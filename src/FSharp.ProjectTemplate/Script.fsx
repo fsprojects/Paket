@@ -2,7 +2,7 @@
 // for more guidance on F# programming.
 
 #load "Library.fs"
-open fsharp_project_template
+open FSharp.ProjectTemplate
 
-// Define your library scripting code here
-
+printfn "%s" <| Greetings.ShoutHello ()
+printfn "%s" <| Greetings.SayHello "World"
