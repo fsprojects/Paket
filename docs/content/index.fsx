@@ -20,6 +20,8 @@ Documentation
   <div class="span1"></div>
 </div>
 
+<img src="img/logo.png" alt="F# project" style="float:right;width:150px;margin:10px" />
+
 Example
 -------
 
