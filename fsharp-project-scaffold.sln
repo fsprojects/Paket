@@ -12,11 +12,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".nuget", ".nuget", "{1F1B4F
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "docs", "docs", "{A6A6AF7D-D6E3-442D-9B1E-58CC91879BE1}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{CAC060D0-20F0-49E1-B3BF-D282FBFA7020}"
-EndProject
 Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "fsharp-project-template", "src\fsharp-project-template\fsharp-project-template.fsproj", "{7E90D6CE-A10B-4858-A5BC-41DF7250CBCA}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{D07EFF6F-02B3-4FA6-A831-1ADD49EB0595}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "project", "project", "{BF60BC93-E09B-4E5F-9D85-95A519479D54}"
 	ProjectSection(SolutionItems) = preProject
 		README.md = README.md
 		RELEASENOTES.md = RELEASENOTES.md

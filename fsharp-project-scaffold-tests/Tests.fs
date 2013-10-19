@@ -1,0 +1,1 @@
+﻿namespace fsharp_project_scaffold_tests
