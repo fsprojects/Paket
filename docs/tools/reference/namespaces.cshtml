@@ -1,0 +1,49 @@
+@{ 
+  Layout = "default";
+  Title = "Namespaces";
+}
+
+<h1>@Model.Name.Name</h1>
+
+@foreach (var ns in Model.Namespaces)
+{
+  <h2>@ns.Name</h2>
+  <div>
+  @if (ns.Types.Length > 0) {
+    <table class="table table-bordered type-list">
+      <thead>
+        <tr><td>Type</td><td>Description</td></tr>
+      </thead>
+      <tbody>
+      @foreach (var it in ns.Types)
+	    {
+        <tr>
+		      <td class="type-name">
+            <a href="@(it.UrlName).html">@it.Name</a>
+		      </td>
+          <td class="xmldoc">@it.Comment.Blurb</td>
+        </tr>
+	    }
+      </tbody>
+    </table>
+  }
+  @if (ns.Modules.Length > 0) {
+    <table class="table table-bordered module-list">
+      <thead>
+        <tr><td>Module</td><td>Description</td></tr>
+      </thead>
+      <tbody>
+      @foreach (var it in ns.Modules)
+	    {
+        <tr>
+		      <td class="module-name">
+            <a href="@(it.UrlName).html">@it.Name</a>
+		      </td>
+          <td class="xmldoc">@it.Comment.Blurb</td>
+        </tr>
+	    }
+      </tbody>
+    </table>
+  }
+  </div>
+}

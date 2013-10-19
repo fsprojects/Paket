@@ -1,0 +1,64 @@
+@using FSharp.MetadataFormat
+@{
+  Layout = "default";
+  Title = "Module";
+}
+
+@{
+  var members = (IEnumerable<Member>)Model.Type.AllMembers;
+  var comment = (Comment)Model.Type.Comment;
+  var byCategory =
+      members.GroupBy(m => m.Category).OrderBy(g => String.IsNullOrEmpty(g.Key) ? "ZZZ" : g.Key)
+             .Select((g, n) => new { Index = n, GroupKey = g.Key, Members = g.OrderBy(m => m.Name), Name = String.IsNullOrEmpty(g.Key) ? "Other type members" : g.Key });
+}
+
+<h1>@Model.Type.Name</h1>
+<div class="xmldoc">
+  @foreach (var sec in comment.Sections) {
+    if (!byCategory.Any(g => g.GroupKey == sec.Key)) {
+      if (sec.Key != "<default>") {
+        <h2>@sec.Key</h2>
+      }
+      @sec.Value
+    }
+  }
+</div>
+@if (byCategory.Count() > 1)
+{
+  <h2>Table of contents</h2>
+  <ul>
+    @foreach (var g in byCategory)
+    {
+      <li><a href="@("#section" + g.Index.ToString())">@g.Name</a></li>
+    }
+  </ul>
+}
+@foreach (var g in byCategory) {
+  if (byCategory.Count() > 1) {
+    <h2>@g.Name<a name="@("section" + g.Index.ToString())">&#160;</a></h2>
+    var info = comment.Sections.FirstOrDefault(kvp => kvp.Key == g.GroupKey);
+    if (info.Key != null) {
+      <div class="xmldoc">
+        @info.Value
+      </div>
+    }
+  }
+
+  @RenderPart("members", new {
+    Header = "Constructors",
+    TableHeader = "Constructor",
+    Members = g.Members.Where(m => m.Kind == MemberKind.Constructor)
+  })
+
+  @RenderPart("members", new {
+    Header = "Instance members",
+    TableHeader = "Instance member",
+    Members = g.Members.Where(m => m.Kind == MemberKind.InstanceMember)
+  })
+
+  @RenderPart("members", new {
+    Header = "Static members",
+    TableHeader = "Static member",
+    Members = g.Members.Where(m => m.Kind == MemberKind.StaticMember)
+  })
+}

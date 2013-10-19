@@ -1,0 +1,120 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>@Title</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="http://code.jquery.com/jquery-1.8.0.js"></script>
+  <script src="http://code.jquery.com/ui/1.8.23/jquery-ui.js"></script>
+  <script src="http://netdna.bootstrapcdn.com/twitter-bootstrap/2.2.1/js/bootstrap.min.js"></script>
+  <link href="http://netdna.bootstrapcdn.com/twitter-bootstrap/2.2.1/css/bootstrap-combined.min.css" rel="stylesheet">
+  <link type="text/css" rel="stylesheet" href="../content/style.css" />
+  <script src="../content/tips.js" type="text/javascript"></script>
+  <!-- HTML5 shim, for IE6-8 support of HTML5 elements -->
+  <!--[if lt IE 9]>
+    <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+  <![endif]-->
+  <style type="text/css">
+    #main h2 {
+       font-size: 160%;
+       margin-top:40px;
+    }
+    #main h3 {
+      font-size: 130%;
+      font-weight: bold;
+      margin-top: 20px;
+    }
+    thead {
+       font-weight:bold;
+    }
+    .type-list .type-name, .module-list .module-name {
+       width:25%;
+       font-weight:bold;
+    }
+    .member-list .member-name {
+       width:35%;
+    }
+    #main table .xmldoc h2 {
+      font-size:120%;
+    }
+  </style>
+</head>
+<body>
+    <div class="container">
+      <div class="masthead">
+        <ul class="nav nav-pills pull-right">
+          <li><a href="http://fsharp.org">fsharp.org</a></li>
+          <li><a href="http://github.com/BlueMountainCapital/FSharp.DataFrame">github page</a></li>
+          <li><a href="http://fsharp.github.io/FSharp.Charting/">F# Charting</a></li>
+          <li><a href="http://fsharp.github.io/FSharp.Data/">F# Data</a></li>
+        </ul>
+        <h3 class="muted">F# DataFrame Library</h3>
+      </div>
+      <hr />
+      <div class="row">
+        <div class="span9" id="main">
+          @RenderBody()
+        </div>
+        <div class="span3">
+          <a href="https://nuget.org/packages/FSharp.DataFrame">
+            <img src="../images/logo.png" style="width:140px;height:140px;margin:10px 0px 0px 35px;border-style:none;" />
+          </a>
+
+          <ul class="nav nav-list" id="menu">
+            <li class="nav-header">F# DataFrame</li>
+            <li><a href="../index.html">Home page</a></li>
+            <li class="divider"></li>
+            <li><a href="https://nuget.org/packages/FSharp.DataFrame">Get Library via NuGet</a></li>
+            <li><a href="https://github.com/BlueMountainCapital/FSharp.DataFrame">Source Code on GitHub</a></li>
+            <li><a href="https://github.com/BlueMountainCapital/FSharp.DataFrame/blob/master/LICENSE.md">License</a></li>
+            <li><a href="https://github.com/BlueMountainCapital/FSharp.DataFrame/blob/master/RELEASE_NOTES.md">Release Notes</a></li>
+            <li><a href="../design.html">Design notes</a></li>
+
+            <li class="nav-header">Using from F#</li>
+            <li>
+              <a href="../tutorial.html">Quick start tutorial</a>
+              <ul class="nav nav-list">
+                <li><a href="../tutorial.html#creating">Creating data frames</a></li>
+                <li><a href="../tutorial.html#reindexing-and-joins">Using index & joining</a></li>
+                <li><a href="../tutorial.html#selecting">Reading values, slicing</a></li>
+                <li><a href="../tutorial.html#timeseries">Ordered time series</a></li>
+                <li><a href="../tutorial.html#projections">Projection and filtering</a></li>
+                <li><a href="../tutorial.html#grouping">Aggregating groups</a></li>
+              </ul>
+            </li>
+            <li>
+              <a href="../features.html">Data frame features</a>
+              <ul class="nav nav-list">
+                <li><a href="../features.html#creating">Creating & loading</a></li>
+                <li><a href="../features.html#dataframe">Frame manipulation</a></li>
+                <li><a href="../features.html#slicing">Advanced slicing</a></li>
+                <li><a href="../features.html#grouping">Grouping data</a></li>
+                <li><a href="../features.html#indexing">Hierarchical indexing</a></li>
+                <li><a href="../features.html#missing">Missing values</a></li>
+              </ul>
+            </li>
+            <li>
+              <a href="../timeseries.html">Time series features</a>
+              <ul class="nav nav-list">
+                <li><a href="../timeseries.html#alignment">Alignment & joining</a></li>
+                <li><a href="../timeseries.html#windowing">Windows and chunks</a></li>
+                <li><a href="../timeseries.html#sampling">Lookup and resampling</a></li>
+                <li><a href="../timeseries.html#stats">Statistics & math</a></li>
+              </ul>
+            </li>
+
+            <li class="nav-header">Documentation</li>
+            <li><a href="../reference/index.html">API Reference</a></li>
+
+            <li class="nav-header">Samples</li>
+            <li><a href="../lazysource.html">Lazy data loading</a></li>
+            <li><a href="../samples/volatility.html">Price volatility</a></li>
+            <li><a href="../samples/titanic.html">Titanic survivors</a></li>
+          </ul>
+
+        </div>
+      </div>
+    </div>
+    <a href="http://github.com/BlueMountainCapital/FSharp.DataFrame"><img style="position: absolute; top: 0; right: 0; border: 0;" src="https://s3.amazonaws.com/github/ribbons/forkme_right_green_007200.png" alt="Fork me on GitHub"></a>
+</body>
+</html>
