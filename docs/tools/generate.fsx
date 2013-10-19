@@ -16,7 +16,7 @@ open FSharp.MetadataFormat
 let (++) a b = Path.Combine(a, b)
 
 // Binaries that have XML documentation (in a corresponding generated XML file)
-let referenceBinaries = [ "FSharp.ProjectScaffold.dll" ]
+let referenceBinaries = [ "FSharp.ProjectTemplate.dll" ]
 // Web site location for the generated documentation
 let website = "http://tpetricek.github.io/FSharp.FSharp.ProjectScaffold"
 
