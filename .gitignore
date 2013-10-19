@@ -96,8 +96,11 @@ publish/
 *.Publish.xml
 
 # NuGet Packages Directory
-## TODO: If you have NuGet Package Restore enabled, uncomment the next line
-#packages/
+packages/
+
+
+# Enable nuget.exe in the .nuget folder (though normally executables are not tracked)
+!.nuget/NuGet.exe
 
 # Windows Azure Build Output
 csx
