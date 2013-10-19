@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2013
 VisualStudioVersion = 12.0.21005.1
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "fsharp-project-scaffold-tests", "fsharp-project-scaffold-tests\fsharp-project-scaffold-tests.fsproj", "{E789C72A-5CFD-436B-8EF1-61AA2852A89F}"
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "fsharp-project-scaffold-tests", "tests\fsharp-project-scaffold-tests\fsharp-project-scaffold-tests.fsproj", "{E789C72A-5CFD-436B-8EF1-61AA2852A89F}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

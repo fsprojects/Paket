@@ -34,7 +34,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="fsharp_project_template">
-      <HintPath>..\bin\fsharp_project_template.dll</HintPath>
+      <HintPath>..\..\bin\fsharp_project_template.dll</HintPath>
     </Reference>
     <Reference Include="mscorlib" />
     <Reference Include="FSharp.Core, Version=$(TargetFSharpCoreVersion), Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
