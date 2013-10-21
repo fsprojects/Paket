@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<package xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <metadata xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
+    <id>@project@</id>
+    <version>@build.number@</version>
+    <authors>@authors@</authors>
+    <owners>@authors@</owners>
+    <licenseUrl>http://github.com/fsharp/fsharp-project-scaffold/blob/master/LICENSE.txt</licenseUrl>
+    <projectUrl>http://fsharp.github.com/FSharp.Data</projectUrl>
+    <iconUrl>https://raw.github.com/fsharp/fsharp-project-scaffold/master/nuget/logo.png</iconUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <summary>@summary@</summary>
+    <description>@description@</description>
+    <releaseNotes>@releaseNotes@</releaseNotes>
+    <copyright>Copyright 2013</copyright>
+    <tags>@tags@</tags>
+    <dependencies />
+  </metadata>
+  <files>
+    <file src="..\bin\FSharp.ProjectTemplate.dll" target="lib/net40" />
+  </files>
+</package>
