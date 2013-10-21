@@ -1,8 +1,8 @@
-﻿// Learn more about F# at http://fsharp.net. See the 'F# Tutorial' project
+﻿// Learn more about F# at http://fsharp.org. See the 'F# Tutorial' project
 // for more guidance on F# programming.
 
 #load "Library.fs"
 open FSharp.ProjectTemplate
 
-printfn "%s" <| Greetings.ShoutHello ()
-printfn "%s" <| Greetings.SayHello "World"
+let num = Library.hello 42
+printfn "%i" num
