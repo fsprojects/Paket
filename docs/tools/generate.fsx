@@ -33,41 +33,40 @@ open System.IO
 open Fake.FileHelper
 open FSharp.Literate
 open FSharp.MetadataFormat
-let (++) a b = Path.Combine(a, b)
 
 // When called from 'build.fsx', use the public project URL as <root>
 // otherwise, use the current 'output' directory.
 #if RELEASE
 let root = website
 #else
-let root = "file://" + (__SOURCE_DIRECTORY__ ++ "../output")
+let root = "file://" + (__SOURCE_DIRECTORY__ @@ "../output")
 #endif
 
 // Paths with template/source/output locations
-let bin      = __SOURCE_DIRECTORY__ ++ "../../bin"
-let content  = __SOURCE_DIRECTORY__ ++ "../content"
-let output   = __SOURCE_DIRECTORY__ ++ "../output"
-let files    = __SOURCE_DIRECTORY__ ++ "../files"
-let template = __SOURCE_DIRECTORY__ ++ "template.html"
-let literate = __SOURCE_DIRECTORY__ ++ "../../packages/FSharp.Formatting.2.0.4/literate/content"
-let referenceTemplate = __SOURCE_DIRECTORY__ ++ "reference"
+let bin      = __SOURCE_DIRECTORY__ @@ "../../bin"
+let content  = __SOURCE_DIRECTORY__ @@ "../content"
+let output   = __SOURCE_DIRECTORY__ @@ "../output"
+let files    = __SOURCE_DIRECTORY__ @@ "../files"
+let template = __SOURCE_DIRECTORY__ @@ "template.html"
+let literate = __SOURCE_DIRECTORY__ @@ "../../packages/FSharp.Formatting.2.0.4/literate/content"
+let referenceTemplate = __SOURCE_DIRECTORY__ @@ "reference"
 
 // Build API reference from XML comments
 let buildReference () = 
-  CleanDir (output ++ "reference")
+  CleanDir (output @@ "reference")
   for lib in referenceBinaries do
-    MetadataFormat.Generate(bin ++ lib, output ++ "reference", referenceTemplate)
+    MetadataFormat.Generate(bin @@ lib, output @@ "reference", referenceTemplate)
 
 // Build documentation from `fsx` and `md` files in `docs/content`
 let buildDocumentation () =
   CopyRecursive files output true |> Log "Copying file: "
-  ensureDirectory (output ++ "styles")
-  CopyRecursive literate (output ++ "styles") true |> Log "Copying styles: "
+  ensureDirectory (output @@ "styles")
+  CopyRecursive literate (output @@ "styles") true |> Log "Copying styles: "
   let subdirs = Directory.EnumerateDirectories(content, "*", SearchOption.AllDirectories)
   for dir in Seq.append [content] subdirs do
     let sub = if dir.Length > content.Length then dir.Substring(content.Length + 1) else "."
     Literate.ProcessDirectory
-      ( dir, template, output ++ sub, 
+      ( dir, template, output @@ sub, 
         replacements = ("root", root)::info )
 
 // Generate 
