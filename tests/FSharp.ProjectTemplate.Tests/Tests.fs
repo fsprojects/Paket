@@ -1,1 +1,1 @@
-﻿namespace fsharp_project_scaffold_tests
+﻿namespace FSharp.ProjectScaffold.Tests

@@ -69,6 +69,6 @@ let buildDocumentation () =
       ( dir, template, output @@ sub, 
         replacements = ("root", root)::info )
 
-// Generate 
+// Generate
 buildDocumentation()
 buildReference()
