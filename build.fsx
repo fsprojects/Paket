@@ -39,15 +39,6 @@ let tags = "F# fsharp project template scaffold sample example"
 // Read additional information from the release notes document
 // Expected format: "0.9.0-beta - Foo bar." or just "0.9.0 - Foo bar."
 // (We need to extract just the number for AssemblyInfo & all version for NuGet
-//let versionAsm, versionNuGet, releaseNotes = 
-//    let lastItem = File.ReadLines "RELEASE_NOTES.md" |> Seq.last
-//    let firstDash = lastItem.IndexOf(" - ")
-//    let notes = lastItem.Substring(firstDash + 2).Trim()
-//    let version = lastItem.Substring(0, firstDash).Trim([|'*'|]).Trim()
-//    // Get just numeric version, if it contains dash
-//    let versionDash = version.IndexOf('-')
-//    if versionDash = -1 then version, version, notes
-//    else version.Substring(0, versionDash), version, notes
 let { AssemblyVersion = versionAsm
       NugetVersion    = versionNuGet
       Notes           = releaseNotes} = 
