@@ -28,11 +28,9 @@ let project   = "FSharp.ProjectTemplate"
 let authors   = [ "tpetricek"; "pblasucci"; ]
 let summary   = "A prototypical F# library (file system layout and tooling), recommended by the F# Foundation."
 let description = """
-  The F# DataFrame library (FSharp.DataFrame.dll) implements an efficient and robust 
-  data frame and series structures for manipulating with structured data. It supports
-  handling of missing values, aggregations, grouping, joining, statistical functions and
-  more. For frames and series with ordered indices (such as time series), automatic
-  alignment is also available. """
+  A prototypical F# library (file system layout and tooling), recommended by the F# Foundation.
+  It demonstrates combining popular tools and techniques for dependency management, testing, documentation, 
+  and deployment. It is public-domain licensed, and suitable for modification. """
 
 let tags = "F# fsharp project template scaffold sample example"
 
