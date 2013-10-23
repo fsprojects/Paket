@@ -43,7 +43,6 @@ let root = "file://" + (__SOURCE_DIRECTORY__ @@ "../output")
 #endif
 
 // Paths with template/source/output locations
-<<<<<<< HEAD
 let bin = __SOURCE_DIRECTORY__ @@ "../../bin"
 let content = __SOURCE_DIRECTORY__ @@ "../content"
 let output = __SOURCE_DIRECTORY__ @@ "../output"
