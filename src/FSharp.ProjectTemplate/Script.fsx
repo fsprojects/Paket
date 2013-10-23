@@ -1,8 +1,8 @@
-﻿// Learn more about F# at http://fsharp.net. See the 'F# Tutorial' project
+﻿// Learn more about F# at http://fsharp.org. See the 'F# Tutorial' project
 // for more guidance on F# programming.
 
 #load "Library.fs"
-open fsharp_project_template
+open FSharp.ProjectTemplate
 
-// Define your library scripting code here
-
+let num = Library.hello 42
+printfn "%i" num

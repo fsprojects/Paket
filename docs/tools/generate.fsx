@@ -44,16 +44,16 @@ let root = "file://" + (__SOURCE_DIRECTORY__ ++ "../output")
 #endif
 
 // Paths with template/source/output locations
-let bin      = __SOURCE_DIRECTORY__ ++ "../../bin"
-let content  = __SOURCE_DIRECTORY__ ++ "../content"
-let output   = __SOURCE_DIRECTORY__ ++ "../output"
-let files    = __SOURCE_DIRECTORY__ ++ "../files"
+let bin = __SOURCE_DIRECTORY__ ++ "../../bin"
+let content = __SOURCE_DIRECTORY__ ++ "../content"
+let output = __SOURCE_DIRECTORY__ ++ "../output"
+let files = __SOURCE_DIRECTORY__ ++ "../files"
 let template = __SOURCE_DIRECTORY__ ++ "template.html"
 let literate = __SOURCE_DIRECTORY__ ++ "../../packages/FSharp.Formatting.2.0.4/literate/content"
 let referenceTemplate = __SOURCE_DIRECTORY__ ++ "reference"
 
 // Build API reference from XML comments
-let buildReference () = 
+let buildReference () =
   CleanDir (output ++ "reference")
   for lib in referenceBinaries do
     MetadataFormat.Generate(bin ++ lib, output ++ "reference", referenceTemplate)
@@ -67,9 +67,9 @@ let buildDocumentation () =
   for dir in Seq.append [content] subdirs do
     let sub = if dir.Length > content.Length then dir.Substring(content.Length + 1) else "."
     Literate.ProcessDirectory
-      ( dir, template, output ++ sub, 
+      ( dir, template, output ++ sub,
         replacements = ("root", root)::info )
 
-// Generate 
+// Generate
 buildDocumentation()
 buildReference()
