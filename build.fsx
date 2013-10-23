@@ -3,21 +3,15 @@
 // --------------------------------------------------------------------------------------
 
 #r @"packages/FAKE/tools/FakeLib.dll"
-
 open Fake 
-open Fake.AssemblyInfoFile
 open Fake.Git
+open Fake.AssemblyInfoFile
 open Fake.ReleaseNotesHelper
 open System
-open System.IO
-open System.Text.RegularExpressions
 
-Environment.CurrentDirectory <- __SOURCE_DIRECTORY__
-
-let files includes = 
-  { BaseDirectories = [__SOURCE_DIRECTORY__]
-    Includes = includes
-    Excludes = [] } |> Scan
+// --------------------------------------------------------------------------------------
+// START TODO: Provide project-specific details below
+// --------------------------------------------------------------------------------------
 
 // Information about the project to be used 
 //  - by NuGet
@@ -26,33 +20,32 @@ let files includes =
 let solution  = "FSharp.ProjectScaffold"
 let project   = "FSharp.ProjectTemplate"
 let authors   = [ "tpetricek"; "pblasucci"; ]
-let summary   = "A prototypical F# library (file system layout and tooling), recommended by the F# Foundation."
+let summary   = "A prototypical F# library recommended by the F# Software Foundation."
 let description = """
-  A prototypical F# library (file system layout and tooling), recommended by the F# Foundation.
-  It demonstrates combining popular tools and techniques for dependency management, testing, documentation, 
-  and deployment. It is public-domain licensed, and suitable for modification. """
+  A prototypical F# library (file system layout and tooling), recommended by the 
+  F# Software Foundation. It demonstrates combining popular tools and techniques for 
+  dependency management, testing, documentation, and deployment. It is public-domain 
+  licensed, and suitable for modification. """
 
 let tags = "F# fsharp project template scaffold sample example"
 
-// Read additional information from the release notes document
-// Expected format: "0.9.0-beta - Foo bar." or just "0.9.0 - Foo bar."
-// (We need to extract just the number for AssemblyInfo & all version for NuGet
-let { AssemblyVersion = versionAsm
-      NugetVersion    = versionNuGet
-      Notes           = releaseNotes} = 
-      "RELEASE_NOTES.md" |> File.ReadAllLines |> parseReleaseNotes
-
 // --------------------------------------------------------------------------------------
-// Generate assembly info files with the right version & up-to-date information
+// END TODO: The rest of the file includes standard build steps 
+// --------------------------------------------------------------------------------------
 
+// Read additional information from the release notes document
+Environment.CurrentDirectory <- __SOURCE_DIRECTORY__
+let release = parseReleaseNotes (IO.File.ReadAllLines "RELEASE_NOTES.md")
+
+// Generate assembly info files with the right version & up-to-date information
 Target "AssemblyInfo" (fun _ ->
   let fileName = "src/" + project + "/AssemblyInfo.fs"
   CreateFSharpAssemblyInfo fileName
       [ Attribute.Title project
         Attribute.Product project
         Attribute.Description summary
-        Attribute.Version versionAsm
-        Attribute.FileVersion versionAsm ] 
+        Attribute.Version release.AssemblyVersion
+        Attribute.FileVersion release.AssemblyVersion ] 
 )
 
 // --------------------------------------------------------------------------------------
@@ -75,8 +68,11 @@ Target "CleanDocs" (fun _ ->
 // Build library & test project
 
 Target "Build" (fun _ ->
-    (files [solution +       ".sln"
-            solution + ".Tests.sln"])
+    { BaseDirectories = [__SOURCE_DIRECTORY__]
+      Includes = [ solution +       ".sln"
+                   solution + ".Tests.sln" ]
+      Excludes = [] } 
+    |> Scan
     |> MSBuildRelease "" "Rebuild"
     |> ignore
 )
@@ -90,7 +86,10 @@ Target "Build" (fun _ ->
 //
 //    ActivateFinalTarget "CloseTestRunner"
 //
-//    (files ["tests/*/bin/Debug/FSharp.ProjectScaffold*Tests*.dll"])
+//    { BaseDirectories = [__SOURCE_DIRECTORY__]
+//      Includes = ["tests/*/bin/Debug/FSharp.ProjectScaffold*Tests*.dll"]
+//      Excludes = [] } 
+//    |> Scan
 //    |> NUnit (fun p ->
 //        { p with
 //            ToolPath = nunitPath
@@ -118,8 +117,8 @@ Target "NuGet" (fun _ ->
             Project = project
             Summary = summary
             Description = description
-            Version = versionNuGet
-            ReleaseNotes = String.Join(Environment.NewLine,releaseNotes)
+            Version = release.NugetVersion
+            ReleaseNotes = String.Join(Environment.NewLine, release.Notes)
             Tags = tags
             OutputPath = "bin"
             ToolPath = nugetPath
@@ -133,7 +132,7 @@ Target "NuGet" (fun _ ->
 // Generate the documentation
 
 Target "JustGenerateDocs" (fun _ ->
-    executeFSI "docs/tools" "generate.fsx" ["define","RELEASE"] |> ignore
+    executeFSIWithArgs "docs/tools" "generate.fsx" ["--define:RELEASE"] [] |> ignore
 )
 
 Target "GenerateDocs" DoNothing
@@ -154,7 +153,7 @@ Target "ReleaseDocs" (fun _ ->
     Branches.checkoutBranch ghPagesLocal ghPages
     CopyRecursive "docs/output" ghPagesLocal true |> printfn "%A"
     CommandHelper.runSimpleGitCommand ghPagesLocal "add ." |> printfn "%s"
-    let cmd = sprintf """commit -a -m "Update generated documentation for version %s""" versionNuGet
+    let cmd = sprintf """commit -a -m "Update generated documentation for version %s""" release.NugetVersion
     CommandHelper.runSimpleGitCommand ghPagesLocal cmd |> printfn "%s"
     Branches.push ghPagesLocal
 )
@@ -164,7 +163,7 @@ Target "ReleaseBinaries" (fun _ ->
     Branches.checkoutBranch "release" "release"
     CopyRecursive "bin" "release/bin" true |> printfn "%A"
     MoveFile "./release/" "./release/bin/FSharp.ProjectScaffold.fsx"
-    let cmd = sprintf """commit -a -m "Update binaries for version %s""" versionNuGet
+    let cmd = sprintf """commit -a -m "Update binaries for version %s""" release.NugetVersion
     CommandHelper.runSimpleGitCommand "release" cmd |> printfn "%s"
     Branches.push "release"
 )
