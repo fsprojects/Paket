@@ -146,7 +146,7 @@ Target "GenerateDocs" DoNothing
 Target "ReleaseDocs" (fun _ ->
     let ghPages      = "gh-pages"
     let ghPagesLocal = "temp/gh-pages"
-    Repository.clone "temp" (gitHome + "/fsharp-project-scaffold.git") ghPages
+    Repository.clone "temp" (gitHome + "/FSharp.ProjectScaffold.git") ghPages
     Branches.checkoutBranch ghPagesLocal ghPages
     CopyRecursive "docs/output" ghPagesLocal true |> printfn "%A"
     CommandHelper.runSimpleGitCommand ghPagesLocal "add ." |> printfn "%s"

@@ -5,9 +5,9 @@
     <version>@build.number@</version>
     <authors>@authors@</authors>
     <owners>@authors@</owners>
-    <licenseUrl>http://github.com/pblasucci/fsharp-project-scaffold/blob/master/LICENSE.txt</licenseUrl>
-    <projectUrl>http://pblasucci.github.com/fsharp-project-scaffold</projectUrl>
-    <iconUrl>https://raw.github.com/fsharp/fsharp-project-scaffold/master/nuget/logo.png</iconUrl>
+    <licenseUrl>http://github.com/pblasucci/FSharp.ProjectScaffold/blob/master/LICENSE.txt</licenseUrl>
+    <projectUrl>http://pblasucci.github.com/FSharp.ProjectScaffold</projectUrl>
+    <iconUrl>https://raw.github.com/fsharp/FSharp.ProjectScaffold/master/nuget/logo.png</iconUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <summary>@summary@</summary>
     <description>@description@</description>
