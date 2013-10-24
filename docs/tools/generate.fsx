@@ -6,7 +6,7 @@
 // Binaries that have XML documentation (in a corresponding generated XML file)
 let referenceBinaries = [ "FSharp.ProjectTemplate.dll" ]
 // Web site location for the generated documentation
-let website = "http://pblasucci.github.io/FSharp.FSharp.ProjectScaffold"
+let website = "http://pblasucci.github.io/fsharp-project-scaffold"
 
 // Specify more information about your project
 let info =
@@ -43,7 +43,7 @@ let root = "file://" + (__SOURCE_DIRECTORY__ @@ "../output")
 #endif
 
 // Paths with template/source/output locations
-let bin = __SOURCE_DIRECTORY__ @@ "../../bin"
+let bin = __SOURCE_DIRECTORY__ @@ "../../bin/Release"
 let content = __SOURCE_DIRECTORY__ @@ "../content"
 let output = __SOURCE_DIRECTORY__ @@ "../output"
 let files = __SOURCE_DIRECTORY__ @@ "../files"
