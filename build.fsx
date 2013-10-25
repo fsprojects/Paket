@@ -14,8 +14,10 @@ open System
 // --------------------------------------------------------------------------------------
 
 // Information about the project are used
-//  - by the generated NuGet package 
 //  - for version and project name in generated AssemblyInfo file
+//  - by the generated NuGet package 
+//  - to run tests and to publish documentation on GitHub gh-pages
+//  - for documentation, you also need to edit info in "docs/tools/generate.fsx"
 
 // The name of the project 
 // (used by attributes in AssemblyInfo, name of a NuGet package and directory in 'src')
