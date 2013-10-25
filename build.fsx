@@ -13,20 +13,39 @@ open System
 // START TODO: Provide project-specific details below
 // --------------------------------------------------------------------------------------
 
-// Information about the project to be used 
-//  - by NuGet
-//  - in AssemblyInfo files
-//  - in FAKE tasks
-let solution  = "FSharp.ProjectScaffold"
-let project   = "FSharp.ProjectTemplate"
-let authors   = [ "Your Name" ]
-let summary   = "A short summary of your project."
-let description = """
-  A lengthy description of your project. """
+// Information about the project are used
+//  - by the generated NuGet package 
+//  - for version and project name in generated AssemblyInfo file
 
+// The name of the project 
+// (used by attributes in AssemblyInfo, name of a NuGet package and directory in 'src')
+let project = "FSharp.ProjectTemplate"
+
+// Short summary of the project
+// (used as description in AssemblyInfo and as a short summary for NuGet package)
+let summary = "A short summary of your project."
+
+// Longer description of the project
+// (used as a description for NuGet package; line breaks are automatically cleaned up)
+let description = """
+  A lengthy description of your project. 
+  This can have multiple lines and will be cleaned up. """
+// List of author names (for NuGet package)
+let authors = [ "Your Name" ]
+// Tags for your project (for NuGet package)
 let tags = "F# fsharp tags which describe your project"
 
+// File system information 
+// (<solutionFile>.sln and <solutionFile>.Tests.sln are built during the building)
+let solutionFile  = "FSharp.ProjectScaffold"
+// Pattern specifying assemblies to be tested using NUnit
+let testAssemblies = ["tests/*/bin/*/FSharp.ProjectTemplate*Tests*.dll"]
+
+// Git configuration (used for publishing documentation in gh-pages branch)
+// The profile where the project is posted 
 let gitHome = "https://github.com/pblasucci"
+// The name of the project on GitHub
+let gitName = "FSharp.ProjectScaffold"
 
 // --------------------------------------------------------------------------------------
 // END TODO: The rest of the file includes standard build steps 
@@ -68,8 +87,8 @@ Target "CleanDocs" (fun _ ->
 
 Target "Build" (fun _ ->
     { BaseDirectories = [__SOURCE_DIRECTORY__]
-      Includes = [ solution +       ".sln"
-                   solution + ".Tests.sln" ]
+      Includes = [ solutionFile +       ".sln"
+                   solutionFile + ".Tests.sln" ]
       Excludes = [] } 
     |> Scan
     |> MSBuildRelease "" "Rebuild"
@@ -82,11 +101,10 @@ Target "Build" (fun _ ->
 Target "RunTests" (fun _ ->
     let nunitVersion = GetPackageVersion "packages" "NUnit.Runners"
     let nunitPath = sprintf "packages/NUnit.Runners.%s/Tools" nunitVersion
-
     ActivateFinalTarget "CloseTestRunner"
 
     { BaseDirectories = [__SOURCE_DIRECTORY__]
-      Includes = ["tests/*/bin/*/FSharp.ProjectTemplate*Tests*.dll"]
+      Includes = testAssemblies
       Excludes = [] } 
     |> Scan
     |> NUnit (fun p ->
@@ -140,7 +158,7 @@ Target "GenerateDocs" (fun _ ->
 Target "ReleaseDocs" (fun _ ->
     let ghPages      = "gh-pages"
     let ghPagesLocal = "temp/gh-pages"
-    Repository.clone "temp" (gitHome + "/FSharp.ProjectScaffold.git") ghPages
+    Repository.clone "temp" (gitHome + "/" + gitName + ".git") ghPages
     Branches.checkoutBranch ghPagesLocal ghPages
     CopyRecursive "docs/output" ghPagesLocal true |> printfn "%A"
     CommandHelper.runSimpleGitCommand ghPagesLocal "add ." |> printfn "%s"
