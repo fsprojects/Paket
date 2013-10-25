@@ -130,15 +130,9 @@ Target "NuGet" (fun _ ->
 // --------------------------------------------------------------------------------------
 // Generate the documentation
 
-Target "JustGenerateDocs" (fun _ ->
+Target "GenerateDocs" (fun _ ->
     executeFSIWithArgs "docs/tools" "generate.fsx" ["--define:RELEASE"] [] |> ignore
 )
-
-Target "GenerateDocs" DoNothing
-
-"CleanDocs" 
-  ==> "JustGenerateDocs" 
-  ==> "GenerateDocs"
 
 // --------------------------------------------------------------------------------------
 // Release Scripts

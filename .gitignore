@@ -95,12 +95,6 @@ publish/
 # Publish Web Output
 *.Publish.xml
 
-# NuGet Packages Directory
-packages/
-
-# Generated documentation folder
-docs/output/
-
 # Enable nuget.exe in the .nuget folder (though normally executables are not tracked)
 !.nuget/NuGet.exe
 
@@ -159,3 +153,19 @@ $RECYCLE.BIN/
 
 # Mac desktop service store files
 .DS_Store
+
+# ===================================================
+# Exclude F# project specific directories and files
+# ===================================================
+
+# NuGet Packages Directory
+packages/
+
+# Generated documentation folder
+docs/output/
+
+# Temp folder used for publishing docs
+temp/
+
+# Test results produced by build
+TestResults.xml
