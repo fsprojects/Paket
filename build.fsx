@@ -170,6 +170,7 @@ Target "All" DoNothing
   ==> "All"
 
 "All" 
+  ==> "CleanDocs"
   ==> "GenerateDocs"
   ==> "ReleaseDocs"
   ==> "NuGet"
