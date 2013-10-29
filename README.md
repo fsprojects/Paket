@@ -61,7 +61,7 @@ followed by a detailed description.
 	</thead>
 	<tbody>
 		<tr>
-			<td></td>
+			<td>[bin](/tree/master/bin)</td>
 			<td></td>
 		</tr>
 	</tbody>
