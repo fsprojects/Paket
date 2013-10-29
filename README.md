@@ -3,54 +3,15 @@ FSharp.ProjectScaffold
 
 A prototypical F# library (file system layout and tooling), recommended by the F# Foundation.
 
-Overview
----
-
 This sample demonstrates the suggested structure of a typical F# solution.
 _(NOTE: this layout should NOT be used when authoring a Type Provider. 
-For more details about doing so, see [read this.](http://link/needed))_
+For more details about doing so, please [read this.](../../wiki/Suggestions-for-Building-a-Type-Provider))_ 
+It also showcase a few popular F#-centric libraries (e.g. FSharp.Formatting), 
+as well as using some more general libraries (e.g. NUnit) from within F#.
 
-The general structure (on-disk) is laid out below,
-followed by a detailed description. 
+---
 
--	.nuget/
-  *	Nuget.config
-  *	Nuget.exe
-  *	Nuget.targets
-  *	packages.config
--	bin/
-  *	[README.md](http://link/needed)
--	docs/
-  -	content/
-    *	index.fsx
-    *	tutorial.fsx
-  -	files/
-    -	img/
-      *	logo.png
-  +	output/
-  -	tools/
-    -	templates/
-      *	template.cshtml
-    *	generate.fsx
-    *	packages.config
--	lib/
-  *	[README.md](http://link/needed)
--	nuget/
--	packages/
-  *	[README.md](http://link/needed)
--	src/
-  +	FSharp.ProjectTemplate/
--	temp/
-  *	[README.md](http://link/needed)
--	tests/
-  +	FSharp.ProjectTemplate.Tests/
-*	build.cmd
-*	build.fsx
-*	FSharp.ProjectScaffold.sln
-*	[LICENSE.txt](http://link/needed)
-*	[RELEASE_NOTES.md](http://link/needed)
-*	[README.md](http://link/needed)
-
+<a id="SolutionFoldersTable"/>
 <table>
   <caption>Summary of solution folders</caption>
   <thead>
@@ -62,7 +23,14 @@ followed by a detailed description.
   <tbody>
     <tr>
       <td><a href="../../tree/master/.nuget">.nuget</a></td>
-      <td></td>
+      <td>
+        <p>This directory, and the files it contains, are used to bootstrap the build process. 
+        Specifically, it enables the acquistion of NuGet dependencies on a clean build.
+        It is further used by the build process when performing other NuGet-related tasks. 
+        These tools also facilitate the <em>Package Restore</em> functionality inside of Visual Studio.</p>
+        <p><strong>It is strongly recommended that nothing be put into this directory.</strong></p>
+        <p>It is <strong>strongly advised</strong> that the <strong>contents of this directory be committed</strong> to source control.</p>
+      </td>
     </tr>
     <tr>
       <td><a href="../../tree/master/bin">bin</a></td>
@@ -116,7 +84,15 @@ followed by a detailed description.
     <tr>
     <tr>
       <td><a href="../../tree/master/src">.nuget</a></td>
-      <td></td>
+      <td>
+        <p>Use this directory to house the actual codebase (e.g. one, or more, Visual Studio F# projects) in your solution. 
+        A good way to get started is to rename the project included in this sample (FSharp.ProjectTemplate). 
+        Alternately, delete the sample project and create your own.</p>
+        <p><em>NOTE: When you rename the sample project, or add aditional projects to this directory, you may need to edit <code>build.fsx</code> and/or <code>generate.fsx</code>. 
+        You will, likely, also need to update your <code>.sln</code> file(s).
+        Please see the following <a href="#SolutionFilesTable">table</a> for more details.</em></p>
+        <p><em>NOTE: you should NOT place testing porjects in this path. Testing files belong in the <code>tests</code> directory.</em></p>
+      </td>
     </tr>
     <tr>
       <td><a href="../../tree/master/temp">temp</a></td>
@@ -127,12 +103,19 @@ followed by a detailed description.
       </td>
     </tr>
     <tr>
-      <td><a href="../../tree/master/tests">.nuget</a></td>
-      <td></td>
+      <td><a href="../../tree/master/tests">tests</a></td>
+      <td>
+        <p>Use this directory to house any testing projects you might develop (i.e. libraries leveraging NUnit, xUnit, MBUnit, et cetera).
+        The sample project included in this directory is configured to use NUnit. Further, <code>build.fsx</code> is coded to execute these test as part of the build process.</p>
+        <p><em>NOTE: When you rename the sample project, or add aditional projects to this directory, you may need to edit <code>build.fsx</code> and/or <code>generate.fsx</code>.
+        You will, likely, also need to update your <code>.sln</code> file(s).
+        Please see the following <a href="#SolutionFilesTable">table</a> for more details.</em></p>
+      </td>
     </tr>
   </tbody>
 </table>
 
+<a id="SolutionFilesTable"/>
 <table>
   <caption>Summary of important solution files</caption>
   <thead>
@@ -147,39 +130,39 @@ followed by a detailed description.
       <td></td>
     </tr>
     <tr>
-      <td>build.fsx</td>
+      <td><a href="build.fsx">build.fsx</a></td>
       <td></td>
     </tr>
     <tr>
-      <td>FSharp.ProjectScaffold.sln</td>
+      <td><a href="FSharp.ProjectScaffold.sln">FSharp.ProjectScaffold.sln</a></td>
       <td></td>
     </tr>
     <tr>
-      <td>LICENSE.txt</td>
+      <td><a href="LICENSE.txt">LICENSE.txt</a></td>
       <td></td>
     </tr>
     <tr>
-      <td>RELEASE_NOTES.md</td>
+      <td><a href="RELEASE_NOTES.md">RELEASE_NOTES.md</a></td>
       <td></td>
     </tr>
     <tr>
-      <td>README.md</td>
+      <td><a href="README.md">README.md</a></td>
       <td></td>
     </tr>
     <tr>
-      <td>/docs/content/index.fsx</td>
+      <td><a href="docs/content/index.fsx">docs/content/index.fsx</a></td>
       <td></td>
     </tr>
     <tr>
-      <td>/docs/content/tutorial.fsx</td>
+      <td><a href="docs/content/tutorial.fsx">docs/content/tutorial.fsx</a></td>
       <td></td>
     </tr>
     <tr>
-      <td>/docs/tools/generate.fsx</td>
+      <td><a href="docs/tools/generate.fsx">docs/tools/generate.fsx</a></td>
       <td></td>
     </tr>
     <tr>
-      <td>/docs/tools/templates/template.cshtml</td>
+      <td><a href="docs/tools/templates/template.cshtml">docs/tools/templates/template.cshtml</a></td>
       <td></td>
     </tr>
   </tbody>
