@@ -76,7 +76,7 @@ as well as using some more general libraries (e.g. <a href="http://www.nunit.org
       <td>
         <p>This directory contains tools used in the generation of both narrative documentation and API documentation.
         The main interaction with the content of this directory consists of editing <code>generate.fsx</code> to include the appropriate repository information
-        (see the following <a href="#SolutionFilesTable">table</a> for more details).</p>
+        (see the <a href="#SolutionFilesTable">following table</a> for more details).</p>
       </td>
     </tr>
     <tr>
@@ -119,7 +119,7 @@ as well as using some more general libraries (e.g. <a href="http://www.nunit.org
         Alternately, delete the sample project and create your own.</p>
         <p><em>NOTE: When you rename the sample project, or add aditional projects to this directory, you may need to edit <code>build.fsx</code> and/or <code>generate.fsx</code>. 
         You will, likely, also need to update your <code>.sln</code> file(s).
-        Please see the following <a href="#SolutionFilesTable">table</a> for more details.</em></p>
+        Please see the <a href="#SolutionFilesTable">following table</a> for more details.</em></p>
         <p><em>NOTE: you should NOT place testing porjects in this path. Testing files belong in the <code>tests</code> directory.</em></p>
       </td>
     </tr>
@@ -138,7 +138,7 @@ as well as using some more general libraries (e.g. <a href="http://www.nunit.org
         The sample project included in this directory is configured to use NUnit. Further, <code>build.fsx</code> is coded to execute these test as part of the build process.</p>
         <p><em>NOTE: When you rename the sample project, or add aditional projects to this directory, you may need to edit <code>build.fsx</code> and/or <code>generate.fsx</code>.
         You will, likely, also need to update your <code>.sln</code> file(s).
-        Please see the following <a href="#SolutionFilesTable">table</a> for more details.</em></p>
+        Please see the <a href="#SolutionFilesTable">following table</a> for more details.</em></p>
       </td>
     </tr>
   </tbody>
@@ -156,43 +156,43 @@ as well as using some more general libraries (e.g. <a href="http://www.nunit.org
   <tbody>
     <tr>
       <td><a href="build.cmd">build.cmd</a></td>
-      <td></td>
+      <td><code>TODO: add description</code></td>
     </tr>
     <tr>
       <td><a href="build.fsx">build.fsx</a></td>
-      <td></td>
+      <td><code>TODO: add description</code></td>
     </tr>
     <tr>
       <td><a href="FSharp.ProjectScaffold.sln">FSharp.ProjectScaffold.sln</a></td>
-      <td></td>
+      <td><code>TODO: add description</code></td>
     </tr>
     <tr>
       <td><a href="LICENSE.txt">LICENSE.txt</a></td>
-      <td></td>
+      <td><code>TODO: add description</code></td>
     </tr>
     <tr>
       <td><a href="RELEASE_NOTES.md">RELEASE_NOTES.md</a></td>
-      <td></td>
+      <td><code>TODO: add description</code></td>
     </tr>
     <tr>
       <td><a href="README.md">README.md</a></td>
-      <td></td>
+      <td><code>TODO: add description</code></td>
     </tr>
     <tr>
       <td><a href="docs/content/index.fsx">docs/content/index.fsx</a></td>
-      <td></td>
+      <td><code>TODO: add description</code></td>
     </tr>
     <tr>
       <td><a href="docs/content/tutorial.fsx">docs/content/tutorial.fsx</a></td>
-      <td></td>
+      <td><code>TODO: add description</code></td>
     </tr>
     <tr>
       <td><a href="docs/tools/generate.fsx">docs/tools/generate.fsx</a></td>
-      <td></td>
+      <td><code>TODO: add description</code></td>
     </tr>
     <tr>
       <td><a href="docs/tools/templates/template.cshtml">docs/tools/templates/template.cshtml</a></td>
-      <td></td>
+      <td><code>TODO: add description</code></td>
     </tr>
   </tbody>
 </table>
