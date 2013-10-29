@@ -1,2 +1,12 @@
+This file is in the `temp` directory.
+
+This directory is used by the build process as a "scratch", or working, area.
+
+**It is strongly recommended that nothing be put into this directory.**
+
+---
+NOTE: 
+
 This file is a placeholder, used to preserve directory structure in Git.
-It does not need to be edited.
+
+This file does not need to be edited.
