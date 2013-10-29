@@ -61,8 +61,13 @@ followed by a detailed description.
 	</thead>
 	<tbody>
 		<tr>
-			<td>[bin](/tree/master/bin)</td>
-			<td></td>
+			<td><a href="/tree/master/bin">bin</a></td>
+			<td><p>This directory is the primary output directory for libraries and NuGet packages when using the build system 
+(i.e. <code>build.cmd</code> or <code>build.fsx</code>). It is also the target directory when building in <em>Release</em> mode inside Visual Studio.
+This directory is touched by many parts of the build process.</p>
+<p><strong>It is strongly recommended that nothing be put into this directory.</strong></p>
+<p>It is <strong>strongly advised</strong> that the <strong>contents of this directory not be committed</strong> to source control 
+(with the sole exception being this <code>README.md</code> file).</p></td>
 		</tr>
 	</tbody>
 </table>
