@@ -6,8 +6,12 @@ A prototypical F# library (file system layout and tooling), recommended by the F
 This sample demonstrates the suggested structure of a typical F# solution.
 _(NOTE: this layout should NOT be used when authoring a Type Provider. 
 For more details about doing so, please [read this.](../../wiki/Suggestions-for-Building-a-Type-Provider))_ 
-It also showcase a few popular F#-centric libraries (e.g. FSharp.Formatting), 
-as well as using some more general libraries (e.g. NUnit) from within F#.
+It also showcase a few popular F#-centric libraries (e.g. <a href="http://fsharp.github.io/FAKE/" target="_blank">F# Make</a>), 
+as well as using some more general libraries (e.g. <a href="http://www.nunit.org/" target="_blank">NUnit</a>) from within F#.
+
+---
+
+[Sample API documents available here](http://pblasucci.github.io/FSharp.ProjectScaffold)
 
 ---
 
@@ -44,19 +48,44 @@ as well as using some more general libraries (e.g. NUnit) from within F#.
     </tr>
     <tr>
       <td><a href="../../tree/master/docs/content">docs/content</a></td>
-      <td></td>
+      <td>
+        <p>Use this directory for all your narratvie documentation source files.
+        Said files should be either F# scripts (ending in <code>.fsx</code>) or Mark Down files (ending in <code>.md</code>).
+        This project includes two sample scripts. Feel free to extend and/or replace these files.
+        For more information on generating documentation, please see <a href="http://tpetricek.github.io/FSharp.Formatting/" target="_blank">FSharp.Formatting</a>.</p>
+      </td>
     </tr>
     <tr>
       <td><a href="../../tree/master/docs/files">docs/files</a></td>
-      <td></td>
+      <td>
+        <p>Use this directory to house any supporting assets needed for documentation generation. 
+        For instance, this directory might be where you place image files which are to be linked/embedded in the final documentation.</p>
+      </td>
     </tr>
     <tr>
       <td><a href="../../tree/master/docs/output">docs/output</a></td>
-      <td></td>
+      <td>
+        <p>This directory will contain the final artifacts for both narrative and API documentation. 
+        This folder will be automatically created by the documenation generation process.</p>
+        <p><strong>It is strongly recommended that nothing be put into this directory.</strong></p>
+        <p>It is <strong>strongly advised</strong> that the <strong>contents of this directory NOT be committed</strong> to source control.</p>
+      </td>
     </tr>
     <tr>
       <td><a href="../../tree/master/docs/tools">docs/tools</a></td>
-      <td></td>
+      <td>
+        <p>This directory contains tools used in the generation of both narrative documentation and API documentation.
+        The main interaction with the content of this directory consists of editing <code>generate.fsx</code> to include the appropriate repository information
+        (see the following <a href="#SolutionFilesTable">table</a> for more details).</p>
+      </td>
+    </tr>
+    <tr>
+      <td><a href="../../tree/master/docs/tools/templates">docs/tools/templates</a></td>
+      <td>
+        <p>This directory contains the (default) Razor template used as part of generating documentation. 
+        You are encouraged to edit this template. You may also create additional templates, 
+        but that will require making edits to <code>generate.fsx</code>.</p>
+      </td>
     </tr>
     <tr>
       <td><a href="../../tree/master/lib">lib</a></td>
@@ -167,7 +196,3 @@ as well as using some more general libraries (e.g. NUnit) from within F#.
     </tr>
   </tbody>
 </table>
-
----
-
-[Sample API documents available here](http://pblasucci.github.io/FSharp.ProjectScaffold)
