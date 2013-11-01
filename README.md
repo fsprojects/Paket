@@ -11,7 +11,6 @@ as well as using some more general libraries (e.g. <a href="http://www.nunit.org
 
 ---
 
-<a id="SolutionFoldersTable"/>
 <table>
   <caption>Summary of solution folders</caption>
   <thead>
@@ -135,13 +134,12 @@ as well as using some more general libraries (e.g. <a href="http://www.nunit.org
         The sample project included in this directory is configured to use NUnit. Further, <code>build.fsx</code> is coded to execute these test as part of the build process.</p>
         <p><em>NOTE: When you rename the sample project, or add aditional projects to this directory, you may need to edit <code>build.fsx</code> and/or <code>generate.fsx</code>.
         You will, likely, also need to update your <code>.sln</code> file(s).
-        Please see the <a href="#SolutionFilesTable">following table</a> for more details.</em></p>
+        Please see the following table for more details.</em></p>
       </td>
     </tr>
   </tbody>
 </table>
 
-<a id="SolutionFilesTable"/>
 <table>
   <caption>Summary of important solution files</caption>
   <thead>
@@ -190,6 +188,7 @@ as well as using some more general libraries (e.g. <a href="http://www.nunit.org
           <dt><code>gitName</code></dt>
           <dd>The name of this project's GitHub repository. This is used for publishing documentation.</dd>
         </dl>
+        <p><code>TODO: document list of included build targets.</code></p>
       </td>
     </tr>
     <tr>
@@ -262,4 +261,4 @@ as well as using some more general libraries (e.g. <a href="http://www.nunit.org
 
 ---
 
-[Sample API documents available here](http://pblasucci.github.io/FSharp.ProjectScaffold)
+<a hreaf="http://pblasucci.github.io/FSharp.ProjectScaffold" target="_blank">Sample API documents available here.</a>
