@@ -38,7 +38,7 @@ let authors = [ "Your Name" ]
 let tags = "F# fsharp tags which describe your project"
 
 // File system information 
-// (<solutionFile>.sln and <solutionFile>.Tests.sln are built during the building)
+// (<solutionFile>.sln is built during the building process)
 let solutionFile  = "FSharp.ProjectScaffold"
 // Pattern specifying assemblies to be tested using NUnit
 let testAssemblies = ["tests/*/bin/*/FSharp.ProjectTemplate*Tests*.dll"]
