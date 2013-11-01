@@ -72,7 +72,7 @@ as well as using some more general libraries (e.g. <a href="http://www.nunit.org
       <td>
         <p>This directory contains tools used in the generation of both narrative documentation and API documentation.
         The main interaction with the content of this directory consists of editing <code>generate.fsx</code> to include the appropriate repository information
-        (see the <a href="#SolutionFilesTable">following table</a> for more details).</p>
+        (see the following table for more details).</p>
       </td>
     </tr>
     <tr>
@@ -115,7 +115,7 @@ as well as using some more general libraries (e.g. <a href="http://www.nunit.org
         Alternately, delete the sample project and create your own.</p>
         <p><em>NOTE: When you rename the sample project, or add aditional projects to this directory, you may need to edit <code>build.fsx</code> and/or <code>generate.fsx</code>. 
         You will, likely, also need to update your <code>.sln</code> file(s).
-        Please see the <a href="#SolutionFilesTable">following table</a> for more details.</em></p>
+        Please see the following table for more details.</em></p>
         <p><em>NOTE: you should NOT place testing porjects in this path. Testing files belong in the <code>tests</code> directory.</em></p>
       </td>
     </tr>
