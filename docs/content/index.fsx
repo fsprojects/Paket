@@ -13,38 +13,37 @@ Documentation
   <div class="span1"></div>
   <div class="span6">
     <div class="well well-small" id="nuget">
-      The F# DataFrame library can be <a href="https://nuget.org/packages/FSharp.ProjectTemplate">installed from NuGet</a>:
+      The F# ProjectTemplate library can be <a href="https://nuget.org/packages/FSharp.ProjectTemplate">installed from NuGet</a>:
       <pre>PM> Install-Package FSharp.ProjectTemplate</pre>
     </div>
   </div>
   <div class="span1"></div>
 </div>
 
-<img src="img/logo.png" alt="F# project" style="float:right;width:150px;margin:10px" />
+<img src="img/logo.png" alt="F# Project" style="float:right;width:150px;margin:10px" />
 
 Example
 -------
 
-Assume we loaded [Titanic data set](http://www.kaggle.com/c/titanic-gettingStarted) 
-into a data frame called `titanic` (the data frame has numerous columns including string 
-`Sex` and Boolean `Survived`). Now we can calculate the survival rates for males and females:
+This example demonstrates using a function defined in this sample library.
 
 *)
 #r "FSharp.ProjectTemplate.dll"
 open FSharp.ProjectTemplate
 
-Library.hello 0
+printfn "hello = %i" <| Library.hello 0
+
 (**
 Some more info
 
 Samples & documentation
 -----------------------
 
-The library comes with comprehensible documentation. The tutorials and articles are 
-automatically generated from `*.fsx` files in [the samples folder][samples]. The API
-reference is automatically generated from Markdown comments in the library implementation.
+The library comes with comprehensible documentation. 
+It can include a tutorials automatically generated from `*.fsx` files in [the content folder][content]. 
+The API reference is automatically generated from Markdown comments in the library implementation.
 
- * [Stuff](stuff.html) has more stuff
+ * [Tutorial](tutorial.html) contains a further explanation of this sample library.
 
  * [API Reference](reference/index.html) contains automatically generated documentation for all types, modules
    and functions in the library. This includes additional brief samples on using most of the
@@ -58,11 +57,11 @@ the project and submit pull requests. If you're adding new public API, please al
 consider adding [samples][samples] that can be turned into a documentation. You might
 also want to read [library design notes](design.html) to understand how it works.
 
-The library is available under **INSERT** license, which allows modification and 
+The library is available under Public Domain license, which allows modification and 
 redistribution for both commercial and non-commercial purposes. For more information see the 
 [License file][license] in the GitHub repository. 
 
-  [samples]: https://github.com/fsharp/FSharp.ProjectScaffold/tree/master/samples
+  [content]: https://github.com/fsharp/FSharp.ProjectScaffold/tree/master/docs/content
   [gh]: https://github.com/fsharp/FSharp.ProjectScaffold
   [issues]: https://github.com/fsharp/FSharp.ProjectScaffold/issues
   [readme]: https://github.com/fsharp/FSharp.ProjectScaffold/blob/master/README.md
