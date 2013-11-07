@@ -226,7 +226,7 @@ as well as using some more general libraries (e.g. <a href="http://www.nunit.org
       the generated documentation to a GitHub pages branch (assuming 
       one has been setup in your repository).</p> 
       <p>For further details about documentation generation, 
-      please see the <a href="http://tpetricek.github.io/FSharp.Formatting/">FSharp.Formatting library</a>.</p></td>
+      please see the <a href="http://tpetricek.github.io/FSharp.Formatting/" trarget="_blank">FSharp.Formatting library</a>.</p></td>
     </tr>
     <tr>
       <td><a href="docs/content/tutorial.fsx">docs/content/tutorial.fsx</a></td>
