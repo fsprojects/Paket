@@ -92,7 +92,6 @@ Target "Build" (fun _ ->
       Includes = [ solutionFile +       ".sln"
                    solutionFile + ".Tests.sln" ]
       Excludes = [] } 
-    |> Scan
     |> MSBuildRelease "" "Rebuild"
     |> ignore
 )
@@ -108,7 +107,6 @@ Target "RunTests" (fun _ ->
     { BaseDirectories = [__SOURCE_DIRECTORY__]
       Includes = testAssemblies
       Excludes = [] } 
-    |> Scan
     |> NUnit (fun p ->
         { p with
             ToolPath = nunitPath

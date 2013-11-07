@@ -65,5 +65,5 @@ redistribution for both commercial and non-commercial purposes. For more informa
   [gh]: https://github.com/pblasucci/FSharp.ProjectScaffold
   [issues]: https://github.com/pblasucci/FSharp.ProjectScaffold/issues
   [readme]: https://github.com/pblasucci/FSharp.ProjectScaffold/blob/master/README.md
-  [license]: https://github.com/pblasucci/FSharp.ProjectScaffold/blob/master/LICENSE.md
+  [license]: https://github.com/pblasucci/FSharp.ProjectScaffold/blob/master/LICENSE.txt
 *)
