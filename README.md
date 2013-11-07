@@ -220,13 +220,13 @@ as well as using some more general libraries (e.g. <a href="http://www.nunit.org
       <td><a href="docs/content/index.fsx">docs/content/index.fsx</a></td>
       <td><p>Use this file to provide a narrative overview of your project.
       You can write actual, executable F# code in this file. Additionally,
-      you may use MarkDown comment. As part of the build process, this file
-      (along with any other <code>*.fsx</code> or <code>*.md</code> files in this directory) will be
+      you may use MarkDown comments. As part of the build process, this file
+      (along with any other <code>*.fsx</code> or <code>*.md</code> files in the <a href="../../tree/master/docs/content">docs/content</a> directory) will be
       processed into HTML documentation. There is also a build target to deploy
       the generated documentation to a GitHub pages branch (assuming 
       one has been setup in your repository).</p> 
       <p>For further details about documentation generation, 
-      please see the <a href="http://tpetricek.github.io/FSharp.Formatting/" trarget="_blank">FSharp.Formatting library</a>.</p></td>
+      please see the <a href="http://tpetricek.github.io/FSharp.Formatting/" target="_blank">FSharp.Formatting library</a>.</p></td>
     </tr>
     <tr>
       <td><a href="docs/content/tutorial.fsx">docs/content/tutorial.fsx</a></td>
