@@ -88,11 +88,10 @@ Target "CleanDocs" (fun _ ->
 // Build library & test project
 
 Target "Build" (fun _ ->
-    { BaseDirectories = [__SOURCE_DIRECTORY__]
+    { BaseDirectory = __SOURCE_DIRECTORY__
       Includes = [ solutionFile +       ".sln"
                    solutionFile + ".Tests.sln" ]
       Excludes = [] } 
-    |> Scan
     |> MSBuildRelease "" "Rebuild"
     |> ignore
 )
@@ -105,10 +104,9 @@ Target "RunTests" (fun _ ->
     let nunitPath = sprintf "packages/NUnit.Runners.%s/Tools" nunitVersion
     ActivateFinalTarget "CloseTestRunner"
 
-    { BaseDirectories = [__SOURCE_DIRECTORY__]
+    { BaseDirectory = __SOURCE_DIRECTORY__
       Includes = testAssemblies
       Excludes = [] } 
-    |> Scan
     |> NUnit (fun p ->
         { p with
             ToolPath = nunitPath
