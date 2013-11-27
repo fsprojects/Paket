@@ -6,7 +6,7 @@
 // Binaries that have XML documentation (in a corresponding generated XML file)
 let referenceBinaries = [ "FSharp.ProjectTemplate.dll" ]
 // Web site location for the generated documentation
-let website = "http://pblasucci.github.io/FSharp.ProjectScaffold"
+let website = "/FSharp.ProjectScaffold"
 
 // Specify more information about your project
 let info =
