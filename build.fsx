@@ -100,8 +100,6 @@ Target "Build" (fun _ ->
 // Run the unit tests using test runner & kill test runner when complete
 
 Target "RunTests" (fun _ ->
-    let nunitVersion = GetPackageVersion "packages" "NUnit.Runners"
-    let nunitPath = sprintf "packages/NUnit.Runners.%s/Tools" nunitVersion
     ActivateFinalTarget "CloseTestRunner"
 
     { BaseDirectory = __SOURCE_DIRECTORY__
@@ -109,7 +107,6 @@ Target "RunTests" (fun _ ->
       Excludes = [] } 
     |> NUnit (fun p ->
         { p with
-            ToolPath = nunitPath
             DisableShadowCopy = true
             TimeOut = TimeSpan.FromMinutes 20.
             OutputFile = "TestResults.xml" })
