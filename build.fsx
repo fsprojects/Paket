@@ -153,6 +153,7 @@ Target "ReleaseDocs" (fun _ ->
     let ghPagesLocal = "temp/gh-pages"
     Repository.clone "temp" (gitHome + "/" + gitName + ".git") ghPages
     Branches.checkoutBranch ghPagesLocal ghPages
+    fullclean ghPagesLocal
     CopyRecursive "docs/output" ghPagesLocal true |> printfn "%A"
     CommandHelper.runSimpleGitCommand ghPagesLocal "add ." |> printfn "%s"
     let cmd = sprintf """commit -a -m "Update generated documentation for version %s""" release.NugetVersion
