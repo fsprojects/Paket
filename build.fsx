@@ -121,7 +121,7 @@ Target "NuGet" (fun _ ->
     let description = description.Replace("\r", "")
                                  .Replace("\n", "")
                                  .Replace("  ", " ")
-    let nugetPath = ".nuget/nuget.exe"
+
     NuGet (fun p -> 
         { p with   
             Authors = authors
@@ -132,7 +132,6 @@ Target "NuGet" (fun _ ->
             ReleaseNotes = String.Join(Environment.NewLine, release.Notes)
             Tags = tags
             OutputPath = "bin"
-            ToolPath = nugetPath
             AccessKey = getBuildParamOrDefault "nugetkey" ""
             Publish = hasBuildParam "nugetkey"
             Dependencies = [] })
