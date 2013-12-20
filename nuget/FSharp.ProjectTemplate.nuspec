@@ -17,6 +17,6 @@
     <dependencies />
   </metadata>
   <files>
-    <file src="FSharp.ProjectTemplate.dll" target="lib/net40" />
+    <file src="..\bin\FSharp.ProjectTemplate.dll" target="lib/net40" />
   </files>
 </package>
