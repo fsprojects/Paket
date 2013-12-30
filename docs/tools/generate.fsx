@@ -13,7 +13,7 @@ let info =
   [ "project-name", "FSharp.ProjectScaffold"
     "project-author", "Your Name"
     "project-summary", "A short summary of your project"
-    "project-github", "http://github.com/pblasucci/FSharp.ProjectScaffold"
+    "project-github", "http://github.com/fsprojects/FSharp.ProjectScaffold"
     "project-nuget", "http://nuget.com/packages/FSharp.ProjectScaffold" ]
 
 // --------------------------------------------------------------------------------------

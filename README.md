@@ -271,4 +271,4 @@ as well as using some more general libraries (e.g. <a href="http://www.nunit.org
 
 ---
 
-<a href="http://pblasucci.github.io/FSharp.ProjectScaffold" target="_blank">Sample API documents available here.</a>
+<a href="http://fsprojects.github.io/FSharp.ProjectScaffold" target="_blank">Sample API documents available here.</a>
