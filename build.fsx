@@ -45,7 +45,7 @@ let testAssemblies = "tests/*/bin/*/FSharp.ProjectTemplate*Tests*.dll"
 
 // Git configuration (used for publishing documentation in gh-pages branch)
 // The profile where the project is posted 
-let gitHome = "https://github.com/pblasucci"
+let gitHome = "https://github.com/fsprojects"
 // The name of the project on GitHub
 let gitName = "FSharp.ProjectScaffold"
 
