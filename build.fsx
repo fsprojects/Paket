@@ -112,11 +112,6 @@ FinalTarget "CloseTestRunner" (fun _ ->
 // Build a NuGet package
 
 Target "NuGet" (fun _ ->
-    // Format the description to fit on a single line (remove \r\n and double-spaces)
-    let description = description.Replace("\r", "")
-                                 .Replace("\n", "")
-                                 .Replace("  ", " ")
-
     NuGet (fun p -> 
         { p with   
             Authors = authors
