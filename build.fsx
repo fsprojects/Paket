@@ -139,7 +139,7 @@ Target "ReleaseDocs" (fun _ ->
     Branches.checkoutBranch ghPagesLocal ghPages
     fullclean ghPagesLocal
     CopyRecursive "docs/output" ghPagesLocal true |> printfn "%A"
-    CommandHelper.runSimpleGitCommand ghPagesLocal "add ." |> printfn "%s"
+    StageAll ghPagesLocal
     Commit ghPagesLocal (sprintf "Update generated documentation for version %s" release.NugetVersion)
     Branches.push ghPagesLocal
 )
