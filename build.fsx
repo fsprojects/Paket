@@ -140,8 +140,7 @@ Target "ReleaseDocs" (fun _ ->
     fullclean ghPagesLocal
     CopyRecursive "docs/output" ghPagesLocal true |> printfn "%A"
     CommandHelper.runSimpleGitCommand ghPagesLocal "add ." |> printfn "%s"
-    let cmd = sprintf """commit -a -m "Update generated documentation for version %s""" release.NugetVersion
-    CommandHelper.runSimpleGitCommand ghPagesLocal cmd |> printfn "%s"
+    Commit ghPagesLocal (sprintf "Update generated documentation for version %s" release.NugetVersion)
     Branches.push ghPagesLocal
 )
 
