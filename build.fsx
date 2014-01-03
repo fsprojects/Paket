@@ -134,14 +134,14 @@ Target "GenerateDocs" (fun _ ->
 
 Target "ReleaseDocs" (fun _ ->
     let ghPages      = "gh-pages"
-    let ghPagesLocal = "temp/gh-pages"
-    Repository.clone "temp" (gitHome + "/" + gitName + ".git") ghPages
-    Branches.checkoutBranch ghPagesLocal ghPages
-    fullclean ghPagesLocal
-    CopyRecursive "docs/output" ghPagesLocal true |> printfn "%A"
-    StageAll ghPagesLocal
-    Commit ghPagesLocal (sprintf "Update generated documentation for version %s" release.NugetVersion)
-    Branches.push ghPagesLocal
+    CleanDir ghPages
+    Repository.cloneSingleBranch "" (gitHome + "/" + gitName + ".git") ghPages ghPages
+
+    fullclean ghPages
+    CopyRecursive "docs/output" ghPages true |> tracefn "%A"
+    StageAll ghPages
+    Commit ghPages (sprintf "Update generated documentation for version %s" release.NugetVersion)
+    Branches.push ghPages
 )
 
 Target "Release" DoNothing

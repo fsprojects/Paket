@@ -166,6 +166,7 @@ docs/output/
 
 # Temp folder used for publishing docs
 temp/
+gh-pages/
 
 # Test results produced by build
 TestResults.xml
