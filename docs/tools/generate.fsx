@@ -86,7 +86,29 @@ let buildDocumentation () =
       ( dir, docTemplate, output @@ sub, replacements = ("root", root)::info,
         layoutRoots = layoutRoots )
 
+// Remove `FSharp.Core` from `bin` directory.
+// Otherwise, version conflict can break code tips.
+let execute pipeline =
+    // Cache `FSharp.Core.*` files
+    let files = 
+        !! (bin @@ "FSharp.Core.*")
+        |> Seq.toArray
+        |> Array.map (fun file ->
+            (file, File.ReadAllBytes file))
+    // Remove `FSharp.Core.*` files
+    files |> Seq.iter (fun (file,_) ->
+        printfn  "Removing '%s'" file
+        File.Delete file)
+    // Execute document generation pipeline
+    pipeline()
+    // Restore `FSharp.Core.*` files
+    files |> Seq.iter (fun (file, bytes) ->
+        printfn "Restoring '%s'" file
+        File.WriteAllBytes(file, bytes))
+
+
 // Generate
-copyFiles()
-buildDocumentation()
-buildReference()
+execute(
+  copyFiles 
+  >> buildDocumentation
+  >> buildReference)
