@@ -94,16 +94,17 @@ let execute pipeline =
         !! (bin @@ "FSharp.Core.*")
         |> Seq.toArray
         |> Array.map (fun file ->
+            TraceHelper.traceError <| sprintf "'Bin' directory should not contain file '%s'" file
             (file, File.ReadAllBytes file))
     // Remove `FSharp.Core.*` files
     files |> Seq.iter (fun (file,_) ->
-        printfn  "Removing '%s'" file
+        TraceHelper.traceImportant <| sprintf  "Removing '%s'" file
         File.Delete file)
     // Execute document generation pipeline
     pipeline()
     // Restore `FSharp.Core.*` files
     files |> Seq.iter (fun (file, bytes) ->
-        printfn "Restoring '%s'" file
+        TraceHelper.traceImportant <| sprintf "Restoring '%s'" file
         File.WriteAllBytes(file, bytes))
 
 
