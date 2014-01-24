@@ -94,8 +94,9 @@ let execute pipeline =
         !! (bin @@ "FSharp.Core.*")
         |> Seq.toArray
         |> Array.map (fun file ->
-            TraceHelper.traceError <| sprintf "'Bin' directory should not contain file '%s'" file
             (file, File.ReadAllBytes file))
+    if (files.Length > 0) then
+        TraceHelper.traceError "Consider setting CopyLocal to False for FSharp.Core in all *.fsproj files"
     // Remove `FSharp.Core.*` files
     files |> Seq.iter (fun (file,_) ->
         TraceHelper.traceImportant <| sprintf  "Removing '%s'" file
