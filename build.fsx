@@ -48,6 +48,7 @@ let testAssemblies = "tests/*/bin/*/FSharp.ProjectTemplate*Tests*.dll"
 let gitHome = "https://github.com/fsprojects"
 // The name of the project on GitHub
 let gitName = "FSharp.ProjectScaffold"
+let cloneUrl = "git@github.com:fsprojects/FSharp.ProjectScaffold.git"
 
 // --------------------------------------------------------------------------------------
 // END TODO: The rest of the file includes standard build steps 
@@ -135,7 +136,7 @@ Target "GenerateDocs" (fun _ ->
 Target "ReleaseDocs" (fun _ ->
     let tempDocsDir = "temp/gh-pages"
     CleanDir tempDocsDir
-    Repository.cloneSingleBranch "" (gitHome + "/" + gitName + ".git") "gh-pages" tempDocsDir
+    Repository.cloneSingleBranch "" cloneUrl "gh-pages" tempDocsDir
 
     fullclean tempDocsDir
     CopyRecursive "docs/output" tempDocsDir true |> tracefn "%A"
