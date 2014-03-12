@@ -6,6 +6,9 @@
 *.user
 *.sln.docstates
 
+# Xamarin Studio / monodevelop user-specific
+*.userprefs
+
 # Build results
 
 [Dd]ebug/
