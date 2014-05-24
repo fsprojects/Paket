@@ -16,7 +16,7 @@ as well as using some more general libraries (e.g. <a href="http://www.nunit.org
   <thead>
     <tr>
       <th>Folder</th>
-      <th>Descritpion</th>
+      <th>Description</th>
     </tr>
   </thead>
   <tbody>
@@ -36,7 +36,7 @@ as well as using some more general libraries (e.g. <a href="http://www.nunit.org
       <td>
         <p>This directory is the primary output directory for libraries and NuGet packages when using the build system 
         (i.e. <code>build.cmd</code> or <code>build.fsx</code>). It is also the target directory when building in <em>Release</em> mode inside Visual Studio 
-        (<em>Note: this has to me manually configured on a per-project basis, as has been done with the example project</em>).
+        (<em>Note: this has to be manually configured on a per-project basis, as has been done with the example project</em>).
         This directory is touched by many parts of the build process.</p>
         <p><strong>It is strongly recommended that nothing be put into this directory.</strong></p>
         <p>It is <strong>strongly advised</strong> that the <strong>contents of this directory NOT be committed</strong> to source control.</p>
