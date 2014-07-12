@@ -184,7 +184,7 @@ Target "All" DoNothing
   ==> "CleanDocs"
   ==> "GenerateDocs"
   ==> "ReleaseDocs"
-  =?> ("SourceLink", not isMono )
+  =?> ("SourceLink", Pdbstr.tryFind().IsSome )
   ==> "NuGet"
   ==> "Release"
 
