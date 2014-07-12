@@ -1,7 +1,14 @@
 ###############################################################################
 # Set default behavior to automatically normalize line endings.
 ###############################################################################
-* text=auto
+# Autodetect text or binary. Do not leave merge conflict markers in the files.
+* text=auto merge=union
+
+# Use LF in the working directory by default. Override with core.autocrlf=true.
+*.fs eol=lf
+
+# Visual Studio can read LF sln files, but it always writes them as CRLF.
+*.sln eol=crlf
 
 ###############################################################################
 # Set default behavior for command prompt diff.
