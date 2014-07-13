@@ -23,35 +23,39 @@ open SourceLink
 
 // The name of the project 
 // (used by attributes in AssemblyInfo, name of a NuGet package and directory in 'src')
-let project = "FSharp.ProjectTemplate"
+let project = "##ProjectName##"
 
 // Short summary of the project
 // (used as description in AssemblyInfo and as a short summary for NuGet package)
-let summary = "A short summary of your project."
+let summary = "##Summary##"
 
 // Longer description of the project
 // (used as a description for NuGet package; line breaks are automatically cleaned up)
-let description = """
-  A lengthy description of your project. 
-  This can have multiple lines and will be cleaned up. """
+let description = "##Description##"
+
 // List of author names (for NuGet package)
-let authors = [ "Your Name" ]
+let authors = [ "##Author##" ]
+
 // Tags for your project (for NuGet package)
-let tags = "F# fsharp tags which describe your project"
+let tags = "##Tags##"
 
 // File system information 
 // (<solutionFile>.sln is built during the building process)
-let solutionFile  = "FSharp.ProjectScaffold"
+let solutionFile  = "##ProjectName##.sln"
+
 // Pattern specifying assemblies to be tested using NUnit
 let testAssemblies = "tests/**/bin/Release/*Tests*.dll"
 
 // Git configuration (used for publishing documentation in gh-pages branch)
 // The profile where the project is posted 
-let gitHome = "https://github.com/fsprojects"
+let gitHome = "https://github.com/##GitHome##"
+
 // The name of the project on GitHub
-let gitName = "FSharp.ProjectScaffold"
+let gitName = "##GitName##"
+
 // The url for the raw files hosted
-let gitRaw = environVarOrDefault "gitRaw" "https://raw.github.com/fsharp"
+let gitRaw = environVarOrDefault "gitRaw" "https://raw.github.com/##GitHome##"
+
 // --------------------------------------------------------------------------------------
 // END TODO: The rest of the file includes standard build steps 
 // --------------------------------------------------------------------------------------
