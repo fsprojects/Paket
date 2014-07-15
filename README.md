@@ -1,7 +1,7 @@
 F# ProjectScaffold
 =======================
 
-A prototypical F# library (file system layout and tooling), recommended by the F# Foundation.
+A prototypical F# library (file system layout and tooling), recommended by the F# Software Foundation.
 
 This sample demonstrates the suggested structure of a typical F# solution.
 _(NOTE: this layout needs adjusting when authoring a Type Provider. 
@@ -151,7 +151,7 @@ as well as using some more general libraries (e.g. <a href="http://www.nunit.org
   <tbody>
     <tr>
       <td><a href=".travis.yml">.travis.yml</a></td>
-      <td><p>Specifies an automated continuous integration (CI) build using Travis. Enable your CI build at 
+      <td><p>Specifies an automated continuous integration (CI) build-and-test on OSX using Travis. Enable your CI build at 
       <a href="http://travis-ci.org">travis-ci.org</a> by logging on there wih your GitHub account and 
       activating the project.  If you enable this, then every pull request, commit, branch and tag 
       of your project on GitHub will be built automatically. Builds of open source projects are free.  The default
@@ -159,7 +159,7 @@ as well as using some more general libraries (e.g. <a href="http://www.nunit.org
     </tr>
     <tr>
       <td><a href=".travis.yml">appveyor.yml</a></td>
-      <td><p>A similar specification of an automated continuous integration (CI) build on Windows using AppVeyor. 
+      <td><p>A similar specification of an automated continuous integration (CI) build-and-test on Windows using AppVeyor. 
       Enable your CI build at <a href="http://appveyor.com">appveyor.com</a>.  </p></td>
     </tr>
     <tr>
