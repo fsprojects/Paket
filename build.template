@@ -45,7 +45,6 @@ let authors = [ "##Author##" ]
 let tags = "##Tags##"
 
 // File system information 
-// (<solutionFile>.sln is built during the building process)
 let solutionFile  = "##ProjectName##.sln"
 
 // Pattern specifying assemblies to be tested using NUnit
@@ -97,7 +96,7 @@ Target "CleanDocs" (fun _ ->
 // Build library & test project
 
 Target "Build" (fun _ ->
-    !! (solutionFile + "*.sln")
+    !! solutionFile
     |> MSBuildRelease "" "Rebuild"
     |> ignore
 )
