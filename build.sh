@@ -1,10 +1,13 @@
 #!/bin/bash
 
-mono .nuget/NuGet.exe install Nuget.Core -OutputDirectory packages -ExcludeVersion 
+if [ ! -e .nuget/NuGet.exe ]; then 
+  mono .nuget/NuGet.exe install Nuget.Core -OutputDirectory packages -ExcludeVersion 
+fi
 
 if [ ! -e packages/FAKE/tools/FAKE.exe ]; then 
-  mono .nuget/NuGet.exe install FAKE -OutputDirectory packages -ExcludeVersion -version "2.18.2"
+  mono .nuget/NuGet.exe install FAKE -OutputDirectory packages -ExcludeVersion -version "[3.2.1,)"
 fi
+
 if [ ! -e packages/SourceLink.Fake/Tools/Fake.fsx ]; then
   mono .nuget/NuGet.exe install SourceLink.Fake -OutputDirectory packages -ExcludeVersion
 fi
