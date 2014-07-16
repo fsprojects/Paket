@@ -1,6 +1,6 @@
 #!/bin/bash
 
-if [ ! -e .nuget/NuGet.exe ]; then 
+if [ ! -e packages/Nuget.Core/lib/net40-Client/NuGet.Core.dll ]; then 
   mono .nuget/NuGet.exe install Nuget.Core -OutputDirectory packages -ExcludeVersion 
 fi
 

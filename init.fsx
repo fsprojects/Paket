@@ -15,7 +15,7 @@ let outputPath = localFile "build.fsx"
 let prompt (msg:string) = 
   Console.Write(msg)
   Console.ReadLine().Trim() |> function | "" -> None | s -> Some s
-let promptFor friendlyName = prompt(sprintf "Please enter [%s]:" friendlyName)
+let promptFor friendlyName = prompt(sprintf "Please enter %s:" friendlyName)
 
 failfUnlessExists buildTemplatePath "Cannot find build template file %s" 
   (Path.GetFullPath buildTemplatePath)
@@ -73,5 +73,5 @@ let newContent =
   |> replaceToken "##GitName##" projectName
 
 let buildFilePath = localFile "build.fsx"
-File.WriteAllLines(buildFilePath,newContent)
+File.WriteAllLines(buildFilePath, newContent)
 File.Delete(buildTemplatePath)
