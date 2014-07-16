@@ -5,7 +5,7 @@ if [ ! -e packages/Nuget.Core/lib/net40-Client/NuGet.Core.dll ]; then
 fi
 
 if [ ! -e packages/FAKE/tools/FAKE.exe ]; then 
-  mono .nuget/NuGet.exe install FAKE -OutputDirectory packages -ExcludeVersion -version "[3.2.1,)"
+  mono .nuget/NuGet.exe install FAKE -OutputDirectory packages -ExcludeVersion -version "3.2.1"
 fi
 
 if [ ! -e packages/SourceLink.Fake/Tools/Fake.fsx ]; then
