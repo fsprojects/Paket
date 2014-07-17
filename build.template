@@ -195,6 +195,8 @@ Target "All" DoNothing
   ==> "CleanDocs"
   ==> "GenerateDocs"
   ==> "ReleaseDocs"
+
+"All" 
 #if MONO
 #else
   =?> ("SourceLink", Pdbstr.tryFind().IsSome )

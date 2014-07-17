@@ -3,13 +3,25 @@ F# ProjectScaffold
 
 A prototypical F# library (file system layout and tooling), recommended by the F# Software Foundation.
 
-This sample demonstrates the suggested structure of a typical F# solution.
+This scaffoling can be used to generate the suggested structure of a typical F# solution.
 _(NOTE: this layout needs adjusting when authoring a Type Provider. 
 For more details about doing so, please [read this.](../../wiki/Suggestions-for-Building-a-Type-Provider))_ 
-It also showcase a few popular F#-centric libraries (e.g. <a href="http://fsharp.github.io/FAKE/" target="_blank">F# Make</a>), 
-as well as using some more general libraries (e.g. <a href="http://www.nunit.org/" target="_blank">NUnit</a>) from within F#.
 
----
+### Technologies 
+
+|---------------------------|-------------------------------------------|
+| Platforms                 | Linux, Windows, OSX                       |
+| Build Automation          | [FAKE](http://fsharp.github.io/FAKE/)     |
+| Unit Testing              | [NUnit](http://www.nunit.org/)            |
+| Packaging                 | Nuget                                     |
+| Package Hosting           | [nuget.org](http://nuget.org)             |
+| Documentation Authoring   | Markdown, HTML and F# Literate Scripts    |
+| Documentation Hosting     | GitHub                                    |
+| Source Code Linking       | SourceLink                                |
+| Continuous Build and Test | [Travis](http://travis-ci.org) (Linux/OSX) and [AppVeyor](http://appveyor.com) (Windows) |
+
+
+### Structure
 
 <table>
   <caption>Summary of solution folders</caption>
@@ -35,7 +47,7 @@ as well as using some more general libraries (e.g. <a href="http://www.nunit.org
       <td><a href="../../tree/master/bin">bin</a></td>
       <td>
         <p>This directory is the primary output directory for libraries and NuGet packages when using the build system 
-        (i.e. <code>build.cmd</code> or <code>build.fsx</code>). It is also the target directory when building in <em>Release</em> mode inside Visual Studio 
+        (i.e. <code>build.cmd</code> or <code>build.fsx</code>). It is also the target directory when building in Visual Studio 
         (<em>Note: this has to be manually configured on a per-project basis, as has been done with the example project</em>).
         This directory is touched by many parts of the build process.</p>
         <p><strong>It is strongly recommended that nothing be put into this directory.</strong></p>
@@ -45,7 +57,7 @@ as well as using some more general libraries (e.g. <a href="http://www.nunit.org
     <tr>
       <td><a href="../../tree/master/docs/content">docs/content</a></td>
       <td>
-        <p>Use this directory for all your narratvie documentation source files.
+        <p>Use this directory for all your literate documentation source files.
         Said files should be either F# scripts (ending in <code>.fsx</code>) or Mark Down files (ending in <code>.md</code>).
         This project includes two sample scripts. Feel free to extend and/or replace these files.
         For more information on generating documentation, please see <a href="http://tpetricek.github.io/FSharp.Formatting/" target="_blank">FSharp.Formatting</a>.</p>
@@ -140,6 +152,8 @@ as well as using some more general libraries (e.g. <a href="http://www.nunit.org
   </tbody>
 </table>
 
+### Files
+
 <table>
   <caption>Summary of important solution files</caption>
   <thead>
@@ -163,7 +177,7 @@ as well as using some more general libraries (e.g. <a href="http://www.nunit.org
       Enable your CI build at <a href="http://appveyor.com">appveyor.com</a>.  </p></td>
     </tr>
     <tr>
-      <td><a href="build.cmd">build.cmd</a></td>
+      <td><a href="build.cmd">build.cmd</a> and <a href="build.sh">build.sh</a> </td>
       <td>
         <p>A simple command script which allows the build to be started (i.e. calls <a href="build.fsx">build.fsx</a>) from the command prompt or the file system explorer.
         It also fetches the latest version of <a href="http://fsharp.github.io/FAKE/" target="_blank">F# Make</a>, if it's not detected in <a href="../../tree/master/packages">packages</a>.</p>
@@ -284,4 +298,4 @@ as well as using some more general libraries (e.g. <a href="http://www.nunit.org
 
 ---
 
-<a href="http://fsprojects.github.io/FSharp.ProjectScaffold" target="_blank">Sample API documents available here.</a>
+<a href="http://fsprojects.github.io/ProjectScaffold" target="_blank">Sample API documents available here.</a>
