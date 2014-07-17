@@ -9,7 +9,9 @@ open System.Collections.Generic
 // --------------------------------
 let failfUnlessExists f msg p = if not <| File.Exists f then failwithf msg p
 let combine p1 p2 = Path.Combine(p1, p2)
-let move p1 p2 = File.Move(p1, p2)
+let move p1 p2 = 
+  printfn "moving %s to %s" p1 p2
+  File.Move(p1, p2)
 let localFile f = combine __SOURCE_DIRECTORY__ f
 let buildTemplatePath = localFile "build.template" 
 let outputPath = localFile "build.fsx" 
