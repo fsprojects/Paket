@@ -3,7 +3,7 @@ F# ProjectScaffold
 
 A prototypical F# library (file system layout and tooling), recommended by the F# Software Foundation.
 
-This scaffoling can be used to generate the suggested structure of a typical F# solution.
+This scaffolding can be used to generate the suggested structure of a typical F# library.
 _(NOTE: this layout needs adjusting when authoring a Type Provider. 
 For more details about doing so, please [read this.](../../wiki/Suggestions-for-Building-a-Type-Provider))_ 
 
@@ -14,13 +14,33 @@ For more details about doing so, please [read this.](../../wiki/Suggestions-for-
 | Platforms                 | Linux, Windows, OSX                       |
 | Build Automation          | [FAKE](http://fsharp.github.io/FAKE/)     |
 | Unit Testing              | [NUnit](http://www.nunit.org/)            |
-| Packaging                 | Nuget                                     |
-| Package Hosting           | [nuget.org](http://nuget.org)             |
+| Package Formats           | Nuget packages                            |
 | Documentation Authoring   | Markdown, HTML and F# Literate Scripts    |
-| Documentation Hosting     | GitHub                                    |
 | Source Code Linking       | SourceLink                                |
 | Continuous Build and Test | [Travis](http://travis-ci.org) (Linux/OSX) and [AppVeyor](http://appveyor.com) (Windows) |
+| Default Package Hosting   | [nuget.org](http://nuget.org)             |
+| Default Documentation Hosting  | [GitHub Pages](https://help.github.com/articles/what-are-github-pages)   |
 
+### Initializing
+
+Run 
+
+    ./build.sh
+or
+
+    ./build.cmd
+
+You will be prompted for the name of your project and some other details. The project structure will then be generated from templates.
+
+### Build and Release
+
+After initialization, you can 
+
+- Open, edit, build and test using ``ProjectName.sln``
+- Build and test release binaries using ``build.cmd`` or ``build.sh `` 
+- Build and test release packages using ``build.cmd Release`` or ``build.sh Release`` 
+- Build and publish release docs using ``build.cmd ReleaseDocs`` or ``build.sh ReleaseDocs`` 
+- Publish packages using ``nuget/publish.cmd`` 
 
 ### Structure
 
@@ -36,62 +56,59 @@ For more details about doing so, please [read this.](../../wiki/Suggestions-for-
     <tr>
       <td><a href="../../tree/master/.nuget">.nuget</a></td>
       <td>
-        <p>This directory, and the files it contains, are used to bootstrap the build process. 
-        Specifically, it enables the acquistion of NuGet dependencies on a clean build.
-        It is further used by the build process when performing other NuGet-related tasks. 
-        These tools also facilitate the <em>Package Restore</em> functionality inside of Visual Studio.</p>
-        <p><strong>It is strongly recommended that nothing be put into this directory.</strong></p>
-        <p>It is <strong>strongly advised</strong> that the <strong>contents of this directory be committed</strong> to source control.</p>
+        <p>These files are used to get NuGet dependencies on a clean build and for other NuGet-related tasks including
+        <em>Package Restore</em> of Visual Studio.</p>
+        <p>Do not put anything else in this directory.</p>
+        <p>Do commit the contents of this directory to source control.</p>
       </td>
     </tr>
     <tr>
-      <td><a href="../../tree/master/bin">bin</a></td>
+      <td>bin</td>
       <td>
-        <p>This directory is the primary output directory for libraries and NuGet packages when using the build system 
-        (i.e. <code>build.cmd</code> or <code>build.fsx</code>). It is also the target directory when building in Visual Studio 
-        (<em>Note: this has to be manually configured on a per-project basis, as has been done with the example project</em>).
-        This directory is touched by many parts of the build process.</p>
-        <p><strong>It is strongly recommended that nothing be put into this directory.</strong></p>
-        <p>It is <strong>strongly advised</strong> that the <strong>contents of this directory NOT be committed</strong> to source control.</p>
+        <p>The primary output directory for libraries and NuGet packages when using the build system 
+        (i.e. <code>build.cmd</code> and <code>build.sh</code>). It is also the target directory when building in Visual Studio or Xamarin Studio
+        (<em>Note: this has to be manually configured on a per-project basis, as has been done with the example project</em>).</p>
+        <p>Do not put anything else in this directory.</p>
+        <p>Do not commit the contents of this directory to source control.</p>
       </td>
     </tr>
     <tr>
       <td><a href="../../tree/master/docs/content">docs/content</a></td>
       <td>
         <p>Use this directory for all your literate documentation source files.
-        Said files should be either F# scripts (ending in <code>.fsx</code>) or Mark Down files (ending in <code>.md</code>).
-        This project includes two sample scripts. Feel free to extend and/or replace these files.
+        These should be either F# scripts (ending in <code>.fsx</code>) or Markdown files (ending in <code>.md</code>).
+        This project includes two sample documentation scripts. Feel free to extend and/or replace these files.
         For more information on generating documentation, please see <a href="http://tpetricek.github.io/FSharp.Formatting/" target="_blank">FSharp.Formatting</a>.</p>
       </td>
     </tr>
     <tr>
       <td><a href="../../tree/master/docs/files">docs/files</a></td>
       <td>
-        <p>Use this directory to house any supporting assets needed for documentation generation. 
-        For instance, this directory might be where you place image files which are to be linked/embedded in the final documentation.</p>
+        <p>Contains supporting assets needed for documentation generation. 
+        For instance, image files which are to be linked/embedded in the final documentation.</p>
       </td>
     </tr>
     <tr>
       <td><a href="../../tree/master/docs/output">docs/output</a></td>
       <td>
-        <p>This directory will contain the final artifacts for both narrative and API documentation. 
+        <p>Contains the final artifacts for both narrative and API documentation. 
         This folder will be automatically created by the documenation generation process.</p>
-        <p><strong>It is strongly recommended that nothing be put into this directory.</strong></p>
-        <p>It is <strong>strongly advised</strong> that the <strong>contents of this directory NOT be committed</strong> to source control.</p>
+        <p>Do not put anything else in this directory.</p>
+        <p>Do not commit this directory to source control.</p>
       </td>
     </tr>
     <tr>
       <td><a href="../../tree/master/docs/tools">docs/tools</a></td>
       <td>
-        <p>This directory contains tools used in the generation of both narrative documentation and API documentation.
-        The main interaction with the content of this directory consists of editing <code>generate.fsx</code> to include the appropriate repository information
+        <p>Contains tools used in the generation of both narrative documentation and API documentation.
+        Edit <code>generate.fsx</code> to include the appropriate repository information
         (see the following table for more details).</p>
       </td>
     </tr>
     <tr>
       <td><a href="../../tree/master/docs/tools/templates">docs/tools/templates</a></td>
       <td>
-        <p>This directory contains the (default) Razor template used as part of generating documentation. 
+        <p>Contains the (default) Razor template used as part of generating documentation. 
         You are encouraged to edit this template. You may also create additional templates, 
         but that will require making edits to <code>generate.fsx</code>.</p>
       </td>
@@ -106,48 +123,44 @@ For more details about doing so, please [read this.](../../wiki/Suggestions-for-
     <tr>
       <td><a href="../../tree/master/nuget">nuget</a></td>
       <td>
-        <p>You should use this directory to store any artifacts required to produce a NuGet package for your project.
-        This typically includes a <code>.nuspec</code> file and some <code>.ps1</code> scripts, for instance.
-        Additionally, this example project includes a <code>.cmd</code> file suitable for manual deployment of packages to <a href="http://nuget.org" target="_blank">http://nuget.org</a>.</p>
+        <p>Stores the NuGet package specifications for your project, typically a <code>.nuspec</code> file.
+        Also includes a <code>publish.cmd</code> file for manual deployment of packages to <a href="http://nuget.org" target="_blank">http://nuget.org</a>.</p>
       </td>
     </tr>
     <tr>
-      <td><a href="../../tree/master/packages">packages</a></td>
+      <td>packages</td>
       <td>
-        <p>Any NuGet packages on which your project depends will be downloaded to this directory.
-        Additionally, packages required by the build process will be stored here.</p>
-        <p>It is <strong>strongly advised</strong> that the <strong>contents of this directory NOT be committed<strong> to source control.</p>
+        <p>Contains any NuGet packages on which your project depends will be downloaded to this directory.</p>
+        <p>Do not put anything else in this directory.</p>
+        <p>Do not commit the contents of this directory to source control.</p>
       </td>
     </tr>
     <tr>
     <tr>
       <td><a href="../../tree/master/src">src</a></td>
       <td>
-        <p>Use this directory to house the actual codebase (e.g. one, or more, Visual Studio F# projects) in your solution. 
-        A good way to get started is to rename the project included in this sample (FSharp.ProjectTemplate). 
-        Alternately, delete the sample project and create your own.</p>
-        <p><em>NOTE: When you rename the sample project, or add aditional projects to this directory, you may need to edit <code>build.fsx</code> and/or <code>generate.fsx</code>. 
-        You will, likely, also need to update your <code>.sln</code> file(s).
-        Please see the following table for more details.</em></p>
-        <p><em>NOTE: you should NOT place testing porjects in this path. Testing files belong in the <code>tests</code> directory.</em></p>
+        <p>The actual codebase (e.g. one, or more, F# projects) in your solution. 
+        The project files are automatically renamed from (FSharp.ProjectTemplate) when initializing the project.</p>
+        <p><em>NOTE: When you add projects to this directory, you will need to edit <code>build.fsx</code> and/or <code>generate.fsx</code>. 
+        You will also need to update your <code>.sln</code> file(s).</em></p>
+        <p><em>NOTE: Do not place testing projects in this path. Testing files belong in the <code>tests</code> directory.</em></p>
       </td>
     </tr>
     <tr>
-      <td><a href="../../tree/master/temp">temp</a></td>
+      <td>temp</td>
       <td>
         <p>This directory is used by the build process as a "scratch", or working, area.</p>
-        <p><strong>It is strongly recommended that nothing be put into this directory.</strong></p>
-        <p>It is <strong>strongly advised</strong> that the <strong>contents of this directory NOT be committed</strong> to source control.</p>
+        <p>Do not put anything else in this directory.</p>
+        <p>Do not commit the contents of this directory to source control.</p>
       </td>
     </tr>
     <tr>
       <td><a href="../../tree/master/tests">tests</a></td>
       <td>
-        <p>Use this directory to house any testing projects you might develop (i.e. libraries leveraging NUnit, xUnit, MBUnit, et cetera).
+        <p>Contains any testing projects you might develop (i.e. libraries leveraging NUnit, xUnit, MBUnit, et cetera).
         The sample project included in this directory is configured to use NUnit. Further, <code>build.fsx</code> is coded to execute these test as part of the build process.</p>
-        <p><em>NOTE: When you rename the sample project, or add aditional projects to this directory, you may need to edit <code>build.fsx</code> and/or <code>generate.fsx</code>.
-        You will, likely, also need to update your <code>.sln</code> file(s).
-        Please see the following table for more details.</em></p>
+        <p><em>NOTE: When you add aditional projects to this directory, you may need to edit <code>build.fsx</code> and/or <code>generate.fsx</code>.
+        You will, likely, also need to update your <code>.sln</code> file(s).</em></p>
       </td>
     </tr>
   </tbody>
@@ -174,7 +187,7 @@ For more details about doing so, please [read this.](../../wiki/Suggestions-for-
     </tr>
     <tr>
       <td><a href=".travis.yml">appveyor.yml</a></td>
-      <td><p>A similar specification of an automated continuous integration (CI) build-and-test on Windows using AppVeyor. 
+      <td><p>A specification of an automated continuous integration (CI) build-and-test on Windows using AppVeyor. 
       Enable your CI build at <a href="http://appveyor.com">appveyor.com</a>.  </p></td>
     </tr>
     <tr>
