@@ -13,7 +13,7 @@ if [ ! -e packages/SourceLink.Fake/Tools/Fake.fsx ]; then
 fi
 
 if [ ! -e build.fsx ]; then 
-  fsharpi init.fsx
+  mono packages/FAKE/tools/FAKE.exe init.fsx
 fi
 
 #workaround assembly resolution issues in build.fsx
