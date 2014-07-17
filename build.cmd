@@ -1,9 +1,9 @@
 @echo off
 cls
 
-IF NOT EXIST packages\Nuget.Core\lib\net40-Client\NuGet.Core.dll (
-  .nuget\nuget.exe install Nuget.Core -OutputDirectory packages -ExcludeVersion
-)
+REM IF NOT EXIST packages\Nuget.Core\lib\net40-Client\NuGet.Core.dll (
+REM   .nuget\nuget.exe install Nuget.Core -OutputDirectory packages -ExcludeVersion
+REM )
 
 
 .nuget\nuget.exe install FAKE -OutputDirectory packages -ExcludeVersion
