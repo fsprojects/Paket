@@ -17,7 +17,14 @@ let outputPath = localFile "build.fsx"
 let prompt (msg:string) = 
   Console.Write(msg)
   Console.ReadLine().Trim() |> function | "" -> None | s -> Some s
-let promptFor friendlyName = prompt (sprintf "%s: " friendlyName)
+let runningOnAppveyor =
+  not <| String.IsNullOrEmpty(Environment.GetEnvironmentVariable("CI"))
+let runningOnTravis =
+  not <| String.IsNullOrEmpty(Environment.GetEnvironmentVariable("TRAVIS"))
+let inCI = runningOnAppveyor || runningOnTravis
+let promptFor friendlyName = 
+  if inCI then Some "CONTINUOUSINTEGRATION"
+  else prompt (sprintf "%s: " friendlyName)
 let rec promptForNoSpaces friendlyName =
   match promptFor friendlyName with
   | None -> None
