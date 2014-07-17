@@ -12,5 +12,4 @@ if [ ! -e build.fsx ]; then
   mono packages/FAKE/tools/FAKE.exe init.fsx
 fi
 
-#workaround assembly resolution issues in build.fsx
 mono packages/FAKE/tools/FAKE.exe $@ --fsiargs -d:MONO build.fsx 
