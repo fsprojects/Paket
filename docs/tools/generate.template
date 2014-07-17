@@ -12,7 +12,7 @@ let githubLink = "http://github.com/##GitHome##/##GitName##"
 
 // Specify more information about your project
 let info =
-  [ "project-name", "##ProjectName"
+  [ "project-name", "##ProjectName##"
     "project-author", "##Author##"
     "project-summary", "##Summary##"
     "project-github", githubLink
