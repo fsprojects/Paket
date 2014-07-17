@@ -167,6 +167,4 @@ let generate templatePath generatedFilePath =
 generate (localFile "build.template") (localFile "build.fsx")
 generate (localFile "docs/tools/generate.template") (localFile "docs/tools/generate.fsx")
 File.Delete "init.fsx"
-File.Delete "init.sh"
-File.Delete "init.cmd"
 
