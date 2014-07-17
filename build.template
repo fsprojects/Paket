@@ -2,7 +2,7 @@
 // FAKE build script 
 // --------------------------------------------------------------------------------------
 
-#r @"packages/Nuget.Core/lib/net40-Client/NuGet.Core.dll"
+#r @"packages/FAKE/tools/NuGet.Core.dll"
 #r @"packages/FAKE/tools/FakeLib.dll"
 open Fake
 open Fake.Git

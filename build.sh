@@ -1,9 +1,5 @@
 #!/bin/bash
 
-if [ ! -e packages/Nuget.Core/lib/net40-Client/NuGet.Core.dll ]; then 
-  mono .nuget/NuGet.exe install Nuget.Core -OutputDirectory packages -ExcludeVersion 
-fi
-
 if [ ! -e packages/FAKE/tools/FAKE.exe ]; then 
   mono .nuget/NuGet.exe install FAKE -OutputDirectory packages -ExcludeVersion -version "3.2.1"
 fi
