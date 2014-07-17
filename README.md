@@ -9,7 +9,8 @@ For more details about doing so, please [read this.](../../wiki/Suggestions-for-
 
 ### Technologies 
 
-|---------------------------|-------------------------------------------|
+| Area                      |  Technologies                             |
+|:--------------------------|:------------------------------------------|
 | Platforms                 | Linux, Windows, OSX                       |
 | Build Automation          | [FAKE](http://fsharp.github.io/FAKE/)     |
 | Unit Testing              | [NUnit](http://www.nunit.org/)            |
