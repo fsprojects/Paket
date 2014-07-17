@@ -8,11 +8,17 @@ open System.Collections.Generic
 // It generates the build.fsx and generate.fsx files 
 // --------------------------------
 let failfUnlessExists f msg p = if not <| File.Exists f then failwithf msg p
-let combine p1 p2 = Path.Combine(p1, p2)
+let combine p1 p2 = Path.Combine(p2, p1)
 let move p1 p2 = 
-  printfn "moving %s to %s" p1 p2
-  File.Move(p1, p2)
-let localFile f = combine __SOURCE_DIRECTORY__ f
+  if File.Exists p1 then
+    printfn "moving %s to %s" p1 p2
+    File.Move(p1, p2)
+  elif Directory.Exists p1 then
+    printfn "moving directory %s to %s" p1 p2
+    Directory.Move(p1, p2)
+  else
+    failwithf "Could not move %s to %s" p1 p2
+let localFile f = combine f __SOURCE_DIRECTORY__ 
 let buildTemplatePath = localFile "build.template" 
 let outputPath = localFile "build.fsx" 
 
@@ -85,9 +91,14 @@ move templateSolutionFile solutionFile
 
 //Rename project files and directories
 let projectTemplateFile = 
-  localFile (sprintf "./src/%s/%s.fsproj" projectTemplateName projectTemplateName)
+  localFile "src" 
+  |> combine projectTemplateName 
+  |> combine (projectTemplateName + ".fsproj")
 let testTemplateProjectFile = 
-  localFile (sprintf "./tests/%s/%s.fsproj" testTemplateProjectName testTemplateProjectName)
+  localFile "tests" 
+  |> combine testTemplateProjectName 
+  |> combine (testTemplateProjectName + ".fsproj")
+
 failfUnlessExists projectTemplateFile "Cannot find solution file %s"
             (projectTemplateFile |> Path.GetFullPath) 
 failfUnlessExists testTemplateProjectFile "Cannot find project file %s"
@@ -96,16 +107,16 @@ let projectTemplateDirectory = FileInfo(projectTemplateFile).Directory
 let testTemplateProjectDirectory = FileInfo(testTemplateProjectFile).Directory
 
 let projectFilePath = 
-  combine projectTemplateDirectory.FullName (projectName + ".fsproj")
+  projectTemplateDirectory.FullName |> combine (projectName + ".fsproj")
 let testProjectFilePath = 
-  combine testTemplateProjectDirectory.FullName (projectName + ".Tests.fsproj")
+  testTemplateProjectDirectory.FullName |> combine (projectName + ".Tests.fsproj")
 
 move projectTemplateFile projectFilePath
 move testTemplateProjectFile testProjectFilePath
 move projectTemplateDirectory.FullName 
-     (combine projectTemplateDirectory.Parent.FullName projectName)
+     (combine projectName projectTemplateDirectory.Parent.FullName)
 move testTemplateProjectDirectory.FullName 
-     (combine testTemplateProjectDirectory.Parent.FullName projectName + ".Tests")
+      (combine (projectName + ".Tests") testTemplateProjectDirectory.Parent.FullName)
 
 //Now that everything is renamed, we need to update the content of some files
 let replace t r (lines:seq<string>) = 
