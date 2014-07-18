@@ -178,7 +178,7 @@ Target "ReleaseDocs" (fun _ ->
 )
 
 Target "Release" DoNothing
-Target "ReleasePackage" DoNothing
+Target "BuildPackage" DoNothing
 
 // --------------------------------------------------------------------------------------
 // Run all targets by default. Invoke 'build <Target>' to override
@@ -190,11 +190,11 @@ Target "All" DoNothing
   ==> "AssemblyInfo"
   ==> "Build"
   ==> "RunTests"
+  ==> "CleanDocs"
+  ==> "GenerateDocs"
   ==> "All"
 
 "All" 
-  ==> "CleanDocs"
-  ==> "GenerateDocs"
   ==> "ReleaseDocs"
 
 "All" 
@@ -203,12 +203,12 @@ Target "All" DoNothing
   =?> ("SourceLink", Pdbstr.tryFind().IsSome )
 #endif
   ==> "NuGet"
-  ==> "ReleasePackage"
+  ==> "BuildPackage"
 
 "ReleaseDocs"
     ==> "Release"
 
-"ReleasePackage"
+"BuildPackage"
     ==> "Release"
 
 RunTargetOrDefault "All"
