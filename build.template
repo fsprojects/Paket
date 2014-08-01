@@ -68,15 +68,34 @@ let gitRaw = environVarOrDefault "gitRaw" "https://raw.github.com/##GitHome##"
 Environment.CurrentDirectory <- __SOURCE_DIRECTORY__
 let release = parseReleaseNotes (IO.File.ReadAllLines "RELEASE_NOTES.md")
 
-// Generate assembly info files with the right version & up-to-date information
-Target "AssemblyInfo" (fun _ ->
-  let fileName = "src/" + project + "/AssemblyInfo.fs"
-  CreateFSharpAssemblyInfo fileName
-      [ Attribute.Title project
+let genFSAssemblyInfo (projectPath) = 
+    let projectName = System.IO.Path.GetFileNameWithoutExtension(projectPath) 
+    let basePath = "src/" + projectName 
+    let fileName = basePath + "/AssemblyInfo.fs"
+    CreateFSharpAssemblyInfo fileName
+      [ Attribute.Title (projectName)
         Attribute.Product project
         Attribute.Description summary
         Attribute.Version release.AssemblyVersion
         Attribute.FileVersion release.AssemblyVersion ] 
+
+let genCSAssemblyInfo (projectPath) = 
+    let projectName = System.IO.Path.GetFileNameWithoutExtension(projectPath) 
+    let basePath = "src/" + projectName + "/Properties"
+    let fileName = basePath + "/AssemblyInfo.cs"
+    CreateCSharpAssemblyInfo fileName
+      [ Attribute.Title (projectName)
+        Attribute.Product project
+        Attribute.Description summary
+        Attribute.Version release.AssemblyVersion
+        Attribute.FileVersion release.AssemblyVersion ] 
+
+// Generate assembly info files with the right version & up-to-date information
+Target "AssemblyInfo" (fun _ ->
+  let fsProjs =  !! "src/**/*.fsproj"
+  let csProjs = !! "src/**/*.csproj"
+  fsProjs |> Seq.iter genFSAssemblyInfo
+  csProjs |> Seq.iter genCSAssemblyInfo
 )
 
 // --------------------------------------------------------------------------------------
