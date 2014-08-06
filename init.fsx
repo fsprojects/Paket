@@ -135,11 +135,13 @@ let rec filesToReplace dir = seq {
   yield! Directory.GetFiles(dir, "*.fsproj")
   yield! Directory.GetFiles(dir, "*.fs")
   yield! Directory.GetFiles(dir, "*.fsx")
+  yield! Directory.GetFiles(dir, "*.nuspec")
   yield! Directory.EnumerateDirectories(dir) |> Seq.collect filesToReplace
 }
 let updateFiles = 
   seq { yield solutionFile 
         yield! filesToReplace <| localFile "src"
+        yield! filesToReplace <| localFile "nuget"
         yield! filesToReplace <| localFile "tests" } 
         |> Seq.map replaceContent 
         |> Seq.iter print
