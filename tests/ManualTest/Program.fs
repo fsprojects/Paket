@@ -1,10 +1,10 @@
 ﻿open FSharp.ProjectTemplate.ConfigDSL
 
 let completeConfig = 
-    runConfig "myConfig.fsx"
-     ==> runConfig "myConfig2.fsx"
+    ReadFromFile "myConfig.fsx"
+     ==> ReadFromFile "myConfig2.fsx"
 
 for x in completeConfig do
-    printfn "%s => %s" x.Key x.Value
+    printfn "%s from %s => %s" x.Key x.Value.Source x.Value.Version
 
 System.Console.ReadKey() |> ignore
