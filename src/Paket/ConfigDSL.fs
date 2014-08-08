@@ -24,7 +24,7 @@ let private executeInScript source (executeInScript:FsiEvaluationSession -> unit
     let commonOptions = [| "fsi.exe"; "--noninteractive" |]
 
     let sbOut = new Text.StringBuilder()  
-    let sbErr = new Text.StringBuilder()  // TODO: evtl. irgendwo ausgeben
+    let sbErr = new Text.StringBuilder()
     let outStream = new StringWriter(sbOut)
     let errStream = new StringWriter(sbErr)
 
