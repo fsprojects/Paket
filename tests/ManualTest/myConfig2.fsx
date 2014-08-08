@@ -1,4 +1,4 @@
-﻿source "http://nuget.org/api/v2"
+source "http://nuget.org/api/v2"
 
 printfn "hello world from config2"
 

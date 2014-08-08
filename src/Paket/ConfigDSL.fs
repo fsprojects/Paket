@@ -1,4 +1,4 @@
-﻿module FSharp.ProjectTemplate.ConfigDSL
+module Paket.ConfigDSL
 
 open System
 open System.IO

@@ -1,4 +1,4 @@
-﻿open FSharp.ProjectTemplate.ConfigDSL
+open Paket.ConfigDSL
 
 let completeConfig = 
     ReadFromFile "myConfig.fsx"

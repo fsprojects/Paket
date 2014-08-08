@@ -28,37 +28,37 @@ open SourceLink
 
 // The name of the project 
 // (used by attributes in AssemblyInfo, name of a NuGet package and directory in 'src')
-let project = "##ProjectName##"
+let project = "Paket"
 
 // Short summary of the project
 // (used as description in AssemblyInfo and as a short summary for NuGet package)
-let summary = "##Summary##"
+let summary = "A dependency manager for .NET"
 
 // Longer description of the project
 // (used as a description for NuGet package; line breaks are automatically cleaned up)
-let description = "##Description##"
+let description = "A dependency manager for .NET"
 
 // List of author names (for NuGet package)
-let authors = [ "##Author##" ]
+let authors = [ "Steffen Forkmann, Alexander Gross" ]
 
 // Tags for your project (for NuGet package)
-let tags = "##Tags##"
+let tags = "nuget, bunlder, F#"
 
 // File system information 
-let solutionFile  = "##ProjectName##.sln"
+let solutionFile  = "Paket.sln"
 
 // Pattern specifying assemblies to be tested using NUnit
 let testAssemblies = "tests/**/bin/Release/*Tests*.dll"
 
 // Git configuration (used for publishing documentation in gh-pages branch)
 // The profile where the project is posted 
-let gitHome = "https://github.com/##GitHome##"
+let gitHome = "https://github.com/fsprojects"
 
 // The name of the project on GitHub
-let gitName = "##GitName##"
+let gitName = "Paket"
 
 // The url for the raw files hosted
-let gitRaw = environVarOrDefault "gitRaw" "https://raw.github.com/##GitHome##"
+let gitRaw = environVarOrDefault "gitRaw" "https://raw.github.com/fsprojects"
 
 // --------------------------------------------------------------------------------------
 // END TODO: The rest of the file includes standard build steps 
