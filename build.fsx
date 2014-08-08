@@ -65,8 +65,7 @@ let gitRaw = environVarOrDefault "gitRaw" "https://raw.github.com/fsprojects"
 // --------------------------------------------------------------------------------------
 
 // Read additional information from the release notes document
-Environment.CurrentDirectory <- __SOURCE_DIRECTORY__
-let release = parseReleaseNotes (IO.File.ReadAllLines "RELEASE_NOTES.md")
+let release = LoadReleaseNotes "RELEASE_NOTES.md"
 
 let genFSAssemblyInfo (projectPath) = 
     let projectName = System.IO.Path.GetFileNameWithoutExtension(projectPath) 
@@ -165,7 +164,7 @@ Target "NuGet" (fun _ ->
             Summary = summary
             Description = description
             Version = release.NugetVersion
-            ReleaseNotes = String.Join(Environment.NewLine, release.Notes)
+            ReleaseNotes = toLines release.Notes
             Tags = tags
             OutputPath = "bin"
             AccessKey = getBuildParamOrDefault "nugetkey" ""
