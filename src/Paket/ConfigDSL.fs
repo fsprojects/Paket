@@ -49,7 +49,7 @@ let private executeInScript source (executeInScript:FsiEvaluationSession -> unit
     | exn ->        
         failwithf "FsiEvaluationSession could not be created. %s" <| sbErr.ToString() 
 
-let FromCode code : Config = executeInScript "Code" (fun session -> session.EvalExpression code |> ignore)
+let FromCode source code : Config = executeInScript source (fun session -> session.EvalExpression code |> ignore)
 let ReadFromFile fileName : Config = executeInScript fileName (fun session -> session.EvalScript fileName)
 
 // TODO make this correct        

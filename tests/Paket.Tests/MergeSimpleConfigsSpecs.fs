@@ -22,12 +22,14 @@ nuget "Castle.Windsor-log4net" "~> 1.2"
 
 [<Test>]
 let ``should merge simple configs`` () =
-    let cfg1 = FromCode config1
-    let cfg2 = FromCode config2
+    let cfg1 = FromCode "src1" config1
+    let cfg2 = FromCode "src2" config2
 
     let cfg = merge cfg1 cfg2
 
     cfg.["Rx-Main"].Version |> shouldEqual "~> 2.2"    
+    cfg.["Rx-Main"].Source |> shouldEqual "src2"    
     cfg.["Castle.Windsor-log4net"].Version |> shouldEqual "~> 3.2"    
+    cfg.["Castle.Windsor-log4net"].Source |> shouldEqual "src1"    
     cfg.["FAKE"].Version |> shouldEqual "~> 3.0"
 
