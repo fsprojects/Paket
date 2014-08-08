@@ -39,10 +39,10 @@ let summary = "A dependency manager for .NET"
 let description = "A dependency manager for .NET"
 
 // List of author names (for NuGet package)
-let authors = [ "Steffen Forkmann, Alexander Gross" ]
+let authors = [ "Steffen Forkmann"; "Alexander Gross" ]
 
 // Tags for your project (for NuGet package)
-let tags = "nuget, bunlder, F#"
+let tags = "nuget, bundler, F#"
 
 // File system information 
 let solutionFile  = "Paket.sln"
