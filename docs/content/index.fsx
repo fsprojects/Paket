@@ -13,8 +13,8 @@ Documentation
   <div class="span1"></div>
   <div class="span6">
     <div class="well well-small" id="nuget">
-      The F# ProjectTemplate library can be <a href="https://nuget.org/packages/FSharp.ProjectTemplate">installed from NuGet</a>:
-      <pre>PM> Install-Package FSharp.ProjectTemplate</pre>
+      The F# ProjectTemplate library can be <a href="https://nuget.org/packages/Paket">installed from NuGet</a>:
+      <pre>PM> Install-Package Paket</pre>
     </div>
   </div>
   <div class="span1"></div>
