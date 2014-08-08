@@ -1,4 +1,4 @@
-module Paket.Tests
+module Paket.LoadConfigSpecs
 
 open Paket
 open NUnit.Framework
