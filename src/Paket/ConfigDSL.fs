@@ -55,6 +55,11 @@ let ReadFromFile fileName : Config = executeInScript fileName (fun session -> se
 // TODO make this correct        
 let merge (config1:Config) (config2:Config) =
     config2
-    |> Seq.fold (fun m x -> Map.add x.Key x.Value m) config1
+    |> Seq.fold (fun m x -> 
+        match Map.tryFind x.Key m with
+        | Some v ->  if v.Version > x.Value.Version then m else Map.add x.Key x.Value m
+        | None ->    Map.add x.Key x.Value m
+
+       ) config1
 
 let (==>) c1 c2 = merge c1 c2

@@ -60,6 +60,7 @@
   <ItemGroup>
     <Compile Include="FsUnit.fs" />
     <Compile Include="LoadConfigSpecs.fs" />
+    <Compile Include="MergeSimpleConfigsSpecs.fs" />
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
