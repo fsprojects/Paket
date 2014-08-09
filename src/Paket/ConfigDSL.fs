@@ -5,9 +5,14 @@ open System.IO
 open System.Collections.Generic
 open Microsoft.FSharp.Compiler.Interactive.Shell
 
+type Version = {
+    Min : string
+    Max :string }
+    with static member Parse text : Version = { Min = text; Max = "" }
+
 type ConfigValue = {
     Source : string
-    Version :string }
+    Version : Version }
 
 type Config = Map<string,ConfigValue>
 
@@ -39,7 +44,7 @@ let private executeInScript source (executeInScript:FsiEvaluationSession -> unit
             match session.EvalExpression "config" with
             | Some value -> 
                 value.ReflectionValue :?> Dictionary<string,string>
-                |> Seq.fold (fun m x -> Map.add x.Key { Source = source; Version = x.Value } m) Map.empty
+                |> Seq.fold (fun m x -> Map.add x.Key { Source = source; Version = Version.Parse x.Value } m) Map.empty
 
             | _ -> failwithf "Error: %s" <| sbErr.ToString()
         with    
@@ -51,6 +56,8 @@ let private executeInScript source (executeInScript:FsiEvaluationSession -> unit
 
 let FromCode source code : Config = executeInScript source (fun session -> session.EvalExpression code |> ignore)
 let ReadFromFile fileName : Config = executeInScript fileName (fun session -> session.EvalScript fileName)
+
+
 
 // TODO make this correct        
 let merge (config1:Config) (config2:Config) =
