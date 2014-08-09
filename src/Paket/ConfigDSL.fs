@@ -10,19 +10,26 @@ type VersionRange = {
     Max : string }
 
 type Version =
+| MinVersion of string
 | SpecificVersion of string
 | VersionRange of VersionRange
     with 
+        static member Between(min,max) : Version = VersionRange {Min = min; Max = max}
+        static member Exactly version : Version = SpecificVersion version
+        static member AtLeast version : Version = MinVersion version
         static member Parse(text:string) : Version = 
-            if text.StartsWith "~> " then
-                // TODO: Make this pretty
+            // TODO: Make this pretty
+            if text.StartsWith "~> " then                
                 let min = text.Replace("~> ","")
                 let parts = min.Split('.')
                 let major = Int32.Parse parts.[0]
                 let newParts = (major+1).ToString() :: Seq.toList (parts |> Seq.skip 1 |> Seq.map (fun _ -> "0"))
-                VersionRange { Min = min; Max = String.Join(".",newParts) }
+                Version.Between(min,String.Join(".",newParts))
             else
-                SpecificVersion text
+                if text.StartsWith "= " then
+                    Version.Exactly(text.Replace("= ",""))
+                else
+                    Version.AtLeast text
 
 type ConfigValue = {
     Source : string
