@@ -5,16 +5,13 @@ open System.IO
 open System.Collections.Generic
 open Microsoft.FSharp.Compiler.Interactive.Shell
 
-type VersionRange = {
-    Min : string
-    Max : string }
-
 type Version =
 | MinVersion of string
 | SpecificVersion of string
-| VersionRange of VersionRange
+| VersionRange of string*string
+| Conflict of Version
     with 
-        static member Between(min,max) : Version = VersionRange {Min = min; Max = max}
+        static member Between(min,max) : Version = VersionRange(min,max)
         static member Exactly version : Version = SpecificVersion version
         static member AtLeast version : Version = MinVersion version
         static member Parse(text:string) : Version = 
@@ -78,7 +75,13 @@ let private executeInScript source (executeInScript:FsiEvaluationSession -> unit
 let FromCode source code : Config = executeInScript source (fun session -> session.EvalExpression code |> ignore)
 let ReadFromFile fileName : Config = executeInScript fileName (fun session -> session.EvalScript fileName)
 
-
+let Shrink(version1,version2) = 
+    match version1,version2 with
+    | MinVersion v1, MinVersion v2 -> Version.AtLeast(max v1 v2)
+    | MinVersion v1, SpecificVersion v2 when v2 >= v1 -> Version.Exactly v2
+    | SpecificVersion v1, MinVersion v2 when v1 >= v2 -> Version.Exactly v1    
+    | VersionRange(min1,max1), SpecificVersion v2 when min1 <= v2 && max1 > v2 -> Version.Exactly v2
+    | SpecificVersion v1, VersionRange(min2,max2) when min2 <= v1 && max2 > v1-> Version.Exactly v1
 
 // TODO make this correct        
 let merge (config1:Config) (config2:Config) =
