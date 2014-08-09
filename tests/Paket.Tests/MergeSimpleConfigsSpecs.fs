@@ -27,12 +27,9 @@ let ``should merge simple configs`` () =
 
     let cfg = merge cfg1 cfg2
 
-    cfg.["Rx-Main"].Version.Min |> shouldEqual "2.2"    
-    cfg.["Rx-Main"].Version.Max |> shouldEqual "3.0"    
+    cfg.["Rx-Main"].Version |> shouldEqual (VersionRange { Min = "2.2"; Max = "3.0" })
     cfg.["Rx-Main"].Source |> shouldEqual "src2"    
-    cfg.["Castle.Windsor-log4net"].Version.Min |> shouldEqual "3.2"    
-    cfg.["Castle.Windsor-log4net"].Version.Max |> shouldEqual "4.0"    
+    cfg.["Castle.Windsor-log4net"].Version |> shouldEqual (VersionRange { Min = "3.2"; Max = "4.0" })
     cfg.["Castle.Windsor-log4net"].Source |> shouldEqual "src1"    
-    cfg.["FAKE"].Version.Min |> shouldEqual "3.0"
-    cfg.["FAKE"].Version.Max |> shouldEqual "4.0"
+    cfg.["FAKE"].Version |> shouldEqual (VersionRange { Min = "3.0"; Max = "4.0" })
 

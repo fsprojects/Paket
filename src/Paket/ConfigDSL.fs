@@ -5,9 +5,13 @@ open System.IO
 open System.Collections.Generic
 open Microsoft.FSharp.Compiler.Interactive.Shell
 
-type Version = {
+type VersionRange = {
     Min : string
     Max : string }
+
+type Version =
+| SpecificVersion of string
+| VersionRange of VersionRange
     with 
         static member Parse(text:string) : Version = 
             if text.StartsWith "~> " then
@@ -16,9 +20,9 @@ type Version = {
                 let parts = min.Split('.')
                 let major = Int32.Parse parts.[0]
                 let newParts = (major+1).ToString() :: Seq.toList (parts |> Seq.skip 1 |> Seq.map (fun _ -> "0"))
-                { Min = min; Max = String.Join(".",newParts) }
+                VersionRange { Min = min; Max = String.Join(".",newParts) }
             else
-                { Min = text; Max = "" }
+                SpecificVersion text
 
 type ConfigValue = {
     Source : string
