@@ -7,8 +7,18 @@ open Microsoft.FSharp.Compiler.Interactive.Shell
 
 type Version = {
     Min : string
-    Max :string }
-    with static member Parse text : Version = { Min = text; Max = "" }
+    Max : string }
+    with 
+        static member Parse(text:string) : Version = 
+            if text.StartsWith "~> " then
+                // TODO: Make this pretty
+                let min = text.Replace("~> ","")
+                let parts = min.Split('.')
+                let major = Int32.Parse parts.[0]
+                let newParts = (major+1).ToString() :: Seq.toList (parts |> Seq.skip 1 |> Seq.map (fun _ -> "0"))
+                { Min = min; Max = String.Join(".",newParts) }
+            else
+                { Min = text; Max = "" }
 
 type ConfigValue = {
     Source : string
