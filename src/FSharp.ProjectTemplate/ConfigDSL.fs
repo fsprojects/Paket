@@ -5,12 +5,6 @@ open System.IO
 open System.Collections.Generic
 open Microsoft.FSharp.Compiler.Interactive.Shell
 
-type ConfigValue = {
-    Source : string
-    Version :string }
-
-type Config = Map<string,ConfigValue>
-
 let initialCode = """
 let config = new System.Collections.Generic.Dictionary<string,string>()
 let source x = ()  // Todo
@@ -18,7 +12,7 @@ let source x = ()  // Todo
 let nuget x y = config.Add(x,y)
 """
 
-let private executeInScript source (executeInScript:FsiEvaluationSession -> unit) : Config =
+let runConfig fileName  =
     let fsiConfig = FsiEvaluationSession.GetDefaultConfiguration()
 
     let commonOptions = [| "fsi.exe"; "--noninteractive" |]
@@ -33,14 +27,12 @@ let private executeInScript source (executeInScript:FsiEvaluationSession -> unit
     try
         let session = FsiEvaluationSession.Create(fsiConfig, commonOptions, stdin, outStream, errStream)
        
-        try             
+        try 
+            
             session.EvalInteraction initialCode |> ignore                    
-            executeInScript session
+            session.EvalScript fileName
             match session.EvalExpression "config" with
-            | Some value -> 
-                value.ReflectionValue :?> Dictionary<string,string>
-                |> Seq.fold (fun m x -> Map.add x.Key { Source = source; Version = x.Value } m) Map.empty
-
+            | Some x -> x.ReflectionValue :?> System.Collections.Generic.Dictionary<string,string>
             | _ -> failwithf "Error: %s" <| sbErr.ToString()
         with    
         | _ -> failwithf "Error: %s" <| sbErr.ToString()
@@ -49,14 +41,18 @@ let private executeInScript source (executeInScript:FsiEvaluationSession -> unit
     | exn ->
         printfn "FsiEvaluationSession could not be created."
         
-        raise exn
-
-let FromCode code : Config = executeInScript "Code" (fun session -> session.EvalExpression code |> ignore)
-let ReadFromFile fileName : Config = executeInScript fileName (fun session -> session.EvalScript fileName)
+        raise exn    
 
 // TODO make this correct        
-let merge (config1:Config) (config2:Config) =
-    config2
-    |> Seq.fold (fun m x -> Map.add x.Key x.Value m) config1
+let merge (config1:Dictionary<string,string>) (config2:Dictionary<string,string>) =
+
+    let config = Dictionary<string,string>()
+    for x in config1 do
+      config.Add(x.Key,x.Value)
+    
+    for x in config2 do
+      config.[x.Key] <- x.Value
+
+    config
 
 let (==>) c1 c2 = merge c1 c2
