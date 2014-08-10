@@ -1,8 +1,8 @@
-module Paket.Tests
+﻿module FSharp.ProjectScaffold.Tests
 
-open Paket
+open FSharp.ProjectTemplate
 open NUnit.Framework
-open Paket.ConfigDSL
+open FSharp.ProjectTemplate.ConfigDSL
 
 let config1 = """
 source "http://nuget.org/api/v2"

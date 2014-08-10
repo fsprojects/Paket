@@ -1,4 +1,4 @@
-
+﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2013
 VisualStudioVersion = 12.0.30723.0
@@ -12,12 +12,12 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".nuget", ".nuget", "{1F1B4F
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "docs", "docs", "{A6A6AF7D-D6E3-442D-9B1E-58CC91879BE1}"
 EndProject
-Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Paket", "src\Paket\Paket.fsproj", "{7E90D6CE-A10B-4858-A5BC-41DF7250CBCA}"
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "FSharp.ProjectTemplate", "src\FSharp.ProjectTemplate\FSharp.ProjectTemplate.fsproj", "{7E90D6CE-A10B-4858-A5BC-41DF7250CBCA}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "project", "project", "{BF60BC93-E09B-4E5F-9D85-95A519479D54}"
 	ProjectSection(SolutionItems) = preProject
 		build.fsx = build.fsx
-		nuget\Paket.nuspec = nuget\Paket.nuspec
+		nuget\FSharp.ProjectTemplate.nuspec = nuget\FSharp.ProjectTemplate.nuspec
 		README.md = README.md
 		RELEASE_NOTES.md = RELEASE_NOTES.md
 	EndProjectSection
@@ -36,7 +36,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "content", "content", "{8E6D
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{ED8079DD-2B06-4030-9F0F-DC548F98E1C4}"
 EndProject
-Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Paket.Tests", "tests\Paket.Tests\Paket.Tests.fsproj", "{E789C72A-5CFD-436B-8EF1-61AA2852A89F}"
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "FSharp.ProjectTemplate.Tests", "tests\FSharp.ProjectTemplate.Tests\FSharp.ProjectTemplate.Tests.fsproj", "{E789C72A-5CFD-436B-8EF1-61AA2852A89F}"
 EndProject
 Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "ManualTest", "tests\ManualTest\ManualTest.fsproj", "{0252F0B5-B106-42F5-ABA8-743A1AAE8A6E}"
 EndProject

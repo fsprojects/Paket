@@ -5,9 +5,9 @@
     <version>@build.number@</version>
     <authors>@authors@</authors>
     <owners>@authors@</owners>
-    <licenseUrl>http://github.com/fsprojects/Paket/blob/master/LICENSE.txt</licenseUrl>
-    <projectUrl>http://fsprojects.github.com/Paket</projectUrl>
-    <iconUrl>https://raw.github.com/fsharp/Paket/master/nuget/logo.png</iconUrl>
+    <licenseUrl>http://github.com/fsprojects/FSharp.ProjectScaffold/blob/master/LICENSE.txt</licenseUrl>
+    <projectUrl>http://fsprojects.github.com/FSharp.ProjectScaffold</projectUrl>
+    <iconUrl>https://raw.github.com/fsharp/FSharp.ProjectScaffold/master/nuget/logo.png</iconUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <summary>@summary@</summary>
     <description>@description@</description>
@@ -17,7 +17,7 @@
     <dependencies />
   </metadata>
   <files>
-    <file src="..\bin\Paket.dll" target="lib/net40" />
-    <file src="..\bin\Paket.pdb" target="lib/net40" />
+    <file src="..\bin\FSharp.ProjectTemplate.dll" target="lib/net40" />
+    <file src="..\bin\FSharp.ProjectTemplate.pdb" target="lib/net40" />
   </files>
 </package>

@@ -1,22 +1,22 @@
-// --------------------------------------------------------------------------------------
+﻿// --------------------------------------------------------------------------------------
 // Builds the documentation from `.fsx` and `.md` files in the 'docs/content' directory
 // (the generated documentation is stored in the 'docs/output' directory)
 // --------------------------------------------------------------------------------------
 
 // Binaries that have XML documentation (in a corresponding generated XML file)
-let referenceBinaries = [ "Paket.dll" ]
+let referenceBinaries = [ "##ProjectName##.dll" ]
 // Web site location for the generated documentation
-let website = "/Paket"
+let website = "/##ProjectName##"
 
-let githubLink = "http://github.com/fsprojects/Paket"
+let githubLink = "http://github.com/##GitHome##/##GitName##"
 
 // Specify more information about your project
 let info =
-  [ "project-name", "Paket"
-    "project-author", "Steffen Forkmann, Alexander Gross"
-    "project-summary", "A dependency manager for .NET"
+  [ "project-name", "##ProjectName##"
+    "project-author", "##Author##"
+    "project-summary", "##Summary##"
     "project-github", githubLink
-    "project-nuget", "http://nuget.com/packages/Paket" ]
+    "project-nuget", "http://nuget.com/packages/##ProjectName##" ]
 
 // --------------------------------------------------------------------------------------
 // For typical project, no changes are needed below
