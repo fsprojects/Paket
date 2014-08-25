@@ -82,12 +82,12 @@ let analyzeNode (discovery:IDiscovery) (package,versionRange:VersionRange) : Ver
 
     { Package = package; Version = maxVersion; Dependencies = discovery.GetDirectDependencies(package,maxVersion) }
 
-let analyzeGraph (discovery:IDiscovery) (package,versionRange:VersionRange) : VersionNode =
+let rec analyzeGraph (discovery:IDiscovery) (package,versionRange:VersionRange) : VersionNode =
     let startNode = analyzeNode discovery (package,versionRange)
     let mutable dependencies = startNode.Dependencies
 
     for node in startNode.Dependencies do
-        let current = analyzeNode discovery (node.Key,node.Value)
+        let current = analyzeGraph discovery (node.Key,node.Value)
         for dep in current.Dependencies do
             dependencies <-
                 match Map.tryFind dep.Key dependencies with
