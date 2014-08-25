@@ -28,6 +28,17 @@ type Version =
         else if text.StartsWith "= " then Version.Exactly(text.Replace("= ", ""))
         else Version.AtLeast text
 
+
+/// Calculates the logical conjunction of the given version requirements
+let Shrink(version1, version2) = 
+    match version1, version2 with
+    | MinVersion v1, MinVersion v2 -> Version.AtLeast(max v1 v2)
+    | MinVersion v1, SpecificVersion v2 when v2 >= v1 -> Version.Exactly v2
+    | SpecificVersion v1, MinVersion v2 when v1 >= v2 -> Version.Exactly v1
+    | VersionRange(min1, max1), SpecificVersion v2 when min1 <= v2 && max1 > v2 -> Version.Exactly v2
+    | SpecificVersion v1, VersionRange(min2, max2) when min2 <= v1 && max2 > v1 -> Version.Exactly v1
+    | VersionRange(min1, max1), VersionRange(min2, max2) -> Version.VersionRange(max min1 min2, min max1 max2)
+
 type ConfigValue = 
     { Source : string
       Version : Version }
@@ -66,14 +77,6 @@ let private executeInScript source (executeInScript : FsiEvaluationSession -> un
 
 let FromCode source code : Config = executeInScript source (fun session -> session.EvalExpression code |> ignore)
 let ReadFromFile fileName : Config = executeInScript fileName (fun session -> session.EvalScript fileName)
-
-let Shrink(version1, version2) = 
-    match version1, version2 with
-    | MinVersion v1, MinVersion v2 -> Version.AtLeast(max v1 v2)
-    | MinVersion v1, SpecificVersion v2 when v2 >= v1 -> Version.Exactly v2
-    | SpecificVersion v1, MinVersion v2 when v1 >= v2 -> Version.Exactly v1
-    | VersionRange(min1, max1), SpecificVersion v2 when min1 <= v2 && max1 > v2 -> Version.Exactly v2
-    | SpecificVersion v1, VersionRange(min2, max2) when min2 <= v1 && max2 > v1 -> Version.Exactly v1
 
 // TODO make this correct        
 let merge (config1 : Config) (config2 : Config) = 
