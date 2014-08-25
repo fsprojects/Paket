@@ -11,9 +11,9 @@ graph.Add(("A","3.0"),[("B",VersionRange.AtLeast "1.0")])
 graph.Add(("A","3.1"),[("B",VersionRange.AtLeast "1.0")])
 graph.Add(("A","3.3"),[("B",VersionRange.AtLeast "1.0")])
 
+graph.Add(("B","1.0"),[])
 graph.Add(("B","1.1"),[])
-graph.Add(("B","1.2"),[])
-graph.Add(("B","1.3"),["A",VersionRange.AtLeast "3.3"])
+graph.Add(("B","1.2"),["A",VersionRange.AtLeast "3.3"])
 
 let discovery = 
   { new IDiscovery with
@@ -21,7 +21,7 @@ let discovery =
       member __.GetVersions package = graph.Keys |> Seq.filter (fun (k,_) -> k = package) |> Seq.map snd }
 
 [<Test>]
-let ``should analyze graph completly``() = 
+let ``should analyze graph completely``() = 
     let node = AnalyzeGraph discovery ("A",VersionRange.AtLeast "3.3")
-    node.["A"] |> shouldEqual (VersionRange.AtLeast "3.3")
-    node.["B"] |> shouldEqual (VersionRange.AtLeast "1.3")
+    node.["A"] |> shouldEqual (VersionRange.Exactly "3.3")
+    node.["B"] |> shouldEqual (VersionRange.AtLeast "1.0")

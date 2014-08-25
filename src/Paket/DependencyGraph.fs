@@ -86,8 +86,13 @@ let mergeDependencies (d1:Dependencies) (d2:Dependencies) =
 
     dependencies
 
+open System.Collections.Generic
+
 let AnalyzeGraph (discovery:IDiscovery) (package,versionRange:VersionRange) : Dependencies =
+    let cache = new HashSet<_>()
+
     let rec analyzeGraph (package,versionRange) =
+        if not <| cache.Add(package,versionRange) then Map.empty else
         let _,startDependencies = analyzeNode discovery (package,versionRange)
         let mutable dependencies = startDependencies
 
