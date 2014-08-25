@@ -48,8 +48,6 @@ let Shrink(version1, version2) =
 let filterVersions (version:VersionRange) versions =
     versions
     |> List.filter version.IsInRange
-    
-
 
 type VersionNode = {
     Package : string
@@ -83,3 +81,17 @@ let analyzeNode (discovery:IDiscovery) (package,versionRange:VersionRange) : Ver
         |> Seq.max
 
     { Package = package; Version = maxVersion; Dependencies = discovery.GetDirectDependencies(package,maxVersion) }
+
+let analyzeGraph (discovery:IDiscovery) (package,versionRange:VersionRange) : VersionNode =
+    let startNode = analyzeNode discovery (package,versionRange)
+    let mutable dependencies = startNode.Dependencies
+
+    for node in startNode.Dependencies do
+        let current = analyzeNode discovery (node.Key,node.Value)
+        for dep in current.Dependencies do
+            dependencies <-
+                match Map.tryFind dep.Key dependencies with
+                | Some d -> Map.add dep.Key (Shrink(d,dep.Value)) dependencies
+                | None -> Map.add dep.Key dep.Value dependencies
+
+    { Package = package; Version = startNode.Version; Dependencies = dependencies }
