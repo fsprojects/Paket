@@ -58,6 +58,7 @@
   <Import Project="$(FSharpTargetsPath)" />
   <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\NuGet.targets')" />
   <ItemGroup>
+    <Compile Include="CyclicGraphSpecs.fs" />
     <Compile Include="FsUnit.fs" />
     <Compile Include="VersionComparisionSpecs.fs" />
     <Compile Include="FilterVersionSpecs.fs" />

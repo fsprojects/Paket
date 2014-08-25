@@ -38,6 +38,7 @@ let Shrink(version1, version2) =
     | AtLeast v1, AtLeast v2 -> VersionRange.AtLeast(max v1 v2)
     | AtLeast v1, Exactly v2 when v2 >= v1 -> VersionRange.Exactly v2
     | Exactly v1, AtLeast v2 when v1 >= v2 -> VersionRange.Exactly v1
+    | Exactly v1, Exactly v2 when v1 = v2 -> VersionRange.Exactly v1
     | Between(min1, max1), Exactly v2 when min1 <= v2 && max1 > v2 -> VersionRange.Exactly v2
     | Exactly v1, Between(min2, max2) when min2 <= v1 && max2 > v1 -> VersionRange.Exactly v1
     | Between(min1, max1), Between(min2, max2) -> VersionRange.Between(max min1 min2, min max1 max2)
@@ -46,11 +47,7 @@ let filterVersions (version:VersionRange) versions =
     versions
     |> List.filter version.IsInRange
 
-type VersionNode = {
-    Package : string
-    Version : string
-    Dependencies : Map<string, VersionRange>
-}
+type Dependencies = Map<string, VersionRange>
 
 type ConfigValue = 
     { Source : string
@@ -71,24 +68,38 @@ type IDiscovery =
    abstract member GetDirectDependencies : string * string -> Map<string, VersionRange>
    abstract member GetVersions : string -> string seq
 
-let analyzeNode (discovery:IDiscovery) (package,versionRange:VersionRange) : VersionNode =
+let analyzeNode (discovery:IDiscovery) (package,versionRange:VersionRange) =
     let maxVersion = 
         discovery.GetVersions package
         |> Seq.filter versionRange.IsInRange
         |> Seq.max
 
-    { Package = package; Version = maxVersion; Dependencies = discovery.GetDirectDependencies(package,maxVersion) }
+    maxVersion,discovery.GetDirectDependencies(package,maxVersion)
 
-let rec analyzeGraph (discovery:IDiscovery) (package,versionRange:VersionRange) : VersionNode =
-    let startNode = analyzeNode discovery (package,versionRange)
-    let mutable dependencies = startNode.Dependencies
+let mergeDependencies (d1:Dependencies) (d2:Dependencies) =
+    let mutable dependencies = d1
+    for dep in d2 do
+        dependencies <-
+            match Map.tryFind dep.Key dependencies with
+            | Some d -> Map.add dep.Key (Shrink(d,dep.Value)) dependencies
+            | None -> Map.add dep.Key dep.Value dependencies
 
-    for node in startNode.Dependencies do
-        let current = analyzeGraph discovery (node.Key,node.Value)
-        for dep in current.Dependencies do
-            dependencies <-
-                match Map.tryFind dep.Key dependencies with
-                | Some d -> Map.add dep.Key (Shrink(d,dep.Value)) dependencies
-                | None -> Map.add dep.Key dep.Value dependencies
+    dependencies
 
-    { Package = package; Version = startNode.Version; Dependencies = dependencies }
+let AnalyzeGraph (discovery:IDiscovery) (package,versionRange:VersionRange) : Dependencies =
+    let rec analyzeGraph (package,versionRange) =
+        let _,startDependencies = analyzeNode discovery (package,versionRange)
+        let mutable dependencies = startDependencies
+
+        for node in startDependencies do
+            dependencies <- mergeDependencies dependencies (analyzeGraph (node.Key,node.Value))
+
+        dependencies
+
+    let maxVersion = 
+        discovery.GetVersions package
+        |> Seq.filter versionRange.IsInRange
+        |> Seq.max
+
+    Map.add package (VersionRange.Exactly maxVersion) Map.empty
+    |> mergeDependencies (analyzeGraph (package,versionRange))

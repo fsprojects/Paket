@@ -42,26 +42,25 @@ let discovery =
 
 [<Test>]
 let ``should analyze single node``() = 
-    let node = analyzeNode discovery ("FAKE",VersionRange.AtLeast "3.3")
-    node.Version |> shouldEqual "4.0"
-    node.Dependencies.["A"] |> shouldEqual (VersionRange.AtLeast "3.3")
-    node.Dependencies.["B"] |> shouldEqual (VersionRange.Exactly "1.3")
-    node.Dependencies.["C"] |> shouldEqual (VersionRange.AtLeast "1.0")
+    let maxVersion,node = analyzeNode discovery ("FAKE",VersionRange.AtLeast "3.3")
+    maxVersion |> shouldEqual "4.0"
+    node.["A"] |> shouldEqual (VersionRange.AtLeast "3.3")
+    node.["B"] |> shouldEqual (VersionRange.Exactly "1.3")
 
 [<Test>]
 let ``should analyze graph one level deep``() = 
-    let node = analyzeGraph discovery ("FAKE",VersionRange.AtLeast "3.3")
-    node.Version |> shouldEqual "4.0"
-    node.Dependencies.["A"] |> shouldEqual (VersionRange.AtLeast "3.3")
-    node.Dependencies.["B"] |> shouldEqual (VersionRange.Exactly "1.3")
-    node.Dependencies.["C"] |> shouldEqual (VersionRange.AtLeast "1.0")
+    let node = AnalyzeGraph discovery ("FAKE",VersionRange.AtLeast "3.3")
+    node.["FAKE"] |> shouldEqual (VersionRange.Exactly "4.0")
+    node.["A"] |> shouldEqual (VersionRange.AtLeast "3.3")
+    node.["B"] |> shouldEqual (VersionRange.Exactly "1.3")
+    node.["C"] |> shouldEqual (VersionRange.AtLeast "1.0")
 
-    node.Dependencies.ContainsKey "D" |> shouldEqual false
+    node.ContainsKey "D" |> shouldEqual false
 
 [<Test>]
 let ``should analyze graph completly``() = 
-    let node = analyzeGraph discovery ("FAKE",VersionRange.AtLeast "3.3")
-    node.Version |> shouldEqual "4.0"
-    node.Dependencies.["E"] |> shouldEqual (VersionRange.AtLeast "2.0")
-    node.Dependencies.["F"] |> shouldEqual (VersionRange.AtLeast "1.0")
-    node.Dependencies.["G"] |> shouldEqual (VersionRange.AtLeast "1.0")
+    let node = AnalyzeGraph discovery ("FAKE",VersionRange.AtLeast "3.3")
+    node.["FAKE"] |> shouldEqual (VersionRange.Exactly "4.0")
+    node.["E"] |> shouldEqual (VersionRange.AtLeast "2.0")
+    node.["F"] |> shouldEqual (VersionRange.AtLeast "1.0")
+    node.["G"] |> shouldEqual (VersionRange.AtLeast "1.0")

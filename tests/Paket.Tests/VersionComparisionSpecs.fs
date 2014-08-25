@@ -21,6 +21,10 @@ let ``should shrink VersionRange by SpecificVersion``() =
     Shrink(VersionRange.Exactly "1.1", VersionRange.Between("0.9", "2.2")) |> shouldEqual (VersionRange.Exactly "1.1")
 
 [<Test>]
+let ``should not shrink SpecificVersion``() =
+    Shrink(VersionRange.Exactly "1.1", VersionRange.Exactly "1.1") |> shouldEqual (VersionRange.Exactly "1.1")
+
+[<Test>]
 let ``should shrink VersionRange by VersionRange``() = 
     Shrink(VersionRange.Between("2.2", "4.4"), VersionRange.Between("2.2", "4.4")) |> shouldEqual (VersionRange.Between("2.2", "4.4"))
     Shrink(VersionRange.Between("2.2", "4.4"), VersionRange.Between("3.3", "4.4")) |> shouldEqual (VersionRange.Between("3.3", "4.4"))
