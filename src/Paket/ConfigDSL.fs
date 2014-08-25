@@ -4,46 +4,7 @@ open System
 open System.IO
 open System.Collections.Generic
 open Microsoft.FSharp.Compiler.Interactive.Shell
-
-type Version = 
-    | MinVersion of string
-    | SpecificVersion of string
-    | VersionRange of string * string
-    | Conflict of Version
-    static member Between(min, max) : Version = VersionRange(min, max)
-    static member Exactly version : Version = SpecificVersion version
-    static member AtLeast version : Version = MinVersion version
-    static member Parse(text : string) : Version = 
-        // TODO: Make this pretty
-        if text.StartsWith "~> " then 
-            let min = text.Replace("~> ", "")
-            let parts = min.Split('.')
-            let major = Int32.Parse parts.[0]
-            
-            let newParts = 
-                (major + 1).ToString() :: Seq.toList (parts
-                                                      |> Seq.skip 1
-                                                      |> Seq.map (fun _ -> "0"))
-            Version.Between(min, String.Join(".", newParts))
-        else if text.StartsWith "= " then Version.Exactly(text.Replace("= ", ""))
-        else Version.AtLeast text
-
-
-/// Calculates the logical conjunction of the given version requirements
-let Shrink(version1, version2) = 
-    match version1, version2 with
-    | MinVersion v1, MinVersion v2 -> Version.AtLeast(max v1 v2)
-    | MinVersion v1, SpecificVersion v2 when v2 >= v1 -> Version.Exactly v2
-    | SpecificVersion v1, MinVersion v2 when v1 >= v2 -> Version.Exactly v1
-    | VersionRange(min1, max1), SpecificVersion v2 when min1 <= v2 && max1 > v2 -> Version.Exactly v2
-    | SpecificVersion v1, VersionRange(min2, max2) when min2 <= v1 && max2 > v1 -> Version.Exactly v1
-    | VersionRange(min1, max1), VersionRange(min2, max2) -> Version.VersionRange(max min1 min2, min max1 max2)
-
-type ConfigValue = 
-    { Source : string
-      Version : Version }
-
-type Config = Map<string, ConfigValue>
+open Paket.DependencyGraph
 
 let initialCode = """
 let config = new System.Collections.Generic.Dictionary<string,string>()
@@ -70,21 +31,12 @@ let private executeInScript source (executeInScript : FsiEvaluationSession -> un
                 value.ReflectionValue :?> Dictionary<string, string> 
                 |> Seq.fold (fun m x -> 
                        Map.add x.Key { Source = source
-                                       Version = Version.Parse x.Value } m) Map.empty
+                                       Version = VersionRange.Parse x.Value } m) Map.empty
             | _ -> failwithf "Error: %s" <| sbErr.ToString()
         with _ -> failwithf "Error: %s" <| sbErr.ToString()
     with exn -> failwithf "FsiEvaluationSession could not be created. %s" <| sbErr.ToString()
 
 let FromCode source code : Config = executeInScript source (fun session -> session.EvalExpression code |> ignore)
 let ReadFromFile fileName : Config = executeInScript fileName (fun session -> session.EvalScript fileName)
-
-// TODO make this correct        
-let merge (config1 : Config) (config2 : Config) = 
-    config2 |> Seq.fold (fun m x -> 
-                   match Map.tryFind x.Key m with
-                   | Some v -> 
-                       if v.Version > x.Value.Version then m
-                       else Map.add x.Key x.Value m
-                   | None -> Map.add x.Key x.Value m) config1
 
 let (==>) c1 c2 = merge c1 c2

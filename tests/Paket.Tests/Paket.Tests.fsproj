@@ -60,6 +60,8 @@
   <ItemGroup>
     <Compile Include="FsUnit.fs" />
     <Compile Include="VersionComparisionSpecs.fs" />
+    <Compile Include="FilterVersionSpecs.fs" />
+    <Compile Include="DependencyGraphSpecs.fs" />
     <Compile Include="LoadConfigSpecs.fs" />
     <Compile Include="MergeSimpleConfigsSpecs.fs" />
     <None Include="packages.config" />
