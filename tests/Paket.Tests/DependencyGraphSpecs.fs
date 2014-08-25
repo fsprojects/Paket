@@ -9,7 +9,7 @@ open FsUnit
 let graph = new Dictionary<string*string,(string*VersionRange) list>()
 graph.Add(("FAKE","3.3"),[("A",VersionRange.AtLeast "3.0")])
 graph.Add(("FAKE","3.7"),[("A",VersionRange.AtLeast "3.1"); ("B",VersionRange.Exactly "1.1")])
-graph.Add(("FAKE","4.0"),[("A",VersionRange.AtLeast "3.3"); ("B",VersionRange.Exactly "1.3"); ("E",VersionRange.MinVersion "2.0")])
+graph.Add(("FAKE","4.0"),[("A",VersionRange.AtLeast "3.3"); ("B",VersionRange.Exactly "1.3"); ("E",VersionRange.AtLeast "2.0")])
 
 graph.Add(("A","3.0"),[("B",VersionRange.AtLeast "1.0")])
 graph.Add(("A","3.1"),[("B",VersionRange.AtLeast "1.0")])
@@ -28,10 +28,10 @@ graph.Add(("D","1.1"),[])
 graph.Add(("E","1.0"),[])
 graph.Add(("E","1.1"),[])
 graph.Add(("E","2.0"),[])
-graph.Add(("E","2.1"),[("F",VersionRange.MinVersion "1.0")])
+graph.Add(("E","2.1"),[("F",VersionRange.AtLeast "1.0")])
 
 graph.Add(("F","1.0"),[])
-graph.Add(("F","1.1"),[("G",VersionRange.MinVersion "1.0")])
+graph.Add(("F","1.1"),[("G",VersionRange.AtLeast "1.0")])
 
 graph.Add(("G","1.0"),[])
 
