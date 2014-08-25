@@ -15,16 +15,14 @@ nuget "SignalR" "= 3.3.2"
 """
 
 [<Test>]
-let ``should read simple config1`` () =
+let ``should read simple config1``() = 
     let cfg = FromCode "src1" config1
-    cfg.["Rx-Main"].Version |> shouldEqual (Version.Between("2.0","3.0"))
-    cfg.["Rx-Main"].Source |> shouldEqual "src1"    
-    cfg.["Castle.Windsor-log4net"].Version |> shouldEqual (Version.Between("3.2","4.0"))
-
+    cfg.["Rx-Main"].Version |> shouldEqual (Version.Between("2.0", "3.0"))
+    cfg.["Rx-Main"].Source |> shouldEqual "src1"
+    cfg.["Castle.Windsor-log4net"].Version |> shouldEqual (Version.Between("3.2", "4.0"))
     cfg.["FAKE"].Version |> shouldEqual (Version.Exactly "1.1")
     cfg.["SignalR"].Version |> shouldEqual (Version.Exactly "3.3.2")
 
-    
 let config2 = """
 source "http://nuget.org/api/v2"
 
@@ -34,9 +32,9 @@ nuget "MinPackage" "1.1.3"
 """
 
 [<Test>]
-let ``should read simple config2`` () =
+let ``should read simple config2``() = 
     let cfg = FromCode "src2" config2
-    cfg.["Rx-Main"].Version |> shouldEqual (Version.Between("2.2","3.0"))
-    cfg.["Rx-Main"].Source |> shouldEqual "src2"    
-    cfg.["FAKE"].Version |> shouldEqual (Version.Between("3.0","4.0"))
+    cfg.["Rx-Main"].Version |> shouldEqual (Version.Between("2.2", "3.0"))
+    cfg.["Rx-Main"].Source |> shouldEqual "src2"
+    cfg.["FAKE"].Version |> shouldEqual (Version.Between("3.0", "4.0"))
     cfg.["MinPackage"].Version |> shouldEqual (Version.AtLeast "1.1.3")
