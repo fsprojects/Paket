@@ -3,42 +3,39 @@
 open Paket
 open Paket.DependencyGraph
 open NUnit.Framework
-open System.Collections.Generic
 open FsUnit
 
-let graph = new Dictionary<string*string,(string*VersionRange) list>()
-graph.Add(("FAKE","3.3"),[("A",VersionRange.AtLeast "3.0")])
-graph.Add(("FAKE","3.7"),[("A",VersionRange.AtLeast "3.1"); ("B",VersionRange.Exactly "1.1")])
-graph.Add(("FAKE","4.0"),[("A",VersionRange.AtLeast "3.3"); ("B",VersionRange.Exactly "1.3"); ("E",VersionRange.AtLeast "2.0")])
+let graph = [
+    "FAKE","3.3",[("A",VersionRange.AtLeast "3.0")]
+    "FAKE","3.7",[("A",VersionRange.AtLeast "3.1"); ("B",VersionRange.Exactly "1.1")]
+    "FAKE","4.0",[("A",VersionRange.AtLeast "3.3"); ("B",VersionRange.Exactly "1.3"); ("E",VersionRange.AtLeast "2.0")]
 
-graph.Add(("A","3.0"),[("B",VersionRange.AtLeast "1.0")])
-graph.Add(("A","3.1"),[("B",VersionRange.AtLeast "1.0")])
-graph.Add(("A","3.3"),[("B",VersionRange.AtLeast "1.0")])
+    "A","3.0",[("B",VersionRange.AtLeast "1.0")]
+    "A","3.1",[("B",VersionRange.AtLeast "1.0")]
+    "A","3.3",[("B",VersionRange.AtLeast "1.0")]
 
-graph.Add(("B","1.1"),[])
-graph.Add(("B","1.2"),[])
-graph.Add(("B","1.3"),["C",VersionRange.AtLeast "1.0"])
+    "B","1.1",[]
+    "B","1.2",[]
+    "B","1.3",["C",VersionRange.AtLeast "1.0"]
 
-graph.Add(("C","1.0"),[])
-graph.Add(("C","1.1"),[])
+    "C","1.0",[]
+    "C","1.1",[]
 
-graph.Add(("D","1.0"),[])
-graph.Add(("D","1.1"),[])
+    "D","1.0",[]
+    "D","1.1",[]
 
-graph.Add(("E","1.0"),[])
-graph.Add(("E","1.1"),[])
-graph.Add(("E","2.0"),[])
-graph.Add(("E","2.1"),[("F",VersionRange.AtLeast "1.0")])
+    "E","1.0",[]
+    "E","1.1",[]
+    "E","2.0",[]
+    "E","2.1",[("F",VersionRange.AtLeast "1.0")]
 
-graph.Add(("F","1.0"),[])
-graph.Add(("F","1.1"),[("G",VersionRange.AtLeast "1.0")])
+    "F","1.0",[]
+    "F","1.1",[("G",VersionRange.AtLeast "1.0")]
 
-graph.Add(("G","1.0"),[])
+    "G","1.0",[]
+]
 
-let discovery = 
-  { new IDiscovery with
-      member __.GetDirectDependencies(package,version) = graph.[package,version] |> Map.ofList
-      member __.GetVersions package = graph.Keys |> Seq.filter (fun (k,_) -> k = package) |> Seq.map snd }
+let discovery = DictionaryDiscovery graph
 
 [<Test>]
 let ``should analyze single node``() = 
