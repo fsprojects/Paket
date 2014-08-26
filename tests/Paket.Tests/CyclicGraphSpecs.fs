@@ -16,7 +16,7 @@ let graph = [
 ]
 
 [<Test>]
-let ``should analyze graph completely``() = 
-    let node = AnalyzeGraph (DictionaryDiscovery graph) ("A",VersionRange.AtLeast "3.3")
-    node.["A"] |> shouldEqual (VersionRange.Exactly "3.3")
-    node.["B"] |> shouldEqual (VersionRange.AtLeast "1.0")
+let ``should analyze graph completely``() =
+    let node = Resolve(DictionaryDiscovery graph, Map.add "A" (VersionRange.AtLeast "1.0") Map.empty)
+    node.["A"] |> shouldEqual "3.3"
+    node.["B"] |> shouldEqual "1.2"

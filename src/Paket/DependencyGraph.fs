@@ -80,14 +80,7 @@ let DictionaryDiscovery(graph : seq<string * string * (string * VersionRange) li
               |> Seq.filter (fun (p,_,_) -> p = package)
               |> Seq.map (fun (_,v,_) -> v) }
 
-let analyzeNode (discovery : IDiscovery) (package, versionRange : VersionRange) = 
-    let maxVersion = 
-        discovery.GetVersions package
-        |> Seq.filter versionRange.IsInRange
-        |> Seq.max
-    maxVersion, discovery.GetDirectDependencies(package, maxVersion)
-
-let mergeDependencies (d1 : Dependencies) (d2 : Dependencies) = 
+let private mergeDependencies (d1 : Dependencies) (d2 : Dependencies) = 
     let mutable dependencies = d1
     for dep in d2 do
         dependencies <- match Map.tryFind dep.Key dependencies with
@@ -95,22 +88,21 @@ let mergeDependencies (d1 : Dependencies) (d2 : Dependencies) =
                         | None -> Map.add dep.Key dep.Value dependencies
     dependencies
 
-let AnalyzeGraph (discovery : IDiscovery) (package, versionRange : VersionRange) : Dependencies = 
-    let cache = new HashSet<_>()
-    
-    let rec analyzeGraph (package, versionRange) = 
-        if not <| cache.Add(package, versionRange) then Map.empty
-        else 
-            let _, startDependencies = analyzeNode discovery (package, versionRange)
-            let mutable dependencies = startDependencies
-            for node in startDependencies do
-                dependencies <- mergeDependencies dependencies (analyzeGraph (node.Key, node.Value))
-            dependencies
-    
-    let maxVersion = 
-        discovery.GetVersions package
-        |> Seq.filter versionRange.IsInRange
-        |> Seq.max
-    
-    Map.add package (VersionRange.Exactly maxVersion) Map.empty 
-    |> mergeDependencies (analyzeGraph (package, versionRange))
+let Resolve(discovery : IDiscovery, dependencies:Dependencies) =      
+    let rec analyzeGraph fixedDependencies (dependencies:Dependencies) =
+        if Map.isEmpty dependencies then fixedDependencies else
+        let current = Seq.head dependencies
+        match Map.tryFind current.Key fixedDependencies with
+        | Some fixedVersion -> if current.Value.IsInRange fixedVersion then fixedDependencies else failwith "Conflict"
+        | None -> 
+            let maxVersion = 
+                discovery.GetVersions current.Key
+                |> Seq.filter current.Value.IsInRange
+                |> Seq.max
+
+            let newDependencies =               
+                mergeDependencies dependencies (discovery.GetDirectDependencies(current.Key, maxVersion))
+                |> Map.remove current.Key
+
+            analyzeGraph (Map.add current.Key maxVersion fixedDependencies) newDependencies
+    analyzeGraph Map.empty dependencies
