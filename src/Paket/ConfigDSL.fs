@@ -6,6 +6,11 @@ open System.Collections.Generic
 open Microsoft.FSharp.Compiler.Interactive.Shell
 open Paket.DependencyGraph
 
+type Config(dependencies : Dependency seq) =
+    let dependencyMap = dependencies |> Map.ofSeq
+    member __.Dependencies = dependencyMap
+    member __.Resolve(discovery : IDiscovery) = Resolve(discovery, dependencies)
+
 let initialCode = """
 let config = new System.Collections.Generic.Dictionary<string,string>()
 let source x = ()  // Todo
@@ -13,7 +18,7 @@ let source x = ()  // Todo
 let nuget x y = config.Add(x,y)
 """
 
-let private executeInScript source (executeInScript : FsiEvaluationSession -> unit) : Config = 
+let private executeInScript (executeInScript : FsiEvaluationSession -> unit) : Config = 
     let fsiConfig = FsiEvaluationSession.GetDefaultConfiguration()
     let commonOptions = [| "fsi.exe"; "--noninteractive" |]
     let sbOut = new Text.StringBuilder()
@@ -28,15 +33,13 @@ let private executeInScript source (executeInScript : FsiEvaluationSession -> un
             executeInScript session
             match session.EvalExpression "config" with
             | Some value -> 
-                value.ReflectionValue :?> Dictionary<string, string> 
-                |> Seq.fold (fun m x -> 
-                       Map.add x.Key { Source = source
-                                       Version = VersionRange.Parse x.Value } m) Map.empty
+                let dependencies =
+                    value.ReflectionValue :?> Dictionary<string, string>
+                    |> Seq.map (fun x -> x.Key,VersionRange.Parse x.Value)
+                Config(dependencies)
             | _ -> failwithf "Error: %s" <| sbErr.ToString()
         with _ -> failwithf "Error: %s" <| sbErr.ToString()
     with exn -> failwithf "FsiEvaluationSession could not be created. %s" <| sbErr.ToString()
 
-let FromCode source code : Config = executeInScript source (fun session -> session.EvalExpression code |> ignore)
-let ReadFromFile fileName : Config = executeInScript fileName (fun session -> session.EvalScript fileName)
-
-let (==>) c1 c2 = merge c1 c2
+let FromCode code : Config = executeInScript (fun session -> session.EvalExpression code |> ignore)
+let ReadFromFile fileName : Config = executeInScript (fun session -> session.EvalScript fileName)

@@ -1,7 +1,6 @@
 ﻿module Paket.DependencyGraph
 
 open System
-open System.Collections.Generic
 
 type VersionRange = 
     | AtLeast of string
@@ -47,21 +46,6 @@ let filterVersions (version : VersionRange) versions = versions |> List.filter v
 
 type Dependency = string * VersionRange
 type Dependencies = Map<string,VersionRange>
-
-type ConfigValue = 
-    { Source : string
-      Version : VersionRange }
-
-type Config = Map<string, ConfigValue>
-
-// TODO make this correct        
-let merge (config1 : Config) (config2 : Config) = 
-    config2 |> Seq.fold (fun m x -> 
-                   match Map.tryFind x.Key m with
-                   | Some v -> 
-                       if v.Version > x.Value.Version then m
-                       else Map.add x.Key x.Value m
-                   | None -> Map.add x.Key x.Value m) config1
 
 type IDiscovery = 
     abstract GetDirectDependencies : string * string -> Dependency list
