@@ -1,7 +1,6 @@
 ﻿module Paket.CyclicGraphSpecs
 
 open Paket
-open Paket.DependencyGraph
 open NUnit.Framework
 open FsUnit
 
@@ -17,6 +16,6 @@ let graph = [
 
 [<Test>]
 let ``should analyze graph completely``() =
-    let resolved = Resolve(DictionaryDiscovery graph, ["A",VersionRange.AtLeast "1.0"])
+    let resolved = Resolver.Resolve(Discovery.DictionaryDiscovery graph, ["A",VersionRange.AtLeast "1.0"])
     resolved.["A"] |> shouldEqual (ResolvedVersion.Resolved "3.3")
     resolved.["B"] |> shouldEqual (ResolvedVersion.Resolved "1.2")

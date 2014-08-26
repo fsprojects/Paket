@@ -1,9 +1,7 @@
 module Paket.ResolveConfigSpecs
 
 open Paket
-open Paket.DependencyGraph
 open NUnit.Framework
-open Paket.ConfigDSL
 open FsUnit
 
 let config1 = """
@@ -27,11 +25,11 @@ let graph = [
     "log","1.2",[]
 ]
 
-let discovery = DictionaryDiscovery graph
+let discovery = Discovery.DictionaryDiscovery graph
 
 [<Test>]
 let ``should resolve simple config1``() = 
-    let cfg = FromCode config1
+    let cfg = Config.FromCode config1
     let resolved = cfg.Resolve(discovery)
     resolved.["Rx-Main"] |> shouldEqual (ResolvedVersion.Resolved "2.0")
     resolved.["Rx-Core"] |> shouldEqual (ResolvedVersion.Resolved "2.1")

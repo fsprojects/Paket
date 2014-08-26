@@ -1,9 +1,7 @@
 module Paket.LoadConfigSpecs
 
 open Paket
-open Paket.DependencyGraph
 open NUnit.Framework
-open Paket.ConfigDSL
 open FsUnit
 
 let config1 = """
@@ -17,7 +15,7 @@ nuget "SignalR" "= 3.3.2"
 
 [<Test>]
 let ``should read simple config1``() = 
-    let cfg = FromCode config1
+    let cfg = Config.FromCode config1
     cfg.DirectDependencies.["Rx-Main"] |> shouldEqual (VersionRange.Between("2.0", "3.0"))
     cfg.DirectDependencies.["Castle.Windsor-log4net"] |> shouldEqual (VersionRange.Between("3.2", "4.0"))
     cfg.DirectDependencies.["FAKE"] |> shouldEqual (VersionRange.Exactly "1.1")
@@ -35,7 +33,7 @@ nuget "MinPackage" "1.1.3"
 
 [<Test>]
 let ``should read simple with additional F# code``() = 
-    let cfg = FromCode config2
+    let cfg = Config.FromCode config2
     cfg.DirectDependencies.["Rx-Main"] |> shouldEqual (VersionRange.Between("2.2", "3.0"))
     cfg.DirectDependencies.["FAKE"] |> shouldEqual (VersionRange.Between("3.0", "4.0"))
     cfg.DirectDependencies.["MinPackage"] |> shouldEqual (VersionRange.AtLeast "1.1.3")

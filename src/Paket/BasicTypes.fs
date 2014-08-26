@@ -35,10 +35,10 @@ type DefindedDependency = {
     ReferencedPackage : string
     ReferencedVersion : VersionRange }
 
-type ResolvedVersion =
-| Resolved of string
-| Conflict of DefindedDependency * DefindedDependency
-
 type IDiscovery = 
     abstract GetDirectDependencies : string * string -> (string * VersionRange) list
     abstract GetVersions : string -> string seq
+
+type ResolvedVersion =
+| Resolved of string
+| Conflict of DefindedDependency * DefindedDependency

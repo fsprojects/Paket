@@ -1,7 +1,6 @@
 ﻿module Paket.DependencyGraphSpecs
 
 open Paket
-open Paket.DependencyGraph
 open NUnit.Framework
 open FsUnit
 
@@ -35,11 +34,11 @@ let graph = [
     "G","1.0",[]
 ]
 
-let discovery = DictionaryDiscovery graph
+let discovery = Discovery.DictionaryDiscovery graph
 
 [<Test>]
 let ``should analyze graph one level deep``() = 
-    let resolved = Resolve(discovery, ["FAKE",VersionRange.AtLeast "3.3"])
+    let resolved = Resolver.Resolve(discovery, ["FAKE",VersionRange.AtLeast "3.3"])
     resolved.["FAKE"] |> shouldEqual (ResolvedVersion.Resolved "4.0")
     resolved.["A"] |> shouldEqual (ResolvedVersion.Resolved "3.3")
     resolved.["B"] |> shouldEqual (ResolvedVersion.Resolved "1.3")
@@ -49,7 +48,7 @@ let ``should analyze graph one level deep``() =
 
 [<Test>]
 let ``should analyze graph completly``() = 
-    let resolved = Resolve(discovery, ["FAKE",VersionRange.AtLeast "3.3"])
+    let resolved = Resolver.Resolve(discovery, ["FAKE",VersionRange.AtLeast "3.3"])
     resolved.["FAKE"] |> shouldEqual (ResolvedVersion.Resolved "4.0")
     resolved.["E"] |> shouldEqual (ResolvedVersion.Resolved "2.1")
     resolved.["F"] |> shouldEqual (ResolvedVersion.Resolved "1.1")

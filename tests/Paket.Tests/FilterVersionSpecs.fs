@@ -1,7 +1,6 @@
 ﻿module Paket.FilterVersionSpecs
 
 open Paket
-open Paket.DependencyGraph
 open NUnit.Framework
 open FsUnit
 
