@@ -34,11 +34,10 @@ let graph = [
     "G","1.0",[]
 ]
 
-let discovery = Discovery.DictionaryDiscovery graph
 
 [<Test>]
 let ``should analyze graph one level deep``() = 
-    let resolved = Resolver.Resolve(discovery, ["FAKE",VersionRange.AtLeast "3.3"])
+    let resolved = Resolver.Resolve(Discovery.DictionaryDiscovery graph, ["FAKE",VersionRange.AtLeast "3.3"])
     resolved.["FAKE"] |> shouldEqual (ResolvedVersion.Resolved "4.0")
     resolved.["A"] |> shouldEqual (ResolvedVersion.Resolved "3.3")
     resolved.["B"] |> shouldEqual (ResolvedVersion.Resolved "1.3")
@@ -48,8 +47,39 @@ let ``should analyze graph one level deep``() =
 
 [<Test>]
 let ``should analyze graph completly``() = 
-    let resolved = Resolver.Resolve(discovery, ["FAKE",VersionRange.AtLeast "3.3"])
+    let resolved = Resolver.Resolve(Discovery.DictionaryDiscovery graph, ["FAKE",VersionRange.AtLeast "3.3"])
     resolved.["FAKE"] |> shouldEqual (ResolvedVersion.Resolved "4.0")
     resolved.["E"] |> shouldEqual (ResolvedVersion.Resolved "2.1")
     resolved.["F"] |> shouldEqual (ResolvedVersion.Resolved "1.1")
     resolved.["G"] |> shouldEqual (ResolvedVersion.Resolved "1.0")
+
+let graph2 = [
+    "A","1.0",["B",VersionRange.Exactly "1.1";"C",VersionRange.Exactly "2.4"]
+    "B","1.1",["D",VersionRange.Between("1.3","1.6")]
+    "C","2.4",["D",VersionRange.Between("1.4","1.7")]
+    "D","1.3",[]
+    "D","1.4",[]
+    "D","1.5",[]
+    "D","1.6",[]
+    "D","1.7",[]
+    "E","1.0",[]
+]
+
+[<Test>]
+let ``should analyze graph2 completely``() =
+    let resolved = Resolver.Resolve(Discovery.DictionaryDiscovery graph2, ["A",VersionRange.AtLeast "1.0"])
+    resolved.["A"] |> shouldEqual (ResolvedVersion.Resolved "1.0")
+    resolved.["B"] |> shouldEqual (ResolvedVersion.Resolved "1.1")
+    resolved.["C"] |> shouldEqual (ResolvedVersion.Resolved "2.4")
+    resolved.["D"] |> shouldEqual (ResolvedVersion.Resolved "1.5")
+
+    resolved.ContainsKey "E" |> shouldEqual false
+
+[<Test>]
+let ``should analyze graph2 completely with multiple starting nodes``() =
+    let resolved = Resolver.Resolve(Discovery.DictionaryDiscovery graph2, ["A",VersionRange.AtLeast "1.0"; "E",VersionRange.AtLeast "1.0"])
+    resolved.["A"] |> shouldEqual (ResolvedVersion.Resolved "1.0")
+    resolved.["B"] |> shouldEqual (ResolvedVersion.Resolved "1.1")
+    resolved.["C"] |> shouldEqual (ResolvedVersion.Resolved "2.4")
+    resolved.["D"] |> shouldEqual (ResolvedVersion.Resolved "1.5")
+    resolved.["E"] |> shouldEqual (ResolvedVersion.Resolved "1.0")
