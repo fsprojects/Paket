@@ -7,8 +7,8 @@ open Microsoft.FSharp.Compiler.Interactive.Shell
 open Paket.DependencyGraph
 
 type Config(dependencies : Dependency seq) =
-    let dependencyMap = dependencies |> Map.ofSeq
-    member __.Dependencies = dependencyMap
+    let dependencyMap = Map.ofSeq dependencies
+    member __.DirectDependencies = dependencyMap
     member __.Resolve(discovery : IDiscovery) = Resolve(discovery, dependencies)
 
 let initialCode = """
