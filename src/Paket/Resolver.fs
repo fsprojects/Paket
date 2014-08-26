@@ -18,7 +18,11 @@ let private shrink(s1:Shrinked, s2:Shrinked) =
         | Exactly v1, Exactly v2 when v1 = v2 ->  s1
         | Between(min1, max1), Exactly v2 when min1 <= v2 && max1 > v2 -> s2
         | Exactly v1, Between(min2, max2) when min2 <= v1 && max2 > v1 -> s2
-        | Between(min1, max1), Between(min2, max2) -> Shrinked.Ok { version1 with ReferencedVersion = VersionRange.Between(max min1 min2, min max1 max2) } // TODO:
+        | Between(min1, max1), Between(min2, max2) ->
+            let newMin = max min1 min2
+            let newMax = min max1 max2
+            if newMin > newMax then Shrinked.Conflict(version1, version2) else
+            Shrinked.Ok { version1 with ReferencedVersion = VersionRange.Between(newMin, newMax) } // TODO:
         | _ -> Shrinked.Conflict(version1, version2)
     | _ -> s1
 

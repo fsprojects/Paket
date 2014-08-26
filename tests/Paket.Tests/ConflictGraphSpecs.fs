@@ -15,12 +15,29 @@ let graph = [
 ]
 
 [<Test>]
-let ``should analyze graph completely``() =
+let ``should analyze graph and report conflict``() =
     let resolved = Resolver.Resolve(Discovery.DictionaryDiscovery graph, ["A",VersionRange.AtLeast "1.0"])
     resolved.["A"] |> shouldEqual (ResolvedVersion.Resolved "1.0")
     resolved.["B"] |> shouldEqual (ResolvedVersion.Resolved "1.1")
     resolved.["C"] |> shouldEqual (ResolvedVersion.Resolved "2.4")
-    resolved.["D"] |> shouldEqual (ResolvedVersion.Conflict ({DefiningPackage = "B"; DefiningVersion = "1.1"; ReferencedPackage = "D"; ReferencedVersion = Exactly "1.4";},
-                                                             {DefiningPackage = "C"; DefiningVersion = "2.4"; ReferencedPackage = "D"; ReferencedVersion = Exactly "1.6";}))
+    resolved.["D"] |> shouldEqual (ResolvedVersion.Conflict ({DefiningPackage = "B"; DefiningVersion = "1.1"; ReferencedPackage = "D"; ReferencedVersion = Exactly "1.4"},
+                                                             {DefiningPackage = "C"; DefiningVersion = "2.4"; ReferencedPackage = "D"; ReferencedVersion = Exactly "1.6"}))
     resolved.["E"] |> shouldEqual (ResolvedVersion.Resolved "4.3")
     resolved.["F"] |> shouldEqual (ResolvedVersion.Resolved "1.2")
+
+let graph2 = [
+    "A","1.0",["B",VersionRange.Exactly "1.1";"C",VersionRange.Exactly "2.4"]
+    "B","1.1",["D",VersionRange.Between("1.4","1.5")]
+    "C","2.4",["D",VersionRange.Between("1.6","1.7")]
+    "D","1.4",[]
+    "D","1.6",[]
+]
+
+[<Test>]
+let ``should analyze graph2 and report conflict``() =
+    let resolved = Resolver.Resolve(Discovery.DictionaryDiscovery graph2, ["A",VersionRange.AtLeast "1.0"])
+    resolved.["A"] |> shouldEqual (ResolvedVersion.Resolved "1.0")
+    resolved.["B"] |> shouldEqual (ResolvedVersion.Resolved "1.1")
+    resolved.["C"] |> shouldEqual (ResolvedVersion.Resolved "2.4")
+    resolved.["D"] |> shouldEqual (ResolvedVersion.Conflict ({DefiningPackage = "B"; DefiningVersion = "1.1"; ReferencedPackage = "D"; ReferencedVersion = Between ("1.4","1.5")},
+                                                             {DefiningPackage = "C"; DefiningVersion = "2.4"; ReferencedPackage = "D"; ReferencedVersion = Between ("1.6","1.7")}))
