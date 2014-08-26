@@ -40,17 +40,17 @@ let discovery = DictionaryDiscovery graph
 [<Test>]
 let ``should analyze graph one level deep``() = 
     let resolved = Resolve(discovery, ["FAKE",VersionRange.AtLeast "3.3"])
-    resolved.["FAKE"] |> shouldEqual (VersionRange.Exactly "4.0")
-    resolved.["A"] |> shouldEqual (VersionRange.Exactly "3.3")
-    resolved.["B"] |> shouldEqual (VersionRange.Exactly "1.3")
-    resolved.["C"] |> shouldEqual (VersionRange.Exactly "1.1")
+    resolved.["FAKE"] |> shouldEqual (ResolvedVersion.Resolved "4.0")
+    resolved.["A"] |> shouldEqual (ResolvedVersion.Resolved "3.3")
+    resolved.["B"] |> shouldEqual (ResolvedVersion.Resolved "1.3")
+    resolved.["C"] |> shouldEqual (ResolvedVersion.Resolved "1.1")
 
     resolved.ContainsKey "D" |> shouldEqual false
 
 [<Test>]
 let ``should analyze graph completly``() = 
     let resolved = Resolve(discovery, ["FAKE",VersionRange.AtLeast "3.3"])
-    resolved.["FAKE"] |> shouldEqual (VersionRange.Exactly "4.0")
-    resolved.["E"] |> shouldEqual (VersionRange.Exactly "2.1")
-    resolved.["F"] |> shouldEqual (VersionRange.Exactly "1.1")
-    resolved.["G"] |> shouldEqual (VersionRange.Exactly "1.0")
+    resolved.["FAKE"] |> shouldEqual (ResolvedVersion.Resolved "4.0")
+    resolved.["E"] |> shouldEqual (ResolvedVersion.Resolved "2.1")
+    resolved.["F"] |> shouldEqual (ResolvedVersion.Resolved "1.1")
+    resolved.["G"] |> shouldEqual (ResolvedVersion.Resolved "1.0")

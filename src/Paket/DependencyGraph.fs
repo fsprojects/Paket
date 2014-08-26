@@ -31,17 +31,24 @@ type VersionRange =
         | Between(min, max) -> version >= min && version < max
         | Conflict _ -> false
 
+type DefindedDependency = {
+    DefiningPackage : string
+    DefiningVersion : string
+    ReferencedPackage : string
+    ReferencedVersion : VersionRange }
+
 /// Calculates the logical conjunction of the given version requirements
-let Shrink(version1, version2) = 
-    match version1, version2 with
-    | AtLeast v1, AtLeast v2 -> VersionRange.AtLeast(max v1 v2)
-    | AtLeast v1, Exactly v2 when v2 >= v1 -> VersionRange.Exactly v2
-    | Exactly v1, AtLeast v2 when v1 >= v2 -> VersionRange.Exactly v1
-    | Exactly v1, Exactly v2 when v1 = v2 -> VersionRange.Exactly v1
-    | Between(min1, max1), Exactly v2 when min1 <= v2 && max1 > v2 -> VersionRange.Exactly v2
-    | Exactly v1, Between(min2, max2) when min2 <= v1 && max2 > v1 -> VersionRange.Exactly v1
-    | Between(min1, max1), Between(min2, max2) -> VersionRange.Between(max min1 min2, min max1 max2)
-    | _ -> VersionRange.Conflict(version1,version2)
+let Shrink(version1:DefindedDependency, version2:DefindedDependency) = 
+    match version1.ReferencedVersion, version2.ReferencedVersion with
+    | AtLeast v1, AtLeast v2 when v1 >= v2 -> version1
+    | AtLeast _, AtLeast _ -> version2
+    | AtLeast v1, Exactly v2 when v2 >= v1 -> version2
+    | Exactly v1, AtLeast v2 when v1 >= v2 -> version1
+    | Exactly v1, Exactly v2 when v1 = v2 -> version1
+    | Between(min1, max1), Exactly v2 when min1 <= v2 && max1 > v2 -> version2
+    | Exactly v1, Between(min2, max2) when min2 <= v1 && max2 > v1 -> version1
+    | Between(min1, max1), Between(min2, max2) -> { version1 with ReferencedVersion = VersionRange.Between(max min1 min2, min max1 max2) } // TODO:
+    | _ -> { version1 with ReferencedVersion = VersionRange.Conflict(version1.ReferencedVersion, version2.ReferencedVersion)} // TODO:
 
 let filterVersions (version : VersionRange) versions = versions |> List.filter version.IsInRange
 
@@ -65,37 +72,40 @@ let DictionaryDiscovery(graph : seq<string * string * Dependency list>) =
               |> Seq.filter (fun (p,_,_) -> p = package)
               |> Seq.map (fun (_,v,_) -> v) }
 
+type ResolvedVersion =
+| Resolved of string
+| ResolvingConflict of DefindedDependency
 
 let Resolve(discovery : IDiscovery, dependencies:Dependency seq) =      
-    let rec analyzeGraph (fixedDependencies:Dependencies)  (dependencies:Dependencies) =
+    let rec analyzeGraph fixedDependencies  (dependencies:Map<string,DefindedDependency>) =
         if Map.isEmpty dependencies then fixedDependencies else
         let current = Seq.head dependencies
 
-        match current.Value with
-        | Conflict _ -> analyzeGraph (Map.add current.Key current.Value fixedDependencies) (Map.remove current.Key dependencies)
+        match current.Value.ReferencedVersion with
+        | Conflict _  -> analyzeGraph (Map.add current.Key (ResolvedVersion.ResolvingConflict current.Value) fixedDependencies) (Map.remove current.Key dependencies)
         | _ ->
             match Map.tryFind current.Key fixedDependencies with
-            | Some (Exactly fixedVersion) -> if current.Value.IsInRange fixedVersion then fixedDependencies else failwith "Conflict"
+            | Some (Resolved fixedVersion) -> if current.Value.ReferencedVersion.IsInRange fixedVersion then fixedDependencies else failwith "Conflict"
             | _ ->            
                 let maxVersion = 
                     discovery.GetVersions current.Key
-                    |> Seq.filter current.Value.IsInRange
+                    |> Seq.filter current.Value.ReferencedVersion.IsInRange
                     |> Seq.max
 
                 let mutable newDependencies = dependencies
 
                 for package,version in discovery.GetDirectDependencies(current.Key, maxVersion) do
+                    let newDependency = { DefiningPackage = current.Key; DefiningVersion = maxVersion; ReferencedPackage = package; ReferencedVersion = version}
                     newDependencies <- 
                         match Map.tryFind package newDependencies with
-                        | Some oldDependency -> 
-    //                        match Shrink(oldDependency, version) with
-    //                        | VersionRange.Conflict(v1,v2) -> failwithf "Version conflict for package %s. Package %s %s wants %s %A but package %s %s wants %s %A." package current.Key maxVersion current.Key v1 package maxVersion current.Key v2
-    //                        | correctVersion -> Map.add package correctVersion newDependencies
-
-                              Map.add package (Shrink(oldDependency, version)) newDependencies
-                        | None -> Map.add package version newDependencies
+                        | Some oldDependency -> Map.add package (Shrink(oldDependency,newDependency)) newDependencies
+                        | None -> Map.add package newDependency newDependencies
 
                 newDependencies <- Map.remove current.Key newDependencies
 
-                analyzeGraph (Map.add current.Key (VersionRange.Exactly maxVersion) fixedDependencies) newDependencies
-    analyzeGraph Map.empty (Map.ofSeq dependencies)
+                analyzeGraph (Map.add current.Key (ResolvedVersion.Resolved maxVersion) fixedDependencies) newDependencies
+
+    dependencies
+    |> Seq.map (fun (p,v) -> p,{ DefiningPackage = ""; DefiningVersion = "";  ReferencedPackage = p; ReferencedVersion = v})
+    |> Map.ofSeq
+    |> analyzeGraph Map.empty

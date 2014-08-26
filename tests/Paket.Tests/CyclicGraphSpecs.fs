@@ -18,5 +18,5 @@ let graph = [
 [<Test>]
 let ``should analyze graph completely``() =
     let resolved = Resolve(DictionaryDiscovery graph, ["A",VersionRange.AtLeast "1.0"])
-    resolved.["A"] |> shouldEqual (VersionRange.Exactly "3.3")
-    resolved.["B"] |> shouldEqual (VersionRange.Exactly "1.2")
+    resolved.["A"] |> shouldEqual (ResolvedVersion.Resolved "3.3")
+    resolved.["B"] |> shouldEqual (ResolvedVersion.Resolved "1.2")

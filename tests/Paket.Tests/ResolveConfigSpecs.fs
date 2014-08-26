@@ -33,9 +33,9 @@ let discovery = DictionaryDiscovery graph
 let ``should resolve simple config1``() = 
     let cfg = FromCode config1
     let resolved = cfg.Resolve(discovery)
-    resolved.["Rx-Main"] |> shouldEqual (VersionRange.Exactly "2.0")
-    resolved.["Rx-Core"] |> shouldEqual (VersionRange.Exactly "2.1")
-    resolved.["Castle.Windsor-log4net"] |> shouldEqual (VersionRange.Exactly "3.3")
-    resolved.["Castle.Windsor"] |> shouldEqual (VersionRange.Exactly "2.1")
-    resolved.["log4net"] |> shouldEqual (VersionRange.Exactly "1.1")
-    resolved.["log"] |> shouldEqual (VersionRange.Exactly "1.2")
+    resolved.["Rx-Main"] |> shouldEqual (ResolvedVersion.Resolved "2.0")
+    resolved.["Rx-Core"] |> shouldEqual (ResolvedVersion.Resolved "2.1")
+    resolved.["Castle.Windsor-log4net"] |> shouldEqual (ResolvedVersion.Resolved "3.3")
+    resolved.["Castle.Windsor"] |> shouldEqual (ResolvedVersion.Resolved "2.1")
+    resolved.["log4net"] |> shouldEqual (ResolvedVersion.Resolved "1.1")
+    resolved.["log"] |> shouldEqual (ResolvedVersion.Resolved "1.2")

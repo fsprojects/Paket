@@ -18,9 +18,9 @@ let graph = [
 [<Test>]
 let ``should analyze graph completely``() =
     let resolved = Resolve(DictionaryDiscovery graph, ["A",VersionRange.AtLeast "1.0"])
-    resolved.["A"] |> shouldEqual (VersionRange.Exactly "1.0")
-    resolved.["B"] |> shouldEqual (VersionRange.Exactly "1.1")
-    resolved.["C"] |> shouldEqual (VersionRange.Exactly "2.4")
-    resolved.["D"] |> shouldEqual (VersionRange.Conflict (VersionRange.Exactly "1.4",VersionRange.Exactly "1.6"))
-    resolved.["E"] |> shouldEqual (VersionRange.Exactly "4.3")
-    resolved.["F"] |> shouldEqual (VersionRange.Exactly "1.2")
+    resolved.["A"] |> shouldEqual (ResolvedVersion.Resolved "1.0")
+    resolved.["B"] |> shouldEqual (ResolvedVersion.Resolved "1.1")
+    resolved.["C"] |> shouldEqual (ResolvedVersion.Resolved "2.4")
+    resolved.["D"] |> shouldEqual (ResolvedVersion.ResolvingConflict {DefiningPackage = "B"; DefiningVersion = "1.1"; ReferencedPackage = "D"; ReferencedVersion = Conflict (Exactly "1.4",Exactly "1.6");})
+    resolved.["E"] |> shouldEqual (ResolvedVersion.Resolved "4.3")
+    resolved.["F"] |> shouldEqual (ResolvedVersion.Resolved "1.2")
