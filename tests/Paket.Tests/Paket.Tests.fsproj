@@ -59,12 +59,13 @@
   <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\NuGet.targets')" />
   <ItemGroup>
     <Compile Include="FsUnit.fs" />
-    <Compile Include="ResolveConfigSpecs.fs" />
     <Compile Include="VersionComparisionSpecs.fs" />
     <Compile Include="FilterVersionSpecs.fs" />
     <Compile Include="DependencyGraphSpecs.fs" />
     <Compile Include="CyclicGraphSpecs.fs" />
+    <Compile Include="ConflictGraphSpecs.fs" />
     <Compile Include="LoadConfigSpecs.fs" />
+    <Compile Include="ResolveConfigSpecs.fs" />
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>

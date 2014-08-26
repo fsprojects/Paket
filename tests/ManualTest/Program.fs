@@ -11,5 +11,5 @@ let graph = [
 let discovery = DictionaryDiscovery graph
 
 for x in completeConfig.Resolve(discovery) do
-    printfn "%s => %s" x.Key x.Value
+    printfn "%s => %A" x.Key x.Value
 System.Console.ReadKey() |> ignore

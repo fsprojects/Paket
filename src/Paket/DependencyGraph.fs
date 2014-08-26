@@ -6,7 +6,7 @@ type VersionRange =
     | AtLeast of string
     | Exactly of string
     | Between of string * string
-    | Conflict of VersionRange
+    | Conflict of VersionRange * VersionRange
     
     static member Parse(text : string) : VersionRange = 
         // TODO: Make this pretty
@@ -41,6 +41,7 @@ let Shrink(version1, version2) =
     | Between(min1, max1), Exactly v2 when min1 <= v2 && max1 > v2 -> VersionRange.Exactly v2
     | Exactly v1, Between(min2, max2) when min2 <= v1 && max2 > v1 -> VersionRange.Exactly v1
     | Between(min1, max1), Between(min2, max2) -> VersionRange.Between(max min1 min2, min max1 max2)
+    | _ -> VersionRange.Conflict(version1,version2)
 
 let filterVersions (version : VersionRange) versions = versions |> List.filter version.IsInRange
 
@@ -64,29 +65,37 @@ let DictionaryDiscovery(graph : seq<string * string * Dependency list>) =
               |> Seq.filter (fun (p,_,_) -> p = package)
               |> Seq.map (fun (_,v,_) -> v) }
 
-let private mergeDependencies (d1 : Dependencies) (d2 : Dependency seq) =
-    let mutable dependencies = d1
-    for package,version in d2 do
-        dependencies <- match Map.tryFind package dependencies with
-                        | Some d -> Map.add package (Shrink(d, version)) dependencies
-                        | None -> Map.add package version dependencies
-    dependencies
 
 let Resolve(discovery : IDiscovery, dependencies:Dependency seq) =      
-    let rec analyzeGraph fixedDependencies (dependencies:Dependencies) =
+    let rec analyzeGraph (fixedDependencies:Dependencies)  (dependencies:Dependencies) =
         if Map.isEmpty dependencies then fixedDependencies else
         let current = Seq.head dependencies
-        match Map.tryFind current.Key fixedDependencies with
-        | Some fixedVersion -> if current.Value.IsInRange fixedVersion then fixedDependencies else failwith "Conflict"
-        | None -> 
-            let maxVersion = 
-                discovery.GetVersions current.Key
-                |> Seq.filter current.Value.IsInRange
-                |> Seq.max
 
-            let newDependencies =               
-                mergeDependencies dependencies (discovery.GetDirectDependencies(current.Key, maxVersion))
-                |> Map.remove current.Key
+        match current.Value with
+        | Conflict _ -> analyzeGraph (Map.add current.Key current.Value fixedDependencies) (Map.remove current.Key dependencies)
+        | _ ->
+            match Map.tryFind current.Key fixedDependencies with
+            | Some (Exactly fixedVersion) -> if current.Value.IsInRange fixedVersion then fixedDependencies else failwith "Conflict"
+            | _ ->            
+                let maxVersion = 
+                    discovery.GetVersions current.Key
+                    |> Seq.filter current.Value.IsInRange
+                    |> Seq.max
 
-            analyzeGraph (Map.add current.Key maxVersion fixedDependencies) newDependencies
+                let mutable newDependencies = dependencies
+
+                for package,version in discovery.GetDirectDependencies(current.Key, maxVersion) do
+                    newDependencies <- 
+                        match Map.tryFind package newDependencies with
+                        | Some oldDependency -> 
+    //                        match Shrink(oldDependency, version) with
+    //                        | VersionRange.Conflict(v1,v2) -> failwithf "Version conflict for package %s. Package %s %s wants %s %A but package %s %s wants %s %A." package current.Key maxVersion current.Key v1 package maxVersion current.Key v2
+    //                        | correctVersion -> Map.add package correctVersion newDependencies
+
+                              Map.add package (Shrink(oldDependency, version)) newDependencies
+                        | None -> Map.add package version newDependencies
+
+                newDependencies <- Map.remove current.Key newDependencies
+
+                analyzeGraph (Map.add current.Key (VersionRange.Exactly maxVersion) fixedDependencies) newDependencies
     analyzeGraph Map.empty (Map.ofSeq dependencies)

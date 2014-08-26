@@ -32,3 +32,9 @@ let ``should shrink VersionRange by VersionRange``() =
     Shrink(VersionRange.Between("2.2", "4.4"), VersionRange.Between("1.1", "3.3")) |> shouldEqual (VersionRange.Between("2.2", "3.3"))
     Shrink(VersionRange.Between("2.2", "4.4"), VersionRange.Between("1.1", "5.5")) |> shouldEqual (VersionRange.Between("2.2", "4.4"))
     Shrink(VersionRange.Between("1.1", "5.5"), VersionRange.Between("2.2", "4.4")) |> shouldEqual (VersionRange.Between("2.2", "4.4"))
+
+
+[<Test>]
+let ``should detect conflict``() =
+    Shrink(VersionRange.Exactly "1.1", VersionRange.Exactly "2.1") 
+    |> shouldEqual (VersionRange.Conflict(VersionRange.Exactly "1.1", VersionRange.Exactly "2.1"))
