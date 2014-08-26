@@ -45,7 +45,8 @@ let Shrink(version1, version2) =
 
 let filterVersions (version : VersionRange) versions = versions |> List.filter version.IsInRange
 
-type Dependencies = Map<string, VersionRange>
+type Dependency = string * VersionRange
+type Dependencies = Map<string,VersionRange>
 
 type ConfigValue = 
     { Source : string
@@ -63,32 +64,31 @@ let merge (config1 : Config) (config2 : Config) =
                    | None -> Map.add x.Key x.Value m) config1
 
 type IDiscovery = 
-    abstract GetDirectDependencies : string * string -> Map<string, VersionRange>
+    abstract GetDirectDependencies : string * string -> Dependency list
     abstract GetVersions : string -> string seq
 
-let DictionaryDiscovery(graph : seq<string * string * (string * VersionRange) list>) = 
+let DictionaryDiscovery(graph : seq<string * string * Dependency list>) = 
     { new IDiscovery with
           member __.GetDirectDependencies(package, version) = 
             graph 
             |> Seq.filter (fun (p,v,_) -> p = package && v = version) 
             |> Seq.map (fun (_,_,d) -> d) 
             |> Seq.head 
-            |> Map.ofList
 
           member __.GetVersions package = 
               graph              
               |> Seq.filter (fun (p,_,_) -> p = package)
               |> Seq.map (fun (_,v,_) -> v) }
 
-let private mergeDependencies (d1 : Dependencies) (d2 : Dependencies) = 
+let private mergeDependencies (d1 : Dependencies) (d2 : Dependency seq) =
     let mutable dependencies = d1
-    for dep in d2 do
-        dependencies <- match Map.tryFind dep.Key dependencies with
-                        | Some d -> Map.add dep.Key (Shrink(d, dep.Value)) dependencies
-                        | None -> Map.add dep.Key dep.Value dependencies
+    for package,version in d2 do
+        dependencies <- match Map.tryFind package dependencies with
+                        | Some d -> Map.add package (Shrink(d, version)) dependencies
+                        | None -> Map.add package version dependencies
     dependencies
 
-let Resolve(discovery : IDiscovery, dependencies:Dependencies) =      
+let Resolve(discovery : IDiscovery, dependencies:Dependency seq) =      
     let rec analyzeGraph fixedDependencies (dependencies:Dependencies) =
         if Map.isEmpty dependencies then fixedDependencies else
         let current = Seq.head dependencies
@@ -105,4 +105,4 @@ let Resolve(discovery : IDiscovery, dependencies:Dependencies) =
                 |> Map.remove current.Key
 
             analyzeGraph (Map.add current.Key maxVersion fixedDependencies) newDependencies
-    analyzeGraph Map.empty dependencies
+    analyzeGraph Map.empty (Map.ofSeq dependencies)

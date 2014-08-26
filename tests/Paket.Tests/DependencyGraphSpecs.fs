@@ -39,7 +39,7 @@ let discovery = DictionaryDiscovery graph
 
 [<Test>]
 let ``should analyze graph one level deep``() = 
-    let node = Resolve(discovery, Map.add "FAKE" (VersionRange.AtLeast "3.3") Map.empty)
+    let node = Resolve(discovery, ["FAKE",VersionRange.AtLeast "3.3"])
     node.["FAKE"] |> shouldEqual "4.0"
     node.["A"] |> shouldEqual "3.3"
     node.["B"] |> shouldEqual "1.3"
@@ -49,7 +49,7 @@ let ``should analyze graph one level deep``() =
 
 [<Test>]
 let ``should analyze graph completly``() = 
-    let node = Resolve(discovery, Map.add "FAKE" (VersionRange.AtLeast "3.3") Map.empty)
+    let node = Resolve(discovery, ["FAKE",VersionRange.AtLeast "3.3"])
     node.["FAKE"] |> shouldEqual "4.0"
     node.["E"] |> shouldEqual "2.1"
     node.["F"] |> shouldEqual "1.1"
