@@ -25,12 +25,10 @@ let graph = [
     "log","1.2",[]
 ]
 
-let discovery = Discovery.DictionaryDiscovery graph
-
 [<Test>]
 let ``should resolve simple config1``() = 
     let cfg = Config.FromCode config1
-    let resolved = cfg.Resolve(discovery)
+    let resolved = cfg.Resolve(Discovery.DictionaryDiscovery graph)
     resolved.["Rx-Main"] |> shouldEqual (ResolvedVersion.Resolved "2.0")
     resolved.["Rx-Core"] |> shouldEqual (ResolvedVersion.Resolved "2.1")
     resolved.["Castle.Windsor-log4net"] |> shouldEqual (ResolvedVersion.Resolved "3.3")
