@@ -35,15 +35,23 @@ type Package =
       SourceType : string
       Source : string }
 
-type DefindedDependency = 
+type PackageDependency = 
     { DefiningPackage : string
       DefiningVersion : string
       DependentPackage : Package }
+
+type Dependency = 
+    | RootDependency of Package
+    | PackageDependency of PackageDependency
+    member this.DependentPackage = 
+        match this with
+        | RootDependency p -> p
+        | PackageDependency d -> d.DependentPackage
 
 type IDiscovery = 
     abstract GetDirectDependencies : string * string * string * string -> Package list
     abstract GetVersions : string -> string seq
 
 type ResolvedVersion = 
-    | Resolved of DefindedDependency
-    | Conflict of DefindedDependency * DefindedDependency
+    | Resolved of Dependency
+    | Conflict of Dependency * Dependency

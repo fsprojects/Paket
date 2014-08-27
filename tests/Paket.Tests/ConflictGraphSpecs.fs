@@ -21,8 +21,8 @@ let ``should analyze graph and report conflict``() =
     getVersion resolved.["A"] |> shouldEqual "1.0"
     getVersion resolved.["B"] |> shouldEqual "1.1"
     getVersion resolved.["C"] |> shouldEqual "2.4"
-    resolved.["D"] |> shouldEqual (ResolvedVersion.Conflict ({DefiningPackage = "B"; DefiningVersion = "1.1"; DependentPackage = { Name = "D"; VersionRange = Exactly "1.4"; SourceType = ""; Source = ""}},
-                                                             {DefiningPackage = "C"; DefiningVersion = "2.4"; DependentPackage = { Name = "D"; VersionRange = Exactly "1.6"; SourceType = ""; Source = ""}}))
+    resolved.["D"] |> shouldEqual (ResolvedVersion.Conflict (PackageDependency {DefiningPackage = "B"; DefiningVersion = "1.1"; DependentPackage = { Name = "D"; VersionRange = Exactly "1.4"; SourceType = ""; Source = ""}},
+                                                             PackageDependency {DefiningPackage = "C"; DefiningVersion = "2.4"; DependentPackage = { Name = "D"; VersionRange = Exactly "1.6"; SourceType = ""; Source = ""}}))
     getVersion resolved.["E"] |> shouldEqual "4.3"
     getDefiningPackage resolved.["E"] |> shouldEqual "B"
     getDefiningVersion resolved.["E"] |> shouldEqual "1.1"
@@ -44,5 +44,5 @@ let ``should analyze graph2 and report conflict``() =
     getVersion resolved.["A"] |> shouldEqual "1.0"
     getVersion resolved.["B"] |> shouldEqual "1.1"
     getVersion resolved.["C"] |> shouldEqual "2.4"
-    resolved.["D"] |> shouldEqual (ResolvedVersion.Conflict ({DefiningPackage = "B"; DefiningVersion = "1.1"; DependentPackage = { Name = "D"; VersionRange = Between ("1.4","1.5"); SourceType = ""; Source = ""}},
-                                                             {DefiningPackage = "C"; DefiningVersion = "2.4"; DependentPackage = { Name = "D"; VersionRange = Between ("1.6","1.7"); SourceType = ""; Source = ""}}))
+    resolved.["D"] |> shouldEqual (ResolvedVersion.Conflict (PackageDependency {DefiningPackage = "B"; DefiningVersion = "1.1"; DependentPackage = { Name = "D"; VersionRange = Between ("1.4","1.5"); SourceType = ""; Source = ""}},
+                                                             PackageDependency {DefiningPackage = "C"; DefiningVersion = "2.4"; DependentPackage = { Name = "D"; VersionRange = Between ("1.6","1.7"); SourceType = ""; Source = ""}}))
