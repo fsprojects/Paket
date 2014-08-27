@@ -32,6 +32,7 @@ type VersionRange =
 type Package = 
     { Name : string
       VersionRange : VersionRange
+      SourceType : string
       Source : string }
 
 type DefindedDependency = 
@@ -39,10 +40,11 @@ type DefindedDependency =
       DefiningVersion : string
       ReferencedPackage : string
       ReferencedVersion : VersionRange
+      SourceType : string
       Source : string }
 
 type IDiscovery = 
-    abstract GetDirectDependencies : string * string * string -> Package list
+    abstract GetDirectDependencies : string * string * string * string -> Package list
     abstract GetVersions : string -> string seq
 
 type ResolvedVersion = 

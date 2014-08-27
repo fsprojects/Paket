@@ -9,12 +9,12 @@ open Paket
 module private ConfigHelpers =
     let initialCode = """
 open System.Collections.Generic
-let __nuget = new Dictionary<string,string*string>()
+let __nuget = new Dictionary<string,string*string*string>()
 let mutable __nugetSource = ""
 
 let source url = __nugetSource <- url
 
-let nuget package version = __nuget.Add(package,(version,__nugetSource))
+let nuget package version = __nuget.Add(package,("nuget",__nugetSource,version))
 """
 
     let executeInScript (executeInScript : FsiEvaluationSession -> unit) = 
@@ -33,10 +33,10 @@ let nuget package version = __nuget.Add(package,(version,__nugetSource))
                 match session.EvalExpression "__nuget" with
                 | Some value -> 
                     let dependencies =
-                        value.ReflectionValue :?> Dictionary<string, string*string>
+                        value.ReflectionValue :?> Dictionary<string,string*string*string>
                         |> Seq.map (fun x -> 
-                            let version,source = x.Value
-                            { Name = x.Key; VersionRange = VersionRange.Parse version; Source = source })
+                            let sourceType,source,version = x.Value
+                            { Name = x.Key; VersionRange = VersionRange.Parse version; SourceType = sourceType; Source = source })
                     dependencies
                 | _ -> failwithf "Error: %s" <| sbErr.ToString()
             with _ -> failwithf "Error: %s" <| sbErr.ToString()

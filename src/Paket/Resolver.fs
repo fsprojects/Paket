@@ -32,11 +32,11 @@ let private addDependency package dependencies newDependency =
     | Some oldDependency -> Map.add package (shrink(oldDependency,newDependency)) dependencies
     | None -> Map.add package newDependency dependencies
     
-let private mergeDependencies (discovery : IDiscovery) source definingPackage definingVersion dependencies =
+let private mergeDependencies (discovery : IDiscovery) sourceType source definingPackage definingVersion dependencies =
     let mutable newDependencies = dependencies
 
-    for p in discovery.GetDirectDependencies(source, definingPackage, definingVersion) do
-        let newDependency = { DefiningPackage = definingPackage; DefiningVersion = definingVersion; ReferencedPackage = p.Name; ReferencedVersion = p.VersionRange; Source = p.Source }
+    for p in discovery.GetDirectDependencies(sourceType, source, definingPackage, definingVersion) do
+        let newDependency = { DefiningPackage = definingPackage; DefiningVersion = definingVersion; ReferencedPackage = p.Name; ReferencedVersion = p.VersionRange; SourceType = sourceType; Source = p.Source }
         newDependencies <- addDependency p.Name newDependencies newDependency            
 
     newDependencies
@@ -61,14 +61,14 @@ let Resolve(discovery : IDiscovery, dependencies:Package seq) =
                     |> Seq.filter d.ReferencedVersion.IsInRange
                     |> Seq.max
 
-                let resolvedPackage = { DefiningPackage = d.DefiningPackage; DefiningVersion = d.DefiningVersion; ReferencedPackage = definingPackage; ReferencedVersion = Exactly maxVersion; Source = d.Source}
+                let resolvedPackage = { DefiningPackage = d.DefiningPackage; DefiningVersion = d.DefiningVersion; ReferencedPackage = definingPackage; ReferencedVersion = Exactly maxVersion; SourceType = d.SourceType; Source = d.Source}
 
                 dependencies
-                |> mergeDependencies discovery d.Source definingPackage maxVersion
+                |> mergeDependencies discovery d.SourceType d.Source definingPackage maxVersion
                 |> Map.remove definingPackage
                 |> analyzeGraph (Map.add definingPackage (ResolvedVersion.Resolved resolvedPackage) fixedDependencies)
 
     dependencies
-    |> Seq.map (fun p -> p.Name,{ DefiningPackage = ""; DefiningVersion = ""; ReferencedPackage = p.Name; ReferencedVersion = p.VersionRange; Source = p.Source})
+    |> Seq.map (fun p -> p.Name,{ DefiningPackage = ""; DefiningVersion = ""; ReferencedPackage = p.Name; ReferencedVersion = p.VersionRange; SourceType = p.SourceType; Source = p.Source})
     |> Seq.fold (fun m (p,d) -> addDependency p m d) Map.empty
     |> analyzeGraph Map.empty
