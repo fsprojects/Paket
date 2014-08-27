@@ -26,36 +26,45 @@ let private shrink(s1:Shrinked, s2:Shrinked) =
         | _ -> Shrinked.Conflict(version1, version2)
     | _ -> s1
 
+let private addDependency package dependencies newDependency =
+    let newDependency = Shrinked.Ok newDependency    
+    match Map.tryFind package dependencies with
+    | Some oldDependency -> Map.add package (shrink(oldDependency,newDependency)) dependencies
+    | None -> Map.add package newDependency dependencies
+    
+let private mergeDependencies (discovery : IDiscovery) definingPackage definingVersion dependencies =
+    let mutable newDependencies = dependencies
+
+    for package,version in discovery.GetDirectDependencies(definingPackage, definingVersion) do
+        let newDependency = { DefiningPackage = definingPackage; DefiningVersion = definingVersion; ReferencedPackage = package; ReferencedVersion = version}
+        newDependencies <- addDependency package newDependencies newDependency            
+
+    newDependencies
+
 let Resolve(discovery : IDiscovery, dependencies:(string * VersionRange) seq) =      
     let rec analyzeGraph fixedDependencies (dependencies:Map<string,Shrinked>) =
         if Map.isEmpty dependencies then fixedDependencies else
         let current = Seq.head dependencies
+        let definingPackage = current.Key
 
         match current.Value with
-        | Shrinked.Conflict(c1,c2) -> analyzeGraph (Map.add current.Key (ResolvedVersion.Conflict(c1,c2)) fixedDependencies) (Map.remove current.Key dependencies)
+        | Shrinked.Conflict(c1,c2) -> analyzeGraph (Map.add definingPackage (ResolvedVersion.Conflict(c1,c2)) fixedDependencies) (Map.remove definingPackage dependencies)
         | Ok c -> 
-            match Map.tryFind current.Key fixedDependencies with
+            match Map.tryFind definingPackage fixedDependencies with
             | Some (Resolved fixedVersion) -> if c.ReferencedVersion.IsInRange fixedVersion then fixedDependencies else failwith "Conflict"
             | _ ->            
                 let maxVersion = 
-                    discovery.GetVersions current.Key
+                    discovery.GetVersions definingPackage
                     |> Seq.filter c.ReferencedVersion.IsInRange
                     |> Seq.max
 
-                let mutable newDependencies = dependencies
 
-                for package,version in discovery.GetDirectDependencies(current.Key, maxVersion) do
-                    let newDependency = Shrinked.Ok { DefiningPackage = current.Key; DefiningVersion = maxVersion; ReferencedPackage = package; ReferencedVersion = version}
-                    newDependencies <- 
-                        match Map.tryFind package newDependencies with
-                        | Some oldDependency -> Map.add package (shrink(oldDependency,newDependency)) newDependencies
-                        | None -> Map.add package newDependency newDependencies
-
-                newDependencies <- Map.remove current.Key newDependencies
-
-                analyzeGraph (Map.add current.Key (ResolvedVersion.Resolved maxVersion) fixedDependencies) newDependencies
+                dependencies
+                |> mergeDependencies discovery definingPackage maxVersion
+                |> Map.remove definingPackage
+                |> analyzeGraph (Map.add definingPackage (ResolvedVersion.Resolved maxVersion) fixedDependencies)
 
     dependencies
-    |> Seq.map (fun (p,v) -> p,Shrinked.Ok { DefiningPackage = ""; DefiningVersion = "";  ReferencedPackage = p; ReferencedVersion = v})
-    |> Map.ofSeq
+    |> Seq.map (fun (p,v) -> p,{ DefiningPackage = ""; DefiningVersion = "";  ReferencedPackage = p; ReferencedVersion = v})
+    |> Seq.fold (fun m (p,d) -> addDependency p m d) Map.empty
     |> analyzeGraph Map.empty

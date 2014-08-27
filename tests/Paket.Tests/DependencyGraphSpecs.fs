@@ -55,6 +55,7 @@ let ``should analyze graph completly``() =
 
 let graph2 = [
     "A","1.0",["B",VersionRange.Exactly "1.1";"C",VersionRange.Exactly "2.4"]
+    "A","1.1",["B",VersionRange.Exactly "1.1";"C",VersionRange.Exactly "2.4"]
     "B","1.1",["D",VersionRange.Between("1.3","1.6")]
     "C","2.4",["D",VersionRange.Between("1.4","1.7")]
     "D","1.3",[]
@@ -68,7 +69,7 @@ let graph2 = [
 [<Test>]
 let ``should analyze graph2 completely``() =
     let resolved = Resolver.Resolve(Discovery.DictionaryDiscovery graph2, ["A",VersionRange.AtLeast "1.0"])
-    resolved.["A"] |> shouldEqual (ResolvedVersion.Resolved "1.0")
+    resolved.["A"] |> shouldEqual (ResolvedVersion.Resolved "1.1")
     resolved.["B"] |> shouldEqual (ResolvedVersion.Resolved "1.1")
     resolved.["C"] |> shouldEqual (ResolvedVersion.Resolved "2.4")
     resolved.["D"] |> shouldEqual (ResolvedVersion.Resolved "1.5")
@@ -78,7 +79,7 @@ let ``should analyze graph2 completely``() =
 [<Test>]
 let ``should analyze graph2 completely with multiple starting nodes``() =
     let resolved = Resolver.Resolve(Discovery.DictionaryDiscovery graph2, ["A",VersionRange.AtLeast "1.0"; "E",VersionRange.AtLeast "1.0"])
-    resolved.["A"] |> shouldEqual (ResolvedVersion.Resolved "1.0")
+    resolved.["A"] |> shouldEqual (ResolvedVersion.Resolved "1.1")
     resolved.["B"] |> shouldEqual (ResolvedVersion.Resolved "1.1")
     resolved.["C"] |> shouldEqual (ResolvedVersion.Resolved "2.4")
     resolved.["D"] |> shouldEqual (ResolvedVersion.Resolved "1.5")
