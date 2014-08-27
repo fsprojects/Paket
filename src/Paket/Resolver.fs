@@ -10,7 +10,7 @@ type private Shrinked =
 let private shrink (s1 : Shrinked, s2 : Shrinked) = 
     match s1, s2 with
     | Ok version1, Ok version2 -> 
-        match version1.DependentPackage.VersionRange, version2.DependentPackage.VersionRange with
+        match version1.Referenced.VersionRange, version2.Referenced.VersionRange with
         | AtLeast v1, AtLeast v2 when v1 >= v2 -> s1
         | AtLeast _, AtLeast _ -> s2
         | AtLeast v1, Exactly v2 when v2 >= v1 -> s2
@@ -24,12 +24,12 @@ let private shrink (s1 : Shrinked, s2 : Shrinked) =
             if newMin > newMax then Shrinked.Conflict(version1, version2)
             else 
                 let shrinkedDependency = 
-                    { version1.DependentPackage with VersionRange = VersionRange.Between(newMin, newMax) }
+                    { version1.Referenced with VersionRange = VersionRange.Between(newMin, newMax) }
                 Shrinked.Ok(match version1 with
-                            | RootDependency _ -> RootDependency shrinkedDependency
-                            | PackageDependency d -> 
-                                PackageDependency { DefiningPackage = d.DefiningPackage
-                                                    DependentPackage = shrinkedDependency })
+                            | FromRoot _ -> FromRoot shrinkedDependency
+                            | FromPackage d -> 
+                                FromPackage { Defining = d.Defining
+                                              Referenced = shrinkedDependency })
         | _ -> Shrinked.Conflict(version1, version2)
     | _ -> s1
 
@@ -43,8 +43,8 @@ let private mergeDependencies (discovery : IDiscovery) (definingPackage:Package)
     let mutable newDependencies = dependencies
     for p in discovery.GetDirectDependencies(definingPackage.SourceType, definingPackage.Source, definingPackage.Name, version) do
         let newDependency = 
-            PackageDependency { DefiningPackage = { definingPackage with VersionRange = Exactly version}
-                                DependentPackage = 
+            FromPackage { Defining = { definingPackage with VersionRange = Exactly version}
+                          Referenced = 
                                     { Name = p.Name
                                       VersionRange = p.VersionRange
                                       SourceType = p.SourceType
@@ -60,42 +60,42 @@ let Resolve(discovery : IDiscovery, dependencies:Package seq) =
 
         match current.Value with
         | Shrinked.Conflict(c1,c2) -> analyzeGraph (Map.add resolvedName (ResolvedVersion.Conflict(c1,c2)) fixedDependencies) (Map.remove resolvedName dependencies)
-        | Ok referencedPackage -> 
+        | Ok dependency -> 
             match Map.tryFind resolvedName fixedDependencies with
             | Some (Resolved dependency) -> 
-                match dependency.DependentPackage.VersionRange with
-                | Exactly fixedVersion -> if referencedPackage.DependentPackage.VersionRange.IsInRange fixedVersion then fixedDependencies else failwith "Conflict"
+                match dependency.Referenced.VersionRange with
+                | Exactly fixedVersion -> if dependency.Referenced.VersionRange.IsInRange fixedVersion then fixedDependencies else failwith "Conflict"
                 | _ -> failwith "Not allowed"
             | _ ->            
                 let maxVersion = 
                     discovery.GetVersions resolvedName
-                    |> Seq.filter referencedPackage.DependentPackage.VersionRange.IsInRange
+                    |> Seq.filter dependency.Referenced.VersionRange.IsInRange
                     |> Seq.max
 
                 let resolvedPackage =
                     { Name = resolvedName
                       VersionRange = Exactly maxVersion
-                      SourceType = referencedPackage.DependentPackage.SourceType
-                      Source = referencedPackage.DependentPackage.Source }
+                      SourceType = dependency.Referenced.SourceType
+                      Source = dependency.Referenced.Source }
                 let resolvedDependency = 
-                    match referencedPackage with
-                    | RootDependency p -> 
-                        RootDependency resolvedPackage
-                    | PackageDependency d -> 
-                        PackageDependency { DefiningPackage = d.DefiningPackage
-                                            DependentPackage = resolvedPackage }
+                    match dependency with
+                    | FromRoot p -> 
+                        FromRoot resolvedPackage
+                    | FromPackage d -> 
+                        FromPackage { Defining = d.Defining
+                                      Referenced = resolvedPackage }
 
                 dependencies
-                |> mergeDependencies discovery referencedPackage.DependentPackage maxVersion
+                |> mergeDependencies discovery dependency.Referenced maxVersion
                 |> Map.remove resolvedName
                 |> analyzeGraph (Map.add resolvedName (ResolvedVersion.Resolved resolvedDependency) fixedDependencies)
 
     dependencies
     |> Seq.map (fun p -> 
            p.Name, 
-           RootDependency { Name = p.Name
-                            VersionRange = p.VersionRange
-                            SourceType = p.SourceType
-                            Source = p.Source })
+           FromRoot { Name = p.Name
+                      VersionRange = p.VersionRange
+                      SourceType = p.SourceType
+                      Source = p.Source })
     |> Seq.fold (fun m (p, d) -> addDependency p m d) Map.empty
     |> analyzeGraph Map.empty

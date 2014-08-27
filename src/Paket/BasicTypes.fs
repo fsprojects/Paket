@@ -36,16 +36,16 @@ type Package =
       Source : string }
 
 type PackageDependency = 
-    { DefiningPackage : Package
-      DependentPackage : Package }
+    { Defining : Package
+      Referenced : Package }
 
 type Dependency = 
-    | RootDependency of Package
-    | PackageDependency of PackageDependency
-    member this.DependentPackage = 
+    | FromRoot of Package
+    | FromPackage of PackageDependency
+    member this.Referenced = 
         match this with
-        | RootDependency p -> p
-        | PackageDependency d -> d.DependentPackage
+        | FromRoot p -> p
+        | FromPackage d -> d.Referenced
 
 type IDiscovery = 
     abstract GetDirectDependencies : string * string * string * string -> Package list
