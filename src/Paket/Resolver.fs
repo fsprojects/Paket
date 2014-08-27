@@ -32,41 +32,51 @@ let private addDependency package dependencies newDependency =
     | Some oldDependency -> Map.add package (shrink(oldDependency,newDependency)) dependencies
     | None -> Map.add package newDependency dependencies
     
-let private mergeDependencies (discovery : IDiscovery) sourceType source definingPackage definingVersion dependencies =
+let private mergeDependencies (discovery : IDiscovery) sourceType source definingPackage definingVersion dependencies = 
     let mutable newDependencies = dependencies
-
     for p in discovery.GetDirectDependencies(sourceType, source, definingPackage, definingVersion) do
-        let newDependency = { DefiningPackage = definingPackage; DefiningVersion = definingVersion; ReferencedPackage = p.Name; ReferencedVersion = p.VersionRange; SourceType = sourceType; Source = p.Source }
-        newDependencies <- addDependency p.Name newDependencies newDependency            
-
+        let newDependency = 
+            { DefiningPackage = definingPackage
+              DefiningVersion = definingVersion
+              ReferencedPackage = p.Name
+              ReferencedVersion = p.VersionRange
+              SourceType = sourceType
+              Source = p.Source }
+        newDependencies <- addDependency p.Name newDependencies newDependency
     newDependencies
 
 let Resolve(discovery : IDiscovery, dependencies:Package seq) =      
     let rec analyzeGraph fixedDependencies (dependencies:Map<string,Shrinked>) =
         if Map.isEmpty dependencies then fixedDependencies else
         let current = Seq.head dependencies
-        let definingPackage = current.Key
+        let resolvedName = current.Key
 
         match current.Value with
-        | Shrinked.Conflict(c1,c2) -> analyzeGraph (Map.add definingPackage (ResolvedVersion.Conflict(c1,c2)) fixedDependencies) (Map.remove definingPackage dependencies)
-        | Ok d -> 
-            match Map.tryFind definingPackage fixedDependencies with
+        | Shrinked.Conflict(c1,c2) -> analyzeGraph (Map.add resolvedName (ResolvedVersion.Conflict(c1,c2)) fixedDependencies) (Map.remove resolvedName dependencies)
+        | Ok referencedPackage -> 
+            match Map.tryFind resolvedName fixedDependencies with
             | Some (Resolved package) -> 
                 match package.ReferencedVersion with
-                | Exactly fixedVersion -> if d.ReferencedVersion.IsInRange fixedVersion then fixedDependencies else failwith "Conflict"
+                | Exactly fixedVersion -> if referencedPackage.ReferencedVersion.IsInRange fixedVersion then fixedDependencies else failwith "Conflict"
                 | _ -> failwith "Not allowed"
             | _ ->            
                 let maxVersion = 
-                    discovery.GetVersions definingPackage
-                    |> Seq.filter d.ReferencedVersion.IsInRange
+                    discovery.GetVersions resolvedName
+                    |> Seq.filter referencedPackage.ReferencedVersion.IsInRange
                     |> Seq.max
 
-                let resolvedPackage = { DefiningPackage = d.DefiningPackage; DefiningVersion = d.DefiningVersion; ReferencedPackage = definingPackage; ReferencedVersion = Exactly maxVersion; SourceType = d.SourceType; Source = d.Source}
+                let resolvedPackage = 
+                    { DefiningPackage = referencedPackage.DefiningPackage
+                      DefiningVersion = referencedPackage.DefiningVersion
+                      ReferencedPackage = resolvedName
+                      ReferencedVersion = Exactly maxVersion
+                      SourceType = referencedPackage.SourceType
+                      Source = referencedPackage.Source }
 
                 dependencies
-                |> mergeDependencies discovery d.SourceType d.Source definingPackage maxVersion
-                |> Map.remove definingPackage
-                |> analyzeGraph (Map.add definingPackage (ResolvedVersion.Resolved resolvedPackage) fixedDependencies)
+                |> mergeDependencies discovery referencedPackage.SourceType referencedPackage.Source resolvedName maxVersion
+                |> Map.remove resolvedName
+                |> analyzeGraph (Map.add resolvedName (ResolvedVersion.Resolved resolvedPackage) fixedDependencies)
 
     dependencies
     |> Seq.map (fun p -> p.Name,{ DefiningPackage = ""; DefiningVersion = ""; ReferencedPackage = p.Name; ReferencedVersion = p.VersionRange; SourceType = p.SourceType; Source = p.Source})
