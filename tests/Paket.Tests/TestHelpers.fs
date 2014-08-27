@@ -27,11 +27,13 @@ let getVersion resolved =
 
 let getDefiningPackage resolved =
     match resolved with
-    | ResolvedVersion.Resolved (PackageDependency x) -> x.DefiningPackage
+    | ResolvedVersion.Resolved (PackageDependency x) -> x.DefiningPackage.Name
 
 let getDefiningVersion resolved =
     match resolved with
-    | ResolvedVersion.Resolved (PackageDependency x) -> x.DefiningVersion
+    | ResolvedVersion.Resolved (PackageDependency x) -> 
+        match x.DefiningPackage.VersionRange with
+        | Exactly v -> v
 
 let getSourceType resolved =
     match resolved with

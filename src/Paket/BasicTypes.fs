@@ -36,8 +36,7 @@ type Package =
       Source : string }
 
 type PackageDependency = 
-    { DefiningPackage : string
-      DefiningVersion : string
+    { DefiningPackage : Package
       DependentPackage : Package }
 
 type Dependency = 

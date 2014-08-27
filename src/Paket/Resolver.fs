@@ -29,7 +29,6 @@ let private shrink (s1 : Shrinked, s2 : Shrinked) =
                             | RootDependency _ -> RootDependency shrinkedDependency
                             | PackageDependency d -> 
                                 PackageDependency { DefiningPackage = d.DefiningPackage
-                                                    DefiningVersion = d.DefiningVersion
                                                     DependentPackage = shrinkedDependency })
         | _ -> Shrinked.Conflict(version1, version2)
     | _ -> s1
@@ -40,16 +39,15 @@ let private addDependency package dependencies newDependency =
     | Some oldDependency -> Map.add package (shrink(oldDependency,newDependency)) dependencies
     | None -> Map.add package newDependency dependencies
     
-let private mergeDependencies (discovery : IDiscovery) sourceType source definingPackage definingVersion dependencies = 
+let private mergeDependencies (discovery : IDiscovery) (definingPackage:Package) version dependencies = 
     let mutable newDependencies = dependencies
-    for p in discovery.GetDirectDependencies(sourceType, source, definingPackage, definingVersion) do
+    for p in discovery.GetDirectDependencies(definingPackage.SourceType, definingPackage.Source, definingPackage.Name, version) do
         let newDependency = 
-            PackageDependency { DefiningPackage = definingPackage
-                                DefiningVersion = definingVersion
+            PackageDependency { DefiningPackage = { definingPackage with VersionRange = Exactly version}
                                 DependentPackage = 
                                     { Name = p.Name
                                       VersionRange = p.VersionRange
-                                      SourceType = sourceType
+                                      SourceType = p.SourceType
                                       Source = p.Source } }
         newDependencies <- addDependency p.Name newDependencies newDependency
     newDependencies
@@ -85,11 +83,10 @@ let Resolve(discovery : IDiscovery, dependencies:Package seq) =
                         RootDependency resolvedPackage
                     | PackageDependency d -> 
                         PackageDependency { DefiningPackage = d.DefiningPackage
-                                            DefiningVersion = d.DefiningVersion
                                             DependentPackage = resolvedPackage }
 
                 dependencies
-                |> mergeDependencies discovery referencedPackage.DependentPackage.SourceType referencedPackage.DependentPackage.Source resolvedName maxVersion
+                |> mergeDependencies discovery referencedPackage.DependentPackage maxVersion
                 |> Map.remove resolvedName
                 |> analyzeGraph (Map.add resolvedName (ResolvedVersion.Resolved resolvedDependency) fixedDependencies)
 
