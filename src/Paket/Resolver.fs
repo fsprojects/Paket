@@ -41,7 +41,7 @@ let private mergeDependencies (discovery : IDiscovery) definingPackage definingV
 
     newDependencies
 
-let Resolve(discovery : IDiscovery, dependencies:(string * VersionRange) seq) =      
+let Resolve(discovery : IDiscovery, dependencies:Package seq) =      
     let rec analyzeGraph fixedDependencies (dependencies:Map<string,Shrinked>) =
         if Map.isEmpty dependencies then fixedDependencies else
         let current = Seq.head dependencies
@@ -51,20 +51,22 @@ let Resolve(discovery : IDiscovery, dependencies:(string * VersionRange) seq) =
         | Shrinked.Conflict(c1,c2) -> analyzeGraph (Map.add definingPackage (ResolvedVersion.Conflict(c1,c2)) fixedDependencies) (Map.remove definingPackage dependencies)
         | Ok c -> 
             match Map.tryFind definingPackage fixedDependencies with
-            | Some (Resolved fixedVersion) -> if c.ReferencedVersion.IsInRange fixedVersion then fixedDependencies else failwith "Conflict"
+            | Some (Resolved package) -> 
+                match package.ReferencedVersion with
+                | Exactly fixedVersion -> if c.ReferencedVersion.IsInRange fixedVersion then fixedDependencies else failwith "Conflict"
+                | _ -> failwith "Not allowed"
             | _ ->            
                 let maxVersion = 
                     discovery.GetVersions definingPackage
                     |> Seq.filter c.ReferencedVersion.IsInRange
                     |> Seq.max
 
-
                 dependencies
                 |> mergeDependencies discovery definingPackage maxVersion
                 |> Map.remove definingPackage
-                |> analyzeGraph (Map.add definingPackage (ResolvedVersion.Resolved maxVersion) fixedDependencies)
+                |> analyzeGraph (Map.add definingPackage (ResolvedVersion.Resolved { DefiningPackage = c.DefiningPackage; DefiningVersion = c.DefiningVersion; ReferencedPackage = definingPackage; ReferencedVersion = Exactly maxVersion}) fixedDependencies)
 
     dependencies
-    |> Seq.map (fun (p,v) -> p,{ DefiningPackage = ""; DefiningVersion = "";  ReferencedPackage = p; ReferencedVersion = v})
+    |> Seq.map (fun p -> p.Name,{ DefiningPackage = ""; DefiningVersion = ""; ReferencedPackage = p.Name; ReferencedVersion = p.VersionRange})
     |> Seq.fold (fun m (p,d) -> addDependency p m d) Map.empty
     |> analyzeGraph Map.empty

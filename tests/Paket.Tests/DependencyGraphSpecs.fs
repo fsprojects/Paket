@@ -3,6 +3,7 @@
 open Paket
 open NUnit.Framework
 open FsUnit
+open TestHelpers
 
 let graph = [
     "FAKE","3.3",[("A",VersionRange.AtLeast "3.0")]
@@ -37,21 +38,21 @@ let graph = [
 
 [<Test>]
 let ``should analyze graph one level deep``() = 
-    let resolved = Resolver.Resolve(Discovery.DictionaryDiscovery graph, ["FAKE",VersionRange.AtLeast "3.3"])
-    resolved.["FAKE"] |> shouldEqual (ResolvedVersion.Resolved "4.0")
-    resolved.["A"] |> shouldEqual (ResolvedVersion.Resolved "3.3")
-    resolved.["B"] |> shouldEqual (ResolvedVersion.Resolved "1.3")
-    resolved.["C"] |> shouldEqual (ResolvedVersion.Resolved "1.1")
+    let resolved = resolve graph ["FAKE",VersionRange.AtLeast "3.3"]
+    getVersion resolved.["FAKE"] |> shouldEqual "4.0"
+    getVersion resolved.["A"] |> shouldEqual "3.3"
+    getVersion resolved.["B"] |> shouldEqual "1.3"
+    getVersion resolved.["C"] |> shouldEqual "1.1"
 
     resolved.ContainsKey "D" |> shouldEqual false
 
 [<Test>]
 let ``should analyze graph completly``() = 
-    let resolved = Resolver.Resolve(Discovery.DictionaryDiscovery graph, ["FAKE",VersionRange.AtLeast "3.3"])
-    resolved.["FAKE"] |> shouldEqual (ResolvedVersion.Resolved "4.0")
-    resolved.["E"] |> shouldEqual (ResolvedVersion.Resolved "2.1")
-    resolved.["F"] |> shouldEqual (ResolvedVersion.Resolved "1.1")
-    resolved.["G"] |> shouldEqual (ResolvedVersion.Resolved "1.0")
+    let resolved = resolve graph ["FAKE",VersionRange.AtLeast "3.3"]
+    getVersion resolved.["FAKE"] |> shouldEqual "4.0"
+    getVersion resolved.["E"] |> shouldEqual "2.1"
+    getVersion resolved.["F"] |> shouldEqual "1.1"
+    getVersion resolved.["G"] |> shouldEqual "1.0"
 
 let graph2 = [
     "A","1.0",["B",VersionRange.Exactly "1.1";"C",VersionRange.Exactly "2.4"]
@@ -68,19 +69,21 @@ let graph2 = [
 
 [<Test>]
 let ``should analyze graph2 completely``() =
-    let resolved = Resolver.Resolve(Discovery.DictionaryDiscovery graph2, ["A",VersionRange.AtLeast "1.0"])
-    resolved.["A"] |> shouldEqual (ResolvedVersion.Resolved "1.1")
-    resolved.["B"] |> shouldEqual (ResolvedVersion.Resolved "1.1")
-    resolved.["C"] |> shouldEqual (ResolvedVersion.Resolved "2.4")
-    resolved.["D"] |> shouldEqual (ResolvedVersion.Resolved "1.5")
+    let resolved = resolve graph2 ["A",VersionRange.AtLeast "1.0"]
+    getVersion resolved.["A"] |> shouldEqual "1.1"
+    getVersion resolved.["B"] |> shouldEqual "1.1"
+    getVersion resolved.["C"] |> shouldEqual "2.4"
+    getVersion resolved.["D"] |> shouldEqual "1.5"
+    getDefiningPackage resolved.["D"] |> shouldEqual "B"
+    getDefiningVersion resolved.["D"] |> shouldEqual "1.1"
 
     resolved.ContainsKey "E" |> shouldEqual false
 
 [<Test>]
 let ``should analyze graph2 completely with multiple starting nodes``() =
-    let resolved = Resolver.Resolve(Discovery.DictionaryDiscovery graph2, ["A",VersionRange.AtLeast "1.0"; "E",VersionRange.AtLeast "1.0"])
-    resolved.["A"] |> shouldEqual (ResolvedVersion.Resolved "1.1")
-    resolved.["B"] |> shouldEqual (ResolvedVersion.Resolved "1.1")
-    resolved.["C"] |> shouldEqual (ResolvedVersion.Resolved "2.4")
-    resolved.["D"] |> shouldEqual (ResolvedVersion.Resolved "1.5")
-    resolved.["E"] |> shouldEqual (ResolvedVersion.Resolved "1.0")
+    let resolved = resolve graph2 ["A",VersionRange.AtLeast "1.0"; "E",VersionRange.AtLeast "1.0"]
+    getVersion resolved.["A"] |> shouldEqual "1.1"
+    getVersion resolved.["B"] |> shouldEqual "1.1"
+    getVersion resolved.["C"] |> shouldEqual "2.4"
+    getVersion resolved.["D"] |> shouldEqual "1.5"
+    getVersion resolved.["E"] |> shouldEqual "1.0"

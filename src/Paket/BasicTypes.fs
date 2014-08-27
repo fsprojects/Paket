@@ -29,16 +29,21 @@ type VersionRange =
         | Exactly v -> v = version
         | Between(min, max) -> version >= min && version < max
 
-type DefindedDependency = {
-    DefiningPackage : string
-    DefiningVersion : string
-    ReferencedPackage : string
-    ReferencedVersion : VersionRange }
+type Package = 
+    { Name : string
+      VersionRange : VersionRange
+      Source : string }
+
+type DefindedDependency = 
+    { DefiningPackage : string
+      DefiningVersion : string
+      ReferencedPackage : string
+      ReferencedVersion : VersionRange }
 
 type IDiscovery = 
     abstract GetDirectDependencies : string * string -> (string * VersionRange) list
     abstract GetVersions : string -> string seq
 
-type ResolvedVersion =
-| Resolved of string
-| Conflict of DefindedDependency * DefindedDependency
+type ResolvedVersion = 
+    | Resolved of DefindedDependency
+    | Conflict of DefindedDependency * DefindedDependency

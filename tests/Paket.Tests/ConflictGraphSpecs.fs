@@ -3,6 +3,7 @@
 open Paket
 open NUnit.Framework
 open FsUnit
+open TestHelpers
 
 let graph = [
     "A","1.0",["B",VersionRange.Exactly "1.1";"C",VersionRange.Exactly "2.4"]
@@ -16,14 +17,18 @@ let graph = [
 
 [<Test>]
 let ``should analyze graph and report conflict``() =
-    let resolved = Resolver.Resolve(Discovery.DictionaryDiscovery graph, ["A",VersionRange.AtLeast "1.0"])
-    resolved.["A"] |> shouldEqual (ResolvedVersion.Resolved "1.0")
-    resolved.["B"] |> shouldEqual (ResolvedVersion.Resolved "1.1")
-    resolved.["C"] |> shouldEqual (ResolvedVersion.Resolved "2.4")
+    let resolved = resolve graph ["A",VersionRange.AtLeast "1.0"]
+    getVersion resolved.["A"] |> shouldEqual "1.0"
+    getVersion resolved.["B"] |> shouldEqual "1.1"
+    getVersion resolved.["C"] |> shouldEqual "2.4"
     resolved.["D"] |> shouldEqual (ResolvedVersion.Conflict ({DefiningPackage = "B"; DefiningVersion = "1.1"; ReferencedPackage = "D"; ReferencedVersion = Exactly "1.4"},
                                                              {DefiningPackage = "C"; DefiningVersion = "2.4"; ReferencedPackage = "D"; ReferencedVersion = Exactly "1.6"}))
-    resolved.["E"] |> shouldEqual (ResolvedVersion.Resolved "4.3")
-    resolved.["F"] |> shouldEqual (ResolvedVersion.Resolved "1.2")
+    getVersion resolved.["E"] |> shouldEqual "4.3"
+    getDefiningPackage resolved.["E"] |> shouldEqual "B"
+    getDefiningVersion resolved.["E"] |> shouldEqual "1.1"
+    getVersion resolved.["F"] |> shouldEqual "1.2"
+    getDefiningPackage resolved.["F"] |> shouldEqual "C"
+    getDefiningVersion resolved.["F"] |> shouldEqual "2.4"
 
 let graph2 = [
     "A","1.0",["B",VersionRange.Exactly "1.1";"C",VersionRange.Exactly "2.4"]
@@ -35,9 +40,9 @@ let graph2 = [
 
 [<Test>]
 let ``should analyze graph2 and report conflict``() =
-    let resolved = Resolver.Resolve(Discovery.DictionaryDiscovery graph2, ["A",VersionRange.AtLeast "1.0"])
-    resolved.["A"] |> shouldEqual (ResolvedVersion.Resolved "1.0")
-    resolved.["B"] |> shouldEqual (ResolvedVersion.Resolved "1.1")
-    resolved.["C"] |> shouldEqual (ResolvedVersion.Resolved "2.4")
+    let resolved = resolve graph2 ["A",VersionRange.AtLeast "1.0"]
+    getVersion resolved.["A"] |> shouldEqual "1.0"
+    getVersion resolved.["B"] |> shouldEqual "1.1"
+    getVersion resolved.["C"] |> shouldEqual "2.4"
     resolved.["D"] |> shouldEqual (ResolvedVersion.Conflict ({DefiningPackage = "B"; DefiningVersion = "1.1"; ReferencedPackage = "D"; ReferencedVersion = Between ("1.4","1.5")},
                                                              {DefiningPackage = "C"; DefiningVersion = "2.4"; ReferencedPackage = "D"; ReferencedVersion = Between ("1.6","1.7")}))

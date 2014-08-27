@@ -3,6 +3,7 @@ module Paket.ResolveConfigSpecs
 open Paket
 open NUnit.Framework
 open FsUnit
+open TestHelpers
 
 let config1 = """
 source "http://nuget.org/api/v2"
@@ -29,9 +30,9 @@ let graph = [
 let ``should resolve simple config1``() = 
     let cfg = Config.FromCode config1
     let resolved = cfg.Resolve(Discovery.DictionaryDiscovery graph)
-    resolved.["Rx-Main"] |> shouldEqual (ResolvedVersion.Resolved "2.0")
-    resolved.["Rx-Core"] |> shouldEqual (ResolvedVersion.Resolved "2.1")
-    resolved.["Castle.Windsor-log4net"] |> shouldEqual (ResolvedVersion.Resolved "3.3")
-    resolved.["Castle.Windsor"] |> shouldEqual (ResolvedVersion.Resolved "2.1")
-    resolved.["log4net"] |> shouldEqual (ResolvedVersion.Resolved "1.1")
-    resolved.["log"] |> shouldEqual (ResolvedVersion.Resolved "1.2")
+    getVersion resolved.["Rx-Main"] |> shouldEqual "2.0"
+    getVersion resolved.["Rx-Core"] |> shouldEqual "2.1"
+    getVersion resolved.["Castle.Windsor-log4net"] |> shouldEqual "3.3"
+    getVersion resolved.["Castle.Windsor"] |> shouldEqual "2.1"
+    getVersion resolved.["log4net"] |> shouldEqual "1.1"
+    getVersion resolved.["log"] |> shouldEqual "1.2"
