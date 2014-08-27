@@ -13,7 +13,6 @@ Say more
 #r "Paket.dll"
 open Paket
 
-Library.hello 0
 (**
 Some more info
 *)
