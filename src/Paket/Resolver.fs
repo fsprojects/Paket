@@ -32,12 +32,12 @@ let private addDependency package dependencies newDependency =
     | Some oldDependency -> Map.add package (shrink(oldDependency,newDependency)) dependencies
     | None -> Map.add package newDependency dependencies
     
-let private mergeDependencies (discovery : IDiscovery) definingPackage definingVersion dependencies =
+let private mergeDependencies (discovery : IDiscovery) source definingPackage definingVersion dependencies =
     let mutable newDependencies = dependencies
 
-    for package,version in discovery.GetDirectDependencies(definingPackage, definingVersion) do
-        let newDependency = { DefiningPackage = definingPackage; DefiningVersion = definingVersion; ReferencedPackage = package; ReferencedVersion = version}
-        newDependencies <- addDependency package newDependencies newDependency            
+    for p in discovery.GetDirectDependencies(source, definingPackage, definingVersion) do
+        let newDependency = { DefiningPackage = definingPackage; DefiningVersion = definingVersion; ReferencedPackage = p.Name; ReferencedVersion = p.VersionRange; Source = p.Source }
+        newDependencies <- addDependency p.Name newDependencies newDependency            
 
     newDependencies
 
@@ -49,24 +49,26 @@ let Resolve(discovery : IDiscovery, dependencies:Package seq) =
 
         match current.Value with
         | Shrinked.Conflict(c1,c2) -> analyzeGraph (Map.add definingPackage (ResolvedVersion.Conflict(c1,c2)) fixedDependencies) (Map.remove definingPackage dependencies)
-        | Ok c -> 
+        | Ok d -> 
             match Map.tryFind definingPackage fixedDependencies with
             | Some (Resolved package) -> 
                 match package.ReferencedVersion with
-                | Exactly fixedVersion -> if c.ReferencedVersion.IsInRange fixedVersion then fixedDependencies else failwith "Conflict"
+                | Exactly fixedVersion -> if d.ReferencedVersion.IsInRange fixedVersion then fixedDependencies else failwith "Conflict"
                 | _ -> failwith "Not allowed"
             | _ ->            
                 let maxVersion = 
                     discovery.GetVersions definingPackage
-                    |> Seq.filter c.ReferencedVersion.IsInRange
+                    |> Seq.filter d.ReferencedVersion.IsInRange
                     |> Seq.max
 
+                let resolvedPackage = { DefiningPackage = d.DefiningPackage; DefiningVersion = d.DefiningVersion; ReferencedPackage = definingPackage; ReferencedVersion = Exactly maxVersion; Source = d.Source}
+
                 dependencies
-                |> mergeDependencies discovery definingPackage maxVersion
+                |> mergeDependencies discovery d.Source definingPackage maxVersion
                 |> Map.remove definingPackage
-                |> analyzeGraph (Map.add definingPackage (ResolvedVersion.Resolved { DefiningPackage = c.DefiningPackage; DefiningVersion = c.DefiningVersion; ReferencedPackage = definingPackage; ReferencedVersion = Exactly maxVersion}) fixedDependencies)
+                |> analyzeGraph (Map.add definingPackage (ResolvedVersion.Resolved resolvedPackage) fixedDependencies)
 
     dependencies
-    |> Seq.map (fun p -> p.Name,{ DefiningPackage = ""; DefiningVersion = ""; ReferencedPackage = p.Name; ReferencedVersion = p.VersionRange})
+    |> Seq.map (fun p -> p.Name,{ DefiningPackage = ""; DefiningVersion = ""; ReferencedPackage = p.Name; ReferencedVersion = p.VersionRange; Source = p.Source})
     |> Seq.fold (fun m (p,d) -> addDependency p m d) Map.empty
     |> analyzeGraph Map.empty

@@ -62,7 +62,6 @@
     <Compile Include="BasicTypes.fs" />
     <Compile Include="Resolver.fs" />
     <Compile Include="Config.fs" />
-    <Compile Include="Discovery.fs" />
     <Content Include="packages.config" />
   </ItemGroup>
   <ItemGroup>

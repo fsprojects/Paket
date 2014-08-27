@@ -29,10 +29,13 @@ let graph = [
 [<Test>]
 let ``should resolve simple config1``() = 
     let cfg = Config.FromCode config1
-    let resolved = cfg.Resolve(Discovery.DictionaryDiscovery graph)
+    let resolved = cfg.Resolve(DictionaryDiscovery graph)
     getVersion resolved.["Rx-Main"] |> shouldEqual "2.0"
     getVersion resolved.["Rx-Core"] |> shouldEqual "2.1"
     getVersion resolved.["Castle.Windsor-log4net"] |> shouldEqual "3.3"
     getVersion resolved.["Castle.Windsor"] |> shouldEqual "2.1"
     getVersion resolved.["log4net"] |> shouldEqual "1.1"
     getVersion resolved.["log"] |> shouldEqual "1.2"
+    getDefiningPackage resolved.["log"] |> shouldEqual "log4net"
+    getDefiningVersion resolved.["log"] |> shouldEqual "1.1"
+    getSource resolved.["log"] |> shouldEqual "http://nuget.org/api/v2"

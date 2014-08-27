@@ -21,8 +21,8 @@ let ``should analyze graph and report conflict``() =
     getVersion resolved.["A"] |> shouldEqual "1.0"
     getVersion resolved.["B"] |> shouldEqual "1.1"
     getVersion resolved.["C"] |> shouldEqual "2.4"
-    resolved.["D"] |> shouldEqual (ResolvedVersion.Conflict ({DefiningPackage = "B"; DefiningVersion = "1.1"; ReferencedPackage = "D"; ReferencedVersion = Exactly "1.4"},
-                                                             {DefiningPackage = "C"; DefiningVersion = "2.4"; ReferencedPackage = "D"; ReferencedVersion = Exactly "1.6"}))
+    resolved.["D"] |> shouldEqual (ResolvedVersion.Conflict ({DefiningPackage = "B"; DefiningVersion = "1.1"; ReferencedPackage = "D"; ReferencedVersion = Exactly "1.4"; Source = ""},
+                                                             {DefiningPackage = "C"; DefiningVersion = "2.4"; ReferencedPackage = "D"; ReferencedVersion = Exactly "1.6"; Source = ""}))
     getVersion resolved.["E"] |> shouldEqual "4.3"
     getDefiningPackage resolved.["E"] |> shouldEqual "B"
     getDefiningVersion resolved.["E"] |> shouldEqual "1.1"
@@ -44,5 +44,5 @@ let ``should analyze graph2 and report conflict``() =
     getVersion resolved.["A"] |> shouldEqual "1.0"
     getVersion resolved.["B"] |> shouldEqual "1.1"
     getVersion resolved.["C"] |> shouldEqual "2.4"
-    resolved.["D"] |> shouldEqual (ResolvedVersion.Conflict ({DefiningPackage = "B"; DefiningVersion = "1.1"; ReferencedPackage = "D"; ReferencedVersion = Between ("1.4","1.5")},
-                                                             {DefiningPackage = "C"; DefiningVersion = "2.4"; ReferencedPackage = "D"; ReferencedVersion = Between ("1.6","1.7")}))
+    resolved.["D"] |> shouldEqual (ResolvedVersion.Conflict ({DefiningPackage = "B"; DefiningVersion = "1.1"; ReferencedPackage = "D"; ReferencedVersion = Between ("1.4","1.5"); Source = ""},
+                                                             {DefiningPackage = "C"; DefiningVersion = "2.4"; ReferencedPackage = "D"; ReferencedVersion = Between ("1.6","1.7"); Source = ""}))
