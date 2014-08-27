@@ -22,7 +22,7 @@ let resolve graph (dependencies: (string * VersionRange) seq) =
 let getVersion resolved =
     match resolved with
     | ResolvedVersion.Resolved x ->
-        match x.ReferencedVersion with
+        match x.DependentPackage.VersionRange with
         | Exactly v -> v
 
 let getDefiningPackage resolved =
@@ -35,8 +35,8 @@ let getDefiningVersion resolved =
 
 let getSourceType resolved =
     match resolved with
-    | ResolvedVersion.Resolved x -> x.SourceType
+    | ResolvedVersion.Resolved x -> x.DependentPackage.SourceType
 
 let getSource resolved =
     match resolved with
-    | ResolvedVersion.Resolved x -> x.Source
+    | ResolvedVersion.Resolved x -> x.DependentPackage.Source

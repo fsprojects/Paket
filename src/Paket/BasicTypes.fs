@@ -38,10 +38,7 @@ type Package =
 type DefindedDependency = 
     { DefiningPackage : string
       DefiningVersion : string
-      ReferencedPackage : string
-      ReferencedVersion : VersionRange
-      SourceType : string
-      Source : string }
+      DependentPackage : Package }
 
 type IDiscovery = 
     abstract GetDirectDependencies : string * string * string * string -> Package list
