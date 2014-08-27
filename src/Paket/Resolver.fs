@@ -78,17 +78,16 @@ let Resolve(discovery : IDiscovery, dependencies:Package seq) =
                       SourceType = dependency.Referenced.SourceType
                       Source = dependency.Referenced.Source }
                 let resolvedDependency = 
-                    match dependency with
-                    | FromRoot p -> 
-                        FromRoot resolvedPackage
-                    | FromPackage d -> 
-                        FromPackage { Defining = d.Defining
-                                      Referenced = resolvedPackage }
+                    ResolvedVersion.Resolved(match dependency with
+                                             | FromRoot _ -> FromRoot resolvedPackage
+                                             | FromPackage d -> 
+                                                 FromPackage { Defining = d.Defining
+                                                               Referenced = resolvedPackage })
 
                 dependencies
                 |> mergeDependencies discovery dependency.Referenced maxVersion
                 |> Map.remove resolvedName
-                |> analyzeGraph (Map.add resolvedName (ResolvedVersion.Resolved resolvedDependency) fixedDependencies)
+                |> analyzeGraph (Map.add resolvedName resolvedDependency fixedDependencies)
 
     dependencies
     |> Seq.map (fun p -> 
