@@ -6,7 +6,7 @@ open System.Collections.Generic
 open Microsoft.FSharp.Compiler.Interactive.Shell
 open Paket
 
-module private ConfigHelpers =
+module ConfigHelpers =
     let initialCode = """
 open System.Collections.Generic
 let __nuget = new Dictionary<string,string*string*string>()
@@ -16,6 +16,22 @@ let source url = __nugetSource <- url
 
 let nuget package version = __nuget.Add(package,("nuget",__nugetSource,version))
 """
+
+    let parseVersionRange (text : string) : VersionRange = 
+        // TODO: Make this pretty
+        if text.StartsWith "~> " then 
+            let min = text.Replace("~> ", "")
+            let parts = min.Split('.')
+            let major = Int32.Parse parts.[0]
+            
+            let newParts = 
+                (major + 1).ToString() :: Seq.toList (parts
+                                                      |> Seq.skip 1
+                                                      |> Seq.map (fun _ -> "0"))
+            VersionRange.Between(min, String.Join(".", newParts))
+        else if text.StartsWith "= " then VersionRange.Exactly(text.Replace("= ", ""))
+        else VersionRange.AtLeast text
+    
 
     let executeInScript (executeInScript : FsiEvaluationSession -> unit) = 
         let fsiConfig = FsiEvaluationSession.GetDefaultConfiguration()
@@ -36,7 +52,7 @@ let nuget package version = __nuget.Add(package,("nuget",__nugetSource,version))
                         value.ReflectionValue :?> Dictionary<string,string*string*string>
                         |> Seq.map (fun x -> 
                             let sourceType,source,version = x.Value
-                            { Name = x.Key; VersionRange = VersionRange.Parse version; SourceType = sourceType; Source = source })
+                            { Name = x.Key; VersionRange = parseVersionRange version; SourceType = sourceType; Source = source })
                     dependencies
                 | _ -> failwithf "Error: %s" <| sbErr.ToString()
             with _ -> failwithf "Error: %s" <| sbErr.ToString()
