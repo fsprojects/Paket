@@ -40,17 +40,17 @@ let private addDependency package dependencies newDependency =
     | None -> Map.add package newDependency dependencies   
 
 let Resolve(discovery : IDiscovery, dependencies:Package seq) =    
-    let rec analyzeGraph fixedDependencies (dependencies:Map<string,Shrinked>) =
-        if Map.isEmpty dependencies then fixedDependencies else
+    let rec analyzeGraph processed (dependencies:Map<string,Shrinked>) =
+        if Map.isEmpty dependencies then processed else
         let current = Seq.head dependencies
         let resolvedName = current.Key
 
         match current.Value with
         | Shrinked.Conflict(c1,c2) -> 
-            let resolved = { fixedDependencies with ResolvedVersionMap = Map.add resolvedName (ResolvedVersion.Conflict(c1,c2)) fixedDependencies.ResolvedVersionMap }
+            let resolved = { processed with ResolvedVersionMap = Map.add resolvedName (ResolvedVersion.Conflict(c1,c2)) processed.ResolvedVersionMap }
             analyzeGraph resolved (Map.remove resolvedName dependencies)
         | Ok dependency -> 
-            match Map.tryFind resolvedName fixedDependencies.ResolvedVersionMap with
+            match Map.tryFind resolvedName processed.ResolvedVersionMap with
             | Some (Resolved dependency) -> 
                 match dependency.Referenced.VersionRange with
                 | Exactly fixedVersion -> 
@@ -58,7 +58,7 @@ let Resolve(discovery : IDiscovery, dependencies:Package seq) =
                     
                     dependencies
                     |> Map.remove resolvedName
-                    |> analyzeGraph fixedDependencies
+                    |> analyzeGraph processed
                 | _ -> failwith "Not allowed"
             | _ ->
                 
@@ -95,7 +95,10 @@ let Resolve(discovery : IDiscovery, dependencies:Package seq) =
                                             Source = dependentPackage.Source } }
                     dependencies <- addDependency dependentPackage.Name dependencies newDependency
 
-                let resolved = { fixedDependencies with ResolvedVersionMap = Map.add resolvedName resolvedDependency fixedDependencies.ResolvedVersionMap }
+                let resolved = 
+                    { ResolvedVersionMap = Map.add resolvedName resolvedDependency processed.ResolvedVersionMap
+                      DirectDependencies = Map.add (dependency.Referenced.Name, maxVersion) dependentPackages processed.DirectDependencies }
+                
                 dependencies
                 |> Map.remove resolvedName
                 |> analyzeGraph resolved
@@ -109,4 +112,4 @@ let Resolve(discovery : IDiscovery, dependencies:Package seq) =
                                SourceType = p.SourceType
                                Source = p.Source })
     |> Seq.fold (fun m (p, d) -> addDependency p m d) Map.empty
-    |> analyzeGraph { ResolvedVersionMap = Map.empty }
+    |> analyzeGraph { ResolvedVersionMap = Map.empty; DirectDependencies = Map.empty }
