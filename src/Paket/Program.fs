@@ -1,15 +1,18 @@
 ﻿open System
+open System.IO
 open Nessos.UnionArgParser
 open Paket
 
 type CLIArguments =
     | [<AltCommandLine("-s")>] Source of string
+    | [<AltCommandLine("-lf")>] LockFile of string
 
 with
     interface IArgParserTemplate with
         member s.Usage =
             match s with
-            | Source _ -> "specify a dependency definition"
+            | Source _ -> "specify a dependency definition."
+            | LockFile _ -> "specify a lockfile name."
 
 
 let parser = UnionArgParser.Create<CLIArguments>()
@@ -24,8 +27,14 @@ let results =
          failwithf "Paket.exe%s%s" Environment.NewLine (parser.Usage() )
          
 let source = results.GetResult <@ CLIArguments.Source @> 
-let target = "packages.lock"
+let lockfile =
+    match results.TryGetResult <@ CLIArguments.LockFile @> with
+    | Some x -> x
+    | _ -> 
+        let fi = FileInfo(source)
+        fi.Directory.FullName + Path.DirectorySeparatorChar.ToString() + fi.Name.Replace(fi.Extension,".lock")
+
 let cfg = Config.ReadFromFile source
 
 cfg.Resolve(Nuget.NugetDiscovery).DirectDependencies
-|> LockFile.CreateLockFile target
+|> LockFile.CreateLockFile lockfile
