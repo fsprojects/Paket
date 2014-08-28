@@ -48,11 +48,11 @@ let getDependencies nugetURL package version =
     |> fun s -> s.Split([| '|' |], System.StringSplitOptions.RemoveEmptyEntries)
     |> Array.map (fun d -> d.Split ':')
     |> Array.filter (fun d -> Array.isEmpty d |> not && d.[0] <> "")
-    |> Array.map (fun a -> 
-           let v = if a.Length > 1 then a.[1] else ""
-           { Name = a.[0]
+    |> Array.map (fun a -> a.[0],if a.Length > 1 then a.[1] else "")
+    |> Array.map (fun (name,version) -> 
+           { Name = name
            // TODO: Parse nuget version ranges - see http://docs.nuget.org/docs/reference/versioning
-             VersionRange = parseVersionRange v
+             VersionRange = parseVersionRange version
              SourceType = "nuget"
              Source = nugetURL })
 
