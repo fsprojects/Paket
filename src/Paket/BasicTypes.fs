@@ -3,6 +3,7 @@
 open System
 
 type VersionRange = 
+    | Latest
     | AtLeast of string
     | Exactly of string
     | Between of string * string

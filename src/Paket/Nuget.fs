@@ -21,6 +21,7 @@ let getAllVersions nugetURL package =
     JsonConvert.DeserializeObject<string[]>(raw) |> Array.toSeq
 
 let parseVersionRange (text:string) =
+    if text = "" then Latest else
     if text.StartsWith "[" && text.EndsWith "]" then Exactly (text.Replace("[","").Replace("]","")) else AtLeast text
 
 /// Gets all dependencies of the given package version.
@@ -39,12 +40,13 @@ let getDependencies nugetURL package version =
     }
     |> Seq.head
     |> fun s -> s.Split([| '|' |], System.StringSplitOptions.RemoveEmptyEntries)
-    |> Array.map (fun d -> d.Split([| ':' |], System.StringSplitOptions.RemoveEmptyEntries))
-    |> Array.filter (fun x -> x.Length = 2)
+    |> Array.map (fun d -> d.Split ':')
+    |> Array.filter (fun d -> Array.isEmpty d |> not && d.[0] <> "")
     |> Array.map (fun a -> 
+           let v = if a.Length > 1 then a.[1] else ""
            { Name = a.[0]
            // TODO: Parse nuget version ranges - see http://docs.nuget.org/docs/reference/versioning
-             VersionRange = parseVersionRange a.[1]
+             VersionRange = parseVersionRange v
              SourceType = "nuget"
              Source = nugetURL })
 
