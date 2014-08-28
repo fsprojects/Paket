@@ -40,20 +40,22 @@ let private addDependency package dependencies newDependency =
     | None -> Map.add package newDependency dependencies
     
 let private mergeDependencies (discovery : IDiscovery) (package : Package) version dependencies = 
-    async { 
-        let dependencies = ref dependencies
-        let! newDependencies = discovery.GetDirectDependencies(package.SourceType, package.Source, package.Name, version)
-        for p in newDependencies do
-            let newDependency = 
-                FromPackage { Defining = { package with VersionRange = Exactly version }
-                              Referenced = 
-                                  { Name = p.Name
-                                    VersionRange = p.VersionRange
-                                    SourceType = p.SourceType
-                                    Source = p.Source } }
-            dependencies := addDependency p.Name !dependencies newDependency
-        return !dependencies
-    }
+    let mutable dependencies = dependencies
+    let newDependencies = 
+        discovery.GetDirectDependencies(package.SourceType, package.Source, package.Name, version) 
+        |> Async.RunSynchronously
+
+    for p in newDependencies do
+        let newDependency = 
+            FromPackage { Defining = { package with VersionRange = Exactly version }
+                          Referenced = 
+                              { Name = p.Name
+                                VersionRange = p.VersionRange
+                                SourceType = p.SourceType
+                                Source = p.Source } }
+        dependencies <- addDependency p.Name dependencies newDependency
+    dependencies
+
 
 let Resolve(discovery : IDiscovery, dependencies:Package seq) =      
     let rec analyzeGraph fixedDependencies (dependencies:Map<string,Shrinked>) =
@@ -96,7 +98,6 @@ let Resolve(discovery : IDiscovery, dependencies:Package seq) =
 
                 dependencies
                 |> mergeDependencies discovery dependency.Referenced maxVersion
-                |> Async.RunSynchronously
                 |> Map.remove resolvedName
                 |> analyzeGraph (Map.add resolvedName resolvedDependency fixedDependencies)
 
