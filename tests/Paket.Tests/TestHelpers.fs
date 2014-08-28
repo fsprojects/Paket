@@ -10,7 +10,7 @@ let DictionaryDiscovery(graph : seq<string * string * (string * VersionRange) li
               |> Seq.map (fun (_,_,d) -> d) 
               |> Seq.head 
               |> List.map (fun (p,v) -> { Name = p; VersionRange = v; SourceType = sourceType; Source = source})
-          member __.GetVersions package = 
+          member __.GetVersions(sourceType, source, package) = 
               graph              
               |> Seq.filter (fun (p,_,_) -> p = package)
               |> Seq.map (fun (_,v,_) -> v) }

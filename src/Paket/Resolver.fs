@@ -71,10 +71,9 @@ let Resolve(discovery : IDiscovery, dependencies:Package seq) =
                     |> Map.remove resolvedName
                     |> analyzeGraph fixedDependencies
                 | _ -> failwith "Not allowed"
-            | _ ->  
-                let allVersions = discovery.GetVersions resolvedName |> Seq.toList         
+            | _ ->
                 let maxVersion = 
-                    allVersions
+                    discovery.GetVersions(dependency.Referenced.SourceType,dependency.Referenced.Source,resolvedName)
                     |> Seq.filter dependency.Referenced.VersionRange.IsInRange
                     |> Seq.max
 

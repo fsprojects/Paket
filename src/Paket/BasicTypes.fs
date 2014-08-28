@@ -49,7 +49,7 @@ type Dependency =
 
 type IDiscovery = 
     abstract GetDirectDependencies : string * string * string * string -> Package list
-    abstract GetVersions : string -> string seq
+    abstract GetVersions : string * string * string -> string seq
 
 type ResolvedVersion = 
     | Resolved of Dependency

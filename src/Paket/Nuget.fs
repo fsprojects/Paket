@@ -5,8 +5,6 @@ open System.Net
 open System.Xml
 open Newtonsoft.Json
 
-let nugetURL = "https://nuget.org/api/v2/"
-
 let private get (url : string) = 
     use client = new WebClient()
     try 
@@ -17,17 +15,18 @@ let private get (url : string) =
         // TODO: Handle HTTP 404 errors gracefully and return an empty string to indicate there is no content.
         ""
 /// Gets versions of the given package.
-let getAllVersions package =
-    let raw = sprintf "%spackage-versions/%s" nugetURL package |> get
+let getAllVersions nugetURL package =
+    let raw = sprintf "%s/package-versions/%s" nugetURL package |> get
+    if raw = "" then Seq.empty else
     JsonConvert.DeserializeObject<string[]>(raw) |> Array.toSeq
 
 let parseVersionRange (text:string) =
     if text.StartsWith "[" && text.EndsWith "]" then Exactly (text.Replace("[","").Replace("]","")) else AtLeast text
 
 /// Gets all dependencies of the given package version.
-let getDependencies package version = 
+let getDependencies nugetURL package version = 
     // TODO: this is a very very naive implementation
-    let raw = sprintf "%sPackages(Id='%s',Version='%s')/Dependencies" nugetURL package version |> get
+    let raw = sprintf "%s/Packages(Id='%s',Version='%s')/Dependencies" nugetURL package version |> get
     let doc = XmlDocument()
     doc.LoadXml raw
     let manager = new XmlNamespaceManager(doc.NameTable)
@@ -49,10 +48,13 @@ let getDependencies package version =
              SourceType = "nuget"
              Source = nugetURL })
 
-
-
 let NugetDiscovery() = 
     { new IDiscovery with
-          member __.GetDirectDependencies(sourceType, source, package, version) = getDependencies package version |> Array.toList
-
-          member __.GetVersions package = getAllVersions package } 
+          
+          member __.GetDirectDependencies(sourceType, source, package, version) = 
+              if sourceType <> "nuget" then failwithf "invalid sourceType %s" sourceType
+              getDependencies source package version |> Array.toList
+          
+          member __.GetVersions(sourceType, source, package) = 
+              if sourceType <> "nuget" then failwithf "invalid sourceType %s" sourceType
+              getAllVersions source package }
