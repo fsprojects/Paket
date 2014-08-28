@@ -60,11 +60,6 @@
     <Compile Include="Program.fs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Paket.Tests\Paket.Tests.fsproj">
-      <Name>Paket.Tests</Name>
-      <Project>{e789c72a-5cfd-436b-8ef1-61aa2852a89f}</Project>
-      <Private>True</Private>
-    </ProjectReference>
     <Reference Include="mscorlib" />
     <Reference Include="FSharp.Core, Version=$(TargetFSharpCoreVersion), Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
       <Private>False</Private>
