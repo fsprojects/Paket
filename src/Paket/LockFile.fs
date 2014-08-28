@@ -16,3 +16,6 @@ let format dependencies =
          "  specs:"] @ formatPackages dependencies
 
     String.Join(Environment.NewLine,all)
+
+let CreateLockFile fileName dependencies =
+    IO.File.WriteAllText(fileName, format dependencies)

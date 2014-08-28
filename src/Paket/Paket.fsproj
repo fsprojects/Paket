@@ -6,7 +6,7 @@
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>7e90d6ce-a10b-4858-a5bc-41df7250cbca</ProjectGuid>
-    <OutputType>Library</OutputType>
+    <OutputType>Exe</OutputType>
     <RootNamespace>Paket</RootNamespace>
     <AssemblyName>Paket</AssemblyName>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
@@ -25,6 +25,9 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <WarningLevel>3</WarningLevel>
     <DocumentationFile>..\..\bin\Paket.xml</DocumentationFile>
+    <StartArguments>-s "D:\code\paket\packages.fsx"</StartArguments>
+    <StartAction>Project</StartAction>
+    <StartProgram>Paket.exe</StartProgram>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -72,6 +75,7 @@
     <Compile Include="Nuget.fs" />
     <Compile Include="Config.fs" />
     <Compile Include="LockFile.fs" />
+    <Compile Include="Program.fs" />
     <Content Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
@@ -93,6 +97,10 @@
     <Reference Include="System.Numerics" />
     <Reference Include="System.Xml" />
     <Reference Include="System.Xml.Linq" />
+    <Reference Include="UnionArgParser">
+      <HintPath>..\..\packages\UnionArgParser.0.7.1\lib\net40\UnionArgParser.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
   </ItemGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it.
        Other similar extension points exist, see Microsoft.Common.targets.

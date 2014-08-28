@@ -69,9 +69,8 @@ let getDependencies nugetURL package version =
         return packages
     }
 
-let NugetDiscovery() = 
+let NugetDiscovery = 
     { new IDiscovery with
-          
           member __.GetDirectDependencies(sourceType, source, package, version) = 
               if sourceType <> "nuget" then failwithf "invalid sourceType %s" sourceType
               getDependencies source package version
