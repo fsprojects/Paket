@@ -4,16 +4,6 @@ let completeConfig = Config.ReadFromFile "myConfig.fsx"
 
 let resolution = completeConfig.Resolve(Nuget.NugetDiscovery())
 
-for x in resolution.ResolvedVersionMap do
-    printfn "%A" x.Value
-
-printfn ""
-
-for x in resolution.DirectDependencies do
-    let name,version = x.Key
-    printfn "%s (%s)" name version
-    for d in x.Value do
-        printfn "  %s (%s)" d.Name (ConfigHelpers.formatVersionRange d.VersionRange)
-
+printfn "%s" (LockFile.format resolution.DirectDependencies)
 
 System.Console.ReadKey() |> ignore

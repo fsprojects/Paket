@@ -26,17 +26,23 @@ let graph = [
     "log","1.2",[]
 ]
 
+let expected = """NUGET
+  remote: http://nuget.org/api/v2
+  specs:
+    Castle.Windsor (2.1)
+    Castle.Windsor-log4net (3.3)
+      Castle.Windsor (>= 2.0)
+      log4net (>= 1.0)
+    Rx-Core (2.1)
+    Rx-Main (2.0)
+      Rx-Core (>= 2.1)
+    log (1.2)
+    log4net (1.1)
+      log (>= 1.0)"""
+
 [<Test>]
 let ``should generate lock file``() = 
     let cfg = Config.FromCode config1
-    let resolved = cfg.Resolve(DictionaryDiscovery graph).ResolvedVersionMap
-    getVersion resolved.["Rx-Main"] |> shouldEqual "2.0"
-    getVersion resolved.["Rx-Core"] |> shouldEqual "2.1"
-    getVersion resolved.["Castle.Windsor-log4net"] |> shouldEqual "3.3"
-    getVersion resolved.["Castle.Windsor"] |> shouldEqual "2.1"
-    getVersion resolved.["log4net"] |> shouldEqual "1.1"
-    getVersion resolved.["log"] |> shouldEqual "1.2"
-    getDefiningPackage resolved.["log"] |> shouldEqual "log4net"
-    getDefiningVersion resolved.["log"] |> shouldEqual "1.1"
-    getSourceType resolved.["log"] |> shouldEqual "nuget"
-    getSource resolved.["log"] |> shouldEqual "http://nuget.org/api/v2"
+    cfg.Resolve(DictionaryDiscovery graph).DirectDependencies
+    |> LockFile.format
+    |> shouldEqual expected
