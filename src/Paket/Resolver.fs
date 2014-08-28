@@ -64,11 +64,17 @@ let Resolve(discovery : IDiscovery, dependencies:Package seq) =
             match Map.tryFind resolvedName fixedDependencies with
             | Some (Resolved dependency) -> 
                 match dependency.Referenced.VersionRange with
-                | Exactly fixedVersion -> if dependency.Referenced.VersionRange.IsInRange fixedVersion then fixedDependencies else failwith "Conflict"
+                | Exactly fixedVersion -> 
+                    if not <| dependency.Referenced.VersionRange.IsInRange fixedVersion then failwith "Conflict" else
+                    
+                    dependencies
+                    |> Map.remove resolvedName
+                    |> analyzeGraph fixedDependencies
                 | _ -> failwith "Not allowed"
-            | _ ->            
+            | _ ->  
+                let allVersions = discovery.GetVersions resolvedName |> Seq.toList         
                 let maxVersion = 
-                    discovery.GetVersions resolvedName
+                    allVersions
                     |> Seq.filter dependency.Referenced.VersionRange.IsInRange
                     |> Seq.max
 
