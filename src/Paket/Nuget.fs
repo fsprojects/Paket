@@ -3,6 +3,7 @@
 open System.IO
 open System.Net
 open System.Xml
+open Newtonsoft.Json
 
 let nugetURL = "https://nuget.org/api/v2/"
 
@@ -15,21 +16,12 @@ let private get (url : string) =
     with exn -> 
         // TODO: Handle HTTP 404 errors gracefully and return an empty string to indicate there is no content.
         ""
+/// Gets versions of the given package.
+let getAllVersions package =
+    let raw = sprintf "%spackage-versions/%s" nugetURL package |> get
+    JsonConvert.DeserializeObject<string[]>(raw) |> Array.toSeq
 
-let getAllVersions package = 
-    // TODO: this is a very very naive implementation
-    let raw = sprintf "%sPackages()?$filter=Id eq '%s'&$select=Version" nugetURL package |> get
-    let doc = XmlDocument()
-    doc.LoadXml raw
-    let manager = new XmlNamespaceManager(doc.NameTable)
-    manager.AddNamespace("ns", "http://www.w3.org/2005/Atom")
-    manager.AddNamespace("d", "http://schemas.microsoft.com/ado/2007/08/dataservices")
-    manager.AddNamespace("m", "http://schemas.microsoft.com/ado/2007/08/dataservices/metadata")
-    seq { 
-        for node in doc.SelectNodes("//ns:feed//ns:entry//m:properties//d:Version", manager) do
-            yield node.InnerText
-    }
-/// Gets dependencies of a the package.
+/// Gets all dependencies of the given package version.
 let getDependencies package version = 
     // TODO: this is a very very naive implementation
     let raw = sprintf "%sPackages(Id='%s',Version='%s')/Dependencies" nugetURL package version |> get
