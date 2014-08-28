@@ -101,12 +101,16 @@ let Resolve(discovery : IDiscovery, dependencies:Package seq) =
                 |> Map.remove resolvedName
                 |> analyzeGraph (Map.add resolvedName resolvedDependency fixedDependencies)
 
-    dependencies
-    |> Seq.map (fun p -> 
-           p.Name, 
-           FromRoot { Name = p.Name
-                      VersionRange = p.VersionRange
-                      SourceType = p.SourceType
-                      Source = p.Source })
-    |> Seq.fold (fun m (p, d) -> addDependency p m d) Map.empty
-    |> analyzeGraph Map.empty
+    
+    let resolvedVersions =
+        dependencies
+        |> Seq.map (fun p -> 
+                        p.Name, 
+                        FromRoot { Name = p.Name
+                                   VersionRange = p.VersionRange
+                                   SourceType = p.SourceType
+                                   Source = p.Source })
+        |> Seq.fold (fun m (p, d) -> addDependency p m d) Map.empty
+        |> analyzeGraph Map.empty 
+
+    { ResolvedVersionMap = resolvedVersions }

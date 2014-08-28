@@ -1,4 +1,4 @@
-module Paket.ResolveConfigSpecs
+﻿module Paket.LockFileGenerationSpecs
 
 open Paket
 open NUnit.Framework
@@ -27,7 +27,7 @@ let graph = [
 ]
 
 [<Test>]
-let ``should resolve simple config1``() = 
+let ``should generate lock file``() = 
     let cfg = Config.FromCode config1
     let resolved = cfg.Resolve(DictionaryDiscovery graph).ResolvedVersionMap
     getVersion resolved.["Rx-Main"] |> shouldEqual "2.0"

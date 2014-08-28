@@ -37,3 +37,7 @@ type IDiscovery =
 type ResolvedVersion = 
     | Resolved of Dependency
     | Conflict of Dependency * Dependency
+
+type PackageResolution = {
+    ResolvedVersionMap : Map<string,ResolvedVersion>
+}
