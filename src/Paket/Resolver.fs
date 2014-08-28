@@ -37,36 +37,20 @@ let private addDependency package dependencies newDependency =
     let newDependency = Shrinked.Ok newDependency    
     match Map.tryFind package dependencies with
     | Some oldDependency -> Map.add package (shrink(oldDependency,newDependency)) dependencies
-    | None -> Map.add package newDependency dependencies
-    
-let private mergeDependencies (discovery : IDiscovery) (package : Package) version dependencies = 
-    let mutable dependencies = dependencies
-    let newDependencies = 
-        discovery.GetDirectDependencies(package.SourceType, package.Source, package.Name, version) 
-        |> Async.RunSynchronously
+    | None -> Map.add package newDependency dependencies   
 
-    for p in newDependencies do
-        let newDependency = 
-            FromPackage { Defining = { package with VersionRange = Exactly version }
-                          Referenced = 
-                              { Name = p.Name
-                                VersionRange = p.VersionRange
-                                SourceType = p.SourceType
-                                Source = p.Source } }
-        dependencies <- addDependency p.Name dependencies newDependency
-    dependencies
-
-
-let Resolve(discovery : IDiscovery, dependencies:Package seq) =      
+let Resolve(discovery : IDiscovery, dependencies:Package seq) =    
     let rec analyzeGraph fixedDependencies (dependencies:Map<string,Shrinked>) =
         if Map.isEmpty dependencies then fixedDependencies else
         let current = Seq.head dependencies
         let resolvedName = current.Key
 
         match current.Value with
-        | Shrinked.Conflict(c1,c2) -> analyzeGraph (Map.add resolvedName (ResolvedVersion.Conflict(c1,c2)) fixedDependencies) (Map.remove resolvedName dependencies)
+        | Shrinked.Conflict(c1,c2) -> 
+            let resolved = { fixedDependencies with ResolvedVersionMap = Map.add resolvedName (ResolvedVersion.Conflict(c1,c2)) fixedDependencies.ResolvedVersionMap }
+            analyzeGraph resolved (Map.remove resolvedName dependencies)
         | Ok dependency -> 
-            match Map.tryFind resolvedName fixedDependencies with
+            match Map.tryFind resolvedName fixedDependencies.ResolvedVersionMap with
             | Some (Resolved dependency) -> 
                 match dependency.Referenced.VersionRange with
                 | Exactly fixedVersion -> 
@@ -96,21 +80,33 @@ let Resolve(discovery : IDiscovery, dependencies:Package seq) =
                                                  FromPackage { Defining = d.Defining
                                                                Referenced = resolvedPackage })
 
+                let mutable dependencies = dependencies
+                let dependentPackages = 
+                    discovery.GetDirectDependencies(dependency.Referenced.SourceType, dependency.Referenced.Source, dependency.Referenced.Name, maxVersion) 
+                    |> Async.RunSynchronously
+
+                for dependentPackage in dependentPackages do
+                    let newDependency = 
+                        FromPackage { Defining = { dependency.Referenced with VersionRange = Exactly maxVersion }
+                                      Referenced = 
+                                          { Name = dependentPackage.Name
+                                            VersionRange = dependentPackage.VersionRange
+                                            SourceType = dependentPackage.SourceType
+                                            Source = dependentPackage.Source } }
+                    dependencies <- addDependency dependentPackage.Name dependencies newDependency
+
+                let resolved = { fixedDependencies with ResolvedVersionMap = Map.add resolvedName resolvedDependency fixedDependencies.ResolvedVersionMap }
                 dependencies
-                |> mergeDependencies discovery dependency.Referenced maxVersion
                 |> Map.remove resolvedName
-                |> analyzeGraph (Map.add resolvedName resolvedDependency fixedDependencies)
+                |> analyzeGraph resolved
 
     
-    let resolvedVersions =
-        dependencies
-        |> Seq.map (fun p -> 
-                        p.Name, 
-                        FromRoot { Name = p.Name
-                                   VersionRange = p.VersionRange
-                                   SourceType = p.SourceType
-                                   Source = p.Source })
-        |> Seq.fold (fun m (p, d) -> addDependency p m d) Map.empty
-        |> analyzeGraph Map.empty 
-
-    { ResolvedVersionMap = resolvedVersions }
+    dependencies
+    |> Seq.map (fun p -> 
+                    p.Name, 
+                    FromRoot { Name = p.Name
+                               VersionRange = p.VersionRange
+                               SourceType = p.SourceType
+                               Source = p.Source })
+    |> Seq.fold (fun m (p, d) -> addDependency p m d) Map.empty
+    |> analyzeGraph { ResolvedVersionMap = Map.empty }
