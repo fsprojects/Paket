@@ -49,8 +49,8 @@ type Dependency =
         | FromPackage d -> d.Referenced
 
 type IDiscovery = 
-    abstract GetDirectDependencies : string * string * string * string -> Package list
-    abstract GetVersions : string * string * string -> string seq
+    abstract GetDirectDependencies : string * string * string * string -> Async<Package list>
+    abstract GetVersions : string * string * string -> Async<string seq>
 
 type ResolvedVersion = 
     | Resolved of Dependency

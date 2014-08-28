@@ -39,18 +39,21 @@ let private addDependency package dependencies newDependency =
     | Some oldDependency -> Map.add package (shrink(oldDependency,newDependency)) dependencies
     | None -> Map.add package newDependency dependencies
     
-let private mergeDependencies (discovery : IDiscovery) (definingPackage:Package) version dependencies = 
-    let mutable newDependencies = dependencies
-    for p in discovery.GetDirectDependencies(definingPackage.SourceType, definingPackage.Source, definingPackage.Name, version) do
-        let newDependency = 
-            FromPackage { Defining = { definingPackage with VersionRange = Exactly version}
-                          Referenced = 
-                                    { Name = p.Name
-                                      VersionRange = p.VersionRange
-                                      SourceType = p.SourceType
-                                      Source = p.Source } }
-        newDependencies <- addDependency p.Name newDependencies newDependency
-    newDependencies
+let private mergeDependencies (discovery : IDiscovery) (package : Package) version dependencies = 
+    async { 
+        let dependencies = ref dependencies
+        let! newDependencies = discovery.GetDirectDependencies(package.SourceType, package.Source, package.Name, version)
+        for p in newDependencies do
+            let newDependency = 
+                FromPackage { Defining = { package with VersionRange = Exactly version }
+                              Referenced = 
+                                  { Name = p.Name
+                                    VersionRange = p.VersionRange
+                                    SourceType = p.SourceType
+                                    Source = p.Source } }
+            dependencies := addDependency p.Name !dependencies newDependency
+        return !dependencies
+    }
 
 let Resolve(discovery : IDiscovery, dependencies:Package seq) =      
     let rec analyzeGraph fixedDependencies (dependencies:Map<string,Shrinked>) =
@@ -72,8 +75,10 @@ let Resolve(discovery : IDiscovery, dependencies:Package seq) =
                     |> analyzeGraph fixedDependencies
                 | _ -> failwith "Not allowed"
             | _ ->
+                
                 let maxVersion = 
                     discovery.GetVersions(dependency.Referenced.SourceType,dependency.Referenced.Source,resolvedName)
+                    |> Async.RunSynchronously
                     |> Seq.filter dependency.Referenced.VersionRange.IsInRange
                     |> Seq.max
 
@@ -91,6 +96,7 @@ let Resolve(discovery : IDiscovery, dependencies:Package seq) =
 
                 dependencies
                 |> mergeDependencies discovery dependency.Referenced maxVersion
+                |> Async.RunSynchronously
                 |> Map.remove resolvedName
                 |> analyzeGraph (Map.add resolvedName resolvedDependency fixedDependencies)
 
