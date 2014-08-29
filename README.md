@@ -5,6 +5,8 @@ A package dependency managaer for .NET
 
 Initial docs can be found at http://fsprojects.github.io/Paket/
 
+Paket is work in progress!
+
 # Build the project
 
 * Mono: Run *build.sh*  [![Travis build status](https://travis-ci.org/fsprojects/Paket.png)](https://travis-ci.org/fsprojects/Paket)
