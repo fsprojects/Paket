@@ -33,23 +33,18 @@
       <div class="row">
         <div class="span9" id="main">
           
-<table class="pre"><tr><td class="lines"><pre class="fssnip">
-<span class="l">1: </span>
-</pre>
-</td>
-<td class="snippet"><pre class="fssnip">
-<span class="prep">#I</span> <span class="s">&quot;</span><span class="s">.</span><span class="s">.</span><span class="s">/</span><span class="s">.</span><span class="s">.</span><span class="s">/</span><span class="s">bin</span><span class="s">&quot;</span></pre>
-</td>
-</tr>
-</table>
-
 <h1>What is Paket?</h1>
 
 <p>Paket is a package manager for .NET and mono projects. It tracks your NuGet packages and installs the exact package versions that are needed.</p>
 
 <h2>Getting Started</h2>
 
-<p>This example demonstrates using a function defined in this sample library.</p>
+<p>Specify your dependencies in a packages.fsx file in your project's root:</p>
+
+<table class="pre"><tr><td><pre lang="batchfile">source &quot;http://nuget.org/api/v2&quot;
+
+nuget &quot;Castle.Windsor-log4net&quot; &quot;~&gt; 3.2&quot;
+nuget &quot;Rx-Main&quot; &quot;~&gt; 2.0&quot;</pre></td></tr></table>
 
 <h2>Contributing and copyright</h2>
 
