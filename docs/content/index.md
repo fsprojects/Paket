@@ -1,6 +1,8 @@
 What is Paket?
 ==============
 
+First of all: Paket is work in progress!
+
 Paket is a package manager for .NET and mono projects. It's inspired by [bundler][bundler], but designed to work well with [NuGet][nuget] packages. 
 It allows you to track and install the exact package versions that are needed.
 
