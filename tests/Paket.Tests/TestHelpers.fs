@@ -1,6 +1,7 @@
 ﻿module Paket.TestHelpers
 
 open Paket
+open System
 
 let DictionaryDiscovery(graph : seq<string * string * (string * VersionRange) list>) = 
     { new IDiscovery with
@@ -52,3 +53,6 @@ let getSourceType resolved =
 let getSource resolved =
     match resolved with
     | ResolvedVersion.Resolved x -> x.Referenced.Source
+
+
+let normalizeLineEndings (text:string) = text.Replace("\r\n","\n").Replace("\r","\n").Replace("\n",Environment.NewLine)

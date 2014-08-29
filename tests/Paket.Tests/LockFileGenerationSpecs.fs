@@ -45,4 +45,4 @@ let ``should generate lock file``() =
     let cfg = Config.FromCode config1
     cfg.Resolve(DictionaryDiscovery graph).DirectDependencies
     |> LockFile.format
-    |> shouldEqual expected
+    |> shouldEqual (normalizeLineEndings expected)
