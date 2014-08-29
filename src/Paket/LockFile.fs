@@ -2,25 +2,25 @@
 
 open System
 
-let formatPackages (packages: (string*string) seq) =
-    [for name,version in packages do
-        yield sprintf "    %s (%s)" name version]
-
 let format (resolved:PackageResolution)  =
     // TODO: implement conflict handling
-    let packages =
+    let sources =
         resolved
         |> Seq.map (fun x ->
             match x.Value with
             | Resolved d -> 
                 match d.Referenced.VersionRange with
-                | Exactly v -> d.Referenced.Name,v
+                | Exactly v -> d.Referenced.Source,d.Referenced.Name,v
             )
+        |> Seq.groupBy (fun (s,n,v) -> s)
    
     let all =
-        ["NUGET"
-         "  remote: http://nuget.org/api/v2"
-         "  specs:"] @ formatPackages packages
+        [yield "NUGET"
+         for source,packages in sources do
+             yield "  remote: " + source
+             yield "  specs:"
+             for _,name,version in packages do
+                 yield sprintf "    %s (%s)" name version]
 
     String.Join(Environment.NewLine,all)
 

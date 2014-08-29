@@ -28,7 +28,7 @@
     <StartArguments>install</StartArguments>
     <StartAction>Project</StartAction>
     <StartProgram>Paket.exe</StartProgram>
-    <StartWorkingDirectory>D:\code\paket\</StartWorkingDirectory>
+    <StartWorkingDirectory>C:\code\paket\</StartWorkingDirectory>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
