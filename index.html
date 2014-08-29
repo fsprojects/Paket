@@ -40,7 +40,7 @@ It allows you to track and install the exact package versions that are needed.</
 
 <h2>Getting Started</h2>
 
-<p>Specify your dependencies in a packages.fsx file in your project's root:</p>
+<p>Specify your dependencies in a <code>packages.fsx</code> file in your project's root:</p>
 
 <table class="pre"><tr><td class="lines"><pre class="fssnip">
 <span class="l">1: </span>
@@ -57,6 +57,14 @@ It allows you to track and install the exact package versions that are needed.</
 </td>
 </tr>
 </table>
+
+<p>Install all of the required packages from your specified sources:</p>
+
+<table class="pre"><tr><td><pre lang="batchfile">$ paket install</pre></td></tr></table>
+
+<p>This command will analyze your package definitions and generate a <code>package.lock</code> file. 
+You should commit <code>packages.fsx</code> and <code>package.lock</code> to your version control system.
+This ensures that other developers on your app, as well as your deployment environment, will all use the same third-party code that you are using now.</p>
 
 <h2>Contributing and copyright</h2>
 
