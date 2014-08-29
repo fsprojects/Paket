@@ -1,18 +1,45 @@
 What is Paket?
 ==============
 
-Paket is a package manager for .NET and mono projects. It tracks your NuGet packages and installs the exact package versions that are needed. 
+Paket is a package manager for .NET and mono projects. It's inspired by [bundler][bundler], but designed to work well with [NuGet][nuget] packages. 
+It allows you to track and install the exact package versions that are needed.
+
+  [bundler]: http://bundler.io/
+  [nuget]: https://www.nuget.org/ 
 
 Getting Started
 ---------------
 
-Specify your dependencies in a packages.fsx file in your project's root:
+Specify your dependencies in a `packages.fsx` file in your project's root:
 
-    [lang=batchfile]
     source "http://nuget.org/api/v2"
 
     nuget "Castle.Windsor-log4net" "~> 3.2"
     nuget "Rx-Main" "~> 2.0"
+
+Install all of the required packages from your specified sources:
+
+    [lang=batchfile]
+    $ paket install
+
+This command will analyze your package definitions and generate a `package.lock` file. 
+You should commit `packages.fsx` and `package.lock` to your version control system.
+This ensures that other developers on your app, as well as your deployment environment, will all use the same third-party code that you are using now. It will look like this:
+
+    [lang=textfile]
+    NUGET
+      remote: http://nuget.org/api/v2
+      specs:
+        Castle.Windsor (2.1)
+        Castle.Windsor-log4net (3.3)
+          Castle.Windsor (>= 2.0)
+          log4net (>= 1.0)
+        Rx-Core (2.1)
+        Rx-Main (2.0)
+          Rx-Core (>= 2.1)
+        log (1.2)
+        log4net (1.1)
+          log (>= 1.0)
  
 Contributing and copyright
 --------------------------
