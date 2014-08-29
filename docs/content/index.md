@@ -19,6 +19,8 @@ Specify your dependencies in a `packages.fsx` file in your project's root:
     nuget "Castle.Windsor-log4net" "~> 3.2"
     nuget "Rx-Main" "~> 2.0"
 
+[More details about the packages file.](packages_file.html)
+
 Install all of the required packages from your specified sources:
 
     [lang=batchfile]
@@ -26,7 +28,7 @@ Install all of the required packages from your specified sources:
 
 The [install command](paket_install.html) will analyze your package definitions and generate a `package.lock` file. 
 You should commit `packages.fsx` and `package.lock` to your version control system.
-[More details about the Lockfile](lockfile.html).
+[More details about the Lockfile.](lockfile.html)
 
 Contributing and copyright
 --------------------------

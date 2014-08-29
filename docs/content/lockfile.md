@@ -1,7 +1,7 @@
 What is the Lockfile?
 =====================
 
-Consider the following `packages.fsx` file:
+Consider the following [Packages file](packages_file.html):
 
     source "http://nuget.org/api/v2"
 
