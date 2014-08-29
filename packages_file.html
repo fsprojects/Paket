@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="utf-8"/>
-    <title>What is Paket?
+    <title>The packages.fsx file
 </title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <meta name="description" content="A dependency manager for .NET"/>
@@ -33,16 +33,10 @@
       <div class="row">
         <div class="span9" id="main">
           
-<h1>What is Paket?</h1>
+<h1>The packages.fsx file</h1>
 
-<p>First of all: Paket is work in progress!</p>
-
-<p>Paket is a package manager for .NET and mono projects. It's inspired by <a href="http://bundler.io/">bundler</a>, but designed to work well with <a href="https://www.nuget.org/">NuGet</a> packages. 
-It allows you to track and install the exact package versions that are needed.</p>
-
-<h2>Getting Started</h2>
-
-<p>Specify your dependencies in a <code>packages.fsx</code> file in your project's root:</p>
+<p>The Packages file is used to specify your applications's dependencies. 
+It uses a similar syntax like <a href="http://bundler.io/">bundler</a>'s GEMfile.</p>
 
 <table class="pre"><tr><td class="lines"><pre class="fssnip">
 <span class="l">1: </span>
@@ -60,26 +54,39 @@ It allows you to track and install the exact package versions that are needed.</
 </tr>
 </table>
 
-<p><a href="packages_file.html">More details about the packages file.</a></p>
+<p>Only direct dependencies are listed in <code>packages.fsx</code>.
+Paket uses this definition to compute a concrete package resolution,
+which includes indirect dependencies, in a <a href="lockfile.html">Lockfile</a>.</p>
 
-<p>Install all of the required packages from your specified sources:</p>
+<h2>Sources</h2>
 
-<table class="pre"><tr><td><pre lang="batchfile">$ paket install</pre></td></tr></table>
+<p>It's possible to use multiple sources:</p>
 
-<p>The <a href="paket_install.html">install command</a> will analyze your package definitions and generate a <code>package.lock</code> file. 
-You should commit <code>packages.fsx</code> and <code>package.lock</code> to your version control system.
-<a href="lockfile.html">More details about the Lockfile.</a></p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip">
+<span class="l">1: </span>
+<span class="l">2: </span>
+<span class="l">3: </span>
+<span class="l">4: </span>
+<span class="l">5: </span>
+<span class="l">6: </span>
+<span class="l">7: </span>
+<span class="l">8: </span>
+</pre>
+</td>
+<td class="snippet"><pre class="fssnip">
+<span class="i">source</span> <span class="s">&quot;</span><span class="s">http</span><span class="s">:</span><span class="s">/</span><span class="s">/</span><span class="s">nuget</span><span class="s">.</span><span class="s">org</span><span class="s">/</span><span class="s">api</span><span class="s">/</span><span class="s">v2</span><span class="s">&quot;</span> <span class="c">// nuget.org</span>
 
-<h2>Contributing and copyright</h2>
+<span class="i">nuget</span> <span class="s">&quot;</span><span class="s">Castle</span><span class="s">.</span><span class="s">Windsor</span><span class="s">-</span><span class="s">log4net</span><span class="s">&quot;</span> <span class="s">&quot;</span><span class="s">~</span><span class="s">&gt;</span><span class="s"> </span><span class="s">3</span><span class="s">.</span><span class="s">2</span><span class="s">&quot;</span>
+<span class="i">nuget</span> <span class="s">&quot;</span><span class="s">Rx</span><span class="s">-</span><span class="s">Main</span><span class="s">&quot;</span> <span class="s">&quot;</span><span class="s">~</span><span class="s">&gt;</span><span class="s"> </span><span class="s">2</span><span class="s">.</span><span class="s">0</span><span class="s">&quot;</span>
 
-<p>The project is hosted on <a href="https://github.com/fsprojects/Paket">GitHub</a> where you can <a href="https://github.com/fsprojects/Paket/issues">report issues</a>, fork 
-the project and submit pull requests. If you're adding new public API, please also 
-consider adding <a href="https://github.com/fsprojects/Paket/tree/master/docs/content">samples</a> that can be turned into a documentation. You might
-also want to read <a href="https://github.com/fsprojects/Paket/blob/master/README.md">library design notes</a> to understand how it works.</p>
+<span class="i">source</span> <span class="s">&quot;</span><span class="s">http</span><span class="s">:</span><span class="s">/</span><span class="s">/</span><span class="s">myserver</span><span class="s">/</span><span class="s">nuget</span><span class="s">/</span><span class="s">api</span><span class="s">/</span><span class="s">v2</span><span class="s">&quot;</span> <span class="c">// custom feed</span>
 
-<p>The library is available under Public Domain license, which allows modification and 
-redistribution for both commercial and non-commercial purposes. For more information see the 
-<a href="https://github.com/fsprojects/Paket/blob/master/LICENSE.txt">License file</a> in the GitHub repository.</p>
+<span class="i">nuget</span> <span class="s">&quot;</span><span class="s">FAKE</span><span class="s">&quot;</span> <span class="s">&quot;</span><span class="s">~</span><span class="s">&gt;</span><span class="s"> </span><span class="s">3</span><span class="s">.</span><span class="s">2</span><span class="s">&quot;</span></pre>
+</td>
+</tr>
+</table>
+
+<p>The <a href="lockfile.html">Lockfile</a> will respect this settings.</p>
 
 
         </div>
