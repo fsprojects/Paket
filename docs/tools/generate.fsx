@@ -16,7 +16,7 @@ let info =
     "project-author", "Steffen Forkmann, Alexander Gross"
     "project-summary", "A dependency manager for .NET"
     "project-github", githubLink
-    "project-nuget", "http://nuget.com/packages/Paket" ]
+    "project-nuget", "http://nuget.org/packages/Paket" ]
 
 // --------------------------------------------------------------------------------------
 // For typical project, no changes are needed below
