@@ -22,7 +22,7 @@ Install all of the required packages from your specified sources:
     [lang=batchfile]
     $ paket install
 
-This command will analyze your package definitions and generate a `package.lock` file. 
+The [install command](paket_install.html) will analyze your package definitions and generate a `package.lock` file. 
 You should commit `packages.fsx` and `package.lock` to your version control system.
 This ensures that other developers on your app, as well as your deployment environment, will all use the same third-party code that you are using now. It will look like this:
 
