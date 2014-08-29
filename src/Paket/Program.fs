@@ -5,14 +5,11 @@ open Paket
 
 type CLIArguments =
     | [<AltCommandLine("-s")>] Source of string
-    | [<AltCommandLine("-lf")>] LockFile of string
-
 with
     interface IArgParserTemplate with
         member s.Usage =
             match s with
             | Source _ -> "specify a dependency definition."
-            | LockFile _ -> "specify a lockfile name."
 
 
 let parser = UnionArgParser.Create<CLIArguments>()
@@ -34,11 +31,8 @@ match command with
         | _ -> "packages.fsx"
 
     let lockfile =
-        match results.TryGetResult <@ CLIArguments.LockFile @> with
-        | Some x -> x
-        | _ -> 
-            let fi = FileInfo(source)
-            fi.Directory.FullName + Path.DirectorySeparatorChar.ToString() + fi.Name.Replace(fi.Extension,".lock")
+        let fi = FileInfo(source)
+        fi.Directory.FullName + Path.DirectorySeparatorChar.ToString() + fi.Name.Replace(fi.Extension,".lock")
 
     let cfg = Config.ReadFromFile source
 
