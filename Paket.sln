@@ -35,6 +35,7 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "content", "content", "{8E6D5255-776D-4B61-85F9-73C37AA1FB9A}"
 	ProjectSection(SolutionItems) = preProject
 		docs\content\index.md = docs\content\index.md
+		docs\content\lockfile.md = docs\content\lockfile.md
 		docs\content\paket_install.md = docs\content\paket_install.md
 	EndProjectSection
 EndProject

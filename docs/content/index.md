@@ -26,19 +26,8 @@ Install all of the required packages from your specified sources:
 
 The [install command](paket_install.html) will analyze your package definitions and generate a `package.lock` file. 
 You should commit `packages.fsx` and `package.lock` to your version control system.
-This ensures that other developers on your app, as well as your deployment environment, will all use the same third-party code that you are using now. It will look like this:
+[More details about the Lockfile](lockfile.html).
 
-    [lang=textfile]
-    NUGET
-      remote: http://nuget.org/api/v2
-      specs:
-        Castle.Windsor (2.1)
-        Castle.Windsor-log4net (3.3)
-        Rx-Core (2.1)
-        Rx-Main (2.0)
-        log (1.2)
-        log4net (1.1)
- 
 Contributing and copyright
 --------------------------
 
