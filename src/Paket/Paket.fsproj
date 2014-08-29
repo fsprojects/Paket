@@ -76,6 +76,7 @@
     <Compile Include="Config.fs" />
     <Compile Include="LockFile.fs" />
     <Compile Include="Program.fs" />
+    <None Include="packages" />
     <Content Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
