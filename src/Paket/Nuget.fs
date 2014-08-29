@@ -69,6 +69,17 @@ let getDependencies nugetURL package version =
         return packages
     }
 
+let DownloadPackage(source,name,version,targetFileName) =
+    let url = "TODO"
+    let client = new WebClient()
+
+    printfn "Downloading %s to %s" url targetFileName
+            
+    // TODO: Set credentials
+    client.DownloadFile(url, targetFileName)            
+                
+
+
 let NugetDiscovery = 
     { new IDiscovery with
           member __.GetDirectDependencies(sourceType, source, package, version) = 
