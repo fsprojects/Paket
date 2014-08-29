@@ -2,20 +2,27 @@
 
 open System
 
-let formatPackages (dependencies: Map<string*string,Package list>) =
-    [for x in dependencies do        
-        let name,version = x.Key
-        yield sprintf "    %s (%s)" name version
-        for d in x.Value do
-            yield sprintf "      %s (%s)" d.Name (ConfigHelpers.formatVersionRange d.VersionRange)]
+let formatPackages (packages: (string*string) seq) =
+    [for name,version in packages do
+        yield sprintf "    %s (%s)" name version]
 
-let format dependencies =
+let format (resolved:PackageResolution)  =
+    // TODO: implement conflict handling
+    let packages =
+        resolved
+        |> Seq.map (fun x ->
+            match x.Value with
+            | Resolved d -> 
+                match d.Referenced.VersionRange with
+                | Exactly v -> d.Referenced.Name,v
+            )
+   
     let all =
         ["NUGET"
          "  remote: http://nuget.org/api/v2"
-         "  specs:"] @ formatPackages dependencies
+         "  specs:"] @ formatPackages packages
 
     String.Join(Environment.NewLine,all)
 
-let CreateLockFile fileName dependencies =
-    IO.File.WriteAllText(fileName, format dependencies)
+let CreateLockFile fileName (resolved:PackageResolution) =    
+    IO.File.WriteAllText(fileName, format resolved)

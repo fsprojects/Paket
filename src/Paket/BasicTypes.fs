@@ -38,7 +38,4 @@ type ResolvedVersion =
     | Resolved of Dependency
     | Conflict of Dependency * Dependency
 
-type PackageResolution = {
-    DirectDependencies : Map<string*string,Package list>
-    ResolvedVersionMap : Map<string,ResolvedVersion>
-}
+type PackageResolution =  Map<string,ResolvedVersion>

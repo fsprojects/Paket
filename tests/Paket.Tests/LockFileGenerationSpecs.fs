@@ -31,18 +31,14 @@ let expected = """NUGET
   specs:
     Castle.Windsor (2.1)
     Castle.Windsor-log4net (3.3)
-      Castle.Windsor (>= 2.0)
-      log4net (>= 1.0)
     Rx-Core (2.1)
     Rx-Main (2.0)
-      Rx-Core (>= 2.1)
     log (1.2)
-    log4net (1.1)
-      log (>= 1.0)"""
+    log4net (1.1)"""
 
 [<Test>]
 let ``should generate lock file``() = 
     let cfg = Config.FromCode config1
-    cfg.Resolve(DictionaryDiscovery graph).DirectDependencies
+    cfg.Resolve(DictionaryDiscovery graph)
     |> LockFile.format
     |> shouldEqual (normalizeLineEndings expected)

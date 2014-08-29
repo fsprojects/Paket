@@ -36,7 +36,7 @@ match command with
 
     let cfg = Config.ReadFromFile source
 
-    cfg.Resolve(Nuget.NugetDiscovery).DirectDependencies
+    cfg.Resolve(Nuget.NugetDiscovery)    
     |> LockFile.CreateLockFile lockfile
 
     printfn "Lockfile written to %s" lockfile
