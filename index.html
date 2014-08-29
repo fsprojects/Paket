@@ -66,6 +66,22 @@ It allows you to track and install the exact package versions that are needed.</
 You should commit <code>packages.fsx</code> and <code>package.lock</code> to your version control system.
 This ensures that other developers on your app, as well as your deployment environment, will all use the same third-party code that you are using now.</p>
 
+<p>The  <code>package.lock</code> file will look like this:</p>
+
+<table class="pre"><tr><td><pre lang="textfile">NUGET
+  remote: http://nuget.org/api/v2
+  specs:
+    Castle.Windsor (2.1)
+    Castle.Windsor-log4net (3.3)
+      Castle.Windsor (&gt;= 2.0)
+      log4net (&gt;= 1.0)
+    Rx-Core (2.1)
+    Rx-Main (2.0)
+      Rx-Core (&gt;= 2.1)
+    log (1.2)
+    log4net (1.1)
+      log (&gt;= 1.0)</pre></td></tr></table>
+
 <h2>Contributing and copyright</h2>
 
 <p>The project is hosted on <a href="https://github.com/fsprojects/Paket">GitHub</a> where you can <a href="https://github.com/fsprojects/Paket/issues">report issues</a>, fork 
