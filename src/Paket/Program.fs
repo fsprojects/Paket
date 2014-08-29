@@ -19,22 +19,31 @@ let parser = UnionArgParser.Create<CLIArguments>()
  
 let cmdArgs = System.Environment.GetCommandLineArgs()
 
-let results =
+let command,results =
     try
-         parser.Parse(cmdArgs.[1..])
+        cmdArgs.[1],parser.Parse(cmdArgs.[2..])
     with
     | _ -> 
          failwithf "Paket.exe%s%s" Environment.NewLine (parser.Usage() )
-         
-let source = results.GetResult <@ CLIArguments.Source @> 
-let lockfile =
-    match results.TryGetResult <@ CLIArguments.LockFile @> with
-    | Some x -> x
-    | _ -> 
-        let fi = FileInfo(source)
-        fi.Directory.FullName + Path.DirectorySeparatorChar.ToString() + fi.Name.Replace(fi.Extension,".lock")
 
-let cfg = Config.ReadFromFile source
+match command with
+| "install" ->         
+    let source = 
+        match results.TryGetResult <@ CLIArguments.Source @> with
+        | Some x -> x
+        | _ -> "packages.fsx"
 
-cfg.Resolve(Nuget.NugetDiscovery).DirectDependencies
-|> LockFile.CreateLockFile lockfile
+    let lockfile =
+        match results.TryGetResult <@ CLIArguments.LockFile @> with
+        | Some x -> x
+        | _ -> 
+            let fi = FileInfo(source)
+            fi.Directory.FullName + Path.DirectorySeparatorChar.ToString() + fi.Name.Replace(fi.Extension,".lock")
+
+    let cfg = Config.ReadFromFile source
+
+    cfg.Resolve(Nuget.NugetDiscovery).DirectDependencies
+    |> LockFile.CreateLockFile lockfile
+
+    printfn "Lockfile written to %s" lockfile
+| _ -> failwith "no command given"
