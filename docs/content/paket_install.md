@@ -4,8 +4,8 @@ paket install
 Ensures that all dependencies in your `packages.fsx` are available to your application.
 
     [lang=batchfile]
-    $ paket install [--source=FILE]
+    $ paket install [--package-file=FILE]
 
 Options:
 
-  `--source`:  Use the specified packages files instead of `packages.fsx`.
+  `--package-file`:  Use the specified packages file instead of `packages.fsx`.

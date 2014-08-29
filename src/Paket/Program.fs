@@ -4,12 +4,12 @@ open Nessos.UnionArgParser
 open Paket
 
 type CLIArguments =
-    | [<AltCommandLine("-s")>] Source of string
+    | Package_File of string
 with
     interface IArgParserTemplate with
         member s.Usage =
             match s with
-            | Source _ -> "specify a dependency definition."
+            | Package_File _ -> "specify a dependency definition."
 
 
 let parser = UnionArgParser.Create<CLIArguments>()
@@ -26,7 +26,7 @@ let command,results =
 match command with
 | "install" ->         
     let source = 
-        match results.TryGetResult <@ CLIArguments.Source @> with
+        match results.TryGetResult <@ CLIArguments.Package_File @> with
         | Some x -> x
         | _ -> "packages.fsx"
 
