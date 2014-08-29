@@ -1,6 +1,3 @@
-#I "../../bin"
-
-(**
 What is Paket?
 ==============
 
@@ -9,12 +6,13 @@ Paket is a package manager for .NET and mono projects. It tracks your NuGet pack
 Getting Started
 ---------------
 
-This example demonstrates using a function defined in this sample library.
+Specify your dependencies in a packages.fsx file in your project's root:
 
-*)
+    [lang=batchfile]
+    source "http://nuget.org/api/v2"
 
-
-(**
+    nuget "Castle.Windsor-log4net" "~> 3.2"
+    nuget "Rx-Main" "~> 2.0"
  
 Contributing and copyright
 --------------------------
@@ -33,4 +31,3 @@ redistribution for both commercial and non-commercial purposes. For more informa
   [issues]: https://github.com/fsprojects/Paket/issues
   [readme]: https://github.com/fsprojects/Paket/blob/master/README.md
   [license]: https://github.com/fsprojects/Paket/blob/master/LICENSE.txt
-*)
