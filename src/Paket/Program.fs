@@ -23,21 +23,26 @@ let command,results =
     | _ -> 
          failwithf "Paket.exe%s%s" Environment.NewLine (parser.Usage() )
 
-match command with
-| "install" ->         
-    let source = 
-        match results.TryGetResult <@ CLIArguments.Package_File @> with
-        | Some x -> x
-        | _ -> "packages.fsx"
+let source = 
+    match results.TryGetResult <@ CLIArguments.Package_File @> with
+    | Some x -> x
+    | _ -> "packages.fsx"
 
-    let lockfile =
-        let fi = FileInfo(source)
-        fi.Directory.FullName + Path.DirectorySeparatorChar.ToString() + fi.Name.Replace(fi.Extension,".lock")
+let lockfile =
+    let fi = FileInfo(source)
+    FileInfo(fi.Directory.FullName + Path.DirectorySeparatorChar.ToString() + fi.Name.Replace(fi.Extension,".lock"))
 
+let updateLockFile() =
     let cfg = Config.ReadFromFile source
 
     cfg.Resolve(Nuget.NugetDiscovery)    
-    |> LockFile.CreateLockFile lockfile
+    |> LockFile.CreateLockFile lockfile.FullName
 
-    printfn "Lockfile written to %s" lockfile
+    printfn "Lockfile written to %s" lockfile.FullName
+
+match command with
+| "install" ->
+    if not lockfile.Exists then
+        updateLockFile()
+| "update" -> updateLockFile()
 | _ -> failwith "no command given"

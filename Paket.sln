@@ -38,6 +38,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "content", "content", "{8E6D
 		docs\content\lockfile.md = docs\content\lockfile.md
 		docs\content\packages_file.md = docs\content\packages_file.md
 		docs\content\paket_install.md = docs\content\paket_install.md
+		docs\content\paket_update.md = docs\content\paket_update.md
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{ED8079DD-2B06-4030-9F0F-DC548F98E1C4}"
