@@ -16,12 +16,17 @@ The `package.lock` file is a concrete resolution of all direct or indirect depen
     NUGET
       remote: http://nuget.org/api/v2
       specs:
-        Castle.Windsor (2.1)
-        Castle.Windsor-log4net (3.3)
-        Rx-Core (2.1)
-        Rx-Main (2.0)
-        log (1.2)
-        log4net (1.1)
+        Castle.Core (3.3.0)
+        Castle.Core-log4net (3.3.0)
+        Castle.LoggingFacility (3.3.0)
+        Castle.Windsor (3.3.0)
+        Castle.Windsor-log4net (3.3.0)
+        Rx-Core (2.2.5)
+        Rx-Interfaces (2.2.5)
+        Rx-Linq (2.2.5)
+        Rx-Main (2.2.5)
+        Rx-PlatformServices (2.3)
+        log4net (1.2.10)
 
 Further runs of [paket install](packet_install.htm) will not analyze the `packages.fsx` file again.
 So if you commit `package.lock` to your version control system, 
