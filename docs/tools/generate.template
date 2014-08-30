@@ -16,7 +16,7 @@ let info =
     "project-author", "##Author##"
     "project-summary", "##Summary##"
     "project-github", githubLink
-    "project-nuget", "http://nuget.com/packages/##ProjectName##" ]
+    "project-nuget", "http://nuget.org/packages/##ProjectName##" ]
 
 // --------------------------------------------------------------------------------------
 // For typical project, no changes are needed below
