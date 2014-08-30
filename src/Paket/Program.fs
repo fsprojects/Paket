@@ -32,17 +32,11 @@ let lockfile =
     let fi = FileInfo(source)
     FileInfo(fi.Directory.FullName + Path.DirectorySeparatorChar.ToString() + fi.Name.Replace(fi.Extension,".lock"))
 
-let updateLockFile() =
-    let cfg = Config.ReadFromFile source
 
-    cfg.Resolve(Nuget.NugetDiscovery)    
-    |> LockFile.CreateLockFile lockfile.FullName
-
-    printfn "Lockfile written to %s" lockfile.FullName
 
 match command with
 | "install" ->
     if not lockfile.Exists then
-        updateLockFile()
-| "update" -> updateLockFile()
+        LockFile.Update source lockfile.FullName
+| "update" -> LockFile.Update source lockfile.FullName
 | _ -> failwith "no command given"

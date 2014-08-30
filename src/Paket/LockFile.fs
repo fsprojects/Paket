@@ -1,6 +1,7 @@
 ﻿module Paket.LockFile
 
 open System
+open System.IO
 
 let format (resolved:PackageResolution)  =
     // TODO: implement conflict handling
@@ -12,7 +13,7 @@ let format (resolved:PackageResolution)  =
                 match d.Referenced.VersionRange with
                 | Exactly v -> d.Referenced.Source,d.Referenced.Name,v
             )
-        |> Seq.groupBy (fun (s,n,v) -> s)
+        |> Seq.groupBy (fun (s,_,_) -> s)
    
     let all =
         [yield "NUGET"
@@ -24,5 +25,10 @@ let format (resolved:PackageResolution)  =
 
     String.Join(Environment.NewLine,all)
 
-let CreateLockFile fileName (resolved:PackageResolution) =    
-    IO.File.WriteAllText(fileName, format resolved)
+let Update packageFile lockFile =
+    let cfg = Config.ReadFromFile packageFile
+    let resolution = cfg.Resolve(Nuget.NugetDiscovery)
+
+    File.WriteAllText(lockFile, format resolution)
+
+    printfn "Lockfile written to %s" lockFile
