@@ -70,6 +70,7 @@
     <Compile Include="ResolveConfigSpecs.fs" />
     <Compile Include="LockFileGenerationSpecs.fs" />
     <Compile Include="LockFileGenerationWithMutlipleSourcesSpecs.fs" />
+    <Compile Include="LockFileParserSpecs.fs" />
     <None Include="packages" />
     <None Include="packages.config" />
   </ItemGroup>

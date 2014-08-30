@@ -70,14 +70,20 @@ let getDependencies nugetURL package version =
     }
 
 let DownloadPackage(source,name,version,targetFileName) =
-    let url = "TODO"
+    let url =
+        match source with
+        | "http://nuget.org/api/v2" -> 
+            sprintf "http://packages.nuget.org/v1/Package/Download/%s/%s" name version
+        | _ -> 
+            // TODO: How can we discover the download link
+            failwithf "unknown package source %s - can't download package %s %s" source name version
+    
     let client = new WebClient()
 
     printfn "Downloading %s to %s" url targetFileName
             
     // TODO: Set credentials
-    client.DownloadFile(url, targetFileName)            
-                
+    client.DownloadFile(url, targetFileName)
 
 
 let NugetDiscovery = 

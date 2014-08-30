@@ -56,3 +56,5 @@ let getSource resolved =
 
 
 let normalizeLineEndings (text:string) = text.Replace("\r\n","\n").Replace("\r","\n").Replace("\n",Environment.NewLine)
+
+let toLines (text:string) = text.Replace("\r\n","\n").Replace("\r","\n").Split('\n')

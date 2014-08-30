@@ -25,7 +25,7 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <WarningLevel>3</WarningLevel>
     <DocumentationFile>..\..\bin\Paket.xml</DocumentationFile>
-    <StartArguments>install</StartArguments>
+    <StartArguments>update</StartArguments>
     <StartAction>Project</StartAction>
     <StartProgram>Paket.exe</StartProgram>
     <StartWorkingDirectory>C:\code\paket\</StartWorkingDirectory>
@@ -76,6 +76,7 @@
     <Compile Include="Nuget.fs" />
     <Compile Include="Config.fs" />
     <Compile Include="LockFile.fs" />
+    <Compile Include="Process.fs" />
     <Compile Include="Program.fs" />
     <None Include="packages" />
     <Content Include="packages.config" />

@@ -1,7 +1,6 @@
 ﻿open System
-open System.IO
 open Nessos.UnionArgParser
-open Paket
+open Paket.Process
 
 type CLIArguments =
     | Package_File of string
@@ -23,20 +22,12 @@ let command,results =
     | _ -> 
          failwithf "Paket.exe%s%s" Environment.NewLine (parser.Usage() )
 
-let source = 
+let packageFile = 
     match results.TryGetResult <@ CLIArguments.Package_File @> with
     | Some x -> x
     | _ -> "packages.fsx"
 
-let lockfile =
-    let fi = FileInfo(source)
-    FileInfo(fi.Directory.FullName + Path.DirectorySeparatorChar.ToString() + fi.Name.Replace(fi.Extension,".lock"))
-
-
-
 match command with
-| "install" ->
-    if not lockfile.Exists then
-        LockFile.Update source lockfile.FullName
-| "update" -> LockFile.Update source lockfile.FullName
+| "install" -> Install false packageFile
+| "update" ->  Install true packageFile
 | _ -> failwith "no command given"

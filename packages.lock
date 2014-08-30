@@ -5,4 +5,4 @@ NUGET
     NUnit (2.6.3)
     NUnit.Runners (2.6.3)
     Newtonsoft.Json (6.0.4)
-    UnionArgParser (0.7.1)
+    UnionArgParser (0.7.2)

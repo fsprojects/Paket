@@ -25,6 +25,19 @@ let format (resolved:PackageResolution)  =
 
     String.Join(Environment.NewLine,all)
 
+/// Parses a lockfile from lines
+let Parse (lines: string seq) =
+    lines
+    |> Seq.skip 3
+    |> Seq.filter (fun p -> String.IsNullOrWhiteSpace p |> not)
+    |> Seq.map (fun p -> p.Replace(" ","").Replace(")",""))
+    |> Seq.map (fun p -> 
+        let splitted = p.Split('(')
+        { SourceType = "nuget"
+          Source = "http://nuget.org/api/v2"
+          Name = splitted.[0]
+          VersionRange = Exactly splitted.[1]})
+
 let Update packageFile lockFile =
     let cfg = Config.ReadFromFile packageFile
     let resolution = cfg.Resolve(Nuget.NugetDiscovery)
