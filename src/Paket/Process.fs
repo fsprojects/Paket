@@ -3,7 +3,6 @@
 open System.IO
 
 let DownloadPackages(lockFile : Package seq) = 
-    let targetFolder = DirectoryInfo("./packages")
     lockFile |> Seq.map (fun package -> 
                     let version = 
                         match package.VersionRange with
@@ -11,9 +10,12 @@ let DownloadPackages(lockFile : Package seq) =
                         | v -> failwithf "Version error in lockfile for %s %A" package.Name v
                     match package.SourceType with
                     | "nuget" -> 
-                        Nuget.DownloadPackage
-                            (package.Source, package.Name, version, 
-                             targetFolder.FullName + "/" + package.Name + "." + version + ".nupkg")
+                        let targetFile =
+                            Path.Combine(
+                                Nuget.CacheFolder,
+                                package.Name + "." + version + ".nupkg")
+
+                        Nuget.DownloadPackage(package.Source, package.Name, version, targetFile)
                     | _ -> failwithf "Can't download from source type %s" package.SourceType)
 
 let Install regenerate packageFile =

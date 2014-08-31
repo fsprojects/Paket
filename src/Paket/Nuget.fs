@@ -70,8 +70,12 @@ let getDependencies nugetURL package version =
         return packages
     }
 
-let DownloadPackage(source, name, version, targetFileName) = 
+let CacheFolder = 
+    Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Local/NuGet/Cache")
+
+let DownloadPackage(source, name, version) = 
     async { 
+        let targetFileName = Path.Combine(CacheFolder,name + "." + version + ".nupkg")
         let fi = FileInfo targetFileName
         if fi.Exists && fi.Length > 0L then return targetFileName else
         let url = 
