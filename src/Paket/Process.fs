@@ -9,13 +9,7 @@ let DownloadPackages(lockFile : Package seq) =
                         | Exactly v -> v
                         | v -> failwithf "Version error in lockfile for %s %A" package.Name v
                     match package.SourceType with
-                    | "nuget" -> 
-                        let targetFile =
-                            Path.Combine(
-                                Nuget.CacheFolder,
-                                package.Name + "." + version + ".nupkg")
-
-                        Nuget.DownloadPackage(package.Source, package.Name, version, targetFile)
+                    | "nuget" -> Nuget.DownloadPackage(package.Source, package.Name, version)
                     | _ -> failwithf "Can't download from source type %s" package.SourceType)
 
 let Install regenerate packageFile =
