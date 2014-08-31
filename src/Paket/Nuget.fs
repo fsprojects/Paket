@@ -1,6 +1,7 @@
 ﻿module Paket.Nuget
 
 open System
+open System.IO
 open System.Net
 open System.Xml
 open Newtonsoft.Json
@@ -71,6 +72,8 @@ let getDependencies nugetURL package version =
 
 let DownloadPackage(source, name, version, targetFileName) = 
     async { 
+        let fi = FileInfo targetFileName
+        if fi.Exists && fi.Length > 0L then return targetFileName else
         let url = 
             match source with
             | "http://nuget.org/api/v2" -> sprintf "http://packages.nuget.org/v1/Package/Download/%s/%s" name version
