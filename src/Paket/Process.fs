@@ -4,17 +4,17 @@ open System.IO
 
 let DownloadPackages(lockFile : Package seq) = 
     let targetFolder = DirectoryInfo("./packages")
-    for package in lockFile do
-        let version = 
-            match package.VersionRange with
-            | Exactly v -> v
-            | v -> failwithf "Version error in lockfile for %s %A" package.Name v
-        match package.SourceType with
-        | "nuget" -> 
-            Nuget.DownloadPackage
-                (package.Source, package.Name, version, 
-                 targetFolder.FullName + "/" + package.Name + "." + version + ".nupkg")
-        | _ -> failwithf "Can't download from source type %s" package.SourceType
+    lockFile |> Seq.map (fun package -> 
+                    let version = 
+                        match package.VersionRange with
+                        | Exactly v -> v
+                        | v -> failwithf "Version error in lockfile for %s %A" package.Name v
+                    match package.SourceType with
+                    | "nuget" -> 
+                        Nuget.DownloadPackage
+                            (package.Source, package.Name, version, 
+                             targetFolder.FullName + "/" + package.Name + "." + version + ".nupkg")
+                    | _ -> failwithf "Can't download from source type %s" package.SourceType)
 
 let Install regenerate packageFile =
     let lockfile =
@@ -27,3 +27,5 @@ let Install regenerate packageFile =
     File.ReadAllLines lockfile.FullName
     |> LockFile.Parse
     |> DownloadPackages
+    |> Async.Parallel
+    |> Async.RunSynchronously

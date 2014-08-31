@@ -69,22 +69,23 @@ let getDependencies nugetURL package version =
         return packages
     }
 
-let DownloadPackage(source,name,version,targetFileName) =
-    let url =
-        match source with
-        | "http://nuget.org/api/v2" -> 
-            sprintf "http://packages.nuget.org/v1/Package/Download/%s/%s" name version
-        | _ -> 
-            // TODO: How can we discover the download link
-            failwithf "unknown package source %s - can't download package %s %s" source name version
-    
-    let client = new WebClient()
-
-    printfn "Downloading %s to %s" url targetFileName
-            
-    // TODO: Set credentials
-    client.DownloadFile(url, targetFileName)
-
+let DownloadPackage(source, name, version, targetFileName) = 
+    async { 
+        let url = 
+            match source with
+            | "http://nuget.org/api/v2" -> sprintf "http://packages.nuget.org/v1/Package/Download/%s/%s" name version
+            | _ -> 
+                // TODO: How can we discover the download link?
+                failwithf "unknown package source %s - can't download package %s %s" source name version
+        
+        let client = new WebClient()
+        printfn "Downloading %s" url
+        // TODO: Set credentials
+        client.DownloadFileAsync(Uri url, targetFileName)
+        let! _ = Async.AwaitEvent(client.DownloadFileCompleted)
+        printfn "Finished download of %s" url
+        return targetFileName
+    }
 
 let NugetDiscovery = 
     { new IDiscovery with
