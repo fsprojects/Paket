@@ -20,8 +20,19 @@ let getProject (fileName:string) =
 type ReferenceNode = {
     DLLName : string
     Node: XmlNode
+    Private : bool
+    HintPath : string option
     }
 
 let getReferences (doc : XmlDocument, manager) = 
     [ for node in doc.SelectNodes("//ns:Project/ns:ItemGroup/ns:Reference", manager) do
-          yield { DLLName = node.Attributes.["Include"].InnerText.Split(',').[0]; Node = node} ]
+          let hintPath = ref None
+          let privateDll = ref false
+          for c in node.ChildNodes do
+              if c.Name.ToLower() = "hintpath" then hintPath := Some c.InnerText
+              if c.Name.ToLower() = "private" then privateDll := true
+
+          yield { DLLName = node.Attributes.["Include"].InnerText.Split(',').[0]
+                  Private = !privateDll
+                  HintPath = !hintPath
+                  Node = node } ]
