@@ -39,7 +39,13 @@ let FindOutdated(packageFile) =
 
     [for p in installed do
         match newPackages.[p.Name] with
-        | Resolved newVersion ->  if p.VersionRange <> newVersion.Referenced.VersionRange then yield newVersion.Referenced
+        | Resolved newVersion -> 
+            if p.VersionRange <> newVersion.Referenced.VersionRange then 
+                match newVersion.Referenced.VersionRange with
+                | Specific v2 -> 
+                    match p.VersionRange with
+                    | Specific v1 -> yield p.Name,v1,v2
+
         | Conflict(_) -> failwith "version conflict handling not implemented" ]
 
 /// Prints all outdated packages.
@@ -47,6 +53,7 @@ let ListOutdated(packageFile) =
     let allOutdated = FindOutdated packageFile
     if allOutdated = [] then
         tracefn "No outdated packages found."
-    for outdated in allOutdated do
-        match outdated.VersionRange with
-        | Specific v ->  tracefn "%s %s" outdated.Name <| v.ToString()
+    else
+        tracefn "Outdated packages found:"
+        for name,oldVersion,newVersion in allOutdated do
+            tracefn "  * %s %s -> %s" name (oldVersion.ToString()) (newVersion.ToString())
