@@ -69,9 +69,10 @@ let getDependencies nugetURL package version =
             |> Array.toList
         return packages
     }
-
+    
 let CacheFolder = 
-    Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Local/NuGet/Cache")
+    let appData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)
+    Path.Combine(Path.Combine(appData, "NuGet"), "Cache")
 
 let DownloadPackage(source, name, version) = 
     async { 
