@@ -27,17 +27,27 @@ let format (resolved:PackageResolution)  =
 
 /// Parses a lockfile from lines
 let Parse (lines: string seq) =
-    lines
-    |> Seq.skip 3
-    |> Seq.filter (fun p -> String.IsNullOrWhiteSpace p |> not)
-    |> Seq.map (fun p -> p.Replace(" ","").Replace(")",""))
-    |> Seq.map (fun p -> 
-        let splitted = p.Split('(')
-        { SourceType = "nuget"
-          Source = "http://nuget.org/api/v2"
-          Name = splitted.[0]
-          VersionRange = VersionRange.Exactly splitted.[1]
-          })
+    let lines = 
+        lines
+        |> Seq.filter (fun line -> String.IsNullOrWhiteSpace line |> not)
+        |> Seq.map (fun line ->  line.Replace(" ",""))
+        |> Seq.skip 1
+    let remote = ref "http://nuget.org/api/v2"
+    
+    [for line in lines do
+        if line.StartsWith("remote:") then
+            remote := line.Replace("remote:","")
+        elif line.StartsWith("specs:") then 
+            ()
+        else
+            let spec = line.Replace(")","")
+            let splitted = spec.Split('(')
+            yield
+                { SourceType = "nuget"
+                  Source = !remote
+                  Name = splitted.[0]
+                  VersionRange = VersionRange.Exactly splitted.[1]
+                  }]
 
 let Update packageFile lockFile =
     let cfg = Config.ReadFromFile packageFile
