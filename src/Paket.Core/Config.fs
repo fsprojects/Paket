@@ -6,7 +6,7 @@ open System.Collections.Generic
 open Microsoft.FSharp.Compiler.Interactive.Shell
 open Paket
 
-// [omit]
+/// [omit]
 module ConfigHelpers = 
     let initialCode = """
 open System.Collections.Generic
