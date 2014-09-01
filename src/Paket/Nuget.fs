@@ -5,6 +5,7 @@ open System.IO
 open System.Net
 open System.Xml
 open Newtonsoft.Json
+open System.IO.Compression
 
 let private get (url : string) = 
     async { 
@@ -76,11 +77,11 @@ let CacheFolder =
     Path.Combine(Path.Combine(appData, "NuGet"), "Cache")
 
 /// Downloads the given package to the NuGet Cache folder
-let DownloadPackage(source, name, version) = 
+let DownloadPackage(source, name, version, force) = 
     async { 
         let targetFileName = Path.Combine(CacheFolder,name + "." + version + ".nupkg")
         let fi = FileInfo targetFileName
-        if fi.Exists && fi.Length > 0L then 
+        if not force && fi.Exists && fi.Length > 0L then 
             tracefn "%s %s already downloaded" name version
             return targetFileName 
         else
@@ -100,13 +101,20 @@ let DownloadPackage(source, name, version) =
     }
 
 /// Extracts the given package to the ./packages folder
-let ExtractPackage(fileName, name, version) = 
+let ExtractPackage(fileName, name, version, force) = 
     async { 
         let targetFolder = DirectoryInfo(Path.Combine("packages", name)).FullName
-        CleanDir targetFolder
-        Compression.ZipFile.ExtractToDirectory(fileName, targetFolder)
-        tracefn "%s %s unzipped" name version
-        return targetFolder
+        let fi = FileInfo(fileName)
+        let targetFile = FileInfo(Path.Combine(targetFolder,fi.Name))
+        if not force && targetFile.Exists then
+            tracefn "%s %s already extracted" name version
+            return targetFolder
+        else
+            CleanDir targetFolder
+            File.Copy(fileName,targetFile.FullName)
+            Compression.ZipFile.ExtractToDirectory(fileName, targetFolder)
+            tracefn "%s %s unzipped" name version
+            return targetFolder
     }
 
 let NugetDiscovery = 

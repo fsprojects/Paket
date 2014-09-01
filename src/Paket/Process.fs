@@ -2,7 +2,7 @@
 
 open System.IO
 
-let ExtractPackages(packages : Package seq) = 
+let ExtractPackages force (packages : Package seq) = 
     packages |> Seq.map (fun package -> 
                     let version = 
                         match package.VersionRange with
@@ -11,11 +11,11 @@ let ExtractPackages(packages : Package seq) =
                     match package.SourceType with
                     | "nuget" -> 
                         async {
-                            let! packageFile = Nuget.DownloadPackage(package.Source, package.Name, version.ToString())
-                            return! Nuget.ExtractPackage(packageFile,package.Name, version.ToString()) }
+                            let! packageFile = Nuget.DownloadPackage(package.Source, package.Name, version.ToString(), force)
+                            return! Nuget.ExtractPackage(packageFile,package.Name, version.ToString(), force) }
                     | _ -> failwithf "Can't download from source type %s" package.SourceType)
 
-let Install regenerate packageFile =
+let Install regenerate force packageFile =
     let lockfile =
         let fi = FileInfo(packageFile)
         FileInfo(fi.Directory.FullName + Path.DirectorySeparatorChar.ToString() + fi.Name.Replace(fi.Extension,".lock"))
@@ -25,7 +25,7 @@ let Install regenerate packageFile =
 
     File.ReadAllLines lockfile.FullName
     |> LockFile.Parse
-    |> ExtractPackages
+    |> ExtractPackages force
     |> Async.Parallel
     |> Async.RunSynchronously
     |> ignore

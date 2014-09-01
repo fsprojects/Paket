@@ -4,11 +4,13 @@ open Paket.Process
 
 type CLIArguments =
     | Package_File of string
+    | Force
 with
     interface IArgParserTemplate with
         member s.Usage =
             match s with
             | Package_File _ -> "specify a dependency definition."
+            | Force -> "specify a dependency definition."
 
 
 let parser = UnionArgParser.Create<CLIArguments>()
@@ -27,7 +29,13 @@ let packageFile =
     | Some x -> x
     | _ -> "packages.fsx"
 
+let force = 
+    match results.TryGetResult <@ CLIArguments.Force @> with
+    | Some _ -> true
+    | None -> false
+
 match command with
-| "install" -> Install false packageFile
-| "update" ->  Install true packageFile
+| "install" -> Install false force packageFile
+| "update" ->  Install true force packageFile
 | _ -> failwith "no command given"
+|> ignore
