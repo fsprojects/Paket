@@ -25,3 +25,4 @@ let Install regenerate packageFile =
     |> DownloadPackages
     |> Async.Parallel
     |> Async.RunSynchronously
+    |> ignore

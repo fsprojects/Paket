@@ -9,6 +9,7 @@ open Newtonsoft.Json
 let private get (url : string) = 
     async { 
         use client = new WebClient()
+
         try 
             return! client.AsyncDownloadString(Uri(url))
         with exn -> 
@@ -78,21 +79,24 @@ let DownloadPackage(source, name, version) =
     async { 
         let targetFileName = Path.Combine(CacheFolder,name + "." + version + ".nupkg")
         let fi = FileInfo targetFileName
-        if fi.Exists && fi.Length > 0L then return targetFileName else
-        let url = 
-            match source with
-            | "http://nuget.org/api/v2" -> sprintf "http://packages.nuget.org/v1/Package/Download/%s/%s" name version
-            | _ -> 
-                // TODO: How can we discover the download link?
-                failwithf "unknown package source %s - can't download package %s %s" source name version
+        if fi.Exists && fi.Length > 0L then 
+            tracefn "%s %s already downloaded" name version
+            return targetFileName 
+        else
+            let url = 
+                match source with
+                | "http://nuget.org/api/v2" -> sprintf "http://packages.nuget.org/v1/Package/Download/%s/%s" name version
+                | _ -> 
+                    // TODO: How can we discover the download link?
+                    failwithf "unknown package source %s - can't download package %s %s" source name version
         
-        let client = new WebClient()
-        printfn "Downloading %s" url
-        // TODO: Set credentials
-        client.DownloadFileAsync(Uri url, targetFileName)
-        let! _ = Async.AwaitEvent(client.DownloadFileCompleted)
-        printfn "Finished download of %s" url
-        return targetFileName
+            let client = new WebClient()
+            tracefn "Downloading %s %s" name version
+            // TODO: Set credentials
+            client.DownloadFileAsync(Uri url, targetFileName)
+            let! _ = Async.AwaitEvent(client.DownloadFileCompleted)
+            tracefn "Finished %s %s" name version
+            return targetFileName
     }
 
 let NugetDiscovery = 

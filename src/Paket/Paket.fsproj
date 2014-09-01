@@ -72,6 +72,7 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Compile Include="BasicTypes.fs" />
+    <Compile Include="Utils.fs" />
     <Compile Include="Resolver.fs" />
     <Compile Include="Nuget.fs" />
     <Compile Include="Config.fs" />
