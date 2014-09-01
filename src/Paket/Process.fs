@@ -2,14 +2,17 @@
 
 open System.IO
 
-let DownloadPackages(lockFile : Package seq) = 
-    lockFile |> Seq.map (fun package -> 
+let ExtractPackages(packages : Package seq) = 
+    packages |> Seq.map (fun package -> 
                     let version = 
                         match package.VersionRange with
-                        | Minimum v -> v
+                        | Specific v -> v
                         | v -> failwithf "Version error in lockfile for %s %A" package.Name v
                     match package.SourceType with
-                    | "nuget" -> Nuget.DownloadPackage(package.Source, package.Name, version.ToString())
+                    | "nuget" -> 
+                        async {
+                            let! packageFile = Nuget.DownloadPackage(package.Source, package.Name, version.ToString())
+                            return! Nuget.ExtractPackage(packageFile,package.Name, version.ToString()) }
                     | _ -> failwithf "Can't download from source type %s" package.SourceType)
 
 let Install regenerate packageFile =
@@ -22,7 +25,7 @@ let Install regenerate packageFile =
 
     File.ReadAllLines lockfile.FullName
     |> LockFile.Parse
-    |> DownloadPackages
+    |> ExtractPackages
     |> Async.Parallel
     |> Async.RunSynchronously
     |> ignore

@@ -75,6 +75,7 @@ let CacheFolder =
     let appData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)
     Path.Combine(Path.Combine(appData, "NuGet"), "Cache")
 
+/// Downloads the given package to the NuGet Cache folder
 let DownloadPackage(source, name, version) = 
     async { 
         let targetFileName = Path.Combine(CacheFolder,name + "." + version + ".nupkg")
@@ -95,8 +96,17 @@ let DownloadPackage(source, name, version) =
             // TODO: Set credentials
             client.DownloadFileAsync(Uri url, targetFileName)
             let! _ = Async.AwaitEvent(client.DownloadFileCompleted)
-            tracefn "Finished %s %s" name version
             return targetFileName
+    }
+
+/// Extracts the given package to the ./packages folder
+let ExtractPackage(fileName, name, version) = 
+    async { 
+        let targetFolder = DirectoryInfo(Path.Combine("packages", name)).FullName
+        CleanDir targetFolder
+        Compression.ZipFile.ExtractToDirectory(fileName, targetFolder)
+        tracefn "%s %s unzipped" name version
+        return targetFolder
     }
 
 let NugetDiscovery = 
