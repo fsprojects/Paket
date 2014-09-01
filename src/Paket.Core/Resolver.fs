@@ -1,4 +1,5 @@
-﻿module Paket.Resolver
+﻿/// Contains logic which helps to resolve the dependency graph.
+module Paket.Resolver
 
 open Paket
 
@@ -39,7 +40,8 @@ let private addDependency package dependencies newDependency =
     | Some oldDependency -> Map.add package (shrink(oldDependency,newDependency)) dependencies
     | None -> Map.add package newDependency dependencies   
 
-let Resolve(discovery : IDiscovery, dependencies:Package seq) =    
+/// Resolves all direct and indirect dependencies
+let Resolve(discovery : IDiscovery, rootDependencies:Package seq) =    
     let rec analyzeGraph processed (dependencies:Map<string,Shrinked>) =
         if Map.isEmpty dependencies then processed else
         let current = Seq.head dependencies
@@ -102,7 +104,7 @@ let Resolve(discovery : IDiscovery, dependencies:Package seq) =
                 |> analyzeGraph resolved
 
     
-    dependencies
+    rootDependencies
     |> Seq.map (fun p -> 
                     p.Name, 
                     FromRoot { Name = p.Name
