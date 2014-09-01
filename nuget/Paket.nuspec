@@ -7,7 +7,7 @@
     <owners>@authors@</owners>
     <licenseUrl>http://github.com/fsprojects/Paket/blob/master/LICENSE.txt</licenseUrl>
     <projectUrl>http://fsprojects.github.com/Paket</projectUrl>
-    <iconUrl>https://raw.github.com/fsharp/Paket/master/nuget/logo.png</iconUrl>
+    <iconUrl>https://raw.githubusercontent.com/fsprojects/Paket/master/docs/files/img/logo.png</iconUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <summary>@summary@</summary>
     <description>@description@</description>
