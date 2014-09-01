@@ -1,32 +1,34 @@
 ﻿[<AutoOpen>]
+/// Contains methods for IO.
 module Paket.Utils
 
 open System
 open System.IO
 
+/// [omit]
 let monitor = new Object()
 
-let trace (s:string) = lock monitor (fun () -> printfn "%s" s)
+/// [omit]
+let trace (s : string) = lock monitor (fun () -> printfn "%s" s)
 
+/// [omit]
 let tracefn fmt = Printf.ksprintf trace fmt
 
 /// Creates a directory if it does not exist.
 let CreateDir path = 
     let dir = DirectoryInfo path
-    if not dir.Exists then 
-        dir.Create()
+    if not dir.Exists then dir.Create()
 
 /// Cleans a directory by removing all files and sub-directories.
 let CleanDir path = 
     let di = DirectoryInfo path
     if di.Exists then 
         // delete all files
-        Directory.GetFiles(path, "*.*", SearchOption.AllDirectories) 
-        |> Seq.iter (fun file -> 
-                        let fi = FileInfo file
-                        fi.IsReadOnly <- false
-                        fi.Delete())
-
+        let files = Directory.GetFiles(path, "*.*", SearchOption.AllDirectories)
+        files |> Seq.iter (fun file -> 
+                     let fi = FileInfo file
+                     fi.IsReadOnly <- false
+                     fi.Delete())
         // deletes all subdirectories
         let rec deleteDirs actDir = 
             Directory.GetDirectories(actDir) |> Seq.iter deleteDirs

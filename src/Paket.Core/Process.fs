@@ -21,7 +21,7 @@ let Install regenerate force packageFile =
         FileInfo(fi.Directory.FullName + Path.DirectorySeparatorChar.ToString() + fi.Name.Replace(fi.Extension,".lock"))
 
     if regenerate || (not lockfile.Exists) then
-        LockFile.Update packageFile lockfile.FullName
+        LockFile.Update(packageFile,lockfile.FullName)
 
     File.ReadAllLines lockfile.FullName
     |> LockFile.Parse
