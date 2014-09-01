@@ -36,6 +36,7 @@
 
 <h1>Process</h1>
 <div class="xmldoc">
+<p>Contains methods for the install and update process.</p>
 </div>
 
 <!-- Render nested types and modules, if there are any -->
@@ -49,37 +50,39 @@
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '3', 3)" onmouseover="showTip(event, '3', 3)">
-            ExtractPackages force packages
+          <code onmouseout="hideTip(event, '2', 2)" onmouseover="showTip(event, '2', 2)">
+            ExtractPackages (force, packages)
           </code>
-          <div class="tip" id="3">
-            <strong>Signature:</strong> force:bool -&gt; packages:seq&lt;Package&gt; -&gt; seq&lt;Async&lt;string&gt;&gt;<br />
+          <div class="tip" id="2">
+            <strong>Signature:</strong> (force:bool * packages:seq&lt;Package&gt;) -&gt; seq&lt;Async&lt;string&gt;&gt;<br />
                       </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Process.fs#L5-5" class="github-link">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Process.fs#L7-7" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
-          
+          <p>Downloads and extracts all package.</p>
+
         </td>
       </tr>
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '13', 13)" onmouseover="showTip(event, '13', 13)">
-            Install regenerate force packageFile
+          <code onmouseout="hideTip(event, '4', 4)" onmouseover="showTip(event, '4', 4)">
+            Install (regenerate, force, packageFile)
           </code>
-          <div class="tip" id="13">
-            <strong>Signature:</strong> regenerate:bool -&gt; force:bool -&gt; packageFile:string -&gt; unit<br />
+          <div class="tip" id="4">
+            <strong>Signature:</strong> (regenerate:bool * force:bool * packageFile:string) -&gt; unit<br />
                       </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Process.fs#L18-18" class="github-link">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Process.fs#L21-21" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
-          
+          <p>Installs the given packageFile.</p>
+
         </td>
       </tr>
     </tbody>
