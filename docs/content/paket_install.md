@@ -9,4 +9,5 @@ Ensures that all dependencies in your `packages.fsx` are available to your appli
 Options:
 
   `--force`:  Forces the download and reinstallation of all packages.
+
   `--package-file`:  Use the specified packages file instead of `packages.fsx`.
