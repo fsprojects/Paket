@@ -35,7 +35,7 @@ let force =
     | None -> false
 
 match command with
-| "install" -> Install false force packageFile
-| "update" ->  Install true force packageFile
+| "install" -> Install(false,force,packageFile)
+| "update" ->  Install(true,force,packageFile)
 | _ -> failwith "no command given"
 |> ignore
