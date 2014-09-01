@@ -36,6 +36,7 @@
 
 <h1>Resolver</h1>
 <div class="xmldoc">
+<p>Contains logic which helps to resolve the dependency graph.</p>
 </div>
 
 <!-- Render nested types and modules, if there are any -->
@@ -50,18 +51,19 @@
         <td class="member-name">
 
           <code onmouseout="hideTip(event, '3', 3)" onmouseover="showTip(event, '3', 3)">
-            Resolve (discovery, dependencies)
+            Resolve (discovery, rootDependencies)
           </code>
           <div class="tip" id="3">
-            <strong>Signature:</strong> (discovery:IDiscovery * dependencies:seq&lt;Package&gt;) -&gt; Map&lt;string,ResolvedVersion&gt;<br />
+            <strong>Signature:</strong> (discovery:IDiscovery * rootDependencies:seq&lt;Package&gt;) -&gt; Map&lt;string,ResolvedVersion&gt;<br />
                       </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Resolver.fs#L42-42" class="github-link">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Resolver.fs#L44-44" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
-          
+          <p>Resolves all direct and indirect dependencies</p>
+
         </td>
       </tr>
     </tbody>
