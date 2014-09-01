@@ -95,7 +95,7 @@ type SemVerInfo =
                 else 0
             | _ -> invalidArg "yobj" "cannot compare values of different types"
 
-/// Parser for [SemVer docs](http://semver.org/).
+/// Parser for [SemVer](http://semver.org/).
 module SemVer = 
     /// Parses the given version string into a SemVerInfo which can be printed using ToString() or compared
     /// according to the rules described in the [SemVer docs](http://semver.org/).
