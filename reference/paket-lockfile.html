@@ -36,6 +36,7 @@
 
 <h1>LockFile</h1>
 <div class="xmldoc">
+<p>Contains methods to handle lockfiles.</p>
 </div>
 
 <!-- Render nested types and modules, if there are any -->
@@ -49,33 +50,15 @@
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '1', 1)" onmouseover="showTip(event, '1', 1)">
-            format resolved
-          </code>
-          <div class="tip" id="1">
-            <strong>Signature:</strong> resolved:PackageResolution -&gt; string<br />
-                      </div>
-        </td>
-        <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/LockFile.fs#L6-6" class="github-link">
-              <img src="../content/img/github.png" class="normal" />
-              <img src="../content/img/github-blue.png" class="hover" />
-            </a>
-          
-        </td>
-      </tr>
-      <tr>
-        <td class="member-name">
-
-          <code onmouseout="hideTip(event, '4', 4)" onmouseover="showTip(event, '4', 4)">
+          <code onmouseout="hideTip(event, '14', 14)" onmouseover="showTip(event, '14', 14)">
             Parse lines
           </code>
-          <div class="tip" id="4">
+          <div class="tip" id="14">
             <strong>Signature:</strong> lines:seq&lt;string&gt; -&gt; Package list<br />
                       </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/LockFile.fs#L29-29" class="github-link">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/LockFile.fs#L31-31" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -86,19 +69,20 @@
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '5', 5)" onmouseover="showTip(event, '5', 5)">
-            Update packageFile lockFile
+          <code onmouseout="hideTip(event, '19', 19)" onmouseover="showTip(event, '19', 19)">
+            Update (packageFile, lockFile)
           </code>
-          <div class="tip" id="5">
-            <strong>Signature:</strong> packageFile:string -&gt; lockFile:string -&gt; unit<br />
+          <div class="tip" id="19">
+            <strong>Signature:</strong> (packageFile:string * lockFile:string) -&gt; unit<br />
                       </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/LockFile.fs#L52-52" class="github-link">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/LockFile.fs#L51-51" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
-          
+          <p>Updates the lockfile with the analyzed dependencies from the packageFile.</p>
+
         </td>
       </tr>
     </tbody>
