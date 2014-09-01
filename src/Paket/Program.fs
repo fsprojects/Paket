@@ -1,6 +1,8 @@
-﻿open System
+﻿/// [omit]
+module Paket.Program
+
+open System
 open Nessos.UnionArgParser
-open Paket
 
 type CLIArguments =
     | Package_File of string
