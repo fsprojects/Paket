@@ -2,7 +2,10 @@ NUGET
   remote: http://nuget.org/api/v2
   specs:
     FSharp.Compiler.Service (0.0.59)
+    FSharp.Formatting (2.4.9)
+    Microsoft.AspNet.Razor (3.2.2)
     NUnit (2.6.3)
     NUnit.Runners (2.6.3)
     Newtonsoft.Json (6.0.4)
-    UnionArgParser (0.7.2)
+    RazorEngine (3.4.1)
+    UnionArgParser (0.8.0)
