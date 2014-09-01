@@ -1,5 +1,6 @@
 ﻿namespace Paket
 
+/// Represents version information.
 type VersionRange = 
     | Latest
     | Minimum of SemVerInfo
@@ -22,17 +23,19 @@ type VersionRange =
 
     static member Between(version1,version2) = Range(SemVer.parse version1, SemVer.parse version2)
 
-
+/// Represents a package.
 type Package = 
     { Name : string
       VersionRange : VersionRange
       SourceType : string
       Source : string }
 
+/// Represents a package dependency.
 type PackageDependency = 
     { Defining : Package
       Referenced : Package }
 
+/// Represents a dependency.
 type Dependency = 
     | FromRoot of Package
     | FromPackage of PackageDependency
@@ -41,12 +44,15 @@ type Dependency =
         | FromRoot p -> p
         | FromPackage d -> d.Referenced
 
+/// Interface for discovery APIs.
 type IDiscovery = 
     abstract GetDirectDependencies : string * string * string * string -> Async<Package list>
     abstract GetVersions : string * string * string -> Async<string seq>
 
-type ResolvedVersion = 
+/// Represents a resolved dependency.
+type ResolvedDependency = 
     | Resolved of Dependency
     | Conflict of Dependency * Dependency
 
-type PackageResolution =  Map<string,ResolvedVersion>
+/// Represents a complete dependency resolution.
+type PackageResolution =  Map<string,ResolvedDependency>

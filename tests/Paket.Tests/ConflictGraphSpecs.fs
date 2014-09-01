@@ -47,7 +47,7 @@ let ``should analyze graph and report conflict``() =
                             VersionRange = VersionRange.Exactly "1.6"
                             SourceType = ""
                             Source = "" } }
-    resolved.["D"] |> shouldEqual (ResolvedVersion.Conflict conflict)
+    resolved.["D"] |> shouldEqual (ResolvedDependency.Conflict conflict)
     getVersion resolved.["E"] |> shouldEqual "4.3"
     getDefiningPackage resolved.["E"] |> shouldEqual "B"
     getDefiningVersion resolved.["E"] |> shouldEqual "1.1"
@@ -91,4 +91,4 @@ let ``should analyze graph2 and report conflict``() =
                             VersionRange = VersionRange.Between("1.6", "1.7")
                             SourceType = ""
                             Source = "" } }
-    resolved.["D"] |> shouldEqual (ResolvedVersion.Conflict conflict)
+    resolved.["D"] |> shouldEqual (ResolvedDependency.Conflict conflict)

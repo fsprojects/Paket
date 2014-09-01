@@ -49,7 +49,7 @@ let Resolve(discovery : IDiscovery, rootDependencies:Package seq) =
 
         match current.Value with
         | Shrinked.Conflict(c1,c2) -> 
-            let resolved =  Map.add resolvedName (ResolvedVersion.Conflict(c1,c2)) processed
+            let resolved =  Map.add resolvedName (ResolvedDependency.Conflict(c1,c2)) processed
             analyzeGraph resolved (Map.remove resolvedName dependencies)
         | Ok dependency -> 
             match Map.tryFind resolvedName processed with
@@ -76,7 +76,7 @@ let Resolve(discovery : IDiscovery, rootDependencies:Package seq) =
                       SourceType = dependency.Referenced.SourceType
                       Source = dependency.Referenced.Source }
                 let resolvedDependency = 
-                    ResolvedVersion.Resolved(match dependency with
+                    ResolvedDependency.Resolved(match dependency with
                                              | FromRoot _ -> FromRoot resolvedPackage
                                              | FromPackage d -> 
                                                  FromPackage { Defining = d.Defining
