@@ -2,9 +2,10 @@
 <html lang="en">
   <head>
     <meta charset="utf-8"/>
-    <title>PackageResolution - Paket</title>
+    <title>paket outdated
+</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-    <meta name="description" content=""/>
+    <meta name="description" content="A dependency manager for .NET"/>
     <meta name="author" content="Steffen Forkmann, Alexander Gross"/>
 
     <script src="https://code.jquery.com/jquery-1.8.0.js"></script>
@@ -31,63 +32,16 @@
       <div class="row">
         <div class="span9" id="main">
           
+<h1>paket outdated</h1>
 
+<p>Lists all dependencies which have new versions available.</p>
 
+<table class="pre"><tr><td><pre lang="batchfile">$ paket outdated [--package-file=FILE]</pre></td></tr></table>
 
-<h1>PackageResolution</h1>
-<div class="xmldoc">
-<p>Represents a complete dependency resolution.</p>
-</div>
-  <h3>Instance members</h3>
-  <table class="table table-bordered member-list">
-    <thead>
-      <tr><td>Instance member</td><td>Description</td></tr>
-    </thead>
-    <tbody>
-      <tr>
-        <td class="member-name">
+<p>Options:</p>
 
-          <code onmouseout="hideTip(event, '36', 36)" onmouseover="showTip(event, '36', 36)">
-            Count
-          </code>
-          <div class="tip" id="36">
-            <strong>Signature:</strong> int<br />
-                      </div>
-        </td>
-        <td class="xmldoc">
-          
-        </td>
-      </tr>
-      <tr>
-        <td class="member-name">
+<p><code>--package-file</code>:  Use the specified packages file instead of <code>packages.fsx</code>.</p>
 
-          <code onmouseout="hideTip(event, '37', 37)" onmouseover="showTip(event, '37', 37)">
-            IsEmpty
-          </code>
-          <div class="tip" id="37">
-            <strong>Signature:</strong> bool<br />
-                      </div>
-        </td>
-        <td class="xmldoc">
-          
-        </td>
-      </tr>
-      <tr>
-        <td class="member-name">
-
-          <code onmouseout="hideTip(event, '38', 38)" onmouseover="showTip(event, '38', 38)">
-            [key]
-          </code>
-          <div class="tip" id="38">
-            <strong>Signature:</strong> key:string -&gt; ResolvedDependency<br />
-                      </div>
-        </td>
-        <td class="xmldoc">
-          
-        </td>
-      </tr>
-    </tbody>
-  </table>
 
         </div>
         <div class="span3">
@@ -110,6 +64,7 @@
 
             <li class="nav-header">Paket commands</li>
             <li><a href="/Paket/paket_install.html">paket install</a></li>
+            <li><a href="/Paket/paket_outdated.html">paket outdated</a></li>
             <li><a href="/Paket/paket_update.html">paket update</a></li>
           </ul>
         </div>
