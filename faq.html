@@ -2,9 +2,10 @@
 <html lang="en">
   <head>
     <meta charset="utf-8"/>
-    <title>PackageResolution - Paket</title>
+    <title>FAQ - Frequently Asked Questions
+</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-    <meta name="description" content=""/>
+    <meta name="description" content="A dependency manager for .NET"/>
     <meta name="author" content="Steffen Forkmann, Alexander Gross"/>
 
     <script src="https://code.jquery.com/jquery-1.8.0.js"></script>
@@ -31,62 +32,15 @@
       <div class="row">
         <div class="span9" id="main">
           
+<h1>FAQ - Frequently Asked Questions</h1>
 
+<h2>Resolving dependencies from NuGet is really slow</h2>
 
+<p>Q: When I resolve the dependencies from NuGet.org it is really slow. Why is that?</p>
 
-<h1>PackageResolution</h1>
-<div class="xmldoc">
-</div>
-  <h3>Instance members</h3>
-  <table class="table table-bordered member-list">
-    <thead>
-      <tr><td>Instance member</td><td>Description</td></tr>
-    </thead>
-    <tbody>
-      <tr>
-        <td class="member-name">
+<p>A: Paket uses the NuGet ODATA API to discover package dependencies. Unfortunately this AAI is very slow. 
+Good news is that the NuGet is currently developing a faster API. Paket might take advantage of that.</p>
 
-          <code onmouseout="hideTip(event, '49', 49)" onmouseover="showTip(event, '49', 49)">
-            Count
-          </code>
-          <div class="tip" id="49">
-            <strong>Signature:</strong> int<br />
-                      </div>
-        </td>
-        <td class="xmldoc">
-          
-        </td>
-      </tr>
-      <tr>
-        <td class="member-name">
-
-          <code onmouseout="hideTip(event, '50', 50)" onmouseover="showTip(event, '50', 50)">
-            IsEmpty
-          </code>
-          <div class="tip" id="50">
-            <strong>Signature:</strong> bool<br />
-                      </div>
-        </td>
-        <td class="xmldoc">
-          
-        </td>
-      </tr>
-      <tr>
-        <td class="member-name">
-
-          <code onmouseout="hideTip(event, '51', 51)" onmouseover="showTip(event, '51', 51)">
-            [key]
-          </code>
-          <div class="tip" id="51">
-            <strong>Signature:</strong> key:string -&gt; ResolvedVersion<br />
-                      </div>
-        </td>
-        <td class="xmldoc">
-          
-        </td>
-      </tr>
-    </tbody>
-  </table>
 
         </div>
         <div class="span3">
