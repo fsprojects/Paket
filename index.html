@@ -66,9 +66,11 @@ It allows you to track and install the exact package versions that are needed.</
 
 <table class="pre"><tr><td><pre lang="batchfile">$ paket install</pre></td></tr></table>
 
-<p>The <a href="paket_install.html">install command</a> will analyze your package definitions and generate a <code>package.lock</code> file. 
-You should commit <code>packages.fsx</code> and <code>package.lock</code> to your version control system.
-<a href="lockfile.html">More details about the Lockfile.</a></p>
+<p>The <a href="paket_install.html">install command</a> will analyze your package definitions and generate a <code>package.lock</code> file.
+If the lockfile already exists then it will not be regenerated.
+You should commit <code>packages.fsx</code> and <code>package.lock</code> to your version control system.</p>
+
+<p><a href="lockfile.html">More details about the Lockfile.</a></p>
 
 <h2>Contributing and copyright</h2>
 
