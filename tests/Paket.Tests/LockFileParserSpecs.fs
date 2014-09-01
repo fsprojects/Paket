@@ -24,14 +24,14 @@ let ``should parse lockfile``() =
     result.[0].SourceType |> shouldEqual "nuget"
     result.[0].Source |> shouldEqual "http://nuget.org/api/v2"
     result.[0].Name |> shouldEqual "Castle.Windsor"
-    result.[0].VersionRange |> shouldEqual (Exactly "2.1")
+    result.[0].VersionRange |> shouldEqual (VersionRange.Exactly "2.1")
 
     result.[1].SourceType |> shouldEqual "nuget"
     result.[1].Source |> shouldEqual "http://nuget.org/api/v2"
     result.[1].Name |> shouldEqual "Castle.Windsor-log4net"
-    result.[1].VersionRange |> shouldEqual (Exactly "3.3")
+    result.[1].VersionRange |> shouldEqual (VersionRange.Exactly "3.3")
     
     result.[5].SourceType |> shouldEqual "nuget"
     result.[5].Source |> shouldEqual "http://nuget.org/api/v2"
     result.[5].Name |> shouldEqual "log4net"
-    result.[5].VersionRange |> shouldEqual (Exactly "1.1")
+    result.[5].VersionRange |> shouldEqual (VersionRange.Exactly "1.1")

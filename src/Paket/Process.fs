@@ -6,10 +6,10 @@ let DownloadPackages(lockFile : Package seq) =
     lockFile |> Seq.map (fun package -> 
                     let version = 
                         match package.VersionRange with
-                        | Exactly v -> v
+                        | Minimum v -> v
                         | v -> failwithf "Version error in lockfile for %s %A" package.Name v
                     match package.SourceType with
-                    | "nuget" -> Nuget.DownloadPackage(package.Source, package.Name, version)
+                    | "nuget" -> Nuget.DownloadPackage(package.Source, package.Name, version.ToString())
                     | _ -> failwithf "Can't download from source type %s" package.SourceType)
 
 let Install regenerate packageFile =

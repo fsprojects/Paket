@@ -71,6 +71,7 @@
       <Link>FSharp.Core.sigdata</Link>
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+    <Compile Include="SemVer.fs" />
     <Compile Include="BasicTypes.fs" />
     <Compile Include="Utils.fs" />
     <Compile Include="Resolver.fs" />

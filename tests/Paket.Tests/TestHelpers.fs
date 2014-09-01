@@ -34,7 +34,7 @@ let getVersion resolved =
     match resolved with
     | ResolvedVersion.Resolved x ->
         match x.Referenced.VersionRange with
-        | Exactly v -> v
+        | Specific v -> v.ToString()
 
 let getDefiningPackage resolved =
     match resolved with
@@ -44,7 +44,7 @@ let getDefiningVersion resolved =
     match resolved with
     | ResolvedVersion.Resolved (FromPackage x) -> 
         match x.Defining.VersionRange with
-        | Exactly v -> v
+        | Specific v -> v.ToString()
 
 let getSourceType resolved =
     match resolved with

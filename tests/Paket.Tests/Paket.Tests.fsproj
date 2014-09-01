@@ -60,6 +60,7 @@
   <ItemGroup>
     <Compile Include="FsUnit.fs" />
     <Compile Include="TestHelpers.fs" />
+    <Compile Include="SemVerSpecs.fs" />
     <Compile Include="NugetVersionRangeSpecs.fs" />
     <Compile Include="FilterVersionSpecs.fs" />
     <Compile Include="DependencyGraphSpecs.fs" />

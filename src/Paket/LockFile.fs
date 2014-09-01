@@ -11,7 +11,7 @@ let format (resolved:PackageResolution)  =
             match x.Value with
             | Resolved d -> 
                 match d.Referenced.VersionRange with
-                | Exactly v -> d.Referenced.Source,d.Referenced.Name,v
+                | Specific v -> d.Referenced.Source,d.Referenced.Name,v
             )
         |> Seq.groupBy (fun (s,_,_) -> s)
    
@@ -21,7 +21,7 @@ let format (resolved:PackageResolution)  =
              yield "  remote: " + source
              yield "  specs:"
              for _,name,version in packages do
-                 yield sprintf "    %s (%s)" name version]
+                 yield sprintf "    %s (%s)" name <| version.ToString()]
 
     String.Join(Environment.NewLine,all)
 
@@ -36,7 +36,8 @@ let Parse (lines: string seq) =
         { SourceType = "nuget"
           Source = "http://nuget.org/api/v2"
           Name = splitted.[0]
-          VersionRange = Exactly splitted.[1]})
+          VersionRange = VersionRange.Exactly splitted.[1]
+          })
 
 let Update packageFile lockFile =
     let cfg = Config.ReadFromFile packageFile

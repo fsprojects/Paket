@@ -30,13 +30,13 @@ let nuget package version = __nuget.Add(package,("nuget",__nugetSource,version))
                                                       |> Seq.map (fun _ -> "0"))
             VersionRange.Between(min, String.Join(".", newParts))
         else if text.StartsWith "= " then VersionRange.Exactly(text.Replace("= ", ""))
-        else VersionRange.AtLeast text
+        else VersionRange.AtLeast(text)
     
     let formatVersionRange (version: VersionRange) =
         match version with
-        | AtLeast v -> ">= " + v
-        | Exactly v -> v
-        | Between(v1,v2) -> ">= " + v1 + ", < " + v2
+        | Minimum v -> ">= " + v.ToString()
+        | Specific v -> v.ToString()
+        | Range(v1,v2) -> ">= " + v1.ToString() + ", < " + v2.ToString()
 
     let executeInScript (executeInScript : FsiEvaluationSession -> unit) = 
         let fsiConfig = FsiEvaluationSession.GetDefaultConfiguration()

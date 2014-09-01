@@ -2,15 +2,26 @@
 
 type VersionRange = 
     | Latest
-    | AtLeast of string
-    | Exactly of string
-    | Between of string * string
+    | Minimum of SemVerInfo
+    | Specific of SemVerInfo
+    | Range of SemVerInfo * SemVerInfo
     /// Checks wether the given version is in the version range
-    member this.IsInRange version = 
+    member this.IsInRange(version:string) =
+        this.IsInRange(SemVer.parse version)
+
+    /// Checks wether the given version is in the version range
+    member this.IsInRange(version:SemVerInfo) =
         match this with
-        | AtLeast v -> v <= version
-        | Exactly v -> v = version
-        | Between(min, max) -> version >= min && version < max
+        | Minimum v -> v <= version
+        | Specific v -> v = version
+        | Range(min, max) -> version >= min && version < max
+
+    static member AtLeast version = Minimum(SemVer.parse version)
+
+    static member Exactly version = Specific(SemVer.parse version)
+
+    static member Between(version1,version2) = Range(SemVer.parse version1, SemVer.parse version2)
+
 
 type Package = 
     { Name : string

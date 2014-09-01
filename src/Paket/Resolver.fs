@@ -11,20 +11,20 @@ let private shrink (s1 : Shrinked, s2 : Shrinked) =
     match s1, s2 with
     | Ok version1, Ok version2 -> 
         match version1.Referenced.VersionRange, version2.Referenced.VersionRange with
-        | AtLeast v1, AtLeast v2 when v1 >= v2 -> s1
-        | AtLeast _, AtLeast _ -> s2
-        | AtLeast v1, Exactly v2 when v2 >= v1 -> s2
-        | Exactly v1, AtLeast v2 when v1 >= v2 -> s1
-        | Exactly v1, Exactly v2 when v1 = v2 -> s1
-        | Between(min1, max1), Exactly v2 when min1 <= v2 && max1 > v2 -> s2
-        | Exactly v1, Between(min2, max2) when min2 <= v1 && max2 > v1 -> s2
-        | Between(min1, max1), Between(min2, max2) -> 
+        | Minimum v1, Minimum v2 when v1 >= v2 -> s1
+        | Minimum _, Minimum _ -> s2
+        | Minimum v1, Specific v2 when v2 >= v1 -> s2
+        | Specific v1, Minimum v2 when v1 >= v2 -> s1
+        | Specific v1, Specific v2 when v1 = v2 -> s1
+        | Range(min1, max1), Specific v2 when min1 <= v2 && max1 > v2 -> s2
+        | Specific v1, Range(min2, max2) when min2 <= v1 && max2 > v1 -> s2
+        | Range(min1, max1), Range(min2, max2) -> 
             let newMin = max min1 min2
             let newMax = min max1 max2
             if newMin > newMax then Shrinked.Conflict(version1, version2)
             else 
                 let shrinkedDependency = 
-                    { version1.Referenced with VersionRange = VersionRange.Between(newMin, newMax) }
+                    { version1.Referenced with VersionRange = VersionRange.Range(newMin, newMax) }
                 Shrinked.Ok(match version1 with
                             | FromRoot _ -> FromRoot shrinkedDependency
                             | FromPackage d -> 
@@ -53,7 +53,7 @@ let Resolve(discovery : IDiscovery, dependencies:Package seq) =
             match Map.tryFind resolvedName processed with
             | Some (Resolved dependency) -> 
                 match dependency.Referenced.VersionRange with
-                | Exactly fixedVersion -> 
+                | Specific fixedVersion -> 
                     if not <| dependency.Referenced.VersionRange.IsInRange fixedVersion then failwith "Conflict" else
                     
                     dependencies
@@ -70,7 +70,7 @@ let Resolve(discovery : IDiscovery, dependencies:Package seq) =
 
                 let resolvedPackage =
                     { Name = resolvedName
-                      VersionRange = Exactly maxVersion
+                      VersionRange = VersionRange.Exactly maxVersion
                       SourceType = dependency.Referenced.SourceType
                       Source = dependency.Referenced.Source }
                 let resolvedDependency = 
@@ -87,7 +87,7 @@ let Resolve(discovery : IDiscovery, dependencies:Package seq) =
 
                 for dependentPackage in dependentPackages do
                     let newDependency = 
-                        FromPackage { Defining = { dependency.Referenced with VersionRange = Exactly maxVersion }
+                        FromPackage { Defining = { dependency.Referenced with VersionRange = VersionRange.Exactly maxVersion }
                                       Referenced = 
                                           { Name = dependentPackage.Name
                                             VersionRange = dependentPackage.VersionRange

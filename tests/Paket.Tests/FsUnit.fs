@@ -87,6 +87,8 @@ type Recorder<'T>() =
 module Extensions =
   // like "should equal", but validates same-type
   let shouldEqual (x: 'a) (y: 'a) = Assert.AreEqual(x, y, sprintf "Expected: %A\nActual: %A" x y)
+  let shouldBeSmallerThan (x: 'a) (y: 'a) = Assert.GreaterOrEqual(x, y, sprintf "Expected: %A\nActual: %A" x y)
+  let shouldBeGreaterThan (x: 'a) (y: 'a) = Assert.Greater(y, x, sprintf "Expected: %A\nActual: %A" x y)
   let notEqual x = new NotConstraint(new EqualConstraint(x))
 
   let inline spy1 (recorder:Recorder<'T>) f = fun p -> recorder.Record(p); f p
