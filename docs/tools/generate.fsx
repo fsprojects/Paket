@@ -4,7 +4,7 @@
 // --------------------------------------------------------------------------------------
 
 // Binaries that have XML documentation (in a corresponding generated XML file)
-let referenceBinaries = [ "Paket.dll" ]
+let referenceBinaries = [ "Paket.Core.dll" ]
 // Web site location for the generated documentation
 let website = "/Paket"
 
