@@ -26,8 +26,10 @@ Install all of the required packages from your specified sources:
     [lang=batchfile]
     $ paket install
 
-The [install command](paket_install.html) will analyze your package definitions and generate a `package.lock` file. 
+The [install command](paket_install.html) will analyze your package definitions and generate a `package.lock` file.
+If the lockfile already exists then it will not be regenerated.
 You should commit `packages.fsx` and `package.lock` to your version control system.
+
 [More details about the Lockfile.](lockfile.html)
 
 Contributing and copyright
