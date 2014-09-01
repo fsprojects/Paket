@@ -1,6 +1,6 @@
 ﻿open System
 open Nessos.UnionArgParser
-open Paket.Process
+open Paket
 
 type CLIArguments =
     | Package_File of string
@@ -35,7 +35,8 @@ let force =
     | None -> false
 
 match command with
-| "install" -> Install(false,force,packageFile)
-| "update" ->  Install(true,force,packageFile)
+| "install" -> Process.Install(false,force,packageFile)
+| "update" ->  Process.Install(true,force,packageFile)
+| "outdated" ->  Process.ListOutdated(packageFile)
 | _ -> failwith "no command given"
 |> ignore

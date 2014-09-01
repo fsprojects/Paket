@@ -17,13 +17,36 @@ let ExtractPackages(force, packages : Package seq) =
                                 return! Nuget.ExtractPackage(packageFile, package.Name, version.ToString(), force) }
                     | _ -> failwithf "Can't download from source type %s" package.SourceType)
 
+let findLockfile packageFile =
+    let fi = FileInfo(packageFile)
+    FileInfo(Path.Combine(fi.Directory.FullName, fi.Name.Replace(fi.Extension, ".lock")))
+
 /// Installs the given packageFile.
 let Install(regenerate, force, packageFile) = 
-    let lockfile = 
-        let fi = FileInfo(packageFile)
-        FileInfo(Path.Combine(fi.Directory.FullName + fi.Name.Replace(fi.Extension, ".lock")))
+    let lockfile = findLockfile packageFile
     if regenerate || (not lockfile.Exists) then LockFile.Update(packageFile, lockfile.FullName)
     ExtractPackages(force, File.ReadAllLines lockfile.FullName |> LockFile.Parse)
     |> Async.Parallel
     |> Async.RunSynchronously
     |> ignore
+
+/// Finds all outdated packages.
+let FindOutdated(packageFile) = 
+    let lockfile = findLockfile packageFile
+    
+    let newPackages = LockFile.Create(packageFile)
+    let installed = if lockfile.Exists then LockFile.Parse(File.ReadAllLines lockfile.FullName) else []
+
+    [for p in installed do
+        match newPackages.[p.Name] with
+        | Resolved newVersion ->  if p.VersionRange <> newVersion.Referenced.VersionRange then yield newVersion.Referenced
+        | Conflict(_) -> failwith "version conflict handling not implemented" ]
+
+/// Prints all outdated packages.
+let ListOutdated(packageFile) = 
+    let allOutdated = FindOutdated packageFile
+    if allOutdated = [] then
+        tracefn "No outdated packages found."
+    for outdated in allOutdated do
+        match outdated.VersionRange with
+        | Specific v ->  tracefn "%s %s" outdated.Name <| v.ToString()

@@ -1,7 +1,7 @@
 ﻿namespace System
 open System.Reflection
 
-[<assembly: AssemblyTitleAttribute("Paket")>]
+[<assembly: AssemblyTitleAttribute("Paket.Core")>]
 [<assembly: AssemblyProductAttribute("Paket")>]
 [<assembly: AssemblyDescriptionAttribute("A dependency manager for .NET")>]
 [<assembly: AssemblyVersionAttribute("0.0.0")>]

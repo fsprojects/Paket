@@ -11,6 +11,7 @@ There is no way to tell which packages are only indirect dependencies. Even more
 You have no control over this process.
  
 Paket on the other hand is always generating the [lockfile](lockfile.html) in the solution root. This file allows you to see exactly what's happening with you dependencies.
+The [paket outdated](paket_outdated.html) command will list you all packages which are have new versions available.
 
 Resolving dependencies from NuGet is really slow
 ------------------------------------------------
