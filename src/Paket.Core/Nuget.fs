@@ -1,32 +1,21 @@
-﻿module Paket.Nuget
+﻿/// Contains NuGet support.
+module Paket.Nuget
 
 open System
 open System.IO
 open System.Net
 open System.Xml
 open Newtonsoft.Json
-open System.IO.Compression
-
-let private get (url : string) = 
-    async { 
-        use client = new WebClient()
-
-        try 
-            return! client.AsyncDownloadString(Uri(url))
-        with exn -> 
-            // TODO: Handle HTTP 404 errors gracefully and return an empty string to indicate there is no content.
-            return ""
-    }
-
 
 /// Gets versions of the given package.
-let getAllVersions nugetURL package = 
+let getAllVersions(nugetURL,package) = 
     async { 
-        let! raw = sprintf "%s/package-versions/%s" nugetURL package |> get
+        let! raw = sprintf "%s/package-versions/%s" nugetURL package |> getFromUrl
         if raw = "" then return Seq.empty
         else return JsonConvert.DeserializeObject<string []>(raw) |> Array.toSeq
     }
 
+/// Parses NuGet version ranges.
 let parseVersionRange (text:string) = 
     if text = "" then Latest else
     if text.StartsWith "[" then
@@ -41,7 +30,7 @@ let parseVersionRange (text:string) =
 let getDependencies nugetURL package version = 
     async { 
         // TODO: this is a very very naive implementation
-        let! raw = sprintf "%s/Packages(Id='%s',Version='%s')/Dependencies" nugetURL package version |> get
+        let! raw = sprintf "%s/Packages(Id='%s',Version='%s')/Dependencies" nugetURL package version |> getFromUrl
         let doc = XmlDocument()
         doc.LoadXml raw
         let manager = new XmlNamespaceManager(doc.NameTable)
@@ -72,6 +61,7 @@ let getDependencies nugetURL package version =
         return packages
     }
     
+/// The NuGet cache folder.
 let CacheFolder = 
     let appData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)
     Path.Combine(Path.Combine(appData, "NuGet"), "Cache")
@@ -117,6 +107,7 @@ let ExtractPackage(fileName, name, version, force) =
             return targetFolder
     }
 
+/// Nuget Discovery API.
 let NugetDiscovery = 
     { new IDiscovery with
           member __.GetDirectDependencies(sourceType, source, package, version) = 
@@ -125,4 +116,4 @@ let NugetDiscovery =
           
           member __.GetVersions(sourceType, source, package) = 
               if sourceType <> "nuget" then failwithf "invalid sourceType %s" sourceType
-              getAllVersions source package }
+              getAllVersions(source,package) }

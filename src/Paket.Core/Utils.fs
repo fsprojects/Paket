@@ -4,6 +4,7 @@ module Paket.Utils
 
 open System
 open System.IO
+open System.Net
 
 /// [omit]
 let monitor = new Object()
@@ -37,3 +38,14 @@ let CleanDir path =
     else CreateDir path
     // set writeable
     File.SetAttributes(path, FileAttributes.Normal)
+
+/// [omit]
+let getFromUrl (url : string) = 
+    async { 
+        use client = new WebClient()
+        try 
+            return! client.AsyncDownloadString(Uri(url))
+        with exn -> 
+            // TODO: Handle HTTP 404 errors gracefully and return an empty string to indicate there is no content.
+            return ""
+    }
