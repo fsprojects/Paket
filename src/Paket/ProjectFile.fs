@@ -62,7 +62,7 @@ let updateReference(projectFile : ProjectFile, referenceNode: ReferenceNode) =
         | Some node -> 
             node.Attributes.["Include"].Value <- referenceNode.DLLName
             let newText = Environment.NewLine + referenceNode.Inner() + Environment.NewLine + "    "
-            if node.InnerXml.Replace("\r","").Replace("\n","").Replace(" ","") <> newText.Replace("\r","").Replace("\n","").Replace(" ","") then
+            if node.InnerXml.Replace("\r","").Replace("\n","").Replace(" ","").Replace(" xmlns=\"http://schemas.microsoft.com/developer/msbuild/2003\"","") <> newText.Replace("\r","").Replace("\n","").Replace(" ","") then
                 node.InnerXml <- newText
                 projectFile.Modified <- true 
         | _ -> failwith "Unexpected error"
