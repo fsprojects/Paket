@@ -41,13 +41,13 @@ let private getAlgorithm algorithmName =
             |> Convert.ToBase64String)
     
 /// Compares a nuget hash with a local file
-let compareWith (localFile : FileInfo) nugetHashDetails = 
+let compareWith packageName (localFile : FileInfo) nugetHashDetails = 
     let nugetHashValue, algorithmName = nugetHashDetails
     match algorithmName |> getAlgorithm with
     | Some computeHash -> 
         use stream = localFile.FullName |> File.OpenRead
         let localHash = stream |> computeHash
-        if localHash <> nugetHashValue then Some "downloaded package hash does not match nuget"
+        if localHash <> nugetHashValue then Some(sprintf "downloaded package hash does not match nuget for package %s" packageName)
         else None
     | None -> Some "unknown hashing algorithm used"
 
