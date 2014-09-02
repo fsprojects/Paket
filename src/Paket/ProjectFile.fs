@@ -1,10 +1,9 @@
-﻿/// Contains methods to read and manipulate project files.
-module Paket.ProjectFile
+﻿namespace Paket
 
 open System
 open System.Xml
-open System.IO
 
+/// Contains methods to read and manipulate project file ndoes.
 type ReferenceNode = 
     { DLLName : string
       Node : XmlNode option
@@ -22,6 +21,7 @@ type ReferenceNode =
                       yield x.Inner()
                       yield "    </Reference>" ])
 
+/// Contains methods to read and manipulate project files.
 type ProjectFile = 
     { Document : XmlDocument
       Namespaces : XmlNamespaceManager
@@ -60,16 +60,12 @@ type ProjectFile =
             firstNode.ParentNode.InnerXml <- firstNode.ParentNode.InnerXml + Environment.NewLine + referenceNode.ToString() + Environment.NewLine        
             this.Modified <- true 
 
-
-let getProject (fileName:string) =
-    let doc = new XmlDocument()
-    doc.Load fileName
+    static member Load(fileName:string) =
+        let doc = new XmlDocument()
+        doc.Load fileName
      
-    let manager = new XmlNamespaceManager(doc.NameTable)
-    manager.AddNamespace("ns", "http://schemas.microsoft.com/developer/msbuild/2003")    
-    { Document = doc; Namespaces = manager; Modified = false }
+        let manager = new XmlNamespaceManager(doc.NameTable)
+        manager.AddNamespace("ns", "http://schemas.microsoft.com/developer/msbuild/2003")    
+        { Document = doc; Namespaces = manager; Modified = false }
 
 
-
-/// Finds all libraries in a nuget packge.
-let FindAllProjects(folder) = DirectoryInfo(folder).EnumerateFiles("*.*proj", SearchOption.AllDirectories)
