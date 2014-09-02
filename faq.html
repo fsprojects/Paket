@@ -36,9 +36,9 @@
 
 <h2>Why can't I just use NuGet?</h2>
 
-<p><em>Q:</em> I don't understand why I need Paket to manage my packages. Why can't I just use NuGet?</p>
+<p><strong>Q:</strong> I don't understand why I need Paket to manage my packages. Why can't I just use NuGet?</p>
 
-<p><em>A:</em> NuGet doesn't really have the concept of indirect dependencies. If you install a package into your project and that package has further dependencies then all indirect packages are included in the <code>packages.config</code> file.
+<p><strong>A:</strong> NuGet doesn't really have the concept of indirect dependencies. If you install a package into your project and that package has further dependencies then all indirect packages are included in the <code>packages.config</code> file.
 There is no way to tell which packages are only indirect dependencies. Even more important: if two packages reference conflicting versions of a package than NuGet will silently take the latest version.
 You have no control over this process.</p>
 
@@ -49,9 +49,9 @@ The <a href="paket_outdated.html">paket outdated</a> command will list you all p
 
 <h2>Resolving dependencies from NuGet is really slow</h2>
 
-<p><em>Q:</em> When I resolve the dependencies from NuGet.org it is really slow. Why is that?</p>
+<p><strong>Q:</strong> When I resolve the dependencies from NuGet.org it is really slow. Why is that?</p>
 
-<p><em>A:</em> Paket uses the NuGet ODATA API to discover package dependencies. Unfortunately this API is very slow. 
+<p><strong>A:</strong> Paket uses the NuGet ODATA API to discover package dependencies. Unfortunately this API is very slow. 
 Good news is that the NuGet is currently developing a faster API. Paket might take advantage of that.</p>
 
 
