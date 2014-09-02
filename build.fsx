@@ -210,7 +210,7 @@ Target "All" DoNothing
   ==> "All"
 
 "All" 
-  ==> "ReleaseDocs"
+  ==> "GenerateDocs"
 
 "All" 
 #if MONO
