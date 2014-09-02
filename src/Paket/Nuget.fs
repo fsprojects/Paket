@@ -1,4 +1,4 @@
-﻿/// Contains NuGet support.
+/// Contains NuGet support.
 module Paket.Nuget
 
 open System
@@ -114,7 +114,7 @@ let ExtractPackage(fileName, name, version, force) =
                     else
                         cleanup sub
             cleanup (DirectoryInfo targetFolder)
-            tracefn "%s %s unzipped" name version
+            tracefn "%s %s unzipped to %s" name version targetFolder
             return targetFolder
     }
 
