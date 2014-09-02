@@ -1,7 +1,8 @@
 NUGET
   remote: http://nuget.org/api/v2
   specs:
-    FSharp.Compiler.Service (0.0.59)
+    FAKE (3.4.0)
+    FSharp.Compiler.Service (0.0.60)
     NUnit (2.6.3)
     NUnit.Runners (2.6.3)
     Newtonsoft.Json (6.0.4)
