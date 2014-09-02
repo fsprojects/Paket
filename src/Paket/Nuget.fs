@@ -102,7 +102,8 @@ let ExtractPackage(fileName, name, version, force) =
         else 
             CleanDir targetFolder
             File.Copy(fileName, targetFile.FullName)
-            Compression.ZipFile.ExtractToDirectory(fileName, targetFolder)
+            let zip = ICSharpCode.SharpZipLib.Zip.FastZip()
+            zip.ExtractZip(fileName, targetFolder, null)
             // cleanup folder structure
             let rec cleanup (dir : DirectoryInfo) = 
                 for sub in dir.GetDirectories() do
