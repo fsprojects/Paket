@@ -46,11 +46,10 @@ let Install(regenerate, force, packageFile) =
                 for lib in libraries do
                     let relativePath = Uri(proj.FullName).MakeRelativeUri(Uri(lib.FullName)).ToString().Replace("/", "\\")
 
-                    ProjectFile.updateReference (project, 
-                                                 { DLLName = lib.Name.Replace(lib.Extension, "")
-                                                   HintPath = Some relativePath
-                                                   Private = true
-                                                   Node = None })
+                    project.UpdateReference ({ DLLName = lib.Name.Replace(lib.Extension, "")
+                                               HintPath = Some relativePath
+                                               Private = true
+                                               Node = None })
 
         if project.Modified then
             project.Document.Save(proj.FullName)

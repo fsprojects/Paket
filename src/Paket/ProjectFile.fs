@@ -38,6 +38,27 @@ type ProjectFile =
                       HintPath = !hintPath
                       Node = Some node } ]
 
+    member this.UpdateReference(referenceNode: ReferenceNode) =
+        let nodes = this.GetReferences()
+        match nodes |> Seq.tryFind (fun node -> node.DLLName = referenceNode.DLLName) with
+        | Some targetNode ->
+            match targetNode.Node with
+            | Some node -> 
+                node.Attributes.["Include"].Value <- referenceNode.DLLName
+                let newText = Environment.NewLine + referenceNode.Inner() + Environment.NewLine + "    "
+                let oldTrimmed = node.InnerXml.Replace("xmlns=\"http://schemas.microsoft.com/developer/msbuild/2003\"","").Replace("\r","").Replace("\n","").Replace(" ","")
+                let newTrimmed = newText.Replace("\r","").Replace("\n","").Replace(" ","")
+                if oldTrimmed <> newTrimmed then
+                    node.InnerXml <- newText
+                    this.Modified <- true 
+            | _ -> failwith "Unexpected error"
+        | None ->
+            let firstNode =
+                seq { for node in this.Document.SelectNodes("//ns:Project/ns:ItemGroup/ns:Reference", this.Namespaces) -> node }
+                |> Seq.head
+
+            firstNode.ParentNode.InnerXml <- firstNode.ParentNode.InnerXml + Environment.NewLine + referenceNode.ToString() + Environment.NewLine        
+            this.Modified <- true 
 
 
 let getProject (fileName:string) =
@@ -48,27 +69,7 @@ let getProject (fileName:string) =
     manager.AddNamespace("ns", "http://schemas.microsoft.com/developer/msbuild/2003")    
     { Document = doc; Namespaces = manager; Modified = false }
 
-let updateReference(projectFile : ProjectFile, referenceNode: ReferenceNode) =
-    let nodes = projectFile.GetReferences()
-    match nodes |> Seq.tryFind (fun node -> node.DLLName = referenceNode.DLLName) with
-    | Some targetNode ->
-        match targetNode.Node with
-        | Some node -> 
-            node.Attributes.["Include"].Value <- referenceNode.DLLName
-            let newText = Environment.NewLine + referenceNode.Inner() + Environment.NewLine + "    "
-            let oldTrimmed = node.InnerXml.Replace("xmlns=\"http://schemas.microsoft.com/developer/msbuild/2003\"","").Replace("\r","").Replace("\n","").Replace(" ","")
-            let newTrimmed = newText.Replace("\r","").Replace("\n","").Replace(" ","")
-            if oldTrimmed <> newTrimmed then
-                node.InnerXml <- newText
-                projectFile.Modified <- true 
-        | _ -> failwith "Unexpected error"
-    | None ->
-        let firstNode =
-            seq { for node in projectFile.Document.SelectNodes("//ns:Project/ns:ItemGroup/ns:Reference", projectFile.Namespaces) -> node }
-            |> Seq.head
 
-        firstNode.ParentNode.InnerXml <- firstNode.ParentNode.InnerXml + Environment.NewLine + referenceNode.ToString() + Environment.NewLine        
-        projectFile.Modified <- true 
 
 /// Finds all libraries in a nuget packge.
 let FindAllProjects(folder) = DirectoryInfo(folder).EnumerateFiles("*.*proj", SearchOption.AllDirectories)
