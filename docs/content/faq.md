@@ -13,6 +13,8 @@ You have no control over this process.
 Paket on the other hand is always generating the [lockfile](lockfile.html) in the solution root. This file allows you to see exactly what's happening with your dependencies.
 The [paket outdated](paket_outdated.html) command will list you all packages which have new versions available.
 
+Future versions of Paket will also allow to [reference files directly from git repositories](https://github.com/fsprojects/Paket/issues/9).
+
 Resolving dependencies from NuGet is really slow
 ------------------------------------------------
 
