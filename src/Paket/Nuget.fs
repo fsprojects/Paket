@@ -6,6 +6,7 @@ open System.IO
 open System.Net
 open System.Xml
 open Newtonsoft.Json
+open Ionic.Zip
 
 /// Gets versions of the given package.
 let getAllVersions(nugetURL,package) = 
@@ -96,6 +97,7 @@ let DownloadPackage(source, name, version, force) =
             | None -> return targetFileName
     }
 
+
 /// Extracts the given package to the ./packages folder
 let ExtractPackage(fileName, name, version, force) = 
     async { 
@@ -108,8 +110,11 @@ let ExtractPackage(fileName, name, version, force) =
         else 
             CleanDir targetFolder
             File.Copy(fileName, targetFile.FullName)
-            let zip = ICSharpCode.SharpZipLib.Zip.FastZip()
-            zip.ExtractZip(fileName, targetFolder, null)
+            let zip = ZipFile.Read(fileName)
+            Directory.CreateDirectory(targetFolder) |> ignore
+            for e in zip do
+                e.Extract(targetFolder, ExtractExistingFileAction.OverwriteSilently)
+
             // cleanup folder structure
             let rec cleanup (dir : DirectoryInfo) = 
                 for sub in dir.GetDirectories() do

@@ -1,6 +1,7 @@
 NUGET
   remote: http://nuget.org/api/v2
   specs:
+    DotNetZip (1.9.3)
     FAKE (3.4.0)
     FSharp.Compiler.Service (0.0.60)
     FSharp.Formatting (2.4.21)

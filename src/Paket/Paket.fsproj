@@ -89,9 +89,6 @@
       <HintPath>..\..\packages\FSharp.Compiler.Service\lib\net45\FSharp.Compiler.Service.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="ICSharpCode.SharpZipLib">
-      <HintPath>..\..\lib\ICSharpCode.SharpZipLib.dll</HintPath>
-    </Reference>
     <Reference Include="mscorlib" />
     <Reference Include="FSharp.Core, Version=4.3.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
       <Private>True</Private>
@@ -108,6 +105,10 @@
     <Reference Include="System.Xml.Linq" />
     <Reference Include="UnionArgParser">
       <HintPath>..\..\packages\UnionArgParser\lib\net40\UnionArgParser.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Ionic.Zip">
+      <HintPath>..\..\packages\DotNetZip\lib\net20\Ionic.Zip.dll</HintPath>
       <Private>True</Private>
     </Reference>
   </ItemGroup>

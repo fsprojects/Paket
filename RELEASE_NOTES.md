@@ -1,3 +1,6 @@
+#### 0.0.1-alpha010 - 02.09.2014
+* Using DotNetZip instead of SharpZipLib
+
 #### 0.0.1-alpha009 - 02.09.2014
 * Use hash checks for Nuget downloads- https://github.com/fsprojects/Paket/pull/25
 
