@@ -19,26 +19,31 @@ let parser = UnionArgParser.Create<CLIArguments>()
  
 let cmdArgs = System.Environment.GetCommandLineArgs()
 
-let command,results =
+let results =
     try
-        cmdArgs.[1],parser.Parse(cmdArgs.[2..])
+        Some(cmdArgs.[1],parser.Parse(cmdArgs.[2..]))
     with
-    | _ -> 
-         failwithf "Paket.exe%s%s" Environment.NewLine (parser.Usage() )
+    | _ ->
+        tracefn "Paket.exe%s%s" Environment.NewLine (parser.Usage())    
+        None
 
-let packageFile = 
-    match results.TryGetResult <@ CLIArguments.Package_File @> with
-    | Some x -> x
-    | _ -> "packages.fsx"
 
-let force = 
-    match results.TryGetResult <@ CLIArguments.Force @> with
-    | Some _ -> true
-    | None -> false
+match results with
+| Some(command,results) ->
+    let packageFile = 
+        match results.TryGetResult <@ CLIArguments.Package_File @> with
+        | Some x -> x
+        | _ -> "packages.fsx"
 
-match command with
-| "install" -> Process.Install(false,force,packageFile)
-| "update" ->  Process.Install(true,force,packageFile)
-| "outdated" ->  Process.ListOutdated(packageFile)
-| _ -> failwith "no command given"
-|> ignore
+    let force = 
+        match results.TryGetResult <@ CLIArguments.Force @> with
+        | Some _ -> true
+        | None -> false
+
+    match command with
+    | "install" -> Process.Install(false,force,packageFile)
+    | "update" ->  Process.Install(true,force,packageFile)
+    | "outdated" ->  Process.ListOutdated(packageFile)
+    | _ -> failwith "no command given"
+    |> ignore
+| None -> ()

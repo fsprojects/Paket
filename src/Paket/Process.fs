@@ -2,7 +2,6 @@
 module Paket.Process
 
 open System.IO
-open Paket.ProjectFile
 open System
 
 /// Downloads and extracts all package.
@@ -30,6 +29,8 @@ let findPackagesForProject projectFile =
     if packageFile.Exists then File.ReadAllLines packageFile.FullName else
     failwithf "Package config file not found for Project %s" projectFile
 
+let private findAllProjects(folder) = DirectoryInfo(folder).EnumerateFiles("*.*proj", SearchOption.AllDirectories)
+
 /// Installs the given packageFile.
 let Install(regenerate, force, packageFile) = 
     let lockfile = findLockfile packageFile
@@ -38,9 +39,9 @@ let Install(regenerate, force, packageFile) =
         ExtractPackages(force, File.ReadAllLines lockfile.FullName |> LockFile.Parse)
         |> Async.Parallel
         |> Async.RunSynchronously
-    for proj in ProjectFile.FindAllProjects(".") do
+    for proj in findAllProjects(".") do
         let usedPackages = findPackagesForProject proj.FullName
-        let project = ProjectFile.getProject proj.FullName
+        let project = ProjectFile.Load proj.FullName
         for package, libraries in extracted do
             if Array.exists ((=) package.Name) usedPackages then 
                 for lib in libraries do
