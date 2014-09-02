@@ -76,6 +76,7 @@
     <Compile Include="Utils.fs" />
     <Compile Include="Resolver.fs" />
     <Compile Include="ProjectFile.fs" />
+    <Compile Include="Hashing.fs" />
     <Compile Include="Nuget.fs" />
     <Compile Include="Config.fs" />
     <Compile Include="LockFile.fs" />

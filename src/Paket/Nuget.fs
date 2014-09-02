@@ -70,8 +70,8 @@ let CacheFolder =
 let DownloadPackage(source, name, version, force) = 
     async { 
         let targetFileName = Path.Combine(CacheFolder,name + "." + version + ".nupkg")
-        let fi = FileInfo targetFileName
-        if not force && fi.Exists && fi.Length > 0L then 
+        let targetFile = FileInfo targetFileName
+        if not force && targetFile.Exists && targetFile.Length > 0L then 
             tracefn "%s %s already downloaded" name version
             return targetFileName 
         else
@@ -82,12 +82,18 @@ let DownloadPackage(source, name, version, force) =
                     // TODO: How can we discover the download link?
                     failwithf "unknown package source %s - can't download package %s %s" source name version
         
-            let client = new WebClient()
+            use client = new WebClient()
             tracefn "Downloading %s %s" name version
             // TODO: Set credentials
-            client.DownloadFileAsync(Uri url, targetFileName)
-            let! _ = Async.AwaitEvent(client.DownloadFileCompleted)
-            return targetFileName
+            do! client.DownloadFileTaskAsync(Uri url, targetFileName)
+                |> Async.AwaitIAsyncResult
+                |> Async.Ignore
+            let! hashDetails = Hashing.getDetailsFromNuget name version
+            match hashDetails |> Hashing.compareWith targetFile with
+            | Some error -> 
+                File.Delete targetFileName
+                return failwith error
+            | None -> return targetFileName
     }
 
 /// Extracts the given package to the ./packages folder
