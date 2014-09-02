@@ -7,9 +7,7 @@ open Paket.ProjectFile
 
 [<Test>]
 let ``should detect reference nodes``() =
-    let references =
-        ProjectFile.getProject "./TestData/Project1.fsprojtest"
-        |> ProjectFile.getReferences
+    let references = ProjectFile.getProject("./TestData/Project1.fsprojtest").GetReferences()
 
     references.Length |> shouldEqual 4
     references.[0].DLLName |> shouldEqual "mscorlib"
@@ -30,14 +28,14 @@ let ``should detect reference nodes``() =
 
 [<Test>]
 let ``should update single nodes``() =
-    let doc = ProjectFile.getProject "./TestData/Project1.fsprojtest"
+    let project = ProjectFile.getProject "./TestData/Project1.fsprojtest"
 
-    let node = (ProjectFile.getReferences doc).[2]
+    let node = (project.GetReferences()).[2]
     let newNode = { node with HintPath = Some @"..\..\packages\NUnit.2.7.5\lib\nunit.framework.dll" }
 
-    ProjectFile.updateReference(doc,newNode)
+    ProjectFile.updateReference(project,newNode)
 
-    let reloaded = ProjectFile.getReferences doc
+    let reloaded = project.GetReferences()
 
     reloaded.[2].DLLName |> shouldEqual "nunit.framework"
     reloaded.[2].Private |> shouldEqual true
@@ -45,14 +43,14 @@ let ``should update single nodes``() =
 
 [<Test>]
 let ``should add single node``() =
-    let doc = ProjectFile.getProject "./TestData/Project1.fsprojtest"
+    let project = ProjectFile.getProject "./TestData/Project1.fsprojtest"
 
     let hintPath = @"..\..\packagesFAKE\lib\Fake.Core.dll"
     let newNode = { DLLName = "FAKE"; HintPath = Some hintPath; Private = false; Node = None }
 
-    ProjectFile.updateReference(doc,newNode)
+    ProjectFile.updateReference(project,newNode)
 
-    let reloaded = ProjectFile.getReferences doc
+    let reloaded = project.GetReferences()
 
     reloaded.[4].DLLName |> shouldEqual "FAKE"
     reloaded.[4].Private |> shouldEqual false

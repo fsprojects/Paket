@@ -5,25 +5,6 @@ open System
 open System.Xml
 open System.IO
 
-type ProjectFile = {
-    Document : XmlDocument;
-    Namespaces : XmlNamespaceManager 
-    mutable Modified : bool }
-
-/// Reads the packages file which sits next to the projectFile.
-let LoadReferencedPackages (projectFileName:string) = 
-    let fi = FileInfo(projectFileName)
-    let packagesDef = FileInfo(fi.Directory.FullName + Path.DirectorySeparatorChar.ToString() + "packages")
-    if packagesDef.Exists then File.ReadAllLines(packagesDef.FullName) else [||]
-
-let getProject (fileName:string) =
-    let doc = new XmlDocument()
-    doc.Load fileName
-    
-    let manager = new XmlNamespaceManager(doc.NameTable)
-    manager.AddNamespace("ns", "http://schemas.microsoft.com/developer/msbuild/2003")    
-    { Document = doc; Namespaces = manager; Modified = false }
-
 type ReferenceNode = 
     { DLLName : string
       Node : XmlNode option
@@ -41,21 +22,34 @@ type ReferenceNode =
                       yield x.Inner()
                       yield "    </Reference>" ])
 
-let getReferences (projectFile : ProjectFile) = 
-    [ for node in projectFile.Document.SelectNodes("//ns:Project/ns:ItemGroup/ns:Reference", projectFile.Namespaces) do
-          let hintPath = ref None
-          let privateDll = ref false
-          for c in node.ChildNodes do
-              if c.Name.ToLower() = "hintpath" then hintPath := Some c.InnerText
-              if c.Name.ToLower() = "private" then privateDll := true
+type ProjectFile = 
+    { Document : XmlDocument
+      Namespaces : XmlNamespaceManager
+      mutable Modified : bool }
+    member this.GetReferences() =
+        [ for node in this.Document.SelectNodes("//ns:Project/ns:ItemGroup/ns:Reference", this.Namespaces) do
+              let hintPath = ref None
+              let privateDll = ref false
+              for c in node.ChildNodes do
+                  if c.Name.ToLower() = "hintpath" then hintPath := Some c.InnerText
+                  if c.Name.ToLower() = "private" then privateDll := true
+              yield { DLLName = node.Attributes.["Include"].InnerText.Split(',').[0]
+                      Private = !privateDll
+                      HintPath = !hintPath
+                      Node = Some node } ]
 
-          yield { DLLName = node.Attributes.["Include"].InnerText.Split(',').[0]
-                  Private = !privateDll
-                  HintPath = !hintPath
-                  Node = Some node } ]
+
+
+let getProject (fileName:string) =
+    let doc = new XmlDocument()
+    doc.Load fileName
+     
+    let manager = new XmlNamespaceManager(doc.NameTable)
+    manager.AddNamespace("ns", "http://schemas.microsoft.com/developer/msbuild/2003")    
+    { Document = doc; Namespaces = manager; Modified = false }
 
 let updateReference(projectFile : ProjectFile, referenceNode: ReferenceNode) =
-    let nodes = getReferences projectFile
+    let nodes = projectFile.GetReferences()
     match nodes |> Seq.tryFind (fun node -> node.DLLName = referenceNode.DLLName) with
     | Some targetNode ->
         match targetNode.Node with
