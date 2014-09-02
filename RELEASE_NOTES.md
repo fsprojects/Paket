@@ -1,3 +1,6 @@
+#### 0.0.1-alpha013 - 02.09.2014
+* Don't fail if hash is corrupted. just show error - relates to https://github.com/fsprojects/Paket/issues/35
+
 #### 0.0.1-alpha012 - 02.09.2014
 * Better error message when hash is wrong
 

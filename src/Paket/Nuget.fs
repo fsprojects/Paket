@@ -92,8 +92,9 @@ let DownloadPackage(source, name, version, force) =
             let! hashDetails = Hashing.getDetailsFromNuget name version
             match hashDetails |> Hashing.compareWith name targetFile with
             | Some error -> 
-                File.Delete targetFileName
-                return failwith error
+                // TODO: File.Delete targetFileName
+                traceError error
+                return targetFileName
             | None -> return targetFileName
     }
 
