@@ -2,6 +2,7 @@
 module Paket.Resolver
 
 open Paket
+open System
 
 type private Shrinked =
 | Ok of Dependency
@@ -63,13 +64,20 @@ let Resolve(discovery : IDiscovery, rootDependencies:Package seq) =
                     |> analyzeGraph processed
                 | _ -> failwith "Not allowed"
             | _ ->
-                
-                let maxVersion = 
-                    discovery.GetVersions(dependency.Referenced.SourceType,dependency.Referenced.Source,resolvedName)
+                let allVersions = 
+                    discovery.GetVersions(dependency.Referenced.SourceType,dependency.Referenced.Source,resolvedName) 
                     |> Async.RunSynchronously
-                    |> Seq.filter dependency.Referenced.VersionRange.IsInRange
-                    |> Seq.map SemVer.parse
-                    |> Seq.max
+                    |> Seq.toList
+
+                let versions =                
+                    allVersions
+                    |> List.filter dependency.Referenced.VersionRange.IsInRange
+                    |> List.map SemVer.parse
+
+                if versions = [] then
+                    failwithf "No package found which matches %s %A.%sVersion available: %A" dependency.Referenced.Name dependency.Referenced.VersionRange Environment.NewLine allVersions
+
+                let maxVersion = List.max versions
 
                 let resolvedPackage =
                     { Name = resolvedName

@@ -6,8 +6,8 @@ open FsUnit
 
 [<Test>]
 let ``can detect minimum version``() = 
-    Nuget.parseVersionRange "2.2" |> shouldEqual (VersionRange.Exactly "2.2")
-    Nuget.parseVersionRange "1.2" |> shouldEqual (VersionRange.Exactly "1.2")
+    Nuget.parseVersionRange "2.2" |> shouldEqual (VersionRange.AtLeast "2.2")
+    Nuget.parseVersionRange "1.2" |> shouldEqual (VersionRange.AtLeast "1.2")
 
 [<Test>]
 let ``can detect latest version``() = 

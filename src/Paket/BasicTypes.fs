@@ -13,6 +13,7 @@ type VersionRange =
     /// Checks wether the given version is in the version range
     member this.IsInRange(version:SemVerInfo) =
         match this with
+        | Latest -> true
         | Minimum v -> v <= version
         | Specific v -> v = version
         | Range(min, max) -> version >= min && version < max

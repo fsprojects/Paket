@@ -25,7 +25,7 @@ let parseVersionRange (text:string) =
         else
             let parts = text.Replace("[","").Replace(")","").Split ','
             VersionRange.Between(parts.[0],parts.[1])
-    else VersionRange.Exactly(text)
+    else VersionRange.AtLeast(text)
 
 /// Gets all dependencies of the given package version.
 let getDependencies nugetURL package version = 
