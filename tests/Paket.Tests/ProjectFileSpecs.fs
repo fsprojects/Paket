@@ -35,9 +35,9 @@ let ``should update single nodes``() =
     let node = (ProjectFile.getReferences doc).[2]
     let newNode = { node with HintPath = Some @"..\..\packages\NUnit.2.7.5\lib\nunit.framework.dll" }
 
-    let doc' = ProjectFile.updateReference(doc,newNode)
+    ProjectFile.updateReference(doc,newNode)
 
-    let reloaded = ProjectFile.getReferences doc'
+    let reloaded = ProjectFile.getReferences doc
 
     reloaded.[2].DLLName |> shouldEqual "nunit.framework"
     reloaded.[2].Private |> shouldEqual true
@@ -50,9 +50,9 @@ let ``should add single node``() =
     let hintPath = @"..\..\packagesFAKE\lib\Fake.Core.dll"
     let newNode = { DLLName = "FAKE"; HintPath = Some hintPath; Private = false; Node = None }
 
-    let doc' = ProjectFile.updateReference(doc,newNode)
+    ProjectFile.updateReference(doc,newNode)
 
-    let reloaded = ProjectFile.getReferences doc'
+    let reloaded = ProjectFile.getReferences doc
 
     reloaded.[4].DLLName |> shouldEqual "FAKE"
     reloaded.[4].Private |> shouldEqual false
