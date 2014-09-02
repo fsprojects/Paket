@@ -68,11 +68,12 @@ let Resolve(discovery : IDiscovery, rootDependencies:Package seq) =
                     discovery.GetVersions(dependency.Referenced.SourceType,dependency.Referenced.Source,resolvedName)
                     |> Async.RunSynchronously
                     |> Seq.filter dependency.Referenced.VersionRange.IsInRange
+                    |> Seq.map SemVer.parse
                     |> Seq.max
 
                 let resolvedPackage =
                     { Name = resolvedName
-                      VersionRange = VersionRange.Exactly maxVersion
+                      VersionRange = VersionRange.Exactly(maxVersion.ToString())
                       SourceType = dependency.Referenced.SourceType
                       Source = dependency.Referenced.Source }
                 let resolvedDependency = 
@@ -84,12 +85,12 @@ let Resolve(discovery : IDiscovery, rootDependencies:Package seq) =
 
                 let mutable dependencies = dependencies
                 let dependentPackages = 
-                    discovery.GetDirectDependencies(dependency.Referenced.SourceType, dependency.Referenced.Source, dependency.Referenced.Name, maxVersion) 
+                    discovery.GetDirectDependencies(dependency.Referenced.SourceType, dependency.Referenced.Source, dependency.Referenced.Name, maxVersion.ToString()) 
                     |> Async.RunSynchronously
 
                 for dependentPackage in dependentPackages do
                     let newDependency = 
-                        FromPackage { Defining = { dependency.Referenced with VersionRange = VersionRange.Exactly maxVersion }
+                        FromPackage { Defining = { dependency.Referenced with VersionRange = VersionRange.Exactly(maxVersion.ToString()) }
                                       Referenced = 
                                           { Name = dependentPackage.Name
                                             VersionRange = dependentPackage.VersionRange
