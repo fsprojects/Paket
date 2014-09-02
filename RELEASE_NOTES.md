@@ -1,3 +1,6 @@
+#### 0.0.1-alpha012 - 02.09.2014
+* Better error message when hash is wrong
+
 #### 0.0.1-alpha011 - 02.09.2014
 * Better NUnit version range parsing
 
