@@ -25,10 +25,11 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <WarningLevel>3</WarningLevel>
     <DocumentationFile>..\..\bin\Paket.xml</DocumentationFile>
-    <StartArguments>outdated</StartArguments>
+    <StartArguments>install</StartArguments>
     <StartAction>Project</StartAction>
     <StartProgram>Paket.exe</StartProgram>
-    <StartWorkingDirectory>D:\code\paket</StartWorkingDirectory>
+    <StartWorkingDirectory>
+    </StartWorkingDirectory>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -76,6 +77,7 @@
     <Compile Include="Utils.fs" />
     <Compile Include="Resolver.fs" />
     <Compile Include="ProjectFile.fs" />
+    <Compile Include="Hashing.fs" />
     <Compile Include="Nuget.fs" />
     <Compile Include="Config.fs" />
     <Compile Include="LockFile.fs" />

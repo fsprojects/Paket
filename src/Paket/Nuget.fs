@@ -8,7 +8,7 @@ open System.Xml
 open Newtonsoft.Json
 
 /// Gets versions of the given package.
-let getAllVersions(nugetURL,package) = 
+let getAllVersions (nugetURL, package) = 
     async { 
         let! raw = sprintf "%s/package-versions/%s" nugetURL package |> getFromUrl
         if raw = "" then return Seq.empty
@@ -16,14 +16,13 @@ let getAllVersions(nugetURL,package) =
     }
 
 /// Parses NuGet version ranges.
-let parseVersionRange (text:string) = 
-    if text = "" then Latest else
-    if text.StartsWith "[" then
-        if text.EndsWith "]" then 
-            VersionRange.Exactly(text.Replace("[","").Replace("]",""))
-        else
-            let parts = text.Replace("[","").Replace(")","").Split ','
-            VersionRange.Between(parts.[0],parts.[1])
+let parseVersionRange (text : string) = 
+    if text = "" then Latest
+    else if text.StartsWith "[" then 
+        if text.EndsWith "]" then VersionRange.Exactly(text.Replace("[", "").Replace("]", ""))
+        else 
+            let parts = text.Replace("[", "").Replace(")", "").Split ','
+            VersionRange.Between(parts.[0], parts.[1])
     else VersionRange.AtLeast(text)
 
 /// Gets all dependencies of the given package version.
@@ -60,7 +59,7 @@ let getDependencies nugetURL package version =
             |> Array.toList
         return packages
     }
-    
+
 /// The NuGet cache folder.
 let CacheFolder = 
     let appData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)
@@ -69,25 +68,32 @@ let CacheFolder =
 /// Downloads the given package to the NuGet Cache folder
 let DownloadPackage(source, name, version, force) = 
     async { 
-        let targetFileName = Path.Combine(CacheFolder,name + "." + version + ".nupkg")
-        let fi = FileInfo targetFileName
-        if not force && fi.Exists && fi.Length > 0L then 
+        let targetFileName = Path.Combine(CacheFolder, name + "." + version + ".nupkg")
+        let targetFile = FileInfo targetFileName
+        if not force && targetFile.Exists && targetFile.Length > 0L then 
             tracefn "%s %s already downloaded" name version
-            return targetFileName 
-        else
+            return targetFileName
+        else 
             let url = 
                 match source with
-                | "http://nuget.org/api/v2" -> sprintf "http://packages.nuget.org/v1/Package/Download/%s/%s" name version
+                | "http://nuget.org/api/v2" -> 
+                    sprintf "http://packages.nuget.org/v1/Package/Download/%s/%s" name version
                 | _ -> 
                     // TODO: How can we discover the download link?
                     failwithf "unknown package source %s - can't download package %s %s" source name version
-        
-            let client = new WebClient()
+            
+            use client = new WebClient()
             tracefn "Downloading %s %s" name version
             // TODO: Set credentials
-            client.DownloadFileAsync(Uri url, targetFileName)
-            let! _ = Async.AwaitEvent(client.DownloadFileCompleted)
-            return targetFileName
+            do! client.DownloadFileTaskAsync(Uri url, targetFileName)
+                |> Async.AwaitIAsyncResult
+                |> Async.Ignore
+            let! hashDetails = Hashing.getDetailsFromNuget name version
+            match hashDetails |> Hashing.compareWith targetFile with
+            | Some error -> 
+                File.Delete targetFileName
+                return failwith error
+            | None -> return targetFileName
     }
 
 /// Extracts the given package to the ./packages folder
@@ -95,13 +101,13 @@ let ExtractPackage(fileName, name, version, force) =
     async { 
         let targetFolder = DirectoryInfo(Path.Combine("packages", name)).FullName
         let fi = FileInfo(fileName)
-        let targetFile = FileInfo(Path.Combine(targetFolder,fi.Name))
-        if not force && targetFile.Exists then
+        let targetFile = FileInfo(Path.Combine(targetFolder, fi.Name))
+        if not force && targetFile.Exists then 
             tracefn "%s %s already extracted" name version
             return targetFolder
-        else
+        else 
             CleanDir targetFolder
-            File.Copy(fileName,targetFile.FullName)
+            File.Copy(fileName, targetFile.FullName)
             Compression.ZipFile.ExtractToDirectory(fileName, targetFolder)
             tracefn "%s %s unzipped" name version
             return targetFolder
@@ -110,10 +116,11 @@ let ExtractPackage(fileName, name, version, force) =
 /// Nuget Discovery API.
 let NugetDiscovery = 
     { new IDiscovery with
+          
           member __.GetDirectDependencies(sourceType, source, package, version) = 
               if sourceType <> "nuget" then failwithf "invalid sourceType %s" sourceType
               getDependencies source package version
           
           member __.GetVersions(sourceType, source, package) = 
               if sourceType <> "nuget" then failwithf "invalid sourceType %s" sourceType
-              getAllVersions(source,package) }
+              getAllVersions (source, package) }
