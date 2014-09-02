@@ -8,9 +8,9 @@ Consider the following [Packages file](packages_file.html):
     nuget "Castle.Windsor-log4net" "~> 3.2"
     nuget "Rx-Main" "~> 2.0"
 
-In this case we specify dependencies to `Castle.Windsor-log4net` and `Rx-Main`.
-Both packages have dependencies to further NuGet packages. 
-The `package.lock` file is a concrete resolution of all direct or indirect dependencies of your application.
+Here we specify dependencies on the standard NuGet feed's `Castle.Windsor-log4net` and `Rx-Main` packages; both these packages have dependencies on further NuGet packages. 
+
+The `packages.lock` file records the concrete resolutions of all direct *and indirect* dependencies of your project:-
 
     [lang=textfile]
     NUGET
@@ -28,7 +28,6 @@ The `package.lock` file is a concrete resolution of all direct or indirect depen
         Rx-PlatformServices (2.3)
         log4net (1.2.10)
 
-Further runs of [paket install](packet_install.htm) will not analyze the `packages.fsx` file again.
-So if you commit `package.lock` to your version control system, 
-it ensures that other developers, as well as your build servers, 
-will always use the same packages that you are using now.
+Subsequent runs of [paket install](packet_install.htm) will not reanalyze the `packages.fsx` file.
+
+As a result, committing the `packages.lock` file to your version control system guarantees that other developers and/or build servers will always end up with a reliable and consistent set of packages regardless of where or when a [paket install](packet_install.htm) occurs.
