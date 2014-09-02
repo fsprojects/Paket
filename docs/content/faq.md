@@ -24,3 +24,5 @@ Resolving dependencies from NuGet is really slow
 **A:** Paket uses the NuGet oData API to discover package dependencies. Unfortunately this API is very slow. 
 
 Some good news is that [the NuGet team are currently developing a faster API](http://blog.nuget.org/20140711/nuget-architecture.html); Paket may be able to take advantage of that.
+
+Once the Lockfile is written Paket won't use the oData API anymore and therefore package restore is very fast. 
