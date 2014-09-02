@@ -8,7 +8,7 @@ open Paket.ProjectFile
 [<Test>]
 let ``should detect reference nodes``() =
     let references =
-        ProjectFile.getProject "./TestData/Project1.fsproj"
+        ProjectFile.getProject "./TestData/Project1.fsprojtest"
         |> ProjectFile.getReferences
 
     references.Length |> shouldEqual 4
@@ -30,7 +30,7 @@ let ``should detect reference nodes``() =
 
 [<Test>]
 let ``should update single nodes``() =
-    let doc = ProjectFile.getProject "./TestData/Project1.fsproj"
+    let doc = ProjectFile.getProject "./TestData/Project1.fsprojtest"
 
     let node = (ProjectFile.getReferences doc).[2]
     let newNode = { node with HintPath = Some @"..\..\packages\NUnit.2.7.5\lib\nunit.framework.dll" }
@@ -45,7 +45,7 @@ let ``should update single nodes``() =
 
 [<Test>]
 let ``should add single node``() =
-    let doc = ProjectFile.getProject "./TestData/Project1.fsproj"
+    let doc = ProjectFile.getProject "./TestData/Project1.fsprojtest"
 
     let hintPath = @"..\..\packagesFAKE\lib\Fake.Core.dll"
     let newNode = { DLLName = "FAKE"; HintPath = Some hintPath; Private = false; Node = None }
