@@ -26,3 +26,18 @@ let ``should detect reference nodes``() =
     references.[3].DLLName |> shouldEqual "System"
     references.[3].Private |> shouldEqual false
     references.[3].HintPath |> shouldEqual None
+
+[<Test>]
+let ``should update single nodes``() =
+    let doc = ProjectFile.getProject "./TestData/Project1.fsproj"
+
+    let node = (ProjectFile.getReferences doc).[2]
+    let newNode = { node with HintPath = Some @"..\..\packages\NUnit.2.7.5\lib\nunit.framework.dll" }
+
+    let doc' = ProjectFile.updateReference(doc,newNode)
+
+    let reloaded = ProjectFile.getReferences doc'
+
+    reloaded.[2].DLLName |> shouldEqual "nunit.framework"
+    reloaded.[2].Private |> shouldEqual true
+    reloaded.[2].HintPath |> shouldEqual (Some @"..\..\packages\NUnit.2.7.5\lib\nunit.framework.dll")    

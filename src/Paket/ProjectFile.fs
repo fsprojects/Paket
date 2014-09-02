@@ -1,6 +1,7 @@
 ﻿/// Contains methods to read and manipulate project files.
 module Paket.ProjectFile
 
+open System
 open System.Xml
 open System.IO
 
@@ -13,18 +14,29 @@ let LoadReferencedPackages (projectFileName:string) =
 let getProject (fileName:string) =
     let doc = new XmlDocument()
     doc.Load fileName
+    doc
+
+type ReferenceNode = 
+    { DLLName : string
+      Node : XmlNode
+      Private : bool
+      HintPath : string option }
+    member x.Inner() = 
+        String.Join(Environment.NewLine, 
+                    [ match x.HintPath with
+                      | Some path -> yield sprintf "      <HintPath>%s</HintPath>" path
+                      | _ -> ()
+                      if x.Private then yield "      <Private>True</Private>"])
+    override x.ToString() = 
+        String.Join(Environment.NewLine, 
+                    [ yield sprintf "    <Reference Include=\"%s\">" x.DLLName
+                      yield x.Inner()
+                      yield "    </Reference>" ])
+
+let getReferences (doc : XmlDocument) = 
     let manager = new XmlNamespaceManager(doc.NameTable)
     manager.AddNamespace("ns", "http://schemas.microsoft.com/developer/msbuild/2003")
-    doc,manager
 
-type ReferenceNode = {
-    DLLName : string
-    Node: XmlNode
-    Private : bool
-    HintPath : string option
-    }
-
-let getReferences (doc : XmlDocument, manager) = 
     [ for node in doc.SelectNodes("//ns:Project/ns:ItemGroup/ns:Reference", manager) do
           let hintPath = ref None
           let privateDll = ref false
@@ -36,3 +48,9 @@ let getReferences (doc : XmlDocument, manager) =
                   Private = !privateDll
                   HintPath = !hintPath
                   Node = node } ]
+
+let updateReference(doc : XmlDocument, referenceNode: ReferenceNode) =
+    referenceNode.Node.Attributes.["Include"].Value <- referenceNode.DLLName
+    referenceNode.Node.InnerXml <- referenceNode.Inner()
+       
+    doc
