@@ -44,9 +44,7 @@ let Install(regenerate, force, packageFile) =
         for package, libraries in extracted do
             if Array.exists ((=) package.Name) usedPackages then 
                 for lib in libraries do
-                    let relativePath = 
-                        Uri(proj.FullName).MakeRelativeUri(Uri(lib.FullName)).ToString()
-                            .Replace("/", Path.DirectorySeparatorChar.ToString())
+                    let relativePath = Uri(proj.FullName).MakeRelativeUri(Uri(lib.FullName)).ToString().Replace("/", "\\")
 
                     ProjectFile.updateReference (doc, 
                                                  { DLLName = lib.Name.Replace(lib.Extension, "")
