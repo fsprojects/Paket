@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<package xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <metadata xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
+    <id>Paket</id>
+    <version>0.0.1-alpha008</version>
+    <authors>Steffen Forkmann, Alexander Gross</authors>
+    <owners>Steffen Forkmann, Alexander Gross</owners>
+    <licenseUrl>http://github.com/fsprojects/Paket/blob/master/LICENSE.txt</licenseUrl>
+    <projectUrl>http://fsprojects.github.com/Paket</projectUrl>
+    <iconUrl>https://raw.githubusercontent.com/fsprojects/Paket/master/docs/files/img/logo.png</iconUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <summary>A dependency manager for .NET</summary>
+    <description>A dependency manager for .NET</description>
+    <releaseNotes>Dogfooding works on Windows</releaseNotes>
+    <copyright>Copyright 2014</copyright>
+    <tags>nuget, bundler, F#</tags>
+    <dependencies />
+  </metadata>
+  <files>
+    <file src="..\bin\Paket.exe" target="tools" />
+    <file src="..\bin\FSharp.Compiler.Service.dll" target="tools" />
+    <file src="..\bin\FSharp.Core.dll" target="tools" />
+    <file src="..\bin\FSharp.Core.optdata" target="tools" />
+    <file src="..\bin\FSharp.Core.sigdata" target="tools" />
+    <file src="..\bin\Newtonsoft.Json.dll" target="tools" />
+    <file src="..\bin\UnionArgParser.dll" target="tools" />
+    <file src="..\bin\ICSharpCode.SharpZipLib.dll" target="tools" />
+  </files>
+</package>
