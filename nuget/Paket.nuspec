@@ -24,6 +24,6 @@
     <file src="..\bin\FSharp.Core.sigdata" target="tools" />
     <file src="..\bin\Newtonsoft.Json.dll" target="tools" />
     <file src="..\bin\UnionArgParser.dll" target="tools" />
-    <file src="..\bin\ICSharpCode.SharpZipLib" target="tools" />
+    <file src="..\bin\ICSharpCode.SharpZipLib.dll" target="tools" />
   </files>
 </package>
