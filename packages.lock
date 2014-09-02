@@ -2,7 +2,7 @@ NUGET
   remote: http://nuget.org/api/v2
   specs:
     FAKE (3.4.0)
-    FSharp.Compiler.Service (0.0.60)
+    FSharp.Compiler.Service (0.0.59)
     FSharp.Formatting (2.4.21)
     Microsoft.AspNet.Razor (2.0.30506.0)
     NUnit (2.6.3)
