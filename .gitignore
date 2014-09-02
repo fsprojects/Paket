@@ -175,3 +175,4 @@ TestResults.xml
 
 # Nuget outputs
 nuget/*.nupkg
+release.cmd

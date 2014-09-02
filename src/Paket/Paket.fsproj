@@ -82,7 +82,6 @@
     <Compile Include="Process.fs" />
     <Compile Include="Program.fs" />
     <None Include="packages" />
-    <Content Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="FSharp.Compiler.Service">

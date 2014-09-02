@@ -78,7 +78,6 @@
     </None>
     <Compile Include="ProjectFileSpecs.fs" />
     <None Include="packages" />
-    <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="mscorlib" />
