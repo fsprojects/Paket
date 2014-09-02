@@ -85,11 +85,12 @@ let Resolve(discovery : IDiscovery, rootDependencies:Package seq) =
                       SourceType = dependency.Referenced.SourceType
                       Source = dependency.Referenced.Source }
                 let resolvedDependency = 
-                    ResolvedDependency.Resolved(match dependency with
-                                             | FromRoot _ -> FromRoot resolvedPackage
-                                             | FromPackage d -> 
-                                                 FromPackage { Defining = d.Defining
-                                                               Referenced = resolvedPackage })
+                    ResolvedDependency.Resolved(
+                                            match dependency with
+                                            | FromRoot _ -> FromRoot resolvedPackage
+                                            | FromPackage d -> 
+                                                FromPackage { Defining = d.Defining
+                                                              Referenced = resolvedPackage })
 
                 let mutable dependencies = dependencies
                 let dependentPackages = 
