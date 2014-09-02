@@ -2,6 +2,8 @@
 module Paket.Process
 
 open System.IO
+open Paket.ProjectFile
+open System
 
 /// Downloads and extracts all package.
 let ExtractPackages(force, packages : Package seq) = 
@@ -14,21 +16,45 @@ let ExtractPackages(force, packages : Package seq) =
                     | "nuget" -> 
                         async { let! packageFile = Nuget.DownloadPackage
                                                        (package.Source, package.Name, version.ToString(), force)
-                                return! Nuget.ExtractPackage(packageFile, package.Name, version.ToString(), force) }
+                                let! folder = Nuget.ExtractPackage(packageFile, package.Name, version.ToString(), force) 
+                                return package,Nuget.GetLibraries folder}
                     | _ -> failwithf "Can't download from source type %s" package.SourceType)
 
 let findLockfile packageFile =
     let fi = FileInfo(packageFile)
     FileInfo(Path.Combine(fi.Directory.FullName, fi.Name.Replace(fi.Extension, ".lock")))
 
+let findPackagesForProject projectFile =
+    let fi = FileInfo(projectFile)
+    let packageFile = FileInfo(Path.Combine(fi.Directory.FullName, "packages"))
+    if packageFile.Exists then File.ReadAllLines packageFile.FullName else
+    failwithf "Package config file not found for Project %s" projectFile
+
 /// Installs the given packageFile.
 let Install(regenerate, force, packageFile) = 
     let lockfile = findLockfile packageFile
     if regenerate || (not lockfile.Exists) then LockFile.Update(packageFile, lockfile.FullName)
-    ExtractPackages(force, File.ReadAllLines lockfile.FullName |> LockFile.Parse)
-    |> Async.Parallel
-    |> Async.RunSynchronously
-    |> ignore
+    let extracted = 
+        ExtractPackages(force, File.ReadAllLines lockfile.FullName |> LockFile.Parse)
+        |> Async.Parallel
+        |> Async.RunSynchronously
+    for proj in ProjectFile.FindAllProjects(".") do
+        let usedPackages = findPackagesForProject proj.FullName
+        let doc = ProjectFile.getProject proj.FullName
+        for package, libraries in extracted do
+            if Array.exists ((=) package.Name) usedPackages then 
+                for lib in libraries do
+                    let relativePath = 
+                        Uri(proj.FullName).MakeRelativeUri(Uri(lib.FullName)).ToString()
+                            .Replace("/", Path.DirectorySeparatorChar.ToString())
+
+                    ProjectFile.updateReference (doc, 
+                                                 { DLLName = lib.Name.Replace(lib.Extension, "")
+                                                   HintPath = Some relativePath
+                                                   Private = true
+                                                   Node = None })
+        doc.Save(proj.FullName)
+        
 
 /// Finds all outdated packages.
 let FindOutdated(packageFile) = 

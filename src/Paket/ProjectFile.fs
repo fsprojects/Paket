@@ -50,10 +50,14 @@ let getReferences (doc : XmlDocument) =
                   Node = Some node } ]
 
 let updateReference(doc : XmlDocument, referenceNode: ReferenceNode) =
-    match referenceNode.Node with
-    | Some node ->
-        node.Attributes.["Include"].Value <- referenceNode.DLLName
-        node.InnerXml <- referenceNode.Inner()
+    let nodes = getReferences (doc : XmlDocument)
+    match nodes |> Seq.tryFind (fun node -> node.DLLName = referenceNode.DLLName) with
+    | Some targetNode ->
+        match targetNode.Node with
+        | Some node -> 
+            node.Attributes.["Include"].Value <- referenceNode.DLLName
+            node.InnerXml <- Environment.NewLine +  referenceNode.Inner() + Environment.NewLine + "    "
+        | _ -> failwith "Unexpected error"
     | None ->
         let manager = new XmlNamespaceManager(doc.NameTable)
         manager.AddNamespace("ns", "http://schemas.microsoft.com/developer/msbuild/2003")
@@ -61,6 +65,7 @@ let updateReference(doc : XmlDocument, referenceNode: ReferenceNode) =
             seq { for node in doc.SelectNodes("//ns:Project/ns:ItemGroup/ns:Reference", manager) -> node }
             |> Seq.head
 
-        firstNode.ParentNode.InnerXml <- firstNode.ParentNode.InnerXml + Environment.NewLine + referenceNode.ToString()
+        firstNode.ParentNode.InnerXml <- firstNode.ParentNode.InnerXml + Environment.NewLine + referenceNode.ToString() + Environment.NewLine
 
-    doc
+/// Finds all libraries in a nuget packge.
+let FindAllProjects(folder) = DirectoryInfo(folder).EnumerateFiles("*.*proj", SearchOption.AllDirectories)

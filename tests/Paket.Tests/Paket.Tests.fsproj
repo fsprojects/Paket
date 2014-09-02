@@ -73,9 +73,9 @@
     <Compile Include="LockFileGenerationWithMutlipleSourcesSpecs.fs" />
     <Compile Include="LockFileParserSpecs.fs" />
     <Compile Include="LockFileWithMultipleSourcesParserSpecs.fs" />
-    <Content Include="TestData\Project1.fsproj">
+    <None Include="TestData\Project1.fsprojtest">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
+    </None>
     <Compile Include="ProjectFileSpecs.fs" />
     <None Include="packages" />
     <None Include="packages.config" />

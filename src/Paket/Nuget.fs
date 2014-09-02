@@ -107,6 +107,14 @@ let ExtractPackage(fileName, name, version, force) =
             return targetFolder
     }
 
+/// Finds all libraries in a nuget packge.
+let GetLibraries(targetFolder) =
+    let dir = DirectoryInfo(Path.Combine(targetFolder,"lib"))
+    if dir.Exists then
+        dir.GetFiles("*.dll",SearchOption.AllDirectories)
+    else
+        Array.empty
+
 /// Nuget Discovery API.
 let NugetDiscovery = 
     { new IDiscovery with
