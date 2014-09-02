@@ -3,6 +3,7 @@
 open Paket
 open NUnit.Framework
 open FsUnit
+open Paket.ProjectFile
 
 [<Test>]
 let ``should detect reference nodes``() =
@@ -40,4 +41,19 @@ let ``should update single nodes``() =
 
     reloaded.[2].DLLName |> shouldEqual "nunit.framework"
     reloaded.[2].Private |> shouldEqual true
-    reloaded.[2].HintPath |> shouldEqual (Some @"..\..\packages\NUnit.2.7.5\lib\nunit.framework.dll")    
+    reloaded.[2].HintPath |> shouldEqual (Some @"..\..\packages\NUnit.2.7.5\lib\nunit.framework.dll")
+
+[<Test>]
+let ``should add single node``() =
+    let doc = ProjectFile.getProject "./TestData/Project1.fsproj"
+
+    let hintPath = @"..\..\packagesFAKE\lib\Fake.Core.dll"
+    let newNode = { DLLName = "FAKE"; HintPath = Some hintPath; Private = false; Node = None }
+
+    let doc' = ProjectFile.updateReference(doc,newNode)
+
+    let reloaded = ProjectFile.getReferences doc'
+
+    reloaded.[4].DLLName |> shouldEqual "FAKE"
+    reloaded.[4].Private |> shouldEqual false
+    reloaded.[4].HintPath |> shouldEqual (Some hintPath)

@@ -18,7 +18,7 @@ let getProject (fileName:string) =
 
 type ReferenceNode = 
     { DLLName : string
-      Node : XmlNode
+      Node : XmlNode option
       Private : bool
       HintPath : string option }
     member x.Inner() = 
@@ -47,10 +47,20 @@ let getReferences (doc : XmlDocument) =
           yield { DLLName = node.Attributes.["Include"].InnerText.Split(',').[0]
                   Private = !privateDll
                   HintPath = !hintPath
-                  Node = node } ]
+                  Node = Some node } ]
 
 let updateReference(doc : XmlDocument, referenceNode: ReferenceNode) =
-    referenceNode.Node.Attributes.["Include"].Value <- referenceNode.DLLName
-    referenceNode.Node.InnerXml <- referenceNode.Inner()
-       
+    match referenceNode.Node with
+    | Some node ->
+        node.Attributes.["Include"].Value <- referenceNode.DLLName
+        node.InnerXml <- referenceNode.Inner()
+    | None ->
+        let manager = new XmlNamespaceManager(doc.NameTable)
+        manager.AddNamespace("ns", "http://schemas.microsoft.com/developer/msbuild/2003")
+        let firstNode =
+            seq { for node in doc.SelectNodes("//ns:Project/ns:ItemGroup/ns:Reference", manager) -> node }
+            |> Seq.head
+
+        firstNode.ParentNode.InnerXml <- firstNode.ParentNode.InnerXml + Environment.NewLine + referenceNode.ToString()
+
     doc
