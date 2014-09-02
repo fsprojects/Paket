@@ -40,18 +40,20 @@ let Install(regenerate, force, packageFile) =
         |> Async.RunSynchronously
     for proj in ProjectFile.FindAllProjects(".") do
         let usedPackages = findPackagesForProject proj.FullName
-        let doc = ProjectFile.getProject proj.FullName
+        let project = ProjectFile.getProject proj.FullName
         for package, libraries in extracted do
             if Array.exists ((=) package.Name) usedPackages then 
                 for lib in libraries do
                     let relativePath = Uri(proj.FullName).MakeRelativeUri(Uri(lib.FullName)).ToString().Replace("/", "\\")
 
-                    ProjectFile.updateReference (doc, 
+                    ProjectFile.updateReference (project, 
                                                  { DLLName = lib.Name.Replace(lib.Extension, "")
                                                    HintPath = Some relativePath
                                                    Private = true
                                                    Node = None })
-        doc.Save(proj.FullName)
+
+        if project.Modified then
+            project.Document.Save(proj.FullName)
         
 
 /// Finds all outdated packages.
