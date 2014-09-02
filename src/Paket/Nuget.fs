@@ -95,14 +95,24 @@ let ExtractPackage(fileName, name, version, force) =
     async { 
         let targetFolder = DirectoryInfo(Path.Combine("packages", name)).FullName
         let fi = FileInfo(fileName)
-        let targetFile = FileInfo(Path.Combine(targetFolder,fi.Name))
-        if not force && targetFile.Exists then
+        let targetFile = FileInfo(Path.Combine(targetFolder, fi.Name))
+        if not force && targetFile.Exists then 
             tracefn "%s %s already extracted" name version
             return targetFolder
-        else
+        else 
             CleanDir targetFolder
-            File.Copy(fileName,targetFile.FullName)
+            File.Copy(fileName, targetFile.FullName)
             Compression.ZipFile.ExtractToDirectory(fileName, targetFolder)
+            // cleanup folder structure
+            let rec cleanup (dir : DirectoryInfo) = 
+                for sub in dir.GetDirectories() do
+                    let newName = sub.FullName.Replace("%2B", "+")
+                    if sub.FullName <> newName then 
+                        Directory.Move(sub.FullName, newName)
+                        cleanup (DirectoryInfo newName)
+                    else
+                        cleanup sub
+            cleanup (DirectoryInfo targetFolder)
             tracefn "%s %s unzipped" name version
             return targetFolder
     }
