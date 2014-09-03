@@ -26,8 +26,7 @@ let findLockfile packageFile =
 let findPackagesForProject projectFile =
     let fi = FileInfo(projectFile)
     let packageFile = FileInfo(Path.Combine(fi.Directory.FullName, "packages"))
-    if packageFile.Exists then File.ReadAllLines packageFile.FullName else
-    failwithf "Package config file not found for Project %s" projectFile
+    if packageFile.Exists then File.ReadAllLines packageFile.FullName else [||]
 
 let private findAllProjects(folder) = DirectoryInfo(folder).EnumerateFiles("*.*proj", SearchOption.AllDirectories)
 

@@ -1,3 +1,6 @@
+#### 0.0.1-alpha014 - 03.09.2014
+* Allow ??projs without package definition files - https://github.com/fsprojects/Paket/issues/29
+
 #### 0.0.1-alpha013 - 02.09.2014
 * Don't fail if hash is corrupted. just show error - relates to https://github.com/fsprojects/Paket/issues/35
 
