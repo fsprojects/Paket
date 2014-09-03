@@ -7,13 +7,34 @@ open System.Net
 open Newtonsoft.Json
 open Ionic.Zip
 open System.Xml.Linq
+open System.Xml
+
+let getVersionsFromNuget (nugetURL, package) = 
+    async { 
+        // TODO: this is a very very naive implementation
+        let! raw = sprintf "%s/Packages?$filter=Id eq '%s'" nugetURL package |> getFromUrl
+        let doc = XmlDocument()
+        doc.LoadXml raw
+        let manager = new XmlNamespaceManager(doc.NameTable)
+        manager.AddNamespace("ns", "http://www.w3.org/2005/Atom")
+        manager.AddNamespace("d", "http://schemas.microsoft.com/ado/2007/08/dataservices")
+        manager.AddNamespace("m", "http://schemas.microsoft.com/ado/2007/08/dataservices/metadata")
+        return seq { 
+                   for node in doc.SelectNodes("//ns:feed/ns:entry/m:properties/d:Version", manager) do
+                       yield node.InnerText
+               }
+    }
+    
 
 /// Gets versions of the given package.
 let getAllVersions(nugetURL,package) = 
     async { 
         let! raw = sprintf "%s/package-versions/%s" nugetURL package |> getFromUrl
-        if raw = "" then return Seq.empty
-        else return JsonConvert.DeserializeObject<string []>(raw) |> Array.toSeq
+        if raw = "" then 
+            let! first = getVersionsFromNuget(nugetURL,package)
+            return first
+        else 
+            return JsonConvert.DeserializeObject<string []>(raw) |> Array.toSeq
     }
 
 /// Parses NuGet version ranges.
