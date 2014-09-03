@@ -93,8 +93,8 @@ let Resolve(discovery : IDiscovery, rootDependencies:Package seq) =
                                                               Referenced = resolvedPackage })
 
                 let mutable dependencies = dependencies
-                let dependentPackages = 
-                    discovery.GetDirectDependencies(dependency.Referenced.SourceType, dependency.Referenced.Source, dependency.Referenced.Name, maxVersion.ToString()) 
+                let dependentPackages,_ = 
+                    discovery.GetPackageDetails(dependency.Referenced.SourceType, dependency.Referenced.Source, dependency.Referenced.Name, maxVersion.ToString()) 
                     |> Async.RunSynchronously
 
                 for dependentPackage in dependentPackages do
