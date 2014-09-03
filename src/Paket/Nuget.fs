@@ -17,9 +17,8 @@ let loadNuGetOData raw =
     manager.AddNamespace("m", "http://schemas.microsoft.com/ado/2007/08/dataservices/metadata")
     doc,manager
 
-let getVersionsFromNuget (nugetURL, package) = 
+let getAllVersionsFromNugetOData (nugetURL, package) = 
     async { 
-        // TODO: this is a very very naive implementation
         let! raw = sprintf "%s/Packages?$filter=Id eq '%s'" nugetURL package |> getFromUrl
         let doc,manager = loadNuGetOData raw
         return seq { 
@@ -34,7 +33,7 @@ let getAllVersions(nugetURL,package) =
     async { 
         let! raw = sprintf "%s/package-versions/%s" nugetURL package |> getFromUrl
         if raw = "" then 
-            let! first = getVersionsFromNuget(nugetURL,package)
+            let! first = getAllVersionsFromNugetOData(nugetURL,package)
             return first
         else 
             return JsonConvert.DeserializeObject<string []>(raw) |> Array.toSeq
@@ -54,7 +53,6 @@ let parseVersionRange (text:string) =
 /// Gets hash value and algorithm from Nuget.
 let getDetailsFromNuget nugetURL package version = 
     async { 
-        // TODO: this is a very very naive implementation
         let! raw = sprintf "%s/Packages(Id='%s',Version='%s')" nugetURL package version |> getFromUrl
         let doc,manager = loadNuGetOData raw
             
