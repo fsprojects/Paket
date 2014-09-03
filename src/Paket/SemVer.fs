@@ -73,7 +73,7 @@ type SemVerInfo =
     override x.Equals(yobj) = 
         match yobj with
         | :? SemVerInfo as y -> 
-            (x.Minor, x.Minor, x.Patch, x.PreRelease, x.Build) = (y.Minor, y.Minor, y.Patch, y.PreRelease, y.Build)
+            (x.Major, x.Minor, x.Patch, x.PreRelease, x.Build) = (y.Major, y.Minor, y.Patch, y.PreRelease, y.Build)
         | _ -> false
     
     override x.GetHashCode() = hash (x.Minor, x.Minor, x.Patch, x.PreRelease, x.Build)
