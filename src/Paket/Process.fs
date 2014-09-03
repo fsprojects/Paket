@@ -39,10 +39,24 @@ let Install(regenerate, force, packageFile) =
         |> Async.Parallel
         |> Async.RunSynchronously
     for proj in findAllProjects(".") do
-        let usedPackages = findPackagesForProject proj.FullName
+        let directPackages = findPackagesForProject proj.FullName
         let project = ProjectFile.Load proj.FullName
+
+        let usedPackages = new System.Collections.Generic.HashSet<_>()
+
         for package, libraries in extracted do
-            if Array.exists ((=) package.Name) usedPackages then 
+            if Array.exists ((=) package.Name) directPackages then
+                usedPackages.Add package.Name |> ignore
+                match package.VersionRange with
+                | Specific v -> 
+                    let _,indirectDependencies =
+                        Nuget.getDetailsFromNuget package.Source package.Name (v.ToString())
+                        |> Async.RunSynchronously
+                    for x in indirectDependencies do
+                        usedPackages.Add x.Name |> ignore
+
+        for package, libraries in extracted do
+            if usedPackages.Contains package.Name then
                 for lib in libraries do
                     let relativePath = Uri(proj.FullName).MakeRelativeUri(Uri(lib.FullName)).ToString().Replace("/", "\\")
 

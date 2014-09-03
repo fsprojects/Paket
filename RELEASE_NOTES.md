@@ -1,3 +1,6 @@
+#### 0.0.1-alpha017 - 03.09.2014
+* Make indirect dependencies optional in packages file - https://github.com/fsprojects/Paket/issues/38
+
 #### 0.0.1-alpha016 - 03.09.2014
 * Support TeamCity feeds - https://github.com/fsprojects/Paket/issues/37
 
