@@ -4,7 +4,6 @@ module Paket.Nuget
 open System
 open System.IO
 open System.Net
-open System.Xml
 open Newtonsoft.Json
 open Ionic.Zip
 open System.Xml.Linq
@@ -36,6 +35,11 @@ let getDetailsFromNuget nugetURL name version =
                     |> wc.DownloadStringTaskAsync
                     |> Async.AwaitTask
         let data = XDocument.Parse data
+let getDetailsFromNuget nugetURL package version = 
+    async { 
+        // TODO: this is a very very naive implementation
+        let! raw = sprintf "%s/Packages(Id='%s',Version='%s')" nugetURL package version |> getFromUrl
+        let data = XDocument.Parse raw
             
         let getAttribute = 
             let rootNs = XName.Get("entry", "http://www.w3.org/2005/Atom")
