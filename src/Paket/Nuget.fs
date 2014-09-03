@@ -135,16 +135,13 @@ let DownloadPackage(source, name, version, force) = async {
             tracefn "%s %s already downloaded" name version
             return targetFileName 
         else
-            let url = ref (sprintf "http://packages.nuget.org/v1/Package/Download/%s/%s" name version)
-            if source <> "http://nuget.org/api/v2" then 
-                // discover the link on the fly
-                let! (link,_) = getDetailsFromNuget force source name version
-                url := link
+            // discover the link on the fly
+            let! (link,_) = getDetailsFromNuget force source name version
         
             use client = new WebClient()
             tracefn "Downloading %s %s to %s" name version targetFileName
             // TODO: Set credentials
-            do! client.DownloadFileTaskAsync(Uri !url, targetFileName)
+            do! client.DownloadFileTaskAsync(Uri link, targetFileName)
                 |> Async.AwaitIAsyncResult
                 |> Async.Ignore
 
