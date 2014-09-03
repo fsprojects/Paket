@@ -4,7 +4,6 @@ module Paket.Nuget
 open System
 open System.IO
 open System.Net
-open System.Xml
 open Newtonsoft.Json
 open Ionic.Zip
 open System.Xml.Linq
@@ -28,23 +27,28 @@ let parseVersionRange (text:string) =
             VersionRange.Between(parts.[0],parts.[1])
     else VersionRange.AtLeast(text)
 
-/// Gets all dependencies of the given package version.
-let getDependencies nugetURL package version = 
+/// Gets hash value and algorithm from Nuget.
+let getDetailsFromNuget nugetURL package version = 
     async { 
         // TODO: this is a very very naive implementation
-        let! raw = sprintf "%s/Packages(Id='%s',Version='%s')/Dependencies" nugetURL package version |> getFromUrl
-        let doc = XmlDocument()
-        doc.LoadXml raw
-        let manager = new XmlNamespaceManager(doc.NameTable)
-        manager.AddNamespace("ns", "http://www.w3.org/2005/Atom")
-        manager.AddNamespace("d", "http://schemas.microsoft.com/ado/2007/08/dataservices")
-        manager.AddNamespace("m", "http://schemas.microsoft.com/ado/2007/08/dataservices/metadata")
+        let! raw = sprintf "%s/Packages(Id='%s',Version='%s')" nugetURL package version |> getFromUrl
+        let data = XDocument.Parse raw
+            
+        let getAttribute = 
+            let rootNs = XName.Get("entry", "http://www.w3.org/2005/Atom")
+            let propertiesNs = 
+                XName.Get("properties", "http://schemas.microsoft.com/ado/2007/08/dataservices/metadata")
+            let attributesNs attribute = 
+                XName.Get(attribute, "http://schemas.microsoft.com/ado/2007/08/dataservices")
+                
+            let properties = 
+                rootNs
+                |> data.Element
+                |> fun entry -> entry.Element(propertiesNs)
+            fun attribute -> properties.Element(attributesNs attribute).Value
+
         let packages = 
-            seq { 
-                for node in doc.SelectNodes("//d:Dependencies", manager) do
-                    yield node.InnerText
-            }
-            |> Seq.head
+            getAttribute "Dependencies"
             |> fun s -> s.Split([| '|' |], System.StringSplitOptions.RemoveEmptyEntries)
             |> Array.map (fun d -> d.Split ':')
             |> Array.filter (fun d -> Array.isEmpty d
@@ -60,31 +64,8 @@ let getDependencies nugetURL package version =
                      SourceType = "nuget"
                      Source = nugetURL })
             |> Array.toList
-        return packages
-    }
 
-/// Gets hash value and algorithm from Nuget.
-let getDetailsFromNuget name version = 
-    async { 
-        use wc = new WebClient()
-        let! data = sprintf "https://www.nuget.org/api/v2/Packages(Id='%s',Version='%s')" name version
-                    |> wc.DownloadStringTaskAsync
-                    |> Async.AwaitTask
-        let data = XDocument.Parse data
-            
-        let getAttribute = 
-            let rootNs = XName.Get("entry", "http://www.w3.org/2005/Atom")
-            let propertiesNs = 
-                XName.Get("properties", "http://schemas.microsoft.com/ado/2007/08/dataservices/metadata")
-            let attributesNs attribute = 
-                XName.Get(attribute, "http://schemas.microsoft.com/ado/2007/08/dataservices")
-                
-            let properties = 
-                rootNs
-                |> data.Element
-                |> fun entry -> entry.Element(propertiesNs)
-            fun attribute -> properties.Element(attributesNs attribute).Value
-        return (getAttribute "PackageHash", getAttribute "PackageHashAlgorithm")
+        return (packages,getAttribute "PackageHash", getAttribute "PackageHashAlgorithm")
     }
     
 /// The NuGet cache folder.
@@ -114,8 +95,8 @@ let DownloadPackage(source, name, version, force) =
             do! client.DownloadFileTaskAsync(Uri url, targetFileName)
                 |> Async.AwaitIAsyncResult
                 |> Async.Ignore
-            let! hashDetails = getDetailsFromNuget name version
-            match hashDetails |> Hashing.compareWith name targetFile with
+            let! _,hash,algorithm = getDetailsFromNuget source name version
+            match (hash,algorithm) |> Hashing.compareWith name targetFile with
             | Some error -> 
                 // TODO: File.Delete targetFileName
                 traceError error
@@ -166,10 +147,12 @@ let GetLibraries(targetFolder) =
 /// Nuget Discovery API.
 let NugetDiscovery = 
     { new IDiscovery with
+          
           member __.GetDirectDependencies(sourceType, source, package, version) = 
               if sourceType <> "nuget" then failwithf "invalid sourceType %s" sourceType
-              getDependencies source package version
+              async { let! dependencies, _, _ = getDetailsFromNuget source package version
+                      return dependencies }
           
           member __.GetVersions(sourceType, source, package) = 
               if sourceType <> "nuget" then failwithf "invalid sourceType %s" sourceType
-              getAllVersions(source,package) }
+              getAllVersions (source, package) }
