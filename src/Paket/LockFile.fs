@@ -25,7 +25,7 @@ let format (resolved : PackageResolution) =
               for _, package, version in packages do
                   let hash = 
                       match package.Hash with
-                      | Some hash -> sprintf " %s %s" hash.Algorithm hash.Hash
+                      | Some hash -> "" // sprintf " %s %s" hash.Algorithm hash.Hash
                       | None -> ""
                   yield sprintf "    %s (%s)%s" package.Name (version.ToString()) hash ]
     
