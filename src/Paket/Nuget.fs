@@ -100,9 +100,9 @@ let CacheFolder =
     let appData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)
     Path.Combine(Path.Combine(appData, "NuGet"), "Cache")
 
-let private loadFromCacheOrOData fileName nugetURL package version = 
+let private loadFromCacheOrOData force fileName nugetURL package version = 
     async {
-        if File.Exists fileName then
+        if not force && File.Exists fileName then
             try 
                 let json = File.ReadAllText(fileName)
                 return false,JsonConvert.DeserializeObject<PackageDetails>(json)
@@ -115,19 +115,17 @@ let private loadFromCacheOrOData fileName nugetURL package version =
     }
 
 
-let getDetailsFromNuget nugetURL package version = 
+let getDetailsFromNuget force nugetURL package version = 
     async {
         try            
             let fi = FileInfo(Path.Combine(CacheFolder,sprintf "%s.%s.json" package version))
-            let! (invalidCache,details) = loadFromCacheOrOData fi.FullName nugetURL package version 
+            let! (invalidCache,details) = loadFromCacheOrOData force fi.FullName nugetURL package version 
             if invalidCache then
                 File.WriteAllText(fi.FullName,JsonConvert.SerializeObject(details))
             return details
         with
         | _ -> return! getDetailsFromNugetViaOData nugetURL package version 
-    }
-    
-    
+    }    
 
 /// Downloads the given package to the NuGet Cache folder
 let DownloadPackage(source, name, version, force) = async { 
@@ -140,7 +138,7 @@ let DownloadPackage(source, name, version, force) = async {
             let url = ref (sprintf "http://packages.nuget.org/v1/Package/Download/%s/%s" name version)
             if source <> "http://nuget.org/api/v2" then 
                 // discover the link on the fly
-                let! (link,_) = getDetailsFromNuget source name version
+                let! (link,_) = getDetailsFromNuget force source name version
                 url := link
         
             use client = new WebClient()
@@ -197,9 +195,9 @@ let GetLibraries(targetFolder) =
 let NugetDiscovery = 
     { new IDiscovery with
           
-          member __.GetPackageDetails(sourceType, source, package, version) = 
+          member __.GetPackageDetails(force, sourceType, source, package, version) = 
               if sourceType <> "nuget" then failwithf "invalid sourceType %s" sourceType
-              getDetailsFromNuget source package version
+              getDetailsFromNuget force source package version
           
           member __.GetVersions(sourceType, source, package) = 
               if sourceType <> "nuget" then failwithf "invalid sourceType %s" sourceType

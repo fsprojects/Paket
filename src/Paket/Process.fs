@@ -33,7 +33,7 @@ let private findAllProjects(folder) = DirectoryInfo(folder).EnumerateFiles("*.*p
 /// Installs the given packageFile.
 let Install(regenerate, force, packageFile) = 
     let lockfile = findLockfile packageFile
-    if regenerate || (not lockfile.Exists) then LockFile.Update(packageFile, lockfile.FullName)
+    if regenerate || (not lockfile.Exists) then LockFile.Update(force, packageFile, lockfile.FullName)
     let extracted = 
         ExtractPackages(force, File.ReadAllLines lockfile.FullName |> LockFile.Parse)
         |> Async.Parallel
@@ -50,7 +50,7 @@ let Install(regenerate, force, packageFile) =
                 match package.VersionRange with
                 | Specific v -> 
                     let _,indirectDependencies =
-                        Nuget.getDetailsFromNuget package.Source package.Name (v.ToString())
+                        Nuget.getDetailsFromNuget force package.Source package.Name (v.ToString())
                         |> Async.RunSynchronously
                     for x in indirectDependencies do
                         usedPackages.Add x.Name |> ignore
@@ -73,7 +73,7 @@ let Install(regenerate, force, packageFile) =
 let FindOutdated(packageFile) = 
     let lockfile = findLockfile packageFile
     
-    let newPackages = LockFile.Create(packageFile)
+    let newPackages = LockFile.Create(true,packageFile)
     let installed = if lockfile.Exists then LockFile.Parse(File.ReadAllLines lockfile.FullName) else []
 
     [for p in installed do

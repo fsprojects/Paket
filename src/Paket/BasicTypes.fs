@@ -50,7 +50,7 @@ type PackageDetails =  string * Package list
 
 /// Interface for discovery APIs.
 type IDiscovery = 
-    abstract GetPackageDetails : string * string * string * string -> Async<PackageDetails>
+    abstract GetPackageDetails : bool * string * string * string * string -> Async<PackageDetails>
     abstract GetVersions : string * string * string -> Async<string seq>
 
 /// Represents a resolved dependency.
