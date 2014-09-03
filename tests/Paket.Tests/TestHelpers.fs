@@ -6,7 +6,7 @@ open System
 let DictionaryDiscovery(graph : seq<string * string * (string * VersionRange) list>) = 
     { new IDiscovery with
           
-          member __.GetPackageDetails(true, sourceType, source, package, version) = 
+          member __.GetPackageDetails(force, sourceType, source, package, version) = 
               async { 
                   let dependencies =
                     graph
