@@ -23,11 +23,7 @@ let format (resolved : PackageResolution) =
               yield "  remote: " + source
               yield "  specs:"
               for _, package, version in packages do
-                  let hash = 
-                      match package.Hash with
-                      | Some hash -> "" // sprintf " %s %s" hash.Algorithm hash.Hash
-                      | None -> ""
-                  yield sprintf "    %s (%s)%s" package.Name (version.ToString()) hash ]
+                  yield sprintf "    %s (%s)" package.Name (version.ToString()) ]
     
     String.Join(Environment.NewLine, all)
 
@@ -49,7 +45,6 @@ let Parse(lines : string seq) =
               yield { SourceType = "nuget"
                       Source = !remote
                       Name = splitted.[0]
-                      Hash = if splitted.Length > 2 then Some({ Algorithm = splitted.[2]; Hash = splitted.[3] }) else None
                       VersionRange = VersionRange.Exactly version } ]
 
 /// Analyzes the dependencies from the packageFile.

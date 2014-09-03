@@ -85,11 +85,10 @@ let getDetailsFromNuget nugetURL package version =
                      // TODO: Parse nuget version ranges - see http://docs.nuget.org/docs/reference/versioning
                      VersionRange = parseVersionRange version
                      SourceType = "nuget"
-                     Hash = None
                      Source = nugetURL })
             |> Array.toList
 
-        return packages,Some{ Algorithm = getAttribute "PackageHashAlgorithm"; Hash = getAttribute "PackageHash" }
+        return packages
     }
     
 /// The NuGet cache folder.
@@ -98,22 +97,11 @@ let CacheFolder =
     Path.Combine(Path.Combine(appData, "NuGet"), "Cache")
 
 /// Downloads the given package to the NuGet Cache folder
-let DownloadPackage(source, name, version, hash, force) = 
+let DownloadPackage(source, name, version, force) = 
     async { 
         let targetFileName = Path.Combine(CacheFolder,name + "." + version + ".nupkg")
         let targetFile = FileInfo targetFileName
-        let download =
-            if force then true else
-            if targetFile.Exists && targetFile.Length > 0L then
-                match hash with
-                | Some hash ->
-                    match Hashing.compareWith name targetFile hash with
-                    | Some _ -> true // Hash is incorrect -> download again
-                    | None -> false // Hash is correct -> do not download again
-                | None -> true // we don't know the hash -> download again
-            else true
-
-        if not download then 
+        if not force && targetFile.Exists && targetFile.Length > 0L then 
             tracefn "%s %s already downloaded" name version
             return targetFileName 
         else
@@ -131,15 +119,7 @@ let DownloadPackage(source, name, version, hash, force) =
                 |> Async.AwaitIAsyncResult
                 |> Async.Ignore
 
-            match hash with
-            | Some hash ->
-                match Hashing.compareWith name targetFile hash with
-                | Some error -> 
-                    // TODO: File.Delete targetFileName
-                    traceError error
-                    return targetFileName
-                | None -> return targetFileName
-            | None -> return targetFileName
+            return targetFileName
     }
 
 
