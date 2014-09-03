@@ -1,11 +1,18 @@
 ﻿namespace Paket
 
+type Bound = 
+    | Open
+    | Closed
+
 /// Represents version information.
 type VersionRange = 
     | Latest
-    | Minimum of SemVerInfo
     | Specific of SemVerInfo
-    | Range of SemVerInfo * SemVerInfo
+    | Minimum of SemVerInfo
+    | GreaterThan of SemVerInfo
+    | Maximum of SemVerInfo
+    | LessThan of SemVerInfo
+    | Range of fromB : Bound * from : SemVerInfo * _to : SemVerInfo * _toB : Bound
     /// Checks wether the given version is in the version range
     member this.IsInRange(version:string) =
         this.IsInRange(SemVer.parse version)
@@ -16,13 +23,13 @@ type VersionRange =
         | Latest -> true
         | Minimum v -> v <= version
         | Specific v -> v = version
-        | Range(min, max) -> version >= min && version < max
+        | Range(_, min, max, _) -> version >= min && version < max
 
     static member AtLeast version = Minimum(SemVer.parse version)
 
     static member Exactly version = Specific(SemVer.parse version)
 
-    static member Between(version1,version2) = Range(SemVer.parse version1, SemVer.parse version2)
+    static member Between(version1,version2) = Range(Closed, SemVer.parse version1, SemVer.parse version2, Open)
 
 /// Represents a package.
 type Package = 

@@ -37,7 +37,7 @@ let nuget package version = __nuget.Add(package,("nuget",__nugetSource,version))
         match version with
         | Minimum v -> ">= " + v.ToString()
         | Specific v -> v.ToString()
-        | Range(v1, v2) -> ">= " + v1.ToString() + ", < " + v2.ToString()
+        | Range(_, v1, v2, _) -> ">= " + v1.ToString() + ", < " + v2.ToString()
     
     let executeInScript (executeInScript : FsiEvaluationSession -> unit) = 
         let fsiConfig = FsiEvaluationSession.GetDefaultConfiguration()

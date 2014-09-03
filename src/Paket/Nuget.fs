@@ -50,6 +50,8 @@ let parseVersionRange (text:string) =
         else
             let parts = text.Replace("[","").Replace(")","").Split ','
             VersionRange.Between(parts.[0],parts.[1])
+    elif text.StartsWith "(" then
+        text.Trim([|'(';',';')'|]) |> SemVer.parse |> VersionRange.GreaterThan
     else VersionRange.AtLeast(text)
 
 /// Gets hash value and algorithm from Nuget.
