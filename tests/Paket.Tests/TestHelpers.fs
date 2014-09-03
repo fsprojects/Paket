@@ -17,9 +17,8 @@ let DictionaryDiscovery(graph : seq<string * string * (string * VersionRange) li
                                 { Name = p
                                   VersionRange = v
                                   SourceType = sourceType
-                                  Hash = None
                                   Source = source })
-                  return dependencies,None
+                  return dependencies
               }
           
           member __.GetVersions(sourceType, source, package) = 
@@ -30,7 +29,7 @@ let DictionaryDiscovery(graph : seq<string * string * (string * VersionRange) li
               } }
 
 let resolve graph (dependencies: (string * VersionRange) seq) =
-    let packages = dependencies |> Seq.map (fun (n,v) -> { Name = n; VersionRange = v; SourceType = ""; Source = ""; Hash = None})
+    let packages = dependencies |> Seq.map (fun (n,v) -> { Name = n; VersionRange = v; SourceType = ""; Source = "" })
     Resolver.Resolve(DictionaryDiscovery graph, packages)
 
 let getVersion resolved =

@@ -79,7 +79,7 @@ let Resolve(discovery : IDiscovery, rootDependencies:Package seq) =
 
                 let maxVersion = List.max versions
 
-                let dependentPackages,hash = 
+                let dependentPackages = 
                     discovery.GetPackageDetails(dependency.Referenced.SourceType, dependency.Referenced.Source, dependency.Referenced.Name, maxVersion.ToString()) 
                     |> Async.RunSynchronously
 
@@ -87,7 +87,6 @@ let Resolve(discovery : IDiscovery, rootDependencies:Package seq) =
                     { Name = resolvedName
                       VersionRange = VersionRange.Exactly(maxVersion.ToString())
                       SourceType = dependency.Referenced.SourceType
-                      Hash = hash
                       Source = dependency.Referenced.Source }
 
                 let resolvedDependency = 
@@ -107,7 +106,6 @@ let Resolve(discovery : IDiscovery, rootDependencies:Package seq) =
                                           { Name = dependentPackage.Name
                                             VersionRange = dependentPackage.VersionRange
                                             SourceType = dependentPackage.SourceType
-                                            Hash = None
                                             Source = dependentPackage.Source } }
                     dependencies <- addDependency dependentPackage.Name dependencies newDependency
 

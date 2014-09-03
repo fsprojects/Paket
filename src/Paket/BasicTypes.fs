@@ -24,16 +24,10 @@ type VersionRange =
 
     static member Between(version1,version2) = Range(SemVer.parse version1, SemVer.parse version2)
 
-/// Represents a package hash.
-type PackageHash = 
-    { Algorithm : string
-      Hash : string }
-
 /// Represents a package.
 type Package = 
     { Name : string
       VersionRange : VersionRange
-      Hash : PackageHash option
       SourceType : string
       Source : string }
 
@@ -53,7 +47,7 @@ type Dependency =
 
 /// Interface for discovery APIs.
 type IDiscovery = 
-    abstract GetPackageDetails : string * string * string * string -> Async<Package list * PackageHash option>
+    abstract GetPackageDetails : string * string * string * string -> Async<Package list>
     abstract GetVersions : string * string * string -> Async<string seq>
 
 /// Represents a resolved dependency.

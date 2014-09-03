@@ -61,7 +61,6 @@ let nuget package version = __nuget.Add(package,("nuget",__nugetSource,version))
                                { Name = x.Key
                                  VersionRange = parseVersionRange version
                                  SourceType = sourceType
-                                 Hash = None
                                  Source = source })
                     dependencies
                 | _ -> failwithf "Error: %s" <| sbErr.ToString()
