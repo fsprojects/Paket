@@ -59,4 +59,7 @@ type ResolvedDependency =
     | Conflict of Dependency * Dependency
 
 /// Represents a complete dependency resolution.
-type PackageResolution =  Map<string,ResolvedDependency>
+type PackageResolution = {
+    DirectDependencies : Map<string*string,Package list>
+    ResolvedVersionMap : Map<string,ResolvedDependency>
+}

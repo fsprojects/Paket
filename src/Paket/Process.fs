@@ -77,7 +77,7 @@ let FindOutdated(packageFile) =
     let installed = if lockfile.Exists then LockFile.Parse(File.ReadAllLines lockfile.FullName) else []
 
     [for p in installed do
-        match newPackages.[p.Name] with
+        match newPackages.ResolvedVersionMap.[p.Name] with
         | Resolved newVersion -> 
             if p.VersionRange <> newVersion.Referenced.VersionRange then 
                 match newVersion.Referenced.VersionRange with

@@ -30,7 +30,7 @@ let DictionaryDiscovery(graph : seq<string * string * (string * VersionRange) li
 
 let resolve graph (dependencies: (string * VersionRange) seq) =
     let packages = dependencies |> Seq.map (fun (n,v) -> { Name = n; VersionRange = v; SourceType = ""; Source = "" })
-    Resolver.Resolve(true, DictionaryDiscovery graph, packages)
+    Resolver.Resolve(true, DictionaryDiscovery graph, packages).ResolvedVersionMap
 
 let getVersion resolved =
     match resolved with
