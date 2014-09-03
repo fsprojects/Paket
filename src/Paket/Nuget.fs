@@ -78,6 +78,7 @@ let getDetailsFromNuget nugetURL package version =
                      // TODO: Parse nuget version ranges - see http://docs.nuget.org/docs/reference/versioning
                      VersionRange = parseVersionRange version
                      SourceType = "nuget"
+                     Hash = None
                      Source = nugetURL })
             |> Array.toList
 
