@@ -79,12 +79,17 @@ let Resolve(discovery : IDiscovery, rootDependencies:Package seq) =
 
                 let maxVersion = List.max versions
 
+                let dependentPackages,hash = 
+                    discovery.GetPackageDetails(dependency.Referenced.SourceType, dependency.Referenced.Source, dependency.Referenced.Name, maxVersion.ToString()) 
+                    |> Async.RunSynchronously
+
                 let resolvedPackage =
                     { Name = resolvedName
                       VersionRange = VersionRange.Exactly(maxVersion.ToString())
                       SourceType = dependency.Referenced.SourceType
-                      Hash = dependency.Referenced.Hash
+                      Hash = hash
                       Source = dependency.Referenced.Source }
+
                 let resolvedDependency = 
                     ResolvedDependency.Resolved(
                                             match dependency with
@@ -94,9 +99,6 @@ let Resolve(discovery : IDiscovery, rootDependencies:Package seq) =
                                                               Referenced = resolvedPackage })
 
                 let mutable dependencies = dependencies
-                let dependentPackages,hash = 
-                    discovery.GetPackageDetails(dependency.Referenced.SourceType, dependency.Referenced.Source, dependency.Referenced.Name, maxVersion.ToString()) 
-                    |> Async.RunSynchronously
 
                 for dependentPackage in dependentPackages do
                     let newDependency = 
@@ -105,7 +107,7 @@ let Resolve(discovery : IDiscovery, rootDependencies:Package seq) =
                                           { Name = dependentPackage.Name
                                             VersionRange = dependentPackage.VersionRange
                                             SourceType = dependentPackage.SourceType
-                                            Hash = hash
+                                            Hash = None
                                             Source = dependentPackage.Source } }
                     dependencies <- addDependency dependentPackage.Name dependencies newDependency
 
