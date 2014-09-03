@@ -83,6 +83,7 @@ let Resolve(discovery : IDiscovery, rootDependencies:Package seq) =
                     { Name = resolvedName
                       VersionRange = VersionRange.Exactly(maxVersion.ToString())
                       SourceType = dependency.Referenced.SourceType
+                      Hash = dependency.Referenced.Hash
                       Source = dependency.Referenced.Source }
                 let resolvedDependency = 
                     ResolvedDependency.Resolved(
@@ -93,7 +94,7 @@ let Resolve(discovery : IDiscovery, rootDependencies:Package seq) =
                                                               Referenced = resolvedPackage })
 
                 let mutable dependencies = dependencies
-                let dependentPackages,_ = 
+                let dependentPackages,hash = 
                     discovery.GetPackageDetails(dependency.Referenced.SourceType, dependency.Referenced.Source, dependency.Referenced.Name, maxVersion.ToString()) 
                     |> Async.RunSynchronously
 
@@ -104,6 +105,7 @@ let Resolve(discovery : IDiscovery, rootDependencies:Package seq) =
                                           { Name = dependentPackage.Name
                                             VersionRange = dependentPackage.VersionRange
                                             SourceType = dependentPackage.SourceType
+                                            Hash = hash
                                             Source = dependentPackage.Source } }
                     dependencies <- addDependency dependentPackage.Name dependencies newDependency
 
@@ -115,11 +117,6 @@ let Resolve(discovery : IDiscovery, rootDependencies:Package seq) =
 
     
     rootDependencies
-    |> Seq.map (fun p -> 
-                    p.Name, 
-                    FromRoot { Name = p.Name
-                               VersionRange = p.VersionRange
-                               SourceType = p.SourceType
-                               Source = p.Source })
+    |> Seq.map (fun p -> p.Name, FromRoot p)
     |> Seq.fold (fun m (p, d) -> addDependency p m d) Map.empty
     |> analyzeGraph Map.empty

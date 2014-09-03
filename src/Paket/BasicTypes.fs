@@ -33,6 +33,7 @@ type PackageHash =
 type Package = 
     { Name : string
       VersionRange : VersionRange
+      Hash : PackageHash option
       SourceType : string
       Source : string }
 
