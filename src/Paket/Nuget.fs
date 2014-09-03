@@ -81,7 +81,7 @@ let getDetailsFromNuget nugetURL package version =
                      Source = nugetURL })
             |> Array.toList
 
-        return (packages,getAttribute "PackageHash", getAttribute "PackageHashAlgorithm")
+        return packages,Some{ Algorithm = getAttribute "PackageHashAlgorithm"; Hash = getAttribute "PackageHash" }
     }
     
 /// The NuGet cache folder.
@@ -111,8 +111,8 @@ let DownloadPackage(source, name, version, force) =
             do! client.DownloadFileTaskAsync(Uri url, targetFileName)
                 |> Async.AwaitIAsyncResult
                 |> Async.Ignore
-            let! _,hash,algorithm = getDetailsFromNuget source name version
-            match (hash,algorithm) |> Hashing.compareWith name targetFile with
+            let! _,Some hash = getDetailsFromNuget source name version
+            match Hashing.compareWith name targetFile hash with
             | Some error -> 
                 // TODO: File.Delete targetFileName
                 traceError error
@@ -164,10 +164,9 @@ let GetLibraries(targetFolder) =
 let NugetDiscovery = 
     { new IDiscovery with
           
-          member __.GetDirectDependencies(sourceType, source, package, version) = 
+          member __.GetPackageDetails(sourceType, source, package, version) = 
               if sourceType <> "nuget" then failwithf "invalid sourceType %s" sourceType
-              async { let! dependencies, _, _ = getDetailsFromNuget source package version
-                      return dependencies }
+              getDetailsFromNuget source package version
           
           member __.GetVersions(sourceType, source, package) = 
               if sourceType <> "nuget" then failwithf "invalid sourceType %s" sourceType
