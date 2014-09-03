@@ -5,12 +5,14 @@ open System
 open Nessos.UnionArgParser
 
 type CLIArguments =
+    | [<First>] Command of string
     | Package_File of string
     | Force
 with
     interface IArgParserTemplate with
         member s.Usage =
             match s with
+            | Command _ -> "specify a command."
             | Package_File _ -> "specify a dependency definition."
             | Force -> "specify a dependency definition."
 
@@ -21,15 +23,14 @@ let cmdArgs = System.Environment.GetCommandLineArgs()
 
 let results =
     try
-        Some(cmdArgs.[1],parser.Parse(cmdArgs.[2..]))
+        Some(parser.Parse(cmdArgs.[1..]))
     with
-    | _ ->
-        tracefn "Paket.exe%s%s" Environment.NewLine (parser.Usage())    
+    | exn ->
+        traceErrorfn "%s" exn.Message
         None
 
-
 match results with
-| Some(command,results) ->
+| Some(results) ->
     let packageFile = 
         match results.TryGetResult <@ CLIArguments.Package_File @> with
         | Some x -> x
@@ -40,10 +41,12 @@ match results with
         | Some _ -> true
         | None -> false
 
-    match command with
+    match results.GetResult <@ CLIArguments.Command @> with
     | "install" -> Process.Install(false,force,packageFile)
     | "update" ->  Process.Install(true,force,packageFile)
     | "outdated" ->  Process.ListOutdated(packageFile)
-    | _ -> failwith "no command given"
+    | x -> 
+        traceErrorfn "%s is not valid command" x
+        tracefn "Paket.exe%s%s" Environment.NewLine (parser.Usage())
     |> ignore
 | None -> ()
