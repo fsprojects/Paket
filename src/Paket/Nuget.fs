@@ -7,6 +7,7 @@ open System.Net
 open System.Xml
 open Newtonsoft.Json
 open Ionic.Zip
+open System.Xml.Linq
 
 /// Gets versions of the given package.
 let getAllVersions(nugetURL,package) = 
@@ -61,6 +62,30 @@ let getDependencies nugetURL package version =
             |> Array.toList
         return packages
     }
+
+/// Gets hash value and algorithm from Nuget.
+let getDetailsFromNuget name version = 
+    async { 
+        use wc = new WebClient()
+        let! data = sprintf "https://www.nuget.org/api/v2/Packages(Id='%s',Version='%s')" name version
+                    |> wc.DownloadStringTaskAsync
+                    |> Async.AwaitTask
+        let data = XDocument.Parse data
+            
+        let getAttribute = 
+            let rootNs = XName.Get("entry", "http://www.w3.org/2005/Atom")
+            let propertiesNs = 
+                XName.Get("properties", "http://schemas.microsoft.com/ado/2007/08/dataservices/metadata")
+            let attributesNs attribute = 
+                XName.Get(attribute, "http://schemas.microsoft.com/ado/2007/08/dataservices")
+                
+            let properties = 
+                rootNs
+                |> data.Element
+                |> fun entry -> entry.Element(propertiesNs)
+            fun attribute -> properties.Element(attributesNs attribute).Value
+        return (getAttribute "PackageHash", getAttribute "PackageHashAlgorithm")
+    }
     
 /// The NuGet cache folder.
 let CacheFolder = 
@@ -89,7 +114,7 @@ let DownloadPackage(source, name, version, force) =
             do! client.DownloadFileTaskAsync(Uri url, targetFileName)
                 |> Async.AwaitIAsyncResult
                 |> Async.Ignore
-            let! hashDetails = Hashing.getDetailsFromNuget name version
+            let! hashDetails = getDetailsFromNuget name version
             match hashDetails |> Hashing.compareWith name targetFile with
             | Some error -> 
                 // TODO: File.Delete targetFileName
