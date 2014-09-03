@@ -91,7 +91,7 @@ let CacheFolder =
     Path.Combine(Path.Combine(appData, "NuGet"), "Cache")
 
 /// Downloads the given package to the NuGet Cache folder
-let DownloadPackage(source, name, version, force) = 
+let DownloadPackage(source, name, version, hash, force) = 
     async { 
         let targetFileName = Path.Combine(CacheFolder,name + "." + version + ".nupkg")
         let targetFile = FileInfo targetFileName
@@ -112,12 +112,15 @@ let DownloadPackage(source, name, version, force) =
             do! client.DownloadFileTaskAsync(Uri url, targetFileName)
                 |> Async.AwaitIAsyncResult
                 |> Async.Ignore
-            let! _,Some hash = getDetailsFromNuget source name version
-            match Hashing.compareWith name targetFile hash with
-            | Some error -> 
-                // TODO: File.Delete targetFileName
-                traceError error
-                return targetFileName
+
+            match hash with
+            | Some hash ->
+                match Hashing.compareWith name targetFile hash with
+                | Some error -> 
+                    // TODO: File.Delete targetFileName
+                    traceError error
+                    return targetFileName
+                | None -> return targetFileName
             | None -> return targetFileName
     }
 

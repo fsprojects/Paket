@@ -14,7 +14,7 @@ let ExtractPackages(force, packages : Package seq) =
                     match package.SourceType with
                     | "nuget" -> 
                         async { let! packageFile = Nuget.DownloadPackage
-                                                       (package.Source, package.Name, version.ToString(), force)
+                                                       (package.Source, package.Name, version.ToString(), package.Hash, force)
                                 let! folder = Nuget.ExtractPackage(packageFile, package.Name, version.ToString(), force) 
                                 return package,Nuget.GetLibraries folder}
                     | _ -> failwithf "Can't download from source type %s" package.SourceType)
