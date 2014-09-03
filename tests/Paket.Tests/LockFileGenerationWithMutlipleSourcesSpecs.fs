@@ -43,6 +43,6 @@ let expected = """NUGET
 [<Test>]
 let ``should generate lock file``() = 
     let cfg = Config.FromCode config1
-    cfg.Resolve(DictionaryDiscovery graph)
+    cfg.Resolve(true, DictionaryDiscovery graph)
     |> LockFile.format
     |> shouldEqual (normalizeLineEndings expected)

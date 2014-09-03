@@ -48,12 +48,12 @@ let Parse(lines : string seq) =
                       VersionRange = VersionRange.Exactly version } ]
 
 /// Analyzes the dependencies from the packageFile.
-let Create(packageFile) = 
+let Create(force,packageFile) = 
     let cfg = Config.ReadFromFile packageFile
-    cfg.Resolve(Nuget.NugetDiscovery)
+    cfg.Resolve(force,Nuget.NugetDiscovery)
 
 /// Updates the lockfile with the analyzed dependencies from the packageFile.
-let Update(packageFile, lockFile) = 
-    let resolution = Create(packageFile)
+let Update(force, packageFile, lockFile) = 
+    let resolution = Create(force,packageFile)
     File.WriteAllText(lockFile, format resolution)
     printfn "Lockfile written to %s" lockFile

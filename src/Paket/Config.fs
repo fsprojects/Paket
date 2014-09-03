@@ -73,7 +73,7 @@ type Config(packages : Package seq) =
     let dependencyMap = Map.ofSeq (packages |> Seq.map (fun p -> p.Name, p.VersionRange))
     member __.DirectDependencies = dependencyMap
     member __.Packages = packages
-    member __.Resolve(discovery : IDiscovery) = Resolver.Resolve(discovery, packages)
+    member __.Resolve(force, discovery : IDiscovery) = Resolver.Resolve(force, discovery, packages)
     static member FromCode code : Config = 
         Config(ConfigHelpers.executeInScript (fun session -> session.EvalExpression code |> ignore))
     static member ReadFromFile fileName : Config = 

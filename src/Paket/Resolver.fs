@@ -42,7 +42,7 @@ let private addDependency package dependencies newDependency =
     | None -> Map.add package newDependency dependencies   
 
 /// Resolves all direct and indirect dependencies
-let Resolve(discovery : IDiscovery, rootDependencies:Package seq) =    
+let Resolve(force, discovery : IDiscovery, rootDependencies:Package seq) =    
     let rec analyzeGraph processed (dependencies:Map<string,Shrinked>) =
         if Map.isEmpty dependencies then processed else
         let current = Seq.head dependencies
@@ -80,7 +80,7 @@ let Resolve(discovery : IDiscovery, rootDependencies:Package seq) =
                 let maxVersion = List.max versions
 
                 let _,dependentPackages = 
-                    discovery.GetPackageDetails(dependency.Referenced.SourceType, dependency.Referenced.Source, dependency.Referenced.Name, maxVersion.ToString()) 
+                    discovery.GetPackageDetails(force, dependency.Referenced.SourceType, dependency.Referenced.Source, dependency.Referenced.Name, maxVersion.ToString()) 
                     |> Async.RunSynchronously
 
                 let resolvedPackage =
