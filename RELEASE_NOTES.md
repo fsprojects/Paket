@@ -1,3 +1,6 @@
+#### 0.0.1-alpha015 - 03.09.2014
+* Better download tracing
+
 #### 0.0.1-alpha014 - 03.09.2014
 * Allow ??projs without package definition files - https://github.com/fsprojects/Paket/issues/29
 

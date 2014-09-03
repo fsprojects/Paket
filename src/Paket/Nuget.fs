@@ -118,7 +118,7 @@ let DownloadPackage(source, name, version, force) =
                     failwithf "unknown package source %s - can't download package %s %s" source name version
         
             use client = new WebClient()
-            tracefn "Downloading %s %s" name version
+            tracefn "Downloading %s %s to %s" name version targetFileName
             // TODO: Set credentials
             do! client.DownloadFileTaskAsync(Uri url, targetFileName)
                 |> Async.AwaitIAsyncResult
