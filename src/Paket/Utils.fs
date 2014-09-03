@@ -66,9 +66,5 @@ let CleanDir path =
 let getFromUrl (url : string) = 
     async { 
         use client = new WebClient()
-        try 
-            return! client.AsyncDownloadString(Uri(url))
-        with exn -> 
-            // TODO: Handle HTTP 404 errors gracefully and return an empty string to indicate there is no content.
-            return ""
+        return! client.AsyncDownloadString(Uri(url))        
     }
