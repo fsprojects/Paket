@@ -17,7 +17,9 @@ let loadNuGetOData raw =
     manager.AddNamespace("m", "http://schemas.microsoft.com/ado/2007/08/dataservices/metadata")
     doc,manager
 
+/// Gets versions of the given package via OData.
 let getAllVersionsFromNugetOData (nugetURL, package) = 
+    // we cannot cache this
     async { 
         let! raw = sprintf "%s/Packages?$filter=Id eq '%s'" nugetURL package |> getFromUrl
         let doc,manager = loadNuGetOData raw
@@ -27,9 +29,9 @@ let getAllVersionsFromNugetOData (nugetURL, package) =
                }
     }
     
-
 /// Gets versions of the given package.
 let getAllVersions(nugetURL,package) = 
+    // we cannot cache this
     async { 
         let! raw = sprintf "%s/package-versions/%s" nugetURL package |> getFromUrl
         if raw = "" then 
@@ -60,6 +62,8 @@ let getDetailsFromNuget nugetURL name version =
         let data = XDocument.Parse data
 /// Gets package details from Nuget.
 let getDetailsFromNuget nugetURL package version = 
+/// Gets package details from Nuget via OData
+let getDetailsFromNugetViaOData nugetURL package version = 
     async { 
         let! raw = sprintf "%s/Packages(Id='%s',Version='%s')" nugetURL package version |> getFromUrl
         let doc,manager = loadNuGetOData raw
@@ -100,11 +104,40 @@ let getDetailsFromNuget nugetURL package version =
 
         return downloadLink,packages
     }
-    
+
 /// The NuGet cache folder.
 let CacheFolder = 
     let appData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)
     Path.Combine(Path.Combine(appData, "NuGet"), "Cache")
+
+let private loadFromCacheOrOData fileName nugetURL package version = 
+    async {
+        if File.Exists fileName then
+            try 
+                let json = File.ReadAllText(fileName)
+                return false,JsonConvert.DeserializeObject<PackageDetails>(json)
+            with _ -> 
+                let! details = getDetailsFromNugetViaOData nugetURL package version
+                return true,details
+        else
+            let! details = getDetailsFromNugetViaOData nugetURL package version
+            return true,details
+    }
+
+
+let getDetailsFromNuget nugetURL package version = 
+    async {
+        try            
+            let fi = FileInfo(Path.Combine(CacheFolder,sprintf "%s.%s.json" package version))
+            let! (invalidCache,details) = loadFromCacheOrOData fi.FullName nugetURL package version 
+            if invalidCache then
+                File.WriteAllText(fi.FullName,JsonConvert.SerializeObject(details))
+            return details
+        with
+        | _ -> return! getDetailsFromNugetViaOData nugetURL package version 
+    }
+    
+    
 
 /// Downloads the given package to the NuGet Cache folder
 let DownloadPackage(source, name, version, force) = async { 
