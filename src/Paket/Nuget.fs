@@ -6,19 +6,22 @@ open System.IO
 open System.Net
 open Newtonsoft.Json
 open Ionic.Zip
-open System.Xml.Linq
 open System.Xml
+
+let loadNuGetOData raw =
+    let doc = XmlDocument()
+    doc.LoadXml raw
+    let manager = new XmlNamespaceManager(doc.NameTable)
+    manager.AddNamespace("ns", "http://www.w3.org/2005/Atom")
+    manager.AddNamespace("d", "http://schemas.microsoft.com/ado/2007/08/dataservices")
+    manager.AddNamespace("m", "http://schemas.microsoft.com/ado/2007/08/dataservices/metadata")
+    doc,manager
 
 let getVersionsFromNuget (nugetURL, package) = 
     async { 
         // TODO: this is a very very naive implementation
         let! raw = sprintf "%s/Packages?$filter=Id eq '%s'" nugetURL package |> getFromUrl
-        let doc = XmlDocument()
-        doc.LoadXml raw
-        let manager = new XmlNamespaceManager(doc.NameTable)
-        manager.AddNamespace("ns", "http://www.w3.org/2005/Atom")
-        manager.AddNamespace("d", "http://schemas.microsoft.com/ado/2007/08/dataservices")
-        manager.AddNamespace("m", "http://schemas.microsoft.com/ado/2007/08/dataservices/metadata")
+        let doc,manager = loadNuGetOData raw
         return seq { 
                    for node in doc.SelectNodes("//ns:feed/ns:entry/m:properties/d:Version", manager) do
                        yield node.InnerText
@@ -53,20 +56,14 @@ let getDetailsFromNuget nugetURL package version =
     async { 
         // TODO: this is a very very naive implementation
         let! raw = sprintf "%s/Packages(Id='%s',Version='%s')" nugetURL package version |> getFromUrl
-        let data = XDocument.Parse raw
+        let doc,manager = loadNuGetOData raw
             
-        let getAttribute = 
-            let rootNs = XName.Get("entry", "http://www.w3.org/2005/Atom")
-            let propertiesNs = 
-                XName.Get("properties", "http://schemas.microsoft.com/ado/2007/08/dataservices/metadata")
-            let attributesNs attribute = 
-                XName.Get(attribute, "http://schemas.microsoft.com/ado/2007/08/dataservices")
-                
-            let properties = 
-                rootNs
-                |> data.Element
-                |> fun entry -> entry.Element(propertiesNs)
-            fun attribute -> properties.Element(attributesNs attribute).Value
+        let getAttribute name = 
+            seq { 
+                   for node in doc.SelectNodes(sprintf "//ns:entry/m:properties/d:%s" name, manager) do
+                       yield node.InnerText
+               }
+               |> Seq.head
 
         let packages = 
             getAttribute "Dependencies"
