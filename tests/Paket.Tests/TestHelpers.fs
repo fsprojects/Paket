@@ -18,7 +18,7 @@ let DictionaryDiscovery(graph : seq<string * string * (string * VersionRange) li
                                   VersionRange = v
                                   SourceType = sourceType
                                   Source = source })
-                  return dependencies
+                  return "",dependencies
               }
           
           member __.GetVersions(sourceType, source, package) = 

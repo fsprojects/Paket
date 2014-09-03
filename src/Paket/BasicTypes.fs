@@ -47,7 +47,7 @@ type Dependency =
 
 /// Interface for discovery APIs.
 type IDiscovery = 
-    abstract GetPackageDetails : string * string * string * string -> Async<Package list>
+    abstract GetPackageDetails : string * string * string * string -> Async<string*Package list>
     abstract GetVersions : string * string * string -> Async<string seq>
 
 /// Represents a resolved dependency.

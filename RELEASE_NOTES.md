@@ -1,3 +1,6 @@
+#### 0.0.1-alpha016 - 03.09.2014
+* Support TeamCity feeds - https://github.com/fsprojects/Paket/issues/37
+
 #### 0.0.1-alpha015 - 03.09.2014
 * Better download tracing
 

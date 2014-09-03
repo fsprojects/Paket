@@ -79,7 +79,7 @@ let Resolve(discovery : IDiscovery, rootDependencies:Package seq) =
 
                 let maxVersion = List.max versions
 
-                let dependentPackages = 
+                let _,dependentPackages = 
                     discovery.GetPackageDetails(dependency.Referenced.SourceType, dependency.Referenced.Source, dependency.Referenced.Name, maxVersion.ToString()) 
                     |> Async.RunSynchronously
 

@@ -58,6 +58,7 @@ let getDetailsFromNuget nugetURL name version =
                     |> wc.DownloadStringTaskAsync
                     |> Async.AwaitTask
         let data = XDocument.Parse data
+/// Gets package details from Nuget.
 let getDetailsFromNuget nugetURL package version = 
     async { 
         let! raw = sprintf "%s/Packages(Id='%s',Version='%s')" nugetURL package version |> getFromUrl
@@ -69,6 +70,15 @@ let getDetailsFromNuget nugetURL package version =
                        yield node.InnerText
                }
                |> Seq.head
+
+        let downloadLink = 
+            seq { 
+                   for node in doc.SelectNodes("//ns:entry/ns:content", manager) do
+                       if node.Attributes.["type"].Value = "application/zip" then
+                           yield node.Attributes.["src"].Value
+               }
+               |> Seq.head
+
 
         let packages = 
             getAttribute "Dependencies"
@@ -88,7 +98,7 @@ let getDetailsFromNuget nugetURL package version =
                      Source = nugetURL })
             |> Array.toList
 
-        return packages
+        return downloadLink,packages
     }
     
 /// The NuGet cache folder.
@@ -97,25 +107,23 @@ let CacheFolder =
     Path.Combine(Path.Combine(appData, "NuGet"), "Cache")
 
 /// Downloads the given package to the NuGet Cache folder
-let DownloadPackage(source, name, version, force) = 
-    async { 
+let DownloadPackage(source, name, version, force) = async { 
         let targetFileName = Path.Combine(CacheFolder,name + "." + version + ".nupkg")
         let targetFile = FileInfo targetFileName
         if not force && targetFile.Exists && targetFile.Length > 0L then 
             tracefn "%s %s already downloaded" name version
             return targetFileName 
         else
-            let url = 
-                match source with
-                | "http://nuget.org/api/v2" -> sprintf "http://packages.nuget.org/v1/Package/Download/%s/%s" name version
-                | _ -> 
-                    // TODO: How can we discover the download link?
-                    failwithf "unknown package source %s - can't download package %s %s" source name version
+            let url = ref (sprintf "http://packages.nuget.org/v1/Package/Download/%s/%s" name version)
+            if source <> "http://nuget.org/api/v2" then 
+                // discover the link on the fly
+                let! (link,_) = getDetailsFromNuget source name version
+                url := link
         
             use client = new WebClient()
             tracefn "Downloading %s %s to %s" name version targetFileName
             // TODO: Set credentials
-            do! client.DownloadFileTaskAsync(Uri url, targetFileName)
+            do! client.DownloadFileTaskAsync(Uri !url, targetFileName)
                 |> Async.AwaitIAsyncResult
                 |> Async.Ignore
 
