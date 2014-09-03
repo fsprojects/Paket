@@ -63,6 +63,7 @@ let Install(regenerate, force, packageFile) =
                     project.UpdateReference ({ DLLName = lib.Name.Replace(lib.Extension, "")
                                                HintPath = Some relativePath
                                                Private = true
+                                               Condition = None
                                                Node = None })
 
         if project.Modified then

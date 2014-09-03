@@ -7,6 +7,7 @@ open System.Xml
 type ReferenceNode = 
     { DLLName : string
       Node : XmlNode option
+      Condition : string option
       Private : bool
       HintPath : string option }
     member x.Inner() = 
@@ -16,8 +17,12 @@ type ReferenceNode =
                       | _ -> ()
                       if x.Private then yield "      <Private>True</Private>"])
     override x.ToString() = 
+        let condition =
+            match x.Condition with
+            | Some c -> " Condition=\"$(TargetFrameworkVersion) == 'v3.5'\""
+            | _ -> ""
         String.Join(Environment.NewLine, 
-                    [ yield sprintf "    <Reference Include=\"%s\">" x.DLLName
+                    [ yield sprintf "    <Reference Include=\"%s\"%s>" x.DLLName condition
                       yield x.Inner()
                       yield "    </Reference>" ])
 
@@ -36,6 +41,10 @@ type ProjectFile =
               yield { DLLName = node.Attributes.["Include"].InnerText.Split(',').[0]
                       Private = !privateDll
                       HintPath = !hintPath
+                      Condition = 
+                        match [for attr in node.Attributes -> attr.Name, attr.Value] |> List.tryFind (fun (name,v) -> name.ToLower() = "condition") with
+                        | Some(n,v) -> Some v
+                        | None -> None
                       Node = Some node } ]
 
     member this.UpdateReference(referenceNode: ReferenceNode) =
