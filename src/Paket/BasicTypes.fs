@@ -45,9 +45,12 @@ type Dependency =
         | FromRoot p -> p
         | FromPackage d -> d.Referenced
 
+/// Represents package details
+type PackageDetails =  string * Package list
+
 /// Interface for discovery APIs.
 type IDiscovery = 
-    abstract GetPackageDetails : string * string * string * string -> Async<string*Package list>
+    abstract GetPackageDetails : string * string * string * string -> Async<PackageDetails>
     abstract GetVersions : string * string * string -> Async<string seq>
 
 /// Represents a resolved dependency.

@@ -1,3 +1,6 @@
+#### 0.0.1-alpha018 - 03.09.2014
+* Cache all NuGet data - https://github.com/fsprojects/Paket/issues/39
+
 #### 0.0.1-alpha017 - 03.09.2014
 * Make indirect dependencies optional in packages file - https://github.com/fsprojects/Paket/issues/38
 
