@@ -25,7 +25,7 @@ let format (resolved : PackageResolution) =
               for _, package, version in packages do
                   let hash = 
                       match package.Hash with
-                      | Some hash -> sprintf " - %s %s" hash.Algorithm hash.Hash
+                      | Some hash -> sprintf " %s %s" hash.Algorithm hash.Hash
                       | None -> ""
                   yield sprintf "    %s (%s)%s" package.Name (version.ToString()) hash ]
     
@@ -36,21 +36,21 @@ let Parse(lines : string seq) =
     let lines = 
         lines
         |> Seq.filter (fun line -> String.IsNullOrWhiteSpace line |> not)
-        |> Seq.map (fun line -> line.Replace(" ", ""))
+        |> Seq.map (fun line -> line.Trim(' '))
         |> Seq.skip 1
     
     let remote = ref "http://nuget.org/api/v2"
     [ for line in lines do
-          if line.StartsWith("remote:") then remote := line.Replace("remote:", "")
+          if line.StartsWith("remote:") then remote := line.Replace("remote: ", "")
           elif line.StartsWith("specs:") then ()
-          else 
-              let spec = line.Replace(")", "")
-              let splitted = spec.Split('(')
+          else
+              let splitted = line.Split(' ')
+              let version = splitted.[1].Replace("(", "").Replace(")", "")
               yield { SourceType = "nuget"
                       Source = !remote
                       Name = splitted.[0]
-                      Hash = None // TODO: #27
-                      VersionRange = VersionRange.Exactly splitted.[1] } ]
+                      Hash = if splitted.Length > 2 then Some({ Algorithm = splitted.[2]; Hash = splitted.[3] }) else None
+                      VersionRange = VersionRange.Exactly version } ]
 
 /// Analyzes the dependencies from the packageFile.
 let Create(packageFile) = 
