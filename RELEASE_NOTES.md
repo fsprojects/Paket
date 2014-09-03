@@ -1,3 +1,6 @@
+#### 0.0.1-alpha019 - 03.09.2014
+* Store indirect dependencies in the lockfile - https://github.com/fsprojects/Paket/issues/43
+
 #### 0.0.1-alpha018 - 03.09.2014
 * Cache all NuGet data - https://github.com/fsprojects/Paket/issues/39
 
