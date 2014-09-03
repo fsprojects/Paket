@@ -102,7 +102,6 @@
     <Reference Include="System.Core" />
     <Reference Include="System.Numerics" />
     <Reference Include="System.Xml" />
-    <Reference Include="System.Xml.Linq" />
     <Reference Include="UnionArgParser">
       <HintPath>..\..\packages\UnionArgParser\lib\net40\UnionArgParser.dll</HintPath>
       <Private>True</Private>
