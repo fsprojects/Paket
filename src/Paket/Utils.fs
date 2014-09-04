@@ -5,6 +5,7 @@ module Paket.Utils
 open System
 open System.IO
 open System.Net
+open System.Xml
 
 /// [omit]
 let monitor = new Object()
@@ -61,6 +62,17 @@ let CleanDir path =
     else CreateDir path
     // set writeable
     File.SetAttributes(path, FileAttributes.Normal)
+
+/// [omit]
+let normalizeXml(doc:XmlDocument) =
+    use stringWriter = new StringWriter()
+    let settings = XmlWriterSettings()
+    settings.Indent <- true
+        
+    use xmlTextWriter = XmlWriter.Create(stringWriter, settings)
+    doc.WriteTo(xmlTextWriter)
+    xmlTextWriter.Flush()
+    stringWriter.GetStringBuilder().ToString()
 
 /// [omit]
 let getFromUrl (url : string) = 
