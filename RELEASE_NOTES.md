@@ -1,3 +1,6 @@
+#### 0.0.1-alpha022 - 04.09.2014
+* Install all indirect packages
+
 #### 0.0.1-alpha021 - 04.09.2014
 * OData fallback fixed
 
