@@ -36,4 +36,4 @@ let ``should read simple with additional F# code``() =
     let cfg = Config.FromCode config2
     cfg.DirectDependencies.["Rx-Main"] |> shouldEqual (VersionRange.Between("2.2", "3.0"))
     cfg.DirectDependencies.["FAKE"] |> shouldEqual (VersionRange.Between("3.0", "4.0"))
-    cfg.DirectDependencies.["MinPackage"] |> shouldEqual (VersionRange.AtLeast "1.1.3")
+    cfg.DirectDependencies.["MinPackage"] |> shouldEqual (VersionRange.Exactly "1.1.3")
