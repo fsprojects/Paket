@@ -5,6 +5,14 @@ open System
 open System.IO
 
 /// [omit]
+let formatVersionRange (version : VersionRange) = 
+    match version with
+    | Minimum v -> ">= " + v.ToString()
+    | Specific v -> v.ToString()
+    | Latest -> ">= 0"
+    | Range(_, v1, v2, _) -> ">= " + v1.ToString() + ", < " + v2.ToString()
+
+/// [omit]
 let format (resolved : PackageResolution) = 
     // TODO: implement conflict handling
     let sources = 
@@ -25,7 +33,7 @@ let format (resolved : PackageResolution) =
               for _, package, version in packages do
                   yield sprintf "    %s (%s)" package.Name (version.ToString()) 
                   for d in resolved.DirectDependencies.[package.Name,version.ToString()] do
-                      yield sprintf "      %s (%s)" d.Name (ConfigHelpers.formatVersionRange d.VersionRange)]
+                      yield sprintf "      %s (%s)" d.Name (formatVersionRange d.VersionRange)]
     
     String.Join(Environment.NewLine, all)
 
