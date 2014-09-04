@@ -4,16 +4,25 @@ open System
 open System.IO
 open System.Xml
 
+
+/// Contains methods to analyze .NET Framework Conditions.
+type FrameworkConditionType =
+| Unknown
+| All
+| Framework of string
+
 /// Contains methods to analyze .NET Framework Conditions.
 type FramworkCondition = 
-    { Framework : string }
+    { Framework : FrameworkConditionType }
     static member DetectFromPath(path : string) = 
+        let fi = new FileInfo(path)
         let path = path.Replace("\\","/").ToLower()
-        if path.Contains "lib/net20/" then { Framework = "v2.0" }
-        else if path.Contains "lib/net35/" then { Framework = "v3.5" }
-        else if path.Contains "lib/net40/" then { Framework = "v4.0" }
-        else if path.Contains "lib/net45/" then { Framework = "v4.5" }
-        else { Framework = "" }
+        if path.Contains "lib/net20/" then { Framework = Framework  "v2.0" }
+        else if path.Contains "lib/net35/" then { Framework = Framework "v3.5" }
+        else if path.Contains "lib/net40/" then { Framework = Framework "v4.0" }
+        else if path.Contains "lib/net45/" then { Framework = Framework "v4.5" }
+        else if path.Contains("lib/" + fi.Name.ToLower())  then { Framework = All }
+        else { Framework = Unknown }
 
 /// Contains methods to read and manipulate project file ndoes.
 type ReferenceNode = 
@@ -87,13 +96,18 @@ type ProjectFile =
                     let relativePath = Uri(this.FileName).MakeRelativeUri(Uri(lib.FullName)).ToString()
 
                     let framworkCondition = FramworkCondition.DetectFromPath relativePath
-                    let condition = if framworkCondition.Framework = "" then None else Some(sprintf "'$(TargetFrameworkVersion)' == '%s'" framworkCondition.Framework)
+                    let installIt,condition = 
+                        match framworkCondition.Framework with
+                        | Unknown -> false,None 
+                        | Framework fw -> true,Some(sprintf "'$(TargetFrameworkVersion)' == '%s'" fw)
+                        | All -> true,None
 
-                    this.UpdateReference ({ DLLName = lib.Name.Replace(lib.Extension, "")
-                                            HintPath = Some(relativePath.Replace("/", "\\"))
-                                            Private = true
-                                            Condition = condition
-                                            Node = None })
+                    if installIt then
+                        this.UpdateReference ({ DLLName = lib.Name.Replace(lib.Extension, "")
+                                                HintPath = Some(relativePath.Replace("/", "\\"))
+                                                Private = true
+                                                Condition = condition
+                                                Node = None })
 
         if Utils.normalizeXml this.Document <> this.OriginalText then
             this.Document.Save(this.FileName)
