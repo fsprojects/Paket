@@ -13,8 +13,20 @@ let formatVersionRange (version : VersionRange) =
     | Range(_, v1, v2, _) -> ">= " + v1.ToString() + ", < " + v2.ToString()
 
 /// [omit]
+let extractErrors (resolved : PackageResolution) = 
+    let errors = 
+        resolved.ResolvedVersionMap
+        |> Seq.map (fun x ->
+            match x.Value with
+            | Resolved _ -> ""
+            | Conflict(c1,c2) ->
+                sprintf "%A %A" c1 c2
+            )
+    String.Join(Environment.NewLine,errors)
+
+
+/// [omit]
 let format (resolved : PackageResolution) = 
-    // TODO: implement conflict handling
     let sources = 
         resolved.ResolvedVersionMap
         |> Seq.map (fun x ->
@@ -22,6 +34,9 @@ let format (resolved : PackageResolution) =
             | Resolved d -> 
                 match d.Referenced.VersionRange with
                 | Specific v -> d.Referenced.Source,d.Referenced,v
+            | Conflict(c1,c2) ->
+                traceErrorfn "%A %A" c1 c2
+                failwith ""
             )
         |> Seq.groupBy (fun (s,_,_) -> s)
 
@@ -81,5 +96,10 @@ let Create(force,packageFile) =
 /// Updates the lockfile with the analyzed dependencies from the packageFile.
 let Update(force, packageFile, lockFile) = 
     let resolution = Create(force,packageFile)
-    File.WriteAllText(lockFile, format resolution)
-    printfn "Lockfile written to %s" lockFile
+    let errors = extractErrors resolution
+    if errors = "" then
+        File.WriteAllText(lockFile, format resolution)
+        printfn "Lockfile written to %s" lockFile
+    else 
+        traceErrorfn "%s" errors
+        failwith "" // TODO:
