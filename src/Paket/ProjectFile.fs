@@ -77,17 +77,25 @@ type ProjectFile =
             | Some node -> 
                 node.Attributes.["Include"].Value <- referenceNode.DLLName
                 let newText = Environment.NewLine + referenceNode.Inner() + Environment.NewLine + "    "
-                let oldTrimmed = node.InnerXml.Replace("xmlns=\"http://schemas.microsoft.com/developer/msbuild/2003\"","").Replace("\r","").Replace("\n","").Replace(" ","")
-                let newTrimmed = newText.Replace("\r","").Replace("\n","").Replace(" ","")
-                if oldTrimmed <> newTrimmed then
-                    node.InnerXml <- newText
+                node.InnerXml <- newText
             | _ -> failwith "Unexpected error"
         | None ->
             let firstNode =
                 seq { for node in this.Document.SelectNodes("//ns:Project/ns:ItemGroup/ns:Reference", this.Namespaces) -> node }
-                |> Seq.head
+                |> Seq.last
 
-            firstNode.ParentNode.InnerXml <- firstNode.ParentNode.InnerXml + Environment.NewLine + referenceNode.ToString() + Environment.NewLine        
+            let copy = firstNode.Clone()
+            copy.Attributes.["Include"].Value <- referenceNode.DLLName
+            match referenceNode.Condition with
+            | Some c ->
+                if [for attr in copy.Attributes -> attr.Name.ToLower() ] |> List.exists ((=) "condition") then
+                    copy.Attributes.["Condition"].Value <- c
+                else
+                    (copy :?> XmlElement).SetAttribute("Condition", c) |> ignore
+            | None -> ()
+
+            copy.InnerXml <- Environment.NewLine + referenceNode.Inner() + Environment.NewLine + "    "
+            firstNode.ParentNode.AppendChild(copy) |> ignore
 
     member this.UpdateReferences(extracted,usedPackages:System.Collections.Generic.HashSet<string>) =
         for package, libraries in extracted do
@@ -99,9 +107,10 @@ type ProjectFile =
                     let installIt,condition = 
                         match framworkCondition.Framework with
                         | Unknown -> false,None 
-                        | Framework fw -> true,Some(sprintf "'$(TargetFrameworkVersion)' == '%s'" fw)
+                        | Framework fw -> true,Some(sprintf "$(TargetFrameworkVersion) == '%s'" fw)
                         | All -> true,None
 
+                    
                     if installIt then
                         this.UpdateReference ({ DLLName = lib.Name.Replace(lib.Extension, "")
                                                 HintPath = Some(relativePath.Replace("/", "\\"))
