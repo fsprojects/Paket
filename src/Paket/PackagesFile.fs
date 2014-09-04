@@ -30,6 +30,11 @@ let nuget package version = __nuget.Add(package,("nuget",__nugetSource,version))
                     | true, number -> (number+1).ToString()
                     | _ ->  parts.[idx]
                 parts.[parts.Length-1] <- "0"
+            else
+                parts.[0] <-
+                    match Int32.TryParse parts.[0] with
+                    | true, number -> (number+1).ToString()
+                    | _ ->  parts.[0]
 
             VersionRange.Between(min, String.Join(".", parts))
         else if text.StartsWith ">= " then VersionRange.AtLeast(text.Replace(">= ", ""))

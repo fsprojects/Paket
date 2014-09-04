@@ -66,7 +66,7 @@
     <Compile Include="DependencyGraphSpecs.fs" />
     <Compile Include="CyclicGraphSpecs.fs" />
     <Compile Include="ConflictGraphSpecs.fs" />
-    <Compile Include="ConfigVersionRangeSpecs.fs" />
+    <Compile Include="PackagesFileVersionRangeSpecs.fs" />
     <Compile Include="LoadConfigSpecs.fs" />
     <Compile Include="ResolveConfigSpecs.fs" />
     <Compile Include="LockFileGenerationSpecs.fs" />

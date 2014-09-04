@@ -1,4 +1,4 @@
-﻿module Paket.ConfigVersionRangeSpecs
+﻿module Paket.PackagesFileVersionRangeSpecs
 
 open Paket
 open NUnit.Framework
@@ -25,3 +25,9 @@ let ``can detect ordinary Between``() =
 [<Test>]
 let ``can detect lower versions for ~>``() = 
     ConfigHelpers.parseVersionRange "~> 3.2.0.0" |> shouldEqual (VersionRange.Between("3.2.0.0","3.2.1.0"))
+
+    ConfigHelpers.parseVersionRange "~> 1.2.3.4" |> shouldEqual (VersionRange.Between("1.2.3.4","1.2.4.0"))    
+    ConfigHelpers.parseVersionRange "~> 1.2.3" |> shouldEqual (VersionRange.Between("1.2.3","1.3.0"))
+    ConfigHelpers.parseVersionRange "~> 1.2" |> shouldEqual (VersionRange.Between("1.2","2.0"))
+    ConfigHelpers.parseVersionRange "~> 1.0" |> shouldEqual (VersionRange.Between("1.0","2.0"))
+    ConfigHelpers.parseVersionRange "~> 1" |> shouldEqual (VersionRange.Between("1","2"))
