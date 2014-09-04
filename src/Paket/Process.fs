@@ -2,7 +2,6 @@
 module Paket.Process
 
 open System.IO
-open System
 
 /// Downloads and extracts all package.
 let ExtractPackages(force, packages : Package seq) = 
@@ -46,14 +45,12 @@ let Install(regenerate, force, packageFile) =
 
         for package,_ in extracted do
             if Array.exists ((=) package.Name) directPackages then
-                usedPackages.Add package.Name |> ignore
-                match package.VersionRange with
-                | Specific v -> 
-                    let _,indirectDependencies =
-                        Nuget.getDetailsFromNuget force package.Source package.Name (v.ToString())
-                        |> Async.RunSynchronously
-                    for x in indirectDependencies do
-                        usedPackages.Add x.Name |> ignore
+                if usedPackages.Add package.Name then
+                    match package.DirectDependencies with
+                    | Some dependencies ->
+                        for d in dependencies do
+                            usedPackages.Add d |> ignore // TODO: we need to install the depencies of the dependencies of the dependencies...
+                    | None -> ()
         
         project.UpdateReferences(extracted,usedPackages)
 
