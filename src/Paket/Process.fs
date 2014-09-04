@@ -58,13 +58,23 @@ let Install(regenerate, force, packageFile) =
         for package, libraries in extracted do
             if usedPackages.Contains package.Name then
                 for lib in libraries do
-                    let relativePath = Uri(proj.FullName).MakeRelativeUri(Uri(lib.FullName)).ToString().Replace("/", "\\")
+                    let relativePath = Uri(proj.FullName).MakeRelativeUri(Uri(lib.FullName)).ToString()
+                    let targetFramework = 
+                        let path = relativePath.ToLower()
+                        if path.Contains "lib/net20/" then "v2.0" else
+                        if path.Contains "lib/net35/" then "v3.5" else
+                        if path.Contains "lib/net40/" then "v4.0" else
+                        if path.Contains "lib/net45/" then "v4.5" else                        
+                        ""
 
-                    project.UpdateReference ({ DLLName = lib.Name.Replace(lib.Extension, "")
-                                               HintPath = Some relativePath
-                                               Private = true
-                                               Condition = None
-                                               Node = None })
+                    if targetFramework <> "" then  // exlude strange frameworks for now
+                        let condition = if targetFramework = "" then None else Some(sprintf "'$(TargetFrameworkVersion)' == '%s'" targetFramework)
+
+                        project.UpdateReference ({ DLLName = lib.Name.Replace(lib.Extension, "")
+                                                   HintPath = Some(relativePath.Replace("/", "\\"))
+                                                   Private = true
+                                                   Condition = condition
+                                                   Node = None })
 
         if project.Modified then
             project.Document.Save(proj.FullName)
