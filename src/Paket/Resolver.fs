@@ -53,11 +53,12 @@ let Resolve(force, discovery : IDiscovery, rootDependencies:Package seq) =
             let resolved = { processed with ResolvedVersionMap = Map.add resolvedName (ResolvedDependency.Conflict(c1,c2)) processed.ResolvedVersionMap }
             analyzeGraph resolved (Map.remove resolvedName dependencies)
         | Ok dependency -> 
+            let originalPackage = dependency.Referenced
             match Map.tryFind resolvedName processed.ResolvedVersionMap with
-            | Some (Resolved dependency) -> 
-                match dependency.Referenced.VersionRange with
+            | Some (Resolved dependency') -> 
+                match dependency'.Referenced.VersionRange with
                 | Specific fixedVersion -> 
-                    if not <| dependency.Referenced.VersionRange.IsInRange fixedVersion then failwith "Conflict" else
+                    if not <| dependency'.Referenced.VersionRange.IsInRange fixedVersion then failwith "Conflict" else
                     
                     dependencies
                     |> Map.remove resolvedName
@@ -65,30 +66,37 @@ let Resolve(force, discovery : IDiscovery, rootDependencies:Package seq) =
                 | _ -> failwith "Not allowed"
             | _ ->
                 let allVersions = 
-                    discovery.GetVersions(dependency.Referenced.SourceType,dependency.Referenced.Source,resolvedName) 
+                    discovery.GetVersions(originalPackage.SourceType,originalPackage.Source,resolvedName) 
                     |> Async.RunSynchronously
                     |> Seq.toList
 
                 let versions =                
                     allVersions
-                    |> List.filter dependency.Referenced.VersionRange.IsInRange
+                    |> List.filter originalPackage.VersionRange.IsInRange
                     |> List.map SemVer.parse
 
                 if versions = [] then
-                    failwithf "No package found which matches %s %A.%sVersion available: %A" dependency.Referenced.Name dependency.Referenced.VersionRange Environment.NewLine allVersions
+                    failwithf "No package found which matches %s %A.%sVersion available: %A" originalPackage.Name originalPackage.VersionRange Environment.NewLine allVersions
 
-                let maxVersion = List.max versions
+                let resolvedVersion = 
+                    match dependency with
+                    | FromRoot _ -> List.max versions
+                    | FromPackage d ->
+                        match originalPackage.ResolverStrategy with
+                        | ResolverStrategy.Max -> List.max versions
+                        | ResolverStrategy.Min -> List.min versions
 
                 let _,dependentPackages = 
-                    discovery.GetPackageDetails(force, dependency.Referenced.SourceType, dependency.Referenced.Source, dependency.Referenced.Name, maxVersion.ToString()) 
+                    discovery.GetPackageDetails(force, originalPackage.SourceType, originalPackage.Source, originalPackage.Name, originalPackage.ResolverStrategy, resolvedVersion.ToString()) 
                     |> Async.RunSynchronously
 
                 let resolvedPackage =
                     { Name = resolvedName
-                      VersionRange = VersionRange.Exactly(maxVersion.ToString())
-                      SourceType = dependency.Referenced.SourceType
+                      VersionRange = VersionRange.Exactly(resolvedVersion.ToString())
+                      SourceType = originalPackage.SourceType
                       DirectDependencies = None
-                      Source = dependency.Referenced.Source }
+                      ResolverStrategy = originalPackage.ResolverStrategy
+                      Source = originalPackage.Source }
 
                 let resolvedDependency = 
                     ResolvedDependency.Resolved(
@@ -102,18 +110,19 @@ let Resolve(force, discovery : IDiscovery, rootDependencies:Package seq) =
 
                 for dependentPackage in dependentPackages do
                     let newDependency = 
-                        FromPackage { Defining = { dependency.Referenced with VersionRange = VersionRange.Exactly(maxVersion.ToString()) }
+                        FromPackage { Defining = { originalPackage with VersionRange = VersionRange.Exactly(resolvedVersion.ToString()) }
                                       Referenced = 
                                           { Name = dependentPackage.Name
                                             VersionRange = dependentPackage.VersionRange
                                             SourceType = dependentPackage.SourceType
                                             DirectDependencies = None
+                                            ResolverStrategy = originalPackage.ResolverStrategy
                                             Source = dependentPackage.Source } }
                     dependencies <- addDependency dependentPackage.Name dependencies newDependency
 
                 let resolved = 
                     { ResolvedVersionMap = Map.add resolvedName resolvedDependency processed.ResolvedVersionMap
-                      DirectDependencies = Map.add (dependency.Referenced.Name, maxVersion.ToString()) dependentPackages processed.DirectDependencies }
+                      DirectDependencies = Map.add (originalPackage.Name, resolvedVersion.ToString()) dependentPackages processed.DirectDependencies }
                 
                 dependencies
                 |> Map.remove resolvedName

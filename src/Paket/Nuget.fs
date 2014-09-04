@@ -98,7 +98,7 @@ let getDetailsFromNuget nugetURL package version =
         | _ -> failParse()
             
 /// Gets package details from Nuget via OData
-let getDetailsFromNugetViaOData nugetURL package version = 
+let getDetailsFromNugetViaOData nugetURL package resolverStrategy version = 
     async { 
         let! raw = sprintf "%s/Packages(Id='%s',Version='%s')" nugetURL package version |> getFromUrl
         let doc,manager = loadNuGetOData raw
@@ -135,6 +135,7 @@ let getDetailsFromNugetViaOData nugetURL package version =
                      VersionRange = parseVersionRange version
                      SourceType = "nuget"
                      DirectDependencies = None
+                     ResolverStrategy = resolverStrategy
                      Source = nugetURL })
             |> Array.toList
 
@@ -146,36 +147,36 @@ let CacheFolder =
     let appData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)
     Path.Combine(Path.Combine(appData, "NuGet"), "Cache")
 
-let private loadFromCacheOrOData force fileName nugetURL package version = 
+let private loadFromCacheOrOData force fileName nugetURL package resolverStrategy version = 
     async {
         if not force && File.Exists fileName then
             try 
                 let json = File.ReadAllText(fileName)
                 return false,JsonConvert.DeserializeObject<PackageDetails>(json)
             with _ -> 
-                let! details = getDetailsFromNugetViaOData nugetURL package version
+                let! details = getDetailsFromNugetViaOData nugetURL package resolverStrategy version
                 return true,details
         else
-            let! details = getDetailsFromNugetViaOData nugetURL package version
+            let! details = getDetailsFromNugetViaOData nugetURL package resolverStrategy version
             return true,details
     }
 
 
-let getDetailsFromNuget force nugetURL package version = 
+let getDetailsFromNuget force nugetURL package resolverStrategy version = 
     async {
         try            
             let fi = FileInfo(Path.Combine(CacheFolder,sprintf "%s.%s.json" package version))
-            let! (invalidCache,details) = loadFromCacheOrOData force fi.FullName nugetURL package version 
+            let! (invalidCache,details) = loadFromCacheOrOData force fi.FullName nugetURL package resolverStrategy version 
             if invalidCache then
                 File.WriteAllText(fi.FullName,JsonConvert.SerializeObject(details))
             return details
         with
-        | _ -> return! getDetailsFromNugetViaOData nugetURL package version 
+        | _ -> return! getDetailsFromNugetViaOData nugetURL package resolverStrategy version 
     }    
 
 
 /// Downloads the given package to the NuGet Cache folder
-let DownloadPackage(source, name, version, force) = async { 
+let DownloadPackage(source, name, resolverStrategy, version, force) = async { 
         let targetFileName = Path.Combine(CacheFolder,name + "." + version + ".nupkg")
         let targetFile = FileInfo targetFileName
         if not force && targetFile.Exists && targetFile.Length > 0L then 
@@ -183,7 +184,7 @@ let DownloadPackage(source, name, version, force) = async {
             return targetFileName 
         else
             // discover the link on the fly
-            let! (link,_) = getDetailsFromNuget force source name version
+            let! (link,_) = getDetailsFromNuget force source name resolverStrategy version
         
             use client = new WebClient()
             tracefn "Downloading %s %s to %s" name version targetFileName
@@ -238,9 +239,9 @@ let GetLibraries(targetFolder) =
 let NugetDiscovery = 
     { new IDiscovery with
           
-          member __.GetPackageDetails(force, sourceType, source, package, version) = 
+          member __.GetPackageDetails(force, sourceType, source, package, resolverStrategy, version) = 
               if sourceType <> "nuget" then failwithf "invalid sourceType %s" sourceType
-              getDetailsFromNuget force source package version
+              getDetailsFromNuget force source package resolverStrategy version
           
           member __.GetVersions(sourceType, source, package) = 
               if sourceType <> "nuget" then failwithf "invalid sourceType %s" sourceType
