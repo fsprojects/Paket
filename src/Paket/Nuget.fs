@@ -114,6 +114,7 @@ let getDetailsFromNugetViaOData nugetURL package version =
                      // TODO: Parse nuget version ranges - see http://docs.nuget.org/docs/reference/versioning
                      VersionRange = parseVersionRange version
                      SourceType = "nuget"
+                     DirectDependencies = None
                      Source = nugetURL })
             |> Array.toList
 
@@ -151,6 +152,7 @@ let getDetailsFromNuget force nugetURL package version =
         with
         | _ -> return! getDetailsFromNugetViaOData nugetURL package version 
     }    
+
 
 /// Downloads the given package to the NuGet Cache folder
 let DownloadPackage(source, name, version, force) = async { 
