@@ -16,8 +16,12 @@ The [paket outdated](paket_outdated.html) command lists packages that have new v
 
 Future versions of Paket will also enable one to [reference files directly from git repositories](https://github.com/fsprojects/Paket/issues/9).
 
-Resolving dependencies from NuGet is really slow
-------------------------------------------------
+
+**Q:** Why does Paket add references to the libraries of all the libraries framework versions in a NuGet package?
+
+**A:** NuGet installs only for the currently matching .NET framework version of your project. Whenever you want to change the framework version you have to reinstall your NuGet packages. 
+Paket installs all of them; but it adds conditional attributes.
+
 
 **Q:** When I resolve the dependencies from NuGet.org it is really slow. Why is that?
 
