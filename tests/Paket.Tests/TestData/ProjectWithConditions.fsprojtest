@@ -73,15 +73,12 @@
     <Compile Include="LockFileGenerationWithMutlipleSourcesSpecs.fs" />
     <Compile Include="LockFileParserSpecs.fs" />
     <Compile Include="LockFileWithMultipleSourcesParserSpecs.fs" />
-    <None Include="TestData\Project1.fsprojtest">
+    <Content Include="TestData\Project1.fsproj">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Include="TestData\ProjectWithConditions.fsprojtest">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
+    </Content>
     <Compile Include="ProjectFileSpecs.fs" />
-    <Compile Include="ProjectFileWithConditionsSpecs.fs" />
     <None Include="packages" />
+    <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="mscorlib" />
@@ -89,12 +86,17 @@
       <Private>True</Private>
       <HintPath>..\..\lib\FSharp\FSharp.Core.dll</HintPath>
     </Reference>
+    <Reference Include="FSharp.Core" Condition="$(TargetFrameworkVersion) == 'v3.5'">
+      <HintPath>..\..\lib\FSharp\Net20\FSharp.Core.dll</HintPath>
+    </Reference>
+    <Reference Include="FSharp.Core" Condition="'$(TargetFrameworkVersion)' == 'v4.0'">
+      <HintPath>..\..\lib\FSharp\FSharp.Core.dll</HintPath>
+    </Reference>    
     <Reference Include="nunit.framework">
-      <HintPath>..\..\packages\NUnit\lib\nunit.framework.dll</HintPath>
+      <HintPath>..\..\packages\NUnit.2.6.3\lib\nunit.framework.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="System" />
-    <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\src\Paket\Paket.fsproj">
