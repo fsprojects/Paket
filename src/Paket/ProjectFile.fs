@@ -4,6 +4,17 @@ open System
 open System.IO
 open System.Xml
 
+/// Contains methods to analyze .NET Framework Conditions.
+type FramworkCondition = 
+    { Framework : string }
+    static member DetectFromPath(path : string) = 
+        let path = path.Replace("\\","/").ToLower()
+        if path.Contains "lib/net20/" then { Framework = "v2.0" }
+        else if path.Contains "lib/net35/" then { Framework = "v3.5" }
+        else if path.Contains "lib/net40/" then { Framework = "v4.0" }
+        else if path.Contains "lib/net45/" then { Framework = "v4.5" }
+        else { Framework = "" }
+
 /// Contains methods to read and manipulate project file ndoes.
 type ReferenceNode = 
     { DLLName : string
@@ -76,15 +87,9 @@ type ProjectFile =
             if usedPackages.Contains package.Name then
                 for (lib:FileInfo) in libraries do
                     let relativePath = Uri(this.FileName).MakeRelativeUri(Uri(lib.FullName)).ToString()
-                    let targetFramework = 
-                        let path = relativePath.ToLower()
-                        if path.Contains "lib/net20/" then "v2.0" else
-                        if path.Contains "lib/net35/" then "v3.5" else
-                        if path.Contains "lib/net40/" then "v4.0" else
-                        if path.Contains "lib/net45/" then "v4.5" else                        
-                        ""
 
-                    let condition = if targetFramework = "" then None else Some(sprintf "'$(TargetFrameworkVersion)' == '%s'" targetFramework)
+                    let framworkCondition = FramworkCondition.DetectFromPath relativePath
+                    let condition = if framworkCondition.Framework = "" then None else Some(sprintf "'$(TargetFrameworkVersion)' == '%s'" framworkCondition.Framework)
 
                     this.UpdateReference ({ DLLName = lib.Name.Replace(lib.Extension, "")
                                             HintPath = Some(relativePath.Replace("/", "\\"))

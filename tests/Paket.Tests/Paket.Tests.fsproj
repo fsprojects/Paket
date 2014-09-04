@@ -79,6 +79,7 @@
     <None Include="TestData\ProjectWithConditions.fsprojtest">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <Compile Include="ProjectFileConditionSpecs.fs" />
     <Compile Include="ProjectFileSpecs.fs" />
     <Compile Include="ProjectFileWithConditionsSpecs.fs" />
     <None Include="packages" />
