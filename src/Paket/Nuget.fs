@@ -167,9 +167,8 @@ let DownloadPackage(source, name, version, force) = async {
             use client = new WebClient()
             tracefn "Downloading %s %s to %s" name version targetFileName
             // TODO: Set credentials
-            do! client.DownloadFileTaskAsync(Uri link, targetFileName)
-                |> Async.AwaitIAsyncResult
-                |> Async.Ignore
+            client.DownloadFileAsync(Uri link, targetFileName)
+            let! _ = Async.AwaitEvent(client.DownloadFileCompleted)
 
             return targetFileName
     }
