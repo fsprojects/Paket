@@ -1,3 +1,6 @@
+#### 0.0.1-alpha021 - 04.09.2014
+* OData fallback fixed
+
 #### 0.0.1-alpha020 - 03.09.2014
 * Better **proj handling
 
