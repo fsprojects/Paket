@@ -67,14 +67,13 @@ let Install(regenerate, force, packageFile) =
                         if path.Contains "lib/net45/" then "v4.5" else                        
                         ""
 
-                    if targetFramework <> "" then  // exlude strange frameworks for now
-                        let condition = if targetFramework = "" then None else Some(sprintf "'$(TargetFrameworkVersion)' == '%s'" targetFramework)
+                    let condition = if targetFramework = "" then None else Some(sprintf "'$(TargetFrameworkVersion)' == '%s'" targetFramework)
 
-                        project.UpdateReference ({ DLLName = lib.Name.Replace(lib.Extension, "")
-                                                   HintPath = Some(relativePath.Replace("/", "\\"))
-                                                   Private = true
-                                                   Condition = condition
-                                                   Node = None })
+                    project.UpdateReference ({ DLLName = lib.Name.Replace(lib.Extension, "")
+                                               HintPath = Some(relativePath.Replace("/", "\\"))
+                                               Private = true
+                                               Condition = condition
+                                               Node = None })
 
         if project.Modified then
             project.Document.Save(proj.FullName)
