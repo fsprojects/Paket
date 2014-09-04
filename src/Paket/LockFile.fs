@@ -37,7 +37,41 @@ let format (resolved : PackageResolution) =
     
     String.Join(Environment.NewLine, all)
 
+let private (|Remote|Package|Dependency|Spec|Header|Blank|) (line:string) =
+    match line.Trim() with
+    | "NUGET" -> Header
+    | _ when String.IsNullOrWhiteSpace line -> Blank
+    | trimmed when trimmed.StartsWith "remote:" -> Remote (trimmed.Substring(trimmed.IndexOf(": ") + 2))
+    | trimmed when trimmed.StartsWith "specs:" -> Spec
+    | trimmed when line.StartsWith "      " -> Dependency (trimmed.Split ' ' |> Seq.head)
+    | trimmed -> Package trimmed
+
 /// Parses a lockfile from lines
+let Parse(lines : string seq) =     
+    (("http://nuget.org/api/v2", []), lines)
+    ||> Seq.fold(fun (currentSource, packages) line ->
+        match line with
+        | Remote newSource -> newSource, packages
+        | Header | Spec | Blank -> (currentSource, packages)
+        | Package details ->
+            let parts = details.Split(' ')
+            let version = parts.[1].Replace("(", "").Replace(")", "")
+            currentSource, { SourceType = PackageSource.Nuget
+                             Source = currentSource 
+                             Name = parts.[0]
+                             DirectDependencies = []
+                             ResolverStrategy = Max
+                             VersionRange = VersionRange.Exactly version } :: packages
+        | Dependency details ->
+            match packages with
+            | currentPackage :: otherPackages -> 
+                currentSource,
+                { currentPackage with
+                    DirectDependencies = [details]
+                                         |> List.append currentPackage.DirectDependencies } :: otherPackages
+            | _ -> failwith "cannot set a dependency - no package has been specified.")
+    |> snd
+    |> List.rev
 let Parse(lines : string seq) = 
     let lines = 
         lines

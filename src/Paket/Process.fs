@@ -11,12 +11,11 @@ let ExtractPackages(force, packages : Package seq) =
                         | Specific v -> v
                         | v -> failwithf "Version error in lockfile for %s %A" package.Name v
                     match package.SourceType with
-                    | "nuget" -> 
+                    | Nuget -> 
                         async { let! packageFile = Nuget.DownloadPackage
                                                        (package.Source, package.Name, package.ResolverStrategy, version.ToString(), force)
                                 let! folder = Nuget.ExtractPackage(packageFile, package.Name, version.ToString(), force) 
-                                return package,Nuget.GetLibraries folder}
-                    | _ -> failwithf "Can't download from source type %s" package.SourceType)
+                                return package,Nuget.GetLibraries folder})
 
 let findLockfile packageFile =
     let fi = FileInfo(packageFile)
@@ -51,6 +50,8 @@ let Install(regenerate, force, packageFile) =
         let rec addPackage name =
             let package = allPackages.[name]
             if usedPackages.Add name then
+                for d in package.DirectDependencies do
+                    addPackage d
                 match package.DirectDependencies with
                 | Some dependencies ->
                     for d in dependencies do

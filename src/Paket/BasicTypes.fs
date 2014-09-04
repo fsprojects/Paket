@@ -37,9 +37,17 @@ type ResolverStrategy =
 | Max
 | Min
 
+/// Different sources that packages can come from
+type PackageSource =
+| Nuget
+
 /// Represents a package.
 type Package = 
     { Name : string
+      DirectDependencies : string list
+      VersionRange : VersionRange
+      ResolverStrategy : ResolverStrategy
+      SourceType : PackageSource
       DirectDependencies : (string list) option
       VersionRange : VersionRange
       ResolverStrategy : ResolverStrategy
@@ -65,6 +73,8 @@ type PackageDetails =  string * Package list
 
 /// Interface for discovery APIs.
 type IDiscovery = 
+    abstract GetPackageDetails : bool * PackageSource * string * string * ResolverStrategy * string -> Async<PackageDetails>
+    abstract GetVersions : PackageSource * string * string -> Async<string seq>
     abstract GetPackageDetails : bool * string * string * string * ResolverStrategy * string -> Async<PackageDetails>
     abstract GetVersions : string * string * string -> Async<string seq>
 

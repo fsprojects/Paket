@@ -20,6 +20,8 @@ let graph =
       "E", "4.3", []
       "F", "1.2", [] ]
 
+let defaultPackage = { Name = ""; VersionRange = VersionRange.Exactly "1.0"; SourceType = Nuget; DirectDependencies = []; ResolverStrategy = Max; Source = "" }
+
 [<Test>]
 let ``should analyze graph and report conflict``() = 
     let resolved = resolve graph [ "A", VersionRange.AtLeast "1.0" ]
@@ -27,6 +29,10 @@ let ``should analyze graph and report conflict``() =
     getVersion resolved.["B"] |> shouldEqual "1.1"
     getVersion resolved.["C"] |> shouldEqual "2.4"
     let conflict = 
+        FromPackage { Defining = { defaultPackage with Name = "B"; VersionRange = VersionRange.Exactly "1.1" }
+                      Referenced = { defaultPackage with Name = "D"; VersionRange = VersionRange.Exactly "1.4" } }, 
+        FromPackage { Defining = { defaultPackage with Name = "C"; VersionRange = VersionRange.Exactly "2.4" }
+                      Referenced = { defaultPackage with Name = "D"; VersionRange = VersionRange.Exactly "1.6" } }
         FromPackage { Defining = 
                           { Name = "B"
                             VersionRange = VersionRange.Exactly "1.1"
@@ -79,6 +85,10 @@ let ``should analyze graph2 and report conflict``() =
     getVersion resolved.["B"] |> shouldEqual "1.1"
     getVersion resolved.["C"] |> shouldEqual "2.4"
     let conflict = 
+        FromPackage { Defining = { defaultPackage with Name = "B"; VersionRange = VersionRange.Exactly "1.1" }
+                      Referenced = { defaultPackage with Name = "D"; VersionRange = VersionRange.Between("1.4", "1.5") } },
+        FromPackage { Defining = { defaultPackage with Name = "C"; VersionRange = VersionRange.Exactly "2.4" }
+                      Referenced = { defaultPackage with Name = "D"; VersionRange = VersionRange.Between("1.6", "1.7") } }
         FromPackage { Defining = 
                           { Name = "B"
                             VersionRange = VersionRange.Exactly "1.1"
