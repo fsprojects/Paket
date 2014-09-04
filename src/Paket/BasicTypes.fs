@@ -48,6 +48,10 @@ type Package =
       VersionRange : VersionRange
       ResolverStrategy : ResolverStrategy
       SourceType : PackageSource
+      DirectDependencies : (string list) option
+      VersionRange : VersionRange
+      ResolverStrategy : ResolverStrategy
+      SourceType : string
       Source : string }
 
 /// Represents a package dependency.
@@ -71,6 +75,8 @@ type PackageDetails =  string * Package list
 type IDiscovery = 
     abstract GetPackageDetails : bool * PackageSource * string * string * ResolverStrategy * string -> Async<PackageDetails>
     abstract GetVersions : PackageSource * string * string -> Async<string seq>
+    abstract GetPackageDetails : bool * string * string * string * ResolverStrategy * string -> Async<PackageDetails>
+    abstract GetVersions : string * string * string -> Async<string seq>
 
 /// Represents a resolved dependency.
 type ResolvedDependency = 

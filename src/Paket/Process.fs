@@ -52,6 +52,11 @@ let Install(regenerate, force, packageFile) =
             if usedPackages.Add name then
                 for d in package.DirectDependencies do
                     addPackage d
+                match package.DirectDependencies with
+                | Some dependencies ->
+                    for d in dependencies do
+                        addPackage d
+                | None -> ()
 
         directPackages
         |> Array.iter addPackage

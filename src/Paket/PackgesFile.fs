@@ -58,6 +58,8 @@ let nuget package version = __nuget.Add(package,("nuget",__nugetSource,version))
                                  ResolverStrategy = if version.StartsWith "!" then ResolverStrategy.Min else ResolverStrategy.Max
                                  SourceType = match sourceType with | "nuget" -> Nuget | _ -> failwith "Unknown package source"
                                  DirectDependencies = []
+                                 SourceType = sourceType
+                                 DirectDependencies = None
                                  Source = source })
                     dependencies
                 | _ -> failwithf "Error: %s" <| sbErr.ToString()

@@ -72,6 +72,38 @@ let Parse(lines : string seq) =
             | _ -> failwith "cannot set a dependency - no package has been specified.")
     |> snd
     |> List.rev
+let Parse(lines : string seq) = 
+    let lines = 
+        lines
+        |> Seq.filter (fun line -> String.IsNullOrWhiteSpace line |> not)
+        |> Seq.skip 1
+        |> Seq.toArray
+    
+    let remote = ref "http://nuget.org/api/v2"
+    // TODO: Maybe someone finds a nicer way to parse this
+    [ let i = ref 0
+      while !i < lines.Length do
+          let line = lines.[!i]
+          i := !i + 1
+          if line.Contains("remote:") then remote := line.Replace("remote:", "").Replace(" ", "")
+          elif line.Contains("specs:") then ()
+          else 
+              let splitted = line.Trim(' ').Split(' ')
+              let version = splitted.[1].Replace("(", "").Replace(")", "")
+
+              // parse direct dependencies
+              let dependencies = ref []
+              while !i < lines.Length && (lines.[!i]).StartsWith "      " do
+                  let splitted = (lines.[!i]).Trim(' ').Split(' ')
+                  dependencies := splitted.[0] :: !dependencies
+                  i := !i + 1
+
+              yield { SourceType = "nuget"
+                      Source = !remote
+                      Name = splitted.[0]
+                      DirectDependencies = Some(List.rev !dependencies)
+                      ResolverStrategy = ResolverStrategy.Max
+                      VersionRange = VersionRange.Exactly version } ]
 
 /// Analyzes the dependencies from the packageFile.
 let Create(force,packageFile) = 

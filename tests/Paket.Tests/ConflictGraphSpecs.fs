@@ -33,6 +33,34 @@ let ``should analyze graph and report conflict``() =
                       Referenced = { defaultPackage with Name = "D"; VersionRange = VersionRange.Exactly "1.4" } }, 
         FromPackage { Defining = { defaultPackage with Name = "C"; VersionRange = VersionRange.Exactly "2.4" }
                       Referenced = { defaultPackage with Name = "D"; VersionRange = VersionRange.Exactly "1.6" } }
+        FromPackage { Defining = 
+                          { Name = "B"
+                            VersionRange = VersionRange.Exactly "1.1"
+                            SourceType = ""
+                            DirectDependencies = None
+                            ResolverStrategy = ResolverStrategy.Max
+                            Source = "" }
+                      Referenced = 
+                          { Name = "D"
+                            VersionRange = VersionRange.Exactly "1.4"
+                            SourceType = ""
+                            DirectDependencies = None
+                            ResolverStrategy = ResolverStrategy.Max
+                            Source = "" } }, 
+        FromPackage { Defining = 
+                          { Name = "C"
+                            VersionRange = VersionRange.Exactly "2.4"
+                            SourceType = ""
+                            DirectDependencies = None
+                            ResolverStrategy = ResolverStrategy.Max
+                            Source = "" }
+                      Referenced = 
+                          { Name = "D"
+                            VersionRange = VersionRange.Exactly "1.6"
+                            SourceType = ""
+                            DirectDependencies = None
+                            ResolverStrategy = ResolverStrategy.Max
+                            Source = "" } }
     resolved.["D"] |> shouldEqual (ResolvedDependency.Conflict conflict)
     getVersion resolved.["E"] |> shouldEqual "4.3"
     getDefiningPackage resolved.["E"] |> shouldEqual "B"
@@ -61,4 +89,32 @@ let ``should analyze graph2 and report conflict``() =
                       Referenced = { defaultPackage with Name = "D"; VersionRange = VersionRange.Between("1.4", "1.5") } },
         FromPackage { Defining = { defaultPackage with Name = "C"; VersionRange = VersionRange.Exactly "2.4" }
                       Referenced = { defaultPackage with Name = "D"; VersionRange = VersionRange.Between("1.6", "1.7") } }
+        FromPackage { Defining = 
+                          { Name = "B"
+                            VersionRange = VersionRange.Exactly "1.1"
+                            SourceType = ""
+                            DirectDependencies = None
+                            ResolverStrategy = ResolverStrategy.Max
+                            Source = "" }
+                      Referenced = 
+                          { Name = "D"
+                            VersionRange = VersionRange.Between("1.4", "1.5")
+                            SourceType = ""
+                            DirectDependencies = None
+                            ResolverStrategy = ResolverStrategy.Max
+                            Source = "" } }, 
+        FromPackage { Defining = 
+                          { Name = "C"
+                            VersionRange = VersionRange.Exactly "2.4"
+                            SourceType = ""
+                            DirectDependencies = None
+                            ResolverStrategy = ResolverStrategy.Max
+                            Source = "" }
+                      Referenced = 
+                          { Name = "D"
+                            VersionRange = VersionRange.Between("1.6", "1.7")
+                            SourceType = ""
+                            DirectDependencies = None
+                            ResolverStrategy = ResolverStrategy.Max
+                            Source = "" } }
     resolved.["D"] |> shouldEqual (ResolvedDependency.Conflict conflict)
