@@ -71,14 +71,13 @@ type ProjectFile =
                         | None -> None
                       Node = Some node } ]
 
-    member this.DeleteOldReferences(referenceNode : ReferenceNode) =
-        let nodes = this.GetReferences()
-        match nodes |> Seq.tryFind (fun node -> node.DLLName = referenceNode.DLLName && node.Condition = referenceNode.Condition) with
-        | Some targetNode -> 
+    member this.DeleteOldReferences(name) =
+        this.GetReferences()
+        |> Seq.filter (fun node -> node.DLLName = name) 
+        |> Seq.iter (fun targetNode -> 
             match targetNode.Node with
             | Some node -> node.ParentNode.RemoveChild(node) |> ignore
-            | None -> ()
-        | None -> ()
+            | None -> ())
 
     member this.AddReference(referenceNode: ReferenceNode) =
         let firstNode =
@@ -111,6 +110,11 @@ type ProjectFile =
         firstNode.ParentNode.AppendChild(copy) |> ignore
 
     member this.UpdateReferences(extracted,usedPackages:System.Collections.Generic.HashSet<string>) =
+        for _, libraries in extracted do            
+            let libraries = libraries |> Seq.toArray
+            for (lib:FileInfo) in libraries do                                       
+                this.DeleteOldReferences (lib.Name.Replace(lib.Extension, ""))
+
         for package, libraries in extracted do
             if usedPackages.Contains package.Name then
                 let libraries = libraries |> Seq.toArray
@@ -126,15 +130,13 @@ type ProjectFile =
                         | All -> true,None
 
                     
-                    if installIt then
-                        let node =
-                            { DLLName = lib.Name.Replace(lib.Extension, "")
-                              HintPath = Some(relativePath.Replace("/", "\\"))
-                              Private = true
-                              Condition = condition
-                              Node = None }
-                        this.DeleteOldReferences node
-                        this.AddReference node
+                    if installIt then                        
+                        { DLLName = lib.Name.Replace(lib.Extension, "")
+                          HintPath = Some(relativePath.Replace("/", "\\"))
+                          Private = true
+                          Condition = condition
+                          Node = None }
+                        |> this.AddReference
 
         if Utils.normalizeXml this.Document <> this.OriginalText then
             this.Document.Save(this.FileName)
