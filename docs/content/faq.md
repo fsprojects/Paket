@@ -17,11 +17,12 @@ The [paket outdated](paket_outdated.html) command lists packages that have new v
 Future versions of Paket will also enable one to [reference files directly from git repositories](https://github.com/fsprojects/Paket/issues/9).
 
 
-**Q:** Why does Paket add references to the libraries of all the libraries framework versions in a NuGet package?
+**Q:** Why does Paket add references to the libraries associated with each supported framework version within a NuGet package to my projects?
 
-**A:** NuGet installs only for the currently matching .NET framework version of your project. Whenever you want to change the framework version you have to reinstall your NuGet packages. 
-Paket installs all of them; but it adds conditional attributes.
+**A:** A NuGet package installation adds references only for the currently selected target .NET framework version of your project;
+whenever you want to change the framework version you have to reinstall your NuGet packages (assuming you notice the problem).
 
+Paket adds references to all of them; but with *Condition* properties filtering them based on the currently selected *TargetFramework*.
 
 **Q:** When I resolve the dependencies from NuGet.org it is really slow. Why is that?
 
