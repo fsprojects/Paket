@@ -21,3 +21,7 @@ let ``can detect specific version``() =
 let ``can detect ordinary Between``() = 
     ConfigHelpers.parseVersionRange "~> 2.2" |> shouldEqual (VersionRange.Between("2.2","3.0"))
     ConfigHelpers.parseVersionRange "~> 1.2" |> shouldEqual (VersionRange.Between("1.2","2.0"))
+
+[<Test>]
+let ``can detect lower versions for ~>``() = 
+    ConfigHelpers.parseVersionRange "~> 3.2.0.0" |> shouldEqual (VersionRange.Between("3.2.0.0","3.2.1.0"))
