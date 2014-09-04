@@ -30,7 +30,7 @@ let ``should update correct node``() =
     let node = (project.GetReferences()).[2]
     let newNode = { node with HintPath = Some @"..\..\packages\FSharp.Core\lib\net20\FSharp.Core.dll" }
 
-    project.UpdateReference(newNode)
+    project.AddReference(newNode)
 
     let reloaded = project.GetReferences()
 

@@ -53,6 +53,7 @@ type ProjectFile =
       OriginalText : string
       Document : XmlDocument
       Namespaces : XmlNamespaceManager }
+    static member DefaultNameSpace = "http://schemas.microsoft.com/developer/msbuild/2003"
     member this.GetReferences() =
         [ for node in this.Document.SelectNodes("//ns:Project/ns:ItemGroup/ns:Reference", this.Namespaces) do
               let hintPath = ref None
@@ -69,33 +70,44 @@ type ProjectFile =
                         | None -> None
                       Node = Some node } ]
 
-    member this.UpdateReference(referenceNode: ReferenceNode) =
+    member this.DeleteOldReferences(referenceNode : ReferenceNode) =
         let nodes = this.GetReferences()
         match nodes |> Seq.tryFind (fun node -> node.DLLName = referenceNode.DLLName && node.Condition = referenceNode.Condition) with
-        | Some targetNode ->
+        | Some targetNode -> 
             match targetNode.Node with
-            | Some node -> 
-                node.Attributes.["Include"].Value <- referenceNode.DLLName
-                let newText = Environment.NewLine + referenceNode.Inner() + Environment.NewLine + "    "
-                node.InnerXml <- newText
-            | _ -> failwith "Unexpected error"
-        | None ->
-            let firstNode =
-                seq { for node in this.Document.SelectNodes("//ns:Project/ns:ItemGroup/ns:Reference", this.Namespaces) -> node }
-                |> Seq.last
-
-            let copy = firstNode.Clone()
-            copy.Attributes.["Include"].Value <- referenceNode.DLLName
-            match referenceNode.Condition with
-            | Some c ->
-                if [for attr in copy.Attributes -> attr.Name.ToLower() ] |> List.exists ((=) "condition") then
-                    copy.Attributes.["Condition"].Value <- c
-                else
-                    (copy :?> XmlElement).SetAttribute("Condition", c) |> ignore
+            | Some node -> node.ParentNode.RemoveChild(node) |> ignore
             | None -> ()
+        | None -> ()
 
-            copy.InnerXml <- Environment.NewLine + referenceNode.Inner() + Environment.NewLine + "    "
-            firstNode.ParentNode.AppendChild(copy) |> ignore
+    member this.AddReference(referenceNode: ReferenceNode) =
+        let firstNode =
+            seq { for node in this.Document.SelectNodes("//ns:Project/ns:ItemGroup/ns:Reference", this.Namespaces) -> node }
+            |> Seq.last
+
+            
+        let copy = this.Document.CreateElement("Reference", ProjectFile.DefaultNameSpace)
+        copy.SetAttribute("Include", referenceNode.DLLName)
+        match referenceNode.Condition with
+        | Some c ->  copy.SetAttribute("Condition", c) |> ignore
+        | None -> ()
+
+        match referenceNode.HintPath with
+        | Some hintPath ->
+            let element = this.Document.CreateElement("HintPath",ProjectFile.DefaultNameSpace)
+            element.InnerText <- hintPath
+            
+            copy.AppendChild(element) |> ignore
+        | None -> ()
+            
+        match referenceNode.Private with
+        | true ->
+            let element = this.Document.CreateElement("Private",ProjectFile.DefaultNameSpace)
+            element.InnerText <- "True"
+            
+            copy.AppendChild(element) |> ignore
+        | _ -> ()
+
+        firstNode.ParentNode.AppendChild(copy) |> ignore
 
     member this.UpdateReferences(extracted,usedPackages:System.Collections.Generic.HashSet<string>) =
         for package, libraries in extracted do
@@ -112,11 +124,14 @@ type ProjectFile =
 
                     
                     if installIt then
-                        this.UpdateReference ({ DLLName = lib.Name.Replace(lib.Extension, "")
-                                                HintPath = Some(relativePath.Replace("/", "\\"))
-                                                Private = true
-                                                Condition = condition
-                                                Node = None })
+                        let node =
+                            { DLLName = lib.Name.Replace(lib.Extension, "")
+                              HintPath = Some(relativePath.Replace("/", "\\"))
+                              Private = true
+                              Condition = condition
+                              Node = None }
+                        this.DeleteOldReferences node
+                        this.AddReference node
 
         if Utils.normalizeXml this.Document <> this.OriginalText then
             this.Document.Save(this.FileName)
@@ -127,5 +142,5 @@ type ProjectFile =
         doc.Load fi.FullName
 
         let manager = new XmlNamespaceManager(doc.NameTable)
-        manager.AddNamespace("ns", "http://schemas.microsoft.com/developer/msbuild/2003")    
+        manager.AddNamespace("ns", ProjectFile.DefaultNameSpace)
         { FileName = fi.FullName; Document = doc; Namespaces = manager; OriginalText = Utils.normalizeXml doc }
