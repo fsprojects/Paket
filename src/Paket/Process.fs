@@ -48,10 +48,12 @@ let Install(regenerate, force, packageFile) =
             |> Map.ofArray
 
         let rec addPackage name =
-            let package = allPackages.[name]
-            if usedPackages.Add name then
-                for d in package.DirectDependencies do
-                    addPackage d
+            match allPackages |> Map.tryFind name with
+            | Some package ->
+                if usedPackages.Add name then
+                    for d in package.DirectDependencies do
+                        addPackage d
+            | None -> ()
 
         directPackages
         |> Array.iter addPackage
