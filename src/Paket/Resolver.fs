@@ -58,7 +58,7 @@ let Resolve(force, discovery : IDiscovery, rootDependencies:Package seq) =
             | Some (Resolved dependency') -> 
                 match dependency'.Referenced.VersionRange with
                 | Specific fixedVersion -> 
-                    if not <| dependency'.Referenced.VersionRange.IsInRange fixedVersion then failwith "Conflict" else
+                    if not <| dependency.Referenced.VersionRange.IsInRange fixedVersion then failwith "Conflict" else
                     
                     dependencies
                     |> Map.remove resolvedName
