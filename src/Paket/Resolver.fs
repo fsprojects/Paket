@@ -18,15 +18,15 @@ let private shrink (s1 : Shrinked, s2 : Shrinked) =
         | Minimum v1, Specific v2 when v2 >= v1 -> s2
         | Specific v1, Minimum v2 when v1 >= v2 -> s1
         | Specific v1, Specific v2 when v1 = v2 -> s1
-        | Range(min1, max1), Specific v2 when min1 <= v2 && max1 > v2 -> s2
-        | Specific v1, Range(min2, max2) when min2 <= v1 && max2 > v1 -> s2
-        | Range(min1, max1), Range(min2, max2) -> 
+        | Range(_, min1, max1, _), Specific v2 when min1 <= v2 && max1 > v2 -> s2
+        | Specific v1, Range(_, min2, max2, _) when min2 <= v1 && max2 > v1 -> s2
+        | Range(_, min1, max1, _), Range(_, min2, max2, _) -> 
             let newMin = max min1 min2
             let newMax = min max1 max2
             if newMin > newMax then Shrinked.Conflict(version1, version2)
             else 
                 let shrinkedDependency = 
-                    { version1.Referenced with VersionRange = VersionRange.Range(newMin, newMax) }
+                    { version1.Referenced with VersionRange = VersionRange.Range(Closed, newMin, newMax, Open) }
                 Shrinked.Ok(match version1 with
                             | FromRoot _ -> FromRoot shrinkedDependency
                             | FromPackage d -> 

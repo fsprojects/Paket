@@ -43,15 +43,40 @@ let getAllVersions(nugetURL,package) =
 
 /// Parses NuGet version ranges.
 let parseVersionRange (text:string) = 
-    if text = "" then Latest else
-    if text.StartsWith "[" then
-        if text.EndsWith "]" then 
-            VersionRange.Exactly(text.Replace("[","").Replace("]",""))
-        else
-            let parts = text.Replace("[","").Replace(")","").Split ','
-            VersionRange.Between(parts.[0],parts.[1])
-    else VersionRange.AtLeast(text)
+    if text = null then nullArg "text" 
+    let failParse() = failwithf "unable to parse %s" text
 
+    let parseBound  = function
+        | '[' | ']' -> Closed
+        | '(' | ')' -> Open
+        | _         -> failParse()
+
+    if text = "" then Latest
+    elif not <| text.Contains "," then
+        if text.StartsWith "[" then Specific(text.Trim([|'['; ']'|]) |> SemVer.parse)
+        else Minimum(SemVer.parse text)
+    else
+        let fromB = parseBound text.[0]
+        let toB   = parseBound (Seq.last text)
+        let versions = text
+                        .Trim([|'['; ']';'(';')'|])
+                        .Split([|','|], StringSplitOptions.RemoveEmptyEntries)
+                        |> Array.map SemVer.parse
+        match versions.Length with
+        | 2 ->
+            Range(fromB, versions.[0], versions.[1], toB)
+        | 1 ->
+            if text.[1] = ',' then
+                match fromB, toB with
+                | Open, Closed -> Maximum(versions.[0])
+                | Open, Open -> LessThan(versions.[0])
+                | _ -> failParse()
+            else 
+                match fromB, toB with
+                | Open, Open -> GreaterThan(versions.[0])
+                | _ -> failParse()
+        | _ -> failParse()
+            
 /// Gets package details from Nuget via OData
 let getDetailsFromNugetViaOData nugetURL package version = 
     async { 
