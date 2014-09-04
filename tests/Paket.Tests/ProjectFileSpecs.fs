@@ -45,7 +45,7 @@ let ``should add single node``() =
     let project = ProjectFile.Load "./TestData/Project1.fsprojtest"
 
     let hintPath = @"..\..\packagesFAKE\lib\Fake.Core.dll"
-    let newNode = { DLLName = "FAKE"; HintPath = Some hintPath; Private = false; Node = None }
+    let newNode = { DLLName = "FAKE"; HintPath = Some hintPath; Private = false; Node = None; Condition = None }
 
     project.UpdateReference(newNode)
 
