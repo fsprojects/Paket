@@ -1,3 +1,6 @@
+#### 0.0.1-alpha023 - 04.09.2014
+* Make it .NET 4.0
+
 #### 0.0.1-alpha022 - 04.09.2014
 * Install all indirect packages
 
