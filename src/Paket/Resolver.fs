@@ -94,7 +94,7 @@ let Resolve(force, discovery : IDiscovery, rootDependencies:Package seq) =
                     { Name = resolvedName
                       VersionRange = VersionRange.Exactly(resolvedVersion.ToString())
                       SourceType = originalPackage.SourceType
-                      DirectDependencies = None
+                      DirectDependencies = []
                       ResolverStrategy = originalPackage.ResolverStrategy
                       Source = originalPackage.Source }
 
@@ -115,7 +115,7 @@ let Resolve(force, discovery : IDiscovery, rootDependencies:Package seq) =
                                           { Name = dependentPackage.Name
                                             VersionRange = dependentPackage.VersionRange
                                             SourceType = dependentPackage.SourceType
-                                            DirectDependencies = None
+                                            DirectDependencies = []
                                             ResolverStrategy = originalPackage.ResolverStrategy
                                             Source = dependentPackage.Source } }
                     dependencies <- addDependency dependentPackage.Name dependencies newDependency

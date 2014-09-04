@@ -133,8 +133,8 @@ let getDetailsFromNugetViaOData nugetURL package resolverStrategy version =
                    { Name = name
                      // TODO: Parse nuget version ranges - see http://docs.nuget.org/docs/reference/versioning
                      VersionRange = parseVersionRange version
-                     SourceType = "nuget"
-                     DirectDependencies = None
+                     SourceType = Nuget
+                     DirectDependencies = []
                      ResolverStrategy = resolverStrategy
                      Source = nugetURL })
             |> Array.toList
@@ -239,10 +239,11 @@ let GetLibraries(targetFolder) =
 let NugetDiscovery = 
     { new IDiscovery with
           
+          //TODO: Should we be able to call these methods with an invalid source type?
           member __.GetPackageDetails(force, sourceType, source, package, resolverStrategy, version) = 
-              if sourceType <> "nuget" then failwithf "invalid sourceType %s" sourceType
+              if sourceType <> Nuget then failwithf "invalid sourceType %A" sourceType
               getDetailsFromNuget force source package resolverStrategy version
           
           member __.GetVersions(sourceType, source, package) = 
-              if sourceType <> "nuget" then failwithf "invalid sourceType %s" sourceType
+              if sourceType <> Nuget then failwithf "invalid sourceType %A" sourceType
               getAllVersions (source, package) }
