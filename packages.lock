@@ -14,4 +14,5 @@ NUGET
     Newtonsoft.Json (6.0.4)
     RazorEngine (3.3.0)
       Microsoft.AspNet.Razor (>= 2.0.30506.0)
+    SourceLink.Fake (0.3.4)
     UnionArgParser (0.8.0)
