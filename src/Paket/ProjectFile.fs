@@ -41,9 +41,9 @@ type ReferenceNode =
 /// Contains methods to read and manipulate project files.
 type ProjectFile = 
     { FileName: string
+      OriginalText : string
       Document : XmlDocument
-      Namespaces : XmlNamespaceManager
-      mutable Modified : bool }
+      Namespaces : XmlNamespaceManager }
     member this.GetReferences() =
         [ for node in this.Document.SelectNodes("//ns:Project/ns:ItemGroup/ns:Reference", this.Namespaces) do
               let hintPath = ref None
@@ -72,7 +72,6 @@ type ProjectFile =
                 let newTrimmed = newText.Replace("\r","").Replace("\n","").Replace(" ","")
                 if oldTrimmed <> newTrimmed then
                     node.InnerXml <- newText
-                    this.Modified <- true 
             | _ -> failwith "Unexpected error"
         | None ->
             let firstNode =
@@ -80,7 +79,6 @@ type ProjectFile =
                 |> Seq.head
 
             firstNode.ParentNode.InnerXml <- firstNode.ParentNode.InnerXml + Environment.NewLine + referenceNode.ToString() + Environment.NewLine        
-            this.Modified <- true 
 
     member this.UpdateReferences(extracted,usedPackages:System.Collections.Generic.HashSet<string>) =
         for package, libraries in extracted do
@@ -97,16 +95,14 @@ type ProjectFile =
                                             Condition = condition
                                             Node = None })
 
-        if this.Modified then
+        if Utils.normalizeXml this.Document <> this.OriginalText then
             this.Document.Save(this.FileName)
 
     static member Load(fileName:string) =
         let fi = FileInfo(fileName)
         let doc = new XmlDocument()
         doc.Load fi.FullName
-     
+
         let manager = new XmlNamespaceManager(doc.NameTable)
         manager.AddNamespace("ns", "http://schemas.microsoft.com/developer/msbuild/2003")    
-        { FileName = fi.FullName; Document = doc; Namespaces = manager; Modified = false }
-
-
+        { FileName = fi.FullName; Document = doc; Namespaces = manager; OriginalText = Utils.normalizeXml doc }
