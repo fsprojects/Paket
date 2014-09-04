@@ -34,6 +34,7 @@ type VersionRange =
 /// Represents a package.
 type Package = 
     { Name : string
+      DirectDependencies : (string list) option
       VersionRange : VersionRange
       SourceType : string
       Source : string }

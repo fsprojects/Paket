@@ -33,22 +33,25 @@ let format (resolved : PackageResolution) =
 let Parse(lines : string seq) = 
     let lines = 
         lines
-        |> Seq.filter (fun line -> String.IsNullOrWhiteSpace line |> not)
-        |> Seq.filter (fun line -> line.StartsWith "      " |> not)
-        |> Seq.map (fun line -> line.Trim(' '))
+        |> Seq.filter (fun line -> String.IsNullOrWhiteSpace line |> not)                
         |> Seq.skip 1
     
     let remote = ref "http://nuget.org/api/v2"
-    [ for line in lines do
-          if line.StartsWith("remote:") then remote := line.Replace("remote: ", "")
-          elif line.StartsWith("specs:") then ()
+    [ use e = lines.GetEnumerator()    
+      while e.MoveNext() do
+          let line = e.Current
+          if line.Contains("remote:") then remote := line.Replace("remote:", "").Replace(" ", "")
+          elif line.Contains("specs:") then ()
+          elif line.StartsWith "      " then ()
           else
-              let splitted = line.Split(' ')
+              let splitted = line.Trim(' ').Split(' ')
               let version = splitted.[1].Replace("(", "").Replace(")", "")
               yield { SourceType = "nuget"
                       Source = !remote
                       Name = splitted.[0]
+                      DirectDependencies = None
                       VersionRange = VersionRange.Exactly version } ]
+
 /// Analyzes the dependencies from the packageFile.
 let Create(force,packageFile) = 
     let cfg = Config.ReadFromFile packageFile
