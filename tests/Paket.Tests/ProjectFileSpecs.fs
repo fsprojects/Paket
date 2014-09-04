@@ -36,9 +36,9 @@ let ``should update single nodes``() =
 
     let reloaded = project.GetReferences()
 
-    reloaded.[2].DLLName |> shouldEqual "nunit.framework"
-    reloaded.[2].Private |> shouldEqual true
-    reloaded.[2].HintPath |> shouldEqual (Some @"..\..\packages\NUnit.2.7.5\lib\nunit.framework.dll")
+    reloaded.[4].DLLName |> shouldEqual "nunit.framework"
+    reloaded.[4].Private |> shouldEqual true
+    reloaded.[4].HintPath |> shouldEqual (Some @"..\..\packages\NUnit.2.7.5\lib\nunit.framework.dll")
 
 [<Test>]
 let ``should add single node``() =

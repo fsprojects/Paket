@@ -34,5 +34,5 @@ let ``should update correct node``() =
 
     let reloaded = project.GetReferences()
 
-    reloaded.[2].DLLName |> shouldEqual "FSharp.Core"
-    reloaded.[2].HintPath |> shouldEqual (Some @"..\..\packages\FSharp.Core\lib\net20\FSharp.Core.dll")
+    reloaded.[6].DLLName |> shouldEqual "FSharp.Core"
+    reloaded.[6].HintPath |> shouldEqual (Some @"..\..\packages\FSharp.Core\lib\net20\FSharp.Core.dll")
