@@ -44,7 +44,7 @@ let Install(regenerate, force, packageFile) =
 
         let usedPackages = new System.Collections.Generic.HashSet<_>()
 
-        for package, libraries in extracted do
+        for package,_ in extracted do
             if Array.exists ((=) package.Name) directPackages then
                 usedPackages.Add package.Name |> ignore
                 match package.VersionRange with
@@ -54,30 +54,9 @@ let Install(regenerate, force, packageFile) =
                         |> Async.RunSynchronously
                     for x in indirectDependencies do
                         usedPackages.Add x.Name |> ignore
-
-        for package, libraries in extracted do
-            if usedPackages.Contains package.Name then
-                for lib in libraries do
-                    let relativePath = Uri(proj.FullName).MakeRelativeUri(Uri(lib.FullName)).ToString()
-                    let targetFramework = 
-                        let path = relativePath.ToLower()
-                        if path.Contains "lib/net20/" then "v2.0" else
-                        if path.Contains "lib/net35/" then "v3.5" else
-                        if path.Contains "lib/net40/" then "v4.0" else
-                        if path.Contains "lib/net45/" then "v4.5" else                        
-                        ""
-
-                    let condition = if targetFramework = "" then None else Some(sprintf "'$(TargetFrameworkVersion)' == '%s'" targetFramework)
-
-                    project.UpdateReference ({ DLLName = lib.Name.Replace(lib.Extension, "")
-                                               HintPath = Some(relativePath.Replace("/", "\\"))
-                                               Private = true
-                                               Condition = condition
-                                               Node = None })
-
-        if project.Modified then
-            project.Document.Save(proj.FullName)
         
+        project.UpdateReferences(extracted,usedPackages)
+
 
 /// Finds all outdated packages.
 let FindOutdated(packageFile) = 

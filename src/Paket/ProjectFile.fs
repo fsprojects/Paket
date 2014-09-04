@@ -1,6 +1,7 @@
 ﻿namespace Paket
 
 open System
+open System.IO
 open System.Xml
 
 /// Contains methods to read and manipulate project file ndoes.
@@ -28,7 +29,8 @@ type ReferenceNode =
 
 /// Contains methods to read and manipulate project files.
 type ProjectFile = 
-    { Document : XmlDocument
+    { FileName: string
+      Document : XmlDocument
       Namespaces : XmlNamespaceManager
       mutable Modified : bool }
     member this.GetReferences() =
@@ -69,12 +71,37 @@ type ProjectFile =
             firstNode.ParentNode.InnerXml <- firstNode.ParentNode.InnerXml + Environment.NewLine + referenceNode.ToString() + Environment.NewLine        
             this.Modified <- true 
 
+    member this.UpdateReferences(extracted,usedPackages:System.Collections.Generic.HashSet<string>) =
+        for package, libraries in extracted do
+            if usedPackages.Contains package.Name then
+                for (lib:FileInfo) in libraries do
+                    let relativePath = Uri(this.FileName).MakeRelativeUri(Uri(lib.FullName)).ToString()
+                    let targetFramework = 
+                        let path = relativePath.ToLower()
+                        if path.Contains "lib/net20/" then "v2.0" else
+                        if path.Contains "lib/net35/" then "v3.5" else
+                        if path.Contains "lib/net40/" then "v4.0" else
+                        if path.Contains "lib/net45/" then "v4.5" else                        
+                        ""
+
+                    let condition = if targetFramework = "" then None else Some(sprintf "'$(TargetFrameworkVersion)' == '%s'" targetFramework)
+
+                    this.UpdateReference ({ DLLName = lib.Name.Replace(lib.Extension, "")
+                                            HintPath = Some(relativePath.Replace("/", "\\"))
+                                            Private = true
+                                            Condition = condition
+                                            Node = None })
+
+        if this.Modified then
+            this.Document.Save(this.FileName)
+
     static member Load(fileName:string) =
+        let fi = FileInfo(fileName)
         let doc = new XmlDocument()
-        doc.Load fileName
+        doc.Load fi.FullName
      
         let manager = new XmlNamespaceManager(doc.NameTable)
         manager.AddNamespace("ns", "http://schemas.microsoft.com/developer/msbuild/2003")    
-        { Document = doc; Namespaces = manager; Modified = false }
+        { FileName = fi.FullName; Document = doc; Namespaces = manager; Modified = false }
 
 
