@@ -82,7 +82,7 @@
     <Compile Include="ProjectFileConditionSpecs.fs" />
     <Compile Include="ProjectFileSpecs.fs" />
     <Compile Include="ProjectFileWithConditionsSpecs.fs" />
-    <None Include="packages" />
+    <None Include="packages.list" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="mscorlib" />

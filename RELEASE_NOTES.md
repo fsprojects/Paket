@@ -1,3 +1,6 @@
+#### 0.0.1-alpha027 - 04.09.2014
+* Renamed packages file to packages.list file
+
 #### 0.0.1-alpha026 - 04.09.2014
 * Better installation in project file
 

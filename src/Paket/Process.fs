@@ -21,9 +21,9 @@ let findLockfile packageFile =
     let fi = FileInfo(packageFile)
     FileInfo(Path.Combine(fi.Directory.FullName, fi.Name.Replace(fi.Extension, ".lock")))
 
-let findPackagesForProject projectFile =
+let extractDependenciesFromListFile projectFile =
     let fi = FileInfo(projectFile)
-    let packageFile = FileInfo(Path.Combine(fi.Directory.FullName, "packages"))
+    let packageFile = FileInfo(Path.Combine(fi.Directory.FullName, "packages.list"))
     if packageFile.Exists then File.ReadAllLines packageFile.FullName else [||]
 
 let private findAllProjects(folder) = DirectoryInfo(folder).EnumerateFiles("*.*proj", SearchOption.AllDirectories)
@@ -37,7 +37,7 @@ let Install(regenerate, force, packageFile) =
         |> Async.Parallel
         |> Async.RunSynchronously
     for proj in findAllProjects(".") do
-        let directPackages = findPackagesForProject proj.FullName
+        let directPackages = extractDependenciesFromListFile proj.FullName
         let project = ProjectFile.Load proj.FullName
 
         let usedPackages = new System.Collections.Generic.HashSet<_>()
