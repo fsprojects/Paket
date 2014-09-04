@@ -19,7 +19,7 @@ type ReferenceNode =
     override x.ToString() = 
         let condition =
             match x.Condition with
-            | Some c -> " Condition=\"$(TargetFrameworkVersion) == 'v3.5'\""
+            | Some c -> sprintf " Condition=\"%s\"" c
             | _ -> ""
         String.Join(Environment.NewLine, 
                     [ yield sprintf "    <Reference Include=\"%s\"%s>" x.DLLName condition
