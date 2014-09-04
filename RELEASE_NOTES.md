@@ -1,3 +1,6 @@
+#### 0.0.1-alpha020 - 03.09.2014
+* Better **proj handling
+
 #### 0.0.1-alpha019 - 03.09.2014
 * Store indirect dependencies in the lockfile - https://github.com/fsprojects/Paket/issues/43
 
