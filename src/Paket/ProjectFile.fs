@@ -49,7 +49,7 @@ type ProjectFile =
 
     member this.UpdateReference(referenceNode: ReferenceNode) =
         let nodes = this.GetReferences()
-        match nodes |> Seq.tryFind (fun node -> node.DLLName = referenceNode.DLLName) with
+        match nodes |> Seq.tryFind (fun node -> node.DLLName = referenceNode.DLLName && node.Condition = referenceNode.Condition) with
         | Some targetNode ->
             match targetNode.Node with
             | Some node -> 
