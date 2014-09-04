@@ -68,6 +68,7 @@ let Parse(lines : string seq) =
                       Source = !remote
                       Name = splitted.[0]
                       DirectDependencies = Some(List.rev !dependencies)
+                      ResolverStrategy = ResolverStrategy.Max
                       VersionRange = VersionRange.Exactly version } ]
 
 /// Analyzes the dependencies from the packageFile.

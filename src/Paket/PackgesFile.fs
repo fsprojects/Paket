@@ -54,7 +54,8 @@ let nuget package version = __nuget.Add(package,("nuget",__nugetSource,version))
                         |> Seq.map (fun x -> 
                                let sourceType, source, version = x.Value
                                { Name = x.Key
-                                 VersionRange = parseVersionRange version
+                                 VersionRange = parseVersionRange(version.Trim '!')
+                                 ResolverStrategy = if version.StartsWith "!" then ResolverStrategy.Min else ResolverStrategy.Max
                                  SourceType = sourceType
                                  DirectDependencies = None
                                  Source = source })

@@ -6,7 +6,7 @@ open System
 let DictionaryDiscovery(graph : seq<string * string * (string * VersionRange) list>) = 
     { new IDiscovery with
           
-          member __.GetPackageDetails(force, sourceType, source, package, version) = 
+          member __.GetPackageDetails(force, sourceType, source, package, resolverStrategy, version) = 
               async { 
                   let dependencies =
                     graph
@@ -18,6 +18,7 @@ let DictionaryDiscovery(graph : seq<string * string * (string * VersionRange) li
                                   VersionRange = v
                                   SourceType = sourceType
                                   DirectDependencies = None
+                                  ResolverStrategy = resolverStrategy
                                   Source = source })
                   return "",dependencies
               }
@@ -30,7 +31,7 @@ let DictionaryDiscovery(graph : seq<string * string * (string * VersionRange) li
               } }
 
 let resolve graph (dependencies: (string * VersionRange) seq) =
-    let packages = dependencies |> Seq.map (fun (n,v) -> { Name = n; VersionRange = v; SourceType = ""; Source = ""; DirectDependencies = None })
+    let packages = dependencies |> Seq.map (fun (n,v) -> { Name = n; VersionRange = v; SourceType = ""; Source = ""; DirectDependencies = None; ResolverStrategy = ResolverStrategy.Max })
     Resolver.Resolve(true, DictionaryDiscovery graph, packages).ResolvedVersionMap
 
 let getVersion resolved =

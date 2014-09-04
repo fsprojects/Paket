@@ -31,11 +31,18 @@ type VersionRange =
 
     static member Between(version1,version2) = Range(Closed, SemVer.parse version1, SemVer.parse version2, Open)
 
+
+/// Represents a resolver strategy.
+type ResolverStrategy =
+| Max
+| Min
+
 /// Represents a package.
 type Package = 
     { Name : string
       DirectDependencies : (string list) option
       VersionRange : VersionRange
+      ResolverStrategy : ResolverStrategy
       SourceType : string
       Source : string }
 
@@ -58,7 +65,7 @@ type PackageDetails =  string * Package list
 
 /// Interface for discovery APIs.
 type IDiscovery = 
-    abstract GetPackageDetails : bool * string * string * string * string -> Async<PackageDetails>
+    abstract GetPackageDetails : bool * string * string * string * ResolverStrategy * string -> Async<PackageDetails>
     abstract GetVersions : string * string * string -> Async<string seq>
 
 /// Represents a resolved dependency.
