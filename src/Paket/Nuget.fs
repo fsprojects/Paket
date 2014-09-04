@@ -30,15 +30,14 @@ let getAllVersionsFromNugetOData (nugetURL, package) =
     }
     
 /// Gets versions of the given package.
-let getAllVersions(nugetURL,package) = 
+let getAllVersions (nugetURL, package) = 
     // we cannot cache this
     async { 
-        let! raw = sprintf "%s/package-versions/%s" nugetURL package |> getFromUrl
-        if raw = "" then 
-            let! first = getAllVersionsFromNugetOData(nugetURL,package)
-            return first
-        else 
-            return JsonConvert.DeserializeObject<string []>(raw) |> Array.toSeq
+        let! raw = sprintf "%s/package-versions/%s" nugetURL package |> safeGetFromUrl
+        match raw with
+        | None -> let! first = getAllVersionsFromNugetOData (nugetURL, package)
+                  return first
+        | Some data -> return JsonConvert.DeserializeObject<string []>(data) |> Array.toSeq
     }
 
 /// Parses NuGet version ranges.

@@ -66,5 +66,15 @@ let CleanDir path =
 let getFromUrl (url : string) = 
     async { 
         use client = new WebClient()
-        return! client.AsyncDownloadString(Uri(url))        
+        return! client.AsyncDownloadString(Uri(url))
+    }
+
+/// [omit]
+let safeGetFromUrl (url : string) = 
+    async { 
+        try 
+            use client = new WebClient()
+            let! raw = client.AsyncDownloadString(Uri(url))
+            return Some raw
+        with _ -> return None
     }
