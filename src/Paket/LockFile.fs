@@ -20,8 +20,19 @@ let extractErrors (resolved : PackageResolution) =
             match x.Value with
             | Resolved _ -> ""
             | Conflict(c1,c2) ->
-                sprintf "%A %A" c1 c2
+                let d1 = c1.Referenced
+                let v1 = 
+                    match d1.VersionRange with
+                    | Specific v -> v.ToString()
+                let d2 = c1.Referenced
+                let v2 = 
+                    match d1.VersionRange with
+                    | Specific v -> v.ToString()
+                sprintf "%s %s depends on%s  %s (%s)%s%s %s depends on%s  %s (%s)" 
+                        d1.Name v1 Environment.NewLine c1.Referenced.Name (formatVersionRange c1.Referenced.VersionRange) Environment.NewLine 
+                        d2.Name v2 Environment.NewLine c2.Referenced.Name (formatVersionRange c2.Referenced.VersionRange) 
             )
+        |> Seq.filter ((<>) "")
     String.Join(Environment.NewLine,errors)
 
 
@@ -102,4 +113,4 @@ let Update(force, packageFile, lockFile) =
         printfn "Lockfile written to %s" lockFile
     else 
         traceErrorfn "%s" errors
-        failwith "" // TODO:
+        failwith "Could not resolve dependencies" // TODO: better error handling
