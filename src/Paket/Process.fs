@@ -43,14 +43,22 @@ let Install(regenerate, force, packageFile) =
 
         let usedPackages = new System.Collections.Generic.HashSet<_>()
 
-        for package,_ in extracted do
-            if Array.exists ((=) package.Name) directPackages then
-                if usedPackages.Add package.Name then
-                    match package.DirectDependencies with
-                    | Some dependencies ->
-                        for d in dependencies do
-                            usedPackages.Add d |> ignore // TODO: we need to install the depencies of the dependencies of the dependencies...
-                    | None -> ()
+        let allPackages =
+            extracted
+            |> Array.map (fun (p,_) -> p.Name,p)
+            |> Map.ofArray
+
+        let rec addPackage name =
+            let package = allPackages.[name]
+            if usedPackages.Add name then
+                match package.DirectDependencies with
+                | Some dependencies ->
+                    for d in dependencies do
+                        addPackage d
+                | None -> ()
+
+        directPackages
+        |> Array.iter addPackage
         
         project.UpdateReferences(extracted,usedPackages)
 
