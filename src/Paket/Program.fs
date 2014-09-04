@@ -17,7 +17,7 @@ with
 
 let parser = UnionArgParser.Create<CLIArguments>()
  
-let cmdArgs = System.Environment.GetCommandLineArgs()
+let cmdArgs = Environment.GetCommandLineArgs()
 
 let results =
     try
@@ -27,23 +27,27 @@ let results =
         tracefn "Paket.exe%s%s" Environment.NewLine (parser.Usage())    
         None
 
+try
+    match results with
+    | Some(command,results) ->
+        let packageFile = 
+            match results.TryGetResult <@ CLIArguments.Package_File @> with
+            | Some x -> x
+            | _ -> "packages.fsx"
 
-match results with
-| Some(command,results) ->
-    let packageFile = 
-        match results.TryGetResult <@ CLIArguments.Package_File @> with
-        | Some x -> x
-        | _ -> "packages.fsx"
+        let force = 
+            match results.TryGetResult <@ CLIArguments.Force @> with
+            | Some _ -> true
+            | None -> false
 
-    let force = 
-        match results.TryGetResult <@ CLIArguments.Force @> with
-        | Some _ -> true
-        | None -> false
-
-    match command with
-    | "install" -> Process.Install(false,force,packageFile)
-    | "update" ->  Process.Install(true,force,packageFile)
-    | "outdated" ->  Process.ListOutdated(packageFile)
-    | _ -> failwith "no command given"
-    |> ignore
-| None -> ()
+        match command with
+        | "install" -> Process.Install(false,force,packageFile)
+        | "update" ->  Process.Install(true,force,packageFile)
+        | "outdated" ->  Process.ListOutdated(packageFile)
+        | _ -> failwith "no command given"
+        |> ignore
+    | None -> ()
+with
+| exn -> 
+    Environment.ExitCode <- 1
+    traceError exn.Message
