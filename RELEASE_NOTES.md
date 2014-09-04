@@ -1,4 +1,4 @@
-#### 0.0.1-alpha025 - 04.09.2014
+#### 0.0.1-alpha026 - 04.09.2014
 * Better installation in project file
 
 #### 0.0.1-alpha024 - 04.09.2014
