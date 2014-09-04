@@ -22,14 +22,16 @@ let nuget package version = __nuget.Add(package,("nuget",__nugetSource,version))
         // TODO: Make this pretty
         if text.StartsWith "~> " then 
             let min = text.Replace("~> ", "")
-            let parts = min.Split('.')
-            let major = Int32.Parse parts.[0]
-            
-            let newParts = 
-                (major + 1).ToString() :: Seq.toList (parts
-                                                      |> Seq.skip 1
-                                                      |> Seq.map (fun _ -> "0"))
-            VersionRange.Between(min, String.Join(".", newParts))
+            let parts = min.Split('.')            
+            if parts.Length > 1 then
+                let idx = parts.Length-2
+                parts.[idx] <-
+                    match Int32.TryParse parts.[idx] with
+                    | true, number -> (number+1).ToString()
+                    | _ ->  parts.[idx]
+                parts.[parts.Length-1] <- "0"
+
+            VersionRange.Between(min, String.Join(".", parts))
         else if text.StartsWith ">= " then VersionRange.AtLeast(text.Replace(">= ", ""))
         else if text.StartsWith "= " then VersionRange.Exactly(text.Replace("= ", ""))
         else VersionRange.Exactly(text)
