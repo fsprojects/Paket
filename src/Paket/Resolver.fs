@@ -58,12 +58,17 @@ let Resolve(force, discovery : IDiscovery, rootDependencies:Package seq) =
             | Some (Resolved dependency') -> 
                 match dependency'.Referenced.VersionRange with
                 | Specific fixedVersion -> 
-                    if not <| dependency.Referenced.VersionRange.IsInRange fixedVersion then 
-                        { processed with 
-                            ResolvedVersionMap =
-                                processed.ResolvedVersionMap 
-                                |> Map.remove resolvedName
-                                |> Map.add resolvedName (ResolvedDependency.Conflict(dependency',dependency))  }
+                    if not <| dependency.Referenced.VersionRange.IsInRange fixedVersion then
+                        let resolved =
+                            { processed with 
+                                ResolvedVersionMap =
+                                    processed.ResolvedVersionMap 
+                                    |> Map.remove resolvedName
+                                    |> Map.add resolvedName (ResolvedDependency.Conflict(dependency',dependency))  }
+                        
+                        dependencies
+                        |> Map.remove resolvedName
+                        |> analyzeGraph resolved
                     else                    
                         dependencies
                         |> Map.remove resolvedName
