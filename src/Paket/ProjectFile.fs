@@ -112,11 +112,13 @@ type ProjectFile =
     member this.UpdateReferences(extracted,usedPackages:System.Collections.Generic.HashSet<string>) =
         for package, libraries in extracted do
             if usedPackages.Contains package.Name then
+                let libraries = libraries |> Seq.toArray
                 for (lib:FileInfo) in libraries do
                     let relativePath = Uri(this.FileName).MakeRelativeUri(Uri(lib.FullName)).ToString()
 
                     let framworkCondition = FramworkCondition.DetectFromPath relativePath
-                    let installIt,condition = 
+                    let installIt,condition =
+                        if libraries.Length = 1 then true,None else // we don't have any other chance
                         match framworkCondition.Framework with
                         | Unknown -> false,None 
                         | Framework fw -> true,Some(sprintf "$(TargetFrameworkVersion) == '%s'" fw)
