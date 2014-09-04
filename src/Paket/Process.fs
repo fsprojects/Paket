@@ -31,7 +31,10 @@ let private findAllProjects(folder) = DirectoryInfo(folder).EnumerateFiles("*.*p
 /// Installs the given packageFile.
 let Install(regenerate, force, packageFile) = 
     let lockfile = findLockfile packageFile
-    if regenerate || (not lockfile.Exists) then LockFile.Update(force, packageFile, lockfile.FullName)
+     
+    if regenerate || (not lockfile.Exists) then 
+        LockFile.Update(force, packageFile, lockfile.FullName)
+
     let extracted = 
         ExtractPackages(force, File.ReadAllLines lockfile.FullName |> LockFile.Parse)
         |> Async.Parallel
