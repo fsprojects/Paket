@@ -4,7 +4,6 @@ open System
 open System.IO
 open System.Xml
 
-
 /// The Framework version.
 type FrameworkVersionType =
 | Unknown
@@ -63,6 +62,7 @@ type private InstallInfo = {
     Path : string
     Condition : FramworkCondition
 }
+
 /// Contains methods to read and manipulate project files.
 type ProjectFile = 
     { FileName: string
@@ -140,26 +140,33 @@ type ProjectFile =
                             { DllName = lib.Name.Replace(lib.Extension, "")
                               Path = relativePath
                               Condition = FramworkCondition.DetectFromPath relativePath } ]
-            |> Seq.groupBy (fun info -> info.DllName)
+            |> Seq.groupBy (fun info -> info.DllName,info.Condition.FrameworkVersion)
+            |> Seq.groupBy (fun ((name,_),_) -> name)
 
-        for _,libs in installInfos do
-            let libs = libs |> Seq.toArray
-            for lib in libs do
-                let installIt,condition =
-                   if libs.Length = 1 then true,None else
-                    match lib.Condition.FrameworkVersion with
-                    | Unknown -> false,None 
-                    | Framework fw -> true,Some(sprintf "$(TargetFrameworkVersion) == '%s'" fw)
-                    | All -> true,None
+        for _,group1 in installInfos do
+            let libsWithSameName = group1 |> Seq.toArray
+            for _,libs in libsWithSameName do
+                let libsWithSameFrameworkVersion = libs |> Seq.toArray
+                for lib in libsWithSameFrameworkVersion do
+                    let installIt,condition =
+                        if libsWithSameName.Length = 1 then true,None else
+                        let profileTypeCondition =
+                            if libsWithSameFrameworkVersion.Length = 1 then "" else
+                            sprintf " And $(TargetFrameworkProfile) == '%s'" (if lib.Condition.FrameworkProfile = Client then "Client" else "")
+
+                        match lib.Condition.FrameworkVersion with
+                        | Unknown -> false,None 
+                        | Framework fw -> true,Some(sprintf "$(TargetFrameworkVersion) == '%s'%s" fw profileTypeCondition)
+                        | All -> true,None
 
                     
-                if installIt then                        
-                    { DLLName = lib.DllName
-                      HintPath = Some(lib.Path.Replace("/", "\\"))
-                      Private = true
-                      Condition = condition
-                      Node = None }
-                    |> this.AddReference
+                    if installIt then                        
+                        { DLLName = lib.DllName
+                          HintPath = Some(lib.Path.Replace("/", "\\"))
+                          Private = true
+                          Condition = condition
+                          Node = None }
+                        |> this.AddReference
 
         if Utils.normalizeXml this.Document <> this.OriginalText then
             this.Document.Save(this.FileName)
