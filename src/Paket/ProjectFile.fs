@@ -26,22 +26,23 @@ type FrameworkProfileType =
 /// Contains methods to analyze .NET Framework Conditions.
 type FramworkCondition = 
     { FrameworkVersion : FrameworkVersionType;
+      CLRVersion : string option;
       FrameworkProfile : FrameworkProfileType }
     static member DetectFromPath(path : string) = 
         let path = path.Replace("\\", "/").ToLower()
         let fi = new FileInfo(path)
-        if path.Contains "lib/1.0/" then { FrameworkVersion = Framework "v1.0"; FrameworkProfile = Full }
-        elif path.Contains "lib/1.1/" then { FrameworkVersion = Framework "v1.1"; FrameworkProfile = Full }
-        elif path.Contains "lib/2.0/" then { FrameworkVersion = Framework "v2.0"; FrameworkProfile = Full }
-        elif path.Contains "lib/net20/" then { FrameworkVersion = Framework "v2.0"; FrameworkProfile = Full }
-        elif path.Contains "lib/net35/" then { FrameworkVersion = Framework "v3.5"; FrameworkProfile = Full }
-        elif path.Contains "lib/net40/" then { FrameworkVersion = Framework "v4.0"; FrameworkProfile = Full }
-        elif path.Contains "lib/net40-full/" then { FrameworkVersion = Framework "v4.0"; FrameworkProfile = Full }
-        elif path.Contains "lib/net40-client/" then { FrameworkVersion = Framework "v4.0" ; FrameworkProfile = Client }
-        elif path.Contains "lib/net45/" then { FrameworkVersion = Framework "v4.5" ; FrameworkProfile = Full }
-        elif path.Contains "lib/net451/" then { FrameworkVersion = FrameworkExtension("v4.5","v4.5.1") ; FrameworkProfile = Full }
-        elif path.Contains("lib/" + fi.Name.ToLower()) then { FrameworkVersion = All ; FrameworkProfile = Full }
-        else { FrameworkVersion = Unknown ; FrameworkProfile = Full }
+        if path.Contains "lib/1.0/" then { FrameworkVersion = All; FrameworkProfile = Full; CLRVersion = Some "1.0" }
+        elif path.Contains "lib/1.1/" then { FrameworkVersion = All; FrameworkProfile = Full; CLRVersion = Some "1.1" }
+        elif path.Contains "lib/2.0/" then { FrameworkVersion = All; FrameworkProfile = Full ; CLRVersion = Some "2.0" }
+        elif path.Contains "lib/net20/" then { FrameworkVersion = Framework "v2.0"; FrameworkProfile = Full; CLRVersion = None }
+        elif path.Contains "lib/net35/" then { FrameworkVersion = Framework "v3.5"; FrameworkProfile = Full; CLRVersion = None }
+        elif path.Contains "lib/net40/" then { FrameworkVersion = Framework "v4.0"; FrameworkProfile = Full; CLRVersion = None }
+        elif path.Contains "lib/net40-full/" then { FrameworkVersion = Framework "v4.0"; FrameworkProfile = Full; CLRVersion = None }
+        elif path.Contains "lib/net40-client/" then { FrameworkVersion = Framework "v4.0" ; FrameworkProfile = Client; CLRVersion = None }
+        elif path.Contains "lib/net45/" then { FrameworkVersion = Framework "v4.5" ; FrameworkProfile = Full; CLRVersion = None }
+        elif path.Contains "lib/net451/" then { FrameworkVersion = FrameworkExtension("v4.5","v4.5.1") ; FrameworkProfile = Full; CLRVersion = None }
+        elif path.Contains("lib/" + fi.Name.ToLower()) then { FrameworkVersion = All ; FrameworkProfile = Full; CLRVersion = None }
+        else { FrameworkVersion = Unknown ; FrameworkProfile = Full; CLRVersion = None }
 
 /// Contains methods to read and manipulate project file ndoes.
 type ReferenceNode = 
@@ -93,6 +94,18 @@ module DLLGrouping =
                 libs
         else libs
 
+    let handleCLRVersions (libs:InstallInfo seq) =
+        let withoutCLR =
+            libs 
+            |> Seq.filter (fun l -> l.Condition.CLRVersion = None)
+        
+        let withCLR = 
+            libs 
+            |> Seq.filter (fun l -> l.Condition.CLRVersion <> None)
+        
+        if Seq.isEmpty withCLR then libs else
+            [withCLR |> Seq.maxBy (fun l -> l.Condition.CLRVersion)]
+            |> Seq.append withoutCLR
 
 /// Contains methods to read and manipulate project files.
 type ProjectFile = 
@@ -148,6 +161,8 @@ type ProjectFile =
             for (_,frameworkVersion),libs in libsWithSameName do
                 let libsWithSameFrameworkVersion = 
                     libs 
+                    |> Seq.cache
+                    |> DLLGrouping.handleCLRVersions 
                     |> DLLGrouping.handleFrameworkExtensions frameworkVersion 
                     |> DLLGrouping.handleClientFrameworks frameworkVersion 
                     |> Seq.toArray              

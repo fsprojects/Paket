@@ -14,9 +14,12 @@ let ``should detect framework version from path``() =
     FramworkCondition.DetectFromPath(@"..\NUnit\lib\NUnit.dll").FrameworkVersion |> shouldEqual All
     FramworkCondition.DetectFromPath("../NUnit/lib/NUnit.dll").FrameworkVersion |> shouldEqual All
 
-    FramworkCondition.DetectFromPath(@"..\Rx-log4net\lib\1.0\log4net.dll").FrameworkVersion |> shouldEqual (Framework "v1.0")
-    FramworkCondition.DetectFromPath(@"..\Rx-log4net\lib\1.1\log4net.dll").FrameworkVersion |> shouldEqual (Framework "v1.1")
-    FramworkCondition.DetectFromPath(@"..\Rx-log4net\lib\2.0\log4net.dll").FrameworkVersion |> shouldEqual (Framework "v2.0")
+[<Test>]
+let ``should detect CLR version from path``() =
+    FramworkCondition.DetectFromPath(@"..\Rx-log4net\lib\1.0\log4net.dll").CLRVersion |> shouldEqual (Some "1.0")
+    FramworkCondition.DetectFromPath(@"..\Rx-log4net\lib\1.1\log4net.dll").CLRVersion |> shouldEqual (Some "1.1")
+    FramworkCondition.DetectFromPath(@"..\Rx-log4net\lib\2.0\log4net.dll").CLRVersion |> shouldEqual (Some "2.0")
+    FramworkCondition.DetectFromPath(@"..\Rx-log4net\lib\2.0\log4net.dll").FrameworkVersion |> shouldEqual All
 
 
 [<Test>]
