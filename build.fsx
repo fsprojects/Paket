@@ -215,9 +215,9 @@ Target "All" DoNothing
   ==> "Build"
   ==> "RunTests"
   ==> "CleanDocs"
-  ==> "GenerateDocs"
+  =?> ("GenerateDocs",isLocalBuild && not isMono)
   ==> "All"
-  ==> "ReleaseDocs"
+  =?> ("ReleaseDocs",isLocalBuild && not isMono)
 
 "All" 
 #if MONO
