@@ -1,3 +1,6 @@
+#### 0.0.1-alpha028 - 05.09.2014
+* Better handling of nuget folders
+
 #### 0.0.1-alpha027 - 04.09.2014
 * Renamed packages file to packages.list file
 
