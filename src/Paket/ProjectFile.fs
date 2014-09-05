@@ -5,29 +5,35 @@ open System.IO
 open System.Xml
 
 
-/// Contains methods to analyze .NET Framework Conditions.
-type FrameworkConditionType =
+/// The Framework version.
+type FrameworkVersionType =
 | Unknown
 | All
 | Framework of string
 
+/// The Framework profile.
+type FrameworkProfileType =
+| Client
+| Full
+
 /// Contains methods to analyze .NET Framework Conditions.
 type FramworkCondition = 
-    { Framework : FrameworkConditionType }
+    { FrameworkVersion : FrameworkVersionType;
+      FrameworkProfile : FrameworkProfileType }
     static member DetectFromPath(path : string) = 
         let path = path.Replace("\\", "/").ToLower()
         let fi = new FileInfo(path)
-        if path.Contains "lib/1.0/" then { Framework = Framework "v1.0" }
-        elif path.Contains "lib/1.1/" then { Framework = Framework "v1.1" }
-        elif path.Contains "lib/2.0/" then { Framework = Framework "v2.0" }
-        elif path.Contains "lib/net20/" then { Framework = Framework "v2.0" }
-        elif path.Contains "lib/net35/" then { Framework = Framework "v3.5" }
-        elif path.Contains "lib/net40/" then { Framework = Framework "v4.0" }
-        elif path.Contains "lib/net40-full/" then { Framework = Framework "v4.0" }
-        elif path.Contains "lib/net40-client/" then { Framework = Framework "v4.0" } // TODO: fix me
-        elif path.Contains "lib/net45/" then { Framework = Framework "v4.5" }
-        elif path.Contains("lib/" + fi.Name.ToLower()) then { Framework = All }
-        else { Framework = Unknown }
+        if path.Contains "lib/1.0/" then { FrameworkVersion = Framework "v1.0"; FrameworkProfile = Full }
+        elif path.Contains "lib/1.1/" then { FrameworkVersion = Framework "v1.1"; FrameworkProfile = Full }
+        elif path.Contains "lib/2.0/" then { FrameworkVersion = Framework "v2.0"; FrameworkProfile = Full }
+        elif path.Contains "lib/net20/" then { FrameworkVersion = Framework "v2.0"; FrameworkProfile = Full }
+        elif path.Contains "lib/net35/" then { FrameworkVersion = Framework "v3.5"; FrameworkProfile = Full }
+        elif path.Contains "lib/net40/" then { FrameworkVersion = Framework "v4.0"; FrameworkProfile = Full }
+        elif path.Contains "lib/net40-full/" then { FrameworkVersion = Framework "v4.0"; FrameworkProfile = Full }
+        elif path.Contains "lib/net40-client/" then { FrameworkVersion = Framework "v4.0" ; FrameworkProfile = Client }
+        elif path.Contains "lib/net45/" then { FrameworkVersion = Framework "v4.5" ; FrameworkProfile = Full }
+        elif path.Contains("lib/" + fi.Name.ToLower()) then { FrameworkVersion = All ; FrameworkProfile = Full }
+        else { FrameworkVersion = Unknown ; FrameworkProfile = Full }
 
 /// Contains methods to read and manipulate project file ndoes.
 type ReferenceNode = 
@@ -128,7 +134,7 @@ type ProjectFile =
                     let framworkCondition = FramworkCondition.DetectFromPath relativePath
                     let installIt,condition =
                         if libraries.Length = 1 then true,None else // we don't have any other chance
-                        match framworkCondition.Framework with
+                        match framworkCondition.FrameworkVersion with
                         | Unknown -> false,None 
                         | Framework fw -> true,Some(sprintf "$(TargetFrameworkVersion) == '%s'" fw)
                         | All -> true,None
