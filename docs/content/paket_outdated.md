@@ -8,4 +8,4 @@ Lists all dependencies that have newer versions available.
 
 Options:
 
-  `--package-file`:  Use the specified packages file instead of `packages.fsx`.
+  `--package-file`:  Use the specified file instead of `Dependencies`.

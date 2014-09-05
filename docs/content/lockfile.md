@@ -1,7 +1,7 @@
 What is the Lockfile?
 =====================
 
-Consider the following [Packages file](packages_file.html):
+Consider the following [Dependencies file](Dependencies_file.html):
 
     source "http://nuget.org/api/v2"
 
@@ -44,6 +44,6 @@ The `packages.lock` file records the concrete resolutions of all direct *and ind
           Rx-Core (>= 2.2)
         log4net (1.2.10)
 
-Subsequent runs of [paket install](packet_install.htm) will not reanalyze the `packages.fsx` file.
+Subsequent runs of [paket install](packet_install.htm) will not reanalyze the `Dependencies` file.
 
-As a result, committing the `packages.lock` file to your version control system guarantees that other developers and/or build servers will always end up with a reliable and consistent set of packages regardless of where or when a [paket install](packet_install.htm) occurs.
+As a result, committing the `Dependencies.lock` file to your version control system guarantees that other developers and/or build servers will always end up with a reliable and consistent set of packages regardless of where or when a [paket install](packet_install.htm) occurs.

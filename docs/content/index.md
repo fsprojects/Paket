@@ -12,7 +12,7 @@ It enables precise and predictable control over what packages the projects withi
 Getting Started
 ---------------
 
-Specify the version-rules of all dependencies used in your application in a `packages.fsx` file in your project's root:
+Specify the version-rules of all dependencies used in your application in a [Dependencies](Dependencies_file.html) file in your project's root:
 
     source "http://nuget.org/api/v2"
 
@@ -24,10 +24,10 @@ Install all of the required packages from your specified sources:
     [lang=batchfile]
     $ paket install
 
-The [install command](paket_install.html) will analyze your [packages file (`packages.fsx`)](packages_file.html) and generate a [lockfile (`packages.lock`)](lockfile.html) file alongside it.
-If the lockfile already exists then it will not be regenerated.
+The [install command](paket_install.html) will analyze your [Dependencies](Dependencies_file.html) file and generate a [Lockfile (`Depedencies.lock`)](lockfile.html) file alongside it.
+If the lockfile already exists, then it will not be regenerated.
 
-Both `packages.fsx` and `packages.lock` should be committed to your version control system.
+Both `Dependencies` and `Dependencies.lock` should be committed to your version control system.
 
 Contributing and copyright
 --------------------------

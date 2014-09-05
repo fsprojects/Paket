@@ -10,4 +10,4 @@ Options:
 
   `--force`:  Forces the download and reinstallation of all packages.
 
-  `--package-file`:  Use the specified packages file instead of `packages.fsx`.
+  `--package-file`:  Use the specified file instead of `Dependencies`.

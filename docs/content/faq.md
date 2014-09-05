@@ -8,7 +8,7 @@ NuGet doesn't separate out the concept of indirect dependencies; if you install 
 
 Even more importantly: if two packages reference conflicting versions of a package, NuGet will silently take the latest version; You have no control over this process.
  
-Paket on the other hand maintains this information on a consistent and stable basis within the [lockfile](lockfile.html) in the solution root. This file, together with the `packages.fsx` enables you to determine exactly what's happening with your dependencies.
+Paket on the other hand maintains this information on a consistent and stable basis within the [lockfile](lockfile.html) in the solution root. This file, together with the [Dependencies](Dependencies_file.html) file enables you to determine exactly what's happening with your dependencies.
 
 The [paket outdated](paket_outdated.html) command lists packages that have new versions available.
 
@@ -34,4 +34,4 @@ Paket uses the NuGet oData API to discover package dependencies. Unfortunately t
 
 Some good news is that [the NuGet team are currently developing a faster API](http://blog.nuget.org/20140711/nuget-architecture.html); Paket may be able to take advantage of that.
 
-Once the Lockfile is written Paket won't use the oData API anymore and therefore package restore is very fast. 
+Once the [Lockfile](lockfile.html)  is written Paket won't use the oData API anymore and therefore package restore is very fast. 

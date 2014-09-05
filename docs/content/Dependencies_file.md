@@ -1,7 +1,7 @@
-The packages.fsx file
+The Dependencies file
 =====================
 
-The Packages file is used to specify your applications's dependencies. 
+The Dependencies file is used to specify your applications's dependencies. 
 It uses a similar syntax like [bundler](http://bundler.io/)'s GEMfile.
   
     source "http://nuget.org/api/v2"
@@ -9,9 +9,9 @@ It uses a similar syntax like [bundler](http://bundler.io/)'s GEMfile.
     nuget "Castle.Windsor-log4net" "~> 3.2"
     nuget "Rx-Main" "~> 2.0"
 
-Only direct dependencies are listed in `packages.fsx`.
+Only direct dependencies are listed in this file.
 Paket uses this definition to compute a concrete package resolution,
-which includes indirect dependencies, in a [Lockfile](lockfile.html).
+which also includes indirect dependencies, in a [Dependencies.lock](lockfile.html) file.
 
 Sources
 -------
