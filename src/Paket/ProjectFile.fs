@@ -69,7 +69,7 @@ module DLLGrouping =
         |> Seq.groupBy (fun ((name, _), _) -> name)
     
     let hasClientProfile libs = libs |> Seq.exists (fun x -> x.Condition.FrameworkProfile = Client)
-    let hasFulleProfile libs = libs |> Seq.exists (fun x -> x.Condition.FrameworkProfile = Full)
+    let hasFullProfile libs = libs |> Seq.exists (fun x -> x.Condition.FrameworkProfile = Full)
     
     let hasFramworkExtensions libs = 
         libs |> Seq.exists (fun x -> 
@@ -86,7 +86,7 @@ module DLLGrouping =
         else libs
 
     let handleClientFrameworks frameworkVersion libs = 
-        if frameworkVersion = "v4.0" && hasClientProfile libs && not <| hasFulleProfile libs then 
+        if frameworkVersion = "v4.0" && hasClientProfile libs && not <| hasFullProfile libs then 
             let copy = libs |> Seq.head
             Seq.append 
                 [ { copy with Condition = { copy.Condition with FrameworkProfile = Full } } ] 
