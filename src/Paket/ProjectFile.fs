@@ -15,8 +15,8 @@ type FrameworkConditionType =
 type FramworkCondition = 
     { Framework : FrameworkConditionType }
     static member DetectFromPath(path : string) = 
-        let fi = new FileInfo(path)
         let path = path.Replace("\\","/").ToLower()
+        let fi = new FileInfo(path)
         if path.Contains "lib/net20/" then { Framework = Framework  "v2.0" }
         else if path.Contains "lib/net35/" then { Framework = Framework "v3.5" }
         else if path.Contains "lib/net40/" then { Framework = Framework "v4.0" }
