@@ -157,6 +157,7 @@ type ProjectFile =
             for (_,frameworkVersion),libs in libsWithSameName do
                 let libsWithSameFrameworkVersion = libs |> Seq.toArray
                 let hasExtensions = libsWithSameFrameworkVersion |> Array.exists (fun x -> match x.Condition.FrameworkVersion with | FrameworkExtension _ -> true | _ -> false)
+                let hasClientProfile = libsWithSameFrameworkVersion |> Array.exists (fun x -> x.Condition.FrameworkProfile = Client)
                 let libsWithSameFrameworkVersion =
                     if frameworkVersion = "v4.5" && (not hasExtensions) then
                         let copy = libsWithSameFrameworkVersion |> Seq.head
@@ -167,7 +168,7 @@ type ProjectFile =
                     let installIt,condition =
                         if libsWithSameName.Length = 1 then true,None else
                         let profileTypeCondition =
-                            if libsWithSameFrameworkVersion.Length = 1 then "" else
+                            if not hasClientProfile then "" else
                             sprintf " And $(TargetFrameworkProfile) == '%s'" (if lib.Condition.FrameworkProfile = Client then "Client" else "")
 
                         match lib.Condition.FrameworkVersion with
