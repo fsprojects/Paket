@@ -20,7 +20,7 @@ let graph =
       "E", "4.3", []
       "F", "1.2", [] ]
 
-let defaultPackage = { Name = ""; VersionRange = VersionRange.Exactly "1.0"; SourceType = Nuget; DirectDependencies = []; ResolverStrategy = ResolverStrategy.Max; Source = "" }
+let defaultPackage = { Name = ""; VersionRange = VersionRange.Exactly "1.0"; Source = Nuget ""; DirectDependencies = []; ResolverStrategy = ResolverStrategy.Max }
 
 [<Test>]
 let ``should analyze graph and report conflict``() = 

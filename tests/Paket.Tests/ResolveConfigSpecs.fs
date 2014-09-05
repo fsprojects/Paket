@@ -38,5 +38,4 @@ let ``should resolve simple config1``() =
     getVersion resolved.["log"] |> shouldEqual "1.2"
     getDefiningPackage resolved.["log"] |> shouldEqual "log4net"
     getDefiningVersion resolved.["log"] |> shouldEqual "1.1"
-    getSourceType resolved.["log"] |> shouldEqual Nuget
-    getSource resolved.["log"] |> shouldEqual "http://nuget.org/api/v2"
+    getSource resolved.["log"] |> shouldEqual (Nuget "http://nuget.org/api/v2")

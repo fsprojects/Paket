@@ -112,10 +112,9 @@ let getDetailsFromNugetViaOData nugetURL package resolverStrategy version =
                    { Name = name
                      // TODO: Parse nuget version ranges - see http://docs.nuget.org/docs/reference/versioning
                      VersionRange = parseVersionRange version
-                     SourceType = Nuget
+                     Source = Nuget nugetURL
                      DirectDependencies = []
-                     ResolverStrategy = resolverStrategy
-                     Source = nugetURL })
+                     ResolverStrategy = resolverStrategy })
             |> Array.toList
 
         return downloadLink,packages
@@ -219,10 +218,12 @@ let NugetDiscovery =
     { new IDiscovery with
           
           //TODO: Should we really be able to call these methods with invalid arguments?
-          member __.GetPackageDetails(force, sourceType, source, package, resolverStrategy, version) = 
-              if sourceType <> Nuget then failwithf "invalid sourceType %A" sourceType
-              getDetailsFromNuget force source package resolverStrategy version
+          member __.GetPackageDetails(force, source, package, resolverStrategy, version) =
+              match source with
+              | Nuget url -> getDetailsFromNuget force url package resolverStrategy version
+              | _ -> failwithf "invalid sourceType %A" source              
           
-          member __.GetVersions(sourceType, source, package) = 
-              if sourceType <> Nuget then failwithf "invalid sourceType %A" sourceType
-              getAllVersions (source, package) }
+          member __.GetVersions(source, package) = 
+              match source with
+              | Nuget url -> getAllVersions (url, package)
+              | _ -> failwithf "invalid sourceType %A" source }

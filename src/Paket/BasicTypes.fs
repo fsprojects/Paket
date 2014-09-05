@@ -1,5 +1,6 @@
 ﻿namespace Paket
 
+/// Defines if the range is open or closed.
 type Bound = 
     | Open
     | Closed
@@ -36,8 +37,9 @@ type ResolverStrategy =
 | Max
 | Min
 
+/// Represents the package source type.
 type PackageSource =
-| Nuget
+| Nuget of string
 
 /// Represents a package.
 type Package = 
@@ -45,8 +47,7 @@ type Package =
       DirectDependencies : string list
       VersionRange : VersionRange
       ResolverStrategy : ResolverStrategy
-      SourceType : PackageSource
-      Source : string }
+      Source : PackageSource }
 
 /// Represents a package dependency.
 type PackageDependency = 
@@ -67,8 +68,8 @@ type PackageDetails =  string * Package list
 
 /// Interface for discovery APIs.
 type IDiscovery = 
-    abstract GetPackageDetails : bool * PackageSource * string * string * ResolverStrategy * string -> Async<PackageDetails>
-    abstract GetVersions : PackageSource * string * string -> Async<string seq>
+    abstract GetPackageDetails : bool * PackageSource * string * ResolverStrategy * string -> Async<PackageDetails>
+    abstract GetVersions : PackageSource * string -> Async<string seq>
 
 /// Represents a resolved dependency.
 type ResolvedDependency = 

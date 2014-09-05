@@ -76,7 +76,7 @@ let Resolve(force, discovery : IDiscovery, rootDependencies:Package seq) =
                 | _ -> failwith "Not allowed"
             | _ ->
                 let allVersions = 
-                    discovery.GetVersions(originalPackage.SourceType,originalPackage.Source,resolvedName) 
+                    discovery.GetVersions(originalPackage.Source,resolvedName) 
                     |> Async.RunSynchronously
                     |> Seq.toList
 
@@ -97,16 +97,15 @@ let Resolve(force, discovery : IDiscovery, rootDependencies:Package seq) =
                         | ResolverStrategy.Min -> List.min versions
 
                 let _,dependentPackages = 
-                    discovery.GetPackageDetails(force, originalPackage.SourceType, originalPackage.Source, originalPackage.Name, originalPackage.ResolverStrategy, resolvedVersion.ToString()) 
+                    discovery.GetPackageDetails(force, originalPackage.Source, originalPackage.Name, originalPackage.ResolverStrategy, resolvedVersion.ToString()) 
                     |> Async.RunSynchronously
 
                 let resolvedPackage =
                     { Name = resolvedName
                       VersionRange = VersionRange.Exactly(resolvedVersion.ToString())
-                      SourceType = originalPackage.SourceType
+                      Source = originalPackage.Source
                       DirectDependencies = []
-                      ResolverStrategy = originalPackage.ResolverStrategy
-                      Source = originalPackage.Source }
+                      ResolverStrategy = originalPackage.ResolverStrategy }
 
                 let resolvedDependency = 
                     ResolvedDependency.Resolved(
@@ -124,7 +123,6 @@ let Resolve(force, discovery : IDiscovery, rootDependencies:Package seq) =
                                       Referenced = 
                                           { Name = dependentPackage.Name
                                             VersionRange = dependentPackage.VersionRange
-                                            SourceType = dependentPackage.SourceType
                                             DirectDependencies = []
                                             ResolverStrategy = originalPackage.ResolverStrategy
                                             Source = dependentPackage.Source } }

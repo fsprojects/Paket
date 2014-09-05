@@ -6,7 +6,7 @@ open System
 let DictionaryDiscovery(graph : seq<string * string * (string * VersionRange) list>) = 
     { new IDiscovery with
           
-          member __.GetPackageDetails(force, sourceType, source, package, resolverStrategy, version) = 
+          member __.GetPackageDetails(force, source, package, resolverStrategy, version) = 
               async { 
                   let dependencies =
                     graph
@@ -16,14 +16,13 @@ let DictionaryDiscovery(graph : seq<string * string * (string * VersionRange) li
                          |> List.map (fun (p, v) -> 
                                 { Name = p
                                   VersionRange = v
-                                  SourceType = sourceType
                                   DirectDependencies = []
                                   ResolverStrategy = resolverStrategy
                                   Source = source })
                   return "",dependencies
               }
           
-          member __.GetVersions(sourceType, source, package) = 
+          member __.GetVersions(source, package) = 
               async { 
                   return graph
                          |> Seq.filter (fun (p, _, _) -> p = package)
@@ -31,7 +30,7 @@ let DictionaryDiscovery(graph : seq<string * string * (string * VersionRange) li
               } }
 
 let resolve graph (dependencies: (string * VersionRange) seq) =
-    let packages = dependencies |> Seq.map (fun (n,v) -> { Name = n; VersionRange = v; SourceType = Nuget; Source = ""; DirectDependencies = []; ResolverStrategy = ResolverStrategy.Max })
+    let packages = dependencies |> Seq.map (fun (n,v) -> { Name = n; VersionRange = v; Source = Nuget ""; DirectDependencies = []; ResolverStrategy = ResolverStrategy.Max })
     Resolver.Resolve(true, DictionaryDiscovery graph, packages).ResolvedVersionMap
 
 let getVersion resolved =
@@ -49,10 +48,6 @@ let getDefiningVersion resolved =
     | ResolvedDependency.Resolved (FromPackage x) -> 
         match x.Defining.VersionRange with
         | Specific v -> v.ToString()
-
-let getSourceType resolved =
-    match resolved with
-    | ResolvedDependency.Resolved x -> x.Referenced.SourceType
 
 let getSource resolved =
     match resolved with

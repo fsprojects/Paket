@@ -10,10 +10,10 @@ let ExtractPackages(force, packages : Package seq) =
                         match package.VersionRange with
                         | Specific v -> v
                         | v -> failwithf "Version error in lockfile for %s %A" package.Name v
-                    match package.SourceType with
-                    | Nuget -> 
+                    match package.Source with
+                    | Nuget source -> 
                         async { let! packageFile = Nuget.DownloadPackage
-                                                       (package.Source, package.Name, package.ResolverStrategy, version.ToString(), force)
+                                                       (source, package.Name, package.ResolverStrategy, version.ToString(), force)
                                 let! folder = Nuget.ExtractPackage(packageFile, package.Name, version.ToString(), force) 
                                 return package,Nuget.GetLibraries folder})
 
