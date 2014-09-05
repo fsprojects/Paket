@@ -15,15 +15,18 @@ type FrameworkConditionType =
 type FramworkCondition = 
     { Framework : FrameworkConditionType }
     static member DetectFromPath(path : string) = 
-        let path = path.Replace("\\","/").ToLower()
+        let path = path.Replace("\\", "/").ToLower()
         let fi = new FileInfo(path)
-        if path.Contains "lib/net20/" then { Framework = Framework  "v2.0" }
-        else if path.Contains "lib/net35/" then { Framework = Framework "v3.5" }
-        else if path.Contains "lib/net40/" then { Framework = Framework "v4.0" }
-        else if path.Contains "lib/net40-full/" then { Framework = Framework "v4.0" }
-        else if path.Contains "lib/net40-client/" then { Framework = Framework "v4.0" } // TODO: fix me
-        else if path.Contains "lib/net45/" then { Framework = Framework "v4.5" }
-        else if path.Contains("lib/" + fi.Name.ToLower())  then { Framework = All }
+        if path.Contains "lib/1.0/" then { Framework = Framework "v1.0" }
+        elif path.Contains "lib/1.1/" then { Framework = Framework "v1.1" }
+        elif path.Contains "lib/2.0/" then { Framework = Framework "v2.0" }
+        elif path.Contains "lib/net20/" then { Framework = Framework "v2.0" }
+        elif path.Contains "lib/net35/" then { Framework = Framework "v3.5" }
+        elif path.Contains "lib/net40/" then { Framework = Framework "v4.0" }
+        elif path.Contains "lib/net40-full/" then { Framework = Framework "v4.0" }
+        elif path.Contains "lib/net40-client/" then { Framework = Framework "v4.0" } // TODO: fix me
+        elif path.Contains "lib/net45/" then { Framework = Framework "v4.5" }
+        elif path.Contains("lib/" + fi.Name.ToLower()) then { Framework = All }
         else { Framework = Unknown }
 
 /// Contains methods to read and manipulate project file ndoes.
