@@ -58,6 +58,11 @@ type ReferenceNode =
                       yield x.Inner()
                       yield "    </Reference>" ])
 
+type private InstallInfo = {
+    DllName : string
+    Path : string
+    Condition : FramworkCondition
+}
 /// Contains methods to read and manipulate project files.
 type ProjectFile = 
     { FileName: string
@@ -125,28 +130,36 @@ type ProjectFile =
             for (lib:FileInfo) in libraries do                                       
                 this.DeleteOldReferences (lib.Name.Replace(lib.Extension, ""))
 
-        for package, libraries in extracted do
-            if usedPackages.Contains package.Name then
-                let libraries = libraries |> Seq.toArray
-                for (lib:FileInfo) in libraries do
-                    let relativePath = Uri(this.FileName).MakeRelativeUri(Uri(lib.FullName)).ToString()
+        let installInfos =
+            [for package, libraries in extracted do
+                if usedPackages.Contains package.Name then
+                    let libraries = libraries |> Seq.toArray
+                    for (lib:FileInfo) in libraries do
+                        let relativePath = Uri(this.FileName).MakeRelativeUri(Uri(lib.FullName)).ToString() 
+                        yield 
+                            { DllName = lib.Name.Replace(lib.Extension, "")
+                              Path = relativePath
+                              Condition = FramworkCondition.DetectFromPath relativePath } ]
+            |> Seq.groupBy (fun info -> info.DllName)
 
-                    let framworkCondition = FramworkCondition.DetectFromPath relativePath
-                    let installIt,condition =
-                        if libraries.Length = 1 then true,None else // we don't have any other chance
-                        match framworkCondition.FrameworkVersion with
-                        | Unknown -> false,None 
-                        | Framework fw -> true,Some(sprintf "$(TargetFrameworkVersion) == '%s'" fw)
-                        | All -> true,None
+        for _,libs in installInfos do
+            let libs = libs |> Seq.toArray
+            for lib in libs do
+                let installIt,condition =
+                   if libs.Length = 1 then true,None else
+                    match lib.Condition.FrameworkVersion with
+                    | Unknown -> false,None 
+                    | Framework fw -> true,Some(sprintf "$(TargetFrameworkVersion) == '%s'" fw)
+                    | All -> true,None
 
                     
-                    if installIt then                        
-                        { DLLName = lib.Name.Replace(lib.Extension, "")
-                          HintPath = Some(relativePath.Replace("/", "\\"))
-                          Private = true
-                          Condition = condition
-                          Node = None }
-                        |> this.AddReference
+                if installIt then                        
+                    { DLLName = lib.DllName
+                      HintPath = Some(lib.Path.Replace("/", "\\"))
+                      Private = true
+                      Condition = condition
+                      Node = None }
+                    |> this.AddReference
 
         if Utils.normalizeXml this.Document <> this.OriginalText then
             this.Document.Save(this.FileName)
