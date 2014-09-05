@@ -92,6 +92,13 @@ module DLLGrouping =
                     | FrameworkExtension _ -> true
                     | _ -> false)
 
+    let handleFrameworkExtensions frameworkVersion libs = 
+        if frameworkVersion = "v4.5" && not <| hasFramworkExtensions libs then 
+            let copy = libs |> Seq.head
+            Seq.append 
+                [ { copy with Condition = { copy.Condition with FrameworkVersion = FrameworkExtension("v4.5", "v4.5.1") } } ] 
+                libs
+        else libs
 
 
 /// Contains methods to read and manipulate project files.
@@ -164,14 +171,10 @@ type ProjectFile =
         for _,group1 in installInfos do
             let libsWithSameName = group1 |> Seq.toArray
             for (_,frameworkVersion),libs in libsWithSameName do
-                let libsWithSameFrameworkVersion = libs |> Seq.toArray
-                
-                
-                let libsWithSameFrameworkVersion =
-                    if frameworkVersion = "v4.5" && not <| DLLGrouping.hasFramworkExtensions libsWithSameFrameworkVersion then
-                        let copy = libsWithSameFrameworkVersion |> Seq.head
-                        Array.append [|{ copy with Condition = { copy.Condition with FrameworkVersion = FrameworkExtension("v4.5","v4.5.1") } }|] libsWithSameFrameworkVersion
-                    else libsWithSameFrameworkVersion
+                let libsWithSameFrameworkVersion = 
+                    libs 
+                    |> DLLGrouping.handleFrameworkExtensions frameworkVersion 
+                    |> Seq.toArray              
 
                 for lib in libsWithSameFrameworkVersion do
                     let installIt,condition =
