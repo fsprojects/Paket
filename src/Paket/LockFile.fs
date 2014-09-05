@@ -110,17 +110,18 @@ let Parse(lines : string seq) =
     |> snd
     |> List.rev
 
-/// Analyzes the dependencies from the packageFile.
-let Create(force,packageFile) = 
-    let cfg = DependenciesFile.ReadFromFile packageFile
+/// Analyzes the dependencies from the Dependencies file.
+let Create(force,dependenciesFile) =     
+    let cfg = DependenciesFile.ReadFromFile dependenciesFile
+    tracefn "Analyzing %s" dependenciesFile
     cfg.Resolve(force,Nuget.NugetDiscovery)
 
-/// Updates the lockfile with the analyzed dependencies from the packageFile.
+/// Updates the lockfile with the analyzed dependencies from the Dependencies file.
 let Update(force, packageFile, lockFile) = 
     let resolution = Create(force,packageFile)
     let errors = extractErrors resolution
     if errors = "" then
         File.WriteAllText(lockFile, format resolution)
-        printfn "Lockfile written to %s" lockFile
+        tracefn "Lockfile written to %s" lockFile
     else
         failwith <| "Could not resolve dependencies." + Environment.NewLine + errors
