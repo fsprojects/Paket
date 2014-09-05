@@ -14,17 +14,20 @@ type VersionRange =
     | Maximum of SemVerInfo
     | LessThan of SemVerInfo
     | Range of fromB : Bound * from : SemVerInfo * _to : SemVerInfo * _toB : Bound
-    /// Checks wether the given version is in the version range
-    member this.IsInRange(version:string) =
-        this.IsInRange(SemVer.parse version)
-
+    
     /// Checks wether the given version is in the version range
     member this.IsInRange(version:SemVerInfo) =
         match this with
         | Latest -> true
-        | Minimum v -> v <= version
         | Specific v -> v = version
-        | Range(_, min, max, _) -> version >= min && version < max
+        | Minimum v -> v <= version
+        | GreaterThan v -> v < version
+        | Maximum v -> v >= version
+        | LessThan v -> v > version
+        | Range(fromB, from, _to, _toB) -> 
+            let fromCompare = match fromB with | Closed -> (>=) | Open -> (>)
+            let _toCompare  = match _toB  with | Closed -> (<=) | Open -> (<)
+            fromCompare version from && _toCompare version _to
 
     static member AtLeast version = Minimum(SemVer.parse version)
 

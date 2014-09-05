@@ -79,11 +79,11 @@ let Resolve(force, discovery : IDiscovery, rootDependencies:Package seq) =
                     discovery.GetVersions(originalPackage.Source,resolvedName) 
                     |> Async.RunSynchronously
                     |> Seq.toList
+                    |> List.map SemVer.parse
 
                 let versions =                
                     allVersions
                     |> List.filter originalPackage.VersionRange.IsInRange
-                    |> List.map SemVer.parse
 
                 if versions = [] then
                     failwithf "No package found which matches %s %A.%sVersion available: %A" originalPackage.Name originalPackage.VersionRange Environment.NewLine allVersions
