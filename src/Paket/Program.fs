@@ -4,7 +4,7 @@ module Paket.Program
 open System
 open Nessos.UnionArgParser
 
-type Comnmand =
+type Command =
     | Install
     | Update
     | Outdated
@@ -35,10 +35,10 @@ let results =
     try
         let results = parser.Parse(cmdArgs.[1..])
         let command =
-            if results.Contains <@ CLIArguments.Install @> then Comnmand.Install
-            elif results.Contains <@ CLIArguments.Update @> then Comnmand.Update
-            elif results.Contains <@ CLIArguments.Outdated @> then Comnmand.Outdated
-            else Comnmand.Unkown
+            if results.Contains <@ CLIArguments.Install @> then Command.Install
+            elif results.Contains <@ CLIArguments.Update @> then Command.Update
+            elif results.Contains <@ CLIArguments.Outdated @> then Command.Outdated
+            else Command.Unkown
         Some(command,results)
     with
     | _ ->
@@ -59,9 +59,9 @@ try
             | None -> false
 
         match command with
-        | Comnmand.Install -> Process.Install(false,force,packageFile)
-        | Comnmand.Update ->  Process.Install(true,force,packageFile)
-        | Comnmand.Outdated -> Process.ListOutdated(packageFile)
+        | Command.Install -> Process.Install(false,force,packageFile)
+        | Command.Update ->  Process.Install(true,force,packageFile)
+        | Command.Outdated -> Process.ListOutdated(packageFile)
         | _ -> failwithf "no command given.%s" (parser.Usage())
         |> ignore
     | None -> ()

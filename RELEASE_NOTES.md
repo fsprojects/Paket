@@ -1,4 +1,7 @@
-#### 0.0.1-alpha029 - 05.09.2014
+#### 0.0.1-alpha031 - 05.09.2014
+* Typos...
+
+#### 0.0.1-alpha030 - 05.09.2014
 * Parse dependencies file without FCS
 
 #### 0.0.1-alpha028 - 05.09.2014
