@@ -72,22 +72,27 @@ type InstallInfo = {
     Condition : FramworkCondition
 }
 
-module DLLGrouping =
-    let groupDLLs (usedPackages:HashSet<string>) extracted =
-        [for package, libraries in extracted do
-            if usedPackages.Contains package.Name then
-                let libraries = libraries |> Seq.toArray
-                for (lib:FileInfo) in libraries do                    
-                    yield 
-                        { DllName = lib.Name.Replace(lib.Extension, "")
-                          Path = lib.FullName
-                          Condition = FramworkCondition.DetectFromPath lib.FullName } ]
-        |> Seq.groupBy (fun info -> info.DllName,info.Condition.FrameworkVersion.GetGroup())
-        |> Seq.groupBy (fun ((name,_),_) -> name)
-
+module DLLGrouping = 
+    let groupDLLs (usedPackages : HashSet<string>) extracted = 
+        [ for package, libraries in extracted do
+              if usedPackages.Contains package.Name then 
+                  let libraries = libraries |> Seq.toArray
+                  for (lib : FileInfo) in libraries do
+                      yield { DllName = lib.Name.Replace(lib.Extension, "")
+                              Path = lib.FullName
+                              Condition = FramworkCondition.DetectFromPath lib.FullName } ]
+        |> Seq.groupBy (fun info -> info.DllName, info.Condition.FrameworkVersion.GetGroup())
+        |> Seq.groupBy (fun ((name, _), _) -> name)
+    
     let hasClientProfile libs = libs |> Seq.exists (fun x -> x.Condition.FrameworkProfile = Client)
+    
+    let hasFramworkExtensions libs = 
+        libs |> Seq.exists (fun x -> 
+                    match x.Condition.FrameworkVersion with
+                    | FrameworkExtension _ -> true
+                    | _ -> false)
 
-    let hasExtensions libs = libs |> Seq.exists (fun x -> match x.Condition.FrameworkVersion with | FrameworkExtension _ -> true | _ -> false)
+
 
 /// Contains methods to read and manipulate project files.
 type ProjectFile = 
@@ -163,7 +168,7 @@ type ProjectFile =
                 
                 
                 let libsWithSameFrameworkVersion =
-                    if frameworkVersion = "v4.5" && not <| DLLGrouping.hasExtensions libsWithSameFrameworkVersion then
+                    if frameworkVersion = "v4.5" && not <| DLLGrouping.hasFramworkExtensions libsWithSameFrameworkVersion then
                         let copy = libsWithSameFrameworkVersion |> Seq.head
                         Array.append [|{ copy with Condition = { copy.Condition with FrameworkVersion = FrameworkExtension("v4.5","v4.5.1") } }|] libsWithSameFrameworkVersion
                     else libsWithSameFrameworkVersion
