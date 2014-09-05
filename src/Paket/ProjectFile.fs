@@ -46,7 +46,6 @@ type FramworkCondition =
 /// Contains methods to read and manipulate project file ndoes.
 type ReferenceNode = 
     { DLLName : string
-      Node : XmlNode option
       Condition : string option
       Private : bool
       HintPath : string option }
@@ -93,30 +92,12 @@ type ProjectFile =
       Document : XmlDocument
       Namespaces : XmlNamespaceManager }
     static member DefaultNameSpace = "http://schemas.microsoft.com/developer/msbuild/2003"
-    member this.GetReferences() =
-        [ for node in this.Document.SelectNodes("//ns:Project/ns:ItemGroup/ns:Reference", this.Namespaces) do
-              let hintPath = ref None
-              let privateDll = ref false
-              for c in node.ChildNodes do
-                  if c.Name.ToLower() = "hintpath" then hintPath := Some c.InnerText
-                  if c.Name.ToLower() = "private" then privateDll := true
-              yield { DLLName = node.Attributes.["Include"].InnerText.Split(',').[0]
-                      Private = !privateDll
-                      HintPath = !hintPath
-                      Condition = 
-                        match [for attr in node.Attributes -> attr.Name, attr.Value] |> List.tryFind (fun (name,v) -> name.ToLower() = "condition") with
-                        | Some(n,v) -> Some v
-                        | None -> None
-                      Node = Some node } ]
 
     member this.DeleteOldReferences(name) =
-        this.GetReferences()
-        |> Seq.filter (fun node -> node.DLLName = name) 
-        |> Seq.iter (fun targetNode -> 
-            match targetNode.Node with
-            | Some node -> node.ParentNode.RemoveChild(node) |> ignore
-            | None -> ())
-
+       for node in this.Document.SelectNodes("//ns:Project/ns:ItemGroup/ns:Reference", this.Namespaces) do
+            if node.Attributes.["Include"].InnerText.Split(',').[0] = name then
+                node.ParentNode.RemoveChild(node) |> ignore
+       
     member this.AddReference(referenceNode: ReferenceNode) =
         let firstNode =
             seq { for node in this.Document.SelectNodes("//ns:Project/ns:ItemGroup/ns:Reference", this.Namespaces) -> node }
@@ -179,8 +160,7 @@ type ProjectFile =
                         { DLLName = lib.DllName
                           HintPath = Some(Uri(this.FileName).MakeRelativeUri(Uri(lib.Path)).ToString().Replace("/", "\\"))
                           Private = true
-                          Condition = condition
-                          Node = None }
+                          Condition = condition }
                         |> this.AddReference
 
         if Utils.normalizeXml this.Document <> this.OriginalText then
