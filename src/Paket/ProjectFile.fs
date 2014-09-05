@@ -85,6 +85,10 @@ module DLLGrouping =
         |> Seq.groupBy (fun info -> info.DllName,info.Condition.FrameworkVersion.GetGroup())
         |> Seq.groupBy (fun ((name,_),_) -> name)
 
+    let hasClientProfile libs = libs |> Seq.exists (fun x -> x.Condition.FrameworkProfile = Client)
+
+    let hasExtensions libs = libs |> Seq.exists (fun x -> match x.Condition.FrameworkVersion with | FrameworkExtension _ -> true | _ -> false)
+
 /// Contains methods to read and manipulate project files.
 type ProjectFile = 
     { FileName: string
@@ -156,10 +160,10 @@ type ProjectFile =
             let libsWithSameName = group1 |> Seq.toArray
             for (_,frameworkVersion),libs in libsWithSameName do
                 let libsWithSameFrameworkVersion = libs |> Seq.toArray
-                let hasExtensions = libsWithSameFrameworkVersion |> Array.exists (fun x -> match x.Condition.FrameworkVersion with | FrameworkExtension _ -> true | _ -> false)
-                let hasClientProfile = libsWithSameFrameworkVersion |> Array.exists (fun x -> x.Condition.FrameworkProfile = Client)
+                
+                
                 let libsWithSameFrameworkVersion =
-                    if frameworkVersion = "v4.5" && (not hasExtensions) then
+                    if frameworkVersion = "v4.5" && not <| DLLGrouping.hasExtensions libsWithSameFrameworkVersion then
                         let copy = libsWithSameFrameworkVersion |> Seq.head
                         Array.append [|{ copy with Condition = { copy.Condition with FrameworkVersion = FrameworkExtension("v4.5","v4.5.1") } }|] libsWithSameFrameworkVersion
                     else libsWithSameFrameworkVersion
@@ -168,7 +172,7 @@ type ProjectFile =
                     let installIt,condition =
                         if libsWithSameName.Length = 1 then true,None else
                         let profileTypeCondition =
-                            if not hasClientProfile then "" else
+                            if not <| DLLGrouping.hasClientProfile libsWithSameFrameworkVersion then "" else
                             sprintf " And $(TargetFrameworkProfile) == '%s'" (if lib.Condition.FrameworkProfile = Client then "Client" else "")
 
                         match lib.Condition.FrameworkVersion with
