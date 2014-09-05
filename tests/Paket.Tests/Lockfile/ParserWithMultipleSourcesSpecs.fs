@@ -1,4 +1,4 @@
-﻿module Paket.LockFileParserSpecs
+﻿module Paket.LockFile.ParserWithMultipleSourcesSpecs
 
 open Paket
 open NUnit.Framework
@@ -10,15 +10,12 @@ let lockFile = """NUGET
   specs:
     Castle.Windsor (2.1)
     Castle.Windsor-log4net (3.3)
-      Castle.Windsor (>= 2.0)
-      log4net (>= 1.0)
-    Rx-Core (2.1)
-    Rx-Main (2.0)
-      Rx-Core (>= 2.1)
     log (1.2)
     log4net (1.1)
-      log (>= 1.0)
-"""   
+  remote: http://nuget.org/api/v3
+  specs:
+    Rx-Core (2.1)
+    Rx-Main (2.0)"""
 
 [<Test>]
 let ``should parse lockfile``() = 
@@ -28,14 +25,15 @@ let ``should parse lockfile``() =
     result.[0].Source |> shouldEqual (Nuget "http://nuget.org/api/v2")
     result.[0].Name |> shouldEqual "Castle.Windsor"
     result.[0].VersionRange |> shouldEqual (VersionRange.Exactly "2.1")
-    result.[0].DirectDependencies |> shouldEqual []
 
     result.[1].Source |> shouldEqual (Nuget "http://nuget.org/api/v2")
     result.[1].Name |> shouldEqual "Castle.Windsor-log4net"
     result.[1].VersionRange |> shouldEqual (VersionRange.Exactly "3.3")
-    result.[1].DirectDependencies |> shouldEqual ["Castle.Windsor"; "log4net"]
     
-    result.[5].Source |> shouldEqual (Nuget "http://nuget.org/api/v2")
-    result.[5].Name |> shouldEqual "log4net"
-    result.[5].VersionRange |> shouldEqual (VersionRange.Exactly "1.1")
-    result.[5].DirectDependencies |> shouldEqual ["log"]
+    result.[4].Source |> shouldEqual (Nuget "http://nuget.org/api/v3")
+    result.[4].Name |> shouldEqual "Rx-Core"
+    result.[4].VersionRange |> shouldEqual (VersionRange.Exactly "2.1")
+
+    result.[5].Source |> shouldEqual (Nuget "http://nuget.org/api/v3")
+    result.[5].Name |> shouldEqual "Rx-Main"
+    result.[5].VersionRange |> shouldEqual (VersionRange.Exactly "2.0")

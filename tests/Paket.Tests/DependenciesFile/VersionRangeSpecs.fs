@@ -1,4 +1,4 @@
-﻿module Paket.PackagesFileVersionRangeSpecs
+﻿module Paket.DependenciesFile.VersionRangeSpecs
 
 open Paket
 open NUnit.Framework

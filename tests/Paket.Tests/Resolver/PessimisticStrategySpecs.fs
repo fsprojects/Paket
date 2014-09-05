@@ -1,4 +1,4 @@
-module Paket.PessimisticResolverSpecs
+module Paket.Resolver.PessimisticStrategySpecs
 
 open Paket
 open NUnit.Framework

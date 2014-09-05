@@ -1,4 +1,4 @@
-module Paket.LoadConfigSpecs
+module Paket.DependenciesFile.ParserSpecs
 
 open Paket
 open NUnit.Framework

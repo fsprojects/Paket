@@ -1,4 +1,4 @@
-﻿module Paket.LockFileGenerationSpecs
+﻿module Paket.LockFile.GenerationWithMutlipleSourcesSpecs
 
 open Paket
 open NUnit.Framework
@@ -9,6 +9,8 @@ let config1 = """
 source "http://nuget.org/api/v2"
 
 nuget "Castle.Windsor-log4net" "~> 3.2"
+
+source "http://nuget.org/api/v3"
 nuget "Rx-Main" "~> 2.0"
 """
 
@@ -33,12 +35,14 @@ let expected = """NUGET
     Castle.Windsor-log4net (3.3)
       Castle.Windsor (>= 2.0)
       log4net (>= 1.0)
-    Rx-Core (2.1)
-    Rx-Main (2.0)
-      Rx-Core (>= 2.1)
     log (1.2)
     log4net (1.1)
-      log (>= 1.0)"""
+      log (>= 1.0)
+  remote: http://nuget.org/api/v3
+  specs:
+    Rx-Core (2.1)
+    Rx-Main (2.0)
+      Rx-Core (>= 2.1)"""
 
 [<Test>]
 let ``should generate lock file``() = 
