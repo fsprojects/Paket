@@ -12,26 +12,22 @@ It enables precise and predictable control over what packages the projects withi
 Getting Started
 ---------------
 
-1. Specify the version-rules of all dependencies used in your application in a `packages.fsx` file in your project's root:
+Specify the version-rules of all dependencies used in your application in a `packages.fsx` file in your project's root:
 
     source "http://nuget.org/api/v2"
 
     nuget "Castle.Windsor-log4net" "~> 3.2"
     nuget "Rx-Main" "~> 2.0"
 
-[More details about the packages file.](packages_file.html)
-
-2. Install all of the required packages from your specified sources:
+Install all of the required packages from your specified sources:
 
     [lang=batchfile]
     $ paket install
 
-The [install command](paket_install.html) will analyze your [packages file](packages_file.html) and generate a [lockfile (`packages.lock`)](lockfile.html) file alongside it.
+The [install command](paket_install.html) will analyze your [packages file (`packages.fsx`)](packages_file.html) and generate a [lockfile (`packages.lock`)](lockfile.html) file alongside it.
 If the lockfile already exists then it will not be regenerated.
 
-3. Both `packages.fsx` and `packages.lock` should be committed to your version control system.
-
-[More details about the Lockfile.](lockfile.html)
+Both `packages.fsx` and `packages.lock` should be committed to your version control system.
 
 Contributing and copyright
 --------------------------
