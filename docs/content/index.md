@@ -4,7 +4,7 @@ What is Paket?
 First of all: Paket is work in progress!
 
 Paket is a package manager for .NET and mono projects. It's inspired by [bundler][bundler], but designed to work well with [NuGet][nuget] packages. 
-It allows you to track and install the exact package versions that are needed. More details are in the [FAQs](faq.html).
+It enables precise and predictable control over what packages the projects within your application reference. More details are in the [FAQs](faq.html).
 
   [bundler]: http://bundler.io/
   [nuget]: https://www.nuget.org/ 
@@ -12,7 +12,7 @@ It allows you to track and install the exact package versions that are needed. M
 Getting Started
 ---------------
 
-Specify your dependencies in a `packages.fsx` file in your project's root:
+1. Specify the version-rules of all dependencies used in your application in a `packages.fsx` file in your project's root:
 
     source "http://nuget.org/api/v2"
 
@@ -21,14 +21,15 @@ Specify your dependencies in a `packages.fsx` file in your project's root:
 
 [More details about the packages file.](packages_file.html)
 
-Install all of the required packages from your specified sources:
+2. Install all of the required packages from your specified sources:
 
     [lang=batchfile]
     $ paket install
 
-The [install command](paket_install.html) will analyze your package definitions and generate a `package.lock` file.
+The [install command](paket_install.html) will analyze your [packages file](packages_file.html) and generate a [lockfile (`packages.lock`)](lockfile.html) file alongside it.
 If the lockfile already exists then it will not be regenerated.
-You should commit `packages.fsx` and `package.lock` to your version control system.
+
+3. Both `packages.fsx` and `packages.lock` should be committed to your version control system.
 
 [More details about the Lockfile.](lockfile.html)
 
@@ -36,8 +37,8 @@ Contributing and copyright
 --------------------------
 
 The project is hosted on [GitHub][gh] where you can [report issues][issues], fork 
-the project and submit pull requests. If you're adding new public API, please also 
-consider adding [samples][content] that can be turned into a documentation. You might
+the project and submit pull requests. If you're adding a new public API, please also 
+consider adding [samples][content] that can be turned into documentation. You might
 also want to read [library design notes][readme] to understand how it works.
 
 The library is available under MIT license, which allows modification and 
