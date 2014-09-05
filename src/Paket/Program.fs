@@ -14,7 +14,7 @@ type CLIArguments =
     | [<First>][<NoAppSettings>][<CustomCommandLine("install")>] Install
     | [<First>][<NoAppSettings>][<CustomCommandLine("update")>] Update
     | [<First>][<NoAppSettings>][<CustomCommandLine("outdated")>] Outdated
-    | Package_File of string
+    | Dependencies_File of string
     | Force
 with
     interface IArgParserTemplate with
@@ -23,7 +23,7 @@ with
             | Install -> "installs all packages."
             | Update -> "updates the lockfile and installs all packages."
             | Outdated -> "displays information about new packages."
-            | Package_File _ -> "specify a dependency definition."
+            | Dependencies_File _ -> "specify a dependency definition."
             | Force -> "specify a dependency definition."
 
 
@@ -49,7 +49,7 @@ try
     match results with
     | Some(command,results) ->
         let packageFile = 
-            match results.TryGetResult <@ CLIArguments.Package_File @> with
+            match results.TryGetResult <@ CLIArguments.Dependencies_File @> with
             | Some x -> x
             | _ -> "Dependencies"
 

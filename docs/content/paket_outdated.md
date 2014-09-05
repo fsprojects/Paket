@@ -4,8 +4,8 @@ paket outdated
 Lists all dependencies that have newer versions available.
 
     [lang=batchfile]
-    $ paket outdated [--package-file=FILE]
+    $ paket outdated [--dependencies-file=FILE]
 
 Options:
 
-  `--package-file`:  Use the specified file instead of `Dependencies`.
+  `--dependencies-file`:  Use the specified file instead of `Dependencies`.
