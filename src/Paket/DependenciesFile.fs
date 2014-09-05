@@ -5,7 +5,7 @@ open System.IO
 open Paket
 
 /// [omit]
-module ConfigHelpers = 
+module DependenciesFileParser = 
 
     let parseVersionRange (text : string) : VersionRange = 
         // TODO: Make this pretty
@@ -57,14 +57,14 @@ module ConfigHelpers =
         |> snd
         |> List.rev
 
-/// Allows to parse and analyze packages.fsx files.
-type Config(packages : Package seq) = 
+/// Allows to parse and analyze Dependencies files.
+type DependenciesFile(packages : Package seq) = 
     let packages = packages |> Seq.toList
     let dependencyMap = Map.ofSeq (packages |> Seq.map (fun p -> p.Name, p.VersionRange))
     member __.DirectDependencies = dependencyMap
     member __.Packages = packages
     member __.Resolve(force, discovery : IDiscovery) = Resolver.Resolve(force, discovery, packages)
-    static member FromCode(code:string) : Config = 
-        Config(ConfigHelpers.parseDependenciesFile <| code.Replace("\r\n","\n").Replace("\r","\n").Split('\n'))
-    static member ReadFromFile fileName : Config = 
-        Config(ConfigHelpers.parseDependenciesFile <| File.ReadAllLines fileName)
+    static member FromCode(code:string) : DependenciesFile = 
+        DependenciesFile(DependenciesFileParser.parseDependenciesFile <| code.Replace("\r\n","\n").Replace("\r","\n").Split('\n'))
+    static member ReadFromFile fileName : DependenciesFile = 
+        DependenciesFile(DependenciesFileParser.parseDependenciesFile <| File.ReadAllLines fileName)

@@ -112,7 +112,7 @@ let Parse(lines : string seq) =
 
 /// Analyzes the dependencies from the packageFile.
 let Create(force,packageFile) = 
-    let cfg = Config.ReadFromFile packageFile
+    let cfg = DependenciesFile.ReadFromFile packageFile
     cfg.Resolve(force,Nuget.NugetDiscovery)
 
 /// Updates the lockfile with the analyzed dependencies from the packageFile.
