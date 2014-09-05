@@ -22,7 +22,7 @@ let extractErrors (resolved : PackageResolution) =
             | Conflict(c1,c2) ->
                 let d1 = 
                     match c1 with
-                    | FromRoot _ -> "Package-File"
+                    | FromRoot _ -> "Dependencies file"
                     | FromPackage d -> 
                         let v1 = 
                             match d.Defining.VersionRange with
@@ -31,7 +31,7 @@ let extractErrors (resolved : PackageResolution) =
      
                 let d2 = 
                     match c2 with
-                    | FromRoot _ -> "Package-File"
+                    | FromRoot _ -> "Dependencies file"
                     | FromPackage d -> 
                         let v1 = 
                             match d.Defining.VersionRange with
