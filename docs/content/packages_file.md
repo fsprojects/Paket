@@ -32,8 +32,8 @@ The [Lockfile](lockfile.html) will respect these settings.
 NuGet-style pessimistic version constraints
 -------------------------------------------
 
-NuGet uses a pessimistic versiion resolution strategy. In order to make the transition easier Paket allows you to use NuGet's dependency resolution by prefixing your version constraint with *!*.
+NuGet uses a pessimistic versiion resolution strategy. In order to make the transition easier Paket allows you to use NuGet's dependency resolution by prefixing your version constraint with **!**.
 
     source "http://nuget.org/api/v2"
 
-    nuget "Nancy.Bootstrappers.Windsor" "!~> 0.23"
+    nuget "Nancy.Bootstrappers.Windsor" "!~> 0.23" // use pessimistic version resolver
