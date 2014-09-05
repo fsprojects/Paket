@@ -3,6 +3,7 @@
 open System
 open System.IO
 open System.Xml
+open System.Collections.Generic
 
 /// The Framework version.
 type FrameworkVersionType =
@@ -65,11 +66,24 @@ type ReferenceNode =
                       yield x.Inner()
                       yield "    </Reference>" ])
 
-type private InstallInfo = {
+type InstallInfo = {
     DllName : string
     Path : string
     Condition : FramworkCondition
 }
+
+module DLLGrouping =
+    let groupDLLs (usedPackages:HashSet<string>) extracted =
+        [for package, libraries in extracted do
+            if usedPackages.Contains package.Name then
+                let libraries = libraries |> Seq.toArray
+                for (lib:FileInfo) in libraries do                    
+                    yield 
+                        { DllName = lib.Name.Replace(lib.Extension, "")
+                          Path = lib.FullName
+                          Condition = FramworkCondition.DetectFromPath lib.FullName } ]
+        |> Seq.groupBy (fun info -> info.DllName,info.Condition.FrameworkVersion.GetGroup())
+        |> Seq.groupBy (fun ((name,_),_) -> name)
 
 /// Contains methods to read and manipulate project files.
 type ProjectFile = 
@@ -132,25 +146,12 @@ type ProjectFile =
 
         firstNode.ParentNode.AppendChild(copy) |> ignore
 
-    member this.UpdateReferences(extracted,usedPackages:System.Collections.Generic.HashSet<string>) =
-        for _, libraries in extracted do            
-            let libraries = libraries |> Seq.toArray
+    member this.UpdateReferences(extracted,usedPackages:HashSet<string>) =
+        for _, libraries in extracted do
             for (lib:FileInfo) in libraries do                                       
                 this.DeleteOldReferences (lib.Name.Replace(lib.Extension, ""))
 
-        let installInfos =
-            [for package, libraries in extracted do
-                if usedPackages.Contains package.Name then
-                    let libraries = libraries |> Seq.toArray
-                    for (lib:FileInfo) in libraries do
-                        let relativePath = Uri(this.FileName).MakeRelativeUri(Uri(lib.FullName)).ToString() 
-                        yield 
-                            { DllName = lib.Name.Replace(lib.Extension, "")
-                              Path = relativePath
-                              Condition = FramworkCondition.DetectFromPath relativePath } ]
-            |> Seq.groupBy (fun info -> info.DllName,info.Condition.FrameworkVersion.GetGroup())
-            |> Seq.groupBy (fun ((name,_),_) -> name)
-
+        let installInfos = DLLGrouping.groupDLLs usedPackages extracted
         for _,group1 in installInfos do
             let libsWithSameName = group1 |> Seq.toArray
             for (_,frameworkVersion),libs in libsWithSameName do
@@ -178,7 +179,7 @@ type ProjectFile =
                     
                     if installIt then                        
                         { DLLName = lib.DllName
-                          HintPath = Some(lib.Path.Replace("/", "\\"))
+                          HintPath = Some(Uri(this.FileName).MakeRelativeUri(Uri(lib.Path)).ToString().Replace("/", "\\"))
                           Private = true
                           Condition = condition
                           Node = None }
