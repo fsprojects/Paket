@@ -1,4 +1,7 @@
 #### 0.0.1-alpha031 - 05.09.2014
+* Change the file names to new naming idea - https://github.com/fsprojects/Paket/issues/59
+
+#### 0.0.1-alpha031 - 05.09.2014
 * Typos...
 
 #### 0.0.1-alpha030 - 05.09.2014
