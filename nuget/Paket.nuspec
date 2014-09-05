@@ -18,7 +18,6 @@
   </metadata>
   <files>
     <file src="..\bin\Paket.exe" target="tools" />
-    <file src="..\bin\FSharp.Compiler.Service.dll" target="tools" />
     <file src="..\bin\FSharp.Core.dll" target="tools" />
     <file src="..\bin\FSharp.Core.optdata" target="tools" />
     <file src="..\bin\FSharp.Core.sigdata" target="tools" />
