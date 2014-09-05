@@ -175,7 +175,8 @@ Target "NuGet" (fun _ ->
 // Generate the documentation
 
 Target "GenerateDocs" (fun _ ->
-    executeFSIWithArgs "docs/tools" "generate.fsx" ["--define:RELEASE"] [] |> ignore
+    if not <| executeFSIWithArgs "docs/tools" "generate.fsx" ["--define:RELEASE"] [] then
+      failwith "generating docs failed"
 )
 
 // --------------------------------------------------------------------------------------
