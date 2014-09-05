@@ -50,21 +50,6 @@ type ReferenceNode =
       Condition : string option
       Private : bool
       HintPath : string option }
-    member x.Inner() = 
-        String.Join(Environment.NewLine, 
-                    [ match x.HintPath with
-                      | Some path -> yield sprintf "      <HintPath>%s</HintPath>" path
-                      | _ -> ()
-                      if x.Private then yield "      <Private>True</Private>"])
-    override x.ToString() = 
-        let condition =
-            match x.Condition with
-            | Some c -> sprintf " Condition=\"%s\"" c
-            | _ -> ""
-        String.Join(Environment.NewLine, 
-                    [ yield sprintf "    <Reference Include=\"%s\"%s>" x.DLLName condition
-                      yield x.Inner()
-                      yield "    </Reference>" ])
 
 type InstallInfo = {
     DllName : string
