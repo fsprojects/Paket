@@ -7,6 +7,7 @@ open System.Net
 open Newtonsoft.Json
 open Ionic.Zip
 open System.Xml
+open System.Collections.Generic
 
 let loadNuGetOData raw =
     let doc = XmlDocument()
@@ -29,15 +30,28 @@ let getAllVersionsFromNugetOData (nugetURL, package) =
                }
     }
     
+let private versionDataCache = Dictionary<_, _>()
+
 /// Gets versions of the given package.
-let getAllVersions (nugetURL, package) = 
+/// Caches calls in RAM - do not cache on disk!
+let getAllVersions (nugetURL, package) =     
     // we cannot cache this
     async { 
-        let! raw = sprintf "%s/package-versions/%s" nugetURL package |> safeGetFromUrl
-        match raw with
-        | None -> let! first = getAllVersionsFromNugetOData (nugetURL, package)
-                  return first
-        | Some data -> return JsonConvert.DeserializeObject<string []>(data) |> Array.toSeq
+        let key = nugetURL + package
+        match versionDataCache.TryGetValue key with
+        | true, data -> return data
+        | _ -> 
+            let! raw = sprintf "%s/package-versions/%s" nugetURL package |> safeGetFromUrl
+
+            match raw with
+            | None -> 
+                let! result = getAllVersionsFromNugetOData (nugetURL, package)
+                versionDataCache.Add(key, result)
+                return result
+            | Some data -> 
+                let result = JsonConvert.DeserializeObject<string []>(data) |> Array.toSeq
+                versionDataCache.Add(key, result)
+                return result
     }
 
 /// Parses NuGet version ranges.
@@ -140,6 +154,8 @@ let private loadFromCacheOrOData force fileName nugetURL package resolverStrateg
     }
 
 
+/// Tries to get download link and direct dependencies from Nuget
+/// Caches calls into json file
 let getDetailsFromNuget force nugetURL package resolverStrategy version = 
     async {
         try            
@@ -154,22 +170,21 @@ let getDetailsFromNuget force nugetURL package resolverStrategy version =
 
 
 /// Downloads the given package to the NuGet Cache folder
-let DownloadPackage(source, name, resolverStrategy, version, force) = async { 
-        let targetFileName = Path.Combine(CacheFolder,name + "." + version + ".nupkg")
+let DownloadPackage(source, name, resolverStrategy, version, force) = 
+    async { 
+        let targetFileName = Path.Combine(CacheFolder, name + "." + version + ".nupkg")
         let targetFile = FileInfo targetFileName
         if not force && targetFile.Exists && targetFile.Length > 0L then 
             tracefn "%s %s already downloaded" name version
-            return targetFileName 
-        else
+            return targetFileName
+        else 
             // discover the link on the fly
-            let! (link,_) = getDetailsFromNuget force source name resolverStrategy version
-        
+            let! (link, _) = getDetailsFromNuget force source name resolverStrategy version
             use client = new WebClient()
             tracefn "Downloading %s %s to %s" name version targetFileName
             // TODO: Set credentials
             client.DownloadFileAsync(Uri link, targetFileName)
             let! _ = Async.AwaitEvent(client.DownloadFileCompleted)
-
             return targetFileName
     }
 
