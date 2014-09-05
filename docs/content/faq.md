@@ -24,6 +24,10 @@ whenever you want to change the framework version you have to reinstall your NuG
 
 Paket adds references to all of them; but with *Condition* properties filtering them based on the currently selected *TargetFramework*.
 
+**Q:** Why does Paket use a different package resolution strategy than NuGet?
+
+**A:** Paket tries to embrace [SemVer](http://semver.org/) while NuGet uses a pessimistic version resolution strategy. You can always prefix your version constraints with *!* if you need to use [NuGet compatibility](packages_file.html).
+
 **Q:** When I resolve the dependencies from NuGet.org it is really slow. Why is that?
 
 **A:** Paket uses the NuGet oData API to discover package dependencies. Unfortunately this API is very slow. 
