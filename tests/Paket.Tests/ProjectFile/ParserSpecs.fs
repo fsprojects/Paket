@@ -1,4 +1,4 @@
-﻿module Paket.ProjectFileSpecs
+﻿module Paket.ProjectFile.ParserSpecs
 
 open Paket
 open NUnit.Framework
@@ -6,7 +6,7 @@ open FsUnit
 
 [<Test>]
 let ``should detect reference nodes``() =
-    let references = ProjectFile.Load("./TestData/Project1.fsprojtest").GetReferences()
+    let references = ProjectFile.Load("./ProjectFile/TestData/Project1.fsprojtest").GetReferences()
 
     references.Length |> shouldEqual 4
     references.[0].DLLName |> shouldEqual "mscorlib"
@@ -27,7 +27,7 @@ let ``should detect reference nodes``() =
 
 [<Test>]
 let ``should update single nodes``() =
-    let project = ProjectFile.Load "./TestData/Project1.fsprojtest"
+    let project = ProjectFile.Load "./ProjectFile/TestData/Project1.fsprojtest"
 
     let node = (project.GetReferences()).[2]
     let newNode = { node with HintPath = Some @"..\..\packages\NUnit.2.7.5\lib\nunit.framework.dll" }
@@ -42,7 +42,7 @@ let ``should update single nodes``() =
 
 [<Test>]
 let ``should add single node``() =
-    let project = ProjectFile.Load "./TestData/Project1.fsprojtest"
+    let project = ProjectFile.Load "./ProjectFile/TestData/Project1.fsprojtest"
 
     let hintPath = @"..\..\packagesFAKE\lib\Fake.Core.dll"
     let newNode = { DLLName = "FAKE"; HintPath = Some hintPath; Private = false; Node = None; Condition = None }

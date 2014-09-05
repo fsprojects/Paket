@@ -1,4 +1,4 @@
-﻿module Paket.ProjectFileConditionSpecs
+﻿module Paket.ProjectFile.ConditionSpecs
 
 open Paket
 open NUnit.Framework

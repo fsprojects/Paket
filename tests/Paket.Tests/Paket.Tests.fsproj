@@ -74,15 +74,15 @@
     <Compile Include="LockFile\GeneratorWithMutlipleSourcesSpecs.fs" />
     <Compile Include="LockFile\ParserSpecs.fs" />
     <Compile Include="LockFile\ParserWithMultipleSourcesSpecs.fs" />
-    <None Include="TestData\Project1.fsprojtest">
+    <None Include="ProjectFile\TestData\Project1.fsprojtest">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Include="TestData\ProjectWithConditions.fsprojtest">
+    <None Include="ProjectFile\TestData\ProjectWithConditions.fsprojtest">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <Compile Include="ProjectFileConditionSpecs.fs" />
-    <Compile Include="ProjectFileSpecs.fs" />
-    <Compile Include="ProjectFileWithConditionsSpecs.fs" />
+    <Compile Include="ProjectFile\ConditionSpecs.fs" />
+    <Compile Include="ProjectFile\ParserSpecs.fs" />
+    <Compile Include="ProjectFile\ManipulationSpecs.fs" />
     <None Include="References.list" />
   </ItemGroup>
   <ItemGroup>

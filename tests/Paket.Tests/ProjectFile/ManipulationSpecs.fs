@@ -1,4 +1,4 @@
-﻿module Paket.ProjectFileWithConditionsSpecs
+﻿module Paket.ProjectFile.ManipulationSpecs
 
 open Paket
 open NUnit.Framework
@@ -6,7 +6,7 @@ open FsUnit
 
 [<Test>]
 let ``should detect reference nodes``() =
-    let references = ProjectFile.Load("./TestData/ProjectWithConditions.fsprojtest").GetReferences()
+    let references = ProjectFile.Load("./ProjectFile/TestData/ProjectWithConditions.fsprojtest").GetReferences()
 
     references.Length |> shouldEqual 6
 
@@ -25,7 +25,7 @@ let ``should detect reference nodes``() =
 
 [<Test>]
 let ``should update correct node``() =
-    let project = ProjectFile.Load "./TestData/ProjectWithConditions.fsprojtest"
+    let project = ProjectFile.Load "./ProjectFile/TestData/ProjectWithConditions.fsprojtest"
 
     let node = (project.GetReferences()).[2]
     let newNode = { node with HintPath = Some @"..\..\packages\FSharp.Core\lib\net20\FSharp.Core.dll" }
