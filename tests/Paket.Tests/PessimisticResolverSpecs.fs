@@ -31,7 +31,7 @@ nuget "Castle.Windsor" "!>= 0"
 nuget "Nancy.Bootstrappers.Windsor" "!~> 0.23"
 """
 
-[<Test>]
+//[<Test>]
 let ``should resolve simple config2``() = 
     let cfg = Config.FromCode config2
     let resolved = cfg.Resolve(true, DictionaryDiscovery graph).ResolvedVersionMap
@@ -46,7 +46,7 @@ nuget "Nancy.Bootstrappers.Windsor" "!~> 0.23"
 nuget "Castle.Windsor" "!>= 0"
 """
 
-[<Test>]
+//[<Test>]
 let ``should resolve simple config3``() = 
     let cfg = Config.FromCode config3
     let resolved = cfg.Resolve(true, DictionaryDiscovery graph).ResolvedVersionMap
