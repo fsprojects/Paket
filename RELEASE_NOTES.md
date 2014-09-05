@@ -1,3 +1,6 @@
+#### 0.0.1-alpha033 - 05.09.2014
+* First self build without FCS
+
 #### 0.0.1-alpha032 - 05.09.2014
 * Change the file names to new naming idea - https://github.com/fsprojects/Paket/issues/59
 
