@@ -43,15 +43,15 @@ let private addDependency package dependencies newDependency =
 
 /// Resolves all direct and indirect dependencies
 let Resolve(force, discovery : IDiscovery, rootDependencies:Package seq) =    
-    let rec analyzeGraph processed (dependencies:Map<string,Shrinked>) =
-        if Map.isEmpty dependencies then processed else
-        let current = Seq.head dependencies
+    let rec analyzeGraph processed (openDependencies:Map<string,Shrinked>) =
+        if Map.isEmpty openDependencies then processed else
+        let current = Seq.head openDependencies
         let resolvedName = current.Key
 
         match current.Value with
         | Shrinked.Conflict(c1,c2) -> 
             let resolved = { processed with ResolvedVersionMap = Map.add resolvedName (ResolvedDependency.Conflict(c1,c2)) processed.ResolvedVersionMap }
-            analyzeGraph resolved (Map.remove resolvedName dependencies)
+            analyzeGraph resolved (Map.remove resolvedName openDependencies)
         | Ok dependency -> 
             let originalPackage = dependency.Referenced
             match Map.tryFind resolvedName processed.ResolvedVersionMap with
@@ -66,11 +66,11 @@ let Resolve(force, discovery : IDiscovery, rootDependencies:Package seq) =
                                     |> Map.remove resolvedName
                                     |> Map.add resolvedName (ResolvedDependency.Conflict(dependency',dependency))  }
                         
-                        dependencies
+                        openDependencies
                         |> Map.remove resolvedName
                         |> analyzeGraph resolved
                     else                    
-                        dependencies
+                        openDependencies
                         |> Map.remove resolvedName
                         |> analyzeGraph processed
                 | _ -> failwith "Not allowed"
@@ -115,7 +115,7 @@ let Resolve(force, discovery : IDiscovery, rootDependencies:Package seq) =
                                                 FromPackage { Defining = d.Defining
                                                               Referenced = resolvedPackage })
 
-                let mutable dependencies = dependencies
+                let mutable dependencies = openDependencies
 
                 for dependentPackage in dependentPackages do
                     let newDependency = 
