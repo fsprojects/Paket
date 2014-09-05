@@ -69,6 +69,7 @@ module DLLGrouping =
         |> Seq.groupBy (fun ((name, _), _) -> name)
     
     let hasClientProfile libs = libs |> Seq.exists (fun x -> x.Condition.FrameworkProfile = Client)
+    let hasFulleProfile libs = libs |> Seq.exists (fun x -> x.Condition.FrameworkProfile = Full)
     
     let hasFramworkExtensions libs = 
         libs |> Seq.exists (fun x -> 
@@ -81,6 +82,14 @@ module DLLGrouping =
             let copy = libs |> Seq.head
             Seq.append 
                 [ { copy with Condition = { copy.Condition with FrameworkVersion = FrameworkExtension("v4.5", "v4.5.1") } } ] 
+                libs
+        else libs
+
+    let handleClientFrameworks frameworkVersion libs = 
+        if frameworkVersion = "v4.0" && hasClientProfile libs && not <| hasFulleProfile libs then 
+            let copy = libs |> Seq.head
+            Seq.append 
+                [ { copy with Condition = { copy.Condition with FrameworkProfile = Full } } ] 
                 libs
         else libs
 
@@ -140,6 +149,7 @@ type ProjectFile =
                 let libsWithSameFrameworkVersion = 
                     libs 
                     |> DLLGrouping.handleFrameworkExtensions frameworkVersion 
+                    |> DLLGrouping.handleClientFrameworks frameworkVersion 
                     |> Seq.toArray              
 
                 for lib in libsWithSameFrameworkVersion do
