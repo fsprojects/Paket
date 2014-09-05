@@ -17,6 +17,10 @@ let ``should detect framework version from path``() =
 
 [<Test>]
 let ``should detect client framework version from path``() =
-    // this is a temporary hack
+    // TODO: this is a temporary hack and needs to be fixed
     FramworkCondition.DetectFromPath(@"..\packages\Castle.Core\lib\net40-client\Castle.Core.dll").Framework |> shouldEqual (Framework "v4.0")
+
+[<Test>]
+let ``should detect net40-full as net40``() =
+    FramworkCondition.DetectFromPath(@"..\packages\Log4Net\lib\net40-full\log4net.dll").Framework |> shouldEqual (Framework "v4.0")
    
