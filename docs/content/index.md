@@ -27,7 +27,9 @@ Install all of the required packages from your specified sources:
 The [install command](paket_install.html) will analyze your [Dependencies](Dependencies_file.html) file and generate a [Lockfile (`Depedencies.lock`)](lockfile.html) file alongside it.
 If the lockfile already exists, then it will not be regenerated.
 
-Both `Dependencies` and `Dependencies.lock` should be committed to your version control system.
+You may have a References.list file next to your VS projects to have Paket automatically add references for the package IDs noted in that file.
+
+All the involved files (`Dependencies`, `Dependencies.lock` and `References.list`) should be committed to your version control system. 
 
 Contributing and copyright
 --------------------------
