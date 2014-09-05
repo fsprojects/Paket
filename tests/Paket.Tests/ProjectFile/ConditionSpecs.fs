@@ -31,3 +31,7 @@ let ``should detect net40-full as net40``() =
    
     FramworkCondition.DetectFromPath(@"..\packages\log4net\lib\net40\log4net.dll").FrameworkVersion |> shouldEqual (Framework "v4.0")
     FramworkCondition.DetectFromPath(@"..\packages\log4net\lib\net40\log4net.dll").FrameworkProfile |> shouldEqual Full
+
+[<Test>]
+let ``should detect net451 as special case of 4.5``() =
+    FramworkCondition.DetectFromPath(@"..\Rx-Main\lib\net451\Rx.dll").FrameworkVersion |> shouldEqual (FrameworkExtension("v4.5","v4.5.1") )

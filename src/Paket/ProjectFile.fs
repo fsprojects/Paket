@@ -9,6 +9,13 @@ type FrameworkVersionType =
 | Unknown
 | All
 | Framework of string
+| FrameworkExtension of string * string
+    member x.GetGroup() =
+        match x with
+        | Unknown -> "Unknown"
+        | All -> "All"
+        | Framework v -> v
+        | FrameworkExtension(v,_) -> v
 
 /// The Framework profile.
 type FrameworkProfileType =
@@ -31,6 +38,7 @@ type FramworkCondition =
         elif path.Contains "lib/net40-full/" then { FrameworkVersion = Framework "v4.0"; FrameworkProfile = Full }
         elif path.Contains "lib/net40-client/" then { FrameworkVersion = Framework "v4.0" ; FrameworkProfile = Client }
         elif path.Contains "lib/net45/" then { FrameworkVersion = Framework "v4.5" ; FrameworkProfile = Full }
+        elif path.Contains "lib/net451/" then { FrameworkVersion = FrameworkExtension("v4.5","v4.5.1") ; FrameworkProfile = Full }
         elif path.Contains("lib/" + fi.Name.ToLower()) then { FrameworkVersion = All ; FrameworkProfile = Full }
         else { FrameworkVersion = Unknown ; FrameworkProfile = Full }
 
@@ -140,13 +148,20 @@ type ProjectFile =
                             { DllName = lib.Name.Replace(lib.Extension, "")
                               Path = relativePath
                               Condition = FramworkCondition.DetectFromPath relativePath } ]
-            |> Seq.groupBy (fun info -> info.DllName,info.Condition.FrameworkVersion)
+            |> Seq.groupBy (fun info -> info.DllName,info.Condition.FrameworkVersion.GetGroup())
             |> Seq.groupBy (fun ((name,_),_) -> name)
 
         for _,group1 in installInfos do
             let libsWithSameName = group1 |> Seq.toArray
-            for _,libs in libsWithSameName do
+            for (_,frameworkVersion),libs in libsWithSameName do
                 let libsWithSameFrameworkVersion = libs |> Seq.toArray
+                let hasExtensions = libsWithSameFrameworkVersion |> Array.exists (fun x -> match x.Condition.FrameworkVersion with | FrameworkExtension _ -> true | _ -> false)
+                let libsWithSameFrameworkVersion =
+                    if frameworkVersion = "v4.5" && (not hasExtensions) then
+                        let copy = libsWithSameFrameworkVersion |> Seq.head
+                        Array.append [|{ copy with Condition = { copy.Condition with FrameworkVersion = FrameworkExtension("v4.5","v4.5.1") } }|] libsWithSameFrameworkVersion
+                    else libsWithSameFrameworkVersion
+
                 for lib in libsWithSameFrameworkVersion do
                     let installIt,condition =
                         if libsWithSameName.Length = 1 then true,None else
@@ -157,6 +172,7 @@ type ProjectFile =
                         match lib.Condition.FrameworkVersion with
                         | Unknown -> false,None 
                         | Framework fw -> true,Some(sprintf "$(TargetFrameworkVersion) == '%s'%s" fw profileTypeCondition)
+                        | FrameworkExtension(_,fw) -> true,Some(sprintf "$(TargetFrameworkVersion) == '%s'%s" fw profileTypeCondition)
                         | All -> true,None
 
                     
