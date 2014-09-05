@@ -208,7 +208,7 @@ Target "BuildPackage" DoNothing
 // --------------------------------------------------------------------------------------
 // Run all targets by default. Invoke 'build <Target>' to override
 
-Target "BuildAll" DoNothing
+Target "All" DoNothing
 
 "Clean"
   ==> "AssemblyInfo"
@@ -216,14 +216,21 @@ Target "BuildAll" DoNothing
   ==> "RunTests"
   ==> "CleanDocs"
   ==> "GenerateDocs"
-  ==> "BuildAll"
+  ==> "All"
   ==> "ReleaseDocs"
-  ==> "Release"
 
-"BuildAll" 
-  =?> ("SourceLink",isLocalBuild && not isMono && Pdbstr.tryFind().IsSome)
+"All" 
+#if MONO
+#else
+  =?> ("SourceLink", Pdbstr.tryFind().IsSome )
+#endif
   ==> "NuGet"
   ==> "BuildPackage"
-  ==> "Release"
 
-RunTargetOrDefault "BuildAll"
+"ReleaseDocs"
+    ==> "Release"
+
+"BuildPackage"
+    ==> "Release"
+
+RunTargetOrDefault "All"
