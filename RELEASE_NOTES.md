@@ -1,3 +1,6 @@
+#### 0.0.1-alpha035 - 05.09.2014
+* Better VersionRange tests
+
 #### 0.0.1-alpha034 - 05.09.2014
 * Fixed parameter name
 
