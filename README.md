@@ -4,8 +4,7 @@ F# ProjectScaffold
 A prototypical F# library (file system layout and tooling), recommended by the F# Software Foundation.
 
 This scaffolding can be used to generate the suggested structure of a typical F# library.
-_(NOTE: this layout needs adjusting when authoring a Type Provider. 
-For more details about doing so, please [read this.](../../wiki/Suggestions-for-Building-a-Type-Provider))_ 
+_(NOTE: this layout needs adjusting when authoring a Type Provider. In that case you should use a separate Tests solution)_ 
 
 ### Technologies 
 
