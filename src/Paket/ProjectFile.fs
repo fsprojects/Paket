@@ -52,6 +52,7 @@ type FramworkCondition =
         elif path.Contains "lib/net40-full/" then { Framework = DotNetFramework(Framework "v4.0",Full); CLRVersion = None }
         elif path.Contains "lib/net40-client/" then { Framework = DotNetFramework(Framework "v4.0",Client); CLRVersion = None }
         elif path.Contains "lib/net45/" then { Framework = DotNetFramework(Framework "v4.5",Full); CLRVersion = None }
+        elif path.Contains "lib/net45-full/" then { Framework = DotNetFramework(Framework "v4.5",Full); CLRVersion = None }
         elif path.Contains "lib/net451/" then { Framework = DotNetFramework(FrameworkExtension("v4.5","v4.5.1"),Full); CLRVersion = None }
         elif path.Contains "lib/sl3/" then { Framework = Silverlight("v3.0"); CLRVersion = None; }
         elif path.Contains "lib/sl4/" then { Framework = Silverlight("v4.0"); CLRVersion = None; }

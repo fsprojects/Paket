@@ -49,3 +49,7 @@ let ``should detect WindowsPhone version from path``() =
 [<Test>]
 let ``should detect framework version from uppercase path``() =
     FramworkCondition.DetectFromPath(@"..\packages\GitVersion.1.2.0\Lib\Net45\GitVersionCore.dll").Framework|> shouldEqual (DotNetFramework(Framework "v4.5",Full))
+
+[<Test>]
+let ``should detect net45-full``() =
+    FramworkCondition.DetectFromPath(@"..\packages\Ninject\lib\net45-full\Ninject.dll").Framework|> shouldEqual (DotNetFramework(Framework "v4.5",Full))
