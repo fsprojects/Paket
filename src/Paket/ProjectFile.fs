@@ -232,10 +232,6 @@ type ProjectFile =
             match !lastLib with
             | None -> ()
             | Some lib ->
-                let otherwiseNode = this.Document.CreateElement("Otherwise", ProjectFile.DefaultNameSpace)
-
-                let innerChooseNode = this.Document.CreateElement("Choose", ProjectFile.DefaultNameSpace)
-
                 let condition =
                     match lib.Condition.Framework with
                     | DotNetFramework _ -> "$(TargetFrameworkIdentifier) == '.NETFramework'"
@@ -264,9 +260,7 @@ type ProjectFile =
                 let itemGroup = this.Document.CreateElement("ItemGroup", ProjectFile.DefaultNameSpace)
                 itemGroup.AppendChild(reference) |> ignore
                 whenNode.AppendChild(itemGroup) |> ignore
-                innerChooseNode.AppendChild(whenNode) |> ignore
-                otherwiseNode.AppendChild(innerChooseNode) |> ignore
-                chooseNode.AppendChild(otherwiseNode) |> ignore
+                chooseNode.AppendChild(whenNode) |> ignore
 
             projectNode.AppendChild(chooseNode) |> ignore
 

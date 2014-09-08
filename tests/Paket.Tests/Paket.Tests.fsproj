@@ -116,7 +116,7 @@
         </Reference>
       </ItemGroup>
     </When>
-    <Otherwise>
+    <When Condition="$(TargetFrameworkIdentifier) == '.NETFramework'">
       <ItemGroup>
         <Reference Include="nunit.framework">
           <HintPath>..\..\packages\NUnit\lib\nunit.framework.dll</HintPath>
@@ -124,6 +124,6 @@
           <Paket>True</Paket>
         </Reference>
       </ItemGroup>
-    </Otherwise>
+    </When>
   </Choose>
 </Project>
