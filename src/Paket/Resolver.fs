@@ -89,7 +89,7 @@ let Resolve(force, discovery : IDiscovery, rootDependencies:Package seq) =
                     allVersions
                     |> List.map (fun v -> v.ToString())
                     |> fun xs -> String.Join("  " +  Environment.NewLine, xs)
-                    |> failwithf "No package found which matches %s %A.%sVersion available: %s" originalPackage.Name (originalPackage.VersionRange.ToString()) Environment.NewLine 
+                    |> failwithf "No package found which matches %s %A on %s.%sVersion available: %s" originalPackage.Name (originalPackage.VersionRange.ToString()) (originalPackage.Source.ToString()) Environment.NewLine 
 
                 let resolvedVersion = 
                     match dependency with

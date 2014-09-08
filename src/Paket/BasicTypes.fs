@@ -65,6 +65,9 @@ type ResolverStrategy =
 /// Represents the package source type.
 type PackageSource =
 | Nuget of string
+    override this.ToString() =
+        match this with
+        | Nuget url -> url
 
 /// Represents a package.
 type Package = 
