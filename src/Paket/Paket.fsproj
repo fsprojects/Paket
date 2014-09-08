@@ -111,7 +111,7 @@
         </Reference>
       </ItemGroup>
     </When>
-    <When Condition="$(TargetFrameworkIdentifier) == '.NETFramework'">
+    <Otherwise>
       <ItemGroup>
         <Reference Include="Ionic.Zip">
           <HintPath>..\..\packages\DotNetZip\lib\net20\Ionic.Zip.dll</HintPath>
@@ -119,7 +119,7 @@
           <Paket>True</Paket>
         </Reference>
       </ItemGroup>
-    </When>
+    </Otherwise>
   </Choose>
   <Choose>
     <When Condition="$(TargetFrameworkIdentifier) == '.NETFramework' And $(TargetFrameworkVersion) == 'v2.0'">
@@ -167,7 +167,7 @@
         </Reference>
       </ItemGroup>
     </When>
-    <When Condition="$(TargetFrameworkIdentifier) == '.NETFramework'">
+    <Otherwise>
       <ItemGroup>
         <Reference Include="Newtonsoft.Json">
           <HintPath>..\..\packages\Newtonsoft.Json\lib\net45\Newtonsoft.Json.dll</HintPath>
@@ -175,7 +175,7 @@
           <Paket>True</Paket>
         </Reference>
       </ItemGroup>
-    </When>
+    </Otherwise>
   </Choose>
   <Choose>
     <When Condition="$(TargetFrameworkIdentifier) == '.NETFramework' And $(TargetFrameworkVersion) == 'v3.5'">
@@ -196,7 +196,7 @@
         </Reference>
       </ItemGroup>
     </When>
-    <When Condition="$(TargetFrameworkIdentifier) == '.NETFramework'">
+    <Otherwise>
       <ItemGroup>
         <Reference Include="RestSharp">
           <HintPath>..\..\packages\RestSharp\lib\net4\RestSharp.dll</HintPath>
@@ -204,7 +204,7 @@
           <Paket>True</Paket>
         </Reference>
       </ItemGroup>
-    </When>
+    </Otherwise>
   </Choose>
   <Choose>
     <When Condition="$(TargetFrameworkIdentifier) == 'Silverlight' And $(SilverlightVersion) == 'v4.0'">
@@ -216,7 +216,7 @@
         </Reference>
       </ItemGroup>
     </When>
-    <When Condition="$(TargetFrameworkIdentifier) == 'Silverlight'">
+    <Otherwise>
       <ItemGroup>
         <Reference Include="RestSharp.Silverlight">
           <HintPath>..\..\packages\RestSharp\lib\sl4\RestSharp.Silverlight.dll</HintPath>
@@ -224,7 +224,7 @@
           <Paket>True</Paket>
         </Reference>
       </ItemGroup>
-    </When>
+    </Otherwise>
   </Choose>
   <Choose>
     <When Condition="$(TargetFrameworkIdentifier) == 'WindowsPhoneApp' And $(TargetPlatformVersion) == '7.1'">
@@ -236,7 +236,7 @@
         </Reference>
       </ItemGroup>
     </When>
-    <When Condition="$(TargetFrameworkIdentifier) == 'WindowsPhoneApp'">
+    <Otherwise>
       <ItemGroup>
         <Reference Include="RestSharp.WindowsPhone">
           <HintPath>..\..\packages\RestSharp\lib\sl4-wp71\RestSharp.WindowsPhone.dll</HintPath>
@@ -244,7 +244,7 @@
           <Paket>True</Paket>
         </Reference>
       </ItemGroup>
-    </When>
+    </Otherwise>
   </Choose>
   <Choose>
     <When Condition="$(TargetFrameworkIdentifier) == '.NETFramework' And $(TargetFrameworkVersion) == 'v3.5'">
@@ -265,7 +265,7 @@
         </Reference>
       </ItemGroup>
     </When>
-    <When Condition="$(TargetFrameworkIdentifier) == '.NETFramework'">
+    <Otherwise>
       <ItemGroup>
         <Reference Include="UnionArgParser">
           <HintPath>..\..\packages\UnionArgParser\lib\net40\UnionArgParser.dll</HintPath>
@@ -273,6 +273,6 @@
           <Paket>True</Paket>
         </Reference>
       </ItemGroup>
-    </When>
+    </Otherwise>
   </Choose>
 </Project>
