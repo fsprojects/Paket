@@ -42,7 +42,7 @@ let results =
         Some(command,results)
     with
     | _ ->
-        tracefn "Paket.exe%s%s" Environment.NewLine (parser.Usage())
+        tracefn "%s %s%s" (String.Join(" ",cmdArgs)) Environment.NewLine (parser.Usage())
         None
 
 try
