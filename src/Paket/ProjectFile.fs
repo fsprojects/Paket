@@ -6,7 +6,7 @@ open System.Xml
 open System.Collections.Generic
 
 /// The Framework version.
-type FrameworkVersionType =
+type FrameworkVersion =
 | Unknown
 | All
 | Framework of string
@@ -25,7 +25,7 @@ type FrameworkProfileType =
 
 /// Contains methods to analyze .NET Framework Conditions.
 type FramworkCondition = 
-    { FrameworkVersion : FrameworkVersionType;
+    { FrameworkVersion : FrameworkVersion;
       CLRVersion : string option;
       SilverlightVersion : string option;
       FrameworkProfile : FrameworkProfileType }

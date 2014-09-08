@@ -235,10 +235,8 @@ let NugetDiscovery =
           //TODO: Should we really be able to call these methods with invalid arguments?
           member __.GetPackageDetails(force, source, package, resolverStrategy, version) =
               match source with
-              | Nuget url -> getDetailsFromNuget force url package resolverStrategy version
-              | _ -> failwithf "invalid sourceType %A" source              
+              | Nuget url -> getDetailsFromNuget force url package resolverStrategy version         
           
           member __.GetVersions(source, package) = 
               match source with
-              | Nuget url -> getAllVersions (url, package)
-              | _ -> failwithf "invalid sourceType %A" source }
+              | Nuget url -> getAllVersions (url, package)}
