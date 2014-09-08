@@ -6,6 +6,7 @@
 
 # Use LF in the working directory by default. Override with core.autocrlf=true.
 *.fs eol=lf
+*fsi eol=lf
 
 # Visual Studio can read LF sln files, but it always writes them as CRLF.
 *.sln eol=crlf
