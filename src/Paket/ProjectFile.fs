@@ -159,9 +159,7 @@ type ProjectFile =
             if !remove then
                 node.ParentNode.RemoveChild(node) |> ignore
 
-    member this.DeleteOldReferences() =     
-        this.DeletePaketNodes()
-
+    member this.DeleteEmptyReferences() =
         this.DeleteIfEmpty("//ns:Project/ns:Choose/ns:Otherwise/ns:ItemGroup")        
         this.DeleteIfEmpty("//ns:Project/ns:Choose/ns:When/ns:ItemGroup")
         this.DeleteIfEmpty("//ns:Project/ns:Choose/ns:Otherwise")
@@ -169,7 +167,7 @@ type ProjectFile =
         this.DeleteIfEmpty("//ns:Project/ns:Choose")
 
     member this.UpdateReferences(extracted,usedPackages:HashSet<string>) =
-        this.DeleteOldReferences()
+        this.DeletePaketNodes()
 
         let projectNode =
             seq { for node in this.Document.SelectNodes("//ns:Project", this.Namespaces) -> node }
@@ -258,6 +256,8 @@ type ProjectFile =
                 chooseNode.AppendChild(otherwiseNode) |> ignore
 
             projectNode.AppendChild(chooseNode) |> ignore
+
+        this.DeleteEmptyReferences()
 
         if Utils.normalizeXml this.Document <> this.OriginalText then
             this.Document.Save(this.FileName)
