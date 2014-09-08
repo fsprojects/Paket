@@ -41,23 +41,9 @@ let getAllVersions (nugetURL, package) =
         match versionDataCache.TryGetValue key with
         | true, data -> return data
         | _ -> 
-            let! raw = sprintf "%s/package-versions/%s" nugetURL package |> safeGetFromUrl
-
-            match raw with
-            | None -> 
-                let! result = getAllVersionsFromNugetOData (nugetURL, package)
-                versionDataCache.Add(key, result)
-                return result
-            | Some data -> 
-                try
-                    let result =
-                        JsonConvert.DeserializeObject<string []>(data) |> Array.toSeq
-                    versionDataCache.Add(key, result)
-                    return result
-                with 
-                | exn -> 
-                    failwithf "Could not deserialize version data from %s for package %s.%s  Message: %s" nugetURL package Environment.NewLine exn.Message
-                    return Seq.empty
+            let! result = getAllVersionsFromNugetOData (nugetURL, package)
+            versionDataCache.Add(key, result)
+            return result
     }
 
 /// Parses NuGet version ranges.
@@ -112,7 +98,8 @@ let getDetailsFromNugetViaOData nugetURL package resolverStrategy version =
         let downloadLink = 
             seq { 
                    for node in doc.SelectNodes("//ns:entry/ns:content", manager) do
-                       if node.Attributes.["type"].Value = "application/zip" then
+                       let downloadType = node.Attributes.["type"].Value
+                       if downloadType = "application/zip" || downloadType = "binary/octet-stream" then
                            yield node.Attributes.["src"].Value
                }
                |> Seq.head

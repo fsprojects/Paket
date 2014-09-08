@@ -44,7 +44,7 @@ module DependenciesFileParser =
         (("http://nuget.org/api/v2", []), lines)
         ||> Seq.fold(fun (currentSource, packages) line ->
             match line with
-            | Remote newSource -> newSource, packages
+            | Remote newSource -> newSource.TrimEnd([|'/'|]), packages
             | Blank -> (currentSource, packages)
             | Package details ->
                 let parts = details.Split('"')
