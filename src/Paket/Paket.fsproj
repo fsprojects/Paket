@@ -28,7 +28,7 @@
     <StartArguments>update</StartArguments>
     <StartAction>Project</StartAction>
     <StartProgram>Paket.exe</StartProgram>
-    <StartWorkingDirectory>D:\code\paket</StartWorkingDirectory>
+    <StartWorkingDirectory>D:\code\FAKE</StartWorkingDirectory>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
