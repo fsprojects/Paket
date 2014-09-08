@@ -34,7 +34,7 @@ rm -rf $BIN/paket
 
 cat >> $BIN/paket <<EOF
 #!/bin/bash
-exec mono $LIB/paket/Paket.exe "$@"
+exec mono $LIB/paket/Paket.exe "\$@"
 EOF
 
 chmod a+x $BIN/paket
