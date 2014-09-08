@@ -167,7 +167,9 @@ type ProjectFile =
 
         let installInfos = InstallRules.groupDLLs usedPackages extracted
         for dllName,group1 in installInfos do
-            let libsWithSameName = if this.HasCustomNodes(dllName) then [||] else Seq.toArray group1
+            if this.HasCustomNodes(dllName) then () else
+            let chooseNode = this.Document.CreateElement("Choose", ProjectFile.DefaultNameSpace)
+            let libsWithSameName = Seq.toArray group1
             for (_,frameworkVersion),libs in libsWithSameName do
                 let libsWithSameFrameworkVersion = 
                     libs 
@@ -215,11 +217,10 @@ type ProjectFile =
 
                         let itemGroup = this.Document.CreateElement("ItemGroup", ProjectFile.DefaultNameSpace)
                         itemGroup.AppendChild(reference) |> ignore                        
-                        whenNode.AppendChild(itemGroup) |> ignore
-                        
-                        let chooseNode = this.Document.CreateElement("Choose", ProjectFile.DefaultNameSpace)
+                        whenNode.AppendChild(itemGroup) |> ignore                        
                         chooseNode.AppendChild(whenNode) |> ignore
-                        projectNode.AppendChild(chooseNode) |> ignore
+
+            projectNode.AppendChild(chooseNode) |> ignore
 
         if Utils.normalizeXml this.Document <> this.OriginalText then
             this.Document.Save(this.FileName)
