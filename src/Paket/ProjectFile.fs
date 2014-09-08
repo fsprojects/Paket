@@ -106,18 +106,15 @@ module DLLGrouping =
                 libs
         else libs
 
-    let handleCLRVersions (libs:InstallInfo seq) =
-        let withoutCLR =
+    let handleCLRVersions (libs:InstallInfo list) =
+        let withoutCLR,withCLR =
             libs 
-            |> Seq.filter (fun l -> l.Condition.CLRVersion = None)
-        
-        let withCLR = 
-            libs 
-            |> Seq.filter (fun l -> l.Condition.CLRVersion <> None)
-        
-        if Seq.isEmpty withCLR then libs else
-            [withCLR |> Seq.maxBy (fun l -> l.Condition.CLRVersion)]
-            |> Seq.append withoutCLR
+            |> Seq.toList
+            |> List.partition (fun l -> l.Condition.CLRVersion = None)
+
+        if List.isEmpty withCLR then libs else
+        (withCLR |> List.maxBy (fun l -> l.Condition.CLRVersion)) :: withoutCLR
+
 
 /// Contains methods to read and manipulate project files.
 type ProjectFile = 
@@ -160,7 +157,7 @@ type ProjectFile =
             for (_,frameworkVersion),libs in libsWithSameName do
                 let libsWithSameFrameworkVersion = 
                     libs 
-                    |> Seq.cache
+                    |> List.ofSeq
                     |> DLLGrouping.handleCLRVersions 
                     |> DLLGrouping.handleFrameworkExtensions frameworkVersion 
                     |> DLLGrouping.handleClientFrameworks frameworkVersion 
