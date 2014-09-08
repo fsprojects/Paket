@@ -108,12 +108,15 @@ module InstallRules =
 
     let handleCLRVersions (libs:InstallInfo list) =
         let withoutCLR,withCLR =
-            libs 
-            |> Seq.toList
+            libs
             |> List.partition (fun l -> l.Condition.CLRVersion = None)
 
         if List.isEmpty withCLR then libs else
         (withCLR |> List.maxBy (fun l -> l.Condition.CLRVersion)) :: withoutCLR
+
+    let removeUnknown (libs:InstallInfo list) =
+       libs
+       |> List.filter (fun l -> match l.Condition.Framework with | DotNetFramework(Unknown,_) -> false | _ -> true)
 
 
 /// Contains methods to read and manipulate project files.
@@ -174,51 +177,50 @@ type ProjectFile =
                 let libsWithSameFrameworkVersion = 
                     libs 
                     |> List.ofSeq
+                    |> InstallRules.removeUnknown 
                     |> InstallRules.handleCLRVersions 
                     |> InstallRules.handleFrameworkExtensions frameworkVersion 
-                    |> InstallRules.handleClientFrameworks frameworkVersion 
+                    |> InstallRules.handleClientFrameworks frameworkVersion
                     |> Seq.toArray              
 
                 for lib in libsWithSameFrameworkVersion do
-                    let installIt,condition =                        
+                    let condition =                        
                         match lib.Condition.Framework with
                         | DotNetFramework(v,_) ->
-                            if libsWithSameName.Length = 1 then true,"true" else
+                            if libsWithSameName.Length = 1 then "true" else
                             let profileTypeCondition =
                                 if not <| InstallRules.hasClientProfile libsWithSameFrameworkVersion then "" else
                                 sprintf " And $(TargetFrameworkProfile) == '%s'" (match lib.Condition.Framework with | DotNetFramework(_,Client) -> "Client" | _ -> "")
                             match v with
-                            | Unknown -> false,"true" 
-                            | Framework fw -> true,sprintf "$(TargetFrameworkIdentifier) == '.NETFramework' And $(TargetFrameworkVersion) == '%s'%s" fw profileTypeCondition
-                            | FrameworkExtension(_,fw) -> true,sprintf "$(TargetFrameworkIdentifier) == '.NETFramework' And $(TargetFrameworkVersion) == '%s'%s" fw profileTypeCondition
-                            | All -> true,"true"
-                        | WindowsPhoneApp v -> true,sprintf "$(TargetFrameworkIdentifier) == 'WindowsPhoneApp' And $(TargetPlatformVersion) == '%s'" v
-                        | Silverlight v -> true,sprintf "$(TargetFrameworkIdentifier) == 'Silverlight' And $(SilverlightVersion) == '%s'" v
-                    
-                    if installIt then                    
-                        let whenNode = this.Document.CreateElement("When", ProjectFile.DefaultNameSpace)
-                        whenNode.SetAttribute("Condition", condition) |> ignore
+                            | Framework fw -> sprintf "$(TargetFrameworkIdentifier) == '.NETFramework' And $(TargetFrameworkVersion) == '%s'%s" fw profileTypeCondition
+                            | FrameworkExtension(_,fw) -> sprintf "$(TargetFrameworkIdentifier) == '.NETFramework' And $(TargetFrameworkVersion) == '%s'%s" fw profileTypeCondition
+                            | All -> "true"
+                        | WindowsPhoneApp v -> sprintf "$(TargetFrameworkIdentifier) == 'WindowsPhoneApp' And $(TargetPlatformVersion) == '%s'" v
+                        | Silverlight v -> sprintf "$(TargetFrameworkIdentifier) == 'Silverlight' And $(SilverlightVersion) == '%s'" v
+                
+                    let whenNode = this.Document.CreateElement("When", ProjectFile.DefaultNameSpace)
+                    whenNode.SetAttribute("Condition", condition) |> ignore
                         
-                        let reference = this.Document.CreateElement("Reference", ProjectFile.DefaultNameSpace)
-                        reference.SetAttribute("Include", lib.DllName)
+                    let reference = this.Document.CreateElement("Reference", ProjectFile.DefaultNameSpace)
+                    reference.SetAttribute("Include", lib.DllName)
 
-                        let element = this.Document.CreateElement("HintPath",ProjectFile.DefaultNameSpace)
-                        element.InnerText <- Uri(this.FileName).MakeRelativeUri(Uri(lib.Path)).ToString().Replace("/", "\\")
+                    let element = this.Document.CreateElement("HintPath",ProjectFile.DefaultNameSpace)
+                    element.InnerText <- Uri(this.FileName).MakeRelativeUri(Uri(lib.Path)).ToString().Replace("/", "\\")
             
-                        reference.AppendChild(element) |> ignore
+                    reference.AppendChild(element) |> ignore
  
-                        let element = this.Document.CreateElement("Private",ProjectFile.DefaultNameSpace)
-                        element.InnerText <- "True"
-                        reference.AppendChild(element) |> ignore
+                    let element = this.Document.CreateElement("Private",ProjectFile.DefaultNameSpace)
+                    element.InnerText <- "True"
+                    reference.AppendChild(element) |> ignore
 
-                        let element = this.Document.CreateElement("Paket",ProjectFile.DefaultNameSpace)
-                        element.InnerText <- "True"            
-                        reference.AppendChild(element) |> ignore
+                    let element = this.Document.CreateElement("Paket",ProjectFile.DefaultNameSpace)
+                    element.InnerText <- "True"            
+                    reference.AppendChild(element) |> ignore
 
-                        let itemGroup = this.Document.CreateElement("ItemGroup", ProjectFile.DefaultNameSpace)
-                        itemGroup.AppendChild(reference) |> ignore                        
-                        whenNode.AppendChild(itemGroup) |> ignore                        
-                        chooseNode.AppendChild(whenNode) |> ignore
+                    let itemGroup = this.Document.CreateElement("ItemGroup", ProjectFile.DefaultNameSpace)
+                    itemGroup.AppendChild(reference) |> ignore                        
+                    whenNode.AppendChild(itemGroup) |> ignore                        
+                    chooseNode.AppendChild(whenNode) |> ignore
 
             projectNode.AppendChild(chooseNode) |> ignore
 
