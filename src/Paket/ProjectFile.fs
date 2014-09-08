@@ -129,10 +129,27 @@ type ProjectFile =
     static member DefaultNameSpace = "http://schemas.microsoft.com/developer/msbuild/2003"
 
     member this.DeleteOldReferences(name) =
-       for node in this.Document.SelectNodes("//ns:Project/ns:ItemGroup/ns:Reference", this.Namespaces) do
+        for node in this.Document.SelectNodes("//ns:Project/ns:ItemGroup/ns:Reference", this.Namespaces) do
             if node.Attributes.["Include"].InnerText.Split(',').[0] = name then
                 node.ParentNode.RemoveChild(node) |> ignore
        
+        for node in this.Document.SelectNodes("//ns:Project/ns:Choose/ns:When/ns:ItemGroup/ns:Reference", this.Namespaces) do
+            if node.Attributes.["Include"].InnerText.Split(',').[0] = name then
+                node.ParentNode.RemoveChild(node) |> ignore
+
+        for node in this.Document.SelectNodes("//ns:Project/ns:Choose/ns:When/ns:ItemGroup", this.Namespaces) do
+            if node.ChildNodes.Count = 0 then
+                node.ParentNode.RemoveChild(node) |> ignore
+
+        for node in this.Document.SelectNodes("//ns:Project/ns:Choose/ns:When", this.Namespaces) do
+            if node.ChildNodes.Count = 0 then
+                node.ParentNode.RemoveChild(node) |> ignore
+
+        for node in this.Document.SelectNodes("//ns:Project/ns:Choose", this.Namespaces) do
+            if node.ChildNodes.Count = 0 then
+                node.ParentNode.RemoveChild(node) |> ignore
+
+
     member this.AddReference(referenceNode: ReferenceNode) =
         let firstNode =
             seq { for node in this.Document.SelectNodes("//ns:Project/ns:ItemGroup/ns:Reference", this.Namespaces) -> node }
