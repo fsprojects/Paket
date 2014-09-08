@@ -92,16 +92,16 @@ module InstallRules =
 
     let handleFrameworkExtensions frameworkVersion libs = 
         if frameworkVersion = ".NET v4.5" && not <| hasFramworkExtensions libs then 
-            let copy = libs |> Seq.head
-            Seq.append 
+            let copy = libs |> List.head
+            List.append 
                 [ { copy with Condition = { copy.Condition with Framework = DotNetFramework(FrameworkExtension("v4.5", "v4.5.1"),Full) } } ] 
                 libs
         else libs
 
     let handleClientFrameworks frameworkVersion libs = 
         if frameworkVersion = ".NET v4.0" && hasClientProfile libs && not <| hasFullProfile libs then 
-            let copy = libs |> Seq.head
-            Seq.append 
+            let copy = libs |> List.head
+            List.append 
                 [ { copy with Condition = { copy.Condition with Framework = DotNetFramework(match copy.Condition.Framework with | DotNetFramework(v,_) -> v,Full) } } ] 
                 libs
         else libs
@@ -146,7 +146,7 @@ type ProjectFile =
         !hasCustom
 
     member this.DeletePaketNodes() =
-        for node in this.Document.SelectNodes("//ns:Project/ns:Choose/ns:When/ns:ItemGroup/ns:Reference", this.Namespaces) do
+        for node in this.Document.SelectNodes("//ns:Reference", this.Namespaces) do
             let remove = ref false
             for child in node.ChildNodes do
                 if child.Name = "Paket" then remove := true
@@ -157,7 +157,9 @@ type ProjectFile =
     member this.DeleteOldReferences() =     
         this.DeletePaketNodes()
 
+        this.DeleteIfEmpty("//ns:Project/ns:Choose/ns:Otherwise/ns:ItemGroup")        
         this.DeleteIfEmpty("//ns:Project/ns:Choose/ns:When/ns:ItemGroup")
+        this.DeleteIfEmpty("//ns:Project/ns:Choose/ns:Otherwise")
         this.DeleteIfEmpty("//ns:Project/ns:Choose/ns:When")
         this.DeleteIfEmpty("//ns:Project/ns:Choose")
 
@@ -169,10 +171,10 @@ type ProjectFile =
             |> Seq.head
 
         let installInfos = InstallRules.groupDLLs usedPackages extracted
-        for dllName,group1 in installInfos do
+        for dllName,libsWithSameName in installInfos do
             if this.HasCustomNodes(dllName) then () else
             let chooseNode = this.Document.CreateElement("Choose", ProjectFile.DefaultNameSpace)
-            let libsWithSameName = Seq.toArray group1
+            let lastLib = ref None
             for (_,frameworkVersion),libs in libsWithSameName do
                 let libsWithSameFrameworkVersion = 
                     libs 
@@ -181,13 +183,11 @@ type ProjectFile =
                     |> InstallRules.handleCLRVersions 
                     |> InstallRules.handleFrameworkExtensions frameworkVersion 
                     |> InstallRules.handleClientFrameworks frameworkVersion
-                    |> Seq.toArray              
 
                 for lib in libsWithSameFrameworkVersion do
                     let condition =                        
                         match lib.Condition.Framework with
                         | DotNetFramework(v,_) ->
-                            if libsWithSameName.Length = 1 then "true" else
                             let profileTypeCondition =
                                 if not <| InstallRules.hasClientProfile libsWithSameFrameworkVersion then "" else
                                 sprintf " And $(TargetFrameworkProfile) == '%s'" (match lib.Condition.Framework with | DotNetFramework(_,Client) -> "Client" | _ -> "")
@@ -218,9 +218,37 @@ type ProjectFile =
                     reference.AppendChild(element) |> ignore
 
                     let itemGroup = this.Document.CreateElement("ItemGroup", ProjectFile.DefaultNameSpace)
-                    itemGroup.AppendChild(reference) |> ignore                        
-                    whenNode.AppendChild(itemGroup) |> ignore                        
+                    itemGroup.AppendChild(reference) |> ignore
+                    whenNode.AppendChild(itemGroup) |> ignore
                     chooseNode.AppendChild(whenNode) |> ignore
+
+                    lastLib := Some lib
+
+            match !lastLib with
+            | None -> ()
+            | Some lib ->
+                let otherwiseNode = this.Document.CreateElement("Otherwise", ProjectFile.DefaultNameSpace)
+
+                let reference = this.Document.CreateElement("Reference", ProjectFile.DefaultNameSpace)
+                reference.SetAttribute("Include", lib.DllName)
+
+                let element = this.Document.CreateElement("HintPath",ProjectFile.DefaultNameSpace)
+                element.InnerText <- Uri(this.FileName).MakeRelativeUri(Uri(lib.Path)).ToString().Replace("/", "\\")
+            
+                reference.AppendChild(element) |> ignore
+ 
+                let element = this.Document.CreateElement("Private",ProjectFile.DefaultNameSpace)
+                element.InnerText <- "True"
+                reference.AppendChild(element) |> ignore
+
+                let element = this.Document.CreateElement("Paket",ProjectFile.DefaultNameSpace)
+                element.InnerText <- "True"            
+                reference.AppendChild(element) |> ignore
+
+                let itemGroup = this.Document.CreateElement("ItemGroup", ProjectFile.DefaultNameSpace)
+                itemGroup.AppendChild(reference) |> ignore
+                otherwiseNode.AppendChild(itemGroup) |> ignore
+                chooseNode.AppendChild(otherwiseNode) |> ignore
 
             projectNode.AppendChild(chooseNode) |> ignore
 
