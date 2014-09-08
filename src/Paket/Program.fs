@@ -15,7 +15,7 @@ type CLIArguments =
     | [<First>][<NoAppSettings>][<CustomCommandLine("update")>] Update
     | [<First>][<NoAppSettings>][<CustomCommandLine("outdated")>] Outdated
     | Dependencies_File of string
-    | Force
+    | [<AltCommandLine("-f")>] Force
 with
     interface IArgParserTemplate with
         member s.Usage =
