@@ -45,3 +45,7 @@ let ``should detect Silverlight version from path``() =
 let ``should detect WindowsPhone version from path``() =
     FramworkCondition.DetectFromPath(@"..\..\packages\RestSharp\lib\sl4-wp71\RestSharp.WindowsPhone.dll").Framework|> shouldEqual (WindowsPhoneApp("7.1"))
     FramworkCondition.DetectFromPath(@"..\..\packages\RestSharp\lib\sl4-wp\TechTalk.SpecFlow.WindowsPhone7.dll").Framework|> shouldEqual (WindowsPhoneApp("7.1"))
+
+[<Test>]
+let ``should detect framework version from uppercase path``() =
+    FramworkCondition.DetectFromPath(@"..\packages\GitVersion.1.2.0\Lib\Net45\GitVersionCore.dll").Framework|> shouldEqual (DotNetFramework(Framework "v4.5",Full))
