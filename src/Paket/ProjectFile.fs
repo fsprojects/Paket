@@ -129,23 +129,24 @@ type ProjectFile =
             if node.ChildNodes.Count = 0 then
                 node.ParentNode.RemoveChild(node) |> ignore
 
-    member this.DeleteDLLNodes(xPath,name) =
-        for node in this.Document.SelectNodes(xPath, this.Namespaces) do
-            if node.Attributes.["Include"].InnerText.Split(',').[0] = name then
+    member this.DeletePaketNodes() =
+        for node in this.Document.SelectNodes("//ns:Project/ns:Choose/ns:When/ns:ItemGroup/ns:Reference", this.Namespaces) do
+            let remove = ref false
+            for child in node.ChildNodes do
+                if child.Name = "Paket" then remove := true
+            
+            if !remove then
                 node.ParentNode.RemoveChild(node) |> ignore
 
-    member this.DeleteOldReferences(name) =
-        this.DeleteDLLNodes("//ns:Project/ns:ItemGroup/ns:Reference", name)       
-        this.DeleteDLLNodes("//ns:Project/ns:Choose/ns:When/ns:ItemGroup/ns:Reference", name)
+    member this.DeleteOldReferences() =     
+        this.DeletePaketNodes()
 
         this.DeleteIfEmpty("//ns:Project/ns:Choose/ns:When/ns:ItemGroup")
         this.DeleteIfEmpty("//ns:Project/ns:Choose/ns:When")
         this.DeleteIfEmpty("//ns:Project/ns:Choose")
 
     member this.UpdateReferences(extracted,usedPackages:HashSet<string>) =
-        for _, libraries in extracted do
-            for (lib:FileInfo) in libraries do                                       
-                this.DeleteOldReferences (lib.Name.Replace(lib.Extension, ""))
+        this.DeleteOldReferences()
 
         let projectNode =
             seq { for node in this.Document.SelectNodes("//ns:Project", this.Namespaces) -> node }
