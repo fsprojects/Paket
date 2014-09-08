@@ -125,26 +125,23 @@ type ProjectFile =
       Namespaces : XmlNamespaceManager }
     static member DefaultNameSpace = "http://schemas.microsoft.com/developer/msbuild/2003"
 
+    member this.DeleteIfEmpty xPath =
+        for node in this.Document.SelectNodes(xPath, this.Namespaces) do
+            if node.ChildNodes.Count = 0 then
+                node.ParentNode.RemoveChild(node) |> ignore
+
+    member this.DeleteDLLNodes(name,xPath) =
+        for node in this.Document.SelectNodes(xPath, this.Namespaces) do
+            if node.Attributes.["Include"].InnerText.Split(',').[0] = name then
+                node.ParentNode.RemoveChild(node) |> ignore
+
     member this.DeleteOldReferences(name) =
-        for node in this.Document.SelectNodes("//ns:Project/ns:ItemGroup/ns:Reference", this.Namespaces) do
-            if node.Attributes.["Include"].InnerText.Split(',').[0] = name then
-                node.ParentNode.RemoveChild(node) |> ignore
-       
-        for node in this.Document.SelectNodes("//ns:Project/ns:Choose/ns:When/ns:ItemGroup/ns:Reference", this.Namespaces) do
-            if node.Attributes.["Include"].InnerText.Split(',').[0] = name then
-                node.ParentNode.RemoveChild(node) |> ignore
+        this.DeleteDLLNodes("//ns:Project/ns:ItemGroup/ns:Reference", name)       
+        this.DeleteDLLNodes("//ns:Project/ns:Choose/ns:When/ns:ItemGroup/ns:Reference", name)
 
-        for node in this.Document.SelectNodes("//ns:Project/ns:Choose/ns:When/ns:ItemGroup", this.Namespaces) do
-            if node.ChildNodes.Count = 0 then
-                node.ParentNode.RemoveChild(node) |> ignore
-
-        for node in this.Document.SelectNodes("//ns:Project/ns:Choose/ns:When", this.Namespaces) do
-            if node.ChildNodes.Count = 0 then
-                node.ParentNode.RemoveChild(node) |> ignore
-
-        for node in this.Document.SelectNodes("//ns:Project/ns:Choose", this.Namespaces) do
-            if node.ChildNodes.Count = 0 then
-                node.ParentNode.RemoveChild(node) |> ignore
+        this.DeleteIfEmpty("//ns:Project/ns:Choose/ns:When/ns:ItemGroup")
+        this.DeleteIfEmpty("//ns:Project/ns:Choose/ns:When")
+        this.DeleteIfEmpty("//ns:Project/ns:Choose")
 
     member this.UpdateReferences(extracted,usedPackages:HashSet<string>) =
         for _, libraries in extracted do
