@@ -193,7 +193,10 @@ type ProjectFile =
  
                         let element = this.Document.CreateElement("Private",ProjectFile.DefaultNameSpace)
                         element.InnerText <- "True"
-            
+                        reference.AppendChild(element) |> ignore
+
+                        let element = this.Document.CreateElement("Paket",ProjectFile.DefaultNameSpace)
+                        element.InnerText <- "True"            
                         reference.AppendChild(element) |> ignore
 
                         let itemGroup = this.Document.CreateElement("ItemGroup", ProjectFile.DefaultNameSpace)

@@ -107,6 +107,7 @@
         <Reference Include="Ionic.Zip">
           <HintPath>..\..\packages\DotNetZip\lib\net20\Ionic.Zip.dll</HintPath>
           <Private>True</Private>
+          <Paket>True</Paket>
         </Reference>
       </ItemGroup>
     </When>
@@ -117,6 +118,7 @@
         <Reference Include="Newtonsoft.Json">
           <HintPath>..\..\packages\Newtonsoft.Json\lib\net20\Newtonsoft.Json.dll</HintPath>
           <Private>True</Private>
+          <Paket>True</Paket>
         </Reference>
       </ItemGroup>
     </When>
@@ -127,6 +129,7 @@
         <Reference Include="Newtonsoft.Json">
           <HintPath>..\..\packages\Newtonsoft.Json\lib\net35\Newtonsoft.Json.dll</HintPath>
           <Private>True</Private>
+          <Paket>True</Paket>
         </Reference>
       </ItemGroup>
     </When>
@@ -137,6 +140,7 @@
         <Reference Include="Newtonsoft.Json">
           <HintPath>..\..\packages\Newtonsoft.Json\lib\net40\Newtonsoft.Json.dll</HintPath>
           <Private>True</Private>
+          <Paket>True</Paket>
         </Reference>
       </ItemGroup>
     </When>
@@ -147,6 +151,7 @@
         <Reference Include="Newtonsoft.Json">
           <HintPath>..\..\packages\Newtonsoft.Json\lib\net45\Newtonsoft.Json.dll</HintPath>
           <Private>True</Private>
+          <Paket>True</Paket>
         </Reference>
       </ItemGroup>
     </When>
@@ -157,6 +162,7 @@
         <Reference Include="Newtonsoft.Json">
           <HintPath>..\..\packages\Newtonsoft.Json\lib\net45\Newtonsoft.Json.dll</HintPath>
           <Private>True</Private>
+          <Paket>True</Paket>
         </Reference>
       </ItemGroup>
     </When>
@@ -167,6 +173,7 @@
         <Reference Include="UnionArgParser">
           <HintPath>..\..\packages\UnionArgParser\lib\net35\UnionArgParser.dll</HintPath>
           <Private>True</Private>
+          <Paket>True</Paket>
         </Reference>
       </ItemGroup>
     </When>
@@ -177,6 +184,7 @@
         <Reference Include="UnionArgParser">
           <HintPath>..\..\packages\UnionArgParser\lib\net40\UnionArgParser.dll</HintPath>
           <Private>True</Private>
+          <Paket>True</Paket>
         </Reference>
       </ItemGroup>
     </When>
