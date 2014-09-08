@@ -49,9 +49,15 @@ let getAllVersions (nugetURL, package) =
                 versionDataCache.Add(key, result)
                 return result
             | Some data -> 
-                let result = JsonConvert.DeserializeObject<string []>(data) |> Array.toSeq
-                versionDataCache.Add(key, result)
-                return result
+                try
+                    let result =
+                        JsonConvert.DeserializeObject<string []>(data) |> Array.toSeq
+                    versionDataCache.Add(key, result)
+                    return result
+                with 
+                | exn -> 
+                    failwithf "Could not deserialize version data from %s for package %s.%s%s" nugetURL package Environment.NewLine exn.Message
+                    return Seq.empty
     }
 
 /// Parses NuGet version ranges.
