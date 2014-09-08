@@ -190,7 +190,7 @@ type ProjectFile =
                     |> List.sortBy (fun lib -> lib.Path)
 
                 for lib in libsWithSameFrameworkVersion do
-                    let condition =                        
+                    let condition =
                         match lib.Condition.Framework with
                         | DotNetFramework(v,_) ->
                             let profileTypeCondition =
@@ -234,6 +234,17 @@ type ProjectFile =
             | Some lib ->
                 let otherwiseNode = this.Document.CreateElement("Otherwise", ProjectFile.DefaultNameSpace)
 
+                let innerChooseNode = this.Document.CreateElement("Choose", ProjectFile.DefaultNameSpace)
+
+                let condition =
+                    match lib.Condition.Framework with
+                    | DotNetFramework _ -> "$(TargetFrameworkIdentifier) == '.NETFramework'"
+                    | WindowsPhoneApp _ -> "$(TargetFrameworkIdentifier) == 'WindowsPhoneApp'"
+                    | Silverlight _ -> "$(TargetFrameworkIdentifier) == 'Silverlight'"
+
+                let whenNode = this.Document.CreateElement("When", ProjectFile.DefaultNameSpace)
+                whenNode.SetAttribute("Condition", condition) |> ignore
+
                 let reference = this.Document.CreateElement("Reference", ProjectFile.DefaultNameSpace)
                 reference.SetAttribute("Include", lib.DllName)
 
@@ -252,7 +263,9 @@ type ProjectFile =
 
                 let itemGroup = this.Document.CreateElement("ItemGroup", ProjectFile.DefaultNameSpace)
                 itemGroup.AppendChild(reference) |> ignore
-                otherwiseNode.AppendChild(itemGroup) |> ignore
+                whenNode.AppendChild(itemGroup) |> ignore
+                innerChooseNode.AppendChild(whenNode) |> ignore
+                otherwiseNode.AppendChild(innerChooseNode) |> ignore
                 chooseNode.AppendChild(otherwiseNode) |> ignore
 
             projectNode.AppendChild(chooseNode) |> ignore
