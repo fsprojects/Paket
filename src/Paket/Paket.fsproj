@@ -187,10 +187,19 @@
         </Reference>
       </ItemGroup>
     </When>
+    <When Condition="$(TargetFrameworkIdentifier) == '.NETFramework' And $(TargetFrameworkVersion) == 'v4.0'">
+      <ItemGroup>
+        <Reference Include="RestSharp">
+          <HintPath>..\..\packages\RestSharp\lib\net4\RestSharp.dll</HintPath>
+          <Private>True</Private>
+          <Paket>True</Paket>
+        </Reference>
+      </ItemGroup>
+    </When>
     <Otherwise>
       <ItemGroup>
         <Reference Include="RestSharp">
-          <HintPath>..\..\packages\RestSharp\lib\net35\RestSharp.dll</HintPath>
+          <HintPath>..\..\packages\RestSharp\lib\net4\RestSharp.dll</HintPath>
           <Private>True</Private>
           <Paket>True</Paket>
         </Reference>
