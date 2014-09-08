@@ -77,8 +77,13 @@ let normalizeXml(doc:XmlDocument) =
 /// [omit]
 let getFromUrl (url : string) = 
     async { 
-        use client = new WebClient()
-        return! client.AsyncDownloadString(Uri(url))
+        try
+            use client = new WebClient()
+            return! client.AsyncDownloadString(Uri(url))
+        with
+        | exn -> 
+            failwithf "Could not retrieve data from %s%s  Message: %s" url Environment.NewLine exn.Message
+            return ""
     }
 
 /// [omit]

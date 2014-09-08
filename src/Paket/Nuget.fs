@@ -56,7 +56,7 @@ let getAllVersions (nugetURL, package) =
                     return result
                 with 
                 | exn -> 
-                    failwithf "Could not deserialize version data from %s for package %s.%s%s" nugetURL package Environment.NewLine exn.Message
+                    failwithf "Could not deserialize version data from %s for package %s.%s  Message: %s" nugetURL package Environment.NewLine exn.Message
                     return Seq.empty
     }
 
