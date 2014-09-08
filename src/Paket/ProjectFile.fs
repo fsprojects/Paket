@@ -129,7 +129,7 @@ type ProjectFile =
             if node.ChildNodes.Count = 0 then
                 node.ParentNode.RemoveChild(node) |> ignore
 
-    member this.DeleteDLLNodes(name,xPath) =
+    member this.DeleteDLLNodes(xPath,name) =
         for node in this.Document.SelectNodes(xPath, this.Namespaces) do
             if node.Attributes.["Include"].InnerText.Split(',').[0] = name then
                 node.ParentNode.RemoveChild(node) |> ignore
