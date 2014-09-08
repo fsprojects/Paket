@@ -28,6 +28,28 @@ type VersionRange =
             let fromCompare = match fromB with | Closed -> (>=) | Open -> (>)
             let _toCompare  = match _toB  with | Closed -> (<=) | Open -> (<)
             fromCompare version from && _toCompare version _to
+   
+    override this.ToString() =
+        match this with
+        | Latest -> "Latest"
+        | Specific v -> v.ToString()
+        | Minimum v -> ">= " + v.ToString()
+        | GreaterThan v -> "> " + v.ToString()
+        | Maximum v -> "<= " + v.ToString()
+        | LessThan v -> "< " + v.ToString()
+        | Range(fromB, from, _to, _toB) ->
+            let from = 
+                match fromB with
+                 | Open -> "> " + from.ToString()
+                 | Closed -> ">= " + from.ToString()
+
+            let _to = 
+                match _toB with
+                 | Open -> "< " + _to.ToString()
+                 | Closed -> "<= " + _to.ToString()
+
+            from + " " + _to
+
 
     static member AtLeast version = Minimum(SemVer.parse version)
 
