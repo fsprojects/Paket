@@ -26,10 +26,12 @@ type FrameworkProfile =
 /// Framework Identifier type.
 type FrameworkIdentifier =
 | DotNetFramework of FrameworkVersion * FrameworkProfile
+| WindowsPhoneApp of string
 | Silverlight of string
     member x.GetGroup() =
         match x with
         | DotNetFramework(v,_) -> ".NET " + v.GetGroup()        
+        | WindowsPhoneApp(v) -> "WindowsPhoneApp " + v
         | Silverlight(v) -> "Silverlight " + v
 
 
@@ -51,6 +53,7 @@ type FramworkCondition =
         elif path.Contains "lib/net45/" then { Framework = DotNetFramework(Framework "v4.5",Full); CLRVersion = None }
         elif path.Contains "lib/net451/" then { Framework = DotNetFramework(FrameworkExtension("v4.5","v4.5.1"),Full); CLRVersion = None }
         elif path.Contains "lib/sl4/" then { Framework = Silverlight("v4.0"); CLRVersion = None; }
+        elif path.Contains "lib/sl4-wp71/" then { Framework = WindowsPhoneApp("7.1"); CLRVersion = None; }
         elif path.Contains("lib/" + fi.Name.ToLower()) then { Framework = DotNetFramework(All,Full); CLRVersion = None; }
         else { Framework = DotNetFramework(Unknown,Full); CLRVersion = None }
 
@@ -177,7 +180,8 @@ type ProjectFile =
                             | Framework fw -> true,sprintf "$(TargetFrameworkIdentifier) == '.NETFramework' And $(TargetFrameworkVersion) == '%s'%s" fw profileTypeCondition
                             | FrameworkExtension(_,fw) -> true,sprintf "$(TargetFrameworkIdentifier) == '.NETFramework' And $(TargetFrameworkVersion) == '%s'%s" fw profileTypeCondition
                             | All -> true,"true"
-                        | Silverlight v -> true,sprintf "$(TargetFrameworkIdentifier) == '.Silverlight' And $(SilverlightVersion) == '%s'" v
+                        | WindowsPhoneApp v -> true,sprintf "$(TargetFrameworkIdentifier) == 'WindowsPhoneApp' And $(TargetPlatformVersion) == '%s'" v
+                        | Silverlight v -> true,sprintf "$(TargetFrameworkIdentifier) == 'Silverlight' And $(SilverlightVersion) == '%s'" v
                     
                     if installIt then                    
                         let whenNode = this.Document.CreateElement("When", ProjectFile.DefaultNameSpace)
