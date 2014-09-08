@@ -114,6 +114,10 @@ module InstallRules =
         if List.isEmpty withCLR then libs else
         (withCLR |> List.maxBy (fun l -> l.Condition.CLRVersion)) :: withoutCLR
 
+    let handlePath root (libs:InstallInfo list) =
+        libs 
+        |> List.map (fun lib -> { lib with Path = Uri(root).MakeRelativeUri(Uri(lib.Path)).ToString().Replace("/", "\\")} )
+
     let removeUnknown (libs:InstallInfo list) =
        libs
        |> List.filter (fun l -> match l.Condition.Framework with | DotNetFramework(Unknown,_) -> false | _ -> true)
@@ -178,11 +182,13 @@ type ProjectFile =
             for (_,frameworkVersion),libs in libsWithSameName do
                 let libsWithSameFrameworkVersion = 
                     libs 
-                    |> List.ofSeq
+                    |> List.ofSeq                    
                     |> InstallRules.removeUnknown 
+                    |> InstallRules.handlePath this.FileName
                     |> InstallRules.handleCLRVersions 
                     |> InstallRules.handleFrameworkExtensions frameworkVersion 
                     |> InstallRules.handleClientFrameworks frameworkVersion
+                    |> List.sortBy (fun lib -> lib.Path)
 
                 for lib in libsWithSameFrameworkVersion do
                     let condition =                        
@@ -205,7 +211,7 @@ type ProjectFile =
                     reference.SetAttribute("Include", lib.DllName)
 
                     let element = this.Document.CreateElement("HintPath",ProjectFile.DefaultNameSpace)
-                    element.InnerText <- Uri(this.FileName).MakeRelativeUri(Uri(lib.Path)).ToString().Replace("/", "\\")
+                    element.InnerText <- lib.Path
             
                     reference.AppendChild(element) |> ignore
  
@@ -233,7 +239,7 @@ type ProjectFile =
                 reference.SetAttribute("Include", lib.DllName)
 
                 let element = this.Document.CreateElement("HintPath",ProjectFile.DefaultNameSpace)
-                element.InnerText <- Uri(this.FileName).MakeRelativeUri(Uri(lib.Path)).ToString().Replace("/", "\\")
+                element.InnerText <- lib.Path
             
                 reference.AppendChild(element) |> ignore
  
