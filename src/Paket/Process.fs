@@ -25,6 +25,8 @@ let extractReferencesFromListFile projectFile =
     let fi = FileInfo(projectFile)
     let packageFile = FileInfo(Path.Combine(fi.Directory.FullName, "References.list"))
     if packageFile.Exists then File.ReadAllLines packageFile.FullName else [||]
+    |> Array.map (fun s -> s.Trim())
+    |> Array.filter (fun s -> System.String.IsNullOrWhiteSpace s |> not)
 
 let private findAllProjects(folder) = DirectoryInfo(folder).EnumerateFiles("*.*proj", SearchOption.AllDirectories)
 
