@@ -38,6 +38,7 @@ let ``should detect net451 as special case of 4.5``() =
 [<Test>]
 let ``should detect Silverlight version from path``() =
     FramworkCondition.DetectFromPath(@"..\..\packages\RestSharp\lib\sl4\RestSharp.Silverlight.dll").Framework|> shouldEqual (Silverlight("v4.0"))
+    FramworkCondition.DetectFromPath(@"..\..\packages\SpecFlow\lib\sl3\Specflow.Silverlight.dll").Framework|> shouldEqual (Silverlight("v3.0"))
 
 [<Test>]
 let ``should detect WindowsPhone version from path``() =
