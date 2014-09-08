@@ -47,6 +47,7 @@ type FramworkCondition =
         elif path.Contains "lib/2.0/" then { Framework = DotNetFramework(All,Full); CLRVersion = Some "2.0" }
         elif path.Contains "lib/net20/" then { Framework = DotNetFramework(Framework "v2.0",Full); CLRVersion = None }
         elif path.Contains "lib/net35/" then { Framework = DotNetFramework(Framework "v3.5",Full); CLRVersion = None }
+        elif path.Contains "lib/net4/" then { Framework = DotNetFramework(Framework "v4.0",Full); CLRVersion = None }
         elif path.Contains "lib/net40/" then { Framework = DotNetFramework(Framework "v4.0",Full); CLRVersion = None }
         elif path.Contains "lib/net40-full/" then { Framework = DotNetFramework(Framework "v4.0",Full); CLRVersion = None }
         elif path.Contains "lib/net40-client/" then { Framework = DotNetFramework(Framework "v4.0",Client); CLRVersion = None }

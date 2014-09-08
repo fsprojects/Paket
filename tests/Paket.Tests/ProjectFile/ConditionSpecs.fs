@@ -6,6 +6,7 @@ open FsUnit
 
 [<Test>]
 let ``should detect framework version from path``() =
+    FramworkCondition.DetectFromPath(@"..\RestSharp\lib\net4\RestSharp.dll").Framework|> shouldEqual (DotNetFramework(Framework "v4.0",Full))
     FramworkCondition.DetectFromPath(@"..\Rx-Main\lib\net40\Rx.dll").Framework|> shouldEqual (DotNetFramework(Framework "v4.0",Full))
     FramworkCondition.DetectFromPath(@"..\Rx-Main\lib\net45\Rx.dll").Framework|> shouldEqual (DotNetFramework(Framework "v4.5",Full))
     FramworkCondition.DetectFromPath(@"..\Rx-Main\lib\net20\Rx.dll").Framework|> shouldEqual (DotNetFramework(Framework "v2.0",Full))
