@@ -19,32 +19,40 @@ type FrameworkVersion =
         | FrameworkExtension(v,_) -> v
 
 /// The Framework profile.
-type FrameworkProfileType =
+type FrameworkProfile =
 | Client
 | Full
 
+/// Framework Identifier type.
+type FrameworkIdentifier =
+| DotNetFramework of FrameworkVersion * FrameworkProfile
+| Silverlight of string
+    member x.GetGroup() =
+        match x with
+        | DotNetFramework(v,_) -> ".NET " + v.GetGroup()        
+        | Silverlight(v) -> "Silverlight " + v
+
+
 /// Contains methods to analyze .NET Framework Conditions.
 type FramworkCondition = 
-    { FrameworkVersion : FrameworkVersion;
-      CLRVersion : string option;
-      SilverlightVersion : string option;
-      FrameworkProfile : FrameworkProfileType }
+    { Framework : FrameworkIdentifier;
+      CLRVersion : string option; }
     static member DetectFromPath(path : string) = 
         let path = path.Replace("\\", "/").ToLower()
         let fi = new FileInfo(path)
-        if path.Contains "lib/1.0/" then { FrameworkVersion = All; FrameworkProfile = Full; CLRVersion = Some "1.0"; SilverlightVersion = None }
-        elif path.Contains "lib/1.1/" then { FrameworkVersion = All; FrameworkProfile = Full; CLRVersion = Some "1.1"; SilverlightVersion = None }
-        elif path.Contains "lib/2.0/" then { FrameworkVersion = All; FrameworkProfile = Full ; CLRVersion = Some "2.0"; SilverlightVersion = None }
-        elif path.Contains "lib/net20/" then { FrameworkVersion = Framework "v2.0"; FrameworkProfile = Full; CLRVersion = None; SilverlightVersion = None }
-        elif path.Contains "lib/net35/" then { FrameworkVersion = Framework "v3.5"; FrameworkProfile = Full; CLRVersion = None; SilverlightVersion = None }
-        elif path.Contains "lib/net40/" then { FrameworkVersion = Framework "v4.0"; FrameworkProfile = Full; CLRVersion = None; SilverlightVersion = None }
-        elif path.Contains "lib/net40-full/" then { FrameworkVersion = Framework "v4.0"; FrameworkProfile = Full; CLRVersion = None; SilverlightVersion = None}
-        elif path.Contains "lib/net40-client/" then { FrameworkVersion = Framework "v4.0" ; FrameworkProfile = Client; CLRVersion = None; SilverlightVersion = None }
-        elif path.Contains "lib/net45/" then { FrameworkVersion = Framework "v4.5" ; FrameworkProfile = Full; CLRVersion = None; SilverlightVersion = None }
-        elif path.Contains "lib/net451/" then { FrameworkVersion = FrameworkExtension("v4.5","v4.5.1") ; FrameworkProfile = Full; CLRVersion = None; SilverlightVersion = None }
-        elif path.Contains "lib/sl4/" then { FrameworkVersion = Framework "Silverlight" ; FrameworkProfile = Full; CLRVersion = None; SilverlightVersion = Some "v4.0" }
-        elif path.Contains("lib/" + fi.Name.ToLower()) then { FrameworkVersion = All ; FrameworkProfile = Full; CLRVersion = None; SilverlightVersion = None }
-        else { FrameworkVersion = Unknown ; FrameworkProfile = Full; CLRVersion = None; SilverlightVersion = None }
+        if path.Contains "lib/1.0/" then { Framework = DotNetFramework(All,Full); CLRVersion = Some "1.0" }
+        elif path.Contains "lib/1.1/" then { Framework = DotNetFramework(All,Full); CLRVersion = Some "1.1" }
+        elif path.Contains "lib/2.0/" then { Framework = DotNetFramework(All,Full); CLRVersion = Some "2.0" }
+        elif path.Contains "lib/net20/" then { Framework = DotNetFramework(Framework "v2.0",Full); CLRVersion = None }
+        elif path.Contains "lib/net35/" then { Framework = DotNetFramework(Framework "v3.5",Full); CLRVersion = None }
+        elif path.Contains "lib/net40/" then { Framework = DotNetFramework(Framework "v4.0",Full); CLRVersion = None }
+        elif path.Contains "lib/net40-full/" then { Framework = DotNetFramework(Framework "v4.0",Full); CLRVersion = None }
+        elif path.Contains "lib/net40-client/" then { Framework = DotNetFramework(Framework "v4.0",Client); CLRVersion = None }
+        elif path.Contains "lib/net45/" then { Framework = DotNetFramework(Framework "v4.5",Full); CLRVersion = None }
+        elif path.Contains "lib/net451/" then { Framework = DotNetFramework(FrameworkExtension("v4.5","v4.5.1"),Full); CLRVersion = None }
+        elif path.Contains "lib/sl4/" then { Framework = Silverlight("v4.0"); CLRVersion = None; }
+        elif path.Contains("lib/" + fi.Name.ToLower()) then { Framework = DotNetFramework(All,Full); CLRVersion = None; }
+        else { Framework = DotNetFramework(Unknown,Full); CLRVersion = None }
 
 /// Contains methods to read and manipulate project file ndoes.
 type ReferenceNode = 
@@ -68,31 +76,34 @@ module DLLGrouping =
                       yield { DllName = lib.Name.Replace(lib.Extension, "")
                               Path = lib.FullName
                               Condition = FramworkCondition.DetectFromPath lib.FullName } ]
-        |> Seq.groupBy (fun info -> info.DllName, info.Condition.FrameworkVersion.GetGroup())
+        |> Seq.groupBy (fun info -> info.DllName, info.Condition.Framework.GetGroup())
         |> Seq.groupBy (fun ((name, _), _) -> name)
     
-    let hasClientProfile libs = libs |> Seq.exists (fun x -> x.Condition.FrameworkProfile = Client)
-    let hasFullProfile libs = libs |> Seq.exists (fun x -> x.Condition.FrameworkProfile = Full)
+    let hasClientProfile libs = libs |> Seq.exists (fun x -> match x.Condition.Framework with | DotNetFramework (_,p) -> p = Client | _ -> false)
+    let hasFullProfile libs = libs |> Seq.exists (fun x -> match x.Condition.Framework with | DotNetFramework (_,p) -> p = Full | _ -> false)
     
     let hasFramworkExtensions libs = 
         libs |> Seq.exists (fun x -> 
-                    match x.Condition.FrameworkVersion with
-                    | FrameworkExtension _ -> true
+                    match x.Condition.Framework with
+                    | DotNetFramework(v,_) ->
+                        match v with
+                        | FrameworkExtension _ -> true
+                        | _ -> false
                     | _ -> false)
 
     let handleFrameworkExtensions frameworkVersion libs = 
-        if frameworkVersion = "v4.5" && not <| hasFramworkExtensions libs then 
+        if frameworkVersion = ".NET v4.5" && not <| hasFramworkExtensions libs then 
             let copy = libs |> Seq.head
             Seq.append 
-                [ { copy with Condition = { copy.Condition with FrameworkVersion = FrameworkExtension("v4.5", "v4.5.1") } } ] 
+                [ { copy with Condition = { copy.Condition with Framework = DotNetFramework(FrameworkExtension("v4.5", "v4.5.1"),Full) } } ] 
                 libs
         else libs
 
     let handleClientFrameworks frameworkVersion libs = 
-        if frameworkVersion = "v4.0" && hasClientProfile libs && not <| hasFullProfile libs then 
+        if frameworkVersion = ".NET v4.0" && hasClientProfile libs && not <| hasFullProfile libs then 
             let copy = libs |> Seq.head
             Seq.append 
-                [ { copy with Condition = { copy.Condition with FrameworkProfile = Full } } ] 
+                [ { copy with Condition = { copy.Condition with Framework = DotNetFramework(match copy.Condition.Framework with | DotNetFramework(v,_) -> v,Full) } } ] 
                 libs
         else libs
 
@@ -174,14 +185,15 @@ type ProjectFile =
                         if libsWithSameName.Length = 1 then true,None else
                         let profileTypeCondition =
                             if not <| DLLGrouping.hasClientProfile libsWithSameFrameworkVersion then "" else
-                            sprintf " And $(TargetFrameworkProfile) == '%s'" (if lib.Condition.FrameworkProfile = Client then "Client" else "")
+                            sprintf " And $(TargetFrameworkProfile) == '%s'" (match lib.Condition.Framework with | DotNetFramework(_,Client) -> "Client" | _ -> "")
 
-                        match lib.Condition.FrameworkVersion with
-                        | Unknown -> false,None 
-                        | Framework fw -> true,Some(sprintf "$(TargetFrameworkVersion) == '%s'%s" fw profileTypeCondition)
-                        | FrameworkExtension(_,fw) -> true,Some(sprintf "$(TargetFrameworkVersion) == '%s'%s" fw profileTypeCondition)
-                        | All -> true,None
-
+                        match lib.Condition.Framework with
+                        | DotNetFramework(v,_) ->
+                            match v with
+                            | Unknown -> false,None 
+                            | Framework fw -> true,Some(sprintf "$(TargetFrameworkVersion) == '%s'%s" fw profileTypeCondition)
+                            | FrameworkExtension(_,fw) -> true,Some(sprintf "$(TargetFrameworkVersion) == '%s'%s" fw profileTypeCondition)
+                            | All -> true,None
                     
                     if installIt then                        
                         { DLLName = lib.DllName
