@@ -66,7 +66,7 @@ type InstallInfo = {
     Condition : FramworkCondition
 }
 
-module DLLGrouping = 
+module InstallRules = 
     let groupDLLs (usedPackages : HashSet<string>) extracted = 
         [ for package, libraries in extracted do
               if usedPackages.Contains package.Name then 
@@ -129,6 +129,19 @@ type ProjectFile =
             if node.ChildNodes.Count = 0 then
                 node.ParentNode.RemoveChild(node) |> ignore
 
+    member this.HasCustomNodes(dllName) =
+        let hasCustom = ref false
+        for node in this.Document.SelectNodes("//ns:Reference", this.Namespaces) do
+            if node.Attributes.["Include"].InnerText.Split(',').[0] = dllName then
+                let isPaket = ref false
+                for child in node.ChildNodes do
+                    if child.Name = "Paket" then 
+                        isPaket := true
+                if not !isPaket then
+                    hasCustom := true
+            
+        !hasCustom
+
     member this.DeletePaketNodes() =
         for node in this.Document.SelectNodes("//ns:Project/ns:Choose/ns:When/ns:ItemGroup/ns:Reference", this.Namespaces) do
             let remove = ref false
@@ -152,16 +165,16 @@ type ProjectFile =
             seq { for node in this.Document.SelectNodes("//ns:Project", this.Namespaces) -> node }
             |> Seq.head
 
-        let installInfos = DLLGrouping.groupDLLs usedPackages extracted
-        for _,group1 in installInfos do
-            let libsWithSameName = group1 |> Seq.toArray
+        let installInfos = InstallRules.groupDLLs usedPackages extracted
+        for dllName,group1 in installInfos do
+            let libsWithSameName = if this.HasCustomNodes(dllName) then [||] else Seq.toArray group1
             for (_,frameworkVersion),libs in libsWithSameName do
                 let libsWithSameFrameworkVersion = 
                     libs 
                     |> List.ofSeq
-                    |> DLLGrouping.handleCLRVersions 
-                    |> DLLGrouping.handleFrameworkExtensions frameworkVersion 
-                    |> DLLGrouping.handleClientFrameworks frameworkVersion 
+                    |> InstallRules.handleCLRVersions 
+                    |> InstallRules.handleFrameworkExtensions frameworkVersion 
+                    |> InstallRules.handleClientFrameworks frameworkVersion 
                     |> Seq.toArray              
 
                 for lib in libsWithSameFrameworkVersion do
@@ -170,7 +183,7 @@ type ProjectFile =
                         | DotNetFramework(v,_) ->
                             if libsWithSameName.Length = 1 then true,"true" else
                             let profileTypeCondition =
-                                if not <| DLLGrouping.hasClientProfile libsWithSameFrameworkVersion then "" else
+                                if not <| InstallRules.hasClientProfile libsWithSameFrameworkVersion then "" else
                                 sprintf " And $(TargetFrameworkProfile) == '%s'" (match lib.Condition.Framework with | DotNetFramework(_,Client) -> "Client" | _ -> "")
                             match v with
                             | Unknown -> false,"true" 
