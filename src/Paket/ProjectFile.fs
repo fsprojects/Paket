@@ -27,22 +27,24 @@ type FrameworkProfileType =
 type FramworkCondition = 
     { FrameworkVersion : FrameworkVersionType;
       CLRVersion : string option;
+      SilverlightVersion : string option;
       FrameworkProfile : FrameworkProfileType }
     static member DetectFromPath(path : string) = 
         let path = path.Replace("\\", "/").ToLower()
         let fi = new FileInfo(path)
-        if path.Contains "lib/1.0/" then { FrameworkVersion = All; FrameworkProfile = Full; CLRVersion = Some "1.0" }
-        elif path.Contains "lib/1.1/" then { FrameworkVersion = All; FrameworkProfile = Full; CLRVersion = Some "1.1" }
-        elif path.Contains "lib/2.0/" then { FrameworkVersion = All; FrameworkProfile = Full ; CLRVersion = Some "2.0" }
-        elif path.Contains "lib/net20/" then { FrameworkVersion = Framework "v2.0"; FrameworkProfile = Full; CLRVersion = None }
-        elif path.Contains "lib/net35/" then { FrameworkVersion = Framework "v3.5"; FrameworkProfile = Full; CLRVersion = None }
-        elif path.Contains "lib/net40/" then { FrameworkVersion = Framework "v4.0"; FrameworkProfile = Full; CLRVersion = None }
-        elif path.Contains "lib/net40-full/" then { FrameworkVersion = Framework "v4.0"; FrameworkProfile = Full; CLRVersion = None }
-        elif path.Contains "lib/net40-client/" then { FrameworkVersion = Framework "v4.0" ; FrameworkProfile = Client; CLRVersion = None }
-        elif path.Contains "lib/net45/" then { FrameworkVersion = Framework "v4.5" ; FrameworkProfile = Full; CLRVersion = None }
-        elif path.Contains "lib/net451/" then { FrameworkVersion = FrameworkExtension("v4.5","v4.5.1") ; FrameworkProfile = Full; CLRVersion = None }
-        elif path.Contains("lib/" + fi.Name.ToLower()) then { FrameworkVersion = All ; FrameworkProfile = Full; CLRVersion = None }
-        else { FrameworkVersion = Unknown ; FrameworkProfile = Full; CLRVersion = None }
+        if path.Contains "lib/1.0/" then { FrameworkVersion = All; FrameworkProfile = Full; CLRVersion = Some "1.0"; SilverlightVersion = None }
+        elif path.Contains "lib/1.1/" then { FrameworkVersion = All; FrameworkProfile = Full; CLRVersion = Some "1.1"; SilverlightVersion = None }
+        elif path.Contains "lib/2.0/" then { FrameworkVersion = All; FrameworkProfile = Full ; CLRVersion = Some "2.0"; SilverlightVersion = None }
+        elif path.Contains "lib/net20/" then { FrameworkVersion = Framework "v2.0"; FrameworkProfile = Full; CLRVersion = None; SilverlightVersion = None }
+        elif path.Contains "lib/net35/" then { FrameworkVersion = Framework "v3.5"; FrameworkProfile = Full; CLRVersion = None; SilverlightVersion = None }
+        elif path.Contains "lib/net40/" then { FrameworkVersion = Framework "v4.0"; FrameworkProfile = Full; CLRVersion = None; SilverlightVersion = None }
+        elif path.Contains "lib/net40-full/" then { FrameworkVersion = Framework "v4.0"; FrameworkProfile = Full; CLRVersion = None; SilverlightVersion = None}
+        elif path.Contains "lib/net40-client/" then { FrameworkVersion = Framework "v4.0" ; FrameworkProfile = Client; CLRVersion = None; SilverlightVersion = None }
+        elif path.Contains "lib/net45/" then { FrameworkVersion = Framework "v4.5" ; FrameworkProfile = Full; CLRVersion = None; SilverlightVersion = None }
+        elif path.Contains "lib/net451/" then { FrameworkVersion = FrameworkExtension("v4.5","v4.5.1") ; FrameworkProfile = Full; CLRVersion = None; SilverlightVersion = None }
+        elif path.Contains "lib/sl4/" then { FrameworkVersion = Framework "Silverlight" ; FrameworkProfile = Full; CLRVersion = None; SilverlightVersion = Some "v4.0" }
+        elif path.Contains("lib/" + fi.Name.ToLower()) then { FrameworkVersion = All ; FrameworkProfile = Full; CLRVersion = None; SilverlightVersion = None }
+        else { FrameworkVersion = Unknown ; FrameworkProfile = Full; CLRVersion = None; SilverlightVersion = None }
 
 /// Contains methods to read and manipulate project file ndoes.
 type ReferenceNode = 

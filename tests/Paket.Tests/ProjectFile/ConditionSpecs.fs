@@ -38,3 +38,9 @@ let ``should detect net40-full as net40``() =
 [<Test>]
 let ``should detect net451 as special case of 4.5``() =
     FramworkCondition.DetectFromPath(@"..\Rx-Main\lib\net451\Rx.dll").FrameworkVersion |> shouldEqual (FrameworkExtension("v4.5","v4.5.1") )
+
+[<Test>]
+let ``should detect Silverlight version from path``() =
+    FramworkCondition.DetectFromPath(@"..\..\packages\RestSharp\lib\sl4\RestSharp.Silverlight.dll").FrameworkVersion |> shouldEqual (Framework "Silverlight")
+    FramworkCondition.DetectFromPath(@"..\..\packages\RestSharp\lib\sl4\RestSharp.Silverlight.dll").SilverlightVersion |> shouldEqual (Some "v4.0")
+    FramworkCondition.DetectFromPath(@"..\Rx-Main\lib\net20\Rx.dll").SilverlightVersion |> shouldEqual None
