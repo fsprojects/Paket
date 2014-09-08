@@ -6,7 +6,7 @@ open System
 let DictionaryDiscovery(graph : seq<string * string * (string * VersionRange) list>) = 
     { new IDiscovery with
           
-          member __.GetPackageDetails(force, source, package, resolverStrategy, version) = 
+          member __.GetPackageDetails(force, sources, package, resolverStrategy, version) = 
               async { 
                   let dependencies =
                     graph
@@ -18,19 +18,20 @@ let DictionaryDiscovery(graph : seq<string * string * (string * VersionRange) li
                                   VersionRange = v
                                   DirectDependencies = []
                                   ResolverStrategy = resolverStrategy
-                                  Source = source })
+                                  Sources = sources })
                   return "",dependencies
               }
           
-          member __.GetVersions(source, package) = 
+          member __.GetVersions(sources, package) = 
               async { 
-                  return graph
-                         |> Seq.filter (fun (p, _, _) -> p = package)
-                         |> Seq.map (fun (_, v, _) -> v)
+                  return [|
+                            graph
+                             |> Seq.filter (fun (p, _, _) -> p = package)
+                             |> Seq.map (fun (_, v, _) -> v)|]
               } }
 
 let resolve graph (dependencies: (string * VersionRange) seq) =
-    let packages = dependencies |> Seq.map (fun (n,v) -> { Name = n; VersionRange = v; Source = Nuget ""; DirectDependencies = []; ResolverStrategy = ResolverStrategy.Max })
+    let packages = dependencies |> Seq.map (fun (n,v) -> { Name = n; VersionRange = v; Sources = [Nuget ""]; DirectDependencies = []; ResolverStrategy = ResolverStrategy.Max })
     Resolver.Resolve(true, DictionaryDiscovery graph, packages).ResolvedVersionMap
 
 let getVersion resolved =
@@ -51,7 +52,7 @@ let getDefiningVersion resolved =
 
 let getSource resolved =
     match resolved with
-    | ResolvedDependency.Resolved x -> x.Referenced.Source
+    | ResolvedDependency.Resolved x -> x.Referenced.Sources |> List.head
 
 
 let normalizeLineEndings (text:string) = text.Replace("\r\n","\n").Replace("\r","\n").Replace("\n",Environment.NewLine)

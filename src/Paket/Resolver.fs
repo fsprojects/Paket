@@ -76,8 +76,9 @@ let Resolve(force, discovery : IDiscovery, rootDependencies:Package seq) =
                 | _ -> failwith "Not allowed"
             | _ ->
                 let allVersions = 
-                    discovery.GetVersions(originalPackage.Source,resolvedName) 
+                    discovery.GetVersions(originalPackage.Sources,resolvedName) 
                     |> Async.RunSynchronously
+                    |> Seq.concat
                     |> Seq.toList
                     |> List.map SemVer.parse
 
@@ -89,7 +90,7 @@ let Resolve(force, discovery : IDiscovery, rootDependencies:Package seq) =
                     allVersions
                     |> List.map (fun v -> v.ToString())
                     |> fun xs -> String.Join("  " +  Environment.NewLine, xs)
-                    |> failwithf "No package found which matches %s %A on %s.%sVersion available: %s" originalPackage.Name (originalPackage.VersionRange.ToString()) (originalPackage.Source.ToString()) Environment.NewLine 
+                    |> failwithf "No package found which matches %s %A on %A.%sVersion available: %s" originalPackage.Name (originalPackage.VersionRange.ToString()) originalPackage.Sources Environment.NewLine 
 
                 let resolvedVersion = 
                     match dependency with
@@ -100,13 +101,13 @@ let Resolve(force, discovery : IDiscovery, rootDependencies:Package seq) =
                         | ResolverStrategy.Min -> List.min versions
 
                 let _,dependentPackages = 
-                    discovery.GetPackageDetails(force, originalPackage.Source, originalPackage.Name, originalPackage.ResolverStrategy, resolvedVersion.ToString()) 
+                    discovery.GetPackageDetails(force, originalPackage.Sources, originalPackage.Name, originalPackage.ResolverStrategy, resolvedVersion.ToString()) 
                     |> Async.RunSynchronously
 
                 let resolvedPackage =
                     { Name = resolvedName
                       VersionRange = VersionRange.Exactly(resolvedVersion.ToString())
-                      Source = originalPackage.Source
+                      Sources = originalPackage.Sources
                       DirectDependencies = []
                       ResolverStrategy = originalPackage.ResolverStrategy }
 
@@ -128,7 +129,7 @@ let Resolve(force, discovery : IDiscovery, rootDependencies:Package seq) =
                                             VersionRange = dependentPackage.VersionRange
                                             DirectDependencies = []
                                             ResolverStrategy = originalPackage.ResolverStrategy
-                                            Source = dependentPackage.Source } }
+                                            Sources = dependentPackage.Sources } }
                     dependencies <- addDependency dependentPackage.Name dependencies newDependency
 
                 let resolved = 

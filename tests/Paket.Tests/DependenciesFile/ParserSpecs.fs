@@ -50,6 +50,23 @@ nuget "MinPackage" "1.1.3"
 let ``should read simple config with comments``() = 
     let cfg = DependenciesFile.FromCode config3
     cfg.DirectDependencies.["Rx-Main"] |> shouldEqual (VersionRange.Between("2.2", "3.0"))
-    (cfg.Packages |> List.find (fun p -> p.Name = "Rx-Main")).Source |> shouldEqual (Nuget "http://nuget.org/api/v2")
+    (cfg.Packages |> List.find (fun p -> p.Name = "Rx-Main")).Sources |> List.head |> shouldEqual (Nuget "http://nuget.org/api/v2")
     cfg.DirectDependencies.["FAKE"] |> shouldEqual (VersionRange.Between("3.0", "4.0"))
-    (cfg.Packages |> List.find (fun p -> p.Name = "FAKE")).Source |> shouldEqual (Nuget "http://nuget.org/api/v2")
+    (cfg.Packages |> List.find (fun p -> p.Name = "FAKE")).Sources |> List.head  |> shouldEqual (Nuget "http://nuget.org/api/v2")
+
+let config4 = """
+source "http://nuget.org/api/v2" // first source
+
+nuget "FAKE" "~> 3.0" 
+source "http://nuget.org/api/v3" // second
+nuget "Rx-Main" "~> 2.2"
+nuget "MinPackage" "1.1.3"
+"""
+
+[<Test>]
+let ``should read config with multiple sources``() = 
+    let cfg = DependenciesFile.FromCode config4
+
+    (cfg.Packages |> List.find (fun p -> p.Name = "Rx-Main")).Sources |> shouldEqual [Nuget "http://nuget.org/api/v3"; Nuget "http://nuget.org/api/v2"]
+    (cfg.Packages |> List.find (fun p -> p.Name = "MinPackage")).Sources |> shouldEqual [Nuget "http://nuget.org/api/v3"; Nuget "http://nuget.org/api/v2"]
+    (cfg.Packages |> List.find (fun p -> p.Name = "FAKE")).Sources |> shouldEqual [Nuget "http://nuget.org/api/v2"]

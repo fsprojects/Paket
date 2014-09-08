@@ -41,19 +41,19 @@ module DependenciesFileParser =
         | _ -> Blank
     
     let parseDependenciesFile (lines:string seq) = 
-        (("http://nuget.org/api/v2", []), lines)
-        ||> Seq.fold(fun (currentSource, packages) line ->
+        (([], []), lines)
+        ||> Seq.fold(fun (sources: PackageSource list, packages) line ->
             match line with
-            | Remote newSource -> newSource.TrimEnd([|'/'|]), packages
-            | Blank -> (currentSource, packages)
+            | Remote newSource -> (Nuget(newSource.TrimEnd([|'/'|])) :: sources), packages
+            | Blank -> (sources, packages)
             | Package details ->
                 let parts = details.Split('"')
                 let version = parts.[3]
-                currentSource, { Source = Nuget currentSource 
-                                 Name = parts.[1]
-                                 DirectDependencies = []
-                                 ResolverStrategy = if version.StartsWith "!" then ResolverStrategy.Min else ResolverStrategy.Max
-                                 VersionRange = parseVersionRange(version.Trim '!') } :: packages)
+                sources, { Sources = sources
+                           Name = parts.[1]
+                           DirectDependencies = []
+                           ResolverStrategy = if version.StartsWith "!" then ResolverStrategy.Min else ResolverStrategy.Max
+                           VersionRange = parseVersionRange(version.Trim '!') } :: packages)
         |> snd
         |> List.rev
 

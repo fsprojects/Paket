@@ -10,7 +10,7 @@ let ExtractPackages(force, packages : Package seq) =
                         match package.VersionRange with
                         | Specific v -> v
                         | v -> failwithf "Version error in lockfile for %s %A" package.Name v
-                    match package.Source with
+                    match List.head package.Sources with
                     | Nuget source -> 
                         async { let! packageFile = Nuget.DownloadPackage
                                                        (source, package.Name, package.ResolverStrategy, version.ToString(), force)

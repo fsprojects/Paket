@@ -22,18 +22,18 @@ let ``should parse lockfile``() =
     let result = LockFile.Parse(toLines lockFile) |> Seq.toArray
     result.Length |> shouldEqual 6
 
-    result.[0].Source |> shouldEqual (Nuget "http://nuget.org/api/v2")
+    result.[0].Sources |> List.head |> shouldEqual (Nuget "http://nuget.org/api/v2")
     result.[0].Name |> shouldEqual "Castle.Windsor"
     result.[0].VersionRange |> shouldEqual (VersionRange.Exactly "2.1")
 
-    result.[1].Source |> shouldEqual (Nuget "http://nuget.org/api/v2")
+    result.[1].Sources |> List.head |> shouldEqual (Nuget "http://nuget.org/api/v2")
     result.[1].Name |> shouldEqual "Castle.Windsor-log4net"
     result.[1].VersionRange |> shouldEqual (VersionRange.Exactly "3.3")
     
-    result.[4].Source |> shouldEqual (Nuget "http://nuget.org/api/v3")
+    result.[4].Sources |> List.head |> shouldEqual (Nuget "http://nuget.org/api/v3")
     result.[4].Name |> shouldEqual "Rx-Core"
     result.[4].VersionRange |> shouldEqual (VersionRange.Exactly "2.1")
 
-    result.[5].Source |> shouldEqual (Nuget "http://nuget.org/api/v3")
+    result.[5].Sources |> List.head |> shouldEqual (Nuget "http://nuget.org/api/v3")
     result.[5].Name |> shouldEqual "Rx-Main"
     result.[5].VersionRange |> shouldEqual (VersionRange.Exactly "2.0")

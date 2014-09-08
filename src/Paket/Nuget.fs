@@ -119,7 +119,7 @@ let getDetailsFromNugetViaOData nugetURL package resolverStrategy version =
                    { Name = name
                      // TODO: Parse nuget version ranges - see http://docs.nuget.org/docs/reference/versioning
                      VersionRange = parseVersionRange version
-                     Source = Nuget nugetURL
+                     Sources = [Nuget nugetURL]
                      DirectDependencies = []
                      ResolverStrategy = resolverStrategy })
             |> Array.toList
@@ -226,10 +226,31 @@ let NugetDiscovery =
     { new IDiscovery with
           
           //TODO: Should we really be able to call these methods with invalid arguments?
-          member __.GetPackageDetails(force, source, package, resolverStrategy, version) =
-              match source with
-              | Nuget url -> getDetailsFromNuget force url package resolverStrategy version         
+          member __.GetPackageDetails(force, sources, package, resolverStrategy, version) = async { 
+                  let rec tryNext xs = 
+                      async { 
+                          match xs with
+                          | source :: rest -> 
+                              try 
+                                  match source with
+                                  | Nuget url -> 
+                                    let! details = getDetailsFromNuget force url package resolverStrategy version
+                                    let s,packages = details
+
+                                    return s,(packages |> List.map (fun package -> {package with Sources = sources})) 
+                              with _ ->
+                                return! tryNext rest
+                          | [] -> 
+                              failwithf "Couldn't get package details for package %s on %A" package sources
+                              return! tryNext []
+                      }
+
+                  return! tryNext sources
+              }
           
-          member __.GetVersions(source, package) = 
-              match source with
-              | Nuget url -> getAllVersions (url, package)}
+          member __.GetVersions(sources, package) =
+              sources
+              |> Seq.map (fun source -> 
+                            match source with
+                            | Nuget url -> getAllVersions (url, package))
+              |> Async.Parallel }
