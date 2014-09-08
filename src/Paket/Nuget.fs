@@ -41,9 +41,28 @@ let getAllVersions (nugetURL, package) =
         match versionDataCache.TryGetValue key with
         | true, data -> return data
         | _ -> 
-            let! result = getAllVersionsFromNugetOData (nugetURL, package)
-            versionDataCache.Add(key, result)
-            return result
+            let! raw = sprintf "%s/package-versions/%s" nugetURL package |> safeGetFromUrl
+
+            match raw with
+            | None -> 
+                let! result = getAllVersionsFromNugetOData (nugetURL, package)
+                versionDataCache.Add(key, result)
+                return result
+            | Some data -> 
+                try
+                    try
+                        let result = JsonConvert.DeserializeObject<string []>(data) |> Array.toSeq
+                        versionDataCache.Add(key, result)
+                        return result
+                    with
+                    | _ ->
+                        let! result = getAllVersionsFromNugetOData (nugetURL, package)
+                        versionDataCache.Add(key, result)
+                        return result
+                with 
+                | exn -> 
+                    failwithf "Could not get data from %s for package %s.%s Message: %s" nugetURL package Environment.NewLine exn.Message
+                    return Seq.empty
     }
 
 /// Parses NuGet version ranges.
