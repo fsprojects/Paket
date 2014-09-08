@@ -11,7 +11,7 @@ NUGET
     Microsoft.AspNet.Razor (2.0.30506.0)
     NUnit (2.6.3)
     NUnit.Runners (2.6.3)
-    Newtonsoft.Json (6.0.4)
+    Newtonsoft.Json (6.0.5)
     RazorEngine (3.3.0)
       Microsoft.AspNet.Razor (>= 2.0.30506.0)
     SourceLink.Fake (0.3.4)
