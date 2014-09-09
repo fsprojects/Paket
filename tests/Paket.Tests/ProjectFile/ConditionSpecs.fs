@@ -57,6 +57,10 @@ let ``should detect net45-full``() =
     FramworkCondition.DetectFromPath(@"..\packages\Ninject\lib\net45-full\Ninject.dll").First().Framework |> shouldEqual (DotNetFramework(Framework "v4.5",Full))
 
 [<Test>]
+let ``should detect net``() =
+    FramworkCondition.DetectFromPath(@"..\packages\RhinoMocks\lib\net\Rhino.Mocks.dll").First().Framework |> shouldEqual (DotNetFramework(All,Full))
+
+[<Test>]
 let ``should detect multi-libs``() =
     FramworkCondition.DetectFromPath(@"..\packages\Janitor.Fody\Lib\portable-net4+sl5+wp8+win8+wpa81+MonoAndroid16+MonoTouch40\Janitor.dll").First().Framework |> shouldEqual (DotNetFramework(Framework "v4.0",Full))
     FramworkCondition.DetectFromPath(@"..\packages\Janitor.Fody\Lib\portable-net4+sl5+wp8+win8+wpa81+MonoAndroid16+MonoTouch40\Janitor.dll").Skip(1).First().Framework |> shouldEqual (Silverlight "v5.0")
