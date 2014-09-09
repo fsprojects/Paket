@@ -45,3 +45,7 @@ let ``can compare semvers``() =
     (SemVer.parse "2.3.4-alpha2") |> shouldBeGreaterThan (SemVer.parse "2.3.4-alpha")
     (SemVer.parse "2.3.4-alpha003") |> shouldBeGreaterThan (SemVer.parse "2.3.4-alpha2")
     (SemVer.parse "2.3.4-rc") |> shouldBeGreaterThan (SemVer.parse "2.3.4-beta2")
+
+[<Test>]
+let ``can compare 4-parts semvers``() =
+    (SemVer.parse "1.0.0.2420") |> shouldBeGreaterThan (SemVer.parse "1.0")
