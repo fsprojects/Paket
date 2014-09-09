@@ -66,6 +66,8 @@ type ProjectFile =
             if !remove then
                 node.ParentNode.RemoveChild(node) |> ignore
 
+    member this.CreateNode(name) = this.Document.CreateElement(name, ProjectFile.DefaultNameSpace)
+
     member this.DeleteEmptyReferences() =
         this.DeleteIfEmpty("//ns:Project/ns:Choose/ns:Otherwise/ns:ItemGroup")        
         this.DeleteIfEmpty("//ns:Project/ns:Choose/ns:When/ns:ItemGroup")
@@ -93,26 +95,26 @@ type ProjectFile =
                     |> List.sortBy (fun lib -> lib.Path)
 
                 for lib in libsWithSameFrameworkVersion do                
-                    let whenNode = this.Document.CreateElement("When", ProjectFile.DefaultNameSpace)
+                    let whenNode = this.CreateNode "When"
                     whenNode.SetAttribute("Condition", lib.Condition.GetCondition()) |> ignore
                         
-                    let reference = this.Document.CreateElement("Reference", ProjectFile.DefaultNameSpace)
+                    let reference = this.CreateNode "Reference"
                     reference.SetAttribute("Include", lib.DllName)
 
-                    let element = this.Document.CreateElement("HintPath",ProjectFile.DefaultNameSpace)
+                    let element = this.CreateNode "HintPath"
                     element.InnerText <- lib.Path
             
                     reference.AppendChild(element) |> ignore
  
-                    let element = this.Document.CreateElement("Private",ProjectFile.DefaultNameSpace)
+                    let element = this.CreateNode "Private"
                     element.InnerText <- "True"
                     reference.AppendChild(element) |> ignore
 
-                    let element = this.Document.CreateElement("Paket",ProjectFile.DefaultNameSpace)
+                    let element = this.CreateNode "Paket"
                     element.InnerText <- "True"            
                     reference.AppendChild(element) |> ignore
 
-                    let itemGroup = this.Document.CreateElement("ItemGroup", ProjectFile.DefaultNameSpace)
+                    let itemGroup = this.CreateNode "ItemGroup"
                     itemGroup.AppendChild(reference) |> ignore
                     whenNode.AppendChild(itemGroup) |> ignore
                     chooseNode.AppendChild(whenNode) |> ignore
@@ -122,26 +124,26 @@ type ProjectFile =
                 match !lastLib with
                 | None -> ()
                 | Some lib ->
-                    let whenNode = this.Document.CreateElement("When", ProjectFile.DefaultNameSpace)
+                    let whenNode = this.CreateNode "When"
                     whenNode.SetAttribute("Condition", lib.Condition.GetGroupCondition()) |> ignore
 
-                    let reference = this.Document.CreateElement("Reference", ProjectFile.DefaultNameSpace)
+                    let reference = this.CreateNode "Reference"
                     reference.SetAttribute("Include", lib.DllName)
 
-                    let element = this.Document.CreateElement("HintPath",ProjectFile.DefaultNameSpace)
+                    let element = this.CreateNode "HintPath"
                     element.InnerText <- lib.Path
             
                     reference.AppendChild(element) |> ignore
  
-                    let element = this.Document.CreateElement("Private",ProjectFile.DefaultNameSpace)
+                    let element = this.CreateNode "Private"
                     element.InnerText <- "True"
                     reference.AppendChild(element) |> ignore
 
-                    let element = this.Document.CreateElement("Paket",ProjectFile.DefaultNameSpace)
+                    let element = this.CreateNode "Paket"
                     element.InnerText <- "True"            
                     reference.AppendChild(element) |> ignore
 
-                    let itemGroup = this.Document.CreateElement("ItemGroup", ProjectFile.DefaultNameSpace)
+                    let itemGroup = this.CreateNode "ItemGroup"
                     itemGroup.AppendChild(reference) |> ignore
                     whenNode.AppendChild(itemGroup) |> ignore
                     chooseNode.AppendChild(whenNode) |> ignore
