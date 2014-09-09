@@ -22,8 +22,7 @@ How to get Paket
   <div class="span1"></div>
 </div>
 
-* [Release Notes](RELEASE_NOTES.html)
-* [![NuGet Status](http://img.shields.io/nuget/v/Paket.svg?style=flat)](https://www.nuget.org/packages/Paket/)
+[![NuGet Status](http://img.shields.io/nuget/v/Paket.svg?style=flat)](https://www.nuget.org/packages/Paket/)
 
 Getting Started
 ---------------
