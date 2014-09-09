@@ -67,3 +67,8 @@ let ``can check if in range for Range``() =
     "2.5" |> isInRange (VersionRange.Range (Closed, (SemVer.parse "2.2"), (SemVer.parse "3.0"), Closed)) |> shouldEqual true
     "3.0" |> isInRange (VersionRange.Range (Closed, (SemVer.parse "2.2"), (SemVer.parse "3.0"), Closed)) |> shouldEqual true
     "3.2" |> isInRange (VersionRange.Range (Closed, (SemVer.parse "2.2"), (SemVer.parse "3.0"), Closed)) |> shouldEqual false
+
+[<Test>]
+let ``can check if in range for 4-parts range``() =    
+    "1.0.0.3108" |> isInRange (DependenciesFileParser.parseVersionRange "1.0.0.3108") |> shouldEqual true
+    "1.0.0.2420" |> isInRange (DependenciesFileParser.parseVersionRange "~> 1.0") |> shouldEqual true
