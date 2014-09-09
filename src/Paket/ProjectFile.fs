@@ -7,7 +7,6 @@ open System.Collections.Generic
 
 /// The Framework version.
 type FrameworkVersion =
-| Unknown
 | All
 | Framework of string
 
@@ -32,27 +31,45 @@ type FrameworkIdentifier =
 type FramworkCondition = 
     { Framework : FrameworkIdentifier;
       CLRVersion : string option; }
-    static member DetectFromPath(path : string) = 
+    static member DetectFromPath(path : string) : FramworkCondition list = 
+
+        let rec mapPath acc parts =
+            match parts with
+            | [] -> acc
+            | path::rest ->
+                match path with
+                | "1.0" -> mapPath ({ Framework = DotNetFramework(All,Full); CLRVersion = Some "1.0" } :: acc) rest
+                | "1.1" -> mapPath ({ Framework = DotNetFramework(All,Full); CLRVersion = Some "1.1" } :: acc) rest
+                | "2.0" -> mapPath ({ Framework = DotNetFramework(All,Full); CLRVersion = Some "2.0" } :: acc) rest
+                | "net20" -> mapPath ({ Framework = DotNetFramework(Framework "v2.0",Full); CLRVersion = None } :: acc) rest
+                | "net35" -> mapPath ({ Framework = DotNetFramework(Framework "v3.5",Full); CLRVersion = None } :: acc) rest
+                | "net4" -> mapPath ({ Framework = DotNetFramework(Framework "v4.0",Full); CLRVersion = None } :: acc) rest
+                | "net40" -> mapPath ({ Framework = DotNetFramework(Framework "v4.0",Full); CLRVersion = None } :: acc) rest                
+                | "net40-full" -> mapPath ({ Framework = DotNetFramework(Framework "v4.0",Full); CLRVersion = None } :: acc) rest
+                | "net40-client" -> mapPath ({ Framework = DotNetFramework(Framework "v4.0",Client); CLRVersion = None } :: acc) rest
+                | "portable-net4" -> mapPath ({ Framework = DotNetFramework(Framework "v4.0",Full); CLRVersion = None } :: acc) rest
+                | "net45" -> mapPath ({ Framework = DotNetFramework(Framework "v4.5",Full); CLRVersion = None } :: acc) rest
+                | "net45-full" -> mapPath ({ Framework = DotNetFramework(Framework "v4.5",Full); CLRVersion = None } :: acc) rest
+                | "net451" -> mapPath ({ Framework = DotNetFramework(Framework "v4.5.1",Full); CLRVersion = None } :: acc) rest
+                | "sl3" -> mapPath ({ Framework = Silverlight("v3.0"); CLRVersion = None; } :: acc) rest
+                | "sl4" -> mapPath ({ Framework = Silverlight("v4.0"); CLRVersion = None; } :: acc) rest
+                | "sl5" -> mapPath ({ Framework = Silverlight("v5.0"); CLRVersion = None; } :: acc) rest
+                | "sl4-wp" -> mapPath ({ Framework = WindowsPhoneApp("7.1"); CLRVersion = None; } :: acc) rest
+                | "sl4-wp71" -> mapPath ({ Framework = WindowsPhoneApp("7.1"); CLRVersion = None; } :: acc) rest
+                | _ -> mapPath acc rest
+               
         let path = path.Replace("\\", "/").ToLower()
         let fi = new FileInfo(path)
-        if path.Contains "lib/1.0/" then { Framework = DotNetFramework(All,Full); CLRVersion = Some "1.0" }
-        elif path.Contains "lib/1.1/" then { Framework = DotNetFramework(All,Full); CLRVersion = Some "1.1" }
-        elif path.Contains "lib/2.0/" then { Framework = DotNetFramework(All,Full); CLRVersion = Some "2.0" }
-        elif path.Contains "lib/net20/" then { Framework = DotNetFramework(Framework "v2.0",Full); CLRVersion = None }
-        elif path.Contains "lib/net35/" then { Framework = DotNetFramework(Framework "v3.5",Full); CLRVersion = None }
-        elif path.Contains "lib/net4/" then { Framework = DotNetFramework(Framework "v4.0",Full); CLRVersion = None }
-        elif path.Contains "lib/net40/" then { Framework = DotNetFramework(Framework "v4.0",Full); CLRVersion = None }
-        elif path.Contains "lib/net40-full/" then { Framework = DotNetFramework(Framework "v4.0",Full); CLRVersion = None }
-        elif path.Contains "lib/net40-client/" then { Framework = DotNetFramework(Framework "v4.0",Client); CLRVersion = None }
-        elif path.Contains "lib/net45/" then { Framework = DotNetFramework(Framework "v4.5",Full); CLRVersion = None }
-        elif path.Contains "lib/net45-full/" then { Framework = DotNetFramework(Framework "v4.5",Full); CLRVersion = None }
-        elif path.Contains "lib/net451/" then { Framework = DotNetFramework(Framework "v4.5.1",Full); CLRVersion = None }
-        elif path.Contains "lib/sl3/" then { Framework = Silverlight("v3.0"); CLRVersion = None; }
-        elif path.Contains "lib/sl4/" then { Framework = Silverlight("v4.0"); CLRVersion = None; }
-        elif path.Contains "lib/sl4-wp/" then { Framework = WindowsPhoneApp("7.1"); CLRVersion = None; }
-        elif path.Contains "lib/sl4-wp71/" then { Framework = WindowsPhoneApp("7.1"); CLRVersion = None; }
-        elif path.Contains("lib/" + fi.Name.ToLower()) then { Framework = DotNetFramework(All,Full); CLRVersion = None; }
-        else { Framework = DotNetFramework(Unknown,Full); CLRVersion = None }
+
+        if path.Contains("lib/" + fi.Name.ToLower()) then [{ Framework = DotNetFramework(All,Full); CLRVersion = None; }] else
+        let startPos = path.IndexOf("lib/")
+        let endPos = path.IndexOf(fi.Name.ToLower())
+        if startPos < 0 || endPos < 0 then [] else
+        path.Substring(startPos+4,endPos-startPos-5).Split('+')
+        |> Seq.toList
+        |> mapPath []
+        |> List.rev
+        
 
 /// Contains methods to read and manipulate project file ndoes.
 type InstallInfo = {
@@ -67,9 +84,10 @@ module InstallRules =
               if usedPackages.Contains package.Name then 
                   let libraries = libraries |> Seq.toArray
                   for (lib : FileInfo) in libraries do
-                      yield { DllName = lib.Name.Replace(lib.Extension, "")
-                              Path = lib.FullName
-                              Condition = FramworkCondition.DetectFromPath lib.FullName } ]
+                      for condition in FramworkCondition.DetectFromPath lib.FullName do
+                          yield { DllName = lib.Name.Replace(lib.Extension, "")
+                                  Path = lib.FullName
+                                  Condition = condition } ]
         |> Seq.groupBy (fun info -> info.DllName, info.Condition.Framework.GetGroup())
         |> Seq.groupBy (fun ((name, _), _) -> name)
     
