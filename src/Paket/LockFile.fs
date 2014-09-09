@@ -84,7 +84,7 @@ let private (|Remote|Package|Dependency|Spec|Header|Blank|) (line:string) =
     | trimmed when line.StartsWith "      " -> Dependency (trimmed.Split ' ' |> Seq.head)
     | trimmed -> Package trimmed
 
-/// Parses a lockfile from lines
+/// Parses a Lock file from lines
 let Parse(lines : string seq) =
     (("http://nuget.org/api/v2", []), lines)
     ||> Seq.fold(fun (currentSource, packages) line ->
@@ -116,12 +116,12 @@ let Create(force,dependenciesFile) =
     tracefn "Analyzing %s" dependenciesFile
     cfg.Resolve(force,Nuget.NugetDiscovery)
 
-/// Updates the lockfile with the analyzed dependencies from the Dependencies file.
+/// Updates the Lock file with the analyzed dependencies from the Dependencies file.
 let Update(force, packageFile, lockFile) = 
     let resolution = Create(force,packageFile)
     let errors = extractErrors resolution
     if errors = "" then
         File.WriteAllText(lockFile, format resolution)
-        tracefn "Lockfile written to %s" lockFile
+        tracefn "Locked version resolutions written to %s" lockFile
     else
         failwith <| "Could not resolve dependencies." + Environment.NewLine + errors
