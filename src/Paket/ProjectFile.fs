@@ -22,9 +22,9 @@ type FrameworkIdentifier =
 | Silverlight of string
     member x.GetGroup() =
         match x with
-        | DotNetFramework(v,_) -> ".NET"  
-        | WindowsPhoneApp(v) -> "WindowsPhoneApp"
-        | Silverlight(v) -> "Silverlight"
+        | DotNetFramework _ -> ".NET"  
+        | WindowsPhoneApp _ -> "WindowsPhoneApp"
+        | Silverlight _ -> "Silverlight"
 
 
 /// Contains methods to analyze .NET Framework Conditions.
