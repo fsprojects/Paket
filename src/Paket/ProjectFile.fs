@@ -90,10 +90,8 @@ type ProjectFile =
         whenNode.AppendChild(itemGroup) |> ignore
         whenNode
 
-    member this.DeleteEmptyReferences() =
-        this.DeleteIfEmpty("//ns:Project/ns:Choose/ns:Otherwise/ns:ItemGroup")        
+    member this.DeleteEmptyReferences() = 
         this.DeleteIfEmpty("//ns:Project/ns:Choose/ns:When/ns:ItemGroup")
-        this.DeleteIfEmpty("//ns:Project/ns:Choose/ns:Otherwise")
         this.DeleteIfEmpty("//ns:Project/ns:Choose/ns:When")
         this.DeleteIfEmpty("//ns:Project/ns:Choose")
 
