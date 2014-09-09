@@ -7,6 +7,24 @@ It enables precise and predictable control over what packages the projects withi
   [bundler]: http://bundler.io/
   [nuget]: https://www.nuget.org/ 
 
+How to get Paket
+----------------
+
+<div class="row">
+  <div class="span1"></div>
+  <div class="span6">
+    <div class="well well-small" id="nuget">
+      Paket is available <a href="https://nuget.org/packages/Paket">on NuGet</a>.
+      To install the tool, run the following command in the <a href="http://docs.nuget.org/docs/start-here/using-the-package-manager-console">Package Manager Console</a>:
+      <pre>PM> Install-Package Paket</pre>
+    </div>
+  </div>
+  <div class="span1"></div>
+</div>
+
+* [Release Notes](RELEASE_NOTES.html)
+* [![NuGet Status](http://img.shields.io/nuget/v/Paket.svg?style=flat)](https://www.nuget.org/packages/Paket/)
+
 Getting Started
 ---------------
 
