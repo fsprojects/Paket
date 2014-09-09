@@ -65,6 +65,16 @@ let getAllVersions (nugetURL, package) =
                     return Seq.empty
     }
 
+/// Gets versions of the given package from local Nuget feed.
+let getAllVersionsFromLocalPath (localNugetPath, package) =
+    async {
+        return Directory.EnumerateFiles(localNugetPath)
+               |> Seq.choose (fun f -> 
+                                   let _match = Text.RegularExpressions.Regex(sprintf @"%s\.(\d.*)\.nupkg" package).Match(f)
+                                   if _match.Groups.Count > 1 then Some _match.Groups.[1].Value else None)
+    }
+
+
 /// Parses NuGet version ranges.
 let parseVersionRange (text:string) = 
     if text = null then nullArg "text" 
@@ -179,7 +189,43 @@ let getDetailsFromNuget force nugetURL package resolverStrategy version =
         with
         | _ -> return! getDetailsFromNugetViaOData nugetURL package resolverStrategy version 
     }    
+    
+/// Reads direct dependencies from a nupkg file
+let getDetailsFromLocalFile path package resolverStrategy version =
+    async {
+        let nupkg = FileInfo(Path.Combine(path, sprintf "%s.%s.nupkg" package version))
+        let zip = ZipFile.Read(nupkg.FullName)
+        let zippedNuspec = (zip |> Seq.find (fun f -> f.FileName.EndsWith ".nuspec"))
 
+        zippedNuspec.Extract(Path.GetTempPath(), ExtractExistingFileAction.OverwriteSilently)
+
+        let nuspec = FileInfo(Path.Combine(Path.GetTempPath(), zippedNuspec.FileName))
+        
+        let xmlDoc = XmlDocument()
+        nuspec.FullName |> xmlDoc.Load
+
+        let ns = new XmlNamespaceManager(xmlDoc.NameTable);
+        ns.AddNamespace("x", "http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd");
+        ns.AddNamespace("y", "http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd");
+        
+        let nsUri = xmlDoc.LastChild.NamespaceURI
+        let pfx = ns.LookupPrefix(nsUri)
+
+        let dependencies = 
+            xmlDoc.SelectNodes(sprintf "/%s:package/%s:metadata/%s:dependencies/%s:dependency" pfx pfx pfx pfx, ns)
+            |> Seq.cast<XmlNode>
+            |> Seq.map (fun node -> 
+                            {Name = node.Attributes.["id"].Value
+                             VersionRange = parseVersionRange node.Attributes.["version"].Value
+                             Sources = [LocalNuget path]
+                             DirectDependencies = []
+                             ResolverStrategy = resolverStrategy }) 
+            |> Seq.toList
+
+        File.Delete(nuspec.FullName)
+
+        return package,dependencies
+    }
 
 /// Downloads the given package to the NuGet Cache folder
 let DownloadPackage(source, name, resolverStrategy, version, force) = 
@@ -256,7 +302,10 @@ let NugetDiscovery =
                                     let! details = getDetailsFromNuget force url package resolverStrategy version
                                     let s,packages = details
 
-                                    return s,(packages |> List.map (fun package -> {package with Sources = sources})) 
+                                    return s,(packages |> List.map (fun package -> {package with Sources = sources}))
+                                  | LocalNuget path -> 
+                                    let! s,packages = getDetailsFromLocalFile path package resolverStrategy version
+                                    return s,(packages |> List.map (fun package -> {package with Sources = sources}))
                               with _ ->
                                 return! tryNext rest
                           | [] -> 
@@ -271,5 +320,6 @@ let NugetDiscovery =
               sources
               |> Seq.map (fun source -> 
                             match source with
-                            | Nuget url -> getAllVersions (url, package))
+                            | Nuget url -> getAllVersions (url, package)
+                            | LocalNuget path -> getAllVersionsFromLocalPath (path, package))
               |> Async.Parallel }

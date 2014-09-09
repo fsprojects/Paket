@@ -9,3 +9,11 @@ nuget "FSharp.Formatting" "!~> 2.4"
 nuget "RestSharp" ">= 0"
 nuget "DotNetZip" "~> 1.9.3"
 nuget "SourceLink.Fake" "~> 0.3"
+
+source "d:\NugetRepo"
+
+nuget "Moq" "4.1.1309.1617"
+
+source "\\THEIMOWSKI-W7\NugetRepoShare"
+
+nuget "Castle.Windsor" "3.3.0"

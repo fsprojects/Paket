@@ -1,4 +1,9 @@
 NUGET
+  remote: \\THEIMOWSKI-W7\NugetRepoShare
+  specs:
+    Castle.Core (3.3.0)
+    Castle.Windsor (3.3.0)
+      Castle.Core (>= 3.3.0)
   remote: http://nuget.org/api/v2
   specs:
     DotNetZip (1.9.3)
@@ -17,3 +22,6 @@ NUGET
     RestSharp (104.4.0)
     SourceLink.Fake (0.3.4)
     UnionArgParser (0.8.0)
+  remote: d:\NugetRepo
+  specs:
+    Moq (4.1.1309.1617)

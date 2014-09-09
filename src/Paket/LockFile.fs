@@ -57,6 +57,7 @@ let format (resolved : PackageResolution) =
                 | Specific v -> 
                     match List.head d.Referenced.Sources with
                     | Nuget url -> url,d.Referenced,v
+                    | LocalNuget path -> path,d.Referenced,v
             | Conflict(c1,c2) ->
                 traceErrorfn "%A %A" c1 c2
                 failwith ""
@@ -94,7 +95,7 @@ let Parse(lines : string seq) =
         | Package details ->
             let parts = details.Split(' ')
             let version = parts.[1].Replace("(", "").Replace(")", "")
-            currentSource, { Sources = [Nuget currentSource]
+            currentSource, { Sources = [PackageSource.Parse currentSource]
                              Name = parts.[0]
                              DirectDependencies = []
                              ResolverStrategy = Max
