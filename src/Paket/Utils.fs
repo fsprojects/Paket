@@ -16,16 +16,6 @@ let trace (s : string) = lock monitor (fun () -> printfn "%s" s)
 /// [omit]
 let tracefn fmt = Printf.ksprintf trace fmt
 
-
-let writeText toStdErr color newLine text = 
-    
-    
-    if toStdErr then 
-        if newLine then eprintfn "%s" text
-        else eprintf "%s" text
-    else if newLine then printfn "%s" text
-    else printf "%s" text
-
 /// [omit]
 let traceError (s : string) = 
     lock monitor 
