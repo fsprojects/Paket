@@ -70,3 +70,51 @@ let ``should read config with multiple sources``() =
     (cfg.Packages |> List.find (fun p -> p.Name = "Rx-Main")).Sources |> shouldEqual [Nuget "http://nuget.org/api/v3"; Nuget "http://nuget.org/api/v2"]
     (cfg.Packages |> List.find (fun p -> p.Name = "MinPackage")).Sources |> shouldEqual [Nuget "http://nuget.org/api/v3"; Nuget "http://nuget.org/api/v2"]
     (cfg.Packages |> List.find (fun p -> p.Name = "FAKE")).Sources |> shouldEqual [Nuget "http://nuget.org/api/v2"]
+
+let config5 = """source "http://nuget.org/api/v2"
+
+nuget "RavenDB.Client" ">= 0"
+nuget RavenDB.Server" ">= 0"  // missing "
+"""
+
+[<Test>]
+let ``should report errors if pacakge misses "``() = 
+    try
+        DependenciesFile.FromCode config5 |> ignore
+        failwith "No message given"
+    with 
+    | exn ->
+        exn.Message.Contains("Paket.dependencies") |> shouldEqual true
+        exn.Message.Contains("line 4") |> shouldEqual true
+        exn.Message.Contains("missing \"") |> shouldEqual true
+
+let config6 = """source "http://nuget.org/api/v2"
+nuget "Fody" "1.25.0"
+nuget "Obsolete.Fody" 3.1.0.0"  // missing "
+"""
+
+[<Test>]
+let ``should report errors if version misses "``() = 
+    try
+        DependenciesFile.FromCode config6 |> ignore
+        failwith "No message given"
+    with 
+    | exn ->
+        exn.Message.Contains("Paket.dependencies") |> shouldEqual true
+        exn.Message.Contains("line 3") |> shouldEqual true
+        exn.Message.Contains("missing \"") |> shouldEqual true
+
+let config7 = """nuget "Fody" "> 0"
+"""
+
+[<Test>]
+let ``should report errors if nuget is single``() = 
+    try
+        DependenciesFile.FromCode config7 |> ignore
+        failwith "No message given"
+    with 
+    | exn ->
+        exn.Message.Contains("Paket.dependencies") |> shouldEqual true
+        exn.Message.Contains("line 1") |> shouldEqual true
+        exn.Message.Contains("could not parse version range") |> shouldEqual true
+        exn.Message.Contains("> 0") |> shouldEqual true

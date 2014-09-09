@@ -8,27 +8,30 @@ open Paket
 module DependenciesFileParser = 
 
     let parseVersionRange (text : string) : VersionRange = 
-        // TODO: Make this pretty
-        if text.StartsWith "~> " then 
-            let min = text.Replace("~> ", "")
-            let parts = min.Split('.')            
-            if parts.Length > 1 then
-                let idx = parts.Length-2
-                parts.[idx] <-
-                    match Int32.TryParse parts.[idx] with
-                    | true, number -> (number+1).ToString()
-                    | _ ->  parts.[idx]
-                parts.[parts.Length-1] <- "0"
-            else
-                parts.[0] <-
-                    match Int32.TryParse parts.[0] with
-                    | true, number -> (number+1).ToString()
-                    | _ ->  parts.[0]
+        try
+            // TODO: Make this pretty
+            if text.StartsWith "~> " then 
+                let min = text.Replace("~> ", "")
+                let parts = min.Split('.')            
+                if parts.Length > 1 then
+                    let idx = parts.Length-2
+                    parts.[idx] <-
+                        match Int32.TryParse parts.[idx] with
+                        | true, number -> (number+1).ToString()
+                        | _ ->  parts.[idx]
+                    parts.[parts.Length-1] <- "0"
+                else
+                    parts.[0] <-
+                        match Int32.TryParse parts.[0] with
+                        | true, number -> (number+1).ToString()
+                        | _ ->  parts.[0]
 
-            VersionRange.Between(min, String.Join(".", parts))
-        else if text.StartsWith ">= " then VersionRange.AtLeast(text.Replace(">= ", ""))
-        else if text.StartsWith "= " then VersionRange.Exactly(text.Replace("= ", ""))
-        else VersionRange.Exactly(text)
+                VersionRange.Between(min, String.Join(".", parts))
+            else if text.StartsWith ">= " then VersionRange.AtLeast(text.Replace(">= ", ""))
+            else if text.StartsWith "= " then VersionRange.Exactly(text.Replace("= ", ""))
+            else VersionRange.Exactly(text)
+        with
+        | _ -> failwithf "could not parse version range \"%s\"" text
 
     let private (|Remote|Package|Blank|) (line:string) =
         match line.Trim() with
@@ -41,20 +44,26 @@ module DependenciesFileParser =
         | _ -> Blank
     
     let parseDependenciesFile (lines:string seq) = 
-        (([], []), lines)
-        ||> Seq.fold(fun (sources: PackageSource list, packages) line ->
-            match line with
-            | Remote newSource -> (Nuget(newSource.TrimEnd([|'/'|])) :: sources), packages
-            | Blank -> (sources, packages)
-            | Package details ->
-                let parts = details.Split('"')
-                let version = parts.[3]
-                sources, { Sources = sources
-                           Name = parts.[1]
-                           DirectDependencies = []
-                           ResolverStrategy = if version.StartsWith "!" then ResolverStrategy.Min else ResolverStrategy.Max
-                           VersionRange = parseVersionRange(version.Trim '!') } :: packages)
-        |> snd
+        ((0,[], []), lines)
+        ||> Seq.fold(fun (lineNo, sources: PackageSource list, packages) line ->
+            let lineNo = lineNo + 1
+            try
+                match line with
+                | Remote newSource -> lineNo, (Nuget(newSource.TrimEnd([|'/'|])) :: sources), packages
+                | Blank -> lineNo, sources, packages
+                | Package details ->
+                    let parts = details.Split('"')
+                    if parts.Length < 4 || String.IsNullOrWhiteSpace parts.[1] || String.IsNullOrWhiteSpace parts.[3] then
+                        failwith "missing \""
+                    let version = parts.[3]
+                    lineNo, sources, { Sources = sources
+                                       Name = parts.[1]
+                                       DirectDependencies = []
+                                       ResolverStrategy = if version.StartsWith "!" then ResolverStrategy.Min else ResolverStrategy.Max
+                                       VersionRange = parseVersionRange(version.Trim '!') } :: packages
+            with
+            | exn -> failwithf "Error in Paket.dependencies line %d%s  %s" lineNo Environment.NewLine exn.Message)
+        |> fun (_,_,x) -> x
         |> List.rev
 
 /// Allows to parse and analyze Dependencies files.
