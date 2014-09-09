@@ -33,8 +33,8 @@ let ``should detect net40-full as net40``() =
     FramworkCondition.DetectFromPath(@"..\packages\log4net\lib\net40\log4net.dll").Framework|> shouldEqual (DotNetFramework(Framework "v4.0",Full))
 
 [<Test>]
-let ``should detect net451 as special case of 4.5``() =
-    FramworkCondition.DetectFromPath(@"..\Rx-Main\lib\net451\Rx.dll").Framework|> shouldEqual (DotNetFramework(FrameworkExtension("v4.5","v4.5.1"),Full))
+let ``should detect net451``() =
+    FramworkCondition.DetectFromPath(@"..\Rx-Main\lib\net451\Rx.dll").Framework|> shouldEqual (DotNetFramework(Framework "v4.5.1",Full))
 
 [<Test>]
 let ``should detect Silverlight version from path``() =
