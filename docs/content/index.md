@@ -1,8 +1,6 @@
 What is Paket?
 ==============
 
-First of all: Paket is work in progress!
-
 Paket is a package manager for .NET and mono projects. It's inspired by [bundler][bundler], but designed to work well with [NuGet][nuget] packages. 
 It enables precise and predictable control over what packages the projects within your application reference. More details are in the [FAQs](faq.html).
 
@@ -12,7 +10,7 @@ It enables precise and predictable control over what packages the projects withi
 Getting Started
 ---------------
 
-Specify the version-rules of all dependencies used in your application in a [Dependencies](Dependencies_file.html) file in your project's root:
+Specify the version-rules of all dependencies used in your application in a [Paket.dependencies](Dependencies_file.html) file in your project's root:
 
     source "http://nuget.org/api/v2"
 
@@ -24,12 +22,24 @@ Install all of the required packages from your specified sources:
     [lang=batchfile]
     $ paket install
 
-The [install command](paket_install.html) will analyze your [Dependencies](Dependencies_file.html) file and generate a [Lockfile (`Depedencies.lock`)](lockfile.html) file alongside it.
-If the lockfile already exists, then it will not be regenerated.
+The [install command](paket_install.html) will analyze your [Paket.dependencies](Dependencies_file.html) file and generate a [Paket.lock](lock_file.html) file alongside it.
+If the lock file already exists, it will not be regenerated.
 
-You may have a [References.list](References_list_files.html) file next to your VS projects to have Paket automatically add references for the package IDs noted in that file.
+You may have a [Paket.references](References_files.html) file next to your VS projects to have Paket automatically add references for the package IDs noted in that file.
 
-All the involved files (`Dependencies`, `Dependencies.lock` and `References.list`) should be committed to your version control system. 
+All of the files involved (`Paket.dependencies`, `Paket.lock` and `Paket.references`) should be committed to your version control system. 
+
+Determine if there are package updates available:
+
+    [lang=batchfile]
+    $ paket outdated
+
+Download updated packages; update lock:
+
+    [lang=batchfile]
+    $ paket update
+
+The [update command](paket_update.html) will analyze your [Paket.dependencies](Dependencies_file.html) file, and (iff the rules dictate that any direct or indirect dependencies have updates that should be applied) updates the [Paket.lock](lock_file.html) file.
 
 Contributing and copyright
 --------------------------

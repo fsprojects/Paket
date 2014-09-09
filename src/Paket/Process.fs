@@ -9,7 +9,7 @@ let ExtractPackages(force, packages : Package seq) =
                     let version = 
                         match package.VersionRange with
                         | Specific v -> v
-                        | v -> failwithf "Version error in lockfile for %s %A" package.Name v
+                        | v -> failwithf "Version error in Lock file for %s %A" package.Name v
                     match List.head package.Sources with
                     | Nuget source -> 
                         async { let! packageFile = Nuget.DownloadPackage
@@ -21,13 +21,13 @@ let ExtractPackages(force, packages : Package seq) =
                                 let! folder = Nuget.ExtractPackage(packageFile, package.Name, version.ToString(), force) 
                                 return package,Nuget.GetLibraries folder})
 
-let findLockfile packageFile =
-    let fi = FileInfo(packageFile)
-    FileInfo(Path.Combine(fi.Directory.FullName, fi.Name + ".lock"))
+let findLockfile dependenciesFile =
+    let fi = FileInfo(dependenciesFile)
+    FileInfo(Path.Combine(fi.Directory.FullName, fi.Name.Replace(fi.Extension,"") + ".lock"))
 
 let extractReferencesFromListFile projectFile =
     let fi = FileInfo(projectFile)
-    let packageFile = FileInfo(Path.Combine(fi.Directory.FullName, "References.list"))
+    let packageFile = FileInfo(Path.Combine(fi.Directory.FullName, "Paket.references"))
     if packageFile.Exists then File.ReadAllLines packageFile.FullName else [||]
     |> Array.map (fun s -> s.Trim())
     |> Array.filter (fun s -> System.String.IsNullOrWhiteSpace s |> not)
@@ -35,11 +35,11 @@ let extractReferencesFromListFile projectFile =
 let private findAllProjects(folder) = DirectoryInfo(folder).EnumerateFiles("*.*proj", SearchOption.AllDirectories)
 
 /// Installs the given packageFile.
-let Install(regenerate, force, packageFile) = 
-    let lockfile = findLockfile packageFile
+let Install(regenerate, force, dependenciesFile) = 
+    let lockfile = findLockfile dependenciesFile
      
     if regenerate || (not lockfile.Exists) then 
-        LockFile.Update(force, packageFile, lockfile.FullName)
+        LockFile.Update(force, dependenciesFile, lockfile.FullName)
 
     let extracted = 
         ExtractPackages(force, File.ReadAllLines lockfile.FullName |> LockFile.Parse)
@@ -62,7 +62,7 @@ let Install(regenerate, force, packageFile) =
                 if usedPackages.Add name then
                     for d in package.DirectDependencies do
                         addPackage d
-            | None -> failwithf "Project %s references package %s, but it was not found in the lockfile." proj.FullName name
+            | None -> failwithf "Project %s references package %s, but it was not found in the Lock file." proj.FullName name
 
         directPackages
         |> Array.iter addPackage
@@ -72,10 +72,10 @@ let Install(regenerate, force, packageFile) =
 
 /// Finds all outdated packages.
 let FindOutdated(packageFile) = 
-    let lockfile = findLockfile packageFile
+    let lockFile = findLockfile packageFile
     
     let newPackages = LockFile.Create(true,packageFile)
-    let installed = if lockfile.Exists then LockFile.Parse(File.ReadAllLines lockfile.FullName) else []
+    let installed = if lockFile.Exists then LockFile.Parse(File.ReadAllLines lockFile.FullName) else []
 
     [for p in installed do
         match newPackages.ResolvedVersionMap.[p.Name] with

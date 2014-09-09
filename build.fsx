@@ -39,7 +39,7 @@ let summary = "A dependency manager for .NET"
 let description = "A dependency manager for .NET"
 
 // List of author names (for NuGet package)
-let authors = [ "Steffen Forkmann"; "Alexander Groß" ]
+let authors = [ "Steffen Forkmann"; "Alexander Gross" ]
 
 // Tags for your project (for NuGet package)
 let tags = "nuget, bundler, F#"
@@ -63,6 +63,9 @@ let gitRaw = environVarOrDefault "gitRaw" "https://raw.github.com/fsprojects"
 // --------------------------------------------------------------------------------------
 // END TODO: The rest of the file includes standard build steps 
 // --------------------------------------------------------------------------------------
+
+let buildDir = "bin"
+let buildMergedDir = buildDir @@ "merged"
 
 // Read additional information from the release notes document
 let release = LoadReleaseNotes "RELEASE_NOTES.md"
@@ -101,7 +104,7 @@ Target "AssemblyInfo" (fun _ ->
 // Clean build results & restore NuGet packages
 
 Target "Clean" (fun _ ->
-    CleanDirs ["bin"; "temp"]
+    CleanDirs [buildDir; "temp"]
 )
 
 Target "CleanDocs" (fun _ ->
@@ -153,6 +156,23 @@ Target "SourceLink" (fun _ ->
 
 // --------------------------------------------------------------------------------------
 // Build a NuGet package
+
+Target "MergeAssemblies" (fun _ ->        
+    CreateDir buildMergedDir
+
+    let toPack =
+        ["Paket.exe"; "FSharp.Core.dll"; "Ionic.Zip.dll"; "Newtonsoft.Json.dll"; "UnionArgParser.dll"]
+        |> List.map (fun l -> buildDir @@ l)
+        |> separated " "
+
+    let result =
+        ExecProcess (fun info ->
+            info.FileName <- currentDirectory @@ "tools" @@ "ILRepack" @@ "ILRepack.exe"
+            info.Arguments <- sprintf "/internalize /verbose /lib:%s /ver:%s /out:%s %s" buildDir release.AssemblyVersion (buildMergedDir @@ "Paket.exe") toPack
+            ) (TimeSpan.FromMinutes 5.)
+
+    if result <> 0 then failwithf "Error during ILRepack execution."
+)
 
 Target "NuGet" (fun _ ->
     NuGet (fun p -> 
@@ -224,6 +244,7 @@ Target "All" DoNothing
 #else
   =?> ("SourceLink", Pdbstr.tryFind().IsSome )
 #endif
+  ==> "MergeAssemblies"
   ==> "NuGet"
   ==> "BuildPackage"
 

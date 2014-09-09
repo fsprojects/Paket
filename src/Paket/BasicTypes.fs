@@ -16,7 +16,7 @@ type VersionRange =
     | Range of fromB : Bound * from : SemVerInfo * _to : SemVerInfo * _toB : Bound
     
     /// Checks wether the given version is in the version range
-    member this.IsInRange(version:SemVerInfo) =
+    member this.IsInRange(version : SemVerInfo) = 
         match this with
         | Latest -> true
         | Specific v -> v = version
@@ -24,10 +24,18 @@ type VersionRange =
         | GreaterThan v -> v < version
         | Maximum v -> v >= version
         | LessThan v -> v > version
-        | Range(fromB, from, _to, _toB) -> 
-            let fromCompare = match fromB with | Closed -> (>=) | Open -> (>)
-            let _toCompare  = match _toB  with | Closed -> (<=) | Open -> (<)
-            fromCompare version from && _toCompare version _to
+        | Range(fromB, from, _to, _toB) ->             
+            let isInUpperBound = 
+                match _toB with
+                | Closed -> version <= _to
+                | Open -> version < _to
+
+            let isInLowerBound =
+                match fromB with
+                | Closed -> version >= from
+                | Open -> version > from
+
+            isInLowerBound && isInUpperBound
    
     override this.ToString() =
         match this with

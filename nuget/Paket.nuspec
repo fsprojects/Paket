@@ -17,12 +17,6 @@
     <dependencies />
   </metadata>
   <files>
-    <file src="..\bin\Paket.exe" target="tools" />
-    <file src="..\bin\FSharp.Core.dll" target="tools" />
-    <file src="..\bin\FSharp.Core.optdata" target="tools" />
-    <file src="..\bin\FSharp.Core.sigdata" target="tools" />
-    <file src="..\bin\Newtonsoft.Json.dll" target="tools" />
-    <file src="..\bin\UnionArgParser.dll" target="tools" />
-    <file src="..\bin\Ionic.Zip.dll" target="tools" />
+    <file src="..\bin\merged\Paket.exe" target="tools" />
   </files>
 </package>

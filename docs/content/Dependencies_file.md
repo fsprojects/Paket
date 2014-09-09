@@ -1,17 +1,18 @@
-The Dependencies file
-=====================
+The Paket.dependencies file
+===========================
 
-The Dependencies file is used to specify your applications's dependencies. 
-It uses a similar syntax like [bundler](http://bundler.io/)'s GEMfile.
+The `Paket.dependencies` file is used to specify reules regarding your application's dependencies. 
+
+It uses a similar syntax to that of [bundler](http://bundler.io/)'s GEMfile:-
   
     source "http://nuget.org/api/v2"
 
     nuget "Castle.Windsor-log4net" "~> 3.2"
     nuget "Rx-Main" "~> 2.0"
 
-Only direct dependencies are listed in this file.
-Paket uses this definition to compute a concrete package resolution,
-which also includes indirect dependencies, in a [Dependencies.lock](lockfile.html) file.
+Only direct dependencies should be listed in this file.
+
+Paket uses this definition to compute a concrete package resolution, which also includes indirect dependencies, in a [Paket.lock](lock_file.html) file.
 
 Sources
 -------
@@ -27,13 +28,13 @@ It's possible to use multiple sources:
 
     nuget "FAKE" "~> 3.2"
 
-The [Lockfile](lockfile.html) will respect these settings.
+The [Paket.lock](lock_file.html) will also reflect these settings.
 
 NuGet-style pessimistic version constraints
 -------------------------------------------
 
-NuGet uses a pessimistic versiion resolution strategy. In order to make the transition easier Paket allows you to use NuGet's dependency resolution by prefixing your version constraint with **!**.
+NuGet uses a pessimistic version resolution strategy. In order to make the transition easier, Paket allows you to apply NuGet's dependency resolution strategy by prefixing your version constraint with **`!`**.
 
     source "http://nuget.org/api/v2"
 
-    nuget "Nancy.Bootstrappers.Windsor" "!~> 0.23" // use pessimistic version resolver
+    nuget "Nancy.Bootstrappers.Windsor" "!~> 0.23" // use pessimistic version resolution strategy

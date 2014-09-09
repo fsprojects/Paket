@@ -81,7 +81,7 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <Compile Include="ProjectFile\ConditionSpecs.fs" />
-    <None Include="References.list" />
+    <None Include="Paket.references" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="mscorlib" />

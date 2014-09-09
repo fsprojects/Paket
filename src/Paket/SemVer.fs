@@ -85,8 +85,8 @@ type SemVerInfo =
                 else if x.Minor <> y.Minor then compare x.Minor y.Minor
                 else if x.Patch <> y.Patch then compare x.Patch y.Patch
                 else if x.PreRelease = y.PreRelease && x.Build = y.Build then 0
-                else if x.PreRelease.IsNone && x.Build = "" then 1
-                else if y.PreRelease.IsNone && y.Build = "" then -1
+                else if x.PreRelease.IsNone && not y.PreRelease.IsNone && x.Build = "" then 1
+                else if y.PreRelease.IsNone && not x.PreRelease.IsNone && y.Build = "" then -1
                 else if x.PreRelease <> y.PreRelease then compare x.PreRelease y.PreRelease
                 else if x.Build <> y.Build then 
                     match Int32.TryParse x.Build, Int32.TryParse y.Build with

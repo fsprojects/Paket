@@ -5,7 +5,7 @@ A package dependency manager for .NET
 
 Initial docs can be found at http://fsprojects.github.io/Paket/
 
-Paket is work in progress! [![NuGet Status](http://img.shields.io/nuget/v/Paket.svg?style=flat)](https://www.nuget.org/packages/Paket/) 
+[![NuGet Status](http://img.shields.io/nuget/v/Paket.svg?style=flat)](https://www.nuget.org/packages/Paket/) 
 
 # Build the project
 
