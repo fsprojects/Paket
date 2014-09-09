@@ -60,5 +60,7 @@ let ``should detect net``() =
 
 [<Test>]
 let ``should detect multi-libs``() =
-    FrameworkIdentifier.DetectFromPath(@"..\packages\Janitor.Fody\Lib\portable-net4+sl5+wp8+win8+wpa81+MonoAndroid16+MonoTouch40\Janitor.dll").First() |> shouldEqual (DotNetFramework(Framework "v4.0",Full,None))
-    FrameworkIdentifier.DetectFromPath(@"..\packages\Janitor.Fody\Lib\portable-net4+sl5+wp8+win8+wpa81+MonoAndroid16+MonoTouch40\Janitor.dll").Skip(1).First() |> shouldEqual (Silverlight "v5.0")
+    FrameworkIdentifier.DetectFromPath(@"..\packages\Janitor.Fody\Lib\portable-net4+sl5+wp8+win8+wpa81+MonoAndroid16+MonoTouch40\Janitor.dll") 
+        |> shouldEqual 
+            [DotNetFramework(Framework "v4.0",Full,None)
+             Silverlight "v5.0"]
