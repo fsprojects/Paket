@@ -5,19 +5,19 @@ open System.IO
 open System.Xml
 open System.Collections.Generic
 
-/// The Framework version.
-type FrameworkVersion =
-| All
-| Framework of string
-
 /// The Framework profile.
 type FrameworkProfile =
 | Client
 | Full
 
+/// The Framework version.
+type FrameworkVersion =
+| All
+| Framework of string
+
 /// Framework Identifier type.
 type FrameworkIdentifier =
-| DotNetFramework of FrameworkVersion * FrameworkProfile
+| DotNetFramework of FrameworkVersion * FrameworkProfile * string option
 | WindowsPhoneApp of string
 | Silverlight of string
     member x.GetGroup() =
@@ -26,11 +26,9 @@ type FrameworkIdentifier =
         | WindowsPhoneApp _ -> "WindowsPhoneApp"
         | Silverlight _ -> "Silverlight"
 
-
 /// Contains methods to analyze .NET Framework Conditions.
 type FramworkCondition = 
-    { Framework : FrameworkIdentifier;
-      CLRVersion : string option; }
+    { Framework : FrameworkIdentifier }
     static member DetectFromPath(path : string) : FramworkCondition list = 
 
         let rec mapPath acc parts =
@@ -38,31 +36,31 @@ type FramworkCondition =
             | [] -> acc
             | path::rest ->
                 match path with
-                | "net" -> mapPath ({ Framework = DotNetFramework(All,Full); CLRVersion = None } :: acc) rest
-                | "1.0" -> mapPath ({ Framework = DotNetFramework(All,Full); CLRVersion = Some "1.0" } :: acc) rest
-                | "1.1" -> mapPath ({ Framework = DotNetFramework(All,Full); CLRVersion = Some "1.1" } :: acc) rest
-                | "2.0" -> mapPath ({ Framework = DotNetFramework(All,Full); CLRVersion = Some "2.0" } :: acc) rest
-                | "net20" -> mapPath ({ Framework = DotNetFramework(Framework "v2.0",Full); CLRVersion = None } :: acc) rest
-                | "net35" -> mapPath ({ Framework = DotNetFramework(Framework "v3.5",Full); CLRVersion = None } :: acc) rest
-                | "net4" -> mapPath ({ Framework = DotNetFramework(Framework "v4.0",Full); CLRVersion = None } :: acc) rest
-                | "net40" -> mapPath ({ Framework = DotNetFramework(Framework "v4.0",Full); CLRVersion = None } :: acc) rest                
-                | "net40-full" -> mapPath ({ Framework = DotNetFramework(Framework "v4.0",Full); CLRVersion = None } :: acc) rest
-                | "net40-client" -> mapPath ({ Framework = DotNetFramework(Framework "v4.0",Client); CLRVersion = None } :: acc) rest
-                | "portable-net4" -> mapPath ({ Framework = DotNetFramework(Framework "v4.0",Full); CLRVersion = None } :: acc) rest
-                | "net45" -> mapPath ({ Framework = DotNetFramework(Framework "v4.5",Full); CLRVersion = None } :: acc) rest
-                | "net45-full" -> mapPath ({ Framework = DotNetFramework(Framework "v4.5",Full); CLRVersion = None } :: acc) rest
-                | "net451" -> mapPath ({ Framework = DotNetFramework(Framework "v4.5.1",Full); CLRVersion = None } :: acc) rest
-                | "sl3" -> mapPath ({ Framework = Silverlight("v3.0"); CLRVersion = None; } :: acc) rest
-                | "sl4" -> mapPath ({ Framework = Silverlight("v4.0"); CLRVersion = None; } :: acc) rest
-                | "sl5" -> mapPath ({ Framework = Silverlight("v5.0"); CLRVersion = None; } :: acc) rest
-                | "sl4-wp" -> mapPath ({ Framework = WindowsPhoneApp("7.1"); CLRVersion = None; } :: acc) rest
-                | "sl4-wp71" -> mapPath ({ Framework = WindowsPhoneApp("7.1"); CLRVersion = None; } :: acc) rest
+                | "net" -> mapPath ({ Framework = DotNetFramework(All,Full,None) } :: acc) rest
+                | "1.0" -> mapPath ({ Framework = DotNetFramework(All,Full,Some "1.0") } :: acc) rest
+                | "1.1" -> mapPath ({ Framework = DotNetFramework(All,Full,Some "1.1") } :: acc) rest
+                | "2.0" -> mapPath ({ Framework = DotNetFramework(All,Full,Some "2.0") } :: acc) rest
+                | "net20" -> mapPath ({ Framework = DotNetFramework(Framework "v2.0",Full,None) } :: acc) rest
+                | "net35" -> mapPath ({ Framework = DotNetFramework(Framework "v3.5",Full,None) } :: acc) rest
+                | "net4" -> mapPath ({ Framework = DotNetFramework(Framework "v4.0",Full,None) } :: acc) rest
+                | "net40" -> mapPath ({ Framework = DotNetFramework(Framework "v4.0",Full,None) } :: acc) rest                
+                | "net40-full" -> mapPath ({ Framework = DotNetFramework(Framework "v4.0",Full,None) } :: acc) rest
+                | "net40-client" -> mapPath ({ Framework = DotNetFramework(Framework "v4.0",Client,None) } :: acc) rest
+                | "portable-net4" -> mapPath ({ Framework = DotNetFramework(Framework "v4.0",Full,None) } :: acc) rest
+                | "net45" -> mapPath ({ Framework = DotNetFramework(Framework "v4.5",Full,None) } :: acc) rest
+                | "net45-full" -> mapPath ({ Framework = DotNetFramework(Framework "v4.5",Full,None) } :: acc) rest
+                | "net451" -> mapPath ({ Framework = DotNetFramework(Framework "v4.5.1",Full,None) } :: acc) rest
+                | "sl3" -> mapPath ({ Framework = Silverlight("v3.0") } :: acc) rest
+                | "sl4" -> mapPath ({ Framework = Silverlight("v4.0") } :: acc) rest
+                | "sl5" -> mapPath ({ Framework = Silverlight("v5.0") } :: acc) rest
+                | "sl4-wp" -> mapPath ({ Framework = WindowsPhoneApp("7.1") } :: acc) rest
+                | "sl4-wp71" -> mapPath ({ Framework = WindowsPhoneApp("7.1") } :: acc) rest
                 | _ -> mapPath acc rest
                
         let path = path.Replace("\\", "/").ToLower()
         let fi = new FileInfo(path)
 
-        if path.Contains("lib/" + fi.Name.ToLower()) then [{ Framework = DotNetFramework(All,Full); CLRVersion = None; }] else
+        if path.Contains("lib/" + fi.Name.ToLower()) then [{ Framework = DotNetFramework(All,Full,None) }] else
         let startPos = path.IndexOf("lib/")
         let endPos = path.IndexOf(fi.Name.ToLower())
         if startPos < 0 || endPos < 0 then [] else
@@ -93,24 +91,24 @@ module InstallRules =
         |> Seq.groupBy (fun info -> info.DllName, info.Condition.Framework.GetGroup())
         |> Seq.groupBy (fun ((name, _), _) -> name)
     
-    let hasClientProfile libs = libs |> Seq.exists (fun x -> match x.Condition.Framework with | DotNetFramework (_,p) -> p = Client | _ -> false)
-    let hasFullProfile libs = libs |> Seq.exists (fun x -> match x.Condition.Framework with | DotNetFramework (_,p) -> p = Full | _ -> false)
+    let hasClientProfile libs = libs |> Seq.exists (fun x -> match x.Condition.Framework with | DotNetFramework (_,Client,_) ->true | _ -> false)
+    let hasFullProfile libs = libs |> Seq.exists (fun x -> match x.Condition.Framework with | DotNetFramework (_,Full,_) -> true | _ -> false)
 
     let handleClientFrameworks frameworkVersion libs = 
         if frameworkVersion = ".NET v4.0" && hasClientProfile libs && not <| hasFullProfile libs then 
             let copy = libs |> List.head
             List.append 
-                [ { copy with Condition = { copy.Condition with Framework = DotNetFramework(match copy.Condition.Framework with | DotNetFramework(v,_) -> v,Full) } } ] 
+                [ { copy with Condition = { copy.Condition with Framework = DotNetFramework(match copy.Condition.Framework with | DotNetFramework(v,_,c) -> v,Full,c) } } ] 
                 libs
         else libs
 
     let handleCLRVersions (libs:InstallInfo list) =
         let withoutCLR,withCLR =
             libs
-            |> List.partition (fun l -> l.Condition.CLRVersion = None)
+            |> List.partition (fun l -> match l.Condition.Framework with | DotNetFramework(_,_,None) -> true | _ -> false)
 
         if List.isEmpty withCLR then libs else
-        (withCLR |> List.maxBy (fun l -> l.Condition.CLRVersion)) :: withoutCLR
+        (withCLR |> List.maxBy (fun l -> match l.Condition.Framework with | DotNetFramework(_,_,clr) -> clr | _ -> None)) :: withoutCLR
 
     let handlePath root (libs:InstallInfo list) =
         libs 
@@ -183,10 +181,10 @@ type ProjectFile =
                 for lib in libsWithSameFrameworkVersion do
                     let condition =
                         match lib.Condition.Framework with
-                        | DotNetFramework(v,_) ->
+                        | DotNetFramework(v,_,clrVersion) ->
                             let profileTypeCondition =
                                 if not <| InstallRules.hasClientProfile libsWithSameFrameworkVersion then "" else
-                                sprintf " And $(TargetFrameworkProfile) == '%s'" (match lib.Condition.Framework with | DotNetFramework(_,Client) -> "Client" | _ -> "")
+                                sprintf " And $(TargetFrameworkProfile) == '%s'" (match lib.Condition.Framework with | DotNetFramework(_,Client,_) -> "Client" | _ -> "")
                             match v with
                             | Framework fw -> sprintf "$(TargetFrameworkIdentifier) == '.NETFramework' And $(TargetFrameworkVersion) == '%s'%s" fw profileTypeCondition
                             | All -> "true"
