@@ -10,7 +10,7 @@ It uses a similar syntax like [bundler](http://bundler.io/)'s GEMfile.
     nuget "Rx-Main" "~> 2.0"
 
 Only direct dependencies are listed in this file.
-Paket uses this definition to compute a concrete package resolution, which also includes indirect dependencies, in a [Paket.lock](lockfile.html) file.
+Paket uses this definition to compute a concrete package resolution, which also includes indirect dependencies, in a [Paket.lock](lock_file.html) file.
 
 Sources
 -------
@@ -26,7 +26,7 @@ It's possible to use multiple sources:
 
     nuget "FAKE" "~> 3.2"
 
-The [Paket.lock](lockfile.html) will respect these settings.
+The [Paket.lock](lock_file.html) will respect these settings.
 
 NuGet-style pessimistic version constraints
 -------------------------------------------

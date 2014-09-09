@@ -1,7 +1,7 @@
 paket update
 ============
 
-Recomputes the package dependency resolution and updates the [Paket.Lock](lockfile.html).
+Recomputes the package dependency resolution and updates the [Paket.Lock](lock_file.html).
 
     [lang=batchfile]
     $ paket update [--force] [--dependencies-file=FILE]

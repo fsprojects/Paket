@@ -24,7 +24,7 @@ Install all of the required packages from your specified sources:
     [lang=batchfile]
     $ paket install
 
-The [install command](paket_install.html) will analyze your [Paket.dependencies](Dependencies_file.html) file and generate a [Paket.lock](lockfile.html) file alongside it.
+The [install command](paket_install.html) will analyze your [Paket.dependencies](Dependencies_file.html) file and generate a [Paket.lock](lock_file.html) file alongside it.
 If the lockfile already exists, then it will not be regenerated.
 
 You may have a [Paket.references](References_files.html) file next to your VS projects to have Paket automatically add references for the package IDs noted in that file.
