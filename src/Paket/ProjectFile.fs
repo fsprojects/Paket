@@ -68,6 +68,11 @@ type ProjectFile =
 
     member this.CreateNode(name) = this.Document.CreateElement(name, ProjectFile.DefaultNameSpace)
 
+    member this.CreateNode(name,text) = 
+        let node = this.CreateNode(name)
+        node.InnerText <- text
+        node
+
     member this.DeleteEmptyReferences() =
         this.DeleteIfEmpty("//ns:Project/ns:Choose/ns:Otherwise/ns:ItemGroup")        
         this.DeleteIfEmpty("//ns:Project/ns:Choose/ns:When/ns:ItemGroup")
@@ -95,24 +100,16 @@ type ProjectFile =
                     |> List.sortBy (fun lib -> lib.Path)
 
                 for lib in libsWithSameFrameworkVersion do                
-                    let whenNode = this.CreateNode "When"
-                    whenNode.SetAttribute("Condition", lib.Condition.GetCondition()) |> ignore
+                    let whenNode = 
+                        this.CreateNode "When"
+                        |> addAttribute "Condition" (lib.Condition.GetCondition())
                         
-                    let reference = this.CreateNode "Reference"
-                    reference.SetAttribute("Include", lib.DllName)
-
-                    let element = this.CreateNode "HintPath"
-                    element.InnerText <- lib.Path
-            
-                    reference.AppendChild(element) |> ignore
- 
-                    let element = this.CreateNode "Private"
-                    element.InnerText <- "True"
-                    reference.AppendChild(element) |> ignore
-
-                    let element = this.CreateNode "Paket"
-                    element.InnerText <- "True"            
-                    reference.AppendChild(element) |> ignore
+                    let reference = 
+                        this.CreateNode "Reference"
+                        |> addAttribute "Include" lib.DllName
+                        |> addChild (this.CreateNode("HintPath",lib.Path))
+                        |> addChild (this.CreateNode("Private","True"))
+                        |> addChild (this.CreateNode("Paket","True"))
 
                     let itemGroup = this.CreateNode "ItemGroup"
                     itemGroup.AppendChild(reference) |> ignore
@@ -124,24 +121,16 @@ type ProjectFile =
                 match !lastLib with
                 | None -> ()
                 | Some lib ->
-                    let whenNode = this.CreateNode "When"
-                    whenNode.SetAttribute("Condition", lib.Condition.GetGroupCondition()) |> ignore
+                    let whenNode = 
+                        this.CreateNode "When"
+                        |> addAttribute "Condition" (lib.Condition.GetGroupCondition())
 
-                    let reference = this.CreateNode "Reference"
-                    reference.SetAttribute("Include", lib.DllName)
-
-                    let element = this.CreateNode "HintPath"
-                    element.InnerText <- lib.Path
-            
-                    reference.AppendChild(element) |> ignore
- 
-                    let element = this.CreateNode "Private"
-                    element.InnerText <- "True"
-                    reference.AppendChild(element) |> ignore
-
-                    let element = this.CreateNode "Paket"
-                    element.InnerText <- "True"            
-                    reference.AppendChild(element) |> ignore
+                    let reference = 
+                        this.CreateNode "Reference"
+                        |> addAttribute "Include" lib.DllName
+                        |> addChild (this.CreateNode("HintPath",lib.Path))
+                        |> addChild (this.CreateNode("Private","True"))
+                        |> addChild (this.CreateNode("Paket","True"))
 
                     let itemGroup = this.CreateNode "ItemGroup"
                     itemGroup.AppendChild(reference) |> ignore

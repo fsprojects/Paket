@@ -37,6 +37,16 @@ let traceError (s : string) =
             if curColor <> color then Console.ForegroundColor <- curColor)
 
 /// [omit]
+let addAttribute name value (node:XmlElement) =
+    node.SetAttribute(name, value) |> ignore
+    node
+
+/// [omit]
+let addChild child (node:XmlElement) =
+    node.AppendChild(child) |> ignore
+    node
+
+/// [omit]
 let traceErrorfn fmt = Printf.ksprintf traceError fmt
 
 /// Creates a directory if it does not exist.
