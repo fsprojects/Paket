@@ -84,7 +84,8 @@ module InstallRules =
               if usedPackages.Contains package.Name then 
                   let libraries = libraries |> Seq.toArray
                   for (lib : FileInfo) in libraries do
-                      for condition in FramworkCondition.DetectFromPath lib.FullName do
+                      let conditions = FramworkCondition.DetectFromPath lib.FullName
+                      for condition in conditions do
                           yield { DllName = lib.Name.Replace(lib.Extension, "")
                                   Path = lib.FullName
                                   Condition = condition } ]
@@ -113,10 +114,6 @@ module InstallRules =
     let handlePath root (libs:InstallInfo list) =
         libs 
         |> List.map (fun lib -> { lib with Path = Uri(root).MakeRelativeUri(Uri(lib.Path)).ToString().Replace("/", "\\")} )
-
-    let removeUnknown (libs:InstallInfo list) =
-       libs
-       |> List.filter (fun l -> match l.Condition.Framework with | DotNetFramework(Unknown,_) -> false | _ -> true)
 
 
 /// Contains methods to read and manipulate project files.
@@ -177,7 +174,6 @@ type ProjectFile =
                 let libsWithSameFrameworkVersion = 
                     libs 
                     |> List.ofSeq                    
-                    |> InstallRules.removeUnknown 
                     |> InstallRules.handlePath this.FileName
                     |> InstallRules.handleCLRVersions 
                     |> InstallRules.handleClientFrameworks frameworkVersion
