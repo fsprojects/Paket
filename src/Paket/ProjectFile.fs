@@ -26,14 +26,6 @@ module private InstallRules =
         |> Seq.groupBy (fun info -> info.DllName, info.Condition.GetGroupCondition())
         |> Seq.groupBy (fun ((name, _), _) -> name)
 
-    let handleCLRVersions (libs:InstallInfo list) =
-        let withoutCLR,withCLR =
-            libs
-            |> List.partition (fun l -> match l.Condition with | DotNetFramework(_,_,None) -> true | _ -> false)
-
-        if List.isEmpty withCLR then libs else
-        (withCLR |> List.maxBy (fun l -> match l.Condition with | DotNetFramework(_,_,clr) -> clr | _ -> None)) :: withoutCLR
-
     let handlePath root (libs:InstallInfo list) =
         libs 
         |> List.map (fun lib -> { lib with Path = Uri(root).MakeRelativeUri(Uri(lib.Path)).ToString().Replace("/", "\\")} )
@@ -98,7 +90,6 @@ type ProjectFile =
                     libs 
                     |> List.ofSeq                    
                     |> InstallRules.handlePath this.FileName
-                    |> InstallRules.handleCLRVersions 
                     |> List.sortBy (fun lib -> lib.Path)
 
                 for lib in libsWithSameFrameworkVersion do                

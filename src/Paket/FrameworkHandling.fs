@@ -14,7 +14,7 @@ type FrameworkVersion =
 
 /// Framework Identifier type.
 type FrameworkIdentifier = 
-    | DotNetFramework of FrameworkVersion * FrameworkProfile * string option
+    | DotNetFramework of FrameworkVersion * FrameworkProfile
     | WindowsPhoneApp of string
     | Silverlight of string
     
@@ -26,12 +26,12 @@ type FrameworkIdentifier =
 
     member x.GetFrameworkProfile() =        
         match x with 
-        | DotNetFramework(_,Client,_) -> " And $(TargetFrameworkProfile) == 'Client'" 
+        | DotNetFramework(_,Client) -> " And $(TargetFrameworkProfile) == 'Client'" 
         | _ -> ""
 
     member x.GetCondition() =
         match x with
-        | DotNetFramework(v,_,_) ->
+        | DotNetFramework(v,_) ->
             match v with
             | Framework fw -> sprintf "$(TargetFrameworkIdentifier) == '.NETFramework' And $(TargetFrameworkVersion) == '%s'%s" fw (x.GetFrameworkProfile())
             | All -> "true"
@@ -42,20 +42,20 @@ type FrameworkIdentifier =
         let extract parts = 
             [ for path in parts do
                   match path with
-                  | "net" -> yield DotNetFramework(All, Full, None)
-                  | "1.0" -> yield DotNetFramework(All, Full, Some "1.0")
-                  | "1.1" -> yield DotNetFramework(All, Full, Some "1.1")
-                  | "2.0" -> yield DotNetFramework(All, Full, Some "2.0")
-                  | "net20" -> yield DotNetFramework(Framework "v2.0", Full, None)
-                  | "net35" -> yield DotNetFramework(Framework "v3.5", Full, None)
-                  | "net4" -> yield DotNetFramework(Framework "v4.0", Full, None)
-                  | "net40" -> yield DotNetFramework(Framework "v4.0", Full, None)
-                  | "net40-full" -> yield DotNetFramework(Framework "v4.0", Full, None)
-                  | "net40-client" -> yield DotNetFramework(Framework "v4.0", Client, None)
-                  | "portable-net4" -> yield DotNetFramework(Framework "v4.0", Full, None)
-                  | "net45" -> yield DotNetFramework(Framework "v4.5", Full, None)
-                  | "net45-full" -> yield DotNetFramework(Framework "v4.5", Full, None)
-                  | "net451" -> yield DotNetFramework(Framework "v4.5.1", Full, None)
+                  | "net" -> yield DotNetFramework(All, Full)
+                  | "1.0" -> yield DotNetFramework(All, Full)
+                  | "1.1" -> yield DotNetFramework(All, Full)
+                  | "2.0" -> yield DotNetFramework(All, Full)
+                  | "net20" -> yield DotNetFramework(Framework "v2.0", Full)
+                  | "net35" -> yield DotNetFramework(Framework "v3.5", Full)
+                  | "net4" -> yield DotNetFramework(Framework "v4.0", Full)
+                  | "net40" -> yield DotNetFramework(Framework "v4.0", Full)
+                  | "net40-full" -> yield DotNetFramework(Framework "v4.0", Full)
+                  | "net40-client" -> yield DotNetFramework(Framework "v4.0", Client)
+                  | "portable-net4" -> yield DotNetFramework(Framework "v4.0", Full)
+                  | "net45" -> yield DotNetFramework(Framework "v4.5", Full)
+                  | "net45-full" -> yield DotNetFramework(Framework "v4.5", Full)
+                  | "net451" -> yield DotNetFramework(Framework "v4.5.1", Full)
                   | "sl3" -> yield Silverlight "v3.0"
                   | "sl4" -> yield Silverlight "v4.0"
                   | "sl5" -> yield Silverlight "v5.0"
@@ -65,7 +65,7 @@ type FrameworkIdentifier =
         
         let path = path.Replace("\\", "/").ToLower()
         let fi = new FileInfo(path)
-        if path.Contains("lib/" + fi.Name.ToLower()) then [ DotNetFramework(All, Full, None) ]
+        if path.Contains("lib/" + fi.Name.ToLower()) then [ DotNetFramework(All, Full) ]
         else 
             let startPos = path.IndexOf("lib/")
             let endPos = path.IndexOf(fi.Name.ToLower())
