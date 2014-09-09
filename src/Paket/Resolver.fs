@@ -54,6 +54,8 @@ let Resolve(force, discovery : IDiscovery, rootDependencies:Package seq) =
             analyzeGraph resolved (Map.remove resolvedName openDependencies)
         | Ok dependency -> 
             let originalPackage = dependency.Referenced
+           
+            tracefn "  %s %s"  originalPackage.Name (originalPackage.VersionRange.ToString())
             match Map.tryFind resolvedName processed.ResolvedVersionMap with
             | Some (Resolved dependency') -> 
                 match dependency'.Referenced.VersionRange with
