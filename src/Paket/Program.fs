@@ -21,9 +21,9 @@ with
         member s.Usage =
             match s with
             | Install -> "installs all packages."
-            | Update -> "updates the lockfile and installs all packages."
+            | Update -> "updates the Lock File and installs all packages."
             | Outdated -> "displays information about new packages."
-            | Dependencies_File _ -> "specify a dependency definition."
+            | Dependencies_File _ -> "specify a file containing dependency definitions."
             | Force -> "specify a dependency definition."
 
 

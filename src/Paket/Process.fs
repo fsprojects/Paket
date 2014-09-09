@@ -9,7 +9,7 @@ let ExtractPackages(force, packages : Package seq) =
                     let version = 
                         match package.VersionRange with
                         | Specific v -> v
-                        | v -> failwithf "Version error in lockfile for %s %A" package.Name v
+                        | v -> failwithf "Version error in Lock file for %s %A" package.Name v
                     match List.head package.Sources with
                     | Nuget source -> 
                         async { let! packageFile = Nuget.DownloadPackage
@@ -58,7 +58,7 @@ let Install(regenerate, force, dependenciesFile) =
                 if usedPackages.Add name then
                     for d in package.DirectDependencies do
                         addPackage d
-            | None -> failwithf "Project %s references package %s, but it was not found in the lockfile." proj.FullName name
+            | None -> failwithf "Project %s references package %s, but it was not found in the Lock file." proj.FullName name
 
         directPackages
         |> Array.iter addPackage
@@ -68,10 +68,10 @@ let Install(regenerate, force, dependenciesFile) =
 
 /// Finds all outdated packages.
 let FindOutdated(packageFile) = 
-    let lockfile = findLockfile packageFile
+    let lockFile = findLockfile packageFile
     
     let newPackages = LockFile.Create(true,packageFile)
-    let installed = if lockfile.Exists then LockFile.Parse(File.ReadAllLines lockfile.FullName) else []
+    let installed = if lockFile.Exists then LockFile.Parse(File.ReadAllLines lockFile.FullName) else []
 
     [for p in installed do
         match newPackages.ResolvedVersionMap.[p.Name] with
