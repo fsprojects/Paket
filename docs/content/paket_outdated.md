@@ -8,4 +8,4 @@ Lists all dependencies that have newer versions available.
 
 Options:
 
-  `--dependencies-file`:  Use the specified file instead of `Dependencies`.
+  `--dependencies-file`:  Use the specified file instead of `Paket.dependencies`.

@@ -51,7 +51,7 @@ try
         let packageFile = 
             match results.TryGetResult <@ CLIArguments.Dependencies_File @> with
             | Some x -> x
-            | _ -> "Dependencies"
+            | _ -> "Paket.dependencies"
 
         let force = 
             match results.TryGetResult <@ CLIArguments.Force @> with

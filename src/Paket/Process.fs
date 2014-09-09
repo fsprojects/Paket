@@ -17,13 +17,13 @@ let ExtractPackages(force, packages : Package seq) =
                                 let! folder = Nuget.ExtractPackage(packageFile, package.Name, version.ToString(), force) 
                                 return package,Nuget.GetLibraries folder})
 
-let findLockfile packageFile =
-    let fi = FileInfo(packageFile)
-    FileInfo(Path.Combine(fi.Directory.FullName, fi.Name + ".lock"))
+let findLockfile dependenciesFile =
+    let fi = FileInfo(dependenciesFile)
+    FileInfo(Path.Combine(fi.Directory.FullName, fi.Name.Replace(fi.Extension,"") + ".lock"))
 
 let extractReferencesFromListFile projectFile =
     let fi = FileInfo(projectFile)
-    let packageFile = FileInfo(Path.Combine(fi.Directory.FullName, "References.list"))
+    let packageFile = FileInfo(Path.Combine(fi.Directory.FullName, "Paket.references"))
     if packageFile.Exists then File.ReadAllLines packageFile.FullName else [||]
     |> Array.map (fun s -> s.Trim())
     |> Array.filter (fun s -> System.String.IsNullOrWhiteSpace s |> not)
@@ -31,11 +31,11 @@ let extractReferencesFromListFile projectFile =
 let private findAllProjects(folder) = DirectoryInfo(folder).EnumerateFiles("*.*proj", SearchOption.AllDirectories)
 
 /// Installs the given packageFile.
-let Install(regenerate, force, packageFile) = 
-    let lockfile = findLockfile packageFile
+let Install(regenerate, force, dependenciesFile) = 
+    let lockfile = findLockfile dependenciesFile
      
     if regenerate || (not lockfile.Exists) then 
-        LockFile.Update(force, packageFile, lockfile.FullName)
+        LockFile.Update(force, dependenciesFile, lockfile.FullName)
 
     let extracted = 
         ExtractPackages(force, File.ReadAllLines lockfile.FullName |> LockFile.Parse)

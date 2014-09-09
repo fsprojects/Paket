@@ -8,7 +8,7 @@ NuGet doesn't separate out the concept of indirect dependencies; if you install 
 
 Even more importantly: if two packages reference conflicting versions of a package, NuGet will silently take the latest version; You have no control over this process.
  
-Paket on the other hand maintains this information on a consistent and stable basis within the [lockfile](lockfile.html) in the solution root. This file, together with the [Dependencies](Dependencies_file.html) file enables you to determine exactly what's happening with your dependencies.
+Paket on the other hand maintains this information on a consistent and stable basis within the [lockfile](lockfile.html) in the solution root. This file, together with the [Paket.dependencies](Dependencies_file.html) file enables you to determine exactly what's happening with your dependencies.
 
 The [paket outdated](paket_outdated.html) command lists packages that have new versions available.
 

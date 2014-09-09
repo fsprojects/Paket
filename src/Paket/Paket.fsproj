@@ -81,7 +81,7 @@
     <Compile Include="LockFile.fs" />
     <Compile Include="Process.fs" />
     <Compile Include="Program.fs" />
-    <None Include="References.list" />
+    <None Include="Paket.references" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="mscorlib" />
