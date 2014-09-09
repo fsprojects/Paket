@@ -49,7 +49,7 @@ module DependenciesFileParser =
             let lineNo = lineNo + 1
             try
                 match line with
-                | Remote newSource -> lineNo, (Nuget(newSource.TrimEnd([|'/'|])) :: sources), packages
+                | Remote newSource -> lineNo, (PackageSource.Parse(newSource.TrimEnd([|'/'|])) :: sources), packages
                 | Blank -> lineNo, sources, packages
                 | Package details ->
                     let parts = details.Split('"')

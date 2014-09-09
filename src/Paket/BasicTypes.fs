@@ -73,9 +73,16 @@ type ResolverStrategy =
 /// Represents the package source type.
 type PackageSource =
 | Nuget of string
+| LocalNuget of string
     override this.ToString() =
         match this with
         | Nuget url -> url
+        | LocalNuget path -> path
+
+    static member Parse source = 
+        match System.Uri.TryCreate(source, System.UriKind.Absolute) with
+        | true, uri -> if uri.Scheme = System.Uri.UriSchemeFile then LocalNuget(source) else Nuget(source)
+        | _ -> failwith "unable to parse package source: %s" source
 
 /// Represents a package.
 type Package = 
