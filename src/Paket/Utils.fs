@@ -16,16 +16,6 @@ let trace (s : string) = lock monitor (fun () -> printfn "%s" s)
 /// [omit]
 let tracefn fmt = Printf.ksprintf trace fmt
 
-
-let writeText toStdErr color newLine text = 
-    
-    
-    if toStdErr then 
-        if newLine then eprintfn "%s" text
-        else eprintf "%s" text
-    else if newLine then printfn "%s" text
-    else printf "%s" text
-
 /// [omit]
 let traceError (s : string) = 
     lock monitor 
@@ -35,6 +25,16 @@ let traceError (s : string) =
             if curColor <> color then Console.ForegroundColor <- color
             printfn "%s" s
             if curColor <> color then Console.ForegroundColor <- curColor)
+
+/// [omit]
+let addAttribute name value (node:XmlElement) =
+    node.SetAttribute(name, value) |> ignore
+    node
+
+/// [omit]
+let addChild child (node:XmlElement) =
+    node.AppendChild(child) |> ignore
+    node
 
 /// [omit]
 let traceErrorfn fmt = Printf.ksprintf traceError fmt
