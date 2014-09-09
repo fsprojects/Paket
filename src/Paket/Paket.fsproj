@@ -28,7 +28,7 @@
     <StartArguments>update</StartArguments>
     <StartAction>Project</StartAction>
     <StartProgram>Paket.exe</StartProgram>
-    <StartWorkingDirectory>D:\code\NServiceBus</StartWorkingDirectory>
+    <StartWorkingDirectory>D:\code\paket</StartWorkingDirectory>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -144,15 +144,6 @@
       <ItemGroup>
         <Reference Include="Newtonsoft.Json">
           <HintPath>..\..\packages\Newtonsoft.Json\lib\net40\Newtonsoft.Json.dll</HintPath>
-          <Private>True</Private>
-          <Paket>True</Paket>
-        </Reference>
-      </ItemGroup>
-    </When>
-    <When Condition="$(TargetFrameworkIdentifier) == '.NETFramework' And $(TargetFrameworkVersion) == 'v4.5.1'">
-      <ItemGroup>
-        <Reference Include="Newtonsoft.Json">
-          <HintPath>..\..\packages\Newtonsoft.Json\lib\net45\Newtonsoft.Json.dll</HintPath>
           <Private>True</Private>
           <Paket>True</Paket>
         </Reference>

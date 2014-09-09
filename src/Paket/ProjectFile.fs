@@ -10,13 +10,6 @@ type FrameworkVersion =
 | Unknown
 | All
 | Framework of string
-| FrameworkExtension of string * string
-    member x.GetGroup() =
-        match x with
-        | Unknown -> "Unknown"
-        | All -> "All"
-        | Framework v -> v
-        | FrameworkExtension(v,_) -> v
 
 /// The Framework profile.
 type FrameworkProfile =
@@ -30,9 +23,9 @@ type FrameworkIdentifier =
 | Silverlight of string
     member x.GetGroup() =
         match x with
-        | DotNetFramework(v,_) -> ".NET " + v.GetGroup()        
-        | WindowsPhoneApp(v) -> "WindowsPhoneApp " + v
-        | Silverlight(v) -> "Silverlight " + v
+        | DotNetFramework(v,_) -> ".NET"  
+        | WindowsPhoneApp(v) -> "WindowsPhoneApp"
+        | Silverlight(v) -> "Silverlight"
 
 
 /// Contains methods to analyze .NET Framework Conditions.
@@ -53,7 +46,7 @@ type FramworkCondition =
         elif path.Contains "lib/net40-client/" then { Framework = DotNetFramework(Framework "v4.0",Client); CLRVersion = None }
         elif path.Contains "lib/net45/" then { Framework = DotNetFramework(Framework "v4.5",Full); CLRVersion = None }
         elif path.Contains "lib/net45-full/" then { Framework = DotNetFramework(Framework "v4.5",Full); CLRVersion = None }
-        elif path.Contains "lib/net451/" then { Framework = DotNetFramework(FrameworkExtension("v4.5","v4.5.1"),Full); CLRVersion = None }
+        elif path.Contains "lib/net451/" then { Framework = DotNetFramework(Framework "v4.5.1",Full); CLRVersion = None }
         elif path.Contains "lib/sl3/" then { Framework = Silverlight("v3.0"); CLRVersion = None; }
         elif path.Contains "lib/sl4/" then { Framework = Silverlight("v4.0"); CLRVersion = None; }
         elif path.Contains "lib/sl4-wp/" then { Framework = WindowsPhoneApp("7.1"); CLRVersion = None; }
@@ -82,23 +75,6 @@ module InstallRules =
     
     let hasClientProfile libs = libs |> Seq.exists (fun x -> match x.Condition.Framework with | DotNetFramework (_,p) -> p = Client | _ -> false)
     let hasFullProfile libs = libs |> Seq.exists (fun x -> match x.Condition.Framework with | DotNetFramework (_,p) -> p = Full | _ -> false)
-    
-    let hasFramworkExtensions libs = 
-        libs |> Seq.exists (fun x -> 
-                    match x.Condition.Framework with
-                    | DotNetFramework(v,_) ->
-                        match v with
-                        | FrameworkExtension _ -> true
-                        | _ -> false
-                    | _ -> false)
-
-    let handleFrameworkExtensions frameworkVersion libs = 
-        if frameworkVersion = ".NET v4.5" && not <| hasFramworkExtensions libs then 
-            let copy = libs |> List.head
-            List.append 
-                [ { copy with Condition = { copy.Condition with Framework = DotNetFramework(FrameworkExtension("v4.5", "v4.5.1"),Full) } } ] 
-                libs
-        else libs
 
     let handleClientFrameworks frameworkVersion libs = 
         if frameworkVersion = ".NET v4.0" && hasClientProfile libs && not <| hasFullProfile libs then 
@@ -186,7 +162,6 @@ type ProjectFile =
                     |> InstallRules.removeUnknown 
                     |> InstallRules.handlePath this.FileName
                     |> InstallRules.handleCLRVersions 
-                    |> InstallRules.handleFrameworkExtensions frameworkVersion 
                     |> InstallRules.handleClientFrameworks frameworkVersion
                     |> List.sortBy (fun lib -> lib.Path)
 
@@ -199,7 +174,6 @@ type ProjectFile =
                                 sprintf " And $(TargetFrameworkProfile) == '%s'" (match lib.Condition.Framework with | DotNetFramework(_,Client) -> "Client" | _ -> "")
                             match v with
                             | Framework fw -> sprintf "$(TargetFrameworkIdentifier) == '.NETFramework' And $(TargetFrameworkVersion) == '%s'%s" fw profileTypeCondition
-                            | FrameworkExtension(_,fw) -> sprintf "$(TargetFrameworkIdentifier) == '.NETFramework' And $(TargetFrameworkVersion) == '%s'%s" fw profileTypeCondition
                             | All -> "true"
                         | WindowsPhoneApp v -> sprintf "$(TargetFrameworkIdentifier) == 'WindowsPhoneApp' And $(TargetPlatformVersion) == '%s'" v
                         | Silverlight v -> sprintf "$(TargetFrameworkIdentifier) == 'Silverlight' And $(SilverlightVersion) == '%s'" v
