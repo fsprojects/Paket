@@ -73,6 +73,23 @@ type ProjectFile =
         node.InnerText <- text
         node
 
+    member private this.CreateWhenNode(lib:InstallInfo,condition)=
+        let whenNode = 
+            this.CreateNode "When"
+            |> addAttribute "Condition" condition
+                        
+        let reference = 
+            this.CreateNode "Reference"
+            |> addAttribute "Include" lib.DllName
+            |> addChild (this.CreateNode("HintPath",lib.Path))
+            |> addChild (this.CreateNode("Private","True"))
+            |> addChild (this.CreateNode("Paket","True"))
+
+        let itemGroup = this.CreateNode "ItemGroup"
+        itemGroup.AppendChild(reference) |> ignore
+        whenNode.AppendChild(itemGroup) |> ignore
+        whenNode
+
     member this.DeleteEmptyReferences() =
         this.DeleteIfEmpty("//ns:Project/ns:Choose/ns:Otherwise/ns:ItemGroup")        
         this.DeleteIfEmpty("//ns:Project/ns:Choose/ns:When/ns:ItemGroup")
@@ -99,43 +116,14 @@ type ProjectFile =
                     |> InstallRules.handlePath this.FileName
                     |> List.sortBy (fun lib -> lib.Path)
 
-                for lib in libsWithSameFrameworkVersion do                
-                    let whenNode = 
-                        this.CreateNode "When"
-                        |> addAttribute "Condition" (lib.Condition.GetCondition())
-                        
-                    let reference = 
-                        this.CreateNode "Reference"
-                        |> addAttribute "Include" lib.DllName
-                        |> addChild (this.CreateNode("HintPath",lib.Path))
-                        |> addChild (this.CreateNode("Private","True"))
-                        |> addChild (this.CreateNode("Paket","True"))
-
-                    let itemGroup = this.CreateNode "ItemGroup"
-                    itemGroup.AppendChild(reference) |> ignore
-                    whenNode.AppendChild(itemGroup) |> ignore
-                    chooseNode.AppendChild(whenNode) |> ignore
+                for lib in libsWithSameFrameworkVersion do                                    
+                    chooseNode.AppendChild(this.CreateWhenNode(lib,lib.Condition.GetCondition())) |> ignore
 
                     lastLib := Some lib
 
                 match !lastLib with
                 | None -> ()
-                | Some lib ->
-                    let whenNode = 
-                        this.CreateNode "When"
-                        |> addAttribute "Condition" (lib.Condition.GetGroupCondition())
-
-                    let reference = 
-                        this.CreateNode "Reference"
-                        |> addAttribute "Include" lib.DllName
-                        |> addChild (this.CreateNode("HintPath",lib.Path))
-                        |> addChild (this.CreateNode("Private","True"))
-                        |> addChild (this.CreateNode("Paket","True"))
-
-                    let itemGroup = this.CreateNode "ItemGroup"
-                    itemGroup.AppendChild(reference) |> ignore
-                    whenNode.AppendChild(itemGroup) |> ignore
-                    chooseNode.AppendChild(whenNode) |> ignore
+                | Some lib -> chooseNode.AppendChild(this.CreateWhenNode(lib,lib.Condition.GetGroupCondition())) |> ignore
 
                 projectNode.AppendChild(chooseNode) |> ignore
 
