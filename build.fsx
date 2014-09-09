@@ -157,20 +157,18 @@ Target "SourceLink" (fun _ ->
 // --------------------------------------------------------------------------------------
 // Build a NuGet package
 
-
 Target "MergeAssemblies" (fun _ ->        
     CreateDir buildMergedDir
 
     let toPack =
         ["Paket.exe"; "FSharp.Core.dll"; "Ionic.Zip.dll"; "Newtonsoft.Json.dll"; "UnionArgParser.dll"]
         |> List.map (fun l -> buildDir @@ l)
-        |> List.map (fun l -> "\"" + l + "\"")
         |> separated " "
 
     let result =
         ExecProcess (fun info ->
             info.FileName <- currentDirectory @@ "tools" @@ "ILRepack" @@ "ILRepack.exe"
-            info.Arguments <- sprintf "-internalize -verbose -lib:%s \"/out:%s\" %s" buildDir (buildMergedDir @@ "Paket.exe") toPack
+            info.Arguments <- sprintf "/internalize /verbose /lib:%s /ver:%s /out:%s %s" buildDir release.AssemblyVersion (buildMergedDir @@ "Paket.exe") toPack
             ) (TimeSpan.FromMinutes 5.)
 
     if result <> 0 then failwithf "Error during ILRepack execution."
