@@ -25,31 +25,29 @@ type FrameworkIdentifier =
 
     static member DetectFromPath(path : string) : FrameworkIdentifier list = 
 
-        let rec mapPath acc parts =
-            match parts with
-            | [] -> acc
-            | path::rest ->
+        let extract parts =
+            [for path in parts do
                 match path with
-                | "net" -> mapPath (DotNetFramework(All,Full,None) :: acc) rest
-                | "1.0" -> mapPath (DotNetFramework(All,Full,Some "1.0") :: acc) rest
-                | "1.1" -> mapPath (DotNetFramework(All,Full,Some "1.1") :: acc) rest
-                | "2.0" -> mapPath (DotNetFramework(All,Full,Some "2.0") :: acc) rest
-                | "net20" -> mapPath (DotNetFramework(Framework "v2.0",Full,None) :: acc) rest
-                | "net35" -> mapPath (DotNetFramework(Framework "v3.5",Full,None) :: acc) rest
-                | "net4" -> mapPath (DotNetFramework(Framework "v4.0",Full,None) :: acc) rest
-                | "net40" -> mapPath (DotNetFramework(Framework "v4.0",Full,None) :: acc) rest                
-                | "net40-full" -> mapPath (DotNetFramework(Framework "v4.0",Full,None) :: acc) rest
-                | "net40-client" -> mapPath (DotNetFramework(Framework "v4.0",Client,None) :: acc) rest
-                | "portable-net4" -> mapPath (DotNetFramework(Framework "v4.0",Full,None) :: acc) rest
-                | "net45" -> mapPath (DotNetFramework(Framework "v4.5",Full,None) :: acc) rest
-                | "net45-full" -> mapPath (DotNetFramework(Framework "v4.5",Full,None) :: acc) rest
-                | "net451" -> mapPath (DotNetFramework(Framework "v4.5.1",Full,None) :: acc) rest
-                | "sl3" -> mapPath (Silverlight("v3.0") :: acc) rest
-                | "sl4" -> mapPath (Silverlight("v4.0") :: acc) rest
-                | "sl5" -> mapPath (Silverlight("v5.0") :: acc) rest
-                | "sl4-wp" -> mapPath (WindowsPhoneApp("7.1") :: acc) rest
-                | "sl4-wp71" -> mapPath (WindowsPhoneApp("7.1") :: acc) rest
-                | _ -> mapPath acc rest
+                | "net" -> yield DotNetFramework(All,Full,None)
+                | "1.0" -> yield DotNetFramework(All,Full,Some "1.0")
+                | "1.1" -> yield DotNetFramework(All,Full,Some "1.1")
+                | "2.0" -> yield DotNetFramework(All,Full,Some "2.0")
+                | "net20" -> yield DotNetFramework(Framework "v2.0",Full,None)
+                | "net35" -> yield DotNetFramework(Framework "v3.5",Full,None)
+                | "net4" -> yield DotNetFramework(Framework "v4.0",Full,None) 
+                | "net40" -> yield DotNetFramework(Framework "v4.0",Full,None)
+                | "net40-full" -> yield DotNetFramework(Framework "v4.0",Full,None)
+                | "net40-client" -> yield DotNetFramework(Framework "v4.0",Client,None)
+                | "portable-net4" -> yield DotNetFramework(Framework "v4.0",Full,None)
+                | "net45" -> yield DotNetFramework(Framework "v4.5",Full,None)
+                | "net45-full" -> yield DotNetFramework(Framework "v4.5",Full,None)
+                | "net451" -> yield DotNetFramework(Framework "v4.5.1",Full,None)
+                | "sl3" -> yield Silverlight "v3.0"
+                | "sl4" -> yield Silverlight "v4.0"
+                | "sl5" -> yield Silverlight "v5.0"
+                | "sl4-wp" -> yield WindowsPhoneApp "7.1"
+                | "sl4-wp71" -> yield WindowsPhoneApp "7.1"
+                | _ -> () ]
                
         let path = path.Replace("\\", "/").ToLower()
         let fi = new FileInfo(path)
@@ -58,8 +56,6 @@ type FrameworkIdentifier =
         let startPos = path.IndexOf("lib/")
         let endPos = path.IndexOf(fi.Name.ToLower())
         if startPos < 0 || endPos < 0 then [] else
-        path.Substring(startPos+4,endPos-startPos-5).Split('+')
-        |> Seq.toList
-        |> mapPath []
-        |> List.rev
+        path.Substring(startPos+4,endPos-startPos-5).Split('+')        
+        |> extract
         
