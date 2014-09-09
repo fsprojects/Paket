@@ -23,19 +23,8 @@ module private InstallRules =
                           yield { DllName = lib.Name.Replace(lib.Extension, "")
                                   Path = lib.FullName
                                   Condition = condition } ]
-        |> Seq.groupBy (fun info -> info.DllName, info.Condition.GetGroup())
+        |> Seq.groupBy (fun info -> info.DllName, info.Condition.GetGroupCondition())
         |> Seq.groupBy (fun ((name, _), _) -> name)
-    
-    let hasClientProfile libs = libs |> Seq.exists (fun x -> match x.Condition with | DotNetFramework (_,Client,_) ->true | _ -> false)
-    let hasFullProfile libs = libs |> Seq.exists (fun x -> match x.Condition with | DotNetFramework (_,Full,_) -> true | _ -> false)
-
-    let handleClientFrameworks frameworkVersion libs = 
-        if frameworkVersion = ".NET v4.0" && hasClientProfile libs && not <| hasFullProfile libs then 
-            let copy = libs |> List.head
-            List.append 
-                [ { copy with Condition = DotNetFramework(match copy.Condition with | DotNetFramework(v,_,c) -> v,Full,c) } ] 
-                libs
-        else libs
 
     let handleCLRVersions (libs:InstallInfo list) =
         let withoutCLR,withCLR =
@@ -103,31 +92,18 @@ type ProjectFile =
         for dllName,libsWithSameName in installInfos do
             if this.HasCustomNodes(dllName) then () else            
             let lastLib = ref None
-            for (_,frameworkVersion),libs in libsWithSameName do
+            for (_,_),libs in libsWithSameName do
                 let chooseNode = this.Document.CreateElement("Choose", ProjectFile.DefaultNameSpace)
                 let libsWithSameFrameworkVersion = 
                     libs 
                     |> List.ofSeq                    
                     |> InstallRules.handlePath this.FileName
                     |> InstallRules.handleCLRVersions 
-                    |> InstallRules.handleClientFrameworks frameworkVersion
                     |> List.sortBy (fun lib -> lib.Path)
 
-                for lib in libsWithSameFrameworkVersion do
-                    let condition =
-                        match lib.Condition with
-                        | DotNetFramework(v,_,clrVersion) ->
-                            let profileTypeCondition =
-                                if not <| InstallRules.hasClientProfile libsWithSameFrameworkVersion then "" else
-                                sprintf " And $(TargetFrameworkProfile) == '%s'" (match lib.Condition with | DotNetFramework(_,Client,_) -> "Client" | _ -> "")
-                            match v with
-                            | Framework fw -> sprintf "$(TargetFrameworkIdentifier) == '.NETFramework' And $(TargetFrameworkVersion) == '%s'%s" fw profileTypeCondition
-                            | All -> "true"
-                        | WindowsPhoneApp v -> sprintf "$(TargetFrameworkIdentifier) == 'WindowsPhoneApp' And $(TargetPlatformVersion) == '%s'" v
-                        | Silverlight v -> sprintf "$(TargetFrameworkIdentifier) == 'Silverlight' And $(SilverlightVersion) == '%s'" v
-                
+                for lib in libsWithSameFrameworkVersion do                
                     let whenNode = this.Document.CreateElement("When", ProjectFile.DefaultNameSpace)
-                    whenNode.SetAttribute("Condition", condition) |> ignore
+                    whenNode.SetAttribute("Condition", lib.Condition.GetCondition()) |> ignore
                         
                     let reference = this.Document.CreateElement("Reference", ProjectFile.DefaultNameSpace)
                     reference.SetAttribute("Include", lib.DllName)
@@ -155,14 +131,8 @@ type ProjectFile =
                 match !lastLib with
                 | None -> ()
                 | Some lib ->
-                    let condition =
-                        match lib.Condition with
-                        | DotNetFramework _ -> "$(TargetFrameworkIdentifier) == '.NETFramework'"
-                        | WindowsPhoneApp _ -> "$(TargetFrameworkIdentifier) == 'WindowsPhoneApp'"
-                        | Silverlight _ -> "$(TargetFrameworkIdentifier) == 'Silverlight'"
-
                     let whenNode = this.Document.CreateElement("When", ProjectFile.DefaultNameSpace)
-                    whenNode.SetAttribute("Condition", condition) |> ignore
+                    whenNode.SetAttribute("Condition", lib.Condition.GetGroupCondition()) |> ignore
 
                     let reference = this.Document.CreateElement("Reference", ProjectFile.DefaultNameSpace)
                     reference.SetAttribute("Include", lib.DllName)

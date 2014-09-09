@@ -18,12 +18,26 @@ type FrameworkIdentifier =
     | WindowsPhoneApp of string
     | Silverlight of string
     
-    member x.GetGroup() = 
+    member x.GetGroupCondition() =
         match x with
-        | DotNetFramework _ -> ".NET"
-        | WindowsPhoneApp _ -> "WindowsPhoneApp"
-        | Silverlight _ -> "Silverlight"
-    
+        | DotNetFramework _ -> "$(TargetFrameworkIdentifier) == '.NETFramework'"
+        | WindowsPhoneApp _ -> "$(TargetFrameworkIdentifier) == 'WindowsPhoneApp'"
+        | Silverlight _ -> "$(TargetFrameworkIdentifier) == 'Silverlight'"
+
+    member x.GetFrameworkProfile() =        
+        match x with 
+        | DotNetFramework(_,Client,_) -> " And $(TargetFrameworkProfile) == 'Client'" 
+        | _ -> ""
+
+    member x.GetCondition() =
+        match x with
+        | DotNetFramework(v,_,_) ->
+            match v with
+            | Framework fw -> sprintf "$(TargetFrameworkIdentifier) == '.NETFramework' And $(TargetFrameworkVersion) == '%s'%s" fw (x.GetFrameworkProfile())
+            | All -> "true"
+        | WindowsPhoneApp v -> sprintf "$(TargetFrameworkIdentifier) == 'WindowsPhoneApp' And $(TargetPlatformVersion) == '%s'" v
+        | Silverlight v -> sprintf "$(TargetFrameworkIdentifier) == 'Silverlight' And $(SilverlightVersion) == '%s'" v
+
     static member DetectFromPath(path : string) : FrameworkIdentifier list = 
         let extract parts = 
             [ for path in parts do
