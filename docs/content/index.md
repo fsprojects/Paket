@@ -56,7 +56,7 @@ Download updated packages; update lock:
     [lang=batchfile]
     $ paket update
 
-The [update command](paket_update.html) will analyze your [Paket.dependencies](Dependencies_file.html) file, and (iff the rules dictate that any direct or indirect dependencies have updates that should be applied) updates the [Paket.lock](lock_file.html) file.
+The [update command](paket_update.html) will analyze your [Paket.dependencies](Dependencies_file.html) file, and updates the [Paket.lock](lock_file.html) file.
 
 Contributing and copyright
 --------------------------
