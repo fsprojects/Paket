@@ -17,6 +17,6 @@
     <dependencies />
   </metadata>
   <files>
-    <file src="..\bin\merged\Paket.exe" target="tools" />
+    <file src="..\bin\merged\paket.exe" target="tools" />
   </files>
 </package>

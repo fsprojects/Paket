@@ -8,7 +8,7 @@
     <ProjectGuid>{09b32f18-0c20-4489-8c83-5106d5c04c93}</ProjectGuid>
     <OutputType>Exe</OutputType>
     <RootNamespace>Paket</RootNamespace>
-    <AssemblyName>Paket</AssemblyName>
+    <AssemblyName>paket</AssemblyName>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <TargetFSharpCoreVersion>4.3.0.0</TargetFSharpCoreVersion>
     <Name>Paket</Name>
@@ -27,7 +27,7 @@
     <DocumentationFile>..\..\bin\Paket.xml</DocumentationFile>
     <StartArguments>update</StartArguments>
     <StartAction>Project</StartAction>
-    <StartProgram>Paket.exe</StartProgram>
+    <StartProgram>paket.exe</StartProgram>
     <StartWorkingDirectory>D:\code\paket\tests\ManualCSTest</StartWorkingDirectory>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
