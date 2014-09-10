@@ -41,10 +41,17 @@ let findLockfile dependenciesFile =
     FileInfo(Path.Combine(fi.Directory.FullName, fi.Name.Replace(fi.Extension,"") + ".lock"))
 
 
-let extractReferencesFromListFile projectFile =
+let extractReferencesFromListFile projectFile = 
     let fi = FileInfo(projectFile)
-    let referencesFile = FileInfo(Path.Combine(fi.Directory.FullName, "paket.references"))
-    if referencesFile.Exists then File.ReadAllLines referencesFile.FullName else [||]
+    
+    let references = 
+        let specificReferencesFile = FileInfo(Path.Combine(fi.Directory.FullName, fi.Name + ".paket.references"))
+        if specificReferencesFile.Exists then File.ReadAllLines specificReferencesFile.FullName
+        else 
+            let generalReferencesFile = FileInfo(Path.Combine(fi.Directory.FullName, "paket.references"))
+            if generalReferencesFile.Exists then File.ReadAllLines generalReferencesFile.FullName
+            else [||]
+    references
     |> Array.map (fun s -> s.Trim())
     |> Array.filter (fun s -> System.String.IsNullOrWhiteSpace s |> not)
 
