@@ -43,3 +43,8 @@ let ``can detect range version``() =
         |> shouldEqual (VersionRange.Range(Closed, SemVer.parse "2.2", SemVer.parse "3", Open))
     Nuget.parseVersionRange "[2.2,3]" 
         |> shouldEqual (VersionRange.Range(Closed, SemVer.parse "2.2", SemVer.parse "3", Closed))
+
+        
+[<Test>]
+let ``can detect "null" version``() = 
+    Nuget.parseVersionRange "null" |> shouldEqual (DependenciesFileParser.parseVersionRange ">= 0")

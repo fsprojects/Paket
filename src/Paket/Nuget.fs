@@ -86,6 +86,7 @@ let parseVersionRange (text:string) =
         | _         -> failParse()
 
     if text = "" then Latest
+    elif text = "null" then Minimum(SemVer.parse "0")
     elif not <| text.Contains "," then
         if text.StartsWith "[" then Specific(text.Trim([|'['; ']'|]) |> SemVer.parse)
         else Minimum(SemVer.parse text)
