@@ -12,8 +12,12 @@ type private InstallInfo = {
     Condition : FrameworkIdentifier
 }
 
+module private UriHelper =
+    let createRelativePath root path =
+        Uri(root).MakeRelativeUri(Uri(path)).ToString().Replace("/", "\\")
+
 module private InstallRules = 
-    let groupDLLs (usedPackages : HashSet<string>) extracted = 
+    let groupDLLs (usedPackages : HashSet<string>) extracted projectPath = 
         [ for (package:ResolvedPackage), libraries in extracted do
               if usedPackages.Contains package.Name then 
                   let libraries = libraries |> Seq.toArray
@@ -22,15 +26,10 @@ module private InstallRules =
                       | None -> ()
                       | Some condition ->
                           yield { DllName = lib.Name.Replace(lib.Extension, "")
-                                  Path = lib.FullName
+                                  Path = UriHelper.createRelativePath projectPath lib.FullName
                                   Condition = condition } ]
         |> Seq.groupBy (fun info -> info.DllName, info.Condition.GetFrameworkIdentifier())
         |> Seq.groupBy (fun ((name, _), _) -> name)
-
-    let handlePath root (libs:InstallInfo list) =
-        libs 
-        |> List.map (fun lib -> { lib with Path = Uri(root).MakeRelativeUri(Uri(lib.Path)).ToString().Replace("/", "\\")} )
-
 
 /// Contains methods to read and manipulate project files.
 type ProjectFile = 
@@ -62,17 +61,18 @@ type ProjectFile =
             
         !hasCustom
 
-    member this.DeletePaketReferenceNodes() =    
-        let nodesToDelete = List<_>()
-        for node in this.Document.SelectNodes("//ns:Reference", this.Namespaces) do
-            let remove = ref false
+    member this.FindPaketNodes(name) = 
+        [
+            for node in this.Document.SelectNodes(sprintf "//ns:%s" name, this.Namespaces) do
+                let isPaketNode = ref false
             for child in node.ChildNodes do
-                if child.Name = "Paket" then remove := true
+                    if child.Name = "Paket" then isPaketNode := true
             
-            if !remove then
-                nodesToDelete.Add node
+                if !isPaketNode then yield node
+        ]
 
-        for node in nodesToDelete do
+    member this.DeletePaketNodes(name) =    
+        for node in this.FindPaketNodes(name) do
             node.ParentNode.RemoveChild(node) |> ignore
 
     member this.DeletePaketCompileNodes() =    
@@ -157,8 +157,8 @@ type ProjectFile =
         match [ for node in this.Document.SelectNodes("//ns:Project", this.Namespaces) -> node ] with
         | [] -> ()
         | projectNode :: _ -> 
-            this.DeletePaketReferenceNodes()
-            let installInfos = InstallRules.groupDLLs usedPackages extracted
+            this.DeletePaketNodes("Reference")
+            let installInfos = InstallRules.groupDLLs usedPackages extracted this.FileName
             for dllName, libsWithSameName in installInfos do
                 if hard then
                     this.DeleteCustomNodes(dllName)
@@ -171,7 +171,6 @@ type ProjectFile =
                         let libsWithSameFrameworkVersion = 
                             libs
                             |> List.ofSeq
-                            |> InstallRules.handlePath this.FileName
                             |> List.sortBy (fun lib -> lib.Path)
                         for lib in libsWithSameFrameworkVersion do
                             chooseNode.AppendChild(this.CreateWhenNode(lib, lib.Condition.GetCondition())) |> ignore
@@ -187,10 +186,32 @@ type ProjectFile =
     member this.Save() =
         if Utils.normalizeXml this.Document <> this.OriginalText then this.Document.Save(this.FileName)
 
+    member this.GetContentFiles() =
+        this.FindPaketNodes("Content")
+        |> List.map (fun n ->  FileInfo(Path.Combine(Path.GetDirectoryName(this.FileName), n.Attributes.["Include"].Value)))
+
+    member this.UpdateContentFiles(contentFiles : list<FileInfo>) =
+        let contentNode (fi: FileInfo) = 
+            this.CreateNode "Content" 
+            |> addAttribute "Include" (UriHelper.createRelativePath this.FileName fi.FullName)
+            |> addChild (this.CreateNode("Paket","True"))
+
+        match [ for node in this.Document.SelectNodes("//ns:Project", this.Namespaces) -> node ] with
+        | [] -> ()
+        | projectNode :: _ -> 
+            this.DeletePaketNodes("Content")
+            this.DeleteIfEmpty("//ns:Project/ns:ItemGroup")
+            let itemGroupNode = this.Document.CreateElement("ItemGroup", ProjectFile.DefaultNameSpace)
+
+            contentFiles
+            |> List.map contentNode
+            |> List.iter (fun node -> itemGroupNode.AppendChild(node) |> ignore)
+
+            projectNode.AppendChild(itemGroupNode) |> ignore
+            
     member this.ConvertNugetToPaket() =
         for node in this.Document.SelectNodes("//ns:*[@Include='packages.config']", this.Namespaces) do
             node.Attributes.["Include"].Value <- "paket.references"
-        if Utils.normalizeXml this.Document <> this.OriginalText then this.Document.Save(this.FileName)
 
     static member Load(fileName:string) =
         try

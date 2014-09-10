@@ -57,6 +57,33 @@ let private findAllProjects(folder) =
     |> List.map (fun projectType -> findAllFiles(folder, projectType) |> Seq.toList)
     |> List.concat
 
+let private findPackagesWithContent usedPackages = 
+    usedPackages
+    |> Seq.map (fun p -> DirectoryInfo(Path.Combine("packages", p)))
+    |> Seq.choose (fun packageDir -> packageDir.GetDirectories("Content") |> Array.tryFind (fun _ -> true))
+    |> Seq.toList
+
+let private copyContentFilesToProject project packagesWithContent = 
+
+    let rec copyDirContents (fromDir : DirectoryInfo, toDir : DirectoryInfo) =
+        fromDir.GetDirectories() |> Array.toList
+        |> List.collect (fun subDir -> copyDirContents(subDir, toDir.CreateSubdirectory(subDir.Name)))
+        |> List.append
+            (fromDir.GetFiles() 
+                |> Array.toList
+                |> List.map (fun file -> file.CopyTo(Path.Combine(toDir.FullName, file.Name), true)))
+
+    packagesWithContent
+    |> List.collect (fun packageDir -> copyDirContents (packageDir, (DirectoryInfo(Path.GetDirectoryName(project.FileName)))))
+
+let private removeContentFiles (project: ProjectFile) =
+    project.GetContentFiles() 
+        |> List.sortBy (fun f -> f.FullName)
+        |> List.rev
+        |> List.iter(fun f -> 
+                         File.Delete(f.FullName)
+                         if f.Directory.GetFiles() |> Seq.isEmpty then Directory.Delete(f.Directory.FullName))
+
 /// Installs the given packageFile.
 let Install(regenerate, force, hard, dependenciesFilename) = 
     let lockFile =
@@ -106,11 +133,18 @@ let Install(regenerate, force, hard, dependenciesFilename) =
         
         project.UpdateReferences(extractedPackages,usedPackages,hard)
 
+
         lockFile.SourceFiles 
         |> List.filter (fun file -> usedSourceFiles.Contains(file.Name))
         |> project.UpdateSourceFiles
 
+        removeContentFiles project
+        let packagesWithContent = findPackagesWithContent usedPackages
+        let contentFiles = copyContentFilesToProject project packagesWithContent
+        project.UpdateContentFiles(contentFiles)
+
         project.Save()
+
 
 
 /// Finds all outdated packages.
