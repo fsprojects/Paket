@@ -1,5 +1,5 @@
 /// Contains methods to handle lockfiles.
-module paket.lockFile
+module Paket.LockFile
 
 open System
 open System.IO

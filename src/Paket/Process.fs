@@ -38,17 +38,12 @@ let ExtractPackages(force, packages : Package seq) =
 
 let findLockfile dependenciesFile =
     let fi = FileInfo(dependenciesFile)
-    let lockFileName =
-        Path.Combine(fi.Directory.FullName, fi.Name.Replace(fi.Extension,"") + ".lock")
-        |> checkForLowerCase
-
-    FileInfo lockFileName
+    FileInfo(Path.Combine(fi.Directory.FullName, fi.Name.Replace(fi.Extension,"") + ".lock"))
 
 
 let extractReferencesFromListFile projectFile =
     let fi = FileInfo(projectFile)
-    let referencesFileName = Path.Combine(fi.Directory.FullName, "paket.references") |> checkForLowerCase
-    let referencesFile = FileInfo referencesFileName
+    let referencesFile = FileInfo(Path.Combine(fi.Directory.FullName, "paket.references"))
     if referencesFile.Exists then File.ReadAllLines referencesFile.FullName else [||]
     |> Array.map (fun s -> s.Trim())
     |> Array.filter (fun s -> System.String.IsNullOrWhiteSpace s |> not)

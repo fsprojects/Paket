@@ -74,13 +74,6 @@ let normalizeXml(doc:XmlDocument) =
     xmlTextWriter.Flush()
     stringWriter.GetStringBuilder().ToString()
 
-let checkForLowerCase fileName = 
-    let file = FileInfo fileName
-    if file.Exists then file.FullName
-    else 
-        let lowerCase = FileInfo(Path.Combine(file.Directory.FullName, file.Name.ToLower()))
-        if lowerCase.Exists then lowerCase.FullName else fileName
-
 /// [omit]
 let getFromUrl (url : string) = 
     async { 
