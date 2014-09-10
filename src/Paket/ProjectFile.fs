@@ -61,14 +61,18 @@ type ProjectFile =
             
         !hasCustom
 
-    member this.DeletePaketNodes() =
+    member this.DeletePaketNodes() =    
+        let nodesToDelete = List<_>()
         for node in this.Document.SelectNodes("//ns:Reference", this.Namespaces) do
             let remove = ref false
             for child in node.ChildNodes do
                 if child.Name = "Paket" then remove := true
             
             if !remove then
-                node.ParentNode.RemoveChild(node) |> ignore
+                nodesToDelete.Add node
+
+        for node in nodesToDelete do
+            node.ParentNode.RemoveChild(node) |> ignore
 
     member this.CreateNode(name) = this.Document.CreateElement(name, ProjectFile.DefaultNameSpace)
 
