@@ -24,6 +24,7 @@ with
             | Install -> "installs all packages."
             | Update -> "updates the Lock File and installs all packages."
             | Outdated -> "displays information about new packages."
+            | Verbose -> "displays verbose output."
             | Dependencies_File _ -> "specify a file containing dependency definitions."
             | Force -> "specify a dependency definition."
 
