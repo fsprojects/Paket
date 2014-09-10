@@ -3,7 +3,7 @@ The Paket.dependencies file
 
 The `Paket.dependencies` file is used to specify reules regarding your application's dependencies. 
 
-It uses a similar syntax to that of [bundler](http://bundler.io/)'s GEMfile:-
+It uses a similar syntax to that of [bundler](http://bundler.io/)'s GEMfile:
   
     source "http://nuget.org/api/v2"
 
@@ -29,6 +29,16 @@ It's possible to use multiple sources:
     nuget "FAKE" "~> 3.2"
 
 The [Paket.lock](lock_file.html) will also reflect these settings.
+
+Path sources
+------------
+
+Paket supports NuGet feeds like [nuget.org](http.//nuget.org) or [TeamCity](http://www.jetbrains.com/teamcity/), but it also supports paths:
+
+	source "C:\Nugets"
+	source "\\server\nugets"
+
+    nuget "FAKE" "~> 3.2"
 
 NuGet-style pessimistic version constraints
 -------------------------------------------
