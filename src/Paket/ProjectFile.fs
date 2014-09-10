@@ -103,40 +103,35 @@ type ProjectFile =
         this.DeleteIfEmpty("//ns:Project/ns:Choose/ns:When")
         this.DeleteIfEmpty("//ns:Project/ns:Choose")
 
-    member this.UpdateReferences(extracted,usedPackages:HashSet<string>) =
-        this.DeletePaketNodes()
-
-        let projectNode =
-            seq { for node in this.Document.SelectNodes("//ns:Project", this.Namespaces) -> node }
-            |> Seq.head
-
-        let installInfos = InstallRules.groupDLLs usedPackages extracted
-        for dllName,libsWithSameName in installInfos do
-            if this.HasCustomNodes(dllName) then () else            
-            let lastLib = ref None
-            for (_,_),libs in libsWithSameName do
-                let chooseNode = this.Document.CreateElement("Choose", ProjectFile.DefaultNameSpace)
-                let libsWithSameFrameworkVersion = 
-                    libs 
-                    |> List.ofSeq                    
-                    |> InstallRules.handlePath this.FileName
-                    |> List.sortBy (fun lib -> lib.Path)
-
-                for lib in libsWithSameFrameworkVersion do                                    
-                    chooseNode.AppendChild(this.CreateWhenNode(lib,lib.Condition.GetCondition())) |> ignore
-
-                    lastLib := Some lib
-
-                match !lastLib with
-                | None -> ()
-                | Some lib -> chooseNode.AppendChild(this.CreateWhenNode(lib,lib.Condition.GetGroupCondition())) |> ignore
-
-                projectNode.AppendChild(chooseNode) |> ignore
-
-        this.DeleteEmptyReferences()
-
-        if Utils.normalizeXml this.Document <> this.OriginalText then
-            this.Document.Save(this.FileName)
+    member this.UpdateReferences(extracted, usedPackages : HashSet<string>) = 
+        match [ for node in this.Document.SelectNodes("//ns:Project", this.Namespaces) -> node ] with
+        | [] -> ()
+        | projectNode :: _ -> 
+            this.DeletePaketNodes()
+            let installInfos = InstallRules.groupDLLs usedPackages extracted
+            for dllName, libsWithSameName in installInfos do
+                if this.HasCustomNodes(dllName) then ()
+                else 
+                    let lastLib = ref None
+                    for (_, _), libs in libsWithSameName do
+                        let chooseNode = this.Document.CreateElement("Choose", ProjectFile.DefaultNameSpace)
+                        
+                        let libsWithSameFrameworkVersion = 
+                            libs
+                            |> List.ofSeq
+                            |> InstallRules.handlePath this.FileName
+                            |> List.sortBy (fun lib -> lib.Path)
+                        for lib in libsWithSameFrameworkVersion do
+                            chooseNode.AppendChild(this.CreateWhenNode(lib, lib.Condition.GetCondition())) |> ignore
+                            lastLib := Some lib
+                        match !lastLib with
+                        | None -> ()
+                        | Some lib -> 
+                            chooseNode.AppendChild(this.CreateWhenNode(lib, lib.Condition.GetGroupCondition())) 
+                            |> ignore
+                        projectNode.AppendChild(chooseNode) |> ignore
+            this.DeleteEmptyReferences()
+            if Utils.normalizeXml this.Document <> this.OriginalText then this.Document.Save(this.FileName)
 
     static member Load(fileName:string) =
         let fi = FileInfo(fileName)
