@@ -63,6 +63,7 @@ try
         | Command.Update -> Process.Install(true,force,packageFile)
         | Command.Outdated -> Process.ListOutdated(packageFile)
         | _ -> failwithf "no command given.%s" (parser.Usage())
+        tracefn "Ready."
         |> ignore
     | None -> ()
 with
