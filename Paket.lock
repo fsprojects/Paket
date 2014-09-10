@@ -2,12 +2,12 @@ NUGET
   remote: http://nuget.org/api/v2
   specs:
     DotNetZip (1.9.3)
-    FAKE (3.4.1)
+    FAKE (3.4.3)
     FSharp.Compiler.Service (0.0.59)
-    FSharp.Formatting (2.4.21)
-      Microsoft.AspNet.Razor (>= 2.0.30506.0)
-      RazorEngine (>= 3.3.0)
-      FSharp.Compiler.Service (>= 0.0.59)
+    FSharp.Formatting (2.4.22)
+      Microsoft.AspNet.Razor (2.0.30506.0)
+      RazorEngine (3.3.0)
+      FSharp.Compiler.Service (0.0.59)
     Microsoft.AspNet.Razor (2.0.30506.0)
     NUnit (2.6.3)
     NUnit.Runners (2.6.3)
