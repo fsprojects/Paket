@@ -14,6 +14,7 @@ type CLIArguments =
     | [<First>][<NoAppSettings>][<CustomCommandLine("install")>] Install
     | [<First>][<NoAppSettings>][<CustomCommandLine("update")>] Update
     | [<First>][<NoAppSettings>][<CustomCommandLine("outdated")>] Outdated
+    | [<AltCommandLine("-v")>] Verbose
     | Dependencies_File of string
     | [<AltCommandLine("-f")>] Force
 with
@@ -29,7 +30,7 @@ with
 
 let parser = UnionArgParser.Create<CLIArguments>("USAGE: paket [install|update|outdated] ... options")
  
-let results =
+let results,verbose =
     try
         let results = parser.Parse()
         let command =
@@ -37,11 +38,11 @@ let results =
             elif results.Contains <@ CLIArguments.Update @> then Command.Update
             elif results.Contains <@ CLIArguments.Outdated @> then Command.Outdated
             else Command.Unkown
-        Some(command,results)
+        Some(command,results),results.Contains <@ CLIArguments.Verbose @>
     with
     | _ ->
         tracefn "%s %s%s" (String.Join(" ",Environment.GetCommandLineArgs())) Environment.NewLine (parser.Usage())
-        None
+        None,false
 
 try
     match results with
@@ -67,5 +68,7 @@ try
 with
 | exn -> 
     Environment.ExitCode <- 1
-    traceErrorfn "Paket failed with:%s   %s%sStackTrace:%s  %s" 
-        Environment.NewLine exn.Message Environment.NewLine Environment.NewLine exn.StackTrace
+    traceErrorfn "Paket failed with:%s   %s" Environment.NewLine exn.Message
+
+    if verbose then
+        traceErrorfn "StackTrace:%s  %s" Environment.NewLine exn.StackTrace
