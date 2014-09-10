@@ -16,7 +16,7 @@ How to get Paket
     <div class="well well-small" id="nuget">
       Paket is available <a href="https://nuget.org/packages/Paket">on NuGet</a>.
       To install the tool, run the following command in the <a href="http://docs.nuget.org/docs/start-here/using-the-package-manager-console">Package Manager Console</a>:
-      <pre>PM> Install-Package Paket</pre>
+      <pre>PM> Install-Package Paket -Pre</pre>
     </div>
   </div>
   <div class="span1"></div>
