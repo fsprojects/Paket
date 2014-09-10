@@ -25,7 +25,7 @@ Paket adds references to all of them; but with *Condition* properties filtering 
 Why does Paket use a different package resolution strategy than NuGet?
 ----------------------------------------------------------------------
 
-Paket tries to embrace [SemVer](http://semver.org/) while NuGet uses a pessimistic version resolution strategy. You can always prefix your version constraints with **!** if you need to use [NuGet compatibility](packages_file.html).
+Paket tries to embrace [SemVer](http://semver.org/) while NuGet uses a pessimistic version resolution strategy. You can always prefix your version constraints with **!** if you need to use [NuGet compatibility](dependencies_file.html).
 
 When I resolve the dependencies from NuGet.org it is really slow. Why is that?
 ------------------------------------------------------------------------------
