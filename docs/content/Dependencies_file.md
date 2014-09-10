@@ -1,7 +1,7 @@
-The Paket.dependencies file
+The paket.dependencies file
 ===========================
 
-The `Paket.dependencies` file is used to specify rules regarding your application's dependencies. 
+The `paket.dependencies` file is used to specify rules regarding your application's dependencies. 
 
 It uses a similar syntax to that of [bundler](http://bundler.io/)'s [Gemfile](http://bundler.io/gemfile.html):
   
@@ -12,7 +12,7 @@ It uses a similar syntax to that of [bundler](http://bundler.io/)'s [Gemfile](ht
 
 Only direct dependencies should be listed in this file.
 
-Paket uses this definition to compute a concrete package resolution, which also includes indirect dependencies, in a [Paket.lock](lock_file.html) file.
+Paket uses this definition to compute a concrete package resolution, which also includes indirect dependencies, in a [paket.lock](lock_file.html) file.
 
 Sources
 -------
@@ -28,7 +28,7 @@ It's possible to use multiple sources:
     
     nuget "CustomLib" "~> 1.5" // downloaded from the custom feed
 
-The [Paket.lock](lock_file.html) will also reflect these settings.
+The [paket.lock](lock_file.html) will also reflect these settings.
 
 Path sources
 ------------

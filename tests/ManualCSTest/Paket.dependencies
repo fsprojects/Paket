@@ -1,3 +1,0 @@
-source "http://nuget.org/api/v2"
-
-nuget "Newtonsoft.Json" "~> 6.0"

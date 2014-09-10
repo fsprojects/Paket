@@ -52,7 +52,7 @@ try
         let dependenciesFile = 
             match results.TryGetResult <@ CLIArguments.Dependencies_File @> with
             | Some x -> x
-            | _ -> "Paket.dependencies"
+            | _ -> "paket.dependencies"
             |> checkForLowerCase
 
         let force = 

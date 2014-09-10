@@ -1,4 +1,4 @@
-﻿/// Contains methods for the install and update process.
+/// Contains methods for the install and update process.
 module Paket.Process
 
 open System.IO
@@ -47,7 +47,7 @@ let findLockfile dependenciesFile =
 
 let extractReferencesFromListFile projectFile =
     let fi = FileInfo(projectFile)
-    let referencesFileName = Path.Combine(fi.Directory.FullName, "Paket.references") |> checkForLowerCase
+    let referencesFileName = Path.Combine(fi.Directory.FullName, "paket.references") |> checkForLowerCase
     let referencesFile = FileInfo referencesFileName
     if referencesFile.Exists then File.ReadAllLines referencesFile.FullName else [||]
     |> Array.map (fun s -> s.Trim())

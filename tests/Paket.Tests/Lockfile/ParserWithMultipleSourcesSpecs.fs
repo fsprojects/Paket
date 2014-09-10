@@ -1,4 +1,4 @@
-﻿module Paket.LockFile.ParserWithMultipleSourcesSpecs
+module paket.lockFile.ParserWithMultipleSourcesSpecs
 
 open Paket
 open NUnit.Framework

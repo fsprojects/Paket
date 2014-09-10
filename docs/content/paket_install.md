@@ -1,7 +1,7 @@
 paket install
 =============
 
-Ensures that all dependencies in your [Paket.dependencies](Dependencies_file.html) file are available to your application.
+Ensures that all dependencies in your [paket.dependencies](Dependencies_file.html) file are available to your application.
 
     [lang=batchfile]
     $ paket install [--force] [--dependencies-file=FILE]
@@ -10,4 +10,4 @@ Options:
 
   `--force`:  Forces the download and reinstallation of all packages.
 
-  `--dependencies-file`:  Use the specified file instead of `Paket.dependencies`.
+  `--dependencies-file`:  Use the specified file instead of `paket.dependencies`.

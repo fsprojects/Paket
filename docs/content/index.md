@@ -27,7 +27,7 @@ How to get Paket
 Getting Started
 ---------------
 
-Specify the version-rules of all dependencies used in your application in a [Paket.dependencies](Dependencies_file.html) file in your project's root:
+Specify the version-rules of all dependencies used in your application in a [paket.dependencies](Dependencies_file.html) file in your project's root:
 
     source "http://nuget.org/api/v2"
 
@@ -39,12 +39,12 @@ Install all of the required packages from your specified sources:
     [lang=batchfile]
     $ paket install
 
-The [install command](paket_install.html) will analyze your [Paket.dependencies](Dependencies_file.html) file and generate a [Paket.lock](lock_file.html) file alongside it.
+The [install command](paket_install.html) will analyze your [paket.dependencies](Dependencies_file.html) file and generate a [paket.lock](lock_file.html) file alongside it.
 If the lock file already exists, it will not be regenerated.
 
-You may have a [Paket.references](References_files.html) file next to your VS projects to have Paket automatically add references for the package IDs noted in that file.
+You may have a [paket.references](References_files.html) file next to your VS projects to have Paket automatically add references for the package IDs noted in that file.
 
-All of the files involved (`Paket.dependencies`, `Paket.lock` and `Paket.references`) should be committed to your version control system. 
+All of the files involved (`paket.dependencies`, `paket.lock` and `paket.references`) should be committed to your version control system. 
 
 Determine if there are package updates available:
 
@@ -56,7 +56,7 @@ Download updated packages; update lock:
     [lang=batchfile]
     $ paket update
 
-The [update command](paket_update.html) will analyze your [Paket.dependencies](Dependencies_file.html) file, and updates the [Paket.lock](lock_file.html) file.
+The [update command](paket_update.html) will analyze your [paket.dependencies](Dependencies_file.html) file, and updates the [paket.lock](lock_file.html) file.
 
 Contributing and copyright
 --------------------------

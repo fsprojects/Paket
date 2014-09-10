@@ -1,4 +1,4 @@
-﻿module Paket.LockFile.GeneratorSpecs
+module paket.lockFile.GeneratorSpecs
 
 open Paket
 open NUnit.Framework

@@ -62,7 +62,7 @@ module DependenciesFileParser =
                                        ResolverStrategy = if version.StartsWith "!" then ResolverStrategy.Min else ResolverStrategy.Max
                                        VersionRange = parseVersionRange(version.Trim '!') } :: packages
             with
-            | exn -> failwithf "Error in Paket.dependencies line %d%s  %s" lineNo Environment.NewLine exn.Message)
+            | exn -> failwithf "Error in paket.dependencies line %d%s  %s" lineNo Environment.NewLine exn.Message)
         |> fun (_,_,x) -> x
         |> List.rev
 

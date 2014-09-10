@@ -1,4 +1,4 @@
-﻿module Paket.LockFile.ParserSpecs
+module paket.lockFile.ParserSpecs
 
 open Paket
 open NUnit.Framework

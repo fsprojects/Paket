@@ -1,4 +1,4 @@
-﻿module Paket.LockFile.GenerationWithMutlipleSourcesSpecs
+module paket.lockFile.GenerationWithMutlipleSourcesSpecs
 
 open Paket
 open NUnit.Framework

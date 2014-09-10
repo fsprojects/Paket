@@ -1,4 +1,4 @@
-module Paket.DependenciesFile.ParserSpecs
+module paket.dependenciesFile.ParserSpecs
 
 open Paket
 open NUnit.Framework
@@ -84,7 +84,7 @@ let ``should report errors if pacakge misses "``() =
         failwith "No message given"
     with 
     | exn ->
-        exn.Message.Contains("Paket.dependencies") |> shouldEqual true
+        exn.Message.Contains("paket.dependencies") |> shouldEqual true
         exn.Message.Contains("line 4") |> shouldEqual true
         exn.Message.Contains("missing \"") |> shouldEqual true
 
@@ -100,7 +100,7 @@ let ``should report errors if version misses "``() =
         failwith "No message given"
     with 
     | exn ->
-        exn.Message.Contains("Paket.dependencies") |> shouldEqual true
+        exn.Message.Contains("paket.dependencies") |> shouldEqual true
         exn.Message.Contains("line 3") |> shouldEqual true
         exn.Message.Contains("missing \"") |> shouldEqual true
 
@@ -114,7 +114,7 @@ let ``should report errors if nuget is single``() =
         failwith "No message given"
     with 
     | exn ->
-        exn.Message.Contains("Paket.dependencies") |> shouldEqual true
+        exn.Message.Contains("paket.dependencies") |> shouldEqual true
         exn.Message.Contains("line 1") |> shouldEqual true
         exn.Message.Contains("could not parse version range") |> shouldEqual true
         exn.Message.Contains("> 0") |> shouldEqual true
