@@ -40,9 +40,13 @@ type ProjectFile =
     static member DefaultNameSpace = "http://schemas.microsoft.com/developer/msbuild/2003"
 
     member this.DeleteIfEmpty xPath =
+        let nodesToDelete = List<_>()
         for node in this.Document.SelectNodes(xPath, this.Namespaces) do
             if node.ChildNodes.Count = 0 then
-                node.ParentNode.RemoveChild(node) |> ignore
+                nodesToDelete.Add node
+
+        for node in nodesToDelete do
+            node.ParentNode.RemoveChild(node) |> ignore
 
     member this.HasCustomNodes(dllName) =
         let hasCustom = ref false
