@@ -69,4 +69,5 @@ try
 with
 | exn -> 
     Environment.ExitCode <- 1
-    traceErrorfn "Paket failed with:%s%s" Environment.NewLine exn.Message
+    traceErrorfn "Paket failed with:%s   %s%sStackTrace:%s  %s" 
+        Environment.NewLine exn.Message Environment.NewLine Environment.NewLine exn.StackTrace
