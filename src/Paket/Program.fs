@@ -29,11 +29,9 @@ with
 
 let parser = UnionArgParser.Create<CLIArguments>("USAGE: paket [install|update|outdated] ... options")
  
-let cmdArgs = Environment.GetCommandLineArgs()
-
 let results =
     try
-        let results = parser.Parse(cmdArgs.[1..])
+        let results = parser.Parse()
         let command =
             if results.Contains <@ CLIArguments.Install @> then Command.Install
             elif results.Contains <@ CLIArguments.Update @> then Command.Update
@@ -42,7 +40,7 @@ let results =
         Some(command,results)
     with
     | _ ->
-        tracefn "%s %s%s" (String.Join(" ",cmdArgs)) Environment.NewLine (parser.Usage())
+        tracefn "%s %s%s" (String.Join(" ",Environment.GetCommandLineArgs())) Environment.NewLine (parser.Usage())
         None
 
 try
