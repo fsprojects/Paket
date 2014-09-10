@@ -1,15 +1,13 @@
 #!/bin/bash
 
-mono .nuget/NuGet.exe install Paket3 -OutputDirectory packages -Prerelease -ExcludeVersion
-exit_code=$?
-if [ $exit_code -ne 0 ]; then
-	exit $exit_code
+mono .nuget/NuGet.exe install Paket -OutputDirectory packages -Prerelease -ExcludeVersion
+if [ $? -ne 0 ]; then
+	exit 1
 fi
 
 mono packages/Paket/tools/Paket.exe install
-exit_code=$?
-if [ $exit_code -ne 0 ]; then
-	exit $exit_code
+if [ $? -ne 0 ]; then
+	exit 1
 fi
 
 mono packages/FAKE/tools/FAKE.exe $@ --fsiargs -d:MONO build.fsx 
