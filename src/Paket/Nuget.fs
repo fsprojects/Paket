@@ -9,7 +9,7 @@ open Ionic.Zip
 open System.Xml
 open System.Collections.Generic
 
-let loadNuGetOData raw =
+let private loadNuGetOData raw =
     let doc = XmlDocument()
     doc.LoadXml raw
     let manager = new XmlNamespaceManager(doc.NameTable)
@@ -112,7 +112,7 @@ let parseVersionRange (text:string) =
         | _ -> failParse()
             
 /// Gets package details from Nuget via OData
-let getDetailsFromNugetViaOData nugetURL package resolverStrategy version = 
+let getDetailsFromNugetViaOData nugetURL package sources resolverStrategy version = 
     async { 
         let! raw = sprintf "%s/Packages(Id='%s',Version='%s')" nugetURL package version |> getFromUrl
         let doc,manager = loadNuGetOData raw
@@ -142,13 +142,11 @@ let getDetailsFromNugetViaOData nugetURL package resolverStrategy version =
                                       |> not && d.[0] <> "")
             |> Array.map (fun a -> 
                    a.[0], 
-                   if a.Length > 1 then a.[1]
-                   else "")
-            |> Array.map (fun (name, version) -> 
+                   if a.Length > 1 then a.[1] else "0")
+            |> Array.map (fun (name, version) ->
                    { Name = name
-                     // TODO: Parse nuget version ranges - see http://docs.nuget.org/docs/reference/versioning
-                     VersionRange = parseVersionRange version
-                     Sources = [Nuget nugetURL]
+                     VersionRange =  parseVersionRange version
+                     Sources = sources
                      DirectDependencies = []
                      ResolverStrategy = resolverStrategy })
             |> Array.toList
@@ -161,37 +159,37 @@ let CacheFolder =
     let appData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)
     Path.Combine(Path.Combine(appData, "NuGet"), "Cache")
 
-let private loadFromCacheOrOData force fileName nugetURL package resolverStrategy version = 
+let private loadFromCacheOrOData force fileName nugetURL package sources resolverStrategy version = 
     async {
         if not force && File.Exists fileName then
             try 
                 let json = File.ReadAllText(fileName)
                 return false,JsonConvert.DeserializeObject<PackageDetails>(json)
             with _ -> 
-                let! details = getDetailsFromNugetViaOData nugetURL package resolverStrategy version
+                let! details = getDetailsFromNugetViaOData nugetURL package sources resolverStrategy version
                 return true,details
         else
-            let! details = getDetailsFromNugetViaOData nugetURL package resolverStrategy version
+            let! details = getDetailsFromNugetViaOData nugetURL package sources resolverStrategy version
             return true,details
     }
 
 
 /// Tries to get download link and direct dependencies from Nuget
 /// Caches calls into json file
-let getDetailsFromNuget force nugetURL package resolverStrategy version = 
+let getDetailsFromNuget force nugetURL package sources resolverStrategy version = 
     async {
         try            
             let fi = FileInfo(Path.Combine(CacheFolder,sprintf "%s.%s.json" package version))
-            let! (invalidCache,details) = loadFromCacheOrOData force fi.FullName nugetURL package resolverStrategy version 
+            let! (invalidCache,details) = loadFromCacheOrOData force fi.FullName nugetURL package sources resolverStrategy version 
             if invalidCache then
                 File.WriteAllText(fi.FullName,JsonConvert.SerializeObject(details))
             return details
         with
-        | _ -> return! getDetailsFromNugetViaOData nugetURL package resolverStrategy version 
+        | _ -> return! getDetailsFromNugetViaOData nugetURL package sources resolverStrategy version 
     }    
     
 /// Reads direct dependencies from a nupkg file
-let getDetailsFromLocalFile path package resolverStrategy version =
+let getDetailsFromLocalFile path package sources resolverStrategy version =
     async {
         let nupkg = FileInfo(Path.Combine(path, sprintf "%s.%s.nupkg" package version))
         let zip = ZipFile.Read(nupkg.FullName)
@@ -215,9 +213,15 @@ let getDetailsFromLocalFile path package resolverStrategy version =
             xmlDoc.SelectNodes(sprintf "/%s:package/%s:metadata/%s:dependencies/%s:dependency" pfx pfx pfx pfx, ns)
             |> Seq.cast<XmlNode>
             |> Seq.map (fun node -> 
-                            {Name = node.Attributes.["id"].Value
-                             VersionRange = parseVersionRange node.Attributes.["version"].Value
-                             Sources = [LocalNuget path]
+                            let name = node.Attributes.["id"].Value                            
+                            let version = 
+                                if node.Attributes.["version"] <> null then 
+                                    parseVersionRange node.Attributes.["version"].Value 
+                                else 
+                                    parseVersionRange "0"
+                            {Name = name
+                             VersionRange = version
+                             Sources = sources
                              DirectDependencies = []
                              ResolverStrategy = resolverStrategy }) 
             |> Seq.toList
@@ -228,7 +232,7 @@ let getDetailsFromLocalFile path package resolverStrategy version =
     }
 
 /// Downloads the given package to the NuGet Cache folder
-let DownloadPackage(source, name, resolverStrategy, version, force) = 
+let DownloadPackage(url, name, sources, resolverStrategy, version, force) = 
     async { 
         let targetFileName = Path.Combine(CacheFolder, name + "." + version + ".nupkg")
         let targetFile = FileInfo targetFileName
@@ -237,7 +241,7 @@ let DownloadPackage(source, name, resolverStrategy, version, force) =
             return targetFileName
         else 
             // discover the link on the fly
-            let! (link, _) = getDetailsFromNuget force source name resolverStrategy version
+            let! (link, _) = getDetailsFromNuget force url name sources resolverStrategy version
             use client = new WebClient()
             tracefn "Downloading %s %s to %s" name version targetFileName
             // TODO: Set credentials
@@ -299,12 +303,12 @@ let NugetDiscovery =
                               try 
                                   match source with
                                   | Nuget url -> 
-                                    let! details = getDetailsFromNuget force url package resolverStrategy version
+                                    let! details = getDetailsFromNuget force url package sources resolverStrategy version
                                     let s,packages = details
 
                                     return s,(packages |> List.map (fun package -> {package with Sources = sources}))
                                   | LocalNuget path -> 
-                                    let! s,packages = getDetailsFromLocalFile path package resolverStrategy version
+                                    let! s,packages = getDetailsFromLocalFile path package sources resolverStrategy version
                                     return s,(packages |> List.map (fun package -> {package with Sources = sources}))
                               with _ ->
                                 return! tryNext rest

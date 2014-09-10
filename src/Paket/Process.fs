@@ -10,16 +10,31 @@ let ExtractPackages(force, packages : Package seq) =
                         match package.VersionRange with
                         | Specific v -> v
                         | v -> failwithf "Version error in Lock file for %s %A" package.Name v
-                    match List.head package.Sources with
-                    | Nuget source -> 
-                        async { let! packageFile = Nuget.DownloadPackage
-                                                       (source, package.Name, package.ResolverStrategy, version.ToString(), force)
-                                let! folder = Nuget.ExtractPackage(packageFile, package.Name, version.ToString(), force) 
-                                return package,Nuget.GetLibraries folder}
-                    | LocalNuget path -> 
-                        async { let packageFile = Path.Combine(path, sprintf "%s.%s.nupkg" package.Name (version.ToString()))
-                                let! folder = Nuget.ExtractPackage(packageFile, package.Name, version.ToString(), force) 
-                                return package,Nuget.GetLibraries folder})
+
+
+                    let rec trySource sources = 
+                        async { 
+                            match sources with
+                            | [] -> 
+                                failwithf "could not find package %s in %A" package.Name package.Sources
+                                return package, [||]
+                            | source :: rest -> 
+                                try
+                                    match source with
+                                    | Nuget source -> let! packageFile = Nuget.DownloadPackage
+                                                                             (source, package.Name, package.Sources, package.ResolverStrategy, 
+                                                                              version.ToString(), force)
+                                                      let! folder = Nuget.ExtractPackage(packageFile, package.Name, version.ToString(), force)
+                                                      return package, Nuget.GetLibraries folder
+                                    | LocalNuget path -> 
+                                        let packageFile = Path.Combine(path, sprintf "%s.%s.nupkg" package.Name (version.ToString()))
+                                        let! folder = Nuget.ExtractPackage(packageFile, package.Name, version.ToString(), force)
+                                        return package, Nuget.GetLibraries folder
+                                with
+                                | _ -> return! trySource rest
+                        }
+                    
+                    trySource package.Sources)
 
 let findLockfile dependenciesFile =
     let fi = FileInfo(dependenciesFile)

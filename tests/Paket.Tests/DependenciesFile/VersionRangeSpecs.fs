@@ -31,3 +31,7 @@ let ``can detect lower versions for ~>``() =
     DependenciesFileParser.parseVersionRange "~> 1.2" |> shouldEqual (VersionRange.Between("1.2","2.0"))
     DependenciesFileParser.parseVersionRange "~> 1.0" |> shouldEqual (VersionRange.Between("1.0","2.0"))
     DependenciesFileParser.parseVersionRange "~> 1" |> shouldEqual (VersionRange.Between("1","2"))
+
+[<Test>]
+let ``can detect minimum NuGet version``() = 
+    Nuget.parseVersionRange "0" |> shouldEqual (DependenciesFileParser.parseVersionRange ">= 0")
