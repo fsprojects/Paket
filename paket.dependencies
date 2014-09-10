@@ -1,0 +1,10 @@
+source "http://nuget.org/api/v2"
+
+nuget "Newtonsoft.Json" "~> 6.0"
+nuget "UnionArgParser" "~> 0.7"
+nuget "NUnit.Runners" "~> 2.6.3"
+nuget "NUnit" "~> 2.6.3"
+nuget "FAKE" "~> 3.4"
+nuget "FSharp.Formatting" "~> 2.4"
+nuget "DotNetZip" "~> 1.9.3"
+nuget "SourceLink.Fake" "~> 0.3"
