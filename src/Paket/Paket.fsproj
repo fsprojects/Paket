@@ -28,7 +28,7 @@
     <StartArguments>update</StartArguments>
     <StartAction>Project</StartAction>
     <StartProgram>paket.exe</StartProgram>
-    <StartWorkingDirectory>D:\code\paket\tests\ManualCSTest</StartWorkingDirectory>
+    <StartWorkingDirectory>D:\code\paket</StartWorkingDirectory>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>

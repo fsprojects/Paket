@@ -3,6 +3,7 @@ module Paket.Program
 
 open System
 open Nessos.UnionArgParser
+open System.IO
 
 type Command =
     | Install
@@ -48,10 +49,11 @@ let results,verbose =
 try
     match results with
     | Some(command,results) ->
-        let packageFile = 
+        let dependenciesFile = 
             match results.TryGetResult <@ CLIArguments.Dependencies_File @> with
             | Some x -> x
             | _ -> "Paket.dependencies"
+            |> checkForLowerCase
 
         let force = 
             match results.TryGetResult <@ CLIArguments.Force @> with
@@ -59,9 +61,9 @@ try
             | None -> false
 
         match command with
-        | Command.Install -> Process.Install(false,force,packageFile)
-        | Command.Update -> Process.Install(true,force,packageFile)
-        | Command.Outdated -> Process.ListOutdated(packageFile)
+        | Command.Install -> Process.Install(false,force,dependenciesFile)
+        | Command.Update -> Process.Install(true,force,dependenciesFile)
+        | Command.Outdated -> Process.ListOutdated(dependenciesFile)
         | _ -> failwithf "no command given.%s" (parser.Usage())
         
         tracefn "Ready."
