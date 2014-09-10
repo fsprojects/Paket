@@ -73,7 +73,8 @@ type SemVerInfo =
     override x.Equals(yobj) = 
         match yobj with
         | :? SemVerInfo as y -> 
-            (x.Major, x.Minor, x.Patch, x.PreRelease, x.Build) = (y.Major, y.Minor, y.Patch, y.PreRelease, y.Build)
+            x.Major = y.Major && x.Minor = y.Minor && x.Patch = y.Patch && x.PreRelease = y.PreRelease 
+            && (x.Build = y.Build || (x.Build = "0" && y.Build = "") || (y.Build = "0" && x.Build = ""))
         | _ -> false
     
     override x.GetHashCode() = hash (x.Minor, x.Minor, x.Patch, x.PreRelease, x.Build)
@@ -127,5 +128,5 @@ module SemVer =
           PreRelease = PreRelease.TryParse preRelease
           Build = 
               if l > 3 then splitted.[3]
-              else ""
+              else String.Empty
           Original = Some version }

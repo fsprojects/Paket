@@ -49,3 +49,10 @@ let ``can compare semvers``() =
 [<Test>]
 let ``can compare 4-parts semvers``() =
     (SemVer.parse "1.0.0.2420") |> shouldBeGreaterThan (SemVer.parse "1.0")
+
+[<Test>]
+let ``trailing zeros are equal``() =
+    (SemVer.parse "1.0.0") |> shouldEqual (SemVer.parse "1.0")
+    (SemVer.parse "1.0.0") |> shouldEqual (SemVer.parse "1")
+    (SemVer.parse "1.2.3.0") |> shouldEqual (SemVer.parse "1.2.3")
+    (SemVer.parse "1.2.0") |> shouldEqual (SemVer.parse "1.2")
