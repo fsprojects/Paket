@@ -295,9 +295,6 @@ let NugetDiscovery =
           
           //TODO: Should we really be able to call these methods with invalid arguments?
           member __.GetPackageDetails(force, sources, package, resolverStrategy, version) = async { 
-                  // this might make lookup of dependencies faster
-                  let moveSourceToFront source sources = source :: (List.filter ((<>) source) sources)
-                    
                   let rec tryNext xs = 
                       async { 
                           match xs with
@@ -305,20 +302,11 @@ let NugetDiscovery =
                               try 
                                   match source with
                                   | Nuget url -> 
-                                    let! link,packages = getDetailsFromNuget force url package sources resolverStrategy version                                  
-
-                                    return 
-                                        { Source = source
-                                          DownloadLink = link
-                                          DirectDependencies =
-                                            packages |> List.map (fun package -> {package with Sources = moveSourceToFront source sources})}
+                                    let! details = getDetailsFromNuget force url package sources resolverStrategy version                                  
+                                    return source,details
                                   | LocalNuget path -> 
-                                    let! link,packages = getDetailsFromLocalFile path package sources resolverStrategy version
-                                    return 
-                                        { Source = source
-                                          DownloadLink = link
-                                          DirectDependencies =
-                                            packages |> List.map (fun package -> {package with Sources = moveSourceToFront source sources})}
+                                    let! details = getDetailsFromLocalFile path package sources resolverStrategy version                                    
+                                    return source,details
                               with _ ->
                                 return! tryNext rest
                           | [] -> 
@@ -326,7 +314,12 @@ let NugetDiscovery =
                               return! tryNext []
                       }
 
-                  return! tryNext sources
+                  let! source,(link,packages) = tryNext sources
+                  return 
+                      { Source = source
+                        DownloadLink = link
+                        DirectDependencies =
+                        packages |> List.map (fun package -> {package with Sources = source :: (List.filter ((<>) source) sources) })}
               }
           
           member __.GetVersions(sources, package) =
