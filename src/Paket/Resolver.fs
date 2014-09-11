@@ -42,7 +42,7 @@ let private addDependency package dependencies newDependency =
     | None -> Map.add package newDependency dependencies   
 
 /// Resolves all direct and indirect dependencies
-let Resolve(force, discovery : IDiscovery, rootDependencies:Package seq) =    
+let Resolve(force, discovery : IDiscovery, rootDependencies:UnresolvedPackage seq) =    
     let rec analyzeGraph processed (openDependencies:Map<string,Shrinked>) =
         if Map.isEmpty openDependencies then processed else
         let current = Seq.head openDependencies
@@ -57,25 +57,22 @@ let Resolve(force, discovery : IDiscovery, rootDependencies:Package seq) =
            
             tracefn "  %s %s"  originalPackage.Name (originalPackage.VersionRange.ToString())
             match Map.tryFind resolvedName processed.ResolvedVersionMap with
-            | Some (Resolved dependency') -> 
-                match dependency'.Referenced.VersionRange with
-                | Specific fixedVersion -> 
-                    if not <| dependency.Referenced.VersionRange.IsInRange fixedVersion then
-                        let resolved =
-                            { processed with 
-                                ResolvedVersionMap =
-                                    processed.ResolvedVersionMap 
-                                    |> Map.remove resolvedName
-                                    |> Map.add resolvedName (ResolvedDependency.Conflict(dependency',dependency))  }
+            | Some (Resolved package') -> 
+                if not <| dependency.Referenced.VersionRange.IsInRange package'.Version then
+                    let resolved =
+                        { processed with 
+                            ResolvedVersionMap =
+                                processed.ResolvedVersionMap 
+                                |> Map.remove resolvedName
+                                |> Map.add resolvedName (ResolvedDependency.ResolvedConflict(package',dependency))  }
                         
-                        openDependencies
-                        |> Map.remove resolvedName
-                        |> analyzeGraph resolved
-                    else                    
-                        openDependencies
-                        |> Map.remove resolvedName
-                        |> analyzeGraph processed
-                | _ -> failwith "Not allowed"
+                    openDependencies
+                    |> Map.remove resolvedName
+                    |> analyzeGraph resolved
+                else                    
+                    openDependencies
+                    |> Map.remove resolvedName
+                    |> analyzeGraph processed
             | _ ->
                 let allVersions = 
                     discovery.GetVersions(originalPackage.Sources,resolvedName) 
@@ -106,21 +103,14 @@ let Resolve(force, discovery : IDiscovery, rootDependencies:Package seq) =
                     discovery.GetPackageDetails(force, originalPackage.Sources, originalPackage.Name, originalPackage.ResolverStrategy, resolvedVersion.ToString()) 
                     |> Async.RunSynchronously
 
-                let resolvedPackage =
+                let resolvedPackage:ResolvedPackage =
                     { Name = resolvedName
-                      VersionRange = VersionRange.Exactly(resolvedVersion.ToString())
-                      Sources = [packageDetails.Source]
-                      DirectDependencies = []
-                      ResolverStrategy = originalPackage.ResolverStrategy }
+                      Version = resolvedVersion
+                      DirectDependencies = packageDetails.DirectDependencies |> List.map (fun p -> p.Name)
+                      Source = packageDetails.Source }
 
-                let resolvedDependency = 
-                    ResolvedDependency.Resolved(
-                                            match dependency with
-                                            | FromRoot _ -> FromRoot resolvedPackage
-                                            | FromPackage d -> 
-                                                FromPackage { Defining = d.Defining
-                                                              Referenced = resolvedPackage })
-
+                let resolvedDependency = ResolvedDependency.Resolved resolvedPackage
+                                            
                 let mutable dependencies = openDependencies
 
                 for dependentPackage in packageDetails.DirectDependencies do

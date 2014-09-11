@@ -36,23 +36,11 @@ let resolve graph (dependencies: (string * VersionRange) seq) =
 
 let getVersion resolved =
     match resolved with
-    | ResolvedDependency.Resolved x ->
-        match x.Referenced.VersionRange with
-        | Specific v -> v.ToString()
-
-let getDefiningPackage resolved =
-    match resolved with
-    | ResolvedDependency.Resolved (FromPackage x) -> x.Defining.Name
-
-let getDefiningVersion resolved =
-    match resolved with
-    | ResolvedDependency.Resolved (FromPackage x) -> 
-        match x.Defining.VersionRange with
-        | Specific v -> v.ToString()
+    | ResolvedDependency.Resolved x -> x.Version.ToString()
 
 let getSource resolved =
     match resolved with
-    | ResolvedDependency.Resolved x -> x.Referenced.Sources |> List.head
+    | ResolvedDependency.Resolved x -> x.Source
 
 
 let normalizeLineEndings (text:string) = text.Replace("\r\n","\n").Replace("\r","\n").Replace("\n",Environment.NewLine)

@@ -2,39 +2,22 @@
 module Paket.Process
 
 open System.IO
+open System.Collections.Generic
 
 /// Downloads and extracts all package.
-let ExtractPackages(force, packages : Package seq) = 
+let ExtractPackages(force, packages : ResolvedPackage seq) = 
     packages |> Seq.map (fun package -> 
-                    let version = 
-                        match package.VersionRange with
-                        | Specific v -> v
-                        | v -> failwithf "Version error in Lock file for %s %A" package.Name v
-
-
-                    let rec trySource sources = 
-                        async { 
-                            match sources with
-                            | [] -> 
-                                failwithf "could not find package %s in %A" package.Name package.Sources
-                                return package, [||]
-                            | source :: rest -> 
-                                try
-                                    match source with
-                                    | Nuget source -> let! packageFile = Nuget.DownloadPackage
-                                                                             (source, package.Name, package.Sources, package.ResolverStrategy, 
-                                                                              version.ToString(), force)
-                                                      let! folder = Nuget.ExtractPackage(packageFile, package.Name, version.ToString(), force)
-                                                      return package, Nuget.GetLibraries folder
-                                    | LocalNuget path -> 
-                                        let packageFile = Path.Combine(path, sprintf "%s.%s.nupkg" package.Name (version.ToString()))
-                                        let! folder = Nuget.ExtractPackage(packageFile, package.Name, version.ToString(), force)
-                                        return package, Nuget.GetLibraries folder
-                                with
-                                | _ -> return! trySource rest
-                        }
-                    
-                    trySource package.Sources)
+                            async {
+                                match package.Source with
+                                | Nuget source -> 
+                                    let! packageFile = 
+                                        Nuget.DownloadPackage(source, package.Name, [package.Source], package.Version.ToString(), force)
+                                    let! folder = Nuget.ExtractPackage(packageFile, package.Name, package.Version.ToString(), force)
+                                    return package, Nuget.GetLibraries folder
+                                | LocalNuget path -> 
+                                    let packageFile = Path.Combine(path, sprintf "%s.%s.nupkg" package.Name (package.Version.ToString()))
+                                    let! folder = Nuget.ExtractPackage(packageFile, package.Name, package.Version.ToString(), force)
+                                    return package, Nuget.GetLibraries folder })
 
 let findLockfile dependenciesFile =
     let fi = FileInfo(dependenciesFile)
@@ -72,7 +55,7 @@ let Install(regenerate, force, dependenciesFile) =
         let directPackages = extractReferencesFromListFile proj.FullName
         let project = ProjectFile.Load proj.FullName
 
-        let usedPackages = new System.Collections.Generic.HashSet<_>()
+        let usedPackages = new HashSet<_>()
 
         let allPackages =
             extracted
@@ -103,11 +86,8 @@ let FindOutdated(packageFile) =
     [for p in installed do
         match newPackages.ResolvedVersionMap.[p.Name] with
         | Resolved newVersion -> 
-            if p.VersionRange <> newVersion.Referenced.VersionRange then 
-                match newVersion.Referenced.VersionRange with
-                | Specific v2 -> 
-                    match p.VersionRange with
-                    | Specific v1 -> yield p.Name,v1,v2
+            if p.Version <> newVersion.Version then 
+                yield p.Name,p.Version,newVersion.Version
 
         | Conflict(_) -> failwith "version conflict handling not implemented" ]
 

@@ -67,7 +67,7 @@ module DependenciesFileParser =
         |> List.rev
 
 /// Allows to parse and analyze Dependencies files.
-type DependenciesFile(packages : Package seq) = 
+type DependenciesFile(packages : UnresolvedPackage seq) = 
     let packages = packages |> Seq.toList
     let dependencyMap = Map.ofSeq (packages |> Seq.map (fun p -> p.Name, p.VersionRange))
     member __.DirectDependencies = dependencyMap

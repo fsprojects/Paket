@@ -84,22 +84,30 @@ type PackageSource =
         | true, uri -> if uri.Scheme = System.Uri.UriSchemeFile then LocalNuget(source) else Nuget(source)
         | _ -> failwith "unable to parse package source: %s" source
 
-/// Represents a package.
-type Package = 
+
+/// Represents an unresolved package.
+type UnresolvedPackage =
     { Name : string
       DirectDependencies : string list
       VersionRange : VersionRange
       ResolverStrategy : ResolverStrategy
       Sources : PackageSource list }
 
+/// Represents data about resolved packages
+type ResolvedPackage = 
+    { Name : string
+      Version : SemVerInfo
+      DirectDependencies : string list
+      Source : PackageSource }
+
 /// Represents a package dependency.
 type PackageDependency = 
-    { Defining : Package
-      Referenced : Package }
+    { Defining : UnresolvedPackage
+      Referenced : UnresolvedPackage }
 
 /// Represents a dependency.
 type Dependency = 
-    | FromRoot of Package
+    | FromRoot of UnresolvedPackage
     | FromPackage of PackageDependency
     member this.Referenced = 
         match this with
@@ -110,7 +118,7 @@ type Dependency =
 type PackageDetails = {
     Source: PackageSource 
     DownloadLink: string
-    DirectDependencies : Package list }
+    DirectDependencies : UnresolvedPackage list }
 
 /// Interface for discovery APIs.
 type IDiscovery = 
@@ -119,11 +127,12 @@ type IDiscovery =
 
 /// Represents a resolved dependency.
 type ResolvedDependency = 
-    | Resolved of Dependency
+    | Resolved of ResolvedPackage
+    | ResolvedConflict of ResolvedPackage * Dependency // TODO: New algorithm needs to remove this
     | Conflict of Dependency * Dependency
 
 /// Represents a complete dependency resolution.
 type PackageResolution = {
-    DirectDependencies : Map<string*string,Package list>
+    DirectDependencies : Map<string*string,UnresolvedPackage list>
     ResolvedVersionMap : Map<string,ResolvedDependency>
 }

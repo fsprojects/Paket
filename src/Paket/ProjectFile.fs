@@ -5,7 +5,7 @@ open System.IO
 open System.Xml
 open System.Collections.Generic
 
-/// Contains methods to read and manipulate project file ndoes.
+/// Contains methods to read and manipulate project file nodes.
 type private InstallInfo = {
     DllName : string
     Path : string
@@ -14,7 +14,7 @@ type private InstallInfo = {
 
 module private InstallRules = 
     let groupDLLs (usedPackages : HashSet<string>) extracted = 
-        [ for (package:Package), libraries in extracted do
+        [ for (package:ResolvedPackage), libraries in extracted do
               if usedPackages.Contains package.Name then 
                   let libraries = libraries |> Seq.toArray
                   for (lib : FileInfo) in libraries do

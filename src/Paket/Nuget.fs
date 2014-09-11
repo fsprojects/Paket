@@ -165,7 +165,7 @@ let private loadFromCacheOrOData force fileName nugetURL package sources resolve
         if not force && File.Exists fileName then
             try 
                 let json = File.ReadAllText(fileName)
-                return false,JsonConvert.DeserializeObject<string * Package list>(json)
+                return false,JsonConvert.DeserializeObject<string * UnresolvedPackage list>(json)
             with _ -> 
                 let! details = getDetailsFromNugetViaOData nugetURL package sources resolverStrategy version
                 return true,details
@@ -233,7 +233,7 @@ let getDetailsFromLocalFile path package sources resolverStrategy version =
     }
 
 /// Downloads the given package to the NuGet Cache folder
-let DownloadPackage(url, name, sources, resolverStrategy, version, force) = 
+let DownloadPackage(url, name, sources, version, force) = 
     async { 
         let targetFileName = Path.Combine(CacheFolder, name + "." + version + ".nupkg")
         let targetFile = FileInfo targetFileName
@@ -242,7 +242,7 @@ let DownloadPackage(url, name, sources, resolverStrategy, version, force) =
             return targetFileName
         else 
             // discover the link on the fly
-            let! (link, _) = getDetailsFromNuget force url name sources resolverStrategy version
+            let! (link, _) = getDetailsFromNuget force url name sources ResolverStrategy.Max version
             use client = new WebClient()
             tracefn "Downloading %s %s to %s" name version targetFileName
             // TODO: Set credentials
