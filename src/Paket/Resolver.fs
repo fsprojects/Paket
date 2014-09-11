@@ -102,14 +102,14 @@ let Resolve(force, discovery : IDiscovery, rootDependencies:Package seq) =
                         | ResolverStrategy.Max -> List.max versions
                         | ResolverStrategy.Min -> List.min versions
 
-                let _,dependentPackages = 
+                let matchingSource,_,dependentPackages = 
                     discovery.GetPackageDetails(force, originalPackage.Sources, originalPackage.Name, originalPackage.ResolverStrategy, resolvedVersion.ToString()) 
                     |> Async.RunSynchronously
 
                 let resolvedPackage =
                     { Name = resolvedName
                       VersionRange = VersionRange.Exactly(resolvedVersion.ToString())
-                      Sources = originalPackage.Sources
+                      Sources = matchingSource :: (List.filter ((<>) matchingSource) originalPackage.Sources)
                       DirectDependencies = []
                       ResolverStrategy = originalPackage.ResolverStrategy }
 

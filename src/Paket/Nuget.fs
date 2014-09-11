@@ -165,7 +165,7 @@ let private loadFromCacheOrOData force fileName nugetURL package sources resolve
         if not force && File.Exists fileName then
             try 
                 let json = File.ReadAllText(fileName)
-                return false,JsonConvert.DeserializeObject<PackageDetails>(json)
+                return false,JsonConvert.DeserializeObject<string * Package list>(json)
             with _ -> 
                 let! details = getDetailsFromNugetViaOData nugetURL package sources resolverStrategy version
                 return true,details
@@ -297,6 +297,9 @@ let NugetDiscovery =
           
           //TODO: Should we really be able to call these methods with invalid arguments?
           member __.GetPackageDetails(force, sources, package, resolverStrategy, version) = async { 
+                  // this might make lookup of dependencies faster
+                  let moveSourceToFront source sources = source :: (List.filter ((<>) source) sources)
+                    
                   let rec tryNext xs = 
                       async { 
                           match xs with
@@ -307,10 +310,10 @@ let NugetDiscovery =
                                     let! details = getDetailsFromNuget force url package sources resolverStrategy version
                                     let s,packages = details
 
-                                    return s,(packages |> List.map (fun package -> {package with Sources = sources}))
+                                    return source,s,(packages |> List.map (fun package -> {package with Sources = moveSourceToFront source sources}))
                                   | LocalNuget path -> 
                                     let! s,packages = getDetailsFromLocalFile path package sources resolverStrategy version
-                                    return s,(packages |> List.map (fun package -> {package with Sources = sources}))
+                                    return source,s,(packages |> List.map (fun package -> {package with Sources = moveSourceToFront source sources}))
                               with _ ->
                                 return! tryNext rest
                           | [] -> 

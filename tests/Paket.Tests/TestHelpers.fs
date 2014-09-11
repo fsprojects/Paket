@@ -19,7 +19,7 @@ let DictionaryDiscovery(graph : seq<string * string * (string * VersionRange) li
                                   DirectDependencies = []
                                   ResolverStrategy = resolverStrategy
                                   Sources = sources })
-                  return "",dependencies
+                  return Seq.head sources,"",dependencies
               }
           
           member __.GetVersions(sources, package) = 

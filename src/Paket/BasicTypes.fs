@@ -107,7 +107,7 @@ type Dependency =
         | FromPackage d -> d.Referenced
 
 /// Represents package details
-type PackageDetails =  string * Package list
+type PackageDetails =  PackageSource * string * Package list
 
 /// Interface for discovery APIs.
 type IDiscovery = 
