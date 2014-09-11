@@ -88,7 +88,6 @@ type PackageSource =
 /// Represents an unresolved package.
 type UnresolvedPackage =
     { Name : string
-      DirectDependencies : string list
       VersionRange : VersionRange
       ResolverStrategy : ResolverStrategy
       Sources : PackageSource list }

@@ -148,7 +148,6 @@ let getDetailsFromNugetViaOData nugetURL package sources resolverStrategy versio
                    { Name = name
                      VersionRange =  parseVersionRange version
                      Sources = sources
-                     DirectDependencies = []
                      ResolverStrategy = resolverStrategy })
             |> Array.toList
 
@@ -223,7 +222,6 @@ let getDetailsFromLocalFile path package sources resolverStrategy version =
                             {Name = name
                              VersionRange = version
                              Sources = sources
-                             DirectDependencies = []
                              ResolverStrategy = resolverStrategy }) 
             |> Seq.toList
 
