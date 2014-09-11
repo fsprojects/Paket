@@ -102,14 +102,14 @@ let Resolve(force, discovery : IDiscovery, rootDependencies:Package seq) =
                         | ResolverStrategy.Max -> List.max versions
                         | ResolverStrategy.Min -> List.min versions
 
-                let matchingSource,_,dependentPackages = 
+                let packageDetails = 
                     discovery.GetPackageDetails(force, originalPackage.Sources, originalPackage.Name, originalPackage.ResolverStrategy, resolvedVersion.ToString()) 
                     |> Async.RunSynchronously
 
                 let resolvedPackage =
                     { Name = resolvedName
                       VersionRange = VersionRange.Exactly(resolvedVersion.ToString())
-                      Sources = matchingSource :: (List.filter ((<>) matchingSource) originalPackage.Sources)
+                      Sources = [packageDetails.Source]
                       DirectDependencies = []
                       ResolverStrategy = originalPackage.ResolverStrategy }
 
@@ -123,7 +123,7 @@ let Resolve(force, discovery : IDiscovery, rootDependencies:Package seq) =
 
                 let mutable dependencies = openDependencies
 
-                for dependentPackage in dependentPackages do
+                for dependentPackage in packageDetails.DirectDependencies do
                     let newDependency = 
                         FromPackage { Defining = { originalPackage with VersionRange = VersionRange.Exactly(resolvedVersion.ToString()) }
                                       Referenced = 
@@ -136,7 +136,7 @@ let Resolve(force, discovery : IDiscovery, rootDependencies:Package seq) =
 
                 let resolved = 
                     { ResolvedVersionMap = Map.add resolvedName resolvedDependency processed.ResolvedVersionMap
-                      DirectDependencies = Map.add (originalPackage.Name, resolvedVersion.ToString()) dependentPackages processed.DirectDependencies }
+                      DirectDependencies = Map.add (originalPackage.Name, resolvedVersion.ToString()) packageDetails.DirectDependencies processed.DirectDependencies }
                 
                 dependencies
                 |> Map.remove resolvedName

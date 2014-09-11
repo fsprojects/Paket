@@ -307,13 +307,20 @@ let NugetDiscovery =
                               try 
                                   match source with
                                   | Nuget url -> 
-                                    let! details = getDetailsFromNuget force url package sources resolverStrategy version
-                                    let s,packages = details
+                                    let! link,packages = getDetailsFromNuget force url package sources resolverStrategy version                                  
 
-                                    return source,s,(packages |> List.map (fun package -> {package with Sources = moveSourceToFront source sources}))
+                                    return 
+                                        { Source = source
+                                          DownloadLink = link
+                                          DirectDependencies =
+                                            packages |> List.map (fun package -> {package with Sources = moveSourceToFront source sources})}
                                   | LocalNuget path -> 
-                                    let! s,packages = getDetailsFromLocalFile path package sources resolverStrategy version
-                                    return source,s,(packages |> List.map (fun package -> {package with Sources = moveSourceToFront source sources}))
+                                    let! link,packages = getDetailsFromLocalFile path package sources resolverStrategy version
+                                    return 
+                                        { Source = source
+                                          DownloadLink = link
+                                          DirectDependencies =
+                                            packages |> List.map (fun package -> {package with Sources = moveSourceToFront source sources})}
                               with _ ->
                                 return! tryNext rest
                           | [] -> 
