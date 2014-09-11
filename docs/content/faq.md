@@ -29,3 +29,9 @@ Paket uses the NuGet OData API to discover package dependencies. Unfortunately t
 Some good news is that [the NuGet team is currently developing a faster API](http://blog.nuget.org/20140711/nuget-architecture.html). Paket may be able to take advantage of that in the future.
 
 Once the [paket.lock](lock_file.html) is written, Paket won't use the OData API anymore and therefore package restore is very fast.
+
+## Can I use Paket to manage npm/bower/whatever dependencies?
+
+[No.](https://github.com/fsprojects/Paket/issues/61) We don't believe in reinventing the wheel.
+
+On top of that, such a "meta package manager" abstraction is likely to be less flexible and behind on what native tools have to offer. Paket serves a specific need, that is [SemVer-compatible](http://semver.org) NuGet.
