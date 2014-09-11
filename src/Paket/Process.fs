@@ -2,6 +2,7 @@
 module Paket.Process
 
 open System.IO
+open System.Collections.Generic
 
 /// Downloads and extracts all package.
 let ExtractPackages(force, packages : Package seq) = 
@@ -60,22 +61,39 @@ let private findAllProjects(folder) = DirectoryInfo(folder).EnumerateFiles("*.*p
 /// Installs the given packageFile.
 let Install(regenerate, force, dependenciesFile) = 
     let lockfile = findLockfile dependenciesFile
-     
+    
+    let cfg = DependenciesFile.ReadFromFile dependenciesFile
     if regenerate || (not lockfile.Exists) then 
-        LockFile.Update(force, dependenciesFile, lockfile.FullName)
+        LockFile.Update(force, cfg, lockfile.FullName)
 
-    let extracted = 
+    let extractedPackages = 
         ExtractPackages(force, File.ReadAllLines lockfile.FullName |> LockFile.Parse)
         |> Async.Parallel
+        |> Async.RunSynchronously    
+    
+    let extractedFiles =
+        let rootPath = dependenciesFile |> Path.GetDirectoryName
+        cfg.RemoteFiles
+        |> List.map(
+            function
+            | GitHub source ->
+                async {
+                    let! file = GitHub.downloadFile source
+                    let destination = Path.Combine(rootPath, "paket-files", source.Owner, source.Project, source.FilePath)
+                    Directory.CreateDirectory(destination |> Path.GetDirectoryName) |> ignore
+                    File.WriteAllText(destination, file)
+                    return destination })
+        |> Async.Parallel
         |> Async.RunSynchronously
+
     for proj in findAllProjects(".") do
         let directPackages = extractReferencesFromListFile proj.FullName
         let project = ProjectFile.Load proj.FullName
 
-        let usedPackages = new System.Collections.Generic.HashSet<_>()
+        let usedPackages = new HashSet<_>()
 
         let allPackages =
-            extracted
+            extractedPackages
             |> Array.map (fun (p,_) -> p.Name,p)
             |> Map.ofArray
 
@@ -90,14 +108,14 @@ let Install(regenerate, force, dependenciesFile) =
         directPackages
         |> Array.iter addPackage
         
-        project.UpdateReferences(extracted,usedPackages)
+        project.UpdateReferences(extractedPackages,usedPackages)
 
 
 /// Finds all outdated packages.
-let FindOutdated(packageFile) = 
-    let lockFile = findLockfile packageFile
+let FindOutdated(dependenciesFile) = 
+    let lockFile = findLockfile dependenciesFile
     
-    let newPackages = LockFile.Create(true,packageFile)
+    let newPackages = LockFile.Create(true, dependenciesFile)
     let installed = if lockFile.Exists then LockFile.Parse(File.ReadAllLines lockFile.FullName) else []
 
     [for p in installed do

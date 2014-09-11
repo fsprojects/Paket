@@ -112,17 +112,18 @@ let Parse(lines : string seq) =
     |> List.rev
 
 /// Analyzes the dependencies from the Dependencies file.
-let Create(force,dependenciesFile) =     
+let Create(force, dependenciesFile) =     
     let cfg = DependenciesFile.ReadFromFile dependenciesFile
     tracefn "Analyzing %s" dependenciesFile
-    cfg.Resolve(force,Nuget.NugetDiscovery)
+    cfg.Resolve(force, Nuget.NugetDiscovery)
 
 /// Updates the Lock file with the analyzed dependencies from the Dependencies file.
-let Update(force, packageFile, lockFile) = 
-    let resolution = Create(force,packageFile)
-    let errors = extractErrors resolution
+let Update(force, dependenciesFile:DependenciesFile, lockFile) = 
+    tracefn "Analyzing %s" dependenciesFile
+    let packageResolution = dependenciesFile.Resolve(force, Nuget.NugetDiscovery)
+    let errors = extractErrors packageResolution
     if errors = "" then
-        File.WriteAllText(lockFile, format resolution)
+        File.WriteAllText(lockFile, format (packageResolution))
         tracefn "Locked version resolutions written to %s" lockFile
     else
         failwith <| "Could not resolve dependencies." + Environment.NewLine + errors

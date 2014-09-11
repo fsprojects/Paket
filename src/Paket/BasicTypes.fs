@@ -84,6 +84,22 @@ type PackageSource =
         | true, uri -> if uri.Scheme = System.Uri.UriSchemeFile then LocalNuget(source) else Nuget(source)
         | _ -> failwith "unable to parse package source: %s" source
 
+// Represents details on a dependent source file.
+type SourceFileDetails =
+    { Owner : string
+      Project : string
+      Path : string
+      Commit : string option }
+    member this.FilePath =
+        this.Path
+            .TrimStart('/')
+            .Replace("/", "\\")
+            
+// The different types of source files.
+type SourceFile = | GitHub of File : SourceFileDetails
+
+// TODO: Perhaps Source File and Package should be merged into a DU?
+
 /// Represents a package.
 type Package = 
     { Name : string
@@ -91,6 +107,8 @@ type Package =
       VersionRange : VersionRange
       ResolverStrategy : ResolverStrategy
       Sources : PackageSource list }
+
+
 
 /// Represents a package dependency.
 type PackageDependency = 

@@ -1,5 +1,5 @@
 ﻿/// Contains logic which helps to resolve the dependency graph.
-module Paket.Resolver
+module Paket.PackageResolver
 
 open Paket
 open System

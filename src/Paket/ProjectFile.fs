@@ -5,7 +5,7 @@ open System.IO
 open System.Xml
 open System.Collections.Generic
 
-/// Contains methods to read and manipulate project file ndoes.
+/// Contains methods to read and manipulate project file nodes.
 type private InstallInfo = {
     DllName : string
     Path : string
