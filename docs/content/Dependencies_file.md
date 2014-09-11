@@ -64,7 +64,7 @@ The `package ID` parameter is the same as you find in NuGet's `packages.config` 
 <div id="version-constraints"></div>
 ### Version constraints
 
-One key feature of Paket is that it separates the definition of dependencies from the actual resolution. NuGet does both using `packages.config` where both package IDs and their respective pinned version are listed.
+One key feature of Paket is that it separates the definition of dependencies from the actual resolution. NuGet stores resolution information in `packages.config` where both package IDs and their respective pinned version are listed.
 
 With Paket you do not need to pin specific versions (although you can). Paket allows you to leverage [semantic versioning](http://semver.org) and define version constraints in a very flexible manner.
 
@@ -153,7 +153,7 @@ The `~>` "twiddle-wakka" operator is borrowed from [bundler](http://bundler.io/)
 
 NOT SUPPORTED YET
 
-If want to allow never backward-compatible versions but also need a specific fix version within the allowed range, use a compound constraint.
+If want to allow newer backward-compatible versions but also need a specific fix version within the allowed range, use a compound constraint.
 
     nuget "Example" "~> 1.2" ">= 1.2.3"
 
@@ -175,7 +175,7 @@ Paket uses the definitions from `paket.dependencies` to compute the dependency g
 
 The resolution algorithm balances direct and indirect dependencies such that you will get the *latest matching versions* of direct dependencies (defined using the [`nuget` statement](#dependencies)) and indirect dependencies (defined by your direct dependency's [nuspec](http://docs.nuget.org/docs/reference/nuspec-reference)). Paket checks compatibility by comparing available versions to the constraints of either source, `paket.dependencies`, or [nuspec](http://docs.nuget.org/docs/reference/nuspec-reference).
 
-As stated above, the algorithm defaults to downloading the latest versions matching the constraints.
+As stated above, the algorithm defaults to resolving the latest versions matching the constraints.
 
 As long as everybody follows [SemVer](http://semver.org) and you define sane version constraints (e.g. within a major version) for your direct dependencies the system is very likely to work well.
 
@@ -185,7 +185,7 @@ While developing Paket we found that many packages available on [NuGet](http://n
 
 For example, an assembly inside a NuGet package `A` might have a reference to a strong-named assembly that is pulled from another NuGet package `B`. Despite strong-naming the `B` assembly, `A` still specifies an open version constraint (`> <version of B that was compiled against>`).
 
-This might be due to the fact that the [nuspec file format](http://docs.nuget.org/docs/reference/nuspec-reference) requires you to pin the dependency version using double brackets: `<dependency id="B" version="[1.2.3]" />`. Even the authors of Paket made the mistake of omitting the brackets, effectively specifying `> 1.2.3`. Newer releases of `B` package might still work together with `A` using [assembly binding redirects](http://msdn.microsoft.com/en-us/library/7wd6ex19(v=vs.110).aspx), a feature of .NET that the authors of Paket are not very fond of. Even if you are OK with binding redirects, what would happen after `B` `2.0` is released? If you imply that `B` follows [SemVer](http://semver.org), the `2.0` version *will have* breaking changes.
+This might be due to the fact that the [nuspec file format](http://docs.nuget.org/docs/reference/nuspec-reference) requires you to pin the dependency version using double brackets: `<dependency id="B" version="[1.2.3]" />`. Even the authors of Paket made the mistake of omitting the brackets, effectively specifying `> 1.2.3`. Newer releases of `B` package might still work together with `A` using [assembly binding redirects](http://msdn.microsoft.com/en-us/library/7wd6ex19(v=vs.110).aspx), a feature of .NET that the authors of Paket are not very fond of. Even if you are OK with binding redirects, what would happen after `B` `2.0` is released? If you imply that `B` follows [SemVer](http://semver.org), the `2.0` version *will have* breaking changes. NuGet will allow the update regardless, giving the false impression that your app still works.
 
 <div id="nuget-style-dependency-resolution"></div>
 #### Paket's NuGet-style dependency resolution for indirect dependencies
@@ -196,7 +196,7 @@ To let Paket use NuGet-style dependency resolution for indirect dependencies, us
 
     source "http://nuget.org/api/v2"
 
-    nuget "Example-A" "!~> 1.2" // use "min" version resolution strategy
+    nuget "Example" "!~> 1.2" // use "min" version resolution strategy
 
 This effectively will get you the *lowest matching versions* of `Example`'s dependencies. Still, you will get the *latest matching version* of `Example` itself according to its [version constraint of `1.2 <= x < 2`](#pessimistic-version-constraint).
 
