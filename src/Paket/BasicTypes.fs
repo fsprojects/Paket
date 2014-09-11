@@ -97,7 +97,7 @@ type UnresolvedPackage =
 type ResolvedPackage = 
     { Name : string
       Version : SemVerInfo
-      DirectDependencies : string list
+      DirectDependencies : (string * VersionRange) list
       Source : PackageSource }
 
 /// Represents a package dependency.
@@ -132,7 +132,4 @@ type ResolvedDependency =
     | Conflict of Dependency * Dependency
 
 /// Represents a complete dependency resolution.
-type PackageResolution = {
-    DirectDependencies : Map<string*string,UnresolvedPackage list>
-    ResolvedVersionMap : Map<string,ResolvedDependency>
-}
+type PackageResolution = Map<string,ResolvedDependency>

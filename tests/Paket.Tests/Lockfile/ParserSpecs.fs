@@ -33,9 +33,9 @@ let ``should parse lock file``() =
     result.[1].Source |> shouldEqual (Nuget "http://nuget.org/api/v2")
     result.[1].Name |> shouldEqual "Castle.Windsor-log4net"
     result.[1].Version |> shouldEqual (SemVer.parse "3.3")
-    result.[1].DirectDependencies |> shouldEqual ["Castle.Windsor"; "log4net"]
+    result.[1].DirectDependencies |> shouldEqual ["Castle.Windsor", DependenciesFileParser.parseVersionRange ">= 2.0"; "log4net", DependenciesFileParser.parseVersionRange ">= 1.0"]
     
     result.[5].Source |> shouldEqual (Nuget "http://nuget.org/api/v2")
     result.[5].Name |> shouldEqual "log4net"
     result.[5].Version |> shouldEqual (SemVer.parse "1.1")
-    result.[5].DirectDependencies |> shouldEqual ["log"]
+    result.[5].DirectDependencies |> shouldEqual ["log", DependenciesFileParser.parseVersionRange ">= 1.0"]
