@@ -4,6 +4,8 @@ group :development do
   gem 'guard'
   gem 'guard-bundler'
   gem 'guard-depend'
+  gem 'adsf'
+  gem 'launchy'
 
   case RbConfig::CONFIG['target_os']
   when /windows|bccwin|cygwin|djgpp|mingw|mswin|wince/i
