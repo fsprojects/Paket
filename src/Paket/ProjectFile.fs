@@ -184,7 +184,7 @@ type ProjectFile =
             this.DeleteEmptyReferences()
 
     member this.Save() =
-        if Utils.normalizeXml this.Document <> this.OriginalText then this.Document.Save(this.FileName)
+            if Utils.normalizeXml this.Document <> this.OriginalText then this.Document.Save(this.FileName)
 
     member this.GetContentFiles() =
         this.FindPaketNodes("Content")
@@ -195,32 +195,34 @@ type ProjectFile =
             this.CreateNode "Content" 
             |> addAttribute "Include" (UriHelper.createRelativePath this.FileName fi.FullName)
             |> addChild (this.CreateNode("Paket","True"))
+            :> XmlNode
 
         match [ for node in this.Document.SelectNodes("//ns:Project", this.Namespaces) -> node ] with
         | [] -> ()
         | projectNode :: _ -> 
             this.DeletePaketNodes("Content")
-            this.DeleteIfEmpty("//ns:Project/ns:ItemGroup")
             let itemGroupNode = this.Document.CreateElement("ItemGroup", ProjectFile.DefaultNameSpace)
 
             contentFiles
             |> List.map contentNode
+            |> List.append [ for node in this.Document.SelectNodes("//ns:Content", this.Namespaces) -> node ]
+            |> List.sortBy (fun contentNode -> contentNode.Attributes.["Include"].Value)
             |> List.iter (fun node -> itemGroupNode.AppendChild(node) |> ignore)
 
+            this.DeleteIfEmpty("//ns:Project/ns:ItemGroup")
             projectNode.AppendChild(itemGroupNode) |> ignore
-            
     member this.ConvertNugetToPaket() =
         for node in this.Document.SelectNodes("//ns:*[@Include='packages.config']", this.Namespaces) do
             node.Attributes.["Include"].Value <- "paket.references"
 
     static member Load(fileName:string) =
         try
-            let fi = FileInfo(fileName)
-            let doc = new XmlDocument()
-            doc.Load fi.FullName
+        let fi = FileInfo(fileName)
+        let doc = new XmlDocument()
+        doc.Load fi.FullName
 
-            let manager = new XmlNamespaceManager(doc.NameTable)
-            manager.AddNamespace("ns", ProjectFile.DefaultNameSpace)
+        let manager = new XmlNamespaceManager(doc.NameTable)
+        manager.AddNamespace("ns", ProjectFile.DefaultNameSpace)
             { FileName = fi.FullName; Document = doc; Namespaces = manager; OriginalText = Utils.normalizeXml doc }
         with
         | exn -> failwithf "Error while parsing %s:%s      %s" fileName Environment.NewLine exn.Message
