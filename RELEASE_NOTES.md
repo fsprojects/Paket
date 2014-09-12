@@ -1,2 +1,2 @@
-#### 0.1.0-alpha001 - 11.09.2014
-* All files lowercase
+#### 0.1.0-alpha002 - 12.09.2014
+* We are live - yay!
