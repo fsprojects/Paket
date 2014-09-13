@@ -14,7 +14,7 @@ type private InstallInfo = {
 
 module private InstallRules = 
     let groupDLLs (usedPackages : HashSet<string>) extracted = 
-        [ for package, libraries in extracted do
+        [ for (package:ResolvedPackage), libraries in extracted do
               if usedPackages.Contains package.Name then 
                   let libraries = libraries |> Seq.toArray
                   for (lib : FileInfo) in libraries do

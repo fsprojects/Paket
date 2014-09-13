@@ -68,7 +68,6 @@ module DependenciesFileParser =
                     let version = parts.[3]
                     lineNo, sources, { Sources = sources
                                        Name = parts.[1]
-                                       DirectDependencies = []
                                        ResolverStrategy = if version.StartsWith "!" then ResolverStrategy.Min else ResolverStrategy.Max
                                        VersionRange = parseVersionRange(version.Trim '!') } :: packages, sourceFiles
                 | SourceFile((owner,project, commit), path) ->
@@ -87,6 +86,8 @@ module DependenciesFileParser =
 
 /// Allows to parse and analyze Dependencies files.
 type DependenciesFile(packages : Package list, remoteFiles : SourceFile list) = 
+type DependenciesFile(packages : UnresolvedPackage seq) = 
+    let packages = packages |> Seq.toList
     let dependencyMap = Map.ofSeq (packages |> Seq.map (fun p -> p.Name, p.VersionRange))
     member __.DirectDependencies = dependencyMap
     member __.Packages = packages

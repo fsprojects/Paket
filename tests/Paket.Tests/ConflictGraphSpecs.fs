@@ -20,7 +20,7 @@ let graph =
       "E", "4.3", []
       "F", "1.2", [] ]
 
-let defaultPackage = { Name = ""; VersionRange = VersionRange.Exactly "1.0"; Sources = [Nuget ""]; DirectDependencies = []; ResolverStrategy = ResolverStrategy.Max }
+let defaultPackage = { Name = ""; VersionRange = VersionRange.Exactly "1.0"; Sources = [Nuget ""]; ResolverStrategy = ResolverStrategy.Max }
 
 [<Test>]
 let ``should analyze graph and report conflict``() = 
@@ -35,12 +35,9 @@ let ``should analyze graph and report conflict``() =
                       Referenced = { defaultPackage with Name = "D"; VersionRange = VersionRange.Exactly "1.6" } }
 
     resolved.["D"] |> shouldEqual (ResolvedDependency.Conflict conflict)
-    getVersion resolved.["E"] |> shouldEqual "4.3"
-    getDefiningPackage resolved.["E"] |> shouldEqual "B"
-    getDefiningVersion resolved.["E"] |> shouldEqual "1.1"
+    getVersion resolved.["E"] |> shouldEqual "4.3"    
     getVersion resolved.["F"] |> shouldEqual "1.2"
-    getDefiningPackage resolved.["F"] |> shouldEqual "C"
-    getDefiningVersion resolved.["F"] |> shouldEqual "2.4"
+    
 
 let graph2 = 
     [ "A", "1.0", 

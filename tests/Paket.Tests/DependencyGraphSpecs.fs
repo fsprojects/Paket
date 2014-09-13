@@ -74,9 +74,7 @@ let ``should analyze graph2 completely``() =
     getVersion resolved.["B"] |> shouldEqual "1.1"
     getVersion resolved.["C"] |> shouldEqual "2.4"
     getVersion resolved.["D"] |> shouldEqual "1.5"
-    getDefiningPackage resolved.["D"] |> shouldEqual "B"
-    getDefiningVersion resolved.["D"] |> shouldEqual "1.1"
-
+    
     resolved.ContainsKey "E" |> shouldEqual false
 
 [<Test>]

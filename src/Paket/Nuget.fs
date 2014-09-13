@@ -148,7 +148,6 @@ let getDetailsFromNugetViaOData nugetURL package sources resolverStrategy versio
                    { Name = name
                      VersionRange =  parseVersionRange version
                      Sources = sources
-                     DirectDependencies = []
                      ResolverStrategy = resolverStrategy })
             |> Array.toList
 
@@ -165,7 +164,7 @@ let private loadFromCacheOrOData force fileName nugetURL package sources resolve
         if not force && File.Exists fileName then
             try 
                 let json = File.ReadAllText(fileName)
-                return false,JsonConvert.DeserializeObject<string * Package list>(json)
+                return false,JsonConvert.DeserializeObject<string * UnresolvedPackage list>(json)
             with _ -> 
                 let! details = getDetailsFromNugetViaOData nugetURL package sources resolverStrategy version
                 return true,details
@@ -223,7 +222,6 @@ let getDetailsFromLocalFile path package sources resolverStrategy version =
                             {Name = name
                              VersionRange = version
                              Sources = sources
-                             DirectDependencies = []
                              ResolverStrategy = resolverStrategy }) 
             |> Seq.toList
 
@@ -233,7 +231,7 @@ let getDetailsFromLocalFile path package sources resolverStrategy version =
     }
 
 /// Downloads the given package to the NuGet Cache folder
-let DownloadPackage(url, name, sources, resolverStrategy, version, force) = 
+let DownloadPackage(url, name, sources, version, force) = 
     async { 
         let targetFileName = Path.Combine(CacheFolder, name + "." + version + ".nupkg")
         let targetFile = FileInfo targetFileName
@@ -242,7 +240,7 @@ let DownloadPackage(url, name, sources, resolverStrategy, version, force) =
             return targetFileName
         else 
             // discover the link on the fly
-            let! (link, _) = getDetailsFromNuget force url name sources resolverStrategy version
+            let! (link, _) = getDetailsFromNuget force url name sources ResolverStrategy.Max version
             use client = new WebClient()
             tracefn "Downloading %s %s to %s" name version targetFileName
             // TODO: Set credentials
@@ -297,9 +295,6 @@ let NugetDiscovery =
           
           //TODO: Should we really be able to call these methods with invalid arguments?
           member __.GetPackageDetails(force, sources, package, resolverStrategy, version) = async { 
-                  // this might make lookup of dependencies faster
-                  let moveSourceToFront source sources = source :: (List.filter ((<>) source) sources)
-                    
                   let rec tryNext xs = 
                       async { 
                           match xs with
@@ -307,13 +302,11 @@ let NugetDiscovery =
                               try 
                                   match source with
                                   | Nuget url -> 
-                                    let! details = getDetailsFromNuget force url package sources resolverStrategy version
-                                    let s,packages = details
-
-                                    return source,s,(packages |> List.map (fun package -> {package with Sources = moveSourceToFront source sources}))
+                                    let! details = getDetailsFromNuget force url package sources resolverStrategy version                                  
+                                    return source,details
                                   | LocalNuget path -> 
-                                    let! s,packages = getDetailsFromLocalFile path package sources resolverStrategy version
-                                    return source,s,(packages |> List.map (fun package -> {package with Sources = moveSourceToFront source sources}))
+                                    let! details = getDetailsFromLocalFile path package sources resolverStrategy version                                    
+                                    return source,details
                               with _ ->
                                 return! tryNext rest
                           | [] -> 
@@ -321,7 +314,12 @@ let NugetDiscovery =
                               return! tryNext []
                       }
 
-                  return! tryNext sources
+                  let! source,(link,packages) = tryNext sources
+                  return 
+                      { Source = source
+                        DownloadLink = link
+                        DirectDependencies =
+                        packages |> List.map (fun package -> {package with Sources = source :: (List.filter ((<>) source) sources) })}
               }
           
           member __.GetVersions(sources, package) =

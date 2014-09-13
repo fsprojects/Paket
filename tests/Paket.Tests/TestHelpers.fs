@@ -16,10 +16,9 @@ let DictionaryDiscovery(graph : seq<string * string * (string * VersionRange) li
                          |> List.map (fun (p, v) -> 
                                 { Name = p
                                   VersionRange = v
-                                  DirectDependencies = []
                                   ResolverStrategy = resolverStrategy
                                   Sources = sources })
-                  return Seq.head sources,"",dependencies
+                  return { Source = Seq.head sources; DownloadLink = ""; DirectDependencies = dependencies }
               }
           
           member __.GetVersions(sources, package) = 
@@ -31,28 +30,16 @@ let DictionaryDiscovery(graph : seq<string * string * (string * VersionRange) li
               } }
 
 let resolve graph (dependencies: (string * VersionRange) seq) =
-    let packages = dependencies |> Seq.map (fun (n,v) -> { Name = n; VersionRange = v; Sources = [Nuget ""]; DirectDependencies = []; ResolverStrategy = ResolverStrategy.Max })
-    Resolver.Resolve(true, DictionaryDiscovery graph, packages).ResolvedVersionMap
+    let packages = dependencies |> Seq.map (fun (n,v) -> { Name = n; VersionRange = v; Sources = [Nuget ""]; ResolverStrategy = ResolverStrategy.Max })
+    Resolver.Resolve(true, DictionaryDiscovery graph, packages)
 
 let getVersion resolved =
     match resolved with
-    | ResolvedDependency.Resolved x ->
-        match x.Referenced.VersionRange with
-        | Specific v -> v.ToString()
-
-let getDefiningPackage resolved =
-    match resolved with
-    | ResolvedDependency.Resolved (FromPackage x) -> x.Defining.Name
-
-let getDefiningVersion resolved =
-    match resolved with
-    | ResolvedDependency.Resolved (FromPackage x) -> 
-        match x.Defining.VersionRange with
-        | Specific v -> v.ToString()
+    | ResolvedDependency.Resolved x -> x.Version.ToString()
 
 let getSource resolved =
     match resolved with
-    | ResolvedDependency.Resolved x -> x.Referenced.Sources |> List.head
+    | ResolvedDependency.Resolved x -> x.Source
 
 
 let normalizeLineEndings (text:string) = text.Replace("\r\n","\n").Replace("\r","\n").Replace("\n",Environment.NewLine)

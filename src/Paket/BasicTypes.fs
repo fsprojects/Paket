@@ -101,20 +101,29 @@ type SourceFile =
 //TODO: Perhaps Source File and Package should be merged into a DU?
 /// Represents a package.
 type Package = 
+
+/// Represents an unresolved package.
+type UnresolvedPackage =
     { Name : string
-      DirectDependencies : string list
       VersionRange : VersionRange
       ResolverStrategy : ResolverStrategy
       Sources : PackageSource list }
 
+/// Represents data about resolved packages
+type ResolvedPackage = 
+    { Name : string
+      Version : SemVerInfo
+      DirectDependencies : (string * VersionRange) list
+      Source : PackageSource }
+
 /// Represents a package dependency.
 type PackageDependency = 
-    { Defining : Package
-      Referenced : Package }
+    { Defining : UnresolvedPackage
+      Referenced : UnresolvedPackage }
 
 /// Represents a dependency.
 type Dependency = 
-    | FromRoot of Package
+    | FromRoot of UnresolvedPackage
     | FromPackage of PackageDependency
     member this.Referenced = 
         match this with
@@ -122,7 +131,10 @@ type Dependency =
         | FromPackage d -> d.Referenced
 
 /// Represents package details
-type PackageDetails =  PackageSource * string * Package list
+type PackageDetails = {
+    Source: PackageSource 
+    DownloadLink: string
+    DirectDependencies : UnresolvedPackage list }
 
 /// Interface for discovery APIs.
 type IDiscovery = 
@@ -131,11 +143,9 @@ type IDiscovery =
 
 /// Represents a resolved dependency.
 type ResolvedDependency = 
-    | Resolved of Dependency
+    | Resolved of ResolvedPackage
+    | ResolvedConflict of ResolvedPackage * Dependency // TODO: New algorithm needs to remove this
     | Conflict of Dependency * Dependency
 
 /// Represents a complete dependency resolution.
-type PackageResolution = {
-    DirectDependencies : Map<string*string,Package list>
-    ResolvedVersionMap : Map<string,ResolvedDependency>
-}
+type PackageResolution = Map<string,ResolvedDependency>

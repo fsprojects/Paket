@@ -15,7 +15,7 @@ let formatVersionRange (version : VersionRange) =
 /// [omit]
 let extractErrors (resolved : PackageResolution) = 
     let errors = 
-        resolved.ResolvedVersionMap
+        resolved
         |> Seq.map (fun x ->
             match x.Value with
             | Resolved _ -> ""
@@ -49,30 +49,28 @@ let extractErrors (resolved : PackageResolution) =
 /// [omit]
 let serializePackages (resolved : PackageResolution) = 
     let sources = 
-        resolved.ResolvedVersionMap
+        resolved
         |> Seq.map (fun x ->
             match x.Value with
-            | Resolved d -> 
-                match d.Referenced.VersionRange with
-                | Specific v -> 
-                    match List.head d.Referenced.Sources with
-                    | Nuget url -> url,d.Referenced,v
-                    | LocalNuget path -> path,d.Referenced,v
+            | Resolved package -> 
+                match package.Source with
+                | Nuget url -> url,package
+                | LocalNuget path -> path,package
             | Conflict(c1,c2) ->
                 traceErrorfn "%A %A" c1 c2
-                failwith ""
+                failwith ""  // TODO: trace all errors
             )
-        |> Seq.groupBy (fun (s,_,_) -> s)
+        |> Seq.groupBy fst
 
     let all = 
         [ yield "NUGET"
           for source, packages in sources do
               yield "  remote: " + source
               yield "  specs:"
-              for _, package, version in packages do
-                  yield sprintf "    %s (%s)" package.Name (version.ToString()) 
-                  for d in resolved.DirectDependencies.[package.Name,version.ToString()] do
-                      yield sprintf "      %s (%s)" d.Name (formatVersionRange d.VersionRange)]
+              for _,package in packages do
+                  yield sprintf "    %s (%s)" package.Name (package.Version.ToString()) 
+                  for name,v in package.DirectDependencies do
+                      yield sprintf "      %s (%s)" name (formatVersionRange v)]
     
     String.Join(Environment.NewLine, all)
 
@@ -153,6 +151,41 @@ let Parse(lines : string seq) =
             | _ -> failwith "invalid remote details."
         )
     |> fun state -> List.rev state.Packages, List.rev state.SourceFiles
+let private (|Remote|Package|Dependency|Spec|Header|Blank|) (line:string) =
+    match line.Trim() with
+    | "NUGET" -> Header
+    | _ when String.IsNullOrWhiteSpace line -> Blank
+    | trimmed when trimmed.StartsWith "remote:" -> Remote (trimmed.Substring(trimmed.IndexOf(": ") + 2))
+    | trimmed when trimmed.StartsWith "specs:" -> Spec
+    | trimmed when line.StartsWith "      " ->
+         let parts = trimmed.Split '(' 
+         Dependency (parts.[0].Trim(),parts.[1].Replace("(", "").Replace(")", "").Trim())
+    | trimmed -> Package trimmed
+
+/// Parses a Lock file from lines
+let Parse(lines : string seq) : ResolvedPackage list =
+    (("http://nuget.org/api/v2", []), lines)
+    ||> Seq.fold(fun (currentSource, packages) line ->
+        match line with
+        | Remote newSource -> newSource, packages
+        | Header | Spec | Blank -> (currentSource, packages)
+        | Package details ->
+            let parts = details.Split(' ')
+            let version = parts.[1].Replace("(", "").Replace(")", "")
+            currentSource, { Source = PackageSource.Parse currentSource
+                             Name = parts.[0]
+                             DirectDependencies = []
+                             Version = SemVer.parse version } :: packages
+        | Dependency(name,version) ->
+            match packages with
+            | currentPackage :: otherPackages -> 
+                currentSource,
+                { currentPackage with
+                    DirectDependencies = [name,Latest] // TODO: parse version if we really need it 
+                    |> List.append currentPackage.DirectDependencies } :: otherPackages
+            | _ -> failwith "cannot set a dependency - no package has been specified.")
+    |> snd
+    |> List.rev
 
 /// Analyzes the dependencies from the Dependencies file.
 let Create(force, dependenciesFilename) =     
