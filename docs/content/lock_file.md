@@ -44,8 +44,8 @@ The `paket.lock` file records the concrete resolutions of all direct *and indire
           Rx-Core (>= 2.2)
         log4net (1.2.10)
 
-If the `paket.lock` file is not present when [paket install](paket_install.htm) is requested, it will be generated. Subsequent runs of [paket install](paket_install.htm) will not reanalyze the `paket.dependencies` file or touch `paket.lock`.
+If the `paket.lock` file is not present when [paket install](paket_install.html) is requested, it will be generated. Subsequent runs of [paket install](paket_install.html) will not reanalyze the `paket.dependencies` file or touch `paket.lock`.
 
-All changes after the initial generation will be as a result of [`paket install`](paket_install.htm) or [paket update](paket_update.htm) commands.
+All changes after the initial generation will be as a result of [`paket install`](paket_install.html) or [paket update](paket_update.html) commands.
 
-As a result, committing the `paket.lock` file to your version control system guarantees that other developers and/or build servers will always end up with a reliable and consistent set of packages regardless of where or when a [paket install](paket_install.htm) occurs.
+As a result, committing the `paket.lock` file to your version control system guarantees that other developers and/or build servers will always end up with a reliable and consistent set of packages regardless of where or when a [paket install](paket_install.html) occurs.
