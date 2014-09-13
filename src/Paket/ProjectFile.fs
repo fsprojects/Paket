@@ -65,8 +65,8 @@ type ProjectFile =
         [
             for node in this.Document.SelectNodes(sprintf "//ns:%s" name, this.Namespaces) do
                 let isPaketNode = ref false
-            for child in node.ChildNodes do
-                    if child.Name = "Paket" then isPaketNode := true
+                for child in node.ChildNodes do
+                        if child.Name = "Paket" then isPaketNode := true
             
                 if !isPaketNode then yield node
         ]
@@ -196,21 +196,30 @@ type ProjectFile =
             |> addAttribute "Include" (UriHelper.createRelativePath this.FileName fi.FullName)
             |> addChild (this.CreateNode("Paket","True"))
             :> XmlNode
-
+        
         match [ for node in this.Document.SelectNodes("//ns:Project", this.Namespaces) -> node ] with
         | [] -> ()
         | projectNode :: _ -> 
             this.DeletePaketNodes("Content")
             let itemGroupNode = this.Document.CreateElement("ItemGroup", ProjectFile.DefaultNameSpace)
 
+            let firstNodeForDirs =
+                this.Document.SelectNodes("//ns:Content", this.Namespaces)
+                |> Seq.cast<XmlNode>
+                |> Seq.groupBy (fun node -> Path.GetDirectoryName(node.Attributes.["Include"].Value))
+                |> Seq.map (fun (key, nodes) -> (key, nodes |> Seq.head))
+                |> Map.ofSeq
+            
             contentFiles
-            |> List.map contentNode
-            |> List.append [ for node in this.Document.SelectNodes("//ns:Content", this.Namespaces) -> node ]
-            |> List.sortBy (fun contentNode -> contentNode.Attributes.["Include"].Value)
-            |> List.iter (fun node -> itemGroupNode.AppendChild(node) |> ignore)
-
-            this.DeleteIfEmpty("//ns:Project/ns:ItemGroup")
+            |> List.map (fun file -> (UriHelper.createRelativePath this.FileName file.DirectoryName), contentNode file)
+            |> List.iter (fun (dir, paketNode) ->
+                    match Map.tryFind dir firstNodeForDirs with
+                    | Some (node) -> node.ParentNode.InsertBefore(paketNode, node) |> ignore
+                    | None -> itemGroupNode.AppendChild(paketNode) |> ignore )
+            
             projectNode.AppendChild(itemGroupNode) |> ignore
+            this.DeleteIfEmpty("//ns:Project/ns:ItemGroup")
+
     member this.ConvertNugetToPaket() =
         for node in this.Document.SelectNodes("//ns:*[@Include='packages.config']", this.Namespaces) do
             node.Attributes.["Include"].Value <- "paket.references"
