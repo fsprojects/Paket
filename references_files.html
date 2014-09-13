@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8"/>
+    <title>The paket.references files
+</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <meta name="description" content="A dependency manager for .NET"/>
+    <meta name="author" content="Steffen Forkmann, Alexander Gross"/>
+
+    <script src="https://code.jquery.com/jquery-1.8.0.js"></script>
+    <script src="https://code.jquery.com/ui/1.8.23/jquery-ui.js"></script>
+    <script src="https://netdna.bootstrapcdn.com/twitter-bootstrap/2.2.1/js/bootstrap.min.js"></script>
+    <link href="https://netdna.bootstrapcdn.com/twitter-bootstrap/2.2.1/css/bootstrap-combined.min.css" rel="stylesheet"/>
+
+    <link type="text/css" rel="stylesheet" href="/Paket/content/style.css" />
+    <script type="text/javascript" src="/Paket/content/tips.js"></script>
+    <!-- HTML5 shim, for IE6-8 support of HTML5 elements -->
+    <!--[if lt IE 9]>
+      <script src="https://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+  </head>
+  <body>
+    <div class="container">
+      <div class="masthead">
+        <ul class="nav nav-pills pull-right">
+          <li><a href="http://github.com/fsprojects/Paket">github page</a></li>
+        </ul>
+        <h3 class="muted"><a href="/Paket/index.html">Paket</a></h3>
+      </div>
+      <hr />
+      <div class="row">
+        <div class="span9" id="main">
+          
+<h1>The paket.references files</h1>
+
+<p><code>paket.references</code> is used to specify which dependencies are to be installed into the MSBuild projects in your repository. Paket determines the set of dependencies that are to be referenced by each MSBuild project within a directory from its <code>paket.references</code> file.</p>
+
+<p>A repository may contain zero or more <code>paket.references</code> files.</p>
+
+<p>It acts a lot like NuGet's <code>packages.config</code> files but there are some key differences:</p>
+
+<ul>
+<li>One does not specify package versions these are instead sourced from the <a href="lock_file.html"><code>paket.lock</code> file</a> (which are in turn derived from the rules contained within the <a href="dependencies_file.html"><code>paket.dependencies</code> file</a> in the course of the <em>initial</em> <a href="paket_install.html"><code>paket install</code></a> or subsequent <a href="paket_update.html"><code>paket update</code></a> commands)</li>
+<li>Only direct dependencies should be listed (see below, <a href="https://github.com/fsprojects/Paket/issues/38">we're currently evaluating options for other reference modes</a>)</li>
+<li>It's just a plain text file</li>
+<li>It's optional</li>
+</ul>
+
+<h2>Location</h2>
+
+<p>Paket looks for <code>paket.references</code> files underneath the folder where <a href="dependencies_file.html"><code>packet.dependencies</code></a> is located.</p>
+
+<h2>Layout</h2>
+
+<p>The file whitelists any dependencies from the <a href="lock_file.html"><code>paket.lock</code></a> set that are to be referenced within the projects alongside it in a given directory:</p>
+
+<table class="pre"><tr><td class="lines"><pre class="fssnip">
+<span class="l">1: </span>
+<span class="l">2: </span>
+<span class="l">3: </span>
+<span class="l">4: </span>
+</pre>
+</td>
+<td class="snippet"><pre class="fssnip">
+<span class="i">Newtonsoft</span><span class="o">.</span><span class="i">Json</span>
+<span class="i">UnionArgParser</span>
+<span class="i">DotNetZip</span>
+<span class="i">RestSharp</span></pre>
+</td>
+</tr>
+</table>
+
+<p>For each MSBuild project alongside a <code>paket.references</code>, <a href="paket_install.html"><code>paket install</code></a> and <a href="paket_update.html"><code>paket update</code></a> will add references to the dependencies listed in <code>paket.references</code> <em>and all their indirect dependencies</em>.</p>
+
+<p>The references injected into the MSBuild project represent the complete set of rules specified within the package for each <code>lib</code> and <code>Content</code> item; each reference is <code>Conditon</code>al on an MSBuild expression predicated on the project's active framework etc. This allows you to change the target version of the MSBuild project (either within Visual Studio or e.g. as part of a multi-pass build) without reinstalling dependencies or incurring an impenetrable set of diffs.</p>
+
+<h2>File name conventions</h2>
+
+<p>If Paket finds <code>paket.references</code> in a folder, the dependencies it specifies will be added to all MSBuild projects in that folder.</p>
+
+<p>If you have multiple MSBuild projects in a folder that require a non-homogenous set of references, you have two options:</p>
+
+<ul>
+<li>Have a shared <code>paket.references</code> file that acts as a default for all except ones that require special treatment. For each special-case project, add a <code>&lt;MSBuild project&gt;.paket.references</code> file</li>
+<li>Add a project-specific <code>&lt;MSBuild project&gt;.paket.references</code> file for each and every project that requires any references</li>
+</ul>
+
+<p>Please note that Paket does not merge the directory's shared reference list with the project-specific references. If a specific reference list is present, it overrides the default (even if that file is empty, in which case it prevents anything being added to its sibling project file).</p>
+
+<h3>Global paket.references</h3>
+
+<table class="pre"><tr><td class="lines"><pre class="fssnip">
+<span class="l">1: </span>
+<span class="l">2: </span>
+<span class="l">3: </span>
+<span class="l">4: </span>
+<span class="l">5: </span>
+<span class="l">6: </span>
+<span class="l">7: </span>
+<span class="l">8: </span>
+</pre>
+</td>
+<td class="snippet"><pre class="fssnip">
+<span class="o">/</span>
+<span class="o">/</span><span class="i">paket</span><span class="o">.</span><span class="i">dependencies</span>
+<span class="o">/</span><span class="i">paket</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs1', 1)" onmouseover="showTip(event, 'fs1', 1)" class="i">lock</span>
+<span class="o">/</span><span class="i">src</span><span class="o">/</span><span class="i">Example</span><span class="o">.</span><span class="i">csproj</span>
+<span class="o">/</span><span class="i">src</span><span class="o">/</span><span class="i">Example</span><span class="o">.</span><span class="i">fsproj</span>
+<span class="o">/</span><span class="i">src</span><span class="o">/</span><span class="i">Example</span><span class="o">.</span><span class="i">vbproj</span>
+<span class="o">/</span><span class="i">src</span><span class="o">/</span><span class="i">paket</span><span class="o">.</span><span class="i">references</span>
+<span class="o">/</span><span class="i">test</span><span class="o">/</span><span class="i">Example</span><span class="o">.</span><span class="i">csproj</span></pre>
+</td>
+</tr>
+</table>
+
+<p>In this example,</p>
+
+<ul>
+<li>the dependencies specified in <code>/src/paket.references</code> will be added to <code>/src/Example.csproj</code>, <code>/src/Example.fsproj</code> and <code>/src/Example.vbproj</code></li>
+<li><code>/test/Example.csproj</code> is left untouched</li>
+</ul>
+
+<h3>Global paket.references with project-specific override</h3>
+
+<table class="pre"><tr><td class="lines"><pre class="fssnip">
+<span class="l">1: </span>
+<span class="l">2: </span>
+<span class="l">3: </span>
+<span class="l">4: </span>
+<span class="l">5: </span>
+<span class="l">6: </span>
+<span class="l">7: </span>
+<span class="l">8: </span>
+</pre>
+</td>
+<td class="snippet"><pre class="fssnip">
+<span class="o">/</span>
+<span class="o">/</span><span class="i">paket</span><span class="o">.</span><span class="i">dependencies</span>
+<span class="o">/</span><span class="i">paket</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs1', 2)" onmouseover="showTip(event, 'fs1', 2)" class="i">lock</span>
+<span class="o">/</span><span class="i">src</span><span class="o">/</span><span class="i">Example</span><span class="o">.</span><span class="i">csproj</span>
+<span class="o">/</span><span class="i">src</span><span class="o">/</span><span class="i">Example</span><span class="o">.</span><span class="i">fsproj</span>
+<span class="o">/</span><span class="i">src</span><span class="o">/</span><span class="i">Example</span><span class="o">.</span><span class="i">vbproj</span>
+<span class="o">/</span><span class="i">src</span><span class="o">/</span><span class="i">Example</span><span class="o">.</span><span class="i">vbproj</span><span class="o">.</span><span class="i">paket</span><span class="o">.</span><span class="i">references</span>
+<span class="o">/</span><span class="i">src</span><span class="o">/</span><span class="i">paket</span><span class="o">.</span><span class="i">references</span></pre>
+</td>
+</tr>
+</table>
+
+<p>In this example,</p>
+
+<ul>
+<li>the dependencies specified in <code>/src/paket.references</code> will be added to <code>/src/Example.csproj</code> and <code>/src/Example.fsproj</code></li>
+<li>the dependencies specified in <code>/src/Example.vbproj.paket.references</code> will be added to <code>/src/Example.vbproj</code></li>
+<li>Paket does not merge the dependencies of <code>/src/paket.references</code> and <code>/src/Example.vbproj.paket.references</code></li>
+</ul>
+
+<h3>Project-specific references only</h3>
+
+<table class="pre"><tr><td class="lines"><pre class="fssnip">
+<span class="l">1: </span>
+<span class="l">2: </span>
+<span class="l">3: </span>
+<span class="l">4: </span>
+<span class="l">5: </span>
+<span class="l">6: </span>
+<span class="l">7: </span>
+</pre>
+</td>
+<td class="snippet"><pre class="fssnip">
+<span class="o">/</span>
+<span class="o">/</span><span class="i">paket</span><span class="o">.</span><span class="i">dependencies</span>
+<span class="o">/</span><span class="i">paket</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs1', 3)" onmouseover="showTip(event, 'fs1', 3)" class="i">lock</span>
+<span class="o">/</span><span class="i">src</span><span class="o">/</span><span class="i">Example</span><span class="o">.</span><span class="i">csproj</span>
+<span class="o">/</span><span class="i">src</span><span class="o">/</span><span class="i">Example</span><span class="o">.</span><span class="i">csproj</span><span class="o">.</span><span class="i">paket</span><span class="o">.</span><span class="i">references</span>
+<span class="o">/</span><span class="i">src</span><span class="o">/</span><span class="i">Example</span><span class="o">.</span><span class="i">fsproj</span>
+<span class="o">/</span><span class="i">src</span><span class="o">/</span><span class="i">Example</span><span class="o">.</span><span class="i">fsproj</span><span class="o">.</span><span class="i">paket</span><span class="o">.</span><span class="i">references</span></pre>
+</td>
+</tr>
+</table>
+
+<p>In this example,</p>
+
+<ul>
+<li>the dependencies specified in <code>/src/Example.csproj.paket.references</code> will be added to <code>/src/Example.csproj</code></li>
+<li>the dependencies specified in <code>/src/Example.fsproj.paket.references</code> will be added to <code>/src/Example.fsproj</code></li>
+</ul>
+
+<div class="tip" id="fs1">val lock : lockObject:&#39;Lock -&gt; action:(unit -&gt; &#39;T) -&gt; &#39;T (requires reference type)<br /><br />Full name: Microsoft.FSharp.Core.Operators.lock</div>
+
+        </div>
+        <div class="span3">
+          <img src="/Paket/img/logo.png" alt="F# Project" style="width:150px;margin:10px" />
+          <ul class="nav nav-list" id="menu" style="margin-top: 20px;">
+            <li class="nav-header">Paket</li>
+            <li><a href="/Paket/index.html">Home page</a></li>
+            <li class="divider"></li>
+            <li><a href="http://nuget.org/packages/Paket">Get Library via NuGet</a></li>
+            <li><a href="http://github.com/fsprojects/Paket">Source Code on GitHub</a></li>
+            <li><a href="http://github.com/fsprojects/Paket/issues">Report an issue</a></li>
+            <li><a href="http://github.com/fsprojects/Paket/blob/master/LICENSE.txt">License</a></li>
+            <li><a href="http://github.com/fsprojects/Paket/blob/master/RELEASE_NOTES.md">Release Notes</a></li>
+
+            <li class="nav-header">Documentation</li>
+            <li><a href="/Paket/faq.html">FAQ</a></li>
+            <li><a href="/Paket/dependencies_file.html">paket.dependencies</a></li>
+            <li><a href="/Paket/lock_file.html">paket.lock</a></li>
+            <li><a href="/Paket/references_files.html">paket.references</a></li>
+            <li><a href="/Paket/reference/index.html">API Reference</a></li>
+
+            <li class="nav-header">Paket commands</li>
+            <li><a href="/Paket/paket_install.html">paket install</a></li>
+            <li><a href="/Paket/paket_outdated.html">paket outdated</a></li>
+            <li><a href="/Paket/paket_update.html">paket update</a></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+    <a href="http://github.com/fsprojects/Paket"><img style="position: absolute; top: 0; right: 0; border: 0;" src="https://s3.amazonaws.com/github/ribbons/forkme_right_gray_6d6d6d.png" alt="Fork me on GitHub"/></a>
+  </body>
+</html>

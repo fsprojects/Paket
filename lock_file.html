@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8"/>
+    <title>The paket.lock file
+</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <meta name="description" content="A dependency manager for .NET"/>
+    <meta name="author" content="Steffen Forkmann, Alexander Gross"/>
+
+    <script src="https://code.jquery.com/jquery-1.8.0.js"></script>
+    <script src="https://code.jquery.com/ui/1.8.23/jquery-ui.js"></script>
+    <script src="https://netdna.bootstrapcdn.com/twitter-bootstrap/2.2.1/js/bootstrap.min.js"></script>
+    <link href="https://netdna.bootstrapcdn.com/twitter-bootstrap/2.2.1/css/bootstrap-combined.min.css" rel="stylesheet"/>
+
+    <link type="text/css" rel="stylesheet" href="/Paket/content/style.css" />
+    <script type="text/javascript" src="/Paket/content/tips.js"></script>
+    <!-- HTML5 shim, for IE6-8 support of HTML5 elements -->
+    <!--[if lt IE 9]>
+      <script src="https://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+  </head>
+  <body>
+    <div class="container">
+      <div class="masthead">
+        <ul class="nav nav-pills pull-right">
+          <li><a href="http://github.com/fsprojects/Paket">github page</a></li>
+        </ul>
+        <h3 class="muted"><a href="/Paket/index.html">Paket</a></h3>
+      </div>
+      <hr />
+      <div class="row">
+        <div class="span9" id="main">
+          
+<h1>The paket.lock file</h1>
+
+<p>Consider the following <a href="dependencies_file.html"><code>paket.dependencies</code></a> file:</p>
+
+<table class="pre"><tr><td class="lines"><pre class="fssnip">
+<span class="l">1: </span>
+<span class="l">2: </span>
+<span class="l">3: </span>
+<span class="l">4: </span>
+</pre>
+</td>
+<td class="snippet"><pre class="fssnip">
+<span class="i">source</span> <span class="s">&quot;</span><span class="s">http</span><span class="s">:</span><span class="s">/</span><span class="s">/</span><span class="s">nuget</span><span class="s">.</span><span class="s">org</span><span class="s">/</span><span class="s">api</span><span class="s">/</span><span class="s">v2</span><span class="s">&quot;</span>
+
+<span class="i">nuget</span> <span class="s">&quot;</span><span class="s">Castle</span><span class="s">.</span><span class="s">Windsor</span><span class="s">-</span><span class="s">log4net</span><span class="s">&quot;</span> <span class="s">&quot;</span><span class="s">!</span><span class="s">~</span><span class="s">&gt;</span><span class="s"> </span><span class="s">3</span><span class="s">.</span><span class="s">2</span><span class="s">&quot;</span>
+<span class="i">nuget</span> <span class="s">&quot;</span><span class="s">Rx</span><span class="s">-</span><span class="s">Main</span><span class="s">&quot;</span> <span class="s">&quot;</span><span class="s">!</span><span class="s">~</span><span class="s">&gt;</span><span class="s"> </span><span class="s">2</span><span class="s">.</span><span class="s">0</span><span class="s">&quot;</span></pre>
+</td>
+</tr>
+</table>
+
+<p>Here we <a href="dependencies_file.html">specify dependencies</a> on the default NuGet feed's <a href="https://www.nuget.org/packages/Castle.Windsor-log4net/"><code>Castle.Windsor-log4net</code></a> and <a href="https://www.nuget.org/packages/Rx-Main/"><code>Rx-Main</code></a> packages; both these packages have dependencies on further NuGet packages.</p>
+
+<p>The <code>paket.lock</code> file records the concrete dependency resolution of all direct <em>and indirect</em> dependencies of your project:</p>
+
+<table class="pre"><tr><td><pre lang="textfile">NUGET
+  remote: http://nuget.org/api/v2
+  specs:
+    Castle.Core (3.3.0)
+    Castle.Core-log4net (3.3.0)
+      Castle.Core (&gt;= 3.3.0)
+      log4net (1.2.10)
+    Castle.LoggingFacility (3.3.0)
+      Castle.Core (&gt;= 3.3.0)
+      Castle.Windsor (&gt;= 3.3.0)
+    Castle.Windsor (3.3.0)
+      Castle.Core (&gt;= 3.3.0)
+    Castle.Windsor-log4net (3.3.0)
+      Castle.Core-log4net (&gt;= 3.3.0)
+      Castle.LoggingFacility (&gt;= 3.3.0)
+    Rx-Core (2.2.5)
+      Rx-Interfaces (&gt;= 2.2.5)
+    Rx-Interfaces (2.2.5)
+    Rx-Linq (2.2.5)
+      Rx-Interfaces (&gt;= 2.2.5)
+      Rx-Core (&gt;= 2.2.5)
+    Rx-Main (2.2.5)
+      Rx-Interfaces (&gt;= 2.2.5)
+      Rx-Core (&gt;= 2.2.5)
+      Rx-Linq (&gt;= 2.2.5)
+      Rx-PlatformServices (&gt;= 2.2.5)
+    Rx-PlatformServices (2.2.5)
+      Rx-Interfaces (&gt;= 2.2.5)
+      Rx-Core (&gt;= 2.2.5)
+    log4net (1.2.10)</pre></td></tr></table>
+
+<p>If the <code>paket.lock</code> file is not present when <a href="paket_install.html">paket install</a> is requested, it will be generated. Subsequent runs of <a href="paket_install.html">paket install</a> will not reanalyze the <code>paket.dependencies</code> file or touch <code>paket.lock</code>.</p>
+
+<p>All changes after the initial generation will be as a result of <a href="paket_install.html"><code>paket install</code></a> or <a href="paket_update.html">paket update</a> commands.</p>
+
+<p>As a result, committing the <code>paket.lock</code> file to your version control system guarantees that other developers and/or build servers will always end up with a reliable and consistent set of packages regardless of where or when a <a href="paket_install.html">paket install</a> occurs.
+When you run <a href="paket_install.html"><code>paket install</code></a> and the <code>paket.lock</code> file is not present, it will be generated. Subsequent runs of <a href="paket_install.html"><code>paket install</code></a> will not reanalyze the <code>paket.dependencies</code> file nor touch <code>paket.lock</code>.</p>
+
+<p>If you make changes to <a href="dependencies_file.html"><code>paket.dependencies</code></a> or you want Paket to check for newer versions of the direct and indirect dependencies as specified in <a href="dependencies_file.html"><code>paket.dependencies</code></a>, run <a href="paket_update.html"><code>paket update</code></a>.</p>
+
+<p>As a result, committing the <code>paket.lock</code> file to your version control system guarantees that other developers and/or build servers will always end up with a reliable and consistent set of packages regardless of where or when <a href="paket_install.html"><code>paket install</code></a> is executed.</p>
+
+
+        </div>
+        <div class="span3">
+          <img src="/Paket/img/logo.png" alt="F# Project" style="width:150px;margin:10px" />
+          <ul class="nav nav-list" id="menu" style="margin-top: 20px;">
+            <li class="nav-header">Paket</li>
+            <li><a href="/Paket/index.html">Home page</a></li>
+            <li class="divider"></li>
+            <li><a href="http://nuget.org/packages/Paket">Get Library via NuGet</a></li>
+            <li><a href="http://github.com/fsprojects/Paket">Source Code on GitHub</a></li>
+            <li><a href="http://github.com/fsprojects/Paket/issues">Report an issue</a></li>
+            <li><a href="http://github.com/fsprojects/Paket/blob/master/LICENSE.txt">License</a></li>
+            <li><a href="http://github.com/fsprojects/Paket/blob/master/RELEASE_NOTES.md">Release Notes</a></li>
+
+            <li class="nav-header">Documentation</li>
+            <li><a href="/Paket/faq.html">FAQ</a></li>
+            <li><a href="/Paket/dependencies_file.html">paket.dependencies</a></li>
+            <li><a href="/Paket/lock_file.html">paket.lock</a></li>
+            <li><a href="/Paket/references_files.html">paket.references</a></li>
+            <li><a href="/Paket/reference/index.html">API Reference</a></li>
+
+            <li class="nav-header">Paket commands</li>
+            <li><a href="/Paket/paket_install.html">paket install</a></li>
+            <li><a href="/Paket/paket_outdated.html">paket outdated</a></li>
+            <li><a href="/Paket/paket_update.html">paket update</a></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+    <a href="http://github.com/fsprojects/Paket"><img style="position: absolute; top: 0; right: 0; border: 0;" src="https://s3.amazonaws.com/github/ribbons/forkme_right_gray_6d6d6d.png" alt="Fork me on GitHub"/></a>
+  </body>
+</html>

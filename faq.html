@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8"/>
+    <title>FAQ — Frequently Asked Questions
+</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <meta name="description" content="A dependency manager for .NET"/>
+    <meta name="author" content="Steffen Forkmann, Alexander Gross"/>
+
+    <script src="https://code.jquery.com/jquery-1.8.0.js"></script>
+    <script src="https://code.jquery.com/ui/1.8.23/jquery-ui.js"></script>
+    <script src="https://netdna.bootstrapcdn.com/twitter-bootstrap/2.2.1/js/bootstrap.min.js"></script>
+    <link href="https://netdna.bootstrapcdn.com/twitter-bootstrap/2.2.1/css/bootstrap-combined.min.css" rel="stylesheet"/>
+
+    <link type="text/css" rel="stylesheet" href="/Paket/content/style.css" />
+    <script type="text/javascript" src="/Paket/content/tips.js"></script>
+    <!-- HTML5 shim, for IE6-8 support of HTML5 elements -->
+    <!--[if lt IE 9]>
+      <script src="https://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+  </head>
+  <body>
+    <div class="container">
+      <div class="masthead">
+        <ul class="nav nav-pills pull-right">
+          <li><a href="http://github.com/fsprojects/Paket">github page</a></li>
+        </ul>
+        <h3 class="muted"><a href="/Paket/index.html">Paket</a></h3>
+      </div>
+      <hr />
+      <div class="row">
+        <div class="span9" id="main">
+          
+<h1>FAQ — Frequently Asked Questions</h1>
+
+<h2>I don't understand why I need Paket to manage my packages. Why can't I just use NuGet?</h2>
+
+<p>NuGet does not separate out the concept of indirect dependencies; if you install a package into your project and that package has further dependencies then all indirect packages are included in the <code>packages.config</code>. There is no way to tell which packages are only indirect dependencies.</p>
+
+<p>Even more importantly: If two packages reference conflicting versions of a package, NuGet will silently take the latest version. You have no control over this process.</p>
+
+<p>Paket on the other hand maintains this information on a consistent and stable basis within the <a href="lock_file.html"><code>paket.lock</code> file</a> in the solution root. This file, together with the <a href="dependencies_file.html"><code>paket.dependencies</code> file</a>  enables you to determine exactly what's happening with your dependencies.</p>
+
+<p>The <a href="paket_outdated.html"><code>paket outdated</code> command</a> lists packages that have new versions available.</p>
+
+<p>Future versions of Paket will also enable one to <a href="https://github.com/fsprojects/Paket/issues/9">reference files directly from git repositories</a>.</p>
+
+<h2>Why does Paket add references to the libraries associated with each supported framework version within a NuGet package to my projects?</h2>
+
+<p>A NuGet package installation adds references only for the currently selected target .NET framework version of your project at the time of installation. Whenever you switch the framework version of your project, there's a potential need to reinstall all of the packages.</p>
+
+<p>However the Visual Studio tooling does not address this – it's up to you to remember to reinstall. In the best case, this leads to compiler errors about missing methods/types etc. In the worst case, it's a variance that's either deeply buried within the code (meaning it might be difficult to trap in a test cycle) or a more difficult to detect 'silent' problem.</p>
+
+<p>Paket adds references to all of them, but with <code>Condition</code> attributes filtering them based on the currently selected <code>TargetFramework</code> and other relevant MSBuild properties.</p>
+
+<p>See <a href="references_files.html"><code>paket.references</code></a> for more information.</p>
+
+<h2>Why does Paket use a different package resolution strategy than NuGet?</h2>
+
+<p>Paket tries to embrace <a href="http://semver.org/">SemVer</a> while NuGet uses a pessimistic version resolution strategy. You can prefix your version constraints with <code>!</code> if you need to use <a href="dependencies_file.html#nuget-style-dependency-resolution">NuGet compatibility</a>.</p>
+
+<h2>When I resolve the dependencies from NuGet.org it is really slow. Why is that?</h2>
+
+<p>Paket uses the NuGet OData API to discover package dependencies. Unfortunately this API is very slow.</p>
+
+<p>Some good news is that <a href="http://blog.nuget.org/20140711/nuget-architecture.html">the NuGet team is currently developing a faster API</a>. Paket may be able to take advantage of that in the future.</p>
+
+<p>Once the <a href="lock_file.html"><code>paket.lock</code> file</a> is written, Paket no longer needs to use the OData API any futher; as a result, <a href="paket_install.html"><code>paket install</code></a> is very fast.</p>
+
+<h2>Can I use Paket to manage npm/bower/whatever dependencies?</h2>
+
+<p><a href="https://github.com/fsprojects/Paket/issues/61">No.</a> We don't believe in reinventing the wheel.</p>
+
+<p>On top of that, such a "meta package manager" abstraction is likely to be less flexible and behind on what native tools have to offer. Paket serves a specific need, that is <a href="http://semver.org">SemVer-compatible</a> NuGet.</p>
+
+
+        </div>
+        <div class="span3">
+          <img src="/Paket/img/logo.png" alt="F# Project" style="width:150px;margin:10px" />
+          <ul class="nav nav-list" id="menu" style="margin-top: 20px;">
+            <li class="nav-header">Paket</li>
+            <li><a href="/Paket/index.html">Home page</a></li>
+            <li class="divider"></li>
+            <li><a href="http://nuget.org/packages/Paket">Get Library via NuGet</a></li>
+            <li><a href="http://github.com/fsprojects/Paket">Source Code on GitHub</a></li>
+            <li><a href="http://github.com/fsprojects/Paket/issues">Report an issue</a></li>
+            <li><a href="http://github.com/fsprojects/Paket/blob/master/LICENSE.txt">License</a></li>
+            <li><a href="http://github.com/fsprojects/Paket/blob/master/RELEASE_NOTES.md">Release Notes</a></li>
+
+            <li class="nav-header">Documentation</li>
+            <li><a href="/Paket/faq.html">FAQ</a></li>
+            <li><a href="/Paket/dependencies_file.html">paket.dependencies</a></li>
+            <li><a href="/Paket/lock_file.html">paket.lock</a></li>
+            <li><a href="/Paket/references_files.html">paket.references</a></li>
+            <li><a href="/Paket/reference/index.html">API Reference</a></li>
+
+            <li class="nav-header">Paket commands</li>
+            <li><a href="/Paket/paket_install.html">paket install</a></li>
+            <li><a href="/Paket/paket_outdated.html">paket outdated</a></li>
+            <li><a href="/Paket/paket_update.html">paket update</a></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+    <a href="http://github.com/fsprojects/Paket"><img style="position: absolute; top: 0; right: 0; border: 0;" src="https://s3.amazonaws.com/github/ribbons/forkme_right_gray_6d6d6d.png" alt="Fork me on GitHub"/></a>
+  </body>
+</html>

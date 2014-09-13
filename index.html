@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8"/>
+    <title>What is Paket?
+</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <meta name="description" content="A dependency manager for .NET"/>
+    <meta name="author" content="Steffen Forkmann, Alexander Gross"/>
+
+    <script src="https://code.jquery.com/jquery-1.8.0.js"></script>
+    <script src="https://code.jquery.com/ui/1.8.23/jquery-ui.js"></script>
+    <script src="https://netdna.bootstrapcdn.com/twitter-bootstrap/2.2.1/js/bootstrap.min.js"></script>
+    <link href="https://netdna.bootstrapcdn.com/twitter-bootstrap/2.2.1/css/bootstrap-combined.min.css" rel="stylesheet"/>
+
+    <link type="text/css" rel="stylesheet" href="/Paket/content/style.css" />
+    <script type="text/javascript" src="/Paket/content/tips.js"></script>
+    <!-- HTML5 shim, for IE6-8 support of HTML5 elements -->
+    <!--[if lt IE 9]>
+      <script src="https://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+  </head>
+  <body>
+    <div class="container">
+      <div class="masthead">
+        <ul class="nav nav-pills pull-right">
+          <li><a href="http://github.com/fsprojects/Paket">github page</a></li>
+        </ul>
+        <h3 class="muted"><a href="/Paket/index.html">Paket</a></h3>
+      </div>
+      <hr />
+      <div class="row">
+        <div class="span9" id="main">
+          
+<h1>What is Paket?</h1>
+
+<p>Paket is a package manager for .NET and <a href="http://www.mono-project.com/">Mono</a> projects. It's inspired by <a href="http://bundler.io/">bundler</a>, but designed to work well with <a href="https://www.nuget.org/">NuGet</a> packages.
+It enables precise and predictable control over what packages the projects within your application reference. More details are in the <a href="faq.html">FAQ</a>.</p>
+
+<h2>How to get Paket</h2>
+
+<div class="row">
+  <div class="span1"></div>
+  <div class="span6">
+    <div class="well well-small" id="nuget">
+      Paket is available <a href="https://nuget.org/packages/Paket">on NuGet</a>.
+      To install the tool, run the following command in the <a href="http://docs.nuget.org/docs/start-here/using-the-package-manager-console">Package Manager Console</a>:
+      <pre>PM> Install-Package Paket</pre>
+    </div>
+  </div>
+  <div class="span1"></div>
+</div>
+
+<p><a href="https://www.nuget.org/packages/Paket/"><img src="http://img.shields.io/nuget/v/Paket.svg?style=flat" alt="NuGet Status" /></a></p>
+
+<h2>Getting Started</h2>
+
+<p>Specify the version rules of all dependencies used in your application in a <a href="dependencies_file.html"><code>paket.dependencies</code> file</a> in your project's root:</p>
+
+<table class="pre"><tr><td class="lines"><pre class="fssnip">
+<span class="l">1: </span>
+<span class="l">2: </span>
+<span class="l">3: </span>
+<span class="l">4: </span>
+</pre>
+</td>
+<td class="snippet"><pre class="fssnip">
+<span class="i">source</span> <span class="s">&quot;</span><span class="s">http</span><span class="s">:</span><span class="s">/</span><span class="s">/</span><span class="s">nuget</span><span class="s">.</span><span class="s">org</span><span class="s">/</span><span class="s">api</span><span class="s">/</span><span class="s">v2</span><span class="s">&quot;</span>
+
+<span class="i">nuget</span> <span class="s">&quot;</span><span class="s">Castle</span><span class="s">.</span><span class="s">Windsor</span><span class="s">-</span><span class="s">log4net</span><span class="s">&quot;</span> <span class="s">&quot;</span><span class="s">~</span><span class="s">&gt;</span><span class="s"> </span><span class="s">3</span><span class="s">.</span><span class="s">2</span><span class="s">&quot;</span>
+<span class="i">nuget</span> <span class="s">&quot;</span><span class="s">Rx</span><span class="s">-</span><span class="s">Main</span><span class="s">&quot;</span> <span class="s">&quot;</span><span class="s">~</span><span class="s">&gt;</span><span class="s"> </span><span class="s">2</span><span class="s">.</span><span class="s">0</span><span class="s">&quot;</span></pre>
+</td>
+</tr>
+</table>
+
+<p>Install all of the required packages from the specified sources:</p>
+
+<table class="pre"><tr><td><pre lang="batchfile">$ paket install</pre></td></tr></table>
+
+<p>The <a href="paket_install.html"><code>paket install</code> command</a> will analyze your <a href="dependencies_file.html"><code>paket.dependencies</code> file</a> and generate a <a href="lock_file.html"><code>paket.lock</code> file</a> alongside it.
+If the lock file already exists, it will not be regenerated.</p>
+
+<p>You may have <a href="references_files.html"><code>paket.references</code> files</a> next to your Visual Studio projects to have Paket automatically add references for the packages noted in that file.</p>
+
+<p>All of the files involved (<a href="dependencies_files.html"><code>paket.dependencies</code></a>, <a href="lock_file.html"><code>paket.lock</code></a> and <a href="references_files.html"><code>paket.references</code></a>) should be committed to your version control system.</p>
+
+<p>Determine if there are package updates available:</p>
+
+<table class="pre"><tr><td><pre lang="batchfile">$ paket outdated</pre></td></tr></table>
+
+<p>Download updated packages; update lock:</p>
+
+<table class="pre"><tr><td><pre lang="batchfile">$ paket update</pre></td></tr></table>
+
+<p>The <a href="paket_update.html"><code>paket update</code> command</a> will analyze your <a href="dependencies_file.html"><code>paket.dependencies</code> file</a>, and update the <a href="lock_file.html"><code>paket.lock</code> file</a>.</p>
+
+<h2>Contributing and copyright</h2>
+
+<p>The project is hosted on <a href="https://github.com/fsprojects/Paket">GitHub</a> where you can <a href="https://github.com/fsprojects/Paket/issues">report issues</a>, fork
+the project and submit pull requests. If you're adding a new public API, please also
+consider adding <a href="https://github.com/fsprojects/Paket/tree/master/docs/content">samples</a> that can be turned into documentation. You might
+also want to read <a href="https://github.com/fsprojects/Paket/blob/master/README.md">library design notes</a> to understand how it works.</p>
+
+<p>The library is available under MIT license, which allows modification and
+redistribution for both commercial and non-commercial purposes. For more information see the
+<a href="https://github.com/fsprojects/Paket/blob/master/LICENSE.txt">License file</a> in the GitHub repository.</p>
+
+
+        </div>
+        <div class="span3">
+          <img src="/Paket/img/logo.png" alt="F# Project" style="width:150px;margin:10px" />
+          <ul class="nav nav-list" id="menu" style="margin-top: 20px;">
+            <li class="nav-header">Paket</li>
+            <li><a href="/Paket/index.html">Home page</a></li>
+            <li class="divider"></li>
+            <li><a href="http://nuget.org/packages/Paket">Get Library via NuGet</a></li>
+            <li><a href="http://github.com/fsprojects/Paket">Source Code on GitHub</a></li>
+            <li><a href="http://github.com/fsprojects/Paket/issues">Report an issue</a></li>
+            <li><a href="http://github.com/fsprojects/Paket/blob/master/LICENSE.txt">License</a></li>
+            <li><a href="http://github.com/fsprojects/Paket/blob/master/RELEASE_NOTES.md">Release Notes</a></li>
+
+            <li class="nav-header">Documentation</li>
+            <li><a href="/Paket/faq.html">FAQ</a></li>
+            <li><a href="/Paket/dependencies_file.html">paket.dependencies</a></li>
+            <li><a href="/Paket/lock_file.html">paket.lock</a></li>
+            <li><a href="/Paket/references_files.html">paket.references</a></li>
+            <li><a href="/Paket/reference/index.html">API Reference</a></li>
+
+            <li class="nav-header">Paket commands</li>
+            <li><a href="/Paket/paket_install.html">paket install</a></li>
+            <li><a href="/Paket/paket_outdated.html">paket outdated</a></li>
+            <li><a href="/Paket/paket_update.html">paket update</a></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+    <a href="http://github.com/fsprojects/Paket"><img style="position: absolute; top: 0; right: 0; border: 0;" src="https://s3.amazonaws.com/github/ribbons/forkme_right_gray_6d6d6d.png" alt="Fork me on GitHub"/></a>
+  </body>
+</html>
