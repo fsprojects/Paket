@@ -16,7 +16,6 @@ let DictionaryDiscovery(graph : seq<string * string * (string * VersionRange) li
                          |> List.map (fun (p, v) -> 
                                 { Name = p
                                   VersionRange = v
-                                  DirectDependencies = []
                                   ResolverStrategy = resolverStrategy
                                   Sources = sources })
                   return { Source = Seq.head sources; DownloadLink = ""; DirectDependencies = dependencies }
@@ -31,8 +30,8 @@ let DictionaryDiscovery(graph : seq<string * string * (string * VersionRange) li
               } }
 
 let resolve graph (dependencies: (string * VersionRange) seq) =
-    let packages = dependencies |> Seq.map (fun (n,v) -> { Name = n; VersionRange = v; Sources = [Nuget ""]; DirectDependencies = []; ResolverStrategy = ResolverStrategy.Max })
-    Resolver.Resolve(true, DictionaryDiscovery graph, packages).ResolvedVersionMap
+    let packages = dependencies |> Seq.map (fun (n,v) -> { Name = n; VersionRange = v; Sources = [Nuget ""]; ResolverStrategy = ResolverStrategy.Max })
+    Resolver.Resolve(true, DictionaryDiscovery graph, packages)
 
 let getVersion resolved =
     match resolved with

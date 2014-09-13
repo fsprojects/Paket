@@ -15,7 +15,7 @@ let formatVersionRange (version : VersionRange) =
 /// [omit]
 let extractErrors (resolved : PackageResolution) = 
     let errors = 
-        resolved.ResolvedVersionMap
+        resolved
         |> Seq.map (fun x ->
             match x.Value with
             | Resolved _ -> ""
@@ -49,7 +49,7 @@ let extractErrors (resolved : PackageResolution) =
 /// [omit]
 let format (resolved : PackageResolution) = 
     let sources = 
-        resolved.ResolvedVersionMap
+        resolved
         |> Seq.map (fun x ->
             match x.Value with
             | Resolved package -> 
@@ -69,8 +69,8 @@ let format (resolved : PackageResolution) =
               yield "  specs:"
               for _,package in packages do
                   yield sprintf "    %s (%s)" package.Name (package.Version.ToString()) 
-                  for d in resolved.DirectDependencies.[package.Name,package.Version.ToString()] do
-                      yield sprintf "      %s (%s)" d.Name (formatVersionRange d.VersionRange)]
+                  for name,v in package.DirectDependencies do
+                      yield sprintf "      %s (%s)" name (formatVersionRange v)]
     
     String.Join(Environment.NewLine, all)
 
@@ -80,7 +80,9 @@ let private (|Remote|Package|Dependency|Spec|Header|Blank|) (line:string) =
     | _ when String.IsNullOrWhiteSpace line -> Blank
     | trimmed when trimmed.StartsWith "remote:" -> Remote (trimmed.Substring(trimmed.IndexOf(": ") + 2))
     | trimmed when trimmed.StartsWith "specs:" -> Spec
-    | trimmed when line.StartsWith "      " -> Dependency (trimmed.Split ' ' |> Seq.head)
+    | trimmed when line.StartsWith "      " ->
+         let parts = trimmed.Split '(' 
+         Dependency (parts.[0].Trim(),parts.[1].Replace("(", "").Replace(")", "").Trim())
     | trimmed -> Package trimmed
 
 /// Parses a Lock file from lines
@@ -97,13 +99,13 @@ let Parse(lines : string seq) : ResolvedPackage list =
                              Name = parts.[0]
                              DirectDependencies = []
                              Version = SemVer.parse version } :: packages
-        | Dependency details ->
+        | Dependency(name,version) ->
             match packages with
             | currentPackage :: otherPackages -> 
                 currentSource,
                 { currentPackage with
-                    DirectDependencies = [details]
-                                         |> List.append currentPackage.DirectDependencies } :: otherPackages
+                    DirectDependencies = [name,Latest] // TODO: parse version if we really need it 
+                    |> List.append currentPackage.DirectDependencies } :: otherPackages
             | _ -> failwith "cannot set a dependency - no package has been specified.")
     |> snd
     |> List.rev

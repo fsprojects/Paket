@@ -50,21 +50,19 @@ let Resolve(force, discovery : IDiscovery, rootDependencies:UnresolvedPackage se
 
         match current.Value with
         | Shrinked.Conflict(c1,c2) -> 
-            let resolved = { processed with ResolvedVersionMap = Map.add resolvedName (ResolvedDependency.Conflict(c1,c2)) processed.ResolvedVersionMap }
+            let resolved = Map.add resolvedName (ResolvedDependency.Conflict(c1,c2)) processed
             analyzeGraph resolved (Map.remove resolvedName openDependencies)
         | Ok dependency -> 
             let originalPackage = dependency.Referenced
            
             tracefn "  %s %s"  originalPackage.Name (originalPackage.VersionRange.ToString())
-            match Map.tryFind resolvedName processed.ResolvedVersionMap with
+            match Map.tryFind resolvedName processed with
             | Some (Resolved package') -> 
                 if not <| dependency.Referenced.VersionRange.IsInRange package'.Version then
                     let resolved =
-                        { processed with 
-                            ResolvedVersionMap =
-                                processed.ResolvedVersionMap 
-                                |> Map.remove resolvedName
-                                |> Map.add resolvedName (ResolvedDependency.ResolvedConflict(package',dependency))  }
+                        processed 
+                        |> Map.remove resolvedName
+                        |> Map.add resolvedName (ResolvedDependency.ResolvedConflict(package',dependency))
                         
                     openDependencies
                     |> Map.remove resolvedName
@@ -106,7 +104,9 @@ let Resolve(force, discovery : IDiscovery, rootDependencies:UnresolvedPackage se
                 let resolvedPackage:ResolvedPackage =
                     { Name = resolvedName
                       Version = resolvedVersion
-                      DirectDependencies = packageDetails.DirectDependencies |> List.map (fun p -> p.Name)
+                      DirectDependencies = 
+                        packageDetails.DirectDependencies 
+                        |> List.map (fun p -> p.Name,p.VersionRange)
                       Source = packageDetails.Source }
 
                 let resolvedDependency = ResolvedDependency.Resolved resolvedPackage
@@ -118,16 +118,13 @@ let Resolve(force, discovery : IDiscovery, rootDependencies:UnresolvedPackage se
                         FromPackage { Defining = { originalPackage with VersionRange = VersionRange.Exactly(resolvedVersion.ToString()) }
                                       Referenced = 
                                           { Name = dependentPackage.Name
-                                            VersionRange = dependentPackage.VersionRange
-                                            DirectDependencies = []
+                                            VersionRange = dependentPackage.VersionRange                                            
                                             ResolverStrategy = originalPackage.ResolverStrategy
                                             Sources = dependentPackage.Sources } }
                     dependencies <- addDependency dependentPackage.Name dependencies newDependency
 
-                let resolved = 
-                    { ResolvedVersionMap = Map.add resolvedName resolvedDependency processed.ResolvedVersionMap
-                      DirectDependencies = Map.add (originalPackage.Name, resolvedVersion.ToString()) packageDetails.DirectDependencies processed.DirectDependencies }
-                
+                let resolved = Map.add resolvedName resolvedDependency processed
+
                 dependencies
                 |> Map.remove resolvedName
                 |> analyzeGraph resolved
@@ -136,4 +133,4 @@ let Resolve(force, discovery : IDiscovery, rootDependencies:UnresolvedPackage se
     rootDependencies
     |> Seq.map (fun p -> p.Name, FromRoot p)
     |> Seq.fold (fun m (p, d) -> addDependency p m d) Map.empty
-    |> analyzeGraph { ResolvedVersionMap = Map.empty; DirectDependencies = Map.empty }
+    |> analyzeGraph Map.empty

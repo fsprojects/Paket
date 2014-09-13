@@ -58,7 +58,6 @@ module DependenciesFileParser =
                     let version = parts.[3]
                     lineNo, sources, { Sources = sources
                                        Name = parts.[1]
-                                       DirectDependencies = []
                                        ResolverStrategy = if version.StartsWith "!" then ResolverStrategy.Min else ResolverStrategy.Max
                                        VersionRange = parseVersionRange(version.Trim '!') } :: packages
             with
