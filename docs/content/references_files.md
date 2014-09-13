@@ -5,7 +5,7 @@ The paket.references files
 
 It acts a lot like NuGet's `packages.config` files but there are some key differences:
 
-- One does not specify the versions, these are instead sourced from the [`paket.lock`](lock_file.html) (which are in turn derived from the rules contained within the [`paket.dependencies`](Dependencies_file.html) in the course of the *initial* [`paket install`](paket_install.html) or [`paket update`](paket_update.html) commands)
+- One does not specify the versions, these are instead sourced from the [`paket.lock`](lock_file.html) (which are in turn derived from the rules contained within the [`paket.dependencies`](dependencies_file.html) in the course of the *initial* [`paket install`](paket_install.html) or [`paket update`](paket_update.html) commands)
 - Only direct dependencies should be listed (see below, [we're evaluation options for other reference modes](https://github.com/fsprojects/Paket/issues/38))
 - It's just a plain text file
 
