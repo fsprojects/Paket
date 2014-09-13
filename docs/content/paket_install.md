@@ -1,5 +1,4 @@
-paket install
-=============
+# paket install
 
 Ensures that all dependencies in your [`paket.dependencies` file](dependencies_file.html) are available to your application.
 
@@ -8,6 +7,6 @@ Ensures that all dependencies in your [`paket.dependencies` file](dependencies_f
 
 Options:
 
-  `--force`:  Forces the download and reinstallation of all packages.
+  `--force`: Forces the download and reinstallation of all packages.
 
-  `--dependencies-file`:  Use the specified file instead of `paket.dependencies`.
+  `--dependencies-file`: Use the specified file instead of [`paket.dependencies`](dependencies_file.html).
