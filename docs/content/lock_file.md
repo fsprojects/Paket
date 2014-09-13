@@ -1,16 +1,16 @@
 The paket.lock file
 ====================
 
-Consider the following [paket.dependencies](Dependencies_file.html) file:
+Consider the following [`paket.dependencies`](Dependencies_file.html) file:
 
     source "http://nuget.org/api/v2"
 
-    nuget "Castle.Windsor-log4net" "~> 3.2"
-    nuget "Rx-Main" "~> 2.0"
+    nuget "Castle.Windsor-log4net" "!~> 3.2"
+    nuget "Rx-Main" "!~> 2.0"
 
-Here we specify dependencies on the default NuGet feed's `Castle.Windsor-log4net` and `Rx-Main` packages; both these packages have dependencies on further NuGet packages. 
+Here we [specify dependencies](Dependencies_file.html) on the default NuGet feed's [`Castle.Windsor-log4net`](https://www.nuget.org/packages/Castle.Windsor-log4net/) and [`Rx-Main`](https://www.nuget.org/packages/Rx-Main/) packages; both these packages have dependencies on further NuGet packages.
 
-The `paket.lock` file records the concrete resolutions of all direct *and indirect* dependencies of your project:-
+The `paket.lock` file records the concrete dependency resolution of all direct *and indirect* dependencies of your project:
 
     [lang=textfile]
     NUGET
@@ -39,13 +39,13 @@ The `paket.lock` file records the concrete resolutions of all direct *and indire
           Rx-Core (>= 2.2.5)
           Rx-Linq (>= 2.2.5)
           Rx-PlatformServices (>= 2.2.5)
-        Rx-PlatformServices (2.3)
-          Rx-Interfaces (>= 2.2)
-          Rx-Core (>= 2.2)
+        Rx-PlatformServices (2.2.5)
+          Rx-Interfaces (>= 2.2.5)
+          Rx-Core (>= 2.2.5)
         log4net (1.2.10)
 
-If the `paket.lock` file is not present when [paket install](packet_install.htm) is requested, it will be generated. Subsequent runs of [paket install](packet_install.htm) will not reanalyze the `paket.dependencies` file or touch `paket.lock`.
+When you run [`paket install`](paket_install.html) and the `paket.lock` file is not present, it will be generated. Subsequent runs of [`paket install`](paket_install.html) will not reanalyze the `paket.dependencies` file nor touch `paket.lock`.
 
-All changes after the initial generation will be as a result of [`paket install`](packet_install.htm) or [paket update](packet_update.htm) commands.
+If you make changes to [`paket.dependencies`](Dependencies_file.html) or you want Paket to check for newer versions of the direct and indirect dependencies as specified in [`paket.dependencies`](Dependencies_file.html), run [`paket update`](paket_update.html).
 
-As a result, committing the `paket.lock` file to your version control system guarantees that other developers and/or build servers will always end up with a reliable and consistent set of packages regardless of where or when a [paket install](packet_install.htm) occurs.
+As a result, committing the `paket.lock` file to your version control system guarantees that other developers and/or build servers will always end up with a reliable and consistent set of packages regardless of where or when [`paket install`](paket_install.html) is executed.
