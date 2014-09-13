@@ -1,11 +1,11 @@
 What is Paket?
 ==============
 
-Paket is a package manager for .NET and mono projects. It's inspired by [bundler][bundler], but designed to work well with [NuGet][nuget] packages. 
-It enables precise and predictable control over what packages the projects within your application reference. More details are in the [FAQs](faq.html).
+Paket is a package manager for .NET and mono projects. It's inspired by [bundler][bundler], but designed to work well with [NuGet][nuget] packages.
+It enables precise and predictable control over what packages the projects within your application reference. More details are in the [FAQ](faq.html).
 
   [bundler]: http://bundler.io/
-  [nuget]: https://www.nuget.org/ 
+  [nuget]: https://www.nuget.org/
 
 How to get Paket
 ----------------
@@ -44,7 +44,7 @@ If the lock file already exists, it will not be regenerated.
 
 You may have a [paket.references](References_files.html) file next to your VS projects to have Paket automatically add references for the package IDs noted in that file.
 
-All of the files involved (`paket.dependencies`, `paket.lock` and `paket.references`) should be committed to your version control system. 
+All of the files involved (`paket.dependencies`, `paket.lock` and `paket.references`) should be committed to your version control system.
 
 Determine if there are package updates available:
 
@@ -61,14 +61,14 @@ The [update command](paket_update.html) will analyze your [paket.dependencies](D
 Contributing and copyright
 --------------------------
 
-The project is hosted on [GitHub][gh] where you can [report issues][issues], fork 
-the project and submit pull requests. If you're adding a new public API, please also 
+The project is hosted on [GitHub][gh] where you can [report issues][issues], fork
+the project and submit pull requests. If you're adding a new public API, please also
 consider adding [samples][content] that can be turned into documentation. You might
 also want to read [library design notes][readme] to understand how it works.
 
-The library is available under MIT license, which allows modification and 
-redistribution for both commercial and non-commercial purposes. For more information see the 
-[License file][license] in the GitHub repository. 
+The library is available under MIT license, which allows modification and
+redistribution for both commercial and non-commercial purposes. For more information see the
+[License file][license] in the GitHub repository.
 
   [content]: https://github.com/fsprojects/Paket/tree/master/docs/content
   [gh]: https://github.com/fsprojects/Paket
