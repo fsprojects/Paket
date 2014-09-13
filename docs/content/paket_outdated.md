@@ -1,5 +1,4 @@
-paket outdated
-==============
+# paket outdated
 
 Lists all dependencies that have newer versions available.
 
@@ -8,4 +7,4 @@ Lists all dependencies that have newer versions available.
 
 Options:
 
-  `--dependencies-file`:  Use the specified file instead of `paket.dependencies`.
+  `--dependencies-file`: Use the specified file instead of [`paket.dependencies`](dependencies_file.html).
