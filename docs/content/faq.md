@@ -20,6 +20,8 @@ However the Visual Studio tooling does not address this – it's up to you to re
 
 Paket adds references to all of them, but with `Condition` attributes filtering them based on the currently selected `TargetFramework` and other relevant MSBuild properties.
 
+See [`paket.references`](references_files.html) for more information.
+
 ## Why does Paket use a different package resolution strategy than NuGet?
 
 Paket tries to embrace [SemVer](http://semver.org/) while NuGet uses a pessimistic version resolution strategy. You can prefix your version constraints with `!` if you need to use [NuGet compatibility](dependencies_file.html#nuget-style-dependency-resolution).
