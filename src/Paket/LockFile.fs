@@ -104,7 +104,8 @@ let Parse(lines : string seq) : ResolvedPackage list =
             | currentPackage :: otherPackages -> 
                 currentSource,
                 { currentPackage with
-                    DirectDependencies = [name,DependenciesFileParser.parseVersionRange version] |> List.append currentPackage.DirectDependencies } :: otherPackages
+                    DirectDependencies = [name,Latest] // TODO: parse version if we really need it 
+                    |> List.append currentPackage.DirectDependencies } :: otherPackages
             | _ -> failwith "cannot set a dependency - no package has been specified.")
     |> snd
     |> List.rev
