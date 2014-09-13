@@ -8,7 +8,7 @@ type Command =
     | Install
     | Update
     | Outdated
-    | Unkown
+    | Unknown
 
 type CLIArguments =
     | [<First>][<NoAppSettings>][<CustomCommandLine("install")>] Install
@@ -38,7 +38,7 @@ let results,verbose =
             if results.Contains <@ CLIArguments.Install @> then Command.Install
             elif results.Contains <@ CLIArguments.Update @> then Command.Update
             elif results.Contains <@ CLIArguments.Outdated @> then Command.Outdated
-            else Command.Unkown
+            else Command.Unknown
         Some(command,results),results.Contains <@ CLIArguments.Verbose @>
     with
     | _ ->

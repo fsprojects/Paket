@@ -59,29 +59,33 @@ let extractReferencesFromListFile projectFile =
 let private findAllProjects(folder) = DirectoryInfo(folder).EnumerateFiles("*.*proj", SearchOption.AllDirectories)
 
 /// Installs the given packageFile.
-let Install(regenerate, force, dependenciesFile) = 
-    let lockfile = findLockfile dependenciesFile
-    
-    let cfg = DependenciesFile.ReadFromFile dependenciesFile
-    if regenerate || (not lockfile.Exists) then 
-        LockFile.Update(force, cfg, lockfile.FullName)
+let Install(regenerate, force, dependenciesFilename) = 
+    let packages, sourceFiles =
+        let lockfile = findLockfile dependenciesFilename   
+        
+        if regenerate || (not lockfile.Exists) then 
+            LockFile.Update(force, dependenciesFilename, lockfile.FullName)
+        
+        File.ReadAllLines lockfile.FullName |> LockFile.Parse
 
     let extractedPackages = 
-        ExtractPackages(force, File.ReadAllLines lockfile.FullName |> LockFile.Parse)
+        ExtractPackages(force, packages)
         |> Async.Parallel
         |> Async.RunSynchronously    
-    
-    let extractedFiles =
-        let rootPath = dependenciesFile |> Path.GetDirectoryName
-        cfg.RemoteFiles
-        |> List.map(
-            function
-            | GitHub source ->
+
+    let extractedSourceFiles =
+        let rootPath = dependenciesFilename |> Path.GetDirectoryName
+        sourceFiles
+        |> List.map(fun source ->
                 async {
-                    let! file = GitHub.downloadFile source
-                    let destination = Path.Combine(rootPath, "paket-files", source.Owner, source.Project, source.FilePath)
-                    Directory.CreateDirectory(destination |> Path.GetDirectoryName) |> ignore
-                    File.WriteAllText(destination, file)
+                    let destination = Path.Combine(rootPath, "paket-files", source.Owner, source.Project, source.CommitWithDefault, source.FilePath)
+
+                    if File.Exists destination then tracefn "%s already exists locally" (source.ToString())
+                    else
+                        tracefn "Downloading %s..." (source.ToString())
+                        let! file = GitHub.downloadFile source
+                        Directory.CreateDirectory(destination |> Path.GetDirectoryName) |> ignore
+                        File.WriteAllText(destination, file)
                     return destination })
         |> Async.Parallel
         |> Async.RunSynchronously
@@ -114,11 +118,13 @@ let Install(regenerate, force, dependenciesFile) =
 /// Finds all outdated packages.
 let FindOutdated(dependenciesFile) = 
     let lockFile = findLockfile dependenciesFile
-    
-    let newPackages = LockFile.Create(true, dependenciesFile)
-    let installed = if lockFile.Exists then LockFile.Parse(File.ReadAllLines lockFile.FullName) else []
 
-    [for p in installed do
+    //TODO: Anything we need to do for source files here?    
+    let newPackages, _ = LockFile.Create(true, dependenciesFile)
+    let installedPackages, _ =
+        if lockFile.Exists then LockFile.Parse(File.ReadAllLines lockFile.FullName) else [], []
+
+    [for p in installedPackages do
         match newPackages.ResolvedVersionMap.[p.Name] with
         | Resolved newVersion -> 
             if p.VersionRange <> newVersion.Referenced.VersionRange then 

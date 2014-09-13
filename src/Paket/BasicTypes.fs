@@ -85,7 +85,8 @@ type PackageSource =
         | _ -> failwith "unable to parse package source: %s" source
 
 // Represents details on a dependent source file.
-type SourceFileDetails =
+//TODO: As new sources e.g. fssnip etc. are added, this should probably become a DU or perhaps have an enum marker.
+type SourceFile =
     { Owner : string
       Project : string
       Path : string
@@ -94,12 +95,10 @@ type SourceFileDetails =
         this.Path
             .TrimStart('/')
             .Replace("/", "\\")
+    member this.CommitWithDefault = defaultArg this.Commit "master"
+    override this.ToString() = sprintf "(%s:%s:%s) %s" this.Owner this.Project this.CommitWithDefault this.Path
             
-// The different types of source files.
-type SourceFile = | GitHub of File : SourceFileDetails
-
-// TODO: Perhaps Source File and Package should be merged into a DU?
-
+//TODO: Perhaps Source File and Package should be merged into a DU?
 /// Represents a package.
 type Package = 
     { Name : string
@@ -107,8 +106,6 @@ type Package =
       VersionRange : VersionRange
       ResolverStrategy : ResolverStrategy
       Sources : PackageSource list }
-
-
 
 /// Represents a package dependency.
 type PackageDependency = 

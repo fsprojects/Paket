@@ -33,7 +33,7 @@ module DependenciesFileParser =
         with
         | _ -> failwithf "could not parse version range \"%s\"" text
 
-    let private (|Remote|Package|Blank|GitHubFile|) (line:string) =
+    let private (|Remote|Package|Blank|SourceFile|) (line:string) =
         match line.Trim() with
         | _ when String.IsNullOrWhiteSpace line -> Blank
         | trimmed when trimmed.StartsWith "source" -> 
@@ -49,18 +49,18 @@ module DependenciesFileParser =
                 | [| owner; project; commit |] -> owner, project, Some commit
                 | _ -> failwith "invalid github specification"
             match parts with
-            | [| _; projectSpec; fileSpec |] -> GitHubFile(getParts projectSpec, fileSpec)
+            | [| _; projectSpec; fileSpec |] -> SourceFile(getParts projectSpec, fileSpec)
             | _ -> failwith "invalid github specification"
         | _ -> Blank
     
     let parseDependenciesFile (lines:string seq) = 
         ((0,[], [], []), lines)
-        ||> Seq.fold(fun (lineNo, sources: PackageSource list, packages, remoteFiles) line ->
+        ||> Seq.fold(fun (lineNo, sources: PackageSource list, packages, sourceFiles) line ->
             let lineNo = lineNo + 1
             try
                 match line with
-                | Remote newSource -> lineNo, (PackageSource.Parse(newSource.TrimEnd([|'/'|])) :: sources), packages, remoteFiles
-                | Blank -> lineNo, sources, packages, remoteFiles
+                | Remote newSource -> lineNo, (PackageSource.Parse(newSource.TrimEnd([|'/'|])) :: sources), packages, sourceFiles
+                | Blank -> lineNo, sources, packages, sourceFiles
                 | Package details ->
                     let parts = details.Split('"')
                     if parts.Length < 4 || String.IsNullOrWhiteSpace parts.[1] || String.IsNullOrWhiteSpace parts.[3] then
@@ -70,13 +70,14 @@ module DependenciesFileParser =
                                        Name = parts.[1]
                                        DirectDependencies = []
                                        ResolverStrategy = if version.StartsWith "!" then ResolverStrategy.Min else ResolverStrategy.Max
-                                       VersionRange = parseVersionRange(version.Trim '!') } :: packages, remoteFiles
-                | GitHubFile((owner,project, commit), path) ->
-                    lineNo, sources, packages, 
-                    GitHub { Owner = owner
-                             Project = project
-                             Commit = commit
-                             Path = path } :: remoteFiles
+                                       VersionRange = parseVersionRange(version.Trim '!') } :: packages, sourceFiles
+                | SourceFile((owner,project, commit), path) ->
+                    let newSourceFile = { Owner = owner
+                                          Project = project
+                                          Commit = commit
+                                          Path = path }
+                    tracefn "  %O" newSourceFile
+                    lineNo, sources, packages, newSourceFile :: sourceFiles
                     
             with
             | exn -> failwithf "Error in paket.dependencies line %d%s  %s" lineNo Environment.NewLine exn.Message)
