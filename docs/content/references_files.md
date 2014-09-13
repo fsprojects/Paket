@@ -1,41 +1,43 @@
-The paket.references files
-==========================
+# The paket.references files
 
-`paket.references` is used to specify which dependencies are to be installed in MSBuild projects.
+`paket.references` is used to specify which dependencies are to be installed into the MSBuild projects in your repository. Paket determines the set of dependencies that are to be referenced by each MSBuild project within a directory from its `paket.references` file.
+
+A repository may contain zero or more `paket.references` files.
 
 It acts a lot like NuGet's `packages.config` files but there are some key differences:
 
-- One does not specify the versions, these are instead sourced from the [`paket.lock`](lock_file.html) (which are in turn derived from the rules contained within the [`paket.dependencies`](dependencies_file.html) in the course of the *initial* [`paket install`](paket_install.html) or [`paket update`](paket_update.html) commands)
-- Only direct dependencies should be listed (see below, [we're evaluation options for other reference modes](https://github.com/fsprojects/Paket/issues/38))
+- One does not specify package versions these are instead sourced from the [`paket.lock` file](lock_file.html) (which are in turn derived from the rules contained within the [`paket.dependencies` file](dependencies_file.html) in the course of the *initial* [`paket install`](paket_install.html) or subsequent [`paket update`](paket_update.html) commands)
+- Only direct dependencies should be listed (see below, [we're currently evaluating options for other reference modes](https://github.com/fsprojects/Paket/issues/38))
 - It's just a plain text file
+- It's optional
+
+## Location
+
+Paket looks for `paket.references` files underneath the folder where [`packet.dependencies`](dependencies_file.html) is located.
 
 ## Layout
 
-Paket expects a list of dependencies that need to be referenced by your projects inside the `paket.references` file:
+The file whitelists any dependencies from the [`paket.lock`](lock_file.html) set that are to be referenced within the projects alongside it in a given directory:
 
     Newtonsoft.Json
     UnionArgParser
     DotNetZip
     RestSharp
 
-The dependencies listed are cross-checked against [`paket.lock`](lock_file.html).
+For each MSBuild project alongside a `paket.references`, [`paket install`](paket_install.html) and [`paket update`](paket_update.html) will add references to the dependencies listed in `paket.references` *and all their indirect dependencies*.
 
-If you place `paket.references` next to MSBuild projects then [`paket install`](paket_install.html) and [`paket update`](paket_update.html) will add references to the dependencies listed in `paket.references` *and all their indirect dependencies*.
-
-The MSBuild references added are conditional depending on the libraries and content contained in the dependency. This means you can change the target version of the MSBuild project without reinstalling dependencies.
-
-Having `paket.references` is not required. It may also be empty (then, no references are added).
+The references injected into the MSBuild project represent the complete set of rules specified within the package for each `lib` and `Content` item; each reference is `Conditon`al on an MSBuild expression predicated on the project's active framework etc. This allows you to change the target version of the MSBuild project (either within Visual Studio or e.g. as part of a multi-pass build) without reinstalling dependencies or incurring an impenetrable set of diffs.
 
 ## File name conventions
 
-When Paket finds `paket.references` in a folder, the dependencies it specifies will be added to all MSBuild projects in that folder.
+If Paket finds `paket.references` in a folder, the dependencies it specifies will be added to all MSBuild projects in that folder.
 
-If you have multiple MSBuild projects in a folder that require a different set of references, you have two options:
+If you have multiple MSBuild projects in a folder that require a non-homogenous set of references, you have two options:
 
-- Have a global `paket.references` file for all projects except the ones that need special care. These special-care projects will have a `<MSBuild project>.paket.references` file
-- Have a project-specific `<MSBuild project>.paket.references` file for all projects
+- Have a shared `paket.references` file that acts as a default for all except ones that require special treatment. For each special-case project, add a `<MSBuild project>.paket.references` file
+- Add a project-specific `<MSBuild project>.paket.references` file for each and every project that requires any references
 
-Please note that Paket does not merge global and project-specific references.
+Please note that Paket does not merge the directory's shared reference list with the project-specific references. If a specific reference list is present, it overrides the default (even if that file is empty, in which case it prevents anything being added to its sibling project file).
 
 ### Global paket.references
 
@@ -66,7 +68,7 @@ In this example,
 
 In this example,
 
-- the dependencies specified in `/src/paket.references` will be added to `/src/Example.csproj` and `/src/Example.fssproj`
+- the dependencies specified in `/src/paket.references` will be added to `/src/Example.csproj` and `/src/Example.fsproj`
 - the dependencies specified in `/src/Example.vbproj.paket.references` will be added to `/src/Example.vbproj`
 - Paket does not merge the dependencies of `/src/paket.references` and `/src/Example.vbproj.paket.references`
 
