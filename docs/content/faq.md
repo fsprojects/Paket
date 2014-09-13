@@ -1,22 +1,24 @@
-# FAQ - Frequently Asked Questions
+# FAQ — Frequently Asked Questions
 
 ## I don't understand why I need Paket to manage my packages. Why can't I just use NuGet?
 
-NuGet does not separate out the concept of indirect dependencies; if you install a package into your project and that package has further dependencies then all indirect packages are included in the `packages.config` file. There is no way to tell which packages are only indirect dependencies.
+NuGet does not separate out the concept of indirect dependencies; if you install a package into your project and that package has further dependencies then all indirect packages are included in the `packages.config`. There is no way to tell which packages are only indirect dependencies.
 
 Even more importantly: If two packages reference conflicting versions of a package, NuGet will silently take the latest version. You have no control over this process.
 
-Paket on the other hand maintains this information on a consistent and stable basis within the [paket.lock](lock_file.html) in the solution root. This file, together with the [paket.dependencies](Dependencies_file.html) file enables you to determine exactly what's happening with your dependencies.
+Paket on the other hand maintains this information on a consistent and stable basis within the [`paket.lock` file](lock_file.html) in the solution root. This file, together with the [`paket.dependencies` file](dependencies_file.html)  enables you to determine exactly what's happening with your dependencies.
 
-The [paket outdated](paket_outdated.html) command lists packages that have new versions available.
+The [`paket outdated` command](paket_outdated.html) lists packages that have new versions available.
 
 Future versions of Paket will also enable one to [reference files directly from git repositories](https://github.com/fsprojects/Paket/issues/9).
 
 ## Why does Paket add references to the libraries associated with each supported framework version within a NuGet package to my projects?
 
-A NuGet package installation adds references only for the currently selected target .NET framework version of your project. Whenever you want to change the framework version you have to reinstall your NuGet packages, assuming you notice the problem.
+A NuGet package installation adds references only for the currently selected target .NET framework version of your project at the time of installation. Whenever you switch the framework version of your project, there's a potential need to reinstall all of the packages.
 
-Paket adds references to all of them, but with `Condition` attributes filtering them based on the currently selected `TargetFramework` and some other MSBuild properties.
+However the Visual Studio tooling does not address this – it's up to you to remember to reinstall. In the best case, this leads to compiler errors about missing methods/types etc. In the worst case, it's a variance that's either deeply buried within the code (meaning it might be difficult to trap in a test cycle) or a more difficult to detect 'silent' problem.
+
+Paket adds references to all of them, but with `Condition` attributes filtering them based on the currently selected `TargetFramework` and other relevant MSBuild properties.
 
 ## Why does Paket use a different package resolution strategy than NuGet?
 
@@ -28,7 +30,7 @@ Paket uses the NuGet OData API to discover package dependencies. Unfortunately t
 
 Some good news is that [the NuGet team is currently developing a faster API](http://blog.nuget.org/20140711/nuget-architecture.html). Paket may be able to take advantage of that in the future.
 
-Once the [paket.lock](lock_file.html) is written, Paket won't use the OData API anymore and therefore package restore is very fast.
+Once the [`paket.lock` file](lock_file.html) is written, Paket no longer needs to use the OData API any futher; as a result, [`paket install`](paket_install.html) is very fast.
 
 ## Can I use Paket to manage npm/bower/whatever dependencies?
 
