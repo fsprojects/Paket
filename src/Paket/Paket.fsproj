@@ -70,7 +70,7 @@
     <Compile Include="SemVer.fs" />
     <Compile Include="BasicTypes.fs" />
     <Compile Include="Utils.fs" />
-    <Compile Include="Resolver.fs" />
+    <Compile Include="PackageResolver.fs" />
     <Compile Include="FrameworkHandling.fs" />
     <Compile Include="ProjectFile.fs" />
     <Compile Include="GitHub.fs" />

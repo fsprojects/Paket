@@ -107,8 +107,6 @@ let FindOutdated(dependenciesFile) =
         if lockFile.Exists then LockFile.Parse(File.ReadAllLines lockFile.FullName) else [], []
 
     [for p in installedPackages do
-        match newPackages.ResolvedVersionMap.[p.Name] with
-    [for p in installed do
         match newPackages.[p.Name] with
         | Resolved newVersion -> 
             if p.Version <> newVersion.Version then 

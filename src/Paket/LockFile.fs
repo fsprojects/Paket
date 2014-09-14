@@ -91,7 +91,7 @@ let serializeSourceFiles (files:SourceFile list) =
 type private ParseState =
     { RepositoryType : string option
       Remote : string option
-      Packages : Package list
+      Packages : ResolvedPackage list
       SourceFiles : SourceFile list }
 
 let private (|Remote|NugetPackage|NugetDependency|SourceFile|Spec|RepositoryType|Blank|) (state, line:string) =
@@ -101,7 +101,9 @@ let private (|Remote|NugetPackage|NugetDependency|SourceFile|Spec|RepositoryType
     | _, _ when String.IsNullOrWhiteSpace line -> Blank
     | _, trimmed when trimmed.StartsWith "remote:" -> Remote (trimmed.Substring(trimmed.IndexOf(": ") + 2))
     | _, trimmed when trimmed.StartsWith "specs:" -> Spec
-    | _, trimmed when line.StartsWith "      " -> NugetDependency (trimmed.Split ' ' |> Seq.head)
+    | _, trimmed when line.StartsWith "      " ->
+        let parts = trimmed.Split '(' 
+        NugetDependency (parts.[0].Trim(),parts.[1].Replace("(", "").Replace(")", "").Trim())
     | Some "NUGET", trimmed -> NugetPackage trimmed
     | Some "GITHUB", trimmed -> SourceFile trimmed
     | Some _, _ -> failwith "unknown Repository Type."
@@ -122,18 +124,17 @@ let Parse(lines : string seq) =
             | Some remote ->
                 let parts = details.Split ' '
                 let version = parts.[1] |> removeBrackets
-                { state with Packages = { Sources = [PackageSource.Parse remote]
+                { state with Packages = { Source = PackageSource.Parse remote
                                           Name = parts.[0]
                                           DirectDependencies = []
-                                          ResolverStrategy = Max
-                                          VersionRange = VersionRange.Exactly version } :: state.Packages }
+                                          Version = SemVer.parse version } :: state.Packages }
             | None -> failwith "no source has been specified."
-        | NugetDependency details ->
+        | NugetDependency (name, version) ->
             match state.Packages with
             | currentPackage :: otherPackages -> 
                 { state with
                     Packages = { currentPackage with
-                                    DirectDependencies = [details] |> List.append currentPackage.DirectDependencies
+                                    DirectDependencies = [name, Latest] |> List.append currentPackage.DirectDependencies
                                 } :: otherPackages }
             | [] -> failwith "cannot set a dependency - no package has been specified."
         | SourceFile details ->
@@ -151,41 +152,6 @@ let Parse(lines : string seq) =
             | _ -> failwith "invalid remote details."
         )
     |> fun state -> List.rev state.Packages, List.rev state.SourceFiles
-let private (|Remote|Package|Dependency|Spec|Header|Blank|) (line:string) =
-    match line.Trim() with
-    | "NUGET" -> Header
-    | _ when String.IsNullOrWhiteSpace line -> Blank
-    | trimmed when trimmed.StartsWith "remote:" -> Remote (trimmed.Substring(trimmed.IndexOf(": ") + 2))
-    | trimmed when trimmed.StartsWith "specs:" -> Spec
-    | trimmed when line.StartsWith "      " ->
-         let parts = trimmed.Split '(' 
-         Dependency (parts.[0].Trim(),parts.[1].Replace("(", "").Replace(")", "").Trim())
-    | trimmed -> Package trimmed
-
-/// Parses a Lock file from lines
-let Parse(lines : string seq) : ResolvedPackage list =
-    (("http://nuget.org/api/v2", []), lines)
-    ||> Seq.fold(fun (currentSource, packages) line ->
-        match line with
-        | Remote newSource -> newSource, packages
-        | Header | Spec | Blank -> (currentSource, packages)
-        | Package details ->
-            let parts = details.Split(' ')
-            let version = parts.[1].Replace("(", "").Replace(")", "")
-            currentSource, { Source = PackageSource.Parse currentSource
-                             Name = parts.[0]
-                             DirectDependencies = []
-                             Version = SemVer.parse version } :: packages
-        | Dependency(name,version) ->
-            match packages with
-            | currentPackage :: otherPackages -> 
-                currentSource,
-                { currentPackage with
-                    DirectDependencies = [name,Latest] // TODO: parse version if we really need it 
-                    |> List.append currentPackage.DirectDependencies } :: otherPackages
-            | _ -> failwith "cannot set a dependency - no package has been specified.")
-    |> snd
-    |> List.rev
 
 /// Analyzes the dependencies from the Dependencies file.
 let Create(force, dependenciesFilename) =     

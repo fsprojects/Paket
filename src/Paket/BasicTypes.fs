@@ -98,10 +98,6 @@ type SourceFile =
     member this.CommitWithDefault = defaultArg this.Commit "master"
     override this.ToString() = sprintf "(%s:%s:%s) %s" this.Owner this.Project this.CommitWithDefault this.Path
             
-//TODO: Perhaps Source File and Package should be merged into a DU?
-/// Represents a package.
-type Package = 
-
 /// Represents an unresolved package.
 type UnresolvedPackage =
     { Name : string
