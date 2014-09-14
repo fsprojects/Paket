@@ -61,14 +61,23 @@ type ProjectFile =
             
         !hasCustom
 
-    member this.DeleteReferencesNodes(deleteOnlyPaketNodes) =    
+    member this.DeletePaketNodes() =    
         let nodesToDelete = List<_>()
         for node in this.Document.SelectNodes("//ns:Reference", this.Namespaces) do
-            let remove = ref (not deleteOnlyPaketNodes)
+            let remove = ref false
             for child in node.ChildNodes do
                 if child.Name = "Paket" then remove := true
             
             if !remove then
+                nodesToDelete.Add node
+
+        for node in nodesToDelete do
+            node.ParentNode.RemoveChild(node) |> ignore
+
+    member this.DeleteCustomNodes(dllName) =    
+        let nodesToDelete = List<_>()
+        for node in this.Document.SelectNodes("//ns:Reference", this.Namespaces) do
+            if node.Attributes.["Include"].InnerText.Split(',').[0] = dllName then            
                 nodesToDelete.Add node
 
         for node in nodesToDelete do
@@ -107,9 +116,11 @@ type ProjectFile =
         match [ for node in this.Document.SelectNodes("//ns:Project", this.Namespaces) -> node ] with
         | [] -> ()
         | projectNode :: _ -> 
-            this.DeleteReferencesNodes(not hard)
+            this.DeletePaketNodes()
             let installInfos = InstallRules.groupDLLs usedPackages extracted
             for dllName, libsWithSameName in installInfos do
+                if hard then
+                    this.DeleteCustomNodes(dllName)
                 if this.HasCustomNodes(dllName) then ()
                 else 
                     let lastLib = ref None
