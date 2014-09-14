@@ -16,7 +16,7 @@ type CLIArguments =
     | [<First>][<NoAppSettings>][<CustomCommandLine("update")>] Update
     | [<First>][<NoAppSettings>][<CustomCommandLine("outdated")>] Outdated
     | [<AltCommandLine("-v")>] Verbose
-    | dependencies_file of string
+    | Dependencies_file of string
     | [<AltCommandLine("-f")>] Force
     | Hard
 with
@@ -27,7 +27,7 @@ with
             | Update -> "updates the packet.lock ile and installs all packages."
             | Outdated -> "displays information about new packages."
             | Verbose -> "displays verbose output."
-            | dependencies_file _ -> "specify a file containing dependency definitions."
+            | Dependencies_file _ -> "specify a file containing dependency definitions."
             | Force -> "forces the download of all packages."
             | Hard -> "overwrites manual package references."
 
@@ -52,7 +52,7 @@ try
     match results with
     | Some(command,results) ->
         let dependenciesFile = 
-            match results.TryGetResult <@ CLIArguments.dependencies_file @> with
+            match results.TryGetResult <@ CLIArguments.Dependencies_file @> with
             | Some x -> x
             | _ -> "paket.dependencies"
 
