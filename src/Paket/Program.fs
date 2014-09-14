@@ -16,18 +16,20 @@ type CLIArguments =
     | [<First>][<NoAppSettings>][<CustomCommandLine("update")>] Update
     | [<First>][<NoAppSettings>][<CustomCommandLine("outdated")>] Outdated
     | [<AltCommandLine("-v")>] Verbose
-    | Dependencies_File of string
+    | dependencies_file of string
     | [<AltCommandLine("-f")>] Force
+    | Hard
 with
     interface IArgParserTemplate with
         member s.Usage =
             match s with
             | Install -> "installs all packages."
-            | Update -> "updates the Lock File and installs all packages."
+            | Update -> "updates the packet.lock ile and installs all packages."
             | Outdated -> "displays information about new packages."
             | Verbose -> "displays verbose output."
-            | Dependencies_File _ -> "specify a file containing dependency definitions."
-            | Force -> "specify a dependency definition."
+            | dependencies_file _ -> "specify a file containing dependency definitions."
+            | Force -> "forces the download of all packages."
+            | Hard -> "overwrites manual package references."
 
 
 let parser = UnionArgParser.Create<CLIArguments>("USAGE: paket [install|update|outdated] ... options")
@@ -50,7 +52,7 @@ try
     match results with
     | Some(command,results) ->
         let dependenciesFile = 
-            match results.TryGetResult <@ CLIArguments.Dependencies_File @> with
+            match results.TryGetResult <@ CLIArguments.dependencies_file @> with
             | Some x -> x
             | _ -> "paket.dependencies"
 
@@ -59,9 +61,14 @@ try
             | Some _ -> true
             | None -> false
 
+        let hard = 
+            match results.TryGetResult <@ CLIArguments.Hard @> with
+            | Some _ -> true
+            | None -> false
+
         match command with
-        | Command.Install -> Process.Install(false,force,dependenciesFile)
-        | Command.Update -> Process.Install(true,force,dependenciesFile)
+        | Command.Install -> Process.Install(false,force,hard,dependenciesFile)
+        | Command.Update -> Process.Install(true,force,hard,dependenciesFile)
         | Command.Outdated -> Process.ListOutdated(dependenciesFile)
         | _ -> failwithf "no command given.%s" (parser.Usage())
         

@@ -41,7 +41,7 @@ let extractReferencesFromListFile projectFile =
 let private findAllProjects(folder) = DirectoryInfo(folder).EnumerateFiles("*.*proj", SearchOption.AllDirectories)
 
 /// Installs the given packageFile.
-let Install(regenerate, force, dependenciesFile) = 
+let Install(regenerate, force, hard, dependenciesFile) = 
     let lockfile = findLockfile dependenciesFile
      
     if regenerate || (not lockfile.Exists) then 
@@ -73,7 +73,7 @@ let Install(regenerate, force, dependenciesFile) =
         directPackages
         |> Array.iter addPackage
         
-        project.UpdateReferences(extracted,usedPackages)
+        project.UpdateReferences(extracted,usedPackages,hard)
 
 
 /// Finds all outdated packages.

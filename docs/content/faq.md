@@ -6,11 +6,15 @@ NuGet does not separate out the concept of indirect dependencies; if you install
 
 Even more importantly: If two packages reference conflicting versions of a package, NuGet will silently take the latest version. You have no control over this process.
 
-Paket on the other hand maintains this information on a consistent and stable basis within the [`paket.lock` file](lock_file.html) in the solution root. This file, together with the [`paket.dependencies` file](dependencies_file.html)  enables you to determine exactly what's happening with your dependencies.
+Paket on the other hand maintains this information on a consistent and stable basis within the [`paket.lock` file](lock_file.html) in the solution root. This file, together with the [`paket.dependencies` file](dependencies_file.html) enables you to determine exactly what's happening with your dependencies.
 
 The [`paket outdated` command](paket_outdated.html) lists packages that have new versions available.
 
 Future versions of Paket will also enable one to [reference files directly from git repositories](https://github.com/fsprojects/Paket/issues/9).
+
+## I'm already using NuGet. How can I convert to Paket?
+
+The process is very easy and you can read more about it in the [convert from NuGet](convert_from_nuget.html) section.
 
 ## Why does Paket add references to the libraries associated with each supported framework version within a NuGet package to my projects?
 

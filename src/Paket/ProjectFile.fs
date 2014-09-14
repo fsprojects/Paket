@@ -61,10 +61,10 @@ type ProjectFile =
             
         !hasCustom
 
-    member this.DeletePaketNodes() =    
+    member this.DeleteReferencesNodes(deleteOnlyPaketNodes) =    
         let nodesToDelete = List<_>()
         for node in this.Document.SelectNodes("//ns:Reference", this.Namespaces) do
-            let remove = ref false
+            let remove = ref (not deleteOnlyPaketNodes)
             for child in node.ChildNodes do
                 if child.Name = "Paket" then remove := true
             
@@ -103,11 +103,11 @@ type ProjectFile =
         this.DeleteIfEmpty("//ns:Project/ns:Choose/ns:When")
         this.DeleteIfEmpty("//ns:Project/ns:Choose")
 
-    member this.UpdateReferences(extracted, usedPackages : HashSet<string>) = 
+    member this.UpdateReferences(extracted, usedPackages : HashSet<string>, hard) = 
         match [ for node in this.Document.SelectNodes("//ns:Project", this.Namespaces) -> node ] with
         | [] -> ()
         | projectNode :: _ -> 
-            this.DeletePaketNodes()
+            this.DeleteReferencesNodes(not hard)
             let installInfos = InstallRules.groupDLLs usedPackages extracted
             for dllName, libsWithSameName in installInfos do
                 if this.HasCustomNodes(dllName) then ()

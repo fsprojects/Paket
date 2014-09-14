@@ -21,6 +21,8 @@ It enables precise and predictable control over what packages the projects withi
   <div class="span1"></div>
 </div>
 
+If you are already using NuGet for package restore in your solution then you can learn about the upgrade process in the [convert from NuGet](convert_from_nuget.html) section.
+
 [![NuGet Status](http://img.shields.io/nuget/v/Paket.svg?style=flat)](https://www.nuget.org/packages/Paket/)
 
 ## Getting Started
