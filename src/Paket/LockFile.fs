@@ -47,7 +47,7 @@ let extractErrors (resolved : PackageResolution) =
 
 
 /// [omit]
-let format (resolved : PackageResolution) = 
+let serializePackages (resolved : PackageResolution) = 
     let sources = 
         resolved
         |> Seq.map (fun x ->
@@ -74,6 +74,83 @@ let format (resolved : PackageResolution) =
     
     String.Join(Environment.NewLine, all)
 
+let serializeSourceFiles (files:SourceFile list) =
+    seq {
+        yield "GITHUB"
+        for (owner,project), files in files |> Seq.groupBy(fun f -> f.Owner,f.Project) do
+            yield sprintf "  remote: %s/%s" owner project
+            yield "  specs:"
+            for file in files do
+                let path = file.Path.TrimStart '/'
+                match file.Commit with
+                | Some commit -> yield sprintf "    %s (%s)" path commit
+                | None -> yield sprintf "    %s" path
+    }
+    |> fun all -> String.Join(Environment.NewLine, all)
+
+type private ParseState =
+    { RepositoryType : string option
+      Remote : string option
+      Packages : Package list
+      SourceFiles : SourceFile list }
+
+let private (|Remote|NugetPackage|NugetDependency|SourceFile|Spec|RepositoryType|Blank|) (state, line:string) =
+    match (state.RepositoryType, line.Trim()) with
+    | _, "NUGET" -> RepositoryType "NUGET"
+    | _, "GITHUB" -> RepositoryType "GITHUB"
+    | _, _ when String.IsNullOrWhiteSpace line -> Blank
+    | _, trimmed when trimmed.StartsWith "remote:" -> Remote (trimmed.Substring(trimmed.IndexOf(": ") + 2))
+    | _, trimmed when trimmed.StartsWith "specs:" -> Spec
+    | _, trimmed when line.StartsWith "      " -> NugetDependency (trimmed.Split ' ' |> Seq.head)
+    | Some "NUGET", trimmed -> NugetPackage trimmed
+    | Some "GITHUB", trimmed -> SourceFile trimmed
+    | Some _, _ -> failwith "unknown Repository Type."
+    | _ -> failwith "unknown lock file format."
+
+/// Parses a Lock file from lines
+let Parse(lines : string seq) =
+    let remove textToRemove (source:string) = source.Replace(textToRemove, "")
+    let removeBrackets = remove "(" >> remove ")"
+    ({ RepositoryType = None; Remote = None; Packages = []; SourceFiles = [] }, lines)
+    ||> Seq.fold(fun state line ->
+        match (state, line) with
+        | Remote remoteSource -> { state with Remote = Some remoteSource }
+        | Spec | Blank -> state
+        | RepositoryType repoType -> { state with RepositoryType = Some repoType }
+        | NugetPackage details ->
+            match state.Remote with
+            | Some remote ->
+                let parts = details.Split ' '
+                let version = parts.[1] |> removeBrackets
+                { state with Packages = { Sources = [PackageSource.Parse remote]
+                                          Name = parts.[0]
+                                          DirectDependencies = []
+                                          ResolverStrategy = Max
+                                          VersionRange = VersionRange.Exactly version } :: state.Packages }
+            | None -> failwith "no source has been specified."
+        | NugetDependency details ->
+            match state.Packages with
+            | currentPackage :: otherPackages -> 
+                { state with
+                    Packages = { currentPackage with
+                                    DirectDependencies = [details] |> List.append currentPackage.DirectDependencies
+                                } :: otherPackages }
+            | [] -> failwith "cannot set a dependency - no package has been specified."
+        | SourceFile details ->
+            match state.Remote |> Option.map(fun s -> s.Split '/') with
+            | Some [| owner; project |] ->
+                let path, commit = match details.Split ' ' with
+                                   | [| filePath; commit |] -> filePath, Some (commit |> removeBrackets)
+                                   | [| filePath |] -> filePath, None
+                                   | _ -> failwith "invalid file source details."
+                { state with
+                    SourceFiles = { Commit = commit
+                                    Owner = owner
+                                    Project = project
+                                    Path = path } :: state.SourceFiles }
+            | _ -> failwith "invalid remote details."
+        )
+    |> fun state -> List.rev state.Packages, List.rev state.SourceFiles
 let private (|Remote|Package|Dependency|Spec|Header|Blank|) (line:string) =
     match line.Trim() with
     | "NUGET" -> Header
@@ -111,17 +188,18 @@ let Parse(lines : string seq) : ResolvedPackage list =
     |> List.rev
 
 /// Analyzes the dependencies from the Dependencies file.
-let Create(force,dependenciesFile) =     
-    let cfg = DependenciesFile.ReadFromFile dependenciesFile
-    tracefn "Analyzing %s" dependenciesFile
-    cfg.Resolve(force,Nuget.NugetDiscovery)
+let Create(force, dependenciesFilename) =     
+    tracefn "Parsing %s" dependenciesFilename
+    let dependenciesFile = DependenciesFile.ReadFromFile dependenciesFilename
+    dependenciesFile.Resolve(force, Nuget.NugetDiscovery), dependenciesFile.RemoteFiles
 
 /// Updates the Lock file with the analyzed dependencies from the Dependencies file.
-let Update(force, packageFile, lockFile) = 
-    let resolution = Create(force,packageFile)
-    let errors = extractErrors resolution
+let Update(force, dependenciesFilename, lockFile) = 
+    let packageResolution, remoteFiles = Create(force, dependenciesFilename)
+    let errors = extractErrors packageResolution
     if errors = "" then
-        File.WriteAllText(lockFile, format resolution)
+        let output = String.Join(Environment.NewLine, serializePackages (packageResolution), serializeSourceFiles remoteFiles)
+        File.WriteAllText(lockFile, output)
         tracefn "Locked version resolutions written to %s" lockFile
     else
         failwith <| "Could not resolve dependencies." + Environment.NewLine + errors

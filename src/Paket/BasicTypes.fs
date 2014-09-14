@@ -84,6 +84,23 @@ type PackageSource =
         | true, uri -> if uri.Scheme = System.Uri.UriSchemeFile then LocalNuget(source) else Nuget(source)
         | _ -> failwith "unable to parse package source: %s" source
 
+// Represents details on a dependent source file.
+//TODO: As new sources e.g. fssnip etc. are added, this should probably become a DU or perhaps have an enum marker.
+type SourceFile =
+    { Owner : string
+      Project : string
+      Path : string
+      Commit : string option }
+    member this.FilePath =
+        this.Path
+            .TrimStart('/')
+            .Replace("/", "\\")
+    member this.CommitWithDefault = defaultArg this.Commit "master"
+    override this.ToString() = sprintf "(%s:%s:%s) %s" this.Owner this.Project this.CommitWithDefault this.Path
+            
+//TODO: Perhaps Source File and Package should be merged into a DU?
+/// Represents a package.
+type Package = 
 
 /// Represents an unresolved package.
 type UnresolvedPackage =

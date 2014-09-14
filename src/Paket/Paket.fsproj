@@ -25,9 +25,11 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <WarningLevel>3</WarningLevel>
     <DocumentationFile>..\..\bin\Paket.xml</DocumentationFile>
-    <StartArguments>update</StartArguments>
+    <StartArguments>install --dependencies-file "C:\Users\Isaac\Source\Repos\Paket\tests\ManualCSTest\paket.dependencies"</StartArguments>
     <StartAction>Project</StartAction>
     <StartProgram>paket.exe</StartProgram>
+    <StartWorkingDirectory>
+    </StartWorkingDirectory>
     <StartWorkingDirectory>c:\code\paket</StartWorkingDirectory>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
@@ -71,6 +73,7 @@
     <Compile Include="Resolver.fs" />
     <Compile Include="FrameworkHandling.fs" />
     <Compile Include="ProjectFile.fs" />
+    <Compile Include="GitHub.fs" />
     <Compile Include="Nuget.fs" />
     <Compile Include="DependenciesFile.fs" />
     <Compile Include="LockFile.fs" />
