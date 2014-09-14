@@ -118,3 +118,19 @@ let ``should report errors if nuget is single``() =
         exn.Message.Contains("line 1") |> shouldEqual true
         exn.Message.Contains("could not parse version range") |> shouldEqual true
         exn.Message.Contains("> 0") |> shouldEqual true
+
+[<Test>]
+let ``should read source file from config``() =
+    let config = """github "fsharp:FAKE" "src/app/FAKE/Cli.fs"
+                    github "fsharp:FAKE:bla123zxc" "src/app/FAKE/FileWithCommit.fs" """
+    let dependencies = DependenciesFile.FromCode config
+    dependencies.RemoteFiles
+    |> shouldEqual
+        [ { Owner = "fsharp"
+            Project = "FAKE"
+            Path = "src/app/FAKE/Cli.fs"
+            Commit = None }
+          { Owner = "fsharp"
+            Project = "FAKE"
+            Path = "src/app/FAKE/FileWithCommit.fs"
+            Commit = Some "bla123zxc" } ]

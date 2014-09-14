@@ -77,7 +77,7 @@ let serializePackages (resolved : PackageResolution) =
 let serializeSourceFiles (files:SourceFile list) =
     seq {
         yield "GITHUB"
-        for (owner,project), files in files |> Seq.groupBy(fun f -> f.Owner,f.Project) do
+        for (owner,project), files in files |> Seq.groupBy(fun f -> f.Owner, f.Project) do
             yield sprintf "  remote: %s/%s" owner project
             yield "  specs:"
             for file in files do

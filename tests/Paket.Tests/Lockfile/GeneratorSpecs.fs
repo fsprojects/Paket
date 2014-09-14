@@ -9,8 +9,7 @@ let config1 = """
 source "http://nuget.org/api/v2"
 
 nuget "Castle.Windsor-log4net" "~> 3.2"
-nuget "Rx-Main" "~> 2.0"
-"""
+nuget "Rx-Main" "~> 2.0" """
 
 let graph = [
     "Castle.Windsor-log4net","3.2",[]
@@ -41,8 +40,25 @@ let expected = """NUGET
       log (>= 1.0)"""
 
 [<Test>]
-let ``should generate lock file``() = 
+let ``should generate lock file for packages``() = 
     let cfg = DependenciesFile.FromCode config1
     cfg.Resolve(true, DictionaryDiscovery graph)
     |> LockFile.serializePackages
     |> shouldEqual (normalizeLineEndings expected)
+
+[<Test>]
+let ``should generate lock file for source files``() = 
+    let cfg = """github "owner:project1" "folder/file.fs"
+github "owner:project1:commit1" "folder/file1.fs"
+github "owner:project2:commit2" "folder/file.fs" """ |> DependenciesFile.FromCode
+    
+    cfg.RemoteFiles
+    |> LockFile.serializeSourceFiles
+    |> shouldEqual """GITHUB
+  remote: owner/project1
+  specs:
+    folder/file.fs
+    folder/file1.fs (commit1)
+  remote: owner/project2
+  specs:
+    folder/file.fs (commit2)"""
