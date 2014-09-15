@@ -30,6 +30,12 @@ See [`paket.references`](references_files.html) for more information.
 
 Paket tries to embrace [SemVer](http://semver.org/) while NuGet uses a pessimistic version resolution strategy. You can prefix your version constraints with `!` if you need to use [NuGet compatibility](dependencies_file.html#nuget-style-dependency-resolution).
 
+## Does Paket run install.ps1 scripts?
+
+No we don't run any scripts from NuGet packages and we have no plans to do this in the future.
+We know that this might cause you some manual work for some of the currently available NuGet packages, but we think these install scripts cause more harm than good.
+Instead we encourage everybody to use a declarative install process.  
+
 ## When I resolve the dependencies from NuGet.org it is really slow. Why is that?
 
 Paket uses the NuGet OData API to discover package dependencies. Unfortunately this API is very slow.
