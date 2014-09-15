@@ -18,12 +18,13 @@ module private InstallRules =
               if usedPackages.Contains package.Name then 
                   let libraries = libraries |> Seq.toArray
                   for (lib : FileInfo) in libraries do
-                      let conditions = FrameworkIdentifier.DetectFromPath lib.FullName
-                      for condition in conditions do
+                      match FrameworkIdentifier.DetectFromPath lib.FullName with
+                      | None -> ()
+                      | Some condition ->
                           yield { DllName = lib.Name.Replace(lib.Extension, "")
                                   Path = lib.FullName
                                   Condition = condition } ]
-        |> Seq.groupBy (fun info -> info.DllName, info.Condition.GetGroupCondition())
+        |> Seq.groupBy (fun info -> info.DllName, info.Condition.GetFrameworkIdentifier())
         |> Seq.groupBy (fun ((name, _), _) -> name)
 
     let handlePath root (libs:InstallInfo list) =
@@ -138,7 +139,7 @@ type ProjectFile =
                         match !lastLib with
                         | None -> ()
                         | Some lib -> 
-                            chooseNode.AppendChild(this.CreateWhenNode(lib, lib.Condition.GetGroupCondition())) 
+                            chooseNode.AppendChild(this.CreateWhenNode(lib, lib.Condition.GetFrameworkIdentifier())) 
                             |> ignore
                         projectNode.AppendChild(chooseNode) |> ignore
             this.DeleteEmptyReferences()
