@@ -36,11 +36,13 @@
 
 <p>Ensures that all dependencies in your <a href="dependencies_file.html"><code>paket.dependencies</code> file</a> are available to your application.</p>
 
-<table class="pre"><tr><td><pre lang="batchfile">$ paket install [--force] [--dependencies-file=FILE]</pre></td></tr></table>
+<table class="pre"><tr><td><pre lang="batchfile">$ paket install [--force] [--hard] [--dependencies-file=FILE]</pre></td></tr></table>
 
 <p>Options:</p>
 
 <p><code>--force</code>: Forces the download and reinstallation of all packages.</p>
+
+<p><code>--hard</code>: Replaces the package references from the project files even if they are not installed by Paket. See <a href="convert_from_nuget.html">convert from NuGet</a>.</p>
 
 <p><code>--dependencies-file</code>: Use the specified file instead of <a href="dependencies_file.html"><code>paket.dependencies</code></a>.</p>
 
@@ -63,6 +65,7 @@
             <li><a href="/Paket/dependencies_file.html">paket.dependencies</a></li>
             <li><a href="/Paket/lock_file.html">paket.lock</a></li>
             <li><a href="/Paket/references_files.html">paket.references</a></li>
+            <li><a href="/Paket/convert_from_nuget.html">Convert from NuGet</a></li>
             <li><a href="/Paket/reference/index.html">API Reference</a></li>
 
             <li class="nav-header">Paket commands</li>

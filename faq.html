@@ -40,11 +40,15 @@
 
 <p>Even more importantly: If two packages reference conflicting versions of a package, NuGet will silently take the latest version. You have no control over this process.</p>
 
-<p>Paket on the other hand maintains this information on a consistent and stable basis within the <a href="lock_file.html"><code>paket.lock</code> file</a> in the solution root. This file, together with the <a href="dependencies_file.html"><code>paket.dependencies</code> file</a>  enables you to determine exactly what's happening with your dependencies.</p>
+<p>Paket on the other hand maintains this information on a consistent and stable basis within the <a href="lock_file.html"><code>paket.lock</code> file</a> in the solution root. This file, together with the <a href="dependencies_file.html"><code>paket.dependencies</code> file</a> enables you to determine exactly what's happening with your dependencies.</p>
 
 <p>The <a href="paket_outdated.html"><code>paket outdated</code> command</a> lists packages that have new versions available.</p>
 
 <p>Future versions of Paket will also enable one to <a href="https://github.com/fsprojects/Paket/issues/9">reference files directly from git repositories</a>.</p>
+
+<h2>I'm already using NuGet. How can I convert to Paket?</h2>
+
+<p>The process is very easy and you can read more about it in the <a href="convert_from_nuget.html">convert from NuGet</a> section.</p>
 
 <h2>Why does Paket add references to the libraries associated with each supported framework version within a NuGet package to my projects?</h2>
 
@@ -93,6 +97,7 @@
             <li><a href="/Paket/dependencies_file.html">paket.dependencies</a></li>
             <li><a href="/Paket/lock_file.html">paket.lock</a></li>
             <li><a href="/Paket/references_files.html">paket.references</a></li>
+            <li><a href="/Paket/convert_from_nuget.html">Convert from NuGet</a></li>
             <li><a href="/Paket/reference/index.html">API Reference</a></li>
 
             <li class="nav-header">Paket commands</li>
