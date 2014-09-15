@@ -30,6 +30,7 @@ See [`paket.references`](references_files.html) for more information.
 
 Paket tries to embrace [SemVer](http://semver.org/) while NuGet uses a pessimistic version resolution strategy. You can prefix your version constraints with `!` if you need to use [NuGet compatibility](dependencies_file.html#nuget-style-dependency-resolution).
 
+<div id="paket-vs-powershell-install-scripts"></div>
 ## Does Paket run install.ps1 scripts?
 
 No, we don't run any script or program from NuGet packages and we have no plans to do this in the future.
