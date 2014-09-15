@@ -32,9 +32,22 @@ Paket tries to embrace [SemVer](http://semver.org/) while NuGet uses a pessimist
 
 ## Does Paket run install.ps1 scripts?
 
-No we don't run any scripts from NuGet packages and we have no plans to do this in the future.
+No, we don't run any script or program from NuGet packages and we have no plans to do this in the future.
 We know that this might cause you some manual work for some of the currently available NuGet packages, but we think these install scripts cause more harm than good.
-Instead we encourage everybody to use a declarative install process.  
+In fact our current model doesn't allow to run install.ps1 script like the following from `FontAwesome.4.1.0`:
+
+    [lang=batchfile]
+    param($installPath, $toolsPath, $package, $project)
+    
+    foreach ($fontFile in $project.ProjectItems.Item("fonts").ProjectItems)
+    {
+        $fontFile.Properties.Item("BuildAction").Value = 2;        
+    }
+    
+The reason is simply that even if we would support Powershell on Windows we can't access the Visual Studio project system. Paket is a command line tool and doesn't run inside of Visual Studio.
+There is no way to make this work - and even NuGet.exe can't do it in command line mode. 
+
+Instead we encourage the .NET community to use a declarative install process and we will help to fix this in the affected packages.
 
 ## When I resolve the dependencies from NuGet.org it is really slow. Why is that?
 
