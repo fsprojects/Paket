@@ -145,10 +145,13 @@ type ProjectFile =
             if Utils.normalizeXml this.Document <> this.OriginalText then this.Document.Save(this.FileName)
 
     static member Load(fileName:string) =
-        let fi = FileInfo(fileName)
-        let doc = new XmlDocument()
-        doc.Load fi.FullName
+        try
+            let fi = FileInfo(fileName)
+            let doc = new XmlDocument()
+            doc.Load fi.FullName
 
-        let manager = new XmlNamespaceManager(doc.NameTable)
-        manager.AddNamespace("ns", ProjectFile.DefaultNameSpace)
-        { FileName = fi.FullName; Document = doc; Namespaces = manager; OriginalText = Utils.normalizeXml doc }
+            let manager = new XmlNamespaceManager(doc.NameTable)
+            manager.AddNamespace("ns", ProjectFile.DefaultNameSpace)
+            { FileName = fi.FullName; Document = doc; Namespaces = manager; OriginalText = Utils.normalizeXml doc }
+        with
+        | exn -> failwithf "Error while parsing %s:%s      %s" fileName Environment.NewLine exn.Message

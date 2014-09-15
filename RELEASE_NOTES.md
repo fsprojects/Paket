@@ -1,3 +1,6 @@
+#### 0.1.3 - 15.09.2014
+* Detect FSharpx.Core in packages
+
 #### 0.1.2 - 15.09.2014
 * --hard parameter allows better transition from NuGet.exe
 
