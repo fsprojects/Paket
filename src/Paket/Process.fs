@@ -67,9 +67,10 @@ let Install(regenerate, force, hard, dependenciesFile) =
             match allPackages |> Map.tryFind name with
             | Some package ->
                 if usedPackages.Add name then
-                    for d,_ in package.DirectDependencies do
-                        addPackage d
-            | None -> failwithf "Project %s references package %s, but it was not found in the Lock file." proj.FullName name
+                    if not strict then
+                        for d,_ in package.DirectDependencies do
+                            addPackage d
+            | None -> failwithf "Project %s references package %s, but it was not found in the paket.lock file." proj.FullName name
 
         directPackages
         |> Array.iter addPackage
