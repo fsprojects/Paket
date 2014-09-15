@@ -44,7 +44,7 @@ If the lock file already exists, it will not be regenerated.
 
 You may have [`paket.references` files](references_files.html) next to your Visual Studio projects to have Paket automatically add references for the packages noted in that file.
 
-All of the files involved ([`paket.dependencies`](dependencies_files.html), [`paket.lock`](lock_file.html) and [`paket.references`](references_files.html)) should be committed to your version control system.
+All of the files involved ([`paket.dependencies`](dependencies_file.html), [`paket.lock`](lock_file.html) and [`paket.references`](references_files.html)) should be committed to your version control system.
 
 Determine if there are package updates available:
 

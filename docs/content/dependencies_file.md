@@ -117,7 +117,7 @@ NOT SUPPORTED YET
 
 The `~>` "twiddle-wakka" operator is borrowed from [bundler](http://bundler.io/). It is used to specify a version range.
 
-It translates to "use the minimum version specified, but allow upgrades to `<version specified>, last part chopped off, last number incremented by 1`". In other words, the maximum allowed version is computed as follows: Chop off the last part of the version specified, and allow the remaining last part to increase. Pin any of the parts before that.
+It translates to "use the minimum version specified, but allow upgrades up to, but not including, `<version specified>, last part chopped off, last number incremented by 1`". In other words, allow the last part stated explicitly to increase, but pin any of the elements before that.
 
 Let us illustrate:
 
