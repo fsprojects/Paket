@@ -47,8 +47,9 @@ let Install(regenerate, force, hard, dependenciesFile) =
     if regenerate || (not lockfile.Exists) then 
         LockFile.Update(force, dependenciesFile, lockfile.FullName)
 
+    let strict,dependencies = File.ReadAllLines lockfile.FullName |> LockFile.Parse
     let extracted = 
-        ExtractPackages(force, File.ReadAllLines lockfile.FullName |> LockFile.Parse)
+        ExtractPackages(force, dependencies)
         |> Async.Parallel
         |> Async.RunSynchronously
     for proj in findAllProjects(".") do
@@ -81,7 +82,7 @@ let FindOutdated(packageFile) =
     let lockFile = findLockfile packageFile
     
     let _,newPackages = LockFile.Create(true,packageFile)
-    let installed = if lockFile.Exists then LockFile.Parse(File.ReadAllLines lockFile.FullName) else []
+    let  _,installed = if lockFile.Exists then LockFile.Parse(File.ReadAllLines lockFile.FullName) else false,[]
 
     [for p in installed do
         match newPackages.[p.Name] with

@@ -66,7 +66,7 @@ module DependenciesFileParser =
                           VersionRange = parseVersionRange(version.Trim '!') } :: packages
             with
             | exn -> failwithf "Error in paket.dependencies line %d%s  %s" lineNo Environment.NewLine exn.Message)
-        |> fun (_,mode,_,x) -> mode, List.rev x
+        |> fun (_,mode,_,xs) -> mode, List.rev xs
 
 /// Allows to parse and analyze Dependencies files.
 type DependenciesFile(strictMode,packages : UnresolvedPackage seq) = 

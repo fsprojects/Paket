@@ -76,41 +76,44 @@ let format strictMode (resolved : PackageResolution) =
     
     String.Join(Environment.NewLine, all)
 
-let private (|Remote|Package|Dependency|Spec|Header|Blank|) (line:string) =
+let private (|Remote|Package|Dependency|Spec|Header|Blank|ReferencesMode|) (line:string) =
     match line.Trim() with
     | "NUGET" -> Header
     | _ when String.IsNullOrWhiteSpace line -> Blank
     | trimmed when trimmed.StartsWith "remote:" -> Remote (trimmed.Substring(trimmed.IndexOf(": ") + 2))
     | trimmed when trimmed.StartsWith "specs:" -> Spec
+    | trimmed when trimmed.StartsWith "REFERENCES:" -> ReferencesMode(trimmed.Replace("REFERENCES:","").Trim() = "STRICT")
     | trimmed when line.StartsWith "      " ->
          let parts = trimmed.Split '(' 
          Dependency (parts.[0].Trim(),parts.[1].Replace("(", "").Replace(")", "").Trim())
     | trimmed -> Package trimmed
 
 /// Parses a Lock file from lines
-let Parse(lines : string seq) : ResolvedPackage list =
-    (("http://nuget.org/api/v2", []), lines)
-    ||> Seq.fold(fun (currentSource, packages) line ->
+let Parse(lines : string seq) =
+    (("http://nuget.org/api/v2", false,  []), lines)
+    ||> Seq.fold(fun (currentSource, referencesMode, packages) line ->
         match line with
-        | Remote newSource -> newSource, packages
-        | Header | Spec | Blank -> (currentSource, packages)
+        | Remote newSource -> newSource, referencesMode, packages
+        | Header | Spec | Blank -> (currentSource, referencesMode, packages)
+        | ReferencesMode mode -> (currentSource, mode, packages)
         | Package details ->
             let parts = details.Split(' ')
             let version = parts.[1].Replace("(", "").Replace(")", "")
-            currentSource, { Source = PackageSource.Parse currentSource
-                             Name = parts.[0]
-                             DirectDependencies = []
-                             Version = SemVer.parse version } :: packages
+            currentSource, referencesMode,
+                 { Source = PackageSource.Parse currentSource
+                   Name = parts.[0]
+                   DirectDependencies = []
+                   Version = SemVer.parse version } :: packages
         | Dependency(name,version) ->
             match packages with
             | currentPackage :: otherPackages -> 
                 currentSource,
+                referencesMode,
                 { currentPackage with
                     DirectDependencies = [name,Latest] // TODO: parse version if we really need it 
                     |> List.append currentPackage.DirectDependencies } :: otherPackages
             | _ -> failwith "cannot set a dependency - no package has been specified.")
-    |> snd
-    |> List.rev
+    |> fun (_,referencesMode,xs) -> referencesMode, List.rev xs
 
 /// Analyzes the dependencies from the Dependencies file.
 let Create(force,dependenciesFile) =     
