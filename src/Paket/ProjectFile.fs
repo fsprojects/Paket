@@ -103,6 +103,17 @@ type ProjectFile =
         this.DeleteIfEmpty("//ns:Project/ns:Choose/ns:When")
         this.DeleteIfEmpty("//ns:Project/ns:Choose")
 
+    member this.UpdateSourceFiles(sourceFiles) =
+        // find the compiled items item group
+        // add all source files
+        let compileNodeGroup = this.Document.SelectNodes("//ns:Project/ns:ItemGroup/ns:Compile", this.Namespaces).[0].ParentNode
+        
+        //TODO: Insert at correct position!
+        for sourceFile in sourceFiles do
+            let node = this.CreateNode("Compile")
+            node.SetAttribute("Include",sourceFile)
+            compileNodeGroup.AppendChild(node) |> ignore
+
     member this.UpdateReferences(extracted, usedPackages : HashSet<string>) = 
         match [ for node in this.Document.SelectNodes("//ns:Project", this.Namespaces) -> node ] with
         | [] -> ()
@@ -131,7 +142,9 @@ type ProjectFile =
                             |> ignore
                         projectNode.AppendChild(chooseNode) |> ignore
             this.DeleteEmptyReferences()
-            if Utils.normalizeXml this.Document <> this.OriginalText then this.Document.Save(this.FileName)
+
+    member this.Save() =
+        if Utils.normalizeXml this.Document <> this.OriginalText then this.Document.Save(this.FileName)
 
     static member Load(fileName:string) =
         let fi = FileInfo(fileName)

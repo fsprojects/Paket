@@ -55,22 +55,20 @@ let Install(regenerate, force, dependenciesFilename) =
         |> Async.Parallel
         |> Async.RunSynchronously    
 
-    let extractedSourceFiles =
-        let rootPath = dependenciesFilename |> Path.GetDirectoryName
-        sourceFiles
-        |> List.map(fun source ->
-                async {
-                    let destination = Path.Combine(rootPath, "paket-files", source.Owner, source.Project, source.CommitWithDefault, source.FilePath)
-
-                    if File.Exists destination then tracefn "%s already exists locally" (source.ToString())
-                    else
-                        tracefn "Downloading %s..." (source.ToString())
-                        let! file = GitHub.downloadFile source
-                        Directory.CreateDirectory(destination |> Path.GetDirectoryName) |> ignore
-                        File.WriteAllText(destination, file)
-                    return destination })
-        |> Async.Parallel
-        |> Async.RunSynchronously
+    let rootPath = dependenciesFilename |> Path.GetDirectoryName
+    sourceFiles
+    |> List.map(fun source ->
+            async {
+                let destination = Path.Combine(rootPath, source.FilePath)
+                if File.Exists destination then tracefn "%s already exists locally" (source.ToString())
+                else
+                    tracefn "Downloading %s..." (source.ToString())
+                    let! file = GitHub.downloadFile source
+                    Directory.CreateDirectory(destination |> Path.GetDirectoryName) |> ignore
+                    File.WriteAllText(destination, file) })
+    |> Async.Parallel
+    |> Async.Ignore
+    |> Async.RunSynchronously
 
     for proj in findAllProjects(".") do
         let directPackages = extractReferencesFromListFile proj.FullName
@@ -95,6 +93,8 @@ let Install(regenerate, force, dependenciesFilename) =
         |> Array.iter addPackage
         
         project.UpdateReferences(extractedPackages,usedPackages)
+        project.UpdateSourceFiles(sourceFiles |> List.map(fun s -> s.FilePath))
+        project.Save()
 
 
 /// Finds all outdated packages.
