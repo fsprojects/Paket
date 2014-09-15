@@ -144,6 +144,11 @@ type ProjectFile =
             this.DeleteEmptyReferences()
             if Utils.normalizeXml this.Document <> this.OriginalText then this.Document.Save(this.FileName)
 
+    member this.ConvertNugetToPaket() =
+        for node in this.Document.SelectNodes("//ns:*[@Include='packages.config']", this.Namespaces) do
+            node.Attributes.["Include"].Value <- "paket.references"
+        if Utils.normalizeXml this.Document <> this.OriginalText then this.Document.Save(this.FileName)
+
     static member Load(fileName:string) =
         try
             let fi = FileInfo(fileName)
