@@ -56,6 +56,9 @@ type FrameworkIdentifier =
                   | "net45" -> yield DotNetFramework(Framework "v4.5", Full)
                   | "net45-full" -> yield DotNetFramework(Framework "v4.5", Full)
                   | "net451" -> yield DotNetFramework(Framework "v4.5.1", Full)
+                  | "35" -> yield DotNetFramework(Framework "v3.5", Full)
+                  | "40" -> yield DotNetFramework(Framework "v4.0", Full)
+                  | "45" -> yield DotNetFramework(Framework "v4.5", Full)
                   | "sl3" -> yield Silverlight "v3.0"
                   | "sl4" -> yield Silverlight "v4.0"
                   | "sl5" -> yield Silverlight "v5.0"
