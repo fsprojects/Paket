@@ -1,6 +1,7 @@
 /// Contains methods for the install and update process.
 module Paket.Process
 
+open System
 open System.IO
 open System.Collections.Generic
 
@@ -38,7 +39,7 @@ let extractReferencesFromListFile projectFile =
     |> Array.map (fun s -> s.Trim())
     |> Array.filter (fun s -> System.String.IsNullOrWhiteSpace s |> not)
 
-let private findAllProjects(folder) = DirectoryInfo(folder).EnumerateFiles("*.*proj", SearchOption.AllDirectories)
+let private findAllFiles(folder, pattern) = DirectoryInfo(folder).EnumerateFiles(pattern, SearchOption.AllDirectories)
 
 /// Installs the given packageFile.
 let Install(regenerate, force, hard, dependenciesFile) = 
@@ -51,7 +52,7 @@ let Install(regenerate, force, hard, dependenciesFile) =
         ExtractPackages(force, File.ReadAllLines lockfile.FullName |> LockFile.Parse)
         |> Async.Parallel
         |> Async.RunSynchronously
-    for proj in findAllProjects(".") do
+    for proj in findAllFiles(".", "*.*proj") do
         let directPackages = extractReferencesFromListFile proj.FullName
         let project = ProjectFile.Load proj.FullName
 
@@ -100,3 +101,61 @@ let ListOutdated(packageFile) =
         tracefn "Outdated packages found:"
         for name,oldVersion,newVersion in allOutdated do
             tracefn "  * %s %s -> %s" name (oldVersion.ToString()) (newVersion.ToString())
+
+/// Converts all projects from NuGet to Paket
+let ConvertFromNuget() =
+    let nugetPackages = 
+        findAllFiles(".", "packages.config") |> Seq.map (fun f -> f, Nuget.ReadPackagesFromFile f)
+    
+    let allVersions =
+        nugetPackages
+        |> Seq.map snd
+        |> Seq.concat
+        |> Seq.groupBy fst
+        |> Seq.map (fun (k, packages) -> k, packages |> Seq.map snd |> Seq.distinct)
+    
+    for (name, versions) in allVersions do
+        if versions |> Seq.length > 1 
+        then traceWarnfn "Package %s is referenced multiple times in different versions: %A. Taking the latest one." 
+                            name    
+                            (versions |> Seq.map string |> Seq.toList)
+
+    let dependenciesFileContent = 
+        "source \"http://nuget.org/api/v2\"" + Environment.NewLine + Environment.NewLine +
+         (allVersions |> Seq.map (fun (k,packages) -> sprintf "nuget \"%s\" \"%s\"" k (Seq.max packages |> string))
+         |> String.concat Environment.NewLine)
+        
+    File.WriteAllText("paket.dependencies", dependenciesFileContent)
+    trace "Generated paket.dependencies file"
+        
+    for (packageFile, packages) in nugetPackages do
+        if packageFile.Directory.Name <> ".nuget"
+        then
+            match findAllFiles(packageFile.DirectoryName, "*.*proj") |> Seq.toList with
+            | [projFile] -> 
+                let referencesFileContent = packages |> List.map fst |> String.concat Environment.NewLine
+                File.WriteAllText(packageFile.FullName, referencesFileContent)
+                File.Move(packageFile.FullName, Path.Combine(packageFile.DirectoryName, "paket.references"))
+                let updated = File.ReadAllText(projFile.FullName).Replace(packageFile.Name, "paket.references")
+                File.WriteAllText(projFile.FullName, updated)
+                tracefn "Converted \"%s\" to \"paket.references\"" packageFile.FullName
+
+            | [] -> traceErrorfn "Unable to convert \"%s\" because corresponding project file was not found." packageFile.FullName
+            | _::_ as files -> 
+                traceErrorfn "Unable to convert \"%s\" because more than one file matches project file: %A" packageFile.FullName files
+        else
+            match findAllFiles(packageFile.Directory.Parent.FullName, "*.*sln") |> Seq.toList with
+            | [slnFile] -> 
+                let solution = SolutionFile(slnFile.FullName)
+                solution.RemoveNugetPackagesFile()
+                solution.Save()
+                File.Delete(packageFile.FullName)
+                tracefn "Deleted \"%s\"" packageFile.FullName
+
+            | [] -> traceErrorfn "Unable to delete \"%s\" because corresponding solution file was not found." packageFile.FullName
+            | _::_ as files -> 
+                traceErrorfn "Unable to delete \"%s\" because more than one file matches solution file: %A" packageFile.FullName files
+
+    if Directory.Exists(".\packages") then 
+        CleanDir ".\packages"
+        trace "Cleared .\packages directory"
