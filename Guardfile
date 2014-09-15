@@ -53,7 +53,7 @@ end
 
 class Build
   def self.generate_docs
-    target = 'GenerateDocs'
+    target = 'GenerateHelp'
 
     case RbConfig::CONFIG['target_os']
     when /windows|bccwin|cygwin|djgpp|mingw|mswin|wince/i
