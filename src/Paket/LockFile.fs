@@ -47,7 +47,7 @@ let extractErrors (resolved : PackageResolution) =
 
 
 /// [omit]
-let format (resolved : PackageResolution) = 
+let format strictMode (resolved : PackageResolution) = 
     let sources = 
         resolved
         |> Seq.map (fun x ->
@@ -63,7 +63,9 @@ let format (resolved : PackageResolution) =
         |> Seq.groupBy fst
 
     let all = 
-        [ yield "NUGET"
+        [ if strictMode then
+            yield "REFERENCES: STRICT"
+          yield "NUGET"
           for source, packages in sources do
               yield "  remote: " + source
               yield "  specs:"
@@ -114,14 +116,14 @@ let Parse(lines : string seq) : ResolvedPackage list =
 let Create(force,dependenciesFile) =     
     let cfg = DependenciesFile.ReadFromFile dependenciesFile
     tracefn "Analyzing %s" dependenciesFile
-    cfg.Resolve(force,Nuget.NugetDiscovery)
+    cfg,cfg.Resolve(force,Nuget.NugetDiscovery)
 
 /// Updates the Lock file with the analyzed dependencies from the Dependencies file.
 let Update(force, packageFile, lockFile) = 
-    let resolution = Create(force,packageFile)
+    let cfg,resolution = Create(force,packageFile)
     let errors = extractErrors resolution
     if errors = "" then
-        File.WriteAllText(lockFile, format resolution)
+        File.WriteAllText(lockFile, format cfg.Strict resolution)
         tracefn "Locked version resolutions written to %s" lockFile
     else
         failwith <| "Could not resolve dependencies." + Environment.NewLine + errors

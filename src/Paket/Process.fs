@@ -80,7 +80,7 @@ let Install(regenerate, force, hard, dependenciesFile) =
 let FindOutdated(packageFile) = 
     let lockFile = findLockfile packageFile
     
-    let newPackages = LockFile.Create(true,packageFile)
+    let _,newPackages = LockFile.Create(true,packageFile)
     let installed = if lockFile.Exists then LockFile.Parse(File.ReadAllLines lockFile.FullName) else []
 
     [for p in installed do
