@@ -44,8 +44,8 @@ In fact our current model doesn't allow to run install.ps1 script like the follo
         $fontFile.Properties.Item("BuildAction").Value = 2;        
     }
     
-The reason is simply that even if we would support Powershell on Windows we can't access the Visual Studio project system. Paket is a command line tool and doesn't run inside of Visual Studio.
-There is no way to make this work - and even NuGet.exe can't do it in command line mode. 
+The reason is simply that even if we would support PowerShell on Windows we can't access the Visual Studio project system. Paket is a command line tool and doesn't run inside of Visual Studio.
+There is no way to make this work – and even NuGet.exe can't do it in command line mode. 
 
 Instead we encourage the .NET community to use a declarative install process and we will help to fix this in the affected packages.
 
