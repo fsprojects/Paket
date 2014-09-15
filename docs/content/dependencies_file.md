@@ -48,6 +48,18 @@ Paket supports file paths such as local directories or references to UNC shares:
     source "~/project/nugets"
     source "\\server\nugets"
 
+<div id="strict-mode"></div>
+### Strict references
+
+Paket usually references all direct and indirect dependencies that are listed in your [paket.references](references_files.md) files to your project file.
+With the `strict` mode it will only reference direct dependencies.
+
+	references strict
+    source "http://nuget.org/api/v2"
+
+    nuget "Newtonsoft.Json" "~> 6.0"
+    nuget "UnionArgParser" "~> 0.7"
+
 <div id="dependencies"></div>
 ## Dependencies
 
