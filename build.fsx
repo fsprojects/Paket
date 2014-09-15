@@ -1,5 +1,5 @@
 // --------------------------------------------------------------------------------------
-// FAKE build script 
+// FAKE build script
 // --------------------------------------------------------------------------------------
 
 #r @"packages/FAKE/tools/NuGet.Core.dll"
@@ -22,11 +22,11 @@ open SourceLink
 
 // Information about the project are used
 //  - for version and project name in generated AssemblyInfo file
-//  - by the generated NuGet package 
+//  - by the generated NuGet package
 //  - to run tests and to publish documentation on GitHub gh-pages
 //  - for documentation, you also need to edit info in "docs/tools/generate.fsx"
 
-// The name of the project 
+// The name of the project
 // (used by attributes in AssemblyInfo, name of a NuGet package and directory in 'src')
 let project = "Paket"
 
@@ -44,14 +44,14 @@ let authors = [ "Steffen Forkmann"; "Alexander Gross" ]
 // Tags for your project (for NuGet package)
 let tags = "nuget, bundler, F#"
 
-// File system information 
+// File system information
 let solutionFile  = "Paket.sln"
 
 // Pattern specifying assemblies to be tested using NUnit
 let testAssemblies = "tests/**/bin/Release/*Tests*.dll"
 
 // Git configuration (used for publishing documentation in gh-pages branch)
-// The profile where the project is posted 
+// The profile where the project is posted
 let gitHome = "https://github.com/fsprojects"
 
 // The name of the project on GitHub
@@ -61,7 +61,7 @@ let gitName = "Paket"
 let gitRaw = environVarOrDefault "gitRaw" "https://raw.github.com/fsprojects"
 
 // --------------------------------------------------------------------------------------
-// END TODO: The rest of the file includes standard build steps 
+// END TODO: The rest of the file includes standard build steps
 // --------------------------------------------------------------------------------------
 
 let buildDir = "bin"
@@ -70,38 +70,8 @@ let buildMergedDir = buildDir @@ "merged"
 // Read additional information from the release notes document
 let release = LoadReleaseNotes "RELEASE_NOTES.md"
 
-let genFSAssemblyInfo (projectPath) = 
-    let projectName = System.IO.Path.GetFileNameWithoutExtension(projectPath) 
-    let basePath = "src/" + projectName 
-    let fileName = basePath + "/AssemblyInfo.fs"
-    CreateFSharpAssemblyInfo fileName
-      [ Attribute.Title (projectName)
-        Attribute.Product project
-        Attribute.Description summary
-        Attribute.Version release.AssemblyVersion
-        Attribute.FileVersion release.AssemblyVersion ] 
-
-let genCSAssemblyInfo (projectPath) = 
-    let projectName = System.IO.Path.GetFileNameWithoutExtension(projectPath) 
-    let basePath = "src/" + projectName + "/Properties"
-    let fileName = basePath + "/AssemblyInfo.cs"
-    CreateCSharpAssemblyInfo fileName
-      [ Attribute.Title (projectName)
-        Attribute.Product project
-        Attribute.Description summary
-        Attribute.Version release.AssemblyVersion
-        Attribute.FileVersion release.AssemblyVersion ] 
-
-// Generate assembly info files with the right version & up-to-date information
-Target "AssemblyInfo" (fun _ ->
-  let fsProjs =  !! "src/**/*.fsproj"
-  let csProjs = !! "src/**/*.csproj"
-  fsProjs |> Seq.iter genFSAssemblyInfo
-  csProjs |> Seq.iter genCSAssemblyInfo
-)
-
 // --------------------------------------------------------------------------------------
-// Clean build results & restore NuGet packages
+// Clean build results
 
 Target "Clean" (fun _ ->
     CleanDirs [buildDir; "temp"]
@@ -112,6 +82,42 @@ Target "CleanDocs" (fun _ ->
 )
 
 // --------------------------------------------------------------------------------------
+// Generate AssemblyInfo files
+
+let genFSAssemblyInfo (projectPath) =
+    let projectName = System.IO.Path.GetFileNameWithoutExtension(projectPath)
+    let basePath = "src/" + projectName
+    let fileName = basePath + "/AssemblyInfo.fs"
+    CreateFSharpAssemblyInfo fileName
+      [ Attribute.Title (projectName)
+        Attribute.Product project
+        Attribute.Description summary
+        Attribute.Version release.AssemblyVersion
+        Attribute.FileVersion release.AssemblyVersion ]
+
+let genCSAssemblyInfo (projectPath) =
+    let projectName = System.IO.Path.GetFileNameWithoutExtension(projectPath)
+    let basePath = "src/" + projectName + "/Properties"
+    let fileName = basePath + "/AssemblyInfo.cs"
+    CreateCSharpAssemblyInfo fileName
+      [ Attribute.Title (projectName)
+        Attribute.Product project
+        Attribute.Description summary
+        Attribute.Version release.AssemblyVersion
+        Attribute.FileVersion release.AssemblyVersion ]
+
+// Generate assembly info files with the right version & up-to-date information
+Target "AssemblyInfo" (fun _ ->
+  let fsProjs =  !! "src/**/*.fsproj"
+  let csProjs = !! "src/**/*.csproj"
+  fsProjs |> Seq.iter genFSAssemblyInfo
+  csProjs |> Seq.iter genCSAssemblyInfo
+)
+
+"Clean"
+    ==> "AssemblyInfo"
+
+// --------------------------------------------------------------------------------------
 // Build library & test project
 
 Target "Build" (fun _ ->
@@ -120,11 +126,14 @@ Target "Build" (fun _ ->
     |> ignore
 )
 
+"AssemblyInfo"
+    ==> "Build"
+
 // --------------------------------------------------------------------------------------
 // Run the unit tests using test runner
 
 Target "RunTests" (fun _ ->
-    !! testAssemblies 
+    !! testAssemblies
     |> NUnit (fun p ->
         { p with
             DisableShadowCopy = true
@@ -132,7 +141,11 @@ Target "RunTests" (fun _ ->
             OutputFile = "TestResults.xml" })
 )
 
+"Build"
+    ==> "RunTests"
+
 #if MONO
+Target "SourceLink" DoNothing
 #else
 // --------------------------------------------------------------------------------------
 // SourceLink allows Source Indexing on the PDB generated by the compiler, this allows
@@ -154,10 +167,13 @@ Target "SourceLink" (fun _ ->
 )
 #endif
 
+"Build"
+    =?> ("SourceLink", Pdbstr.tryFind().IsSome)
+
 // --------------------------------------------------------------------------------------
 // Build a NuGet package
 
-Target "MergeAssemblies" (fun _ ->        
+Target "MergeAssemblies" (fun _ ->
     CreateDir buildMergedDir
 
     let toPack =
@@ -174,9 +190,12 @@ Target "MergeAssemblies" (fun _ ->
     if result <> 0 then failwithf "Error during ILRepack execution."
 )
 
+"RunTests"
+    ==> "MergeAssemblies"
+
 Target "NuGet" (fun _ ->
-    NuGet (fun p -> 
-        { p with   
+    NuGet (fun p ->
+        { p with
             Authors = authors
             Project = project
             Summary = summary
@@ -191,13 +210,35 @@ Target "NuGet" (fun _ ->
         ("nuget/" + project + ".nuspec")
 )
 
+"MergeAssemblies"
+    ==> "NuGet"
+
 // --------------------------------------------------------------------------------------
 // Generate the documentation
 
-Target "GenerateDocs" (fun _ ->
-    if not <| executeFSIWithArgs "docs/tools" "generate.fsx" ["--define:RELEASE"] [] then
-      failwith "generating docs failed"
+Target "GenerateReferenceDocs" (fun _ ->
+    if not <| executeFSIWithArgs "docs/tools" "generate.fsx" ["--define:RELEASE"; "--define:REFERENCE"] [] then
+      failwith "generating reference documentation failed"
 )
+
+"CleanDocs"
+    ==> "Build"
+    ==> "GenerateReferenceDocs"
+
+Target "GenerateHelp" (fun _ ->
+    if not <| executeFSIWithArgs "docs/tools" "generate.fsx" ["--define:RELEASE"; "--define:HELP"] [] then
+      failwith "generating help documentation failed"
+)
+
+"CleanDocs"
+    ==> "GenerateHelp"
+
+Target "GenerateDocs" DoNothing
+
+"GenerateReferenceDocs"
+    =?> ("GenerateDocs",isLocalBuild && not isMono)
+"GenerateHelp"
+    =?> ("GenerateDocs",isLocalBuild && not isMono)
 
 // --------------------------------------------------------------------------------------
 // Release Scripts
@@ -223,35 +264,23 @@ Target "Release" (fun _ ->
     Branches.pushTag "" "origin" release.NugetVersion
 )
 
+"ReleaseDocs"
+    ==> "Release"
+
 Target "BuildPackage" DoNothing
+
+"NuGet"
+    ==> "BuildPackage"
+
+"BuildPackage"
+    ==> "Release"
 
 // --------------------------------------------------------------------------------------
 // Run all targets by default. Invoke 'build <Target>' to override
 
 Target "All" DoNothing
 
-"Clean"
-  ==> "AssemblyInfo"
-  ==> "Build"
-  ==> "RunTests"
-  ==> "CleanDocs"
-  =?> ("GenerateDocs",isLocalBuild && not isMono)
-  ==> "All"
-  =?> ("ReleaseDocs",isLocalBuild && not isMono)
-
-"All" 
-#if MONO
-#else
-  =?> ("SourceLink", Pdbstr.tryFind().IsSome )
-#endif
-  ==> "MergeAssemblies"
-  ==> "NuGet"
-  ==> "BuildPackage"
-
-"ReleaseDocs"
-    ==> "Release"
-
 "BuildPackage"
-    ==> "Release"
+    ==> "All"
 
 RunTargetOrDefault "All"
