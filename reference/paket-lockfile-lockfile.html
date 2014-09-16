@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="utf-8"/>
-    <title>PreRelease - Paket</title>
+    <title>LockFile - Paket</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <meta name="description" content=""/>
     <meta name="author" content="Steffen Forkmann, Alexander Gross"/>
@@ -34,28 +34,54 @@
 
 
 
-<h1>PreRelease</h1>
+<h1>LockFile</h1>
 <div class="xmldoc">
-<p>Information about PreRelease packages.</p>
+<p>Allows to parse and analyze paket.lock files.</p>
 </div>
-  <h3>Record Fields</h3>
+  <h3>Constructors</h3>
   <table class="table table-bordered member-list">
     <thead>
-      <tr><td>Record Field</td><td>Description</td></tr>
+      <tr><td>Constructor</td><td>Description</td></tr>
     </thead>
     <tbody>
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '84', 84)" onmouseover="showTip(event, '84', 84)">
-            Name
+          <code onmouseout="hideTip(event, '47', 47)" onmouseover="showTip(event, '47', 47)">
+            new(strictMode, packages, remoteFiles)
           </code>
-          <div class="tip" id="84">
-            <strong>Signature:</strong> string<br />
+          <div class="tip" id="47">
+            <strong>Signature:</strong> (strictMode:bool * packages:ResolvedPackage list * remoteFiles:SourceFile list) -&gt; LockFile<br />
                       </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket/SemVer.fs#L11-11" class="github-link">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket/LockFile.fs#L125-125" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          
+        </td>
+      </tr>
+    </tbody>
+  </table>
+  <h3>Instance members</h3>
+  <table class="table table-bordered member-list">
+    <thead>
+      <tr><td>Instance member</td><td>Description</td></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '56', 56)" onmouseover="showTip(event, '56', 56)">
+            ResolvedPackages
+          </code>
+          <div class="tip" id="56">
+            <strong>Signature:</strong> ResolvedPackage list<br />
+                      </div>
+        </td>
+        <td class="xmldoc">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket/LockFile.fs#L127-127" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -65,15 +91,15 @@
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '86', 86)" onmouseover="showTip(event, '86', 86)">
-            Number
+          <code onmouseout="hideTip(event, '57', 57)" onmouseover="showTip(event, '57', 57)">
+            ResolvedPackages
           </code>
-          <div class="tip" id="86">
-            <strong>Signature:</strong> int option<br />
+          <div class="tip" id="57">
+            <strong>Signature:</strong> ResolvedPackage list<br />
                       </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket/SemVer.fs#L12-12" class="github-link">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket/LockFile.fs#L127-127" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -83,15 +109,69 @@
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '87', 87)" onmouseover="showTip(event, '87', 87)">
-            Origin
+          <code onmouseout="hideTip(event, '58', 58)" onmouseover="showTip(event, '58', 58)">
+            SourceFiles
           </code>
-          <div class="tip" id="87">
-            <strong>Signature:</strong> string<br />
+          <div class="tip" id="58">
+            <strong>Signature:</strong> SourceFile list<br />
                       </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket/SemVer.fs#L10-10" class="github-link">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket/LockFile.fs#L126-126" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '59', 59)" onmouseover="showTip(event, '59', 59)">
+            SourceFiles
+          </code>
+          <div class="tip" id="59">
+            <strong>Signature:</strong> SourceFile list<br />
+                      </div>
+        </td>
+        <td class="xmldoc">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket/LockFile.fs#L126-126" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '60', 60)" onmouseover="showTip(event, '60', 60)">
+            Strict
+          </code>
+          <div class="tip" id="60">
+            <strong>Signature:</strong> bool<br />
+                      </div>
+        </td>
+        <td class="xmldoc">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket/LockFile.fs#L128-128" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '61', 61)" onmouseover="showTip(event, '61', 61)">
+            Strict
+          </code>
+          <div class="tip" id="61">
+            <strong>Signature:</strong> bool<br />
+                      </div>
+        </td>
+        <td class="xmldoc">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket/LockFile.fs#L128-128" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -109,19 +189,20 @@
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '122', 122)" onmouseover="showTip(event, '122', 122)">
-            TryParse(str)
+          <code onmouseout="hideTip(event, '74', 74)" onmouseover="showTip(event, '74', 74)">
+            Parse(lines)
           </code>
-          <div class="tip" id="122">
-            <strong>Signature:</strong> str:string -&gt; PreRelease option<br />
+          <div class="tip" id="74">
+            <strong>Signature:</strong> lines:seq&lt;string&gt; -&gt; LockFile<br />
                       </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket/SemVer.fs#L14-14" class="github-link">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket/LockFile.fs#L130-130" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
-          
+          <p>Parses a paket.lock file from lines</p>
+
         </td>
       </tr>
     </tbody>
