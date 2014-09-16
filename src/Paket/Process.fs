@@ -120,24 +120,24 @@ let Install(regenerate, force, hard, dependenciesFilename) =
                 let sourceFile = name.Split(':').[1]
                 usedSourceFiles.Add sourceFile |> ignore
             else
-            match allPackages |> Map.tryFind name with
-            | Some package ->
-                if usedPackages.Add name then
-                    if not lockFile.Strict then
-                        for d,_ in package.DirectDependencies do
-                            addPackage d
-            | None -> failwithf "Project %s references package %s, but it was not found in the paket.lock file." proj.FullName name
+                match allPackages |> Map.tryFind name with
+                | Some package ->
+                    if usedPackages.Add name then
+                        if not lockFile.Strict then
+                            for d,_ in package.DirectDependencies do
+                                addPackage d
+                | None -> failwithf "Project %s references package %s, but it was not found in the paket.lock file." proj.FullName name
 
         directPackages
         |> Array.iter addPackage
         
         project.UpdateReferences(extractedPackages,usedPackages,hard)
-		
+
         lockFile.SourceFiles 
         |> List.filter (fun file -> usedSourceFiles.Contains(file.Name))
         |> project.UpdateSourceFiles
 
-		removeContentFiles project
+        removeContentFiles project
         let packagesWithContent = findPackagesWithContent usedPackages
         let contentFiles = copyContentFilesToProject project packagesWithContent
         project.UpdateContentFiles(contentFiles)

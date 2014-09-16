@@ -190,7 +190,7 @@ type ProjectFile =
         this.FindPaketNodes("Content")
         |> List.map (fun n ->  FileInfo(Path.Combine(Path.GetDirectoryName(this.FileName), n.Attributes.["Include"].Value)))
 
-    member this.UpdateContentFiles(contentFiles : list<FileInfo>, hard) =
+    member this.UpdateContentFiles(contentFiles : list<FileInfo>) =
         let contentNode (fi: FileInfo) = 
             this.CreateNode "Content" 
             |> addAttribute "Include" (UriHelper.createRelativePath this.FileName fi.FullName)
@@ -233,12 +233,12 @@ type ProjectFile =
 
     static member Load(fileName:string) =
         try
-        let fi = FileInfo(fileName)
-        let doc = new XmlDocument()
-        doc.Load fi.FullName
+            let fi = FileInfo(fileName)
+            let doc = new XmlDocument()
+            doc.Load fi.FullName
 
-        let manager = new XmlNamespaceManager(doc.NameTable)
-        manager.AddNamespace("ns", ProjectFile.DefaultNameSpace)
+            let manager = new XmlNamespaceManager(doc.NameTable)
+            manager.AddNamespace("ns", ProjectFile.DefaultNameSpace)
             { FileName = fi.FullName; Document = doc; Namespaces = manager; OriginalText = Utils.normalizeXml doc }
         with
         | exn -> failwithf "Error while parsing %s:%s      %s" fileName Environment.NewLine exn.Message
