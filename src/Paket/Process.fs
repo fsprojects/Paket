@@ -5,7 +5,7 @@ open System
 open System.IO
 open System.Collections.Generic
 
-/// Downloads and extracts all package.
+/// Downloads and extracts all packages.
 let ExtractPackages(force, packages) = 
     Seq.map (fun (package : ResolvedPackage) -> 
         async { 
@@ -19,6 +19,17 @@ let ExtractPackages(force, packages) =
                 let! folder = Nuget.ExtractPackage(packageFile, package.Name, package.Version.ToString(), force)
                 return Some(package, Nuget.GetLibraries folder)
         }) packages
+
+let DownloadSourceFiles(rootPath,sourceFiles) = 
+    Seq.map (fun (source : SourceFile) -> 
+        async { 
+            let destination = Path.Combine(rootPath, source.FilePath)
+            tracefn "Downloading %s..." (source.ToString())
+            let! file = GitHub.downloadFile source
+            Directory.CreateDirectory(destination |> Path.GetDirectoryName) |> ignore
+            File.WriteAllText(destination, file)
+            return None
+        }) sourceFiles
 
 let findLockfile dependenciesFile =
     let fi = FileInfo(dependenciesFile)
@@ -57,23 +68,10 @@ let Install(regenerate, force, hard, dependenciesFilename) =
         File.ReadAllLines lockFileName.FullName 
         |> LockFile.LockFile.Parse
 
-    let rootPath = dependenciesFilename |> Path.GetDirectoryName
-
-    let sourceFileDownloads =
-        lockFile.SourceFiles
-        |> Seq.map (fun source -> 
-               async { 
-                   let destination = Path.Combine(rootPath, source.FilePath)
-                   tracefn "Downloading %s..." (source.ToString())
-                   let! file = GitHub.downloadFile source
-                   Directory.CreateDirectory(destination |> Path.GetDirectoryName) |> ignore
-                   File.WriteAllText(destination, file)
-                   return None
-               })
 
     let extractedPackages = 
         ExtractPackages(force, lockFile.ResolvedPackages)
-        |> Seq.append sourceFileDownloads
+        |> Seq.append (DownloadSourceFiles(Path.GetDirectoryName dependenciesFilename, lockFile.SourceFiles))
         |> Async.Parallel
         |> Async.RunSynchronously
         |> Array.choose id
