@@ -51,6 +51,8 @@ Paket supports file paths such as local directories or references to UNC shares:
 <div id="strict-mode"></div>
 ### Strict references
 
+** Only in [0.2.0 alpha versions](https://www.nuget.org/packages/Paket/0.2.0-alpha001) **
+
 Paket usually references all direct and indirect dependencies that are listed in your [paket.references](references_files.md) files to your project file.
 With the `strict` mode it will only reference direct dependencies.
 
