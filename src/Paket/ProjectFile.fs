@@ -104,16 +104,31 @@ type ProjectFile =
         this.DeleteIfEmpty("//ns:Project/ns:Choose")
 
     member this.UpdateSourceFiles(sourceFiles) =
-        // find the compiled items item group
-        // add all source files
-        let compileNodeGroup = this.Document.SelectNodes("//ns:Project/ns:ItemGroup/ns:Compile", this.Namespaces).[0].ParentNode
+        // If there is not item group for compiled items, create one.
+        let compileItemGroup =
+            match this.Document.SelectNodes("//ns:Project/ns:ItemGroup/ns:Compile", this.Namespaces) with
+            | items when items.Count = 0 ->
+                let itemGroup = this.CreateNode("ItemGroup")
+                let project = this.Document.SelectNodes("//ns:Project", this.Namespaces).[0]
+                project.AppendChild(itemGroup)
+            | compileItems -> compileItems.[0].ParentNode            
         
-        //TODO: Insert at correct position!
+        // Insert all source files in their correct position.
         for sourceFile in sourceFiles do
-            let node = this.CreateNode("Compile")
-            node.SetAttribute("Include",sourceFile)
-            compileNodeGroup.AppendChild(node) |> ignore
-
+            let node =
+                let node = this.CreateNode("Compile")
+                node.SetAttribute("Include", sourceFile)
+                node
+            match compileItemGroup.ChildNodes.Count with
+            | 0 -> compileItemGroup.AppendChild(node) |> ignore
+            | _ ->
+                let compileNodes = compileItemGroup.ChildNodes |> Seq.cast<XmlNode>
+                match compileNodes
+                      |> Seq.takeWhile(fun n -> String.Compare(n.Attributes.["Include"].Value, sourceFile, true) = -1)
+                      |> Seq.toList with
+                | [] -> compileItemGroup.InsertBefore(node, compileNodes |> Seq.head) |> ignore
+                | items -> compileItemGroup.InsertAfter(node, items |> Seq.last) |> ignore
+            
     member this.UpdateReferences(extracted, usedPackages : HashSet<string>) = 
         match [ for node in this.Document.SelectNodes("//ns:Project", this.Namespaces) -> node ] with
         | [] -> ()
