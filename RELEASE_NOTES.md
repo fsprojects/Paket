@@ -1,4 +1,4 @@
-#### 0.2.0-alpha008 - 16.09.2014
+#### 0.2.0-alpha009 - 16.09.2014
 * Support content files from nuget - https://github.com/fsprojects/Paket/pull/84
 
 #### 0.2.0-alpha007 - 16.09.2014
