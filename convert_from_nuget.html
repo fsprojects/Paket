@@ -34,6 +34,8 @@
           
 <h1>Convert your solution from NuGet</h1>
 
+<h2>Manual process</h2>
+
 <p>If you are already using <code>NuGet.exe</code> for package restore then it should be easy to convert to Paket.</p>
 
 <ol>
@@ -41,6 +43,20 @@
 <li>Convert every <code>packages.config</code> file to <a href="references_files.html">paket.references</a> syntax. This is very easy - you just have to remove all the XML and keep the package names.</li>
 <li>Run <a href="paket_install.html">paket install</a> with the <code>--hard</code> flag. This will analyze the dependencies, generate a <a href="lock_file.html">paket.lock</a> file and remove all the old package references from your project files and install new references in Paket's syntax.</li>
 </ol>
+
+<div id="automatic"></div>
+
+<h2>Automatic process</h2>
+
+<p>Paket can assist you with the conversion. The <code>convert-from-nuget</code> command finds all <code>packages.config</code> files and based on them generates a <a href="dependencies_file.html">paket.dependencies</a> file and converts them to <a href="references_files.html">paket.references</a>. 
+If the <code>packages.config</code> is solution-level, then its dependencies will be written to <a href="dependencies_file.html">paket.dependencies</a> and it will be removed.
+Afterwards it will run the <a href="paket_install.html">paket install</a> process with the <code>--hard</code> flag. This will analyze the dependencies, generate a <a href="lock_file.html">paket.lock</a> file and remove all the old package references from your project files and install new references in Paket's syntax.</p>
+
+<table class="pre"><tr><td><pre lang="batchfile">$ paket convert-from-nuget [--dependencies-file=FILE]</pre></td></tr></table>
+
+<p>Options:</p>
+
+<p><code>--dependencies-file</code>: Use the specified file instead of <a href="dependencies_file.html"><code>paket.dependencies</code></a>.</p>
 
 
         </div>
@@ -61,13 +77,13 @@
             <li><a href="/Paket/dependencies_file.html">paket.dependencies</a></li>
             <li><a href="/Paket/lock_file.html">paket.lock</a></li>
             <li><a href="/Paket/references_files.html">paket.references</a></li>
-            <li><a href="/Paket/convert_from_nuget.html">Convert from NuGet</a></li>
             <li><a href="/Paket/reference/index.html">API Reference</a></li>
 
             <li class="nav-header">Paket commands</li>
             <li><a href="/Paket/paket_install.html">paket install</a></li>
             <li><a href="/Paket/paket_outdated.html">paket outdated</a></li>
             <li><a href="/Paket/paket_update.html">paket update</a></li>
+            <li><a href="/Paket/convert_from_nuget.html">paket convert-from-nuget</a></li>            
           </ul>
         </div>
       </div>
