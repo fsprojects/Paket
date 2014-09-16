@@ -289,6 +289,13 @@ let GetLibraries(targetFolder) =
     else
         Array.empty
 
+/// Lists packages defined in a NuGet packages.config
+let ReadPackagesFromFile(configFile : FileInfo) =
+    let doc = XmlDocument()
+    doc.Load configFile.FullName
+    [for node in doc.SelectNodes("//package") ->
+        node.Attributes.["id"].Value, node.Attributes.["version"].Value |> SemVer.parse ]
+
 /// Nuget Discovery API.
 let NugetDiscovery = 
     { new IDiscovery with

@@ -1,6 +1,7 @@
 /// Contains methods for the install and update process.
 module Paket.Process
 
+open System
 open System.IO
 open System.Collections.Generic
 
@@ -42,6 +43,7 @@ let private findAllProjects(folder) =
     ["csproj";"fsproj";"vbproj"]
     |> List.map (fun projectType -> DirectoryInfo(folder).EnumerateFiles(sprintf "*.%s" projectType, SearchOption.AllDirectories) |> Seq.toList)
     |> List.concat
+let private findAllFiles(folder, pattern) = DirectoryInfo(folder).EnumerateFiles(pattern, SearchOption.AllDirectories)
 
 /// Installs the given packageFile.
 let Install(regenerate, force, hard, dependenciesFile) = 
@@ -54,7 +56,7 @@ let Install(regenerate, force, hard, dependenciesFile) =
         ExtractPackages(force, File.ReadAllLines lockfile.FullName |> LockFile.Parse)
         |> Async.Parallel
         |> Async.RunSynchronously
-    for proj in findAllProjects(".") do
+    for proj in findAllFiles(".", "*.*proj") do
         let directPackages = extractReferencesFromListFile proj.FullName
         let project = ProjectFile.Load proj.FullName
 
@@ -103,3 +105,56 @@ let ListOutdated(packageFile) =
         tracefn "Outdated packages found:"
         for name,oldVersion,newVersion in allOutdated do
             tracefn "  * %s %s -> %s" name (oldVersion.ToString()) (newVersion.ToString())
+
+/// Converts all projects from NuGet to Paket
+let ConvertFromNuget() =
+    let nugetPackages = 
+        findAllFiles(".", "packages.config") |> Seq.map (fun f -> f, Nuget.ReadPackagesFromFile f)
+    
+    let allVersions =
+        nugetPackages
+        |> Seq.collect snd
+        |> Seq.groupBy fst
+        |> Seq.map (fun (name, packages) -> name, packages |> Seq.map snd |> Seq.distinct)
+    
+    for (name, versions) in allVersions do
+        if Seq.length versions > 1 
+        then traceWarnfn "Package %s is referenced multiple times in different versions: %A. Paket will choose the latest one." 
+                            name    
+                            (versions |> Seq.map string |> Seq.toList)
+    
+    let latestVersions = allVersions |> Seq.map (fun (name,versions) -> name, versions |> Seq.max |> string)
+
+    let dependenciesFileContent = 
+        "source \"http://nuget.org/api/v2\"" + Environment.NewLine + Environment.NewLine +
+         (latestVersions |> Seq.map (fun (name,version) -> sprintf "nuget \"%s\" \"~> %s\"" name version)
+         |> String.concat Environment.NewLine)
+        
+    File.WriteAllText("paket.dependencies", dependenciesFileContent)
+    trace "Generated \"paket.dependencies\" file"
+        
+    for (packageFile, packages) in nugetPackages do
+        if packageFile.Directory.Name <> ".nuget"
+        then
+            let referencesFileContent = packages |> List.map fst |> String.concat Environment.NewLine
+            File.WriteAllText(packageFile.FullName, referencesFileContent)
+            File.Move(packageFile.FullName, Path.Combine(packageFile.DirectoryName, "paket.references"))
+            
+            for file in findAllFiles(packageFile.DirectoryName, "*.*proj") do
+                ProjectFile.Load(file.FullName).ConvertNugetToPaket()
+                           
+            tracefn "Converted \"%s\" to \"paket.references\"" packageFile.FullName
+
+        else
+            File.Delete(packageFile.FullName)
+
+            for slnFile in findAllFiles(packageFile.Directory.Parent.FullName, "*.sln") do
+                SolutionFile.RemoveNugetPackagesFile(slnFile.FullName)
+            
+            tracefn "Deleted \"%s\"" packageFile.FullName
+
+    if Directory.Exists(".\packages") then 
+        CleanDir ".\packages"
+        trace "Cleared .\packages directory"
+
+    Install(false, false, true, "paket.dependencies")
