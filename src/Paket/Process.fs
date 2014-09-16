@@ -74,7 +74,7 @@ let Install(regenerate, force, hard, dependenciesFile) =
                 if usedPackages.Add name then
                     for d,_ in package.DirectDependencies do
                         addPackage d
-            | None -> failwithf "Project %s references package %s, but it was not found in the Lock file." proj.FullName name
+            | None -> failwithf "Project %s references package %s, but it was not found in the packages.lock file." proj.FullName name
 
         directPackages
         |> Array.iter addPackage
