@@ -78,7 +78,11 @@ type ProjectFile =
     member this.DeletePaketCompileNodes() =    
         let nodesToDelete = List<_>()
         for node in this.Document.SelectNodes("//ns:Compile", this.Namespaces) do            
-            if node.Attributes.["Include"].InnerText.Split(',').[0].Contains "paket-files" then // TODO: Make this pretty
+            let remove = ref false
+            for child in node.ChildNodes do
+                if child.Name = "Paket" then remove := true
+            
+            if !remove then
                 nodesToDelete.Add node
 
         for node in nodesToDelete do
@@ -144,6 +148,7 @@ type ProjectFile =
                     let node = this.CreateNode("Compile")
                     node.SetAttribute("Include", path)
                     node
+                    |> addChild (this.CreateNode("Paket","True"))
                 match compileItemGroup.ChildNodes.Count with
                 | 0 -> compileItemGroup.AppendChild(node) |> ignore
                 | _ ->
