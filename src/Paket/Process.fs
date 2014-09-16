@@ -1,6 +1,7 @@
 /// Contains methods for the install and update process.
 module Paket.Process
 
+open System
 open System.IO
 open System.Collections.Generic
 
@@ -38,12 +39,17 @@ let extractReferencesFromListFile projectFile =
     |> Array.map (fun s -> s.Trim())
     |> Array.filter (fun s -> System.String.IsNullOrWhiteSpace s |> not)
 
-let private findAllProjects(folder) = DirectoryInfo(folder).EnumerateFiles("*.*proj", SearchOption.AllDirectories)
+let private findAllFiles(folder, pattern) = DirectoryInfo(folder).EnumerateFiles(pattern, SearchOption.AllDirectories)
+
+let private findAllProjects(folder) = 
+    ["*.csproj";"*.fsproj";"*.vbproj"]
+    |> List.map (fun projectType -> findAllFiles(folder, projectType) |> Seq.toList)
+    |> List.concat
 
 /// Installs the given packageFile.
-let Install(regenerate, force, dependenciesFilename) = 
+let Install(regenerate, force, hard, dependenciesFilename) = 
     let packages, sourceFiles =
-        let lockfile = findLockfile dependenciesFilename   
+        let lockfile = findLockfile dependenciesFilename
         
         if regenerate || (not lockfile.Exists) then 
             LockFile.Update(force, dependenciesFilename, lockfile.FullName)
@@ -53,7 +59,7 @@ let Install(regenerate, force, dependenciesFilename) =
     let extractedPackages = 
         ExtractPackages(force, packages)
         |> Async.Parallel
-        |> Async.RunSynchronously    
+        |> Async.RunSynchronously
 
     let rootPath = dependenciesFilename |> Path.GetDirectoryName
     sourceFiles
@@ -87,12 +93,12 @@ let Install(regenerate, force, dependenciesFilename) =
                 if usedPackages.Add name then
                     for d,_ in package.DirectDependencies do
                         addPackage d
-            | None -> failwithf "Project %s references package %s, but it was not found in the Lock file." proj.FullName name
+            | None -> failwithf "Project %s references package %s, but it was not found in the packages.lock file." proj.FullName name
 
         directPackages
         |> Array.iter addPackage
         
-        project.UpdateReferences(extractedPackages,usedPackages)
+        project.UpdateReferences(extractedPackages,usedPackages,hard)
         project.UpdateSourceFiles(sourceFiles |> List.map(fun s -> s.FilePath))
         project.Save()
 
@@ -123,3 +129,56 @@ let ListOutdated(packageFile) =
         tracefn "Outdated packages found:"
         for name,oldVersion,newVersion in allOutdated do
             tracefn "  * %s %s -> %s" name (oldVersion.ToString()) (newVersion.ToString())
+
+/// Converts all projects from NuGet to Paket
+let ConvertFromNuget() =
+    let nugetPackages = 
+        findAllFiles(".", "packages.config") |> Seq.map (fun f -> f, Nuget.ReadPackagesFromFile f)
+    
+    let allVersions =
+        nugetPackages
+        |> Seq.collect snd
+        |> Seq.groupBy fst
+        |> Seq.map (fun (name, packages) -> name, packages |> Seq.map snd |> Seq.distinct)
+    
+    for (name, versions) in allVersions do
+        if Seq.length versions > 1 
+        then traceWarnfn "Package %s is referenced multiple times in different versions: %A. Paket will choose the latest one." 
+                            name    
+                            (versions |> Seq.map string |> Seq.toList)
+    
+    let latestVersions = allVersions |> Seq.map (fun (name,versions) -> name, versions |> Seq.max |> string)
+
+    let dependenciesFileContent = 
+        "source \"http://nuget.org/api/v2\"" + Environment.NewLine + Environment.NewLine +
+         (latestVersions |> Seq.map (fun (name,version) -> sprintf "nuget \"%s\" \"%s\"" name version)
+         |> String.concat Environment.NewLine)
+        
+    File.WriteAllText("paket.dependencies", dependenciesFileContent)
+    trace "Generated \"paket.dependencies\" file"
+        
+    for (packageFile, packages) in nugetPackages do
+        if packageFile.Directory.Name <> ".nuget"
+        then
+            let referencesFileContent = packages |> List.map fst |> String.concat Environment.NewLine
+            File.WriteAllText(packageFile.FullName, referencesFileContent)
+            File.Move(packageFile.FullName, Path.Combine(packageFile.DirectoryName, "paket.references"))
+            
+            for file in findAllProjects(packageFile.DirectoryName) do
+                ProjectFile.Load(file.FullName).ConvertNugetToPaket()
+                           
+            tracefn "Converted \"%s\" to \"paket.references\"" packageFile.FullName
+
+        else
+            File.Delete(packageFile.FullName)
+
+            for slnFile in findAllFiles(packageFile.Directory.Parent.FullName, "*.sln") do
+                SolutionFile.RemoveNugetPackagesFile(slnFile.FullName)
+            
+            tracefn "Deleted \"%s\"" packageFile.FullName
+
+    if Directory.Exists(".\packages") then 
+        CleanDir ".\packages"
+        trace "Cleared .\packages directory"
+
+    Install(false, false, true, "paket.dependencies")

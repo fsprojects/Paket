@@ -1,13 +1,14 @@
-paket update
-============
+# paket update
 
-Recomputes the package dependency resolution and updates the [paket.lock](lock_file.html) if updates are warranted.
+Recomputes the dependency resolution and updates the [`paket.lock` file](lock_file.html) if updates are warranted.
 
     [lang=batchfile]
-    $ paket update [--force] [--dependencies-file=FILE]
+    $ paket update [--force] [--hard] [--dependencies-file=FILE]
 
 Options:
 
-  `--force`:  Forces the download and reinstallation of all packages.
+  `--force`: Forces the download and reinstallation of all packages.
 
-  `--dependencies-file`:  Use the specified file instead of `paket.dependencies`.
+  `--hard`: Replaces the package references from the project files even if they are not installed by Paket. See [convert from NuGet](convert_from_nuget.html).
+
+  `--dependencies-file`: Use the specified file instead of [`paket.dependencies`](dependencies_file.html).

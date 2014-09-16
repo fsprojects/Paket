@@ -1,6 +1,6 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2013
-VisualStudioVersion = 12.0.30723.0
+VisualStudioVersion = 12.0.30501.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".nuget", ".nuget", "{1F1B4F0F-2998-4D74-865B-9122611C2B14}"
 	ProjectSection(SolutionItems) = preProject
@@ -32,14 +32,15 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tools", "tools", "{83F16175
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "content", "content", "{8E6D5255-776D-4B61-85F9-73C37AA1FB9A}"
 	ProjectSection(SolutionItems) = preProject
-		docs\content\Dependencies_file.md = docs\content\Dependencies_file.md
+		docs\content\convert_from_nuget.md = docs\content\convert_from_nuget.md
+		docs\content\dependencies_file.md = docs\content\dependencies_file.md
 		docs\content\faq.md = docs\content\faq.md
 		docs\content\index.md = docs\content\index.md
 		docs\content\lock_file.md = docs\content\lock_file.md
 		docs\content\paket_install.md = docs\content\paket_install.md
 		docs\content\paket_outdated.md = docs\content\paket_outdated.md
 		docs\content\paket_update.md = docs\content\paket_update.md
-		docs\content\References_files.md = docs\content\References_files.md
+		docs\content\references_files.md = docs\content\references_files.md
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{ED8079DD-2B06-4030-9F0F-DC548F98E1C4}"

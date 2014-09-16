@@ -17,14 +17,19 @@ let trace (s : string) = lock monitor (fun () -> printfn "%s" s)
 let tracefn fmt = Printf.ksprintf trace fmt
 
 /// [omit]
-let traceError (s : string) = 
+let traceColored color (s: string) = 
     lock monitor 
         (fun () ->
-            let color = ConsoleColor.Red
             let curColor = Console.ForegroundColor
             if curColor <> color then Console.ForegroundColor <- color
             printfn "%s" s
             if curColor <> color then Console.ForegroundColor <- curColor)
+
+/// [omit]
+let traceError = traceColored ConsoleColor.Red
+
+/// [omit]
+let traceWarn = traceColored ConsoleColor.Yellow
 
 /// [omit]
 let addAttribute name value (node:XmlElement) =
@@ -38,6 +43,9 @@ let addChild child (node:XmlElement) =
 
 /// [omit]
 let traceErrorfn fmt = Printf.ksprintf traceError fmt
+
+/// [omit]
+let traceWarnfn fmt = Printf.ksprintf traceWarn fmt
 
 /// Creates a directory if it does not exist.
 let CreateDir path = 

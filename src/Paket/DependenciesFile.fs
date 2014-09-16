@@ -8,28 +8,29 @@ open Paket
 module DependenciesFileParser = 
 
     let parseVersionRange (text : string) : VersionRange = 
-        try
-            // TODO: Make this pretty
-            if text.StartsWith "~> " then 
-                let min = text.Replace("~> ", "")
-                let parts = min.Split('.')            
-                if parts.Length > 1 then
-                    let idx = parts.Length-2
-                    parts.[idx] <-
-                        match Int32.TryParse parts.[idx] with
-                        | true, number -> (number+1).ToString()
-                        | _ ->  parts.[idx]
-                    parts.[parts.Length-1] <- "0"
-                else
-                    parts.[0] <-
-                        match Int32.TryParse parts.[0] with
-                        | true, number -> (number+1).ToString()
-                        | _ ->  parts.[0]
+        let splitVersion (text:string) =
+            let tokens = ["~>";">=";"=" ]
+            match tokens |> List.tryFind(text.StartsWith) with
+            | Some token -> token, text.Replace(token + " ", "")
+            | None -> "=", text
 
-                VersionRange.Between(min, String.Join(".", parts))
-            else if text.StartsWith ">= " then VersionRange.AtLeast(text.Replace(">= ", ""))
-            else if text.StartsWith "= " then VersionRange.Exactly(text.Replace("= ", ""))
-            else VersionRange.Exactly(text)
+        try
+            match splitVersion text with
+            | ">=", version -> VersionRange.AtLeast(version)
+            | "~>", minimum ->
+                let maximum =                    
+                    let promote index (values:string array) =
+                        let parsed, number = Int32.TryParse values.[index]
+                        if parsed then values.[index] <- (number + 1).ToString()
+                        if values.Length > 1 then values.[values.Length - 1] <- "0"
+                        values
+
+                    let parts = minimum.Split '.'
+                    let penultimateItem = Math.Max(parts.Length - 2, 0)
+                    let promoted = parts |> promote penultimateItem
+                    String.Join(".", promoted)
+                VersionRange.Between(minimum, maximum)
+            | _, version -> VersionRange.Exactly(version)
         with
         | _ -> failwithf "could not parse version range \"%s\"" text
 

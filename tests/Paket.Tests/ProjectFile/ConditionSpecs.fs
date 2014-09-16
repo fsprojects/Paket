@@ -59,6 +59,13 @@ let ``should detect net``() =
     FrameworkIdentifier.DetectFromPath(@"..\packages\RhinoMocks\lib\net\Rhino.Mocks.dll").First() |> shouldEqual (DotNetFramework(All,Full))
 
 [<Test>]
+let ``should detect 35, 40 and 45``() =
+    FrameworkIdentifier.DetectFromPath(@"..\packages\FSharpx.Core\lib\35\FSharp.Core.dll").First() |> shouldEqual (DotNetFramework(Framework "v3.5",Full))
+    FrameworkIdentifier.DetectFromPath(@"..\packages\FSharpx.Core\lib\40\FSharp.Core.dll").First() |> shouldEqual (DotNetFramework(Framework "v4.0",Full))
+    FrameworkIdentifier.DetectFromPath(@"..\packages\FSharpx.Core\lib\45\FSharp.Core.dll").First() |> shouldEqual (DotNetFramework(Framework "v4.5",Full))
+    
+
+[<Test>]
 let ``should detect multi-libs``() =
     FrameworkIdentifier.DetectFromPath(@"..\packages\Janitor.Fody\Lib\portable-net4+sl5+wp8+win8+wpa81+MonoAndroid16+MonoTouch40\Janitor.dll") 
         |> shouldEqual 

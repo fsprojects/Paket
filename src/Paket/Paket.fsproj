@@ -74,6 +74,7 @@
     <Compile Include="FrameworkHandling.fs" />
     <Compile Include="ProjectFile.fs" />
     <Compile Include="GitHub.fs" />
+    <Compile Include="SolutionFile.fs" />
     <Compile Include="Nuget.fs" />
     <Compile Include="DependenciesFile.fs" />
     <Compile Include="LockFile.fs" />

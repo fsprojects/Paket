@@ -74,6 +74,15 @@ type ProjectFile =
         for node in nodesToDelete do
             node.ParentNode.RemoveChild(node) |> ignore
 
+    member this.DeleteCustomNodes(dllName) =    
+        let nodesToDelete = List<_>()
+        for node in this.Document.SelectNodes("//ns:Reference", this.Namespaces) do
+            if node.Attributes.["Include"].InnerText.Split(',').[0] = dllName then            
+                nodesToDelete.Add node
+
+        for node in nodesToDelete do
+            node.ParentNode.RemoveChild(node) |> ignore
+
     member this.CreateNode(name) = this.Document.CreateElement(name, ProjectFile.DefaultNameSpace)
 
     member this.CreateNode(name,text) = 
@@ -128,14 +137,16 @@ type ProjectFile =
                       |> Seq.toList with
                 | [] -> compileItemGroup.InsertBefore(node, compileNodes |> Seq.head) |> ignore
                 | items -> compileItemGroup.InsertAfter(node, items |> Seq.last) |> ignore
-            
-    member this.UpdateReferences(extracted, usedPackages : HashSet<string>) = 
+
+    member this.UpdateReferences(extracted, usedPackages : HashSet<string>, hard) = 
         match [ for node in this.Document.SelectNodes("//ns:Project", this.Namespaces) -> node ] with
         | [] -> ()
         | projectNode :: _ -> 
             this.DeletePaketNodes()
             let installInfos = InstallRules.groupDLLs usedPackages extracted
             for dllName, libsWithSameName in installInfos do
+                if hard then
+                    this.DeleteCustomNodes(dllName)
                 if this.HasCustomNodes(dllName) then ()
                 else 
                     let lastLib = ref None
@@ -161,11 +172,19 @@ type ProjectFile =
     member this.Save() =
         if Utils.normalizeXml this.Document <> this.OriginalText then this.Document.Save(this.FileName)
 
-    static member Load(fileName:string) =
-        let fi = FileInfo(fileName)
-        let doc = new XmlDocument()
-        doc.Load fi.FullName
+    member this.ConvertNugetToPaket() =
+        for node in this.Document.SelectNodes("//ns:*[@Include='packages.config']", this.Namespaces) do
+            node.Attributes.["Include"].Value <- "paket.references"
+        if Utils.normalizeXml this.Document <> this.OriginalText then this.Document.Save(this.FileName)
 
-        let manager = new XmlNamespaceManager(doc.NameTable)
-        manager.AddNamespace("ns", ProjectFile.DefaultNameSpace)
-        { FileName = fi.FullName; Document = doc; Namespaces = manager; OriginalText = Utils.normalizeXml doc }
+    static member Load(fileName:string) =
+        try
+            let fi = FileInfo(fileName)
+            let doc = new XmlDocument()
+            doc.Load fi.FullName
+
+            let manager = new XmlNamespaceManager(doc.NameTable)
+            manager.AddNamespace("ns", ProjectFile.DefaultNameSpace)
+            { FileName = fi.FullName; Document = doc; Namespaces = manager; OriginalText = Utils.normalizeXml doc }
+        with
+        | exn -> failwithf "Error while parsing %s:%s      %s" fileName Environment.NewLine exn.Message
