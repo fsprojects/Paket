@@ -118,6 +118,31 @@
 </tr>
 </table>
 
+<div id="strict-mode"></div>
+
+<h3>Strict references</h3>
+
+<p>Paket usually references all direct and indirect dependencies that are listed in your <a href="references_files.md">paket.references</a> files to your project file.
+With the <code>strict</code> mode it will only reference direct dependencies.</p>
+
+<table class="pre"><tr><td class="lines"><pre class="fssnip">
+<span class="l">1: </span>
+<span class="l">2: </span>
+<span class="l">3: </span>
+<span class="l">4: </span>
+<span class="l">5: </span>
+</pre>
+</td>
+<td class="snippet"><pre class="fssnip">
+<span class="i">references</span> <span class="i">strict</span>
+<span class="i">source</span> <span class="s">&quot;</span><span class="s">http</span><span class="s">:</span><span class="s">/</span><span class="s">/</span><span class="s">nuget</span><span class="s">.</span><span class="s">org</span><span class="s">/</span><span class="s">api</span><span class="s">/</span><span class="s">v2</span><span class="s">&quot;</span>
+
+<span class="i">nuget</span> <span class="s">&quot;</span><span class="s">Newtonsoft</span><span class="s">.</span><span class="s">Json</span><span class="s">&quot;</span> <span class="s">&quot;</span><span class="s">~</span><span class="s">&gt;</span><span class="s"> </span><span class="s">6</span><span class="s">.</span><span class="s">0</span><span class="s">&quot;</span>
+<span class="i">nuget</span> <span class="s">&quot;</span><span class="s">UnionArgParser</span><span class="s">&quot;</span> <span class="s">&quot;</span><span class="s">~</span><span class="s">&gt;</span><span class="s"> </span><span class="s">0</span><span class="s">.</span><span class="s">7</span><span class="s">&quot;</span></pre>
+</td>
+</tr>
+</table>
+
 <div id="dependencies"></div>
 
 <h2>Dependencies</h2>
