@@ -57,6 +57,33 @@ let private findAllProjects(folder) =
     |> List.map (fun projectType -> findAllFiles(folder, projectType) |> Seq.toList)
     |> List.concat
 
+let private findPackagesWithContent usedPackages = 
+    usedPackages
+    |> Seq.map (fun p -> DirectoryInfo(Path.Combine("packages", p)))
+    |> Seq.choose (fun packageDir -> packageDir.GetDirectories("Content") |> Array.tryFind (fun _ -> true))
+    |> Seq.toList
+
+let private copyContentFilesToProject project packagesWithContent = 
+
+    let rec copyDirContents (fromDir : DirectoryInfo, toDir : DirectoryInfo) =
+        fromDir.GetDirectories() |> Array.toList
+        |> List.collect (fun subDir -> copyDirContents(subDir, toDir.CreateSubdirectory(subDir.Name)))
+        |> List.append
+            (fromDir.GetFiles() 
+                |> Array.toList
+                |> List.map (fun file -> file.CopyTo(Path.Combine(toDir.FullName, file.Name), true)))
+
+    packagesWithContent
+    |> List.collect (fun packageDir -> copyDirContents (packageDir, (DirectoryInfo(Path.GetDirectoryName(project.FileName)))))
+
+let private removeContentFiles (project: ProjectFile) =
+    project.GetContentFiles() 
+        |> List.sortBy (fun f -> f.FullName)
+        |> List.rev
+        |> List.iter(fun f -> 
+                         File.Delete(f.FullName)
+                         if f.Directory.GetFiles() |> Seq.isEmpty then Directory.Delete(f.Directory.FullName))
+
 /// Installs the given packageFile.
 let Install(regenerate, force, hard, dependenciesFilename) = 
     let lockFile =
@@ -95,7 +122,7 @@ let Install(regenerate, force, hard, dependenciesFilename) =
             else
                 match allPackages |> Map.tryFind name with
                 | Some package ->
-                     if usedPackages.Add name then
+                    if usedPackages.Add name then
                         if not lockFile.Strict then
                             for d,_ in package.DirectDependencies do
                                 addPackage d
@@ -110,8 +137,12 @@ let Install(regenerate, force, hard, dependenciesFilename) =
         |> List.filter (fun file -> usedSourceFiles.Contains(file.Name))
         |> project.UpdateSourceFiles
 
-        project.Save()
+        removeContentFiles project
+        let packagesWithContent = findPackagesWithContent usedPackages
+        let contentFiles = copyContentFilesToProject project packagesWithContent
+        project.UpdateContentFiles(contentFiles)
 
+        project.Save()
 
 /// Finds all outdated packages.
 let FindOutdated(dependenciesFile) = 
@@ -175,7 +206,9 @@ let ConvertFromNuget() =
             File.Move(packageFile.FullName, Path.Combine(packageFile.DirectoryName, "paket.references"))
             
             for file in findAllProjects(packageFile.DirectoryName) do
-                ProjectFile.Load(file.FullName).ConvertNugetToPaket()
+                let project = ProjectFile.Load(file.FullName)
+                project.ConvertNugetToPaket()
+                project.Save()
                            
             tracefn "Converted \"%s\" to \"paket.references\"" packageFile.FullName
 
