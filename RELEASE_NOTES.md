@@ -1,3 +1,6 @@
+#### 0.2.0-alpha003 - 16.09.2014
+* Strict mode - https://github.com/fsprojects/Paket/pull/104
+
 #### 0.2.0-alpha002 - 16.09.2014
 * Allow to use Github files - https://github.com/fsprojects/Paket/pull/96
 
