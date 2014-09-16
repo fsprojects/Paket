@@ -34,7 +34,7 @@ module DependenciesFileParser =
         with
         | _ -> failwithf "could not parse version range \"%s\"" text
 
-    let private (|Remote|Package|Blank|SourceFile|) (line:string) =
+    let private (|Remote|Package|Blank|ReferencesMode|SourceFile|) (line:string) =
         match line.Trim() with
         | _ when String.IsNullOrWhiteSpace line -> Blank
         | trimmed when trimmed.StartsWith "source" -> 
@@ -42,6 +42,7 @@ module DependenciesFileParser =
             let snd = trimmed.IndexOf("\"",fst+1)
             Remote (trimmed.Substring(fst,snd-fst).Replace("\"",""))                
         | trimmed when trimmed.StartsWith "nuget" -> Package(trimmed.Replace("nuget","").Trim())
+        | trimmed when trimmed.StartsWith "references" -> ReferencesMode(trimmed.Replace("references","").Trim() = "strict")
         | trimmed when trimmed.StartsWith "github" ->
             let parts = trimmed.Replace("\"", "").Split ' '
             let getParts (projectSpec:string) =
@@ -55,43 +56,47 @@ module DependenciesFileParser =
         | _ -> Blank
     
     let parseDependenciesFile (lines:string seq) = 
-        ((0,[], [], []), lines)
-        ||> Seq.fold(fun (lineNo, sources: PackageSource list, packages, sourceFiles) line ->
+        ((0, false, [], [], []), lines)
+        ||> Seq.fold(fun (lineNo, referencesMode, sources: PackageSource list, packages, sourceFiles) line ->
             let lineNo = lineNo + 1
             try
                 match line with
-                | Remote newSource -> lineNo, (PackageSource.Parse(newSource.TrimEnd([|'/'|])) :: sources), packages, sourceFiles
-                | Blank -> lineNo, sources, packages, sourceFiles
+                | Remote newSource -> lineNo, referencesMode, (PackageSource.Parse(newSource.TrimEnd([|'/'|])) :: sources), packages, sourceFiles
+                | Blank -> lineNo, referencesMode, sources, packages, sourceFiles
+                | ReferencesMode mode -> lineNo, mode, sources, packages, sourceFiles
                 | Package details ->
                     let parts = details.Split('"')
                     if parts.Length < 4 || String.IsNullOrWhiteSpace parts.[1] || String.IsNullOrWhiteSpace parts.[3] then
                         failwith "missing \""
                     let version = parts.[3]
-                    lineNo, sources, { Sources = sources
-                                       Name = parts.[1]
-                                       ResolverStrategy = if version.StartsWith "!" then ResolverStrategy.Min else ResolverStrategy.Max
-                                       VersionRange = parseVersionRange(version.Trim '!') } :: packages, sourceFiles
+                    lineNo, referencesMode, sources, 
+                        { Sources = sources
+                          Name = parts.[1]
+                          ResolverStrategy = if version.StartsWith "!" then ResolverStrategy.Min else ResolverStrategy.Max
+                          VersionRange = parseVersionRange(version.Trim '!') } :: packages, sourceFiles
                 | SourceFile((owner,project, commit), path) ->
                     let newSourceFile = { Owner = owner
                                           Project = project
                                           Commit = commit
                                           Path = path }
                     tracefn "  %O" newSourceFile
-                    lineNo, sources, packages, newSourceFile :: sourceFiles
+                    lineNo, referencesMode, sources, packages, newSourceFile :: sourceFiles
                     
             with
             | exn -> failwithf "Error in paket.dependencies line %d%s  %s" lineNo Environment.NewLine exn.Message)
-        |> fun (_,_,packages,remoteFiles) ->
+        |> fun (_,mode,_,packages,remoteFiles) ->
+            mode,
             packages |> List.rev,
             remoteFiles |> List.rev
 
 /// Allows to parse and analyze Dependencies files.
-type DependenciesFile(packages : UnresolvedPackage list, remoteFiles : SourceFile list) = 
+type DependenciesFile(strictMode,packages : UnresolvedPackage list, remoteFiles : SourceFile list) = 
     let packages = packages |> Seq.toList
     let dependencyMap = Map.ofSeq (packages |> Seq.map (fun p -> p.Name, p.VersionRange))
     member __.DirectDependencies = dependencyMap
     member __.Packages = packages
     member __.RemoteFiles = remoteFiles
+    member __.Strict = strictMode
     member __.Resolve(force, discovery : IDiscovery) = PackageResolver.Resolve(force, discovery, packages)
     static member FromCode(code:string) : DependenciesFile = 
         DependenciesFile(DependenciesFileParser.parseDependenciesFile <| code.Replace("\r\n","\n").Replace("\r","\n").Split('\n'))

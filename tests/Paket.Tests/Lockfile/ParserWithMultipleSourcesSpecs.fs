@@ -19,8 +19,11 @@ let lockFile = """NUGET
 
 [<Test>]
 let ``should parse lock file``() = 
-    let result = LockFile.Parse(toLines lockFile) |> fst |> Seq.toArray
+    let strict,result,_ = LockFile.Parse(toLines lockFile)
+    let result = result |> Seq.toArray
+
     result.Length |> shouldEqual 6
+    strict |> shouldEqual false
 
     result.[0].Source |> shouldEqual (Nuget "http://nuget.org/api/v2")
     result.[0].Name |> shouldEqual "Castle.Windsor"

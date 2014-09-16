@@ -70,6 +70,7 @@
     <Compile Include="Resolver\SimpleDependenciesSpecs.fs" />
     <Compile Include="Resolver\PessimisticStrategySpecs.fs" />
     <Compile Include="LockFile\GeneratorSpecs.fs" />
+    <Compile Include="LockFile\GenerateStrictModeSpecs.fs" />
     <Compile Include="LockFile\GeneratorWithMutlipleSourcesSpecs.fs" />
     <Compile Include="LockFile\ParserSpecs.fs" />
     <Compile Include="LockFile\ParserWithMultipleSourcesSpecs.fs" />

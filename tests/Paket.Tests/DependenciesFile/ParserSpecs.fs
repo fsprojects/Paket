@@ -16,6 +16,8 @@ nuget "SignalR" "= 3.3.2"
 [<Test>]
 let ``should read simple config``() = 
     let cfg = DependenciesFile.FromCode config1
+    cfg.Strict |> shouldEqual false
+
     cfg.DirectDependencies.["Rx-Main"] |> shouldEqual (VersionRange.Between("2.0", "3.0"))
     cfg.DirectDependencies.["Castle.Windsor-log4net"] |> shouldEqual (VersionRange.Between("3.2", "4.0"))
     cfg.DirectDependencies.["FAKE"] |> shouldEqual (VersionRange.Exactly "1.1")
@@ -66,6 +68,7 @@ nuget "MinPackage" "1.1.3"
 [<Test>]
 let ``should read config with multiple sources``() = 
     let cfg = DependenciesFile.FromCode config4
+    cfg.Strict |> shouldEqual false
 
     (cfg.Packages |> List.find (fun p -> p.Name = "Rx-Main")).Sources |> shouldEqual [Nuget "http://nuget.org/api/v3"; Nuget "http://nuget.org/api/v2"]
     (cfg.Packages |> List.find (fun p -> p.Name = "MinPackage")).Sources |> shouldEqual [Nuget "http://nuget.org/api/v3"; Nuget "http://nuget.org/api/v2"]
@@ -134,3 +137,17 @@ let ``should read source file from config``() =
             Project = "FAKE"
             Path = "src/app/FAKE/FileWithCommit.fs"
             Commit = Some "bla123zxc" } ]
+
+let strictConfig = """
+references strict
+source "http://nuget.org/api/v2" // first source
+
+nuget "FAKE" "~> 3.0"
+"""
+
+[<Test>]
+let ``should read strict config``() = 
+    let cfg = DependenciesFile.FromCode strictConfig
+    cfg.Strict |> shouldEqual true
+
+    (cfg.Packages |> List.find (fun p -> p.Name = "FAKE")).Sources |> shouldEqual [Nuget "http://nuget.org/api/v2"]

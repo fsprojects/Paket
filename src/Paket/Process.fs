@@ -48,7 +48,7 @@ let private findAllProjects(folder) =
 
 /// Installs the given packageFile.
 let Install(regenerate, force, hard, dependenciesFilename) = 
-    let packages, sourceFiles =
+    let strict, packages, sourceFiles =
         let lockfile = findLockfile dependenciesFilename
         
         if regenerate || (not lockfile.Exists) then 
@@ -91,9 +91,10 @@ let Install(regenerate, force, hard, dependenciesFilename) =
             match allPackages |> Map.tryFind name with
             | Some package ->
                 if usedPackages.Add name then
-                    for d,_ in package.DirectDependencies do
-                        addPackage d
-            | None -> failwithf "Project %s references package %s, but it was not found in the packages.lock file." proj.FullName name
+                    if not strict then
+                        for d,_ in package.DirectDependencies do
+                            addPackage d
+            | None -> failwithf "Project %s references package %s, but it was not found in the paket.lock file." proj.FullName name
 
         directPackages
         |> Array.iter addPackage
@@ -108,9 +109,9 @@ let FindOutdated(dependenciesFile) =
     let lockFile = findLockfile dependenciesFile
 
     //TODO: Anything we need to do for source files here?    
-    let newPackages, _ = LockFile.Create(true, dependenciesFile)
-    let installedPackages, _ =
-        if lockFile.Exists then LockFile.Parse(File.ReadAllLines lockFile.FullName) else [], []
+    let _,newPackages, _ = LockFile.Create(true, dependenciesFile)
+    let _,installedPackages, _ =
+        if lockFile.Exists then LockFile.Parse(File.ReadAllLines lockFile.FullName) else false, [], []
 
     [for p in installedPackages do
         match newPackages.[p.Name] with

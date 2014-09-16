@@ -47,7 +47,7 @@ let extractErrors (resolved : PackageResolution) =
 
 
 /// [omit]
-let serializePackages (resolved : PackageResolution) = 
+let serializePackages strictMode (resolved : PackageResolution) = 
     let sources = 
         resolved
         |> Seq.map (fun x ->
@@ -64,11 +64,12 @@ let serializePackages (resolved : PackageResolution) =
 
     let all = 
         let hasReported = ref false
-        [ for source, packages in sources do
+        [ if strictMode then
+            yield "REFERENCES: STRICT"
+          for source, packages in sources do
               if not !hasReported then
                 yield "NUGET"
                 hasReported := true
-
               yield "  remote: " + source
               yield "  specs:"
               for _,package in packages do
@@ -100,15 +101,17 @@ type private ParseState =
     { RepositoryType : string option
       Remote : string option
       Packages : ResolvedPackage list
-      SourceFiles : SourceFile list }
+      SourceFiles : SourceFile list
+      Strict: bool }
 
-let private (|Remote|NugetPackage|NugetDependency|SourceFile|Spec|RepositoryType|Blank|) (state, line:string) =
+let private (|Remote|NugetPackage|NugetDependency|SourceFile|RepositoryType|Blank|ReferencesMode|) (state, line:string) =
     match (state.RepositoryType, line.Trim()) with
     | _, "NUGET" -> RepositoryType "NUGET"
     | _, "GITHUB" -> RepositoryType "GITHUB"
     | _, _ when String.IsNullOrWhiteSpace line -> Blank
     | _, trimmed when trimmed.StartsWith "remote:" -> Remote (trimmed.Substring(trimmed.IndexOf(": ") + 2))
-    | _, trimmed when trimmed.StartsWith "specs:" -> Spec
+    | _, trimmed when trimmed.StartsWith "specs:" -> Blank
+    | _, trimmed when trimmed.StartsWith "REFERENCES:" -> ReferencesMode(trimmed.Replace("REFERENCES:","").Trim() = "STRICT")
     | _, trimmed when line.StartsWith "      " ->
         let parts = trimmed.Split '(' 
         NugetDependency (parts.[0].Trim(),parts.[1].Replace("(", "").Replace(")", "").Trim())
@@ -121,11 +124,12 @@ let private (|Remote|NugetPackage|NugetDependency|SourceFile|Spec|RepositoryType
 let Parse(lines : string seq) =
     let remove textToRemove (source:string) = source.Replace(textToRemove, "")
     let removeBrackets = remove "(" >> remove ")"
-    ({ RepositoryType = None; Remote = None; Packages = []; SourceFiles = [] }, lines)
+    ({ RepositoryType = None; Remote = None; Packages = []; SourceFiles = []; Strict = false }, lines)
     ||> Seq.fold(fun state line ->
         match (state, line) with
         | Remote remoteSource -> { state with Remote = Some remoteSource }
-        | Spec | Blank -> state
+        | Blank -> state
+        | ReferencesMode mode -> { state with Strict = mode }
         | RepositoryType repoType -> { state with RepositoryType = Some repoType }
         | NugetPackage details ->
             match state.Remote with
@@ -159,20 +163,20 @@ let Parse(lines : string seq) =
                                     Path = path } :: state.SourceFiles }
             | _ -> failwith "invalid remote details."
         )
-    |> fun state -> List.rev state.Packages, List.rev state.SourceFiles
+    |> fun state -> state.Strict, List.rev state.Packages, List.rev state.SourceFiles
 
 /// Analyzes the dependencies from the paket.dependencies file.
 let Create(force, dependenciesFilename) =     
     tracefn "Parsing %s" dependenciesFilename
     let dependenciesFile = DependenciesFile.ReadFromFile dependenciesFilename
-    dependenciesFile.Resolve(force, Nuget.NugetDiscovery), dependenciesFile.RemoteFiles
+    dependenciesFile,dependenciesFile.Resolve(force, Nuget.NugetDiscovery), dependenciesFile.RemoteFiles
 
 /// Updates the Lock file with the analyzed dependencies from the paket.dependencies file.
 let Update(force, dependenciesFilename, lockFile) = 
-    let packageResolution, remoteFiles = Create(force, dependenciesFilename)
+    let dependenciesFile,packageResolution, remoteFiles = Create(force, dependenciesFilename)
     let errors = extractErrors packageResolution
     if errors = "" then
-        let output = String.Join(Environment.NewLine, serializePackages (packageResolution), serializeSourceFiles remoteFiles)
+        let output = String.Join(Environment.NewLine, serializePackages dependenciesFile.Strict packageResolution, serializeSourceFiles remoteFiles)
         File.WriteAllText(lockFile, output)
         tracefn "Locked version resolutions written to %s" lockFile
     else
