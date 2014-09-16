@@ -6,19 +6,19 @@ open System.IO
 open System.Collections.Generic
 
 /// Downloads and extracts all package.
-let ExtractPackages(force, packages : ResolvedPackage seq) = 
-    packages |> Seq.map (fun package -> 
-                            async {
-                                match package.Source with
-                                | Nuget source -> 
-                                    let! packageFile = 
-                                        Nuget.DownloadPackage(source, package.Name, [package.Source], package.Version.ToString(), force)
-                                    let! folder = Nuget.ExtractPackage(packageFile, package.Name, package.Version.ToString(), force)
-                                    return package, Nuget.GetLibraries folder
-                                | LocalNuget path -> 
-                                    let packageFile = Path.Combine(path, sprintf "%s.%s.nupkg" package.Name (package.Version.ToString()))
-                                    let! folder = Nuget.ExtractPackage(packageFile, package.Name, package.Version.ToString(), force)
-                                    return package, Nuget.GetLibraries folder })
+let ExtractPackages(force, packages) = 
+    Seq.map (fun (package : ResolvedPackage) -> 
+        async { 
+            match package.Source with
+            | Nuget source -> 
+                let! packageFile = Nuget.DownloadPackage(source, package.Name, [ package.Source ], package.Version.ToString(), force)
+                let! folder = Nuget.ExtractPackage(packageFile, package.Name, package.Version.ToString(), force)
+                return package, Nuget.GetLibraries folder
+            | LocalNuget path -> 
+                let packageFile = Path.Combine(path, sprintf "%s.%s.nupkg" package.Name (package.Version.ToString()))
+                let! folder = Nuget.ExtractPackage(packageFile, package.Name, package.Version.ToString(), force)
+                return package, Nuget.GetLibraries folder
+        }) packages
 
 let findLockfile dependenciesFile =
     let fi = FileInfo(dependenciesFile)
@@ -54,7 +54,8 @@ let Install(regenerate, force, hard, dependenciesFilename) =
         if regenerate || (not lockFileName.Exists) then 
             LockFile.Update(force, dependenciesFilename, lockFileName.FullName)
         
-        File.ReadAllLines lockFileName.FullName |> LockFile.LockFile.Parse
+        File.ReadAllLines lockFileName.FullName 
+        |> LockFile.LockFile.Parse
 
     let extractedPackages = 
         ExtractPackages(force, lockFile.ResolvedPackages)
