@@ -124,8 +124,8 @@ let ``should report errors if nuget is single``() =
 
 [<Test>]
 let ``should read source file from config``() =
-    let config = """github "fsharp:FAKE" "src/app/FAKE/Cli.fs"
-                    github "fsharp:FAKE:bla123zxc" "src/app/FAKE/FileWithCommit.fs" """
+    let config = """github "fsharp/FAKE" "src/app/FAKE/Cli.fs"
+                    github "fsharp/FAKE:bla123zxc" "src/app/FAKE/FileWithCommit.fs" """
     let dependencies = DependenciesFile.FromCode config
     dependencies.RemoteFiles
     |> shouldEqual

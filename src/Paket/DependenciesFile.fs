@@ -46,13 +46,13 @@ module DependenciesFileParser =
         | trimmed when trimmed.StartsWith "github" ->
             let parts = trimmed.Replace("\"", "").Split ' '
             let getParts (projectSpec:string) =
-                match projectSpec.Split ':' with
+                match projectSpec.Split [|':'; '/'|] with
                 | [| owner; project |] -> owner, project, None
                 | [| owner; project; commit |] -> owner, project, Some commit
-                | _ -> failwith "invalid github specification"
+                | _ -> failwithf "invalid github specification:%s     %s" Environment.NewLine trimmed
             match parts with
             | [| _; projectSpec; fileSpec |] -> SourceFile(getParts projectSpec, fileSpec)
-            | _ -> failwith "invalid github specification"
+            | _ -> failwithf "invalid github specification:%s     %s" Environment.NewLine trimmed
         | _ -> Blank
     
     let parseDependenciesFile (lines:string seq) = 
