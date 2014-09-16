@@ -27,25 +27,26 @@ GITHUB
 
 [<Test>]
 let ``should parse lock file``() = 
-    let strict, packages, sourceFiles = LockFile.Parse(toLines lockFile)
-    packages.Length |> shouldEqual 6
+    let lockFile = LockFile.Parse(toLines lockFile)
+    lockFile.ResolvedPackages.Length |> shouldEqual 6
+    lockFile.Strict |> shouldEqual false
 
-    packages.[0].Source |> shouldEqual (Nuget "http://nuget.org/api/v2")
-    packages.[0].Name |> shouldEqual "Castle.Windsor"
-    packages.[0].Version |> shouldEqual (SemVer.parse "2.1")
-    packages.[0].DirectDependencies |> shouldEqual []
+    lockFile.ResolvedPackages.[0].Source |> shouldEqual (Nuget "http://nuget.org/api/v2")
+    lockFile.ResolvedPackages.[0].Name |> shouldEqual "Castle.Windsor"
+    lockFile.ResolvedPackages.[0].Version |> shouldEqual (SemVer.parse "2.1")
+    lockFile.ResolvedPackages.[0].DirectDependencies |> shouldEqual []
 
-    packages.[1].Source |> shouldEqual (Nuget "http://nuget.org/api/v2")
-    packages.[1].Name |> shouldEqual "Castle.Windsor-log4net"
-    packages.[1].Version |> shouldEqual (SemVer.parse "3.3")
-    packages.[1].DirectDependencies |> shouldEqual ["Castle.Windsor", Latest; "log4net", Latest]
+    lockFile.ResolvedPackages.[1].Source |> shouldEqual (Nuget "http://nuget.org/api/v2")
+    lockFile.ResolvedPackages.[1].Name |> shouldEqual "Castle.Windsor-log4net"
+    lockFile.ResolvedPackages.[1].Version |> shouldEqual (SemVer.parse "3.3")
+    lockFile.ResolvedPackages.[1].DirectDependencies |> shouldEqual ["Castle.Windsor", Latest; "log4net", Latest]
     
-    packages.[5].Source |> shouldEqual (Nuget "http://nuget.org/api/v2")
-    packages.[5].Name |> shouldEqual "log4net"
-    packages.[5].Version |> shouldEqual (SemVer.parse "1.1")
-    packages.[5].DirectDependencies |> shouldEqual ["log", Latest]
+    lockFile.ResolvedPackages.[5].Source |> shouldEqual (Nuget "http://nuget.org/api/v2")
+    lockFile.ResolvedPackages.[5].Name |> shouldEqual "log4net"
+    lockFile.ResolvedPackages.[5].Version |> shouldEqual (SemVer.parse "1.1")
+    lockFile.ResolvedPackages.[5].DirectDependencies |> shouldEqual ["log", Latest]
 
-    sourceFiles |> shouldEqual
+    lockFile.SourceFiles |> shouldEqual
         [ { Owner = "fsharp"
             Project = "FAKE"
             Path = "src/app/FAKE/Cli.fs"
@@ -55,9 +56,9 @@ let ``should parse lock file``() =
             Path = "src/app/Fake.Deploy.Lib/FakeDeployAgentHelper.fs"
             Commit = Some "Globbing" } ]
     
-    sourceFiles.[0].CommitWithDefault |> shouldEqual "master"
-    sourceFiles.[0].Path |> shouldEqual "src/app/FAKE/Cli.fs"
-    sourceFiles.[0].ToString() |> shouldEqual "(fsharp:FAKE:master) src/app/FAKE/Cli.fs"
+    lockFile.SourceFiles.[0].CommitWithDefault |> shouldEqual "master"
+    lockFile.SourceFiles.[0].Path |> shouldEqual "src/app/FAKE/Cli.fs"
+    lockFile.SourceFiles.[0].ToString() |> shouldEqual "(fsharp:FAKE:master) src/app/FAKE/Cli.fs"
 
 let strictLockFile = """REFERENCES: STRICT
 NUGET
@@ -77,13 +78,12 @@ NUGET
 
 [<Test>]
 let ``should parse strict lock file``() = 
-    let strict,result,_ = LockFile.Parse(toLines strictLockFile) 
-    let result = result |> Seq.toArray
-    result.Length |> shouldEqual 6
-    strict |> shouldEqual true
+    let lockFile = LockFile.Parse(toLines strictLockFile) 
+    lockFile.ResolvedPackages.Length |> shouldEqual 6
+    lockFile.Strict |> shouldEqual true
 
-    result.[5].Source |> shouldEqual (Nuget "http://nuget.org/api/v2")
-    result.[5].Name |> shouldEqual "log4net"
-    result.[5].Version |> shouldEqual (SemVer.parse "1.1")
-    result.[5].DirectDependencies |> shouldEqual ["log", Latest]
+    lockFile.ResolvedPackages.[5].Source |> shouldEqual (Nuget "http://nuget.org/api/v2")
+    lockFile.ResolvedPackages.[5].Name |> shouldEqual "log4net"
+    lockFile.ResolvedPackages.[5].Version |> shouldEqual (SemVer.parse "1.1")
+    lockFile.ResolvedPackages.[5].DirectDependencies |> shouldEqual ["log", Latest]
 

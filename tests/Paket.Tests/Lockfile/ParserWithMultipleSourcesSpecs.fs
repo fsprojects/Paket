@@ -19,24 +19,22 @@ let lockFile = """NUGET
 
 [<Test>]
 let ``should parse lock file``() = 
-    let strict,result,_ = LockFile.Parse(toLines lockFile)
-    let result = result |> Seq.toArray
+    let lockFile = LockFile.Parse(toLines lockFile)
+    lockFile.ResolvedPackages.Length |> shouldEqual 6
+    lockFile.Strict |> shouldEqual false
 
-    result.Length |> shouldEqual 6
-    strict |> shouldEqual false
+    lockFile.ResolvedPackages.[0].Source |> shouldEqual (Nuget "http://nuget.org/api/v2")
+    lockFile.ResolvedPackages.[0].Name |> shouldEqual "Castle.Windsor"
+    lockFile.ResolvedPackages.[0].Version |> shouldEqual (SemVer.parse "2.1")
 
-    result.[0].Source |> shouldEqual (Nuget "http://nuget.org/api/v2")
-    result.[0].Name |> shouldEqual "Castle.Windsor"
-    result.[0].Version |> shouldEqual (SemVer.parse "2.1")
-
-    result.[1].Source |> shouldEqual (Nuget "http://nuget.org/api/v2")
-    result.[1].Name |> shouldEqual "Castle.Windsor-log4net"
-    result.[1].Version |> shouldEqual (SemVer.parse "3.3")
+    lockFile.ResolvedPackages.[1].Source |> shouldEqual (Nuget "http://nuget.org/api/v2")
+    lockFile.ResolvedPackages.[1].Name |> shouldEqual "Castle.Windsor-log4net"
+    lockFile.ResolvedPackages.[1].Version |> shouldEqual (SemVer.parse "3.3")
     
-    result.[4].Source |> shouldEqual (Nuget "http://nuget.org/api/v3")
-    result.[4].Name |> shouldEqual "Rx-Core"
-    result.[4].Version |> shouldEqual (SemVer.parse "2.1")
+    lockFile.ResolvedPackages.[4].Source |> shouldEqual (Nuget "http://nuget.org/api/v3")
+    lockFile.ResolvedPackages.[4].Name |> shouldEqual "Rx-Core"
+    lockFile.ResolvedPackages.[4].Version |> shouldEqual (SemVer.parse "2.1")
 
-    result.[5].Source |> shouldEqual (Nuget "http://nuget.org/api/v3")
-    result.[5].Name |> shouldEqual "Rx-Main"
-    result.[5].Version |> shouldEqual (SemVer.parse "2.0")
+    lockFile.ResolvedPackages.[5].Source |> shouldEqual (Nuget "http://nuget.org/api/v3")
+    lockFile.ResolvedPackages.[5].Name |> shouldEqual "Rx-Main"
+    lockFile.ResolvedPackages.[5].Version |> shouldEqual (SemVer.parse "2.0")

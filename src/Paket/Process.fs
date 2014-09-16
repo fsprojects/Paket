@@ -48,21 +48,21 @@ let private findAllProjects(folder) =
 
 /// Installs the given packageFile.
 let Install(regenerate, force, hard, dependenciesFilename) = 
-    let strict, packages, sourceFiles =
-        let lockfile = findLockfile dependenciesFilename
+    let lockFile =
+        let lockFileName = findLockfile dependenciesFilename
         
-        if regenerate || (not lockfile.Exists) then 
-            LockFile.Update(force, dependenciesFilename, lockfile.FullName)
+        if regenerate || (not lockFileName.Exists) then 
+            LockFile.Update(force, dependenciesFilename, lockFileName.FullName)
         
-        File.ReadAllLines lockfile.FullName |> LockFile.Parse
+        File.ReadAllLines lockFileName.FullName |> LockFile.LockFile.Parse
 
     let extractedPackages = 
-        ExtractPackages(force, packages)
+        ExtractPackages(force, lockFile.ResolvedPackages)
         |> Async.Parallel
         |> Async.RunSynchronously
 
     let rootPath = dependenciesFilename |> Path.GetDirectoryName
-    sourceFiles
+    lockFile.SourceFiles
     |> List.map(fun source ->
             async {
                 let destination = Path.Combine(rootPath, source.FilePath)
@@ -91,7 +91,7 @@ let Install(regenerate, force, hard, dependenciesFilename) =
             match allPackages |> Map.tryFind name with
             | Some package ->
                 if usedPackages.Add name then
-                    if not strict then
+                    if not lockFile.Strict then
                         for d,_ in package.DirectDependencies do
                             addPackage d
             | None -> failwithf "Project %s references package %s, but it was not found in the paket.lock file." proj.FullName name
@@ -100,7 +100,7 @@ let Install(regenerate, force, hard, dependenciesFilename) =
         |> Array.iter addPackage
         
         project.UpdateReferences(extractedPackages,usedPackages,hard)
-        project.UpdateSourceFiles(sourceFiles |> List.map(fun s -> s.FilePath))
+        project.UpdateSourceFiles(lockFile.SourceFiles |> List.map(fun s -> s.FilePath))
         project.Save()
 
 
@@ -110,10 +110,10 @@ let FindOutdated(dependenciesFile) =
 
     //TODO: Anything we need to do for source files here?    
     let _,newPackages, _ = LockFile.Create(true, dependenciesFile)
-    let _,installedPackages, _ =
-        if lockFile.Exists then LockFile.Parse(File.ReadAllLines lockFile.FullName) else false, [], []
+    let lockFile  =
+        if lockFile.Exists then LockFile.LockFile.Parse(File.ReadAllLines lockFile.FullName) else LockFile.LockFile(false,[],[])
 
-    [for p in installedPackages do
+    [for p in lockFile.ResolvedPackages do
         match newPackages.[p.Name] with
         | Resolved newVersion -> 
             if p.Version <> newVersion.Version then 
