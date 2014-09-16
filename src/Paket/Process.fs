@@ -62,16 +62,16 @@ let Install(regenerate, force, hard, dependenciesFilename) =
         |> Async.RunSynchronously
 
     let rootPath = dependenciesFilename |> Path.GetDirectoryName
+    
     lockFile.SourceFiles
-    |> List.map(fun source ->
-            async {
-                let destination = Path.Combine(rootPath, source.FilePath)
-                if File.Exists destination then tracefn "%s already exists locally" (source.ToString())
-                else
-                    tracefn "Downloading %s..." (source.ToString())
-                    let! file = GitHub.downloadFile source
-                    Directory.CreateDirectory(destination |> Path.GetDirectoryName) |> ignore
-                    File.WriteAllText(destination, file) })
+    |> List.map (fun source -> 
+           async { 
+               let destination = Path.Combine(rootPath, source.FilePath)
+               tracefn "Downloading %s..." (source.ToString())
+               let! file = GitHub.downloadFile source
+               Directory.CreateDirectory(destination |> Path.GetDirectoryName) |> ignore
+               File.WriteAllText(destination, file)
+           })
     |> Async.Parallel
     |> Async.Ignore
     |> Async.RunSynchronously
