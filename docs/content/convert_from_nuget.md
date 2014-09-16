@@ -18,8 +18,4 @@ If the `packages.config` is solution-level, then its dependencies will be writte
 Afterwards it will run the [paket install](paket_install.html) process with the `--hard` flag. This will analyze the dependencies, generate a [paket.lock](lock_file.html) file and remove all the old package references from your project files and install new references in Paket's syntax.
 
     [lang=batchfile]
-    $ paket convert-from-nuget [--dependencies-file=FILE]
-
-Options:
-
-  `--dependencies-file`: Use the specified file instead of [`paket.dependencies`](dependencies_file.html).
+    $ paket convert-from-nuget
