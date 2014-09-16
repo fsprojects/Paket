@@ -132,7 +132,7 @@ type FrameworkIdentifier =
             | "sl4-wp" -> Some(WindowsPhoneApp "7.1")
             | "sl4-wp71" -> Some(WindowsPhoneApp "7.1")
             | _ -> 
-                match profileMapping |> Seq.tryFind (fun (_,p) -> path = p) with
+                match profileMapping |> Seq.tryFind (fun (_,p) -> path.ToLower() = p.ToLower()) with
                 | None -> None
                 | Some (profile,_) -> Some(PortableFramework("7.0",profile))
 
