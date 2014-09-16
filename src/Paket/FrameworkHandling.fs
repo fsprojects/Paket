@@ -59,6 +59,54 @@ type FrameworkIdentifier =
         | Silverlight v -> sprintf "%s And $(SilverlightVersion) == '%s'" (x.GetFrameworkIdentifier()) v
 
     static member DetectFromPath(path : string) : FrameworkIdentifier option = 
+
+        let profileMapping = 
+            [ "Profile2", "portable-net4+sl4+netcore45+wp7"
+              "Profile3", "portable-net4+sl4"
+              "Profile4", "portable-net45+sl4+netcore45+wp7"
+              "Profile5", "portable-net4+netcore45+MonoAndroid1+MonoTouch1"
+              "Profile6", "portable-net403+netcore45+MonoAndroid1+MonoTouch1"
+              "Profile7", "portable-net45+netcore45+MonoAndroid1+MonoTouch1"
+              "Profile14", "portable-net4+sl5+MonoAndroid1+MonoTouch1"
+              "Profile18", "portable-net403+sl4"
+              "Profile19", "portable-net403+sl5+MonoAndroid1+MonoTouch1"
+              "Profile23", "portable-net45+sl4"
+              "Profile24", "portable-net45+sl5+MonoAndroid1+MonoTouch1"
+              "Profile31", "portable-netcore451+wp81"
+              "Profile32", "portable-netcore451+wpa81"
+              "Profile36", "portable-net4+sl4+netcore45+wp8"
+              "Profile37", "portable-net4+sl5+netcore45+MonoAndroid1+MonoTouch1"
+              "Profile41", "portable-net403+sl4+netcore45"
+              "Profile42", "portable-net403+sl5+netcore45+MonoAndroid1+MonoTouch1"
+              "Profile44", "portable-net451+netcore451"
+              "Profile46", "portable-net45+sl4+netcore45"
+              "Profile47", "portable-net45+sl5+netcore45+MonoAndroid1+MonoTouch1"
+              "Profile49", "portable-net45+wp8+MonoAndroid1+MonoTouch1"
+              "Profile78", "portable-net45+netcore45+wp8+MonoAndroid1+MonoTouch1"
+              "Profile84", "portable-wpa81+wp81"
+              "Profile88", "portable-net4+sl4+netcore45+wp71"
+              "Profile92", "portable-net4+netcore45+wpa81+MonoAndroid1+MonoTouch1"
+              "Profile95", "portable-net403+sl4+netcore45+wp7"
+              "Profile96", "portable-net403+sl4+netcore45+wp71"
+              "Profile102", "portable-net403+netcore45+wpa81+MonoAndroid1+MonoTouch1"
+              "Profile104", "portable-net45+sl4+netcore45+wp71"
+              "Profile111", "portable-net45+netcore45+wpa81+MonoAndroid1+MonoTouch1"
+              "Profile136", "portable-net4+sl5+netcore45+wp8+MonoAndroid1+MonoTouch1"
+              "Profile143", "portable-net403+sl4+netcore45+wp8"
+              "Profile147", "portable-net403+sl5+netcore45+wp8+MonoAndroid1+MonoTouch1"
+              "Profile151", "portable-net451+netcore451+wpa81"
+              "Profile154", "portable-net45+sl4+netcore45+wp8"
+              "Profile157", "portable-netcore451+wpa81+wp81"
+              "Profile158", "portable-net45+sl5+netcore45+wp8+MonoAndroid1+MonoTouch1"
+              "Profile225", "portable-net4+sl5+netcore45+wpa81+MonoAndroid1+MonoTouch1"
+              "Profile240", "portable-net403+sl5+netcore45+wpa81"
+              "Profile255", "portable-net45+sl5+netcore45+wpa81+MonoAndroid1+MonoTouch1"
+              "Profile259", "portable-net45+netcore45+wpa81+wp8+MonoAndroid1+MonoTouch1"
+              "Profile328", "portable-net4+sl5+netcore45+wpa81+wp8+MonoAndroid1+MonoTouch1"
+              "Profile328", "portable-net4+sl5+wp8+win8+wpa81+monoandroid16+monotouch40"
+              "Profile336", "portable-net403+sl5+netcore45+wpa81+wp8+MonoAndroid1+MonoTouch1"
+              "Profile344", "portable-net45+sl5+netcore45+wpa81+wp8+MonoAndroid1+MonoTouch1" ]
+
         let extract path = 
             match path with
             | "net" -> Some(DotNetFramework(All, Full))
@@ -83,8 +131,11 @@ type FrameworkIdentifier =
             | "sl5" -> Some(Silverlight "v5.0")
             | "sl4-wp" -> Some(WindowsPhoneApp "7.1")
             | "sl4-wp71" -> Some(WindowsPhoneApp "7.1")
-            | "portable-net4+sl5+wp8+win8+wpa81+monoandroid16+monotouch40" -> Some(PortableFramework("7.0","Profile328"))
-            | _ -> None
+            | _ -> 
+                match profileMapping |> Seq.tryFind (fun (_,p) -> path = p) with
+                | None -> None
+                | Some (profile,_) -> Some(PortableFramework("7.0",profile))
+
         
         let path = path.Replace("\\", "/").ToLower()
         let fi = new FileInfo(path)
