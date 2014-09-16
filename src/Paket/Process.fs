@@ -38,7 +38,10 @@ let extractReferencesFromListFile projectFile =
     |> Array.map (fun s -> s.Trim())
     |> Array.filter (fun s -> System.String.IsNullOrWhiteSpace s |> not)
 
-let private findAllProjects(folder) = DirectoryInfo(folder).EnumerateFiles("*.*proj", SearchOption.AllDirectories)
+let private findAllProjects(folder) = 
+    ["csproj";"fsproj";"vbproj"]
+    |> List.map (fun projectType -> DirectoryInfo(folder).EnumerateFiles(sprintf "*.%s" projectType, SearchOption.AllDirectories) |> Seq.toList)
+    |> List.concat
 
 /// Installs the given packageFile.
 let Install(regenerate, force, hard, dependenciesFile) = 

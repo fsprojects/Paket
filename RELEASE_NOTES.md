@@ -1,3 +1,6 @@
+#### 0.1.4 - 16.09.2014
+* Only vbproj, csproj and fsproj files are handled
+
 #### 0.1.3 - 15.09.2014
 * Detect FSharpx.Core in packages
 
