@@ -1,3 +1,6 @@
+#### 0.2.0-alpha004 - 16.09.2014
+* Detecting portable profiles
+
 #### 0.2.0-alpha003 - 16.09.2014
 * Strict mode - https://github.com/fsprojects/Paket/pull/104
 
