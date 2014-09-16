@@ -141,8 +141,8 @@ type ProjectFile =
                     project.AppendChild(itemGroup)
                 | compileItems -> compileItems.[0].ParentNode            
         
-            // Insert all source files in their correct position.
-            for sourceFile in sourceFiles do
+            // Insert all source files to the top of the list, but keep alphabetical order
+            for sourceFile in sourceFiles |> List.sortBy (fun x -> x.Name) |> List.rev do
                 let path = Uri(this.FileName).MakeRelativeUri(Uri(sourceFile.FilePath)).ToString().Replace("/", "\\")
                 let node =
                     let node = this.CreateNode("Compile")
@@ -151,15 +151,7 @@ type ProjectFile =
                     |> addChild (this.CreateNode("Paket","True"))
                     |> addChild (this.CreateNode("Link",sourceFile.Name))
 
-                match compileItemGroup.ChildNodes.Count with
-                | 0 -> compileItemGroup.AppendChild(node) |> ignore
-                | _ ->
-                    let compileNodes = compileItemGroup.ChildNodes |> Seq.cast<XmlNode>
-                    match compileNodes
-                          |> Seq.takeWhile(fun n -> String.Compare(n.Attributes.["Include"].Value, path, true) = -1)
-                          |> Seq.toList with
-                    | [] -> compileItemGroup.InsertBefore(node, compileNodes |> Seq.head) |> ignore
-                    | items -> compileItemGroup.InsertAfter(node, items |> Seq.last) |> ignore
+                compileItemGroup.PrependChild(node) |> ignore                
 
     member this.UpdateReferences(extracted, usedPackages : HashSet<string>, hard) = 
         match [ for node in this.Document.SelectNodes("//ns:Project", this.Namespaces) -> node ] with
