@@ -1,6 +1,0 @@
-source "http://nuget.org/api/v2"
-
-nuget "Newtonsoft.Json" "~> 6.0"
-github "fsharp:FAKE" "src/app/FAKE/Cli.fs"
-github "fsharp:FAKE:Globbing" "/src/app/Fake.Deploy.Lib/FakeDeployAgentHelper.fs"
-github "fsharp:FAKE:b019e6db78b88386447a1efd1bd70826f5008344" "src/app/FAKE/CommandlineParams.fs"
