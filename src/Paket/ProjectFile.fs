@@ -127,7 +127,7 @@ type ProjectFile =
         this.DeleteIfEmpty("//ns:Project/ns:Choose/ns:When")
         this.DeleteIfEmpty("//ns:Project/ns:Choose")
 
-    member this.UpdateSourceFiles(sourceFiles) =
+    member this.UpdateSourceFiles(sourceFiles:SourceFile list) =
         match [ for node in this.Document.SelectNodes("//ns:Project", this.Namespaces) -> node ] with
         | [] -> ()
         | _ -> 
@@ -143,12 +143,14 @@ type ProjectFile =
         
             // Insert all source files in their correct position.
             for sourceFile in sourceFiles do
-                let path = Uri(this.FileName).MakeRelativeUri(Uri(sourceFile)).ToString().Replace("/", "\\")
+                let path = Uri(this.FileName).MakeRelativeUri(Uri(sourceFile.FilePath)).ToString().Replace("/", "\\")
                 let node =
                     let node = this.CreateNode("Compile")
                     node.SetAttribute("Include", path)
                     node
                     |> addChild (this.CreateNode("Paket","True"))
+                    |> addChild (this.CreateNode("Link",sourceFile.Name))
+
                 match compileItemGroup.ChildNodes.Count with
                 | 0 -> compileItemGroup.AppendChild(node) |> ignore
                 | _ ->

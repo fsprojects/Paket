@@ -78,7 +78,7 @@ module DependenciesFileParser =
                     let newSourceFile = { Owner = owner
                                           Project = project
                                           Commit = commit
-                                          Path = path }
+                                          Name = path }
                     tracefn "  %O" newSourceFile
                     lineNo, referencesMode, sources, packages, newSourceFile :: sourceFiles
                     

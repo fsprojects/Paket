@@ -91,17 +91,17 @@ type PackageSource =
 type SourceFile =
     { Owner : string
       Project : string
-      Path : string
+      Name : string
       Commit : string option }
     member this.FilePath =
-        let path = this.Path
+        let path = this.Name
                     .TrimStart('/')
                     .Replace("/", "\\")
         let di = DirectoryInfo(Path.Combine("paket-files", this.Owner, this.Project, this.CommitWithDefault, path))
         di.FullName
 
     member this.CommitWithDefault = defaultArg this.Commit "master"
-    override this.ToString() = sprintf "(%s:%s:%s) %s" this.Owner this.Project this.CommitWithDefault this.Path
+    override this.ToString() = sprintf "(%s:%s:%s) %s" this.Owner this.Project this.CommitWithDefault this.Name
             
 /// Represents an unresolved package.
 type UnresolvedPackage =

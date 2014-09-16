@@ -131,11 +131,11 @@ let ``should read source file from config``() =
     |> shouldEqual
         [ { Owner = "fsharp"
             Project = "FAKE"
-            Path = "src/app/FAKE/Cli.fs"
+            Name = "src/app/FAKE/Cli.fs"
             Commit = None }
           { Owner = "fsharp"
             Project = "FAKE"
-            Path = "src/app/FAKE/FileWithCommit.fs"
+            Name = "src/app/FAKE/FileWithCommit.fs"
             Commit = Some "bla123zxc" } ]
 
 let strictConfig = """

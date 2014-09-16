@@ -49,15 +49,15 @@ let ``should parse lock file``() =
     lockFile.SourceFiles |> shouldEqual
         [ { Owner = "fsharp"
             Project = "FAKE"
-            Path = "src/app/FAKE/Cli.fs"
+            Name = "src/app/FAKE/Cli.fs"
             Commit = None }
           { Owner = "fsharp"
             Project = "FAKE"
-            Path = "src/app/Fake.Deploy.Lib/FakeDeployAgentHelper.fs"
+            Name = "src/app/Fake.Deploy.Lib/FakeDeployAgentHelper.fs"
             Commit = Some "Globbing" } ]
     
     lockFile.SourceFiles.[0].CommitWithDefault |> shouldEqual "master"
-    lockFile.SourceFiles.[0].Path |> shouldEqual "src/app/FAKE/Cli.fs"
+    lockFile.SourceFiles.[0].Name |> shouldEqual "src/app/FAKE/Cli.fs"
     lockFile.SourceFiles.[0].ToString() |> shouldEqual "(fsharp:FAKE:master) src/app/FAKE/Cli.fs"
 
 let strictLockFile = """REFERENCES: STRICT

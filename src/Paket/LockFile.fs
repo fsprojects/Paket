@@ -90,7 +90,7 @@ let serializeSourceFiles (files:SourceFile list) =
             yield sprintf "  remote: %s/%s" owner project
             yield "  specs:"
             for file in files do
-                let path = file.Path.TrimStart '/'
+                let path = file.Name.TrimStart '/'
                 match file.Commit with
                 | Some commit -> yield sprintf "    %s (%s)" path commit
                 | None -> yield sprintf "    %s" path]
@@ -166,7 +166,7 @@ type LockFile(strictMode,packages : ResolvedPackage list, remoteFiles : SourceFi
                         SourceFiles = { Commit = commit
                                         Owner = owner
                                         Project = project
-                                        Path = path } :: state.SourceFiles }
+                                        Name = path } :: state.SourceFiles }
                 | _ -> failwith "invalid remote details."
             )
         |> fun state -> LockFile(state.Strict, List.rev state.Packages, List.rev state.SourceFiles)

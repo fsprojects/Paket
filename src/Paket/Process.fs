@@ -107,10 +107,8 @@ let Install(regenerate, force, hard, dependenciesFilename) =
         project.UpdateReferences(extractedPackages,usedPackages,hard)
 
         lockFile.SourceFiles 
-        |> List.filter (fun file -> usedSourceFiles.Contains(file.Path))
-        |> List.map (fun s -> s.FilePath)
+        |> List.filter (fun file -> usedSourceFiles.Contains(file.Name))
         |> project.UpdateSourceFiles
-
 
         project.Save()
 
