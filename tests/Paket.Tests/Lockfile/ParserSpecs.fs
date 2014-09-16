@@ -1,4 +1,4 @@
-module paket.lockFile.ParserSpecs
+module Paket.LockFile.ParserSpecs
 
 open Paket
 open NUnit.Framework
@@ -56,6 +56,6 @@ let ``should parse lock file``() =
             Commit = Some "Globbing" } ]
     
     sourceFiles.[0].CommitWithDefault |> shouldEqual "master"
-    sourceFiles.[0].FilePath |> shouldEqual "src\\app\\FAKE\\Cli.fs"
+    sourceFiles.[0].Path |> shouldEqual "src/app/FAKE/Cli.fs"
     sourceFiles.[0].ToString() |> shouldEqual "(fsharp:FAKE:master) src/app/FAKE/Cli.fs"
 

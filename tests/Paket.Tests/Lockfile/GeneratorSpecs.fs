@@ -1,4 +1,4 @@
-module paket.lockFile.GeneratorSpecs
+module Paket.LockFile.GeneratorSpecs
 
 open Paket
 open NUnit.Framework
@@ -46,6 +46,16 @@ let ``should generate lock file for packages``() =
     |> LockFile.serializePackages
     |> shouldEqual (normalizeLineEndings expected)
 
+
+let expectedWithGithub = """GITHUB
+  remote: owner/project1
+  specs:
+    folder/file.fs
+    folder/file1.fs (commit1)
+  remote: owner/project2
+  specs:
+    folder/file.fs (commit2)"""
+    
 [<Test>]
 let ``should generate lock file for source files``() = 
     let cfg = """github "owner:project1" "folder/file.fs"
@@ -54,11 +64,4 @@ github "owner:project2:commit2" "folder/file.fs" """ |> DependenciesFile.FromCod
     
     cfg.RemoteFiles
     |> LockFile.serializeSourceFiles
-    |> shouldEqual """GITHUB
-  remote: owner/project1
-  specs:
-    folder/file.fs
-    folder/file1.fs (commit1)
-  remote: owner/project2
-  specs:
-    folder/file.fs (commit2)"""
+    |> shouldEqual (normalizeLineEndings expectedWithGithub)

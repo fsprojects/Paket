@@ -63,8 +63,12 @@ let serializePackages (resolved : PackageResolution) =
         |> Seq.groupBy fst
 
     let all = 
-        [ yield "NUGET"
-          for source, packages in sources do
+        let hasReported = ref false
+        [ for source, packages in sources do
+              if not !hasReported then
+                yield "NUGET"
+                hasReported := true
+
               yield "  remote: " + source
               yield "  specs:"
               for _,package in packages do
@@ -74,19 +78,23 @@ let serializePackages (resolved : PackageResolution) =
     
     String.Join(Environment.NewLine, all)
 
-let serializeSourceFiles (files:SourceFile list) =
-    seq {
-        yield "GITHUB"
-        for (owner,project), files in files |> Seq.groupBy(fun f -> f.Owner, f.Project) do
+let serializeSourceFiles (files:SourceFile list) =    
+    let all =       
+        let hasReported = ref false
+        [ for (owner,project), files in files |> Seq.groupBy(fun f -> f.Owner, f.Project) do
+            if not !hasReported then
+                yield "GITHUB"
+                hasReported := true
+
             yield sprintf "  remote: %s/%s" owner project
             yield "  specs:"
             for file in files do
                 let path = file.Path.TrimStart '/'
                 match file.Commit with
                 | Some commit -> yield sprintf "    %s (%s)" path commit
-                | None -> yield sprintf "    %s" path
-    }
-    |> fun all -> String.Join(Environment.NewLine, all)
+                | None -> yield sprintf "    %s" path]
+
+    String.Join(Environment.NewLine, all)
 
 type private ParseState =
     { RepositoryType : string option
@@ -153,13 +161,13 @@ let Parse(lines : string seq) =
         )
     |> fun state -> List.rev state.Packages, List.rev state.SourceFiles
 
-/// Analyzes the dependencies from the Dependencies file.
+/// Analyzes the dependencies from the paket.dependencies file.
 let Create(force, dependenciesFilename) =     
     tracefn "Parsing %s" dependenciesFilename
     let dependenciesFile = DependenciesFile.ReadFromFile dependenciesFilename
     dependenciesFile.Resolve(force, Nuget.NugetDiscovery), dependenciesFile.RemoteFiles
 
-/// Updates the Lock file with the analyzed dependencies from the Dependencies file.
+/// Updates the Lock file with the analyzed dependencies from the paket.dependencies file.
 let Update(force, dependenciesFilename, lockFile) = 
     let packageResolution, remoteFiles = Create(force, dependenciesFilename)
     let errors = extractErrors packageResolution
