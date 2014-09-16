@@ -13,11 +13,11 @@ let ExtractPackages(force, packages) =
             | Nuget source -> 
                 let! packageFile = Nuget.DownloadPackage(source, package.Name, [ package.Source ], package.Version.ToString(), force)
                 let! folder = Nuget.ExtractPackage(packageFile, package.Name, package.Version.ToString(), force)
-                return package, Nuget.GetLibraries folder
+                return Some(package, Nuget.GetLibraries folder)
             | LocalNuget path -> 
                 let packageFile = Path.Combine(path, sprintf "%s.%s.nupkg" package.Name (package.Version.ToString()))
                 let! folder = Nuget.ExtractPackage(packageFile, package.Name, package.Version.ToString(), force)
-                return package, Nuget.GetLibraries folder
+                return Some(package, Nuget.GetLibraries folder)
         }) packages
 
 let findLockfile dependenciesFile =
@@ -57,25 +57,26 @@ let Install(regenerate, force, hard, dependenciesFilename) =
         File.ReadAllLines lockFileName.FullName 
         |> LockFile.LockFile.Parse
 
+    let rootPath = dependenciesFilename |> Path.GetDirectoryName
+
+    let sourceFileDownloads =
+        lockFile.SourceFiles
+        |> Seq.map (fun source -> 
+               async { 
+                   let destination = Path.Combine(rootPath, source.FilePath)
+                   tracefn "Downloading %s..." (source.ToString())
+                   let! file = GitHub.downloadFile source
+                   Directory.CreateDirectory(destination |> Path.GetDirectoryName) |> ignore
+                   File.WriteAllText(destination, file)
+                   return None
+               })
+
     let extractedPackages = 
         ExtractPackages(force, lockFile.ResolvedPackages)
+        |> Seq.append sourceFileDownloads
         |> Async.Parallel
         |> Async.RunSynchronously
-
-    let rootPath = dependenciesFilename |> Path.GetDirectoryName
-    
-    lockFile.SourceFiles
-    |> List.map (fun source -> 
-           async { 
-               let destination = Path.Combine(rootPath, source.FilePath)
-               tracefn "Downloading %s..." (source.ToString())
-               let! file = GitHub.downloadFile source
-               Directory.CreateDirectory(destination |> Path.GetDirectoryName) |> ignore
-               File.WriteAllText(destination, file)
-           })
-    |> Async.Parallel
-    |> Async.Ignore
-    |> Async.RunSynchronously
+        |> Array.choose id
 
     for proj in findAllProjects(".") do
         let directPackages = extractReferencesFromListFile proj.FullName
