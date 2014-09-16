@@ -78,7 +78,7 @@ type ProjectFile =
     member this.DeletePaketCompileNodes() =    
         let nodesToDelete = List<_>()
         for node in this.Document.SelectNodes("//ns:Compile", this.Namespaces) do            
-            if node.Attributes.["Include"].InnerText.Split(',').[0].StartsWith "paket-files" then // TODO: Make this pretty
+            if node.Attributes.["Include"].InnerText.Split(',').[0].Contains "paket-files" then // TODO: Make this pretty
                 nodesToDelete.Add node
 
         for node in nodesToDelete do
@@ -139,16 +139,17 @@ type ProjectFile =
         
             // Insert all source files in their correct position.
             for sourceFile in sourceFiles do
+                let path = Uri(this.FileName).MakeRelativeUri(Uri(sourceFile)).ToString().Replace("/", "\\")
                 let node =
                     let node = this.CreateNode("Compile")
-                    node.SetAttribute("Include", sourceFile)
+                    node.SetAttribute("Include", path)
                     node
                 match compileItemGroup.ChildNodes.Count with
                 | 0 -> compileItemGroup.AppendChild(node) |> ignore
                 | _ ->
                     let compileNodes = compileItemGroup.ChildNodes |> Seq.cast<XmlNode>
                     match compileNodes
-                          |> Seq.takeWhile(fun n -> String.Compare(n.Attributes.["Include"].Value, sourceFile, true) = -1)
+                          |> Seq.takeWhile(fun n -> String.Compare(n.Attributes.["Include"].Value, path, true) = -1)
                           |> Seq.toList with
                     | [] -> compileItemGroup.InsertBefore(node, compileNodes |> Seq.head) |> ignore
                     | items -> compileItemGroup.InsertAfter(node, items |> Seq.last) |> ignore
