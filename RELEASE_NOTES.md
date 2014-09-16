@@ -1,3 +1,6 @@
+#### 0.2.0-alpha005 - 16.09.2014
+* Dogfooding the Github feature
+
 #### 0.2.0-alpha004 - 16.09.2014
 * Detecting portable profiles
 
