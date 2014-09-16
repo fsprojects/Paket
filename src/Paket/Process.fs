@@ -141,7 +141,7 @@ let ConvertFromNuget() =
             File.WriteAllText(packageFile.FullName, referencesFileContent)
             File.Move(packageFile.FullName, Path.Combine(packageFile.DirectoryName, "paket.references"))
             
-            for file in findAllFiles(packageFile.DirectoryName, "*.*proj") do
+            for file in findAllProjects(packageFile.DirectoryName) do
                 ProjectFile.Load(file.FullName).ConvertNugetToPaket()
                            
             tracefn "Converted \"%s\" to \"paket.references\"" packageFile.FullName
