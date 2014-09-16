@@ -131,14 +131,13 @@ let Install(regenerate, force, hard, dependenciesFilename) =
         directPackages
         |> Array.iter addPackage
         
-        project.UpdateReferences(extractedPackages,usedPackages,hard)		
+        project.UpdateReferences(extractedPackages,usedPackages,hard)
 		
-
         lockFile.SourceFiles 
         |> List.filter (fun file -> usedSourceFiles.Contains(file.Name))
         |> project.UpdateSourceFiles
 
-        removeContentFiles project
+		removeContentFiles project
         let packagesWithContent = findPackagesWithContent usedPackages
         let contentFiles = copyContentFilesToProject project packagesWithContent
         project.UpdateContentFiles(contentFiles)
@@ -207,7 +206,9 @@ let ConvertFromNuget() =
             File.Move(packageFile.FullName, Path.Combine(packageFile.DirectoryName, "paket.references"))
             
             for file in findAllProjects(packageFile.DirectoryName) do
-                ProjectFile.Load(file.FullName).ConvertNugetToPaket()
+                let project = ProjectFile.Load(file.FullName)
+                project.ConvertNugetToPaket()
+                project.Save()
                            
             tracefn "Converted \"%s\" to \"paket.references\"" packageFile.FullName
 

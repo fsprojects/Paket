@@ -190,7 +190,7 @@ type ProjectFile =
         this.FindPaketNodes("Content")
         |> List.map (fun n ->  FileInfo(Path.Combine(Path.GetDirectoryName(this.FileName), n.Attributes.["Include"].Value)))
 
-    member this.UpdateContentFiles(contentFiles : list<FileInfo>) =
+    member this.UpdateContentFiles(contentFiles : list<FileInfo>, hard) =
         let contentNode (fi: FileInfo) = 
             this.CreateNode "Content" 
             |> addAttribute "Include" (UriHelper.createRelativePath this.FileName fi.FullName)
@@ -214,7 +214,14 @@ type ProjectFile =
             |> List.map (fun file -> (UriHelper.createRelativePath this.FileName file.DirectoryName), contentNode file)
             |> List.iter (fun (dir, paketNode) ->
                     match Map.tryFind dir firstNodeForDirs with
-                    | Some (node) -> node.ParentNode.InsertBefore(paketNode, node) |> ignore
+                    | Some (firstNodeForDir) -> 
+                        match (this.Document.SelectNodes(sprintf "//ns:*[@Include='%s']" paketNode.Attributes.["Include"].Value, this.Namespaces) 
+                                                |> Seq.cast<XmlNode> |> Seq.tryFind (fun _ -> true)) with
+                        | Some (existingNode) -> 
+                            if not <| (existingNode.ChildNodes |> Seq.cast<XmlNode> |> Seq.exists (fun n -> n.Name = "Paket"))
+                            then existingNode :?> XmlElement |> addChild (this.CreateNode("Paket", "True")) |> ignore
+                        | None -> firstNodeForDir.ParentNode.InsertBefore(paketNode, firstNodeForDir) |> ignore
+
                     | None -> itemGroupNode.AppendChild(paketNode) |> ignore )
             
             projectNode.AppendChild(itemGroupNode) |> ignore
