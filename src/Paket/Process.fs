@@ -39,11 +39,12 @@ let extractReferencesFromListFile projectFile =
     |> Array.map (fun s -> s.Trim())
     |> Array.filter (fun s -> System.String.IsNullOrWhiteSpace s |> not)
 
-let private findAllProjects(folder) = 
-    ["csproj";"fsproj";"vbproj"]
-    |> List.map (fun projectType -> DirectoryInfo(folder).EnumerateFiles(sprintf "*.%s" projectType, SearchOption.AllDirectories) |> Seq.toList)
-    |> List.concat
 let private findAllFiles(folder, pattern) = DirectoryInfo(folder).EnumerateFiles(pattern, SearchOption.AllDirectories)
+
+let private findAllProjects(folder) = 
+    ["*.csproj";"*.fsproj";"*.vbproj"]
+    |> List.map (fun projectType -> findAllFiles(folder, projectType) |> Seq.toList)
+    |> List.concat
 
 /// Installs the given packageFile.
 let Install(regenerate, force, hard, dependenciesFile) = 
@@ -56,7 +57,7 @@ let Install(regenerate, force, hard, dependenciesFile) =
         ExtractPackages(force, File.ReadAllLines lockfile.FullName |> LockFile.Parse)
         |> Async.Parallel
         |> Async.RunSynchronously
-    for proj in findAllFiles(".", "*.*proj") do
+    for proj in findAllProjects(".") do
         let directPackages = extractReferencesFromListFile proj.FullName
         let project = ProjectFile.Load proj.FullName
 
