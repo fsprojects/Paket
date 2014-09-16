@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
@@ -57,9 +57,7 @@
   </Choose>
   <Import Project="$(FSharpTargetsPath)" />
   <ItemGroup>
-    <Compile Include="..\..\paket-files\forki\FsUnit\master\FsUnit.fs" >
-          <Paket>True</Paket>
-    </Compile>
+    <Compile Include="..\..\paket-files\forki\FsUnit\master\FsUnit.fs" />
     <Compile Include="TestHelpers.fs" />
     <Compile Include="SemVerSpecs.fs" />
     <Compile Include="NugetVersionRangeSpecs.fs" />
