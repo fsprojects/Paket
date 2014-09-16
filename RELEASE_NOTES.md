@@ -1,3 +1,6 @@
+#### 0.2.0-alpha001 - 16.09.2014
+* convert-from-nuget command - http://fsprojects.github.io/Paket/convert_from_nuget.html
+
 #### 0.1.4 - 16.09.2014
 * Only vbproj, csproj and fsproj files are handled
 
