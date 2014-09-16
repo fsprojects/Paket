@@ -12,10 +12,6 @@ type private InstallInfo = {
     Condition : FrameworkIdentifier
 }
 
-module private UriHelper =
-    let createRelativePath root path =
-        Uri(root).MakeRelativeUri(Uri(path)).ToString().Replace("/", "\\")
-
 module private InstallRules = 
     let groupDLLs (usedPackages : HashSet<string>) extracted projectPath = 
         [ for (package:ResolvedPackage), libraries in extracted do
@@ -26,7 +22,7 @@ module private InstallRules =
                       | None -> ()
                       | Some condition ->
                           yield { DllName = lib.Name.Replace(lib.Extension, "")
-                                  Path = UriHelper.createRelativePath projectPath lib.FullName
+                                  Path = createRelativePath projectPath lib.FullName
                                   Condition = condition } ]
         |> Seq.groupBy (fun info -> info.DllName, info.Condition.GetFrameworkIdentifier())
         |> Seq.groupBy (fun ((name, _), _) -> name)
@@ -193,7 +189,7 @@ type ProjectFile =
     member this.UpdateContentFiles(contentFiles : list<FileInfo>) =
         let contentNode (fi: FileInfo) = 
             this.CreateNode "Content" 
-            |> addAttribute "Include" (UriHelper.createRelativePath this.FileName fi.FullName)
+            |> addAttribute "Include" (createRelativePath this.FileName fi.FullName)
             |> addChild (this.CreateNode("Paket","True"))
             :> XmlNode
         
@@ -211,7 +207,7 @@ type ProjectFile =
                 |> Map.ofSeq
             
             contentFiles
-            |> List.map (fun file -> (UriHelper.createRelativePath this.FileName file.DirectoryName), contentNode file)
+            |> List.map (fun file -> (createRelativePath this.FileName file.DirectoryName), contentNode file)
             |> List.iter (fun (dir, paketNode) ->
                     match Map.tryFind dir firstNodeForDirs with
                     | Some (firstNodeForDir) -> 

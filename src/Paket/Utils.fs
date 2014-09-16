@@ -72,6 +72,10 @@ let CleanDir path =
     File.SetAttributes(path, FileAttributes.Normal)
 
 /// [omit]
+let createRelativePath root path =
+    Uri(root).MakeRelativeUri(Uri(path)).ToString().Replace("/", "\\")
+
+/// [omit]
 let normalizeXml(doc:XmlDocument) =
     use stringWriter = new StringWriter()
     let settings = XmlWriterSettings()
