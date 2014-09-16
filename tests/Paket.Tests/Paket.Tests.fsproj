@@ -57,7 +57,7 @@
   </Choose>
   <Import Project="$(FSharpTargetsPath)" />
   <ItemGroup>
-    <Compile Include="FsUnit.fs" />
+    <Compile Include="paket-files\forki\FsUnit\master\FsUnit.fs" />
     <Compile Include="TestHelpers.fs" />
     <Compile Include="SemVerSpecs.fs" />
     <Compile Include="NugetVersionRangeSpecs.fs" />

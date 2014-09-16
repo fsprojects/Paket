@@ -62,7 +62,7 @@ type ProjectFile =
             
         !hasCustom
 
-    member this.DeletePaketNodes() =    
+    member this.DeletePaketReferenceNodes() =    
         let nodesToDelete = List<_>()
         for node in this.Document.SelectNodes("//ns:Reference", this.Namespaces) do
             let remove = ref false
@@ -70,6 +70,15 @@ type ProjectFile =
                 if child.Name = "Paket" then remove := true
             
             if !remove then
+                nodesToDelete.Add node
+
+        for node in nodesToDelete do
+            node.ParentNode.RemoveChild(node) |> ignore
+
+    member this.DeletePaketCompileNodes() =    
+        let nodesToDelete = List<_>()
+        for node in this.Document.SelectNodes("//ns:Compile", this.Namespaces) do            
+            if node.Attributes.["Include"].InnerText.Split(',').[0].StartsWith "paket-files" then // TODO: Make this pretty
                 nodesToDelete.Add node
 
         for node in nodesToDelete do
@@ -110,40 +119,45 @@ type ProjectFile =
 
     member this.DeleteEmptyReferences() = 
         this.DeleteIfEmpty("//ns:Project/ns:Choose/ns:When/ns:ItemGroup")
+        this.DeleteIfEmpty("//ns:ItemGroup")
         this.DeleteIfEmpty("//ns:Project/ns:Choose/ns:When")
         this.DeleteIfEmpty("//ns:Project/ns:Choose")
 
     member this.UpdateSourceFiles(sourceFiles) =
-        // If there is not item group for compiled items, create one.
-        let compileItemGroup =
-            match this.Document.SelectNodes("//ns:Project/ns:ItemGroup/ns:Compile", this.Namespaces) with
-            | items when items.Count = 0 ->
-                let itemGroup = this.CreateNode("ItemGroup")
-                let project = this.Document.SelectNodes("//ns:Project", this.Namespaces).[0]
-                project.AppendChild(itemGroup)
-            | compileItems -> compileItems.[0].ParentNode            
+        match [ for node in this.Document.SelectNodes("//ns:Project", this.Namespaces) -> node ] with
+        | [] -> ()
+        | _ -> 
+            this.DeletePaketCompileNodes()
+            // If there is no item group for compiled items, create one.
+            let compileItemGroup =
+                match this.Document.SelectNodes("//ns:Project/ns:ItemGroup/ns:Compile", this.Namespaces) with
+                | items when items.Count = 0 ->
+                    let itemGroup = this.CreateNode("ItemGroup")
+                    let project = this.Document.SelectNodes("//ns:Project", this.Namespaces).[0]
+                    project.AppendChild(itemGroup)
+                | compileItems -> compileItems.[0].ParentNode            
         
-        // Insert all source files in their correct position.
-        for sourceFile in sourceFiles do
-            let node =
-                let node = this.CreateNode("Compile")
-                node.SetAttribute("Include", sourceFile)
-                node
-            match compileItemGroup.ChildNodes.Count with
-            | 0 -> compileItemGroup.AppendChild(node) |> ignore
-            | _ ->
-                let compileNodes = compileItemGroup.ChildNodes |> Seq.cast<XmlNode>
-                match compileNodes
-                      |> Seq.takeWhile(fun n -> String.Compare(n.Attributes.["Include"].Value, sourceFile, true) = -1)
-                      |> Seq.toList with
-                | [] -> compileItemGroup.InsertBefore(node, compileNodes |> Seq.head) |> ignore
-                | items -> compileItemGroup.InsertAfter(node, items |> Seq.last) |> ignore
+            // Insert all source files in their correct position.
+            for sourceFile in sourceFiles do
+                let node =
+                    let node = this.CreateNode("Compile")
+                    node.SetAttribute("Include", sourceFile)
+                    node
+                match compileItemGroup.ChildNodes.Count with
+                | 0 -> compileItemGroup.AppendChild(node) |> ignore
+                | _ ->
+                    let compileNodes = compileItemGroup.ChildNodes |> Seq.cast<XmlNode>
+                    match compileNodes
+                          |> Seq.takeWhile(fun n -> String.Compare(n.Attributes.["Include"].Value, sourceFile, true) = -1)
+                          |> Seq.toList with
+                    | [] -> compileItemGroup.InsertBefore(node, compileNodes |> Seq.head) |> ignore
+                    | items -> compileItemGroup.InsertAfter(node, items |> Seq.last) |> ignore
 
     member this.UpdateReferences(extracted, usedPackages : HashSet<string>, hard) = 
         match [ for node in this.Document.SelectNodes("//ns:Project", this.Namespaces) -> node ] with
         | [] -> ()
         | projectNode :: _ -> 
-            this.DeletePaketNodes()
+            this.DeletePaketReferenceNodes()
             let installInfos = InstallRules.groupDLLs usedPackages extracted
             for dllName, libsWithSameName in installInfos do
                 if hard then

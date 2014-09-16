@@ -177,3 +177,4 @@ TestResults.xml
 nuget/*.nupkg
 release.cmd
 localpackages/
+paket-files

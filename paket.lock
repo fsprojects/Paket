@@ -16,3 +16,7 @@ NUGET
       Microsoft.AspNet.Razor (>= 2.0.30506.0)
     SourceLink.Fake (0.3.4)
     UnionArgParser (0.8.0)
+GITHUB
+  remote: forki/FsUnit
+  specs:
+    FsUnit.fs
