@@ -11,7 +11,7 @@ If you are already using `NuGet.exe` for package restore then it should be easy 
 <div id="automatic"></div>
 ## Automatic process
 
-** Only in 0.2.0 alpha versions **
+** Only in [0.2.0 alpha versions](https://www.nuget.org/packages/Paket/0.2.0-alpha001) **
 
 Paket can assist you with the conversion. The `convert-from-nuget` command finds all `packages.config` files and converts them to [paket.references](references_files.html) and generates a [paket.dependencies](dependencies_file.html) file. 
 If the `packages.config` is solution-level, then its dependencies will be written to [paket.dependencies](dependencies_file.html) and it will be removed.
