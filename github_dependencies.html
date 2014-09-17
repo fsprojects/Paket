@@ -2,9 +2,10 @@
 <html lang="en">
   <head>
     <meta charset="utf-8"/>
-    <title>PackageDependency - Paket</title>
+    <title>Github dependencies
+</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-    <meta name="description" content=""/>
+    <meta name="description" content="A dependency manager for .NET"/>
     <meta name="author" content="Steffen Forkmann, Alexander Gross"/>
 
     <script src="https://code.jquery.com/jquery-1.8.0.js"></script>
@@ -31,57 +32,26 @@
       <div class="row">
         <div class="span9" id="main">
           
+<h1>Github dependencies</h1>
 
+<p><strong> Only in <a href="https://www.nuget.org/packages/Paket/0.2.0-alpha001">0.2.0 alpha versions</a> </strong></p>
 
+<p>Paket allows to link files from <a href="http://www.github.com">Github.com</a> into your projects.</p>
 
-<h1>PackageDependency</h1>
-<div class="xmldoc">
-<p>Represents a package dependency.</p>
-</div>
-  <h3>Record Fields</h3>
-  <table class="table table-bordered member-list">
-    <thead>
-      <tr><td>Record Field</td><td>Description</td></tr>
-    </thead>
-    <tbody>
-      <tr>
-        <td class="member-name">
+<h2>Referencing a single file</h2>
 
-          <code onmouseout="hideTip(event, '44', 44)" onmouseover="showTip(event, '44', 44)">
-            Defining
-          </code>
-          <div class="tip" id="44">
-            <strong>Signature:</strong> UnresolvedPackage<br />
-                      </div>
-        </td>
-        <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket/BasicTypes.fs#L121-121" class="github-link">
-              <img src="../content/img/github.png" class="normal" />
-              <img src="../content/img/github-blue.png" class="hover" />
-            </a>
-          
-        </td>
-      </tr>
-      <tr>
-        <td class="member-name">
+<p>You can reference a single file from <a href="http://www.github.com">Github.com</a> simply by specifying the source repository and the file name in the <a href="dependencies_file.html"><code>paket.dependencies</code> file</a>:</p>
 
-          <code onmouseout="hideTip(event, '45', 45)" onmouseover="showTip(event, '45', 45)">
-            Referenced
-          </code>
-          <div class="tip" id="45">
-            <strong>Signature:</strong> UnresolvedPackage<br />
-                      </div>
-        </td>
-        <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket/BasicTypes.fs#L122-122" class="github-link">
-              <img src="../content/img/github.png" class="normal" />
-              <img src="../content/img/github-blue.png" class="hover" />
-            </a>
-          
-        </td>
-      </tr>
-    </tbody>
-  </table>
+<table class="pre"><tr><td class="lines"><pre class="fssnip">
+<span class="l">1: </span>
+</pre>
+</td>
+<td class="snippet"><pre class="fssnip">
+<span class="i">github</span> <span class="i">forki</span><span class="o">/</span><span class="i">FsUnit</span> <span class="i">FsUnit</span><span class="o">.</span><span class="i">fs</span></pre>
+</td>
+</tr>
+</table>
+
 
         </div>
         <div class="span3">

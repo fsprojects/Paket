@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8"/>
+    <title>NuGet dependencies
+</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <meta name="description" content="A dependency manager for .NET"/>
+    <meta name="author" content="Steffen Forkmann, Alexander Gross"/>
+
+    <script src="https://code.jquery.com/jquery-1.8.0.js"></script>
+    <script src="https://code.jquery.com/ui/1.8.23/jquery-ui.js"></script>
+    <script src="https://netdna.bootstrapcdn.com/twitter-bootstrap/2.2.1/js/bootstrap.min.js"></script>
+    <link href="https://netdna.bootstrapcdn.com/twitter-bootstrap/2.2.1/css/bootstrap-combined.min.css" rel="stylesheet"/>
+
+    <link type="text/css" rel="stylesheet" href="/Paket/content/style.css" />
+    <script type="text/javascript" src="/Paket/content/tips.js"></script>
+    <!-- HTML5 shim, for IE6-8 support of HTML5 elements -->
+    <!--[if lt IE 9]>
+      <script src="https://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+  </head>
+  <body>
+    <div class="container">
+      <div class="masthead">
+        <ul class="nav nav-pills pull-right">
+          <li><a href="http://github.com/fsprojects/Paket">github page</a></li>
+        </ul>
+        <h3 class="muted"><a href="/Paket/index.html">Paket</a></h3>
+      </div>
+      <hr />
+      <div class="row">
+        <div class="span9" id="main">
+          
+<h1>NuGet dependencies</h1>
+
+<p>Paket allows to reference <a href="http://www.nuget.org">NuGet</a> packages in your application.</p>
+
+<h2>Sources</h2>
+
+<p>Sources are defined by the <code>source "&lt;address&gt;"</code> statement.</p>
+
+<p>Paket supports multiple sources per <code>paket.dependencies</code>. It's recommended to put all <code>source</code> statements at the top of <code>paket.dependencies</code>. The ordering of sources is important, since the first <code>source</code> a <a href="#package-id">dependency</a> is found in will be the one used for download.</p>
+
+<p>The <a href="lock_file.html"><code>paket.lock</code> file</a> will reflect the sources selected by dependency resolution.</p>
+
+<h3>NuGet feeds</h3>
+
+<p>Paket supports NuGet feeds like those emitted by <a href="http://www.nuget.org">nuget.org</a> or <a href="http://www.jetbrains.com/teamcity/">TeamCity</a>.</p>
+
+<p>Please note that you need to specify <em>all</em> NuGet sources, including the default feed from <a href="http://www.nuget.org">nuget.org</a>. Paket does not take the current machine's NuGet Package Sources configuration (that you set up e.g. using Visual Studio) into account.</p>
+
+<table class="pre"><tr><td class="lines"><pre class="fssnip">
+<span class="l">1: </span>
+<span class="l">2: </span>
+</pre>
+</td>
+<td class="snippet"><pre class="fssnip">
+<span class="i">source</span> <span class="s">&quot;</span><span class="s">http</span><span class="s">:</span><span class="s">/</span><span class="s">/</span><span class="s">nuget</span><span class="s">.</span><span class="s">org</span><span class="s">/</span><span class="s">api</span><span class="s">/</span><span class="s">v2</span><span class="s">&quot;</span>      <span class="c">// nuget.org</span>
+<span class="i">source</span> <span class="s">&quot;</span><span class="s">http</span><span class="s">:</span><span class="s">/</span><span class="s">/</span><span class="s">myserver</span><span class="s">/</span><span class="s">nuget</span><span class="s">/</span><span class="s">api</span><span class="s">/</span><span class="s">v2</span><span class="s">&quot;</span> <span class="c">// custom feed</span></pre>
+</td>
+</tr>
+</table>
+
+<p>The <a href="lock_file.html">paket.lock</a> will also reflect these settings.</p>
+
+<h3>Path sources</h3>
+
+<p>Paket supports file paths such as local directories or references to UNC shares:</p>
+
+<table class="pre"><tr><td class="lines"><pre class="fssnip">
+<span class="l">1: </span>
+<span class="l">2: </span>
+<span class="l">3: </span>
+</pre>
+</td>
+<td class="snippet"><pre class="fssnip">
+<span class="i">source</span> <span class="s">&quot;</span><span class="s">C</span><span class="s">:</span><span class="s">\</span><span class="s">Nugets</span><span class="s">&quot;</span>
+<span class="i">source</span> <span class="s">&quot;</span><span class="s">~</span><span class="s">/</span><span class="s">project</span><span class="s">/</span><span class="s">nugets</span><span class="s">&quot;</span>
+<span class="i">source</span> <span class="s">&quot;</span><span class="s">\\</span><span class="s">server</span><span class="s">\n</span><span class="s">ugets</span><span class="s">&quot;</span></pre>
+</td>
+</tr>
+</table>
+
+<div id="strict-mode"></div>
+
+<h3>Strict references</h3>
+
+<p><strong> Only in <a href="https://www.nuget.org/packages/Paket/0.2.0-alpha001">0.2.0 alpha versions</a> </strong></p>
+
+<p>Paket usually references all direct and indirect dependencies that are listed in your <a href="references_files.md">paket.references</a> files to your project file.
+With the <code>strict</code> mode it will only reference direct dependencies.</p>
+
+<table class="pre"><tr><td class="lines"><pre class="fssnip">
+<span class="l">1: </span>
+<span class="l">2: </span>
+<span class="l">3: </span>
+<span class="l">4: </span>
+<span class="l">5: </span>
+</pre>
+</td>
+<td class="snippet"><pre class="fssnip">
+<span class="i">references</span> <span class="i">strict</span>
+<span class="i">source</span> <span class="s">&quot;</span><span class="s">http</span><span class="s">:</span><span class="s">/</span><span class="s">/</span><span class="s">nuget</span><span class="s">.</span><span class="s">org</span><span class="s">/</span><span class="s">api</span><span class="s">/</span><span class="s">v2</span><span class="s">&quot;</span>
+
+<span class="i">nuget</span> <span class="s">&quot;</span><span class="s">Newtonsoft</span><span class="s">.</span><span class="s">Json</span><span class="s">&quot;</span> <span class="s">&quot;</span><span class="s">~</span><span class="s">&gt;</span><span class="s"> </span><span class="s">6</span><span class="s">.</span><span class="s">0</span><span class="s">&quot;</span>
+<span class="i">nuget</span> <span class="s">&quot;</span><span class="s">UnionArgParser</span><span class="s">&quot;</span> <span class="s">&quot;</span><span class="s">~</span><span class="s">&gt;</span><span class="s"> </span><span class="s">0</span><span class="s">.</span><span class="s">7</span><span class="s">&quot;</span></pre>
+</td>
+</tr>
+</table>
+
+<div id="dependencies"></div>
+
+<h2>Dependencies</h2>
+
+<p>The dependencies of your project are defined by the <code>nuget "&lt;package ID&gt;" "&lt;version constraint&gt;"</code> statement.</p>
+
+<p>Paket currently supports only NuGet packages, but <a href="https://github.com/fsprojects/Paket/issues/9">we're evaluating other options</a>.</p>
+
+<div id="package-id"></div>
+
+<h3>Package ID</h3>
+
+<p>The <code>package ID</code> parameter is the same as you find in NuGet's <code>packages.config</code> or on <a href="http://www.nuget.org">nuget.org</a>.</p>
+
+<div id="version-constraints"></div>
+
+<h3>Version constraints</h3>
+
+<p>One key feature of Paket is that it separates the definition of dependencies from the actual resolution. NuGet stores resolution information in <code>packages.config</code>, where both package IDs and their respective pinned version are combined.</p>
+
+<p>With Paket you do not need to pin specific versions (although you can). Paket allows you to leverage <a href="http://semver.org">semantic versioning</a> and define version constraints in a very flexible manner.</p>
+
+<p>Please also see below how you can <a href="#nuget-style-dependency-resolution">influence the resolution of indirect dependencies</a>.</p>
+
+<h4>Pinned version constraint</h4>
+
+<table class="pre"><tr><td class="lines"><pre class="fssnip">
+<span class="l">1: </span>
+<span class="l">2: </span>
+<span class="l">3: </span>
+<span class="l">4: </span>
+</pre>
+</td>
+<td class="snippet"><pre class="fssnip">
+<span class="i">nuget</span> <span class="s">&quot;</span><span class="s">Example</span><span class="s">&quot;</span> <span class="s">&quot;</span><span class="s">=</span><span class="s"> </span><span class="s">1</span><span class="s">.</span><span class="s">2</span><span class="s">.</span><span class="s">3</span><span class="s">&quot;</span>
+<span class="i">nuget</span> <span class="s">&quot;</span><span class="s">Example</span><span class="s">&quot;</span> <span class="s">&quot;</span><span class="s">1</span><span class="s">.</span><span class="s">2</span><span class="s">.</span><span class="s">3</span><span class="s">&quot;</span>   <span class="c">// same as above</span>
+
+<span class="i">nuget</span> <span class="s">&quot;</span><span class="s">Example</span><span class="s">&quot;</span> <span class="s">&quot;</span><span class="s">1</span><span class="s">.</span><span class="s">2</span><span class="s">.</span><span class="s">3</span><span class="s">-</span><span class="s">alpha001</span><span class="s">&quot;</span></pre>
+</td>
+</tr>
+</table>
+
+<p>This is the strictest version constraint. Use the <code>=</code> operator to specify an exact version match; the <code>=</code> is optional.</p>
+
+<h4>Greater-than-or-equal version constraint</h4>
+
+<table class="pre"><tr><td class="lines"><pre class="fssnip">
+<span class="l">1: </span>
+<span class="l">2: </span>
+<span class="l">3: </span>
+</pre>
+</td>
+<td class="snippet"><pre class="fssnip">
+<span class="i">nuget</span> <span class="s">&quot;</span><span class="s">Example</span><span class="s">&quot;</span> <span class="s">&quot;</span><span class="s">&gt;</span><span class="s">=</span><span class="s"> </span><span class="s">1</span><span class="s">.</span><span class="s">2</span><span class="s">.</span><span class="s">3</span><span class="s">&quot;</span>
+
+<span class="i">nuget</span> <span class="s">&quot;</span><span class="s">Example</span><span class="s">&quot;</span> <span class="s">&quot;</span><span class="s">&gt;</span><span class="s">=</span><span class="s"> </span><span class="s">1</span><span class="s">.</span><span class="s">2</span><span class="s">.</span><span class="s">3</span><span class="s">-</span><span class="s">alpha001</span><span class="s">&quot;</span></pre>
+</td>
+</tr>
+</table>
+
+<p>Use the <code>&gt;=</code> operator to denote that you want the latest version available, as long as it's newer that what follows the <code>&gt;=</code> operator.</p>
+
+<h4>TODO Greater-than version constraint</h4>
+
+<table class="pre"><tr><td class="lines"><pre class="fssnip">
+<span class="l">1: </span>
+</pre>
+</td>
+<td class="snippet"><pre class="fssnip">
+<span class="i">nuget</span> <span class="s">&quot;</span><span class="s">Example</span><span class="s">&quot;</span> <span class="s">&quot;</span><span class="s">&gt;</span><span class="s"> </span><span class="s">1</span><span class="s">.</span><span class="s">2</span><span class="s">.</span><span class="s">3</span><span class="s">&quot;</span></pre>
+</td>
+</tr>
+</table>
+
+<p>NOT SUPPORTED YET</p>
+
+<h4>TODO Less-than-or-equal version constraint</h4>
+
+<table class="pre"><tr><td class="lines"><pre class="fssnip">
+<span class="l">1: </span>
+</pre>
+</td>
+<td class="snippet"><pre class="fssnip">
+<span class="i">nuget</span> <span class="s">&quot;</span><span class="s">Example</span><span class="s">&quot;</span> <span class="s">&quot;</span><span class="s">&lt;</span><span class="s">=</span><span class="s"> </span><span class="s">1</span><span class="s">.</span><span class="s">2</span><span class="s">.</span><span class="s">3</span><span class="s">&quot;</span></pre>
+</td>
+</tr>
+</table>
+
+<p>NOT SUPPORTED YET</p>
+
+<h4>TODO Less-than version constraint</h4>
+
+<table class="pre"><tr><td class="lines"><pre class="fssnip">
+<span class="l">1: </span>
+</pre>
+</td>
+<td class="snippet"><pre class="fssnip">
+<span class="i">nuget</span> <span class="s">&quot;</span><span class="s">Example</span><span class="s">&quot;</span> <span class="s">&quot;</span><span class="s">&lt;</span><span class="s"> </span><span class="s">1</span><span class="s">.</span><span class="s">2</span><span class="s">.</span><span class="s">3</span><span class="s">&quot;</span></pre>
+</td>
+</tr>
+</table>
+
+<p>NOT SUPPORTED YET</p>
+
+<h4>TODO Compound version constraint</h4>
+
+<table class="pre"><tr><td class="lines"><pre class="fssnip">
+<span class="l">1: </span>
+</pre>
+</td>
+<td class="snippet"><pre class="fssnip">
+<span class="i">nuget</span> <span class="s">&quot;</span><span class="s">Example</span><span class="s">&quot;</span> <span class="s">&quot;</span><span class="s">&gt;</span><span class="s">=</span><span class="s"> </span><span class="s">1</span><span class="s">.</span><span class="s">2</span><span class="s">.</span><span class="s">3</span><span class="s">&quot;</span> <span class="s">&quot;</span><span class="s">&lt;</span><span class="s"> </span><span class="s">1</span><span class="s">.</span><span class="s">5</span><span class="s">&quot;</span></pre>
+</td>
+</tr>
+</table>
+
+<p>NOT SUPPORTED YET</p>
+
+<div id="pessimistic-version-constraint"></div>
+
+<h4>Pessimistic version constraint</h4>
+
+<table class="pre"><tr><td class="lines"><pre class="fssnip">
+<span class="l">1: </span>
+</pre>
+</td>
+<td class="snippet"><pre class="fssnip">
+<span class="i">nuget</span> <span class="s">&quot;</span><span class="s">Example</span><span class="s">&quot;</span> <span class="s">&quot;</span><span class="s">~</span><span class="s">&gt;</span><span class="s"> </span><span class="s">1</span><span class="s">.</span><span class="s">2</span><span class="s">.</span><span class="s">3</span><span class="s">&quot;</span></pre>
+</td>
+</tr>
+</table>
+
+<p>The <code>~&gt;</code> "twiddle-wakka" operator is borrowed from <a href="http://bundler.io/">bundler</a>. It is used to specify a version range.</p>
+
+<p>It translates to "use the minimum version specified, but allow upgrades up to, but not including, <code>&lt;version specified&gt;, last part chopped off, last number incremented by 1</code>". In other words, allow the last part stated explicitly to increase, but pin any of the elements before that.</p>
+
+<p>Let us illustrate:</p>
+
+<table>
+  <thead>
+    <td>Constraint</td>
+    <td>Version range</td>
+  </thead>
+  <tr>
+    <td><pre>~> 0</pre></td>
+    <td><pre>0 <= x < 1</pre></td>
+  </tr>
+  <tr>
+    <td><pre>~> 1.0</pre></td>
+    <td><pre>1.0 <= x < 2.0</pre></td>
+  </tr>
+  <tr>
+    <td><pre>~> 1.2</pre></td>
+    <td><pre>1.2 <= x < 2.0</pre></td>
+  </tr>
+  <tr>
+    <td><pre>~> 1.2.3</pre></td>
+    <td><pre>1.2.3 <= x < 1.3</pre></td>
+  </tr>
+  <tr>
+    <td><pre>~> 1.2.3.4</pre></td>
+    <td><pre>1.2.3.4 <= x < 1.2.4</pre></td>
+  </tr>
+  <tr>
+    <td><pre>~> 1.2.3-alpha001</pre></td>
+    <td><pre>1.2.3-alpha001 <= x < 1.3</pre></td>
+  </tr>
+<table>
+
+<h4>TODO Pessimistic version constraint with compound</h4>
+
+<p>NOT SUPPORTED YET</p>
+
+<p>If want to allow newer backward-compatible versions but also need a specific fix version within the allowed range, use a compound constraint.</p>
+
+<table class="pre"><tr><td class="lines"><pre class="fssnip">
+<span class="l">1: </span>
+</pre>
+</td>
+<td class="snippet"><pre class="fssnip">
+<span class="i">nuget</span> <span class="s">&quot;</span><span class="s">Example</span><span class="s">&quot;</span> <span class="s">&quot;</span><span class="s">~</span><span class="s">&gt;</span><span class="s"> </span><span class="s">1</span><span class="s">.</span><span class="s">2</span><span class="s">&quot;</span> <span class="s">&quot;</span><span class="s">&gt;</span><span class="s">=</span><span class="s"> </span><span class="s">1</span><span class="s">.</span><span class="s">2</span><span class="s">.</span><span class="s">3</span><span class="s">&quot;</span></pre>
+</td>
+</tr>
+</table>
+
+<p>The example above translates to <code>1.2.3 &lt;= x &lt; 2.0</code>.</p>
+
+<h3>Controlling dependency resolution</h3>
+
+<h4>A word on NuGet</h4>
+
+<p>The NuGet dependency resolution strategy was a major motivation for us to develop Paket in the first place.</p>
+
+<p>NuGet made the decision very early that if package <code>A</code> depends on package <code>B</code>, you will always get the <em>lowest matching version</em> of package <code>B</code>, regardless of available newer versions. One side effect of this decision is that after you install <code>A</code> (and <code>B</code>), you will  be able to immediately update <code>B</code> to a newer version as long as it satisfies the version constraint defined by <code>A</code>.</p>
+
+<p>Installing packages like this is almost always a two-step operation: install and then try to update. We found it very hard to keep our project's dependencies at the latest version, that's why we chose to handle things differently.</p>
+
+<h4>How Paket works by default</h4>
+
+<p>Paket uses the definitions from <code>paket.dependencies</code> to compute the dependency graph.</p>
+
+<p>The resolution algorithm balances direct and indirect dependencies such that you will get the <em>latest matching versions</em> of direct dependencies (defined using the <a href="#dependencies"><code>nuget</code> statement</a>) and indirect dependencies (defined by your direct dependency's <a href="http://docs.nuget.org/docs/reference/nuspec-reference">nuspec</a>). Paket checks compatibility by comparing available versions to the constraints of either source, <code>paket.dependencies</code>, or <a href="http://docs.nuget.org/docs/reference/nuspec-reference">nuspec</a>.</p>
+
+<p>As stated above, the algorithm defaults to resolving the latest versions matching the constraints.</p>
+
+<p>As long as everybody follows <a href="http://semver.org">SemVer</a> and you define sane version constraints (e.g. within a major version) for your direct dependencies the system is very likely to work well.</p>
+
+<p>While developing Paket we found that many packages available on <a href="http://www.nuget.org">NuGet</a> today (September 2014) don't follow <a href="http://semver.org">SemVer</a> very well with regard to specifying their own dependencies.</p>
+
+<h4>A real-world example</h4>
+
+<p>For example, an assembly inside a NuGet package <code>A</code> might have a reference to a strong-named assembly that is pulled from another NuGet package <code>B</code>. Despite strong-naming the <code>B</code> assembly, <code>A</code> still specifies an open version constraint (<code>&gt; &lt;version of B that was compiled against&gt;</code>).</p>
+
+<p>This might be due to the fact that the <a href="http://docs.nuget.org/docs/reference/nuspec-reference">nuspec file format</a> requires you to pin the dependency version using double brackets: <code>&lt;dependency id="B" version="[1.2.3]" /&gt;</code>. Even the authors of Paket made the mistake of omitting the brackets, effectively specifying <code>&gt; 1.2.3</code>. Newer releases of <code>B</code> package might still work together with <code>A</code> using <a href="http://msdn.microsoft.com/en-us/library/7wd6ex19(v=vs.110).aspx">assembly binding redirects</a>, a feature of .NET that the authors of Paket are not very fond of. Even if you are OK with binding redirects, what would happen after <code>B</code> <code>2.0</code> is released? If you assume that <code>B</code> follows <a href="http://semver.org">SemVer</a>, the <code>2.0</code> version, by definition, <em>will</em> have breaking changes. NuGet will allow the update regardless, giving the false impression that your app still works.</p>
+
+<div id="nuget-style-dependency-resolution"></div>
+
+<h4>Paket's NuGet-style dependency resolution for indirect dependencies</h4>
+
+<p>To make your transition to Paket easier and to allow package authors to correct their version constraints you can have Paket behave like NuGet when resolving indirect dependencies (i.e. defaulting to lowest matching versions).</p>
+
+<p>To request that Paket applies NuGet-style dependency resolution for indirect dependencies, use the <code>!</code> operator in your version constraint.</p>
+
+<table class="pre"><tr><td class="lines"><pre class="fssnip">
+<span class="l">1: </span>
+<span class="l">2: </span>
+<span class="l">3: </span>
+</pre>
+</td>
+<td class="snippet"><pre class="fssnip">
+<span class="i">source</span> <span class="s">&quot;</span><span class="s">http</span><span class="s">:</span><span class="s">/</span><span class="s">/</span><span class="s">nuget</span><span class="s">.</span><span class="s">org</span><span class="s">/</span><span class="s">api</span><span class="s">/</span><span class="s">v2</span><span class="s">&quot;</span>
+
+<span class="i">nuget</span> <span class="s">&quot;</span><span class="s">Example</span><span class="s">&quot;</span> <span class="s">&quot;</span><span class="s">!</span><span class="s">~</span><span class="s">&gt;</span><span class="s"> </span><span class="s">1</span><span class="s">.</span><span class="s">2</span><span class="s">&quot;</span> <span class="c">// use &quot;min&quot; version resolution strategy</span></pre>
+</td>
+</tr>
+</table>
+
+<p>This effectively will get you the <em>lowest matching versions</em> of <code>Example</code>'s dependencies. Still, you will get the <em>latest matching version</em> of <code>Example</code> itself according to its <a href="#pessimistic-version-constraint">version constraint of <code>1.2 &lt;= x &lt; 2</code></a>.</p>
+
+<p>The <code>!</code> modifier is applicable to all <a href="#version-constraints">version constraints</a>:</p>
+
+<table class="pre"><tr><td class="lines"><pre class="fssnip">
+<span class="l">1: </span>
+<span class="l">2: </span>
+<span class="l">3: </span>
+<span class="l">4: </span>
+</pre>
+</td>
+<td class="snippet"><pre class="fssnip">
+<span class="i">source</span> <span class="s">&quot;</span><span class="s">http</span><span class="s">:</span><span class="s">/</span><span class="s">/</span><span class="s">nuget</span><span class="s">.</span><span class="s">org</span><span class="s">/</span><span class="s">api</span><span class="s">/</span><span class="s">v2</span><span class="s">&quot;</span>
+
+<span class="i">nuget</span> <span class="s">&quot;</span><span class="s">Example</span><span class="s">-</span><span class="s">B</span><span class="s">&quot;</span> <span class="s">&quot;</span><span class="s">!</span><span class="s">=</span><span class="s"> </span><span class="s">1</span><span class="s">.</span><span class="s">2</span><span class="s">&quot;</span>  <span class="c">// use &quot;min&quot; version resolution strategy</span>
+<span class="i">nuget</span> <span class="s">&quot;</span><span class="s">Example</span><span class="s">-</span><span class="s">C</span><span class="s">&quot;</span> <span class="s">&quot;</span><span class="s">!</span><span class="s">&gt;</span><span class="s">=</span><span class="s"> </span><span class="s">1</span><span class="s">.</span><span class="s">2</span><span class="s">&quot;</span> <span class="c">// use &quot;min&quot; version resolution strategy</span></pre>
+</td>
+</tr>
+</table>
+
+
+        </div>
+        <div class="span3">
+          <img src="/Paket/img/logo.png" alt="F# Project" style="width:150px;margin:10px" />
+          <ul class="nav nav-list" id="menu" style="margin-top: 20px;">
+            <li class="nav-header">Paket</li>
+            <li><a href="/Paket/index.html">Home page</a></li>
+            <li class="divider"></li>
+            <li><a href="http://nuget.org/packages/Paket">Get Library via NuGet</a></li>
+            <li><a href="http://github.com/fsprojects/Paket">Source Code on GitHub</a></li>
+            <li><a href="http://github.com/fsprojects/Paket/issues">Report an issue</a></li>
+            <li><a href="http://github.com/fsprojects/Paket/blob/master/LICENSE.txt">License</a></li>
+            <li><a href="http://github.com/fsprojects/Paket/blob/master/RELEASE_NOTES.md">Release Notes</a></li>
+
+            <li class="nav-header">Documentation</li>
+            <li><a href="/Paket/faq.html">FAQ</a></li>
+            <li><a href="/Paket/dependencies_file.html">paket.dependencies</a></li>
+            <li><a href="/Paket/lock_file.html">paket.lock</a></li>
+            <li><a href="/Paket/references_files.html">paket.references</a></li>
+            <li><a href="/Paket/reference/index.html">API Reference</a></li>
+
+            <li class="nav-header">Paket commands</li>
+            <li><a href="/Paket/paket_install.html">paket install</a></li>
+            <li><a href="/Paket/paket_outdated.html">paket outdated</a></li>
+            <li><a href="/Paket/paket_update.html">paket update</a></li>
+            <li><a href="/Paket/convert_from_nuget.html">paket convert-from-nuget</a></li>            
+          </ul>
+        </div>
+      </div>
+    </div>
+    <a href="http://github.com/fsprojects/Paket"><img style="position: absolute; top: 0; right: 0; border: 0;" src="https://s3.amazonaws.com/github/ribbons/forkme_right_gray_6d6d6d.png" alt="Fork me on GitHub"/></a>
+  </body>
+</html>
