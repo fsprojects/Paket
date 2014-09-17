@@ -91,9 +91,7 @@ let serializeSourceFiles (files:SourceFile list) =
             yield "  specs:"
             for file in files do
                 let path = file.Name.TrimStart '/'
-                match file.Commit with
-                | Some commit -> yield sprintf "    %s (%s)" path commit
-                | None -> yield sprintf "    %s" path]
+                yield sprintf "    %s (%s)" path file.Commit]
 
     String.Join(Environment.NewLine, all)
 
@@ -159,8 +157,7 @@ type LockFile(strictMode,packages : ResolvedPackage list, remoteFiles : SourceFi
                 match state.Remote |> Option.map(fun s -> s.Split '/') with
                 | Some [| owner; project |] ->
                     let path, commit = match details.Split ' ' with
-                                       | [| filePath; commit |] -> filePath, Some (commit |> removeBrackets)
-                                       | [| filePath |] -> filePath, None
+                                       | [| filePath; commit |] -> filePath, commit |> removeBrackets                                       
                                        | _ -> failwith "invalid file source details."
                     { state with
                         SourceFiles = { Commit = commit

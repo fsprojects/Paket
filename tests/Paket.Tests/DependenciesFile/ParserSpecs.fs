@@ -92,7 +92,7 @@ let ``should report errors if nuget is single``() =
 
 [<Test>]
 let ``should read source file from config``() =
-    let config = """github "fsharp/FAKE" "src/app/FAKE/Cli.fs"
+    let config = """github "fsharp/FAKE:master" "src/app/FAKE/Cli.fs"
                     github "fsharp/FAKE:bla123zxc" "src/app/FAKE/FileWithCommit.fs" """
     let dependencies = DependenciesFile.FromCode config
     dependencies.RemoteFiles
@@ -100,11 +100,11 @@ let ``should read source file from config``() =
         [ { Owner = "fsharp"
             Project = "FAKE"
             Name = "src/app/FAKE/Cli.fs"
-            Commit = None }
+            Commit = "master" }
           { Owner = "fsharp"
             Project = "FAKE"
             Name = "src/app/FAKE/FileWithCommit.fs"
-            Commit = Some "bla123zxc" } ]
+            Commit = "bla123zxc" } ]
 
 let strictConfig = """
 references strict
@@ -164,7 +164,7 @@ let ``should read config without quotes but lots of whitespace``() =
 
 [<Test>]
 let ``should read github source file from config without quotes``() =
-    let config = """github fsharp/FAKE   src/app/FAKE/Cli.fs
+    let config = """github fsharp/FAKE:master   src/app/FAKE/Cli.fs
                     github    fsharp/FAKE:bla123zxc src/app/FAKE/FileWithCommit.fs """
     let dependencies = DependenciesFile.FromCode config
     dependencies.RemoteFiles
@@ -172,8 +172,8 @@ let ``should read github source file from config without quotes``() =
         [ { Owner = "fsharp"
             Project = "FAKE"
             Name = "src/app/FAKE/Cli.fs"
-            Commit = None }
+            Commit = "master" }
           { Owner = "fsharp"
             Project = "FAKE"
             Name = "src/app/FAKE/FileWithCommit.fs"
-            Commit = Some "bla123zxc" } ]
+            Commit = "bla123zxc" } ]

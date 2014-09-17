@@ -57,7 +57,7 @@
   </Choose>
   <Import Project="$(FSharpTargetsPath)" />
   <ItemGroup>
-    <Compile Include="..\..\paket-files\forki\FsUnit\master\FsUnit.fs">
+    <Compile Include="..\..\paket-files\forki\FsUnit\7623fc13439f0e60bd05c1ed3b5f6dcb937fe468\FsUnit.fs">
       <Paket>True</Paket>
       <Link>FsUnit.fs</Link>
     </Compile>

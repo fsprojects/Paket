@@ -21,7 +21,7 @@ let lockFile = """NUGET
 GITHUB
   remote: fsharp/FAKE
   specs:
-    src/app/FAKE/Cli.fs
+    src/app/FAKE/Cli.fs (7699e40e335f3cc54ab382a8969253fecc1e08a9)
     src/app/Fake.Deploy.Lib/FakeDeployAgentHelper.fs (Globbing)
 """   
 
@@ -50,13 +50,13 @@ let ``should parse lock file``() =
         [ { Owner = "fsharp"
             Project = "FAKE"
             Name = "src/app/FAKE/Cli.fs"
-            Commit = None }
+            Commit = "7699e40e335f3cc54ab382a8969253fecc1e08a9" }
           { Owner = "fsharp"
             Project = "FAKE"
             Name = "src/app/Fake.Deploy.Lib/FakeDeployAgentHelper.fs"
-            Commit = Some "Globbing" } ]
+            Commit = "Globbing" } ]
     
-    lockFile.SourceFiles.[0].CommitWithDefault |> shouldEqual "master"
+    lockFile.SourceFiles.[0].Commit |> shouldEqual "7699e40e335f3cc54ab382a8969253fecc1e08a9"
     lockFile.SourceFiles.[0].Name |> shouldEqual "src/app/FAKE/Cli.fs"
     lockFile.SourceFiles.[0].ToString() |> shouldEqual "(fsharp:FAKE:master) src/app/FAKE/Cli.fs"
 

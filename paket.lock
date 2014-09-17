@@ -19,4 +19,4 @@ NUGET
 GITHUB
   remote: forki/FsUnit
   specs:
-    FsUnit.fs
+    FsUnit.fs (7623fc13439f0e60bd05c1ed3b5f6dcb937fe468)

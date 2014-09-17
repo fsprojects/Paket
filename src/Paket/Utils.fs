@@ -91,6 +91,7 @@ let getFromUrl (url : string) =
     async { 
         try
             use client = new WebClient()
+            client.Headers.Add ("user-agent", "Paket")
             return! client.AsyncDownloadString(Uri(url))
         with
         | exn -> 
@@ -103,6 +104,7 @@ let safeGetFromUrl (url : string) =
     async { 
         try 
             use client = new WebClient()
+            client.Headers.Add ("user-agent", "Paket")
             let! raw = client.AsyncDownloadString(Uri(url))
             return Some raw
         with _ -> return None

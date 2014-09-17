@@ -78,9 +78,15 @@ module DependenciesFileParser =
                           ResolverStrategy = if version.StartsWith "!" then ResolverStrategy.Min else ResolverStrategy.Max
                           VersionRange = parseVersionRange(version.Trim '!') } :: packages, sourceFiles
                 | SourceFile((owner,project, commit), path) ->
+                    // TODO: Put SHA1 retrieval into resolver
+                    let sha = 
+                        match commit with                        
+                        | None -> GitHub.getSHA1OfBranch owner project "master" |> Async.RunSynchronously
+                        | Some sha -> sha
+
                     let newSourceFile = { Owner = owner
                                           Project = project
-                                          Commit = commit
+                                          Commit = sha
                                           Name = path }
                     tracefn "  %O" newSourceFile
                     lineNo, referencesMode, sources, packages, newSourceFile :: sourceFiles
