@@ -12,9 +12,11 @@ The [`paket outdated` command](paket_outdated.html) lists packages that have new
 
 Paket also enables one to [reference files directly from GitHub repositories](github_dependencies.html).
 
-## I'm already using NuGet. How can I convert to Paket?
+<div id="no-version"></div>
+## NuGet puts the package version into the path. Is Paket doing the same?
 
-The process is very easy and you can read more about it in the [convert from NuGet](convert_from_nuget.html) section.
+No, since Paket provides a global view to your dependencies it installs only one version of a package and therefor the version number is not needed in the path.
+This makes it much easier to reference files in the package and you don't have to edit these references when you update a package.
 
 ## Why does Paket add references to the libraries associated with each supported framework version within a NuGet package to my projects?
 
@@ -57,6 +59,10 @@ Paket uses the NuGet OData API to discover package dependencies. Unfortunately t
 Some good news is that [the NuGet team is currently developing a faster API](http://blog.nuget.org/20140711/nuget-architecture.html). Paket may be able to take advantage of that in the future.
 
 Once the [`paket.lock` file](lock_file.html) is written, Paket no longer needs to use the OData API any futher; as a result, [`paket install`](paket_install.html) is very fast.
+
+## I'm already using NuGet. How can I convert to Paket?
+
+The process is very easy and you can read more about it in the [convert from NuGet](convert_from_nuget.html) section.
 
 ## Can I use Paket to manage npm/bower/whatever dependencies?
 
