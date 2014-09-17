@@ -36,11 +36,11 @@
 
 <p><strong> Only in <a href="https://www.nuget.org/packages/Paket/0.2.0-alpha001">0.2.0 alpha versions</a> </strong></p>
 
-<p>Paket allows to link files from <a href="http://www.github.com">Github.com</a> into your projects.</p>
+<p>Paket allows to link files from <a href="http://www.github.com">github.com</a> into your projects.</p>
 
 <h2>Referencing a single file</h2>
 
-<p>You can reference a single file from <a href="http://www.github.com">Github.com</a> simply by specifying the source repository and the file name in the <a href="dependencies_file.html"><code>paket.dependencies</code> file</a>:</p>
+<p>You can reference a single file from <a href="http://www.github.com">github.com</a> simply by specifying the source repository and the file name in the <a href="dependencies_file.html"><code>paket.dependencies</code> file</a>:</p>
 
 <table class="pre"><tr><td class="lines"><pre class="fssnip">
 <span class="l">1: </span>
@@ -51,6 +51,13 @@
 </td>
 </tr>
 </table>
+
+<p>If you run the <a href="paket_update.html"><code>paket update</code> command</a>, then it will add a new section to your <a href="lock_file.html"><code>paket.lock</code> file</a>:</p>
+
+<table class="pre"><tr><td><pre lang="batchfile">GITHUB
+  remote: forki/FsUnit
+  specs:
+    FsUnit.fs (7623fc13439f0e60bd05c1ed3b5f6dcb937fe468)</pre></td></tr></table>
 
 
         </div>
