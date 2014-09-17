@@ -43,7 +43,7 @@ module DependenciesFileParser =
             let parts = trimmed.Split ' '
             Remote (parts.[1].Replace("\"",""))                
         | trimmed when trimmed.StartsWith "nuget" -> 
-            let parts = trimmed.Replace("nuget","").Trim().Replace("\"", "").Split ' ' |> Seq.toList
+            let parts = trimmed.Replace("nuget","").Trim().Replace("\"", "").Split([|' '|],StringSplitOptions.RemoveEmptyEntries) |> Seq.toList
             match parts with
             | name :: operator :: version  :: _ 
                 when List.exists ((=) operator) operators -> Package(name,operator + " " + version)
@@ -51,7 +51,7 @@ module DependenciesFileParser =
             | _ -> failwithf "could not retrieve nuget package from %s" trimmed
         | trimmed when trimmed.StartsWith "references" -> ReferencesMode(trimmed.Replace("references","").Trim() = "strict")
         | trimmed when trimmed.StartsWith "github" ->
-            let parts = trimmed.Replace("\"", "").Split ' '
+            let parts = trimmed.Replace("\"", "").Trim().Split([|' '|],StringSplitOptions.RemoveEmptyEntries)
             let getParts (projectSpec:string) =
                 match projectSpec.Split [|':'; '/'|] with
                 | [| owner; project |] -> owner, project, None

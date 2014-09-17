@@ -131,7 +131,27 @@ nuget SignalR = 3.3.2
 """
 
 [<Test>]
-let ``should read config without "``() = 
+let ``should read config without quotes``() = 
+    let cfg = DependenciesFile.FromCode configWithoutQuotes
+    cfg.Strict |> shouldEqual false
+    cfg.DirectDependencies.Count |> shouldEqual 4
+
+    cfg.DirectDependencies.["Rx-Main"] |> shouldEqual (VersionRange.Between("2.0", "3.0"))
+    cfg.DirectDependencies.["Castle.Windsor-log4net"] |> shouldEqual (VersionRange.Between("3.2", "4.0"))
+    cfg.DirectDependencies.["FAKE"] |> shouldEqual (VersionRange.Exactly "1.1")
+    cfg.DirectDependencies.["SignalR"] |> shouldEqual (VersionRange.Exactly "3.3.2")
+
+let configWithoutQuotesButLotsOfWhiteSpace = """
+source      http://nuget.org/api/v2
+
+nuget   Castle.Windsor-log4net   ~>     3.2
+nuget Rx-Main ~> 2.0
+nuget FAKE =    1.1
+nuget SignalR    = 3.3.2
+"""
+
+[<Test>]
+let ``should read config without quotes but lots of whitespace``() = 
     let cfg = DependenciesFile.FromCode configWithoutQuotes
     cfg.Strict |> shouldEqual false
     cfg.DirectDependencies.Count |> shouldEqual 4
@@ -144,8 +164,8 @@ let ``should read config without "``() =
 
 [<Test>]
 let ``should read github source file from config without quotes``() =
-    let config = """github fsharp/FAKE src/app/FAKE/Cli.fs
-                    github fsharp/FAKE:bla123zxc src/app/FAKE/FileWithCommit.fs """
+    let config = """github fsharp/FAKE   src/app/FAKE/Cli.fs
+                    github    fsharp/FAKE:bla123zxc src/app/FAKE/FileWithCommit.fs """
     let dependencies = DependenciesFile.FromCode config
     dependencies.RemoteFiles
     |> shouldEqual
