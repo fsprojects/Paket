@@ -14,7 +14,7 @@ To give you an overview, this is what Paket's `paket.dependencies` file looks li
     nuget "FSharp.Formatting" "~> 2.4"
     nuget "DotNetZip" "~> 1.9.3"
     nuget "SourceLink.Fake" "~> 0.3"  
-	github forki/FsUnit FsUnit.fs       // Only in 0.2.0 alpha versions
+	github forki/FsUnit FsUnit.fs
 
 The syntax looks familiar to users of Ruby's [bundler](http://bundler.io/) [Gemfile](http://bundler.io/gemfile.html). This is intended because it proved to work well for the authors of Paket.
 
@@ -28,4 +28,4 @@ Only direct dependencies should be listed. Paket uses this definition to compute
 Paket supports the following source types:
 
 * [NuGet](nuget_dependencies.html)
-* [Github](github_dependencies.html) ** Only in [0.2.0 alpha versions](https://www.nuget.org/packages/Paket/0.2.0-alpha001) **
+* [Github](github_dependencies.html)

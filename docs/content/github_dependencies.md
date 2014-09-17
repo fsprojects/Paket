@@ -1,7 +1,5 @@
 # Github dependencies
 
-** Only in [0.2.0 alpha versions](https://www.nuget.org/packages/Paket/0.2.0-alpha001) **
-
 Paket allows to link files from [github.com](http://www.github.com) into your projects.
 
 ## Referencing a single file
