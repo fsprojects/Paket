@@ -10,7 +10,7 @@ Paket on the other hand maintains this information on a consistent and stable ba
 
 The [`paket outdated` command](paket_outdated.html) lists packages that have new versions available.
 
-Future versions of Paket will also enable one to [reference files directly from git repositories](https://github.com/fsprojects/Paket/issues/9).
+Paket also enables one to [reference files directly from GitHub repositories](github_dependencies.html).
 
 ## I'm already using NuGet. How can I convert to Paket?
 
