@@ -4,16 +4,16 @@ The `paket.dependencies` file is used to specify rules regarding your applicatio
 
 To give you an overview, this is what Paket's `paket.dependencies` file looks like as of the time of writing:
 
-    source "http://nuget.org/api/v2"
+    source http://nuget.org/api/v2
 
-    nuget "Newtonsoft.Json" "~> 6.0"
-    nuget "UnionArgParser" "~> 0.7"
-    nuget "NUnit.Runners" "~> 2.6.3"
-    nuget "NUnit" "~> 2.6.3"
-    nuget "FAKE" "~> 3.4"
-    nuget "FSharp.Formatting" "~> 2.4"
-    nuget "DotNetZip" "~> 1.9.3"
-    nuget "SourceLink.Fake" "~> 0.3"  
+    nuget Newtonsoft.Json ~> 6.0
+    nuget UnionArgParser ~> 0.7
+    nuget NUnit.Runners ~> 2.6.3
+    nuget NUnit ~> 2.6.3
+    nuget FAKE ~> 3.4
+    nuget FSharp.Formatting ~> 2.4
+    nuget DotNetZip ~> 1.9.3
+    nuget SourceLink.Fake ~> 0.3
 	github forki/FsUnit FsUnit.fs
 
 The syntax looks familiar to users of Ruby's [bundler](http://bundler.io/) [Gemfile](http://bundler.io/gemfile.html). This is intended because it proved to work well for the authors of Paket.

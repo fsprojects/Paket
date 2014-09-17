@@ -16,8 +16,8 @@ Paket supports NuGet feeds like those emitted by [nuget.org](http://www.nuget.or
 
 Please note that you need to specify *all* NuGet sources, including the default feed from [nuget.org](http://www.nuget.org). Paket does not take the current machine's NuGet Package Sources configuration (that you set up e.g. using Visual Studio) into account.
 
-    source "http://nuget.org/api/v2"      // nuget.org
-    source "http://myserver/nuget/api/v2" // custom feed
+    source http://nuget.org/api/v2      // nuget.org
+    source http://myserver/nuget/api/v2 // custom feed
 
 The [paket.lock](lock_file.html) will also reflect these settings.
 
@@ -25,9 +25,9 @@ The [paket.lock](lock_file.html) will also reflect these settings.
 
 Paket supports file paths such as local directories or references to UNC shares:
 
-    source "C:\Nugets"
-    source "~/project/nugets"
-    source "\\server\nugets"
+    source C:\Nugets
+    source ~/project/nugets
+    source \\server\nugets
 
 <div id="strict-mode"></div>
 ### Strict references
@@ -36,10 +36,10 @@ Paket usually references all direct and indirect dependencies that are listed in
 With the `strict` mode it will only reference direct dependencies.
 
 	references strict
-    source "http://nuget.org/api/v2"
+    source http://nuget.org/api/v2
 
-    nuget "Newtonsoft.Json" "~> 6.0"
-    nuget "UnionArgParser" "~> 0.7"
+    nuget Newtonsoft.Json ~> 6.0
+    nuget UnionArgParser ~> 0.7
 
 <div id="dependencies"></div>
 ## Dependencies
@@ -64,49 +64,49 @@ Please also see below how you can [influence the resolution of indirect dependen
 
 #### Pinned version constraint
 
-    nuget "Example" "= 1.2.3"
-    nuget "Example" "1.2.3"   // same as above
+    nuget Example = 1.2.3
+    nuget Example 1.2.3   // same as above
 
-    nuget "Example" "1.2.3-alpha001"
+    nuget Example 1.2.3-alpha001
 
 This is the strictest version constraint. Use the `=` operator to specify an exact version match; the `=` is optional.
 
 #### Greater-than-or-equal version constraint
 
-    nuget "Example" ">= 1.2.3"
+    nuget Example >= 1.2.3
 
-    nuget "Example" ">= 1.2.3-alpha001"
+    nuget Example >= 1.2.3-alpha001
 
 Use the `>=` operator to denote that you want the latest version available, as long as it's newer that what follows the `>=` operator.
 
 #### TODO Greater-than version constraint
 
-    nuget "Example" "> 1.2.3"
+    nuget Example > 1.2.3
 
 NOT SUPPORTED YET
 
 #### TODO Less-than-or-equal version constraint
 
-    nuget "Example" "<= 1.2.3"
+    nuget Example <= 1.2.3
 
 NOT SUPPORTED YET
 
 #### TODO Less-than version constraint
 
-    nuget "Example" "< 1.2.3"
+    nuget Example < 1.2.3
 
 NOT SUPPORTED YET
 
 #### TODO Compound version constraint
 
-    nuget "Example" ">= 1.2.3" "< 1.5"
+    nuget Example >= 1.2.3 < 1.5
 
 NOT SUPPORTED YET
 
 <div id="pessimistic-version-constraint"></div>
 #### Pessimistic version constraint
 
-    nuget "Example" "~> 1.2.3"
+    nuget Example ~> 1.2.3
 
 The `~>` "twiddle-wakka" operator is borrowed from [bundler](http://bundler.io/). It is used to specify a version range.
 
@@ -151,7 +151,7 @@ NOT SUPPORTED YET
 
 If want to allow newer backward-compatible versions but also need a specific fix version within the allowed range, use a compound constraint.
 
-    nuget "Example" "~> 1.2" ">= 1.2.3"
+    nuget Example ~> 1.2 >= 1.2.3
 
 The example above translates to `1.2.3 <= x < 2.0`.
 
@@ -190,15 +190,15 @@ To make your transition to Paket easier and to allow package authors to correct 
 
 To request that Paket applies NuGet-style dependency resolution for indirect dependencies, use the `!` operator in your version constraint.
 
-    source "http://nuget.org/api/v2"
+    source http://nuget.org/api/v2
 
-    nuget "Example" "!~> 1.2" // use "min" version resolution strategy
+    nuget Example !~> 1.2 // use "min" version resolution strategy
 
 This effectively will get you the *lowest matching versions* of `Example`'s dependencies. Still, you will get the *latest matching version* of `Example` itself according to its [version constraint of `1.2 <= x < 2`](#pessimistic-version-constraint).
 
 The `!` modifier is applicable to all [version constraints](#version-constraints):
 
-    source "http://nuget.org/api/v2"
+    source http://nuget.org/api/v2
 
-    nuget "Example-B" "!= 1.2"  // use "min" version resolution strategy
-    nuget "Example-C" "!>= 1.2" // use "min" version resolution strategy
+    nuget Example-B != 1.2  // use "min" version resolution strategy
+    nuget Example-C !>= 1.2 // use "min" version resolution strategy

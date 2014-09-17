@@ -3,10 +3,10 @@ The paket.lock file
 
 Consider the following [`paket.dependencies`](dependencies_file.html) file:
 
-    source "http://nuget.org/api/v2"
+    source http://nuget.org/api/v2
 
-    nuget "Castle.Windsor-log4net" "!~> 3.2"
-    nuget "Rx-Main" "!~> 2.0"
+    nuget Castle.Windsor-log4net !~> 3.2
+    nuget Rx-Main !~> 2.0
 
 Here we [specify dependencies](dependencies_file.html) on the default NuGet feed's [`Castle.Windsor-log4net`](https://www.nuget.org/packages/Castle.Windsor-log4net/) and [`Rx-Main`](https://www.nuget.org/packages/Rx-Main/) packages; both these packages have dependencies on further NuGet packages.
 

@@ -29,10 +29,10 @@ If you are already using NuGet for package restore in your solution then you can
 
 Specify the version rules of all dependencies used in your application in a [`paket.dependencies` file](dependencies_file.html) in your project's root:
 
-    source "http://nuget.org/api/v2"
+    source http://nuget.org/api/v2
 
-    nuget "Castle.Windsor-log4net" "~> 3.2"
-    nuget "Rx-Main" "~> 2.0"
+    nuget Castle.Windsor-log4net ~> 3.2
+    nuget Rx-Main ~> 2.0
 
 Install all of the required packages from the specified sources:
 
