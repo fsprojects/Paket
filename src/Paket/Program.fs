@@ -20,6 +20,7 @@ type CLIArguments =
     | Dependencies_file of string
     | [<AltCommandLine("-f")>] Force
     | Hard
+    | No_install
 with
     interface IArgParserTemplate with
         member s.Usage =
@@ -32,6 +33,7 @@ with
             | Dependencies_file _ -> "specify a file containing dependency definitions."
             | Force -> "forces the download of all packages."
             | Hard -> "overwrites manual package references."
+            | No_install -> "omits install --hard after convert-from-nuget"
 
 
 let parser = UnionArgParser.Create<CLIArguments>("USAGE: paket [install|update|outdated|convert-from-nuget] ... options")
@@ -69,11 +71,16 @@ try
             | Some _ -> true
             | None -> false
 
+        let installAfterConvert =
+            match results.TryGetResult <@ CLIArguments.No_install @> with
+            | Some _ -> false
+            | None -> true
+
         match command with
         | Command.Install -> Process.Install(false,force,hard,dependenciesFile)
         | Command.Update -> Process.Install(true,force,hard,dependenciesFile)
         | Command.Outdated -> Process.ListOutdated(dependenciesFile)
-        | Command.ConvertFromNuget -> Process.ConvertFromNuget()
+        | Command.ConvertFromNuget -> Process.ConvertFromNuget(force,installAfterConvert)
         | _ -> failwithf "no command given.%s" (parser.Usage())
         
         tracefn "Ready."
