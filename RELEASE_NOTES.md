@@ -1,13 +1,11 @@
-#### 0.2.0-rc1 - 17.09.2014
-* Package names in Dependencies file are no longer case-sensitive - https://github.com/fsprojects/Paket/pull/108
-* Always pin the Github version of a referenced file in the lockfile - https://github.com/fsprojects/Paket/pull/110
-* Support cleaner syntax in paket.dependencies - https://github.com/fsprojects/Paket/pull/95
-* Support content files from nuget - https://github.com/fsprojects/Paket/pull/84
-* Dogfooding the Github feature
-* Detecting portable profiles
+#### 0.2.0 - 17.09.2014
+* Allow to directly link GitHub files - http://fsprojects.github.io/Paket/github_dependencies.html
+* Automatic NuGet conversion - http://fsprojects.github.io/Paket/convert_from_nuget.html
+* Cleaner syntax in paket.dependencies - https://github.com/fsprojects/Paket/pull/95
 * Strict mode - https://github.com/fsprojects/Paket/pull/104
-* Allow to use Github files - https://github.com/fsprojects/Paket/pull/96
-* convert-from-nuget command - http://fsprojects.github.io/Paket/convert_from_nuget.html
+* Detecting portable profiles
+* Support content files from nuget - https://github.com/fsprojects/Paket/pull/84
+* Package names in Dependencies file are no longer case-sensitive - https://github.com/fsprojects/Paket/pull/108
 
 #### 0.1.4 - 16.09.2014
 * Only vbproj, csproj and fsproj files are handled
