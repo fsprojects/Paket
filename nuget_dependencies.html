@@ -56,8 +56,8 @@
 </pre>
 </td>
 <td class="snippet"><pre class="fssnip">
-<span class="i">source</span> <span class="s">&quot;</span><span class="s">http</span><span class="s">:</span><span class="s">/</span><span class="s">/</span><span class="s">nuget</span><span class="s">.</span><span class="s">org</span><span class="s">/</span><span class="s">api</span><span class="s">/</span><span class="s">v2</span><span class="s">&quot;</span>      <span class="c">// nuget.org</span>
-<span class="i">source</span> <span class="s">&quot;</span><span class="s">http</span><span class="s">:</span><span class="s">/</span><span class="s">/</span><span class="s">myserver</span><span class="s">/</span><span class="s">nuget</span><span class="s">/</span><span class="s">api</span><span class="s">/</span><span class="s">v2</span><span class="s">&quot;</span> <span class="c">// custom feed</span></pre>
+<span class="i">source</span> <span class="i">http</span><span class="o">:</span><span class="c">//nuget.org/api/v2      // nuget.org</span>
+<span class="i">source</span> <span class="i">http</span><span class="o">:</span><span class="c">//myserver/nuget/api/v2 // custom feed</span></pre>
 </td>
 </tr>
 </table>
@@ -75,9 +75,9 @@
 </pre>
 </td>
 <td class="snippet"><pre class="fssnip">
-<span class="i">source</span> <span class="s">&quot;</span><span class="s">C</span><span class="s">:</span><span class="s">\</span><span class="s">Nugets</span><span class="s">&quot;</span>
-<span class="i">source</span> <span class="s">&quot;</span><span class="s">~</span><span class="s">/</span><span class="s">project</span><span class="s">/</span><span class="s">nugets</span><span class="s">&quot;</span>
-<span class="i">source</span> <span class="s">&quot;</span><span class="s">\\</span><span class="s">server</span><span class="s">\n</span><span class="s">ugets</span><span class="s">&quot;</span></pre>
+<span class="i">source</span> <span class="i">C</span><span class="o">:</span>
+<span class="i">source</span> <span class="o">~/</span><span class="i">project</span><span class="o">/</span><span class="i">nugets</span>
+<span class="i">source</span> </pre>
 </td>
 </tr>
 </table>
@@ -99,10 +99,10 @@ With the <code>strict</code> mode it will only reference direct dependencies.</p
 </td>
 <td class="snippet"><pre class="fssnip">
 <span class="i">references</span> <span class="i">strict</span>
-<span class="i">source</span> <span class="s">&quot;</span><span class="s">http</span><span class="s">:</span><span class="s">/</span><span class="s">/</span><span class="s">nuget</span><span class="s">.</span><span class="s">org</span><span class="s">/</span><span class="s">api</span><span class="s">/</span><span class="s">v2</span><span class="s">&quot;</span>
+<span class="i">source</span> <span class="i">http</span><span class="o">:</span><span class="c">//nuget.org/api/v2</span>
 
-<span class="i">nuget</span> <span class="s">&quot;</span><span class="s">Newtonsoft</span><span class="s">.</span><span class="s">Json</span><span class="s">&quot;</span> <span class="s">&quot;</span><span class="s">~</span><span class="s">&gt;</span><span class="s"> </span><span class="s">6</span><span class="s">.</span><span class="s">0</span><span class="s">&quot;</span>
-<span class="i">nuget</span> <span class="s">&quot;</span><span class="s">UnionArgParser</span><span class="s">&quot;</span> <span class="s">&quot;</span><span class="s">~</span><span class="s">&gt;</span><span class="s"> </span><span class="s">0</span><span class="s">.</span><span class="s">7</span><span class="s">&quot;</span></pre>
+<span class="i">nuget</span> <span class="i">Newtonsoft</span><span class="o">.</span><span class="i">Json</span> <span class="o">~&gt;</span> <span class="n">6.0</span>
+<span class="i">nuget</span> <span class="i">UnionArgParser</span> <span class="o">~&gt;</span> <span class="n">0.7</span></pre>
 </td>
 </tr>
 </table>
@@ -141,10 +141,10 @@ With the <code>strict</code> mode it will only reference direct dependencies.</p
 </pre>
 </td>
 <td class="snippet"><pre class="fssnip">
-<span class="i">nuget</span> <span class="s">&quot;</span><span class="s">Example</span><span class="s">&quot;</span> <span class="s">&quot;</span><span class="s">=</span><span class="s"> </span><span class="s">1</span><span class="s">.</span><span class="s">2</span><span class="s">.</span><span class="s">3</span><span class="s">&quot;</span>
-<span class="i">nuget</span> <span class="s">&quot;</span><span class="s">Example</span><span class="s">&quot;</span> <span class="s">&quot;</span><span class="s">1</span><span class="s">.</span><span class="s">2</span><span class="s">.</span><span class="s">3</span><span class="s">&quot;</span>   <span class="c">// same as above</span>
+<span class="i">nuget</span> <span class="i">Example</span> <span class="o">=</span> <span class="n">1.2</span><span class="o">.</span><span class="n">3</span>
+<span class="i">nuget</span> <span class="i">Example</span> <span class="n">1.2</span><span class="o">.</span><span class="n">3</span>   <span class="c">// same as above</span>
 
-<span class="i">nuget</span> <span class="s">&quot;</span><span class="s">Example</span><span class="s">&quot;</span> <span class="s">&quot;</span><span class="s">1</span><span class="s">.</span><span class="s">2</span><span class="s">.</span><span class="s">3</span><span class="s">-</span><span class="s">alpha001</span><span class="s">&quot;</span></pre>
+<span class="i">nuget</span> <span class="i">Example</span> <span class="n">1.2</span><span class="o">.</span><span class="n">3</span><span class="o">-</span><span class="i">alpha001</span></pre>
 </td>
 </tr>
 </table>
@@ -160,9 +160,9 @@ With the <code>strict</code> mode it will only reference direct dependencies.</p
 </pre>
 </td>
 <td class="snippet"><pre class="fssnip">
-<span class="i">nuget</span> <span class="s">&quot;</span><span class="s">Example</span><span class="s">&quot;</span> <span class="s">&quot;</span><span class="s">&gt;</span><span class="s">=</span><span class="s"> </span><span class="s">1</span><span class="s">.</span><span class="s">2</span><span class="s">.</span><span class="s">3</span><span class="s">&quot;</span>
+<span class="i">nuget</span> <span class="i">Example</span> <span class="o">&gt;</span><span class="o">=</span> <span class="n">1.2</span><span class="o">.</span><span class="n">3</span>
 
-<span class="i">nuget</span> <span class="s">&quot;</span><span class="s">Example</span><span class="s">&quot;</span> <span class="s">&quot;</span><span class="s">&gt;</span><span class="s">=</span><span class="s"> </span><span class="s">1</span><span class="s">.</span><span class="s">2</span><span class="s">.</span><span class="s">3</span><span class="s">-</span><span class="s">alpha001</span><span class="s">&quot;</span></pre>
+<span class="i">nuget</span> <span class="i">Example</span> <span class="o">&gt;</span><span class="o">=</span> <span class="n">1.2</span><span class="o">.</span><span class="n">3</span><span class="o">-</span><span class="i">alpha001</span></pre>
 </td>
 </tr>
 </table>
@@ -176,7 +176,7 @@ With the <code>strict</code> mode it will only reference direct dependencies.</p
 </pre>
 </td>
 <td class="snippet"><pre class="fssnip">
-<span class="i">nuget</span> <span class="s">&quot;</span><span class="s">Example</span><span class="s">&quot;</span> <span class="s">&quot;</span><span class="s">&gt;</span><span class="s"> </span><span class="s">1</span><span class="s">.</span><span class="s">2</span><span class="s">.</span><span class="s">3</span><span class="s">&quot;</span></pre>
+<span class="i">nuget</span> <span class="i">Example</span> <span class="o">&gt;</span> <span class="n">1.2</span><span class="o">.</span><span class="n">3</span></pre>
 </td>
 </tr>
 </table>
@@ -190,7 +190,7 @@ With the <code>strict</code> mode it will only reference direct dependencies.</p
 </pre>
 </td>
 <td class="snippet"><pre class="fssnip">
-<span class="i">nuget</span> <span class="s">&quot;</span><span class="s">Example</span><span class="s">&quot;</span> <span class="s">&quot;</span><span class="s">&lt;</span><span class="s">=</span><span class="s"> </span><span class="s">1</span><span class="s">.</span><span class="s">2</span><span class="s">.</span><span class="s">3</span><span class="s">&quot;</span></pre>
+<span class="i">nuget</span> <span class="i">Example</span> <span class="o">&lt;=</span> <span class="n">1.2</span><span class="o">.</span><span class="n">3</span></pre>
 </td>
 </tr>
 </table>
@@ -204,7 +204,7 @@ With the <code>strict</code> mode it will only reference direct dependencies.</p
 </pre>
 </td>
 <td class="snippet"><pre class="fssnip">
-<span class="i">nuget</span> <span class="s">&quot;</span><span class="s">Example</span><span class="s">&quot;</span> <span class="s">&quot;</span><span class="s">&lt;</span><span class="s"> </span><span class="s">1</span><span class="s">.</span><span class="s">2</span><span class="s">.</span><span class="s">3</span><span class="s">&quot;</span></pre>
+<span class="i">nuget</span> <span class="i">Example</span> <span class="o">&lt;</span> <span class="n">1.2</span><span class="o">.</span><span class="n">3</span></pre>
 </td>
 </tr>
 </table>
@@ -218,7 +218,7 @@ With the <code>strict</code> mode it will only reference direct dependencies.</p
 </pre>
 </td>
 <td class="snippet"><pre class="fssnip">
-<span class="i">nuget</span> <span class="s">&quot;</span><span class="s">Example</span><span class="s">&quot;</span> <span class="s">&quot;</span><span class="s">&gt;</span><span class="s">=</span><span class="s"> </span><span class="s">1</span><span class="s">.</span><span class="s">2</span><span class="s">.</span><span class="s">3</span><span class="s">&quot;</span> <span class="s">&quot;</span><span class="s">&lt;</span><span class="s"> </span><span class="s">1</span><span class="s">.</span><span class="s">5</span><span class="s">&quot;</span></pre>
+<span class="i">nuget</span> <span class="i">Example</span> <span class="o">&gt;</span><span class="o">=</span> <span class="n">1.2</span><span class="o">.</span><span class="n">3</span> <span class="o">&lt;</span> <span class="n">1.5</span></pre>
 </td>
 </tr>
 </table>
@@ -234,7 +234,7 @@ With the <code>strict</code> mode it will only reference direct dependencies.</p
 </pre>
 </td>
 <td class="snippet"><pre class="fssnip">
-<span class="i">nuget</span> <span class="s">&quot;</span><span class="s">Example</span><span class="s">&quot;</span> <span class="s">&quot;</span><span class="s">~</span><span class="s">&gt;</span><span class="s"> </span><span class="s">1</span><span class="s">.</span><span class="s">2</span><span class="s">.</span><span class="s">3</span><span class="s">&quot;</span></pre>
+<span class="i">nuget</span> <span class="i">Example</span> <span class="o">~&gt;</span> <span class="n">1.2</span><span class="o">.</span><span class="n">3</span></pre>
 </td>
 </tr>
 </table>
@@ -287,7 +287,7 @@ With the <code>strict</code> mode it will only reference direct dependencies.</p
 </pre>
 </td>
 <td class="snippet"><pre class="fssnip">
-<span class="i">nuget</span> <span class="s">&quot;</span><span class="s">Example</span><span class="s">&quot;</span> <span class="s">&quot;</span><span class="s">~</span><span class="s">&gt;</span><span class="s"> </span><span class="s">1</span><span class="s">.</span><span class="s">2</span><span class="s">&quot;</span> <span class="s">&quot;</span><span class="s">&gt;</span><span class="s">=</span><span class="s"> </span><span class="s">1</span><span class="s">.</span><span class="s">2</span><span class="s">.</span><span class="s">3</span><span class="s">&quot;</span></pre>
+<span class="i">nuget</span> <span class="i">Example</span> <span class="o">~&gt;</span> <span class="n">1.2</span> <span class="o">&gt;</span><span class="o">=</span> <span class="n">1.2</span><span class="o">.</span><span class="n">3</span></pre>
 </td>
 </tr>
 </table>
@@ -337,9 +337,9 @@ With the <code>strict</code> mode it will only reference direct dependencies.</p
 </pre>
 </td>
 <td class="snippet"><pre class="fssnip">
-<span class="i">source</span> <span class="s">&quot;</span><span class="s">http</span><span class="s">:</span><span class="s">/</span><span class="s">/</span><span class="s">nuget</span><span class="s">.</span><span class="s">org</span><span class="s">/</span><span class="s">api</span><span class="s">/</span><span class="s">v2</span><span class="s">&quot;</span>
+<span class="i">source</span> <span class="i">http</span><span class="o">:</span><span class="c">//nuget.org/api/v2</span>
 
-<span class="i">nuget</span> <span class="s">&quot;</span><span class="s">Example</span><span class="s">&quot;</span> <span class="s">&quot;</span><span class="s">!</span><span class="s">~</span><span class="s">&gt;</span><span class="s"> </span><span class="s">1</span><span class="s">.</span><span class="s">2</span><span class="s">&quot;</span> <span class="c">// use &quot;min&quot; version resolution strategy</span></pre>
+<span class="i">nuget</span> <span class="i">Example</span> <span class="o">!~&gt;</span> <span class="n">1.2</span> <span class="c">// use &quot;min&quot; version resolution strategy</span></pre>
 </td>
 </tr>
 </table>
@@ -356,10 +356,10 @@ With the <code>strict</code> mode it will only reference direct dependencies.</p
 </pre>
 </td>
 <td class="snippet"><pre class="fssnip">
-<span class="i">source</span> <span class="s">&quot;</span><span class="s">http</span><span class="s">:</span><span class="s">/</span><span class="s">/</span><span class="s">nuget</span><span class="s">.</span><span class="s">org</span><span class="s">/</span><span class="s">api</span><span class="s">/</span><span class="s">v2</span><span class="s">&quot;</span>
+<span class="i">source</span> <span class="i">http</span><span class="o">:</span><span class="c">//nuget.org/api/v2</span>
 
-<span class="i">nuget</span> <span class="s">&quot;</span><span class="s">Example</span><span class="s">-</span><span class="s">B</span><span class="s">&quot;</span> <span class="s">&quot;</span><span class="s">!</span><span class="s">=</span><span class="s"> </span><span class="s">1</span><span class="s">.</span><span class="s">2</span><span class="s">&quot;</span>  <span class="c">// use &quot;min&quot; version resolution strategy</span>
-<span class="i">nuget</span> <span class="s">&quot;</span><span class="s">Example</span><span class="s">-</span><span class="s">C</span><span class="s">&quot;</span> <span class="s">&quot;</span><span class="s">!</span><span class="s">&gt;</span><span class="s">=</span><span class="s"> </span><span class="s">1</span><span class="s">.</span><span class="s">2</span><span class="s">&quot;</span> <span class="c">// use &quot;min&quot; version resolution strategy</span></pre>
+<span class="i">nuget</span> <span class="i">Example</span><span class="o">-</span><span class="i">B</span> <span class="o">!=</span> <span class="n">1.2</span>  <span class="c">// use &quot;min&quot; version resolution strategy</span>
+<span class="i">nuget</span> <span class="i">Example</span><span class="o">-</span><span class="i">C</span> <span class="o">!&gt;=</span> <span class="n">1.2</span> <span class="c">// use &quot;min&quot; version resolution strategy</span></pre>
 </td>
 </tr>
 </table>
