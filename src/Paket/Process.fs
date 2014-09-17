@@ -112,7 +112,7 @@ let Install(regenerate, force, hard, dependenciesFilename) =
 
         let allPackages =
             extractedPackages
-            |> Array.map (fun (p,_) -> p.Name,p)
+            |> Array.map (fun (p,_) -> p.Name.ToLower(),p)
             |> Map.ofArray
 
         let rec addPackage (name:string) =
@@ -120,6 +120,7 @@ let Install(regenerate, force, hard, dependenciesFilename) =
                 let sourceFile = name.Split(':').[1]
                 usedSourceFiles.Add sourceFile |> ignore
             else
+                let name = name.ToLower()
                 match allPackages |> Map.tryFind name with
                 | Some package ->
                     if usedPackages.Add name then
