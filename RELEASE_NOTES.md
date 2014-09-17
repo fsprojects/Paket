@@ -1,4 +1,4 @@
-#### 0.2.0-alpha012 - 17.09.2014
+#### 0.2.0-alpha013 - 17.09.2014
 * Package names in Dependencies file are no longer case-sensitive - https://github.com/fsprojects/Paket/pull/108
 
 #### 0.2.0-alpha011 - 17.09.2014

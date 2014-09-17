@@ -136,14 +136,19 @@ let Resolve(force, discovery : IDiscovery, rootDependencies:UnresolvedPackage se
         |> Seq.fold (fun m (p, d) -> addDependency p m d) Map.empty
         |> analyzeGraph Map.empty
 
+    // cleanup names
     resolved
-    |> Seq.fold (fun map x -> 
-        
-    
+    |> Seq.fold (fun map x ->       
         match x.Value with
-        | Resolved p -> 
-            let officialName = p.Name
-            Map.add officialName x.Value map
+        | Resolved p ->
+            let cleanup =
+                { p with DirectDependencies =
+                        p.DirectDependencies
+                        |> List.map (fun (name,v) -> 
+                            match resolved.[name.ToLower()] with
+                            | Resolved d -> d.Name,v
+                            | _ -> name,v) }
+            Map.add p.Name (Resolved cleanup) map
         | _ -> Map.add x.Key x.Value map
     ) Map.empty
 
