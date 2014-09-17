@@ -7,10 +7,12 @@ open Paket
 /// [omit]
 module DependenciesFileParser = 
 
+    let private basicOperators = ["~>";">=";"="]
+    let private operators = basicOperators @ (basicOperators |> List.map (fun o -> "!" + o))
+
     let parseVersionRange (text : string) : VersionRange = 
-        let splitVersion (text:string) =
-            let tokens = ["~>";">=";"=" ]
-            match tokens |> List.tryFind(text.StartsWith) with
+        let splitVersion (text:string) =            
+            match basicOperators |> List.tryFind(text.StartsWith) with
             | Some token -> token, text.Replace(token + " ", "")
             | None -> "=", text
 
@@ -37,11 +39,16 @@ module DependenciesFileParser =
     let private (|Remote|Package|Blank|ReferencesMode|SourceFile|) (line:string) =
         match line.Trim() with
         | _ when String.IsNullOrWhiteSpace line -> Blank
-        | trimmed when trimmed.StartsWith "source" -> 
-            let fst = trimmed.IndexOf("\"")
-            let snd = trimmed.IndexOf("\"",fst+1)
-            Remote (trimmed.Substring(fst,snd-fst).Replace("\"",""))                
-        | trimmed when trimmed.StartsWith "nuget" -> Package(trimmed.Replace("nuget","").Trim())
+        | trimmed when trimmed.StartsWith "source" ->
+            let parts = trimmed.Split ' '
+            Remote (parts.[1].Replace("\"",""))                
+        | trimmed when trimmed.StartsWith "nuget" -> 
+            let parts = trimmed.Replace("nuget","").Trim().Replace("\"", "").Split ' ' |> Seq.toList
+            match parts with
+            | name :: operator :: version  :: _ 
+                when List.exists ((=) operator) operators -> Package(name,operator + " " + version)
+            | name :: version :: _ -> Package(name,version)
+            | _ -> failwithf "could not retrieve nuget package from %s" trimmed
         | trimmed when trimmed.StartsWith "references" -> ReferencesMode(trimmed.Replace("references","").Trim() = "strict")
         | trimmed when trimmed.StartsWith "github" ->
             let parts = trimmed.Replace("\"", "").Split ' '
@@ -64,14 +71,10 @@ module DependenciesFileParser =
                 | Remote newSource -> lineNo, referencesMode, (PackageSource.Parse(newSource.TrimEnd([|'/'|])) :: sources), packages, sourceFiles
                 | Blank -> lineNo, referencesMode, sources, packages, sourceFiles
                 | ReferencesMode mode -> lineNo, mode, sources, packages, sourceFiles
-                | Package details ->
-                    let parts = details.Split('"')
-                    if parts.Length < 4 || String.IsNullOrWhiteSpace parts.[1] || String.IsNullOrWhiteSpace parts.[3] then
-                        failwith "missing \""
-                    let version = parts.[3]
+                | Package(name,version) ->
                     lineNo, referencesMode, sources, 
                         { Sources = sources
-                          Name = parts.[1]
+                          Name = name
                           ResolverStrategy = if version.StartsWith "!" then ResolverStrategy.Min else ResolverStrategy.Max
                           VersionRange = parseVersionRange(version.Trim '!') } :: packages, sourceFiles
                 | SourceFile((owner,project, commit), path) ->

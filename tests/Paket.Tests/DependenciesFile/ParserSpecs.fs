@@ -74,38 +74,6 @@ let ``should read config with multiple sources``() =
     (cfg.Packages |> List.find (fun p -> p.Name = "MinPackage")).Sources |> shouldEqual [Nuget "http://nuget.org/api/v3"; Nuget "http://nuget.org/api/v2"]
     (cfg.Packages |> List.find (fun p -> p.Name = "FAKE")).Sources |> shouldEqual [Nuget "http://nuget.org/api/v2"]
 
-let config5 = """source "http://nuget.org/api/v2"
-
-nuget "RavenDB.Client" ">= 0"
-nuget RavenDB.Server" ">= 0"  // missing "
-"""
-
-[<Test>]
-let ``should report errors if pacakge misses "``() = 
-    try
-        DependenciesFile.FromCode config5 |> ignore
-        failwith "No message given"
-    with 
-    | exn ->
-        exn.Message.Contains("paket.dependencies") |> shouldEqual true
-        exn.Message.Contains("line 4") |> shouldEqual true
-        exn.Message.Contains("missing \"") |> shouldEqual true
-
-let config6 = """source "http://nuget.org/api/v2"
-nuget "Fody" "1.25.0"
-nuget "Obsolete.Fody" 3.1.0.0"  // missing "
-"""
-
-[<Test>]
-let ``should report errors if version misses "``() = 
-    try
-        DependenciesFile.FromCode config6 |> ignore
-        failwith "No message given"
-    with 
-    | exn ->
-        exn.Message.Contains("paket.dependencies") |> shouldEqual true
-        exn.Message.Contains("line 3") |> shouldEqual true
-        exn.Message.Contains("missing \"") |> shouldEqual true
 
 let config7 = """nuget "Fody" "> 0"
 """
@@ -120,7 +88,7 @@ let ``should report errors if nuget is single``() =
         exn.Message.Contains("paket.dependencies") |> shouldEqual true
         exn.Message.Contains("line 1") |> shouldEqual true
         exn.Message.Contains("could not parse version range") |> shouldEqual true
-        exn.Message.Contains("> 0") |> shouldEqual true
+        exn.Message.Contains(">") |> shouldEqual true
 
 [<Test>]
 let ``should read source file from config``() =
@@ -151,3 +119,41 @@ let ``should read strict config``() =
     cfg.Strict |> shouldEqual true
 
     (cfg.Packages |> List.find (fun p -> p.Name = "FAKE")).Sources |> shouldEqual [Nuget "http://nuget.org/api/v2"]
+
+
+let configWithoutQuotes = """
+source http://nuget.org/api/v2
+
+nuget Castle.Windsor-log4net ~> 3.2
+nuget Rx-Main ~> 2.0
+nuget FAKE = 1.1
+nuget SignalR = 3.3.2
+"""
+
+[<Test>]
+let ``should read config without "``() = 
+    let cfg = DependenciesFile.FromCode configWithoutQuotes
+    cfg.Strict |> shouldEqual false
+    cfg.DirectDependencies.Count |> shouldEqual 4
+
+    cfg.DirectDependencies.["Rx-Main"] |> shouldEqual (VersionRange.Between("2.0", "3.0"))
+    cfg.DirectDependencies.["Castle.Windsor-log4net"] |> shouldEqual (VersionRange.Between("3.2", "4.0"))
+    cfg.DirectDependencies.["FAKE"] |> shouldEqual (VersionRange.Exactly "1.1")
+    cfg.DirectDependencies.["SignalR"] |> shouldEqual (VersionRange.Exactly "3.3.2")
+
+
+[<Test>]
+let ``should read github source file from config without quotes``() =
+    let config = """github fsharp/FAKE src/app/FAKE/Cli.fs
+                    github fsharp/FAKE:bla123zxc src/app/FAKE/FileWithCommit.fs """
+    let dependencies = DependenciesFile.FromCode config
+    dependencies.RemoteFiles
+    |> shouldEqual
+        [ { Owner = "fsharp"
+            Project = "FAKE"
+            Name = "src/app/FAKE/Cli.fs"
+            Commit = None }
+          { Owner = "fsharp"
+            Project = "FAKE"
+            Name = "src/app/FAKE/FileWithCommit.fs"
+            Commit = Some "bla123zxc" } ]
