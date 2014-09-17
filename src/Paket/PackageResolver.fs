@@ -130,8 +130,20 @@ let Resolve(force, discovery : IDiscovery, rootDependencies:UnresolvedPackage se
                 |> Map.remove resolvedName
                 |> analyzeGraph resolved
 
+    let resolved =
+        rootDependencies
+        |> Seq.map (fun p -> p.Name, FromRoot p)
+        |> Seq.fold (fun m (p, d) -> addDependency p m d) Map.empty
+        |> analyzeGraph Map.empty
+
+    resolved
+    |> Seq.fold (fun map x -> 
+        
     
-    rootDependencies
-    |> Seq.map (fun p -> p.Name, FromRoot p)
-    |> Seq.fold (fun m (p, d) -> addDependency p m d) Map.empty
-    |> analyzeGraph Map.empty
+        match x.Value with
+        | Resolved p -> 
+            let officialName = p.Name
+            Map.add officialName x.Value map
+        | _ -> Map.add x.Key x.Value map
+    ) Map.empty
+
