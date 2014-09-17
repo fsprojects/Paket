@@ -1,4 +1,4 @@
-#### 0.2.0-alpha010 - 16.09.2014
+#### 0.2.0-alpha010 - 17.09.2014
 * Support cleaner syntax in paket.dependencies - https://github.com/fsprojects/Paket/pull/95
 
 #### 0.2.0-alpha009 - 16.09.2014
