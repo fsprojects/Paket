@@ -192,8 +192,8 @@ let ConvertFromNuget() =
     let latestVersions = allVersions |> Seq.map (fun (name,versions) -> name, versions |> Seq.max |> string)
 
     let dependenciesFileContent = 
-        "source \"http://nuget.org/api/v2\"" + Environment.NewLine + Environment.NewLine +
-         (latestVersions |> Seq.map (fun (name,version) -> sprintf "nuget \"%s\" \"%s\"" name version)
+        "source http://nuget.org/api/v2" + Environment.NewLine + Environment.NewLine +
+         (latestVersions |> Seq.map (fun (name,version) -> sprintf "nuget %s %s" name version)
          |> String.concat Environment.NewLine)
         
     File.WriteAllText("paket.dependencies", dependenciesFileContent)
