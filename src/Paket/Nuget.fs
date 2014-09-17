@@ -8,6 +8,7 @@ open Newtonsoft.Json
 open Ionic.Zip
 open System.Xml
 open System.Collections.Generic
+open System.Text.RegularExpressions
 
 let private loadNuGetOData raw =
     let doc = XmlDocument()
@@ -68,9 +69,9 @@ let getAllVersions (nugetURL, package) =
 /// Gets versions of the given package from local Nuget feed.
 let getAllVersionsFromLocalPath (localNugetPath, package) =
     async {
-        return Directory.EnumerateFiles(localNugetPath)
-               |> Seq.choose (fun f -> 
-                                   let _match = Text.RegularExpressions.Regex(sprintf @"%s\.(\d.*)\.nupkg" package).Match(f)
+        return Directory.EnumerateFiles(localNugetPath,"*.nupkg",SearchOption.AllDirectories)
+               |> Seq.choose (fun fileName -> 
+                                   let _match = Regex(sprintf @"%s\.(\d.*)\.nupkg" package, RegexOptions.IgnoreCase).Match(fileName)
                                    if _match.Groups.Count > 1 then Some _match.Groups.[1].Value else None)
     }
 
@@ -125,6 +126,14 @@ let getDetailsFromNugetViaOData nugetURL package sources resolverStrategy versio
                }
                |> Seq.head
 
+        let officialName = 
+            seq { 
+                   for node in doc.SelectNodes("//ns:entry/ns:title", manager) do
+                       yield node.InnerText
+               }
+               |> Seq.head
+
+
         let downloadLink = 
             seq { 
                    for node in doc.SelectNodes("//ns:entry/ns:content", manager) do
@@ -151,7 +160,7 @@ let getDetailsFromNugetViaOData nugetURL package sources resolverStrategy versio
                      ResolverStrategy = resolverStrategy })
             |> Array.toList
 
-        return downloadLink,packages
+        return officialName,downloadLink,packages
     }
 
 /// The NuGet cache folder.
@@ -164,7 +173,7 @@ let private loadFromCacheOrOData force fileName nugetURL package sources resolve
         if not force && File.Exists fileName then
             try 
                 let json = File.ReadAllText(fileName)
-                return false,JsonConvert.DeserializeObject<string * UnresolvedPackage list>(json)
+                return false,JsonConvert.DeserializeObject<string * string * UnresolvedPackage list>(json)
             with _ -> 
                 let! details = getDetailsFromNugetViaOData nugetURL package sources resolverStrategy version
                 return true,details
@@ -225,9 +234,15 @@ let getDetailsFromLocalFile path package sources resolverStrategy version =
                              ResolverStrategy = resolverStrategy }) 
             |> Seq.toList
 
+        let officialName = 
+            xmlDoc.SelectNodes(sprintf "/%s:package/%s:metadata/%s:id" pfx pfx pfx, ns)
+            |> Seq.cast<XmlNode>
+            |> Seq.head
+            |> fun node -> node.InnerText
+
         File.Delete(nuspec.FullName)
 
-        return package,dependencies
+        return officialName,package,dependencies
     }
 
 /// Downloads the given package to the NuGet Cache folder
@@ -240,7 +255,7 @@ let DownloadPackage(url, name, sources, version, force) =
             return targetFileName
         else 
             // discover the link on the fly
-            let! (link, _) = getDetailsFromNuget force url name sources ResolverStrategy.Max version
+            let! (_,link, _) = getDetailsFromNuget force url name sources ResolverStrategy.Max version
             use client = new WebClient()
             tracefn "Downloading %s %s to %s" name version targetFileName
             // TODO: Set credentials
@@ -321,9 +336,10 @@ let NugetDiscovery =
                               return! tryNext []
                       }
 
-                  let! source,(link,packages) = tryNext sources
+                  let! source,(name,link,packages) = tryNext sources
                   return 
-                      { Source = source
+                      { Name = name
+                        Source = source
                         DownloadLink = link
                         DirectDependencies =
                         packages |> List.map (fun package -> {package with Sources = source :: (List.filter ((<>) source) sources) })}

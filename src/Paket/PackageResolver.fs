@@ -35,11 +35,12 @@ let private shrink (s1 : Shrinked, s2 : Shrinked) =
         | _ -> Shrinked.Conflict(version1, version2)
     | _ -> s1
 
-let private addDependency package dependencies newDependency =
+let private addDependency (packageName:string) dependencies newDependency =
+    let name = packageName.ToLower()
     let newDependency = Shrinked.Ok newDependency    
-    match Map.tryFind package dependencies with
-    | Some oldDependency -> Map.add package (shrink(oldDependency,newDependency)) dependencies
-    | None -> Map.add package newDependency dependencies   
+    match Map.tryFind name dependencies with
+    | Some oldDependency -> Map.add name (shrink(oldDependency,newDependency)) dependencies
+    | None -> Map.add name newDependency dependencies   
 
 /// Resolves all direct and indirect dependencies
 let Resolve(force, discovery : IDiscovery, rootDependencies:UnresolvedPackage seq) =    
@@ -102,7 +103,7 @@ let Resolve(force, discovery : IDiscovery, rootDependencies:UnresolvedPackage se
                     |> Async.RunSynchronously
 
                 let resolvedPackage:ResolvedPackage =
-                    { Name = resolvedName
+                    { Name = packageDetails.Name
                       Version = resolvedVersion
                       DirectDependencies = 
                         packageDetails.DirectDependencies 

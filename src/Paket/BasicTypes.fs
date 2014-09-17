@@ -131,10 +131,11 @@ type Dependency =
         | FromPackage d -> d.Referenced
 
 /// Represents package details
-type PackageDetails = {
-    Source: PackageSource 
-    DownloadLink: string
-    DirectDependencies : UnresolvedPackage list }
+type PackageDetails = 
+    { Name : string
+      Source : PackageSource
+      DownloadLink : string
+      DirectDependencies : UnresolvedPackage list }
 
 /// Interface for discovery APIs.
 type IDiscovery = 
