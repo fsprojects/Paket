@@ -58,7 +58,7 @@ let ``should parse lock file``() =
     
     lockFile.SourceFiles.[0].Commit |> shouldEqual "7699e40e335f3cc54ab382a8969253fecc1e08a9"
     lockFile.SourceFiles.[0].Name |> shouldEqual "src/app/FAKE/Cli.fs"
-    lockFile.SourceFiles.[0].ToString() |> shouldEqual "(fsharp:FAKE:master) src/app/FAKE/Cli.fs"
+    lockFile.SourceFiles.[0].ToString() |> shouldEqual "(fsharp:FAKE:7699e40e335f3cc54ab382a8969253fecc1e08a9) src/app/FAKE/Cli.fs"
 
 let strictLockFile = """REFERENCES: STRICT
 NUGET
