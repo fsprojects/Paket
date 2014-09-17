@@ -39,20 +39,20 @@ let graph = [
 [<Test>]
 let ``should analyze graph one level deep``() = 
     let resolved = resolve graph ["FAKE",VersionRange.AtLeast "3.3"]
-    getVersion resolved.["FAKE"] |> shouldEqual "4.0"
-    getVersion resolved.["A"] |> shouldEqual "3.3"
-    getVersion resolved.["B"] |> shouldEqual "1.3"
-    getVersion resolved.["C"] |> shouldEqual "1.1"
+    getVersion resolved.["fake"] |> shouldEqual "4.0"
+    getVersion resolved.["a"] |> shouldEqual "3.3"
+    getVersion resolved.["b"] |> shouldEqual "1.3"
+    getVersion resolved.["c"] |> shouldEqual "1.1"
 
-    resolved.ContainsKey "D" |> shouldEqual false
+    resolved.ContainsKey "d" |> shouldEqual false
 
 [<Test>]
 let ``should analyze graph completly``() = 
     let resolved = resolve graph ["FAKE",VersionRange.AtLeast "3.3"]
-    getVersion resolved.["FAKE"] |> shouldEqual "4.0"
-    getVersion resolved.["E"] |> shouldEqual "2.1"
-    getVersion resolved.["F"] |> shouldEqual "1.1"
-    getVersion resolved.["G"] |> shouldEqual "1.0"
+    getVersion resolved.["fake"] |> shouldEqual "4.0"
+    getVersion resolved.["e"] |> shouldEqual "2.1"
+    getVersion resolved.["f"] |> shouldEqual "1.1"
+    getVersion resolved.["g"] |> shouldEqual "1.0"
 
 let graph2 = [
     "A","1.0",["B",VersionRange.Exactly "1.1";"C",VersionRange.Exactly "2.4"]
@@ -70,18 +70,18 @@ let graph2 = [
 [<Test>]
 let ``should analyze graph2 completely``() =
     let resolved = resolve graph2 ["A",VersionRange.AtLeast "1.0"]
-    getVersion resolved.["A"] |> shouldEqual "1.1"
-    getVersion resolved.["B"] |> shouldEqual "1.1"
-    getVersion resolved.["C"] |> shouldEqual "2.4"
-    getVersion resolved.["D"] |> shouldEqual "1.5"
+    getVersion resolved.["a"] |> shouldEqual "1.1"
+    getVersion resolved.["b"] |> shouldEqual "1.1"
+    getVersion resolved.["c"] |> shouldEqual "2.4"
+    getVersion resolved.["d"] |> shouldEqual "1.5"
     
-    resolved.ContainsKey "E" |> shouldEqual false
+    resolved.ContainsKey "e" |> shouldEqual false
 
 [<Test>]
 let ``should analyze graph2 completely with multiple starting nodes``() =
     let resolved = resolve graph2 ["A",VersionRange.AtLeast "1.0"; "E",VersionRange.AtLeast "1.0"]
-    getVersion resolved.["A"] |> shouldEqual "1.1"
-    getVersion resolved.["B"] |> shouldEqual "1.1"
-    getVersion resolved.["C"] |> shouldEqual "2.4"
-    getVersion resolved.["D"] |> shouldEqual "1.5"
-    getVersion resolved.["E"] |> shouldEqual "1.0"
+    getVersion resolved.["a"] |> shouldEqual "1.1"
+    getVersion resolved.["b"] |> shouldEqual "1.1"
+    getVersion resolved.["c"] |> shouldEqual "2.4"
+    getVersion resolved.["d"] |> shouldEqual "1.5"
+    getVersion resolved.["e"] |> shouldEqual "1.0"

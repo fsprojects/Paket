@@ -21,8 +21,8 @@ nuget "Nancy.Bootstrappers.Windsor" "!~> 0.23"
 let ``should resolve simple config1``() = 
     let cfg = DependenciesFile.FromCode config1
     let resolved = cfg.Resolve(true, DictionaryDiscovery graph)
-    getVersion resolved.["Castle.Windsor"] |> shouldEqual "3.2.1"
-    getVersion resolved.["Nancy.Bootstrappers.Windsor"] |> shouldEqual "0.23"
+    getVersion resolved.["castle.windsor"] |> shouldEqual "3.2.1"
+    getVersion resolved.["nancy.bootstrappers.windsor"] |> shouldEqual "0.23"
 
 let config2 = """
 source "http://nuget.org/api/v2"
@@ -35,8 +35,8 @@ nuget "Nancy.Bootstrappers.Windsor" "!~> 0.23"
 let ``should resolve simple config2``() = 
     let cfg = DependenciesFile.FromCode config2
     let resolved = cfg.Resolve(true, DictionaryDiscovery graph)
-    getVersion resolved.["Castle.Windsor"] |> shouldEqual "3.2.1"
-    getVersion resolved.["Nancy.Bootstrappers.Windsor"] |> shouldEqual "0.23"
+    getVersion resolved.["castle.windsor"] |> shouldEqual "3.2.1"
+    getVersion resolved.["nancy.bootstrappers.windsor"] |> shouldEqual "0.23"
 
 
 let config3 = """
@@ -50,5 +50,5 @@ nuget "Castle.Windsor" "!>= 0"
 let ``should resolve simple config3``() = 
     let cfg = DependenciesFile.FromCode config3
     let resolved = cfg.Resolve(true, DictionaryDiscovery graph)
-    getVersion resolved.["Castle.Windsor"] |> shouldEqual "3.2.1"
-    getVersion resolved.["Nancy.Bootstrappers.Windsor"] |> shouldEqual "0.23"
+    getVersion resolved.["castle.windsor"] |> shouldEqual "3.2.1"
+    getVersion resolved.["nancy.bootstrappers.windsor"] |> shouldEqual "0.23"

@@ -25,7 +25,7 @@ let DictionaryDiscovery(graph : seq<string * string * (string * VersionRange) li
               async { 
                   return [|
                             graph
-                             |> Seq.filter (fun (p, _, _) -> p = package)
+                             |> Seq.filter (fun (p, _, _) -> p.ToLower() = package.ToLower())
                              |> Seq.map (fun (_, v, _) -> v)|]
               } }
 
