@@ -47,7 +47,7 @@ let ``should generate lock file for packages``() =
     |> shouldEqual (normalizeLineEndings expected)
 
 
-let expectedWithGithub = """GITHUB
+let expectedWithGitHub = """GITHUB
   remote: owner/project1
   specs:
     folder/file.fs (master)
@@ -64,4 +64,4 @@ github "owner:project2:commit2" "folder/file.fs" """ |> DependenciesFile.FromCod
     
     cfg.RemoteFiles
     |> LockFile.serializeSourceFiles
-    |> shouldEqual (normalizeLineEndings expectedWithGithub)
+    |> shouldEqual (normalizeLineEndings expectedWithGitHub)

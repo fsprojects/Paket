@@ -28,4 +28,4 @@ Only direct dependencies should be listed. Paket uses this definition to compute
 Paket supports the following source types:
 
 * [NuGet](nuget_dependencies.html)
-* [Github](github_dependencies.html)
+* [GitHub](github_dependencies.html)

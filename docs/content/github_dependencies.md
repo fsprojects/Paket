@@ -1,4 +1,4 @@
-# Github dependencies
+# GitHub dependencies
 
 Paket allows to link files from [github.com](http://www.github.com) into your projects.
 
@@ -25,4 +25,4 @@ If you want to reference the file in one of your project files then add an entry
 
 This will reference the linked file directly into your project.
 
-![alt text](img/github_reference.png "Github file referenced in project")
+![alt text](img/github_reference.png "GitHub file referenced in project")
