@@ -30,10 +30,10 @@ let graph = [
 let ``should resolve simple config1``() = 
     let cfg = DependenciesFile.FromCode config1
     let resolved = cfg.Resolve(true, DictionaryDiscovery graph)
-    getVersion resolved.["rx-main"] |> shouldEqual "2.0"
-    getVersion resolved.["rx-core"] |> shouldEqual "2.1"
-    getVersion resolved.["castle.windsor-log4net"] |> shouldEqual "3.3"
-    getVersion resolved.["castle.windsor"] |> shouldEqual "2.1"
+    getVersion resolved.["Rx-Main"] |> shouldEqual "2.0"
+    getVersion resolved.["Rx-Core"] |> shouldEqual "2.1"
+    getVersion resolved.["Castle.Windsor-log4net"] |> shouldEqual "3.3"
+    getVersion resolved.["Castle.Windsor"] |> shouldEqual "2.1"
     getVersion resolved.["log4net"] |> shouldEqual "1.1"
     getVersion resolved.["log"] |> shouldEqual "1.2"
     getSource resolved.["log"] |> shouldEqual (Nuget "http://nuget.org/api/v2")

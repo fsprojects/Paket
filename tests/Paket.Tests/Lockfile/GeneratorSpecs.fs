@@ -32,12 +32,12 @@ let expected = """NUGET
     Castle.Windsor-log4net (3.3)
       Castle.Windsor (>= 2.0)
       log4net (>= 1.0)
-    log (1.2)
-    log4net (1.1)
-      log (>= 1.0)
     Rx-Core (2.1)
     Rx-Main (2.0)
-      Rx-Core (>= 2.1)"""
+      Rx-Core (>= 2.1)
+    log (1.2)
+    log4net (1.1)
+      log (>= 1.0)"""
 
 [<Test>]
 let ``should generate lock file for packages``() = 

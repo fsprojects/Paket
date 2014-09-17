@@ -25,9 +25,9 @@ let defaultPackage = { Name = ""; VersionRange = VersionRange.Exactly "1.0"; Sou
 [<Test>]
 let ``should analyze graph and report conflict``() = 
     let resolved = resolve graph [ "A", VersionRange.AtLeast "1.0" ]
-    getVersion resolved.["a"] |> shouldEqual "1.0"
-    getVersion resolved.["b"] |> shouldEqual "1.1"
-    getVersion resolved.["c"] |> shouldEqual "2.4"
+    getVersion resolved.["A"] |> shouldEqual "1.0"
+    getVersion resolved.["B"] |> shouldEqual "1.1"
+    getVersion resolved.["C"] |> shouldEqual "2.4"
     let conflict = 
         FromPackage { Defining = { defaultPackage with Name = "B"; VersionRange = VersionRange.Exactly "1.1" }
                       Referenced = { defaultPackage with Name = "D"; VersionRange = VersionRange.Exactly "1.4" } },
@@ -35,8 +35,8 @@ let ``should analyze graph and report conflict``() =
                       Referenced = { defaultPackage with Name = "D"; VersionRange = VersionRange.Exactly "1.6" } }
 
     resolved.["d"] |> shouldEqual (ResolvedDependency.Conflict conflict)
-    getVersion resolved.["e"] |> shouldEqual "4.3"    
-    getVersion resolved.["f"] |> shouldEqual "1.2"
+    getVersion resolved.["E"] |> shouldEqual "4.3"    
+    getVersion resolved.["F"] |> shouldEqual "1.2"
     
 
 let graph2 = 
@@ -51,9 +51,9 @@ let graph2 =
 [<Test>]
 let ``should analyze graph2 and report conflict``() = 
     let resolved = resolve graph2 [ "A", VersionRange.AtLeast "1.0" ]
-    getVersion resolved.["a"] |> shouldEqual "1.0"
-    getVersion resolved.["b"] |> shouldEqual "1.1"
-    getVersion resolved.["c"] |> shouldEqual "2.4"
+    getVersion resolved.["A"] |> shouldEqual "1.0"
+    getVersion resolved.["B"] |> shouldEqual "1.1"
+    getVersion resolved.["C"] |> shouldEqual "2.4"
     let conflict = 
         FromPackage { Defining = { defaultPackage with Name = "B"; VersionRange = VersionRange.Exactly "1.1" }
                       Referenced = { defaultPackage with Name = "D"; VersionRange = VersionRange.Between("1.4", "1.5") } },
