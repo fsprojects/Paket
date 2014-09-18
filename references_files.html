@@ -5,7 +5,7 @@
     <title>The paket.references files
 </title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-    <meta name="description" content="A dependency manager for .NET"/>
+    <meta name="description" content="A package dependency manager for .NET with support for NuGet packages and GitHub files."/>
     <meta name="author" content="Steffen Forkmann, Alexander Gross"/>
 
     <script src="https://code.jquery.com/jquery-1.8.0.js"></script>
@@ -32,7 +32,7 @@
       <div class="row">
         <div class="span9" id="main">
           
-<h1>The paket.references files</h1>
+<h1><a name="The-paket-references-files" class="anchor" href="#The-paket-references-files">The paket.references files</a></h1>
 
 <p><code>paket.references</code> is used to specify which dependencies are to be installed into the MSBuild projects in your repository. Paket determines the set of dependencies that are to be referenced by each MSBuild project within a directory from its <code>paket.references</code> file.</p>
 
@@ -47,11 +47,11 @@
 <li>It's optional</li>
 </ul>
 
-<h2>Location</h2>
+<h2><a name="Location" class="anchor" href="#Location">Location</a></h2>
 
 <p>Paket looks for <code>paket.references</code> files underneath the folder where <a href="dependencies_file.html"><code>packet.dependencies</code></a> is located.</p>
 
-<h2>Layout</h2>
+<h2><a name="Layout" class="anchor" href="#Layout">Layout</a></h2>
 
 <p>The file whitelists any dependencies from the <a href="lock_file.html"><code>paket.lock</code></a> set that are to be referenced within the projects alongside it in a given directory:</p>
 
@@ -75,7 +75,7 @@
 
 <p>The references injected into the MSBuild project represent the complete set of rules specified within the package for each <code>lib</code> and <code>Content</code> item; each reference is <code>Condition</code>al on an MSBuild expression predicated on the project's active framework etc. This allows you to change the target version of the MSBuild project (either within Visual Studio or e.g. as part of a multi-pass build) without reinstalling dependencies or incurring an impenetrable set of diffs.</p>
 
-<h2>File name conventions</h2>
+<h2><a name="File-name-conventions" class="anchor" href="#File-name-conventions">File name conventions</a></h2>
 
 <p>If Paket finds <code>paket.references</code> in a folder, the dependencies it specifies will be added to all MSBuild projects in that folder.</p>
 
@@ -88,7 +88,7 @@
 
 <p>Please note that Paket does not merge the directory's shared reference list with the project-specific references. If a specific reference list is present, it overrides the default (even if that file is empty, in which case it prevents anything being added to its sibling project file).</p>
 
-<h3>Global paket.references</h3>
+<h3><a name="Global-paket-references" class="anchor" href="#Global-paket-references">Global paket.references</a></h3>
 
 <table class="pre"><tr><td class="lines"><pre class="fssnip">
 <span class="l">1: </span>
@@ -121,7 +121,7 @@
 <li><code>/test/Example.csproj</code> is left untouched</li>
 </ul>
 
-<h3>Global paket.references with project-specific override</h3>
+<h3><a name="Global-paket-references-with-project-specific-override" class="anchor" href="#Global-paket-references-with-project-specific-override">Global paket.references with project-specific override</a></h3>
 
 <table class="pre"><tr><td class="lines"><pre class="fssnip">
 <span class="l">1: </span>
@@ -155,7 +155,7 @@
 <li>Paket does not merge the dependencies of <code>/src/paket.references</code> and <code>/src/Example.vbproj.paket.references</code></li>
 </ul>
 
-<h3>Project-specific references only</h3>
+<h3><a name="Project-specific-references-only" class="anchor" href="#Project-specific-references-only">Project-specific references only</a></h3>
 
 <table class="pre"><tr><td class="lines"><pre class="fssnip">
 <span class="l">1: </span>

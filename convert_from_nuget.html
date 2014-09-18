@@ -5,7 +5,7 @@
     <title>Convert your solution from NuGet
 </title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-    <meta name="description" content="A dependency manager for .NET"/>
+    <meta name="description" content="A package dependency manager for .NET with support for NuGet packages and GitHub files."/>
     <meta name="author" content="Steffen Forkmann, Alexander Gross"/>
 
     <script src="https://code.jquery.com/jquery-1.8.0.js"></script>
@@ -32,9 +32,9 @@
       <div class="row">
         <div class="span9" id="main">
           
-<h1>Convert your solution from NuGet</h1>
+<h1><a name="Convert-your-solution-from-NuGet" class="anchor" href="#Convert-your-solution-from-NuGet">Convert your solution from NuGet</a></h1>
 
-<h2>Manual process</h2>
+<h2><a name="Manual-process" class="anchor" href="#Manual-process">Manual process</a></h2>
 
 <p>If you are already using <code>NuGet.exe</code> for package restore then it should be easy to convert to Paket.</p>
 
@@ -46,7 +46,7 @@
 
 <div id="automatic"></div>
 
-<h2>Automatic process</h2>
+<h2><a name="Automatic-process" class="anchor" href="#Automatic-process">Automatic process</a></h2>
 
 <p>Paket can assist you with the conversion. The <code>convert-from-nuget</code> command finds all <code>packages.config</code> files and converts them to <a href="references_files.html"><code>paket.references</code></a> and generates a <a href="dependencies_file.html"><code>paket.dependencies</code> file</a>. 
 If the <code>packages.config</code> is solution-level, then its dependencies will be written to <a href="dependencies_file.html"><code>paket.dependencies</code></a> and it will be removed.

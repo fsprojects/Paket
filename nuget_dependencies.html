@@ -5,7 +5,7 @@
     <title>NuGet dependencies
 </title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-    <meta name="description" content="A dependency manager for .NET"/>
+    <meta name="description" content="A package dependency manager for .NET with support for NuGet packages and GitHub files."/>
     <meta name="author" content="Steffen Forkmann, Alexander Gross"/>
 
     <script src="https://code.jquery.com/jquery-1.8.0.js"></script>
@@ -32,11 +32,11 @@
       <div class="row">
         <div class="span9" id="main">
           
-<h1>NuGet dependencies</h1>
+<h1><a name="NuGet-dependencies" class="anchor" href="#NuGet-dependencies">NuGet dependencies</a></h1>
 
 <p>Paket allows to reference <a href="http://www.nuget.org">NuGet</a> packages in your application.</p>
 
-<h2>Sources</h2>
+<h2><a name="Sources" class="anchor" href="#Sources">Sources</a></h2>
 
 <p>Sources are defined by the <code>source "&lt;address&gt;"</code> statement.</p>
 
@@ -44,7 +44,7 @@
 
 <p>The <a href="lock_file.html"><code>paket.lock</code> file</a> will reflect the sources selected by dependency resolution.</p>
 
-<h3>NuGet feeds</h3>
+<h3><a name="NuGet-feeds" class="anchor" href="#NuGet-feeds">NuGet feeds</a></h3>
 
 <p>Paket supports NuGet feeds like those emitted by <a href="http://www.nuget.org">nuget.org</a> or <a href="http://www.jetbrains.com/teamcity/">TeamCity</a>.</p>
 
@@ -64,7 +64,7 @@
 
 <p>The <a href="lock_file.html">paket.lock</a> will also reflect these settings.</p>
 
-<h3>Path sources</h3>
+<h3><a name="Path-sources" class="anchor" href="#Path-sources">Path sources</a></h3>
 
 <p>Paket supports file paths such as local directories or references to UNC shares:</p>
 
@@ -84,7 +84,7 @@
 
 <div id="strict-mode"></div>
 
-<h3>Strict references</h3>
+<h3><a name="Strict-references" class="anchor" href="#Strict-references">Strict references</a></h3>
 
 <p>Paket usually references all direct and indirect dependencies that are listed in your <a href="references_files.md">paket.references</a> files to your project file.
 With the <code>strict</code> mode it will only reference direct dependencies.</p>
@@ -109,7 +109,7 @@ With the <code>strict</code> mode it will only reference direct dependencies.</p
 
 <div id="dependencies"></div>
 
-<h2>Dependencies</h2>
+<h2><a name="Dependencies" class="anchor" href="#Dependencies">Dependencies</a></h2>
 
 <p>The dependencies of your project are defined by the <code>nuget "&lt;package ID&gt;" "&lt;version constraint&gt;"</code> statement.</p>
 
@@ -117,13 +117,13 @@ With the <code>strict</code> mode it will only reference direct dependencies.</p
 
 <div id="package-id"></div>
 
-<h3>Package ID</h3>
+<h3><a name="Package-ID" class="anchor" href="#Package-ID">Package ID</a></h3>
 
 <p>The <code>package ID</code> parameter is the same as you find in NuGet's <code>packages.config</code> or on <a href="http://www.nuget.org">nuget.org</a>.</p>
 
 <div id="version-constraints"></div>
 
-<h3>Version constraints</h3>
+<h3><a name="Version-constraints" class="anchor" href="#Version-constraints">Version constraints</a></h3>
 
 <p>One key feature of Paket is that it separates the definition of dependencies from the actual resolution. NuGet stores resolution information in <code>packages.config</code>, where both package IDs and their respective pinned version are combined.</p>
 
@@ -131,7 +131,7 @@ With the <code>strict</code> mode it will only reference direct dependencies.</p
 
 <p>Please also see below how you can <a href="#nuget-style-dependency-resolution">influence the resolution of indirect dependencies</a>.</p>
 
-<h4>Pinned version constraint</h4>
+<h4><a name="Pinned-version-constraint" class="anchor" href="#Pinned-version-constraint">Pinned version constraint</a></h4>
 
 <table class="pre"><tr><td class="lines"><pre class="fssnip">
 <span class="l">1: </span>
@@ -151,7 +151,7 @@ With the <code>strict</code> mode it will only reference direct dependencies.</p
 
 <p>This is the strictest version constraint. Use the <code>=</code> operator to specify an exact version match; the <code>=</code> is optional.</p>
 
-<h4>Greater-than-or-equal version constraint</h4>
+<h4><a name="Greater-than-or-equal-version-constraint" class="anchor" href="#Greater-than-or-equal-version-constraint">Greater-than-or-equal version constraint</a></h4>
 
 <table class="pre"><tr><td class="lines"><pre class="fssnip">
 <span class="l">1: </span>
@@ -169,7 +169,7 @@ With the <code>strict</code> mode it will only reference direct dependencies.</p
 
 <p>Use the <code>&gt;=</code> operator to denote that you want the latest version available, as long as it's newer that what follows the <code>&gt;=</code> operator.</p>
 
-<h4>Omitting the version constraint</h4>
+<h4><a name="Omitting-the-version-constraint" class="anchor" href="#Omitting-the-version-constraint">Omitting the version constraint</a></h4>
 
 <table class="pre"><tr><td class="lines"><pre class="fssnip">
 <span class="l">1: </span>
@@ -183,7 +183,7 @@ With the <code>strict</code> mode it will only reference direct dependencies.</p
 
 <p>If you omit the version constraint then Paket will assume <code>&gt;= 0</code>.</p>
 
-<h4>TODO Greater-than version constraint</h4>
+<h4><a name="TODO-Greater-than-version-constraint" class="anchor" href="#TODO-Greater-than-version-constraint">TODO Greater-than version constraint</a></h4>
 
 <table class="pre"><tr><td class="lines"><pre class="fssnip">
 <span class="l">1: </span>
@@ -197,7 +197,7 @@ With the <code>strict</code> mode it will only reference direct dependencies.</p
 
 <p>NOT SUPPORTED YET</p>
 
-<h4>TODO Less-than-or-equal version constraint</h4>
+<h4><a name="TODO-Less-than-or-equal-version-constraint" class="anchor" href="#TODO-Less-than-or-equal-version-constraint">TODO Less-than-or-equal version constraint</a></h4>
 
 <table class="pre"><tr><td class="lines"><pre class="fssnip">
 <span class="l">1: </span>
@@ -211,7 +211,7 @@ With the <code>strict</code> mode it will only reference direct dependencies.</p
 
 <p>NOT SUPPORTED YET</p>
 
-<h4>TODO Less-than version constraint</h4>
+<h4><a name="TODO-Less-than-version-constraint" class="anchor" href="#TODO-Less-than-version-constraint">TODO Less-than version constraint</a></h4>
 
 <table class="pre"><tr><td class="lines"><pre class="fssnip">
 <span class="l">1: </span>
@@ -225,7 +225,7 @@ With the <code>strict</code> mode it will only reference direct dependencies.</p
 
 <p>NOT SUPPORTED YET</p>
 
-<h4>TODO Compound version constraint</h4>
+<h4><a name="TODO-Compound-version-constraint" class="anchor" href="#TODO-Compound-version-constraint">TODO Compound version constraint</a></h4>
 
 <table class="pre"><tr><td class="lines"><pre class="fssnip">
 <span class="l">1: </span>
@@ -241,7 +241,7 @@ With the <code>strict</code> mode it will only reference direct dependencies.</p
 
 <div id="pessimistic-version-constraint"></div>
 
-<h4>Pessimistic version constraint</h4>
+<h4><a name="Pessimistic-version-constraint" class="anchor" href="#Pessimistic-version-constraint">Pessimistic version constraint</a></h4>
 
 <table class="pre"><tr><td class="lines"><pre class="fssnip">
 <span class="l">1: </span>
@@ -290,7 +290,7 @@ With the <code>strict</code> mode it will only reference direct dependencies.</p
   </tr>
 <table>
 
-<h4>TODO Pessimistic version constraint with compound</h4>
+<h4><a name="TODO-Pessimistic-version-constraint-with-compound" class="anchor" href="#TODO-Pessimistic-version-constraint-with-compound">TODO Pessimistic version constraint with compound</a></h4>
 
 <p>NOT SUPPORTED YET</p>
 
@@ -308,9 +308,9 @@ With the <code>strict</code> mode it will only reference direct dependencies.</p
 
 <p>The example above translates to <code>1.2.3 &lt;= x &lt; 2.0</code>.</p>
 
-<h3>Controlling dependency resolution</h3>
+<h3><a name="Controlling-dependency-resolution" class="anchor" href="#Controlling-dependency-resolution">Controlling dependency resolution</a></h3>
 
-<h4>A word on NuGet</h4>
+<h4><a name="A-word-on-NuGet" class="anchor" href="#A-word-on-NuGet">A word on NuGet</a></h4>
 
 <p>The NuGet dependency resolution strategy was a major motivation for us to develop Paket in the first place.</p>
 
@@ -318,7 +318,7 @@ With the <code>strict</code> mode it will only reference direct dependencies.</p
 
 <p>Installing packages like this is almost always a two-step operation: install and then try to update. We found it very hard to keep our project's dependencies at the latest version, that's why we chose to handle things differently.</p>
 
-<h4>How Paket works by default</h4>
+<h4><a name="How-Paket-works-by-default" class="anchor" href="#How-Paket-works-by-default">How Paket works by default</a></h4>
 
 <p>Paket uses the definitions from <code>paket.dependencies</code> to compute the dependency graph.</p>
 
@@ -330,7 +330,7 @@ With the <code>strict</code> mode it will only reference direct dependencies.</p
 
 <p>While developing Paket we found that many packages available on <a href="http://www.nuget.org">NuGet</a> today (September 2014) don't follow <a href="http://semver.org">SemVer</a> very well with regard to specifying their own dependencies.</p>
 
-<h4>A real-world example</h4>
+<h4><a name="A-real-world-example" class="anchor" href="#A-real-world-example">A real-world example</a></h4>
 
 <p>For example, an assembly inside a NuGet package <code>A</code> might have a reference to a strong-named assembly that is pulled from another NuGet package <code>B</code>. Despite strong-naming the <code>B</code> assembly, <code>A</code> still specifies an open version constraint (<code>&gt; &lt;version of B that was compiled against&gt;</code>).</p>
 
@@ -338,7 +338,7 @@ With the <code>strict</code> mode it will only reference direct dependencies.</p
 
 <div id="nuget-style-dependency-resolution"></div>
 
-<h4>Paket's NuGet-style dependency resolution for indirect dependencies</h4>
+<h4><a name="Paket-s-NuGet-style-dependency-resolution-for-indirect-dependencies" class="anchor" href="#Paket-s-NuGet-style-dependency-resolution-for-indirect-dependencies">Paket's NuGet-style dependency resolution for indirect dependencies</a></h4>
 
 <p>To make your transition to Paket easier and to allow package authors to correct their version constraints you can have Paket behave like NuGet when resolving indirect dependencies (i.e. defaulting to lowest matching versions).</p>
 
