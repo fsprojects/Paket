@@ -34,6 +34,8 @@ A package dependency manager for .NET with support for NuGet packages and GitHub
  - Run the build
  - Send a Pull Request
 
+If you want to contribute to the [docs][2] then please send a pull request to the markdown files in `/docs/content`.
+
 ## License
 
 The [MIT license][6]
