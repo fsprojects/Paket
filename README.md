@@ -1,11 +1,17 @@
 Paket
 =====
 
-A package dependency manager for .NET
+A package dependency manager for .NET with support for NuGet packages and GitHub files.
 
-Initial docs can be found at http://fsprojects.github.io/Paket/
+## Online resources
 
-[![NuGet Status](http://img.shields.io/nuget/v/Paket.svg?style=flat)](https://www.nuget.org/packages/Paket/) 
+ - NuGet package [![NuGet Status](http://img.shields.io/nuget/v/Paket.svg?style=flat)](https://www.nuget.org/packages/Paket/) 
+ - [Source code][1]
+ - [Documentation][2]
+
+ [1]: https://github.com/fsprojects/Paket/
+ [2]: http://fsprojects.github.io/Paket/
+
 
 # Build the project
 
