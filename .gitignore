@@ -178,3 +178,4 @@ nuget/*.nupkg
 release.cmd
 localpackages/
 paket-files
+*.orig
