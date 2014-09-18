@@ -224,8 +224,12 @@ type ProjectFile =
             this.DeleteIfEmpty("//ns:Project/ns:ItemGroup")
 
     member this.ConvertNugetToPaket() =
-        for node in this.Document.SelectNodes("//ns:*[@Include='packages.config']", this.Namespaces) do
-            node.Attributes.["Include"].Value <- "paket.references"
+        let nodeToChange = this.Document.SelectSingleNode("//ns:*[@Include='packages.config']", this.Namespaces)
+        nodeToChange.Attributes.["Include"].Value <- "paket.references"
+
+    member this.RemoveNugetPackagesFile() =
+        let nodeToRemove = this.Document.SelectSingleNode("//ns:*[@Include='packages.config']", this.Namespaces)
+        nodeToRemove.ParentNode.RemoveChild(nodeToRemove) |> ignore
 
     static member Load(fileName:string) =
         try
