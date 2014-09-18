@@ -4,6 +4,7 @@ module Paket.Process
 open System
 open System.IO
 open System.Collections.Generic
+open System.Xml
 
 /// Downloads and extracts all packages.
 let ExtractPackages(force, packages) = 
@@ -174,6 +175,11 @@ let ListOutdated(packageFile) =
 
 let private depFileName = "paket.dependencies"
 
+let private readPackageSources(configFile : FileInfo) =
+    let doc = XmlDocument()
+    doc.Load configFile.FullName
+    [for node in doc.SelectNodes("//packageSources/add[@value]") -> node.Attributes.["value"].Value]
+
 let private convertNugetsToDepFile(nugetPackagesConfigs) =
     let allVersions =
         nugetPackagesConfigs
@@ -201,10 +207,19 @@ let private convertNugetsToDepFile(nugetPackagesConfigs) =
         latestVersions 
         |> Seq.filter (fun (name,_) -> not (confictingPackages |> Set.contains (name.ToLower())))
         |> Seq.map (fun (name,version) -> sprintf "nuget %s %s" name version)
+        |> Seq.toList
     
     if not depFileExists 
     then
-        File.WriteAllLines(depFileName, Seq.append ["source http://nuget.org/api/v2"; String.Empty] dependencyLines)
+        let packageSources =
+            match findAllFiles(".", "nuget.config") |> Seq.tryFind (fun _ -> true) with
+            | Some configFile -> 
+                let sources = readPackageSources(configFile) 
+                safeDeleteFile "nuget.config"
+                sources
+            | None -> ["http://nuget.org/api/v2"]
+            |> List.map (sprintf "source %s")
+        File.WriteAllLines(depFileName, packageSources @ [String.Empty] @ dependencyLines)
         tracefn "Generated \"%s\" file" depFileName 
     elif not (dependencyLines |> Seq.isEmpty)
     then
