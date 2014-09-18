@@ -66,6 +66,9 @@ the project and submit pull requests. If you're adding a new public API, please 
 consider adding [samples][content] that can be turned into documentation. You might
 also want to read [library design notes][readme] to understand how it works.
 
+To get started with the code, just fork and clone locally. Then run the build
+scripts to retrieve dependencies to be able to build the solution.
+
 The library is available under MIT license, which allows modification and
 redistribution for both commercial and non-commercial purposes. For more information see the
 [License file][license] in the GitHub repository.
