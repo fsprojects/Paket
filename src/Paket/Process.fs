@@ -221,8 +221,4 @@ let ConvertFromNuget() =
             
             tracefn "Deleted \"%s\"" packageFile.FullName
 
-    if Directory.Exists(".\packages") then 
-        CleanDir ".\packages"
-        trace "Cleared .\packages directory"
-
     Install(false, false, true, "paket.dependencies")
