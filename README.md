@@ -32,7 +32,7 @@ A package dependency manager for .NET with support for NuGet packages and GitHub
  - To build the solution, run the ```build.cmd``` (Windows) or ```build.sh``` (Mono) file to retrieve dependencies.
  - Create a topic specific branch in git. Add some nice feature in the code. Do not forget to add tests.
  - Run the build to make sure everything passes.
- - Send a Pull Request and celebrate!
+ - Send a Pull Request.
 
 If you want to contribute to the [docs][2] then please send a pull request to the markdown files in `/docs/content`.
 
