@@ -4,7 +4,7 @@ A package dependency manager for .NET with support for NuGet packages and GitHub
 
 ## Online resources
 
- - NuGet package [![NuGet Status](http://img.shields.io/nuget/v/Paket.svg?style=flat)](https://www.nuget.org/packages/Paket/) 
+ - NuGet package [![NuGet Status](http://img.shields.io/nuget/v/Paket.svg?style=flat)](https://www.nuget.org/packages/Paket/)
  - [Source code][1]
  - [Documentation][2]
 
@@ -28,10 +28,11 @@ A package dependency manager for .NET with support for NuGet packages and GitHub
 
 ## Quick contributing guide
 
- - Fork and clone locally
- - Create a topic specific branch. Add some nice feature. Do not forget to add tests.
- - Run the build
- - Send a Pull Request
+ - Fork and clone locally.
+ - To build the solution, run the ```build.cmd``` (Windows) or ```build.sh``` (Mono) file to retrieve dependencies.
+ - Create a topic specific branch in git. Add some nice feature in the code. Do not forget to add tests.
+ - Run the build to make sure everything passes.
+ - Send a Pull Request and celebrate!
 
 If you want to contribute to the [docs][2] then please send a pull request to the markdown files in `/docs/content`.
 
