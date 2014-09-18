@@ -145,7 +145,7 @@ type ProjectFile =
                     node.SetAttribute("Include", path)
                     node
                     |> addChild (this.CreateNode("Paket","True"))
-                    |> addChild (this.CreateNode("Link",sourceFile.Name))
+                    |> addChild (this.CreateNode("Link","paket-files/" + sourceFile.Name))
 
                 compileItemGroup.PrependChild(node) |> ignore                
 
