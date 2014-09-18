@@ -1,3 +1,6 @@
+#### 0.2.3 - 18.09.2014
+* If you omit the version constraint then Paket will assume `>= 0`.
+
 #### 0.2.2 - 18.09.2014
 * Linked source files now all go underneath a "paket-files" folder.
 

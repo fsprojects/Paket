@@ -177,3 +177,19 @@ let ``should read github source file from config without quotes``() =
             Project = "FAKE"
             Name = "src/app/FAKE/FileWithCommit.fs"
             Commit = "bla123zxc" } ]
+
+let configWithoutVersions = """
+source "http://nuget.org/api/v2"
+
+nuget Castle.Windsor-log4net
+nuget Rx-Main
+nuget "FAKE"
+"""
+
+[<Test>]
+let ``should read config without versions``() = 
+    let cfg = DependenciesFile.FromCode configWithoutVersions
+
+    cfg.DirectDependencies.["Rx-Main"] |> shouldEqual (VersionRange.AtLeast "0")
+    cfg.DirectDependencies.["Castle.Windsor-log4net"] |> shouldEqual (VersionRange.AtLeast "0")
+    cfg.DirectDependencies.["FAKE"] |> shouldEqual (VersionRange.AtLeast "0")

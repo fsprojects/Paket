@@ -79,6 +79,10 @@ This is the strictest version constraint. Use the `=` operator to specify an exa
 
 Use the `>=` operator to denote that you want the latest version available, as long as it's newer that what follows the `>=` operator.
 
+    nuget Example
+
+If you omit the version constraint then Paket will assume `>= 0`.
+
 #### TODO Greater-than version constraint
 
     nuget Example > 1.2.3

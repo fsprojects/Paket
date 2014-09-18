@@ -48,6 +48,7 @@ module DependenciesFileParser =
             | name :: operator :: version  :: _ 
                 when List.exists ((=) operator) operators -> Package(name,operator + " " + version)
             | name :: version :: _ -> Package(name,version)
+            | name :: _ -> Package(name,">= 0")
             | _ -> failwithf "could not retrieve nuget package from %s" trimmed
         | trimmed when trimmed.StartsWith "references" -> ReferencesMode(trimmed.Replace("references","").Trim() = "strict")
         | trimmed when trimmed.StartsWith "github" ->
