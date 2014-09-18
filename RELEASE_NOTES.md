@@ -1,3 +1,6 @@
+#### 0.2.2 - 18.09.2014
+* Linked source files now all go underneath a "paket-files" folder.
+
 #### 0.2.1 - 18.09.2014
 * Don't clear packages folder during convert-from-nuget - our own paket might live there
 

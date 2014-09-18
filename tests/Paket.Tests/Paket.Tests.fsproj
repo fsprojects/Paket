@@ -59,7 +59,7 @@
   <ItemGroup>
     <Compile Include="..\..\paket-files\forki\FsUnit\7623fc13439f0e60bd05c1ed3b5f6dcb937fe468\FsUnit.fs">
       <Paket>True</Paket>
-      <Link>paket-files/FsUnit.fs</Link>
+      <Link>FsUnit.fs</Link>
     </Compile>
     <Compile Include="TestHelpers.fs" />
     <Compile Include="SemVerSpecs.fs" />
