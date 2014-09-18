@@ -71,16 +71,6 @@ let CleanDir path =
     // set writeable
     File.SetAttributes(path, FileAttributes.Normal)
 
-let safeDeleteDir path =  
-    let tmpPath = Path.GetTempPath() + ".toDelete"
-    Directory.Move(path, tmpPath)
-    Directory.Delete(tmpPath)
-
-let safeDeleteFile path =
-    let tmpPath = Path.GetTempPath() + ".toDelete"
-    File.Move(path, tmpPath)
-    File.Delete(tmpPath)
-
 /// [omit]
 let createRelativePath root path =
     Uri(root).MakeRelativeUri(Uri(path)).ToString().Replace("/", "\\")

@@ -210,21 +210,21 @@ let private convertNugetsToDepFile(nugetPackagesConfigs) =
         |> Seq.toList
     
     if not depFileExists 
-    then
-        let packageSources =
-            match findAllFiles(".", "nuget.config") |> Seq.tryFind (fun _ -> true) with
-            | Some configFile -> 
-                let sources = readPackageSources(configFile) 
-                safeDeleteFile "nuget.config"
-                sources
-            | None -> ["http://nuget.org/api/v2"]
-            |> List.map (sprintf "source %s")
-        File.WriteAllLines(depFileName, packageSources @ [String.Empty] @ dependencyLines)
-        tracefn "Generated \"%s\" file" depFileName 
+        then
+            let packageSources =
+                match findAllFiles(".", "nuget.config") |> Seq.tryFind (fun _ -> true) with
+                | Some configFile -> 
+                    let sources = readPackageSources(configFile) 
+                    File.Delete(configFile.FullName)
+                    sources
+                | None -> ["http://nuget.org/api/v2"]
+                |> List.map (sprintf "source %s")
+            File.WriteAllLines(depFileName, packageSources @ [String.Empty] @ dependencyLines)
+            tracefn "Generated \"%s\" file" depFileName 
     elif not (dependencyLines |> Seq.isEmpty)
-    then
-        File.AppendAllLines(depFileName, dependencyLines)
-        traceWarnfn "Overwritten \"%s\" file" depFileName 
+        then
+            File.AppendAllLines(depFileName, dependencyLines)
+            traceWarnfn "Overwritten \"%s\" file" depFileName 
     else tracefn "%s is up to date" depFileName
         
 
@@ -244,13 +244,13 @@ let private convertNugetToRefFile(nugetPackagesConfig) =
         |> List.filter (fun name -> not (confictingReferences |> Set.contains (name.ToLower())))
                             
     if not refFileExists 
-    then
-        File.WriteAllLines(refFile, referencesLines)
-        tracefn "Converted \"%s\" to \"paket.references\"" nugetPackagesConfig.File.FullName 
+        then
+            File.WriteAllLines(refFile, referencesLines)
+            tracefn "Converted \"%s\" to \"paket.references\"" nugetPackagesConfig.File.FullName 
     elif not (referencesLines |> List.isEmpty)
-    then
-        File.AppendAllLines(refFile, referencesLines)
-        traceWarnfn "Overwritten \"%s\" file" refFile
+        then
+            File.AppendAllLines(refFile, referencesLines)
+            traceWarnfn "Overwritten \"%s\" file" refFile
     else tracefn "%s is up to date" refFile
 
 /// Converts all projects from NuGet to Paket
@@ -269,12 +269,12 @@ let ConvertFromNuget(force, installAfter) =
 
             convertNugetToRefFile(nugetPackagesConfig)
 
-            safeDeleteFile packageFile.FullName
-
             for file in findAllProjects(packageFile.DirectoryName) do
                 let project = ProjectFile.Load(file.FullName)
                 project.ReplaceNugetPackagesFile()
                 project.Save()
+
+            File.Delete(packageFile.FullName)
 
         | SolutionLevel ->
             for slnFile in findAllFiles(packageFile.Directory.Parent.FullName, "*.sln") do
@@ -282,8 +282,8 @@ let ConvertFromNuget(force, installAfter) =
             
             File.Delete(packageFile.FullName)
 
-            if Directory.EnumerateFileSystemEntries(packageFile.DirectoryName) |> Seq.isEmpty then
-                safeDeleteDir packageFile.DirectoryName
+            if Directory.EnumerateFileSystemEntries(packageFile.DirectoryName) |> Seq.isEmpty 
+                then Directory.Delete packageFile.DirectoryName
             tracefn "Deleted solution-level \"%s\"" packageFile.FullName
 
     if installAfter then Install(false, false, true, depFileName)
