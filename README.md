@@ -1,5 +1,4 @@
-Paket
-=====
+# Paket
 
 A package dependency manager for .NET with support for NuGet packages and GitHub files.
 
@@ -12,10 +11,31 @@ A package dependency manager for .NET with support for NuGet packages and GitHub
  [1]: https://github.com/fsprojects/Paket/
  [2]: http://fsprojects.github.io/Paket/
 
+## Troubleshooting and support
 
-# Build the project
+ - Found a bug or missing a feature? Feed the [issue tracker][3]
+ - Announcements and related miscellanea through Twitter ([@sforkmann][4], [@agross][5])
+
+ [3]: https://github.com/fsprojects/Paket/issues
+ [4]: http://twitter.com/sforkmann
+ [5]: http://twitter.com/agross
+
+## Build the project
 
 |  |  BuildScript | Status of last build |
 | :------ | :------: | :------: |
 | **Mono** | [build.sh](https://github.com/fsprojects/Paket/blob/master/build.sh) | [![Travis build status](https://travis-ci.org/fsprojects/Paket.png)](https://travis-ci.org/fsprojects/Paket) |
 | **Windows** | [build.cmd](https://github.com/fsprojects/Paket/blob/master/build.cmd) | [![AppVeyor Build status](https://ci.appveyor.com/api/projects/status/aqs8eux16x4g5p47/branch/master)](https://ci.appveyor.com/project/SteffenForkmann/paket/branch/master) |
+
+## Quick contributing guide
+
+ - Fork and clone locally
+ - Create a topic specific branch. Add some nice feature. Do not forget to add tests.
+ - Run the build
+ - Send a Pull Request
+
+## License
+
+The [MIT license][6]
+
+ [6]: https://github.com/fsprojects/Paket/blob/master/LICENSE.txt
