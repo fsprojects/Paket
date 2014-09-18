@@ -70,9 +70,12 @@
 
 <p>The syntax looks familiar to users of Ruby's <a href="http://bundler.io/">bundler</a> <a href="http://bundler.io/gemfile.html">Gemfile</a>. This is intended because it proved to work well for the authors of Paket.</p>
 
-<p>The file specifies that Paket's NuGet dependencies should be downloaded from <a href="http://www.nuget.org">nuget.org</a> and that we need e.g.: 
-<em> <a href="http://www.nunit.org/"><code>NUnit</code></a> <a href="nuget_dependencies.html#pessimistic-version-constraint">in version <code>2.6.3 &lt;= x &lt; 2.7</code></a>
-</em> <a href="http://fsharp.github.io/FAKE/"><code>FAKE</code></a> <a href="nuget_dependencies.html#pessimistic-version-constraint">in version <code>3.4 &lt;= x &lt; 3.5</code></a> as a build tool</p>
+<p>The file specifies that Paket's NuGet dependencies should be downloaded from <a href="http://www.nuget.org">nuget.org</a> and that we need e.g.:</p>
+
+<ul>
+<li><a href="http://www.nunit.org/"><code>NUnit</code></a> <a href="nuget_dependencies.html#pessimistic-version-constraint">in version <code>2.6.3 &lt;= x &lt; 2.7</code></a></li>
+<li><a href="http://fsharp.github.io/FAKE/"><code>FAKE</code></a> <a href="nuget_dependencies.html#pessimistic-version-constraint">in version <code>3.4 &lt;= x &lt; 3.5</code></a> as a build tool</li>
+</ul>
 
 <p>Only direct dependencies should be listed. Paket uses this definition to compute a concrete dependency resolution, which also includes indirect dependencies. The resulting dependency graph is then persisted to the <a href="lock_file.html"><code>paket.lock</code> file</a>.</p>
 
