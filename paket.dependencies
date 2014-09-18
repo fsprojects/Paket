@@ -1,5 +1,6 @@
 source http://nuget.org/api/v2
 
+nuget FSharp.Core.Microsoft.Signed
 nuget Newtonsoft.Json
 nuget UnionArgParser
 nuget NUnit.Runners >= 2.6
