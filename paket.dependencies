@@ -1,11 +1,11 @@
 source http://nuget.org/api/v2
 
-nuget Newtonsoft.Json >= 0
-nuget UnionArgParser >= 0
+nuget Newtonsoft.Json
+nuget UnionArgParser
 nuget NUnit.Runners >= 2.6
 nuget NUnit >= 2.6
-nuget FAKE >= 0
-nuget FSharp.Formatting >= 0
+nuget FAKE
+nuget FSharp.Formatting
 nuget DotNetZip ~> 1.9.3
-nuget SourceLink.Fake >= 0
+nuget SourceLink.Fake
 github forki/FsUnit FsUnit.fs
