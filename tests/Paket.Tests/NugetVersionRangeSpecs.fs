@@ -6,7 +6,7 @@ open FsUnit
 
 [<Test>]
 let ``can detect latest version``() = 
-    Nuget.parseVersionRange "" |> shouldEqual Latest
+    Nuget.parseVersionRange "" |> shouldEqual VersionRange.NoRestriction
 
 [<Test>]
 let ``can detect specific version``() = 

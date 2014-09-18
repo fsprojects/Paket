@@ -8,11 +8,6 @@ let isInRange (versionRange:VersionRange) semVer =
     versionRange.IsInRange (SemVer.parse semVer)
 
 [<Test>]
-let ``can check if in range for Latest``() =
-    "2.2" |> isInRange VersionRange.Latest |> shouldEqual true
-    "3.0" |> isInRange VersionRange.Latest |> shouldEqual true
-
-[<Test>]
 let ``can check if in range for Specific``() =
     "2.2" |> isInRange (VersionRange.Specific (SemVer.parse "2.2")) |> shouldEqual true
     "2.4" |> isInRange (VersionRange.Specific (SemVer.parse "2.2")) |> shouldEqual false

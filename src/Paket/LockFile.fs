@@ -145,12 +145,13 @@ type LockFile(strictMode,packages : ResolvedPackage list, remoteFiles : SourceFi
                                               DirectDependencies = []
                                               Version = SemVer.parse version } :: state.Packages }
                 | None -> failwith "no source has been specified."
-            | NugetDependency (name, version) ->
+            | NugetDependency (name, _) ->
                 match state.Packages with
                 | currentPackage :: otherPackages -> 
                     { state with
                         Packages = { currentPackage with
-                                        DirectDependencies = [name, Latest] |> List.append currentPackage.DirectDependencies
+                                        DirectDependencies = [name, VersionRange.NoRestriction] 
+                                        |> List.append currentPackage.DirectDependencies
                                     } :: otherPackages }
                 | [] -> failwith "cannot set a dependency - no package has been specified."
             | SourceFile details ->

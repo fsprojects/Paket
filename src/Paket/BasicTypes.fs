@@ -9,7 +9,6 @@ type Bound =
 
 /// Represents version information.
 type VersionRange = 
-    | Latest
     | Specific of SemVerInfo
     | Minimum of SemVerInfo
     | GreaterThan of SemVerInfo
@@ -20,7 +19,6 @@ type VersionRange =
     /// Checks wether the given version is in the version range
     member this.IsInRange(version : SemVerInfo) = 
         match this with
-        | Latest -> true
         | Specific v -> v = version
         | Minimum v -> v <= version
         | GreaterThan v -> v < version
@@ -41,7 +39,6 @@ type VersionRange =
    
     override this.ToString() =
         match this with
-        | Latest -> "Latest"
         | Specific v -> v.ToString()
         | Minimum v -> ">= " + v.ToString()
         | GreaterThan v -> "> " + v.ToString()
@@ -62,6 +59,8 @@ type VersionRange =
 
 
     static member AtLeast version = Minimum(SemVer.parse version)
+
+    static member NoRestriction = Minimum(SemVer.parse "0")
 
     static member Exactly version = Specific(SemVer.parse version)
 
