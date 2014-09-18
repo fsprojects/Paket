@@ -240,8 +240,7 @@ Target "All" DoNothing
 "Clean"
   ==> "AssemblyInfo"
   ==> "Build"
-  ==> "RunTests"
-  ==> "CleanDocs"
+  ==> "RunTests"  
   =?> ("GenerateReferenceDocs",isLocalBuild && not isMono)
   =?> ("GenerateDocs",isLocalBuild && not isMono)
   ==> "All"
@@ -256,13 +255,14 @@ Target "All" DoNothing
   ==> "NuGet"
   ==> "BuildPackage"
 
-"GenerateHelp"
-    ==> "GenerateDocs"
+"CleanDocs"
+  ==> "GenerateHelp"
+  ==> "GenerateDocs"
     
 "ReleaseDocs"
-    ==> "Release"
+  ==> "Release"
 
 "BuildPackage"
-    ==> "Release"
+  ==> "Release"
 
 RunTargetOrDefault "All"
