@@ -14,7 +14,7 @@ let githubLink = "http://github.com/fsprojects/Paket"
 let info =
   [ "project-name", "Paket"
     "project-author", "Steffen Forkmann, Alexander Gross"
-    "project-summary", "A dependency manager for .NET"
+    "project-summary", "A package dependency manager for .NET with support for NuGet packages and GitHub files."
     "project-github", githubLink
     "project-nuget", "http://nuget.org/packages/Paket" ]
 
@@ -87,7 +87,8 @@ let buildDocumentation () =
     let sub = if dir.Length > content.Length then dir.Substring(content.Length + 1) else "."
     Literate.ProcessDirectory
       ( dir, docTemplate, output @@ sub, replacements = ("root", root)::info,
-        layoutRoots = layoutRoots )
+        layoutRoots = layoutRoots,
+        generateAnchors = true )
 
 // Generate
 copyFiles()
