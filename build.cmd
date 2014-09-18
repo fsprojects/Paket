@@ -1,12 +1,12 @@
 @echo off
 cls
 
-.nuget\nuget.exe install Paket -OutputDirectory packages -Prerelease -ExcludeVersion
+paket.bootstrapper.exe
 if errorlevel 1 (
   exit /b %errorlevel%
 )
 
-packages\Paket\tools\paket.exe install
+paket.exe install
 if errorlevel 1 (
   exit /b %errorlevel%
 )

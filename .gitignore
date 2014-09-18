@@ -179,3 +179,4 @@ release.cmd
 localpackages/
 paket-files
 *.orig
+paket.exe
