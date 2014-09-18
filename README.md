@@ -29,9 +29,12 @@ A package dependency manager for .NET with support for NuGet packages and GitHub
 ## Quick contributing guide
 
  - Fork and clone locally.
- - To build the solution, run the ```build.cmd``` (Windows) or ```build.sh``` (Mono) file to retrieve dependencies.
- - Create a topic specific branch in git. Add some nice feature in the code. Do not forget to add tests.
- - Run the build to make sure everything passes.
+ - To build the solution, run the ```build.cmd``` (Windows) or ```build.sh``` (Mono). This will:
+	- download all dependencies using Paket
+	- build Paket and the tests
+	- run all tests
+ - Create a topic specific branch in git. Add a nice feature in the code. Do not forget to add tests.
+ - Run the build to make sure everything still passes.
  - Send a Pull Request.
 
 If you want to contribute to the [docs][2] then please send a pull request to the markdown files in `/docs/content`.
