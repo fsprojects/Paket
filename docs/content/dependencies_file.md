@@ -19,8 +19,9 @@ To give you an overview, this is what Paket's `paket.dependencies` file looks li
 The syntax looks familiar to users of Ruby's [bundler](http://bundler.io/) [Gemfile](http://bundler.io/gemfile.html). This is intended because it proved to work well for the authors of Paket.
 
 The file specifies that Paket's NuGet dependencies should be downloaded from [nuget.org](http://www.nuget.org) and that we need e.g.: 
-* [`NUnit`](http://www.nunit.org/) [in version `2.6.3 <= x < 2.7`](nuget_dependencies.html#pessimistic-version-constraint)
-* [`FAKE`](http://fsharp.github.io/FAKE/) [in version `3.4 <= x < 3.5`](nuget_dependencies.html#pessimistic-version-constraint) as a build tool
+
+  * [`NUnit`](http://www.nunit.org/) [in version `2.6.3 <= x < 2.7`](nuget_dependencies.html#pessimistic-version-constraint)
+  * [`FAKE`](http://fsharp.github.io/FAKE/) [in version `3.4 <= x < 3.5`](nuget_dependencies.html#pessimistic-version-constraint) as a build tool
 
 Only direct dependencies should be listed. Paket uses this definition to compute a concrete dependency resolution, which also includes indirect dependencies. The resulting dependency graph is then persisted to the [`paket.lock` file](lock_file.html).
 
