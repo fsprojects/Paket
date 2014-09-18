@@ -1,3 +1,6 @@
+#### 0.2.4 - 18.09.2014
+* Fix bug in Portable profile generation
+
 #### 0.2.3 - 18.09.2014
 * If you omit the version constraint then Paket will assume `>= 0`.
 
