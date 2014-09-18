@@ -39,7 +39,7 @@ type FrameworkIdentifier =
 
     member x.GetPlatformIdentifier() =        
         match x with 
-        | PortableFramework(_,_) -> sprintf " And $(TargetPlatformIdentifier) == Portable'"
+        | PortableFramework(_,_) -> sprintf " And $(TargetPlatformIdentifier) == 'Portable'"
         | _ -> ""
 
     member x.GetPlatformVersion() =        
