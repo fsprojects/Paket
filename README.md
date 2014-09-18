@@ -14,11 +14,10 @@ A package dependency manager for .NET with support for NuGet packages and GitHub
 ## Troubleshooting and support
 
  - Found a bug or missing a feature? Feed the [issue tracker][3]
- - Announcements and related miscellanea through Twitter ([@sforkmann][4], [@agross][5])
+ - Announcements and related miscellanea through Twitter ([@PaketManager][4])
 
  [3]: https://github.com/fsprojects/Paket/issues
- [4]: http://twitter.com/sforkmann
- [5]: http://twitter.com/agross
+ [4]: http://twitter.com/PaketManager
 
 ## Build the project
 
@@ -38,6 +37,6 @@ If you want to contribute to the [docs][2] then please send a pull request to th
 
 ## License
 
-The [MIT license][6]
+The [MIT license][5]
 
- [6]: https://github.com/fsprojects/Paket/blob/master/LICENSE.txt
+ [5]: https://github.com/fsprojects/Paket/blob/master/LICENSE.txt
