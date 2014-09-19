@@ -1,4 +1,4 @@
-#### 0.2.13 - 19.09.2014
+#### 0.2.14 - 19.09.2014
 * Lockfile is sorted alphabetical (case-insensitive)
 
 #### 0.2.12 - 19.09.2014
