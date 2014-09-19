@@ -1,4 +1,7 @@
-#### 0.2.6 - 18.09.2014
+#### 0.2.7 - 19.09.2014
+* New async download strategy
+
+#### 0.2.6 - 19.09.2014
 * --no-install and --force flags for convert-from-nuget - https://github.com/fsprojects/Paket/pull/120
 
 #### 0.2.4 - 18.09.2014

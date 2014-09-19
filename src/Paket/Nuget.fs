@@ -255,12 +255,33 @@ let DownloadPackage(url, name, sources, version, force) =
         else 
             // discover the link on the fly
             let! (_,link, _) = getDetailsFromNuget force url name sources ResolverStrategy.Max version
-            use client = new WebClient()
-            tracefn "Downloading %s %s to %s" name version targetFileName
-            // TODO: Set credentials
-            client.DownloadFileAsync(Uri link, targetFileName)
-            let! _ = Async.AwaitEvent(client.DownloadFileCompleted)
-            return targetFileName
+            try
+                tracefn "Downloading %s %s to %s" name version targetFileName
+                use client = new WebClient()
+                // TODO: Set credentials
+
+                client.Headers.Add("user-agent", "paket")
+
+                let request = HttpWebRequest.Create(Uri link) :?> HttpWebRequest
+                request.AutomaticDecompression <- DecompressionMethods.GZip ||| DecompressionMethods.Deflate
+                use! httpResponse = request.AsyncGetResponse()
+            
+                use httpResponseStream = httpResponse.GetResponseStream()
+            
+                let bufferSize = 4096
+                let buffer : byte [] = Array.zeroCreate bufferSize
+                let bytesRead = ref -1
+
+                use fileStream = File.Create(targetFileName)
+            
+                while !bytesRead <> 0 do
+                    let! bytes = httpResponseStream.AsyncRead(buffer, 0, bufferSize)
+                    bytesRead := bytes
+                    do! fileStream.AsyncWrite(buffer, 0, !bytesRead)
+                return targetFileName
+            with
+            | exn -> failwithf "Could not download %s %s.%s    %s" name version Environment.NewLine exn.Message
+                     return targetFileName
     }
 
 
