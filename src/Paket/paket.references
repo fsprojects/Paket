@@ -1,4 +1,3 @@
-FSharp.Core.Microsoft.Signed
-Newtonsoft.Json
+﻿Newtonsoft.Json
 UnionArgParser
 DotNetZip

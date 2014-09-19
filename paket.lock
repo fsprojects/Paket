@@ -4,7 +4,6 @@ NUGET
     DotNetZip (1.9.3)
     FAKE (3.4.3)
     FSharp.Compiler.Service (0.0.59)
-    FSharp.Core.Microsoft.Signed (3.1.1.1)
     FSharp.Formatting (2.4.23)
       Microsoft.AspNet.Razor (2.0.30506.0)
       RazorEngine (3.3.0)
