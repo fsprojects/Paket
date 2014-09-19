@@ -4,10 +4,12 @@ A package dependency manager for .NET with support for NuGet packages and GitHub
 
 ## Online resources
 
- - NuGet package [![NuGet Status](http://img.shields.io/nuget/v/Paket.svg?style=flat)](https://www.nuget.org/packages/Paket/)
  - [Source code][1]
  - [Documentation][2]
- - [Download][3]
+ - Download [paket.exe][3]
+ - Download [paket.bootstrapper.exe][3]
+ 
+[![NuGet Status](http://img.shields.io/nuget/v/Paket.svg?style=flat)](https://www.nuget.org/packages/Paket/)
 
  [1]: https://github.com/fsprojects/Paket/
  [2]: http://fsprojects.github.io/Paket/
