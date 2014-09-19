@@ -42,7 +42,7 @@ let summary = "A package dependency manager for .NET with support for NuGet pack
 let description = "A package dependency manager for .NET with support for NuGet packages and GitHub files."
 
 // List of author names (for NuGet package)
-let authors = [ "Steffen Forkmann"; "Alexander Gross" ]
+let authors = [ "Paket team" ]
 
 // Tags for your project (for NuGet package)
 let tags = "nuget, bundler, F#"
