@@ -16,6 +16,7 @@ NUGET
       Microsoft.Bcl (>= 1.1.9)
       Microsoft.Bcl.Build (>= 1.0.14)
     Newtonsoft.Json (6.0.5)
+    NuGet.CommandLine (2.8.2)
     NUnit (2.6.3)
     NUnit.Runners (2.6.3)
     Octokit (0.4.1)

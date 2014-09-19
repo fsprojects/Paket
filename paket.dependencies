@@ -9,4 +9,5 @@ nuget FAKE
 nuget FSharp.Formatting
 nuget DotNetZip ~> 1.9.3
 nuget SourceLink.Fake
+nuget NuGet.CommandLine
 github forki/FsUnit FsUnit.fs
