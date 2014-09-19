@@ -1,5 +1,5 @@
-#### 0.2.5 - 18.09.2014
-* Use official FSharp.Core.dll
+#### 0.2.6 - 18.09.2014
+* --no-install and --force flags for convert-from-nuget - https://github.com/fsprojects/Paket/pull/120
 
 #### 0.2.4 - 18.09.2014
 * Fix bug in Portable profile generation
