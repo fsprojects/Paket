@@ -49,8 +49,8 @@ let private convertNugetsToDepFile(nugetPackagesConfigs) =
                 | Some configFile -> 
                     let sources = readPackageSources(configFile) 
                     File.Delete(configFile.FullName)
-                    sources @ ["http://nuget.org/api/v2"]
-                | None -> ["http://nuget.org/api/v2"]
+                    sources @ [Constants.DefaultNugetStream]
+                | None -> [Constants.DefaultNugetStream]
                 |> Set.ofList
                 |> Set.toList
                 |> List.map (sprintf "source %s")                

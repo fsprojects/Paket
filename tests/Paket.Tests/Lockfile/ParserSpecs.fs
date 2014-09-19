@@ -31,17 +31,17 @@ let ``should parse lock file``() =
     lockFile.ResolvedPackages.Length |> shouldEqual 6
     lockFile.Strict |> shouldEqual false
 
-    lockFile.ResolvedPackages.[0].Source |> shouldEqual (Nuget "http://nuget.org/api/v2")
+    lockFile.ResolvedPackages.[0].Source |> shouldEqual (Nuget Constants.DefaultNugetStream)
     lockFile.ResolvedPackages.[0].Name |> shouldEqual "Castle.Windsor"
     lockFile.ResolvedPackages.[0].Version |> shouldEqual (SemVer.parse "2.1")
     lockFile.ResolvedPackages.[0].DirectDependencies |> shouldEqual []
 
-    lockFile.ResolvedPackages.[1].Source |> shouldEqual (Nuget "http://nuget.org/api/v2")
+    lockFile.ResolvedPackages.[1].Source |> shouldEqual (Nuget Constants.DefaultNugetStream)
     lockFile.ResolvedPackages.[1].Name |> shouldEqual "Castle.Windsor-log4net"
     lockFile.ResolvedPackages.[1].Version |> shouldEqual (SemVer.parse "3.3")
     lockFile.ResolvedPackages.[1].DirectDependencies |> shouldEqual ["Castle.Windsor", VersionRange.NoRestriction; "log4net", VersionRange.NoRestriction]
     
-    lockFile.ResolvedPackages.[5].Source |> shouldEqual (Nuget "http://nuget.org/api/v2")
+    lockFile.ResolvedPackages.[5].Source |> shouldEqual (Nuget Constants.DefaultNugetStream)
     lockFile.ResolvedPackages.[5].Name |> shouldEqual "log4net"
     lockFile.ResolvedPackages.[5].Version |> shouldEqual (SemVer.parse "1.1")
     lockFile.ResolvedPackages.[5].DirectDependencies |> shouldEqual ["log", VersionRange.NoRestriction]
@@ -82,7 +82,7 @@ let ``should parse strict lock file``() =
     lockFile.ResolvedPackages.Length |> shouldEqual 6
     lockFile.Strict |> shouldEqual true
 
-    lockFile.ResolvedPackages.[5].Source |> shouldEqual (Nuget "http://nuget.org/api/v2")
+    lockFile.ResolvedPackages.[5].Source |> shouldEqual (Nuget Constants.DefaultNugetStream)
     lockFile.ResolvedPackages.[5].Name |> shouldEqual "log4net"
     lockFile.ResolvedPackages.[5].Version |> shouldEqual (SemVer.parse "1.1")
     lockFile.ResolvedPackages.[5].DirectDependencies |> shouldEqual ["log", VersionRange.NoRestriction]
