@@ -25,12 +25,12 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <WarningLevel>3</WarningLevel>
     <DocumentationFile>..\..\bin\Paket.xml</DocumentationFile>
-    <StartArguments>update</StartArguments>
+    <StartArguments>convert-from-nuget</StartArguments>
     <StartAction>Project</StartAction>
     <StartProgram>paket.exe</StartProgram>
     <StartWorkingDirectory>
     </StartWorkingDirectory>
-    <StartWorkingDirectory>D:\code\paket</StartWorkingDirectory>
+    <StartWorkingDirectory>D:\code\FSharp.Formatting</StartWorkingDirectory>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -70,6 +70,7 @@
     <Compile Include="SemVer.fs" />
     <Compile Include="BasicTypes.fs" />
     <Compile Include="Constants.fs" />
+    <Compile Include="Logging.fs" />
     <Compile Include="Utils.fs" />
     <Compile Include="PackageResolver.fs" />
     <Compile Include="FrameworkHandling.fs" />
