@@ -15,21 +15,15 @@ module SolutionFile =
                 slnContent.RemoveRange(index, 4)
         | None -> ()
 
-    
-    let RemoveNugetPackagesFile(solutionName: string) = 
+    let RemoveNugetEntries(solutionName: string) =
         let slnContent = ResizeArray( File.ReadAllLines solutionName )
-        match slnContent |> Seq.tryFindIndex (fun line -> line.Contains(".nuget\\packages.config")) with
-        | Some(index) -> 
-            slnContent.RemoveAt(index)
-            removeNugetSlnFolderIfEmpty(slnContent)
-            File.WriteAllLines(solutionName, slnContent)
-        | None -> ()        
-
-    let RemoveNugetTargetsFile(solutionName: string) =
-        let slnContent = ResizeArray( File.ReadAllLines solutionName )
+        let mutable modified = false
         match slnContent |> Seq.tryFindIndex (fun line -> line.Contains(".nuget\\nuget.targets")) with
-        | Some(index) -> 
-            slnContent.RemoveAt(index)
-            removeNugetSlnFolderIfEmpty(slnContent)
-            File.WriteAllLines(solutionName, slnContent)
+        | Some(index) -> slnContent.RemoveAt(index); modified <- true
         | None -> ()        
+        match slnContent |> Seq.tryFindIndex (fun line -> line.Contains(".nuget\\packages.config")) with
+        | Some(index) -> slnContent.RemoveAt(index); modified <- true
+        | None -> ()
+
+        removeNugetSlnFolderIfEmpty(slnContent)
+        if modified then File.WriteAllLines(solutionName, slnContent)
