@@ -3,11 +3,14 @@
 // --------------------------------------------------------------------------------------
 
 #r @"packages/FAKE/tools/NuGet.Core.dll"
+#r @"packages/Octokit/lib/net45/Octokit.dll"
 #r @"packages/FAKE/tools/FakeLib.dll"
 open Fake
 open Fake.Git
 open Fake.AssemblyInfoFile
 open Fake.ReleaseNotesHelper
+open Octokit
+open System.IO
 open System
 #if MONO
 #else
@@ -52,7 +55,8 @@ let testAssemblies = "tests/**/bin/Release/*Tests*.dll"
 
 // Git configuration (used for publishing documentation in gh-pages branch)
 // The profile where the project is posted
-let gitHome = "https://github.com/fsprojects"
+let gitOwner = "fsprojects"
+let gitHome = "https://github.com/" + gitOwner
 
 // The name of the project on GitHub
 let gitName = "Paket"
@@ -66,6 +70,7 @@ let gitRaw = environVarOrDefault "gitRaw" "https://raw.github.com/fsprojects"
 
 let buildDir = "bin"
 let buildMergedDir = buildDir @@ "merged"
+
 
 // Read additional information from the release notes document
 let release = LoadReleaseNotes "RELEASE_NOTES.md"
@@ -217,17 +222,66 @@ Target "ReleaseDocs" (fun _ ->
     fullclean tempDocsDir
     CopyRecursive "docs/output" tempDocsDir true |> tracefn "%A"
     StageAll tempDocsDir
-    Commit tempDocsDir (sprintf "Update generated documentation for version %s" release.NugetVersion)
+    Git.Commit.Commit tempDocsDir (sprintf "Update generated documentation for version %s" release.NugetVersion)
     Branches.push tempDocsDir
 )
 
 Target "Release" (fun _ ->
     StageAll ""
-    Commit "" (sprintf "Bump version to %s" release.NugetVersion)
+    Git.Commit.Commit "" (sprintf "Bump version to %s" release.NugetVersion)
     Branches.push ""
 
     Branches.tag "" release.NugetVersion
     Branches.pushTag "" "origin" release.NugetVersion
+
+    // release on github
+    let github = new GitHubClient(new ProductHeaderValue("FAKE"))
+    github.Credentials <- Credentials(getBuildParamOrDefault "github-user" "",getBuildParamOrDefault "github-pw" "")
+
+    let newRelease = new ReleaseUpdate(release.NugetVersion)
+    newRelease.Name <- release.NugetVersion
+    newRelease.Body <- toLines release.Notes
+    newRelease.Draft <- true
+    newRelease.Prerelease <- false
+
+    let released = 
+        Async.AwaitTask (github.Release.Create(gitOwner, gitName, newRelease))
+        |> Async.RunSynchronously
+
+    tracefn "Created release id %d" released.Id
+
+    let archiveContents = File.OpenRead("bin/merged/paket.exe")
+    let assetUpload = new ReleaseAssetUpload() 
+    assetUpload.FileName <- "paket.exe"
+    assetUpload.ContentType <- "application/octet-stream"
+    assetUpload.RawData <- archiveContents
+
+    let asset =
+        Async.AwaitTask (github.Release.UploadAsset(released, assetUpload))
+        |> Async.RunSynchronously
+
+    tracefn "Uploaded %s" asset.Name
+
+    let archiveContents = File.OpenRead("bin/paket.bootstrapper.exe")
+    let assetUpload = new ReleaseAssetUpload() 
+    assetUpload.FileName <- "paket.exe"
+    assetUpload.ContentType <- "application/octet-stream"
+    assetUpload.RawData <- archiveContents
+
+    let asset =
+        Async.AwaitTask (github.Release.UploadAsset(released, assetUpload))
+        |> Async.RunSynchronously
+
+    tracefn "Uploaded %s" asset.Name
+
+    let update = released.ToUpdate()
+    update.Draft <- false
+
+    let released = 
+        Async.AwaitTask (github.Release.Edit(gitOwner, gitName, released.Id, update))
+        |> Async.RunSynchronously
+
+    tracefn "Released %d on github" released.Id
 )
 
 Target "BuildPackage" DoNothing
