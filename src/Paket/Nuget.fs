@@ -260,10 +260,7 @@ let DownloadPackage(url, name, sources, version, force) =
             let! (_,link, _) = getDetailsFromNuget force url name sources ResolverStrategy.Max version
             try
                 tracefn "Downloading %s %s to %s" name version targetFileName
-                use client = new WebClient()
-                // TODO: Set credentials
-
-                client.Headers.Add("user-agent", "paket")
+                use client = createWebClient()
 
                 let request = HttpWebRequest.Create(Uri link) :?> HttpWebRequest
                 request.AutomaticDecompression <- DecompressionMethods.GZip ||| DecompressionMethods.Deflate

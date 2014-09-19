@@ -86,12 +86,16 @@ let normalizeXml(doc:XmlDocument) =
     xmlTextWriter.Flush()
     stringWriter.GetStringBuilder().ToString()
 
+let createWebClient() =
+    let client = new WebClient()
+    client.Headers.Add("user-agent", "Paket")
+    client
+
 /// [omit]
 let getFromUrl (url : string) = 
     async { 
         try
-            use client = new WebClient()
-            client.Headers.Add ("user-agent", "Paket")
+            use client = createWebClient()
             return! client.AsyncDownloadString(Uri(url))
         with
         | exn -> 
@@ -103,8 +107,7 @@ let getFromUrl (url : string) =
 let safeGetFromUrl (url : string) = 
     async { 
         try 
-            use client = new WebClient()
-            client.Headers.Add ("user-agent", "Paket")
+            use client = createWebClient()
             let! raw = client.AsyncDownloadString(Uri(url))
             return Some raw
         with _ -> return None
