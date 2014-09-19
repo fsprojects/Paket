@@ -226,49 +226,53 @@ Target "ReleaseDocs" (fun _ ->
     Branches.push tempDocsDir
 )
 
+type Draft = 
+    { Client : GitHubClient
+      DraftRelease : Release }
+
 let createClient user password = 
-    let github = new GitHubClient(new ProductHeaderValue("FAKE"))
-    github.Credentials <- Credentials(user,password)
-    github
+    async { 
+        let github = new GitHubClient(new ProductHeaderValue("FAKE"))
+        github.Credentials <- Credentials(user, password)
+        return github
+    }
 
-let createDraft owner project releaseNotes (client:GitHubClient) =
-    let data = new ReleaseUpdate(releaseNotes.NugetVersion)
-    data.Name <- releaseNotes.NugetVersion
-    data.Body <- toLines releaseNotes.Notes
-    data.Draft <- true
-    data.Prerelease <- false
+let createDraft owner project releaseNotes (client : Async<GitHubClient>) = 
+    async { 
+        let data = new ReleaseUpdate(releaseNotes.NugetVersion)
+        data.Name <- releaseNotes.NugetVersion
+        data.Body <- toLines releaseNotes.Notes
+        data.Draft <- true
+        data.Prerelease <- false
+        let! client' = client
+        let! draft = Async.AwaitTask <| client'.Release.Create(owner, project, data)
+        tracefn "Created draft release id %d" draft.Id
+        return { Client = client'
+                 DraftRelease = draft }
+    }
 
-    let draft = 
-        Async.AwaitTask (client.Release.Create(owner, project, data))
-        |> Async.RunSynchronously
+let uploadFile fileName (draft : Async<Draft>) = 
+    async { 
+        let fi = FileInfo(fileName)
+        let archiveContents = File.OpenRead(fi.FullName)
+        let assetUpload = new ReleaseAssetUpload()
+        assetUpload.FileName <- fi.Name
+        assetUpload.ContentType <- "application/octet-stream"
+        assetUpload.RawData <- archiveContents
+        let! draft' = draft
+        let! asset = Async.AwaitTask <| draft'.Client.Release.UploadAsset(draft'.DraftRelease, assetUpload)
+        tracefn "Uploaded %s" asset.Name
+        return draft'
+    }
 
-    tracefn "Created draft release id %d" draft.Id
-    client,draft
-
-let uploadFile fileName (client:GitHubClient,draft:Release) =
-    let fi = FileInfo(fileName)
-    let archiveContents = File.OpenRead(fi.FullName)
-    let assetUpload = new ReleaseAssetUpload() 
-    assetUpload.FileName <- fi.Name
-    assetUpload.ContentType <- "application/octet-stream"
-    assetUpload.RawData <- archiveContents
-
-    let asset =
-        Async.AwaitTask (client.Release.UploadAsset(draft, assetUpload))
-        |> Async.RunSynchronously
-
-    tracefn "Uploaded %s" asset.Name
-    client,draft
-
-let releaseDraft (client:GitHubClient,draft:Release) =
-    let update = draft.ToUpdate()
-    update.Draft <- false
-
-    let released = 
-        Async.AwaitTask (client.Release.Edit(gitOwner, gitName, draft.Id, update))
-        |> Async.RunSynchronously
-
-    tracefn "Released %d on github" released.Id
+let releaseDraft (draft : Async<Draft>) = 
+    async { 
+        let! draft' = draft
+        let update = draft'.DraftRelease.ToUpdate()
+        update.Draft <- false
+        let! released = Async.AwaitTask <| draft'.Client.Release.Edit(gitOwner, gitName, draft'.DraftRelease.Id, update)
+        tracefn "Released %d on github" released.Id
+    }
 
 Target "Release" (fun _ ->
     StageAll ""
@@ -284,6 +288,7 @@ Target "Release" (fun _ ->
     |> uploadFile "./bin/merged/paket.exe"
     |> uploadFile "./bin/paket.bootstrapper.exe"
     |> releaseDraft
+    |> Async.RunSynchronously
 )
 
 Target "BuildPackage" DoNothing
