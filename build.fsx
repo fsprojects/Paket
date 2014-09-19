@@ -264,7 +264,7 @@ Target "Release" (fun _ ->
 
     let archiveContents = File.OpenRead("bin/paket.bootstrapper.exe")
     let assetUpload = new ReleaseAssetUpload() 
-    assetUpload.FileName <- "paket.exe"
+    assetUpload.FileName <- "paket.bootstrapper.exe"
     assetUpload.ContentType <- "application/octet-stream"
     assetUpload.RawData <- archiveContents
 
