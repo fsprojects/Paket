@@ -1,3 +1,6 @@
+#### 0.2.15 - 19.09.2014
+* Dogfooding without NuGet.exe
+
 #### 0.2.14 - 19.09.2014
 * Lockfile is sorted alphabetical (case-insensitive)
 
