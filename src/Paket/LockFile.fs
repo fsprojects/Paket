@@ -3,6 +3,7 @@ module Paket.LockFile
 
 open System
 open System.IO
+open Paket.Logging
 
 /// [omit]
 let formatVersionRange (version : VersionRange) = 

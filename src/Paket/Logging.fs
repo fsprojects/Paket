@@ -1,5 +1,4 @@
-﻿[<AutoOpen>]
-module internal Paket.Logging
+﻿module internal Paket.Logging
 
 open System
 
@@ -26,3 +25,9 @@ let traceError = traceColored ConsoleColor.Red
 
 /// [omit]
 let traceWarn = traceColored ConsoleColor.Yellow
+
+/// [omit]
+let traceErrorfn fmt = Printf.ksprintf traceError fmt
+
+/// [omit]
+let traceWarnfn fmt = Printf.ksprintf traceWarn fmt

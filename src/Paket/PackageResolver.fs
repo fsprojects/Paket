@@ -3,6 +3,7 @@ module Paket.PackageResolver
 
 open Paket
 open System
+open Paket.Logging
 
 type private Shrinked =
 | Ok of Dependency

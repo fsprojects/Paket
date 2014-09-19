@@ -2,6 +2,7 @@
 module Paket.InstallProcess
 
 open Paket
+open Paket.Logging
 open System.IO
 open System.Collections.Generic
 

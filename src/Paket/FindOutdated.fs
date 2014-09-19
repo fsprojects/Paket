@@ -2,6 +2,7 @@
 module Paket.FindOutdated
 
 open System.IO
+open Paket.Logging
 
 /// Finds all outdated packages.
 let FindOutdated(dependenciesFile) = 

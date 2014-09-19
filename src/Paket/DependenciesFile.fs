@@ -3,6 +3,7 @@ namespace Paket
 open System
 open System.IO
 open Paket
+open Paket.Logging
 
 /// [omit]
 module DependenciesFileParser = 

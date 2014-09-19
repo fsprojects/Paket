@@ -4,6 +4,7 @@ open System
 open System.IO
 open System.Xml
 open System.Collections.Generic
+open Paket.Xml
 
 /// Contains methods to read and manipulate project file nodes.
 type private InstallInfo = {

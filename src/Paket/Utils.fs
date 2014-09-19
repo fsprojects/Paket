@@ -7,22 +7,6 @@ open System.IO
 open System.Net
 open System.Xml
 
-/// [omit]
-let addAttribute name value (node:XmlElement) =
-    node.SetAttribute(name, value) |> ignore
-    node
-
-/// [omit]
-let addChild child (node:XmlElement) =
-    node.AppendChild(child) |> ignore
-    node
-
-/// [omit]
-let traceErrorfn fmt = Printf.ksprintf traceError fmt
-
-/// [omit]
-let traceWarnfn fmt = Printf.ksprintf traceWarn fmt
-
 /// Creates a directory if it does not exist.
 let CreateDir path = 
     let dir = DirectoryInfo path

@@ -3,6 +3,7 @@ module Paket.Program
 
 open System
 open Nessos.UnionArgParser
+open Paket.Logging
 
 type Command =
     | Install

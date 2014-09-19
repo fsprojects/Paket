@@ -71,6 +71,7 @@
     <Compile Include="BasicTypes.fs" />
     <Compile Include="Constants.fs" />
     <Compile Include="Logging.fs" />
+    <Compile Include="Xml.fs" />
     <Compile Include="Utils.fs" />
     <Compile Include="PackageResolver.fs" />
     <Compile Include="FrameworkHandling.fs" />

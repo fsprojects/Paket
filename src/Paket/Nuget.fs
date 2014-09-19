@@ -9,6 +9,7 @@ open Ionic.Zip
 open System.Xml
 open System.Collections.Generic
 open System.Text.RegularExpressions
+open Paket.Logging
 
 let private loadNuGetOData raw =
     let doc = XmlDocument()
