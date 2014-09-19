@@ -71,7 +71,7 @@ let serializePackages strictMode (resolved : PackageResolution) =
                 hasReported := true
               yield "  remote: " + source
               yield "  specs:"
-              for _,package in packages do
+              for _,package in packages |> Seq.sortBy (fun (_,p) -> p.Name.ToLower()) do
                   yield sprintf "    %s (%s)" package.Name (package.Version.ToString()) 
                   for name,v in package.DirectDependencies do
                       yield sprintf "      %s (%s)" name (formatVersionRange v)]
@@ -88,7 +88,7 @@ let serializeSourceFiles (files:SourceFile list) =
 
             yield sprintf "  remote: %s/%s" owner project
             yield "  specs:"
-            for file in files do
+            for file in files |> Seq.sortBy (fun f -> f.Owner.ToLower(),f.Project.ToLower(),f.Name.ToLower())  do
                 let path = file.Name.TrimStart '/'
                 yield sprintf "    %s (%s)" path file.Commit]
 
