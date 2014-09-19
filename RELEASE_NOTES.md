@@ -1,3 +1,6 @@
+#### 0.2.8 - 19.09.2014
+* Ensure the NuGet cache folder exists
+
 #### 0.2.7 - 19.09.2014
 * New async download strategy
 

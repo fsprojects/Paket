@@ -165,7 +165,10 @@ let getDetailsFromNugetViaOData nugetURL package sources resolverStrategy versio
 /// The NuGet cache folder.
 let CacheFolder = 
     let appData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)
-    Path.Combine(Path.Combine(appData, "NuGet"), "Cache")
+    let di = DirectoryInfo(Path.Combine(Path.Combine(appData, "NuGet"), "Cache"))
+    if not di.Exists then
+        di.Create()
+    di.FullName
 
 let private loadFromCacheOrOData force fileName nugetURL package sources resolverStrategy version = 
     async {
