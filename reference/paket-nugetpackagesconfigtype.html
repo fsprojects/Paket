@@ -2,10 +2,9 @@
 <html lang="en">
   <head>
     <meta charset="utf-8"/>
-    <title>Convert your solution from NuGet
-</title>
+    <title>NugetPackagesConfigType - Paket</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-    <meta name="description" content="A package dependency manager for .NET with support for NuGet packages and GitHub files."/>
+    <meta name="description" content=""/>
     <meta name="author" content="Steffen Forkmann, Alexander Gross"/>
 
     <script src="https://code.jquery.com/jquery-1.8.0.js"></script>
@@ -32,34 +31,57 @@
       <div class="row">
         <div class="span9" id="main">
           
-<h1><a name="Convert-your-solution-from-NuGet" class="anchor" href="#Convert-your-solution-from-NuGet">Convert your solution from NuGet</a></h1>
 
-<h2><a name="Manual-process" class="anchor" href="#Manual-process">Manual process</a></h2>
 
-<p>If you are already using <code>NuGet.exe</code> for package restore then it should be easy to convert to Paket.</p>
 
-<ol>
-<li>Analyse your <code>packages.config</code> files and extract the referenced packages into a <a href="dependencies_file.html"><code>paket.dependencies</code> file</a>.</li>
-<li>Convert every <code>packages.config</code> file to <a href="references_files.html"><code>paket.references</code></a> syntax. This is very easy - you just have to remove all the XML and keep the package names.</li>
-<li>Run <a href="paket_install.html">paket install</a> with the <code>--hard</code> flag. This will analyze the dependencies, generate a <a href="lock_file.html"><code>paket.lock</code> file</a> and remove all the old package references from your project files and install new references in Paket's syntax.</li>
-</ol>
+<h1>NugetPackagesConfigType</h1>
+<div class="xmldoc">
+<p>Represents type of NuGet packages.config file</p>
+</div>
+  <h3>Union Cases</h3>
+  <table class="table table-bordered member-list">
+    <thead>
+      <tr><td>Union Case</td><td>Description</td></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td class="member-name">
 
-<div id="automatic"></div>
+          <code onmouseout="hideTip(event, '32', 32)" onmouseover="showTip(event, '32', 32)">
+            ProjectLevel
+          </code>
+          <div class="tip" id="32">
+            <strong>Signature:</strong> <br />
+                      </div>
+        </td>
+        <td class="xmldoc">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket/BasicTypes.fs#L105-105" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
 
-<h2><a name="Automatic-process" class="anchor" href="#Automatic-process">Automatic process</a></h2>
-
-<p>Paket can assist you with the conversion. The <code>convert-from-nuget</code> command finds all <code>packages.config</code> files and converts them to <a href="references_files.html"><code>paket.references</code></a> and generates a <a href="dependencies_file.html"><code>paket.dependencies</code> file</a>. 
-If the <code>packages.config</code> is solution-level, then its dependencies will be written to <a href="dependencies_file.html"><code>paket.dependencies</code></a> and it will be removed.
-Afterwards it will run the <a href="paket_install.html">paket install</a> process with the <code>--hard</code> flag. This will analyze the dependencies, generate a <a href="lock_file.html"><code>paket.lock</code> file</a> and remove all the old package references from your project files and install new references in Paket's syntax.</p>
-
-<table class="pre"><tr><td><pre lang="batchfile">$ paket convert-from-nuget [--force] [--no-install]</pre></td></tr></table>
-
-<p>Options:</p>
-
-<p><code>--force</code>: Forces the convertion, even if there already exist any <a href="dependencies_file.html"><code>paket.dependencies</code> file</a> or <a href="references_files.html"><code>paket.references</code></a> files.</p>
-
-<p><code>--no-install</code>: Does not run <a href="paket_install.html">paket install</a> process afterwards.</p>
-
+          <code onmouseout="hideTip(event, '35', 35)" onmouseover="showTip(event, '35', 35)">
+            SolutionLevel
+          </code>
+          <div class="tip" id="35">
+            <strong>Signature:</strong> <br />
+                      </div>
+        </td>
+        <td class="xmldoc">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket/BasicTypes.fs#L105-105" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          
+        </td>
+      </tr>
+    </tbody>
+  </table>
 
         </div>
         <div class="span3">
