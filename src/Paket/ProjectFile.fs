@@ -234,11 +234,16 @@ type ProjectFile =
     member this.RemoveNugetTargetsEntries() =
         let toDelete = 
             [ this.Document.SelectNodes("//ns:RestorePackages", this.Namespaces)
-              this.Document.SelectNodes("//ns:Import[@Project='$(SolutionDir)\.nuget\nuget.targets']", this.Namespaces) 
+              this.Document.SelectNodes("//ns:Import[@Project='$(SolutionDir)\\.nuget\\nuget.targets']", this.Namespaces) 
               this.Document.SelectNodes("//ns:Target[@Name='EnsureNuGetPackageBuildImports']", this.Namespaces)]
             |> List.map (Seq.cast<XmlNode> >> Seq.firstOrDefault)
         toDelete
-        |> List.iter (Option.iter (fun node -> node.ParentNode.RemoveChild(node) |> ignore))
+        |> List.iter 
+            (Option.iter 
+                (fun node -> 
+                     let parent = node.ParentNode
+                     node.ParentNode.RemoveChild(node) |> ignore
+                     if not parent.HasChildNodes then parent.ParentNode.RemoveChild(parent) |> ignore))
 
     static member Load(fileName:string) =
         try

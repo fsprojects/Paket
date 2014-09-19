@@ -123,7 +123,7 @@ let ConvertFromNuget(force, installAfter) =
             tracefn "Deleted solution-level \"%s\"" packageFile.FullName
 
     match FindAllFiles(".", "nuget.targets") |> Seq.firstOrDefault with
-    | Some (nugetTargets) -> 
+    | Some (nugetTargets) ->
         for slnFile in FindAllFiles(nugetTargets.Directory.Parent.FullName, "*.sln") do
                 SolutionFile.RemoveNugetTargetsFile(slnFile.FullName)
 
@@ -133,6 +133,7 @@ let ConvertFromNuget(force, installAfter) =
                 project.Save()
 
         File.Delete(nugetTargets.FullName)
+        trace "Deleted nuget.targets"
     | None -> ()
 
     if installAfter then InstallProcess.Install(false, false, true, depFileName)

@@ -18,7 +18,7 @@ module SolutionFile =
     
     let RemoveNugetPackagesFile(solutionName: string) = 
         let slnContent = ResizeArray( File.ReadAllLines solutionName )
-        match slnContent |> Seq.tryFindIndex (fun line -> line.Contains(".nuget\packages.config")) with
+        match slnContent |> Seq.tryFindIndex (fun line -> line.Contains(".nuget\\packages.config")) with
         | Some(index) -> 
             slnContent.RemoveAt(index)
             removeNugetSlnFolderIfEmpty(slnContent)
@@ -27,7 +27,7 @@ module SolutionFile =
 
     let RemoveNugetTargetsFile(solutionName: string) =
         let slnContent = ResizeArray( File.ReadAllLines solutionName )
-        match slnContent |> Seq.tryFindIndex (fun line -> line.Contains(".nuget\nuget.targets")) with
+        match slnContent |> Seq.tryFindIndex (fun line -> line.Contains(".nuget\\nuget.targets")) with
         | Some(index) -> 
             slnContent.RemoveAt(index)
             removeNugetSlnFolderIfEmpty(slnContent)
