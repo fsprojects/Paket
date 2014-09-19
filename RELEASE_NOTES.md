@@ -1,3 +1,6 @@
+#### 0.2.9 - 19.09.2014
+* Using paket.bootstrapper
+
 #### 0.2.8 - 19.09.2014
 * Ensure the NuGet cache folder exists
 
