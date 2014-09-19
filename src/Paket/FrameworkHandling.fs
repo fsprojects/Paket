@@ -92,6 +92,7 @@ type FrameworkIdentifier =
               "Profile104", "portable-net45+sl4+netcore45+wp71"
               "Profile111", "portable-net45+netcore45+wpa81+MonoAndroid1+MonoTouch1"
               "Profile136", "portable-net4+sl5+netcore45+wp8+MonoAndroid1+MonoTouch1"
+              "Profile136", "portable-net4+sl5+wp8+win8+wpa81+MonoTouch+MonoAndroid"
               "Profile143", "portable-net403+sl4+netcore45+wp8"
               "Profile147", "portable-net403+sl5+netcore45+wp8+MonoAndroid1+MonoTouch1"
               "Profile151", "portable-net451+netcore451+wpa81"
