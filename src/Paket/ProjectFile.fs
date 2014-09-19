@@ -218,7 +218,7 @@ type ProjectFile =
                     match Map.tryFind dir firstNodeForDirs with
                     | Some (firstNodeForDir) -> 
                         match (this.Document.SelectNodes(sprintf "//ns:*[@Include='%s']" paketNode.Attributes.["Include"].Value, this.Namespaces) 
-                                                |> Seq.cast<XmlNode> |> Seq.tryFind (fun _ -> true)) with
+                                                |> Seq.cast<XmlNode> |> Seq.firstOrDefault) with
                         | Some (existingNode) -> 
                             if not <| (existingNode.ChildNodes |> Seq.cast<XmlNode> |> Seq.exists (fun n -> n.Name = "Paket"))
                             then existingNode :?> XmlElement |> addChild (this.CreateNode("Paket", "True")) |> ignore
@@ -236,6 +236,20 @@ type ProjectFile =
         | [_] -> nugetNode.ParentNode.RemoveChild(nugetNode) |> ignore
         | [] -> nugetNode.Attributes.["Include"].Value <- "paket.references"
         | _::_ -> failwithf "multiple paket.references nodes in project file %s" this.FileName
+
+    member this.RemoveNugetTargetsEntries() =
+        let toDelete = 
+            [ this.Document.SelectNodes("//ns:RestorePackages", this.Namespaces)
+              this.Document.SelectNodes("//ns:Import[@Project='$(SolutionDir)\\.nuget\\nuget.targets']", this.Namespaces) 
+              this.Document.SelectNodes("//ns:Target[@Name='EnsureNuGetPackageBuildImports']", this.Namespaces)]
+            |> List.map (Seq.cast<XmlNode> >> Seq.firstOrDefault)
+        toDelete
+        |> List.iter 
+            (Option.iter 
+                (fun node -> 
+                     let parent = node.ParentNode
+                     node.ParentNode.RemoveChild(node) |> ignore
+                     if not parent.HasChildNodes then parent.ParentNode.RemoveChild(parent) |> ignore))
 
     static member Load(fileName:string) =
         try

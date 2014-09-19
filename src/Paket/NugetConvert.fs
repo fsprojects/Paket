@@ -45,7 +45,7 @@ let private convertNugetsToDepFile(nugetPackagesConfigs) =
     if not depFileExists 
         then
             let packageSources =
-                match FindAllFiles(".", "nuget.config") |> Seq.tryFind (fun _ -> true) with
+                match FindAllFiles(".", "nuget.config") |> Seq.firstOrDefault with
                 | Some configFile -> 
                     let sources = readPackageSources(configFile) 
                     File.Delete(configFile.FullName)
@@ -56,11 +56,11 @@ let private convertNugetsToDepFile(nugetPackagesConfigs) =
                 |> List.map (sprintf "source %s")                
                 
             File.WriteAllLines(depFileName, packageSources @ [String.Empty] @ dependencyLines)
-            tracefn "Generated \"%s\" file" depFileName 
+            tracefn "Generated %s file" depFileName 
     elif not (dependencyLines |> Seq.isEmpty)
         then
-            File.AppendAllLines(depFileName, dependencyLines)
-            traceWarnfn "Overwritten \"%s\" file" depFileName 
+            File.WriteAllLines(depFileName, Seq.append (File.ReadAllLines(depFileName)) dependencyLines)
+            traceWarnfn "Overwritten %s file" depFileName 
     else tracefn "%s is up to date" depFileName
 
 let private convertNugetToRefFile(nugetPackagesConfig) =
@@ -81,11 +81,11 @@ let private convertNugetToRefFile(nugetPackagesConfig) =
     if not refFileExists 
         then
             File.WriteAllLines(refFile, referencesLines)
-            tracefn "Converted \"%s\" to \"paket.references\"" nugetPackagesConfig.File.FullName 
+            tracefn "Converted %s to paket.references" nugetPackagesConfig.File.FullName 
     elif not (referencesLines |> List.isEmpty)
         then
-            File.AppendAllLines(refFile, referencesLines)
-            traceWarnfn "Overwritten \"%s\" file" refFile
+            File.WriteAllLines(refFile, Seq.append (File.ReadAllLines(refFile)) referencesLines)
+            traceWarnfn "Overwritten %s file" refFile
     else tracefn "%s is up to date" refFile
 
 
@@ -102,24 +102,30 @@ let ConvertFromNuget(force, installAfter) =
         | ProjectLevel ->
             let refFile = Path.Combine(packageFile.DirectoryName, "paket.references")
             if File.Exists refFile && not force then failwithf "%s already exists, use --force to overwrite" refFile
-
             convertNugetToRefFile(nugetPackagesConfig)
+        | SolutionLevel -> ()
 
-            for file in ProjectFile.FindAllProjects(packageFile.DirectoryName) do
-                let project = ProjectFile.Load(file.FullName)
-                project.ReplaceNugetPackagesFile()
-                project.Save()
+    for slnFile in FindAllFiles(".", "*.sln") do
+        SolutionFile.RemoveNugetEntries(slnFile.FullName)
 
-            File.Delete(packageFile.FullName)
+    for projFile in ProjectFile.FindAllProjects(".") do
+        let project = ProjectFile.Load(projFile.FullName)
+        project.ReplaceNugetPackagesFile()
+        project.RemoveNugetTargetsEntries()
+        project.Save()
 
-        | SolutionLevel ->
-            for slnFile in FindAllFiles(packageFile.Directory.Parent.FullName, "*.sln") do
-                SolutionFile.RemoveNugetPackagesFile(slnFile.FullName)
-            
-            File.Delete(packageFile.FullName)
+    for packagesConfigFile in nugetPackagesConfigs |> Seq.map (fun f -> f.File) do
+        File.Delete(packagesConfigFile.FullName)
 
-            if Directory.EnumerateFileSystemEntries(packageFile.DirectoryName) |> Seq.isEmpty 
-                then Directory.Delete packageFile.DirectoryName
-            tracefn "Deleted solution-level \"%s\"" packageFile.FullName
+    match Directory.EnumerateDirectories(".", ".nuget", SearchOption.AllDirectories) |> Seq.firstOrDefault with
+    | Some nugetDir ->
+        let nugetTargets = Path.Combine(nugetDir, "nuget.targets")
+        if File.Exists nugetTargets then
+            File.Delete(nugetTargets)
+            tracefn "Deleted %s" nugetTargets
+
+        if Directory.EnumerateFileSystemEntries(nugetDir) |> Seq.isEmpty 
+            then Directory.Delete nugetDir
+    | None -> ()
 
     if installAfter then InstallProcess.Install(false, false, true, depFileName)
