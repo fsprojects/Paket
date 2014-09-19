@@ -7,17 +7,19 @@ A package dependency manager for .NET with support for NuGet packages and GitHub
  - NuGet package [![NuGet Status](http://img.shields.io/nuget/v/Paket.svg?style=flat)](https://www.nuget.org/packages/Paket/)
  - [Source code][1]
  - [Documentation][2]
+ - [Download][3]
 
  [1]: https://github.com/fsprojects/Paket/
  [2]: http://fsprojects.github.io/Paket/
+ [3]: https://github.com/fsprojects/Paket/releases/latest
 
 ## Troubleshooting and support
 
- - Found a bug or missing a feature? Feed the [issue tracker][3]
- - Announcements and related miscellanea through Twitter ([@PaketManager][4])
-
- [3]: https://github.com/fsprojects/Paket/issues
- [4]: http://twitter.com/PaketManager
+ - Found a bug or missing a feature? Feed the [issue tracker][4]
+ - Announcements and related miscellanea through Twitter ([@PaketManager][5])
+ 
+ [4]: https://github.com/fsprojects/Paket/issues
+ [5]: http://twitter.com/PaketManager
 
 ## Build the project
 
@@ -41,6 +43,6 @@ If you want to contribute to the [docs][2] then please send a pull request to th
 
 ## License
 
-The [MIT license][5]
+The [MIT license][6]
 
- [5]: https://github.com/fsprojects/Paket/blob/master/LICENSE.txt
+ [6]: https://github.com/fsprojects/Paket/blob/master/LICENSE.txt

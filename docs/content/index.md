@@ -9,6 +9,8 @@ It enables precise and predictable control over what packages the projects withi
 
 ## How to get Paket
 
+Paket is available for [download from GitHub.com](https://github.com/fsprojects/Paket/releases/latest).
+
 <div class="row">
   <div class="span1"></div>
   <div class="span6">
