@@ -100,6 +100,16 @@ type SourceFile =
         di.FullName
 
     override this.ToString() = sprintf "(%s:%s:%s) %s" this.Owner this.Project this.Commit this.Name
+       
+/// Represents type of NuGet packages.config file
+type NugetPackagesConfigType = ProjectLevel | SolutionLevel
+
+/// Represents NuGet packages.config file
+type NugetPackagesConfig = {
+    File: FileInfo;
+    Packages: (string*SemVerInfo) list
+    Type: NugetPackagesConfigType
+}
             
 /// Represents an unresolved package.
 type UnresolvedPackage =

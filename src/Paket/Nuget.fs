@@ -304,11 +304,13 @@ let GetLibraries(targetFolder) =
         Array.empty
 
 /// Lists packages defined in a NuGet packages.config
-let ReadPackagesFromFile(configFile : FileInfo) =
+let ReadPackagesConfig(configFile : FileInfo) =
     let doc = XmlDocument()
     doc.Load configFile.FullName
-    [for node in doc.SelectNodes("//package") ->
-        node.Attributes.["id"].Value, node.Attributes.["version"].Value |> SemVer.parse ]
+    { File = configFile
+      Type = if configFile.Directory.Name = ".nuget" then SolutionLevel else ProjectLevel
+      Packages = [for node in doc.SelectNodes("//package") ->
+                      node.Attributes.["id"].Value, node.Attributes.["version"].Value |> SemVer.parse ]}
 
 /// Nuget Discovery API.
 let NugetDiscovery = 
