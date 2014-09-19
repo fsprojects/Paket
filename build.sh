@@ -6,7 +6,7 @@ if [ $exit_code -ne 0 ]; then
 	exit $exit_code
 fi
 
-mono paket.exe install
+mono paket.exe install -v
 exit_code=$?
 if [ $exit_code -ne 0 ]; then
 	exit $exit_code

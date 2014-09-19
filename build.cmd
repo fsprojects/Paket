@@ -6,7 +6,7 @@ if errorlevel 1 (
   exit /b %errorlevel%
 )
 
-paket.exe install
+paket.exe install -v
 if errorlevel 1 (
   exit /b %errorlevel%
 )
