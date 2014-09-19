@@ -35,6 +35,12 @@ type ProjectFile =
       Namespaces : XmlNamespaceManager }
     static member DefaultNameSpace = "http://schemas.microsoft.com/developer/msbuild/2003"
 
+    /// Finds all project files
+    static member FindAllProjects(folder) = 
+        ["*.csproj";"*.fsproj";"*.vbproj"]
+        |> List.map (fun projectType -> FindAllFiles(folder, projectType) |> Seq.toList)
+        |> List.concat
+
     member this.DeleteIfEmpty xPath =
         let nodesToDelete = List<_>()
         for node in this.Document.SelectNodes(xPath, this.Namespaces) do

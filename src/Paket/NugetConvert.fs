@@ -105,7 +105,7 @@ let ConvertFromNuget(force, installAfter) =
 
             convertNugetToRefFile(nugetPackagesConfig)
 
-            for file in FindAllProjects(packageFile.DirectoryName) do
+            for file in ProjectFile.FindAllProjects(packageFile.DirectoryName) do
                 let project = ProjectFile.Load(file.FullName)
                 project.ReplaceNugetPackagesFile()
                 project.Save()
