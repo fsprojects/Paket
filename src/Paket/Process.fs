@@ -4,6 +4,7 @@ module Paket.Process
 open System
 open System.IO
 open System.Collections.Generic
+open System.Xml
 
 /// Downloads and extracts all packages.
 let ExtractPackages(force, packages) = 
@@ -172,14 +173,17 @@ let ListOutdated(packageFile) =
         for name,oldVersion,newVersion in allOutdated do
             tracefn "  * %s %s -> %s" name (oldVersion.ToString()) (newVersion.ToString())
 
-/// Converts all projects from NuGet to Paket
-let ConvertFromNuget() =
-    let nugetPackages = 
-        findAllFiles(".", "packages.config") |> Seq.map (fun f -> f, Nuget.ReadPackagesFromFile f)
-    
+let private depFileName = "paket.dependencies"
+
+let private readPackageSources(configFile : FileInfo) =
+    let doc = XmlDocument()
+    doc.Load configFile.FullName
+    [for node in doc.SelectNodes("//packageSources/add[@value]") -> node.Attributes.["value"].Value]
+
+let private convertNugetsToDepFile(nugetPackagesConfigs) =
     let allVersions =
-        nugetPackages
-        |> Seq.collect snd
+        nugetPackagesConfigs
+        |> Seq.collect (fun c -> c.Packages)
         |> Seq.groupBy fst
         |> Seq.map (fun (name, packages) -> name, packages |> Seq.map snd |> Seq.distinct)
     
@@ -190,35 +194,96 @@ let ConvertFromNuget() =
                             (versions |> Seq.map string |> Seq.toList)
     
     let latestVersions = allVersions |> Seq.map (fun (name,versions) -> name, versions |> Seq.max |> string)
+    
+    let depFileExists = File.Exists depFileName 
+    let existingPackages = 
+        if depFileExists 
+        then (DependenciesFile.ReadFromFile depFileName).Packages |> List.map (fun p -> p.Name.ToLower()) |> Set.ofList
+        else Set.empty
+    let confictingPackages = Set.intersect existingPackages (latestVersions |> Seq.map fst |> Seq.map (fun n -> n.ToLower()) |> Set.ofSeq)
+    confictingPackages |> Set.iter (fun name -> traceWarnfn "Package %s is already defined in %s" name depFileName)
 
-    let dependenciesFileContent = 
-        "source http://nuget.org/api/v2" + Environment.NewLine + Environment.NewLine +
-         (latestVersions |> Seq.map (fun (name,version) -> sprintf "nuget %s %s" name version)
-         |> String.concat Environment.NewLine)
-        
-    File.WriteAllText("paket.dependencies", dependenciesFileContent)
-    trace "Generated \"paket.dependencies\" file"
-        
-    for (packageFile, packages) in nugetPackages do
-        if packageFile.Directory.Name <> ".nuget"
+    let dependencyLines = 
+        latestVersions 
+        |> Seq.filter (fun (name,_) -> not (confictingPackages |> Set.contains (name.ToLower())))
+        |> Seq.map (fun (name,version) -> sprintf "nuget %s %s" name version)
+        |> Seq.toList
+    
+    if not depFileExists 
         then
-            let referencesFileContent = packages |> List.map fst |> String.concat Environment.NewLine
-            File.WriteAllText(packageFile.FullName, referencesFileContent)
-            File.Move(packageFile.FullName, Path.Combine(packageFile.DirectoryName, "paket.references"))
-            
+            let packageSources =
+                match findAllFiles(".", "nuget.config") |> Seq.tryFind (fun _ -> true) with
+                | Some configFile -> 
+                    let sources = readPackageSources(configFile) 
+                    File.Delete(configFile.FullName)
+                    sources
+                | None -> ["http://nuget.org/api/v2"]
+                |> List.map (sprintf "source %s")
+            File.WriteAllLines(depFileName, packageSources @ [String.Empty] @ dependencyLines)
+            tracefn "Generated \"%s\" file" depFileName 
+    elif not (dependencyLines |> Seq.isEmpty)
+        then
+            File.AppendAllLines(depFileName, dependencyLines)
+            traceWarnfn "Overwritten \"%s\" file" depFileName 
+    else tracefn "%s is up to date" depFileName
+        
+
+let private convertNugetToRefFile(nugetPackagesConfig) =
+    let refFile = Path.Combine(nugetPackagesConfig.File.DirectoryName, "paket.references")
+    let refFileExists = File.Exists refFile
+    let existingReferences = 
+        if refFileExists
+        then (File.ReadAllLines refFile) |> Array.map (fun p -> p.ToLower()) |> Set.ofArray
+        else Set.empty
+    let confictingReferences = Set.intersect existingReferences (nugetPackagesConfig.Packages |> List.map fst |> Seq.map (fun n -> n.ToLower()) |> Set.ofSeq)
+    confictingReferences |> Set.iter (fun name -> traceWarnfn "Reference %s is already defined in %s" name refFile)
+
+    let referencesLines = 
+        nugetPackagesConfig.Packages 
+        |> List.map fst 
+        |> List.filter (fun name -> not (confictingReferences |> Set.contains (name.ToLower())))
+                            
+    if not refFileExists 
+        then
+            File.WriteAllLines(refFile, referencesLines)
+            tracefn "Converted \"%s\" to \"paket.references\"" nugetPackagesConfig.File.FullName 
+    elif not (referencesLines |> List.isEmpty)
+        then
+            File.AppendAllLines(refFile, referencesLines)
+            traceWarnfn "Overwritten \"%s\" file" refFile
+    else tracefn "%s is up to date" refFile
+
+/// Converts all projects from NuGet to Paket
+let ConvertFromNuget(force, installAfter) =
+    if File.Exists depFileName && not force then failwithf "%s already exists, use --force to overwrite" depFileName
+    
+    let nugetPackagesConfigs = findAllFiles(".", "packages.config") |> Seq.map Nuget.ReadPackagesConfig
+    convertNugetsToDepFile(nugetPackagesConfigs)
+        
+    for nugetPackagesConfig  in nugetPackagesConfigs do
+        let packageFile = nugetPackagesConfig.File
+        match nugetPackagesConfig.Type with
+        | ProjectLevel ->
+            let refFile = Path.Combine(packageFile.DirectoryName, "paket.references")
+            if File.Exists refFile && not force then failwithf "%s already exists, use --force to overwrite" refFile
+
+            convertNugetToRefFile(nugetPackagesConfig)
+
             for file in findAllProjects(packageFile.DirectoryName) do
                 let project = ProjectFile.Load(file.FullName)
-                project.ConvertNugetToPaket()
+                project.ReplaceNugetPackagesFile()
                 project.Save()
-                           
-            tracefn "Converted \"%s\" to \"paket.references\"" packageFile.FullName
 
-        else
             File.Delete(packageFile.FullName)
 
+        | SolutionLevel ->
             for slnFile in findAllFiles(packageFile.Directory.Parent.FullName, "*.sln") do
                 SolutionFile.RemoveNugetPackagesFile(slnFile.FullName)
             
-            tracefn "Deleted \"%s\"" packageFile.FullName
+            File.Delete(packageFile.FullName)
 
-    Install(false, false, true, "paket.dependencies")
+            if Directory.EnumerateFileSystemEntries(packageFile.DirectoryName) |> Seq.isEmpty 
+                then Directory.Delete packageFile.DirectoryName
+            tracefn "Deleted solution-level \"%s\"" packageFile.FullName
+
+    if installAfter then Install(false, false, true, depFileName)

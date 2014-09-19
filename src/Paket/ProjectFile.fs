@@ -223,9 +223,12 @@ type ProjectFile =
             projectNode.AppendChild(itemGroupNode) |> ignore
             this.DeleteIfEmpty("//ns:Project/ns:ItemGroup")
 
-    member this.ConvertNugetToPaket() =
-        for node in this.Document.SelectNodes("//ns:*[@Include='packages.config']", this.Namespaces) do
-            node.Attributes.["Include"].Value <- "paket.references"
+    member this.ReplaceNugetPackagesFile() =
+        let nugetNode = this.Document.SelectSingleNode("//ns:*[@Include='packages.config']", this.Namespaces)
+        match [for node in this.Document.SelectNodes("//ns:*[@Include='paket.references']", this.Namespaces) -> node] with 
+        | [_] -> nugetNode.ParentNode.RemoveChild(nugetNode) |> ignore
+        | [] -> nugetNode.Attributes.["Include"].Value <- "paket.references"
+        | _::_ -> failwithf "multiple paket.references nodes in project file %s" this.FileName
 
     static member Load(fileName:string) =
         try
