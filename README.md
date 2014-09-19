@@ -2,6 +2,21 @@
 
 A package dependency manager for .NET with support for NuGet packages and GitHub files.
 
+## Why Paket?
+
+NuGet does not separate out the concept of indirect dependencies. 
+If you install a package into your project and that package has further dependencies then all indirect packages are included in the packages.config. 
+There is no way to tell which packages are only indirect dependencies.
+
+Even more importantly: If two packages reference conflicting versions of a package, NuGet will silently take the latest version. You have no control over this process.
+
+Paket on the other hand maintains this information on a consistent and stable basis within the paket.lock file in the solution root.
+This file, together with the paket.dependencies file enables you to determine exactly what's happening with your dependencies.
+
+Paket also enables you to reference files directly from GitHub repositories.
+
+Fore more reasons see the [FAQs](http://fsprojects.github.io/Paket/faq.html).
+
 ## Online resources
 
  - [Source code][1]
