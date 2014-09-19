@@ -59,7 +59,7 @@ let private convertNugetsToDepFile(nugetPackagesConfigs) =
             tracefn "Generated %s file" depFileName 
     elif not (dependencyLines |> Seq.isEmpty)
         then
-            File.AppendAllLines(depFileName, dependencyLines)
+            File.WriteAllLines(depFileName, Seq.append (File.ReadAllLines(depFileName)) dependencyLines)
             traceWarnfn "Overwritten %s file" depFileName 
     else tracefn "%s is up to date" depFileName
 
@@ -84,7 +84,7 @@ let private convertNugetToRefFile(nugetPackagesConfig) =
             tracefn "Converted %s to paket.references" nugetPackagesConfig.File.FullName 
     elif not (referencesLines |> List.isEmpty)
         then
-            File.AppendAllLines(refFile, referencesLines)
+            File.WriteAllLines(refFile, Seq.append (File.ReadAllLines(refFile)) referencesLines)
             traceWarnfn "Overwritten %s file" refFile
     else tracefn "%s is up to date" refFile
 
