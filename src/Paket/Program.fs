@@ -77,10 +77,10 @@ try
             | None -> true
 
         match command with
-        | Command.Install -> Process.Install(false,force,hard,dependenciesFile)
-        | Command.Update -> Process.Install(true,force,hard,dependenciesFile)
-        | Command.Outdated -> Process.ListOutdated(dependenciesFile)
-        | Command.ConvertFromNuget -> Process.ConvertFromNuget(force,installAfterConvert)
+        | Command.Install -> InstallProcess.Install(false,force,hard,dependenciesFile)
+        | Command.Update -> InstallProcess.Install(true,force,hard,dependenciesFile)
+        | Command.Outdated -> FindOutdated.ListOutdated(dependenciesFile)
+        | Command.ConvertFromNuget -> NuGetConvert.ConvertFromNuget(force,installAfterConvert)
         | _ -> failwithf "no command given.%s" (parser.Usage())
         
         tracefn "Ready."

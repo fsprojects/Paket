@@ -9,7 +9,6 @@ let formatVersionRange (version : VersionRange) =
     match version with
     | Minimum v -> ">= " + v.ToString()
     | Specific v -> v.ToString()
-    | Latest -> ">= 0"
     | Range(_, v1, v2, _) -> ">= " + v1.ToString() + ", < " + v2.ToString()
 
 /// [omit]
@@ -185,3 +184,8 @@ let Update(force, dependenciesFilename, lockFile) =
         tracefn "Locked version resolutions written to %s" lockFile
     else
         failwith <| "Could not resolve dependencies." + Environment.NewLine + errors
+
+/// Find the matching lock file to a dependencies file
+let findLockfile dependenciesFile =
+    let fi = FileInfo(dependenciesFile)
+    FileInfo(Path.Combine(fi.Directory.FullName, fi.Name.Replace(fi.Extension,"") + ".lock"))

@@ -109,3 +109,12 @@ let safeGetFromUrl (url : string) =
             return Some raw
         with _ -> return None
     }
+
+/// Enumerates all files with the given pattern
+let FindAllFiles(folder, pattern) = DirectoryInfo(folder).EnumerateFiles(pattern, SearchOption.AllDirectories)
+
+/// Finds all project files
+let FindAllProjects(folder) = 
+    ["*.csproj";"*.fsproj";"*.vbproj"]
+    |> List.map (fun projectType -> FindAllFiles(folder, projectType) |> Seq.toList)
+    |> List.concat
