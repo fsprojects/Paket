@@ -225,6 +225,7 @@ type ProjectFile =
 
     member this.ReplaceNugetPackagesFile() =
         let nugetNode = this.Document.SelectSingleNode("//ns:*[@Include='packages.config']", this.Namespaces)
+        if nugetNode = null then () else
         match [for node in this.Document.SelectNodes("//ns:*[@Include='paket.references']", this.Namespaces) -> node] with 
         | [_] -> nugetNode.ParentNode.RemoveChild(nugetNode) |> ignore
         | [] -> nugetNode.Attributes.["Include"].Value <- "paket.references"

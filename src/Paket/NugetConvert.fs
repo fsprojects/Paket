@@ -49,9 +49,12 @@ let private convertNugetsToDepFile(nugetPackagesConfigs) =
                 | Some configFile -> 
                     let sources = readPackageSources(configFile) 
                     File.Delete(configFile.FullName)
-                    sources
+                    sources @ ["http://nuget.org/api/v2"]
                 | None -> ["http://nuget.org/api/v2"]
-                |> List.map (sprintf "source %s")
+                |> Set.ofList
+                |> Set.toList
+                |> List.map (sprintf "source %s")                
+                
             File.WriteAllLines(depFileName, packageSources @ [String.Empty] @ dependencyLines)
             tracefn "Generated \"%s\" file" depFileName 
     elif not (dependencyLines |> Seq.isEmpty)
