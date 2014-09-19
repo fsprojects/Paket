@@ -16,11 +16,20 @@ module SolutionFile =
         | None -> ()
 
     
-    let RemoveNugetPackagesFile(fileName: string) = 
-        let slnContent = ResizeArray( File.ReadAllLines fileName )
+    let RemoveNugetPackagesFile(solutionName: string) = 
+        let slnContent = ResizeArray( File.ReadAllLines solutionName )
         match slnContent |> Seq.tryFindIndex (fun line -> line.Contains(".nuget\packages.config")) with
         | Some(index) -> 
             slnContent.RemoveAt(index)
             removeNugetSlnFolderIfEmpty(slnContent)
-            File.WriteAllLines(fileName, slnContent)
+            File.WriteAllLines(solutionName, slnContent)
+        | None -> ()        
+
+    let RemoveNugetTargetsFile(solutionName: string) =
+        let slnContent = ResizeArray( File.ReadAllLines solutionName )
+        match slnContent |> Seq.tryFindIndex (fun line -> line.Contains(".nuget\nuget.targets")) with
+        | Some(index) -> 
+            slnContent.RemoveAt(index)
+            removeNugetSlnFolderIfEmpty(slnContent)
+            File.WriteAllLines(solutionName, slnContent)
         | None -> ()        

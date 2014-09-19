@@ -121,3 +121,6 @@ let FindAllProjects(folder) =
     ["*.csproj";"*.fsproj";"*.vbproj"]
     |> List.map (fun projectType -> FindAllFiles(folder, projectType) |> Seq.toList)
     |> List.concat
+
+module Seq = 
+    let firstOrDefault seq = Seq.tryFind (fun _ -> true) seq

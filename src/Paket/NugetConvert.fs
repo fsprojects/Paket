@@ -45,7 +45,7 @@ let private convertNugetsToDepFile(nugetPackagesConfigs) =
     if not depFileExists 
         then
             let packageSources =
-                match FindAllFiles(".", "nuget.config") |> Seq.tryFind (fun _ -> true) with
+                match FindAllFiles(".", "nuget.config") |> Seq.firstOrDefault with
                 | Some configFile -> 
                     let sources = readPackageSources(configFile) 
                     File.Delete(configFile.FullName)
@@ -121,5 +121,18 @@ let ConvertFromNuget(force, installAfter) =
             if Directory.EnumerateFileSystemEntries(packageFile.DirectoryName) |> Seq.isEmpty 
                 then Directory.Delete packageFile.DirectoryName
             tracefn "Deleted solution-level \"%s\"" packageFile.FullName
+
+    match FindAllFiles(".", "nuget.targets") |> Seq.firstOrDefault with
+    | Some (nugetTargets) -> 
+        for slnFile in FindAllFiles(nugetTargets.Directory.Parent.FullName, "*.sln") do
+                SolutionFile.RemoveNugetTargetsFile(slnFile.FullName)
+
+        for file in FindAllProjects(nugetTargets.Directory.Parent.FullName) do
+                let project = ProjectFile.Load(file.FullName)
+                project.RemoveNugetTargetsEntries()
+                project.Save()
+
+        File.Delete(nugetTargets.FullName)
+    | None -> ()
 
     if installAfter then InstallProcess.Install(false, false, true, depFileName)
