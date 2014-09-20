@@ -89,11 +89,10 @@ let private convertNugetToRefFile(nugetPackagesConfig) =
             traceWarnfn "Overwritten %s file" refFile
     else tracefn "%s is up to date" refFile
 
-
 /// Converts all projects from NuGet to Paket
 let ConvertFromNuget(force, installAfter) =
     if File.Exists depFileName && not force then failwithf "%s already exists, use --force to overwrite" depFileName
-    
+
     let nugetPackagesConfigs = FindAllFiles(".", "packages.config") |> Seq.map Nuget.ReadPackagesConfig
     convertNugetsToDepFile(nugetPackagesConfigs)
         
@@ -124,6 +123,7 @@ let ConvertFromNuget(force, installAfter) =
         if File.Exists nugetTargets then
             File.Delete(nugetTargets)
             tracefn "Deleted %s" nugetTargets
+            VSIntegration.InitAutoRestore()
 
         if Directory.EnumerateFileSystemEntries(nugetDir) |> Seq.isEmpty 
             then Directory.Delete nugetDir

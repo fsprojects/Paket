@@ -251,6 +251,14 @@ type ProjectFile =
                      let parent = node.ParentNode
                      node.ParentNode.RemoveChild(node) |> ignore
                      if not parent.HasChildNodes then parent.ParentNode.RemoveChild(parent) |> ignore))
+    
+    member this.AddImportForPaketTargets() =
+        match this.Document.SelectNodes("//ns:Import[@Project='$(SolutionDir)\\.paket\\paket.targets']", this.Namespaces)
+                            |> Seq.cast |> Seq.firstOrDefault with
+        | Some _ -> ()
+        | None -> 
+            let node = this.CreateNode("Import") |> addAttribute "Project" "$(SolutionDir)\\.paket\\paket.targets"
+            this.Document.SelectSingleNode("//ns:Project", this.Namespaces).AppendChild(node) |> ignore
 
     static member Load(fileName:string) =
         try

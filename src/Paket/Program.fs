@@ -10,6 +10,7 @@ type Command =
     | Update
     | Outdated
     | ConvertFromNuget
+    | InitAutoRestore
     | Unknown
 
 type CLIArguments =
@@ -17,6 +18,7 @@ type CLIArguments =
     | [<First>][<NoAppSettings>][<CustomCommandLine("update")>] Update
     | [<First>][<NoAppSettings>][<CustomCommandLine("outdated")>] Outdated
     | [<First>][<NoAppSettings>][<CustomCommandLine("convert-from-nuget")>] ConvertFromNuget
+    | [<First>][<NoAppSettings>][<CustomCommandLine("init-auto-restore")>] InitAutoRestore
     | [<AltCommandLine("-v")>] Verbose
     | Dependencies_file of string
     | [<AltCommandLine("-f")>] Force
@@ -30,6 +32,7 @@ with
             | Update -> "updates the packet.lock ile and installs all packages."
             | Outdated -> "displays information about new packages."
             | ConvertFromNuget -> "converts all projects from NuGet to Paket."
+            | InitAutoRestore -> "enables automatic restore for VS"
             | Verbose -> "displays verbose output."
             | Dependencies_file _ -> "specify a file containing dependency definitions."
             | Force -> "forces the download of all packages."
@@ -47,6 +50,7 @@ let results,verbose =
             elif results.Contains <@ CLIArguments.Update @> then Command.Update
             elif results.Contains <@ CLIArguments.Outdated @> then Command.Outdated
             elif results.Contains <@ CLIArguments.ConvertFromNuget @> then Command.ConvertFromNuget
+            elif results.Contains <@ CLIArguments.InitAutoRestore @> then Command.InitAutoRestore
             else Command.Unknown
         Some(command,results),results.Contains <@ CLIArguments.Verbose @>
     with
@@ -81,6 +85,7 @@ try
         | Command.Install -> InstallProcess.Install(false,force,hard,dependenciesFile)
         | Command.Update -> InstallProcess.Install(true,force,hard,dependenciesFile)
         | Command.Outdated -> FindOutdated.ListOutdated(dependenciesFile)
+        | Command.InitAutoRestore -> VSIntegration.InitAutoRestore()
         | Command.ConvertFromNuget -> NuGetConvert.ConvertFromNuget(force,installAfterConvert)
         | _ -> failwithf "no command given.%s" (parser.Usage())
         
