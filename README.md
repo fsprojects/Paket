@@ -10,12 +10,12 @@ There is no way to tell which packages are only indirect dependencies.
 
 Even more importantly: If two packages reference conflicting versions of a package, NuGet will silently take the latest version. You have no control over this process.
 
-Paket on the other hand maintains this information on a consistent and stable basis within the [`paket.lock` file](http://fsprojects.github.io/Paket/lock_file.html) in the solution root.
-This file, together with the [`paket.dependencies` file](http://fsprojects.github.io/Paket/dependencies_file.html) enables you to determine exactly what's happening with your dependencies.
+Paket on the other hand maintains this information on a consistent and stable basis within the [`paket.lock` file][7] in the solution root.
+This file, together with the [`paket.dependencies` file][8] enables you to determine exactly what's happening with your dependencies.
 
-Paket also enables you to [reference files directly from GitHub](http://fsprojects.github.io/Paket/github_dependencies.html) repositories.
+Paket also enables you to [reference files directly from GitHub][9] repositories.
 
-Fore more reasons see the [FAQs](http://fsprojects.github.io/Paket/faq.html).
+Fore more reasons see the [FAQs][10].
 
 ## Online resources
 
@@ -58,3 +58,7 @@ The [MIT license][6]
  [4]: https://github.com/fsprojects/Paket/issues
  [5]: http://twitter.com/PaketManager
  [6]: https://github.com/fsprojects/Paket/blob/master/LICENSE.txt
+ [7]: http://fsprojects.github.io/Paket/lock_file.html
+ [8]: http://fsprojects.github.io/Paket/dependencies_file.html
+ [9]: http://fsprojects.github.io/Paket/github_dependencies.html
+ [10]: http://fsprojects.github.io/Paket/faq.html
