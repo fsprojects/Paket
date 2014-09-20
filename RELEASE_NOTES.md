@@ -1,3 +1,6 @@
+#### 0.2.21 - 20.09.2014
+* Adding verbose mode
+
 #### 0.2.20 - 20.09.2014
 * Release paket.targets file
 

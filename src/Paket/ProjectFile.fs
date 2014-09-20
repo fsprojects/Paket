@@ -1,5 +1,6 @@
 ﻿namespace Paket
 
+open Paket.Logging
 open System
 open System.IO
 open System.Xml
@@ -160,13 +161,15 @@ type ProjectFile =
         match [ for node in this.Document.SelectNodes("//ns:Project", this.Namespaces) -> node ] with
         | [] -> ()
         | projectNode :: _ -> 
+            verbosefn "Installing to %s" this.FileName
             this.DeletePaketNodes("Reference")
             let installInfos = InstallRules.groupDLLs usedPackages extracted this.FileName
             for dllName, libsWithSameName in installInfos do
                 if hard then
                     this.DeleteCustomNodes(dllName)
-                if this.HasCustomNodes(dllName) then ()
+                if this.HasCustomNodes(dllName) then verbosefn "  - custom nodes for %s ==> skipping" dllName
                 else 
+                    verbosefn "  - installing %s" dllName
                     let lastLib = ref None
                     for (_, _), libs in libsWithSameName do
                         let chooseNode = this.Document.CreateElement("Choose", ProjectFile.DefaultNameSpace)
