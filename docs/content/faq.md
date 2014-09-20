@@ -8,7 +8,7 @@ Even more importantly: If two packages reference conflicting versions of a packa
 
 Paket on the other hand maintains this information on a consistent and stable basis within the [`paket.lock` file](lock-file.html) in the solution root. This file, together with the [`paket.dependencies` file](dependencies-file.html) enables you to determine exactly what's happening with your dependencies.
 
-The [`paket outdated` command](paket_outdated.html) lists packages that have new versions available.
+The [`paket outdated` command](paket-outdated.html) lists packages that have new versions available.
 
 Paket also enables one to [reference files directly from GitHub repositories](github-dependencies.html).
 
