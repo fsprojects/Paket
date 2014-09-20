@@ -1,3 +1,6 @@
+#### 0.2.19 - 20.09.2014
+* Use VS targets
+
 #### 0.2.18 - 20.09.2014
 * Fix paket outdated
 
