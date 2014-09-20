@@ -1,3 +1,6 @@
+#### 0.2.24 - 20.09.2014
+* Respect case sensitivity for package paths - https://github.com/fsprojects/Paket/pull/137
+
 #### 0.2.23 - 20.09.2014
 * Adding verbose mode
 
