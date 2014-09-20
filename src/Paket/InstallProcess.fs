@@ -109,12 +109,13 @@ let Install(regenerate, force, hard, dependenciesFilename) =
             |> Map.ofArray
 
         let rec addPackage (name:string) =
-            if name.ToLower().StartsWith "file:" then
+            let identity = name.ToLower()
+
+            if identity.StartsWith "file:" then
                 let sourceFile = name.Split(':').[1]
                 usedSourceFiles.Add sourceFile |> ignore
             else
-                let name = name.ToLower()
-                match allPackages |> Map.tryFind name with
+                match allPackages |> Map.tryFind identity with
                 | Some package ->
                     if usedPackages.Add name then
                         if not lockFile.Strict then
