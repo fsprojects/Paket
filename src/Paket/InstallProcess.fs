@@ -25,11 +25,14 @@ let DownloadSourceFiles(rootPath,sourceFiles) =
     Seq.map (fun (source : SourceFile) -> 
         async { 
             let destination = Path.Combine(rootPath, source.FilePath)
-            tracefn "Downloading %s..." (source.ToString())
-            let! file = GitHub.downloadFile source
-            Directory.CreateDirectory(destination |> Path.GetDirectoryName) |> ignore
-            File.WriteAllText(destination, file)
-            return None
+            if File.Exists destination then
+                return None
+            else
+                tracefn "Downloading %s..." (source.ToString())
+                let! file = GitHub.downloadFile source
+                Directory.CreateDirectory(destination |> Path.GetDirectoryName) |> ignore
+                File.WriteAllText(destination, file)
+                return None
         }) sourceFiles
 
 let private findPackagesWithContent usedPackages = 
