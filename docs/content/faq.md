@@ -64,6 +64,10 @@ Once the [`paket.lock` file](lock-file.html) is written, Paket no longer needs t
 
 The process is very easy and you can read more about it in the [convert from NuGet](convert-from-nuget.html) section.
 
+## Does Paket allow groups like bundler does?
+
+No at the moment we don't see the requirement for something like [bundler's groups](http://bundler.io/v1.7/groups.html). Longer discussion can be found [here](https://github.com/fsprojects/Paket/issues/116).
+
 ## Can I use Paket to manage npm/bower/whatever dependencies?
 
 [No.](https://github.com/fsprojects/Paket/issues/61) We don't believe in reinventing the wheel.
