@@ -5,9 +5,14 @@ open System
 open Nessos.UnionArgParser
 open Paket.Logging
 open System.Diagnostics
+open System.Reflection
 
 let private stopWatch = new Stopwatch()
 stopWatch.Start()
+
+let assembly = Assembly.GetExecutingAssembly()
+let fvi = FileVersionInfo.GetVersionInfo(assembly.Location);
+tracefn "Paket version %s" fvi.FileVersion
 
 type Command =
     | Install

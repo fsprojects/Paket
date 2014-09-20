@@ -1,3 +1,6 @@
+#### 0.2.25 - 20.09.2014
+* Show version at start
+
 #### 0.2.24 - 20.09.2014
 * Respect case sensitivity for package paths - https://github.com/fsprojects/Paket/pull/137
 
