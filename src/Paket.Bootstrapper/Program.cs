@@ -12,7 +12,7 @@ namespace Paket.Bootstrapper
         {
             try
             {
-                var folder = "";
+                var folder = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
                 if (args.Length > 1)
                     folder = args[0];
 
