@@ -101,6 +101,7 @@ let Install(regenerate, force, hard, dependenciesFilename) =
         let directPackages = extractReferencesFromListFile proj.FullName
         let project = ProjectFile.Load proj.FullName
 
+        if directPackages |> Array.isEmpty |> not then verbosefn "  - direct packages: %A" directPackages
         let usedPackages = new HashSet<_>()
         let usedSourceFiles = new HashSet<_>()
 
@@ -110,12 +111,12 @@ let Install(regenerate, force, hard, dependenciesFilename) =
             |> Map.ofArray
 
         let rec addPackage (name:string) =
-            if name.ToLower().StartsWith "file:" then
+            let identity = name.ToLower()
+            if identity.StartsWith "file:" then
                 let sourceFile = name.Split(':').[1]
                 usedSourceFiles.Add sourceFile |> ignore
             else
-                let name = name.ToLower()
-                match allPackages |> Map.tryFind name with
+                match allPackages |> Map.tryFind identity with
                 | Some package ->
                     if usedPackages.Add name then
                         if not lockFile.Strict then
@@ -126,6 +127,8 @@ let Install(regenerate, force, hard, dependenciesFilename) =
         directPackages
         |> Array.iter addPackage
         
+        if usedPackages.Count > 0 then verbosefn "  - all packages: %A" (usedPackages |> Seq.toArray)
+
         project.UpdateReferences(extractedPackages,usedPackages,hard)
 
         lockFile.SourceFiles 

@@ -17,7 +17,7 @@ type private InstallInfo = {
 module private InstallRules = 
     let groupDLLs (usedPackages : HashSet<string>) extracted projectPath = 
         [ for (package:ResolvedPackage), libraries in extracted do
-              if usedPackages.Contains(package.Name.ToLower()) then 
+              if usedPackages.Contains(package.Name) then 
                   let libraries = libraries |> Seq.toArray
                   for (lib : FileInfo) in libraries do
                       match FrameworkIdentifier.DetectFromPath lib.FullName with
