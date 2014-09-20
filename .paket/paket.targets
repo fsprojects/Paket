@@ -54,7 +54,7 @@
     </Target>
 
     <Target Name="DownloadPaket">
-      <Exec Command="$(DownloadPaketCommand)" />
+      <Exec Command="$(DownloadPaketCommand)" Condition=" '$(DownloadPaket)' == 'true' AND !Exists('$(PaketExePath)')" />
     </Target>
 
     <Target Name="RestorePackages" DependsOnTargets="CheckPrerequisites">
