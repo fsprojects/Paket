@@ -47,10 +47,10 @@
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '54', 54)" onmouseover="showTip(event, '54', 54)">
+          <code onmouseout="hideTip(event, '55', 55)" onmouseover="showTip(event, '55', 55)">
             new(strictMode, packages, remoteFiles)
           </code>
-          <div class="tip" id="54">
+          <div class="tip" id="55">
             <strong>Signature:</strong> (strictMode:bool * packages:UnresolvedPackage list * remoteFiles:SourceFile list) -&gt; DependenciesFile<br />
                       </div>
         </td>
@@ -73,24 +73,6 @@
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '60', 60)" onmouseover="showTip(event, '60', 60)">
-            DirectDependencies
-          </code>
-          <div class="tip" id="60">
-            <strong>Signature:</strong> Map&lt;string,VersionRange&gt;<br />
-                      </div>
-        </td>
-        <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket/DependenciesFile.fs#L107-107" class="github-link">
-              <img src="../content/img/github.png" class="normal" />
-              <img src="../content/img/github-blue.png" class="hover" />
-            </a>
-          
-        </td>
-      </tr>
-      <tr>
-        <td class="member-name">
-
           <code onmouseout="hideTip(event, '62', 62)" onmouseover="showTip(event, '62', 62)">
             DirectDependencies
           </code>
@@ -110,14 +92,14 @@
         <td class="member-name">
 
           <code onmouseout="hideTip(event, '63', 63)" onmouseover="showTip(event, '63', 63)">
-            Packages
+            DirectDependencies
           </code>
           <div class="tip" id="63">
-            <strong>Signature:</strong> UnresolvedPackage list<br />
+            <strong>Signature:</strong> Map&lt;string,VersionRange&gt;<br />
                       </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket/DependenciesFile.fs#L108-108" class="github-link">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket/DependenciesFile.fs#L107-107" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -146,14 +128,14 @@
         <td class="member-name">
 
           <code onmouseout="hideTip(event, '65', 65)" onmouseover="showTip(event, '65', 65)">
-            RemoteFiles
+            Packages
           </code>
           <div class="tip" id="65">
-            <strong>Signature:</strong> SourceFile list<br />
+            <strong>Signature:</strong> UnresolvedPackage list<br />
                       </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket/DependenciesFile.fs#L109-109" class="github-link">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket/DependenciesFile.fs#L108-108" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -182,14 +164,14 @@
         <td class="member-name">
 
           <code onmouseout="hideTip(event, '67', 67)" onmouseover="showTip(event, '67', 67)">
-            Resolve(force, discovery)
+            RemoteFiles
           </code>
           <div class="tip" id="67">
-            <strong>Signature:</strong> (force:bool * discovery:IDiscovery) -&gt; Map&lt;string,ResolvedDependency&gt;<br />
+            <strong>Signature:</strong> SourceFile list<br />
                       </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket/DependenciesFile.fs#L111-111" class="github-link">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket/DependenciesFile.fs#L109-109" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -200,14 +182,14 @@
         <td class="member-name">
 
           <code onmouseout="hideTip(event, '68', 68)" onmouseover="showTip(event, '68', 68)">
-            Strict
+            Resolve(force, discovery)
           </code>
           <div class="tip" id="68">
-            <strong>Signature:</strong> bool<br />
+            <strong>Signature:</strong> (force:bool * discovery:IDiscovery) -&gt; Map&lt;string,ResolvedDependency&gt;<br />
                       </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket/DependenciesFile.fs#L110-110" class="github-link">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket/DependenciesFile.fs#L111-111" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -232,6 +214,24 @@
           
         </td>
       </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '70', 70)" onmouseover="showTip(event, '70', 70)">
+            Strict
+          </code>
+          <div class="tip" id="70">
+            <strong>Signature:</strong> bool<br />
+                      </div>
+        </td>
+        <td class="xmldoc">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket/DependenciesFile.fs#L110-110" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          
+        </td>
+      </tr>
     </tbody>
   </table>
   <h3>Static members</h3>
@@ -243,10 +243,10 @@
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '80', 80)" onmouseover="showTip(event, '80', 80)">
+          <code onmouseout="hideTip(event, '81', 81)" onmouseover="showTip(event, '81', 81)">
             FromCode(code)
           </code>
-          <div class="tip" id="80">
+          <div class="tip" id="81">
             <strong>Signature:</strong> code:string -&gt; DependenciesFile<br />
                       </div>
         </td>
@@ -261,10 +261,10 @@
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '81', 81)" onmouseover="showTip(event, '81', 81)">
+          <code onmouseout="hideTip(event, '82', 82)" onmouseover="showTip(event, '82', 82)">
             ReadFromFile(fileName)
           </code>
-          <div class="tip" id="81">
+          <div class="tip" id="82">
             <strong>Signature:</strong> fileName:string -&gt; DependenciesFile<br />
                       </div>
         </td>
