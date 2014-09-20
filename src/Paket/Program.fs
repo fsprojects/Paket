@@ -4,6 +4,10 @@ module Paket.Program
 open System
 open Nessos.UnionArgParser
 open Paket.Logging
+open System.Diagnostics
+
+let private stopWatch = new Stopwatch()
+stopWatch.Start()
 
 type Command =
     | Install
@@ -89,7 +93,10 @@ try
         | Command.ConvertFromNuget -> NuGetConvert.ConvertFromNuget(force,installAfterConvert)
         | _ -> failwithf "no command given.%s" (parser.Usage())
         
-        tracefn "Ready."
+        let ts = stopWatch.Elapsed
+        let elapsedTime = String.Format("{0:00}.{1:00}s", ts.Seconds, ts.Milliseconds / 10)
+
+        tracefn "%s - ready." elapsedTime
     | None -> ()
 with
 | exn -> 
