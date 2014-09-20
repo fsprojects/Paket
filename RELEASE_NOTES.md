@@ -1,3 +1,6 @@
+#### 0.2.20 - 20.09.2014
+* Release paket.targets file
+
 #### 0.2.19 - 20.09.2014
 * Use VS targets
 
