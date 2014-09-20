@@ -96,7 +96,8 @@ let Install(regenerate, force, hard, dependenciesFilename) =
         |> Async.RunSynchronously
         |> Array.choose id
 
-    for proj in ProjectFile.FindAllProjects(".") do
+    for proj in ProjectFile.FindAllProjects(".") do    
+        verbosefn "Installing to %s" proj.FullName
         let directPackages = extractReferencesFromListFile proj.FullName
         let project = ProjectFile.Load proj.FullName
 

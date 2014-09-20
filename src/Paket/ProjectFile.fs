@@ -159,9 +159,8 @@ type ProjectFile =
 
     member this.UpdateReferences(extracted, usedPackages : HashSet<string>, hard) = 
         match [ for node in this.Document.SelectNodes("//ns:Project", this.Namespaces) -> node ] with
-        | [] -> ()
+        | [] -> verbosefn "%s is not a project file ==> skipping" this.FileName
         | projectNode :: _ -> 
-            verbosefn "Installing to %s" this.FileName
             this.DeletePaketNodes("Reference")
             let installInfos = InstallRules.groupDLLs usedPackages extracted this.FileName
             for dllName, libsWithSameName in installInfos do
