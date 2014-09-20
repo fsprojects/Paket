@@ -84,6 +84,7 @@
     <Compile Include="InstallProcess.fs" />
     <Compile Include="NugetConvert.fs" />
     <Compile Include="FindOutdated.fs" />
+    <Compile Include="VSIntegration.fs" />
     <Compile Include="Program.fs" />
     <None Include="paket.references" />
   </ItemGroup>
@@ -105,6 +106,7 @@
   <Target Name="AfterBuild">
   </Target>
   -->
+  <Import Project="$(SolutionDir)\.paket\paket.targets" />
   <Choose>
     <When Condition="$(TargetFrameworkIdentifier) == '.NETFramework' And $(TargetFrameworkVersion) == 'v2.0'">
       <ItemGroup>

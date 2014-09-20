@@ -1,12 +1,12 @@
 #!/bin/bash
 
-mono paket.bootstrapper.exe
+mono .paket/paket.bootstrapper.exe
 exit_code=$?
 if [ $exit_code -ne 0 ]; then
 	exit $exit_code
 fi
 
-mono paket.exe install -v
+mono .paket/paket.exe install -v
 exit_code=$?
 if [ $exit_code -ne 0 ]; then
 	exit $exit_code
