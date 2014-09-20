@@ -254,7 +254,7 @@ let DownloadPackage(url, name, sources, version, force) =
         let targetFileName = Path.Combine(CacheFolder, name + "." + version + ".nupkg")
         let targetFile = FileInfo targetFileName
         if not force && targetFile.Exists && targetFile.Length > 0L then 
-            tracefn "%s %s already downloaded" name version
+            verbosefn "%s %s already downloaded" name version
             return targetFileName
         else 
             // discover the link on the fly
@@ -291,8 +291,8 @@ let ExtractPackage(fileName, name, version, force) =
         let targetFolder = DirectoryInfo(Path.Combine("packages", name)).FullName
         let fi = FileInfo(fileName)
         let targetFile = FileInfo(Path.Combine(targetFolder, fi.Name))
-        if not force && targetFile.Exists then 
-            tracefn "%s %s already extracted" name version
+        if not force && targetFile.Exists then           
+            verbosefn "%s %s already extracted" name version
             return targetFolder
         else 
             CleanDir targetFolder

@@ -2,6 +2,8 @@
 
 open System
 
+let mutable verbose = false
+
 /// [omit]
 let monitor = new Object()
 
@@ -10,6 +12,14 @@ let trace (s : string) = lock monitor (fun () -> printfn "%s" s)
 
 /// [omit]
 let tracefn fmt = Printf.ksprintf trace fmt
+
+/// [omit]
+let traceVerbose (s : string) =
+    if verbose then
+        lock monitor (fun () -> printfn "%s" s)
+
+/// [omit]
+let verbosefn fmt = Printf.ksprintf traceVerbose fmt
 
 /// [omit]
 let traceColored color (s: string) = 

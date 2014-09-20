@@ -46,7 +46,7 @@ with
 
 let parser = UnionArgParser.Create<CLIArguments>("USAGE: paket [install|update|outdated|convert-from-nuget] ... options")
  
-let results,verbose =
+let results =
     try
         let results = parser.Parse()
         let command =
@@ -56,11 +56,14 @@ let results,verbose =
             elif results.Contains <@ CLIArguments.ConvertFromNuget @> then Command.ConvertFromNuget
             elif results.Contains <@ CLIArguments.InitAutoRestore @> then Command.InitAutoRestore
             else Command.Unknown
-        Some(command,results),results.Contains <@ CLIArguments.Verbose @>
+        if results.Contains <@ CLIArguments.Verbose @> then
+            verbose <- true
+
+        Some(command,results)
     with
     | _ ->
         tracefn "%s %s%s" (String.Join(" ",Environment.GetCommandLineArgs())) Environment.NewLine (parser.Usage())
-        None,false
+        None
 
 try
     match results with
