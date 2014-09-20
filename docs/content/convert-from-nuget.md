@@ -18,7 +18,7 @@ Paket can assist you with the conversion. The `convert-from-nuget` command:
 3. If you use NuGet automatic package restore and have directory `.nuget` with `nuget.targets` inside, then appropriate entries in all project files will be removed ([read more](http://docs.nuget.org/docs/workflows/migrating-to-automatic-package-restore#If_you_are_not_using_TFS)), 
 `nuget.targets` file will be removed and the [paket init-auto-restore](paket-init-auto-restore.html) command will be invoked.
 4. Unless `--no-install` option is given, the [paket install](paket-install.html) process with the `--hard` flag will be executed. This will analyze the dependencies, generate a [`paket.lock` file](lock-file.html) and remove all the old package references from your project files and install new references in Paket's syntax.
-5. You can specify `--force` option if you already use Paket, but still have remaining NuGet `packages.config` files.
+5. If you specify `--force`, the conversion will attempt to infer additional dependencies from newly added / previously unprocessed `packages.config` files and add them to the end of an existing `paket.dependencies` and `paket.references` files.
 
 <div id="syntax"></div>
 
