@@ -34,7 +34,7 @@ let ``should analyze graph and report conflict``() =
         FromPackage { Defining = { defaultPackage with Name = "C"; VersionRange = VersionRange.Exactly "2.4" }
                       Referenced = { defaultPackage with Name = "D"; VersionRange = VersionRange.Exactly "1.6" } }
 
-    resolved.["d"] |> shouldEqual (ResolvedDependency.Conflict conflict)
+    resolved.["D"] |> shouldEqual (ResolvedDependency.Conflict conflict)
     getVersion resolved.["E"] |> shouldEqual "4.3"    
     getVersion resolved.["F"] |> shouldEqual "1.2"
     
@@ -59,4 +59,4 @@ let ``should analyze graph2 and report conflict``() =
                       Referenced = { defaultPackage with Name = "D"; VersionRange = VersionRange.Between("1.4", "1.5") } },
         FromPackage { Defining = { defaultPackage with Name = "C"; VersionRange = VersionRange.Exactly "2.4" }
                       Referenced = { defaultPackage with Name = "D"; VersionRange = VersionRange.Between("1.6", "1.7") } }
-    resolved.["d"] |> shouldEqual (ResolvedDependency.Conflict conflict)
+    resolved.["D"] |> shouldEqual (ResolvedDependency.Conflict conflict)
