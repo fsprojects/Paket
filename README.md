@@ -38,7 +38,7 @@ Fore more reasons see the [FAQs](http://fsprojects.github.io/Paket/faq.html).
  [4]: https://github.com/fsprojects/Paket/issues
  [5]: http://twitter.com/PaketManager
 
-## Build the project
+## Build status
 
 |  |  BuildScript | Status of last build |
 | :------ | :------: | :------: |
@@ -48,15 +48,12 @@ Fore more reasons see the [FAQs](http://fsprojects.github.io/Paket/faq.html).
 ## Quick contributing guide
 
  - Fork and clone locally.
- - To build the solution, run the ```build.cmd``` (Windows) or ```build.sh``` (Mono). This will:
-	- download all dependencies using Paket
-	- build Paket and the tests
-	- run all tests
+ - Build the solution with Visual Studion or run `build.sh` on Mono.
  - Create a topic specific branch in git. Add a nice feature in the code. Do not forget to add tests.
- - Run the build to make sure everything still passes.
+ - Run the `build.bat (`build.sh` on Mono) to make sure all tests are still passing.
  - Send a Pull Request.
 
-If you want to contribute to the [docs][2] then please send a pull request to the markdown files in `/docs/content`.
+If you want to contribute to the [docs][2] then please modify the markdown files in `/docs/content` and send a pull request.
 
 ## License
 
