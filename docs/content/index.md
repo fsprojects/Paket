@@ -11,18 +11,6 @@ It enables precise and predictable control over what packages the projects withi
 
 Paket is available for [download from GitHub.com](https://github.com/fsprojects/Paket/releases/latest).
 
-<div class="row">
-  <div class="span1"></div>
-  <div class="span6">
-    <div class="well well-small" id="nuget">
-      Paket is available <a href="https://nuget.org/packages/Paket">on NuGet</a>.
-      To install the tool, run the following command in the <a href="http://docs.nuget.org/docs/start-here/using-the-package-manager-console">Package Manager Console</a>:
-      <pre>PM> Install-Package Paket</pre>
-    </div>
-  </div>
-  <div class="span1"></div>
-</div>
-
 If you are already using NuGet for package restore in your solution then you can learn about the upgrade process in the [convert from NuGet](convert-from-nuget.html) section.
 
 [![NuGet Status](http://img.shields.io/nuget/v/Paket.svg?style=flat)](https://www.nuget.org/packages/Paket/)
