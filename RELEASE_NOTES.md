@@ -1,5 +1,8 @@
+#### 0.2.17 - 20.09.2014
+* Fix paket outdated
+
 #### 0.2.16 - 20.09.2014
-*Remove nuget targets on convert-from-nuget - https://github.com/fsprojects/Paket/pull/127
+* Remove nuget targets on convert-from-nuget - https://github.com/fsprojects/Paket/pull/127
 
 #### 0.2.15 - 19.09.2014
 * Dogfooding without NuGet.exe

@@ -2,7 +2,6 @@
 // FAKE build script
 // --------------------------------------------------------------------------------------
 
-#r @"packages/FAKE/tools/NuGet.Core.dll"
 #r @"packages/Octokit/lib/net45/Octokit.dll"
 #r @"packages/FAKE/tools/FakeLib.dll"
 open Fake

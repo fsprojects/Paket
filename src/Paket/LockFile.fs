@@ -19,6 +19,7 @@ let extractErrors (resolved : PackageResolution) =
         |> Seq.map (fun x ->
             match x.Value with
             | Resolved _ -> ""
+            | ResolvedDependency.ResolvedConflict(c1,c2) -> ""
             | Conflict(c1,c2) ->
                 let d1 = 
                     match c1 with

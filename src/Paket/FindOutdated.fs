@@ -13,13 +13,18 @@ let FindOutdated(dependenciesFile) =
     let lockFile  =
         if lockFile.Exists then LockFile.LockFile.Parse(File.ReadAllLines lockFile.FullName) else LockFile.LockFile(false,[],[])
 
-    [for p in lockFile.ResolvedPackages do
-        match newPackages.[p.Name] with
-        | Resolved newVersion -> 
-            if p.Version <> newVersion.Version then 
-                yield p.Name,p.Version,newVersion.Version
+    let errors = LockFile.extractErrors newPackages
 
-        | Conflict(_) -> failwith "version conflict handling not implemented" ]
+    if errors <> "" then
+        traceError errors
+        []
+    else
+        [for p in lockFile.ResolvedPackages do
+            match newPackages.[p.Name] with
+            | Resolved newVersion -> 
+                if p.Version <> newVersion.Version then 
+                    yield p.Name,p.Version,newVersion.Version        
+            | _ -> () ]
 
 /// Prints all outdated packages.
 let ListOutdated(packageFile) = 
