@@ -34,7 +34,7 @@
           
 <h1><a name="What-is-Paket" class="anchor" href="#What-is-Paket">What is Paket?</a></h1>
 
-<p>Paket is a dependency manager for .NET and <a href="http://www.mono-project.com/">Mono</a> projects, which is designed to work well with <a href="https://www.nuget.org/">NuGet</a> packages and also allows to <a href="github_dependencies.html">reference files directly from GitHub repositories</a>.
+<p>Paket is a dependency manager for .NET and <a href="http://www.mono-project.com/">Mono</a> projects, which is designed to work well with <a href="https://www.nuget.org/">NuGet</a> packages and also allows to <a href="github-dependencies.html">reference files directly from GitHub repositories</a>.
 It enables precise and predictable control over what packages the projects within your application reference. More details are in the <a href="faq.html">FAQ</a>.</p>
 
 <h2><a name="How-to-get-Paket" class="anchor" href="#How-to-get-Paket">How to get Paket</a></h2>
@@ -53,13 +53,13 @@ It enables precise and predictable control over what packages the projects withi
   <div class="span1"></div>
 </div>
 
-<p>If you are already using NuGet for package restore in your solution then you can learn about the upgrade process in the <a href="convert_from_nuget.html">convert from NuGet</a> section.</p>
+<p>If you are already using NuGet for package restore in your solution then you can learn about the upgrade process in the <a href="convert-from-nuget.html">convert from NuGet</a> section.</p>
 
 <p><a href="https://www.nuget.org/packages/Paket/"><img src="http://img.shields.io/nuget/v/Paket.svg?style=flat" alt="NuGet Status" /></a></p>
 
 <h2><a name="Getting-Started" class="anchor" href="#Getting-Started">Getting Started</a></h2>
 
-<p>Specify the version rules of all dependencies used in your application in a <a href="dependencies_file.html"><code>paket.dependencies</code> file</a> in your project's root:</p>
+<p>Specify the version rules of all dependencies used in your application in a <a href="dependencies-file.html"><code>paket.dependencies</code> file</a> in your project's root:</p>
 
 <table class="pre"><tr><td class="lines"><pre class="fssnip">
 <span class="l">1: </span>
@@ -81,12 +81,12 @@ It enables precise and predictable control over what packages the projects withi
 
 <table class="pre"><tr><td><pre lang="batchfile">$ paket install</pre></td></tr></table>
 
-<p>The <a href="paket_install.html"><code>paket install</code> command</a> will analyze your <a href="dependencies_file.html"><code>paket.dependencies</code> file</a> and generate a <a href="lock_file.html"><code>paket.lock</code> file</a> alongside it.
+<p>The <a href="paket-install.html"><code>paket install</code> command</a> will analyze your <a href="dependencies-file.html"><code>paket.dependencies</code> file</a> and generate a <a href="lock-file.html"><code>paket.lock</code> file</a> alongside it.
 If the lock file already exists, it will not be regenerated.</p>
 
-<p>You may have <a href="references_files.html"><code>paket.references</code> files</a> next to your Visual Studio projects to have Paket automatically add references for the packages noted in that file.</p>
+<p>You may have <a href="references-files.html"><code>paket.references</code> files</a> next to your Visual Studio projects to have Paket automatically add references for the packages noted in that file.</p>
 
-<p>All of the files involved (<a href="dependencies_file.html"><code>paket.dependencies</code></a>, <a href="lock_file.html"><code>paket.lock</code></a> and <a href="references_files.html"><code>paket.references</code></a>) should be committed to your version control system.</p>
+<p>All of the files involved (<a href="dependencies-file.html"><code>paket.dependencies</code></a>, <a href="lock-file.html"><code>paket.lock</code></a> and <a href="references-files.html"><code>paket.references</code></a>) should be committed to your version control system.</p>
 
 <p>Determine if there are package updates available:</p>
 
@@ -96,7 +96,7 @@ If the lock file already exists, it will not be regenerated.</p>
 
 <table class="pre"><tr><td><pre lang="batchfile">$ paket update</pre></td></tr></table>
 
-<p>The <a href="paket_update.html"><code>paket update</code> command</a> will analyze your <a href="dependencies_file.html"><code>paket.dependencies</code> file</a>, and update the <a href="lock_file.html"><code>paket.lock</code> file</a>.</p>
+<p>The <a href="paket-update.html"><code>paket update</code> command</a> will analyze your <a href="dependencies-file.html"><code>paket.dependencies</code> file</a>, and update the <a href="lock-file.html"><code>paket.lock</code> file</a>.</p>
 
 <h2><a name="Contributing-and-copyright" class="anchor" href="#Contributing-and-copyright">Contributing and copyright</a></h2>
 
@@ -128,20 +128,20 @@ redistribution for both commercial and non-commercial purposes. For more informa
 
             <li class="nav-header">Documentation</li>
             <li><a href="/Paket/faq.html">FAQ</a></li>
-            <li><a href="/Paket/dependencies_file.html">paket.dependencies</a></li>
-            <li><a href="/Paket/lock_file.html">paket.lock</a></li>
-            <li><a href="/Paket/references_files.html">paket.references</a></li>
+            <li><a href="/Paket/dependencies-file.html">paket.dependencies</a></li>
+            <li><a href="/Paket/lock-file.html">paket.lock</a></li>
+            <li><a href="/Paket/references-files.html">paket.references</a></li>
             <li class="divider"></li>
-            <li><a href="/Paket/nuget_dependencies.html">NuGet dependencies</a></li>
-            <li><a href="/Paket/github_dependencies.html">GitHub dependencies</a></li>
+            <li><a href="/Paket/nuget-dependencies.html">NuGet dependencies</a></li>
+            <li><a href="/Paket/github-dependencies.html">GitHub dependencies</a></li>
             <li class="divider"></li>
             <li><a href="/Paket/reference/index.html">API Reference</a></li>
 
             <li class="nav-header">Paket commands</li>
-            <li><a href="/Paket/paket_install.html">paket install</a></li>
+            <li><a href="/Paket/paket-install.html">paket install</a></li>
             <li><a href="/Paket/paket_outdated.html">paket outdated</a></li>
-            <li><a href="/Paket/paket_update.html">paket update</a></li>
-            <li><a href="/Paket/convert_from_nuget.html">paket convert-from-nuget</a></li>            
+            <li><a href="/Paket/paket-update.html">paket update</a></li>
+            <li><a href="/Paket/convert-from-nuget.html">paket convert-from-nuget</a></li>            
           </ul>
         </div>
       </div>

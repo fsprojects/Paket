@@ -34,7 +34,7 @@
           
 <h1><a name="The-paket-lock-file" class="anchor" href="#The-paket-lock-file">The paket.lock file</a></h1>
 
-<p>Consider the following <a href="dependencies_file.html"><code>paket.dependencies</code></a> file:</p>
+<p>Consider the following <a href="dependencies-file.html"><code>paket.dependencies</code></a> file:</p>
 
 <table class="pre"><tr><td class="lines"><pre class="fssnip">
 <span class="l">1: </span>
@@ -52,7 +52,7 @@
 </tr>
 </table>
 
-<p>Here we <a href="dependencies_file.html">specify dependencies</a> on the default NuGet feed's <a href="https://www.nuget.org/packages/Castle.Windsor-log4net/"><code>Castle.Windsor-log4net</code></a> and <a href="https://www.nuget.org/packages/Rx-Main/"><code>Rx-Main</code></a> packages; both these packages have dependencies on further NuGet packages.</p>
+<p>Here we <a href="dependencies-file.html">specify dependencies</a> on the default NuGet feed's <a href="https://www.nuget.org/packages/Castle.Windsor-log4net/"><code>Castle.Windsor-log4net</code></a> and <a href="https://www.nuget.org/packages/Rx-Main/"><code>Rx-Main</code></a> packages; both these packages have dependencies on further NuGet packages.</p>
 
 <p>The <code>paket.lock</code> file records the concrete dependency resolution of all direct <em>and indirect</em> dependencies of your project:</p>
 
@@ -87,16 +87,16 @@
       Rx-Core (&gt;= 2.2.5)
     log4net (1.2.10)</pre></td></tr></table>
 
-<p>If the <code>paket.lock</code> file is not present when <a href="paket_install.html">paket install</a> is requested, it will be generated. Subsequent runs of <a href="paket_install.html">paket install</a> will not reanalyze the <code>paket.dependencies</code> file or touch <code>paket.lock</code>.</p>
+<p>If the <code>paket.lock</code> file is not present when <a href="paket-install.html">paket install</a> is requested, it will be generated. Subsequent runs of <a href="paket-install.html">paket install</a> will not reanalyze the <code>paket.dependencies</code> file or touch <code>paket.lock</code>.</p>
 
-<p>All changes after the initial generation will be as a result of <a href="paket_install.html"><code>paket install</code></a> or <a href="paket_update.html">paket update</a> commands.</p>
+<p>All changes after the initial generation will be as a result of <a href="paket-install.html"><code>paket install</code></a> or <a href="paket-update.html">paket update</a> commands.</p>
 
-<p>As a result, committing the <code>paket.lock</code> file to your version control system guarantees that other developers and/or build servers will always end up with a reliable and consistent set of packages regardless of where or when a <a href="paket_install.html">paket install</a> occurs.
-When you run <a href="paket_install.html"><code>paket install</code></a> and the <code>paket.lock</code> file is not present, it will be generated. Subsequent runs of <a href="paket_install.html"><code>paket install</code></a> will not reanalyze the <code>paket.dependencies</code> file nor touch <code>paket.lock</code>.</p>
+<p>As a result, committing the <code>paket.lock</code> file to your version control system guarantees that other developers and/or build servers will always end up with a reliable and consistent set of packages regardless of where or when a <a href="paket-install.html">paket install</a> occurs.
+When you run <a href="paket-install.html"><code>paket install</code></a> and the <code>paket.lock</code> file is not present, it will be generated. Subsequent runs of <a href="paket-install.html"><code>paket install</code></a> will not reanalyze the <code>paket.dependencies</code> file nor touch <code>paket.lock</code>.</p>
 
-<p>If you make changes to <a href="dependencies_file.html"><code>paket.dependencies</code></a> or you want Paket to check for newer versions of the direct and indirect dependencies as specified in <a href="dependencies_file.html"><code>paket.dependencies</code></a>, run <a href="paket_update.html"><code>paket update</code></a>.</p>
+<p>If you make changes to <a href="dependencies-file.html"><code>paket.dependencies</code></a> or you want Paket to check for newer versions of the direct and indirect dependencies as specified in <a href="dependencies-file.html"><code>paket.dependencies</code></a>, run <a href="paket-update.html"><code>paket update</code></a>.</p>
 
-<p>As a result, committing the <code>paket.lock</code> file to your version control system guarantees that other developers and/or build servers will always end up with a reliable and consistent set of packages regardless of where or when <a href="paket_install.html"><code>paket install</code></a> is executed.</p>
+<p>As a result, committing the <code>paket.lock</code> file to your version control system guarantees that other developers and/or build servers will always end up with a reliable and consistent set of packages regardless of where or when <a href="paket-install.html"><code>paket install</code></a> is executed.</p>
 
 
         </div>
@@ -114,20 +114,20 @@ When you run <a href="paket_install.html"><code>paket install</code></a> and the
 
             <li class="nav-header">Documentation</li>
             <li><a href="/Paket/faq.html">FAQ</a></li>
-            <li><a href="/Paket/dependencies_file.html">paket.dependencies</a></li>
-            <li><a href="/Paket/lock_file.html">paket.lock</a></li>
-            <li><a href="/Paket/references_files.html">paket.references</a></li>
+            <li><a href="/Paket/dependencies-file.html">paket.dependencies</a></li>
+            <li><a href="/Paket/lock-file.html">paket.lock</a></li>
+            <li><a href="/Paket/references-files.html">paket.references</a></li>
             <li class="divider"></li>
-            <li><a href="/Paket/nuget_dependencies.html">NuGet dependencies</a></li>
-            <li><a href="/Paket/github_dependencies.html">GitHub dependencies</a></li>
+            <li><a href="/Paket/nuget-dependencies.html">NuGet dependencies</a></li>
+            <li><a href="/Paket/github-dependencies.html">GitHub dependencies</a></li>
             <li class="divider"></li>
             <li><a href="/Paket/reference/index.html">API Reference</a></li>
 
             <li class="nav-header">Paket commands</li>
-            <li><a href="/Paket/paket_install.html">paket install</a></li>
+            <li><a href="/Paket/paket-install.html">paket install</a></li>
             <li><a href="/Paket/paket_outdated.html">paket outdated</a></li>
-            <li><a href="/Paket/paket_update.html">paket update</a></li>
-            <li><a href="/Paket/convert_from_nuget.html">paket convert-from-nuget</a></li>            
+            <li><a href="/Paket/paket-update.html">paket update</a></li>
+            <li><a href="/Paket/convert-from-nuget.html">paket convert-from-nuget</a></li>            
           </ul>
         </div>
       </div>

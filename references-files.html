@@ -41,7 +41,7 @@
 <p>It acts a lot like NuGet's <code>packages.config</code> files but there are some key differences:</p>
 
 <ul>
-<li>One does not specify package versions these are instead sourced from the <a href="lock_file.html"><code>paket.lock</code> file</a> (which are in turn derived from the rules contained within the <a href="dependencies_file.html"><code>paket.dependencies</code> file</a> in the course of the <em>initial</em> <a href="paket_install.html"><code>paket install</code></a> or subsequent <a href="paket_update.html"><code>paket update</code></a> commands)</li>
+<li>One does not specify package versions these are instead sourced from the <a href="lock-file.html"><code>paket.lock</code> file</a> (which are in turn derived from the rules contained within the <a href="dependencies-file.html"><code>paket.dependencies</code> file</a> in the course of the <em>initial</em> <a href="paket-install.html"><code>paket install</code></a> or subsequent <a href="paket-update.html"><code>paket update</code></a> commands)</li>
 <li>Only direct dependencies should be listed (see below, <a href="https://github.com/fsprojects/Paket/issues/38">we're currently evaluating options for other reference modes</a>)</li>
 <li>It's just a plain text file</li>
 <li>It's optional</li>
@@ -49,11 +49,11 @@
 
 <h2><a name="Location" class="anchor" href="#Location">Location</a></h2>
 
-<p>Paket looks for <code>paket.references</code> files underneath the folder where <a href="dependencies_file.html"><code>packet.dependencies</code></a> is located.</p>
+<p>Paket looks for <code>paket.references</code> files underneath the folder where <a href="dependencies-file.html"><code>packet.dependencies</code></a> is located.</p>
 
 <h2><a name="Layout" class="anchor" href="#Layout">Layout</a></h2>
 
-<p>The file whitelists any dependencies from the <a href="lock_file.html"><code>paket.lock</code></a> set that are to be referenced within the projects alongside it in a given directory:</p>
+<p>The file whitelists any dependencies from the <a href="lock-file.html"><code>paket.lock</code></a> set that are to be referenced within the projects alongside it in a given directory:</p>
 
 <table class="pre"><tr><td class="lines"><pre class="fssnip">
 <span class="l">1: </span>
@@ -71,7 +71,7 @@
 </tr>
 </table>
 
-<p>For each MSBuild project alongside a <code>paket.references</code>, <a href="paket_install.html"><code>paket install</code></a> and <a href="paket_update.html"><code>paket update</code></a> will add references to the dependencies listed in <code>paket.references</code> <em>and all their indirect dependencies</em>.</p>
+<p>For each MSBuild project alongside a <code>paket.references</code>, <a href="paket-install.html"><code>paket install</code></a> and <a href="paket-update.html"><code>paket update</code></a> will add references to the dependencies listed in <code>paket.references</code> <em>and all their indirect dependencies</em>.</p>
 
 <p>The references injected into the MSBuild project represent the complete set of rules specified within the package for each <code>lib</code> and <code>Content</code> item; each reference is <code>Condition</code>al on an MSBuild expression predicated on the project's active framework etc. This allows you to change the target version of the MSBuild project (either within Visual Studio or e.g. as part of a multi-pass build) without reinstalling dependencies or incurring an impenetrable set of diffs.</p>
 
@@ -203,20 +203,20 @@
 
             <li class="nav-header">Documentation</li>
             <li><a href="/Paket/faq.html">FAQ</a></li>
-            <li><a href="/Paket/dependencies_file.html">paket.dependencies</a></li>
-            <li><a href="/Paket/lock_file.html">paket.lock</a></li>
-            <li><a href="/Paket/references_files.html">paket.references</a></li>
+            <li><a href="/Paket/dependencies-file.html">paket.dependencies</a></li>
+            <li><a href="/Paket/lock-file.html">paket.lock</a></li>
+            <li><a href="/Paket/references-files.html">paket.references</a></li>
             <li class="divider"></li>
-            <li><a href="/Paket/nuget_dependencies.html">NuGet dependencies</a></li>
-            <li><a href="/Paket/github_dependencies.html">GitHub dependencies</a></li>
+            <li><a href="/Paket/nuget-dependencies.html">NuGet dependencies</a></li>
+            <li><a href="/Paket/github-dependencies.html">GitHub dependencies</a></li>
             <li class="divider"></li>
             <li><a href="/Paket/reference/index.html">API Reference</a></li>
 
             <li class="nav-header">Paket commands</li>
-            <li><a href="/Paket/paket_install.html">paket install</a></li>
+            <li><a href="/Paket/paket-install.html">paket install</a></li>
             <li><a href="/Paket/paket_outdated.html">paket outdated</a></li>
-            <li><a href="/Paket/paket_update.html">paket update</a></li>
-            <li><a href="/Paket/convert_from_nuget.html">paket convert-from-nuget</a></li>            
+            <li><a href="/Paket/paket-update.html">paket update</a></li>
+            <li><a href="/Paket/convert-from-nuget.html">paket convert-from-nuget</a></li>            
           </ul>
         </div>
       </div>

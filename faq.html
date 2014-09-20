@@ -40,11 +40,11 @@
 
 <p>Even more importantly: If two packages reference conflicting versions of a package, NuGet will silently take the latest version. You have no control over this process.</p>
 
-<p>Paket on the other hand maintains this information on a consistent and stable basis within the <a href="lock_file.html"><code>paket.lock</code> file</a> in the solution root. This file, together with the <a href="dependencies_file.html"><code>paket.dependencies</code> file</a> enables you to determine exactly what's happening with your dependencies.</p>
+<p>Paket on the other hand maintains this information on a consistent and stable basis within the <a href="lock-file.html"><code>paket.lock</code> file</a> in the solution root. This file, together with the <a href="dependencies-file.html"><code>paket.dependencies</code> file</a> enables you to determine exactly what's happening with your dependencies.</p>
 
 <p>The <a href="paket_outdated.html"><code>paket outdated</code> command</a> lists packages that have new versions available.</p>
 
-<p>Paket also enables one to <a href="github_dependencies.html">reference files directly from GitHub repositories</a>.</p>
+<p>Paket also enables one to <a href="github-dependencies.html">reference files directly from GitHub repositories</a>.</p>
 
 <div id="no-version"></div>
 
@@ -61,11 +61,11 @@ This makes it much easier to reference files in the package and you don't have t
 
 <p>Paket adds references to all of them, but with <code>Condition</code> attributes filtering them based on the currently selected <code>TargetFramework</code> and other relevant MSBuild properties.</p>
 
-<p>See <a href="references_files.html"><code>paket.references</code></a> for more information.</p>
+<p>See <a href="references-files.html"><code>paket.references</code></a> for more information.</p>
 
 <h2><a name="Why-does-Paket-use-a-different-package-resolution-strategy-than-NuGet" class="anchor" href="#Why-does-Paket-use-a-different-package-resolution-strategy-than-NuGet">Why does Paket use a different package resolution strategy than NuGet?</a></h2>
 
-<p>Paket tries to embrace <a href="http://semver.org/">SemVer</a> while NuGet uses a pessimistic version resolution strategy. You can prefix your version constraints with <code>!</code> if you need to use <a href="dependencies_file.html#nuget-style-dependency-resolution">NuGet compatibility</a>.</p>
+<p>Paket tries to embrace <a href="http://semver.org/">SemVer</a> while NuGet uses a pessimistic version resolution strategy. You can prefix your version constraints with <code>!</code> if you need to use <a href="dependencies-file.html#nuget-style-dependency-resolution">NuGet compatibility</a>.</p>
 
 <h2><a name="Does-Paket-run-install-ps1-scripts" class="anchor" href="#Does-Paket-run-install-ps1-scripts">Does Paket run install.ps1 scripts?</a></h2>
 
@@ -93,11 +93,11 @@ There is no way to make this work – and even NuGet.exe can't do it in command 
 
 <p>Some good news is that <a href="http://blog.nuget.org/20140711/nuget-architecture.html">the NuGet team is currently developing a faster API</a>. Paket may be able to take advantage of that in the future.</p>
 
-<p>Once the <a href="lock_file.html"><code>paket.lock</code> file</a> is written, Paket no longer needs to use the OData API any futher; as a result, <a href="paket_install.html"><code>paket install</code></a> is very fast.</p>
+<p>Once the <a href="lock-file.html"><code>paket.lock</code> file</a> is written, Paket no longer needs to use the OData API any futher; as a result, <a href="paket-install.html"><code>paket install</code></a> is very fast.</p>
 
 <h2><a name="I-m-already-using-NuGet-How-can-I-convert-to-Paket" class="anchor" href="#I-m-already-using-NuGet-How-can-I-convert-to-Paket">I'm already using NuGet. How can I convert to Paket?</a></h2>
 
-<p>The process is very easy and you can read more about it in the <a href="convert_from_nuget.html">convert from NuGet</a> section.</p>
+<p>The process is very easy and you can read more about it in the <a href="convert-from-nuget.html">convert from NuGet</a> section.</p>
 
 <h2><a name="Can-I-use-Paket-to-manage-npm-bower-whatever-dependencies" class="anchor" href="#Can-I-use-Paket-to-manage-npm-bower-whatever-dependencies">Can I use Paket to manage npm/bower/whatever dependencies?</a></h2>
 
@@ -121,20 +121,20 @@ There is no way to make this work – and even NuGet.exe can't do it in command 
 
             <li class="nav-header">Documentation</li>
             <li><a href="/Paket/faq.html">FAQ</a></li>
-            <li><a href="/Paket/dependencies_file.html">paket.dependencies</a></li>
-            <li><a href="/Paket/lock_file.html">paket.lock</a></li>
-            <li><a href="/Paket/references_files.html">paket.references</a></li>
+            <li><a href="/Paket/dependencies-file.html">paket.dependencies</a></li>
+            <li><a href="/Paket/lock-file.html">paket.lock</a></li>
+            <li><a href="/Paket/references-files.html">paket.references</a></li>
             <li class="divider"></li>
-            <li><a href="/Paket/nuget_dependencies.html">NuGet dependencies</a></li>
-            <li><a href="/Paket/github_dependencies.html">GitHub dependencies</a></li>
+            <li><a href="/Paket/nuget-dependencies.html">NuGet dependencies</a></li>
+            <li><a href="/Paket/github-dependencies.html">GitHub dependencies</a></li>
             <li class="divider"></li>
             <li><a href="/Paket/reference/index.html">API Reference</a></li>
 
             <li class="nav-header">Paket commands</li>
-            <li><a href="/Paket/paket_install.html">paket install</a></li>
+            <li><a href="/Paket/paket-install.html">paket install</a></li>
             <li><a href="/Paket/paket_outdated.html">paket outdated</a></li>
-            <li><a href="/Paket/paket_update.html">paket update</a></li>
-            <li><a href="/Paket/convert_from_nuget.html">paket convert-from-nuget</a></li>            
+            <li><a href="/Paket/paket-update.html">paket update</a></li>
+            <li><a href="/Paket/convert-from-nuget.html">paket convert-from-nuget</a></li>            
           </ul>
         </div>
       </div>
