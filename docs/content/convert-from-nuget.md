@@ -11,9 +11,16 @@ If you are already using `NuGet.exe` for package restore then it should be easy 
 <div id="automatic"></div>
 ## Automatic process
 
-Paket can assist you with the conversion. The `convert-from-nuget` command finds all `packages.config` files and converts them to [`paket.references`](references-files.html) and generates a [`paket.dependencies` file](dependencies-file.html). 
-If the `packages.config` is solution-level, then its dependencies will be written to [`paket.dependencies`](dependencies-file.html) and it will be removed.
-Afterwards it will run the [paket install](paket-install.html) process with the `--hard` flag. This will analyze the dependencies, generate a [`paket.lock` file](lock-file.html) and remove all the old package references from your project files and install new references in Paket's syntax.
+Paket can assist you with the conversion. The `convert-from-nuget` command:
+
+1. Finds all `packages.config` files and converts them to [`paket.references`](references-files.html) and generates a [`paket.dependencies` file](dependencies-file.html). 
+2. If there is a solution-level `packages.config`, then its dependencies will be written to [`paket.dependencies`](dependencies-file.html) and the file will be removed.
+3. If you use NuGet automatic package restore and have directory `.nuget` with `nuget.targets` inside, then appropriate entries in all project files will be removed ([read more](http://docs.nuget.org/docs/workflows/migrating-to-automatic-package-restore#If_you_are_not_using_TFS)), 
+`nuget.targets` file will be removed and the [paket init-auto-restore](paket-init-auto-restore.html) command will be invoked.
+4. Unless `--no-install` option is given, the [paket install](paket-install.html) process with the `--hard` flag will be executed. This will analyze the dependencies, generate a [`paket.lock` file](lock-file.html) and remove all the old package references from your project files and install new references in Paket's syntax.
+5. You can specify `--force` option if you already use Paket, but still have remaining NuGet `packages.config` files.
+
+<div id="syntax"></div>
 
     [lang=batchfile]
     $ paket convert-from-nuget [--force] [--no-install]
