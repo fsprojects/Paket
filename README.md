@@ -179,7 +179,7 @@ After initialization, you can
     <tr>
       <td><a href=".travis.yml">.travis.yml</a></td>
       <td><p>Specifies an automated continuous integration (CI) build-and-test on OSX using Travis. Enable your CI build at 
-      <a href="http://travis-ci.org">travis-ci.org</a> by logging on there wih your GitHub account and 
+      <a href="http://travis-ci.org">travis-ci.org</a> by logging on there with your GitHub account and 
       activating the project.  If you enable this, then every pull request, commit, branch and tag 
       of your project on GitHub will be built automatically. Builds of open source projects are free.  The default
       build is on Mac OSX (you can also specify Linux by changing the default language).  </p></td>
@@ -211,7 +211,7 @@ After initialization, you can
           as the name of a NuGet package, and for locating a directory under <a href="../../tree/master/src">src</a>.</dd>
           <dt><code>summary</code></dt>
           <dd>A short summary of your project, used as the description in AssemblyInfo. 
-          It also provides as a short summary for your NuGet package.</dd>
+          It also provides a short summary for your NuGet package.</dd>
           <dt><code>description</code></dt>
           <dd>A longer description of the project used as a description for your NuGet package 
           <em>(Note: line breaks are automatically cleaned up)</em>.</dd>
@@ -247,7 +247,7 @@ After initialization, you can
       <td>
         <p>This file details verion-by-version changes in your code.
         It is used for documentation and to populate nuget package details.
-        It uses a proper subset of MarkDown, with a few simple conventions.
+        It uses a proper subset of Markdown, with a few simple conventions.
         More details of this format may be found 
         in the documenation for <a href="http://fsharp.github.io/FAKE/apidocs/fake-releasenoteshelper.html" target="_blank">F# Make's ReleaseNotesHelper</a>.</p>
       </td>
@@ -260,7 +260,7 @@ After initialization, you can
       <td><a href="docs/content/index.fsx">docs/content/index.fsx</a></td>
       <td><p>Use this file to provide a narrative overview of your project.
       You can write actual, executable F# code in this file. Additionally,
-      you may use MarkDown comments. As part of the build process, this file
+      you may use Markdown comments. As part of the build process, this file
       (along with any other <code>*.fsx</code> or <code>*.md</code> files in the <a href="../../tree/master/docs/content">docs/content</a> directory) will be
       processed into HTML documentation. There is also a build target to deploy
       the generated documentation to a GitHub pages branch (assuming 
