@@ -10,10 +10,10 @@ There is no way to tell which packages are only indirect dependencies.
 
 Even more importantly: If two packages reference conflicting versions of a package, NuGet will silently take the latest version. You have no control over this process.
 
-Paket on the other hand maintains this information on a consistent and stable basis within the paket.lock file in the solution root.
-This file, together with the paket.dependencies file enables you to determine exactly what's happening with your dependencies.
+Paket on the other hand maintains this information on a consistent and stable basis within the [`paket.lock` file](http://fsprojects.github.io/Paket/lock_file.html) in the solution root.
+This file, together with the [`paket.dependencies` file](http://fsprojects.github.io/Paket/dependencies_file.html) enables you to determine exactly what's happening with your dependencies.
 
-Paket also enables you to reference files directly from GitHub repositories.
+Paket also enables you to [reference files directly from GitHub](http://fsprojects.github.io/Paket/github_dependencies.html) repositories.
 
 Fore more reasons see the [FAQs](http://fsprojects.github.io/Paket/faq.html).
 
@@ -26,17 +26,10 @@ Fore more reasons see the [FAQs](http://fsprojects.github.io/Paket/faq.html).
  
 [![NuGet Status](http://img.shields.io/nuget/v/Paket.svg?style=flat)](https://www.nuget.org/packages/Paket/)
 
- [1]: https://github.com/fsprojects/Paket/
- [2]: http://fsprojects.github.io/Paket/
- [3]: https://github.com/fsprojects/Paket/releases/latest
-
 ## Troubleshooting and support
 
  - Found a bug or missing a feature? Feed the [issue tracker][4]
  - Announcements and related miscellanea through Twitter ([@PaketManager][5])
- 
- [4]: https://github.com/fsprojects/Paket/issues
- [5]: http://twitter.com/PaketManager
 
 ## Build status
 
@@ -59,4 +52,9 @@ If you want to contribute to the [docs][2] then please modify the markdown files
 
 The [MIT license][6]
 
+ [1]: https://github.com/fsprojects/Paket/
+ [2]: http://fsprojects.github.io/Paket/
+ [3]: https://github.com/fsprojects/Paket/releases/latest
+ [4]: https://github.com/fsprojects/Paket/issues
+ [5]: http://twitter.com/PaketManager
  [6]: https://github.com/fsprojects/Paket/blob/master/LICENSE.txt
