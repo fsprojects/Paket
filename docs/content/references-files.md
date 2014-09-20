@@ -6,25 +6,25 @@ A repository may contain zero or more `paket.references` files.
 
 It acts a lot like NuGet's `packages.config` files but there are some key differences:
 
-- One does not specify package versions these are instead sourced from the [`paket.lock` file](lock_file.html) (which are in turn derived from the rules contained within the [`paket.dependencies` file](dependencies_file.html) in the course of the *initial* [`paket install`](paket_install.html) or subsequent [`paket update`](paket_update.html) commands)
+- One does not specify package versions these are instead sourced from the [`paket.lock` file](lock-file.html) (which are in turn derived from the rules contained within the [`paket.dependencies` file](dependencies-file.html) in the course of the *initial* [`paket install`](paket-install.html) or subsequent [`paket update`](paket-update.html) commands)
 - Only direct dependencies should be listed (see below, [we're currently evaluating options for other reference modes](https://github.com/fsprojects/Paket/issues/38))
 - It's just a plain text file
 - It's optional
 
 ## Location
 
-Paket looks for `paket.references` files underneath the folder where [`packet.dependencies`](dependencies_file.html) is located.
+Paket looks for `paket.references` files underneath the folder where [`packet.dependencies`](dependencies-file.html) is located.
 
 ## Layout
 
-The file whitelists any dependencies from the [`paket.lock`](lock_file.html) set that are to be referenced within the projects alongside it in a given directory:
+The file whitelists any dependencies from the [`paket.lock`](lock-file.html) set that are to be referenced within the projects alongside it in a given directory:
 
     Newtonsoft.Json
     UnionArgParser
     DotNetZip
     RestSharp
 
-For each MSBuild project alongside a `paket.references`, [`paket install`](paket_install.html) and [`paket update`](paket_update.html) will add references to the dependencies listed in `paket.references` *and all their indirect dependencies*.
+For each MSBuild project alongside a `paket.references`, [`paket install`](paket-install.html) and [`paket update`](paket-update.html) will add references to the dependencies listed in `paket.references` *and all their indirect dependencies*.
 
 The references injected into the MSBuild project represent the complete set of rules specified within the package for each `lib` and `Content` item; each reference is `Condition`al on an MSBuild expression predicated on the project's active framework etc. This allows you to change the target version of the MSBuild project (either within Visual Studio or e.g. as part of a multi-pass build) without reinstalling dependencies or incurring an impenetrable set of diffs.
 

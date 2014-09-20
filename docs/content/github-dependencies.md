@@ -4,11 +4,11 @@ Paket allows to link files from [github.com](http://www.github.com) into your pr
 
 ## Referencing a single file
 
-You can reference a single file from [github.com](http://www.github.com) simply by specifying the source repository and the file name in the [`paket.dependencies` file](dependencies_file.html):
+You can reference a single file from [github.com](http://www.github.com) simply by specifying the source repository and the file name in the [`paket.dependencies` file](dependencies-file.html):
 
     github forki/FsUnit FsUnit.fs
 
-If you run the [`paket update` command](paket_update.html), then it will add a new section to your [`paket.lock` file](lock_file.html):
+If you run the [`paket update` command](paket-update.html), then it will add a new section to your [`paket.lock` file](lock-file.html):
 
     [lang=batchfile]
 	GITHUB
@@ -18,7 +18,7 @@ If you run the [`paket update` command](paket_update.html), then it will add a n
 
 As you can see the file is pinned to a concrete commit. This allows you to reliably use the same file version in succeeding builds.
 
-If you want to reference the file in one of your project files then add an entry to the project's [`paket.references` file.](references_files.html):
+If you want to reference the file in one of your project files then add an entry to the project's [`paket.references` file.](references-files.html):
 
 	[lang=batchfile]
 	File:FsUnit.fs

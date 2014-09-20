@@ -8,7 +8,7 @@ Sources are defined by the `source "<address>"` statement.
 
 Paket supports multiple sources per `paket.dependencies`. It's recommended to put all `source` statements at the top of `paket.dependencies`. The ordering of sources is important, since the first `source` a [dependency](#package-id) is found in will be the one used for download.
 
-The [`paket.lock` file](lock_file.html) will reflect the sources selected by dependency resolution.
+The [`paket.lock` file](lock-file.html) will reflect the sources selected by dependency resolution.
 
 ### NuGet feeds
 
@@ -19,7 +19,7 @@ Please note that you need to specify *all* NuGet sources, including the default 
     source http://nuget.org/api/v2      // nuget.org
     source http://myserver/nuget/api/v2 // custom feed
 
-The [paket.lock](lock_file.html) will also reflect these settings.
+The [paket.lock](lock-file.html) will also reflect these settings.
 
 ### Path sources
 
@@ -32,7 +32,7 @@ Paket supports file paths such as local directories or references to UNC shares:
 <div id="strict-mode"></div>
 ### Strict references
 
-Paket usually references all direct and indirect dependencies that are listed in your [paket.references](references_files.md) files to your project file.
+Paket usually references all direct and indirect dependencies that are listed in your [paket.references](references-files.md) files to your project file.
 With the `strict` mode it will only reference direct dependencies.
 
 	references strict

@@ -1,6 +1,6 @@
 # What is Paket?
 
-Paket is a dependency manager for .NET and [Mono][mono] projects, which is designed to work well with [NuGet][nuget] packages and also allows to [reference files directly from GitHub repositories](github_dependencies.html).
+Paket is a dependency manager for .NET and [Mono][mono] projects, which is designed to work well with [NuGet][nuget] packages and also allows to [reference files directly from GitHub repositories](github-dependencies.html).
 It enables precise and predictable control over what packages the projects within your application reference. More details are in the [FAQ](faq.html).
 
   [mono]: http://www.mono-project.com/
@@ -23,13 +23,13 @@ Paket is available for [download from GitHub.com](https://github.com/fsprojects/
   <div class="span1"></div>
 </div>
 
-If you are already using NuGet for package restore in your solution then you can learn about the upgrade process in the [convert from NuGet](convert_from_nuget.html) section.
+If you are already using NuGet for package restore in your solution then you can learn about the upgrade process in the [convert from NuGet](convert-from-nuget.html) section.
 
 [![NuGet Status](http://img.shields.io/nuget/v/Paket.svg?style=flat)](https://www.nuget.org/packages/Paket/)
 
 ## Getting Started
 
-Specify the version rules of all dependencies used in your application in a [`paket.dependencies` file](dependencies_file.html) in your project's root:
+Specify the version rules of all dependencies used in your application in a [`paket.dependencies` file](dependencies-file.html) in your project's root:
 
     source http://nuget.org/api/v2
 
@@ -41,12 +41,12 @@ Install all of the required packages from the specified sources:
     [lang=batchfile]
     $ paket install
 
-The [`paket install` command](paket_install.html) will analyze your [`paket.dependencies` file](dependencies_file.html) and generate a [`paket.lock` file](lock_file.html) alongside it.
+The [`paket install` command](paket-install.html) will analyze your [`paket.dependencies` file](dependencies-file.html) and generate a [`paket.lock` file](lock-file.html) alongside it.
 If the lock file already exists, it will not be regenerated.
 
-You may have [`paket.references` files](references_files.html) next to your Visual Studio projects to have Paket automatically add references for the packages noted in that file.
+You may have [`paket.references` files](references-files.html) next to your Visual Studio projects to have Paket automatically add references for the packages noted in that file.
 
-All of the files involved ([`paket.dependencies`](dependencies_file.html), [`paket.lock`](lock_file.html) and [`paket.references`](references_files.html)) should be committed to your version control system.
+All of the files involved ([`paket.dependencies`](dependencies-file.html), [`paket.lock`](lock-file.html) and [`paket.references`](references-files.html)) should be committed to your version control system.
 
 Determine if there are package updates available:
 
@@ -58,7 +58,7 @@ Download updated packages; update lock:
     [lang=batchfile]
     $ paket update
 
-The [`paket update` command](paket_update.html) will analyze your [`paket.dependencies` file](dependencies_file.html), and update the [`paket.lock` file](lock_file.html).
+The [`paket update` command](paket-update.html) will analyze your [`paket.dependencies` file](dependencies-file.html), and update the [`paket.lock` file](lock-file.html).
 
 Contributing and copyright
 --------------------------

@@ -6,11 +6,11 @@ NuGet does not separate out the concept of indirect dependencies; if you install
 
 Even more importantly: If two packages reference conflicting versions of a package, NuGet will silently take the latest version. You have no control over this process.
 
-Paket on the other hand maintains this information on a consistent and stable basis within the [`paket.lock` file](lock_file.html) in the solution root. This file, together with the [`paket.dependencies` file](dependencies_file.html) enables you to determine exactly what's happening with your dependencies.
+Paket on the other hand maintains this information on a consistent and stable basis within the [`paket.lock` file](lock-file.html) in the solution root. This file, together with the [`paket.dependencies` file](dependencies-file.html) enables you to determine exactly what's happening with your dependencies.
 
 The [`paket outdated` command](paket_outdated.html) lists packages that have new versions available.
 
-Paket also enables one to [reference files directly from GitHub repositories](github_dependencies.html).
+Paket also enables one to [reference files directly from GitHub repositories](github-dependencies.html).
 
 <div id="no-version"></div>
 ## NuGet puts the package version into the path. Is Paket doing the same?
@@ -26,11 +26,11 @@ However the Visual Studio tooling does not address this – it's up to you to re
 
 Paket adds references to all of them, but with `Condition` attributes filtering them based on the currently selected `TargetFramework` and other relevant MSBuild properties.
 
-See [`paket.references`](references_files.html) for more information.
+See [`paket.references`](references-files.html) for more information.
 
 ## Why does Paket use a different package resolution strategy than NuGet?
 
-Paket tries to embrace [SemVer](http://semver.org/) while NuGet uses a pessimistic version resolution strategy. You can prefix your version constraints with `!` if you need to use [NuGet compatibility](dependencies_file.html#nuget-style-dependency-resolution).
+Paket tries to embrace [SemVer](http://semver.org/) while NuGet uses a pessimistic version resolution strategy. You can prefix your version constraints with `!` if you need to use [NuGet compatibility](dependencies-file.html#nuget-style-dependency-resolution).
 
 ## Does Paket run install.ps1 scripts?
 <div id="paket-vs-powershell-install-scripts"></div>
@@ -58,11 +58,11 @@ Paket uses the NuGet OData API to discover package dependencies. Unfortunately t
 
 Some good news is that [the NuGet team is currently developing a faster API](http://blog.nuget.org/20140711/nuget-architecture.html). Paket may be able to take advantage of that in the future.
 
-Once the [`paket.lock` file](lock_file.html) is written, Paket no longer needs to use the OData API any futher; as a result, [`paket install`](paket_install.html) is very fast.
+Once the [`paket.lock` file](lock-file.html) is written, Paket no longer needs to use the OData API any futher; as a result, [`paket install`](paket-install.html) is very fast.
 
 ## I'm already using NuGet. How can I convert to Paket?
 
-The process is very easy and you can read more about it in the [convert from NuGet](convert_from_nuget.html) section.
+The process is very easy and you can read more about it in the [convert from NuGet](convert-from-nuget.html) section.
 
 ## Can I use Paket to manage npm/bower/whatever dependencies?
 

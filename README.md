@@ -58,7 +58,7 @@ The [MIT license][6]
  [4]: https://github.com/fsprojects/Paket/issues
  [5]: http://twitter.com/PaketManager
  [6]: https://github.com/fsprojects/Paket/blob/master/LICENSE.txt
- [7]: http://fsprojects.github.io/Paket/lock_file.html
- [8]: http://fsprojects.github.io/Paket/dependencies_file.html
- [9]: http://fsprojects.github.io/Paket/github_dependencies.html
+ [7]: http://fsprojects.github.io/Paket/lock-file.html
+ [8]: http://fsprojects.github.io/Paket/dependencies-file.html
+ [9]: http://fsprojects.github.io/Paket/github-dependencies.html
  [10]: http://fsprojects.github.io/Paket/faq.html

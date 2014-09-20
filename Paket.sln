@@ -25,17 +25,17 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tools", "tools", "{83F16175
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "content", "content", "{8E6D5255-776D-4B61-85F9-73C37AA1FB9A}"
 	ProjectSection(SolutionItems) = preProject
-		docs\content\convert_from_nuget.md = docs\content\convert_from_nuget.md
-		docs\content\dependencies_file.md = docs\content\dependencies_file.md
+		docs\content\convert-from-nuget.md = docs\content\convert-from-nuget.md
+		docs\content\dependencies-file.md = docs\content\dependencies-file.md
 		docs\content\faq.md = docs\content\faq.md
-		docs\content\github_dependencies.md = docs\content\github_dependencies.md
+		docs\content\github-dependencies.md = docs\content\github-dependencies.md
 		docs\content\index.md = docs\content\index.md
-		docs\content\lock_file.md = docs\content\lock_file.md
-		docs\content\nuget_dependencies.md = docs\content\nuget_dependencies.md
-		docs\content\paket_install.md = docs\content\paket_install.md
+		docs\content\lock-file.md = docs\content\lock-file.md
+		docs\content\nuget-dependencies.md = docs\content\nuget-dependencies.md
+		docs\content\paket-install.md = docs\content\paket-install.md
 		docs\content\paket_outdated.md = docs\content\paket_outdated.md
-		docs\content\paket_update.md = docs\content\paket_update.md
-		docs\content\references_files.md = docs\content\references_files.md
+		docs\content\paket-update.md = docs\content\paket-update.md
+		docs\content\references-files.md = docs\content\references-files.md
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{ED8079DD-2B06-4030-9F0F-DC548F98E1C4}"

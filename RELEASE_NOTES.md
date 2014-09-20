@@ -41,8 +41,8 @@
 * Don't clear packages folder during convert-from-nuget - our own paket might live there
 
 #### 0.2.0 - 17.09.2014
-* Allow to directly link GitHub files - http://fsprojects.github.io/Paket/github_dependencies.html
-* Automatic NuGet conversion - http://fsprojects.github.io/Paket/convert_from_nuget.html
+* Allow to directly link GitHub files - http://fsprojects.github.io/Paket/github-dependencies.html
+* Automatic NuGet conversion - http://fsprojects.github.io/Paket/convert-from-nuget.html
 * Cleaner syntax in paket.dependencies - https://github.com/fsprojects/Paket/pull/95
 * Strict mode - https://github.com/fsprojects/Paket/pull/104
 * Detecting portable profiles
