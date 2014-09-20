@@ -148,6 +148,7 @@ let Resolve(force, discovery : IDiscovery, rootDependencies:UnresolvedPackage se
                             | Resolved d -> d.Name,v
                             | _ -> name,v) }
             Map.add p.Name (Resolved cleanup) map
-        | _ ->  Map.add x.Key x.Value map
+        | ResolvedDependency.Conflict(c1,c2) ->            
+            Map.add c1.Referenced.Name x.Value map
     ) Map.empty
 
