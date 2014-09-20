@@ -64,10 +64,8 @@ let Resolve(force, discovery : IDiscovery, rootDependencies:UnresolvedPackage se
                     let resolved =
                         processed 
                         |> Map.remove resolvedName
-                        |> Map.add resolvedName (ResolvedDependency.ResolvedConflict(package',dependency))
                         
                     openDependencies
-                    |> Map.remove resolvedName
                     |> analyzeGraph resolved
                 else                    
                     openDependencies
@@ -150,9 +148,6 @@ let Resolve(force, discovery : IDiscovery, rootDependencies:UnresolvedPackage se
                             | Resolved d -> d.Name,v
                             | _ -> name,v) }
             Map.add p.Name (Resolved cleanup) map
-        | ResolvedDependency.Conflict(c1,c2) ->            
-            Map.add c1.Referenced.Name x.Value map
-        | ResolvedDependency.ResolvedConflict(c1,c2) ->
-            Map.add c1.Name x.Value map
+        | _ ->  Map.add x.Key x.Value map
     ) Map.empty
 

@@ -154,7 +154,6 @@ type IDiscovery =
 /// Represents a resolved dependency.
 type ResolvedDependency = 
     | Resolved of ResolvedPackage
-    | ResolvedConflict of ResolvedPackage * Dependency // TODO: New algorithm needs to remove this
     | Conflict of Dependency * Dependency
 
 /// Represents a complete dependency resolution.
