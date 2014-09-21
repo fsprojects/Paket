@@ -2,8 +2,9 @@
 
 open System.IO
 open Paket.LockFile
+open Logging
 
-let Simplify(lockFile : LockFile, depFile : DependenciesFile, refFiles : list<FileInfo * string[]>) = 
+let Analyze(lockFile : LockFile, depFile : DependenciesFile, refFiles : list<FileInfo * string[]>) = 
     
     let depsLookup =
         lockFile.ResolvedPackages
@@ -31,3 +32,24 @@ let Simplify(lockFile : LockFile, depFile : DependenciesFile, refFiles : list<Fi
     let refFiles' = refFiles |> List.map (fun (fi, refs) -> fi, refs |> getSimplifiedDeps id |> Seq.toArray)
 
     DependenciesFile(false, simplifiedDeps, depFile.RemoteFiles), refFiles'
+
+let Simplify () = 
+    if not <| File.Exists("paket.dependencies") then
+        failwith "paket.dependencies file not found."
+    let lockFile = LockFile.findLockfile("paket.dependencies")
+    if not <| File.Exists(lockFile.FullName) then 
+        failwith "lock file not found. Create lock file by running paket install"
+
+    let refFiles = 
+        FindAllFiles(".", "paket.references") 
+        |> Seq.map(fun f -> f, File.ReadAllLines f.FullName) 
+        |> Seq.toList
+
+    let simplifiedDepsFile, simplifiedRefFiles =
+        Analyze(LockFile.Parse (File.ReadAllLines(lockFile.FullName)), 
+                DependenciesFile.ReadFromFile("paket.dependencies"), 
+                refFiles)
+
+    for file,lines in simplifiedRefFiles do
+        File.WriteAllLines(file.FullName, lines)
+        tracefn "Simplified %s" file.FullName

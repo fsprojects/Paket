@@ -36,7 +36,7 @@ let refFiles1 = [
 
 [<Test>]
 let ``should remove one level deep indirect dependencies from dep and ref files``() = 
-    let depFile,refFiles = Simplifier.Simplify(lockFile1, depFile1, refFiles1)
+    let depFile,refFiles = Simplifier.Analyze(lockFile1, depFile1, refFiles1)
     
     depFile.Packages |> List.length |> shouldEqual [|"A";"D"|].Length
     depFile.DirectDependencies.["A"] |> shouldEqual (VersionRange.Exactly "3.3.0")
@@ -79,7 +79,7 @@ let refFiles2 = [
 
 [<Test>]
 let ``should remove all indirect dependencies from dep file recursively``() =
-    let depFile,refFiles  = Simplifier.Simplify(lockFile2, depFile2, refFiles2)
+    let depFile,refFiles  = Simplifier.Analyze(lockFile2, depFile2, refFiles2)
     
     depFile.Packages |> List.length |> shouldEqual [|"A";"C"|].Length
     depFile.DirectDependencies.["A"] |> shouldEqual (VersionRange.Exactly "1.0")
