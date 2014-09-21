@@ -83,6 +83,7 @@
     <Compile Include="DependenciesFile.fs" />
     <Compile Include="LockFile.fs" />
     <Compile Include="InstallProcess.fs" />
+    <Compile Include="AddProcess.fs" />
     <Compile Include="VSIntegration.fs" />
     <Compile Include="NugetConvert.fs" />
     <Compile Include="FindOutdated.fs" />

@@ -64,7 +64,7 @@ module DependenciesFileParser =
             | _ -> failwithf "invalid github specification:%s     %s" Environment.NewLine trimmed
         | _ -> Blank
     
-    let parseDependenciesFile (lines:string seq) = 
+    let parseDependenciesFile fileName (lines:string seq) = 
         ((0, false, [], [], []), lines)
         ||> Seq.fold(fun (lineNo, referencesMode, sources: PackageSource list, packages, sourceFiles) line ->
             let lineNo = lineNo + 1
@@ -96,20 +96,22 @@ module DependenciesFileParser =
             with
             | exn -> failwithf "Error in paket.dependencies line %d%s  %s" lineNo Environment.NewLine exn.Message)
         |> fun (_,mode,_,packages,remoteFiles) ->
+            fileName,
             mode,
             packages |> List.rev,
             remoteFiles |> List.rev
 
 /// Allows to parse and analyze paket.dependencies files.
-type DependenciesFile(strictMode,packages : UnresolvedPackage list, remoteFiles : SourceFile list) = 
+type DependenciesFile(fileName,strictMode,packages : UnresolvedPackage list, remoteFiles : SourceFile list) = 
     let packages = packages |> Seq.toList
     let dependencyMap = Map.ofSeq (packages |> Seq.map (fun p -> p.Name, p.VersionRange))
     member __.DirectDependencies = dependencyMap
     member __.Packages = packages
     member __.RemoteFiles = remoteFiles
     member __.Strict = strictMode
+    member __.FileName = fileName
     member __.Resolve(force, discovery : IDiscovery) = PackageResolver.Resolve(force, discovery, packages)
     static member FromCode(code:string) : DependenciesFile = 
-        DependenciesFile(DependenciesFileParser.parseDependenciesFile <| code.Replace("\r\n","\n").Replace("\r","\n").Split('\n'))
+        DependenciesFile(DependenciesFileParser.parseDependenciesFile "" <| code.Replace("\r\n","\n").Replace("\r","\n").Split('\n'))
     static member ReadFromFile fileName : DependenciesFile = 
-        DependenciesFile(DependenciesFileParser.parseDependenciesFile <| File.ReadAllLines fileName)
+        DependenciesFile(DependenciesFileParser.parseDependenciesFile fileName <| File.ReadAllLines fileName)

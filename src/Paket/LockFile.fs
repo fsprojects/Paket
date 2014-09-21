@@ -120,12 +120,16 @@ let private (|Remote|NugetPackage|NugetDependency|SourceFile|RepositoryType|Blan
 
 
 /// Allows to parse and analyze paket.lock files.
-type LockFile(strictMode,packages : ResolvedPackage list, remoteFiles : SourceFile list) =
+type LockFile(fileName:string,strictMode,packages : ResolvedPackage list, remoteFiles : SourceFile list) =
     member __.SourceFiles = remoteFiles
     member __.ResolvedPackages = packages
+    member __.FileName = fileName
     member __.Strict = strictMode
+    /// Parses a paket.lock file from file
+    static member Parse(fileName) = LockFile.Parse(fileName,File.ReadAllLines fileName)
+
     /// Parses a paket.lock file from lines
-    static member Parse(lines : string seq) =
+    static member Parse(fileName,lines : string seq) =
         let remove textToRemove (source:string) = source.Replace(textToRemove, "")
         let removeBrackets = remove "(" >> remove ")"
         ({ RepositoryType = None; Remote = None; Packages = []; SourceFiles = []; Strict = false }, lines)
@@ -167,7 +171,7 @@ type LockFile(strictMode,packages : ResolvedPackage list, remoteFiles : SourceFi
                                         Name = path } :: state.SourceFiles }
                 | _ -> failwith "invalid remote details."
             )
-        |> fun state -> LockFile(state.Strict, List.rev state.Packages, List.rev state.SourceFiles)
+        |> fun state -> LockFile(fileName,state.Strict, List.rev state.Packages, List.rev state.SourceFiles)
 
 /// Analyzes the dependencies from the paket.dependencies file.
 let Create(force, dependenciesFilename) =     

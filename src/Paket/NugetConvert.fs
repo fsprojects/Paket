@@ -129,4 +129,6 @@ let ConvertFromNuget(force, installAfter) =
             then Directory.Delete nugetDir
     | None -> ()
 
-    if installAfter then InstallProcess.Install(false, false, true, depFileName)
+    if installAfter then 
+        let lockFileName = LockFile.findLockfile depFileName       
+        InstallProcess.Install(false,true,LockFile.LockFile.Parse lockFileName.FullName)

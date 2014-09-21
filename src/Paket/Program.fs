@@ -6,6 +6,7 @@ open Nessos.UnionArgParser
 open Paket.Logging
 open System.Diagnostics
 open System.Reflection
+open System.IO
 
 let private stopWatch = new Stopwatch()
 stopWatch.Start()
@@ -15,6 +16,7 @@ let fvi = FileVersionInfo.GetVersionInfo(assembly.Location);
 tracefn "Paket version %s" fvi.FileVersion
 
 type Command =
+    | Add
     | Install
     | Update
     | Outdated
@@ -23,6 +25,7 @@ type Command =
     | Unknown
 
 type CLIArguments =
+    | [<First>][<NoAppSettings>][<CustomCommandLine("add")>] Add
     | [<First>][<NoAppSettings>][<CustomCommandLine("install")>] Install
     | [<First>][<NoAppSettings>][<CustomCommandLine("update")>] Update
     | [<First>][<NoAppSettings>][<CustomCommandLine("outdated")>] Outdated
@@ -37,6 +40,7 @@ with
     interface IArgParserTemplate with
         member s.Usage =
             match s with
+            | Add -> "adds a package to the depedencies."
             | Install -> "installs all packages."
             | Update -> "updates the packet.lock ile and installs all packages."
             | Outdated -> "displays information about new packages."
@@ -49,7 +53,7 @@ with
             | No_install -> "omits install --hard after convert-from-nuget"
 
 
-let parser = UnionArgParser.Create<CLIArguments>("USAGE: paket [install|update|outdated|convert-from-nuget] ... options")
+let parser = UnionArgParser.Create<CLIArguments>("USAGE: paket [add|install|update|outdated|convert-from-nuget] ... options")
  
 let results =
     try
@@ -73,30 +77,31 @@ let results =
 try
     match results with
     | Some(command,results) ->
-        let dependenciesFile = 
+        let dependenciesFileName = 
             match results.TryGetResult <@ CLIArguments.Dependencies_file @> with
             | Some x -> x
             | _ -> "paket.dependencies"
 
-        let force = 
-            match results.TryGetResult <@ CLIArguments.Force @> with
-            | Some _ -> true
-            | None -> false
-
-        let hard = 
-            match results.TryGetResult <@ CLIArguments.Hard @> with
-            | Some _ -> true
-            | None -> false
-
-        let installAfterConvert =
-            match results.TryGetResult <@ CLIArguments.No_install @> with
-            | Some _ -> false
-            | None -> true
+        let force = results.Contains <@ CLIArguments.Force @> 
+        let hard = results.Contains <@ CLIArguments.Hard @> 
+        let installAfterConvert = results.Contains <@ CLIArguments.No_install @> 
 
         match command with
-        | Command.Install -> InstallProcess.Install(false,force,hard,dependenciesFile)
-        | Command.Update -> InstallProcess.Install(true,force,hard,dependenciesFile)
-        | Command.Outdated -> FindOutdated.ListOutdated(dependenciesFile)
+        | Command.Add -> AddProcess.Add(force,hard,dependenciesFileName)
+        | Command.Install -> 
+            let lockFileName = LockFile.findLockfile dependenciesFileName
+        
+            if not lockFileName.Exists then 
+                LockFile.Update(force, dependenciesFileName, lockFileName.FullName)
+
+            InstallProcess.Install(force,hard,LockFile.LockFile.Parse lockFileName.FullName)
+        | Command.Update -> 
+            let lockFileName = LockFile.findLockfile dependenciesFileName
+        
+            LockFile.Update(force, dependenciesFileName, lockFileName.FullName)
+
+            InstallProcess.Install(force,hard,LockFile.LockFile.Parse lockFileName.FullName)
+        | Command.Outdated -> FindOutdated.ListOutdated(dependenciesFileName)
         | Command.InitAutoRestore -> VSIntegration.InitAutoRestore()
         | Command.ConvertFromNuget -> NuGetConvert.ConvertFromNuget(force,installAfterConvert)
         | _ -> traceErrorfn "no command given.%s" (parser.Usage())

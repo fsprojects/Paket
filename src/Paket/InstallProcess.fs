@@ -78,20 +78,10 @@ let extractReferencesFromListFile projectFile =
 
 
 /// Installs the given packageFile.
-let Install(regenerate, force, hard, dependenciesFilename) = 
-    let lockFile =
-        let lockFileName = LockFile.findLockfile dependenciesFilename
-        
-        if regenerate || (not lockFileName.Exists) then 
-            LockFile.Update(force, dependenciesFilename, lockFileName.FullName)
-        
-        File.ReadAllLines lockFileName.FullName 
-        |> LockFile.LockFile.Parse
-
-
+let Install(force, hard, lockFile:LockFile.LockFile) = 
     let extractedPackages = 
         ExtractPackages(force, lockFile.ResolvedPackages)
-        |> Seq.append (DownloadSourceFiles(Path.GetDirectoryName dependenciesFilename, lockFile.SourceFiles))
+        |> Seq.append (DownloadSourceFiles(Path.GetDirectoryName lockFile.FileName, lockFile.SourceFiles))
         |> Async.Parallel
         |> Async.RunSynchronously
         |> Array.choose id

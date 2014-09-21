@@ -11,7 +11,7 @@ let FindOutdated(dependenciesFile) =
     //TODO: Anything we need to do for source files here?    
     let _,newPackages, _ = LockFile.Create(true, dependenciesFile)
     let lockFile  =
-        if lockFile.Exists then LockFile.LockFile.Parse(File.ReadAllLines lockFile.FullName) else LockFile.LockFile(false,[],[])
+        if lockFile.Exists then LockFile.LockFile.Parse(lockFile.FullName) else LockFile.LockFile("",false,[],[])
 
     let errors = LockFile.extractErrors newPackages
 
