@@ -17,9 +17,9 @@ type private InstallInfo = {
 }
 
 module private InstallRules = 
-    let groupDLLs (usedPackages : HashSet<string>) extracted projectPath = 
+    let groupDLLs (usedPackages : Dictionary<string,bool>) extracted projectPath = 
         [ for (package:ResolvedPackage), libraries in extracted do
-              if usedPackages.Contains(package.Name) then 
+              if usedPackages.ContainsKey(package.Name) then 
                   let libraries = libraries |> Seq.toArray
                   for (lib : FileInfo) in libraries do
                       match FrameworkIdentifier.DetectFromPath lib.FullName with
@@ -162,7 +162,7 @@ type ProjectFile =
 
                 compileItemGroup.PrependChild(node) |> ignore                
 
-    member this.UpdateReferences(extracted, usedPackages : HashSet<string>, hard) = 
+    member this.UpdateReferences(extracted, usedPackages : Dictionary<string,bool>, hard) = 
         match [ for node in this.Document.SelectNodes("//ns:Project", this.Namespaces) -> node ] with
         | [] -> verbosefn "%s is not a project file ==> skipping" this.FileName
         | projectNode :: _ -> 

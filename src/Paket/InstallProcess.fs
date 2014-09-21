@@ -35,9 +35,9 @@ let DownloadSourceFiles(rootPath,sourceFiles) =
                 return None
         }) sourceFiles
 
-let private findPackagesWithContent usedPackages = 
+let private findPackagesWithContent (usedPackages:Dictionary<_,_>) = 
     usedPackages
-    |> Seq.map (fun p -> DirectoryInfo(Path.Combine("packages", p)))
+    |> Seq.map (fun kv -> DirectoryInfo(Path.Combine("packages", kv.Key)))
     |> Seq.choose (fun packageDir -> packageDir.GetDirectories("Content") |> Array.tryFind (fun _ -> true))
     |> Seq.toList
 
@@ -102,7 +102,7 @@ let Install(regenerate, force, hard, dependenciesFilename) =
         let project = ProjectFile.Load proj.FullName
 
         if directPackages |> Array.isEmpty |> not then verbosefn "  - direct packages: %A" directPackages
-        let usedPackages = new HashSet<_>()
+        let usedPackages = new Dictionary<_,_>()
         let usedSourceFiles = new HashSet<_>()
 
         let allPackages =
@@ -110,7 +110,7 @@ let Install(regenerate, force, hard, dependenciesFilename) =
             |> Array.map (fun (p,_) -> p.Name.ToLower(),p)
             |> Map.ofArray
 
-        let rec addPackage (name:string) =
+        let rec addPackage directly (name:string) =
             let identity = name.ToLower()
             if identity.StartsWith "file:" then
                 let sourceFile = name.Split(':').[1]
@@ -118,14 +118,17 @@ let Install(regenerate, force, hard, dependenciesFilename) =
             else
                 match allPackages |> Map.tryFind identity with
                 | Some package ->
-                    if usedPackages.Add name then
+                    match usedPackages.TryGetValue name with
+                    | false,_ ->
+                        usedPackages.Add(name,directly)
                         if not lockFile.Strict then
                             for d,_ in package.DirectDependencies do
-                                addPackage d
+                                addPackage false d
+                    | true,v -> usedPackages.[name] <- directly
                 | None -> failwithf "Project %s references package %s, but it was not found in the paket.lock file." proj.FullName name
 
         directPackages
-        |> Array.iter addPackage
+        |> Array.iter (addPackage true)
         
         if usedPackages.Count > 0 then verbosefn "  - all packages: %A" (usedPackages |> Seq.toArray)
 
