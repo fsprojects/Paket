@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="utf-8"/>
-    <title>PackageResolver - Paket</title>
+    <title>Nuspec - Paket</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <meta name="description" content=""/>
     <meta name="author" content="Steffen Forkmann, Alexander Gross"/>
@@ -34,12 +34,29 @@
 
 
 
-<h1>PackageResolver</h1>
+<h1>Nuspec</h1>
 <div class="xmldoc">
-<p>Contains logic which helps to resolve the dependency graph.</p>
+<p>Contains Nuspec support.</p>
 </div>
 
 <!-- Render nested types and modules, if there are any -->
+  <h2>Nested types and modules</h2>
+  <div>
+      <table class="table table-bordered type-list">
+    <thead>
+      <tr><td>Type</td><td>Description</td></tr>
+    </thead>
+    <tbody>
+        <tr>
+          <td class="type-name">
+            <a href="paket-nuspec-references.html">References</a>
+          </td>
+          <td class="xmldoc"></td>
+        </tr>
+    </tbody>
+  </table>
+
+  </div>
 
   <h3>Functions and values</h3>
   <table class="table table-bordered member-list">
@@ -50,20 +67,19 @@
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '1', 1)" onmouseover="showTip(event, '1', 1)">
-            Resolve (...)
+          <code onmouseout="hideTip(event, '26', 26)" onmouseover="showTip(event, '26', 26)">
+            GetReferences fileName
           </code>
-          <div class="tip" id="1">
-            <strong>Signature:</strong> (force:bool * discovery:IDiscovery * rootDependencies:seq&lt;UnresolvedPackage&gt;) -&gt; Map&lt;string,ResolvedDependency&gt;<br />
+          <div class="tip" id="26">
+            <strong>Signature:</strong> fileName:string -&gt; References<br />
                       </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket/PackageResolver.fs#L47-47" class="github-link">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket/Nuspec.fs#L12-12" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
-          <p>Resolves all direct and indirect dependencies</p>
-
+          
         </td>
       </tr>
     </tbody>
