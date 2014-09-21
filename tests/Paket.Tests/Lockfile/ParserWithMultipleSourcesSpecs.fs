@@ -19,22 +19,23 @@ let lockFile = """NUGET
 
 [<Test>]
 let ``should parse lock file``() = 
-    let lockFile = LockFile.Parse("",toLines lockFile)
-    lockFile.ResolvedPackages.Length |> shouldEqual 6
+    let lockFile = LockFile.Parse(toLines lockFile)
+    let packages = List.rev lockFile.Packages
+    packages.Length |> shouldEqual 6
     lockFile.Strict |> shouldEqual false
 
-    lockFile.ResolvedPackages.[0].Source |> shouldEqual (Nuget Constants.DefaultNugetStream)
-    lockFile.ResolvedPackages.[0].Name |> shouldEqual "Castle.Windsor"
-    lockFile.ResolvedPackages.[0].Version |> shouldEqual (SemVer.parse "2.1")
+    packages.[0].Source |> shouldEqual (Nuget Constants.DefaultNugetStream)
+    packages.[0].Name |> shouldEqual "Castle.Windsor"
+    packages.[0].Version |> shouldEqual (SemVer.parse "2.1")
 
-    lockFile.ResolvedPackages.[1].Source |> shouldEqual (Nuget Constants.DefaultNugetStream)
-    lockFile.ResolvedPackages.[1].Name |> shouldEqual "Castle.Windsor-log4net"
-    lockFile.ResolvedPackages.[1].Version |> shouldEqual (SemVer.parse "3.3")
+    packages.[1].Source |> shouldEqual (Nuget Constants.DefaultNugetStream)
+    packages.[1].Name |> shouldEqual "Castle.Windsor-log4net"
+    packages.[1].Version |> shouldEqual (SemVer.parse "3.3")
     
-    lockFile.ResolvedPackages.[4].Source |> shouldEqual (Nuget "http://nuget.org/api/v3")
-    lockFile.ResolvedPackages.[4].Name |> shouldEqual "Rx-Core"
-    lockFile.ResolvedPackages.[4].Version |> shouldEqual (SemVer.parse "2.1")
+    packages.[4].Source |> shouldEqual (Nuget "http://nuget.org/api/v3")
+    packages.[4].Name |> shouldEqual "Rx-Core"
+    packages.[4].Version |> shouldEqual (SemVer.parse "2.1")
 
-    lockFile.ResolvedPackages.[5].Source |> shouldEqual (Nuget "http://nuget.org/api/v3")
-    lockFile.ResolvedPackages.[5].Name |> shouldEqual "Rx-Main"
-    lockFile.ResolvedPackages.[5].Version |> shouldEqual (SemVer.parse "2.0")
+    packages.[5].Source |> shouldEqual (Nuget "http://nuget.org/api/v3")
+    packages.[5].Name |> shouldEqual "Rx-Main"
+    packages.[5].Version |> shouldEqual (SemVer.parse "2.0")

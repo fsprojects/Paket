@@ -95,7 +95,7 @@ let serializeSourceFiles (files:SourceFile list) =
 
     String.Join(Environment.NewLine, all)
 
-type private ParseState =
+type ParseState =
     { RepositoryType : string option
       Remote : string option
       Packages : ResolvedPackage list
@@ -118,62 +118,85 @@ let private (|Remote|NugetPackage|NugetDependency|SourceFile|RepositoryType|Blan
     | Some _, _ -> failwith "unknown Repository Type."
     | _ -> failwith "unknown lock file format."
 
+let Parse lines =
+    let remove textToRemove (source:string) = source.Replace(textToRemove, "")
+    let removeBrackets = remove "(" >> remove ")"
+    ({ RepositoryType = None; Remote = None; Packages = []; SourceFiles = []; Strict = false }, lines)
+    ||> Seq.fold(fun state line ->
+        match (state, line) with
+        | Remote remoteSource -> { state with Remote = Some remoteSource }
+        | Blank -> state
+        | ReferencesMode mode -> { state with Strict = mode }
+        | RepositoryType repoType -> { state with RepositoryType = Some repoType }
+        | NugetPackage details ->
+            match state.Remote with
+            | Some remote ->
+                let parts = details.Split ' '
+                let version = parts.[1] |> removeBrackets
+                { state with Packages = { Source = PackageSource.Parse remote
+                                          Name = parts.[0]
+                                          DirectDependencies = []
+                                          Version = SemVer.parse version } :: state.Packages }
+            | None -> failwith "no source has been specified."
+        | NugetDependency (name, _) ->
+            match state.Packages with
+            | currentPackage :: otherPackages -> 
+                { state with
+                    Packages = { currentPackage with
+                                    DirectDependencies = [name, VersionRange.NoRestriction] 
+                                    |> List.append currentPackage.DirectDependencies
+                                } :: otherPackages }
+            | [] -> failwith "cannot set a dependency - no package has been specified."
+        | SourceFile details ->
+            match state.Remote |> Option.map(fun s -> s.Split '/') with
+            | Some [| owner; project |] ->
+                let path, commit = match details.Split ' ' with
+                                    | [| filePath; commit |] -> filePath, commit |> removeBrackets                                       
+                                    | _ -> failwith "invalid file source details."
+                { state with
+                    SourceFiles = { Commit = commit
+                                    Owner = owner
+                                    Project = project
+                                    Name = path } :: state.SourceFiles }
+            | _ -> failwith "invalid remote details.")
+
 
 /// Allows to parse and analyze paket.lock files.
-type LockFile(fileName:string,strictMode,packages : ResolvedPackage list, remoteFiles : SourceFile list) =
-    member __.SourceFiles = remoteFiles
-    member __.ResolvedPackages = packages
+type LockFile(fileName:string,strictMode,dependenciesResolution:DependencyResolution) =
+    member __.SourceFiles = dependenciesResolution.RemoteFiles
+    member __.ResolvedPackages = dependenciesResolution.PackageResolution
+    member __.DependenciesResolution = dependenciesResolution
     member __.FileName = fileName
     member __.Strict = strictMode
-    /// Parses a paket.lock file from file
-    static member Parse(fileName) = LockFile.Parse(fileName,File.ReadAllLines fileName)
+
+    /// Updates the Lock file with the analyzed dependencies from the paket.dependencies file.
+    member __.Serialize() =
+        let errors = extractErrors dependenciesResolution.PackageResolution
+        if errors = "" then 
+            let output = 
+                String.Join
+                    (Environment.NewLine,                  
+                     serializePackages dependenciesResolution.DependenciesFile.Strict dependenciesResolution.PackageResolution, 
+                     serializeSourceFiles dependenciesResolution.RemoteFiles)
+            let lockFileName = dependenciesResolution.DependenciesFile.FindLockfile().FullName
+            File.WriteAllText(lockFileName, output)
+            tracefn "Locked version resolutions written to %s" lockFileName
+        else failwith <| "Could not resolve dependencies." + Environment.NewLine + errors
 
     /// Parses a paket.lock file from lines
-    static member Parse(fileName,lines : string seq) =
-        let remove textToRemove (source:string) = source.Replace(textToRemove, "")
-        let removeBrackets = remove "(" >> remove ")"
-        ({ RepositoryType = None; Remote = None; Packages = []; SourceFiles = []; Strict = false }, lines)
-        ||> Seq.fold(fun state line ->
-            match (state, line) with
-            | Remote remoteSource -> { state with Remote = Some remoteSource }
-            | Blank -> state
-            | ReferencesMode mode -> { state with Strict = mode }
-            | RepositoryType repoType -> { state with RepositoryType = Some repoType }
-            | NugetPackage details ->
-                match state.Remote with
-                | Some remote ->
-                    let parts = details.Split ' '
-                    let version = parts.[1] |> removeBrackets
-                    { state with Packages = { Source = PackageSource.Parse remote
-                                              Name = parts.[0]
-                                              DirectDependencies = []
-                                              Version = SemVer.parse version } :: state.Packages }
-                | None -> failwith "no source has been specified."
-            | NugetDependency (name, _) ->
-                match state.Packages with
-                | currentPackage :: otherPackages -> 
-                    { state with
-                        Packages = { currentPackage with
-                                        DirectDependencies = [name, VersionRange.NoRestriction] 
-                                        |> List.append currentPackage.DirectDependencies
-                                    } :: otherPackages }
-                | [] -> failwith "cannot set a dependency - no package has been specified."
-            | SourceFile details ->
-                match state.Remote |> Option.map(fun s -> s.Split '/') with
-                | Some [| owner; project |] ->
-                    let path, commit = match details.Split ' ' with
-                                       | [| filePath; commit |] -> filePath, commit |> removeBrackets                                       
-                                       | _ -> failwith "invalid file source details."
-                    { state with
-                        SourceFiles = { Commit = commit
-                                        Owner = owner
-                                        Project = project
-                                        Name = path } :: state.SourceFiles }
-                | _ -> failwith "invalid remote details."
-            )
-        |> fun state -> LockFile(fileName,state.Strict, List.rev state.Packages, List.rev state.SourceFiles)
+    static member Parse(dependenciesFile:DependenciesFile) : LockFile =    
+        let fileName = dependenciesFile.FindLockfile().FullName
+        let lines = File.ReadAllLines fileName
+        Parse lines
+        |> fun state -> 
+            let resolution =
+                state.Packages
+                |> Seq.fold (fun map p -> Map.add p.Name (ResolvedDependency.Resolved p) map) Map.empty
+                
+            let dependenciesResolution = DependencyResolution(dependenciesFile, resolution, List.rev state.SourceFiles)
+            LockFile(fileName,state.Strict,dependenciesResolution)
+            
 
-/// Updates the Lock file with the analyzed dependencies from the paket.dependencies file.
 let Update(dependenciesResolution: DependencyResolution) = 
     let errors = extractErrors dependenciesResolution.PackageResolution
     if errors = "" then 

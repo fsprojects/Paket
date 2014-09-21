@@ -27,26 +27,28 @@ GITHUB
 
 [<Test>]
 let ``should parse lock file``() = 
-    let lockFile = LockFile.Parse("",toLines lockFile)
-    lockFile.ResolvedPackages.Length |> shouldEqual 6
+    let lockFile = LockFile.Parse(toLines lockFile)
+    let packages = List.rev lockFile.Packages
+    packages.Length |> shouldEqual 6
     lockFile.Strict |> shouldEqual false
 
-    lockFile.ResolvedPackages.[0].Source |> shouldEqual (Nuget Constants.DefaultNugetStream)
-    lockFile.ResolvedPackages.[0].Name |> shouldEqual "Castle.Windsor"
-    lockFile.ResolvedPackages.[0].Version |> shouldEqual (SemVer.parse "2.1")
-    lockFile.ResolvedPackages.[0].DirectDependencies |> shouldEqual []
+    packages.[0].Source |> shouldEqual (Nuget Constants.DefaultNugetStream)
+    packages.[0].Name |> shouldEqual "Castle.Windsor"
+    packages.[0].Version |> shouldEqual (SemVer.parse "2.1")
+    packages.[0].DirectDependencies |> shouldEqual []
 
-    lockFile.ResolvedPackages.[1].Source |> shouldEqual (Nuget Constants.DefaultNugetStream)
-    lockFile.ResolvedPackages.[1].Name |> shouldEqual "Castle.Windsor-log4net"
-    lockFile.ResolvedPackages.[1].Version |> shouldEqual (SemVer.parse "3.3")
-    lockFile.ResolvedPackages.[1].DirectDependencies |> shouldEqual ["Castle.Windsor", VersionRange.NoRestriction; "log4net", VersionRange.NoRestriction]
+    packages.[1].Source |> shouldEqual (Nuget Constants.DefaultNugetStream)
+    packages.[1].Name |> shouldEqual "Castle.Windsor-log4net"
+    packages.[1].Version |> shouldEqual (SemVer.parse "3.3")
+    packages.[1].DirectDependencies |> shouldEqual ["Castle.Windsor", VersionRange.NoRestriction; "log4net", VersionRange.NoRestriction]
     
-    lockFile.ResolvedPackages.[5].Source |> shouldEqual (Nuget Constants.DefaultNugetStream)
-    lockFile.ResolvedPackages.[5].Name |> shouldEqual "log4net"
-    lockFile.ResolvedPackages.[5].Version |> shouldEqual (SemVer.parse "1.1")
-    lockFile.ResolvedPackages.[5].DirectDependencies |> shouldEqual ["log", VersionRange.NoRestriction]
+    packages.[5].Source |> shouldEqual (Nuget Constants.DefaultNugetStream)
+    packages.[5].Name |> shouldEqual "log4net"
+    packages.[5].Version |> shouldEqual (SemVer.parse "1.1")
+    packages.[5].DirectDependencies |> shouldEqual ["log", VersionRange.NoRestriction]
 
-    lockFile.SourceFiles |> shouldEqual
+    let sourceFiles = List.rev lockFile.SourceFiles
+    sourceFiles|> shouldEqual
         [ { Owner = "fsharp"
             Project = "FAKE"
             Name = "src/app/FAKE/Cli.fs"
@@ -56,9 +58,9 @@ let ``should parse lock file``() =
             Name = "src/app/Fake.Deploy.Lib/FakeDeployAgentHelper.fs"
             Commit = "Globbing" } ]
     
-    lockFile.SourceFiles.[0].Commit |> shouldEqual "7699e40e335f3cc54ab382a8969253fecc1e08a9"
-    lockFile.SourceFiles.[0].Name |> shouldEqual "src/app/FAKE/Cli.fs"
-    lockFile.SourceFiles.[0].ToString() |> shouldEqual "(fsharp:FAKE:7699e40e335f3cc54ab382a8969253fecc1e08a9) src/app/FAKE/Cli.fs"
+    sourceFiles.[0].Commit |> shouldEqual "7699e40e335f3cc54ab382a8969253fecc1e08a9"
+    sourceFiles.[0].Name |> shouldEqual "src/app/FAKE/Cli.fs"
+    sourceFiles.[0].ToString() |> shouldEqual "(fsharp:FAKE:7699e40e335f3cc54ab382a8969253fecc1e08a9) src/app/FAKE/Cli.fs"
 
 let strictLockFile = """REFERENCES: STRICT
 NUGET
@@ -78,12 +80,13 @@ NUGET
 
 [<Test>]
 let ``should parse strict lock file``() = 
-    let lockFile = LockFile.Parse("",toLines strictLockFile) 
-    lockFile.ResolvedPackages.Length |> shouldEqual 6
+    let lockFile = LockFile.Parse(toLines strictLockFile)
+    let packages = List.rev lockFile.Packages
+    packages.Length |> shouldEqual 6
     lockFile.Strict |> shouldEqual true
 
-    lockFile.ResolvedPackages.[5].Source |> shouldEqual (Nuget Constants.DefaultNugetStream)
-    lockFile.ResolvedPackages.[5].Name |> shouldEqual "log4net"
-    lockFile.ResolvedPackages.[5].Version |> shouldEqual (SemVer.parse "1.1")
-    lockFile.ResolvedPackages.[5].DirectDependencies |> shouldEqual ["log", VersionRange.NoRestriction]
+    packages.[5].Source |> shouldEqual (Nuget Constants.DefaultNugetStream)
+    packages.[5].Name |> shouldEqual "log4net"
+    packages.[5].Version |> shouldEqual (SemVer.parse "1.1")
+    packages.[5].DirectDependencies |> shouldEqual ["log", VersionRange.NoRestriction]
 

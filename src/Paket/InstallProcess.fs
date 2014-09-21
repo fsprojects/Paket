@@ -7,8 +7,13 @@ open System.IO
 open System.Collections.Generic
 
 /// Downloads and extracts all packages.
-let ExtractPackages(force, packages) = 
-    Seq.map (fun (package : ResolvedPackage) -> 
+let ExtractPackages(force, packages:PackageResolution) = 
+    packages
+    |> Seq.map (fun kv -> 
+        match kv.Value with
+        | Resolved p -> p
+        | _ -> failwithf "Resolution failed for %s" kv.Key)
+    |> Seq.map (fun (package : ResolvedPackage) -> 
         async { 
             match package.Source with
             | Nuget source -> 
@@ -19,7 +24,7 @@ let ExtractPackages(force, packages) =
                 let packageFile = Path.Combine(path, sprintf "%s.%s.nupkg" package.Name (package.Version.ToString()))
                 let! folder = Nuget.ExtractPackage(packageFile, package.Name, package.Version.ToString(), force)
                 return Some(package, Nuget.GetLibraries folder)
-        }) packages
+        })
 
 let DownloadSourceFiles(rootPath,sourceFiles) = 
     Seq.map (fun (source : SourceFile) -> 

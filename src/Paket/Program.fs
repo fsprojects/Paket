@@ -94,11 +94,11 @@ try
             if not lockFileName.Exists then 
                 LockFile.Update(resolution)
 
-            InstallProcess.Install(force,hard,LockFile.LockFile.Parse(lockFileName.FullName))
+            InstallProcess.Install(force,hard,LockFile.LockFile.Parse resolution.DependenciesFile)
         | Command.Update -> 
             let resolution = DependencyResolution.Analyze(dependenciesFileName,force)
             LockFile.Update(resolution)
-            InstallProcess.Install(force,hard,LockFile.LockFile.Parse(resolution.DependenciesFile.FindLockfile().FullName))
+            InstallProcess.Install(force,hard,LockFile.LockFile.Parse resolution.DependenciesFile)
         | Command.Outdated -> FindOutdated.ListOutdated(dependenciesFileName)
         | Command.InitAutoRestore -> VSIntegration.InitAutoRestore()
         | Command.ConvertFromNuget -> NuGetConvert.ConvertFromNuget(force,installAfterConvert)
