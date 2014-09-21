@@ -124,7 +124,7 @@ let Install(regenerate, force, hard, dependenciesFilename) =
                         if not lockFile.Strict then
                             for d,_ in package.DirectDependencies do
                                 addPackage false d
-                    | true,v -> usedPackages.[name] <- directly
+                    | true,v -> usedPackages.[name] <- v || directly
                 | None -> failwithf "Project %s references package %s, but it was not found in the paket.lock file." proj.FullName name
 
         directPackages
