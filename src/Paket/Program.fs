@@ -99,7 +99,7 @@ try
         | Command.Outdated -> FindOutdated.ListOutdated(dependenciesFile)
         | Command.InitAutoRestore -> VSIntegration.InitAutoRestore()
         | Command.ConvertFromNuget -> NuGetConvert.ConvertFromNuget(force,installAfterConvert)
-        | _ -> failwithf "no command given.%s" (parser.Usage())
+        | _ -> traceErrorfn "no command given.%s" (parser.Usage())
         
         let ts = stopWatch.Elapsed
         let elapsedTime = String.Format("{0:00}.{1:00}s", ts.Seconds, ts.Milliseconds / 10)
