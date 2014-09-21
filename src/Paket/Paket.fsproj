@@ -75,6 +75,7 @@
     <Compile Include="Utils.fs" />
     <Compile Include="PackageResolver.fs" />
     <Compile Include="FrameworkHandling.fs" />
+    <Compile Include="Nuspec.fs" />
     <Compile Include="ProjectFile.fs" />
     <Compile Include="GitHub.fs" />
     <Compile Include="SolutionFile.fs" />

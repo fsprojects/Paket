@@ -6,12 +6,14 @@ open System.IO
 open System.Xml
 open System.Collections.Generic
 open Paket.Xml
+open Nuspec
 
 /// Contains methods to read and manipulate project file nodes.
 type private InstallInfo = {
     DllName : string
     Path : string
     Condition : FrameworkIdentifier
+    Package : ResolvedPackage
 }
 
 module private InstallRules = 
@@ -25,9 +27,12 @@ module private InstallRules =
                       | Some condition ->
                           yield { DllName = lib.Name.Replace(lib.Extension, "")
                                   Path = createRelativePath projectPath lib.FullName
+                                  Package = package
                                   Condition = condition } ]
-        |> Seq.groupBy (fun info -> info.DllName, info.Condition.GetFrameworkIdentifier())
-        |> Seq.groupBy (fun ((name, _), _) -> name)
+        |> Seq.groupBy (fun info -> info.Package.Name, info.DllName, info.Condition.GetFrameworkIdentifier())
+        |> Seq.groupBy (fun ((packageName,name, _), _) -> packageName,name)
+        |> Seq.groupBy (fun ((packageName,_),_) -> packageName)
+
 
 /// Contains methods to read and manipulate project files.
 type ProjectFile = 
@@ -163,29 +168,39 @@ type ProjectFile =
         | projectNode :: _ -> 
             this.DeletePaketNodes("Reference")
             let installInfos = InstallRules.groupDLLs usedPackages extracted this.FileName
-            for dllName, libsWithSameName in installInfos do
-                if hard then
-                    this.DeleteCustomNodes(dllName)
-                if this.HasCustomNodes(dllName) then verbosefn "  - custom nodes for %s ==> skipping" dllName
-                else 
-                    verbosefn "  - installing %s" dllName
-                    let lastLib = ref None
-                    for (_, _), libs in libsWithSameName do
-                        let chooseNode = this.Document.CreateElement("Choose", ProjectFile.DefaultNameSpace)
+            for packageName, installInfos in installInfos do
+                let nuspec = FileInfo(sprintf "./packages/%s/%s.nuspec" packageName packageName)
+                let references = Nuspec.GetReferences nuspec.FullName
+                for (_,dllName), libsWithSameName in installInfos do
+                    if hard then
+                        this.DeleteCustomNodes(dllName)
+                
+                    if this.HasCustomNodes(dllName) then verbosefn "  - custom nodes for %s ==> skipping" dllName
+                    else
+                        let install = 
+                            match references with
+                            | References.All -> true
+                            | References.Explicit references -> references |> List.exists ((=) (dllName + ".dll"))
+
+                        if not install then verbosefn "  - %s not listed in %s ==> excluded" dllName nuspec.Name else
+                        verbosefn "  - installing %s" dllName
+                        let lastLib = ref None
+                        for (_), libs in libsWithSameName do
+                            let chooseNode = this.Document.CreateElement("Choose", ProjectFile.DefaultNameSpace)
                         
-                        let libsWithSameFrameworkVersion = 
-                            libs
-                            |> List.ofSeq
-                            |> List.sortBy (fun lib -> lib.Path)
-                        for lib in libsWithSameFrameworkVersion do
-                            chooseNode.AppendChild(this.CreateWhenNode(lib, lib.Condition.GetCondition())) |> ignore
-                            lastLib := Some lib
-                        match !lastLib with
-                        | None -> ()
-                        | Some lib -> 
-                            chooseNode.AppendChild(this.CreateWhenNode(lib, lib.Condition.GetFrameworkIdentifier())) 
-                            |> ignore
-                        projectNode.AppendChild(chooseNode) |> ignore
+                            let libsWithSameFrameworkVersion = 
+                                libs
+                                |> List.ofSeq
+                                |> List.sortBy (fun lib -> lib.Path)
+                            for lib in libsWithSameFrameworkVersion do
+                                chooseNode.AppendChild(this.CreateWhenNode(lib, lib.Condition.GetCondition())) |> ignore
+                                lastLib := Some lib
+                            match !lastLib with
+                            | None -> ()
+                            | Some lib -> 
+                                chooseNode.AppendChild(this.CreateWhenNode(lib, lib.Condition.GetFrameworkIdentifier())) 
+                                |> ignore
+                            projectNode.AppendChild(chooseNode) |> ignore
             this.DeleteEmptyReferences()
 
     member this.Save() =

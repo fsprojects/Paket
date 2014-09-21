@@ -1,3 +1,6 @@
+#### 0.2.27 - 21.09.2014
+* If explicit references are listed in nuspec we have to respect this 
+
 #### 0.2.26 - 20.09.2014
 * Show version at start
 

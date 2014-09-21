@@ -64,6 +64,13 @@
     <Compile Include="TestHelpers.fs" />
     <Compile Include="SemVerSpecs.fs" />
     <Compile Include="NugetVersionRangeSpecs.fs" />
+    <Content Include="TestFiles\FSharp.Data.nuspec">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="TestFiles\Octokit.nuspec">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Compile Include="NuspecSpecs.fs" />
     <Compile Include="FilterVersionSpecs.fs" />
     <Compile Include="DependencyGraphSpecs.fs" />
     <Compile Include="CyclicGraphSpecs.fs" />
