@@ -173,24 +173,16 @@ type LockFile(fileName:string,strictMode,packages : ResolvedPackage list, remote
             )
         |> fun state -> LockFile(fileName,state.Strict, List.rev state.Packages, List.rev state.SourceFiles)
 
-/// Analyzes the dependencies from the paket.dependencies file.
-let Create(force, dependenciesFilename) =     
-    tracefn "Parsing %s" dependenciesFilename
-    let dependenciesFile = DependenciesFile.ReadFromFile dependenciesFilename
-    dependenciesFile,dependenciesFile.Resolve(force, Nuget.NugetDiscovery), dependenciesFile.RemoteFiles
-
 /// Updates the Lock file with the analyzed dependencies from the paket.dependencies file.
-let Update(force, dependenciesFilename, lockFile) = 
-    let dependenciesFile,packageResolution, remoteFiles = Create(force, dependenciesFilename)
-    let errors = extractErrors packageResolution
-    if errors = "" then
-        let output = String.Join(Environment.NewLine, serializePackages dependenciesFile.Strict packageResolution, serializeSourceFiles remoteFiles)
-        File.WriteAllText(lockFile, output)
-        tracefn "Locked version resolutions written to %s" lockFile
-    else
-        failwith <| "Could not resolve dependencies." + Environment.NewLine + errors
-
-/// Find the matching lock file to a dependencies file
-let findLockfile dependenciesFile =
-    let fi = FileInfo(dependenciesFile)
-    FileInfo(Path.Combine(fi.Directory.FullName, fi.Name.Replace(fi.Extension,"") + ".lock"))
+let Update(dependenciesResolution: DependencyResolution) = 
+    let errors = extractErrors dependenciesResolution.PackageResolution
+    if errors = "" then 
+        let output = 
+            String.Join
+                (Environment.NewLine,                  
+                 serializePackages dependenciesResolution.DependenciesFile.Strict dependenciesResolution.PackageResolution, 
+                 serializeSourceFiles dependenciesResolution.RemoteFiles)
+        let lockFileName = dependenciesResolution.DependenciesFile.FindLockfile().FullName
+        File.WriteAllText(lockFileName, output)
+        tracefn "Locked version resolutions written to %s" lockFileName
+    else failwith <| "Could not resolve dependencies." + Environment.NewLine + errors

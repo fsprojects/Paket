@@ -115,3 +115,18 @@ type DependenciesFile(fileName,strictMode,packages : UnresolvedPackage list, rem
         DependenciesFile(DependenciesFileParser.parseDependenciesFile "" <| code.Replace("\r\n","\n").Replace("\r","\n").Split('\n'))
     static member ReadFromFile fileName : DependenciesFile = 
         DependenciesFile(DependenciesFileParser.parseDependenciesFile fileName <| File.ReadAllLines fileName)
+
+    /// Find the matching lock file to a dependencies file
+    member this.FindLockfile() =
+        let fi = FileInfo(this.FileName)
+        FileInfo(Path.Combine(fi.Directory.FullName, fi.Name.Replace(fi.Extension,"") + ".lock"))
+    
+type DependencyResolution(dependenciesFile:DependenciesFile,resolution:PackageResolution,remoteFiles:SourceFile list) =
+    member __.DependenciesFile = dependenciesFile
+    member __.PackageResolution = resolution
+    member __.RemoteFiles = remoteFiles
+    /// Analyzes the dependencies from the paket.dependencies file.
+    static member Analyze(dependenciesFilename,force) =
+        tracefn "Parsing %s" dependenciesFilename
+        let dependenciesFile = DependenciesFile.ReadFromFile dependenciesFilename
+        DependencyResolution(dependenciesFile,dependenciesFile.Resolve(force, Nuget.NugetDiscovery), dependenciesFile.RemoteFiles)

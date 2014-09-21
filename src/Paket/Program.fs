@@ -89,18 +89,16 @@ try
         match command with
         | Command.Add -> AddProcess.Add(force,hard,dependenciesFileName)
         | Command.Install -> 
-            let lockFileName = LockFile.findLockfile dependenciesFileName
-        
+            let resolution = DependencyResolution.Analyze(dependenciesFileName,force)            
+            let lockFileName = resolution.DependenciesFile.FindLockfile()
             if not lockFileName.Exists then 
-                LockFile.Update(force, dependenciesFileName, lockFileName.FullName)
+                LockFile.Update(resolution)
 
-            InstallProcess.Install(force,hard,LockFile.LockFile.Parse lockFileName.FullName)
+            InstallProcess.Install(force,hard,LockFile.LockFile.Parse(lockFileName.FullName))
         | Command.Update -> 
-            let lockFileName = LockFile.findLockfile dependenciesFileName
-        
-            LockFile.Update(force, dependenciesFileName, lockFileName.FullName)
-
-            InstallProcess.Install(force,hard,LockFile.LockFile.Parse lockFileName.FullName)
+            let resolution = DependencyResolution.Analyze(dependenciesFileName,force)
+            LockFile.Update(resolution)
+            InstallProcess.Install(force,hard,LockFile.LockFile.Parse(resolution.DependenciesFile.FindLockfile().FullName))
         | Command.Outdated -> FindOutdated.ListOutdated(dependenciesFileName)
         | Command.InitAutoRestore -> VSIntegration.InitAutoRestore()
         | Command.ConvertFromNuget -> NuGetConvert.ConvertFromNuget(force,installAfterConvert)

@@ -1,26 +1,22 @@
 /// Contains methods to find outdated packages.
 module Paket.FindOutdated
 
-open System.IO
 open Paket.Logging
 
 /// Finds all outdated packages.
-let FindOutdated(dependenciesFile) = 
-    let lockFile = LockFile.findLockfile dependenciesFile
-
+let FindOutdated(dependenciesFile) =     
     //TODO: Anything we need to do for source files here?    
-    let _,newPackages, _ = LockFile.Create(true, dependenciesFile)
-    let lockFile  =
-        if lockFile.Exists then LockFile.LockFile.Parse(lockFile.FullName) else LockFile.LockFile("",false,[],[])
+    let resolution = DependencyResolution.Analyze(dependenciesFile,true)
+    let lockFile = LockFile.LockFile.Parse(resolution.DependenciesFile.FindLockfile().FullName)
 
-    let errors = LockFile.extractErrors newPackages
+    let errors = LockFile.extractErrors resolution.PackageResolution
 
     if errors <> "" then
         traceError errors
         []
     else
         [for p in lockFile.ResolvedPackages do
-            match newPackages.[p.Name] with
+            match resolution.PackageResolution.[p.Name] with
             | Resolved newVersion -> 
                 if p.Version <> newVersion.Version then 
                     yield p.Name,p.Version,newVersion.Version        

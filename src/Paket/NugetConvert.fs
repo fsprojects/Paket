@@ -7,7 +7,7 @@ open System.IO
 open System.Xml
 open Paket.Logging
 
-let private depFileName = "paket.dependencies"
+let private dependenciesFileName = "paket.dependencies"
 
 let private readPackageSources(configFile : FileInfo) =
     let doc = XmlDocument()
@@ -29,13 +29,13 @@ let private convertNugetsToDepFile(nugetPackagesConfigs) =
     
     let latestVersions = allVersions |> Seq.map (fun (name,versions) -> name, versions |> Seq.max |> string)
     
-    let depFileExists = File.Exists depFileName 
+    let depFileExists = File.Exists dependenciesFileName 
     let existingPackages = 
         if depFileExists 
-        then (DependenciesFile.ReadFromFile depFileName).Packages |> List.map (fun p -> p.Name.ToLower()) |> Set.ofList
+        then (DependenciesFile.ReadFromFile dependenciesFileName).Packages |> List.map (fun p -> p.Name.ToLower()) |> Set.ofList
         else Set.empty
     let confictingPackages = Set.intersect existingPackages (latestVersions |> Seq.map fst |> Seq.map (fun n -> n.ToLower()) |> Set.ofSeq)
-    confictingPackages |> Set.iter (fun name -> traceWarnfn "Package %s is already defined in %s" name depFileName)
+    confictingPackages |> Set.iter (fun name -> traceWarnfn "Package %s is already defined in %s" name dependenciesFileName)
 
     let dependencyLines = 
         latestVersions 
@@ -56,13 +56,13 @@ let private convertNugetsToDepFile(nugetPackagesConfigs) =
                 |> Set.toList
                 |> List.map (sprintf "source %s")                
                 
-            File.WriteAllLines(depFileName, packageSources @ [String.Empty] @ dependencyLines)
-            tracefn "Generated %s file" depFileName 
+            File.WriteAllLines(dependenciesFileName, packageSources @ [String.Empty] @ dependencyLines)
+            tracefn "Generated %s file" dependenciesFileName 
     elif not (dependencyLines |> Seq.isEmpty)
         then
-            File.WriteAllLines(depFileName, Seq.append (File.ReadAllLines(depFileName)) dependencyLines)
-            traceWarnfn "Overwritten %s file" depFileName 
-    else tracefn "%s is up to date" depFileName
+            File.WriteAllLines(dependenciesFileName, Seq.append (File.ReadAllLines(dependenciesFileName)) dependencyLines)
+            traceWarnfn "Overwritten %s file" dependenciesFileName 
+    else tracefn "%s is up to date" dependenciesFileName
 
 let private convertNugetToRefFile(nugetPackagesConfig) =
     let refFile = Path.Combine(nugetPackagesConfig.File.DirectoryName, "paket.references")
@@ -91,7 +91,7 @@ let private convertNugetToRefFile(nugetPackagesConfig) =
 
 /// Converts all projects from NuGet to Paket
 let ConvertFromNuget(force, installAfter) =
-    if File.Exists depFileName && not force then failwithf "%s already exists, use --force to overwrite" depFileName
+    if File.Exists dependenciesFileName && not force then failwithf "%s already exists, use --force to overwrite" dependenciesFileName
 
     let nugetPackagesConfigs = FindAllFiles(".", "packages.config") |> Seq.map Nuget.ReadPackagesConfig
     convertNugetsToDepFile(nugetPackagesConfigs)
@@ -129,6 +129,7 @@ let ConvertFromNuget(force, installAfter) =
             then Directory.Delete nugetDir
     | None -> ()
 
-    if installAfter then 
-        let lockFileName = LockFile.findLockfile depFileName       
-        InstallProcess.Install(false,true,LockFile.LockFile.Parse lockFileName.FullName)
+    if installAfter then
+        let resolution = DependencyResolution.Analyze(dependenciesFileName,force)            
+        let lockFileName = resolution.DependenciesFile.FindLockfile()
+        InstallProcess.Install(false,true,LockFile.LockFile.Parse(lockFileName.FullName))
