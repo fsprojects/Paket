@@ -18,20 +18,19 @@ type private InstallInfo = {
 
 module private InstallRules = 
     let groupDLLs (usedPackages : Dictionary<string,bool>) extracted projectPath = 
-        [ for (package:ResolvedPackage), libraries in extracted do
-              
-              if usedPackages.ContainsKey(package.Name) then 
-                  let libraries = libraries |> Seq.toArray
-                  for (lib : FileInfo) in libraries do
-                      match FrameworkIdentifier.DetectFromPath lib.FullName with
-                      | None -> verbosefn "    - could not unterstand %s ==> ignored" lib.FullName
-                      | Some condition ->
-                          let dllName = lib.Name.Replace(lib.Extension, "")
-                          verbosefn "    - adding new condition %A fo %s" condition dllName
-                          yield { DllName = dllName
-                                  Path = createRelativePath projectPath lib.FullName
-                                  Package = package
-                                  Condition = condition } ]
+        [ for (package:ResolvedPackage), libraries in extracted do              
+              if usedPackages.ContainsKey(package.Name) |> not then verbosefn "    - %s is not used ==> ignored" package.Name else
+                let libraries = Seq.toArray libraries
+                for (lib : FileInfo) in libraries do
+                    match FrameworkIdentifier.DetectFromPath lib.FullName with
+                    | None -> verbosefn "    - could not unterstand %s ==> ignored" lib.FullName
+                    | Some condition ->
+                        let dllName = lib.Name.Replace(lib.Extension, "")
+                        verbosefn "    - adding new condition %A fo %s" condition dllName
+                        yield { DllName = dllName
+                                Path = createRelativePath projectPath lib.FullName
+                                Package = package
+                                Condition = condition } ]
         |> Seq.groupBy (fun info -> info.Package.Name, info.DllName, info.Condition.GetFrameworkIdentifier())
         |> Seq.groupBy (fun ((packageName,name, _), _) -> packageName,name)
         |> Seq.groupBy (fun ((packageName,_),_) -> packageName)

@@ -319,10 +319,20 @@ let ExtractPackage(fileName, name, version, force) =
 /// Finds all libraries in a nuget packge.
 let GetLibraries(targetFolder) =
     let dir = DirectoryInfo(Path.Combine(targetFolder,"lib"))
-    if dir.Exists then
-        dir.GetFiles("*.dll",SearchOption.AllDirectories)
-    else
-        Array.empty
+    let libs = 
+        if dir.Exists then
+            dir.GetFiles("*.dll",SearchOption.AllDirectories)
+        else
+            Array.empty
+
+    if Logging.verbose then
+        if Array.isEmpty libs then 
+            verbosefn "No libraries found in %s" targetFolder 
+        else
+            let s = String.Join(Environment.NewLine + "  - ",libs |> Array.map (fun l -> l.FullName))
+            verbosefn "Libraries found in %s:%s" targetFolder s
+
+    libs
 
 /// Lists packages defined in a NuGet packages.config
 let ReadPackagesConfig(configFile : FileInfo) =

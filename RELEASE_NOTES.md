@@ -1,3 +1,6 @@
+#### 0.2.30 - 21.09.2014
+* Even more tracing
+
 #### 0.2.29 - 21.09.2014
 * Resolve dependencies in non-empty intersection - https://github.com/fsprojects/Paket/issues/144
 
