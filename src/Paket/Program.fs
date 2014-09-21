@@ -92,15 +92,23 @@ try
             let resolution = DependencyResolution.Analyze(dependenciesFileName,force)            
             let lockFileName = resolution.DependenciesFile.FindLockfile()
             
-            if not lockFileName.Exists then 
-                LockFile.LockFile(lockFileName.FullName,resolution.DependenciesFile.Strict,resolution).Serialize()
+            let lockFile = 
+                if not lockFileName.Exists then 
+                    let lockFile = LockFile.LockFile(lockFileName.FullName,resolution.DependenciesFile.Strict,resolution)
+                    lockFile.Serialize()
+                    lockFile
+                else
+                    LockFile.LockFile.Parse resolution.DependenciesFile
 
-            InstallProcess.Install(force,hard,LockFile.LockFile.Parse resolution.DependenciesFile)
+            InstallProcess.Install(force,hard,lockFile)
         | Command.Update -> 
             let resolution = DependencyResolution.Analyze(dependenciesFileName,force)
             let lockFileName = resolution.DependenciesFile.FindLockfile()
-            LockFile.LockFile(lockFileName.FullName,resolution.DependenciesFile.Strict,resolution).Serialize()
-            InstallProcess.Install(force,hard,LockFile.LockFile.Parse resolution.DependenciesFile)
+            let lockFile =             
+                let lockFile = LockFile.LockFile(lockFileName.FullName,resolution.DependenciesFile.Strict,resolution)
+                lockFile.Serialize()
+                lockFile
+            InstallProcess.Install(force,hard,lockFile)
         | Command.Outdated -> FindOutdated.ListOutdated(dependenciesFileName)
         | Command.InitAutoRestore -> VSIntegration.InitAutoRestore()
         | Command.ConvertFromNuget -> NuGetConvert.ConvertFromNuget(force,installAfterConvert)
