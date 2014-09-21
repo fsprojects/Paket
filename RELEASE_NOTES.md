@@ -1,3 +1,6 @@
+#### 0.2.28 - 21.09.2014
+* Added more tracing statements
+
 #### 0.2.27 - 21.09.2014
 * If explicit references are listed in nuspec we have to respect this 
 

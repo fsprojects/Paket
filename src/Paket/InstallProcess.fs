@@ -129,8 +129,6 @@ let Install(regenerate, force, hard, dependenciesFilename) =
 
         directPackages
         |> Array.iter (addPackage true)
-        
-        if usedPackages.Count > 0 then verbosefn "  - all packages: %A" (usedPackages |> Seq.toArray)
 
         project.UpdateReferences(extractedPackages,usedPackages,hard)
 

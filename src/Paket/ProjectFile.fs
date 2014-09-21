@@ -19,13 +19,16 @@ type private InstallInfo = {
 module private InstallRules = 
     let groupDLLs (usedPackages : Dictionary<string,bool>) extracted projectPath = 
         [ for (package:ResolvedPackage), libraries in extracted do
+              
               if usedPackages.ContainsKey(package.Name) then 
                   let libraries = libraries |> Seq.toArray
                   for (lib : FileInfo) in libraries do
                       match FrameworkIdentifier.DetectFromPath lib.FullName with
-                      | None -> ()
+                      | None -> verbosefn "    - could not unterstand %s ==> ignored" lib.FullName
                       | Some condition ->
-                          yield { DllName = lib.Name.Replace(lib.Extension, "")
+                          let dllName = lib.Name.Replace(lib.Extension, "")
+                          verbosefn "    - adding new condition %A fo %s" condition dllName
+                          yield { DllName = dllName
                                   Path = createRelativePath projectPath lib.FullName
                                   Package = package
                                   Condition = condition } ]
@@ -81,7 +84,11 @@ type ProjectFile =
         ]
 
     member this.DeletePaketNodes(name) =    
-        for node in this.FindPaketNodes(name) do
+        let nodesToDelete = this.FindPaketNodes(name) 
+        if nodesToDelete |> Seq.isEmpty |> not then
+            verbosefn "    - Deleting Paket nodes"
+
+        for node in nodesToDelete do
             node.ParentNode.RemoveChild(node) |> ignore
 
     member this.DeletePaketCompileNodes() =    
@@ -94,16 +101,22 @@ type ProjectFile =
             if !remove then
                 nodesToDelete.Add node
 
+        if nodesToDelete |> Seq.isEmpty |> not then
+            verbosefn "    - Deleting Paket Compile nodes"
+
         for node in nodesToDelete do
             node.ParentNode.RemoveChild(node) |> ignore
 
-    member this.DeleteCustomNodes(dllName) =    
+    member this.DeleteCustomNodes(dllName) =        
         let nodesToDelete = List<_>()
         for node in this.Document.SelectNodes("//ns:Reference", this.Namespaces) do
             if node.Attributes.["Include"].InnerText.Split(',').[0] = dllName then            
                 nodesToDelete.Add node
 
-        for node in nodesToDelete do
+        if nodesToDelete |> Seq.isEmpty |> not then
+            verbosefn "    - Deleting custom projects nodes for %s" dllName
+
+        for node in nodesToDelete do            
             node.ParentNode.RemoveChild(node) |> ignore
 
     member this.CreateNode(name) = this.Document.CreateElement(name, ProjectFile.DefaultNameSpace)
@@ -185,7 +198,7 @@ type ProjectFile =
                         if not install then verbosefn "  - %s not listed in %s ==> excluded" dllName nuspec.Name else
                         verbosefn "  - installing %s" dllName
                         let lastLib = ref None
-                        for (_), libs in libsWithSameName do
+                        for (_), libs in libsWithSameName do                            
                             let chooseNode = this.Document.CreateElement("Choose", ProjectFile.DefaultNameSpace)
                         
                             let libsWithSameFrameworkVersion = 
@@ -193,6 +206,7 @@ type ProjectFile =
                                 |> List.ofSeq
                                 |> List.sortBy (fun lib -> lib.Path)
                             for lib in libsWithSameFrameworkVersion do
+                                verbosefn "     - %A" lib.Condition
                                 chooseNode.AppendChild(this.CreateWhenNode(lib, lib.Condition.GetCondition())) |> ignore
                                 lastLib := Some lib
                             match !lastLib with
@@ -204,7 +218,9 @@ type ProjectFile =
             this.DeleteEmptyReferences()
 
     member this.Save() =
-            if Utils.normalizeXml this.Document <> this.OriginalText then this.Document.Save(this.FileName)
+            if Utils.normalizeXml this.Document <> this.OriginalText then 
+                verbosefn "Project %s changed" this.FileName
+                this.Document.Save(this.FileName)
 
     member this.GetContentFiles() =
         this.FindPaketNodes("Content")
