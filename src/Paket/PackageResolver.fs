@@ -13,7 +13,9 @@ type private Shrinked =
 let private shrink (s1 : Shrinked, s2 : Shrinked) = 
     match s1, s2 with
     | Ok version1, Ok version2 -> 
-        match version1.Referenced.VersionRange, version2.Referenced.VersionRange with
+        let vr1 = version1.Referenced.VersionRange
+        let vr2 = version2.Referenced.VersionRange
+        match vr1, vr2 with
         | Minimum v1, Minimum v2 when v1 >= v2 -> s1
         | Minimum _, Minimum _ -> s2
         | Minimum v1, Specific v2 when v2 >= v1 -> s2
@@ -28,6 +30,28 @@ let private shrink (s1 : Shrinked, s2 : Shrinked) =
             else 
                 let shrinkedDependency = 
                     { version1.Referenced with VersionRange = VersionRange.Range(Closed, newMin, newMax, Open) }
+                Shrinked.Ok(match version1 with
+                            | FromRoot _ -> FromRoot shrinkedDependency
+                            | FromPackage d -> 
+                                FromPackage { Defining = d.Defining
+                                              Referenced = shrinkedDependency })
+        | Range(_, min1, max1, _), Minimum v2 ->
+            let newMin = max min1 v2
+            if newMin > max1 then Shrinked.Conflict(version1, version2)
+            else 
+                let shrinkedDependency = 
+                    { version1.Referenced with VersionRange = VersionRange.Range(Closed, newMin, max1, Open) }
+                Shrinked.Ok(match version1 with
+                            | FromRoot _ -> FromRoot shrinkedDependency
+                            | FromPackage d -> 
+                                FromPackage { Defining = d.Defining
+                                              Referenced = shrinkedDependency })
+        | Minimum v1, Range(_, min2, max2, _)  -> 
+            let newMin = max v1 min2
+            if newMin > max2 then Shrinked.Conflict(version1, version2)
+            else 
+                let shrinkedDependency = 
+                    { version1.Referenced with VersionRange = VersionRange.Range(Closed, newMin, max2, Open) }
                 Shrinked.Ok(match version1 with
                             | FromRoot _ -> FromRoot shrinkedDependency
                             | FromPackage d -> 

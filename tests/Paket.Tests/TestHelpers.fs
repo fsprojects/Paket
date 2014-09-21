@@ -36,11 +36,11 @@ let resolve graph (dependencies: (string * VersionRange) seq) =
 let getVersion resolved =
     match resolved with
     | ResolvedDependency.Resolved x -> x.Version.ToString()
+    | ResolvedDependency.Conflict _ -> "UNRESOLVED"
 
 let getSource resolved =
     match resolved with
     | ResolvedDependency.Resolved x -> x.Source
-
 
 let normalizeLineEndings (text:string) = text.Replace("\r\n","\n").Replace("\r","\n").Replace("\n",Environment.NewLine)
 
