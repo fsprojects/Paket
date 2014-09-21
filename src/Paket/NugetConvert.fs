@@ -133,7 +133,7 @@ let ConvertFromNuget(force, installAfter) =
         let resolution = DependencyResolution.Analyze(dependenciesFileName,force)
         let lockFileName = resolution.DependenciesFile.FindLockfile()
         let lockFile =             
-            let lockFile = LockFile.LockFile(lockFileName.FullName,resolution.DependenciesFile.Strict,resolution)
-            lockFile.Serialize()
+            let lockFile = LockFile(lockFileName.FullName,resolution.DependenciesFile.Strict,resolution)
+            lockFile.Save()
             lockFile
-        InstallProcess.Install(false,true,lockFile)        
+        InstallProcess.Install(false,true,lockFile)

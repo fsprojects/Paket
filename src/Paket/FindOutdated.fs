@@ -7,9 +7,9 @@ open Paket.Logging
 let FindOutdated(dependenciesFile) =     
     //TODO: Anything we need to do for source files here?    
     let resolution = DependencyResolution.Analyze(dependenciesFile,true)
-    let lockFile = LockFile.LockFile.Parse(resolution.DependenciesFile)
+    let lockFile = LockFile.LoadFrom(resolution.DependenciesFile)
 
-    let errors = LockFile.extractErrors resolution.PackageResolution
+    let errors = LockFileSerializer.extractErrors resolution.PackageResolution
 
     if errors <> "" then
         traceError errors

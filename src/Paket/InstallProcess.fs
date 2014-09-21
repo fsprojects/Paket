@@ -83,7 +83,7 @@ let extractReferencesFromListFile projectFile =
 
 
 /// Installs the given packageFile.
-let Install(force, hard, lockFile:LockFile.LockFile) = 
+let Install(force, hard, lockFile:LockFile) = 
     let extractedPackages = 
         ExtractPackages(force, lockFile.ResolvedPackages)
         |> Seq.append (DownloadSourceFiles(Path.GetDirectoryName lockFile.FileName, lockFile.SourceFiles))

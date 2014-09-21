@@ -43,7 +43,7 @@ let expected = """NUGET
 let ``should generate lock file for packages``() = 
     let cfg = DependenciesFile.FromCode config1
     cfg.Resolve(true, DictionaryDiscovery graph)
-    |> LockFile.serializePackages cfg.Strict
+    |> LockFileSerializer.serializePackages cfg.Strict
     |> shouldEqual (normalizeLineEndings expected)
 
 
@@ -63,5 +63,5 @@ github "owner/project1:commit1" "folder/file1.fs"
 github "owner:project2:commit2" "folder/file.fs" """ |> DependenciesFile.FromCode
     
     cfg.RemoteFiles
-    |> LockFile.serializeSourceFiles
+    |> LockFileSerializer.serializeSourceFiles
     |> shouldEqual (normalizeLineEndings expectedWithGitHub)

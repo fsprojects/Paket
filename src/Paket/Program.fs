@@ -94,19 +94,19 @@ try
             
             let lockFile = 
                 if not lockFileName.Exists then 
-                    let lockFile = LockFile.LockFile(lockFileName.FullName,resolution.DependenciesFile.Strict,resolution)
-                    lockFile.Serialize()
+                    let lockFile = LockFile(lockFileName.FullName,resolution.DependenciesFile.Strict,resolution)
+                    lockFile.Save()
                     lockFile
                 else
-                    LockFile.LockFile.Parse resolution.DependenciesFile
+                    LockFile.LoadFrom resolution.DependenciesFile
 
             InstallProcess.Install(force,hard,lockFile)
         | Command.Update -> 
             let resolution = DependencyResolution.Analyze(dependenciesFileName,force)
             let lockFileName = resolution.DependenciesFile.FindLockfile()
             let lockFile =             
-                let lockFile = LockFile.LockFile(lockFileName.FullName,resolution.DependenciesFile.Strict,resolution)
-                lockFile.Serialize()
+                let lockFile = LockFile(lockFileName.FullName,resolution.DependenciesFile.Strict,resolution)
+                lockFile.Save()
                 lockFile
             InstallProcess.Install(force,hard,lockFile)
         | Command.Outdated -> FindOutdated.ListOutdated(dependenciesFileName)

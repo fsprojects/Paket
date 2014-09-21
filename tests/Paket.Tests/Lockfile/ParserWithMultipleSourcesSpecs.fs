@@ -19,7 +19,7 @@ let lockFile = """NUGET
 
 [<Test>]
 let ``should parse lock file``() = 
-    let lockFile = LockFile.Parse(toLines lockFile)
+    let lockFile = LockFileParser.Parse(toLines lockFile)
     let packages = List.rev lockFile.Packages
     packages.Length |> shouldEqual 6
     lockFile.Strict |> shouldEqual false

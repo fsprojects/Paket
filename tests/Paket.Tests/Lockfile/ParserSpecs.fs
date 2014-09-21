@@ -27,7 +27,7 @@ GITHUB
 
 [<Test>]
 let ``should parse lock file``() = 
-    let lockFile = LockFile.Parse(toLines lockFile)
+    let lockFile = LockFileParser.Parse(toLines lockFile)
     let packages = List.rev lockFile.Packages
     packages.Length |> shouldEqual 6
     lockFile.Strict |> shouldEqual false
@@ -80,7 +80,7 @@ NUGET
 
 [<Test>]
 let ``should parse strict lock file``() = 
-    let lockFile = LockFile.Parse(toLines strictLockFile)
+    let lockFile = LockFileParser.Parse(toLines strictLockFile)
     let packages = List.rev lockFile.Packages
     packages.Length |> shouldEqual 6
     lockFile.Strict |> shouldEqual true
