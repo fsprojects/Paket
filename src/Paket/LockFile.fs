@@ -195,17 +195,3 @@ type LockFile(fileName:string,strictMode,dependenciesResolution:DependencyResolu
                 
             let dependenciesResolution = DependencyResolution(dependenciesFile, resolution, List.rev state.SourceFiles)
             LockFile(fileName,state.Strict,dependenciesResolution)
-            
-
-let Update(dependenciesResolution: DependencyResolution) = 
-    let errors = extractErrors dependenciesResolution.PackageResolution
-    if errors = "" then 
-        let output = 
-            String.Join
-                (Environment.NewLine,                  
-                 serializePackages dependenciesResolution.DependenciesFile.Strict dependenciesResolution.PackageResolution, 
-                 serializeSourceFiles dependenciesResolution.RemoteFiles)
-        let lockFileName = dependenciesResolution.DependenciesFile.FindLockfile().FullName
-        File.WriteAllText(lockFileName, output)
-        tracefn "Locked version resolutions written to %s" lockFileName
-    else failwith <| "Could not resolve dependencies." + Environment.NewLine + errors
