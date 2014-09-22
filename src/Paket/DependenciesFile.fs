@@ -107,6 +107,10 @@ type DependenciesFile(fileName,strictMode,packages : UnresolvedPackage list, rem
     member __.FileName = fileName
     member this.Resolve(force) = this.Resolve(Nuget.GetVersions,Nuget.GetPackageDetails force)
     member __.Resolve(getVersionF, getPackageDetailsF) = PackageResolver.Resolve(getVersionF, getPackageDetailsF, packages)
+    member __.Add(packageName,version) =
+        let lastPackage = Seq.last packages
+        let newPackage = {lastPackage with Name = packageName; VersionRange = DependenciesFileParser.parseVersionRange version}
+        DependenciesFile(fileName,strictMode,packages @ [newPackage], remoteFiles )
 
     static member FromCode(code:string) : DependenciesFile = 
         DependenciesFile(DependenciesFileParser.parseDependenciesFile "" <| code.Replace("\r\n","\n").Replace("\r","\n").Split('\n'))

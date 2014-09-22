@@ -6,4 +6,6 @@ open Paket.Logging
 open System.IO
 open System.Collections.Generic
 
-let Add(force, hard, dependenciesFilename) = ()
+let Add(package, version, force, hard, dependenciesFileName) = 
+    let dependenciesFile = DependenciesFile.ReadFromFile dependenciesFileName
+    ()

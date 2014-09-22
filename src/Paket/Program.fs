@@ -87,7 +87,7 @@ try
         let installAfterConvert = results.Contains <@ CLIArguments.No_install @> |> not
 
         match command with
-        | Command.Add -> AddProcess.Add(force,hard,dependenciesFileName)
+        | Command.Add -> AddProcess.Add("TODO","",force,hard,dependenciesFileName)
         | Command.Install -> UpdateProcess.Update(dependenciesFileName,false,force,hard) 
         | Command.Update -> UpdateProcess.Update(dependenciesFileName,true,force,hard)
         | Command.Outdated -> FindOutdated.ListOutdated(dependenciesFileName)
