@@ -6,7 +6,7 @@ A repository may contain zero or more `paket.references` files.
 
 It acts a lot like NuGet's `packages.config` files but there are some key differences:
 
-- One does not specify package versions these are instead sourced from the [`paket.lock` file](lock-file.html) (which are in turn derived from the rules contained within the [`paket.dependencies` file](dependencies-file.html) in the course of the *initial* [`paket install`](paket-install.html) or subsequent [`paket update`](paket-update.html) commands)
+- One does not specify package versions; these are instead sourced from the [`paket.lock` file](lock-file.html) (which are in turn derived from the rules contained within the [`paket.dependencies` file](dependencies-file.html) in the course of the *initial* [`paket install`](paket-install.html) or subsequent [`paket update`](paket-update.html) commands)
 - Only direct dependencies should be listed (see below, [we're currently evaluating options for other reference modes](https://github.com/fsprojects/Paket/issues/38))
 - It's just a plain text file
 - It's optional
@@ -26,7 +26,7 @@ The file whitelists any dependencies from the [`paket.lock`](lock-file.html) set
 
 For each MSBuild project alongside a `paket.references`, [`paket install`](paket-install.html) and [`paket update`](paket-update.html) will add references to the dependencies listed in `paket.references` *and all their indirect dependencies*.
 
-The references injected into the MSBuild project represent the complete set of rules specified within the package for each `lib` and `Content` item; each reference is `Condition`al on an MSBuild expression predicated on the project's active framework etc. This allows you to change the target version of the MSBuild project (either within Visual Studio or e.g. as part of a multi-pass build) without reinstalling dependencies or incurring an impenetrable set of diffs.
+The references injected into the MSBuild project reflect the complete set of rules specified within the package for each `lib` and `Content` item; each reference is `Condition`al on an MSBuild expression predicated on the project's active framework etc. This allows you to change the target version of the MSBuild project (either within Visual Studio or e.g. as part of a multi-pass build) without reinstalling dependencies or incurring an impenetrable set of diffs.
 
 ## File name conventions
 
@@ -37,7 +37,7 @@ If you have multiple MSBuild projects in a folder that require a non-homogenous 
 - Have a shared `paket.references` file that acts as a default for all except ones that require special treatment. For each special-case project, add a `<MSBuild project>.paket.references` file
 - Add a project-specific `<MSBuild project>.paket.references` file for each and every project that requires any references
 
-Please note that Paket does not merge the directory's shared reference list with the project-specific references. If a specific reference list is present, it overrides the default (even if that file is empty, in which case it prevents anything being added to its sibling project file).
+Please note that Paket does not union the directory's shared reference list with the project-specific references. If a specific references file is present, it overrides the default (even if that file is empty, in which case it prevents anything being added to its sibling project file).
 
 ### Global paket.references
 
