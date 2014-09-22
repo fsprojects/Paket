@@ -23,7 +23,7 @@ The [paket.lock](lock-file.html) will also reflect these settings.
 
 ### Path sources
 
-Pake talso supports file paths such as local directories or references to UNC shares:
+Paket also supports file paths such as local directories or references to UNC shares:
 
     source C:\Nugets
     source ~/project/nugets
