@@ -138,4 +138,4 @@ type PackageResolution = Map<string , ResolvedPackage>
 
 type Resolved =
 | Ok of PackageResolution
-| Conflict of UnresolvedPackage list * UnresolvedPackage list
+| Conflict of Set<UnresolvedPackage> * UnresolvedPackage list

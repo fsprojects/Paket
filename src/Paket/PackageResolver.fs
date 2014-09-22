@@ -34,7 +34,7 @@ let Resolve(getVersionsF, getPackageDetailsF, rootDependencies:UnresolvedPackage
             versions
         | true,versions -> versions
 
-    let rec improveModel (filteredVersions,packages,closed:UnresolvedPackage list,stillOpen:UnresolvedPackage list) =
+    let rec improveModel (filteredVersions,packages,closed:Set<UnresolvedPackage>,stillOpen:UnresolvedPackage list) =
         match stillOpen with
         | dependency::rest ->            
             let compatibleVersions = 
@@ -57,9 +57,9 @@ let Resolve(getVersionsF, getPackageDetailsF, rootDependencies:UnresolvedPackage
                     let newDependencies =
                         exploredPackage.DirectDependencies
                         |> List.map (fun (n,v) -> {dependency with Name = n; VersionRange = v })
-                        |> List.filter (fun d -> List.exists ((=) d) closed |> not)
+                        |> List.filter (fun d -> Set.contains d closed |> not)
                     
-                    improveModel (newFilteredVersion,exploredPackage::packages,dependency::closed,newDependencies @ rest)
+                    improveModel (newFilteredVersion,exploredPackage::packages,Set.add dependency closed,newDependencies @ rest)
                 | Ok _ -> state)
                   (Conflict(closed,stillOpen))
         | [] -> 
@@ -75,4 +75,4 @@ let Resolve(getVersionsF, getPackageDetailsF, rootDependencies:UnresolvedPackage
             else 
                 Conflict(closed,stillOpen)
             
-    improveModel(Map.empty,[],[],rootDependencies)
+    improveModel(Map.empty,[],Set.empty,rootDependencies)
