@@ -5,3 +5,6 @@ let DefaultNugetStream = "http://nuget.org/api/v2"
 
 [<Literal>]
 let DependenciesFile = "paket.dependencies"
+
+[<Literal>]
+let ReferencesFile = "Constants.ReferencesFile"
