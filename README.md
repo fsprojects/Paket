@@ -56,7 +56,7 @@ After initialization, you can
       <td><a href="../../tree/master/.nuget">.nuget</a></td>
       <td>
         <p>These files are used to get NuGet dependencies on a clean build and for other NuGet-related tasks including
-        <em>Package Restore</em> of Visual Studio.</p>
+        Visual Studio <em>Package Restore<em>.</p>
         <p>Do not put anything else in this directory.</p>
         <p>Do commit the contents of this directory to source control.</p>
       </td>
@@ -172,7 +172,7 @@ After initialization, you can
   <thead>
     <tr>
       <th>Path</th>
-      <th>Descritpion</th>
+      <th>Description</th>
     </tr>
   </thead>
   <tbody>
