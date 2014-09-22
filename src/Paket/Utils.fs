@@ -77,15 +77,5 @@ let safeGetFromUrl (url : string) =
 let FindAllFiles(folder, pattern) = DirectoryInfo(folder).EnumerateFiles(pattern, SearchOption.AllDirectories)
 
 /// [omit]
-let memoize f =
-    let cache = System.Collections.Generic.Dictionary<_,_>()
-    (fun x ->
-        match cache.TryGetValue(x) with
-        | true, v -> v
-        | _ -> let v = f x
-               cache.Add(x, v)
-               v)
-
-/// [omit]
 module Seq = 
     let firstOrDefault seq = Seq.tryFind (fun _ -> true) seq

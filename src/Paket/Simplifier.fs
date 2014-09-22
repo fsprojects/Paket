@@ -29,18 +29,17 @@ let Analyze(allPackages : list<ResolvedPackage>, depFile : DependenciesFile, ref
                                                |> Set.ofList)
         |> Map.ofSeq
 
-    let runWithLower f = (fun (s: string) -> f(s.ToLower())) 
+    let rec getAllDeps (package : string) =
+        Set.union depsLookup.[package.ToLower()]
+                  (Set.unionMany (depsLookup.[package.ToLower()] |> Set.map getAllDeps))
 
-    let rec getAllDeps =
-        memoize (fun (package : string) -> 
-                     Set.union depsLookup.[package]
-                               (Set.unionMany (depsLookup.[package] |> Set.map getAllDeps))) |> runWithLower
+    let flattenedLookup = depsLookup |> Map.map (fun key _ -> getAllDeps key)
 
-    let getSimplifiedDeps depNameFun allDeps =
+    let getSimplifiedDeps (depNameFun : 'a -> string) allDeps =
         let indirectDeps = 
             allDeps 
             |> Seq.map depNameFun 
-            |> Seq.fold (fun set directDep -> Set.union set (getAllDeps directDep)) Set.empty
+            |> Seq.fold (fun set directDep -> Set.union set (flattenedLookup.[ directDep.ToLower() ])) Set.empty
         allDeps |> Seq.filter (fun dep -> not <| Set.contains ((depNameFun dep).ToLower()) indirectDeps)
 
     let simplifiedDeps = depFile.Packages |> getSimplifiedDeps (fun p -> p.Name) |> Seq.toList
