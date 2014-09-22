@@ -47,10 +47,10 @@ let Resolve(getVersionsF, getPackageDetailsF, rootDependencies:UnresolvedPackage
                 match dependency.ResolverStrategy with
                 | Max -> List.sort compatibleVersions |> List.rev
                 | Min -> List.sort compatibleVersions
-                
-            let state = ref (Conflict(closed,stillOpen))
-            for versionToExplore in sorted do
-                match !state with
+                            
+            sorted 
+            |> List.fold (fun state versionToExplore ->
+                match state with
                 | Conflict _ ->
                     let exploredPackage = getExploredPackage(dependency.Sources,dependency.Name,versionToExplore)
                     let newFilteredVersion = Map.add dependency.Name [versionToExplore] filteredVersions
@@ -59,9 +59,9 @@ let Resolve(getVersionsF, getPackageDetailsF, rootDependencies:UnresolvedPackage
                         |> List.map (fun (n,v) -> {dependency with Name = n; VersionRange = v })
                         |> List.filter (fun d -> List.exists ((=) d) closed |> not)
                     
-                    state := improveModel (newFilteredVersion,exploredPackage::packages,dependency::closed,newDependencies @ rest)
-                | Ok _ -> ()
-            !state
+                    improveModel (newFilteredVersion,exploredPackage::packages,dependency::closed,newDependencies @ rest)
+                | Ok _ -> state)
+                  (Conflict(closed,stillOpen))
         | [] -> 
             let isOk =
                 filteredVersions
