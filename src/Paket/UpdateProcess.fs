@@ -9,9 +9,10 @@ let Update(dependenciesFileName, forceResolution, force, hard) =
     
     let lockFile = 
         if forceResolution || not lockFileName.Exists then 
-            let resolution = DependencyResolution.Analyze(dependenciesFileName, force)
-            let lockFile = LockFile(lockFileName.FullName, resolution.DependenciesFile.Strict, resolution)
+            let dependenciesFile = DependenciesFile.ReadFromFile dependenciesFileName
+            let resolution = DependencyResolution.Analyze(dependenciesFile, force)
+            let lockFile = LockFile(lockFileName.FullName, dependenciesFile.Strict, resolution)
             lockFile.Save()
             lockFile
-        else DependenciesFile.ReadFromFile dependenciesFileName |> LockFile.LoadFrom
+        else LockFile.LoadFrom lockFileName.FullName
     InstallProcess.Install(force, hard, lockFile)

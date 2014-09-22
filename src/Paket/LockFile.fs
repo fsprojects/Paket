@@ -177,22 +177,20 @@ type LockFile(fileName:string,strictMode,dependenciesResolution:DependencyResolu
             let output = 
                 String.Join
                     (Environment.NewLine,                  
-                     LockFileSerializer.serializePackages dependenciesResolution.DependenciesFile.Strict dependenciesResolution.PackageResolution, 
+                     LockFileSerializer.serializePackages strictMode dependenciesResolution.PackageResolution, 
                      LockFileSerializer.serializeSourceFiles dependenciesResolution.RemoteFiles)
-            let lockFileName = dependenciesResolution.DependenciesFile.FindLockfile().FullName
-            File.WriteAllText(lockFileName, output)
-            tracefn "Locked version resolutions written to %s" lockFileName
+            File.WriteAllText(fileName, output)
+            tracefn "Locked version resolutions written to %s" fileName
         else failwith <| "Could not resolve dependencies." + Environment.NewLine + errors
 
     /// Parses a paket.lock file from lines
-    static member LoadFrom(dependenciesFile:DependenciesFile) : LockFile =    
-        let fileName = dependenciesFile.FindLockfile().FullName
-        let lines = File.ReadAllLines fileName
+    static member LoadFrom(lockFileName) : LockFile =
+        let lines = File.ReadAllLines lockFileName
         LockFileParser.Parse lines
         |> fun state -> 
             let resolution =
                 state.Packages
                 |> Seq.fold (fun map p -> Map.add p.Name (ResolvedDependency.Resolved p) map) Map.empty
                 
-            let dependenciesResolution = DependencyResolution(dependenciesFile, resolution, List.rev state.SourceFiles)
-            LockFile(fileName,state.Strict,dependenciesResolution)
+            let dependenciesResolution = DependencyResolution(resolution, List.rev state.SourceFiles)
+            LockFile(lockFileName,state.Strict,dependenciesResolution)

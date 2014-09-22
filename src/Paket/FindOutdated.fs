@@ -4,10 +4,11 @@ module Paket.FindOutdated
 open Paket.Logging
 
 /// Finds all outdated packages.
-let FindOutdated(dependenciesFile) =     
-    //TODO: Anything we need to do for source files here?    
+let FindOutdated(dependenciesFileName) =     
+    //TODO: Anything we need to do for source files here?
+    let dependenciesFile = DependenciesFile.ReadFromFile dependenciesFileName
     let resolution = DependencyResolution.Analyze(dependenciesFile,true)
-    let lockFile = LockFile.LoadFrom(resolution.DependenciesFile)
+    let lockFile = LockFile.LoadFrom(dependenciesFile.FindLockfile().FullName)
 
     let errors = LockFileSerializer.extractErrors resolution.PackageResolution
 
