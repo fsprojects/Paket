@@ -49,17 +49,12 @@ The [`paket update` command](paket-update.html) will analyze your [`paket.depend
 Contributing and copyright
 --------------------------
 
-The project is hosted on [GitHub][gh] where you can [report issues][issues], fork
-the project and submit pull requests. If you're adding a new public API, please also
-consider adding [samples][content] that can be turned into documentation. You might
-also want to read the [library design notes][readme] to understand how it works.
+The project is hosted on [GitHub][gh] where you can [report issues][issues], fork the project and submit pull requests.
 
-To get started with the code, just fork and clone locally. Then run the build
-scripts to retrieve dependencies to be able to build the solution.
+To get started with the code, just fork and clone locally. Then build the solution with `build.sh` on Mono, Visual Studio or `build.cmd`. *Please see the [Quick contributing guide in the README][readme] for contribution gudelines*.
 
-The library is available under MIT license, which allows modification and
-redistribution for both commercial and non-commercial purposes. For more information see the
-[License file][license] in the GitHub repository.
+The library is available under MIT license, which allows modification and redistribution for both commercial and non-commercial purposes. 
+For more information see the [License file][license] in the GitHub repository.
 
   [content]: https://github.com/fsprojects/Paket/tree/master/docs/content
   [gh]: https://github.com/fsprojects/Paket
