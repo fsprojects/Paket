@@ -68,7 +68,7 @@ let private addDependency (packageName:string) dependencies newDependency =
     | None -> Map.add name newDependency dependencies   
 
 /// Resolves all direct and indirect dependencies
-let Resolve(discovery : IDiscovery, force, rootDependencies:UnresolvedPackage seq) : PackageResolution =    
+let Resolve(getVersionsF, getPackageDetailsF, rootDependencies:UnresolvedPackage seq) : PackageResolution =    
     let rec analyzeGraph processed (openDependencies:Map<string,Shrinked>) =
         if Map.isEmpty openDependencies then processed else
         let current = Seq.head openDependencies
@@ -96,12 +96,7 @@ let Resolve(discovery : IDiscovery, force, rootDependencies:UnresolvedPackage se
                     |> Map.remove resolvedName
                     |> analyzeGraph processed
             | _ ->
-                let allVersions = 
-                    discovery.GetVersions(originalPackage.Sources,resolvedName) 
-                    |> Async.RunSynchronously
-                    |> Seq.concat
-                    |> Seq.toList
-                    |> List.map SemVer.parse
+                let allVersions = getVersionsF originalPackage.Sources resolvedName
 
                 let versions =                
                     allVersions
@@ -122,8 +117,7 @@ let Resolve(discovery : IDiscovery, force, rootDependencies:UnresolvedPackage se
                         | ResolverStrategy.Min -> List.min versions
 
                 let packageDetails = 
-                    discovery.GetPackageDetails(force, originalPackage.Sources, originalPackage.Name, originalPackage.ResolverStrategy, resolvedVersion.ToString()) 
-                    |> Async.RunSynchronously
+                    getPackageDetailsF originalPackage.Sources originalPackage.Name originalPackage.ResolverStrategy (resolvedVersion.ToString())
 
                 let resolvedPackage:ResolvedPackage =
                     { Name = packageDetails.Name

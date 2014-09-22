@@ -343,44 +343,37 @@ let ReadPackagesConfig(configFile : FileInfo) =
       Packages = [for node in doc.SelectNodes("//package") ->
                       node.Attributes.["id"].Value, node.Attributes.["version"].Value |> SemVer.parse ]}
 
-/// Nuget Discovery API.
-let NugetDiscovery = 
-    { new IDiscovery with
-          
-          //TODO: Should we really be able to call these methods with invalid arguments?
-          member __.GetPackageDetails(force, sources, package, resolverStrategy, version) = async { 
-                  let rec tryNext xs = 
-                      async { 
-                          match xs with
-                          | source :: rest -> 
-                              try 
-                                  match source with
-                                  | Nuget url -> 
-                                    let! details = getDetailsFromNuget force url package sources resolverStrategy version                                  
-                                    return source,details
-                                  | LocalNuget path -> 
-                                    let! details = getDetailsFromLocalFile path package sources resolverStrategy version                                    
-                                    return source,details
-                              with _ ->
-                                return! tryNext rest
-                          | [] -> 
-                              failwithf "Couldn't get package details for package %s on %A" package sources
-                              return! tryNext []
-                      }
 
-                  let! source,(name,link,packages) = tryNext sources
-                  return 
-                      { Name = name
-                        Source = source
-                        DownloadLink = link
-                        DirectDependencies =
-                        packages |> List.map (fun package -> {package with Sources = source :: (List.filter ((<>) source) sources) })}
-              }
-          
-          member __.GetVersions(sources, package) =
-              sources
-              |> Seq.map (fun source -> 
-                            match source with
-                            | Nuget url -> getAllVersions (url, package)
-                            | LocalNuget path -> getAllVersionsFromLocalPath (path, package))
-              |> Async.Parallel }
+//TODO: Should we really be able to call these methods with invalid arguments?
+let GetPackageDetails force sources package resolverStrategy version = 
+    let rec tryNext xs = 
+        match xs with
+        | source :: rest -> 
+            try 
+                match source with
+                | Nuget url -> 
+                    getDetailsFromNuget force url package sources resolverStrategy version |> Async.RunSynchronously
+                | LocalNuget path -> 
+                    getDetailsFromLocalFile path package sources resolverStrategy version |> Async.RunSynchronously
+                |> fun x -> source,x
+            with _ -> tryNext rest
+        | [] -> failwithf "Couldn't get package details for package %s on %A" package sources
+    
+    let source, (name, link, packages) = tryNext sources
+    { Name = name
+      Source = source
+      DownloadLink = link
+      DirectDependencies = 
+          packages |> List.map (fun package -> { package with Sources = source :: (List.filter ((<>) source) sources) }) }
+
+let GetVersions sources package = 
+    sources
+    |> Seq.map (fun source -> 
+           match source with
+           | Nuget url -> getAllVersions (url, package)
+           | LocalNuget path -> getAllVersionsFromLocalPath (path, package))
+    |> Async.Parallel
+    |> Async.RunSynchronously
+    |> Seq.concat
+    |> Seq.toList
+    |> List.map SemVer.parse

@@ -110,8 +110,8 @@ type DependenciesFile(fileName,strictMode,packages : UnresolvedPackage list, rem
     member __.RemoteFiles = remoteFiles
     member __.Strict = strictMode
     member __.FileName = fileName
-    member this.Resolve(force) = this.Resolve(Nuget.NugetDiscovery,force)
-    member __.Resolve(discovery : IDiscovery, force) = PackageResolver.Resolve(discovery, force, packages)
+    member this.Resolve(force) = this.Resolve(Nuget.GetVersions,Nuget.GetPackageDetails force)
+    member __.Resolve(getVersionF, getPackageDetailsF) = PackageResolver.Resolve(getVersionF, getPackageDetailsF, packages)
 
     static member FromCode(code:string) : DependenciesFile = 
         DependenciesFile(DependenciesFileParser.parseDependenciesFile "" <| code.Replace("\r\n","\n").Replace("\r","\n").Split('\n'))

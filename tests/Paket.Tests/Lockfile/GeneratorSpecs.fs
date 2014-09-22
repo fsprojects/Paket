@@ -42,7 +42,7 @@ let expected = """NUGET
 [<Test>]
 let ``should generate lock file for packages``() = 
     let cfg = DependenciesFile.FromCode config1
-    cfg.Resolve(DictionaryDiscovery graph, true)
+    cfg.Resolve(VersionsFromGraph graph, PackageDetailsFromGraph graph)
     |> LockFileSerializer.serializePackages cfg.Strict
     |> shouldEqual (normalizeLineEndings expected)
 
