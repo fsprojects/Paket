@@ -83,3 +83,19 @@ let ``should resolve fixed config``() =
     getVersion resolved.["Castle.Core"] |> shouldEqual "3.2.0"
     getVersion resolved.["Castle.Windsor-log4net"] |> shouldEqual "3.2.0.1"
     getVersion resolved.["Castle.Core-log4net"] |> shouldEqual "3.2.0"
+
+
+let config4 = """
+source "http://nuget.org/api/v2"
+
+nuget "Castle.Core" "= 3.2.0"
+nuget "Castle.Windsor-log4net" "~> 3.2.0.1"
+"""
+
+[<Test>]
+let ``should resolve fixed config4``() = 
+    let cfg = DependenciesFile.FromCode config4
+    let resolved = cfg.Resolve(VersionsFromGraph graph3, PackageDetailsFromGraph graph3) |> UpdateProcess.getResolvedPackagesOrFail
+    getVersion resolved.["Castle.Core"] |> shouldEqual "3.2.0"
+    getVersion resolved.["Castle.Windsor-log4net"] |> shouldEqual "3.2.0.1"
+    getVersion resolved.["Castle.Core-log4net"] |> shouldEqual "3.2.0"
