@@ -2,6 +2,7 @@
 
 open System.IO
 open Logging
+open System
 
 let Analyze(allPackages : list<ResolvedPackage>, depFile : DependenciesFile, refFiles : list<FileInfo * string[]>) = 
     
@@ -32,6 +33,13 @@ let Analyze(allPackages : list<ResolvedPackage>, depFile : DependenciesFile, ref
 
     DependenciesFile(depFile.FileName, false, simplifiedDeps, depFile.RemoteFiles), refFiles'
 
+let private formatDiff (before : string []) (after : string []) =
+    "   Before:" + Environment.NewLine +
+    "       " + String.Join("       " + Environment.NewLine, before) +
+    Environment.NewLine + Environment.NewLine +
+    "   After:" + Environment.NewLine +
+    "       " + String.Join("       " + Environment.NewLine, after)
+
 let Simplify () = 
     if not <| File.Exists("paket.dependencies") then
         failwith "paket.dependencies file not found."
@@ -54,8 +62,11 @@ let Simplify () =
         |> Seq.map(fun f -> f, File.ReadAllLines f.FullName) 
         |> Seq.toList
 
+    let refFilesLookup = refFiles |> List.map (fun (fi,content) -> fi.FullName, content) |> Map.ofList
+
     let simplifiedDepsFile, simplifiedRefFiles = Analyze(packages, depFile, refFiles)
 
     for file,lines in simplifiedRefFiles do
         File.WriteAllLines(file.FullName, lines)
         tracefn "Simplified %s" file.FullName
+        traceVerbose (formatDiff refFilesLookup.[file.FullName] lines)
