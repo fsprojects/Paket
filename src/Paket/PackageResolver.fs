@@ -7,6 +7,7 @@ open System.Collections.Generic
 
 /// Resolves all direct and indirect dependencies
 let Resolve(getVersionsF, getPackageDetailsF, rootDependencies:UnresolvedPackage list) =
+    tracefn "Resolving packages:" 
     let exploredPackages = Dictionary<string*SemVerInfo,ResolvedPackage>()
     let allVersions = new Dictionary<string,SemVerInfo list>()
     
@@ -14,6 +15,7 @@ let Resolve(getVersionsF, getPackageDetailsF, rootDependencies:UnresolvedPackage
         match exploredPackages.TryGetValue <| (packageName,version) with
         | true,package -> package
         | false,_ ->
+            tracefn "    - exploring %s %s" packageName (version.ToString())
             let packageDetails : PackageDetails = getPackageDetailsF sources packageName (version.ToString())
             let explored =
                 { Name = packageDetails.Name
@@ -26,7 +28,7 @@ let Resolve(getVersionsF, getPackageDetailsF, rootDependencies:UnresolvedPackage
     let getAllVersions(sources,packageName) =
         match allVersions.TryGetValue packageName with
         | false,_ ->
-            verbosefn "Getting versions for %s" packageName
+            tracefn "  - fetching versions for %s" packageName
             let versions = getVersionsF sources packageName
             allVersions.Add(packageName,versions)
             versions
@@ -34,7 +36,7 @@ let Resolve(getVersionsF, getPackageDetailsF, rootDependencies:UnresolvedPackage
 
     let rec improveModel (filteredVersions,packages,closed:UnresolvedPackage list,stillOpen:UnresolvedPackage list) =
         match stillOpen with
-        | dependency::rest ->
+        | dependency::rest ->            
             let compatibleVersions = 
                 match Map.tryFind dependency.Name filteredVersions with
                 | None -> getAllVersions(dependency.Sources,dependency.Name)

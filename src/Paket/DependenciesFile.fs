@@ -85,13 +85,8 @@ module DependenciesFileParser =
                         match commit with                        
                         | None -> GitHub.getSHA1OfBranch owner project "master" |> Async.RunSynchronously
                         | Some sha -> sha
-
-                    let newSourceFile = { Owner = owner
-                                          Project = project
-                                          Commit = sha
-                                          Name = path }
-                    tracefn "  %O" newSourceFile
-                    lineNo, referencesMode, sources, packages, newSourceFile :: sourceFiles
+                    
+                    lineNo, referencesMode, sources, packages, { Owner = owner; Project = project; Commit = sha; Name = path } :: sourceFiles
                     
             with
             | exn -> failwithf "Error in paket.dependencies line %d%s  %s" lineNo Environment.NewLine exn.Message)
