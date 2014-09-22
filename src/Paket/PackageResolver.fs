@@ -25,12 +25,12 @@ let Resolve(getVersionsF, getPackageDetailsF, rootDependencies:UnresolvedPackage
             exploredPackages.Add((packageName.ToLower(),version),explored)
             explored
         
-    let getAllVersions(sources,packageName) =
-        match allVersions.TryGetValue packageName with
+    let getAllVersions(sources,packageName:string) =
+        match allVersions.TryGetValue(packageName.ToLower()) with
         | false,_ ->
             tracefn "  - fetching versions for %s" packageName
             let versions = getVersionsF sources packageName
-            allVersions.Add(packageName,versions)
+            allVersions.Add(packageName.ToLower(),versions)
             versions
         | true,versions -> versions
 
