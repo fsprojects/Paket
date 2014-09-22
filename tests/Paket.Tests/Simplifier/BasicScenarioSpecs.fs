@@ -12,7 +12,7 @@ let toPackages =
         { ResolvedPackage.Name = name
           Version = SemVer.parse ver 
           Source = Nuget(Constants.DefaultNugetStream)
-          DirectDependencies = deps
+          Dependencies = deps
                                |> List.map (fun (name, verRan) ->
                                                 name, Nuget.parseVersionRange verRan)
         })
@@ -49,11 +49,11 @@ let ``should remove one level deep indirect dependencies from dep and ref files`
 
 
 let graph2 = 
-    ["A", "1.0", ["B", "1.5"]
-     "B", "1.5", ["D", "2.0"]
-     "C", "2.0", ["E", "3.0"]
-     "D", "2.0", ["E", "3.0"]
-     "E", "3.0", ["F", "4.0"]
+    ["A", "1.0", ["b", "1.5"]
+     "b", "1.5", ["D", "2.0"]
+     "C", "2.0", ["e", "3.0"]
+     "d", "2.0", ["E", "3.0"]
+     "E", "3.0", ["f", "4.0"]
      "F", "4.0", []] |> toPackages
 
 let depFile2 = """
@@ -61,10 +61,10 @@ source http://nuget.org/api/v2
 
 nuget A 1.0
 nuget B 1.5
-nuget C 2.0
+nuget c 2.0
 nuget D 2.0
 nuget E 3.0
-nuget F 4.0""" |> DependenciesFile.FromCode
+nuget f 4.0""" |> DependenciesFile.FromCode
 
 let refFiles2 = [
     FileInfo("c:\dummy\1"), [|"A";"B";"C";"D";"F"|]
@@ -75,9 +75,9 @@ let refFiles2 = [
 let ``should remove all indirect dependencies from dep file recursively``() =
     let depFile,refFiles  = Simplifier.Analyze(graph2, depFile2, refFiles2)
     
-    depFile.Packages |> List.length |> shouldEqual [|"A";"C"|].Length
+    depFile.Packages |> List.length |> shouldEqual [|"A";"c"|].Length
     depFile.DirectDependencies.["A"] |> shouldEqual (VersionRange.Exactly "1.0")
-    depFile.DirectDependencies.["C"] |> shouldEqual (VersionRange.Exactly "2.0")
+    depFile.DirectDependencies.["c"] |> shouldEqual (VersionRange.Exactly "2.0")
 
     refFiles.Head |> snd |> shouldEqual [|"A";"C"|]
     refFiles.Tail.Head |> snd |> shouldEqual [|"C";"D"|]

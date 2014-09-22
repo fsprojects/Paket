@@ -24,7 +24,7 @@ let Analyze(allPackages : list<ResolvedPackage>, depFile : DependenciesFile, ref
     let depsLookup =
         allPackages
         |> Seq.map (fun package -> package.Name.ToLower(), 
-                                               package.DirectDependencies 
+                                               package.Dependencies 
                                                |> List.map (fun (name,_) -> name.ToLower()) 
                                                |> Set.ofList)
         |> Map.ofSeq
