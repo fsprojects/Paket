@@ -12,7 +12,7 @@ The [`paket.lock` file](lock-file.html) will reflect the sources selected by dep
 
 ### NuGet feeds
 
-Paket supports NuGet feeds like those emitted by [nuget.org](http://www.nuget.org) or [TeamCity](http://www.jetbrains.com/teamcity/).
+Paket supports NuGet feeds like those provided by [nuget.org](http://www.nuget.org) or [TeamCity](http://www.jetbrains.com/teamcity/).
 
 Please note that you need to specify *all* NuGet sources, including the default feed from [nuget.org](http://www.nuget.org). Paket does not take the current machine's NuGet Package Sources configuration (that you set up e.g. using Visual Studio) into account.
 
@@ -23,7 +23,7 @@ The [paket.lock](lock-file.html) will also reflect these settings.
 
 ### Path sources
 
-Paket supports file paths such as local directories or references to UNC shares:
+Pake talso supports file paths such as local directories or references to UNC shares:
 
     source C:\Nugets
     source ~/project/nugets
@@ -33,9 +33,9 @@ Paket supports file paths such as local directories or references to UNC shares:
 ### Strict references
 
 Paket usually references all direct and indirect dependencies that are listed in your [paket.references](references-files.md) files to your project file.
-With the `strict` mode it will only reference direct dependencies.
+In `strict` mode it will **only** reference *direct* dependencies.
 
-	references strict
+    references strict
     source http://nuget.org/api/v2
 
     nuget Newtonsoft.Json ~> 6.0
@@ -46,7 +46,7 @@ With the `strict` mode it will only reference direct dependencies.
 
 The dependencies of your project are defined by the `nuget "<package ID>" "<version constraint>"` statement.
 
-Paket currently supports only NuGet packages, but [we're evaluating other options](https://github.com/fsprojects/Paket/issues/9).
+Paket also supports file dependencies, such as [referencing files directly from GitHub repositories](github-dependencies.html).
 
 <div id="package-id"></div>
 ### Package ID
@@ -60,7 +60,7 @@ One key feature of Paket is that it separates the definition of dependencies fro
 
 With Paket you do not need to pin specific versions (although you can). Paket allows you to leverage [semantic versioning](http://semver.org) and define version constraints in a very flexible manner.
 
-Please also see below how you can [influence the resolution of indirect dependencies](#nuget-style-dependency-resolution).
+You can also [influence the resolution of indirect dependencies](#nuget-style-dependency-resolution).
 
 #### Pinned version constraint
 
