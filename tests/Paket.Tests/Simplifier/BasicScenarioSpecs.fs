@@ -1,25 +1,27 @@
 module Paket.Simplifier.BasicScenarioSpecs
 
 open Paket
-open Paket.LockFile
+
 open NUnit.Framework
 open FsUnit
-open TestHelpers
 open System.IO
 
 
-let lockFile1 = """
-NUGET
-  remote: http://nuget.org/api/v2
-  specs:
-    A (3.3.0)
-      B (>= 3.3.0)
-      C (= 1.0)
-    B (3.3.1)
-    C (1.0)
-    D (2.1)
-      B (>= 3.0)
-      C (>= 1.0)""" |> toLines |> LockFile.Parse
+let toPackages =
+    List.map (fun (name,ver,deps) ->
+        { ResolvedPackage.Name = name
+          Version = SemVer.parse ver 
+          Source = Nuget(Constants.DefaultNugetStream)
+          DirectDependencies = deps
+                               |> List.map (fun (name, verRan) ->
+                                                name, Nuget.parseVersionRange verRan)
+        })
+
+let graph1 = 
+    ["A", "3.3.0", ["B", "3.3.0"; "C", "1.0"]
+     "B", "3.3.0", []
+     "C", "1.0", []
+     "D", "2.1", ["B", "3.0"; "C", "1.0"]] |> toPackages
 
 let depFile1 = """
 source http://nuget.org/api/v2
@@ -36,7 +38,7 @@ let refFiles1 = [
 
 [<Test>]
 let ``should remove one level deep indirect dependencies from dep and ref files``() = 
-    let depFile,refFiles = Simplifier.Analyze(lockFile1, depFile1, refFiles1)
+    let depFile,refFiles = Simplifier.Analyze(graph1, depFile1, refFiles1)
     
     depFile.Packages |> List.length |> shouldEqual [|"A";"D"|].Length
     depFile.DirectDependencies.["A"] |> shouldEqual (VersionRange.Exactly "3.3.0")
@@ -46,21 +48,13 @@ let ``should remove one level deep indirect dependencies from dep and ref files`
     refFiles.Tail.Head |> snd |> shouldEqual [|"B";"C"|]
 
 
-let lockFile2 = """
-NUGET
-  remote: http://nuget.org/api/v2
-  specs:
-    A (1.0)
-      B (1.5)
-    B (1.5)
-      D (2.0)
-    C (2.0)
-      E (3.0)
-    D (2.0)
-      E (3.0)
-    E (3.0)
-      F (4.0)
-    F (4.0)""" |> toLines |> LockFile.Parse
+let graph2 = 
+    ["A", "1.0", ["B", "1.5"]
+     "B", "1.5", ["D", "2.0"]
+     "C", "2.0", ["E", "3.0"]
+     "D", "2.0", ["E", "3.0"]
+     "E", "3.0", ["F", "4.0"]
+     "F", "4.0", []] |> toPackages
 
 let depFile2 = """
 source http://nuget.org/api/v2
@@ -79,7 +73,7 @@ let refFiles2 = [
 
 [<Test>]
 let ``should remove all indirect dependencies from dep file recursively``() =
-    let depFile,refFiles  = Simplifier.Analyze(lockFile2, depFile2, refFiles2)
+    let depFile,refFiles  = Simplifier.Analyze(graph2, depFile2, refFiles2)
     
     depFile.Packages |> List.length |> shouldEqual [|"A";"C"|].Length
     depFile.DirectDependencies.["A"] |> shouldEqual (VersionRange.Exactly "1.0")
