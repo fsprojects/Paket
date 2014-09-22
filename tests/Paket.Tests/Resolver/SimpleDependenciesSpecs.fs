@@ -29,7 +29,7 @@ let graph = [
 [<Test>]
 let ``should resolve simple config1``() = 
     let cfg = DependenciesFile.FromCode config1
-    let resolved = cfg.Resolve(true, DictionaryDiscovery graph)
+    let resolved = cfg.Resolve(DictionaryDiscovery graph, true)
     getVersion resolved.["Rx-Main"] |> shouldEqual "2.0"
     getVersion resolved.["Rx-Core"] |> shouldEqual "2.1"
     getVersion resolved.["Castle.Windsor-log4net"] |> shouldEqual "3.3"
@@ -55,7 +55,7 @@ let graph2 = [
 [<Test>]
 let ``should resolve simple config2``() = 
     let cfg = DependenciesFile.FromCode config2
-    let resolved = cfg.Resolve(true, DictionaryDiscovery graph2)
+    let resolved = cfg.Resolve(DictionaryDiscovery graph2, true)
     getVersion resolved.["FsUnit"] |> shouldEqual "1.3.1"
     getVersion resolved.["NUnit"] |> shouldEqual "2.6.3"
 

@@ -68,7 +68,7 @@ let private addDependency (packageName:string) dependencies newDependency =
     | None -> Map.add name newDependency dependencies   
 
 /// Resolves all direct and indirect dependencies
-let Resolve(force, discovery : IDiscovery, rootDependencies:UnresolvedPackage seq) : PackageResolution =    
+let Resolve(discovery : IDiscovery, force, rootDependencies:UnresolvedPackage seq) : PackageResolution =    
     let rec analyzeGraph processed (openDependencies:Map<string,Shrinked>) =
         if Map.isEmpty openDependencies then processed else
         let current = Seq.head openDependencies

@@ -7,10 +7,10 @@ open Paket.Logging
 let FindOutdated(dependenciesFileName) =     
     //TODO: Anything we need to do for source files here?
     let dependenciesFile = DependenciesFile.ReadFromFile dependenciesFileName
-    let resolution = DependencyResolution.Analyze(dependenciesFile,true)
+    let resolution = dependenciesFile.Resolve(true)
     let lockFile = LockFile.LoadFrom(dependenciesFile.FindLockfile().FullName)
 
-    let errors = LockFileSerializer.extractErrors resolution.PackageResolution
+    let errors = LockFileSerializer.extractErrors resolution
 
     if errors <> "" then
         traceError errors
@@ -22,7 +22,7 @@ let FindOutdated(dependenciesFileName) =
                 | Resolved p -> p
                 | _ -> failwithf "Resolution failed for %s" kv.Key
 
-            match resolution.PackageResolution.[package.Name] with
+            match resolution.[package.Name] with
             | Resolved newVersion -> 
                 if package.Version <> newVersion.Version then 
                     yield package.Name,package.Version,newVersion.Version        

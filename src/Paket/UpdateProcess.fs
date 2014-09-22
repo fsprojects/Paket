@@ -10,8 +10,8 @@ let Update(dependenciesFileName, forceResolution, force, hard) =
     let lockFile = 
         if forceResolution || not lockFileName.Exists then 
             let dependenciesFile = DependenciesFile.ReadFromFile dependenciesFileName
-            let resolution = DependencyResolution.Analyze(dependenciesFile, force)
-            let lockFile = LockFile(lockFileName.FullName, dependenciesFile.Strict, resolution)
+            let resolution = dependenciesFile.Resolve force
+            let lockFile = LockFile(lockFileName.FullName, dependenciesFile.Strict, resolution, dependenciesFile.RemoteFiles)
             lockFile.Save()
             lockFile
         else LockFile.LoadFrom lockFileName.FullName

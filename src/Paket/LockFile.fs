@@ -163,22 +163,21 @@ module LockFileParser =
 
 
 /// Allows to parse and analyze paket.lock files.
-type LockFile(fileName:string,strictMode,dependenciesResolution:DependencyResolution) =
-    member __.SourceFiles = dependenciesResolution.RemoteFiles
-    member __.ResolvedPackages = dependenciesResolution.PackageResolution
-    member __.DependenciesResolution = dependenciesResolution
+type LockFile(fileName:string,strictMode,resolution:PackageResolution,remoteFiles:SourceFile list) =
+    member __.SourceFiles = remoteFiles
+    member __.ResolvedPackages = resolution
     member __.FileName = fileName
     member __.Strict = strictMode
 
     /// Updates the Lock file with the analyzed dependencies from the paket.dependencies file.
     member __.Save() =
-        let errors = LockFileSerializer.extractErrors dependenciesResolution.PackageResolution
+        let errors = LockFileSerializer.extractErrors resolution
         if errors = "" then 
             let output = 
                 String.Join
                     (Environment.NewLine,                  
-                     LockFileSerializer.serializePackages strictMode dependenciesResolution.PackageResolution, 
-                     LockFileSerializer.serializeSourceFiles dependenciesResolution.RemoteFiles)
+                     LockFileSerializer.serializePackages strictMode resolution, 
+                     LockFileSerializer.serializeSourceFiles remoteFiles)
             File.WriteAllText(fileName, output)
             tracefn "Locked version resolutions written to %s" fileName
         else failwith <| "Could not resolve dependencies." + Environment.NewLine + errors
@@ -192,5 +191,4 @@ type LockFile(fileName:string,strictMode,dependenciesResolution:DependencyResolu
                 state.Packages
                 |> Seq.fold (fun map p -> Map.add p.Name (ResolvedDependency.Resolved p) map) Map.empty
                 
-            let dependenciesResolution = DependencyResolution(resolution, List.rev state.SourceFiles)
-            LockFile(lockFileName,state.Strict,dependenciesResolution)
+            LockFile(lockFileName,state.Strict,resolution, List.rev state.SourceFiles)

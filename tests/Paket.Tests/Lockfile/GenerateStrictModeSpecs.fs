@@ -25,6 +25,6 @@ NUGET
 [<Test>]
 let ``should generate strict lock file``() = 
     let cfg = DependenciesFile.FromCode config1
-    cfg.Resolve(true, DictionaryDiscovery graph)
+    cfg.Resolve(DictionaryDiscovery graph, true)
     |> LockFileSerializer.serializePackages cfg.Strict
     |> shouldEqual (normalizeLineEndings expected)
