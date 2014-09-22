@@ -1,4 +1,4 @@
-﻿/// Contains methods for the install and update process.
+﻿/// Contains methods for the install process.
 module Paket.InstallProcess
 
 open Paket

@@ -117,9 +117,12 @@ type DependenciesFile(fileName,strictMode,packages : UnresolvedPackage list, rem
         DependenciesFile(DependenciesFileParser.parseDependenciesFile fileName <| File.ReadAllLines fileName)
 
     /// Find the matching lock file to a dependencies file
-    member this.FindLockfile() =
-        let fi = FileInfo(this.FileName)
+    static member FindLockfile(dependenciesFileName) =
+        let fi = FileInfo(dependenciesFileName)
         FileInfo(Path.Combine(fi.Directory.FullName, fi.Name.Replace(fi.Extension,"") + ".lock"))
+
+    /// Find the matching lock file to a dependencies file
+    member this.FindLockfile() = DependenciesFile.FindLockfile this.FileName
     
 type DependencyResolution(dependenciesFile:DependenciesFile,resolution:PackageResolution,remoteFiles:SourceFile list) =
     member __.DependenciesFile = dependenciesFile
