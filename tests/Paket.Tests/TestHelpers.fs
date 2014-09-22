@@ -21,9 +21,9 @@ let VersionsFromGraph (graph : seq<string * string * (string * VersionRange) lis
     |> Seq.map (fun (_, v, _) -> SemVer.parse v)
     |> Seq.toList
 
-let safeResolve graph (dependencies : (string * VersionRange) seq) = 
+let safeResolve graph (dependencies : (string * VersionRange) list) = 
     let packages = 
-        dependencies |> Seq.map (fun (n, v) -> 
+        dependencies |> List.map (fun (n, v) -> 
                             { Name = n
                               VersionRange = v
                               Sources = [ Nuget "" ]
