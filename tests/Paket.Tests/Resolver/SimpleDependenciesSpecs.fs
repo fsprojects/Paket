@@ -89,7 +89,7 @@ let config4 = """
 source "http://nuget.org/api/v2"
 
 nuget "Castle.Core" "= 3.2.0"
-nuget "Castle.Windsor-log4net" "~> 3.2.0.1"
+nuget "Castle.Windsor-log4net" "~> 3.2"
 """
 
 [<Test>]
