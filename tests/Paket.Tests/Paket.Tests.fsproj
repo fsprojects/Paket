@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
@@ -72,12 +72,13 @@
     </Content>
     <Compile Include="NuspecSpecs.fs" />
     <Compile Include="FilterVersionSpecs.fs" />
-    <Compile Include="DependencyGraphSpecs.fs" />
-    <Compile Include="CyclicGraphSpecs.fs" />
-    <Compile Include="ConflictGraphSpecs.fs" />
     <Compile Include="DependenciesFile\VersionRangeSpecs.fs" />
     <Compile Include="DependenciesFile\ParserSpecs.fs" />
+    <Compile Include="Resolver\DependencyGraphSpecs.fs" />
     <Compile Include="Resolver\SimpleDependenciesSpecs.fs" />
+    <Compile Include="Resolver\CyclicGraphSpecs.fs" />
+    <Compile Include="Resolver\ConflictGraphSpecs.fs" />
+    <Compile Include="Resolver\CasingSpecs.fs" />
     <Compile Include="Resolver\PessimisticStrategySpecs.fs" />
     <Compile Include="LockFile\GeneratorSpecs.fs" />
     <Compile Include="LockFile\GenerateStrictModeSpecs.fs" />

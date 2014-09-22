@@ -11,8 +11,8 @@ let Resolve(getVersionsF, getPackageDetailsF, rootDependencies:UnresolvedPackage
     let exploredPackages = Dictionary<string*SemVerInfo,ResolvedPackage>()
     let allVersions = new Dictionary<string,SemVerInfo list>()
     
-    let getExploredPackage(sources,packageName,version) =
-        match exploredPackages.TryGetValue <| (packageName,version) with
+    let getExploredPackage(sources,packageName:string,version) =
+        match exploredPackages.TryGetValue <| (packageName.ToLower(),version) with
         | true,package -> package
         | false,_ ->
             tracefn "    - exploring %s %s" packageName (version.ToString())
@@ -22,7 +22,7 @@ let Resolve(getVersionsF, getPackageDetailsF, rootDependencies:UnresolvedPackage
                   Version = version
                   DirectDependencies = packageDetails.DirectDependencies 
                   Source = packageDetails.Source }
-            exploredPackages.Add((packageName,version),explored)
+            exploredPackages.Add((packageName.ToLower(),version),explored)
             explored
         
     let getAllVersions(sources,packageName) =

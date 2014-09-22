@@ -3,14 +3,14 @@
 open Paket
 open System
 
-let PackageDetailsFromGraph (graph : seq<string * string * (string * VersionRange) list>) sources package version = 
-    let dependencies = 
+let PackageDetailsFromGraph (graph : seq<string * string * (string * VersionRange) list>) sources (package:string) version = 
+    let name,dependencies = 
         graph
-        |> Seq.filter (fun (p, v, _) -> p = package && v = version)
-        |> Seq.map (fun (_, _, d) -> d)
+        |> Seq.filter (fun (p, v, _) -> p.ToLower() = package.ToLower() && v = version)
+        |> Seq.map (fun (n, _, d) -> n,d)
         |> Seq.head
 
-    { Name = package
+    { Name = name
       Source = Seq.head sources
       DownloadLink = ""
       DirectDependencies = dependencies }
