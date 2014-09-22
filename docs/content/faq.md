@@ -15,7 +15,7 @@ Paket also enables one to [reference files directly from GitHub repositories](gi
 <div id="no-version"></div>
 ## NuGet puts the package version into the path. Is Paket doing the same?
 
-No, since Paket provides a global view to your dependencies it installs only one version of a package and therefor the version number is not needed in the path.
+No, since Paket provides a global view of your dependencies it installs only one version of a package and therefore the version number is not needed in the path.
 This makes it much easier to reference files in the package and you don't have to edit these references when you update a package.
 
 ## Why does Paket add references to the libraries associated with each supported framework version within a NuGet package to my projects?
@@ -37,7 +37,7 @@ Paket tries to embrace [SemVer](http://semver.org/) while NuGet uses a pessimist
 
 No, we don't run any script or program from NuGet packages and we have no plans to do this in the future.
 We know that this might cause you some manual work for some of the currently available NuGet packages, but we think these install scripts cause more harm than good.
-In fact our current model doesn't allow to run install.ps1 script like the following from `FontAwesome.4.1.0`:
+In fact our current model would not be able to work consistently alongside an `install.ps1` script like the following from `FontAwesome.4.1.0`:
 
     [lang=batchfile]
     param($installPath, $toolsPath, $package, $project)
@@ -48,7 +48,7 @@ In fact our current model doesn't allow to run install.ps1 script like the follo
     }
     
 The reason is simply that even if we would support PowerShell on Windows we can't access the Visual Studio project system. Paket is a command line tool and doesn't run inside of Visual Studio.
-There is no way to make this work – and even NuGet.exe can't do it in command line mode. 
+There is no reasonable way to make this work – and even NuGet.exe can't do it in command line mode. 
 
 Instead we encourage the .NET community to use a declarative install process and we will help to fix this in the affected packages.
 
@@ -66,7 +66,7 @@ The process is very easy and you can read more about it in the [convert from NuG
 
 ## Does Paket allow groups like bundler does?
 
-No at the moment we don't see the requirement for something like [bundler's groups](http://bundler.io/v1.7/groups.html). Longer discussion can be found [here](https://github.com/fsprojects/Paket/issues/116).
+No at the moment we don't see the need for something like [bundler's groups](http://bundler.io/v1.7/groups.html) in the .NET environment. Longer discussion can be found [here](https://github.com/fsprojects/Paket/issues/116).
 
 ## Can I use Paket to manage npm/bower/whatever dependencies?
 

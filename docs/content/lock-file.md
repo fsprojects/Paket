@@ -46,11 +46,11 @@ The `paket.lock` file records the concrete dependency resolution of all direct *
 
 If the `paket.lock` file is not present when [paket install](paket-install.html) is requested, it will be generated. Subsequent runs of [paket install](paket-install.html) will not reanalyze the `paket.dependencies` file or touch `paket.lock`.
 
-All changes after the initial generation will be as a result of [`paket install`](paket-install.html) or [paket update](paket-update.html) commands.
+All changes after the initial generation will be as a result of [paket update](paket-update.html) commands.
 
 As a result, committing the `paket.lock` file to your version control system guarantees that other developers and/or build servers will always end up with a reliable and consistent set of packages regardless of where or when a [paket install](paket-install.html) occurs.
-When you run [`paket install`](paket-install.html) and the `paket.lock` file is not present, it will be generated. Subsequent runs of [`paket install`](paket-install.html) will not reanalyze the `paket.dependencies` file nor touch `paket.lock`.
 
-If you make changes to [`paket.dependencies`](dependencies-file.html) or you want Paket to check for newer versions of the direct and indirect dependencies as specified in [`paket.dependencies`](dependencies-file.html), run [`paket update`](paket-update.html).
+If you make changes to [`paket.dependencies`](dependencies-file.html) or you want Paket to check for newer versions of the direct and indirect dependencies as specified in [`paket.dependencies`](dependencies-file.html), run:
 
-As a result, committing the `paket.lock` file to your version control system guarantees that other developers and/or build servers will always end up with a reliable and consistent set of packages regardless of where or when [`paket install`](paket-install.html) is executed.
+  - [`paket outdated`](paket-outdated.html) to check for new versions, and report what's available.
+  - [`paket update`](paket-update.html) to check for new versions, download any that fit the criteria`, and update the references within the project files as specified by their associated [`paket.references`](references-files.html).
