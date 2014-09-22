@@ -20,7 +20,7 @@ let Resolve(getVersionsF, getPackageDetailsF, rootDependencies:UnresolvedPackage
             let explored =
                 { Name = packageDetails.Name
                   Version = version
-                  DirectDependencies = packageDetails.DirectDependencies 
+                  Dependencies = packageDetails.DirectDependencies 
                   Source = packageDetails.Source }
             exploredPackages.Add((packageName.ToLower(),version),explored)
             explored
@@ -55,7 +55,7 @@ let Resolve(getVersionsF, getPackageDetailsF, rootDependencies:UnresolvedPackage
                     let exploredPackage = getExploredPackage(dependency.Sources,dependency.Name,versionToExplore)
                     let newFilteredVersion = Map.add dependency.Name [versionToExplore] filteredVersions
                     let newDependencies =
-                        exploredPackage.DirectDependencies
+                        exploredPackage.Dependencies
                         |> List.map (fun (n,v) -> {dependency with Name = n; VersionRange = v })
                         |> List.filter (fun d -> Set.contains d closed |> not)
                     
@@ -71,8 +71,18 @@ let Resolve(getVersionsF, getPackageDetailsF, rootDependencies:UnresolvedPackage
                     | _ -> false)
         
             if isOk then
-                Ok(packages |> Seq.fold (fun map p -> Map.add p.Name p map) Map.empty) 
+                Ok(packages |> Seq.fold (fun map p -> Map.add (p.Name.ToLower()) p map) Map.empty) 
             else 
                 Conflict(closed,stillOpen)
             
-    improveModel(Map.empty,[],Set.empty,rootDependencies)
+    match improveModel (Map.empty, [], Set.empty, rootDependencies) with
+    | Conflict(_) as c -> c
+    | Resolved.Ok model -> 
+        // cleanup names
+        Ok(model |> Seq.fold (fun map x -> 
+                        let package = x.Value
+                        let cleanup = 
+                            { package with Dependencies = 
+                                               package.Dependencies 
+                                               |> List.map (fun (name, v) -> model.[name.ToLower()].Name, v) }
+                        Map.add package.Name cleanup map) Map.empty)

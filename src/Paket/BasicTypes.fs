@@ -122,7 +122,7 @@ type UnresolvedPackage =
 type ResolvedPackage = 
     { Name : string
       Version : SemVerInfo
-      DirectDependencies : (string * VersionRange) list
+      Dependencies : (string * VersionRange) list
       Source : PackageSource }
 
 /// Represents package details

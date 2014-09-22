@@ -36,7 +36,7 @@ module LockFileSerializer =
                   yield "  specs:"
                   for _,package in packages |> Seq.sortBy (fun (_,p) -> p.Name.ToLower()) do
                       yield sprintf "    %s (%s)" package.Name (package.Version.ToString()) 
-                      for name,v in package.DirectDependencies do
+                      for name,v in package.Dependencies do
                           yield sprintf "      %s (%s)" name (formatVersionRange v)]
     
         String.Join(Environment.NewLine, all)
@@ -98,7 +98,7 @@ module LockFileParser =
                     let version = parts.[1] |> removeBrackets
                     { state with Packages = { Source = PackageSource.Parse remote
                                               Name = parts.[0]
-                                              DirectDependencies = []
+                                              Dependencies = []
                                               Version = SemVer.parse version } :: state.Packages }
                 | None -> failwith "no source has been specified."
             | NugetDependency (name, _) ->
@@ -106,8 +106,8 @@ module LockFileParser =
                 | currentPackage :: otherPackages -> 
                     { state with
                         Packages = { currentPackage with
-                                        DirectDependencies = [name, VersionRange.NoRestriction] 
-                                        |> List.append currentPackage.DirectDependencies
+                                        Dependencies = [name, VersionRange.NoRestriction] 
+                                        |> List.append currentPackage.Dependencies
                                     } :: otherPackages }
                 | [] -> failwith "cannot set a dependency - no package has been specified."
             | SourceFile details ->
