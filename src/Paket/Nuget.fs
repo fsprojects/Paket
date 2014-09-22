@@ -19,6 +19,12 @@ let private loadNuGetOData raw =
     manager.AddNamespace("m", "http://schemas.microsoft.com/ado/2007/08/dataservices/metadata")
     doc,manager
 
+type NugetPackageCache =
+    { Dependencies : (string * VersionRange) list
+      Name : string
+      Url : string}
+
+
 /// Gets versions of the given package via OData.
 let getAllVersionsFromNugetOData (nugetURL, package) = 
     // we cannot cache this
@@ -141,8 +147,9 @@ let getDetailsFromNugetViaOData nugetURL package version =
             |> Array.map (fun (name, version) -> name, parseVersionRange version)
             |> Array.toList
 
-        return officialName,downloadLink,packages
+        return { Name = officialName; Url = downloadLink; Dependencies = packages }
     }
+
 
 /// The NuGet cache folder.
 let CacheFolder = 
@@ -157,7 +164,11 @@ let private loadFromCacheOrOData force fileName nugetURL package version =
         if not force && File.Exists fileName then
             try 
                 let json = File.ReadAllText(fileName)
-                return false,JsonConvert.DeserializeObject<string * string * (string * VersionRange) list>(json)
+                let cachedObject = JsonConvert.DeserializeObject<NugetPackageCache>(json)                
+                if cachedObject.Name = null || cachedObject.Url = null then
+                    failwith "invalid cache"
+                
+                return false,cachedObject
             with _ -> 
                 let! details = getDetailsFromNugetViaOData nugetURL package version
                 return true,details
@@ -223,7 +234,7 @@ let getDetailsFromLocalFile path package version =
 
         File.Delete(nuspec.FullName)
 
-        return officialName,package,dependencies
+        return { Name = officialName; Url = package; Dependencies = dependencies }
     }
 
 /// Downloads the given package to the NuGet Cache folder
@@ -236,11 +247,11 @@ let DownloadPackage(url, name, version, force) =
             return targetFileName
         else 
             // discover the link on the fly
-            let! (_,link, _) = getDetailsFromNuget force url name version
+            let! nugetPackage = getDetailsFromNuget force url name version
             try
                 tracefn "Downloading %s %s to %s" name version targetFileName
 
-                let request = HttpWebRequest.Create(Uri link) :?> HttpWebRequest
+                let request = HttpWebRequest.Create(Uri nugetPackage.Url) :?> HttpWebRequest
                 request.AutomaticDecompression <- DecompressionMethods.GZip ||| DecompressionMethods.Deflate
                 use! httpResponse = request.AsyncGetResponse()
             
@@ -337,11 +348,11 @@ let GetPackageDetails force sources package version =
             with _ -> tryNext rest
         | [] -> failwithf "Couldn't get package details for package %s on %A" package sources
     
-    let source, (name, link, dependencies) = tryNext sources
-    { Name = name
+    let source, nugetObject = tryNext sources
+    { Name = nugetObject.Name
       Source = source
-      DownloadLink = link
-      DirectDependencies = dependencies  }
+      DownloadLink = nugetObject.Url
+      DirectDependencies = nugetObject.Dependencies  }
 
 let GetVersions sources package = 
     sources
