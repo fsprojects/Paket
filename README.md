@@ -41,7 +41,7 @@ Fore more reasons see the [FAQs][10].
 ## Quick contributing guide
 
  - Fork and clone locally.
- - Build the solution with Visual Studion or run `build.sh` on Mono.
+ - Build the solution with Visual Studio or run `build.sh` on Mono.
  - Create a topic specific branch in git. Add a nice feature in the code. Do not forget to add tests.
  - Run the `build.bat (`build.sh` on Mono) to make sure all tests are still passing.
  - Send a Pull Request.
