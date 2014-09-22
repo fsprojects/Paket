@@ -3,17 +3,13 @@
 open Paket
 open System
 
-let PackageDetailsFromGraph (graph : seq<string * string * (string * VersionRange) list>) sources package resolverStrategy version = 
+let PackageDetailsFromGraph (graph : seq<string * string * (string * VersionRange) list>) sources package version = 
     let dependencies = 
         graph
         |> Seq.filter (fun (p, v, _) -> p = package && v = version)
         |> Seq.map (fun (_, _, d) -> d)
         |> Seq.head
-        |> List.map (fun (p, v) -> 
-                { Name = p
-                  VersionRange = v
-                  ResolverStrategy = resolverStrategy
-                  Sources = sources })
+
     { Name = package
       Source = Seq.head sources
       DownloadLink = ""

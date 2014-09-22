@@ -130,7 +130,7 @@ type PackageDetails =
     { Name : string
       Source : PackageSource
       DownloadLink : string
-      DirectDependencies : UnresolvedPackage list }
+      DirectDependencies :  (string * VersionRange) list }
       
 type FilteredVersions = Map<string,SemVerInfo list>
 

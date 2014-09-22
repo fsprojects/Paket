@@ -13,17 +13,15 @@ type ExploredWorld(getVersionsF, getPackageDetailsF,rootDependencies:UnresolvedP
 
     member __.ExploredPackages = exploredPackages
     
-    member __.GetExploredPackage(sources,resolverStrategy,packageName,version) =
+    member __.GetExploredPackage(sources,packageName,version) =
         match exploredPackages.TryGetValue <| (packageName,version) with
         | true,package -> package
         | false,_ ->
-            let packageDetails : PackageDetails = getPackageDetailsF sources packageName resolverStrategy (version.ToString())
+            let packageDetails : PackageDetails = getPackageDetailsF sources packageName (version.ToString())
             let explored =
                 { Name = packageDetails.Name
                   Version = version
-                  DirectDependencies = 
-                        packageDetails.DirectDependencies 
-                        |> List.map (fun p -> p.Name,p.VersionRange)
+                  DirectDependencies = packageDetails.DirectDependencies 
                   Source = packageDetails.Source }
             exploredPackages.Add((packageName,version),explored)
             explored
@@ -64,7 +62,7 @@ type ExploredWorld(getVersionsF, getPackageDetailsF,rootDependencies:UnresolvedP
                 for versionToExplore in sorted do
                     match !state with
                     | Conflict _ ->
-                        let exploredPackage = this.GetExploredPackage(dependency.Sources,dependency.ResolverStrategy,dependency.Name,versionToExplore)
+                        let exploredPackage = this.GetExploredPackage(dependency.Sources,dependency.Name,versionToExplore)
                         let newFilteredVersion = Map.add dependency.Name [versionToExplore] filteredVersions
                         let newDependencies =
                             exploredPackage.DirectDependencies
