@@ -51,9 +51,9 @@ let Analyze(allPackages : list<ResolvedPackage>, depFile : DependenciesFile, ref
     DependenciesFile(depFile.FileName, depFile.Strict, simplifiedDeps, depFile.RemoteFiles), refFiles'
 
 let Simplify () = 
-    if not <| File.Exists(Constants.DepsFile) then
-        failwithf "%s file not found." Constants.DepsFile
-    let depFile = DependenciesFile.ReadFromFile(Constants.DepsFile)
+    if not <| File.Exists(Constants.DependenciesFile) then
+        failwithf "%s file not found." Constants.DependenciesFile
+    let depFile = DependenciesFile.ReadFromFile(Constants.DependenciesFile)
     let lockFilePath = depFile.FindLockfile()
     if not <| File.Exists(lockFilePath.FullName) then 
         failwith "lock file not found. Create lock file by running paket install"
@@ -68,14 +68,14 @@ let Simplify () =
     let simplifiedDepFile, simplifiedRefFiles = Analyze(packages, depFile, refFiles)
     
     let removedDeps = Set.difference (Set depFile.Packages) (Set simplifiedDepFile.Packages) |> Set.map (fun p -> p.Name.ToLower())
-    let before = File.ReadAllLines(Constants.DepsFile)
+    let before = File.ReadAllLines(Constants.DependenciesFile)
     let after = before |> Array.filter(fun line -> 
                                            if not <| line.StartsWith("nuget", StringComparison.InvariantCultureIgnoreCase) then true
                                            else 
                                                 let dep = line.Split([|' '|]).[1].Trim().ToLower()
                                                 removedDeps |> Set.forall (fun removedDep -> removedDep <> dep))
 
-    simplify Constants.DepsFile before after
+    simplify Constants.DependenciesFile before after
 
     if depFile.Strict then
         traceWarn "Strict mode detected. Will not attempt to simplify paket.references files."

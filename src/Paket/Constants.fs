@@ -4,4 +4,4 @@
 let DefaultNugetStream = "http://nuget.org/api/v2"
 
 [<Literal>]
-let DepsFile = "paket.dependencies"
+let DependenciesFile = "paket.dependencies"
