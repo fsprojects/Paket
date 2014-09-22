@@ -2,171 +2,89 @@
 module Paket.PackageResolver
 
 open Paket
-open System
 open Paket.Logging
+open System.Collections.Generic
 
-type private Shrinked =
-| Ok of Dependency
-| Conflict of Dependency * Dependency
+type ExploredWorld(getVersionsF, getPackageDetailsF,rootDependencies:UnresolvedPackage list) =
+    let exploredPackages = Dictionary<string*SemVerInfo,ResolvedPackage>()
+    let allVersions = new Dictionary<string,SemVerInfo list>()
 
+    member __.RootDependencies = rootDependencies
 
-let private shrink (s1 : Shrinked, s2 : Shrinked) = 
-    match s1, s2 with
-    | Ok version1, Ok version2 -> 
-        let vr1 = version1.Referenced.VersionRange
-        let vr2 = version2.Referenced.VersionRange
-        match vr1, vr2 with
-        | Minimum v1, Minimum v2 when v1 >= v2 -> s1
-        | Minimum _, Minimum _ -> s2
-        | Minimum v1, Specific v2 when v2 >= v1 -> s2
-        | Specific v1, Minimum v2 when v1 >= v2 -> s1
-        | Specific v1, Specific v2 when v1 = v2 -> s1
-        | Range(_, min1, max1, _), Specific v2 when min1 <= v2 && max1 > v2 -> s2
-        | Specific v1, Range(_, min2, max2, _) when min2 <= v1 && max2 > v1 -> s2
-        | Range(_, min1, max1, _), Range(_, min2, max2, _) -> 
-            let newMin = max min1 min2
-            let newMax = min max1 max2
-            if newMin > newMax then Shrinked.Conflict(version1, version2)
-            else 
-                let shrinkedDependency = 
-                    { version1.Referenced with VersionRange = VersionRange.Range(Closed, newMin, newMax, Open) }
-                Shrinked.Ok(match version1 with
-                            | FromRoot _ -> FromRoot shrinkedDependency
-                            | FromPackage d -> 
-                                FromPackage { Defining = d.Defining
-                                              Referenced = shrinkedDependency })
-        | Range(_, min1, max1, _), Minimum v2 ->
-            let newMin = max min1 v2
-            if newMin > max1 then Shrinked.Conflict(version1, version2)
-            else 
-                let shrinkedDependency = 
-                    { version1.Referenced with VersionRange = VersionRange.Range(Closed, newMin, max1, Open) }
-                Shrinked.Ok(match version1 with
-                            | FromRoot _ -> FromRoot shrinkedDependency
-                            | FromPackage d -> 
-                                FromPackage { Defining = d.Defining
-                                              Referenced = shrinkedDependency })
-        | Minimum v1, Range(_, min2, max2, _)  -> 
-            let newMin = max v1 min2
-            if newMin > max2 then Shrinked.Conflict(version1, version2)
-            else 
-                let shrinkedDependency = 
-                    { version1.Referenced with VersionRange = VersionRange.Range(Closed, newMin, max2, Open) }
-                Shrinked.Ok(match version1 with
-                            | FromRoot _ -> FromRoot shrinkedDependency
-                            | FromPackage d -> 
-                                FromPackage { Defining = d.Defining
-                                              Referenced = shrinkedDependency })
-        | _ -> Shrinked.Conflict(version1, version2)
-    | _ -> s1
-
-let private addDependency (packageName:string) dependencies newDependency =
-    let name = packageName.ToLower()
-    let newDependency = Shrinked.Ok newDependency    
-    match Map.tryFind name dependencies with
-    | Some oldDependency -> Map.add name (shrink(oldDependency,newDependency)) dependencies
-    | None -> Map.add name newDependency dependencies   
-
-/// Resolves all direct and indirect dependencies
-let Resolve(getVersionsF, getPackageDetailsF, rootDependencies:UnresolvedPackage seq) : PackageResolution =    
-    let rec analyzeGraph processed (openDependencies:Map<string,Shrinked>) =
-        if Map.isEmpty openDependencies then processed else
-        let current = Seq.head openDependencies
-        let resolvedName = current.Key
-
-        match current.Value with
-        | Shrinked.Conflict(c1,c2) -> 
-            let resolved = Map.add resolvedName (ResolvedDependency.Conflict(c1,c2)) processed
-            analyzeGraph resolved (Map.remove resolvedName openDependencies)
-        | Ok dependency -> 
-            let originalPackage = dependency.Referenced
-           
-            tracefn "  %s %s"  originalPackage.Name (originalPackage.VersionRange.ToString())
-            match Map.tryFind resolvedName processed with
-            | Some (Resolved package') -> 
-                if not <| dependency.Referenced.VersionRange.IsInRange package'.Version then
-                    let resolved =
-                        processed 
-                        |> Map.remove resolvedName
-                        
-                    openDependencies
-                    |> analyzeGraph resolved
-                else                    
-                    openDependencies
-                    |> Map.remove resolvedName
-                    |> analyzeGraph processed
-            | _ ->
-                let allVersions = getVersionsF originalPackage.Sources resolvedName
-
-                let versions =                
-                    allVersions
-                    |> List.filter originalPackage.VersionRange.IsInRange
-
-                if versions = [] then
-                    allVersions
-                    |> List.map (fun v -> v.ToString())
-                    |> fun xs -> String.Join(Environment.NewLine + "  ", xs)
-                    |> failwithf "No package found that matches %s %A on %A.%sVersion available:%s  %s" originalPackage.Name (originalPackage.VersionRange.ToString()) originalPackage.Sources Environment.NewLine Environment.NewLine
-
-                let resolvedVersion = 
-                    match dependency with
-                    | FromRoot _ -> List.max versions
-                    | FromPackage d ->
-                        match originalPackage.ResolverStrategy with
-                        | ResolverStrategy.Max -> List.max versions
-                        | ResolverStrategy.Min -> List.min versions
-
-                let packageDetails = 
-                    getPackageDetailsF originalPackage.Sources originalPackage.Name originalPackage.ResolverStrategy (resolvedVersion.ToString())
-
-                let resolvedPackage:ResolvedPackage =
-                    { Name = packageDetails.Name
-                      Version = resolvedVersion
-                      DirectDependencies = 
+    member __.ExploredPackages = exploredPackages
+    
+    member __.GetExploredPackage(sources,resolverStrategy,packageName,version) =
+        match exploredPackages.TryGetValue <| (packageName,version) with
+        | true,package -> package
+        | false,_ ->
+            let packageDetails : PackageDetails = getPackageDetailsF sources packageName resolverStrategy (version.ToString())
+            let explored =
+                { Name = packageDetails.Name
+                  Version = version
+                  DirectDependencies = 
                         packageDetails.DirectDependencies 
                         |> List.map (fun p -> p.Name,p.VersionRange)
-                      Source = packageDetails.Source }
+                  Source = packageDetails.Source }
+            exploredPackages.Add((packageName,version),explored)
+            explored
+        
 
-                let resolvedDependency = ResolvedDependency.Resolved resolvedPackage
-                                            
-                let mutable dependencies = openDependencies
+    member __.GetAllVersions(sources,packageName) =
+        match allVersions.TryGetValue packageName with
+        | false,_ ->
+            verbosefn "Getting versions for %s" packageName
+            let versions = getVersionsF sources packageName
+            allVersions.Add(packageName,versions)
+            versions
+        | true,versions -> versions
 
-                for dependentPackage in packageDetails.DirectDependencies do
-                    let newDependency = 
-                        FromPackage { Defining = { originalPackage with VersionRange = VersionRange.Exactly(resolvedVersion.ToString()) }
-                                      Referenced = 
-                                          { Name = dependentPackage.Name
-                                            VersionRange = dependentPackage.VersionRange                                            
-                                            ResolverStrategy = originalPackage.ResolverStrategy
-                                            Sources = dependentPackage.Sources } }
-                    dependencies <- addDependency dependentPackage.Name dependencies newDependency
+    member this.Resolve() =
+        let isOk (filteredVersions:FilteredVersions) =
+            filteredVersions
+            |> Map.forall (fun _ v -> 
+                match v with
+                | [x] -> true
+                | _ -> false)
+        
+        let rec improveModel (filteredVersions,packages,closed:UnresolvedPackage list,stillOpen:UnresolvedPackage list) =
+            match stillOpen with
+            | dependency::rest ->
+                let compatibleVersions = 
+                    match Map.tryFind dependency.Name filteredVersions with
+                    | None -> this.GetAllVersions(dependency.Sources,dependency.Name)
+                    | Some versions -> versions
+                    |> List.filter dependency.VersionRange.IsInRange
+                    
+                let sorted =                
+                    match dependency.ResolverStrategy with
+                    | Max -> List.sort compatibleVersions |> List.rev
+                    | Min -> List.sort compatibleVersions
+                
+                let state = ref (Conflict(closed,stillOpen))
+                for versionToExplore in sorted do
+                    match !state with
+                    | Conflict _ ->
+                        let exploredPackage = this.GetExploredPackage(dependency.Sources,dependency.ResolverStrategy,dependency.Name,versionToExplore)
+                        let newFilteredVersion = Map.add dependency.Name [versionToExplore] filteredVersions
+                        let newDependencies =
+                            exploredPackage.DirectDependencies
+                            |> List.map (fun (n,v) -> {dependency with Name = n; VersionRange = v })
+                            |> List.filter (fun d -> List.exists ((=) d) closed |> not)
+                    
+                        state := improveModel (newFilteredVersion,exploredPackage::packages,dependency::closed,newDependencies @ rest)
+                    | Ok _ -> ()
+                !state
+            | [] -> 
+                if isOk filteredVersions then 
+                    Ok(packages |> Seq.fold (fun map p -> Map.add p.Name p map) Map.empty) 
+                else 
+                    Conflict(closed,stillOpen)
+            
+        improveModel(Map.empty,[],[],rootDependencies)        
 
-                let resolved = Map.add resolvedName resolvedDependency processed
 
-                dependencies
-                |> Map.remove resolvedName
-                |> analyzeGraph resolved
-
-    let resolved =
-        rootDependencies
-        |> Seq.map (fun p -> p.Name, FromRoot p)
-        |> Seq.fold (fun m (p, d) -> addDependency p m d) Map.empty
-        |> analyzeGraph Map.empty
-
-    // cleanup names
-    resolved
-    |> Seq.fold (fun map x ->       
-        match x.Value with
-        | Resolved p ->
-            let cleanup =
-                { p with DirectDependencies =
-                        p.DirectDependencies
-                        |> List.map (fun (name,v) -> 
-                            match resolved.[name.ToLower()] with
-                            | Resolved d -> d.Name,v
-                            | _ -> name,v) }
-            Map.add p.Name (Resolved cleanup) map
-        | ResolvedDependency.Conflict(c1,c2) ->            
-            Map.add c1.Referenced.Name x.Value map
-    ) Map.empty
-
+/// Resolves all direct and indirect dependencies
+let Resolve(getVersionsF, getPackageDetailsF, rootDependencies:UnresolvedPackage seq) : Resolved =    
+    let explored = ExploredWorld(getVersionsF, getPackageDetailsF, rootDependencies |> Seq.toList)
+    
+    explored.Resolve()

@@ -13,52 +13,14 @@ module LockFileSerializer =
         | Range(_, v1, v2, _) -> ">= " + v1.ToString() + ", < " + v2.ToString()
 
     /// [omit]
-    let extractErrors (resolved : PackageResolution) = 
-        let errors = 
-            resolved
-            |> Seq.map (fun x ->
-                match x.Value with
-                | Resolved _ -> ""
-                | Conflict(c1,c2) ->
-                    let d1 = 
-                        match c1 with
-                        | FromRoot _ -> "Dependencies file"
-                        | FromPackage d -> 
-                            let v1 = 
-                                match d.Defining.VersionRange with
-                                | Specific v -> v.ToString()
-                            d.Defining.Name + " " + v1
-     
-                    let d2 = 
-                        match c2 with
-                        | FromRoot _ -> "Dependencies file"
-                        | FromPackage d -> 
-                            let v1 = 
-                                match d.Defining.VersionRange with
-                                | Specific v -> v.ToString()
-                            d.Defining.Name + " " + v1
-
-                    sprintf "%s depends on%s  %s (%s)%s%s depends on%s  %s (%s)" 
-                            d1 Environment.NewLine c1.Referenced.Name (formatVersionRange c1.Referenced.VersionRange) Environment.NewLine 
-                            d2 Environment.NewLine c2.Referenced.Name (formatVersionRange c2.Referenced.VersionRange) 
-                )
-            |> Seq.filter ((<>) "")
-        String.Join(Environment.NewLine,errors)
-
-
-    /// [omit]
     let serializePackages strictMode (resolved : PackageResolution) = 
         let sources = 
             resolved
-            |> Seq.map (fun x ->
-                match x.Value with
-                | Resolved package -> 
+            |> Seq.map (fun kv ->
+                    let package = kv.Value
                     match package.Source with
                     | Nuget url -> url,package
                     | LocalNuget path -> path,package
-                | Conflict(c1,c2) ->
-                    traceErrorfn "%A %A" c1 c2
-                    failwith ""  // TODO: trace all errors
                 )
             |> Seq.groupBy fst
 
@@ -171,24 +133,16 @@ type LockFile(fileName:string,strictMode,resolution:PackageResolution,remoteFile
 
     /// Updates the Lock file with the analyzed dependencies from the paket.dependencies file.
     member __.Save() =
-        let errors = LockFileSerializer.extractErrors resolution
-        if errors = "" then 
-            let output = 
-                String.Join
-                    (Environment.NewLine,                  
-                     LockFileSerializer.serializePackages strictMode resolution, 
-                     LockFileSerializer.serializeSourceFiles remoteFiles)
-            File.WriteAllText(fileName, output)
-            tracefn "Locked version resolutions written to %s" fileName
-        else failwith <| "Could not resolve dependencies." + Environment.NewLine + errors
+        let output = 
+            String.Join
+                (Environment.NewLine,                  
+                    LockFileSerializer.serializePackages strictMode resolution, 
+                    LockFileSerializer.serializeSourceFiles remoteFiles)
+        File.WriteAllText(fileName, output)
+        tracefn "Locked version resolutions written to %s" fileName
 
     /// Parses a paket.lock file from lines
     static member LoadFrom(lockFileName) : LockFile =
         let lines = File.ReadAllLines lockFileName
         LockFileParser.Parse lines
-        |> fun state -> 
-            let resolution =
-                state.Packages
-                |> Seq.fold (fun map p -> Map.add p.Name (ResolvedDependency.Resolved p) map) Map.empty
-                
-            LockFile(lockFileName,state.Strict,resolution, List.rev state.SourceFiles)
+        |> fun state -> LockFile(lockFileName,state.Strict,state.Packages |> Seq.fold (fun map p -> Map.add p.Name p map) Map.empty, List.rev state.SourceFiles)

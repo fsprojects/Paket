@@ -10,11 +10,8 @@ open System.Collections.Generic
 let ExtractPackages(force, packages:PackageResolution) = 
     packages
     |> Seq.map (fun kv -> 
-        match kv.Value with
-        | Resolved p -> p
-        | _ -> failwithf "Resolution failed for %s" kv.Key)
-    |> Seq.map (fun (package : ResolvedPackage) -> 
         async { 
+            let package = kv.Value
             match package.Source with
             | Nuget source -> 
                 let! packageFile = Nuget.DownloadPackage(source, package.Name, [ package.Source ], package.Version.ToString(), force)

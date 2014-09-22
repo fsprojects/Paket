@@ -7,26 +7,16 @@ open Paket.Logging
 let FindOutdated(dependenciesFileName) =     
     //TODO: Anything we need to do for source files here?
     let dependenciesFile = DependenciesFile.ReadFromFile dependenciesFileName
-    let resolution = dependenciesFile.Resolve(true)
+    let resolution = dependenciesFile.Resolve(true) |> UpdateProcess.getResolvedPackagesOrFail
     let lockFile = LockFile.LoadFrom(dependenciesFile.FindLockfile().FullName)
 
-    let errors = LockFileSerializer.extractErrors resolution
-
-    if errors <> "" then
-        traceError errors
-        []
-    else
-        [for kv in lockFile.ResolvedPackages do
-            let package = 
-                match kv.Value with
-                | Resolved p -> p
-                | _ -> failwithf "Resolution failed for %s" kv.Key
-
-            match resolution.[package.Name] with
-            | Resolved newVersion -> 
-                if package.Version <> newVersion.Version then 
-                    yield package.Name,package.Version,newVersion.Version        
-            | _ -> () ]
+    [for kv in lockFile.ResolvedPackages do
+        let package = kv.Value
+        match resolution |> Map.tryFind package.Name with
+        | Some newVersion -> 
+            if package.Version <> newVersion.Version then 
+                yield package.Name,package.Version,newVersion.Version        
+        | _ -> ()]
 
 /// Prints all outdated packages.
 let ListOutdated(packageFile) = 

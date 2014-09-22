@@ -24,20 +24,12 @@ let defaultPackage = { Name = ""; VersionRange = VersionRange.Exactly "1.0"; Sou
 
 [<Test>]
 let ``should analyze graph and report conflict``() = 
-    let resolved = resolve graph [ "A", VersionRange.AtLeast "1.0" ]
-    getVersion resolved.["A"] |> shouldEqual "1.0"
-    getVersion resolved.["B"] |> shouldEqual "1.1"
-    getVersion resolved.["C"] |> shouldEqual "2.4"
-    let conflict = 
-        FromPackage { Defining = { defaultPackage with Name = "B"; VersionRange = VersionRange.Exactly "1.1" }
-                      Referenced = { defaultPackage with Name = "D"; VersionRange = VersionRange.Exactly "1.4" } },
-        FromPackage { Defining = { defaultPackage with Name = "C"; VersionRange = VersionRange.Exactly "2.4" }
-                      Referenced = { defaultPackage with Name = "D"; VersionRange = VersionRange.Exactly "1.6" } }
-
-    resolved.["D"] |> shouldEqual (ResolvedDependency.Conflict conflict)
-    getVersion resolved.["E"] |> shouldEqual "4.3"    
-    getVersion resolved.["F"] |> shouldEqual "1.2"
-    
+    match safeResolve graph [ "A", VersionRange.AtLeast "1.0" ] with
+    | Ok _ -> failwith "we expected an error"
+    | Conflict(_,stillOpen) ->
+        let conflicting = stillOpen |> Seq.head 
+        conflicting.Name |> shouldEqual "D"
+        conflicting.VersionRange |> shouldEqual (VersionRange.Exactly "1.6")
 
 let graph2 = 
     [ "A", "1.0", 
@@ -50,13 +42,9 @@ let graph2 =
 
 [<Test>]
 let ``should analyze graph2 and report conflict``() = 
-    let resolved = resolve graph2 [ "A", VersionRange.AtLeast "1.0" ]
-    getVersion resolved.["A"] |> shouldEqual "1.0"
-    getVersion resolved.["B"] |> shouldEqual "1.1"
-    getVersion resolved.["C"] |> shouldEqual "2.4"
-    let conflict = 
-        FromPackage { Defining = { defaultPackage with Name = "B"; VersionRange = VersionRange.Exactly "1.1" }
-                      Referenced = { defaultPackage with Name = "D"; VersionRange = VersionRange.Between("1.4", "1.5") } },
-        FromPackage { Defining = { defaultPackage with Name = "C"; VersionRange = VersionRange.Exactly "2.4" }
-                      Referenced = { defaultPackage with Name = "D"; VersionRange = VersionRange.Between("1.6", "1.7") } }
-    resolved.["D"] |> shouldEqual (ResolvedDependency.Conflict conflict)
+    match safeResolve graph2 [ "A", VersionRange.AtLeast "1.0" ] with
+    | Ok _ -> failwith "we expected an error"
+    | Conflict(_,stillOpen) ->
+        let conflicting = stillOpen |> Seq.head 
+        conflicting.Name |> shouldEqual "D"
+        conflicting.VersionRange |> shouldEqual (VersionRange.Between("1.6", "1.7"))

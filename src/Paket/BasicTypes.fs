@@ -125,31 +125,17 @@ type ResolvedPackage =
       DirectDependencies : (string * VersionRange) list
       Source : PackageSource }
 
-/// Represents a package dependency.
-type PackageDependency = 
-    { Defining : UnresolvedPackage
-      Referenced : UnresolvedPackage }
-
-/// Represents a dependency.
-type Dependency = 
-    | FromRoot of UnresolvedPackage
-    | FromPackage of PackageDependency
-    member this.Referenced = 
-        match this with
-        | FromRoot p -> p
-        | FromPackage d -> d.Referenced
-
 /// Represents package details
 type PackageDetails = 
     { Name : string
       Source : PackageSource
       DownloadLink : string
       DirectDependencies : UnresolvedPackage list }
+      
+type FilteredVersions = Map<string,SemVerInfo list>
 
-/// Represents a resolved dependency.
-type ResolvedDependency = 
-    | Resolved of ResolvedPackage
-    | Conflict of Dependency * Dependency
+type PackageResolution = Map<string , ResolvedPackage>
 
-/// Represents a complete dependency resolution.
-type PackageResolution = Map<string,ResolvedDependency>
+type Resolved =
+| Ok of PackageResolution
+| Conflict of UnresolvedPackage list * UnresolvedPackage list

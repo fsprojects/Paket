@@ -84,7 +84,7 @@ try
 
         let force = results.Contains <@ CLIArguments.Force @> 
         let hard = results.Contains <@ CLIArguments.Hard @> 
-        let installAfterConvert = results.Contains <@ CLIArguments.No_install @> 
+        let installAfterConvert = results.Contains <@ CLIArguments.No_install @> |> not
 
         match command with
         | Command.Add -> AddProcess.Add(force,hard,dependenciesFileName)
