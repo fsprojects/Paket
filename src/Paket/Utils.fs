@@ -79,10 +79,11 @@ let readKey() = System.Console.ReadKey().KeyChar.ToString()
 /// Until the user pressed y or n.
 let askYesNo question =
     let rec getAnswer() = 
-        Logging.tracef "%s ([Y]es/[N]o) => " question
+        Logging.tracefn "%s" question
+        Logging.tracef "    [Y]es/[N]o => "
         let answer = readKey()
         Logging.tracefn ""
-        match answer with
+        match answer.ToLower() with
         | "y" -> true
         | "n" -> false
         | _ -> getAnswer()

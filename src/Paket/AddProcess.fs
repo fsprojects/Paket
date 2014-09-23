@@ -2,7 +2,7 @@
 module Paket.AddProcess
 
 open Paket
-open System
+open System.IO
 
 let Add(package, version, force, hard, interactive, installAfter, dependenciesFileName) =
     let dependenciesFile =
@@ -12,10 +12,20 @@ let Add(package, version, force, hard, interactive, installAfter, dependenciesFi
     let resolution = dependenciesFile.Resolve force |> UpdateProcess.getResolvedPackagesOrFail
 
     if interactive then
+        let di = DirectoryInfo(".")
         for proj in ProjectFile.FindAllProjects(".") do
-            if Utils.askYesNo(sprintf "  Install to %s"  proj.FullName) then
-               ()
-            
+            if Utils.askYesNo(sprintf "  Install to %s?" (proj.FullName.Replace(di.FullName,""))) then
+                match InstallProcess.findReferencesFile proj.FullName with
+                | None ->
+                    let newFileName =
+                        let fi = FileInfo(Path.Combine(proj.Directory.FullName,Constants.ReferencesFile))
+                        if fi.Exists then
+                            Path.Combine(proj.Directory.FullName,proj.Name + "." + Constants.ReferencesFile)
+                        else
+                            fi.FullName
+
+                    File.WriteAllLines(newFileName,[package])
+                | Some fileName -> File.AppendAllLines(fileName,["";package])
 
     if installAfter then
         let lockFileName = DependenciesFile.FindLockfile dependenciesFileName

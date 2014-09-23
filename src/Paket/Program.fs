@@ -44,7 +44,7 @@ with
     interface IArgParserTemplate with
         member s.Usage =
             match s with
-            | Add -> "adds a package to the depedencies."
+            | Add -> "adds a package to the dependencies."
             | Install -> "installs all packages."
             | Update -> "updates the packet.lock file and installs all packages."
             | Outdated -> "displays information about new packages."
