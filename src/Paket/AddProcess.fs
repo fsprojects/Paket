@@ -3,10 +3,20 @@ module Paket.AddProcess
 
 open Paket
 
-let Add(package, version, force, hard, installAfter, dependenciesFileName) = 
-    DependenciesFile.ReadFromFile(dependenciesFileName)
-      .Add(package,version)
-      .Save()
+let Add(package, version, force, hard, installAfter, dependenciesFileName) =
+    let dependenciesFile =
+        DependenciesFile.ReadFromFile(dependenciesFileName)
+          .Add(package,version)
+
+    let resolution = dependenciesFile.Resolve force |> UpdateProcess.getResolvedPackagesOrFail    
 
     if installAfter then
-        UpdateProcess.Update(Constants.DependenciesFile,true,force,hard)
+        let lockFileName = DependenciesFile.FindLockfile dependenciesFileName
+    
+        let lockFile =                
+            let lockFile = LockFile(lockFileName.FullName, dependenciesFile.Strict, resolution, dependenciesFile.RemoteFiles)
+            lockFile.Save()
+            lockFile
+        InstallProcess.Install(force, hard, lockFile)
+
+    dependenciesFile.Save()
