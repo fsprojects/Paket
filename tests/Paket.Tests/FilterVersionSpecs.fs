@@ -39,29 +39,29 @@ let ``can check if in range for LessThan``() =
     
 [<Test>]
 let ``can check if in range for Range``() =
-    "2.1" |> isInRange (VersionRange.Range (Open, (SemVer.parse "2.2"), (SemVer.parse "3.0"), Open)) |> shouldEqual false
-    "2.2" |> isInRange (VersionRange.Range (Open, (SemVer.parse "2.2"), (SemVer.parse "3.0"), Open)) |> shouldEqual false
-    "2.5" |> isInRange (VersionRange.Range (Open, (SemVer.parse "2.2"), (SemVer.parse "3.0"), Open)) |> shouldEqual true
-    "3.0" |> isInRange (VersionRange.Range (Open, (SemVer.parse "2.2"), (SemVer.parse "3.0"), Open)) |> shouldEqual false
-    "3.2" |> isInRange (VersionRange.Range (Open, (SemVer.parse "2.2"), (SemVer.parse "3.0"), Open)) |> shouldEqual false
+    "2.1" |> isInRange (VersionRange.Range (Excluding, (SemVer.parse "2.2"), (SemVer.parse "3.0"), Excluding)) |> shouldEqual false
+    "2.2" |> isInRange (VersionRange.Range (Excluding, (SemVer.parse "2.2"), (SemVer.parse "3.0"), Excluding)) |> shouldEqual false
+    "2.5" |> isInRange (VersionRange.Range (Excluding, (SemVer.parse "2.2"), (SemVer.parse "3.0"), Excluding)) |> shouldEqual true
+    "3.0" |> isInRange (VersionRange.Range (Excluding, (SemVer.parse "2.2"), (SemVer.parse "3.0"), Excluding)) |> shouldEqual false
+    "3.2" |> isInRange (VersionRange.Range (Excluding, (SemVer.parse "2.2"), (SemVer.parse "3.0"), Excluding)) |> shouldEqual false
 
-    "2.1" |> isInRange (VersionRange.Range (Open, (SemVer.parse "2.2"), (SemVer.parse "3.0"), Closed)) |> shouldEqual false
-    "2.2" |> isInRange (VersionRange.Range (Open, (SemVer.parse "2.2"), (SemVer.parse "3.0"), Closed)) |> shouldEqual false
-    "2.5" |> isInRange (VersionRange.Range (Open, (SemVer.parse "2.2"), (SemVer.parse "3.0"), Closed)) |> shouldEqual true
-    "3.0" |> isInRange (VersionRange.Range (Open, (SemVer.parse "2.2"), (SemVer.parse "3.0"), Closed)) |> shouldEqual true
-    "3.2" |> isInRange (VersionRange.Range (Open, (SemVer.parse "2.2"), (SemVer.parse "3.0"), Closed)) |> shouldEqual false
+    "2.1" |> isInRange (VersionRange.Range (Excluding, (SemVer.parse "2.2"), (SemVer.parse "3.0"), Including)) |> shouldEqual false
+    "2.2" |> isInRange (VersionRange.Range (Excluding, (SemVer.parse "2.2"), (SemVer.parse "3.0"), Including)) |> shouldEqual false
+    "2.5" |> isInRange (VersionRange.Range (Excluding, (SemVer.parse "2.2"), (SemVer.parse "3.0"), Including)) |> shouldEqual true
+    "3.0" |> isInRange (VersionRange.Range (Excluding, (SemVer.parse "2.2"), (SemVer.parse "3.0"), Including)) |> shouldEqual true
+    "3.2" |> isInRange (VersionRange.Range (Excluding, (SemVer.parse "2.2"), (SemVer.parse "3.0"), Including)) |> shouldEqual false
 
-    "2.1" |> isInRange (VersionRange.Range (Closed, (SemVer.parse "2.2"), (SemVer.parse "3.0"), Open)) |> shouldEqual false
-    "2.2" |> isInRange (VersionRange.Range (Closed, (SemVer.parse "2.2"), (SemVer.parse "3.0"), Open)) |> shouldEqual true
-    "2.5" |> isInRange (VersionRange.Range (Closed, (SemVer.parse "2.2"), (SemVer.parse "3.0"), Open)) |> shouldEqual true
-    "3.0" |> isInRange (VersionRange.Range (Closed, (SemVer.parse "2.2"), (SemVer.parse "3.0"), Open)) |> shouldEqual false
-    "3.2" |> isInRange (VersionRange.Range (Closed, (SemVer.parse "2.2"), (SemVer.parse "3.0"), Open)) |> shouldEqual false
+    "2.1" |> isInRange (VersionRange.Range (Including, (SemVer.parse "2.2"), (SemVer.parse "3.0"), Excluding)) |> shouldEqual false
+    "2.2" |> isInRange (VersionRange.Range (Including, (SemVer.parse "2.2"), (SemVer.parse "3.0"), Excluding)) |> shouldEqual true
+    "2.5" |> isInRange (VersionRange.Range (Including, (SemVer.parse "2.2"), (SemVer.parse "3.0"), Excluding)) |> shouldEqual true
+    "3.0" |> isInRange (VersionRange.Range (Including, (SemVer.parse "2.2"), (SemVer.parse "3.0"), Excluding)) |> shouldEqual false
+    "3.2" |> isInRange (VersionRange.Range (Including, (SemVer.parse "2.2"), (SemVer.parse "3.0"), Excluding)) |> shouldEqual false
 
-    "2.1" |> isInRange (VersionRange.Range (Closed, (SemVer.parse "2.2"), (SemVer.parse "3.0"), Closed)) |> shouldEqual false
-    "2.2" |> isInRange (VersionRange.Range (Closed, (SemVer.parse "2.2"), (SemVer.parse "3.0"), Closed)) |> shouldEqual true
-    "2.5" |> isInRange (VersionRange.Range (Closed, (SemVer.parse "2.2"), (SemVer.parse "3.0"), Closed)) |> shouldEqual true
-    "3.0" |> isInRange (VersionRange.Range (Closed, (SemVer.parse "2.2"), (SemVer.parse "3.0"), Closed)) |> shouldEqual true
-    "3.2" |> isInRange (VersionRange.Range (Closed, (SemVer.parse "2.2"), (SemVer.parse "3.0"), Closed)) |> shouldEqual false
+    "2.1" |> isInRange (VersionRange.Range (Including, (SemVer.parse "2.2"), (SemVer.parse "3.0"), Including)) |> shouldEqual false
+    "2.2" |> isInRange (VersionRange.Range (Including, (SemVer.parse "2.2"), (SemVer.parse "3.0"), Including)) |> shouldEqual true
+    "2.5" |> isInRange (VersionRange.Range (Including, (SemVer.parse "2.2"), (SemVer.parse "3.0"), Including)) |> shouldEqual true
+    "3.0" |> isInRange (VersionRange.Range (Including, (SemVer.parse "2.2"), (SemVer.parse "3.0"), Including)) |> shouldEqual true
+    "3.2" |> isInRange (VersionRange.Range (Including, (SemVer.parse "2.2"), (SemVer.parse "3.0"), Including)) |> shouldEqual false
 
 [<Test>]
 let ``can check if in range for 4-parts range``() =    

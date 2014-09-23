@@ -33,6 +33,25 @@ let ``can detect lower versions for ~>``() =
     DependenciesFileParser.parseVersionRange "~> 1" |> shouldEqual (VersionRange.Between("1","2"))
 
 [<Test>]
+let ``can detect greater-than``() = 
+    DependenciesFileParser.parseVersionRange "> 3.2" |> shouldEqual (VersionRange.GreaterThan(SemVer.parse "3.2"))
+
+[<Test>]
+let ``can detect less-than``() = 
+    DependenciesFileParser.parseVersionRange "< 3.1" |> shouldEqual (VersionRange.LessThan(SemVer.parse "3.1"))
+
+[<Test>]
+let ``can detect less-than-or-equal``() = 
+    DependenciesFileParser.parseVersionRange "<= 3.1" |> shouldEqual (VersionRange.Maximum(SemVer.parse "3.1"))
+
+[<Test>]
+let ``can detect range``() = 
+    DependenciesFileParser.parseVersionRange ">= 1.2.3 < 1.5" |> shouldEqual (VersionRange.Range(Bound.Including,SemVer.parse "1.2.3",SemVer.parse("1.5"), Bound.Excluding))
+    DependenciesFileParser.parseVersionRange "> 1.2.3 < 1.5" |> shouldEqual (VersionRange.Range(Bound.Excluding,SemVer.parse "1.2.3",SemVer.parse("1.5"), Bound.Excluding))
+    DependenciesFileParser.parseVersionRange "> 1.2.3 <= 2.5" |> shouldEqual (VersionRange.Range(Bound.Excluding,SemVer.parse "1.2.3",SemVer.parse("2.5"), Bound.Including))
+    DependenciesFileParser.parseVersionRange ">= 1.2 <= 2.5" |> shouldEqual (VersionRange.Range(Bound.Including,SemVer.parse "1.2",SemVer.parse("2.5"), Bound.Including))
+
+[<Test>]
 let ``can detect minimum NuGet version``() = 
     Nuget.parseVersionRange "0" |> shouldEqual (DependenciesFileParser.parseVersionRange ">= 0")
     Nuget.parseVersionRange "" |> shouldEqual (DependenciesFileParser.parseVersionRange ">= 0")

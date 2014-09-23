@@ -73,8 +73,8 @@ let parseVersionRange (text:string) =
     let failParse() = failwithf "unable to parse %s" text
 
     let parseBound  = function
-        | '[' | ']' -> Closed
-        | '(' | ')' -> Open
+        | '[' | ']' -> Including
+        | '(' | ')' -> Excluding
         | _         -> failParse()
 
     if  text = null || text = "" || text = "null" then VersionRange.NoRestriction
@@ -94,12 +94,12 @@ let parseVersionRange (text:string) =
         | 1 ->
             if text.[1] = ',' then
                 match fromB, toB with
-                | Open, Closed -> Maximum(versions.[0])
-                | Open, Open -> LessThan(versions.[0])
+                | Excluding, Including -> Maximum(versions.[0])
+                | Excluding, Excluding -> LessThan(versions.[0])
                 | _ -> failParse()
             else 
                 match fromB, toB with
-                | Open, Open -> GreaterThan(versions.[0])
+                | Excluding, Excluding -> GreaterThan(versions.[0])
                 | _ -> failParse()
         | _ -> failParse()
             

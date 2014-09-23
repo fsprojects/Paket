@@ -76,3 +76,18 @@ let ``should serialize remote files in config``() =
     
     cfg.ToString()
     |> shouldEqual (normalizeLineEndings configWithRemoteFile)
+
+
+let allVersionsConfig = """source http://nuget.org/api/v2
+
+nuget Example > 1.2.3
+nuget Example2 <= 1.2.3
+nuget Example3 < 2.2.3
+nuget Example4 >= 1.2.3 < 1.5"""
+
+[<Test>]
+let ``should serialize config with all kinds of versions``() = 
+    let cfg = DependenciesFile.FromCode allVersionsConfig
+    
+    cfg.ToString()
+    |> shouldEqual (normalizeLineEndings allVersionsConfig)

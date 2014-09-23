@@ -85,29 +85,12 @@ Use the `>=` operator to denote that you want the latest version available, as l
 
 If you omit the version constraint then Paket will assume `>= 0`.
 
-#### TODO Greater-than version constraint
+#### Further version constraints
 
-    nuget Example > 1.2.3
-
-NOT SUPPORTED YET
-
-#### TODO Less-than-or-equal version constraint
-
-    nuget Example <= 1.2.3
-
-NOT SUPPORTED YET
-
-#### TODO Less-than version constraint
-
-    nuget Example < 1.2.3
-
-NOT SUPPORTED YET
-
-#### TODO Compound version constraint
-
-    nuget Example >= 1.2.3 < 1.5
-
-NOT SUPPORTED YET
+    nuget Example > 1.2.3         // greater than 1.2.3
+    nuget Example <= 1.2.3        // at least 1.2.3
+    nuget Example < 1.2.3         // less than 1.2.3
+    nuget Example >= 1.2.3 < 1.5  // at least 1.2.3 but less than 1.5
 
 <div id="pessimistic-version-constraint"></div>
 #### Pessimistic version constraint

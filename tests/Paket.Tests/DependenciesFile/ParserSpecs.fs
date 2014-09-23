@@ -75,22 +75,6 @@ let ``should read config with multiple sources``() =
     (cfg.Packages |> List.find (fun p -> p.Name = "MinPackage")).Sources |> shouldEqual [Nuget "http://nuget.org/api/v3"; Nuget Constants.DefaultNugetStream]
     (cfg.Packages |> List.find (fun p -> p.Name = "FAKE")).Sources |> shouldEqual [Nuget Constants.DefaultNugetStream]
 
-
-let config7 = """nuget "Fody" "> 0"
-"""
-
-[<Test>]
-let ``should report errors if nuget is single``() = 
-    try
-        DependenciesFile.FromCode config7 |> ignore
-        failwith "No message given"
-    with 
-    | exn ->
-        exn.Message.Contains("paket.dependencies") |> shouldEqual true
-        exn.Message.Contains("line 1") |> shouldEqual true
-        exn.Message.Contains("could not parse version range") |> shouldEqual true
-        exn.Message.Contains(">") |> shouldEqual true
-
 [<Test>]
 let ``should read source file from config``() =
     let config = """github "fsharp/FAKE:master" "src/app/FAKE/Cli.fs"

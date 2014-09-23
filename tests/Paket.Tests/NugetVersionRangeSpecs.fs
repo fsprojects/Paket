@@ -36,13 +36,13 @@ let ``can detect less than version``() =
 [<Test>]
 let ``can detect range version``() = 
     Nuget.parseVersionRange "(2.2,3)" 
-        |> shouldEqual (VersionRange.Range(Open, SemVer.parse "2.2", SemVer.parse "3", Open))
+        |> shouldEqual (VersionRange.Range(Excluding, SemVer.parse "2.2", SemVer.parse "3", Excluding))
     Nuget.parseVersionRange "(2.2,3]" 
-        |> shouldEqual (VersionRange.Range(Open, SemVer.parse "2.2", SemVer.parse "3", Closed))
+        |> shouldEqual (VersionRange.Range(Excluding, SemVer.parse "2.2", SemVer.parse "3", Including))
     Nuget.parseVersionRange "[2.2,3)" 
-        |> shouldEqual (VersionRange.Range(Closed, SemVer.parse "2.2", SemVer.parse "3", Open))
+        |> shouldEqual (VersionRange.Range(Including, SemVer.parse "2.2", SemVer.parse "3", Excluding))
     Nuget.parseVersionRange "[2.2,3]" 
-        |> shouldEqual (VersionRange.Range(Closed, SemVer.parse "2.2", SemVer.parse "3", Closed))
+        |> shouldEqual (VersionRange.Range(Including, SemVer.parse "2.2", SemVer.parse "3", Including))
 
         
 [<Test>]

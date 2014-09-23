@@ -4,8 +4,8 @@ open System.IO
 
 /// Defines if the range is open or closed.
 type Bound = 
-    | Open
-    | Closed
+    | Excluding
+    | Including
 
 /// Represents version information.
 type VersionRange = 
@@ -27,13 +27,13 @@ type VersionRange =
         | Range(fromB, from, _to, _toB) ->             
             let isInUpperBound = 
                 match _toB with
-                | Closed -> version <= _to
-                | Open -> version < _to
+                | Including -> version <= _to
+                | Excluding -> version < _to
 
             let isInLowerBound =
                 match fromB with
-                | Closed -> version >= from
-                | Open -> version > from
+                | Including -> version >= from
+                | Excluding -> version > from
 
             isInLowerBound && isInUpperBound
    
@@ -47,13 +47,13 @@ type VersionRange =
         | Range(fromB, from, _to, _toB) ->
             let from = 
                 match fromB with
-                 | Open -> "> " + from.ToString()
-                 | Closed -> ">= " + from.ToString()
+                 | Excluding -> "> " + from.ToString()
+                 | Including -> ">= " + from.ToString()
 
             let _to = 
                 match _toB with
-                 | Open -> "< " + _to.ToString()
-                 | Closed -> "<= " + _to.ToString()
+                 | Excluding -> "< " + _to.ToString()
+                 | Including -> "<= " + _to.ToString()
 
             from + " " + _to
 
@@ -64,7 +64,7 @@ type VersionRange =
 
     static member Exactly version = Specific(SemVer.parse version)
 
-    static member Between(version1,version2) = Range(Closed, SemVer.parse version1, SemVer.parse version2, Open)
+    static member Between(version1,version2) = Range(Including, SemVer.parse version1, SemVer.parse version2, Excluding)
 
 /// Represents a resolver strategy.
 type ResolverStrategy =

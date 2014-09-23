@@ -8,37 +8,47 @@ open Paket.Logging
 /// [omit]
 module DependenciesFileParser = 
 
-    let private basicOperators = ["~>";">=";"="]
+    let private basicOperators = ["~>";"<=";">=";"=";">";"<"]
     let private operators = basicOperators @ (basicOperators |> List.map (fun o -> "!" + o))
 
     let parseResolverStrategy (text : string) = if text.StartsWith "!" then ResolverStrategy.Min else ResolverStrategy.Max
 
     let parseVersionRange (text : string) : VersionRange = 
         if text = "" || text = null then VersionRange.AtLeast("0") else
-        let splitVersion (text:string) =            
-            match basicOperators |> List.tryFind(text.StartsWith) with
-            | Some token -> token, text.Replace(token + " ", "")
-            | None -> "=", text
 
-        try
-            match splitVersion text with
-            | ">=", version -> VersionRange.AtLeast(version)
-            | "~>", minimum ->
-                let maximum =                    
-                    let promote index (values:string array) =
-                        let parsed, number = Int32.TryParse values.[index]
-                        if parsed then values.[index] <- (number + 1).ToString()
-                        if values.Length > 1 then values.[values.Length - 1] <- "0"
-                        values
+        match text.Split(' ') with
+        | [| ">="; v1; "<"; v2 |] -> VersionRange.Range(Bound.Including,SemVer.parse v1,SemVer.parse v2,Bound.Excluding)
+        | [| ">="; v1; "<="; v2 |] -> VersionRange.Range(Bound.Including,SemVer.parse v1,SemVer.parse v2,Bound.Including)
+        | [| ">"; v1; "<"; v2 |] -> VersionRange.Range(Bound.Excluding,SemVer.parse v1,SemVer.parse v2,Bound.Excluding)
+        | [| ">"; v1; "<="; v2 |] -> VersionRange.Range(Bound.Excluding,SemVer.parse v1,SemVer.parse v2,Bound.Including)
+        | _ ->
+            let splitVersion (text:string) =            
+                match basicOperators |> List.tryFind(text.StartsWith) with
+                | Some token -> token, text.Replace(token + " ", "")
+                | None -> "=", text
 
-                    let parts = minimum.Split '.'
-                    let penultimateItem = Math.Max(parts.Length - 2, 0)
-                    let promoted = parts |> promote penultimateItem
-                    String.Join(".", promoted)
-                VersionRange.Between(minimum, maximum)
-            | _, version -> VersionRange.Exactly(version)
-        with
-        | _ -> failwithf "could not parse version range \"%s\"" text
+            try
+                match splitVersion text with
+                | ">=", version -> VersionRange.AtLeast(version)
+                | ">", version -> VersionRange.GreaterThan(SemVer.parse version)
+                | "<", version -> VersionRange.LessThan(SemVer.parse version)
+                | "<=", version -> VersionRange.Maximum(SemVer.parse version)
+                | "~>", minimum ->
+                    let maximum =                    
+                        let promote index (values:string array) =
+                            let parsed, number = Int32.TryParse values.[index]
+                            if parsed then values.[index] <- (number + 1).ToString()
+                            if values.Length > 1 then values.[values.Length - 1] <- "0"
+                            values
+
+                        let parts = minimum.Split '.'
+                        let penultimateItem = Math.Max(parts.Length - 2, 0)
+                        let promoted = parts |> promote penultimateItem
+                        String.Join(".", promoted)
+                    VersionRange.Between(minimum, maximum)
+                | _, version -> VersionRange.Exactly(version)
+            with
+            | _ -> failwithf "could not parse version range \"%s\"" text
 
     let private (|Remote|Package|Blank|ReferencesMode|SourceFile|) (line:string) =
         match line.Trim() with
@@ -49,6 +59,8 @@ module DependenciesFileParser =
         | trimmed when trimmed.StartsWith "nuget" -> 
             let parts = trimmed.Replace("nuget","").Trim().Replace("\"", "").Split([|' '|],StringSplitOptions.RemoveEmptyEntries) |> Seq.toList
             match parts with
+            | name :: operator1 :: version1  :: operator2 :: version2  :: _ 
+                when List.exists ((=) operator1) operators && List.exists ((=) operator2) operators -> Package(name,operator1 + " " + version1 + " " + operator2 + " " + version2)
             | name :: operator :: version  :: _ 
                 when List.exists ((=) operator) operators -> Package(name,operator + " " + version)
             | name :: version :: _ -> Package(name,version)
