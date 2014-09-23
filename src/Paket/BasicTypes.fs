@@ -91,6 +91,7 @@ type SourceFile =
     { Owner : string
       Project : string
       Name : string
+      CommitSpecified: bool
       Commit : string }
     member this.FilePath =
         let path = this.Name

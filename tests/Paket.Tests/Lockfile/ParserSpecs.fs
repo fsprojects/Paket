@@ -52,9 +52,11 @@ let ``should parse lock file``() =
         [ { Owner = "fsharp"
             Project = "FAKE"
             Name = "src/app/FAKE/Cli.fs"
+            CommitSpecified = true
             Commit = "7699e40e335f3cc54ab382a8969253fecc1e08a9" }
           { Owner = "fsharp"
             Project = "FAKE"
+            CommitSpecified = true
             Name = "src/app/Fake.Deploy.Lib/FakeDeployAgentHelper.fs"
             Commit = "Globbing" } ]
     
@@ -89,4 +91,3 @@ let ``should parse strict lock file``() =
     packages.[5].Name |> shouldEqual "log4net"
     packages.[5].Version |> shouldEqual (SemVer.parse "1.1")
     packages.[5].Dependencies |> shouldEqual ["log", VersionRange.NoRestriction]
-

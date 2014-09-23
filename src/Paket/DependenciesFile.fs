@@ -82,12 +82,12 @@ module DependenciesFileParser =
                           VersionRange = parseVersionRange(version.Trim '!') } :: packages, sourceFiles
                 | SourceFile((owner,project, commit), path) ->
                     // TODO: Put SHA1 retrieval into resolver
-                    let sha = 
+                    let specified,sha = 
                         match commit with                        
-                        | None -> GitHub.getSHA1OfBranch owner project "master" |> Async.RunSynchronously
-                        | Some sha -> sha
+                        | None -> false,GitHub.getSHA1OfBranch owner project "master" |> Async.RunSynchronously
+                        | Some sha -> true,sha
                     
-                    lineNo, referencesMode, sources, packages, { Owner = owner; Project = project; Commit = sha; Name = path } :: sourceFiles
+                    lineNo, referencesMode, sources, packages, { Owner = owner; Project = project; Commit = sha; CommitSpecified = specified; Name = path } :: sourceFiles
                     
             with
             | exn -> failwithf "Error in paket.dependencies line %d%s  %s" lineNo Environment.NewLine exn.Message)
@@ -96,6 +96,16 @@ module DependenciesFileParser =
             mode,
             packages |> List.rev,
             remoteFiles |> List.rev
+
+module DependenciesFileSerializer = 
+    let formatVersionRange (version : VersionRange) : string =
+        match version with
+        | Minimum x -> ">= " + x.ToString()
+        | GreaterThan x -> x.ToString()
+        | Specific x -> "= " + x.ToString()
+        | VersionRange.Range(fromB,from,_to,_toB) when 
+            DependenciesFileParser.parseVersionRange("~> " + from.ToString()) = version
+              -> "~> " + from.ToString()
 
 /// Allows to parse and analyze paket.dependencies files.
 type DependenciesFile(fileName,strictMode,packages : UnresolvedPackage list, remoteFiles : SourceFile list) = 
@@ -114,6 +124,49 @@ type DependenciesFile(fileName,strictMode,packages : UnresolvedPackage list, rem
         let newPackage = {lastPackage with Name = packageName; VersionRange = versionRange}
         tracefn "Adding %s %s to paket.dependencies" packageName (versionRange.ToString())
         DependenciesFile(fileName,strictMode,packages @ [newPackage], remoteFiles)
+
+    override __.ToString() =        
+        let sources = 
+            packages
+            |> Seq.map (fun package -> package.Sources,package)
+            |> Seq.groupBy fst
+
+        let all =
+            let hasReportedSource = ref false
+            let hasReportedFirst = ref false
+            let hasReportedSecond = ref false
+            [ if strictMode then
+                  yield "references strict"
+              for sources, packages in sources do
+                  for source in sources do
+                      hasReportedSource := true
+                      match source with
+                      | Nuget source -> yield "source " + source
+                      | LocalNuget source -> yield "source " + source
+                  
+                  for _,package in packages do
+                      if (not !hasReportedFirst) && !hasReportedSource  then
+                          yield ""
+                          hasReportedFirst := true
+
+                      match package.VersionRange with
+                      | Minimum x when x = SemVer.parse "0" -> yield sprintf "nuget %s" package.Name
+                      | _ -> yield sprintf "nuget %s %s" package.Name (DependenciesFileSerializer.formatVersionRange package.VersionRange)
+                     
+              for remoteFile in remoteFiles do
+                  if (not !hasReportedSecond) && !hasReportedFirst then
+                      yield ""
+                      hasReportedSecond := true
+
+                  if remoteFile.CommitSpecified then
+                      yield sprintf "github %s/%s:%s %s" remoteFile.Owner remoteFile.Project remoteFile.Commit remoteFile.Name
+                  else
+                      yield sprintf "github %s/%s %s" remoteFile.Owner remoteFile.Project remoteFile.Name]
+        String.Join(Environment.NewLine, all)                                 
+
+    member this.Save() =
+        File.WriteAllText(fileName, this.ToString())
+        tracefn "Dependencies files saved to %s" fileName
 
     static member FromCode(code:string) : DependenciesFile = 
         DependenciesFile(DependenciesFileParser.parseDependenciesFile "" <| code.Replace("\r\n","\n").Replace("\r","\n").Split('\n'))

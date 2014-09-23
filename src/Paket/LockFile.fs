@@ -42,7 +42,7 @@ module LockFileSerializer =
         String.Join(Environment.NewLine, all)
 
     let serializeSourceFiles (files:SourceFile list) =    
-        let all =       
+        let all =
             let hasReported = ref false
             [ for (owner,project), files in files |> Seq.groupBy(fun f -> f.Owner, f.Project) do
                 if not !hasReported then
@@ -120,6 +120,7 @@ module LockFileParser =
                         SourceFiles = { Commit = commit
                                         Owner = owner
                                         Project = project
+                                        CommitSpecified = true
                                         Name = path } :: state.SourceFiles }
                 | _ -> failwith "invalid remote details.")
 

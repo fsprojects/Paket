@@ -4,6 +4,7 @@ open Paket
 open NUnit.Framework
 open FsUnit
 
+
 let config1 = """
 source "http://nuget.org/api/v2"
 
@@ -100,9 +101,11 @@ let ``should read source file from config``() =
         [ { Owner = "fsharp"
             Project = "FAKE"
             Name = "src/app/FAKE/Cli.fs"
+            CommitSpecified = true
             Commit = "master" }
           { Owner = "fsharp"
             Project = "FAKE"
+            CommitSpecified = true
             Name = "src/app/FAKE/FileWithCommit.fs"
             Commit = "bla123zxc" } ]
 
@@ -172,9 +175,11 @@ let ``should read github source file from config without quotes``() =
         [ { Owner = "fsharp"
             Project = "FAKE"
             Name = "src/app/FAKE/Cli.fs"
+            CommitSpecified = true
             Commit = "master" }
           { Owner = "fsharp"
             Project = "FAKE"
+            CommitSpecified = true
             Name = "src/app/FAKE/FileWithCommit.fs"
             Commit = "bla123zxc" } ]
 
