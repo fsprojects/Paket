@@ -48,6 +48,46 @@
 
 <p><code>--dependencies-file</code>: Use the specified file instead of <a href="dependencies-file.html"><code>paket.dependencies</code></a>.</p>
 
+<h2><a name="Sample" class="anchor" href="#Sample">Sample</a></h2>
+
+<p>Consider the following <a href="dependencies-file.html"><code>paket.dependencies</code> file</a>:</p>
+
+<table class="pre"><tr><td class="lines"><pre class="fssnip">
+<span class="l">1: </span>
+<span class="l">2: </span>
+<span class="l">3: </span>
+</pre>
+</td>
+<td class="snippet"><pre class="fssnip">
+<span class="i">source</span> <span class="i">http</span><span class="o">:</span><span class="c">//nuget.org/api/v2</span>
+
+<span class="i">nuget</span> <span class="i">FAKE</span></pre>
+</td>
+</tr>
+</table>
+
+<p>now we run <code>paket add nuget xunit --interactive</code> install the package:</p>
+
+<p><img src="img/interactive-add.png" alt="alt text" title="Interactive paket add" /></p>
+
+<p>This will add the package to the selected <a href="references-file.html"><code>paket.references</code> files</a> and also to the <a href="dependencies-file.html"><code>paket.dependencies</code> file</a>:</p>
+
+<table class="pre"><tr><td class="lines"><pre class="fssnip">
+<span class="l">1: </span>
+<span class="l">2: </span>
+<span class="l">3: </span>
+<span class="l">4: </span>
+</pre>
+</td>
+<td class="snippet"><pre class="fssnip">
+<span class="i">source</span> <span class="i">http</span><span class="o">:</span><span class="c">//nuget.org/api/v2</span>
+
+<span class="i">nuget</span> <span class="i">FAKE</span>
+<span class="i">nuget</span> <span class="i">xunit</span></pre>
+</td>
+</tr>
+</table>
+
 
         </div>
         <div class="span3">
