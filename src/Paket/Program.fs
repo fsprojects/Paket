@@ -34,6 +34,7 @@ type CLIArguments =
     | [<First>][<NoAppSettings>][<CustomCommandLine("simplify")>] Simplify
     | [<AltCommandLine("-v")>] Verbose
     | Dependencies_file of string
+    | [<AltCommandLine("-i")>] Interactive
     | [<AltCommandLine("-f")>] Force
     | Hard
     | [<CustomCommandLine("nuget")>] Nuget of string
@@ -53,6 +54,7 @@ with
             | Verbose -> "displays verbose output."
             | Dependencies_file _ -> "specify a file containing dependency definitions."
             | Force -> "forces the download of all packages."
+            | Interactive -> "interactive process."
             | Hard -> "overwrites manual package references."
             | No_install -> "omits install --hard after convert-from-nuget."
             | Nuget _ -> "allows to specify a nuget package."
@@ -90,6 +92,7 @@ try
             | _ -> Constants.DependenciesFile
 
         let force = results.Contains <@ CLIArguments.Force @> 
+        let interactive = results.Contains <@ CLIArguments.Interactive @> 
         let hard = results.Contains <@ CLIArguments.Hard @> 
         let noInstall = results.Contains <@ CLIArguments.No_install @>
 
@@ -100,7 +103,7 @@ try
                 match results.TryGetResult <@ CLIArguments.Version @> with
                 | Some x -> x
                 | _ -> ""
-            AddProcess.Add(packageName,version,force,hard,noInstall |> not,dependenciesFileName)
+            AddProcess.Add(packageName,version,force,hard,interactive,noInstall |> not,dependenciesFileName)
         | Command.Install -> UpdateProcess.Update(dependenciesFileName,false,force,hard) 
         | Command.Update -> UpdateProcess.Update(dependenciesFileName,true,force,hard)
         | Command.Outdated -> FindOutdated.ListOutdated(dependenciesFileName)

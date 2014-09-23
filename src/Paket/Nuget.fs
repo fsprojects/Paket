@@ -176,7 +176,6 @@ let private loadFromCacheOrOData force fileName nugetURL package version =
             return true,details
     }
 
-
 /// Tries to get download link and direct dependencies from Nuget
 /// Caches calls into json file
 let getDetailsFromNuget force nugetURL package version = 

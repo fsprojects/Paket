@@ -25,12 +25,12 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <WarningLevel>3</WarningLevel>
     <DocumentationFile>..\..\bin\Paket.xml</DocumentationFile>
-    <StartArguments>add nuget xunit version "~&gt; 1.9"</StartArguments>
+    <StartArguments>update --hard</StartArguments>
     <StartAction>Project</StartAction>
     <StartProgram>paket.exe</StartProgram>
     <StartWorkingDirectory>
     </StartWorkingDirectory>
-    <StartWorkingDirectory>D:\code\paket</StartWorkingDirectory>
+    <StartWorkingDirectory>D:\code\fake</StartWorkingDirectory>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>

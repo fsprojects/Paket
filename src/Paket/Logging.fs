@@ -8,10 +8,17 @@ let mutable verbose = false
 let monitor = new Object()
 
 /// [omit]
-let trace (s : string) = lock monitor (fun () -> printfn "%s" s)
+let tracen (s : string) = lock monitor (fun () -> printfn "%s" s)
 
 /// [omit]
-let tracefn fmt = Printf.ksprintf trace fmt
+let tracefn fmt = Printf.ksprintf tracen fmt
+
+/// [omit]
+let trace (s : string) = lock monitor (fun () -> printf "%s" s)
+
+/// [omit]
+let tracef fmt = Printf.ksprintf trace fmt
+
 
 /// [omit]
 let traceVerbose (s : string) =

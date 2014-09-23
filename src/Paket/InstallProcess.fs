@@ -64,17 +64,20 @@ let private removeContentFiles (project: ProjectFile) =
                          File.Delete(f.FullName)
                          if f.Directory.GetFiles() |> Seq.isEmpty then Directory.Delete(f.Directory.FullName))
 
-let extractReferencesFromListFile projectFile = 
+let findReferencesFile projectFile =
     let fi = FileInfo(projectFile)
     
-    let references = 
-        let specificReferencesFile = FileInfo(Path.Combine(fi.Directory.FullName, fi.Name + "." + Constants.ReferencesFile))
-        if specificReferencesFile.Exists then File.ReadAllLines specificReferencesFile.FullName
-        else 
-            let generalReferencesFile = FileInfo(Path.Combine(fi.Directory.FullName, Constants.ReferencesFile))
-            if generalReferencesFile.Exists then File.ReadAllLines generalReferencesFile.FullName
-            else [||]
-    references
+    let specificReferencesFile = FileInfo(Path.Combine(fi.Directory.FullName, fi.Name + "." + Constants.ReferencesFile))
+    if specificReferencesFile.Exists then Some specificReferencesFile.FullName
+    else 
+        let generalReferencesFile = FileInfo(Path.Combine(fi.Directory.FullName, Constants.ReferencesFile))
+        if generalReferencesFile.Exists then Some generalReferencesFile.FullName
+        else None
+
+let extractReferencesFromListFile projectFile = 
+    match findReferencesFile projectFile with 
+    | Some file -> File.ReadAllLines file
+    | None -> [||]
     |> Array.map (fun s -> s.Trim())
     |> Array.filter (fun s -> System.String.IsNullOrWhiteSpace s |> not)
 

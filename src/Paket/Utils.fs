@@ -73,6 +73,37 @@ let safeGetFromUrl (url : string) =
         with _ -> return None
     }
 
+let readKey() = System.Console.ReadKey().KeyChar.ToString()
+
+/// If the guard is true then a [Y]es / [N]o question will be ask.
+/// Until the user pressed y or n.
+let askYesNo question =
+    let rec getAnswer() = 
+        Logging.tracef "%s ([Y]es/[N]o) => " question
+        let answer = readKey()
+        Logging.tracefn ""
+        match answer with
+        | "y" -> true
+        | "n" -> false
+        | _ -> getAnswer()
+
+    getAnswer()
+
+
+/// If the guard is true then a [0] / .. / [n] question will be ask.
+/// Until the user pressed a valid number.
+let askNumberedQuestion question options =
+    let rec getAnswer() = 
+        Logging.tracef "%s\r\n  => " question
+        let answer = readKey()
+        Logging.tracefn ""
+        match System.Int32.TryParse answer with
+        | true, x when x >= 0 && x < options -> x
+        | _ -> getAnswer()
+
+    getAnswer()
+
+
 /// Enumerates all files with the given pattern
 let FindAllFiles(folder, pattern) = DirectoryInfo(folder).EnumerateFiles(pattern, SearchOption.AllDirectories)
 
