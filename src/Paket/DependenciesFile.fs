@@ -13,12 +13,26 @@ module DependenciesFileParser =
 
     let parseResolverStrategy (text : string) = if text.StartsWith "!" then ResolverStrategy.Min else ResolverStrategy.Max
 
+    let twiddle(minimum:string) =                    
+        let promote index (values:string array) =
+            let parsed, number = Int32.TryParse values.[index]
+            if parsed then values.[index] <- (number + 1).ToString()
+            if values.Length > 1 then values.[values.Length - 1] <- "0"
+            values
+
+        let parts = minimum.Split '.'
+        let penultimateItem = Math.Max(parts.Length - 2, 0)
+        let promoted = parts |> promote penultimateItem
+        String.Join(".", promoted)
+
     let parseVersionRange (text : string) : VersionRange = 
         if text = "" || text = null then VersionRange.AtLeast("0") else
 
         match text.Split(' ') with
         | [| ">="; v1; "<"; v2 |] -> VersionRange.Range(Bound.Including,SemVer.parse v1,SemVer.parse v2,Bound.Excluding)
         | [| ">="; v1; "<="; v2 |] -> VersionRange.Range(Bound.Including,SemVer.parse v1,SemVer.parse v2,Bound.Including)
+        | [| "~>"; v1; ">="; v2 |] -> VersionRange.Range(Bound.Including,SemVer.parse v2,SemVer.parse(twiddle v1),Bound.Excluding)
+        | [| "~>"; v1; ">"; v2 |] -> VersionRange.Range(Bound.Excluding,SemVer.parse v2,SemVer.parse(twiddle v1),Bound.Excluding)
         | [| ">"; v1; "<"; v2 |] -> VersionRange.Range(Bound.Excluding,SemVer.parse v1,SemVer.parse v2,Bound.Excluding)
         | [| ">"; v1; "<="; v2 |] -> VersionRange.Range(Bound.Excluding,SemVer.parse v1,SemVer.parse v2,Bound.Including)
         | _ ->
@@ -33,19 +47,7 @@ module DependenciesFileParser =
                 | ">", version -> VersionRange.GreaterThan(SemVer.parse version)
                 | "<", version -> VersionRange.LessThan(SemVer.parse version)
                 | "<=", version -> VersionRange.Maximum(SemVer.parse version)
-                | "~>", minimum ->
-                    let maximum =                    
-                        let promote index (values:string array) =
-                            let parsed, number = Int32.TryParse values.[index]
-                            if parsed then values.[index] <- (number + 1).ToString()
-                            if values.Length > 1 then values.[values.Length - 1] <- "0"
-                            values
-
-                        let parts = minimum.Split '.'
-                        let penultimateItem = Math.Max(parts.Length - 2, 0)
-                        let promoted = parts |> promote penultimateItem
-                        String.Join(".", promoted)
-                    VersionRange.Between(minimum, maximum)
+                | "~>", minimum -> VersionRange.Between(minimum,twiddle minimum)
                 | _, version -> VersionRange.Exactly(version)
             with
             | _ -> failwithf "could not parse version range \"%s\"" text

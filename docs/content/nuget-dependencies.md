@@ -134,9 +134,7 @@ Let us illustrate:
   </tr>
 <table>
 
-#### TODO Pessimistic version constraint with compound
-
-NOT SUPPORTED YET
+#### Pessimistic version constraint with compound
 
 If want to allow newer backward-compatible versions but also need a specific fix version within the allowed range, use a compound constraint.
 
