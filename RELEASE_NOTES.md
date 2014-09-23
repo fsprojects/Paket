@@ -1,5 +1,6 @@
 #### 0.3.0-alpha001 - 23.09.2014
-* New command: paket add - http://fsprojects.github.io/Paket/paket-add.html
+* New command: paket add [--interactive] - http://fsprojects.github.io/Paket/paket-add.html
+* New command: paket simplify - http://fsprojects.github.io/Paket/paket-simplify.html
 
 #### 0.2.30 - 21.09.2014
 * Even more tracing
