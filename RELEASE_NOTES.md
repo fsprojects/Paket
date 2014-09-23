@@ -1,69 +1,18 @@
 #### 0.3.0-alpha001 - 23.09.2014
 * New command: paket add [--interactive] - http://fsprojects.github.io/Paket/paket-add.html
 * New command: paket simplify - http://fsprojects.github.io/Paket/paket-simplify.html
-
-#### 0.2.30 - 21.09.2014
-* Even more tracing
-
-#### 0.2.29 - 21.09.2014
-* Resolve dependencies in non-empty intersection - https://github.com/fsprojects/Paket/issues/144
-
-#### 0.2.28 - 21.09.2014
-* Added more tracing statements
-
-#### 0.2.27 - 21.09.2014
-* If explicit references are listed in nuspec we have to respect this 
-
-#### 0.2.26 - 20.09.2014
-* Show version at start
-
-#### 0.2.24 - 20.09.2014
-* Respect case sensitivity for package paths - https://github.com/fsprojects/Paket/pull/137
-
-#### 0.2.23 - 20.09.2014
-* Adding verbose mode
-
-#### 0.2.20 - 20.09.2014
-* Release paket.targets file
-
-#### 0.2.19 - 20.09.2014
-* Use VS targets
-
-#### 0.2.18 - 20.09.2014
-* Fix paket outdated
-
-#### 0.2.16 - 20.09.2014
-* Remove nuget targets on convert-from-nuget - https://github.com/fsprojects/Paket/pull/127
-
-#### 0.2.15 - 19.09.2014
-* Dogfooding without NuGet.exe
-
-#### 0.2.14 - 19.09.2014
-* Lockfile is sorted alphabetical (case-insensitive)
-
-#### 0.2.12 - 19.09.2014
-* Using paket.bootstrapper
-
-#### 0.2.8 - 19.09.2014
-* Ensure the NuGet cache folder exists
-
-#### 0.2.7 - 19.09.2014
-* New async download strategy
-
-#### 0.2.6 - 19.09.2014
-* --no-install and --force flags for convert-from-nuget - https://github.com/fsprojects/Paket/pull/120
-
-#### 0.2.4 - 18.09.2014
-* Fix bug in Portable profile generation
-
-#### 0.2.3 - 18.09.2014
-* If you omit the version constraint then Paket will assume `>= 0`.
-
-#### 0.2.2 - 18.09.2014
+* New package resolver algorithm
+* Better verbose mode - use -v flag
+* Version info is shown at start
+* Respect case sensitivity for package paths for Linux - https://github.com/fsprojects/Paket/pull/137
+* Better Visual Studio integration by using paket.targets file - http://fsprojects.github.io/Paket/paket-init-auto-restore.html
+* Improved convert-from-nuget command - http://fsprojects.github.io/Paket/convert-from-nuget.html
+* paket.lock file is sorted alphabetical (case-insensitive)
+* New paket.bootstrapper.exe (7KB) allows to download paket.exe from github.com
+* BUGFIX: Ensure the NuGet cache folder exists
+* BUGFIX: Async download fixed on mono
+* New NuGet package version constraints - http://fsprojects.github.io/Paket/nuget-dependencies.html#Further-version-constraints
 * Linked source files now all go underneath a "paket-files" folder.
-
-#### 0.2.1 - 18.09.2014
-* Don't clear packages folder during convert-from-nuget - our own paket might live there
 
 #### 0.2.0 - 17.09.2014
 * Allow to directly link GitHub files - http://fsprojects.github.io/Paket/github-dependencies.html
