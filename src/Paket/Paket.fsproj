@@ -85,6 +85,7 @@
     <Compile Include="InstallProcess.fs" />
     <Compile Include="UpdateProcess.fs" />
     <Compile Include="AddProcess.fs" />
+    <Compile Include="Simplifier.fs" />
     <Compile Include="VSIntegration.fs" />
     <Compile Include="NugetConvert.fs" />
     <Compile Include="FindOutdated.fs" />

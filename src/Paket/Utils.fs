@@ -76,5 +76,6 @@ let safeGetFromUrl (url : string) =
 /// Enumerates all files with the given pattern
 let FindAllFiles(folder, pattern) = DirectoryInfo(folder).EnumerateFiles(pattern, SearchOption.AllDirectories)
 
+/// [omit]
 module Seq = 
     let firstOrDefault seq = Seq.tryFind (fun _ -> true) seq

@@ -68,10 +68,10 @@ let extractReferencesFromListFile projectFile =
     let fi = FileInfo(projectFile)
     
     let references = 
-        let specificReferencesFile = FileInfo(Path.Combine(fi.Directory.FullName, fi.Name + ".paket.references"))
+        let specificReferencesFile = FileInfo(Path.Combine(fi.Directory.FullName, fi.Name + ".Constants.ReferencesFile"))
         if specificReferencesFile.Exists then File.ReadAllLines specificReferencesFile.FullName
         else 
-            let generalReferencesFile = FileInfo(Path.Combine(fi.Directory.FullName, "paket.references"))
+            let generalReferencesFile = FileInfo(Path.Combine(fi.Directory.FullName, "Constants.ReferencesFile"))
             if generalReferencesFile.Exists then File.ReadAllLines generalReferencesFile.FullName
             else [||]
     references

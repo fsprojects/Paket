@@ -22,6 +22,7 @@ type Command =
     | Outdated
     | ConvertFromNuget
     | InitAutoRestore
+    | Simplify
     | Unknown
 
 type CLIArguments =
@@ -31,6 +32,7 @@ type CLIArguments =
     | [<First>][<NoAppSettings>][<CustomCommandLine("outdated")>] Outdated
     | [<First>][<NoAppSettings>][<CustomCommandLine("convert-from-nuget")>] ConvertFromNuget
     | [<First>][<NoAppSettings>][<CustomCommandLine("init-auto-restore")>] InitAutoRestore
+    | [<First>][<NoAppSettings>][<CustomCommandLine("simplify")>] Simplify
     | [<AltCommandLine("-v")>] Verbose
     | Dependencies_file of string
     | [<AltCommandLine("-f")>] Force
@@ -46,14 +48,14 @@ with
             | Outdated -> "displays information about new packages."
             | ConvertFromNuget -> "converts all projects from NuGet to Paket."
             | InitAutoRestore -> "enables automatic restore for VS"
+            | Simplify -> "analyzes dependencies and removes unnecessary indirect dependencies"
             | Verbose -> "displays verbose output."
             | Dependencies_file _ -> "specify a file containing dependency definitions."
             | Force -> "forces the download of all packages."
             | Hard -> "overwrites manual package references."
             | No_install -> "omits install --hard after convert-from-nuget"
 
-
-let parser = UnionArgParser.Create<CLIArguments>("USAGE: paket [add|install|update|outdated|convert-from-nuget] ... options")
+let parser = UnionArgParser.Create<CLIArguments>("USAGE: paket [add|install|update|outdated|convert-from-nuget|init-auto-restore|simplify] ... options")
  
 let results =
     try
@@ -64,6 +66,7 @@ let results =
             elif results.Contains <@ CLIArguments.Outdated @> then Command.Outdated
             elif results.Contains <@ CLIArguments.ConvertFromNuget @> then Command.ConvertFromNuget
             elif results.Contains <@ CLIArguments.InitAutoRestore @> then Command.InitAutoRestore
+            elif results.Contains <@ CLIArguments.Simplify @> then Command.Simplify
             else Command.Unknown
         if results.Contains <@ CLIArguments.Verbose @> then
             verbose <- true
@@ -93,6 +96,7 @@ try
         | Command.Outdated -> FindOutdated.ListOutdated(dependenciesFileName)
         | Command.InitAutoRestore -> VSIntegration.InitAutoRestore()
         | Command.ConvertFromNuget -> NuGetConvert.ConvertFromNuget(force,installAfterConvert)
+        | Command.Simplify -> Simplifier.Simplify()
         | _ -> traceErrorfn "no command given.%s" (parser.Usage())
         
         let ts = stopWatch.Elapsed
