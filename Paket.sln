@@ -1,6 +1,6 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2013
-VisualStudioVersion = 12.0.30324.0
+VisualStudioVersion = 12.0.30723.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "docs", "docs", "{A6A6AF7D-D6E3-442D-9B1E-58CC91879BE1}"
 EndProject
@@ -32,6 +32,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "content", "content", "{8E6D
 		docs\content\index.md = docs\content\index.md
 		docs\content\lock-file.md = docs\content\lock-file.md
 		docs\content\nuget-dependencies.md = docs\content\nuget-dependencies.md
+		docs\content\paket-add.md = docs\content\paket-add.md
 		docs\content\paket-init-auto-restore.md = docs\content\paket-init-auto-restore.md
 		docs\content\paket-install.md = docs\content\paket-install.md
 		docs\content\paket-outdated.md = docs\content\paket-outdated.md
