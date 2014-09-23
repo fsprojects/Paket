@@ -83,7 +83,7 @@ try
         let dependenciesFileName = 
             match results.TryGetResult <@ CLIArguments.Dependencies_file @> with
             | Some x -> x
-            | _ -> "paket.dependencies"
+            | _ -> Constants.DependenciesFile
 
         let force = results.Contains <@ CLIArguments.Force @> 
         let hard = results.Contains <@ CLIArguments.Hard @> 
