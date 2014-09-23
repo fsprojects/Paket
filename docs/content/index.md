@@ -2,6 +2,7 @@
 
 Paket is a dependency manager for .NET and [Mono][mono] projects, which is designed to work well with [NuGet][nuget] packages and also enables [referencing files directly from GitHub repositories](github-dependencies.html).
 It enables precise and predictable control over what packages the projects within your application reference. More details are in the [FAQ](faq.html).
+If you are already using NuGet for package restore in your solution then you can learn about the upgrade process in the [convert from NuGet](convert-from-nuget.html) section.
 
   [mono]: http://www.mono-project.com/
   [bundler]: http://bundler.io/
@@ -9,9 +10,12 @@ It enables precise and predictable control over what packages the projects withi
 
 ## How to get Paket
 
-Paket is available for [download from GitHub.com](https://github.com/fsprojects/Paket/releases/latest). It's also available as a NuGet package, `Paket`: [![NuGet Status](http://img.shields.io/nuget/v/Paket.svg?style=flat)](https://www.nuget.org/packages/Paket/) See [Release notes](https://github.com/fsprojects/Paket/blob/master/RELEASE_NOTES.txt) for history.
+Paket is available as:
 
-If you are already using NuGet for package restore in your solution then you can learn about the upgrade process in the [convert from NuGet](convert-from-nuget.html) section.
+  * [download from GitHub.com](https://github.com/fsprojects/Paket/releases/latest)
+  * as a `Paket` on Nuget.org 
+  
+[![NuGet Status](http://img.shields.io/nuget/v/Paket.svg?style=flat)](https://www.nuget.org/packages/Paket/)
 
 ## Getting Started
 
