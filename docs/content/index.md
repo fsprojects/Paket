@@ -13,7 +13,7 @@ If you are already using NuGet for package restore in your solution then you can
 Paket is available as:
 
   * [download from GitHub.com](https://github.com/fsprojects/Paket/releases/latest)
-  * as a `Paket` on Nuget.org 
+  * as a package [`Paket` on nuget.org](https://www.nuget.org/packages/Paket/)
   
 [![NuGet Status](http://img.shields.io/nuget/v/Paket.svg?style=flat)](https://www.nuget.org/packages/Paket/)
 

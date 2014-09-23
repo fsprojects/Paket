@@ -53,4 +53,4 @@ As a result, committing the `paket.lock` file to your version control system gua
 If you make changes to [`paket.dependencies`](dependencies-file.html) or you want Paket to check for newer versions of the direct and indirect dependencies as specified in [`paket.dependencies`](dependencies-file.html), run:
 
   - [`paket outdated`](paket-outdated.html) to check for new versions, and report what's available.
-  - [`paket update`](paket-update.html) to check for new versions, download any that fit the criteria`, and update the references within the project files as specified by their associated [`paket.references`](references-files.html).
+  - [`paket update`](paket-update.html) to check for new versions, download any that fit the criteria, and update the references within the project files as specified by their associated [`paket.references`](references-files.html).
