@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="utf-8"/>
-    <title>paket update
+    <title>paket simplify
 </title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <meta name="description" content="A package dependency manager for .NET with support for NuGet packages and GitHub files."/>
@@ -32,17 +32,13 @@
       <div class="row">
         <div class="span9" id="main">
           
-<h1><a name="paket-update" class="anchor" href="#paket-update">paket update</a></h1>
+<h1><a name="paket-simplify" class="anchor" href="#paket-simplify">paket simplify</a></h1>
 
-<p>Recomputes the dependency resolution, updates the <a href="lock-file.html"><code>paket.lock</code> file</a> and propagates any resulting package changes into all project files referencing updated packages.</p>
+<p>Simplifies your <a href="dependencies-file.html"><code>paket.dependencies</code> file</a> aby removing indirect dependencies.</p>
 
-<table class="pre"><tr><td><pre lang="batchfile">$ paket update [--force] [--hard] [--dependencies-file=FILE]</pre></td></tr></table>
+<table class="pre"><tr><td><pre lang="batchfile">$ paket simplify [--dependencies-file=FILE]</pre></td></tr></table>
 
 <p>Options:</p>
-
-<p><code>--force</code>: Forces the download and reinstallation of all packages.</p>
-
-<p><code>--hard</code>: Replaces package references within project files even if they are not yet adhering to to Paket's conventions (and hence considered manually managed). See <a href="convert-from-nuget.html">convert from NuGet</a>.</p>
 
 <p><code>--dependencies-file</code>: Use the specified file instead of <a href="dependencies-file.html"><code>paket.dependencies</code></a>.</p>
 
