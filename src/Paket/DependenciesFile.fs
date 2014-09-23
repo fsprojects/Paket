@@ -81,7 +81,7 @@ module DependenciesFileParser =
             | _ -> failwithf "invalid github specification:%s     %s" Environment.NewLine trimmed
         | _ -> Blank
     
-    let parseDependenciesFile fileName (lines:string seq) = 
+    let parseDependenciesFile getSha1 fileName (lines:string seq) = 
         ((0, false, [], [], []), lines)
         ||> Seq.fold(fun (lineNo, referencesMode, sources: PackageSource list, packages, sourceFiles) line ->
             let lineNo = lineNo + 1
@@ -100,7 +100,7 @@ module DependenciesFileParser =
                     // TODO: Put SHA1 retrieval into resolver because of rate limit
                     let specified,sha = 
                         match commit with                        
-                        | None -> false,GitHub.getSHA1OfBranch owner project "master" |> Async.RunSynchronously
+                        | None -> false,getSha1 owner project "master"
                         | Some sha -> true,sha
                     
                     lineNo, referencesMode, sources, packages, { Owner = owner; Project = project; Commit = sha; CommitSpecified = specified; Name = path } :: sourceFiles
@@ -196,11 +196,13 @@ type DependenciesFile(fileName,strictMode,packages : UnresolvedPackage list, rem
         File.WriteAllText(fileName, this.ToString())
         tracefn "Dependencies files saved to %s" fileName
 
-    static member FromCode(code:string) : DependenciesFile = 
-        DependenciesFile(DependenciesFileParser.parseDependenciesFile "" <| code.Replace("\r\n","\n").Replace("\r","\n").Split('\n'))
+    static member FromCode(getSha1,code:string) : DependenciesFile = 
+        DependenciesFile(DependenciesFileParser.parseDependenciesFile getSha1 "" <| code.Replace("\r\n","\n").Replace("\r","\n").Split('\n'))
+
     static member ReadFromFile fileName : DependenciesFile = 
-        tracefn "Parsing %s" fileName
-        DependenciesFile(DependenciesFileParser.parseDependenciesFile fileName <| File.ReadAllLines fileName)
+        tracefn "Parsing %s" fileName        
+        let getSha1 owner repo branch = GitHub.getSHA1OfBranch owner repo branch |> Async.RunSynchronously
+        DependenciesFile(DependenciesFileParser.parseDependenciesFile getSha1 fileName <| File.ReadAllLines fileName)
 
     /// Find the matching lock file to a dependencies file
     static member FindLockfile(dependenciesFileName) =

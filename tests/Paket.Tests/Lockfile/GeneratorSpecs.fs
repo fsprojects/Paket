@@ -41,7 +41,7 @@ let expected = """NUGET
 
 [<Test>]
 let ``should generate lock file for packages``() = 
-    let cfg = DependenciesFile.FromCode config1
+    let cfg = DependenciesFile.FromCode(fakeSha1,config1)
     cfg.Resolve(VersionsFromGraph graph, PackageDetailsFromGraph graph)|> UpdateProcess.getResolvedPackagesOrFail
     |> LockFileSerializer.serializePackages cfg.Strict
     |> shouldEqual (normalizeLineEndings expected)
@@ -58,9 +58,11 @@ let expectedWithGitHub = """GITHUB
     
 [<Test>]
 let ``should generate lock file for source files``() = 
-    let cfg = """github "owner:project1:master" "folder/file.fs"
+    let config = """github "owner:project1:master" "folder/file.fs"
 github "owner/project1:commit1" "folder/file1.fs"
-github "owner:project2:commit2" "folder/file.fs" """ |> DependenciesFile.FromCode
+github "owner:project2:commit2" "folder/file.fs" """ 
+
+    let cfg =DependenciesFile.FromCode(fakeSha1,config)
     
     cfg.RemoteFiles
     |> LockFileSerializer.serializeSourceFiles

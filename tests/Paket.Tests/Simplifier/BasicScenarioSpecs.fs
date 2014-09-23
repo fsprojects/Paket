@@ -5,7 +5,7 @@ open Paket
 open NUnit.Framework
 open FsUnit
 open System.IO
-
+open TestHelpers
 
 let toPackages =
     List.map (fun (name,ver,deps) ->
@@ -29,7 +29,9 @@ source http://nuget.org/api/v2
 nuget A 3.3.0
 nuget B 3.3.1
 nuget C 1.0
-nuget D 2.1""" |> DependenciesFile.FromCode
+nuget D 2.1"""
+
+let cfg = DependenciesFile.FromCode(fakeSha1,depFile1)
 
 let refFiles1 = [
     FileInfo("c:\dummy\1"), [|"A";"B";"C";"D"|]
@@ -38,7 +40,7 @@ let refFiles1 = [
 
 [<Test>]
 let ``should remove one level deep indirect dependencies from dep and ref files``() = 
-    let depFile,refFiles = Simplifier.Analyze(graph1, depFile1, refFiles1)
+    let depFile,refFiles = Simplifier.Analyze(graph1, cfg, refFiles1)
     
     depFile.Packages |> List.length |> shouldEqual [|"A";"D"|].Length
     depFile.DirectDependencies.["A"] |> shouldEqual (VersionRange.Exactly "3.3.0")
@@ -64,7 +66,9 @@ nuget B 1.5
 nuget c 2.0
 nuget D 2.0
 nuget E 3.0
-nuget f 4.0""" |> DependenciesFile.FromCode
+nuget f 4.0""" 
+
+let cfg2 = DependenciesFile.FromCode(fakeSha1,depFile2)
 
 let refFiles2 = [
     FileInfo("c:\dummy\1"), [|"A";"B";"C";"D";"F"|]
@@ -73,7 +77,7 @@ let refFiles2 = [
 
 [<Test>]
 let ``should remove all indirect dependencies from dep file recursively``() =
-    let depFile,refFiles  = Simplifier.Analyze(graph2, depFile2, refFiles2)
+    let depFile,refFiles  = Simplifier.Analyze(graph2, cfg2, refFiles2)
     
     depFile.Packages |> List.length |> shouldEqual [|"A";"c"|].Length
     depFile.DirectDependencies.["A"] |> shouldEqual (VersionRange.Exactly "1.0")

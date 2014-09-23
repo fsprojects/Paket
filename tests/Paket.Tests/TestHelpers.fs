@@ -41,3 +41,5 @@ let getSource (resolved:ResolvedPackage) = resolved.Source
 let normalizeLineEndings (text : string) = 
     text.Replace("\r\n", "\n").Replace("\r", "\n").Replace("\n", Environment.NewLine)
 let toLines (text : string) = text.Replace("\r\n", "\n").Replace("\r", "\n").Split('\n')
+
+let fakeSha1 owner repo branch = "12345"
