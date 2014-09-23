@@ -59,7 +59,7 @@ let Simplify () =
     let lockFile = LockFile.LoadFrom lockFilePath.FullName
     let packages = lockFile.ResolvedPackages |> Seq.map (fun kv -> kv.Value) |> List.ofSeq
     let refFiles = 
-        FindAllFiles(".", "Constants.ReferencesFile") 
+        FindAllFiles(".", Constants.ReferencesFile) 
         |> Seq.map(fun f -> f, File.ReadAllLines f.FullName) 
         |> Seq.toList
     let refFilesBefore = refFiles |> List.map (fun (fi,content) -> fi.FullName, content) |> Map.ofList
@@ -77,7 +77,7 @@ let Simplify () =
     simplify Constants.DependenciesFile before after
 
     if depFile.Strict then
-        traceWarn "Strict mode detected. Will not attempt to simplify Constants.ReferencesFile files."
+        traceWarn ("Strict mode detected. Will not attempt to simplify " + Constants.ReferencesFile + " files.")
     else
         for file,after in simplifiedRefFiles do
             let before = refFilesBefore.[file.FullName]

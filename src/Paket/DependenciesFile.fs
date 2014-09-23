@@ -12,6 +12,7 @@ module DependenciesFileParser =
     let private operators = basicOperators @ (basicOperators |> List.map (fun o -> "!" + o))
 
     let parseVersionRange (text : string) : VersionRange = 
+        if text = "" || text = null then VersionRange.AtLeast("0") else
         let splitVersion (text:string) =            
             match basicOperators |> List.tryFind(text.StartsWith) with
             | Some token -> token, text.Replace(token + " ", "")
@@ -109,8 +110,10 @@ type DependenciesFile(fileName,strictMode,packages : UnresolvedPackage list, rem
     member __.Resolve(getVersionF, getPackageDetailsF) = PackageResolver.Resolve(getVersionF, getPackageDetailsF, packages)
     member __.Add(packageName,version) =
         let lastPackage = Seq.last packages
-        let newPackage = {lastPackage with Name = packageName; VersionRange = DependenciesFileParser.parseVersionRange version}
-        DependenciesFile(fileName,strictMode,packages @ [newPackage], remoteFiles )
+        let versionRange = DependenciesFileParser.parseVersionRange version
+        let newPackage = {lastPackage with Name = packageName; VersionRange = versionRange}
+        tracefn "Adding %s %s to paket.dependencies" packageName (versionRange.ToString())
+        DependenciesFile(fileName,strictMode,packages @ [newPackage], remoteFiles)
 
     static member FromCode(code:string) : DependenciesFile = 
         DependenciesFile(DependenciesFileParser.parseDependenciesFile "" <| code.Replace("\r\n","\n").Replace("\r","\n").Split('\n'))

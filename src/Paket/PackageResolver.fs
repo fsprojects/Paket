@@ -15,7 +15,7 @@ let Resolve(getVersionsF, getPackageDetailsF, rootDependencies:UnresolvedPackage
         match exploredPackages.TryGetValue <| (packageName.ToLower(),version) with
         | true,package -> package
         | false,_ ->
-            tracefn "    - exploring %s %s" packageName (version.ToString())
+            verbosefn "    - exploring %s %s" packageName (version.ToString())
             let packageDetails : PackageDetails = getPackageDetailsF sources packageName (version.ToString())
             let explored =
                 { Name = packageDetails.Name

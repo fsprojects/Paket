@@ -2,10 +2,8 @@
 module Paket.AddProcess
 
 open Paket
-open Paket.Logging
-open System.IO
-open System.Collections.Generic
 
-let Add(package, version, force, hard, dependenciesFileName) = 
-    let dependenciesFile = DependenciesFile.ReadFromFile dependenciesFileName
-    ()
+let Add(package, version, force, hard, installAfter, dependenciesFileName) = 
+    let dependenciesFile = DependenciesFile.ReadFromFile(dependenciesFileName).Add(package,version)
+    if installAfter then
+        UpdateProcess.Update(Constants.DependenciesFile,true,force,hard)

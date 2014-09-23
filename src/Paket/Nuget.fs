@@ -70,7 +70,6 @@ let getAllVersionsFromLocalPath (localNugetPath, package) =
 
 /// Parses NuGet version ranges.
 let parseVersionRange (text:string) = 
-    if text = null then nullArg "text" 
     let failParse() = failwithf "unable to parse %s" text
 
     let parseBound  = function
@@ -78,7 +77,7 @@ let parseVersionRange (text:string) =
         | '(' | ')' -> Open
         | _         -> failParse()
 
-    if text = "" || text = "null" then VersionRange.NoRestriction
+    if  text = null || text = "" || text = "null" then VersionRange.NoRestriction
     elif not <| text.Contains "," then
         if text.StartsWith "[" then Specific(text.Trim([|'['; ']'|]) |> SemVer.parse)
         else Minimum(SemVer.parse text)

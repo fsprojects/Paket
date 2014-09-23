@@ -265,10 +265,10 @@ type ProjectFile =
     member this.ReplaceNugetPackagesFile() =
         let nugetNode = this.Document.SelectSingleNode("//ns:*[@Include='packages.config']", this.Namespaces)
         if nugetNode = null then () else
-        match [for node in this.Document.SelectNodes("//ns:*[@Include='Constants.ReferencesFile']", this.Namespaces) -> node] with 
+        match [for node in this.Document.SelectNodes("//ns:*[@Include='" + Constants.ReferencesFile + "']", this.Namespaces) -> node] with 
         | [_] -> nugetNode.ParentNode.RemoveChild(nugetNode) |> ignore
-        | [] -> nugetNode.Attributes.["Include"].Value <- "Constants.ReferencesFile"
-        | _::_ -> failwithf "multiple Constants.ReferencesFile nodes in project file %s" this.FileName
+        | [] -> nugetNode.Attributes.["Include"].Value <- Constants.ReferencesFile
+        | _::_ -> failwithf "multiple %s nodes in project file %s" Constants.ReferencesFile this.FileName
 
     member this.RemoveNugetTargetsEntries() =
         let toDelete = 

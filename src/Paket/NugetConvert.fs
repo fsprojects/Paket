@@ -63,7 +63,7 @@ let private convertNugetsToDepFile(nugetPackagesConfigs) =
     else tracefn "%s is up to date" Constants.DependenciesFile
 
 let private convertNugetToRefFile(nugetPackagesConfig) =
-    let refFile = Path.Combine(nugetPackagesConfig.File.DirectoryName, "Constants.ReferencesFile")
+    let refFile = Path.Combine(nugetPackagesConfig.File.DirectoryName, Constants.ReferencesFile)
     let refFileExists = File.Exists refFile
     let existingReferences = 
         if refFileExists
@@ -80,7 +80,7 @@ let private convertNugetToRefFile(nugetPackagesConfig) =
     if not refFileExists 
         then
             File.WriteAllLines(refFile, referencesLines)
-            tracefn "Converted %s to Constants.ReferencesFile" nugetPackagesConfig.File.FullName 
+            tracefn "Converted %s to %s" nugetPackagesConfig.File.FullName Constants.ReferencesFile
     elif not (referencesLines |> List.isEmpty)
         then
             File.WriteAllLines(refFile, Seq.append (File.ReadAllLines(refFile)) referencesLines)
@@ -98,7 +98,7 @@ let ConvertFromNuget(force, installAfter) =
         let packageFile = nugetPackagesConfig.File
         match nugetPackagesConfig.Type with
         | ProjectLevel ->
-            let refFile = Path.Combine(packageFile.DirectoryName, "Constants.ReferencesFile")
+            let refFile = Path.Combine(packageFile.DirectoryName, Constants.ReferencesFile)
             if File.Exists refFile && not force then failwithf "%s already exists, use --force to overwrite" refFile
             convertNugetToRefFile(nugetPackagesConfig)
         | SolutionLevel -> ()

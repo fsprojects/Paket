@@ -6,7 +6,6 @@ open Nessos.UnionArgParser
 open Paket.Logging
 open System.Diagnostics
 open System.Reflection
-open System.IO
 
 let private stopWatch = new Stopwatch()
 stopWatch.Start()
@@ -37,6 +36,8 @@ type CLIArguments =
     | Dependencies_file of string
     | [<AltCommandLine("-f")>] Force
     | Hard
+    | [<CustomCommandLine("nuget")>] Nuget of string
+    | [<CustomCommandLine("version")>] Version of string
     | No_install
 with
     interface IArgParserTemplate with
@@ -44,24 +45,27 @@ with
             match s with
             | Add -> "adds a package to the depedencies."
             | Install -> "installs all packages."
-            | Update -> "updates the packet.lock ile and installs all packages."
+            | Update -> "updates the packet.lock file and installs all packages."
             | Outdated -> "displays information about new packages."
             | ConvertFromNuget -> "converts all projects from NuGet to Paket."
-            | InitAutoRestore -> "enables automatic restore for VS"
-            | Simplify -> "analyzes dependencies and removes unnecessary indirect dependencies"
+            | InitAutoRestore -> "enables automatic restore for Visual Studio."
+            | Simplify -> "analyzes dependencies and removes unnecessary indirect dependencies."
             | Verbose -> "displays verbose output."
             | Dependencies_file _ -> "specify a file containing dependency definitions."
             | Force -> "forces the download of all packages."
             | Hard -> "overwrites manual package references."
-            | No_install -> "omits install --hard after convert-from-nuget"
+            | No_install -> "omits install --hard after convert-from-nuget."
+            | Nuget _ -> "allows to specify a nuget package."
+            | Version _ -> "allows to specify a package version."
 
 let parser = UnionArgParser.Create<CLIArguments>("USAGE: paket [add|install|update|outdated|convert-from-nuget|init-auto-restore|simplify] ... options")
  
 let results =
     try
         let results = parser.Parse()
-        let command =
-            if results.Contains <@ CLIArguments.Install @> then Command.Install
+        let command = 
+            if results.Contains <@ CLIArguments.Add @> then Command.Add
+            elif results.Contains <@ CLIArguments.Install @> then Command.Install
             elif results.Contains <@ CLIArguments.Update @> then Command.Update
             elif results.Contains <@ CLIArguments.Outdated @> then Command.Outdated
             elif results.Contains <@ CLIArguments.ConvertFromNuget @> then Command.ConvertFromNuget
@@ -87,15 +91,21 @@ try
 
         let force = results.Contains <@ CLIArguments.Force @> 
         let hard = results.Contains <@ CLIArguments.Hard @> 
-        let installAfterConvert = results.Contains <@ CLIArguments.No_install @> |> not
+        let noInstall = results.Contains <@ CLIArguments.No_install @>
 
         match command with
-        | Command.Add -> AddProcess.Add("TODO","",force,hard,dependenciesFileName)
+        | Command.Add -> 
+            let packageName =  results.GetResult <@ CLIArguments.Nuget @>
+            let version = 
+                match results.TryGetResult <@ CLIArguments.Version @> with
+                | Some x -> x
+                | _ -> ""
+            AddProcess.Add(packageName,version,force,hard,noInstall |> not,dependenciesFileName)
         | Command.Install -> UpdateProcess.Update(dependenciesFileName,false,force,hard) 
         | Command.Update -> UpdateProcess.Update(dependenciesFileName,true,force,hard)
         | Command.Outdated -> FindOutdated.ListOutdated(dependenciesFileName)
         | Command.InitAutoRestore -> VSIntegration.InitAutoRestore()
-        | Command.ConvertFromNuget -> NuGetConvert.ConvertFromNuget(force,installAfterConvert)
+        | Command.ConvertFromNuget -> NuGetConvert.ConvertFromNuget(force,noInstall |> not)
         | Command.Simplify -> Simplifier.Simplify()
         | _ -> traceErrorfn "no command given.%s" (parser.Usage())
         
