@@ -99,7 +99,7 @@ If you omit the version constraint then Paket will assume `>= 0`.
 
 The `~>` "twiddle-wakka" operator is borrowed from [bundler](http://bundler.io/). It is used to specify a version range.
 
-It translates to "use the minimum version specified, but allow upgrades up to, but not including, `<version specified>, last part chopped off, last number incremented by 1`". In other words, allow the last part stated explicitly to increase, but pin any of the elements before that.
+It translates to "use the minimum version specified, but allow upgrades up to, but not including, <version specified>, last part chopped off, last number incremented by 1". In other words, allow the last part stated explicitly to increase, but pin any of the elements before that.
 
 Let us illustrate:
 
