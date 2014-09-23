@@ -55,7 +55,7 @@ Contributing and copyright
 
 The project is hosted on [GitHub][gh] where you can [report issues][issues], fork the project and submit pull requests.
 
-To get started with the code, just fork and clone locally. Then build the solution with `build.sh` on Mono, Visual Studio or `build.cmd`. *Please see the [Quick contributing guide in the README][readme] for contribution gudelines*.
+Please see the [Quick contributing guide in the README][readme] for contribution gudelines.
 
 The library is available under MIT license, which allows modification and redistribution for both commercial and non-commercial purposes. 
 For more information see the [License file][license] in the GitHub repository.
