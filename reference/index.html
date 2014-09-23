@@ -57,10 +57,9 @@
         </tr>
         <tr>
           <td class="type-name">
-            <a href="paket-dependency.html">Dependency</a>
+            <a href="paket-filteredversions.html">FilteredVersions</a>
           </td>
-          <td class="xmldoc"><p>Represents a dependency.</p>
-</td>
+          <td class="xmldoc"></td>
         </tr>
         <tr>
           <td class="type-name">
@@ -85,9 +84,9 @@
         </tr>
         <tr>
           <td class="type-name">
-            <a href="paket-idiscovery.html">IDiscovery</a>
+            <a href="paket-lockfile.html">LockFile</a>
           </td>
-          <td class="xmldoc"><p>Interface for discovery APIs.</p>
+          <td class="xmldoc"><p>Allows to parse and analyze paket.lock files.</p>
 </td>
         </tr>
         <tr>
@@ -106,13 +105,6 @@
         </tr>
         <tr>
           <td class="type-name">
-            <a href="paket-packagedependency.html">PackageDependency</a>
-          </td>
-          <td class="xmldoc"><p>Represents a package dependency.</p>
-</td>
-        </tr>
-        <tr>
-          <td class="type-name">
             <a href="paket-packagedetails.html">PackageDetails</a>
           </td>
           <td class="xmldoc"><p>Represents package details</p>
@@ -122,8 +114,7 @@
           <td class="type-name">
             <a href="paket-packageresolution.html">PackageResolution</a>
           </td>
-          <td class="xmldoc"><p>Represents a complete dependency resolution.</p>
-</td>
+          <td class="xmldoc"></td>
         </tr>
         <tr>
           <td class="type-name">
@@ -160,10 +151,9 @@
         </tr>
         <tr>
           <td class="type-name">
-            <a href="paket-resolveddependency.html">ResolvedDependency</a>
+            <a href="paket-resolved.html">Resolved</a>
           </td>
-          <td class="xmldoc"><p>Represents a resolved dependency.</p>
-</td>
+          <td class="xmldoc"></td>
         </tr>
         <tr>
           <td class="type-name">
@@ -215,7 +205,20 @@
     <tbody>
         <tr>
           <td class="module-name">
+            <a href="paket-addprocess.html">AddProcess</a>
+          </td>
+          <td class="xmldoc"><p>Contains methods for addition of new packages</p>
+</td>
+        </tr>
+        <tr>
+          <td class="module-name">
             <a href="paket-constants.html">Constants</a>
+          </td>
+          <td class="xmldoc"></td>
+        </tr>
+        <tr>
+          <td class="module-name">
+            <a href="paket-dependenciesfileserializer.html">DependenciesFileSerializer</a>
           </td>
           <td class="xmldoc"></td>
         </tr>
@@ -236,15 +239,20 @@
           <td class="module-name">
             <a href="paket-installprocess.html">InstallProcess</a>
           </td>
-          <td class="xmldoc"><p>Contains methods for the install and update process.</p>
+          <td class="xmldoc"><p>Contains methods for the install process.</p>
 </td>
         </tr>
         <tr>
           <td class="module-name">
-            <a href="paket-lockfile.html">LockFile</a>
+            <a href="paket-lockfileparser.html">LockFileParser</a>
           </td>
-          <td class="xmldoc"><p>Contains methods to handle lockfiles.</p>
-</td>
+          <td class="xmldoc"></td>
+        </tr>
+        <tr>
+          <td class="module-name">
+            <a href="paket-lockfileserializer.html">LockFileSerializer</a>
+          </td>
+          <td class="xmldoc"></td>
         </tr>
         <tr>
           <td class="module-name">
@@ -283,9 +291,22 @@
         </tr>
         <tr>
           <td class="module-name">
+            <a href="paket-simplifier.html">Simplifier</a>
+          </td>
+          <td class="xmldoc"></td>
+        </tr>
+        <tr>
+          <td class="module-name">
             <a href="paket-solutionfile.html">SolutionFile</a>
           </td>
           <td class="xmldoc"><p>Contains methods to read and manipulate solution files.</p>
+</td>
+        </tr>
+        <tr>
+          <td class="module-name">
+            <a href="paket-updateprocess.html">UpdateProcess</a>
+          </td>
+          <td class="xmldoc"><p>Contains methods for the update process.</p>
 </td>
         </tr>
         <tr>
@@ -337,9 +358,11 @@
             <li><a href="./../reference/index.html">API Reference</a></li>
 
             <li class="nav-header">Paket commands</li>
-            <li><a href="./../paket-install.html">paket install</a></li>
-            <li><a href="./../paket-outdated.html">paket outdated</a></li>
+            <li><a href="./../paket-install.html">paket install</a></li>            
             <li><a href="./../paket-update.html">paket update</a></li>
+            <li><a href="./../paket-install.html">paket install</a></li>
+            <li class="divider"></li>
+            <li><a href="./../paket-outdated.html">paket outdated</a></li>
             <li><a href="./../convert-from-nuget.html">paket convert-from-nuget</a></li>            
             <li><a href="./../paket-init-auto-restore.html">paket init-auto-restore</a></li>            
           </ul>

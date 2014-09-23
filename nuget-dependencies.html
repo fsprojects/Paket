@@ -46,7 +46,7 @@
 
 <h3><a name="NuGet-feeds" class="anchor" href="#NuGet-feeds">NuGet feeds</a></h3>
 
-<p>Paket supports NuGet feeds like those emitted by <a href="http://www.nuget.org">nuget.org</a> or <a href="http://www.jetbrains.com/teamcity/">TeamCity</a>.</p>
+<p>Paket supports NuGet feeds like those provided by <a href="http://www.nuget.org">nuget.org</a> or <a href="http://www.jetbrains.com/teamcity/">TeamCity</a>.</p>
 
 <p>Please note that you need to specify <em>all</em> NuGet sources, including the default feed from <a href="http://www.nuget.org">nuget.org</a>. Paket does not take the current machine's NuGet Package Sources configuration (that you set up e.g. using Visual Studio) into account.</p>
 
@@ -66,7 +66,7 @@
 
 <h3><a name="Path-sources" class="anchor" href="#Path-sources">Path sources</a></h3>
 
-<p>Paket supports file paths such as local directories or references to UNC shares:</p>
+<p>Paket also supports file paths such as local directories or references to UNC shares:</p>
 
 <table class="pre"><tr><td class="lines"><pre class="fssnip">
 <span class="l">1: </span>
@@ -87,7 +87,7 @@
 <h3><a name="Strict-references" class="anchor" href="#Strict-references">Strict references</a></h3>
 
 <p>Paket usually references all direct and indirect dependencies that are listed in your <a href="references-files.md">paket.references</a> files to your project file.
-With the <code>strict</code> mode it will only reference direct dependencies.</p>
+In <code>strict</code> mode it will <strong>only</strong> reference <em>direct</em> dependencies.</p>
 
 <table class="pre"><tr><td class="lines"><pre class="fssnip">
 <span class="l">1: </span>
@@ -113,7 +113,7 @@ With the <code>strict</code> mode it will only reference direct dependencies.</p
 
 <p>The dependencies of your project are defined by the <code>nuget "&lt;package ID&gt;" "&lt;version constraint&gt;"</code> statement.</p>
 
-<p>Paket currently supports only NuGet packages, but <a href="https://github.com/fsprojects/Paket/issues/9">we're evaluating other options</a>.</p>
+<p>Paket also supports file dependencies, such as <a href="github-dependencies.html">referencing files directly from GitHub repositories</a>.</p>
 
 <div id="package-id"></div>
 
@@ -129,7 +129,7 @@ With the <code>strict</code> mode it will only reference direct dependencies.</p
 
 <p>With Paket you do not need to pin specific versions (although you can). Paket allows you to leverage <a href="http://semver.org">semantic versioning</a> and define version constraints in a very flexible manner.</p>
 
-<p>Please also see below how you can <a href="#nuget-style-dependency-resolution">influence the resolution of indirect dependencies</a>.</p>
+<p>You can also <a href="#nuget-style-dependency-resolution">influence the resolution of indirect dependencies</a>.</p>
 
 <h4><a name="Pinned-version-constraint" class="anchor" href="#Pinned-version-constraint">Pinned version constraint</a></h4>
 
@@ -183,61 +183,23 @@ With the <code>strict</code> mode it will only reference direct dependencies.</p
 
 <p>If you omit the version constraint then Paket will assume <code>&gt;= 0</code>.</p>
 
-<h4><a name="TODO-Greater-than-version-constraint" class="anchor" href="#TODO-Greater-than-version-constraint">TODO Greater-than version constraint</a></h4>
+<h4><a name="Further-version-constraints" class="anchor" href="#Further-version-constraints">Further version constraints</a></h4>
 
 <table class="pre"><tr><td class="lines"><pre class="fssnip">
 <span class="l">1: </span>
+<span class="l">2: </span>
+<span class="l">3: </span>
+<span class="l">4: </span>
 </pre>
 </td>
 <td class="snippet"><pre class="fssnip">
-<span class="i">nuget</span> <span class="i">Example</span> <span class="o">&gt;</span> <span class="n">1.2</span><span class="o">.</span><span class="n">3</span></pre>
+<span class="i">nuget</span> <span class="i">Example</span> <span class="o">&gt;</span> <span class="n">1.2</span><span class="o">.</span><span class="n">3</span>         <span class="c">// greater than 1.2.3</span>
+<span class="i">nuget</span> <span class="i">Example</span> <span class="o">&lt;=</span> <span class="n">1.2</span><span class="o">.</span><span class="n">3</span>        <span class="c">// at least 1.2.3</span>
+<span class="i">nuget</span> <span class="i">Example</span> <span class="o">&lt;</span> <span class="n">1.2</span><span class="o">.</span><span class="n">3</span>         <span class="c">// less than 1.2.3</span>
+<span class="i">nuget</span> <span class="i">Example</span> <span class="o">&gt;</span><span class="o">=</span> <span class="n">1.2</span><span class="o">.</span><span class="n">3</span> <span class="o">&lt;</span> <span class="n">1.5</span>  <span class="c">// at least 1.2.3 but less than 1.5</span></pre>
 </td>
 </tr>
 </table>
-
-<p>NOT SUPPORTED YET</p>
-
-<h4><a name="TODO-Less-than-or-equal-version-constraint" class="anchor" href="#TODO-Less-than-or-equal-version-constraint">TODO Less-than-or-equal version constraint</a></h4>
-
-<table class="pre"><tr><td class="lines"><pre class="fssnip">
-<span class="l">1: </span>
-</pre>
-</td>
-<td class="snippet"><pre class="fssnip">
-<span class="i">nuget</span> <span class="i">Example</span> <span class="o">&lt;=</span> <span class="n">1.2</span><span class="o">.</span><span class="n">3</span></pre>
-</td>
-</tr>
-</table>
-
-<p>NOT SUPPORTED YET</p>
-
-<h4><a name="TODO-Less-than-version-constraint" class="anchor" href="#TODO-Less-than-version-constraint">TODO Less-than version constraint</a></h4>
-
-<table class="pre"><tr><td class="lines"><pre class="fssnip">
-<span class="l">1: </span>
-</pre>
-</td>
-<td class="snippet"><pre class="fssnip">
-<span class="i">nuget</span> <span class="i">Example</span> <span class="o">&lt;</span> <span class="n">1.2</span><span class="o">.</span><span class="n">3</span></pre>
-</td>
-</tr>
-</table>
-
-<p>NOT SUPPORTED YET</p>
-
-<h4><a name="TODO-Compound-version-constraint" class="anchor" href="#TODO-Compound-version-constraint">TODO Compound version constraint</a></h4>
-
-<table class="pre"><tr><td class="lines"><pre class="fssnip">
-<span class="l">1: </span>
-</pre>
-</td>
-<td class="snippet"><pre class="fssnip">
-<span class="i">nuget</span> <span class="i">Example</span> <span class="o">&gt;</span><span class="o">=</span> <span class="n">1.2</span><span class="o">.</span><span class="n">3</span> <span class="o">&lt;</span> <span class="n">1.5</span></pre>
-</td>
-</tr>
-</table>
-
-<p>NOT SUPPORTED YET</p>
 
 <div id="pessimistic-version-constraint"></div>
 
@@ -404,9 +366,11 @@ With the <code>strict</code> mode it will only reference direct dependencies.</p
             <li><a href="./reference/index.html">API Reference</a></li>
 
             <li class="nav-header">Paket commands</li>
-            <li><a href="./paket-install.html">paket install</a></li>
-            <li><a href="./paket-outdated.html">paket outdated</a></li>
+            <li><a href="./paket-install.html">paket install</a></li>            
             <li><a href="./paket-update.html">paket update</a></li>
+            <li><a href="./paket-install.html">paket install</a></li>
+            <li class="divider"></li>
+            <li><a href="./paket-outdated.html">paket outdated</a></li>
             <li><a href="./convert-from-nuget.html">paket convert-from-nuget</a></li>            
             <li><a href="./paket-init-auto-restore.html">paket init-auto-restore</a></li>            
           </ul>

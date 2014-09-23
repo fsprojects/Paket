@@ -40,23 +40,6 @@
 </div>
 
 <!-- Render nested types and modules, if there are any -->
-  <h2>Nested types and modules</h2>
-  <div>
-      <table class="table table-bordered module-list">
-    <thead>
-      <tr><td>Module</td><td>Description</td></tr>
-    </thead>
-    <tbody>
-        <tr>
-          <td class="module-name">
-            <a href="paket-utils-seq.html">Seq</a>
-          </td>
-          <td class="xmldoc"></td>
-        </tr>
-    </tbody>
-  </table>
-
-  </div>
 
   <h3>Functions and values</h3>
   <table class="table table-bordered member-list">
@@ -67,10 +50,50 @@
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '34', 34)" onmouseover="showTip(event, '34', 34)">
+          <code onmouseout="hideTip(event, '39', 39)" onmouseover="showTip(event, '39', 39)">
+            askNumberedQuestion question options
+          </code>
+          <div class="tip" id="39">
+            <strong>Signature:</strong> question:string -&gt; options:int -&gt; int<br />
+                      </div>
+        </td>
+        <td class="xmldoc">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket/Utils.fs#L96-96" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          <p>If the guard is true then a [0] / .. / [n] question will be ask.
+Until the user pressed a valid number.</p>
+
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '40', 40)" onmouseover="showTip(event, '40', 40)">
+            askYesNo question
+          </code>
+          <div class="tip" id="40">
+            <strong>Signature:</strong> question:string -&gt; bool<br />
+                      </div>
+        </td>
+        <td class="xmldoc">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket/Utils.fs#L80-80" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          <p>If the guard is true then a [Y]es / [N]o question will be ask.
+Until the user pressed y or n.</p>
+
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '41', 41)" onmouseover="showTip(event, '41', 41)">
             CleanDir path
           </code>
-          <div class="tip" id="34">
+          <div class="tip" id="41">
             <strong>Signature:</strong> path:string -&gt; unit<br />
                       </div>
         </td>
@@ -86,10 +109,10 @@
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '35', 35)" onmouseover="showTip(event, '35', 35)">
+          <code onmouseout="hideTip(event, '42', 42)" onmouseover="showTip(event, '42', 42)">
             CreateDir path
           </code>
-          <div class="tip" id="35">
+          <div class="tip" id="42">
             <strong>Signature:</strong> path:string -&gt; unit<br />
                       </div>
         </td>
@@ -105,10 +128,10 @@
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '36', 36)" onmouseover="showTip(event, '36', 36)">
+          <code onmouseout="hideTip(event, '43', 43)" onmouseover="showTip(event, '43', 43)">
             createWebClient ()
           </code>
-          <div class="tip" id="36">
+          <div class="tip" id="43">
             <strong>Signature:</strong> unit -&gt; WebClient<br />
                       </div>
         </td>
@@ -123,20 +146,38 @@
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '37', 37)" onmouseover="showTip(event, '37', 37)">
+          <code onmouseout="hideTip(event, '44', 44)" onmouseover="showTip(event, '44', 44)">
             FindAllFiles (folder, pattern)
           </code>
-          <div class="tip" id="37">
+          <div class="tip" id="44">
             <strong>Signature:</strong> (folder:string * pattern:string) -&gt; IEnumerable&lt;FileInfo&gt;<br />
                       </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket/Utils.fs#L77-77" class="github-link">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket/Utils.fs#L109-109" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
           <p>Enumerates all files with the given pattern</p>
 
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '45', 45)" onmouseover="showTip(event, '45', 45)">
+            readKey ()
+          </code>
+          <div class="tip" id="45">
+            <strong>Signature:</strong> unit -&gt; string<br />
+                      </div>
+        </td>
+        <td class="xmldoc">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket/Utils.fs#L76-76" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          
         </td>
       </tr>
     </tbody>
@@ -167,9 +208,11 @@
             <li><a href="./../reference/index.html">API Reference</a></li>
 
             <li class="nav-header">Paket commands</li>
-            <li><a href="./../paket-install.html">paket install</a></li>
-            <li><a href="./../paket-outdated.html">paket outdated</a></li>
+            <li><a href="./../paket-install.html">paket install</a></li>            
             <li><a href="./../paket-update.html">paket update</a></li>
+            <li><a href="./../paket-install.html">paket install</a></li>
+            <li class="divider"></li>
+            <li><a href="./../paket-outdated.html">paket outdated</a></li>
             <li><a href="./../convert-from-nuget.html">paket convert-from-nuget</a></li>            
             <li><a href="./../paket-init-auto-restore.html">paket init-auto-restore</a></li>            
           </ul>

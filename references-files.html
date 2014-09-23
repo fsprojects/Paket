@@ -41,7 +41,7 @@
 <p>It acts a lot like NuGet's <code>packages.config</code> files but there are some key differences:</p>
 
 <ul>
-<li>One does not specify package versions these are instead sourced from the <a href="lock-file.html"><code>paket.lock</code> file</a> (which are in turn derived from the rules contained within the <a href="dependencies-file.html"><code>paket.dependencies</code> file</a> in the course of the <em>initial</em> <a href="paket-install.html"><code>paket install</code></a> or subsequent <a href="paket-update.html"><code>paket update</code></a> commands)</li>
+<li>One does not specify package versions; these are instead sourced from the <a href="lock-file.html"><code>paket.lock</code> file</a> (which are in turn derived from the rules contained within the <a href="dependencies-file.html"><code>paket.dependencies</code> file</a> in the course of the <em>initial</em> <a href="paket-install.html"><code>paket install</code></a> or subsequent <a href="paket-update.html"><code>paket update</code></a> commands)</li>
 <li>Only direct dependencies should be listed (see below, <a href="https://github.com/fsprojects/Paket/issues/38">we're currently evaluating options for other reference modes</a>)</li>
 <li>It's just a plain text file</li>
 <li>It's optional</li>
@@ -73,7 +73,7 @@
 
 <p>For each MSBuild project alongside a <code>paket.references</code>, <a href="paket-install.html"><code>paket install</code></a> and <a href="paket-update.html"><code>paket update</code></a> will add references to the dependencies listed in <code>paket.references</code> <em>and all their indirect dependencies</em>.</p>
 
-<p>The references injected into the MSBuild project represent the complete set of rules specified within the package for each <code>lib</code> and <code>Content</code> item; each reference is <code>Condition</code>al on an MSBuild expression predicated on the project's active framework etc. This allows you to change the target version of the MSBuild project (either within Visual Studio or e.g. as part of a multi-pass build) without reinstalling dependencies or incurring an impenetrable set of diffs.</p>
+<p>The references injected into the MSBuild project reflect the complete set of rules specified within the package for each <code>lib</code> and <code>Content</code> item; each reference is <code>Condition</code>al on an MSBuild expression predicated on the project's active framework etc. This allows you to change the target version of the MSBuild project (either within Visual Studio or e.g. as part of a multi-pass build) without reinstalling dependencies or incurring an impenetrable set of diffs.</p>
 
 <h2><a name="File-name-conventions" class="anchor" href="#File-name-conventions">File name conventions</a></h2>
 
@@ -86,7 +86,7 @@
 <li>Add a project-specific <code>&lt;MSBuild project&gt;.paket.references</code> file for each and every project that requires any references</li>
 </ul>
 
-<p>Please note that Paket does not merge the directory's shared reference list with the project-specific references. If a specific reference list is present, it overrides the default (even if that file is empty, in which case it prevents anything being added to its sibling project file).</p>
+<p>Please note that Paket does not union the directory's shared reference list with the project-specific references. If a specific references file is present, it overrides the default (even if that file is empty, in which case it prevents anything being added to its sibling project file).</p>
 
 <h3><a name="Global-paket-references" class="anchor" href="#Global-paket-references">Global paket.references</a></h3>
 
@@ -213,9 +213,11 @@
             <li><a href="./reference/index.html">API Reference</a></li>
 
             <li class="nav-header">Paket commands</li>
-            <li><a href="./paket-install.html">paket install</a></li>
-            <li><a href="./paket-outdated.html">paket outdated</a></li>
+            <li><a href="./paket-install.html">paket install</a></li>            
             <li><a href="./paket-update.html">paket update</a></li>
+            <li><a href="./paket-install.html">paket install</a></li>
+            <li class="divider"></li>
+            <li><a href="./paket-outdated.html">paket outdated</a></li>
             <li><a href="./convert-from-nuget.html">paket convert-from-nuget</a></li>            
             <li><a href="./paket-init-auto-restore.html">paket init-auto-restore</a></li>            
           </ul>

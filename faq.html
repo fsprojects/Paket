@@ -50,7 +50,7 @@
 
 <h2><a name="NuGet-puts-the-package-version-into-the-path-Is-Paket-doing-the-same" class="anchor" href="#NuGet-puts-the-package-version-into-the-path-Is-Paket-doing-the-same">NuGet puts the package version into the path. Is Paket doing the same?</a></h2>
 
-<p>No, since Paket provides a global view to your dependencies it installs only one version of a package and therefor the version number is not needed in the path.
+<p>No, since Paket provides a global view of your dependencies it installs only one version of a package and therefore the version number is not needed in the path.
 This makes it much easier to reference files in the package and you don't have to edit these references when you update a package.</p>
 
 <h2><a name="Why-does-Paket-add-references-to-the-libraries-associated-with-each-supported-framework-version-within-a-NuGet-package-to-my-projects" class="anchor" href="#Why-does-Paket-add-references-to-the-libraries-associated-with-each-supported-framework-version-within-a-NuGet-package-to-my-projects">Why does Paket add references to the libraries associated with each supported framework version within a NuGet package to my projects?</a></h2>
@@ -73,7 +73,7 @@ This makes it much easier to reference files in the package and you don't have t
 
 <p>No, we don't run any script or program from NuGet packages and we have no plans to do this in the future.
 We know that this might cause you some manual work for some of the currently available NuGet packages, but we think these install scripts cause more harm than good.
-In fact our current model doesn't allow to run install.ps1 script like the following from <code>FontAwesome.4.1.0</code>:</p>
+In fact our current model would not be able to work consistently alongside an <code>install.ps1</code> script like the following from <code>FontAwesome.4.1.0</code>:</p>
 
 <table class="pre"><tr><td><pre lang="batchfile">param($installPath, $toolsPath, $package, $project)
 
@@ -83,7 +83,7 @@ foreach ($fontFile in $project.ProjectItems.Item(&quot;fonts&quot;).ProjectItems
 }</pre></td></tr></table>
 
 <p>The reason is simply that even if we would support PowerShell on Windows we can't access the Visual Studio project system. Paket is a command line tool and doesn't run inside of Visual Studio.
-There is no way to make this work – and even NuGet.exe can't do it in command line mode.</p>
+There is no reasonable way to make this work – and even NuGet.exe can't do it in command line mode.</p>
 
 <p>Instead we encourage the .NET community to use a declarative install process and we will help to fix this in the affected packages.</p>
 
@@ -101,7 +101,7 @@ There is no way to make this work – and even NuGet.exe can't do it in command 
 
 <h2><a name="Does-Paket-allow-groups-like-bundler-does" class="anchor" href="#Does-Paket-allow-groups-like-bundler-does">Does Paket allow groups like bundler does?</a></h2>
 
-<p>No at the moment we don't see the requirement for something like <a href="http://bundler.io/v1.7/groups.html">bundler's groups</a>. Longer discussion can be found <a href="https://github.com/fsprojects/Paket/issues/116">here</a>.</p>
+<p>No at the moment we don't see the need for something like <a href="http://bundler.io/v1.7/groups.html">bundler's groups</a> in the .NET environment. Longer discussion can be found <a href="https://github.com/fsprojects/Paket/issues/116">here</a>.</p>
 
 <h2><a name="Can-I-use-Paket-to-manage-npm-bower-whatever-dependencies" class="anchor" href="#Can-I-use-Paket-to-manage-npm-bower-whatever-dependencies">Can I use Paket to manage npm/bower/whatever dependencies?</a></h2>
 
@@ -135,9 +135,11 @@ There is no way to make this work – and even NuGet.exe can't do it in command 
             <li><a href="./reference/index.html">API Reference</a></li>
 
             <li class="nav-header">Paket commands</li>
-            <li><a href="./paket-install.html">paket install</a></li>
-            <li><a href="./paket-outdated.html">paket outdated</a></li>
+            <li><a href="./paket-install.html">paket install</a></li>            
             <li><a href="./paket-update.html">paket update</a></li>
+            <li><a href="./paket-install.html">paket install</a></li>
+            <li class="divider"></li>
+            <li><a href="./paket-outdated.html">paket outdated</a></li>
             <li><a href="./convert-from-nuget.html">paket convert-from-nuget</a></li>            
             <li><a href="./paket-init-auto-restore.html">paket init-auto-restore</a></li>            
           </ul>

@@ -40,23 +40,36 @@
 
 <ol>
 <li>Analyse your <code>packages.config</code> files and extract the referenced packages into a <a href="dependencies-file.html"><code>paket.dependencies</code> file</a>.</li>
-<li>Convert every <code>packages.config</code> file to <a href="references-files.html"><code>paket.references</code></a> syntax. This is very easy - you just have to remove all the XML and keep the package names.</li>
-<li>Run <a href="paket-install.html">paket install</a> with the <code>--hard</code> flag. This will analyze the dependencies, generate a <a href="lock-file.html"><code>paket.lock</code> file</a> and remove all the old package references from your project files and install new references in Paket's syntax.</li>
+<li>Convert each <code>packages.config</code> file to <a href="references-files.html"><code>paket.references</code></a> syntax. This is very easy - you just have to remove all the XML and keep the package names.</li>
+<li>Run <a href="paket-install.html">paket install</a> with the <code>--hard</code> flag. This will analyze the dependencies, generate a <a href="lock-file.html"><code>paket.lock</code> file</a>, remove all the old package references from your project files and replace them with equivalent <code>&lt;Reference</code>s in a syntax that can be managed automatically by Paket.</li>
 </ol>
 
 <div id="automatic"></div>
 
-<h2><a name="Automatic-process" class="anchor" href="#Automatic-process">Automatic process</a></h2>
+<h2><a name="Automated-process" class="anchor" href="#Automated-process">Automated process</a></h2>
 
-<p>Paket can assist you with the conversion. The <code>convert-from-nuget</code> command:</p>
+<p>Paket can assist you with the conversion. The <code>paket convert-from-nuget</code> command:</p>
 
 <ol>
-<li>Finds all <code>packages.config</code> files and converts them to <a href="references-files.html"><code>paket.references</code></a> and generates a <a href="dependencies-file.html"><code>paket.dependencies</code> file</a>.</li>
-<li>If there is a solution-level <code>packages.config</code>, then its dependencies will be written to <a href="dependencies-file.html"><code>paket.dependencies</code></a> and the file will be removed.</li>
-<li>If you use NuGet automatic package restore and have directory <code>.nuget</code> with <code>nuget.targets</code> inside, then appropriate entries in all project files will be removed (<a href="http://docs.nuget.org/docs/workflows/migrating-to-automatic-package-restore#If_you_are_not_using_TFS">read more</a>), 
-<code>nuget.targets</code> file will be removed and the <a href="paket-init-auto-restore.html">paket init-auto-restore</a> command will be invoked.</li>
-<li>Unless <code>--no-install</code> option is given, the <a href="paket-install.html">paket install</a> process with the <code>--hard</code> flag will be executed. This will analyze the dependencies, generate a <a href="lock-file.html"><code>paket.lock</code> file</a> and remove all the old package references from your project files and install new references in Paket's syntax.</li>
-<li>If you specify <code>--force</code>, the conversion will attempt to infer additional dependencies from newly added / previously unprocessed <code>packages.config</code> files and add them to the end of an existing <code>paket.dependencies</code> and <code>paket.references</code> files.</li>
+<li>Finds all <code>packages.config</code> files, generates a <a href="dependencies-file.html"><code>paket.dependencies</code> file</a> in the solution root and replaces each <code>packages.config</code> with an equivalent <a href="references-files.html"><code>paket.references</code> file</a>.</li>
+<li>If there is a solution-level <code>packages.config</code>, then it will be removed and its dependencies will be included into the <a href="dependencies-file.html"><code>paket.dependencies</code></a>.</li>
+<li><p>If you use NuGet Package Restore (and have a <code>.nuget</code> directory with <code>nuget.targets</code> inside), then</p>
+<ul>
+<li>associated elements in all project files will be removed - (<a href="http://docs.nuget.org/docs/workflows/migrating-to-automatic-package-restore#If_you_are_not_using_TFS">read more</a>).</li>
+<li>the <code>nuget.targets</code> file will be removed =.</li>
+<li><p>the <a href="paket-init-auto-restore.html"><code>paket init-auto-restore</code></a> command will be invoked.</p></li>
+</ul></li>
+<li><p>Next (unless <code>--no-install</code> is specified), the <a href="paket-install.html">paket install</a> process with the <code>--hard</code> flag will be executed. This will:</p>
+<ul>
+<li>analyze the dependencies.</li>
+<li>generate a <a href="lock-file.html"><code>paket.lock</code> file</a>.</li>
+<li><p>remove all the old package references from your project files and install new references in Paket's syntax.</p></li>
+</ul></li>
+<li><p>If you specify <code>--force</code>, the conversion will attempt to infer additional dependencies from newly added / previously unprocessed <code>packages.config</code> files and</p>
+<ul>
+<li>add any newly discovered dependencies to the end of an existing <code>paket.dependencies</code> file.</li>
+<li>transfer/append references from the <code>packages.config</code> files into <code>paket.references</code> files alongside.</li>
+</ul></li>
 </ol>
 
 <div id="syntax"></div>
@@ -65,9 +78,9 @@
 
 <p>Options:</p>
 
-<p><code>--force</code>: Forces the convertion, even if there already exist any <a href="dependencies-file.html"><code>paket.dependencies</code> file</a> or <a href="references-files.html"><code>paket.references</code></a> files.</p>
+<p><code>--force</code>: Forces the conversion, even if a <a href="dependencies-file.html"><code>paket.dependencies</code> file</a> or <a href="references-files.html"><code>paket.references</code></a> files are present.</p>
 
-<p><code>--no-install</code>: Does not run <a href="paket-install.html">paket install</a> process afterwards.</p>
+<p><code>--no-install</code>: Skips <a href="paket-install.html"><code>paket install --hard</code></a> process afterward generation of dependencies / references files.</p>
 
 
         </div>
@@ -95,9 +108,11 @@
             <li><a href="./reference/index.html">API Reference</a></li>
 
             <li class="nav-header">Paket commands</li>
-            <li><a href="./paket-install.html">paket install</a></li>
-            <li><a href="./paket-outdated.html">paket outdated</a></li>
+            <li><a href="./paket-install.html">paket install</a></li>            
             <li><a href="./paket-update.html">paket update</a></li>
+            <li><a href="./paket-install.html">paket install</a></li>
+            <li class="divider"></li>
+            <li><a href="./paket-outdated.html">paket outdated</a></li>
             <li><a href="./convert-from-nuget.html">paket convert-from-nuget</a></li>            
             <li><a href="./paket-init-auto-restore.html">paket init-auto-restore</a></li>            
           </ul>

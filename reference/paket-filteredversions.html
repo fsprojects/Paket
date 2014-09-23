@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="utf-8"/>
-    <title>IDiscovery - Paket</title>
+    <title>FilteredVersions - Paket</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <meta name="description" content=""/>
     <meta name="author" content="Steffen Forkmann, Alexander Gross"/>
@@ -34,9 +34,8 @@
 
 
 
-<h1>IDiscovery</h1>
+<h1>FilteredVersions</h1>
 <div class="xmldoc">
-<p>Interface for discovery APIs.</p>
 </div>
   <h3>Instance members</h3>
   <table class="table table-bordered member-list">
@@ -47,38 +46,42 @@
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '57', 57)" onmouseover="showTip(event, '57', 57)">
-            GetPackageDetails(...)
+          <code onmouseout="hideTip(event, '94', 94)" onmouseover="showTip(event, '94', 94)">
+            Count
           </code>
-          <div class="tip" id="57">
-            <strong>Signature:</strong> (bool * PackageSource list * string * ResolverStrategy * string) -&gt; Async&lt;PackageDetails&gt;<br />
-              <strong>Modifiers:</strong> abstract<br />
+          <div class="tip" id="94">
+            <strong>Signature:</strong> int<br />
                       </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket/BasicTypes.fs#L151-151" class="github-link">
-              <img src="../content/img/github.png" class="normal" />
-              <img src="../content/img/github-blue.png" class="hover" />
-            </a>
           
         </td>
       </tr>
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '58', 58)" onmouseover="showTip(event, '58', 58)">
-            GetVersions(arg1, arg2)
+          <code onmouseout="hideTip(event, '95', 95)" onmouseover="showTip(event, '95', 95)">
+            IsEmpty
           </code>
-          <div class="tip" id="58">
-            <strong>Signature:</strong> (PackageSource list * string) -&gt; Async&lt;seq&lt;string&gt; []&gt;<br />
-              <strong>Modifiers:</strong> abstract<br />
+          <div class="tip" id="95">
+            <strong>Signature:</strong> bool<br />
                       </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket/BasicTypes.fs#L152-152" class="github-link">
-              <img src="../content/img/github.png" class="normal" />
-              <img src="../content/img/github-blue.png" class="hover" />
-            </a>
+          
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '96', 96)" onmouseover="showTip(event, '96', 96)">
+            [key]
+          </code>
+          <div class="tip" id="96">
+            <strong>Signature:</strong> key:string -&gt; SemVerInfo list<br />
+                      </div>
+        </td>
+        <td class="xmldoc">
           
         </td>
       </tr>
@@ -110,9 +113,11 @@
             <li><a href="./../reference/index.html">API Reference</a></li>
 
             <li class="nav-header">Paket commands</li>
-            <li><a href="./../paket-install.html">paket install</a></li>
-            <li><a href="./../paket-outdated.html">paket outdated</a></li>
+            <li><a href="./../paket-install.html">paket install</a></li>            
             <li><a href="./../paket-update.html">paket update</a></li>
+            <li><a href="./../paket-install.html">paket install</a></li>
+            <li class="divider"></li>
+            <li><a href="./../paket-outdated.html">paket outdated</a></li>
             <li><a href="./../convert-from-nuget.html">paket convert-from-nuget</a></li>            
             <li><a href="./../paket-init-auto-restore.html">paket init-auto-restore</a></li>            
           </ul>
