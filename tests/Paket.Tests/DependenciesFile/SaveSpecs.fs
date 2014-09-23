@@ -9,8 +9,8 @@ let config1 = """source http://nuget.org/api/v2
 
 nuget Castle.Windsor-log4net ~> 3.2
 nuget Rx-Main ~> 2.0
-nuget FAKE = 1.1
-nuget SignalR = 3.3.2"""
+nuget FAKE 1.1
+nuget SignalR 3.3.2"""
 
 [<Test>]
 let ``should serialize simple config``() = 

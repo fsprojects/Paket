@@ -11,6 +11,8 @@ module DependenciesFileParser =
     let private basicOperators = ["~>";">=";"="]
     let private operators = basicOperators @ (basicOperators |> List.map (fun o -> "!" + o))
 
+    let parseResolverStrategy (text : string) = if text.StartsWith "!" then ResolverStrategy.Min else ResolverStrategy.Max
+
     let parseVersionRange (text : string) : VersionRange = 
         if text = "" || text = null then VersionRange.AtLeast("0") else
         let splitVersion (text:string) =            
@@ -78,10 +80,10 @@ module DependenciesFileParser =
                     lineNo, referencesMode, sources, 
                         { Sources = sources
                           Name = name
-                          ResolverStrategy = if version.StartsWith "!" then ResolverStrategy.Min else ResolverStrategy.Max
+                          ResolverStrategy = parseResolverStrategy version
                           VersionRange = parseVersionRange(version.Trim '!') } :: packages, sourceFiles
                 | SourceFile((owner,project, commit), path) ->
-                    // TODO: Put SHA1 retrieval into resolver
+                    // TODO: Put SHA1 retrieval into resolver because of rate limit
                     let specified,sha = 
                         match commit with                        
                         | None -> false,GitHub.getSHA1OfBranch owner project "master" |> Async.RunSynchronously
@@ -98,14 +100,24 @@ module DependenciesFileParser =
             remoteFiles |> List.rev
 
 module DependenciesFileSerializer = 
-    let formatVersionRange (version : VersionRange) : string =
-        match version with
-        | Minimum x -> ">= " + x.ToString()
-        | GreaterThan x -> x.ToString()
-        | Specific x -> "= " + x.ToString()
-        | VersionRange.Range(fromB,from,_to,_toB) when 
-            DependenciesFileParser.parseVersionRange("~> " + from.ToString()) = version
-              -> "~> " + from.ToString()
+    let formatVersionRange strategy (version : VersionRange) : string = 
+        if strategy = ResolverStrategy.Max && version = VersionRange.NoRestriction then ""
+        else 
+            let prefix = 
+                if strategy = ResolverStrategy.Min then "!"
+                else ""
+            
+            let version = 
+                match version with
+                | Minimum x -> ">= " + x.ToString()
+                | GreaterThan x -> "> " + x.ToString()
+                | Specific x -> x.ToString()
+                | VersionRange.Range(_, from, _, _) 
+                        when DependenciesFileParser.parseVersionRange ("~> " + from.ToString()) = version -> 
+                            "~> " + from.ToString()
+                | _ -> version.ToString()
+            
+            prefix + version
 
 /// Allows to parse and analyze paket.dependencies files.
 type DependenciesFile(fileName,strictMode,packages : UnresolvedPackage list, remoteFiles : SourceFile list) = 
@@ -118,10 +130,13 @@ type DependenciesFile(fileName,strictMode,packages : UnresolvedPackage list, rem
     member __.FileName = fileName
     member this.Resolve(force) = this.Resolve(Nuget.GetVersions,Nuget.GetPackageDetails force)
     member __.Resolve(getVersionF, getPackageDetailsF) = PackageResolver.Resolve(getVersionF, getPackageDetailsF, packages)
-    member __.Add(packageName,version) =
-        let lastPackage = Seq.last packages
-        let versionRange = DependenciesFileParser.parseVersionRange version
-        let newPackage = {lastPackage with Name = packageName; VersionRange = versionRange}
+    member __.Add(packageName,version:string) =
+        let versionRange = DependenciesFileParser.parseVersionRange (version.Trim '!')
+        let sources = 
+            match packages |> List.rev with
+            | lastPackage::_ -> lastPackage.Sources
+            | [] -> [Nuget Constants.DefaultNugetStream]
+        let newPackage = {Name = packageName; VersionRange = versionRange; Sources = sources; ResolverStrategy = DependenciesFileParser.parseResolverStrategy version }
         tracefn "Adding %s %s to paket.dependencies" packageName (versionRange.ToString())
         DependenciesFile(fileName,strictMode,packages @ [newPackage], remoteFiles)
 
@@ -149,9 +164,8 @@ type DependenciesFile(fileName,strictMode,packages : UnresolvedPackage list, rem
                           yield ""
                           hasReportedFirst := true
 
-                      match package.VersionRange with
-                      | Minimum x when x = SemVer.parse "0" -> yield sprintf "nuget %s" package.Name
-                      | _ -> yield sprintf "nuget %s %s" package.Name (DependenciesFileSerializer.formatVersionRange package.VersionRange)
+                      let version = DependenciesFileSerializer.formatVersionRange package.ResolverStrategy package.VersionRange
+                      yield sprintf "nuget %s%s" package.Name (if version <> "" then " " + version else "")
                      
               for remoteFile in remoteFiles do
                   if (not !hasReportedSecond) && !hasReportedFirst then
