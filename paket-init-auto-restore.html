@@ -34,14 +34,16 @@
           
 <h1><a name="paket-init-auto-restore" class="anchor" href="#paket-init-auto-restore">paket init-auto-restore</a></h1>
 
-<p>Enables automatic Package Restore in Visual Studio. Under the hood, the command:</p>
+<p>Enables automatic Package Restore in Visual Studio.</p>
+
+<table class="pre"><tr><td><pre lang="batchfile">$ paket init-auto-restore</pre></td></tr></table>
+
+<p>The command:</p>
 
 <ul>
 <li>creates a <code>.paket</code> directory in your solution root</li>
 <li>downloads <code>paket.targets</code> and <code>paket.bootstrapper.exe</code> into it</li>
-<li><p>adds an <code>&lt;Import</code> statement for <code>paket.targets</code> to all projects under the working directory.</p>
-<p>[lang=batchfile]
-$ paket init-auto-restore</p></li>
+<li>adds an <code>&lt;Import&gt;</code> statement for <code>paket.targets</code> to all projects under the working directory.</li>
 </ul>
 
 
