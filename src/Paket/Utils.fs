@@ -46,16 +46,20 @@ let normalizeXml(doc:XmlDocument) =
     xmlTextWriter.Flush()
     stringWriter.GetStringBuilder().ToString()
 
-let createWebClient() =
+let createWebClient(auth:Auth option ) =
     let client = new WebClient()
+    match auth with
+    | None -> ()
+    | Some auth -> client.Credentials <- new NetworkCredential(auth.Username,auth.Password)
+
     client.Headers.Add("user-agent", "Paket")
     client
 
 /// [omit]
-let getFromUrl (url : string) = 
+let getFromUrl (auth:Auth option, url : string) = 
     async { 
         try
-            use client = createWebClient()
+            use client = createWebClient auth
             return! client.AsyncDownloadString(Uri(url))
         with
         | exn -> 
@@ -64,10 +68,10 @@ let getFromUrl (url : string) =
     }
 
 /// [omit]
-let safeGetFromUrl (url : string) = 
+let safeGetFromUrl (auth:Auth option, url : string) = 
     async { 
         try 
-            use client = createWebClient()
+            use client = createWebClient auth
             let! raw = client.AsyncDownloadString(Uri(url))
             return Some raw
         with _ -> return None

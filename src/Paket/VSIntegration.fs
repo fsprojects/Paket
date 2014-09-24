@@ -6,7 +6,7 @@ open Logging
 let InitAutoRestore() = 
     if not <| Directory.Exists(".paket") then Directory.CreateDirectory(".paket") |> ignore
     CleanDir(".paket")
-    use client = createWebClient()
+    use client = createWebClient None
 
     let releasesUrl = "https://api.github.com/repos/fsprojects/Paket/releases";
     let data = client.DownloadString(releasesUrl)

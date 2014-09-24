@@ -26,10 +26,10 @@ type NugetPackageCache =
 
 
 /// Gets versions of the given package via OData.
-let getAllVersionsFromNugetOData (nugetURL, package) = 
+let getAllVersionsFromNugetOData(auth,nugetURL, package) = 
     // we cannot cache this
     async { 
-        let! raw = sprintf "%s/Packages?$filter=Id eq '%s'" nugetURL package |> getFromUrl
+        let! raw = getFromUrl(auth,sprintf "%s/Packages?$filter=Id eq '%s'" nugetURL package)
         let doc,manager = loadNuGetOData raw
         return seq { 
                    for node in doc.SelectNodes("//ns:feed/ns:entry/m:properties/d:Version", manager) do
@@ -38,19 +38,19 @@ let getAllVersionsFromNugetOData (nugetURL, package) =
     }
 
 /// Gets all versions no. of the given package.
-let getAllVersions (nugetURL, package) = 
+let getAllVersions(auth,nugetURL, package) = 
     // we cannot cache this
     async { 
-        let! raw = sprintf "%s/package-versions/%s?includePrerelease=true" nugetURL package |> safeGetFromUrl
+        let! raw = safeGetFromUrl(auth,sprintf "%s/package-versions/%s?includePrerelease=true" nugetURL package)
         match raw with
-        | None -> let! result = getAllVersionsFromNugetOData (nugetURL, package)
+        | None -> let! result = getAllVersionsFromNugetOData(auth,nugetURL, package)
                   return result
         | Some data -> 
             try 
                 try 
                     let result = JsonConvert.DeserializeObject<string []>(data) |> Array.toSeq
                     return result
-                with _ -> let! result = getAllVersionsFromNugetOData (nugetURL, package)
+                with _ -> let! result = getAllVersionsFromNugetOData(auth,nugetURL, package)
                           return result
             with exn -> 
                 failwithf "Could not get data from %s for package %s.%s Message: %s" nugetURL package 
@@ -104,9 +104,9 @@ let parseVersionRange (text:string) =
         | _ -> failParse()
             
 /// Gets package details from Nuget via OData
-let getDetailsFromNugetViaOData nugetURL package version = 
+let getDetailsFromNugetViaOData auth nugetURL package version = 
     async { 
-        let! raw = sprintf "%s/Packages(Id='%s',Version='%s')" nugetURL package version |> getFromUrl
+        let! raw = getFromUrl(auth,sprintf "%s/Packages(Id='%s',Version='%s')" nugetURL package version)
         let doc,manager = loadNuGetOData raw
             
         let getAttribute name = 
@@ -158,7 +158,7 @@ let CacheFolder =
         di.Create()
     di.FullName
 
-let private loadFromCacheOrOData force fileName nugetURL package version = 
+let private loadFromCacheOrOData force fileName auth nugetURL package version = 
     async {
         if not force && File.Exists fileName then
             try 
@@ -169,25 +169,25 @@ let private loadFromCacheOrOData force fileName nugetURL package version =
                 
                 return false,cachedObject
             with _ -> 
-                let! details = getDetailsFromNugetViaOData nugetURL package version
+                let! details = getDetailsFromNugetViaOData auth nugetURL package version
                 return true,details
         else
-            let! details = getDetailsFromNugetViaOData nugetURL package version
+            let! details = getDetailsFromNugetViaOData auth nugetURL package version
             return true,details
     }
 
 /// Tries to get download link and direct dependencies from Nuget
 /// Caches calls into json file
-let getDetailsFromNuget force nugetURL package version = 
+let getDetailsFromNuget force auth nugetURL package version = 
     async {
         try            
             let fi = FileInfo(Path.Combine(CacheFolder,sprintf "%s.%s.json" package version))
-            let! (invalidCache,details) = loadFromCacheOrOData force fi.FullName nugetURL package version 
+            let! (invalidCache,details) = loadFromCacheOrOData force fi.FullName auth nugetURL package version 
             if invalidCache then
                 File.WriteAllText(fi.FullName,JsonConvert.SerializeObject(details))
             return details
         with
-        | _ -> return! getDetailsFromNugetViaOData nugetURL package version 
+        | _ -> return! getDetailsFromNugetViaOData auth nugetURL package version 
     }    
     
 /// Reads direct dependencies from a nupkg file
@@ -236,7 +236,7 @@ let getDetailsFromLocalFile path package version =
     }
 
 /// Downloads the given package to the NuGet Cache folder
-let DownloadPackage(url, name, version, force) = 
+let DownloadPackage(auth, url, name, version, force) = 
     async { 
         let targetFileName = Path.Combine(CacheFolder, name + "." + version + ".nupkg")
         let targetFile = FileInfo targetFileName
@@ -245,7 +245,7 @@ let DownloadPackage(url, name, version, force) =
             return targetFileName
         else 
             // discover the link on the fly
-            let! nugetPackage = getDetailsFromNuget force url name version
+            let! nugetPackage = getDetailsFromNuget force auth url name version
             try
                 tracefn "Downloading %s %s to %s" name version targetFileName
 
@@ -339,7 +339,7 @@ let GetPackageDetails force sources package version =
             try 
                 match source with
                 | Nuget source -> 
-                    getDetailsFromNuget force source.Url package version |> Async.RunSynchronously
+                    getDetailsFromNuget force source.Auth source.Url package version |> Async.RunSynchronously
                 | LocalNuget path -> 
                     getDetailsFromLocalFile path package version |> Async.RunSynchronously
                 |> fun x -> source,x
@@ -356,7 +356,7 @@ let GetVersions sources package =
     sources
     |> Seq.map (fun source -> 
            match source with
-           | Nuget source -> getAllVersions (source.Url, package)
+           | Nuget source -> getAllVersions(source.Auth,source.Url, package)
            | LocalNuget path -> getAllVersionsFromLocalPath (path, package))
     |> Async.Parallel
     |> Async.RunSynchronously
