@@ -71,3 +71,9 @@ let ``can check if in range for 4-parts range``() =
 [<Test>]
 let ``can support trailing 0``() =    
     "1.2.3" |> isInRange (DependenciesFileParser.parseVersionRange "1.2.3.0") |> shouldEqual true    
+
+[<Test>]
+let ``can support alpha version``() = 
+    "1.2.3-alpha001" |> isInRange (DependenciesFileParser.parseVersionRange "1.2.3-alpha001") |> shouldEqual true
+    "1.2.3-alpha001" |> isInRange (DependenciesFileParser.parseVersionRange "1.2.3") |> shouldEqual false
+    "1.2.3-alpha003" |> isInRange (DependenciesFileParser.parseVersionRange ">= 1") |> shouldEqual false

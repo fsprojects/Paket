@@ -17,14 +17,14 @@ type VersionRange =
     | Range of fromB : Bound * from : SemVerInfo * _to : SemVerInfo * _toB : Bound
     
     /// Checks wether the given version is in the version range
-    member this.IsInRange(version : SemVerInfo) = 
+    member this.IsInRange(version : SemVerInfo) =                      
         match this with
         | Specific v -> v = version
-        | Minimum v -> v <= version
-        | GreaterThan v -> v < version
-        | Maximum v -> v >= version
-        | LessThan v -> v > version
-        | Range(fromB, from, _to, _toB) ->             
+        | Minimum v -> v <= version && version.PreRelease = None
+        | GreaterThan v -> v < version && version.PreRelease = None
+        | Maximum v -> v >= version && version.PreRelease = None
+        | LessThan v -> v > version && version.PreRelease = None
+        | Range(fromB, from, _to, _toB) ->
             let isInUpperBound = 
                 match _toB with
                 | Including -> version <= _to
@@ -35,7 +35,7 @@ type VersionRange =
                 | Including -> version >= from
                 | Excluding -> version > from
 
-            isInLowerBound && isInUpperBound
+            isInLowerBound && isInUpperBound  && version.PreRelease = None
    
     override this.ToString() =
         match this with
