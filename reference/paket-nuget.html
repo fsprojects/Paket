@@ -90,7 +90,7 @@
             DownloadPackage (...)
           </code>
           <div class="tip" id="18">
-            <strong>Signature:</strong> (url:string * name:string * version:string * force:bool) -&gt; Async&lt;string&gt;<br />
+            <strong>Signature:</strong> (auth:Auth option * url:string * name:string * version:string * force:bool) -&gt; Async&lt;string&gt;<br />
                       </div>
         </td>
         <td class="xmldoc">
@@ -125,10 +125,10 @@
         <td class="member-name">
 
           <code onmouseout="hideTip(event, '20', 20)" onmouseover="showTip(event, '20', 20)">
-            getAllVersions (nugetURL, package)
+            getAllVersions (auth, nugetURL, package)
           </code>
           <div class="tip" id="20">
-            <strong>Signature:</strong> (nugetURL:string * package:string) -&gt; Async&lt;seq&lt;string&gt;&gt;<br />
+            <strong>Signature:</strong> (auth:Auth option * nugetURL:string * package:string) -&gt; Async&lt;seq&lt;string&gt;&gt;<br />
                       </div>
         </td>
         <td class="xmldoc">
@@ -166,7 +166,7 @@
             getAllVersionsFromNugetOData (...)
           </code>
           <div class="tip" id="22">
-            <strong>Signature:</strong> (nugetURL:string * package:string) -&gt; Async&lt;seq&lt;string&gt;&gt;<br />
+            <strong>Signature:</strong> (auth:Auth option * nugetURL:string * package:string) -&gt; Async&lt;seq&lt;string&gt;&gt;<br />
                       </div>
         </td>
         <td class="xmldoc">
@@ -204,7 +204,7 @@
             getDetailsFromNuget (...)
           </code>
           <div class="tip" id="24">
-            <strong>Signature:</strong> force:bool -&gt; nugetURL:string -&gt; package:string -&gt; version:string -&gt; Async&lt;NugetPackageCache&gt;<br />
+            <strong>Signature:</strong> force:bool -&gt; auth:Auth option -&gt; nugetURL:string -&gt; package:string -&gt; version:string -&gt; Async&lt;NugetPackageCache&gt;<br />
                       </div>
         </td>
         <td class="xmldoc">
@@ -224,7 +224,7 @@ Caches calls into json file</p>
             getDetailsFromNugetViaOData (...)
           </code>
           <div class="tip" id="25">
-            <strong>Signature:</strong> nugetURL:string -&gt; package:string -&gt; version:string -&gt; Async&lt;NugetPackageCache&gt;<br />
+            <strong>Signature:</strong> auth:Auth option -&gt; nugetURL:string -&gt; package:string -&gt; version:string -&gt; Async&lt;NugetPackageCache&gt;<br />
                       </div>
         </td>
         <td class="xmldoc">
