@@ -36,44 +36,38 @@
 
 <p>The <code>paket.dependencies</code> file is used to specify rules regarding your application's dependencies.</p>
 
-<p>To give you an overview, this is what Paket's <code>paket.dependencies</code> file looks like as of the time of writing:</p>
+<p>To give you an overview, consider the following <code>paket.dependencies</code> file:</p>
 
 <table class="pre"><tr><td class="lines"><pre class="fssnip">
-<span class="l"> 1: </span>
-<span class="l"> 2: </span>
-<span class="l"> 3: </span>
-<span class="l"> 4: </span>
-<span class="l"> 5: </span>
-<span class="l"> 6: </span>
-<span class="l"> 7: </span>
-<span class="l"> 8: </span>
-<span class="l"> 9: </span>
-<span class="l">10: </span>
-<span class="l">11: </span>
+<span class="l">1: </span>
+<span class="l">2: </span>
+<span class="l">3: </span>
+<span class="l">4: </span>
+<span class="l">5: </span>
+<span class="l">6: </span>
+<span class="l">7: </span>
 </pre>
 </td>
 <td class="snippet"><pre class="fssnip">
 <span class="i">source</span> <span class="i">http</span><span class="o">:</span><span class="c">//nuget.org/api/v2</span>
 
-<span class="i">nuget</span> <span class="i">Newtonsoft</span><span class="o">.</span><span class="i">Json</span> <span class="o">~&gt;</span> <span class="n">6.0</span>
-<span class="i">nuget</span> <span class="i">UnionArgParser</span> <span class="o">~&gt;</span> <span class="n">0.7</span>
-<span class="i">nuget</span> <span class="i">NUnit</span><span class="o">.</span><span class="i">Runners</span> <span class="o">~&gt;</span> <span class="n">2.6</span><span class="o">.</span><span class="n">3</span>
 <span class="i">nuget</span> <span class="i">NUnit</span> <span class="o">~&gt;</span> <span class="n">2.6</span><span class="o">.</span><span class="n">3</span>
 <span class="i">nuget</span> <span class="i">FAKE</span> <span class="o">~&gt;</span> <span class="n">3.4</span>
-<span class="i">nuget</span> <span class="i">FSharp</span><span class="o">.</span><span class="i">Formatting</span> <span class="o">~&gt;</span> <span class="n">2.4</span>
-<span class="i">nuget</span> <span class="i">DotNetZip</span> <span class="o">~&gt;</span> <span class="n">1.9</span><span class="o">.</span><span class="n">3</span>
+<span class="i">nuget</span> <span class="i">DotNetZip</span> <span class="o">&gt;</span><span class="o">=</span> <span class="n">1.9</span>
 <span class="i">nuget</span> <span class="i">SourceLink</span><span class="o">.</span><span class="i">Fake</span>
 <span class="i">github</span> <span class="i">forki</span><span class="o">/</span><span class="i">FsUnit</span> <span class="i">FsUnit</span><span class="o">.</span><span class="i">fs</span></pre>
 </td>
 </tr>
 </table>
 
-<p>The file specifies that Paket's NuGet dependencies should be downloaded from <a href="http://www.nuget.org">nuget.org</a> and that we need e.g.:</p>
+<p>The file specifies that Paket's NuGet dependencies should be downloaded from <a href="http://www.nuget.org">nuget.org</a> and that we need:</p>
 
 <ul>
-<li><a href="http://www.nunit.org/"><code>NUnit</code></a> <a href="nuget-dependencies.html#Pessimistic-version-constraint">in version <code>2.6.3 &lt;= x &lt; 2.7</code></a></li>
-<li><a href="http://fsharp.github.io/FAKE/"><code>FAKE</code></a> <a href="nuget-dependencies.html#Pessimistic-version-constraint">in version <code>3.4 &lt;= x &lt; 3.5</code></a> as a build tool</li>
-<li><a href="https://github.com/ctaggart/SourceLink"><code>SourceLink.Fake</code></a> in the latest version</li>
+<li><a href="http://www.nunit.org/">NUnit</a> in version <a href="nuget-dependencies.html#Pessimistic-version-constraint">2.6.3 &lt;= x &lt; 2.7</a></li>
+<li><a href="http://fsharp.github.io/FAKE/">FAKE</a> in version <a href="nuget-dependencies.html#Pessimistic-version-constraint">3.4 &lt;= x &lt; 3.5</a> as a build tool</li>
+<li><a href="http://dotnetzip.codeplex.com/">DotNetZip</a> with version which is at <a href="http://fsprojects.github.io/Paket/nuget-dependencies.html#Greater-than-or-equal-version-constraint">least 1.9</a></li>
+<li><a href="https://github.com/ctaggart/SourceLink">SourceLink.Fake</a> in the latest version</li>
+<li><a href="https://github.com/forki/FsUnit">FSUnit.fs</a> from github.</li>
 </ul>
 
 <p>Paket uses this definition to compute a concrete dependency resolution, which also includes indirect dependencies. The resulting dependency graph is then persisted to the <a href="lock-file.html"><code>paket.lock</code> file</a>.</p>
