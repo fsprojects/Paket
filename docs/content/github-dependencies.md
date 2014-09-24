@@ -10,7 +10,6 @@ You can reference a single file from [github.com](http://www.github.com) simply 
 
 If you run the [`paket update` command](paket-update.html), it will add a new section to your [`paket.lock` file](lock-file.html):
 
-    [lang=batchfile]
     GITHUB
       remote: forki/FsUnit
       specs:

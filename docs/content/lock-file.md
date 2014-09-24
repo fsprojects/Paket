@@ -12,7 +12,6 @@ Here we [specify dependencies](dependencies-file.html) on the default NuGet feed
 
 The `paket.lock` file records the concrete dependency resolution of all direct *and indirect* dependencies of your project:
 
-    [lang=textfile]
     NUGET
       remote: http://nuget.org/api/v2
       specs:
