@@ -20,7 +20,7 @@ let private loadNuGetOData raw =
     doc,manager
 
 type NugetPackageCache =
-    { Dependencies : (string * VersionRange) list
+    { Dependencies : (string * VersionRequirement) list
       Name : string
       Url : string}
 
@@ -70,39 +70,42 @@ let getAllVersionsFromLocalPath (localNugetPath, package) =
 
 /// Parses NuGet version ranges.
 let parseVersionRange (text:string) = 
-    let failParse() = failwithf "unable to parse %s" text
+    if  text = null || text = "" || text = "null" then VersionRequirement.NoRestriction else
 
-    let parseBound  = function
-        | '[' | ']' -> Including
-        | '(' | ')' -> Excluding
-        | _         -> failParse()
+    let parseRange text = 
+        let failParse() = failwithf "unable to parse %s" text
 
-    if  text = null || text = "" || text = "null" then VersionRange.NoRestriction
-    elif not <| text.Contains "," then
-        if text.StartsWith "[" then Specific(text.Trim([|'['; ']'|]) |> SemVer.parse)
-        else Minimum(SemVer.parse text)
-    else
-        let fromB = parseBound text.[0]
-        let toB   = parseBound (Seq.last text)
-        let versions = text
-                        .Trim([|'['; ']';'(';')'|])
-                        .Split([|','|], StringSplitOptions.RemoveEmptyEntries)
-                        |> Array.map SemVer.parse
-        match versions.Length with
-        | 2 ->
-            Range(fromB, versions.[0], versions.[1], toB)
-        | 1 ->
-            if text.[1] = ',' then
-                match fromB, toB with
-                | Excluding, Including -> Maximum(versions.[0])
-                | Excluding, Excluding -> LessThan(versions.[0])
-                | _ -> failParse()
-            else 
-                match fromB, toB with
-                | Excluding, Excluding -> GreaterThan(versions.[0])
-                | _ -> failParse()
-        | _ -> failParse()
-            
+        let parseBound  = function
+            | '[' | ']' -> Including
+            | '(' | ')' -> Excluding
+            | _         -> failParse()
+        
+        if not <| text.Contains "," then
+            if text.StartsWith "[" then Specific(text.Trim([|'['; ']'|]) |> SemVer.parse)
+            else Minimum(SemVer.parse text)
+        else
+            let fromB = parseBound text.[0]
+            let toB   = parseBound (Seq.last text)
+            let versions = text
+                            .Trim([|'['; ']';'(';')'|])
+                            .Split([|','|], StringSplitOptions.RemoveEmptyEntries)
+                            |> Array.map SemVer.parse
+            match versions.Length with
+            | 2 ->
+                Range(fromB, versions.[0], versions.[1], toB)
+            | 1 ->
+                if text.[1] = ',' then
+                    match fromB, toB with
+                    | Excluding, Including -> Maximum(versions.[0])
+                    | Excluding, Excluding -> LessThan(versions.[0])
+                    | _ -> failParse()
+                else 
+                    match fromB, toB with
+                    | Excluding, Excluding -> GreaterThan(versions.[0])
+                    | _ -> failParse()
+            | _ -> failParse()
+    VersionRequirement(parseRange text,PreReleaseStatus.No)
+
 /// Gets package details from Nuget via OData
 let getDetailsFromNugetViaOData auth nugetURL package version = 
     async { 

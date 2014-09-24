@@ -16,11 +16,11 @@ let getResolvedPackagesOrFail resolution =
         addToError "Error in resolution." 
         addToError "  Resolved:"
         for x in closed do
-           addToError <| sprintf "    - %s %s" x.Name (x.VersionRange.ToString())
+           addToError <| sprintf "    - %s %s" x.Name (x.VersionRequirement.Range.ToString())
 
         addToError "  Still open:"
         for x in stillOpen do
-           addToError <| sprintf  "    - %s %s" x.Name (x.VersionRange.ToString())
+           addToError <| sprintf  "    - %s %s" x.Name (x.VersionRequirement.Range.ToString())
 
         failwith !errorText
 

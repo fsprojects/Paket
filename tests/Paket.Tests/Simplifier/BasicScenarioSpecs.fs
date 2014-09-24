@@ -43,8 +43,8 @@ let ``should remove one level deep indirect dependencies from dep and ref files`
     let depFile,refFiles = Simplifier.Analyze(graph1, cfg, refFiles1)
     
     depFile.Packages |> List.length |> shouldEqual [|"A";"D"|].Length
-    depFile.DirectDependencies.["A"] |> shouldEqual (VersionRange.Exactly "3.3.0")
-    depFile.DirectDependencies.["D"] |> shouldEqual (VersionRange.Exactly "2.1")
+    depFile.DirectDependencies.["A"].Range |> shouldEqual (VersionRange.Exactly "3.3.0")
+    depFile.DirectDependencies.["D"].Range |> shouldEqual (VersionRange.Exactly "2.1")
 
     refFiles.Head |> snd |> shouldEqual [|"A";"D"|]
     refFiles.Tail.Head |> snd |> shouldEqual [|"B";"C"|]
@@ -80,8 +80,8 @@ let ``should remove all indirect dependencies from dep file recursively``() =
     let depFile,refFiles  = Simplifier.Analyze(graph2, cfg2, refFiles2)
     
     depFile.Packages |> List.length |> shouldEqual [|"A";"c"|].Length
-    depFile.DirectDependencies.["A"] |> shouldEqual (VersionRange.Exactly "1.0")
-    depFile.DirectDependencies.["c"] |> shouldEqual (VersionRange.Exactly "2.0")
+    depFile.DirectDependencies.["A"].Range |> shouldEqual (VersionRange.Exactly "1.0")
+    depFile.DirectDependencies.["c"].Range |> shouldEqual (VersionRange.Exactly "2.0")
 
     refFiles.Head |> snd |> shouldEqual [|"A";"C"|]
     refFiles.Tail.Head |> snd |> shouldEqual [|"C";"D"|]

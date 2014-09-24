@@ -56,7 +56,7 @@ type NugetPackagesConfig = {
 /// Represents an unresolved package.
 type UnresolvedPackage =
     { Name : string
-      VersionRange : VersionRange
+      VersionRequirement : VersionRequirement
       ResolverStrategy : ResolverStrategy
       Sources : PackageSource list }
 
@@ -64,7 +64,7 @@ type UnresolvedPackage =
 type ResolvedPackage = 
     { Name : string
       Version : SemVerInfo
-      Dependencies : (string * VersionRange) list
+      Dependencies : (string * VersionRequirement) list
       Source : PackageSource }
 
 /// Represents package details
@@ -72,7 +72,7 @@ type PackageDetails =
     { Name : string
       Source : PackageSource
       DownloadLink : string
-      DirectDependencies :  (string * VersionRange) list }
+      DirectDependencies :  (string * VersionRequirement) list }
       
 type FilteredVersions = Map<string,SemVerInfo list>
 

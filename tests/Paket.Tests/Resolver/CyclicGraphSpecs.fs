@@ -7,13 +7,13 @@ open FsUnit
 open TestHelpers
 
 let graph = [
-    "A","3.0",[("B",VersionRange.AtLeast "1.0")]
-    "A","3.1",[("B",VersionRange.AtLeast "1.0")]
-    "A","3.3",[("B",VersionRange.AtLeast "1.0")]
+    "A","3.0",[("B",VersionRequirement(VersionRange.AtLeast "1.0",PreReleaseStatus.No) )]
+    "A","3.1",[("B",VersionRequirement(VersionRange.AtLeast "1.0",PreReleaseStatus.No))]
+    "A","3.3",[("B",VersionRequirement(VersionRange.AtLeast "1.0",PreReleaseStatus.No))]
 
     "B","1.0",[]
     "B","1.1",[]
-    "B","1.2",["A",VersionRange.AtLeast "3.3"]
+    "B","1.2",["A",VersionRequirement(VersionRange.AtLeast "3.3",PreReleaseStatus.No)]
 ]
 
 [<Test>]

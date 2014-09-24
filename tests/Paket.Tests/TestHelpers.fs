@@ -3,7 +3,7 @@
 open Paket
 open System
 
-let PackageDetailsFromGraph (graph : seq<string * string * (string * VersionRange) list>) sources (package:string) version = 
+let PackageDetailsFromGraph (graph : seq<string * string * (string * VersionRequirement) list>) sources (package:string) version = 
     let name,dependencies = 
         graph
         |> Seq.filter (fun (p, v, _) -> p.ToLower() = package.ToLower() && v = version)
@@ -15,7 +15,7 @@ let PackageDetailsFromGraph (graph : seq<string * string * (string * VersionRang
       DownloadLink = ""
       DirectDependencies = dependencies }
 
-let VersionsFromGraph (graph : seq<string * string * (string * VersionRange) list>) sources (package : string) = 
+let VersionsFromGraph (graph : seq<string * string * (string * VersionRequirement) list>) sources (package : string) = 
     graph
     |> Seq.filter (fun (p, _, _) -> p.ToLower() = package.ToLower())
     |> Seq.map (fun (_, v, _) -> SemVer.parse v)
@@ -25,7 +25,7 @@ let safeResolve graph (dependencies : (string * VersionRange) list) =
     let packages = 
         dependencies |> List.map (fun (n, v) -> 
                             { Name = n
-                              VersionRange = v
+                              VersionRequirement = VersionRequirement(v,PreReleaseStatus.No)
                               Sources = [ PackageSource.NugetSource "" ]
                               ResolverStrategy = ResolverStrategy.Max })
     PackageResolver.Resolve(VersionsFromGraph graph, PackageDetailsFromGraph graph, packages)

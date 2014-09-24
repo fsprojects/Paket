@@ -6,8 +6,8 @@ open Paket.Logging
 
 module LockFileSerializer =
     /// [omit]
-    let formatVersionRange (version : VersionRange) = 
-        match version with
+    let formatVersionRange (version : VersionRequirement) = 
+        match version.Range with
         | Minimum v -> ">= " + v.ToString()
         | Specific v -> v.ToString()
         | Range(_, v1, v2, _) -> ">= " + v1.ToString() + ", < " + v2.ToString()
@@ -111,7 +111,7 @@ module LockFileParser =
                 | currentPackage :: otherPackages -> 
                     { state with
                         Packages = { currentPackage with
-                                        Dependencies = [name, VersionRange.NoRestriction] 
+                                        Dependencies = [name, VersionRequirement.NoRestriction] 
                                         |> List.append currentPackage.Dependencies
                                     } :: otherPackages }
                 | [] -> failwith "cannot set a dependency - no package has been specified."

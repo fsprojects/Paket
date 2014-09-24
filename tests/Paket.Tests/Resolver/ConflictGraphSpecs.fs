@@ -7,20 +7,20 @@ open TestHelpers
 
 let graph = 
     [ "A", "1.0", 
-      [ "B", VersionRange.Exactly "1.1"
-        "C", VersionRange.Exactly "2.4" ]
+      [ "B", VersionRequirement(VersionRange.Exactly "1.1",PreReleaseStatus.No)
+        "C", VersionRequirement(VersionRange.Exactly "2.4",PreReleaseStatus.No) ]
       "B", "1.1", 
-      [ "E", VersionRange.Exactly "4.3"
-        "D", VersionRange.Exactly "1.4" ]
+      [ "E", VersionRequirement(VersionRange.Exactly "4.3",PreReleaseStatus.No)
+        "D", VersionRequirement(VersionRange.Exactly "1.4",PreReleaseStatus.No) ]
       "C", "2.4", 
-      [ "F", VersionRange.Exactly "1.2"
-        "D", VersionRange.Exactly "1.6" ]
+      [ "F", VersionRequirement(VersionRange.Exactly "1.2",PreReleaseStatus.No)
+        "D", VersionRequirement(VersionRange.Exactly "1.6",PreReleaseStatus.No) ]
       "D", "1.4", []
       "D", "1.6", []
       "E", "4.3", []
       "F", "1.2", [] ]
 
-let defaultPackage = { Name = ""; VersionRange = VersionRange.Exactly "1.0"; Sources = [PackageSource.NugetSource ""]; ResolverStrategy = ResolverStrategy.Max }
+let defaultPackage = { Name = ""; VersionRequirement = VersionRequirement(VersionRange.Exactly "1.0",PreReleaseStatus.No); Sources = [PackageSource.NugetSource ""]; ResolverStrategy = ResolverStrategy.Max }
 
 [<Test>]
 let ``should analyze graph and report conflict``() = 
@@ -29,14 +29,14 @@ let ``should analyze graph and report conflict``() =
     | Conflict(_,stillOpen) ->
         let conflicting = stillOpen |> Seq.head 
         conflicting.Name |> shouldEqual "D"
-        conflicting.VersionRange |> shouldEqual (VersionRange.Exactly "1.6")
+        conflicting.VersionRequirement.Range |> shouldEqual (VersionRange.Exactly "1.6")
 
 let graph2 = 
     [ "A", "1.0", 
-      [ "B", VersionRange.Exactly "1.1"
-        "C", VersionRange.Exactly "2.4" ]
-      "B", "1.1", [ "D", VersionRange.Between("1.4", "1.5") ]
-      "C", "2.4", [ "D", VersionRange.Between("1.6", "1.7") ]
+      [ "B", VersionRequirement(VersionRange.Exactly "1.1",PreReleaseStatus.No)
+        "C", VersionRequirement(VersionRange.Exactly "2.4",PreReleaseStatus.No) ]
+      "B", "1.1", [ "D", VersionRequirement(VersionRange.Between("1.4", "1.5"),PreReleaseStatus.No) ]
+      "C", "2.4", [ "D", VersionRequirement(VersionRange.Between("1.6", "1.7"),PreReleaseStatus.No) ]
       "D", "1.4", []
       "D", "1.6", [] ]
 
@@ -47,4 +47,4 @@ let ``should analyze graph2 and report conflict``() =
     | Conflict(_,stillOpen) ->
         let conflicting = stillOpen |> Seq.head 
         conflicting.Name |> shouldEqual "D"
-        conflicting.VersionRange |> shouldEqual (VersionRange.Between("1.6", "1.7"))
+        conflicting.VersionRequirement.Range |> shouldEqual (VersionRange.Between("1.6", "1.7"))

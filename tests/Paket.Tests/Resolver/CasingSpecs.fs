@@ -6,7 +6,7 @@ open FsUnit
 open TestHelpers
 
 let graph = [
-    "Nancy.Bootstrappers.Windsor","0.23",["Castle.Windsor",VersionRange.AtLeast "3.2.1"]
+    "Nancy.Bootstrappers.Windsor","0.23",["Castle.Windsor",VersionRequirement(VersionRange.AtLeast "3.2.1",PreReleaseStatus.No)]
     "Castle.Windsor","3.2.1",[]
     "Castle.Windsor","3.3.0",[]
 ]
@@ -25,7 +25,7 @@ let ``should resolve wrong casing in config file``() =
     getVersion resolved.["Nancy.Bootstrappers.Windsor"] |> shouldEqual "0.23"
 
 let graph2 = [
-    "Nancy.Bootstrappers.Windsor","0.23",["castle.windsor",VersionRange.AtLeast "3.2.1"]
+    "Nancy.Bootstrappers.Windsor","0.23",["castle.windsor",VersionRequirement(VersionRange.AtLeast "3.2.1",PreReleaseStatus.No)]
     "Castle.Windsor","3.2.1",[]
     "Castle.Windsor","3.3.0",[]
 ]
@@ -38,8 +38,8 @@ let ``should resolve wrong casing in package dependency``() =
     getVersion resolved.["Nancy.Bootstrappers.Windsor"] |> shouldEqual "0.23"
 
 let graph3 = [
-    "Nancy.Bootstrappers.Windsor","0.21",["Castle.Windsor",VersionRange.AtLeast "3.2.1"]
-    "Nancy.Bootstrappers.Windsor","0.23",["Castle.Windsor",VersionRange.AtLeast "3.2.1"]
+    "Nancy.Bootstrappers.Windsor","0.21",["Castle.Windsor",VersionRequirement(VersionRange.AtLeast "3.2.1",PreReleaseStatus.No)]
+    "Nancy.Bootstrappers.Windsor","0.23",["Castle.Windsor",VersionRequirement(VersionRange.AtLeast "3.2.1",PreReleaseStatus.No)]
     "Castle.Windsor","3.2.1",[]
     "castle.windsor","3.3.0",[]
 ]

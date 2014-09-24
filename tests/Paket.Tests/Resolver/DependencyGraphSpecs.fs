@@ -6,17 +6,17 @@ open FsUnit
 open TestHelpers
 
 let graph = [
-    "FAKE","3.3",[("A",VersionRange.AtLeast "3.0")]
-    "FAKE","3.7",[("A",VersionRange.AtLeast "3.1"); ("B",VersionRange.Exactly "1.1")]
-    "FAKE","4.0",[("A",VersionRange.AtLeast "3.3"); ("B",VersionRange.Exactly "1.3"); ("E",VersionRange.AtLeast "2.0")]
+    "FAKE","3.3",[("A",VersionRequirement(VersionRange.AtLeast "3.0",PreReleaseStatus.No))]
+    "FAKE","3.7",[("A",VersionRequirement(VersionRange.AtLeast "3.1",PreReleaseStatus.No)); ("B",VersionRequirement(VersionRange.Exactly "1.1",PreReleaseStatus.No))]
+    "FAKE","4.0",[("A",VersionRequirement(VersionRange.AtLeast "3.3",PreReleaseStatus.No)); ("B",VersionRequirement(VersionRange.Exactly "1.3",PreReleaseStatus.No)); ("E",VersionRequirement(VersionRange.AtLeast "2.0",PreReleaseStatus.No))]
 
-    "A","3.0",[("B",VersionRange.AtLeast "1.0")]
-    "A","3.1",[("B",VersionRange.AtLeast "1.0")]
-    "A","3.3",[("B",VersionRange.AtLeast "1.0")]
+    "A","3.0",[("B",VersionRequirement(VersionRange.AtLeast "1.0",PreReleaseStatus.No))]
+    "A","3.1",[("B",VersionRequirement(VersionRange.AtLeast "1.0",PreReleaseStatus.No))]
+    "A","3.3",[("B",VersionRequirement(VersionRange.AtLeast "1.0",PreReleaseStatus.No))]
 
     "B","1.1",[]
     "B","1.2",[]
-    "B","1.3",["C",VersionRange.AtLeast "1.0"]
+    "B","1.3",["C",VersionRequirement(VersionRange.AtLeast "1.0",PreReleaseStatus.No)]
 
     "C","1.0",[]
     "C","1.1",[]
@@ -27,10 +27,10 @@ let graph = [
     "E","1.0",[]
     "E","1.1",[]
     "E","2.0",[]
-    "E","2.1",[("F",VersionRange.AtLeast "1.0")]
+    "E","2.1",[("F",VersionRequirement(VersionRange.AtLeast "1.0",PreReleaseStatus.No))]
 
     "F","1.0",[]
-    "F","1.1",[("G",VersionRange.AtLeast "1.0")]
+    "F","1.1",[("G",VersionRequirement(VersionRange.AtLeast "1.0",PreReleaseStatus.No))]
 
     "G","1.0",[]
 ]
@@ -55,10 +55,10 @@ let ``should analyze graph completly``() =
     getVersion resolved.["G"] |> shouldEqual "1.0"
 
 let graph2 = [
-    "A","1.0",["B",VersionRange.Exactly "1.1";"C",VersionRange.Exactly "2.4"]
-    "A","1.1",["B",VersionRange.Exactly "1.1";"C",VersionRange.Exactly "2.4"]
-    "B","1.1",["D",VersionRange.Between("1.3","1.6")]
-    "C","2.4",["D",VersionRange.Between("1.4","1.7")]
+    "A","1.0",["B",VersionRequirement(VersionRange.Exactly "1.1",PreReleaseStatus.No);"C",VersionRequirement(VersionRange.Exactly "2.4",PreReleaseStatus.No)]
+    "A","1.1",["B",VersionRequirement(VersionRange.Exactly "1.1",PreReleaseStatus.No);"C",VersionRequirement(VersionRange.Exactly "2.4",PreReleaseStatus.No)]
+    "B","1.1",["D",VersionRequirement(VersionRange.Between("1.3","1.6"),PreReleaseStatus.No)]
+    "C","2.4",["D",VersionRequirement(VersionRange.Between("1.4","1.7"),PreReleaseStatus.No)]
     "D","1.3",[]
     "D","1.4",[]
     "D","1.5",[]

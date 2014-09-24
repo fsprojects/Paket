@@ -6,7 +6,7 @@ open FsUnit
 open TestHelpers
 
 let graph = [
-    "Nancy.Bootstrappers.Windsor","0.23",["Castle.Windsor",VersionRange.AtLeast "3.2.1"]
+    "Nancy.Bootstrappers.Windsor","0.23",["Castle.Windsor",VersionRequirement(VersionRange.AtLeast "3.2.1",PreReleaseStatus.No)]
     "Castle.Windsor","3.2.1",[]
     "Castle.Windsor","3.3.0",[]
 ]

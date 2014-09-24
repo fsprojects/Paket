@@ -41,7 +41,7 @@ let Resolve(getVersionsF, getPackageDetailsF, rootDependencies:UnresolvedPackage
                 match Map.tryFind dependency.Name filteredVersions with
                 | None -> getAllVersions(dependency.Sources,dependency.Name)
                 | Some versions -> versions
-                |> List.filter dependency.VersionRange.IsInRange
+                |> List.filter dependency.VersionRequirement.IsInRange
                     
             let sorted =                
                 match dependency.ResolverStrategy with
@@ -56,7 +56,7 @@ let Resolve(getVersionsF, getPackageDetailsF, rootDependencies:UnresolvedPackage
                     let newFilteredVersion = Map.add dependency.Name [versionToExplore] filteredVersions
                     let newDependencies =
                         exploredPackage.Dependencies
-                        |> List.map (fun (n,v) -> {dependency with Name = n; VersionRange = v })
+                        |> List.map (fun (n,v) -> {dependency with Name = n; VersionRequirement = v })
                         |> List.filter (fun d -> Set.contains d closed |> not)
                     
                     improveModel (newFilteredVersion,exploredPackage::packages,Set.add dependency closed,newDependencies @ rest)

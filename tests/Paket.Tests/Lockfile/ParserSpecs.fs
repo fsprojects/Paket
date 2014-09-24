@@ -40,12 +40,12 @@ let ``should parse lock file``() =
     packages.[1].Source |> shouldEqual Constants.DefaultNugetSource
     packages.[1].Name |> shouldEqual "Castle.Windsor-log4net"
     packages.[1].Version |> shouldEqual (SemVer.parse "3.3")
-    packages.[1].Dependencies |> shouldEqual ["Castle.Windsor", VersionRange.NoRestriction; "log4net", VersionRange.NoRestriction]
+    packages.[1].Dependencies |> shouldEqual ["Castle.Windsor", VersionRequirement.NoRestriction; "log4net", VersionRequirement.NoRestriction]
     
     packages.[5].Source |> shouldEqual Constants.DefaultNugetSource
     packages.[5].Name |> shouldEqual "log4net"
     packages.[5].Version |> shouldEqual (SemVer.parse "1.1")
-    packages.[5].Dependencies |> shouldEqual ["log", VersionRange.NoRestriction]
+    packages.[5].Dependencies |> shouldEqual ["log", VersionRequirement.NoRestriction]
 
     let sourceFiles = List.rev lockFile.SourceFiles
     sourceFiles|> shouldEqual
@@ -90,7 +90,7 @@ let ``should parse strict lock file``() =
     packages.[5].Source |> shouldEqual Constants.DefaultNugetSource
     packages.[5].Name |> shouldEqual "log4net"
     packages.[5].Version |> shouldEqual (SemVer.parse "1.1")
-    packages.[5].Dependencies |> shouldEqual ["log", VersionRange.NoRestriction]
+    packages.[5].Dependencies |> shouldEqual ["log", VersionRequirement.NoRestriction]
 
 
 let lockFileWithAuth = """NUGET
