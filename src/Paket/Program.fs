@@ -109,7 +109,7 @@ try
         | Command.Outdated -> FindOutdated.ListOutdated(dependenciesFileName)
         | Command.InitAutoRestore -> VSIntegration.InitAutoRestore()
         | Command.ConvertFromNuget -> NuGetConvert.ConvertFromNuget(force,noInstall |> not)
-        | Command.Simplify -> Simplifier.Simplify()
+        | Command.Simplify -> Simplifier.Simplify(dependenciesFileName)
         | _ -> traceErrorfn "no command given.%s" (parser.Usage())
         
         let ts = stopWatch.Elapsed

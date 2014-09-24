@@ -1,6 +1,6 @@
 # paket simplify
 
-Simplifies your [`paket.dependencies` file](dependencies-file.html) aby removing indirect dependencies.
+Simplifies your [`paket.dependencies` file](dependencies-file.html) by removing indirect dependencies.
 
     [lang=batchfile]
     $ paket simplify [--dependencies-file=FILE]
