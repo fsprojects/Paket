@@ -34,8 +34,8 @@ nuget D 2.1"""
 let cfg = DependenciesFile.FromCode(noSha1,depFile1)
 
 let refFiles1 = [
-    FileInfo("c:\dummy\1"), [|"A";"B";"C";"D"|]
-    FileInfo("c:\dummy\2"), [|"B";"C"|]
+    ReferencesFile.FromLines [|"A";"B";"C";"D"|]
+    ReferencesFile.FromLines [|"B";"C"|]
 ]
 
 [<Test>]
@@ -46,8 +46,8 @@ let ``should remove one level deep indirect dependencies from dep and ref files`
     depFile.DirectDependencies.["A"].Range |> shouldEqual (VersionRange.Exactly "3.3.0")
     depFile.DirectDependencies.["D"].Range |> shouldEqual (VersionRange.Exactly "2.1")
 
-    refFiles.Head |> snd |> shouldEqual [|"A";"D"|]
-    refFiles.Tail.Head |> snd |> shouldEqual [|"B";"C"|]
+    refFiles.Head.NugetPackages |> shouldEqual ["A";"D"]
+    refFiles.Tail.Head.NugetPackages |> shouldEqual ["B";"C"]
 
 
 let graph2 = 
@@ -71,8 +71,8 @@ nuget f 4.0"""
 let cfg2 = DependenciesFile.FromCode(noSha1,depFile2)
 
 let refFiles2 = [
-    FileInfo("c:\dummy\1"), [|"A";"B";"C";"D";"F"|]
-    FileInfo("c:\dummy\2"), [|"C";"D";"E"|]
+    ReferencesFile.FromLines [|"A";"B";"C";"D";"F"|]
+    ReferencesFile.FromLines [|"C";"D";"E"|]
 ]
 
 [<Test>]
@@ -83,5 +83,5 @@ let ``should remove all indirect dependencies from dep file recursively``() =
     depFile.DirectDependencies.["A"].Range |> shouldEqual (VersionRange.Exactly "1.0")
     depFile.DirectDependencies.["c"].Range |> shouldEqual (VersionRange.Exactly "2.0")
 
-    refFiles.Head |> snd |> shouldEqual [|"A";"C"|]
-    refFiles.Tail.Head |> snd |> shouldEqual [|"C";"D"|]
+    refFiles.Head.NugetPackages |>  shouldEqual ["A";"C"]
+    refFiles.Tail.Head.NugetPackages |>  shouldEqual ["C";"D"]

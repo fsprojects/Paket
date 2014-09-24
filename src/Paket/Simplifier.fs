@@ -19,7 +19,7 @@ let private simplify file before after =
     else
         tracefn "%s is already simplified" file
 
-let Analyze(allPackages : list<ResolvedPackage>, depFile : DependenciesFile, refFiles : list<FileInfo * string[]>) = 
+let Analyze(allPackages : list<ResolvedPackage>, depFile : DependenciesFile, refFiles : list<ReferencesFile>) = 
     
     let depsLookup =
         allPackages
@@ -38,14 +38,14 @@ let Analyze(allPackages : list<ResolvedPackage>, depFile : DependenciesFile, ref
     let getSimplifiedDeps (depNameFun : 'a -> string) allDeps =
         let indirectDeps = 
             allDeps 
-            |> Seq.map depNameFun 
-            |> Seq.fold (fun set directDep -> Set.union set (flattenedLookup.[ directDep.ToLower() ])) Set.empty
-        allDeps |> Seq.filter (fun dep -> not <| Set.contains ((depNameFun dep).ToLower()) indirectDeps)
+            |> List.map depNameFun 
+            |> List.fold (fun set directDep -> Set.union set (flattenedLookup.[ directDep.ToLower() ])) Set.empty
+        allDeps |> List.filter (fun dep -> not <| Set.contains ((depNameFun dep).ToLower()) indirectDeps)
 
     let simplifiedDeps = depFile.Packages |> getSimplifiedDeps (fun p -> p.Name) |> Seq.toList
     let refFiles' = if depFile.Strict 
                     then refFiles 
-                    else refFiles |> List.map (fun (fi, refs) -> fi, refs |> getSimplifiedDeps id |> Seq.toArray)
+                    else refFiles |> List.map (fun refFile -> {refFile with NugetPackages = refFile.NugetPackages |> getSimplifiedDeps id})
 
     DependenciesFile(depFile.FileName, depFile.Strict, simplifiedDeps, depFile.RemoteFiles), refFiles'
 
@@ -58,11 +58,7 @@ let Simplify () =
         failwith "lock file not found. Create lock file by running paket install."
     let lockFile = LockFile.LoadFrom lockFilePath.FullName
     let packages = lockFile.ResolvedPackages |> Seq.map (fun kv -> kv.Value) |> List.ofSeq
-    let refFiles = 
-        FindAllFiles(".", Constants.ReferencesFile) 
-        |> Seq.map(fun f -> f, File.ReadAllLines f.FullName) 
-        |> Seq.toList
-    let refFilesBefore = refFiles |> List.map (fun (fi,content) -> fi.FullName, content) |> Map.ofList
+    let refFiles = FindAllFiles(".", Constants.ReferencesFile) |> Seq.toList |> List.map (fun fi -> ReferencesFile.FromFile fi.FullName)
     
     let simplifiedDepFile, simplifiedRefFiles = Analyze(packages, depFile, refFiles)
     
@@ -79,6 +75,5 @@ let Simplify () =
     if depFile.Strict then
         traceWarn ("Strict mode detected. Will not attempt to simplify " + Constants.ReferencesFile + " files.")
     else
-        for file,after in simplifiedRefFiles do
-            let before = refFilesBefore.[file.FullName]
-            simplify file.FullName before after
+        for refFile in simplifiedRefFiles do
+            File.WriteAllText(refFile.FileName, refFile.ToString())
