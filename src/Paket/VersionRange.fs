@@ -32,7 +32,14 @@ type VersionRequirement =
     member this.IsInRange(version : SemVerInfo) =         
         match this with
         | VersionRequirement(range,prerelease) ->
-            let checkPrerelease prerelease version = version.PreRelease = None
+            let checkPrerelease prerelease version = 
+                match this.PreReleases with
+                | PreReleaseStatus.All -> true
+                | PreReleaseStatus.No -> version.PreRelease = None
+                | PreReleaseStatus.Concrete list ->
+                     match version.PreRelease with
+                     | None -> true
+                     | Some pre -> List.exists ((=) pre.Name) list
 
             match range with
             | Specific v -> v = version

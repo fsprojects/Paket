@@ -80,3 +80,17 @@ let ``can support alpha version``() =
     "1.2.3-alpha001" |> isInRange (DependenciesFileParser.parseVersionRequirement "1.2.3-alpha001") |> shouldEqual true
     "1.2.3-alpha001" |> isInRange (DependenciesFileParser.parseVersionRequirement "1.2.3") |> shouldEqual false
     "1.2.3-alpha003" |> isInRange (DependenciesFileParser.parseVersionRequirement ">= 1") |> shouldEqual false
+
+    "1.2.3-alpha003" |> isInRange (DependenciesFileParser.parseVersionRequirement ">= 1 prerelease") |> shouldEqual true
+    "1.2.3-alpha023" |> isInRange (DependenciesFileParser.parseVersionRequirement ">= 1 alpha") |> shouldEqual true
+    "1.2.3-alpha023" |> isInRange (DependenciesFileParser.parseVersionRequirement ">= 1 alpha rc") |> shouldEqual true
+    "1.2.3-alpha023" |> isInRange (DependenciesFileParser.parseVersionRequirement ">= 1 beta rc") |> shouldEqual false
+
+[<Test>]
+let ``can support rc version``() =     
+    "1.2.3-rec003" |> isInRange (DependenciesFileParser.parseVersionRequirement ">= 1 prerelease") |> shouldEqual true
+    "1.2.3-rc2" |> isInRange (DependenciesFileParser.parseVersionRequirement ">= 1 alpha") |> shouldEqual false
+    "1.2.3-rc2" |> isInRange (DependenciesFileParser.parseVersionRequirement ">= 1 beta rc") |> shouldEqual true
+
+    "1.2.3-rc2" |> isInRange (DependenciesFileParser.parseVersionRequirement ">= 2 beta rc") |> shouldEqual false
+    
