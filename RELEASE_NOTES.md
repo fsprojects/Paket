@@ -1,7 +1,8 @@
-#### 0.3.0-alpha008 - 23.09.2014
+#### 0.3.0-alpha009 - 23.09.2014
 * New command: paket add [--interactive] - http://fsprojects.github.io/Paket/paket-add.html
 * New command: paket simplify - http://fsprojects.github.io/Paket/paket-simplify.html
 * New package resolver algorithm
+* Support for prereleases
 * Support for private NuGet feeds
 * Better verbose mode - use -v flag
 * Version info is shown at start
