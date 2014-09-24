@@ -126,7 +126,7 @@ module DependenciesFileParser =
 
 module DependenciesFileSerializer = 
     let formatVersionRange strategy (version : VersionRequirement) : string = 
-        if strategy = ResolverStrategy.Max && version = VersionRequirement.NoRestriction then ""
+        if strategy = ResolverStrategy.Max && version = VersionRequirement.AllReleases then ""
         else 
             let prefix = 
                 if strategy = ResolverStrategy.Min then "!"

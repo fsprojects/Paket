@@ -8,9 +8,8 @@ type Bound =
 /// Defines if the range accepts prereleases
 type PreReleaseStatus = 
     | No
-    | AllPrereleases
-    | Beta
-    | ReleaseCandidate
+    | All
+    | Suffixes of string list
 
 /// Represents version information.
 type VersionRange = 
@@ -58,7 +57,8 @@ type VersionRequirement =
         match this with
         | VersionRequirement(range,_) -> range
 
-    static member NoRestriction = VersionRequirement(Minimum(SemVer.parse "0"),PreReleaseStatus.No)
+    static member AllReleases = VersionRequirement(Minimum(SemVer.parse "0"),PreReleaseStatus.No)
+    static member NoRestriction = VersionRequirement(Minimum(SemVer.parse "0"),PreReleaseStatus.All)
 
     override this.ToString() =
         match this.Range with

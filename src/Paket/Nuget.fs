@@ -70,7 +70,7 @@ let getAllVersionsFromLocalPath (localNugetPath, package) =
 
 /// Parses NuGet version ranges.
 let parseVersionRange (text:string) = 
-    if  text = null || text = "" || text = "null" then VersionRequirement.NoRestriction else
+    if  text = null || text = "" || text = "null" then VersionRequirement.AllReleases else
 
     let parseRange text = 
         let failParse() = failwithf "unable to parse %s" text
