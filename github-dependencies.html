@@ -52,10 +52,21 @@
 
 <p>If you run the <a href="paket-update.html"><code>paket update</code> command</a>, it will add a new section to your <a href="lock-file.html"><code>paket.lock</code> file</a>:</p>
 
-<table class="pre"><tr><td><pre lang="batchfile">GITHUB
-  remote: forki/FsUnit
-  specs:
-    FsUnit.fs (7623fc13439f0e60bd05c1ed3b5f6dcb937fe468)</pre></td></tr></table>
+<table class="pre"><tr><td class="lines"><pre class="fssnip">
+<span class="l">1: </span>
+<span class="l">2: </span>
+<span class="l">3: </span>
+<span class="l">4: </span>
+</pre>
+</td>
+<td class="snippet"><pre class="fssnip">
+<span class="i">GITHUB</span>
+  <span class="i">remote</span><span class="o">:</span> <span class="i">forki</span><span class="o">/</span><span class="i">FsUnit</span>
+  <span class="i">specs</span><span class="o">:</span>
+    <span class="i">FsUnit</span><span class="o">.</span><span class="i">fs</span> (<span class="n">7623fc13439f0e60bd05c1ed3b5f6dcb937fe468</span>)</pre>
+</td>
+</tr>
+</table>
 
 <p>As you can see the file is pinned to a concrete commit. This allows you to reliably use the same file version in succeeding builds until you elect to perform a <a href="paket-update.html"><code>paket update</code> command</a> at a time of your choosing.</p>
 
