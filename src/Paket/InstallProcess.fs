@@ -43,7 +43,7 @@ let private findPackagesWithContent (usedPackages:Dictionary<_,_>) =
     |> Seq.choose (fun packageDir -> packageDir.GetDirectories("Content") |> Array.tryFind (fun _ -> true))
     |> Seq.toList
 
-let private copyContentFilesToProject project packagesWithContent = 
+let private copyContentFilesToProject (project : ProjectFile) packagesWithContent = 
 
     let rec copyDirContents (fromDir : DirectoryInfo, toDir : DirectoryInfo) =
         fromDir.GetDirectories() |> Array.toList

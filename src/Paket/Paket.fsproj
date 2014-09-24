@@ -83,6 +83,7 @@
     <Compile Include="Nuget.fs" />
     <Compile Include="DependenciesFile.fs" />
     <Compile Include="LockFile.fs" />
+    <Compile Include="ReferncesFile.fs" />
     <Compile Include="InstallProcess.fs" />
     <Compile Include="UpdateProcess.fs" />
     <Compile Include="AddProcess.fs" />
