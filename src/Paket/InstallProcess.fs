@@ -57,12 +57,25 @@ let private copyContentFilesToProject project packagesWithContent =
     |> List.collect (fun packageDir -> copyDirContents (packageDir, (DirectoryInfo(Path.GetDirectoryName(project.FileName)))))
 
 let private removeContentFiles (project: ProjectFile) =
+    let removeFilesAndTrimDirs (files: FileInfo list) =
+        for f in files do 
+            if f.Exists then 
+                f.Delete()
+
+        let dirsPathsDeepestFirst = 
+            files
+            |> Seq.map (fun f -> f.Directory.FullName)
+            |> Seq.distinct
+            |> List.ofSeq
+            |> List.rev
+        
+        for dirPath in dirsPathsDeepestFirst do
+            let dir = DirectoryInfo dirPath
+            if dir.Exists && dir.EnumerateFileSystemInfos() |> Seq.isEmpty then
+               dir.Delete()
+
     project.GetContentFiles() 
-        |> List.sortBy (fun f -> f.FullName)
-        |> List.rev
-        |> List.iter(fun f -> 
-                         File.Delete(f.FullName)
-                         if f.Directory.GetFiles() |> Seq.isEmpty then Directory.Delete(f.Directory.FullName))
+    |> removeFilesAndTrimDirs
 
 let findReferencesFile projectFile =
     let fi = FileInfo(projectFile)
