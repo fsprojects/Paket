@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="utf-8"/>
-    <title>FrameworkIdentifier - Paket</title>
+    <title>VersionRequirement - Paket</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <meta name="description" content=""/>
     <meta name="author" content="Steffen Forkmann, Alexander Gross"/>
@@ -34,9 +34,8 @@
 
 
 
-<h1>FrameworkIdentifier</h1>
+<h1>VersionRequirement</h1>
 <div class="xmldoc">
-<p>Framework Identifier type.</p>
 </div>
   <h3>Union Cases</h3>
   <table class="table table-bordered member-list">
@@ -47,69 +46,15 @@
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '52', 52)" onmouseover="showTip(event, '52', 52)">
-            DotNetFramework(...)
+          <code onmouseout="hideTip(event, '154', 154)" onmouseover="showTip(event, '154', 154)">
+            VersionRequirement(...)
           </code>
-          <div class="tip" id="52">
-            <strong>Signature:</strong> FrameworkVersion * FrameworkProfile<br />
+          <div class="tip" id="154">
+            <strong>Signature:</strong> VersionRange * PreReleaseStatus<br />
                       </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket/FrameworkHandling.fs#L22-22" class="github-link">
-              <img src="../content/img/github.png" class="normal" />
-              <img src="../content/img/github-blue.png" class="hover" />
-            </a>
-          
-        </td>
-      </tr>
-      <tr>
-        <td class="member-name">
-
-          <code onmouseout="hideTip(event, '53', 53)" onmouseover="showTip(event, '53', 53)">
-            PortableFramework(...)
-          </code>
-          <div class="tip" id="53">
-            <strong>Signature:</strong> PlatformVersion * PortableFrameworkProfile<br />
-                      </div>
-        </td>
-        <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket/FrameworkHandling.fs#L23-23" class="github-link">
-              <img src="../content/img/github.png" class="normal" />
-              <img src="../content/img/github-blue.png" class="hover" />
-            </a>
-          
-        </td>
-      </tr>
-      <tr>
-        <td class="member-name">
-
-          <code onmouseout="hideTip(event, '54', 54)" onmouseover="showTip(event, '54', 54)">
-            Silverlight(string)
-          </code>
-          <div class="tip" id="54">
-            <strong>Signature:</strong> string<br />
-                      </div>
-        </td>
-        <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket/FrameworkHandling.fs#L25-25" class="github-link">
-              <img src="../content/img/github.png" class="normal" />
-              <img src="../content/img/github-blue.png" class="hover" />
-            </a>
-          
-        </td>
-      </tr>
-      <tr>
-        <td class="member-name">
-
-          <code onmouseout="hideTip(event, '55', 55)" onmouseover="showTip(event, '55', 55)">
-            WindowsPhoneApp(string)
-          </code>
-          <div class="tip" id="55">
-            <strong>Signature:</strong> string<br />
-                      </div>
-        </td>
-        <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket/FrameworkHandling.fs#L24-24" class="github-link">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket/VersionRange.fs#L30-30" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -127,15 +72,34 @@
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '75', 75)" onmouseover="showTip(event, '75', 75)">
-            GetCondition()
+          <code onmouseout="hideTip(event, '201', 201)" onmouseover="showTip(event, '201', 201)">
+            IsInRange(version)
           </code>
-          <div class="tip" id="75">
-            <strong>Signature:</strong> unit -&gt; string<br />
+          <div class="tip" id="201">
+            <strong>Signature:</strong> version:SemVerInfo -&gt; bool<br />
                       </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket/FrameworkHandling.fs#L51-51" class="github-link">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket/VersionRange.fs#L32-32" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          <p>Checks wether the given version is in the version range</p>
+
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '205', 205)" onmouseover="showTip(event, '205', 205)">
+            PreReleases
+          </code>
+          <div class="tip" id="205">
+            <strong>Signature:</strong> PreReleaseStatus<br />
+                      </div>
+        </td>
+        <td class="xmldoc">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket/VersionRange.fs#L67-67" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -145,15 +109,15 @@
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '76', 76)" onmouseover="showTip(event, '76', 76)">
-            GetFrameworkIdentifier()
+          <code onmouseout="hideTip(event, '206', 206)" onmouseover="showTip(event, '206', 206)">
+            PreReleases
           </code>
-          <div class="tip" id="76">
-            <strong>Signature:</strong> unit -&gt; string<br />
+          <div class="tip" id="206">
+            <strong>Signature:</strong> PreReleaseStatus<br />
                       </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket/FrameworkHandling.fs#L27-27" class="github-link">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket/VersionRange.fs#L67-67" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -163,15 +127,15 @@
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '77', 77)" onmouseover="showTip(event, '77', 77)">
-            GetFrameworkProfile()
+          <code onmouseout="hideTip(event, '207', 207)" onmouseover="showTip(event, '207', 207)">
+            Range
           </code>
-          <div class="tip" id="77">
-            <strong>Signature:</strong> unit -&gt; string<br />
+          <div class="tip" id="207">
+            <strong>Signature:</strong> VersionRange<br />
                       </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket/FrameworkHandling.fs#L34-34" class="github-link">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket/VersionRange.fs#L63-63" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -181,15 +145,15 @@
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '78', 78)" onmouseover="showTip(event, '78', 78)">
-            GetPlatformIdentifier()
+          <code onmouseout="hideTip(event, '208', 208)" onmouseover="showTip(event, '208', 208)">
+            Range
           </code>
-          <div class="tip" id="78">
-            <strong>Signature:</strong> unit -&gt; string<br />
+          <div class="tip" id="208">
+            <strong>Signature:</strong> VersionRange<br />
                       </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket/FrameworkHandling.fs#L40-40" class="github-link">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket/VersionRange.fs#L63-63" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -199,15 +163,15 @@
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '79', 79)" onmouseover="showTip(event, '79', 79)">
-            GetPlatformVersion()
+          <code onmouseout="hideTip(event, '209', 209)" onmouseover="showTip(event, '209', 209)">
+            ToString()
           </code>
-          <div class="tip" id="79">
+          <div class="tip" id="209">
             <strong>Signature:</strong> unit -&gt; string<br />
                       </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket/FrameworkHandling.fs#L45-45" class="github-link">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket/VersionRange.fs#L74-74" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -225,15 +189,69 @@
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '96', 96)" onmouseover="showTip(event, '96', 96)">
-            DetectFromPath(path)
+          <code onmouseout="hideTip(event, '213', 213)" onmouseover="showTip(event, '213', 213)">
+            AllReleases
           </code>
-          <div class="tip" id="96">
-            <strong>Signature:</strong> path:string -&gt; FrameworkIdentifier option<br />
+          <div class="tip" id="213">
+            <strong>Signature:</strong> VersionRequirement<br />
                       </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket/FrameworkHandling.fs#L61-61" class="github-link">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket/VersionRange.fs#L71-71" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '214', 214)" onmouseover="showTip(event, '214', 214)">
+            AllReleases
+          </code>
+          <div class="tip" id="214">
+            <strong>Signature:</strong> VersionRequirement<br />
+                      </div>
+        </td>
+        <td class="xmldoc">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket/VersionRange.fs#L71-71" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '215', 215)" onmouseover="showTip(event, '215', 215)">
+            NoRestriction
+          </code>
+          <div class="tip" id="215">
+            <strong>Signature:</strong> VersionRequirement<br />
+                      </div>
+        </td>
+        <td class="xmldoc">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket/VersionRange.fs#L72-72" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '216', 216)" onmouseover="showTip(event, '216', 216)">
+            NoRestriction
+          </code>
+          <div class="tip" id="216">
+            <strong>Signature:</strong> VersionRequirement<br />
+                      </div>
+        </td>
+        <td class="xmldoc">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket/VersionRange.fs#L72-72" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
