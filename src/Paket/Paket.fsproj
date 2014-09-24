@@ -68,6 +68,7 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Compile Include="SemVer.fs" />
+    <Compile Include="VersionRange.fs" />
     <Compile Include="BasicTypes.fs" />
     <Compile Include="Constants.fs" />
     <Compile Include="Logging.fs" />
