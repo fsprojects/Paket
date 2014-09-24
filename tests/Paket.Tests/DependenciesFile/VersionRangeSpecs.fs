@@ -4,7 +4,7 @@ open Paket
 open NUnit.Framework
 open FsUnit
 
-let parseRange text = DependenciesFileParser.parseVersionRange(text).Range
+let parseRange text = DependenciesFileParser.parseVersionRequirement(text).Range
 
 [<Test>]
 let ``can detect minimum version``() = 
@@ -57,9 +57,20 @@ let ``can detect range``() =
 
 [<Test>]
 let ``can detect minimum NuGet version``() = 
-    Nuget.parseVersionRange "0" |> shouldEqual (DependenciesFileParser.parseVersionRange ">= 0")
-    Nuget.parseVersionRange "" |> shouldEqual (DependenciesFileParser.parseVersionRange ">= 0")
-    Nuget.parseVersionRange null |> shouldEqual (DependenciesFileParser.parseVersionRange ">= 0")
+    Nuget.parseVersionRange "0" |> shouldEqual (DependenciesFileParser.parseVersionRequirement ">= 0")
+    Nuget.parseVersionRange "" |> shouldEqual (DependenciesFileParser.parseVersionRequirement ">= 0")
+    Nuget.parseVersionRange null |> shouldEqual (DependenciesFileParser.parseVersionRequirement ">= 0")
 
     parseRange "" |> shouldEqual (parseRange ">= 0")
     parseRange null |> shouldEqual (parseRange ">= 0")
+
+[<Test>]
+let ``can detect prereleases``() = 
+    DependenciesFileParser.parseVersionRequirement "<= 3.1" 
+    |> shouldEqual (VersionRequirement(VersionRange.Maximum(SemVer.parse "3.1"),PreReleaseStatus.No))
+
+    DependenciesFileParser.parseVersionRequirement "<= 3.1 prerelease" 
+    |> shouldEqual (VersionRequirement(VersionRange.Maximum(SemVer.parse "3.1"),PreReleaseStatus.All))
+
+    DependenciesFileParser.parseVersionRequirement "> 3.1 alpha beta"
+    |> shouldEqual (VersionRequirement(VersionRange.GreaterThan(SemVer.parse "3.1"),(PreReleaseStatus.Concrete ["alpha"; "beta"])))

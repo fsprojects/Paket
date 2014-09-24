@@ -68,15 +68,15 @@ let ``can check if in range for Range``() =
 
 [<Test>]
 let ``can check if in range for 4-parts range``() =    
-    "1.0.0.3108" |> isInRange (DependenciesFileParser.parseVersionRange "1.0.0.3108") |> shouldEqual true
-    "1.0.0.2420" |> isInRange (DependenciesFileParser.parseVersionRange "~> 1.0") |> shouldEqual true
+    "1.0.0.3108" |> isInRange (DependenciesFileParser.parseVersionRequirement "1.0.0.3108") |> shouldEqual true
+    "1.0.0.2420" |> isInRange (DependenciesFileParser.parseVersionRequirement "~> 1.0") |> shouldEqual true
 
 [<Test>]
 let ``can support trailing 0``() =    
-    "1.2.3" |> isInRange (DependenciesFileParser.parseVersionRange "1.2.3.0") |> shouldEqual true    
+    "1.2.3" |> isInRange (DependenciesFileParser.parseVersionRequirement "1.2.3.0") |> shouldEqual true    
 
 [<Test>]
 let ``can support alpha version``() = 
-    "1.2.3-alpha001" |> isInRange (DependenciesFileParser.parseVersionRange "1.2.3-alpha001") |> shouldEqual true
-    "1.2.3-alpha001" |> isInRange (DependenciesFileParser.parseVersionRange "1.2.3") |> shouldEqual false
-    "1.2.3-alpha003" |> isInRange (DependenciesFileParser.parseVersionRange ">= 1") |> shouldEqual false
+    "1.2.3-alpha001" |> isInRange (DependenciesFileParser.parseVersionRequirement "1.2.3-alpha001") |> shouldEqual true
+    "1.2.3-alpha001" |> isInRange (DependenciesFileParser.parseVersionRequirement "1.2.3") |> shouldEqual false
+    "1.2.3-alpha003" |> isInRange (DependenciesFileParser.parseVersionRequirement ">= 1") |> shouldEqual false

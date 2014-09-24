@@ -26,34 +26,39 @@ module DependenciesFileParser =
         let promoted = parts |> promote penultimateItem
         String.Join(".", promoted)
 
-    let parseVersionRange (text : string) : VersionRequirement =
-        let parseRange text = 
-            if text = "" || text = null then VersionRange.AtLeast("0") else
+    let parseVersionRequirement (text : string) : VersionRequirement =
+        let parsePrerelease(texts:string seq) =
+            if Seq.isEmpty texts then PreReleaseStatus.No else
+            if Seq.head(texts).ToLower() = "prerelease" then PreReleaseStatus.All else
+            PreReleaseStatus.Concrete(texts |> Seq.toList)
 
-            match text.Split(' ') with
-            | [| ">="; v1; "<"; v2 |] -> VersionRange.Range(Bound.Including,SemVer.parse v1,SemVer.parse v2,Bound.Excluding)
-            | [| ">="; v1; "<="; v2 |] -> VersionRange.Range(Bound.Including,SemVer.parse v1,SemVer.parse v2,Bound.Including)
-            | [| "~>"; v1; ">="; v2 |] -> VersionRange.Range(Bound.Including,SemVer.parse v2,SemVer.parse(twiddle v1),Bound.Excluding)
-            | [| "~>"; v1; ">"; v2 |] -> VersionRange.Range(Bound.Excluding,SemVer.parse v2,SemVer.parse(twiddle v1),Bound.Excluding)
-            | [| ">"; v1; "<"; v2 |] -> VersionRange.Range(Bound.Excluding,SemVer.parse v1,SemVer.parse v2,Bound.Excluding)
-            | [| ">"; v1; "<="; v2 |] -> VersionRange.Range(Bound.Excluding,SemVer.parse v1,SemVer.parse v2,Bound.Including)
-            | _ ->
-                let splitVersion (text:string) =            
-                    match basicOperators |> List.tryFind(text.StartsWith) with
-                    | Some token -> token, text.Replace(token + " ", "")
-                    | None -> "=", text
+        if text = "" || text = null then VersionRequirement(VersionRange.AtLeast("0"),PreReleaseStatus.No) else
 
-                try
-                    match splitVersion text with
-                    | ">=", version -> VersionRange.AtLeast(version)
-                    | ">", version -> VersionRange.GreaterThan(SemVer.parse version)
-                    | "<", version -> VersionRange.LessThan(SemVer.parse version)
-                    | "<=", version -> VersionRange.Maximum(SemVer.parse version)
-                    | "~>", minimum -> VersionRange.Between(minimum,twiddle minimum)
-                    | _, version -> VersionRange.Exactly(version)
-                with
+        match text.Split(' ') |> Array.toList with
+        |  ">=" :: v1 :: "<" :: v2 :: rest -> VersionRequirement(VersionRange.Range(Bound.Including,SemVer.parse v1,SemVer.parse v2,Bound.Excluding),parsePrerelease rest)
+        |  ">=" :: v1 :: "<=" :: v2 :: rest -> VersionRequirement(VersionRange.Range(Bound.Including,SemVer.parse v1,SemVer.parse v2,Bound.Including),parsePrerelease rest)
+        |  "~>" :: v1 :: ">=" :: v2 :: rest -> VersionRequirement(VersionRange.Range(Bound.Including,SemVer.parse v2,SemVer.parse(twiddle v1),Bound.Excluding),parsePrerelease rest)
+        |  "~>" :: v1 :: ">" :: v2 :: rest -> VersionRequirement(VersionRange.Range(Bound.Excluding,SemVer.parse v2,SemVer.parse(twiddle v1),Bound.Excluding),parsePrerelease rest)
+        |  ">" :: v1 :: "<" :: v2 :: rest -> VersionRequirement(VersionRange.Range(Bound.Excluding,SemVer.parse v1,SemVer.parse v2,Bound.Excluding),parsePrerelease rest)
+        |  ">" :: v1 :: "<=" :: v2 :: rest -> VersionRequirement(VersionRange.Range(Bound.Excluding,SemVer.parse v1,SemVer.parse v2,Bound.Including),parsePrerelease rest)
+        | _ -> 
+            let splitVersion (text:string) =            
+                match basicOperators |> List.tryFind(text.StartsWith) with
+                | Some token -> token, text.Replace(token + " ", "").Split(' ') |> Array.toList
+                | None -> "=", text.Split(' ') |> Array.toList
+
+            try
+                match splitVersion text with
+                | ">=", version :: rest -> VersionRequirement(VersionRange.AtLeast(version),parsePrerelease rest)
+                | ">", version :: rest -> VersionRequirement(VersionRange.GreaterThan(SemVer.parse version),parsePrerelease rest)
+                | "<", version :: rest -> VersionRequirement(VersionRange.LessThan(SemVer.parse version),parsePrerelease rest)
+                | "<=", version :: rest -> VersionRequirement(VersionRange.Maximum(SemVer.parse version),parsePrerelease rest)
+                | "~>", minimum :: rest -> VersionRequirement(VersionRange.Between(minimum,twiddle minimum),parsePrerelease rest)
+                | _, version :: rest -> VersionRequirement(VersionRange.Exactly(version),parsePrerelease rest)
                 | _ -> failwithf "could not parse version range \"%s\"" text
-        VersionRequirement(parseRange text,PreReleaseStatus.No)
+            with
+            | _ -> failwithf "could not parse version range \"%s\"" text
+
 
     let userNameRegex = new Regex("username[:][ ]*[\"]?([^\"]+)[\"]?", RegexOptions.IgnoreCase);
     let passwordRegex = new Regex("password[:][ ]*[\"]?([^\"]+)[\"]?", RegexOptions.IgnoreCase);
@@ -106,7 +111,7 @@ module DependenciesFileParser =
                         { Sources = sources
                           Name = name
                           ResolverStrategy = parseResolverStrategy version
-                          VersionRequirement = parseVersionRange(version.Trim '!') } :: packages, sourceFiles
+                          VersionRequirement = parseVersionRequirement(version.Trim '!') } :: packages, sourceFiles
                 | SourceFile((owner,project, commit), path) ->
                     // TODO: Put SHA1 retrieval into resolver because of rate limit
                     let specified,sha = 
@@ -138,7 +143,7 @@ module DependenciesFileSerializer =
                 | GreaterThan x -> "> " + x.ToString()
                 | Specific x -> x.ToString()
                 | VersionRange.Range(_, from, _, _) 
-                        when DependenciesFileParser.parseVersionRange ("~> " + from.ToString()) = version -> 
+                        when DependenciesFileParser.parseVersionRequirement ("~> " + from.ToString()) = version -> 
                             "~> " + from.ToString()
                 | _ -> version.ToString()
             
@@ -156,7 +161,7 @@ type DependenciesFile(fileName,strictMode,packages : UnresolvedPackage list, rem
     member this.Resolve(force) = this.Resolve(Nuget.GetVersions,Nuget.GetPackageDetails force)
     member __.Resolve(getVersionF, getPackageDetailsF) = PackageResolver.Resolve(getVersionF, getPackageDetailsF, packages)
     member __.Add(packageName,version:string) =
-        let versionRange = DependenciesFileParser.parseVersionRange (version.Trim '!')
+        let versionRange = DependenciesFileParser.parseVersionRequirement (version.Trim '!')
         let sources = 
             match packages |> List.rev with
             | lastPackage::_ -> lastPackage.Sources

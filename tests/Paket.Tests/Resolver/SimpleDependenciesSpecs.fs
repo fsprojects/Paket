@@ -47,7 +47,7 @@ nuget FsUnit ~> 1.3
 """
 
 let graph2 = [
-    "FsUnit","1.3.1",["NUnit",DependenciesFileParser.parseVersionRange ">= 2.6.3"]
+    "FsUnit","1.3.1",["NUnit",DependenciesFileParser.parseVersionRequirement ">= 2.6.3"]
     "NUnit","2.6.2",[]
     "NUnit","2.6.3",[]    
 ]
@@ -70,10 +70,10 @@ let graph3 = [
     "Castle.Core","3.2.0",[]
     "Castle.Core","3.3.0",[]
     "Castle.Core","3.3.1",[]
-    "Castle.Windsor-log4net","3.2.0.1",["Castle.Core-log4net",DependenciesFileParser.parseVersionRange ">= 3.2.0"]
-    "Castle.Core-log4net","3.2.0",["Castle.Core",DependenciesFileParser.parseVersionRange ">= 3.2.0"]
-    "Castle.Core-log4net","3.3.0",["Castle.Core",DependenciesFileParser.parseVersionRange ">= 3.3.0"]
-    "Castle.Core-log4net","3.3.1",["Castle.Core",DependenciesFileParser.parseVersionRange ">= 3.3.1"]
+    "Castle.Windsor-log4net","3.2.0.1",["Castle.Core-log4net",DependenciesFileParser.parseVersionRequirement ">= 3.2.0"]
+    "Castle.Core-log4net","3.2.0",["Castle.Core",DependenciesFileParser.parseVersionRequirement ">= 3.2.0"]
+    "Castle.Core-log4net","3.3.0",["Castle.Core",DependenciesFileParser.parseVersionRequirement ">= 3.3.0"]
+    "Castle.Core-log4net","3.3.1",["Castle.Core",DependenciesFileParser.parseVersionRequirement ">= 3.3.1"]
 ]
 
 [<Test>]

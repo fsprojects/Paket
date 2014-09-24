@@ -9,7 +9,7 @@ type Bound =
 type PreReleaseStatus = 
     | No
     | All
-    | Suffixes of string list
+    | Concrete of string list
 
 /// Represents version information.
 type VersionRange = 
@@ -18,8 +18,7 @@ type VersionRange =
     | GreaterThan of SemVerInfo
     | Maximum of SemVerInfo
     | LessThan of SemVerInfo
-    | Range of fromB : Bound * from : SemVerInfo * _to : SemVerInfo * _toB : Bound
-      
+    | Range of fromB : Bound * from : SemVerInfo * _to : SemVerInfo * _toB : Bound 
 
     static member AtLeast version = Minimum(SemVer.parse version)
 
@@ -34,6 +33,7 @@ type VersionRequirement =
         match this with
         | VersionRequirement(range,prerelease) ->
             let checkPrerelease prerelease version = version.PreRelease = None
+
             match range with
             | Specific v -> v = version
             | Minimum v -> v <= version && checkPrerelease prerelease version
