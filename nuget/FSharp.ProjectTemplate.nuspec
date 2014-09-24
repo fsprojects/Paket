@@ -7,7 +7,7 @@
     <owners>@authors@</owners>
     <licenseUrl>http://github.com/fsprojects/FSharp.ProjectScaffold/blob/master/LICENSE.txt</licenseUrl>
     <projectUrl>http://fsprojects.github.com/FSharp.ProjectScaffold</projectUrl>
-    <iconUrl>https://raw.github.com/fsharp/FSharp.ProjectScaffold/master/nuget/logo.png</iconUrl>
+    <iconUrl>https://raw.githubusercontent.com/fsprojects/ProjectScaffold/master/docs/files/img/logo.png</iconUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <summary>@summary@</summary>
     <description>@description@</description>
