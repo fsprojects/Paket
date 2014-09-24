@@ -2,21 +2,27 @@
 module Paket.UpdateProcess
 
 open Paket
-open Paket.Logging
+open System
 
 let getResolvedPackagesOrFail resolution =
     match resolution with
     | Ok model -> model
-    | Conflict(closed,stillOpen) -> 
-        traceErrorfn "Resolved:"
+    | Conflict(closed,stillOpen) ->
+
+        let errorText = ref ""
+
+        let addToError text = errorText := !errorText + Environment.NewLine + text
+
+        addToError "Error in resolution." 
+        addToError "  Resolved:"
         for x in closed do
-           traceErrorfn  "  - %s %s" x.Name (x.VersionRange.ToString())
+           addToError <| sprintf "    - %s %s" x.Name (x.VersionRange.ToString())
 
-        traceErrorfn "Still open:"
+        addToError "  Still open:"
         for x in stillOpen do
-           traceErrorfn  "  - %s %s" x.Name (x.VersionRange.ToString())
+           addToError <| sprintf  "    - %s %s" x.Name (x.VersionRange.ToString())
 
-        failwithf "Error in resolution." 
+        failwith !errorText
 
 
 /// Update command
