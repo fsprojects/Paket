@@ -4,16 +4,13 @@ open System.IO
 open Logging
 open System
 
-let private formatDiff (before : string []) (after : string []) =
-    "   Before:" + Environment.NewLine +
-    "       " + String.Join(Environment.NewLine + "       ", before) +
-    Environment.NewLine + Environment.NewLine +
-    "   After:" + Environment.NewLine +
-    "       " + String.Join(Environment.NewLine + "       ", after)
+let private formatDiff (before : string) (after : string) =
+    let nl = Environment.NewLine
+    nl + "Before:" + nl + nl + before + nl + nl + nl + "After:" + nl + nl + after + nl + nl
 
 let private simplify file before after =
     if before <> after then
-        File.WriteAllLines(file, after)
+        File.WriteAllText(file, after)
         tracefn "Simplified %s" file
         traceVerbose (formatDiff before after)
     else
@@ -45,7 +42,8 @@ let Analyze(allPackages : list<ResolvedPackage>, depFile : DependenciesFile, ref
     let simplifiedDeps = depFile.Packages |> getSimplifiedDeps (fun p -> p.Name) |> Seq.toList
     let refFiles' = if depFile.Strict 
                     then refFiles 
-                    else refFiles |> List.map (fun refFile -> {refFile with NugetPackages = refFile.NugetPackages |> getSimplifiedDeps id})
+                    else refFiles |> List.map (fun refFile -> {refFile with NugetPackages = 
+                                                                            refFile.NugetPackages |> getSimplifiedDeps id})
 
     DependenciesFile(depFile.FileName, depFile.Strict, simplifiedDeps, depFile.RemoteFiles), refFiles'
 
@@ -56,24 +54,21 @@ let Simplify () =
     let lockFilePath = depFile.FindLockfile()
     if not <| File.Exists(lockFilePath.FullName) then 
         failwith "lock file not found. Create lock file by running paket install."
+
     let lockFile = LockFile.LoadFrom lockFilePath.FullName
     let packages = lockFile.ResolvedPackages |> Seq.map (fun kv -> kv.Value) |> List.ofSeq
-    let refFiles = FindAllFiles(".", Constants.ReferencesFile) |> Seq.toList |> List.map (fun fi -> ReferencesFile.FromFile fi.FullName)
-    
+    let refFiles = 
+        ProjectFile.FindAllProjects(".") 
+        |> List.choose ProjectFile.FindReferencesFile 
+        |> List.map ReferencesFile.FromFile
+    let refFilesBefore = refFiles |> List.map (fun refFile -> refFile.FileName, refFile) |> Map.ofList
+
     let simplifiedDepFile, simplifiedRefFiles = Analyze(packages, depFile, refFiles)
     
-    let removedDeps = Set.difference (Set depFile.Packages) (Set simplifiedDepFile.Packages) |> Set.map (fun p -> p.Name.ToLower())
-    let before = File.ReadAllLines(Constants.DependenciesFile)
-    let after = before |> Array.filter(fun line -> 
-                                           if not <| line.StartsWith("nuget", StringComparison.InvariantCultureIgnoreCase) then true
-                                           else 
-                                                let dep = line.Split([|' '|]).[1].Trim().ToLower()
-                                                removedDeps |> Set.forall (fun removedDep -> removedDep <> dep))
-
-    simplify Constants.DependenciesFile before after
+    simplify depFile.FileName <| depFile.ToString() <| simplifiedDepFile.ToString()
 
     if depFile.Strict then
         traceWarn ("Strict mode detected. Will not attempt to simplify " + Constants.ReferencesFile + " files.")
     else
         for refFile in simplifiedRefFiles do
-            File.WriteAllText(refFile.FileName, refFile.ToString())
+            simplify refFile.FileName <| refFilesBefore.[refFile.FileName].ToString() <| refFile.ToString()

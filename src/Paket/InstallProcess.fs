@@ -77,18 +77,8 @@ let private removeContentFiles (project: ProjectFile) =
     project.GetContentFiles() 
     |> removeFilesAndTrimDirs
 
-let findReferencesFile projectFile =
-    let fi = FileInfo(projectFile)
-    
-    let specificReferencesFile = FileInfo(Path.Combine(fi.Directory.FullName, fi.Name + "." + Constants.ReferencesFile))
-    if specificReferencesFile.Exists then Some specificReferencesFile.FullName
-    else 
-        let generalReferencesFile = FileInfo(Path.Combine(fi.Directory.FullName, Constants.ReferencesFile))
-        if generalReferencesFile.Exists then Some generalReferencesFile.FullName
-        else None
-
 let extractReferencesFromListFile projectFile = 
-    match findReferencesFile projectFile with 
+    match ProjectFile.FindReferencesFile <| FileInfo(projectFile) with 
     | Some file -> File.ReadAllLines file
     | None -> [||]
     |> Array.map (fun s -> s.Trim())
