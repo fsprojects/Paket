@@ -99,6 +99,10 @@ There is no reasonable way to make this work – and even NuGet.exe can't do it 
 
 <p>The process is very easy and you can read more about it in the <a href="convert-from-nuget.html">convert from NuGet</a> section.</p>
 
+<h2><a name="Why-should-I-commit-the-lock-file" class="anchor" href="#Why-should-I-commit-the-lock-file">Why should I commit the lock file?</a></h2>
+
+<p>Committing the <a href="lock-file.html"><code>paket.lock</code> file</a> to your version control system guarantees that other developers and/or build servers will always end up with a reliable and consistent set of packages regardless of where or when a <a href="paket-install.html">paket install</a> occurs.</p>
+
 <h2><a name="Does-Paket-allow-groups-like-bundler-does" class="anchor" href="#Does-Paket-allow-groups-like-bundler-does">Does Paket allow groups like bundler does?</a></h2>
 
 <p>No at the moment we don't see the need for something like <a href="http://bundler.io/v1.7/groups.html">bundler's groups</a> in the .NET environment. Longer discussion can be found <a href="https://github.com/fsprojects/Paket/issues/116">here</a>.</p>
