@@ -16,10 +16,16 @@ let GetReferences(fileName:string) =
     doc.Load fi.FullName
 
     let manager = new XmlNamespaceManager(doc.NameTable)
-    manager.AddNamespace("ns", "http://schemas.microsoft.com/packaging/2012/06/nuspec.xsd")
+    manager.AddNamespace("ns1", "http://schemas.microsoft.com/packaging/2012/06/nuspec.xsd")
+    manager.AddNamespace("ns2", "http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd")
 
-    if [for node in doc.SelectNodes("//ns:references", manager) -> node] = [] then References.All else
-    
-    References.Explicit 
-        [for node in doc.SelectNodes("//ns:reference", manager) do 
-            yield node.Attributes.["file"].InnerText]
+    let referencesNodes =
+        [for node in doc.SelectNodes("//ns1:references", manager) do yield node
+         for node in doc.SelectNodes("//ns2:references", manager) do yield node]
+
+    if List.isEmpty referencesNodes then  References.All  else    
+        References.Explicit(
+            [for node in doc.SelectNodes("//ns1:reference", manager) do 
+                yield node.Attributes.["file"].InnerText 
+             for node in doc.SelectNodes("//ns2:reference", manager) do 
+                yield node.Attributes.["file"].InnerText])

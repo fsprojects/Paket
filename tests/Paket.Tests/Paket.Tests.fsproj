@@ -69,6 +69,9 @@
     </Content>
     <Content Include="TestFiles\Octokit.nuspec">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>     
+    <Content Include="TestFiles\Fantomas.nuspec">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Compile Include="NuspecSpecs.fs" />
     <Compile Include="FilterVersionSpecs.fs" />
@@ -90,7 +93,7 @@
     <Compile Include="Simplifier\BasicScenarioSpecs.fs" />
     <None Include="ProjectFile\TestData\Project1.fsprojtest">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
+    </None>                                          
     <None Include="ProjectFile\TestData\ProjectWithConditions.fsprojtest">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>

@@ -19,3 +19,8 @@ let ``can detect all references``() =
 let ``if nuspec is not found we assume all references``() = 
     Nuspec.GetReferences "TestFiles/blablub.nuspec"
     |> shouldEqual References.All
+
+[<Test>]
+let ``can detect explicit references for Fantomas``() = 
+    Nuspec.GetReferences "TestFiles/Fantomas.nuspec"
+    |> shouldEqual (References.Explicit ["FantomasLib.dll"])

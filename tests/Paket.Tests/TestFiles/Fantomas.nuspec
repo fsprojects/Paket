@@ -1,0 +1,25 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd">
+    <metadata>
+        <id>Fantomas</id>
+        <version>1.5.0</version>
+        <title>Fantomas</title>
+        <authors>Anh-Dung Phan,Gustavo Guerra</authors>
+        <licenseUrl>http://github.com/dungpa/fantomas/blob/master/LICENSE.md</licenseUrl>
+        <projectUrl>https://github.com/dungpa/fantomas</projectUrl>
+        <iconUrl>https://raw.github.com/dungpa/fantomas/master/src/Fantomas.VisualStudio/fantomas_logo.png</iconUrl>
+        <requireLicenseAcceptance>false</requireLicenseAcceptance>
+        <description>This library aims at formatting F# source files based on a given configuration. Fantomas will ensure correct indentation and consistent spacing between elements in the source files.
+
+Some common use cases include (1) Reformatting a code base to conform a universal page width (2) Converting legacy code from verbose syntax to light syntax (3) Formatting auto-generated F# signatures.</description>
+        <summary>Source code formatting tool for F#.</summary>
+        <releaseNotes>A lot of bug fixings</releaseNotes>
+        <tags>F# fsharp formatting beautifier indentation indenter</tags>
+        <dependencies>
+            <dependency id="FSharp.Compiler.Service" version="0.0.57" />
+        </dependencies>
+        <references>
+            <reference file="FantomasLib.dll" />
+        </references>
+    </metadata>
+</package>
