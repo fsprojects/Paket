@@ -5,7 +5,6 @@ It enables precise and predictable control over what packages the projects withi
 If you are already using NuGet for package restore in your solution then you can learn about the upgrade process in the [convert from NuGet](convert-from-nuget.html) section.
 
   [mono]: http://www.mono-project.com/
-  [bundler]: http://bundler.io/
   [nuget]: https://www.nuget.org/
 
 ## How to get Paket
@@ -53,7 +52,7 @@ The [`paket install` command](paket-install.html) will analyze your dependencies
 
 You can place [`paket.references` files](references-files.html) alongside your Visual Studio projects to have Paket automatically sync references for the packages noted in that file whenever an `install` or `update` takes place.
 
-All of the files involved (the [`paket.dependencies`](dependencies-file.html) and [`paket.lock`](lock-file.html) in the root, and the [`paket.references`](references-files.html) files for each project) should be committed to your version control system.
+All of the [files involved should be committed](faq.html#Why-should-I-commit-the-lock-file) to your version control system.
 
 Determine if there are package updates available:
 

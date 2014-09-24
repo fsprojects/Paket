@@ -64,6 +64,10 @@ Once the [`paket.lock` file](lock-file.html) is written, Paket no longer needs t
 
 The process is very easy and you can read more about it in the [convert from NuGet](convert-from-nuget.html) section.
 
+## Why should I commit the lock file?
+
+Committing the [`paket.lock` file](lock-file.html) to your version control system guarantees that other developers and/or build servers will always end up with a reliable and consistent set of packages regardless of where or when a [paket install](paket-install.html) occurs.
+
 ## Does Paket allow groups like bundler does?
 
 No at the moment we don't see the need for something like [bundler's groups](http://bundler.io/v1.7/groups.html) in the .NET environment. Longer discussion can be found [here](https://github.com/fsprojects/Paket/issues/116).
