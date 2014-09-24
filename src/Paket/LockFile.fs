@@ -19,22 +19,26 @@ module LockFileSerializer =
             |> Seq.map (fun kv ->
                     let package = kv.Value
                     match package.Source with
-                    | Nuget source -> source.Url,package
-                    | LocalNuget path -> path,package
+                    | Nuget source -> source.Url,source.Auth,package
+                    | LocalNuget path -> path,None,package
                 )
-            |> Seq.groupBy fst
+            |> Seq.groupBy (fun (a,b,_) -> a,b)
 
         let all = 
             let hasReported = ref false
             [ if strictMode then
                 yield "REFERENCES: STRICT"
-              for source, packages in sources do
+              for (source, auth), packages in sources do
                   if not !hasReported then
                     yield "NUGET"
                     hasReported := true
-                  yield "  remote: " + source
+
+                  match auth with
+                  | None -> yield "  remote: " + source
+                  | Some auth -> yield sprintf "  remote: %s username: \"%s\" password: \"%s\"" source auth.Username auth.Password
+
                   yield "  specs:"
-                  for _,package in packages |> Seq.sortBy (fun (_,p) -> p.Name.ToLower()) do
+                  for _,_,package in packages |> Seq.sortBy (fun (_,_,p) -> p.Name.ToLower()) do
                       yield sprintf "    %s (%s)" package.Name (package.Version.ToString()) 
                       for name,v in package.Dependencies do
                           yield sprintf "      %s (%s)" name (formatVersionRange v)]
@@ -60,7 +64,8 @@ module LockFileSerializer =
 module LockFileParser =
     type ParseState =
         { RepositoryType : string option
-          Remote : string option
+          RemoteAuth : Auth option
+          RemoteUrl :string option
           Packages : ResolvedPackage list
           SourceFiles : SourceFile list
           Strict: bool }
@@ -70,7 +75,7 @@ module LockFileParser =
         | _, "NUGET" -> RepositoryType "NUGET"
         | _, "GITHUB" -> RepositoryType "GITHUB"
         | _, _ when String.IsNullOrWhiteSpace line -> Blank
-        | _, trimmed when trimmed.StartsWith "remote:" -> Remote (trimmed.Substring(trimmed.IndexOf(": ") + 2))
+        | _, trimmed when trimmed.StartsWith "remote:" -> Remote(trimmed.Substring(trimmed.IndexOf(": ") + 2).Split(' ').[0], DependenciesFileParser.parseAuth trimmed)
         | _, trimmed when trimmed.StartsWith "specs:" -> Blank
         | _, trimmed when trimmed.StartsWith "REFERENCES:" -> ReferencesMode(trimmed.Replace("REFERENCES:","").Trim() = "STRICT")
         | _, trimmed when line.StartsWith "      " ->
@@ -84,19 +89,19 @@ module LockFileParser =
     let Parse lines =
         let remove textToRemove (source:string) = source.Replace(textToRemove, "")
         let removeBrackets = remove "(" >> remove ")"
-        ({ RepositoryType = None; Remote = None; Packages = []; SourceFiles = []; Strict = false }, lines)
+        ({ RepositoryType = None; RemoteAuth = None; RemoteUrl = None; Packages = []; SourceFiles = []; Strict = false }, lines)
         ||> Seq.fold(fun state line ->
             match (state, line) with
-            | Remote remoteSource -> { state with Remote = Some remoteSource }
+            | Remote(url,auth) -> { state with RemoteUrl = Some url; RemoteAuth = auth }
             | Blank -> state
             | ReferencesMode mode -> { state with Strict = mode }
             | RepositoryType repoType -> { state with RepositoryType = Some repoType }
             | NugetPackage details ->
-                match state.Remote with
+                match state.RemoteUrl with
                 | Some remote ->
                     let parts = details.Split ' '
                     let version = parts.[1] |> removeBrackets
-                    { state with Packages = { Source = PackageSource.Parse remote
+                    { state with Packages = { Source = PackageSource.Parse(remote,state.RemoteAuth)
                                               Name = parts.[0]
                                               Dependencies = []
                                               Version = SemVer.parse version } :: state.Packages }
@@ -111,7 +116,7 @@ module LockFileParser =
                                     } :: otherPackages }
                 | [] -> failwith "cannot set a dependency - no package has been specified."
             | SourceFile details ->
-                match state.Remote |> Option.map(fun s -> s.Split '/') with
+                match state.RemoteUrl |> Option.map(fun s -> s.Split '/') with
                 | Some [| owner; project |] ->
                     let path, commit = match details.Split ' ' with
                                         | [| filePath; commit |] -> filePath, commit |> removeBrackets                                       

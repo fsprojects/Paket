@@ -91,3 +91,18 @@ let ``should serialize config with all kinds of versions``() =
     
     cfg.ToString()
     |> shouldEqual (normalizeLineEndings allVersionsConfig)
+
+
+let configWithPassword = """source http://nuget.org/api/v2 username: "user" password: "pass"
+
+nuget Example > 1.2.3
+nuget Example2 <= 1.2.3
+nuget Example3 < 2.2.3
+nuget Example4 >= 1.2.3 < 1.5"""
+
+[<Test>]
+let ``should serialize config with password``() = 
+    let cfg = DependenciesFile.FromCode(noSha1,configWithPassword)
+    
+    cfg.ToString()
+    |> shouldEqual (normalizeLineEndings configWithPassword)

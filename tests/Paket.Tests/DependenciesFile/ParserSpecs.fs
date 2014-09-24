@@ -200,3 +200,19 @@ let ``should read config without versions``() =
     cfg.DirectDependencies.["Rx-Main"] |> shouldEqual (VersionRange.AtLeast "0")
     cfg.DirectDependencies.["Castle.Windsor-log4net"] |> shouldEqual (VersionRange.AtLeast "0")
     cfg.DirectDependencies.["FAKE"] |> shouldEqual (VersionRange.AtLeast "0")
+
+
+let configWithPassword = """
+source http://nuget.org/api/v2 username: "tatü tata" password: "you got hacked!"
+nuget Rx-Main
+"""
+
+[<Test>]
+let ``should read config with encapsulated password source``() = 
+    let cfg = DependenciesFile.FromCode(noSha1, configWithPassword)
+    
+    (cfg.Packages |> List.find (fun p -> p.Name = "Rx-Main")).Sources 
+    |> shouldEqual [ PackageSource.Nuget { Url = "http://nuget.org/api/v2"
+                                           Auth = 
+                                               Some { Username = "tatü tata"
+                                                      Password = "you got hacked!" } } ]

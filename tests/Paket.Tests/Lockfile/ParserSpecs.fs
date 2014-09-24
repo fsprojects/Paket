@@ -91,3 +91,19 @@ let ``should parse strict lock file``() =
     packages.[5].Name |> shouldEqual "log4net"
     packages.[5].Version |> shouldEqual (SemVer.parse "1.1")
     packages.[5].Dependencies |> shouldEqual ["log", VersionRange.NoRestriction]
+
+
+let lockFileWithAuth = """NUGET
+  remote: http://nuget.org/api/v2 username: "tatü tata" password: "you got hacked!"
+  specs:
+    Castle.Windsor (2.1)"""   
+
+[<Test>]
+let ``should parse lock file with auth``() = 
+    let lockFile = LockFileParser.Parse(toLines lockFileWithAuth)
+    let packages = List.rev lockFile.Packages
+    packages.Length |> shouldEqual 1
+    packages.[0].Source |> shouldEqual (PackageSource.Nuget { Url = "http://nuget.org/api/v2"
+                                                              Auth = 
+                                                                  Some { Username = "tatü tata"
+                                                                         Password = "you got hacked!" } })

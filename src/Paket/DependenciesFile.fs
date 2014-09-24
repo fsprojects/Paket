@@ -7,6 +7,7 @@ open Paket.Logging
 
 /// [omit]
 module DependenciesFileParser = 
+    open System.Text.RegularExpressions
 
     let private basicOperators = ["~>";"<=";">=";"=";">";"<"]
     let private operators = basicOperators @ (basicOperators |> List.map (fun o -> "!" + o))
@@ -52,12 +53,20 @@ module DependenciesFileParser =
             with
             | _ -> failwithf "could not parse version range \"%s\"" text
 
+    let userNameRegex = new Regex("username[:][ ]*[\"]?([^\"]+)[\"]?", RegexOptions.IgnoreCase);
+    let passwordRegex = new Regex("password[:][ ]*[\"]?([^\"]+)[\"]?", RegexOptions.IgnoreCase);
+    let parseAuth(text:string) =
+        if userNameRegex.IsMatch(text) && passwordRegex.IsMatch(text) then
+            Some { Username = userNameRegex.Match(text).Groups.[1].Value; Password = passwordRegex.Match(text).Groups.[1].Value }
+        else
+            None
+
     let private (|Remote|Package|Blank|ReferencesMode|SourceFile|) (line:string) =
         match line.Trim() with
         | _ when String.IsNullOrWhiteSpace line -> Blank
         | trimmed when trimmed.StartsWith "source" ->
             let parts = trimmed.Split ' '
-            Remote (parts.[1].Replace("\"",""))                
+            Remote (parts.[1].Replace("\"",""),parseAuth trimmed)
         | trimmed when trimmed.StartsWith "nuget" -> 
             let parts = trimmed.Replace("nuget","").Trim().Replace("\"", "").Split([|' '|],StringSplitOptions.RemoveEmptyEntries) |> Seq.toList
             match parts with
@@ -87,7 +96,7 @@ module DependenciesFileParser =
             let lineNo = lineNo + 1
             try
                 match line with
-                | Remote newSource -> lineNo, referencesMode, (PackageSource.Parse(newSource.TrimEnd([|'/'|])) :: sources), packages, sourceFiles
+                | Remote(newSource,auth) -> lineNo, referencesMode, (PackageSource.Parse(newSource.TrimEnd([|'/'|]),auth) :: sources), packages, sourceFiles
                 | Blank -> lineNo, referencesMode, sources, packages, sourceFiles
                 | ReferencesMode mode -> lineNo, mode, sources, packages, sourceFiles
                 | Package(name,version) ->
@@ -170,7 +179,11 @@ type DependenciesFile(fileName,strictMode,packages : UnresolvedPackage list, rem
                   for source in sources do
                       hasReportedSource := true
                       match source with
-                      | Nuget source -> yield "source " + source.Url
+                      | Nuget source -> 
+                        match source.Auth with
+                        | None -> yield "source " + source.Url 
+                        | Some auth -> yield sprintf "source %s username: \"%s\" password: \"%s\"" source.Url auth.Username auth.Password
+                        
                       | LocalNuget source -> yield "source " + source
                   
                   for _,package in packages do
