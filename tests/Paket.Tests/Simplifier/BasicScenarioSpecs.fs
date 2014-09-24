@@ -11,7 +11,7 @@ let toPackages =
     List.map (fun (name,ver,deps) ->
         { ResolvedPackage.Name = name
           Version = SemVer.parse ver 
-          Source = Nuget(Constants.DefaultNugetStream)
+          Source = Constants.DefaultNugetSource
           Dependencies = deps
                                |> List.map (fun (name, verRan) ->
                                                 name, Nuget.parseVersionRange verRan)

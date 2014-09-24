@@ -149,7 +149,7 @@ type DependenciesFile(fileName,strictMode,packages : UnresolvedPackage list, rem
         let sources = 
             match packages |> List.rev with
             | lastPackage::_ -> lastPackage.Sources
-            | [] -> [Nuget Constants.DefaultNugetStream]
+            | [] -> [Constants.DefaultNugetSource]
         let newPackage = {Name = packageName; VersionRange = versionRange; Sources = sources; ResolverStrategy = DependenciesFileParser.parseResolverStrategy version }
         tracefn "Adding %s %s to paket.dependencies" packageName (versionRange.ToString())
         DependenciesFile(fileName,strictMode,packages @ [newPackage], remoteFiles)
@@ -170,7 +170,7 @@ type DependenciesFile(fileName,strictMode,packages : UnresolvedPackage list, rem
                   for source in sources do
                       hasReportedSource := true
                       match source with
-                      | Nuget source -> yield "source " + source
+                      | Nuget source -> yield "source " + source.Url
                       | LocalNuget source -> yield "source " + source
                   
                   for _,package in packages do

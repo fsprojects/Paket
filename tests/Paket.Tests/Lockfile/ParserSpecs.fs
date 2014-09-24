@@ -32,17 +32,17 @@ let ``should parse lock file``() =
     packages.Length |> shouldEqual 6
     lockFile.Strict |> shouldEqual false
 
-    packages.[0].Source |> shouldEqual (Nuget Constants.DefaultNugetStream)
+    packages.[0].Source |> shouldEqual Constants.DefaultNugetSource
     packages.[0].Name |> shouldEqual "Castle.Windsor"
     packages.[0].Version |> shouldEqual (SemVer.parse "2.1")
     packages.[0].Dependencies |> shouldEqual []
 
-    packages.[1].Source |> shouldEqual (Nuget Constants.DefaultNugetStream)
+    packages.[1].Source |> shouldEqual Constants.DefaultNugetSource
     packages.[1].Name |> shouldEqual "Castle.Windsor-log4net"
     packages.[1].Version |> shouldEqual (SemVer.parse "3.3")
     packages.[1].Dependencies |> shouldEqual ["Castle.Windsor", VersionRange.NoRestriction; "log4net", VersionRange.NoRestriction]
     
-    packages.[5].Source |> shouldEqual (Nuget Constants.DefaultNugetStream)
+    packages.[5].Source |> shouldEqual Constants.DefaultNugetSource
     packages.[5].Name |> shouldEqual "log4net"
     packages.[5].Version |> shouldEqual (SemVer.parse "1.1")
     packages.[5].Dependencies |> shouldEqual ["log", VersionRange.NoRestriction]
@@ -87,7 +87,7 @@ let ``should parse strict lock file``() =
     packages.Length |> shouldEqual 6
     lockFile.Strict |> shouldEqual true
 
-    packages.[5].Source |> shouldEqual (Nuget Constants.DefaultNugetStream)
+    packages.[5].Source |> shouldEqual Constants.DefaultNugetSource
     packages.[5].Name |> shouldEqual "log4net"
     packages.[5].Version |> shouldEqual (SemVer.parse "1.1")
     packages.[5].Dependencies |> shouldEqual ["log", VersionRange.NoRestriction]

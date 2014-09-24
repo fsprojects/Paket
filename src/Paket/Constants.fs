@@ -1,7 +1,9 @@
 ﻿module Paket.Constants
 
 [<Literal>]
-let DefaultNugetStream = "http://nuget.org/api/v2"
+let internal DefaultNugetStream = "http://nuget.org/api/v2"
+
+let DefaultNugetSource = PackageSource.NugetSource DefaultNugetStream
 
 [<Literal>]
 let DependenciesFile = "paket.dependencies"

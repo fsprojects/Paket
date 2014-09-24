@@ -338,8 +338,8 @@ let GetPackageDetails force sources package version =
         | source :: rest -> 
             try 
                 match source with
-                | Nuget url -> 
-                    getDetailsFromNuget force url package version |> Async.RunSynchronously
+                | Nuget source -> 
+                    getDetailsFromNuget force source.Url package version |> Async.RunSynchronously
                 | LocalNuget path -> 
                     getDetailsFromLocalFile path package version |> Async.RunSynchronously
                 |> fun x -> source,x
@@ -356,7 +356,7 @@ let GetVersions sources package =
     sources
     |> Seq.map (fun source -> 
            match source with
-           | Nuget url -> getAllVersions (url, package)
+           | Nuget source -> getAllVersions (source.Url, package)
            | LocalNuget path -> getAllVersionsFromLocalPath (path, package))
     |> Async.Parallel
     |> Async.RunSynchronously

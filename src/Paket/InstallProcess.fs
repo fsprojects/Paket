@@ -14,7 +14,7 @@ let ExtractPackages(force, packages:PackageResolution) =
             let package = kv.Value
             match package.Source with
             | Nuget source -> 
-                let! packageFile = Nuget.DownloadPackage(source, package.Name, package.Version.ToString(), force)
+                let! packageFile = Nuget.DownloadPackage(source.Url, package.Name, package.Version.ToString(), force)
                 let! folder = Nuget.ExtractPackage(packageFile, package.Name, package.Version.ToString(), force)
                 return Some(package, Nuget.GetLibraries folder)
             | LocalNuget path -> 

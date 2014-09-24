@@ -26,7 +26,7 @@ let safeResolve graph (dependencies : (string * VersionRange) list) =
         dependencies |> List.map (fun (n, v) -> 
                             { Name = n
                               VersionRange = v
-                              Sources = [ Nuget "" ]
+                              Sources = [ PackageSource.NugetSource "" ]
                               ResolverStrategy = ResolverStrategy.Max })
     PackageResolver.Resolve(VersionsFromGraph graph, PackageDetailsFromGraph graph, packages)
 
