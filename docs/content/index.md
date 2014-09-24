@@ -22,16 +22,34 @@ Paket is available as:
 Specify the version rules of all dependencies used in your application in a [`paket.dependencies` file](dependencies-file.html) in your project's root:
 
     source http://nuget.org/api/v2
-
+    
     nuget Castle.Windsor-log4net ~> 3.2
-    nuget Rx-Main ~> 2.0
+    nuget NUnit
 
 Install all of the required packages from the specified sources:
 
     [lang=batchfile]
     $ paket install
 
-The [`paket install` command](paket-install.html) will analyze your dependencies and generate a [`paket.lock` file](lock-file.html) if it doesn't exist yet.
+The [`paket install` command](paket-install.html) will analyze your dependencies and generate a [`paket.lock` file](lock-file.html) if it doesn't exist yet:
+
+    NUGET
+      remote: http://nuget.org/api/v2
+      specs:
+        Castle.Core (3.3.1)
+		Castle.Core-log4net (3.3.1)
+		  Castle.Core (>= 3.3.1)
+		  log4net (1.2.10)
+		Castle.LoggingFacility (3.3.0)
+		  Castle.Core (>= 3.3.0)
+		  Castle.Windsor (>= 3.3.0)
+		Castle.Windsor (3.3.0)
+		  Castle.Core (>= 3.3.0)
+		Castle.Windsor-log4net (3.3.0)
+		  Castle.Core-log4net (>= 3.3.0)
+          Castle.LoggingFacility (>= 3.3.0)
+		log4net (1.2.10)
+		NUnit (2.6.3)
 
 You can place [`paket.references` files](references-files.html) alongside your Visual Studio projects to have Paket automatically sync references for the packages noted in that file whenever an `install` or `update` takes place.
 
