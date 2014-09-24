@@ -23,7 +23,7 @@ module private InstallRules =
                 let libraries = Seq.toArray libraries
                 for (lib : FileInfo) in libraries do
                     match FrameworkIdentifier.DetectFromPath lib.FullName with
-                    | None -> verbosefn "    - could not unterstand %s ==> ignored" lib.FullName
+                    | None -> verbosefn "    - could not understand %s ==> ignored" lib.FullName
                     | Some condition ->
                         let dllName = lib.Name.Replace(lib.Extension, "")
                         verbosefn "    - adding new condition %A fo %s" condition dllName
