@@ -18,6 +18,10 @@ Please note that you need to specify *all* NuGet sources, including the default 
 
     source http://nuget.org/api/v2      // nuget.org
     source http://myserver/nuget/api/v2 // custom feed
+    
+It's also possible to provide login information for private NuGet feeds:
+
+    source http://myserver/nuget/api/v2 username: "my user" password: "my pw"
 
 The [paket.lock](lock-file.html) will also reflect these settings.
 
