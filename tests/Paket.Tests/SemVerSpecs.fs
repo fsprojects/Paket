@@ -15,7 +15,6 @@ let ``can parse semver strings and print the result``() =
     (SemVer.parse "1.0.0-rc.1").ToString() |> shouldEqual "1.0.0-rc.1"
     (SemVer.parse "1.2.3-foo").ToString() |> shouldEqual "1.2.3-foo"
 
-
 [<Test>]
 let ``can parse semver strings``() = 
     let semVer = SemVer.parse("1.2.3-alpha.beta")
@@ -56,3 +55,8 @@ let ``trailing zeros are equal``() =
     (SemVer.parse "1.0.0") |> shouldEqual (SemVer.parse "1")
     (SemVer.parse "1.2.3.0") |> shouldEqual (SemVer.parse "1.2.3")
     (SemVer.parse "1.2.0") |> shouldEqual (SemVer.parse "1.2")
+
+[<Test>]
+let ``can parse strange versions``() = 
+    (SemVer.parse "2.1-alpha10").ToString() |> shouldEqual "2.1-alpha10"
+    (SemVer.parse "2-alpha100").ToString() |> shouldEqual "2-alpha100"

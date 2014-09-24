@@ -112,17 +112,28 @@ module SemVer =
         let l = splitted.Length
         
         let patch, preRelease = 
-            if l <= 2 then 0, ""
-            else 
+            match l with
+            | 0 -> 0, ""
+            | 1 ->
+                let splitted' = splitted.[0].Split '-'
+                0, 
+                if splitted'.Length > 1 then splitted'.[1]
+                else ""
+            | 2 ->
+                let splitted' = splitted.[1].Split '-'
+                0, 
+                if splitted'.Length > 1 then splitted'.[1]
+                else ""
+            | _ ->
                 let splitted' = splitted.[2].Split '-'
                 Int32.Parse splitted'.[0], 
                 if splitted'.Length > 1 then splitted'.[1]
                 else ""
         { Major = 
-              if l > 0 then Int32.Parse splitted.[0]
+              if l > 0 then Int32.Parse (splitted.[0].Split('-').[0])
               else 0
           Minor = 
-              if l > 1 then Int32.Parse splitted.[1]
+              if l > 1 then Int32.Parse (splitted.[1].Split('-').[0])
               else 0
           Patch = patch
           PreRelease = PreRelease.TryParse preRelease
