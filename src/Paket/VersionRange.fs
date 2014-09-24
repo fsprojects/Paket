@@ -57,6 +57,10 @@ type VersionRequirement =
         match this with
         | VersionRequirement(range,_) -> range
 
+    member this.PreReleases =
+        match this with
+        | VersionRequirement(_,prereleases) -> prereleases
+
     static member AllReleases = VersionRequirement(Minimum(SemVer.parse "0"),PreReleaseStatus.No)
     static member NoRestriction = VersionRequirement(Minimum(SemVer.parse "0"),PreReleaseStatus.All)
 

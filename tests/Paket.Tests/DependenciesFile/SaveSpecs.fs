@@ -50,8 +50,8 @@ nuget Octokit
 nuget Newtonsoft.Json
 nuget UnionArgParser
 nuget NUnit.Runners >= 2.6
-nuget NUnit >= 2.6
-nuget FAKE
+nuget NUnit >= 2.6 alpha
+nuget FAKE alpha
 nuget FSharp.Formatting
 nuget DotNetZip ~> 1.9.3
 nuget SourceLink.Fake
@@ -81,8 +81,8 @@ let ``should serialize remote files in config``() =
 let allVersionsConfig = """source http://nuget.org/api/v2
 
 nuget Example > 1.2.3
-nuget Example2 <= 1.2.3
-nuget Example3 < 2.2.3
+nuget Example2 <= 1.2.3 alpha beta
+nuget Example3 < 2.2.3 prerelease
 nuget Example4 >= 1.2.3 < 1.5"""
 
 [<Test>]

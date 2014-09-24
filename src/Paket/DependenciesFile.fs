@@ -28,6 +28,7 @@ module DependenciesFileParser =
 
     let parseVersionRequirement (text : string) : VersionRequirement =
         let parsePrerelease(texts:string seq) =
+            let texts = texts |> Seq.filter ((<>) "")
             if Seq.isEmpty texts then PreReleaseStatus.No else
             if Seq.head(texts).ToLower() = "prerelease" then PreReleaseStatus.All else
             PreReleaseStatus.Concrete(texts |> Seq.toList)
@@ -76,13 +77,21 @@ module DependenciesFileParser =
             Remote (parts.[1].Replace("\"",""),parseAuth trimmed)
         | trimmed when trimmed.StartsWith "nuget" -> 
             let parts = trimmed.Replace("nuget","").Trim().Replace("\"", "").Split([|' '|],StringSplitOptions.RemoveEmptyEntries) |> Seq.toList
+
+            let isVersion(text:string) = 
+                match Int32.TryParse(text.[0].ToString()) with
+                | true,_ -> true
+                | _ -> false
+           
             match parts with
-            | name :: operator1 :: version1  :: operator2 :: version2  :: _ 
-                when List.exists ((=) operator1) operators && List.exists ((=) operator2) operators -> Package(name,operator1 + " " + version1 + " " + operator2 + " " + version2)
-            | name :: operator :: version  :: _ 
-                when List.exists ((=) operator) operators -> Package(name,operator + " " + version)
-            | name :: version :: _ -> Package(name,version)
-            | name :: _ -> Package(name,">= 0")
+            | name :: operator1 :: version1  :: operator2 :: version2 :: rest
+                when List.exists ((=) operator1) operators && List.exists ((=) operator2) operators -> Package(name,operator1 + " " + version1 + " " + operator2 + " " + version2 + " " + String.Join(" ",rest))
+            | name :: operator :: version  :: rest 
+                when List.exists ((=) operator) operators -> Package(name,operator + " " + version + " " + String.Join(" ",rest))
+            | name :: version :: rest when isVersion version -> 
+                Package(name,version + " " + String.Join(" ",rest))
+            | name :: rest -> Package(name,">= 0 " + String.Join(" ",rest))
+            | name :: [] -> Package(name,">= 0")
             | _ -> failwithf "could not retrieve nuget package from %s" trimmed
         | trimmed when trimmed.StartsWith "references" -> ReferencesMode(trimmed.Replace("references","").Trim() = "strict")
         | trimmed when trimmed.StartsWith "github" ->
@@ -130,24 +139,30 @@ module DependenciesFileParser =
             remoteFiles |> List.rev
 
 module DependenciesFileSerializer = 
-    let formatVersionRange strategy (version : VersionRequirement) : string = 
-        if strategy = ResolverStrategy.Max && version = VersionRequirement.AllReleases then ""
-        else 
-            let prefix = 
-                if strategy = ResolverStrategy.Min then "!"
-                else ""
+    let formatVersionRange strategy (version : VersionRequirement) : string =          
+        let prefix = 
+            if strategy = ResolverStrategy.Min then "!"
+            else ""
+
+        let preReleases = 
+            match version.PreReleases with
+            | No -> ""
+            | PreReleaseStatus.All -> "prerelease"
+            | Concrete list -> String.Join(" ",list)
             
-            let version = 
-                match version.Range with
-                | Minimum x -> ">= " + x.ToString()
-                | GreaterThan x -> "> " + x.ToString()
-                | Specific x -> x.ToString()
-                | VersionRange.Range(_, from, _, _) 
-                        when DependenciesFileParser.parseVersionRequirement ("~> " + from.ToString()) = version -> 
-                            "~> " + from.ToString()
-                | _ -> version.ToString()
+        let version = 
+            match version.Range with
+            | Minimum x when strategy = ResolverStrategy.Max && x = SemVer.parse "0" -> ""
+            | Minimum x -> ">= " + x.ToString()
+            | GreaterThan x -> "> " + x.ToString()
+            | Specific x -> x.ToString()
+            | VersionRange.Range(_, from, _, _) 
+                    when DependenciesFileParser.parseVersionRequirement ("~> " + from.ToString() + preReleases) = version -> 
+                        "~> " + from.ToString()
+            | _ -> version.ToString()
             
-            prefix + version
+        let text = prefix + version         
+        if text <> "" && preReleases <> "" then text + " " + preReleases else text + preReleases
 
 /// Allows to parse and analyze paket.dependencies files.
 type DependenciesFile(fileName,strictMode,packages : UnresolvedPackage list, remoteFiles : SourceFile list) = 
