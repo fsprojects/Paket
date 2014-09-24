@@ -14,7 +14,7 @@ nuget SignalR 3.3.2"""
 
 [<Test>]
 let ``should serialize simple config``() = 
-    let cfg = DependenciesFile.FromCode(fakeSha1,config1)
+    let cfg = DependenciesFile.FromCode(noSha1,config1)
     
     cfg.ToString()
     |> shouldEqual (normalizeLineEndings config1)
@@ -27,7 +27,7 @@ nuget FAKE ~> 3.0"""
 
 [<Test>]
 let ``should serialize strict config``() = 
-    let cfg = DependenciesFile.FromCode(fakeSha1,strictConfig)
+    let cfg = DependenciesFile.FromCode(noSha1,strictConfig)
     
     cfg.ToString()
     |> shouldEqual (normalizeLineEndings strictConfig)
@@ -37,7 +37,7 @@ let simplestConfig = """nuget FAKE ~> 3.0"""
 
 [<Test>]
 let ``should serialize simplestConfig``() = 
-    let cfg = DependenciesFile.FromCode(fakeSha1,simplestConfig)
+    let cfg = DependenciesFile.FromCode(noSha1,simplestConfig)
     
     cfg.ToString()
     |> shouldEqual (normalizeLineEndings simplestConfig)
@@ -72,7 +72,7 @@ github fsharp/FAKE:bla123zxc src/app/FAKE/FileWithCommit.fs"""
 
 [<Test>]
 let ``should serialize remote files in config``() = 
-    let cfg = DependenciesFile.FromCode(fakeSha1,configWithRemoteFile)
+    let cfg = DependenciesFile.FromCode(noSha1,configWithRemoteFile)
     
     cfg.ToString()
     |> shouldEqual (normalizeLineEndings configWithRemoteFile)
@@ -87,7 +87,7 @@ nuget Example4 >= 1.2.3 < 1.5"""
 
 [<Test>]
 let ``should serialize config with all kinds of versions``() = 
-    let cfg = DependenciesFile.FromCode(fakeSha1,allVersionsConfig)
+    let cfg = DependenciesFile.FromCode(noSha1,allVersionsConfig)
     
     cfg.ToString()
     |> shouldEqual (normalizeLineEndings allVersionsConfig)

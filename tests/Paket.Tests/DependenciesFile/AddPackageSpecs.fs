@@ -15,7 +15,7 @@ nuget Rx-Main ~> 2.0
 nuget FAKE = 1.1
 nuget SignalR = 3.3.2"""
 
-    let cfg = DependenciesFile.FromCode(fakeSha1,config).Add("xunit","")
+    let cfg = DependenciesFile.FromCode(noSha1,config).Add("xunit","")
     
     let expected = """source http://nuget.org/api/v2
 
@@ -80,7 +80,7 @@ let ``should add new packages with specific version if we give it``() =
     let config = """source http://nuget.org/api/v2
 nuget Castle.Windsor-log4net ~> 3.2"""
 
-    let cfg = DependenciesFile.FromCode(fakeSha1,config).Add("FAKE","1.2")
+    let cfg = DependenciesFile.FromCode(noSha1,config).Add("FAKE","1.2")
     
     let expected = """source http://nuget.org/api/v2
 
@@ -109,7 +109,7 @@ github forki/FsUnit FsUnit.fs"""
 let ``should add new packages with nuget package resolution strategy``() = 
     let config = """"""
 
-    let cfg = DependenciesFile.FromCode(fakeSha1,config).Add("FAKE","!~> 1.2")
+    let cfg = DependenciesFile.FromCode(noSha1,config).Add("FAKE","!~> 1.2")
     
     let expected = """source http://nuget.org/api/v2
 

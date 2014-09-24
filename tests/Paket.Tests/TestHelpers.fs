@@ -42,4 +42,6 @@ let normalizeLineEndings (text : string) =
     text.Replace("\r\n", "\n").Replace("\r", "\n").Replace("\n", Environment.NewLine)
 let toLines (text : string) = text.Replace("\r\n", "\n").Replace("\r", "\n").Split('\n')
 
+let noSha1 owner repo branch = failwith "no github configured"
+
 let fakeSha1 owner repo branch = "12345"

@@ -31,7 +31,7 @@ nuget B 3.3.1
 nuget C 1.0
 nuget D 2.1"""
 
-let cfg = DependenciesFile.FromCode(fakeSha1,depFile1)
+let cfg = DependenciesFile.FromCode(noSha1,depFile1)
 
 let refFiles1 = [
     FileInfo("c:\dummy\1"), [|"A";"B";"C";"D"|]
@@ -68,7 +68,7 @@ nuget D 2.0
 nuget E 3.0
 nuget f 4.0""" 
 
-let cfg2 = DependenciesFile.FromCode(fakeSha1,depFile2)
+let cfg2 = DependenciesFile.FromCode(noSha1,depFile2)
 
 let refFiles2 = [
     FileInfo("c:\dummy\1"), [|"A";"B";"C";"D";"F"|]

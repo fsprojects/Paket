@@ -16,7 +16,7 @@ nuget "SignalR" "= 3.3.2"
 
 [<Test>]
 let ``should read simple config``() = 
-    let cfg = DependenciesFile.FromCode(fakeSha1,config1)
+    let cfg = DependenciesFile.FromCode(noSha1,config1)
     cfg.Strict |> shouldEqual false
 
     cfg.DirectDependencies.["Rx-Main"] |> shouldEqual (VersionRange.Between("2.0", "3.0"))
@@ -36,7 +36,7 @@ nuget "MinPackage" "1.1.3"
 
 [<Test>]
 let ``should read simple config with additional F# code``() = 
-    let cfg = DependenciesFile.FromCode(fakeSha1,config2)
+    let cfg = DependenciesFile.FromCode(noSha1,config2)
     cfg.DirectDependencies.["Rx-Main"] |> shouldEqual (VersionRange.Between("2.2", "3.0"))
     cfg.DirectDependencies.["FAKE"] |> shouldEqual (VersionRange.Between("3.0", "4.0"))
     cfg.DirectDependencies.["MinPackage"] |> shouldEqual (VersionRange.Exactly "1.1.3")
@@ -51,7 +51,7 @@ nuget "MinPackage" "1.1.3"
 
 [<Test>]
 let ``should read simple config with comments``() = 
-    let cfg = DependenciesFile.FromCode(fakeSha1,config3)
+    let cfg = DependenciesFile.FromCode(noSha1,config3)
     cfg.DirectDependencies.["Rx-Main"] |> shouldEqual (VersionRange.Between("2.2", "3.0"))
     (cfg.Packages |> List.find (fun p -> p.Name = "Rx-Main")).Sources |> List.head |> shouldEqual (Nuget Constants.DefaultNugetStream)
     cfg.DirectDependencies.["FAKE"] |> shouldEqual (VersionRange.Between("3.0", "4.0"))
@@ -68,7 +68,7 @@ nuget "MinPackage" "1.1.3"
 
 [<Test>]
 let ``should read config with multiple sources``() = 
-    let cfg = DependenciesFile.FromCode(fakeSha1,config4)
+    let cfg = DependenciesFile.FromCode(noSha1,config4)
     cfg.Strict |> shouldEqual false
 
     (cfg.Packages |> List.find (fun p -> p.Name = "Rx-Main")).Sources |> shouldEqual [Nuget "http://nuget.org/api/v3"; Nuget Constants.DefaultNugetStream]
@@ -79,7 +79,7 @@ let ``should read config with multiple sources``() =
 let ``should read source file from config``() =
     let config = """github "fsharp/FAKE:master" "src/app/FAKE/Cli.fs"
                     github "fsharp/FAKE:bla123zxc" "src/app/FAKE/FileWithCommit.fs" """
-    let dependencies = DependenciesFile.FromCode(fakeSha1,config)
+    let dependencies = DependenciesFile.FromCode(noSha1,config)
     dependencies.RemoteFiles
     |> shouldEqual
         [ { Owner = "fsharp"
@@ -102,7 +102,7 @@ nuget "FAKE" "~> 3.0"
 
 [<Test>]
 let ``should read strict config``() = 
-    let cfg = DependenciesFile.FromCode(fakeSha1,strictConfig)
+    let cfg = DependenciesFile.FromCode(noSha1,strictConfig)
     cfg.Strict |> shouldEqual true
 
     (cfg.Packages |> List.find (fun p -> p.Name = "FAKE")).Sources |> shouldEqual [Nuget "http://nuget.org/api/v2"]
@@ -119,7 +119,7 @@ nuget SignalR = 3.3.2
 
 [<Test>]
 let ``should read config without quotes``() = 
-    let cfg = DependenciesFile.FromCode(fakeSha1,configWithoutQuotes)
+    let cfg = DependenciesFile.FromCode(noSha1,configWithoutQuotes)
     cfg.Strict |> shouldEqual false
     cfg.DirectDependencies.Count |> shouldEqual 4
 
@@ -139,7 +139,7 @@ nuget SignalR    = 3.3.2
 
 [<Test>]
 let ``should read config without quotes but lots of whitespace``() = 
-    let cfg = DependenciesFile.FromCode(fakeSha1,configWithoutQuotes)
+    let cfg = DependenciesFile.FromCode(noSha1,configWithoutQuotes)
     cfg.Strict |> shouldEqual false
     cfg.DirectDependencies.Count |> shouldEqual 4
 
@@ -153,7 +153,7 @@ let ``should read config without quotes but lots of whitespace``() =
 let ``should read github source file from config without quotes``() =
     let config = """github fsharp/FAKE:master   src/app/FAKE/Cli.fs
                     github    fsharp/FAKE:bla123zxc src/app/FAKE/FileWithCommit.fs """
-    let dependencies = DependenciesFile.FromCode(fakeSha1,config)
+    let dependencies = DependenciesFile.FromCode(noSha1,config)
     dependencies.RemoteFiles
     |> shouldEqual
         [ { Owner = "fsharp"
@@ -195,7 +195,7 @@ nuget "FAKE"
 
 [<Test>]
 let ``should read config without versions``() = 
-    let cfg = DependenciesFile.FromCode(fakeSha1,configWithoutVersions)
+    let cfg = DependenciesFile.FromCode(noSha1,configWithoutVersions)
 
     cfg.DirectDependencies.["Rx-Main"] |> shouldEqual (VersionRange.AtLeast "0")
     cfg.DirectDependencies.["Castle.Windsor-log4net"] |> shouldEqual (VersionRange.AtLeast "0")
