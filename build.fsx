@@ -204,6 +204,14 @@ Target "GenerateReferenceDocs" (fun _ ->
 )
 
 Target "GenerateHelp" (fun _ ->
+    DeleteFile "docs/content/release-notes.md"    
+    CopyFile "docs/content/" "RELEASE_NOTES.md"
+    Rename "docs/content/release-notes.md" "docs/content/RELEASE_NOTES.md"
+
+    DeleteFile "docs/content/license.md"
+    CopyFile "docs/content/" "LICENSE.txt"
+    Rename "docs/content/license.md" "docs/content/LICENSE.txt"
+
     if not <| executeFSIWithArgs "docs/tools" "generate.fsx" ["--define:RELEASE"; "--define:HELP"] [] then
       failwith "generating help documentation failed"
 )
