@@ -9,6 +9,7 @@ open Ionic.Zip
 open System.Xml
 open System.Text.RegularExpressions
 open Paket.Logging
+open System.Text
 
 let private loadNuGetOData raw =
     let doc = XmlDocument()
@@ -254,6 +255,20 @@ let DownloadPackage(auth, url, name, version, force) =
 
                 let request = HttpWebRequest.Create(Uri nugetPackage.Url) :?> HttpWebRequest
                 request.AutomaticDecompression <- DecompressionMethods.GZip ||| DecompressionMethods.Deflate
+
+                match auth with
+                | None -> ()
+                | Some auth -> 
+                    // htttp://stackoverflow.com/questions/16044313/webclient-httpwebrequest-with-basic-authentication-returns-404-not-found-for-v/26016919#26016919
+                    //this works ONLY if the server returns 401 first
+                    //client DOES NOT send credentials on first request
+                    //ONLY after a 401
+                    //client.Credentials <- new NetworkCredential(auth.Username,auth.Password)
+
+                    //so use THIS instead to send credenatials RIGHT AWAY
+                    let credentials = Convert.ToBase64String(Encoding.ASCII.GetBytes(auth.Username + ":" + auth.Password))
+                    request.Headers.[HttpRequestHeader.Authorization] <- String.Format("Basic {0}", credentials)
+
                 use! httpResponse = request.AsyncGetResponse()
             
                 use httpResponseStream = httpResponse.GetResponseStream()
@@ -347,7 +362,7 @@ let GetPackageDetails force sources package version =
                     getDetailsFromLocalFile path package version |> Async.RunSynchronously
                 |> fun x -> source,x
             with _ -> tryNext rest
-        | [] -> failwithf "Couldn't get package details for package %s on %A" package sources
+        | [] -> failwithf "Couldn't get package details for package %s on %A." package (sources |> List.map (fun (s:PackageSource) -> s.ToString()))
     
     let source, nugetObject = tryNext sources
     { Name = nugetObject.Name

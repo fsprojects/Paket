@@ -73,7 +73,7 @@ let getFromUrl (auth:Auth option, url : string) =
             return! client.AsyncDownloadString(Uri(url))
         with
         | exn -> 
-            failwithf "Could not retrieve data from %s%s  Message: %s" url Environment.NewLine exn.Message
+            failwithf "Could not retrieve data from %s%s Message: %s" url Environment.NewLine exn.Message
             return ""
     }
 

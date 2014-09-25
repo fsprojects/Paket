@@ -1,0 +1,4 @@
+NUGET
+  remote: https://www.myget.org/F/paket-test username: "paket" password: "[REPLACEME]"
+  specs:
+    GoogleAnalyticsTracker.Core (3.0.22)
