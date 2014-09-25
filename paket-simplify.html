@@ -37,11 +37,13 @@
 <p>Simplifies your <a href="dependencies-file.html"><code>paket.dependencies</code> file</a> by removing indirect dependencies.
 Does also simplify <a href="references-files.html"><code>paket.references</code> files</a>, unless <a href="nuget-dependencies.html#Strict-references">strict</a> mode is used.</p>
 
-<table class="pre"><tr><td><pre lang="batchfile">$ paket simplify [-v] [--dependencies-file FILE]</pre></td></tr></table>
+<table class="pre"><tr><td><pre lang="batchfile">$ paket simplify [-v] [--interactive] [--dependencies-file FILE]</pre></td></tr></table>
 
 <p>Options:</p>
 
 <p><code>-v</code>: Verbose - output the difference in content before and after running simplify command.</p>
+
+<p><code>--interactive</code>: Asks to confirm to delete every indirect dependency from each of the files. See <a href="paket-simplify.html#Interactive-mode">Interactive Mode</a>.</p>
 
 <p><code>--dependencies-file</code>: Use the specified file instead of <a href="dependencies-file.html"><code>paket.dependencies</code></a>.</p>
 
@@ -123,6 +125,11 @@ And this is exactly what happens after executing <code>paket simplify</code> com
 <p>Unless you are relying heavily on components from <code>Castle.Core</code>, you would not care about controlling the required version of <code>Castle.Core</code> package. Paket will do the job.</p>
 
 <p>The simplify command will help you maintain your direct dependencies.</p>
+
+<h2><a name="Interactive-mode" class="anchor" href="#Interactive-mode">Interactive mode</a></h2>
+
+<p>Sometimes, you may still want to have control over some of the indirect depenedencies. In this case you can use the <code>--interactive</code> flag,
+which will ask you to confirm before deleting a dependency from a file.</p>
 
 <div class="tip" id="fs1">namespace Microsoft.FSharp.Core</div>
 
