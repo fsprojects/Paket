@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
@@ -57,7 +57,7 @@
   </Choose>
   <Import Project="$(FSharpTargetsPath)" />
   <ItemGroup>
-    <Compile Include="..\..\paket-files\forki\FsUnit\7623fc13439f0e60bd05c1ed3b5f6dcb937fe468\FsUnit.fs">
+    <Compile Include="..\..\paket-files\forki\FsUnit\FsUnit.fs">
       <Paket>True</Paket>
       <Link>paket-files/FsUnit.fs</Link>
     </Compile>
@@ -69,7 +69,7 @@
     </Content>
     <Content Include="TestFiles\Octokit.nuspec">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>     
+    </Content>
     <Content Include="TestFiles\Fantomas.nuspec">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
@@ -78,7 +78,7 @@
     <Compile Include="DependenciesFile\VersionRangeSpecs.fs" />
     <Compile Include="DependenciesFile\ParserSpecs.fs" />
     <Compile Include="DependenciesFile\SaveSpecs.fs" />
-    <Compile Include="DependenciesFile\AddPackageSpecs.fs" />    
+    <Compile Include="DependenciesFile\AddPackageSpecs.fs" />
     <Compile Include="Resolver\DependencyGraphSpecs.fs" />
     <Compile Include="Resolver\SimpleDependenciesSpecs.fs" />
     <Compile Include="Resolver\CyclicGraphSpecs.fs" />
@@ -86,7 +86,7 @@
     <Compile Include="Resolver\CasingSpecs.fs" />
     <Compile Include="Resolver\PessimisticStrategySpecs.fs" />
     <Compile Include="LockFile\GeneratorSpecs.fs" />
-    <Compile Include="LockFile\GenerateStrictModeSpecs.fs" />  
+    <Compile Include="LockFile\GenerateStrictModeSpecs.fs" />
     <Compile Include="LockFile\GenerateAuthModeSpecs.fs" />
     <Compile Include="LockFile\GeneratorWithMutlipleSourcesSpecs.fs" />
     <Compile Include="LockFile\ParserSpecs.fs" />
@@ -95,7 +95,7 @@
     <Compile Include="Simplifier\BasicScenarioSpecs.fs" />
     <None Include="ProjectFile\TestData\Project1.fsprojtest">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>                                          
+    </None>
     <None Include="ProjectFile\TestData\ProjectWithConditions.fsprojtest">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>

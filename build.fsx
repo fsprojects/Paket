@@ -2,21 +2,18 @@
 // FAKE build script
 // --------------------------------------------------------------------------------------
 
-#r @"packages/Octokit/lib/net45/Octokit.dll"
 #r @"packages/FAKE/tools/FakeLib.dll"
+
 open Fake
 open Fake.Git
 open Fake.AssemblyInfoFile
 open Fake.ReleaseNotesHelper
-open Octokit
-open System.IO
 open System
 #if MONO
 #else
 #load "packages/SourceLink.Fake/Tools/Fake.fsx"
 open SourceLink
 #endif
-
 
 // --------------------------------------------------------------------------------------
 // START TODO: Provide project-specific details below
@@ -233,53 +230,8 @@ Target "ReleaseDocs" (fun _ ->
     Branches.push tempDocsDir
 )
 
-type Draft = 
-    { Client : GitHubClient
-      DraftRelease : Release }
-
-let createClient user password = 
-    async { 
-        let github = new GitHubClient(new ProductHeaderValue("FAKE"))
-        github.Credentials <- Credentials(user, password)
-        return github
-    }
-
-let createDraft owner project releaseNotes (client : Async<GitHubClient>) = 
-    async { 
-        let data = new ReleaseUpdate(releaseNotes.NugetVersion)
-        data.Name <- releaseNotes.NugetVersion
-        data.Body <- toLines releaseNotes.Notes
-        data.Draft <- true
-        data.Prerelease <- releaseNotes.SemVer.PreRelease <> None
-        let! client' = client
-        let! draft = Async.AwaitTask <| client'.Release.Create(owner, project, data)
-        tracefn "Created draft release id %d" draft.Id
-        return { Client = client'
-                 DraftRelease = draft }
-    }
-
-let uploadFile fileName (draft : Async<Draft>) = 
-    async { 
-        let fi = FileInfo(fileName)
-        let archiveContents = File.OpenRead(fi.FullName)
-        let assetUpload = new ReleaseAssetUpload()
-        assetUpload.FileName <- fi.Name
-        assetUpload.ContentType <- "application/octet-stream"
-        assetUpload.RawData <- archiveContents
-        let! draft' = draft
-        let! asset = Async.AwaitTask <| draft'.Client.Release.UploadAsset(draft'.DraftRelease, assetUpload)
-        tracefn "Uploaded %s" asset.Name
-        return draft'
-    }
-
-let releaseDraft (draft : Async<Draft>) = 
-    async { 
-        let! draft' = draft
-        let update = draft'.DraftRelease.ToUpdate()
-        update.Draft <- false
-        let! released = Async.AwaitTask <| draft'.Client.Release.Edit(gitOwner, gitName, draft'.DraftRelease.Id, update)
-        tracefn "Released %d on github" released.Id
-    }
+#load "paket-files/fsharp/FAKE/modules/Octokit.fsx"
+open Octokit
 
 Target "Release" (fun _ ->
     StageAll ""
@@ -288,10 +240,10 @@ Target "Release" (fun _ ->
 
     Branches.tag "" release.NugetVersion
     Branches.pushTag "" "origin" release.NugetVersion
-
+    
     // release on github
     createClient (getBuildParamOrDefault "github-user" "") (getBuildParamOrDefault "github-pw" "")
-    |> createDraft gitOwner gitName release
+    |> createDraft gitOwner gitName release.NugetVersion (release.SemVer.PreRelease = None) release.Notes 
     |> uploadFile "./bin/merged/paket.exe"
     |> uploadFile "./bin/paket.bootstrapper.exe"
     |> uploadFile ".paket/paket.targets"

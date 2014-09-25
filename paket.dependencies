@@ -12,3 +12,4 @@ nuget SourceLink.Fake
 nuget NuGet.CommandLine
 
 github forki/FsUnit FsUnit.fs
+github fsharp/FAKE modules/Octokit.fsx
