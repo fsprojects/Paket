@@ -6,7 +6,7 @@ Paket allows to reference [NuGet](http://www.nuget.org) packages in your applica
 
 Sources are defined by the `source "<address>"` statement.
 
-Paket supports multiple sources per `paket.dependencies`. It's recommended to put all `source` statements at the top of `paket.dependencies`. The ordering of sources is important, since the first `source` a [dependency](#package-id) is found in will be the one used for download.
+Paket supports multiple sources per `paket.dependencies`. It's recommended to put all `source` statements at the top of `paket.dependencies`.
 
 The [`paket.lock` file](lock-file.html) will reflect the sources selected by dependency resolution.
 
