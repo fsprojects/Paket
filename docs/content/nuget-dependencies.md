@@ -146,7 +146,7 @@ If you want to dependend on prereleases then Paket can assist you. In contrast t
     nuget Example >= 3 rc             // at least 3.0 but including rc versions 
     nuget Example >= 3 prerelase      // at least 3.0 but including all prerelease versions
 
-#### Paket's NuGet-style dependency resolution for indirect dependencies
+### Paket's NuGet-style dependency resolution for indirect dependencies
 
 NuGet's dependency syntax led to a lot of incompatible packages on Nuget.org ([read more](controlling-nuget-resolution.html)). To make your transition to Paket easier and to allow package authors to correct their version constraints you can have Paket behave like NuGet when resolving indirect dependencies (i.e. defaulting to lowest matching versions).
 

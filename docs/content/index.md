@@ -74,10 +74,10 @@ The project is hosted on [GitHub][gh] where you can [report issues][issues], for
 Please see the [Quick contributing guide in the README][readme] for contribution gudelines.
 
 The library is available under MIT license, which allows modification and redistribution for both commercial and non-commercial purposes. 
-For more information see the [License file][license] in the GitHub repository.
+For more information see the [License file][license].
 
   [content]: https://github.com/fsprojects/Paket/tree/master/docs/content
   [gh]: https://github.com/fsprojects/Paket
   [issues]: https://github.com/fsprojects/Paket/issues
   [readme]: https://github.com/fsprojects/Paket/blob/master/README.md
-  [license]: https://github.com/fsprojects/Paket/blob/master/LICENSE.txt
+  [license]: http://fsprojects.github.io/Paket/license.html
