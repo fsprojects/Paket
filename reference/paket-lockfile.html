@@ -47,10 +47,10 @@
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '116', 116)" onmouseover="showTip(event, '116', 116)">
+          <code onmouseout="hideTip(event, '115', 115)" onmouseover="showTip(event, '115', 115)">
             new(...)
           </code>
-          <div class="tip" id="116">
+          <div class="tip" id="115">
             <strong>Signature:</strong> (fileName:string * strictMode:bool * resolution:PackageResolution * remoteFiles:SourceFile list) -&gt; LockFile<br />
                       </div>
         </td>
@@ -73,6 +73,24 @@
       <tr>
         <td class="member-name">
 
+          <code onmouseout="hideTip(event, '116', 116)" onmouseover="showTip(event, '116', 116)">
+            FileName
+          </code>
+          <div class="tip" id="116">
+            <strong>Signature:</strong> string<br />
+                      </div>
+        </td>
+        <td class="xmldoc">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket/LockFile.fs#L137-137" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
           <code onmouseout="hideTip(event, '117', 117)" onmouseover="showTip(event, '117', 117)">
             FileName
           </code>
@@ -92,14 +110,14 @@
         <td class="member-name">
 
           <code onmouseout="hideTip(event, '118', 118)" onmouseover="showTip(event, '118', 118)">
-            FileName
+            ResolvedPackages
           </code>
           <div class="tip" id="118">
-            <strong>Signature:</strong> string<br />
+            <strong>Signature:</strong> PackageResolution<br />
                       </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket/LockFile.fs#L137-137" class="github-link">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket/LockFile.fs#L136-136" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -128,27 +146,9 @@
         <td class="member-name">
 
           <code onmouseout="hideTip(event, '120', 120)" onmouseover="showTip(event, '120', 120)">
-            ResolvedPackages
-          </code>
-          <div class="tip" id="120">
-            <strong>Signature:</strong> PackageResolution<br />
-                      </div>
-        </td>
-        <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket/LockFile.fs#L136-136" class="github-link">
-              <img src="../content/img/github.png" class="normal" />
-              <img src="../content/img/github-blue.png" class="hover" />
-            </a>
-          
-        </td>
-      </tr>
-      <tr>
-        <td class="member-name">
-
-          <code onmouseout="hideTip(event, '121', 121)" onmouseover="showTip(event, '121', 121)">
             Save()
           </code>
-          <div class="tip" id="121">
+          <div class="tip" id="120">
             <strong>Signature:</strong> unit -&gt; unit<br />
                       </div>
         </td>
@@ -159,6 +159,24 @@
             </a>
           <p>Updates the Lock file with the analyzed dependencies from the paket.dependencies file.</p>
 
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '121', 121)" onmouseover="showTip(event, '121', 121)">
+            SourceFiles
+          </code>
+          <div class="tip" id="121">
+            <strong>Signature:</strong> SourceFile list<br />
+                      </div>
+        </td>
+        <td class="xmldoc">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket/LockFile.fs#L135-135" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          
         </td>
       </tr>
       <tr>
@@ -183,14 +201,14 @@
         <td class="member-name">
 
           <code onmouseout="hideTip(event, '123', 123)" onmouseover="showTip(event, '123', 123)">
-            SourceFiles
+            Strict
           </code>
           <div class="tip" id="123">
-            <strong>Signature:</strong> SourceFile list<br />
+            <strong>Signature:</strong> bool<br />
                       </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket/LockFile.fs#L135-135" class="github-link">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket/LockFile.fs#L138-138" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -215,24 +233,6 @@
           
         </td>
       </tr>
-      <tr>
-        <td class="member-name">
-
-          <code onmouseout="hideTip(event, '125', 125)" onmouseover="showTip(event, '125', 125)">
-            Strict
-          </code>
-          <div class="tip" id="125">
-            <strong>Signature:</strong> bool<br />
-                      </div>
-        </td>
-        <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket/LockFile.fs#L138-138" class="github-link">
-              <img src="../content/img/github.png" class="normal" />
-              <img src="../content/img/github-blue.png" class="hover" />
-            </a>
-          
-        </td>
-      </tr>
     </tbody>
   </table>
   <h3>Static members</h3>
@@ -244,10 +244,10 @@
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '128', 128)" onmouseover="showTip(event, '128', 128)">
+          <code onmouseout="hideTip(event, '134', 134)" onmouseover="showTip(event, '134', 134)">
             LoadFrom(lockFileName)
           </code>
-          <div class="tip" id="128">
+          <div class="tip" id="134">
             <strong>Signature:</strong> lockFileName:string -&gt; LockFile<br />
                       </div>
         </td>

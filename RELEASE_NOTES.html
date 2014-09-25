@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8"/>
+    <title>RELEASE_NOTES</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <meta name="description" content="A package dependency manager for .NET with support for NuGet packages and GitHub files."/>
+    <meta name="author" content="Steffen Forkmann, Alexander Gross"/>
+
+    <script src="https://code.jquery.com/jquery-1.8.0.js"></script>
+    <script src="https://code.jquery.com/ui/1.8.23/jquery-ui.js"></script>
+    <script src="https://netdna.bootstrapcdn.com/twitter-bootstrap/2.2.1/js/bootstrap.min.js"></script>
+    <link href="https://netdna.bootstrapcdn.com/twitter-bootstrap/2.2.1/css/bootstrap-combined.min.css" rel="stylesheet"/>
+
+    <link type="text/css" rel="stylesheet" href="./content/style.css" />
+    <script type="text/javascript" src="./content/tips.js"></script>
+    <!-- HTML5 shim, for IE6-8 support of HTML5 elements -->
+    <!--[if lt IE 9]>
+      <script src="https://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+  </head>
+  <body>
+    <div class="container">
+      <div class="masthead">
+        <ul class="nav nav-pills pull-right">
+          <li><a href="http://github.com/fsprojects/Paket">github page</a></li>
+        </ul>
+        <h3 class="muted"><a href="./index.html">Paket</a></h3>
+      </div>
+      <hr />
+      <div class="row">
+        <div class="span9" id="main">
+          
+<h4><a name="0-3-0-alpha010-23-09-2014" class="anchor" href="#0-3-0-alpha010-23-09-2014">0.3.0-alpha010 - 23.09.2014</a></h4>
+
+<ul>
+<li>New command: paket add [--interactive] - <a href="http://fsprojects.github.io/Paket/paket-add.html">http://fsprojects.github.io/Paket/paket-add.html</a></li>
+<li>New command: paket simplify - <a href="http://fsprojects.github.io/Paket/paket-simplify.html">http://fsprojects.github.io/Paket/paket-simplify.html</a></li>
+<li>New package resolver algorithm</li>
+<li>Support for prereleases</li>
+<li>Support for private NuGet feeds</li>
+<li>Better verbose mode - use -v flag</li>
+<li>Version info is shown at start</li>
+<li>Respect case sensitivity for package paths for Linux - <a href="https://github.com/fsprojects/Paket/pull/137">https://github.com/fsprojects/Paket/pull/137</a></li>
+<li>Better Visual Studio integration by using paket.targets file - <a href="http://fsprojects.github.io/Paket/paket-init-auto-restore.html">http://fsprojects.github.io/Paket/paket-init-auto-restore.html</a></li>
+<li>Improved convert-from-nuget command - <a href="http://fsprojects.github.io/Paket/convert-from-nuget.html">http://fsprojects.github.io/Paket/convert-from-nuget.html</a></li>
+<li>paket.lock file is sorted alphabetical (case-insensitive)</li>
+<li>New paket.bootstrapper.exe (7KB) allows to download paket.exe from github.com</li>
+<li>BUGFIX: Ensure the NuGet cache folder exists</li>
+<li>BUGFIX: Async download fixed on mono</li>
+<li>New NuGet package version constraints - <a href="http://fsprojects.github.io/Paket/nuget-dependencies.html#Further-version-constraints">http://fsprojects.github.io/Paket/nuget-dependencies.html#Further-version-constraints</a></li>
+<li>Linked source files now all go underneath a "paket-files" folder.</li>
+</ul>
+
+<h4><a name="0-2-0-17-09-2014" class="anchor" href="#0-2-0-17-09-2014">0.2.0 - 17.09.2014</a></h4>
+
+<ul>
+<li>Allow to directly link GitHub files - <a href="http://fsprojects.github.io/Paket/github-dependencies.html">http://fsprojects.github.io/Paket/github-dependencies.html</a></li>
+<li>Automatic NuGet conversion - <a href="http://fsprojects.github.io/Paket/convert-from-nuget.html">http://fsprojects.github.io/Paket/convert-from-nuget.html</a></li>
+<li>Cleaner syntax in paket.dependencies - <a href="https://github.com/fsprojects/Paket/pull/95">https://github.com/fsprojects/Paket/pull/95</a></li>
+<li>Strict mode - <a href="https://github.com/fsprojects/Paket/pull/104">https://github.com/fsprojects/Paket/pull/104</a></li>
+<li>Detecting portable profiles</li>
+<li>Support content files from nuget - <a href="https://github.com/fsprojects/Paket/pull/84">https://github.com/fsprojects/Paket/pull/84</a></li>
+<li>Package names in Dependencies file are no longer case-sensitive - <a href="https://github.com/fsprojects/Paket/pull/108">https://github.com/fsprojects/Paket/pull/108</a></li>
+</ul>
+
+<h4><a name="0-1-4-16-09-2014" class="anchor" href="#0-1-4-16-09-2014">0.1.4 - 16.09.2014</a></h4>
+
+<ul>
+<li>Only vbproj, csproj and fsproj files are handled</li>
+</ul>
+
+<h4><a name="0-1-3-15-09-2014" class="anchor" href="#0-1-3-15-09-2014">0.1.3 - 15.09.2014</a></h4>
+
+<ul>
+<li>Detect FSharpx.Core in packages</li>
+</ul>
+
+<h4><a name="0-1-2-15-09-2014" class="anchor" href="#0-1-2-15-09-2014">0.1.2 - 15.09.2014</a></h4>
+
+<ul>
+<li>--hard parameter allows better transition from NuGet.exe</li>
+</ul>
+
+<h4><a name="0-1-0-12-09-2014" class="anchor" href="#0-1-0-12-09-2014">0.1.0 - 12.09.2014</a></h4>
+
+<ul>
+<li>We are live - yay!</li>
+</ul>
+
+
+        </div>
+        <div class="span3">
+          <img src="./img/logo.png" alt="F# Project" style="width:150px;margin:10px" />
+          <ul class="nav nav-list" id="menu" style="margin-top: 20px;">
+            <li class="nav-header">Paket</li>
+            <li><a href="./index.html">Home page</a></li>
+            <li class="divider"></li>
+            <li><a href="http://nuget.org/packages/Paket">Get Library via NuGet</a></li>
+            <li><a href="http://github.com/fsprojects/Paket">Source Code on GitHub</a></li>
+            <li><a href="http://github.com/fsprojects/Paket/issues">Report an issue</a></li>
+            <li><a href="http://github.com/fsprojects/Paket/blob/master/LICENSE.txt">License</a></li>
+            <li><a href="http://github.com/fsprojects/Paket/blob/master/RELEASE_NOTES.md">Release Notes</a></li>
+
+            <li class="nav-header">Documentation</li>
+            <li><a href="./faq.html">FAQ</a></li>
+            <li><a href="./dependencies-file.html">paket.dependencies</a></li>
+            <li><a href="./lock-file.html">paket.lock</a></li>
+            <li><a href="./references-files.html">paket.references</a></li>
+            <li class="divider"></li>
+            <li><a href="./nuget-dependencies.html">NuGet dependencies</a></li>
+            <li><a href="./github-dependencies.html">GitHub dependencies</a></li>
+            <li class="divider"></li>
+            <li><a href="./reference/index.html">API Reference</a></li>
+
+            <li class="nav-header">Paket commands</li>
+            <li><a href="./paket-install.html">paket install</a></li>            
+            <li><a href="./paket-update.html">paket update</a></li>
+            <li><a href="./paket-add.html">paket add</a></li>
+            <li class="divider"></li>
+            <li><a href="./paket-outdated.html">paket outdated</a></li>
+            <li><a href="./paket-simplify.html">paket simplify</a></li>
+            <li><a href="./convert-from-nuget.html">paket convert-from-nuget</a></li>            
+            <li><a href="./paket-init-auto-restore.html">paket init-auto-restore</a></li>            
+          </ul>
+        </div>
+      </div>
+    </div>
+    <a href="http://github.com/fsprojects/Paket"><img style="position: absolute; top: 0; right: 0; border: 0;" src="https://s3.amazonaws.com/github/ribbons/forkme_right_gray_6d6d6d.png" alt="Fork me on GitHub"/></a>
+  </body>
+</html>
