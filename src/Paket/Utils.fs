@@ -6,6 +6,7 @@ open System
 open System.IO
 open System.Net
 open System.Xml
+open System.Text
 
 /// Creates a directory if it does not exist.
 let CreateDir path = 
@@ -50,7 +51,16 @@ let createWebClient(auth:Auth option ) =
     let client = new WebClient()
     match auth with
     | None -> ()
-    | Some auth -> client.Credentials <- new NetworkCredential(auth.Username,auth.Password)
+    | Some auth -> 
+        // htttp://stackoverflow.com/questions/16044313/webclient-httpwebrequest-with-basic-authentication-returns-404-not-found-for-v/26016919#26016919
+        //this works ONLY if the server returns 401 first
+        //client DOES NOT send credentials on first request
+        //ONLY after a 401
+        //client.Credentials <- new NetworkCredential(auth.Username,auth.Password)
+
+        //so use THIS instead to send credenatials RIGHT AWAY
+        let credentials = Convert.ToBase64String(Encoding.ASCII.GetBytes(auth.Username + ":" + auth.Password))
+        client.Headers.[HttpRequestHeader.Authorization] <- String.Format("Basic {0}", credentials)
 
     client.Headers.Add("user-agent", "Paket")
     client
