@@ -1,20 +1,20 @@
-#### 0.3.0-alpha010 - 23.09.2014
+#### 0.3.0-alpha011 - 23.09.2014
 * New command: paket add [--interactive] - http://fsprojects.github.io/Paket/paket-add.html
 * New command: paket simplify - http://fsprojects.github.io/Paket/paket-simplify.html
-* New package resolver algorithm
-* Support for prereleases
+* Better Visual Studio integration by using paket.targets file - http://fsprojects.github.io/Paket/paket-init-auto-restore.html
+* Support for NuGet prereleases - http://fsprojects.github.io/Paket/nuget-dependencies.html#PreReleases
 * Support for private NuGet feeds - http://fsprojects.github.io/Paket/nuget-dependencies.html#NuGet-feeds
+* New NuGet package version constraints - http://fsprojects.github.io/Paket/nuget-dependencies.html#Further-version-constraints
+* Respect case sensitivity for package paths for Linux - https://github.com/fsprojects/Paket/pull/137
+* Improved convert-from-nuget command - http://fsprojects.github.io/Paket/convert-from-nuget.html
+* New paket.bootstrapper.exe (7KB) allows to download paket.exe from github.com - http://fsprojects.github.io/Paket/paket-init-auto-restore.html
+* New package resolver algorithm
 * Better verbose mode - use -v flag
 * Version info is shown at paket.exe start
-* Respect case sensitivity for package paths for Linux - https://github.com/fsprojects/Paket/pull/137
-* Better Visual Studio integration by using paket.targets file - http://fsprojects.github.io/Paket/paket-init-auto-restore.html
-* Improved convert-from-nuget command - http://fsprojects.github.io/Paket/convert-from-nuget.html
-* paket.lock file is sorted alphabetical (case-insensitive)
-* New paket.bootstrapper.exe (7KB) allows to download paket.exe from github.com
+* paket.lock file is sorted alphabetical (case-insensitive) 
+* Linked source files now all go underneath a "paket-files" folder.
 * BUGFIX: Ensure the NuGet cache folder exists
 * BUGFIX: Async download fixed on mono
-* New NuGet package version constraints - http://fsprojects.github.io/Paket/nuget-dependencies.html#Further-version-constraints
-* Linked source files now all go underneath a "paket-files" folder.
 
 #### 0.2.0 - 17.09.2014
 * Allow to directly link GitHub files - http://fsprojects.github.io/Paket/github-dependencies.html
