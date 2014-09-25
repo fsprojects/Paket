@@ -1,3 +1,6 @@
+#### 0.3.1 - 25.09.2014
+* New [--interactive] mode for paket simplify - http://fsprojects.github.io/Paket/paket-simplify.html
+
 #### 0.3.0 - 25.09.2014
 * New command: paket add [--interactive] - http://fsprojects.github.io/Paket/paket-add.html
 * New command: paket simplify - http://fsprojects.github.io/Paket/paket-simplify.html
