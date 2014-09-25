@@ -48,7 +48,7 @@
 
 <p>Paket supports NuGet feeds like those provided by <a href="http://www.nuget.org">nuget.org</a> or <a href="http://www.jetbrains.com/teamcity/">TeamCity</a>.</p>
 
-<p>Please note that you need to specify <em>all</em> NuGet sources, including the default feed from <a href="http://www.nuget.org">nuget.org</a>. Paket does not take the current machine's NuGet Package Sources configuration (that you set up e.g. using Visual Studio) into account.</p>
+<p>Please note that you need to specify all NuGet sources, including the default feed from <a href="http://www.nuget.org">nuget.org</a>. Paket does not take the current machine's NuGet Package Sources configuration (that you set up e.g. using Visual Studio) into account.</p>
 
 <table class="pre"><tr><td class="lines"><pre class="fssnip">
 <span class="l">1: </span>
@@ -141,7 +141,7 @@ In <code>strict</code> mode it will <strong>only</strong> reference <em>direct</
 
 <p>With Paket you do not need to pin specific versions (although you can). Paket allows you to leverage <a href="http://semver.org">semantic versioning</a> and define version constraints in a very flexible manner.</p>
 
-<p>You can also <a href="#nuget-style-dependency-resolution">influence the resolution of indirect dependencies</a>.</p>
+<p>You can also <a href="#Paket-s-NuGet-style-dependency-resolution-for-indirect-dependencies">influence the resolution of indirect dependencies</a>.</p>
 
 <h4><a name="Pinned-version-constraint" class="anchor" href="#Pinned-version-constraint">Pinned version constraint</a></h4>
 
@@ -162,24 +162,6 @@ In <code>strict</code> mode it will <strong>only</strong> reference <em>direct</
 </table>
 
 <p>This is the strictest version constraint. Use the <code>=</code> operator to specify an exact version match; the <code>=</code> is optional.</p>
-
-<h4><a name="Greater-than-or-equal-version-constraint" class="anchor" href="#Greater-than-or-equal-version-constraint">Greater-than-or-equal version constraint</a></h4>
-
-<table class="pre"><tr><td class="lines"><pre class="fssnip">
-<span class="l">1: </span>
-<span class="l">2: </span>
-<span class="l">3: </span>
-</pre>
-</td>
-<td class="snippet"><pre class="fssnip">
-<span class="i">nuget</span> <span class="i">Example</span> <span class="o">&gt;</span><span class="o">=</span> <span class="n">1.2</span><span class="o">.</span><span class="n">3</span>
-
-<span class="i">nuget</span> <span class="i">Example</span> <span class="o">&gt;</span><span class="o">=</span> <span class="n">1.2</span><span class="o">.</span><span class="n">3</span><span class="o">-</span><span class="i">alpha001</span></pre>
-</td>
-</tr>
-</table>
-
-<p>Use the <code>&gt;=</code> operator to denote that you want the latest version available, as long as it's newer that what follows the <code>&gt;=</code> operator.</p>
 
 <h4><a name="Omitting-the-version-constraint" class="anchor" href="#Omitting-the-version-constraint">Omitting the version constraint</a></h4>
 
@@ -202,9 +184,11 @@ In <code>strict</code> mode it will <strong>only</strong> reference <em>direct</
 <span class="l">2: </span>
 <span class="l">3: </span>
 <span class="l">4: </span>
+<span class="l">5: </span>
 </pre>
 </td>
 <td class="snippet"><pre class="fssnip">
+<span class="i">nuget</span> <span class="i">Example</span> <span class="o">&gt;</span><span class="o">=</span> <span class="n">1.2</span><span class="o">.</span><span class="n">3</span>        <span class="c">// at least 1.2.3</span>
 <span class="i">nuget</span> <span class="i">Example</span> <span class="o">&gt;</span> <span class="n">1.2</span><span class="o">.</span><span class="n">3</span>         <span class="c">// greater than 1.2.3</span>
 <span class="i">nuget</span> <span class="i">Example</span> <span class="o">&lt;=</span> <span class="n">1.2</span><span class="o">.</span><span class="n">3</span>        <span class="c">// at least 1.2.3</span>
 <span class="i">nuget</span> <span class="i">Example</span> <span class="o">&lt;</span> <span class="n">1.2</span><span class="o">.</span><span class="n">3</span>         <span class="c">// less than 1.2.3</span>
@@ -212,8 +196,6 @@ In <code>strict</code> mode it will <strong>only</strong> reference <em>direct</
 </td>
 </tr>
 </table>
-
-<div id="pessimistic-version-constraint"></div>
 
 <h4><a name="Pessimistic-version-constraint" class="anchor" href="#Pessimistic-version-constraint">Pessimistic version constraint</a></h4>
 
@@ -330,7 +312,7 @@ In <code>strict</code> mode it will <strong>only</strong> reference <em>direct</
 </tr>
 </table>
 
-<p>This effectively will get you the <em>lowest matching versions</em> of <code>Example</code>'s dependencies. Still, you will get the <em>latest matching version</em> of <code>Example</code> itself according to its <a href="#pessimistic-version-constraint">version constraint of <code>1.2 &lt;= x &lt; 2</code></a>.</p>
+<p>This effectively will get you the <em>lowest matching versions</em> of <code>Example</code>'s dependencies. Still, you will get the <em>latest matching version</em> of <code>Example</code> itself according to its <a href="#Pessimistic-version-constraint">version constraint of <code>1.2 &lt;= x &lt; 2</code></a>.</p>
 
 <p>The <code>!</code> modifier is applicable to all <a href="#version-constraints">version constraints</a>:</p>
 
