@@ -3,9 +3,9 @@
 * New command: paket simplify - http://fsprojects.github.io/Paket/paket-simplify.html
 * New package resolver algorithm
 * Support for prereleases
-* Support for private NuGet feeds
+* Support for private NuGet feeds - http://fsprojects.github.io/Paket/nuget-dependencies.html#NuGet-feeds
 * Better verbose mode - use -v flag
-* Version info is shown at start
+* Version info is shown at paket.exe start
 * Respect case sensitivity for package paths for Linux - https://github.com/fsprojects/Paket/pull/137
 * Better Visual Studio integration by using paket.targets file - http://fsprojects.github.io/Paket/paket-init-auto-restore.html
 * Improved convert-from-nuget command - http://fsprojects.github.io/Paket/convert-from-nuget.html
