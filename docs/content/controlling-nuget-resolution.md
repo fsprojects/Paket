@@ -1,4 +1,4 @@
-# Controlling dependency resolution
+# Controlling NuGet dependency resolution
 
 ## A word on NuGet
 

@@ -148,7 +148,7 @@ If you want to dependend on prereleases then Paket can assist you. In contrast t
 
 #### Paket's NuGet-style dependency resolution for indirect dependencies
 
-NuGet's dependency syntax led to a lot of incompatible packages on Nuget.org ([read more](controlling-nuget-resolution.html). To make your transition to Paket easier and to allow package authors to correct their version constraints you can have Paket behave like NuGet when resolving indirect dependencies (i.e. defaulting to lowest matching versions).
+NuGet's dependency syntax led to a lot of incompatible packages on Nuget.org ([read more](controlling-nuget-resolution.html)). To make your transition to Paket easier and to allow package authors to correct their version constraints you can have Paket behave like NuGet when resolving indirect dependencies (i.e. defaulting to lowest matching versions).
 
 To request that Paket applies NuGet-style dependency resolution for indirect dependencies, use the `!` operator in your version constraint.
 
