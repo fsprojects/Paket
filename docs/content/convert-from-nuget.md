@@ -42,3 +42,5 @@ Options:
   `--force`: Forces the conversion, even if a [`paket.dependencies` file](dependencies-file.html) or [`paket.references`](references-files.html) files are present.
 
   `--no-install`: Skips [`paket install --hard`](paket-install.html) process afterward generation of dependencies / references files.
+
+  `--dependencies-file`: Use the specified file instead of [`paket.dependencies`](dependencies-file.html).
