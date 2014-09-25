@@ -280,37 +280,9 @@ In <code>strict</code> mode it will <strong>only</strong> reference <em>direct</
 </tr>
 </table>
 
-<h3><a name="Controlling-dependency-resolution" class="anchor" href="#Controlling-dependency-resolution">Controlling dependency resolution</a></h3>
-
-<h4><a name="A-word-on-NuGet" class="anchor" href="#A-word-on-NuGet">A word on NuGet</a></h4>
-
-<p>The NuGet dependency resolution strategy was a major motivation for us to develop Paket in the first place.</p>
-
-<p>NuGet made the decision very early that if package <code>A</code> depends on package <code>B</code>, you will always get the <em>lowest matching version</em> of package <code>B</code>, regardless of available newer versions. One side effect of this decision is that after you install <code>A</code> (and <code>B</code>), you will  be able to immediately update <code>B</code> to a newer version as long as it satisfies the version constraint defined by <code>A</code>.</p>
-
-<p>Installing packages like this is almost always a two-step operation: install and then try to update. We found it very hard to keep our project's dependencies at the latest version, that's why we chose to handle things differently.</p>
-
-<h4><a name="How-Paket-works-by-default" class="anchor" href="#How-Paket-works-by-default">How Paket works by default</a></h4>
-
-<p>Paket uses the definitions from <code>paket.dependencies</code> to compute the dependency graph.</p>
-
-<p>The resolution algorithm balances direct and indirect dependencies such that you will get the <em>latest matching versions</em> of direct dependencies (defined using the <a href="#dependencies"><code>nuget</code> statement</a>) and indirect dependencies (defined by your direct dependency's <a href="http://docs.nuget.org/docs/reference/nuspec-reference">nuspec</a>). Paket checks compatibility by comparing available versions to the constraints of either source, <code>paket.dependencies</code>, or <a href="http://docs.nuget.org/docs/reference/nuspec-reference">nuspec</a>.</p>
-
-<p>As stated above, the algorithm defaults to resolving the latest versions matching the constraints.</p>
-
-<p>As long as everybody follows <a href="http://semver.org">SemVer</a> and you define sane version constraints (e.g. within a major version) for your direct dependencies the system is very likely to work well.</p>
-
-<p>While developing Paket we found that many packages available on <a href="http://www.nuget.org">NuGet</a> today (September 2014) don't follow <a href="http://semver.org">SemVer</a> very well with regard to specifying their own dependencies.</p>
-
-<h4><a name="A-real-world-example" class="anchor" href="#A-real-world-example">A real-world example</a></h4>
-
-<p>For example, an assembly inside a NuGet package <code>A</code> might have a reference to a strong-named assembly that is pulled from another NuGet package <code>B</code>. Despite strong-naming the <code>B</code> assembly, <code>A</code> still specifies an open version constraint (<code>&gt; &lt;version of B that was compiled against&gt;</code>).</p>
-
-<p>This might be due to the fact that the <a href="http://docs.nuget.org/docs/reference/nuspec-reference">nuspec file format</a> requires you to pin the dependency version using double brackets: <code>&lt;dependency id="B" version="[1.2.3]" /&gt;</code>. Even the authors of Paket made the mistake of omitting the brackets, effectively specifying <code>&gt; 1.2.3</code>. Newer releases of <code>B</code> package might still work together with <code>A</code> using <a href="http://msdn.microsoft.com/en-us/library/7wd6ex19(v=vs.110).aspx">assembly binding redirects</a>, a feature of .NET that the authors of Paket are not very fond of. Even if you are OK with binding redirects, what would happen after <code>B</code> <code>2.0</code> is released? If you assume that <code>B</code> follows <a href="http://semver.org">SemVer</a>, the <code>2.0</code> version, by definition, <em>will</em> have breaking changes. NuGet will allow the update regardless, giving the false impression that your app still works.</p>
-
 <h4><a name="Paket-s-NuGet-style-dependency-resolution-for-indirect-dependencies" class="anchor" href="#Paket-s-NuGet-style-dependency-resolution-for-indirect-dependencies">Paket's NuGet-style dependency resolution for indirect dependencies</a></h4>
 
-<p>To make your transition to Paket easier and to allow package authors to correct their version constraints you can have Paket behave like NuGet when resolving indirect dependencies (i.e. defaulting to lowest matching versions).</p>
+<p>NuGet's dependency syntax led to a lot of incompatible packages on Nuget.org (<a href="controlling-nuget-resolution.html">read more</a>. To make your transition to Paket easier and to allow package authors to correct their version constraints you can have Paket behave like NuGet when resolving indirect dependencies (i.e. defaulting to lowest matching versions).</p>
 
 <p>To request that Paket applies NuGet-style dependency resolution for indirect dependencies, use the <code>!</code> operator in your version constraint.</p>
 
