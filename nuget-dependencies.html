@@ -40,7 +40,7 @@
 
 <p>Sources are defined by the <code>source "&lt;address&gt;"</code> statement.</p>
 
-<p>Paket supports multiple sources per <code>paket.dependencies</code>. It's recommended to put all <code>source</code> statements at the top of <code>paket.dependencies</code>. The ordering of sources is important, since the first <code>source</code> a <a href="#package-id">dependency</a> is found in will be the one used for download.</p>
+<p>Paket supports multiple sources per <code>paket.dependencies</code>. It's recommended to put all <code>source</code> statements at the top of <code>paket.dependencies</code>.</p>
 
 <p>The <a href="lock-file.html"><code>paket.lock</code> file</a> will reflect the sources selected by dependency resolution.</p>
 
@@ -280,7 +280,7 @@ In <code>strict</code> mode it will <strong>only</strong> reference <em>direct</
 </tr>
 </table>
 
-<h4><a name="Paket-s-NuGet-style-dependency-resolution-for-indirect-dependencies" class="anchor" href="#Paket-s-NuGet-style-dependency-resolution-for-indirect-dependencies">Paket's NuGet-style dependency resolution for indirect dependencies</a></h4>
+<h3><a name="Paket-s-NuGet-style-dependency-resolution-for-indirect-dependencies" class="anchor" href="#Paket-s-NuGet-style-dependency-resolution-for-indirect-dependencies">Paket's NuGet-style dependency resolution for indirect dependencies</a></h3>
 
 <p>NuGet's dependency syntax led to a lot of incompatible packages on Nuget.org (<a href="controlling-nuget-resolution.html">read more</a>). To make your transition to Paket easier and to allow package authors to correct their version constraints you can have Paket behave like NuGet when resolving indirect dependencies (i.e. defaulting to lowest matching versions).</p>
 
