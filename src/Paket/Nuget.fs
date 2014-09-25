@@ -289,36 +289,47 @@ let DownloadPackage(auth, url, name, version, force) =
                      return targetFileName
     }
 
+let isExtracted fileName =
+    let fi = FileInfo(fileName)
+    if not fi.Exists then false else
+    let di = fi.Directory
+    di.EnumerateFileSystemInfos()
+    |> Seq.forall (fun f -> f.FullName = fi.FullName)
 
 /// Extracts the given package to the ./packages folder
-let ExtractPackage(fileName, name, version, force) = 
+let ExtractPackage(fileName:string, targetFolder, name, version) =    
+    async {
+        let zip = ZipFile.Read(fileName)
+        Directory.CreateDirectory(targetFolder) |> ignore
+        for e in zip do
+            e.Extract(targetFolder, ExtractExistingFileAction.OverwriteSilently)
+
+        // cleanup folder structure
+        let rec cleanup (dir : DirectoryInfo) = 
+            for sub in dir.GetDirectories() do
+                let newName = sub.FullName.Replace("%2B", "+")
+                if sub.FullName <> newName then 
+                    Directory.Move(sub.FullName, newName)
+                    cleanup (DirectoryInfo newName)
+                else
+                    cleanup sub
+        cleanup (DirectoryInfo targetFolder)
+        tracefn "%s %s unzipped to %s" name version targetFolder
+        return targetFolder
+    }
+
+/// Extracts the given package to the ./packages folder
+let CopyFromCache(fileName, name, version, force) = 
     async { 
         let targetFolder = DirectoryInfo(Path.Combine("packages", name)).FullName
         let fi = FileInfo(fileName)
         let targetFile = FileInfo(Path.Combine(targetFolder, fi.Name))
         if not force && targetFile.Exists then           
-            verbosefn "%s %s already extracted" name version
-            return targetFolder
-        else 
+            verbosefn "%s %s already copied" name version        
+        else
             CleanDir targetFolder
-            File.Copy(fileName, targetFile.FullName)
-            let zip = ZipFile.Read(fileName)
-            Directory.CreateDirectory(targetFolder) |> ignore
-            for e in zip do
-                e.Extract(targetFolder, ExtractExistingFileAction.OverwriteSilently)
-
-            // cleanup folder structure
-            let rec cleanup (dir : DirectoryInfo) = 
-                for sub in dir.GetDirectories() do
-                    let newName = sub.FullName.Replace("%2B", "+")
-                    if sub.FullName <> newName then 
-                        Directory.Move(sub.FullName, newName)
-                        cleanup (DirectoryInfo newName)
-                    else
-                        cleanup sub
-            cleanup (DirectoryInfo targetFolder)
-            tracefn "%s %s unzipped to %s" name version targetFolder
-            return targetFolder
+            File.Copy(fileName, targetFile.FullName)            
+        return! ExtractPackage(targetFile.FullName,targetFolder,name,version)
     }
 
 /// Finds all libraries in a nuget packge.
