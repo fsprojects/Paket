@@ -15,7 +15,7 @@ This file, together with the [`paket.dependencies` file][8] enables you to deter
 
 Paket also enables you to [reference files directly from GitHub][9] repositories.
 
-Fore more reasons see the [FAQs][10].
+For more reasons see the [FAQ][10].
 
 ## Online resources
 
