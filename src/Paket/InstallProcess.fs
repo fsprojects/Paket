@@ -14,8 +14,7 @@ let ExtractPackages(force, packages:PackageResolution) =
             let package = kv.Value
             match package.Source with
             | Nuget source -> 
-                let! packageFile = Nuget.DownloadPackage(source.Auth, source.Url, package.Name, package.Version.ToString(), force)
-                let! folder = Nuget.CopyFromCache(packageFile, package.Name, package.Version.ToString(), force)
+                let! folder = Nuget.DownloadPackage(source.Auth, source.Url, package.Name, package.Version.ToString(), force)
                 return Some(package, Nuget.GetLibraries folder)
             | LocalNuget path -> 
                 let packageFile = Path.Combine(path, sprintf "%s.%s.nupkg" package.Name (package.Version.ToString()))
