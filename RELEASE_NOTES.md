@@ -1,4 +1,4 @@
-#### 0.3.0-alpha013 - 23.09.2014
+#### 0.3.0-alpha014 - 23.09.2014
 * New command: paket add [--interactive] - http://fsprojects.github.io/Paket/paket-add.html
 * New command: paket simplify - http://fsprojects.github.io/Paket/paket-simplify.html
 * Better Visual Studio integration by using paket.targets file - http://fsprojects.github.io/Paket/paket-init-auto-restore.html
