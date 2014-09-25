@@ -4,11 +4,13 @@ Simplifies your [`paket.dependencies` file](dependencies-file.html) by removing 
 Does also simplify [`paket.references` files](references-files.html), unless [strict](nuget-dependencies.html#Strict-references) mode is used.
 
     [lang=batchfile]
-    $ paket simplify [-v] [--dependencies-file FILE]
+    $ paket simplify [-v] [--interactive] [--dependencies-file FILE]
 
 Options:
 
   `-v`: Verbose - output the difference in content before and after running simplify command.
+
+  `--interactive`: Asks to confirm to delete every indirect dependency from each of the files. See [Interactive Mode](paket-simplify.html#Interactive-mode).
   
   `--dependencies-file`: Use the specified file instead of [`paket.dependencies`](dependencies-file.html).
 
@@ -53,3 +55,8 @@ will be the content of your [`paket.references` file](references-files.html).
 Unless you are relying heavily on components from `Castle.Core`, you would not care about controlling the required version of `Castle.Core` package. Paket will do the job.
 
 The simplify command will help you maintain your direct dependencies.
+
+## Interactive mode
+
+Sometimes, you may still want to have control over some of the indirect depenedencies. In this case you can use the `--interactive` flag,
+which will ask you to confirm before deleting a dependency from a file.

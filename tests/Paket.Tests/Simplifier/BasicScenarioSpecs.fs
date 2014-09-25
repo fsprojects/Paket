@@ -40,7 +40,7 @@ let refFiles1 = [
 
 [<Test>]
 let ``should remove one level deep indirect dependencies from dep and ref files``() = 
-    let depFile,refFiles = Simplifier.Analyze(graph1, cfg, refFiles1)
+    let depFile,refFiles = Simplifier.Analyze(graph1, cfg, refFiles1, false)
     
     depFile.Packages |> List.length |> shouldEqual [|"A";"D"|].Length
     depFile.DirectDependencies.["A"].Range |> shouldEqual (VersionRange.Exactly "3.3.0")
@@ -77,7 +77,7 @@ let refFiles2 = [
 
 [<Test>]
 let ``should remove all indirect dependencies from dep file recursively``() =
-    let depFile,refFiles  = Simplifier.Analyze(graph2, cfg2, refFiles2)
+    let depFile,refFiles  = Simplifier.Analyze(graph2, cfg2, refFiles2, false)
     
     depFile.Packages |> List.length |> shouldEqual [|"A";"c"|].Length
     depFile.DirectDependencies.["A"].Range |> shouldEqual (VersionRange.Exactly "1.0")
