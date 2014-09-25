@@ -3,7 +3,7 @@
 Recomputes the dependency resolution, updates the [`paket.lock` file](lock-file.html) and propagates any resulting package changes into all project files referencing updated packages.
 
     [lang=batchfile]
-    $ paket update [--force] [--hard] [--dependencies-file=FILE]
+    $ paket update [--force] [--hard] [--dependencies-file FILE]
 
 Options:
 

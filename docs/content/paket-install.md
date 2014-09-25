@@ -3,7 +3,7 @@
 Ensures that all dependencies in your [`paket.dependencies` file](dependencies-file.html) are present in the `packages` directory and referenced correctly in all projects.
 
     [lang=batchfile]
-    $ paket install [--force] [--hard] [--dependencies-file=FILE]
+    $ paket install [--force] [--hard] [--dependencies-file FILE]
 
 Options:
 

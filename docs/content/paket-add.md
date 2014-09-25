@@ -3,7 +3,7 @@
 Adds a new package to your [`paket.dependencies` file](dependencies-file.html) and runs the [update process](paket-update.html).
 
     [lang=batchfile]
-    $ paket add nuget PACKAGENAME [version VERSION] [--interactive] [--force] [--hard] [--dependencies-file=FILE]
+    $ paket add nuget PACKAGENAME [version VERSION] [--interactive] [--force] [--hard] [--dependencies-file FILE]
 
 Options:
 
@@ -23,7 +23,7 @@ Consider the following [`paket.dependencies` file](dependencies-file.html):
 
 	nuget FAKE
 
-now we run `paket add nuget xunit --interactive` install the package:
+Now we run `paket add nuget xunit --interactive` install the package:
 
 ![alt text](img/interactive-add.png "Interactive paket add")
 

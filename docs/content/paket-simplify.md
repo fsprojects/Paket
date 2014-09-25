@@ -4,7 +4,7 @@ Simplifies your [`paket.dependencies` file](dependencies-file.html) by removing 
 Does also simplify [`paket.references` files](references-files.html), unless [strict](nuget-dependencies.html#Strict-references) mode is used.
 
     [lang=batchfile]
-    $ paket simplify [-v] [--dependencies-file=FILE]
+    $ paket simplify [-v] [--dependencies-file FILE]
 
 Options:
 
