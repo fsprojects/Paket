@@ -50,6 +50,14 @@ type ProjectFile =
         |> List.map (fun projectType -> FindAllFiles(folder, projectType) |> Seq.toList)
         |> List.concat
 
+    static member FindReferencesFile (projectFile : FileInfo) =
+        let specificReferencesFile = FileInfo(Path.Combine(projectFile.Directory.FullName, projectFile.Name + "." + Constants.ReferencesFile))
+        if specificReferencesFile.Exists then Some specificReferencesFile.FullName
+        else 
+            let generalReferencesFile = FileInfo(Path.Combine(projectFile.Directory.FullName, Constants.ReferencesFile))
+            if generalReferencesFile.Exists then Some generalReferencesFile.FullName
+            else None
+
     member this.DeleteIfEmpty xPath =
         let nodesToDelete = List<_>()
         for node in this.Document.SelectNodes(xPath, this.Namespaces) do

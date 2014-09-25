@@ -91,6 +91,7 @@
     <Compile Include="LockFile\GeneratorWithMutlipleSourcesSpecs.fs" />
     <Compile Include="LockFile\ParserSpecs.fs" />
     <Compile Include="LockFile\ParserWithMultipleSourcesSpecs.fs" />
+    <Compile Include="ReferencesFile\ReferencesFileSpecs.fs" />
     <Compile Include="Simplifier\BasicScenarioSpecs.fs" />
     <None Include="ProjectFile\TestData\Project1.fsprojtest">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
