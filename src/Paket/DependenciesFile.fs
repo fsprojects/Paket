@@ -170,12 +170,14 @@ type DependenciesFile(fileName,strictMode,packages : UnresolvedPackage list, rem
     let dependencyMap = Map.ofSeq (packages |> Seq.map (fun p -> p.Name, p.VersionRequirement))
     member __.DirectDependencies = dependencyMap
     member __.Packages = packages
+    member __.HasPackage (name : string) = packages |> List.exists (fun p -> p.Name.ToLower() = name.ToLower())
     member __.RemoteFiles = remoteFiles
     member __.Strict = strictMode
     member __.FileName = fileName
     member this.Resolve(force) = this.Resolve(Nuget.GetVersions,Nuget.GetPackageDetails force)
     member __.Resolve(getVersionF, getPackageDetailsF) = PackageResolver.Resolve(getVersionF, getPackageDetailsF, packages)
-    member __.Add(packageName,version:string) =
+    member this.Add(packageName,version:string) =
+        if this.HasPackage packageName then failwithf "%s has already package %s" Constants.DependenciesFile packageName
         let versionRange = DependenciesFileParser.parseVersionRequirement (version.Trim '!')
         let sources = 
             match packages |> List.rev with

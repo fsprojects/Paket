@@ -108,7 +108,7 @@ try
         | Command.Update -> UpdateProcess.Update(dependenciesFileName,true,force,hard)
         | Command.Outdated -> FindOutdated.ListOutdated(dependenciesFileName)
         | Command.InitAutoRestore -> VSIntegration.InitAutoRestore()
-        | Command.ConvertFromNuget -> NuGetConvert.ConvertFromNuget(force,noInstall |> not)
+        | Command.ConvertFromNuget -> NuGetConvert.ConvertFromNuget(force,noInstall |> not,dependenciesFileName)
         | Command.Simplify -> Simplifier.Simplify(dependenciesFileName)
         | _ -> traceErrorfn "no command given.%s" (parser.Usage())
         
