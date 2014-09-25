@@ -250,7 +250,7 @@ let createDraft owner project releaseNotes (client : Async<GitHubClient>) =
         data.Name <- releaseNotes.NugetVersion
         data.Body <- toLines releaseNotes.Notes
         data.Draft <- true
-        data.Prerelease <- false
+        data.Prerelease <- releaseNotes.SemVer.PreRelease <> None
         let! client' = client
         let! draft = Async.AwaitTask <| client'.Release.Create(owner, project, data)
         tracefn "Created draft release id %d" draft.Id
