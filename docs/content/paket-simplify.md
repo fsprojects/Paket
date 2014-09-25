@@ -12,7 +12,7 @@ Options:
   
   `--dependencies-file`: Use the specified file instead of [`paket.dependencies`](dependencies-file.html).
 
-## Working example
+## Sample
 
 When you install `Castle.Windsor` package in NuGet to a project, it will generate a following `packages.config` file in the project location:
 
