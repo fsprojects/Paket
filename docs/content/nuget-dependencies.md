@@ -14,7 +14,7 @@ The [`paket.lock` file](lock-file.html) will reflect the sources selected by dep
 
 Paket supports NuGet feeds like those provided by [nuget.org](http://www.nuget.org) or [TeamCity](http://www.jetbrains.com/teamcity/).
 
-Please note that you need to specify *all* NuGet sources, including the default feed from [nuget.org](http://www.nuget.org). Paket does not take the current machine's NuGet Package Sources configuration (that you set up e.g. using Visual Studio) into account.
+Please note that you need to specify all NuGet sources, including the default feed from [nuget.org](http://www.nuget.org). Paket does not take the current machine's NuGet Package Sources configuration (that you set up e.g. using Visual Studio) into account.
 
     source http://nuget.org/api/v2      // nuget.org
     source http://myserver/nuget/api/v2 // custom feed
@@ -64,7 +64,7 @@ One key feature of Paket is that it separates the definition of dependencies fro
 
 With Paket you do not need to pin specific versions (although you can). Paket allows you to leverage [semantic versioning](http://semver.org) and define version constraints in a very flexible manner.
 
-You can also [influence the resolution of indirect dependencies](#nuget-style-dependency-resolution).
+You can also [influence the resolution of indirect dependencies](#Paket-s-NuGet-style-dependency-resolution-for-indirect-dependencies).
 
 #### Pinned version constraint
 
@@ -75,14 +75,6 @@ You can also [influence the resolution of indirect dependencies](#nuget-style-de
 
 This is the strictest version constraint. Use the `=` operator to specify an exact version match; the `=` is optional.
 
-#### Greater-than-or-equal version constraint
-
-    nuget Example >= 1.2.3
-
-    nuget Example >= 1.2.3-alpha001
-
-Use the `>=` operator to denote that you want the latest version available, as long as it's newer that what follows the `>=` operator.
-
 #### Omitting the version constraint
 
     nuget Example
@@ -91,12 +83,12 @@ If you omit the version constraint then Paket will assume `>= 0`.
 
 #### Further version constraints
 
+    nuget Example >= 1.2.3        // at least 1.2.3
     nuget Example > 1.2.3         // greater than 1.2.3
     nuget Example <= 1.2.3        // at least 1.2.3
     nuget Example < 1.2.3         // less than 1.2.3
     nuget Example >= 1.2.3 < 1.5  // at least 1.2.3 but less than 1.5
 
-<div id="pessimistic-version-constraint"></div>
 #### Pessimistic version constraint
 
     nuget Example ~> 1.2.3
@@ -185,7 +177,7 @@ To request that Paket applies NuGet-style dependency resolution for indirect dep
 
     nuget Example !~> 1.2 // use "min" version resolution strategy
 
-This effectively will get you the *lowest matching versions* of `Example`'s dependencies. Still, you will get the *latest matching version* of `Example` itself according to its [version constraint of `1.2 <= x < 2`](#pessimistic-version-constraint).
+This effectively will get you the *lowest matching versions* of `Example`'s dependencies. Still, you will get the *latest matching version* of `Example` itself according to its [version constraint of `1.2 <= x < 2`](#Pessimistic-version-constraint).
 
 The `!` modifier is applicable to all [version constraints](#version-constraints):
 
