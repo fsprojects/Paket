@@ -245,27 +245,30 @@ let isExtracted fileName =
     if not fi.Exists then false else
     let di = fi.Directory
     di.EnumerateFileSystemInfos()
-    |> Seq.forall (fun f -> f.FullName = fi.FullName)
+    |> Seq.exists (fun f -> f.FullName <>fi.FullName)    
 
 /// Extracts the given package to the ./packages folder
 let ExtractPackage(fileName:string, targetFolder, name, version) =    
     async {
-        let zip = ZipFile.Read(fileName)
-        Directory.CreateDirectory(targetFolder) |> ignore
-        for e in zip do
-            e.Extract(targetFolder, ExtractExistingFileAction.OverwriteSilently)
+        if  isExtracted fileName then
+             verbosefn "%s %s already extracted" name version
+        else
+            let zip = ZipFile.Read(fileName)
+            Directory.CreateDirectory(targetFolder) |> ignore
+            for e in zip do
+                e.Extract(targetFolder, ExtractExistingFileAction.OverwriteSilently)
 
-        // cleanup folder structure
-        let rec cleanup (dir : DirectoryInfo) = 
-            for sub in dir.GetDirectories() do
-                let newName = sub.FullName.Replace("%2B", "+")
-                if sub.FullName <> newName then 
-                    Directory.Move(sub.FullName, newName)
-                    cleanup (DirectoryInfo newName)
-                else
-                    cleanup sub
-        cleanup (DirectoryInfo targetFolder)
-        tracefn "%s %s unzipped to %s" name version targetFolder
+            // cleanup folder structure
+            let rec cleanup (dir : DirectoryInfo) = 
+                for sub in dir.GetDirectories() do
+                    let newName = sub.FullName.Replace("%2B", "+")
+                    if sub.FullName <> newName && not (Directory.Exists newName) then 
+                        Directory.Move(sub.FullName, newName)
+                        cleanup (DirectoryInfo newName)
+                    else
+                        cleanup sub
+            cleanup (DirectoryInfo targetFolder)
+            tracefn "%s %s unzipped to %s" name version targetFolder
         return targetFolder
     }
 
