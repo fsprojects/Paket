@@ -16,7 +16,10 @@ let private simplify file before after =
     else
         tracefn "%s is already simplified" file
 
-let Analyze(allPackages : list<ResolvedPackage>, depFile : DependenciesFile, refFiles : list<ReferencesFile>) = 
+let private interactiveConfirm fileName (package : string) = 
+        Utils.askYesNo(sprintf "Do you want to remove indirect dependency %s from file %s ?" package fileName)
+
+let Analyze(allPackages : list<ResolvedPackage>, depFile : DependenciesFile, refFiles : list<ReferencesFile>, interactive) = 
     
     let depsLookup =
         allPackages
@@ -32,22 +35,23 @@ let Analyze(allPackages : list<ResolvedPackage>, depFile : DependenciesFile, ref
 
     let flattenedLookup = depsLookup |> Map.map (fun key _ -> getAllDeps key)
 
-    let getSimplifiedDeps (depNameFun : 'a -> string) allDeps =
+    let getSimplifiedDeps (depNameFun : 'a -> string) fileName allDeps =
         let indirectDeps = 
             allDeps 
             |> List.map depNameFun 
             |> List.fold (fun set directDep -> Set.union set (flattenedLookup.[ directDep.ToLower() ])) Set.empty
-        allDeps |> List.filter (fun dep -> not <| Set.contains ((depNameFun dep).ToLower()) indirectDeps)
+        let depsToRemove = if interactive then indirectDeps |> Set.filter (interactiveConfirm fileName) else indirectDeps
+        allDeps |> List.filter (fun dep -> not <| Set.contains ((depNameFun dep).ToLower()) depsToRemove)
 
-    let simplifiedDeps = depFile.Packages |> getSimplifiedDeps (fun p -> p.Name) |> Seq.toList
+    let simplifiedDeps = depFile.Packages |> getSimplifiedDeps (fun p -> p.Name) depFile.FileName |> Seq.toList
     let refFiles' = if depFile.Strict 
                     then refFiles 
                     else refFiles |> List.map (fun refFile -> {refFile with NugetPackages = 
-                                                                            refFile.NugetPackages |> getSimplifiedDeps id})
+                                                                            refFile.NugetPackages |> getSimplifiedDeps id refFile.FileName})
 
     DependenciesFile(depFile.FileName, depFile.Strict, simplifiedDeps, depFile.RemoteFiles), refFiles'
 
-let Simplify (dependenciesFileName) = 
+let Simplify (interactive, dependenciesFileName) = 
     if not <| File.Exists(dependenciesFileName) then
         failwithf "%s file not found." dependenciesFileName
     let depFile = DependenciesFile.ReadFromFile(dependenciesFileName)
@@ -63,8 +67,9 @@ let Simplify (dependenciesFileName) =
         |> List.map ReferencesFile.FromFile
     let refFilesBefore = refFiles |> List.map (fun refFile -> refFile.FileName, refFile) |> Map.ofList
 
-    let simplifiedDepFile, simplifiedRefFiles = Analyze(packages, depFile, refFiles)
+    let simplifiedDepFile, simplifiedRefFiles = Analyze(packages, depFile, refFiles, interactive)
     
+    printfn ""
     simplify depFile.FileName <| depFile.ToString() <| simplifiedDepFile.ToString()
 
     if depFile.Strict then
