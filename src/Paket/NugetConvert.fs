@@ -12,6 +12,11 @@ let private readPackageSources(configFile : FileInfo) =
     doc.Load configFile.FullName
     [for node in doc.SelectNodes("//packageSources/add[@value]") -> node.Attributes.["value"].Value]
 
+let removeFileIfExists file = 
+    if File.Exists file then 
+        File.Delete file
+        tracefn "Deleted %s" file
+
 let private convertNugetsToDepFile(nugetPackagesConfigs) =
     let allVersions =
         nugetPackagesConfigs
@@ -47,7 +52,7 @@ let private convertNugetsToDepFile(nugetPackagesConfigs) =
                 match FindAllFiles(".", "nuget.config") |> Seq.firstOrDefault with
                 | Some configFile -> 
                     let sources = readPackageSources(configFile) 
-                    File.Delete(configFile.FullName)
+                    removeFileIfExists configFile.FullName
                     sources @ [Constants.DefaultNugetStream]
                 | None -> [Constants.DefaultNugetStream]
                 |> Set.ofList
@@ -88,7 +93,7 @@ let private convertNugetToRefFile(nugetPackagesConfig) =
     else tracefn "%s is up to date" refFile
 
 /// Converts all projects from NuGet to Paket
-let ConvertFromNuget(force, installAfter) =
+let ConvertFromNuget(force, installAfter, dependenciesFileName) =
     if File.Exists Constants.DependenciesFile && not force then failwithf "%s already exists, use --force to overwrite" Constants.DependenciesFile
 
     let nugetPackagesConfigs = FindAllFiles(".", "packages.config") |> Seq.map Nuget.ReadPackagesConfig
@@ -113,14 +118,17 @@ let ConvertFromNuget(force, installAfter) =
         project.Save()
 
     for packagesConfigFile in nugetPackagesConfigs |> Seq.map (fun f -> f.File) do
-        File.Delete(packagesConfigFile.FullName)
+        removeFileIfExists packagesConfigFile.FullName
 
     match Directory.EnumerateDirectories(".", ".nuget", SearchOption.AllDirectories) |> Seq.firstOrDefault with
     | Some nugetDir ->
         let nugetTargets = Path.Combine(nugetDir, "nuget.targets")
         if File.Exists nugetTargets then
-            File.Delete(nugetTargets)
-            tracefn "Deleted %s" nugetTargets
+            let nugetExe = Path.Combine(nugetDir, "nuget.exe")
+            removeFileIfExists nugetExe
+            removeFileIfExists nugetTargets
+            let depFile = DependenciesFile.ReadFromFile(dependenciesFileName)
+            if not <| depFile.HasPackage("Nuget.CommandLine") then depFile.Add("Nuget.CommandLine", "").Save()
             VSIntegration.InitAutoRestore()
 
         if Directory.EnumerateFileSystemEntries(nugetDir) |> Seq.isEmpty 

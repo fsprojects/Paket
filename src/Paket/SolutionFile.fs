@@ -18,12 +18,11 @@ module SolutionFile =
     let RemoveNugetEntries(solutionName: string) =
         let slnContent = ResizeArray( File.ReadAllLines solutionName )
         let mutable modified = false
-        match slnContent |> Seq.tryFindIndex (fun line -> line.Contains(".nuget\\nuget.targets")) with
-        | Some(index) -> slnContent.RemoveAt(index); modified <- true
-        | None -> ()        
-        match slnContent |> Seq.tryFindIndex (fun line -> line.Contains(".nuget\\packages.config")) with
-        | Some(index) -> slnContent.RemoveAt(index); modified <- true
-        | None -> ()
 
+        for file in ["nuget.targets";"packages.config";"nuget.exe"] do
+            match slnContent |> Seq.tryFindIndex (fun line -> line.ToLower().Contains(sprintf ".nuget\\%s" file)) with
+            | Some(index) -> slnContent.RemoveAt(index); modified <- true
+            | None -> ()            
+        
         removeNugetSlnFolderIfEmpty(slnContent)
         if modified then File.WriteAllLines(solutionName, slnContent)
