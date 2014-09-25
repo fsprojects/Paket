@@ -146,37 +146,9 @@ If you want to dependend on prereleases then Paket can assist you. In contrast t
     nuget Example >= 3 rc             // at least 3.0 but including rc versions 
     nuget Example >= 3 prerelase      // at least 3.0 but including all prerelease versions
 
-### Controlling dependency resolution
-
-#### A word on NuGet
-
-The NuGet dependency resolution strategy was a major motivation for us to develop Paket in the first place.
-
-NuGet made the decision very early that if package `A` depends on package `B`, you will always get the *lowest matching version* of package `B`, regardless of available newer versions. One side effect of this decision is that after you install `A` (and `B`), you will  be able to immediately update `B` to a newer version as long as it satisfies the version constraint defined by `A`.
-
-Installing packages like this is almost always a two-step operation: install and then try to update. We found it very hard to keep our project's dependencies at the latest version, that's why we chose to handle things differently.
-
-#### How Paket works by default
-
-Paket uses the definitions from `paket.dependencies` to compute the dependency graph.
-
-The resolution algorithm balances direct and indirect dependencies such that you will get the *latest matching versions* of direct dependencies (defined using the [`nuget` statement](#dependencies)) and indirect dependencies (defined by your direct dependency's [nuspec](http://docs.nuget.org/docs/reference/nuspec-reference)). Paket checks compatibility by comparing available versions to the constraints of either source, `paket.dependencies`, or [nuspec](http://docs.nuget.org/docs/reference/nuspec-reference).
-
-As stated above, the algorithm defaults to resolving the latest versions matching the constraints.
-
-As long as everybody follows [SemVer](http://semver.org) and you define sane version constraints (e.g. within a major version) for your direct dependencies the system is very likely to work well.
-
-While developing Paket we found that many packages available on [NuGet](http://www.nuget.org) today (September 2014) don't follow [SemVer](http://semver.org) very well with regard to specifying their own dependencies.
-
-#### A real-world example
-
-For example, an assembly inside a NuGet package `A` might have a reference to a strong-named assembly that is pulled from another NuGet package `B`. Despite strong-naming the `B` assembly, `A` still specifies an open version constraint (`> <version of B that was compiled against>`).
-
-This might be due to the fact that the [nuspec file format](http://docs.nuget.org/docs/reference/nuspec-reference) requires you to pin the dependency version using double brackets: `<dependency id="B" version="[1.2.3]" />`. Even the authors of Paket made the mistake of omitting the brackets, effectively specifying `> 1.2.3`. Newer releases of `B` package might still work together with `A` using [assembly binding redirects](http://msdn.microsoft.com/en-us/library/7wd6ex19(v=vs.110).aspx), a feature of .NET that the authors of Paket are not very fond of. Even if you are OK with binding redirects, what would happen after `B` `2.0` is released? If you assume that `B` follows [SemVer](http://semver.org), the `2.0` version, by definition, *will* have breaking changes. NuGet will allow the update regardless, giving the false impression that your app still works.
-
 #### Paket's NuGet-style dependency resolution for indirect dependencies
 
-To make your transition to Paket easier and to allow package authors to correct their version constraints you can have Paket behave like NuGet when resolving indirect dependencies (i.e. defaulting to lowest matching versions).
+NuGet's dependency syntax led to a lot of incompatible packages on Nuget.org ([read more](controlling-nuget-resolution.html). To make your transition to Paket easier and to allow package authors to correct their version constraints you can have Paket behave like NuGet when resolving indirect dependencies (i.e. defaulting to lowest matching versions).
 
 To request that Paket applies NuGet-style dependency resolution for indirect dependencies, use the `!` operator in your version constraint.
 
