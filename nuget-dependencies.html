@@ -133,8 +133,6 @@ In <code>strict</code> mode it will <strong>only</strong> reference <em>direct</
 
 <p>The <code>package ID</code> parameter is the same as you find in NuGet's <code>packages.config</code> or on <a href="http://www.nuget.org">nuget.org</a>.</p>
 
-<div id="version-constraints"></div>
-
 <h3><a name="Version-constraints" class="anchor" href="#Version-constraints">Version constraints</a></h3>
 
 <p>One key feature of Paket is that it separates the definition of dependencies from the actual resolution. NuGet stores resolution information in <code>packages.config</code>, where both package IDs and their respective pinned version are combined.</p>
@@ -190,7 +188,7 @@ In <code>strict</code> mode it will <strong>only</strong> reference <em>direct</
 <td class="snippet"><pre class="fssnip">
 <span class="i">nuget</span> <span class="i">Example</span> <span class="o">&gt;</span><span class="o">=</span> <span class="n">1.2</span><span class="o">.</span><span class="n">3</span>        <span class="c">// at least 1.2.3</span>
 <span class="i">nuget</span> <span class="i">Example</span> <span class="o">&gt;</span> <span class="n">1.2</span><span class="o">.</span><span class="n">3</span>         <span class="c">// greater than 1.2.3</span>
-<span class="i">nuget</span> <span class="i">Example</span> <span class="o">&lt;=</span> <span class="n">1.2</span><span class="o">.</span><span class="n">3</span>        <span class="c">// at least 1.2.3</span>
+<span class="i">nuget</span> <span class="i">Example</span> <span class="o">&lt;=</span> <span class="n">1.2</span><span class="o">.</span><span class="n">3</span>        <span class="c">// less than or equal to 1.2.3</span>
 <span class="i">nuget</span> <span class="i">Example</span> <span class="o">&lt;</span> <span class="n">1.2</span><span class="o">.</span><span class="n">3</span>         <span class="c">// less than 1.2.3</span>
 <span class="i">nuget</span> <span class="i">Example</span> <span class="o">&gt;</span><span class="o">=</span> <span class="n">1.2</span><span class="o">.</span><span class="n">3</span> <span class="o">&lt;</span> <span class="n">1.5</span>  <span class="c">// at least 1.2.3 but less than 1.5</span></pre>
 </td>
@@ -262,6 +260,26 @@ In <code>strict</code> mode it will <strong>only</strong> reference <em>direct</
 
 <p>The example above translates to <code>1.2.3 &lt;= x &lt; 2.0</code>.</p>
 
+<h3><a name="PreReleases" class="anchor" href="#PreReleases">PreReleases</a></h3>
+
+<p>If you want to dependend on prereleases then Paket can assist you. In contrast to NuGet, Paket allows you to depend on different prerelease channels:</p>
+
+<table class="pre"><tr><td class="lines"><pre class="fssnip">
+<span class="l">1: </span>
+<span class="l">2: </span>
+<span class="l">3: </span>
+<span class="l">4: </span>
+</pre>
+</td>
+<td class="snippet"><pre class="fssnip">
+<span class="i">nuget</span> <span class="i">Example</span> <span class="o">&gt;</span><span class="o">=</span> <span class="n">1.2</span><span class="o">.</span><span class="n">3</span> <span class="i">alpha</span>      <span class="c">// at least 1.2.3 including alpha versions</span>
+<span class="i">nuget</span> <span class="i">Example</span> <span class="o">&gt;</span><span class="o">=</span> <span class="n">2</span> <span class="i">beta</span> <span class="i">rc</span>        <span class="c">// at least 2.0 including rc and beta versions</span>
+<span class="i">nuget</span> <span class="i">Example</span> <span class="o">&gt;</span><span class="o">=</span> <span class="n">3</span> <span class="i">rc</span>             <span class="c">// at least 3.0 but including rc versions </span>
+<span class="i">nuget</span> <span class="i">Example</span> <span class="o">&gt;</span><span class="o">=</span> <span class="n">3</span> <span class="i">prerelase</span>      <span class="c">// at least 3.0 but including all prerelease versions</span></pre>
+</td>
+</tr>
+</table>
+
 <h3><a name="Controlling-dependency-resolution" class="anchor" href="#Controlling-dependency-resolution">Controlling dependency resolution</a></h3>
 
 <h4><a name="A-word-on-NuGet" class="anchor" href="#A-word-on-NuGet">A word on NuGet</a></h4>
@@ -290,8 +308,6 @@ In <code>strict</code> mode it will <strong>only</strong> reference <em>direct</
 
 <p>This might be due to the fact that the <a href="http://docs.nuget.org/docs/reference/nuspec-reference">nuspec file format</a> requires you to pin the dependency version using double brackets: <code>&lt;dependency id="B" version="[1.2.3]" /&gt;</code>. Even the authors of Paket made the mistake of omitting the brackets, effectively specifying <code>&gt; 1.2.3</code>. Newer releases of <code>B</code> package might still work together with <code>A</code> using <a href="http://msdn.microsoft.com/en-us/library/7wd6ex19(v=vs.110).aspx">assembly binding redirects</a>, a feature of .NET that the authors of Paket are not very fond of. Even if you are OK with binding redirects, what would happen after <code>B</code> <code>2.0</code> is released? If you assume that <code>B</code> follows <a href="http://semver.org">SemVer</a>, the <code>2.0</code> version, by definition, <em>will</em> have breaking changes. NuGet will allow the update regardless, giving the false impression that your app still works.</p>
 
-<div id="nuget-style-dependency-resolution"></div>
-
 <h4><a name="Paket-s-NuGet-style-dependency-resolution-for-indirect-dependencies" class="anchor" href="#Paket-s-NuGet-style-dependency-resolution-for-indirect-dependencies">Paket's NuGet-style dependency resolution for indirect dependencies</a></h4>
 
 <p>To make your transition to Paket easier and to allow package authors to correct their version constraints you can have Paket behave like NuGet when resolving indirect dependencies (i.e. defaulting to lowest matching versions).</p>
@@ -314,7 +330,7 @@ In <code>strict</code> mode it will <strong>only</strong> reference <em>direct</
 
 <p>This effectively will get you the <em>lowest matching versions</em> of <code>Example</code>'s dependencies. Still, you will get the <em>latest matching version</em> of <code>Example</code> itself according to its <a href="#Pessimistic-version-constraint">version constraint of <code>1.2 &lt;= x &lt; 2</code></a>.</p>
 
-<p>The <code>!</code> modifier is applicable to all <a href="#version-constraints">version constraints</a>:</p>
+<p>The <code>!</code> modifier is applicable to all <a href="#Version-constraints">version constraints</a>:</p>
 
 <table class="pre"><tr><td class="lines"><pre class="fssnip">
 <span class="l">1: </span>
