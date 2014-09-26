@@ -28,7 +28,7 @@ type PackageSource =
 
 // Represents details on a dependent source file.
 //TODO: As new sources e.g. fssnip etc. are added, this should probably become a DU or perhaps have an enum marker.
-type SourceFile =
+type UnresolvedSourceFile =
     { Owner : string
       Project : string
       Name : string      
@@ -46,6 +46,22 @@ type SourceFile =
         match this.Commit with
         | Some commit -> sprintf "%s/%s:%s %s" this.Owner this.Project commit this.Name
         | None -> sprintf "%s/%s %s" this.Owner this.Project this.Name
+
+type ResolvedSourceFile =
+    { Owner : string
+      Project : string
+      Name : string      
+      Commit : string }
+    member this.FilePath =
+        let path = this.Name
+                    .TrimStart('/')
+                    .Replace("/", Path.DirectorySeparatorChar.ToString())
+                    .Replace("\\", Path.DirectorySeparatorChar.ToString())
+
+        let di = DirectoryInfo(Path.Combine("paket-files", this.Owner, this.Project, path))
+        di.FullName
+
+    override this.ToString() =  sprintf "%s/%s:%s %s" this.Owner this.Project this.Commit this.Name
        
 /// Represents type of NuGet packages.config file
 type NugetPackagesConfigType = ProjectLevel | SolutionLevel
@@ -88,4 +104,4 @@ type ResolvedPackages =
 
 type Resolved = {
     ResolvedPackages : ResolvedPackages
-    ResolvedSourceFiles : SourceFile list }
+    ResolvedSourceFiles : ResolvedSourceFile list }

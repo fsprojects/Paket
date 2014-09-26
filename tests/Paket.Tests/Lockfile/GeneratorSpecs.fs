@@ -65,5 +65,13 @@ github "owner:project2:commit2" "folder/file.fs" """
     let cfg = DependenciesFile.FromCode(config)
     
     cfg.RemoteFiles
+    |> List.map (fun f -> 
+        match f.Commit with
+        | Some commit ->  { Commit = commit
+                            Owner = f.Owner
+                            Project = f.Project
+                            Name = f.Name }
+        | _ -> failwith "error")
+
     |> LockFileSerializer.serializeSourceFiles
     |> shouldEqual (normalizeLineEndings expectedWithGitHub)

@@ -156,7 +156,7 @@ type ProjectFile =
         this.DeleteIfEmpty("//ns:Project/ns:Choose/ns:When")
         this.DeleteIfEmpty("//ns:Project/ns:Choose")
 
-    member this.UpdateSourceFiles(sourceFiles:SourceFile list) =
+    member this.UpdateSourceFiles(sourceFiles:ResolvedSourceFile list) =
         match [ for node in this.Document.SelectNodes("//ns:Project", this.Namespaces) -> node ] with
         | [] -> ()
         | _ -> 

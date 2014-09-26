@@ -45,7 +45,7 @@ module LockFileSerializer =
     
         String.Join(Environment.NewLine, all)
 
-    let serializeSourceFiles (files:SourceFile list) =    
+    let serializeSourceFiles (files:ResolvedSourceFile list) =    
         let all =
             let hasReported = ref false
             [ for (owner,project), files in files |> Seq.groupBy(fun f -> f.Owner, f.Project) do
@@ -57,9 +57,7 @@ module LockFileSerializer =
                 yield "  specs:"
                 for file in files |> Seq.sortBy (fun f -> f.Owner.ToLower(),f.Project.ToLower(),f.Name.ToLower())  do
                     let path = file.Name.TrimStart '/'
-                    match file.Commit with
-                    | Some commit -> yield sprintf "    %s (%s)" path commit
-                    | None -> failwith "file %s wasn't resolved" (file.ToString()) ]
+                    yield sprintf "    %s (%s)" path file.Commit ]
 
         String.Join(Environment.NewLine, all)
 
@@ -69,7 +67,7 @@ module LockFileParser =
           RemoteAuth : Auth option
           RemoteUrl :string option
           Packages : ResolvedPackage list
-          SourceFiles : SourceFile list
+          SourceFiles : ResolvedSourceFile list
           Strict: bool }
 
     let private (|Remote|NugetPackage|NugetDependency|SourceFile|RepositoryType|Blank|ReferencesMode|) (state, line:string) =
@@ -124,7 +122,7 @@ module LockFileParser =
                                         | [| filePath; commit |] -> filePath, commit |> removeBrackets                                       
                                         | _ -> failwith "invalid file source details."
                     { state with
-                        SourceFiles = { Commit = Some commit
+                        SourceFiles = { Commit = commit
                                         Owner = owner
                                         Project = project
                                         Name = path } :: state.SourceFiles }
@@ -132,7 +130,7 @@ module LockFileParser =
 
 
 /// Allows to parse and analyze paket.lock files.
-type LockFile(fileName:string,strictMode,resolution:PackageResolution,remoteFiles:SourceFile list) =
+type LockFile(fileName:string,strictMode,resolution:PackageResolution,remoteFiles:ResolvedSourceFile list) =
     member __.SourceFiles = remoteFiles
     member __.ResolvedPackages = resolution
     member __.FileName = fileName

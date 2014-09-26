@@ -23,7 +23,7 @@ let ExtractPackages(force, packages:PackageResolution) =
         })
 
 let DownloadSourceFiles(rootPath,sourceFiles) = 
-    Seq.map (fun (source : SourceFile) -> 
+    Seq.map (fun (source : ResolvedSourceFile) -> 
         async {
             let path = FileInfo(Path.Combine(rootPath, source.FilePath)).Directory.FullName
             let versionFile = FileInfo(Path.Combine(path,"paket.version"))
@@ -32,9 +32,7 @@ let DownloadSourceFiles(rootPath,sourceFiles) =
             let isInRightVersion = 
                 if not <| File.Exists destination then false else
                 if not <| versionFile.Exists then false else
-                match source.Commit with
-                | None -> false
-                | Some commit -> commit = File.ReadAllText(versionFile.FullName) 
+                source.Commit = File.ReadAllText(versionFile.FullName) 
 
             if isInRightVersion then
                 verbosefn "Sourcefile %s is already there." (source.ToString())
@@ -44,9 +42,7 @@ let DownloadSourceFiles(rootPath,sourceFiles) =
                 let! file = GitHub.downloadSourceFile source
                 Directory.CreateDirectory(destination |> Path.GetDirectoryName) |> ignore
                 File.WriteAllText(destination, file)
-                match source.Commit with
-                | None -> ()
-                | Some commit -> File.WriteAllText(versionFile.FullName, commit)
+                File.WriteAllText(versionFile.FullName, source.Commit)
 
                 return None
         }) sourceFiles

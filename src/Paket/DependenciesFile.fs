@@ -108,7 +108,7 @@ module DependenciesFileParser =
     
     let parseDependenciesFile fileName (lines:string seq) = 
         ((0, false, [], [], []), lines)
-        ||> Seq.fold(fun (lineNo, referencesMode, sources: PackageSource list, packages, sourceFiles) line ->
+        ||> Seq.fold(fun (lineNo, referencesMode, sources: PackageSource list, packages, sourceFiles: UnresolvedSourceFile list) line ->
             let lineNo = lineNo + 1
             try
                 match line with
@@ -159,7 +159,7 @@ module DependenciesFileSerializer =
         if text <> "" && preReleases <> "" then text + " " + preReleases else text + preReleases
 
 /// Allows to parse and analyze paket.dependencies files.
-type DependenciesFile(fileName,strictMode,packages : UnresolvedPackage list, remoteFiles : SourceFile list) = 
+type DependenciesFile(fileName,strictMode,packages : UnresolvedPackage list, remoteFiles : UnresolvedSourceFile list) = 
     let packages = packages |> Seq.toList
     let dependencyMap = Map.ofSeq (packages |> Seq.map (fun p -> p.Name, p.VersionRequirement))
     member __.DirectDependencies = dependencyMap
