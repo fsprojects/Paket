@@ -35,10 +35,10 @@ let DownloadSourceFiles(rootPath,sourceFiles) =
                 File.ReadAllText(versionFile.FullName) = source.Commit
 
             if isInRightVersion then
-                verbosefn "Sourcefile %s is already uptodate." (source.ToString())
+                verbosefn "Sourcefile %s is already there." (source.ToString())
                 return None
             else
-                tracefn "Downloading %s..." (source.ToString())
+                tracefn "Downloading %s to %s" (source.ToString()) destination
                 let! file = GitHub.downloadFile source
                 Directory.CreateDirectory(destination |> Path.GetDirectoryName) |> ignore
                 File.WriteAllText(destination, file)
