@@ -5,6 +5,14 @@ open NUnit.Framework
 open FsUnit
 open TestHelpers
 
+[<Test>]
+let ``should read emptx config``() = 
+    let cfg = DependenciesFile.FromCode("")
+    cfg.Strict |> shouldEqual false
+
+    cfg.Packages.Length |> shouldEqual 0
+    cfg.RemoteFiles.Length |> shouldEqual 0
+
 let config1 = """
 source "http://nuget.org/api/v2"
 

@@ -25,7 +25,7 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <WarningLevel>3</WarningLevel>
     <DocumentationFile>..\..\bin\Paket.xml</DocumentationFile>
-    <StartArguments>update -f</StartArguments>
+    <StartArguments>update</StartArguments>
     <StartAction>Project</StartAction>
     <StartProgram>paket.exe</StartProgram>
     <StartWorkingDirectory>
@@ -74,12 +74,12 @@
     <Compile Include="Logging.fs" />
     <Compile Include="Xml.fs" />
     <Compile Include="Utils.fs" />
+    <Compile Include="GitHub.fs" />
     <Compile Include="ModuleResolver.fs" />
     <Compile Include="PackageResolver.fs" />
     <Compile Include="FrameworkHandling.fs" />
     <Compile Include="Nuspec.fs" />
     <Compile Include="ProjectFile.fs" />
-    <Compile Include="GitHub.fs" />
     <Compile Include="SolutionFile.fs" />
     <Compile Include="Nuget.fs" />
     <Compile Include="DependenciesFile.fs" />

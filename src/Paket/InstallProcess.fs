@@ -41,7 +41,7 @@ let DownloadSourceFiles(rootPath,sourceFiles) =
                 return None
             else
                 tracefn "Downloading %s to %s" (source.ToString()) destination
-                let! file = GitHub.downloadFile source
+                let! file = GitHub.downloadSourceFile source
                 Directory.CreateDirectory(destination |> Path.GetDirectoryName) |> ignore
                 File.WriteAllText(destination, file)
                 match source.Commit with

@@ -1,3 +1,6 @@
+#### 0.3.9 - 26.09.2014
+* Resolve dependencies for github modules.
+
 #### 0.3.8 - 26.09.2014
 * Don't use version in path for github files.
 
