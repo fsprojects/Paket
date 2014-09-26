@@ -31,4 +31,4 @@ GITHUB
     FsUnit.fs (7623fc13439f0e60bd05c1ed3b5f6dcb937fe468)
   remote: fsharp/FAKE
   specs:
-    modules/Octokit.fsx (8e475ed413a3df4d3ee3eecf88c8c05c70401462)
+    modules/Octokit/Octokit.fsx (a25c2f256a99242c1106b5a3478aae6bb68c7a93)
