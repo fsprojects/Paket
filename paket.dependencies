@@ -1,6 +1,5 @@
 source http://nuget.org/api/v2
 
-nuget Octokit
 nuget Newtonsoft.Json
 nuget UnionArgParser
 nuget NUnit.Runners >= 2.6
