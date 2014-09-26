@@ -77,7 +77,7 @@ let Resolve(getVersionsF, getPackageDetailsF, rootDependencies:UnresolvedPackage
             
     match improveModel (Map.empty, [], Set.empty, rootDependencies) with
     | Conflict(_) as c -> c
-    | Resolved.Ok model -> 
+    | ResolvedPackages.Ok model -> 
         // cleanup names
         Ok(model |> Seq.fold (fun map x -> 
                         let package = x.Value

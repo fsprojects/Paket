@@ -31,9 +31,8 @@ type PackageSource =
 type SourceFile =
     { Owner : string
       Project : string
-      Name : string
-      CommitSpecified: bool
-      Commit : string }
+      Name : string      
+      Commit : string option }
     member this.FilePath =
         let path = this.Name
                     .TrimStart('/')
@@ -43,7 +42,10 @@ type SourceFile =
         let di = DirectoryInfo(Path.Combine("paket-files", this.Owner, this.Project, path))
         di.FullName
 
-    override this.ToString() = sprintf "(%s:%s:%s) %s" this.Owner this.Project this.Commit this.Name
+    override this.ToString() = 
+        match this.Commit with
+        | Some commit -> sprintf "%s/%s:%s %s" this.Owner this.Project commit this.Name
+        | None -> sprintf "%s/%s %s" this.Owner this.Project this.Name
        
 /// Represents type of NuGet packages.config file
 type NugetPackagesConfigType = ProjectLevel | SolutionLevel
@@ -80,6 +82,10 @@ type FilteredVersions = Map<string,SemVerInfo list>
 
 type PackageResolution = Map<string , ResolvedPackage>
 
-type Resolved =
+type ResolvedPackages =
 | Ok of PackageResolution
 | Conflict of Set<UnresolvedPackage> * UnresolvedPackage list
+
+type Resolved = {
+    ResolvedPackages : ResolvedPackages
+    ResolvedSourceFiles : SourceFile list }

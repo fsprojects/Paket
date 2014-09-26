@@ -15,7 +15,7 @@ nuget Rx-Main ~> 2.0
 nuget FAKE = 1.1
 nuget SignalR = 3.3.2"""
 
-    let cfg = DependenciesFile.FromCode(noSha1,config).Add("xunit","")
+    let cfg = DependenciesFile.FromCode(config).Add("xunit","")
     
     let expected = """source http://nuget.org/api/v2
 
@@ -39,7 +39,7 @@ nuget NuGet.CommandLine
 
 github forki/FsUnit FsUnit.fs"""
 
-    let cfg = DependenciesFile.FromCode(fakeSha1,config).Add("xunit","")
+    let cfg = DependenciesFile.FromCode(config).Add("xunit","")
     
     let expected = """source http://nuget.org/api/v2
 
@@ -63,7 +63,7 @@ nuget Castle.Windsor-log4net ~> 3.2
 
 github forki/FsUnit FsUnit.fs"""
 
-    let cfg = DependenciesFile.FromCode(fakeSha1,config).Add("FAKE","~> 1.2")
+    let cfg = DependenciesFile.FromCode(config).Add("FAKE","~> 1.2")
     
     let expected = """source http://nuget.org/api/v2
 
@@ -80,7 +80,7 @@ let ``should add new packages with specific version if we give it``() =
     let config = """source http://nuget.org/api/v2
 nuget Castle.Windsor-log4net ~> 3.2"""
 
-    let cfg = DependenciesFile.FromCode(noSha1,config).Add("FAKE","1.2")
+    let cfg = DependenciesFile.FromCode(config).Add("FAKE","1.2")
     
     let expected = """source http://nuget.org/api/v2
 
@@ -94,7 +94,7 @@ nuget FAKE 1.2"""
 let ``should add new packages even to empty package section``() = 
     let config = """github forki/FsUnit FsUnit.fs"""
 
-    let cfg = DependenciesFile.FromCode(fakeSha1,config).Add("FAKE","~> 1.2")
+    let cfg = DependenciesFile.FromCode(config).Add("FAKE","~> 1.2")
     
     let expected = """source http://nuget.org/api/v2
 
@@ -109,7 +109,7 @@ github forki/FsUnit FsUnit.fs"""
 let ``should add new packages with nuget package resolution strategy``() = 
     let config = """"""
 
-    let cfg = DependenciesFile.FromCode(noSha1,config).Add("FAKE","!~> 1.2")
+    let cfg = DependenciesFile.FromCode(config).Add("FAKE","!~> 1.2")
     
     let expected = """source http://nuget.org/api/v2
 
@@ -129,7 +129,7 @@ nuget FAKE = 1.1
 nuget SignalR = 3.3.2"""
 
     try
-        DependenciesFile.FromCode(noSha1,config).Add("FAKE","") |> ignore
+        DependenciesFile.FromCode(config).Add("FAKE","") |> ignore
         failwith "adding the same package did not throw"
     with e -> 
         e.Message |> shouldEqual <| sprintf "%s has already package %s" Constants.DependenciesFile "FAKE"
@@ -145,7 +145,7 @@ nuget FAKE = 1.1
 nuget SignalR = 3.3.2"""
 
     try
-        DependenciesFile.FromCode(noSha1,config).Add("fAKe","") |> ignore
+        DependenciesFile.FromCode(config).Add("fAKe","") |> ignore
         failwith "adding the same package did not throw"
     with e -> 
         e.Message |> shouldEqual <| sprintf "%s has already package %s" Constants.DependenciesFile "fAKe"

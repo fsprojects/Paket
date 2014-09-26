@@ -19,8 +19,8 @@ nuget "Nancy.Bootstrappers.Windsor" "!~> 0.23"
 
 [<Test>]
 let ``should resolve simple config1``() = 
-    let cfg = DependenciesFile.FromCode(noSha1,config1)
-    let resolved = cfg.Resolve(VersionsFromGraph graph, PackageDetailsFromGraph graph) |> UpdateProcess.getResolvedPackagesOrFail
+    let cfg = DependenciesFile.FromCode(config1)
+    let resolved = cfg.Resolve(noSha1,VersionsFromGraph graph, PackageDetailsFromGraph graph) |> UpdateProcess.getResolvedPackagesOrFail
     getVersion resolved.["Castle.Windsor"] |> shouldEqual "3.2.1"
     getVersion resolved.["Nancy.Bootstrappers.Windsor"] |> shouldEqual "0.23"
 
@@ -33,8 +33,8 @@ nuget "Nancy.Bootstrappers.Windsor" "!~> 0.23"
 
 [<Test>]
 let ``should resolve simple config2``() = 
-    let cfg = DependenciesFile.FromCode(noSha1,config2)
-    let resolved = cfg.Resolve(VersionsFromGraph graph, PackageDetailsFromGraph graph) |> UpdateProcess.getResolvedPackagesOrFail
+    let cfg = DependenciesFile.FromCode(config2)
+    let resolved = cfg.Resolve(noSha1,VersionsFromGraph graph, PackageDetailsFromGraph graph) |> UpdateProcess.getResolvedPackagesOrFail
     getVersion resolved.["Castle.Windsor"] |> shouldEqual "3.2.1"
     getVersion resolved.["Nancy.Bootstrappers.Windsor"] |> shouldEqual "0.23"
 
@@ -48,7 +48,7 @@ nuget "Castle.Windsor" "!>= 0"
 
 [<Test>]
 let ``should resolve simple config3``() = 
-    let cfg = DependenciesFile.FromCode(noSha1,config3)
-    let resolved = cfg.Resolve(VersionsFromGraph graph, PackageDetailsFromGraph graph) |> UpdateProcess.getResolvedPackagesOrFail
+    let cfg = DependenciesFile.FromCode(config3)
+    let resolved = cfg.Resolve(noSha1,VersionsFromGraph graph, PackageDetailsFromGraph graph) |> UpdateProcess.getResolvedPackagesOrFail
     getVersion resolved.["Castle.Windsor"] |> shouldEqual "3.2.1"
     getVersion resolved.["Nancy.Bootstrappers.Windsor"] |> shouldEqual "0.23"

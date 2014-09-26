@@ -52,17 +52,15 @@ let ``should parse lock file``() =
         [ { Owner = "fsharp"
             Project = "FAKE"
             Name = "src/app/FAKE/Cli.fs"
-            CommitSpecified = true
-            Commit = "7699e40e335f3cc54ab382a8969253fecc1e08a9" }
+            Commit = Some "7699e40e335f3cc54ab382a8969253fecc1e08a9" }
           { Owner = "fsharp"
             Project = "FAKE"
-            CommitSpecified = true
             Name = "src/app/Fake.Deploy.Lib/FakeDeployAgentHelper.fs"
-            Commit = "Globbing" } ]
+            Commit = Some "Globbing" } ]
     
-    sourceFiles.[0].Commit |> shouldEqual "7699e40e335f3cc54ab382a8969253fecc1e08a9"
+    sourceFiles.[0].Commit |> shouldEqual (Some "7699e40e335f3cc54ab382a8969253fecc1e08a9")
     sourceFiles.[0].Name |> shouldEqual "src/app/FAKE/Cli.fs"
-    sourceFiles.[0].ToString() |> shouldEqual "(fsharp:FAKE:7699e40e335f3cc54ab382a8969253fecc1e08a9) src/app/FAKE/Cli.fs"
+    sourceFiles.[0].ToString() |> shouldEqual "fsharp/FAKE:7699e40e335f3cc54ab382a8969253fecc1e08a9 src/app/FAKE/Cli.fs"
 
 let strictLockFile = """REFERENCES: STRICT
 NUGET

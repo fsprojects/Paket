@@ -21,7 +21,7 @@ let VersionsFromGraph (graph : seq<string * string * (string * VersionRequiremen
     |> Seq.map (fun (_, v, _) -> SemVer.parse v)
     |> Seq.toList
 
-let safeResolve graph (dependencies : (string * VersionRange) list) = 
+let safeResolve graph (dependencies : (string * VersionRange) list)  = 
     let packages = 
         dependencies |> List.map (fun (n, v) -> 
                             { Name = n
@@ -32,7 +32,7 @@ let safeResolve graph (dependencies : (string * VersionRange) list) =
 
 let resolve graph dependencies = 
     safeResolve graph dependencies
-    |> UpdateProcess.getResolvedPackagesOrFail
+    |> UpdateProcess.extractResolvedPackagesOrFail
 
 let getVersion (resolved:ResolvedPackage) = resolved.Version.ToString()
 

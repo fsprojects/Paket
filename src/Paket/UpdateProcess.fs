@@ -4,8 +4,8 @@ module Paket.UpdateProcess
 open Paket
 open System
 
-let getResolvedPackagesOrFail resolution =
-    match resolution with
+let extractResolvedPackagesOrFail (resolvedPackages:ResolvedPackages) =
+    match resolvedPackages with
     | Ok model -> model
     | Conflict(closed,stillOpen) ->
 
@@ -24,6 +24,8 @@ let getResolvedPackagesOrFail resolution =
 
         failwith !errorText
 
+let getResolvedPackagesOrFail (resolution:Resolved) = extractResolvedPackagesOrFail resolution.ResolvedPackages
+
 
 /// Update command
 let Update(dependenciesFileName, forceResolution, force, hard) = 
@@ -32,8 +34,8 @@ let Update(dependenciesFileName, forceResolution, force, hard) =
     let lockFile = 
         if forceResolution || not lockFileName.Exists then 
             let dependenciesFile = DependenciesFile.ReadFromFile dependenciesFileName
-            let resolution = dependenciesFile.Resolve force |> getResolvedPackagesOrFail
-            let lockFile = LockFile(lockFileName.FullName, dependenciesFile.Strict, resolution, dependenciesFile.RemoteFiles)
+            let resolution = dependenciesFile.Resolve force
+            let lockFile = LockFile(lockFileName.FullName, dependenciesFile.Strict, getResolvedPackagesOrFail resolution, resolution.ResolvedSourceFiles)
             lockFile.Save()
             lockFile
         else LockFile.LoadFrom lockFileName.FullName

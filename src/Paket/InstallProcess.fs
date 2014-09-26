@@ -32,7 +32,9 @@ let DownloadSourceFiles(rootPath,sourceFiles) =
             let isInRightVersion = 
                 if not <| File.Exists destination then false else
                 if not <| versionFile.Exists then false else
-                File.ReadAllText(versionFile.FullName) = source.Commit
+                match source.Commit with
+                | None -> false
+                | Some commit -> commit = File.ReadAllText(versionFile.FullName) 
 
             if isInRightVersion then
                 verbosefn "Sourcefile %s is already there." (source.ToString())
@@ -42,7 +44,10 @@ let DownloadSourceFiles(rootPath,sourceFiles) =
                 let! file = GitHub.downloadFile source
                 Directory.CreateDirectory(destination |> Path.GetDirectoryName) |> ignore
                 File.WriteAllText(destination, file)
-                File.WriteAllText(versionFile.FullName, source.Commit)
+                match source.Commit with
+                | None -> ()
+                | Some commit -> File.WriteAllText(versionFile.FullName, commit)
+
                 return None
         }) sourceFiles
 

@@ -12,5 +12,7 @@ let getSHA1OfBranch owner project branch =
     }
 
 /// Gets a single file from github.
-let downloadFile remoteFile =    
-    getFromUrl(None,sprintf "https://github.com/%s/%s/raw/%s/%s" remoteFile.Owner remoteFile.Project remoteFile.Commit remoteFile.Name)
+let downloadFile remoteFile =
+    match remoteFile.Commit with
+    | Some commit -> getFromUrl(None,sprintf "https://github.com/%s/%s/raw/%s/%s" remoteFile.Owner remoteFile.Project commit remoteFile.Name)
+    | None -> failwith "Can't download %s. No commit specified" (remoteFile.ToString())

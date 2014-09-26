@@ -9,7 +9,8 @@ let Add(package, version, force, hard, interactive, installAfter, dependenciesFi
         DependenciesFile.ReadFromFile(dependenciesFileName)
           .Add(package,version)
 
-    let resolution = dependenciesFile.Resolve force |> UpdateProcess.getResolvedPackagesOrFail
+    let resolution = dependenciesFile.Resolve force 
+    let resolvedPackages = UpdateProcess.getResolvedPackagesOrFail resolution
 
     if interactive then
         let di = DirectoryInfo(".")
@@ -31,7 +32,7 @@ let Add(package, version, force, hard, interactive, installAfter, dependenciesFi
         let lockFileName = DependenciesFile.FindLockfile dependenciesFileName
     
         let lockFile =                
-            let lockFile = LockFile(lockFileName.FullName, dependenciesFile.Strict, resolution, dependenciesFile.RemoteFiles)
+            let lockFile = LockFile(lockFileName.FullName, dependenciesFile.Strict, resolvedPackages, resolution.ResolvedSourceFiles)
             lockFile.Save()
             lockFile
         InstallProcess.Install(force, hard, lockFile)
