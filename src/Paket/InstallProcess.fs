@@ -24,15 +24,25 @@ let ExtractPackages(force, packages:PackageResolution) =
 
 let DownloadSourceFiles(rootPath,sourceFiles) = 
     Seq.map (fun (source : SourceFile) -> 
-        async { 
+        async {
+            let path = FileInfo(Path.Combine(rootPath, source.FilePath)).Directory.FullName
+            let versionFile = FileInfo(Path.Combine(path,"paket.version"))
             let destination = Path.Combine(rootPath, source.FilePath)
-            if File.Exists destination then
+
+            let isInRightVersion = 
+                if not <| File.Exists destination then false else
+                if not <| versionFile.Exists then false else
+                File.ReadAllText(versionFile.FullName) = source.Commit
+
+            if isInRightVersion then
+                verbosefn "Sourcefile %s is already uptodate." (source.ToString())
                 return None
             else
                 tracefn "Downloading %s..." (source.ToString())
                 let! file = GitHub.downloadFile source
                 Directory.CreateDirectory(destination |> Path.GetDirectoryName) |> ignore
                 File.WriteAllText(destination, file)
+                File.WriteAllText(versionFile.FullName, source.Commit)
                 return None
         }) sourceFiles
 

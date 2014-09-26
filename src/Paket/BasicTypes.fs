@@ -38,7 +38,7 @@ type SourceFile =
         let path = this.Name
                     .TrimStart('/')
                     .Replace("/", "\\")
-        let di = DirectoryInfo(Path.Combine("paket-files", this.Owner, this.Project, this.Commit, path))
+        let di = DirectoryInfo(Path.Combine("paket-files", this.Owner, this.Project, path))
         di.FullName
 
     override this.ToString() = sprintf "(%s:%s:%s) %s" this.Owner this.Project this.Commit this.Name
