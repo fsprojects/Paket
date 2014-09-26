@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="utf-8"/>
-    <title>AddProcess - Paket</title>
+    <title>ModuleResolver - Paket</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <meta name="description" content=""/>
     <meta name="author" content="Steffen Forkmann, Alexander Gross"/>
@@ -34,9 +34,9 @@
 
 
 
-<h1>AddProcess</h1>
+<h1>ModuleResolver</h1>
 <div class="xmldoc">
-<p>Contains methods for addition of new packages</p>
+<p>Contains logic which helps to resolve the dependency graph for modules</p>
 </div>
 
 <!-- Render nested types and modules, if there are any -->
@@ -50,15 +50,15 @@
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '11', 11)" onmouseover="showTip(event, '11', 11)">
-            Add (...)
+          <code onmouseout="hideTip(event, '5', 5)" onmouseover="showTip(event, '5', 5)">
+            Resolve (getSha1, remoteFiles)
           </code>
-          <div class="tip" id="11">
-            <strong>Signature:</strong> (package:string * version:string * force:bool * hard:bool * interactive:bool * installAfter:bool * dependenciesFileName:string) -&gt; unit<br />
+          <div class="tip" id="5">
+            <strong>Signature:</strong> (getSha1:(string -&gt; string -&gt; string -&gt; string) * remoteFiles:SourceFile list) -&gt; SourceFile list<br />
                       </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket/AddProcess.fs#L7-7" class="github-link">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket/ModuleResolver.fs#L8-8" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
