@@ -37,7 +37,9 @@ type SourceFile =
     member this.FilePath =
         let path = this.Name
                     .TrimStart('/')
-                    .Replace("/", "\\")
+                    .Replace("/", Path.DirectorySeparatorChar.ToString())
+                    .Replace("\\", Path.DirectorySeparatorChar.ToString())
+
         let di = DirectoryInfo(Path.Combine("paket-files", this.Owner, this.Project, path))
         di.FullName
 
