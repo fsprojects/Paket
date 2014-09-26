@@ -1,4 +1,4 @@
-#### 0.3.2 - 26.09.2014
+#### 0.3.3 - 26.09.2014
 * Don't use version in path for github files.
 
 #### 0.3.1 - 25.09.2014
