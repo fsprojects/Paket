@@ -51,7 +51,8 @@ type ResolvedSourceFile =
     { Owner : string
       Project : string
       Name : string      
-      Commit : string }
+      Commit : string
+      Dependencies : (string * VersionRequirement) list }
     member this.FilePath =
         let path = this.Name
                     .TrimStart('/')

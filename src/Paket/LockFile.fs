@@ -57,7 +57,9 @@ module LockFileSerializer =
                 yield "  specs:"
                 for file in files |> Seq.sortBy (fun f -> f.Owner.ToLower(),f.Project.ToLower(),f.Name.ToLower())  do
                     let path = file.Name.TrimStart '/'
-                    yield sprintf "    %s (%s)" path file.Commit ]
+                    yield sprintf "    %s (%s)" path file.Commit 
+                    for dep in file.Dependencies do
+                      yield sprintf "%A" dep]
 
         String.Join(Environment.NewLine, all)
 
@@ -121,10 +123,11 @@ module LockFileParser =
                     let path, commit = match details.Split ' ' with
                                         | [| filePath; commit |] -> filePath, commit |> removeBrackets                                       
                                         | _ -> failwith "invalid file source details."
-                    { state with
+                    { state with                        
                         SourceFiles = { Commit = commit
                                         Owner = owner
                                         Project = project
+                                        Dependencies = []
                                         Name = path } :: state.SourceFiles }
                 | _ -> failwith "invalid remote details.")
 

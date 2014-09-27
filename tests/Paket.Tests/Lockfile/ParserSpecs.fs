@@ -52,9 +52,11 @@ let ``should parse lock file``() =
         [ { Owner = "fsharp"
             Project = "FAKE"
             Name = "src/app/FAKE/Cli.fs"
+            Dependencies = []
             Commit = "7699e40e335f3cc54ab382a8969253fecc1e08a9" }
           { Owner = "fsharp"
             Project = "FAKE"
+            Dependencies = []
             Name = "src/app/Fake.Deploy.Lib/FakeDeployAgentHelper.fs"
             Commit = "Globbing" } ]
     

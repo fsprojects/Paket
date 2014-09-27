@@ -70,8 +70,8 @@ github "owner:project2:commit2" "folder/file.fs" """
         | Some commit ->  { Commit = commit
                             Owner = f.Owner
                             Project = f.Project
+                            Dependencies = []
                             Name = f.Name }
         | _ -> failwith "error")
-
     |> LockFileSerializer.serializeSourceFiles
     |> shouldEqual (normalizeLineEndings expectedWithGitHub)
