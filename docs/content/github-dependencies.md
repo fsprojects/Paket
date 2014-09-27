@@ -25,3 +25,37 @@ If you want to reference the file in one of your project files then add an entry
 This will reference the linked file directly into your project.
 
 ![alt text](img/github_reference.png "GitHub file referenced in project")
+
+
+## Remote dependencies
+
+If the remote file needs further dependencies then you can just put a [`paket.dependencies` file.](dependencies-files.html) into the same GitHub repo folder.
+Let's look at a sample:
+
+![alt text](img/octokit-module.png "Octokit module")
+
+And we reference this in our own [`paket.dependencies` file.](dependencies-files.html):
+
+    github fsharp/FAKE modules/Octokit/Octokit.fsx
+
+
+This generates the following [`paket.lock` file](lock-file.html):
+
+	NUGET
+	  remote: http://nuget.org/api/v2
+	  specs:
+		Microsoft.Bcl (1.1.9)
+		  Microsoft.Bcl.Build (>= 1.0.14)
+		Microsoft.Bcl.Build (1.0.21)
+		Microsoft.Net.Http (2.2.28)
+		  Microsoft.Bcl (>= 1.1.9)
+		  Microsoft.Bcl.Build (>= 1.0.14)
+		Octokit (0.4.1)
+		  Microsoft.Net.Http (>= 0)
+	GITHUB
+	  remote: fsharp/FAKE
+	  specs:
+		modules/Octokit/Octokit.fsx (a25c2f256a99242c1106b5a3478aae6bb68c7a93)
+		  Octokit (>= 0)
+
+As you can see Paket also resolved the Octokit dependency.

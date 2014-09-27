@@ -1,5 +1,5 @@
-#### 0.4.0-alpha001 - 27.09.2014
-* Resolve dependencies for github modules.
+#### 0.4.0-alpha002 - 27.09.2014
+* Resolve dependencies for github modules - http://fsprojects.github.io/Paket/github-dependencies.html#Remote-dependencies
 * Don't use version in path for github files.
 * New [--interactive] mode for paket simplify - http://fsprojects.github.io/Paket/paket-simplify.html
 
