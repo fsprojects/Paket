@@ -44,9 +44,12 @@ let Resolve(getVersionsF, getPackageDetailsF, rootDependencies:UnresolvedPackage
                 |> List.filter dependency.VersionRequirement.IsInRange
                     
             let sorted =                
-                match dependency.ResolverStrategy with
-                | Max -> List.sort compatibleVersions |> List.rev
-                | Min -> List.sort compatibleVersions
+                if dependency.IsRoot then
+                    List.sort compatibleVersions |> List.rev
+                else
+                    match dependency.ResolverStrategy with
+                    | Max -> List.sort compatibleVersions |> List.rev
+                    | Min -> List.sort compatibleVersions
                             
             sorted 
             |> List.fold (fun state versionToExplore ->
@@ -56,7 +59,7 @@ let Resolve(getVersionsF, getPackageDetailsF, rootDependencies:UnresolvedPackage
                     let newFilteredVersion = Map.add dependency.Name [versionToExplore] filteredVersions
                     let newDependencies =
                         exploredPackage.Dependencies
-                        |> List.map (fun (n,v) -> {dependency with Name = n; VersionRequirement = v })
+                        |> List.map (fun (n,v) -> {dependency with Name = n; VersionRequirement = v; IsRoot = false })
                         |> List.filter (fun d -> Set.contains d closed |> not)
                     
                     improveModel (newFilteredVersion,exploredPackage::packages,Set.add dependency closed,newDependencies @ rest)

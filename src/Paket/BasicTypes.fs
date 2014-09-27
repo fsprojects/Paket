@@ -63,6 +63,7 @@ type UnresolvedPackage =
     { Name : string
       VersionRequirement : VersionRequirement
       ResolverStrategy : ResolverStrategy
+      IsRoot: bool
       Sources : PackageSource list }
 
 /// Represents data about resolved packages
