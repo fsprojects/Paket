@@ -70,6 +70,7 @@ module LockFileParser =
           RemoteUrl :string option
           Packages : ResolvedPackage list
           SourceFiles : ResolvedSourceFile list
+          LastWasPackage : bool
           Strict: bool }
 
     let private (|Remote|NugetPackage|NugetDependency|SourceFile|RepositoryType|Blank|ReferencesMode|) (state, line:string) =
@@ -91,7 +92,7 @@ module LockFileParser =
     let Parse lines =
         let remove textToRemove (source:string) = source.Replace(textToRemove, "")
         let removeBrackets = remove "(" >> remove ")"
-        ({ RepositoryType = None; RemoteAuth = None; RemoteUrl = None; Packages = []; SourceFiles = []; Strict = false }, lines)
+        ({ RepositoryType = None; RemoteAuth = None; RemoteUrl = None; Packages = []; SourceFiles = []; Strict = false; LastWasPackage = false }, lines)
         ||> Seq.fold(fun state line ->
             match (state, line) with
             | Remote(url,auth) -> { state with RemoteUrl = Some url; RemoteAuth = auth }
@@ -100,17 +101,20 @@ module LockFileParser =
             | RepositoryType repoType -> { state with RepositoryType = Some repoType }
             | NugetPackage details ->
                 match state.RemoteUrl with
-                | Some remote ->
+                | Some remote -> 
                     let parts = details.Split ' '
                     let version = parts.[1] |> removeBrackets
-                    { state with Packages = { Source = PackageSource.Parse(remote,state.RemoteAuth)
-                                              Name = parts.[0]
-                                              Dependencies = []
-                                              Version = SemVer.parse version } :: state.Packages }
+                    { state with LastWasPackage = true
+                                 Packages = 
+                                     { Source = PackageSource.Parse(remote, state.RemoteAuth)
+                                       Name = parts.[0]
+                                       Dependencies = []
+                                       Version = SemVer.parse version } :: state.Packages }
                 | None -> failwith "no source has been specified."
             | NugetDependency (name, _) ->
                 match state.Packages with
                 | currentPackage :: otherPackages -> 
+                    if not state.LastWasPackage then state else
                     { state with
                         Packages = { currentPackage with
                                         Dependencies = [name, VersionRequirement.AllReleases] 
@@ -123,7 +127,8 @@ module LockFileParser =
                     let path, commit = match details.Split ' ' with
                                         | [| filePath; commit |] -> filePath, commit |> removeBrackets                                       
                                         | _ -> failwith "invalid file source details."
-                    { state with                        
+                    { state with  
+                        LastWasPackage = false                      
                         SourceFiles = { Commit = commit
                                         Owner = owner
                                         Project = project
