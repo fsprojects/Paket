@@ -42,12 +42,10 @@
 
 <table class="pre"><tr><td class="lines"><pre class="fssnip">
 <span class="l">1: </span>
-<span class="l">2: </span>
 </pre>
 </td>
 <td class="snippet"><pre class="fssnip">
-<span class="i">github</span> <span class="i">forki</span><span class="o">/</span><span class="i">FsUnit</span> <span class="i">FsUnit</span><span class="o">.</span><span class="i">fs</span>
-<span class="i">github</span> <span class="i">fsharp</span><span class="o">/</span><span class="i">FAKE</span> <span class="i">modules</span><span class="o">/</span><span class="i">Octokit</span><span class="o">/</span><span class="i">Octokit</span><span class="o">.</span><span class="i">fsx</span></pre>
+<span class="i">github</span> <span class="i">forki</span><span class="o">/</span><span class="i">FsUnit</span> <span class="i">FsUnit</span><span class="o">.</span><span class="i">fs</span></pre>
 </td>
 </tr>
 </table>
@@ -59,21 +57,13 @@
 <span class="l">2: </span>
 <span class="l">3: </span>
 <span class="l">4: </span>
-<span class="l">5: </span>
-<span class="l">6: </span>
-<span class="l">7: </span>
-<span class="l">8: </span>
 </pre>
 </td>
 <td class="snippet"><pre class="fssnip">
 <span class="i">GITHUB</span>
   <span class="i">remote</span><span class="o">:</span> <span class="i">forki</span><span class="o">/</span><span class="i">FsUnit</span>
   <span class="i">specs</span><span class="o">:</span>
-    <span class="i">FsUnit</span><span class="o">.</span><span class="i">fs</span> (<span class="n">7623fc13439f0e60bd05c1ed3b5f6dcb937fe468</span>)
-  <span class="i">remote</span><span class="o">:</span> <span class="i">fsharp</span><span class="o">/</span><span class="i">FAKE</span>
-  <span class="i">specs</span><span class="o">:</span>
-    <span class="i">modules</span><span class="o">/</span><span class="i">Octokit</span><span class="o">/</span><span class="i">Octokit</span><span class="o">.</span><span class="i">fsx</span> (<span class="i">a25c2f256a99242c1106b5a3478aae6bb68c7a93</span>)
-      <span class="i">Octokit</span> (<span class="o">&gt;</span><span class="o">=</span> <span class="n">0</span>)</pre>
+    <span class="i">FsUnit</span><span class="o">.</span><span class="i">fs</span> (<span class="n">7623fc13439f0e60bd05c1ed3b5f6dcb937fe468</span>)</pre>
 </td>
 </tr>
 </table>
@@ -88,6 +78,70 @@
 
 <p><img src="img/github_reference.png" alt="alt text" title="GitHub file referenced in project" /></p>
 
+<h2><a name="Handling-dependencies" class="anchor" href="#Handling-dependencies">Handling dependencies</a></h2>
+
+<p>If the remote file needs further dependencies then you can just put a <a href="dependencies-files.html"><code>paket.dependencies</code> file.</a> into the same GitHub repo folder.
+Let's look at a sample:</p>
+
+<p><img src="img/octokit-module.png" alt="alt text" title="Octokit module" /></p>
+
+<p>And we reference this in our own <a href="dependencies-files.html"><code>paket.dependencies</code> file.</a>:</p>
+
+<table class="pre"><tr><td class="lines"><pre class="fssnip">
+<span class="l">1: </span>
+</pre>
+</td>
+<td class="snippet"><pre class="fssnip">
+<span class="i">github</span> <span class="i">fsharp</span><span class="o">/</span><span class="i">FAKE</span> <span class="i">modules</span><span class="o">/</span><span class="i">Octokit</span><span class="o">/</span><span class="i">Octokit</span><span class="o">.</span><span class="i">fsx</span></pre>
+</td>
+</tr>
+</table>
+
+<p>This generates the following <a href="lock-file.html"><code>paket.lock</code> file</a>:</p>
+
+<table class="pre"><tr><td class="lines"><pre class="fssnip">
+<span class="l"> 1: </span>
+<span class="l"> 2: </span>
+<span class="l"> 3: </span>
+<span class="l"> 4: </span>
+<span class="l"> 5: </span>
+<span class="l"> 6: </span>
+<span class="l"> 7: </span>
+<span class="l"> 8: </span>
+<span class="l"> 9: </span>
+<span class="l">10: </span>
+<span class="l">11: </span>
+<span class="l">12: </span>
+<span class="l">13: </span>
+<span class="l">14: </span>
+<span class="l">15: </span>
+<span class="l">16: </span>
+</pre>
+</td>
+<td class="snippet"><pre class="fssnip">
+<span class="i">NUGET</span>
+  <span class="i">remote</span><span class="o">:</span> <span class="i">http</span><span class="o">:</span><span class="c">//nuget.org/api/v2</span>
+  <span class="i">specs</span><span class="o">:</span>
+    <span onmouseout="hideTip(event, 'fs1', 1)" onmouseover="showTip(event, 'fs1', 1)" class="i">Microsoft</span><span class="o">.</span><span class="i">Bcl</span> (<span class="n">1.1</span><span class="o">.</span><span class="n">9</span>)
+      <span onmouseout="hideTip(event, 'fs1', 2)" onmouseover="showTip(event, 'fs1', 2)" class="i">Microsoft</span><span class="o">.</span><span class="i">Bcl</span><span class="o">.</span><span class="i">Build</span> (<span class="o">&gt;</span><span class="o">=</span> <span class="n">1.0</span><span class="o">.</span><span class="n">14</span>)
+    <span onmouseout="hideTip(event, 'fs1', 3)" onmouseover="showTip(event, 'fs1', 3)" class="i">Microsoft</span><span class="o">.</span><span class="i">Bcl</span><span class="o">.</span><span class="i">Build</span> (<span class="n">1.0</span><span class="o">.</span><span class="n">21</span>)
+    <span onmouseout="hideTip(event, 'fs1', 4)" onmouseover="showTip(event, 'fs1', 4)" class="i">Microsoft</span><span class="o">.</span><span class="i">Net</span><span class="o">.</span><span class="i">Http</span> (<span class="n">2.2</span><span class="o">.</span><span class="n">28</span>)
+      <span onmouseout="hideTip(event, 'fs1', 5)" onmouseover="showTip(event, 'fs1', 5)" class="i">Microsoft</span><span class="o">.</span><span class="i">Bcl</span> (<span class="o">&gt;</span><span class="o">=</span> <span class="n">1.1</span><span class="o">.</span><span class="n">9</span>)
+      <span onmouseout="hideTip(event, 'fs1', 6)" onmouseover="showTip(event, 'fs1', 6)" class="i">Microsoft</span><span class="o">.</span><span class="i">Bcl</span><span class="o">.</span><span class="i">Build</span> (<span class="o">&gt;</span><span class="o">=</span> <span class="n">1.0</span><span class="o">.</span><span class="n">14</span>)
+    <span class="i">Octokit</span> (<span class="n">0.4</span><span class="o">.</span><span class="n">1</span>)
+      <span onmouseout="hideTip(event, 'fs1', 7)" onmouseover="showTip(event, 'fs1', 7)" class="i">Microsoft</span><span class="o">.</span><span class="i">Net</span><span class="o">.</span><span class="i">Http</span> (<span class="o">&gt;</span><span class="o">=</span> <span class="n">0</span>)
+<span class="i">GITHUB</span>
+  <span class="i">remote</span><span class="o">:</span> <span class="i">fsharp</span><span class="o">/</span><span class="i">FAKE</span>
+  <span class="i">specs</span><span class="o">:</span>
+    <span class="i">modules</span><span class="o">/</span><span class="i">Octokit</span><span class="o">/</span><span class="i">Octokit</span><span class="o">.</span><span class="i">fsx</span> (<span class="i">a25c2f256a99242c1106b5a3478aae6bb68c7a93</span>)
+      <span class="i">Octokit</span> (<span class="o">&gt;</span><span class="o">=</span> <span class="n">0</span>)</pre>
+</td>
+</tr>
+</table>
+
+<p>As you can see Paket also resolved the Octokit dependency.</p>
+
+<div class="tip" id="fs1">namespace Microsoft</div>
 
         </div>
         <div class="span3">
