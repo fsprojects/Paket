@@ -47,22 +47,6 @@ type UnresolvedSourceFile =
         | Some commit -> sprintf "%s/%s:%s %s" this.Owner this.Project commit this.Name
         | None -> sprintf "%s/%s %s" this.Owner this.Project this.Name
 
-type ResolvedSourceFile =
-    { Owner : string
-      Project : string
-      Name : string      
-      Commit : string
-      Dependencies : (string * VersionRequirement) list }
-    member this.FilePath =
-        let path = this.Name
-                    .TrimStart('/')
-                    .Replace("/", Path.DirectorySeparatorChar.ToString())
-                    .Replace("\\", Path.DirectorySeparatorChar.ToString())
-
-        let di = DirectoryInfo(Path.Combine("paket-files", this.Owner, this.Project, path))
-        di.FullName
-
-    override this.ToString() =  sprintf "%s/%s:%s %s" this.Owner this.Project this.Commit this.Name
        
 /// Represents type of NuGet packages.config file
 type NugetPackagesConfigType = ProjectLevel | SolutionLevel
@@ -87,6 +71,23 @@ type ResolvedPackage =
       Version : SemVerInfo
       Dependencies : (string * VersionRequirement) list
       Source : PackageSource }
+
+type ResolvedSourceFile =
+    { Owner : string
+      Project : string
+      Name : string      
+      Commit : string
+      Dependencies : UnresolvedPackage list }
+    member this.FilePath =
+        let path = this.Name
+                    .TrimStart('/')
+                    .Replace("/", Path.DirectorySeparatorChar.ToString())
+                    .Replace("\\", Path.DirectorySeparatorChar.ToString())
+
+        let di = DirectoryInfo(Path.Combine("paket-files", this.Owner, this.Project, path))
+        di.FullName
+
+    override this.ToString() =  sprintf "%s/%s:%s %s" this.Owner this.Project this.Commit this.Name
 
 /// Represents package details
 type PackageDetails = 

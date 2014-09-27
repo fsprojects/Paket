@@ -182,11 +182,7 @@ type DependenciesFile(fileName,strictMode,packages : UnresolvedPackage list, rem
 
         let dependencies = 
             remoteFiles 
-            |> List.map (fun f -> GitHub.downloadDependenciesFile f)
-            |> Async.Parallel 
-            |> Async.RunSynchronously
-            |> Array.map (fun text -> DependenciesFile.FromCode text)
-            |> Array.map (fun df -> df.Packages)
+            |> List.map (fun f -> f.Dependencies)
             |> List.concat
 
         { ResolvedPackages = PackageResolver.Resolve(getVersionF, getPackageDetailsF, dependencies @ packages)

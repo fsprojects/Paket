@@ -59,7 +59,7 @@ module LockFileSerializer =
                     let path = file.Name.TrimStart '/'
                     yield sprintf "    %s (%s)" path file.Commit 
                     for dep in file.Dependencies do
-                      yield sprintf "%A" dep]
+                        yield sprintf "      %s (%s)" dep.Name (formatVersionRange dep.VersionRequirement)]
 
         String.Join(Environment.NewLine, all)
 
