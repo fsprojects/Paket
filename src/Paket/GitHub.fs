@@ -14,15 +14,21 @@ let getSHA1OfBranch owner project branch =
 
 
 /// Gets a dependencies file from github.
-let downloadDependenciesFile(remoteFile:ResolvedSourceFile) = async {
+let downloadDependenciesFile(rootPath,remoteFile:ResolvedSourceFile) = async {
     let fi = FileInfo(remoteFile.Name)
 
     let dependenciesFileName = remoteFile.Name.Replace(fi.Name,"paket.dependencies")
 
     let url = sprintf "https://github.com/%s/%s/raw/%s/%s" remoteFile.Owner remoteFile.Project remoteFile.Commit dependenciesFileName
     let! result = safeGetFromUrl(None,url)
+
     match result with
-    | Some text -> return text
+    | Some text ->
+        let destination = Path.Combine(rootPath, remoteFile.ComputeFilePath(dependenciesFileName))
+
+        Directory.CreateDirectory(destination |> Path.GetDirectoryName) |> ignore
+        File.WriteAllText(destination, text)
+        return text
     | None -> return "" }
 
 /// Gets a single file from github.

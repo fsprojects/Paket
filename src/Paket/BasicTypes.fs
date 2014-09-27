@@ -79,8 +79,10 @@ type ResolvedSourceFile =
       Name : string      
       Commit : string
       Dependencies : UnresolvedPackage list }
-    member this.FilePath =
-        let path = this.Name
+    member this.FilePath = this.ComputeFilePath(this.Name)
+
+    member this.ComputeFilePath(name:string) =
+        let path = name
                     .TrimStart('/')
                     .Replace("/", Path.DirectorySeparatorChar.ToString())
                     .Replace("\\", Path.DirectorySeparatorChar.ToString())

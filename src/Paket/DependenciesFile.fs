@@ -174,7 +174,7 @@ type DependenciesFile(fileName,strictMode,packages : UnresolvedPackage list, rem
         this.Resolve(getSha1,Nuget.GetVersions,Nuget.GetPackageDetails force)
     member __.Resolve(getSha1,getVersionF, getPackageDetailsF) =
         let resolveSourceFile(file:ResolvedSourceFile) : UnresolvedPackage list =
-            GitHub.downloadDependenciesFile file
+            GitHub.downloadDependenciesFile(Path.GetDirectoryName fileName, file)
             |> Async.RunSynchronously
             |> DependenciesFile.FromCode
             |> fun df -> df.Packages
