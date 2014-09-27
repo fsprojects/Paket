@@ -35,7 +35,7 @@ nuget "Nancy.Bootstrappers.Windsor" "!~> 0.23"
 let ``should resolve simple config2``() = 
     let cfg = DependenciesFile.FromCode(config2)
     let resolved = cfg.Resolve(noSha1,VersionsFromGraph graph, PackageDetailsFromGraph graph) |> UpdateProcess.getResolvedPackagesOrFail
-    getVersion resolved.["Castle.Windsor"] |> shouldEqual "3.2.1"
+    getVersion resolved.["Castle.Windsor"] |> shouldEqual "3.3.0"
     getVersion resolved.["Nancy.Bootstrappers.Windsor"] |> shouldEqual "0.23"
 
 

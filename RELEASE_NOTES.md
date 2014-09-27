@@ -1,4 +1,4 @@
-#### 0.3.12 - 27.09.2014
+#### 0.3.13 - 27.09.2014
 * Resolve dependencies for github modules.
 
 #### 0.3.8 - 26.09.2014
