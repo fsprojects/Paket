@@ -80,7 +80,7 @@ type PackageRequirement =
     interface System.IComparable with
        member this.CompareTo that = 
           match that with 
-          | :? PackageRequirement as that -> compare (this.Name,this.VersionRequirement) (that.Name,that.VersionRequirement)
+          | :? PackageRequirement as that -> compare (this.Parent,this.Name,this.VersionRequirement) (that.Parent,that.Name,that.VersionRequirement)
           | _ -> invalidArg "that" "cannot compare value of different types" 
 
 /// Represents data about resolved packages
