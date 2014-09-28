@@ -64,7 +64,7 @@ type UnresolvedPackage =
     { Name : string
       VersionRequirement : VersionRequirement
       ResolverStrategy : ResolverStrategy
-      IsRoot: bool
+      Parent: UnresolvedPackage option
       Sources : PackageSource list }
     override this.Equals(that) = 
         match that with

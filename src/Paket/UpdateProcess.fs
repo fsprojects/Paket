@@ -4,6 +4,8 @@ module Paket.UpdateProcess
 open Paket
 open System
 
+
+
 let extractResolvedPackagesOrFail (resolvedPackages:ResolvedPackages) =
     match resolvedPackages with
     | Ok model -> model
@@ -13,15 +15,25 @@ let extractResolvedPackagesOrFail (resolvedPackages:ResolvedPackages) =
 
         let addToError text = errorText := !errorText + Environment.NewLine + text
 
+        let traceUnresolvedPackage (x : UnresolvedPackage) = 
+            match x.Parent with
+            | None -> 
+                sprintf "    - %s %s%s       - from paket.dependencies" x.Name (x.VersionRequirement.ToString()) 
+                    Environment.NewLine
+            | Some parent -> 
+                sprintf "    - %s %s%s       - from %s %s" x.Name (x.VersionRequirement.ToString()) Environment.NewLine 
+                    parent.Name (parent.VersionRequirement.ToString())
+            |> addToError
+
         addToError "Error in resolution." 
         addToError "  Resolved:"
-        for x in closed do
-           addToError <| sprintf "    - %s %s" x.Name (x.VersionRequirement.ToString())
+        for x in closed do           
+           traceUnresolvedPackage x
 
         addToError "  Still open:"
         for x in stillOpen do
-           addToError <| sprintf  "    - %s %s" x.Name (x.VersionRequirement.ToString())
-
+            traceUnresolvedPackage x
+           
         addToError " Please try to relax some conditions."
         failwith !errorText
 

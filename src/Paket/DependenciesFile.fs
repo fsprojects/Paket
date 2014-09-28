@@ -120,7 +120,7 @@ module DependenciesFileParser =
                         { Sources = sources
                           Name = name
                           ResolverStrategy = parseResolverStrategy version
-                          IsRoot = true
+                          Parent = None
                           VersionRequirement = parseVersionRequirement(version.Trim '!') } :: packages, sourceFiles
                 | SourceFile((owner,project, commit), path) ->
                     lineNo, referencesMode, sources, packages, { Owner = owner; Project = project; Commit = commit; Name = path } :: sourceFiles
@@ -196,7 +196,7 @@ type DependenciesFile(fileName,strictMode,packages : UnresolvedPackage list, rem
             match packages |> List.rev with
             | lastPackage::_ -> lastPackage.Sources
             | [] -> [Constants.DefaultNugetSource]
-        let newPackage = {Name = packageName; VersionRequirement = versionRange; Sources = sources; ResolverStrategy = DependenciesFileParser.parseResolverStrategy version; IsRoot = true }
+        let newPackage = {Name = packageName; VersionRequirement = versionRange; Sources = sources; ResolverStrategy = DependenciesFileParser.parseResolverStrategy version; Parent = None }
         tracefn "Adding %s %s to paket.dependencies" packageName (versionRange.ToString())
         DependenciesFile(fileName,strictMode,packages @ [newPackage], remoteFiles)
 
