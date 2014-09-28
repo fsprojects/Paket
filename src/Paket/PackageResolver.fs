@@ -34,9 +34,23 @@ let Resolve(getVersionsF, getPackageDetailsF, rootDependencies:UnresolvedPackage
             versions
         | true,versions -> versions
 
-    let rec improveModel (filteredVersions,packages,closed:Set<UnresolvedPackage>,stillOpen:UnresolvedPackage list) =
-        match stillOpen with
-        | dependency::rest ->            
+    let rec improveModel (filteredVersions,packages:ResolvedPackage list,closed:Set<UnresolvedPackage>,stillOpen:Set<UnresolvedPackage>) =
+        if Set.isEmpty stillOpen then
+            let isOk =
+                filteredVersions
+                |> Map.forall (fun _ v -> 
+                    match v with
+                    | [_] -> true
+                    | _ -> false)
+        
+            if isOk then
+                Ok(packages |> Seq.fold (fun map p -> Map.add (p.Name.ToLower()) p map) Map.empty) 
+            else 
+                Conflict(closed,stillOpen)
+        else
+            let dependency = Seq.head stillOpen
+            let rest = stillOpen |> Set.remove dependency
+     
             let compatibleVersions = 
                 match Map.tryFind dependency.Name filteredVersions with
                 | None -> getAllVersions(dependency.Sources,dependency.Name)
@@ -61,24 +75,14 @@ let Resolve(getVersionsF, getPackageDetailsF, rootDependencies:UnresolvedPackage
                         exploredPackage.Dependencies
                         |> List.map (fun (n,v) -> {dependency with Name = n; VersionRequirement = v; IsRoot = false })
                         |> List.filter (fun d -> Set.contains d closed |> not)
+                        |> Set.ofList
                     
-                    improveModel (newFilteredVersion,exploredPackage::packages,Set.add dependency closed,newDependencies @ rest)
+                    improveModel (newFilteredVersion,exploredPackage::packages,Set.add dependency closed,Set.union rest newDependencies)
                 | Ok _ -> state)
                   (Conflict(closed,stillOpen))
-        | [] -> 
-            let isOk =
-                filteredVersions
-                |> Map.forall (fun _ v -> 
-                    match v with
-                    | [_] -> true
-                    | _ -> false)
-        
-            if isOk then
-                Ok(packages |> Seq.fold (fun map p -> Map.add (p.Name.ToLower()) p map) Map.empty) 
-            else 
-                Conflict(closed,stillOpen)
+
             
-    match improveModel (Map.empty, [], Set.empty, rootDependencies) with
+    match improveModel (Map.empty, [], Set.empty, Set.ofList rootDependencies) with
     | Conflict(_) as c -> c
     | ResolvedPackages.Ok model -> 
         // cleanup names
