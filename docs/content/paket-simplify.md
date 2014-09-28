@@ -58,5 +58,5 @@ The simplify command will help you maintain your direct dependencies.
 
 ## Interactive mode
 
-Sometimes, you may still want to have control over some of the indirect depenedencies. In this case you can use the `--interactive` flag,
+Sometimes, you may still want to have control over some of the indirect dependencies. In this case you can use the `--interactive` flag,
 which will ask you to confirm before deleting a dependency from a file.
