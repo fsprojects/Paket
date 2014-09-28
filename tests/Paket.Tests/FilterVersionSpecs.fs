@@ -87,10 +87,14 @@ let ``can support alpha version``() =
     "1.2.3-alpha023" |> isInRange (DependenciesFileParser.parseVersionRequirement ">= 1 beta rc") |> shouldEqual false
 
 [<Test>]
-let ``can support rc version``() =     
+let ``can support rc version``() = 
     "1.2.3-rec003" |> isInRange (DependenciesFileParser.parseVersionRequirement ">= 1 prerelease") |> shouldEqual true
     "1.2.3-rc2" |> isInRange (DependenciesFileParser.parseVersionRequirement ">= 1 alpha") |> shouldEqual false
     "1.2.3-rc2" |> isInRange (DependenciesFileParser.parseVersionRequirement ">= 1 beta rc") |> shouldEqual true
 
     "1.2.3-rc2" |> isInRange (DependenciesFileParser.parseVersionRequirement ">= 2 beta rc") |> shouldEqual false
+
+[<Test>]
+let ``can support "build" version``() = 
+    "0.9.0-build06428" |> isInRange (DependenciesFileParser.parseVersionRequirement ">= 0.9.0-build06428") |> shouldEqual true
     

@@ -33,7 +33,7 @@ type VersionRequirement =
         match this with
         | VersionRequirement(range,prerelease) ->
             let checkPrerelease prerelease version = 
-                match this.PreReleases with
+                match prerelease with
                 | PreReleaseStatus.All -> true
                 | PreReleaseStatus.No -> version.PreRelease = None
                 | PreReleaseStatus.Concrete list ->
@@ -43,9 +43,9 @@ type VersionRequirement =
 
             match range with
             | Specific v -> v = version
-            | Minimum v -> v <= version && checkPrerelease prerelease version
+            | Minimum v -> v = version || (v <= version && checkPrerelease prerelease version)
             | GreaterThan v -> v < version && checkPrerelease prerelease version
-            | Maximum v -> v >= version && checkPrerelease prerelease version
+            | Maximum v -> v = version || (v >= version && checkPrerelease prerelease version)
             | LessThan v -> v > version && checkPrerelease prerelease version
             | Range(fromB, from, _to, _toB) ->
                 let isInUpperBound = 
