@@ -29,12 +29,12 @@ This will reference the linked file directly into your project.
 
 ## Remote dependencies
 
-If the remote file needs further dependencies then you can just put a [`paket.dependencies` file.](dependencies-files.html) into the same GitHub repo folder.
+If the remote file needs further dependencies then you can just put a [`paket.dependencies` file.](dependencies-file.html) into the same GitHub repo folder.
 Let's look at a sample:
 
 ![alt text](img/octokit-module.png "Octokit module")
 
-And we reference this in our own [`paket.dependencies` file.](dependencies-files.html):
+And we reference this in our own [`paket.dependencies` file.](dependencies-file.html):
 
     github fsharp/FAKE modules/Octokit/Octokit.fsx
 
