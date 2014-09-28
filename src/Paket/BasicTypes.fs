@@ -59,12 +59,25 @@ type NugetPackagesConfig = {
 }
             
 /// Represents an unresolved package.
+[<CustomEquality;CustomComparison>]
 type UnresolvedPackage =
     { Name : string
       VersionRequirement : VersionRequirement
       ResolverStrategy : ResolverStrategy
       IsRoot: bool
       Sources : PackageSource list }
+    override this.Equals(that) = 
+        match that with
+        | :? UnresolvedPackage as that -> this.Name = that.Name && this.VersionRequirement = that.VersionRequirement
+        | _ -> false
+
+    override this.GetHashCode() = hash (this.Name,this.VersionRequirement)
+
+    interface System.IComparable with
+       member this.CompareTo that = 
+          match that with 
+          | :? UnresolvedPackage as that -> compare (this.Name,this.VersionRequirement) (that.Name,that.VersionRequirement)
+          | _ -> invalidArg "that" "cannot compare value of different types" 
 
 /// Represents data about resolved packages
 type ResolvedPackage = 
