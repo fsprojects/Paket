@@ -22,7 +22,7 @@ let graph =
 
 let defaultPackage = 
     { Name = ""
-      Parent = None
+      Parent = PackageRequirementSource.DependenciesFile ""
       VersionRequirement = VersionRequirement(VersionRange.Exactly "1.0", PreReleaseStatus.No)
       Sources = [ PackageSource.NugetSource "" ]
       ResolverStrategy = ResolverStrategy.Max }

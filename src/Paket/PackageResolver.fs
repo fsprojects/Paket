@@ -6,7 +6,7 @@ open Paket.Logging
 open System.Collections.Generic
 
 /// Resolves all direct and indirect dependencies
-let Resolve(getVersionsF, getPackageDetailsF, rootDependencies:UnresolvedPackage list) =
+let Resolve(getVersionsF, getPackageDetailsF, rootDependencies:PackageRequirement list) =
     tracefn "Resolving packages:" 
     let exploredPackages = Dictionary<string*SemVerInfo,ResolvedPackage>()
     let allVersions = new Dictionary<string,SemVerInfo list>()
@@ -34,7 +34,7 @@ let Resolve(getVersionsF, getPackageDetailsF, rootDependencies:UnresolvedPackage
             versions
         | true,versions -> versions
 
-    let rec improveModel (filteredVersions,packages:ResolvedPackage list,closed:Set<UnresolvedPackage>,stillOpen:Set<UnresolvedPackage>) =
+    let rec improveModel (filteredVersions,packages:ResolvedPackage list,closed:Set<PackageRequirement>,stillOpen:Set<PackageRequirement>) =
         if Set.isEmpty stillOpen then
             let isOk =
                 filteredVersions
@@ -58,9 +58,10 @@ let Resolve(getVersionsF, getPackageDetailsF, rootDependencies:UnresolvedPackage
                 |> List.filter dependency.VersionRequirement.IsInRange
                     
             let sorted =                
-                if dependency.Parent = None then
+                match dependency.Parent with
+                | DependenciesFile _ ->
                     List.sort compatibleVersions |> List.rev
-                else
+                | _ ->
                     match dependency.ResolverStrategy with
                     | Max -> List.sort compatibleVersions |> List.rev
                     | Min -> List.sort compatibleVersions
@@ -73,7 +74,7 @@ let Resolve(getVersionsF, getPackageDetailsF, rootDependencies:UnresolvedPackage
                     let newFilteredVersion = Map.add dependency.Name [versionToExplore] filteredVersions
                     let newDependencies =
                         exploredPackage.Dependencies
-                        |> List.map (fun (n,v) -> {dependency with Name = n; VersionRequirement = v; Parent = Some dependency })
+                        |> List.map (fun (n,v) -> {dependency with Name = n; VersionRequirement = v; Parent = Package(dependency.Name,versionToExplore) })
                         |> List.filter (fun d -> Set.contains d closed |> not)
                         |> Set.ofList
                     

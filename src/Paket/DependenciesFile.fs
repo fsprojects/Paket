@@ -120,7 +120,7 @@ module DependenciesFileParser =
                         { Sources = sources
                           Name = name
                           ResolverStrategy = parseResolverStrategy version
-                          Parent = None
+                          Parent = DependenciesFile fileName
                           VersionRequirement = parseVersionRequirement(version.Trim '!') } :: packages, sourceFiles
                 | SourceFile((owner,project, commit), path) ->
                     lineNo, referencesMode, sources, packages, { Owner = owner; Project = project; Commit = commit; Name = path } :: sourceFiles
@@ -160,7 +160,7 @@ module DependenciesFileSerializer =
         if text <> "" && preReleases <> "" then text + " " + preReleases else text + preReleases
 
 /// Allows to parse and analyze paket.dependencies files.
-type DependenciesFile(fileName,strictMode,packages : UnresolvedPackage list, remoteFiles : UnresolvedSourceFile list) = 
+type DependenciesFile(fileName,strictMode,packages : PackageRequirement list, remoteFiles : UnresolvedSourceFile list) = 
     let packages = packages |> Seq.toList
     let dependencyMap = Map.ofSeq (packages |> Seq.map (fun p -> p.Name, p.VersionRequirement))
     member __.DirectDependencies = dependencyMap
@@ -173,7 +173,7 @@ type DependenciesFile(fileName,strictMode,packages : UnresolvedPackage list, rem
         let getSha1 owner repo branch = GitHub.getSHA1OfBranch owner repo branch |> Async.RunSynchronously
         this.Resolve(getSha1,Nuget.GetVersions,Nuget.GetPackageDetails force)
     member __.Resolve(getSha1,getVersionF, getPackageDetailsF) =
-        let resolveSourceFile(file:ResolvedSourceFile) : UnresolvedPackage list =
+        let resolveSourceFile(file:ResolvedSourceFile) : PackageRequirement list =
             GitHub.downloadDependenciesFile(Path.GetDirectoryName fileName, file)
             |> Async.RunSynchronously
             |> DependenciesFile.FromCode
@@ -196,7 +196,12 @@ type DependenciesFile(fileName,strictMode,packages : UnresolvedPackage list, rem
             match packages |> List.rev with
             | lastPackage::_ -> lastPackage.Sources
             | [] -> [Constants.DefaultNugetSource]
-        let newPackage = {Name = packageName; VersionRequirement = versionRange; Sources = sources; ResolverStrategy = DependenciesFileParser.parseResolverStrategy version; Parent = None }
+        let newPackage = 
+            { Name = packageName
+              VersionRequirement = versionRange
+              Sources = sources
+              ResolverStrategy = DependenciesFileParser.parseResolverStrategy version
+              Parent = PackageRequirementSource.DependenciesFile fileName }
         tracefn "Adding %s %s to paket.dependencies" packageName (versionRange.ToString())
         DependenciesFile(fileName,strictMode,packages @ [newPackage], remoteFiles)
 

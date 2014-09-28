@@ -17,6 +17,6 @@ let Resolve(getPackages, getSha1, remoteFiles : UnresolvedSourceFile list) : Res
                              Project = file.Project
                              Dependencies = []
                              Name = file.Name }
-                       let packages:UnresolvedPackage list = getPackages naked
+                       let packages:PackageRequirement list = getPackages naked
 
                        {naked with Dependencies = packages })

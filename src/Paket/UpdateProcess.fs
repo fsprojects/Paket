@@ -15,14 +15,13 @@ let extractResolvedPackagesOrFail (resolvedPackages:ResolvedPackages) =
 
         let addToError text = errorText := !errorText + Environment.NewLine + text
 
-        let traceUnresolvedPackage (x : UnresolvedPackage) = 
+        let traceUnresolvedPackage (x : PackageRequirement) = 
             match x.Parent with
-            | None -> 
-                sprintf "    - %s %s%s       - from paket.dependencies" x.Name (x.VersionRequirement.ToString()) 
-                    Environment.NewLine
-            | Some parent -> 
+            | DependenciesFile _ -> 
+                sprintf "    - %s %s" x.Name (x.VersionRequirement.ToString())
+            | Package(name,version) -> 
                 sprintf "    - %s %s%s       - from %s %s" x.Name (x.VersionRequirement.ToString()) Environment.NewLine 
-                    parent.Name (parent.VersionRequirement.ToString())
+                    name (version.ToString())
             |> addToError
 
         addToError "Error in resolution." 
@@ -30,9 +29,10 @@ let extractResolvedPackagesOrFail (resolvedPackages:ResolvedPackages) =
         for x in closed do           
            traceUnresolvedPackage x
 
-        addToError "  Still open:"
-        for x in stillOpen do
-            traceUnresolvedPackage x
+        addToError "  Con't resolve:"
+        stillOpen
+        |> Seq.head
+        |> traceUnresolvedPackage
            
         addToError " Please try to relax some conditions."
         failwith !errorText

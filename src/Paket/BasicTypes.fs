@@ -57,18 +57,22 @@ type NugetPackagesConfig = {
     Packages: (string*SemVerInfo) list
     Type: NugetPackagesConfigType
 }
+
+type PackageRequirementSource =
+| DependenciesFile of string
+| Package of string * SemVerInfo
             
 /// Represents an unresolved package.
 [<CustomEquality;CustomComparison>]
-type UnresolvedPackage =
+type PackageRequirement =
     { Name : string
       VersionRequirement : VersionRequirement
       ResolverStrategy : ResolverStrategy
-      Parent: UnresolvedPackage option
+      Parent: PackageRequirementSource
       Sources : PackageSource list }
     override this.Equals(that) = 
         match that with
-        | :? UnresolvedPackage as that -> this.Name = that.Name && this.VersionRequirement = that.VersionRequirement
+        | :? PackageRequirement as that -> this.Name = that.Name && this.VersionRequirement = that.VersionRequirement
         | _ -> false
 
     override this.GetHashCode() = hash (this.Name,this.VersionRequirement)
@@ -76,7 +80,7 @@ type UnresolvedPackage =
     interface System.IComparable with
        member this.CompareTo that = 
           match that with 
-          | :? UnresolvedPackage as that -> compare (this.Name,this.VersionRequirement) (that.Name,that.VersionRequirement)
+          | :? PackageRequirement as that -> compare (this.Name,this.VersionRequirement) (that.Name,that.VersionRequirement)
           | _ -> invalidArg "that" "cannot compare value of different types" 
 
 /// Represents data about resolved packages
@@ -91,7 +95,7 @@ type ResolvedSourceFile =
       Project : string
       Name : string      
       Commit : string
-      Dependencies : UnresolvedPackage list }
+      Dependencies : PackageRequirement list }
     member this.FilePath = this.ComputeFilePath(this.Name)
 
     member this.ComputeFilePath(name:string) =
@@ -118,7 +122,7 @@ type PackageResolution = Map<string , ResolvedPackage>
 
 type ResolvedPackages =
 | Ok of PackageResolution
-| Conflict of Set<UnresolvedPackage> * Set<UnresolvedPackage>
+| Conflict of Set<PackageRequirement> * Set<PackageRequirement>
 
 type Resolved = {
     ResolvedPackages : ResolvedPackages
