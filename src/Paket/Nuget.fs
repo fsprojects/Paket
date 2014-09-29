@@ -369,7 +369,7 @@ let ReadPackagesConfig(configFile : FileInfo) =
 
 
 //TODO: Should we really be able to call these methods with invalid arguments?
-let GetPackageDetails force sources package version = 
+let GetPackageDetails force sources package version : PackageResolver.PackageDetails= 
     let rec tryNext xs = 
         match xs with
         | source :: rest -> 
@@ -387,7 +387,7 @@ let GetPackageDetails force sources package version =
     { Name = nugetObject.Name
       Source = source
       DownloadLink = nugetObject.DownloadUrl
-      DirectDependencies = nugetObject.Dependencies  }
+      DirectDependencies = nugetObject.Dependencies  } 
 
 let GetVersions sources package = 
     sources

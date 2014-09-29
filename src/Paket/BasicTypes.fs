@@ -103,13 +103,3 @@ type ResolvedSourceFile =
 
     override this.ToString() =  sprintf "%s/%s:%s %s" this.Owner this.Project this.Commit this.Name
 
-/// Represents package details
-type PackageDetails = 
-    { Name : string
-      Source : PackageSource
-      DownloadLink : string
-      DirectDependencies :  (string * VersionRequirement) list }
-      
-type FilteredVersions = Map<string,SemVerInfo list>
-
-

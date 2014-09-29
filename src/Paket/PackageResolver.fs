@@ -6,6 +6,13 @@ open Paket.Logging
 open System.Collections.Generic
 open System
 
+/// Represents package details
+type PackageDetails = 
+    { Name : string
+      Source : PackageSource
+      DownloadLink : string
+      DirectDependencies :  (string * VersionRequirement) list }
+
 /// Represents data about resolved packages
 type ResolvedPackage = 
     { Name : string
