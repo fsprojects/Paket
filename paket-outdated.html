@@ -36,9 +36,13 @@
 
 <p>Lists all dependencies that have newer versions available.</p>
 
-<table class="pre"><tr><td><pre lang="batchfile">$ paket outdated [--dependencies-file FILE]</pre></td></tr></table>
+<table class="pre"><tr><td><pre lang="batchfile">$ paket outdated [--pre] [--strict] [--dependencies-file FILE]</pre></td></tr></table>
 
 <p>Options:</p>
+
+<p><code>--pre</code>: Includes prereleases.</p>
+
+<p><code>--strict</code>: Keeps the version requirement as in the <a href="dependencies-file.html"><code>paket.dependencies</code></a>.</p>
 
 <p><code>--dependencies-file</code>: Use the specified file instead of <a href="dependencies-file.html"><code>paket.dependencies</code></a>.</p>
 
