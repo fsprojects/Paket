@@ -1,3 +1,6 @@
+#### 0.4.1 - 29.09.2014
+* Adding support for portable-net45+wp80+win8+wpa81
+
 #### 0.4.0 - 28.09.2014
 * Resolve dependencies for github modules - http://fsprojects.github.io/Paket/github-dependencies.html#Remote-dependencies
 * New [--interactive] mode for paket simplify - http://fsprojects.github.io/Paket/paket-simplify.html
