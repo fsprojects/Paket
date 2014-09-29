@@ -1,3 +1,6 @@
+#### 0.4.2 - 29.09.2014
+* New --no-auto-restore option for convert-from-nuget command - http://fsprojects.github.io/Paket/convert-from-nuget.html#Automated-process
+
 #### 0.4.1 - 29.09.2014
 * Adding support for portable-net45+wp80+win8+wpa81
 

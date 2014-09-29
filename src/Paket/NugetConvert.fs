@@ -93,13 +93,13 @@ let private convertNugetToRefFile(nugetPackagesConfig) =
     else tracefn "%s is up to date" refFile
 
 /// Converts all projects from NuGet to Paket
-let ConvertFromNuget(force, installAfter, dependenciesFileName) =
+let ConvertFromNuget(force, installAfter, initAutoRestore, dependenciesFileName) =
     if File.Exists Constants.DependenciesFile && not force then failwithf "%s already exists, use --force to overwrite" Constants.DependenciesFile
 
     let nugetPackagesConfigs = FindAllFiles(".", "packages.config") |> Seq.map Nuget.ReadPackagesConfig
     convertNugetsToDepFile(nugetPackagesConfigs)
         
-    for nugetPackagesConfig  in nugetPackagesConfigs do
+    for nugetPackagesConfig in nugetPackagesConfigs do
         let packageFile = nugetPackagesConfig.File
         match nugetPackagesConfig.Type with
         | ProjectLevel ->
@@ -129,7 +129,8 @@ let ConvertFromNuget(force, installAfter, dependenciesFileName) =
             removeFileIfExists nugetTargets
             let depFile = DependenciesFile.ReadFromFile(dependenciesFileName)
             if not <| depFile.HasPackage("Nuget.CommandLine") then depFile.Add("Nuget.CommandLine", "").Save()
-            VSIntegration.InitAutoRestore()
+            if initAutoRestore then
+                VSIntegration.InitAutoRestore()
 
         if Directory.EnumerateFileSystemEntries(nugetDir) |> Seq.isEmpty 
             then Directory.Delete nugetDir

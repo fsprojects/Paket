@@ -39,7 +39,8 @@ type CLIArguments =
     | Hard
     | [<CustomCommandLine("nuget")>] Nuget of string
     | [<CustomCommandLine("version")>] Version of string
-    | No_install
+    | No_Install
+    | No_Auto_Restore
 with
     interface IArgParserTemplate with
         member s.Usage =
@@ -56,7 +57,8 @@ with
             | Force -> "forces the download of all packages."
             | Interactive -> "interactive process."
             | Hard -> "overwrites manual package references."
-            | No_install -> "omits install --hard after convert-from-nuget."
+            | No_Install -> "omits install --hard after convert-from-nuget."
+            | No_Auto_Restore -> "omits ini-auto-restore after convert-from-nuget."
             | Nuget _ -> "allows to specify a nuget package."
             | Version _ -> "allows to specify a package version."
 
@@ -94,7 +96,8 @@ try
         let force = results.Contains <@ CLIArguments.Force @> 
         let interactive = results.Contains <@ CLIArguments.Interactive @> 
         let hard = results.Contains <@ CLIArguments.Hard @> 
-        let noInstall = results.Contains <@ CLIArguments.No_install @>
+        let noInstall = results.Contains <@ CLIArguments.No_Install @>
+        let noAutoRestore = results.Contains <@ CLIArguments.No_Auto_Restore @>
 
         match command with
         | Command.Add -> 
@@ -108,7 +111,7 @@ try
         | Command.Update -> UpdateProcess.Update(dependenciesFileName,true,force,hard)
         | Command.Outdated -> FindOutdated.ListOutdated(dependenciesFileName)
         | Command.InitAutoRestore -> VSIntegration.InitAutoRestore()
-        | Command.ConvertFromNuget -> NuGetConvert.ConvertFromNuget(force,noInstall |> not,dependenciesFileName)
+        | Command.ConvertFromNuget -> NuGetConvert.ConvertFromNuget(force,noInstall |> not,noAutoRestore |> not,dependenciesFileName)
         | Command.Simplify -> Simplifier.Simplify(interactive,dependenciesFileName)
         | _ -> traceErrorfn "no command given.%s" (parser.Usage())
         
