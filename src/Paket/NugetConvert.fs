@@ -11,7 +11,13 @@ open Paket.Nuget
 let private readPackageSources(configFile : FileInfo) =
     let doc = XmlDocument()
     doc.Load configFile.FullName
-    [for node in doc.SelectNodes("//packageSources/add[@value]") -> node.Attributes.["value"].Value]
+    [for node in doc.SelectNodes("//packageSources/add[@value]") -> 
+        {PackageSources.NugetSource.Url = node.Attributes.["value"].Value
+         PackageSources.NugetSource.Auth = doc.SelectNodes(sprintf "//packageSourceCredentials/%s" node.Attributes.["key"].Value) 
+                                           |> Seq.cast<XmlNode> 
+                                           |> Seq.firstOrDefault
+                                           |> Option.map (fun node -> {Username = node.SelectSingleNode("//add[@key='Username']").Attributes.["value"].Value
+                                                                       Password = node.SelectSingleNode("//add[@key='ClearTextPassword']").Attributes.["value"].Value})} ]
 
 let removeFileIfExists file = 
     if File.Exists file then 
@@ -49,18 +55,27 @@ let private convertNugetsToDepFile(nugetPackagesConfigs) =
     
     if not depFileExists 
         then
-            let packageSources =
+            let nugetSources =
                 match FindAllFiles(".", "nuget.config") |> Seq.firstOrDefault with
                 | Some configFile -> 
                     let sources = readPackageSources(configFile) 
                     removeFileIfExists configFile.FullName
-                    sources @ [Constants.DefaultNugetStream]
-                | None -> [Constants.DefaultNugetStream]
+                    sources @ [{Url = Constants.DefaultNugetStream; Auth = None}]
+                | None -> [{Url = Constants.DefaultNugetStream; Auth = None}]
                 |> Set.ofList
-                |> Set.toList
-                |> List.map (sprintf "source %s")                
-                
-            File.WriteAllLines(Constants.DependenciesFile, packageSources @ [String.Empty] @ dependencyLines)
+                |> Set.toList        
+            
+            let packages =
+                latestVersions 
+                |> Seq.filter (fun (name,_) -> not (confictingPackages |> Set.contains (name.ToLower())))
+                |> Seq.map (fun (name,v) -> {Requirements.PackageRequirement.Name = name
+                                             Requirements.PackageRequirement.VersionRequirement = VersionRequirement(VersionRange.Specific(SemVer.parse v), PreReleaseStatus.No)
+                                             Requirements.PackageRequirement.ResolverStrategy = Max
+                                             Requirements.PackageRequirement.Sources = nugetSources |> List.map (fun n -> PackageSources.PackageSource.Nuget(n))
+                                             Requirements.PackageRequirement.Parent = Requirements.PackageRequirementSource.DependenciesFile(Constants.DependenciesFile)})
+                |> Seq.toList
+
+            DependenciesFile(Constants.DependenciesFile, false, packages, []).Save()
             tracefn "Generated %s file" Constants.DependenciesFile 
     elif not (dependencyLines |> Seq.isEmpty)
         then
