@@ -1,3 +1,6 @@
+#### 0.4.9 - 29.09.2014
+* Deploy fixed targets file - https://github.com/fsprojects/Paket/issues/172
+
 #### 0.4.8 - 29.09.2014
 * Executable libs are also added to project file
 
