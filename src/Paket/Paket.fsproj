@@ -81,6 +81,7 @@
     <Compile Include="Nuspec.fs" />
     <Compile Include="ProjectFile.fs" />
     <Compile Include="SolutionFile.fs" />
+    <Compile Include="PackageSourceParser.fs" />
     <Compile Include="Nuget.fs" />
     <Compile Include="DependenciesFile.fs" />
     <Compile Include="LockFile.fs" />

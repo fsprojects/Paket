@@ -1,3 +1,6 @@
+#### 0.4.7 - 29.09.2014
+* Store source authentication options in paket.dependencies only
+
 #### 0.4.6 - 29.09.2014
 * Don't look for auth in cache 
 

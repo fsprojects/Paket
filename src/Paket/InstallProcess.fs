@@ -7,14 +7,21 @@ open System.IO
 open System.Collections.Generic
 
 /// Downloads and extracts all packages.
-let ExtractPackages(force, packages:PackageResolution) = 
+let ExtractPackages(sources,force, packages:PackageResolution) = 
     packages
     |> Seq.map (fun kv -> 
         async { 
             let package = kv.Value
             match package.Source with
-            | Nuget source -> 
-                let! folder = Nuget.DownloadPackage(source.Auth, source.Url, package.Name, package.Version.ToString(), force)
+            | Nuget source ->
+                let auth =
+                    sources 
+                    |> List.tryPick (fun s -> 
+                                        match s with
+                                        | Nuget s -> s.Auth
+                                        | _ -> None)
+
+                let! folder = Nuget.DownloadPackage(auth, source.Url, package.Name, package.Version.ToString(), force)
                 return Some(package, Nuget.GetLibraries folder)
             | LocalNuget path -> 
                 let packageFile = Path.Combine(path, sprintf "%s.%s.nupkg" package.Name (package.Version.ToString()))
@@ -96,9 +103,9 @@ let extractReferencesFromListFile projectFile =
 
 
 /// Installs the given packageFile.
-let Install(force, hard, lockFile:LockFile) = 
+let Install(sources,force, hard, lockFile:LockFile) = 
     let extractedPackages = 
-        ExtractPackages(force, lockFile.ResolvedPackages)
+        ExtractPackages(sources,force, lockFile.ResolvedPackages)
         |> Seq.append (DownloadSourceFiles(Path.GetDirectoryName lockFile.FileName, lockFile.SourceFiles))
         |> Async.Parallel
         |> Async.RunSynchronously

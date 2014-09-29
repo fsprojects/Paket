@@ -35,6 +35,12 @@ let Add(package, version, force, hard, interactive, installAfter, dependenciesFi
             let lockFile = LockFile(lockFileName.FullName, dependenciesFile.Strict, resolvedPackages, resolution.ResolvedSourceFiles)
             lockFile.Save()
             lockFile
-        InstallProcess.Install(force, hard, lockFile)
+
+        let sources =
+            dependenciesFileName
+            |> File.ReadAllLines
+            |> PackageSourceParser.getSources 
+
+        InstallProcess.Install(sources, force, hard, lockFile)
 
     dependenciesFile.Save()

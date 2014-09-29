@@ -3,8 +3,7 @@ module Paket.UpdateProcess
 
 open Paket
 open System
-
-
+open System.IO
 
 let extractResolvedPackagesOrFail (resolvedPackages:ResolvedPackages) =
     match resolvedPackages with
@@ -42,14 +41,22 @@ let getResolvedPackagesOrFail (resolution:Resolved) = extractResolvedPackagesOrF
 
 /// Update command
 let Update(dependenciesFileName, forceResolution, force, hard) = 
-    let lockFileName = DependenciesFile.FindLockfile dependenciesFileName    
+    let lockFileName = DependenciesFile.FindLockfile dependenciesFileName
     
-    let lockFile = 
+    let sources, lockFile = 
         if forceResolution || not lockFileName.Exists then 
             let dependenciesFile = DependenciesFile.ReadFromFile dependenciesFileName
             let resolution = dependenciesFile.Resolve force
-            let lockFile = LockFile(lockFileName.FullName, dependenciesFile.Strict, getResolvedPackagesOrFail resolution, resolution.ResolvedSourceFiles)
+            let lockFile = 
+                LockFile
+                    (lockFileName.FullName, dependenciesFile.Strict, getResolvedPackagesOrFail resolution, 
+                     resolution.ResolvedSourceFiles)
             lockFile.Save()
-            lockFile
-        else LockFile.LoadFrom(lockFileName.FullName)
-    InstallProcess.Install(force, hard, lockFile)
+            dependenciesFile.Sources, lockFile
+        else 
+            let sources = 
+                dependenciesFileName
+                |> File.ReadAllLines
+                |> PackageSourceParser.getSources
+            sources, LockFile.LoadFrom(lockFileName.FullName)
+    InstallProcess.Install(sources, force, hard, lockFile)

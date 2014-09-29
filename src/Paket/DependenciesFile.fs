@@ -61,20 +61,12 @@ module DependenciesFileParser =
             | _ -> failwithf "could not parse version range \"%s\"" text
 
 
-    let userNameRegex = new Regex("username[:][ ]*[\"]?([^\"]+)[\"]?", RegexOptions.IgnoreCase);
-    let passwordRegex = new Regex("password[:][ ]*[\"]?([^\"]+)[\"]?", RegexOptions.IgnoreCase);
-    let parseAuth(text:string) =
-        if userNameRegex.IsMatch(text) && passwordRegex.IsMatch(text) then
-            Some { Username = userNameRegex.Match(text).Groups.[1].Value; Password = passwordRegex.Match(text).Groups.[1].Value }
-        else
-            None
-
     let private (|Remote|Package|Blank|ReferencesMode|SourceFile|) (line:string) =
         match line.Trim() with
         | _ when String.IsNullOrWhiteSpace line -> Blank
         | trimmed when trimmed.StartsWith "source" ->
             let parts = trimmed.Split ' '
-            Remote (parts.[1].Replace("\"",""),parseAuth trimmed)
+            Remote (parts.[1].Replace("\"",""),PackageSourceParser.parseAuth trimmed)
         | trimmed when trimmed.StartsWith "nuget" -> 
             let parts = trimmed.Replace("nuget","").Trim().Replace("\"", "").Split([|' '|],StringSplitOptions.RemoveEmptyEntries) |> Seq.toList
 
@@ -163,12 +155,21 @@ module DependenciesFileSerializer =
 type DependenciesFile(fileName,strictMode,packages : PackageRequirement list, remoteFiles : UnresolvedSourceFile list) = 
     let packages = packages |> Seq.toList
     let dependencyMap = Map.ofSeq (packages |> Seq.map (fun p -> p.Name, p.VersionRequirement))
+    
+    let sources =
+        packages 
+        |> Seq.map (fun p -> p.Sources)
+        |> Seq.concat
+        |> Set.ofSeq
+        |> Set.toList
+            
     member __.DirectDependencies = dependencyMap
     member __.Packages = packages
     member __.HasPackage (name : string) = packages |> List.exists (fun p -> p.Name.ToLower() = name.ToLower())
     member __.RemoteFiles = remoteFiles
     member __.Strict = strictMode
     member __.FileName = fileName
+    member __.Sources = sources
     member this.Resolve(force) = 
         let getSha1 owner repo branch = GitHub.getSHA1OfBranch owner repo branch |> Async.RunSynchronously
         this.Resolve(getSha1,Nuget.GetVersions,Nuget.GetPackageDetails force)
