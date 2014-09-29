@@ -106,7 +106,10 @@ type FrameworkIdentifier =
               "Profile328", "portable-net4+sl5+netcore45+wpa81+wp8+MonoAndroid1+MonoTouch1"
               "Profile328", "portable-net4+sl5+wp8+win8+wpa81+monoandroid16+monotouch40"
               "Profile336", "portable-net403+sl5+netcore45+wpa81+wp8+MonoAndroid1+MonoTouch1"
-              "Profile344", "portable-net45+sl5+netcore45+wpa81+wp8+MonoAndroid1+MonoTouch1" ]
+              "Profile344", "portable-net45+sl5+netcore45+wpa81+wp8+MonoAndroid1+MonoTouch1"
+
+              // unsure
+              "Profile84", "portable-net45+wp80+win8+wpa81" ]
 
         let extract path = 
             match path with
