@@ -1,3 +1,6 @@
+#### 0.4.6 - 29.09.2014
+* Don't look for auth in cache 
+
 #### 0.4.5 - 29.09.2014
 * New [--pre] and [--strict] modes for paket outdated - http://fsprojects.github.io/Paket/paket-outdated.html 
 
