@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="utf-8"/>
-    <title>PackageDetails - Paket</title>
+    <title>ResolvedPackages - Paket</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <meta name="description" content=""/>
     <meta name="author" content="Steffen Forkmann, Alexander Gross"/>
@@ -34,28 +34,27 @@
 
 
 
-<h1>PackageDetails</h1>
+<h1>ResolvedPackages</h1>
 <div class="xmldoc">
-<p>Represents package details</p>
 </div>
-  <h3>Record Fields</h3>
+  <h3>Union Cases</h3>
   <table class="table table-bordered member-list">
     <thead>
-      <tr><td>Record Field</td><td>Description</td></tr>
+      <tr><td>Union Case</td><td>Description</td></tr>
     </thead>
     <tbody>
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '122', 122)" onmouseover="showTip(event, '122', 122)">
-            DirectDependencies
+          <code onmouseout="hideTip(event, '98', 98)" onmouseover="showTip(event, '98', 98)">
+            Conflict(...)
           </code>
-          <div class="tip" id="122">
-            <strong>Signature:</strong> (string * VersionRequirement) list<br />
+          <div class="tip" id="98">
+            <strong>Signature:</strong> Set&lt;PackageRequirement&gt; * Set&lt;PackageRequirement&gt;<br />
                       </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket/BasicTypes.fs#L117-117" class="github-link">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket/PackageResolver.fs#L29-29" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -65,51 +64,41 @@
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '123', 123)" onmouseover="showTip(event, '123', 123)">
-            DownloadLink
+          <code onmouseout="hideTip(event, '99', 99)" onmouseover="showTip(event, '99', 99)">
+            Ok(PackageResolution)
           </code>
-          <div class="tip" id="123">
-            <strong>Signature:</strong> string<br />
+          <div class="tip" id="99">
+            <strong>Signature:</strong> PackageResolution<br />
                       </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket/BasicTypes.fs#L116-116" class="github-link">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket/PackageResolver.fs#L28-28" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
           
         </td>
       </tr>
+    </tbody>
+  </table>
+  <h3>Instance members</h3>
+  <table class="table table-bordered member-list">
+    <thead>
+      <tr><td>Instance member</td><td>Description</td></tr>
+    </thead>
+    <tbody>
       <tr>
         <td class="member-name">
 
           <code onmouseout="hideTip(event, '124', 124)" onmouseover="showTip(event, '124', 124)">
-            Name
+            GetModelOrFail()
           </code>
           <div class="tip" id="124">
-            <strong>Signature:</strong> string<br />
+            <strong>Signature:</strong> unit -&gt; PackageResolution<br />
                       </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket/BasicTypes.fs#L114-114" class="github-link">
-              <img src="../content/img/github.png" class="normal" />
-              <img src="../content/img/github-blue.png" class="hover" />
-            </a>
-          
-        </td>
-      </tr>
-      <tr>
-        <td class="member-name">
-
-          <code onmouseout="hideTip(event, '125', 125)" onmouseover="showTip(event, '125', 125)">
-            Source
-          </code>
-          <div class="tip" id="125">
-            <strong>Signature:</strong> PackageSource<br />
-                      </div>
-        </td>
-        <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket/BasicTypes.fs#L115-115" class="github-link">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket/PackageResolver.fs#L31-31" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
