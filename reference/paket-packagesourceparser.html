@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="utf-8"/>
-    <title>References - Paket</title>
+    <title>PackageSourceParser - Paket</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <meta name="description" content=""/>
     <meta name="author" content="Steffen Forkmann, Alexander Gross"/>
@@ -34,27 +34,30 @@
 
 
 
-<h1>References</h1>
+<h1>PackageSourceParser</h1>
 <div class="xmldoc">
 </div>
-  <h3>Union Cases</h3>
+
+<!-- Render nested types and modules, if there are any -->
+
+  <h3>Functions and values</h3>
   <table class="table table-bordered member-list">
     <thead>
-      <tr><td>Union Case</td><td>Description</td></tr>
+      <tr><td>Function or value</td><td>Description</td></tr>
     </thead>
     <tbody>
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '59', 59)" onmouseover="showTip(event, '59', 59)">
-            All
+          <code onmouseout="hideTip(event, '21', 21)" onmouseover="showTip(event, '21', 21)">
+            getSources lines
           </code>
-          <div class="tip" id="59">
-            <strong>Signature:</strong> <br />
+          <div class="tip" id="21">
+            <strong>Signature:</strong> lines:seq&lt;string&gt; -&gt; PackageSource list<br />
                       </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket/Nuspec.fs#L9-9" class="github-link">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket/PackageSourceParser.fs#L16-16" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -64,15 +67,51 @@
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '64', 64)" onmouseover="showTip(event, '64', 64)">
-            Explicit(string list)
+          <code onmouseout="hideTip(event, '24', 24)" onmouseover="showTip(event, '24', 24)">
+            parseAuth text
           </code>
-          <div class="tip" id="64">
-            <strong>Signature:</strong> string list<br />
+          <div class="tip" id="24">
+            <strong>Signature:</strong> text:string -&gt; Auth option<br />
                       </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket/Nuspec.fs#L10-10" class="github-link">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket/PackageSourceParser.fs#L10-10" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '25', 25)" onmouseover="showTip(event, '25', 25)">
+            passwordRegex 
+          </code>
+          <div class="tip" id="25">
+            <strong>Signature:</strong> Regex<br />
+                      </div>
+        </td>
+        <td class="xmldoc">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket/PackageSourceParser.fs#L9-9" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '26', 26)" onmouseover="showTip(event, '26', 26)">
+            userNameRegex 
+          </code>
+          <div class="tip" id="26">
+            <strong>Signature:</strong> Regex<br />
+                      </div>
+        </td>
+        <td class="xmldoc">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket/PackageSourceParser.fs#L8-8" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
