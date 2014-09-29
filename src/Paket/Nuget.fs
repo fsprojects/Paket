@@ -23,7 +23,7 @@ let private loadNuGetOData raw =
 type NugetPackageCache =
     { Dependencies : (string * VersionRequirement) list
       Name : string
-      Source: PackageSource
+      SourceUrl: string
       DownloadUrl : string}
 
 
@@ -151,7 +151,7 @@ let getDetailsFromNugetViaOData auth nugetURL package version =
             |> Array.map (fun (name, version) -> name, parseVersionRange version)
             |> Array.toList
 
-        return { Name = officialName; DownloadUrl = downloadLink; Dependencies = packages; Source = PackageSource.NugetSource nugetURL }
+        return { Name = officialName; DownloadUrl = downloadLink; Dependencies = packages; SourceUrl = nugetURL }
     }
 
 
@@ -169,7 +169,7 @@ let private loadFromCacheOrOData force fileName auth nugetURL package version =
             try 
                 let json = File.ReadAllText(fileName)
                 let cachedObject = JsonConvert.DeserializeObject<NugetPackageCache>(json)                
-                if cachedObject.Name = null || cachedObject.DownloadUrl = null || cachedObject.Source = Unchecked.defaultof<PackageSource> then
+                if cachedObject.Name = null || cachedObject.DownloadUrl = null || cachedObject.SourceUrl = null then
                     let! details = getDetailsFromNugetViaOData auth nugetURL package version
                     return true,details
                 else
@@ -188,10 +188,13 @@ let getDetailsFromNuget force auth nugetURL package version =
     async {
         try            
             let fi = FileInfo(Path.Combine(CacheFolder,sprintf "%s.%s.json" package version))
-            let! (invalidCache,details) = loadFromCacheOrOData force fi.FullName auth nugetURL package version 
-            if invalidCache then
-                File.WriteAllText(fi.FullName,JsonConvert.SerializeObject(details))
-            return details
+            let! (invalidCache,details) = loadFromCacheOrOData force fi.FullName auth nugetURL package version
+            if details.SourceUrl <> nugetURL then
+                return! getDetailsFromNugetViaOData auth nugetURL package version 
+            else
+                if invalidCache then
+                    File.WriteAllText(fi.FullName,JsonConvert.SerializeObject(details))
+                return details
         with
         | _ -> return! getDetailsFromNugetViaOData auth nugetURL package version 
     }    
@@ -238,7 +241,7 @@ let getDetailsFromLocalFile path package version =
 
         File.Delete(nuspec.FullName)
 
-        return { Name = officialName; DownloadUrl = package; Dependencies = dependencies; Source = LocalNuget path }
+        return { Name = officialName; DownloadUrl = package; Dependencies = dependencies; SourceUrl = path }
     }
 
 
@@ -376,12 +379,13 @@ let GetPackageDetails force sources package version =
                     getDetailsFromNuget force source.Auth source.Url package version |> Async.RunSynchronously
                 | LocalNuget path -> 
                     getDetailsFromLocalFile path package version |> Async.RunSynchronously
+                |> fun x -> source,x
             with _ -> tryNext rest
         | [] -> failwithf "Couldn't get package details for package %s on %A." package (sources |> List.map (fun (s:PackageSource) -> s.ToString()))
     
-    let nugetObject = tryNext sources
+    let source,nugetObject = tryNext sources
     { Name = nugetObject.Name
-      Source = nugetObject.Source
+      Source = source
       DownloadLink = nugetObject.DownloadUrl
       DirectDependencies = nugetObject.Dependencies  }
 
