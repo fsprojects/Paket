@@ -23,7 +23,8 @@ let private loadNuGetOData raw =
 type NugetPackageCache =
     { Dependencies : (string * VersionRequirement) list
       Name : string
-      Url : string}
+      Source: PackageSource
+      DownloadUrl : string}
 
 
 /// Gets versions of the given package via OData.
@@ -150,7 +151,7 @@ let getDetailsFromNugetViaOData auth nugetURL package version =
             |> Array.map (fun (name, version) -> name, parseVersionRange version)
             |> Array.toList
 
-        return { Name = officialName; Url = downloadLink; Dependencies = packages }
+        return { Name = officialName; DownloadUrl = downloadLink; Dependencies = packages; Source = PackageSource.NugetSource nugetURL }
     }
 
 
@@ -168,10 +169,11 @@ let private loadFromCacheOrOData force fileName auth nugetURL package version =
             try 
                 let json = File.ReadAllText(fileName)
                 let cachedObject = JsonConvert.DeserializeObject<NugetPackageCache>(json)                
-                if cachedObject.Name = null || cachedObject.Url = null then
-                    failwith "invalid cache"
-                
-                return false,cachedObject
+                if cachedObject.Name = null || cachedObject.DownloadUrl = null || cachedObject.Source = Unchecked.defaultof<PackageSource> then
+                    let! details = getDetailsFromNugetViaOData auth nugetURL package version
+                    return true,details
+                else
+                    return false,cachedObject
             with _ -> 
                 let! details = getDetailsFromNugetViaOData auth nugetURL package version
                 return true,details
@@ -236,7 +238,7 @@ let getDetailsFromLocalFile path package version =
 
         File.Delete(nuspec.FullName)
 
-        return { Name = officialName; Url = package; Dependencies = dependencies }
+        return { Name = officialName; DownloadUrl = package; Dependencies = dependencies; Source = LocalNuget path }
     }
 
 
@@ -299,7 +301,7 @@ let DownloadPackage(auth, url, name, version, force) =
             try
                 tracefn "Downloading %s %s to %s" name version targetFileName
 
-                let request = HttpWebRequest.Create(Uri nugetPackage.Url) :?> HttpWebRequest
+                let request = HttpWebRequest.Create(Uri nugetPackage.DownloadUrl) :?> HttpWebRequest
                 request.AutomaticDecompression <- DecompressionMethods.GZip ||| DecompressionMethods.Deflate
 
                 match auth with
@@ -374,14 +376,13 @@ let GetPackageDetails force sources package version =
                     getDetailsFromNuget force source.Auth source.Url package version |> Async.RunSynchronously
                 | LocalNuget path -> 
                     getDetailsFromLocalFile path package version |> Async.RunSynchronously
-                |> fun x -> source,x
             with _ -> tryNext rest
         | [] -> failwithf "Couldn't get package details for package %s on %A." package (sources |> List.map (fun (s:PackageSource) -> s.ToString()))
     
-    let source, nugetObject = tryNext sources
+    let nugetObject = tryNext sources
     { Name = nugetObject.Name
-      Source = source
-      DownloadLink = nugetObject.Url
+      Source = nugetObject.Source
+      DownloadLink = nugetObject.DownloadUrl
       DirectDependencies = nugetObject.Dependencies  }
 
 let GetVersions sources package = 

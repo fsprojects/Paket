@@ -1,3 +1,6 @@
+#### 0.4.3 - 29.09.2014
+* Cache package source - Fixes issue with multiple sources
+
 #### 0.4.2 - 29.09.2014
 * New --no-auto-restore option for convert-from-nuget command - http://fsprojects.github.io/Paket/convert-from-nuget.html#Automated-process
 
