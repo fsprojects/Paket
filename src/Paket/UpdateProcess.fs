@@ -42,7 +42,7 @@ let getResolvedPackagesOrFail (resolution:Resolved) = extractResolvedPackagesOrF
 
 /// Update command
 let Update(dependenciesFileName, forceResolution, force, hard) = 
-    let lockFileName = DependenciesFile.FindLockfile dependenciesFileName
+    let lockFileName = DependenciesFile.FindLockfile dependenciesFileName    
     
     let lockFile = 
         if forceResolution || not lockFileName.Exists then 
@@ -51,5 +51,5 @@ let Update(dependenciesFileName, forceResolution, force, hard) =
             let lockFile = LockFile(lockFileName.FullName, dependenciesFile.Strict, getResolvedPackagesOrFail resolution, resolution.ResolvedSourceFiles)
             lockFile.Save()
             lockFile
-        else LockFile.LoadFrom lockFileName.FullName
+        else LockFile.LoadFrom(lockFileName.FullName)
     InstallProcess.Install(force, hard, lockFile)

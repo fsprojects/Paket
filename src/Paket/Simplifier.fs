@@ -59,7 +59,7 @@ let Simplify (interactive, dependenciesFileName) =
     if not <| File.Exists(lockFilePath.FullName) then 
         failwith "lock file not found. Create lock file by running paket install."
 
-    let lockFile = LockFile.LoadFrom lockFilePath.FullName
+    let lockFile = LockFile.LoadFrom(lockFilePath.FullName)
     let packages = lockFile.ResolvedPackages |> Seq.map (fun kv -> kv.Value) |> List.ofSeq
     let refFiles = 
         ProjectFile.FindAllProjects(".") 

@@ -33,9 +33,7 @@ module LockFileSerializer =
                     yield "NUGET"
                     hasReported := true
 
-                  match auth with
-                  | None -> yield "  remote: " + source
-                  | Some auth -> yield sprintf "  remote: %s username: \"%s\" password: \"%s\"" source auth.Username auth.Password
+                  yield "  remote: " + source
 
                   yield "  specs:"
                   for _,_,package in packages |> Seq.sortBy (fun (_,_,p) -> p.Name.ToLower()) do
@@ -66,7 +64,6 @@ module LockFileSerializer =
 module LockFileParser =
     type ParseState =
         { RepositoryType : string option
-          RemoteAuth : Auth option
           RemoteUrl :string option
           Packages : ResolvedPackage list
           SourceFiles : ResolvedSourceFile list
@@ -78,7 +75,7 @@ module LockFileParser =
         | _, "NUGET" -> RepositoryType "NUGET"
         | _, "GITHUB" -> RepositoryType "GITHUB"
         | _, _ when String.IsNullOrWhiteSpace line -> Blank
-        | _, trimmed when trimmed.StartsWith "remote:" -> Remote(trimmed.Substring(trimmed.IndexOf(": ") + 2).Split(' ').[0], DependenciesFileParser.parseAuth trimmed)
+        | _, trimmed when trimmed.StartsWith "remote:" -> Remote(trimmed.Substring(trimmed.IndexOf(": ") + 2).Split(' ').[0])
         | _, trimmed when trimmed.StartsWith "specs:" -> Blank
         | _, trimmed when trimmed.StartsWith "REFERENCES:" -> ReferencesMode(trimmed.Replace("REFERENCES:","").Trim() = "STRICT")
         | _, trimmed when line.StartsWith "      " ->
@@ -89,13 +86,13 @@ module LockFileParser =
         | Some _, _ -> failwith "unknown Repository Type."
         | _ -> failwith "unknown lock file format."
 
-    let Parse lines =
+    let Parse(lockFileLines) =
         let remove textToRemove (source:string) = source.Replace(textToRemove, "")
         let removeBrackets = remove "(" >> remove ")"
-        ({ RepositoryType = None; RemoteAuth = None; RemoteUrl = None; Packages = []; SourceFiles = []; Strict = false; LastWasPackage = false }, lines)
+        ({ RepositoryType = None; RemoteUrl = None; Packages = []; SourceFiles = []; Strict = false; LastWasPackage = false }, lockFileLines)
         ||> Seq.fold(fun state line ->
             match (state, line) with
-            | Remote(url,auth) -> { state with RemoteUrl = Some url; RemoteAuth = auth }
+            | Remote(url) -> { state with RemoteUrl = Some url }
             | Blank -> state
             | ReferencesMode mode -> { state with Strict = mode }
             | RepositoryType repoType -> { state with RepositoryType = Some repoType }
@@ -106,7 +103,7 @@ module LockFileParser =
                     let version = parts.[1] |> removeBrackets
                     { state with LastWasPackage = true
                                  Packages = 
-                                     { Source = PackageSource.Parse(remote, state.RemoteAuth)
+                                     { Source = PackageSource.Parse(remote, None)
                                        Name = parts.[0]
                                        Dependencies = []
                                        Version = SemVer.parse version } :: state.Packages }
@@ -155,7 +152,6 @@ type LockFile(fileName:string,strictMode,resolution:PackageResolution,remoteFile
         tracefn "Locked version resolutions written to %s" fileName
 
     /// Parses a paket.lock file from lines
-    static member LoadFrom(lockFileName) : LockFile =
-        let lines = File.ReadAllLines lockFileName
-        LockFileParser.Parse lines
+    static member LoadFrom(lockFileName) : LockFile =        
+        LockFileParser.Parse(File.ReadAllLines lockFileName)
         |> fun state -> LockFile(lockFileName,state.Strict,state.Packages |> Seq.fold (fun map p -> Map.add p.Name p map) Map.empty, List.rev state.SourceFiles)

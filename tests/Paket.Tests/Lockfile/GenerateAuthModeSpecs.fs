@@ -16,12 +16,12 @@ let graph = [
 ]
 
 let expected = """NUGET
-  remote: http://nuget.org/api/v2 username: "user" password: "pass"
+  remote: http://nuget.org/api/v2
   specs:
     Castle.Windsor-log4net (3.2)"""
 
 [<Test>]
-let ``should generate strict lock file``() = 
+let ``should generate no auth in lock file``() = 
     let cfg = DependenciesFile.FromCode(config1)
     cfg.Resolve(noSha1,VersionsFromGraph graph, PackageDetailsFromGraph graph) |> UpdateProcess.getResolvedPackagesOrFail
     |> LockFileSerializer.serializePackages cfg.Strict
