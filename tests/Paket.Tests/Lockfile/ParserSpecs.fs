@@ -32,17 +32,17 @@ let ``should parse lock file``() =
     packages.Length |> shouldEqual 6
     lockFile.Strict |> shouldEqual false
 
-    packages.[0].Source |> shouldEqual Constants.DefaultNugetSource
+    packages.[0].Source |> shouldEqual PackageSources.DefaultNugetSource
     packages.[0].Name |> shouldEqual "Castle.Windsor"
     packages.[0].Version |> shouldEqual (SemVer.parse "2.1")
     packages.[0].Dependencies |> shouldEqual []
 
-    packages.[1].Source |> shouldEqual Constants.DefaultNugetSource
+    packages.[1].Source |> shouldEqual PackageSources.DefaultNugetSource
     packages.[1].Name |> shouldEqual "Castle.Windsor-log4net"
     packages.[1].Version |> shouldEqual (SemVer.parse "3.3")
     packages.[1].Dependencies |> shouldEqual ["Castle.Windsor", VersionRequirement.AllReleases; "log4net", VersionRequirement.AllReleases]
     
-    packages.[5].Source |> shouldEqual Constants.DefaultNugetSource
+    packages.[5].Source |> shouldEqual PackageSources.DefaultNugetSource
     packages.[5].Name |> shouldEqual "log4net"
     packages.[5].Version |> shouldEqual (SemVer.parse "1.1")
     packages.[5].Dependencies |> shouldEqual ["log", VersionRequirement.AllReleases]
@@ -87,7 +87,7 @@ let ``should parse strict lock file``() =
     packages.Length |> shouldEqual 6
     lockFile.Strict |> shouldEqual true
 
-    packages.[5].Source |> shouldEqual Constants.DefaultNugetSource
+    packages.[5].Source |> shouldEqual PackageSources.DefaultNugetSource
     packages.[5].Name |> shouldEqual "log4net"
     packages.[5].Version |> shouldEqual (SemVer.parse "1.1")
     packages.[5].Dependencies |> shouldEqual ["log", VersionRequirement.AllReleases]
@@ -135,7 +135,7 @@ let ``should parse own lock file``() =
     packages.Length |> shouldEqual 16
     lockFile.Strict |> shouldEqual false
 
-    packages.[1].Source |> shouldEqual Constants.DefaultNugetSource
+    packages.[1].Source |> shouldEqual PackageSources.DefaultNugetSource
     packages.[1].Name |> shouldEqual "FAKE"
     packages.[1].Version |> shouldEqual (SemVer.parse "3.5.5")
 

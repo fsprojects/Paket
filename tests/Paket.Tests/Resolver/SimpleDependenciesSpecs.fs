@@ -36,7 +36,7 @@ let ``should resolve simple config1``() =
     getVersion resolved.["Castle.Windsor"] |> shouldEqual "2.1"
     getVersion resolved.["log4net"] |> shouldEqual "1.1"
     getVersion resolved.["log"] |> shouldEqual "1.2"
-    getSource resolved.["log"] |> shouldEqual Constants.DefaultNugetSource
+    getSource resolved.["log"] |> shouldEqual PackageSources.DefaultNugetSource
 
 
 let config2 = """

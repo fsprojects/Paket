@@ -10,7 +10,7 @@ let toPackages =
         (fun (name, ver, deps) -> 
         { Name = name
           Version = SemVer.parse ver
-          Source = Constants.DefaultNugetSource
+          Source = PackageSources.DefaultNugetSource
           Dependencies = deps |> List.map (fun (name, verRan) -> name, Nuget.parseVersionRange verRan) } : PackageResolver.ResolvedPackage)
 
 let graph1 = 

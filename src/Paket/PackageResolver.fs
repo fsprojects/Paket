@@ -2,9 +2,11 @@
 module Paket.PackageResolver
 
 open Paket
+open Paket.Requirements
 open Paket.Logging
 open System.Collections.Generic
 open System
+open Paket.PackageSources
 
 /// Represents package details
 type PackageDetails = 
@@ -20,7 +22,7 @@ type ResolvedPackage =
       Dependencies : (string * VersionRequirement) list
       Source : PackageSource }
 
-type PackageResolution = Map<string , ResolvedPackage>
+type PackageResolution = Map<string , ResolvedPackage>        
 
 type ResolvedPackages =
 | Ok of PackageResolution

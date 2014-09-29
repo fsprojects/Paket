@@ -4,6 +4,7 @@ open System
 open System.IO
 open Paket
 open System.Text.RegularExpressions
+open Paket.PackageSources
 
 let userNameRegex = new Regex("username[:][ ]*[\"]?([^\"]+)[\"]?", RegexOptions.IgnoreCase);
 let passwordRegex = new Regex("password[:][ ]*[\"]?([^\"]+)[\"]?", RegexOptions.IgnoreCase);

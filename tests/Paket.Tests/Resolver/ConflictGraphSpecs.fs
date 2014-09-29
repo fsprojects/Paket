@@ -1,6 +1,8 @@
 ﻿module Paket.ConflictGraphSpecs
 
 open Paket
+open Paket.Requirements
+open Paket.PackageSources
 open Paket.PackageResolver
 open NUnit.Framework
 open FsUnit

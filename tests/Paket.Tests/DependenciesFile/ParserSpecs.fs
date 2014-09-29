@@ -1,6 +1,7 @@
 module paket.dependenciesFile.ParserSpecs
 
 open Paket
+open Paket.PackageSources
 open NUnit.Framework
 open FsUnit
 open TestHelpers
@@ -61,9 +62,9 @@ nuget "MinPackage" "1.1.3"
 let ``should read simple config with comments``() = 
     let cfg = DependenciesFile.FromCode(config3)
     cfg.DirectDependencies.["Rx-Main"].Range |> shouldEqual (VersionRange.Between("2.2", "3.0"))
-    (cfg.Packages |> List.find (fun p -> p.Name = "Rx-Main")).Sources |> List.head |> shouldEqual Constants.DefaultNugetSource
+    (cfg.Packages |> List.find (fun p -> p.Name = "Rx-Main")).Sources |> List.head |> shouldEqual PackageSources.DefaultNugetSource
     cfg.DirectDependencies.["FAKE"].Range |> shouldEqual (VersionRange.Between("3.0", "4.0"))
-    (cfg.Packages |> List.find (fun p -> p.Name = "FAKE")).Sources |> List.head  |> shouldEqual Constants.DefaultNugetSource
+    (cfg.Packages |> List.find (fun p -> p.Name = "FAKE")).Sources |> List.head  |> shouldEqual PackageSources.DefaultNugetSource
 
 let config4 = """
 source "http://nuget.org/api/v2" // first source
@@ -79,9 +80,9 @@ let ``should read config with multiple sources``() =
     let cfg = DependenciesFile.FromCode(config4)
     cfg.Strict |> shouldEqual false
 
-    (cfg.Packages |> List.find (fun p -> p.Name = "Rx-Main")).Sources |> shouldEqual [PackageSource.NugetSource "http://nuget.org/api/v3"; Constants.DefaultNugetSource]
-    (cfg.Packages |> List.find (fun p -> p.Name = "MinPackage")).Sources |> shouldEqual [PackageSource.NugetSource "http://nuget.org/api/v3"; Constants.DefaultNugetSource]
-    (cfg.Packages |> List.find (fun p -> p.Name = "FAKE")).Sources |> shouldEqual [Constants.DefaultNugetSource]
+    (cfg.Packages |> List.find (fun p -> p.Name = "Rx-Main")).Sources |> shouldEqual [PackageSource.NugetSource "http://nuget.org/api/v3"; PackageSources.DefaultNugetSource]
+    (cfg.Packages |> List.find (fun p -> p.Name = "MinPackage")).Sources |> shouldEqual [PackageSource.NugetSource "http://nuget.org/api/v3"; PackageSources.DefaultNugetSource]
+    (cfg.Packages |> List.find (fun p -> p.Name = "FAKE")).Sources |> shouldEqual [PackageSources.DefaultNugetSource]
 
 [<Test>]
 let ``should read source file from config``() =

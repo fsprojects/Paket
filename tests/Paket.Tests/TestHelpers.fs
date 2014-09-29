@@ -2,6 +2,8 @@
 
 open Paket
 open System
+open Paket.Requirements
+open Paket.PackageSources
 open PackageResolver
 
 let PackageDetailsFromGraph (graph : seq<string * string * (string * VersionRequirement) list>) sources (package:string) version = 

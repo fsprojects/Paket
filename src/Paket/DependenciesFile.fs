@@ -4,8 +4,10 @@ open System
 open System.IO
 open Paket
 open Paket.Logging
+open Paket.Requirements
 open Paket.ModuleResolver
 open Paket.PackageResolver
+open Paket.PackageSources
 
 /// [omit]
 module DependenciesFileParser = 
@@ -197,7 +199,7 @@ type DependenciesFile(fileName,strictMode,packages : PackageRequirement list, re
         let sources = 
             match packages |> List.rev with
             | lastPackage::_ -> lastPackage.Sources
-            | [] -> [Constants.DefaultNugetSource]
+            | [] -> [PackageSources.DefaultNugetSource]
         let newPackage = 
             { Name = packageName
               VersionRequirement = versionRange

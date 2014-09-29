@@ -7,6 +7,7 @@ open Paket.ModuleResolver
 open Paket.PackageResolver
 open System.IO
 open System.Collections.Generic
+open Paket.PackageSources
 
 /// Downloads and extracts all packages.
 let ExtractPackages(sources,force, packages:PackageResolution) = 
@@ -15,7 +16,7 @@ let ExtractPackages(sources,force, packages:PackageResolution) =
         async { 
             let package = kv.Value
             match package.Source with
-            | Nuget source ->
+            |  Nuget source ->
                 let auth =
                     sources 
                     |> List.tryPick (fun s -> 

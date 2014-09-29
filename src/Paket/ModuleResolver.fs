@@ -2,6 +2,7 @@
 module Paket.ModuleResolver
 
 open System.IO
+open Paket.Requirements
 
 // Represents details on a dependent source file.
 //TODO: As new sources e.g. fssnip etc. are added, this should probably become a DU or perhaps have an enum marker.

@@ -11,6 +11,18 @@ open System.Text.RegularExpressions
 open Paket.Logging
 open System.Text
 
+open Paket.PackageSources
+
+/// Represents type of NuGet packages.config file
+type NugetPackagesConfigType = ProjectLevel | SolutionLevel
+
+/// Represents NuGet packages.config file
+type NugetPackagesConfig = {
+    File: FileInfo;
+    Packages: (string*SemVerInfo) list
+    Type: NugetPackagesConfigType
+}
+
 let private loadNuGetOData raw =
     let doc = XmlDocument()
     doc.LoadXml raw

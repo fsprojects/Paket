@@ -8,6 +8,10 @@ open System.Net
 open System.Xml
 open System.Text
 
+type Auth = 
+    { Username : string
+      Password : string }
+
 /// Creates a directory if it does not exist.
 let CreateDir path = 
     let dir = DirectoryInfo path
@@ -47,7 +51,7 @@ let normalizeXml(doc:XmlDocument) =
     xmlTextWriter.Flush()
     stringWriter.GetStringBuilder().ToString()
 
-let createWebClient(auth:Auth option ) =
+let createWebClient(auth:Auth option) =
     let client = new WebClient()
     match auth with
     | None -> ()

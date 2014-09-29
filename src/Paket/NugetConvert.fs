@@ -6,6 +6,7 @@ open System
 open System.IO
 open System.Xml
 open Paket.Logging
+open Paket.Nuget
 
 let private readPackageSources(configFile : FileInfo) =
     let doc = XmlDocument()

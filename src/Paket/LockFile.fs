@@ -5,6 +5,7 @@ open System.IO
 open Paket.Logging
 open Paket.PackageResolver
 open Paket.ModuleResolver
+open Paket.PackageSources
 
 module LockFileSerializer =
     /// [omit]
