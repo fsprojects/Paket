@@ -1,4 +1,4 @@
-#### 0.4.4 - 29.09.2014
+#### 0.4.5 - 29.09.2014
 * New [--pre] and [--strict] modes for paket outdated - http://fsprojects.github.io/Paket/paket-outdated.html 
 
 #### 0.4.3 - 29.09.2014
