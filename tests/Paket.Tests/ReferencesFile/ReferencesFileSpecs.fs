@@ -18,12 +18,12 @@ let ``should parse lines correctly``() =
     refFile.NugetPackages.Length |> shouldEqual 3
     refFile.NugetPackages.Head |> shouldEqual "Castle.Windsor"
     refFile.NugetPackages.Tail.Tail.Head |> shouldEqual "jQuery"
-    refFile.GithubFiles.Length |> shouldEqual 1
-    refFile.GithubFiles.Head |> shouldEqual "FsUnit.fs"
+    refFile.GitHubFiles.Length |> shouldEqual 1
+    refFile.GitHubFiles.Head |> shouldEqual "FsUnit.fs"
 
 [<Test>]
 let ``should serialize itself correctly``() = 
-    let refFile = {FileName = ""; NugetPackages = ["A"; "B"]; GithubFiles = ["FromGithub.fs"]}
+    let refFile = {FileName = ""; NugetPackages = ["A"; "B"]; GitHubFiles = ["FromGithub.fs"]}
     let expected = [|"A"; "B"; "File:FromGithub.fs"|]
 
     refFile.ToString() |> toLines |> shouldEqual expected
