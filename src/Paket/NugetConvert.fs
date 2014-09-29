@@ -7,11 +7,18 @@ open System.IO
 open System.Xml
 open Paket.Logging
 open Paket.Nuget
+open Paket.PackageSources
 
 let private readPackageSources(configFile : FileInfo) =
     let doc = XmlDocument()
     doc.Load configFile.FullName
-    [for node in doc.SelectNodes("//packageSources/add[@value]") -> node.Attributes.["value"].Value]
+    [for node in doc.SelectNodes("//packageSources/add[@value]") -> 
+        {PackageSources.NugetSource.Url = node.Attributes.["value"].Value
+         PackageSources.NugetSource.Auth = doc.SelectNodes(sprintf "//packageSourceCredentials/%s" node.Attributes.["key"].Value) 
+                                           |> Seq.cast<XmlNode> 
+                                           |> Seq.firstOrDefault
+                                           |> Option.map (fun node -> {Username = node.SelectSingleNode("//add[@key='Username']").Attributes.["value"].Value
+                                                                       Password = node.SelectSingleNode("//add[@key='ClearTextPassword']").Attributes.["value"].Value})} ]
 
 let removeFileIfExists file = 
     if File.Exists file then 
@@ -31,67 +38,68 @@ let private convertNugetsToDepFile(nugetPackagesConfigs) =
                             name    
                             (versions |> Seq.map string |> Seq.toList)
     
-    let latestVersions = allVersions |> Seq.map (fun (name,versions) -> name, versions |> Seq.max |> string)
-    
-    let depFileExists = File.Exists Constants.DependenciesFile 
-    let existingPackages = 
-        if depFileExists 
-        then (DependenciesFile.ReadFromFile Constants.DependenciesFile).Packages |> List.map (fun p -> p.Name.ToLower()) |> Set.ofList
-        else Set.empty
-    let confictingPackages = Set.intersect existingPackages (latestVersions |> Seq.map fst |> Seq.map (fun n -> n.ToLower()) |> Set.ofSeq)
-    confictingPackages |> Set.iter (fun name -> traceWarnfn "Package %s is already defined in %s" name Constants.DependenciesFile)
+    let latestVersions = allVersions |> Seq.map (fun (name,versions) -> name, versions |> Seq.max |> string) |> Seq.toList
 
-    let dependencyLines = 
-        latestVersions 
-        |> Seq.filter (fun (name,_) -> not (confictingPackages |> Set.contains (name.ToLower())))
-        |> Seq.map (fun (name,version) -> sprintf "nuget %s %s" name version)
-        |> Seq.toList
+    let existingDepFile = 
+        if File.Exists Constants.DependenciesFile 
+        then Some(DependenciesFile.ReadFromFile(Constants.DependenciesFile)) 
+        else None
+
+    let confictingPackages, packagesToAdd = 
+        match existingDepFile with
+        | Some depFile -> latestVersions |> List.partition (fun (name,_) -> depFile.HasPackage name)
+        | None -> [], latestVersions
     
-    if not depFileExists 
-        then
-            let packageSources =
-                match FindAllFiles(".", "nuget.config") |> Seq.firstOrDefault with
-                | Some configFile -> 
-                    let sources = readPackageSources(configFile) 
-                    removeFileIfExists configFile.FullName
-                    sources @ [Constants.DefaultNugetStream]
-                | None -> [Constants.DefaultNugetStream]
-                |> Set.ofList
-                |> Set.toList
-                |> List.map (sprintf "source %s")                
-                
-            File.WriteAllLines(Constants.DependenciesFile, packageSources @ [String.Empty] @ dependencyLines)
-            tracefn "Generated %s file" Constants.DependenciesFile 
-    elif not (dependencyLines |> Seq.isEmpty)
-        then
-            File.WriteAllLines(Constants.DependenciesFile, Seq.append (File.ReadAllLines(Constants.DependenciesFile)) dependencyLines)
-            traceWarnfn "Overwritten %s file" Constants.DependenciesFile 
-    else tracefn "%s is up to date" Constants.DependenciesFile
+    for (name, _) in confictingPackages do traceWarnfn "Package %s is already defined in %s" name Constants.DependenciesFile
+    
+    let defaultNugetSource = {NugetSource.Url = Constants.DefaultNugetStream; NugetSource.Auth = None}
+
+    let nugetPackageRequirement (name: string, v: string, nugetSources : list<NugetSource>) =
+        {Requirements.PackageRequirement.Name = name
+         Requirements.PackageRequirement.VersionRequirement = VersionRequirement(VersionRange.Specific(SemVer.parse v), PreReleaseStatus.No)
+         Requirements.PackageRequirement.ResolverStrategy = Max
+         Requirements.PackageRequirement.Sources = nugetSources |> List.map (fun n -> PackageSources.PackageSource.Nuget(n))
+         Requirements.PackageRequirement.Parent = Requirements.PackageRequirementSource.DependenciesFile(Constants.DependenciesFile)}
+
+    match existingDepFile with
+    | None ->
+        let nugetSources =
+            match FindAllFiles(".", "nuget.config") |> Seq.firstOrDefault with
+            | Some configFile -> 
+                let sources = readPackageSources(configFile) 
+                removeFileIfExists configFile.FullName
+                sources @ [defaultNugetSource]
+            | None -> [defaultNugetSource]
+            |> Set.ofList
+            |> Set.toList        
+        
+        let packages = packagesToAdd |> List.map (fun (name,v) -> nugetPackageRequirement(name,v,nugetSources))
+        DependenciesFile(Constants.DependenciesFile, false, packages, []).Save()
+    | Some depFile ->
+        if not (packagesToAdd |> List.isEmpty)
+            then (packagesToAdd |> List.fold (fun (d : DependenciesFile) (name,version) -> d.Add(name,version)) depFile).Save()
+        else tracefn "%s is up to date" depFile.FileName
 
 let private convertNugetToRefFile(nugetPackagesConfig) =
-    let refFile = Path.Combine(nugetPackagesConfig.File.DirectoryName, Constants.ReferencesFile)
-    let refFileExists = File.Exists refFile
-    let existingReferences = 
-        if refFileExists
-        then (File.ReadAllLines refFile) |> Array.map (fun p -> p.ToLower()) |> Set.ofArray
-        else Set.empty
-    let confictingReferences = Set.intersect existingReferences (nugetPackagesConfig.Packages |> List.map fst |> Seq.map (fun n -> n.ToLower()) |> Set.ofSeq)
-    confictingReferences |> Set.iter (fun name -> traceWarnfn "Reference %s is already defined in %s" name refFile)
+    let refFilePath = Path.Combine(nugetPackagesConfig.File.DirectoryName, Constants.ReferencesFile)
+    let existingRefFile = if File.Exists refFilePath then Some <| ReferencesFile.FromFile(refFilePath) else None
 
-    let referencesLines = 
-        nugetPackagesConfig.Packages 
-        |> List.map fst 
-        |> List.filter (fun name -> not (confictingReferences |> Set.contains (name.ToLower())))
-                            
-    if not refFileExists 
-        then
-            File.WriteAllLines(refFile, referencesLines)
-            tracefn "Converted %s to %s" nugetPackagesConfig.File.FullName Constants.ReferencesFile
-    elif not (referencesLines |> List.isEmpty)
-        then
-            File.WriteAllLines(refFile, Seq.append (File.ReadAllLines(refFile)) referencesLines)
-            traceWarnfn "Overwritten %s file" refFile
-    else tracefn "%s is up to date" refFile
+    let confictingRefs, refsToAdd =
+        match existingRefFile with
+        | Some refFile -> 
+            nugetPackagesConfig.Packages 
+            |> List.partition (fun (name,_) -> 
+                                    refFile.NugetPackages |> List.exists (fun np -> String.Equals(name,np,StringComparison.InvariantCultureIgnoreCase)))
+        | _ -> [], nugetPackagesConfig.Packages
+    
+    for (name,_) in confictingRefs do traceWarnfn "Reference %s is already defined in %s" name refFilePath
+            
+    match existingRefFile with 
+    | None -> {ReferencesFile.FileName = refFilePath; NugetPackages = refsToAdd |> List.map fst; GitHubFiles = []}.Save()
+    | Some refFile ->
+        if not (refsToAdd |> List.isEmpty)
+            then (refsToAdd |> List.fold (fun (refFile : ReferencesFile) (name,_) -> refFile.AddNugetRef(name)) refFile).Save()
+        else tracefn "%s is up to date" refFilePath
 
 /// Converts all projects from NuGet to Paket
 let ConvertFromNuget(force, installAfter, initAutoRestore, dependenciesFileName) =
