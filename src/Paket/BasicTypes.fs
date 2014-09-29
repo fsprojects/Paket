@@ -26,26 +26,6 @@ type PackageSource =
 
     static member NugetSource url = Nuget { Url = url; Auth = None }
 
-// Represents details on a dependent source file.
-//TODO: As new sources e.g. fssnip etc. are added, this should probably become a DU or perhaps have an enum marker.
-type UnresolvedSourceFile =
-    { Owner : string
-      Project : string
-      Name : string      
-      Commit : string option }
-    member this.FilePath =
-        let path = this.Name
-                    .TrimStart('/')
-                    .Replace("/", Path.DirectorySeparatorChar.ToString())
-                    .Replace("\\", Path.DirectorySeparatorChar.ToString())
-
-        let di = DirectoryInfo(Path.Combine("paket-files", this.Owner, this.Project, path))
-        di.FullName
-
-    override this.ToString() = 
-        match this.Commit with
-        | Some commit -> sprintf "%s/%s:%s %s" this.Owner this.Project commit this.Name
-        | None -> sprintf "%s/%s %s" this.Owner this.Project this.Name
 
        
 /// Represents type of NuGet packages.config file
@@ -82,24 +62,4 @@ type PackageRequirement =
           match that with 
           | :? PackageRequirement as that -> compare (this.Parent,this.Name,this.VersionRequirement) (that.Parent,that.Name,that.VersionRequirement)
           | _ -> invalidArg "that" "cannot compare value of different types" 
-
-
-type ResolvedSourceFile =
-    { Owner : string
-      Project : string
-      Name : string      
-      Commit : string
-      Dependencies : PackageRequirement list }
-    member this.FilePath = this.ComputeFilePath(this.Name)
-
-    member this.ComputeFilePath(name:string) =
-        let path = name
-                    .TrimStart('/')
-                    .Replace("/", Path.DirectorySeparatorChar.ToString())
-                    .Replace("\\", Path.DirectorySeparatorChar.ToString())
-
-        let di = DirectoryInfo(Path.Combine("paket-files", this.Owner, this.Project, path))
-        di.FullName
-
-    override this.ToString() =  sprintf "%s/%s:%s %s" this.Owner this.Project this.Commit this.Name
 

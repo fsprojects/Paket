@@ -71,7 +71,7 @@ github "owner:project2:commit2" "folder/file.fs" """
                             Owner = f.Owner
                             Project = f.Project
                             Dependencies = []
-                            Name = f.Name }
+                            Name = f.Name } : ModuleResolver.ResolvedSourceFile
         | _ -> failwith "error")
     |> LockFileSerializer.serializeSourceFiles
     |> shouldEqual (normalizeLineEndings expectedWithGitHub)

@@ -1,6 +1,7 @@
 ﻿namespace Paket
 
 open Paket.Logging
+open Paket.ModuleResolver
 open Paket.PackageResolver
 open System
 open System.IO

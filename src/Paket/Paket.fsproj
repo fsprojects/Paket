@@ -74,8 +74,8 @@
     <Compile Include="Logging.fs" />
     <Compile Include="Xml.fs" />
     <Compile Include="Utils.fs" />
-    <Compile Include="GitHub.fs" />
     <Compile Include="ModuleResolver.fs" />
+    <Compile Include="GitHub.fs" />
     <Compile Include="PackageResolver.fs" />
     <Compile Include="FrameworkHandling.fs" />
     <Compile Include="Nuspec.fs" />

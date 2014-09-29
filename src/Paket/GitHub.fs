@@ -14,7 +14,7 @@ let getSHA1OfBranch owner project branch =
 
 
 /// Gets a dependencies file from github.
-let downloadDependenciesFile(rootPath,remoteFile:ResolvedSourceFile) = async {
+let downloadDependenciesFile(rootPath,remoteFile:ModuleResolver.ResolvedSourceFile) = async {
     let fi = FileInfo(remoteFile.Name)
 
     let dependenciesFileName = remoteFile.Name.Replace(fi.Name,"paket.dependencies")
@@ -32,4 +32,4 @@ let downloadDependenciesFile(rootPath,remoteFile:ResolvedSourceFile) = async {
     | None -> return "" }
 
 /// Gets a single file from github.
-let downloadSourceFile remoteFile = getFromUrl(None,sprintf "https://github.com/%s/%s/raw/%s/%s" remoteFile.Owner remoteFile.Project remoteFile.Commit remoteFile.Name)
+let downloadSourceFile(remoteFile:ModuleResolver.ResolvedSourceFile) = getFromUrl(None,sprintf "https://github.com/%s/%s/raw/%s/%s" remoteFile.Owner remoteFile.Project remoteFile.Commit remoteFile.Name)

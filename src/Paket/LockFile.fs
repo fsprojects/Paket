@@ -4,6 +4,7 @@ open System
 open System.IO
 open Paket.Logging
 open Paket.PackageResolver
+open Paket.ModuleResolver
 
 module LockFileSerializer =
     /// [omit]

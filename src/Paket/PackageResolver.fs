@@ -60,7 +60,7 @@ type ResolvedPackages =
 
 type Resolved = {
     ResolvedPackages : ResolvedPackages
-    ResolvedSourceFiles : ResolvedSourceFile list }
+    ResolvedSourceFiles : ModuleResolver.ResolvedSourceFile list }
 
 /// Resolves all direct and indirect dependencies
 let Resolve(getVersionsF, getPackageDetailsF, rootDependencies:PackageRequirement list) =
