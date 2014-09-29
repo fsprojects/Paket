@@ -40,6 +40,8 @@ type CLIArguments =
     | [<CustomCommandLine("nuget")>] Nuget of string
     | [<CustomCommandLine("version")>] Version of string
     | No_Install
+    | Strict
+    | [<AltCommandLine("--pre")>] Include_Prereleases
     | No_Auto_Restore
 with
     interface IArgParserTemplate with
@@ -58,6 +60,8 @@ with
             | Interactive -> "interactive process."
             | Hard -> "overwrites manual package references."
             | No_Install -> "omits install --hard after convert-from-nuget."
+            | Strict -> "keeps all version requirements when searching for outdated packages."
+            | Include_Prereleases -> "includes prereleases when searching for outdated packages."
             | No_Auto_Restore -> "omits ini-auto-restore after convert-from-nuget."
             | Nuget _ -> "allows to specify a nuget package."
             | Version _ -> "allows to specify a package version."
@@ -98,6 +102,8 @@ try
         let hard = results.Contains <@ CLIArguments.Hard @> 
         let noInstall = results.Contains <@ CLIArguments.No_Install @>
         let noAutoRestore = results.Contains <@ CLIArguments.No_Auto_Restore @>
+        let strict = results.Contains <@ CLIArguments.Strict @>
+        let includePrereleases = results.Contains <@ CLIArguments.Include_Prereleases @>
 
         match command with
         | Command.Add -> 
@@ -109,7 +115,7 @@ try
             AddProcess.Add(packageName,version,force,hard,interactive,noInstall |> not,dependenciesFileName)
         | Command.Install -> UpdateProcess.Update(dependenciesFileName,false,force,hard) 
         | Command.Update -> UpdateProcess.Update(dependenciesFileName,true,force,hard)
-        | Command.Outdated -> FindOutdated.ListOutdated(dependenciesFileName)
+        | Command.Outdated -> FindOutdated.ListOutdated(strict,includePrereleases,dependenciesFileName)
         | Command.InitAutoRestore -> VSIntegration.InitAutoRestore()
         | Command.ConvertFromNuget -> NuGetConvert.ConvertFromNuget(force,noInstall |> not,noAutoRestore |> not,dependenciesFileName)
         | Command.Simplify -> Simplifier.Simplify(interactive,dependenciesFileName)
