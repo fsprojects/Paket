@@ -31,9 +31,7 @@ let safeResolve graph (dependencies : (string * VersionRange) list)  =
                               ResolverStrategy = ResolverStrategy.Max })
     PackageResolver.Resolve(VersionsFromGraph graph, PackageDetailsFromGraph graph, packages)
 
-let resolve graph dependencies = 
-    safeResolve graph dependencies
-    |> UpdateProcess.extractResolvedPackagesOrFail
+let resolve graph dependencies = (safeResolve graph dependencies).GetModelOrFail()
 
 let getVersion (resolved:ResolvedPackage) = resolved.Version.ToString()
 

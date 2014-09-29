@@ -4,6 +4,47 @@ module Paket.PackageResolver
 open Paket
 open Paket.Logging
 open System.Collections.Generic
+open System
+
+type ResolvedPackages =
+| Ok of PackageResolution
+| Conflict of Set<PackageRequirement> * Set<PackageRequirement>
+    with
+    member this.GetModelOrFail() =
+        match this with
+        | Ok model -> model
+        | Conflict(closed,stillOpen) ->
+
+            let errorText = ref ""
+
+            let addToError text = errorText := !errorText + Environment.NewLine + text
+
+            let traceUnresolvedPackage (x : PackageRequirement) = 
+                match x.Parent with
+                | DependenciesFile _ -> 
+                    sprintf "    - %s %s" x.Name (x.VersionRequirement.ToString())
+                | Package(name,version) -> 
+                    sprintf "    - %s %s%s       - from %s %s" x.Name (x.VersionRequirement.ToString()) Environment.NewLine 
+                        name (version.ToString())
+                |> addToError
+
+            addToError "Error in resolution." 
+            addToError "  Resolved:"
+            for x in closed do           
+               traceUnresolvedPackage x
+
+            addToError "  Con't resolve:"
+            stillOpen
+            |> Seq.head
+            |> traceUnresolvedPackage
+           
+            addToError " Please try to relax some conditions."
+            failwith !errorText
+
+
+type Resolved = {
+    ResolvedPackages : ResolvedPackages
+    ResolvedSourceFiles : ResolvedSourceFile list }
 
 /// Resolves all direct and indirect dependencies
 let Resolve(getVersionsF, getPackageDetailsF, rootDependencies:PackageRequirement list) =

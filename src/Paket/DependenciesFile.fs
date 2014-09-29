@@ -4,10 +4,10 @@ open System
 open System.IO
 open Paket
 open Paket.Logging
+open Paket.PackageResolver
 
 /// [omit]
 module DependenciesFileParser = 
-    open System.Text.RegularExpressions
 
     let private basicOperators = ["~>";"<=";">=";"=";">";"<"]
     let private operators = basicOperators @ (basicOperators |> List.map (fun o -> "!" + o))

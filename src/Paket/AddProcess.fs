@@ -10,7 +10,7 @@ let Add(package, version, force, hard, interactive, installAfter, dependenciesFi
           .Add(package,version)
 
     let resolution = dependenciesFile.Resolve force 
-    let resolvedPackages = UpdateProcess.getResolvedPackagesOrFail resolution
+    let resolvedPackages = resolution.ResolvedPackages.GetModelOrFail()
 
     if interactive then
         let di = DirectoryInfo(".")

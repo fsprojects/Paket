@@ -25,7 +25,7 @@ let FindOutdated(strict,includingPrereleases,dependenciesFileName) =
             DependenciesFile(loadedFile.FileName,loadedFile.Strict,newPackages,loadedFile.RemoteFiles)
             
     let resolution = dependenciesFile.Resolve(true) 
-    let resolvedPackages = UpdateProcess.getResolvedPackagesOrFail resolution
+    let resolvedPackages = resolution.ResolvedPackages.GetModelOrFail()
     let lockFile = LockFile.LoadFrom(dependenciesFile.FindLockfile().FullName)
 
     [for kv in lockFile.ResolvedPackages do

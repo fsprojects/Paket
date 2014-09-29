@@ -1,6 +1,7 @@
 ﻿module Paket.ConflictGraphSpecs
 
 open Paket
+open Paket.PackageResolver
 open NUnit.Framework
 open FsUnit
 open TestHelpers

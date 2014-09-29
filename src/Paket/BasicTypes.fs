@@ -120,10 +120,3 @@ type FilteredVersions = Map<string,SemVerInfo list>
 
 type PackageResolution = Map<string , ResolvedPackage>
 
-type ResolvedPackages =
-| Ok of PackageResolution
-| Conflict of Set<PackageRequirement> * Set<PackageRequirement>
-
-type Resolved = {
-    ResolvedPackages : ResolvedPackages
-    ResolvedSourceFiles : ResolvedSourceFile list }
