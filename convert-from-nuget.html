@@ -55,8 +55,8 @@
 <li>If there is a solution-level <code>packages.config</code>, then it will be removed and its dependencies will be included into the <a href="dependencies-file.html"><code>paket.dependencies</code></a>.</li>
 <li><p>If you use NuGet Package Restore (and have a <code>.nuget</code> directory with <code>nuget.targets</code> inside), then</p>
 <ul>
-<li>associated elements in all project files will be removed - (<a href="http://docs.nuget.org/docs/workflows/migrating-to-automatic-package-restore#If_you_are_not_using_TFS">read more</a>).</li>
-<li>the <code>nuget.targets</code> file will be removed =.</li>
+<li>associated elements in all project files will be removed (<a href="http://docs.nuget.org/docs/workflows/migrating-to-automatic-package-restore#If_you_are_not_using_TFS">read more</a>).</li>
+<li>the <code>nuget.targets</code> file will be removed.</li>
 <li><p>the <a href="paket-init-auto-restore.html"><code>paket init-auto-restore</code></a> command will be invoked.</p></li>
 </ul></li>
 <li><p>Next (unless <code>--no-install</code> is specified), the <a href="paket-install.html">paket install</a> process with the <code>--hard</code> flag will be executed. This will:</p>
