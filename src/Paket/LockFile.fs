@@ -3,6 +3,7 @@ namespace Paket
 open System
 open System.IO
 open Paket.Logging
+open Paket.PackageResolver
 
 module LockFileSerializer =
     /// [omit]

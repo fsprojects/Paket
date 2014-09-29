@@ -3,6 +3,7 @@
 open System.IO
 open Logging
 open System
+open Paket.PackageResolver
 
 let private formatDiff (before : string) (after : string) =
     let nl = Environment.NewLine

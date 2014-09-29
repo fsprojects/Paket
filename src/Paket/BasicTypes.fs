@@ -83,12 +83,6 @@ type PackageRequirement =
           | :? PackageRequirement as that -> compare (this.Parent,this.Name,this.VersionRequirement) (that.Parent,that.Name,that.VersionRequirement)
           | _ -> invalidArg "that" "cannot compare value of different types" 
 
-/// Represents data about resolved packages
-type ResolvedPackage = 
-    { Name : string
-      Version : SemVerInfo
-      Dependencies : (string * VersionRequirement) list
-      Source : PackageSource }
 
 type ResolvedSourceFile =
     { Owner : string
@@ -118,5 +112,4 @@ type PackageDetails =
       
 type FilteredVersions = Map<string,SemVerInfo list>
 
-type PackageResolution = Map<string , ResolvedPackage>
 

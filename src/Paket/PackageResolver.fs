@@ -6,6 +6,15 @@ open Paket.Logging
 open System.Collections.Generic
 open System
 
+/// Represents data about resolved packages
+type ResolvedPackage = 
+    { Name : string
+      Version : SemVerInfo
+      Dependencies : (string * VersionRequirement) list
+      Source : PackageSource }
+
+type PackageResolution = Map<string , ResolvedPackage>
+
 type ResolvedPackages =
 | Ok of PackageResolution
 | Conflict of Set<PackageRequirement> * Set<PackageRequirement>

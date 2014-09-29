@@ -4,18 +4,14 @@ open Paket
 
 open NUnit.Framework
 open FsUnit
-open System.IO
-open TestHelpers
 
-let toPackages =
-    List.map (fun (name,ver,deps) ->
-        { ResolvedPackage.Name = name
-          Version = SemVer.parse ver 
+let toPackages = 
+    List.map 
+        (fun (name, ver, deps) -> 
+        { Name = name
+          Version = SemVer.parse ver
           Source = Constants.DefaultNugetSource
-          Dependencies = deps
-                               |> List.map (fun (name, verRan) ->
-                                                name, Nuget.parseVersionRange verRan)
-        })
+          Dependencies = deps |> List.map (fun (name, verRan) -> name, Nuget.parseVersionRange verRan) } : PackageResolver.ResolvedPackage)
 
 let graph1 = 
     ["A", "3.3.0", ["B", "3.3.0"; "C", "1.0"]

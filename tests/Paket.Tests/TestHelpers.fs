@@ -2,6 +2,7 @@
 
 open Paket
 open System
+open PackageResolver
 
 let PackageDetailsFromGraph (graph : seq<string * string * (string * VersionRequirement) list>) sources (package:string) version = 
     let name,dependencies = 
