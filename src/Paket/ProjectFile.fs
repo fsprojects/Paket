@@ -202,7 +202,7 @@ type ProjectFile =
                         let install = 
                             match references with
                             | References.All -> true
-                            | References.Explicit references -> references |> List.exists ((=) (dllName + ".dll"))
+                            | References.Explicit references -> references |> List.exists (fun x -> x = dllName + ".dll" || x = dllName + ".exe")
 
                         if not install then verbosefn "  - %s not listed in %s ==> excluded" dllName nuspec.Name else
                         verbosefn "  - installing %s" dllName

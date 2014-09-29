@@ -1,3 +1,6 @@
+#### 0.4.8 - 29.09.2014
+* Executable libs are also added to project file
+
 #### 0.4.7 - 29.09.2014
 * Store source authentication options in paket.dependencies only
 

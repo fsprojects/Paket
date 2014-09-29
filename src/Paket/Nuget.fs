@@ -358,6 +358,7 @@ let GetLibraries(targetFolder) =
     let libs = 
         if dir.Exists then
             dir.GetFiles("*.dll",SearchOption.AllDirectories)
+            |> Array.append(dir.GetFiles("*.exe",SearchOption.AllDirectories))
         else
             Array.empty
 
