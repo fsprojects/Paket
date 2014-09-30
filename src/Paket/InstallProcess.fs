@@ -23,9 +23,14 @@ let ExtractPackages(sources,force, packages:PackageResolution) =
                                         match s with
                                         | Nuget s -> s.Auth
                                         | _ -> None)
-
-                let! folder = Nuget.DownloadPackage(auth, source.Url, package.Name, package.Version.ToString(), force)
-                return Some(package, Nuget.GetLibraries folder)
+                try
+                    let! folder = Nuget.DownloadPackage(auth, source.Url, package.Name, package.Version.ToString(), force)
+                    return Some(package, Nuget.GetLibraries folder)
+                with
+                | _ when force = false ->
+                    // something went wrong with the download - let's retry with force flag
+                    let! folder = Nuget.DownloadPackage(auth, source.Url, package.Name, package.Version.ToString(), true)
+                    return Some(package, Nuget.GetLibraries folder)
             | LocalNuget path -> 
                 let packageFile = Path.Combine(path, sprintf "%s.%s.nupkg" package.Name (package.Version.ToString()))
                 let! folder = Nuget.CopyFromCache(packageFile, package.Name, package.Version.ToString(), force)

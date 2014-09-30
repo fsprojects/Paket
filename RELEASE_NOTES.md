@@ -1,3 +1,6 @@
+#### 0.4.14 - 30.09.2014
+* Automatic retry with force flag if the package download failed
+
 #### 0.4.13 - 30.09.2014
 * paket convert-from-nuget sorts the dependencies file
 
