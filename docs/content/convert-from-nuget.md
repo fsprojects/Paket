@@ -6,7 +6,7 @@ If you are already using `NuGet.exe` for package restore then it should be easy 
 
 1. Analyse your `packages.config` files and extract the referenced packages into a [`paket.dependencies` file](dependencies-file.html).
 2. Convert each `packages.config` file to [`paket.references`](references-files.html) syntax. This is very easy - you just have to remove all the XML and keep the package names.
-3. Run [paket install](paket-install.html) with the `--hard` flag. This will analyze the dependencies, generate a [`paket.lock` file](lock-file.html), remove all the old package references from your project files and replace them with equivalent `<Reference`s in a syntax that can be managed automatically by Paket.
+3. Run [paket install](paket-install.html) with the `--hard` flag. This will analyze the dependencies, generate a [`paket.lock` file](lock-file.html), remove all the old package references from your project files and replace them with equivalent `Reference`s in a syntax that can be managed automatically by Paket.
 
 <div id="automatic"></div>
 ## Automated process
@@ -35,7 +35,7 @@ Paket can assist you with the conversion. The `paket convert-from-nuget` command
 <div id="syntax"></div>
 
     [lang=batchfile]
-    $ paket convert-from-nuget [--force] [--no-install] [--no-auto-restore]
+    $ paket convert-from-nuget [--force] [--no-install] [--no-auto-restore] [--dependencies-file FILE]
 
 Options:
 
