@@ -228,8 +228,8 @@ nuget Rx-Main
 
 [<Test>]
 let ``should read config with password in env variable``() = 
-    Environment.SetEnvironmentVariable("FEED_USERNAME", "user XYZ")
-    Environment.SetEnvironmentVariable("FEED_PASSWORD", "pw Love")
+    Environment.SetEnvironmentVariable("FEED_USERNAME", "user XYZ", EnvironmentVariableTarget.Process)
+    Environment.SetEnvironmentVariable("FEED_PASSWORD", "pw Love", EnvironmentVariableTarget.Process)
     let cfg = DependenciesFile.FromCode( configWithPasswordInEnvVariable)
     
     (cfg.Packages |> List.find (fun p -> p.Name = "Rx-Main")).Sources 
