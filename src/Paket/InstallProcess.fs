@@ -8,6 +8,7 @@ open Paket.PackageResolver
 open System.IO
 open System.Collections.Generic
 open Paket.PackageSources
+open System.Text.RegularExpressions
 
 /// Downloads and extracts all packages.
 let ExtractPackages(sources,force, packages:PackageResolution) = 
@@ -71,12 +72,13 @@ let private findPackagesWithContent (usedPackages:Dictionary<_,_>) =
 
 let private copyContentFilesToProject (project : ProjectFile) packagesWithContent = 
 
-    let blackList (fi : FileInfo) = 
+    let onBlackList (fi : FileInfo) = 
         let rules : list<(FileInfo -> bool)> = [
-            fun f -> f.Name <> "_._"
+            fun f -> f.Name = "_._"
+            fun f -> Regex(".*\.transform").IsMatch f.Name
         ]
         rules
-        |> List.forall (fun rule -> rule(fi))
+        |> List.exists (fun rule -> rule(fi))
 
     let rec copyDirContents (fromDir : DirectoryInfo, toDir : Lazy<DirectoryInfo>) =
         fromDir.GetDirectories() |> Array.toList
@@ -84,7 +86,7 @@ let private copyContentFilesToProject (project : ProjectFile) packagesWithConten
         |> List.append
             (fromDir.GetFiles() 
                 |> Array.toList
-                |> List.filter blackList
+                |> List.filter (onBlackList >> not)
                 |> List.map (fun file -> file.CopyTo(Path.Combine(toDir.Force().FullName, file.Name), true)))
 
     packagesWithContent
