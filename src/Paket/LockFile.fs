@@ -31,7 +31,7 @@ module LockFileSerializer =
             let hasReported = ref false
             [ if strictMode then
                 yield "REFERENCES: STRICT"
-              for (source, auth), packages in sources do
+              for (source, _), packages in sources do
                   if not !hasReported then
                     yield "NUGET"
                     hasReported := true
@@ -108,7 +108,7 @@ module LockFileParser =
                                  Packages = 
                                      { Source = PackageSource.Parse(remote, None)
                                        Name = parts.[0]
-                                       Dependencies = []
+                                       Dependencies = Set.empty
                                        Version = SemVer.parse version } :: state.Packages }
                 | None -> failwith "no source has been specified."
             | NugetDependency (name, _) ->
@@ -117,8 +117,7 @@ module LockFileParser =
                     if not state.LastWasPackage then state else
                     { state with
                         Packages = { currentPackage with
-                                        Dependencies = [name, VersionRequirement.AllReleases] 
-                                        |> List.append currentPackage.Dependencies
+                                        Dependencies = Set.add (name, VersionRequirement.AllReleases) currentPackage.Dependencies
                                     } :: otherPackages }
                 | [] -> failwith "cannot set a dependency - no package has been specified."
             | SourceFile details ->

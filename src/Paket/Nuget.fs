@@ -400,7 +400,7 @@ let GetPackageDetails force sources package version : PackageResolver.PackageDet
     { Name = nugetObject.Name
       Source = source
       DownloadLink = nugetObject.DownloadUrl
-      DirectDependencies = nugetObject.Dependencies  } 
+      DirectDependencies = nugetObject.Dependencies |> Set.ofList } 
 
 let GetVersions sources package = 
     sources

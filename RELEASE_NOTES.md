@@ -1,3 +1,6 @@
+#### 0.4.15 - 30.09.2014
+* Removed duplicate indirect dependencies from lock file - https://github.com/fsprojects/Paket/issues/200
+
 #### 0.4.14 - 30.09.2014
 * Automatic retry with force flag if the package download failed
 
@@ -8,7 +11,7 @@
 * Support log4net
 
 #### 0.4.10 - 29.09.2014
-* Use credentials from nuget.config on paket convert-fro-nuget - https://github.com/fsprojects/Paket/issues/198
+* Use credentials from nuget.config on paket convert-from-nuget - https://github.com/fsprojects/Paket/issues/198
 
 #### 0.4.9 - 29.09.2014
 * Deploy fixed targets file - https://github.com/fsprojects/Paket/issues/172

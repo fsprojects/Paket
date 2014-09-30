@@ -26,8 +26,7 @@ let Analyze(allPackages : list<ResolvedPackage>, depFile : DependenciesFile, ref
         allPackages
         |> Seq.map (fun package -> package.Name.ToLower(), 
                                                package.Dependencies 
-                                               |> List.map (fun (name,_) -> name.ToLower()) 
-                                               |> Set.ofList)
+                                               |> Set.map (fun (name,_) -> name.ToLower()))
         |> Map.ofSeq
 
     let rec getAllDeps (package : string) =

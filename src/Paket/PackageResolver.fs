@@ -13,13 +13,13 @@ type PackageDetails =
     { Name : string
       Source : PackageSource
       DownloadLink : string
-      DirectDependencies :  (string * VersionRequirement) list }
+      DirectDependencies :  (string * VersionRequirement) Set }
 
 /// Represents data about resolved packages
 type ResolvedPackage = 
     { Name : string
       Version : SemVerInfo
-      Dependencies : (string * VersionRequirement) list
+      Dependencies : (string * VersionRequirement) Set
       Source : PackageSource }
 
 type PackageResolution = Map<string , ResolvedPackage>        
@@ -133,9 +133,8 @@ let Resolve(getVersionsF, getPackageDetailsF, rootDependencies:PackageRequiremen
                     let newFilteredVersion = Map.add dependency.Name [versionToExplore] filteredVersions
                     let newDependencies =
                         exploredPackage.Dependencies
-                        |> List.map (fun (n,v) -> {dependency with Name = n; VersionRequirement = v; Parent = Package(dependency.Name,versionToExplore) })
-                        |> List.filter (fun d -> Set.contains d closed |> not)
-                        |> Set.ofList
+                        |> Set.map (fun (n,v) -> {dependency with Name = n; VersionRequirement = v; Parent = Package(dependency.Name,versionToExplore) })
+                        |> Set.filter (fun d -> Set.contains d closed |> not)                        
                     
                     improveModel (newFilteredVersion,exploredPackage::packages,Set.add dependency closed,Set.union rest newDependencies)
                 | Ok _ -> state)
@@ -151,5 +150,5 @@ let Resolve(getVersionsF, getPackageDetailsF, rootDependencies:PackageRequiremen
                         let cleanup = 
                             { package with Dependencies = 
                                                package.Dependencies 
-                                               |> List.map (fun (name, v) -> model.[name.ToLower()].Name, v) }
+                                               |> Set.map (fun (name, v) -> model.[name.ToLower()].Name, v) }
                         Map.add package.Name cleanup map) Map.empty)
