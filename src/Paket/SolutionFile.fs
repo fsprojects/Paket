@@ -13,7 +13,7 @@ type SolutionFile(fileName: string) =
     
     let removeNugetSlnFolderIfEmpty() =
         match content |> Seq.tryFindIndex (fun line -> 
-                line.StartsWith(sprintf """Project({%s})""" slnFolderProjectGuid) && line.Contains(".nuget")) with
+                line.StartsWith(sprintf "Project(\"{%s}\")" slnFolderProjectGuid) && line.Contains(".nuget")) with
         | Some(index) -> 
             if content.[index+1].Contains("ProjectSection(SolutionItems)") &&
                content.[index+2].Contains("EndProjectSection") &&
@@ -33,13 +33,11 @@ type SolutionFile(fileName: string) =
     member __.AddPaketFolder(dependenciesFile, lockFile) =
         match content |> Seq.tryFindIndex (fun line -> line.StartsWith("MinimumVisualStudioVersion")) with
         | Some index -> 
-            let depFile = createRelativePath dependenciesFile fileName
-            let lockFile = lockFile |> Option.map (fun l -> createRelativePath l fileName)
             let lines = ResizeArray<_>()
 
-            lines.Add(sprintf   "Project(\"{%s}\") = \".paket\", \".paket\", \"{%s}\"" slnFolderProjectGuid <| Guid.NewGuid().ToString("D"))
+            lines.Add(sprintf   "Project(\"{%s}\") = \".paket\", \".paket\", \"{%s}\"" slnFolderProjectGuid <| Guid.NewGuid().ToString("D").ToUpper())
             lines.Add           " ProjectSection(SolutionItems) = preProject"
-            lines.Add(sprintf   "		%s = %s" depFile depFile)
+            lines.Add(sprintf   "		%s = %s" dependenciesFile dependenciesFile)
             if lockFile |> Option.isSome then
                 lines.Add(sprintf"		%s = %s" lockFile.Value lockFile.Value)
             lines.Add           "	EndProjectSection"
