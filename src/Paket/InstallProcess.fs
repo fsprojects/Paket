@@ -71,16 +71,24 @@ let private findPackagesWithContent (usedPackages:Dictionary<_,_>) =
 
 let private copyContentFilesToProject (project : ProjectFile) packagesWithContent = 
 
-    let rec copyDirContents (fromDir : DirectoryInfo, toDir : DirectoryInfo) =
+    let blackList (fi : FileInfo) = 
+        let rules : list<(FileInfo -> bool)> = [
+            fun f -> f.Name <> "_._"
+        ]
+        rules
+        |> List.forall (fun rule -> rule(fi))
+
+    let rec copyDirContents (fromDir : DirectoryInfo, toDir : Lazy<DirectoryInfo>) =
         fromDir.GetDirectories() |> Array.toList
-        |> List.collect (fun subDir -> copyDirContents(subDir, toDir.CreateSubdirectory(subDir.Name)))
+        |> List.collect (fun subDir -> copyDirContents(subDir, lazy toDir.Force().CreateSubdirectory(subDir.Name)))
         |> List.append
             (fromDir.GetFiles() 
                 |> Array.toList
-                |> List.map (fun file -> file.CopyTo(Path.Combine(toDir.FullName, file.Name), true)))
+                |> List.filter blackList
+                |> List.map (fun file -> file.CopyTo(Path.Combine(toDir.Force().FullName, file.Name), true)))
 
     packagesWithContent
-    |> List.collect (fun packageDir -> copyDirContents (packageDir, (DirectoryInfo(Path.GetDirectoryName(project.FileName)))))
+    |> List.collect (fun packageDir -> copyDirContents (packageDir, lazy (DirectoryInfo(Path.GetDirectoryName(project.FileName)))))
 
 let private removeContentFiles (project: ProjectFile) =
     let removeFilesAndTrimDirs (files: FileInfo list) =
