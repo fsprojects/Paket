@@ -31,6 +31,7 @@ let private convertNugetsToDepFile(nugetPackagesConfigs) =
         |> Seq.collect (fun c -> c.Packages)
         |> Seq.groupBy fst
         |> Seq.map (fun (name, packages) -> name, packages |> Seq.map snd |> Seq.distinct)
+        |> Seq.sortBy (fun (name,_) -> name.ToLower())
     
     for (name, versions) in allVersions do
         if Seq.length versions > 1 
