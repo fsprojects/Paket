@@ -1,3 +1,6 @@
+#### 0.4.11 - 30.09.2014
+* Support log4net
+
 #### 0.4.10 - 29.09.2014
 * Use credentials from nuget.config on paket convert-fro-nuget - https://github.com/fsprojects/Paket/issues/198
 
