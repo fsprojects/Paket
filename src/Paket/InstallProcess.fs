@@ -15,6 +15,7 @@ let ExtractPackages(sources,force, packages:PackageResolution) =
     |> Seq.map (fun kv -> 
         async { 
             let package = kv.Value
+            let v = package.Version.ToString()
             match package.Source with
             |  Nuget source ->
                 let auth =
@@ -24,16 +25,16 @@ let ExtractPackages(sources,force, packages:PackageResolution) =
                                         | Nuget s -> s.Auth
                                         | _ -> None)
                 try
-                    let! folder = Nuget.DownloadPackage(auth, source.Url, package.Name, package.Version.ToString(), force)
+                    let! folder = Nuget.DownloadPackage(auth, source.Url, package.Name, v, force)
                     return Some(package, Nuget.GetLibraries folder)
                 with
                 | _ when force = false ->
-                    // something went wrong with the download - let's retry with force flag
-                    let! folder = Nuget.DownloadPackage(auth, source.Url, package.Name, package.Version.ToString(), true)
+                    tracefn "Something went wrong with the download of %s %s - automatic retry with --force." package.Name v
+                    let! folder = Nuget.DownloadPackage(auth, source.Url, package.Name, v, true)
                     return Some(package, Nuget.GetLibraries folder)
             | LocalNuget path -> 
-                let packageFile = Path.Combine(path, sprintf "%s.%s.nupkg" package.Name (package.Version.ToString()))
-                let! folder = Nuget.CopyFromCache(packageFile, package.Name, package.Version.ToString(), force)
+                let packageFile = Path.Combine(path, sprintf "%s.%s.nupkg" package.Name v)
+                let! folder = Nuget.CopyFromCache(packageFile, package.Name, v, force)
                 return Some(package, Nuget.GetLibraries folder)
         })
 
