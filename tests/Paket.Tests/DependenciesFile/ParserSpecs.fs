@@ -5,6 +5,7 @@ open Paket.PackageSources
 open NUnit.Framework
 open FsUnit
 open TestHelpers
+open System
 
 [<Test>]
 let ``should read emptx config``() = 
@@ -219,3 +220,20 @@ let ``should read config with encapsulated password source``() =
                                            Auth = 
                                                Some { Username = "tatü tata"
                                                       Password = "you got hacked!" } } ]
+
+let configWithPasswordInEnvVariable = """
+source http://nuget.org/api/v2 username: "%FEED_USERNAME%" password: "%FEED_PASSWORD%"
+nuget Rx-Main
+"""
+
+[<Test>]
+let ``should read config with password in env variable``() = 
+    Environment.SetEnvironmentVariable("FEED_USERNAME", "user XYZ")
+    Environment.SetEnvironmentVariable("FEED_PASSWORD", "pw Love")
+    let cfg = DependenciesFile.FromCode( configWithPasswordInEnvVariable)
+    
+    (cfg.Packages |> List.find (fun p -> p.Name = "Rx-Main")).Sources 
+    |> shouldEqual [ PackageSource.Nuget { Url = "http://nuget.org/api/v2"
+                                           Auth = 
+                                               Some { Username = "user XYZ"
+                                                      Password = "pw Love" } } ]
