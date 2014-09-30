@@ -23,6 +23,12 @@ It's also possible to provide login information for private NuGet feeds:
 
     source http://myserver/nuget/api/v2 username: "my user" password: "my pw"
 
+If you don't want to check your username and password into source control, you can use environment variables instead:
+
+    source http://myserver/nuget/api/v2 username: "%PRIVATE_FEED_USER%" password: "%PRIVATE_FEED_PASS%"
+
+`%PRIVATE_FEED_USER%` and `%PRIVATE_FEED_PASS%` will be expanded with the contents of your `PRIVATE_FEED_USER` and `PRIVATE_FEED_PASS` environment variables.
+
 The [paket.lock](lock-file.html) will also reflect these settings.
 
 ### Path sources
