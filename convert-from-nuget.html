@@ -41,7 +41,7 @@
 <ol>
 <li>Analyse your <code>packages.config</code> files and extract the referenced packages into a <a href="dependencies-file.html"><code>paket.dependencies</code> file</a>.</li>
 <li>Convert each <code>packages.config</code> file to <a href="references-files.html"><code>paket.references</code></a> syntax. This is very easy - you just have to remove all the XML and keep the package names.</li>
-<li>Run <a href="paket-install.html">paket install</a> with the <code>--hard</code> flag. This will analyze the dependencies, generate a <a href="lock-file.html"><code>paket.lock</code> file</a>, remove all the old package references from your project files and replace them with equivalent <code>&lt;Reference</code>s in a syntax that can be managed automatically by Paket.</li>
+<li>Run <a href="paket-install.html">paket install</a> with the <code>--hard</code> flag. This will analyze the dependencies, generate a <a href="lock-file.html"><code>paket.lock</code> file</a>, remove all the old package references from your project files and replace them with equivalent <code>Reference</code>s in a syntax that can be managed automatically by Paket.</li>
 </ol>
 
 <div id="automatic"></div>
@@ -74,7 +74,7 @@
 
 <div id="syntax"></div>
 
-<table class="pre"><tr><td><pre lang="batchfile">$ paket convert-from-nuget [--force] [--no-install] [--no-auto-restore]</pre></td></tr></table>
+<table class="pre"><tr><td><pre lang="batchfile">$ paket convert-from-nuget [--force] [--no-install] [--no-auto-restore] [--dependencies-file FILE]</pre></td></tr></table>
 
 <p>Options:</p>
 
