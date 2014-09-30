@@ -1,0 +1,4 @@
+NUGET
+  remote: http://nuget.org/api/v2
+  specs:
+    psake (4.3.2)
