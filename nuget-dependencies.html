@@ -74,6 +74,20 @@
 </tr>
 </table>
 
+<p>If you don't want to check your username and password into source control, you can use environment variables instead:</p>
+
+<table class="pre"><tr><td class="lines"><pre class="fssnip">
+<span class="l">1: </span>
+</pre>
+</td>
+<td class="snippet"><pre class="fssnip">
+<span class="i">source</span> <span class="i">http</span><span class="o">:</span><span class="c">//myserver/nuget/api/v2 username: &quot;%PRIVATE_FEED_USER%&quot; password: &quot;%PRIVATE_FEED_PASS%&quot;</span></pre>
+</td>
+</tr>
+</table>
+
+<p><code>%PRIVATE_FEED_USER%</code> and <code>%PRIVATE_FEED_PASS%</code> will be expanded with the contents of your <code>PRIVATE_FEED_USER</code> and <code>PRIVATE_FEED_PASS</code> environment variables.</p>
+
 <p>The <a href="lock-file.html">paket.lock</a> will also reflect these settings.</p>
 
 <h3><a name="Path-sources" class="anchor" href="#Path-sources">Path sources</a></h3>
