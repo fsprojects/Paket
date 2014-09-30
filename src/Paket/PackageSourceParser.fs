@@ -8,9 +8,11 @@ open Paket.PackageSources
 
 let userNameRegex = new Regex("username[:][ ]*[\"]?([^\"]+)[\"]?", RegexOptions.IgnoreCase);
 let passwordRegex = new Regex("password[:][ ]*[\"]?([^\"]+)[\"]?", RegexOptions.IgnoreCase);
+
 let parseAuth(text:string) =
     if userNameRegex.IsMatch(text) && passwordRegex.IsMatch(text) then
-        Some { Username = userNameRegex.Match(text).Groups.[1].Value; Password = passwordRegex.Match(text).Groups.[1].Value }
+        let expanded = Environment.ExpandEnvironmentVariables(text)
+        Some { Username = userNameRegex.Match(expanded).Groups.[1].Value; Password = passwordRegex.Match(expanded).Groups.[1].Value }
     else
         None
 
@@ -20,5 +22,5 @@ let getSources lines =
         | trimmed when trimmed.StartsWith "source" ->
             let parts = trimmed.Split ' '
             let newSource = parts.[1].Replace("\"","").TrimEnd([|'/'|])
-            yield PackageSource.Parse(newSource,parseAuth trimmed) 
+            yield PackageSource.Parse(newSource,parseAuth trimmed)
         | _ -> ()]
