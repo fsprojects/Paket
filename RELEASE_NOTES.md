@@ -1,4 +1,4 @@
-#### 0.4.12 - 30.09.2014
+#### 0.4.13 - 30.09.2014
 * paket convert-from-nuget sorts the dependencies file
 
 #### 0.4.11 - 30.09.2014
