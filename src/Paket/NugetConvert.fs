@@ -119,7 +119,10 @@ let ConvertFromNuget(force, installAfter, initAutoRestore, dependenciesFileName)
         | SolutionLevel -> ()
 
     for slnFile in FindAllFiles(".", "*.sln") do
-        SolutionFile.RemoveNugetEntries(slnFile.FullName)
+        let solution = SolutionFile(slnFile.FullName)
+        solution.RemoveNugetEntries()
+        solution.AddPaketFolder(dependenciesFileName, if installAfter then Some("paket.lock") else None)
+        solution.Save()
 
     for projFile in ProjectFile.FindAllProjects(".") do
         let project = ProjectFile.Load(projFile.FullName)
