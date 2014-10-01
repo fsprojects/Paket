@@ -8,10 +8,12 @@ let KnownDotNetFrameworks = [ "v1.0"; "v1.1"; "v2.0"; "v3.5"; "v4.0"; "v4.5"; "v
 
 type InstallModell = 
     { Frameworks : Map<FrameworkIdentifier, string Set> }
+    
     static member EmptyModel : InstallModell = 
         let frameworks = 
             [ for x in KnownDotNetFrameworks -> DotNetFramework(Framework x, Full) ]
         { Frameworks = List.fold (fun map f -> Map.add f Set.empty map) Map.empty frameworks }
+    
     member this.GetFrameworks() = this.Frameworks |> Seq.map (fun kv -> kv.Key)
     member this.GetFiles(framework) = this.Frameworks.[framework]
 
@@ -27,26 +29,25 @@ let extractFrameworksFromPaths (model : InstallModell) libs : InstallModell =
                 | Some framework -> addToModel framework lib model
                 | None -> model) model
 
-let useLowerVersionLibIfEmpty (model : InstallModell) =
+let useLowerVersionLibIfEmpty (model : InstallModell) = 
     KnownDotNetFrameworks
     |> List.rev
-    |> List.fold (fun (model:InstallModell) lowerVersion ->
-            let newFiles = model.GetFiles(DotNetFramework(Framework lowerVersion, Full)) 
-            let upperVersions = KnownDotNetFrameworks |> List.filter (fun version -> version > lowerVersion)
-            upperVersions
-            |> List.fold (fun (model:InstallModell) upperVersion -> 
-                    let framework = DotNetFramework(Framework upperVersion, Full)
-                    match Map.tryFind framework model.Frameworks with
-                    | Some files when Set.isEmpty files -> { model with Frameworks = Map.add framework newFiles model.Frameworks }
-                    | _ -> model) model
-        ) model
-
+    |> List.fold (fun (model : InstallModell) lowerVersion -> 
+           let newFiles = model.GetFiles(DotNetFramework(Framework lowerVersion, Full))
+           let upperVersions = KnownDotNetFrameworks |> List.filter (fun version -> version > lowerVersion)
+           upperVersions |> List.fold (fun (model : InstallModell) upperVersion -> 
+                                let framework = DotNetFramework(Framework upperVersion, Full)
+                                match Map.tryFind framework model.Frameworks with
+                                | Some files when Set.isEmpty files -> 
+                                    { model with Frameworks = Map.add framework newFiles model.Frameworks }
+                                | _ -> model) model) model
 
 [<Test>]
 let ``should create empty model with net40, net45 ...``() = 
     let model = 
         [ @"..\Rx-Main\lib\net40\Rx.dll"; @"..\Rx-Main\lib\net45\Rx.dll" ] 
         |> extractFrameworksFromPaths InstallModell.EmptyModel
+
     model.GetFrameworks() |> shouldContain (DotNetFramework(Framework "v4.0", Full))
     model.GetFrameworks() |> shouldContain (DotNetFramework(Framework "v4.5", Full))
 
