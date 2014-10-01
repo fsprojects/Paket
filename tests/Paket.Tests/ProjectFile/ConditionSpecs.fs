@@ -3,7 +3,6 @@
 open Paket
 open NUnit.Framework
 open FsUnit
-open System.Linq
 
 let element x = match x with | Some y -> y
 

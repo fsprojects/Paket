@@ -58,6 +58,8 @@ type FrameworkIdentifier =
         | WindowsPhoneApp _ -> sprintf "%s%s" (x.GetFrameworkIdentifier()) (x.GetPlatformVersion())
         | Silverlight v -> sprintf "%s And $(SilverlightVersion) == '%s'" (x.GetFrameworkIdentifier()) v
 
+    override x.ToString() = x.GetCondition()
+
     static member DetectFromPath(path : string) : FrameworkIdentifier option = 
 
         let profileMapping = 
