@@ -76,6 +76,7 @@ let private copyContentFilesToProject (project : ProjectFile) packagesWithConten
         let rules : list<(FileInfo -> bool)> = [
             fun f -> f.Name = "_._"
             fun f -> Regex(".*\.transform").IsMatch f.Name
+            fun f -> Regex(".*\.pp").IsMatch f.Name
         ]
         rules
         |> List.exists (fun rule -> rule(fi))
