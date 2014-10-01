@@ -1,8 +1,8 @@
 #### 0.4.17 - 01.10.2014
-*  Content files like _._, *.transform and *.pp are ignored - https://github.com/fsprojects/Paket/issues/207
+* Content files like `_._`, `*.transform` and `*.pp` are ignored - https://github.com/fsprojects/Paket/issues/207
 
 #### 0.4.16 - 30.09.2014
-*  paket convert-from-nuget adds .paket folder to the sln - https://github.com/fsprojects/Paket/issues/206
+* paket convert-from-nuget adds .paket folder to the sln - https://github.com/fsprojects/Paket/issues/206
  
 #### 0.4.15 - 30.09.2014
 * Removed duplicate indirect dependencies from lock file - https://github.com/fsprojects/Paket/issues/200
