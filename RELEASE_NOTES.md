@@ -1,7 +1,4 @@
-#### 0.4.18 - 01.10.2014
-* Using FSharp.Core.Microsoft.Signed package
-
-#### 0.4.17 - 01.10.2014
+#### 0.4.19 - 01.10.2014
 * Content files like `_._`, `*.transform` and `*.pp` are ignored - https://github.com/fsprojects/Paket/issues/207
 
 #### 0.4.16 - 30.09.2014
