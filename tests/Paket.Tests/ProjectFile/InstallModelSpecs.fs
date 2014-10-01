@@ -21,13 +21,6 @@ let addToModel framework lib (model : InstallModell) : InstallModell =
                      | Some files -> Map.add framework (Set.add lib files) model.Frameworks
                      | None -> Map.add framework (Set.singleton lib) model.Frameworks }
 
-let addToModelIfEmpty framework lib (model : InstallModell) : InstallModell = 
-    { model with Frameworks = 
-                     match Map.tryFind framework model.Frameworks with
-                     | Some files ->
-                        if Set.isEmpty files then Map.add framework (Set.singleton lib) model.Frameworks else model.Frameworks
-                     | None -> Map.add framework (Set.singleton lib) model.Frameworks }
-
 let extractFrameworksFromPaths (model : InstallModell) libs : InstallModell = 
     libs |> List.fold (fun model lib -> 
                 match FrameworkIdentifier.DetectFromPath lib with
@@ -35,17 +28,17 @@ let extractFrameworksFromPaths (model : InstallModell) libs : InstallModell =
                 | None -> model) model
 
 let useLowerVersionLibIfEmpty (model : InstallModell) =
-    let addToUpper upperVersion files model =
-        files
-        |> Seq.fold (fun model file -> addToModelIfEmpty (DotNetFramework(Framework upperVersion, Full)) file model) model
-
     KnownDotNetFrameworks
     |> List.rev
     |> List.fold (fun (model:InstallModell) lowerVersion ->
             let newFiles = model.GetFiles(DotNetFramework(Framework lowerVersion, Full)) 
             let upperVersions = KnownDotNetFrameworks |> List.filter (fun version -> version > lowerVersion)
             upperVersions
-            |> List.fold (fun (model:InstallModell) upperVersion -> addToUpper upperVersion newFiles model) model
+            |> List.fold (fun (model:InstallModell) upperVersion -> 
+                    let framework = DotNetFramework(Framework upperVersion, Full)
+                    match Map.tryFind framework model.Frameworks with
+                    | Some files when Set.isEmpty files -> { model with Frameworks = Map.add framework newFiles model.Frameworks }
+                    | _ -> model) model
         ) model
 
 
