@@ -4,6 +4,11 @@ open Paket
 open NUnit.Framework
 open FsUnit
 
+[<Literal>]
+let placeHolder = "_._"
+let blackList =
+    [fun (f:string) -> f.Contains placeHolder]
+
 let KnownDotNetFrameworks = [ "v1.0"; "v1.1"; "v2.0"; "v3.5"; "v4.0"; "v4.5"; "v4.5.1" ]
 
 type InstallModell = 
@@ -34,13 +39,27 @@ let useLowerVersionLibIfEmpty (model : InstallModell) =
     |> List.rev
     |> List.fold (fun (model : InstallModell) lowerVersion -> 
            let newFiles = model.GetFiles(DotNetFramework(Framework lowerVersion, Full))
-           let upperVersions = KnownDotNetFrameworks |> List.filter (fun version -> version > lowerVersion)
-           upperVersions |> List.fold (fun (model : InstallModell) upperVersion -> 
-                                let framework = DotNetFramework(Framework upperVersion, Full)
-                                match Map.tryFind framework model.Frameworks with
-                                | Some files when Set.isEmpty files -> 
-                                    { model with Frameworks = Map.add framework newFiles model.Frameworks }
-                                | _ -> model) model) model
+           let containsPlaceHolder = newFiles |> Set.exists (fun x -> x.Contains(placeHolder))
+           if Set.isEmpty newFiles || containsPlaceHolder then model
+           else 
+               KnownDotNetFrameworks
+               |> List.filter (fun version -> version > lowerVersion)
+               |> List.fold (fun (model : InstallModell) upperVersion -> 
+                      let framework = DotNetFramework(Framework upperVersion, Full)
+                      match Map.tryFind framework model.Frameworks with
+                      | Some files when Set.isEmpty files -> 
+                          { model with Frameworks = Map.add framework newFiles model.Frameworks }
+                      | _ -> model) model) model
+
+
+let filterBlackList (model : InstallModell) = 
+    { model with Frameworks = 
+                     blackList 
+                     |> List.fold 
+                            (fun frameworks f -> 
+                                frameworks 
+                                |> Map.map (fun _ files -> files |> Set.filter (f >> not))) 
+                        model.Frameworks }
 
 [<Test>]
 let ``should create empty model with net40, net45 ...``() = 
@@ -72,3 +91,33 @@ let ``should add net35 if we have net20 and net40``() =
     model.GetFiles(DotNetFramework(Framework "v4.0", Full)) |> shouldNotContain (@"..\Rx-Main\lib\net20\Rx.dll")
     model.GetFiles(DotNetFramework(Framework "v4.5", Full)) |> shouldContain (@"..\Rx-Main\lib\net40\Rx.dll")
     model.GetFiles(DotNetFramework(Framework "v4.5.1", Full)) |> shouldContain (@"..\Rx-Main\lib\net40\Rx.dll")
+
+[<Test>]
+let ``should put _._ files into right buckets``() = 
+    let model = 
+        [ @"..\Rx-Main\lib\net40\_._"; @"..\Rx-Main\lib\net20\_._" ] 
+        |> extractFrameworksFromPaths InstallModell.EmptyModel
+    model.GetFiles(DotNetFramework(Framework "v2.0", Full)) |> shouldContain (@"..\Rx-Main\lib\net20\_._")
+    model.GetFiles(DotNetFramework(Framework "v4.0", Full)) |> shouldContain (@"..\Rx-Main\lib\net40\_._")
+
+[<Test>]
+let ``should skip buckets which contain placeholder while adjusting upper versions``() = 
+    let model = 
+        [ @"..\Rx-Main\lib\net20\Rx.dll"; @"..\Rx-Main\lib\net40\_._"; ]
+        |> extractFrameworksFromPaths InstallModell.EmptyModel
+        |> useLowerVersionLibIfEmpty
+
+    model.GetFiles(DotNetFramework(Framework "v2.0", Full)) |> shouldContain (@"..\Rx-Main\lib\net20\Rx.dll")
+    model.GetFiles(DotNetFramework(Framework "v3.5", Full)) |> shouldContain (@"..\Rx-Main\lib\net20\Rx.dll")
+    model.GetFiles(DotNetFramework(Framework "v4.0", Full)) |> shouldNotContain (@"..\Rx-Main\lib\net20\Rx.dll")
+    model.GetFiles(DotNetFramework(Framework "v4.5", Full)) |> shouldContain (@"..\Rx-Main\lib\net20\Rx.dll")
+
+[<Test>]
+let ``should filter _._ when processing blacklist``() = 
+    let model = 
+        [ @"..\Rx-Main\lib\net40\_._"; @"..\Rx-Main\lib\net20\_._" ] 
+        |> extractFrameworksFromPaths InstallModell.EmptyModel
+        |> filterBlackList
+
+    model.GetFiles(DotNetFramework(Framework "v2.0", Full)) |> shouldNotContain (@"..\Rx-Main\lib\net20\_._")
+    model.GetFiles(DotNetFramework(Framework "v4.0", Full)) |> shouldNotContain (@"..\Rx-Main\lib\net40\_._")
