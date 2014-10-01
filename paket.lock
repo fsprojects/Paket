@@ -2,7 +2,7 @@ NUGET
   remote: http://nuget.org/api/v2
   specs:
     DotNetZip (1.9.3)
-    FAKE (3.5.5)
+    FAKE (3.5.6)
     FSharp.Compiler.Service (0.0.62)
     FSharp.Core.Microsoft.Signed (3.1.1.1)
     FSharp.Formatting (2.4.26)
@@ -24,7 +24,7 @@ NUGET
       Microsoft.Net.Http (>= 0)
     RazorEngine (3.3.0)
       Microsoft.AspNet.Razor (>= 2.0.30506.0)
-    SourceLink.Fake (0.3.4)
+    SourceLink.Fake (0.4.0)
     UnionArgParser (0.8.0)
 GITHUB
   remote: forki/FsUnit
@@ -32,5 +32,5 @@ GITHUB
     FsUnit.fs (7623fc13439f0e60bd05c1ed3b5f6dcb937fe468)
   remote: fsharp/FAKE
   specs:
-    modules/Octokit/Octokit.fsx (a25c2f256a99242c1106b5a3478aae6bb68c7a93)
+    modules/Octokit/Octokit.fsx (b1b85bc9391d172e672eb89155231e80c8df6f49)
       Octokit (>= 0)
