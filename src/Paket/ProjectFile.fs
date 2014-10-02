@@ -20,8 +20,12 @@ type private InstallInfo = {
 
 module private InstallRules = 
     let groupDLLs (usedPackages : Dictionary<string,bool>) extracted projectPath = 
+        let used = HashSet<_>()      
+        for x in usedPackages do
+            used.Add(x.Key.ToLower()) |> ignore
+
         [ for (package:ResolvedPackage), libraries in extracted do              
-              if usedPackages.ContainsKey(package.Name) |> not then verbosefn "    - %s is not used ==> ignored" package.Name else
+              if used.Contains(package.Name.ToLower()) |> not then verbosefn "    - %s is not used ==> ignored" package.Name else
                 let libraries = Seq.toArray libraries
                 for (lib : FileInfo) in libraries do
                     match FrameworkIdentifier.DetectFromPath lib.FullName with

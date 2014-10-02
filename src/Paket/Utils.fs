@@ -17,22 +17,12 @@ let CreateDir path =
     let dir = DirectoryInfo path
     if not dir.Exists then dir.Create()
 
-/// Cleans a directory by removing all files and sub-directories.
+/// Cleans a directory by deleting it and recreating it.
 let CleanDir path = 
     let di = DirectoryInfo path
     if di.Exists then 
-        // delete all files
-        let files = Directory.GetFiles(path, "*.*", SearchOption.AllDirectories)
-        files |> Seq.iter (fun file -> 
-                     let fi = FileInfo file
-                     fi.IsReadOnly <- false
-                     fi.Delete())
-        // deletes all subdirectories
-        let rec deleteDirs actDir = 
-            Directory.GetDirectories(actDir) |> Seq.iter deleteDirs
-            Directory.Delete(actDir, true)
-        Directory.GetDirectories path |> Seq.iter deleteDirs
-    else CreateDir path
+        di.Delete(true)
+    CreateDir path
     // set writeable
     File.SetAttributes(path, FileAttributes.Normal)
 

@@ -1,3 +1,6 @@
+#### 0.4.20 - 02.10.2014
+* Fix potential casing issue on windows
+
 #### 0.4.19 - 01.10.2014
 * Content files like `_._`, `*.transform` and `*.pp` are ignored - https://github.com/fsprojects/Paket/issues/207
 
