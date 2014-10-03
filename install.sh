@@ -27,7 +27,7 @@ rm -rf $LIB/paket
 install -d $LIB/paket
 
 for f in $TMP/tools/*; do
-  install -D $f $LIB/paket/
+  install $f $LIB/paket/
 done
 
 rm -rf $BIN/paket
