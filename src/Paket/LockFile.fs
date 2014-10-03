@@ -16,7 +16,7 @@ module LockFileSerializer =
         | Range(_, v1, v2, _) -> ">= " + v1.ToString() + ", < " + v2.ToString()
 
     /// [omit]
-    let serializePackages strictMode (resolved : PackageResolution) = 
+    let serializePackages options (resolved : PackageResolution) = 
         let sources = 
             resolved
             |> Seq.map (fun kv ->
@@ -29,8 +29,8 @@ module LockFileSerializer =
 
         let all = 
             let hasReported = ref false
-            [ if strictMode then
-                yield "REFERENCES: STRICT"
+            [ if options.Strict then yield "REFERENCES: STRICT"
+              if options.OmitContent then yield "CONTENT: NONE"
               for (source, _), packages in sources do
                   if not !hasReported then
                     yield "NUGET"
@@ -71,7 +71,10 @@ module LockFileParser =
           Packages : ResolvedPackage list
           SourceFiles : ResolvedSourceFile list
           LastWasPackage : bool
-          Strict: bool }
+          Strict: bool
+          OmitContent: bool }
+    
+    type private InstallOptionCase = StrictCase | OmitContentCase
 
     let private (|Remote|NugetPackage|NugetDependency|SourceFile|RepositoryType|Blank|ReferencesMode|) (state, line:string) =
         match (state.RepositoryType, line.Trim()) with
@@ -80,7 +83,8 @@ module LockFileParser =
         | _, _ when String.IsNullOrWhiteSpace line -> Blank
         | _, trimmed when trimmed.StartsWith "remote:" -> Remote(trimmed.Substring(trimmed.IndexOf(": ") + 2).Split(' ').[0])
         | _, trimmed when trimmed.StartsWith "specs:" -> Blank
-        | _, trimmed when trimmed.StartsWith "REFERENCES:" -> ReferencesMode(trimmed.Replace("REFERENCES:","").Trim() = "STRICT")
+        | _, trimmed when trimmed.StartsWith "REFERENCES:" -> ReferencesMode(StrictCase,trimmed.Replace("REFERENCES:","").Trim() = "STRICT")
+        | _, trimmed when trimmed.StartsWith "CONTENT:" -> ReferencesMode(OmitContentCase,trimmed.Replace("CONTENT:","").Trim() = "NONE")
         | _, trimmed when line.StartsWith "      " ->
             let parts = trimmed.Split '(' 
             NugetDependency (parts.[0].Trim(),parts.[1].Replace("(", "").Replace(")", "").Trim())
@@ -92,12 +96,13 @@ module LockFileParser =
     let Parse(lockFileLines) =
         let remove textToRemove (source:string) = source.Replace(textToRemove, "")
         let removeBrackets = remove "(" >> remove ")"
-        ({ RepositoryType = None; RemoteUrl = None; Packages = []; SourceFiles = []; Strict = false; LastWasPackage = false }, lockFileLines)
+        ({ RepositoryType = None; RemoteUrl = None; Packages = []; SourceFiles = []; Strict = false; OmitContent = false; LastWasPackage = false }, lockFileLines)
         ||> Seq.fold(fun state line ->
             match (state, line) with
             | Remote(url) -> { state with RemoteUrl = Some url }
             | Blank -> state
-            | ReferencesMode mode -> { state with Strict = mode }
+            | ReferencesMode (StrictCase,mode) -> { state with Strict = mode }
+            | ReferencesMode (OmitContentCase,omit) -> { state with OmitContent = omit }
             | RepositoryType repoType -> { state with RepositoryType = Some repoType }
             | NugetPackage details ->
                 match state.RemoteUrl with
@@ -137,18 +142,18 @@ module LockFileParser =
 
 
 /// Allows to parse and analyze paket.lock files.
-type LockFile(fileName:string,strictMode,resolution:PackageResolution,remoteFiles:ResolvedSourceFile list) =
+type LockFile(fileName:string,options,resolution:PackageResolution,remoteFiles:ResolvedSourceFile list) =
     member __.SourceFiles = remoteFiles
     member __.ResolvedPackages = resolution
     member __.FileName = fileName
-    member __.Strict = strictMode
+    member __.Options = options
 
     /// Updates the Lock file with the analyzed dependencies from the paket.dependencies file.
     member __.Save() =
         let output = 
             String.Join
                 (Environment.NewLine,                  
-                    LockFileSerializer.serializePackages strictMode resolution, 
+                    LockFileSerializer.serializePackages options resolution, 
                     LockFileSerializer.serializeSourceFiles remoteFiles)
         File.WriteAllText(fileName, output)
         tracefn "Locked version resolutions written to %s" fileName
@@ -156,4 +161,4 @@ type LockFile(fileName:string,strictMode,resolution:PackageResolution,remoteFile
     /// Parses a paket.lock file from lines
     static member LoadFrom(lockFileName) : LockFile =        
         LockFileParser.Parse(File.ReadAllLines lockFileName)
-        |> fun state -> LockFile(lockFileName,state.Strict,state.Packages |> Seq.fold (fun map p -> Map.add p.Name p map) Map.empty, List.rev state.SourceFiles)
+        |> fun state -> LockFile(lockFileName, {Strict = state.Strict; OmitContent = state.OmitContent},state.Packages |> Seq.fold (fun map p -> Map.add p.Name p map) Map.empty, List.rev state.SourceFiles)

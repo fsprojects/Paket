@@ -44,12 +44,12 @@ let Analyze(allPackages : list<ResolvedPackage>, depFile : DependenciesFile, ref
         allDeps |> List.filter (fun dep -> not <| Set.contains ((depNameFun dep).ToLower()) depsToRemove)
 
     let simplifiedDeps = depFile.Packages |> getSimplifiedDeps (fun p -> p.Name) depFile.FileName |> Seq.toList
-    let refFiles' = if depFile.Strict 
+    let refFiles' = if depFile.Options.Strict 
                     then refFiles 
                     else refFiles |> List.map (fun refFile -> {refFile with NugetPackages = 
                                                                             refFile.NugetPackages |> getSimplifiedDeps id refFile.FileName})
 
-    DependenciesFile(depFile.FileName, depFile.Strict, simplifiedDeps, depFile.RemoteFiles), refFiles'
+    DependenciesFile(depFile.FileName, depFile.Options, simplifiedDeps, depFile.RemoteFiles), refFiles'
 
 let Simplify (interactive, dependenciesFileName) = 
     if not <| File.Exists(dependenciesFileName) then
@@ -72,7 +72,7 @@ let Simplify (interactive, dependenciesFileName) =
     printfn ""
     simplify depFile.FileName <| depFile.ToString() <| simplifiedDepFile.ToString()
 
-    if depFile.Strict then
+    if depFile.Options.Strict then
         traceWarn ("Strict mode detected. Will not attempt to simplify " + Constants.ReferencesFile + " files.")
     else
         for refFile in simplifiedRefFiles do

@@ -1,4 +1,4 @@
-module paket.lockFile.GenerateAuthModeSpecs
+module paket.lockFile.GenerateContentNoneOptionSpecs
 
 open Paket
 open NUnit.Framework
@@ -6,22 +6,24 @@ open FsUnit
 open TestHelpers
 
 let config1 = """
-source "http://nuget.org/api/v2"  username: "user" password: "pass"
+content none
+source "http://nuget.org/api/v2"
 
-nuget "Castle.Windsor-log4net" "~> 3.2"
+nuget "Microsoft.SqlServer.Types"
 """
 
 let graph = [
-    "Castle.Windsor-log4net","3.2",[]
+    "Microsoft.SqlServer.Types","1.0",[]
 ]
 
-let expected = """NUGET
+let expected = """CONTENT: NONE
+NUGET
   remote: http://nuget.org/api/v2
   specs:
-    Castle.Windsor-log4net (3.2)"""
+    Microsoft.SqlServer.Types (1.0)"""
 
 [<Test>]
-let ``should generate no auth in lock file``() = 
+let ``should generate content none lock file``() = 
     let cfg = DependenciesFile.FromCode(config1)
     cfg.Resolve(noSha1,VersionsFromGraph graph, PackageDetailsFromGraph graph).ResolvedPackages.GetModelOrFail()
     |> LockFileSerializer.serializePackages cfg.Options

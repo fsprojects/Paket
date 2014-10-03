@@ -156,7 +156,7 @@ let Install(sources,force, hard, lockFile:LockFile) =
                     match usedPackages.TryGetValue name with
                     | false,_ ->
                         usedPackages.Add(name,directly)
-                        if not lockFile.Strict then
+                        if not lockFile.Options.Strict then
                             for d,_ in package.Dependencies do
                                 addPackage false d
                     | true,v -> usedPackages.[name] <- v || directly
