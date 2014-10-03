@@ -239,7 +239,7 @@ type ProjectFile =
         this.FindPaketNodes("Content")
         |> List.map (fun n ->  FileInfo(Path.Combine(Path.GetDirectoryName(this.FileName), n.Attributes.["Include"].Value)))
 
-    member this.UpdateContentFiles(contentFiles : list<FileInfo>) =
+    member this.UpdateContentFiles(contentFiles : list<FileInfo>, hard) =
         let contentNode (fi: FileInfo) = 
             this.CreateNode "Content" 
             |> addAttribute "Include" (createRelativePath this.FileName fi.FullName)
@@ -249,7 +249,6 @@ type ProjectFile =
         match [ for node in this.Document.SelectNodes("//ns:Project", this.Namespaces) -> node ] with
         | [] -> ()
         | projectNode :: _ -> 
-            this.DeletePaketNodes("Content")
             let itemGroupNode = this.Document.CreateElement("ItemGroup", ProjectFile.DefaultNameSpace)
 
             let firstNodeForDirs =
@@ -268,7 +267,14 @@ type ProjectFile =
                                                 |> Seq.cast<XmlNode> |> Seq.firstOrDefault) with
                         | Some (existingNode) -> 
                             if not <| (existingNode.ChildNodes |> Seq.cast<XmlNode> |> Seq.exists (fun n -> n.Name = "Paket"))
-                            then existingNode :?> XmlElement |> addChild (this.CreateNode("Paket", "True")) |> ignore
+                            then 
+                                if hard 
+                                then existingNode :?> XmlElement |> addChild (this.CreateNode("Paket", "True")) |> ignore
+                                else 
+                                    existingNode.ParentNode.InsertBefore(paketNode, existingNode) |> ignore
+                                    traceWarnfn "Duplicated content file '%s for project %s" 
+                                        existingNode.Attributes.["Include"].Value 
+                                        this.FileName
                         | None -> firstNodeForDir.ParentNode.InsertBefore(paketNode, firstNodeForDir) |> ignore
 
                     | None -> itemGroupNode.AppendChild(paketNode) |> ignore )

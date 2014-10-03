@@ -110,7 +110,7 @@ module DependenciesFileParser =
         | _ -> Blank
     
     let parseDependenciesFile fileName (lines:string seq) = 
-        ((0, {Strict = false; OmitContent = false}, [], [], []), lines)
+        ((0, InstallOptions.Default, [], [], []), lines)
         ||> Seq.fold(fun (lineNo, options, sources: PackageSource list, packages, sourceFiles: UnresolvedSourceFile list) line ->
             let lineNo = lineNo + 1
             try
@@ -228,8 +228,8 @@ type DependenciesFile(fileName,options,packages : PackageRequirement list, remot
             let hasReportedSource = ref false
             let hasReportedFirst = ref false
             let hasReportedSecond = ref false
-            [ if options.Strict then
-                  yield "references strict"
+            [ if options.Strict then yield "references strict"
+              if options.OmitContent then yield "content none"
               for sources, packages in sources do
                   for source in sources do
                       hasReportedSource := true

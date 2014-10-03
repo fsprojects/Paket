@@ -71,8 +71,7 @@ module LockFileParser =
           Packages : ResolvedPackage list
           SourceFiles : ResolvedSourceFile list
           LastWasPackage : bool
-          Strict: bool
-          OmitContent: bool }
+          Options: InstallOptions }
     
     type private InstallOptionCase = StrictCase | OmitContentCase
 
@@ -96,13 +95,13 @@ module LockFileParser =
     let Parse(lockFileLines) =
         let remove textToRemove (source:string) = source.Replace(textToRemove, "")
         let removeBrackets = remove "(" >> remove ")"
-        ({ RepositoryType = None; RemoteUrl = None; Packages = []; SourceFiles = []; Strict = false; OmitContent = false; LastWasPackage = false }, lockFileLines)
+        ({ RepositoryType = None; RemoteUrl = None; Packages = []; SourceFiles = []; Options = InstallOptions.Default; LastWasPackage = false }, lockFileLines)
         ||> Seq.fold(fun state line ->
             match (state, line) with
             | Remote(url) -> { state with RemoteUrl = Some url }
             | Blank -> state
-            | ReferencesMode (StrictCase,mode) -> { state with Strict = mode }
-            | ReferencesMode (OmitContentCase,omit) -> { state with OmitContent = omit }
+            | ReferencesMode (StrictCase,mode) -> { state with Options = {state.Options with Strict = mode} }
+            | ReferencesMode (OmitContentCase,omit) -> { state with Options = {state.Options with OmitContent = omit} }
             | RepositoryType repoType -> { state with RepositoryType = Some repoType }
             | NugetPackage details ->
                 match state.RemoteUrl with
@@ -161,4 +160,4 @@ type LockFile(fileName:string,options,resolution:PackageResolution,remoteFiles:R
     /// Parses a paket.lock file from lines
     static member LoadFrom(lockFileName) : LockFile =        
         LockFileParser.Parse(File.ReadAllLines lockFileName)
-        |> fun state -> LockFile(lockFileName, {Strict = state.Strict; OmitContent = state.OmitContent},state.Packages |> Seq.fold (fun map p -> Map.add p.Name p map) Map.empty, List.rev state.SourceFiles)
+        |> fun state -> LockFile(lockFileName, state.Options ,state.Packages |> Seq.fold (fun map p -> Map.add p.Name p map) Map.empty, List.rev state.SourceFiles)

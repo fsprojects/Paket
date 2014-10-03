@@ -32,6 +32,17 @@ let ``should serialize strict config``() =
     cfg.ToString()
     |> shouldEqual (normalizeLineEndings strictConfig)
 
+let contentNoneConfig = """content none
+source http://nuget.org/api/v2
+
+nuget FAKE ~> 3.0"""
+
+[<Test>]
+let ``should serialize content none config``() = 
+    let cfg = DependenciesFile.FromCode(contentNoneConfig)
+    
+    cfg.ToString()
+    |> shouldEqual (normalizeLineEndings contentNoneConfig)
 
 let simplestConfig = """nuget FAKE ~> 3.0"""
 
