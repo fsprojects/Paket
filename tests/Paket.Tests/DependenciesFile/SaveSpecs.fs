@@ -25,6 +25,7 @@ source http://nuget.org/api/v2
 
 nuget FAKE ~> 3.0"""
 
+
 [<Test>]
 let ``should serialize strict config``() = 
     let cfg = DependenciesFile.FromCode(strictConfig)
@@ -36,6 +37,7 @@ let contentNoneConfig = """content none
 source http://nuget.org/api/v2
 
 nuget FAKE ~> 3.0"""
+
 
 [<Test>]
 let ``should serialize content none config``() = 

@@ -75,15 +75,15 @@ module LockFileParser =
     
     type private InstallOptionCase = StrictCase | OmitContentCase
 
-    let private (|Remote|NugetPackage|NugetDependency|SourceFile|RepositoryType|Blank|ReferencesMode|) (state, line:string) =
+    let private (|Remote|NugetPackage|NugetDependency|SourceFile|RepositoryType|Blank|InstallOption|) (state, line:string) =
         match (state.RepositoryType, line.Trim()) with
         | _, "NUGET" -> RepositoryType "NUGET"
         | _, "GITHUB" -> RepositoryType "GITHUB"
         | _, _ when String.IsNullOrWhiteSpace line -> Blank
         | _, trimmed when trimmed.StartsWith "remote:" -> Remote(trimmed.Substring(trimmed.IndexOf(": ") + 2).Split(' ').[0])
         | _, trimmed when trimmed.StartsWith "specs:" -> Blank
-        | _, trimmed when trimmed.StartsWith "REFERENCES:" -> ReferencesMode(StrictCase,trimmed.Replace("REFERENCES:","").Trim() = "STRICT")
-        | _, trimmed when trimmed.StartsWith "CONTENT:" -> ReferencesMode(OmitContentCase,trimmed.Replace("CONTENT:","").Trim() = "NONE")
+        | _, trimmed when trimmed.StartsWith "REFERENCES:" -> InstallOption(StrictCase,trimmed.Replace("REFERENCES:","").Trim() = "STRICT")
+        | _, trimmed when trimmed.StartsWith "CONTENT:" -> InstallOption(OmitContentCase,trimmed.Replace("CONTENT:","").Trim() = "NONE")
         | _, trimmed when line.StartsWith "      " ->
             let parts = trimmed.Split '(' 
             NugetDependency (parts.[0].Trim(),parts.[1].Replace("(", "").Replace(")", "").Trim())
@@ -100,8 +100,8 @@ module LockFileParser =
             match (state, line) with
             | Remote(url) -> { state with RemoteUrl = Some url }
             | Blank -> state
-            | ReferencesMode (StrictCase,mode) -> { state with Options = {state.Options with Strict = mode} }
-            | ReferencesMode (OmitContentCase,omit) -> { state with Options = {state.Options with OmitContent = omit} }
+            | InstallOption (StrictCase,mode) -> { state with Options = {state.Options with Strict = mode} }
+            | InstallOption (OmitContentCase,omit) -> { state with Options = {state.Options with OmitContent = omit} }
             | RepositoryType repoType -> { state with RepositoryType = Some repoType }
             | NugetPackage details ->
                 match state.RemoteUrl with
