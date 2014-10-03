@@ -70,7 +70,7 @@ let private findPackagesWithContent (usedPackages:Dictionary<_,_>) =
     |> Seq.choose (fun packageDir -> packageDir.GetDirectories("Content") |> Array.tryFind (fun _ -> true))
     |> Seq.toList
 
-let private copyContentFilesToProject (project : ProjectFile) packagesWithContent = 
+let private copyContentFiles (project : ProjectFile, packagesWithContent) = 
 
     let onBlackList (fi : FileInfo) = 
         let rules : list<(FileInfo -> bool)> = [
@@ -156,7 +156,7 @@ let Install(sources,force, hard, lockFile:LockFile) =
                     match usedPackages.TryGetValue name with
                     | false,_ ->
                         usedPackages.Add(name,directly)
-                        if not lockFile.Strict then
+                        if not lockFile.Options.Strict then
                             for d,_ in package.Dependencies do
                                 addPackage false d
                     | true,v -> usedPackages.[name] <- v || directly
@@ -172,8 +172,11 @@ let Install(sources,force, hard, lockFile:LockFile) =
         |> project.UpdateSourceFiles
 
         removeContentFiles project
-        let packagesWithContent = findPackagesWithContent usedPackages
-        let contentFiles = copyContentFilesToProject project packagesWithContent
-        project.UpdateContentFiles(contentFiles)
+        project.DeletePaketNodes("Content")
+        
+        if not lockFile.Options.OmitContent then
+            let packagesWithContent = findPackagesWithContent usedPackages
+            let contentFiles = copyContentFiles(project, packagesWithContent)
+            project.UpdateContentFiles(contentFiles, hard)
 
         project.Save()

@@ -14,7 +14,7 @@ let Update(dependenciesFileName, forceResolution, force, hard) =
             let resolution = dependenciesFile.Resolve force
             let lockFile = 
                 LockFile
-                    (lockFileName.FullName, dependenciesFile.Strict, resolution.ResolvedPackages.GetModelOrFail(), 
+                    (lockFileName.FullName, dependenciesFile.Options, resolution.ResolvedPackages.GetModelOrFail(), 
                      resolution.ResolvedSourceFiles)
             lockFile.Save()
             dependenciesFile.Sources, lockFile

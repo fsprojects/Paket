@@ -22,7 +22,7 @@ let ``should parse lock file``() =
     let lockFile = LockFileParser.Parse(toLines lockFile)
     let packages = List.rev lockFile.Packages
     packages.Length |> shouldEqual 6
-    lockFile.Strict |> shouldEqual false
+    lockFile.Options.Strict |> shouldEqual false
 
     packages.[0].Source |> shouldEqual PackageSources.DefaultNugetSource
     packages.[0].Name |> shouldEqual "Castle.Windsor"

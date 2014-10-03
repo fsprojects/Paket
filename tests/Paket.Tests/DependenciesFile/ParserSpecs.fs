@@ -10,7 +10,7 @@ open System
 [<Test>]
 let ``should read emptx config``() = 
     let cfg = DependenciesFile.FromCode("")
-    cfg.Strict |> shouldEqual false
+    cfg.Options.Strict |> shouldEqual false
 
     cfg.Packages.Length |> shouldEqual 0
     cfg.RemoteFiles.Length |> shouldEqual 0
@@ -27,7 +27,7 @@ nuget "SignalR" "= 3.3.2"
 [<Test>]
 let ``should read simple config``() = 
     let cfg = DependenciesFile.FromCode(config1)
-    cfg.Strict |> shouldEqual false
+    cfg.Options.Strict |> shouldEqual false
 
     cfg.DirectDependencies.["Rx-Main"].Range |> shouldEqual (VersionRange.Between("2.0", "3.0"))
     cfg.DirectDependencies.["Castle.Windsor-log4net"].Range |> shouldEqual (VersionRange.Between("3.2", "4.0"))
@@ -79,7 +79,7 @@ nuget "MinPackage" "1.1.3"
 [<Test>]
 let ``should read config with multiple sources``() = 
     let cfg = DependenciesFile.FromCode(config4)
-    cfg.Strict |> shouldEqual false
+    cfg.Options.Strict |> shouldEqual false
 
     (cfg.Packages |> List.find (fun p -> p.Name = "Rx-Main")).Sources |> shouldEqual [PackageSource.NugetSource "http://nuget.org/api/v3"; PackageSources.DefaultNugetSource]
     (cfg.Packages |> List.find (fun p -> p.Name = "MinPackage")).Sources |> shouldEqual [PackageSource.NugetSource "http://nuget.org/api/v3"; PackageSources.DefaultNugetSource]
@@ -111,10 +111,23 @@ nuget "FAKE" "~> 3.0"
 [<Test>]
 let ``should read strict config``() = 
     let cfg = DependenciesFile.FromCode(strictConfig)
-    cfg.Strict |> shouldEqual true
+    cfg.Options.Strict |> shouldEqual true
 
     (cfg.Packages |> List.find (fun p -> p.Name = "FAKE")).Sources |> shouldEqual [PackageSource.NugetSource "http://nuget.org/api/v2"]
 
+let noneContentConfig = """
+content none
+source "http://nuget.org/api/v2" // first source
+
+nuget "Microsoft.SqlServer.Types"
+"""
+
+[<Test>]
+let ``should read content none config``() = 
+    let cfg = DependenciesFile.FromCode(noneContentConfig)
+    cfg.Options.OmitContent |> shouldEqual true
+
+    (cfg.Packages |> List.find (fun p -> p.Name = "Microsoft.SqlServer.Types")).Sources |> shouldEqual [PackageSource.NugetSource "http://nuget.org/api/v2"]
 
 let configWithoutQuotes = """
 source http://nuget.org/api/v2
@@ -128,7 +141,7 @@ nuget SignalR = 3.3.2
 [<Test>]
 let ``should read config without quotes``() = 
     let cfg = DependenciesFile.FromCode(configWithoutQuotes)
-    cfg.Strict |> shouldEqual false
+    cfg.Options.Strict |> shouldEqual false
     cfg.DirectDependencies.Count |> shouldEqual 4
 
     cfg.DirectDependencies.["Rx-Main"].Range |> shouldEqual (VersionRange.Between("2.0", "3.0"))
@@ -148,7 +161,7 @@ nuget SignalR    = 3.3.2
 [<Test>]
 let ``should read config without quotes but lots of whitespace``() = 
     let cfg = DependenciesFile.FromCode(configWithoutQuotes)
-    cfg.Strict |> shouldEqual false
+    cfg.Options.Strict |> shouldEqual false
     cfg.DirectDependencies.Count |> shouldEqual 4
 
     cfg.DirectDependencies.["Rx-Main"].Range |> shouldEqual (VersionRange.Between("2.0", "3.0"))
