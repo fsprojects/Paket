@@ -47,6 +47,7 @@ type ProjectFile =
     { FileName: string
       OriginalText : string
       Document : XmlDocument
+      ProjectNode : XmlNode
       Namespaces : XmlNamespaceManager }
     static member DefaultNameSpace = "http://schemas.microsoft.com/developer/msbuild/2003"
 
@@ -55,6 +56,7 @@ type ProjectFile =
         ["*.csproj";"*.fsproj";"*.vbproj"]
         |> List.map (fun projectType -> FindAllFiles(folder, projectType) |> Seq.toList)
         |> List.concat
+        |> List.choose (fun fi -> ProjectFile.Load fi.FullName)
 
     static member FindReferencesFile (projectFile : FileInfo) =
         let specificReferencesFile = FileInfo(Path.Combine(projectFile.Directory.FullName, projectFile.Name + "." + Constants.ReferencesFile))
@@ -147,70 +149,64 @@ type ProjectFile =
         this.DeleteIfEmpty("//ns:ItemGroup")
 
     member this.UpdateSourceFiles(sourceFiles:ResolvedSourceFile list) =
-        match [ for node in this.Document.SelectNodes("//ns:Project", this.Namespaces) -> node ] with
-        | [] -> ()
-        | projectNode :: _ -> 
-            // If there is no item group for compiled items, create one.
-            let compileItemGroup =
-                match this.Document.SelectNodes("//ns:Project/ns:ItemGroup/ns:Compile", this.Namespaces) with
-                | items when items.Count = 0 ->
-                    let itemGroup = this.CreateNode("ItemGroup")
-                    projectNode.AppendChild(itemGroup)
-                | compileItems -> compileItems.[0].ParentNode            
-        
-            // Insert all source files to the top of the list, but keep alphabetical order
-            for sourceFile in sourceFiles |> List.sortBy (fun x -> x.Name) |> List.rev do
-                let path = Uri(this.FileName).MakeRelativeUri(Uri(sourceFile.FilePath)).ToString().Replace("/", "\\")
-                let node =
-                    let node = this.CreateNode("Compile")
-                    node.SetAttribute("Include", path)
-                    node
-                    |> addChild (this.CreateNode("Paket","True"))
-                    |> addChild (this.CreateNode("Link","paket-files/" + sourceFile.Name))
+        // If there is no item group for compiled items, create one.
+        let compileItemGroup =
+            match this.Document.SelectNodes("//ns:Project/ns:ItemGroup/ns:Compile", this.Namespaces) with
+            | items when items.Count = 0 ->
+                let itemGroup = this.CreateNode("ItemGroup")
+                this.ProjectNode.AppendChild(itemGroup)
+            | compileItems -> compileItems.[0].ParentNode            
+    
+        // Insert all source files to the top of the list, but keep alphabetical order
+        for sourceFile in sourceFiles |> List.sortBy (fun x -> x.Name) |> List.rev do
+            let path = Uri(this.FileName).MakeRelativeUri(Uri(sourceFile.FilePath)).ToString().Replace("/", "\\")
+            let node =
+                let node = this.CreateNode("Compile")
+                node.SetAttribute("Include", path)
+                node
+                |> addChild (this.CreateNode("Paket","True"))
+                |> addChild (this.CreateNode("Link","paket-files/" + sourceFile.Name))
 
-                compileItemGroup.PrependChild(node) |> ignore                
+            compileItemGroup.PrependChild(node) |> ignore                
 
     member this.UpdateReferences(extracted, usedPackages : Dictionary<string,bool>, hard) = 
-        match [ for node in this.Document.SelectNodes("//ns:Project", this.Namespaces) -> node ] with
-        | [] -> verbosefn "%s is not a project file ==> skipping" this.FileName
-        | projectNode :: _ -> 
-            this.DeletePaketNodes("Reference")
-            let installInfos = InstallRules.groupDLLs usedPackages extracted this.FileName
-            for packageName, installInfos in installInfos do
-                let nuspec = FileInfo(sprintf "./packages/%s/%s.nuspec" packageName packageName)
-                let references = Nuspec.GetReferences nuspec.FullName
-                for (_,dllName), libsWithSameName in installInfos do
-                    if hard then
-                        this.DeleteCustomNodes(dllName)
-                
-                    if this.HasCustomNodes(dllName) then verbosefn "  - custom nodes for %s ==> skipping" dllName
-                    else
-                        let install = 
-                            match references with
-                            | References.All -> true
-                            | References.Explicit references -> references |> List.exists (fun x -> x = dllName + ".dll" || x = dllName + ".exe")
+        this.DeletePaketNodes("Reference")
+        let installInfos = InstallRules.groupDLLs usedPackages extracted this.FileName
+        for packageName, installInfos in installInfos do
+            let nuspec = FileInfo(sprintf "./packages/%s/%s.nuspec" packageName packageName)
+            let references = Nuspec.GetReferences nuspec.FullName
+            for (_,dllName), libsWithSameName in installInfos do
+                if hard then
+                    this.DeleteCustomNodes(dllName)
+            
+                if this.HasCustomNodes(dllName) then verbosefn "  - custom nodes for %s ==> skipping" dllName
+                else
+                    let install = 
+                        match references with
+                        | References.All -> true
+                        | References.Explicit references -> references |> List.exists (fun x -> x = dllName + ".dll" || x = dllName + ".exe")
 
-                        if not install then verbosefn "  - %s not listed in %s ==> excluded" dllName nuspec.Name else
-                        verbosefn "  - installing %s" dllName
-                        let lastLib = ref None
-                        for (_), libs in libsWithSameName do                            
-                            let chooseNode = this.Document.CreateElement("Choose", ProjectFile.DefaultNameSpace)
-                        
-                            let libsWithSameFrameworkVersion = 
-                                libs
-                                |> List.ofSeq
-                                |> List.sortBy (fun lib -> lib.Path)
-                            for lib in libsWithSameFrameworkVersion do
-                                verbosefn "     - %A" lib.Condition
-                                chooseNode.AppendChild(this.CreateWhenNode(lib, lib.Condition.GetCondition())) |> ignore
-                                lastLib := Some lib
-                            match !lastLib with
-                            | None -> ()
-                            | Some lib -> 
-                                chooseNode.AppendChild(this.CreateWhenNode(lib, lib.Condition.GetFrameworkIdentifier())) 
-                                |> ignore
-                            projectNode.AppendChild(chooseNode) |> ignore
-            this.DeleteEmptyReferences()
+                    if not install then verbosefn "  - %s not listed in %s ==> excluded" dllName nuspec.Name else
+                    verbosefn "  - installing %s" dllName
+                    let lastLib = ref None
+                    for (_), libs in libsWithSameName do                            
+                        let chooseNode = this.Document.CreateElement("Choose", ProjectFile.DefaultNameSpace)
+                    
+                        let libsWithSameFrameworkVersion = 
+                            libs
+                            |> List.ofSeq
+                            |> List.sortBy (fun lib -> lib.Path)
+                        for lib in libsWithSameFrameworkVersion do
+                            verbosefn "     - %A" lib.Condition
+                            chooseNode.AppendChild(this.CreateWhenNode(lib, lib.Condition.GetCondition())) |> ignore
+                            lastLib := Some lib
+                        match !lastLib with
+                        | None -> ()
+                        | Some lib -> 
+                            chooseNode.AppendChild(this.CreateWhenNode(lib, lib.Condition.GetFrameworkIdentifier())) 
+                            |> ignore
+                        this.ProjectNode.AppendChild(chooseNode) |> ignore
+        this.DeleteEmptyReferences()
 
     member this.Save() =
             if Utils.normalizeXml this.Document <> this.OriginalText then 
@@ -228,41 +224,38 @@ type ProjectFile =
             |> addChild (this.CreateNode("Paket","True"))
             :> XmlNode
         
-        match [ for node in this.Document.SelectNodes("//ns:Project", this.Namespaces) -> node ] with
-        | [] -> ()
-        | projectNode :: _ -> 
-            let itemGroupNode = this.Document.CreateElement("ItemGroup", ProjectFile.DefaultNameSpace)
+        let itemGroupNode = this.Document.CreateElement("ItemGroup", ProjectFile.DefaultNameSpace)
 
-            let firstNodeForDirs =
-                this.Document.SelectNodes("//ns:Content", this.Namespaces)
-                |> Seq.cast<XmlNode>
-                |> Seq.groupBy (fun node -> Path.GetDirectoryName(node.Attributes.["Include"].Value))
-                |> Seq.map (fun (key, nodes) -> (key, nodes |> Seq.head))
-                |> Map.ofSeq
-            
-            contentFiles
-            |> List.map (fun file -> (createRelativePath this.FileName file.DirectoryName), contentNode file)
-            |> List.iter (fun (dir, paketNode) ->
-                    match Map.tryFind dir firstNodeForDirs with
-                    | Some (firstNodeForDir) -> 
-                        match (this.Document.SelectNodes(sprintf "//ns:*[@Include='%s']" paketNode.Attributes.["Include"].Value, this.Namespaces) 
-                                                |> Seq.cast<XmlNode> |> Seq.firstOrDefault) with
-                        | Some (existingNode) -> 
-                            if not <| (existingNode.ChildNodes |> Seq.cast<XmlNode> |> Seq.exists (fun n -> n.Name = "Paket"))
-                            then 
-                                if hard 
-                                then existingNode :?> XmlElement |> addChild (this.CreateNode("Paket", "True")) |> ignore
-                                else 
-                                    existingNode.ParentNode.InsertBefore(paketNode, existingNode) |> ignore
-                                    traceWarnfn "Duplicated content file '%s for project %s" 
-                                        existingNode.Attributes.["Include"].Value 
-                                        this.FileName
-                        | None -> firstNodeForDir.ParentNode.InsertBefore(paketNode, firstNodeForDir) |> ignore
+        let firstNodeForDirs =
+            this.Document.SelectNodes("//ns:Content", this.Namespaces)
+            |> Seq.cast<XmlNode>
+            |> Seq.groupBy (fun node -> Path.GetDirectoryName(node.Attributes.["Include"].Value))
+            |> Seq.map (fun (key, nodes) -> (key, nodes |> Seq.head))
+            |> Map.ofSeq
+        
+        contentFiles
+        |> List.map (fun file -> (createRelativePath this.FileName file.DirectoryName), contentNode file)
+        |> List.iter (fun (dir, paketNode) ->
+                match Map.tryFind dir firstNodeForDirs with
+                | Some (firstNodeForDir) -> 
+                    match (this.Document.SelectNodes(sprintf "//ns:*[@Include='%s']" paketNode.Attributes.["Include"].Value, this.Namespaces) 
+                                            |> Seq.cast<XmlNode> |> Seq.firstOrDefault) with
+                    | Some (existingNode) -> 
+                        if not <| (existingNode.ChildNodes |> Seq.cast<XmlNode> |> Seq.exists (fun n -> n.Name = "Paket"))
+                        then 
+                            if hard 
+                            then existingNode :?> XmlElement |> addChild (this.CreateNode("Paket", "True")) |> ignore
+                            else 
+                                existingNode.ParentNode.InsertBefore(paketNode, existingNode) |> ignore
+                                traceWarnfn "Duplicated content file '%s for project %s" 
+                                    existingNode.Attributes.["Include"].Value 
+                                    this.FileName
+                    | None -> firstNodeForDir.ParentNode.InsertBefore(paketNode, firstNodeForDir) |> ignore
 
-                    | None -> itemGroupNode.AppendChild(paketNode) |> ignore )
-            
-            projectNode.AppendChild(itemGroupNode) |> ignore
-            this.DeleteIfEmpty("//ns:Project/ns:ItemGroup")
+                | None -> itemGroupNode.AppendChild(paketNode) |> ignore )
+        
+        this.ProjectNode.AppendChild(itemGroupNode) |> ignore
+        this.DeleteIfEmpty("//ns:Project/ns:ItemGroup")
 
     member this.ReplaceNugetPackagesFile() =
         let nugetNode = this.Document.SelectSingleNode("//ns:*[@Include='packages.config']", this.Namespaces)
@@ -307,6 +300,9 @@ type ProjectFile =
 
             let manager = new XmlNamespaceManager(doc.NameTable)
             manager.AddNamespace("ns", ProjectFile.DefaultNameSpace)
-            { FileName = fi.FullName; Document = doc; Namespaces = manager; OriginalText = Utils.normalizeXml doc }
+            let projectNode = doc.SelectNodes("//ns:Project", manager).[0]
+            Some { FileName = fi.FullName; Document = doc; ProjectNode = projectNode; Namespaces = manager; OriginalText = Utils.normalizeXml doc }
         with
-        | exn -> failwithf "Error while parsing %s:%s      %s" fileName Environment.NewLine exn.Message
+        | exn -> 
+            traceWarnfn "Unable to parse %s:%s      %s" fileName Environment.NewLine exn.Message
+            None

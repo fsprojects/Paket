@@ -132,10 +132,9 @@ let Install(sources,force, hard, lockFile:LockFile) =
         |> Async.RunSynchronously
         |> Array.choose id
 
-    for proj in ProjectFile.FindAllProjects(".") do    
-        verbosefn "Installing to %s" proj.FullName
-        let directPackages = extractReferencesFromListFile proj.FullName
-        let project = ProjectFile.Load proj.FullName
+    for project in ProjectFile.FindAllProjects(".") do    
+        verbosefn "Installing to %s" project.FileName
+        let directPackages = extractReferencesFromListFile project.FileName
 
         if directPackages |> Array.isEmpty |> not then verbosefn "  - direct packages: %A" directPackages
         let usedPackages = new Dictionary<_,_>()
@@ -161,7 +160,7 @@ let Install(sources,force, hard, lockFile:LockFile) =
                             for d,_ in package.Dependencies do
                                 addPackage false d
                     | true,v -> usedPackages.[name] <- v || directly
-                | None -> failwithf "Project %s references package %s, but it was not found in the paket.lock file." proj.FullName name
+                | None -> failwithf "Project %s references package %s, but it was not found in the paket.lock file." project.FileName name
 
         directPackages
         |> Array.iter (addPackage true)

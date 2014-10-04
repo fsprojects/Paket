@@ -63,7 +63,7 @@ let Simplify (interactive, dependenciesFileName) =
     let packages = lockFile.ResolvedPackages |> Seq.map (fun kv -> kv.Value) |> List.ofSeq
     let refFiles = 
         ProjectFile.FindAllProjects(".") 
-        |> List.choose ProjectFile.FindReferencesFile 
+        |> List.choose (fun p -> ProjectFile.FindReferencesFile <| FileInfo(p.FileName))
         |> List.map ReferencesFile.FromFile
     let refFilesBefore = refFiles |> List.map (fun refFile -> refFile.FileName, refFile) |> Map.ofList
 

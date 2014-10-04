@@ -9,6 +9,7 @@ let createProject name =
         { FileName = name 
           OriginalText = ""
           Document = XmlDocument()
+          ProjectNode = null
           Namespaces = XmlNamespaceManager(XmlDocument().NameTable)}
 
 [<Test>]

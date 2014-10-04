@@ -124,8 +124,7 @@ let ConvertFromNuget(force, installAfter, initAutoRestore, dependenciesFileName)
         solution.AddPaketFolder(dependenciesFileName, if installAfter then Some("paket.lock") else None)
         solution.Save()
 
-    for projFile in ProjectFile.FindAllProjects(".") do
-        let project = ProjectFile.Load(projFile.FullName)
+    for project in ProjectFile.FindAllProjects(".") do
         project.ReplaceNugetPackagesFile()
         project.RemoveNugetTargetsEntries()
         project.Save()

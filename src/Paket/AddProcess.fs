@@ -14,8 +14,9 @@ let Add(package, version, force, hard, interactive, installAfter, dependenciesFi
 
     if interactive then
         let di = DirectoryInfo(".")
-        for proj in ProjectFile.FindAllProjects(".") do
-            if Utils.askYesNo(sprintf "  Install to %s?" (proj.FullName.Replace(di.FullName,""))) then
+        for project in ProjectFile.FindAllProjects(".") do
+            if Utils.askYesNo(sprintf "  Install to %s?" (project.FileName.Replace(di.FullName,""))) then
+                let proj = FileInfo(project.FileName)
                 match ProjectFile.FindReferencesFile proj with
                 | None ->
                     let newFileName =

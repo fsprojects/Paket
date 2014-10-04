@@ -21,7 +21,6 @@ let InitAutoRestore() =
             tracefn "Downloaded %s" file
         with _ -> traceErrorfn "Unable to download %s for version %s" file latestVersion
 
-    for proj in ProjectFile.FindAllProjects(".") do
-        let project = ProjectFile.Load(proj.FullName)
+    for project in ProjectFile.FindAllProjects(".") do
         project.AddImportForPaketTargets()
         project.Save()
