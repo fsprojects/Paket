@@ -99,23 +99,7 @@ type ProjectFile =
     member this.DeletePaketNodes(name) =    
         let nodesToDelete = this.FindPaketNodes(name) 
         if nodesToDelete |> Seq.isEmpty |> not then
-            verbosefn "    - Deleting Paket nodes"
-
-        for node in nodesToDelete do
-            node.ParentNode.RemoveChild(node) |> ignore
-
-    member this.DeletePaketCompileNodes() =    
-        let nodesToDelete = List<_>()
-        for node in this.Document.SelectNodes("//ns:Compile", this.Namespaces) do            
-            let remove = ref false
-            for child in node.ChildNodes do
-                if child.Name = "Paket" then remove := true
-            
-            if !remove then
-                nodesToDelete.Add node
-
-        if nodesToDelete |> Seq.isEmpty |> not then
-            verbosefn "    - Deleting Paket Compile nodes"
+            verbosefn "    - Deleting Paket %s nodes" name
 
         for node in nodesToDelete do
             node.ParentNode.RemoveChild(node) |> ignore
@@ -158,22 +142,20 @@ type ProjectFile =
 
     member this.DeleteEmptyReferences() = 
         this.DeleteIfEmpty("//ns:Project/ns:Choose/ns:When/ns:ItemGroup")
-        this.DeleteIfEmpty("//ns:ItemGroup")
         this.DeleteIfEmpty("//ns:Project/ns:Choose/ns:When")
         this.DeleteIfEmpty("//ns:Project/ns:Choose")
+        this.DeleteIfEmpty("//ns:ItemGroup")
 
     member this.UpdateSourceFiles(sourceFiles:ResolvedSourceFile list) =
         match [ for node in this.Document.SelectNodes("//ns:Project", this.Namespaces) -> node ] with
         | [] -> ()
-        | _ -> 
-            this.DeletePaketCompileNodes()
+        | projectNode :: _ -> 
             // If there is no item group for compiled items, create one.
             let compileItemGroup =
                 match this.Document.SelectNodes("//ns:Project/ns:ItemGroup/ns:Compile", this.Namespaces) with
                 | items when items.Count = 0 ->
                     let itemGroup = this.CreateNode("ItemGroup")
-                    let project = this.Document.SelectNodes("//ns:Project", this.Namespaces).[0]
-                    project.AppendChild(itemGroup)
+                    projectNode.AppendChild(itemGroup)
                 | compileItems -> compileItems.[0].ParentNode            
         
             // Insert all source files to the top of the list, but keep alphabetical order

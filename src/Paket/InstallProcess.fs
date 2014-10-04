@@ -168,13 +168,13 @@ let Install(sources,force, hard, lockFile:LockFile) =
 
         project.UpdateReferences(extractedPackages,usedPackages,hard)
 
+        project.DeletePaketNodes("Content")
+        project.DeletePaketNodes("Compile")
         lockFile.SourceFiles 
         |> List.filter (fun file -> usedSourceFiles.Contains(file.Name))
         |> project.UpdateSourceFiles
 
         removeContentFiles project
-        project.DeletePaketNodes("Content")
-        
         if not lockFile.Options.OmitContent then
             let packagesWithContent = findPackagesWithContent usedPackages
             let contentFiles = copyContentFiles(project, packagesWithContent)
