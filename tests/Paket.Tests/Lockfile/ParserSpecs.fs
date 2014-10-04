@@ -30,7 +30,7 @@ let ``should parse lock file``() =
     let lockFile = LockFileParser.Parse(toLines lockFile)
     let packages = List.rev lockFile.Packages
     packages.Length |> shouldEqual 6
-    lockFile.Strict |> shouldEqual false
+    lockFile.Options.Strict |> shouldEqual false
 
     packages.[0].Source |> shouldEqual PackageSources.DefaultNugetSource
     packages.[0].Name |> shouldEqual "Castle.Windsor"
@@ -85,7 +85,7 @@ let ``should parse strict lock file``() =
     let lockFile = LockFileParser.Parse(toLines strictLockFile)
     let packages = List.rev lockFile.Packages
     packages.Length |> shouldEqual 6
-    lockFile.Strict |> shouldEqual true
+    lockFile.Options.Strict |> shouldEqual true
 
     packages.[5].Source |> shouldEqual PackageSources.DefaultNugetSource
     packages.[5].Name |> shouldEqual "log4net"
@@ -133,7 +133,7 @@ let ``should parse own lock file``() =
     let lockFile = LockFileParser.Parse(toLines dogfood)
     let packages = List.rev lockFile.Packages
     packages.Length |> shouldEqual 16
-    lockFile.Strict |> shouldEqual false
+    lockFile.Options.Strict |> shouldEqual false
 
     packages.[1].Source |> shouldEqual PackageSources.DefaultNugetSource
     packages.[1].Name |> shouldEqual "FAKE"

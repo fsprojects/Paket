@@ -32,7 +32,7 @@ let Add(package, version, force, hard, interactive, installAfter, dependenciesFi
         let lockFileName = DependenciesFile.FindLockfile dependenciesFileName
     
         let lockFile =                
-            let lockFile = LockFile(lockFileName.FullName, dependenciesFile.Strict, resolvedPackages, resolution.ResolvedSourceFiles)
+            let lockFile = LockFile(lockFileName.FullName, dependenciesFile.Options, resolvedPackages, resolution.ResolvedSourceFiles)
             lockFile.Save()
             lockFile
 

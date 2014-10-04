@@ -10,6 +10,13 @@ open Paket.PackageResolver
 open Paket.PackageSources
 
 /// [omit]
+type InstallOptions = 
+    { Strict : bool 
+      OmitContent : bool }
+
+    static member Default = { Strict = false; OmitContent = false}
+
+/// [omit]
 module DependenciesFileParser = 
 
     let private basicOperators = ["~>";"<=";">=";"=";">";"<"]
@@ -64,7 +71,7 @@ module DependenciesFileParser =
             | _ -> failwithf "could not parse version range \"%s\"" text
 
 
-    let private (|Remote|Package|Blank|ReferencesMode|SourceFile|) (line:string) =
+    let private (|Remote|Package|Blank|ReferencesMode|OmitContent|SourceFile|) (line:string) =
         match line.Trim() with
         | _ when String.IsNullOrWhiteSpace line -> Blank
         | trimmed when trimmed.StartsWith "source" ->
@@ -89,6 +96,7 @@ module DependenciesFileParser =
             | name :: [] -> Package(name,">= 0")
             | _ -> failwithf "could not retrieve nuget package from %s" trimmed
         | trimmed when trimmed.StartsWith "references" -> ReferencesMode(trimmed.Replace("references","").Trim() = "strict")
+        | trimmed when trimmed.StartsWith "content" -> OmitContent(trimmed.Replace("content","").Trim() = "none")
         | trimmed when trimmed.StartsWith "github" ->
             let parts = trimmed.Replace("\"", "").Trim().Split([|' '|],StringSplitOptions.RemoveEmptyEntries)
             let getParts (projectSpec:string) =
@@ -102,29 +110,30 @@ module DependenciesFileParser =
         | _ -> Blank
     
     let parseDependenciesFile fileName (lines:string seq) = 
-        ((0, false, [], [], []), lines)
-        ||> Seq.fold(fun (lineNo, referencesMode, sources: PackageSource list, packages, sourceFiles: UnresolvedSourceFile list) line ->
+        ((0, InstallOptions.Default, [], [], []), lines)
+        ||> Seq.fold(fun (lineNo, options, sources: PackageSource list, packages, sourceFiles: UnresolvedSourceFile list) line ->
             let lineNo = lineNo + 1
             try
                 match line with
-                | Remote(newSource,auth) -> lineNo, referencesMode, (PackageSource.Parse(newSource.TrimEnd([|'/'|]),auth) :: sources), packages, sourceFiles
-                | Blank -> lineNo, referencesMode, sources, packages, sourceFiles
-                | ReferencesMode mode -> lineNo, mode, sources, packages, sourceFiles
+                | Remote(newSource,auth) -> lineNo, options, (PackageSource.Parse(newSource.TrimEnd([|'/'|]),auth) :: sources), packages, sourceFiles
+                | Blank -> lineNo, options, sources, packages, sourceFiles
+                | ReferencesMode mode -> lineNo, { options with Strict = mode }, sources, packages, sourceFiles
+                | OmitContent omit -> lineNo, { options with OmitContent = omit }, sources, packages, sourceFiles
                 | Package(name,version) ->
-                    lineNo, referencesMode, sources, 
+                    lineNo, options, sources, 
                         { Sources = sources
                           Name = name
                           ResolverStrategy = parseResolverStrategy version
                           Parent = DependenciesFile fileName
                           VersionRequirement = parseVersionRequirement(version.Trim '!') } :: packages, sourceFiles
                 | SourceFile((owner,project, commit), path) ->
-                    lineNo, referencesMode, sources, packages, { Owner = owner; Project = project; Commit = commit; Name = path } :: sourceFiles
+                    lineNo, options, sources, packages, { Owner = owner; Project = project; Commit = commit; Name = path } :: sourceFiles
                     
             with
             | exn -> failwithf "Error in paket.dependencies line %d%s  %s" lineNo Environment.NewLine exn.Message)
-        |> fun (_,mode,_,packages,remoteFiles) ->
+        |> fun (_,options,_,packages,remoteFiles) ->
             fileName,
-            mode,
+            options,
             packages |> List.rev,
             remoteFiles |> List.rev
 
@@ -155,7 +164,7 @@ module DependenciesFileSerializer =
         if text <> "" && preReleases <> "" then text + " " + preReleases else text + preReleases
 
 /// Allows to parse and analyze paket.dependencies files.
-type DependenciesFile(fileName,strictMode,packages : PackageRequirement list, remoteFiles : UnresolvedSourceFile list) = 
+type DependenciesFile(fileName,options,packages : PackageRequirement list, remoteFiles : UnresolvedSourceFile list) = 
     let packages = packages |> Seq.toList
     let dependencyMap = Map.ofSeq (packages |> Seq.map (fun p -> p.Name, p.VersionRequirement))
     
@@ -170,7 +179,7 @@ type DependenciesFile(fileName,strictMode,packages : PackageRequirement list, re
     member __.Packages = packages
     member __.HasPackage (name : string) = packages |> List.exists (fun p -> p.Name.ToLower() = name.ToLower())
     member __.RemoteFiles = remoteFiles
-    member __.Strict = strictMode
+    member __.Options = options
     member __.FileName = fileName
     member __.Sources = sources
     member this.Resolve(force) = 
@@ -207,7 +216,7 @@ type DependenciesFile(fileName,strictMode,packages : PackageRequirement list, re
               ResolverStrategy = DependenciesFileParser.parseResolverStrategy version
               Parent = PackageRequirementSource.DependenciesFile fileName }
         tracefn "Adding %s %s to paket.dependencies" packageName (versionRange.ToString())
-        DependenciesFile(fileName,strictMode,packages @ [newPackage], remoteFiles)
+        DependenciesFile(fileName,options,packages @ [newPackage], remoteFiles)
 
     override __.ToString() =        
         let sources = 
@@ -219,8 +228,8 @@ type DependenciesFile(fileName,strictMode,packages : PackageRequirement list, re
             let hasReportedSource = ref false
             let hasReportedFirst = ref false
             let hasReportedSecond = ref false
-            [ if strictMode then
-                  yield "references strict"
+            [ if options.Strict then yield "references strict"
+              if options.OmitContent then yield "content none"
               for sources, packages in sources do
                   for source in sources do
                       hasReportedSource := true
