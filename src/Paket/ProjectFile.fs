@@ -241,7 +241,7 @@ type ProjectFile =
 
     member this.UpdateContentFiles(contentFiles : list<FileInfo>) =
         let contentNode (fi: FileInfo) = 
-            this.CreateNode "Content" 
+            this.CreateNode <| this.DetermineBuildAction fi.Name 
             |> addAttribute "Include" (createRelativePath this.FileName fi.FullName)
             |> addChild (this.CreateNode("Paket","True"))
             :> XmlNode
@@ -305,6 +305,11 @@ type ProjectFile =
         | None -> 
             let node = this.CreateNode("Import") |> addAttribute "Project" "$(SolutionDir)\\.paket\\paket.targets"
             this.Document.SelectSingleNode("//ns:Project", this.Namespaces).AppendChild(node) |> ignore
+
+    member this.DetermineBuildAction fileName =
+        if Path.GetExtension(this.FileName) = Path.GetExtension(fileName) + "proj" 
+        then "Compile"
+        else "Content"
 
     static member Load(fileName:string) =
         try
