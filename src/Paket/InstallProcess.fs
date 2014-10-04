@@ -8,7 +8,6 @@ open Paket.PackageResolver
 open System.IO
 open System.Collections.Generic
 open Paket.PackageSources
-open System.Text.RegularExpressions
 
 /// Downloads and extracts all packages.
 let ExtractPackages(sources,force, packages:PackageResolution) = 
@@ -75,8 +74,10 @@ let private copyContentFilesToProject (project : ProjectFile) packagesWithConten
     let onBlackList (fi : FileInfo) = 
         let rules : list<(FileInfo -> bool)> = [
             fun f -> f.Name = "_._"
-            fun f -> Regex(".*\.transform").IsMatch f.Name
-            fun f -> Regex(".*\.pp").IsMatch f.Name
+            fun f -> f.Name.EndsWith(".transform")
+            fun f -> f.Name.EndsWith(".pp")
+            fun f -> f.Name.EndsWith(".tt")
+            fun f -> f.Name.EndsWith(".ttinclude")
         ]
         rules
         |> List.exists (fun rule -> rule(fi))
