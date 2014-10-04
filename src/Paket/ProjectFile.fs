@@ -306,6 +306,9 @@ type ProjectFile =
             let node = this.CreateNode("Import") |> addAttribute "Project" "$(SolutionDir)\\.paket\\paket.targets"
             this.Document.SelectSingleNode("//ns:Project", this.Namespaces).AppendChild(node) |> ignore
 
+    member this.DetermineBuildAction fileName =
+        ""
+
     static member Load(fileName:string) =
         try
             let fi = FileInfo(fileName)
