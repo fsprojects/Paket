@@ -41,6 +41,10 @@ module private InstallRules =
         |> Seq.groupBy (fun ((packageName,name, _), _) -> packageName,name)
         |> Seq.groupBy (fun ((packageName,_),_) -> packageName)
 
+type FileItem = 
+    { BuildAction : string
+      Include : string 
+      Link : string option }
 
 /// Contains methods to read and manipulate project files.
 type ProjectFile = 
@@ -148,26 +152,59 @@ type ProjectFile =
         this.DeleteIfEmpty("//ns:Project/ns:Choose")
         this.DeleteIfEmpty("//ns:ItemGroup")
 
-    member this.UpdateSourceFiles(sourceFiles:ResolvedSourceFile list) =
-        // If there is no item group for compiled items, create one.
-        let compileItemGroup =
-            match this.Document.SelectNodes("//ns:Project/ns:ItemGroup/ns:Compile", this.Namespaces) with
-            | items when items.Count = 0 ->
-                let itemGroup = this.CreateNode("ItemGroup")
-                this.ProjectNode.AppendChild(itemGroup)
-            | compileItems -> compileItems.[0].ParentNode            
-    
-        // Insert all source files to the top of the list, but keep alphabetical order
-        for sourceFile in sourceFiles |> List.sortBy (fun x -> x.Name) |> List.rev do
-            let path = Uri(this.FileName).MakeRelativeUri(Uri(sourceFile.FilePath)).ToString().Replace("/", "\\")
-            let node =
-                let node = this.CreateNode("Compile")
-                node.SetAttribute("Include", path)
-                node
-                |> addChild (this.CreateNode("Paket","True"))
-                |> addChild (this.CreateNode("Link","paket-files/" + sourceFile.Name))
+    member this.createFileItemNode fileItem =
+        this.CreateNode(fileItem.BuildAction)
+        |> addAttribute "Include" fileItem.Include
+        |> addChild (this.CreateNode("Paket","True"))
+        |> (fun n -> match fileItem.Link with
+                     | Some link -> addChild (this.CreateNode("Link",link)) n
+                     | _ -> n)
 
-            compileItemGroup.PrependChild(node) |> ignore                
+    member this.UpdateFileItems(fileItems : list<FileItem>) = 
+        this.DeletePaketNodes("Compile")
+        this.DeletePaketNodes("Content")
+
+        let contentFiles = fileItems |> List.filter (fun f -> f.BuildAction = "Content")
+        let compileFiles = fileItems |> List.filter (fun f -> f.BuildAction = "Compile")
+
+        if not <| List.isEmpty contentFiles then 
+            let newContentItemGroup = this.CreateNode("ItemGroup")
+
+            let firstNodeForDirs =
+                this.Document.SelectNodes("//ns:Content", this.Namespaces)
+                |> Seq.cast<XmlNode>
+                |> Seq.groupBy (fun node -> Path.GetDirectoryName(node.Attributes.["Include"].Value))
+                |> Seq.map (fun (key, nodes) -> (key, nodes |> Seq.head))
+                |> Map.ofSeq
+
+            contentFiles
+            |> List.map (fun file -> Path.GetDirectoryName(file.Include), this.createFileItemNode file)
+            |> List.iter (fun (dir, paketNode) ->
+                    match Map.tryFind dir firstNodeForDirs with
+                    | Some (firstNodeForDir) -> 
+                        match (this.Document.SelectNodes(sprintf "//ns:*[@Include='%s']" paketNode.Attributes.["Include"].Value, this.Namespaces) 
+                                                |> Seq.cast<XmlNode> |> Seq.firstOrDefault) with
+                        | Some (existingNode) -> 
+                            if not <| (existingNode.ChildNodes |> Seq.cast<XmlNode> |> Seq.exists (fun n -> n.Name = "Paket"))
+                            then existingNode :?> XmlElement |> addChild (this.CreateNode("Paket", "True")) |> ignore
+                        | None -> firstNodeForDir.ParentNode.InsertBefore(paketNode, firstNodeForDir) |> ignore
+
+                    | None -> newContentItemGroup.AppendChild(paketNode) |> ignore )
+        
+            if newContentItemGroup.HasChildNodes then this.ProjectNode.AppendChild(newContentItemGroup) |> ignore
+
+        if not <| List.isEmpty compileFiles then
+            // If there is no item group for compiled items, create one.
+            let compileItemGroup =
+                match this.Document.SelectNodes("//ns:Project/ns:ItemGroup/ns:Compile", this.Namespaces) with
+                | items when items.Count = 0 ->
+                    let itemGroup = this.CreateNode("ItemGroup")
+                    this.ProjectNode.AppendChild(itemGroup)
+                | compileItems -> compileItems.[0].ParentNode
+            
+            // Insert all source files to the top of the list, but keep alphabetical order
+            for node in compileFiles |> List.sortBy (fun x -> x.Include) |> List.map this.createFileItemNode do
+                compileItemGroup.PrependChild node |> ignore
 
     member this.UpdateReferences(extracted, usedPackages : Dictionary<string,bool>, hard) = 
         this.DeletePaketNodes("Reference")
@@ -213,49 +250,10 @@ type ProjectFile =
                 verbosefn "Project %s changed" this.FileName
                 this.Document.Save(this.FileName)
 
-    member this.GetContentFiles() =
+    member this.GetPaketFileItems() =
         this.FindPaketNodes("Content")
+        |> List.append <| this.FindPaketNodes("Compile")
         |> List.map (fun n ->  FileInfo(Path.Combine(Path.GetDirectoryName(this.FileName), n.Attributes.["Include"].Value)))
-
-    member this.UpdateContentFiles(contentFiles : list<FileInfo>, hard) =
-        let contentNode (fi: FileInfo) = 
-            this.CreateNode <| this.DetermineBuildAction fi.Name 
-            |> addAttribute "Include" (createRelativePath this.FileName fi.FullName)
-            |> addChild (this.CreateNode("Paket","True"))
-            :> XmlNode
-        
-        let itemGroupNode = this.Document.CreateElement("ItemGroup", ProjectFile.DefaultNameSpace)
-
-        let firstNodeForDirs =
-            this.Document.SelectNodes("//ns:Content", this.Namespaces)
-            |> Seq.cast<XmlNode>
-            |> Seq.groupBy (fun node -> Path.GetDirectoryName(node.Attributes.["Include"].Value))
-            |> Seq.map (fun (key, nodes) -> (key, nodes |> Seq.head))
-            |> Map.ofSeq
-        
-        contentFiles
-        |> List.map (fun file -> (createRelativePath this.FileName file.DirectoryName), contentNode file)
-        |> List.iter (fun (dir, paketNode) ->
-                match Map.tryFind dir firstNodeForDirs with
-                | Some (firstNodeForDir) -> 
-                    match (this.Document.SelectNodes(sprintf "//ns:*[@Include='%s']" paketNode.Attributes.["Include"].Value, this.Namespaces) 
-                                            |> Seq.cast<XmlNode> |> Seq.firstOrDefault) with
-                    | Some (existingNode) -> 
-                        if not <| (existingNode.ChildNodes |> Seq.cast<XmlNode> |> Seq.exists (fun n -> n.Name = "Paket"))
-                        then 
-                            if hard 
-                            then existingNode :?> XmlElement |> addChild (this.CreateNode("Paket", "True")) |> ignore
-                            else 
-                                existingNode.ParentNode.InsertBefore(paketNode, existingNode) |> ignore
-                                traceWarnfn "Duplicated content file '%s for project %s" 
-                                    existingNode.Attributes.["Include"].Value 
-                                    this.FileName
-                    | None -> firstNodeForDir.ParentNode.InsertBefore(paketNode, firstNodeForDir) |> ignore
-
-                | None -> itemGroupNode.AppendChild(paketNode) |> ignore )
-        
-        this.ProjectNode.AppendChild(itemGroupNode) |> ignore
-        this.DeleteIfEmpty("//ns:Project/ns:ItemGroup")
 
     member this.ReplaceNugetPackagesFile() =
         let nugetNode = this.Document.SelectSingleNode("//ns:*[@Include='packages.config']", this.Namespaces)

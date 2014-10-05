@@ -94,7 +94,12 @@ let private copyContentFiles (project : ProjectFile, packagesWithContent) =
     packagesWithContent
     |> List.collect (fun packageDir -> copyDirContents (packageDir, lazy (DirectoryInfo(Path.GetDirectoryName(project.FileName)))))
 
-let private removeContentFiles (project: ProjectFile) =
+let private removeCopiedFiles (project: ProjectFile) =
+    let rec removeEmptyDirHierarchy (dir : DirectoryInfo) =
+        if dir.Exists && dir.EnumerateFileSystemInfos() |> Seq.isEmpty then
+            dir.Delete()
+            removeEmptyDirHierarchy dir.Parent
+
     let removeFilesAndTrimDirs (files: FileInfo list) =
         for f in files do 
             if f.Exists then 
@@ -108,11 +113,10 @@ let private removeContentFiles (project: ProjectFile) =
             |> List.rev
         
         for dirPath in dirsPathsDeepestFirst do
-            let dir = DirectoryInfo dirPath
-            if dir.Exists && dir.EnumerateFileSystemInfos() |> Seq.isEmpty then
-               dir.Delete()
+            removeEmptyDirHierarchy (DirectoryInfo dirPath)
 
-    project.GetContentFiles() 
+    project.GetPaketFileItems() 
+    |> List.filter (fun fi -> not <| fi.FullName.Contains("paket-files"))
     |> removeFilesAndTrimDirs
 
 let extractReferencesFromListFile projectFile = 
@@ -166,17 +170,27 @@ let Install(sources,force, hard, lockFile:LockFile) =
         |> Array.iter (addPackage true)
 
         project.UpdateReferences(extractedPackages,usedPackages,hard)
+        
+        removeCopiedFiles project
 
-        project.DeletePaketNodes("Content")
-        project.DeletePaketNodes("Compile")
-        lockFile.SourceFiles 
-        |> List.filter (fun file -> usedSourceFiles.Contains(file.Name))
-        |> project.UpdateSourceFiles
+        let gitHubFileItems =
+            lockFile.SourceFiles 
+            |> List.filter (fun file -> usedSourceFiles.Contains(file.Name))
+            |> List.map (fun file -> 
+                             { BuildAction = project.DetermineBuildAction file.Name 
+                               Include = createRelativePath project.FileName file.FilePath
+                               Link = Some("paket-files/" + file.Name) })
+        
+        let nuGetFileItems =
+            if not lockFile.Options.OmitContent then
+                let packagesWithContent = findPackagesWithContent usedPackages
+                let files = copyContentFiles(project, packagesWithContent)
+                files |> List.map (fun file -> 
+                                       { BuildAction = project.DetermineBuildAction file.Name
+                                         Include = createRelativePath project.FileName file.FullName
+                                         Link = None })
+            else []
 
-        removeContentFiles project
-        if not lockFile.Options.OmitContent then
-            let packagesWithContent = findPackagesWithContent usedPackages
-            let contentFiles = copyContentFiles(project, packagesWithContent)
-            project.UpdateContentFiles(contentFiles, hard)
+        project.UpdateFileItems(gitHubFileItems @ nuGetFileItems)
 
         project.Save()
