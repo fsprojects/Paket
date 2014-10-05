@@ -71,16 +71,15 @@ let private findPackagesWithContent (usedPackages:Dictionary<_,_>) =
 
 let private copyContentFiles (project : ProjectFile, packagesWithContent) = 
 
-    let onBlackList (fi : FileInfo) = 
-        let rules : list<(FileInfo -> bool)> = [
+    let rules : list<(FileInfo -> bool)> = [
             fun f -> f.Name = "_._"
             fun f -> f.Name.EndsWith(".transform")
             fun f -> f.Name.EndsWith(".pp")
             fun f -> f.Name.EndsWith(".tt")
             fun f -> f.Name.EndsWith(".ttinclude")
         ]
-        rules
-        |> List.exists (fun rule -> rule(fi))
+
+    let onBlackList (fi : FileInfo) = rules |> List.exists (fun rule -> rule(fi))
 
     let rec copyDirContents (fromDir : DirectoryInfo, toDir : Lazy<DirectoryInfo>) =
         fromDir.GetDirectories() |> Array.toList
@@ -119,13 +118,6 @@ let private removeCopiedFiles (project: ProjectFile) =
     |> List.filter (fun fi -> not <| fi.FullName.Contains("paket-files"))
     |> removeFilesAndTrimDirs
 
-let extractReferencesFromListFile projectFile = 
-    match ProjectFile.FindReferencesFile <| FileInfo(projectFile) with 
-    | Some file -> File.ReadAllLines file
-    | None -> [||]
-    |> Array.map (fun s -> s.Trim())
-    |> Array.filter (fun s -> System.String.IsNullOrWhiteSpace s |> not)
-
 
 /// Installs the given packageFile.
 let Install(sources,force, hard, lockFile:LockFile) = 
@@ -136,13 +128,15 @@ let Install(sources,force, hard, lockFile:LockFile) =
         |> Async.RunSynchronously
         |> Array.choose id
 
-    for project in ProjectFile.FindAllProjects(".") do    
-        verbosefn "Installing to %s" project.FileName
-        let directPackages = extractReferencesFromListFile project.FileName
+    let applicableProjects =
+        ProjectFile.FindAllProjects(".") 
+        |> List.choose (fun p -> ProjectFile.FindReferencesFile (FileInfo(p.FileName))
+                                 |> Option.map (fun r -> p, ReferencesFile.FromFile(r)))
 
-        if directPackages |> Array.isEmpty |> not then verbosefn "  - direct packages: %A" directPackages
+    for project,referenceFile in applicableProjects do    
+        verbosefn "Installing to %s" project.FileName
+
         let usedPackages = new Dictionary<_,_>()
-        let usedSourceFiles = new HashSet<_>()
 
         let allPackages =
             extractedPackages
@@ -151,40 +145,38 @@ let Install(sources,force, hard, lockFile:LockFile) =
 
         let rec addPackage directly (name:string) =
             let identity = name.ToLower()
-            if identity.StartsWith "file:" then
-                let sourceFile = name.Split(':').[1]
-                usedSourceFiles.Add sourceFile |> ignore
-            else
-                match allPackages |> Map.tryFind identity with
-                | Some package ->
-                    match usedPackages.TryGetValue name with
-                    | false,_ ->
-                        usedPackages.Add(name,directly)
-                        if not lockFile.Options.Strict then
-                            for d,_ in package.Dependencies do
-                                addPackage false d
-                    | true,v -> usedPackages.[name] <- v || directly
-                | None -> failwithf "Project %s references package %s, but it was not found in the paket.lock file." project.FileName name
+            match allPackages |> Map.tryFind identity with
+            | Some package ->
+                match usedPackages.TryGetValue name with
+                | false,_ ->
+                    usedPackages.Add(name,directly)
+                    if not lockFile.Options.Strict then
+                        for d,_ in package.Dependencies do
+                            addPackage false d
+                | true,v -> usedPackages.[name] <- v || directly
+            | None -> failwithf "Project %s references package %s, but it was not found in the paket.lock file." project.FileName name
 
-        directPackages
-        |> Array.iter (addPackage true)
+        referenceFile.NugetPackages
+        |> List.iter (addPackage true)
 
         project.UpdateReferences(extractedPackages,usedPackages,hard)
         
         removeCopiedFiles project
 
+        let getGitHubFilePath name = 
+            (lockFile.SourceFiles |> List.find (fun f -> Path.GetFileName(f.Name) = name)).FilePath
+
         let gitHubFileItems =
-            lockFile.SourceFiles 
-            |> List.filter (fun file -> usedSourceFiles.Contains(file.Name))
+            referenceFile.GitHubFiles
             |> List.map (fun file -> 
                              { BuildAction = project.DetermineBuildAction file.Name 
-                               Include = createRelativePath project.FileName file.FilePath
-                               Link = Some("paket-files/" + file.Name) })
+                               Include = createRelativePath project.FileName (getGitHubFilePath file.Name)
+                               Link = Some(Path.Combine(file.Link, Path.GetFileName(file.Name))) })
         
         let nuGetFileItems =
-            if not lockFile.Options.OmitContent then
-                let packagesWithContent = findPackagesWithContent usedPackages
-                let files = copyContentFiles(project, packagesWithContent)
+            if not lockFile.Options.OmitContent 
+            then
+                let files = copyContentFiles(project, findPackagesWithContent usedPackages)
                 files |> List.map (fun file -> 
                                        { BuildAction = project.DetermineBuildAction file.Name
                                          Include = createRelativePath project.FileName file.FullName

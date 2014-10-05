@@ -193,6 +193,9 @@ type ProjectFile =
         for newItemGroup in newItemGroups.Values do
             if newItemGroup.HasChildNodes then this.ProjectNode.AppendChild(newItemGroup) |> ignore
 
+        this.DeleteIfEmpty("//ns:ItemGroup")
+
+
     member this.UpdateReferences(extracted, usedPackages : Dictionary<string,bool>, hard) = 
         this.DeletePaketNodes("Reference")
         let installInfos = InstallRules.groupDLLs usedPackages extracted this.FileName

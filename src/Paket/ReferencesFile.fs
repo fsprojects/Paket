@@ -4,18 +4,32 @@ open System
 open System.IO
 open Logging
 
+type GitHubReference = 
+    { Name : string
+      Link : string }
+
 type ReferencesFile = 
     { FileName: string
       NugetPackages: list<string>
-      GitHubFiles: list<string> } 
+      GitHubFiles: list<GitHubReference> } 
     
+    static member DefaultLink = "paket-files"
+
     static member FromLines(lines : string[]) = 
         let isGitHubFile (line: string) = line.StartsWith "File:"
         let notEmpty (line: string) = not <| System.String.IsNullOrWhiteSpace line
 
         { FileName = ""
           NugetPackages = lines |> Array.filter notEmpty |> Array.filter (isGitHubFile >> not) |> Array.toList
-          GitHubFiles = lines |> Array.filter notEmpty |> Array.filter isGitHubFile |> Array.map (fun s -> s.Replace("File:","")) |> Array.toList }
+          GitHubFiles = 
+            lines 
+            |> Array.filter notEmpty 
+            |> Array.filter isGitHubFile 
+            |> Array.map (fun s -> s.Replace("File:","").Split([|' '|], StringSplitOptions.RemoveEmptyEntries))
+            |> Array.map (fun segments -> { Name = segments.[0]; Link = if segments.Length = 2 
+                                                                        then segments.[1]
+                                                                        else ReferencesFile.DefaultLink} )
+            |> Array.toList }
 
     static member FromFile(fileName : string) =
         let lines = File.ReadAllLines(fileName)
@@ -32,5 +46,5 @@ type ReferencesFile =
     override this.ToString() =
         List.append
             this.NugetPackages
-            (this.GitHubFiles |> List.map (fun s -> "File:" + s))
+            (this.GitHubFiles |> List.map (fun s -> "File:" + s.Name + if s.Link <> ReferencesFile.DefaultLink then " " + s.Link else ""))
             |> String.concat Environment.NewLine

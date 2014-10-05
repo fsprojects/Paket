@@ -19,11 +19,31 @@ let ``should parse lines correctly``() =
     refFile.NugetPackages.Head |> shouldEqual "Castle.Windsor"
     refFile.NugetPackages.Tail.Tail.Head |> shouldEqual "jQuery"
     refFile.GitHubFiles.Length |> shouldEqual 1
-    refFile.GitHubFiles.Head |> shouldEqual "FsUnit.fs"
+    refFile.GitHubFiles.Head.Name |> shouldEqual "FsUnit.fs"
+    refFile.GitHubFiles.Head.Link |> shouldEqual "paket-files"
 
 [<Test>]
 let ``should serialize itself correctly``() = 
-    let refFile = {FileName = ""; NugetPackages = ["A"; "B"]; GitHubFiles = ["FromGithub.fs"]}
+    let refFile = {FileName = ""; NugetPackages = ["A"; "B"]; GitHubFiles = [{Name = "FromGithub.fs"; Link = ReferencesFile.DefaultLink}]}
     let expected = [|"A"; "B"; "File:FromGithub.fs"|]
+
+    refFile.ToString() |> toLines |> shouldEqual expected
+
+let refFileWithCustomPath = """
+File:FsUnit.fs Tests\Common
+"""
+
+[<Test>]
+let ``should parse custom path correctly``() = 
+    let refFile = ReferencesFile.FromLines(toLines refFileWithCustomPath)
+    refFile.NugetPackages.Length |> shouldEqual 0
+    refFile.GitHubFiles.Length |> shouldEqual 1
+    refFile.GitHubFiles.Head.Name |> shouldEqual "FsUnit.fs"
+    refFile.GitHubFiles.Head.Link |> shouldEqual "Tests\Common"
+
+[<Test>]
+let ``should serialize customPath correctly``() = 
+    let refFile = {FileName = ""; NugetPackages = []; GitHubFiles = [{Name = "FromGithub.fs"; Link = "CustomPath\Dir"}]}
+    let expected = [|"File:FromGithub.fs CustomPath\Dir"|]
 
     refFile.ToString() |> toLines |> shouldEqual expected
