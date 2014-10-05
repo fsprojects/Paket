@@ -191,6 +191,6 @@ let Install(sources,force, hard, lockFile:LockFile) =
                                          Link = None })
             else []
 
-        project.UpdateFileItems(gitHubFileItems @ nuGetFileItems)
+        project.UpdateFileItems(gitHubFileItems @ nuGetFileItems, hard)
 
         project.Save()
