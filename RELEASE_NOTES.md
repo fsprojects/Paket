@@ -1,3 +1,7 @@
+#### 0.4.22 - 06.10.2014
+* BUGFIX: Do not look for MinimalVisualStudioVersion when adding paket folder to solution - https://github.com/fsprojects/Paket/pull/221
+* BUGFIX: Fix path in content link
+
 #### 0.4.21 - 06.10.2014
 * Content none mode - http://fsprojects.github.io/Paket/dependencies-file.html#No-content-option
 * Allow source files in content

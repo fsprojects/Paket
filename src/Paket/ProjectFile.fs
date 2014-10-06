@@ -157,7 +157,7 @@ type ProjectFile =
         |> addAttribute "Include" fileItem.Include
         |> addChild (this.CreateNode("Paket","True"))
         |> (fun n -> match fileItem.Link with
-                     | Some link -> addChild (this.CreateNode("Link",link)) n
+                     | Some link -> addChild (this.CreateNode("Link",link.Replace("\\","/"))) n
                      | _ -> n)
 
     member this.UpdateFileItems(fileItems : list<FileItem>, hard) = 
