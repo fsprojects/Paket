@@ -51,7 +51,7 @@ type ResolvedPackages =
             for x in closed do           
                traceUnresolvedPackage x
 
-            addToError "  Con't resolve:"
+            addToError "  Can't resolve:"
             stillOpen
             |> Seq.head
             |> traceUnresolvedPackage
