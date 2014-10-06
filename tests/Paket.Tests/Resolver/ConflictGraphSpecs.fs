@@ -56,3 +56,14 @@ let ``should analyze graph2 and report conflict``() =
         let conflicting = stillOpen |> Seq.head 
         conflicting.Name |> shouldEqual "D"
         conflicting.VersionRequirement.Range |> shouldEqual (VersionRange.Between("1.6", "1.7"))
+
+[<Test>]
+let ``should override graph2 conflict to first version``() = 
+    let resolved = resolve graph2 ["A",VersionRange.AtLeast "1.0"; "D",VersionRange.OverrideAll(SemVer.parse "1.4")]
+    getVersion resolved.["D"] |> shouldEqual "1.4"
+
+
+[<Test>]
+let ``should override graph2 conflict to second version``() = 
+    let resolved = resolve graph2 ["A",VersionRange.AtLeast "1.0"; "D",VersionRange.OverrideAll(SemVer.parse "1.6")]
+    getVersion resolved.["D"] |> shouldEqual "1.6"

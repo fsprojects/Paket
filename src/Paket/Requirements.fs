@@ -25,5 +25,6 @@ type PackageRequirement =
     interface System.IComparable with
        member this.CompareTo that = 
           match that with 
-          | :? PackageRequirement as that -> compare (this.Parent,this.Name,this.VersionRequirement) (that.Parent,that.Name,that.VersionRequirement)
+          | :? PackageRequirement as that ->
+                compare (not this.VersionRequirement.Range.IsGlobalOverride,this.Parent,this.Name,this.VersionRequirement) (not that.VersionRequirement.Range.IsGlobalOverride,that.Parent,that.Name,that.VersionRequirement)
           | _ -> invalidArg "that" "cannot compare value of different types" 

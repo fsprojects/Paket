@@ -13,6 +13,7 @@ type PreReleaseStatus =
 
 /// Represents version information.
 type VersionRange = 
+    | OverrideAll of SemVerInfo
     | Specific of SemVerInfo
     | Minimum of SemVerInfo
     | GreaterThan of SemVerInfo
@@ -25,6 +26,8 @@ type VersionRange =
     static member Exactly version = Specific(SemVer.parse version)
 
     static member Between(version1,version2) = Range(Including, SemVer.parse version1, SemVer.parse version2, Excluding)
+
+    member x.IsGlobalOverride = match x with | OverrideAll _ -> true | _ -> false
 
 type VersionRequirement =
 | VersionRequirement of VersionRange * PreReleaseStatus
@@ -43,6 +46,7 @@ type VersionRequirement =
 
             match range with
             | Specific v -> v = version
+            | OverrideAll v -> v = version
             | Minimum v -> v = version || (v <= version && checkPrerelease prerelease version)
             | GreaterThan v -> v < version && checkPrerelease prerelease version
             | Maximum v -> v = version || (v >= version && checkPrerelease prerelease version)
@@ -74,6 +78,7 @@ type VersionRequirement =
     override this.ToString() =
         match this.Range with
         | Specific v -> v.ToString()
+        | OverrideAll v -> "== " + v.ToString()
         | Minimum v -> ">= " + v.ToString()
         | GreaterThan v -> "> " + v.ToString()
         | Maximum v -> "<= " + v.ToString()

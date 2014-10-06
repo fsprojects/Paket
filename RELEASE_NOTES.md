@@ -1,3 +1,6 @@
+#### 0.4.26 - 06.10.2014
+* Create a "use exactly this" operator in order to override package conflicts - https://github.com/fsprojects/Paket/issues/220
+
 #### 0.4.25 - 06.10.2014
 * Throw if we don't get any versions
 

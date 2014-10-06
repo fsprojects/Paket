@@ -93,13 +93,13 @@ let Resolve(getVersionsF, getPackageDetailsF, rootDependencies:PackageRequiremen
             versions
         | true,versions -> versions
 
-    let rec improveModel (filteredVersions,packages:ResolvedPackage list,closed:Set<PackageRequirement>,stillOpen:Set<PackageRequirement>) =
+    let rec improveModel (filteredVersions:Map<string , (SemVerInfo list * bool)>,packages:ResolvedPackage list,closed:Set<PackageRequirement>,stillOpen:Set<PackageRequirement>) =
         if Set.isEmpty stillOpen then
             let isOk =
                 filteredVersions
                 |> Map.forall (fun _ v -> 
                     match v with
-                    | [_] -> true
+                    | [_],_ -> true
                     | _ -> false)
         
             if isOk then
@@ -110,15 +110,18 @@ let Resolve(getVersionsF, getPackageDetailsF, rootDependencies:PackageRequiremen
             let dependency = Seq.head stillOpen
             let rest = stillOpen |> Set.remove dependency
      
-            let compatibleVersions = 
+            let compatibleVersions,globalOverride = 
                 match Map.tryFind dependency.Name filteredVersions with
                 | None ->
                     let versions = getAllVersions(dependency.Sources,dependency.Name)
                     if Seq.isEmpty versions then
                         failwithf "Couldn't retrieve versions for %s." dependency.Name
-                    versions
-                | Some versions -> versions
-                |> List.filter dependency.VersionRequirement.IsInRange
+                    if dependency.VersionRequirement.Range.IsGlobalOverride then
+                        List.filter dependency.VersionRequirement.IsInRange versions,true
+                    else
+                        List.filter dependency.VersionRequirement.IsInRange versions,false
+                | Some(versions,globalOverride) -> 
+                    if globalOverride then versions,true else List.filter dependency.VersionRequirement.IsInRange versions,false
                     
             let sorted =                
                 match dependency.Parent with
@@ -134,7 +137,7 @@ let Resolve(getVersionsF, getPackageDetailsF, rootDependencies:PackageRequiremen
                 match state with
                 | Conflict _ ->
                     let exploredPackage = getExploredPackage(dependency.Sources,dependency.Name,versionToExplore)
-                    let newFilteredVersion = Map.add dependency.Name [versionToExplore] filteredVersions
+                    let newFilteredVersion = Map.add dependency.Name ([versionToExplore],globalOverride) filteredVersions
                     let newDependencies =
                         exploredPackage.Dependencies
                         |> Set.map (fun (n,v) -> {dependency with Name = n; VersionRequirement = v; Parent = Package(dependency.Name,versionToExplore) })
