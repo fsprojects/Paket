@@ -31,19 +31,30 @@ type SolutionFile(fileName: string) =
         removeNugetSlnFolderIfEmpty()
 
     member __.AddPaketFolder(dependenciesFile, lockFile) =
-        match content |> Seq.tryFindIndex (fun line -> line.StartsWith("MinimumVisualStudioVersion")) with
-        | Some index -> 
-            let lines = ResizeArray<_>()
+        
+        let lines = ResizeArray<_>()
 
-            lines.Add(sprintf   "Project(\"{%s}\") = \".paket\", \".paket\", \"{%s}\"" slnFolderProjectGuid <| Guid.NewGuid().ToString("D").ToUpper())
-            lines.Add           " ProjectSection(SolutionItems) = preProject"
-            lines.Add(sprintf   "		%s = %s" dependenciesFile dependenciesFile)
-            if lockFile |> Option.isSome then
-                lines.Add(sprintf"		%s = %s" lockFile.Value lockFile.Value)
-            lines.Add           "	EndProjectSection"
-            lines.Add           "EndProject"
-            content.InsertRange(index + 1, lines)
-        | None -> failwithf "Unable to add paket folder to solution %s" fileName
+        lines.Add(sprintf   "Project(\"{%s}\") = \".paket\", \".paket\", \"{%s}\"" slnFolderProjectGuid <| Guid.NewGuid().ToString("D").ToUpper())
+        lines.Add           " ProjectSection(SolutionItems) = preProject"
+        lines.Add(sprintf   "		%s = %s" dependenciesFile dependenciesFile)
+        if lockFile |> Option.isSome then
+            lines.Add(sprintf"		%s = %s" lockFile.Value lockFile.Value)
+        lines.Add           "	EndProjectSection"
+        lines.Add           "EndProject"
+
+        match content |> Seq.tryFindIndex (fun line -> line.StartsWith("Project")) with
+        | Some index -> 
+            // insert before the first project in a solution
+            content.InsertRange(index, lines)
+        | None -> 
+            // there are no project in solution
+            match content |> Seq.tryFindIndex (fun line -> line.StartsWith("Global")) with
+            | Some index -> 
+                // insert before ``global`` entry
+                content.InsertRange(index, lines)
+            | None -> 
+                // cannot find ``global`` entry, just append to the end of file
+                content.InsertRange(content.Count, lines)
 
     member __.Save() =
         if content |> Seq.toList <> originalContent 
