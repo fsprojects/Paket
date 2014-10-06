@@ -1,5 +1,5 @@
 #### 0.4.26 - 06.10.2014
-* Create a "use exactly this" operator in order to override package conflicts - https://github.com/fsprojects/Paket/issues/220
+* Create a "use exactly this version" operator in order to override package conflicts - http://fsprojects.github.io/Paket/nuget-dependencies.html#Use-exactly-this-version-constraint
 
 #### 0.4.25 - 06.10.2014
 * Throw if we don't get any versions

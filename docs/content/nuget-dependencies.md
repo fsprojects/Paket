@@ -68,9 +68,15 @@ This is the strictest version constraint. Use the `=` operator to specify an exa
 
 #### Omitting the version constraint
 
+If you omit the version constraint then Paket will assume `>= 0`:
+
     nuget Example
 
-If you omit the version constraint then Paket will assume `>= 0`.
+#### "Use exactly this version" constraint
+
+If your indirect dependencies result in a version conflict you might want to instruct Paket to use a specific version. The `==` operator allows you to manually resolve the conflict:
+
+    nuget Example == 1.2.3 // take exactly this version
 
 #### Further version constraints
 
