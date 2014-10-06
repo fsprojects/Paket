@@ -16,7 +16,7 @@ type PackageSource =
     static member Parse(source,auth) = 
         match System.Uri.TryCreate(source, System.UriKind.Absolute) with
         | true, uri -> if uri.Scheme = System.Uri.UriSchemeFile then LocalNuget(source) else Nuget({ Url = source; Auth = auth })
-        | _ -> failwith "unable to parse package source: %s" source
+        | _ -> failwithf "unable to parse package source: %s" source
 
     static member NugetSource url = Nuget { Url = url; Auth = None }
 
