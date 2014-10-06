@@ -61,6 +61,8 @@
       <Paket>True</Paket>
       <Link>paket-files/FsUnit.fs</Link>
     </Compile>
+  </ItemGroup>
+  <ItemGroup>
     <Compile Include="TestHelpers.fs" />
     <Compile Include="SemVerSpecs.fs" />
     <Compile Include="NugetVersionRangeSpecs.fs" />
