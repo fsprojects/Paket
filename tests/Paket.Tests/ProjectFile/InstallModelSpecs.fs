@@ -9,14 +9,14 @@ let placeHolder = "_._"
 let blackList =
     [fun (f:string) -> f.Contains placeHolder]
 
-let KnownDotNetFrameworks = [ "v1.0"; "v1.1"; "v2.0"; "v3.5"; "v4.0"; "v4.5"; "v4.5.1" ]
+let KnownDotNetFrameworks = [ "v1.0",Full; "v1.1",Full; "v2.0",Full; "v3.5",Full; "v4.0",Client; "v4.0",Full; "v4.5",Full; "v4.5.1",Full ]
 
 type InstallModell = 
     { Frameworks : Map<FrameworkIdentifier, string Set> }
     
     static member EmptyModel : InstallModell = 
         let frameworks = 
-            [ for x in KnownDotNetFrameworks -> DotNetFramework(Framework x, Full) ]
+            [ for x,p in KnownDotNetFrameworks -> DotNetFramework(Framework x, p) ]
         { Frameworks = List.fold (fun map f -> Map.add f Set.empty map) Map.empty frameworks }
     
     member this.GetFrameworks() = this.Frameworks |> Seq.map (fun kv -> kv.Key)
@@ -37,15 +37,15 @@ let extractFrameworksFromPaths (model : InstallModell) libs : InstallModell =
 let useLowerVersionLibIfEmpty (model : InstallModell) = 
     KnownDotNetFrameworks
     |> List.rev
-    |> List.fold (fun (model : InstallModell) lowerVersion -> 
-           let newFiles = model.GetFiles(DotNetFramework(Framework lowerVersion, Full))
+    |> List.fold (fun (model : InstallModell) (lowerVersion,lowerProfile) -> 
+           let newFiles = model.GetFiles(DotNetFramework(Framework lowerVersion, lowerProfile))
            let containsPlaceHolder = newFiles |> Set.exists (fun x -> x.Contains(placeHolder))
            if Set.isEmpty newFiles || containsPlaceHolder then model
            else 
                KnownDotNetFrameworks
-               |> List.filter (fun version -> version > lowerVersion)
-               |> List.fold (fun (model : InstallModell) upperVersion -> 
-                      let framework = DotNetFramework(Framework upperVersion, Full)
+               |> List.filter (fun (version,profile) -> (version,profile) > (lowerVersion,lowerProfile))
+               |> List.fold (fun (model : InstallModell) (upperVersion,upperProfile) -> 
+                      let framework = DotNetFramework(Framework upperVersion, upperProfile)
                       match Map.tryFind framework model.Frameworks with
                       | Some files when Set.isEmpty files -> 
                           { model with Frameworks = Map.add framework newFiles model.Frameworks }
@@ -121,3 +121,15 @@ let ``should filter _._ when processing blacklist``() =
 
     model.GetFiles(DotNetFramework(Framework "v2.0", Full)) |> shouldNotContain (@"..\Rx-Main\lib\net20\_._")
     model.GetFiles(DotNetFramework(Framework "v4.0", Full)) |> shouldNotContain (@"..\Rx-Main\lib\net40\_._")
+
+[<Test>]
+let ``should install single client profile lib for everything ``() = 
+    let model = 
+        [ @"..\Castle.Core\lib\net40-client\Castle.Core.dll" ] 
+        |> extractFrameworksFromPaths InstallModell.EmptyModel
+        |> useLowerVersionLibIfEmpty
+
+    model.GetFiles(DotNetFramework(Framework "v3.5", Full)) |> shouldNotContain (@"..\Castle.Core\lib\net40-client\Castle.Core.dll" )
+    model.GetFiles(DotNetFramework(Framework "v4.0", Client)) |> shouldContain (@"..\Castle.Core\lib\net40-client\Castle.Core.dll" )
+    model.GetFiles(DotNetFramework(Framework "v4.0", Full)) |> shouldContain (@"..\Castle.Core\lib\net40-client\Castle.Core.dll" )
+    model.GetFiles(DotNetFramework(Framework "v4.5", Full)) |> shouldContain (@"..\Castle.Core\lib\net40-client\Castle.Core.dll" )
