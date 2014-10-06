@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<package xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <metadata xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
+    <id>Paket</id>
+    <version>0.4.24</version>
+    <authors>Paket team</authors>
+    <owners>Paket team</owners>
+    <licenseUrl>http://fsprojects.github.io/Paket/license.html</licenseUrl>
+    <projectUrl>http://fsprojects.github.com/Paket</projectUrl>
+    <iconUrl>https://raw.githubusercontent.com/fsprojects/Paket/master/docs/files/img/logo.png</iconUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <summary>A package dependency manager for .NET with support for NuGet packages and GitHub files.</summary>
+    <description>A package dependency manager for .NET with support for NuGet packages and GitHub files.</description>
+    <releaseNotes>Throw if we don't get any versions</releaseNotes>
+    <copyright>Copyright 2014</copyright>
+    <tags>nuget, bundler, F#</tags>
+    <dependencies />
+  </metadata>
+  <files>
+    <file src="..\bin\merged\paket.exe" target="tools" />
+  </files>
+</package>
