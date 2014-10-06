@@ -75,8 +75,8 @@ let ``should understand net40 and net45``() =
     let model = 
         [ @"..\Rx-Main\lib\net40\Rx.dll"; @"..\Rx-Main\lib\net45\Rx.dll" ] 
         |> extractFrameworksFromPaths InstallModell.EmptyModel
-    model.GetFiles(DotNetFramework(Framework "v4.0", Full)) |> shouldContain (@"..\Rx-Main\lib\net40\Rx.dll")
-    model.GetFiles(DotNetFramework(Framework "v4.5", Full)) |> shouldContain (@"..\Rx-Main\lib\net45\Rx.dll")
+    model.GetFiles(DotNetFramework(Framework "v4.0", Full)) |> shouldContain @"..\Rx-Main\lib\net40\Rx.dll"
+    model.GetFiles(DotNetFramework(Framework "v4.5", Full)) |> shouldContain @"..\Rx-Main\lib\net45\Rx.dll"
 
 [<Test>]
 let ``should add net35 if we have net20 and net40``() = 
@@ -85,20 +85,20 @@ let ``should add net35 if we have net20 and net40``() =
         |> extractFrameworksFromPaths InstallModell.EmptyModel
         |> useLowerVersionLibIfEmpty
 
-    model.GetFiles(DotNetFramework(Framework "v2.0", Full)) |> shouldContain (@"..\Rx-Main\lib\net20\Rx.dll")
-    model.GetFiles(DotNetFramework(Framework "v3.5", Full)) |> shouldContain (@"..\Rx-Main\lib\net20\Rx.dll")
-    model.GetFiles(DotNetFramework(Framework "v4.0", Full)) |> shouldContain (@"..\Rx-Main\lib\net40\Rx.dll")
-    model.GetFiles(DotNetFramework(Framework "v4.0", Full)) |> shouldNotContain (@"..\Rx-Main\lib\net20\Rx.dll")
-    model.GetFiles(DotNetFramework(Framework "v4.5", Full)) |> shouldContain (@"..\Rx-Main\lib\net40\Rx.dll")
-    model.GetFiles(DotNetFramework(Framework "v4.5.1", Full)) |> shouldContain (@"..\Rx-Main\lib\net40\Rx.dll")
+    model.GetFiles(DotNetFramework(Framework "v2.0", Full)) |> shouldContain @"..\Rx-Main\lib\net20\Rx.dll"
+    model.GetFiles(DotNetFramework(Framework "v3.5", Full)) |> shouldContain @"..\Rx-Main\lib\net20\Rx.dll"
+    model.GetFiles(DotNetFramework(Framework "v4.0", Full)) |> shouldContain @"..\Rx-Main\lib\net40\Rx.dll"
+    model.GetFiles(DotNetFramework(Framework "v4.0", Full)) |> shouldNotContain @"..\Rx-Main\lib\net20\Rx.dll"
+    model.GetFiles(DotNetFramework(Framework "v4.5", Full)) |> shouldContain @"..\Rx-Main\lib\net40\Rx.dll"
+    model.GetFiles(DotNetFramework(Framework "v4.5.1", Full)) |> shouldContain @"..\Rx-Main\lib\net40\Rx.dll"
 
 [<Test>]
 let ``should put _._ files into right buckets``() = 
     let model = 
         [ @"..\Rx-Main\lib\net40\_._"; @"..\Rx-Main\lib\net20\_._" ] 
         |> extractFrameworksFromPaths InstallModell.EmptyModel
-    model.GetFiles(DotNetFramework(Framework "v2.0", Full)) |> shouldContain (@"..\Rx-Main\lib\net20\_._")
-    model.GetFiles(DotNetFramework(Framework "v4.0", Full)) |> shouldContain (@"..\Rx-Main\lib\net40\_._")
+    model.GetFiles(DotNetFramework(Framework "v2.0", Full)) |> shouldContain @"..\Rx-Main\lib\net20\_._"
+    model.GetFiles(DotNetFramework(Framework "v4.0", Full)) |> shouldContain @"..\Rx-Main\lib\net40\_._"
 
 [<Test>]
 let ``should skip buckets which contain placeholder while adjusting upper versions``() = 
@@ -107,10 +107,10 @@ let ``should skip buckets which contain placeholder while adjusting upper versio
         |> extractFrameworksFromPaths InstallModell.EmptyModel
         |> useLowerVersionLibIfEmpty
 
-    model.GetFiles(DotNetFramework(Framework "v2.0", Full)) |> shouldContain (@"..\Rx-Main\lib\net20\Rx.dll")
-    model.GetFiles(DotNetFramework(Framework "v3.5", Full)) |> shouldContain (@"..\Rx-Main\lib\net20\Rx.dll")
-    model.GetFiles(DotNetFramework(Framework "v4.0", Full)) |> shouldNotContain (@"..\Rx-Main\lib\net20\Rx.dll")
-    model.GetFiles(DotNetFramework(Framework "v4.5", Full)) |> shouldContain (@"..\Rx-Main\lib\net20\Rx.dll")
+    model.GetFiles(DotNetFramework(Framework "v2.0", Full)) |> shouldContain @"..\Rx-Main\lib\net20\Rx.dll"
+    model.GetFiles(DotNetFramework(Framework "v3.5", Full)) |> shouldContain @"..\Rx-Main\lib\net20\Rx.dll"
+    model.GetFiles(DotNetFramework(Framework "v4.0", Full)) |> shouldNotContain @"..\Rx-Main\lib\net20\Rx.dll"
+    model.GetFiles(DotNetFramework(Framework "v4.5", Full)) |> shouldContain @"..\Rx-Main\lib\net20\Rx.dll"
 
 [<Test>]
 let ``should filter _._ when processing blacklist``() = 
@@ -119,8 +119,8 @@ let ``should filter _._ when processing blacklist``() =
         |> extractFrameworksFromPaths InstallModell.EmptyModel
         |> filterBlackList
 
-    model.GetFiles(DotNetFramework(Framework "v2.0", Full)) |> shouldNotContain (@"..\Rx-Main\lib\net20\_._")
-    model.GetFiles(DotNetFramework(Framework "v4.0", Full)) |> shouldNotContain (@"..\Rx-Main\lib\net40\_._")
+    model.GetFiles(DotNetFramework(Framework "v2.0", Full)) |> shouldNotContain @"..\Rx-Main\lib\net20\_._"
+    model.GetFiles(DotNetFramework(Framework "v4.0", Full)) |> shouldNotContain @"..\Rx-Main\lib\net40\_._"
 
 [<Test>]
 let ``should install single client profile lib for everything ``() = 
@@ -129,7 +129,7 @@ let ``should install single client profile lib for everything ``() =
         |> extractFrameworksFromPaths InstallModell.EmptyModel
         |> useLowerVersionLibIfEmpty
 
-    model.GetFiles(DotNetFramework(Framework "v3.5", Full)) |> shouldNotContain (@"..\Castle.Core\lib\net40-client\Castle.Core.dll" )
-    model.GetFiles(DotNetFramework(Framework "v4.0", Client)) |> shouldContain (@"..\Castle.Core\lib\net40-client\Castle.Core.dll" )
-    model.GetFiles(DotNetFramework(Framework "v4.0", Full)) |> shouldContain (@"..\Castle.Core\lib\net40-client\Castle.Core.dll" )
-    model.GetFiles(DotNetFramework(Framework "v4.5", Full)) |> shouldContain (@"..\Castle.Core\lib\net40-client\Castle.Core.dll" )
+    model.GetFiles(DotNetFramework(Framework "v3.5", Full)) |> shouldNotContain @"..\Castle.Core\lib\net40-client\Castle.Core.dll"
+    model.GetFiles(DotNetFramework(Framework "v4.0", Client)) |> shouldContain @"..\Castle.Core\lib\net40-client\Castle.Core.dll" 
+    model.GetFiles(DotNetFramework(Framework "v4.0", Full)) |> shouldContain @"..\Castle.Core\lib\net40-client\Castle.Core.dll"
+    model.GetFiles(DotNetFramework(Framework "v4.5", Full)) |> shouldContain @"..\Castle.Core\lib\net40-client\Castle.Core.dll"
