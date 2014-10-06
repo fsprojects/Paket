@@ -47,9 +47,11 @@ type ResolvedPackages =
                 |> addToError
 
             addToError "Error in resolution." 
-            addToError "  Resolved:"
-            for x in closed do           
-               traceUnresolvedPackage x
+
+            if not closed.IsEmpty then
+                addToError "  Resolved:"
+                for x in closed do
+                   traceUnresolvedPackage x
 
             addToError "  Can't resolve:"
             stillOpen
