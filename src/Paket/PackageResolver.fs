@@ -9,20 +9,20 @@ open System
 open Paket.PackageSources
 
 /// Represents package details
-type PackageDetails = 
+type PackageDetails =
     { Name : string
       Source : PackageSource
       DownloadLink : string
       DirectDependencies :  (string * VersionRequirement) Set }
 
 /// Represents data about resolved packages
-type ResolvedPackage = 
+type ResolvedPackage =
     { Name : string
       Version : SemVerInfo
       Dependencies : (string * VersionRequirement) Set
       Source : PackageSource }
 
-type PackageResolution = Map<string , ResolvedPackage>        
+type PackageResolution = Map<string , ResolvedPackage>
 
 type ResolvedPackages =
 | Ok of PackageResolution
@@ -37,25 +37,27 @@ type ResolvedPackages =
 
             let addToError text = errorText := !errorText + Environment.NewLine + text
 
-            let traceUnresolvedPackage (x : PackageRequirement) = 
+            let traceUnresolvedPackage (x : PackageRequirement) =
                 match x.Parent with
-                | DependenciesFile _ -> 
+                | DependenciesFile _ ->
                     sprintf "    - %s %s" x.Name (x.VersionRequirement.ToString())
-                | Package(name,version) -> 
+                | Package(name,version) ->
                     sprintf "    - %s %s%s       - from %s %s" x.Name (x.VersionRequirement.ToString()) Environment.NewLine 
                         name (version.ToString())
                 |> addToError
 
-            addToError "Error in resolution." 
-            addToError "  Resolved:"
-            for x in closed do           
-               traceUnresolvedPackage x
+            addToError "Error in resolution."
+
+            if not closed.IsEmpty then
+                addToError "  Resolved:"
+                for x in closed do
+                   traceUnresolvedPackage x
 
             addToError "  Can't resolve:"
             stillOpen
             |> Seq.head
             |> traceUnresolvedPackage
-           
+
             addToError " Please try to relax some conditions."
             failwith !errorText
 
@@ -66,10 +68,10 @@ type Resolved = {
 
 /// Resolves all direct and indirect dependencies
 let Resolve(getVersionsF, getPackageDetailsF, rootDependencies:PackageRequirement list) =
-    tracefn "Resolving packages:" 
+    tracefn "Resolving packages:"
     let exploredPackages = Dictionary<string*SemVerInfo,ResolvedPackage>()
     let allVersions = new Dictionary<string,SemVerInfo list>()
-    
+
     let getExploredPackage(sources,packageName:string,version) =
         match exploredPackages.TryGetValue <| (packageName.ToLower(),version) with
         | true,package -> package
@@ -79,11 +81,11 @@ let Resolve(getVersionsF, getPackageDetailsF, rootDependencies:PackageRequiremen
             let explored =
                 { Name = packageDetails.Name
                   Version = version
-                  Dependencies = packageDetails.DirectDependencies 
+                  Dependencies = packageDetails.DirectDependencies
                   Source = packageDetails.Source }
             exploredPackages.Add((packageName.ToLower(),version),explored)
             explored
-        
+
     let getAllVersions(sources,packageName:string) =
         match allVersions.TryGetValue(packageName.ToLower()) with
         | false,_ ->
@@ -97,20 +99,20 @@ let Resolve(getVersionsF, getPackageDetailsF, rootDependencies:PackageRequiremen
         if Set.isEmpty stillOpen then
             let isOk =
                 filteredVersions
-                |> Map.forall (fun _ v -> 
+                |> Map.forall (fun _ v ->
                     match v with
                     | [_] -> true
                     | _ -> false)
-        
+
             if isOk then
-                Ok(packages |> Seq.fold (fun map p -> Map.add (p.Name.ToLower()) p map) Map.empty) 
-            else 
+                Ok(packages |> Seq.fold (fun map p -> Map.add (p.Name.ToLower()) p map) Map.empty)
+            else
                 Conflict(closed,stillOpen)
         else
             let dependency = Seq.head stillOpen
             let rest = stillOpen |> Set.remove dependency
-     
-            let compatibleVersions = 
+
+            let compatibleVersions =
                 match Map.tryFind dependency.Name filteredVersions with
                 | None ->
                     let versions = getAllVersions(dependency.Sources,dependency.Name)
@@ -119,8 +121,8 @@ let Resolve(getVersionsF, getPackageDetailsF, rootDependencies:PackageRequiremen
                     versions
                 | Some versions -> versions
                 |> List.filter dependency.VersionRequirement.IsInRange
-                    
-            let sorted =                
+
+            let sorted =
                 match dependency.Parent with
                 | DependenciesFile _ ->
                     List.sort compatibleVersions |> List.rev
@@ -128,8 +130,8 @@ let Resolve(getVersionsF, getPackageDetailsF, rootDependencies:PackageRequiremen
                     match dependency.ResolverStrategy with
                     | Max -> List.sort compatibleVersions |> List.rev
                     | Min -> List.sort compatibleVersions
-                            
-            sorted 
+
+            sorted
             |> List.fold (fun state versionToExplore ->
                 match state with
                 | Conflict _ ->
@@ -138,21 +140,20 @@ let Resolve(getVersionsF, getPackageDetailsF, rootDependencies:PackageRequiremen
                     let newDependencies =
                         exploredPackage.Dependencies
                         |> Set.map (fun (n,v) -> {dependency with Name = n; VersionRequirement = v; Parent = Package(dependency.Name,versionToExplore) })
-                        |> Set.filter (fun d -> Set.contains d closed |> not)                        
-                    
+                        |> Set.filter (fun d -> Set.contains d closed |> not)
+
                     improveModel (newFilteredVersion,exploredPackage::packages,Set.add dependency closed,Set.union rest newDependencies)
                 | Ok _ -> state)
                   (Conflict(closed,stillOpen))
 
-            
     match improveModel (Map.empty, [], Set.empty, Set.ofList rootDependencies) with
     | Conflict(_) as c -> c
-    | ResolvedPackages.Ok model -> 
+    | ResolvedPackages.Ok model ->
         // cleanup names
-        Ok(model |> Seq.fold (fun map x -> 
+        Ok(model |> Seq.fold (fun map x ->
                         let package = x.Value
-                        let cleanup = 
-                            { package with Dependencies = 
-                                               package.Dependencies 
+                        let cleanup =
+                            { package with Dependencies =
+                                               package.Dependencies
                                                |> Set.map (fun (name, v) -> model.[name.ToLower()].Name, v) }
                         Map.add package.Name cleanup map) Map.empty)
