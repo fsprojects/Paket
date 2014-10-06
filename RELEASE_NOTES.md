@@ -1,3 +1,6 @@
+#### 0.4.23 - 06.10.2014
+* BUGFIX: paket-files need to go to the top
+
 #### 0.4.22 - 06.10.2014
 * BUGFIX: Do not look for MinimalVisualStudioVersion when adding paket folder to solution - https://github.com/fsprojects/Paket/pull/221
 * BUGFIX: Fix path in content link
