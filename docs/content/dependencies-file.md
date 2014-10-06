@@ -30,3 +30,24 @@ Paket supports the following source types:
 
 * [NuGet](nuget-dependencies.html)
 * [GitHub](github-dependencies.html)
+ 
+## Strict references
+
+Paket usually references all direct and indirect dependencies that are listed in your [paket.references](references-files.md) files to your project file.
+In `strict` mode it will **only** reference *direct* dependencies.
+
+    references strict
+    source http://nuget.org/api/v2
+
+    nuget Newtonsoft.Json ~> 6.0
+    nuget UnionArgParser ~> 0.7
+    
+## No content option
+
+This option disables the installation of any content files.
+
+    content none
+    source http://nuget.org/api/v2
+
+    nuget jQuery >= 0 // we don't install jQuery content files
+    nuget UnionArgParser ~> 0.7

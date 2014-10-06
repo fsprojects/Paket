@@ -1,7 +1,7 @@
 # paket simplify
 
 Simplifies your [`paket.dependencies` file](dependencies-file.html) by removing indirect dependencies.
-Does also simplify [`paket.references` files](references-files.html), unless [strict](nuget-dependencies.html#Strict-references) mode is used.
+Does also simplify [`paket.references` files](references-files.html), unless [strict](dependencies-file.html#Strict-references) mode is used.
 
     [lang=batchfile]
     $ paket simplify [-v] [--interactive] [--dependencies-file FILE]
@@ -38,7 +38,7 @@ and the NuGet `packages.config` should be converted to following [`paket.referen
     Castle.Windsor
 
 As you have already probably guessed, the `Castle.Windsor` package happens to have a dependency on the `Castle.Core` package.
-Paket by default (without [strict](nuget-dependencies.html#Strict-references) mode) adds references to all required dependencies of a package that you define for a specific project in [`paket.references` file](references-files.html).
+Paket by default (without [strict](dependencies-file.html#Strict-references) mode) adds references to all required dependencies of a package that you define for a specific project in [`paket.references` file](references-files.html).
 In other words, you still get the same result if you remove `Castle.Core` from your [`paket.references` file](references-files.html).
 And this is exactly what happens after executing `paket simplify` command:
 
