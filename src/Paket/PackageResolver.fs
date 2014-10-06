@@ -112,7 +112,11 @@ let Resolve(getVersionsF, getPackageDetailsF, rootDependencies:PackageRequiremen
      
             let compatibleVersions = 
                 match Map.tryFind dependency.Name filteredVersions with
-                | None -> getAllVersions(dependency.Sources,dependency.Name)
+                | None ->
+                    let versions = getAllVersions(dependency.Sources,dependency.Name)
+                    if Seq.isEmpty versions then
+                        failwithf "Couldn't retrieve versions for %s." dependency.Name
+                    versions
                 | Some versions -> versions
                 |> List.filter dependency.VersionRequirement.IsInRange
                     

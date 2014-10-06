@@ -1,3 +1,6 @@
+#### 0.4.24 - 06.10.2014
+* Throw if we don't get any versions
+
 #### 0.4.23 - 06.10.2014
 * BUGFIX: paket-files need to go to the top
 
