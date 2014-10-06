@@ -189,9 +189,13 @@ type ProjectFile =
                 | None  ->
                     let firstNode = fileItemsInSameDir |> Seq.head
                     firstNode.ParentNode.InsertBefore(paketNode, firstNode) |> ignore
-
+        
+        let firstItemGroup = this.Document.SelectNodes("//ns:ItemGroup", this.Namespaces) |> Seq.cast<XmlNode> |> Seq.firstOrDefault
         for newItemGroup in newItemGroups.Values do
-            if newItemGroup.HasChildNodes then this.ProjectNode.AppendChild(newItemGroup) |> ignore
+            if newItemGroup.HasChildNodes then 
+                match firstItemGroup with
+                | Some firstItemGroup -> firstItemGroup.ParentNode.InsertBefore(newItemGroup, firstItemGroup) |> ignore
+                | None -> this.ProjectNode.AppendChild(newItemGroup) |> ignore
 
         this.DeleteIfEmpty("//ns:ItemGroup")
 
