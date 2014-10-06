@@ -106,29 +106,6 @@
 </tr>
 </table>
 
-<h3><a name="Strict-references" class="anchor" href="#Strict-references">Strict references</a></h3>
-
-<p>Paket usually references all direct and indirect dependencies that are listed in your <a href="references-files.md">paket.references</a> files to your project file.
-In <code>strict</code> mode it will <strong>only</strong> reference <em>direct</em> dependencies.</p>
-
-<table class="pre"><tr><td class="lines"><pre class="fssnip">
-<span class="l">1: </span>
-<span class="l">2: </span>
-<span class="l">3: </span>
-<span class="l">4: </span>
-<span class="l">5: </span>
-</pre>
-</td>
-<td class="snippet"><pre class="fssnip">
-<span class="i">references</span> <span class="i">strict</span>
-<span class="i">source</span> <span class="i">http</span><span class="o">:</span><span class="c">//nuget.org/api/v2</span>
-
-<span class="i">nuget</span> <span class="i">Newtonsoft</span><span class="o">.</span><span class="i">Json</span> <span class="o">~&gt;</span> <span class="n">6.0</span>
-<span class="i">nuget</span> <span class="i">UnionArgParser</span> <span class="o">~&gt;</span> <span class="n">0.7</span></pre>
-</td>
-</tr>
-</table>
-
 <h2><a name="Dependencies" class="anchor" href="#Dependencies">Dependencies</a></h2>
 
 <p>The dependencies of your project are defined by the <code>nuget &lt;package ID&gt; &lt;version constraint&gt;</code> statement.</p>

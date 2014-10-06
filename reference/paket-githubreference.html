@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="utf-8"/>
-    <title>SemVer - Paket</title>
+    <title>GitHubReference - Paket</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <meta name="description" content=""/>
     <meta name="author" content="Steffen Forkmann, Alexander Gross"/>
@@ -34,46 +34,49 @@
 
 
 
-<h1>SemVer</h1>
+<h1>GitHubReference</h1>
 <div class="xmldoc">
-<p>Parser for <a href="http://semver.org/">SemVer</a>.</p>
 </div>
-
-<!-- Render nested types and modules, if there are any -->
-
-  <h3>Functions and values</h3>
+  <h3>Record Fields</h3>
   <table class="table table-bordered member-list">
     <thead>
-      <tr><td>Function or value</td><td>Description</td></tr>
+      <tr><td>Record Field</td><td>Description</td></tr>
     </thead>
     <tbody>
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '42', 42)" onmouseover="showTip(event, '42', 42)">
-            parse version
+          <code onmouseout="hideTip(event, '164', 164)" onmouseover="showTip(event, '164', 164)">
+            Link
           </code>
-          <div class="tip" id="42">
-            <strong>Signature:</strong> version:string -&gt; SemVerInfo<br />
+          <div class="tip" id="164">
+            <strong>Signature:</strong> string<br />
                       </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket/SemVer.fs#L110-110" class="github-link">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket/ReferencesFile.fs#L9-9" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
-          <p>Parses the given version string into a SemVerInfo which can be printed using ToString() or compared
-according to the rules described in the <a href="http://semver.org/">SemVer docs</a>.</p>
+          
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
 
-<h2>Sample</h2>
-
-<pre><code>parse "1.0.0-rc.1"     &lt; parse "1.0.0"          // true
-parse "1.2.3-alpha"    &gt; parse "1.2.2"          // true
-parse "1.2.3-alpha2"   &gt; parse "1.2.3-alpha"    // true
-parse "1.2.3-alpha002" &gt; parse "1.2.3-alpha1"   // true
-parse "1.5.0-beta.2"   &gt; parse "1.5.0-rc.1"     // false
-</code></pre>
-
+          <code onmouseout="hideTip(event, '165', 165)" onmouseover="showTip(event, '165', 165)">
+            Name
+          </code>
+          <div class="tip" id="165">
+            <strong>Signature:</strong> string<br />
+                      </div>
+        </td>
+        <td class="xmldoc">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket/ReferencesFile.fs#L8-8" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          
         </td>
       </tr>
     </tbody>
