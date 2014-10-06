@@ -111,6 +111,8 @@ let configWithPassword = """source http://nuget.org/api/v2 username: "user" pass
 nuget Example > 1.2.3
 nuget Example2 <= 1.2.3
 nuget Example3 < 2.2.3
+nuget Example3 == 2.2.3
+nuget Example3 !== 2.2.3
 nuget Example4 >= 1.2.3 < 1.5"""
 
 [<Test>]

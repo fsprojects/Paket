@@ -19,7 +19,7 @@ type InstallOptions =
 /// [omit]
 module DependenciesFileParser = 
 
-    let private basicOperators = ["~>";"<=";">=";"=";">";"<"]
+    let private basicOperators = ["~>";"==";"<=";">=";"=";">";"<"]
     let private operators = basicOperators @ (basicOperators |> List.map (fun o -> "!" + o))
 
     let parseResolverStrategy (text : string) = if text.StartsWith "!" then ResolverStrategy.Min else ResolverStrategy.Max
@@ -60,6 +60,7 @@ module DependenciesFileParser =
 
             try
                 match splitVersion text with
+                | "==", version :: rest -> VersionRequirement(VersionRange.OverrideAll(SemVer.parse version),parsePrerelease rest)
                 | ">=", version :: rest -> VersionRequirement(VersionRange.AtLeast(version),parsePrerelease rest)
                 | ">", version :: rest -> VersionRequirement(VersionRange.GreaterThan(SemVer.parse version),parsePrerelease rest)
                 | "<", version :: rest -> VersionRequirement(VersionRange.LessThan(SemVer.parse version),parsePrerelease rest)

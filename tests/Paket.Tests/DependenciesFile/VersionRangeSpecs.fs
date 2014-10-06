@@ -74,3 +74,7 @@ let ``can detect prereleases``() =
 
     DependenciesFileParser.parseVersionRequirement "> 3.1 alpha beta"
     |> shouldEqual (VersionRequirement(VersionRange.GreaterThan(SemVer.parse "3.1"),(PreReleaseStatus.Concrete ["alpha"; "beta"])))
+
+[<Test>]
+let ``can detect override operator``() = 
+    parseRange "== 3.2.0.0" |> shouldEqual (VersionRange.OverrideAll(SemVer.parse "3.2.0.0"))    
