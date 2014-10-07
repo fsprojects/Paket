@@ -40,16 +40,25 @@ type NugetPackageCache =
 
 
 /// Gets versions of the given package via OData.
-let getAllVersionsFromNugetOData(auth,nugetURL, package) = 
+let getAllVersionsFromNugetOData (auth, nugetURL, package) = 
     // we cannot cache this
-    async { 
-        let! raw = getFromUrl(auth,sprintf "%s/Packages?$filter=Id eq '%s'" nugetURL package)
-        let doc,manager = loadNuGetOData raw
-        return seq { 
-                   for node in doc.SelectNodes("//ns:feed/ns:entry/m:properties/d:Version", manager) do
-                       yield node.InnerText
-               }
-    }
+    let rec followLink url = 
+        async { 
+            let! raw = getFromUrl (auth, url)
+            let doc, manager = loadNuGetOData raw
+            
+            let currentPage = [ for node in doc.SelectNodes("//ns:feed/ns:entry/m:properties/d:Version", manager) -> node.InnerText ]
+            
+            return
+                [ for linkNode in doc.SelectNodes("//ns:feed/ns:link[@rel=\"next\"]", manager) -> linkNode.Attributes.["href"].Value ]
+                |> List.map followLink
+                |> Async.Parallel
+                |> Async.RunSynchronously
+                |> Seq.concat
+                |> Seq.append currentPage
+        }
+
+    followLink (sprintf "%s/Packages?$filter=Id eq '%s'" nugetURL package)
 
 /// Gets all versions no. of the given package.
 let getAllVersions(auth,nugetURL, package) = 

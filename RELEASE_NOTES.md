@@ -1,3 +1,6 @@
+#### 0.4.27 - 07.10.2014
+* Supporting pagination for long nuget feeds - https://github.com/fsprojects/Paket/issues/223
+
 #### 0.4.26 - 06.10.2014
 * Create a "use exactly this version" operator in order to override package conflicts - http://fsprojects.github.io/Paket/nuget-dependencies.html#Use-exactly-this-version-constraint
 
