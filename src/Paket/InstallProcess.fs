@@ -126,7 +126,7 @@ let Install(sources,force, hard, lockFile:LockFile) =
         |> Seq.append (DownloadSourceFiles(Path.GetDirectoryName lockFile.FileName, lockFile.SourceFiles))
         |> Async.Parallel
         |> Async.RunSynchronously
-        |> Array.choose id
+        |> Array.choose id    
 
     let applicableProjects =
         ProjectFile.FindAllProjects(".") 

@@ -24,6 +24,7 @@ type FrameworkIdentifier =
     | PortableFramework of PlatformVersion * PortableFrameworkProfile
     | MonoAndroid
     | MonoTouch
+    | Windows of string
     | WindowsPhoneApp of string
     | Silverlight of string
 
@@ -106,6 +107,8 @@ type FrameworkIdentifier =
         | "sl50" -> Some(Silverlight "v5.0")
         | "sl4-wp" -> Some(WindowsPhoneApp "7.1")
         | "sl4-wp71" -> Some(WindowsPhoneApp "7.1")
+        | "win8" -> Some(Windows "v8.0")
+        | "wpa81" -> Some(WindowsPhoneApp "v8.1")
         | "monoandroid" -> Some(MonoAndroid)
         | "monotouch" -> Some(MonoTouch)
         | _ ->                         
@@ -122,6 +125,7 @@ type FrameworkIdentifier =
         | DotNetFramework _ -> "$(TargetFrameworkIdentifier) == '.NETFramework'"
         | PortableFramework _ -> "$(TargetFrameworkIdentifier) == '.NETPortable'"
         | WindowsPhoneApp _ -> "$(TargetFrameworkIdentifier) == 'WindowsPhoneApp'"
+        | Windows _ -> "$(TargetFrameworkIdentifier) == 'Windows'"
         | Silverlight _ -> "$(TargetFrameworkIdentifier) == 'Silverlight'"
         | MonoAndroid -> "$(TargetFrameworkIdentifier) == 'MonoAndroid'"
         | MonoTouch -> "$(TargetFrameworkIdentifier) == 'MonoTouch'"
@@ -141,6 +145,7 @@ type FrameworkIdentifier =
         match x with 
         | PortableFramework(v,_) -> sprintf " And $(TargetPlatformVersion) == '%s'"  v
         | WindowsPhoneApp v -> sprintf " And $(TargetPlatformVersion) == '%s'"  v
+        | Windows v -> sprintf " And $(TargetPlatformVersion) == '%s'"  v
         | _ -> ""
 
     member x.GetCondition() =
@@ -151,6 +156,7 @@ type FrameworkIdentifier =
             | All -> "true"
         | PortableFramework _ -> sprintf "%s%s%s%s" (x.GetFrameworkIdentifier()) (x.GetFrameworkProfile()) (x.GetPlatformIdentifier()) (x.GetPlatformVersion())
         | WindowsPhoneApp _ -> sprintf "%s%s" (x.GetFrameworkIdentifier()) (x.GetPlatformVersion())
+        | Windows _ -> sprintf "%s%s" (x.GetFrameworkIdentifier()) (x.GetPlatformVersion())
         | Silverlight v -> sprintf "%s And $(SilverlightVersion) == '%s'" (x.GetFrameworkIdentifier()) v
         | MonoAndroid -> x.GetFrameworkIdentifier()
         | MonoTouch -> x.GetFrameworkIdentifier()
