@@ -79,18 +79,19 @@ type InstallModell =
                           | Some files when Set.isEmpty files |> not -> model
                           | _ -> { model with Frameworks = Map.add framework newFiles model.Frameworks }) model) this
 
-    static member FromLibs libs = InstallModell.EmptyModel.Add libs
+    static member CreateFromLibs libs = 
+        InstallModell.EmptyModel.Add libs
 
 [<Test>]
 let ``should create empty model with net40, net45 ...``() = 
-    let model = InstallModell.FromLibs [ @"..\Rx-Main\lib\net40\Rx.dll"; @"..\Rx-Main\lib\net45\Rx.dll" ] 
+    let model = InstallModell.EmptyModel.Add [ @"..\Rx-Main\lib\net40\Rx.dll"; @"..\Rx-Main\lib\net45\Rx.dll" ] 
 
     model.GetFrameworks() |> shouldContain (DotNetFramework(Framework "v4.0", Full))
     model.GetFrameworks() |> shouldContain (DotNetFramework(Framework "v4.5", Full))
 
 [<Test>]
 let ``should understand net40 and net45``() = 
-    let model = InstallModell.FromLibs [ @"..\Rx-Main\lib\net40\Rx.dll"; @"..\Rx-Main\lib\net45\Rx.dll" ] 
+    let model = InstallModell.EmptyModel.Add [ @"..\Rx-Main\lib\net40\Rx.dll"; @"..\Rx-Main\lib\net45\Rx.dll" ] 
 
     model.GetFiles(DotNetFramework(Framework "v4.0", Full)) |> shouldContain @"..\Rx-Main\lib\net40\Rx.dll"
     model.GetFiles(DotNetFramework(Framework "v4.5", Full)) |> shouldContain @"..\Rx-Main\lib\net45\Rx.dll"
@@ -98,7 +99,7 @@ let ``should understand net40 and net45``() =
 [<Test>]
 let ``should add net35 if we have net20 and net40``() = 
     let model = 
-        InstallModell.FromLibs([ @"..\Rx-Main\lib\net20\Rx.dll"; @"..\Rx-Main\lib\net40\Rx.dll" ])
+        InstallModell.EmptyModel.Add([ @"..\Rx-Main\lib\net20\Rx.dll"; @"..\Rx-Main\lib\net40\Rx.dll" ])
             .UseLowerVersionLibIfEmpty()
 
     model.GetFiles(DotNetFramework(Framework "v2.0", Full)) |> shouldContain @"..\Rx-Main\lib\net20\Rx.dll"
@@ -110,7 +111,7 @@ let ``should add net35 if we have net20 and net40``() =
 
 [<Test>]
 let ``should put _._ files into right buckets``() = 
-    let model = InstallModell.FromLibs [ @"..\Rx-Main\lib\net40\_._"; @"..\Rx-Main\lib\net20\_._" ] 
+    let model = InstallModell.EmptyModel.Add [ @"..\Rx-Main\lib\net40\_._"; @"..\Rx-Main\lib\net20\_._" ] 
 
     model.GetFiles(DotNetFramework(Framework "v2.0", Full)) |> shouldContain @"..\Rx-Main\lib\net20\_._"
     model.GetFiles(DotNetFramework(Framework "v4.0", Full)) |> shouldContain @"..\Rx-Main\lib\net40\_._"
@@ -118,7 +119,7 @@ let ``should put _._ files into right buckets``() =
 [<Test>]
 let ``should inherit _._ files to higher frameworks``() = 
     let model = 
-        InstallModell.FromLibs([ @"..\Rx-Main\lib\net40\_._"; @"..\Rx-Main\lib\net20\_._" ])
+        InstallModell.EmptyModel.Add([ @"..\Rx-Main\lib\net40\_._"; @"..\Rx-Main\lib\net20\_._" ])
             .UseLowerVersionLibIfEmpty()
 
     model.GetFiles(DotNetFramework(Framework "v2.0", Full)) |> shouldContain @"..\Rx-Main\lib\net20\_._"
@@ -131,7 +132,7 @@ let ``should inherit _._ files to higher frameworks``() =
 [<Test>]
 let ``should skip buckets which contain placeholder while adjusting upper versions``() = 
     let model = 
-        InstallModell.FromLibs([ @"..\Rx-Main\lib\net20\Rx.dll"; @"..\Rx-Main\lib\net40\_._"; ])
+        InstallModell.EmptyModel.Add([ @"..\Rx-Main\lib\net20\Rx.dll"; @"..\Rx-Main\lib\net40\_._"; ])
             .UseLowerVersionLibIfEmpty()
 
     model.GetFiles(DotNetFramework(Framework "v2.0", Full)) |> shouldContain @"..\Rx-Main\lib\net20\Rx.dll"
@@ -142,7 +143,7 @@ let ``should skip buckets which contain placeholder while adjusting upper versio
 [<Test>]
 let ``should filter _._ when processing blacklist``() = 
     let model = 
-        InstallModell.FromLibs([ @"..\Rx-Main\lib\net40\_._"; @"..\Rx-Main\lib\net20\_._" ])
+        InstallModell.EmptyModel.Add([ @"..\Rx-Main\lib\net40\_._"; @"..\Rx-Main\lib\net20\_._" ])
             .FilterBlackList()
 
     model.GetFiles(DotNetFramework(Framework "v2.0", Full)) |> shouldNotContain @"..\Rx-Main\lib\net20\_._"
@@ -151,7 +152,7 @@ let ``should filter _._ when processing blacklist``() =
 [<Test>]
 let ``should install single client profile lib for everything``() = 
     let model = 
-        InstallModell.FromLibs([ @"..\Castle.Core\lib\net40-client\Castle.Core.dll" ])
+        InstallModell.EmptyModel.Add([ @"..\Castle.Core\lib\net40-client\Castle.Core.dll" ])
             .UseLowerVersionLibIfEmpty()
 
     model.GetFiles(DotNetFramework(Framework "v3.5", Full)) |> shouldNotContain @"..\Castle.Core\lib\net40-client\Castle.Core.dll"
@@ -162,7 +163,7 @@ let ``should install single client profile lib for everything``() =
 [<Test>]
 let ``should handle lib install of Microsoft.Net.Http for .NET 4.5``() = 
     let model = 
-        InstallModell.FromLibs(
+        InstallModell.EmptyModel.Add(
             [ @"..\Microsoft.Net.Http\lib\net40\System.Net.Http.dll" 
               @"..\Microsoft.Net.Http\lib\net40\System.Net.Http.Extensions.dll" 
               @"..\Microsoft.Net.Http\lib\net40\System.Net.Http.Primitives.dll" 
@@ -185,7 +186,7 @@ let ``should handle lib install of Microsoft.Net.Http for .NET 4.5``() =
 [<Test>]
 let ``should handle lib install of Jint for NET >= 40 and SL >= 50``() = 
     let model = 
-        InstallModell.FromLibs([ @"..\Jint\lib\portable-net40+sl50+win+wp80\Jint.dll" ])
+        InstallModell.EmptyModel.Add([ @"..\Jint\lib\portable-net40+sl50+win+wp80\Jint.dll" ])
             .UsePortableVersionLibIfEmpty()
 
     model.GetFiles(PortableFramework("7.0", "net40+sl50+win+wp80")) |> shouldContain @"..\Jint\lib\portable-net40+sl50+win+wp80\Jint.dll" 
@@ -199,7 +200,7 @@ let ``should handle lib install of Jint for NET >= 40 and SL >= 50``() =
 [<Test>]
 let ``should handle lib install of Microsoft.BCL for NET >= 40``() = 
     let model = 
-        InstallModell.FromLibs(
+        InstallModell.EmptyModel.Add(
             [ @"..\Microsoft.Bcl\lib\net40\System.IO.dll" 
               @"..\Microsoft.Bcl\lib\net40\System.Runtime.dll" 
               @"..\Microsoft.Bcl\lib\net40\System.Threading.Tasks.dll" 
@@ -221,7 +222,7 @@ let ``should handle lib install of Microsoft.BCL for NET >= 40``() =
 [<Test>]
 let ``should skip lib install of Microsoft.BCL for monotouch and monoandroid``() = 
     let model = 
-        InstallModell.FromLibs(
+        InstallModell.EmptyModel.Add(
             [ @"..\Microsoft.Bcl\lib\net40\System.IO.dll" 
               @"..\Microsoft.Bcl\lib\net40\System.Runtime.dll" 
               @"..\Microsoft.Bcl\lib\net40\System.Threading.Tasks.dll" 
@@ -237,7 +238,7 @@ let ``should skip lib install of Microsoft.BCL for monotouch and monoandroid``()
 [<Test>]
 let ``should not use portable-net40 if we have net40``() = 
     let model = 
-        InstallModell.FromLibs(
+        InstallModell.EmptyModel.Add(
             [ @"..\Microsoft.Bcl\lib\net40\System.IO.dll" 
               @"..\Microsoft.Bcl\lib\net40\System.Runtime.dll" 
               @"..\Microsoft.Bcl\lib\net40\System.Threading.Tasks.dll" 
