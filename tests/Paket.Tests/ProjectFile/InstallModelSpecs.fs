@@ -123,7 +123,7 @@ let ``should filter _._ when processing blacklist``() =
     model.GetFiles(DotNetFramework(Framework "v4.0", Full)) |> shouldNotContain @"..\Rx-Main\lib\net40\_._"
 
 [<Test>]
-let ``should install single client profile lib for everything ``() = 
+let ``should install single client profile lib for everything``() = 
     let model = 
         [ @"..\Castle.Core\lib\net40-client\Castle.Core.dll" ] 
         |> extractFrameworksFromPaths InstallModell.EmptyModel
@@ -133,3 +133,27 @@ let ``should install single client profile lib for everything ``() =
     model.GetFiles(DotNetFramework(Framework "v4.0", Client)) |> shouldContain @"..\Castle.Core\lib\net40-client\Castle.Core.dll" 
     model.GetFiles(DotNetFramework(Framework "v4.0", Full)) |> shouldContain @"..\Castle.Core\lib\net40-client\Castle.Core.dll"
     model.GetFiles(DotNetFramework(Framework "v4.5", Full)) |> shouldContain @"..\Castle.Core\lib\net40-client\Castle.Core.dll"
+
+[<Test>]
+let ``should handle lib install of Microsoft.Net.Http for .NET 4.5``() = 
+    let model = 
+        [ @"..\Microsoft.Net.Http\lib\net40\System.Net.Http.dll" 
+          @"..\Microsoft.Net.Http\lib\net40\System.Net.Http.Extensions.dll" 
+          @"..\Microsoft.Net.Http\lib\net40\System.Net.Http.Primitives.dll" 
+          @"..\Microsoft.Net.Http\lib\net40\System.Net.Http.WebRequest.dll" 
+                    
+          @"..\Microsoft.Net.Http\lib\net45\System.Net.Http.Extensions.dll" 
+          @"..\Microsoft.Net.Http\lib\net45\System.Net.Http.Primitives.dll"           
+        ] 
+        |> extractFrameworksFromPaths InstallModell.EmptyModel
+        |> useLowerVersionLibIfEmpty
+
+    model.GetFiles(DotNetFramework(Framework "v3.5", Full)) |> shouldNotContain @"..\Microsoft.Net.Http\lib\net40\System.Net.Http.dll"
+
+    model.GetFiles(DotNetFramework(Framework "v4.0", Full)) |> shouldContain @"..\Microsoft.Net.Http\lib\net40\System.Net.Http.dll"
+    model.GetFiles(DotNetFramework(Framework "v4.0", Full)) |> shouldContain @"..\Microsoft.Net.Http\lib\net40\System.Net.Http.Primitives.dll" 
+    model.GetFiles(DotNetFramework(Framework "v4.0", Full)) |> shouldContain @"..\Microsoft.Net.Http\lib\net40\System.Net.Http.WebRequest.dll" 
+
+    model.GetFiles(DotNetFramework(Framework "v4.5", Full)) |> shouldNotContain @"..\Microsoft.Net.Http\lib\net40\System.Net.Http.dll" 
+    model.GetFiles(DotNetFramework(Framework "v4.5", Full)) |> shouldContain @"..\Microsoft.Net.Http\lib\net45\System.Net.Http.Primitives.dll" 
+    model.GetFiles(DotNetFramework(Framework "v4.5", Full)) |> shouldContain @"..\Microsoft.Net.Http\lib\net45\System.Net.Http.Primitives.dll" 
