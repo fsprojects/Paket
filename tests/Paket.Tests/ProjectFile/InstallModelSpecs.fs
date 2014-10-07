@@ -40,8 +40,7 @@ let useLowerVersionLibIfEmpty (model : InstallModell) =
     |> List.rev
     |> List.fold (fun (model : InstallModell) (lowerVersion,lowerProfile) -> 
            let newFiles = model.GetFiles(DotNetFramework(Framework lowerVersion, lowerProfile))
-           let containsPlaceHolder = newFiles |> Set.exists (fun x -> x.Contains(placeHolder))
-           if Set.isEmpty newFiles || containsPlaceHolder then model
+           if Set.isEmpty newFiles then model
            else 
                KnownDotNetFrameworks
                |> List.filter (fun (version,profile) -> (version,profile) > (lowerVersion,lowerProfile))
@@ -102,6 +101,20 @@ let ``should put _._ files into right buckets``() =
     model.GetFiles(DotNetFramework(Framework "v4.0", Full)) |> shouldContain @"..\Rx-Main\lib\net40\_._"
 
 [<Test>]
+let ``should inherit _._ files to higher frameworks``() = 
+    let model = 
+        [ @"..\Rx-Main\lib\net40\_._"; @"..\Rx-Main\lib\net20\_._" ] 
+        |> extractFrameworksFromPaths InstallModell.EmptyModel
+        |> useLowerVersionLibIfEmpty
+
+    model.GetFiles(DotNetFramework(Framework "v2.0", Full)) |> shouldContain @"..\Rx-Main\lib\net20\_._"
+    model.GetFiles(DotNetFramework(Framework "v3.5", Full)) |> shouldContain @"..\Rx-Main\lib\net20\_._"
+    model.GetFiles(DotNetFramework(Framework "v4.0", Full)) |> shouldContain @"..\Rx-Main\lib\net40\_._"
+    model.GetFiles(DotNetFramework(Framework "v4.5", Full)) |> shouldContain @"..\Rx-Main\lib\net40\_._"
+    model.GetFiles(DotNetFramework(Framework "v4.5.1", Full)) |> shouldContain @"..\Rx-Main\lib\net40\_._"
+
+
+[<Test>]
 let ``should skip buckets which contain placeholder while adjusting upper versions``() = 
     let model = 
         [ @"..\Rx-Main\lib\net20\Rx.dll"; @"..\Rx-Main\lib\net40\_._"; ]
@@ -111,7 +124,7 @@ let ``should skip buckets which contain placeholder while adjusting upper versio
     model.GetFiles(DotNetFramework(Framework "v2.0", Full)) |> shouldContain @"..\Rx-Main\lib\net20\Rx.dll"
     model.GetFiles(DotNetFramework(Framework "v3.5", Full)) |> shouldContain @"..\Rx-Main\lib\net20\Rx.dll"
     model.GetFiles(DotNetFramework(Framework "v4.0", Full)) |> shouldNotContain @"..\Rx-Main\lib\net20\Rx.dll"
-    model.GetFiles(DotNetFramework(Framework "v4.5", Full)) |> shouldContain @"..\Rx-Main\lib\net20\Rx.dll"
+    model.GetFiles(DotNetFramework(Framework "v4.5", Full)) |> shouldNotContain @"..\Rx-Main\lib\net20\Rx.dll"
 
 [<Test>]
 let ``should filter _._ when processing blacklist``() = 
@@ -172,3 +185,25 @@ let ``should handle lib install of Jint for NET >= 40 and SL >= 50``() =
     model.GetFiles(DotNetFramework(Framework "v4.5", Full)) |> shouldContain @"..\Jint\lib\portable-net40+sl50+win+wp80\Jint.dll"
 
     model.GetFiles(Silverlight("v5.0")) |> shouldContain @"..\Jint\lib\portable-net40+sl50+win+wp80\Jint.dll" 
+
+[<Test>]
+let ``should handle lib install of Microsoft.BCL for NET >= 40``() = 
+    let model = 
+        [ @"..\Microsoft.Bcl\lib\net40\System.IO.dll" 
+          @"..\Microsoft.Bcl\lib\net40\System.Runtime.dll" 
+          @"..\Microsoft.Bcl\lib\net40\System.Threading.Tasks.dll" 
+
+          @"..\Microsoft.Bcl\lib\net45\_._" 
+        ]
+        |> extractFrameworksFromPaths InstallModell.EmptyModel
+        |> useLowerVersionLibIfEmpty
+        |> filterBlackList
+
+    model.GetFiles(DotNetFramework(Framework "v3.5", Full)) |> shouldNotContain  @"..\Microsoft.Bcl\lib\net40\System.IO.dll" 
+
+    model.GetFiles(DotNetFramework(Framework "v4.0", Full)) |> shouldContain @"..\Microsoft.Bcl\lib\net40\System.IO.dll" 
+    model.GetFiles(DotNetFramework(Framework "v4.0", Full)) |> shouldContain @"..\Microsoft.Bcl\lib\net40\System.Runtime.dll" 
+    model.GetFiles(DotNetFramework(Framework "v4.0", Full)) |> shouldContain @"..\Microsoft.Bcl\lib\net40\System.Threading.Tasks.dll" 
+
+    model.GetFiles(DotNetFramework(Framework "v4.5", Full)) |> shouldBeEmpty
+    model.GetFiles(DotNetFramework(Framework "v4.5.1", Full)) |> shouldBeEmpty
