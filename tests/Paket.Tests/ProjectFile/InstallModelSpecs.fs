@@ -29,10 +29,11 @@ let addToModel framework lib (model : InstallModell) : InstallModell =
                      | None -> Map.add framework (Set.singleton lib) model.Frameworks }
 
 let extractFrameworksFromPaths (model : InstallModell) libs : InstallModell = 
-    libs |> List.fold (fun model lib -> 
-                match FrameworkIdentifier.DetectFromPath lib with
-                | Some framework -> addToModel framework lib model
-                | None -> model) model
+    libs 
+    |> List.fold 
+           (fun model lib -> 
+           FrameworkIdentifier.DetectAllFromPath lib 
+           |> List.fold (fun model framework -> addToModel framework lib model) model) model
 
 let useLowerVersionLibIfEmpty (model : InstallModell) = 
     KnownDotNetFrameworks
@@ -157,3 +158,15 @@ let ``should handle lib install of Microsoft.Net.Http for .NET 4.5``() =
     model.GetFiles(DotNetFramework(Framework "v4.5", Full)) |> shouldNotContain @"..\Microsoft.Net.Http\lib\net40\System.Net.Http.dll" 
     model.GetFiles(DotNetFramework(Framework "v4.5", Full)) |> shouldContain @"..\Microsoft.Net.Http\lib\net45\System.Net.Http.Primitives.dll" 
     model.GetFiles(DotNetFramework(Framework "v4.5", Full)) |> shouldContain @"..\Microsoft.Net.Http\lib\net45\System.Net.Http.Primitives.dll" 
+
+[<Test>]
+let ``should handle lib install of Jint for NET >= 40 and SL >= 50``() = 
+    let model = 
+        [ @"..\Jint\lib\portable-net40+sl50+win+wp80\Jint.dll" ]
+        |> extractFrameworksFromPaths InstallModell.EmptyModel
+        |> useLowerVersionLibIfEmpty
+
+    model.GetFiles(DotNetFramework(Framework "v3.5", Full)) |> shouldNotContain @"..\Jint\lib\portable-net40+sl50+win+wp80\Jint.dll" 
+
+    model.GetFiles(DotNetFramework(Framework "v4.0", Full)) |> shouldContain @"..\Jint\lib\portable-net40+sl50+win+wp80\Jint.dll"
+    model.GetFiles(DotNetFramework(Framework "v4.5", Full)) |> shouldContain @"..\Jint\lib\portable-net40+sl50+win+wp80\Jint.dll" 
