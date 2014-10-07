@@ -29,11 +29,10 @@ let addToModel framework lib (model : InstallModell) : InstallModell =
                      | None -> Map.add framework (Set.singleton lib) model.Frameworks }
 
 let extractFrameworksFromPaths (model : InstallModell) libs : InstallModell = 
-    libs 
-    |> List.fold 
-           (fun model lib -> 
-           FrameworkIdentifier.DetectAllFromPath lib 
-           |> List.fold (fun model framework -> addToModel framework lib model) model) model
+    libs |> List.fold (fun model lib -> 
+                match FrameworkIdentifier.DetectFromPathNew lib with
+                | Some framework -> addToModel framework lib model
+                | _ -> model) model
 
 let useLowerVersionLibIfEmpty (model : InstallModell) = 
     KnownDotNetFrameworks
@@ -50,6 +49,27 @@ let useLowerVersionLibIfEmpty (model : InstallModell) =
                       | Some files when Set.isEmpty files -> 
                           { model with Frameworks = Map.add framework newFiles model.Frameworks }
                       | _ -> model) model) model
+
+let usePortableVersionLibIfEmpty (model : InstallModell) = 
+    model.Frameworks 
+    |> Seq.fold 
+           (fun (model : InstallModell) kv -> 
+           let newFiles = kv.Value
+           
+           let otherProfiles = 
+               match kv.Key with
+               | PortableFramework(_, f) -> 
+                   f.Split([| '+' |], System.StringSplitOptions.RemoveEmptyEntries)
+                   |> Array.map (FrameworkIdentifier.Extract false)
+                   |> Array.choose id
+               | _ -> [||]
+           if Set.isEmpty newFiles || Array.isEmpty otherProfiles then model
+           else 
+               otherProfiles 
+               |> Array.fold (fun (model : InstallModell) framework -> 
+                      match Map.tryFind framework model.Frameworks with
+                      | Some files when Set.isEmpty files |> not -> model
+                      | _ -> { model with Frameworks = Map.add framework newFiles model.Frameworks }) model) model
 
 
 let filterBlackList (model : InstallModell) = 
@@ -177,12 +197,13 @@ let ``should handle lib install of Jint for NET >= 40 and SL >= 50``() =
     let model = 
         [ @"..\Jint\lib\portable-net40+sl50+win+wp80\Jint.dll" ]
         |> extractFrameworksFromPaths InstallModell.EmptyModel
-        |> useLowerVersionLibIfEmpty
+        |> usePortableVersionLibIfEmpty
+
+    model.GetFiles(PortableFramework("7.0", "net40+sl50+win+wp80")) |> shouldContain @"..\Jint\lib\portable-net40+sl50+win+wp80\Jint.dll" 
 
     model.GetFiles(DotNetFramework(Framework "v3.5", Full)) |> shouldNotContain @"..\Jint\lib\portable-net40+sl50+win+wp80\Jint.dll" 
 
     model.GetFiles(DotNetFramework(Framework "v4.0", Full)) |> shouldContain @"..\Jint\lib\portable-net40+sl50+win+wp80\Jint.dll"
-    model.GetFiles(DotNetFramework(Framework "v4.5", Full)) |> shouldContain @"..\Jint\lib\portable-net40+sl50+win+wp80\Jint.dll"
 
     model.GetFiles(Silverlight("v5.0")) |> shouldContain @"..\Jint\lib\portable-net40+sl50+win+wp80\Jint.dll" 
 
@@ -225,3 +246,23 @@ let ``should skip lib install of Microsoft.BCL for monotouch and monoandroid``()
 
     model.GetFiles(MonoAndroid) |> shouldBeEmpty
     model.GetFiles(MonoTouch) |> shouldBeEmpty
+
+[<Test>]
+let ``should not use portable-net40 if we have net40``() = 
+    let model = 
+        [ @"..\Microsoft.Bcl\lib\net40\System.IO.dll" 
+          @"..\Microsoft.Bcl\lib\net40\System.Runtime.dll" 
+          @"..\Microsoft.Bcl\lib\net40\System.Threading.Tasks.dll" 
+
+          @"..\Microsoft.Bcl\lib\portable-net40+sl4+win8\System.IO.dll" 
+          @"..\Microsoft.Bcl\lib\portable-net40+sl4+win8\System.Runtime.dll" 
+          @"..\Microsoft.Bcl\lib\portable-net40+sl4+win8\System.Threading.Tasks.dll" ]
+        |> extractFrameworksFromPaths InstallModell.EmptyModel
+    
+    model.GetFiles(DotNetFramework(Framework "v4.0", Full)) |> shouldContain @"..\Microsoft.Bcl\lib\net40\System.IO.dll" 
+    model.GetFiles(DotNetFramework(Framework "v4.0", Full)) |> shouldContain @"..\Microsoft.Bcl\lib\net40\System.Runtime.dll" 
+    model.GetFiles(DotNetFramework(Framework "v4.0", Full)) |> shouldContain @"..\Microsoft.Bcl\lib\net40\System.Threading.Tasks.dll" 
+
+    model.GetFiles(PortableFramework("7.0", "net40+sl4+win8")) |> shouldContain @"..\Microsoft.Bcl\lib\portable-net40+sl4+win8\System.IO.dll" 
+    model.GetFiles(PortableFramework("7.0", "net40+sl4+win8")) |> shouldContain @"..\Microsoft.Bcl\lib\portable-net40+sl4+win8\System.Runtime.dll" 
+    model.GetFiles(PortableFramework("7.0", "net40+sl4+win8")) |> shouldContain @"..\Microsoft.Bcl\lib\portable-net40+sl4+win8\System.Threading.Tasks.dll" 

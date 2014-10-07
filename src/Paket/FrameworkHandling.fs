@@ -27,7 +27,7 @@ type FrameworkIdentifier =
     | WindowsPhoneApp of string
     | Silverlight of string
 
-    static member Extract path = 
+    static member Extract useMapping path = 
         let profileMapping = 
             [ "Profile2", "portable-net4+sl4+netcore45+wp7"
               "Profile3", "portable-net4+sl4"
@@ -108,10 +108,13 @@ type FrameworkIdentifier =
         | "sl4-wp71" -> Some(WindowsPhoneApp "7.1")
         | "monoandroid" -> Some(MonoAndroid)
         | "monotouch" -> Some(MonoTouch)
-        | _ -> 
-            match profileMapping |> Seq.tryFind (fun (_,p) -> path.ToLower() = p.ToLower()) with
-            | None -> None
-            | Some (profile,_) -> Some(PortableFramework("7.0",profile))
+        | _ ->                         
+            if (not useMapping) && path.ToLower().StartsWith("portable-") then
+                Some(PortableFramework("7.0", path.ToLower().Replace("portable-","")))
+            else              
+                match profileMapping |> Seq.tryFind (fun (_, p) -> path.ToLower() = p.ToLower()) with
+                | None -> None
+                | Some(profile, _) -> Some(PortableFramework("7.0", profile))
 
     
     member x.GetFrameworkIdentifier() =
@@ -154,21 +157,6 @@ type FrameworkIdentifier =
 
     override x.ToString() = x.GetCondition()
 
-    static member DetectAllFromPath(path : string) : FrameworkIdentifier list =
-        let path = path.Replace("\\", "/").ToLower()
-        let fi = new FileInfo(path)
-        
-        if path.Contains("lib/" + fi.Name.ToLower()) then [DotNetFramework(All, Full)]
-        else 
-            let startPos = path.IndexOf("lib/")
-            let endPos = path.IndexOf(fi.Name.ToLower())
-            if startPos < 0 || endPos < 0 then []
-            else 
-                path.Substring(startPos + 4, endPos - startPos - 5).Split([|'+'|],StringSplitOptions.RemoveEmptyEntries)
-                |> Array.map FrameworkIdentifier.Extract
-                |> Array.choose id
-                |> Array.toList
-
     static member DetectFromPath(path : string) : FrameworkIdentifier option = 
         
         let path = path.Replace("\\", "/").ToLower()
@@ -179,4 +167,16 @@ type FrameworkIdentifier =
             let startPos = path.IndexOf("lib/")
             let endPos = path.IndexOf(fi.Name.ToLower())
             if startPos < 0 || endPos < 0 then None
-            else path.Substring(startPos + 4, endPos - startPos - 5) |> FrameworkIdentifier.Extract
+            else path.Substring(startPos + 4, endPos - startPos - 5) |> FrameworkIdentifier.Extract true
+
+    static member DetectFromPathNew(path : string) : FrameworkIdentifier option = 
+        
+        let path = path.Replace("\\", "/").ToLower()
+        let fi = new FileInfo(path)
+        
+        if path.Contains("lib/" + fi.Name.ToLower()) then Some(DotNetFramework(All, Full))
+        else 
+            let startPos = path.IndexOf("lib/")
+            let endPos = path.IndexOf(fi.Name.ToLower())
+            if startPos < 0 || endPos < 0 then None
+            else path.Substring(startPos + 4, endPos - startPos - 5) |> FrameworkIdentifier.Extract false
