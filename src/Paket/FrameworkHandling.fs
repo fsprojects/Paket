@@ -101,6 +101,7 @@ type FrameworkIdentifier =
         | "sl3" -> Some(Silverlight "v3.0")
         | "sl4" -> Some(Silverlight "v4.0")
         | "sl5" -> Some(Silverlight "v5.0")
+        | "sl50" -> Some(Silverlight "v5.0")
         | "sl4-wp" -> Some(WindowsPhoneApp "7.1")
         | "sl4-wp71" -> Some(WindowsPhoneApp "7.1")
         | _ -> 

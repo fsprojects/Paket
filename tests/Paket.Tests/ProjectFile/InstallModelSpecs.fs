@@ -169,4 +169,6 @@ let ``should handle lib install of Jint for NET >= 40 and SL >= 50``() =
     model.GetFiles(DotNetFramework(Framework "v3.5", Full)) |> shouldNotContain @"..\Jint\lib\portable-net40+sl50+win+wp80\Jint.dll" 
 
     model.GetFiles(DotNetFramework(Framework "v4.0", Full)) |> shouldContain @"..\Jint\lib\portable-net40+sl50+win+wp80\Jint.dll"
-    model.GetFiles(DotNetFramework(Framework "v4.5", Full)) |> shouldContain @"..\Jint\lib\portable-net40+sl50+win+wp80\Jint.dll" 
+    model.GetFiles(DotNetFramework(Framework "v4.5", Full)) |> shouldContain @"..\Jint\lib\portable-net40+sl50+win+wp80\Jint.dll"
+
+    model.GetFiles(Silverlight("v5.0")) |> shouldContain @"..\Jint\lib\portable-net40+sl50+win+wp80\Jint.dll" 
