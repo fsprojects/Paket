@@ -2,7 +2,7 @@ NUGET
   remote: http://nuget.org/api/v2
   specs:
     DotNetZip (1.9.3)
-    FAKE (3.5.6)
+    FAKE (3.5.8)
     FSharp.Compiler.Service (0.0.62)
     FSharp.Formatting (2.4.26)
       FSharp.Compiler.Service (>= 0.0.59)
@@ -31,5 +31,5 @@ GITHUB
     FsUnit.fs (22b3653a865ec4482f195e71b4b1ca328b562c20)
   remote: fsharp/FAKE
   specs:
-    modules/Octokit/Octokit.fsx (b1b85bc9391d172e672eb89155231e80c8df6f49)
+    modules/Octokit/Octokit.fsx (81b69c99af925501a10f81e6b541b481a6c8b9c5)
       Octokit (>= 0)
