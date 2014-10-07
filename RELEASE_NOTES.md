@@ -1,4 +1,4 @@
-#### 0.4.28 - 07.10.2014
+#### 0.4.29 - 07.10.2014
 * Supporting pagination for long nuget feeds - https://github.com/fsprojects/Paket/issues/223
 
 #### 0.4.26 - 06.10.2014
