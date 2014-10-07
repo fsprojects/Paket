@@ -234,6 +234,19 @@ let ``should read config with encapsulated password source``() =
                                                Some { Username = "tatü tata"
                                                       Password = "you got hacked!" } } ]
 
+let configWithPasswordInSingleQuotes = """
+source http://nuget.org/api/v2 username: 'tatü tata' password: 'you got hacked!'
+nuget Rx-Main
+"""
+
+[<Test>]
+let ``should read config with single-quoted password source``() = 
+    try
+        DependenciesFile.FromCode( configWithPasswordInSingleQuotes) |> ignore
+        failwith "Expected error"
+    with
+    | exn when exn.Message <> "Expected error" -> ()
+
 let configWithPasswordInEnvVariable = """
 source http://nuget.org/api/v2 username: "%FEED_USERNAME%" password: "%FEED_PASSWORD%"
 nuget Rx-Main
