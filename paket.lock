@@ -19,7 +19,7 @@ NUGET
     NuGet.CommandLine (2.8.2)
     NUnit (2.6.3)
     NUnit.Runners (2.6.3)
-    Octokit (0.4.1)
+    Octokit (0.5.0)
       Microsoft.Net.Http (>= 0)
     RazorEngine (3.3.0)
       Microsoft.AspNet.Razor (>= 2.0.30506.0)
