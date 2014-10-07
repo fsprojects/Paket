@@ -22,6 +22,8 @@ type PortableFrameworkProfile = string
 type FrameworkIdentifier = 
     | DotNetFramework of FrameworkVersion * FrameworkProfile
     | PortableFramework of PlatformVersion * PortableFrameworkProfile
+    | MonoAndroid
+    | MonoTouch
     | WindowsPhoneApp of string
     | Silverlight of string
 
@@ -104,6 +106,8 @@ type FrameworkIdentifier =
         | "sl50" -> Some(Silverlight "v5.0")
         | "sl4-wp" -> Some(WindowsPhoneApp "7.1")
         | "sl4-wp71" -> Some(WindowsPhoneApp "7.1")
+        | "monoandroid" -> Some(MonoAndroid)
+        | "monotouch" -> Some(MonoTouch)
         | _ -> 
             match profileMapping |> Seq.tryFind (fun (_,p) -> path.ToLower() = p.ToLower()) with
             | None -> None
@@ -116,6 +120,8 @@ type FrameworkIdentifier =
         | PortableFramework _ -> "$(TargetFrameworkIdentifier) == '.NETPortable'"
         | WindowsPhoneApp _ -> "$(TargetFrameworkIdentifier) == 'WindowsPhoneApp'"
         | Silverlight _ -> "$(TargetFrameworkIdentifier) == 'Silverlight'"
+        | MonoAndroid -> "$(TargetFrameworkIdentifier) == 'MonoAndroid'"
+        | MonoTouch -> "$(TargetFrameworkIdentifier) == 'MonoTouch'"
 
     member x.GetFrameworkProfile() =        
         match x with 
@@ -143,6 +149,8 @@ type FrameworkIdentifier =
         | PortableFramework _ -> sprintf "%s%s%s%s" (x.GetFrameworkIdentifier()) (x.GetFrameworkProfile()) (x.GetPlatformIdentifier()) (x.GetPlatformVersion())
         | WindowsPhoneApp _ -> sprintf "%s%s" (x.GetFrameworkIdentifier()) (x.GetPlatformVersion())
         | Silverlight v -> sprintf "%s And $(SilverlightVersion) == '%s'" (x.GetFrameworkIdentifier()) v
+        | MonoAndroid -> x.GetFrameworkIdentifier()
+        | MonoTouch -> x.GetFrameworkIdentifier()
 
     override x.ToString() = x.GetCondition()
 

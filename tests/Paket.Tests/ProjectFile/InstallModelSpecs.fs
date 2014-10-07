@@ -207,3 +207,21 @@ let ``should handle lib install of Microsoft.BCL for NET >= 40``() =
 
     model.GetFiles(DotNetFramework(Framework "v4.5", Full)) |> shouldBeEmpty
     model.GetFiles(DotNetFramework(Framework "v4.5.1", Full)) |> shouldBeEmpty
+
+
+[<Test>]
+let ``should skip lib install of Microsoft.BCL for monotouch and monoandroid``() = 
+    let model = 
+        [ @"..\Microsoft.Bcl\lib\net40\System.IO.dll" 
+          @"..\Microsoft.Bcl\lib\net40\System.Runtime.dll" 
+          @"..\Microsoft.Bcl\lib\net40\System.Threading.Tasks.dll" 
+          @"..\Microsoft.Bcl\lib\monoandroid\_._" 
+          @"..\Microsoft.Bcl\lib\monotouch\_._" 
+          @"..\Microsoft.Bcl\lib\net45\_._" 
+        ]
+        |> extractFrameworksFromPaths InstallModell.EmptyModel
+        |> useLowerVersionLibIfEmpty
+        |> filterBlackList
+
+    model.GetFiles(MonoAndroid) |> shouldBeEmpty
+    model.GetFiles(MonoTouch) |> shouldBeEmpty
