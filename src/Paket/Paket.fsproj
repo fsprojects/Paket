@@ -80,6 +80,7 @@
     <Compile Include="PackageResolver.fs" />
     <Compile Include="FrameworkHandling.fs" />
     <Compile Include="Nuspec.fs" />
+    <Compile Include="InstallModel.fs" />
     <Compile Include="ProjectFile.fs" />
     <Compile Include="SolutionFile.fs" />
     <Compile Include="Nuget.fs" />

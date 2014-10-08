@@ -9,6 +9,9 @@ type References =
 | All
 | Explicit of string list
 
+[<Literal>]
+let PlaceHolder = "_._"
+
 let GetReferences(fileName:string) =
     let fi = FileInfo(fileName)
     if not fi.Exists then References.All else

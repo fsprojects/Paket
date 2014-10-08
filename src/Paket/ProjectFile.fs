@@ -202,7 +202,7 @@ type ProjectFile =
 
     member this.UpdateReferences(extracted, usedPackages : Dictionary<string,bool>, hard) = 
         this.DeletePaketNodes("Reference")
-        let installInfos = InstallRules.groupDLLs usedPackages extracted this.FileName
+        let installInfos = InstallRules.groupDLLs usedPackages extracted this.FileName        
         for packageName, installInfos in installInfos do
             let nuspec = FileInfo(sprintf "./packages/%s/%s.nuspec" packageName packageName)
             let references = Nuspec.GetReferences nuspec.FullName

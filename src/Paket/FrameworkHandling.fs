@@ -32,6 +32,16 @@ type FrameworkVersion =
     | All
     | Framework of FrameworkVersionNo
 
+    static member KnownDotNetFrameworks = 
+        [ FrameworkVersionNo.V1, Full
+          FrameworkVersionNo.V1_1, Full
+          FrameworkVersionNo.V2, Full
+          FrameworkVersionNo.V3_5, Full
+          FrameworkVersionNo.V4, Client
+          FrameworkVersionNo.V4, Full
+          FrameworkVersionNo.V4_5, Full
+          FrameworkVersionNo.V4_5_1, Full ]
+
 type PlatformVersion = string
 
 type PortableFrameworkProfile = string
