@@ -67,7 +67,7 @@
   <ItemGroup>
     <Compile Include="..\..\paket-files\forki\FsUnit\FsUnit.fs">
       <Paket>True</Paket>
-      <Link>paket-files/FsUnit.fs</Link>
+      <Link>FsUnit.fs</Link>
     </Compile>
   </ItemGroup>
   <ItemGroup>
