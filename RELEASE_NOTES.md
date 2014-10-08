@@ -1,3 +1,6 @@
+#### 0.4.30 - 08.10.2014
+* Supporting dot for references file - http://fsprojects.github.io/Paket/github-dependencies.html
+
 #### 0.4.29 - 07.10.2014
 * Supporting pagination for long nuget feeds - https://github.com/fsprojects/Paket/issues/223
 
