@@ -23,9 +23,29 @@ If you want to reference the file in one of your project files then add an entry
     File:FsUnit.fs
 
 This will reference the linked file directly into your project.
+By default the linked file will be visible under ``paket-files`` folder in project.
 
-![alt text](img/github_reference.png "GitHub file referenced in project")
+![alt text](img/github_ref_default_link.png "GitHub file referenced in project with default link")
 
+You can specify custom folder for the file:
+
+    [lang=batchfile]
+    File:FsUnit.fs Tests\FsUnit
+
+![alt text](img/github_ref_custom_link.png "GitHub file referenced in project with custom link")
+
+Or if you use ``.`` for the directory, the file will be placed under the root of the project:
+
+    [lang=batchfile]
+    File:FsUnit.fs .
+
+![alt text](img/github_ref_root.png "GitHub file referenced in project under root of project")
+
+## Recognizing Build Action
+
+Paket will recognize build action for referenced file based on the project type. 
+As example, for a ``*.csproj`` project file, it will use ``Compile`` Build Action if you reference ``*.cs`` file 
+and ``Content`` Build Action if you reference file with any other extension.
 
 ## Remote dependencies
 

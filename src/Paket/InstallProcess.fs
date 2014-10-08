@@ -171,7 +171,8 @@ let Install(sources,force, hard, lockFile:LockFile) =
             |> List.map (fun file -> 
                              { BuildAction = project.DetermineBuildAction file.Name 
                                Include = createRelativePath project.FileName (getGitHubFilePath file.Name)
-                               Link = Some(Path.Combine(file.Link, Path.GetFileName(file.Name))) })
+                               Link = Some(if file.Link = "." then Path.GetFileName(file.Name)
+                                           else Path.Combine(file.Link, Path.GetFileName(file.Name))) })
         
         let nuGetFileItems =
             if not lockFile.Options.OmitContent 
