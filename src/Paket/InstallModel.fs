@@ -127,7 +127,7 @@ type InstallModel =
     member this.GetLibraryNames =
         lazy([ for f in this.Frameworks do
                 for lib in f.Value.References do                
-                    let fi = new FileInfo(lib)
+                    let fi = new FileInfo(lib.Replace("\\",Path.DirectorySeparatorChar.ToString()).Replace("/",Path.DirectorySeparatorChar.ToString()))
                     yield fi.Name.Replace(fi.Extension,"") ]
             |> Set.ofList)
 
