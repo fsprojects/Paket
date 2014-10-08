@@ -5,6 +5,8 @@ open System
 open Paket.Requirements
 open Paket.PackageSources
 open PackageResolver
+open System.Xml
+open System.IO
 
 let PackageDetailsFromGraph (graph : seq<string * string * (string * VersionRequirement) list>) sources (package:string) version = 
     let name,dependencies = 
@@ -42,8 +44,24 @@ let getSource (resolved:ResolvedPackage) = resolved.Source
 
 let normalizeLineEndings (text : string) = 
     text.Replace("\r\n", "\n").Replace("\r", "\n").Replace("\n", Environment.NewLine)
+
+let removeLineEndings (text : string) = 
+    text.Replace("\r\n", "").Replace("\r", "").Replace("\n", "")
+
 let toLines (text : string) = text.Replace("\r\n", "\n").Replace("\r", "\n").Split('\n')
 
 let noSha1 owner repo branch = failwith "no github configured"
 
 let fakeSha1 owner repo branch = "12345"
+
+let normalizeXml(text:string) =
+    let doc = new XmlDocument()
+    doc.LoadXml(text)
+    use stringWriter = new StringWriter()
+    let settings = XmlWriterSettings()
+    settings.Indent <- true
+        
+    use xmlTextWriter = XmlWriter.Create(stringWriter, settings)
+    doc.WriteTo(xmlTextWriter)
+    xmlTextWriter.Flush()
+    stringWriter.GetStringBuilder().ToString()

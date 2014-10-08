@@ -52,7 +52,6 @@ type ProjectFile =
       Document : XmlDocument
       ProjectNode : XmlNode
       Namespaces : XmlNamespaceManager }
-    static member DefaultNameSpace = "http://schemas.microsoft.com/developer/msbuild/2003"
 
     /// Finds all project files
     static member FindAllProjects(folder) = 
@@ -121,7 +120,7 @@ type ProjectFile =
         for node in nodesToDelete do            
             node.ParentNode.RemoveChild(node) |> ignore
 
-    member this.CreateNode(name) = this.Document.CreateElement(name, ProjectFile.DefaultNameSpace)
+    member this.CreateNode(name) = this.Document.CreateElement(name, Constants.ProjectDefaultNameSpace)
 
     member this.CreateNode(name,text) = 
         let node = this.CreateNode(name)
@@ -229,7 +228,7 @@ type ProjectFile =
                     verbosefn "  - installing %s" dllName
                     let lastLib = ref None
                     for (_), libs in libsWithSameName do                            
-                        let chooseNode = this.Document.CreateElement("Choose", ProjectFile.DefaultNameSpace)
+                        let chooseNode = this.Document.CreateElement("Choose", Constants.ProjectDefaultNameSpace)
                     
                         let libsWithSameFrameworkVersion = 
                             libs
@@ -299,7 +298,7 @@ type ProjectFile =
             doc.Load fi.FullName
 
             let manager = new XmlNamespaceManager(doc.NameTable)
-            manager.AddNamespace("ns", ProjectFile.DefaultNameSpace)
+            manager.AddNamespace("ns", Constants.ProjectDefaultNameSpace)
             let projectNode = doc.SelectNodes("//ns:Project", manager).[0]
             Some { FileName = fi.FullName; Document = doc; ProjectNode = projectNode; Namespaces = manager; OriginalText = Utils.normalizeXml doc }
         with

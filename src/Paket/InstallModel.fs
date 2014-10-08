@@ -1,5 +1,9 @@
 ﻿namespace Paket
 
+open System.Xml
+open Paket.Xml
+open System.IO
+
 type InstallFiles =
     {
         References : string Set
@@ -122,3 +126,30 @@ type InstallModel =
         InstallModel.EmptyModel(packageName,packageVersions)
             .Add(libs,references)
             .Process()
+
+    static member private CreateWhenNode(doc,path,condition)=
+        let whenNode = 
+            createNode(doc,"When")
+            |> addAttribute "Condition" condition
+                        
+        let reference = 
+            let fi = new FileInfo(path)
+            createNode(doc,"Reference")
+            |> addAttribute "Include" fi.Name
+            |> addChild (createNodeWithText(doc,"HintPath",path))
+            |> addChild (createNodeWithText(doc,"Private","True"))
+            |> addChild (createNodeWithText(doc,"Paket","True"))
+
+        let itemGroup = createNode(doc,"ItemGroup")
+        itemGroup.AppendChild(reference) |> ignore
+        whenNode.AppendChild(itemGroup) |> ignore
+        whenNode
+
+    member this.GenerateXml(doc:XmlDocument) =    
+        let chooseNode = doc.CreateElement("Choose", Constants.ProjectDefaultNameSpace)
+        this.Frameworks 
+        |> Seq.iter (fun kv -> 
+                    
+            for lib in kv.Value.References do
+                chooseNode.AppendChild(InstallModel.CreateWhenNode(doc, lib, kv.Key.GetCondition())) |> ignore)
+        chooseNode
