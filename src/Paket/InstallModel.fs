@@ -127,29 +127,28 @@ type InstallModel =
             .Add(libs,references)
             .Process()
 
-    static member private CreateWhenNode(doc,path,condition)=
-        let whenNode = 
-            createNode(doc,"When")
-            |> addAttribute "Condition" condition
-                        
-        let reference = 
-            let fi = new FileInfo(path)
-            createNode(doc,"Reference")
-            |> addAttribute "Include" fi.Name
-            |> addChild (createNodeWithText(doc,"HintPath",path))
-            |> addChild (createNodeWithText(doc,"Private","True"))
-            |> addChild (createNodeWithText(doc,"Paket","True"))
-
-        let itemGroup = createNode(doc,"ItemGroup")
-        itemGroup.AppendChild(reference) |> ignore
-        whenNode.AppendChild(itemGroup) |> ignore
-        whenNode
-
     member this.GenerateXml(doc:XmlDocument) =    
         let chooseNode = doc.CreateElement("Choose", Constants.ProjectDefaultNameSpace)
         this.Frameworks 
         |> Seq.iter (fun kv -> 
-                    
+            let whenNode = 
+                createNode(doc,"When")
+                |> addAttribute "Condition" (kv.Key.GetCondition())
+
+            let itemGroup = createNode(doc,"ItemGroup")
+                                
             for lib in kv.Value.References do
-                chooseNode.AppendChild(InstallModel.CreateWhenNode(doc, lib, kv.Key.GetCondition())) |> ignore)
+                let reference = 
+                    let fi = new FileInfo(lib)
+                    createNode(doc,"Reference")
+                    |> addAttribute "Include" fi.Name
+                    |> addChild (createNodeWithText(doc,"HintPath",lib))
+                    |> addChild (createNodeWithText(doc,"Private","True"))
+                    |> addChild (createNodeWithText(doc,"Paket","True"))
+
+                itemGroup.AppendChild(reference) |> ignore
+
+            whenNode.AppendChild(itemGroup) |> ignore
+            chooseNode.AppendChild(whenNode) |> ignore)
+
         chooseNode
