@@ -41,6 +41,12 @@ Or if you use ``.`` for the directory, the file will be placed under the root of
 
 ![alt text](img/github_ref_root.png "GitHub file referenced in project under root of project")
 
+## Recognizing Build Action
+
+Paket will recognize build action for referenced file based on the project type. 
+As example, for a ``*.csproj`` project file, it will use ``Compile`` Build Action if you reference ``*.cs`` file 
+and ``Content`` Build Action if you reference file with any other extension.
+
 ## Remote dependencies
 
 If the remote file needs further dependencies then you can just put a [`paket.dependencies` file.](dependencies-file.html) into the same GitHub repo folder.
