@@ -103,7 +103,7 @@ let private convertNugetToRefFile(nugetPackagesConfig) =
         else tracefn "%s is up to date" refFilePath
 
 /// Converts all projects from NuGet to Paket
-let ConvertFromNuget(force, installAfter, initAutoRestore, dependenciesFileName) =
+let ConvertFromNuget(force, installAfter, initAutoRestore) =
     if File.Exists Constants.DependenciesFile && not force then failwithf "%s already exists, use --force to overwrite" Constants.DependenciesFile
 
     let nugetPackagesConfigs = FindAllFiles(".", "packages.config") |> Seq.map Nuget.ReadPackagesConfig
@@ -122,7 +122,7 @@ let ConvertFromNuget(force, installAfter, initAutoRestore, dependenciesFileName)
         let solution = SolutionFile(slnFile.FullName)
         solution.RemoveNugetEntries()
         let relativePath = createRelativePath solution.FileName Environment.CurrentDirectory 
-        solution.AddPaketFolder(Path.Combine(relativePath, dependenciesFileName), 
+        solution.AddPaketFolder(Path.Combine(relativePath, Constants.DependenciesFile), 
                                 if installAfter then Some(Path.Combine(relativePath, "paket.lock")) else None)
         solution.Save()
 
@@ -141,7 +141,7 @@ let ConvertFromNuget(force, installAfter, initAutoRestore, dependenciesFileName)
             let nugetExe = Path.Combine(nugetDir, "nuget.exe")
             removeFileIfExists nugetExe
             removeFileIfExists nugetTargets
-            let depFile = DependenciesFile.ReadFromFile(dependenciesFileName)
+            let depFile = DependenciesFile.ReadFromFile(Constants.DependenciesFile)
             if not <| depFile.HasPackage("Nuget.CommandLine") then depFile.Add("Nuget.CommandLine", "").Save()
             if initAutoRestore then
                 VSIntegration.InitAutoRestore()
@@ -151,4 +151,4 @@ let ConvertFromNuget(force, installAfter, initAutoRestore, dependenciesFileName)
     | None -> ()
 
     if installAfter then
-        UpdateProcess.Update(Constants.DependenciesFile,true,false,true)
+        UpdateProcess.Update(true,false,true)
