@@ -175,6 +175,25 @@ Target "MergeAssemblies" (fun _ ->
     if result <> 0 then failwithf "Error during ILRepack execution."
 )
 
+Target "SignAssemblies" (fun _ ->
+    let pfx = "code-sign.pfx"
+    if not <| fileExists pfx then
+        traceImportant (sprintf "%s not found, skipped signing assemblies" pfx)
+    else
+
+    let filesToSign = !! "bin/**/*.exe"
+
+    filesToSign
+        |> Seq.iter (fun executable ->
+            let signtool = currentDirectory @@ "tools" @@ "SignTool" @@ "signtool.exe"
+            let args = sprintf "sign /f %s /t http://timestamp.comodoca.com/authenticode %s" pfx executable
+            let result =
+                ExecProcess (fun info ->
+                    info.FileName <- signtool
+                    info.Arguments <- args) System.TimeSpan.MaxValue
+            if result <> 0 then failwithf "Error during signing %s with %s" executable pfx)
+)
+
 Target "NuGet" (fun _ ->
     NuGet (fun p ->
         { p with
@@ -273,6 +292,7 @@ Target "All" DoNothing
   =?> ("SourceLink", Pdbstr.tryFind().IsSome )
 #endif
   ==> "MergeAssemblies"
+  ==> "SignAssemblies"
   ==> "NuGet"
   ==> "BuildPackage"
 
