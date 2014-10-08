@@ -320,14 +320,82 @@ let ``should handle lib install of Microsoft.Net.Http 2.2.28``() =
     model.GetFiles(DotNetFramework(Framework "v4.5", Full)) |> shouldContain @"..\Microsoft.Net.Http\lib\net45\System.Net.Http.Primitives.dll"  
     
     model.GetFiles(PortableFramework("7.0", "net40+sl4+win8+wp71+wpa81")) |> shouldContain @"..\Microsoft.Net.Http\lib\portable-net40+sl4+win8+wp71+wpa81\System.Net.Http.dll"
-    model.GetFiles(PortableFramework("7.0", "net40+sl4+win8+wp71+wpa81"))  |> shouldContain @"..\Microsoft.Net.Http\lib\portable-net40+sl4+win8+wp71+wpa81\System.Net.Http.Extensions.dll" 
-    model.GetFiles(PortableFramework("7.0", "net40+sl4+win8+wp71+wpa81"))  |> shouldContain @"..\Microsoft.Net.Http\lib\portable-net40+sl4+win8+wp71+wpa81\System.Net.Http.Primitives.dll" 
+    model.GetFiles(PortableFramework("7.0", "net40+sl4+win8+wp71+wpa81")) |> shouldContain @"..\Microsoft.Net.Http\lib\portable-net40+sl4+win8+wp71+wpa81\System.Net.Http.Extensions.dll" 
+    model.GetFiles(PortableFramework("7.0", "net40+sl4+win8+wp71+wpa81")) |> shouldContain @"..\Microsoft.Net.Http\lib\portable-net40+sl4+win8+wp71+wpa81\System.Net.Http.Primitives.dll" 
 
-    model.GetFiles(PortableFramework("7.0", "net45+win8"))  |> shouldContain @"..\Microsoft.Net.Http\lib\portable-net45+win8\System.Net.Http.Extensions.dll" 
-    model.GetFiles(PortableFramework("7.0", "net45+win8"))  |> shouldContain @"..\Microsoft.Net.Http\lib\portable-net45+win8\System.Net.Http.Primitives.dll" 
+    model.GetFiles(PortableFramework("7.0", "net45+win8")) |> shouldContain @"..\Microsoft.Net.Http\lib\portable-net45+win8\System.Net.Http.Extensions.dll" 
+    model.GetFiles(PortableFramework("7.0", "net45+win8")) |> shouldContain @"..\Microsoft.Net.Http\lib\portable-net45+win8\System.Net.Http.Primitives.dll" 
 
     model.GetFiles(Windows("v8.0")) |> shouldContain @"..\Microsoft.Net.Http\lib\win8\System.Net.Http.Extensions.dll" 
     model.GetFiles(Windows("v8.0")) |> shouldContain @"..\Microsoft.Net.Http\lib\win8\System.Net.Http.Primitives.dll" 
 
     model.GetFiles(WindowsPhoneApp("v8.1")) |> shouldContain @"..\Microsoft.Net.Http\lib\wpa81\System.Net.Http.Extensions.dll" 
     model.GetFiles(WindowsPhoneApp("v8.1")) |> shouldContain @"..\Microsoft.Net.Http\lib\wpa81\System.Net.Http.Primitives.dll" 
+
+
+[<Test>]
+let ``should handle lib install of Microsoft.Bcl 1.1.9``() = 
+    let model = 
+        emptymodel.Add(
+            [ @"..\Microsoft.Net.Http\lib\monoandroid\_._" 
+              
+              @"..\Microsoft.Net.Http\lib\monotouch\_._" 
+
+              @"..\Microsoft.Bcl\lib\net40\System.IO.dll" 
+              @"..\Microsoft.Bcl\lib\net40\System.Runtime.dll"
+              @"..\Microsoft.Bcl\lib\net40\System.Threading.Tasks.dll" 
+
+              @"..\Microsoft.Net.Http\lib\net45\_._"
+
+              @"..\Microsoft.Bcl\lib\portable-net40+sl4+win8\System.IO.dll" 
+              @"..\Microsoft.Bcl\lib\portable-net40+sl4+win8\System.Runtime.dll" 
+              @"..\Microsoft.Bcl\lib\portable-net40+sl4+win8\System.Threading.Tasks.dll" 
+
+              @"..\Microsoft.Bcl\lib\sl4\System.IO.dll" 
+              @"..\Microsoft.Bcl\lib\sl4\System.Runtime.dll" 
+              @"..\Microsoft.Bcl\lib\sl4\System.Threading.Tasks.dll" 
+
+              @"..\Microsoft.Bcl\lib\sl4-windowsphone71\System.IO.dll" 
+              @"..\Microsoft.Bcl\lib\sl4-windowsphone71\System.Runtime.dll" 
+              @"..\Microsoft.Bcl\lib\sl4-windowsphone71\System.Threading.Tasks.dll" 
+
+              @"..\Microsoft.Bcl\lib\sl5\System.IO.dll" 
+              @"..\Microsoft.Bcl\lib\sl5\System.Runtime.dll" 
+              @"..\Microsoft.Bcl\lib\sl5\System.Threading.Tasks.dll" 
+              
+              @"..\Microsoft.Bcl\lib\win8\_._"
+              @"..\Microsoft.Bcl\lib\wp8\_._"
+              @"..\Microsoft.Bcl\lib\wpa81\_._"
+              @"..\Microsoft.Bcl\lib\portable-net451+win81\_._"
+              @"..\Microsoft.Bcl\lib\portable-net451+win81+wpa81\_._"
+               ])
+            .Process()
+
+    model.GetFiles(DotNetFramework(Framework "v4.0", Full)) |> shouldContain @"..\Microsoft.Bcl\lib\net40\System.IO.dll"
+    model.GetFiles(DotNetFramework(Framework "v4.0", Full)) |> shouldContain @"..\Microsoft.Bcl\lib\net40\System.Runtime.dll" 
+    model.GetFiles(DotNetFramework(Framework "v4.0", Full)) |> shouldContain @"..\Microsoft.Bcl\lib\net40\System.Threading.Tasks.dll" 
+
+    model.GetFiles(DotNetFramework(Framework "v4.5", Full)) |> shouldBeEmpty
+    model.GetFiles(MonoAndroid) |> shouldBeEmpty
+    model.GetFiles(MonoTouch) |> shouldBeEmpty
+    model.GetFiles(Windows "v8.0") |> shouldBeEmpty
+    model.GetFiles(WindowsPhoneApp "v8.0") |> shouldBeEmpty
+    model.GetFiles(WindowsPhoneApp "v8.1") |> shouldBeEmpty
+    model.GetFiles(PortableFramework("7.0", "net451+win81")) |> shouldBeEmpty
+    model.GetFiles(PortableFramework("7.0", "net451+win81+wpa81")) |> shouldBeEmpty
+    
+    model.GetFiles(PortableFramework("7.0", "net40+sl4+win8")) |> shouldContain @"..\Microsoft.Bcl\lib\portable-net40+sl4+win8\System.IO.dll"
+    model.GetFiles(PortableFramework("7.0", "net40+sl4+win8")) |> shouldContain @"..\Microsoft.Bcl\lib\portable-net40+sl4+win8\System.Runtime.dll"
+    model.GetFiles(PortableFramework("7.0", "net40+sl4+win8")) |> shouldContain @"..\Microsoft.Bcl\lib\portable-net40+sl4+win8\System.Threading.Tasks.dll" 
+
+    model.GetFiles(Silverlight("v4.0")) |> shouldContain @"..\Microsoft.Bcl\lib\sl4\System.IO.dll"
+    model.GetFiles(Silverlight("v4.0")) |> shouldContain @"..\Microsoft.Bcl\lib\sl4\System.Runtime.dll"
+    model.GetFiles(Silverlight("v4.0")) |> shouldContain @"..\Microsoft.Bcl\lib\sl4\System.Threading.Tasks.dll" 
+    
+    model.GetFiles(WindowsPhoneApp "7.1") |> shouldContain @"..\Microsoft.Bcl\lib\sl4-windowsphone71\System.IO.dll"
+    model.GetFiles(WindowsPhoneApp "7.1") |> shouldContain @"..\Microsoft.Bcl\lib\sl4-windowsphone71\System.Runtime.dll"
+    model.GetFiles(WindowsPhoneApp "7.1") |> shouldContain @"..\Microsoft.Bcl\lib\sl4-windowsphone71\System.Threading.Tasks.dll" 
+
+    model.GetFiles(Silverlight("v5.0")) |> shouldContain @"..\Microsoft.Bcl\lib\sl5\System.IO.dll"
+    model.GetFiles(Silverlight("v5.0")) |> shouldContain @"..\Microsoft.Bcl\lib\sl5\System.Runtime.dll"
+    model.GetFiles(Silverlight("v5.0")) |> shouldContain @"..\Microsoft.Bcl\lib\sl5\System.Threading.Tasks.dll" 
