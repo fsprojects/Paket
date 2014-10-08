@@ -9,8 +9,6 @@ let placeHolder = "_._"
 let blackList =
     [fun (f:string) -> f.Contains placeHolder]
 
-
-
 let KnownDotNetFrameworks = 
     [ FrameworkVersionNo.V1, Full
       FrameworkVersionNo.V1_1, Full
@@ -21,22 +19,32 @@ let KnownDotNetFrameworks =
       FrameworkVersionNo.V4_5, Full
       FrameworkVersionNo.V4_5_1, Full ]
 
+type InstallFiles =
+    {
+        References : string Set
+        ContentFiles: string Set
+    }
+    static member empty = { References = Set.empty; ContentFiles = Set.empty }
+
+    member this.AddReference lib = { this with References = Set.add lib this.References }
+
+
 type InstallModell = 
     {   PackageName: string
         PackageVersion: SemVerInfo
-        Frameworks : Map<FrameworkIdentifier, string Set> }
+        Frameworks : Map<FrameworkIdentifier, InstallFiles> }
     
     static member EmptyModel(packageName,packageVersion) : InstallModell = 
         let frameworks = 
             [ for x,p in KnownDotNetFrameworks -> DotNetFramework(Framework x, p) ]
         {   PackageName = packageName
             PackageVersion = packageVersion
-            Frameworks = List.fold (fun map f -> Map.add f Set.empty map) Map.empty frameworks }
+            Frameworks = List.fold (fun map f -> Map.add f InstallFiles.empty map) Map.empty frameworks }
     
     member this.GetFrameworks() = this.Frameworks |> Seq.map (fun kv -> kv.Key)
     member this.GetFiles(framework) = 
         match this.Frameworks.TryFind framework with
-        | Some libs -> libs
+        | Some x -> x.References
         | None -> Set.empty
 
     member this.Add(framework,lib:string,references) : InstallModell = 
@@ -48,8 +56,8 @@ type InstallModell =
         if not install then this else
         { this with Frameworks = 
                      match Map.tryFind framework this.Frameworks with
-                     | Some files -> Map.add framework (Set.add lib files) this.Frameworks
-                     | None -> Map.add framework (Set.singleton lib) this.Frameworks }
+                     | Some files -> Map.add framework (files.AddReference lib) this.Frameworks
+                     | None -> Map.add framework (InstallFiles.empty.AddReference lib) this.Frameworks }
 
     member this.Add (libs,references) : InstallModell =         
         libs |> List.fold (fun model lib -> 
@@ -63,7 +71,7 @@ type InstallModell =
         { this with Frameworks = 
                      blackList 
                      |> List.fold 
-                            (fun frameworks f -> Map.map (fun _ files -> files |> Set.filter (f >> not)) frameworks) 
+                            (fun frameworks f ->  Map.map (fun _ files -> {files with References = files.References |> Set.filter (f >> not)}) frameworks) 
                         this.Frameworks }
 
     member this.UseGenericFrameworkVersionIfEmpty() =
@@ -75,8 +83,8 @@ type InstallModell =
 
             let target = DotNetFramework(Framework FrameworkVersionNo.V1,Full)
             match Map.tryFind target this.Frameworks with
-            | Some files when Set.isEmpty files |> not -> this
-            | _ -> { this with Frameworks = Map.add target newFiles this.Frameworks }
+            | Some files when Set.isEmpty files.References |> not -> this
+            | _ -> { this with Frameworks = Map.add target { References = newFiles; ContentFiles = Set.empty} this.Frameworks }
 
         { model with Frameworks = model.Frameworks |> Map.remove genericFramework } 
 
@@ -92,15 +100,15 @@ type InstallModell =
                    |> List.fold (fun (model : InstallModell) (upperVersion,upperProfile) -> 
                           let framework = DotNetFramework(Framework upperVersion, upperProfile)
                           match Map.tryFind framework model.Frameworks with
-                          | Some files when Set.isEmpty files -> 
-                              { model with Frameworks = Map.add framework newFiles model.Frameworks }
+                          | Some files when Set.isEmpty files.References -> 
+                              { model with Frameworks = Map.add framework { References = newFiles; ContentFiles = Set.empty} model.Frameworks }
                           | _ -> model) model) this
 
     member this.UsePortableVersionLibIfEmpty() = 
         this.Frameworks 
         |> Seq.fold 
                (fun (model : InstallModell) kv -> 
-               let newFiles = kv.Value
+               let newFiles = kv.Value.References
            
                if Set.isEmpty newFiles then model else
 
@@ -116,8 +124,8 @@ type InstallModell =
                 otherProfiles 
                 |> Array.fold (fun (model : InstallModell) framework -> 
                         match Map.tryFind framework model.Frameworks with
-                        | Some files when Set.isEmpty files |> not -> model
-                        | _ -> { model with Frameworks = Map.add framework newFiles model.Frameworks }) model) this
+                        | Some files when Set.isEmpty files.References |> not -> model
+                        | _ -> { model with Frameworks = Map.add framework { References = newFiles; ContentFiles = Set.empty} model.Frameworks }) model) this
 
     member this.Process() =
         this
@@ -503,5 +511,5 @@ let ``should not install tools``() =
             .Process()
 
     model.Frameworks
-    |> Seq.forall (fun kv -> kv.Value.IsEmpty)
+    |> Seq.forall (fun kv -> kv.Value.References.IsEmpty)
     |> shouldEqual true
