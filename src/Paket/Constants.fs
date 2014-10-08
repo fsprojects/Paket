@@ -11,5 +11,3 @@ let ReferencesFile = "paket.references"
 
 [<Literal>]
 let ProjectDefaultNameSpace = "http://schemas.microsoft.com/developer/msbuild/2003"
-
-let useNewInstaller = false

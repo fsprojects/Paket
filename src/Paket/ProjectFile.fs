@@ -77,19 +77,6 @@ type ProjectFile =
         for node in nodesToDelete do
             node.ParentNode.RemoveChild(node) |> ignore
 
-    member this.HasCustomNodes(dllName) =
-        let hasCustom = ref false
-        for node in this.Document.SelectNodes("//ns:Reference", this.Namespaces) do
-            if node.Attributes.["Include"].InnerText.Split(',').[0] = dllName then
-                let isPaket = ref false
-                for child in node.ChildNodes do
-                    if child.Name = "Paket" then 
-                        isPaket := true
-                if not !isPaket then
-                    hasCustom := true
-            
-        !hasCustom
-
     member this.FindPaketNodes(name) = 
         [
             for node in this.Document.SelectNodes(sprintf "//ns:%s" name, this.Namespaces) do
@@ -108,41 +95,12 @@ type ProjectFile =
         for node in nodesToDelete do
             node.ParentNode.RemoveChild(node) |> ignore
 
-    member this.DeleteCustomNodes(dllName) =        
-        let nodesToDelete = List<_>()
-        for node in this.Document.SelectNodes("//ns:Reference", this.Namespaces) do
-            if node.Attributes.["Include"].InnerText.Split(',').[0] = dllName then            
-                nodesToDelete.Add node
-
-        if nodesToDelete |> Seq.isEmpty |> not then
-            verbosefn "    - Deleting custom projects nodes for %s" dllName
-
-        for node in nodesToDelete do            
-            node.ParentNode.RemoveChild(node) |> ignore
-
     member this.CreateNode(name) = this.Document.CreateElement(name, Constants.ProjectDefaultNameSpace)
 
     member this.CreateNode(name,text) = 
         let node = this.CreateNode(name)
         node.InnerText <- text
         node
-
-    member private this.CreateWhenNode(lib:InstallInfo,condition)=
-        let whenNode = 
-            this.CreateNode "When"
-            |> addAttribute "Condition" condition
-                        
-        let reference = 
-            this.CreateNode "Reference"
-            |> addAttribute "Include" lib.DllName
-            |> addChild (this.CreateNode("HintPath",lib.Path))
-            |> addChild (this.CreateNode("Private","True"))
-            |> addChild (this.CreateNode("Paket","True"))
-
-        let itemGroup = this.CreateNode "ItemGroup"
-        itemGroup.AppendChild(reference) |> ignore
-        whenNode.AppendChild(itemGroup) |> ignore
-        whenNode
 
     member this.DeleteEmptyReferences() = 
         this.DeleteIfEmpty("//ns:Project/ns:Choose/ns:When/ns:ItemGroup")
@@ -211,46 +169,13 @@ type ProjectFile =
                     yield! libraries ]
                 |> List.map (fun fi -> fi.FullName)
 
-            if Constants.useNewInstaller then
-                let installModel = InstallModel.CreateFromLibs(packageName,SemVer.parse "0",files,references)
-                if hard then
-                    installModel.DeleteCustomNodes(this.Document)
+            let installModel = InstallModel.CreateFromLibs(packageName,SemVer.parse "0",files,references)
+            if hard then
+                installModel.DeleteCustomNodes(this.Document)
 
-                if not <| installModel.HasCustomNodes(this.Document) then
-                    let chooseNode = installModel.GenerateXml(this.FileName, this.Document)
-                    this.ProjectNode.AppendChild(chooseNode) |> ignore
-            else
-                for (_,dllName), libsWithSameName in installInfos do
-                    if hard then
-                        this.DeleteCustomNodes(dllName)
-            
-                    if this.HasCustomNodes(dllName) then verbosefn "  - custom nodes for %s ==> skipping" dllName
-                    else
-                        let install = 
-                            match references with
-                            | References.All -> true
-                            | References.Explicit references -> references |> List.exists (fun x -> x = dllName + ".dll" || x = dllName + ".exe")
-
-                        if not install then verbosefn "  - %s not listed in %s ==> excluded" dllName nuspec.Name else
-                        verbosefn "  - installing %s" dllName
-                        let lastLib = ref None
-                        for (_), libs in libsWithSameName do                            
-                            let chooseNode = this.Document.CreateElement("Choose", Constants.ProjectDefaultNameSpace)
-                    
-                            let libsWithSameFrameworkVersion = 
-                                libs
-                                |> List.ofSeq
-                                |> List.sortBy (fun lib -> lib.Path)
-                            for lib in libsWithSameFrameworkVersion do
-                                verbosefn "     - %A" lib.Condition
-                                chooseNode.AppendChild(this.CreateWhenNode(lib, lib.Condition.GetCondition())) |> ignore
-                                lastLib := Some lib
-                            match !lastLib with
-                            | None -> ()
-                            | Some lib -> 
-                                chooseNode.AppendChild(this.CreateWhenNode(lib, lib.Condition.GetFrameworkIdentifier())) 
-                                |> ignore
-                            this.ProjectNode.AppendChild(chooseNode) |> ignore
+            if installModel.HasCustomNodes(this.Document) then verbosefn "  - custom nodes for %s ==> skipping" packageName else
+            let chooseNode = installModel.GenerateXml(this.FileName, this.Document)
+            this.ProjectNode.AppendChild(chooseNode) |> ignore
 
         this.DeleteEmptyReferences()
 
