@@ -211,39 +211,45 @@ type ProjectFile =
                     yield! libraries ]
                 |> List.map (fun fi -> fi.FullName)
 
-            let installModel = InstallModel.CreateFromLibs(packageName,SemVer.parse "0",files,references)
+            if Constants.useNewInstaller then             
 
-            for (_,dllName), libsWithSameName in installInfos do
-                if hard then
-                    this.DeleteCustomNodes(dllName)
+                let installModel = InstallModel.CreateFromLibs(packageName,SemVer.parse "0",files,references)
+                let chooseNode = installModel.GenerateXml(this.FileName, this.Document)
+                this.ProjectNode.AppendChild(chooseNode) |> ignore
+
+            else
+                for (_,dllName), libsWithSameName in installInfos do
+                    if hard then
+                        this.DeleteCustomNodes(dllName)
             
-                if this.HasCustomNodes(dllName) then verbosefn "  - custom nodes for %s ==> skipping" dllName
-                else
-                    let install = 
-                        match references with
-                        | References.All -> true
-                        | References.Explicit references -> references |> List.exists (fun x -> x = dllName + ".dll" || x = dllName + ".exe")
+                    if this.HasCustomNodes(dllName) then verbosefn "  - custom nodes for %s ==> skipping" dllName
+                    else
+                        let install = 
+                            match references with
+                            | References.All -> true
+                            | References.Explicit references -> references |> List.exists (fun x -> x = dllName + ".dll" || x = dllName + ".exe")
 
-                    if not install then verbosefn "  - %s not listed in %s ==> excluded" dllName nuspec.Name else
-                    verbosefn "  - installing %s" dllName
-                    let lastLib = ref None
-                    for (_), libs in libsWithSameName do                            
-                        let chooseNode = this.Document.CreateElement("Choose", Constants.ProjectDefaultNameSpace)
+                        if not install then verbosefn "  - %s not listed in %s ==> excluded" dllName nuspec.Name else
+                        verbosefn "  - installing %s" dllName
+                        let lastLib = ref None
+                        for (_), libs in libsWithSameName do                            
+                            let chooseNode = this.Document.CreateElement("Choose", Constants.ProjectDefaultNameSpace)
                     
-                        let libsWithSameFrameworkVersion = 
-                            libs
-                            |> List.ofSeq
-                            |> List.sortBy (fun lib -> lib.Path)
-                        for lib in libsWithSameFrameworkVersion do
-                            verbosefn "     - %A" lib.Condition
-                            chooseNode.AppendChild(this.CreateWhenNode(lib, lib.Condition.GetCondition())) |> ignore
-                            lastLib := Some lib
-                        match !lastLib with
-                        | None -> ()
-                        | Some lib -> 
-                            chooseNode.AppendChild(this.CreateWhenNode(lib, lib.Condition.GetFrameworkIdentifier())) 
-                            |> ignore
-                        this.ProjectNode.AppendChild(chooseNode) |> ignore
+                            let libsWithSameFrameworkVersion = 
+                                libs
+                                |> List.ofSeq
+                                |> List.sortBy (fun lib -> lib.Path)
+                            for lib in libsWithSameFrameworkVersion do
+                                verbosefn "     - %A" lib.Condition
+                                chooseNode.AppendChild(this.CreateWhenNode(lib, lib.Condition.GetCondition())) |> ignore
+                                lastLib := Some lib
+                            match !lastLib with
+                            | None -> ()
+                            | Some lib -> 
+                                chooseNode.AppendChild(this.CreateWhenNode(lib, lib.Condition.GetFrameworkIdentifier())) 
+                                |> ignore
+                            this.ProjectNode.AppendChild(chooseNode) |> ignore
+
         this.DeleteEmptyReferences()
 
     member this.Save() =

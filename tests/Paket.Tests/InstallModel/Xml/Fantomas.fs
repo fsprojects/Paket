@@ -97,7 +97,7 @@ let ``should generate Xml for Fantomas 1.5``() =
     let manager = new XmlNamespaceManager(doc.NameTable)
     manager.AddNamespace("ns", Constants.ProjectDefaultNameSpace)
 
-    let chooseNode = model.GenerateXml(doc)
+    let chooseNode = model.GenerateXml("",doc)
     chooseNode.OuterXml
     |> normalizeXml
     |> shouldEqual (normalizeXml expected)

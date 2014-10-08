@@ -127,7 +127,7 @@ type InstallModel =
             .Add(libs,references)
             .Process()
 
-    member this.GenerateXml(doc:XmlDocument) =    
+    member this.GenerateXml(projectPath,doc:XmlDocument) =    
         let chooseNode = doc.CreateElement("Choose", Constants.ProjectDefaultNameSpace)
         this.Frameworks 
         |> Seq.iter (fun kv -> 
@@ -140,9 +140,10 @@ type InstallModel =
             for lib in kv.Value.References do
                 let reference = 
                     let fi = new FileInfo(lib)
+                    
                     createNode(doc,"Reference")
-                    |> addAttribute "Include" fi.Name
-                    |> addChild (createNodeWithText(doc,"HintPath",lib))
+                    |> addAttribute "Include" (fi.Name.Replace(fi.Extension,""))
+                    |> addChild (createNodeWithText(doc,"HintPath",createRelativePath projectPath fi.FullName))
                     |> addChild (createNodeWithText(doc,"Private","True"))
                     |> addChild (createNodeWithText(doc,"Paket","True"))
 
