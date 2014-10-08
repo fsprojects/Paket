@@ -1,3 +1,6 @@
+#### 0.5.0-lapha001 - 08.10.2014
+* Trying new installer
+
 #### 0.4.31 - 08.10.2014
 * Supporting dot for references file - http://fsprojects.github.io/Paket/github-dependencies.html
 
