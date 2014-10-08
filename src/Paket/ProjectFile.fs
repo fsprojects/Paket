@@ -213,7 +213,6 @@ type ProjectFile =
                 |> List.map (fun fi -> fi.FullName)
 
             let installModel = InstallModel.CreateFromLibs(packageName,SemVer.parse "0",files,references)
-            tracefn "%A" installModel
 
             for (_,dllName), libsWithSameName in installInfos do
                 if hard then
