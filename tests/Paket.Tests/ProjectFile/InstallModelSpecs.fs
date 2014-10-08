@@ -270,6 +270,16 @@ let ``should not use portable-net40 if we have net40``() =
     model.GetFiles(PortableFramework("7.0", "net40+sl4+win8")) |> shouldContain @"..\Microsoft.Bcl\lib\portable-net40+sl4+win8\System.Threading.Tasks.dll" 
 
 [<Test>]
+let ``should handle lib install of DotNetZip 1.9.3``() = 
+    let model = emptymodel.Add([ @"..\DotNetZip\lib\net20\Ionic.Zip.dll" ]).Process()
+
+    model.GetFiles(DotNetFramework(Framework "v2.0", Full)) |> shouldContain @"..\DotNetZip\lib\net20\Ionic.Zip.dll"
+    model.GetFiles(DotNetFramework(Framework "v3.5", Full)) |> shouldContain @"..\DotNetZip\lib\net20\Ionic.Zip.dll"
+    model.GetFiles(DotNetFramework(Framework "v4.0", Full)) |> shouldContain @"..\DotNetZip\lib\net20\Ionic.Zip.dll"
+    model.GetFiles(DotNetFramework(Framework "v4.5", Full)) |> shouldContain @"..\DotNetZip\lib\net20\Ionic.Zip.dll"
+
+
+[<Test>]
 let ``should handle lib install of Microsoft.Net.Http 2.2.28``() = 
     let model = 
         emptymodel.Add(
