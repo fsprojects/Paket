@@ -409,3 +409,17 @@ let ``should handle lib install of Microsoft.Bcl 1.1.9``() =
     model.GetFiles(Silverlight("v5.0")) |> shouldContain @"..\Microsoft.Bcl\lib\sl5\System.IO.dll"
     model.GetFiles(Silverlight("v5.0")) |> shouldContain @"..\Microsoft.Bcl\lib\sl5\System.Runtime.dll"
     model.GetFiles(Silverlight("v5.0")) |> shouldContain @"..\Microsoft.Bcl\lib\sl5\System.Threading.Tasks.dll" 
+
+
+[<Test>]
+let ``should not install tools``() = 
+    let model = 
+        emptymodel.Add(
+            [ @"..\FAKE\tools\FAKE.exe" 
+              @"..\FAKE\tools\FakeLib.exe" 
+              @"..\FAKE\tools\Fake.SQL.exe" ])
+            .Process()
+
+    model.Frameworks
+    |> Seq.forall (fun kv -> kv.Value.IsEmpty)
+    |> shouldEqual true
