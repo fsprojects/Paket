@@ -211,12 +211,11 @@ type ProjectFile =
                     yield! libraries ]
                 |> List.map (fun fi -> fi.FullName)
 
-            if Constants.useNewInstaller then             
-
+            if Constants.useNewInstaller then
                 let installModel = InstallModel.CreateFromLibs(packageName,SemVer.parse "0",files,references)
-                let chooseNode = installModel.GenerateXml(this.FileName, this.Document)
-                this.ProjectNode.AppendChild(chooseNode) |> ignore
-
+                if not <| installModel.HasCustomNodes(this.Document) then
+                    let chooseNode = installModel.GenerateXml(this.FileName, this.Document)
+                    this.ProjectNode.AppendChild(chooseNode) |> ignore
             else
                 for (_,dllName), libsWithSameName in installInfos do
                     if hard then

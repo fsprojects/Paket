@@ -4,27 +4,27 @@ open System.Xml
 open Paket.Xml
 open System.IO
 
-type InstallFiles =
-    {
-        References : string Set
-        ContentFiles: string Set
-    }
-    static member empty = { References = Set.empty; ContentFiles = Set.empty }
-
+type InstallFiles = 
+    { References : string Set
+      ContentFiles : string Set }
+    
+    static member empty = 
+        { References = Set.empty
+          ContentFiles = Set.empty }
+    
     member this.AddReference lib = { this with References = Set.add lib this.References }
 
-
 type InstallModel = 
-    {   PackageName: string
-        PackageVersion: SemVerInfo
-        Frameworks : Map<FrameworkIdentifier, InstallFiles> }
-    
-    static member EmptyModel(packageName,packageVersion) : InstallModel = 
+    { PackageName : string
+      PackageVersion : SemVerInfo
+      Frameworks : Map<FrameworkIdentifier, InstallFiles> }
+
+    static member EmptyModel(packageName, packageVersion) : InstallModel = 
         let frameworks = 
-            [ for x,p in FrameworkVersion.KnownDotNetFrameworks -> DotNetFramework(Framework x, p) ]
-        {   PackageName = packageName
-            PackageVersion = packageVersion
-            Frameworks = List.fold (fun map f -> Map.add f InstallFiles.empty map) Map.empty frameworks }
+            [ for x, p in FrameworkVersion.KnownDotNetFrameworks -> DotNetFramework(Framework x, p) ]
+        { PackageName = packageName
+          PackageVersion = packageVersion
+          Frameworks = List.fold (fun map f -> Map.add f InstallFiles.empty map) Map.empty frameworks }
     
     member this.GetFrameworks() = this.Frameworks |> Seq.map (fun kv -> kv.Key)
     member this.GetFiles(framework) = 
@@ -122,12 +122,36 @@ type InstallModel =
             .UseLowerVersionLibIfEmpty()
             .FilterBlackList()
 
+    member this.GetLibraryNames() =
+        [ for f in this.Frameworks do
+            for lib in f.Value.References do                
+                let fi = new FileInfo(lib)
+                yield fi.Name.Replace(fi.Extension,"") ]
+        |> Set.ofList
+
+    member this.HasCustomNodes(doc:XmlDocument) =    
+        let manager = new XmlNamespaceManager(doc.NameTable)
+        manager.AddNamespace("ns", Constants.ProjectDefaultNameSpace)
+
+        let libs = this.GetLibraryNames()
+        let hasCustom = ref false
+        for node in doc.SelectNodes("//ns:Reference", manager) do
+            if Set.contains (node.Attributes.["Include"].InnerText.Split(',').[0]) libs then
+                let isPaket = ref false
+                for child in node.ChildNodes do
+                    if child.Name = "Paket" then 
+                        isPaket := true
+                if not !isPaket then
+                    hasCustom := true
+            
+        !hasCustom
+
     static member CreateFromLibs(packageName,packageVersions,libs,references) = 
         InstallModel.EmptyModel(packageName,packageVersions)
             .Add(libs,references)
             .Process()
 
-    member this.GenerateXml(projectPath,doc:XmlDocument) =    
+    member this.GenerateXml(projectPath,doc:XmlDocument) = 
         let chooseNode = doc.CreateElement("Choose", Constants.ProjectDefaultNameSpace)
         this.Frameworks 
         |> Seq.iter (fun kv -> 

@@ -26,22 +26,22 @@ let expected = """
   </When>
   <When Condition="$(TargetFrameworkIdentifier) == '.NETFramework' And $(TargetFrameworkVersion) == 'v4.0'">
     <ItemGroup>
-      <Reference Include="System.Net.Http.Extensions.dll">
+      <Reference Include="System.Net.Http.Extensions">
         <HintPath>..\Microsoft.Net.Http\lib\net40\System.Net.Http.Extensions.dll</HintPath>
         <Private>True</Private>
         <Paket>True</Paket>
       </Reference>
-      <Reference Include="System.Net.Http.Primitives.dll">
+      <Reference Include="System.Net.Http.Primitives">
         <HintPath>..\Microsoft.Net.Http\lib\net40\System.Net.Http.Primitives.dll</HintPath>
         <Private>True</Private>
         <Paket>True</Paket>
       </Reference>
-      <Reference Include="System.Net.Http.WebRequest.dll">
+      <Reference Include="System.Net.Http.WebRequest">
         <HintPath>..\Microsoft.Net.Http\lib\net40\System.Net.Http.WebRequest.dll</HintPath>
         <Private>True</Private>
         <Paket>True</Paket>
       </Reference>
-      <Reference Include="System.Net.Http.dll">
+      <Reference Include="System.Net.Http">
         <HintPath>..\Microsoft.Net.Http\lib\net40\System.Net.Http.dll</HintPath>
         <Private>True</Private>
         <Paket>True</Paket>
@@ -50,12 +50,12 @@ let expected = """
   </When>
   <When Condition="$(TargetFrameworkIdentifier) == '.NETFramework' And $(TargetFrameworkVersion) == 'v4.5'">
     <ItemGroup>
-      <Reference Include="System.Net.Http.Extensions.dll">
+      <Reference Include="System.Net.Http.Extensions">
         <HintPath>..\Microsoft.Net.Http\lib\net45\System.Net.Http.Extensions.dll</HintPath>
         <Private>True</Private>
         <Paket>True</Paket>
       </Reference>
-      <Reference Include="System.Net.Http.Primitives.dll">
+      <Reference Include="System.Net.Http.Primitives">
         <HintPath>..\Microsoft.Net.Http\lib\net45\System.Net.Http.Primitives.dll</HintPath>
         <Private>True</Private>
         <Paket>True</Paket>
@@ -64,12 +64,12 @@ let expected = """
   </When>
   <When Condition="$(TargetFrameworkIdentifier) == '.NETFramework' And $(TargetFrameworkVersion) == 'v4.5.1'">
     <ItemGroup>
-      <Reference Include="System.Net.Http.Extensions.dll">
+      <Reference Include="System.Net.Http.Extensions">
         <HintPath>..\Microsoft.Net.Http\lib\net45\System.Net.Http.Extensions.dll</HintPath>
         <Private>True</Private>
         <Paket>True</Paket>
       </Reference>
-      <Reference Include="System.Net.Http.Primitives.dll">
+      <Reference Include="System.Net.Http.Primitives">
         <HintPath>..\Microsoft.Net.Http\lib\net45\System.Net.Http.Primitives.dll</HintPath>
         <Private>True</Private>
         <Paket>True</Paket>
@@ -78,17 +78,17 @@ let expected = """
   </When>
   <When Condition="$(TargetFrameworkIdentifier) == '.NETPortable' And $(TargetFrameworkProfile) == 'net40+sl4+win8+wp71+wpa81' And $(TargetPlatformIdentifier) == 'Portable' And $(TargetPlatformVersion) == '7.0'">
     <ItemGroup>
-      <Reference Include="System.Net.Http.Extensions.dll">
+      <Reference Include="System.Net.Http.Extensions">
         <HintPath>..\Microsoft.Net.Http\lib\portable-net40+sl4+win8+wp71+wpa81\System.Net.Http.Extensions.dll</HintPath>
         <Private>True</Private>
         <Paket>True</Paket>
       </Reference>
-      <Reference Include="System.Net.Http.Primitives.dll">
+      <Reference Include="System.Net.Http.Primitives">
         <HintPath>..\Microsoft.Net.Http\lib\portable-net40+sl4+win8+wp71+wpa81\System.Net.Http.Primitives.dll</HintPath>
         <Private>True</Private>
         <Paket>True</Paket>
       </Reference>
-      <Reference Include="System.Net.Http.dll">
+      <Reference Include="System.Net.Http">
         <HintPath>..\Microsoft.Net.Http\lib\portable-net40+sl4+win8+wp71+wpa81\System.Net.Http.dll</HintPath>
         <Private>True</Private>
         <Paket>True</Paket>
@@ -97,12 +97,12 @@ let expected = """
   </When>
   <When Condition="$(TargetFrameworkIdentifier) == '.NETPortable' And $(TargetFrameworkProfile) == 'net45+win8' And $(TargetPlatformIdentifier) == 'Portable' And $(TargetPlatformVersion) == '7.0'">
     <ItemGroup>
-      <Reference Include="System.Net.Http.Extensions.dll">
+      <Reference Include="System.Net.Http.Extensions">
         <HintPath>..\Microsoft.Net.Http\lib\portable-net45+win8\System.Net.Http.Extensions.dll</HintPath>
         <Private>True</Private>
         <Paket>True</Paket>
       </Reference>
-      <Reference Include="System.Net.Http.Primitives.dll">
+      <Reference Include="System.Net.Http.Primitives">
         <HintPath>..\Microsoft.Net.Http\lib\portable-net45+win8\System.Net.Http.Primitives.dll</HintPath>
         <Private>True</Private>
         <Paket>True</Paket>
@@ -111,12 +111,12 @@ let expected = """
   </When>
   <When Condition="$(TargetFrameworkIdentifier) == 'MonoAndroid'">
     <ItemGroup>
-      <Reference Include="System.Net.Http.Extensions.dll">
+      <Reference Include="System.Net.Http.Extensions">
         <HintPath>..\Microsoft.Net.Http\lib\monoandroid\System.Net.Http.Extensions.dll</HintPath>
         <Private>True</Private>
         <Paket>True</Paket>
       </Reference>
-      <Reference Include="System.Net.Http.Primitives.dll">
+      <Reference Include="System.Net.Http.Primitives">
         <HintPath>..\Microsoft.Net.Http\lib\monoandroid\System.Net.Http.Primitives.dll</HintPath>
         <Private>True</Private>
         <Paket>True</Paket>
@@ -125,12 +125,12 @@ let expected = """
   </When>
   <When Condition="$(TargetFrameworkIdentifier) == 'MonoTouch'">
     <ItemGroup>
-      <Reference Include="System.Net.Http.Extensions.dll">
+      <Reference Include="System.Net.Http.Extensions">
         <HintPath>..\Microsoft.Net.Http\lib\monotouch\System.Net.Http.Extensions.dll</HintPath>
         <Private>True</Private>
         <Paket>True</Paket>
       </Reference>
-      <Reference Include="System.Net.Http.Primitives.dll">
+      <Reference Include="System.Net.Http.Primitives">
         <HintPath>..\Microsoft.Net.Http\lib\monotouch\System.Net.Http.Primitives.dll</HintPath>
         <Private>True</Private>
         <Paket>True</Paket>
@@ -139,12 +139,12 @@ let expected = """
   </When>
   <When Condition="$(TargetFrameworkIdentifier) == 'Windows' And $(TargetPlatformVersion) == 'v8.0'">
     <ItemGroup>
-      <Reference Include="System.Net.Http.Extensions.dll">
+      <Reference Include="System.Net.Http.Extensions">
         <HintPath>..\Microsoft.Net.Http\lib\win8\System.Net.Http.Extensions.dll</HintPath>
         <Private>True</Private>
         <Paket>True</Paket>
       </Reference>
-      <Reference Include="System.Net.Http.Primitives.dll">
+      <Reference Include="System.Net.Http.Primitives">
         <HintPath>..\Microsoft.Net.Http\lib\win8\System.Net.Http.Primitives.dll</HintPath>
         <Private>True</Private>
         <Paket>True</Paket>
@@ -153,12 +153,12 @@ let expected = """
   </When>
   <When Condition="$(TargetFrameworkIdentifier) == 'WindowsPhoneApp' And $(TargetPlatformVersion) == 'v8.1'">
     <ItemGroup>
-      <Reference Include="System.Net.Http.Extensions.dll">
+      <Reference Include="System.Net.Http.Extensions">
         <HintPath>..\Microsoft.Net.Http\lib\wpa81\System.Net.Http.Extensions.dll</HintPath>
         <Private>True</Private>
         <Paket>True</Paket>
       </Reference>
-      <Reference Include="System.Net.Http.Primitives.dll">
+      <Reference Include="System.Net.Http.Primitives">
         <HintPath>..\Microsoft.Net.Http\lib\wpa81\System.Net.Http.Primitives.dll</HintPath>
         <Private>True</Private>
         <Paket>True</Paket>
@@ -167,17 +167,17 @@ let expected = """
   </When>
   <When Condition="$(TargetFrameworkIdentifier) == 'Silverlight' And $(SilverlightVersion) == 'v4.0'">
     <ItemGroup>
-      <Reference Include="System.Net.Http.Extensions.dll">
+      <Reference Include="System.Net.Http.Extensions">
         <HintPath>..\Microsoft.Net.Http\lib\portable-net40+sl4+win8+wp71+wpa81\System.Net.Http.Extensions.dll</HintPath>
         <Private>True</Private>
         <Paket>True</Paket>
       </Reference>
-      <Reference Include="System.Net.Http.Primitives.dll">
+      <Reference Include="System.Net.Http.Primitives">
         <HintPath>..\Microsoft.Net.Http\lib\portable-net40+sl4+win8+wp71+wpa81\System.Net.Http.Primitives.dll</HintPath>
         <Private>True</Private>
         <Paket>True</Paket>
       </Reference>
-      <Reference Include="System.Net.Http.dll">
+      <Reference Include="System.Net.Http">
         <HintPath>..\Microsoft.Net.Http\lib\portable-net40+sl4+win8+wp71+wpa81\System.Net.Http.dll</HintPath>
         <Private>True</Private>
         <Paket>True</Paket>
@@ -219,9 +219,6 @@ let ``should generate Xml for System.Net.Http 2.2.8``() =
               References.All)
 
     let doc = new XmlDocument()
-
-    let manager = new XmlNamespaceManager(doc.NameTable)
-    manager.AddNamespace("ns", Constants.ProjectDefaultNameSpace)
 
     let chooseNode = model.GenerateXml("",doc)
     chooseNode.OuterXml
