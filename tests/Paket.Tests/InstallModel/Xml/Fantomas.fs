@@ -1,4 +1,4 @@
-﻿module Paket.InstallModel.XmlGenerationSpecs
+﻿module Paket.InstallModel.Xml.FantomasSpecs
 
 open Paket
 open NUnit.Framework
