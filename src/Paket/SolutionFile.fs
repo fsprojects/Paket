@@ -22,6 +22,8 @@ type SolutionFile(fileName: string) =
                 content.RemoveRange(index, 4)
         | None -> ()
 
+    member __.FileName = fileName
+
     member __.RemoveNugetEntries() =
         for file in ["nuget.targets";"packages.config";"nuget.exe"] do
             match content |> Seq.tryFindIndex (fun line -> line.ToLower().Contains(sprintf ".nuget\\%s" file)) with
@@ -37,8 +39,10 @@ type SolutionFile(fileName: string) =
         lines.Add(sprintf   "Project(\"{%s}\") = \".paket\", \".paket\", \"{%s}\"" slnFolderProjectGuid <| Guid.NewGuid().ToString("D").ToUpper())
         lines.Add           " ProjectSection(SolutionItems) = preProject"
         lines.Add(sprintf   "		%s = %s" dependenciesFile dependenciesFile)
-        if lockFile |> Option.isSome then
-            lines.Add(sprintf"		%s = %s" lockFile.Value lockFile.Value)
+
+        Option.iter (fun lockFile -> 
+            lines.Add(sprintf"		%s = %s" lockFile lockFile)) lockFile
+
         lines.Add           "	EndProjectSection"
         lines.Add           "EndProject"
 

@@ -121,7 +121,9 @@ let ConvertFromNuget(force, installAfter, initAutoRestore, dependenciesFileName)
     for slnFile in FindAllFiles(".", "*.sln") do
         let solution = SolutionFile(slnFile.FullName)
         solution.RemoveNugetEntries()
-        solution.AddPaketFolder(dependenciesFileName, if installAfter then Some("paket.lock") else None)
+        let relativePath = createRelativePath solution.FileName Environment.CurrentDirectory 
+        solution.AddPaketFolder(Path.Combine(relativePath, dependenciesFileName), 
+                                if installAfter then Some(Path.Combine(relativePath, "paket.lock")) else None)
         solution.Save()
 
     for project in ProjectFile.FindAllProjects(".") do

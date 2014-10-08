@@ -180,12 +180,12 @@ type ProjectFile =
                      node.ParentNode.RemoveChild(node) |> ignore
                      if not parent.HasChildNodes then parent.ParentNode.RemoveChild(parent) |> ignore))
     
-    member this.AddImportForPaketTargets() =
-        match this.Document.SelectNodes("//ns:Import[@Project='$(SolutionDir)\\.paket\\paket.targets']", this.Namespaces)
+    member this.AddImportForPaketTargets(relativeTargetsPath) =
+        match this.Document.SelectNodes(sprintf "//ns:Import[@Project='%s']" relativeTargetsPath, this.Namespaces)
                             |> Seq.cast |> Seq.firstOrDefault with
         | Some _ -> ()
         | None -> 
-            let node = this.CreateNode("Import") |> addAttribute "Project" "$(SolutionDir)\\.paket\\paket.targets"
+            let node = this.CreateNode("Import") |> addAttribute "Project" relativeTargetsPath
             this.Document.SelectSingleNode("//ns:Project", this.Namespaces).AppendChild(node) |> ignore
 
     member this.DetermineBuildAction fileName =
