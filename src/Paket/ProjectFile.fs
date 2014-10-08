@@ -149,9 +149,9 @@ type ProjectFile =
         this.DeleteEmptyReferences()
 
     member this.Save() =
-            if Utils.normalizeXml this.Document <> this.OriginalText then 
-                verbosefn "Project %s changed" this.FileName
-                this.Document.Save(this.FileName)
+        if Utils.normalizeXml this.Document <> this.OriginalText then 
+            verbosefn "Project %s changed" this.FileName
+            this.Document.Save(this.FileName)
 
     member this.GetPaketFileItems() =
         this.FindPaketNodes("Content")
