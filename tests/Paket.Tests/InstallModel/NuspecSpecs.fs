@@ -4,6 +4,7 @@ open Paket
 open NUnit.Framework
 open FsUnit
 open Nuspec
+open Paket.InstallModelSpecs
 
 [<Test>]
 let ``can detect explicit references``() = 

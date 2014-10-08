@@ -56,6 +56,14 @@
     </Otherwise>
   </Choose>
   <Import Project="$(FSharpTargetsPath)" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+  <Import Project="$(SolutionDir)\.paket\paket.targets" />
   <ItemGroup>
     <Compile Include="..\..\paket-files\forki\FsUnit\FsUnit.fs">
       <Paket>True</Paket>
@@ -75,7 +83,6 @@
     <Content Include="TestFiles\Fantomas.nuspec">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Compile Include="NuspecSpecs.fs" />
     <Compile Include="FilterVersionSpecs.fs" />
     <Compile Include="DependenciesFile\VersionRangeSpecs.fs" />
     <Compile Include="DependenciesFile\ParserSpecs.fs" />
@@ -103,8 +110,9 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <Compile Include="ProjectFile\ConditionSpecs.fs" />
-    <Compile Include="ProjectFile\InstallModelSpecs.fs" />
     <Compile Include="ProjectFile\FileBuildActionSpecs.fs" />
+    <Compile Include="InstallModel\InstallModelSpecs.fs" />
+    <Compile Include="InstallModel\NuspecSpecs.fs" />
     <None Include="paket.references" />
   </ItemGroup>
   <ItemGroup>
@@ -115,22 +123,12 @@
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Xml" />
-  </ItemGroup>
-  <ItemGroup>
     <ProjectReference Include="..\..\src\Paket\Paket.fsproj">
       <Name>Paket</Name>
       <Project>{09b32f18-0c20-4489-8c83-5106d5c04c93}</Project>
       <Private>True</Private>
     </ProjectReference>
   </ItemGroup>
-  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
-       Other similar extension points exist, see Microsoft.Common.targets.
-  <Target Name="BeforeBuild">
-  </Target>
-  <Target Name="AfterBuild">
-  </Target>
-  -->
-  <Import Project="$(SolutionDir)\.paket\paket.targets" />
   <Choose>
     <When Condition="true">
       <ItemGroup>

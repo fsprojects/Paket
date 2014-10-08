@@ -1,4 +1,4 @@
-﻿module Paket.ProjectFile.InstallationModelpecs
+﻿module Paket.InstallModelSpecs
 
 open Paket
 open NUnit.Framework
@@ -24,20 +24,30 @@ type InstallModell =
             Frameworks = List.fold (fun map f -> Map.add f Set.empty map) Map.empty frameworks }
     
     member this.GetFrameworks() = this.Frameworks |> Seq.map (fun kv -> kv.Key)
-    member this.GetFiles(framework) = this.Frameworks.[framework]
+    member this.GetFiles(framework) = 
+        match this.Frameworks.TryFind framework with
+        | Some libs -> libs
+        | None -> Set.empty
 
-    member this.Add(framework,lib) : InstallModell = 
+    member this.Add(framework,lib:string,references) : InstallModell = 
+        let install =
+            match references with
+            | Nuspec.References.All -> true
+            | Nuspec.References.Explicit list -> list |> List.exists lib.EndsWith
+
+        if not install then this else
         { this with Frameworks = 
                      match Map.tryFind framework this.Frameworks with
                      | Some files -> Map.add framework (Set.add lib files) this.Frameworks
                      | None -> Map.add framework (Set.singleton lib) this.Frameworks }
 
-    member this.Add (libs) : InstallModell = 
+    member this.Add (libs,references) : InstallModell =         
         libs |> List.fold (fun model lib -> 
                     match FrameworkIdentifier.DetectFromPathNew lib with
-                    | Some framework -> model.Add(framework,lib)
+                    | Some framework -> model.Add(framework,lib,references)
                     | _ -> model) this
 
+    member this.Add libs = this.Add(libs, Nuspec.References.All)
 
     member this.FilterBlackList() =
         { this with Frameworks = 
@@ -45,6 +55,20 @@ type InstallModell =
                      |> List.fold 
                             (fun frameworks f -> Map.map (fun _ files -> files |> Set.filter (f >> not)) frameworks) 
                         this.Frameworks }
+
+    member this.UseGenericFrameworkVersionIfEmpty() =
+        let genericFramework = DotNetFramework(All, Full)
+        let newFiles = this.GetFiles genericFramework
+               
+        let model =
+            if Set.isEmpty newFiles then this else
+
+            let target = DotNetFramework(Framework "v1.0",Full)
+            match Map.tryFind target this.Frameworks with
+            | Some files when Set.isEmpty files |> not -> this
+            | _ -> { this with Frameworks = Map.add target newFiles this.Frameworks }
+
+        { model with Frameworks = model.Frameworks |> Map.remove genericFramework } 
 
     member this.UseLowerVersionLibIfEmpty() = 
         KnownDotNetFrameworks
@@ -68,6 +92,8 @@ type InstallModell =
                (fun (model : InstallModell) kv -> 
                let newFiles = kv.Value
            
+               if Set.isEmpty newFiles then model else
+
                let otherProfiles = 
                    match kv.Key with
                    | PortableFramework(_, f) -> 
@@ -75,16 +101,17 @@ type InstallModell =
                        |> Array.map (FrameworkIdentifier.Extract false)
                        |> Array.choose id
                    | _ -> [||]
-               if Set.isEmpty newFiles || Array.isEmpty otherProfiles then model
-               else 
-                   otherProfiles 
-                   |> Array.fold (fun (model : InstallModell) framework -> 
-                          match Map.tryFind framework model.Frameworks with
-                          | Some files when Set.isEmpty files |> not -> model
-                          | _ -> { model with Frameworks = Map.add framework newFiles model.Frameworks }) model) this
+
+               if Array.isEmpty otherProfiles then model else 
+                otherProfiles 
+                |> Array.fold (fun (model : InstallModell) framework -> 
+                        match Map.tryFind framework model.Frameworks with
+                        | Some files when Set.isEmpty files |> not -> model
+                        | _ -> { model with Frameworks = Map.add framework newFiles model.Frameworks }) model) this
 
     member this.Process() =
         this
+            .UseGenericFrameworkVersionIfEmpty()
             .UsePortableVersionLibIfEmpty()
             .UseLowerVersionLibIfEmpty()
             .FilterBlackList()
@@ -412,12 +439,57 @@ let ``should handle lib install of Microsoft.Bcl 1.1.9``() =
 
 
 [<Test>]
+let ``should handle lib install of Fantomas 1.5``() = 
+    let model = 
+        emptymodel.Add(
+            [ @"..\Fantomas\lib\FantomasLib.dll" 
+              @"..\Fantomas\lib\FSharp.Core.dll" 
+              @"..\Fantomas\lib\Fantomas.exe" ])
+          .UseGenericFrameworkVersionIfEmpty()
+          .UseLowerVersionLibIfEmpty()
+
+    model.GetFiles(DotNetFramework(All, Full)) |> shouldBeEmpty
+    model.GetFiles(DotNetFramework(Framework "v2.0", Full)) |> shouldContain @"..\Fantomas\lib\FantomasLib.dll" 
+    model.GetFiles(DotNetFramework(Framework "v2.0", Full)) |> shouldContain @"..\Fantomas\lib\FSharp.Core.dll" 
+
+    model.GetFiles(DotNetFramework(Framework "v3.5", Full)) |> shouldContain @"..\Fantomas\lib\FantomasLib.dll" 
+    model.GetFiles(DotNetFramework(Framework "v3.5", Full)) |> shouldContain @"..\Fantomas\lib\FSharp.Core.dll" 
+
+    model.GetFiles(DotNetFramework(Framework "v4.0", Full)) |> shouldContain @"..\Fantomas\lib\FantomasLib.dll" 
+    model.GetFiles(DotNetFramework(Framework "v4.0", Full)) |> shouldContain @"..\Fantomas\lib\FSharp.Core.dll" 
+
+    model.GetFiles(DotNetFramework(Framework "v4.5", Full)) |> shouldContain @"..\Fantomas\lib\FantomasLib.dll" 
+    model.GetFiles(DotNetFramework(Framework "v4.5", Full)) |> shouldContain @"..\Fantomas\lib\FSharp.Core.dll" 
+
+[<Test>]
+let ``should handle lib install of Fantomas 1.5.0 with explicit references``() = 
+    let model = 
+        emptymodel.Add(
+            [ @"..\Fantomas\lib\FantomasLib.dll" 
+              @"..\Fantomas\lib\FSharp.Core.dll" 
+              @"..\Fantomas\lib\Fantomas.exe" ], Nuspec.Explicit ["FantomasLib.dll"])
+            .Process()
+            
+    model.GetFiles(DotNetFramework(All, Full)) |> shouldBeEmpty
+    model.GetFiles(DotNetFramework(Framework "v2.0", Full)) |> shouldContain @"..\Fantomas\lib\FantomasLib.dll" 
+    model.GetFiles(DotNetFramework(Framework "v2.0", Full)) |> shouldNotContain @"..\Fantomas\lib\FSharp.Core.dll" 
+
+    model.GetFiles(DotNetFramework(Framework "v3.5", Full)) |> shouldContain @"..\Fantomas\lib\FantomasLib.dll" 
+    model.GetFiles(DotNetFramework(Framework "v3.5", Full)) |> shouldNotContain @"..\Fantomas\lib\FSharp.Core.dll" 
+
+    model.GetFiles(DotNetFramework(Framework "v4.0", Full)) |> shouldContain @"..\Fantomas\lib\FantomasLib.dll" 
+    model.GetFiles(DotNetFramework(Framework "v4.0", Full)) |> shouldNotContain @"..\Fantomas\lib\FSharp.Core.dll" 
+
+    model.GetFiles(DotNetFramework(Framework "v4.5", Full)) |> shouldContain @"..\Fantomas\lib\FantomasLib.dll" 
+    model.GetFiles(DotNetFramework(Framework "v4.5", Full)) |> shouldNotContain @"..\Fantomas\lib\FSharp.Core.dll" 
+
+[<Test>]
 let ``should not install tools``() = 
     let model = 
         emptymodel.Add(
             [ @"..\FAKE\tools\FAKE.exe" 
-              @"..\FAKE\tools\FakeLib.exe" 
-              @"..\FAKE\tools\Fake.SQL.exe" ])
+              @"..\FAKE\tools\FakeLib.dll" 
+              @"..\FAKE\tools\Fake.SQL.dll" ])
             .Process()
 
     model.Frameworks
