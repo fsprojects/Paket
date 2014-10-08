@@ -9,37 +9,6 @@ open System.Collections.Generic
 open Paket.Xml
 open Nuspec
 
-/// Contains methods to read and manipulate project file nodes.
-type private InstallInfo = {
-    DllName : string
-    Path : string
-    Condition : FrameworkIdentifier
-    Package : ResolvedPackage
-}
-
-module private InstallRules = 
-    let groupDLLs (usedPackages : Dictionary<string,bool>) extracted projectPath = 
-        let used = HashSet<_>()      
-        for x in usedPackages do
-            used.Add(x.Key.ToLower()) |> ignore
-
-        [ for (package:ResolvedPackage), libraries in extracted do              
-              if used.Contains(package.Name.ToLower()) |> not then verbosefn "    - %s is not used ==> ignored" package.Name else
-                let libraries = Seq.toArray libraries
-                for (lib : FileInfo) in libraries do
-                    match FrameworkIdentifier.DetectFromPath lib.FullName with
-                    | None -> verbosefn "    - could not understand %s ==> ignored" lib.FullName
-                    | Some condition ->
-                        let dllName = lib.Name.Replace(lib.Extension, "")
-                        verbosefn "    - adding new condition %A fo %s" condition dllName
-                        yield { DllName = dllName
-                                Path = createRelativePath projectPath lib.FullName
-                                Package = package
-                                Condition = condition } ]
-        |> Seq.groupBy (fun info -> info.Package.Name, info.DllName, info.Condition.GetFrameworkIdentifier())
-        |> Seq.groupBy (fun ((packageName,name, _), _) -> packageName,name)
-        |> Seq.groupBy (fun ((packageName,_),_) -> packageName)
-
 type FileItem = 
     { BuildAction : string
       Include : string 
@@ -156,10 +125,10 @@ type ProjectFile =
         this.DeleteIfEmpty("//ns:ItemGroup")
 
 
-    member this.UpdateReferences(extracted, usedPackages : Dictionary<string,bool>, hard) = 
-        this.DeletePaketNodes("Reference")
-        let installInfos = InstallRules.groupDLLs usedPackages extracted this.FileName        
-        for packageName, installInfos in installInfos do
+    member this.UpdateReferences(extracted: (ResolvedPackage * FileInfo[])[], usedPackages : Dictionary<string,bool>, hard) = 
+        this.DeletePaketNodes("Reference")  
+        for kv in usedPackages do
+            let packageName = kv.Key
             let nuspec = FileInfo(sprintf "./packages/%s/%s.nuspec" packageName packageName)
             let references = Nuspec.GetReferences nuspec.FullName
 
