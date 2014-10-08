@@ -182,7 +182,7 @@ type InstallModel =
                                 
             for lib in kv.Value.References do
                 let reference = 
-                    let fi = new FileInfo(lib)
+                    let fi = new FileInfo(lib.Replace("\\",Path.DirectorySeparatorChar.ToString()).Replace("/",Path.DirectorySeparatorChar.ToString()))
                     
                     createNode(doc,"Reference")
                     |> addAttribute "Include" (fi.Name.Replace(fi.Extension,""))
