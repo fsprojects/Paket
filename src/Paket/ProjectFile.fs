@@ -1,7 +1,6 @@
 ﻿namespace Paket
 
 open Paket.Logging
-open Paket.ModuleResolver
 open Paket.PackageResolver
 open System
 open System.IO
@@ -206,6 +205,16 @@ type ProjectFile =
         for packageName, installInfos in installInfos do
             let nuspec = FileInfo(sprintf "./packages/%s/%s.nuspec" packageName packageName)
             let references = Nuspec.GetReferences nuspec.FullName
+
+            let files = 
+                [ for (package:ResolvedPackage), libraries in extracted do              
+                  if packageName.ToLower() = package.Name.ToLower() then
+                    yield! libraries ]
+                |> List.map (fun fi -> fi.FullName)
+
+            let installModel = InstallModell.CreateFromLibs(packageName,SemVer.parse "0",files,references).Process()
+            tracefn "%A" installModel
+
             for (_,dllName), libsWithSameName in installInfos do
                 if hard then
                     this.DeleteCustomNodes(dllName)

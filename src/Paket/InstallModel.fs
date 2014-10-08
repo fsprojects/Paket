@@ -121,7 +121,7 @@ type InstallModell =
             .UseLowerVersionLibIfEmpty()
             .FilterBlackList()
 
-    static member CreateFromLibs(packageName,packageVersions,libs) = 
+    static member CreateFromLibs(packageName,packageVersions,libs,references) = 
         InstallModell.EmptyModel(packageName,packageVersions)
-            .Add(libs)
+            .Add(libs,references)
             .Process()
