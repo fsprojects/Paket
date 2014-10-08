@@ -3,6 +3,8 @@
 open System.Xml
 open Paket.Xml
 open System.IO
+open Paket.Logging
+open System.Collections.Generic
 
 type InstallFiles = 
     { References : string Set
@@ -122,18 +124,18 @@ type InstallModel =
             .UseLowerVersionLibIfEmpty()
             .FilterBlackList()
 
-    member this.GetLibraryNames() =
-        [ for f in this.Frameworks do
-            for lib in f.Value.References do                
-                let fi = new FileInfo(lib)
-                yield fi.Name.Replace(fi.Extension,"") ]
-        |> Set.ofList
+    member this.GetLibraryNames =
+        lazy([ for f in this.Frameworks do
+                for lib in f.Value.References do                
+                    let fi = new FileInfo(lib)
+                    yield fi.Name.Replace(fi.Extension,"") ]
+            |> Set.ofList)
 
-    member this.HasCustomNodes(doc:XmlDocument) =    
+    member this.HasCustomNodes(doc:XmlDocument) =
         let manager = new XmlNamespaceManager(doc.NameTable)
         manager.AddNamespace("ns", Constants.ProjectDefaultNameSpace)
 
-        let libs = this.GetLibraryNames()
+        let libs = this.GetLibraryNames.Force()
         let hasCustom = ref false
         for node in doc.SelectNodes("//ns:Reference", manager) do
             if Set.contains (node.Attributes.["Include"].InnerText.Split(',').[0]) libs then
@@ -145,6 +147,23 @@ type InstallModel =
                     hasCustom := true
             
         !hasCustom
+
+    member this.DeleteCustomNodes(doc:XmlDocument) =    
+        let manager = new XmlNamespaceManager(doc.NameTable)
+        manager.AddNamespace("ns", Constants.ProjectDefaultNameSpace)
+
+        let nodesToDelete = List<_>()
+        
+        let libs = this.GetLibraryNames.Force()
+        for node in doc.SelectNodes("//ns:Reference", manager) do
+            if Set.contains (node.Attributes.["Include"].InnerText.Split(',').[0]) libs then          
+                nodesToDelete.Add node
+
+        if nodesToDelete |> Seq.isEmpty |> not then
+            verbosefn "    - Deleting custom projects nodes for %s" this.PackageName
+
+        for node in nodesToDelete do            
+            node.ParentNode.RemoveChild(node) |> ignore
 
     static member CreateFromLibs(packageName,packageVersions,libs,references) = 
         InstallModel.EmptyModel(packageName,packageVersions)

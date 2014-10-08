@@ -63,3 +63,24 @@ let ``should not find custom nodes if there are none``() =
 
     model.HasCustomNodes(doc)
     |> shouldEqual false
+
+
+[<Test>]
+let ``should delete custom nodes if there are some``() = 
+    let model =
+        InstallModel.CreateFromLibs("Fantomas", SemVer.parse "1.5.0",
+            [ @"..\Fantomas\lib\FantomasLib.dll" 
+              @"..\Fantomas\lib\FSharp.Core.dll" 
+              @"..\Fantomas\lib\Fantomas.exe" ],
+              References.Explicit ["FantomasLib.dll"])
+
+    let doc = new XmlDocument()
+    doc.LoadXml projectWithCustomFantomasNode
+
+    model.HasCustomNodes(doc)
+    |> shouldEqual true
+
+    model.DeleteCustomNodes(doc)
+
+    model.HasCustomNodes(doc)
+    |> shouldEqual false

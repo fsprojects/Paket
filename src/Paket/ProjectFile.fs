@@ -213,6 +213,9 @@ type ProjectFile =
 
             if Constants.useNewInstaller then
                 let installModel = InstallModel.CreateFromLibs(packageName,SemVer.parse "0",files,references)
+                if hard then
+                    installModel.DeleteCustomNodes(this.Document)
+
                 if not <| installModel.HasCustomNodes(this.Document) then
                     let chooseNode = installModel.GenerateXml(this.FileName, this.Document)
                     this.ProjectNode.AppendChild(chooseNode) |> ignore
