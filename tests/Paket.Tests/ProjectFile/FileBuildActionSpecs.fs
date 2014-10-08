@@ -1,4 +1,4 @@
-module Paket.ProjectFile.ProjectFileTypesSpecs
+module Paket.ProjectFile.FileBuildActionSpecs
 
 open Paket
 open NUnit.Framework
