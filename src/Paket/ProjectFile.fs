@@ -212,7 +212,7 @@ type ProjectFile =
                     yield! libraries ]
                 |> List.map (fun fi -> fi.FullName)
 
-            let installModel = InstallModell.CreateFromLibs(packageName,SemVer.parse "0",files,references).Process()
+            let installModel = InstallModel.CreateFromLibs(packageName,SemVer.parse "0",files,references)
             tracefn "%A" installModel
 
             for (_,dllName), libsWithSameName in installInfos do

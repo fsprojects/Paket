@@ -1,8 +1,5 @@
 ﻿namespace Paket
 
-
-
-
 type InstallFiles =
     {
         References : string Set
@@ -13,12 +10,12 @@ type InstallFiles =
     member this.AddReference lib = { this with References = Set.add lib this.References }
 
 
-type InstallModell = 
+type InstallModel = 
     {   PackageName: string
         PackageVersion: SemVerInfo
         Frameworks : Map<FrameworkIdentifier, InstallFiles> }
     
-    static member EmptyModel(packageName,packageVersion) : InstallModell = 
+    static member EmptyModel(packageName,packageVersion) : InstallModel = 
         let frameworks = 
             [ for x,p in FrameworkVersion.KnownDotNetFrameworks -> DotNetFramework(Framework x, p) ]
         {   PackageName = packageName
@@ -31,7 +28,7 @@ type InstallModell =
         | Some x -> x.References
         | None -> Set.empty
 
-    member this.Add(framework,lib:string,references) : InstallModell = 
+    member this.Add(framework,lib:string,references) : InstallModel = 
         let install =
             match references with
             | Nuspec.References.All -> true
@@ -43,7 +40,7 @@ type InstallModell =
                      | Some files -> Map.add framework (files.AddReference lib) this.Frameworks
                      | None -> Map.add framework (InstallFiles.empty.AddReference lib) this.Frameworks }
 
-    member this.Add (libs,references) : InstallModell =         
+    member this.Add (libs,references) : InstallModel =         
         libs |> List.fold (fun model lib -> 
                     match FrameworkIdentifier.DetectFromPathNew lib with
                     | Some framework -> model.Add(framework,lib,references)
@@ -78,13 +75,13 @@ type InstallModell =
     member this.UseLowerVersionLibIfEmpty() = 
         FrameworkVersion.KnownDotNetFrameworks
         |> List.rev
-        |> List.fold (fun (model : InstallModell) (lowerVersion,lowerProfile) -> 
+        |> List.fold (fun (model : InstallModel) (lowerVersion,lowerProfile) -> 
                let newFiles = model.GetFiles(DotNetFramework(Framework lowerVersion, lowerProfile))
                if Set.isEmpty newFiles then model
                else 
                    FrameworkVersion.KnownDotNetFrameworks
                    |> List.filter (fun (version,profile) -> (version,profile) > (lowerVersion,lowerProfile))
-                   |> List.fold (fun (model : InstallModell) (upperVersion,upperProfile) -> 
+                   |> List.fold (fun (model : InstallModel) (upperVersion,upperProfile) -> 
                           let framework = DotNetFramework(Framework upperVersion, upperProfile)
                           match Map.tryFind framework model.Frameworks with
                           | Some files when Set.isEmpty files.References -> 
@@ -94,7 +91,7 @@ type InstallModell =
     member this.UsePortableVersionLibIfEmpty() = 
         this.Frameworks 
         |> Seq.fold 
-               (fun (model : InstallModell) kv -> 
+               (fun (model : InstallModel) kv -> 
                let newFiles = kv.Value.References
            
                if Set.isEmpty newFiles then model else
@@ -109,7 +106,7 @@ type InstallModell =
 
                if Array.isEmpty otherProfiles then model else 
                 otherProfiles 
-                |> Array.fold (fun (model : InstallModell) framework -> 
+                |> Array.fold (fun (model : InstallModel) framework -> 
                         match Map.tryFind framework model.Frameworks with
                         | Some files when Set.isEmpty files.References |> not -> model
                         | _ -> { model with Frameworks = Map.add framework { References = newFiles; ContentFiles = Set.empty} model.Frameworks }) model) this
@@ -122,6 +119,6 @@ type InstallModell =
             .FilterBlackList()
 
     static member CreateFromLibs(packageName,packageVersions,libs,references) = 
-        InstallModell.EmptyModel(packageName,packageVersions)
+        InstallModel.EmptyModel(packageName,packageVersions)
             .Add(libs,references)
             .Process()

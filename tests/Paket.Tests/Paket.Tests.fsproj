@@ -111,7 +111,8 @@
     </None>
     <Compile Include="ProjectFile\ConditionSpecs.fs" />
     <Compile Include="ProjectFile\FileBuildActionSpecs.fs" />
-    <Compile Include="InstallModel\InstallModelSpecs.fs" />
+    <Compile Include="InstallModel\ProcessingSpecs.fs" />
+    <Compile Include="InstallModel\XmlGenerationSpecs.fs" />
     <Compile Include="InstallModel\NuspecSpecs.fs" />
     <None Include="paket.references" />
   </ItemGroup>
