@@ -8,12 +8,12 @@ let element x = match x with | Some y -> y
 
 [<Test>]
 let ``should detect framework version from path``() =
-    FrameworkIdentifier.DetectFromPath(@"..\RestSharp\lib\net4\RestSharp.dll")|> element |> shouldEqual (DotNetFramework(Framework "v4.0",Full))
-    FrameworkIdentifier.DetectFromPath(@"..\Rx-Main\lib\net40\Rx.dll")|> element |> shouldEqual (DotNetFramework(Framework "v4.0",Full))
-    FrameworkIdentifier.DetectFromPath(@"..\Rx-Main\lib\net45\Rx.dll")|> element |> shouldEqual (DotNetFramework(Framework "v4.5",Full))
-    FrameworkIdentifier.DetectFromPath(@"..\Rx-Main\lib\net20\Rx.dll")|> element |> shouldEqual (DotNetFramework(Framework "v2.0",Full))
-    FrameworkIdentifier.DetectFromPath(@"..\Rx-Main\lib\net35\Rx.dll")|> element |> shouldEqual (DotNetFramework(Framework "v3.5",Full))
-    FrameworkIdentifier.DetectFromPath("../Rx-Main/lib/net35/Rx.dll")|> element |> shouldEqual (DotNetFramework(Framework "v3.5",Full))
+    FrameworkIdentifier.DetectFromPath(@"..\RestSharp\lib\net4\RestSharp.dll")|> element |> shouldEqual (DotNetFramework(Framework FrameworkVersionNo.V4,Full))
+    FrameworkIdentifier.DetectFromPath(@"..\Rx-Main\lib\net40\Rx.dll")|> element |> shouldEqual (DotNetFramework(Framework FrameworkVersionNo.V4,Full))
+    FrameworkIdentifier.DetectFromPath(@"..\Rx-Main\lib\net45\Rx.dll")|> element |> shouldEqual (DotNetFramework(Framework FrameworkVersionNo.V4_5,Full))
+    FrameworkIdentifier.DetectFromPath(@"..\Rx-Main\lib\net20\Rx.dll")|> element |> shouldEqual (DotNetFramework(Framework FrameworkVersionNo.V2,Full))
+    FrameworkIdentifier.DetectFromPath(@"..\Rx-Main\lib\net35\Rx.dll")|> element |> shouldEqual (DotNetFramework(Framework FrameworkVersionNo.V3_5,Full))
+    FrameworkIdentifier.DetectFromPath("../Rx-Main/lib/net35/Rx.dll")|> element |> shouldEqual (DotNetFramework(Framework FrameworkVersionNo.V3_5,Full))
     FrameworkIdentifier.DetectFromPath(@"..\NUnit\lib\NUnit.dll")|> element |> shouldEqual (DotNetFramework(All,Full))
     FrameworkIdentifier.DetectFromPath("../NUnit/lib/NUnit.dll")|> element |> shouldEqual (DotNetFramework(All,Full))
 
@@ -25,16 +25,16 @@ let ``should detect CLR version from path``() =
 
 [<Test>]
 let ``should detect client framework version from path``() =
-    FrameworkIdentifier.DetectFromPath(@"..\packages\Castle.Core\lib\net40-client\Castle.Core.dll")|> element |> shouldEqual (DotNetFramework(Framework "v4.0",Client))
+    FrameworkIdentifier.DetectFromPath(@"..\packages\Castle.Core\lib\net40-client\Castle.Core.dll")|> element |> shouldEqual (DotNetFramework(Framework FrameworkVersionNo.V4,Client))
 
 [<Test>]
 let ``should detect net40-full as net40``() =
-    FrameworkIdentifier.DetectFromPath(@"..\packages\log4net\lib\net40-full\log4net.dll")|> element |> shouldEqual(DotNetFramework(Framework "v4.0",Full))
-    FrameworkIdentifier.DetectFromPath(@"..\packages\log4net\lib\net40\log4net.dll")|> element |> shouldEqual (DotNetFramework(Framework "v4.0",Full))
+    FrameworkIdentifier.DetectFromPath(@"..\packages\log4net\lib\net40-full\log4net.dll")|> element |> shouldEqual(DotNetFramework(Framework FrameworkVersionNo.V4,Full))
+    FrameworkIdentifier.DetectFromPath(@"..\packages\log4net\lib\net40\log4net.dll")|> element |> shouldEqual (DotNetFramework(Framework FrameworkVersionNo.V4,Full))
 
 [<Test>]
 let ``should detect net451``() =
-    FrameworkIdentifier.DetectFromPath(@"..\Rx-Main\lib\net451\Rx.dll")|> element |> shouldEqual (DotNetFramework(Framework "v4.5.1",Full))
+    FrameworkIdentifier.DetectFromPath(@"..\Rx-Main\lib\net451\Rx.dll")|> element |> shouldEqual (DotNetFramework(Framework FrameworkVersionNo.V4_5_1,Full))
 
 [<Test>]
 let ``should detect Silverlight version from path``() =
@@ -49,11 +49,11 @@ let ``should detect WindowsPhone version from path``() =
 
 [<Test>]
 let ``should detect framework version from uppercase path``() =
-    FrameworkIdentifier.DetectFromPath(@"..\packages\GitVersion.1.2.0\Lib\Net45\GitVersionCore.dll")|> element |> shouldEqual (DotNetFramework(Framework "v4.5",Full))
+    FrameworkIdentifier.DetectFromPath(@"..\packages\GitVersion.1.2.0\Lib\Net45\GitVersionCore.dll")|> element |> shouldEqual (DotNetFramework(Framework FrameworkVersionNo.V4_5,Full))
 
 [<Test>]
 let ``should detect net45-full``() =
-    FrameworkIdentifier.DetectFromPath(@"..\packages\Ninject\lib\net45-full\Ninject.dll")|> element |> shouldEqual (DotNetFramework(Framework "v4.5",Full))
+    FrameworkIdentifier.DetectFromPath(@"..\packages\Ninject\lib\net45-full\Ninject.dll")|> element |> shouldEqual (DotNetFramework(Framework FrameworkVersionNo.V4_5,Full))
 
 [<Test>]
 let ``should detect net``() =
@@ -61,9 +61,9 @@ let ``should detect net``() =
 
 [<Test>]
 let ``should detect 35, 40 and 45``() =
-    FrameworkIdentifier.DetectFromPath(@"..\packages\FSharpx.Core\lib\35\FSharp.Core.dll")|> element |> shouldEqual (DotNetFramework(Framework "v3.5",Full))
-    FrameworkIdentifier.DetectFromPath(@"..\packages\FSharpx.Core\lib\40\FSharp.Core.dll")|> element |> shouldEqual (DotNetFramework(Framework "v4.0",Full))
-    FrameworkIdentifier.DetectFromPath(@"..\packages\FSharpx.Core\lib\45\FSharp.Core.dll")|> element |> shouldEqual (DotNetFramework(Framework "v4.5",Full))
+    FrameworkIdentifier.DetectFromPath(@"..\packages\FSharpx.Core\lib\35\FSharp.Core.dll")|> element |> shouldEqual (DotNetFramework(Framework FrameworkVersionNo.V3_5,Full))
+    FrameworkIdentifier.DetectFromPath(@"..\packages\FSharpx.Core\lib\40\FSharp.Core.dll")|> element |> shouldEqual (DotNetFramework(Framework FrameworkVersionNo.V4,Full))
+    FrameworkIdentifier.DetectFromPath(@"..\packages\FSharpx.Core\lib\45\FSharp.Core.dll")|> element |> shouldEqual (DotNetFramework(Framework FrameworkVersionNo.V4_5,Full))
     
 
 [<Test>]

@@ -9,7 +9,17 @@ let placeHolder = "_._"
 let blackList =
     [fun (f:string) -> f.Contains placeHolder]
 
-let KnownDotNetFrameworks = [ "v1.0",Full; "v1.1",Full; "v2.0",Full; "v3.5",Full; "v4.0",Client; "v4.0",Full; "v4.5",Full; "v4.5.1",Full]
+
+
+let KnownDotNetFrameworks = 
+    [ FrameworkVersionNo.V1, Full
+      FrameworkVersionNo.V1_1, Full
+      FrameworkVersionNo.V2, Full
+      FrameworkVersionNo.V3_5, Full
+      FrameworkVersionNo.V4, Client
+      FrameworkVersionNo.V4, Full
+      FrameworkVersionNo.V4_5, Full
+      FrameworkVersionNo.V4_5_1, Full ]
 
 type InstallModell = 
     {   PackageName: string
@@ -63,7 +73,7 @@ type InstallModell =
         let model =
             if Set.isEmpty newFiles then this else
 
-            let target = DotNetFramework(Framework "v1.0",Full)
+            let target = DotNetFramework(Framework FrameworkVersionNo.V1,Full)
             match Map.tryFind target this.Frameworks with
             | Some files when Set.isEmpty files |> not -> this
             | _ -> { this with Frameworks = Map.add target newFiles this.Frameworks }
@@ -128,15 +138,15 @@ let emptymodel = InstallModell.EmptyModel("Unknown",SemVer.parse "0.1")
 let ``should create empty model with net40, net45 ...``() = 
     let model = emptymodel.Add [ @"..\Rx-Main\lib\net40\Rx.dll"; @"..\Rx-Main\lib\net45\Rx.dll" ] 
 
-    model.GetFrameworks() |> shouldContain (DotNetFramework(Framework "v4.0", Full))
-    model.GetFrameworks() |> shouldContain (DotNetFramework(Framework "v4.5", Full))
+    model.GetFrameworks() |> shouldContain (DotNetFramework(Framework FrameworkVersionNo.V4, Full))
+    model.GetFrameworks() |> shouldContain (DotNetFramework(Framework FrameworkVersionNo.V4_5, Full))
 
 [<Test>]
 let ``should understand net40 and net45``() = 
     let model = emptymodel.Add [ @"..\Rx-Main\lib\net40\Rx.dll"; @"..\Rx-Main\lib\net45\Rx.dll" ] 
 
-    model.GetFiles(DotNetFramework(Framework "v4.0", Full)) |> shouldContain @"..\Rx-Main\lib\net40\Rx.dll"
-    model.GetFiles(DotNetFramework(Framework "v4.5", Full)) |> shouldContain @"..\Rx-Main\lib\net45\Rx.dll"
+    model.GetFiles(DotNetFramework(Framework FrameworkVersionNo.V4, Full)) |> shouldContain @"..\Rx-Main\lib\net40\Rx.dll"
+    model.GetFiles(DotNetFramework(Framework FrameworkVersionNo.V4_5, Full)) |> shouldContain @"..\Rx-Main\lib\net45\Rx.dll"
 
 [<Test>]
 let ``should add net35 if we have net20 and net40``() = 
@@ -144,19 +154,19 @@ let ``should add net35 if we have net20 and net40``() =
         emptymodel.Add([ @"..\Rx-Main\lib\net20\Rx.dll"; @"..\Rx-Main\lib\net40\Rx.dll" ])
             .UseLowerVersionLibIfEmpty()
 
-    model.GetFiles(DotNetFramework(Framework "v2.0", Full)) |> shouldContain @"..\Rx-Main\lib\net20\Rx.dll"
-    model.GetFiles(DotNetFramework(Framework "v3.5", Full)) |> shouldContain @"..\Rx-Main\lib\net20\Rx.dll"
-    model.GetFiles(DotNetFramework(Framework "v4.0", Full)) |> shouldContain @"..\Rx-Main\lib\net40\Rx.dll"
-    model.GetFiles(DotNetFramework(Framework "v4.0", Full)) |> shouldNotContain @"..\Rx-Main\lib\net20\Rx.dll"
-    model.GetFiles(DotNetFramework(Framework "v4.5", Full)) |> shouldContain @"..\Rx-Main\lib\net40\Rx.dll"
-    model.GetFiles(DotNetFramework(Framework "v4.5.1", Full)) |> shouldContain @"..\Rx-Main\lib\net40\Rx.dll"
+    model.GetFiles(DotNetFramework(Framework FrameworkVersionNo.V2, Full)) |> shouldContain @"..\Rx-Main\lib\net20\Rx.dll"
+    model.GetFiles(DotNetFramework(Framework FrameworkVersionNo.V3_5, Full)) |> shouldContain @"..\Rx-Main\lib\net20\Rx.dll"
+    model.GetFiles(DotNetFramework(Framework FrameworkVersionNo.V4, Full)) |> shouldContain @"..\Rx-Main\lib\net40\Rx.dll"
+    model.GetFiles(DotNetFramework(Framework FrameworkVersionNo.V4, Full)) |> shouldNotContain @"..\Rx-Main\lib\net20\Rx.dll"
+    model.GetFiles(DotNetFramework(Framework FrameworkVersionNo.V4_5, Full)) |> shouldContain @"..\Rx-Main\lib\net40\Rx.dll"
+    model.GetFiles(DotNetFramework(Framework FrameworkVersionNo.V4_5_1, Full)) |> shouldContain @"..\Rx-Main\lib\net40\Rx.dll"
 
 [<Test>]
 let ``should put _._ files into right buckets``() = 
     let model = emptymodel.Add [ @"..\Rx-Main\lib\net40\_._"; @"..\Rx-Main\lib\net20\_._" ] 
 
-    model.GetFiles(DotNetFramework(Framework "v2.0", Full)) |> shouldContain @"..\Rx-Main\lib\net20\_._"
-    model.GetFiles(DotNetFramework(Framework "v4.0", Full)) |> shouldContain @"..\Rx-Main\lib\net40\_._"
+    model.GetFiles(DotNetFramework(Framework FrameworkVersionNo.V2, Full)) |> shouldContain @"..\Rx-Main\lib\net20\_._"
+    model.GetFiles(DotNetFramework(Framework FrameworkVersionNo.V4, Full)) |> shouldContain @"..\Rx-Main\lib\net40\_._"
 
 [<Test>]
 let ``should inherit _._ files to higher frameworks``() = 
@@ -164,11 +174,11 @@ let ``should inherit _._ files to higher frameworks``() =
         emptymodel.Add([ @"..\Rx-Main\lib\net40\_._"; @"..\Rx-Main\lib\net20\_._" ])
             .UseLowerVersionLibIfEmpty()
 
-    model.GetFiles(DotNetFramework(Framework "v2.0", Full)) |> shouldContain @"..\Rx-Main\lib\net20\_._"
-    model.GetFiles(DotNetFramework(Framework "v3.5", Full)) |> shouldContain @"..\Rx-Main\lib\net20\_._"
-    model.GetFiles(DotNetFramework(Framework "v4.0", Full)) |> shouldContain @"..\Rx-Main\lib\net40\_._"
-    model.GetFiles(DotNetFramework(Framework "v4.5", Full)) |> shouldContain @"..\Rx-Main\lib\net40\_._"
-    model.GetFiles(DotNetFramework(Framework "v4.5.1", Full)) |> shouldContain @"..\Rx-Main\lib\net40\_._"
+    model.GetFiles(DotNetFramework(Framework FrameworkVersionNo.V2, Full)) |> shouldContain @"..\Rx-Main\lib\net20\_._"
+    model.GetFiles(DotNetFramework(Framework FrameworkVersionNo.V3_5, Full)) |> shouldContain @"..\Rx-Main\lib\net20\_._"
+    model.GetFiles(DotNetFramework(Framework FrameworkVersionNo.V4, Full)) |> shouldContain @"..\Rx-Main\lib\net40\_._"
+    model.GetFiles(DotNetFramework(Framework FrameworkVersionNo.V4_5, Full)) |> shouldContain @"..\Rx-Main\lib\net40\_._"
+    model.GetFiles(DotNetFramework(Framework FrameworkVersionNo.V4_5_1, Full)) |> shouldContain @"..\Rx-Main\lib\net40\_._"
 
 
 [<Test>]
@@ -177,10 +187,10 @@ let ``should skip buckets which contain placeholder while adjusting upper versio
         emptymodel.Add([ @"..\Rx-Main\lib\net20\Rx.dll"; @"..\Rx-Main\lib\net40\_._"; ])
             .UseLowerVersionLibIfEmpty()
 
-    model.GetFiles(DotNetFramework(Framework "v2.0", Full)) |> shouldContain @"..\Rx-Main\lib\net20\Rx.dll"
-    model.GetFiles(DotNetFramework(Framework "v3.5", Full)) |> shouldContain @"..\Rx-Main\lib\net20\Rx.dll"
-    model.GetFiles(DotNetFramework(Framework "v4.0", Full)) |> shouldNotContain @"..\Rx-Main\lib\net20\Rx.dll"
-    model.GetFiles(DotNetFramework(Framework "v4.5", Full)) |> shouldNotContain @"..\Rx-Main\lib\net20\Rx.dll"
+    model.GetFiles(DotNetFramework(Framework FrameworkVersionNo.V2, Full)) |> shouldContain @"..\Rx-Main\lib\net20\Rx.dll"
+    model.GetFiles(DotNetFramework(Framework FrameworkVersionNo.V3_5, Full)) |> shouldContain @"..\Rx-Main\lib\net20\Rx.dll"
+    model.GetFiles(DotNetFramework(Framework FrameworkVersionNo.V4, Full)) |> shouldNotContain @"..\Rx-Main\lib\net20\Rx.dll"
+    model.GetFiles(DotNetFramework(Framework FrameworkVersionNo.V4_5, Full)) |> shouldNotContain @"..\Rx-Main\lib\net20\Rx.dll"
 
 [<Test>]
 let ``should filter _._ when processing blacklist``() = 
@@ -188,8 +198,8 @@ let ``should filter _._ when processing blacklist``() =
         emptymodel.Add([ @"..\Rx-Main\lib\net40\_._"; @"..\Rx-Main\lib\net20\_._" ])
             .FilterBlackList()
 
-    model.GetFiles(DotNetFramework(Framework "v2.0", Full)) |> shouldNotContain @"..\Rx-Main\lib\net20\_._"
-    model.GetFiles(DotNetFramework(Framework "v4.0", Full)) |> shouldNotContain @"..\Rx-Main\lib\net40\_._"
+    model.GetFiles(DotNetFramework(Framework FrameworkVersionNo.V2, Full)) |> shouldNotContain @"..\Rx-Main\lib\net20\_._"
+    model.GetFiles(DotNetFramework(Framework FrameworkVersionNo.V4, Full)) |> shouldNotContain @"..\Rx-Main\lib\net40\_._"
 
 [<Test>]
 let ``should install single client profile lib for everything``() = 
@@ -197,10 +207,10 @@ let ``should install single client profile lib for everything``() =
         emptymodel.Add([ @"..\Castle.Core\lib\net40-client\Castle.Core.dll" ])
             .UseLowerVersionLibIfEmpty()
 
-    model.GetFiles(DotNetFramework(Framework "v3.5", Full)) |> shouldNotContain @"..\Castle.Core\lib\net40-client\Castle.Core.dll"
-    model.GetFiles(DotNetFramework(Framework "v4.0", Client)) |> shouldContain @"..\Castle.Core\lib\net40-client\Castle.Core.dll" 
-    model.GetFiles(DotNetFramework(Framework "v4.0", Full)) |> shouldContain @"..\Castle.Core\lib\net40-client\Castle.Core.dll"
-    model.GetFiles(DotNetFramework(Framework "v4.5", Full)) |> shouldContain @"..\Castle.Core\lib\net40-client\Castle.Core.dll"
+    model.GetFiles(DotNetFramework(Framework FrameworkVersionNo.V3_5, Full)) |> shouldNotContain @"..\Castle.Core\lib\net40-client\Castle.Core.dll"
+    model.GetFiles(DotNetFramework(Framework FrameworkVersionNo.V4, Client)) |> shouldContain @"..\Castle.Core\lib\net40-client\Castle.Core.dll" 
+    model.GetFiles(DotNetFramework(Framework FrameworkVersionNo.V4, Full)) |> shouldContain @"..\Castle.Core\lib\net40-client\Castle.Core.dll"
+    model.GetFiles(DotNetFramework(Framework FrameworkVersionNo.V4_5, Full)) |> shouldContain @"..\Castle.Core\lib\net40-client\Castle.Core.dll"
 
 [<Test>]
 let ``should handle lib install of Microsoft.Net.Http for .NET 4.5``() = 
@@ -215,14 +225,14 @@ let ``should handle lib install of Microsoft.Net.Http for .NET 4.5``() =
               @"..\Microsoft.Net.Http\lib\net45\System.Net.Http.Primitives.dll" ])
             .UseLowerVersionLibIfEmpty()
 
-    model.GetFiles(DotNetFramework(Framework "v3.5", Full)) |> shouldNotContain @"..\Microsoft.Net.Http\lib\net40\System.Net.Http.dll"
+    model.GetFiles(DotNetFramework(Framework FrameworkVersionNo.V3_5, Full)) |> shouldNotContain @"..\Microsoft.Net.Http\lib\net40\System.Net.Http.dll"
 
-    model.GetFiles(DotNetFramework(Framework "v4.0", Full)) |> shouldContain @"..\Microsoft.Net.Http\lib\net40\System.Net.Http.dll"
-    model.GetFiles(DotNetFramework(Framework "v4.0", Full)) |> shouldContain @"..\Microsoft.Net.Http\lib\net40\System.Net.Http.Primitives.dll" 
-    model.GetFiles(DotNetFramework(Framework "v4.0", Full)) |> shouldContain @"..\Microsoft.Net.Http\lib\net40\System.Net.Http.WebRequest.dll" 
+    model.GetFiles(DotNetFramework(Framework FrameworkVersionNo.V4, Full)) |> shouldContain @"..\Microsoft.Net.Http\lib\net40\System.Net.Http.dll"
+    model.GetFiles(DotNetFramework(Framework FrameworkVersionNo.V4, Full)) |> shouldContain @"..\Microsoft.Net.Http\lib\net40\System.Net.Http.Primitives.dll" 
+    model.GetFiles(DotNetFramework(Framework FrameworkVersionNo.V4, Full)) |> shouldContain @"..\Microsoft.Net.Http\lib\net40\System.Net.Http.WebRequest.dll" 
 
-    model.GetFiles(DotNetFramework(Framework "v4.5", Full)) |> shouldNotContain @"..\Microsoft.Net.Http\lib\net40\System.Net.Http.dll" 
-    model.GetFiles(DotNetFramework(Framework "v4.5", Full)) |> shouldContain @"..\Microsoft.Net.Http\lib\net45\System.Net.Http.Primitives.dll" 
+    model.GetFiles(DotNetFramework(Framework FrameworkVersionNo.V4_5, Full)) |> shouldNotContain @"..\Microsoft.Net.Http\lib\net40\System.Net.Http.dll" 
+    model.GetFiles(DotNetFramework(Framework FrameworkVersionNo.V4_5, Full)) |> shouldContain @"..\Microsoft.Net.Http\lib\net45\System.Net.Http.Primitives.dll" 
 
 [<Test>]
 let ``should handle lib install of Jint for NET >= 40 and SL >= 50``() = 
@@ -232,9 +242,9 @@ let ``should handle lib install of Jint for NET >= 40 and SL >= 50``() =
 
     model.GetFiles(PortableFramework("7.0", "net40+sl50+win+wp80")) |> shouldContain @"..\Jint\lib\portable-net40+sl50+win+wp80\Jint.dll" 
 
-    model.GetFiles(DotNetFramework(Framework "v3.5", Full)) |> shouldNotContain @"..\Jint\lib\portable-net40+sl50+win+wp80\Jint.dll" 
+    model.GetFiles(DotNetFramework(Framework FrameworkVersionNo.V3_5, Full)) |> shouldNotContain @"..\Jint\lib\portable-net40+sl50+win+wp80\Jint.dll" 
 
-    model.GetFiles(DotNetFramework(Framework "v4.0", Full)) |> shouldContain @"..\Jint\lib\portable-net40+sl50+win+wp80\Jint.dll"
+    model.GetFiles(DotNetFramework(Framework FrameworkVersionNo.V4, Full)) |> shouldContain @"..\Jint\lib\portable-net40+sl50+win+wp80\Jint.dll"
 
     model.GetFiles(Silverlight("v5.0")) |> shouldContain @"..\Jint\lib\portable-net40+sl50+win+wp80\Jint.dll" 
 
@@ -250,14 +260,14 @@ let ``should handle lib install of Microsoft.BCL for NET >= 40``() =
             .UseLowerVersionLibIfEmpty()
             .FilterBlackList()
 
-    model.GetFiles(DotNetFramework(Framework "v3.5", Full)) |> shouldNotContain  @"..\Microsoft.Bcl\lib\net40\System.IO.dll" 
+    model.GetFiles(DotNetFramework(Framework FrameworkVersionNo.V3_5, Full)) |> shouldNotContain  @"..\Microsoft.Bcl\lib\net40\System.IO.dll" 
 
-    model.GetFiles(DotNetFramework(Framework "v4.0", Full)) |> shouldContain @"..\Microsoft.Bcl\lib\net40\System.IO.dll" 
-    model.GetFiles(DotNetFramework(Framework "v4.0", Full)) |> shouldContain @"..\Microsoft.Bcl\lib\net40\System.Runtime.dll" 
-    model.GetFiles(DotNetFramework(Framework "v4.0", Full)) |> shouldContain @"..\Microsoft.Bcl\lib\net40\System.Threading.Tasks.dll" 
+    model.GetFiles(DotNetFramework(Framework FrameworkVersionNo.V4, Full)) |> shouldContain @"..\Microsoft.Bcl\lib\net40\System.IO.dll" 
+    model.GetFiles(DotNetFramework(Framework FrameworkVersionNo.V4, Full)) |> shouldContain @"..\Microsoft.Bcl\lib\net40\System.Runtime.dll" 
+    model.GetFiles(DotNetFramework(Framework FrameworkVersionNo.V4, Full)) |> shouldContain @"..\Microsoft.Bcl\lib\net40\System.Threading.Tasks.dll" 
 
-    model.GetFiles(DotNetFramework(Framework "v4.5", Full)) |> shouldBeEmpty
-    model.GetFiles(DotNetFramework(Framework "v4.5.1", Full)) |> shouldBeEmpty
+    model.GetFiles(DotNetFramework(Framework FrameworkVersionNo.V4_5, Full)) |> shouldBeEmpty
+    model.GetFiles(DotNetFramework(Framework FrameworkVersionNo.V4_5_1, Full)) |> shouldBeEmpty
 
 
 [<Test>]
@@ -288,9 +298,9 @@ let ``should not use portable-net40 if we have net40``() =
               @"..\Microsoft.Bcl\lib\portable-net40+sl4+win8\System.Runtime.dll" 
               @"..\Microsoft.Bcl\lib\portable-net40+sl4+win8\System.Threading.Tasks.dll" ])
     
-    model.GetFiles(DotNetFramework(Framework "v4.0", Full)) |> shouldContain @"..\Microsoft.Bcl\lib\net40\System.IO.dll" 
-    model.GetFiles(DotNetFramework(Framework "v4.0", Full)) |> shouldContain @"..\Microsoft.Bcl\lib\net40\System.Runtime.dll" 
-    model.GetFiles(DotNetFramework(Framework "v4.0", Full)) |> shouldContain @"..\Microsoft.Bcl\lib\net40\System.Threading.Tasks.dll" 
+    model.GetFiles(DotNetFramework(Framework FrameworkVersionNo.V4, Full)) |> shouldContain @"..\Microsoft.Bcl\lib\net40\System.IO.dll" 
+    model.GetFiles(DotNetFramework(Framework FrameworkVersionNo.V4, Full)) |> shouldContain @"..\Microsoft.Bcl\lib\net40\System.Runtime.dll" 
+    model.GetFiles(DotNetFramework(Framework FrameworkVersionNo.V4, Full)) |> shouldContain @"..\Microsoft.Bcl\lib\net40\System.Threading.Tasks.dll" 
 
     model.GetFiles(PortableFramework("7.0", "net40+sl4+win8")) |> shouldContain @"..\Microsoft.Bcl\lib\portable-net40+sl4+win8\System.IO.dll" 
     model.GetFiles(PortableFramework("7.0", "net40+sl4+win8")) |> shouldContain @"..\Microsoft.Bcl\lib\portable-net40+sl4+win8\System.Runtime.dll" 
@@ -300,10 +310,10 @@ let ``should not use portable-net40 if we have net40``() =
 let ``should handle lib install of DotNetZip 1.9.3``() = 
     let model = emptymodel.Add([ @"..\DotNetZip\lib\net20\Ionic.Zip.dll" ]).Process()
 
-    model.GetFiles(DotNetFramework(Framework "v2.0", Full)) |> shouldContain @"..\DotNetZip\lib\net20\Ionic.Zip.dll"
-    model.GetFiles(DotNetFramework(Framework "v3.5", Full)) |> shouldContain @"..\DotNetZip\lib\net20\Ionic.Zip.dll"
-    model.GetFiles(DotNetFramework(Framework "v4.0", Full)) |> shouldContain @"..\DotNetZip\lib\net20\Ionic.Zip.dll"
-    model.GetFiles(DotNetFramework(Framework "v4.5", Full)) |> shouldContain @"..\DotNetZip\lib\net20\Ionic.Zip.dll"
+    model.GetFiles(DotNetFramework(Framework FrameworkVersionNo.V2, Full)) |> shouldContain @"..\DotNetZip\lib\net20\Ionic.Zip.dll"
+    model.GetFiles(DotNetFramework(Framework FrameworkVersionNo.V3_5, Full)) |> shouldContain @"..\DotNetZip\lib\net20\Ionic.Zip.dll"
+    model.GetFiles(DotNetFramework(Framework FrameworkVersionNo.V4, Full)) |> shouldContain @"..\DotNetZip\lib\net20\Ionic.Zip.dll"
+    model.GetFiles(DotNetFramework(Framework FrameworkVersionNo.V4_5, Full)) |> shouldContain @"..\DotNetZip\lib\net20\Ionic.Zip.dll"
 
 
 [<Test>]
@@ -338,11 +348,11 @@ let ``should handle lib install of Microsoft.Net.Http 2.2.28``() =
               @"..\Microsoft.Net.Http\lib\wpa81\System.Net.Http.Primitives.dll" ])
             .Process()
 
-    model.GetFiles(DotNetFramework(Framework "v3.5", Full)) |> shouldNotContain @"..\Microsoft.Net.Http\lib\net40\System.Net.Http.dll"
+    model.GetFiles(DotNetFramework(Framework FrameworkVersionNo.V3_5, Full)) |> shouldNotContain @"..\Microsoft.Net.Http\lib\net40\System.Net.Http.dll"
 
-    model.GetFiles(DotNetFramework(Framework "v4.0", Full)) |> shouldContain @"..\Microsoft.Net.Http\lib\net40\System.Net.Http.dll"
-    model.GetFiles(DotNetFramework(Framework "v4.0", Full)) |> shouldContain @"..\Microsoft.Net.Http\lib\net40\System.Net.Http.Primitives.dll" 
-    model.GetFiles(DotNetFramework(Framework "v4.0", Full)) |> shouldContain @"..\Microsoft.Net.Http\lib\net40\System.Net.Http.WebRequest.dll" 
+    model.GetFiles(DotNetFramework(Framework FrameworkVersionNo.V4, Full)) |> shouldContain @"..\Microsoft.Net.Http\lib\net40\System.Net.Http.dll"
+    model.GetFiles(DotNetFramework(Framework FrameworkVersionNo.V4, Full)) |> shouldContain @"..\Microsoft.Net.Http\lib\net40\System.Net.Http.Primitives.dll" 
+    model.GetFiles(DotNetFramework(Framework FrameworkVersionNo.V4, Full)) |> shouldContain @"..\Microsoft.Net.Http\lib\net40\System.Net.Http.WebRequest.dll" 
 
     model.GetFiles(MonoAndroid) |> shouldContain @"..\Microsoft.Net.Http\lib\monoandroid\System.Net.Http.Extensions.dll" 
     model.GetFiles(MonoAndroid) |> shouldContain @"..\Microsoft.Net.Http\lib\monoandroid\System.Net.Http.Primitives.dll" 
@@ -350,11 +360,11 @@ let ``should handle lib install of Microsoft.Net.Http 2.2.28``() =
     model.GetFiles(MonoTouch) |> shouldContain @"..\Microsoft.Net.Http\lib\monotouch\System.Net.Http.Extensions.dll" 
     model.GetFiles(MonoTouch) |> shouldContain @"..\Microsoft.Net.Http\lib\monotouch\System.Net.Http.Primitives.dll" 
 
-    model.GetFiles(DotNetFramework(Framework "v4.5", Full)) |> shouldNotContain @"..\Microsoft.Net.Http\lib\net40\System.Net.Http.dll" 
-    model.GetFiles(DotNetFramework(Framework "v4.5", Full)) |> shouldContain @"..\Microsoft.Net.Http\lib\net45\System.Net.Http.Primitives.dll" 
+    model.GetFiles(DotNetFramework(Framework FrameworkVersionNo.V4_5, Full)) |> shouldNotContain @"..\Microsoft.Net.Http\lib\net40\System.Net.Http.dll" 
+    model.GetFiles(DotNetFramework(Framework FrameworkVersionNo.V4_5, Full)) |> shouldContain @"..\Microsoft.Net.Http\lib\net45\System.Net.Http.Primitives.dll" 
 
-    model.GetFiles(DotNetFramework(Framework "v4.5", Full)) |> shouldNotContain @"..\Microsoft.Net.Http\lib\net40\System.Net.Http.dll" 
-    model.GetFiles(DotNetFramework(Framework "v4.5", Full)) |> shouldContain @"..\Microsoft.Net.Http\lib\net45\System.Net.Http.Primitives.dll"  
+    model.GetFiles(DotNetFramework(Framework FrameworkVersionNo.V4_5, Full)) |> shouldNotContain @"..\Microsoft.Net.Http\lib\net40\System.Net.Http.dll" 
+    model.GetFiles(DotNetFramework(Framework FrameworkVersionNo.V4_5, Full)) |> shouldContain @"..\Microsoft.Net.Http\lib\net45\System.Net.Http.Primitives.dll"  
     
     model.GetFiles(PortableFramework("7.0", "net40+sl4+win8+wp71+wpa81")) |> shouldContain @"..\Microsoft.Net.Http\lib\portable-net40+sl4+win8+wp71+wpa81\System.Net.Http.dll"
     model.GetFiles(PortableFramework("7.0", "net40+sl4+win8+wp71+wpa81")) |> shouldContain @"..\Microsoft.Net.Http\lib\portable-net40+sl4+win8+wp71+wpa81\System.Net.Http.Extensions.dll" 
@@ -408,11 +418,11 @@ let ``should handle lib install of Microsoft.Bcl 1.1.9``() =
                ])
             .Process()
 
-    model.GetFiles(DotNetFramework(Framework "v4.0", Full)) |> shouldContain @"..\Microsoft.Bcl\lib\net40\System.IO.dll"
-    model.GetFiles(DotNetFramework(Framework "v4.0", Full)) |> shouldContain @"..\Microsoft.Bcl\lib\net40\System.Runtime.dll" 
-    model.GetFiles(DotNetFramework(Framework "v4.0", Full)) |> shouldContain @"..\Microsoft.Bcl\lib\net40\System.Threading.Tasks.dll" 
+    model.GetFiles(DotNetFramework(Framework FrameworkVersionNo.V4, Full)) |> shouldContain @"..\Microsoft.Bcl\lib\net40\System.IO.dll"
+    model.GetFiles(DotNetFramework(Framework FrameworkVersionNo.V4, Full)) |> shouldContain @"..\Microsoft.Bcl\lib\net40\System.Runtime.dll" 
+    model.GetFiles(DotNetFramework(Framework FrameworkVersionNo.V4, Full)) |> shouldContain @"..\Microsoft.Bcl\lib\net40\System.Threading.Tasks.dll" 
 
-    model.GetFiles(DotNetFramework(Framework "v4.5", Full)) |> shouldBeEmpty
+    model.GetFiles(DotNetFramework(Framework FrameworkVersionNo.V4_5, Full)) |> shouldBeEmpty
     model.GetFiles(MonoAndroid) |> shouldBeEmpty
     model.GetFiles(MonoTouch) |> shouldBeEmpty
     model.GetFiles(Windows "v8.0") |> shouldBeEmpty
@@ -449,17 +459,17 @@ let ``should handle lib install of Fantomas 1.5``() =
           .UseLowerVersionLibIfEmpty()
 
     model.GetFiles(DotNetFramework(All, Full)) |> shouldBeEmpty
-    model.GetFiles(DotNetFramework(Framework "v2.0", Full)) |> shouldContain @"..\Fantomas\lib\FantomasLib.dll" 
-    model.GetFiles(DotNetFramework(Framework "v2.0", Full)) |> shouldContain @"..\Fantomas\lib\FSharp.Core.dll" 
+    model.GetFiles(DotNetFramework(Framework FrameworkVersionNo.V2, Full)) |> shouldContain @"..\Fantomas\lib\FantomasLib.dll" 
+    model.GetFiles(DotNetFramework(Framework FrameworkVersionNo.V2, Full)) |> shouldContain @"..\Fantomas\lib\FSharp.Core.dll" 
 
-    model.GetFiles(DotNetFramework(Framework "v3.5", Full)) |> shouldContain @"..\Fantomas\lib\FantomasLib.dll" 
-    model.GetFiles(DotNetFramework(Framework "v3.5", Full)) |> shouldContain @"..\Fantomas\lib\FSharp.Core.dll" 
+    model.GetFiles(DotNetFramework(Framework FrameworkVersionNo.V3_5, Full)) |> shouldContain @"..\Fantomas\lib\FantomasLib.dll" 
+    model.GetFiles(DotNetFramework(Framework FrameworkVersionNo.V3_5, Full)) |> shouldContain @"..\Fantomas\lib\FSharp.Core.dll" 
 
-    model.GetFiles(DotNetFramework(Framework "v4.0", Full)) |> shouldContain @"..\Fantomas\lib\FantomasLib.dll" 
-    model.GetFiles(DotNetFramework(Framework "v4.0", Full)) |> shouldContain @"..\Fantomas\lib\FSharp.Core.dll" 
+    model.GetFiles(DotNetFramework(Framework FrameworkVersionNo.V4, Full)) |> shouldContain @"..\Fantomas\lib\FantomasLib.dll" 
+    model.GetFiles(DotNetFramework(Framework FrameworkVersionNo.V4, Full)) |> shouldContain @"..\Fantomas\lib\FSharp.Core.dll" 
 
-    model.GetFiles(DotNetFramework(Framework "v4.5", Full)) |> shouldContain @"..\Fantomas\lib\FantomasLib.dll" 
-    model.GetFiles(DotNetFramework(Framework "v4.5", Full)) |> shouldContain @"..\Fantomas\lib\FSharp.Core.dll" 
+    model.GetFiles(DotNetFramework(Framework FrameworkVersionNo.V4_5, Full)) |> shouldContain @"..\Fantomas\lib\FantomasLib.dll" 
+    model.GetFiles(DotNetFramework(Framework FrameworkVersionNo.V4_5, Full)) |> shouldContain @"..\Fantomas\lib\FSharp.Core.dll" 
 
 [<Test>]
 let ``should handle lib install of Fantomas 1.5.0 with explicit references``() = 
@@ -471,17 +481,17 @@ let ``should handle lib install of Fantomas 1.5.0 with explicit references``() =
             .Process()
             
     model.GetFiles(DotNetFramework(All, Full)) |> shouldBeEmpty
-    model.GetFiles(DotNetFramework(Framework "v2.0", Full)) |> shouldContain @"..\Fantomas\lib\FantomasLib.dll" 
-    model.GetFiles(DotNetFramework(Framework "v2.0", Full)) |> shouldNotContain @"..\Fantomas\lib\FSharp.Core.dll" 
+    model.GetFiles(DotNetFramework(Framework FrameworkVersionNo.V2, Full)) |> shouldContain @"..\Fantomas\lib\FantomasLib.dll" 
+    model.GetFiles(DotNetFramework(Framework FrameworkVersionNo.V2, Full)) |> shouldNotContain @"..\Fantomas\lib\FSharp.Core.dll" 
 
-    model.GetFiles(DotNetFramework(Framework "v3.5", Full)) |> shouldContain @"..\Fantomas\lib\FantomasLib.dll" 
-    model.GetFiles(DotNetFramework(Framework "v3.5", Full)) |> shouldNotContain @"..\Fantomas\lib\FSharp.Core.dll" 
+    model.GetFiles(DotNetFramework(Framework FrameworkVersionNo.V3_5, Full)) |> shouldContain @"..\Fantomas\lib\FantomasLib.dll" 
+    model.GetFiles(DotNetFramework(Framework FrameworkVersionNo.V3_5, Full)) |> shouldNotContain @"..\Fantomas\lib\FSharp.Core.dll" 
 
-    model.GetFiles(DotNetFramework(Framework "v4.0", Full)) |> shouldContain @"..\Fantomas\lib\FantomasLib.dll" 
-    model.GetFiles(DotNetFramework(Framework "v4.0", Full)) |> shouldNotContain @"..\Fantomas\lib\FSharp.Core.dll" 
+    model.GetFiles(DotNetFramework(Framework FrameworkVersionNo.V4, Full)) |> shouldContain @"..\Fantomas\lib\FantomasLib.dll" 
+    model.GetFiles(DotNetFramework(Framework FrameworkVersionNo.V4, Full)) |> shouldNotContain @"..\Fantomas\lib\FSharp.Core.dll" 
 
-    model.GetFiles(DotNetFramework(Framework "v4.5", Full)) |> shouldContain @"..\Fantomas\lib\FantomasLib.dll" 
-    model.GetFiles(DotNetFramework(Framework "v4.5", Full)) |> shouldNotContain @"..\Fantomas\lib\FSharp.Core.dll" 
+    model.GetFiles(DotNetFramework(Framework FrameworkVersionNo.V4_5, Full)) |> shouldContain @"..\Fantomas\lib\FantomasLib.dll" 
+    model.GetFiles(DotNetFramework(Framework FrameworkVersionNo.V4_5, Full)) |> shouldNotContain @"..\Fantomas\lib\FSharp.Core.dll" 
 
 [<Test>]
 let ``should not install tools``() = 

@@ -8,11 +8,29 @@ type FrameworkProfile =
     | Client
     | Full
 
+[<RequireQualifiedAccess>]
+type FrameworkVersionNo = 
+    | V1
+    | V1_1
+    | V2
+    | V3_5
+    | V4
+    | V4_5
+    | V4_5_1
+    override this.ToString() = 
+        match this with
+        | V1 -> "v1.0"
+        | V1_1 -> "v1.1"
+        | V2 -> "v2.0"
+        | V3_5 -> "v3.5"
+        | V4 -> "v4.0"
+        | V4_5 -> "v4.5"
+        | V4_5_1 -> "v4.5.1"
 
 /// The Framework version.
 type FrameworkVersion = 
     | All
-    | Framework of string
+    | Framework of FrameworkVersionNo
 
 type PlatformVersion = string
 
@@ -85,22 +103,20 @@ type FrameworkIdentifier =
         | "1.0" -> Some(DotNetFramework(All, Full))
         | "1.1" -> Some(DotNetFramework(All, Full))
         | "2.0" -> Some(DotNetFramework(All, Full))
-        | "net20" -> Some(DotNetFramework(Framework "v2.0", Full))
-        | "net20-full" -> Some(DotNetFramework(Framework "v2.0", Full))
-        | "net35" -> Some(DotNetFramework(Framework "v3.5", Full))
-        | "net35-full" -> Some(DotNetFramework(Framework "v3.5", Full))
-        | "net4" -> Some(DotNetFramework(Framework "v4.0", Full))
-        | "net40" -> Some(DotNetFramework(Framework "v4.0", Full))
-        | "net40-full" -> Some(DotNetFramework(Framework "v4.0", Full))
-        | "net40-client" -> Some(DotNetFramework(Framework "v4.0", Client))
-        | "portable-net4" -> Some(DotNetFramework(Framework "v4.0", Full))
-        | "portable-net40" -> Some(DotNetFramework(Framework "v4.0", Full))
-        | "net45" -> Some(DotNetFramework(Framework "v4.5", Full))
-        | "net45-full" -> Some(DotNetFramework(Framework "v4.5", Full))
-        | "net451" -> Some(DotNetFramework(Framework "v4.5.1", Full))
-        | "35" -> Some(DotNetFramework(Framework "v3.5", Full))
-        | "40" -> Some(DotNetFramework(Framework "v4.0", Full))
-        | "45" -> Some(DotNetFramework(Framework "v4.5", Full))
+        | "net20" -> Some(DotNetFramework(Framework FrameworkVersionNo.V2, Full))
+        | "net20-full" -> Some(DotNetFramework(Framework FrameworkVersionNo.V2, Full))
+        | "net35" -> Some(DotNetFramework(Framework FrameworkVersionNo.V3_5, Full))
+        | "net35-full" -> Some(DotNetFramework(Framework FrameworkVersionNo.V3_5, Full))
+        | "net4" -> Some(DotNetFramework(Framework FrameworkVersionNo.V4, Full))
+        | "net40" -> Some(DotNetFramework(Framework FrameworkVersionNo.V4, Full))
+        | "net40-full" -> Some(DotNetFramework(Framework FrameworkVersionNo.V4, Full))
+        | "net40-client" -> Some(DotNetFramework(Framework FrameworkVersionNo.V4, Client))
+        | "net45" -> Some(DotNetFramework(Framework FrameworkVersionNo.V4_5, Full))
+        | "net45-full" -> Some(DotNetFramework(Framework FrameworkVersionNo.V4_5, Full))
+        | "net451" -> Some(DotNetFramework(Framework FrameworkVersionNo.V4_5_1, Full))
+        | "35" -> Some(DotNetFramework(Framework FrameworkVersionNo.V3_5, Full))
+        | "40" -> Some(DotNetFramework(Framework FrameworkVersionNo.V4, Full))
+        | "45" -> Some(DotNetFramework(Framework FrameworkVersionNo.V4_5, Full))
         | "sl3" -> Some(Silverlight "v3.0")
         | "sl4" -> Some(Silverlight "v4.0")
         | "sl5" -> Some(Silverlight "v5.0")
@@ -154,7 +170,7 @@ type FrameworkIdentifier =
         match x with
         | DotNetFramework(v,_) ->
             match v with
-            | Framework fw -> sprintf "%s And $(TargetFrameworkVersion) == '%s'%s" (x.GetFrameworkIdentifier()) fw (x.GetFrameworkProfile())
+            | Framework fw -> sprintf "%s And $(TargetFrameworkVersion) == '%s'%s" (x.GetFrameworkIdentifier()) (fw.ToString()) (x.GetFrameworkProfile())
             | All -> "true"
         | PortableFramework _ -> sprintf "%s%s%s%s" (x.GetFrameworkIdentifier()) (x.GetFrameworkProfile()) (x.GetPlatformIdentifier()) (x.GetPlatformVersion())
         | WindowsPhoneApp _ -> sprintf "%s%s" (x.GetFrameworkIdentifier()) (x.GetPlatformVersion())
