@@ -6,16 +6,6 @@ open FsUnit
 open Paket.Nuspec
 open System.Xml
 
-let projectWithCustomFantomasNode = """<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
-    <ItemGroup>
-      <Reference Include="FantomasLib">
-        <HintPath>..\..\packages\Fantomas\lib\FantomasLib.dll</HintPath>
-        <Private>True</Private>        
-      </Reference>
-    </ItemGroup>
-</Project>"""
 
 [<Test>]
 let ``should find custom nodes in doc``() = 
@@ -25,29 +15,10 @@ let ``should find custom nodes in doc``() =
               @"..\Fantomas\lib\FSharp.Core.dll" 
               @"..\Fantomas\lib\Fantomas.exe" ],
               References.Explicit ["FantomasLib.dll"])
-
-    let doc = new XmlDocument()
-    doc.LoadXml projectWithCustomFantomasNode
-
-    model.HasCustomNodes(doc)
+    
+    ProjectFile.Load("./ProjectFile/TestData/CustomFantomasNode.fsprojtest").Value.HasCustomNodes(model)
     |> shouldEqual true
 
-
-let projectWithoutCustomFantomasNode = """<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
-    <ItemGroup>
-      <Reference Include="Fanta">
-        <HintPath>..\..\packages\Fanta\lib\Fanta.dll</HintPath>
-        <Private>True</Private>        
-      </Reference>
-      <Reference Include="FantomasLib">
-        <HintPath>..\..\packages\Fantomas\lib\FantomasLib.dll</HintPath>
-        <Private>True</Private>        
-        <Paket>True</Paket>  
-      </Reference>
-    </ItemGroup>
-</Project>"""
 
 [<Test>]
 let ``should not find custom nodes if there are none``() = 
@@ -58,10 +29,7 @@ let ``should not find custom nodes if there are none``() =
               @"..\Fantomas\lib\Fantomas.exe" ],
               References.Explicit ["FantomasLib.dll"])
 
-    let doc = new XmlDocument()
-    doc.LoadXml projectWithoutCustomFantomasNode
-
-    model.HasCustomNodes(doc)
+    ProjectFile.Load("./ProjectFile/TestData/NoCustomFantomasNode.fsprojtest").Value.HasCustomNodes(model)
     |> shouldEqual false
 
 
@@ -74,13 +42,12 @@ let ``should delete custom nodes if there are some``() =
               @"..\Fantomas\lib\Fantomas.exe" ],
               References.Explicit ["FantomasLib.dll"])
 
-    let doc = new XmlDocument()
-    doc.LoadXml projectWithCustomFantomasNode
+    let project = ProjectFile.Load("./ProjectFile/TestData/CustomFantomasNode.fsprojtest").Value
 
-    model.HasCustomNodes(doc)
+    project.HasCustomNodes(model)
     |> shouldEqual true
 
-    model.DeleteCustomNodes(doc)
+    project.DeleteCustomNodes(model)
 
-    model.HasCustomNodes(doc)
+    project.HasCustomNodes(model)
     |> shouldEqual false

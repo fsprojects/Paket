@@ -124,6 +124,61 @@ type ProjectFile =
 
         this.DeleteIfEmpty("//ns:ItemGroup")
 
+    member this.HasCustomNodes(model:InstallModel) =
+        let libs = model.GetLibraryNames.Force()
+        let hasCustom = ref false
+        for node in this.Document.SelectNodes("//ns:Reference", this.Namespaces) do
+            if Set.contains (node.Attributes.["Include"].InnerText.Split(',').[0]) libs then
+                let isPaket = ref false
+                for child in node.ChildNodes do
+                    if child.Name = "Paket" then 
+                        isPaket := true
+                if not !isPaket then
+                    hasCustom := true
+            
+        !hasCustom
+
+    member this.DeleteCustomNodes(model:InstallModel) =
+        let nodesToDelete = List<_>()
+        
+        let libs = model.GetLibraryNames.Force()
+        for node in this.Document.SelectNodes("//ns:Reference", this.Namespaces) do
+            if Set.contains (node.Attributes.["Include"].InnerText.Split(',').[0]) libs then          
+                nodesToDelete.Add node
+
+        if nodesToDelete |> Seq.isEmpty |> not then
+            verbosefn "    - Deleting custom projects nodes for %s" model.PackageName
+
+        for node in nodesToDelete do            
+            node.ParentNode.RemoveChild(node) |> ignore
+
+    member this.GenerateXml(model:InstallModel) =
+        let chooseNode = this.Document.CreateElement("Choose", Constants.ProjectDefaultNameSpace)
+        model.Frameworks 
+        |> Seq.iter (fun kv -> 
+            let whenNode = 
+                createNode(this.Document,"When")
+                |> addAttribute "Condition" (kv.Key.GetCondition())
+
+            let itemGroup = createNode(this.Document,"ItemGroup")
+                                
+            for lib in kv.Value.References do
+                let reference = 
+                    let fi = new FileInfo(normalizePath lib)
+                    
+                    createNode(this.Document,"Reference")
+                    |> addAttribute "Include" (fi.Name.Replace(fi.Extension,""))
+                    |> addChild (createNodeWithText(this.Document,"HintPath",createRelativePath this.FileName fi.FullName))
+                    |> addChild (createNodeWithText(this.Document,"Private","True"))
+                    |> addChild (createNodeWithText(this.Document,"Paket","True"))
+
+                itemGroup.AppendChild(reference) |> ignore
+
+            whenNode.AppendChild(itemGroup) |> ignore
+            chooseNode.AppendChild(whenNode) |> ignore)
+
+        chooseNode
+
 
     member this.UpdateReferences(extracted: (ResolvedPackage * FileInfo[])[], usedPackages : Dictionary<string,bool>, hard) = 
         this.DeletePaketNodes("Reference")  
@@ -140,10 +195,10 @@ type ProjectFile =
 
             let installModel = InstallModel.CreateFromLibs(packageName,SemVer.parse "0",files,references)
             if hard then
-                installModel.DeleteCustomNodes(this.Document)
+                this.DeleteCustomNodes(installModel)
 
-            if installModel.HasCustomNodes(this.Document) then verbosefn "  - custom nodes for %s ==> skipping" packageName else
-            let chooseNode = installModel.GenerateXml(this.FileName, this.Document)
+            if this.HasCustomNodes(installModel) then verbosefn "  - custom nodes for %s ==> skipping" packageName else
+            let chooseNode = this.GenerateXml(installModel)
             this.ProjectNode.AppendChild(chooseNode) |> ignore
 
         this.DeleteEmptyReferences()

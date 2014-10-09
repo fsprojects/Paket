@@ -104,10 +104,19 @@
     <Compile Include="ReferencesFile\ReferencesFileSpecs.fs" />
     <Compile Include="Simplifier\BasicScenarioSpecs.fs" />
     <None Include="ProjectFile\TestData\Project1.fsprojtest">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Include="ProjectFile\TestData\ProjectWithConditions.fsprojtest">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="ProjectFile\TestData\Empty.fsprojtest">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="ProjectFile\TestData\CustomFantomasNode.fsprojtest">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="ProjectFile\TestData\NoCustomFantomasNode.fsprojtest">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <Compile Include="ProjectFile\ConditionSpecs.fs" />
     <Compile Include="ProjectFile\FileBuildActionSpecs.fs" />

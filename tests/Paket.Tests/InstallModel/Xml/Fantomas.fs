@@ -12,7 +12,7 @@ let expected = """
   <When Condition="$(TargetFrameworkIdentifier) == '.NETFramework' And $(TargetFrameworkVersion) == 'v1.0'">
     <ItemGroup>
       <Reference Include="FantomasLib">
-        <HintPath>..\Fantomas\lib\FantomasLib.dll</HintPath>
+        <HintPath>..\..\..\Fantomas\lib\FantomasLib.dll</HintPath>
         <Private>True</Private>
         <Paket>True</Paket>
       </Reference>
@@ -21,7 +21,7 @@ let expected = """
   <When Condition="$(TargetFrameworkIdentifier) == '.NETFramework' And $(TargetFrameworkVersion) == 'v1.1'">
     <ItemGroup>
       <Reference Include="FantomasLib">
-        <HintPath>..\Fantomas\lib\FantomasLib.dll</HintPath>
+        <HintPath>..\..\..\Fantomas\lib\FantomasLib.dll</HintPath>
         <Private>True</Private>
         <Paket>True</Paket>
       </Reference>
@@ -30,7 +30,7 @@ let expected = """
   <When Condition="$(TargetFrameworkIdentifier) == '.NETFramework' And $(TargetFrameworkVersion) == 'v2.0'">
     <ItemGroup>
       <Reference Include="FantomasLib">
-        <HintPath>..\Fantomas\lib\FantomasLib.dll</HintPath>
+        <HintPath>..\..\..\Fantomas\lib\FantomasLib.dll</HintPath>
         <Private>True</Private>
         <Paket>True</Paket>
       </Reference>
@@ -39,7 +39,7 @@ let expected = """
   <When Condition="$(TargetFrameworkIdentifier) == '.NETFramework' And $(TargetFrameworkVersion) == 'v3.5'">
     <ItemGroup>
       <Reference Include="FantomasLib">
-        <HintPath>..\Fantomas\lib\FantomasLib.dll</HintPath>
+        <HintPath>..\..\..\Fantomas\lib\FantomasLib.dll</HintPath>
         <Private>True</Private>
         <Paket>True</Paket>
       </Reference>
@@ -48,7 +48,7 @@ let expected = """
   <When Condition="$(TargetFrameworkIdentifier) == '.NETFramework' And $(TargetFrameworkVersion) == 'v4.0' And $(TargetFrameworkProfile) == 'Client'">
     <ItemGroup>
       <Reference Include="FantomasLib">
-        <HintPath>..\Fantomas\lib\FantomasLib.dll</HintPath>
+        <HintPath>..\..\..\Fantomas\lib\FantomasLib.dll</HintPath>
         <Private>True</Private>
         <Paket>True</Paket>
       </Reference>
@@ -57,7 +57,7 @@ let expected = """
   <When Condition="$(TargetFrameworkIdentifier) == '.NETFramework' And $(TargetFrameworkVersion) == 'v4.0'">
     <ItemGroup>
       <Reference Include="FantomasLib">
-        <HintPath>..\Fantomas\lib\FantomasLib.dll</HintPath>
+        <HintPath>..\..\..\Fantomas\lib\FantomasLib.dll</HintPath>
         <Private>True</Private>
         <Paket>True</Paket>
       </Reference>
@@ -66,7 +66,7 @@ let expected = """
   <When Condition="$(TargetFrameworkIdentifier) == '.NETFramework' And $(TargetFrameworkVersion) == 'v4.5'">
     <ItemGroup>
       <Reference Include="FantomasLib">
-        <HintPath>..\Fantomas\lib\FantomasLib.dll</HintPath>
+        <HintPath>..\..\..\Fantomas\lib\FantomasLib.dll</HintPath>
         <Private>True</Private>
         <Paket>True</Paket>
       </Reference>
@@ -75,7 +75,7 @@ let expected = """
   <When Condition="$(TargetFrameworkIdentifier) == '.NETFramework' And $(TargetFrameworkVersion) == 'v4.5.1'">
     <ItemGroup>
       <Reference Include="FantomasLib">
-        <HintPath>..\Fantomas\lib\FantomasLib.dll</HintPath>
+        <HintPath>..\..\..\Fantomas\lib\FantomasLib.dll</HintPath>
         <Private>True</Private>
         <Paket>True</Paket>
       </Reference>
@@ -91,10 +91,8 @@ let ``should generate Xml for Fantomas 1.5``() =
               @"..\Fantomas\lib\FSharp.Core.dll" 
               @"..\Fantomas\lib\Fantomas.exe" ],
               References.Explicit ["FantomasLib.dll"])
-
-    let doc = new XmlDocument()
-
-    let chooseNode = model.GenerateXml("",doc)
+    
+    let chooseNode = ProjectFile.Load("./ProjectFile/TestData/Empty.fsprojtest").Value.GenerateXml(model)
     chooseNode.OuterXml
     |> normalizeXml
     |> shouldEqual (normalizeXml expected)

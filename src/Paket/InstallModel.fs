@@ -131,68 +131,7 @@ type InstallModel =
                     yield fi.Name.Replace(fi.Extension,"") ]
             |> Set.ofList)
 
-    member this.HasCustomNodes(doc:XmlDocument) =
-        let manager = new XmlNamespaceManager(doc.NameTable)
-        manager.AddNamespace("ns", Constants.ProjectDefaultNameSpace)
-
-        let libs = this.GetLibraryNames.Force()
-        let hasCustom = ref false
-        for node in doc.SelectNodes("//ns:Reference", manager) do
-            if Set.contains (node.Attributes.["Include"].InnerText.Split(',').[0]) libs then
-                let isPaket = ref false
-                for child in node.ChildNodes do
-                    if child.Name = "Paket" then 
-                        isPaket := true
-                if not !isPaket then
-                    hasCustom := true
-            
-        !hasCustom
-
-    member this.DeleteCustomNodes(doc:XmlDocument) =    
-        let manager = new XmlNamespaceManager(doc.NameTable)
-        manager.AddNamespace("ns", Constants.ProjectDefaultNameSpace)
-
-        let nodesToDelete = List<_>()
-        
-        let libs = this.GetLibraryNames.Force()
-        for node in doc.SelectNodes("//ns:Reference", manager) do
-            if Set.contains (node.Attributes.["Include"].InnerText.Split(',').[0]) libs then          
-                nodesToDelete.Add node
-
-        if nodesToDelete |> Seq.isEmpty |> not then
-            verbosefn "    - Deleting custom projects nodes for %s" this.PackageName
-
-        for node in nodesToDelete do            
-            node.ParentNode.RemoveChild(node) |> ignore
-
     static member CreateFromLibs(packageName,packageVersions,libs,references) = 
         InstallModel.EmptyModel(packageName,packageVersions)
             .Add(libs,references)
             .Process()
-
-    member this.GenerateXml(projectPath,doc:XmlDocument) = 
-        let chooseNode = doc.CreateElement("Choose", Constants.ProjectDefaultNameSpace)
-        this.Frameworks 
-        |> Seq.iter (fun kv -> 
-            let whenNode = 
-                createNode(doc,"When")
-                |> addAttribute "Condition" (kv.Key.GetCondition())
-
-            let itemGroup = createNode(doc,"ItemGroup")
-                                
-            for lib in kv.Value.References do
-                let reference = 
-                    let fi = new FileInfo(normalizePath lib)
-                    
-                    createNode(doc,"Reference")
-                    |> addAttribute "Include" (fi.Name.Replace(fi.Extension,""))
-                    |> addChild (createNodeWithText(doc,"HintPath",createRelativePath projectPath fi.FullName))
-                    |> addChild (createNodeWithText(doc,"Private","True"))
-                    |> addChild (createNodeWithText(doc,"Paket","True"))
-
-                itemGroup.AppendChild(reference) |> ignore
-
-            whenNode.AppendChild(itemGroup) |> ignore
-            chooseNode.AppendChild(whenNode) |> ignore)
-
-        chooseNode
