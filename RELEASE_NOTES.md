@@ -1,3 +1,6 @@
+#### 0.5.0-alpha015 - 09.10.2014
+* Fix NRE in bootstrapper
+* 
 #### 0.5.0-alpha014 - 09.10.2014
 * Parallelize install model computation
 
