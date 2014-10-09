@@ -1,3 +1,6 @@
+#### 0.5.0-alpha012 - 09.10.2014
+* Parallelize install model computation
+
 #### 0.5.0-alpha011 - 09.10.2014
 * Replace known portable profiles
 
