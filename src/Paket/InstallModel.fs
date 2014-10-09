@@ -48,7 +48,6 @@ type InstallModel =
 
     member this.Add (libs,references) : InstallModel =         
         libs |> List.fold (fun model lib -> 
-                    let lib = normalizePath lib
                     match FrameworkIdentifier.DetectFromPathNew lib with
                     | Some framework -> model.Add(framework,lib,references)
                     | _ -> model) this
@@ -128,7 +127,7 @@ type InstallModel =
     member this.GetLibraryNames =
         lazy([ for f in this.Frameworks do
                 for lib in f.Value.References do                
-                    let fi = new FileInfo(lib)
+                    let fi = new FileInfo(normalizePath lib)
                     yield fi.Name.Replace(fi.Extension,"") ]
             |> Set.ofList)
 
@@ -183,7 +182,7 @@ type InstallModel =
                                 
             for lib in kv.Value.References do
                 let reference = 
-                    let fi = new FileInfo(lib)
+                    let fi = new FileInfo(normalizePath lib)
                     
                     createNode(doc,"Reference")
                     |> addAttribute "Include" (fi.Name.Replace(fi.Extension,""))

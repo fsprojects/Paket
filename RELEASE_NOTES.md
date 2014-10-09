@@ -1,4 +1,4 @@
-#### 0.5.0-alpha007 - 09.10.2014
+#### 0.5.0-alpha008 - 09.10.2014
 * Use default proxy in paket.exe and bootstrapper.exe - https://github.com/fsprojects/Paket/issues/226
 
 #### 0.5.0-alpha006 - 09.10.2014
