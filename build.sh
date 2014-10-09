@@ -1,6 +1,6 @@
 #!/bin/bash
 
-mono .paket/paket.bootstrapper.exe
+mono .paket/paket.bootstrapper.exe prerelease
 exit_code=$?
 if [ $exit_code -ne 0 ]; then
 	exit $exit_code
