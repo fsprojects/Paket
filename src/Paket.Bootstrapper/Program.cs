@@ -13,64 +13,88 @@ namespace Paket.Bootstrapper
             try
             {
                 var folder = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
-                if (args.Length > 1)
-                    folder = args[0];
+                var latestVersion = "";
+                var ignorePrerelease = true;
 
+                if (args.Length > 1)
+                {
+                    if (args[0] == "prerelease")
+                        ignorePrerelease = false;
+                    else
+                        latestVersion = args[0];
+                }
                 var target = Path.Combine(folder, "paket.exe");
                 var localVersion = "";
+
                 if (File.Exists(target))
                 {
-                    FileVersionInfo fvi = FileVersionInfo.GetVersionInfo(target);
-                    localVersion = fvi.FileVersion;
+                    try
+                    {
+                        FileVersionInfo fvi = FileVersionInfo.GetVersionInfo(target);
+                        localVersion = fvi.FileVersion;
+                    }
+                    catch (Exception)
+                    {
+                    }
                 }
 
-                using (WebClient client = new WebClient())
+                if (latestVersion == "")
                 {
-                    client.Headers.Add("user-agent", "Paket.Bootstrapper");
-                    client.UseDefaultCredentials = true;
-                    client.Proxy = WebRequest.GetSystemWebProxy();
-
-                    var releasesUrl = "https://api.github.com/repos/fsprojects/Paket/releases";
-                    var data = client.DownloadString(releasesUrl);
-                    var start = data.IndexOf("tag_name") + 11;
-                    var end = data.IndexOf("\"", start);
-                    var latestVersion = data.Substring(start, end - start);
-
-                    if (!localVersion.StartsWith(latestVersion))
+                    using (WebClient client = new WebClient())
                     {
-                        var url = String.Format("https://github.com/fsprojects/Paket/releases/download/{0}/paket.exe", latestVersion);
+                        client.Headers.Add("user-agent", "Paket.Bootstrapper");
+                        client.UseDefaultCredentials = true;
+                        client.Proxy = WebRequest.GetSystemWebProxy();
 
-                        Console.WriteLine("Starting download from {0}", url);
-
-                        var request = (HttpWebRequest)HttpWebRequest.Create(url);
-
-                        request.UseDefaultCredentials = true;
-                        request.Proxy = WebRequest.GetSystemWebProxy();
-
-                        request.AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate;
-                        using (HttpWebResponse httpResponse = (HttpWebResponse)request.GetResponse())
+                        var releasesUrl = "https://api.github.com/repos/fsprojects/Paket/releases";
+                        var data = client.DownloadString(releasesUrl);
+                        var start = 0;
+                        while (latestVersion == "")
                         {
-                            using (Stream httpResponseStream = httpResponse.GetResponseStream())
-                            {
-                                const int bufferSize = 4096;
-                                byte[] buffer = new byte[bufferSize];
-                                int bytesRead = 0;
+                            start = data.IndexOf("tag_name", start) + 11;
+                            var end = data.IndexOf("\"", start);
+                            latestVersion = data.Substring(start, end - start);
+                            if (latestVersion.Contains("-") && ignorePrerelease)
+                                latestVersion = "";
+                        }
+                    }
+                }
 
-                                using (FileStream fileStream = File.Create(target))
+                if (!localVersion.StartsWith(latestVersion))
+                {
+                    var url = String.Format("https://github.com/fsprojects/Paket/releases/download/{0}/paket.exe", latestVersion);
+
+                    Console.WriteLine("Starting download from {0}", url);
+
+                    var request = (HttpWebRequest)HttpWebRequest.Create(url);
+
+                    request.UseDefaultCredentials = true;
+                    request.Proxy = WebRequest.GetSystemWebProxy();
+
+                    request.AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate;
+                    using (HttpWebResponse httpResponse = (HttpWebResponse)request.GetResponse())
+                    {
+                        using (Stream httpResponseStream = httpResponse.GetResponseStream())
+                        {
+                            const int bufferSize = 4096;
+                            byte[] buffer = new byte[bufferSize];
+                            int bytesRead = 0;
+
+                            using (FileStream fileStream = File.Create(target))
+                            {
+                                while ((bytesRead = httpResponseStream.Read(buffer, 0, bufferSize)) != 0)
                                 {
-                                    while ((bytesRead = httpResponseStream.Read(buffer, 0, bufferSize)) != 0)
-                                    {
-                                        fileStream.Write(buffer, 0, bytesRead);
-                                    }
+                                    fileStream.Write(buffer, 0, bytesRead);
                                 }
                             }
                         }
                     }
-                    else
-                    {
-                        Console.WriteLine("Paket.exe {0} is up to date.", localVersion);
-                    }
                 }
+                else
+                {
+                    Console.WriteLine("Paket.exe {0} is up to date.", localVersion);
+                }
+
             }
             catch (Exception exn)
             {
