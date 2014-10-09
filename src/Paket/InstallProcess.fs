@@ -8,6 +8,7 @@ open Paket.PackageResolver
 open System.IO
 open System.Collections.Generic
 open Paket.PackageSources
+open FSharp.Control.AsyncExtensions
 
 /// Downloads and extracts a package.
 let ExtractPackage(sources, force, package : ResolvedPackage) = 
@@ -46,14 +47,12 @@ let DownloadSourceFile(rootPath, source:ResolvedSourceFile) =
 
         if isInRightVersion then 
             verbosefn "Sourcefile %s is already there." (source.ToString())
-            return None
         else 
             tracefn "Downloading %s to %s" (source.ToString()) destination
             let! file = GitHub.downloadSourceFile source
             Directory.CreateDirectory(destination |> Path.GetDirectoryName) |> ignore
             File.WriteAllText(destination, file)
             File.WriteAllText(versionFile.FullName, source.Commit)
-            return None
     }
 
 let private findPackagesWithContent (usedPackages:Dictionary<_,_>) = 
@@ -117,22 +116,24 @@ let CreateInstallModel(sources, force, package) =
         let nuspec = FileInfo(sprintf "./packages/%s/%s.nuspec" package.Name package.Name)
         let references = Nuspec.GetReferences nuspec.FullName
         let files = files |> Seq.map (fun fi -> fi.FullName)
-        return Some(package, InstallModel.CreateFromLibs(package.Name, package.Version, files, references))
+        return package, InstallModel.CreateFromLibs(package.Name, package.Version, files, references)
     }
 
 /// Installs the given all packages from the lock file.
 let Install(sources,force, hard, lockFile:LockFile) = 
-    let sourceFileComputation =
+    let sourceFileDownloads =
         lockFile.SourceFiles
-        |> Seq.map (fun file -> DownloadSourceFile(Path.GetDirectoryName lockFile.FileName, file))
+        |> Seq.map (fun file -> DownloadSourceFile(Path.GetDirectoryName lockFile.FileName, file))        
+        |> Async.Parallel
 
-    let extractedPackages = 
+    let packageDownloads = 
         lockFile.ResolvedPackages
         |> Seq.map (fun kv -> CreateInstallModel(sources,force,kv.Value))
-        |> Seq.append sourceFileComputation
         |> Async.Parallel
+
+    let _,extractedPackages =
+        Async.Parallel(sourceFileDownloads,packageDownloads)
         |> Async.RunSynchronously
-        |> Array.choose id
 
     let model =
         extractedPackages

@@ -58,6 +58,12 @@
   </Choose>
   <Import Project="$(FSharpTargetsPath)" Condition="Exists('$(FSharpTargetsPath)')" />
   <ItemGroup>
+    <Compile Include="..\..\paket-files\forki\Async\Async.fs">
+      <Paket>True</Paket>
+      <Link>Async.fs</Link>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
     <Compile Include="AssemblyInfo.fs" />
     <Content Include="..\..\lib\FSharp\FSharp.Core.optdata">
       <Link>FSharp.Core.optdata</Link>
