@@ -33,30 +33,26 @@ let ExtractPackage(sources, force, package : ResolvedPackage) =
             return package, Nuget.GetLibFiles folder
     }
 
-let DownloadSourceFiles(rootPath,sourceFiles) = 
-    Seq.map (fun (source : ResolvedSourceFile) -> 
-        async {
-            let path = FileInfo(Path.Combine(rootPath, source.FilePath)).Directory.FullName
-            let versionFile = FileInfo(Path.Combine(path,"paket.version"))
-            let destination = Path.Combine(rootPath, source.FilePath)
+let DownloadSourceFile(rootPath, source:ResolvedSourceFile) = 
+    async { 
+        let path = FileInfo(Path.Combine(rootPath, source.FilePath)).Directory.FullName
+        let versionFile = FileInfo(Path.Combine(path, "paket.version"))
+        let destination = Path.Combine(rootPath, source.FilePath)
+        
+        let isInRightVersion = 
+            if not <| File.Exists destination then false
+            else if not <| versionFile.Exists then false
+            else source.Commit = File.ReadAllText(versionFile.FullName)
 
-            let isInRightVersion = 
-                if not <| File.Exists destination then false else
-                if not <| versionFile.Exists then false else
-                source.Commit = File.ReadAllText(versionFile.FullName) 
-
-            if isInRightVersion then
-                verbosefn "Sourcefile %s is already there." (source.ToString())
-                return None
-            else
-                tracefn "Downloading %s to %s" (source.ToString()) destination
-                let! file = GitHub.downloadSourceFile source
-                Directory.CreateDirectory(destination |> Path.GetDirectoryName) |> ignore
-                File.WriteAllText(destination, file)
-                File.WriteAllText(versionFile.FullName, source.Commit)
-
-                return None
-        }) sourceFiles
+        if isInRightVersion then 
+            verbosefn "Sourcefile %s is already there." (source.ToString())            
+        else 
+            tracefn "Downloading %s to %s" (source.ToString()) destination
+            let! file = GitHub.downloadSourceFile source
+            Directory.CreateDirectory(destination |> Path.GetDirectoryName) |> ignore
+            File.WriteAllText(destination, file)
+            File.WriteAllText(versionFile.FullName, source.Commit)
+    }
 
 let private findPackagesWithContent (usedPackages:Dictionary<_,_>) = 
     usedPackages
@@ -119,18 +115,22 @@ let CreateInstallModel(sources, force, package) =
         let nuspec = FileInfo(sprintf "./packages/%s/%s.nuspec" package.Name package.Name)
         let references = Nuspec.GetReferences nuspec.FullName
         let files = files |> Seq.map (fun fi -> fi.FullName)
-        return Some(package, InstallModel.CreateFromLibs(package.Name, package.Version, files, references))
+        return package, InstallModel.CreateFromLibs(package.Name, package.Version, files, references)
     }
 
 /// Installs the given packageFile.
 let Install(sources,force, hard, lockFile:LockFile) = 
+    let _ =
+        lockFile.SourceFiles
+        |> Seq.map (fun file -> DownloadSourceFile(Path.GetDirectoryName lockFile.FileName, file))
+        |> Async.Parallel
+        |> Async.RunSynchronously
+
     let extractedPackages = 
         lockFile.ResolvedPackages
         |> Seq.map (fun kv -> CreateInstallModel(sources,force,kv.Value))
-        |> Seq.append (DownloadSourceFiles(Path.GetDirectoryName lockFile.FileName, lockFile.SourceFiles))
         |> Async.Parallel
         |> Async.RunSynchronously
-        |> Array.choose id 
 
     let applicableProjects =
         ProjectFile.FindAllProjects(".") 
