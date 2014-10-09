@@ -26,16 +26,16 @@ let ExtractPackages(sources,force, packages:PackageResolution) =
                                         | _ -> None)
                 try
                     let! folder = Nuget.DownloadPackage(auth, source.Url, package.Name, v, force)
-                    return Some(package, Nuget.GetLibFiles folder)
+                    return package, Nuget.GetLibFiles folder
                 with
                 | _ when force = false ->
                     tracefn "Something went wrong with the download of %s %s - automatic retry with --force." package.Name v
                     let! folder = Nuget.DownloadPackage(auth, source.Url, package.Name, v, true)
-                    return Some(package, Nuget.GetLibFiles folder)
+                    return package, Nuget.GetLibFiles folder
             | LocalNuget path -> 
                 let packageFile = Path.Combine(path, sprintf "%s.%s.nupkg" package.Name v)
                 let! folder = Nuget.CopyFromCache(packageFile, package.Name, v, force)
-                return Some(package, Nuget.GetLibFiles folder)
+                return package, Nuget.GetLibFiles folder
         })
 
 let DownloadSourceFiles(rootPath,sourceFiles) = 
@@ -122,16 +122,18 @@ let private removeCopiedFiles (project: ProjectFile) =
 /// Installs the given packageFile.
 let Install(sources,force, hard, lockFile:LockFile) = 
     let extractedPackages = 
-        ExtractPackages(sources,force, lockFile.ResolvedPackages)
+        ExtractPackages(sources,force, lockFile.ResolvedPackages)                
+        |> Seq.map (fun x -> async {
+            let! (package,files) = x
+            let nuspec = FileInfo(sprintf "./packages/%s/%s.nuspec" package.Name package.Name)
+            let references = Nuspec.GetReferences nuspec.FullName
+
+            return Some(package,InstallModel.CreateFromLibs(package.Name,package.Version,files |> Seq.map (fun fi -> fi.FullName),references))
+            })
         |> Seq.append (DownloadSourceFiles(Path.GetDirectoryName lockFile.FileName, lockFile.SourceFiles))
         |> Async.Parallel
         |> Async.RunSynchronously
         |> Array.choose id 
-        |> Array.map (fun (package,files) -> 
-            let nuspec = FileInfo(sprintf "./packages/%s/%s.nuspec" package.Name package.Name)
-            let references = Nuspec.GetReferences nuspec.FullName
-
-            package,InstallModel.CreateFromLibs(package.Name,package.Version,files |> Seq.map (fun fi -> fi.FullName),references))
 
     let applicableProjects =
         ProjectFile.FindAllProjects(".") 
