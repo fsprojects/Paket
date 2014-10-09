@@ -98,21 +98,31 @@ let testTemplateProjectFile =
   localFile "tests" 
   |> combine testTemplateProjectName 
   |> combine (testTemplateProjectName + ".fsproj")
+let nuspecTemplateFile = 
+  localFile "nuget"
+  |> combine (projectTemplateName + ".nuspec")
 
 failfUnlessExists projectTemplateFile "Cannot find solution file %s"
             (projectTemplateFile |> Path.GetFullPath) 
 failfUnlessExists testTemplateProjectFile "Cannot find project file %s"
             (testTemplateProjectFile |> Path.GetFullPath)
+failfUnlessExists nuspecTemplateFile "Cannot find project file %s"
+            (nuspecTemplateFile |> Path.GetFullPath)
 let projectTemplateDirectory = FileInfo(projectTemplateFile).Directory
 let testTemplateProjectDirectory = FileInfo(testTemplateProjectFile).Directory
+let nugetDirectory = FileInfo(nuspecTemplateFile).Directory
 
 let projectFilePath = 
   projectTemplateDirectory.FullName |> combine (projectName + ".fsproj")
 let testProjectFilePath = 
   testTemplateProjectDirectory.FullName |> combine (projectName + ".Tests.fsproj")
+let nuspecPath = 
+  nugetDirectory.FullName |> combine (projectName + ".nuspec")
+  
 
 move projectTemplateFile projectFilePath
 move testTemplateProjectFile testProjectFilePath
+move nuspecTemplateFile nuspecPath
 move projectTemplateDirectory.FullName 
      (combine projectName projectTemplateDirectory.Parent.FullName)
 move testTemplateProjectDirectory.FullName 
