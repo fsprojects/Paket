@@ -45,13 +45,15 @@ let DownloadSourceFile(rootPath, source:ResolvedSourceFile) =
             else source.Commit = File.ReadAllText(versionFile.FullName)
 
         if isInRightVersion then 
-            verbosefn "Sourcefile %s is already there." (source.ToString())            
+            verbosefn "Sourcefile %s is already there." (source.ToString())
+            return None
         else 
             tracefn "Downloading %s to %s" (source.ToString()) destination
             let! file = GitHub.downloadSourceFile source
             Directory.CreateDirectory(destination |> Path.GetDirectoryName) |> ignore
             File.WriteAllText(destination, file)
             File.WriteAllText(versionFile.FullName, source.Commit)
+            return None
     }
 
 let private findPackagesWithContent (usedPackages:Dictionary<_,_>) = 
@@ -115,22 +117,22 @@ let CreateInstallModel(sources, force, package) =
         let nuspec = FileInfo(sprintf "./packages/%s/%s.nuspec" package.Name package.Name)
         let references = Nuspec.GetReferences nuspec.FullName
         let files = files |> Seq.map (fun fi -> fi.FullName)
-        return package, InstallModel.CreateFromLibs(package.Name, package.Version, files, references)
+        return Some(package, InstallModel.CreateFromLibs(package.Name, package.Version, files, references))
     }
 
-/// Installs the given packageFile.
+/// Installs the given all packages from the lock file.
 let Install(sources,force, hard, lockFile:LockFile) = 
-    let _ =
+    let sourceFileComputation =
         lockFile.SourceFiles
         |> Seq.map (fun file -> DownloadSourceFile(Path.GetDirectoryName lockFile.FileName, file))
-        |> Async.Parallel
-        |> Async.RunSynchronously
 
     let extractedPackages = 
         lockFile.ResolvedPackages
         |> Seq.map (fun kv -> CreateInstallModel(sources,force,kv.Value))
+        |> Seq.append sourceFileComputation
         |> Async.Parallel
         |> Async.RunSynchronously
+        |> Array.choose id
 
     let applicableProjects =
         ProjectFile.FindAllProjects(".") 
