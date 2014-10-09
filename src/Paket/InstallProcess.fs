@@ -9,34 +9,29 @@ open System.IO
 open System.Collections.Generic
 open Paket.PackageSources
 
-/// Downloads and extracts all packages.
-let ExtractPackages(sources,force, packages:PackageResolution) = 
-    packages
-    |> Seq.map (fun kv -> 
-        async { 
-            let package = kv.Value
-            let v = package.Version.ToString()
-            match package.Source with
-            |  Nuget source ->
-                let auth =
-                    sources 
-                    |> List.tryPick (fun s -> 
-                                        match s with
-                                        | Nuget s -> s.Auth
-                                        | _ -> None)
-                try
-                    let! folder = Nuget.DownloadPackage(auth, source.Url, package.Name, v, force)
-                    return package, Nuget.GetLibFiles folder
-                with
-                | _ when force = false ->
-                    tracefn "Something went wrong with the download of %s %s - automatic retry with --force." package.Name v
-                    let! folder = Nuget.DownloadPackage(auth, source.Url, package.Name, v, true)
-                    return package, Nuget.GetLibFiles folder
-            | LocalNuget path -> 
-                let packageFile = Path.Combine(path, sprintf "%s.%s.nupkg" package.Name v)
-                let! folder = Nuget.CopyFromCache(packageFile, package.Name, v, force)
+/// Downloads and extracts a package.
+let ExtractPackage(sources, force, package : ResolvedPackage) = 
+    async { 
+        let v = package.Version.ToString()
+        match package.Source with
+        | Nuget source -> 
+            let auth = 
+                sources |> List.tryPick (fun s -> 
+                               match s with
+                               | Nuget s -> s.Auth
+                               | _ -> None)
+            try 
+                let! folder = Nuget.DownloadPackage(auth, source.Url, package.Name, v, force)
                 return package, Nuget.GetLibFiles folder
-        })
+            with _ when force = false -> 
+                tracefn "Something went wrong with the download of %s %s - automatic retry with --force." package.Name v
+                let! folder = Nuget.DownloadPackage(auth, source.Url, package.Name, v, true)
+                return package, Nuget.GetLibFiles folder
+        | LocalNuget path -> 
+            let packageFile = Path.Combine(path, sprintf "%s.%s.nupkg" package.Name v)
+            let! folder = Nuget.CopyFromCache(packageFile, package.Name, v, force)
+            return package, Nuget.GetLibFiles folder
+    }
 
 let DownloadSourceFiles(rootPath,sourceFiles) = 
     Seq.map (fun (source : ResolvedSourceFile) -> 
@@ -118,18 +113,20 @@ let private removeCopiedFiles (project: ProjectFile) =
     |> List.filter (fun fi -> not <| fi.FullName.Contains("paket-files"))
     |> removeFilesAndTrimDirs
 
+let CreateInstallModel(sources, force, package) = 
+    async { 
+        let! (package, files) = ExtractPackage(sources, force, package)
+        let nuspec = FileInfo(sprintf "./packages/%s/%s.nuspec" package.Name package.Name)
+        let references = Nuspec.GetReferences nuspec.FullName
+        let files = files |> Seq.map (fun fi -> fi.FullName)
+        return Some(package, InstallModel.CreateFromLibs(package.Name, package.Version, files, references))
+    }
 
 /// Installs the given packageFile.
 let Install(sources,force, hard, lockFile:LockFile) = 
     let extractedPackages = 
-        ExtractPackages(sources,force, lockFile.ResolvedPackages)                
-        |> Seq.map (fun x -> async {
-            let! (package,files) = x
-            let nuspec = FileInfo(sprintf "./packages/%s/%s.nuspec" package.Name package.Name)
-            let references = Nuspec.GetReferences nuspec.FullName
-
-            return Some(package,InstallModel.CreateFromLibs(package.Name,package.Version,files |> Seq.map (fun fi -> fi.FullName),references))
-            })
+        lockFile.ResolvedPackages
+        |> Seq.map (fun kv -> CreateInstallModel(sources,force,kv.Value))
         |> Seq.append (DownloadSourceFiles(Path.GetDirectoryName lockFile.FileName, lockFile.SourceFiles))
         |> Async.Parallel
         |> Async.RunSynchronously
