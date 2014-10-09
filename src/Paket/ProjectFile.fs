@@ -180,13 +180,11 @@ type ProjectFile =
         chooseNode
 
 
-    member this.UpdateReferences(extracted: (ResolvedPackage * InstallModel)[], usedPackages : Dictionary<string,bool>, hard) = 
+    member this.UpdateReferences(completeModel: Map<string,InstallModel>, usedPackages : Dictionary<string,bool>, hard) = 
         this.DeletePaketNodes("Reference")  
         for kv in usedPackages do
             let packageName = kv.Key
-            let (package,installModel) = 
-                extracted
-                |> Seq.find (fun (p,m) -> packageName.ToLower() = p.Name.ToLower())
+            let installModel =   completeModel.[packageName.ToLower()]
 
             if hard then
                 this.DeleteCustomNodes(installModel)

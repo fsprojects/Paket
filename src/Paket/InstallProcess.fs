@@ -134,6 +134,16 @@ let Install(sources,force, hard, lockFile:LockFile) =
         |> Async.RunSynchronously
         |> Array.choose id
 
+    let model =
+        extractedPackages
+        |> Array.map (fun (p,m) -> p.Name.ToLower(),m)
+        |> Map.ofArray
+
+    let allPackages =
+        extractedPackages
+        |> Array.map (fun (p,_) -> p.Name.ToLower(),p)
+        |> Map.ofArray
+
     let applicableProjects =
         ProjectFile.FindAllProjects(".") 
         |> List.choose (fun p -> ProjectFile.FindReferencesFile (FileInfo(p.FileName))
@@ -143,11 +153,6 @@ let Install(sources,force, hard, lockFile:LockFile) =
         verbosefn "Installing to %s" project.FileName
 
         let usedPackages = new Dictionary<_,_>()
-
-        let allPackages =
-            extractedPackages
-            |> Array.map (fun (p,_) -> p.Name.ToLower(),p)
-            |> Map.ofArray
 
         let rec addPackage directly (name:string) =
             let identity = name.ToLower()
@@ -165,7 +170,7 @@ let Install(sources,force, hard, lockFile:LockFile) =
         referenceFile.NugetPackages
         |> List.iter (addPackage true)
 
-        project.UpdateReferences(extractedPackages,usedPackages,hard)
+        project.UpdateReferences(model,usedPackages,hard)
         
         removeCopiedFiles project
 
