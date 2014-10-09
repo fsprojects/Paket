@@ -58,12 +58,6 @@
   </Choose>
   <Import Project="$(FSharpTargetsPath)" Condition="Exists('$(FSharpTargetsPath)')" />
   <ItemGroup>
-    <Compile Include="..\..\paket-files\forki\Async\Async.fs">
-      <Paket>True</Paket>
-      <Link>Async.fs</Link>
-    </Compile>
-  </ItemGroup>
-  <ItemGroup>
     <Compile Include="AssemblyInfo.fs" />
     <Content Include="..\..\lib\FSharp\FSharp.Core.optdata">
       <Link>FSharp.Core.optdata</Link>
@@ -73,6 +67,7 @@
       <Link>FSharp.Core.sigdata</Link>
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+    <Compile Include="Async.fs" />
     <Compile Include="SemVer.fs" />
     <Compile Include="VersionRange.fs" />
     <Compile Include="Constants.fs" />
