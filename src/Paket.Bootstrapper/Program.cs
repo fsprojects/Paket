@@ -16,13 +16,20 @@ namespace Paket.Bootstrapper
                 var latestVersion = "";
                 var ignorePrerelease = true;
 
-                if (args.Length > 1)
+                if (args.Length >= 1)
                 {
                     if (args[0] == "prerelease")
+                    {
                         ignorePrerelease = false;
+                        Console.WriteLine("Prerelease requested. Looking for latest prerelease.");
+                    }
                     else
+                    {
                         latestVersion = args[0];
+                        Console.WriteLine("Version {0} requested.", latestVersion);                        
+                    }
                 }
+                else Console.WriteLine("No version specified. Downloading latest stable.");
                 var target = Path.Combine(folder, "paket.exe");
                 var localVersion = "";
 
