@@ -50,7 +50,8 @@ namespace Paket.Bootstrapper
                     try
                     {
                         FileVersionInfo fvi = FileVersionInfo.GetVersionInfo(target);
-                        localVersion = fvi.FileVersion;
+                        if(fvi.FileVersion != null)
+                            localVersion = fvi.FileVersion;
                     }
                     catch (Exception)
                     {
