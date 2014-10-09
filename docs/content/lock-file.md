@@ -1,5 +1,5 @@
 The paket.lock file
-====================
+===================
 
 Consider the following [`paket.dependencies`](dependencies-file.html) file:
 

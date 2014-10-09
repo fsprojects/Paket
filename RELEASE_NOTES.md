@@ -1,3 +1,6 @@
+#### 0.5.0-alpha009 - 09.10.2014
+* Bootstrapper will only download stable releases by default - http://fsprojects.github.io/Paket/bootstrapper.html
+
 #### 0.5.0-alpha008 - 09.10.2014
 * Use default proxy in paket.exe and bootstrapper.exe - https://github.com/fsprojects/Paket/issues/226
 
