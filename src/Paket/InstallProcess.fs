@@ -126,7 +126,12 @@ let Install(sources,force, hard, lockFile:LockFile) =
         |> Seq.append (DownloadSourceFiles(Path.GetDirectoryName lockFile.FileName, lockFile.SourceFiles))
         |> Async.Parallel
         |> Async.RunSynchronously
-        |> Array.choose id    
+        |> Array.choose id 
+        |> Array.map (fun (package,files) -> 
+            let nuspec = FileInfo(sprintf "./packages/%s/%s.nuspec" package.Name package.Name)
+            let references = Nuspec.GetReferences nuspec.FullName
+
+            package,InstallModel.CreateFromLibs(package.Name,package.Version,files |> Seq.map (fun fi -> fi.FullName),references))
 
     let applicableProjects =
         ProjectFile.FindAllProjects(".") 

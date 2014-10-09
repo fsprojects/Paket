@@ -1,10 +1,6 @@
 ﻿namespace Paket
 
-open System.Xml
-open Paket.Xml
 open System.IO
-open Paket.Logging
-open System.Collections.Generic
 
 type InstallFiles = 
     { References : string Set
@@ -47,7 +43,7 @@ type InstallModel =
                      | None -> Map.add framework (InstallFiles.empty.AddReference lib) this.Frameworks }
 
     member this.Add (libs,references) : InstallModel =         
-        libs |> List.fold (fun model lib -> 
+        libs |> Seq.fold (fun model lib -> 
                     match FrameworkIdentifier.DetectFromPath lib with
                     | Some framework -> model.Add(framework,lib,references)
                     | _ -> model) this

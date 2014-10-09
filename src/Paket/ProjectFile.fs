@@ -180,20 +180,14 @@ type ProjectFile =
         chooseNode
 
 
-    member this.UpdateReferences(extracted: (ResolvedPackage * FileInfo[])[], usedPackages : Dictionary<string,bool>, hard) = 
+    member this.UpdateReferences(extracted: (ResolvedPackage * InstallModel)[], usedPackages : Dictionary<string,bool>, hard) = 
         this.DeletePaketNodes("Reference")  
         for kv in usedPackages do
             let packageName = kv.Key
-            let nuspec = FileInfo(sprintf "./packages/%s/%s.nuspec" packageName packageName)
-            let references = Nuspec.GetReferences nuspec.FullName
+            let (package,installModel) = 
+                extracted
+                |> Seq.find (fun (p,m) -> packageName.ToLower() = p.Name.ToLower())
 
-            let files = 
-                [ for (package:ResolvedPackage), libraries in extracted do              
-                  if packageName.ToLower() = package.Name.ToLower() then
-                    yield! libraries ]
-                |> List.map (fun fi -> fi.FullName)
-
-            let installModel = InstallModel.CreateFromLibs(packageName,SemVer.parse "0",files,references)
             if hard then
                 this.DeleteCustomNodes(installModel)
 
