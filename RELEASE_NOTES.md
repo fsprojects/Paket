@@ -1,100 +1,34 @@
-#### 0.5.0-alpha015 - 09.10.2014
-* Fix NRE in bootstrapper
-* 
-#### 0.5.0-alpha014 - 09.10.2014
-* Parallelize install model computation
-
-#### 0.5.0-alpha011 - 09.10.2014
-* Replace known portable profiles
-
-#### 0.5.0-alpha010 - 09.10.2014
-* Keep order of sources - https://github.com/fsprojects/Paket/issues/233
-
-#### 0.5.0-alpha009 - 09.10.2014
+#### 0.5.0 - 09.10.2014
 * Bootstrapper will only download stable releases by default - http://fsprojects.github.io/Paket/bootstrapper.html
-
-#### 0.5.0-alpha008 - 09.10.2014
-* Use default proxy in paket.exe and bootstrapper.exe - https://github.com/fsprojects/Paket/issues/226
-
-#### 0.5.0-alpha006 - 09.10.2014
-* Detect _._ files
-* Removed --dependencies-file option
-* Signing the assembly  
-
-#### 0.5.0-alpha005 - 08.10.2014
-* Trying new installer
-
-#### 0.4.31 - 08.10.2014
+* New installer model allows better compatibility with NuGet and should be much faster
 * Supporting dot for references file - http://fsprojects.github.io/Paket/github-dependencies.html
-
-#### 0.4.29 - 07.10.2014
-* Supporting pagination for long nuget feeds - https://github.com/fsprojects/Paket/issues/223
-
-#### 0.4.26 - 06.10.2014
+* Supporting pagination for long NuGet feeds - https://github.com/fsprojects/Paket/issues/223
 * Create a "use exactly this version" operator in order to override package conflicts - http://fsprojects.github.io/Paket/nuget-dependencies.html#Use-exactly-this-version-constraint
-
-#### 0.4.25 - 06.10.2014
-* Throw if we don't get any versions
-
-#### 0.4.23 - 06.10.2014
-* BUGFIX: paket-files need to go to the top
-
-#### 0.4.22 - 06.10.2014
-* BUGFIX: Do not look for MinimalVisualStudioVersion when adding paket folder to solution - https://github.com/fsprojects/Paket/pull/221
-* BUGFIX: Fix path in content link
-
-#### 0.4.21 - 06.10.2014
-* Content none mode - http://fsprojects.github.io/Paket/dependencies-file.html#No-content-option
-* Allow source files in content
+* New `content none` mode in paket.dependencies - http://fsprojects.github.io/Paket/dependencies-file.html#No-content-option
+* Allow source files in content folder of NuGet packages
 * No -D needed for Linux installer - https://github.com/fsprojects/Paket/pull/210
-
-#### 0.4.20 - 02.10.2014
-* Fix potential casing issue on windows
-
-#### 0.4.19 - 01.10.2014
 * Content files like `_._`, `*.transform` and `*.pp` are ignored - https://github.com/fsprojects/Paket/issues/207
-
-#### 0.4.16 - 30.09.2014
-* paket convert-from-nuget adds .paket folder to the sln - https://github.com/fsprojects/Paket/issues/206
- 
-#### 0.4.15 - 30.09.2014
+* The `convert-from-nuget` command adds .paket folder to the sln - https://github.com/fsprojects/Paket/issues/206
 * Removed duplicate indirect dependencies from lock file - https://github.com/fsprojects/Paket/issues/200
-
-#### 0.4.14 - 30.09.2014
-* Automatic retry with force flag if the package download failed
-
-#### 0.4.13 - 30.09.2014
-* paket convert-from-nuget sorts the dependencies file
-
-#### 0.4.11 - 30.09.2014
-* Support log4net
-
-#### 0.4.10 - 29.09.2014
+* If the package download failed Paket retries with force flag
+* The `convert-from-nuget` commands sorts the dependencies file
 * Use credentials from nuget.config on paket convert-from-nuget - https://github.com/fsprojects/Paket/issues/198
-
-#### 0.4.9 - 29.09.2014
 * Deploy fixed targets file - https://github.com/fsprojects/Paket/issues/172
-
-#### 0.4.8 - 29.09.2014
-* Executable libs are also added to project file
-
-#### 0.4.7 - 29.09.2014
-* Store source authentication options in paket.dependencies only
-
-#### 0.4.6 - 29.09.2014
-* Don't look for auth in cache 
-
-#### 0.4.5 - 29.09.2014
 * New [--pre] and [--strict] modes for paket outdated - http://fsprojects.github.io/Paket/paket-outdated.html 
-
-#### 0.4.3 - 29.09.2014
-* Cache package source - Fixes issue with multiple sources
-
-#### 0.4.2 - 29.09.2014
-* New --no-auto-restore option for convert-from-nuget command - http://fsprojects.github.io/Paket/convert-from-nuget.html#Automated-process
-
-#### 0.4.1 - 29.09.2014
-* Adding support for portable-net45+wp80+win8+wpa81
+* New --no-auto-restore option for `convert-from-nuget` command - http://fsprojects.github.io/Paket/convert-from-nuget.html#Automated-process
+* Adding support for new portable profiles
+* paket.exe is now signed
+* Allow to reference .exe files from NuGet packages
+* Use default proxy in paket.exe and bootstrapper.exe - https://github.com/fsprojects/Paket/issues/226
+* Keep order of sources in paket.dependencies - https://github.com/fsprojects/Paket/issues/233
+* BREAKING CHANGE: Removed --dependencies-file option - from now on it's always paket.dependencies
+* BUGFIX: Bootstrapper will not throw NullReferenceException on broken paket.exe downloads
+* BUGFIX: Authentication information will not be put in cache
+* BUGFIX: Fixes cache issue when using multiple NuGet sources
+* BUGFIX: Fixes potential casing issue on Windows
+* BUGFIX: paket-files need to go to the top of a project file
+* BUGFIX: Do not look for MinimalVisualStudioVersion when adding paket folder to solution - https://github.com/fsprojects/Paket/pull/221
+* COSMETICS: Throw better error message if we don't get any versions from NuGet source
 
 #### 0.4.0 - 28.09.2014
 * Resolve dependencies for github modules - http://fsprojects.github.io/Paket/github-dependencies.html#Remote-dependencies
