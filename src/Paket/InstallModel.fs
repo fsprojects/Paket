@@ -48,7 +48,7 @@ type InstallModel =
 
     member this.Add (libs,references) : InstallModel =         
         libs |> List.fold (fun model lib -> 
-                    match FrameworkIdentifier.DetectFromPathNew lib with
+                    match FrameworkIdentifier.DetectFromPath lib with
                     | Some framework -> model.Add(framework,lib,references)
                     | _ -> model) this
 
@@ -106,7 +106,7 @@ type InstallModel =
                    match kv.Key with
                    | PortableFramework(_, f) -> 
                        f.Split([| '+' |], System.StringSplitOptions.RemoveEmptyEntries)
-                       |> Array.map (FrameworkIdentifier.Extract false)
+                       |> Array.map FrameworkIdentifier.Extract
                        |> Array.choose id
                    | _ -> [||]
 

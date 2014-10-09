@@ -1,3 +1,6 @@
+#### 0.5.0-alpha011 - 09.10.2014
+* Replace known portable profiles
+
 #### 0.5.0-alpha010 - 09.10.2014
 * Keep order of sources - https://github.com/fsprojects/Paket/issues/233
 

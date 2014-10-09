@@ -69,4 +69,4 @@ let ``should detect 35, 40 and 45``() =
 [<Test>]
 let ``should detect profile 328``() =
     FrameworkIdentifier.DetectFromPath(@"..\packages\Janitor.Fody\Lib\portable-net4+sl5+wp8+win8+wpa81+MonoAndroid16+MonoTouch40\Janitor.dll") 
-        |> shouldEqual (Some(PortableFramework("7.0","Profile328")))
+        |> shouldEqual (Some(PortableFramework("7.0","net4+sl5+wp8+win8+wpa81+monoandroid16+monotouch40")))

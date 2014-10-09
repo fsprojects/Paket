@@ -56,57 +56,7 @@ type FrameworkIdentifier =
     | WindowsPhoneApp of string
     | Silverlight of string
 
-    static member Extract useMapping path = 
-        let profileMapping = 
-            [ "Profile2", "portable-net4+sl4+netcore45+wp7"
-              "Profile3", "portable-net4+sl4"
-              "Profile4", "portable-net45+sl4+netcore45+wp7"
-              "Profile5", "portable-net4+netcore45+MonoAndroid1+MonoTouch1"
-              "Profile6", "portable-net403+netcore45+MonoAndroid1+MonoTouch1"
-              "Profile7", "portable-net45+netcore45+MonoAndroid1+MonoTouch1"
-              "Profile14", "portable-net4+sl5+MonoAndroid1+MonoTouch1"
-              "Profile18", "portable-net403+sl4"
-              "Profile19", "portable-net403+sl5+MonoAndroid1+MonoTouch1"
-              "Profile23", "portable-net45+sl4"
-              "Profile24", "portable-net45+sl5+MonoAndroid1+MonoTouch1"
-              "Profile31", "portable-netcore451+wp81"
-              "Profile32", "portable-netcore451+wpa81"
-              "Profile36", "portable-net4+sl4+netcore45+wp8"
-              "Profile37", "portable-net4+sl5+netcore45+MonoAndroid1+MonoTouch1"
-              "Profile41", "portable-net403+sl4+netcore45"
-              "Profile42", "portable-net403+sl5+netcore45+MonoAndroid1+MonoTouch1"
-              "Profile44", "portable-net451+netcore451"
-              "Profile46", "portable-net45+sl4+netcore45"
-              "Profile47", "portable-net45+sl5+netcore45+MonoAndroid1+MonoTouch1"
-              "Profile49", "portable-net45+wp8+MonoAndroid1+MonoTouch1"
-              "Profile78", "portable-net45+netcore45+wp8+MonoAndroid1+MonoTouch1"
-              "Profile84", "portable-wpa81+wp81"
-              "Profile88", "portable-net4+sl4+netcore45+wp71"
-              "Profile92", "portable-net4+netcore45+wpa81+MonoAndroid1+MonoTouch1"
-              "Profile95", "portable-net403+sl4+netcore45+wp7"
-              "Profile96", "portable-net403+sl4+netcore45+wp71"
-              "Profile102", "portable-net403+netcore45+wpa81+MonoAndroid1+MonoTouch1"
-              "Profile104", "portable-net45+sl4+netcore45+wp71"
-              "Profile111", "portable-net45+netcore45+wpa81+MonoAndroid1+MonoTouch1"
-              "Profile136", "portable-net4+sl5+netcore45+wp8+MonoAndroid1+MonoTouch1"
-              "Profile136", "portable-net4+sl5+wp8+win8+wpa81+MonoTouch+MonoAndroid"
-              "Profile143", "portable-net403+sl4+netcore45+wp8"
-              "Profile147", "portable-net403+sl5+netcore45+wp8+MonoAndroid1+MonoTouch1"
-              "Profile151", "portable-net451+netcore451+wpa81"
-              "Profile154", "portable-net45+sl4+netcore45+wp8"
-              "Profile157", "portable-netcore451+wpa81+wp81"
-              "Profile158", "portable-net45+sl5+netcore45+wp8+MonoAndroid1+MonoTouch1"
-              "Profile225", "portable-net4+sl5+netcore45+wpa81+MonoAndroid1+MonoTouch1"
-              "Profile240", "portable-net403+sl5+netcore45+wpa81"
-              "Profile255", "portable-net45+sl5+netcore45+wpa81+MonoAndroid1+MonoTouch1"
-              "Profile259", "portable-net45+netcore45+wpa81+wp8+MonoAndroid1+MonoTouch1"
-              "Profile328", "portable-net4+sl5+netcore45+wpa81+wp8+MonoAndroid1+MonoTouch1"
-              "Profile328", "portable-net4+sl5+wp8+win8+wpa81+monoandroid16+monotouch40"
-              "Profile336", "portable-net403+sl5+netcore45+wpa81+wp8+MonoAndroid1+MonoTouch1"
-              "Profile344", "portable-net45+sl5+netcore45+wpa81+wp8+MonoAndroid1+MonoTouch1"
-
-              // unsure
-              "Profile84", "portable-net45+wp80+win8+wpa81" ]
+    static member Extract path = 
 
         match path with
         | "net" -> Some(DotNetFramework(All, Full))
@@ -140,12 +90,9 @@ type FrameworkIdentifier =
         | "monoandroid" -> Some(MonoAndroid)
         | "monotouch" -> Some(MonoTouch)
         | _ ->                         
-            if (not useMapping) && path.ToLower().StartsWith("portable-") then
+            if path.ToLower().StartsWith("portable-") then
                 Some(PortableFramework("7.0", path.ToLower().Replace("portable-","")))
-            else              
-                match profileMapping |> Seq.tryFind (fun (_, p) -> path.ToLower() = p.ToLower()) with
-                | None -> None
-                | Some(profile, _) -> Some(PortableFramework("7.0", profile))
+            else None
 
     
     member x.GetFrameworkIdentifier() =
@@ -161,7 +108,65 @@ type FrameworkIdentifier =
     member x.GetFrameworkProfile() =        
         match x with 
         | DotNetFramework(_,Client) -> " And $(TargetFrameworkProfile) == 'Client'" 
-        | PortableFramework(_,profile) -> sprintf " And $(TargetFrameworkProfile) == '%s'"  profile
+        | PortableFramework(_,profile) -> 
+            let profileMapping = 
+                [ "Profile2", "net4+sl4+netcore45+wp7"
+                  "Profile3", "net4+sl4"
+                  "Profile4", "net45+sl4+netcore45+wp7"
+                  "Profile5", "net4+netcore45+MonoAndroid1+MonoTouch1"
+                  "Profile6", "net403+netcore45+MonoAndroid1+MonoTouch1"
+                  "Profile7", "net45+netcore45+MonoAndroid1+MonoTouch1"
+                  "Profile14", "net4+sl5+MonoAndroid1+MonoTouch1"
+                  "Profile18", "net403+sl4"
+                  "Profile19", "net403+sl5+MonoAndroid1+MonoTouch1"
+                  "Profile23", "net45+sl4"
+                  "Profile24", "net45+sl5+MonoAndroid1+MonoTouch1"
+                  "Profile31", "netcore451+wp81"
+                  "Profile32", "netcore451+wpa81"
+                  "Profile36", "net4+sl4+netcore45+wp8"
+                  "Profile37", "net4+sl5+netcore45+MonoAndroid1+MonoTouch1"
+                  "Profile41", "net403+sl4+netcore45"
+                  "Profile42", "net403+sl5+netcore45+MonoAndroid1+MonoTouch1"
+                  "Profile44", "net451+netcore451"
+                  "Profile46", "net45+sl4+netcore45"
+                  "Profile47", "net45+sl5+netcore45+MonoAndroid1+MonoTouch1"
+                  "Profile49", "net45+wp8+MonoAndroid1+MonoTouch1"
+                  "Profile78", "net45+netcore45+wp8+MonoAndroid1+MonoTouch1"
+                  "Profile84", "wpa81+wp81"
+                  "Profile88", "net4+sl4+netcore45+wp71"
+                  "Profile92", "net4+netcore45+wpa81+MonoAndroid1+MonoTouch1"
+                  "Profile95", "net403+sl4+netcore45+wp7"
+                  "Profile96", "net403+sl4+netcore45+wp71"
+                  "Profile102", "net403+netcore45+wpa81+MonoAndroid1+MonoTouch1"
+                  "Profile104", "net45+sl4+netcore45+wp71"
+                  "Profile111", "net45+netcore45+wpa81+MonoAndroid1+MonoTouch1"
+                  "Profile136", "net4+sl5+netcore45+wp8+MonoAndroid1+MonoTouch1"
+                  "Profile136", "net4+sl5+wp8+win8+wpa81+MonoTouch+MonoAndroid"
+                  "Profile143", "net403+sl4+netcore45+wp8"
+                  "Profile147", "net403+sl5+netcore45+wp8+MonoAndroid1+MonoTouch1"
+                  "Profile151", "net451+netcore451+wpa81"
+                  "Profile154", "net45+sl4+netcore45+wp8"
+                  "Profile157", "netcore451+wpa81+wp81"
+                  "Profile158", "net45+sl5+netcore45+wp8+MonoAndroid1+MonoTouch1"
+                  "Profile225", "net4+sl5+netcore45+wpa81+MonoAndroid1+MonoTouch1"
+                  "Profile240", "net403+sl5+netcore45+wpa81"
+                  "Profile255", "net45+sl5+netcore45+wpa81+MonoAndroid1+MonoTouch1"
+                  "Profile259", "net45+netcore45+wpa81+wp8+MonoAndroid1+MonoTouch1"
+                  "Profile328", "net4+sl5+netcore45+wpa81+wp8+MonoAndroid1+MonoTouch1"
+                  "Profile328", "net4+sl5+wp8+win8+wpa81+monoandroid16+monotouch40"
+                  "Profile336", "net403+sl5+netcore45+wpa81+wp8+MonoAndroid1+MonoTouch1"
+                  "Profile344", "net45+sl5+netcore45+wpa81+wp8+MonoAndroid1+MonoTouch1"
+
+                  // unsure
+                  "Profile88", "net40+sl4+win8+wp71+wpa81"
+                  "Profile84", "net45+wp80+win8+wpa81" ]
+            
+            let profile =
+                match profileMapping |> Seq.tryFind (fun (_, p) -> profile.ToLower() = p.ToLower()) with
+                | None -> profile
+                | Some(mappedProfile, _) -> mappedProfile
+
+            sprintf " And $(TargetFrameworkProfile) == '%s'"  profile
         | _ -> ""
 
     member x.GetPlatformIdentifier() =        
@@ -201,16 +206,4 @@ type FrameworkIdentifier =
             let startPos = path.IndexOf("lib/")
             let endPos = path.IndexOf(fi.Name.ToLower())
             if startPos < 0 || endPos < 0 then None
-            else path.Substring(startPos + 4, endPos - startPos - 5) |> FrameworkIdentifier.Extract true
-
-    static member DetectFromPathNew(path : string) : FrameworkIdentifier option = 
-        
-        let path = path.Replace("\\", "/").ToLower()
-        let fi = new FileInfo(path)
-        
-        if path.Contains("lib/" + fi.Name.ToLower()) then Some(DotNetFramework(All, Full))
-        else 
-            let startPos = path.IndexOf("lib/")
-            let endPos = path.IndexOf(fi.Name.ToLower())
-            if startPos < 0 || endPos < 0 then None
-            else path.Substring(startPos + 4, endPos - startPos - 5) |> FrameworkIdentifier.Extract false
+            else path.Substring(startPos + 4, endPos - startPos - 5) |> FrameworkIdentifier.Extract
