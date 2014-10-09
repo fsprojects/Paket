@@ -1,3 +1,6 @@
+#### 0.5.0-alpha010 - 09.10.2014
+* Keep order of sources - https://github.com/fsprojects/Paket/issues/233
+
 #### 0.5.0-alpha009 - 09.10.2014
 * Bootstrapper will only download stable releases by default - http://fsprojects.github.io/Paket/bootstrapper.html
 

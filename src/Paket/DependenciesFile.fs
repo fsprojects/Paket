@@ -116,7 +116,7 @@ module DependenciesFileParser =
             let lineNo = lineNo + 1
             try
                 match line with
-                | Remote(newSource,auth) -> lineNo, options, (PackageSource.Parse(newSource.TrimEnd([|'/'|]),auth) :: sources), packages, sourceFiles
+                | Remote(newSource,auth) -> lineNo, options, sources @ [PackageSource.Parse(newSource.TrimEnd([|'/'|]),auth)], packages, sourceFiles
                 | Blank -> lineNo, options, sources, packages, sourceFiles
                 | ReferencesMode mode -> lineNo, { options with Strict = mode }, sources, packages, sourceFiles
                 | OmitContent omit -> lineNo, { options with OmitContent = omit }, sources, packages, sourceFiles
