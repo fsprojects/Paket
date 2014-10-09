@@ -44,7 +44,7 @@ let normalizeXml(doc:XmlDocument) =
 let createWebClient(auth:Auth option) =
     let client = new WebClient()
     match auth with
-    | None -> ()
+    | None -> client.UseDefaultCredentials <- true
     | Some auth -> 
         // htttp://stackoverflow.com/questions/16044313/webclient-httpwebrequest-with-basic-authentication-returns-404-not-found-for-v/26016919#26016919
         //this works ONLY if the server returns 401 first
@@ -57,6 +57,7 @@ let createWebClient(auth:Auth option) =
         client.Headers.[HttpRequestHeader.Authorization] <- String.Format("Basic {0}", credentials)
 
     client.Headers.Add("user-agent", "Paket")
+    client.Proxy <- WebRequest.GetSystemWebProxy()
     client
 
 /// [omit]

@@ -329,7 +329,7 @@ let DownloadPackage(auth, url, name, version, force) =
                 request.AutomaticDecompression <- DecompressionMethods.GZip ||| DecompressionMethods.Deflate
 
                 match auth with
-                | None -> ()
+                | None -> request.UseDefaultCredentials <- true
                 | Some auth -> 
                     // htttp://stackoverflow.com/questions/16044313/webclient-httpwebrequest-with-basic-authentication-returns-404-not-found-for-v/26016919#26016919
                     //this works ONLY if the server returns 401 first
@@ -341,6 +341,7 @@ let DownloadPackage(auth, url, name, version, force) =
                     let credentials = Convert.ToBase64String(Encoding.ASCII.GetBytes(auth.Username + ":" + auth.Password))
                     request.Headers.[HttpRequestHeader.Authorization] <- String.Format("Basic {0}", credentials)
 
+                request.Proxy <- WebRequest.GetSystemWebProxy()
                 use! httpResponse = request.AsyncGetResponse()
             
                 use httpResponseStream = httpResponse.GetResponseStream()
