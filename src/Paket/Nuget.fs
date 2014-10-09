@@ -376,7 +376,7 @@ let GetLibFiles(targetFolder) =
             verbosefn "No libraries found in %s" targetFolder 
         else
             let s = String.Join(Environment.NewLine + "  - ",libs |> Array.map (fun l -> l.FullName))
-            verbosefn "Libraries found in %s:%s" targetFolder s
+            verbosefn "Libraries found in %s:%s  - %s" targetFolder Environment.NewLine s
 
     libs
 
