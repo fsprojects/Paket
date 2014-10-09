@@ -8,6 +8,18 @@ namespace Paket.Bootstrapper
 {
     class Program
     {
+        static IWebProxy GetDefaultWebProxy()
+        {
+            IWebProxy result = WebRequest.GetSystemWebProxy();
+            Uri irrelevantDestination = new Uri(@"http://google.com");
+            Uri address = result.GetProxy(irrelevantDestination);
+
+            if (address == irrelevantDestination)
+                return null;
+
+            return new WebProxy(address) { Credentials = CredentialCache.DefaultCredentials };
+        }
+
         static void Main(string[] args)
         {
             try
@@ -45,13 +57,15 @@ namespace Paket.Bootstrapper
                     }
                 }
 
+                var proxy = GetDefaultWebProxy();
+
                 if (latestVersion == "")
                 {
                     using (WebClient client = new WebClient())
                     {
                         client.Headers.Add("user-agent", "Paket.Bootstrapper");
                         client.UseDefaultCredentials = true;
-                        client.Proxy = WebRequest.GetSystemWebProxy();
+                        client.Proxy = proxy;
 
                         var releasesUrl = "https://api.github.com/repos/fsprojects/Paket/releases";
                         var data = client.DownloadString(releasesUrl);
@@ -76,7 +90,7 @@ namespace Paket.Bootstrapper
                     var request = (HttpWebRequest)HttpWebRequest.Create(url);
 
                     request.UseDefaultCredentials = true;
-                    request.Proxy = WebRequest.GetSystemWebProxy();
+                    request.Proxy = proxy;
 
                     request.AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate;
                     using (HttpWebResponse httpResponse = (HttpWebResponse)request.GetResponse())

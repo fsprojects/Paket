@@ -41,6 +41,16 @@ let normalizeXml(doc:XmlDocument) =
     xmlTextWriter.Flush()
     stringWriter.GetStringBuilder().ToString()
 
+let defaultProxy =
+    let result = WebRequest.GetSystemWebProxy()
+    let irrelevantDestination = new Uri(@"http://google.com")
+    let address = result.GetProxy(irrelevantDestination)
+
+    if address = irrelevantDestination then null else
+    let proxy = new WebProxy(address)
+    proxy.Credentials <- CredentialCache.DefaultCredentials
+    proxy
+
 let createWebClient(auth:Auth option) =
     let client = new WebClient()
     match auth with
@@ -57,7 +67,7 @@ let createWebClient(auth:Auth option) =
         client.Headers.[HttpRequestHeader.Authorization] <- String.Format("Basic {0}", credentials)
 
     client.Headers.Add("user-agent", "Paket")
-    client.Proxy <- WebRequest.GetSystemWebProxy()
+    client.Proxy <- defaultProxy
     client
 
 /// [omit]
