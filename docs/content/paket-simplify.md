@@ -4,15 +4,13 @@ Simplifies your [`paket.dependencies` file](dependencies-file.html) by removing 
 Does also simplify [`paket.references` files](references-files.html), unless [strict](dependencies-file.html#Strict-references) mode is used.
 
     [lang=batchfile]
-    $ paket simplify [-v] [--interactive] [--dependencies-file FILE]
+    $ paket simplify [-v] [--interactive]
 
 Options:
 
   `-v`: Verbose - output the difference in content before and after running simplify command.
 
   `--interactive`: Asks to confirm to delete every indirect dependency from each of the files. See [Interactive Mode](paket-simplify.html#Interactive-mode).
-  
-  `--dependencies-file`: Use the specified file instead of [`paket.dependencies`](dependencies-file.html).
 
 ## Sample
 

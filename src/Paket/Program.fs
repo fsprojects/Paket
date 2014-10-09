@@ -33,7 +33,6 @@ type CLIArguments =
     | [<First>][<NoAppSettings>][<CustomCommandLine("init-auto-restore")>] InitAutoRestore
     | [<First>][<NoAppSettings>][<CustomCommandLine("simplify")>] Simplify
     | [<AltCommandLine("-v")>] Verbose
-    | Dependencies_file of string
     | [<AltCommandLine("-i")>] Interactive
     | [<AltCommandLine("-f")>] Force
     | Hard
@@ -55,7 +54,6 @@ with
             | InitAutoRestore -> "enables automatic restore for Visual Studio."
             | Simplify -> "analyzes dependencies and removes unnecessary indirect dependencies."
             | Verbose -> "displays verbose output."
-            | Dependencies_file _ -> "specify a file containing dependency definitions."
             | Force -> "forces the download of all packages."
             | Interactive -> "interactive process."
             | Hard -> "overwrites manual package references."
@@ -92,11 +90,6 @@ let results =
 try
     match results with
     | Some(command,results) ->
-        let dependenciesFileName = 
-            match results.TryGetResult <@ CLIArguments.Dependencies_file @> with
-            | Some x -> x
-            | _ -> Constants.DependenciesFile
-
         let force = results.Contains <@ CLIArguments.Force @> 
         let interactive = results.Contains <@ CLIArguments.Interactive @> 
         let hard = results.Contains <@ CLIArguments.Hard @> 
@@ -112,13 +105,13 @@ try
                 match results.TryGetResult <@ CLIArguments.Version @> with
                 | Some x -> x
                 | _ -> ""
-            AddProcess.Add(packageName,version,force,hard,interactive,noInstall |> not,dependenciesFileName)
-        | Command.Install -> UpdateProcess.Update(dependenciesFileName,false,force,hard) 
-        | Command.Update -> UpdateProcess.Update(dependenciesFileName,true,force,hard)
-        | Command.Outdated -> FindOutdated.ListOutdated(strict,includePrereleases,dependenciesFileName)
+            AddProcess.Add(packageName,version,force,hard,interactive,noInstall |> not)
+        | Command.Install -> UpdateProcess.Update(false,force,hard) 
+        | Command.Update -> UpdateProcess.Update(true,force,hard)
+        | Command.Outdated -> FindOutdated.ListOutdated(strict,includePrereleases)
         | Command.InitAutoRestore -> VSIntegration.InitAutoRestore()
-        | Command.ConvertFromNuget -> NuGetConvert.ConvertFromNuget(force,noInstall |> not,noAutoRestore |> not,dependenciesFileName)
-        | Command.Simplify -> Simplifier.Simplify(interactive,dependenciesFileName)
+        | Command.ConvertFromNuget -> NuGetConvert.ConvertFromNuget(force,noInstall |> not,noAutoRestore |> not)
+        | Command.Simplify -> Simplifier.Simplify(interactive)
         | _ -> traceErrorfn "no command given.%s" (parser.Usage())
         
         let ts = stopWatch.Elapsed

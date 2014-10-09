@@ -2,6 +2,7 @@
 
 open System.IO
 open Logging
+open System
 
 let InitAutoRestore() = 
     if not <| Directory.Exists(".paket") then Directory.CreateDirectory(".paket") |> ignore
@@ -22,5 +23,7 @@ let InitAutoRestore() =
         with _ -> traceErrorfn "Unable to download %s for version %s" file latestVersion
 
     for project in ProjectFile.FindAllProjects(".") do
-        project.AddImportForPaketTargets()
+        let relativePath = 
+            createRelativePath project.FileName (Path.Combine(Environment.CurrentDirectory, ".paket\\paket.targets")) 
+        project.AddImportForPaketTargets(relativePath)
         project.Save()
