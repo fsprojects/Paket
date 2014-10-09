@@ -362,12 +362,11 @@ let DownloadPackage(auth, url, name, version, force) =
     }
 
 /// Finds all libraries in a nuget packge.
-let GetLibraries(targetFolder) =
+let GetLibFiles(targetFolder) =
     let dir = DirectoryInfo(Path.Combine(targetFolder,"lib"))
     let libs = 
         if dir.Exists then
-            dir.GetFiles("*.dll",SearchOption.AllDirectories)
-            |> Array.append(dir.GetFiles("*.exe",SearchOption.AllDirectories))
+            dir.GetFiles("*.*",SearchOption.AllDirectories)
         else
             Array.empty
 

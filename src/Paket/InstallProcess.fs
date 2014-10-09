@@ -26,16 +26,16 @@ let ExtractPackages(sources,force, packages:PackageResolution) =
                                         | _ -> None)
                 try
                     let! folder = Nuget.DownloadPackage(auth, source.Url, package.Name, v, force)
-                    return Some(package, Nuget.GetLibraries folder)
+                    return Some(package, Nuget.GetLibFiles folder)
                 with
                 | _ when force = false ->
                     tracefn "Something went wrong with the download of %s %s - automatic retry with --force." package.Name v
                     let! folder = Nuget.DownloadPackage(auth, source.Url, package.Name, v, true)
-                    return Some(package, Nuget.GetLibraries folder)
+                    return Some(package, Nuget.GetLibFiles folder)
             | LocalNuget path -> 
                 let packageFile = Path.Combine(path, sprintf "%s.%s.nupkg" package.Name v)
                 let! folder = Nuget.CopyFromCache(packageFile, package.Name, v, force)
-                return Some(package, Nuget.GetLibraries folder)
+                return Some(package, Nuget.GetLibFiles folder)
         })
 
 let DownloadSourceFiles(rootPath,sourceFiles) = 

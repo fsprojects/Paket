@@ -1,3 +1,6 @@
+#### 0.5.0-alpha006 - 09.10.2014
+* Detect _._ files
+
 #### 0.5.0-alpha005 - 08.10.2014
 * Trying new installer
 

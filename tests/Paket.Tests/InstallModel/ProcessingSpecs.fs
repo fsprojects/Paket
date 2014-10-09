@@ -365,6 +365,22 @@ let ``should handle lib install of Fantomas 1.5.0 with explicit references``() =
     model.GetFiles(DotNetFramework(Framework FrameworkVersionNo.V4_5, Full)) |> shouldContain @"..\Fantomas\lib\FantomasLib.dll" 
     model.GetFiles(DotNetFramework(Framework FrameworkVersionNo.V4_5, Full)) |> shouldNotContain @"..\Fantomas\lib\FSharp.Core.dll" 
 
+
+[<Test>]
+let ``should only handle dll and exe files``() = 
+    let model = 
+        emptymodel.Add(
+            [ @"..\Fantomas\lib\FantomasLib.dll" 
+              @"..\Fantomas\lib\FantomasLib.xml" 
+              @"..\Fantomas\lib\FSharp.Core.dll" 
+              @"..\Fantomas\lib\Fantomas.exe" ], Nuspec.All)
+            .Process()
+            
+    model.GetFiles(DotNetFramework(Framework FrameworkVersionNo.V2, Full)) |> shouldContain @"..\Fantomas\lib\FantomasLib.dll" 
+    model.GetFiles(DotNetFramework(Framework FrameworkVersionNo.V2, Full)) |> shouldContain @"..\Fantomas\lib\FSharp.Core.dll" 
+    model.GetFiles(DotNetFramework(Framework FrameworkVersionNo.V2, Full)) |> shouldContain @"..\Fantomas\lib\Fantomas.exe" 
+    model.GetFiles(DotNetFramework(Framework FrameworkVersionNo.V2, Full)) |> shouldNotContain @"..\Fantomas\lib\FantomasLib.xml" 
+
 [<Test>]
 let ``should not install tools``() = 
     let model = 
