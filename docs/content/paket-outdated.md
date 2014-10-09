@@ -3,15 +3,13 @@
 Lists all dependencies that have newer versions available.
 
     [lang=batchfile]
-    $ paket outdated [--pre] [--strict] [--dependencies-file FILE]
+    $ paket outdated [--pre] [--strict]
 
 Options:
 
   `--pre`: Includes prereleases.
 
   `--strict`: Keeps the version requirement as in the [`paket.dependencies`](dependencies-file.html).
-
-  `--dependencies-file`: Use the specified file instead of [`paket.dependencies`](dependencies-file.html).
 
 ## Sample
 

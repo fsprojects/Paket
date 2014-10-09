@@ -51,10 +51,10 @@ let Analyze(allPackages : list<ResolvedPackage>, depFile : DependenciesFile, ref
 
     DependenciesFile(depFile.FileName, depFile.Options, simplifiedDeps, depFile.RemoteFiles), refFiles'
 
-let Simplify (interactive, dependenciesFileName) = 
-    if not <| File.Exists(dependenciesFileName) then
-        failwithf "%s file not found." dependenciesFileName
-    let depFile = DependenciesFile.ReadFromFile(dependenciesFileName)
+let Simplify (interactive) = 
+    if not <| File.Exists(Constants.DependenciesFile) then
+        failwithf "%s file not found." Constants.DependenciesFile
+    let depFile = DependenciesFile.ReadFromFile(Constants.DependenciesFile)
     let lockFilePath = depFile.FindLockfile()
     if not <| File.Exists(lockFilePath.FullName) then 
         failwith "lock file not found. Create lock file by running paket install."

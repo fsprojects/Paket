@@ -35,7 +35,7 @@ Paket can assist you with the conversion. The `paket convert-from-nuget` command
 <div id="syntax"></div>
 
     [lang=batchfile]
-    $ paket convert-from-nuget [--force] [--no-install] [--no-auto-restore] [--dependencies-file FILE]
+    $ paket convert-from-nuget [--force] [--no-install] [--no-auto-restore]
 
 Options:
 
@@ -44,5 +44,3 @@ Options:
   `--no-install`: Skips [`paket install --hard`](paket-install.html) process afterward generation of dependencies / references files.
 
   `--no-auto-restore`: Skips [`paket init-auto-restore`](paket-init-auto-restore.html) process afterward generation of dependencies / references files.
-
-  `--dependencies-file`: Use the specified file instead of [`paket.dependencies`](dependencies-file.html).

@@ -4,9 +4,9 @@ module Paket.AddProcess
 open Paket
 open System.IO
 
-let Add(package, version, force, hard, interactive, installAfter, dependenciesFileName) =
+let Add(package, version, force, hard, interactive, installAfter) =
     let dependenciesFile =
-        DependenciesFile.ReadFromFile(dependenciesFileName)
+        DependenciesFile.ReadFromFile(Constants.DependenciesFile)
           .Add(package,version)
 
     let resolution = dependenciesFile.Resolve force 
@@ -30,7 +30,7 @@ let Add(package, version, force, hard, interactive, installAfter, dependenciesFi
                 | Some fileName -> File.AppendAllLines(fileName,["";package])
 
     if installAfter then
-        let lockFileName = DependenciesFile.FindLockfile dependenciesFileName
+        let lockFileName = DependenciesFile.FindLockfile Constants.DependenciesFile
     
         let lockFile =                
             let lockFile = LockFile(lockFileName.FullName, dependenciesFile.Options, resolvedPackages, resolution.ResolvedSourceFiles)
@@ -38,7 +38,7 @@ let Add(package, version, force, hard, interactive, installAfter, dependenciesFi
             lockFile
 
         let sources =
-            dependenciesFileName
+            Constants.DependenciesFile
             |> File.ReadAllLines
             |> PackageSourceParser.getSources 
 
