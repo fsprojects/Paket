@@ -6,11 +6,11 @@ open FsUnit
 open System.Xml
 
 let createProject name = 
-        { FileName = name 
-          OriginalText = ""
-          Document = XmlDocument()
-          ProjectNode = null
-          Namespaces = XmlNamespaceManager(XmlDocument().NameTable)}
+    { FileName = name
+      OriginalText = ""
+      Document = XmlDocument()
+      ProjectNode = null
+      Namespaces = XmlNamespaceManager(XmlDocument().NameTable) }
 
 [<Test>]
 let ``should recognize compilable files``() =
