@@ -37,7 +37,7 @@ let ``should analyze graph and report conflict``() =
     | Conflict(_,stillOpen) ->
         let conflicting = stillOpen |> Seq.head 
         conflicting.Name |> shouldEqual "D"
-        conflicting.VersionRequirement.Range |> shouldEqual (VersionRange.Exactly "1.6")
+        conflicting.VersionRequirement.Range |> shouldEqual (VersionRange.Exactly "1.4")
 
 let graph2 = 
     [ "A", "1.0", 
@@ -55,7 +55,7 @@ let ``should analyze graph2 and report conflict``() =
     | Conflict(_,stillOpen) ->
         let conflicting = stillOpen |> Seq.head 
         conflicting.Name |> shouldEqual "D"
-        conflicting.VersionRequirement.Range |> shouldEqual (VersionRange.Between("1.6", "1.7"))
+        conflicting.VersionRequirement.Range |> shouldEqual (VersionRange.Between("1.4", "1.5"))
 
 [<Test>]
 let ``should override graph2 conflict to first version``() = 
