@@ -1,4 +1,4 @@
-﻿module internal Paket.Logging
+﻿module Paket.Logging
 
 open System
 
