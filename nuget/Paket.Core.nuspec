@@ -17,6 +17,6 @@
     <dependencies />
   </metadata>
   <files>
-    <file src="..\bin\merged\Paket.Core.dll" target="libs" />
+    <file src="..\bin\merged\Paket.Core.dll" target="lib" />
   </files>
 </package>
