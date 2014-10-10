@@ -124,24 +124,24 @@ let Resolve(getVersionsF, getPackageDetailsF, rootDependencies:PackageRequiremen
                         List.filter dependency.VersionRequirement.IsInRange versions,false
                 | Some(versions,globalOverride) -> 
                     if globalOverride then versions,true else List.filter dependency.VersionRequirement.IsInRange versions,false
-                    
-            let unsorted =
-                match maxDepth with
-                | 0 -> compatibleVersions 
-                | maxDepth when compatibleVersions.Length > maxDepth ->                    
-                    compatibleVersions 
-                    |> Seq.take maxDepth
-                    |> Seq.toList
-                | _ -> compatibleVersions 
+                   
 
             let sorted =                
                 match dependency.Parent with
                 | DependenciesFile _ ->
-                    List.sort unsorted |> List.rev
+                    List.sort compatibleVersions |> List.rev
                 | _ ->
                     match dependency.ResolverStrategy with
-                    | Max -> List.sort unsorted |> List.rev
-                    | Min -> List.sort unsorted
+                    | Max -> List.sort compatibleVersions |> List.rev
+                    | Min -> List.sort compatibleVersions
+                |> fun sorted -> 
+                    match maxDepth with
+                    | 0 -> sorted 
+                    | maxDepth when sorted.Length > maxDepth ->                    
+                        compatibleVersions 
+                        |> Seq.take maxDepth
+                        |> Seq.toList
+                    | _ -> sorted
 
             sorted
             |> List.fold (fun state versionToExplore ->
