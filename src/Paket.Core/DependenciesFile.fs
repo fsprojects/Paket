@@ -46,12 +46,12 @@ module DependenciesFileParser =
         if text = "" || text = null then VersionRequirement(VersionRange.AtLeast("0"),PreReleaseStatus.No) else
 
         match text.Split(' ') |> Array.toList with
-        |  ">=" :: v1 :: "<" :: v2 :: rest -> VersionRequirement(VersionRange.Range(Bound.Including,SemVer.parse v1,SemVer.parse v2,Bound.Excluding),parsePrerelease rest)
-        |  ">=" :: v1 :: "<=" :: v2 :: rest -> VersionRequirement(VersionRange.Range(Bound.Including,SemVer.parse v1,SemVer.parse v2,Bound.Including),parsePrerelease rest)
-        |  "~>" :: v1 :: ">=" :: v2 :: rest -> VersionRequirement(VersionRange.Range(Bound.Including,SemVer.parse v2,SemVer.parse(twiddle v1),Bound.Excluding),parsePrerelease rest)
-        |  "~>" :: v1 :: ">" :: v2 :: rest -> VersionRequirement(VersionRange.Range(Bound.Excluding,SemVer.parse v2,SemVer.parse(twiddle v1),Bound.Excluding),parsePrerelease rest)
-        |  ">" :: v1 :: "<" :: v2 :: rest -> VersionRequirement(VersionRange.Range(Bound.Excluding,SemVer.parse v1,SemVer.parse v2,Bound.Excluding),parsePrerelease rest)
-        |  ">" :: v1 :: "<=" :: v2 :: rest -> VersionRequirement(VersionRange.Range(Bound.Excluding,SemVer.parse v1,SemVer.parse v2,Bound.Including),parsePrerelease rest)
+        |  ">=" :: v1 :: "<" :: v2 :: rest -> VersionRequirement(VersionRange.Range(VersionRangeBound.Including,SemVer.parse v1,SemVer.parse v2,VersionRangeBound.Excluding),parsePrerelease rest)
+        |  ">=" :: v1 :: "<=" :: v2 :: rest -> VersionRequirement(VersionRange.Range(VersionRangeBound.Including,SemVer.parse v1,SemVer.parse v2,VersionRangeBound.Including),parsePrerelease rest)
+        |  "~>" :: v1 :: ">=" :: v2 :: rest -> VersionRequirement(VersionRange.Range(VersionRangeBound.Including,SemVer.parse v2,SemVer.parse(twiddle v1),VersionRangeBound.Excluding),parsePrerelease rest)
+        |  "~>" :: v1 :: ">" :: v2 :: rest -> VersionRequirement(VersionRange.Range(VersionRangeBound.Excluding,SemVer.parse v2,SemVer.parse(twiddle v1),VersionRangeBound.Excluding),parsePrerelease rest)
+        |  ">" :: v1 :: "<" :: v2 :: rest -> VersionRequirement(VersionRange.Range(VersionRangeBound.Excluding,SemVer.parse v1,SemVer.parse v2,VersionRangeBound.Excluding),parsePrerelease rest)
+        |  ">" :: v1 :: "<=" :: v2 :: rest -> VersionRequirement(VersionRange.Range(VersionRangeBound.Excluding,SemVer.parse v1,SemVer.parse v2,VersionRangeBound.Including),parsePrerelease rest)
         | _ -> 
             let splitVersion (text:string) =            
                 match basicOperators |> List.tryFind(text.StartsWith) with

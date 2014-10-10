@@ -108,8 +108,8 @@ let parseVersionRange (text:string) =
         let failParse() = failwithf "unable to parse %s" text
 
         let parseBound  = function
-            | '[' | ']' -> Including
-            | '(' | ')' -> Excluding
+            | '[' | ']' -> VersionRangeBound.Including
+            | '(' | ')' -> VersionRangeBound.Excluding
             | _         -> failParse()
         
         if not <| text.Contains "," then
@@ -128,12 +128,12 @@ let parseVersionRange (text:string) =
             | 1 ->
                 if text.[1] = ',' then
                     match fromB, toB with
-                    | Excluding, Including -> Maximum(versions.[0])
-                    | Excluding, Excluding -> LessThan(versions.[0])
+                    | VersionRangeBound.Excluding, VersionRangeBound.Including -> Maximum(versions.[0])
+                    | VersionRangeBound.Excluding, VersionRangeBound.Excluding -> LessThan(versions.[0])
                     | _ -> failParse()
                 else 
                     match fromB, toB with
-                    | Excluding, Excluding -> GreaterThan(versions.[0])
+                    | VersionRangeBound.Excluding, VersionRangeBound.Excluding -> GreaterThan(versions.[0])
                     | _ -> failParse()
             | _ -> failParse()
     VersionRequirement(parseRange text,PreReleaseStatus.No)

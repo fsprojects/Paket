@@ -1,7 +1,8 @@
 ﻿namespace Paket
 
 /// Defines if the range is open or closed.
-type Bound = 
+[<RequireQualifiedAccess>]
+type VersionRangeBound = 
     | Excluding
     | Including
 
@@ -19,13 +20,13 @@ type VersionRange =
     | GreaterThan of SemVerInfo
     | Maximum of SemVerInfo
     | LessThan of SemVerInfo
-    | Range of fromB : Bound * from : SemVerInfo * _to : SemVerInfo * _toB : Bound 
+    | Range of fromB : VersionRangeBound * from : SemVerInfo * _to : SemVerInfo * _toB : VersionRangeBound 
 
     static member AtLeast version = Minimum(SemVer.parse version)
 
     static member Exactly version = Specific(SemVer.parse version)
 
-    static member Between(version1,version2) = Range(Including, SemVer.parse version1, SemVer.parse version2, Excluding)
+    static member Between(version1,version2) = Range(VersionRangeBound.Including, SemVer.parse version1, SemVer.parse version2, VersionRangeBound.Excluding)
 
     member x.IsGlobalOverride = match x with | OverrideAll _ -> true | _ -> false
 
@@ -54,13 +55,13 @@ type VersionRequirement =
             | Range(fromB, from, _to, _toB) ->
                 let isInUpperBound = 
                     match _toB with
-                    | Including -> version <= _to
-                    | Excluding -> version < _to
+                    | VersionRangeBound.Including -> version <= _to
+                    | VersionRangeBound.Excluding -> version < _to
 
                 let isInLowerBound =
                     match fromB with
-                    | Including -> version >= from
-                    | Excluding -> version > from
+                    | VersionRangeBound.Including -> version >= from
+                    | VersionRangeBound.Excluding -> version > from
 
                 isInLowerBound && isInUpperBound  && checkPrerelease prerelease version
 
@@ -86,13 +87,13 @@ type VersionRequirement =
         | Range(fromB, from, _to, _toB) ->
             let from = 
                 match fromB with
-                 | Excluding -> "> " + from.ToString()
-                 | Including -> ">= " + from.ToString()
+                 | VersionRangeBound.Excluding -> "> " + from.ToString()
+                 | VersionRangeBound.Including -> ">= " + from.ToString()
 
             let _to = 
                 match _toB with
-                 | Excluding -> "< " + _to.ToString()
-                 | Including -> "<= " + _to.ToString()
+                 | VersionRangeBound.Excluding -> "< " + _to.ToString()
+                 | VersionRangeBound.Including -> "<= " + _to.ToString()
 
             from + " " + _to
 

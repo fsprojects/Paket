@@ -42,29 +42,29 @@ let ``can check if in range for LessThan``() =
     
 [<Test>]
 let ``can check if in range for Range``() =
-    "2.1" |> isInRangeNoPreRelease (VersionRange.Range (Excluding, (SemVer.parse "2.2"), (SemVer.parse "3.0"), Excluding)) |> shouldEqual false
-    "2.2" |> isInRangeNoPreRelease (VersionRange.Range (Excluding, (SemVer.parse "2.2"), (SemVer.parse "3.0"), Excluding)) |> shouldEqual false
-    "2.5" |> isInRangeNoPreRelease (VersionRange.Range (Excluding, (SemVer.parse "2.2"), (SemVer.parse "3.0"), Excluding)) |> shouldEqual true
-    "3.0" |> isInRangeNoPreRelease (VersionRange.Range (Excluding, (SemVer.parse "2.2"), (SemVer.parse "3.0"), Excluding)) |> shouldEqual false
-    "3.2" |> isInRangeNoPreRelease (VersionRange.Range (Excluding, (SemVer.parse "2.2"), (SemVer.parse "3.0"), Excluding)) |> shouldEqual false
+    "2.1" |> isInRangeNoPreRelease (VersionRange.Range (VersionRangeBound.Excluding, (SemVer.parse "2.2"), (SemVer.parse "3.0"), VersionRangeBound.Excluding)) |> shouldEqual false
+    "2.2" |> isInRangeNoPreRelease (VersionRange.Range (VersionRangeBound.Excluding, (SemVer.parse "2.2"), (SemVer.parse "3.0"), VersionRangeBound.Excluding)) |> shouldEqual false
+    "2.5" |> isInRangeNoPreRelease (VersionRange.Range (VersionRangeBound.Excluding, (SemVer.parse "2.2"), (SemVer.parse "3.0"), VersionRangeBound.Excluding)) |> shouldEqual true
+    "3.0" |> isInRangeNoPreRelease (VersionRange.Range (VersionRangeBound.Excluding, (SemVer.parse "2.2"), (SemVer.parse "3.0"), VersionRangeBound.Excluding)) |> shouldEqual false
+    "3.2" |> isInRangeNoPreRelease (VersionRange.Range (VersionRangeBound.Excluding, (SemVer.parse "2.2"), (SemVer.parse "3.0"), VersionRangeBound.Excluding)) |> shouldEqual false
 
-    "2.1" |> isInRangeNoPreRelease (VersionRange.Range (Excluding, (SemVer.parse "2.2"), (SemVer.parse "3.0"), Including)) |> shouldEqual false
-    "2.2" |> isInRangeNoPreRelease (VersionRange.Range (Excluding, (SemVer.parse "2.2"), (SemVer.parse "3.0"), Including)) |> shouldEqual false
-    "2.5" |> isInRangeNoPreRelease (VersionRange.Range (Excluding, (SemVer.parse "2.2"), (SemVer.parse "3.0"), Including)) |> shouldEqual true
-    "3.0" |> isInRangeNoPreRelease (VersionRange.Range (Excluding, (SemVer.parse "2.2"), (SemVer.parse "3.0"), Including)) |> shouldEqual true
-    "3.2" |> isInRangeNoPreRelease (VersionRange.Range (Excluding, (SemVer.parse "2.2"), (SemVer.parse "3.0"), Including)) |> shouldEqual false
+    "2.1" |> isInRangeNoPreRelease (VersionRange.Range (VersionRangeBound.Excluding, (SemVer.parse "2.2"), (SemVer.parse "3.0"), VersionRangeBound.Including)) |> shouldEqual false
+    "2.2" |> isInRangeNoPreRelease (VersionRange.Range (VersionRangeBound.Excluding, (SemVer.parse "2.2"), (SemVer.parse "3.0"), VersionRangeBound.Including)) |> shouldEqual false
+    "2.5" |> isInRangeNoPreRelease (VersionRange.Range (VersionRangeBound.Excluding, (SemVer.parse "2.2"), (SemVer.parse "3.0"), VersionRangeBound.Including)) |> shouldEqual true
+    "3.0" |> isInRangeNoPreRelease (VersionRange.Range (VersionRangeBound.Excluding, (SemVer.parse "2.2"), (SemVer.parse "3.0"), VersionRangeBound.Including)) |> shouldEqual true
+    "3.2" |> isInRangeNoPreRelease (VersionRange.Range (VersionRangeBound.Excluding, (SemVer.parse "2.2"), (SemVer.parse "3.0"), VersionRangeBound.Including)) |> shouldEqual false
 
-    "2.1" |> isInRangeNoPreRelease (VersionRange.Range (Including, (SemVer.parse "2.2"), (SemVer.parse "3.0"), Excluding)) |> shouldEqual false
-    "2.2" |> isInRangeNoPreRelease (VersionRange.Range (Including, (SemVer.parse "2.2"), (SemVer.parse "3.0"), Excluding)) |> shouldEqual true
-    "2.5" |> isInRangeNoPreRelease (VersionRange.Range (Including, (SemVer.parse "2.2"), (SemVer.parse "3.0"), Excluding)) |> shouldEqual true
-    "3.0" |> isInRangeNoPreRelease (VersionRange.Range (Including, (SemVer.parse "2.2"), (SemVer.parse "3.0"), Excluding)) |> shouldEqual false
-    "3.2" |> isInRangeNoPreRelease (VersionRange.Range (Including, (SemVer.parse "2.2"), (SemVer.parse "3.0"), Excluding)) |> shouldEqual false
+    "2.1" |> isInRangeNoPreRelease (VersionRange.Range (VersionRangeBound.Including, (SemVer.parse "2.2"), (SemVer.parse "3.0"), VersionRangeBound.Excluding)) |> shouldEqual false
+    "2.2" |> isInRangeNoPreRelease (VersionRange.Range (VersionRangeBound.Including, (SemVer.parse "2.2"), (SemVer.parse "3.0"), VersionRangeBound.Excluding)) |> shouldEqual true
+    "2.5" |> isInRangeNoPreRelease (VersionRange.Range (VersionRangeBound.Including, (SemVer.parse "2.2"), (SemVer.parse "3.0"), VersionRangeBound.Excluding)) |> shouldEqual true
+    "3.0" |> isInRangeNoPreRelease (VersionRange.Range (VersionRangeBound.Including, (SemVer.parse "2.2"), (SemVer.parse "3.0"), VersionRangeBound.Excluding)) |> shouldEqual false
+    "3.2" |> isInRangeNoPreRelease (VersionRange.Range (VersionRangeBound.Including, (SemVer.parse "2.2"), (SemVer.parse "3.0"), VersionRangeBound.Excluding)) |> shouldEqual false
 
-    "2.1" |> isInRangeNoPreRelease (VersionRange.Range (Including, (SemVer.parse "2.2"), (SemVer.parse "3.0"), Including)) |> shouldEqual false
-    "2.2" |> isInRangeNoPreRelease (VersionRange.Range (Including, (SemVer.parse "2.2"), (SemVer.parse "3.0"), Including)) |> shouldEqual true
-    "2.5" |> isInRangeNoPreRelease (VersionRange.Range (Including, (SemVer.parse "2.2"), (SemVer.parse "3.0"), Including)) |> shouldEqual true
-    "3.0" |> isInRangeNoPreRelease (VersionRange.Range (Including, (SemVer.parse "2.2"), (SemVer.parse "3.0"), Including)) |> shouldEqual true
-    "3.2" |> isInRangeNoPreRelease (VersionRange.Range (Including, (SemVer.parse "2.2"), (SemVer.parse "3.0"), Including)) |> shouldEqual false
+    "2.1" |> isInRangeNoPreRelease (VersionRange.Range (VersionRangeBound.Including, (SemVer.parse "2.2"), (SemVer.parse "3.0"), VersionRangeBound.Including)) |> shouldEqual false
+    "2.2" |> isInRangeNoPreRelease (VersionRange.Range (VersionRangeBound.Including, (SemVer.parse "2.2"), (SemVer.parse "3.0"), VersionRangeBound.Including)) |> shouldEqual true
+    "2.5" |> isInRangeNoPreRelease (VersionRange.Range (VersionRangeBound.Including, (SemVer.parse "2.2"), (SemVer.parse "3.0"), VersionRangeBound.Including)) |> shouldEqual true
+    "3.0" |> isInRangeNoPreRelease (VersionRange.Range (VersionRangeBound.Including, (SemVer.parse "2.2"), (SemVer.parse "3.0"), VersionRangeBound.Including)) |> shouldEqual true
+    "3.2" |> isInRangeNoPreRelease (VersionRange.Range (VersionRangeBound.Including, (SemVer.parse "2.2"), (SemVer.parse "3.0"), VersionRangeBound.Including)) |> shouldEqual false
 
 [<Test>]
 let ``can check if in range for 4-parts range``() =    
