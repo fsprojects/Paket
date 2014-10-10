@@ -1,6 +1,6 @@
 ﻿namespace Paket
 
-/// Defines if the range is open or closed.
+/// Defines if the range bound is including or excluding.
 [<RequireQualifiedAccess>]
 type VersionRangeBound = 
     | Excluding
