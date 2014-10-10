@@ -20,7 +20,7 @@ nuget "Nancy.bootstrappers.windsor" "!~> 0.23"
 [<Test>]
 let ``should resolve wrong casing in config file``() = 
     let cfg = DependenciesFile.FromCode(config1)
-    let resolved = cfg.Resolve(noSha1,VersionsFromGraph graph, PackageDetailsFromGraph graph, 0).ResolvedPackages.GetModelOrFail()
+    let resolved = cfg.Resolve(noSha1,VersionsFromGraph graph, PackageDetailsFromGraph graph).ResolvedPackages.GetModelOrFail()
     getVersion resolved.["Castle.Windsor"] |> shouldEqual "3.2.1"
     getVersion resolved.["Nancy.Bootstrappers.Windsor"] |> shouldEqual "0.23"
 
@@ -33,7 +33,7 @@ let graph2 = [
 [<Test>]
 let ``should resolve wrong casing in package dependency``() = 
     let cfg = DependenciesFile.FromCode(config1)
-    let resolved = cfg.Resolve(noSha1,VersionsFromGraph graph2, PackageDetailsFromGraph graph2, 0).ResolvedPackages.GetModelOrFail()
+    let resolved = cfg.Resolve(noSha1,VersionsFromGraph graph2, PackageDetailsFromGraph graph2).ResolvedPackages.GetModelOrFail()
     getVersion resolved.["Castle.Windsor"] |> shouldEqual "3.2.1"
     getVersion resolved.["Nancy.Bootstrappers.Windsor"] |> shouldEqual "0.23"
 
@@ -47,7 +47,7 @@ let graph3 = [
 [<Test>]
 let ``should resolve wrong casing in retrieved package``() = 
     let cfg = DependenciesFile.FromCode(config1)
-    let resolved = cfg.Resolve(noSha1,VersionsFromGraph graph3, PackageDetailsFromGraph graph3, 0).ResolvedPackages.GetModelOrFail()
+    let resolved = cfg.Resolve(noSha1,VersionsFromGraph graph3, PackageDetailsFromGraph graph3).ResolvedPackages.GetModelOrFail()
     getVersion resolved.["Castle.Windsor"] |> shouldEqual "3.2.1"
     getVersion resolved.["Nancy.Bootstrappers.Windsor"] |> shouldEqual "0.23"
 
@@ -61,6 +61,6 @@ nuget "Nancy.bootstrappers.windsor" "!~> 0.23"
 [<Test>]
 let ``should resolve conflicting casing in package``() = 
     let cfg = DependenciesFile.FromCode(config1)
-    let resolved = cfg.Resolve(noSha1,VersionsFromGraph graph3, PackageDetailsFromGraph graph3, 0).ResolvedPackages.GetModelOrFail()
+    let resolved = cfg.Resolve(noSha1,VersionsFromGraph graph3, PackageDetailsFromGraph graph3).ResolvedPackages.GetModelOrFail()
     getVersion resolved.["Castle.Windsor"] |> shouldEqual "3.2.1"
     getVersion resolved.["Nancy.Bootstrappers.Windsor"] |> shouldEqual "0.23"

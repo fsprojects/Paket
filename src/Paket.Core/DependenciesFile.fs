@@ -183,10 +183,11 @@ type DependenciesFile(fileName,options,packages : PackageRequirement list, remot
     member __.Options = options
     member __.FileName = fileName
     member __.Sources = sources
-    member this.Resolve(force,maxDepth) = 
+    member this.Resolve(force) = 
         let getSha1 owner repo branch = GitHub.getSHA1OfBranch owner repo branch |> Async.RunSynchronously
-        this.Resolve(getSha1,Nuget.GetVersions,Nuget.GetPackageDetails force,maxDepth)
-    member __.Resolve(getSha1,getVersionF, getPackageDetailsF,maxDepth) =
+        this.Resolve(getSha1,Nuget.GetVersions,Nuget.GetPackageDetails force)
+
+    member __.Resolve(getSha1,getVersionF, getPackageDetailsF) =
         let resolveSourceFile(file:ResolvedSourceFile) : PackageRequirement list =
             GitHub.downloadDependenciesFile(Path.GetDirectoryName fileName, file)
             |> Async.RunSynchronously
@@ -200,7 +201,7 @@ type DependenciesFile(fileName,options,packages : PackageRequirement list, remot
             |> List.map (fun f -> f.Dependencies)
             |> List.concat
 
-        { ResolvedPackages = PackageResolver.Resolve(getVersionF, getPackageDetailsF, dependencies @ packages,maxDepth)
+        { ResolvedPackages = PackageResolver.Resolve(getVersionF, getPackageDetailsF, dependencies @ packages)
           ResolvedSourceFiles = remoteFiles }        
 
     member this.Add(packageName,version:string) =

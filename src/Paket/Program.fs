@@ -38,7 +38,6 @@ type CLIArguments =
     | Hard
     | [<CustomCommandLine("nuget")>] Nuget of string
     | [<CustomCommandLine("version")>] Version of string
-    | Max_Depth of string
     | No_Install
     | Strict
     | [<AltCommandLine("--pre")>] Include_Prereleases
@@ -62,7 +61,6 @@ with
             | Strict -> "keeps all version requirements when searching for outdated packages."
             | Include_Prereleases -> "includes prereleases when searching for outdated packages."
             | No_Auto_Restore -> "omits ini-auto-restore after convert-from-nuget."
-            | Max_Depth _ -> "allows to overrider the max. depth in resolver."
             | Nuget _ -> "allows to specify a nuget package."
             | Version _ -> "allows to specify a package version."
 
@@ -100,15 +98,6 @@ try
         let strict = results.Contains <@ CLIArguments.Strict @>
         let includePrereleases = results.Contains <@ CLIArguments.Include_Prereleases @>
 
-        let maxDepth = 
-            match results.TryGetResult <@ CLIArguments.Max_Depth @> with
-            | Some x -> 
-                match Int32.TryParse x with
-                | true,d -> d
-                | _ -> failwithf "Could not parse max. depth %s." x
-
-            | _ -> 10
-
         match command with
         | Command.Add -> 
             let packageName =  results.GetResult <@ CLIArguments.Nuget @>
@@ -116,12 +105,12 @@ try
                 match results.TryGetResult <@ CLIArguments.Version @> with
                 | Some x -> x
                 | _ -> ""
-            AddProcess.Add(packageName,version,force,hard,interactive,noInstall |> not,maxDepth)
-        | Command.Install -> UpdateProcess.Update(false,force,hard,maxDepth) 
-        | Command.Update -> UpdateProcess.Update(true,force,hard,maxDepth)
-        | Command.Outdated -> FindOutdated.ListOutdated(strict,includePrereleases,maxDepth)
+            AddProcess.Add(packageName,version,force,hard,interactive,noInstall |> not)
+        | Command.Install -> UpdateProcess.Update(false,force,hard) 
+        | Command.Update -> UpdateProcess.Update(true,force,hard)
+        | Command.Outdated -> FindOutdated.ListOutdated(strict,includePrereleases)
         | Command.InitAutoRestore -> VSIntegration.InitAutoRestore()
-        | Command.ConvertFromNuget -> NuGetConvert.ConvertFromNuget(force,noInstall |> not,noAutoRestore |> not,maxDepth)
+        | Command.ConvertFromNuget -> NuGetConvert.ConvertFromNuget(force,noInstall |> not,noAutoRestore |> not)
         | Command.Simplify -> Simplifier.Simplify(interactive)
         | _ -> traceErrorfn "no command given.%s" (parser.Usage())
         

@@ -1,5 +1,5 @@
-#### 0.5.11 - 10.10.2014
-* Adding maxDepth parameter
+#### 0.5.12 - 10.10.2014
+* Faster resolver
 
 #### 0.5.7 - 10.10.2014
 * Release Paket.Core package

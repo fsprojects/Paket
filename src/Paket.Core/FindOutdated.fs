@@ -4,7 +4,7 @@ module Paket.FindOutdated
 open Paket.Logging
 
 /// Finds all outdated packages.
-let FindOutdated(strict,includingPrereleases,maxDepth) =     
+let FindOutdated(strict,includingPrereleases) =     
     //TODO: Anything we need to do for source files here?
     let loadedFile = DependenciesFile.ReadFromFile Constants.DependenciesFile
     let dependenciesFile =
@@ -24,7 +24,7 @@ let FindOutdated(strict,includingPrereleases,maxDepth) =
 
             DependenciesFile(loadedFile.FileName,loadedFile.Options,newPackages,loadedFile.RemoteFiles)
             
-    let resolution = dependenciesFile.Resolve(true,maxDepth) 
+    let resolution = dependenciesFile.Resolve(true) 
     let resolvedPackages = resolution.ResolvedPackages.GetModelOrFail()
     let lockFile = LockFile.LoadFrom(dependenciesFile.FindLockfile().FullName)
 
@@ -37,8 +37,8 @@ let FindOutdated(strict,includingPrereleases,maxDepth) =
         | _ -> ()]
 
 /// Prints all outdated packages.
-let ListOutdated(strict,includingPrereleases,maxDepth) = 
-    let allOutdated = FindOutdated(strict,includingPrereleases,maxDepth)
+let ListOutdated(strict,includingPrereleases) = 
+    let allOutdated = FindOutdated(strict,includingPrereleases)
     if allOutdated = [] then
         tracefn "No outdated packages found."
     else

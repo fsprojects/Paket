@@ -67,7 +67,7 @@ type Resolved = {
     ResolvedSourceFiles : ModuleResolver.ResolvedSourceFile list }
 
 /// Resolves all direct and indirect dependencies
-let Resolve(getVersionsF, getPackageDetailsF, rootDependencies:PackageRequirement list, maxDepth:int) =
+let Resolve(getVersionsF, getPackageDetailsF, rootDependencies:PackageRequirement list) =
     tracefn "Resolving packages:"
     let exploredPackages = Dictionary<string*SemVerInfo,ResolvedPackage>()
     let allVersions = new Dictionary<string,SemVerInfo list>()
@@ -134,16 +134,7 @@ let Resolve(getVersionsF, getPackageDetailsF, rootDependencies:PackageRequiremen
                     | Max -> List.sort compatibleVersions |> List.rev
                     | Min -> List.sort compatibleVersions
 
-            let trimmed =
-                match maxDepth with
-                | 0 -> sorted 
-                | maxDepth when sorted.Length > maxDepth ->                    
-                    sorted 
-                    |> Seq.take maxDepth
-                    |> Seq.toList
-                | _ -> sorted
-
-            trimmed
+            sorted
             |> List.fold (fun state versionToExplore ->
                 match state with
                 | Conflict _ ->

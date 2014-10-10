@@ -5,13 +5,13 @@ open Paket
 open System.IO
 
 /// Update command
-let Update(forceResolution, force, hard, maxDepth) = 
+let Update(forceResolution, force, hard) = 
     let lockFileName = DependenciesFile.FindLockfile Constants.DependenciesFile
     
     let sources, lockFile = 
         if forceResolution || not lockFileName.Exists then 
             let dependenciesFile = DependenciesFile.ReadFromFile Constants.DependenciesFile
-            let resolution = dependenciesFile.Resolve(force,maxDepth)
+            let resolution = dependenciesFile.Resolve(force)
             let lockFile = 
                 LockFile
                     (lockFileName.FullName, dependenciesFile.Options, resolution.ResolvedPackages.GetModelOrFail(), 
