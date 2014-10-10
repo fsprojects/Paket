@@ -14,7 +14,7 @@
     <releaseNotes>@releaseNotes@</releaseNotes>
     <copyright>Copyright 2014</copyright>
     <tags>@tags@</tags>
-    <dependencies />
+    @dependencies@
   </metadata>
   <files>
     <file src="..\bin\merged\Paket.Core.dll" target="lib" />
