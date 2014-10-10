@@ -38,33 +38,42 @@ type NugetPackageCache =
       SourceUrl: string
       DownloadUrl : string}
 
+let rec private followODataLink auth url = 
+    async { 
+        let! raw = getFromUrl (auth, url)
+        let doc, manager = loadNuGetOData raw
+        
+        let currentPage = 
+            [ for node in doc.SelectNodes("//ns:feed/ns:entry/m:properties/d:Version", manager) -> node.InnerText ]
 
-/// Gets versions of the given package via OData.
-let getAllVersionsFromNugetOData (auth, nugetURL, package) = 
+        return [ for linkNode in doc.SelectNodes("//ns:feed/ns:link[@rel=\"next\"]", manager) -> 
+                     linkNode.Attributes.["href"].Value ]
+               |> List.map (followODataLink auth)
+               |> Async.Parallel
+               |> Async.RunSynchronously
+               |> Seq.concat
+               |> Seq.append currentPage
+    }
+
+/// Gets versions of the given package via OData via /Packages?$filter=Id eq 'packageId'
+let getAllVersionsFromNugetODataWithFilter (auth, nugetURL, package) = 
     // we cannot cache this
-    let rec followLink url = 
-        async { 
-            let! raw = getFromUrl (auth, url)
-            let doc, manager = loadNuGetOData raw
-            
-            let currentPage = [ for node in doc.SelectNodes("//ns:feed/ns:entry/m:properties/d:Version", manager) -> node.InnerText ]
-            
-            return
-                [ for linkNode in doc.SelectNodes("//ns:feed/ns:link[@rel=\"next\"]", manager) -> linkNode.Attributes.["href"].Value ]
-                |> List.map followLink
-                |> Async.Parallel
-                |> Async.RunSynchronously
-                |> Seq.concat
-                |> Seq.append currentPage
-        }
+    followODataLink auth (sprintf "%s/Packages?$filter=Id eq '%s'" nugetURL package)
 
-    followLink (sprintf "%s/Packages?$filter=Id eq '%s'" nugetURL package)
+/// Gets versions of the given package via OData via /FindPackagesById()?id='packageId'.
+let getAllVersionsFromNugetOData (auth, nugetURL, package) = 
+    async { 
+        // we cannot cache this
+        try 
+            return! followODataLink auth (sprintf "%s/FindPackagesById()?id='%s'" nugetURL package)
+        with _ -> return! getAllVersionsFromNugetODataWithFilter (auth, nugetURL, package)
+    }
 
 /// Gets all versions no. of the given package.
 let getAllVersions(auth,nugetURL, package) = 
     // we cannot cache this
     async { 
-        let! raw = safeGetFromUrl(auth,sprintf "%s/package-versions/%s?includePrerelease=true" nugetURL package)
+        let! raw = safeGetFromUrl(auth,sprintf "%s/package-versdddions/%s?includePrerelease=true" nugetURL package)
         match raw with
         | None -> let! result = getAllVersionsFromNugetOData(auth,nugetURL, package)
                   return result

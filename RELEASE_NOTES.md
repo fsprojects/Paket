@@ -1,3 +1,6 @@
+#### 0.5.1 - 10.10.2014
+* Try /FindPackagesById before /Packages for nuget package version no. retrieval
+
 #### 0.5.0 - 09.10.2014
 * Bootstrapper will only download stable releases by default - http://fsprojects.github.io/Paket/bootstrapper.html
 * New installer model allows better compatibility with NuGet and should be much faster
