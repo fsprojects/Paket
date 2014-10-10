@@ -29,7 +29,7 @@ let graph = [
 [<Test>]
 let ``should resolve simple config1``() = 
     let cfg = DependenciesFile.FromCode(config1)
-    let resolved = cfg.Resolve(noSha1,VersionsFromGraph graph, PackageDetailsFromGraph graph).ResolvedPackages.GetModelOrFail()
+    let resolved = cfg.Resolve(noSha1,VersionsFromGraph graph, PackageDetailsFromGraph graph, 0).ResolvedPackages.GetModelOrFail()
     getVersion resolved.["Rx-Main"] |> shouldEqual "2.0"
     getVersion resolved.["Rx-Core"] |> shouldEqual "2.1"
     getVersion resolved.["Castle.Windsor-log4net"] |> shouldEqual "3.3"
@@ -55,7 +55,7 @@ let graph2 = [
 [<Test>]
 let ``should resolve simple config2``() = 
     let cfg = DependenciesFile.FromCode(config2)
-    let resolved = cfg.Resolve(noSha1,VersionsFromGraph graph2, PackageDetailsFromGraph graph2).ResolvedPackages.GetModelOrFail()
+    let resolved = cfg.Resolve(noSha1,VersionsFromGraph graph2, PackageDetailsFromGraph graph2, 0).ResolvedPackages.GetModelOrFail()
     getVersion resolved.["FsUnit"] |> shouldEqual "1.3.1"
     getVersion resolved.["NUnit"] |> shouldEqual "2.6.3"
 
@@ -79,7 +79,7 @@ let graph3 = [
 [<Test>]
 let ``should resolve fixed config``() = 
     let cfg = DependenciesFile.FromCode(config3)
-    let resolved = cfg.Resolve(noSha1,VersionsFromGraph graph3, PackageDetailsFromGraph graph3).ResolvedPackages.GetModelOrFail()
+    let resolved = cfg.Resolve(noSha1,VersionsFromGraph graph3, PackageDetailsFromGraph graph3, 0).ResolvedPackages.GetModelOrFail()
     getVersion resolved.["Castle.Core"] |> shouldEqual "3.2.0"
     getVersion resolved.["Castle.Windsor-log4net"] |> shouldEqual "3.2.0.1"
     getVersion resolved.["Castle.Core-log4net"] |> shouldEqual "3.2.0"
@@ -95,7 +95,7 @@ nuget "Castle.Windsor-log4net" "~> 3.2"
 [<Test>]
 let ``should resolve fixed config4``() = 
     let cfg = DependenciesFile.FromCode(config4)
-    let resolved = cfg.Resolve(noSha1,VersionsFromGraph graph3, PackageDetailsFromGraph graph3).ResolvedPackages.GetModelOrFail()
+    let resolved = cfg.Resolve(noSha1,VersionsFromGraph graph3, PackageDetailsFromGraph graph3, 0).ResolvedPackages.GetModelOrFail()
     getVersion resolved.["Castle.Core"] |> shouldEqual "3.2.0"
     getVersion resolved.["Castle.Windsor-log4net"] |> shouldEqual "3.2.0.1"
     getVersion resolved.["Castle.Core-log4net"] |> shouldEqual "3.2.0"

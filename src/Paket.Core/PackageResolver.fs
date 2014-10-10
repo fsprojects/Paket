@@ -67,7 +67,7 @@ type Resolved = {
     ResolvedSourceFiles : ModuleResolver.ResolvedSourceFile list }
 
 /// Resolves all direct and indirect dependencies
-let Resolve(getVersionsF, getPackageDetailsF, rootDependencies:PackageRequirement list) =
+let Resolve(getVersionsF, getPackageDetailsF, rootDependencies:PackageRequirement list, maxDepth:int) =
     tracefn "Resolving packages:"
     let exploredPackages = Dictionary<string*SemVerInfo,ResolvedPackage>()
     let allVersions = new Dictionary<string,SemVerInfo list>()
@@ -125,14 +125,23 @@ let Resolve(getVersionsF, getPackageDetailsF, rootDependencies:PackageRequiremen
                 | Some(versions,globalOverride) -> 
                     if globalOverride then versions,true else List.filter dependency.VersionRequirement.IsInRange versions,false
                     
+            let unsorted =
+                match maxDepth with
+                | 0 -> compatibleVersions 
+                | maxDepth when compatibleVersions.Length > maxDepth ->                    
+                    compatibleVersions 
+                    |> Seq.take maxDepth
+                    |> Seq.toList
+                | _ -> compatibleVersions 
+
             let sorted =                
                 match dependency.Parent with
                 | DependenciesFile _ ->
-                    List.sort compatibleVersions |> List.rev
+                    List.sort unsorted |> List.rev
                 | _ ->
                     match dependency.ResolverStrategy with
-                    | Max -> List.sort compatibleVersions |> List.rev
-                    | Min -> List.sort compatibleVersions
+                    | Max -> List.sort unsorted |> List.rev
+                    | Min -> List.sort unsorted
 
             sorted
             |> List.fold (fun state versionToExplore ->

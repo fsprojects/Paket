@@ -4,12 +4,12 @@ module Paket.AddProcess
 open Paket
 open System.IO
 
-let Add(package, version, force, hard, interactive, installAfter) =
+let Add(package, version, force, hard, interactive, installAfter, maxDepth) =
     let dependenciesFile =
         DependenciesFile.ReadFromFile(Constants.DependenciesFile)
           .Add(package,version)
 
-    let resolution = dependenciesFile.Resolve force 
+    let resolution = dependenciesFile.Resolve(force,maxDepth)
     let resolvedPackages = resolution.ResolvedPackages.GetModelOrFail()
 
     if interactive then

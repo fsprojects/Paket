@@ -25,6 +25,6 @@ NUGET
 [<Test>]
 let ``should generate content none lock file``() = 
     let cfg = DependenciesFile.FromCode(config1)
-    cfg.Resolve(noSha1,VersionsFromGraph graph, PackageDetailsFromGraph graph).ResolvedPackages.GetModelOrFail()
+    cfg.Resolve(noSha1,VersionsFromGraph graph, PackageDetailsFromGraph graph, 0).ResolvedPackages.GetModelOrFail()
     |> LockFileSerializer.serializePackages cfg.Options
     |> shouldEqual (normalizeLineEndings expected)
