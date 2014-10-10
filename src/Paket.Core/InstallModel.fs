@@ -115,9 +115,9 @@ type InstallModel =
 
     member this.Process() =
         this
-            .UseGenericFrameworkVersionIfEmpty()
-            .UsePortableVersionLibIfEmpty()
+            .UseGenericFrameworkVersionIfEmpty()            
             .UseLowerVersionLibIfEmpty()
+            .UsePortableVersionLibIfEmpty()
             .FilterBlackList()
 
     member this.GetLibraryNames =

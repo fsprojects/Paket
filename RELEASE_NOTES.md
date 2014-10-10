@@ -1,3 +1,6 @@
+#### 0.5.15 - 10.10.2014
+* Prefer full platform builds over portable builds
+
 #### 0.5.14 - 10.10.2014
 * Report if we can't find packages for top level dependencies.
 
