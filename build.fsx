@@ -158,11 +158,28 @@ Target "SourceLink" (fun _ ->
 // --------------------------------------------------------------------------------------
 // Build a NuGet package
 
-Target "MergeAssemblies" (fun _ ->
+Target "MergePaketCore" (fun _ ->
     CreateDir buildMergedDir
 
     let toPack =
-        ["paket.exe"; "FSharp.Core.dll"; "Ionic.Zip.dll"; "Newtonsoft.Json.dll"; "UnionArgParser.dll"]
+        ["Paket.Core.dll"; "FSharp.Core.dll"; "Ionic.Zip.dll"; "Newtonsoft.Json.dll"]
+        |> List.map (fun l -> buildDir @@ l)
+        |> separated " "
+
+    let result =
+        ExecProcess (fun info ->
+            info.FileName <- currentDirectory @@ "tools" @@ "ILRepack" @@ "ILRepack.exe"
+            info.Arguments <- sprintf "/internalize /verbose /lib:%s /ver:%s /out:%s %s" buildDir release.AssemblyVersion (buildMergedDir @@ "Paket.Core.dll") toPack
+            ) (TimeSpan.FromMinutes 5.)
+
+    if result <> 0 then failwithf "Error during ILRepack execution."
+)
+
+Target "MergePaketTool" (fun _ ->
+    CreateDir buildMergedDir
+
+    let toPack =
+        ["paket.exe"; "merged/Paket.Core.dll" ]
         |> List.map (fun l -> buildDir @@ l)
         |> separated " "
 
@@ -181,7 +198,9 @@ Target "SignAssemblies" (fun _ ->
         traceImportant (sprintf "%s not found, skipped signing assemblies" pfx)
     else
 
-    let filesToSign = !! "bin/**/*.exe"
+    let filesToSign = 
+        !! "bin/**/*.exe"
+        ++ "bin/**/Paket.Core.dll"
 
     filesToSign
         |> Seq.iter (fun executable ->
@@ -195,21 +214,22 @@ Target "SignAssemblies" (fun _ ->
 )
 
 Target "NuGet" (fun _ ->
-    NuGet (fun p ->
-        { p with
-            Authors = authors
-            Project = project
-            Summary = summary
-            Description = description
-            Version = release.NugetVersion
-            ReleaseNotes = toLines release.Notes
-            Tags = tags
-            OutputPath = "bin"
-            AccessKey = getBuildParamOrDefault "nugetkey" ""
-            Publish = hasBuildParam "nugetkey"
-            Dependencies = [] })
-        ("nuget/" + project + ".nuspec")
+    [ "Paket.Core"; "Paket" ]
+     |> List.iter (fun project -> 
+            NuGet (fun p -> 
+                { p with Authors = authors
+                         Project = project
+                         Summary = summary
+                         Description = description
+                         Version = release.NugetVersion
+                         ReleaseNotes = toLines release.Notes
+                         Tags = tags
+                         OutputPath = "bin"
+                         AccessKey = getBuildParamOrDefault "nugetkey" ""
+                         Publish = hasBuildParam "nugetkey"
+                         Dependencies = [] }) (sprintf "nuget/%s.nuspec" project))
 )
+
 
 // --------------------------------------------------------------------------------------
 // Generate the documentation
@@ -291,7 +311,8 @@ Target "All" DoNothing
 #else
   =?> ("SourceLink", Pdbstr.tryFind().IsSome )
 #endif
-  ==> "MergeAssemblies"
+  ==> "MergePaketCore"
+  ==> "MergePaketTool"
   ==> "SignAssemblies"
   ==> "NuGet"
   ==> "BuildPackage"
