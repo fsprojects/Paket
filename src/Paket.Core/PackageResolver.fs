@@ -124,7 +124,6 @@ let Resolve(getVersionsF, getPackageDetailsF, rootDependencies:PackageRequiremen
                         List.filter dependency.VersionRequirement.IsInRange versions,false
                 | Some(versions,globalOverride) -> 
                     if globalOverride then versions,true else List.filter dependency.VersionRequirement.IsInRange versions,false
-                   
 
             let sorted =                
                 match dependency.Parent with
@@ -134,16 +133,17 @@ let Resolve(getVersionsF, getPackageDetailsF, rootDependencies:PackageRequiremen
                     match dependency.ResolverStrategy with
                     | Max -> List.sort compatibleVersions |> List.rev
                     | Min -> List.sort compatibleVersions
-                |> fun sorted -> 
-                    match maxDepth with
-                    | 0 -> sorted 
-                    | maxDepth when sorted.Length > maxDepth ->                    
-                        compatibleVersions 
-                        |> Seq.take maxDepth
-                        |> Seq.toList
-                    | _ -> sorted
 
-            sorted
+            let trimmed =
+                match maxDepth with
+                | 0 -> sorted 
+                | maxDepth when sorted.Length > maxDepth ->                    
+                    sorted 
+                    |> Seq.take maxDepth
+                    |> Seq.toList
+                | _ -> sorted
+
+            trimmed
             |> List.fold (fun state versionToExplore ->
                 match state with
                 | Conflict _ ->
