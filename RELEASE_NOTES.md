@@ -1,3 +1,6 @@
+#### 0.5.14 - 10.10.2014
+* Report if we can't find packages for top level dependencies.
+
 #### 0.5.13 - 10.10.2014
 * Faster resolver
 

@@ -137,6 +137,12 @@ let Resolve(getVersionsF, getPackageDetailsF, rootDependencies:PackageRequiremen
                 | Some(versions,globalOverride) -> 
                     if globalOverride then versions,true else List.filter dependency.VersionRequirement.IsInRange versions,false
 
+            if compatibleVersions = [] then
+                match dependency.Parent with
+                | PackageRequirementSource.DependenciesFile _ ->                     
+                    failwithf "Could not find compatible versions for top level dependency:%s     %A%s   Try to relax the dependency or allow prereleases." Environment.NewLine (dependency.ToString()) Environment.NewLine
+                | _ -> ()
+
             let sorted =                
                 match dependency.Parent with
                 | DependenciesFile _ ->
