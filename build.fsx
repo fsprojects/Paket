@@ -162,7 +162,7 @@ Target "MergePaketCore" (fun _ ->
     CreateDir buildMergedDir
 
     let toPack =
-        ["Paket.Core.dll"; "FSharp.Core.dll"; "Ionic.Zip.dll"; "Newtonsoft.Json.dll"]
+        ["Paket.Core.dll"; "FSharp.Core.dll"; ]
         |> List.map (fun l -> buildDir @@ l)
         |> separated " "
 
@@ -214,20 +214,36 @@ Target "SignAssemblies" (fun _ ->
 )
 
 Target "NuGet" (fun _ ->
-    [ "Paket.Core"; "Paket" ]
-     |> List.iter (fun project -> 
-            NuGet (fun p -> 
-                { p with Authors = authors
-                         Project = project
-                         Summary = summary
-                         Description = description
-                         Version = release.NugetVersion
-                         ReleaseNotes = toLines release.Notes
-                         Tags = tags
-                         OutputPath = "bin"
-                         AccessKey = getBuildParamOrDefault "nugetkey" ""
-                         Publish = hasBuildParam "nugetkey"
-                         Dependencies = [] }) (sprintf "nuget/%s.nuspec" project))
+
+    NuGet (fun p -> 
+        { p with Authors = authors
+                 Project = "Paket.Core"
+                 Summary = summary
+                 Description = description
+                 Version = release.NugetVersion
+                 ReleaseNotes = toLines release.Notes
+                 Tags = tags
+                 OutputPath = "bin"
+                 Dependencies = 
+                    ["Newtonsoft.Json", GetPackageVersion "packages" "Newtonsoft.Json" 
+                     "DotNetZip", GetPackageVersion "packages" "DotNetZip" ]
+                 AccessKey = getBuildParamOrDefault "nugetkey" ""
+                 Publish = hasBuildParam "nugetkey" }) 
+       "nuget/Paket.Core.nuspec"
+
+    NuGet (fun p -> 
+        { p with Authors = authors
+                 Project = "Paket"
+                 Summary = summary
+                 Description = description
+                 Version = release.NugetVersion
+                 ReleaseNotes = toLines release.Notes
+                 Tags = tags
+                 OutputPath = "bin"
+                 AccessKey = getBuildParamOrDefault "nugetkey" ""
+                 Publish = hasBuildParam "nugetkey"
+                 Dependencies = [] }) 
+       "nuget/Paket.nuspec"
 )
 
 
