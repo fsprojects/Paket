@@ -15,16 +15,23 @@ type PackageRequirement =
       ResolverStrategy : ResolverStrategy
       Parent: PackageRequirementSource
       Sources : PackageSource list }
+
     override this.Equals(that) = 
         match that with
         | :? PackageRequirement as that -> this.Name = that.Name && this.VersionRequirement = that.VersionRequirement
         | _ -> false
+
+    override this.ToString() = 
+        sprintf "%s %s" this.Name (this.VersionRequirement.ToString())
+
 
     override this.GetHashCode() = hash (this.Name,this.VersionRequirement)
 
     interface System.IComparable with
        member this.CompareTo that = 
           match that with 
-          | :? PackageRequirement as that ->
-                compare (not this.VersionRequirement.Range.IsGlobalOverride,this.Parent,this.Name,this.VersionRequirement) (not that.VersionRequirement.Range.IsGlobalOverride,that.Parent,that.Name,that.VersionRequirement)
+          | :? PackageRequirement as that -> 
+                compare 
+                   (not this.VersionRequirement.Range.IsGlobalOverride,this.Name,this.VersionRequirement) 
+                   (not that.VersionRequirement.Range.IsGlobalOverride,that.Name,that.VersionRequirement)
           | _ -> invalidArg "that" "cannot compare value of different types" 
