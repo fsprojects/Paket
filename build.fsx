@@ -179,7 +179,7 @@ Target "MergePaketTool" (fun _ ->
     CreateDir buildMergedDir
 
     let toPack =
-        ["paket.exe"; "merged/Paket.Core.dll"; "UnionArgParser.dll"]
+        ["paket.exe"; "Paket.Core.dll"; "FSharp.Core.dll"; "Ionic.Zip.dll"; "Newtonsoft.Json.dll"; "UnionArgParser.dll"]
         |> List.map (fun l -> buildDir @@ l)
         |> separated " "
 
