@@ -1,4 +1,4 @@
-#### 0.5.1 - 10.10.2014
+#### 0.5.2 - 10.10.2014
 * Try /FindPackagesById before /Packages for nuget package version no. retrieval
 
 #### 0.5.0 - 09.10.2014

@@ -73,7 +73,7 @@ let getAllVersionsFromNugetOData (auth, nugetURL, package) =
 let getAllVersions(auth,nugetURL, package) = 
     // we cannot cache this
     async { 
-        let! raw = safeGetFromUrl(auth,sprintf "%s/package-versdddions/%s?includePrerelease=true" nugetURL package)
+        let! raw = safeGetFromUrl(auth,sprintf "%s/package-versions/%s?includePrerelease=true" nugetURL package)
         match raw with
         | None -> let! result = getAllVersionsFromNugetOData(auth,nugetURL, package)
                   return result
