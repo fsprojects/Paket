@@ -158,23 +158,6 @@ Target "SourceLink" (fun _ ->
 // --------------------------------------------------------------------------------------
 // Build a NuGet package
 
-Target "MergePaketCore" (fun _ ->
-    CreateDir buildMergedDir
-
-    let toPack =
-        ["Paket.Core.dll"; "FSharp.Core.dll"; ]
-        |> List.map (fun l -> buildDir @@ l)
-        |> separated " "
-
-    let result =
-        ExecProcess (fun info ->
-            info.FileName <- currentDirectory @@ "tools" @@ "ILRepack" @@ "ILRepack.exe"
-            info.Arguments <- sprintf "/internalize /verbose /lib:%s /ver:%s /out:%s %s" buildDir release.AssemblyVersion (buildMergedDir @@ "Paket.Core.dll") toPack
-            ) (TimeSpan.FromMinutes 5.)
-
-    if result <> 0 then failwithf "Error during ILRepack execution."
-)
-
 Target "MergePaketTool" (fun _ ->
     CreateDir buildMergedDir
 
@@ -327,7 +310,6 @@ Target "All" DoNothing
 #else
   =?> ("SourceLink", Pdbstr.tryFind().IsSome )
 #endif
-  ==> "MergePaketCore"
   ==> "MergePaketTool"
   ==> "SignAssemblies"
   ==> "NuGet"
