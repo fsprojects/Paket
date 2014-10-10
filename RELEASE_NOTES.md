@@ -1,3 +1,6 @@
+#### 0.5.3 - 10.10.2014
+* Release Paket.Core package
+
 #### 0.5.2 - 10.10.2014
 * Try /FindPackagesById before /Packages for nuget package version no. retrieval
 
