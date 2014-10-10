@@ -13,13 +13,13 @@ type PreReleaseStatus =
     | Concrete of string list
 
 /// Represents version information.
-type VersionRange = 
-    | OverrideAll of SemVerInfo
-    | Specific of SemVerInfo
+type VersionRange =     
     | Minimum of SemVerInfo
     | GreaterThan of SemVerInfo
     | Maximum of SemVerInfo
     | LessThan of SemVerInfo
+    | Specific of SemVerInfo    
+    | OverrideAll of SemVerInfo
     | Range of fromB : VersionRangeBound * from : SemVerInfo * _to : SemVerInfo * _toB : VersionRangeBound 
 
     static member AtLeast version = Minimum(SemVer.parse version)

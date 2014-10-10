@@ -31,7 +31,13 @@ type PackageRequirement =
        member this.CompareTo that = 
           match that with 
           | :? PackageRequirement as that -> 
-                compare 
-                   (not this.VersionRequirement.Range.IsGlobalOverride,this.Name,this.VersionRequirement) 
-                   (not that.VersionRequirement.Range.IsGlobalOverride,that.Name,that.VersionRequirement)
+                if this = that then 0 else
+                let c1 =
+                    compare 
+                       (not this.VersionRequirement.Range.IsGlobalOverride,this.Parent)
+                       (not that.VersionRequirement.Range.IsGlobalOverride,this.Parent)
+                if c1 <> 0 then c1 else
+                let c2 = compare this.VersionRequirement that.VersionRequirement
+                if c2 <> 0 then -c2 else
+                compare this.Name that.Name
           | _ -> invalidArg "that" "cannot compare value of different types" 

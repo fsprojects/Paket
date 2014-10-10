@@ -41,7 +41,7 @@
     <WarningLevel>3</WarningLevel>
     <DocumentationFile>..\..\bin\Paket.xml</DocumentationFile>
     <StartArguments>update</StartArguments>
-    <StartWorkingDirectory>D:\code\FAKE</StartWorkingDirectory>
+    <StartWorkingDirectory>D:\code\PaketKopie</StartWorkingDirectory>
   </PropertyGroup>
   <PropertyGroup>
     <MinimumVisualStudioVersion Condition="'$(MinimumVisualStudioVersion)' == ''">11</MinimumVisualStudioVersion>

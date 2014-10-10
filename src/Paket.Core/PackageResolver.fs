@@ -22,6 +22,8 @@ type ResolvedPackage =
       Dependencies : (string * VersionRequirement) Set
       Source : PackageSource }
 
+    override this.ToString() = sprintf "%s %s" this.Name (this.Version.ToString())
+
 type PackageResolution = Map<string , ResolvedPackage>
 
 type ResolvedPackages =
@@ -95,6 +97,16 @@ let Resolve(getVersionsF, getPackageDetailsF, rootDependencies:PackageRequiremen
             versions
         | true,versions -> versions
 
+    let isIncluded (vr1 : VersionRange, vr2 : VersionRange) =         
+        match vr1, vr2 with
+        | Minimum v1, Minimum v2 when v1 <= v2 -> true
+        | Minimum v1, Specific v2 when v1 <= v2 -> true
+        | Specific v1, Specific v2 when v1 = v2 -> true
+        | Range(_, min1, max1, _), Specific v2 when min1 <= v2 && max1 >= v2 -> true
+        | GreaterThan v1, GreaterThan v2 when v1 < v2 -> true
+        | GreaterThan v1, Specific v2 when v1 < v2 -> true
+        | _ -> false
+
     let rec improveModel (filteredVersions:Map<string , (SemVerInfo list * bool)>,packages:ResolvedPackage list,closed:Set<PackageRequirement>,stillOpen:Set<PackageRequirement>) =
         if Set.isEmpty stillOpen then
             let isOk =
@@ -144,6 +156,17 @@ let Resolve(getVersionsF, getPackageDetailsF, rootDependencies:PackageRequiremen
                         exploredPackage.Dependencies
                         |> Set.map (fun (n,v) -> {dependency with Name = n; VersionRequirement = v; Parent = Package(dependency.Name,versionToExplore) })
                         |> Set.filter (fun d -> Set.contains d closed |> not)
+                        |> Set.filter (fun d -> Set.contains d stillOpen |> not)
+                        |> Set.filter (fun d ->
+                            closed 
+                            |> Seq.filter (fun x -> x.Name = d.Name)
+                            |> Seq.exists (fun otherDep -> isIncluded (d.VersionRequirement.Range,otherDep.VersionRequirement.Range))
+                            |> not)
+                        |> Set.filter (fun d ->
+                            rest 
+                            |> Seq.filter (fun x -> x.Name = d.Name)
+                            |> Seq.exists (fun otherDep -> isIncluded (d.VersionRequirement.Range,otherDep.VersionRequirement.Range))
+                            |> not)
 
                     improveModel (newFilteredVersion,exploredPackage::packages,Set.add dependency closed,Set.union rest newDependencies)
                 | Ok _ -> state)
