@@ -7,7 +7,7 @@ open Paket.ModuleResolver
 open Paket.PackageResolver
 open System.IO
 open System.Collections.Generic
-open Paket.PackageSources
+open FSharp.Control.AsyncExtensions
 
 let private findPackagesWithContent (usedPackages:Dictionary<_,_>) = 
     usedPackages
@@ -65,9 +65,37 @@ let private removeCopiedFiles (project: ProjectFile) =
     |> removeFilesAndTrimDirs
 
 
+let CreateInstallModel(sources, force, package) = 
+    async { 
+        let! (package, files) = RestoreProcess.ExtractPackage(sources, force, package)
+        let nuspec = FileInfo(sprintf "./packages/%s/%s.nuspec" package.Name package.Name)
+        let references = Nuspec.GetReferences nuspec.FullName
+        let files = files |> Seq.map (fun fi -> fi.FullName)
+        return package, InstallModel.CreateFromLibs(package.Name, package.Version, files, references)
+    }
+
+
+/// Retores the given packages from the lock file.
+let internal createModel(sources,force, lockFile:LockFile) = 
+    let sourceFileDownloads =
+        lockFile.SourceFiles
+        |> Seq.map (fun file -> RestoreProcess.DownloadSourceFile(Path.GetDirectoryName lockFile.FileName, file))        
+        |> Async.Parallel
+
+    let packageDownloads = 
+        lockFile.ResolvedPackages
+        |> Seq.map (fun kv -> CreateInstallModel(sources,force,kv.Value))
+        |> Async.Parallel
+
+    let _,extractedPackages =
+        Async.Parallel(sourceFileDownloads,packageDownloads)
+        |> Async.RunSynchronously
+
+    extractedPackages
+
 /// Installs the given all packages from the lock file.
 let Install(sources,force, hard, lockFile:LockFile) = 
-    let extractedPackages = RestoreProcess.restore(sources,force, lockFile)
+    let extractedPackages = createModel(sources,force, lockFile)
 
     let model =
         extractedPackages

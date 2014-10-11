@@ -55,15 +55,6 @@ let DownloadSourceFile(rootPath, source:ResolvedSourceFile) =
             File.WriteAllText(versionFile.FullName, source.Commit)
     }
 
-let CreateInstallModel(sources, force, package) = 
-    async { 
-        let! (package, files) = ExtractPackage(sources, force, package)
-        let nuspec = FileInfo(sprintf "./packages/%s/%s.nuspec" package.Name package.Name)
-        let references = Nuspec.GetReferences nuspec.FullName
-        let files = files |> Seq.map (fun fi -> fi.FullName)
-        return package, InstallModel.CreateFromLibs(package.Name, package.Version, files, references)
-    }
-
 
 /// Retores the given packages from the lock file.
 let internal restore(sources,force, lockFile:LockFile) = 
@@ -74,14 +65,10 @@ let internal restore(sources,force, lockFile:LockFile) =
 
     let packageDownloads = 
         lockFile.ResolvedPackages
-        |> Seq.map (fun kv -> CreateInstallModel(sources,force,kv.Value))
+        |> Seq.map (fun kv -> ExtractPackage(sources,force,kv.Value))
         |> Async.Parallel
 
-    let _,extractedPackages =
-        Async.Parallel(sourceFileDownloads,packageDownloads)
-        |> Async.RunSynchronously
-
-    extractedPackages
+    Async.Parallel(sourceFileDownloads,packageDownloads) 
 
 let Restore(force) = 
     let lockFileName = DependenciesFile.FindLockfile Constants.DependenciesFile
@@ -96,4 +83,6 @@ let Restore(force) =
                 |> PackageSourceParser.getSources
             sources, LockFile.LoadFrom(lockFileName.FullName)
 
-    restore(sources, force, lockFile) |> ignore
+    restore(sources, force, lockFile) 
+    |> Async.RunSynchronously
+    |> ignore
