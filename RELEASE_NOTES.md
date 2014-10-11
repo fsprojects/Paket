@@ -1,3 +1,6 @@
+#### 0.6.1 - 11.10.2014
+* Install command deprecated
+
 #### 0.6.0 - 11.10.2014
 * New restore command -  http://fsprojects.github.io/Paket/paket-restore.html
 * Report if we can't find packages for top level dependencies.

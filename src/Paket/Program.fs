@@ -110,7 +110,9 @@ try
                 | Some x -> x
                 | _ -> ""
             AddProcess.Add(packageName,version,force,hard,interactive,noInstall |> not)
-        | Command.Install -> UpdateProcess.Update(false,force,hard) 
+        | Command.Install -> 
+            traceWarnfn "The install command is deprecated. Please use paket update and paket restore instead."
+            UpdateProcess.Update(false,force,hard) 
         | Command.Restore -> RestoreProcess.Restore(force) 
         | Command.Update -> UpdateProcess.Update(true,force,hard)
         | Command.Outdated -> FindOutdated.ListOutdated(strict,includePrereleases)
