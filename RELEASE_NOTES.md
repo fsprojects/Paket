@@ -1,17 +1,9 @@
-#### 0.6.0-alpha001 - 11.10.2014
+#### 0.6.0 - 11.10.2014
 * New restore command -  http://fsprojects.github.io/Paket/paket-restore.html
-
-#### 0.5.15 - 10.10.2014
-* Prefer full platform builds over portable builds
-
-#### 0.5.14 - 10.10.2014
 * Report if we can't find packages for top level dependencies.
-
-#### 0.5.13 - 10.10.2014
 * Faster resolver
-
-#### 0.5.7 - 10.10.2014
-* Release Paket.Core package
+* New Paket.Core package on NuGet - https://www.nuget.org/packages/Paket.Core/
+* BUGFIX: Prefer full platform builds over portable builds
 
 #### 0.5.2 - 10.10.2014
 * Try /FindPackagesById before /Packages for nuget package version no. retrieval
