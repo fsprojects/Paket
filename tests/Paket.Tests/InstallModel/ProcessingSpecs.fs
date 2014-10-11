@@ -379,6 +379,17 @@ let ``should only handle dll and exe files``() =
     model.GetFiles(DotNetFramework(Framework FrameworkVersionNo.V2, Full)) |> shouldNotContain @"..\Fantomas\lib\FantomasLib.xml" 
 
 [<Test>]
+let ``should use portable net40 in net45 when don't have other files``() = 
+    let model = 
+        emptymodel.Add(
+            [ @"..\Google.Apis.Core\lib\portable-net40+sl50+win+wpa81+wp80\Google.Apis.Core.dll" ], Nuspec.All)
+            .Process()
+            
+    model.GetFiles(DotNetFramework(Framework FrameworkVersionNo.V4, Full)) |> shouldContain @"..\Google.Apis.Core\lib\portable-net40+sl50+win+wpa81+wp80\Google.Apis.Core.dll"
+    model.GetFiles(DotNetFramework(Framework FrameworkVersionNo.V4_5, Full)) |> shouldContain @"..\Google.Apis.Core\lib\portable-net40+sl50+win+wpa81+wp80\Google.Apis.Core.dll"
+    model.GetFiles(DotNetFramework(Framework FrameworkVersionNo.V4_5_1, Full)) |> shouldContain @"..\Google.Apis.Core\lib\portable-net40+sl50+win+wpa81+wp80\Google.Apis.Core.dll"
+
+[<Test>]
 let ``should not install tools``() = 
     let model = 
         emptymodel.Add(

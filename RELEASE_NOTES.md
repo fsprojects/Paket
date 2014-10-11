@@ -1,3 +1,6 @@
+#### 0.6.5 - 11.10.2014
+* Install model uses portable versions for net40 and net45 when package doesn't contain special versions
+
 #### 0.6.4 - 11.10.2014
 * Paket install displays versions found if constraint does not match any available version 
 

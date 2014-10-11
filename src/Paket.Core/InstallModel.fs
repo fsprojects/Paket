@@ -118,6 +118,7 @@ type InstallModel =
             .UseGenericFrameworkVersionIfEmpty()            
             .UseLowerVersionLibIfEmpty()
             .UsePortableVersionLibIfEmpty()
+            .UseLowerVersionLibIfEmpty()  // because we now might need to use portable
             .FilterBlackList()
 
     member this.GetLibraryNames =
