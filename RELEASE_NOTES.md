@@ -1,3 +1,6 @@
+#### 0.6.0-alpha001 - 11.10.2014
+* New restore command -  http://fsprojects.github.io/Paket/paket-restore.html
+
 #### 0.5.15 - 10.10.2014
 * Prefer full platform builds over portable builds
 

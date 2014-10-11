@@ -24,4 +24,5 @@ let Update(forceResolution, force, hard) =
                 |> File.ReadAllLines
                 |> PackageSourceParser.getSources
             sources, LockFile.LoadFrom(lockFileName.FullName)
+
     InstallProcess.Install(sources, force, hard, lockFile)

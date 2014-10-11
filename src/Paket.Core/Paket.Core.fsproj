@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
@@ -89,6 +89,7 @@
     <Compile Include="DependenciesFile.fs" />
     <Compile Include="LockFile.fs" />
     <Compile Include="ReferencesFile.fs" />
+    <Compile Include="RestoreProcess.fs" />
     <Compile Include="InstallProcess.fs" />
     <Compile Include="UpdateProcess.fs" />
     <Compile Include="AddProcess.fs" />

@@ -17,6 +17,7 @@ tracefn "Paket version %s" fvi.FileVersion
 type Command =
     | Add
     | Install
+    | Restore
     | Update
     | Outdated
     | ConvertFromNuget
@@ -27,6 +28,7 @@ type Command =
 type CLIArguments =
     | [<First>][<NoAppSettings>][<CustomCommandLine("add")>] Add
     | [<First>][<NoAppSettings>][<CustomCommandLine("install")>] Install
+    | [<First>][<NoAppSettings>][<CustomCommandLine("restore")>] Restore
     | [<First>][<NoAppSettings>][<CustomCommandLine("update")>] Update
     | [<First>][<NoAppSettings>][<CustomCommandLine("outdated")>] Outdated
     | [<First>][<NoAppSettings>][<CustomCommandLine("convert-from-nuget")>] ConvertFromNuget
@@ -48,6 +50,7 @@ with
             match s with
             | Add -> "adds a package to the dependencies."
             | Install -> "installs all packages."
+            | Restore -> "resotres all packages."
             | Update -> "updates the packet.lock file and installs all packages."
             | Outdated -> "displays information about new packages."
             | ConvertFromNuget -> "converts all projects from NuGet to Paket."
@@ -72,6 +75,7 @@ let results =
         let command = 
             if results.Contains <@ CLIArguments.Add @> then Command.Add
             elif results.Contains <@ CLIArguments.Install @> then Command.Install
+            elif results.Contains <@ CLIArguments.Restore @> then Command.Restore
             elif results.Contains <@ CLIArguments.Update @> then Command.Update
             elif results.Contains <@ CLIArguments.Outdated @> then Command.Outdated
             elif results.Contains <@ CLIArguments.ConvertFromNuget @> then Command.ConvertFromNuget
@@ -107,6 +111,7 @@ try
                 | _ -> ""
             AddProcess.Add(packageName,version,force,hard,interactive,noInstall |> not)
         | Command.Install -> UpdateProcess.Update(false,force,hard) 
+        | Command.Restore -> RestoreProcess.Restore(force) 
         | Command.Update -> UpdateProcess.Update(true,force,hard)
         | Command.Outdated -> FindOutdated.ListOutdated(strict,includePrereleases)
         | Command.InitAutoRestore -> VSIntegration.InitAutoRestore()
