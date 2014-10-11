@@ -1,3 +1,6 @@
+#### 0.6.4 - 11.10.2014
+* Paket install displays versions found if constraint does not match any available version 
+
 #### 0.6.3 - 11.10.2014
 * Restore doesn't need to calc install model. 
 

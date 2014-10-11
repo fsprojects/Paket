@@ -124,23 +124,25 @@ let Resolve(getVersionsF, getPackageDetailsF, rootDependencies:PackageRequiremen
             let dependency = Seq.head stillOpen
             let rest = stillOpen |> Set.remove dependency
      
-            let compatibleVersions,globalOverride = 
+            let allVersions,compatibleVersions,globalOverride = 
                 match Map.tryFind dependency.Name filteredVersions with
                 | None ->
                     let versions = getAllVersions(dependency.Sources,dependency.Name)
                     if Seq.isEmpty versions then
                         failwithf "Couldn't retrieve versions for %s." dependency.Name
                     if dependency.VersionRequirement.Range.IsGlobalOverride then
-                        List.filter dependency.VersionRequirement.IsInRange versions,true
+                        versions,List.filter dependency.VersionRequirement.IsInRange versions,true
                     else
-                        List.filter dependency.VersionRequirement.IsInRange versions,false
+                        versions,List.filter dependency.VersionRequirement.IsInRange versions,false
                 | Some(versions,globalOverride) -> 
-                    if globalOverride then versions,true else List.filter dependency.VersionRequirement.IsInRange versions,false
+                    if globalOverride then versions,versions,true else versions,List.filter dependency.VersionRequirement.IsInRange versions,false
 
             if compatibleVersions = [] then
                 match dependency.Parent with
                 | PackageRequirementSource.DependenciesFile _ ->                     
-                    failwithf "Could not find compatible versions for top level dependency:%s     %A%s   Try to relax the dependency or allow prereleases." Environment.NewLine (dependency.ToString()) Environment.NewLine
+                    let versionText = String.Join(Environment.NewLine + "     - ",allVersions)
+                    failwithf "Could not find compatible versions for top level dependency:%s     %A%s   Available versions:%s     - %s%s   Try to relax the dependency or allow prereleases." 
+                        Environment.NewLine (dependency.ToString()) Environment.NewLine Environment.NewLine versionText Environment.NewLine
                 | _ -> ()
 
             let sorted =                
