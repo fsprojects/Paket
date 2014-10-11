@@ -9,7 +9,7 @@ TMP=/tmp/paket/src
 LIB=/usr/local/lib
 BIN=/usr/local/bin
 
-LATEST=$(curl -s -G -d '$filter=Id%20eq%20'"'"'Paket'"'"'&$orderby=LastUpdated%20desc&$top=1' "http://www.nuget.org/api/v2/Packages()" | sed -n 's;.*src="\([^"]*\).*;\1;p')
+LATEST=$(curl -s -G -d '$filter=Id%20eq%20'"'"'Paket'"'"'%20and%20IsPrerelease%20eq%20false&$orderby=LastUpdated%20desc&$top=1' "http://www.nuget.org/api/v2/Packages()" | sed -n 's;.*src="\([^"]*\).*;\1;p')
 
 if [ ! "$LATEST" ]; then
   echo "Could not find a paket source on nuget.org. Please check your internet connection and access to http://www.nuget.org."
