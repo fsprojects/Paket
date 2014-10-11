@@ -129,8 +129,7 @@ let ``should handle lib install of Microsoft.BCL for NET >= 40``() =
               @"..\Microsoft.Bcl\lib\net40\System.Threading.Tasks.dll" 
 
               @"..\Microsoft.Bcl\lib\net45\_._" ])
-            .UseLowerVersionLibIfEmpty()
-            .FilterBlackList()
+            .Process()
 
     model.GetFiles(DotNetFramework(Framework FrameworkVersionNo.V3_5, Full)) |> shouldNotContain  @"..\Microsoft.Bcl\lib\net40\System.IO.dll" 
 
@@ -152,8 +151,7 @@ let ``should skip lib install of Microsoft.BCL for monotouch and monoandroid``()
               @"..\Microsoft.Bcl\lib\monoandroid\_._" 
               @"..\Microsoft.Bcl\lib\monotouch\_._" 
               @"..\Microsoft.Bcl\lib\net45\_._" ])
-            .UseLowerVersionLibIfEmpty()
-            .FilterBlackList()
+            .Process()
 
     model.GetFiles(MonoAndroid) |> shouldBeEmpty
     model.GetFiles(MonoTouch) |> shouldBeEmpty
@@ -327,8 +325,7 @@ let ``should handle lib install of Fantomas 1.5``() =
             [ @"..\Fantomas\lib\FantomasLib.dll" 
               @"..\Fantomas\lib\FSharp.Core.dll" 
               @"..\Fantomas\lib\Fantomas.exe" ])
-          .UseGenericFrameworkVersionIfEmpty()
-          .UseLowerVersionLibIfEmpty()
+          .Process()
 
     model.GetFiles(DotNetFramework(All, Full)) |> shouldBeEmpty
     model.GetFiles(DotNetFramework(Framework FrameworkVersionNo.V2, Full)) |> shouldContain @"..\Fantomas\lib\FantomasLib.dll" 
