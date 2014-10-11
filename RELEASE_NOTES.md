@@ -1,8 +1,8 @@
-#### 0.6.2 - 11.10.2014
-* Install command deprecated
+#### 0.6.3 - 11.10.2014
+* Restore doesn't need to calc install model. 
 
 #### 0.6.0 - 11.10.2014
-* New restore command -  http://fsprojects.github.io/Paket/paket-restore.html
+* New restore command - http://fsprojects.github.io/Paket/paket-restore.html
 * Report if we can't find packages for top level dependencies.
 * Faster resolver
 * New Paket.Core package on NuGet - https://www.nuget.org/packages/Paket.Core/
