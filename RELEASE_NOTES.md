@@ -1,3 +1,6 @@
+#### 0.6.6 - 12.10.2014
+* Add FSharp.Core.Microsoft.Signed as dependency
+
 #### 0.6.5 - 11.10.2014
 * Install model uses portable versions for net40 and net45 when package doesn't contain special versions
 
