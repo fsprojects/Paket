@@ -14,7 +14,7 @@ let private readPackageSources(configFile : FileInfo) =
     doc.Load configFile.FullName
     [for node in doc.SelectNodes("//packageSources/add[@value]") ->
         let url = node.Attributes.["value"].Value
-        let auth = doc.SelectNodes(sprintf "//packageSourceCredentials/%s" node.Attributes.["key"].Value)
+        let auth = doc.SelectNodes(sprintf "//packageSourceCredentials/%s" (XmlConvert.EncodeLocalName node.Attributes.["key"].Value))
                    |> Seq.cast<XmlNode>
                    |> Seq.firstOrDefault
                    |> Option.map (fun node -> {Username = node.SelectSingleNode("//add[@key='Username']").Attributes.["value"].Value
