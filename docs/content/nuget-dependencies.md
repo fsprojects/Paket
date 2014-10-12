@@ -16,9 +16,9 @@ Paket supports NuGet feeds like those provided by [nuget.org](http://www.nuget.o
 
 Please note that you need to specify all NuGet sources, including the default feed from [nuget.org](http://www.nuget.org). Paket does not take the current machine's NuGet Package Sources configuration (that you set up e.g. using Visual Studio) into account.
 
-    source http://nuget.org/api/v2      // nuget.org
+    source https://nuget.org/api/v2     // nuget.org
     source http://myserver/nuget/api/v2 // custom feed
-    
+
 It's also possible to provide login information for private NuGet feeds:
 
     source http://myserver/nuget/api/v2 username: "my user" password: "my pw"
@@ -150,7 +150,7 @@ NuGet's dependency syntax led to a lot of incompatible packages on Nuget.org ([r
 
 To request that Paket applies NuGet-style dependency resolution for indirect dependencies, use the `!` operator in your version constraint.
 
-    source http://nuget.org/api/v2
+    source https://nuget.org/api/v2
 
     nuget Example !~> 1.2 // use "min" version resolution strategy
 
@@ -158,7 +158,7 @@ This effectively will get you the *lowest matching versions* of `Example`'s depe
 
 The `!` modifier is applicable to all [version constraints](#Version-constraints):
 
-    source http://nuget.org/api/v2
+    source https://nuget.org/api/v2
 
     nuget Example-B != 1.2  // use "min" version resolution strategy
     nuget Example-C !>= 1.2 // use "min" version resolution strategy

@@ -12,13 +12,14 @@ open Paket.PackageSources
 let private readPackageSources(configFile : FileInfo) =
     let doc = XmlDocument()
     doc.Load configFile.FullName
-    [for node in doc.SelectNodes("//packageSources/add[@value]") -> 
-        {PackageSources.NugetSource.Url = node.Attributes.["value"].Value
-         PackageSources.NugetSource.Auth = doc.SelectNodes(sprintf "//packageSourceCredentials/%s" node.Attributes.["key"].Value) 
-                                           |> Seq.cast<XmlNode> 
-                                           |> Seq.firstOrDefault
-                                           |> Option.map (fun node -> {Username = node.SelectSingleNode("//add[@key='Username']").Attributes.["value"].Value
-                                                                       Password = node.SelectSingleNode("//add[@key='ClearTextPassword']").Attributes.["value"].Value})} ]
+    [for node in doc.SelectNodes("//packageSources/add[@value]") ->
+        let url = node.Attributes.["value"].Value
+        let auth = doc.SelectNodes(sprintf "//packageSourceCredentials/%s" node.Attributes.["key"].Value)
+                   |> Seq.cast<XmlNode>
+                   |> Seq.firstOrDefault
+                   |> Option.map (fun node -> {Username = node.SelectSingleNode("//add[@key='Username']").Attributes.["value"].Value
+                                               Password = node.SelectSingleNode("//add[@key='ClearTextPassword']").Attributes.["value"].Value})
+        PackageSource.Parse (url, auth)]
 
 let removeFileIfExists file = 
     if File.Exists file then 
@@ -52,14 +53,12 @@ let private convertNugetsToDepFile(nugetPackagesConfigs) =
         | None -> [], latestVersions
     
     for (name, _) in confictingPackages do traceWarnfn "Package %s is already defined in %s" name Constants.DependenciesFile
-    
-    let defaultNugetSource = {NugetSource.Url = Constants.DefaultNugetStream; NugetSource.Auth = None}
 
-    let nugetPackageRequirement (name: string, v: string, nugetSources : list<NugetSource>) =
+    let nugetPackageRequirement (name: string, v: string, sources : list<PackageSource>) =
         {Requirements.PackageRequirement.Name = name
          Requirements.PackageRequirement.VersionRequirement = VersionRequirement(VersionRange.Specific(SemVer.Parse v), PreReleaseStatus.No)
          Requirements.PackageRequirement.ResolverStrategy = Max
-         Requirements.PackageRequirement.Sources = nugetSources |> List.map (fun n -> PackageSources.PackageSource.Nuget(n))
+         Requirements.PackageRequirement.Sources = sources
          Requirements.PackageRequirement.Parent = Requirements.PackageRequirementSource.DependenciesFile(Constants.DependenciesFile)}
 
     match existingDepFile with
@@ -69,8 +68,8 @@ let private convertNugetsToDepFile(nugetPackagesConfigs) =
             | Some configFile -> 
                 let sources = readPackageSources(configFile) 
                 removeFileIfExists configFile.FullName
-                sources @ [defaultNugetSource]
-            | None -> [defaultNugetSource]
+                sources @ [DefaultNugetSource]
+            | None -> [DefaultNugetSource]
             |> Set.ofList
             |> Set.toList        
         

@@ -6,7 +6,7 @@ open FsUnit
 open TestHelpers
 
 let lockFile = """NUGET
-  remote: http://nuget.org/api/v2
+  remote: https://nuget.org/api/v2
   specs:
     Castle.Windsor (2.1)
     Castle.Windsor-log4net (3.3)
@@ -66,7 +66,7 @@ let ``should parse lock file``() =
 
 let strictLockFile = """REFERENCES: STRICT
 NUGET
-  remote: http://nuget.org/api/v2
+  remote: https://nuget.org/api/v2
   specs:
     Castle.Windsor (2.1)
     Castle.Windsor-log4net (3.3)
@@ -93,7 +93,7 @@ let ``should parse strict lock file``() =
     packages.[5].Dependencies |> shouldEqual (Set.ofList ["log", VersionRequirement.AllReleases])
 
 let dogfood = """NUGET
-  remote: http://nuget.org/api/v2
+  remote: https://nuget.org/api/v2
   specs:
     DotNetZip (1.9.3)
     FAKE (3.5.5)

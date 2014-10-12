@@ -15,7 +15,7 @@ Options:
 
 Consider the following [`paket.dependencies` file](dependencies-file.html):
 
-    source http://nuget.org/api/v2
+    source https://nuget.org/api/v2
     
     nuget Castle.Core
     nuget Castle.Windsor
@@ -23,7 +23,7 @@ Consider the following [`paket.dependencies` file](dependencies-file.html):
 and the following [`paket.lock` file](lock-file.html): 
 
     NUGET
-      remote: http://nuget.org/api/v2
+      remote: https://nuget.org/api/v2
       specs:
         Castle.Core (2.0.0)
         Castle.Windsor (2.0.0)

@@ -6,7 +6,7 @@ open FsUnit
 open TestHelpers
 
 let config1 = """
-source "http://nuget.org/api/v2"
+source "https://nuget.org/api/v2"
 
 nuget "Castle.Windsor-log4net" "~> 3.2"
 nuget "Rx-Main" "~> 2.0"

@@ -4,7 +4,7 @@ The `paket.dependencies` file is used to specify rules regarding your applicatio
 
 To give you an overview, consider the following `paket.dependencies` file:
 
-    source http://nuget.org/api/v2
+    source https://nuget.org/api/v2
 
     nuget NUnit ~> 2.6.3
     nuget FAKE ~> 3.4
@@ -37,7 +37,7 @@ Paket usually references all direct and indirect dependencies that are listed in
 In `strict` mode it will **only** reference *direct* dependencies.
 
     references strict
-    source http://nuget.org/api/v2
+    source https://nuget.org/api/v2
 
     nuget Newtonsoft.Json ~> 6.0
     nuget UnionArgParser ~> 0.7
@@ -47,7 +47,7 @@ In `strict` mode it will **only** reference *direct* dependencies.
 This option disables the installation of any content files.
 
     content none
-    source http://nuget.org/api/v2
+    source https://nuget.org/api/v2
 
     nuget jQuery >= 0 // we don't install jQuery content files
     nuget UnionArgParser ~> 0.7

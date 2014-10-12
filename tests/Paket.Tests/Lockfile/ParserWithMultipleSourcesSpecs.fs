@@ -6,7 +6,7 @@ open FsUnit
 open TestHelpers
 
 let lockFile = """NUGET
-  remote: http://nuget.org/api/v2
+  remote: https://nuget.org/api/v2
   specs:
     Castle.Windsor (2.1)
     Castle.Windsor-log4net (3.3)

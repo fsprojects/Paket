@@ -52,7 +52,7 @@ let ``should read simple config with additional F# code``() =
     cfg.DirectDependencies.["MinPackage"].Range |> shouldEqual (VersionRange.Exactly "1.1.3")
 
 let config3 = """
-source "http://nuget.org/api/v2" // here we are
+source "https://nuget.org/api/v2" // here we are
 
 nuget "FAKE" "~> 3.0" // born to rule
 nuget "Rx-Main" "~> 2.2"
@@ -68,8 +68,8 @@ let ``should read simple config with comments``() =
     (cfg.Packages |> List.find (fun p -> p.Name = "FAKE")).Sources |> List.head  |> shouldEqual PackageSources.DefaultNugetSource
 
 let config4 = """
-source "http://nuget.org/api/v2" // first source
-source "http://nuget.org/api/v3" // second
+source "https://nuget.org/api/v2" // first source
+source "http://nuget.org/api/v3"  // second
 
 nuget "FAKE" "~> 3.0" 
 nuget "Rx-Main" "~> 2.2"
