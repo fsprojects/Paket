@@ -15,6 +15,11 @@ type FrameworkAssemblyReference = {
 type Nuspec = 
     { References : NuspecReferences 
       FrameworkAssemblyReferences : FrameworkAssemblyReference list}
+    static member KnownNamespaces =
+        ["ns1","http://schemas.microsoft.com/packaging/2012/06/nuspec.xsd"
+         "ns2","http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd"
+         "ns3","http://schemas.microsoft.com/packaging/2013/01/nuspec.xsd"]
+
     static member All = { References = NuspecReferences.All; FrameworkAssemblyReferences = []}
     static member Load(fileName : string) = 
         let fi = FileInfo(fileName)
@@ -23,47 +28,30 @@ type Nuspec =
             let doc = new XmlDocument()
             doc.Load fi.FullName
             let manager = new XmlNamespaceManager(doc.NameTable)
-            manager.AddNamespace("ns1", "http://schemas.microsoft.com/packaging/2012/06/nuspec.xsd")
-            manager.AddNamespace("ns2", "http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd")
-            manager.AddNamespace("ns3", "http://schemas.microsoft.com/packaging/2013/01/nuspec.xsd")
 
-            let referencesNodes = 
-                [ for node in doc.SelectNodes("//ns1:references", manager) do
-                    yield node
-                  for node in doc.SelectNodes("//ns2:references", manager) do
-                    yield node
-                  for node in doc.SelectNodes("//ns3:references", manager) do
-                    yield node]
+            Nuspec.KnownNamespaces
+            |> List.iter (fun (name,ns) -> manager.AddNamespace(name, ns))
+            
+            let getReferences ns =
+                if List.isEmpty [ for node in doc.SelectNodes(sprintf "//%s:references" ns, manager) -> node] then [] else
+                    [ for node in doc.SelectNodes(sprintf "//%s:reference" ns, manager) -> 
+                        node.Attributes.["file"].InnerText]
+
+            let getframeworkAssemblyReferences ns =
+                if List.isEmpty [ for node in doc.SelectNodes(sprintf "//%s:frameworkAssemblies" ns, manager) -> node] then [] else
+                    [ for node in doc.SelectNodes(sprintf "//%s:frameworkAssembly" ns, manager) -> 
+                        { AssemblyName = node.Attributes.["assemblyName"].InnerText
+                          TargetFramework = node.Attributes.["targetFramework"].InnerText }]
 
             let references =
-                if List.isEmpty referencesNodes then NuspecReferences.All else 
-                let files = 
-                    [ for node in doc.SelectNodes("//ns1:reference", manager) do
-                        yield node.Attributes.["file"].InnerText                      
-                      for node in doc.SelectNodes("//ns2:reference", manager) do
-                        yield node.Attributes.["file"].InnerText 
-                        for node in doc.SelectNodes("//ns3:reference", manager) do
-                        yield node.Attributes.["file"].InnerText ]
-                NuspecReferences.Explicit files
+                Nuspec.KnownNamespaces
+                |> List.map (fun (name,ns) -> getReferences name)
+                |> List.concat
+            
+            let frameworkAssemblyReferences =
+                Nuspec.KnownNamespaces
+                |> List.map (fun (name,ns) -> getframeworkAssemblyReferences name)
+                |> List.concat
 
-            let frameworkAssemblyNodes = 
-                [ for node in doc.SelectNodes("//ns1:frameworkAssemblies", manager) do
-                    yield node
-                  for node in doc.SelectNodes("//ns2:frameworkAssemblies", manager) do
-                    yield node
-                  for node in doc.SelectNodes("//ns3:frameworkAssemblies", manager) do
-                    yield node ]
-
-            let frameworkAssemblyReferences = 
-                if List.isEmpty frameworkAssemblyNodes then [] else 
-                [ for node in doc.SelectNodes("//ns1:frameworkAssembly", manager) do
-                      yield { AssemblyName = node.Attributes.["assemblyName"].InnerText
-                              TargetFramework = node.Attributes.["targetFramework"].InnerText }
-                  for node in doc.SelectNodes("//ns2:frameworkAssembly", manager) do
-                      yield { AssemblyName = node.Attributes.["assemblyName"].InnerText
-                              TargetFramework = node.Attributes.["targetFramework"].InnerText } 
-                  for node in doc.SelectNodes("//ns3:frameworkAssembly", manager) do
-                      yield { AssemblyName = node.Attributes.["assemblyName"].InnerText
-                              TargetFramework = node.Attributes.["targetFramework"].InnerText }                               ]
-
-            { References = references; FrameworkAssemblyReferences = frameworkAssemblyReferences }
+            { References = if references = [] then NuspecReferences.All else NuspecReferences.Explicit references; 
+              FrameworkAssemblyReferences = frameworkAssemblyReferences }
