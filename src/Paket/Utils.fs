@@ -69,6 +69,41 @@ let createWebClient(auth:Auth option) =
     client.Headers.Add("user-agent", "Paket")
     client
 
+type System.Net.WebClient with
+    member this.AsyncDownloadFile (address: Uri, filePath: string) : Async<unit> =
+        let downloadAsync =
+            Async.FromContinuations (fun (cont, econt, ccont) ->
+                        let userToken = new obj()
+                        let rec handler = 
+                                System.ComponentModel.AsyncCompletedEventHandler (fun _ args ->
+                                    if userToken = args.UserState then
+                                        this.DownloadFileCompleted.RemoveHandler(handler)
+                                        if args.Cancelled then
+                                            ccont (new OperationCanceledException())
+                                        elif args.Error <> null then
+                                            econt args.Error
+                                        else
+                                            cont ())
+                        this.DownloadFileCompleted.AddHandler(handler)
+                        this.DownloadFileAsync(address, filePath, userToken)
+                    )
+
+        async {
+            use! _holder = Async.OnCancel(fun _ -> this.CancelAsync())
+            return! downloadAsync
+        }
+
+/// [omit]
+let downloadFromUrl (auth:Auth option, url : string) (filePath: string) =
+    async {
+        try
+            use client = createWebClient auth
+            do! client.AsyncDownloadFile(Uri(url), filePath)
+        with
+        | exn ->
+            failwithf "Could not retrieve data from %s%s Message: %s" url Environment.NewLine exn.Message
+    }
+
 /// [omit]
 let getFromUrl (auth:Auth option, url : string) = 
     async { 
