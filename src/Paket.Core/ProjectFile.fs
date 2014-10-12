@@ -173,6 +173,14 @@ type ProjectFile =
 
                 itemGroup.AppendChild(reference) |> ignore
 
+            for frameworkAssembly in kv.Value.FrameworkAssemblyReferences do
+                let reference =                     
+                    createNode(this.Document,"Reference")
+                    |> addAttribute "Include" frameworkAssembly
+                    |> addChild (createNodeWithText(this.Document,"Paket","True"))
+
+                itemGroup.AppendChild(reference) |> ignore
+
             whenNode.AppendChild(itemGroup) |> ignore
             chooseNode.AppendChild(whenNode) |> ignore)
 

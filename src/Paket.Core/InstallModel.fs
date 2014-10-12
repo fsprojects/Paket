@@ -4,13 +4,16 @@ open System.IO
 
 type InstallFiles = 
     { References : string Set
+      FrameworkAssemblyReferences : string Set
       ContentFiles : string Set }
     
     static member empty = 
         { References = Set.empty
+          FrameworkAssemblyReferences = Set.empty
           ContentFiles = Set.empty }
     
     member this.AddReference lib = { this with References = Set.add lib this.References }
+    member this.AddFrameworkAssemblyReference assemblyName = { this with FrameworkAssemblyReferences = Set.add assemblyName this.FrameworkAssemblyReferences }
 
 type InstallModel = 
     { PackageName : string
@@ -30,7 +33,7 @@ type InstallModel =
         | Some x -> x.References
         | None -> Set.empty
 
-    member this.Add(framework,lib:string,references) : InstallModel = 
+    member this.AddReference(framework,lib:string,references) : InstallModel = 
         let install =
             match references with
             | NuspecReferences.All -> true
@@ -42,13 +45,23 @@ type InstallModel =
                      | Some files -> Map.add framework (files.AddReference lib) this.Frameworks
                      | None -> Map.add framework (InstallFiles.empty.AddReference lib) this.Frameworks }
 
-    member this.Add (libs,references) : InstallModel =         
+    member this.AddReferences(libs,references) : InstallModel =         
         libs |> Seq.fold (fun model lib -> 
                     match FrameworkIdentifier.DetectFromPath lib with
-                    | Some framework -> model.Add(framework,lib,references)
+                    | Some framework -> model.AddReference(framework,lib,references)
                     | _ -> model) this
 
-    member this.Add libs = this.Add(libs, NuspecReferences.All)
+    member this.AddReferences(libs) = this.AddReferences(libs, NuspecReferences.All)
+
+    member this.AddFrameworkAssemblyReference(framework,assemblyName) : InstallModel = 
+        { this with Frameworks = 
+                     match Map.tryFind framework this.Frameworks with
+                     | Some files -> Map.add framework (files.AddFrameworkAssemblyReference assemblyName) this.Frameworks
+                     | None -> Map.add framework (InstallFiles.empty.AddFrameworkAssemblyReference assemblyName) this.Frameworks }
+
+    member this.AddFrameworkAssemblyReferences(references) : InstallModel  = 
+        references
+        |> Seq.fold (fun model reference -> model.AddFrameworkAssemblyReference(reference.TargetFramework,reference.AssemblyName)) this
 
     member this.FilterBlackList() =
         let blackList =
@@ -70,7 +83,7 @@ type InstallModel =
             let target = DotNetFramework(Framework FrameworkVersionNo.V1,Full)
             match Map.tryFind target this.Frameworks with
             | Some files when Set.isEmpty files.References |> not -> this
-            | _ -> { this with Frameworks = Map.add target { References = newFiles; ContentFiles = Set.empty} this.Frameworks }
+            | _ -> { this with Frameworks = Map.add target { References = newFiles; ContentFiles = Set.empty; FrameworkAssemblyReferences = Set.empty} this.Frameworks }
 
         { model with Frameworks = model.Frameworks |> Map.remove genericFramework } 
 
@@ -87,7 +100,7 @@ type InstallModel =
                           let framework = DotNetFramework(Framework upperVersion, upperProfile)
                           match Map.tryFind framework model.Frameworks with
                           | Some files when Set.isEmpty files.References -> 
-                              { model with Frameworks = Map.add framework { References = newFiles; ContentFiles = Set.empty} model.Frameworks }
+                              { model with Frameworks = Map.add framework { References = newFiles; ContentFiles = Set.empty; FrameworkAssemblyReferences = Set.empty} model.Frameworks }
                           | _ -> model) model) this
 
     member this.UsePortableVersionLibIfEmpty() = 
@@ -111,7 +124,7 @@ type InstallModel =
                 |> Array.fold (fun (model : InstallModel) framework -> 
                         match Map.tryFind framework model.Frameworks with
                         | Some files when Set.isEmpty files.References |> not -> model
-                        | _ -> { model with Frameworks = Map.add framework { References = newFiles; ContentFiles = Set.empty} model.Frameworks }) model) this
+                        | _ -> { model with Frameworks = Map.add framework { References = newFiles; FrameworkAssemblyReferences = Set.empty; ContentFiles = Set.empty} model.Frameworks }) model) this
 
     member this.Process() =
         this
@@ -130,5 +143,6 @@ type InstallModel =
 
     static member CreateFromLibs(packageName,packageVersions,libs,nuspec:Nuspec) = 
         InstallModel.EmptyModel(packageName,packageVersions)
-            .Add(libs,nuspec.References)
+            .AddReferences(libs,nuspec.References)
+            .AddFrameworkAssemblyReferences(nuspec.FrameworkAssemblyReferences)
             .Process()

@@ -1,3 +1,6 @@
+#### 0.6.9 - 12.10.2014
+* Initial support for frameworkAssemblies from nuspec - https://github.com/fsprojects/Paket/issues/241
+
 #### 0.6.8 - 12.10.2014
 * Use https in DefaultNugetStream - https://github.com/fsprojects/Paket/pull/251
 * Allow to use all branches in GitHub sources - https://github.com/fsprojects/Paket/pull/249
