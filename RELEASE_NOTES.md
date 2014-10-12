@@ -1,4 +1,4 @@
-#### 0.6.9 - 12.10.2014
+#### 0.6.10 - 12.10.2014
 * Initial support for frameworkAssemblies from nuspec - https://github.com/fsprojects/Paket/issues/241
 
 #### 0.6.8 - 12.10.2014

@@ -2,18 +2,21 @@
 
 open System.IO
 
+[<RequireQualifiedAccess>]
+type Reference =
+| Library of string
+| FrameworkAssemblyReference of string
+
 type InstallFiles = 
-    { References : string Set
-      FrameworkAssemblyReferences : string Set
+    { References : Reference Set
       ContentFiles : string Set }
     
     static member empty = 
         { References = Set.empty
-          FrameworkAssemblyReferences = Set.empty
           ContentFiles = Set.empty }
     
-    member this.AddReference lib = { this with References = Set.add lib this.References }
-    member this.AddFrameworkAssemblyReference assemblyName = { this with FrameworkAssemblyReferences = Set.add assemblyName this.FrameworkAssemblyReferences }
+    member this.AddReference lib = { this with References = Set.add (Reference.Library lib) this.References }
+    member this.AddFrameworkAssemblyReference assemblyName = { this with References = Set.add (Reference.FrameworkAssemblyReference assemblyName) this.References }
 
 type InstallModel = 
     { PackageName : string
@@ -28,7 +31,19 @@ type InstallModel =
           Frameworks = List.fold (fun map f -> Map.add f InstallFiles.empty map) Map.empty frameworks }
     
     member this.GetFrameworks() = this.Frameworks |> Seq.map (fun kv -> kv.Key)
+
     member this.GetFiles(framework) = 
+        match this.Frameworks.TryFind framework with
+        | Some x -> 
+            x.References
+            |> Seq.map (fun x ->
+                match x with
+                | Reference.Library lib -> Some lib
+                | _ -> None)
+            |> Seq.choose id
+        | None -> Seq.empty
+
+    member this.GetReferences(framework) = 
         match this.Frameworks.TryFind framework with
         | Some x -> x.References
         | None -> Set.empty
@@ -65,7 +80,10 @@ type InstallModel =
 
     member this.FilterBlackList() =
         let blackList =
-            [fun (f:string) -> not (f.EndsWith ".dll" || f.EndsWith ".exe")]
+            [fun (reference:Reference) -> 
+                match reference with
+                | Reference.Library lib -> not (lib.EndsWith ".dll" || lib.EndsWith ".exe")
+                | _ -> false]
 
         { this with Frameworks = 
                      blackList 
@@ -75,7 +93,7 @@ type InstallModel =
 
     member this.UseGenericFrameworkVersionIfEmpty() =
         let genericFramework = DotNetFramework(All, Full)
-        let newFiles = this.GetFiles genericFramework
+        let newFiles = this.GetReferences genericFramework
                
         let model =
             if Set.isEmpty newFiles then this else
@@ -83,7 +101,7 @@ type InstallModel =
             let target = DotNetFramework(Framework FrameworkVersionNo.V1,Full)
             match Map.tryFind target this.Frameworks with
             | Some files when Set.isEmpty files.References |> not -> this
-            | _ -> { this with Frameworks = Map.add target { References = newFiles; ContentFiles = Set.empty; FrameworkAssemblyReferences = Set.empty} this.Frameworks }
+            | _ -> { this with Frameworks = Map.add target { References = newFiles; ContentFiles = Set.empty } this.Frameworks }
 
         { model with Frameworks = model.Frameworks |> Map.remove genericFramework } 
 
@@ -91,7 +109,7 @@ type InstallModel =
         FrameworkVersion.KnownDotNetFrameworks
         |> List.rev
         |> List.fold (fun (model : InstallModel) (lowerVersion,lowerProfile) -> 
-               let newFiles = model.GetFiles(DotNetFramework(Framework lowerVersion, lowerProfile))
+               let newFiles = model.GetReferences(DotNetFramework(Framework lowerVersion, lowerProfile))
                if Set.isEmpty newFiles then model
                else 
                    FrameworkVersion.KnownDotNetFrameworks
@@ -100,7 +118,7 @@ type InstallModel =
                           let framework = DotNetFramework(Framework upperVersion, upperProfile)
                           match Map.tryFind framework model.Frameworks with
                           | Some files when Set.isEmpty files.References -> 
-                              { model with Frameworks = Map.add framework { References = newFiles; ContentFiles = Set.empty; FrameworkAssemblyReferences = Set.empty} model.Frameworks }
+                              { model with Frameworks = Map.add framework { References = newFiles; ContentFiles = Set.empty } model.Frameworks }
                           | _ -> model) model) this
 
     member this.UsePortableVersionLibIfEmpty() = 
@@ -124,7 +142,7 @@ type InstallModel =
                 |> Array.fold (fun (model : InstallModel) framework -> 
                         match Map.tryFind framework model.Frameworks with
                         | Some files when Set.isEmpty files.References |> not -> model
-                        | _ -> { model with Frameworks = Map.add framework { References = newFiles; FrameworkAssemblyReferences = Set.empty; ContentFiles = Set.empty} model.Frameworks }) model) this
+                        | _ -> { model with Frameworks = Map.add framework { References = newFiles; ContentFiles = Set.empty} model.Frameworks }) model) this
 
     member this.Process() =
         this
@@ -136,9 +154,12 @@ type InstallModel =
 
     member this.GetLibraryNames =
         lazy([ for f in this.Frameworks do
-                for lib in f.Value.References do                
-                    let fi = new FileInfo(normalizePath lib)
-                    yield fi.Name.Replace(fi.Extension,"") ]
+                for lib in f.Value.References do         
+                    match lib with
+                    | Reference.Library lib ->       
+                        let fi = new FileInfo(normalizePath lib)
+                        yield fi.Name.Replace(fi.Extension,"") 
+                    | _ -> ()]
             |> Set.ofList)
 
     static member CreateFromLibs(packageName,packageVersions,libs,nuspec:Nuspec) = 

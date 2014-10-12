@@ -163,21 +163,19 @@ type ProjectFile =
                                 
             for lib in kv.Value.References do
                 let reference = 
-                    let fi = new FileInfo(normalizePath lib)
+                    match lib with
+                    | Reference.Library lib ->
+                        let fi = new FileInfo(normalizePath lib)
                     
-                    createNode(this.Document,"Reference")
-                    |> addAttribute "Include" (fi.Name.Replace(fi.Extension,""))
-                    |> addChild (createNodeWithText(this.Document,"HintPath",createRelativePath this.FileName fi.FullName))
-                    |> addChild (createNodeWithText(this.Document,"Private","True"))
-                    |> addChild (createNodeWithText(this.Document,"Paket","True"))
-
-                itemGroup.AppendChild(reference) |> ignore
-
-            for frameworkAssembly in kv.Value.FrameworkAssemblyReferences do
-                let reference =                     
-                    createNode(this.Document,"Reference")
-                    |> addAttribute "Include" frameworkAssembly
-                    |> addChild (createNodeWithText(this.Document,"Paket","True"))
+                        createNode(this.Document,"Reference")
+                        |> addAttribute "Include" (fi.Name.Replace(fi.Extension,""))
+                        |> addChild (createNodeWithText(this.Document,"HintPath",createRelativePath this.FileName fi.FullName))
+                        |> addChild (createNodeWithText(this.Document,"Private","True"))
+                        |> addChild (createNodeWithText(this.Document,"Paket","True"))
+                    | Reference.FrameworkAssemblyReference frameworkAssembly ->                    
+                        createNode(this.Document,"Reference")
+                        |> addAttribute "Include" frameworkAssembly
+                        |> addChild (createNodeWithText(this.Document,"Paket","True"))
 
                 itemGroup.AppendChild(reference) |> ignore
 

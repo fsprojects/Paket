@@ -78,6 +78,12 @@ let expected = """
         <Private>True</Private>
         <Paket>True</Paket>
       </Reference>
+      <Reference Include="System.Net.Http">
+        <Paket>True</Paket>
+      </Reference>
+      <Reference Include="System.Net.Http.WebRequest">
+        <Paket>True</Paket>
+      </Reference>
     </ItemGroup>
   </When>
 </Choose>"""
