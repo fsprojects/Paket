@@ -420,12 +420,13 @@ let GetPackageDetails force sources package version : PackageResolver.PackageDet
       DownloadLink = nugetObject.DownloadUrl
       DirectDependencies = nugetObject.Dependencies |> Set.ofList } 
 
-let GetVersions sources package = 
+/// Allows to retrieve all version no. for a package from the given sources.
+let GetVersions(sources, packageName) = 
     sources
     |> Seq.map (fun source -> 
            match source with
-           | Nuget source -> getAllVersions(source.Auth,source.Url, package)
-           | LocalNuget path -> getAllVersionsFromLocalPath (path, package))
+           | Nuget source -> getAllVersions (source.Auth, source.Url, packageName)
+           | LocalNuget path -> getAllVersionsFromLocalPath (path, packageName))
     |> Async.Parallel
     |> Async.RunSynchronously
     |> Seq.concat

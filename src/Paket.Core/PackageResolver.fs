@@ -92,7 +92,7 @@ let Resolve(getVersionsF, getPackageDetailsF, rootDependencies:PackageRequiremen
         match allVersions.TryGetValue(packageName.ToLower()) with
         | false,_ ->
             tracefn "  - fetching versions for %s" packageName
-            let versions = getVersionsF sources packageName
+            let versions = getVersionsF(sources,packageName)
             allVersions.Add(packageName.ToLower(),versions)
             versions
         | true,versions -> versions

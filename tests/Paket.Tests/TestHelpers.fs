@@ -20,7 +20,7 @@ let PackageDetailsFromGraph (graph : seq<string * string * (string * VersionRequ
       DownloadLink = ""
       DirectDependencies = Set.ofList dependencies }
 
-let VersionsFromGraph (graph : seq<string * string * (string * VersionRequirement) list>) sources (package : string) = 
+let VersionsFromGraph (graph : seq<string * string * (string * VersionRequirement) list>) (sources, package : string) = 
     graph
     |> Seq.filter (fun (p, _, _) -> p.ToLower() = package.ToLower())
     |> Seq.map (fun (_, v, _) -> SemVer.Parse v)
