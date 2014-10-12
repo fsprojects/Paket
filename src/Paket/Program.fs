@@ -50,8 +50,8 @@ with
             match s with
             | Add -> "adds a package to the dependencies."
             | Install -> "installs all packages."
-            | Restore -> "resotres all packages."
-            | Update -> "updates the packet.lock file and installs all packages."
+            | Restore -> "restores all packages."
+            | Update -> "updates the paket.lock file and installs all packages."
             | Outdated -> "displays information about new packages."
             | ConvertFromNuget -> "converts all projects from NuGet to Paket."
             | InitAutoRestore -> "enables automatic restore for Visual Studio."
@@ -63,7 +63,7 @@ with
             | No_Install -> "omits install --hard after convert-from-nuget."
             | Strict -> "keeps all version requirements when searching for outdated packages."
             | Include_Prereleases -> "includes prereleases when searching for outdated packages."
-            | No_Auto_Restore -> "omits ini-auto-restore after convert-from-nuget."
+            | No_Auto_Restore -> "omits init-auto-restore after convert-from-nuget."
             | Nuget _ -> "allows to specify a nuget package."
             | Version _ -> "allows to specify a package version."
 
