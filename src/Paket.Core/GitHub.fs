@@ -32,4 +32,4 @@ let downloadDependenciesFile(rootPath,remoteFile:ModuleResolver.ResolvedSourceFi
     | None -> return "" }
 
 /// Gets a single file from github.
-let downloadSourceFile(remoteFile:ModuleResolver.ResolvedSourceFile) = getFromUrl(None,sprintf "https://github.com/%s/%s/raw/%s/%s" remoteFile.Owner remoteFile.Project remoteFile.Commit remoteFile.Name)
+let downloadSourceFile(remoteFile:ModuleResolver.ResolvedSourceFile) = downloadFromUrl(None,sprintf "https://github.com/%s/%s/raw/%s/%s" remoteFile.Owner remoteFile.Project remoteFile.Commit remoteFile.Name)
