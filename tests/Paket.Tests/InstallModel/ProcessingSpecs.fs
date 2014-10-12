@@ -346,7 +346,7 @@ let ``should handle lib install of Fantomas 1.5.0 with explicit references``() =
         emptymodel.Add(
             [ @"..\Fantomas\lib\FantomasLib.dll" 
               @"..\Fantomas\lib\FSharp.Core.dll" 
-              @"..\Fantomas\lib\Fantomas.exe" ], Nuspec.Explicit ["FantomasLib.dll"])
+              @"..\Fantomas\lib\Fantomas.exe" ], NuspecReferences.Explicit ["FantomasLib.dll"])
             .Process()
             
     model.GetFiles(DotNetFramework(All, Full)) |> shouldBeEmpty
@@ -370,7 +370,7 @@ let ``should only handle dll and exe files``() =
             [ @"..\Fantomas\lib\FantomasLib.dll" 
               @"..\Fantomas\lib\FantomasLib.xml" 
               @"..\Fantomas\lib\FSharp.Core.dll" 
-              @"..\Fantomas\lib\Fantomas.exe" ], Nuspec.All)
+              @"..\Fantomas\lib\Fantomas.exe" ], NuspecReferences.All)
             .Process()
             
     model.GetFiles(DotNetFramework(Framework FrameworkVersionNo.V2, Full)) |> shouldContain @"..\Fantomas\lib\FantomasLib.dll" 
@@ -382,7 +382,7 @@ let ``should only handle dll and exe files``() =
 let ``should use portable net40 in net45 when don't have other files``() = 
     let model = 
         emptymodel.Add(
-            [ @"..\Google.Apis.Core\lib\portable-net40+sl50+win+wpa81+wp80\Google.Apis.Core.dll" ], Nuspec.All)
+            [ @"..\Google.Apis.Core\lib\portable-net40+sl50+win+wpa81+wp80\Google.Apis.Core.dll" ], NuspecReferences.All)
             .Process()
             
     model.GetFiles(DotNetFramework(Framework FrameworkVersionNo.V4, Full)) |> shouldContain @"..\Google.Apis.Core\lib\portable-net40+sl50+win+wpa81+wp80\Google.Apis.Core.dll"

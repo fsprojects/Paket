@@ -33,8 +33,8 @@ type InstallModel =
     member this.Add(framework,lib:string,references) : InstallModel = 
         let install =
             match references with
-            | Nuspec.References.All -> true
-            | Nuspec.References.Explicit list -> list |> List.exists lib.EndsWith
+            | NuspecReferences.All -> true
+            | NuspecReferences.Explicit list -> list |> List.exists lib.EndsWith
 
         if not install then this else
         { this with Frameworks = 
@@ -48,7 +48,7 @@ type InstallModel =
                     | Some framework -> model.Add(framework,lib,references)
                     | _ -> model) this
 
-    member this.Add libs = this.Add(libs, Nuspec.References.All)
+    member this.Add libs = this.Add(libs, NuspecReferences.All)
 
     member this.FilterBlackList() =
         let blackList =
@@ -128,7 +128,7 @@ type InstallModel =
                     yield fi.Name.Replace(fi.Extension,"") ]
             |> Set.ofList)
 
-    static member CreateFromLibs(packageName,packageVersions,libs,references) = 
+    static member CreateFromLibs(packageName,packageVersions,libs,nuspec:Nuspec) = 
         InstallModel.EmptyModel(packageName,packageVersions)
-            .Add(libs,references)
+            .Add(libs,nuspec.References)
             .Process()

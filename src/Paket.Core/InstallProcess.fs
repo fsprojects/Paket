@@ -69,9 +69,9 @@ let CreateInstallModel(sources, force, package) =
     async { 
         let! (package, files) = RestoreProcess.ExtractPackage(sources, force, package)
         let nuspec = FileInfo(sprintf "./packages/%s/%s.nuspec" package.Name package.Name)
-        let references = Nuspec.GetReferences nuspec.FullName
+        let nuspec = Nuspec.Load nuspec.FullName
         let files = files |> Seq.map (fun fi -> fi.FullName)
-        return package, InstallModel.CreateFromLibs(package.Name, package.Version, files, references)
+        return package, InstallModel.CreateFromLibs(package.Name, package.Version, files, nuspec)
     }
 
 

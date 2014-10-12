@@ -7,7 +7,6 @@ open System.IO
 open System.Xml
 open System.Collections.Generic
 open Paket.Xml
-open Nuspec
 
 type FileItem = 
     { BuildAction : string
