@@ -1,3 +1,6 @@
+#### 0.6.7 - 12.10.2014
+* Download github source files with correct encoding - https://github.com/fsprojects/Paket/pull/248
+
 #### 0.6.6 - 12.10.2014
 * Add FSharp.Core.Microsoft.Signed as dependency
 
