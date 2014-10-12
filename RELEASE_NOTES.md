@@ -1,3 +1,6 @@
+#### 0.6.11 - 12.10.2014
+* BUGFIX: Paket convert-from-nuget failed when package source keys contain invalid XML element chars  - https://github.com/fsprojects/Paket/issues/253
+
 #### 0.6.10 - 12.10.2014
 * Initial support for frameworkAssemblies from nuspec - https://github.com/fsprojects/Paket/issues/241
 
