@@ -17,6 +17,11 @@ If you run the [`paket update` command](paket-update.html), it will add a new se
 
 As you can see the file is pinned to a concrete commit. This allows you to reliably use the same file version in succeeding builds until you elect to perform a [`paket update` command](paket-update.html) at a time of your choosing.
 
+By default the `master` branch is used to determine the commit to reference, you can specify the desired branch or commit in the [`paket.dependencies` file](dependencies-file.html):
+
+    github fsharp/fsfoundation:gh-pages img/logo/fsharp.svg
+    github forki/FsUnit:7623fc13439f0e60bd05c1ed3b5f6dcb937fe468 FsUnit.fs
+
 If you want to reference the file in one of your project files then add an entry to the project's [`paket.references` file.](references-files.html):
 
     [lang=batchfile]
