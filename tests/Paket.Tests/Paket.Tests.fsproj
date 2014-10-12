@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
@@ -83,6 +83,10 @@
     <Content Include="TestFiles\Fantomas.nuspec">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+    
+    <Content Include="TestFiles\Microsoft.Net.Http.nuspec">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Compile Include="FilterVersionSpecs.fs" />
     <Compile Include="DependenciesFile\VersionRangeSpecs.fs" />
     <Compile Include="DependenciesFile\ParserSpecs.fs" />
@@ -118,6 +122,7 @@
     <None Include="ProjectFile\TestData\NoCustomFantomasNode.fsprojtest">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+    
     <Compile Include="ProjectFile\ConditionSpecs.fs" />
     <Compile Include="ProjectFile\FileBuildActionSpecs.fs" />
     <Compile Include="InstallModel\ProcessingSpecs.fs" />
