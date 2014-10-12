@@ -10,7 +10,7 @@ type NuspecReferences =
 
 type FrameworkAssemblyReference = {
     AssemblyName: string
-    TargetFramework : string}
+    TargetFramework : FrameworkIdentifier }
 
 type Nuspec = 
     { References : NuspecReferences 
@@ -39,9 +39,12 @@ type Nuspec =
 
             let getframeworkAssemblyReferences ns =
                 if List.isEmpty [ for node in doc.SelectNodes(sprintf "//%s:frameworkAssemblies" ns, manager) -> node] then [] else
-                    [ for node in doc.SelectNodes(sprintf "//%s:frameworkAssembly" ns, manager) -> 
-                        { AssemblyName = node.Attributes.["assemblyName"].InnerText
-                          TargetFramework = node.Attributes.["targetFramework"].InnerText }]
+                    [ for node in doc.SelectNodes(sprintf "//%s:frameworkAssembly" ns, manager) do
+                        let name =  node.Attributes.["assemblyName"].InnerText
+                        for framework in node.Attributes.["targetFramework"].InnerText.Split([|','; ' '|],System.StringSplitOptions.RemoveEmptyEntries) do
+                            match FrameworkIdentifier.Extract framework with
+                            | Some fw -> yield { AssemblyName = name; TargetFramework = fw }                            
+                            | None -> () ]
 
             let references =
                 Nuspec.KnownNamespaces

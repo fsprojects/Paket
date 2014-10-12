@@ -56,7 +56,49 @@ type FrameworkIdentifier =
     | WindowsPhoneApp of string
     | Silverlight of string
 
-    static member Extract path = 
+    static member KnownAliases =
+        ["NET", "net"
+         ".NET", "net"
+         "NETFramework", "net"
+         ".NETFramework", "net"
+         "NETCore", "netcore"
+         ".NETCore", "netcore"
+         "WinRT", "netcore"
+         ".NETMicroFramework", "netmf"
+         "SL", "sl"
+         "Silverlight", "sl"
+         ".NETPortable", "portable-"
+         "NETPortable", "portable-"
+         "WindowsPhone", "wp"
+         "Windows", "win"
+         "WindowsPhoneApp", "wpa"
+         "Xamarin.iOS", "Xamarin.iOS"
+         "XamariniOS", "Xamarin.iOS"
+         "Xamarin.Mac", "Xamarin.Mac"
+         "XamarinMac", "Xamarin.Mac"
+         "Xamarin.PlayStationThree", "Xamarin.PlayStation3"
+         "XamarinPlayStationThree", "Xamarin.PlayStation3"
+         "XamarinPSThree", "Xamarin.PlayStation3"
+         "Xamarin.PlayStationFour", "Xamarin.PlayStation4"
+         "XamarinPlayStationFour", "Xamarin.PlayStation4"
+         "XamarinPSFour", "Xamarin.PlayStation4"
+         "Xamarin.PlayStationVita", "Xamarin.PlayStationVita"
+         "XamarinPlayStationVita", "Xamarin.PlayStationVita"
+         "XamarinPSVita", "Xamarin.PlayStationVita"
+         "Xamarin.XboxThreeSixty", "Xamarin.Xbox360"
+         "XamarinXboxThreeSixty", "Xamarin.Xbox360"
+         "Xamarin.XboxOne", "Xamarin.XboxOne"
+         "XamarinXboxOne", "Xamarin.XboxOne"
+         
+         "3.5", "35" 
+         "4.0", "40" 
+         "4.5", "45" 
+         "0.0", "" ]
+
+    static member Extract(path:string) = 
+        let path = 
+            FrameworkIdentifier.KnownAliases
+            |> List.fold (fun (path:string) (pattern,replacement) -> path.Replace(pattern.ToLower(),replacement.ToLower())) (path.ToLower())
 
         match path with
         | "net" -> Some(DotNetFramework(All, Full))
@@ -93,7 +135,6 @@ type FrameworkIdentifier =
             if path.ToLower().StartsWith("portable-") then
                 Some(PortableFramework("7.0", path.ToLower().Replace("portable-","")))
             else None
-
     
     member x.GetFrameworkIdentifier() =
         match x with
