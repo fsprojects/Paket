@@ -1,3 +1,7 @@
+#### 0.6.8 - 12.10.2014
+* Use https in DefaultNugetStream - https://github.com/fsprojects/Paket/pull/251
+* Allow to use all branches in GitHub sources - https://github.com/fsprojects/Paket/pull/249
+
 #### 0.6.7 - 12.10.2014
 * Download github source files with correct encoding - https://github.com/fsprojects/Paket/pull/248
 
