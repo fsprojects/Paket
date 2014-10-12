@@ -48,9 +48,9 @@ type ResolvedSourceFile =
 let Resolve(getPackages, getSha1, remoteFiles : UnresolvedSourceFile list) : ResolvedSourceFile list = 
     remoteFiles |> List.map (fun file -> 
                        let sha = 
-                           match file.Commit with
-                           | None -> getSha1 file.Owner file.Project "master"
-                           | Some sha -> sha
+                           file.Commit
+                           |> defaultArg <| "master"
+                           |> getSha1 file.Owner file.Project
                        let naked =
                            { Commit = sha
                              Owner = file.Owner
