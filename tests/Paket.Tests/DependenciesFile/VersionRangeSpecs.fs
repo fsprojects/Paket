@@ -36,24 +36,24 @@ let ``can detect lower versions for ~>``() =
 
 [<Test>]
 let ``can detect greater-than``() = 
-    parseRange "> 3.2" |> shouldEqual (VersionRange.GreaterThan(SemVer.parse "3.2"))
+    parseRange "> 3.2" |> shouldEqual (VersionRange.GreaterThan(SemVer.Parse "3.2"))
 
 [<Test>]
 let ``can detect less-than``() = 
-    parseRange "< 3.1" |> shouldEqual (VersionRange.LessThan(SemVer.parse "3.1"))
+    parseRange "< 3.1" |> shouldEqual (VersionRange.LessThan(SemVer.Parse "3.1"))
 
 [<Test>]
 let ``can detect less-than-or-equal``() = 
-    parseRange "<= 3.1" |> shouldEqual (VersionRange.Maximum(SemVer.parse "3.1"))
+    parseRange "<= 3.1" |> shouldEqual (VersionRange.Maximum(SemVer.Parse "3.1"))
 
 [<Test>]
 let ``can detect range``() = 
-    parseRange ">= 1.2.3 < 1.5" |> shouldEqual (VersionRange.Range(VersionRangeBound.Including,SemVer.parse "1.2.3",SemVer.parse("1.5"), VersionRangeBound.Excluding))
-    parseRange "> 1.2.3 < 1.5" |> shouldEqual (VersionRange.Range(VersionRangeBound.Excluding,SemVer.parse "1.2.3",SemVer.parse("1.5"), VersionRangeBound.Excluding))
-    parseRange "> 1.2.3 <= 2.5" |> shouldEqual (VersionRange.Range(VersionRangeBound.Excluding,SemVer.parse "1.2.3",SemVer.parse("2.5"), VersionRangeBound.Including))
-    parseRange ">= 1.2 <= 2.5" |> shouldEqual (VersionRange.Range(VersionRangeBound.Including,SemVer.parse "1.2",SemVer.parse("2.5"), VersionRangeBound.Including))
-    parseRange "~> 1.2 >= 1.2.3" |> shouldEqual (VersionRange.Range(VersionRangeBound.Including,SemVer.parse "1.2.3",SemVer.parse("2.0"), VersionRangeBound.Excluding))
-    parseRange "~> 1.2 > 1.2.3" |> shouldEqual (VersionRange.Range(VersionRangeBound.Excluding,SemVer.parse "1.2.3",SemVer.parse("2.0"), VersionRangeBound.Excluding))
+    parseRange ">= 1.2.3 < 1.5" |> shouldEqual (VersionRange.Range(VersionRangeBound.Including,SemVer.Parse "1.2.3",SemVer.Parse("1.5"), VersionRangeBound.Excluding))
+    parseRange "> 1.2.3 < 1.5" |> shouldEqual (VersionRange.Range(VersionRangeBound.Excluding,SemVer.Parse "1.2.3",SemVer.Parse("1.5"), VersionRangeBound.Excluding))
+    parseRange "> 1.2.3 <= 2.5" |> shouldEqual (VersionRange.Range(VersionRangeBound.Excluding,SemVer.Parse "1.2.3",SemVer.Parse("2.5"), VersionRangeBound.Including))
+    parseRange ">= 1.2 <= 2.5" |> shouldEqual (VersionRange.Range(VersionRangeBound.Including,SemVer.Parse "1.2",SemVer.Parse("2.5"), VersionRangeBound.Including))
+    parseRange "~> 1.2 >= 1.2.3" |> shouldEqual (VersionRange.Range(VersionRangeBound.Including,SemVer.Parse "1.2.3",SemVer.Parse("2.0"), VersionRangeBound.Excluding))
+    parseRange "~> 1.2 > 1.2.3" |> shouldEqual (VersionRange.Range(VersionRangeBound.Excluding,SemVer.Parse "1.2.3",SemVer.Parse("2.0"), VersionRangeBound.Excluding))
 
 [<Test>]
 let ``can detect minimum NuGet version``() = 
@@ -67,14 +67,14 @@ let ``can detect minimum NuGet version``() =
 [<Test>]
 let ``can detect prereleases``() = 
     DependenciesFileParser.parseVersionRequirement "<= 3.1" 
-    |> shouldEqual (VersionRequirement(VersionRange.Maximum(SemVer.parse "3.1"),PreReleaseStatus.No))
+    |> shouldEqual (VersionRequirement(VersionRange.Maximum(SemVer.Parse "3.1"),PreReleaseStatus.No))
 
     DependenciesFileParser.parseVersionRequirement "<= 3.1 prerelease" 
-    |> shouldEqual (VersionRequirement(VersionRange.Maximum(SemVer.parse "3.1"),PreReleaseStatus.All))
+    |> shouldEqual (VersionRequirement(VersionRange.Maximum(SemVer.Parse "3.1"),PreReleaseStatus.All))
 
     DependenciesFileParser.parseVersionRequirement "> 3.1 alpha beta"
-    |> shouldEqual (VersionRequirement(VersionRange.GreaterThan(SemVer.parse "3.1"),(PreReleaseStatus.Concrete ["alpha"; "beta"])))
+    |> shouldEqual (VersionRequirement(VersionRange.GreaterThan(SemVer.Parse "3.1"),(PreReleaseStatus.Concrete ["alpha"; "beta"])))
 
 [<Test>]
 let ``can detect override operator``() = 
-    parseRange "== 3.2.0.0" |> shouldEqual (VersionRange.OverrideAll(SemVer.parse "3.2.0.0"))    
+    parseRange "== 3.2.0.0" |> shouldEqual (VersionRange.OverrideAll(SemVer.Parse "3.2.0.0"))    

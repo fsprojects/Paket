@@ -57,7 +57,7 @@ let private convertNugetsToDepFile(nugetPackagesConfigs) =
 
     let nugetPackageRequirement (name: string, v: string, nugetSources : list<NugetSource>) =
         {Requirements.PackageRequirement.Name = name
-         Requirements.PackageRequirement.VersionRequirement = VersionRequirement(VersionRange.Specific(SemVer.parse v), PreReleaseStatus.No)
+         Requirements.PackageRequirement.VersionRequirement = VersionRequirement(VersionRange.Specific(SemVer.Parse v), PreReleaseStatus.No)
          Requirements.PackageRequirement.ResolverStrategy = Max
          Requirements.PackageRequirement.Sources = nugetSources |> List.map (fun n -> PackageSources.PackageSource.Nuget(n))
          Requirements.PackageRequirement.Parent = Requirements.PackageRequirementSource.DependenciesFile(Constants.DependenciesFile)}

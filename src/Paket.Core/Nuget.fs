@@ -113,15 +113,15 @@ let parseVersionRange (text:string) =
             | _         -> failParse()
         
         if not <| text.Contains "," then
-            if text.StartsWith "[" then Specific(text.Trim([|'['; ']'|]) |> SemVer.parse)
-            else Minimum(SemVer.parse text)
+            if text.StartsWith "[" then Specific(text.Trim([|'['; ']'|]) |> SemVer.Parse)
+            else Minimum(SemVer.Parse text)
         else
             let fromB = parseBound text.[0]
             let toB   = parseBound (Seq.last text)
             let versions = text
                             .Trim([|'['; ']';'(';')'|])
                             .Split([|','|], StringSplitOptions.RemoveEmptyEntries)
-                            |> Array.map SemVer.parse
+                            |> Array.map SemVer.Parse
             match versions.Length with
             | 2 ->
                 Range(fromB, versions.[0], versions.[1], toB)
@@ -396,7 +396,7 @@ let ReadPackagesConfig(configFile : FileInfo) =
     { File = configFile
       Type = if configFile.Directory.Name = ".nuget" then SolutionLevel else ProjectLevel
       Packages = [for node in doc.SelectNodes("//package") ->
-                      node.Attributes.["id"].Value, node.Attributes.["version"].Value |> SemVer.parse ]}
+                      node.Attributes.["id"].Value, node.Attributes.["version"].Value |> SemVer.Parse ]}
 
 
 //TODO: Should we really be able to call these methods with invalid arguments?
@@ -430,4 +430,4 @@ let GetVersions sources package =
     |> Async.RunSynchronously
     |> Seq.concat
     |> Seq.toList
-    |> List.map SemVer.parse
+    |> List.map SemVer.Parse

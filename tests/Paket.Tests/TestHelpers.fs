@@ -23,7 +23,7 @@ let PackageDetailsFromGraph (graph : seq<string * string * (string * VersionRequ
 let VersionsFromGraph (graph : seq<string * string * (string * VersionRequirement) list>) sources (package : string) = 
     graph
     |> Seq.filter (fun (p, _, _) -> p.ToLower() = package.ToLower())
-    |> Seq.map (fun (_, v, _) -> SemVer.parse v)
+    |> Seq.map (fun (_, v, _) -> SemVer.Parse v)
     |> Seq.toList
 
 let safeResolve graph (dependencies : (string * VersionRange) list)  = 

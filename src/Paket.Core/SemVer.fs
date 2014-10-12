@@ -1,5 +1,4 @@
-﻿/// Contains helpers which allow to deal with [Semantic Versioning](http://semver.org/) (SemVer).
-namespace Paket
+﻿namespace Paket
 
 open System
 open System.Text.RegularExpressions
@@ -96,7 +95,7 @@ type SemVerInfo =
                 else 0
             | _ -> invalidArg "yobj" "cannot compare values of different types"
 
-/// Parser for [SemVer](http://semver.org/).
+///  Parser which allows to deal with [Semantic Versioning](http://semver.org/) (SemVer).
 module SemVer = 
     /// Parses the given version string into a SemVerInfo which can be printed using ToString() or compared
     /// according to the rules described in the [SemVer docs](http://semver.org/).
@@ -107,7 +106,7 @@ module SemVer =
     ///     parse "1.2.3-alpha2"   > parse "1.2.3-alpha"    // true
     ///     parse "1.2.3-alpha002" > parse "1.2.3-alpha1"   // true
     ///     parse "1.5.0-beta.2"   > parse "1.5.0-rc.1"     // false
-    let parse (version : string) = 
+    let Parse(version : string) = 
         let splitted = version.Split '.'
         let l = splitted.Length
         

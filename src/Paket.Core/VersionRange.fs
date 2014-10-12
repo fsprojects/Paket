@@ -22,11 +22,11 @@ type VersionRange =
     | OverrideAll of SemVerInfo
     | Range of fromB : VersionRangeBound * from : SemVerInfo * _to : SemVerInfo * _toB : VersionRangeBound 
 
-    static member AtLeast version = Minimum(SemVer.parse version)
+    static member AtLeast version = Minimum(SemVer.Parse version)
 
-    static member Exactly version = Specific(SemVer.parse version)
+    static member Exactly version = Specific(SemVer.Parse version)
 
-    static member Between(version1,version2) = Range(VersionRangeBound.Including, SemVer.parse version1, SemVer.parse version2, VersionRangeBound.Excluding)
+    static member Between(version1,version2) = Range(VersionRangeBound.Including, SemVer.Parse version1, SemVer.Parse version2, VersionRangeBound.Excluding)
 
     member x.IsGlobalOverride = match x with | OverrideAll _ -> true | _ -> false
 
@@ -73,8 +73,8 @@ type VersionRequirement =
         match this with
         | VersionRequirement(_,prereleases) -> prereleases
 
-    static member AllReleases = VersionRequirement(Minimum(SemVer.parse "0"),PreReleaseStatus.No)
-    static member NoRestriction = VersionRequirement(Minimum(SemVer.parse "0"),PreReleaseStatus.All)
+    static member AllReleases = VersionRequirement(Minimum(SemVer.Parse "0"),PreReleaseStatus.No)
+    static member NoRestriction = VersionRequirement(Minimum(SemVer.Parse "0"),PreReleaseStatus.All)
 
     override this.ToString() =
         match this.Range with
