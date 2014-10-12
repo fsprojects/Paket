@@ -67,7 +67,7 @@ And we reference this in our own [`paket.dependencies` file.](dependencies-file.
 This generates the following [`paket.lock` file](lock-file.html):
 
 	NUGET
-	  remote: http://nuget.org/api/v2
+	  remote: https://nuget.org/api/v2
 	  specs:
 		Microsoft.Bcl (1.1.9)
 		  Microsoft.Bcl.Build (>= 1.0.14)

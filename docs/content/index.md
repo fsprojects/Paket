@@ -20,7 +20,7 @@ Paket is available as:
 
 Specify the version rules of all dependencies used in your application in a [`paket.dependencies` file](dependencies-file.html) in your project's root:
 
-    source http://nuget.org/api/v2
+    source https://nuget.org/api/v2
     
     nuget Castle.Windsor-log4net ~> 3.2
     nuget NUnit
@@ -33,7 +33,7 @@ Install all of the required packages from the specified sources:
 The [`paket install` command](paket-install.html) will analyze your dependencies and generate a [`paket.lock` file](lock-file.html) if it doesn't exist yet:
 
     NUGET
-      remote: http://nuget.org/api/v2
+      remote: https://nuget.org/api/v2
       specs:
         Castle.Core (3.3.1)
 		Castle.Core-log4net (3.3.1)

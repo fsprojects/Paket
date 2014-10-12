@@ -17,7 +17,7 @@ Options:
 
 Consider the following [`paket.dependencies` file](dependencies-file.html):
 
-	source http://nuget.org/api/v2
+	source https://nuget.org/api/v2
 
 	nuget FAKE
 
@@ -27,7 +27,7 @@ Now we run `paket add nuget xunit --interactive` install the package:
 
 This will add the package to the selected [`paket.references` files](references-file.html) and also to the [`paket.dependencies` file](dependencies-file.html):
 
-	source http://nuget.org/api/v2
+	source https://nuget.org/api/v2
 
 	nuget FAKE
 	nuget xunit

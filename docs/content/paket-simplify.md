@@ -25,7 +25,7 @@ When you install `Castle.Windsor` package in NuGet to a project, it will generat
 
 After converting to Paket with [`paket convert-from-nuget command`](convert-from-nuget.html), you should get a following [`paket.dependencies` file](dependencies-file.html):
 
-    source http://nuget.org/api/v2
+    source https://nuget.org/api/v2
     
     nuget Castle.Core 3.3.1
     nuget Castle.Windsor 3.3.0
@@ -40,7 +40,7 @@ Paket by default (without [strict](dependencies-file.html#Strict-references) mod
 In other words, you still get the same result if you remove `Castle.Core` from your [`paket.references` file](references-files.html).
 And this is exactly what happens after executing `paket simplify` command:
 
-    source http://nuget.org/api/v2
+    source https://nuget.org/api/v2
     
     nuget Castle.Windsor 3.3.0
 

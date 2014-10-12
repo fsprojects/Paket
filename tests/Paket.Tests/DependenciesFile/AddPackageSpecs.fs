@@ -96,7 +96,7 @@ let ``should add new packages even to empty package section``() =
 
     let cfg = DependenciesFile.FromCode(config).Add("FAKE","~> 1.2")
     
-    let expected = """source http://nuget.org/api/v2
+    let expected = """source https://nuget.org/api/v2
 
 nuget FAKE ~> 1.2
 
@@ -111,7 +111,7 @@ let ``should add new packages with nuget package resolution strategy``() =
 
     let cfg = DependenciesFile.FromCode(config).Add("FAKE","!~> 1.2")
     
-    let expected = """source http://nuget.org/api/v2
+    let expected = """source https://nuget.org/api/v2
 
 nuget FAKE !~> 1.2"""
 
