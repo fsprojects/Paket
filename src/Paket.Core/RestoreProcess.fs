@@ -49,9 +49,9 @@ let DownloadSourceFile(rootPath, source:ResolvedSourceFile) =
             verbosefn "Sourcefile %s is already there." (source.ToString())
         else 
             tracefn "Downloading %s to %s" (source.ToString()) destination
-            let! file = GitHub.downloadSourceFile source
+            
             Directory.CreateDirectory(destination |> Path.GetDirectoryName) |> ignore
-            File.WriteAllText(destination, file)
+            do! GitHub.downloadSourceFile source destination
             File.WriteAllText(versionFile.FullName, source.Commit)
     }
 
