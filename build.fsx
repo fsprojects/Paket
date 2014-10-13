@@ -241,10 +241,15 @@ Target "GenerateReferenceDocs" (fun _ ->
       failwith "generating reference documentation failed"
 )
 
-let generateHelp() =
-    if not <| executeFSIWithArgs "docs/tools" "generate.fsx" ["--define:RELEASE"; "--define:HELP"] [] then
-        failwith "generating help documentation failed"
-    traceImportant "Help generated"
+let generateHelp fail =
+    if executeFSIWithArgs "docs/tools" "generate.fsx" ["--define:RELEASE"; "--define:HELP"] [] then
+        traceImportant "Help generated"
+    else
+        if fail then
+            failwith "generating help documentation failed"
+        else
+            traceImportant "generating help documentation failed"
+    
 
 Target "GenerateHelp" (fun _ ->
     DeleteFile "docs/content/release-notes.md"    
@@ -255,17 +260,17 @@ Target "GenerateHelp" (fun _ ->
     CopyFile "docs/content/" "LICENSE.txt"
     Rename "docs/content/license.md" "docs/content/LICENSE.txt"
 
-    generateHelp()
+    generateHelp true
 )
 
 
 Target "KeepRunning" (fun _ ->    
     use watcher = new FileSystemWatcher(DirectoryInfo("docs/content").FullName,"*.*")
     watcher.EnableRaisingEvents <- true
-    watcher.Changed.Add(fun e -> generateHelp())
-    watcher.Created.Add(fun e -> generateHelp())
-    watcher.Renamed.Add(fun e -> generateHelp())
-    watcher.Deleted.Add(fun e -> generateHelp())
+    watcher.Changed.Add(fun e -> generateHelp false)
+    watcher.Created.Add(fun e -> generateHelp false)
+    watcher.Renamed.Add(fun e -> generateHelp false)
+    watcher.Deleted.Add(fun e -> generateHelp false)
 
     traceImportant "Waiting for help edits. Press any key to stop."
 
