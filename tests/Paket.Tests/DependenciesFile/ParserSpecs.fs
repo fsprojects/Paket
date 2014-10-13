@@ -263,3 +263,17 @@ let ``should read config with password in env variable``() =
                                            Auth = 
                                                Some { Username = "user XYZ"
                                                       Password = "pw Love" } } ]
+
+let configWithExplicitVersions = """
+source "http://nuget.org/api/v2"
+
+nuget FSharp.Compiler.Service == 0.0.62 
+nuget FsReveal == 0.0.5-beta
+"""
+
+[<Test>]
+let ``should read config explicit versions``() = 
+    let cfg = DependenciesFile.FromCode(configWithExplicitVersions)
+
+    cfg.DirectDependencies.["FSharp.Compiler.Service"].Range |> shouldEqual (VersionRange.OverrideAll (SemVer.Parse "0.0.62"))
+    cfg.DirectDependencies.["FsReveal"].Range |> shouldEqual (VersionRange.OverrideAll (SemVer.Parse "0.0.5-beta"))

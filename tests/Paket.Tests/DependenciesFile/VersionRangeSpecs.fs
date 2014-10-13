@@ -78,3 +78,7 @@ let ``can detect prereleases``() =
 [<Test>]
 let ``can detect override operator``() = 
     parseRange "== 3.2.0.0" |> shouldEqual (VersionRange.OverrideAll(SemVer.Parse "3.2.0.0"))    
+
+[<Test>]
+let ``can detect override operator for beta``() = 
+    parseRange "== 0.0.5-beta" |> shouldEqual (VersionRange.OverrideAll(SemVer.Parse "0.0.5-beta"))    
