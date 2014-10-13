@@ -1,3 +1,6 @@
+#### 0.6.12 - 13.10.2014
+* BUGFIX: Paket only deletes files which will are downloaded by init-auto-restore process - https://github.com/fsprojects/Paket/pull/254
+
 #### 0.6.11 - 12.10.2014
 * BUGFIX: Paket convert-from-nuget failed when package source keys contain invalid XML element chars  - https://github.com/fsprojects/Paket/issues/253
 
