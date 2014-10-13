@@ -41,8 +41,7 @@ let DownloadSourceFile(rootPath, source:ResolvedSourceFile) =
         let destination = Path.Combine(rootPath, source.FilePath)
         
         let isInRightVersion = 
-            if not <| File.Exists destination then false
-            else if not <| versionFile.Exists then false
+            if not <| versionFile.Exists then false
             else source.Commit = File.ReadAllText(versionFile.FullName)
 
         if isInRightVersion then 
@@ -51,7 +50,7 @@ let DownloadSourceFile(rootPath, source:ResolvedSourceFile) =
             tracefn "Downloading %s to %s" (source.ToString()) destination
             
             Directory.CreateDirectory(destination |> Path.GetDirectoryName) |> ignore
-            do! GitHub.downloadSourceFile source destination
+            do! GitHub.downloadGithubFiles(source,destination)
             File.WriteAllText(versionFile.FullName, source.Commit)
     }
 

@@ -1,3 +1,6 @@
+#### 0.6.13 - 13.10.2014
+* Initial support for full github projects - https://github.com/fsprojects/Paket/issues/113
+
 #### 0.6.12 - 13.10.2014
 * BUGFIX: Paket only deletes files which will are downloaded by init-auto-restore process - https://github.com/fsprojects/Paket/pull/254
 
