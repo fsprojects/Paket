@@ -6,7 +6,8 @@ open FsUnit
 open Paket.TestHelpers
 
 let expected = """
-<Choose xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Choose>
   <When Condition="$(TargetFrameworkIdentifier) == '.NETFramework' And $(TargetFrameworkVersion) == 'v1.0'">
     <ItemGroup />
   </When>
@@ -182,41 +183,42 @@ let expected = """
       </Reference>
     </ItemGroup>
   </When>
-</Choose>"""
+</Choose>
+</Project>"""
 
 [<Test>]
 let ``should generate Xml for System.Net.Http 2.2.8``() = 
     let model =     
         InstallModel.CreateFromLibs("System.Net.Http", SemVer.Parse "2.2.8",        
-            [ @"..\Microsoft.Net.Http\lib\monoandroid\System.Net.Http.Extensions.dll" 
-              @"..\Microsoft.Net.Http\lib\monoandroid\System.Net.Http.Primitives.dll" 
+            [ @"..\packages\Microsoft.Net.Http\lib\monoandroid\System.Net.Http.Extensions.dll" 
+              @"..\packages\Microsoft.Net.Http\lib\monoandroid\System.Net.Http.Primitives.dll" 
               
-              @"..\Microsoft.Net.Http\lib\monotouch\System.Net.Http.Extensions.dll" 
-              @"..\Microsoft.Net.Http\lib\monotouch\System.Net.Http.Primitives.dll" 
+              @"..\packages\Microsoft.Net.Http\lib\monotouch\System.Net.Http.Extensions.dll" 
+              @"..\packages\Microsoft.Net.Http\lib\monotouch\System.Net.Http.Primitives.dll" 
 
-              @"..\Microsoft.Net.Http\lib\net40\System.Net.Http.dll" 
-              @"..\Microsoft.Net.Http\lib\net40\System.Net.Http.Extensions.dll" 
-              @"..\Microsoft.Net.Http\lib\net40\System.Net.Http.Primitives.dll" 
-              @"..\Microsoft.Net.Http\lib\net40\System.Net.Http.WebRequest.dll" 
+              @"..\packages\Microsoft.Net.Http\lib\net40\System.Net.Http.dll" 
+              @"..\packages\Microsoft.Net.Http\lib\net40\System.Net.Http.Extensions.dll" 
+              @"..\packages\Microsoft.Net.Http\lib\net40\System.Net.Http.Primitives.dll" 
+              @"..\packages\Microsoft.Net.Http\lib\net40\System.Net.Http.WebRequest.dll" 
                      
-              @"..\Microsoft.Net.Http\lib\net45\System.Net.Http.Extensions.dll" 
-              @"..\Microsoft.Net.Http\lib\net45\System.Net.Http.Primitives.dll" 
+              @"..\packages\Microsoft.Net.Http\lib\net45\System.Net.Http.Extensions.dll" 
+              @"..\packages\Microsoft.Net.Http\lib\net45\System.Net.Http.Primitives.dll" 
               
-              @"..\Microsoft.Net.Http\lib\portable-net40+sl4+win8+wp71+wpa81\System.Net.Http.dll" 
-              @"..\Microsoft.Net.Http\lib\portable-net40+sl4+win8+wp71+wpa81\System.Net.Http.Extensions.dll" 
-              @"..\Microsoft.Net.Http\lib\portable-net40+sl4+win8+wp71+wpa81\System.Net.Http.Primitives.dll"
+              @"..\packages\Microsoft.Net.Http\lib\portable-net40+sl4+win8+wp71+wpa81\System.Net.Http.dll" 
+              @"..\packages\Microsoft.Net.Http\lib\portable-net40+sl4+win8+wp71+wpa81\System.Net.Http.Extensions.dll" 
+              @"..\packages\Microsoft.Net.Http\lib\portable-net40+sl4+win8+wp71+wpa81\System.Net.Http.Primitives.dll"
                             
-              @"..\Microsoft.Net.Http\lib\portable-net45+win8\System.Net.Http.Extensions.dll" 
-              @"..\Microsoft.Net.Http\lib\portable-net45+win8\System.Net.Http.Primitives.dll"
+              @"..\packages\Microsoft.Net.Http\lib\portable-net45+win8\System.Net.Http.Extensions.dll" 
+              @"..\packages\Microsoft.Net.Http\lib\portable-net45+win8\System.Net.Http.Primitives.dll"
 
-              @"..\Microsoft.Net.Http\lib\win8\System.Net.Http.Extensions.dll" 
-              @"..\Microsoft.Net.Http\lib\win8\System.Net.Http.Primitives.dll"
+              @"..\packages\Microsoft.Net.Http\lib\win8\System.Net.Http.Extensions.dll" 
+              @"..\packages\Microsoft.Net.Http\lib\win8\System.Net.Http.Primitives.dll"
               
-              @"..\Microsoft.Net.Http\lib\wpa81\System.Net.Http.Extensions.dll" 
-              @"..\Microsoft.Net.Http\lib\wpa81\System.Net.Http.Primitives.dll" ],
+              @"..\packages\Microsoft.Net.Http\lib\wpa81\System.Net.Http.Extensions.dll" 
+              @"..\packages\Microsoft.Net.Http\lib\wpa81\System.Net.Http.Primitives.dll" ],
               Nuspec.All)
 
-    let chooseNode = ProjectFile.Load("./ProjectFile/TestData/Empty.fsprojtest").Value.GenerateXml(model)
+    let chooseNode = ProjectFile.GenerateTarget(model)
     chooseNode.OuterXml
     |> normalizeXml
     |> shouldEqual (normalizeXml expected)

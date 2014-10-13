@@ -7,7 +7,8 @@ open System.Xml
 open Paket.TestHelpers
 
 let expected = """
-<Choose xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Choose>
   <When Condition="$(TargetFrameworkIdentifier) == '.NETFramework' And $(TargetFrameworkVersion) == 'v1.0'">
     <ItemGroup>
       <Reference Include="FantomasLib">
@@ -80,18 +81,19 @@ let expected = """
       </Reference>
     </ItemGroup>
   </When>
-</Choose>"""
+</Choose>
+</Project>"""
 
 [<Test>]
 let ``should generate Xml for Fantomas 1.5``() = 
     let model =
         InstallModel.CreateFromLibs("Fantomas", SemVer.Parse "1.5.0",        
-            [ @"..\Fantomas\lib\FantomasLib.dll" 
-              @"..\Fantomas\lib\FSharp.Core.dll" 
-              @"..\Fantomas\lib\Fantomas.exe" ],
+            [ @"..\packages\Fantomas\lib\FantomasLib.dll" 
+              @"..\packages\Fantomas\lib\FSharp.Core.dll" 
+              @"..\packages\Fantomas\lib\Fantomas.exe" ],
               { References = NuspecReferences.Explicit ["FantomasLib.dll"]; FrameworkAssemblyReferences = []})
     
-    let chooseNode = ProjectFile.Load("./ProjectFile/TestData/Empty.fsprojtest").Value.GenerateXml(model)
+    let chooseNode = ProjectFile.GenerateTarget(model)
     chooseNode.OuterXml
     |> normalizeXml
     |> shouldEqual (normalizeXml expected)

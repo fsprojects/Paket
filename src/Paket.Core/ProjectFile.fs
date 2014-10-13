@@ -151,38 +151,51 @@ type ProjectFile =
         for node in nodesToDelete do            
             node.ParentNode.RemoveChild(node) |> ignore
 
-    member this.GenerateXml(model:InstallModel) =
-        let chooseNode = this.Document.CreateElement("Choose", Constants.ProjectDefaultNameSpace)
+    member this.GenerateTargetImport(filename:string) =
+        let fileFromSln = "$(SolutionDir)/" + filename.Substring(filename.LastIndexOf("packages"))
+        let importNode = this.Document.CreateElement("Import", Constants.ProjectDefaultNameSpace)
+        let condition = sprintf "Exists('%s')" fileFromSln
+        importNode |> addAttribute "Project" fileFromSln |> ignore
+        importNode |> addAttribute "Condition" condition |> ignore
+        importNode
+
+    static member GenerateTarget(model:InstallModel) =
+        let doc = XmlDocument()
+        let project = doc.CreateElement("Project", Constants.ProjectDefaultNameSpace)
+        let chooseNode = doc.CreateElement("Choose", Constants.ProjectDefaultNameSpace)
+        project.AppendChild(chooseNode) |> ignore
+        doc.AppendChild(project) |> ignore
         model.Frameworks 
         |> Seq.iter (fun kv -> 
             let whenNode = 
-                createNode(this.Document,"When")
+                createNode(doc,"When")
                 |> addAttribute "Condition" (kv.Key.GetCondition())
 
-            let itemGroup = createNode(this.Document,"ItemGroup")
+            let itemGroup = createNode(doc,"ItemGroup")
                                 
             for lib in kv.Value.References do
                 let reference = 
                     match lib with
                     | Reference.Library lib ->
                         let fi = new FileInfo(normalizePath lib)
+                        let libFromSln = "$(SolutionDir)/" + fi.FullName.Substring(fi.FullName.LastIndexOf("packages"))
                     
-                        createNode(this.Document,"Reference")
+                        createNode(doc,"Reference")
                         |> addAttribute "Include" (fi.Name.Replace(fi.Extension,""))
-                        |> addChild (createNodeWithText(this.Document,"HintPath",createRelativePath this.FileName fi.FullName))
-                        |> addChild (createNodeWithText(this.Document,"Private","True"))
-                        |> addChild (createNodeWithText(this.Document,"Paket","True"))
+                        |> addChild (createNodeWithText(doc,"HintPath", libFromSln))
+                        |> addChild (createNodeWithText(doc,"Private","True"))
+                        |> addChild (createNodeWithText(doc,"Paket","True"))
                     | Reference.FrameworkAssemblyReference frameworkAssembly ->                    
-                        createNode(this.Document,"Reference")
+                        createNode(doc,"Reference")
                         |> addAttribute "Include" frameworkAssembly
-                        |> addChild (createNodeWithText(this.Document,"Paket","True"))
+                        |> addChild (createNodeWithText(doc,"Paket","True"))
 
                 itemGroup.AppendChild(reference) |> ignore
 
             whenNode.AppendChild(itemGroup) |> ignore
             chooseNode.AppendChild(whenNode) |> ignore)
 
-        chooseNode
+        doc
 
 
     member this.UpdateReferences(completeModel: Map<string,InstallModel>, usedPackages : Dictionary<string,bool>, hard) = 
@@ -195,8 +208,11 @@ type ProjectFile =
                 this.DeleteCustomNodes(installModel)
 
             if this.HasCustomNodes(installModel) then verbosefn "  - custom nodes for %s ==> skipping" packageName else
-            let chooseNode = this.GenerateXml(installModel)
-            this.ProjectNode.AppendChild(chooseNode) |> ignore
+            let targetDoc = ProjectFile.GenerateTarget(installModel)
+            let paketTarget = FileInfo(sprintf "./packages/%s/Paket.targets" packageName)
+            targetDoc.Save(paketTarget.FullName)
+            let targetImport = this.GenerateTargetImport(paketTarget.FullName)
+            this.ProjectNode.AppendChild(targetImport) |> ignore
 
         this.DeleteEmptyReferences()
 
