@@ -13,6 +13,8 @@ open System
 #else
 #load "packages/SourceLink.Fake/Tools/Fake.fsx"
 open SourceLink
+open System.IO
+
 #endif
 
 // --------------------------------------------------------------------------------------
@@ -239,6 +241,11 @@ Target "GenerateReferenceDocs" (fun _ ->
       failwith "generating reference documentation failed"
 )
 
+let generateHelp() =
+    if not <| executeFSIWithArgs "docs/tools" "generate.fsx" ["--define:RELEASE"; "--define:HELP"] [] then
+        failwith "generating help documentation failed"
+    traceImportant "Help generated"
+
 Target "GenerateHelp" (fun _ ->
     DeleteFile "docs/content/release-notes.md"    
     CopyFile "docs/content/" "RELEASE_NOTES.md"
@@ -248,8 +255,24 @@ Target "GenerateHelp" (fun _ ->
     CopyFile "docs/content/" "LICENSE.txt"
     Rename "docs/content/license.md" "docs/content/LICENSE.txt"
 
-    if not <| executeFSIWithArgs "docs/tools" "generate.fsx" ["--define:RELEASE"; "--define:HELP"] [] then
-      failwith "generating help documentation failed"
+    generateHelp()
+)
+
+
+Target "KeepRunning" (fun _ ->    
+    use watcher = new FileSystemWatcher(DirectoryInfo("docs/content").FullName,"*.*")
+    watcher.EnableRaisingEvents <- true
+    watcher.Changed.Add(fun e -> generateHelp())
+    watcher.Created.Add(fun e -> generateHelp())
+    watcher.Renamed.Add(fun e -> generateHelp())
+    watcher.Deleted.Add(fun e -> generateHelp())
+
+    traceImportant "Waiting for help edits. Press any key to stop."
+
+    System.Console.ReadKey() |> ignore
+
+    watcher.EnableRaisingEvents <- false
+    watcher.Dispose()
 )
 
 Target "GenerateDocs" DoNothing
@@ -320,6 +343,9 @@ Target "All" DoNothing
   ==> "GenerateHelp"
   ==> "GenerateReferenceDocs"
   ==> "GenerateDocs"
+
+"GenerateHelp"
+  ==> "KeepRunning"
     
 "ReleaseDocs"
   ==> "Release"
