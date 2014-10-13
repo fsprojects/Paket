@@ -5,7 +5,7 @@ NUGET
     FAKE (3.5.11)
     FSharp.Compiler.Service (0.0.62)
     FSharp.Core.Microsoft.Signed (3.1.1.1)
-    FSharp.Formatting (2.4.30)
+    FSharp.Formatting (2.4.31)
       FSharp.Compiler.Service (>= 0.0.62)
       Microsoft.AspNet.Razor (2.0.30506.0)
       RazorEngine (3.3.0)
