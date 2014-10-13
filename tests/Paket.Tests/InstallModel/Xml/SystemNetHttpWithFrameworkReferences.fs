@@ -6,7 +6,8 @@ open FsUnit
 open Paket.TestHelpers
 
 let expected = """
-<Choose xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003"> 
+<Choose>
   <When Condition="$(TargetFrameworkIdentifier) == '.NETFramework' And $(TargetFrameworkVersion) == 'v1.0'">
     <ItemGroup />
   </When>
@@ -25,22 +26,22 @@ let expected = """
   <When Condition="$(TargetFrameworkIdentifier) == '.NETFramework' And $(TargetFrameworkVersion) == 'v4.0'">
     <ItemGroup>
       <Reference Include="System.Net.Http.Extensions">
-        <HintPath>..\..\..\Microsoft.Net.Http\lib\net40\System.Net.Http.Extensions.dll</HintPath>
+        <HintPath>$(SolutionDir)\packages\Microsoft.Net.Http\lib\net40\System.Net.Http.Extensions.dll</HintPath>
         <Private>True</Private>
         <Paket>True</Paket>
       </Reference>
       <Reference Include="System.Net.Http.Primitives">
-        <HintPath>..\..\..\Microsoft.Net.Http\lib\net40\System.Net.Http.Primitives.dll</HintPath>
+        <HintPath>$(SolutionDir)\packages\Microsoft.Net.Http\lib\net40\System.Net.Http.Primitives.dll</HintPath>
         <Private>True</Private>
         <Paket>True</Paket>
       </Reference>
       <Reference Include="System.Net.Http.WebRequest">
-        <HintPath>..\..\..\Microsoft.Net.Http\lib\net40\System.Net.Http.WebRequest.dll</HintPath>
+        <HintPath>$(SolutionDir)\packages\Microsoft.Net.Http\lib\net40\System.Net.Http.WebRequest.dll</HintPath>
         <Private>True</Private>
         <Paket>True</Paket>
       </Reference>
       <Reference Include="System.Net.Http">
-        <HintPath>..\..\..\Microsoft.Net.Http\lib\net40\System.Net.Http.dll</HintPath>
+        <HintPath>$(SolutionDir)\packages\Microsoft.Net.Http\lib\net40\System.Net.Http.dll</HintPath>
         <Private>True</Private>
         <Paket>True</Paket>
       </Reference>
@@ -49,12 +50,12 @@ let expected = """
   <When Condition="$(TargetFrameworkIdentifier) == '.NETFramework' And $(TargetFrameworkVersion) == 'v4.5'">
     <ItemGroup>
       <Reference Include="System.Net.Http.Extensions">
-        <HintPath>..\..\..\Microsoft.Net.Http\lib\net45\System.Net.Http.Extensions.dll</HintPath>
+        <HintPath>$(SolutionDir)\packages\Microsoft.Net.Http\lib\net45\System.Net.Http.Extensions.dll</HintPath>
         <Private>True</Private>
         <Paket>True</Paket>
       </Reference>
       <Reference Include="System.Net.Http.Primitives">
-        <HintPath>..\..\..\Microsoft.Net.Http\lib\net45\System.Net.Http.Primitives.dll</HintPath>
+        <HintPath>$(SolutionDir)\packages\Microsoft.Net.Http\lib\net45\System.Net.Http.Primitives.dll</HintPath>
         <Private>True</Private>
         <Paket>True</Paket>
       </Reference>
@@ -69,12 +70,12 @@ let expected = """
   <When Condition="$(TargetFrameworkIdentifier) == '.NETFramework' And $(TargetFrameworkVersion) == 'v4.5.1'">
     <ItemGroup>
       <Reference Include="System.Net.Http.Extensions">
-        <HintPath>..\..\..\Microsoft.Net.Http\lib\net45\System.Net.Http.Extensions.dll</HintPath>
+        <HintPath>$(SolutionDir)\packages\Microsoft.Net.Http\lib\net45\System.Net.Http.Extensions.dll</HintPath>
         <Private>True</Private>
         <Paket>True</Paket>
       </Reference>
       <Reference Include="System.Net.Http.Primitives">
-        <HintPath>..\..\..\Microsoft.Net.Http\lib\net45\System.Net.Http.Primitives.dll</HintPath>
+        <HintPath>$(SolutionDir)\packages\Microsoft.Net.Http\lib\net45\System.Net.Http.Primitives.dll</HintPath>
         <Private>True</Private>
         <Paket>True</Paket>
       </Reference>
@@ -86,25 +87,26 @@ let expected = """
       </Reference>
     </ItemGroup>
   </When>
-</Choose>"""
+</Choose>
+</Project>"""
 
 [<Test>]
 let ``should generate Xml for System.Net.Http 2.2.8``() = 
     let model =     
         InstallModel.CreateFromLibs("System.Net.Http", SemVer.Parse "2.2.8",
-            [ @"..\Microsoft.Net.Http\lib\net40\System.Net.Http.dll" 
-              @"..\Microsoft.Net.Http\lib\net40\System.Net.Http.Extensions.dll" 
-              @"..\Microsoft.Net.Http\lib\net40\System.Net.Http.Primitives.dll" 
-              @"..\Microsoft.Net.Http\lib\net40\System.Net.Http.WebRequest.dll" 
+            [ @"..\packages\Microsoft.Net.Http\lib\net40\System.Net.Http.dll" 
+              @"..\packages\Microsoft.Net.Http\lib\net40\System.Net.Http.Extensions.dll" 
+              @"..\packages\Microsoft.Net.Http\lib\net40\System.Net.Http.Primitives.dll" 
+              @"..\packages\Microsoft.Net.Http\lib\net40\System.Net.Http.WebRequest.dll" 
                      
-              @"..\Microsoft.Net.Http\lib\net45\System.Net.Http.Extensions.dll" 
-              @"..\Microsoft.Net.Http\lib\net45\System.Net.Http.Primitives.dll"],
+              @"..\packages\Microsoft.Net.Http\lib\net45\System.Net.Http.Extensions.dll" 
+              @"..\packages\Microsoft.Net.Http\lib\net45\System.Net.Http.Primitives.dll"],
                { References = NuspecReferences.All
                  FrameworkAssemblyReferences =
                  [{ AssemblyName = "System.Net.Http"; TargetFramework = DotNetFramework(FrameworkVersion.Framework(FrameworkVersionNo.V4_5),Full) }
                   { AssemblyName = "System.Net.Http.WebRequest"; TargetFramework = DotNetFramework(FrameworkVersion.Framework(FrameworkVersionNo.V4_5),Full) }] })
 
-    let chooseNode = ProjectFile.Load("./ProjectFile/TestData/Empty.fsprojtest").Value.GenerateXml(model)
+    let chooseNode = ProjectFile.GenerateTarget(model)
     chooseNode.OuterXml
     |> normalizeXml
     |> shouldEqual (normalizeXml expected)
