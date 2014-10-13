@@ -5,8 +5,7 @@ open Logging
 open System
 
 let InitAutoRestore() = 
-    if not <| Directory.Exists(".paket") then Directory.CreateDirectory(".paket") |> ignore
-    CleanDir(".paket")
+    CreateDir(".paket")
     use client = createWebClient None
 
     let releasesUrl = "https://api.github.com/repos/fsprojects/Paket/releases";
@@ -16,6 +15,9 @@ let InitAutoRestore() =
     let latestVersion = data.Substring(start, end' - start);
     
     for file in ["paket.targets"; "paket.bootstrapper.exe"] do
+        try
+            File.Delete(Path.Combine(".paket", file))
+        with _ -> traceErrorfn "Unable to delete %s" file
         try 
             client.DownloadFile(sprintf "https://github.com/fsprojects/Paket/releases/download/%s/%s" latestVersion file, 
                         Path.Combine(".paket", file))
