@@ -17,8 +17,8 @@ let private readPackageSources(configFile : FileInfo) =
         let auth = doc.SelectNodes(sprintf "//packageSourceCredentials/%s" (XmlConvert.EncodeLocalName node.Attributes.["key"].Value))
                    |> Seq.cast<XmlNode>
                    |> Seq.firstOrDefault
-                   |> Option.map (fun node -> {Username = node.SelectSingleNode("//add[@key='Username']").Attributes.["value"].Value
-                                               Password = node.SelectSingleNode("//add[@key='ClearTextPassword']").Attributes.["value"].Value})
+                   |> Option.map (fun node -> {Username = AuthEntry.Create <| node.SelectSingleNode("//add[@key='Username']").Attributes.["value"].Value
+                                               Password = AuthEntry.Create <| node.SelectSingleNode("//add[@key='ClearTextPassword']").Attributes.["value"].Value})
         PackageSource.Parse (url, auth)]
 
 let removeFileIfExists file = 
