@@ -152,7 +152,8 @@ type ProjectFile =
             node.ParentNode.RemoveChild(node) |> ignore
 
     member this.GenerateTargetImport(filename:string) =
-        let fileFromSln = normalizePath "$(SolutionDir)/" + filename.Substring(filename.LastIndexOf("packages"))
+        let file = "$(SolutionDir)/" + filename.Substring(filename.LastIndexOf("packages"))
+        let fileFromSln = normalizePath file
         let importNode = this.Document.CreateElement("Import", Constants.ProjectDefaultNameSpace)
         let condition = sprintf "Exists('%s')" fileFromSln
         importNode |> addAttribute "Project" fileFromSln |> ignore
@@ -178,7 +179,8 @@ type ProjectFile =
                     match lib with
                     | Reference.Library lib ->
                         let fi = new FileInfo(normalizePath lib)
-                        let libFromSln = normalizePath "$(SolutionDir)/" + fi.FullName.Substring(fi.FullName.LastIndexOf("packages"))
+                        let file = "$(SolutionDir)/" + fi.FullName.Substring(fi.FullName.LastIndexOf("packages"))
+                        let libFromSln = normalizePath file
                     
                         createNode(doc,"Reference")
                         |> addAttribute "Include" (fi.Name.Replace(fi.Extension,""))

@@ -159,7 +159,7 @@ let askNumberedQuestion question options =
     getAnswer()
 
 
-let normalizePath(path:string) = path.Replace("\\",Path.DirectorySeparatorChar.ToString()).Replace("/",Path.DirectorySeparatorChar.ToString())
+let normalizePath(path:string) = path.Replace("\\","/")
 
 /// Enumerates all files with the given pattern
 let FindAllFiles(folder, pattern) = DirectoryInfo(folder).EnumerateFiles(pattern, SearchOption.AllDirectories)

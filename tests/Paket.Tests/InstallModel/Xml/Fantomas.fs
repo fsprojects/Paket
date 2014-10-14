@@ -12,7 +12,7 @@ let expected = """
   <When Condition="$(TargetFrameworkIdentifier) == '.NETFramework' And $(TargetFrameworkVersion) == 'v1.0'">
     <ItemGroup>
       <Reference Include="FantomasLib">
-        <HintPath>$(SolutionDir)\packages\Fantomas\lib\FantomasLib.dll</HintPath>
+        <HintPath>$(SolutionDir)/packages/Fantomas/lib/FantomasLib.dll</HintPath>
         <Private>True</Private>
         <Paket>True</Paket>
       </Reference>
@@ -21,7 +21,7 @@ let expected = """
   <When Condition="$(TargetFrameworkIdentifier) == '.NETFramework' And $(TargetFrameworkVersion) == 'v1.1'">
     <ItemGroup>
       <Reference Include="FantomasLib">
-        <HintPath>$(SolutionDir)\packages\Fantomas\lib\FantomasLib.dll</HintPath>
+        <HintPath>$(SolutionDir)/packages/Fantomas/lib/FantomasLib.dll</HintPath>
         <Private>True</Private>
         <Paket>True</Paket>
       </Reference>
@@ -30,7 +30,7 @@ let expected = """
   <When Condition="$(TargetFrameworkIdentifier) == '.NETFramework' And $(TargetFrameworkVersion) == 'v2.0'">
     <ItemGroup>
       <Reference Include="FantomasLib">
-        <HintPath>$(SolutionDir)\packages\Fantomas\lib\FantomasLib.dll</HintPath>
+        <HintPath>$(SolutionDir)/packages/Fantomas/lib/FantomasLib.dll</HintPath>
         <Private>True</Private>
         <Paket>True</Paket>
       </Reference>
@@ -39,7 +39,7 @@ let expected = """
   <When Condition="$(TargetFrameworkIdentifier) == '.NETFramework' And $(TargetFrameworkVersion) == 'v3.5'">
     <ItemGroup>
       <Reference Include="FantomasLib">
-        <HintPath>$(SolutionDir)\packages\Fantomas\lib\FantomasLib.dll</HintPath>
+        <HintPath>$(SolutionDir)/packages/Fantomas/lib/FantomasLib.dll</HintPath>
         <Private>True</Private>
         <Paket>True</Paket>
       </Reference>
@@ -48,7 +48,7 @@ let expected = """
   <When Condition="$(TargetFrameworkIdentifier) == '.NETFramework' And $(TargetFrameworkVersion) == 'v4.0' And $(TargetFrameworkProfile) == 'Client'">
     <ItemGroup>
       <Reference Include="FantomasLib">
-        <HintPath>$(SolutionDir)\packages\Fantomas\lib\FantomasLib.dll</HintPath>
+        <HintPath>$(SolutionDir)/packages/Fantomas/lib/FantomasLib.dll</HintPath>
         <Private>True</Private>
         <Paket>True</Paket>
       </Reference>
@@ -57,7 +57,7 @@ let expected = """
   <When Condition="$(TargetFrameworkIdentifier) == '.NETFramework' And $(TargetFrameworkVersion) == 'v4.0'">
     <ItemGroup>
       <Reference Include="FantomasLib">
-        <HintPath>$(SolutionDir)\packages\Fantomas\lib\FantomasLib.dll</HintPath>
+        <HintPath>$(SolutionDir)/packages/Fantomas/lib/FantomasLib.dll</HintPath>
         <Private>True</Private>
         <Paket>True</Paket>
       </Reference>
@@ -66,7 +66,7 @@ let expected = """
   <When Condition="$(TargetFrameworkIdentifier) == '.NETFramework' And $(TargetFrameworkVersion) == 'v4.5'">
     <ItemGroup>
       <Reference Include="FantomasLib">
-        <HintPath>$(SolutionDir)\packages\Fantomas\lib\FantomasLib.dll</HintPath>
+        <HintPath>$(SolutionDir)/packages/Fantomas/lib/FantomasLib.dll</HintPath>
         <Private>True</Private>
         <Paket>True</Paket>
       </Reference>
@@ -75,7 +75,7 @@ let expected = """
   <When Condition="$(TargetFrameworkIdentifier) == '.NETFramework' And $(TargetFrameworkVersion) == 'v4.5.1'">
     <ItemGroup>
       <Reference Include="FantomasLib">
-        <HintPath>$(SolutionDir)\packages\Fantomas\lib\FantomasLib.dll</HintPath>
+        <HintPath>$(SolutionDir)/packages/Fantomas/lib/FantomasLib.dll</HintPath>
         <Private>True</Private>
         <Paket>True</Paket>
       </Reference>
@@ -88,9 +88,9 @@ let expected = """
 let ``should generate Xml for Fantomas 1.5``() = 
     let model =
         InstallModel.CreateFromLibs("Fantomas", SemVer.Parse "1.5.0",        
-            [ @"..\packages\Fantomas\lib\FantomasLib.dll" 
-              @"..\packages\Fantomas\lib\FSharp.Core.dll" 
-              @"..\packages\Fantomas\lib\Fantomas.exe" ],
+            [ @"../packages/Fantomas/lib/FantomasLib.dll" 
+              @"../packages/Fantomas/lib/FSharp.Core.dll" 
+              @"../packages/Fantomas/lib/Fantomas.exe" ],
               { References = NuspecReferences.Explicit ["FantomasLib.dll"]; FrameworkAssemblyReferences = []})
     
     let chooseNode = ProjectFile.GenerateTarget(model)
