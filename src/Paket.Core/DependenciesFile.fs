@@ -196,17 +196,21 @@ type DependenciesFile(fileName,options,packages : PackageRequirement list, remot
             |> fun df -> df.Packages
 
         let remoteFiles = ModuleResolver.Resolve(resolveSourceFile,getSha1,remoteFiles)
-
-        let dependencies = 
-            remoteFiles 
+        
+        let remoteDependencies = 
+            remoteFiles
             |> List.map (fun f -> f.Dependencies)
-            |> List.concat
+            |> List.fold (fun set current -> Set.union set current) Set.empty
+            |> Seq.map (fun (n, v) -> 
+                   let p = packages |> Seq.last
+                   { p with Name = n
+                            VersionRequirement = v })
+            |> Seq.toList
 
-        { ResolvedPackages = PackageResolver.Resolve(getVersionF, getPackageDetailsF, dependencies @ packages)
+        { ResolvedPackages = PackageResolver.Resolve(getVersionF, getPackageDetailsF, remoteDependencies @ packages)
           ResolvedSourceFiles = remoteFiles }        
 
-    member this.Add(packageName,version:string) =
-        if this.HasPackage packageName then failwithf "%s has already package %s" Constants.DependenciesFile packageName
+    member this.AddAdditionionalPackage(packageName,version:string) =
         let versionRange = DependenciesFileParser.parseVersionRequirement (version.Trim '!')
         let sources = 
             match packages |> List.rev with
@@ -218,8 +222,13 @@ type DependenciesFile(fileName,options,packages : PackageRequirement list, remot
               Sources = sources
               ResolverStrategy = DependenciesFileParser.parseResolverStrategy version
               Parent = PackageRequirementSource.DependenciesFile fileName }
-        tracefn "Adding %s %s to paket.dependencies" packageName (versionRange.ToString())
+
         DependenciesFile(fileName,options,packages @ [newPackage], remoteFiles)
+
+    member this.Add(packageName,version:string) =
+        if this.HasPackage packageName then failwithf "%s has already package %s" Constants.DependenciesFile packageName        
+        tracefn "Adding %s %s to paket.dependencies" packageName version
+        this.AddAdditionionalPackage(packageName,version)
 
     override __.ToString() =        
         let sources = 

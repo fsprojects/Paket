@@ -26,3 +26,30 @@ let Update(forceResolution, force, hard) =
             sources, LockFile.LoadFrom(lockFileName.FullName)
 
     InstallProcess.Install(sources, force, hard, lockFile)
+
+/// Update a single package command
+let UpdatePackage(packageName : string, force, hard) = 
+    let lockFileName = DependenciesFile.FindLockfile Constants.DependenciesFile
+    
+    let sources, lockFile = 
+        let dependenciesFile = DependenciesFile.ReadFromFile Constants.DependenciesFile
+        let oldLockFile = LockFile.LoadFrom(lockFileName.FullName)
+        
+        let updatedDependenciesFile = 
+            oldLockFile.ResolvedPackages 
+            |> Seq.fold 
+                   (fun (dependenciesFile : DependenciesFile) kv -> 
+                   let resolvedPackage = kv.Value
+                   if resolvedPackage.Name.ToLower() = packageName.ToLower() then dependenciesFile
+                   else 
+                       dependenciesFile.AddAdditionionalPackage
+                           (resolvedPackage.Name, "== " + resolvedPackage.Version.ToString())) dependenciesFile
+        
+        let resolution = updatedDependenciesFile.Resolve(force)
+        let newLockFile = 
+            LockFile
+                (lockFileName.FullName, updatedDependenciesFile.Options, resolution.ResolvedPackages.GetModelOrFail(), 
+                 oldLockFile.SourceFiles)
+        newLockFile.Save()
+        updatedDependenciesFile.Sources, newLockFile
+    InstallProcess.Install(sources, force, hard, lockFile)

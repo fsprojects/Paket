@@ -59,8 +59,8 @@ module LockFileSerializer =
                 for file in files |> Seq.sortBy (fun f -> f.Owner.ToLower(),f.Project.ToLower(),f.Name.ToLower())  do
                     let path = file.Name.TrimStart '/'
                     yield sprintf "    %s (%s)" path file.Commit 
-                    for dep in file.Dependencies do
-                        yield sprintf "      %s (%s)" dep.Name (formatVersionRange dep.VersionRequirement)]
+                    for (name,v) in file.Dependencies do
+                        yield sprintf "      %s (%s)" name (formatVersionRange v)]
 
         String.Join(Environment.NewLine, all)
 
@@ -116,14 +116,23 @@ module LockFileParser =
                                        Version = SemVer.Parse version } :: state.Packages }
                 | None -> failwith "no source has been specified."
             | NugetDependency (name, _) ->
-                match state.Packages with
-                | currentPackage :: otherPackages -> 
-                    if not state.LastWasPackage then state else
-                    { state with
-                        Packages = { currentPackage with
-                                        Dependencies = Set.add (name, VersionRequirement.AllReleases) currentPackage.Dependencies
-                                    } :: otherPackages }
-                | [] -> failwith "cannot set a dependency - no package has been specified."
+                if state.LastWasPackage then                 
+                    match state.Packages with
+                    | currentPackage :: otherPackages -> 
+                        { state with
+                                Packages = { currentPackage with
+                                                Dependencies = Set.add (name, VersionRequirement.AllReleases) currentPackage.Dependencies
+                                            } :: otherPackages }                    
+                    | [] -> failwith "cannot set a dependency - no package has been specified."
+                else
+                    match state.SourceFiles with
+                    | currentFile :: rest -> 
+                        { state with
+                                SourceFiles = 
+                                    { currentFile with
+                                                Dependencies = Set.add (name, VersionRequirement.AllReleases) currentFile.Dependencies
+                                            } :: rest }                    
+                    | [] -> failwith "cannot set a dependency - no remote file has been specified."
             | SourceFile details ->
                 match state.RemoteUrl |> Option.map(fun s -> s.Split '/') with
                 | Some [| owner; project |] ->
@@ -135,7 +144,7 @@ module LockFileParser =
                         SourceFiles = { Commit = commit
                                         Owner = owner
                                         Project = project
-                                        Dependencies = []
+                                        Dependencies = Set.empty
                                         Name = path } :: state.SourceFiles }
                 | _ -> failwith "invalid remote details.")
 

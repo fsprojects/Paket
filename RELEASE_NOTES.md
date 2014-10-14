@@ -1,3 +1,6 @@
+#### 0.7.1 - 14.10.2014
+* New command: `paket update nuget <package id>` - http://fsprojects.github.io/Paket/paket-update.html#Updating-a-single-package
+
 #### 0.7.0 - 14.10.2014
 * Initial support for referencing full github projects - http://fsprojects.github.io/Paket/github-dependencies.html#Referencing-a-GitHub-repository
 * Allow to use all branches in GitHub sources - https://github.com/fsprojects/Paket/pull/249
@@ -15,11 +18,9 @@
 * New restore command - http://fsprojects.github.io/Paket/paket-restore.html
 * Report if we can't find packages for top level dependencies.
 * Faster resolver
+* Try /FindPackagesById before /Packages for nuget package version no. retrieval
 * New Paket.Core package on NuGet - https://www.nuget.org/packages/Paket.Core/
 * BUGFIX: Prefer full platform builds over portable builds
-
-#### 0.5.2 - 10.10.2014
-* Try /FindPackagesById before /Packages for nuget package version no. retrieval
 
 #### 0.5.0 - 09.10.2014
 * Bootstrapper will only download stable releases by default - http://fsprojects.github.io/Paket/bootstrapper.html

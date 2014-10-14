@@ -30,7 +30,7 @@ type ResolvedSourceFile =
       Project : string
       Name : string      
       Commit : string
-      Dependencies : PackageRequirement list }
+      Dependencies : Set<string*VersionRequirement> }
     member this.FilePath = this.ComputeFilePath(this.Name)
 
     member this.ComputeFilePath(name:string) =
@@ -55,8 +55,8 @@ let Resolve(getPackages, getSha1, remoteFiles : UnresolvedSourceFile list) : Res
                            { Commit = sha
                              Owner = file.Owner
                              Project = file.Project
-                             Dependencies = []
+                             Dependencies = Set.empty
                              Name = file.Name }
                        let packages:PackageRequirement list = getPackages naked
 
-                       {naked with Dependencies = packages })
+                       {naked with Dependencies = packages |> Seq.fold (fun set package -> Set.add (package.Name,package.VersionRequirement) set) Set.empty })

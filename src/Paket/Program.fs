@@ -112,7 +112,11 @@ try
             AddProcess.Add(packageName,version,force,hard,interactive,noInstall |> not)
         | Command.Install -> UpdateProcess.Update(false,force,hard) 
         | Command.Restore -> RestoreProcess.Restore(force) 
-        | Command.Update -> UpdateProcess.Update(true,force,hard)
+        | Command.Update -> 
+                 match results.TryGetResult <@ CLIArguments.Nuget @> with
+                | Some packageName -> UpdateProcess.UpdatePackage(packageName,force,hard)
+                | _ -> UpdateProcess.Update(true,force,hard)
+            
         | Command.Outdated -> FindOutdated.ListOutdated(strict,includePrereleases)
         | Command.InitAutoRestore -> VSIntegration.InitAutoRestore()
         | Command.ConvertFromNuget -> NuGetConvert.ConvertFromNuget(force,noInstall |> not,noAutoRestore |> not)
