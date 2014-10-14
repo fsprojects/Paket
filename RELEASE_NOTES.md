@@ -1,33 +1,15 @@
-#### 0.6.13 - 13.10.2014
+#### 0.7.0 - 14.10.2014
 * Initial support for full github projects - https://github.com/fsprojects/Paket/issues/113
-
-#### 0.6.12 - 13.10.2014
-* BUGFIX: Paket only deletes files which will are downloaded by init-auto-restore process - https://github.com/fsprojects/Paket/pull/254
-
-#### 0.6.11 - 12.10.2014
-* BUGFIX: Paket convert-from-nuget failed when package source keys contain invalid XML element chars  - https://github.com/fsprojects/Paket/issues/253
-
-#### 0.6.10 - 12.10.2014
-* Initial support for frameworkAssemblies from nuspec - https://github.com/fsprojects/Paket/issues/241
-
-#### 0.6.8 - 12.10.2014
-* Use https in DefaultNugetStream - https://github.com/fsprojects/Paket/pull/251
 * Allow to use all branches in GitHub sources - https://github.com/fsprojects/Paket/pull/249
-
-#### 0.6.7 - 12.10.2014
+* Initial support for frameworkAssemblies from nuspec - https://github.com/fsprojects/Paket/issues/241
 * Download github source files with correct encoding - https://github.com/fsprojects/Paket/pull/248
-
-#### 0.6.6 - 12.10.2014
 * Add FSharp.Core.Microsoft.Signed as dependency
-
-#### 0.6.5 - 11.10.2014
 * Install model uses portable versions for net40 and net45 when package doesn't contain special versions
-
-#### 0.6.4 - 11.10.2014
-* Paket install displays versions found if constraint does not match any available version 
-
-#### 0.6.3 - 11.10.2014
-* Restore doesn't need to calc install model. 
+* Install command displays existing versions if constraint does not match any version 
+* Restore command doesn't calc install model. 
+* Use https in DefaultNugetStream - https://github.com/fsprojects/Paket/pull/251
+* BUGFIX: Paket only deletes files which will are downloaded by init-auto-restore process - https://github.com/fsprojects/Paket/pull/254
+* BUGFIX: Paket convert-from-nuget failed when package source keys contain invalid XML element chars  - https://github.com/fsprojects/Paket/issues/253
 
 #### 0.6.0 - 11.10.2014
 * New restore command - http://fsprojects.github.io/Paket/paket-restore.html
