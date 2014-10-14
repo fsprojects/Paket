@@ -23,8 +23,7 @@ By default the `master` branch is used to determine the commit to reference, you
     github forki/FsUnit:7623fc13439f0e60bd05c1ed3b5f6dcb937fe468 FsUnit.fs
 
 If you want to reference the file in one of your project files then add an entry to the project's [`paket.references` file.](references-files.html):
-
-    [lang=batchfile]
+    
     File:FsUnit.fs
 
 This will reference the linked file directly into your project.
@@ -34,17 +33,24 @@ By default the linked file will be visible under ``paket-files`` folder in proje
 
 You can specify custom folder for the file:
 
-    [lang=batchfile]
     File:FsUnit.fs Tests\FsUnit
 
 ![alt text](img/github_ref_custom_link.png "GitHub file referenced in project with custom link")
 
 Or if you use ``.`` for the directory, the file will be placed under the root of the project:
-
-    [lang=batchfile]
+    
     File:FsUnit.fs .
 
 ![alt text](img/github_ref_root.png "GitHub file referenced in project under root of project")
+
+## Referencing a GitHub repository
+
+You can also reference a complete [github.com](http://www.github.com) repository by specifying the repository id in the [`paket.dependencies` file](dependencies-file.html):
+
+    github hakimel/reveal.js       // master branch
+	github hakimel/reveal.js:2.6.2 // version 2.6.2
+
+This will download the given repository and put it into your `paket-files` folder. In this case we download the source of [reveal.js](http://lab.hakim.se/reveal-js/#/).
 
 ## Recognizing Build Action
 

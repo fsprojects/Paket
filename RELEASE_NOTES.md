@@ -1,5 +1,5 @@
 #### 0.7.0 - 14.10.2014
-* Initial support for full github projects - https://github.com/fsprojects/Paket/issues/113
+* Initial support for referencing full github projects - http://fsprojects.github.io/Paket/github-dependencies.html#Referencing-a-GitHub-repository
 * Allow to use all branches in GitHub sources - https://github.com/fsprojects/Paket/pull/249
 * Initial support for frameworkAssemblies from nuspec - https://github.com/fsprojects/Paket/issues/241
 * Download github source files with correct encoding - https://github.com/fsprojects/Paket/pull/248
