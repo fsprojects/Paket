@@ -1,6 +1,6 @@
 # Paket
 
-A package dependency manager for .NET with support for NuGet packages and GitHub files.
+A package dependency manager for .NET with support for NuGet packages and GitHub repositories.
 
 ## Why Paket?
 
