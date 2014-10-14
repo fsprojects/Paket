@@ -2,14 +2,35 @@
 if test "$OS" = "Windows_NT"
 then
   # use .Net
-  .nuget/NuGet.exe install FAKE -OutputDirectory packages -ExcludeVersion
-  .nuget/NuGet.exe install SourceLink.Fake -OutputDirectory packages -ExcludeVersion
+
+  .paket/paket.bootstrapper.exe
+  exit_code=$?
+  if [ $exit_code -ne 0 ]; then
+  	exit $exit_code
+  fi
+
+  .paket/paket.exe restore -v
+  exit_code=$?
+  if [ $exit_code -ne 0 ]; then
+  	exit $exit_code
+  fi
+                                                                 
   [ ! -e build.fsx ] && packages/FAKE/tools/FAKE.exe init.fsx
-  packages/FAKE/tools/FAKE.exe build.fsx $@
+  packages/FAKE/tools/FAKE.exe $@ --fsiargs -d:MONO build.fsx 
 else
   # use mono
-  mono .nuget/NuGet.exe install FAKE -OutputDirectory packages -ExcludeVersion
-  mono .nuget/NuGet.exe install SourceLink.Fake -OutputDirectory packages -ExcludeVersion
+  mono .paket/paket.bootstrapper.exe
+  exit_code=$?
+  if [ $exit_code -ne 0 ]; then
+  	exit $exit_code
+  fi
+
+  mono .paket/paket.exe restore -v
+  exit_code=$?
+  if [ $exit_code -ne 0 ]; then
+  	exit $exit_code
+  fi
+
   [ ! -e build.fsx ] && mono packages/FAKE/tools/FAKE.exe init.fsx
-  mono packages/FAKE/tools/FAKE.exe $@ --fsiargs -d:MONO build.fsx
+  mono packages/FAKE/tools/FAKE.exe $@ --fsiargs -d:MONO build.fsx 
 fi
