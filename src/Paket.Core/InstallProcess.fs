@@ -67,7 +67,7 @@ let private removeCopiedFiles (project: ProjectFile) =
 
 let CreateInstallModel(sources, force, package) = 
     async { 
-        let! (package, files) = RestoreProcess.ExtractPackage(sources, force, package)
+        let! (package, files) = NugetDownload.ExtractPackage(sources, force, package)
         let nuspec = FileInfo(sprintf "./packages/%s/%s.nuspec" package.Name package.Name)
         let nuspec = Nuspec.Load nuspec.FullName
         let files = files |> Seq.map (fun fi -> fi.FullName)
@@ -79,7 +79,7 @@ let CreateInstallModel(sources, force, package) =
 let internal createModel(sources,force, lockFile:LockFile) = 
     let sourceFileDownloads =
         lockFile.SourceFiles
-        |> Seq.map (fun file -> RestoreProcess.DownloadSourceFile(Path.GetDirectoryName lockFile.FileName, file))        
+        |> Seq.map (fun file -> NugetDownload.DownloadSourceFile(Path.GetDirectoryName lockFile.FileName, file))        
         |> Async.Parallel
 
     let packageDownloads = 
