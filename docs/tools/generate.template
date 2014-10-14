@@ -78,7 +78,7 @@ let buildReference () =
       parameters = ("root", root)::info,
       sourceRepo = githubLink @@ "tree/master",
       sourceFolder = __SOURCE_DIRECTORY__ @@ ".." @@ "..",
-      publicOnly = true )
+      publicOnly = true, libDirs = [bin] )
 
 // Build documentation from `fsx` and `md` files in `docs/content`
 let buildDocumentation () =
