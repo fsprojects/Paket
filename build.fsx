@@ -9,12 +9,11 @@ open Fake.Git
 open Fake.AssemblyInfoFile
 open Fake.ReleaseNotesHelper
 open System
+open System.IO
 #if MONO
 #else
 #load "packages/SourceLink.Fake/Tools/Fake.fsx"
 open SourceLink
-open System.IO
-
 #endif
 
 // --------------------------------------------------------------------------------------
