@@ -210,7 +210,7 @@ type DependenciesFile(fileName,options,packages : PackageRequirement list, remot
         { ResolvedPackages = PackageResolver.Resolve(getVersionF, getPackageDetailsF, remoteDependencies @ packages)
           ResolvedSourceFiles = remoteFiles }        
 
-    member this.AddAdditionionalPackage(packageName,version:string) =
+    member __.AddAdditionionalPackage(packageName,version:string) =
         let versionRange = DependenciesFileParser.parseVersionRequirement (version.Trim '!')
         let sources = 
             match packages |> List.rev with

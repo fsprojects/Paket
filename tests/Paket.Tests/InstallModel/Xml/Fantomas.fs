@@ -90,7 +90,15 @@ let expected = """
           </Reference>
         </ItemGroup>
       </When>
-      <When Condition="$(TargetFrameworkVersion) == 'v4.5.3'"></When>
+      <When Condition="$(TargetFrameworkVersion) == 'v4.5.3'">
+        <ItemGroup>
+          <Reference Include="FantomasLib">
+            <HintPath>..\..\..\Fantomas\lib\FantomasLib.dll</HintPath>
+            <Private>True</Private>
+            <Paket>True</Paket>
+          </Reference>
+        </ItemGroup>
+      </When>
       <Otherwise>
         <ItemGroup>
           <Reference Include="FantomasLib">

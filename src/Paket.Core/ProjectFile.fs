@@ -73,8 +73,9 @@ type ProjectFile =
     member this.DeleteEmptyReferences() = 
         this.DeleteIfEmpty("//ns:ItemGroup")
         this.DeleteIfEmpty("//ns:When")
-        this.DeleteIfEmpty("//ns:When")
         this.DeleteIfEmpty("//ns:Otherwise")
+        this.DeleteIfEmpty("//ns:Choose")
+        this.DeleteIfEmpty("//ns:When")
         this.DeleteIfEmpty("//ns:Choose")
 
     member this.createFileItemNode fileItem =
@@ -162,7 +163,7 @@ type ProjectFile =
 
             let chooseNode = this.Document.CreateElement("Choose", Constants.ProjectDefaultNameSpace)
 
-            let first = ref None
+            let lastFramework = ref None
             for kv in frameworks do
                 let condition = kv.Key.GetFrameworkCondition()
                 let whenNode = 
@@ -191,18 +192,17 @@ type ProjectFile =
 
                
                 whenNode.AppendChild(itemGroup) |> ignore
-                chooseNode.AppendChild(whenNode) |> ignore
+                chooseNode.AppendChild(whenNode) |> ignore 
+                lastFramework := Some itemGroup        
 
-                first := Some itemGroup
-                groupWhenNode.AppendChild(chooseNode) |> ignore
-            
-            match !first with
+            match !lastFramework with
             | Some itemGroup ->
                 let otherwiseNode = createNode(this.Document,"Otherwise")
-                otherwiseNode.AppendChild(itemGroup) |> ignore
+                otherwiseNode.AppendChild(itemGroup.Clone()) |> ignore
                 chooseNode.AppendChild(otherwiseNode) |> ignore
             | None -> ()
 
+            groupWhenNode.AppendChild(chooseNode) |> ignore
             groupChooseNode.AppendChild(groupWhenNode) |> ignore
 
         groupChooseNode
