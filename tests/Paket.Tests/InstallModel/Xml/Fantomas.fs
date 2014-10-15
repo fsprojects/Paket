@@ -3,7 +3,6 @@
 open Paket
 open NUnit.Framework
 open FsUnit
-open System.Xml
 open Paket.TestHelpers
 
 let expected = """
@@ -72,6 +71,24 @@ let expected = """
     </ItemGroup>
   </When>
   <When Condition="$(TargetFrameworkIdentifier) == '.NETFramework' And $(TargetFrameworkVersion) == 'v4.5.1'">
+    <ItemGroup>
+      <Reference Include="FantomasLib">
+        <HintPath>..\..\..\Fantomas\lib\FantomasLib.dll</HintPath>
+        <Private>True</Private>
+        <Paket>True</Paket>
+      </Reference>
+    </ItemGroup>
+  </When>
+  <When Condition="$(TargetFrameworkIdentifier) == '.NETFramework' And $(TargetFrameworkVersion) == 'v4.5.2'">
+    <ItemGroup>
+      <Reference Include="FantomasLib">
+        <HintPath>..\..\..\Fantomas\lib\FantomasLib.dll</HintPath>
+        <Private>True</Private>
+        <Paket>True</Paket>
+      </Reference>
+    </ItemGroup>
+  </When>
+  <When Condition="$(TargetFrameworkIdentifier) == '.NETFramework' And $(TargetFrameworkVersion) == 'v4.5.3'">
     <ItemGroup>
       <Reference Include="FantomasLib">
         <HintPath>..\..\..\Fantomas\lib\FantomasLib.dll</HintPath>

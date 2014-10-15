@@ -74,6 +74,34 @@ let expected = """
       </Reference>
     </ItemGroup>
   </When>
+  <When Condition="$(TargetFrameworkIdentifier) == '.NETFramework' And $(TargetFrameworkVersion) == 'v4.5.2'">
+    <ItemGroup>
+      <Reference Include="System.Net.Http.Extensions">
+        <HintPath>..\..\..\Microsoft.Net.Http\lib\net45\System.Net.Http.Extensions.dll</HintPath>
+        <Private>True</Private>
+        <Paket>True</Paket>
+      </Reference>
+      <Reference Include="System.Net.Http.Primitives">
+        <HintPath>..\..\..\Microsoft.Net.Http\lib\net45\System.Net.Http.Primitives.dll</HintPath>
+        <Private>True</Private>
+        <Paket>True</Paket>
+      </Reference>
+    </ItemGroup>
+  </When>
+  <When Condition="$(TargetFrameworkIdentifier) == '.NETFramework' And $(TargetFrameworkVersion) == 'v4.5.3'">
+    <ItemGroup>
+      <Reference Include="System.Net.Http.Extensions">
+        <HintPath>..\..\..\Microsoft.Net.Http\lib\net45\System.Net.Http.Extensions.dll</HintPath>
+        <Private>True</Private>
+        <Paket>True</Paket>
+      </Reference>
+      <Reference Include="System.Net.Http.Primitives">
+        <HintPath>..\..\..\Microsoft.Net.Http\lib\net45\System.Net.Http.Primitives.dll</HintPath>
+        <Private>True</Private>
+        <Paket>True</Paket>
+      </Reference>
+    </ItemGroup>
+  </When>
   <When Condition="$(TargetFrameworkIdentifier) == '.NETPortable' And $(TargetFrameworkProfile) == 'Profile88' And $(TargetPlatformIdentifier) == 'Portable' And $(TargetPlatformVersion) == '7.0'">
     <ItemGroup>
       <Reference Include="System.Net.Http.Extensions">

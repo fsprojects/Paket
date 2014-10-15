@@ -17,6 +17,8 @@ type FrameworkVersionNo =
     | V4
     | V4_5
     | V4_5_1
+    | V4_5_2
+    | V4_5_3
     override this.ToString() = 
         match this with
         | V1 -> "v1.0"
@@ -26,6 +28,8 @@ type FrameworkVersionNo =
         | V4 -> "v4.0"
         | V4_5 -> "v4.5"
         | V4_5_1 -> "v4.5.1"
+        | V4_5_2 -> "v4.5.2"
+        | V4_5_3 -> "v4.5.3"
 
 /// The Framework version.
 type FrameworkVersion = 
@@ -40,7 +44,9 @@ type FrameworkVersion =
           FrameworkVersionNo.V4, Client
           FrameworkVersionNo.V4, Full
           FrameworkVersionNo.V4_5, Full
-          FrameworkVersionNo.V4_5_1, Full ]
+          FrameworkVersionNo.V4_5_1, Full
+          FrameworkVersionNo.V4_5_2, Full
+          FrameworkVersionNo.V4_5_3, Full ]
 
 type PlatformVersion = string
 

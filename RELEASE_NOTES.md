@@ -1,3 +1,6 @@
+#### 0.7.2 - 15.10.2014
+* Paket handles .NET 4.5.2 and .NET 4.5.3 projects - https://github.com/fsprojects/Paket/issues/260
+
 #### 0.7.1 - 14.10.2014
 * New command: `paket update nuget <package id>` - http://fsprojects.github.io/Paket/paket-update.html#Updating-a-single-package
 
