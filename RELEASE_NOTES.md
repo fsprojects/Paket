@@ -1,4 +1,4 @@
-#### 0.8.0-alpha001 - 15.10.2014
+#### 0.8.0-alpha002 - 15.10.2014
 * Smarter install in project files
 
 #### 0.7.3 - 15.10.2014

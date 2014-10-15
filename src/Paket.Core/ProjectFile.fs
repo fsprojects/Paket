@@ -212,9 +212,9 @@ type ProjectFile =
 
         groupChooseNode
 
-
     member this.UpdateReferences(completeModel: Map<string,InstallModel>, usedPackages : Dictionary<string,bool>, hard) = 
         this.DeletePaketNodes("Reference")  
+        this.DeleteEmptyReferences()
         for kv in usedPackages do
             let packageName = kv.Key
             let installModel =   completeModel.[packageName.ToLower()]
@@ -224,9 +224,7 @@ type ProjectFile =
 
             if this.HasCustomNodes(installModel) then verbosefn "  - custom nodes for %s ==> skipping" packageName else
             let chooseNode = this.GenerateXml(installModel)
-            this.ProjectNode.AppendChild(chooseNode) |> ignore
-
-        this.DeleteEmptyReferences()
+            this.ProjectNode.AppendChild(chooseNode) |> ignore        
 
     member this.Save() =
         if Utils.normalizeXml this.Document <> this.OriginalText then 
