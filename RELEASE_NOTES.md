@@ -1,3 +1,6 @@
+#### 0.7.3 - 15.10.2014
+* BUGFIX: Do not expand auth when serializing dependencies file - https://github.com/fsprojects/Paket/pull/259
+
 #### 0.7.2 - 15.10.2014
 * Paket handles .NET 4.5.2 and .NET 4.5.3 projects - https://github.com/fsprojects/Paket/issues/260
 
