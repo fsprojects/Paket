@@ -182,23 +182,32 @@ type ProjectFile =
                 createNode(this.Document,"When")
                 |> addAttribute "Condition" group
 
+            let fallbackLibs = model.Fallbacks.[group].References
 
             let chooseNode = this.Document.CreateElement("Choose", Constants.ProjectDefaultNameSpace)
 
-            for kv in frameworks do
-                let condition = kv.Key.GetFrameworkCondition()
-                let whenNode = 
-                    createNode(this.Document,"When")
-                    |> addAttribute "Condition" condition                
-               
-                whenNode.AppendChild(createItemGroup kv.Value.References) |> ignore
-                chooseNode.AppendChild(whenNode) |> ignore
-                  
-            let otherwiseNode = createNode(this.Document,"Otherwise")
-            otherwiseNode.AppendChild(createItemGroup model.Fallbacks.[group].References) |> ignore
-            chooseNode.AppendChild(otherwiseNode) |> ignore
+            let foundSpecialCase = ref false
 
-            groupWhenNode.AppendChild(chooseNode) |> ignore
+            for kv in frameworks do
+                let currentLibs = kv.Value.References
+                if currentLibs <> fallbackLibs then
+                    let condition = kv.Key.GetFrameworkCondition()
+                    let whenNode = 
+                        createNode(this.Document,"When")
+                        |> addAttribute "Condition" condition                
+               
+                    whenNode.AppendChild(createItemGroup currentLibs) |> ignore
+                    chooseNode.AppendChild(whenNode) |> ignore
+                    foundSpecialCase := true
+            
+            if !foundSpecialCase then
+                let otherwiseNode = createNode(this.Document,"Otherwise")
+                otherwiseNode.AppendChild(createItemGroup fallbackLibs) |> ignore
+                chooseNode.AppendChild(otherwiseNode) |> ignore
+                groupWhenNode.AppendChild(chooseNode) |> ignore
+            else
+                groupWhenNode.AppendChild(createItemGroup fallbackLibs) |> ignore
+            
             groupChooseNode.AppendChild(groupWhenNode) |> ignore
 
         groupChooseNode
