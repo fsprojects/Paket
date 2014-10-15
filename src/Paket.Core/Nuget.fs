@@ -347,7 +347,7 @@ let DownloadPackage(auth, url, name, version, force) =
                     //client.Credentials <- new NetworkCredential(auth.Username,auth.Password)
 
                     //so use THIS instead to send credenatials RIGHT AWAY
-                    let credentials = Convert.ToBase64String(Encoding.ASCII.GetBytes(auth.Username + ":" + auth.Password))
+                    let credentials = Convert.ToBase64String(Encoding.ASCII.GetBytes(auth.Username.Expanded + ":" + auth.Password.Expanded))
                     request.Headers.[HttpRequestHeader.Authorization] <- String.Format("Basic {0}", credentials)
 
                 request.Proxy <- Utils.defaultProxy

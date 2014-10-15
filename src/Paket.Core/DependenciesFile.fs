@@ -249,7 +249,7 @@ type DependenciesFile(fileName,options,packages : PackageRequirement list, remot
                       | Nuget source -> 
                         match source.Auth with
                         | None -> yield "source " + source.Url 
-                        | Some auth -> yield sprintf "source %s username: \"%s\" password: \"%s\"" source.Url auth.Username auth.Password
+                        | Some auth -> yield sprintf "source %s username: \"%s\" password: \"%s\"" source.Url <| auth.Username.Original <| auth.Password.Original
                         
                       | LocalNuget source -> yield "source " + source
                   

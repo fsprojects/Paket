@@ -231,8 +231,8 @@ let ``should read config with encapsulated password source``() =
     (cfg.Packages |> List.find (fun p -> p.Name = "Rx-Main")).Sources 
     |> shouldEqual [ PackageSource.Nuget { Url = "http://nuget.org/api/v2"
                                            Auth = 
-                                               Some { Username = "tatü tata"
-                                                      Password = "you got hacked!" } } ]
+                                               Some { Username = { Original = "tatü tata"; Expanded = "tatü tata" }
+                                                      Password = { Original = "you got hacked!"; Expanded = "you got hacked!" } } } ]
 
 let configWithPasswordInSingleQuotes = """
 source http://nuget.org/api/v2 username: 'tatü tata' password: 'you got hacked!'
@@ -261,8 +261,8 @@ let ``should read config with password in env variable``() =
     (cfg.Packages |> List.find (fun p -> p.Name = "Rx-Main")).Sources 
     |> shouldEqual [ PackageSource.Nuget { Url = "http://nuget.org/api/v2"
                                            Auth = 
-                                               Some { Username = "user XYZ"
-                                                      Password = "pw Love" } } ]
+                                               Some { Username = { Original = "%FEED_USERNAME%"; Expanded = "user XYZ"}
+                                                      Password = { Original = "%FEED_PASSWORD%"; Expanded = "pw Love"}  } } ]
 
 let configWithExplicitVersions = """
 source "http://nuget.org/api/v2"

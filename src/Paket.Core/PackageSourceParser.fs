@@ -10,8 +10,8 @@ let passwordRegex = new Regex("password[:][ ]*[\"]([^\"]+)[\"]", RegexOptions.Ig
 
 let parseAuth(text:string) =
     if userNameRegex.IsMatch(text) && passwordRegex.IsMatch(text) then
-        let expanded = Environment.ExpandEnvironmentVariables(text)
-        Some { Username = userNameRegex.Match(expanded).Groups.[1].Value; Password = passwordRegex.Match(expanded).Groups.[1].Value }
+        Some { Username = AuthEntry.Create <| userNameRegex.Match(text).Groups.[1].Value
+               Password = AuthEntry.Create <| passwordRegex.Match(text).Groups.[1].Value }
     else
         if text.Contains("username:") || text.Contains("password:") then
             failwithf "Could not parse auth in \"%s\"" text
