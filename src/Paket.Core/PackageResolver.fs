@@ -26,14 +26,15 @@ type ResolvedPackage =
 
 type PackageResolution = Map<string , ResolvedPackage>
 
+[<RequireQualifiedAccess>]
 type ResolvedPackages =
 | Ok of PackageResolution
 | Conflict of Set<PackageRequirement> * Set<PackageRequirement>
     with
     member this.GetModelOrFail() =
         match this with
-        | Ok model -> model
-        | Conflict(closed,stillOpen) ->
+        | ResolvedPackages.Ok model -> model
+        | ResolvedPackages.Conflict(closed,stillOpen) ->
 
             let errorText = ref ""
 
@@ -117,9 +118,9 @@ let Resolve(getVersionsF, getPackageDetailsF, rootDependencies:PackageRequiremen
                     | _ -> false)
 
             if isOk then
-                Ok(packages |> Seq.fold (fun map p -> Map.add (p.Name.ToLower()) p map) Map.empty)
+                ResolvedPackages.Ok(packages |> Seq.fold (fun map p -> Map.add (p.Name.ToLower()) p map) Map.empty)
             else
-                Conflict(closed,stillOpen)
+                ResolvedPackages.Conflict(closed,stillOpen)
         else
             let dependency = Seq.head stillOpen
             let rest = stillOpen |> Set.remove dependency
@@ -157,7 +158,7 @@ let Resolve(getVersionsF, getPackageDetailsF, rootDependencies:PackageRequiremen
             sorted
             |> List.fold (fun state versionToExplore ->
                 match state with
-                | Conflict _ ->
+                | ResolvedPackages.Conflict _ ->
                     let exploredPackage = getExploredPackage(dependency.Sources,dependency.Name,versionToExplore)
                     let newFilteredVersion = Map.add dependency.Name ([versionToExplore],globalOverride) filteredVersions
                     let newDependencies =
@@ -177,17 +178,17 @@ let Resolve(getVersionsF, getPackageDetailsF, rootDependencies:PackageRequiremen
                             |> not)
 
                     improveModel (newFilteredVersion,exploredPackage::packages,Set.add dependency closed,Set.union rest newDependencies)
-                | Ok _ -> state)
-                  (Conflict(closed,stillOpen))
+                | ResolvedPackages.Ok _ -> state)
+                  (ResolvedPackages.Conflict(closed,stillOpen))
 
     match improveModel (Map.empty, [], Set.empty, Set.ofList rootDependencies) with
-    | Conflict(_) as c -> c
-    | ResolvedPackages.Ok model ->
+    | ResolvedPackages.Conflict(_) as c -> c
+    | ResolvedPackages.Ok model -> 
         // cleanup names
-        Ok(model |> Seq.fold (fun map x ->
-                        let package = x.Value
-                        let cleanup =
-                            { package with Dependencies =
-                                               package.Dependencies
-                                               |> Set.map (fun (name, v) -> model.[name.ToLower()].Name, v) }
-                        Map.add package.Name cleanup map) Map.empty)
+        ResolvedPackages.Ok(model |> Seq.fold (fun map x -> 
+                                         let package = x.Value
+                                         let cleanup = 
+                                             { package with Dependencies = 
+                                                                package.Dependencies 
+                                                                |> Set.map (fun (name, v) -> model.[name.ToLower()].Name, v) }
+                                         Map.add package.Name cleanup map) Map.empty)
