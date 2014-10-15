@@ -125,15 +125,17 @@ type FrameworkIdentifier =
                 Some(PortableFramework("7.0", path.ToLower().Replace("portable-","")))
             else None
     
-    member x.GetFrameworkIdentifier() =
+    member x.Group =
         match x with
-        | DotNetFramework _ -> "$(TargetFrameworkIdentifier) == '.NETFramework'"
-        | PortableFramework _ -> "$(TargetFrameworkIdentifier) == '.NETPortable'"
-        | WindowsPhoneApp _ -> "$(TargetFrameworkIdentifier) == 'WindowsPhoneApp'"
-        | Windows _ -> "$(TargetFrameworkIdentifier) == 'Windows'"
-        | Silverlight _ -> "$(TargetFrameworkIdentifier) == 'Silverlight'"
-        | MonoAndroid -> "$(TargetFrameworkIdentifier) == 'MonoAndroid'"
-        | MonoTouch -> "$(TargetFrameworkIdentifier) == 'MonoTouch'"
+        | DotNetFramework _ -> ".NETFramework"
+        | PortableFramework _ -> ".NETPortable"
+        | WindowsPhoneApp _ -> "WindowsPhoneApp"
+        | Windows _ -> "Windows"
+        | Silverlight _ -> "Silverlight"
+        | MonoAndroid -> "MonoAndroid"
+        | MonoTouch -> "MonoTouch"
+
+    member x.GetFrameworkIdentifier() = sprintf "$(TargetFrameworkIdentifier) == '%s'" x.Group
 
     member x.GetPortableProfile() =
         match x with 

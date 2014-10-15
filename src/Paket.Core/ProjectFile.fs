@@ -153,7 +153,29 @@ type ProjectFile =
         for node in nodesToDelete do            
             node.ParentNode.RemoveChild(node) |> ignore
 
-    member this.GenerateXml(model:InstallModel) =           
+    member this.GenerateXml(model:InstallModel) =
+        let createItemGroup references = 
+            let itemGroup = createNode(this.Document,"ItemGroup")
+                                
+            for lib in references do
+                let reference = 
+                    match lib with
+                    | Reference.Library lib ->
+                        let fi = new FileInfo(normalizePath lib)
+                    
+                        createNode(this.Document,"Reference")
+                        |> addAttribute "Include" (fi.Name.Replace(fi.Extension,""))
+                        |> addChild (createNodeWithText(this.Document,"HintPath",createRelativePath this.FileName fi.FullName))
+                        |> addChild (createNodeWithText(this.Document,"Private","True"))
+                        |> addChild (createNodeWithText(this.Document,"Paket","True"))
+                    | Reference.FrameworkAssemblyReference frameworkAssembly ->                    
+                        createNode(this.Document,"Reference")
+                        |> addAttribute "Include" frameworkAssembly
+                        |> addChild (createNodeWithText(this.Document,"Paket","True"))
+
+                itemGroup.AppendChild(reference) |> ignore
+            itemGroup
+
         let groupChooseNode = this.Document.CreateElement("Choose", Constants.ProjectDefaultNameSpace)
         for group,frameworks in model.GetFrameworkGroups() do
             let groupWhenNode = 
@@ -163,44 +185,18 @@ type ProjectFile =
 
             let chooseNode = this.Document.CreateElement("Choose", Constants.ProjectDefaultNameSpace)
 
-            let lastFramework = ref None
             for kv in frameworks do
                 let condition = kv.Key.GetFrameworkCondition()
                 let whenNode = 
                     createNode(this.Document,"When")
-                    |> addAttribute "Condition" condition
-
-                let itemGroup = createNode(this.Document,"ItemGroup")
-                                
-                for lib in kv.Value.References do
-                    let reference = 
-                        match lib with
-                        | Reference.Library lib ->
-                            let fi = new FileInfo(normalizePath lib)
-                    
-                            createNode(this.Document,"Reference")
-                            |> addAttribute "Include" (fi.Name.Replace(fi.Extension,""))
-                            |> addChild (createNodeWithText(this.Document,"HintPath",createRelativePath this.FileName fi.FullName))
-                            |> addChild (createNodeWithText(this.Document,"Private","True"))
-                            |> addChild (createNodeWithText(this.Document,"Paket","True"))
-                        | Reference.FrameworkAssemblyReference frameworkAssembly ->                    
-                            createNode(this.Document,"Reference")
-                            |> addAttribute "Include" frameworkAssembly
-                            |> addChild (createNodeWithText(this.Document,"Paket","True"))
-
-                    itemGroup.AppendChild(reference) |> ignore
-
+                    |> addAttribute "Condition" condition                
                
-                whenNode.AppendChild(itemGroup) |> ignore
-                chooseNode.AppendChild(whenNode) |> ignore 
-                lastFramework := Some itemGroup        
-
-            match !lastFramework with
-            | Some itemGroup ->
-                let otherwiseNode = createNode(this.Document,"Otherwise")
-                otherwiseNode.AppendChild(itemGroup.Clone()) |> ignore
-                chooseNode.AppendChild(otherwiseNode) |> ignore
-            | None -> ()
+                whenNode.AppendChild(createItemGroup kv.Value.References) |> ignore
+                chooseNode.AppendChild(whenNode) |> ignore
+                  
+            let otherwiseNode = createNode(this.Document,"Otherwise")
+            otherwiseNode.AppendChild(createItemGroup model.Fallbacks.[group].References) |> ignore
+            chooseNode.AppendChild(otherwiseNode) |> ignore
 
             groupWhenNode.AppendChild(chooseNode) |> ignore
             groupChooseNode.AppendChild(groupWhenNode) |> ignore

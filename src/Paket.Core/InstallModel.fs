@@ -21,13 +21,15 @@ type InstallFiles =
 type InstallModel = 
     { PackageName : string
       PackageVersion : SemVerInfo
-      Frameworks : Map<FrameworkIdentifier, InstallFiles> }
+      Frameworks : Map<FrameworkIdentifier, InstallFiles>
+      Fallbacks : Map<string, InstallFiles> }
 
     static member EmptyModel(packageName, packageVersion) : InstallModel = 
         let frameworks = 
             [ for x, p in FrameworkVersion.KnownDotNetFrameworks -> DotNetFramework(Framework x, p) ]
         { PackageName = packageName
           PackageVersion = packageVersion
+          Fallbacks = Map.empty
           Frameworks = List.fold (fun map f -> Map.add f InstallFiles.empty map) Map.empty frameworks }
     
     member this.GetFrameworks() = this.Frameworks |> Seq.map (fun kv -> kv.Key)
@@ -125,6 +127,15 @@ type InstallModel =
                               { model with Frameworks = Map.add framework { References = newFiles; ContentFiles = Set.empty } model.Frameworks }
                           | _ -> model) model) this
 
+    member this.UseLastInGroupAsFallback() =
+        this.Frameworks 
+        |> Seq.fold 
+            (fun (model : InstallModel) kv -> 
+                let group = kv.Key.GetFrameworkIdentifier()
+
+                { model with Fallbacks = Map.add group kv.Value model.Fallbacks}) this
+
+
     member this.UsePortableVersionLibIfEmpty() = 
         this.Frameworks 
         |> Seq.fold 
@@ -153,8 +164,9 @@ type InstallModel =
             .UseGenericFrameworkVersionIfEmpty()            
             .UseLowerVersionLibIfEmpty()
             .UsePortableVersionLibIfEmpty()
-            .UseLowerVersionLibIfEmpty()  // because we now might need to use portable
+            .UseLowerVersionLibIfEmpty()  // because we now might need to use portable            
             .FilterBlackList()
+            .UseLastInGroupAsFallback()
 
     member this.GetLibraryNames =
         lazy([ for f in this.Frameworks do
