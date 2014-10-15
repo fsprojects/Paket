@@ -1,14 +1,9 @@
-#### 0.8.0-alpha002 - 15.10.2014
+#### 0.8.0 - 15.10.2014
 * Smarter install in project files
-
-#### 0.7.3 - 15.10.2014
-* BUGFIX: Do not expand auth when serializing dependencies file - https://github.com/fsprojects/Paket/pull/259
-
-#### 0.7.2 - 15.10.2014
 * Paket handles .NET 4.5.2 and .NET 4.5.3 projects - https://github.com/fsprojects/Paket/issues/260
-
-#### 0.7.1 - 14.10.2014
 * New command: `paket update nuget <package id>` - http://fsprojects.github.io/Paket/paket-update.html#Updating-a-single-package
+* BUGFIX: Do not expand auth when serializing dependencies file - https://github.com/fsprojects/Paket/pull/259
+* BUGFIX: Create catch all case for unknown portable frameworks
 
 #### 0.7.0 - 14.10.2014
 * Initial support for referencing full github projects - http://fsprojects.github.io/Paket/github-dependencies.html#Referencing-a-GitHub-repository
