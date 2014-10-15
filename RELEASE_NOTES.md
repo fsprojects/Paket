@@ -1,3 +1,6 @@
+#### 0.8.1 - 15.10.2014
+* Added another profile mapping for Profile136 - https://github.com/fsprojects/Paket/pull/262
+
 #### 0.8.0 - 15.10.2014
 * Smarter install in project files
 * Paket handles .NET 4.5.2 and .NET 4.5.3 projects - https://github.com/fsprojects/Paket/issues/260
