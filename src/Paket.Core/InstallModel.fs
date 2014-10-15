@@ -32,6 +32,10 @@ type InstallModel =
     
     member this.GetFrameworks() = this.Frameworks |> Seq.map (fun kv -> kv.Key)
 
+    member this.GetFrameworkGroups() =
+        this.Frameworks
+        |> Seq.groupBy (fun kv -> kv.Key.GetFrameworkIdentifier())
+
     member this.GetFiles(framework) = 
         match this.Frameworks.TryFind framework with
         | Some x -> 
@@ -124,25 +128,25 @@ type InstallModel =
     member this.UsePortableVersionLibIfEmpty() = 
         this.Frameworks 
         |> Seq.fold 
-               (fun (model : InstallModel) kv -> 
-               let newFiles = kv.Value.References
+            (fun (model : InstallModel) kv -> 
+                let newFiles = kv.Value.References
            
-               if Set.isEmpty newFiles then model else
+                if Set.isEmpty newFiles then model else
 
-               let otherProfiles = 
-                   match kv.Key with
-                   | PortableFramework(_, f) -> 
-                       f.Split([| '+' |], System.StringSplitOptions.RemoveEmptyEntries)
-                       |> Array.map FrameworkIdentifier.Extract
-                       |> Array.choose id
-                   | _ -> [||]
+                let otherProfiles = 
+                    match kv.Key with
+                    | PortableFramework(_, f) -> 
+                        f.Split([| '+' |], System.StringSplitOptions.RemoveEmptyEntries)
+                        |> Array.map FrameworkIdentifier.Extract
+                        |> Array.choose id
+                    | _ -> [||]
 
-               if Array.isEmpty otherProfiles then model else 
+                if Array.isEmpty otherProfiles then model else 
                 otherProfiles 
                 |> Array.fold (fun (model : InstallModel) framework -> 
-                        match Map.tryFind framework model.Frameworks with
-                        | Some files when Set.isEmpty files.References |> not -> model
-                        | _ -> { model with Frameworks = Map.add framework { References = newFiles; ContentFiles = Set.empty} model.Frameworks }) model) this
+                    match Map.tryFind framework model.Frameworks with
+                    | Some files when Set.isEmpty files.References |> not -> model
+                    | _ -> { model with Frameworks = Map.add framework { References = newFiles; ContentFiles = Set.empty} model.Frameworks }) model) this
 
     member this.Process() =
         this

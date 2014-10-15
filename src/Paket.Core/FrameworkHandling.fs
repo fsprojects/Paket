@@ -135,9 +135,8 @@ type FrameworkIdentifier =
         | MonoAndroid -> "$(TargetFrameworkIdentifier) == 'MonoAndroid'"
         | MonoTouch -> "$(TargetFrameworkIdentifier) == 'MonoTouch'"
 
-    member x.GetFrameworkProfile() =        
+    member x.GetPortableProfile() =
         match x with 
-        | DotNetFramework(_,Client) -> " And $(TargetFrameworkProfile) == 'Client'" 
         | PortableFramework(_,profile) -> 
             let profileMapping = 
                 [ "Profile2", "net4+sl4+netcore45+wp7"
@@ -191,40 +190,55 @@ type FrameworkIdentifier =
                   "Profile88", "net40+sl4+win8+wp71+wpa81"
                   "Profile84", "net45+wp80+win8+wpa81" ]
             
-            let profile =
-                match profileMapping |> Seq.tryFind (fun (_, p) -> profile.ToLower() = p.ToLower()) with
-                | None -> profile
-                | Some(mappedProfile, _) -> mappedProfile
+            
+            match profileMapping |> Seq.tryFind (fun (_, p) -> profile.ToLower() = p.ToLower()) with
+            | None -> None
+            | Some(mappedProfile, _) -> Some mappedProfile
+        | _ -> None
 
-            sprintf " And $(TargetFrameworkProfile) == '%s'"  profile
+    member x.GetFrameworkProfile() =        
+        match x with 
+        | DotNetFramework(_,Client) -> "$(TargetFrameworkProfile) == 'Client'" 
+        | PortableFramework(_,profile) -> 
+            match x.GetPortableProfile() with
+            | None -> sprintf "$(TargetFrameworkProfile) == '%s'"  profile
+            | Some mappedProfile -> sprintf "$(TargetFrameworkProfile) == '%s'"  mappedProfile
         | _ -> ""
 
     member x.GetPlatformIdentifier() =        
         match x with 
-        | PortableFramework(_,_) -> sprintf " And $(TargetPlatformIdentifier) == 'Portable'"
+        | PortableFramework(_,_) -> sprintf "$(TargetPlatformIdentifier) == 'Portable'"
         | _ -> ""
 
     member x.GetPlatformVersion() =        
         match x with 
-        | PortableFramework(v,_) -> sprintf " And $(TargetPlatformVersion) == '%s'"  v
-        | WindowsPhoneApp v -> sprintf " And $(TargetPlatformVersion) == '%s'"  v
-        | Windows v -> sprintf " And $(TargetPlatformVersion) == '%s'"  v
+        | PortableFramework(v,_) -> sprintf "$(TargetPlatformVersion) == '%s'"  v
+        | WindowsPhoneApp v -> sprintf "$(TargetPlatformVersion) == '%s'"  v
+        | Windows v -> sprintf "$(TargetPlatformVersion) == '%s'"  v
         | _ -> ""
 
-    member x.GetCondition() =
+    member x.GetFrameworkCondition() =
+        let (++) x y = 
+           if String.IsNullOrEmpty y then 
+                x 
+           elif String.IsNullOrEmpty x then 
+                y 
+           else x + " And " + y
         match x with
         | DotNetFramework(v,_) ->
             match v with
-            | Framework fw -> sprintf "%s And $(TargetFrameworkVersion) == '%s'%s" (x.GetFrameworkIdentifier()) (fw.ToString()) (x.GetFrameworkProfile())
+            | Framework fw -> sprintf "$(TargetFrameworkVersion) == '%s'" (fw.ToString()) ++ x.GetFrameworkProfile()
             | All -> "true"
-        | PortableFramework _ -> sprintf "%s%s%s%s" (x.GetFrameworkIdentifier()) (x.GetFrameworkProfile()) (x.GetPlatformIdentifier()) (x.GetPlatformVersion())
-        | WindowsPhoneApp _ -> sprintf "%s%s" (x.GetFrameworkIdentifier()) (x.GetPlatformVersion())
-        | Windows _ -> sprintf "%s%s" (x.GetFrameworkIdentifier()) (x.GetPlatformVersion())
-        | Silverlight v -> sprintf "%s And $(SilverlightVersion) == '%s'" (x.GetFrameworkIdentifier()) v
-        | MonoAndroid -> x.GetFrameworkIdentifier()
-        | MonoTouch -> x.GetFrameworkIdentifier()
+        | PortableFramework _ -> x.GetFrameworkProfile() ++ x.GetPlatformIdentifier() ++ x.GetPlatformVersion()
+        | WindowsPhoneApp _ -> x.GetPlatformVersion()
+        | Windows _ -> x.GetPlatformVersion()
+        | Silverlight v -> sprintf "$(SilverlightVersion) == '%s'" v
+        | MonoAndroid -> ""
+        | MonoTouch -> ""
 
-    override x.ToString() = x.GetCondition()
+    member x.GetGroupCondition() = sprintf "%s" (x.GetFrameworkIdentifier())
+
+    override x.ToString() = x.GetFrameworkCondition()
 
     static member DetectFromPath(path : string) : FrameworkIdentifier option = 
         

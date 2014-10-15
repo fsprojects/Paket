@@ -1,4 +1,4 @@
-namespace FSharp.Control
+namespace FSharp.Polyfill
 
 /// Extensions for async workflows.
 [<AutoOpen>]

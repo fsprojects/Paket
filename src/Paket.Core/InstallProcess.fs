@@ -7,7 +7,7 @@ open Paket.ModuleResolver
 open Paket.PackageResolver
 open System.IO
 open System.Collections.Generic
-open FSharp.Control.AsyncExtensions
+open FSharp.Polyfill
 
 let private findPackagesWithContent (usedPackages:Dictionary<_,_>) = 
     usedPackages

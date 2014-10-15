@@ -7,8 +7,7 @@ open Paket.Logging
 open Paket.ModuleResolver
 open Paket.PackageResolver
 open Paket.PackageSources
-open FSharp.Control.AsyncExtensions
-
+open FSharp.Polyfill
 
 /// Downloads and extracts a package.
 let ExtractPackage(sources, force, package : ResolvedPackage) = 
