@@ -1,3 +1,6 @@
+#### 0.8.3 - 16.10.2014
+* `paket add` command tries to keep all other packages stable.
+
 #### 0.8.2 - 15.10.2014
 * Added another profile mapping for Profile136 - https://github.com/fsprojects/Paket/pull/262
 

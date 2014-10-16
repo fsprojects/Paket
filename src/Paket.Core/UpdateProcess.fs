@@ -47,10 +47,9 @@ let UpdatePackage(packageName : string, force, hard) =
                            (resolvedPackage.Name, "== " + resolvedPackage.Version.ToString())) dependenciesFile
         
         let resolution = updatedDependenciesFile.Resolve(force)
+        let resolvedPackages = resolution.ResolvedPackages.GetModelOrFail()
         let newLockFile = 
-            LockFile
-                (lockFileName.FullName, updatedDependenciesFile.Options, resolution.ResolvedPackages.GetModelOrFail(), 
-                 oldLockFile.SourceFiles)
+            LockFile(lockFileName.FullName, updatedDependenciesFile.Options, resolvedPackages, oldLockFile.SourceFiles)
         newLockFile.Save()
         updatedDependenciesFile.Sources, newLockFile
     InstallProcess.Install(sources, force, hard, lockFile)

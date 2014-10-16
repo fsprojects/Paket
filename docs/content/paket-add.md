@@ -1,6 +1,6 @@
 # paket add
 
-Adds a new package to your [`paket.dependencies` file](dependencies-file.html) and runs the [update process](paket-update.html).
+Adds a new package to your [`paket.dependencies` file](dependencies-file.html).
 
     [lang=batchfile]
     $ paket add nuget PACKAGENAME [version VERSION] [--interactive] [--force] [--hard]
