@@ -14,10 +14,7 @@
     <releaseNotes>@releaseNotes@</releaseNotes>
     <copyright>Copyright 2013</copyright>
     <tags>@tags@</tags>
-    <dependencies />
+    @dependencies@
   </metadata>
-  <files>
-    <file src="..\bin\FSharp.ProjectTemplate.dll" target="lib/net40" />
-    <file src="..\bin\FSharp.ProjectTemplate.pdb" target="lib/net40" />
-  </files>
+  @files@
 </package>
