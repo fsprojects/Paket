@@ -14,6 +14,7 @@ _(NOTE: this layout needs adjusting when authoring a Type Provider. In that case
 | Build Automation          | [FAKE](http://fsharp.github.io/FAKE/)     |
 | Unit Testing              | [NUnit](http://www.nunit.org/)            |
 | Package Formats           | Nuget packages                            |
+| Dependency Manager        | [Paket](http://fsprojects.github.io/Paket/) |
 | Documentation Authoring   | Markdown, HTML and F# Literate Scripts    |
 | Source Code Linking       | SourceLink                                |
 | Continuous Build and Test | [Travis](http://travis-ci.org) (Linux/OSX) and [AppVeyor](http://appveyor.com) (Windows) |
