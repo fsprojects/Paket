@@ -151,7 +151,16 @@ let getDetailsFromNugetViaOData auth nugetURL package version =
                }
                |> Seq.head
 
-        let officialName = getAttribute "Id"
+
+        let officialName = 
+            match [ for node in doc.SelectNodes("//ns:entry/m:properties/d:Id", manager) -> node.InnerText] with
+            | id::_ -> id
+            | [] ->
+                seq { 
+                       for node in doc.SelectNodes("//ns:entry/ns:title", manager) do
+                           yield node.InnerText
+                   }
+                   |> Seq.head
 
         let downloadLink = 
             seq { 

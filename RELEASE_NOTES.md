@@ -1,4 +1,4 @@
-#### 0.8.4 - 16.10.2014
+#### 0.8.5 - 16.10.2014
 * BUGFIX: Use the Id property when NuGet package name and id are different - https://github.com/fsprojects/Paket/issues/265
 
 #### 0.8.3 - 16.10.2014
