@@ -75,3 +75,26 @@ github "owner:project2:commit2" "folder/file.fs" """
         | _ -> failwith "error")
     |> LockFileSerializer.serializeSourceFiles
     |> shouldEqual (normalizeLineEndings expectedWithGitHub)
+
+
+let config2 = """
+source https://www.myget.org/F/ravendb3/
+
+nuget RavenDB.Client == 3.0.3498-Unstable
+ """
+
+let graph2 = [
+    "RavenDB.Client","3.0.3498-Unstable",[]
+]
+
+let expected2 = """NUGET
+  remote: https://www.myget.org/F/ravendb3
+  specs:
+    RavenDB.Client (3.0.3498-Unstable)"""
+
+[<Test>]
+let ``should generate lock file for RavenDB.Client``() = 
+    let cfg = DependenciesFile.FromCode(config2)
+    cfg.Resolve(noSha1,VersionsFromGraph graph2, PackageDetailsFromGraph graph2).ResolvedPackages.GetModelOrFail()
+    |> LockFileSerializer.serializePackages cfg.Options
+    |> shouldEqual (normalizeLineEndings expected2)
