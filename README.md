@@ -6,42 +6,9 @@ A prototypical .NET solution (file system layout and tooling), recommended by th
 This scaffolding can be used to generate the suggested structure of a typical F# library.
 _(NOTE: this layout needs adjusting when authoring a Type Provider. In that case you should use a separate Tests solution)_ 
 
-### Technologies 
+Documentation: http://fsprojects.github.io/ProjectScaffold
 
-| Area                      |  Technologies                             |
-|:--------------------------|:------------------------------------------|
-| Platforms                 | Linux, Windows, OSX                       |
-| Build Automation          | [FAKE](http://fsharp.github.io/FAKE/)     |
-| Unit Testing              | [NUnit](http://www.nunit.org/)            |
-| Package Formats           | Nuget packages                            |
-| Dependency Manager        | [Paket](http://fsprojects.github.io/Paket/) |
-| Documentation Authoring   | Markdown, HTML and F# Literate Scripts    |
-| Source Code Linking       | SourceLink                                |
-| Continuous Build and Test | [Travis](http://travis-ci.org) (Linux/OSX) and [AppVeyor](http://appveyor.com) (Windows) |
-| Default Package Hosting   | [nuget.org](http://nuget.org)             |
-| Default Documentation Hosting  | [GitHub Pages](https://help.github.com/articles/what-are-github-pages)   |
 
-### Initializing
-
-Run 
-
-    ./build.sh
-or
-
-    ./build.cmd
-
-You will be prompted for the name of your project and some other details. The project structure will then be generated from templates.
-
-### Build and Release
-
-After initialization, you can 
-
-- Open, edit, build and test using ``ProjectName.sln``
-- Build and test release binaries using ``build.cmd`` or ``build.sh `` 
-- Build and test release packages using ``build.cmd Release`` or ``build.sh Release`` 
-- Build and publish release docs using ``build.cmd ReleaseDocs`` or ``build.sh ReleaseDocs``
-- Add assets to the GitHub releases (Look into the Release target in ``build.fsx``) 
-- Publish packages using ``build.cmd Release`` or ``build.sh Release`` (and specify the NugetAccessKey) 
 
 ### Structure
 
