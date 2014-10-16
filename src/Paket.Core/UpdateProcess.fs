@@ -30,6 +30,7 @@ let Update(forceResolution, force, hard) =
 /// Update a single package command
 let UpdatePackage(packageName : string, force, hard) = 
     let lockFileName = DependenciesFile.FindLockfile Constants.DependenciesFile
+    if not lockFileName.Exists then Update(true, force, hard) else
     
     let sources, lockFile = 
         let dependenciesFile = DependenciesFile.ReadFromFile Constants.DependenciesFile
