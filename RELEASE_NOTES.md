@@ -1,4 +1,4 @@
-#### 0.8.1 - 15.10.2014
+#### 0.8.2 - 15.10.2014
 * Added another profile mapping for Profile136 - https://github.com/fsprojects/Paket/pull/262
 
 #### 0.8.0 - 15.10.2014
