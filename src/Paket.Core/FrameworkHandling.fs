@@ -94,6 +94,7 @@ type FrameworkIdentifier =
         | "1.0" -> Some(DotNetFramework(All, Full))
         | "1.1" -> Some(DotNetFramework(All, Full))
         | "2.0" -> Some(DotNetFramework(All, Full))
+        | "net11" -> Some(DotNetFramework(Framework FrameworkVersionNo.V1_1, Full))
         | "net20" -> Some(DotNetFramework(Framework FrameworkVersionNo.V2, Full))
         | "net20-full" -> Some(DotNetFramework(Framework FrameworkVersionNo.V2, Full))
         | "net35" -> Some(DotNetFramework(Framework FrameworkVersionNo.V3_5, Full))
