@@ -22,10 +22,11 @@ namespace Paket.Bootstrapper
 
         static void Main(string[] args)
         {
+            var folder = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
+            var target = Path.Combine(folder, "paket.exe");
+             
             try
-            {
-                var folder = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
-                var latestVersion = "";
+            {   var latestVersion = "";
                 var ignorePrerelease = true;
 
                 if (args.Length >= 1)
@@ -38,11 +39,10 @@ namespace Paket.Bootstrapper
                     else
                     {
                         latestVersion = args[0];
-                        Console.WriteLine("Version {0} requested.", latestVersion);                        
+                        Console.WriteLine("Version {0} requested.", latestVersion);
                     }
                 }
                 else Console.WriteLine("No version specified. Downloading latest stable.");
-                var target = Path.Combine(folder, "paket.exe");
                 var localVersion = "";
 
                 if (File.Exists(target))
@@ -50,7 +50,7 @@ namespace Paket.Bootstrapper
                     try
                     {
                         FileVersionInfo fvi = FileVersionInfo.GetVersionInfo(target);
-                        if(fvi.FileVersion != null)
+                        if (fvi.FileVersion != null)
                             localVersion = fvi.FileVersion;
                     }
                     catch (Exception)
@@ -120,7 +120,8 @@ namespace Paket.Bootstrapper
             }
             catch (Exception exn)
             {
-                Environment.ExitCode = 1;
+                if (!File.Exists(target))
+                    Environment.ExitCode = 1;
                 Console.ForegroundColor = ConsoleColor.Red;
                 Console.WriteLine(exn.Message);
             }
