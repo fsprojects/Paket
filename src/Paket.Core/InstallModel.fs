@@ -178,8 +178,8 @@ type InstallModel =
                     | _ -> ()]
             |> Set.ofList)
 
-    static member CreateFromLibs(packageName,packageVersions,libs,nuspec:Nuspec) = 
-        InstallModel.EmptyModel(packageName,packageVersions)
+    static member CreateFromLibs(packageName,packageVersion,libs,nuspec:Nuspec) = 
+        InstallModel.EmptyModel(packageName,packageVersion)
             .AddReferences(libs,nuspec.References)
             .AddFrameworkAssemblyReferences(nuspec.FrameworkAssemblyReferences)
             .Process()
