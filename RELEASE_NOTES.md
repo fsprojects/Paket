@@ -1,3 +1,6 @@
+#### 0.8.6 - 17.10.2014
+* BUGFIX: Don't let the bootstrapper fail if we already have a paket.exe
+
 #### 0.8.5 - 16.10.2014
 * BUGFIX: Use the Id property when NuGet package name and id are different - https://github.com/fsprojects/Paket/issues/265
 
