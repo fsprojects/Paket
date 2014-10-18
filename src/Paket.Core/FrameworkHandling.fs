@@ -7,9 +7,10 @@ open System
 type FrameworkProfile = 
     | Client
     | Full
-
+        
 [<RequireQualifiedAccess>]
-type FrameworkVersionNo = 
+/// The Framework version.
+type FrameworkVersion = 
     | V1
     | V1_1
     | V2
@@ -31,22 +32,17 @@ type FrameworkVersionNo =
         | V4_5_2 -> "v4.5.2"
         | V4_5_3 -> "v4.5.3"
 
-/// The Framework version.
-type FrameworkVersion = 
-    | All
-    | Framework of FrameworkVersionNo
-
     static member KnownDotNetFrameworks = 
-        [ FrameworkVersionNo.V1, Full
-          FrameworkVersionNo.V1_1, Full
-          FrameworkVersionNo.V2, Full
-          FrameworkVersionNo.V3_5, Full
-          FrameworkVersionNo.V4, Client
-          FrameworkVersionNo.V4, Full
-          FrameworkVersionNo.V4_5, Full
-          FrameworkVersionNo.V4_5_1, Full
-          FrameworkVersionNo.V4_5_2, Full
-          FrameworkVersionNo.V4_5_3, Full ]
+        [ FrameworkVersion.V1, Full
+          FrameworkVersion.V1_1, Full
+          FrameworkVersion.V2, Full
+          FrameworkVersion.V3_5, Full
+          FrameworkVersion.V4, Client
+          FrameworkVersion.V4, Full
+          FrameworkVersion.V4_5, Full
+          FrameworkVersion.V4_5_1, Full
+          FrameworkVersion.V4_5_2, Full
+          FrameworkVersion.V4_5_3, Full ]
 
 type PlatformVersion = string
 
@@ -90,25 +86,25 @@ type FrameworkIdentifier =
             |> List.fold (fun (path:string) (pattern,replacement) -> path.Replace(pattern.ToLower(),replacement.ToLower())) (path.ToLower())
 
         match path with
-        | "net" -> Some(DotNetFramework(All, Full))
-        | "1.0" -> Some(DotNetFramework(All, Full))
-        | "1.1" -> Some(DotNetFramework(All, Full))
-        | "2.0" -> Some(DotNetFramework(All, Full))
-        | "net11" -> Some(DotNetFramework(Framework FrameworkVersionNo.V1_1, Full))
-        | "net20" -> Some(DotNetFramework(Framework FrameworkVersionNo.V2, Full))
-        | "net20-full" -> Some(DotNetFramework(Framework FrameworkVersionNo.V2, Full))
-        | "net35" -> Some(DotNetFramework(Framework FrameworkVersionNo.V3_5, Full))
-        | "net35-full" -> Some(DotNetFramework(Framework FrameworkVersionNo.V3_5, Full))
-        | "net4" -> Some(DotNetFramework(Framework FrameworkVersionNo.V4, Full))
-        | "net40" -> Some(DotNetFramework(Framework FrameworkVersionNo.V4, Full))
-        | "net40-full" -> Some(DotNetFramework(Framework FrameworkVersionNo.V4, Full))
-        | "net40-client" -> Some(DotNetFramework(Framework FrameworkVersionNo.V4, Client))
-        | "net45" -> Some(DotNetFramework(Framework FrameworkVersionNo.V4_5, Full))
-        | "net45-full" -> Some(DotNetFramework(Framework FrameworkVersionNo.V4_5, Full))
-        | "net451" -> Some(DotNetFramework(Framework FrameworkVersionNo.V4_5_1, Full))
-        | "35" -> Some(DotNetFramework(Framework FrameworkVersionNo.V3_5, Full))
-        | "40" -> Some(DotNetFramework(Framework FrameworkVersionNo.V4, Full))
-        | "45" -> Some(DotNetFramework(Framework FrameworkVersionNo.V4_5, Full))
+        | "net" -> Some(DotNetFramework(FrameworkVersion.V2, Full)) // not sure here
+        | "1.0" -> Some(DotNetFramework(FrameworkVersion.V1, Full))
+        | "1.1" -> Some(DotNetFramework(FrameworkVersion.V1_1, Full))
+        | "2.0" -> Some(DotNetFramework(FrameworkVersion.V2, Full))
+        | "net11" -> Some(DotNetFramework(FrameworkVersion.V1_1, Full))
+        | "net20" -> Some(DotNetFramework(FrameworkVersion.V2, Full))
+        | "net20-full" -> Some(DotNetFramework(FrameworkVersion.V2, Full))
+        | "net35" -> Some(DotNetFramework(FrameworkVersion.V3_5, Full))
+        | "net35-full" -> Some(DotNetFramework(FrameworkVersion.V3_5, Full))
+        | "net4" -> Some(DotNetFramework(FrameworkVersion.V4, Full))
+        | "net40" -> Some(DotNetFramework(FrameworkVersion.V4, Full))
+        | "net40-full" -> Some(DotNetFramework(FrameworkVersion.V4, Full))
+        | "net40-client" -> Some(DotNetFramework(FrameworkVersion.V4, Client))
+        | "net45" -> Some(DotNetFramework(FrameworkVersion.V4_5, Full))
+        | "net45-full" -> Some(DotNetFramework(FrameworkVersion.V4_5, Full))
+        | "net451" -> Some(DotNetFramework(FrameworkVersion.V4_5_1, Full))
+        | "35" -> Some(DotNetFramework(FrameworkVersion.V3_5, Full))
+        | "40" -> Some(DotNetFramework(FrameworkVersion.V4, Full))
+        | "45" -> Some(DotNetFramework(FrameworkVersion.V4_5, Full))
         | "sl3" -> Some(Silverlight "v3.0")
         | "sl4" -> Some(Silverlight "v4.0")
         | "sl5" -> Some(Silverlight "v5.0")
@@ -229,10 +225,7 @@ type FrameworkIdentifier =
                 y 
            else x + " And " + y
         match x with
-        | DotNetFramework(v,_) ->
-            match v with
-            | Framework fw -> sprintf "$(TargetFrameworkVersion) == '%s'" (fw.ToString()) ++ x.GetFrameworkProfile()
-            | All -> "true"
+        | DotNetFramework(fw,_) -> sprintf "$(TargetFrameworkVersion) == '%s'" (fw.ToString()) ++ x.GetFrameworkProfile()
         | PortableFramework _ -> x.GetFrameworkProfile() ++ x.GetPlatformIdentifier() ++ x.GetPlatformVersion()
         | WindowsPhoneApp _ -> x.GetPlatformVersion()
         | Windows _ -> x.GetPlatformVersion()
@@ -249,7 +242,7 @@ type FrameworkIdentifier =
         let path = path.Replace("\\", "/").ToLower()
         let fi = new FileInfo(path)
         
-        if path.Contains("lib/" + fi.Name.ToLower()) then Some(DotNetFramework(All, Full))
+        if path.Contains("lib/" + fi.Name.ToLower()) then Some(DotNetFramework(FrameworkVersion.V1, Full))
         else 
             let startPos = path.IndexOf("lib/")
             let endPos = path.IndexOf(fi.Name.ToLower())
