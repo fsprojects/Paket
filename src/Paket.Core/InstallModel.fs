@@ -26,7 +26,7 @@ type InstallModel =
 
     static member EmptyModel(packageName, packageVersion) : InstallModel = 
         let frameworks = 
-            [ for x, p in FrameworkVersion.KnownDotNetFrameworks -> DotNetFramework(x, p) ]
+            [ for x in FrameworkVersion.KnownDotNetFrameworks -> DotNetFramework(x) ]
         { PackageName = packageName
           PackageVersion = packageVersion
           Fallbacks = Map.empty
@@ -100,14 +100,14 @@ type InstallModel =
     member this.UseLowerVersionLibIfEmpty() = 
         FrameworkVersion.KnownDotNetFrameworks
         |> List.rev
-        |> List.fold (fun (model : InstallModel) (lowerVersion,lowerProfile) -> 
-               let newFiles = model.GetReferences(DotNetFramework(lowerVersion, lowerProfile))
+        |> List.fold (fun (model : InstallModel) (lowerVersion) -> 
+               let newFiles = model.GetReferences(DotNetFramework(lowerVersion))
                if Set.isEmpty newFiles then model
                else 
                    FrameworkVersion.KnownDotNetFrameworks
-                   |> List.filter (fun (version,profile) -> (version,profile) > (lowerVersion,lowerProfile))
-                   |> List.fold (fun (model : InstallModel) (upperVersion,upperProfile) -> 
-                          let framework = DotNetFramework(upperVersion, upperProfile)
+                   |> List.filter (fun (version) -> (version) > (lowerVersion))
+                   |> List.fold (fun (model : InstallModel) (upperVersion) -> 
+                          let framework = DotNetFramework(upperVersion)
                           match Map.tryFind framework model.Frameworks with
                           | Some files when Set.isEmpty files.References -> 
                               { model with Frameworks = Map.add framework { References = newFiles; ContentFiles = Set.empty } model.Frameworks }

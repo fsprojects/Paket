@@ -38,8 +38,8 @@ let ``if nuspec is not found we assume no framework references``() =
 let ``can detect framework assemblies for Microsoft.Net.Http``() = 
     Nuspec.Load("TestFiles/Microsoft.Net.Http.nuspec").FrameworkAssemblyReferences
     |> shouldEqual 
-        [{ AssemblyName = "System.Net.Http"; TargetFramework = DotNetFramework(FrameworkVersion.V4_5,Full) }
-         { AssemblyName = "System.Net.Http.WebRequest"; TargetFramework = DotNetFramework(FrameworkVersion.V4_5,Full) }
+        [{ AssemblyName = "System.Net.Http"; TargetFramework = DotNetFramework(FrameworkVersion.V4_5) }
+         { AssemblyName = "System.Net.Http.WebRequest"; TargetFramework = DotNetFramework(FrameworkVersion.V4_5) }
          { AssemblyName = "System.Net.Http"; TargetFramework = MonoTouch }
          { AssemblyName = "System.Net.Http"; TargetFramework = MonoAndroid } ]
 
@@ -47,4 +47,4 @@ let ``can detect framework assemblies for Microsoft.Net.Http``() =
 let ``can detect framework assemblies for Octokit``() = 
     Nuspec.Load("TestFiles/Octokit.nuspec").FrameworkAssemblyReferences
     |> shouldEqual 
-        [{ AssemblyName = "System.Net.Http"; TargetFramework = DotNetFramework(FrameworkVersion.V4_5,Full) }]
+        [{ AssemblyName = "System.Net.Http"; TargetFramework = DotNetFramework(FrameworkVersion.V4_5) }]
