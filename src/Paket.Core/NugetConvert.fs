@@ -9,6 +9,43 @@ open Paket.Logging
 open Paket.Nuget
 open Paket.PackageSources
 
+type private NugetConfig = 
+    { PackageSources : list<PackageSource>
+      PackageRestoreEnabled : bool
+      PackageRestoreAutomatic : bool }
+
+let private readNugetConfig(file : FileInfo) =
+
+    DirectoryInfo(".nuget")
+    |> Seq.unfold (fun di -> if di = null 
+                             then None 
+                             else Some(FileInfo(Path.Combine(di.FullName, "nuget.config")), di.Parent)) 
+    |> Seq.toList
+    |> List.rev
+    |> List.append [FileInfo(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "nuget", "nuget.config"))]
+    |> List.filter (fun f -> f.Exists)
+    |> List.map (fun f -> let doc = XmlDocument() in doc.Load(f.FullName); doc)
+    |> List.fold (fun config doc -> 
+                      
+                      config) 
+                 { PackageSources = [] 
+                   PackageRestoreEnabled = false 
+                   PackageRestoreAutomatic = false }
+
+    let doc = XmlDocument()
+    doc.Load file.FullName
+    let packages = 
+        [for node in doc.SelectNodes("//packageSources/add[@value]") ->
+            let url = node.Attributes.["value"].Value
+            let auth = doc.SelectNodes(sprintf "//packageSourceCredentials/%s" (XmlConvert.EncodeLocalName node.Attributes.["key"].Value))
+                       |> Seq.cast<XmlNode>
+                       |> Seq.firstOrDefault
+                       |> Option.map (fun node -> {Username = AuthEntry.Create <| node.SelectSingleNode("//add[@key='Username']").Attributes.["value"].Value
+                                                   Password = AuthEntry.Create <| node.SelectSingleNode("//add[@key='ClearTextPassword']").Attributes.["value"].Value})
+            PackageSource.Parse (url, auth)]
+    { PackageSources = packages; PackageRestoreEnabled = true; PackageRestoreAutomatic = true }
+
+
 let private readPackageSources(configFile : FileInfo) =
     let doc = XmlDocument()
     doc.Load configFile.FullName
