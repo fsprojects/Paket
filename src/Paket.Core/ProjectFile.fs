@@ -177,12 +177,13 @@ type ProjectFile =
             itemGroup
 
         let groupChooseNode = this.Document.CreateElement("Choose", Constants.ProjectDefaultNameSpace)
+        let foundCase = ref false
         for group,frameworks in model.GetFrameworkGroups() do
             let groupWhenNode = 
                 createNode(this.Document,"When")
                 |> addAttribute "Condition" group
 
-            let fallbackLibs = model.Fallbacks.[group].References
+            let fallbackLibs = model.Groups.[group].Fallbacks.References
 
             let chooseNode = this.Document.CreateElement("Choose", Constants.ProjectDefaultNameSpace)
 
@@ -190,15 +191,16 @@ type ProjectFile =
 
             for kv in frameworks do
                 let currentLibs = kv.Value.References
-                if currentLibs <> fallbackLibs then
-                    let condition = kv.Key.GetFrameworkCondition()
-                    let whenNode = 
-                        createNode(this.Document,"When")
-                        |> addAttribute "Condition" condition                
+                let condition = kv.Key.GetFrameworkCondition()
+                let whenNode = 
+                    createNode(this.Document,"When")
+                    |> addAttribute "Condition" condition                
                
-                    whenNode.AppendChild(createItemGroup currentLibs) |> ignore
-                    chooseNode.AppendChild(whenNode) |> ignore
-                    foundSpecialCase := true
+                whenNode.AppendChild(createItemGroup currentLibs) |> ignore
+                chooseNode.AppendChild(whenNode) |> ignore
+                foundSpecialCase := true
+                foundCase := true
+
             
             if !foundSpecialCase then
                 let otherwiseNode = createNode(this.Document,"Otherwise")
@@ -210,7 +212,14 @@ type ProjectFile =
             
             groupChooseNode.AppendChild(groupWhenNode) |> ignore
 
-        groupChooseNode
+        if !foundCase then
+            let otherwiseNode = createNode(this.Document,"Otherwise")
+            otherwiseNode.AppendChild(createItemGroup model.DefaultFallback.References) |> ignore
+            groupChooseNode.AppendChild(otherwiseNode) |> ignore
+            groupChooseNode
+        else
+            createItemGroup model.DefaultFallback.References
+        
 
     member this.UpdateReferences(completeModel: Map<string,InstallModel>, usedPackages : Dictionary<string,bool>, hard) = 
         this.DeletePaketNodes("Reference")  

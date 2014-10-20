@@ -232,7 +232,7 @@ type FrameworkIdentifier =
 
     member x.GetGroupCondition() = sprintf "%s" (x.GetFrameworkIdentifier())
 
-    override x.ToString() = x.GetFrameworkCondition()
+    override x.ToString() = x.GetFrameworkIdentifier() + x.GetFrameworkCondition()
 
     static member DetectFromPath(path : string) : FrameworkIdentifier option = 
         
@@ -245,3 +245,5 @@ type FrameworkIdentifier =
             let endPos = path.IndexOf(fi.Name.ToLower())
             if startPos < 0 || endPos < 0 then None
             else path.Substring(startPos + 4, endPos - startPos - 5) |> FrameworkIdentifier.Extract
+
+    static member DefaultGroup = DotNetFramework(FrameworkVersion.V4).Group

@@ -185,6 +185,21 @@ let ``should handle lib install of DotNetZip 1.9.3``() =
     model.GetFiles(DotNetFramework(FrameworkVersion.V4)) |> shouldContain @"..\DotNetZip\lib\net20\Ionic.Zip.dll"
     model.GetFiles(DotNetFramework(FrameworkVersion.V4_5)) |> shouldContain @"..\DotNetZip\lib\net20\Ionic.Zip.dll"
 
+[<Test>]
+let ``should reduce lib install of DotNetZip 1.9.3``() = 
+    let model = emptymodel.AddReferences([ @"..\DotNetZip\lib\net20\Ionic.Zip.dll" ]).ProcessAndReduce()
+
+    model.GetFiles(DotNetFramework(FrameworkVersion.V2)) |> shouldNotContain @"..\DotNetZip\lib\net20\Ionic.Zip.dll"
+    model.GetFiles(DotNetFramework(FrameworkVersion.V4_5)) |> shouldNotContain @"..\DotNetZip\lib\net20\Ionic.Zip.dll"
+
+[<Test>]
+let ``should handle lib install of NUnit 2.6 for windows 8``() = 
+    let model = emptymodel.AddReferences([ @"..\NUnit\lib\nunit.framework.dll" ]).Process()
+
+    model.GetFiles(DotNetFramework(FrameworkVersion.V2)) |> shouldContain @"..\NUnit\lib\nunit.framework.dll"
+    model.GetFiles(DotNetFramework(FrameworkVersion.V4_5)) |> shouldContain @"..\NUnit\lib\nunit.framework.dll"
+    model.GetFiles(Windows("v8.0")) |> shouldContain @"..\NUnit\lib\nunit.framework.dll"
+
 
 [<Test>]
 let ``should handle lib install of Microsoft.Net.Http 2.2.28``() = 
