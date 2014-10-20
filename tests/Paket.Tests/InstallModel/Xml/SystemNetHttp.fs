@@ -129,6 +129,43 @@ let expected = """
       </Reference>
     </ItemGroup>
   </When>
+  <When Condition="$(TargetFrameworkIdentifier) == 'Silverlight'">
+    <Choose>
+      <When Condition="$(SilverlightVersion) == 'v4.0'">
+        <ItemGroup>
+          <Reference Include="System.Net.Http.Extensions">
+            <HintPath>..\..\..\Microsoft.Net.Http\lib\portable-net40+sl4+win8+wp71+wpa81\System.Net.Http.Extensions.dll</HintPath>
+            <Private>True</Private>
+            <Paket>True</Paket>
+          </Reference>
+          <Reference Include="System.Net.Http.Primitives">
+            <HintPath>..\..\..\Microsoft.Net.Http\lib\portable-net40+sl4+win8+wp71+wpa81\System.Net.Http.Primitives.dll</HintPath>
+            <Private>True</Private>
+            <Paket>True</Paket>
+          </Reference>
+          <Reference Include="System.Net.Http">
+            <HintPath>..\..\..\Microsoft.Net.Http\lib\portable-net40+sl4+win8+wp71+wpa81\System.Net.Http.dll</HintPath>
+            <Private>True</Private>
+            <Paket>True</Paket>
+          </Reference>
+        </ItemGroup>
+      </When>
+      <Otherwise>
+        <ItemGroup>
+          <Reference Include="System.Net.Http.Extensions">
+            <HintPath>..\..\..\Microsoft.Net.Http\lib\net45\System.Net.Http.Extensions.dll</HintPath>
+            <Private>True</Private>
+            <Paket>True</Paket>
+          </Reference>
+          <Reference Include="System.Net.Http.Primitives">
+            <HintPath>..\..\..\Microsoft.Net.Http\lib\net45\System.Net.Http.Primitives.dll</HintPath>
+            <Private>True</Private>
+            <Paket>True</Paket>
+          </Reference>
+        </ItemGroup>
+      </Otherwise>
+    </Choose>
+  </When>
   <When Condition="$(TargetFrameworkIdentifier) == 'Windows'">
     <ItemGroup>
       <Reference Include="System.Net.Http.Extensions">
@@ -144,38 +181,65 @@ let expected = """
     </ItemGroup>
   </When>
   <When Condition="$(TargetFrameworkIdentifier) == 'WindowsPhoneApp'">
+    <Choose>
+      <When Condition="$(TargetPlatformVersion) == '7.1'">
+        <ItemGroup>
+          <Reference Include="System.Net.Http.Extensions">
+            <HintPath>..\..\..\Microsoft.Net.Http\lib\net45\System.Net.Http.Extensions.dll</HintPath>
+            <Private>True</Private>
+            <Paket>True</Paket>
+          </Reference>
+          <Reference Include="System.Net.Http.Primitives">
+            <HintPath>..\..\..\Microsoft.Net.Http\lib\net45\System.Net.Http.Primitives.dll</HintPath>
+            <Private>True</Private>
+            <Paket>True</Paket>
+          </Reference>
+        </ItemGroup>
+      </When>
+      <When Condition="$(TargetPlatformVersion) == 'v8.0'">
+        <ItemGroup>
+          <Reference Include="System.Net.Http.Extensions">
+            <HintPath>..\..\..\Microsoft.Net.Http\lib\net45\System.Net.Http.Extensions.dll</HintPath>
+            <Private>True</Private>
+            <Paket>True</Paket>
+          </Reference>
+          <Reference Include="System.Net.Http.Primitives">
+            <HintPath>..\..\..\Microsoft.Net.Http\lib\net45\System.Net.Http.Primitives.dll</HintPath>
+            <Private>True</Private>
+            <Paket>True</Paket>
+          </Reference>
+        </ItemGroup>
+      </When>
+      <Otherwise>
+        <ItemGroup>
+          <Reference Include="System.Net.Http.Extensions">
+            <HintPath>..\..\..\Microsoft.Net.Http\lib\wpa81\System.Net.Http.Extensions.dll</HintPath>
+            <Private>True</Private>
+            <Paket>True</Paket>
+          </Reference>
+          <Reference Include="System.Net.Http.Primitives">
+            <HintPath>..\..\..\Microsoft.Net.Http\lib\wpa81\System.Net.Http.Primitives.dll</HintPath>
+            <Private>True</Private>
+            <Paket>True</Paket>
+          </Reference>
+        </ItemGroup>
+      </Otherwise>
+    </Choose>
+  </When>
+  <Otherwise>
     <ItemGroup>
       <Reference Include="System.Net.Http.Extensions">
-        <HintPath>..\..\..\Microsoft.Net.Http\lib\wpa81\System.Net.Http.Extensions.dll</HintPath>
+        <HintPath>..\..\..\Microsoft.Net.Http\lib\net45\System.Net.Http.Extensions.dll</HintPath>
         <Private>True</Private>
         <Paket>True</Paket>
       </Reference>
       <Reference Include="System.Net.Http.Primitives">
-        <HintPath>..\..\..\Microsoft.Net.Http\lib\wpa81\System.Net.Http.Primitives.dll</HintPath>
+        <HintPath>..\..\..\Microsoft.Net.Http\lib\net45\System.Net.Http.Primitives.dll</HintPath>
         <Private>True</Private>
         <Paket>True</Paket>
       </Reference>
     </ItemGroup>
-  </When>
-  <When Condition="$(TargetFrameworkIdentifier) == 'Silverlight'">
-    <ItemGroup>
-      <Reference Include="System.Net.Http.Extensions">
-        <HintPath>..\..\..\Microsoft.Net.Http\lib\portable-net40+sl4+win8+wp71+wpa81\System.Net.Http.Extensions.dll</HintPath>
-        <Private>True</Private>
-        <Paket>True</Paket>
-      </Reference>
-      <Reference Include="System.Net.Http.Primitives">
-        <HintPath>..\..\..\Microsoft.Net.Http\lib\portable-net40+sl4+win8+wp71+wpa81\System.Net.Http.Primitives.dll</HintPath>
-        <Private>True</Private>
-        <Paket>True</Paket>
-      </Reference>
-      <Reference Include="System.Net.Http">
-        <HintPath>..\..\..\Microsoft.Net.Http\lib\portable-net40+sl4+win8+wp71+wpa81\System.Net.Http.dll</HintPath>
-        <Private>True</Private>
-        <Paket>True</Paket>
-      </Reference>
-    </ItemGroup>
-  </When>
+  </Otherwise>
 </Choose>"""
 
 [<Test>]

@@ -10,8 +10,8 @@ let emptymodel = InstallModel.EmptyModel("Unknown",SemVer.Parse "0.1")
 let ``should create empty model with net40, net45 ...``() = 
     let model = emptymodel.AddReferences [ @"..\Rx-Main\lib\net40\Rx.dll"; @"..\Rx-Main\lib\net45\Rx.dll" ] 
 
-    model.GetFrameworks() |> shouldContain (DotNetFramework(FrameworkVersion.V4))
-    model.GetFrameworks() |> shouldContain (DotNetFramework(FrameworkVersion.V4_5))
+    model.GetFrameworks() |> Seq.map (fun kv -> kv.Key) |> shouldContain (DotNetFramework(FrameworkVersion.V4))
+    model.GetFrameworks() |> Seq.map (fun kv -> kv.Key) |> shouldContain (DotNetFramework(FrameworkVersion.V4_5))
 
 [<Test>]
 let ``should understand net40 and net45``() = 
@@ -107,18 +107,24 @@ let ``should handle lib install of Microsoft.Net.Http for .NET 4.5``() =
     model.GetFiles(DotNetFramework(FrameworkVersion.V4_5)) |> shouldContain @"..\Microsoft.Net.Http\lib\net45\System.Net.Http.Primitives.dll" 
 
 [<Test>]
+let ``should add portable lib``() = 
+    let model = 
+        emptymodel.AddReferences([ @"..\Jint\lib\portable-net40+sl50+win+wp80\Jint.dll" ])
+
+    model.GetFiles(PortableFramework("7.0", "net40+sl50+win+wp80")) |> shouldContain @"..\Jint\lib\portable-net40+sl50+win+wp80\Jint.dll" 
+
+[<Test>]
 let ``should handle lib install of Jint for NET >= 40 and SL >= 50``() = 
     let model = 
         emptymodel.AddReferences([ @"..\Jint\lib\portable-net40+sl50+win+wp80\Jint.dll" ])
             .UsePortableVersionLibIfEmpty()
-
-    model.GetFiles(PortableFramework("7.0", "net40+sl50+win+wp80")) |> shouldContain @"..\Jint\lib\portable-net40+sl50+win+wp80\Jint.dll" 
-
-    model.GetFiles(DotNetFramework(FrameworkVersion.V3_5)) |> shouldNotContain @"..\Jint\lib\portable-net40+sl50+win+wp80\Jint.dll" 
-
+   
     model.GetFiles(DotNetFramework(FrameworkVersion.V4)) |> shouldContain @"..\Jint\lib\portable-net40+sl50+win+wp80\Jint.dll"
 
-    model.GetFiles(Silverlight("v5.0")) |> shouldContain @"..\Jint\lib\portable-net40+sl50+win+wp80\Jint.dll" 
+    model.GetFiles(Silverlight("v5.0")) |> shouldContain @"..\Jint\lib\portable-net40+sl50+win+wp80\Jint.dll"
+    
+    model.GetFiles(DotNetFramework(FrameworkVersion.V3_5)) |> shouldNotContain @"..\Jint\lib\portable-net40+sl50+win+wp80\Jint.dll" 
+    model.GetFiles(PortableFramework("7.0", "net40+sl50+win+wp80")) |> shouldContain @"..\Jint\lib\portable-net40+sl50+win+wp80\Jint.dll" 
 
 [<Test>]
 let ``should handle lib install of Microsoft.BCL for NET >= 40``() = 
@@ -184,6 +190,21 @@ let ``should handle lib install of DotNetZip 1.9.3``() =
     model.GetFiles(DotNetFramework(FrameworkVersion.V3_5)) |> shouldContain @"..\DotNetZip\lib\net20\Ionic.Zip.dll"
     model.GetFiles(DotNetFramework(FrameworkVersion.V4)) |> shouldContain @"..\DotNetZip\lib\net20\Ionic.Zip.dll"
     model.GetFiles(DotNetFramework(FrameworkVersion.V4_5)) |> shouldContain @"..\DotNetZip\lib\net20\Ionic.Zip.dll"
+
+[<Test>]
+let ``should reduce lib install of DotNetZip 1.9.3``() = 
+    let model = emptymodel.AddReferences([ @"..\DotNetZip\lib\net20\Ionic.Zip.dll" ]).ProcessAndReduce()
+
+    model.GetFiles(DotNetFramework(FrameworkVersion.V2)) |> shouldNotContain @"..\DotNetZip\lib\net20\Ionic.Zip.dll"
+    model.GetFiles(DotNetFramework(FrameworkVersion.V4_5)) |> shouldNotContain @"..\DotNetZip\lib\net20\Ionic.Zip.dll"
+
+[<Test>]
+let ``should handle lib install of NUnit 2.6 for windows 8``() = 
+    let model = emptymodel.AddReferences([ @"..\NUnit\lib\nunit.framework.dll" ]).Process()
+
+    model.GetFiles(DotNetFramework(FrameworkVersion.V2)) |> shouldContain @"..\NUnit\lib\nunit.framework.dll"
+    model.GetFiles(DotNetFramework(FrameworkVersion.V4_5)) |> shouldContain @"..\NUnit\lib\nunit.framework.dll"
+    model.GetFiles(Windows("v8.0")) |> shouldContain @"..\NUnit\lib\nunit.framework.dll"
 
 
 [<Test>]
@@ -398,6 +419,6 @@ let ``should not install tools``() =
               @"..\FAKE\tools\Fake.SQL.dll" ])
             .Process()
 
-    model.Frameworks
+    model.GetFrameworks()
     |> Seq.forall (fun kv -> kv.Value.References.IsEmpty)
     |> shouldEqual true

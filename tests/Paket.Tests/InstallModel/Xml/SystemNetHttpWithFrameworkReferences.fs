@@ -70,6 +70,126 @@ let expected = """
       </Otherwise>
     </Choose>
   </When>
+  <When Condition="$(TargetFrameworkIdentifier) == 'MonoAndroid'">
+    <ItemGroup>
+      <Reference Include="System.Net.Http.Extensions">
+        <HintPath>..\..\..\Microsoft.Net.Http\lib\net45\System.Net.Http.Extensions.dll</HintPath>
+        <Private>True</Private>
+        <Paket>True</Paket>
+      </Reference>
+      <Reference Include="System.Net.Http.Primitives">
+        <HintPath>..\..\..\Microsoft.Net.Http\lib\net45\System.Net.Http.Primitives.dll</HintPath>
+        <Private>True</Private>
+        <Paket>True</Paket>
+      </Reference>
+      <Reference Include="System.Net.Http">
+        <Paket>True</Paket>
+      </Reference>
+      <Reference Include="System.Net.Http.WebRequest">
+        <Paket>True</Paket>
+      </Reference>
+    </ItemGroup>
+  </When>
+  <When Condition="$(TargetFrameworkIdentifier) == 'MonoTouch'">
+    <ItemGroup>
+      <Reference Include="System.Net.Http.Extensions">
+        <HintPath>..\..\..\Microsoft.Net.Http\lib\net45\System.Net.Http.Extensions.dll</HintPath>
+        <Private>True</Private>
+        <Paket>True</Paket>
+      </Reference>
+      <Reference Include="System.Net.Http.Primitives">
+        <HintPath>..\..\..\Microsoft.Net.Http\lib\net45\System.Net.Http.Primitives.dll</HintPath>
+        <Private>True</Private>
+        <Paket>True</Paket>
+      </Reference>
+      <Reference Include="System.Net.Http">
+        <Paket>True</Paket>
+      </Reference>
+      <Reference Include="System.Net.Http.WebRequest">
+        <Paket>True</Paket>
+      </Reference>
+    </ItemGroup>
+  </When>
+  <When Condition="$(TargetFrameworkIdentifier) == 'Silverlight'">
+    <ItemGroup>
+      <Reference Include="System.Net.Http.Extensions">
+        <HintPath>..\..\..\Microsoft.Net.Http\lib\net45\System.Net.Http.Extensions.dll</HintPath>
+        <Private>True</Private>
+        <Paket>True</Paket>
+      </Reference>
+      <Reference Include="System.Net.Http.Primitives">
+        <HintPath>..\..\..\Microsoft.Net.Http\lib\net45\System.Net.Http.Primitives.dll</HintPath>
+        <Private>True</Private>
+        <Paket>True</Paket>
+      </Reference>
+      <Reference Include="System.Net.Http">
+        <Paket>True</Paket>
+      </Reference>
+      <Reference Include="System.Net.Http.WebRequest">
+        <Paket>True</Paket>
+      </Reference>
+    </ItemGroup>
+  </When>
+  <When Condition="$(TargetFrameworkIdentifier) == 'Windows'">
+    <ItemGroup>
+      <Reference Include="System.Net.Http.Extensions">
+        <HintPath>..\..\..\Microsoft.Net.Http\lib\net45\System.Net.Http.Extensions.dll</HintPath>
+        <Private>True</Private>
+        <Paket>True</Paket>
+      </Reference>
+      <Reference Include="System.Net.Http.Primitives">
+        <HintPath>..\..\..\Microsoft.Net.Http\lib\net45\System.Net.Http.Primitives.dll</HintPath>
+        <Private>True</Private>
+        <Paket>True</Paket>
+      </Reference>
+      <Reference Include="System.Net.Http">
+        <Paket>True</Paket>
+      </Reference>
+      <Reference Include="System.Net.Http.WebRequest">
+        <Paket>True</Paket>
+      </Reference>
+    </ItemGroup>
+  </When>
+  <When Condition="$(TargetFrameworkIdentifier) == 'WindowsPhoneApp'">
+    <ItemGroup>
+      <Reference Include="System.Net.Http.Extensions">
+        <HintPath>..\..\..\Microsoft.Net.Http\lib\net45\System.Net.Http.Extensions.dll</HintPath>
+        <Private>True</Private>
+        <Paket>True</Paket>
+      </Reference>
+      <Reference Include="System.Net.Http.Primitives">
+        <HintPath>..\..\..\Microsoft.Net.Http\lib\net45\System.Net.Http.Primitives.dll</HintPath>
+        <Private>True</Private>
+        <Paket>True</Paket>
+      </Reference>
+      <Reference Include="System.Net.Http">
+        <Paket>True</Paket>
+      </Reference>
+      <Reference Include="System.Net.Http.WebRequest">
+        <Paket>True</Paket>
+      </Reference>
+    </ItemGroup>
+  </When>
+  <Otherwise>
+    <ItemGroup>
+      <Reference Include="System.Net.Http.Extensions">
+        <HintPath>..\..\..\Microsoft.Net.Http\lib\net45\System.Net.Http.Extensions.dll</HintPath>
+        <Private>True</Private>
+        <Paket>True</Paket>
+      </Reference>
+      <Reference Include="System.Net.Http.Primitives">
+        <HintPath>..\..\..\Microsoft.Net.Http\lib\net45\System.Net.Http.Primitives.dll</HintPath>
+        <Private>True</Private>
+        <Paket>True</Paket>
+      </Reference>
+      <Reference Include="System.Net.Http">
+        <Paket>True</Paket>
+      </Reference>
+      <Reference Include="System.Net.Http.WebRequest">
+        <Paket>True</Paket>
+      </Reference>
+    </ItemGroup>
+  </Otherwise>
 </Choose>"""
 
 [<Test>]

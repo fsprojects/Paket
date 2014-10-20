@@ -120,17 +120,19 @@ type FrameworkIdentifier =
             else None
     
     member x.Group =
-        match x with
-        | DotNetFramework _ -> ".NETFramework"
-        | PortableFramework _ -> ".NETPortable"
-        | WindowsPhoneApp _ -> "WindowsPhoneApp"
-        | Windows _ -> "Windows"
-        | Silverlight _ -> "Silverlight"
-        | MonoAndroid -> "MonoAndroid"
-        | MonoTouch -> "MonoTouch"
+        let group =
+            match x with
+            | DotNetFramework _ -> ".NETFramework"
+            | PortableFramework _ -> ".NETPortable"
+            | WindowsPhoneApp _ -> "WindowsPhoneApp"
+            | Windows _ -> "Windows"
+            | Silverlight _ -> "Silverlight"
+            | MonoAndroid -> "MonoAndroid"
+            | MonoTouch -> "MonoTouch"
 
-    member x.GetFrameworkIdentifier() = sprintf "$(TargetFrameworkIdentifier) == '%s'" x.Group
+        sprintf "$(TargetFrameworkIdentifier) == '%s'" group
 
+    member x.GetFrameworkIdentifier() = x.Group
     member x.GetPortableProfile() =
         match x with 
         | PortableFramework(_,profile) -> 
@@ -232,7 +234,7 @@ type FrameworkIdentifier =
 
     member x.GetGroupCondition() = sprintf "%s" (x.GetFrameworkIdentifier())
 
-    override x.ToString() = x.GetFrameworkCondition()
+    override x.ToString() = x.GetFrameworkIdentifier() + x.GetFrameworkCondition()
 
     static member DetectFromPath(path : string) : FrameworkIdentifier option = 
         
@@ -245,3 +247,5 @@ type FrameworkIdentifier =
             let endPos = path.IndexOf(fi.Name.ToLower())
             if startPos < 0 || endPos < 0 then None
             else path.Substring(startPos + 4, endPos - startPos - 5) |> FrameworkIdentifier.Extract
+
+    static member DefaultGroup = DotNetFramework(FrameworkVersion.V4).Group
