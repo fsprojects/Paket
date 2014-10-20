@@ -85,8 +85,8 @@ let ``should generate Xml for System.Net.Http 2.2.8``() =
               @"..\Microsoft.Net.Http\lib\net45\System.Net.Http.Primitives.dll"],
                { References = NuspecReferences.All
                  FrameworkAssemblyReferences =
-                 [{ AssemblyName = "System.Net.Http"; TargetFramework = DotNetFramework(FrameworkVersion.Framework(FrameworkVersionNo.V4_5),Full) }
-                  { AssemblyName = "System.Net.Http.WebRequest"; TargetFramework = DotNetFramework(FrameworkVersion.Framework(FrameworkVersionNo.V4_5),Full) }] })
+                 [{ AssemblyName = "System.Net.Http"; TargetFramework = DotNetFramework(FrameworkVersion.V4_5) }
+                  { AssemblyName = "System.Net.Http.WebRequest"; TargetFramework = DotNetFramework(FrameworkVersion.V4_5) }] })
 
     let chooseNode = ProjectFile.Load("./ProjectFile/TestData/Empty.fsprojtest").Value.GenerateXml(model)
     chooseNode.OuterXml
