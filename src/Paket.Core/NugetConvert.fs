@@ -52,24 +52,12 @@ let private readNugetConfig() =
                    PackageRestoreEnabled = false 
                    PackageRestoreAutomatic = false }
 
-let private readPackageSources(configFile : FileInfo) =
-    let doc = XmlDocument()
-    doc.Load configFile.FullName
-    [for node in doc.SelectNodes("//packageSources/add[@value]") ->
-        let url = node.Attributes.["value"].Value
-        let auth = doc.SelectNodes(sprintf "//packageSourceCredentials/%s" (XmlConvert.EncodeLocalName node.Attributes.["key"].Value))
-                   |> Seq.cast<XmlNode>
-                   |> Seq.firstOrDefault
-                   |> Option.map (fun node -> {Username = AuthEntry.Create <| node.SelectSingleNode("//add[@key='Username']").Attributes.["value"].Value
-                                               Password = AuthEntry.Create <| node.SelectSingleNode("//add[@key='ClearTextPassword']").Attributes.["value"].Value})
-        PackageSource.Parse (url, auth)]
-
 let removeFileIfExists file = 
     if File.Exists file then 
         File.Delete file
         tracefn "Deleted %s" file
 
-let private convertNugetsToDepFile(nugetPackagesConfigs) =
+let private convertNugetsToDepFile(nugetPackagesConfigs, nugetConfig) =
     let allVersions =
         nugetPackagesConfigs
         |> Seq.collect (fun c -> c.Packages)
@@ -106,17 +94,7 @@ let private convertNugetsToDepFile(nugetPackagesConfigs) =
 
     match existingDepFile with
     | None ->
-        let nugetSources =
-            match FindAllFiles(".", "nuget.config") |> Seq.firstOrDefault with
-            | Some configFile -> 
-                let sources = readPackageSources(configFile) 
-                removeFileIfExists configFile.FullName
-                sources @ [DefaultNugetSource]
-            | None -> [DefaultNugetSource]
-            |> Set.ofList
-            |> Set.toList        
-        
-        let packages = packagesToAdd |> List.map (fun (name,v) -> nugetPackageRequirement(name,v,nugetSources))
+        let packages = packagesToAdd |> List.map (fun (name,v) -> nugetPackageRequirement(name,v,nugetConfig.PackageSources))
         DependenciesFile(Constants.DependenciesFile, InstallOptions.Default, packages, []).Save()
     | Some depFile ->
         if not (packagesToAdd |> List.isEmpty)
@@ -149,7 +127,10 @@ let ConvertFromNuget(force, installAfter, initAutoRestore) =
     if File.Exists Constants.DependenciesFile && not force then failwithf "%s already exists, use --force to overwrite" Constants.DependenciesFile
 
     let nugetPackagesConfigs = FindAllFiles(".", "packages.config") |> Seq.map Nuget.ReadPackagesConfig
-    convertNugetsToDepFile(nugetPackagesConfigs)
+    let nugetConfig = readNugetConfig()
+    FindAllFiles(".", "nuget.config") |> Seq.iter (fun f -> removeFileIfExists f.FullName)
+    
+    convertNugetsToDepFile(nugetPackagesConfigs, nugetConfig)
         
     for nugetPackagesConfig in nugetPackagesConfigs do
         let packageFile = nugetPackagesConfig.File
@@ -176,6 +157,9 @@ let ConvertFromNuget(force, installAfter, initAutoRestore) =
     for packagesConfigFile in nugetPackagesConfigs |> Seq.map (fun f -> f.File) do
         removeFileIfExists packagesConfigFile.FullName
 
+    let autoVsNugetRestore = nugetConfig.PackageRestoreEnabled && nugetConfig.PackageRestoreAutomatic
+    let targetsNugetRestore = FindAllFiles(".", "nuget.targets") |> Seq.isEmpty |> not
+
     match Directory.EnumerateDirectories(".", ".nuget", SearchOption.AllDirectories) |> Seq.firstOrDefault with
     | Some nugetDir ->
         let nugetTargets = Path.Combine(nugetDir, "nuget.targets")
@@ -185,12 +169,13 @@ let ConvertFromNuget(force, installAfter, initAutoRestore) =
             removeFileIfExists nugetTargets
             let depFile = DependenciesFile.ReadFromFile(Constants.DependenciesFile)
             if not <| depFile.HasPackage("Nuget.CommandLine") then depFile.Add("Nuget.CommandLine", "").Save()
-            if initAutoRestore then
-                VSIntegration.InitAutoRestore()
-
+            
         if Directory.EnumerateFileSystemEntries(nugetDir) |> Seq.isEmpty 
             then Directory.Delete nugetDir
     | None -> ()
+
+    if initAutoRestore && (autoVsNugetRestore || targetsNugetRestore) then 
+        VSIntegration.InitAutoRestore()
 
     if installAfter then
         UpdateProcess.Update(true,false,true)
