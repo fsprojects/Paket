@@ -274,21 +274,23 @@ type InstallModel =
                this
     
     member this.BuildUnfilteredModel() = 
-        this.UseLowerVersionLibIfEmpty().UsePortableVersionLibIfEmpty().UseLowerVersionLibIfEmpty() // because we now might need to use portable
-            .UseLowerVersionLibForSpecicalFrameworksIfEmpty().FilterBlackList().UseLastInGroupAsFallback()
+        this
+            .UseLowerVersionLibIfEmpty()
+            .UsePortableVersionLibIfEmpty()
+            .UseLowerVersionLibIfEmpty() // because we now might need to use portable
+            .UseLowerVersionLibForSpecicalFrameworksIfEmpty()
+            .FilterBlackList()
+            .UseLastInGroupAsFallback()
 
     member this.BuildModel() = this.BuildUnfilteredModel().DeleteIfGroupFallback()
     
     member this.GetLibraryNames = 
         lazy ([ for g in this.Groups do
                     for f in g.Value.Frameworks do
-                        for lib in f.Value.References do
-                            yield lib.LibName
-                    for lib in g.Value.Fallbacks.References do
-                        yield lib.LibName
-                for lib in this.DefaultFallback.References do
-                    yield lib.LibName ]
-              |> List.choose id
+                        yield! f.Value.References
+                    yield! g.Value.Fallbacks.References 
+                yield! this.DefaultFallback.References]
+              |> List.choose (fun lib -> lib.LibName)
               |> Set.ofList)
     
     static member CreateFromLibs(packageName, packageVersion, libs, nuspec : Nuspec) = 
