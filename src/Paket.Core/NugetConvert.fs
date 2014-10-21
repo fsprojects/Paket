@@ -14,26 +14,7 @@ type private NugetConfig =
       PackageRestoreEnabled : bool
       PackageRestoreAutomatic : bool }
 
-let private readNugetConfig(file : FileInfo) =
-
-    DirectoryInfo(".nuget")
-    |> Seq.unfold (fun di -> if di = null 
-                             then None 
-                             else Some(FileInfo(Path.Combine(di.FullName, "nuget.config")), di.Parent)) 
-    |> Seq.toList
-    |> List.rev
-    |> List.append [FileInfo(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "nuget", "nuget.config"))]
-    |> List.filter (fun f -> f.Exists)
-    |> List.map (fun f -> let doc = XmlDocument() in doc.Load(f.FullName); doc)
-    |> List.fold (fun config doc -> 
-                      
-                      config) 
-                 { PackageSources = [] 
-                   PackageRestoreEnabled = false 
-                   PackageRestoreAutomatic = false }
-
-    let doc = XmlDocument()
-    doc.Load file.FullName
+let private applyConfig config (doc : XmlDocument) =
     let packages = 
         [for node in doc.SelectNodes("//packageSources/add[@value]") ->
             let url = node.Attributes.["value"].Value
@@ -43,8 +24,33 @@ let private readNugetConfig(file : FileInfo) =
                        |> Option.map (fun node -> {Username = AuthEntry.Create <| node.SelectSingleNode("//add[@key='Username']").Attributes.["value"].Value
                                                    Password = AuthEntry.Create <| node.SelectSingleNode("//add[@key='ClearTextPassword']").Attributes.["value"].Value})
             PackageSource.Parse (url, auth)]
-    { PackageSources = packages; PackageRestoreEnabled = true; PackageRestoreAutomatic = true }
+    { PackageSources = config.PackageSources @ packages
+      PackageRestoreEnabled = 
+        match doc.SelectNodes("//packageRestore/add[@enabled]") |> Seq.cast<XmlNode> |> Seq.firstOrDefault with
+        | Some node -> bool.Parse(node.Attributes.["enabled"].Value)
+        | None -> config.PackageRestoreEnabled
+      PackageRestoreAutomatic = 
+        match doc.SelectNodes("//packageRestore/add[@automatic]") |> Seq.cast<XmlNode> |> Seq.firstOrDefault with
+        | Some node -> bool.Parse(node.Attributes.["automatic"].Value)
+        | None -> config.PackageRestoreAutomatic }
 
+let private readNugetConfig() =
+    DirectoryInfo(".nuget")
+    |> Seq.unfold (fun di -> if di = null 
+                             then None 
+                             else Some(FileInfo(Path.Combine(di.FullName, "nuget.config")), di.Parent)) 
+    |> Seq.toList
+    |> List.rev
+    |> List.append [FileInfo(Path.Combine(
+                                  Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), 
+                                  "nuget", 
+                                  "nuget.config"))]
+    |> List.filter (fun f -> f.Exists)
+    |> List.map (fun f -> let doc = XmlDocument() in doc.Load(f.FullName); doc)
+    |> List.fold applyConfig 
+                 { PackageSources = [] 
+                   PackageRestoreEnabled = false 
+                   PackageRestoreAutomatic = false }
 
 let private readPackageSources(configFile : FileInfo) =
     let doc = XmlDocument()
