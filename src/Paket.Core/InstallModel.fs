@@ -50,6 +50,18 @@ type FrameworkGroup =
         | Some x -> x.References
         | None -> Set.empty
 
+    static member singleton(framework,libs) =
+        { Frameworks = Map.add framework libs Map.empty; Fallbacks = InstallFiles.empty }
+
+    member this.ReplaceFramework(framework,f1,f2) =
+        { this with Frameworks = 
+                        match Map.tryFind framework this.Frameworks with
+                        | Some files -> Map.add framework (f1 files) this.Frameworks
+                        | None -> 
+                            match f2() with
+                            | Some files -> Map.add framework files this.Frameworks
+                            | None -> this.Frameworks }
+
 type InstallModel = 
     { PackageName : string
       PackageVersion : SemVerInfo
@@ -97,18 +109,16 @@ type InstallModel =
             | NuspecReferences.All -> true
             | NuspecReferences.Explicit list -> List.exists lib.EndsWith list
 
-        if not install then this else 
+        if not install then this else
+
         this.AddOrReplaceGroup(
             framework.Group,
-            (fun group ->
-                { group with Frameworks = 
-                                match Map.tryFind framework group.Frameworks with
-                                | Some files -> 
-                                    Map.add framework (files.AddReference lib) group.Frameworks
-                                | None -> 
-                                    Map.add framework (InstallFiles.singleton lib) 
-                                        group.Frameworks }),
-            (fun _ -> Some { Frameworks = Map.add framework (InstallFiles.singleton lib) Map.empty; Fallbacks = InstallFiles.empty }))
+            (fun group -> 
+                group.ReplaceFramework(
+                    framework,
+                    (fun files -> files.AddReference lib),
+                    (fun _ -> Some (InstallFiles.singleton lib)))),
+            (fun _ -> Some(FrameworkGroup.singleton(framework,InstallFiles.singleton lib))))
 
     member this.AddReferences(libs, references) : InstallModel = 
         Seq.fold (fun model lib -> 
@@ -122,23 +132,17 @@ type InstallModel =
         this.AddOrReplaceGroup(
             framework.Group,
             (fun group ->
-                { group with Frameworks = 
-                                match Map.tryFind framework group.Frameworks with
-                                | Some files -> 
-                                    Map.add framework 
-                                        (files.AddFrameworkAssemblyReference assemblyName) 
-                                        group.Frameworks
-                                | None -> 
-                                    Map.add framework 
-                                        (InstallFiles.empty.AddFrameworkAssemblyReference assemblyName) 
-                                        group.Frameworks }),
+                group.ReplaceFramework(
+                    framework,
+                    (fun files -> files.AddFrameworkAssemblyReference assemblyName),
+                    (fun _ -> Some (InstallFiles.empty.AddFrameworkAssemblyReference assemblyName)))),
             (fun _ -> None))
     
     member this.AddFrameworkAssemblyReferences(references) : InstallModel = 
         references 
         |> Seq.fold 
-               (fun model reference -> 
-               model.AddFrameworkAssemblyReference(reference.TargetFramework, reference.AssemblyName)) this
+               (fun model reference -> model.AddFrameworkAssemblyReference(reference.TargetFramework, reference.AssemblyName))
+                this
     
     member this.FilterBlackList() = 
         let blackList = 
@@ -146,6 +150,7 @@ type InstallModel =
                 match reference with
                 | Reference.Library lib -> not (lib.EndsWith ".dll" || lib.EndsWith ".exe")
                 | _ -> false ]
+
         { this with Groups = 
                         this.Groups 
                         |> Map.map 
@@ -186,27 +191,23 @@ type InstallModel =
         else 
             FrameworkIdentifier.KnownSpecialTargets 
             |> List.fold (fun (model : InstallModel) framework -> 
-                   let g = framework.Group
-                   { model with Groups = 
-                                    Map.add g (match Map.tryFind g model.Groups with
-                                               | Some group -> 
-                                                   match Map.tryFind framework group.Frameworks with
-                                                   | Some files when Set.isEmpty files.References -> 
-                                                       { group with Frameworks = 
-                                                                        Map.add framework { References = newFiles
-                                                                                            ContentFiles = Set.empty } 
-                                                                            group.Frameworks }
-                                                   | None -> 
-                                                       { group with Frameworks = 
-                                                                        Map.add framework { References = newFiles
-                                                                                            ContentFiles = Set.empty } 
-                                                                            group.Frameworks }
-                                                   | _ -> group
-                                               | None -> 
-                                                   { Frameworks = 
-                                                         Map.add framework { References = newFiles
-                                                                             ContentFiles = Set.empty } Map.empty
-                                                     Fallbacks = InstallFiles.empty }) model.Groups }) this
+                    model.AddOrReplaceGroup(
+                        framework.Group,
+                        (fun group ->
+                            match Map.tryFind framework group.Frameworks with
+                            | Some files when Set.isEmpty files.References -> 
+                                { group with Frameworks = 
+                                                Map.add framework { References = newFiles
+                                                                    ContentFiles = Set.empty } 
+                                                    group.Frameworks }
+                            | None -> 
+                                { group with Frameworks = 
+                                                Map.add framework { References = newFiles
+                                                                    ContentFiles = Set.empty } 
+                                                    group.Frameworks }
+                            | _ -> group),
+                        (fun _ -> Some ({ Frameworks = Map.add framework { References = newFiles; ContentFiles = Set.empty } Map.empty
+                                          Fallbacks = InstallFiles.empty })))) this
     
     member this.UseLastInGroupAsFallback() = 
         let groups = 
