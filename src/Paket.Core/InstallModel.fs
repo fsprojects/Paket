@@ -98,6 +98,8 @@ type InstallModel =
             match newGroupF() with
             | Some newGroup -> { this with Groups = Map.add groupId newGroup this.Groups }
             | None -> this
+
+    member this.MapGroups(mapF) = { this with Groups = Map.map mapF this.Groups }
         
 
     member this.AddReference(framework : FrameworkIdentifier, lib : string, references) : InstallModel = 
@@ -148,10 +150,7 @@ type InstallModel =
                 | Reference.Library lib -> not (lib.EndsWith ".dll" || lib.EndsWith ".exe")
                 | _ -> false ]
 
-        { this with Groups = 
-                        this.Groups 
-                        |> Map.map 
-                               (fun _ group -> 
+        this.MapGroups(fun _ group -> 
                                { group with Frameworks = 
                                                 blackList 
                                                 |> List.fold 
@@ -160,26 +159,25 @@ type InstallModel =
                                                            (fun _ files -> 
                                                            { files with References = 
                                                                             files.References |> Set.filter (f >> not) }) 
-                                                           frameworks) group.Frameworks }) }
+                                                           frameworks) group.Frameworks })
     
-    member this.UseLowerVersionLibIfEmpty() = 
+    member this.UseLowerVersionLibIfEmpty() =
         let group = 
             FrameworkVersion.KnownDotNetFrameworks
             |> List.rev
             |> List.fold (fun (group : FrameworkGroup) lowerVersion -> 
-                   let newFiles = group.GetReferences(DotNetFramework(lowerVersion))
-                   if Set.isEmpty newFiles then group
-                   else 
-                       FrameworkVersion.KnownDotNetFrameworks
-                       |> List.filter (fun version -> version > lowerVersion)
-                       |> List.fold (fun (group : FrameworkGroup) upperVersion -> 
-                              let framework = DotNetFramework(upperVersion)
-                              match Map.tryFind framework group.Frameworks with
-                              | Some files when Set.isEmpty files.References -> 
-                                  { group with Frameworks = 
-                                                   Map.add framework { References = newFiles
-                                                                       ContentFiles = Set.empty } group.Frameworks }
-                              | _ -> group) group) (Map.find FrameworkIdentifier.DefaultGroup this.Groups)
+                let newFiles = group.GetReferences(DotNetFramework(lowerVersion))
+                if Set.isEmpty newFiles then group  else 
+                FrameworkVersion.KnownDotNetFrameworks
+                |> List.filter (fun version -> version > lowerVersion)
+                |> List.fold (fun (group : FrameworkGroup) upperVersion -> 
+                        let framework = DotNetFramework(upperVersion)
+                        match Map.tryFind framework group.Frameworks with
+                        | Some files when Set.isEmpty files.References -> 
+                            { group with Frameworks = 
+                                            Map.add framework { References = newFiles
+                                                                ContentFiles = Set.empty } group.Frameworks }
+                        | _ -> group) group) (Map.find FrameworkIdentifier.DefaultGroup this.Groups)
         { this with Groups = Map.add FrameworkIdentifier.DefaultGroup group this.Groups }
     
     member this.UseLowerVersionLibForSpecicalFrameworksIfEmpty() = 
@@ -198,34 +196,27 @@ type InstallModel =
                         (fun _ -> Some(FrameworkGroup.singleton(framework,{ References = newFiles; ContentFiles = Set.empty }))))) this
     
     member this.UseLastInGroupAsFallback() = 
-        let groups = 
-            this.Groups |> Map.map (fun _ group -> { group with Fallbacks = (group.Frameworks |> Seq.last).Value })
-        { this with Groups = groups
-                    DefaultFallback = groups.[FrameworkIdentifier.DefaultGroup].Fallbacks }
+        this.MapGroups(fun _ group -> { group with Fallbacks = (group.Frameworks |> Seq.last).Value })
+
+    member this.UseLastGroupFallBackAsDefaultFallBack() =
+        { this with DefaultFallback = this.Groups.[FrameworkIdentifier.DefaultGroup].Fallbacks }
     
-    member this.DeleteIfGroupFallback() = 
-        let groups = 
-            this.Groups 
-            |> Map.map (fun _ group -> 
+    member this.DeleteIfGroupFallback() =
+        this.MapGroups(fun _ group -> 
                    let fallbacks = group.Fallbacks
                    { group with Frameworks = 
                                     group.Frameworks |> Seq.fold (fun frameworks kv -> 
                                                             let files = kv.Value
                                                             if files.References <> fallbacks.References then frameworks
                                                             else Map.remove kv.Key frameworks) group.Frameworks })
-        { this with Groups = groups }
     
-    member this.DeleteEmptyGroupIfDefaultFallback() = 
-        let groups = 
-            this.Groups 
-            |> Map.map 
-                   (fun _ group -> 
+    member this.DeleteEmptyGroupIfDefaultFallback() =
+        this.MapGroups(fun _ group ->
                    let fallbacks = group.Fallbacks
                    group.Frameworks 
                    |> Seq.fold (fun (group : FrameworkGroup) framework -> 
                           if framework.Value.References <> fallbacks.References then group
                           else { group with Frameworks = Map.remove framework.Key group.Frameworks }) group)
-        { this with Groups = groups }
     
     member this.UsePortableVersionLibIfEmpty() = 
         this.GetFrameworks() 
@@ -262,6 +253,7 @@ type InstallModel =
             .UseLowerVersionLibForSpecicalFrameworksIfEmpty()
             .FilterBlackList()
             .UseLastInGroupAsFallback()
+            .UseLastGroupFallBackAsDefaultFallBack()
 
     member this.BuildModel() = this.BuildUnfilteredModel().DeleteIfGroupFallback()
     
