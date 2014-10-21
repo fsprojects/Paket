@@ -44,19 +44,7 @@ type InstallModel =
       PackageVersion : SemVerInfo
       Groups : Map<string, FrameworkGroup>
       DefaultFallback : InstallFiles }
-    
-    static member KnownSpecialTargets = 
-        [ yield Silverlight "v3.0"
-          yield Silverlight "v4.0"
-          yield Silverlight "v5.0"
-          yield Silverlight "v5.0"
-          yield WindowsPhoneApp "7.1"
-          yield Windows "v8.0"
-          yield WindowsPhoneApp "v8.0"
-          yield WindowsPhoneApp "v8.1"
-          yield MonoAndroid
-          yield MonoTouch ]
-    
+
     static member EmptyModel(packageName, packageVersion) : InstallModel = 
         let frameworks = FrameworkVersion.KnownDotNetFrameworks |> List.map (fun x -> DotNetFramework(x))
         
@@ -185,7 +173,7 @@ type InstallModel =
         let newFiles = this.GetReferences(DotNetFramework(FrameworkVersion.V4_5))
         if Set.isEmpty newFiles then this
         else 
-            InstallModel.KnownSpecialTargets 
+            FrameworkIdentifier.KnownSpecialTargets 
             |> List.fold (fun (model : InstallModel) framework -> 
                    let g = framework.Group
                    { model with Groups = 
