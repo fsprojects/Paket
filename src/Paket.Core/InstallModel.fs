@@ -241,30 +241,18 @@ type InstallModel =
                            |> Array.map FrameworkIdentifier.Extract
                            |> Array.choose id
                        | _ -> [||]
-                   if Array.isEmpty otherProfiles then model
-                   else 
-                       otherProfiles 
-                       |> Array.fold (fun (model : InstallModel) framework -> 
-                              let g = framework.Group
-                              { model with Groups = 
-                                               Map.add g (match Map.tryFind g model.Groups with
-                                                          | Some group -> 
-                                                              match Map.tryFind framework group.Frameworks with
-                                                              | Some files when Set.isEmpty files.References |> not -> 
-                                                                  group
-                                                              | _ -> 
-                                                                  { group with Frameworks = 
-                                                                                   Map.add framework 
-                                                                                       { References = newFiles
-                                                                                         ContentFiles = Set.empty } 
-                                                                                       group.Frameworks }
-                                                          | None -> 
-                                                              { Frameworks = 
-                                                                    Map.add framework { References = newFiles
-                                                                                        ContentFiles = Set.empty } 
-                                                                        Map.empty
-                                                                Fallbacks = InstallFiles.empty }) model.Groups }) model) 
-               this
+
+                   if Array.isEmpty otherProfiles then model else 
+                   otherProfiles 
+                   |> Array.fold (fun (model : InstallModel) framework -> 
+                        model.AddOrReplaceGroup(
+                            framework.Group,
+                            (fun group ->
+                                group.ReplaceFramework(
+                                    framework,
+                                    (fun _ -> { References = newFiles; ContentFiles = Set.empty }),
+                                    (fun files -> files))),
+                            (fun _ -> Some(FrameworkGroup.singleton(framework,{ References = newFiles; ContentFiles = Set.empty }))))) model) this
     
     member this.BuildUnfilteredModel() = 
         this
