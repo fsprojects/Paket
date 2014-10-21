@@ -1,3 +1,6 @@
+#### 0.9.0-alpha004 - 21.10.2014
+* Remove old framework references - https://github.com/fsprojects/Paket/issues/274
+
 #### 0.9.0-alpha003 - 21.10.2014
 * Use more profiles - https://github.com/fsprojects/Paket/issues/281
 

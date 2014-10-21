@@ -126,7 +126,8 @@ type ProjectFile =
         this.DeleteIfEmpty("//ns:ItemGroup")
 
     member this.HasCustomNodes(model:InstallModel) =
-        let libs = model.GetLibraryNames.Force()
+        let libs = model.GetReferenceNames.Force()
+        
         let hasCustom = ref false
         for node in this.Document.SelectNodes("//ns:Reference", this.Namespaces) do
             if Set.contains (node.Attributes.["Include"].InnerText.Split(',').[0]) libs then
@@ -142,7 +143,7 @@ type ProjectFile =
     member this.DeleteCustomNodes(model:InstallModel) =
         let nodesToDelete = List<_>()
         
-        let libs = model.GetLibraryNames.Force()
+        let libs = model.GetReferenceNames.Force()
         for node in this.Document.SelectNodes("//ns:Reference", this.Namespaces) do
             if Set.contains (node.Attributes.["Include"].InnerText.Split(',').[0]) libs then          
                 nodesToDelete.Add node

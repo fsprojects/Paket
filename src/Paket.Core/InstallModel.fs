@@ -14,6 +14,19 @@ type Reference =
             Some(fi.Name.Replace(fi.Extension, ""))
         | _ -> None
 
+    member this.FrameworkReferenceName =
+        match this with
+        | FrameworkAssemblyReference name -> Some name
+        | _ -> None
+
+    member this.ReferenceName =
+        match this with
+        | FrameworkAssemblyReference name -> name
+        | Reference.Library lib -> 
+            let fi = new FileInfo(normalizePath lib)
+            fi.Name.Replace(fi.Extension, "")
+
+
 type InstallFiles = 
     { References : Reference Set
       ContentFiles : string Set }
@@ -252,14 +265,14 @@ type InstallModel =
             .UseLastGroupFallBackAsDefaultFallBack()
 
     member this.BuildModel() = this.BuildUnfilteredModel().DeleteIfGroupFallback()
-    
-    member this.GetLibraryNames = 
+
+    member this.GetReferenceNames = 
         lazy ([ for g in this.Groups do
                     for f in g.Value.Frameworks do
                         yield! f.Value.References
                     yield! g.Value.Fallbacks.References 
                 yield! this.DefaultFallback.References]
-              |> List.choose (fun lib -> lib.LibName)
+              |> List.map (fun lib -> lib.ReferenceName)
               |> Set.ofList)
     
     static member CreateFromLibs(packageName, packageVersion, libs, nuspec : Nuspec) = 
