@@ -75,7 +75,7 @@ type InstallModel =
           PackageVersion = packageVersion
           DefaultFallback = InstallFiles.empty
           Groups = Map.add FrameworkIdentifier.DefaultGroup group Map.empty }
-    
+   
     member this.GetFrameworks() = 
         this.Groups
         |> Seq.map (fun kv -> kv.Value.Frameworks)
@@ -129,21 +129,19 @@ type InstallModel =
     
     member this.AddReferences(libs) = this.AddReferences(libs, NuspecReferences.All)
     
-    member this.AddFrameworkAssemblyReference(framework : FrameworkIdentifier, assemblyName) : InstallModel = 
+    member this.AddFrameworkAssemblyReference(reference) : InstallModel = 
         this.AddOrReplaceGroup(
-            framework.Group,
+            reference.TargetFramework.Group,
             (fun group ->
                 group.ReplaceFramework(
-                    framework,
-                    (fun _ -> InstallFiles.empty.AddFrameworkAssemblyReference assemblyName),
-                    (fun files -> files.AddFrameworkAssemblyReference assemblyName))),
+                    reference.TargetFramework,
+                    (fun _ -> InstallFiles.empty.AddFrameworkAssemblyReference reference.AssemblyName),
+                    (fun files -> files.AddFrameworkAssemblyReference reference.AssemblyName))),
             (fun _ -> None))
     
     member this.AddFrameworkAssemblyReferences(references) : InstallModel = 
         references 
-        |> Seq.fold 
-               (fun model reference -> model.AddFrameworkAssemblyReference(reference.TargetFramework, reference.AssemblyName))
-                this
+        |> Seq.fold (fun model reference -> model.AddFrameworkAssemblyReference reference) this
     
     member this.FilterBlackList() = 
         let blackList = 
@@ -160,24 +158,24 @@ type InstallModel =
     
     
     member this.UseLowerVersionLibIfEmpty() =
-        let group = 
-            FrameworkVersion.KnownDotNetFrameworks
-            |> List.rev
-            |> List.fold (fun (group : FrameworkGroup) lowerVersion -> 
-                let newFiles = group.GetReferences(DotNetFramework(lowerVersion))
-                if Set.isEmpty newFiles then group  else 
+        this.AddOrReplaceGroup(
+            FrameworkIdentifier.DefaultGroup,
+            (fun group -> 
                 FrameworkVersion.KnownDotNetFrameworks
-                |> List.filter (fun version -> version > lowerVersion)
-                |> List.fold (fun (group : FrameworkGroup) upperVersion -> 
-                        let framework = DotNetFramework(upperVersion)
-                        match Map.tryFind framework group.Frameworks with
-                        | Some files when Set.isEmpty files.References -> 
-                            { group with Frameworks = 
-                                            Map.add framework { References = newFiles
-                                                                ContentFiles = Set.empty } group.Frameworks }
-                        | _ -> group) group) (Map.find FrameworkIdentifier.DefaultGroup this.Groups)
-
-        { this with Groups = Map.add FrameworkIdentifier.DefaultGroup group this.Groups }
+                |> List.rev
+                |> List.fold (fun (group : FrameworkGroup) lowerVersion -> 
+                    let newFiles = group.GetReferences(DotNetFramework(lowerVersion))
+                    if Set.isEmpty newFiles then group  else 
+                    FrameworkVersion.KnownDotNetFrameworks
+                    |> List.filter (fun version -> version > lowerVersion)
+                    |> List.fold (fun (group : FrameworkGroup) upperVersion -> 
+                            let framework = DotNetFramework(upperVersion)
+                            group.ReplaceFramework(
+                                framework,
+                                (fun _ -> { References = newFiles; ContentFiles = Set.empty }),
+                                (fun files -> files))) 
+                            group) group),
+            (fun _ -> None))
     
     member this.UseLowerVersionLibForSpecicalFrameworksIfEmpty() = 
         let newFiles = this.GetReferences(DotNetFramework(FrameworkVersion.V4_5))
