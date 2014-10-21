@@ -22,7 +22,11 @@ type InstallFiles =
         { References = Set.empty
           ContentFiles = Set.empty }
     
-    member this.AddReference lib = { this with References = Set.add (Reference.Library lib) this.References }
+    static member singleton lib = InstallFiles.empty.AddReference lib
+
+    member this.AddReference lib = 
+        { this with References = Set.add (Reference.Library lib) this.References }
+
     member this.AddFrameworkAssemblyReference assemblyName = 
         { this with References = Set.add (Reference.FrameworkAssemblyReference assemblyName) this.References }
 
@@ -69,66 +73,66 @@ type InstallModel =
         |> Seq.concat
     
     member this.GetFiles(framework : FrameworkIdentifier) = 
-        let g = framework.Group
-        match this.Groups.TryFind g with
+        match this.Groups.TryFind framework.Group with
         | Some group -> group.GetFiles framework
         | None -> Seq.empty
     
     member this.GetReferences(framework : FrameworkIdentifier) = 
-        let g = framework.Group
-        match this.Groups.TryFind g with
+        match this.Groups.TryFind framework.Group with
         | Some group -> group.GetReferences framework
         | None -> Set.empty
     
+    member this.AddOrReplaceGroup(groupId,mapGroupF,newGroupF) =
+        match this.Groups.TryFind groupId with
+        | Some group -> { this with Groups = Map.add groupId (mapGroupF group) this.Groups } 
+        | None -> 
+            match newGroupF() with
+            | Some newGroup -> { this with Groups = Map.add groupId newGroup this.Groups }
+            | None -> this
+        
+
     member this.AddReference(framework : FrameworkIdentifier, lib : string, references) : InstallModel = 
         let install = 
             match references with
             | NuspecReferences.All -> true
-            | NuspecReferences.Explicit list -> list |> List.exists lib.EndsWith
-        if not install then this
-        else 
-            let g = framework.Group
-            { this with Groups = 
-                            match this.Groups.TryFind g with
-                            | Some group -> 
-                                Map.add g 
-                                    ({ group with Frameworks = 
-                                                      match Map.tryFind framework group.Frameworks with
-                                                      | Some files -> 
-                                                          Map.add framework (files.AddReference lib) group.Frameworks
-                                                      | None -> 
-                                                          Map.add framework (InstallFiles.empty.AddReference lib) 
-                                                              group.Frameworks }) this.Groups
-                            | None -> 
-                                Map.add g ({ Frameworks = 
-                                                 Map.add framework (InstallFiles.empty.AddReference lib) Map.empty
-                                             Fallbacks = InstallFiles.empty }) this.Groups }
-    
+            | NuspecReferences.Explicit list -> List.exists lib.EndsWith list
+
+        if not install then this else 
+        this.AddOrReplaceGroup(
+            framework.Group,
+            (fun group ->
+                { group with Frameworks = 
+                                match Map.tryFind framework group.Frameworks with
+                                | Some files -> 
+                                    Map.add framework (files.AddReference lib) group.Frameworks
+                                | None -> 
+                                    Map.add framework (InstallFiles.singleton lib) 
+                                        group.Frameworks }),
+            (fun _ -> Some { Frameworks = Map.add framework (InstallFiles.singleton lib) Map.empty; Fallbacks = InstallFiles.empty }))
+
     member this.AddReferences(libs, references) : InstallModel = 
-        libs |> Seq.fold (fun model lib -> 
+        Seq.fold (fun model lib -> 
                     match FrameworkIdentifier.DetectFromPath lib with
                     | Some framework -> model.AddReference(framework, lib, references)
-                    | _ -> model) this
+                    | _ -> model) this libs
     
     member this.AddReferences(libs) = this.AddReferences(libs, NuspecReferences.All)
     
     member this.AddFrameworkAssemblyReference(framework : FrameworkIdentifier, assemblyName) : InstallModel = 
-        let g = framework.Group
-        { this with Groups = 
-                        match this.Groups.TryFind g with
-                        | Some group -> 
-                            Map.add g 
-                                ({ group with Frameworks = 
-                                                  match Map.tryFind framework group.Frameworks with
-                                                  | Some files -> 
-                                                      Map.add framework 
-                                                          (files.AddFrameworkAssemblyReference assemblyName) 
-                                                          group.Frameworks
-                                                  | None -> 
-                                                      Map.add framework 
-                                                          (InstallFiles.empty.AddFrameworkAssemblyReference assemblyName) 
-                                                          group.Frameworks }) this.Groups
-                        | None -> this.Groups }
+        this.AddOrReplaceGroup(
+            framework.Group,
+            (fun group ->
+                { group with Frameworks = 
+                                match Map.tryFind framework group.Frameworks with
+                                | Some files -> 
+                                    Map.add framework 
+                                        (files.AddFrameworkAssemblyReference assemblyName) 
+                                        group.Frameworks
+                                | None -> 
+                                    Map.add framework 
+                                        (InstallFiles.empty.AddFrameworkAssemblyReference assemblyName) 
+                                        group.Frameworks }),
+            (fun _ -> None))
     
     member this.AddFrameworkAssemblyReferences(references) : InstallModel = 
         references 
