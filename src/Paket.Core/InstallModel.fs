@@ -26,7 +26,7 @@ type InstallModel =
 
     static member EmptyModel(packageName, packageVersion) : InstallModel = 
         let frameworks = 
-            [ for x, p in FrameworkVersion.KnownDotNetFrameworks -> DotNetFramework(Framework x, p) ]
+            [ for x in FrameworkVersion.KnownDotNetFrameworks -> DotNetFramework(x) ]
         { PackageName = packageName
           PackageVersion = packageVersion
           Fallbacks = Map.empty
@@ -97,31 +97,17 @@ type InstallModel =
                             (fun frameworks f ->  Map.map (fun _ files -> {files with References = files.References |> Set.filter (f >> not)}) frameworks) 
                         this.Frameworks }
 
-    member this.UseGenericFrameworkVersionIfEmpty() =
-        let genericFramework = DotNetFramework(All, Full)
-        let newFiles = this.GetReferences genericFramework
-               
-        let model =
-            if Set.isEmpty newFiles then this else
-
-            let target = DotNetFramework(Framework FrameworkVersionNo.V1,Full)
-            match Map.tryFind target this.Frameworks with
-            | Some files when Set.isEmpty files.References |> not -> this
-            | _ -> { this with Frameworks = Map.add target { References = newFiles; ContentFiles = Set.empty } this.Frameworks }
-
-        { model with Frameworks = model.Frameworks |> Map.remove genericFramework } 
-
     member this.UseLowerVersionLibIfEmpty() = 
         FrameworkVersion.KnownDotNetFrameworks
         |> List.rev
-        |> List.fold (fun (model : InstallModel) (lowerVersion,lowerProfile) -> 
-               let newFiles = model.GetReferences(DotNetFramework(Framework lowerVersion, lowerProfile))
+        |> List.fold (fun (model : InstallModel) (lowerVersion) -> 
+               let newFiles = model.GetReferences(DotNetFramework(lowerVersion))
                if Set.isEmpty newFiles then model
                else 
                    FrameworkVersion.KnownDotNetFrameworks
-                   |> List.filter (fun (version,profile) -> (version,profile) > (lowerVersion,lowerProfile))
-                   |> List.fold (fun (model : InstallModel) (upperVersion,upperProfile) -> 
-                          let framework = DotNetFramework(Framework upperVersion, upperProfile)
+                   |> List.filter (fun (version) -> (version) > (lowerVersion))
+                   |> List.fold (fun (model : InstallModel) (upperVersion) -> 
+                          let framework = DotNetFramework(upperVersion)
                           match Map.tryFind framework model.Frameworks with
                           | Some files when Set.isEmpty files.References -> 
                               { model with Frameworks = Map.add framework { References = newFiles; ContentFiles = Set.empty } model.Frameworks }
@@ -161,7 +147,6 @@ type InstallModel =
 
     member this.Process() =
         this
-            .UseGenericFrameworkVersionIfEmpty()            
             .UseLowerVersionLibIfEmpty()
             .UsePortableVersionLibIfEmpty()
             .UseLowerVersionLibIfEmpty()  // because we now might need to use portable            
@@ -178,8 +163,8 @@ type InstallModel =
                     | _ -> ()]
             |> Set.ofList)
 
-    static member CreateFromLibs(packageName,packageVersions,libs,nuspec:Nuspec) = 
-        InstallModel.EmptyModel(packageName,packageVersions)
+    static member CreateFromLibs(packageName,packageVersion,libs,nuspec:Nuspec) = 
+        InstallModel.EmptyModel(packageName,packageVersion)
             .AddReferences(libs,nuspec.References)
             .AddFrameworkAssemblyReferences(nuspec.FrameworkAssemblyReferences)
             .Process()
