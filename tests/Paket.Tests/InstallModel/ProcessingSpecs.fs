@@ -135,7 +135,7 @@ let ``should handle lib install of Microsoft.BCL for NET >= 40``() =
               @"..\Microsoft.Bcl\lib\net40\System.Threading.Tasks.dll" 
 
               @"..\Microsoft.Bcl\lib\net45\_._" ])
-            .Process()
+            .BuildUnfilteredModel()
 
     model.GetFiles(DotNetFramework(FrameworkVersion.V3_5)) |> shouldNotContain  @"..\Microsoft.Bcl\lib\net40\System.IO.dll" 
 
@@ -157,7 +157,7 @@ let ``should skip lib install of Microsoft.BCL for monotouch and monoandroid``()
               @"..\Microsoft.Bcl\lib\monoandroid\_._" 
               @"..\Microsoft.Bcl\lib\monotouch\_._" 
               @"..\Microsoft.Bcl\lib\net45\_._" ])
-            .Process()
+            .BuildUnfilteredModel()
 
     model.GetFiles(MonoAndroid) |> shouldBeEmpty
     model.GetFiles(MonoTouch) |> shouldBeEmpty
@@ -184,7 +184,7 @@ let ``should not use portable-net40 if we have net40``() =
 
 [<Test>]
 let ``should handle lib install of DotNetZip 1.9.3``() = 
-    let model = emptymodel.AddReferences([ @"..\DotNetZip\lib\net20\Ionic.Zip.dll" ]).Process()
+    let model = emptymodel.AddReferences([ @"..\DotNetZip\lib\net20\Ionic.Zip.dll" ]).BuildUnfilteredModel()
 
     model.GetFiles(DotNetFramework(FrameworkVersion.V2)) |> shouldContain @"..\DotNetZip\lib\net20\Ionic.Zip.dll"
     model.GetFiles(DotNetFramework(FrameworkVersion.V3_5)) |> shouldContain @"..\DotNetZip\lib\net20\Ionic.Zip.dll"
@@ -193,14 +193,14 @@ let ``should handle lib install of DotNetZip 1.9.3``() =
 
 [<Test>]
 let ``should reduce lib install of DotNetZip 1.9.3``() = 
-    let model = emptymodel.AddReferences([ @"..\DotNetZip\lib\net20\Ionic.Zip.dll" ]).ProcessAndReduce()
+    let model = emptymodel.AddReferences([ @"..\DotNetZip\lib\net20\Ionic.Zip.dll" ]).BuildModel()
 
     model.GetFiles(DotNetFramework(FrameworkVersion.V2)) |> shouldNotContain @"..\DotNetZip\lib\net20\Ionic.Zip.dll"
     model.GetFiles(DotNetFramework(FrameworkVersion.V4_5)) |> shouldNotContain @"..\DotNetZip\lib\net20\Ionic.Zip.dll"
 
 [<Test>]
 let ``should handle lib install of NUnit 2.6 for windows 8``() = 
-    let model = emptymodel.AddReferences([ @"..\NUnit\lib\nunit.framework.dll" ]).Process()
+    let model = emptymodel.AddReferences([ @"..\NUnit\lib\nunit.framework.dll" ]).BuildUnfilteredModel()
 
     model.GetFiles(DotNetFramework(FrameworkVersion.V2)) |> shouldContain @"..\NUnit\lib\nunit.framework.dll"
     model.GetFiles(DotNetFramework(FrameworkVersion.V4_5)) |> shouldContain @"..\NUnit\lib\nunit.framework.dll"
@@ -237,7 +237,7 @@ let ``should handle lib install of Microsoft.Net.Http 2.2.28``() =
               
               @"..\Microsoft.Net.Http\lib\wpa81\System.Net.Http.Extensions.dll" 
               @"..\Microsoft.Net.Http\lib\wpa81\System.Net.Http.Primitives.dll" ])
-            .Process()
+            .BuildUnfilteredModel()
 
     model.GetFiles(DotNetFramework(FrameworkVersion.V3_5)) |> shouldNotContain @"..\Microsoft.Net.Http\lib\net40\System.Net.Http.dll"
 
@@ -307,7 +307,7 @@ let ``should handle lib install of Microsoft.Bcl 1.1.9``() =
               @"..\Microsoft.Bcl\lib\portable-net451+win81\_._"
               @"..\Microsoft.Bcl\lib\portable-net451+win81+wpa81\_._"
                ])
-            .Process()
+            .BuildUnfilteredModel()
 
     model.GetFiles(DotNetFramework(FrameworkVersion.V4)) |> shouldContain @"..\Microsoft.Bcl\lib\net40\System.IO.dll"
     model.GetFiles(DotNetFramework(FrameworkVersion.V4)) |> shouldContain @"..\Microsoft.Bcl\lib\net40\System.Runtime.dll" 
@@ -346,7 +346,7 @@ let ``should handle lib install of Fantomas 1.5``() =
             [ @"..\Fantomas\lib\FantomasLib.dll" 
               @"..\Fantomas\lib\FSharp.Core.dll" 
               @"..\Fantomas\lib\Fantomas.exe" ])
-          .Process()
+          .BuildUnfilteredModel()
 
     model.GetFiles(DotNetFramework(FrameworkVersion.V2)) |> shouldContain @"..\Fantomas\lib\FantomasLib.dll" 
     model.GetFiles(DotNetFramework(FrameworkVersion.V2)) |> shouldContain @"..\Fantomas\lib\FSharp.Core.dll" 
@@ -367,7 +367,7 @@ let ``should handle lib install of Fantomas 1.5.0 with explicit references``() =
             [ @"..\Fantomas\lib\FantomasLib.dll" 
               @"..\Fantomas\lib\FSharp.Core.dll" 
               @"..\Fantomas\lib\Fantomas.exe" ], NuspecReferences.Explicit ["FantomasLib.dll"])
-            .Process()
+            .BuildUnfilteredModel()
             
     model.GetFiles(DotNetFramework(FrameworkVersion.V2)) |> shouldContain @"..\Fantomas\lib\FantomasLib.dll" 
     model.GetFiles(DotNetFramework(FrameworkVersion.V2)) |> shouldNotContain @"..\Fantomas\lib\FSharp.Core.dll" 
@@ -390,7 +390,7 @@ let ``should only handle dll and exe files``() =
               @"..\Fantomas\lib\FantomasLib.xml" 
               @"..\Fantomas\lib\FSharp.Core.dll" 
               @"..\Fantomas\lib\Fantomas.exe" ], NuspecReferences.All)
-            .Process()
+            .BuildUnfilteredModel()
             
     model.GetFiles(DotNetFramework(FrameworkVersion.V2)) |> shouldContain @"..\Fantomas\lib\FantomasLib.dll" 
     model.GetFiles(DotNetFramework(FrameworkVersion.V2)) |> shouldContain @"..\Fantomas\lib\FSharp.Core.dll" 
@@ -402,7 +402,7 @@ let ``should use portable net40 in net45 when don't have other files``() =
     let model = 
         emptymodel.AddReferences(
             [ @"..\Google.Apis.Core\lib\portable-net40+sl50+win+wpa81+wp80\Google.Apis.Core.dll" ], NuspecReferences.All)
-            .Process()
+            .BuildUnfilteredModel()
             
     model.GetFiles(DotNetFramework(FrameworkVersion.V4)) |> shouldContain @"..\Google.Apis.Core\lib\portable-net40+sl50+win+wpa81+wp80\Google.Apis.Core.dll"
     model.GetFiles(DotNetFramework(FrameworkVersion.V4_5)) |> shouldContain @"..\Google.Apis.Core\lib\portable-net40+sl50+win+wpa81+wp80\Google.Apis.Core.dll"
@@ -417,7 +417,7 @@ let ``should not install tools``() =
             [ @"..\FAKE\tools\FAKE.exe" 
               @"..\FAKE\tools\FakeLib.dll" 
               @"..\FAKE\tools\Fake.SQL.dll" ])
-            .Process()
+            .BuildUnfilteredModel()
 
     model.GetFrameworks()
     |> Seq.forall (fun kv -> kv.Value.References.IsEmpty)

@@ -7,6 +7,13 @@ type Reference =
     | Library of string
     | FrameworkAssemblyReference of string
 
+    member this.LibName =
+        match this with
+        | Reference.Library lib -> 
+            let fi = new FileInfo(normalizePath lib)
+            Some(fi.Name.Replace(fi.Extension, ""))
+        | _ -> None
+
 type InstallFiles = 
     { References : Reference Set
       ContentFiles : string Set }
@@ -266,34 +273,26 @@ type InstallModel =
                                                                 Fallbacks = InstallFiles.empty }) model.Groups }) model) 
                this
     
-    member this.Process() = 
+    member this.BuildUnfilteredModel() = 
         this.UseLowerVersionLibIfEmpty().UsePortableVersionLibIfEmpty().UseLowerVersionLibIfEmpty() // because we now might need to use portable
             .UseLowerVersionLibForSpecicalFrameworksIfEmpty().FilterBlackList().UseLastInGroupAsFallback()
-    member this.ProcessAndReduce() = this.Process().DeleteIfGroupFallback()
+
+    member this.BuildModel() = this.BuildUnfilteredModel().DeleteIfGroupFallback()
     
     member this.GetLibraryNames = 
         lazy ([ for g in this.Groups do
                     for f in g.Value.Frameworks do
                         for lib in f.Value.References do
-                            match lib with
-                            | Reference.Library lib -> 
-                                let fi = new FileInfo(normalizePath lib)
-                                yield fi.Name.Replace(fi.Extension, "")
-                            | _ -> ()
+                            yield lib.LibName
                     for lib in g.Value.Fallbacks.References do
-                        match lib with
-                        | Reference.Library lib -> 
-                            let fi = new FileInfo(normalizePath lib)
-                            yield fi.Name.Replace(fi.Extension, "")
-                        | _ -> ()
+                        yield lib.LibName
                 for lib in this.DefaultFallback.References do
-                    match lib with
-                    | Reference.Library lib -> 
-                        let fi = new FileInfo(normalizePath lib)
-                        yield fi.Name.Replace(fi.Extension, "")
-                    | _ -> () ]
+                    yield lib.LibName ]
+              |> List.choose id
               |> Set.ofList)
     
     static member CreateFromLibs(packageName, packageVersion, libs, nuspec : Nuspec) = 
-        InstallModel.EmptyModel(packageName, packageVersion).AddReferences(libs, nuspec.References)
-                    .AddFrameworkAssemblyReferences(nuspec.FrameworkAssemblyReferences).ProcessAndReduce()
+        InstallModel
+            .EmptyModel(packageName, packageVersion)
+            .AddReferences(libs, nuspec.References)
+            .AddFrameworkAssemblyReferences(nuspec.FrameworkAssemblyReferences).BuildModel()
