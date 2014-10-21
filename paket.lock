@@ -2,11 +2,11 @@ NUGET
   remote: http://nuget.org/api/v2
   specs:
     DotNetZip (1.9.3)
-    FAKE (3.6.1)
-    FSharp.Compiler.Service (0.0.62)
+    FAKE (3.7.2)
+    FSharp.Compiler.Service (0.0.67)
     FSharp.Core.Microsoft.Signed (3.1.1.1)
-    FSharp.Formatting (2.4.33)
-      FSharp.Compiler.Service (>= 0.0.62)
+    FSharp.Formatting (2.4.34)
+      FSharp.Compiler.Service (0.0.67)
       Microsoft.AspNet.Razor (2.0.30506.0)
       RazorEngine (3.3.0)
     Microsoft.AspNet.Razor (2.0.30506.0)
@@ -17,7 +17,7 @@ NUGET
       Microsoft.Bcl (>= 1.1.9)
       Microsoft.Bcl.Build (>= 1.0.14)
     Newtonsoft.Json (6.0.5)
-    NuGet.CommandLine (2.8.2)
+    NuGet.CommandLine (2.8.3)
     NUnit (2.6.3)
     NUnit.Runners (2.6.3)
     Octokit (0.5.2)
@@ -32,5 +32,5 @@ GITHUB
     FsUnit.fs (a8830b5a70e72a1948592cfa1e43e3c5b0a31b92)
   remote: fsharp/FAKE
   specs:
-    modules/Octokit/Octokit.fsx (90fd29a8e8e61fc9f0b1994cf9b50f12e502ccad)
+    modules/Octokit/Octokit.fsx (76b2222991bf1cc4bc07fb0b16605d6ca5ac21a2)
       Octokit (>= 0)
