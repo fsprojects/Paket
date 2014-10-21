@@ -71,6 +71,12 @@ let findBinaries () =
     |> Array.map (fun d -> d.FullName @@ (sprintf "%s.dll" d.Name))
     |> List.ofArray
 
+let findLibDirs () =
+    directoryInfo bin 
+    |> subDirectories
+    |> Array.map (fun d -> d.FullName)
+    |> List.ofArray
+
 // Build API reference from XML comments
 let buildReference () =
   CleanDir (output @@ "reference")
@@ -80,7 +86,7 @@ let buildReference () =
       parameters = ("root", root)::info,
       sourceRepo = githubLink @@ "tree/master",
       sourceFolder = __SOURCE_DIRECTORY__ @@ ".." @@ "..",
-      publicOnly = true, libDirs = [bin] )
+      publicOnly = true,libDirs = (findLibDirs ()) )
 
 // Build documentation from `fsx` and `md` files in `docs/content`
 let buildDocumentation () =
