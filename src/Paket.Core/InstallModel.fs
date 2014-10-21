@@ -53,15 +53,11 @@ type FrameworkGroup =
     static member singleton(framework,libs) =
         { Frameworks = Map.add framework libs Map.empty; Fallbacks = InstallFiles.empty }
 
-    member this.ReplaceFramework(framework,f1,f2,f3) =
+    member this.ReplaceFramework(framework,emptyReferencesF,mapReferencesF) =
         { this with Frameworks = 
                         match Map.tryFind framework this.Frameworks with
-                        | Some files when Set.isEmpty files.References -> Map.add framework (f1()) this.Frameworks
-                        | Some files -> Map.add framework (f2 files) this.Frameworks
-                        | None -> 
-                            match f3() with
-                            | Some files -> Map.add framework files this.Frameworks
-                            | None -> this.Frameworks }
+                        | Some files when Set.isEmpty files.References |> not -> Map.add framework (mapReferencesF files) this.Frameworks
+                        | _ -> Map.add framework (emptyReferencesF()) this.Frameworks }
 
 type InstallModel = 
     { PackageName : string
@@ -118,8 +114,7 @@ type InstallModel =
                 group.ReplaceFramework(
                     framework,
                     (fun _ -> InstallFiles.singleton lib),
-                    (fun files -> files.AddReference lib),
-                    (fun _ -> Some (InstallFiles.singleton lib)))),
+                    (fun files -> files.AddReference lib))),
             (fun _ -> Some(FrameworkGroup.singleton(framework,InstallFiles.singleton lib))))
 
     member this.AddReferences(libs, references) : InstallModel = 
@@ -137,8 +132,7 @@ type InstallModel =
                 group.ReplaceFramework(
                     framework,
                     (fun _ -> InstallFiles.empty.AddFrameworkAssemblyReference assemblyName),
-                    (fun files -> files.AddFrameworkAssemblyReference assemblyName),
-                    (fun _ -> Some (InstallFiles.empty.AddFrameworkAssemblyReference assemblyName)))),
+                    (fun files -> files.AddFrameworkAssemblyReference assemblyName))),
             (fun _ -> None))
     
     member this.AddFrameworkAssemblyReferences(references) : InstallModel = 
@@ -200,8 +194,7 @@ type InstallModel =
                             group.ReplaceFramework(
                                 framework,
                                 (fun _ -> { References = newFiles; ContentFiles = Set.empty }),
-                                (fun files -> files),
-                                (fun _ -> Some({ References = newFiles; ContentFiles = Set.empty })))),
+                                (fun files -> files))),
                         (fun _ -> Some(FrameworkGroup.singleton(framework,{ References = newFiles; ContentFiles = Set.empty }))))) this
     
     member this.UseLastInGroupAsFallback() = 
