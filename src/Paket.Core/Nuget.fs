@@ -291,10 +291,14 @@ let ExtractPackage(fileName:string, targetFolder, name, version) =
         if  isExtracted fileName then
              verbosefn "%s %s already extracted" name version
         else
-            let zip = ZipFile.Read(fileName)
+            use zip = ZipFile.Read(fileName)
             Directory.CreateDirectory(targetFolder) |> ignore
             for e in zip do
-                e.Extract(targetFolder, ExtractExistingFileAction.OverwriteSilently)
+                try
+                    e.Extract(targetFolder, ExtractExistingFileAction.OverwriteSilently)
+                with
+                | exn ->                    
+                    failwithf "Error during unzipping %s in %s %s: %s" e.FileName name version exn.Message 
 
             // cleanup folder structure
             let rec cleanup (dir : DirectoryInfo) = 
@@ -321,7 +325,14 @@ let CopyFromCache(cacheFileName, name, version, force) =
         else
             CleanDir targetFolder
             File.Copy(cacheFileName, targetFile.FullName)            
-        return! ExtractPackage(targetFile.FullName,targetFolder,name,version)
+        try
+            return! ExtractPackage(targetFile.FullName,targetFolder,name,version)            
+        with
+        | exn -> 
+            File.Delete targetFile.FullName
+            Directory.Delete(targetFolder,true)
+            raise exn
+            return ""
     }
 
 /// Downloads the given package to the NuGet Cache folder
