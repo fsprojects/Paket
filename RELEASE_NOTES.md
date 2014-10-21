@@ -1,3 +1,7 @@
+#### 0.9.0-alpha001 - 21.10.2014
+* Create references for Win8 - https://github.com/fsprojects/Paket/issues/280
+* Added net11 to framework handling - https://github.com/fsprojects/Paket/pull/269
+
 #### 0.8.6 - 17.10.2014
 * BUGFIX: Don't let the bootstrapper fail if we already have a paket.exe
 
