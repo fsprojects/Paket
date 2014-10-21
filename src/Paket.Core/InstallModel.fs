@@ -206,8 +206,7 @@ type InstallModel =
                                                                     ContentFiles = Set.empty } 
                                                     group.Frameworks }
                             | _ -> group),
-                        (fun _ -> Some ({ Frameworks = Map.add framework { References = newFiles; ContentFiles = Set.empty } Map.empty
-                                          Fallbacks = InstallFiles.empty })))) this
+                        (fun _ -> Some(FrameworkGroup.singleton(framework,{ References = newFiles; ContentFiles = Set.empty }))))) this
     
     member this.UseLastInGroupAsFallback() = 
         let groups = 
