@@ -150,6 +150,7 @@ type FrameworkIdentifier =
                   "Profile24", "net45+sl5+MonoAndroid1+MonoTouch1"
                   "Profile31", "netcore451+wp81"
                   "Profile32", "netcore451+wpa81"
+                  "Profile32", "win81+wpa81"
                   "Profile36", "net4+sl4+netcore45+wp8"
                   "Profile37", "net4+sl5+netcore45+MonoAndroid1+MonoTouch1"
                   "Profile41", "net403+sl4+netcore45"
