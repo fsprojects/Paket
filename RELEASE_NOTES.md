@@ -1,5 +1,5 @@
-#### 0.9.0-alpha002 - 21.10.2014
-* Use win81+wpa81 as Profile32 - https://github.com/fsprojects/Paket/issues/281
+#### 0.9.0-alpha003 - 21.10.2014
+* Use more profiles - https://github.com/fsprojects/Paket/issues/281
 
 #### 0.9.0-alpha001 - 21.10.2014
 * Create references for Win8 - https://github.com/fsprojects/Paket/issues/280
