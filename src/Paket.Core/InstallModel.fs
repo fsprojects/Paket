@@ -100,7 +100,9 @@ type InstallModel =
             | None -> this
 
     member this.MapGroups(mapF) = { this with Groups = Map.map mapF this.Groups }
-        
+
+    member this.MapGroupFrameworks(mapF) = 
+        this.MapGroups(fun _ group -> { group with Frameworks = Map.map mapF group.Frameworks })
 
     member this.AddReference(framework : FrameworkIdentifier, lib : string, references) : InstallModel = 
         let install = 
@@ -150,16 +152,12 @@ type InstallModel =
                 | Reference.Library lib -> not (lib.EndsWith ".dll" || lib.EndsWith ".exe")
                 | _ -> false ]
 
-        this.MapGroups(fun _ group -> 
-                               { group with Frameworks = 
-                                                blackList 
-                                                |> List.fold 
-                                                       (fun frameworks f -> 
-                                                       Map.map 
-                                                           (fun _ files -> 
-                                                           { files with References = 
-                                                                            files.References |> Set.filter (f >> not) }) 
-                                                           frameworks) group.Frameworks })
+        blackList
+        |> List.map (fun f -> f >> not) // inverse
+        |> List.fold (fun (model:InstallModel) f ->
+                model.MapGroupFrameworks(fun _ files -> { files with References = Set.filter f files.References }) )
+                this
+    
     
     member this.UseLowerVersionLibIfEmpty() =
         let group = 
@@ -178,22 +176,22 @@ type InstallModel =
                                             Map.add framework { References = newFiles
                                                                 ContentFiles = Set.empty } group.Frameworks }
                         | _ -> group) group) (Map.find FrameworkIdentifier.DefaultGroup this.Groups)
+
         { this with Groups = Map.add FrameworkIdentifier.DefaultGroup group this.Groups }
     
     member this.UseLowerVersionLibForSpecicalFrameworksIfEmpty() = 
         let newFiles = this.GetReferences(DotNetFramework(FrameworkVersion.V4_5))
-        if Set.isEmpty newFiles then this
-        else 
-            FrameworkIdentifier.KnownSpecialTargets 
-            |> List.fold (fun (model : InstallModel) framework -> 
-                    model.AddOrReplaceGroup(
-                        framework.Group,
-                        (fun group ->
-                            group.ReplaceFramework(
-                                framework,
-                                (fun _ -> { References = newFiles; ContentFiles = Set.empty }),
-                                (fun files -> files))),
-                        (fun _ -> Some(FrameworkGroup.singleton(framework,{ References = newFiles; ContentFiles = Set.empty }))))) this
+        if Set.isEmpty newFiles then this else 
+        FrameworkIdentifier.KnownSpecialTargets 
+        |> List.fold (fun (model : InstallModel) framework -> 
+                model.AddOrReplaceGroup(
+                    framework.Group,
+                    (fun group ->
+                        group.ReplaceFramework(
+                            framework,
+                            (fun _ -> { References = newFiles; ContentFiles = Set.empty }),
+                            (fun files -> files))),
+                    (fun _ -> Some(FrameworkGroup.singleton(framework,{ References = newFiles; ContentFiles = Set.empty }))))) this
     
     member this.UseLastInGroupAsFallback() = 
         this.MapGroups(fun _ group -> { group with Fallbacks = (group.Frameworks |> Seq.last).Value })
