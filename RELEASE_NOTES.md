@@ -1,3 +1,6 @@
+#### 0.9.0-alpha007 - 22.10.2014
+* Detect VS automatic nuget restore and create paket restore - http://fsprojects.github.io/Paket/convert-from-nuget.html#Automated-process
+
 #### 0.9.0-alpha006 - 22.10.2014
 * Allow to restore packages from paket.references files - http://fsprojects.github.io/Paket/paket-restore.html
 
