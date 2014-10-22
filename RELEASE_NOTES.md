@@ -1,3 +1,6 @@
+#### 0.9.0-alpha006 - 22.10.2014
+* Allow to restore packages from paket.references files - http://fsprojects.github.io/Paket/paket-restore.html
+
 #### 0.9.0-alpha005 - 22.10.2014
 * Detect local nuspec with old XML namespace - https://github.com/fsprojects/Paket/issues/283
 

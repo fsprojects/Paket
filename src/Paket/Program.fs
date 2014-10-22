@@ -40,6 +40,7 @@ type CLIArguments =
     | Hard
     | [<CustomCommandLine("nuget")>] Nuget of string
     | [<CustomCommandLine("version")>] Version of string
+    | [<Rest>]References_Files of string
     | No_Install
     | Strict
     | [<AltCommandLine("--pre")>] Include_Prereleases
@@ -52,6 +53,7 @@ with
             | Install -> "installs all packages."
             | Restore -> "restores all packages."
             | Update -> "updates the paket.lock file and installs all packages."
+            | References_Files _ -> "allows to specify a list of references file names."
             | Outdated -> "displays information about new packages."
             | ConvertFromNuget -> "converts all projects from NuGet to Paket."
             | InitAutoRestore -> "enables automatic restore for Visual Studio."
@@ -104,14 +106,16 @@ try
 
         match command with
         | Command.Add -> 
-            let packageName =  results.GetResult <@ CLIArguments.Nuget @>
+            let packageName = results.GetResult <@ CLIArguments.Nuget @>
             let version = 
                 match results.TryGetResult <@ CLIArguments.Version @> with
                 | Some x -> x
                 | _ -> ""
             AddProcess.Add(packageName,version,force,hard,interactive,noInstall |> not)
         | Command.Install -> UpdateProcess.Update(false,force,hard) 
-        | Command.Restore -> RestoreProcess.Restore(force) 
+        | Command.Restore -> 
+            let files = results.GetResults <@ CLIArguments.References_Files @> 
+            RestoreProcess.Restore(force,files) 
         | Command.Update -> 
             match results.TryGetResult <@ CLIArguments.Nuget @> with
             | Some packageName -> UpdateProcess.UpdatePackage(packageName,force,hard)

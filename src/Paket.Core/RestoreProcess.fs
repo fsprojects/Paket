@@ -4,7 +4,6 @@ module Paket.RestoreProcess
 open Paket
 open System.IO
 open Paket.Logging
-open Paket.ModuleResolver
 open Paket.PackageResolver
 open Paket.PackageSources
 open FSharp.Polyfill
@@ -33,43 +32,23 @@ let ExtractPackage(sources, force, package : ResolvedPackage) =
             return package, Nuget.GetLibFiles folder
     }
 
-let DownloadSourceFile(rootPath, source:ResolvedSourceFile) = 
-    async { 
-        let path = FileInfo(Path.Combine(rootPath, source.FilePath)).Directory.FullName
-        let versionFile = FileInfo(Path.Combine(path, "paket.version"))
-        let destination = Path.Combine(rootPath, source.FilePath)
-        
-        let isInRightVersion = 
-            if not <| versionFile.Exists then false
-            else source.Commit = File.ReadAllText(versionFile.FullName)
-
-        if isInRightVersion then 
-            verbosefn "Sourcefile %s is already there." (source.ToString())
-        else 
-            tracefn "Downloading %s to %s" (source.ToString()) destination
-            
-            Directory.CreateDirectory(destination |> Path.GetDirectoryName) |> ignore
-            do! GitHub.downloadGithubFiles(source,destination)
-            File.WriteAllText(versionFile.FullName, source.Commit)
-    }
-
-
 /// Retores the given packages from the lock file.
-let internal restore(sources,force, lockFile:LockFile) = 
+let internal restore(sources, force, lockFile:LockFile, packages:Set<string>) = 
     let sourceFileDownloads =
         lockFile.SourceFiles
-        |> Seq.map (fun file -> DownloadSourceFile(Path.GetDirectoryName lockFile.FileName, file))        
+        |> Seq.map (fun file -> GitHub.DownloadSourceFile(Path.GetDirectoryName lockFile.FileName, file))        
         |> Async.Parallel
 
     let packageDownloads = 
         lockFile.ResolvedPackages
+        |> Map.filter (fun name _ -> packages.Contains(name.ToLower()))
         |> Seq.map (fun kv -> ExtractPackage(sources,force,kv.Value))
         |> Async.Parallel
 
     Async.Parallel(sourceFileDownloads,packageDownloads) 
 
-let Restore(force) = 
-    let lockFileName = DependenciesFile.FindLockfile Constants.DependenciesFile
+let Restore(force,referencesFileNames) = 
+    let lockFileName = DependenciesFile.FindLockfile Constants.DependenciesFile    
     
     let sources, lockFile = 
         if not lockFileName.Exists then 
@@ -80,7 +59,16 @@ let Restore(force) =
                 |> File.ReadAllLines
                 |> PackageSourceParser.getSources
             sources, LockFile.LoadFrom(lockFileName.FullName)
+    
+    let packages = 
+        if referencesFileNames = [] then lockFile.ResolvedPackages |> Seq.map (fun kv -> kv.Key.ToLower()) else
+        referencesFileNames
+        |> List.map (fun fileName ->
+            let referencesFile = ReferencesFile.FromFile fileName
+            let references = lockFile.GetPackageHull(referencesFile)
+            references |> Seq.map (fun kv -> kv.Key.ToLower()))
+        |> Seq.concat
 
-    restore(sources, force, lockFile) 
+    restore(sources, force, lockFile,Set.ofSeq packages) 
     |> Async.RunSynchronously
     |> ignore

@@ -4,6 +4,7 @@ open Paket
 open Newtonsoft.Json.Linq
 open System.IO
 open Ionic.Zip
+open Paket.Logging
 
 // Gets the sha1 of a branch
 let getSHA1OfBranch owner project branch = 
@@ -73,3 +74,23 @@ let downloadGithubFiles(remoteFile:ModuleResolver.ResolvedSourceFile,destitnatio
 
     | _ ->  return! downloadFromUrl(None,sprintf "https://github.com/%s/%s/raw/%s/%s" remoteFile.Owner remoteFile.Project remoteFile.Commit remoteFile.Name) destitnation
 }
+
+let DownloadSourceFile(rootPath, source:ModuleResolver.ResolvedSourceFile) = 
+    async { 
+        let path = FileInfo(Path.Combine(rootPath, source.FilePath)).Directory.FullName
+        let versionFile = FileInfo(Path.Combine(path, "paket.version"))
+        let destination = Path.Combine(rootPath, source.FilePath)
+        
+        let isInRightVersion = 
+            if not <| versionFile.Exists then false
+            else source.Commit = File.ReadAllText(versionFile.FullName)
+
+        if isInRightVersion then 
+            verbosefn "Sourcefile %s is already there." (source.ToString())
+        else 
+            tracefn "Downloading %s to %s" (source.ToString()) destination
+            
+            Directory.CreateDirectory(destination |> Path.GetDirectoryName) |> ignore
+            do! downloadGithubFiles(source,destination)
+            File.WriteAllText(versionFile.FullName, source.Commit)
+    }

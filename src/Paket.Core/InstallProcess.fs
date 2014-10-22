@@ -64,7 +64,6 @@ let private removeCopiedFiles (project: ProjectFile) =
     |> List.filter (fun fi -> not <| fi.FullName.Contains("paket-files"))
     |> removeFilesAndTrimDirs
 
-
 let CreateInstallModel(sources, force, package) = 
     async { 
         let! (package, files) = RestoreProcess.ExtractPackage(sources, force, package)
@@ -74,24 +73,23 @@ let CreateInstallModel(sources, force, package) =
         return package, InstallModel.CreateFromLibs(package.Name, package.Version, files, nuspec)
     }
 
+/// Restores the given packages from the lock file.
+let createModel(sources,force, lockFile:LockFile) = 
+        let sourceFileDownloads =
+            lockFile.SourceFiles
+            |> Seq.map (fun file -> GitHub.DownloadSourceFile(Path.GetDirectoryName lockFile.FileName, file))        
+            |> Async.Parallel
 
-/// Retores the given packages from the lock file.
-let internal createModel(sources,force, lockFile:LockFile) = 
-    let sourceFileDownloads =
-        lockFile.SourceFiles
-        |> Seq.map (fun file -> RestoreProcess.DownloadSourceFile(Path.GetDirectoryName lockFile.FileName, file))        
-        |> Async.Parallel
+        let packageDownloads = 
+            lockFile.ResolvedPackages
+            |> Seq.map (fun kv -> CreateInstallModel(sources,force,kv.Value))
+            |> Async.Parallel
 
-    let packageDownloads = 
-        lockFile.ResolvedPackages
-        |> Seq.map (fun kv -> CreateInstallModel(sources,force,kv.Value))
-        |> Async.Parallel
+        let _,extractedPackages =
+            Async.Parallel(sourceFileDownloads,packageDownloads)
+            |> Async.RunSynchronously
 
-    let _,extractedPackages =
-        Async.Parallel(sourceFileDownloads,packageDownloads)
-        |> Async.RunSynchronously
-
-    extractedPackages
+        extractedPackages
 
 /// Installs the given all packages from the lock file.
 let Install(sources,force, hard, lockFile:LockFile) = 
@@ -102,11 +100,6 @@ let Install(sources,force, hard, lockFile:LockFile) =
         |> Array.map (fun (p,m) -> p.Name.ToLower(),m)
         |> Map.ofArray
 
-    let allPackages =
-        extractedPackages
-        |> Array.map (fun (p,_) -> p.Name.ToLower(),p)
-        |> Map.ofArray
-
     let applicableProjects =
         ProjectFile.FindAllProjects(".") 
         |> List.choose (fun p -> ProjectFile.FindReferencesFile (FileInfo(p.FileName))
@@ -115,23 +108,7 @@ let Install(sources,force, hard, lockFile:LockFile) =
     for project,referenceFile in applicableProjects do    
         verbosefn "Installing to %s" project.FileName
 
-        let usedPackages = new Dictionary<_,_>()
-
-        let rec addPackage directly (name:string) =
-            let identity = name.ToLower()
-            match allPackages |> Map.tryFind identity with
-            | Some package ->
-                match usedPackages.TryGetValue name with
-                | false,_ ->
-                    usedPackages.Add(name,directly)
-                    if not lockFile.Options.Strict then
-                        for d,_ in package.Dependencies do
-                            addPackage false d
-                | true,v -> usedPackages.[name] <- v || directly
-            | None -> failwithf "Project %s references package %s, but it was not found in the paket.lock file." project.FileName name
-
-        referenceFile.NugetPackages
-        |> List.iter (addPackage true)
+        let usedPackages = lockFile.GetPackageHull(referenceFile)
 
         project.UpdateReferences(model,usedPackages,hard)
         
@@ -149,14 +126,12 @@ let Install(sources,force, hard, lockFile:LockFile) =
                                            else Path.Combine(file.Link, Path.GetFileName(file.Name))) })
         
         let nuGetFileItems =
-            if not lockFile.Options.OmitContent 
-            then
-                let files = copyContentFiles(project, findPackagesWithContent usedPackages)
-                files |> List.map (fun file -> 
-                                       { BuildAction = project.DetermineBuildAction file.Name
-                                         Include = createRelativePath project.FileName file.FullName
-                                         Link = None })
-            else []
+            if lockFile.Options.OmitContent then [] else
+            let files = copyContentFiles(project, findPackagesWithContent usedPackages)
+            files |> List.map (fun file -> 
+                                    { BuildAction = project.DetermineBuildAction file.Name
+                                      Include = createRelativePath project.FileName file.FullName
+                                      Link = None })
 
         project.UpdateFileItems(gitHubFileItems @ nuGetFileItems, hard)
 

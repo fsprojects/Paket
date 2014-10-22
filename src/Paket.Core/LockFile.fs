@@ -151,6 +151,10 @@ module LockFileParser =
 
 /// Allows to parse and analyze paket.lock files.
 type LockFile(fileName:string,options,resolution:PackageResolution,remoteFiles:ResolvedSourceFile list) =
+    let lowerCaseResolution =
+        resolution
+        |> Map.fold (fun resolution name p -> Map.add (name.ToLower()) p resolution) Map.empty
+
     member __.SourceFiles = remoteFiles
     member __.ResolvedPackages = resolution
     member __.FileName = fileName
@@ -170,3 +174,24 @@ type LockFile(fileName:string,options,resolution:PackageResolution,remoteFiles:R
     static member LoadFrom(lockFileName) : LockFile =        
         LockFileParser.Parse(File.ReadAllLines lockFileName)
         |> fun state -> LockFile(lockFileName, state.Options ,state.Packages |> Seq.fold (fun map p -> Map.add p.Name p map) Map.empty, List.rev state.SourceFiles)
+
+    member this.GetPackageHull(referencesFile:ReferencesFile) =
+        let usedPackages = new System.Collections.Generic.Dictionary<_,_>()
+
+        let rec addPackage directly (name:string) =
+            let identity = name.ToLower()
+            match lowerCaseResolution.TryFind identity with
+            | Some package ->
+                match usedPackages.TryGetValue name with
+                | false,_ ->
+                    usedPackages.Add(name,directly)
+                    if not this.Options.Strict then
+                        for d,_ in package.Dependencies do
+                            addPackage false d
+                | true,v -> usedPackages.[name] <- v || directly
+            | None -> failwithf "%s references package %s, but it was not found in the paket.lock file." referencesFile.FileName name
+
+        referencesFile.NugetPackages
+        |> List.iter (addPackage true)
+
+        usedPackages    
