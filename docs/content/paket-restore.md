@@ -9,4 +9,4 @@ Options:
 
   `--force`: Forces the download of all packages.
 
-  `--references-file`: Allows to restore all packages from the given `paket.references` files. If no `paket.references` file is given then all packages will be restored.
+  `--references-files`: Allows to restore all packages from the given `paket.references` files. If no `paket.references` file is given then all packages will be restored.
