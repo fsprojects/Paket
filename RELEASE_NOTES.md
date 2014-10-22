@@ -1,3 +1,6 @@
+#### 0.9.0-alpha005 - 22.10.2014
+* Detect local nuspec with old XML namespace - https://github.com/fsprojects/Paket/issues/283
+
 #### 0.9.0-alpha004 - 21.10.2014
 * Remove old framework references - https://github.com/fsprojects/Paket/issues/274
 

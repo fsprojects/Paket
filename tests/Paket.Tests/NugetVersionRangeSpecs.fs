@@ -6,9 +6,9 @@ open FsUnit
 
 [<Test>]
 let ``can detect latest version``() = 
-    Nuget.parseVersionRange "" |> shouldEqual VersionRequirement.AllReleases
+    NugetVersionRangeParser.parse "" |> shouldEqual VersionRequirement.AllReleases
 
-let parseRange text = Nuget.parseVersionRange(text).Range
+let parseRange text = NugetVersionRangeParser.parse(text).Range
 
 [<Test>]
 let ``can detect specific version``() = 
@@ -49,4 +49,4 @@ let ``can detect range version``() =
         
 [<Test>]
 let ``can detect "null" version``() = 
-    Nuget.parseVersionRange "null" |> shouldEqual (DependenciesFileParser.parseVersionRequirement ">= 0")
+    NugetVersionRangeParser.parse "null" |> shouldEqual (DependenciesFileParser.parseVersionRequirement ">= 0")

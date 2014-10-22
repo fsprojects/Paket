@@ -100,43 +100,6 @@ let getAllVersionsFromLocalPath (localNugetPath, package) =
     }
 
 
-/// Parses NuGet version ranges.
-let parseVersionRange (text:string) = 
-    if  text = null || text = "" || text = "null" then VersionRequirement.AllReleases else
-
-    let parseRange text = 
-        let failParse() = failwithf "unable to parse %s" text
-
-        let parseBound  = function
-            | '[' | ']' -> VersionRangeBound.Including
-            | '(' | ')' -> VersionRangeBound.Excluding
-            | _         -> failParse()
-        
-        if not <| text.Contains "," then
-            if text.StartsWith "[" then Specific(text.Trim([|'['; ']'|]) |> SemVer.Parse)
-            else Minimum(SemVer.Parse text)
-        else
-            let fromB = parseBound text.[0]
-            let toB   = parseBound (Seq.last text)
-            let versions = text
-                            .Trim([|'['; ']';'(';')'|])
-                            .Split([|','|], StringSplitOptions.RemoveEmptyEntries)
-                            |> Array.map SemVer.Parse
-            match versions.Length with
-            | 2 ->
-                Range(fromB, versions.[0], versions.[1], toB)
-            | 1 ->
-                if text.[1] = ',' then
-                    match fromB, toB with
-                    | VersionRangeBound.Excluding, VersionRangeBound.Including -> Maximum(versions.[0])
-                    | VersionRangeBound.Excluding, VersionRangeBound.Excluding -> LessThan(versions.[0])
-                    | _ -> failParse()
-                else 
-                    match fromB, toB with
-                    | VersionRangeBound.Excluding, VersionRangeBound.Excluding -> GreaterThan(versions.[0])
-                    | _ -> failParse()
-            | _ -> failParse()
-    VersionRequirement(parseRange text,PreReleaseStatus.No)
 
 /// Gets package details from Nuget via OData
 let getDetailsFromNugetViaOData auth nugetURL package version = 
@@ -181,7 +144,7 @@ let getDetailsFromNugetViaOData auth nugetURL package version =
             |> Array.map (fun a -> 
                    a.[0], 
                    if a.Length > 1 then a.[1] else "0")
-            |> Array.map (fun (name, version) -> name, parseVersionRange version)
+            |> Array.map (fun (name, version) -> name, NugetVersionRangeParser.parse version)
             |> Array.toList
 
         return { Name = officialName; DownloadUrl = downloadLink; Dependencies = packages; SourceUrl = nugetURL }
@@ -241,40 +204,13 @@ let getDetailsFromLocalFile path package version =
 
         zippedNuspec.Extract(Path.GetTempPath(), ExtractExistingFileAction.OverwriteSilently)
 
-        let nuspec = FileInfo(Path.Combine(Path.GetTempPath(), zippedNuspec.FileName))
-        
-        let xmlDoc = XmlDocument()
-        nuspec.FullName |> xmlDoc.Load
+        let fileName = FileInfo(Path.Combine(Path.GetTempPath(), zippedNuspec.FileName)).FullName
 
-        let ns = new XmlNamespaceManager(xmlDoc.NameTable);
-        ns.AddNamespace("x", "http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd");
-        ns.AddNamespace("y", "http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd");
-        
-        let nsUri = xmlDoc.LastChild.NamespaceURI
-        let pfx = ns.LookupPrefix(nsUri)
+        let nuspec = Nuspec.Load fileName        
 
-        let dependencies = 
-            xmlDoc.SelectNodes(sprintf "/%s:package/%s:metadata/%s:dependencies/%s:dependency" pfx pfx pfx pfx, ns)
-            |> Seq.cast<XmlNode>
-            |> Seq.map (fun node -> 
-                            let name = node.Attributes.["id"].Value                            
-                            let version = 
-                                if node.Attributes.["version"] <> null then 
-                                    parseVersionRange node.Attributes.["version"].Value 
-                                else 
-                                    parseVersionRange "0"
-                            name,version) 
-            |> Seq.toList
+        File.Delete(fileName)
 
-        let officialName = 
-            xmlDoc.SelectNodes(sprintf "/%s:package/%s:metadata/%s:id" pfx pfx pfx, ns)
-            |> Seq.cast<XmlNode>
-            |> Seq.head
-            |> fun node -> node.InnerText
-
-        File.Delete(nuspec.FullName)
-
-        return { Name = officialName; DownloadUrl = package; Dependencies = dependencies; SourceUrl = path }
+        return { Name = nuspec.OfficialName; DownloadUrl = package; Dependencies = nuspec.Dependencies; SourceUrl = path }
     }
 
 

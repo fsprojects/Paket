@@ -60,3 +60,8 @@ let ``trailing zeros are equal``() =
 let ``can parse strange versions``() = 
     (SemVer.Parse "2.1-alpha10").ToString() |> shouldEqual "2.1-alpha10"
     (SemVer.Parse "2-alpha100").ToString() |> shouldEqual "2-alpha100"
+
+[<Test>]
+let ``can parse FSHarp.Data versions``() = 
+    (SemVer.Parse "2.1.0-beta3").ToString() |> shouldEqual "2.1.0-beta3"
+    

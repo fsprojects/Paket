@@ -10,6 +10,11 @@ let ``can detect explicit references``() =
     |> shouldEqual (NuspecReferences.Explicit ["FSharp.Data.dll"])
 
 [<Test>]
+let ``can detect explicit in self made nuspec``() = 
+    Nuspec.Load("TestFiles/FSharp.Data.Prerelease.nuspec").References
+    |> shouldEqual (NuspecReferences.Explicit ["FSharp.Data.dll"])
+
+[<Test>]
 let ``can detect all references``() = 
     Nuspec.Load("TestFiles/Octokit.nuspec").References
     |> shouldEqual NuspecReferences.All

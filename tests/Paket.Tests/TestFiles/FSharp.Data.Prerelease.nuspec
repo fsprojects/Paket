@@ -1,0 +1,31 @@
+<?xml version="1.0"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2012/06/nuspec.xsd">
+  <metadata>
+    <id>FSharp.Data</id>
+    <version>2.1.0-beta3</version>
+    <title>F# Data</title>
+    <authors>Tomas Petricek, Gustavo Guerra</authors>
+    <owners>Tomas Petricek, Gustavo Guerra</owners>
+    <licenseUrl>http://github.com/fsharp/FSharp.Data/blob/master/LICENSE.md</licenseUrl>
+    <projectUrl>http://fsharp.github.io/FSharp.Data</projectUrl>
+    <iconUrl>https://raw.github.com/fsharp/FSharp.Data/master/misc/logo.png</iconUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>The F# Data library (FSharp.Data.dll) implements everything you need to access data in your F# applications and scripts. It implements F# type providers for working with structured file formats (CSV, HTML, JSON and XML) and for accessing the WorldBank and Freebase data. It also includes helpers for parsing CSV, HTML and JSON files and for sending HTTP requests.</description>
+    <summary>Library of F# type providers and data access tools</summary>
+    <releaseNotes>Improve generated table names in HtmlProvider. Added support for lists in addition to tables in HtmlProvider. Added TBA and TBD to list of default missing values. Make HTML parser API more C# friendly. Improve API of HTML operations.</releaseNotes>
+    <copyright>Copyright 2014</copyright>
+    <tags>F# fsharp data typeprovider WorldBank Freebase CSV HTML JSON XML HTTP</tags>
+    <dependencies>
+      <group targetFramework=".NETPortable0.0-net40+sl5+wp8+win8">
+        <dependency id="Zlib.Portable" version="1.10.0" />
+      </group>
+      <group targetFramework=".NETFramework4.0" />
+    </dependencies>
+    <frameworkAssemblies>
+      <frameworkAssembly assemblyName="System.Xml.Linq" targetFramework=".NETFramework4.0" />
+    </frameworkAssemblies>
+    <references>
+      <reference file="FSharp.Data.dll" />
+    </references>
+  </metadata>
+</package>
