@@ -26,12 +26,12 @@ let private applyConfig config (doc : XmlDocument) =
             PackageSource.Parse (url, auth)]
     { PackageSources = config.PackageSources @ packages
       PackageRestoreEnabled = 
-        match doc.SelectNodes("//packageRestore/add[@enabled]") |> Seq.cast<XmlNode> |> Seq.firstOrDefault with
-        | Some node -> bool.Parse(node.Attributes.["enabled"].Value)
+        match doc.SelectNodes("//packageRestore/add[@key='enabled']") |> Seq.cast<XmlNode> |> Seq.firstOrDefault with
+        | Some node -> bool.Parse(node.Attributes.["value"].Value)
         | None -> config.PackageRestoreEnabled
       PackageRestoreAutomatic = 
-        match doc.SelectNodes("//packageRestore/add[@automatic]") |> Seq.cast<XmlNode> |> Seq.firstOrDefault with
-        | Some node -> bool.Parse(node.Attributes.["automatic"].Value)
+        match doc.SelectNodes("//packageRestore/add[@key='automatic']") |> Seq.cast<XmlNode> |> Seq.firstOrDefault with
+        | Some node -> bool.Parse(node.Attributes.["value"].Value)
         | None -> config.PackageRestoreAutomatic }
 
 let private readNugetConfig() =
