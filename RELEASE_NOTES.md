@@ -1,33 +1,16 @@
-#### 0.9.0-alpha007 - 22.10.2014
-* Detect VS automatic nuget restore and create paket restore - http://fsprojects.github.io/Paket/convert-from-nuget.html#Automated-process
-
-#### 0.9.0-alpha006 - 22.10.2014
+#### 0.9.0-alpha009 - 22.10.2014
 * Allow to restore packages from paket.references files - http://fsprojects.github.io/Paket/paket-restore.html
-
-#### 0.9.0-alpha005 - 22.10.2014
 * Detect local nuspec with old XML namespace - https://github.com/fsprojects/Paket/issues/283
-
-#### 0.9.0-alpha004 - 21.10.2014
-* Remove old framework references - https://github.com/fsprojects/Paket/issues/274
-
-#### 0.9.0-alpha003 - 21.10.2014
-* Use more profiles - https://github.com/fsprojects/Paket/issues/281
-
-#### 0.9.0-alpha001 - 21.10.2014
-* Create references for Win8 - https://github.com/fsprojects/Paket/issues/280
-* Added net11 to framework handling - https://github.com/fsprojects/Paket/pull/269
-
-#### 0.8.6 - 17.10.2014
-* BUGFIX: Don't let the bootstrapper fail if we already have a paket.exe
-
-#### 0.8.5 - 16.10.2014
-* BUGFIX: Use the Id property when NuGet package name and id are different - https://github.com/fsprojects/Paket/issues/265
-
-#### 0.8.3 - 16.10.2014
 * `paket add` command tries to keep all other packages stable.
-
-#### 0.8.2 - 15.10.2014
 * Added another profile mapping for Profile136 - https://github.com/fsprojects/Paket/pull/262
+* More portable profiles - https://github.com/fsprojects/Paket/issues/281
+* Added net11 to framework handling - https://github.com/fsprojects/Paket/pull/269
+* Create references for Win8 - https://github.com/fsprojects/Paket/issues/280
+* Detect VS automatic nuget restore and create paket restore - http://fsprojects.github.io/Paket/convert-from-nuget.html#Automated-process
+* `paket convert-from-nuget` doesn't duplicate paket solution items - https://github.com/fsprojects/Paket/pull/286
+* BUGFIX: Paket removes old framework references if during install - https://github.com/fsprojects/Paket/issues/274
+* BUGFIX: Don't let the bootstrapper fail if we already have a paket.exe
+* BUGFIX: Use the Id property when NuGet package name and id are different - https://github.com/fsprojects/Paket/issues/265
 
 #### 0.8.0 - 15.10.2014
 * Smarter install in project files
