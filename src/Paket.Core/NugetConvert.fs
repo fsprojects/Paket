@@ -15,7 +15,8 @@ type private NugetConfig =
       PackageRestoreAutomatic : bool }
 
 let private applyConfig config (doc : XmlDocument) =
-    let packages = 
+    let clearSources = doc.SelectSingleNode("//packageSources/clear") <> null
+    let sources = 
         [for node in doc.SelectNodes("//packageSources/add[@value]") ->
             let url = node.Attributes.["value"].Value
             let auth = doc.SelectNodes(sprintf "//packageSourceCredentials/%s" (XmlConvert.EncodeLocalName node.Attributes.["key"].Value))
@@ -24,7 +25,7 @@ let private applyConfig config (doc : XmlDocument) =
                        |> Option.map (fun node -> {Username = AuthEntry.Create <| node.SelectSingleNode("//add[@key='Username']").Attributes.["value"].Value
                                                    Password = AuthEntry.Create <| node.SelectSingleNode("//add[@key='ClearTextPassword']").Attributes.["value"].Value})
             PackageSource.Parse (url, auth)]
-    { PackageSources = config.PackageSources @ packages
+    { PackageSources = if clearSources then sources else config.PackageSources @ sources
       PackageRestoreEnabled = 
         match doc.SelectNodes("//packageRestore/add[@key='enabled']") |> Seq.cast<XmlNode> |> Seq.firstOrDefault with
         | Some node -> bool.Parse(node.Attributes.["value"].Value)
