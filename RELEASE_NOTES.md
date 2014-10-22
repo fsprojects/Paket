@@ -1,3 +1,6 @@
+#### 0.9.1 - 22.10.2014
+* BUGFIX: Add default nuget source to dependencies file if original project has no source
+
 #### 0.9.0 - 22.10.2014
 * Allow to restore packages from paket.references files - http://fsprojects.github.io/Paket/paket-restore.html
 * Detect local nuspec with old XML namespace - https://github.com/fsprojects/Paket/issues/283

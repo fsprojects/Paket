@@ -36,22 +36,24 @@ let private applyConfig config (doc : XmlDocument) =
         | None -> config.PackageRestoreAutomatic }
 
 let private readNugetConfig() =
-    DirectoryInfo(".nuget")
-    |> Seq.unfold (fun di -> if di = null 
-                             then None 
-                             else Some(FileInfo(Path.Combine(di.FullName, "nuget.config")), di.Parent)) 
-    |> Seq.toList
-    |> List.rev
-    |> List.append [FileInfo(Path.Combine(
-                                  Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), 
-                                  "nuget", 
-                                  "nuget.config"))]
-    |> List.filter (fun f -> f.Exists)
-    |> List.map (fun f -> let doc = XmlDocument() in doc.Load(f.FullName); doc)
-    |> List.fold applyConfig 
-                 { PackageSources = [] 
-                   PackageRestoreEnabled = false 
-                   PackageRestoreAutomatic = false }
+    let config = 
+        DirectoryInfo(".nuget")
+        |> Seq.unfold (fun di -> if di = null 
+                                 then None 
+                                 else Some(FileInfo(Path.Combine(di.FullName, "nuget.config")), di.Parent)) 
+        |> Seq.toList
+        |> List.rev
+        |> List.append [FileInfo(Path.Combine(
+                                      Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), 
+                                      "nuget", 
+                                      "nuget.config"))]
+        |> List.filter (fun f -> f.Exists)
+        |> List.map (fun f -> let doc = XmlDocument() in doc.Load(f.FullName); doc)
+        |> List.fold applyConfig 
+                     { PackageSources = [] 
+                       PackageRestoreEnabled = false 
+                       PackageRestoreAutomatic = false }
+    {config with PackageSources = if config.PackageSources = [] then [Paket.PackageSources.DefaultNugetSource] else config.PackageSources }
 
 let removeFile file = 
     File.Delete file
