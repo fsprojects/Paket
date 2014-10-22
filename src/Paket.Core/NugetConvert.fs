@@ -53,10 +53,9 @@ let private readNugetConfig() =
                    PackageRestoreEnabled = false 
                    PackageRestoreAutomatic = false }
 
-let removeFileIfExists file = 
-    if File.Exists file then 
-        File.Delete file
-        tracefn "Deleted %s" file
+let removeFile file = 
+    File.Delete file
+    tracefn "Deleted %s" file
 
 let private convertNugetsToDepFile(nugetPackagesConfigs, nugetConfig) =
     let allVersions =
@@ -129,7 +128,7 @@ let ConvertFromNuget(force, installAfter, initAutoRestore) =
 
     let nugetPackagesConfigs = FindAllFiles(".", "packages.config") |> Seq.map Nuget.ReadPackagesConfig
     let nugetConfig = readNugetConfig()
-    FindAllFiles(".", "nuget.config") |> Seq.iter (fun f -> removeFileIfExists f.FullName)
+    FindAllFiles(".", "nuget.config") |> Seq.iter (fun f -> removeFile f.FullName)
     
     convertNugetsToDepFile(nugetPackagesConfigs, nugetConfig)
         
@@ -156,26 +155,25 @@ let ConvertFromNuget(force, installAfter, initAutoRestore) =
         project.Save()
 
     for packagesConfigFile in nugetPackagesConfigs |> Seq.map (fun f -> f.File) do
-        removeFileIfExists packagesConfigFile.FullName
+        removeFile packagesConfigFile.FullName
 
     let autoVsNugetRestore = nugetConfig.PackageRestoreEnabled && nugetConfig.PackageRestoreAutomatic
-    let targetsNugetRestore = FindAllFiles(".", "nuget.targets") |> Seq.isEmpty |> not
-
-    match Directory.EnumerateDirectories(".", ".nuget", SearchOption.AllDirectories) |> Seq.firstOrDefault with
-    | Some nugetDir ->
-        let nugetTargets = Path.Combine(nugetDir, "nuget.targets")
-        if File.Exists nugetTargets then
-            let nugetExe = Path.Combine(nugetDir, "nuget.exe")
-            removeFileIfExists nugetExe
-            removeFileIfExists nugetTargets
+    let nugetTargets = FindAllFiles(".", "nuget.targets") |> Seq.firstOrDefault
+    
+    match nugetTargets with
+    | Some nugetTargets ->
+        removeFile nugetTargets.FullName
+        let nugetExe = Path.Combine(nugetTargets.DirectoryName, "nuget.exe")
+        if File.Exists nugetExe then 
+            removeFile nugetExe
             let depFile = DependenciesFile.ReadFromFile(Constants.DependenciesFile)
             if not <| depFile.HasPackage("Nuget.CommandLine") then depFile.Add("Nuget.CommandLine", "").Save()
             
-        if Directory.EnumerateFileSystemEntries(nugetDir) |> Seq.isEmpty 
-            then Directory.Delete nugetDir
+        if Directory.EnumerateFileSystemEntries(nugetTargets.DirectoryName) |> Seq.isEmpty 
+            then Directory.Delete nugetTargets.DirectoryName
     | None -> ()
 
-    if initAutoRestore && (autoVsNugetRestore || targetsNugetRestore) then 
+    if initAutoRestore && (autoVsNugetRestore || nugetTargets.IsSome) then 
         VSIntegration.InitAutoRestore()
 
     if installAfter then
