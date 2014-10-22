@@ -15,12 +15,7 @@ Paket can assist you with the conversion. The `paket convert-from-nuget` command
 
 1. Finds all `packages.config` files, generates a [`paket.dependencies` file](dependencies-file.html) in the solution root and replaces each `packages.config` with an equivalent [`paket.references` file](references-files.html). 
 2. If there is a solution-level `packages.config`, then it will be removed and its dependencies will be included into the [`paket.dependencies`](dependencies-file.html).
-3. If you use NuGet Package Restore (and have a `.nuget` directory with `nuget.targets` inside), then 
-
-  - associated elements in all project files will be removed ([read more](http://docs.nuget.org/docs/workflows/migrating-to-automatic-package-restore#If_you_are_not_using_TFS)).
-  - the `nuget.targets` file will be removed.
-  - the [`paket init-auto-restore`](paket-init-auto-restore.html) command will be invoked.
-
+3. If you use NuGet Package Restore ([MSBuild-Integrated or Automatic Visual Studio Package Restore](http://docs.nuget.org/docs/workflows/migrating-to-automatic-package-restore)), then the [`paket init-auto-restore`](paket-init-auto-restore.html) command will be invoked.
 4. Next (unless `--no-install` is specified), the [paket install](paket-install.html) process with the `--hard` flag will be executed. This will:
 
   - analyze the dependencies.
