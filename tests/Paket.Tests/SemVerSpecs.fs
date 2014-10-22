@@ -60,8 +60,20 @@ let ``trailing zeros are equal``() =
 let ``can parse strange versions``() = 
     (SemVer.Parse "2.1-alpha10").ToString() |> shouldEqual "2.1-alpha10"
     (SemVer.Parse "2-alpha100").ToString() |> shouldEqual "2-alpha100"
+    (SemVer.Parse "2.1-alpha-1").ToString() |> shouldEqual "2.1-alpha-1"
+    (SemVer.Parse "2-alpha-100").ToString() |> shouldEqual "2-alpha-100"
 
 [<Test>]
 let ``can parse FSHarp.Data versions``() = 
     (SemVer.Parse "2.1.0-beta3").ToString() |> shouldEqual "2.1.0-beta3"
-    
+
+[<Test>]
+let ``can parse prerelease versions with dash``() = 
+    let semVer = SemVer.Parse("2.1.0-beta-3")
+    semVer.Major |> shouldEqual 2
+    semVer.Minor |> shouldEqual 1
+    semVer.Patch |> shouldEqual 0
+    semVer.PreRelease |> shouldEqual (Some { Origin = "beta-3"
+                                             Name = "beta-3"
+                                             Number = None })
+    semVer.Build |> shouldEqual ""
