@@ -22,6 +22,41 @@ type SolutionFile(fileName: string) =
                 content.RemoveRange(index, 4)
         | None -> ()
 
+    let addPaketFolder () = 
+        let lines = 
+            [sprintf   "Project(\"{%s}\") = \".paket\", \".paket\", \"{%s}\"" slnFolderProjectGuid (Guid.NewGuid().ToString("D").ToUpper());
+                       "	ProjectSection(SolutionItems) = preProject";
+                       "	EndProjectSection";
+                       "EndProject"]
+
+        let index = 
+            match content |> Seq.tryFindIndex (fun line -> line.StartsWith("Project")) with
+            // insert before the first project in a solution
+            | Some index -> index
+            | None -> 
+                // there are no project in solution
+                match content |> Seq.tryFindIndex (fun line -> line.StartsWith("Global")) with
+                // insert before ``global`` entry
+                | Some index -> index
+                // cannot find ``global`` entry, just append to the end of file
+                | None -> content.Count
+
+        content.InsertRange(index, lines)
+        index, lines |> List.length
+
+    let addPaketFiles(paketProjectIndex, length, dependenciesFile, lockFile) = 
+        let projectLines = content.GetRange(paketProjectIndex, length)
+        
+        let add s =
+            if not <| Seq.exists (fun line -> line = s) projectLines 
+            then content.Insert(paketProjectIndex + 2, s)
+
+        Option.iter (fun lockFile -> 
+            add (sprintf"		%s = %s" lockFile lockFile)) lockFile
+
+        add (sprintf   "		%s = %s" dependenciesFile dependenciesFile)
+        
+
     member __.FileName = fileName
 
     member __.RemoveNugetEntries() =
@@ -33,32 +68,15 @@ type SolutionFile(fileName: string) =
         removeNugetSlnFolderIfEmpty()
 
     member __.AddPaketFolder(dependenciesFile, lockFile) =
+        let paketProjectIndex, length = 
+            match content |> Seq.tryFindIndex (fun line ->
+                line.StartsWith(sprintf   "Project(\"{%s}\") = \".paket\", \".paket\"" slnFolderProjectGuid)) with
+            | Some paketProjectIndex -> 
+                let length = content |> Seq.skip paketProjectIndex |> Seq.findIndex (fun line -> line = "EndProject")
+                paketProjectIndex, length
+            | None -> addPaketFolder()       
         
-        let lines = ResizeArray<_>()
-
-        lines.Add(sprintf   "Project(\"{%s}\") = \".paket\", \".paket\", \"{%s}\"" slnFolderProjectGuid <| Guid.NewGuid().ToString("D").ToUpper())
-        lines.Add           " ProjectSection(SolutionItems) = preProject"
-        lines.Add(sprintf   "		%s = %s" dependenciesFile dependenciesFile)
-
-        Option.iter (fun lockFile -> 
-            lines.Add(sprintf"		%s = %s" lockFile lockFile)) lockFile
-
-        lines.Add           "	EndProjectSection"
-        lines.Add           "EndProject"
-
-        match content |> Seq.tryFindIndex (fun line -> line.StartsWith("Project")) with
-        | Some index -> 
-            // insert before the first project in a solution
-            content.InsertRange(index, lines)
-        | None -> 
-            // there are no project in solution
-            match content |> Seq.tryFindIndex (fun line -> line.StartsWith("Global")) with
-            | Some index -> 
-                // insert before ``global`` entry
-                content.InsertRange(index, lines)
-            | None -> 
-                // cannot find ``global`` entry, just append to the end of file
-                content.InsertRange(content.Count, lines)
+        addPaketFiles(paketProjectIndex, length, dependenciesFile, lockFile)
 
     member __.Save() =
         if content |> Seq.toList <> originalContent 
