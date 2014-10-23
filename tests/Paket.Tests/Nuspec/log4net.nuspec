@@ -1,0 +1,13 @@
+<?xml version="1.0"?>
+<package xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <metadata xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
+    <id>log4net</id>
+    <version>1.2.10</version>
+    <authors>Apache</authors>
+    <owners>Apache</owners>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>log4net is a tool to help the programmer output log statements to a variety of output targets. log4net is a port of the excellent log4j framework to the .NET runtime</description>
+    <summary>log4net is a tool to help the programmer output log statements to a variety of output targets. log4net is a port of the excellent log4j framework to the .NET runtime</summary>
+    <language>en-US</language>
+  </metadata>
+</package>

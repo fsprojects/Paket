@@ -75,21 +75,25 @@
     <Compile Include="SemVerSpecs.fs" />
     <Compile Include="NugetVersionRangeSpecs.fs" />
     <Compile Include="BindingRedirect.fs" />
-    <Content Include="TestFiles\FSharp.Data.nuspec">
+    <Content Include="Nuspec\FSharp.Data.nuspec">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="TestFiles\FSharp.Data.Prerelease.nuspec">
+    <Content Include="Nuspec\FSharp.Data.Prerelease.nuspec">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="TestFiles\Octokit.nuspec">
+    <Content Include="Nuspec\Octokit.nuspec">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="TestFiles\Fantomas.nuspec">
+    <Content Include="Nuspec\Fantomas.nuspec">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="TestFiles\Microsoft.Net.Http.nuspec">
+    <Content Include="Nuspec\Microsoft.Net.Http.nuspec">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+    <Content Include="Nuspec\log4net.nuspec">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>  
+    <Compile Include="Nuspec\NuspecSpecs.fs" />
     <Compile Include="FilterVersionSpecs.fs" />
     <Compile Include="DependenciesFile\VersionRangeSpecs.fs" />
     <Compile Include="DependenciesFile\ParserSpecs.fs" />
@@ -132,7 +136,6 @@
     <Compile Include="InstallModel\Xml\SystemNetHttp.fs" />
     <Compile Include="InstallModel\Xml\SystemNetHttpWithFrameworkReferences.fs" />
     <Compile Include="InstallModel\Xml\ManualNodes.fs" />
-    <Compile Include="InstallModel\NuspecSpecs.fs" />
     <Compile Include="DependencyModel\ProjectDependencySpecs.fs" />
     <None Include="paket.references" />
   </ItemGroup>
