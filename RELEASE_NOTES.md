@@ -1,3 +1,6 @@
+#### 0.9.5 - 23.10.2014
+* Fix !~> resolver
+
 #### 0.9.4 - 23.10.2014
 * Use normal 4.0 framework libs when we only specify net40
 

@@ -34,8 +34,12 @@ type PackageRequirement =
                 if this = that then 0 else
                 let c1 =
                     compare 
-                       (not this.VersionRequirement.Range.IsGlobalOverride,this.Parent,this.Name)
-                       (not that.VersionRequirement.Range.IsGlobalOverride,this.Parent,that.Name)
+                       (not this.VersionRequirement.Range.IsGlobalOverride,this.Parent)
+                       (not that.VersionRequirement.Range.IsGlobalOverride,this.Parent)
                 if c1 <> 0 then c1 else
+                let c2 = -1 * compare this.ResolverStrategy that.ResolverStrategy
+                if c2 <> 0 then c2 else
+                let c3 =compare this.Name that.Name
+                if c3 <> 0 then c3 else
                 -1 * compare this.VersionRequirement that.VersionRequirement                
           | _ -> invalidArg "that" "cannot compare value of different types" 
