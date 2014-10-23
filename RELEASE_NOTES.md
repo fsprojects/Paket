@@ -1,3 +1,6 @@
+#### 0.9.7 - 23.10.2014
+* Revert double dashes support in version no.s
+
 #### 0.9.6 - 23.10.2014
 * Fix !~> resolver
 
