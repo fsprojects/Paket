@@ -11,7 +11,7 @@ type PreRelease =
       Number : int option }
     
     static member TryParse str = 
-        let m = Regex("^(?<name>[a-zA-Z]+)(?<number>\d*)$").Match(str)
+        let m = Regex("^(?<name>[a-zA-Z-]+)(?<number>\d*)$").Match(str)
         match m.Success, m.Groups.["name"].Value, m.Groups.["number"].Value with
         | true, name, "" -> 
             Some { Origin = str
@@ -109,25 +109,24 @@ module SemVer =
     let Parse(version : string) = 
         let splitted = version.Split '.'
         let l = splitted.Length
-        
+
+        let splitAtFirst (char : char) (s : string)=
+            match s.IndexOf(char) with
+            | -1 -> s, ""
+            | x  -> s.Substring(0, x), s.Substring(x+1)
+
         let patch, preRelease = 
             match l with
             | 0 -> 0, ""
             | 1 ->
-                let splitted' = splitted.[0].Split '-'
-                0, 
-                if splitted'.Length > 1 then splitted'.[1]
-                else ""
+                let _, splitted' = splitted.[0] |> splitAtFirst '-'
+                0, splitted'
             | 2 ->
-                let splitted' = splitted.[1].Split '-'
-                0, 
-                if splitted'.Length > 1 then splitted'.[1]
-                else ""
+                let _, splitted' = splitted.[1] |> splitAtFirst '-'
+                0, splitted'
             | _ ->
-                let splitted' = splitted.[2].Split '-'
-                Int32.Parse splitted'.[0], 
-                if splitted'.Length > 1 then splitted'.[1]
-                else ""
+                let p, splitted' = splitted.[2] |> splitAtFirst '-'
+                Int32.Parse p, splitted'
         { Major = 
               if l > 0 then Int32.Parse (splitted.[0].Split('-').[0])
               else 0
