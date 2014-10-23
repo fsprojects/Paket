@@ -53,3 +53,7 @@ let ``can order resolver strategy``() =
     require "A" ResolverStrategy.Min "~> 2.2" |> shouldBeSmallerThan (require "A" ResolverStrategy.Max "~> 2.3")
     require "A" ResolverStrategy.Min "~> 2.2" |> shouldBeSmallerThan (require "A" ResolverStrategy.Max "~> 2.1")
     require "A" ResolverStrategy.Min "~> 2.4" |> shouldBeSmallerThan (require "A" ResolverStrategy.Max "~> 1.3")
+
+[<Test>]
+let ``can order naming and range``() = 
+    require "Castle.Windsor-NLog" ResolverStrategy.Min ">= 0" |> shouldBeGreaterThan (require "Nancy.Bootstrappers.Windsor" ResolverStrategy.Min "~> 0.23")

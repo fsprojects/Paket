@@ -39,7 +39,8 @@ type PackageRequirement =
                 if c1 <> 0 then c1 else
                 let c2 = -1 * compare this.ResolverStrategy that.ResolverStrategy
                 if c2 <> 0 then c2 else
-                let c3 =compare this.Name that.Name
+                let c3 = -1 * compare this.VersionRequirement that.VersionRequirement
                 if c3 <> 0 then c3 else
-                -1 * compare this.VersionRequirement that.VersionRequirement                
+                compare this.Name that.Name
+                
           | _ -> invalidArg "that" "cannot compare value of different types" 
