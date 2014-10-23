@@ -99,6 +99,7 @@
     <Compile Include="Nuspec\NuspecSpecs.fs" />
     <Compile Include="FilterVersionSpecs.fs" />
     <Compile Include="DependenciesFile\VersionRangeSpecs.fs" />
+    <Compile Include="DependenciesFile\VersionRequirementSpecs.fs" />
     <Compile Include="DependenciesFile\ParserSpecs.fs" />
     <Compile Include="DependenciesFile\SaveSpecs.fs" />
     <Compile Include="DependenciesFile\AddPackageSpecs.fs" />
