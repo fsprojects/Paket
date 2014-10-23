@@ -63,5 +63,5 @@ let ``can detect framework assemblies for Octokit``() =
 let ``can detect framework assemblies for FSharp.Data.SqlEnumProvider``() = 
     Nuspec.Load("Nuspec/FSharp.Data.SqlEnumProvider.nuspec").FrameworkAssemblyReferences
     |> shouldEqual 
-        [{ AssemblyName = "System.Data"; TargetFramework = DotNetFramework(FrameworkVersion.V4) }
-         { AssemblyName = "System.Xml"; TargetFramework = DotNetFramework(FrameworkVersion.V4) }]
+        [{ AssemblyName = "System.Data"; TargetFramework = DotNetFramework(FrameworkVersion.V4_Client) }
+         { AssemblyName = "System.Xml"; TargetFramework = DotNetFramework(FrameworkVersion.V4_Client) }]

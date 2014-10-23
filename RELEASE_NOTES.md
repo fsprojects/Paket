@@ -1,3 +1,6 @@
+#### 0.9.4 - 23.10.2014
+* Use normal 4.0 framework libs when we only specify net40
+
 #### 0.9.3 - 23.10.2014
 * Prerelease versions with hyphen are handled for better NuGet compatibility - https://github.com/fsprojects/Paket/issues/263
 

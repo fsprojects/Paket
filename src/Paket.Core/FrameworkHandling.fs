@@ -92,8 +92,8 @@ type FrameworkIdentifier =
         | "net20-full" -> Some(DotNetFramework(FrameworkVersion.V2))
         | "net35" -> Some(DotNetFramework(FrameworkVersion.V3_5))
         | "net35-full" -> Some(DotNetFramework(FrameworkVersion.V3_5))
-        | "net4" -> Some(DotNetFramework(FrameworkVersion.V4))
-        | "net40" -> Some(DotNetFramework(FrameworkVersion.V4))
+        | "net4" -> Some(DotNetFramework(FrameworkVersion.V4_Client))
+        | "net40" -> Some(DotNetFramework(FrameworkVersion.V4_Client))
         | "net40-full" -> Some(DotNetFramework(FrameworkVersion.V4))
         | "net40-client" -> Some(DotNetFramework(FrameworkVersion.V4_Client))
         | "net45" -> Some(DotNetFramework(FrameworkVersion.V4_5))
@@ -261,6 +261,8 @@ type FrameworkIdentifier =
             let startPos = path.IndexOf("lib/")
             let endPos = path.IndexOf(fi.Name.ToLower())
             if startPos < 0 || endPos < 0 then None
-            else path.Substring(startPos + 4, endPos - startPos - 5) |> FrameworkIdentifier.Extract
+            else 
+                path.Substring(startPos + 4, endPos - startPos - 5) 
+                |> FrameworkIdentifier.Extract
 
     static member DefaultGroup = DotNetFramework(FrameworkVersion.V4).Group
