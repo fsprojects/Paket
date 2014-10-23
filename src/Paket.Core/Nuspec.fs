@@ -63,7 +63,8 @@ type Nuspec =
         ["ns1","http://schemas.microsoft.com/packaging/2012/06/nuspec.xsd"
          "ns2","http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd"
          "ns3","http://schemas.microsoft.com/packaging/2013/01/nuspec.xsd"
-         "ns4","http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd"]
+         "ns4","http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd"
+         "ns5","http://schemas.microsoft.com/packaging/2011/10/nuspec.xsd"]
 
     static member All = { References = NuspecReferences.All; Dependencies = []; FrameworkAssemblyReferences = []; OfficialName = "" }
     static member Explicit references = { References = NuspecReferences.Explicit references; Dependencies = []; FrameworkAssemblyReferences = []; OfficialName = "" }
@@ -80,7 +81,9 @@ type Nuspec =
 
             let nsUri = doc.LastChild.NamespaceURI
             let ns = manager.LookupPrefix(nsUri)       
-            
+            if ns = null then
+                failwithf "unrecognized namespace of %s in %s" nsUri fileName
+
             let dependencies = 
                 doc.SelectNodes(sprintf "/%s:package/%s:metadata/%s:dependencies/%s:dependency" ns ns ns ns, manager)
                 |> Seq.cast<XmlNode>
