@@ -1,0 +1,21 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2011/10/nuspec.xsd">
+    <metadata>
+        <id>FSharp.Data.SqlEnumProvider</id>
+        <version>0.9.0-aplha</version>
+        <authors>Dmitry Morozov</authors>
+        <owners>Dmitry Morozov</owners>
+        <licenseUrl>http://github.com/fsprojects/FSharp.Data.SqlEnumProvider/blob/master/LICENSE.md</licenseUrl>
+        <projectUrl>http://github.com/fsprojects/FSharp.Data.SqlEnumProvider/</projectUrl>
+        <requireLicenseAcceptance>false</requireLicenseAcceptance>
+        <description>Database enumeration types</description>
+        <summary>Converts lookup data into enumeration type.</summary>
+        <releaseNotes>TryFindName method was added.</releaseNotes>
+        <copyright>Copyright 2014</copyright>
+        <tags>F# fsharp data typeprovider sql</tags>
+        <frameworkAssemblies>
+            <frameworkAssembly assemblyName="System.Data" targetFramework=".NETFramework4.0" />
+            <frameworkAssembly assemblyName="System.Xml" targetFramework=".NETFramework4.0" />
+        </frameworkAssemblies>
+    </metadata>
+</package>

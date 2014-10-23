@@ -53,3 +53,10 @@ let ``can detect framework assemblies for Octokit``() =
     Nuspec.Load("TestFiles/Octokit.nuspec").FrameworkAssemblyReferences
     |> shouldEqual 
         [{ AssemblyName = "System.Net.Http"; TargetFramework = DotNetFramework(FrameworkVersion.V4_5) }]
+
+[<Test>]
+let ``can detect framework assemblies for FSharp.Data.SqlEnumProvider``() = 
+    Nuspec.Load("TestFiles/FSharp.Data.SqlEnumProvider.nuspec").FrameworkAssemblyReferences
+    |> shouldEqual 
+        [{ AssemblyName = "System.Data"; TargetFramework = DotNetFramework(FrameworkVersion.V4) }
+         { AssemblyName = "System.Xml"; TargetFramework = DotNetFramework(FrameworkVersion.V4) }]
