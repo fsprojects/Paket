@@ -1,3 +1,6 @@
+#### 0.9.3 - 23.10.2014
+* Prerelease versions with hyphen are handled for better NuGet compatibility - https://github.com/fsprojects/Paket/issues/263
+
 #### 0.9.2 - 23.10.2014
 * BUGFIX: Fix namespace handling in nuspec files
 
