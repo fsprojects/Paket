@@ -92,7 +92,10 @@
     </Content>
     <Content Include="Nuspec\log4net.nuspec">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>  
+    </Content>    
+    <Content Include="Nuspec\FSharp.Data.SqlEnumProvider.nuspec">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Compile Include="Nuspec\NuspecSpecs.fs" />
     <Compile Include="FilterVersionSpecs.fs" />
     <Compile Include="DependenciesFile\VersionRangeSpecs.fs" />
