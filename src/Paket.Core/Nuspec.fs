@@ -79,13 +79,17 @@ type Nuspec =
             Nuspec.KnownNamespaces
             |> List.iter (fun (name,ns) -> manager.AddNamespace(name, ns))
 
-            let nsUri = doc.LastChild.NamespaceURI
-            let ns = manager.LookupPrefix(nsUri)       
-            if ns = null then
-                failwithf "unrecognized namespace of %s in %s" nsUri fileName
+            let ns = 
+                let packageNs = manager.LookupPrefix(doc.LastChild.NamespaceURI)       
+                if String.IsNullOrEmpty packageNs then
+                    let metaDataNs = manager.LookupPrefix(doc.LastChild.LastChild.NamespaceURI)
+                    if String.IsNullOrEmpty metaDataNs then
+                        failwithf "Unrecognized namespace in nuspec file %s" fileName
+                    else metaDataNs
+                else packageNs
 
             let dependencies = 
-                doc.SelectNodes(sprintf "/%s:package/%s:metadata/%s:dependencies/%s:dependency" ns ns ns ns, manager)
+                doc.SelectNodes(sprintf "//%s:metadata/%s:dependencies/%s:dependency" ns ns ns, manager)
                 |> Seq.cast<XmlNode>
                 |> Seq.map (fun node -> 
                                 let name = node.Attributes.["id"].Value                            
@@ -98,7 +102,7 @@ type Nuspec =
                 |> Seq.toList
 
             let officialName = 
-                doc.SelectNodes(sprintf "/%s:package/%s:metadata/%s:id" ns ns ns, manager)
+                doc.SelectNodes(sprintf "//%s:metadata/%s:id" ns ns, manager)
                 |> Seq.cast<XmlNode>
                 |> Seq.head
                 |> fun node -> node.InnerText

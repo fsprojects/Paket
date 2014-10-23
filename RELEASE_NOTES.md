@@ -1,3 +1,6 @@
+#### 0.9.2 - 23.10.2014
+* BUGFIX: Fix namespace handling in nuspec files
+
 #### 0.9.1 - 22.10.2014
 * BUGFIX: Add default nuget source to dependencies file if original project has no source
 
