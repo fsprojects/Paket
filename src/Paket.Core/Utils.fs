@@ -29,7 +29,10 @@ let CreateDir path =
 let CleanDir path = 
     let di = DirectoryInfo path
     if di.Exists then 
-        di.Delete(true)
+        try
+            di.Delete(true)
+        with
+        | exn -> failwithf "Error during deletion of %s%s  - %s" di.FullName Environment.NewLine exn.Message 
     CreateDir path
     // set writeable
     File.SetAttributes(path, FileAttributes.Normal)

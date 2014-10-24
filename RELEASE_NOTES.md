@@ -1,3 +1,6 @@
+#### 0.10.0-alpha004 - 24.10.2014
+* Report full paths when access is denied - https://github.com/fsprojects/Paket/issues/242
+
 #### 0.10.0-alpha003 - 24.10.2014
 * Fix timing issue with paket install --hard - https://github.com/fsprojects/Paket/issues/293
 
