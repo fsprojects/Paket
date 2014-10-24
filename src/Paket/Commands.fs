@@ -19,6 +19,7 @@ type Command =
     | [<First>][<CustomCommandLine("update")>]              Update
     | [<First>][<CustomCommandLine("pack")>]                Pack
     | [<First>][<CustomCommandLine("push")>]                Push
+    | [<First>][<CustomCommandLine("emitfsx")>]             EmitFsx
 with 
     interface IArgParserTemplate with
         member this.Usage = 
@@ -37,6 +38,7 @@ with
             | Update -> "Recomputes the dependency resolution, updates the paket.lock file and propagates any resulting package changes into all project files referencing updated packages."
             | Pack -> "Packs all paket.template files within this repository"
             | Push -> "Pushes all `.nupkg` files from the given directory."
+            | EmitFsx -> "Emits an F# script file to load all assemblies the current project depends on."
     
     member this.Name = 
         let uci,_ = Microsoft.FSharp.Reflection.FSharpValue.GetUnionFields(this, typeof<Command>)
@@ -219,6 +221,14 @@ with
             | ApiKey(_) -> "Optionally specify your API key on the command line. Otherwise uses the value of the `nugetkey` environment variable."
             | EndPoint(_) -> "Optionally specify a custom api endpoint to push to. Defaults to `/api/v2/package`"
 
+type EmitFsxArgs =
+    | [<CustomCommandLine("nuget")>] Nuget of string
+with 
+    interface IArgParserTemplate with
+        member this.Usage =
+            match this with
+            | Nuget(_) -> "Nuget package id"
+
 let cmdLineSyntax (parser:UnionArgParser<_>) commandName = 
     "$ paket " + commandName + " " + parser.PrintCommandLineSyntax()
 
@@ -260,6 +270,7 @@ let markdown (command : Command) (additionalText : string) =
         | Update -> syntaxAndOptions (UnionArgParser.Create<UpdateArgs>())
         | Pack -> syntaxAndOptions (UnionArgParser.Create<PackArgs>())
         | Push -> syntaxAndOptions (UnionArgParser.Create<PushArgs>())
+        | EmitFsx -> syntaxAndOptions (UnionArgParser.Create<EmitFsxArgs>())
 
     
     let replaceLinks (text : string) =

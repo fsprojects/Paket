@@ -9,7 +9,7 @@
     <OutputType>Library</OutputType>
     <RootNamespace>Paket</RootNamespace>
     <AssemblyName>Paket.Core</AssemblyName>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <TargetFSharpCoreVersion>4.3.0.0</TargetFSharpCoreVersion>
     <Name>Paket</Name>
     <TargetFrameworkProfile />
@@ -86,6 +86,9 @@
     <Compile Include="Xml.fs" />
     <Compile Include="Utils.fs" />
     <Compile Include="ConfigFile.fs" />
+    <Compile Include="FSharpProjectFileInfo.fs" />
+    <Compile Include="DependencyOrdering.fs" />
+    <Compile Include="EmitFsx.fs" />
     <Compile Include="PackageSources.fs" />
     <Compile Include="FrameworkHandling.fs" />
     <Compile Include="PlatformMatching.fs" />
@@ -135,6 +138,17 @@
     <Reference Include="System.Security" />
     <Reference Include="System.Xml" />
     <Reference Include="System.Xml.Linq" />
+    <Reference Include="Microsoft.Build.Framework" Condition=" '$(TargetFrameworkVersion)' == 'v4.0'" />
+    <Reference Include="Microsoft.Build.Engine" Condition=" '$(TargetFrameworkVersion)' == 'v4.0'" />
+    <Reference Include="Microsoft.Build" Condition=" '$(TargetFrameworkVersion)' == 'v4.0'" />
+    <Reference Include="Microsoft.Build.Utilities.v4.0" Condition=" '$(TargetFrameworkVersion)' == 'v4.0'" />
+    <Reference Include="Microsoft.Build.Tasks.v4.0" Condition=" '$(TargetFrameworkVersion)' == 'v4.0'" />
+    
+    <Reference Include="Microsoft.Build.Framework, Version=12.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" Condition=" '$(TargetFrameworkVersion)' == 'v4.5'" />
+    <Reference Include="Microsoft.Build.Engine, Version=12.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" Condition=" '$(TargetFrameworkVersion)' == 'v4.5'" />
+    <Reference Include="Microsoft.Build, Version=12.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" Condition=" '$(TargetFrameworkVersion)' == 'v4.5'" />
+    <Reference Include="Microsoft.Build.Utilities.v12.0" Condition=" '$(TargetFrameworkVersion)' == 'v4.5'" />
+    <Reference Include="Microsoft.Build.Tasks.v12.0" Condition=" '$(TargetFrameworkVersion)' == 'v4.5'" />
   </ItemGroup>
   <Choose>
     <When Condition="($(TargetFrameworkIdentifier) == '.NETFramework' And ($(TargetFrameworkVersion) == 'v2.0' Or $(TargetFrameworkVersion) == 'v3.0' Or $(TargetFrameworkVersion) == 'v3.5' Or $(TargetFrameworkVersion) == 'v4.0' Or $(TargetFrameworkVersion) == 'v4.5' Or $(TargetFrameworkVersion) == 'v4.5.1' Or $(TargetFrameworkVersion) == 'v4.5.2' Or $(TargetFrameworkVersion) == 'v4.5.3')) Or ($(TargetFrameworkIdentifier) == 'MonoAndroid') Or ($(TargetFrameworkIdentifier) == 'MonoTouch')">
