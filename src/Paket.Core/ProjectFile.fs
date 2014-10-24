@@ -21,6 +21,8 @@ type ProjectFile =
       ProjectNode : XmlNode
       Namespaces : XmlNamespaceManager }
 
+    member this.Name = FileInfo(this.FileName).Name
+
     /// Finds all project files
     static member FindAllProjects(folder) = 
         ["*.csproj";"*.fsproj";"*.vbproj"]

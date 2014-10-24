@@ -16,6 +16,7 @@ tracefn "Paket version %s" fvi.FileVersion
 
 type Command =
     | Add
+    | Remove
     | Install
     | Restore
     | Update
@@ -27,6 +28,7 @@ type Command =
 
 type CLIArguments =
     | [<First>][<NoAppSettings>][<CustomCommandLine("add")>] Add
+    | [<First>][<NoAppSettings>][<CustomCommandLine("remove")>] Remove
     | [<First>][<NoAppSettings>][<CustomCommandLine("install")>] Install
     | [<First>][<NoAppSettings>][<CustomCommandLine("restore")>] Restore
     | [<First>][<NoAppSettings>][<CustomCommandLine("update")>] Update
@@ -50,6 +52,7 @@ with
         member s.Usage =
             match s with
             | Add -> "adds a package to the dependencies."
+            | Remove -> "removes a package from the dependencies."
             | Install -> "installs all packages."
             | Restore -> "restores all packages."
             | Update -> "updates the paket.lock file and installs all packages."
@@ -69,13 +72,14 @@ with
             | Nuget _ -> "allows to specify a nuget package."
             | Version _ -> "allows to specify a package version."
 
-let parser = UnionArgParser.Create<CLIArguments>("USAGE: paket [add|install|update|outdated|convert-from-nuget|init-auto-restore|simplify] ... options")
+let parser = UnionArgParser.Create<CLIArguments>("USAGE: paket [add|remove|install|update|outdated|convert-from-nuget|init-auto-restore|simplify] ... options")
  
 let results =
     try
         let results = parser.Parse()
         let command = 
             if results.Contains <@ CLIArguments.Add @> then Command.Add
+            elif results.Contains <@ CLIArguments.Remove @> then Command.Remove
             elif results.Contains <@ CLIArguments.Install @> then Command.Install
             elif results.Contains <@ CLIArguments.Restore @> then Command.Restore
             elif results.Contains <@ CLIArguments.Update @> then Command.Update
@@ -112,6 +116,9 @@ try
                 | Some x -> x
                 | _ -> ""
             AddProcess.Add(packageName,version,force,hard,interactive,noInstall |> not)
+        | Command.Remove -> 
+            let packageName = results.GetResult <@ CLIArguments.Nuget @>            
+            RemoveProcess.Remove(packageName,force,hard,interactive,noInstall |> not)
         | Command.Install -> UpdateProcess.Update(false,force,hard) 
         | Command.Restore -> 
             let files = results.GetResults <@ CLIArguments.References_Files @> 

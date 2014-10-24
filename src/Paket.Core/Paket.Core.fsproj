@@ -93,6 +93,7 @@
     <Compile Include="RestoreProcess.fs" />
     <Compile Include="InstallProcess.fs" />
     <Compile Include="UpdateProcess.fs" />
+    <Compile Include="RemoveProcess.fs" />
     <Compile Include="AddProcess.fs" />
     <Compile Include="Simplifier.fs" />
     <Compile Include="VSIntegration.fs" />

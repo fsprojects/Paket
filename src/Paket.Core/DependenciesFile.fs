@@ -225,10 +225,22 @@ type DependenciesFile(fileName,options,packages : PackageRequirement list, remot
 
         DependenciesFile(fileName,options,packages @ [newPackage], remoteFiles)
 
+    member __.RemovePackage(packageName:string) =
+        let newPackages = 
+            packages
+            |> List.filter (fun p -> p.Name.ToLower() <> packageName.ToLower())
+
+        DependenciesFile(fileName,options,newPackages,remoteFiles)
+
     member this.Add(packageName,version:string) =
         if this.HasPackage packageName then failwithf "%s has already package %s" Constants.DependenciesFile packageName        
         tracefn "Adding %s %s to paket.dependencies" packageName version
         this.AddAdditionionalPackage(packageName,version)
+
+    member this.Remove(packageName) =
+        if not <| this.HasPackage packageName then failwithf "%s doesn't contain package %s" Constants.DependenciesFile packageName        
+        tracefn "Removing %s from paket.dependencies" packageName
+        this.RemovePackage(packageName)
 
     override __.ToString() =        
         let sources = 

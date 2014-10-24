@@ -1,3 +1,6 @@
+#### 0.10.0-alpha001 - 24.10.2014
+* Initial version of `paket remove` command - http://fsprojects.github.io/Paket/paket-remove.html
+
 #### 0.9.7 - 23.10.2014
 * Revert double dashes support in version no.s
 
