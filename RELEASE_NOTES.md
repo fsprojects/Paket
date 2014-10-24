@@ -1,3 +1,6 @@
+#### 0.10.0-alpha003 - 24.10.2014
+* Fix timing issue with paket install --hard - https://github.com/fsprojects/Paket/issues/293
+
 #### 0.10.0-alpha002 - 24.10.2014
 * Paket add doesn't fail on second attempt - https://github.com/fsprojects/Paket/issues/295
 
