@@ -116,15 +116,6 @@
             </Reference>
           </ItemGroup>
         </When>
-        <When Condition="$(TargetFrameworkVersion) == 'v4.0' And $(TargetFrameworkProfile) == 'Client'">
-          <ItemGroup>
-            <Reference Include="UnionArgParser">
-              <HintPath>..\..\packages\UnionArgParser\lib\net35\UnionArgParser.dll</HintPath>
-              <Private>True</Private>
-              <Paket>True</Paket>
-            </Reference>
-          </ItemGroup>
-        </When>
         <Otherwise>
           <ItemGroup>
             <Reference Include="UnionArgParser">
@@ -203,6 +194,13 @@
         <When Condition="$(TargetFrameworkVersion) == 'v3.5'">
         </When>
         <When Condition="$(TargetFrameworkVersion) == 'v4.0' And $(TargetFrameworkProfile) == 'Client'">
+          <ItemGroup>
+            <Reference Include="FSharp.Core">
+              <HintPath>..\..\packages\FSharp.Core.Microsoft.Signed\lib\net40\FSharp.Core.dll</HintPath>
+              <Private>True</Private>
+              <Paket>True</Paket>
+            </Reference>
+          </ItemGroup>
         </When>
         <When Condition="$(TargetFrameworkVersion) == 'v4.0'">
           <ItemGroup>
