@@ -3,10 +3,10 @@ NUGET
   specs:
     DotNetZip (1.9.3)
     FAKE (3.7.8)
-    FSharp.Compiler.Service (0.0.67)
+    FSharp.Compiler.Service (0.0.72)
     FSharp.Core.Microsoft.Signed (3.1.1.1)
-    FSharp.Formatting (2.4.36)
-      FSharp.Compiler.Service (0.0.67)
+    FSharp.Formatting (2.4.33)
+      FSharp.Compiler.Service (>= 0.0.62)
       Microsoft.AspNet.Razor (2.0.30506.0)
       RazorEngine (3.3.0)
     Microsoft.AspNet.Razor (2.0.30506.0)
