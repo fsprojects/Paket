@@ -233,14 +233,20 @@ type DependenciesFile(fileName,options,packages : PackageRequirement list, remot
         DependenciesFile(fileName,options,newPackages,remoteFiles)
 
     member this.Add(packageName,version:string) =
-        if this.HasPackage packageName then failwithf "%s has already package %s" Constants.DependenciesFile packageName        
-        tracefn "Adding %s %s to paket.dependencies" packageName version
-        this.AddAdditionionalPackage(packageName,version)
+        if this.HasPackage packageName then 
+            traceWarnfn "%s contains package %s already. ==> Ignored" Constants.DependenciesFile packageName
+            this
+        else
+            tracefn "Adding %s %s to paket.dependencies" packageName version
+            this.AddAdditionionalPackage(packageName,version)
 
     member this.Remove(packageName) =
-        if not <| this.HasPackage packageName then failwithf "%s doesn't contain package %s" Constants.DependenciesFile packageName        
-        tracefn "Removing %s from paket.dependencies" packageName
-        this.RemovePackage(packageName)
+        if this.HasPackage packageName then         
+            tracefn "Removing %s from paket.dependencies" packageName
+            this.RemovePackage(packageName)
+        else
+            traceWarnfn "%s doesn't contain package %s. ==> Ignored" Constants.DependenciesFile packageName
+            this
 
     override __.ToString() =        
         let sources = 
