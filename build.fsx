@@ -333,10 +333,10 @@ Target "All" DoNothing
   =?> ("ReleaseDocs",isLocalBuild && not isMono)
 
 "All" 
-#if MONO
-#else
-  =?> ("SourceLink", Pdbstr.tryFind().IsSome )
-#endif
+//#if MONO
+//#else
+//  =?> ("SourceLink", Pdbstr.tryFind().IsSome )
+//#endif
   ==> "MergePaketTool"
   ==> "SignAssemblies"
   ==> "NuGet"
