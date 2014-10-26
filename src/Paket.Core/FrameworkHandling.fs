@@ -258,8 +258,8 @@ type FrameworkIdentifier =
         
         if path.Contains("lib/" + fi.Name.ToLower()) then Some(DotNetFramework(FrameworkVersion.V1))
         else 
-            let startPos = path.IndexOf("lib/")
-            let endPos = path.IndexOf(fi.Name.ToLower())
+            let startPos = path.LastIndexOf("lib/")
+            let endPos = path.LastIndexOf(fi.Name.ToLower())
             if startPos < 0 || endPos < 0 then None
             else 
                 path.Substring(startPos + 4, endPos - startPos - 5) 
