@@ -1,3 +1,8 @@
+#### 0.10.0-alpha005 - 26.10.2014
+* Visual Studio restore only restores for the current project
+* Selective update keeps all other versions
+* Install process accepts filenames with `lib`
+
 #### 0.10.0-alpha004 - 24.10.2014
 * Report full paths when access is denied - https://github.com/fsprojects/Paket/issues/242
 
