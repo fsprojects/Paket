@@ -210,12 +210,13 @@ type DependenciesFile(fileName,options,packages : PackageRequirement list, remot
         { ResolvedPackages = PackageResolver.Resolve(getVersionF, getPackageDetailsF, remoteDependencies @ packages)
           ResolvedSourceFiles = remoteFiles }        
 
-    member __.AddAdditionionalPackage(packageName,version:string) =
+    member __.AddAdditionionalPackage(packageName:string,version:string) =
         let versionRange = DependenciesFileParser.parseVersionRequirement (version.Trim '!')
         let sources = 
             match packages |> List.rev with
             | lastPackage::_ -> lastPackage.Sources
             | [] -> [PackageSources.DefaultNugetSource]
+
         let newPackage = 
             { Name = packageName
               VersionRequirement = versionRange
@@ -224,6 +225,27 @@ type DependenciesFile(fileName,options,packages : PackageRequirement list, remot
               Parent = PackageRequirementSource.DependenciesFile fileName }
 
         DependenciesFile(fileName,options,packages @ [newPackage], remoteFiles)
+
+    member __.AddFixedPackage(packageName:string,version:string) =
+        let versionRange = DependenciesFileParser.parseVersionRequirement (version.Trim '!')
+        let sources = 
+            match packages |> List.rev with
+            | lastPackage::_ -> lastPackage.Sources
+            | [] -> [PackageSources.DefaultNugetSource]
+
+        let strategy = 
+            match packages |> List.tryFind (fun p -> p.Name.ToLower() = packageName.ToLower()) with
+            | Some package -> package.ResolverStrategy
+            | None -> DependenciesFileParser.parseResolverStrategy version
+
+        let newPackage = 
+            { Name = packageName
+              VersionRequirement = versionRange
+              Sources = sources
+              ResolverStrategy = strategy
+              Parent = PackageRequirementSource.DependenciesFile fileName }
+
+        DependenciesFile(fileName,options,(packages |> List.filter (fun p -> p.Name.ToLower() <> packageName.ToLower())) @ [newPackage], remoteFiles)
 
     member __.RemovePackage(packageName:string) =
         let newPackages = 

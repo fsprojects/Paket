@@ -46,7 +46,7 @@ let updateWithModifiedDependenciesFile(dependenciesFile:DependenciesFile,package
                     let resolvedPackage = kv.Value
                     if resolvedPackage.Name.ToLower() = package.ToLower() then dependenciesFile
                     else 
-                        dependenciesFile.AddAdditionionalPackage
+                        dependenciesFile.AddFixedPackage
                             (resolvedPackage.Name, "== " + resolvedPackage.Version.ToString())) dependenciesFile
         
         let resolution = updatedDependenciesFile.Resolve(force)
@@ -73,7 +73,7 @@ let UpdatePackage(packageName : string, force, hard) =
                    let resolvedPackage = kv.Value
                    if resolvedPackage.Name.ToLower() = packageName.ToLower() then dependenciesFile
                    else 
-                       dependenciesFile.AddAdditionionalPackage
+                       dependenciesFile.AddFixedPackage
                            (resolvedPackage.Name, "== " + resolvedPackage.Version.ToString())) dependenciesFile
         
         let resolution = updatedDependenciesFile.Resolve(force)
