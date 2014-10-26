@@ -189,7 +189,7 @@
         <Otherwise>
           <ItemGroup>
             <Reference Include="Newtonsoft.Json">
-              <HintPath>..\..\packages\Newtonsoft.Json\lib\portable-net45+wp80+win8+wpa81\Newtonsoft.Json.dll</HintPath>
+              <HintPath>..\..\packages\Newtonsoft.Json\lib\portable-net45+wp80+win8+wpa81+aspnetcore50\Newtonsoft.Json.dll</HintPath>
               <Private>True</Private>
               <Paket>True</Paket>
             </Reference>
