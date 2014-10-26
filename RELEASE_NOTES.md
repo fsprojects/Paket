@@ -1,36 +1,14 @@
-#### 0.10.0-alpha005 - 26.10.2014
-* Visual Studio restore only restores for the current project
-* Selective update keeps all other versions
-* Install process accepts filenames with `lib`
-
-#### 0.10.0-alpha004 - 24.10.2014
-* Report full paths when access is denied - https://github.com/fsprojects/Paket/issues/242
-
-#### 0.10.0-alpha003 - 24.10.2014
-* Fix timing issue with paket install --hard - https://github.com/fsprojects/Paket/issues/293
-
-#### 0.10.0-alpha002 - 24.10.2014
-* Paket add doesn't fail on second attempt - https://github.com/fsprojects/Paket/issues/295
-
-#### 0.10.0-alpha001 - 24.10.2014
+#### 0.10.0 - 24.10.2014
 * Initial version of `paket remove` command - http://fsprojects.github.io/Paket/paket-remove.html
-
-#### 0.9.7 - 23.10.2014
-* Revert double dashes support in version no.s
-
-#### 0.9.6 - 23.10.2014
-* Fix !~> resolver
-
-#### 0.9.4 - 23.10.2014
-* Use normal 4.0 framework libs when we only specify net40
-
-#### 0.9.3 - 23.10.2014
-* Prerelease versions with hyphen are handled for better NuGet compatibility - https://github.com/fsprojects/Paket/issues/263
-
-#### 0.9.2 - 23.10.2014
+* Paket add doesn't fail on second attempt - https://github.com/fsprojects/Paket/issues/295
+* Report full paths when access is denied - https://github.com/fsprojects/Paket/issues/242
+* Visual Studio restore only restores for the current project
+* BUGFIX: Selective update keeps all other versions
+* BUGFIX: Install process accepts filenames with `lib`
+* BUGFIX: Fix !~> resolver
+* BUGFIX: Use normal 4.0 framework libs when we only specify net40
+* BUGFIX: Fix timing issue with paket install --hard - https://github.com/fsprojects/Paket/issues/293
 * BUGFIX: Fix namespace handling in nuspec files
-
-#### 0.9.1 - 22.10.2014
 * BUGFIX: Add default nuget source to dependencies file if original project has no source
 
 #### 0.9.0 - 22.10.2014
