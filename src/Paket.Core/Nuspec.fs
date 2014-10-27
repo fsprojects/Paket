@@ -53,33 +53,29 @@ module NugetVersionRangeParser =
                 | _ -> failParse()
         VersionRequirement(parseRange text,PreReleaseStatus.No)
 
-    type RangeRestriction =
-    | Upper 
-    | Lower 
-
-
-    let getRangeRestrictionNugetDelimiter (r:RangeRestriction) (v:VersionRangeBound) =
-        match r, v with
-        | Upper, VersionRangeBound.Including -> "]"
-        | Upper, VersionRangeBound.Excluding -> ")"
-        | Lower, VersionRangeBound.Including -> "["
-        | Lower, VersionRangeBound.Excluding -> "("
-        
-    let nugetFriendlySemver (s:SemVerInfo) =
-        match (s.ToString()) with
-        | "0" -> ""
-        | ok  -> ok
-        
     let convertVersionRangeToNugetVersion (v:VersionRange) =
         match v with
-        | Minimum(semver) -> semver |> nugetFriendlySemver
-        | GreaterThan(semver) -> sprintf "(%s,)" (semver.ToString ())
-        | Maximum(semver) -> sprintf "(,%s]" (semver.ToString ())
-        | LessThan(semver) -> sprintf "(,%s)" (semver.ToString ())
-        | Specific(semver) -> sprintf "[%s]" (semver.ToString())
-        | OverrideAll(semver) -> sprintf "[%s]" (semver.ToString()) 
-        | Range(fromB, from,_to,_toB) -> sprintf "%s%s,%s%s" (getRangeRestrictionNugetDelimiter Lower fromB) (from.ToString ()) (_to.ToString ()) (getRangeRestrictionNugetDelimiter Upper _toB) 
+        | Minimum(version) -> 
+            match version.ToString() with
+            | "0" -> ""
+            | x  -> x
+        | GreaterThan(version) -> sprintf "(%s,)" (version.ToString())
+        | Maximum(version) -> sprintf "(,%s]" (version.ToString())
+        | LessThan(version) -> sprintf "(,%s)" (version.ToString())
+        | Specific(version) -> sprintf "[%s]" (version.ToString())
+        | OverrideAll(version) -> sprintf "[%s]" (version.ToString()) 
+        | Range(fromB, from,_to,_toB) -> 
+            let getMinDelimiter (v:VersionRangeBound) =
+                match v with
+                | VersionRangeBound.Including -> "["
+                | VersionRangeBound.Excluding -> "("
+
+            let getMaxDelimiter (v:VersionRangeBound) =
+                match v with
+                | VersionRangeBound.Including -> "]"
+                | VersionRangeBound.Excluding -> ")"
         
+            sprintf "%s%s,%s%s" (getMinDelimiter fromB) (from.ToString()) (_to.ToString()) (getMaxDelimiter _toB) 
 
 
 type Nuspec = 
