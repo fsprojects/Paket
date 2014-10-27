@@ -3,7 +3,6 @@
 open Paket
 open NUnit.Framework
 open FsUnit
-open System.Xml
 
 [<Test>]
 let ``should find custom nodes in doc``() = 
