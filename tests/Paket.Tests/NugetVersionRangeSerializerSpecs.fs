@@ -8,7 +8,7 @@ open FsUnit
 let ``can detect latest version``() = 
     NugetVersionRangeParser.parse "" |> shouldEqual VersionRequirement.AllReleases
 
-let format(versionRange:VersionRange) = NugetVersionRangeParser.convertVersionRangeToNugetVersion versionRange
+let format(versionRange:VersionRange) = NugetVersionRangeParser.format versionRange
 
 [<Test>]
 let ``can detect specific version``() = 

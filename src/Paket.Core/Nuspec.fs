@@ -53,7 +53,8 @@ module NugetVersionRangeParser =
                 | _ -> failParse()
         VersionRequirement(parseRange text,PreReleaseStatus.No)
 
-    let convertVersionRangeToNugetVersion (v:VersionRange) =
+    /// formats a VersionRange in NuGet syntax
+    let format (v:VersionRange) =
         match v with
         | Minimum(version) -> 
             match version.ToString() with
