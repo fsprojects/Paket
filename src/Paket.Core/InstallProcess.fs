@@ -92,7 +92,7 @@ let createModel(sources,force, lockFile:LockFile) =
     extractedPackages
 
 /// Installs the given all packages from the lock file.
-let Install(sources,force, hard, lockFile:LockFile) = 
+let Install(sources,force, hard, lockFile:LockFile, useTargets) = 
     let extractedPackages = createModel(sources,force, lockFile)
 
     let model =
@@ -110,7 +110,7 @@ let Install(sources,force, hard, lockFile:LockFile) =
 
         let usedPackages = lockFile.GetPackageHull(referenceFile)
 
-        project.UpdateReferences(model,usedPackages,hard)
+        project.UpdateReferences(model,usedPackages,hard, useTargets)
         
         removeCopiedFiles project
 

@@ -237,7 +237,7 @@ type ProjectFile =
             createItemGroup model.DefaultFallback.References
         
 
-    member this.UpdateReferences(completeModel: Map<string,InstallModel>, usedPackages : Dictionary<string,bool>, hard) = 
+    member this.UpdateReferences(completeModel: Map<string,InstallModel>, usedPackages : Dictionary<string,bool>, hard, useTargets) = 
         this.DeletePaketNodes("Reference")  
         this.DeleteEmptyReferences()
 
@@ -253,8 +253,14 @@ type ProjectFile =
             if this.HasCustomNodes(installModel) then 
                 verbosefn "  - custom nodes for %s ==> skipping" packageName 
             else
-                let chooseNode = this.GenerateXml(installModel)
-                this.ProjectNode.AppendChild(chooseNode) |> ignore
+                this.ConfigureReference(installModel, useTargets)
+              
+    member private this.ConfigureReference(installModel : InstallModel, useTargets) =
+        if useTargets then
+            let chooseNode = this.GenerateXml(installModel)
+            this.ProjectNode.AppendChild(chooseNode) |> ignore
+        else
+            failwith "--usetargets not implemented"
 
     member this.Save() =
         if Utils.normalizeXml this.Document <> this.OriginalText then 

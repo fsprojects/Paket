@@ -4,7 +4,7 @@ module Paket.AddProcess
 open Paket
 open System.IO
 
-let Add(package, version, force, hard, interactive, installAfter) =
+let Add(package, version, force, hard, interactive, installAfter, useTargets) =
     let dependenciesFile =
         DependenciesFile.ReadFromFile(Constants.DependenciesFile)
           .Add(package,version)
@@ -33,6 +33,6 @@ let Add(package, version, force, hard, interactive, installAfter) =
             |> File.ReadAllLines
             |> PackageSourceParser.getSources 
 
-        InstallProcess.Install(sources, force, hard, lockFile)
+        InstallProcess.Install(sources, force, hard, lockFile, useTargets)
 
     dependenciesFile.Save()
