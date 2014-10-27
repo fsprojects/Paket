@@ -256,7 +256,7 @@ type ProjectFile =
                 this.ConfigureReference(installModel, useTargets)
               
     member private this.ConfigureReference(installModel : InstallModel, useTargets) =
-        if !useTargets then
+        if not useTargets then
             let chooseNode = this.GenerateXml(installModel)
             this.ProjectNode.AppendChild(chooseNode) |> ignore
         else
