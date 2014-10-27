@@ -37,7 +37,6 @@ let ``can detect less than version``() =
 
 [<Test>]
 let ``can detect range version``() = 
-
     VersionRange.Range(VersionRangeBound.Excluding, SemVer.Parse "2.2", SemVer.Parse "3", VersionRangeBound.Excluding) |> format |> shouldEqual "(2.2,3)" 
     VersionRange.Range(VersionRangeBound.Excluding, SemVer.Parse "2.2", SemVer.Parse "3", VersionRangeBound.Including) |> format |> shouldEqual "(2.2,3]" 
     VersionRange.Range(VersionRangeBound.Including, SemVer.Parse "2.2", SemVer.Parse "3", VersionRangeBound.Excluding) |> format |> shouldEqual "[2.2,3)" 
