@@ -1,6 +1,7 @@
 ﻿namespace Paket
 
 open System.IO
+open System.Collections.Generic
 
 [<RequireQualifiedAccess>]
 type Reference = 
@@ -43,6 +44,11 @@ type InstallFiles =
     member this.AddFrameworkAssemblyReference assemblyName = 
         { this with References = Set.add (Reference.FrameworkAssemblyReference assemblyName) this.References }
 
+    member this.MergeWith(that:InstallFiles)= 
+        { this with 
+            References = Set.union that.References this.References
+            ContentFiles = Set.union that.ContentFiles this.ContentFiles }
+
 type FrameworkGroup = 
     { Frameworks : Map<FrameworkIdentifier, InstallFiles>
       Fallbacks : InstallFiles }
@@ -71,6 +77,16 @@ type FrameworkGroup =
                         match Map.tryFind framework this.Frameworks with
                         | Some files when Set.isEmpty files.References |> not -> Map.add framework (mapReferencesF files) this.Frameworks
                         | _ -> Map.add framework (emptyReferencesF()) this.Frameworks }
+
+    member this.MergeWith(that:FrameworkGroup) =
+        let mergedFrameworks =
+            that.Frameworks
+            |> Map.fold (fun group frameworkName framework ->            
+                            match Map.tryFind frameworkName this.Frameworks with
+                            | Some files -> { group with Frameworks = Map.add frameworkName (files.MergeWith framework) group.Frameworks }
+                            | None -> { group with Frameworks = Map.add frameworkName framework group.Frameworks }) this
+        { mergedFrameworks with
+            Fallbacks = this.Fallbacks.MergeWith(that.Fallbacks) }
 
 type InstallModel = 
     { PackageName : string
@@ -169,7 +185,6 @@ type InstallModel =
                 model.MapGroupFrameworks(fun _ files -> { files with References = Set.filter f files.References }) )
                 this
     
-    
     member this.UseLowerVersionLibIfEmpty() =
         this.AddOrReplaceGroup(
             FrameworkIdentifier.DefaultGroup,
@@ -204,13 +219,24 @@ type InstallModel =
                             (fun files -> files))),
                     (fun _ -> Some(FrameworkGroup.singleton(framework,{ References = newFiles; ContentFiles = Set.empty }))))) this
     
+
+    member this.MergeWith(that:InstallModel) =
+        let mergedGroups =
+            that.Groups
+            |> Map.fold (fun (model : InstallModel) groupName group -> 
+                            match this.Groups.TryFind groupName with
+                            | Some g -> { model with Groups = Map.add groupName (group.MergeWith(g)) model.Groups }
+                            | None -> { model with Groups = Map.add groupName group model.Groups }) this
+        { mergedGroups with
+            DefaultFallback = this.DefaultFallback.MergeWith(that.DefaultFallback) }
+
     member this.UseLastInGroupAsFallback() = 
         this.MapGroups(fun _ group -> { group with Fallbacks = (group.Frameworks |> Seq.last).Value })
 
     member this.UseLastGroupFallBackAsDefaultFallBack() =
         { this with DefaultFallback = this.Groups.[FrameworkIdentifier.DefaultGroup].Fallbacks }
     
-    member this.DeleteIfGroupFallback() =
+    member this.FilterFallbacks() =
         this.MapGroups(fun _ group -> 
                    let fallbacks = group.Fallbacks
                    { group with Frameworks = 
@@ -262,9 +288,7 @@ type InstallModel =
             .UseLowerVersionLibForSpecicalFrameworksIfEmpty()
             .FilterBlackList()
             .UseLastInGroupAsFallback()
-            .UseLastGroupFallBackAsDefaultFallBack()
-
-    member this.BuildModel() = this.BuildUnfilteredModel().DeleteIfGroupFallback()
+            .UseLastGroupFallBackAsDefaultFallBack()    
 
     member this.GetReferenceNames = 
         lazy ([ for g in this.Groups do
@@ -279,4 +303,5 @@ type InstallModel =
         InstallModel
             .EmptyModel(packageName, packageVersion)
             .AddReferences(libs, nuspec.References)
-            .AddFrameworkAssemblyReferences(nuspec.FrameworkAssemblyReferences).BuildModel()
+            .AddFrameworkAssemblyReferences(nuspec.FrameworkAssemblyReferences)
+            .BuildUnfilteredModel()

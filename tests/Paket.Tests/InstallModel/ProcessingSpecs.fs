@@ -224,7 +224,7 @@ let ``should handle lib install of DotNetZip 1.9.3``() =
 
 [<Test>]
 let ``should reduce lib install of DotNetZip 1.9.3``() = 
-    let model = emptymodel.AddReferences([ @"..\DotNetZip\lib\net20\Ionic.Zip.dll" ]).BuildModel()
+    let model = emptymodel.AddReferences([ @"..\DotNetZip\lib\net20\Ionic.Zip.dll" ]).BuildUnfilteredModel().FilterFallbacks()
 
     model.GetFiles(DotNetFramework(FrameworkVersion.V2)) |> shouldNotContain @"..\DotNetZip\lib\net20\Ionic.Zip.dll"
     model.GetFiles(DotNetFramework(FrameworkVersion.V4_5)) |> shouldNotContain @"..\DotNetZip\lib\net20\Ionic.Zip.dll"
