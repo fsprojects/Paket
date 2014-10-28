@@ -58,12 +58,20 @@ let updateWithModifiedDependenciesFile(dependenciesFile:DependenciesFile,package
 
 
 /// Update a single package command
-let UpdatePackage(packageName : string, force, hard) = 
+let UpdatePackage(packageName : string, newVersion, force, hard) = 
     let lockFileName = DependenciesFile.FindLockfile Constants.DependenciesFile
     if not lockFileName.Exists then Update(true, force, hard) else
     
     let sources, lockFile = 
-        let dependenciesFile = DependenciesFile.ReadFromFile Constants.DependenciesFile
+        let dependenciesFile = 
+            let depFile = DependenciesFile.ReadFromFile Constants.DependenciesFile
+            match newVersion with
+            | Some newVersion -> 
+                let depFile = depFile.UpdatePackageVersion(packageName, newVersion)
+                depFile.Save()
+                depFile
+            | None -> depFile
+
         let oldLockFile = LockFile.LoadFrom(lockFileName.FullName)
         
         let updatedDependenciesFile = 

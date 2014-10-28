@@ -141,7 +141,7 @@ let Resolve(getVersionsF, getPackageDetailsF, rootDependencies:PackageRequiremen
             if compatibleVersions = [] then
                 match dependency.Parent with
                 | PackageRequirementSource.DependenciesFile _ ->                     
-                    let versionText = String.Join(Environment.NewLine + "     - ",allVersions)
+                    let versionText = String.Join(Environment.NewLine + "     - ",List.sort allVersions)
                     failwithf "Could not find compatible versions for top level dependency:%s     %A%s   Available versions:%s     - %s%s   Try to relax the dependency or allow prereleases." 
                         Environment.NewLine (dependency.ToString()) Environment.NewLine Environment.NewLine versionText Environment.NewLine
                 | _ -> ()

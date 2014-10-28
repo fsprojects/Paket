@@ -34,36 +34,35 @@ type VersionRequirement =
 | VersionRequirement of VersionRange * PreReleaseStatus
     /// Checks wether the given version is in the version range
     member this.IsInRange(version : SemVerInfo) =         
-        match this with
-        | VersionRequirement(range,prerelease) ->
-            let checkPrerelease prerelease version = 
-                match prerelease with
-                | PreReleaseStatus.All -> true
-                | PreReleaseStatus.No -> version.PreRelease = None
-                | PreReleaseStatus.Concrete list ->
-                     match version.PreRelease with
-                     | None -> true
-                     | Some pre -> List.exists ((=) pre.Name) list
+        let (VersionRequirement (range,prerelease)) = this
+        let checkPrerelease prerelease version = 
+            match prerelease with
+            | PreReleaseStatus.All -> true
+            | PreReleaseStatus.No -> version.PreRelease = None
+            | PreReleaseStatus.Concrete list ->
+                 match version.PreRelease with
+                 | None -> true
+                 | Some pre -> List.exists ((=) pre.Name) list
 
-            match range with
-            | Specific v -> v = version
-            | OverrideAll v -> v = version
-            | Minimum v -> v = version || (v <= version && checkPrerelease prerelease version)
-            | GreaterThan v -> v < version && checkPrerelease prerelease version
-            | Maximum v -> v = version || (v >= version && checkPrerelease prerelease version)
-            | LessThan v -> v > version && checkPrerelease prerelease version
-            | Range(fromB, from, _to, _toB) ->
-                let isInUpperBound = 
-                    match _toB with
-                    | VersionRangeBound.Including -> version <= _to
-                    | VersionRangeBound.Excluding -> version < _to
+        match range with
+        | Specific v -> v = version
+        | OverrideAll v -> v = version
+        | Minimum v -> v = version || (v <= version && checkPrerelease prerelease version)
+        | GreaterThan v -> v < version && checkPrerelease prerelease version
+        | Maximum v -> v = version || (v >= version && checkPrerelease prerelease version)
+        | LessThan v -> v > version && checkPrerelease prerelease version
+        | Range(fromB, from, _to, _toB) ->
+            let isInUpperBound = 
+                match _toB with
+                | VersionRangeBound.Including -> version <= _to
+                | VersionRangeBound.Excluding -> version < _to
 
-                let isInLowerBound =
-                    match fromB with
-                    | VersionRangeBound.Including -> version >= from
-                    | VersionRangeBound.Excluding -> version > from
+            let isInLowerBound =
+                match fromB with
+                | VersionRangeBound.Including -> version >= from
+                | VersionRangeBound.Excluding -> version > from
 
-                isInLowerBound && isInUpperBound  && checkPrerelease prerelease version
+            isInLowerBound && isInUpperBound  && checkPrerelease prerelease version
 
     member this.Range =
         match this with

@@ -259,13 +259,27 @@ type DependenciesFile(fileName,options,packages : PackageRequirement list, remot
             traceWarnfn "%s contains package %s already. ==> Ignored" Constants.DependenciesFile packageName
             this
         else
-            tracefn "Adding %s %s to paket.dependencies" packageName version
+            tracefn "Adding %s %s to %s" packageName version Constants.DependenciesFile
             this.AddAdditionionalPackage(packageName,version)
 
     member this.Remove(packageName) =
         if this.HasPackage packageName then         
-            tracefn "Removing %s from paket.dependencies" packageName
+            tracefn "Removing %s from %s" packageName Constants.DependenciesFile
             this.RemovePackage(packageName)
+        else
+            traceWarnfn "%s doesn't contain package %s. ==> Ignored" Constants.DependenciesFile packageName
+            this
+
+    member this.UpdatePackageVersion(packageName, version) =
+        if this.HasPackage(packageName) then
+            let versionRequirement = DependenciesFileParser.parseVersionRequirement version
+            tracefn "Updating %s version to %s in %s" packageName version Constants.DependenciesFile
+            let packages = 
+                this.Packages |> List.map (fun p -> 
+                                     if p.Name.ToLower() = packageName.ToLower() then 
+                                         { p with VersionRequirement = versionRequirement }
+                                     else p)
+            DependenciesFile(this.FileName, this.Options, packages, this.RemoteFiles)
         else
             traceWarnfn "%s doesn't contain package %s. ==> Ignored" Constants.DependenciesFile packageName
             this

@@ -16,7 +16,7 @@ Options:
 It's also possible to update only a single package and to keep all other dependencies fixed:
 
     [lang=batchfile]
-    $ paket update nuget PACKAGENAME [--force] [--hard]	
+    $ paket update nuget PACKAGENAME [version VERSION] [--force] [--hard]	
 
 Options:
 
