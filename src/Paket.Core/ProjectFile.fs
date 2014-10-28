@@ -142,14 +142,6 @@ type ProjectFile =
             
         !hasCustom
 
-    member this.HasFrameworkAssemblyNode(assemblyName) =        
-        let found = ref false
-        for node in this.Document.SelectNodes("//ns:Reference", this.Namespaces) do
-            if node.Attributes.["Include"].InnerText.Split(',').[0] = assemblyName then
-                found := true
-            
-        !found
-
     member this.DeleteCustomNodes(model:InstallModel) =
         let nodesToDelete = List<_>()
         
@@ -169,25 +161,22 @@ type ProjectFile =
             let itemGroup = createNode(this.Document,"ItemGroup")
                                 
             for lib in references do
-                match lib with
-                | Reference.Library lib ->
-                    let fi = new FileInfo(normalizePath lib)
+                let reference = 
+                    match lib with
+                    | Reference.Library lib ->
+                        let fi = new FileInfo(normalizePath lib)
                     
-                    createNode(this.Document,"Reference")
-                    |> addAttribute "Include" (fi.Name.Replace(fi.Extension,""))
-                    |> addChild (createNodeWithText(this.Document,"HintPath",createRelativePath this.FileName fi.FullName))
-                    |> addChild (createNodeWithText(this.Document,"Private","True"))
-                    |> addChild (createNodeWithText(this.Document,"Paket","True"))
-                    |> itemGroup.AppendChild
-                    |> ignore
-                | Reference.FrameworkAssemblyReference frameworkAssembly -> 
-                    if not <| this.HasFrameworkAssemblyNode(frameworkAssembly) then
+                        createNode(this.Document,"Reference")
+                        |> addAttribute "Include" (fi.Name.Replace(fi.Extension,""))
+                        |> addChild (createNodeWithText(this.Document,"HintPath",createRelativePath this.FileName fi.FullName))
+                        |> addChild (createNodeWithText(this.Document,"Private","True"))
+                        |> addChild (createNodeWithText(this.Document,"Paket","True"))
+                    | Reference.FrameworkAssemblyReference frameworkAssembly ->                    
                         createNode(this.Document,"Reference")
                         |> addAttribute "Include" frameworkAssembly
                         |> addChild (createNodeWithText(this.Document,"Paket","True"))
-                        |> itemGroup.AppendChild
-                        |> ignore
-                
+
+                itemGroup.AppendChild(reference) |> ignore
             itemGroup
 
         let groupChooseNode = this.Document.CreateElement("Choose", Constants.ProjectDefaultNameSpace)

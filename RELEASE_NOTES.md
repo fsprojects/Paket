@@ -1,6 +1,3 @@
-#### 0.10.1 - 27.10.2014
-* Don't create duplicate framework assembly references - https://github.com/fsprojects/Paket/issues/297
-
 #### 0.10.0 - 24.10.2014
 * Initial version of `paket remove` command - http://fsprojects.github.io/Paket/paket-remove.html
 * Paket add doesn't fail on second attempt - https://github.com/fsprojects/Paket/issues/295
