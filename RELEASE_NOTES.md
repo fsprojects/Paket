@@ -1,3 +1,6 @@
+#### 0.10.2 - 28.10.2014
+* revert 0.10.1
+
 #### 0.10.0 - 24.10.2014
 * Initial version of `paket remove` command - http://fsprojects.github.io/Paket/paket-remove.html
 * Paket add doesn't fail on second attempt - https://github.com/fsprojects/Paket/issues/295
