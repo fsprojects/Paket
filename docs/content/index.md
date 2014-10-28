@@ -13,7 +13,7 @@ Paket is available as:
 
   * [download from GitHub.com](https://github.com/fsprojects/Paket/releases/latest)
   * as a package [`Paket` on nuget.org](https://www.nuget.org/packages/Paket/)
-  
+
 [![NuGet Status](http://img.shields.io/nuget/v/Paket.svg?style=flat)](https://www.nuget.org/packages/Paket/)
 
 ## Getting Started
@@ -21,7 +21,7 @@ Paket is available as:
 Specify the version rules of all dependencies used in your application in a [`paket.dependencies` file](dependencies-file.html) in your project's root:
 
     source https://nuget.org/api/v2
-    
+
     nuget Castle.Windsor-log4net ~> 3.2
     nuget NUnit
 
@@ -29,6 +29,8 @@ Install all of the required packages from the specified sources:
 
     [lang=batchfile]
     $ paket install
+
+The current convention is to have a `.paket` folder in the root of your solution. From here you can run `.paket/paket.exe install`
 
 The [`paket install` command](paket-install.html) will analyze your dependencies and generate a [`paket.lock` file](lock-file.html) if it doesn't exist yet:
 
@@ -73,7 +75,7 @@ The project is hosted on [GitHub][gh] where you can [report issues][issues], for
 
 Please see the [Quick contributing guide in the README][readme] for contribution gudelines.
 
-The library is available under MIT license, which allows modification and redistribution for both commercial and non-commercial purposes. 
+The library is available under MIT license, which allows modification and redistribution for both commercial and non-commercial purposes.
 For more information see the [License file][license].
 
   [content]: https://github.com/fsprojects/Paket/tree/master/docs/content
