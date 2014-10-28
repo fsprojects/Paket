@@ -187,6 +187,22 @@ let ``should read github source file from config without quotes``() =
             Commit = Some "bla123zxc" } ]
 
 [<Test>]
+let ``should read github source file from config with quotes``() =
+    let config = """github fsharp/FAKE:master  "src/app/FAKE/Cli.fs"
+                    github fsharp/FAKE:bla123zxc "src/app/FAKE/FileWith Space.fs" """
+    let dependencies = DependenciesFile.FromCode(config)
+    dependencies.RemoteFiles
+    |> shouldEqual
+        [ { Owner = "fsharp"
+            Project = "FAKE"
+            Name = "src/app/FAKE/Cli.fs"
+            Commit = Some "master" }
+          { Owner = "fsharp"
+            Project = "FAKE"
+            Name = "src/app/FAKE/FileWith Space.fs"
+            Commit = Some "bla123zxc" } ]
+
+[<Test>]
 let ``should read github source files withou sha1``() =
     let config = """github fsharp/FAKE  src/app/FAKE/Cli.fs
                     github    fsharp/FAKE:bla123zxc src/app/FAKE/FileWithCommit.fs """
