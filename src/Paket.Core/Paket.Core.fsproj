@@ -9,7 +9,7 @@
     <OutputType>Library</OutputType>
     <RootNamespace>Paket</RootNamespace>
     <AssemblyName>Paket.Core</AssemblyName>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <TargetFSharpCoreVersion>4.3.0.0</TargetFSharpCoreVersion>
     <Name>Paket</Name>
     <TargetFrameworkProfile />
@@ -74,6 +74,9 @@
     <Compile Include="Logging.fs" />
     <Compile Include="Xml.fs" />
     <Compile Include="Utils.fs" />
+    <Compile Include="FSharpProjectFileInfo.fs" />
+    <Compile Include="DependencyOrdering.fs" />
+    <Compile Include="EmitFsx.fs" />
     <Compile Include="PackageSources.fs" />
     <Compile Include="Requirements.fs" />
     <Compile Include="ModuleResolver.fs" />
@@ -112,6 +115,17 @@
     <Reference Include="System.Numerics" />
     <Reference Include="System.Xml" />
     <Reference Include="System.Xml.Linq" />
+    <Reference Include="Microsoft.Build.Framework" Condition=" '$(TargetFrameworkVersion)' == 'v4.0'" />
+    <Reference Include="Microsoft.Build.Engine" Condition=" '$(TargetFrameworkVersion)' == 'v4.0'" />
+    <Reference Include="Microsoft.Build" Condition=" '$(TargetFrameworkVersion)' == 'v4.0'" />
+    <Reference Include="Microsoft.Build.Utilities.v4.0" Condition=" '$(TargetFrameworkVersion)' == 'v4.0'" />
+    <Reference Include="Microsoft.Build.Tasks.v4.0" Condition=" '$(TargetFrameworkVersion)' == 'v4.0'" />
+    
+    <Reference Include="Microsoft.Build.Framework, Version=12.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" Condition=" '$(TargetFrameworkVersion)' == 'v4.5'" />
+    <Reference Include="Microsoft.Build.Engine, Version=12.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" Condition=" '$(TargetFrameworkVersion)' == 'v4.5'" />
+    <Reference Include="Microsoft.Build, Version=12.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" Condition=" '$(TargetFrameworkVersion)' == 'v4.5'" />
+    <Reference Include="Microsoft.Build.Utilities.v12.0" Condition=" '$(TargetFrameworkVersion)' == 'v4.5'" />
+    <Reference Include="Microsoft.Build.Tasks.v12.0" Condition=" '$(TargetFrameworkVersion)' == 'v4.5'" />
   </ItemGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it.
        Other similar extension points exist, see Microsoft.Common.targets.

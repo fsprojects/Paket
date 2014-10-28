@@ -21,6 +21,7 @@ type Command =
     | Restore
     | Update
     | Outdated
+    | EmitFsx
     | ConvertFromNuget
     | InitAutoRestore
     | Simplify
@@ -33,6 +34,7 @@ type CLIArguments =
     | [<First>][<NoAppSettings>][<CustomCommandLine("restore")>] Restore
     | [<First>][<NoAppSettings>][<CustomCommandLine("update")>] Update
     | [<First>][<NoAppSettings>][<CustomCommandLine("outdated")>] Outdated
+    | [<First>][<NoAppSettings>][<CustomCommandLine("emitfsx")>] EmitFsx
     | [<First>][<NoAppSettings>][<CustomCommandLine("convert-from-nuget")>] ConvertFromNuget
     | [<First>][<NoAppSettings>][<CustomCommandLine("init-auto-restore")>] InitAutoRestore
     | [<First>][<NoAppSettings>][<CustomCommandLine("simplify")>] Simplify
@@ -58,6 +60,7 @@ with
             | Update -> "updates the paket.lock file and installs all packages."
             | References_Files _ -> "allows to specify a list of references file names."
             | Outdated -> "displays information about new packages."
+            | EmitFsx -> "emits an F# script file referencing all assemblies used by the project."
             | ConvertFromNuget -> "converts all projects from NuGet to Paket."
             | InitAutoRestore -> "enables automatic restore for Visual Studio."
             | Simplify -> "analyzes dependencies and removes unnecessary indirect dependencies."
@@ -84,6 +87,7 @@ let results =
             elif results.Contains <@ CLIArguments.Restore @> then Command.Restore
             elif results.Contains <@ CLIArguments.Update @> then Command.Update
             elif results.Contains <@ CLIArguments.Outdated @> then Command.Outdated
+            elif results.Contains <@ CLIArguments.EmitFsx @> then Command.EmitFsx
             elif results.Contains <@ CLIArguments.ConvertFromNuget @> then Command.ConvertFromNuget
             elif results.Contains <@ CLIArguments.InitAutoRestore @> then Command.InitAutoRestore
             elif results.Contains <@ CLIArguments.Simplify @> then Command.Simplify
@@ -129,6 +133,9 @@ try
             | _ -> UpdateProcess.Update(true,force,hard)
             
         | Command.Outdated -> FindOutdated.ListOutdated(strict,includePrereleases)
+        | Command.EmitFsx -> 
+            let projectFile = results.GetResult <@ CLIArguments.Nuget @>
+            EmitFsx.PrintFsx projectFile []
         | Command.InitAutoRestore -> VSIntegration.InitAutoRestore()
         | Command.ConvertFromNuget -> NuGetConvert.ConvertFromNuget(force,noInstall |> not,noAutoRestore |> not)
         | Command.Simplify -> Simplifier.Simplify(interactive)
