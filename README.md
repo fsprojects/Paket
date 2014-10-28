@@ -7,7 +7,7 @@ This project can be used to scaffold a prototypical .NET solution including file
 * generates [SourceLinks](https://github.com/ctaggart/SourceLink)
 * generates API docs based on XML document tags
 * generates [documentation based on Markdown files](writing-docs.html)
-* denerates [NuGet](http://www.nuget.org) packages
+* generates [NuGet](http://www.nuget.org) packages
 * and allows a simple [one step release process](release-process.html). 
 
 In order to start the scaffolding process run 
