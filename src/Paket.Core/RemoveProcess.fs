@@ -4,7 +4,7 @@ module Paket.RemoveProcess
 open Paket
 open System.IO
 
-let Remove(package:string, force, hard, interactive, installAfter) =
+let Remove(package:string, force, hard, interactive, installAfter, useTargets) =
     let allProjects = ProjectFile.FindAllProjects(".")
     for project in allProjects do
         let proj = FileInfo(project.FileName)
@@ -41,7 +41,7 @@ let Remove(package:string, force, hard, interactive, installAfter) =
             |> File.ReadAllLines
             |> PackageSourceParser.getSources 
 
-        InstallProcess.Install(sources, force, hard, lockFile)
+        InstallProcess.Install(sources, force, hard, lockFile, useTargets)
 
 
     dependenciesFile.Save()

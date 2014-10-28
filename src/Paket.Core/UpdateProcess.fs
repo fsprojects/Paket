@@ -5,7 +5,7 @@ open Paket
 open System.IO
 
 /// Update command
-let Update(forceResolution, force, hard) = 
+let Update(forceResolution, force, hard, useTargets) = 
     let lockFileName = DependenciesFile.FindLockfile Constants.DependenciesFile
     
     let sources, lockFile = 
@@ -25,7 +25,7 @@ let Update(forceResolution, force, hard) =
                 |> PackageSourceParser.getSources
             sources, LockFile.LoadFrom(lockFileName.FullName)
 
-    InstallProcess.Install(sources, force, hard, lockFile)
+    InstallProcess.Install(sources, force, hard, lockFile, useTargets)
 
 let updateWithModifiedDependenciesFile(dependenciesFile:DependenciesFile,package:string, force) =
     let lockFileName = DependenciesFile.FindLockfile Constants.DependenciesFile
@@ -58,9 +58,9 @@ let updateWithModifiedDependenciesFile(dependenciesFile:DependenciesFile,package
 
 
 /// Update a single package command
-let UpdatePackage(packageName : string, force, hard) = 
+let UpdatePackage(packageName : string, force, hard, useTargets) = 
     let lockFileName = DependenciesFile.FindLockfile Constants.DependenciesFile
-    if not lockFileName.Exists then Update(true, force, hard) else
+    if not lockFileName.Exists then Update(true, force, hard, useTargets) else
     
     let sources, lockFile = 
         let dependenciesFile = DependenciesFile.ReadFromFile Constants.DependenciesFile
@@ -82,4 +82,4 @@ let UpdatePackage(packageName : string, force, hard) =
             LockFile(lockFileName.FullName, updatedDependenciesFile.Options, resolvedPackages, oldLockFile.SourceFiles)
         newLockFile.Save()
         updatedDependenciesFile.Sources, newLockFile
-    InstallProcess.Install(sources, force, hard, lockFile)
+    InstallProcess.Install(sources, force, hard, lockFile, useTargets)

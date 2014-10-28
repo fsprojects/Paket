@@ -125,7 +125,7 @@ let private convertNugetToRefFile(nugetPackagesConfig) =
         else tracefn "%s is up to date" refFilePath
 
 /// Converts all projects from NuGet to Paket
-let ConvertFromNuget(force, installAfter, initAutoRestore) =
+let ConvertFromNuget(force, installAfter, initAutoRestore, useTargets) =
     if File.Exists Constants.DependenciesFile && not force then failwithf "%s already exists, use --force to overwrite" Constants.DependenciesFile
 
     let nugetPackagesConfigs = FindAllFiles(".", "packages.config") |> Seq.map Nuget.ReadPackagesConfig
@@ -179,4 +179,4 @@ let ConvertFromNuget(force, installAfter, initAutoRestore) =
         VSIntegration.InitAutoRestore()
 
     if installAfter then
-        UpdateProcess.Update(true,false,true)
+        UpdateProcess.Update(true,false,true, useTargets)

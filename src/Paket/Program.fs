@@ -39,6 +39,7 @@ type CLIArguments =
     | [<AltCommandLine("-v")>] Verbose
     | [<AltCommandLine("-i")>] Interactive
     | [<AltCommandLine("-f")>] Force
+    | Use_Targets
     | Hard
     | [<CustomCommandLine("nuget")>] Nuget of string
     | [<CustomCommandLine("version")>] Version of string
@@ -63,6 +64,7 @@ with
             | Simplify -> "analyzes dependencies and removes unnecessary indirect dependencies."
             | Verbose -> "displays verbose output."
             | Force -> "forces the download of all packages."
+            | Use_Targets -> "use msbuild targets for references."
             | Interactive -> "interactive process."
             | Hard -> "overwrites manual package references."
             | No_Install -> "omits install --hard after convert-from-nuget."
@@ -101,6 +103,7 @@ try
     match results with
     | Some(command,results) ->
         let force = results.Contains <@ CLIArguments.Force @> 
+        let useTargets = results.Contains <@ CLIArguments.Use_Targets @>
         let interactive = results.Contains <@ CLIArguments.Interactive @> 
         let hard = results.Contains <@ CLIArguments.Hard @> 
         let noInstall = results.Contains <@ CLIArguments.No_Install @>
@@ -115,22 +118,22 @@ try
                 match results.TryGetResult <@ CLIArguments.Version @> with
                 | Some x -> x
                 | _ -> ""
-            AddProcess.Add(packageName,version,force,hard,interactive,noInstall |> not)
+            AddProcess.Add(packageName,version,force,hard,interactive,noInstall |> not,useTargets)
         | Command.Remove -> 
             let packageName = results.GetResult <@ CLIArguments.Nuget @>            
-            RemoveProcess.Remove(packageName,force,hard,interactive,noInstall |> not)
-        | Command.Install -> UpdateProcess.Update(false,force,hard) 
+            RemoveProcess.Remove(packageName,force,hard,interactive,noInstall |> not,useTargets)
+        | Command.Install -> UpdateProcess.Update(false,force,hard,useTargets) 
         | Command.Restore -> 
             let files = results.GetResults <@ CLIArguments.References_Files @> 
             RestoreProcess.Restore(force,files) 
         | Command.Update -> 
             match results.TryGetResult <@ CLIArguments.Nuget @> with
-            | Some packageName -> UpdateProcess.UpdatePackage(packageName,force,hard)
-            | _ -> UpdateProcess.Update(true,force,hard)
+            | Some packageName -> UpdateProcess.UpdatePackage(packageName,force,hard,useTargets)
+            | _ -> UpdateProcess.Update(true,force,hard,useTargets)
             
         | Command.Outdated -> FindOutdated.ListOutdated(strict,includePrereleases)
         | Command.InitAutoRestore -> VSIntegration.InitAutoRestore()
-        | Command.ConvertFromNuget -> NuGetConvert.ConvertFromNuget(force,noInstall |> not,noAutoRestore |> not)
+        | Command.ConvertFromNuget -> NuGetConvert.ConvertFromNuget(force,noInstall |> not,noAutoRestore |> not,useTargets)
         | Command.Simplify -> Simplifier.Simplify(interactive)
         | _ -> traceErrorfn "no command given.%s" (parser.Usage())
         
