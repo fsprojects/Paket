@@ -116,87 +116,15 @@
             </Reference>
           </ItemGroup>
         </When>
-        <Otherwise>
-          <ItemGroup>
-            <Reference Include="UnionArgParser">
-              <HintPath>..\..\packages\UnionArgParser\lib\net40\UnionArgParser.dll</HintPath>
-              <Private>True</Private>
-              <Paket>True</Paket>
-            </Reference>
-          </ItemGroup>
-        </Otherwise>
-      </Choose>
-    </When>
-    <When Condition="$(TargetFrameworkIdentifier) == 'MonoAndroid'">
-      <ItemGroup>
-        <Reference Include="UnionArgParser">
-          <HintPath>..\..\packages\UnionArgParser\lib\net40\UnionArgParser.dll</HintPath>
-          <Private>True</Private>
-          <Paket>True</Paket>
-        </Reference>
-      </ItemGroup>
-    </When>
-    <When Condition="$(TargetFrameworkIdentifier) == 'MonoTouch'">
-      <ItemGroup>
-        <Reference Include="UnionArgParser">
-          <HintPath>..\..\packages\UnionArgParser\lib\net40\UnionArgParser.dll</HintPath>
-          <Private>True</Private>
-          <Paket>True</Paket>
-        </Reference>
-      </ItemGroup>
-    </When>
-    <When Condition="$(TargetFrameworkIdentifier) == 'Silverlight'">
-      <ItemGroup>
-        <Reference Include="UnionArgParser">
-          <HintPath>..\..\packages\UnionArgParser\lib\net40\UnionArgParser.dll</HintPath>
-          <Private>True</Private>
-          <Paket>True</Paket>
-        </Reference>
-      </ItemGroup>
-    </When>
-    <When Condition="$(TargetFrameworkIdentifier) == 'Windows'">
-      <ItemGroup>
-        <Reference Include="UnionArgParser">
-          <HintPath>..\..\packages\UnionArgParser\lib\net40\UnionArgParser.dll</HintPath>
-          <Private>True</Private>
-          <Paket>True</Paket>
-        </Reference>
-      </ItemGroup>
-    </When>
-    <When Condition="$(TargetFrameworkIdentifier) == 'WindowsPhoneApp'">
-      <ItemGroup>
-        <Reference Include="UnionArgParser">
-          <HintPath>..\..\packages\UnionArgParser\lib\net40\UnionArgParser.dll</HintPath>
-          <Private>True</Private>
-          <Paket>True</Paket>
-        </Reference>
-      </ItemGroup>
-    </When>
-    <Otherwise>
-      <ItemGroup>
-        <Reference Include="UnionArgParser">
-          <HintPath>..\..\packages\UnionArgParser\lib\net40\UnionArgParser.dll</HintPath>
-          <Private>True</Private>
-          <Paket>True</Paket>
-        </Reference>
-      </ItemGroup>
-    </Otherwise>
-  </Choose>
-  <Choose>
-    <When Condition="$(TargetFrameworkIdentifier) == '.NETFramework'">
-      <Choose>
-        <When Condition="$(TargetFrameworkVersion) == 'v1.0'">
-        </When>
-        <When Condition="$(TargetFrameworkVersion) == 'v1.1'">
-        </When>
-        <When Condition="$(TargetFrameworkVersion) == 'v2.0'">
-        </When>
-        <When Condition="$(TargetFrameworkVersion) == 'v3.5'">
-        </When>
         <When Condition="$(TargetFrameworkVersion) == 'v4.0' And $(TargetFrameworkProfile) == 'Client'">
           <ItemGroup>
             <Reference Include="FSharp.Core">
               <HintPath>..\..\packages\FSharp.Core.Microsoft.Signed\lib\net40\FSharp.Core.dll</HintPath>
+              <Private>True</Private>
+              <Paket>True</Paket>
+            </Reference>
+            <Reference Include="UnionArgParser">
+              <HintPath>..\..\packages\UnionArgParser\lib\net40\UnionArgParser.dll</HintPath>
               <Private>True</Private>
               <Paket>True</Paket>
             </Reference>
@@ -209,12 +137,22 @@
               <Private>True</Private>
               <Paket>True</Paket>
             </Reference>
+            <Reference Include="UnionArgParser">
+              <HintPath>..\..\packages\UnionArgParser\lib\net40\UnionArgParser.dll</HintPath>
+              <Private>True</Private>
+              <Paket>True</Paket>
+            </Reference>
           </ItemGroup>
         </When>
         <Otherwise>
           <ItemGroup>
             <Reference Include="FSharp.Core">
               <HintPath>..\..\packages\FSharp.Core.Microsoft.Signed\lib\net45\FSharp.Core.dll</HintPath>
+              <Private>True</Private>
+              <Paket>True</Paket>
+            </Reference>
+            <Reference Include="UnionArgParser">
+              <HintPath>..\..\packages\UnionArgParser\lib\net40\UnionArgParser.dll</HintPath>
               <Private>True</Private>
               <Paket>True</Paket>
             </Reference>
@@ -269,12 +207,22 @@
           <Private>True</Private>
           <Paket>True</Paket>
         </Reference>
+        <Reference Include="UnionArgParser">
+          <HintPath>..\..\packages\UnionArgParser\lib\net40\UnionArgParser.dll</HintPath>
+          <Private>True</Private>
+          <Paket>True</Paket>
+        </Reference>
       </ItemGroup>
     </When>
     <When Condition="$(TargetFrameworkIdentifier) == 'MonoTouch'">
       <ItemGroup>
         <Reference Include="FSharp.Core">
           <HintPath>..\..\packages\FSharp.Core.Microsoft.Signed\lib\net45\FSharp.Core.dll</HintPath>
+          <Private>True</Private>
+          <Paket>True</Paket>
+        </Reference>
+        <Reference Include="UnionArgParser">
+          <HintPath>..\..\packages\UnionArgParser\lib\net40\UnionArgParser.dll</HintPath>
           <Private>True</Private>
           <Paket>True</Paket>
         </Reference>
@@ -289,6 +237,11 @@
               <Private>True</Private>
               <Paket>True</Paket>
             </Reference>
+            <Reference Include="UnionArgParser">
+              <HintPath>..\..\packages\UnionArgParser\lib\net40\UnionArgParser.dll</HintPath>
+              <Private>True</Private>
+              <Paket>True</Paket>
+            </Reference>
           </ItemGroup>
         </When>
         <When Condition="$(SilverlightVersion) == 'v4.0'">
@@ -298,12 +251,22 @@
               <Private>True</Private>
               <Paket>True</Paket>
             </Reference>
+            <Reference Include="UnionArgParser">
+              <HintPath>..\..\packages\UnionArgParser\lib\net40\UnionArgParser.dll</HintPath>
+              <Private>True</Private>
+              <Paket>True</Paket>
+            </Reference>
           </ItemGroup>
         </When>
         <Otherwise>
           <ItemGroup>
             <Reference Include="FSharp.Core">
               <HintPath>..\..\packages\FSharp.Core.Microsoft.Signed\lib\portable-net45+sl5+netcore45+MonoAndroid1+MonoTouch1\FSharp.Core.dll</HintPath>
+              <Private>True</Private>
+              <Paket>True</Paket>
+            </Reference>
+            <Reference Include="UnionArgParser">
+              <HintPath>..\..\packages\UnionArgParser\lib\net40\UnionArgParser.dll</HintPath>
               <Private>True</Private>
               <Paket>True</Paket>
             </Reference>
@@ -318,6 +281,11 @@
           <Private>True</Private>
           <Paket>True</Paket>
         </Reference>
+        <Reference Include="UnionArgParser">
+          <HintPath>..\..\packages\UnionArgParser\lib\net40\UnionArgParser.dll</HintPath>
+          <Private>True</Private>
+          <Paket>True</Paket>
+        </Reference>
       </ItemGroup>
     </When>
     <When Condition="$(TargetFrameworkIdentifier) == 'WindowsPhoneApp'">
@@ -326,6 +294,11 @@
           <ItemGroup>
             <Reference Include="FSharp.Core">
               <HintPath>..\..\packages\FSharp.Core.Microsoft.Signed\lib\net45\FSharp.Core.dll</HintPath>
+              <Private>True</Private>
+              <Paket>True</Paket>
+            </Reference>
+            <Reference Include="UnionArgParser">
+              <HintPath>..\..\packages\UnionArgParser\lib\net40\UnionArgParser.dll</HintPath>
               <Private>True</Private>
               <Paket>True</Paket>
             </Reference>
@@ -338,12 +311,22 @@
               <Private>True</Private>
               <Paket>True</Paket>
             </Reference>
+            <Reference Include="UnionArgParser">
+              <HintPath>..\..\packages\UnionArgParser\lib\net40\UnionArgParser.dll</HintPath>
+              <Private>True</Private>
+              <Paket>True</Paket>
+            </Reference>
           </ItemGroup>
         </When>
         <Otherwise>
           <ItemGroup>
             <Reference Include="FSharp.Core">
               <HintPath>..\..\packages\FSharp.Core.Microsoft.Signed\lib\portable-net45+netcore45+wpa81+wp8+MonoAndroid1+MonoTouch1\FSharp.Core.dll</HintPath>
+              <Private>True</Private>
+              <Paket>True</Paket>
+            </Reference>
+            <Reference Include="UnionArgParser">
+              <HintPath>..\..\packages\UnionArgParser\lib\net40\UnionArgParser.dll</HintPath>
               <Private>True</Private>
               <Paket>True</Paket>
             </Reference>
@@ -355,6 +338,11 @@
       <ItemGroup>
         <Reference Include="FSharp.Core">
           <HintPath>..\..\packages\FSharp.Core.Microsoft.Signed\lib\net45\FSharp.Core.dll</HintPath>
+          <Private>True</Private>
+          <Paket>True</Paket>
+        </Reference>
+        <Reference Include="UnionArgParser">
+          <HintPath>..\..\packages\UnionArgParser\lib\net40\UnionArgParser.dll</HintPath>
           <Private>True</Private>
           <Paket>True</Paket>
         </Reference>
