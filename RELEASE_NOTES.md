@@ -1,4 +1,17 @@
-#### 0.9.1 - 22.10.2014
+#### 0.11.0-alpha001 - 28.10.2014
+* Build a merged install model with all packages - https://github.com/fsprojects/Paket/issues/297
+
+#### 0.10.0 - 24.10.2014
+* Initial version of `paket remove` command - http://fsprojects.github.io/Paket/paket-remove.html
+* Paket add doesn't fail on second attempt - https://github.com/fsprojects/Paket/issues/295
+* Report full paths when access is denied - https://github.com/fsprojects/Paket/issues/242
+* Visual Studio restore only restores for the current project
+* BUGFIX: Selective update keeps all other versions
+* BUGFIX: Install process accepts filenames with `lib`
+* BUGFIX: Fix !~> resolver
+* BUGFIX: Use normal 4.0 framework libs when we only specify net40
+* BUGFIX: Fix timing issue with paket install --hard - https://github.com/fsprojects/Paket/issues/293
+* BUGFIX: Fix namespace handling in nuspec files
 * BUGFIX: Add default nuget source to dependencies file if original project has no source
 
 #### 0.9.0 - 22.10.2014

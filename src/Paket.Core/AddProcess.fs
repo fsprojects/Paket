@@ -9,39 +9,11 @@ let Add(package, version, force, hard, interactive, installAfter) =
         DependenciesFile.ReadFromFile(Constants.DependenciesFile)
           .Add(package,version)
 
-    let lockFileName = DependenciesFile.FindLockfile Constants.DependenciesFile
-    let lockFile =
-        if not lockFileName.Exists then 
-            let resolution = dependenciesFile.Resolve(force)
-            let resolvedPackages = resolution.ResolvedPackages.GetModelOrFail()
-            let lockFile = LockFile(lockFileName.FullName, dependenciesFile.Options, resolvedPackages, resolution.ResolvedSourceFiles)
-            lockFile.Save()
-            lockFile
-        else
-            let oldLockFile = LockFile.LoadFrom(lockFileName.FullName)
-        
-            let updatedDependenciesFile = 
-                oldLockFile.ResolvedPackages 
-                |> Seq.fold 
-                       (fun (dependenciesFile : DependenciesFile) kv -> 
-                       let resolvedPackage = kv.Value
-                       if resolvedPackage.Name.ToLower() = package.ToLower() then dependenciesFile
-                       else 
-                           dependenciesFile.AddAdditionionalPackage
-                               (resolvedPackage.Name, "== " + resolvedPackage.Version.ToString())) dependenciesFile
-        
-            let resolution = updatedDependenciesFile.Resolve(force)
-            let resolvedPackages = resolution.ResolvedPackages.GetModelOrFail()
-            let newLockFile = 
-                LockFile(lockFileName.FullName, updatedDependenciesFile.Options, resolvedPackages, oldLockFile.SourceFiles)
-            newLockFile.Save()
-            newLockFile
-
+    let lockFile = UpdateProcess.updateWithModifiedDependenciesFile(dependenciesFile,package,force)
     
     if interactive then
-        let di = DirectoryInfo(".")
         for project in ProjectFile.FindAllProjects(".") do
-            if Utils.askYesNo(sprintf "  Install to %s?" (project.FileName.Replace(di.FullName,""))) then
+            if Utils.askYesNo(sprintf "  Install to %s?" project.Name) then
                 let proj = FileInfo(project.FileName)
                 match ProjectFile.FindReferencesFile proj with
                 | None ->

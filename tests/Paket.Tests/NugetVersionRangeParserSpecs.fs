@@ -1,4 +1,4 @@
-﻿module Paket.NugetVersionRangeSpecs
+﻿module Paket.NugetVersionRangeParserSpecs
 
 open Paket
 open NUnit.Framework

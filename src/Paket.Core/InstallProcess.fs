@@ -75,21 +75,21 @@ let CreateInstallModel(sources, force, package) =
 
 /// Restores the given packages from the lock file.
 let createModel(sources,force, lockFile:LockFile) = 
-        let sourceFileDownloads =
-            lockFile.SourceFiles
-            |> Seq.map (fun file -> GitHub.DownloadSourceFile(Path.GetDirectoryName lockFile.FileName, file))        
-            |> Async.Parallel
+    let sourceFileDownloads =
+        lockFile.SourceFiles
+        |> Seq.map (fun file -> GitHub.DownloadSourceFile(Path.GetDirectoryName lockFile.FileName, file))        
+        |> Async.Parallel
 
-        let packageDownloads = 
-            lockFile.ResolvedPackages
-            |> Seq.map (fun kv -> CreateInstallModel(sources,force,kv.Value))
-            |> Async.Parallel
+    let packageDownloads = 
+        lockFile.ResolvedPackages
+        |> Seq.map (fun kv -> CreateInstallModel(sources,force,kv.Value))
+        |> Async.Parallel
 
-        let _,extractedPackages =
-            Async.Parallel(sourceFileDownloads,packageDownloads)
-            |> Async.RunSynchronously
+    let _,extractedPackages =
+        Async.Parallel(sourceFileDownloads,packageDownloads)
+        |> Async.RunSynchronously
 
-        extractedPackages
+    extractedPackages
 
 /// Installs the given all packages from the lock file.
 let Install(sources,force, hard, lockFile:LockFile) = 

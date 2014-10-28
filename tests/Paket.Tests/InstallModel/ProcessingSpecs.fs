@@ -17,8 +17,14 @@ let ``should create empty model with net40, net45 ...``() =
 let ``should understand net40 and net45``() = 
     let model = emptymodel.AddReferences [ @"..\Rx-Main\lib\net40\Rx.dll"; @"..\Rx-Main\lib\net45\Rx.dll" ] 
 
-    model.GetFiles(DotNetFramework(FrameworkVersion.V4)) |> shouldContain @"..\Rx-Main\lib\net40\Rx.dll"
+    model.GetFiles(DotNetFramework(FrameworkVersion.V4_Client)) |> shouldContain @"..\Rx-Main\lib\net40\Rx.dll"
     model.GetFiles(DotNetFramework(FrameworkVersion.V4_5)) |> shouldContain @"..\Rx-Main\lib\net45\Rx.dll"
+
+[<Test>]
+let ``should understand lib in lib.dll``() = 
+    let model = emptymodel.AddReferences [ @"..\FunScript.TypeScript\lib\net40\FunScript.TypeScript.Binding.lib.dll"; ] 
+
+    model.GetFiles(DotNetFramework(FrameworkVersion.V4_Client)) |> shouldContain @"..\FunScript.TypeScript\lib\net40\FunScript.TypeScript.Binding.lib.dll"
 
 [<Test>]
 let ``should add net35 if we have net20 and net40``() = 
@@ -38,7 +44,7 @@ let ``should put _._ files into right buckets``() =
     let model = emptymodel.AddReferences [ @"..\Rx-Main\lib\net40\_._"; @"..\Rx-Main\lib\net20\_._" ] 
 
     model.GetFiles(DotNetFramework(FrameworkVersion.V2)) |> shouldContain @"..\Rx-Main\lib\net20\_._"
-    model.GetFiles(DotNetFramework(FrameworkVersion.V4)) |> shouldContain @"..\Rx-Main\lib\net40\_._"
+    model.GetFiles(DotNetFramework(FrameworkVersion.V4_Client)) |> shouldContain @"..\Rx-Main\lib\net40\_._"
 
 [<Test>]
 let ``should inherit _._ files to higher frameworks``() = 
@@ -84,6 +90,31 @@ let ``should install single client profile lib for everything``() =
     model.GetFiles(DotNetFramework(FrameworkVersion.V4)) |> shouldContain @"..\Castle.Core\lib\net40-client\Castle.Core.dll"
     model.GetFiles(DotNetFramework(FrameworkVersion.V4_5)) |> shouldContain @"..\Castle.Core\lib\net40-client\Castle.Core.dll"
 
+
+[<Test>]
+let ``should install net40 for client profile``() = 
+    let model = 
+        emptymodel.AddReferences(
+            [ @"..\Newtonsoft.Json\lib\net35\Newtonsoft.Json.dll" 
+              @"..\Newtonsoft.Json\lib\net40\Newtonsoft.Json.dll"])
+            .BuildUnfilteredModel()
+
+    model.GetFiles(DotNetFramework(FrameworkVersion.V3_5)) |> shouldContain @"..\Newtonsoft.Json\lib\net35\Newtonsoft.Json.dll" 
+    model.GetFiles(DotNetFramework(FrameworkVersion.V4_Client)) |> shouldContain @"..\Newtonsoft.Json\lib\net40\Newtonsoft.Json.dll" 
+    model.GetFiles(DotNetFramework(FrameworkVersion.V4)) |> shouldContain @"..\Newtonsoft.Json\lib\net40\Newtonsoft.Json.dll" 
+
+[<Test>]
+let ``should install not use net40-full for client profile``() = 
+    let model = 
+        emptymodel.AddReferences(
+            [ @"..\Newtonsoft.Json\lib\net35\Newtonsoft.Json.dll" 
+              @"..\Newtonsoft.Json\lib\net40-full\Newtonsoft.Json.dll"])
+            .BuildUnfilteredModel()
+
+    model.GetFiles(DotNetFramework(FrameworkVersion.V3_5)) |> shouldContain @"..\Newtonsoft.Json\lib\net35\Newtonsoft.Json.dll"     
+    model.GetFiles(DotNetFramework(FrameworkVersion.V4)) |> shouldContain @"..\Newtonsoft.Json\lib\net40-full\Newtonsoft.Json.dll" 
+    model.GetFiles(DotNetFramework(FrameworkVersion.V4_Client)) |> shouldNotContain @"..\Newtonsoft.Json\lib\net40-full\Newtonsoft.Json.dll" 
+
 [<Test>]
 let ``should handle lib install of Microsoft.Net.Http for .NET 4.5``() = 
     let model = 
@@ -117,7 +148,7 @@ let ``should add portable lib``() =
 let ``should handle lib install of Jint for NET >= 40 and SL >= 50``() = 
     let model = 
         emptymodel.AddReferences([ @"..\Jint\lib\portable-net40+sl50+win+wp80\Jint.dll" ])
-            .UsePortableVersionLibIfEmpty()
+            .BuildUnfilteredModel()
    
     model.GetFiles(DotNetFramework(FrameworkVersion.V4)) |> shouldContain @"..\Jint\lib\portable-net40+sl50+win+wp80\Jint.dll"
 
@@ -174,9 +205,9 @@ let ``should not use portable-net40 if we have net40``() =
               @"..\Microsoft.Bcl\lib\portable-net40+sl4+win8\System.Runtime.dll" 
               @"..\Microsoft.Bcl\lib\portable-net40+sl4+win8\System.Threading.Tasks.dll" ])
     
-    model.GetFiles(DotNetFramework(FrameworkVersion.V4)) |> shouldContain @"..\Microsoft.Bcl\lib\net40\System.IO.dll" 
-    model.GetFiles(DotNetFramework(FrameworkVersion.V4)) |> shouldContain @"..\Microsoft.Bcl\lib\net40\System.Runtime.dll" 
-    model.GetFiles(DotNetFramework(FrameworkVersion.V4)) |> shouldContain @"..\Microsoft.Bcl\lib\net40\System.Threading.Tasks.dll" 
+    model.GetFiles(DotNetFramework(FrameworkVersion.V4_Client)) |> shouldContain @"..\Microsoft.Bcl\lib\net40\System.IO.dll" 
+    model.GetFiles(DotNetFramework(FrameworkVersion.V4_Client)) |> shouldContain @"..\Microsoft.Bcl\lib\net40\System.Runtime.dll" 
+    model.GetFiles(DotNetFramework(FrameworkVersion.V4_Client)) |> shouldContain @"..\Microsoft.Bcl\lib\net40\System.Threading.Tasks.dll" 
 
     model.GetFiles(PortableFramework("7.0", "net40+sl4+win8")) |> shouldContain @"..\Microsoft.Bcl\lib\portable-net40+sl4+win8\System.IO.dll" 
     model.GetFiles(PortableFramework("7.0", "net40+sl4+win8")) |> shouldContain @"..\Microsoft.Bcl\lib\portable-net40+sl4+win8\System.Runtime.dll" 
@@ -193,7 +224,7 @@ let ``should handle lib install of DotNetZip 1.9.3``() =
 
 [<Test>]
 let ``should reduce lib install of DotNetZip 1.9.3``() = 
-    let model = emptymodel.AddReferences([ @"..\DotNetZip\lib\net20\Ionic.Zip.dll" ]).BuildModel()
+    let model = emptymodel.AddReferences([ @"..\DotNetZip\lib\net20\Ionic.Zip.dll" ]).BuildUnfilteredModel().FilterFallbacks()
 
     model.GetFiles(DotNetFramework(FrameworkVersion.V2)) |> shouldNotContain @"..\DotNetZip\lib\net20\Ionic.Zip.dll"
     model.GetFiles(DotNetFramework(FrameworkVersion.V4_5)) |> shouldNotContain @"..\DotNetZip\lib\net20\Ionic.Zip.dll"
@@ -422,3 +453,4 @@ let ``should not install tools``() =
     model.GetFrameworks()
     |> Seq.forall (fun kv -> kv.Value.References.IsEmpty)
     |> shouldEqual true
+

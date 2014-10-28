@@ -6,42 +6,47 @@ open FsUnit
 
 [<Test>]
 let ``can detect explicit references``() = 
-    Nuspec.Load("TestFiles/FSharp.Data.nuspec").References
+    Nuspec.Load("Nuspec/FSharp.Data.nuspec").References
     |> shouldEqual (NuspecReferences.Explicit ["FSharp.Data.dll"])
 
 [<Test>]
 let ``can detect explicit in self made nuspec``() = 
-    Nuspec.Load("TestFiles/FSharp.Data.Prerelease.nuspec").References
+    Nuspec.Load("Nuspec/FSharp.Data.Prerelease.nuspec").References
     |> shouldEqual (NuspecReferences.Explicit ["FSharp.Data.dll"])
 
 [<Test>]
 let ``can detect all references``() = 
-    Nuspec.Load("TestFiles/Octokit.nuspec").References
+    Nuspec.Load("Nuspec/Octokit.nuspec").References
+    |> shouldEqual NuspecReferences.All
+
+[<Test>]
+let ``can detect all references for log4net``() = 
+    Nuspec.Load("Nuspec/log4net.nuspec").References
     |> shouldEqual NuspecReferences.All
 
 [<Test>]
 let ``if nuspec is not found we assume all references``() = 
-    Nuspec.Load("TestFiles/blablub.nuspec").References
+    Nuspec.Load("Nuspec/blablub.nuspec").References
     |> shouldEqual NuspecReferences.All
 
 [<Test>]
 let ``can detect explicit references for Fantomas``() = 
-    Nuspec.Load("TestFiles/Fantomas.nuspec").References
+    Nuspec.Load("Nuspec/Fantomas.nuspec").References
     |> shouldEqual (NuspecReferences.Explicit ["FantomasLib.dll"])
 
 [<Test>]
 let ``can detect no framework assemblies for Fantomas``() = 
-    Nuspec.Load("TestFiles/Fantomas.nuspec").FrameworkAssemblyReferences
+    Nuspec.Load("Nuspec/Fantomas.nuspec").FrameworkAssemblyReferences
     |> shouldEqual []
 
 [<Test>]
 let ``if nuspec is not found we assume no framework references``() = 
-    Nuspec.Load("TestFiles/blablub.nuspec").FrameworkAssemblyReferences
+    Nuspec.Load("Nuspec/blablub.nuspec").FrameworkAssemblyReferences
     |> shouldEqual []
 
 [<Test>]
 let ``can detect framework assemblies for Microsoft.Net.Http``() = 
-    Nuspec.Load("TestFiles/Microsoft.Net.Http.nuspec").FrameworkAssemblyReferences
+    Nuspec.Load("Nuspec/Microsoft.Net.Http.nuspec").FrameworkAssemblyReferences
     |> shouldEqual 
         [{ AssemblyName = "System.Net.Http"; TargetFramework = DotNetFramework(FrameworkVersion.V4_5) }
          { AssemblyName = "System.Net.Http.WebRequest"; TargetFramework = DotNetFramework(FrameworkVersion.V4_5) }
@@ -50,6 +55,13 @@ let ``can detect framework assemblies for Microsoft.Net.Http``() =
 
 [<Test>]
 let ``can detect framework assemblies for Octokit``() = 
-    Nuspec.Load("TestFiles/Octokit.nuspec").FrameworkAssemblyReferences
+    Nuspec.Load("Nuspec/Octokit.nuspec").FrameworkAssemblyReferences
     |> shouldEqual 
         [{ AssemblyName = "System.Net.Http"; TargetFramework = DotNetFramework(FrameworkVersion.V4_5) }]
+
+[<Test>]
+let ``can detect framework assemblies for FSharp.Data.SqlEnumProvider``() = 
+    Nuspec.Load("Nuspec/FSharp.Data.SqlEnumProvider.nuspec").FrameworkAssemblyReferences
+    |> shouldEqual 
+        [{ AssemblyName = "System.Data"; TargetFramework = DotNetFramework(FrameworkVersion.V4_Client) }
+         { AssemblyName = "System.Xml"; TargetFramework = DotNetFramework(FrameworkVersion.V4_Client) }]

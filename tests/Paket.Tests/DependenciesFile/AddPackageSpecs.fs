@@ -120,7 +120,7 @@ nuget FAKE !~> 1.2"""
 
 
 [<Test>]
-let ``should fail if package already exists``() = 
+let ``should not fail if package already exists``() = 
     let config = """source http://nuget.org/api/v2
 
 nuget Castle.Windsor-log4net ~> 3.2
@@ -128,15 +128,10 @@ nuget Rx-Main ~> 2.0
 nuget FAKE = 1.1
 nuget SignalR = 3.3.2"""
 
-    try
-        DependenciesFile.FromCode(config).Add("FAKE","") |> ignore
-        failwith "adding the same package did not throw"
-    with e -> 
-        e.Message |> shouldEqual <| sprintf "%s has already package %s" Constants.DependenciesFile "FAKE"
-
+    DependenciesFile.FromCode(config).Add("FAKE","") |> ignore
     
 [<Test>]
-let ``should fail if package already exists - case insensitive``() = 
+let ``should not fail if package already exists - case insensitive``() = 
     let config = """source http://nuget.org/api/v2
 
 nuget Castle.Windsor-log4net ~> 3.2
@@ -144,8 +139,4 @@ nuget Rx-Main ~> 2.0
 nuget FAKE = 1.1
 nuget SignalR = 3.3.2"""
 
-    try
-        DependenciesFile.FromCode(config).Add("fAKe","") |> ignore
-        failwith "adding the same package did not throw"
-    with e -> 
-        e.Message |> shouldEqual <| sprintf "%s has already package %s" Constants.DependenciesFile "fAKe"
+    DependenciesFile.FromCode(config).Add("fAKe","") |> ignore

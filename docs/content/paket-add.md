@@ -13,6 +13,8 @@ Options:
 
   `--hard`: Replaces package references within project files even if they are not yet adhering to to Paket's conventions (and hence considered manually managed). See [convert from NuGet](convert-from-nuget.html).
 
+  See also [paket remove](paket-remove.html).
+
 ## Sample
 
 Consider the following [`paket.dependencies` file](dependencies-file.html):

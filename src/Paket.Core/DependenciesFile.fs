@@ -210,12 +210,13 @@ type DependenciesFile(fileName,options,packages : PackageRequirement list, remot
         { ResolvedPackages = PackageResolver.Resolve(getVersionF, getPackageDetailsF, remoteDependencies @ packages)
           ResolvedSourceFiles = remoteFiles }        
 
-    member __.AddAdditionionalPackage(packageName,version:string) =
+    member __.AddAdditionionalPackage(packageName:string,version:string) =
         let versionRange = DependenciesFileParser.parseVersionRequirement (version.Trim '!')
         let sources = 
             match packages |> List.rev with
             | lastPackage::_ -> lastPackage.Sources
             | [] -> [PackageSources.DefaultNugetSource]
+
         let newPackage = 
             { Name = packageName
               VersionRequirement = versionRange
@@ -225,10 +226,49 @@ type DependenciesFile(fileName,options,packages : PackageRequirement list, remot
 
         DependenciesFile(fileName,options,packages @ [newPackage], remoteFiles)
 
+    member __.AddFixedPackage(packageName:string,version:string) =
+        let versionRange = DependenciesFileParser.parseVersionRequirement (version.Trim '!')
+        let sources = 
+            match packages |> List.rev with
+            | lastPackage::_ -> lastPackage.Sources
+            | [] -> [PackageSources.DefaultNugetSource]
+
+        let strategy = 
+            match packages |> List.tryFind (fun p -> p.Name.ToLower() = packageName.ToLower()) with
+            | Some package -> package.ResolverStrategy
+            | None -> DependenciesFileParser.parseResolverStrategy version
+
+        let newPackage = 
+            { Name = packageName
+              VersionRequirement = versionRange
+              Sources = sources
+              ResolverStrategy = strategy
+              Parent = PackageRequirementSource.DependenciesFile fileName }
+
+        DependenciesFile(fileName,options,(packages |> List.filter (fun p -> p.Name.ToLower() <> packageName.ToLower())) @ [newPackage], remoteFiles)
+
+    member __.RemovePackage(packageName:string) =
+        let newPackages = 
+            packages
+            |> List.filter (fun p -> p.Name.ToLower() <> packageName.ToLower())
+
+        DependenciesFile(fileName,options,newPackages,remoteFiles)
+
     member this.Add(packageName,version:string) =
-        if this.HasPackage packageName then failwithf "%s has already package %s" Constants.DependenciesFile packageName        
-        tracefn "Adding %s %s to paket.dependencies" packageName version
-        this.AddAdditionionalPackage(packageName,version)
+        if this.HasPackage packageName then 
+            traceWarnfn "%s contains package %s already. ==> Ignored" Constants.DependenciesFile packageName
+            this
+        else
+            tracefn "Adding %s %s to paket.dependencies" packageName version
+            this.AddAdditionionalPackage(packageName,version)
+
+    member this.Remove(packageName) =
+        if this.HasPackage packageName then         
+            tracefn "Removing %s from paket.dependencies" packageName
+            this.RemovePackage(packageName)
+        else
+            traceWarnfn "%s doesn't contain package %s. ==> Ignored" Constants.DependenciesFile packageName
+            this
 
     override __.ToString() =        
         let sources = 

@@ -53,6 +53,31 @@ module NugetVersionRangeParser =
                 | _ -> failParse()
         VersionRequirement(parseRange text,PreReleaseStatus.No)
 
+    /// formats a VersionRange in NuGet syntax
+    let format (v:VersionRange) =
+        match v with
+        | Minimum(version) -> 
+            match version.ToString() with
+            | "0" -> ""
+            | x  -> x
+        | GreaterThan(version) -> sprintf "(%s,)" (version.ToString())
+        | Maximum(version) -> sprintf "(,%s]" (version.ToString())
+        | LessThan(version) -> sprintf "(,%s)" (version.ToString())
+        | Specific(version) -> sprintf "[%s]" (version.ToString())
+        | OverrideAll(version) -> sprintf "[%s]" (version.ToString()) 
+        | Range(fromB, from,_to,_toB) -> 
+            let getMinDelimiter (v:VersionRangeBound) =
+                match v with
+                | VersionRangeBound.Including -> "["
+                | VersionRangeBound.Excluding -> "("
+
+            let getMaxDelimiter (v:VersionRangeBound) =
+                match v with
+                | VersionRangeBound.Including -> "]"
+                | VersionRangeBound.Excluding -> ")"
+        
+            sprintf "%s%s,%s%s" (getMinDelimiter fromB) (from.ToString()) (_to.ToString()) (getMaxDelimiter _toB) 
+
 
 type Nuspec = 
     { References : NuspecReferences 
@@ -63,7 +88,8 @@ type Nuspec =
         ["ns1","http://schemas.microsoft.com/packaging/2012/06/nuspec.xsd"
          "ns2","http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd"
          "ns3","http://schemas.microsoft.com/packaging/2013/01/nuspec.xsd"
-         "ns4","http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd"]
+         "ns4","http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd"
+         "ns5","http://schemas.microsoft.com/packaging/2011/10/nuspec.xsd"]
 
     static member All = { References = NuspecReferences.All; Dependencies = []; FrameworkAssemblyReferences = []; OfficialName = "" }
     static member Explicit references = { References = NuspecReferences.Explicit references; Dependencies = []; FrameworkAssemblyReferences = []; OfficialName = "" }
@@ -78,11 +104,17 @@ type Nuspec =
             Nuspec.KnownNamespaces
             |> List.iter (fun (name,ns) -> manager.AddNamespace(name, ns))
 
-            let nsUri = doc.LastChild.NamespaceURI
-            let ns = manager.LookupPrefix(nsUri)       
-            
+            let ns = 
+                let packageNs = manager.LookupPrefix(doc.LastChild.NamespaceURI)       
+                if String.IsNullOrEmpty packageNs then
+                    let metaDataNs = manager.LookupPrefix(doc.LastChild.LastChild.NamespaceURI)
+                    if String.IsNullOrEmpty metaDataNs then
+                        failwithf "Unrecognized namespace in nuspec file %s" fileName
+                    else metaDataNs
+                else packageNs
+
             let dependencies = 
-                doc.SelectNodes(sprintf "/%s:package/%s:metadata/%s:dependencies/%s:dependency" ns ns ns ns, manager)
+                doc.SelectNodes(sprintf "//%s:metadata/%s:dependencies/%s:dependency" ns ns ns, manager)
                 |> Seq.cast<XmlNode>
                 |> Seq.map (fun node -> 
                                 let name = node.Attributes.["id"].Value                            
@@ -95,7 +127,7 @@ type Nuspec =
                 |> Seq.toList
 
             let officialName = 
-                doc.SelectNodes(sprintf "/%s:package/%s:metadata/%s:id" ns ns ns, manager)
+                doc.SelectNodes(sprintf "//%s:metadata/%s:id" ns ns, manager)
                 |> Seq.cast<XmlNode>
                 |> Seq.head
                 |> fun node -> node.InnerText

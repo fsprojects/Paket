@@ -8,8 +8,8 @@ let element x = match x with | Some y -> y
 
 [<Test>]
 let ``should detect framework version from path``() =
-    FrameworkIdentifier.DetectFromPath(@"..\RestSharp\lib\net4\RestSharp.dll")|> element |> shouldEqual (DotNetFramework(FrameworkVersion.V4))
-    FrameworkIdentifier.DetectFromPath(@"..\Rx-Main\lib\net40\Rx.dll")|> element |> shouldEqual (DotNetFramework(FrameworkVersion.V4))
+    FrameworkIdentifier.DetectFromPath(@"..\RestSharp\lib\net4\RestSharp.dll")|> element |> shouldEqual (DotNetFramework(FrameworkVersion.V4_Client))
+    FrameworkIdentifier.DetectFromPath(@"..\Rx-Main\lib\net40\Rx.dll")|> element |> shouldEqual (DotNetFramework(FrameworkVersion.V4_Client))
     FrameworkIdentifier.DetectFromPath(@"..\Rx-Main\lib\net45\Rx.dll")|> element |> shouldEqual (DotNetFramework(FrameworkVersion.V4_5))
     FrameworkIdentifier.DetectFromPath(@"..\Rx-Main\lib\net20\Rx.dll")|> element |> shouldEqual (DotNetFramework(FrameworkVersion.V2))
     FrameworkIdentifier.DetectFromPath(@"..\Rx-Main\lib\net35\Rx.dll")|> element |> shouldEqual (DotNetFramework(FrameworkVersion.V3_5))
@@ -30,7 +30,7 @@ let ``should detect client framework version from path``() =
 [<Test>]
 let ``should detect net40-full as net40``() =
     FrameworkIdentifier.DetectFromPath(@"..\packages\log4net\lib\net40-full\log4net.dll")|> element |> shouldEqual(DotNetFramework(FrameworkVersion.V4))
-    FrameworkIdentifier.DetectFromPath(@"..\packages\log4net\lib\net40\log4net.dll")|> element |> shouldEqual (DotNetFramework(FrameworkVersion.V4))
+    FrameworkIdentifier.DetectFromPath(@"..\packages\log4net\lib\net40\log4net.dll")|> element |> shouldEqual (DotNetFramework(FrameworkVersion.V4_Client))
 
 [<Test>]
 let ``should detect net451``() =

@@ -21,6 +21,8 @@ type ProjectFile =
       ProjectNode : XmlNode
       Namespaces : XmlNamespaceManager }
 
+    member this.Name = FileInfo(this.FileName).Name
+
     /// Finds all project files
     static member FindAllProjects(folder) = 
         ["*.csproj";"*.fsproj";"*.vbproj"]
@@ -159,22 +161,23 @@ type ProjectFile =
             let itemGroup = createNode(this.Document,"ItemGroup")
                                 
             for lib in references do
-                let reference = 
-                    match lib with
-                    | Reference.Library lib ->
-                        let fi = new FileInfo(normalizePath lib)
+                match lib with
+                | Reference.Library lib ->
+                    let fi = new FileInfo(normalizePath lib)
                     
-                        createNode(this.Document,"Reference")
-                        |> addAttribute "Include" (fi.Name.Replace(fi.Extension,""))
-                        |> addChild (createNodeWithText(this.Document,"HintPath",createRelativePath this.FileName fi.FullName))
-                        |> addChild (createNodeWithText(this.Document,"Private","True"))
-                        |> addChild (createNodeWithText(this.Document,"Paket","True"))
-                    | Reference.FrameworkAssemblyReference frameworkAssembly ->                    
-                        createNode(this.Document,"Reference")
-                        |> addAttribute "Include" frameworkAssembly
-                        |> addChild (createNodeWithText(this.Document,"Paket","True"))
-
-                itemGroup.AppendChild(reference) |> ignore
+                    createNode(this.Document,"Reference")
+                    |> addAttribute "Include" (fi.Name.Replace(fi.Extension,""))
+                    |> addChild (createNodeWithText(this.Document,"HintPath",createRelativePath this.FileName fi.FullName))
+                    |> addChild (createNodeWithText(this.Document,"Private","True"))
+                    |> addChild (createNodeWithText(this.Document,"Paket","True"))
+                    |> itemGroup.AppendChild
+                    |> ignore
+                | Reference.FrameworkAssemblyReference frameworkAssembly ->              
+                    createNode(this.Document,"Reference")
+                    |> addAttribute "Include" frameworkAssembly
+                    |> addChild (createNodeWithText(this.Document,"Paket","True"))
+                    |> itemGroup.AppendChild
+                    |> ignore
             itemGroup
 
         let groupChooseNode = this.Document.CreateElement("Choose", Constants.ProjectDefaultNameSpace)
@@ -227,17 +230,25 @@ type ProjectFile =
     member this.UpdateReferences(completeModel: Map<string,InstallModel>, usedPackages : Dictionary<string,bool>, hard) = 
         this.DeletePaketNodes("Reference")  
         this.DeleteEmptyReferences()
-        for kv in usedPackages do
-            let packageName = kv.Key
-            let installModel =   completeModel.[packageName.ToLower()]
 
-            if hard then
+        if hard then
+            for kv in usedPackages do
+                let installModel = completeModel.[kv.Key.ToLower()]
                 this.DeleteCustomNodes(installModel)
 
-            if this.HasCustomNodes(installModel) then verbosefn "  - custom nodes for %s ==> skipping" packageName else
-            let chooseNode = this.GenerateXml(installModel)
-            this.ProjectNode.AppendChild(chooseNode) |> ignore        
+        let merged =
+            usedPackages
+            |> Seq.fold (fun (model:InstallModel) kv -> 
+                            let installModel = completeModel.[kv.Key.ToLower()]
+                            if this.HasCustomNodes(installModel) then 
+                                verbosefn "  - custom nodes for %s ==> skipping" kv.Key
+                                model
+                            else model.MergeWith(completeModel.[kv.Key.ToLower()])) 
+                        (InstallModel.EmptyModel("",SemVer.Parse "0"))
 
+        let chooseNode = this.GenerateXml(merged.FilterFallbacks())
+        this.ProjectNode.AppendChild(chooseNode) |> ignore
+                
     member this.Save() =
         if Utils.normalizeXml this.Document <> this.OriginalText then 
             verbosefn "Project %s changed" this.FileName

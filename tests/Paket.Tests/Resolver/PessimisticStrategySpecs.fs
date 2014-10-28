@@ -35,7 +35,7 @@ nuget "Nancy.Bootstrappers.Windsor" "!~> 0.23"
 let ``should resolve simple config2``() = 
     let cfg = DependenciesFile.FromCode(config2)
     let resolved = cfg.Resolve(noSha1,VersionsFromGraph graph, PackageDetailsFromGraph graph).ResolvedPackages.GetModelOrFail()
-    getVersion resolved.["Castle.Windsor"] |> shouldEqual "3.3.0"
+    getVersion resolved.["Castle.Windsor"] |> shouldEqual "3.2.1"
     getVersion resolved.["Nancy.Bootstrappers.Windsor"] |> shouldEqual "0.23"
 
 
@@ -50,5 +50,37 @@ nuget "Castle.Windsor" "!>= 0"
 let ``should resolve simple config3``() = 
     let cfg = DependenciesFile.FromCode(config3)
     let resolved = cfg.Resolve(noSha1,VersionsFromGraph graph, PackageDetailsFromGraph graph).ResolvedPackages.GetModelOrFail()
-    getVersion resolved.["Castle.Windsor"] |> shouldEqual "3.3.0"
+    getVersion resolved.["Castle.Windsor"] |> shouldEqual "3.2.1"
+    getVersion resolved.["Nancy.Bootstrappers.Windsor"] |> shouldEqual "0.23"
+
+
+let graph2 = [
+    "Nancy.Bootstrappers.Windsor","0.23",["Castle.Windsor",VersionRequirement(VersionRange.AtLeast "3.2.1",PreReleaseStatus.No)]
+    "Castle.Windsor","3.2.0",["Castle.Core",VersionRequirement(VersionRange.AtLeast "3.2.0",PreReleaseStatus.No)]
+    "Castle.Windsor","3.2.1",["Castle.Core",VersionRequirement(VersionRange.AtLeast "3.2.0",PreReleaseStatus.No)]
+    "Castle.Windsor","3.3.0",["Castle.Core",VersionRequirement(VersionRange.AtLeast "3.3.0",PreReleaseStatus.No)]
+    "Castle.Windsor-NLog","3.2.0.1",["Castle.Core-NLog",VersionRequirement(VersionRange.AtLeast "3.2.0",PreReleaseStatus.No)]
+    "Castle.Windsor-NLog","3.3.0",["Castle.Core-NLog",VersionRequirement(VersionRange.AtLeast "3.3.0",PreReleaseStatus.No)]
+    "Castle.Core-NLog","3.2.0",["Castle.Core",VersionRequirement(VersionRange.AtLeast "3.2.0",PreReleaseStatus.No)]
+    "Castle.Core-NLog","3.3.0",["Castle.Core",VersionRequirement(VersionRange.AtLeast "3.3.0",PreReleaseStatus.No)]
+    "Castle.Core-NLog","3.3.1",["Castle.Core",VersionRequirement(VersionRange.AtLeast "3.3.1",PreReleaseStatus.No)]
+    "Castle.Core","3.2.0",[]
+    "Castle.Core","3.2.1",[]
+    "Castle.Core","3.2.2",[]
+    "Castle.Core","3.3.0",[]
+    "Castle.Core","3.3.1",[]
+]
+
+let config4 = """
+source http://nuget.org/api/v2
+
+nuget Castle.Windsor-NLog
+nuget Nancy.Bootstrappers.Windsor !~> 0.23
+"""
+
+[<Test>]
+let ``should resolve simple config4``() = 
+    let cfg = DependenciesFile.FromCode(config4)
+    let resolved = cfg.Resolve(noSha1,VersionsFromGraph graph2, PackageDetailsFromGraph graph2).ResolvedPackages.GetModelOrFail()
+    getVersion resolved.["Castle.Windsor"] |> shouldEqual "3.2.1"
     getVersion resolved.["Nancy.Bootstrappers.Windsor"] |> shouldEqual "0.23"
