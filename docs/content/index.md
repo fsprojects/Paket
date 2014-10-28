@@ -59,12 +59,12 @@ All of the [files involved should be committed](faq.html#Why-should-I-commit-the
 Determine if there are package updates available:
 
     [lang=batchfile]
-    paket outdated
+    $ paket outdated
 
 Download updated packages; update [`paket.lock` file](lock-file.html) and re-install to reflect and changes:
 
     [lang=batchfile]
-    paket update
+    $ paket update
 
 The [`paket update` command](paket-update.html) will analyze your [`paket.dependencies` file](dependencies-file.html), and update the [`paket.lock` file](lock-file.html).
 
