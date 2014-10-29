@@ -1,7 +1,6 @@
 ﻿namespace Paket
 
 open Paket.Logging
-open Paket.PackageResolver
 open System
 open System.IO
 open System.Xml
@@ -258,6 +257,10 @@ type ProjectFile =
         this.FindPaketNodes("Content")
         |> List.append <| this.FindPaketNodes("Compile")
         |> List.map (fun n ->  FileInfo(Path.Combine(Path.GetDirectoryName(this.FileName), n.Attributes.["Include"].Value)))
+
+    member this.GetInterProjectDependencies() =  
+        [for n in this.Document.SelectNodes("//ns:ProjectReference", this.Namespaces) -> 
+            n.SelectSingleNode("ns:Name", this.Namespaces).InnerText] 
 
     member this.ReplaceNugetPackagesFile() =
         let nugetNode = this.Document.SelectSingleNode("//ns:*[@Include='packages.config']", this.Namespaces)

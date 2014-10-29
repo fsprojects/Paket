@@ -123,6 +123,9 @@
     <None Include="ProjectFile\TestData\Project1.fsprojtest">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+  <None Include="ProjectFile\TestData\Project2.fsprojtest">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>    
     <None Include="ProjectFile\TestData\ProjectWithConditions.fsprojtest">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
@@ -137,6 +140,7 @@
     </None>
     <Compile Include="ProjectFile\ConditionSpecs.fs" />
     <Compile Include="ProjectFile\FileBuildActionSpecs.fs" />
+    <Compile Include="ProjectFile\InterProjectDependencySpecs.fs" />
     <Compile Include="InstallModel\ProcessingSpecs.fs" />
     <Compile Include="InstallModel\Xml\Fantomas.fs" />
     <Compile Include="InstallModel\Xml\SystemNetHttp.fs" />

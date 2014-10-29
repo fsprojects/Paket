@@ -1,3 +1,6 @@
+#### 0.11.1 - 29.10.2014
+* Allow to retrieve inter project dependencies from a project file
+
 #### 0.11.0 - 29.10.2014
 * Build a merged install model with all packages - https://github.com/fsprojects/Paket/issues/297
 * `paket update` command allows to set a version - http://fsprojects.github.io/Paket/paket-update.html#Updating-a-single-package
