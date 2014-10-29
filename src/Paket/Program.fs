@@ -125,7 +125,9 @@ try
             RestoreProcess.Restore(force,files) 
         | Command.Update -> 
             match results.TryGetResult <@ CLIArguments.Nuget @> with
-            | Some packageName -> UpdateProcess.UpdatePackage(packageName,force,hard)
+            | Some packageName -> 
+                let version = results.TryGetResult <@ CLIArguments.Version @>
+                UpdateProcess.UpdatePackage(packageName,version,force,hard)
             | _ -> UpdateProcess.Update(true,force,hard)
             
         | Command.Outdated -> FindOutdated.ListOutdated(strict,includePrereleases)
