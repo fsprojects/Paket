@@ -1,6 +1,6 @@
 # ProjectScaffold
 
-This project can be used to scaffold a prototypical .NET solution including file system layout and tooling. This includes a build process which: 
+This project can be used to scaffold a prototypical .NET solution including file system layout and tooling. This includes a build process that: 
 
 * updates all AssemblyInfo files
 * compiles the application and runs all test projects
