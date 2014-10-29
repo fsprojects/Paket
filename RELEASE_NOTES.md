@@ -1,20 +1,10 @@
-#### 0.11.0-alpha006 - 29.10.2014
-* `paket.targets` is compatible with specific references files - https://github.com/fsprojects/Paket/issues/301
-
-#### 0.11.0-alpha005 - 29.10.2014
-* BUGFIX: Don't use "global override" for selective update process - https://github.com/fsprojects/Paket/issues/310
-
-#### 0.11.0-alpha004 - 29.10.2014
-* Paket no longer leaves indirect dependencies in lockfile after remove command - https://github.com/fsprojects/Paket/pull/306 
-
-#### 0.11.0-alpha003 - 29.10.2014
-* BUGFIX: Allow spaces in quoted parameter parsing - https://github.com/fsprojects/Paket/pull/311
-
-#### 0.11.0-alpha002 - 29.10.2014
-* `paket update` command allows to set a version - http://fsprojects.github.io/Paket/paket-update.html#Updating-a-single-package
-
-#### 0.11.0-alpha001 - 28.10.2014
+#### 0.11.0 - 29.10.2014
 * Build a merged install model with all packages - https://github.com/fsprojects/Paket/issues/297
+* `paket update` command allows to set a version - http://fsprojects.github.io/Paket/paket-update.html#Updating-a-single-package
+* `paket.targets` is compatible with specific references files - https://github.com/fsprojects/Paket/issues/301
+* BUGFIX: Paket no longer leaves indirect dependencies in lockfile after remove command - https://github.com/fsprojects/Paket/pull/306 
+* BUGFIX: Don't use "global override" for selective update process - https://github.com/fsprojects/Paket/issues/310
+* BUGFIX: Allow spaces in quoted parameter parsing - https://github.com/fsprojects/Paket/pull/311
 
 #### 0.10.0 - 24.10.2014
 * Initial version of `paket remove` command - http://fsprojects.github.io/Paket/paket-remove.html
