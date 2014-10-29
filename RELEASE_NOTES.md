@@ -1,3 +1,6 @@
+#### 0.11.0-alpha004 - 29.10.2014
+* Paket no longer leaves indirect dependencies in lockfile after remove command - https://github.com/fsprojects/Paket/pull/306 
+
 #### 0.11.0-alpha003 - 29.10.2014
 * BUGFIX: ALlow spaces ib quoted parameter parsing - https://github.com/fsprojects/Paket/pull/311
 
