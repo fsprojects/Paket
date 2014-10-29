@@ -1,3 +1,6 @@
+#### 0.11.0-alpha002 - 29.10.2014
+* `paket update` command allows to set a version - http://fsprojects.github.io/Paket/paket-update.html#Updating-a-single-package
+
 #### 0.11.0-alpha001 - 28.10.2014
 * Build a merged install model with all packages - https://github.com/fsprojects/Paket/issues/297
 
