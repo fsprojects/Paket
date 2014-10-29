@@ -1,4 +1,4 @@
-#### 0.11.0-alpha00& - 29.10.2014
+#### 0.11.0-alpha006 - 29.10.2014
 * `paket.targets` is compatible with specific references files - https://github.com/fsprojects/Paket/issues/301
 
 #### 0.11.0-alpha005 - 29.10.2014
