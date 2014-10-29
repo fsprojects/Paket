@@ -11,10 +11,7 @@ open Paket.PackageSources
 module LockFileSerializer =
     /// [omit]
     let formatVersionRange (version : VersionRequirement) = 
-        match version.Range with
-        | Minimum v -> ">= " + v.ToString()
-        | Specific v -> v.ToString()
-        | Range(_, v1, v2, _) -> ">= " + v1.ToString() + ", < " + v2.ToString()
+        version.ToString()
 
     /// [omit]
     let serializePackages options (resolved : PackageResolution) = 
