@@ -71,6 +71,23 @@ module DependenciesFileParser =
             with
             | _ -> failwithf "could not parse version range \"%s\"" text
 
+    let parseDependencyLine (line:string) =
+        let rec parseDepLine start acc =
+            if start >= line.Length then acc
+            else
+                match line.[start] with
+                | ' ' -> parseDepLine (start+1) acc
+                | '"' ->
+                    match line.IndexOf('"', start+1) with
+                    | -1  -> failwithf "Unclosed quote in line '%s'" line
+                    | ind -> parseDepLine (ind+1) (line.Substring(start+1, ind-start-1)::acc)
+                | _ ->
+                    match line.IndexOf(' ', start+1) with
+                    | -1  -> line.Substring(start)::acc
+                    | ind -> parseDepLine (ind+1) (line.Substring(start, ind-start)::acc)
+        parseDepLine 0 []
+        |> List.rev
+        |> List.toArray
 
     let private (|Remote|Package|Blank|ReferencesMode|OmitContent|SourceFile|) (line:string) =
         match line.Trim() with
@@ -99,7 +116,7 @@ module DependenciesFileParser =
         | trimmed when trimmed.StartsWith "references" -> ReferencesMode(trimmed.Replace("references","").Trim() = "strict")
         | trimmed when trimmed.StartsWith "content" -> OmitContent(trimmed.Replace("content","").Trim() = "none")
         | trimmed when trimmed.StartsWith "github" ->
-            let parts = trimmed.Replace("\"", "").Trim().Split([|' '|],StringSplitOptions.RemoveEmptyEntries)
+            let parts = parseDependencyLine trimmed
             let getParts (projectSpec:string) =
                 match projectSpec.Split [|':'; '/'|] with
                 | [| owner; project |] -> owner, project, None
