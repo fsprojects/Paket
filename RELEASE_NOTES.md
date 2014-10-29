@@ -1,3 +1,6 @@
+#### 0.11.0-alpha003 - 29.10.2014
+* BUGFIX: ALlow spaces ib quoted parameter parsing - https://github.com/fsprojects/Paket/pull/311
+
 #### 0.11.0-alpha002 - 29.10.2014
 * `paket update` command allows to set a version - http://fsprojects.github.io/Paket/paket-update.html#Updating-a-single-package
 
