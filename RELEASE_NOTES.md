@@ -1,4 +1,4 @@
-#### 0.11.1 - 29.10.2014
+#### 0.11.2 - 29.10.2014
 * Allow to retrieve inter project dependencies from a project file
 
 #### 0.11.0 - 29.10.2014

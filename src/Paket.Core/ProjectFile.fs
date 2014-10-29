@@ -12,6 +12,12 @@ type FileItem =
       Include : string 
       Link : string option }
 
+type ProjectReference = 
+    { Path : string
+      Name : string
+      GUID : Guid
+      Private : bool }
+
 /// Contains methods to read and manipulate project files.
 type ProjectFile = 
     { FileName: string
@@ -260,7 +266,10 @@ type ProjectFile =
 
     member this.GetInterProjectDependencies() =  
         [for n in this.Document.SelectNodes("//ns:ProjectReference", this.Namespaces) -> 
-            n.SelectSingleNode("ns:Name", this.Namespaces).InnerText] 
+            { Path = n.Attributes.["Include"].Value
+              Name = n.SelectSingleNode("ns:Name", this.Namespaces).InnerText
+              GUID = n.SelectSingleNode("ns:Project", this.Namespaces).InnerText |> Guid.Parse
+              Private = n.SelectSingleNode("ns:Private", this.Namespaces).InnerText |> bool.Parse }]
 
     member this.ReplaceNugetPackagesFile() =
         let nugetNode = this.Document.SelectSingleNode("//ns:*[@Include='packages.config']", this.Namespaces)
