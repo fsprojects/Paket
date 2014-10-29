@@ -30,7 +30,7 @@ Install all of the required packages from the specified sources:
     [lang=batchfile]
     $ paket install
 
-The usage is to have a [`.paket` folder](paket-folder.html) in the root of your solution. From here you can run `.paket/paket.exe install`
+The usage is to have a [`.paket` folder](paket-folder.html) in the root of your solution to install packages. 
 
 The [`paket install` command](paket-install.html) will analyze your dependencies and automatically generate a [`paket.lock` file](lock-file.html) if it doesn't exist yet:
 
