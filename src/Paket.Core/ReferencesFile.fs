@@ -17,7 +17,7 @@ type ReferencesFile =
 
     static member FromLines(lines : string[]) = 
         let isGitHubFile (line: string) = line.StartsWith "File:"
-        let notEmpty (line: string) = not <| System.String.IsNullOrWhiteSpace line
+        let notEmpty (line: string) = not <| String.IsNullOrWhiteSpace line
 
         { FileName = ""
           NugetPackages = lines |> Array.filter notEmpty |> Array.filter (isGitHubFile >> not) |> Array.toList

@@ -1,6 +1,7 @@
 namespace Paket
 
 open System
+open System.Collections.Generic
 open System.IO
 open Paket.Logging
 open Paket.PackageResolver
@@ -176,7 +177,7 @@ type LockFile(fileName:string,options,resolution:PackageResolution,remoteFiles:R
         |> fun state -> LockFile(lockFileName, state.Options ,state.Packages |> Seq.fold (fun map p -> Map.add p.Name p map) Map.empty, List.rev state.SourceFiles)
 
     member this.GetPackageHull(referencesFile:ReferencesFile) =
-        let usedPackages = new System.Collections.Generic.Dictionary<_,_>()
+        let usedPackages = Dictionary<_,_>()
 
         let rec addPackage directly (name:string) =
             let identity = name.ToLower()
