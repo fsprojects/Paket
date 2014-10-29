@@ -1,8 +1,11 @@
+#### 0.11.0-alpha005 - 29.10.2014
+* BUGFIX: Don't use "global override" for selective update process - https://github.com/fsprojects/Paket/issues/310
+
 #### 0.11.0-alpha004 - 29.10.2014
 * Paket no longer leaves indirect dependencies in lockfile after remove command - https://github.com/fsprojects/Paket/pull/306 
 
 #### 0.11.0-alpha003 - 29.10.2014
-* BUGFIX: ALlow spaces ib quoted parameter parsing - https://github.com/fsprojects/Paket/pull/311
+* BUGFIX: Allow spaces in quoted parameter parsing - https://github.com/fsprojects/Paket/pull/311
 
 #### 0.11.0-alpha002 - 29.10.2014
 * `paket update` command allows to set a version - http://fsprojects.github.io/Paket/paket-update.html#Updating-a-single-package

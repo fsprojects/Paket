@@ -47,7 +47,7 @@ let updateWithModifiedDependenciesFile(dependenciesFile:DependenciesFile,package
                         let resolvedPackage = kv.Value
                         let name = resolvedPackage.Name.ToLower()
                         if name = package.ToLower() || not <| packageKeys.Contains name then dependenciesFile else 
-                        dependenciesFile.AddFixedPackage(resolvedPackage.Name, "== " + resolvedPackage.Version.ToString()))
+                        dependenciesFile.AddFixedPackage(resolvedPackage.Name, "= " + resolvedPackage.Version.ToString()))
                     dependenciesFile
         
         let resolution = updatedDependenciesFile.Resolve(force)
