@@ -1,3 +1,6 @@
+#### 0.11.0-alpha00& - 29.10.2014
+* `paket.targets` is compatible with specific references files - https://github.com/fsprojects/Paket/issues/301
+
 #### 0.11.0-alpha005 - 29.10.2014
 * BUGFIX: Don't use "global override" for selective update process - https://github.com/fsprojects/Paket/issues/310
 
