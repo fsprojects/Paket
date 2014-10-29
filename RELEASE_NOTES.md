@@ -1,3 +1,6 @@
+#### 0.11.3 - 29.10.2014
+* Project output type can be detected from a project file
+
 #### 0.11.2 - 29.10.2014
 * Allow to retrieve inter project dependencies from a project file
 

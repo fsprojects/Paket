@@ -141,6 +141,7 @@
     <Compile Include="ProjectFile\ConditionSpecs.fs" />
     <Compile Include="ProjectFile\FileBuildActionSpecs.fs" />
     <Compile Include="ProjectFile\InterProjectDependencySpecs.fs" />
+    <Compile Include="ProjectFile\OutputTypeSpecs.fs" />
     <Compile Include="InstallModel\ProcessingSpecs.fs" />
     <Compile Include="InstallModel\Xml\Fantomas.fs" />
     <Compile Include="InstallModel\Xml\SystemNetHttp.fs" />

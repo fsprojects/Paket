@@ -18,6 +18,11 @@ type ProjectReference =
       GUID : Guid
       Private : bool }
 
+[<RequireQualifiedAccess>]
+type ProjectOutputType =
+| Exe 
+| Library
+
 /// Contains methods to read and manipulate project files.
 type ProjectFile = 
     { FileName: string
@@ -292,6 +297,14 @@ type ProjectFile =
                      let parent = node.ParentNode
                      node.ParentNode.RemoveChild(node) |> ignore
                      if not parent.HasChildNodes then parent.ParentNode.RemoveChild(parent) |> ignore))
+
+
+    member this.OutputType =
+        seq {for outputType in this.Document.SelectNodes("//ns:OutputType", this.Namespaces) ->
+                match outputType.InnerText with
+                | "Exe" -> ProjectOutputType.Exe
+                | _     -> ProjectOutputType.Library }
+        |> Seq.head
     
     member this.AddImportForPaketTargets(relativeTargetsPath) =
         match this.Document.SelectNodes(sprintf "//ns:Import[@Project='%s']" relativeTargetsPath, this.Namespaces)
