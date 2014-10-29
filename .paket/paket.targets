@@ -17,7 +17,8 @@
     <PaketBootStrapperCommand Condition=" '$(OS)' == 'Windows_NT'">"$(PaketBootStrapperExePath)"</PaketBootStrapperCommand>
     <PaketBootStrapperCommand Condition=" '$(OS)' != 'Windows_NT' ">mono --runtime=v4.0.30319 $(PaketBootStrapperExePath)</PaketBootStrapperCommand>
     <!-- Commands -->
-    <PaketReferences>$(MSBuildProjectDirectory)\paket.references</PaketReferences>
+    <PaketReferences Condition="!Exists('$(MSBuildProjectFullPath).paket.references')">$(MSBuildProjectDirectory)\paket.references</PaketReferences>
+    <PaketReferences Condition="Exists('$(MSBuildProjectFullPath).paket.references')">$(MSBuildProjectFullPath).paket.references</PaketReferences>
     <RestoreCommand>$(PaketCommand) restore --references-files $(PaketReferences)</RestoreCommand>
     <DownloadPaketCommand>$(PaketBootStrapperCommand)</DownloadPaketCommand>
     <!-- We need to ensure packages are restored prior to assembly resolve -->
