@@ -1,6 +1,5 @@
 ﻿module Paket.PackageSourceParser
 
-open System
 open Paket
 open System.Text.RegularExpressions
 open Paket.PackageSources

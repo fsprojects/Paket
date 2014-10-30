@@ -348,8 +348,6 @@ let ReadPackagesConfig(configFile : FileInfo) =
       Packages = [for node in doc.SelectNodes("//package") ->
                       node.Attributes.["id"].Value, node.Attributes.["version"].Value |> SemVer.Parse ]}
 
-
-//TODO: Should we really be able to call these methods with invalid arguments?
 let GetPackageDetails force sources package version : PackageResolver.PackageDetails= 
     let rec tryNext xs = 
         match xs with

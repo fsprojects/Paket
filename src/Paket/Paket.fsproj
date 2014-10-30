@@ -40,7 +40,7 @@
     <DefineConstants>TRACE</DefineConstants>
     <WarningLevel>3</WarningLevel>
     <DocumentationFile>..\..\bin\Paket.xml</DocumentationFile>
-    <StartArguments>install</StartArguments>
+    <StartArguments>update</StartArguments>
     <StartWorkingDirectory>D:\code\PaketKopie</StartWorkingDirectory>
   </PropertyGroup>
   <PropertyGroup>

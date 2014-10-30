@@ -75,7 +75,7 @@
     <Compile Include="SemVerSpecs.fs" />
     <Compile Include="NugetVersionRangeParserSpecs.fs" />
     <Compile Include="NugetVersionRangeSerializerSpecs.fs" />
-    <Compile Include="BindingRedirect.fs" />
+    <Compile Include="BindingRedirect.fs" />    
     <Content Include="Nuspec\FSharp.Data.nuspec">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
@@ -98,6 +98,9 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="Nuspec\FSharp.Data.SqlEnumProvider.nuspec">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>    
+    <Content Include="Nuspec\ReadOnlyCollectionExtensions.nuspec">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Compile Include="Nuspec\NuspecSpecs.fs" />
