@@ -8,10 +8,13 @@ open Paket.Nuget
 
 let fakeUrl = "http://doesntmatter"
 
+let parse fileName =
+    File.ReadAllText fileName
+    |> getODataDetails fakeUrl
+
 [<Test>]
 let ``can detect explicit dependencies for Fantomas``() = 
-    File.ReadAllText("NuGetOdata/Fantomas.xml")
-    |> getODataDetails fakeUrl
+    parse "NuGetOData/Fantomas.xml"
     |> shouldEqual 
         { Name = "Fantomas"
           DownloadUrl = "http://www.nuget.org/api/v2/package/Fantomas/1.6.0"
@@ -21,8 +24,7 @@ let ``can detect explicit dependencies for Fantomas``() =
 
 [<Test>]
 let ``can detect explicit dependencies for Fleece``() = 
-    File.ReadAllText("NuGetOdata/Fleece.xml")
-    |> getODataDetails fakeUrl
+    parse "NuGetOData/Fleece.xml"
     |> shouldEqual 
         { Name = "Fleece"
           DownloadUrl = "http://www.nuget.org/api/v2/package/Fleece/0.4.0"
@@ -35,8 +37,7 @@ let ``can detect explicit dependencies for Fleece``() =
 
 [<Test>]
 let ``can detect explicit dependencies for ReadOnlyCollectionExtensions``() = 
-    File.ReadAllText("NuGetOdata/ReadOnlyCollectionExtensions.xml")
-    |> getODataDetails fakeUrl
+    parse "NuGetOData/ReadOnlyCollectionExtensions.xml"
     |> shouldEqual 
         { Name = "ReadOnlyCollectionExtensions"
           DownloadUrl = "http://www.nuget.org/api/v2/package/ReadOnlyCollectionExtensions/1.2.0"
