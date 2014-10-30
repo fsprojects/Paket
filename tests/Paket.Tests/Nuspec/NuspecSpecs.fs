@@ -89,4 +89,13 @@ let ``can detect empty dependencies for log4net``() =
 [<Test>]
 let ``can detect explicit dependencies for Fantomas``() = 
     Nuspec.Load("Nuspec/Fantomas.nuspec").Dependencies
-    |> shouldEqual ["FSharp.Compiler.Service",DependenciesFileParser.parseVersionRequirement(">= 0.0.57"), []]
+    |> shouldEqual ["FSharp.Compiler.Service",DependenciesFileParser.parseVersionRequirement(">= 0.0.57"), None]
+
+[<Test>]
+let ``can detect explicit dependencies for ReadOnlyCollectionExtensions``() = 
+    Nuspec.Load("Nuspec/ReadOnlyCollectionExtensions.nuspec").Dependencies
+    |> shouldEqual 
+        ["LinqBridge",DependenciesFileParser.parseVersionRequirement(">= 1.3.0"), Some(DotNetFramework(FrameworkVersion.V2))
+         "ReadOnlyCollectionInterfaces",DependenciesFileParser.parseVersionRequirement("1.0.0"), Some(DotNetFramework(FrameworkVersion.V2))
+         "ReadOnlyCollectionInterfaces",DependenciesFileParser.parseVersionRequirement("1.0.0"), Some(DotNetFramework(FrameworkVersion.V3_5))
+         "ReadOnlyCollectionInterfaces",DependenciesFileParser.parseVersionRequirement("1.0.0"), Some(DotNetFramework(FrameworkVersion.V4_Client))]

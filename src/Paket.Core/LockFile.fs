@@ -115,7 +115,7 @@ module LockFileParser =
                     | currentPackage :: otherPackages -> 
                         { state with
                                 Packages = { currentPackage with
-                                                Dependencies = Set.add (name, VersionRequirement.AllReleases, []) currentPackage.Dependencies
+                                                Dependencies = Set.add (name, VersionRequirement.AllReleases, None) currentPackage.Dependencies
                                             } :: otherPackages }                    
                     | [] -> failwith "cannot set a dependency - no package has been specified."
                 else

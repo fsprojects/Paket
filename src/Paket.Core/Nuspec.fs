@@ -81,7 +81,7 @@ module NugetVersionRangeParser =
 
 type Nuspec = 
     { References : NuspecReferences 
-      Dependencies : (string * VersionRequirement * (FrameworkIdentifier list)) list
+      Dependencies : (string * VersionRequirement * (FrameworkIdentifier option)) list
       OfficialName : string
       FrameworkAssemblyReferences : FrameworkAssemblyReference list }
 
@@ -95,7 +95,7 @@ type Nuspec =
             doc.Load fi.FullName
 
             let dependencies = 
-                doc.SelectNodes "//*[local-name() = 'metadata']/*[local-name() = 'dependencies']/*[local-name() = 'dependency']"
+                doc.SelectNodes "//*[local-name() = 'dependency']"
                 |> Seq.cast<XmlNode>
                 |> Seq.map (fun node -> 
                                 let name = node.Attributes.["id"].Value                            
@@ -104,7 +104,13 @@ type Nuspec =
                                         NugetVersionRangeParser.parse node.Attributes.["version"].Value 
                                     else 
                                         NugetVersionRangeParser.parse "0"
-                                name,version,[]) 
+                                let restriction = 
+                                    if node.ParentNode.Name.ToLower() = "group" && node.ParentNode.Attributes.["targetFramework"] <> null then
+                                        let restriction = node.ParentNode.Attributes.["targetFramework"].InnerText
+                                        FrameworkIdentifier.Extract restriction
+                                    else
+                                        None
+                                name,version,restriction) 
                 |> Seq.toList
 
             let officialName = 

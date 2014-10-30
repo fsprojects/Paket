@@ -13,13 +13,13 @@ type PackageDetails =
     { Name : string
       Source : PackageSource
       DownloadLink : string
-      DirectDependencies :  (string * VersionRequirement * (FrameworkIdentifier list)) Set }
+      DirectDependencies :  (string * VersionRequirement * (FrameworkIdentifier option)) Set }
 
 /// Represents data about resolved packages
 type ResolvedPackage =
     { Name : string
       Version : SemVerInfo
-      Dependencies : (string * VersionRequirement * (FrameworkIdentifier list)) Set
+      Dependencies : (string * VersionRequirement * (FrameworkIdentifier option)) Set
       Source : PackageSource }
 
     override this.ToString() = sprintf "%s %s" this.Name (this.Version.ToString())

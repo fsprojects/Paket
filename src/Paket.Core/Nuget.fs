@@ -33,7 +33,7 @@ let private loadNuGetOData raw =
     doc,manager
 
 type NugetPackageCache =
-    { Dependencies : (string * VersionRequirement * (FrameworkIdentifier list)) list
+    { Dependencies : (string * VersionRequirement * (FrameworkIdentifier option)) list
       Name : string
       SourceUrl: string
       DownloadUrl : string}
@@ -135,12 +135,9 @@ let getODataDetails nugetURL raw =
         getAttribute "Dependencies"
         |> fun s -> s.Split([| '|' |], System.StringSplitOptions.RemoveEmptyEntries)
         |> Array.map (fun d -> d.Split ':')
-        |> Array.filter (fun d -> Array.isEmpty d
-                                    |> not && d.[0] <> "")
-        |> Array.map (fun a -> 
-                a.[0], 
-                if a.Length > 1 then a.[1] else "0")
-        |> Array.map (fun (name, version) -> name, NugetVersionRangeParser.parse version ,[])
+        |> Array.filter (fun d -> Array.isEmpty d |> not && d.[0] <> "")
+        |> Array.map (fun a -> a.[0],(if a.Length > 1 then a.[1] else "0"),(if a.Length > 2 && a.[2] <> "" then FrameworkIdentifier.Extract a.[2] else None))
+        |> Array.map (fun (name, version, restricted) -> name, NugetVersionRangeParser.parse version, restricted)
         |> Array.toList
 
     { Name = officialName; DownloadUrl = downloadLink; Dependencies = packages; SourceUrl = nugetURL }

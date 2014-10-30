@@ -72,6 +72,9 @@ type FrameworkIdentifier =
          "Windows", "win"
          "WindowsPhoneApp", "wpa"
          
+         "1.0", "10" 
+         "1.1", "11" 
+         "2.0", "20" 
          "3.5", "35" 
          "4.0", "40" 
          "4.5", "45" 
@@ -84,9 +87,9 @@ type FrameworkIdentifier =
 
         match path with
         | "net" -> Some(DotNetFramework(FrameworkVersion.V2)) // not sure here
-        | "1.0" -> Some(DotNetFramework(FrameworkVersion.V1))
-        | "1.1" -> Some(DotNetFramework(FrameworkVersion.V1_1))
-        | "2.0" -> Some(DotNetFramework(FrameworkVersion.V2))
+        | "10" -> Some(DotNetFramework(FrameworkVersion.V1))
+        | "11" -> Some(DotNetFramework(FrameworkVersion.V1_1))
+        | "20" -> Some(DotNetFramework(FrameworkVersion.V2))
         | "net11" -> Some(DotNetFramework(FrameworkVersion.V1_1))
         | "net20" -> Some(DotNetFramework(FrameworkVersion.V2))
         | "net20-full" -> Some(DotNetFramework(FrameworkVersion.V2))

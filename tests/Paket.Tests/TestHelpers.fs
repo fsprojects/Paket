@@ -12,7 +12,7 @@ let PackageDetailsFromGraph (graph : seq<string * string * (string * VersionRequ
     let name,dependencies = 
         graph
         |> Seq.filter (fun (p, v, _) -> p.ToLower() = package.ToLower() && v = version)
-        |> Seq.map (fun (n, _, d) -> n,d |> List.map (fun (x,y) -> x,y,[]))
+        |> Seq.map (fun (n, _, d) -> n,d |> List.map (fun (x,y) -> x,y,None))
         |> Seq.head
 
     { Name = name
