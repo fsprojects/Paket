@@ -1,3 +1,6 @@
+#### 0.11.8 - 30.10.2014
+* When paket skips a framework install because of custom nodes it shows a warning - https://github.com/fsprojects/Paket/issues/316
+
 #### 0.11.7 - 30.10.2014
 * Remove the namespaces from the nuspec parser - https://github.com/fsprojects/Paket/pull/315
 

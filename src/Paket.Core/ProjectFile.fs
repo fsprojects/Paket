@@ -251,7 +251,7 @@ type ProjectFile =
             |> Seq.fold (fun (model:InstallModel) kv -> 
                             let installModel = completeModel.[kv.Key.ToLower()]
                             if this.HasCustomNodes(installModel) then 
-                                verbosefn "  - custom nodes for %s ==> skipping" kv.Key
+                                traceWarnfn "  - custom nodes for %s ==> skipping" kv.Key
                                 model
                             else model.MergeWith(completeModel.[kv.Key.ToLower()])) 
                         (InstallModel.EmptyModel("",SemVer.Parse "0"))
