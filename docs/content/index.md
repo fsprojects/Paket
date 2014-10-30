@@ -13,7 +13,7 @@ Paket is available as:
 
   * [download from GitHub.com](https://github.com/fsprojects/Paket/releases/latest)
   * as a package [`Paket` on nuget.org](https://www.nuget.org/packages/Paket/)
-  
+
 [![NuGet Status](http://img.shields.io/nuget/v/Paket.svg?style=flat)](https://www.nuget.org/packages/Paket/)
 
 ## Getting Started
@@ -21,7 +21,7 @@ Paket is available as:
 Specify the version rules of all dependencies used in your application in a [`paket.dependencies` file](dependencies-file.html) in your project's root:
 
     source https://nuget.org/api/v2
-    
+
     nuget Castle.Windsor-log4net ~> 3.2
     nuget NUnit
 
@@ -30,7 +30,9 @@ Install all of the required packages from the specified sources:
     [lang=batchfile]
     $ paket install
 
-The [`paket install` command](paket-install.html) will analyze your dependencies and generate a [`paket.lock` file](lock-file.html) if it doesn't exist yet:
+The usage is to have a [`.paket` folder](paket-folder.html) in the root of your solution to install packages. 
+
+The [`paket install` command](paket-install.html) will analyze your dependencies and automatically generate a [`paket.lock` file](lock-file.html) if it doesn't exist yet:
 
     NUGET
       remote: https://nuget.org/api/v2
@@ -50,7 +52,7 @@ The [`paket install` command](paket-install.html) will analyze your dependencies
 		log4net (1.2.10)
 		NUnit (2.6.3)
 
-You can place [`paket.references` files](references-files.html) alongside your Visual Studio projects to have Paket automatically sync references for the packages noted in that file whenever an `install` or `update` takes place.
+You can place [`paket.references` files](references-files.html) alongside your Visual Studio project files to have Paket automatically sync references for the packages noted in that file whenever an `install` or `update` takes place.
 
 All of the [files involved should be committed](faq.html#Why-should-I-commit-the-lock-file) to your version control system.
 
@@ -73,7 +75,7 @@ The project is hosted on [GitHub][gh] where you can [report issues][issues], for
 
 Please see the [Quick contributing guide in the README][readme] for contribution gudelines.
 
-The library is available under MIT license, which allows modification and redistribution for both commercial and non-commercial purposes. 
+The library is available under MIT license, which allows modification and redistribution for both commercial and non-commercial purposes.
 For more information see the [License file][license].
 
   [content]: https://github.com/fsprojects/Paket/tree/master/docs/content
