@@ -32,3 +32,17 @@ let ``can detect explicit dependencies for Fleece``() =
              "ReadOnlyCollectionExtensions",DependenciesFileParser.parseVersionRequirement(">= 1.2.0")
              "System.Json",DependenciesFileParser.parseVersionRequirement(">= 4.0.20126.16343")]
           SourceUrl = fakeUrl }
+
+[<Test>]
+let ``can detect explicit dependencies for ReadOnlyCollectionExtensions``() = 
+    File.ReadAllText("NuGetOdata/ReadOnlyCollectionExtensions.xml")
+    |> getODataDetails fakeUrl
+    |> shouldEqual 
+        { Name = "ReadOnlyCollectionExtensions"
+          DownloadUrl = "http://www.nuget.org/api/v2/package/ReadOnlyCollectionExtensions/1.2.0"
+          Dependencies = 
+            ["LinqBridge",DependenciesFileParser.parseVersionRequirement(">= 1.3.0")
+             "ReadOnlyCollectionInterfaces",DependenciesFileParser.parseVersionRequirement("1.0.0")
+             "ReadOnlyCollectionInterfaces",DependenciesFileParser.parseVersionRequirement("1.0.0")
+             "ReadOnlyCollectionInterfaces",DependenciesFileParser.parseVersionRequirement("1.0.0")]
+          SourceUrl = fakeUrl }
