@@ -10,10 +10,6 @@ open Paket.PackageSources
 
 module LockFileSerializer =
     /// [omit]
-    let formatVersionRange (version : VersionRequirement) = 
-        version.ToString()
-
-    /// [omit]
     let serializePackages options (resolved : PackageResolution) = 
         let sources = 
             resolved
@@ -40,7 +36,7 @@ module LockFileSerializer =
                   for _,_,package in packages |> Seq.sortBy (fun (_,_,p) -> p.Name.ToLower()) do
                       yield sprintf "    %s (%s)" package.Name (package.Version.ToString()) 
                       for name,v in package.Dependencies do
-                          yield sprintf "      %s (%s)" name (formatVersionRange v)]
+                          yield sprintf "      %s (%s)" name (v.ToString())]
     
         String.Join(Environment.NewLine, all)
 
@@ -58,7 +54,7 @@ module LockFileSerializer =
                     let path = file.Name.TrimStart '/'
                     yield sprintf "    %s (%s)" path file.Commit 
                     for (name,v) in file.Dependencies do
-                        yield sprintf "      %s (%s)" name (formatVersionRange v)]
+                        yield sprintf "      %s (%s)" name (v.ToString())]
 
         String.Join(Environment.NewLine, all)
 

@@ -1,3 +1,6 @@
+#### 0.11.4 - 30.10.2014
+* BUGFIX: Paket failed on generating lockfile for LessThan version requirement - https://github.com/fsprojects/Paket/pull/314
+
 #### 0.11.3 - 29.10.2014
 * Project output type can be detected from a project file
 
