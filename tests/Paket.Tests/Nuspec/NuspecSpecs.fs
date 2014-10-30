@@ -20,6 +20,11 @@ let ``can detect all references``() =
     |> shouldEqual NuspecReferences.All
 
 [<Test>]
+let ``can detect all references for FsXaml``() = 
+    Nuspec.Load("Nuspec/FsXaml.Wpf.nuspec").References
+    |> shouldEqual NuspecReferences.All
+
+[<Test>]
 let ``can detect all references for log4net``() = 
     Nuspec.Load("Nuspec/log4net.nuspec").References
     |> shouldEqual NuspecReferences.All

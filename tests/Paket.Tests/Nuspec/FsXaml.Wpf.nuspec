@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2012/06/nuspec.xsd">
+    <metadata>
+        <id>FsXaml.Wpf</id>
+        <version>0.9.9</version>
+        <title>FsXaml for WPF</title>
+        <authors>Reed Copsey,Jr.</authors>
+        <licenseUrl>http://www.apache.org/licenses/</licenseUrl>
+        <requireLicenseAcceptance>false</requireLicenseAcceptance>
+        <description>This is the initial release of the FsXaml WPF project.  It includes the new XAML type provider for WPF, as well as EventToMailbox, EventToCommand, and EventToFSEvent TriggerActions for working with the Blend SDK.</description>
+        <summary />
+        <releaseNotes>Major update which changes the way code behind is accessed.  This simplifies accessing child controls or resources, and eliminates the Accessor nested type.  Added utilites to make ViewControllers simpler and more powerful.</releaseNotes>
+        <copyright>Copyright 2014 FsXaml Team</copyright>
+        <dependencies>
+            <group targetFramework=".NETFramework4.5">
+                <dependency id="Expression.Blend.Sdk" version="1.0.2" />
+            </group>
+        </dependencies>
+        <frameworkAssemblies>
+            <frameworkAssembly assemblyName="PresentationCore" targetFramework=".NETFramework4.5" />
+            <frameworkAssembly assemblyName="PresentationFramework" targetFramework=".NETFramework4.5" />
+            <frameworkAssembly assemblyName="System.Xml" targetFramework=".NETFramework4.5" />
+            <frameworkAssembly assemblyName="System.Xaml" targetFramework=".NETFramework4.5" />
+            <frameworkAssembly assemblyName="WindowsBase" targetFramework=".NETFramework4.5" />
+        </frameworkAssemblies>
+    </metadata>
+</package>
