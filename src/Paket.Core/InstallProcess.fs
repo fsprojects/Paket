@@ -102,7 +102,7 @@ let Install(sources,force, hard, lockFile:LockFile) =
 
     let applicableProjects =
         ProjectFile.FindAllProjects(".") 
-        |> List.choose (fun p -> ProjectFile.FindReferencesFile (FileInfo(p.FileName))
+        |> List.choose (fun p -> ProjectFile.FindReferencesFile(FileInfo(p.FileName))
                                  |> Option.map (fun r -> p, ReferencesFile.FromFile(r)))
 
     for project,referenceFile in applicableProjects do    

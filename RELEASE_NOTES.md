@@ -1,3 +1,6 @@
+#### 0.11.5 - 30.10.2014
+* Create a function which calculates dependencies for a given projectfile.
+
 #### 0.11.4 - 30.10.2014
 * BUGFIX: Paket failed on generating lockfile for LessThan version requirement - https://github.com/fsprojects/Paket/pull/314
 

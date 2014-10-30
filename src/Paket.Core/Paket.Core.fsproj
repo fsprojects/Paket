@@ -87,8 +87,8 @@
     <Compile Include="Nuget.fs" />
     <Compile Include="PackageSourceParser.fs" />
     <Compile Include="DependenciesFile.fs" />
-    <Compile Include="DependencyModel.fs" />
     <Compile Include="ReferencesFile.fs" />
+    <Compile Include="DependencyModel.fs" />
     <Compile Include="LockFile.fs" />
     <Compile Include="RestoreProcess.fs" />
     <Compile Include="InstallProcess.fs" />
