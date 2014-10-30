@@ -305,6 +305,15 @@ type ProjectFile =
                 | "Exe" -> ProjectOutputType.Exe
                 | _     -> ProjectOutputType.Library }
         |> Seq.head
+
+    member this.GetTargetFramework() =
+        seq {for outputType in this.Document.SelectNodes("//ns:TargetFrameworkVersion", this.Namespaces) ->
+                outputType.InnerText  }
+        |> Seq.map (fun s -> // TODO make this a separate function
+                        s.Replace("v","net")
+                        |> FrameworkIdentifier.Extract)                        
+        |> Seq.map (fun o -> o.Value)
+        |> Seq.head
     
     member this.AddImportForPaketTargets(relativeTargetsPath) =
         match this.Document.SelectNodes(sprintf "//ns:Import[@Project='%s']" relativeTargetsPath, this.Namespaces)

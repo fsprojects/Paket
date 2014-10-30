@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
@@ -109,7 +109,7 @@
     <Compile Include="Resolver\CyclicGraphSpecs.fs" />
     <Compile Include="Resolver\ConflictGraphSpecs.fs" />
     <Compile Include="Resolver\CasingSpecs.fs" />
-    <Compile Include="Resolver\PessimisticStrategySpecs.fs" />   
+    <Compile Include="Resolver\PessimisticStrategySpecs.fs" />
     <Compile Include="Resolver\AddingDependenciesSpecs.fs" />
     <Compile Include="Lockfile\GeneratorSpecs.fs" />
     <Compile Include="Lockfile\GenerateStrictModeSpecs.fs" />
@@ -123,9 +123,9 @@
     <None Include="ProjectFile\TestData\Project1.fsprojtest">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-  <None Include="ProjectFile\TestData\Project2.fsprojtest">
+    <None Include="ProjectFile\TestData\Project2.fsprojtest">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>    
+    </None>
     <None Include="ProjectFile\TestData\ProjectWithConditions.fsprojtest">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
@@ -141,7 +141,7 @@
     <Compile Include="ProjectFile\ConditionSpecs.fs" />
     <Compile Include="ProjectFile\FileBuildActionSpecs.fs" />
     <Compile Include="ProjectFile\InterProjectDependencySpecs.fs" />
-    <Compile Include="ProjectFile\OutputTypeSpecs.fs" />
+    <Compile Include="ProjectFile\OutputSpecs.fs" />
     <Compile Include="InstallModel\ProcessingSpecs.fs" />
     <Compile Include="InstallModel\Xml\Fantomas.fs" />
     <Compile Include="InstallModel\Xml\SystemNetHttp.fs" />
