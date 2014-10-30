@@ -1,3 +1,6 @@
+#### 0.11.7 - 30.10.2014
+* Remove the namespaces from the nuspec parser - https://github.com/fsprojects/Paket/pull/315
+
 #### 0.11.6 - 30.10.2014
 * Create a function which extracts the TargetFramework of a given projectfile.
 
