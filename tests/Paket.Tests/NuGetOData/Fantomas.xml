@@ -1,0 +1,49 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<entry xml:base="http://www.nuget.org/api/v2/" xmlns="http://www.w3.org/2005/Atom" xmlns:d="http://schemas.microsoft.com/ado/2007/08/dataservices" xmlns:m="http://schemas.microsoft.com/ado/2007/08/dataservices/metadata">
+  <id>http://www.nuget.org/api/v2/Packages(Id='Fantomas',Version='1.6.0')</id>
+  <category term="NuGetGallery.V2FeedPackage" scheme="http://schemas.microsoft.com/ado/2007/08/dataservices/scheme" />
+  <link rel="edit" title="V2FeedPackage" href="Packages(Id='Fantomas',Version='1.6.0')" />
+  <title type="text">Fantomas</title>
+  <summary type="text">Source code formatting tool for F#.</summary>
+  <updated>2014-10-25T16:42:13Z</updated>
+  <author>
+    <name>Anh-Dung Phan, Gustavo Guerra</name>
+  </author>
+  <link rel="edit-media" title="V2FeedPackage" href="Packages(Id='Fantomas',Version='1.6.0')/$value" />
+  <content type="application/zip" src="http://www.nuget.org/api/v2/package/Fantomas/1.6.0" />
+  <m:properties>
+    <d:Version>1.6.0</d:Version>
+    <d:NormalizedVersion>1.6.0</d:NormalizedVersion>
+    <d:Copyright m:null="true" />
+    <d:Created m:type="Edm.DateTime">2014-10-25T16:42:13.357</d:Created>
+    <d:Dependencies>FSharp.Compiler.Service:0.0.73:</d:Dependencies>
+    <d:Description>
+      This library aims at formatting F# source files based on a given configuration. Fantomas will ensure correct indentation and consistent spacing between elements in the source files.
+
+      Some common use cases include (1) Reformatting a code base to conform a universal page width (2) Converting legacy code from verbose syntax to light syntax (3) Formatting auto-generated F# signatures.
+    </d:Description>
+    <d:DownloadCount m:type="Edm.Int32">3886</d:DownloadCount>
+    <d:GalleryDetailsUrl>http://www.nuget.org/packages/Fantomas/1.6.0</d:GalleryDetailsUrl>
+    <d:IconUrl>https://raw.github.com/dungpa/fantomas/master/src/Fantomas.VisualStudio/fantomas_logo.png</d:IconUrl>
+    <d:IsLatestVersion m:type="Edm.Boolean">true</d:IsLatestVersion>
+    <d:IsAbsoluteLatestVersion m:type="Edm.Boolean">true</d:IsAbsoluteLatestVersion>
+    <d:IsPrerelease m:type="Edm.Boolean">false</d:IsPrerelease>
+    <d:Language m:null="true" />
+    <d:Published m:type="Edm.DateTime">2014-10-25T16:42:13.357</d:Published>
+    <d:PackageHash>n2S7P6eURzbadhU9M2DmEAwiRnH2yBMHnX3JvsD7llJkpA8dQLBmntfYf0KIlI1aWQNoKYsokNvWZsktDzTD8w==</d:PackageHash>
+    <d:PackageHashAlgorithm>SHA512</d:PackageHashAlgorithm>
+    <d:PackageSize m:type="Edm.Int64">796687</d:PackageSize>
+    <d:ProjectUrl>https://github.com/dungpa/fantomas</d:ProjectUrl>
+    <d:ReportAbuseUrl>http://www.nuget.org/package/ReportAbuse/Fantomas/1.6.0</d:ReportAbuseUrl>
+    <d:ReleaseNotes>Add FAKE task helper</d:ReleaseNotes>
+    <d:RequireLicenseAcceptance m:type="Edm.Boolean">false</d:RequireLicenseAcceptance>
+    <d:Tags>F# fsharp formatting beautifier indentation indenter</d:Tags>
+    <d:Title>Fantomas</d:Title>
+    <d:VersionDownloadCount m:type="Edm.Int32">34</d:VersionDownloadCount>
+    <d:MinClientVersion m:null="true" />
+    <d:LastEdited m:type="Edm.DateTime" m:null="true" />
+    <d:LicenseUrl>http://github.com/dungpa/fantomas/blob/master/LICENSE.md</d:LicenseUrl>
+    <d:LicenseNames m:null="true" />
+    <d:LicenseReportUrl m:null="true" />
+  </m:properties>
+</entry>

@@ -103,7 +103,11 @@
     <Content Include="Nuspec\ReadOnlyCollectionExtensions.nuspec">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Compile Include="Nuspec\NuspecSpecs.fs" />
+    <Compile Include="Nuspec\NuspecSpecs.fs" />         
+    <Content Include="NuGetOData\Fantomas.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Compile Include="NuGetOData\ODataSpecs.fs" />
     <Compile Include="FilterVersionSpecs.fs" />
     <Compile Include="DependenciesFile\VersionRangeSpecs.fs" />
     <Compile Include="DependenciesFile\VersionRequirementSpecs.fs" />
