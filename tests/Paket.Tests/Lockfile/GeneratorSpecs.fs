@@ -98,3 +98,33 @@ let ``should generate lock file for RavenDB.Client``() =
     cfg.Resolve(noSha1,VersionsFromGraph graph2, PackageDetailsFromGraph graph2).ResolvedPackages.GetModelOrFail()
     |> LockFileSerializer.serializePackages cfg.Options
     |> shouldEqual (normalizeLineEndings expected2)
+
+let config3 = """
+source "http://nuget.org/api/v2"
+
+nuget "OtherVersionRanges.Package" "~> 1.0" """
+
+let graph3 = [
+    "OtherVersionRanges.Package","1.0", ["LessThan.Package", VersionRequirement(VersionRange.LessThan(SemVer.Parse "2.0"), PreReleaseStatus.No)]
+    "LessThan.Package","1.9",["GreaterThan.Package", VersionRequirement(VersionRange.GreaterThan(SemVer.Parse "2.0"), PreReleaseStatus.No)]
+    "GreaterThan.Package","2.1",["Maximum.Package", VersionRequirement(VersionRange.Maximum(SemVer.Parse "3.0"), PreReleaseStatus.No)]
+    "Maximum.Package","2.9",[]
+]
+
+let expected3 = """NUGET
+  remote: http://nuget.org/api/v2
+  specs:
+    GreaterThan.Package (2.1)
+      Maximum.Package (<= 3.0)
+    LessThan.Package (1.9)
+      GreaterThan.Package (> 2.0)
+    Maximum.Package (2.9)
+    OtherVersionRanges.Package (1.0)
+      LessThan.Package (< 2.0)"""
+
+[<Test>]
+let ``should generate other version ranges for packages``() = 
+    let cfg = DependenciesFile.FromCode(config3)
+    cfg.Resolve(noSha1,VersionsFromGraph graph3, PackageDetailsFromGraph graph3).ResolvedPackages.GetModelOrFail()
+    |> LockFileSerializer.serializePackages cfg.Options
+    |> shouldEqual (normalizeLineEndings expected3)
