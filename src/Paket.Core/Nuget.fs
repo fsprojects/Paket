@@ -33,7 +33,7 @@ let private loadNuGetOData raw =
     doc,manager
 
 type NugetPackageCache =
-    { Dependencies : (string * VersionRequirement) list
+    { Dependencies : (string * VersionRequirement * (FrameworkIdentifier list)) list
       Name : string
       SourceUrl: string
       DownloadUrl : string}
@@ -140,7 +140,7 @@ let getODataDetails nugetURL raw =
         |> Array.map (fun a -> 
                 a.[0], 
                 if a.Length > 1 then a.[1] else "0")
-        |> Array.map (fun (name, version) -> name, NugetVersionRangeParser.parse version)
+        |> Array.map (fun (name, version) -> name, NugetVersionRangeParser.parse version ,[])
         |> Array.toList
 
     { Name = officialName; DownloadUrl = downloadLink; Dependencies = packages; SourceUrl = nugetURL }

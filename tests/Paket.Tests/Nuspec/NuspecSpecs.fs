@@ -89,4 +89,4 @@ let ``can detect empty dependencies for log4net``() =
 [<Test>]
 let ``can detect explicit dependencies for Fantomas``() = 
     Nuspec.Load("Nuspec/Fantomas.nuspec").Dependencies
-    |> shouldEqual ["FSharp.Compiler.Service",DependenciesFileParser.parseVersionRequirement(">= 0.0.57")]
+    |> shouldEqual ["FSharp.Compiler.Service",DependenciesFileParser.parseVersionRequirement(">= 0.0.57"), []]

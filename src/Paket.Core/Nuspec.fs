@@ -81,7 +81,7 @@ module NugetVersionRangeParser =
 
 type Nuspec = 
     { References : NuspecReferences 
-      Dependencies : (string * VersionRequirement) list
+      Dependencies : (string * VersionRequirement * (FrameworkIdentifier list)) list
       OfficialName : string
       FrameworkAssemblyReferences : FrameworkAssemblyReference list }
 
@@ -104,7 +104,7 @@ type Nuspec =
                                         NugetVersionRangeParser.parse node.Attributes.["version"].Value 
                                     else 
                                         NugetVersionRangeParser.parse "0"
-                                name,version) 
+                                name,version,[]) 
                 |> Seq.toList
 
             let officialName = 
