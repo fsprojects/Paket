@@ -84,12 +84,6 @@ type Nuspec =
       Dependencies : (string * VersionRequirement) list
       OfficialName : string
       FrameworkAssemblyReferences : FrameworkAssemblyReference list }
-    static member KnownNamespaces =
-        ["ns1","http://schemas.microsoft.com/packaging/2012/06/nuspec.xsd"
-         "ns2","http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd"
-         "ns3","http://schemas.microsoft.com/packaging/2013/01/nuspec.xsd"
-         "ns4","http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd"
-         "ns5","http://schemas.microsoft.com/packaging/2011/10/nuspec.xsd"]
 
     static member All = { References = NuspecReferences.All; Dependencies = []; FrameworkAssemblyReferences = []; OfficialName = "" }
     static member Explicit references = { References = NuspecReferences.Explicit references; Dependencies = []; FrameworkAssemblyReferences = []; OfficialName = "" }
@@ -99,22 +93,9 @@ type Nuspec =
         else 
             let doc = new XmlDocument()
             doc.Load fi.FullName
-            let manager = new XmlNamespaceManager(doc.NameTable)
-
-            Nuspec.KnownNamespaces
-            |> List.iter (fun (name,ns) -> manager.AddNamespace(name, ns))
-
-            let ns = 
-                let packageNs = manager.LookupPrefix(doc.LastChild.NamespaceURI)       
-                if String.IsNullOrEmpty packageNs then
-                    let metaDataNs = manager.LookupPrefix(doc.LastChild.LastChild.NamespaceURI)
-                    if String.IsNullOrEmpty metaDataNs then
-                        failwithf "Unrecognized namespace in nuspec file %s" fileName
-                    else metaDataNs
-                else packageNs
 
             let dependencies = 
-                doc.SelectNodes(sprintf "//%s:metadata/%s:dependencies/%s:dependency" ns ns ns, manager)
+                doc.SelectNodes "//*[local-name() = 'metadata']/*[local-name() = 'dependencies']/*[local-name() = 'dependency']"
                 |> Seq.cast<XmlNode>
                 |> Seq.map (fun node -> 
                                 let name = node.Attributes.["id"].Value                            
@@ -127,19 +108,19 @@ type Nuspec =
                 |> Seq.toList
 
             let officialName = 
-                doc.SelectNodes(sprintf "//%s:metadata/%s:id" ns ns, manager)
+                doc.SelectNodes "//*[local-name() = 'metadata']/*[local-name() = 'id']"
                 |> Seq.cast<XmlNode>
                 |> Seq.head
                 |> fun node -> node.InnerText
 
             let references =
-                if List.isEmpty [ for node in doc.SelectNodes(sprintf "//%s:references" ns, manager) -> node] then [] else
-                    [ for node in doc.SelectNodes(sprintf "//%s:reference" ns, manager) -> 
+                if List.isEmpty [ for node in doc.SelectNodes "//*[local-name() = 'references']" -> node] then [] else
+                    [ for node in doc.SelectNodes "//*[local-name() = 'reference']" -> 
                         node.Attributes.["file"].InnerText]
             
             let frameworkAssemblyReferences =
-                if List.isEmpty [ for node in doc.SelectNodes(sprintf "//%s:frameworkAssemblies" ns, manager) -> node] then [] else
-                    [ for node in doc.SelectNodes(sprintf "//%s:frameworkAssembly" ns, manager) do
+                if List.isEmpty [ for node in doc.SelectNodes "//*[local-name() = 'frameworkAssemblies']"  -> node] then [] else
+                    [ for node in doc.SelectNodes "//*[local-name() = 'frameworkAssembly']" do
                         let name =  node.Attributes.["assemblyName"].InnerText
                         for framework in node.Attributes.["targetFramework"].InnerText.Split([|','; ' '|],System.StringSplitOptions.RemoveEmptyEntries) do
                             match FrameworkIdentifier.Extract framework with
