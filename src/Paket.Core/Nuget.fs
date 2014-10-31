@@ -33,7 +33,7 @@ let private loadNuGetOData raw =
     doc,manager
 
 type NugetPackageCache =
-    { Dependencies : (string * VersionRequirement) list
+    { Dependencies : (string * VersionRequirement * (FrameworkIdentifier option)) list
       Name : string
       SourceUrl: string
       DownloadUrl : string}
@@ -94,60 +94,60 @@ let getAllVersions(auth,nugetURL, package) =
 let getAllVersionsFromLocalPath (localNugetPath, package) =
     async {
         return Directory.EnumerateFiles(localNugetPath,"*.nupkg",SearchOption.AllDirectories)
-               |> Seq.choose (fun fileName -> 
-                                   let _match = Regex(sprintf @"%s\.(\d.*)\.nupkg" package, RegexOptions.IgnoreCase).Match(fileName)
+               |> Seq.choose (fun fileName ->
+                                   let fi = FileInfo(fileName)
+                                   let _match = Regex(sprintf @"^%s\.(\d.*)\.nupkg" package, RegexOptions.IgnoreCase).Match(fi.Name)
                                    if _match.Groups.Count > 1 then Some _match.Groups.[1].Value else None)
     }
 
 
+let getODataDetails nugetURL raw = 
+    let doc,manager = loadNuGetOData raw
+            
+    let getAttribute name = 
+        seq { 
+                for node in doc.SelectNodes(sprintf "//ns:entry/m:properties/d:%s" name, manager) do
+                    yield node.InnerText
+            }
+            |> Seq.head
+
+
+    let officialName = 
+        match [ for node in doc.SelectNodes("//ns:entry/m:properties/d:Id", manager) -> node.InnerText] with
+        | id::_ -> id
+        | [] ->
+            seq { 
+                    for node in doc.SelectNodes("//ns:entry/ns:title", manager) do
+                        yield node.InnerText
+                }
+                |> Seq.head
+
+    let downloadLink = 
+        seq { 
+                for node in doc.SelectNodes("//ns:entry/ns:content", manager) do
+                    let downloadType = node.Attributes.["type"].Value
+                    if downloadType = "application/zip" || downloadType = "binary/octet-stream" then
+                        yield node.Attributes.["src"].Value
+            }
+            |> Seq.head
+
+
+    let packages = 
+        getAttribute "Dependencies"
+        |> fun s -> s.Split([| '|' |], System.StringSplitOptions.RemoveEmptyEntries)
+        |> Array.map (fun d -> d.Split ':')
+        |> Array.filter (fun d -> Array.isEmpty d |> not && d.[0] <> "")
+        |> Array.map (fun a -> a.[0],(if a.Length > 1 then a.[1] else "0"),(if a.Length > 2 && a.[2] <> "" then FrameworkIdentifier.Extract a.[2] else None))
+        |> Array.map (fun (name, version, restricted) -> name, NugetVersionRangeParser.parse version, restricted)
+        |> Array.toList
+
+    { Name = officialName; DownloadUrl = downloadLink; Dependencies = packages; SourceUrl = nugetURL }
 
 /// Gets package details from Nuget via OData
 let getDetailsFromNugetViaOData auth nugetURL package version = 
     async { 
         let! raw = getFromUrl(auth,sprintf "%s/Packages(Id='%s',Version='%s')" nugetURL package version)
-        let doc,manager = loadNuGetOData raw
-            
-        let getAttribute name = 
-            seq { 
-                   for node in doc.SelectNodes(sprintf "//ns:entry/m:properties/d:%s" name, manager) do
-                       yield node.InnerText
-               }
-               |> Seq.head
-
-
-        let officialName = 
-            match [ for node in doc.SelectNodes("//ns:entry/m:properties/d:Id", manager) -> node.InnerText] with
-            | id::_ -> id
-            | [] ->
-                seq { 
-                       for node in doc.SelectNodes("//ns:entry/ns:title", manager) do
-                           yield node.InnerText
-                   }
-                   |> Seq.head
-
-        let downloadLink = 
-            seq { 
-                   for node in doc.SelectNodes("//ns:entry/ns:content", manager) do
-                       let downloadType = node.Attributes.["type"].Value
-                       if downloadType = "application/zip" || downloadType = "binary/octet-stream" then
-                           yield node.Attributes.["src"].Value
-               }
-               |> Seq.head
-
-
-        let packages = 
-            getAttribute "Dependencies"
-            |> fun s -> s.Split([| '|' |], System.StringSplitOptions.RemoveEmptyEntries)
-            |> Array.map (fun d -> d.Split ':')
-            |> Array.filter (fun d -> Array.isEmpty d
-                                      |> not && d.[0] <> "")
-            |> Array.map (fun a -> 
-                   a.[0], 
-                   if a.Length > 1 then a.[1] else "0")
-            |> Array.map (fun (name, version) -> name, NugetVersionRangeParser.parse version)
-            |> Array.toList
-
-        return { Name = officialName; DownloadUrl = downloadLink; Dependencies = packages; SourceUrl = nugetURL }
+        return getODataDetails nugetURL raw
     }
 
 
@@ -348,8 +348,6 @@ let ReadPackagesConfig(configFile : FileInfo) =
       Packages = [for node in doc.SelectNodes("//package") ->
                       node.Attributes.["id"].Value, node.Attributes.["version"].Value |> SemVer.Parse ]}
 
-
-//TODO: Should we really be able to call these methods with invalid arguments?
 let GetPackageDetails force sources package version : PackageResolver.PackageDetails= 
     let rec tryNext xs = 
         match xs with

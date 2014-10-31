@@ -35,7 +35,7 @@ module LockFileSerializer =
                   yield "  specs:"
                   for _,_,package in packages |> Seq.sortBy (fun (_,_,p) -> p.Name.ToLower()) do
                       yield sprintf "    %s (%s)" package.Name (package.Version.ToString()) 
-                      for name,v in package.Dependencies do
+                      for name,v,_ in package.Dependencies do
                           yield sprintf "      %s (%s)" name (v.ToString())]
     
         String.Join(Environment.NewLine, all)
@@ -115,7 +115,7 @@ module LockFileParser =
                     | currentPackage :: otherPackages -> 
                         { state with
                                 Packages = { currentPackage with
-                                                Dependencies = Set.add (name, VersionRequirement.AllReleases) currentPackage.Dependencies
+                                                Dependencies = Set.add (name, VersionRequirement.AllReleases, None) currentPackage.Dependencies
                                             } :: otherPackages }                    
                     | [] -> failwith "cannot set a dependency - no package has been specified."
                 else
@@ -180,7 +180,7 @@ type LockFile(fileName:string,options,resolution:PackageResolution,remoteFiles:R
                 | false,_ ->
                     usedPackages.Add(name,directly)
                     if not this.Options.Strict then
-                        for d,_ in package.Dependencies do
+                        for d,_,_ in package.Dependencies do
                             addPackage false d
                 | true,v -> usedPackages.[name] <- v || directly
             | None -> failwithf "%s references package %s, but it was not found in the paket.lock file." referencesFile.FileName name

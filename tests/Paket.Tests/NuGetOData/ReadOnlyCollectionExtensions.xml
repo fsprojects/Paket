@@ -1,0 +1,46 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<entry xml:base="http://www.nuget.org/api/v2/" xmlns="http://www.w3.org/2005/Atom" xmlns:d="http://schemas.microsoft.com/ado/2007/08/dataservices" xmlns:m="http://schemas.microsoft.com/ado/2007/08/dataservices/metadata">
+  <id>http://www.nuget.org/api/v2/Packages(Id='ReadOnlyCollectionExtensions',Version='1.2.0')</id>
+  <category term="NuGetGallery.V2FeedPackage" scheme="http://schemas.microsoft.com/ado/2007/08/dataservices/scheme" />
+  <link rel="edit" title="V2FeedPackage" href="Packages(Id='ReadOnlyCollectionExtensions',Version='1.2.0')" />
+  <title type="text">ReadOnlyCollectionExtensions</title>
+  <summary type="text"></summary>
+  <updated>2014-08-26T20:03:12Z</updated>
+  <author>
+    <name>Mauricio Scheffer</name>
+  </author>
+  <link rel="edit-media" title="V2FeedPackage" href="Packages(Id='ReadOnlyCollectionExtensions',Version='1.2.0')/$value" />
+  <content type="application/zip" src="http://www.nuget.org/api/v2/package/ReadOnlyCollectionExtensions/1.2.0" />
+  <m:properties>
+    <d:Version>1.2.0</d:Version>
+    <d:NormalizedVersion>1.2.0</d:NormalizedVersion>
+    <d:Copyright>Copyright Mauricio Scheffer 2012-2014</d:Copyright>
+    <d:Created m:type="Edm.DateTime">2014-05-28T06:24:17.753</d:Created>
+    <d:Dependencies>LinqBridge:1.3.0:net20|ReadOnlyCollectionInterfaces:[1.0.0]:net20|ReadOnlyCollectionInterfaces:[1.0.0]:net35|ReadOnlyCollectionInterfaces:[1.0.0]:net40-Client</d:Dependencies>
+    <d:Description>Extensions/adapters around read-only collection interfaces</d:Description>
+    <d:DownloadCount m:type="Edm.Int32">3186</d:DownloadCount>
+    <d:GalleryDetailsUrl>http://www.nuget.org/packages/ReadOnlyCollectionExtensions/1.2.0</d:GalleryDetailsUrl>
+    <d:IconUrl m:null="true" />
+    <d:IsLatestVersion m:type="Edm.Boolean">true</d:IsLatestVersion>
+    <d:IsAbsoluteLatestVersion m:type="Edm.Boolean">true</d:IsAbsoluteLatestVersion>
+    <d:IsPrerelease m:type="Edm.Boolean">false</d:IsPrerelease>
+    <d:Language m:null="true" />
+    <d:Published m:type="Edm.DateTime">2014-05-28T06:24:17.753</d:Published>
+    <d:PackageHash>0JVCna01JcMJp2BVy/KUOC7VYAk04XB8OO7nrzkEDBYsEMUr1iC9zqfpqNqxXxKj7bfoPCM7Oph5uAeIoJkQMA==</d:PackageHash>
+    <d:PackageHashAlgorithm>SHA512</d:PackageHashAlgorithm>
+    <d:PackageSize m:type="Edm.Int64">42858</d:PackageSize>
+    <d:ProjectUrl>https://www.ohloh.net/p/ReadOnlyCollections</d:ProjectUrl>
+    <d:ReportAbuseUrl>http://www.nuget.org/package/ReportAbuse/ReadOnlyCollectionExtensions/1.2.0</d:ReportAbuseUrl>
+    <d:ReleaseNotes m:null="true" />
+    <d:RequireLicenseAcceptance m:type="Edm.Boolean">false</d:RequireLicenseAcceptance>
+    <d:Summary m:null="true" />
+    <d:Tags>readonly collections backport</d:Tags>
+    <d:Title m:null="true" />
+    <d:VersionDownloadCount m:type="Edm.Int32">236</d:VersionDownloadCount>
+    <d:MinClientVersion m:null="true" />
+    <d:LastEdited m:type="Edm.DateTime" m:null="true" />
+    <d:LicenseUrl>https://github.com/mausch/ReadOnlyCollections/blob/master/license.txt</d:LicenseUrl>
+    <d:LicenseNames>Apache-2.0</d:LicenseNames>
+    <d:LicenseReportUrl></d:LicenseReportUrl>
+  </m:properties>
+</entry>

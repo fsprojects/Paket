@@ -11,7 +11,7 @@ let toPackages =
         { Name = name
           Version = SemVer.Parse ver
           Source = PackageSources.DefaultNugetSource
-          Dependencies = deps |> List.map (fun (name, verRan) -> name, NugetVersionRangeParser.parse verRan) |> Set.ofList } : PackageResolver.ResolvedPackage)
+          Dependencies = deps |> List.map (fun (name, verRan) -> name, NugetVersionRangeParser.parse verRan,None) |> Set.ofList } : PackageResolver.ResolvedPackage)
 
 let graph1 = 
     ["A", "3.3.0", ["B", "3.3.0"; "C", "1.0"]

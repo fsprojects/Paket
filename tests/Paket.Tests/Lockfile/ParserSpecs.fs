@@ -40,12 +40,12 @@ let ``should parse lock file``() =
     packages.[1].Source |> shouldEqual PackageSources.DefaultNugetSource
     packages.[1].Name |> shouldEqual "Castle.Windsor-log4net"
     packages.[1].Version |> shouldEqual (SemVer.Parse "3.3")
-    packages.[1].Dependencies |> shouldEqual (Set.ofList ["Castle.Windsor", VersionRequirement.AllReleases; "log4net", VersionRequirement.AllReleases])
+    packages.[1].Dependencies |> shouldEqual (Set.ofList ["Castle.Windsor", VersionRequirement.AllReleases, None; "log4net", VersionRequirement.AllReleases, None])
     
     packages.[5].Source |> shouldEqual PackageSources.DefaultNugetSource
     packages.[5].Name |> shouldEqual "log4net"
     packages.[5].Version |> shouldEqual (SemVer.Parse "1.1")
-    packages.[5].Dependencies |> shouldEqual (Set.ofList ["log", VersionRequirement.AllReleases])
+    packages.[5].Dependencies |> shouldEqual (Set.ofList ["log", VersionRequirement.AllReleases, None])
 
     let sourceFiles = List.rev lockFile.SourceFiles
     sourceFiles|> shouldEqual
@@ -90,7 +90,7 @@ let ``should parse strict lock file``() =
     packages.[5].Source |> shouldEqual PackageSources.DefaultNugetSource
     packages.[5].Name |> shouldEqual "log4net"
     packages.[5].Version |> shouldEqual (SemVer.Parse "1.1")
-    packages.[5].Dependencies |> shouldEqual (Set.ofList ["log", VersionRequirement.AllReleases])
+    packages.[5].Dependencies |> shouldEqual (Set.ofList ["log", VersionRequirement.AllReleases, None])
 
 let dogfood = """NUGET
   remote: https://nuget.org/api/v2

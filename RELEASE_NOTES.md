@@ -1,3 +1,18 @@
+#### 0.11.10 - 31.10.2014
+* Don't match suffixes in local nuget packages - https://github.com/fsprojects/Paket/issues/317
+
+#### 0.11.9 - 31.10.2014
+* Allow to parse relative nuget folders - https://github.com/fsprojects/Paket/issues/317
+
+#### 0.11.8 - 30.10.2014
+* When paket skips a framework install because of custom nodes it shows a warning - https://github.com/fsprojects/Paket/issues/316
+
+#### 0.11.7 - 30.10.2014
+* Remove the namespaces from the nuspec parser - https://github.com/fsprojects/Paket/pull/315
+
+#### 0.11.6 - 30.10.2014
+* Create a function which extracts the TargetFramework of a given projectfile.
+
 #### 0.11.5 - 30.10.2014
 * Create a function which calculates dependencies for a given projectfile.
 

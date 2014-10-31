@@ -251,7 +251,7 @@ type ProjectFile =
             |> Seq.fold (fun (model:InstallModel) kv -> 
                             let installModel = completeModel.[kv.Key.ToLower()]
                             if this.HasCustomNodes(installModel) then 
-                                verbosefn "  - custom nodes for %s ==> skipping" kv.Key
+                                traceWarnfn "  - custom nodes for %s ==> skipping" kv.Key
                                 model
                             else model.MergeWith(completeModel.[kv.Key.ToLower()])) 
                         (InstallModel.EmptyModel("",SemVer.Parse "0"))
@@ -304,6 +304,15 @@ type ProjectFile =
                 match outputType.InnerText with
                 | "Exe" -> ProjectOutputType.Exe
                 | _     -> ProjectOutputType.Library }
+        |> Seq.head
+
+    member this.GetTargetFramework() =
+        seq {for outputType in this.Document.SelectNodes("//ns:TargetFrameworkVersion", this.Namespaces) ->
+                outputType.InnerText  }
+        |> Seq.map (fun s -> // TODO make this a separate function
+                        s.Replace("v","net")
+                        |> FrameworkIdentifier.Extract)                        
+        |> Seq.map (fun o -> o.Value)
         |> Seq.head
     
     member this.AddImportForPaketTargets(relativeTargetsPath) =

@@ -20,6 +20,16 @@ let ``can detect all references``() =
     |> shouldEqual NuspecReferences.All
 
 [<Test>]
+let ``can detect all references for FsXaml``() = 
+    Nuspec.Load("Nuspec/FsXaml.Wpf.nuspec").References
+    |> shouldEqual NuspecReferences.All
+
+[<Test>]
+let ``can detect all references for ReadOnlyCollectionExtions``() = 
+    Nuspec.Load("Nuspec/ReadOnlyCollectionExtensions.nuspec").References
+    |> shouldEqual NuspecReferences.All
+
+[<Test>]
 let ``can detect all references for log4net``() = 
     Nuspec.Load("Nuspec/log4net.nuspec").References
     |> shouldEqual NuspecReferences.All
@@ -65,3 +75,27 @@ let ``can detect framework assemblies for FSharp.Data.SqlEnumProvider``() =
     |> shouldEqual 
         [{ AssemblyName = "System.Data"; TargetFramework = DotNetFramework(FrameworkVersion.V4_Client) }
          { AssemblyName = "System.Xml"; TargetFramework = DotNetFramework(FrameworkVersion.V4_Client) }]
+
+[<Test>]
+let ``can detect empty framework assemblies for ReadOnlyCollectionExtensions``() = 
+    Nuspec.Load("Nuspec/ReadOnlyCollectionExtensions.nuspec").FrameworkAssemblyReferences
+    |> shouldEqual [ ]
+
+[<Test>]
+let ``can detect empty dependencies for log4net``() = 
+    Nuspec.Load("Nuspec/log4net.nuspec").Dependencies
+    |> shouldEqual []
+
+[<Test>]
+let ``can detect explicit dependencies for Fantomas``() = 
+    Nuspec.Load("Nuspec/Fantomas.nuspec").Dependencies
+    |> shouldEqual ["FSharp.Compiler.Service",DependenciesFileParser.parseVersionRequirement(">= 0.0.57"), None]
+
+[<Test>]
+let ``can detect explicit dependencies for ReadOnlyCollectionExtensions``() = 
+    Nuspec.Load("Nuspec/ReadOnlyCollectionExtensions.nuspec").Dependencies
+    |> shouldEqual 
+        ["LinqBridge",DependenciesFileParser.parseVersionRequirement(">= 1.3.0"), Some(DotNetFramework(FrameworkVersion.V2))
+         "ReadOnlyCollectionInterfaces",DependenciesFileParser.parseVersionRequirement("1.0.0"), Some(DotNetFramework(FrameworkVersion.V2))
+         "ReadOnlyCollectionInterfaces",DependenciesFileParser.parseVersionRequirement("1.0.0"), Some(DotNetFramework(FrameworkVersion.V3_5))
+         "ReadOnlyCollectionInterfaces",DependenciesFileParser.parseVersionRequirement("1.0.0"), Some(DotNetFramework(FrameworkVersion.V4_Client))]
