@@ -16,7 +16,7 @@ type FrameworkVersion =
     | V4_5_1
     | V4_5_2
     | V4_5_3
-    override this.ToString() = 
+    override this.ToString() =
         match this with
         | V1 -> "v1.0"
         | V1_1 -> "v1.1"
@@ -102,6 +102,8 @@ type FrameworkIdentifier =
         | "net45" -> Some(DotNetFramework(FrameworkVersion.V4_5))
         | "net45-full" -> Some(DotNetFramework(FrameworkVersion.V4_5))
         | "net451" -> Some(DotNetFramework(FrameworkVersion.V4_5_1))
+        | "net452" -> Some(DotNetFramework(FrameworkVersion.V4_5_2))
+        | "net453" -> Some(DotNetFramework(FrameworkVersion.V4_5_3))
         | "35" -> Some(DotNetFramework(FrameworkVersion.V3_5))
         | "40" -> Some(DotNetFramework(FrameworkVersion.V4))
         | "45" -> Some(DotNetFramework(FrameworkVersion.V4_5))
@@ -252,7 +254,27 @@ type FrameworkIdentifier =
 
     member x.GetGroupCondition() = sprintf "%s" (x.GetFrameworkIdentifier())
 
-    override x.ToString() = x.GetFrameworkIdentifier() + x.GetFrameworkCondition()
+    override x.ToString() = 
+        match x with
+        | DotNetFramework v ->
+            "net" + 
+                match v with
+                | FrameworkVersion.V1 -> "10"
+                | FrameworkVersion.V1_1 -> "11"
+                | FrameworkVersion.V2 -> "20"
+                | FrameworkVersion.V3_5 -> "35"
+                | FrameworkVersion.V4_Client -> "40"
+                | FrameworkVersion.V4 -> "40"
+                | FrameworkVersion.V4_5 -> "45"
+                | FrameworkVersion.V4_5_1 -> "451"
+                | FrameworkVersion.V4_5_2 -> "452"
+                | FrameworkVersion.V4_5_3 -> "453"
+        | PortableFramework(v,p) -> "portable-" + v.ToString()
+        | MonoAndroid -> "monoandroid"
+        | MonoTouch -> "monotouch"
+        | Windows v -> "win" + v
+        | WindowsPhoneApp v -> "wp" + v
+        | Silverlight v -> "sl" + v
 
     static member DetectFromPath(path : string) : FrameworkIdentifier option = 
         

@@ -35,8 +35,10 @@ module LockFileSerializer =
                   yield "  specs:"
                   for _,_,package in packages |> Seq.sortBy (fun (_,_,p) -> p.Name.ToLower()) do
                       yield sprintf "    %s (%s)" package.Name (package.Version.ToString()) 
-                      for name,v,_ in package.Dependencies do
-                          yield sprintf "      %s (%s)" name (v.ToString())]
+                      for name,v,restriction in package.Dependencies do
+                          match restriction with
+                          | None -> yield sprintf "      %s (%s)" name (v.ToString())
+                          | Some restriction -> yield sprintf "      %s (%s) - %s" name (v.ToString()) (restriction.ToString())]
     
         String.Join(Environment.NewLine, all)
 

@@ -158,6 +158,7 @@
     <Compile Include="ProjectFile\FileBuildActionSpecs.fs" />
     <Compile Include="ProjectFile\InterProjectDependencySpecs.fs" />
     <Compile Include="ProjectFile\OutputSpecs.fs" />
+    <Compile Include="InstallModel\FrameworkIdentifierSpecs.fs" />
     <Compile Include="InstallModel\ProcessingSpecs.fs" />
     <Compile Include="InstallModel\Xml\Fantomas.fs" />
     <Compile Include="InstallModel\Xml\SystemNetHttp.fs" />
