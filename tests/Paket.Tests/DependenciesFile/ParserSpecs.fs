@@ -293,3 +293,15 @@ let ``should read config explicit versions``() =
 
     cfg.DirectDependencies.["FSharp.Compiler.Service"].Range |> shouldEqual (VersionRange.OverrideAll (SemVer.Parse "0.0.62"))
     cfg.DirectDependencies.["FsReveal"].Range |> shouldEqual (VersionRange.OverrideAll (SemVer.Parse "0.0.5-beta"))
+
+let configWithLocalSource = """
+source ./nugets
+
+nuget Nancy.Owin 0.22.2
+"""
+
+[<Test>]
+let ``should read config with local source``() = 
+    let cfg = DependenciesFile.FromCode(configWithLocalSource)
+
+    cfg.DirectDependencies.["Nancy.Owin"].Range |> shouldEqual (VersionRange.Specific (SemVer.Parse "0.22.2"))

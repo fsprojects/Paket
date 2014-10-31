@@ -1,3 +1,6 @@
+#### 0.11.9 - 31.10.2014
+* Allow to parse relative nuget folders - https://github.com/fsprojects/Paket/issues/317
+
 #### 0.11.8 - 30.10.2014
 * When paket skips a framework install because of custom nodes it shows a warning - https://github.com/fsprojects/Paket/issues/316
 
