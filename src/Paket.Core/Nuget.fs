@@ -94,8 +94,9 @@ let getAllVersions(auth,nugetURL, package) =
 let getAllVersionsFromLocalPath (localNugetPath, package) =
     async {
         return Directory.EnumerateFiles(localNugetPath,"*.nupkg",SearchOption.AllDirectories)
-               |> Seq.choose (fun fileName -> 
-                                   let _match = Regex(sprintf @"%s\.(\d.*)\.nupkg" package, RegexOptions.IgnoreCase).Match(fileName)
+               |> Seq.choose (fun fileName ->
+                                   let fi = FileInfo(fileName)
+                                   let _match = Regex(sprintf @"^%s\.(\d.*)\.nupkg" package, RegexOptions.IgnoreCase).Match(fi.Name)
                                    if _match.Groups.Count > 1 then Some _match.Groups.[1].Value else None)
     }
 

@@ -1,3 +1,6 @@
+#### 0.11.10 - 31.10.2014
+* Don't match suffixes in local nuget packages - https://github.com/fsprojects/Paket/issues/317
+
 #### 0.11.9 - 31.10.2014
 * Allow to parse relative nuget folders - https://github.com/fsprojects/Paket/issues/317
 
