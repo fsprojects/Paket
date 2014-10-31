@@ -94,7 +94,8 @@ module DependenciesFileParser =
         | _ when String.IsNullOrWhiteSpace line -> Blank
         | trimmed when trimmed.StartsWith "source" ->
             let parts = trimmed.Split ' '
-            Remote (parts.[1].Replace("\"",""),PackageSourceParser.parseAuth trimmed)
+            let source = parts.[1].Replace("\"","")
+            Remote (source,PackageSourceParser.parseAuth trimmed source)
         | trimmed when trimmed.StartsWith "nuget" -> 
             let parts = trimmed.Replace("nuget","").Trim().Replace("\"", "").Split([|' '|],StringSplitOptions.RemoveEmptyEntries) |> Seq.toList
 
