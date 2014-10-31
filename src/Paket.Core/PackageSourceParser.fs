@@ -16,8 +16,8 @@ let parseAuth (text:string) (source:string) =
         let password = AuthEntry.Create <| passwordRegex.Match(text).Groups.[1].Value
         if (environemntVariableRegex.IsMatch(username.Expanded) 
            && environemntVariableRegex.IsMatch(password.Expanded)) ||
-           ((username.Expanded |> String.IsNullOrEmpty)
-           && (password.Expanded |> String.IsNullOrEmpty)) then
+           (( System.String.IsNullOrEmpty username.Expanded)
+           && (System.String.IsNullOrEmpty password.Expanded)) then
             getFromCredentialStore source
         else 
             Some { Username = username
