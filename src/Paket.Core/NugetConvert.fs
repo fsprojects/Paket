@@ -17,14 +17,33 @@ type private NugetConfig =
 let private applyConfig config (doc : XmlDocument) =
     let clearSources = doc.SelectSingleNode("//packageSources/clear") <> null
     let sources = 
-        [for node in doc.SelectNodes("//packageSources/add[@value]") ->
-            let url = node.Attributes.["value"].Value
-            let auth = doc.SelectNodes(sprintf "//packageSourceCredentials/%s" (XmlConvert.EncodeLocalName node.Attributes.["key"].Value))
-                       |> Seq.cast<XmlNode>
-                       |> Seq.firstOrDefault
-                       |> Option.map (fun node -> {Username = AuthEntry.Create <| node.SelectSingleNode("//add[@key='Username']").Attributes.["value"].Value
-                                                   Password = AuthEntry.Create <| node.SelectSingleNode("//add[@key='ClearTextPassword']").Attributes.["value"].Value})
-            PackageSource.Parse (url, auth)]
+        [ for node in doc.SelectNodes("//packageSources/add[@value]") do
+            if node.Attributes.["value"] <> null then 
+                let url = node.Attributes.["value"].Value
+                  
+                let authNode = 
+                    if node.Attributes.["key"] = null then None else 
+                    let key  =XmlConvert.EncodeLocalName node.Attributes.["key"].Value
+                    doc.SelectNodes(sprintf "//packageSourceCredentials/%s" key)
+                    |> Seq.cast<XmlNode>
+                    |> Seq.firstOrDefault
+                  
+                let auth =
+                    match authNode with
+                    | Some node ->
+                          let userNode = node.SelectSingleNode("//add[@key='Username']")
+                          let passwordNode = node.SelectSingleNode("//add[@key='ClearTextPassword']")
+                          
+                          if userNode = null || passwordNode = null then None else
+                          let usernameAttr = userNode.Attributes.["value"]
+                          let passwordAttr = passwordNode.Attributes.["value"]
+                          
+                          if usernameAttr = null || passwordAttr = null then None else
+                          Some { Username = AuthEntry.Create usernameAttr.Value; Password = AuthEntry.Create passwordAttr.Value }
+                    | None -> None
+
+                yield PackageSource.Parse(url, auth) ]
+
     { PackageSources = if clearSources then sources else config.PackageSources @ sources
       PackageRestoreEnabled = 
         match doc.SelectNodes("//packageRestore/add[@key='enabled']") |> Seq.cast<XmlNode> |> Seq.firstOrDefault with

@@ -1,3 +1,6 @@
+#### 0.11.11 - 01.11.2014
+* Don't fail with NullReferenceException when analyzing nuget.config - https://github.com/fsprojects/Paket/issues/319
+
 #### 0.11.10 - 31.10.2014
 * Don't match suffixes in local nuget packages - https://github.com/fsprojects/Paket/issues/317
 
