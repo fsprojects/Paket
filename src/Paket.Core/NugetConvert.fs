@@ -32,9 +32,14 @@ let applyConfig config (doc : XmlDocument) =
                     match authNode with
                     | Some node ->
                           let userNode = node.SelectSingleNode("//add[@key='Username']")
+                                                
+                          if userNode = null then None else
                           let passwordNode = node.SelectSingleNode("//add[@key='ClearTextPassword']")
-                          
-                          if userNode = null || passwordNode = null then None else
+                          let passwordNode = 
+                              if passwordNode <> null then passwordNode else 
+                              node.SelectSingleNode("//add[@key='Password']")
+
+                          if passwordNode = null then None else
                           let usernameAttr = userNode.Attributes.["value"]
                           let passwordAttr = passwordNode.Attributes.["value"]
                           
