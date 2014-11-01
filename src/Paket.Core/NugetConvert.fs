@@ -14,52 +14,61 @@ type NugetConfig =
       PackageRestoreEnabled : bool
       PackageRestoreAutomatic : bool }
 
-let applyConfig config (doc : XmlDocument) =
-    let clearSources = doc.SelectSingleNode("//packageSources/clear") <> null
-    let sources = 
-        [ for node in doc.SelectNodes("//packageSources/add[@value]") do
-            if node.Attributes.["value"] <> null then 
-                let url = node.Attributes.["value"].Value
+    static member empty =
+        { PackageSources = [] 
+          PackageRestoreEnabled = false 
+          PackageRestoreAutomatic = false }
+
+    member this.ApplyConfig (filename : string) =
+        let doc = XmlDocument()
+        doc.Load(filename)
+
+        let clearSources = doc.SelectSingleNode("//packageSources/clear") <> null
+        let sources = 
+            [ for node in doc.SelectNodes("//packageSources/add[@value]") do
+                if node.Attributes.["value"] <> null then 
+                    let url = node.Attributes.["value"].Value
                   
-                let authNode = 
-                    if node.Attributes.["key"] = null then None else 
-                    let key  =XmlConvert.EncodeLocalName node.Attributes.["key"].Value
-                    doc.SelectNodes(sprintf "//packageSourceCredentials/%s" key)
-                    |> Seq.cast<XmlNode>
-                    |> Seq.firstOrDefault
+                    let authNode = 
+                        if node.Attributes.["key"] = null then None else 
+                        let key = XmlConvert.EncodeLocalName node.Attributes.["key"].Value
+                        doc.SelectNodes(sprintf "//packageSourceCredentials/%s" key)
+                        |> Seq.cast<XmlNode>
+                        |> Seq.firstOrDefault
                   
-                let auth =
-                    match authNode with
-                    | Some node ->
-                          let userNode = node.SelectSingleNode("//add[@key='Username']")
+                    let auth =
+                        match authNode with
+                        | Some node ->
+                              let userNode = node.SelectSingleNode("//add[@key='Username']")
                                                 
-                          if userNode = null then None else
-                          let passwordNode = node.SelectSingleNode("//add[@key='ClearTextPassword']")
-                          let passwordNode = 
-                              if passwordNode <> null then passwordNode else 
-                              node.SelectSingleNode("//add[@key='Password']")
+                              if userNode = null then None else
+                              let passwordNode = node.SelectSingleNode("//add[@key='ClearTextPassword']")
+                              let passwordNode = 
+                                  if passwordNode <> null then passwordNode else 
+                                  node.SelectSingleNode("//add[@key='Password']")
 
-                          if passwordNode = null then None else
-                          let usernameAttr = userNode.Attributes.["value"]
-                          let passwordAttr = passwordNode.Attributes.["value"]
+                              if passwordNode = null then None else
+                              let usernameAttr = userNode.Attributes.["value"]
+                              let passwordAttr = passwordNode.Attributes.["value"]
                           
-                          if usernameAttr = null || passwordAttr = null then None else
-                          Some { Username = AuthEntry.Create usernameAttr.Value; Password = AuthEntry.Create passwordAttr.Value }
-                    | None -> None
+                              if usernameAttr = null || passwordAttr = null then None else
+                              Some { Username = AuthEntry.Create usernameAttr.Value; Password = AuthEntry.Create passwordAttr.Value }
+                        | None -> None
 
-                yield PackageSource.Parse(url, auth) ]
+                    yield PackageSource.Parse(url, auth) ]
 
-    { PackageSources = if clearSources then sources else config.PackageSources @ sources
-      PackageRestoreEnabled = 
-        match doc.SelectNodes("//packageRestore/add[@key='enabled']") |> Seq.cast<XmlNode> |> Seq.firstOrDefault with
-        | Some node -> bool.Parse(node.Attributes.["value"].Value)
-        | None -> config.PackageRestoreEnabled
-      PackageRestoreAutomatic = 
-        match doc.SelectNodes("//packageRestore/add[@key='automatic']") |> Seq.cast<XmlNode> |> Seq.firstOrDefault with
-        | Some node -> bool.Parse(node.Attributes.["value"].Value)
-        | None -> config.PackageRestoreAutomatic }
+        { PackageSources = if clearSources then sources else this.PackageSources @ sources
+          PackageRestoreEnabled = 
+            match doc.SelectNodes("//packageRestore/add[@key='enabled']") |> Seq.cast<XmlNode> |> Seq.firstOrDefault with
+            | Some node -> bool.Parse(node.Attributes.["value"].Value)
+            | None -> this.PackageRestoreEnabled
+          PackageRestoreAutomatic = 
+            match doc.SelectNodes("//packageRestore/add[@key='automatic']") |> Seq.cast<XmlNode> |> Seq.firstOrDefault with
+            | Some node -> bool.Parse(node.Attributes.["value"].Value)
+            | None -> this.PackageRestoreAutomatic }
 
 let private readNugetConfig() =
+    let appDataFolder = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData)
     let config = 
         DirectoryInfo(".nuget")
         |> Seq.unfold (fun di -> if di = null 
@@ -67,16 +76,10 @@ let private readNugetConfig() =
                                  else Some(FileInfo(Path.Combine(di.FullName, "nuget.config")), di.Parent)) 
         |> Seq.toList
         |> List.rev
-        |> List.append [FileInfo(Path.Combine(
-                                      Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), 
-                                      "nuget", 
-                                      "nuget.config"))]
-        |> List.filter (fun f -> f.Exists)
-        |> List.map (fun f -> let doc = XmlDocument() in doc.Load(f.FullName); doc)
-        |> List.fold applyConfig 
-                     { PackageSources = [] 
-                       PackageRestoreEnabled = false 
-                       PackageRestoreAutomatic = false }
+        |> List.append [FileInfo(Path.Combine(appDataFolder, "nuget", "nuget.config"))]
+        |> List.filter (fun fi -> fi.Exists)
+        |> List.fold (fun (config:NugetConfig) fi -> config.ApplyConfig fi.FullName) NugetConfig.empty
+                     
     {config with PackageSources = if config.PackageSources = [] then [Paket.PackageSources.DefaultNugetSource] else config.PackageSources }
 
 let removeFile file = 

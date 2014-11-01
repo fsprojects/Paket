@@ -4,19 +4,9 @@ open Paket
 open NUnit.Framework
 open FsUnit
 open Paket.NuGetConvert
-open System.Xml
 open PackageSources
 
-let emptyConfig : NugetConfig =
-    { PackageSources = [] 
-      PackageRestoreEnabled = false 
-      PackageRestoreAutomatic = false }
-
-let parse (fileName:string) =
-    let doc = XmlDocument() 
-    doc.Load(fileName)
-    NuGetConvert.applyConfig emptyConfig doc
-
+let parse fileName = NugetConfig.empty.ApplyConfig fileName
 
 [<Test>]
 let ``can detect passwords in nuget.config``() = 
