@@ -114,6 +114,9 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Compile Include="NuGetOData\ODataSpecs.fs" />
+    <Content Include="NuGetConfig\ClearTextPasswordConfig.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>    
     <Content Include="NuGetConfig\PasswordConfig.xml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>

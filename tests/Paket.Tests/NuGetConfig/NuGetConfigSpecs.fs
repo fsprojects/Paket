@@ -30,3 +30,16 @@ let ``can detect passwords in nuget.config``() =
                       Auth = Some { Username = AuthEntry.Create "notty"; Password = AuthEntry.Create "adfdsfadsadadfsafdsadfsafsd" } } ]
           PackageRestoreEnabled = false
           PackageRestoreAutomatic = false }
+
+[<Test>]
+let ``can detect cleartextpasswords in nuget.config``() = 
+    parse "NuGetConfig/ClearTextPasswordConfig.xml" 
+    |> shouldEqual
+        { PackageSources = 
+            [ PackageSource.Nuget { Url = "https://www.nuget.org/api/v2/"; Auth = None }
+                                                                  
+              PackageSource.Nuget 
+                    { Url = "https://nuget/somewhere/"
+                      Auth = Some { Username = AuthEntry.Create "myUser"; Password = AuthEntry.Create "myPassword" } } ]
+          PackageRestoreEnabled = false
+          PackageRestoreAutomatic = false }
