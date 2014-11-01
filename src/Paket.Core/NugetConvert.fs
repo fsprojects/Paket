@@ -9,12 +9,12 @@ open Paket.Logging
 open Paket.Nuget
 open Paket.PackageSources
 
-type private NugetConfig = 
+type NugetConfig = 
     { PackageSources : list<PackageSource>
       PackageRestoreEnabled : bool
       PackageRestoreAutomatic : bool }
 
-let private applyConfig config (doc : XmlDocument) =
+let applyConfig config (doc : XmlDocument) =
     let clearSources = doc.SelectSingleNode("//packageSources/clear") <> null
     let sources = 
         [ for node in doc.SelectNodes("//packageSources/add[@value]") do

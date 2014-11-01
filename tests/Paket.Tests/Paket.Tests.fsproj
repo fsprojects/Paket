@@ -114,6 +114,10 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Compile Include="NuGetOData\ODataSpecs.fs" />
+    <Content Include="NuGetConfig\PasswordConfig.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Compile Include="NuGetConfig\NuGetConfigSpecs.fs" />
     <Compile Include="FilterVersionSpecs.fs" />
     <Compile Include="DependenciesFile\VersionRangeSpecs.fs" />
     <Compile Include="DependenciesFile\VersionRequirementSpecs.fs" />
