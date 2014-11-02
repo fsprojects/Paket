@@ -1,4 +1,4 @@
-﻿module Paket.CredentialStore
+﻿module Paket.CredentialStoreSpecs
 
 open Paket
 open Paket.CredentialStore
