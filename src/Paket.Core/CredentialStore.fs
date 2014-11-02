@@ -6,11 +6,6 @@ open System.Security.Cryptography
 open System.Text
 open System.IO
 
-type EncryptedPassword = 
-    { EncryptedPassword : string
-      Salt : string }
-
-
 let credentialStoreFile = Path.Combine(Constants.PaketConfigFolder, "credentials.xml")
 
 let cryptoServiceProvider = new RNGCryptoServiceProvider()
