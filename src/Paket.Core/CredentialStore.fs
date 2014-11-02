@@ -6,9 +6,7 @@ open System.Security.Cryptography
 open System.Text
 open System.IO
 
-let credentialStoreDirectory = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Paket")
-
-let credentialStoreFile = Path.Combine(credentialStoreDirectory, "credentials.xml")
+let credentialStoreFile = Path.Combine(Constants.PaketConfigFolder, "credentials.xml")
 let entropyBytes = Encoding.UTF8.GetBytes("Paket")
 
 /// Encrypts a string with a user specific keys
@@ -45,7 +43,7 @@ let getAuthFromNode (node : XmlNode) =
 
 let askAndAddAuth (source : string) (doc : XmlDocument) = 
     if not Environment.UserInteractive then
-        failwith ("No credentials could be found for source " + source)
+        failwithf "No credentials could be found for source %s" source
 
     Console.Write("Username: ")
     let userName = Console.ReadLine()
@@ -53,7 +51,7 @@ let askAndAddAuth (source : string) (doc : XmlDocument) =
     let node = doc.CreateElement("credential")
     node.SetAttribute("source", source)
     node.SetAttribute("username", userName)
-    node.SetAttribute("password", encrypt (password))
+    node.SetAttribute("password", encrypt password)
 
     doc.DocumentElement.AppendChild node |> ignore
     doc.Save credentialStoreFile
@@ -82,7 +80,8 @@ let getFromCredentialStore (source : string) =
             doc
         else 
             if not (Directory.Exists credentialStoreFile) then 
-                Directory.CreateDirectory credentialStoreDirectory |> ignore
+                Directory.CreateDirectory Constants.PaketConfigFolder |> ignore
+
             let doc = new XmlDocument()
             let el = doc.CreateElement("credentials")
             doc.AppendChild(el) |> ignore

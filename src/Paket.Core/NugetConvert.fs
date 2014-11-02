@@ -68,7 +68,7 @@ type NugetConfig =
             | None -> this.PackageRestoreAutomatic }
 
 let private readNugetConfig() =
-    let appDataFolder = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData)
+    
     let config = 
         DirectoryInfo(".nuget")
         |> Seq.unfold (fun di -> if di = null 
@@ -76,7 +76,7 @@ let private readNugetConfig() =
                                  else Some(FileInfo(Path.Combine(di.FullName, "nuget.config")), di.Parent)) 
         |> Seq.toList
         |> List.rev
-        |> List.append [FileInfo(Path.Combine(appDataFolder, "nuget", "nuget.config"))]
+        |> List.append [FileInfo(Path.Combine(Constants.AppDataFolder, "nuget", "nuget.config"))]
         |> List.filter (fun fi -> fi.Exists)
         |> List.fold (fun (config:NugetConfig) fi -> config.ApplyConfig fi.FullName) NugetConfig.empty
                      
