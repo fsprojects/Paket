@@ -7,6 +7,8 @@ install:
   - sudo apt-get update -qq
   - sudo apt-get install -qq mono-complete nuget mono-vbnc fsharp libgdiplus=2.10-3
   - mozroots --import --sync --quiet
+  - mkdir ~/.config/.mono/keypairs
+  - chmod 700 ~/.config/.mono/keypairs
 
-script: 
+script:
   - ./build.sh All
