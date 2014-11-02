@@ -1,3 +1,6 @@
+#### 0.11.13 - 02.11.2014
+* Trace warning when we replace NuGet.exe with NuGet.CommandLine - https://github.com/fsprojects/Paket/issues/320
+
 #### 0.11.12 - 01.11.2014
 * Don't fail with NullReferenceException when analyzing nuget.config - https://github.com/fsprojects/Paket/issues/319
 

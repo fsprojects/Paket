@@ -194,9 +194,11 @@ let ConvertFromNuget(force, installAfter, initAutoRestore) =
         removeFile nugetTargets.FullName
         let nugetExe = Path.Combine(nugetTargets.DirectoryName, "nuget.exe")
         if File.Exists nugetExe then 
+            traceWarnfn "Removing NuGet.exe and adding Nuget.CommandLine as dependency instead. Please check all paths."
             removeFile nugetExe
             let depFile = DependenciesFile.ReadFromFile(Constants.DependenciesFile)
-            if not <| depFile.HasPackage("Nuget.CommandLine") then depFile.Add("Nuget.CommandLine", "").Save()
+            if not <| depFile.HasPackage("NuGet.CommandLine") then 
+                depFile.Add("NuGet.CommandLine", "").Save()
             
         if Directory.EnumerateFileSystemEntries(nugetTargets.DirectoryName) |> Seq.isEmpty 
             then Directory.Delete nugetTargets.DirectoryName
