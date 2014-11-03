@@ -19,8 +19,19 @@ let ``can detect explicit dependencies for Fantomas``() =
         { Name = "Fantomas"
           DownloadUrl = "http://www.nuget.org/api/v2/package/Fantomas/1.6.0"
           Dependencies = ["FSharp.Compiler.Service",DependenciesFileParser.parseVersionRequirement(">= 0.0.73"), None]
+          Unlisted = false
           SourceUrl = fakeUrl }
 
+[<Test>]
+let ``can detect explicit dependencies for Rx-PlaformServices``() = 
+    parse "NuGetOData/Rx-PlatformServices.xml"
+    |> shouldEqual 
+        { Name = "Rx-PlatformServices"
+          DownloadUrl = "http://www.nuget.org/api/v2/package/Rx-PlatformServices/2.3.0"
+          Dependencies = ["Rx-Interfaces",DependenciesFileParser.parseVersionRequirement(">= 2.2"), None
+                          "Rx-Core",DependenciesFileParser.parseVersionRequirement(">= 2.2"), None]
+          Unlisted = false
+          SourceUrl = fakeUrl }
 
 [<Test>]
 let ``can detect explicit dependencies for Fleece``() = 
@@ -28,6 +39,7 @@ let ``can detect explicit dependencies for Fleece``() =
     |> shouldEqual 
         { Name = "Fleece"
           DownloadUrl = "http://www.nuget.org/api/v2/package/Fleece/0.4.0"
+          Unlisted = false
           Dependencies = 
             ["FSharpPlus",DependenciesFileParser.parseVersionRequirement(">= 0.0.4"), None
              "ReadOnlyCollectionInterfaces",DependenciesFileParser.parseVersionRequirement("1.0.0"), None
@@ -41,6 +53,7 @@ let ``can detect explicit dependencies for ReadOnlyCollectionExtensions``() =
     |> shouldEqual 
         { Name = "ReadOnlyCollectionExtensions"
           DownloadUrl = "http://www.nuget.org/api/v2/package/ReadOnlyCollectionExtensions/1.2.0"
+          Unlisted = false
           Dependencies = 
             ["LinqBridge",DependenciesFileParser.parseVersionRequirement(">= 1.3.0"), Some(DotNetFramework(FrameworkVersion.V2))
              "ReadOnlyCollectionInterfaces",DependenciesFileParser.parseVersionRequirement("1.0.0"), Some(DotNetFramework(FrameworkVersion.V2))

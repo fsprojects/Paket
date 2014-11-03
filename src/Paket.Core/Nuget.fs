@@ -36,6 +36,7 @@ type NugetPackageCache =
     { Dependencies : (string * VersionRequirement * (FrameworkIdentifier option)) list
       Name : string
       SourceUrl: string
+      Unlisted : bool
       DownloadUrl : string}
 
 let rec private followODataLink auth url = 
@@ -141,7 +142,11 @@ let getODataDetails nugetURL raw =
         |> Array.map (fun (name, version, restricted) -> name, NugetVersionRangeParser.parse version, restricted)
         |> Array.toList
 
-    { Name = officialName; DownloadUrl = downloadLink; Dependencies = packages; SourceUrl = nugetURL }
+    { Name = officialName
+      DownloadUrl = downloadLink
+      Dependencies = packages
+      SourceUrl = nugetURL
+      Unlisted = false }
 
 /// Gets package details from Nuget via OData
 let getDetailsFromNugetViaOData auth nugetURL package version = 
@@ -210,7 +215,12 @@ let getDetailsFromLocalFile path package version =
 
         File.Delete(fileName)
 
-        return { Name = nuspec.OfficialName; DownloadUrl = package; Dependencies = nuspec.Dependencies; SourceUrl = path }
+        return 
+            { Name = nuspec.OfficialName
+              DownloadUrl = package
+              Dependencies = nuspec.Dependencies
+              SourceUrl = path
+              Unlisted = false }
     }
 
 
@@ -366,6 +376,7 @@ let GetPackageDetails force sources package version : PackageResolver.PackageDet
     { Name = nugetObject.Name
       Source = source
       DownloadLink = nugetObject.DownloadUrl
+      Unlisted = nugetObject.Unlisted
       DirectDependencies = nugetObject.Dependencies |> Set.ofList } 
 
 /// Allows to retrieve all version no. for a package from the given sources.

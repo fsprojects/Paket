@@ -18,6 +18,7 @@ let PackageDetailsFromGraph (graph : seq<string * string * (string * VersionRequ
     { Name = name
       Source = Seq.head sources
       DownloadLink = ""
+      Unlisted = false
       DirectDependencies = Set.ofList dependencies }
 
 let VersionsFromGraph (graph : seq<string * string * (string * VersionRequirement) list>) (sources, package : string) = 

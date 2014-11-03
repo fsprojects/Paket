@@ -13,6 +13,7 @@ type PackageDetails =
     { Name : string
       Source : PackageSource
       DownloadLink : string
+      Unlisted : bool
       DirectDependencies :  (string * VersionRequirement * (FrameworkIdentifier option)) Set }
 
 /// Represents data about resolved packages

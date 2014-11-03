@@ -383,6 +383,9 @@
     </Content>
     <Content Include="NuGetOData\ReadOnlyCollectionExtensions.xml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>         
+    <Content Include="NuGetOData\Rx-PlatformServices.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Compile Include="NuGetOData\ODataSpecs.fs" />
     <Content Include="NuGetConfig\ClearTextPasswordConfig.xml">
