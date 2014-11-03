@@ -19,7 +19,9 @@ let ``get username and password from node``() =
     let doc = sampleDoc()
     let node = doc.CreateElement("credential")
     node.SetAttribute("username", "demo-user")
-    node.SetAttribute("password", encrypt "demopassword")
+    let salt, password = encrypt "demopassword"
+    node.SetAttribute("password", password)
+    node.SetAttribute("salt", salt)
     // Act
     let auth = getAuthFromNode node
 
