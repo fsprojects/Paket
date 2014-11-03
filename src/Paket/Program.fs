@@ -136,8 +136,7 @@ try
         | Command.Simplify -> Simplifier.Simplify(interactive)
         | _ -> traceErrorfn "no command given.%s" (parser.Usage())
         
-        let ts = stopWatch.Elapsed
-        let elapsedTime = String.Format("{0:00}.{1:00}s", ts.Seconds, ts.Milliseconds / 10)
+        let elapsedTime = Utils.TimeSpanToReadableString stopWatch.Elapsed
 
         tracefn "%s - ready." elapsedTime
     | None -> ()

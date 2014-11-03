@@ -1,3 +1,6 @@
+#### 0.11.14 - 03.11.2014
+* BUGFIX: Paket timing was incorrect - https://github.com/fsprojects/Paket/issues/326
+
 #### 0.11.13 - 02.11.2014
 * Trace warning when we replace NuGet.exe with NuGet.CommandLine - https://github.com/fsprojects/Paket/issues/320
 
