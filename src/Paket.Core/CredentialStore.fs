@@ -7,16 +7,28 @@ open System.Text
 open System.IO
 
 let credentialStoreFile = Path.Combine(Constants.PaketConfigFolder, "credentials.xml")
-let entropyBytes = Encoding.UTF8.GetBytes("Paket")
+
+let cryptoServiceProvider = new RNGCryptoServiceProvider()
+
+let getRandomSalt  () =
+    let saltSize = 8
+    let saltBytes = Array.create saltSize ( new Byte() )
+    cryptoServiceProvider.GetNonZeroBytes(saltBytes)
+    saltBytes
 
 /// Encrypts a string with a user specific keys
 let encrypt (password : string) = 
-    ProtectedData.Protect(Encoding.UTF8.GetBytes password, entropyBytes, DataProtectionScope.CurrentUser)
-    |> Convert.ToBase64String
+    let salt = getRandomSalt()
+    let encryptedPassword = 
+        ProtectedData.Protect(Encoding.UTF8.GetBytes password, salt, DataProtectionScope.CurrentUser)
+    salt |> Convert.ToBase64String ,
+    encryptedPassword |> Convert.ToBase64String
 
 /// Decrypt a encrypted string with a user specific keys
-let decrypt (encrypted : string) = 
-    ProtectedData.Unprotect(Convert.FromBase64String(encrypted), entropyBytes, DataProtectionScope.CurrentUser)
+let decrypt (salt : string) (encrypted : string) =     
+    ProtectedData.Unprotect(Convert.FromBase64String(encrypted), 
+                            Convert.FromBase64String(salt), 
+                            DataProtectionScope.CurrentUser)
     |> Encoding.UTF8.GetString
 
 let readPassword (message : string) : string = 
@@ -38,8 +50,10 @@ let readPassword (message : string) : string =
     password
 
 let getAuthFromNode (node : XmlNode) = 
+    let password = (node.Attributes.["password"].Value)
+    let salt = (node.Attributes.["salt"].Value)
     Some { Username = AuthEntry.Create <| node.Attributes.["username"].Value
-           Password = AuthEntry.Create <| decrypt (node.Attributes.["password"].Value) }
+           Password = AuthEntry.Create <| decrypt salt password}
 
 let askAndAddAuth (source : string) (doc : XmlDocument) = 
     if not Environment.UserInteractive then
@@ -51,7 +65,9 @@ let askAndAddAuth (source : string) (doc : XmlDocument) =
     let node = doc.CreateElement("credential")
     node.SetAttribute("source", source)
     node.SetAttribute("username", userName)
-    node.SetAttribute("password", encrypt password)
+    let salt, encrypedPassword =  encrypt password
+    node.SetAttribute("password", encrypedPassword)
+    node.SetAttribute("salt", salt)
 
     doc.DocumentElement.AppendChild node |> ignore
     doc.Save credentialStoreFile
