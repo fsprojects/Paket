@@ -9,7 +9,7 @@ open PackageSources
 let parse fileName = NugetConfig.empty.ApplyConfig fileName
 
 [<Test>]
-let ``can detect passwords in nuget.config``() = 
+let ``can detect encrypted passwords in nuget.config``() = 
     parse "NuGetConfig/PasswordConfig.xml" 
     |> shouldEqual
         { PackageSources = 
@@ -17,7 +17,7 @@ let ``can detect passwords in nuget.config``() =
                                                                   
               PackageSource.Nuget 
                     { Url = "https://tc/httpAuth/app/nuget/v1/FeedService.svc/"
-                      Auth = Some { Username = AuthEntry.Create "notty"; Password = AuthEntry.Create "adfdsfadsadadfsafdsadfsafsd" } } ]
+                      Auth = Some { Username = AuthEntry.Create "notty"; Password = AuthEntry.Create "secret" } } ]
           PackageRestoreEnabled = false
           PackageRestoreAutomatic = false }
 

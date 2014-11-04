@@ -6,8 +6,14 @@ open System
 open System.IO
 open System.Xml
 open Paket.Logging
+open Paket.Xml
 open Paket.Nuget
 open Paket.PackageSources
+
+let private tryGetValue key (node : XmlNode option) =
+    node 
+    |> Option.bind (getNode (sprintf "//add[@key='%s']" key)) 
+    |> Option.bind (getAttribute "value")
 
 type NugetConfig = 
     { PackageSources : list<PackageSource>
@@ -26,45 +32,34 @@ type NugetConfig =
         let clearSources = doc.SelectSingleNode("//packageSources/clear") <> null
         let sources = 
             [ for node in doc.SelectNodes("//packageSources/add[@value]") do
-                if node.Attributes.["value"] <> null then 
-                    let url = node.Attributes.["value"].Value
+                match node |> getAttribute "value" with
+                | None -> ()
+                | Some url ->
+                    let authNode = node |> getAttribute "key" |> Option.bind (fun key ->
+                            let key = XmlConvert.EncodeLocalName key
+                            doc |> getNode (sprintf "//packageSourceCredentials/%s" key))
                   
-                    let authNode = 
-                        if node.Attributes.["key"] = null then None else 
-                        let key = XmlConvert.EncodeLocalName node.Attributes.["key"].Value
-                        doc.SelectNodes(sprintf "//packageSourceCredentials/%s" key)
-                        |> Seq.cast<XmlNode>
-                        |> Seq.firstOrDefault
-                  
-                    let auth =
-                        match authNode with
-                        | Some node ->
-                              let userNode = node.SelectSingleNode("//add[@key='Username']")
-                                                
-                              if userNode = null then None else
-                              let passwordNode = node.SelectSingleNode("//add[@key='ClearTextPassword']")
-                              let passwordNode = 
-                                  if passwordNode <> null then passwordNode else 
-                                  node.SelectSingleNode("//add[@key='Password']")
+                    let userName = authNode |> tryGetValue "Username"
+                    let clearTextPass = authNode |> tryGetValue "ClearTextPassword"
+                    let encryptedPass = authNode |> tryGetValue "Password"
 
-                              if passwordNode = null then None else
-                              let usernameAttr = userNode.Attributes.["value"]
-                              let passwordAttr = passwordNode.Attributes.["value"]
-                          
-                              if usernameAttr = null || passwordAttr = null then None else
-                              Some { Username = AuthEntry.Create usernameAttr.Value; Password = AuthEntry.Create passwordAttr.Value }
-                        | None -> None
+                    let auth = userName |> Option.bind (fun userName ->
+                            match encryptedPass with
+                            | Some encryptedPass -> Some(userName, CredentialStore.decryptNugetPass encryptedPass)
+                            | None -> clearTextPass |> Option.map (fun clearTextPass -> userName, clearTextPass))
+                                |> Option.map (fun (userName,password) -> 
+                                    { Username = AuthEntry.Create userName; Password = AuthEntry.Create password })
 
                     yield PackageSource.Parse(url, auth) ]
 
         { PackageSources = if clearSources then sources else this.PackageSources @ sources
           PackageRestoreEnabled = 
-            match doc.SelectNodes("//packageRestore/add[@key='enabled']") |> Seq.cast<XmlNode> |> Seq.firstOrDefault with
-            | Some node -> bool.Parse(node.Attributes.["value"].Value)
+            match doc |> getNode "//packageRestore" |> tryGetValue "enabled" with
+            | Some value -> bool.Parse(value)
             | None -> this.PackageRestoreEnabled
           PackageRestoreAutomatic = 
-            match doc.SelectNodes("//packageRestore/add[@key='automatic']") |> Seq.cast<XmlNode> |> Seq.firstOrDefault with
-            | Some node -> bool.Parse(node.Attributes.["value"].Value)
+            match doc |> getNode "//packageRestore" |> tryGetValue "automatic" with
+            | Some value -> bool.Parse(value)
             | None -> this.PackageRestoreAutomatic }
 
 let private readNugetConfig() =
