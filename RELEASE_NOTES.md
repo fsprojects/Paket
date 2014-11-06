@@ -1,3 +1,6 @@
+#### 0.11.15 - 06.11.2014
+* BUGFIX: Detect Lib folder on Linux - https://github.com/fsprojects/Paket/issues/332
+
 #### 0.11.14 - 03.11.2014
 * BUGFIX: Paket timing was incorrect - https://github.com/fsprojects/Paket/issues/326
 

@@ -331,12 +331,14 @@ let DownloadPackage(auth, url, name, version, force) =
         return! CopyFromCache(targetFile.FullName, name, version, force)
     }
 
-/// Finds all libraries in a nuget packge.
-let GetLibFiles(targetFolder) =
-    let dir = DirectoryInfo(Path.Combine(targetFolder,"lib"))
+/// Finds all libraries in a nuget package.
+let GetLibFiles(targetFolder) =    
     let libs = 
+        let dir = DirectoryInfo(targetFolder)
+        let libPath = dir.FullName.ToLower() + Path.DirectorySeparatorChar.ToString() + "lib" + Path.DirectorySeparatorChar.ToString()
         if dir.Exists then
             dir.GetFiles("*.*",SearchOption.AllDirectories)
+            |> Array.filter (fun fi -> fi.FullName.ToLower().Contains(libPath))
         else
             Array.empty
 

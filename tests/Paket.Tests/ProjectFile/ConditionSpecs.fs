@@ -28,6 +28,10 @@ let ``should detect client framework version from path``() =
     FrameworkIdentifier.DetectFromPath(@"..\packages\Castle.Core\lib\net40-client\Castle.Core.dll")|> element |> shouldEqual (DotNetFramework(FrameworkVersion.V4_Client))
 
 [<Test>]
+let ``should detect client framework version from Lib path``() =
+    FrameworkIdentifier.DetectFromPath(@"..\packages\Castle.Core\Lib\net40-client\Castle.Core.dll")|> element |> shouldEqual (DotNetFramework(FrameworkVersion.V4_Client))
+
+[<Test>]
 let ``should detect net40-full as net40``() =
     FrameworkIdentifier.DetectFromPath(@"..\packages\log4net\lib\net40-full\log4net.dll")|> element |> shouldEqual(DotNetFramework(FrameworkVersion.V4))
     FrameworkIdentifier.DetectFromPath(@"..\packages\log4net\lib\net40\log4net.dll")|> element |> shouldEqual (DotNetFramework(FrameworkVersion.V4_Client))
