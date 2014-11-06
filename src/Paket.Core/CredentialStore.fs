@@ -5,6 +5,7 @@ open System.Xml
 open System.Security.Cryptography
 open System.Text
 open System.IO
+open Paket.Config
 
 let credentialStoreFile = Path.Combine(Constants.PaketConfigFolder, "credentials.xml")
 
@@ -54,23 +55,26 @@ let getAuthFromNode (node : XmlNode) =
     let salt = (node.Attributes.["salt"].Value)
     Some { Username = AuthEntry.Create <| node.Attributes.["username"].Value
            Password = AuthEntry.Create <| decrypt salt password}
+           
+let saveCredenetials (source : string) (username : string) (password : string) (credentialsNode : XmlNode) =
+    let salt, encrypedPassword =  encrypt password
+    let node = credentialsNode.OwnerDocument.CreateElement("credential")
+    node.SetAttribute("source", source)
+    node.SetAttribute("username", username)
+    node.SetAttribute("password", encrypedPassword)
+    node.SetAttribute("salt", salt)
+    credentialsNode.AppendChild node |> ignore
+    saveConfigNode credentialsNode
+    node
 
-let askAndAddAuth (source : string) (doc : XmlDocument) = 
+let askAndAddAuth (source : string) (credentialsNode : XmlNode) = 
     if not Environment.UserInteractive then
         failwithf "No credentials could be found for source %s" source
 
     Console.Write("Username: ")
     let userName = Console.ReadLine()
     let password = readPassword "Password: "
-    let node = doc.CreateElement("credential")
-    node.SetAttribute("source", source)
-    node.SetAttribute("username", userName)
-    let salt, encrypedPassword =  encrypt password
-    node.SetAttribute("password", encrypedPassword)
-    node.SetAttribute("salt", salt)
-
-    doc.DocumentElement.AppendChild node |> ignore
-    doc.Save credentialStoreFile
+    let node = saveCredenetials (source) (userName) (password) (credentialsNode)
     getAuthFromNode (node :> XmlNode)
 
 /// Check if the provided credentials for a specific source are correct
@@ -81,35 +85,22 @@ let checkCredentials source cred =
         true
     with _ -> false
 
-let getSourceNodes (doc : XmlDocument) (source) = 
-    doc.SelectNodes("/credentials/credential")
+let getSourceNodes (credentialsNode : XmlNode) (source) = 
+    credentialsNode.SelectNodes("//credential")
     |> Seq.cast<XmlNode>
     |> Seq.filter (fun n -> n.Attributes.["source"].Value = source)
     |> Seq.toList
 
 /// Get the credential from the creedential store for a specific sourcee
-let getFromCredentialStore (source : string) = 
-    let doc = 
-        if File.Exists credentialStoreFile then 
-            let doc = new XmlDocument()
-            doc.Load credentialStoreFile
-            doc
-        else 
-            if not (Directory.Exists credentialStoreFile) then 
-                Directory.CreateDirectory Constants.PaketConfigFolder |> ignore
-
-            let doc = new XmlDocument()
-            let el = doc.CreateElement("credentials")
-            doc.AppendChild(el) |> ignore
-            doc.Save credentialStoreFile
-            doc
+let getFromCredentialStore (source : string) =
+    let credentialsNode = getConfigNode ("credentials")
     
-    let sourceNodes = getSourceNodes doc source
+    let sourceNodes = getSourceNodes credentialsNode source
     if sourceNodes.IsEmpty then 
-        askAndAddAuth source doc 
+        askAndAddAuth source credentialsNode
     else 
         let creds = getAuthFromNode sourceNodes.Head
         if checkCredentials source creds then creds
         else 
-            doc.DocumentElement.RemoveChild sourceNodes.Head |> ignore
-            askAndAddAuth source doc
+            credentialsNode.RemoveChild sourceNodes.Head |> ignore
+            askAndAddAuth source credentialsNode
