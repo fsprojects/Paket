@@ -6,7 +6,7 @@ if errorlevel 1 (
   exit /b %errorlevel%
 )
 
-.paket\paket.exe restore -v
+.paket\paket.exe  install --hard
 if errorlevel 1 (
   exit /b %errorlevel%
 )

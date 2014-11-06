@@ -40,8 +40,8 @@
     <DefineConstants>TRACE</DefineConstants>
     <WarningLevel>3</WarningLevel>
     <DocumentationFile>..\..\bin\Paket.xml</DocumentationFile>
-    <StartArguments>update -f</StartArguments>
-    <StartWorkingDirectory>D:\code\paketkopie</StartWorkingDirectory>
+    <StartArguments>convert-from-nuget</StartArguments>
+    <StartWorkingDirectory>D:\code\gitnav</StartWorkingDirectory>
   </PropertyGroup>
   <PropertyGroup>
     <MinimumVisualStudioVersion Condition="'$(MinimumVisualStudioVersion)' == ''">11</MinimumVisualStudioVersion>
