@@ -15,10 +15,10 @@ To give you an overview, consider the following `paket.dependencies` file:
 The file specifies that Paket's NuGet dependencies should be downloaded from [nuget.org](http://www.nuget.org) and that we need: 
 
   * [NUnit](http://www.nunit.org/) in version [2.6.3 <= x < 2.7](nuget-dependencies.html#Pessimistic-version-constraint)
-  * [FAKE](http://fsharp.github.io/FAKE/) in version [3.4 <= x < 3.5](nuget-dependencies.html#Pessimistic-version-constraint) as a build tool
+  * [FAKE](http://fsharp.github.io/FAKE/) in version [3.4 <= x < 4.0](nuget-dependencies.html#Pessimistic-version-constraint) as a build tool
   * [DotNetZip](http://dotnetzip.codeplex.com/) with version which is at [least 1.9](http://fsprojects.github.io/Paket/nuget-dependencies.html#Greater-than-or-equal-version-constraint)
   * [SourceLink.Fake](https://github.com/ctaggart/SourceLink) in the latest version
-  * [FSUnit.fs](https://github.com/forki/FsUnit) from github.
+  * [FSUnit.fs](https://github.com/forki/FsUnit) from GitHub.
 
 Paket uses this definition to compute a concrete dependency resolution, which also includes indirect dependencies. The resulting dependency graph is then persisted to the [`paket.lock` file](lock-file.html).
 
