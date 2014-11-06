@@ -123,6 +123,14 @@ let getODataDetails nugetURL raw =
                 }
                 |> Seq.head
 
+    let publishDate = 
+        match [ for node in doc.SelectNodes("//ns:entry/m:properties/d:Published", manager) -> node.InnerText] with
+        | id::_ -> 
+            match DateTime.TryParse id with
+            | true,date -> date
+            | _ -> DateTime.MinValue
+        | [] -> DateTime.MinValue
+
     let downloadLink = 
         seq { 
                 for node in doc.SelectNodes("//ns:entry/ns:content", manager) do
@@ -146,12 +154,12 @@ let getODataDetails nugetURL raw =
       DownloadUrl = downloadLink
       Dependencies = packages
       SourceUrl = nugetURL
-      Unlisted = false }
+      Unlisted = publishDate = Constants.MagicUnlistingDate }
 
 /// Gets package details from Nuget via OData
 let getDetailsFromNugetViaOData auth nugetURL package version = 
     async { 
-        let! raw = getFromUrl(auth,sprintf "%s/Packages(Id='%s',Version='%s')" nugetURL package version)
+        let! raw = getFromUrl(auth,sprintf "%s/Packages?$filter=Id eq '%s' and Version eq '%s'" nugetURL package version)
         return getODataDetails nugetURL raw
     }
 

@@ -27,10 +27,10 @@ let ``can detect explicit dependencies for Rx-PlaformServices``() =
     parse "NuGetOData/Rx-PlatformServices.xml"
     |> shouldEqual 
         { Name = "Rx-PlatformServices"
-          DownloadUrl = "http://www.nuget.org/api/v2/package/Rx-PlatformServices/2.3.0"
+          DownloadUrl = "https://www.nuget.org/api/v2/package/Rx-PlatformServices/2.3.0"
           Dependencies = ["Rx-Interfaces",DependenciesFileParser.parseVersionRequirement(">= 2.2"), None
                           "Rx-Core",DependenciesFileParser.parseVersionRequirement(">= 2.2"), None]
-          Unlisted = false
+          Unlisted = true
           SourceUrl = fakeUrl }
 
 [<Test>]

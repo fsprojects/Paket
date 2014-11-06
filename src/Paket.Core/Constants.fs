@@ -18,3 +18,6 @@ let ProjectDefaultNameSpace = "http://schemas.microsoft.com/developer/msbuild/20
 let AppDataFolder = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData)
 
 let PaketConfigFolder = Path.Combine(AppDataFolder, "Paket")
+
+/// The magic unpublished date is 1900-01-01T00:00:00
+let MagicUnlistingDate = DateTimeOffset(1900, 1, 1, 0, 0, 0, TimeSpan.FromHours(-8.)).DateTime
