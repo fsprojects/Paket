@@ -109,6 +109,7 @@ module LockFileParser =
                                      { Source = PackageSource.Parse(remote, None)
                                        Name = parts.[0]
                                        Dependencies = Set.empty
+                                       Unlisted = false
                                        Version = SemVer.Parse version } :: state.Packages }
                 | None -> failwith "no source has been specified."
             | NugetDependency (name, _) ->

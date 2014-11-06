@@ -11,6 +11,7 @@ let toPackages =
         { Name = name
           Version = SemVer.Parse ver
           Source = PackageSources.DefaultNugetSource
+          Unlisted = false
           Dependencies = deps |> List.map (fun (name, verRan) -> name, NugetVersionRangeParser.parse verRan,None) |> Set.ofList } : PackageResolver.ResolvedPackage)
 
 let graph1 = 

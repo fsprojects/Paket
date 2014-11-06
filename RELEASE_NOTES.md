@@ -1,3 +1,6 @@
+#### 0.11.16 - 06.11.2014
+* BUGFIX: Exclude unlisted NuGet packages in Resolver - https://github.com/fsprojects/Paket/issues/327
+
 #### 0.11.15 - 06.11.2014
 * BUGFIX: Detect Lib folder on Linux - https://github.com/fsprojects/Paket/issues/332
 

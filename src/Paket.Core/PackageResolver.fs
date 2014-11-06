@@ -21,6 +21,7 @@ type ResolvedPackage =
     { Name : string
       Version : SemVerInfo
       Dependencies : (string * VersionRequirement * (FrameworkIdentifier option)) Set
+      Unlisted : bool
       Source : PackageSource }
 
     override this.ToString() = sprintf "%s %s" this.Name (this.Version.ToString())
@@ -86,6 +87,7 @@ let Resolve(getVersionsF, getPackageDetailsF, rootDependencies:PackageRequiremen
                 { Name = packageDetails.Name
                   Version = version
                   Dependencies = packageDetails.DirectDependencies
+                  Unlisted = packageDetails.Unlisted
                   Source = packageDetails.Source }
             exploredPackages.Add((packageName.ToLower(),version),explored)
             explored
@@ -160,7 +162,8 @@ let Resolve(getVersionsF, getPackageDetailsF, rootDependencies:PackageRequiremen
             |> List.fold (fun state versionToExplore ->
                 match state with
                 | ResolvedPackages.Conflict _ ->
-                    let exploredPackage = getExploredPackage(dependency.Sources,dependency.Name,versionToExplore)
+                    let exploredPackage = getExploredPackage(dependency.Sources,dependency.Name,versionToExplore)    
+                    if exploredPackage.Unlisted then state else                
                     let newFilteredVersion = Map.add dependency.Name ([versionToExplore],globalOverride) filteredVersions
                     let newDependencies =
                         exploredPackage.Dependencies
@@ -180,7 +183,7 @@ let Resolve(getVersionsF, getPackageDetailsF, rootDependencies:PackageRequiremen
 
                     improveModel (newFilteredVersion,exploredPackage::packages,Set.add dependency closed,Set.union rest newDependencies)
                 | ResolvedPackages.Ok _ -> state)
-                  (ResolvedPackages.Conflict(closed,stillOpen))
+                    (ResolvedPackages.Conflict(closed,stillOpen))
 
     match improveModel (Map.empty, [], Set.empty, Set.ofList rootDependencies) with
     | ResolvedPackages.Conflict(_) as c -> c
