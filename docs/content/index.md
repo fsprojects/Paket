@@ -73,7 +73,7 @@ Contributing and copyright
 
 The project is hosted on [GitHub][gh] where you can [report issues][issues], fork the project and submit pull requests.
 
-Please see the [Quick contributing guide in the README][readme] for contribution gudelines.
+Please see the [Quick contributing guide in the README][readme] for contribution guidelines.
 
 The library is available under MIT license, which allows modification and redistribution for both commercial and non-commercial purposes.
 For more information see the [License file][license].
