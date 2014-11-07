@@ -1,47 +1,19 @@
-#### 0.12.0-alpha001 - 07.11.2014
-* Implemented paket.config file - http://fsprojects.github.io/Paket/paket-config-file.html
-
-#### 0.11.16 - 06.11.2014
-* BUGFIX: Exclude unlisted NuGet packages in Resolver - https://github.com/fsprojects/Paket/issues/327
-
-#### 0.11.15 - 06.11.2014
-* BUGFIX: Detect Lib folder on Linux - https://github.com/fsprojects/Paket/issues/332
-
-#### 0.11.14 - 03.11.2014
-* BUGFIX: Paket timing was incorrect - https://github.com/fsprojects/Paket/issues/326
-
-#### 0.11.13 - 02.11.2014
+#### 0.12.0 - 07.11.2014
+* New global paket.config file - http://fsprojects.github.io/Paket/paket-config-file.html
 * Trace warning when we replace NuGet.exe with NuGet.CommandLine - https://github.com/fsprojects/Paket/issues/320
-
-#### 0.11.12 - 01.11.2014
-* Don't fail with NullReferenceException when analyzing nuget.config - https://github.com/fsprojects/Paket/issues/319
-
-#### 0.11.10 - 31.10.2014
-* Don't match suffixes in local nuget packages - https://github.com/fsprojects/Paket/issues/317
-
-#### 0.11.9 - 31.10.2014
-* Allow to parse relative nuget folders - https://github.com/fsprojects/Paket/issues/317
-
-#### 0.11.8 - 30.10.2014
+* Allow to parse relative NuGet folders - https://github.com/fsprojects/Paket/issues/317
 * When paket skips a framework install because of custom nodes it shows a warning - https://github.com/fsprojects/Paket/issues/316
-
-#### 0.11.7 - 30.10.2014
 * Remove the namespaces from the nuspec parser - https://github.com/fsprojects/Paket/pull/315
-
-#### 0.11.6 - 30.10.2014
-* Create a function which extracts the TargetFramework of a given projectfile.
-
-#### 0.11.5 - 30.10.2014
-* Create a function which calculates dependencies for a given projectfile.
-
-#### 0.11.4 - 30.10.2014
-* BUGFIX: Paket failed on generating lockfile for LessThan version requirement - https://github.com/fsprojects/Paket/pull/314
-
-#### 0.11.3 - 29.10.2014
+* New function which extracts the TargetFramework of a given projectfile.
+* New function which calculates dependencies for a given projectfile.
 * Project output type can be detected from a project file
-
-#### 0.11.2 - 29.10.2014
 * Allow to retrieve inter project dependencies from a project file
+* BUGFIX: Exclude unlisted NuGet packages in Resolver - https://github.com/fsprojects/Paket/issues/327
+* BUGFIX: Detect Lib vs. lib folder on Linux - https://github.com/fsprojects/Paket/issues/332
+* BUGFIX: Paket stopwatch was incorrect - https://github.com/fsprojects/Paket/issues/326
+* BUGFIX: Paket failed on generating lockfile for LessThan version requirement - https://github.com/fsprojects/Paket/pull/314
+* BUGFIX: Don't match suffixes in local NuGet packages - https://github.com/fsprojects/Paket/issues/317
+* BUGFIX: Don't fail with NullReferenceException when analyzing nuget.config - https://github.com/fsprojects/Paket/issues/319
 
 #### 0.11.0 - 29.10.2014
 * Build a merged install model with all packages - https://github.com/fsprojects/Paket/issues/297
