@@ -1,5 +1,5 @@
 #### 0.12.1 - 07.11.2014
-* BUGFIX: `paket update nuget [PACKAGENAME]` should use the same update strategy as `paket add`
+* BUGFIX: `paket update nuget [PACKAGENAME]` should use the same update strategy as `paket add` - https://github.com/fsprojects/Paket/issues/330
 
 #### 0.12.0 - 07.11.2014
 * New global paket.config file - http://fsprojects.github.io/Paket/paket-config-file.html

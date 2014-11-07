@@ -131,7 +131,13 @@ let Resolve(getVersionsF, getPackageDetailsF, rootDependencies:PackageRequiremen
             let allVersions,compatibleVersions,globalOverride = 
                 match Map.tryFind dependency.Name filteredVersions with
                 | None ->
-                    let versions = getAllVersions(dependency.Sources,dependency.Name)
+                    let versions = 
+                        match dependency.VersionRequirement.Range with
+                        | Specific v -> 
+                            let versions = [v]
+                            allVersions.Add(dependency.Name.ToLower(),versions)
+                            versions
+                        | _ -> getAllVersions(dependency.Sources,dependency.Name)
                     if Seq.isEmpty versions then
                         failwithf "Couldn't retrieve versions for %s." dependency.Name
                     if dependency.VersionRequirement.Range.IsGlobalOverride then
