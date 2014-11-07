@@ -1,4 +1,4 @@
-﻿module Paket.CredentialStoreSpecs
+﻿module Paket.ConfigFileSpecs
 
 open Paket
 open Paket.ConfigFile
