@@ -18,7 +18,7 @@ let parseAuth (text : string) (source : string) =
             ((String.IsNullOrEmpty username.Expanded) && 
              (String.IsNullOrEmpty password.Expanded)) 
         then 
-            ConfigFile.getFromCredentialStore source
+            ConfigFile.GetCredentials source
         else 
             Some { Username = username
                    Password = password }
