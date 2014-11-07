@@ -44,7 +44,7 @@ type CLIArguments =
     | [<CustomCommandLine("version")>] Version of string
     | [<Rest>]References_Files of string
     | No_Install
-    | Strict
+    | Ignore_Constraints
     | [<AltCommandLine("--pre")>] Include_Prereleases
     | No_Auto_Restore
 with
@@ -66,7 +66,7 @@ with
             | Interactive -> "interactive process."
             | Hard -> "overwrites manual package references."
             | No_Install -> "omits install --hard after convert-from-nuget."
-            | Strict -> "keeps all version requirements when searching for outdated packages."
+            | Ignore_Constraints -> "ignores the version requirements when searching for outdated packages."
             | Include_Prereleases -> "includes prereleases when searching for outdated packages."
             | No_Auto_Restore -> "omits init-auto-restore after convert-from-nuget."
             | Nuget _ -> "allows to specify a nuget package."
@@ -105,7 +105,6 @@ try
         let hard = results.Contains <@ CLIArguments.Hard @> 
         let noInstall = results.Contains <@ CLIArguments.No_Install @>
         let noAutoRestore = results.Contains <@ CLIArguments.No_Auto_Restore @>
-        let strict = results.Contains <@ CLIArguments.Strict @>
         let includePrereleases = results.Contains <@ CLIArguments.Include_Prereleases @>
 
         match command with
@@ -130,7 +129,9 @@ try
                 UpdateProcess.UpdatePackage(packageName,version,force,hard)
             | _ -> UpdateProcess.Update(true,force,hard)
             
-        | Command.Outdated -> FindOutdated.ListOutdated(strict,includePrereleases)
+        | Command.Outdated ->         
+            let strict = results.Contains <@ CLIArguments.Ignore_Constraints @> |> not
+            FindOutdated.ListOutdated(strict,includePrereleases)
         | Command.InitAutoRestore -> VSIntegration.InitAutoRestore()
         | Command.ConvertFromNuget -> NuGetConvert.ConvertFromNuget(force,noInstall |> not,noAutoRestore |> not)
         | Command.Simplify -> Simplifier.Simplify(interactive)

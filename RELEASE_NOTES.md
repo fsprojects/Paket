@@ -1,3 +1,6 @@
+#### 0.12.2 - 07.11.2014
+* Adding --ignore-constraints to `paket outdated` - https://github.com/fsprojects/Paket/issues/308 
+
 #### 0.12.1 - 07.11.2014
 * BUGFIX: `paket update nuget [PACKAGENAME]` should use the same update strategy as `paket add` - https://github.com/fsprojects/Paket/issues/330
 
