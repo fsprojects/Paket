@@ -1,3 +1,6 @@
+#### 0.12.0-alpha001 - 07.11.2014
+* Implemented paket.config file - http://fsprojects.github.io/Paket/paket-config-file.html
+
 #### 0.11.16 - 06.11.2014
 * BUGFIX: Exclude unlisted NuGet packages in Resolver - https://github.com/fsprojects/Paket/issues/327
 
