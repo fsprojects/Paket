@@ -85,8 +85,7 @@
     <Compile Include="ProjectFile.fs" />
     <Compile Include="SolutionFile.fs" />
     <Compile Include="Nuget.fs" />
-    <Compile Include="Config.fs" />
-    <Compile Include="CredentialStore.fs" />
+    <Compile Include="ConfigFile.fs" />
     <Compile Include="PackageSourceParser.fs" />
     <Compile Include="DependenciesFile.fs" />
     <Compile Include="ReferencesFile.fs" />

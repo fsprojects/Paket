@@ -1,7 +1,7 @@
 ﻿module Paket.CredentialStoreSpecs
 
 open Paket
-open Paket.CredentialStore
+open Paket.ConfigFile
 open NUnit.Framework
 open System.Xml
 open FsUnit

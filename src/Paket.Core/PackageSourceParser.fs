@@ -4,7 +4,6 @@ open Paket
 open System
 open System.Text.RegularExpressions
 open Paket.PackageSources
-open Paket.CredentialStore
 
 let userNameRegex = new Regex("username[:][ ]*[\"]([^\"]*)[\"]", RegexOptions.IgnoreCase)
 let passwordRegex = new Regex("password[:][ ]*[\"]([^\"]*)[\"]", RegexOptions.IgnoreCase)
@@ -19,7 +18,7 @@ let parseAuth (text : string) (source : string) =
             ((String.IsNullOrEmpty username.Expanded) && 
              (String.IsNullOrEmpty password.Expanded)) 
         then 
-            getFromCredentialStore source
+            ConfigFile.getFromCredentialStore source
         else 
             Some { Username = username
                    Password = password }
