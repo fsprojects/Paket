@@ -27,7 +27,18 @@ let Update(forceResolution, force, hard) =
 
     InstallProcess.Install(sources, force, hard, lockFile)
 
-let updateWithModifiedDependenciesFile(dependenciesFile:DependenciesFile,package:string, force) =
+let private fixOldDependencies (oldLockFile:LockFile) (dependenciesFile:DependenciesFile) (package:string) =
+    let packageKeys = dependenciesFile.DirectDependencies |> Seq.map (fun kv -> kv.Key.ToLower()) |> Set.ofSeq
+    oldLockFile.ResolvedPackages 
+    |> Seq.fold 
+            (fun (dependenciesFile : DependenciesFile) kv -> 
+                let resolvedPackage = kv.Value
+                let name = resolvedPackage.Name.ToLower()
+                if name = package.ToLower() || not <| packageKeys.Contains name then dependenciesFile else 
+                dependenciesFile.AddFixedPackage(resolvedPackage.Name, "= " + resolvedPackage.Version.ToString()))
+            dependenciesFile
+
+let updateWithModifiedDependenciesFile(dependenciesFile:DependenciesFile,packageName:string, force) =
     let lockFileName = DependenciesFile.FindLockfile Constants.DependenciesFile
 
     if not lockFileName.Exists then 
@@ -38,17 +49,8 @@ let updateWithModifiedDependenciesFile(dependenciesFile:DependenciesFile,package
         lockFile
     else
         let oldLockFile = LockFile.LoadFrom(lockFileName.FullName)
-        let packageKeys = dependenciesFile.DirectDependencies |> Seq.map (fun kv -> kv.Key.ToLower()) |> Set.ofSeq
 
-        let updatedDependenciesFile = 
-            oldLockFile.ResolvedPackages 
-            |> Seq.fold 
-                    (fun (dependenciesFile : DependenciesFile) kv -> 
-                        let resolvedPackage = kv.Value
-                        let name = resolvedPackage.Name.ToLower()
-                        if name = package.ToLower() || not <| packageKeys.Contains name then dependenciesFile else 
-                        dependenciesFile.AddFixedPackage(resolvedPackage.Name, "= " + resolvedPackage.Version.ToString()))
-                    dependenciesFile
+        let updatedDependenciesFile = fixOldDependencies oldLockFile dependenciesFile packageName
         
         let resolution = updatedDependenciesFile.Resolve(force)
         let resolvedPackages = resolution.ResolvedPackages.GetModelOrFail()
@@ -75,15 +77,7 @@ let UpdatePackage(packageName : string, newVersion, force, hard) =
 
         let oldLockFile = LockFile.LoadFrom(lockFileName.FullName)
         
-        let updatedDependenciesFile = 
-            oldLockFile.ResolvedPackages 
-            |> Seq.fold 
-                   (fun (dependenciesFile : DependenciesFile) kv -> 
-                   let resolvedPackage = kv.Value
-                   if resolvedPackage.Name.ToLower() = packageName.ToLower() then dependenciesFile
-                   else 
-                       dependenciesFile.AddFixedPackage
-                           (resolvedPackage.Name, "== " + resolvedPackage.Version.ToString())) dependenciesFile
+        let updatedDependenciesFile = fixOldDependencies oldLockFile dependenciesFile packageName
         
         let resolution = updatedDependenciesFile.Resolve(force)
         let resolvedPackages = resolution.ResolvedPackages.GetModelOrFail()

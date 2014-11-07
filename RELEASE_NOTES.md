@@ -1,3 +1,6 @@
+#### 0.12.1 - 07.11.2014
+* BUGFIX: `paket update nuget [PACKAGENAME]` should use the same update strategy as `paket add`
+
 #### 0.12.0 - 07.11.2014
 * New global paket.config file - http://fsprojects.github.io/Paket/paket-config-file.html
 * Trace warning when we replace NuGet.exe with NuGet.CommandLine - https://github.com/fsprojects/Paket/issues/320
