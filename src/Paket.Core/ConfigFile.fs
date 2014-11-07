@@ -19,20 +19,20 @@ let private getConfigNode (nodeName : string) =
                 Directory.CreateDirectory Constants.PaketConfigFolder |> ignore
 
             let doc = new XmlDocument()
-            let el = doc.CreateElement(rootElement)
-            doc.AppendChild(el) |> ignore
+            let element = doc.CreateElement rootElement
+            doc.AppendChild(element) |> ignore
             doc.Save Constants.PaketConfigFile
-            el
+            element
 
     let node = rootNode.SelectSingleNode(sprintf "//%s" nodeName)
     if node <> null then
         node
     else
-        let node = rootNode.OwnerDocument.CreateElement(nodeName)
-        rootNode.AppendChild (node) 
+        rootNode.OwnerDocument.CreateElement nodeName
+        |> rootNode.AppendChild
 
 
-let private saveConfigNode (node : XmlNode) = node.OwnerDocument.Save (Constants. PaketConfigFile)
+let private saveConfigNode (node : XmlNode) = node.OwnerDocument.Save Constants.PaketConfigFile
 
 let private cryptoServiceProvider = new RNGCryptoServiceProvider()
 
