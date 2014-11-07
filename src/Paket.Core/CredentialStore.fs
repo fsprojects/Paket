@@ -56,7 +56,7 @@ let getAuthFromNode (node : XmlNode) =
     Some { Username = AuthEntry.Create <| node.Attributes.["username"].Value
            Password = AuthEntry.Create <| decrypt salt password}
            
-let saveCredenetials (source : string) (username : string) (password : string) (credentialsNode : XmlNode) =
+let saveCredentials (source : string) (username : string) (password : string) (credentialsNode : XmlNode) =
     let salt, encrypedPassword =  encrypt password
     let node = credentialsNode.OwnerDocument.CreateElement("credential")
     node.SetAttribute("source", source)
@@ -74,7 +74,7 @@ let askAndAddAuth (source : string) (credentialsNode : XmlNode) =
     Console.Write("Username: ")
     let userName = Console.ReadLine()
     let password = readPassword "Password: "
-    let node = saveCredenetials (source) (userName) (password) (credentialsNode)
+    let node = saveCredentials (source) (userName) (password) (credentialsNode)
     getAuthFromNode (node :> XmlNode)
 
 /// Check if the provided credentials for a specific source are correct
