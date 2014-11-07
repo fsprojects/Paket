@@ -92,11 +92,16 @@ let Resolve(getVersionsF, getPackageDetailsF, rootDependencies:PackageRequiremen
             exploredPackages.Add((packageName.ToLower(),version),explored)
             explored
 
-    let getAllVersions(sources,packageName:string) =
+    let getAllVersions(sources,packageName:string,vr : VersionRange)  =
         match allVersions.TryGetValue(packageName.ToLower()) with
-        | false,_ ->
-            tracefn "  - fetching versions for %s" packageName
-            let versions = getVersionsF(sources,packageName)
+        | false,_ ->            
+            let versions = 
+                match vr with
+                | OverrideAll v -> [v]
+                | Specific v -> [v]
+                | _ -> 
+                    tracefn "  - fetching versions for %s" packageName
+                    getVersionsF(sources,packageName)
             allVersions.Add(packageName.ToLower(),versions)
             versions
         | true,versions -> versions
@@ -131,13 +136,7 @@ let Resolve(getVersionsF, getPackageDetailsF, rootDependencies:PackageRequiremen
             let allVersions,compatibleVersions,globalOverride = 
                 match Map.tryFind dependency.Name filteredVersions with
                 | None ->
-                    let versions = 
-                        match dependency.VersionRequirement.Range with
-                        | Specific v -> 
-                            let versions = [v]
-                            allVersions.Add(dependency.Name.ToLower(),versions)
-                            versions
-                        | _ -> getAllVersions(dependency.Sources,dependency.Name)
+                    let versions = getAllVersions(dependency.Sources,dependency.Name,dependency.VersionRequirement.Range)
                     if Seq.isEmpty versions then
                         failwithf "Couldn't retrieve versions for %s." dependency.Name
                     if dependency.VersionRequirement.Range.IsGlobalOverride then
