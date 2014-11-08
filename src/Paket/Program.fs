@@ -104,8 +104,6 @@ let results =
         tracefn "%s %s%s" (String.Join(" ",Environment.GetCommandLineArgs())) Environment.NewLine (parser.Usage())
         None
 
-let getDependenciesFile() = Settings.FindDependenciesFileInPath false (DirectoryInfo Environment.CurrentDirectory)
-
 try
     match results with
     | Some(command,results) ->
@@ -115,6 +113,8 @@ try
         let noInstall = results.Contains <@ CLIArguments.No_Install @>
         let noAutoRestore = results.Contains <@ CLIArguments.No_Auto_Restore @>
         let includePrereleases = results.Contains <@ CLIArguments.Include_Prereleases @>
+    
+        let dependencies = Dependencies.Locate(Constants.DependenciesFileName)
 
         match command with
         | Command.Add -> 
@@ -123,31 +123,30 @@ try
                 match results.TryGetResult <@ CLIArguments.Version @> with
                 | Some x -> x
                 | _ -> ""
-            
-            AddProcess.Add(getDependenciesFile(),packageName,version,force,hard,interactive,noInstall |> not)
+            dependencies.Add(packageName, version)
         | Command.Remove -> 
             let packageName = results.GetResult <@ CLIArguments.Nuget @>            
-            RemoveProcess.Remove(getDependenciesFile(),packageName,force,hard,interactive,noInstall |> not)
-        | Command.Install -> UpdateProcess.Update(getDependenciesFile(),false,force,hard) 
+            dependencies.Remove(packageName)
+        | Command.Install -> dependencies.Install()
         | Command.Restore -> 
             let files = results.GetResults <@ CLIArguments.References_Files @> 
-            RestoreProcess.Restore(getDependenciesFile(),force,files) 
+            dependencies.Restore(files)
         | Command.Update -> 
             match results.TryGetResult <@ CLIArguments.Nuget @> with
             | Some packageName -> 
                 let version = results.TryGetResult <@ CLIArguments.Version @>
-                UpdateProcess.UpdatePackage(getDependenciesFile(),packageName,version,force,hard)
-            | _ -> UpdateProcess.Update(getDependenciesFile(),true,force,hard)
+                dependencies.UpdatePackage(packageName, version)
+            | _ -> dependencies.Update()
             
         | Command.Outdated ->         
             let strict = results.Contains <@ CLIArguments.Ignore_Constraints @> |> not
-            FindOutdated.ListOutdated(getDependenciesFile(),strict,includePrereleases)
-        | Command.InitAutoRestore -> VSIntegration.InitAutoRestore(getDependenciesFile())
-        | Command.ConvertFromNuget -> NuGetConvert.ConvertFromNuget(getDependenciesFile(),force,noInstall |> not,noAutoRestore |> not)
-        | Command.Simplify -> Simplifier.Simplify(getDependenciesFile(),interactive)
+            dependencies.ListOutdated() 
+        | Command.InitAutoRestore -> dependencies.InitAutoRestore() 
+        | Command.ConvertFromNuget -> dependencies.ConvertFromNuGet()
+        | Command.Simplify -> dependencies.Simplify()
         | Command.FindRefs ->
             let packages = results.GetResults <@ CLIArguments.Packages @>
-            FindReferences.ShowReferencesFor(getDependenciesFile(),packages)
+            dependencies.FindReferencesFor(packages)
         | _ -> traceErrorfn "no command given.%s" (parser.Usage())
         
         let elapsedTime = Utils.TimeSpanToReadableString stopWatch.Elapsed
