@@ -350,7 +350,7 @@ type DependenciesFile(fileName,options,packages : PackageRequirement list, remot
         DependenciesFile(DependenciesFileParser.parseDependenciesFile "" <| code.Replace("\r\n","\n").Replace("\r","\n").Split('\n'))
 
     static member ReadFromFile fileName : DependenciesFile = 
-        tracefn "Parsing %s" fileName
+        verbosefn "Parsing %s" fileName
         DependenciesFile(DependenciesFileParser.parseDependenciesFile fileName <| File.ReadAllLines fileName)
 
     /// Find the matching lock file to a dependencies file
