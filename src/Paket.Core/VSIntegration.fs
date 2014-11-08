@@ -5,7 +5,12 @@ open Logging
 open System
 
 let InitAutoRestore(dependenciesFileName) =
-    let root = Path.GetDirectoryName dependenciesFileName
+    let root =
+        if dependenciesFileName = Constants.DependenciesFileName then
+            "."
+        else
+            Path.GetDirectoryName dependenciesFileName
+
     CreateDir(Path.Combine(root,".paket"))
     use client = createWebClient None
 
