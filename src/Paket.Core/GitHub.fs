@@ -6,6 +6,9 @@ open System.IO
 open Ionic.Zip
 open Paket.Logging
 
+[<Literal>]
+let FullProjectSourceFileName = "FULLPROJECT"
+
 // Gets the sha1 of a branch
 let getSHA1OfBranch owner project branch = 
     async { 
@@ -59,7 +62,7 @@ let rec DirectoryCopy(sourceDirName, destDirName, copySubDirs) =
 /// Gets a single file from github.
 let downloadGithubFiles(remoteFile:ModuleResolver.ResolvedSourceFile,destitnation) = async {
     match remoteFile.Name with
-    | "FULLPROJECT" -> 
+    | FullProjectSourceFileName ->
         let fi = FileInfo(destitnation)
         let projectPath = fi.Directory.FullName
         let zipFile = Path.Combine(projectPath,sprintf "%s.zip" remoteFile.Commit)
