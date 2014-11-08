@@ -10,12 +10,13 @@ let Add(package, version, force, hard, interactive, installAfter) =
         exisitingDependenciesFile
           .Add(package,version)
 
+    let changed = exisitingDependenciesFile <> dependenciesFile
     let lockFile = 
-        if exisitingDependenciesFile = dependenciesFile then
+        if changed then
+            UpdateProcess.updateWithModifiedDependenciesFile(dependenciesFile,package,force)
+        else
             let lockFileName = DependenciesFile.FindLockfile Settings.DependenciesFile
             LockFile.LoadFrom(lockFileName.FullName)
-        else
-            UpdateProcess.updateWithModifiedDependenciesFile(dependenciesFile,package,force)
     
     if interactive then
         for project in ProjectFile.FindAllProjects(".") do
@@ -41,4 +42,5 @@ let Add(package, version, force, hard, interactive, installAfter) =
 
         InstallProcess.Install(sources, force, hard, lockFile)
 
-    dependenciesFile.Save()
+    if changed then
+        dependenciesFile.Save()

@@ -34,12 +34,13 @@ let Remove(package:string, force, hard, interactive, installAfter) =
         exisitingDependenciesFile
           .Remove(package)
 
+    let changed = exisitingDependenciesFile <> dependenciesFile
     let lockFile = 
-        if exisitingDependenciesFile = dependenciesFile then
+        if changed then
+            UpdateProcess.updateWithModifiedDependenciesFile(dependenciesFile,package,force)
+        else
             let lockFileName = DependenciesFile.FindLockfile Settings.DependenciesFile
             LockFile.LoadFrom(lockFileName.FullName)
-        else
-            UpdateProcess.updateWithModifiedDependenciesFile(dependenciesFile,package,force)
     
     if installAfter then
         let sources =
@@ -49,4 +50,5 @@ let Remove(package:string, force, hard, interactive, installAfter) =
 
         InstallProcess.Install(sources, force, hard, lockFile)
 
-    dependenciesFile.Save()
+    if changed then
+        dependenciesFile.Save()
