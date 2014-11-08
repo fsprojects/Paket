@@ -24,13 +24,9 @@ let FindReferencesForPackage (dependenciesFileName, package:string) =
                 if installedPackages.Contains(package.ToLower()) then
                     yield project.FileName ]
 
-let FindReferencesFor (dependenciesFileName, packages) =
+let ShowReferencesFor (dependenciesFileName, packages : string list) =
     packages
     |> Seq.map (fun package -> package,FindReferencesForPackage(dependenciesFileName,package))
-
-
-let ShowReferencesFor (dependenciesFileName, packages : string list) =
-    FindReferencesFor(dependenciesFileName,packages)
     |> Seq.iter (fun (k, vs) ->
         tracefn "%s" k
         vs |> Seq.iter (tracefn "%s")        
