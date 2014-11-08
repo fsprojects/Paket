@@ -1,23 +1,68 @@
+(**
+# Using Paket from F# Interactive
+
+## Configure which paket.dependencies file to use
+
+This page demonstrates how to use `Paket` from the F# Interactive. First we have to reference Paket.Core.dll, open the Paket namespace and to tell Paket which [`paket.dependencies`](dependencies-file.html) file to use.
+*)
+
+//
 #r @"..\..\bin\Paket.Core.dll"
 
 open Paket
 
 // locate the paket.dependencies file
 Dependencies.Locate(__SOURCE_DIRECTORY__)
-// [fsi:found: D:\code\Paket\docs\content\paket.dependencies]
+// [fsi:found: paket.dependencies]
 
+(**
+## Adding and removing NuGet packages
+
+Paket allows to install and uninstall NuGet packages programmatically.
+*)
+
+// install a package
 Dependencies.Add "FSharp.Data"
-// [fsi:found: Adding FSharp.Data  to D:\code\Paket\docs\content\paket.dependencies]
-// [fsi:found: Resolving packages:]
-// [fsi:found:   - fetching versions for FSharp.Data]
-// [fsi:found:     - exploring FSharp.Data 2.1.0]
-// [fsi:found:   - fetching versions for Zlib.Portable]
-// [fsi:found:     - exploring Zlib.Portable 1.10.0]
-// [fsi:found: Locked version resolutions written to D:\code\Paket\docs\content\paket.lock]
-// [fsi:found: Zlib.Portable 1.10.0 unzipped to D:\code\Paket\docs\content\packages\Zlib.Portable]
-// [fsi:found: FSharp.Data 2.1.0 unzipped to D:\code\Paket\docs\content\packages\FSharp.Data]
-// [fsi:found: Dependencies files saved to D:\code\Paket\docs\content\paket.dependencies]
+// [fsi:Adding FSharp.Data to paket.dependencies]
+// [fsi:Resolving packages:]
+// [fsi:  - fetching versions for FSharp.Data]
+// [fsi:    - exploring FSharp.Data 2.1.0]
+// [fsi:  - fetching versions for Zlib.Portable]
+// [fsi:    - exploring Zlib.Portable 1.10.0]
+// [fsi:Locked version resolutions written to paket.lock]
+// [fsi:Zlib.Portable 1.10.0 unzipped to packages\Zlib.Portable]
+// [fsi:FSharp.Data 2.1.0 unzipped to packages\FSharp.Data]
+// [fsi:Dependencies files saved to paket.dependencies]
 
-Dependencies.GetInstalledVersion "FAKE"
+// check which version is installed
+Dependencies.GetInstalledVersion "FSharp.Data"
+// [fsi:val it : string option = Some "2.1.0"]
 
+// uninstall a package
 Dependencies.Remove "FSharp.Data"
+// [fsi:Removing FSharp.Data from paket.dependencies]
+// [fsi:Resolving packages:]
+// [fsi:Locked version resolutions written to paket.lock]
+// [fsi:Dependencies files saved to paket.dependencies]
+
+// check again which version is installed
+Dependencies.GetInstalledVersion "FSharp.Data"
+// [fsi:val it : string option = None]
+
+(**
+## Query the install model
+
+Paket allows to do queries against the installed NuGet packages.
+*)
+
+// install some packages
+Dependencies.Add "FSharp.Data"
+Dependencies.Add "FSharp.Formatting"
+Dependencies.Add "FsUnit"
+
+Dependencies.GetInstalledPackages()
+// [fsi:val it : (string * string) list =]
+// [fsi:  [("FSharp.Compiler.Service", "0.0.67"); ("FSharp.Data", "2.1.0");]
+// [fsi:   ("FSharp.Formatting", "2.4.36"); ("FsUnit", "1.3.0.1");]
+// [fsi:   ("Microsoft.AspNet.Razor", "2.0.30506.0"); ("NUnit", "2.6.3");]
+// [fsi:   ("RazorEngine", "3.3.0"); ("Zlib.Portable", "1.10.0")]]
