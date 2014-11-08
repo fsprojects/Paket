@@ -274,24 +274,24 @@ type DependenciesFile(fileName,options,packages : PackageRequirement list, remot
 
     member this.Add(packageName,version:string) =
         if this.HasPackage packageName then 
-            traceWarnfn "%s contains package %s already. ==> Ignored" Constants.DependenciesFile packageName
+            traceWarnfn "%s contains package %s already. ==> Ignored" Settings.DependenciesFile packageName
             this
         else
-            tracefn "Adding %s %s to %s" packageName version Constants.DependenciesFile
+            tracefn "Adding %s %s to %s" packageName version Settings.DependenciesFile
             this.AddAdditionionalPackage(packageName,version)
 
     member this.Remove(packageName) =
         if this.HasPackage packageName then         
-            tracefn "Removing %s from %s" packageName Constants.DependenciesFile
+            tracefn "Removing %s from %s" packageName Settings.DependenciesFile
             this.RemovePackage(packageName)
         else
-            traceWarnfn "%s doesn't contain package %s. ==> Ignored" Constants.DependenciesFile packageName
+            traceWarnfn "%s doesn't contain package %s. ==> Ignored" Settings.DependenciesFile packageName
             this
 
     member this.UpdatePackageVersion(packageName, version) =
         if this.HasPackage(packageName) then
             let versionRequirement = DependenciesFileParser.parseVersionRequirement version
-            tracefn "Updating %s version to %s in %s" packageName version Constants.DependenciesFile
+            tracefn "Updating %s version to %s in %s" packageName version Settings.DependenciesFile
             let packages = 
                 this.Packages |> List.map (fun p -> 
                                      if p.Name.ToLower() = packageName.ToLower() then 
@@ -299,7 +299,7 @@ type DependenciesFile(fileName,options,packages : PackageRequirement list, remot
                                      else p)
             DependenciesFile(this.FileName, this.Options, packages, this.RemoteFiles)
         else
-            traceWarnfn "%s doesn't contain package %s. ==> Ignored" Constants.DependenciesFile packageName
+            traceWarnfn "%s doesn't contain package %s. ==> Ignored" Settings.DependenciesFile packageName
             this
 
     override __.ToString() =        

@@ -7,7 +7,7 @@ open System.IO
 let DefaultNugetStream = "https://nuget.org/api/v2"
 
 [<Literal>]
-let DependenciesFile = "paket.dependencies"
+let DependenciesFileName = "paket.dependencies"
 
 [<Literal>]
 let ReferencesFile = "paket.references"

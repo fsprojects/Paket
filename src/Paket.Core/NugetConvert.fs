@@ -103,8 +103,8 @@ let private convertNugetsToDepFile(nugetPackagesConfigs, nugetConfig) =
     let latestVersions = allVersions |> Seq.map (fun (name,versions) -> name, versions |> Seq.max |> string) |> Seq.toList
 
     let existingDepFile = 
-        if File.Exists Constants.DependenciesFile 
-        then Some(DependenciesFile.ReadFromFile(Constants.DependenciesFile)) 
+        if File.Exists Settings.DependenciesFile 
+        then Some(DependenciesFile.ReadFromFile(Settings.DependenciesFile)) 
         else None
 
     let confictingPackages, packagesToAdd = 
@@ -112,19 +112,19 @@ let private convertNugetsToDepFile(nugetPackagesConfigs, nugetConfig) =
         | Some depFile -> latestVersions |> List.partition (fun (name,_) -> depFile.HasPackage name)
         | None -> [], latestVersions
     
-    for (name, _) in confictingPackages do traceWarnfn "Package %s is already defined in %s" name Constants.DependenciesFile
+    for (name, _) in confictingPackages do traceWarnfn "Package %s is already defined in %s" name Settings.DependenciesFile
 
     let nugetPackageRequirement (name: string, v: string, sources : list<PackageSource>) =
         {Requirements.PackageRequirement.Name = name
          Requirements.PackageRequirement.VersionRequirement = VersionRequirement(VersionRange.Specific(SemVer.Parse v), PreReleaseStatus.No)
          Requirements.PackageRequirement.ResolverStrategy = Max
          Requirements.PackageRequirement.Sources = sources
-         Requirements.PackageRequirement.Parent = Requirements.PackageRequirementSource.DependenciesFile(Constants.DependenciesFile)}
+         Requirements.PackageRequirement.Parent = Requirements.PackageRequirementSource.DependenciesFile(Settings.DependenciesFile)}
 
     match existingDepFile with
     | None ->
         let packages = packagesToAdd |> List.map (fun (name,v) -> nugetPackageRequirement(name,v,nugetConfig.PackageSources))
-        DependenciesFile(Constants.DependenciesFile, InstallOptions.Default, packages, []).Save()
+        DependenciesFile(Settings.DependenciesFile, InstallOptions.Default, packages, []).Save()
     | Some depFile ->
         if not (packagesToAdd |> List.isEmpty)
             then (packagesToAdd |> List.fold (fun (d : DependenciesFile) (name,version) -> d.Add(name,version)) depFile).Save()
@@ -153,7 +153,7 @@ let private convertNugetToRefFile(nugetPackagesConfig) =
 
 /// Converts all projects from NuGet to Paket
 let ConvertFromNuget(force, installAfter, initAutoRestore) =
-    if File.Exists Constants.DependenciesFile && not force then failwithf "%s already exists, use --force to overwrite" Constants.DependenciesFile
+    if File.Exists Settings.DependenciesFile && not force then failwithf "%s already exists, use --force to overwrite" Settings.DependenciesFile
 
     let nugetPackagesConfigs = FindAllFiles(".", "packages.config") |> Seq.map Nuget.ReadPackagesConfig
     let nugetConfig = readNugetConfig()
@@ -174,7 +174,7 @@ let ConvertFromNuget(force, installAfter, initAutoRestore) =
         let solution = SolutionFile(slnFile.FullName)
         solution.RemoveNugetEntries()
         let relativePath = createRelativePath solution.FileName Environment.CurrentDirectory 
-        solution.AddPaketFolder(Path.Combine(relativePath, Constants.DependenciesFile), 
+        solution.AddPaketFolder(Path.Combine(relativePath, Settings.DependenciesFile), 
                                 if installAfter then Some(Path.Combine(relativePath, "paket.lock")) else None)
         solution.Save()
 
@@ -196,7 +196,7 @@ let ConvertFromNuget(force, installAfter, initAutoRestore) =
         if File.Exists nugetExe then 
             traceWarnfn "Removing NuGet.exe and adding Nuget.CommandLine as dependency instead. Please check all paths."
             removeFile nugetExe
-            let depFile = DependenciesFile.ReadFromFile(Constants.DependenciesFile)
+            let depFile = DependenciesFile.ReadFromFile(Settings.DependenciesFile)
             if not <| depFile.HasPackage("NuGet.CommandLine") then 
                 depFile.Add("NuGet.CommandLine", "").Save()
             

@@ -39,7 +39,8 @@
     <OutputPath>..\..\bin</OutputPath>
     <DefineConstants>TRACE</DefineConstants>
     <WarningLevel>3</WarningLevel>
-    <DocumentationFile>..\..\bin\Paket.xml</DocumentationFile>
+    <DocumentationFile>
+    </DocumentationFile>
     <StartArguments>update -f</StartArguments>
     <StartWorkingDirectory>D:\code\paketkopie</StartWorkingDirectory>
   </PropertyGroup>

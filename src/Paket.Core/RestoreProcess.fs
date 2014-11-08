@@ -48,14 +48,14 @@ let internal restore(sources, force, lockFile:LockFile, packages:Set<string>) =
     Async.Parallel(sourceFileDownloads,packageDownloads) 
 
 let Restore(force,referencesFileNames) = 
-    let lockFileName = DependenciesFile.FindLockfile Constants.DependenciesFile    
+    let lockFileName = DependenciesFile.FindLockfile Settings.DependenciesFile    
     
     let sources, lockFile = 
         if not lockFileName.Exists then 
             failwithf "paket.lock doesn't exist."
         else 
             let sources = 
-                Constants.DependenciesFile
+                Settings.DependenciesFile
                 |> File.ReadAllLines
                 |> PackageSourceParser.getSources
             sources, LockFile.LoadFrom(lockFileName.FullName)

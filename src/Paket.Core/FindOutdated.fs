@@ -6,7 +6,7 @@ open Paket.Logging
 /// Finds all outdated packages.
 let FindOutdated(strict,includingPrereleases) =     
     //TODO: Anything we need to do for source files here?
-    let loadedFile = DependenciesFile.ReadFromFile Constants.DependenciesFile
+    let loadedFile = DependenciesFile.ReadFromFile Settings.DependenciesFile
     let dependenciesFile =
             let newPackages =
                 loadedFile.Packages

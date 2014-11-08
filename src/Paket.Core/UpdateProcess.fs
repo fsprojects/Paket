@@ -6,11 +6,11 @@ open System.IO
 
 /// Update command
 let Update(forceResolution, force, hard) = 
-    let lockFileName = DependenciesFile.FindLockfile Constants.DependenciesFile
+    let lockFileName = DependenciesFile.FindLockfile Settings.DependenciesFile
     
     let sources, lockFile = 
         if forceResolution || not lockFileName.Exists then 
-            let dependenciesFile = DependenciesFile.ReadFromFile Constants.DependenciesFile
+            let dependenciesFile = DependenciesFile.ReadFromFile Settings.DependenciesFile
             let resolution = dependenciesFile.Resolve(force)
             let lockFile = 
                 LockFile
@@ -20,7 +20,7 @@ let Update(forceResolution, force, hard) =
             dependenciesFile.Sources, lockFile
         else 
             let sources = 
-                Constants.DependenciesFile
+                Settings.DependenciesFile
                 |> File.ReadAllLines
                 |> PackageSourceParser.getSources
             sources, LockFile.LoadFrom(lockFileName.FullName)
@@ -39,7 +39,7 @@ let private fixOldDependencies (oldLockFile:LockFile) (dependenciesFile:Dependen
             dependenciesFile
 
 let updateWithModifiedDependenciesFile(dependenciesFile:DependenciesFile,packageName:string, force) =
-    let lockFileName = DependenciesFile.FindLockfile Constants.DependenciesFile
+    let lockFileName = DependenciesFile.FindLockfile Settings.DependenciesFile
 
     if not lockFileName.Exists then 
         let resolution = dependenciesFile.Resolve(force)
@@ -62,12 +62,12 @@ let updateWithModifiedDependenciesFile(dependenciesFile:DependenciesFile,package
 
 /// Update a single package command
 let UpdatePackage(packageName : string, newVersion, force, hard) = 
-    let lockFileName = DependenciesFile.FindLockfile Constants.DependenciesFile
+    let lockFileName = DependenciesFile.FindLockfile Settings.DependenciesFile
     if not lockFileName.Exists then Update(true, force, hard) else
     
     let sources, lockFile = 
         let dependenciesFile = 
-            let depFile = DependenciesFile.ReadFromFile Constants.DependenciesFile
+            let depFile = DependenciesFile.ReadFromFile Settings.DependenciesFile
             match newVersion with
             | Some newVersion -> 
                 let depFile = depFile.UpdatePackageVersion(packageName, newVersion)

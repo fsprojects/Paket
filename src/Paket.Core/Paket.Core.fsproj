@@ -72,6 +72,7 @@
     <Compile Include="VersionRange.fs" />
     <Compile Include="Constants.fs" />
     <Compile Include="Logging.fs" />
+    <Compile Include="Settings.fs" />
     <Compile Include="Xml.fs" />
     <Compile Include="Utils.fs" />
     <Compile Include="PackageSources.fs" />
@@ -101,6 +102,7 @@
     <Compile Include="NugetConvert.fs" />
     <Compile Include="FindOutdated.fs" />
     <Compile Include="BindingRedirects.fs" />
+    <Compile Include="Interactive.fs" />
     <None Include="paket.references" />
   </ItemGroup>
   <ItemGroup>
