@@ -277,7 +277,10 @@ type DependenciesFile(fileName,options,packages : PackageRequirement list, remot
             traceWarnfn "%s contains package %s already. ==> Ignored" Settings.DependenciesFile packageName
             this
         else
-            tracefn "Adding %s %s to %s" packageName version Settings.DependenciesFile
+            if version = "" then
+                tracefn "Adding %s to %s" packageName Settings.DependenciesFile
+            else
+                tracefn "Adding %s %s to %s" packageName version Settings.DependenciesFile
             this.AddAdditionionalPackage(packageName,version)
 
     member this.Remove(packageName) =

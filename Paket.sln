@@ -42,6 +42,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "content", "content", "{8E6D
 		docs\content\paket-restore.md = docs\content\paket-restore.md
 		docs\content\paket-simplify.md = docs\content\paket-simplify.md
 		docs\content\paket-update.md = docs\content\paket-update.md
+		docs\content\paket.dependencies = docs\content\paket.dependencies
 		docs\content\reference-from-repl.fsx = docs\content\reference-from-repl.fsx
 		docs\content\references-files.md = docs\content\references-files.md
 	EndProjectSection
