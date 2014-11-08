@@ -16,6 +16,11 @@ type PackageSource =
         | Nuget source -> source.Url
         | LocalNuget path -> path
 
+    static member Parse(line : string) =
+        let parts = line.Split ' '
+        let source = parts.[1].Replace("\"","").TrimEnd([| '/' |])
+        PackageSource.Parse(source, PackageSource.ParseAuth(line, source))
+
     static member Parse(source,auth) = 
         match System.Uri.TryCreate(source, System.UriKind.Absolute) with
         | true, uri -> if uri.Scheme = System.Uri.UriSchemeFile then LocalNuget(source) else Nuget({ Url = source; Auth = auth })

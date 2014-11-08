@@ -92,10 +92,7 @@ module DependenciesFileParser =
     let private (|Remote|Package|Blank|ReferencesMode|OmitContent|SourceFile|) (line:string) =
         match line.Trim() with
         | _ when String.IsNullOrWhiteSpace line -> Blank
-        | trimmed when trimmed.StartsWith "source" ->
-            let parts = trimmed.Split ' '
-            let source = parts.[1].Replace("\"","").TrimEnd([| '/' |])
-            Remote (source,PackageSource.ParseAuth(trimmed, source))
+        | trimmed when trimmed.StartsWith "source" -> Remote(PackageSource.Parse(trimmed))
         | trimmed when trimmed.StartsWith "nuget" -> 
             let parts = trimmed.Replace("nuget","").Trim().Replace("\"", "").Split([|' '|],StringSplitOptions.RemoveEmptyEntries) |> Seq.toList
 
@@ -135,7 +132,7 @@ module DependenciesFileParser =
             let lineNo = lineNo + 1
             try
                 match line with
-                | Remote(newSource,auth) -> lineNo, options, sources @ [PackageSource.Parse(newSource.TrimEnd([|'/'|]),auth)], packages, sourceFiles
+                | Remote(newSource) -> lineNo, options, sources @ [newSource], packages, sourceFiles
                 | Blank -> lineNo, options, sources, packages, sourceFiles
                 | ReferencesMode mode -> lineNo, { options with Strict = mode }, sources, packages, sourceFiles
                 | OmitContent omit -> lineNo, { options with OmitContent = omit }, sources, packages, sourceFiles
