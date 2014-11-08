@@ -13,6 +13,9 @@ let DependenciesFileName = "paket.dependencies"
 let ReferencesFile = "paket.references"
 
 [<Literal>]
+let PaketFilesFolderName = "paket-files"
+
+[<Literal>]
 let ProjectDefaultNameSpace = "http://schemas.microsoft.com/developer/msbuild/2003"
 
 let AppDataFolder = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData)

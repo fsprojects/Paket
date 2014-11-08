@@ -17,7 +17,7 @@ type UnresolvedSourceFile =
                     .Replace("/", Path.DirectorySeparatorChar.ToString())
                     .Replace("\\", Path.DirectorySeparatorChar.ToString())
 
-        let di = DirectoryInfo(Path.Combine("paket-files", this.Owner, this.Project, path))
+        let di = DirectoryInfo(Path.Combine(Constants.PaketFilesFolderName, this.Owner, this.Project, path))
         di.FullName
 
     override this.ToString() = 
@@ -39,7 +39,7 @@ type ResolvedSourceFile =
                     .Replace("/", Path.DirectorySeparatorChar.ToString())
                     .Replace("\\", Path.DirectorySeparatorChar.ToString())
 
-        let di = DirectoryInfo(Path.Combine("paket-files", this.Owner, this.Project, path))
+        let di = DirectoryInfo(Path.Combine(Constants.PaketFilesFolderName, this.Owner, this.Project, path))
         di.FullName
 
     override this.ToString() =  sprintf "%s/%s:%s %s" this.Owner this.Project this.Commit this.Name
