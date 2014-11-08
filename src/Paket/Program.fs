@@ -51,6 +51,7 @@ type CLIArguments =
     | Ignore_Constraints
     | [<AltCommandLine("--pre")>] Include_Prereleases
     | No_Auto_Restore
+    | Creds_Migration of string
 with
     interface IArgParserTemplate with
         member s.Usage =
@@ -76,6 +77,7 @@ with
             | No_Auto_Restore -> "omits init-auto-restore after convert-from-nuget."
             | Nuget _ -> "allows to specify a nuget package."
             | Version _ -> "allows to specify a package version."
+            | Creds_Migration _ -> "allows to specify credentials migration mode for convert-from-nuget."
             | FindRefs _ -> "finds all references to the given packages."
 
 let parser = UnionArgParser.Create<CLIArguments>("USAGE: paket [add|remove|install|update|outdated|convert-from-nuget|init-auto-restore|simplify|find-refs] ... options")
@@ -143,7 +145,11 @@ try
             let strict = results.Contains <@ CLIArguments.Ignore_Constraints @> |> not
             FindOutdated.ListOutdated(getDependenciesFile(),strict,includePrereleases)
         | Command.InitAutoRestore -> VSIntegration.InitAutoRestore(getDependenciesFile())
-        | Command.ConvertFromNuget -> NuGetConvert.ConvertFromNuget(getDependenciesFile(),force,noInstall |> not,noAutoRestore |> not)
+        | Command.ConvertFromNuget -> 
+            let credsMigrationMode = 
+                results.TryGetResult <@ CLIArguments.Creds_Migration @>
+                |> Option.map NuGetConvert.CredsMigrationMode.Parse
+            NuGetConvert.ConvertFromNuget(getDependenciesFile(),force,noInstall |> not,noAutoRestore |> not, credsMigrationMode)
         | Command.Simplify -> Simplifier.Simplify(getDependenciesFile(),interactive)
         | Command.FindRefs ->
             let packages = results.GetResults <@ CLIArguments.Packages @>

@@ -54,6 +54,10 @@ let Decrypt (salt : string) (encrypted : string) =
     ProtectedData.Unprotect(Convert.FromBase64String encrypted, Convert.FromBase64String salt, DataProtectionScope.CurrentUser)
     |> Encoding.UTF8.GetString
 
+let DecryptNuget (encrypted : string) = 
+    ProtectedData.Unprotect(Convert.FromBase64String encrypted, Encoding.UTF8.GetBytes "NuGet", DataProtectionScope.CurrentUser)
+    |> Encoding.UTF8.GetString
+
 let private readPassword (message : string) : string = 
     Console.Write(message)
     let mutable continueLooping = true
@@ -130,3 +134,7 @@ let GetCredentials (source : string) =
         else 
             credentialsNode.RemoveChild sourceNodes.Head |> ignore
             askAndAddAuth source credentialsNode
+
+let AddCredentials (source, username, password) =
+    let credentialsNode = getConfigNode "credentials"
+    saveCredentials source username password credentialsNode

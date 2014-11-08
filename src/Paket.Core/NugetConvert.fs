@@ -10,6 +10,18 @@ open Paket.Xml
 open Paket.Nuget
 open Paket.PackageSources
 
+type CredsMigrationMode =
+    | EncryptGlobal
+    | PlaintextLocal
+    | Selective
+
+    static member Parse(s : string) = 
+        match s with 
+        | "encrypt-global" -> EncryptGlobal
+        | "plaintext-local" -> PlaintextLocal
+        | "selective" -> Selective
+        | _ -> failwithf "unknown credentials migration mode: %s" s
+
 let private tryGetValue key (node : XmlNode option) =
     node 
     |> Option.bind (getNode (sprintf "//add[@key='%s']" key)) 
@@ -45,7 +57,7 @@ type NugetConfig =
 
                     let auth = userName |> Option.bind (fun userName ->
                             match encryptedPass with
-                            | Some encryptedPass -> Some(userName, CredentialStore.decryptNugetPass encryptedPass)
+                            | Some encryptedPass -> Some(userName, ConfigFile.DecryptNuget encryptedPass)
                             | None -> clearTextPass |> Option.map (fun clearTextPass -> userName, clearTextPass))
                                 |> Option.map (fun (userName,password) -> 
                                     { Username = AuthEntry.Create userName; Password = AuthEntry.Create password })
@@ -147,7 +159,7 @@ let private convertNugetToRefFile(nugetPackagesConfig) =
         else tracefn "%s is up to date" refFilePath
 
 /// Converts all projects from NuGet to Paket
-let ConvertFromNuget(dependenciesFileName, force, installAfter, initAutoRestore) =
+let ConvertFromNuget(dependenciesFileName, force, installAfter, initAutoRestore, credsMigrationMode) =
     if File.Exists dependenciesFileName && not force then failwithf "%s already exists, use --force to overwrite" dependenciesFileName
     let root =
         if dependenciesFileName = Constants.DependenciesFileName then
@@ -159,6 +171,7 @@ let ConvertFromNuget(dependenciesFileName, force, installAfter, initAutoRestore)
     let nugetConfig = readNugetConfig()
     FindAllFiles(root, "nuget.config") |> Seq.iter (fun f -> removeFile f.FullName)
     
+    let credsMigrationMode = defaultArg credsMigrationMode EncryptGlobal
     convertNugetsToDepFile(dependenciesFileName, nugetPackagesConfigs, nugetConfig)
         
     for nugetPackagesConfig in nugetPackagesConfigs do
