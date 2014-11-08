@@ -76,6 +76,7 @@
     <Compile Include="Settings.fs" />
     <Compile Include="Xml.fs" />
     <Compile Include="Utils.fs" />
+    <Compile Include="ConfigFile.fs" />
     <Compile Include="PackageSources.fs" />
     <Compile Include="Requirements.fs" />
     <Compile Include="ModuleResolver.fs" />
@@ -87,8 +88,6 @@
     <Compile Include="ProjectFile.fs" />
     <Compile Include="SolutionFile.fs" />
     <Compile Include="Nuget.fs" />
-    <Compile Include="ConfigFile.fs" />
-    <Compile Include="PackageSourceParser.fs" />
     <Compile Include="DependenciesFile.fs" />
     <Compile Include="ReferencesFile.fs" />
     <Compile Include="DependencyModel.fs" />
