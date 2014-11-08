@@ -8,3 +8,5 @@ Dependencies.Add "FAKE"
 Dependencies.Add "FSharp.Data"
 
 Dependencies.GetInstalledVersion "FAKE"
+
+Dependencies.Remove "FSharp.Data"

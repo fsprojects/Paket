@@ -23,4 +23,6 @@ type Dependencies private () =
         let lockFile = LockFile.LoadFrom(lockFileName.FullName)
         lockFile.ResolvedPackages.[package].Version.ToString()
 
+    /// Removes the given package from dependencies file.
+    static member Remove(package) = RemoveProcess.Remove(package, false, false, false, true)
     
