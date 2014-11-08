@@ -34,15 +34,19 @@ let Remove(package:string, force, hard, interactive, installAfter) =
         exisitingDependenciesFile
           .Remove(package)
 
-    if exisitingDependenciesFile <> dependenciesFile then
-        let lockFile = UpdateProcess.updateWithModifiedDependenciesFile(dependenciesFile,package,force)
+    let lockFile = 
+        if exisitingDependenciesFile = dependenciesFile then
+            let lockFileName = DependenciesFile.FindLockfile Settings.DependenciesFile
+            LockFile.LoadFrom(lockFileName.FullName)
+        else
+            UpdateProcess.updateWithModifiedDependenciesFile(dependenciesFile,package,force)
+    
+    if installAfter then
+        let sources =
+            Settings.DependenciesFile
+            |> File.ReadAllLines
+            |> PackageSourceParser.getSources 
 
-        if installAfter then
-            let sources =
-                Settings.DependenciesFile
-                |> File.ReadAllLines
-                |> PackageSourceParser.getSources 
+        InstallProcess.Install(sources, force, hard, lockFile)
 
-            InstallProcess.Install(sources, force, hard, lockFile)
-
-        dependenciesFile.Save()
+    dependenciesFile.Save()

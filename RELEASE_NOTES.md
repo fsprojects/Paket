@@ -1,3 +1,6 @@
+#### 0.12.3 - 08.11.2014
+* If `paket add` doesn't change the dependencies file then the resolver will be skipped
+
 #### 0.12.2 - 07.11.2014
 * Adding --ignore-constraints to `paket outdated` - https://github.com/fsprojects/Paket/issues/308 
 
