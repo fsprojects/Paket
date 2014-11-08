@@ -6,7 +6,6 @@
 This page demonstrates how to use `Paket` from the F# Interactive. First we have to reference Paket.Core.dll, open the Paket namespace and to tell Paket which [`paket.dependencies`](dependencies-file.html) file to use.
 *)
 
-//
 #r @"..\..\bin\Paket.Core.dll"
 
 open Paket
@@ -78,4 +77,4 @@ dependencies.GetDirectDependencies()
 let paketDependencies = Dependencies.Locate(System.IO.Path.Combine(__SOURCE_DIRECTORY__,".."))
 // [fsi:found: D:\code\Paket\paket.dependencies]
 paketDependencies.FindReferencesFor "UnionArgParser"
-// [fsi:val it : string list = ["D:\code\Paket\src\Paket\paket.references"]]
+// [fsi:val it : string list = ["D:\code\Paket\src\Paket\Paket.fsproj"]]

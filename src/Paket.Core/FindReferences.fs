@@ -6,39 +6,32 @@ open Logging
 
 let FindReferencesForPackage (dependenciesFileName, package:string) =
     let root = Path.GetDirectoryName dependenciesFileName
-    let refFiles =
-        Directory.GetFiles(root, "paket.references", SearchOption.AllDirectories)
-        |> Seq.map ReferencesFile.FromFile
-            
-    refFiles
-    |> Seq.filter (fun r ->
-        r.NugetPackages
-        |> Seq.exists (fun np -> np.ToLower() = package.ToLower()))
-    |> Seq.map (fun r -> r.FileName)
-    |> Seq.toList
+    let projectFiles = ProjectFile.FindAllProjects root
+    let lockFile = LockFile.LoadFrom((DependenciesFile.FindLockfile dependenciesFileName).FullName)
 
-let FindReferencesFor (dependenciesFileName, packages : string list) =
-    let root = Path.GetDirectoryName dependenciesFileName
-    let refFiles =
-        Directory.GetFiles(root, "paket.references", SearchOption.AllDirectories)
-        |> Seq.map ReferencesFile.FromFile
-    
+    [for project in ProjectFile.FindAllProjects root do
+        match ProjectFile.FindReferencesFile(FileInfo(project.FileName)) with
+        | None -> ()
+        | Some referencesFile ->
+                let installedPackages = 
+                    referencesFile
+                    |> ReferencesFile.FromFile
+                    |> lockFile.GetPackageHull
+                    |> fun x -> x.Keys
+                    |> Seq.map (fun x -> x.ToLower())
+                    |> Set.ofSeq
+
+                if installedPackages.Contains(package.ToLower()) then
+                    yield project.FileName ]
+
+let FindReferencesFor (dependenciesFileName, packages) =
     packages
-    |> Seq.collect (fun p ->            
-            refFiles
-            |> Seq.filter (fun r ->
-                r.NugetPackages
-                |> Seq.exists (fun np -> np.ToLower() = p.ToLower()))
-            |> Seq.map (fun r -> (p, r.FileName)))            
-    |> Seq.groupBy fst
-    |> Seq.toList
-    |> List.map (fun (g,values) -> g, Seq.toList values)
+    |> Seq.map (fun package -> package,FindReferencesForPackage(dependenciesFileName,package))
 
 
 let ShowReferencesFor (dependenciesFileName, packages : string list) =
     FindReferencesFor(dependenciesFileName,packages)
     |> Seq.iter (fun (k, vs) ->
         tracefn "%s" k
-        vs |> Seq.map snd |> Seq.iter (tracefn "%s")
-        
+        vs |> Seq.iter (tracefn "%s")        
         tracefn "")
