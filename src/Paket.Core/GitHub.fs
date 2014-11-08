@@ -19,7 +19,7 @@ let getSHA1OfBranch owner project branch =
 let downloadDependenciesFile(rootPath,remoteFile:ModuleResolver.ResolvedSourceFile) = async {
     let fi = FileInfo(remoteFile.Name)
 
-    let dependenciesFileName = remoteFile.Name.Replace(fi.Name,"paket.dependencies")
+    let dependenciesFileName = remoteFile.Name.Replace(fi.Name,Constants.DependenciesFileName)
 
     let url = sprintf "https://github.com/%s/%s/raw/%s/%s" remoteFile.Owner remoteFile.Project remoteFile.Commit dependenciesFileName
     let! result = safeGetFromUrl(None,url)
