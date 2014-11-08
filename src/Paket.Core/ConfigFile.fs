@@ -6,6 +6,7 @@ open System.Security.Cryptography
 open System.Text
 open System.IO
 open Xml
+open Logging
 
 let private rootElement = "configuration"
 
@@ -122,19 +123,19 @@ let getSourceNodes (credentialsNode : XmlNode) (source) =
     |> Seq.toList
 
 
-/// Get the credential from the credential store for a specific sourcee
+/// Get the credential from the credential store for a specific source
 let GetCredentials (source : string) =
     let credentialsNode = getConfigNode "credentials"
     
-    let sourceNodes = getSourceNodes credentialsNode source
-    if sourceNodes.IsEmpty then 
-        askAndAddAuth source credentialsNode
-    else 
-        let creds = getAuthFromNode sourceNodes.Head
-        if checkCredentials source creds then creds
-        else 
-            credentialsNode.RemoveChild sourceNodes.Head |> ignore
-            askAndAddAuth source credentialsNode
+    match getSourceNodes credentialsNode source with
+    | sourceNode::_ ->
+        let creds = getAuthFromNode sourceNode
+        if checkCredentials source creds then
+            creds 
+        else
+            traceWarnfn "credentials for %s source are invalid" source  
+            None
+    | [] -> None
 
 let AddCredentials (source, username, password) =
     let credentialsNode = getConfigNode "credentials"
