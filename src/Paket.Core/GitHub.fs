@@ -57,9 +57,9 @@ let rec DirectoryCopy(sourceDirName, destDirName, copySubDirs) =
             DirectoryCopy(subdir.FullName, Path.Combine(destDirName, subdir.Name), copySubDirs)
 
 /// Gets a single file from github.
-let downloadGithubFiles(remoteFile:ModuleResolver.ResolvedSourceFile,destitnation) = async {
-    match remoteFile.Name with
-    | "FULLPROJECT" -> 
+let downloadRemoteFiles(remoteFile:ModuleResolver.ResolvedSourceFile,destitnation) = async {
+    match remoteFile.Origin, remoteFile.Name with
+    | ModuleResolver.SourceFileOrigin.GitHubLink, "FULLPROJECT" -> 
         let fi = FileInfo(destitnation)
         let projectPath = fi.Directory.FullName
         let zipFile = Path.Combine(projectPath,sprintf "%s.zip" remoteFile.Commit)
@@ -72,7 +72,9 @@ let downloadGithubFiles(remoteFile:ModuleResolver.ResolvedSourceFile,destitnatio
 
         Directory.Delete(source,true)
 
-    | _ ->  return! downloadFromUrl(None,sprintf "https://github.com/%s/%s/raw/%s/%s" remoteFile.Owner remoteFile.Project remoteFile.Commit remoteFile.Name) destitnation
+    | ModuleResolver.SourceFileOrigin.GitHubLink, _ ->  return! downloadFromUrl(None,sprintf "https://github.com/%s/%s/raw/%s/%s" remoteFile.Owner remoteFile.Project remoteFile.Commit remoteFile.Name) destitnation
+    | ModuleResolver.SourceFileOrigin.HttpLink, _ ->  return! downloadFromUrl(None,sprintf "%s" remoteFile.Name) destitnation
+    | ModuleResolver.SourceFileOrigin.NuGetPackage, _ -> failwith("Downloading single file from NuGet is not supported.")
 }
 
 let DownloadSourceFile(rootPath, source:ModuleResolver.ResolvedSourceFile) = 
@@ -91,6 +93,6 @@ let DownloadSourceFile(rootPath, source:ModuleResolver.ResolvedSourceFile) =
             tracefn "Downloading %s to %s" (source.ToString()) destination
             
             Directory.CreateDirectory(destination |> Path.GetDirectoryName) |> ignore
-            do! downloadGithubFiles(source,destination)
+            do! downloadRemoteFiles(source,destination)
             File.WriteAllText(versionFile.FullName, source.Commit)
     }

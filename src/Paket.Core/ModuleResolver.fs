@@ -25,12 +25,16 @@ type UnresolvedSourceFile =
         | Some commit -> sprintf "%s/%s:%s %s" this.Owner this.Project commit this.Name
         | None -> sprintf "%s/%s %s" this.Owner this.Project this.Name
 
+type SourceFileOrigin = NuGetPackage | GitHubLink | HttpLink
+
 type ResolvedSourceFile =
     { Owner : string
       Project : string
       Name : string      
       Commit : string
-      Dependencies : Set<string*VersionRequirement> }
+      Dependencies : Set<string*VersionRequirement>
+      Origin : SourceFileOrigin
+      }
     member this.FilePath = this.ComputeFilePath(this.Name)
 
     member this.ComputeFilePath(name:string) =
@@ -54,6 +58,7 @@ let Resolve(getPackages, getSha1, remoteFiles : UnresolvedSourceFile list) : Res
                        let naked =
                            { Commit = sha
                              Owner = file.Owner
+                             Origin = GitHubLink
                              Project = file.Project
                              Dependencies = Set.empty
                              Name = file.Name }

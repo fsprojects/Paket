@@ -127,6 +127,23 @@ module DependenciesFileParser =
             | [| _; projectSpec; fileSpec |] -> SourceFile(getParts projectSpec, fileSpec)
             | [| _; projectSpec;  |] -> SourceFile(getParts projectSpec, "FULLPROJECT")
             | _ -> failwithf "invalid github specification:%s     %s" Environment.NewLine trimmed
+        | trimmed when trimmed.StartsWith "http" ->
+            let parts = parseDependencyLine trimmed
+            let getParts (projectSpec:string) =
+                let ``project spec`` = 
+                    match projectSpec.EndsWith("/") with
+                    | false -> projectSpec
+                    | true ->  projectSpec.Substring(0, projectSpec.Length-1)
+                let splitted = ``project spec``.Split [|':'; '/'|]
+                match splitted |> Seq.truncate 6 |> Seq.toArray with
+                //SourceFile((owner,project, commit), path)
+                | [| protocol; x; y; domain |] -> SourceFile((domain, domain, None), ``project spec``)
+                | [| protocol; x; y; domain; project |] -> SourceFile((domain,project, None), ``project spec``)
+                | [| protocol; x; y; owner; project; details |] -> SourceFile((owner+"/"+project,project+"/"+details, None), ``project spec``)
+                | _ -> failwithf "invalid http-reference specification:%s     %s" Environment.NewLine trimmed
+            match parts with
+            | [| _; projectSpec;  |] -> getParts projectSpec
+            | _ -> failwithf "invalid http-reference specification:%s     %s" Environment.NewLine trimmed
         | _ -> Blank
     
     let parseDependenciesFile fileName (lines:string seq) = 

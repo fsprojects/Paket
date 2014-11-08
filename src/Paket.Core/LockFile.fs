@@ -45,22 +45,35 @@ module LockFileSerializer =
     let serializeSourceFiles (files:ResolvedSourceFile list) =    
         let all =
             let hasReported = ref false
-            [ for (owner,project), files in files |> Seq.groupBy(fun f -> f.Owner, f.Project) do
-                if not !hasReported then
-                    yield "GITHUB"
-                    hasReported := true
+            [ for (owner,project,origin), files in files |> Seq.groupBy(fun f -> f.Owner, f.Project, f.Origin) do
+                match origin with
+                | GitHubLink -> 
+                    if not !hasReported then
+                        yield "GITHUB"
+                        hasReported := true
+                    yield sprintf "  remote: %s/%s" owner project
+                    yield "  specs:"
+                | HttpLink ->
+                    if not !hasReported then
+                        yield "HTTP"
+                        hasReported := true
+                    yield sprintf "  remote: LINK"
+                    yield "  specs:"
+                | NuGetPackage -> failwith("Referencing sigle file from NuGet is not supported.") 
 
-                yield sprintf "  remote: %s/%s" owner project
-                yield "  specs:"
                 for file in files |> Seq.sortBy (fun f -> f.Owner.ToLower(),f.Project.ToLower(),f.Name.ToLower())  do
+                    
                     let path = file.Name.TrimStart '/'
-                    yield sprintf "    %s (%s)" path file.Commit 
+                    match String.IsNullOrEmpty(file.Commit) with
+                    | false -> yield sprintf "    %s (%s)" path file.Commit 
+                    | true -> yield sprintf "    %s" path 
                     for (name,v) in file.Dependencies do
                         yield sprintf "      %s (%s)" name (v.ToString())]
 
         String.Join(Environment.NewLine, all)
 
 module LockFileParser =
+
     type ParseState =
         { RepositoryType : string option
           RemoteUrl :string option
@@ -73,6 +86,7 @@ module LockFileParser =
 
     let private (|Remote|NugetPackage|NugetDependency|SourceFile|RepositoryType|Blank|InstallOption|) (state, line:string) =
         match (state.RepositoryType, line.Trim()) with
+        | _, "HTTP" -> RepositoryType "HTTP"
         | _, "NUGET" -> RepositoryType "NUGET"
         | _, "GITHUB" -> RepositoryType "GITHUB"
         | _, _ when String.IsNullOrWhiteSpace line -> Blank
@@ -84,7 +98,8 @@ module LockFileParser =
             let parts = trimmed.Split '(' 
             NugetDependency (parts.[0].Trim(),parts.[1].Replace("(", "").Replace(")", "").Trim())
         | Some "NUGET", trimmed -> NugetPackage trimmed
-        | Some "GITHUB", trimmed -> SourceFile trimmed
+        | Some "HTTP", trimmed  -> SourceFile(HttpLink, trimmed)
+        | Some "GITHUB", trimmed -> SourceFile(GitHubLink, trimmed)
         | Some _, _ -> failwith "unknown Repository Type."
         | _ -> failwith "unknown lock file format."
 
@@ -130,16 +145,17 @@ module LockFileParser =
                                                 Dependencies = Set.add (name, VersionRequirement.AllReleases) currentFile.Dependencies
                                             } :: rest }                    
                     | [] -> failwith "cannot set a dependency - no remote file has been specified."
-            | SourceFile details ->
+            | SourceFile(origin, details) ->
                 match state.RemoteUrl |> Option.map(fun s -> s.Split '/') with
                 | Some [| owner; project |] ->
                     let path, commit = match details.Split ' ' with
                                         | [| filePath; commit |] -> filePath, commit |> removeBrackets                                       
                                         | _ -> failwith "invalid file source details."
                     { state with  
-                        LastWasPackage = false                      
+                        LastWasPackage = false
                         SourceFiles = { Commit = commit
                                         Owner = owner
+                                        Origin = origin
                                         Project = project
                                         Dependencies = Set.empty
                                         Name = path } :: state.SourceFiles }

@@ -69,6 +69,7 @@ github "owner:project2:commit2" "folder/file.fs" """
         match f.Commit with
         | Some commit ->  { Commit = commit
                             Owner = f.Owner
+                            Origin = Paket.ModuleResolver.SourceFileOrigin.GitHubLink
                             Project = f.Project
                             Dependencies = Set.empty
                             Name = f.Name } : ModuleResolver.ResolvedSourceFile
@@ -128,3 +129,26 @@ let ``should generate other version ranges for packages``() =
     cfg.Resolve(noSha1,VersionsFromGraph graph3, PackageDetailsFromGraph graph3).ResolvedPackages.GetModelOrFail()
     |> LockFileSerializer.serializePackages cfg.Options
     |> shouldEqual (normalizeLineEndings expected3)
+
+let expectedWithHttp = """HTTP
+  remote: LINK
+  specs:
+    http://www.fssnip.net/raw/1M"""
+    
+[<Test>]
+let ``should generate lock file for http source files``() = 
+    let config = """http "http://www.fssnip.net/raw/1M" """ 
+
+    let cfg = DependenciesFile.FromCode(config)
+    
+    cfg.RemoteFiles
+    |> List.map (fun f -> 
+          { Commit = ""
+            Owner = f.Owner
+            Origin = Paket.ModuleResolver.SourceFileOrigin.HttpLink
+            Project = f.Project
+            Dependencies = Set.empty
+            Name = f.Name } : ModuleResolver.ResolvedSourceFile)
+    |> LockFileSerializer.serializeSourceFiles
+    |> shouldEqual (normalizeLineEndings expectedWithHttp)
+

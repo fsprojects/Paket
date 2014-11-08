@@ -218,6 +218,61 @@ let ``should read github source files withou sha1``() =
             Name = "src/app/FAKE/FileWithCommit.fs"
             Commit = Some "bla123zxc" } ]
 
+[<Test>]
+let ``should read http source file from config without quotes, simple real-life``() =
+    let config = """http http://www.fssnip.net/raw/1M
+                    http http://www.fssnip.net/raw/1M/1
+                    http https://gist.githubusercontent.com/Thorium/1972308/raw/629ed3119e18ec0629142fb30351e50ac688e7fd/gistfile1.fs """
+    let dependencies = DependenciesFile.FromCode(config)
+    dependencies.RemoteFiles
+    |> shouldEqual
+        [ { Owner = "www.fssnip.net/raw"
+            Project = "raw/1M"
+            Name = "http://www.fssnip.net/raw/1M"
+            Commit = None }
+          { Owner = "www.fssnip.net/raw"
+            Project = "raw/1M"
+            Name = "http://www.fssnip.net/raw/1M/1"
+            Commit = None }
+          { Owner = "gist.githubusercontent.com/Thorium"
+            Project = "Thorium/1972308"
+            Name = "https://gist.githubusercontent.com/Thorium/1972308/raw/629ed3119e18ec0629142fb30351e50ac688e7fd/gistfile1.fs"
+            Commit = None } ]
+
+[<Test>]
+let ``should read http source file from config without quotes, parsing rules``() =
+    // The empty "/" should be ommited. After that, parsing amount of "/"-marks:
+    let config = """
+        http http://example/
+        http http://example/item
+        http http://example/item/
+        http http://example/item/3
+        http http://example/item/3/1"""
+    let dependencies = DependenciesFile.FromCode(config)
+    dependencies.RemoteFiles
+    |> shouldEqual
+        [ { Owner = "example"
+            Project = "example"
+            Name = "http://example"
+            Commit = None }
+          { Owner = "example"
+            Project = "item"
+            Name = "http://example/item"
+            Commit = None }
+          { Owner = "example"
+            Project = "item"
+            Name = "http://example/item"
+            Commit = None }
+          { Owner = "example/item"
+            Project = "item/3"
+            Name = "http://example/item/3"
+            Commit = None }
+          { Owner = "example/item"
+            Project = "item/3"
+            Name = "http://example/item/3/1"
+            Commit = None } ]
+
+
 let configWithoutVersions = """
 source "http://nuget.org/api/v2"
 
