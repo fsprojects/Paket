@@ -269,9 +269,9 @@ let ExtractPackage(fileName:string, targetFolder, name, version) =
     }
 
 /// Extracts the given package to the ./packages folder
-let CopyFromCache(cacheFileName, name, version, force) = 
+let CopyFromCache(root, cacheFileName, name, version, force) = 
     async { 
-        let targetFolder = DirectoryInfo(Path.Combine("packages", name)).FullName
+        let targetFolder = DirectoryInfo(Path.Combine(root, "packages", name)).FullName
         let fi = FileInfo(cacheFileName)
         let targetFile = FileInfo(Path.Combine(targetFolder, fi.Name))
         if not force && targetFile.Exists then           
@@ -290,7 +290,7 @@ let CopyFromCache(cacheFileName, name, version, force) =
     }
 
 /// Downloads the given package to the NuGet Cache folder
-let DownloadPackage(auth, url, name, version, force) = 
+let DownloadPackage(root, auth, url, name, version, force) = 
     async { 
         let targetFileName = Path.Combine(CacheFolder, name + "." + version + ".nupkg")
         let targetFile = FileInfo targetFileName
@@ -336,7 +336,7 @@ let DownloadPackage(auth, url, name, version, force) =
 
             with
             | exn -> failwithf "Could not download %s %s.%s    %s" name version Environment.NewLine exn.Message
-        return! CopyFromCache(targetFile.FullName, name, version, force)
+        return! CopyFromCache(root, targetFile.FullName, name, version, force)
     }
 
 /// Finds all libraries in a nuget package.

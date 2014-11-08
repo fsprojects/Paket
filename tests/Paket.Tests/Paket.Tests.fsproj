@@ -198,7 +198,7 @@
         <When Condition="$(TargetFrameworkVersion) == 'v1.0'">
           <ItemGroup>
             <Reference Include="nunit.framework">
-              <HintPath>C:\Users\Steffen\AppData\Local\Temp\packages\NUnit\lib\nunit.framework.dll</HintPath>
+              <HintPath>..\..\packages\NUnit\lib\nunit.framework.dll</HintPath>
               <Private>True</Private>
               <Paket>True</Paket>
             </Reference>
@@ -207,7 +207,7 @@
         <When Condition="$(TargetFrameworkVersion) == 'v1.1'">
           <ItemGroup>
             <Reference Include="nunit.framework">
-              <HintPath>C:\Users\Steffen\AppData\Local\Temp\packages\NUnit\lib\nunit.framework.dll</HintPath>
+              <HintPath>..\..\packages\NUnit\lib\nunit.framework.dll</HintPath>
               <Private>True</Private>
               <Paket>True</Paket>
             </Reference>
@@ -216,7 +216,7 @@
         <When Condition="$(TargetFrameworkVersion) == 'v2.0'">
           <ItemGroup>
             <Reference Include="nunit.framework">
-              <HintPath>C:\Users\Steffen\AppData\Local\Temp\packages\NUnit\lib\nunit.framework.dll</HintPath>
+              <HintPath>..\..\packages\NUnit\lib\nunit.framework.dll</HintPath>
               <Private>True</Private>
               <Paket>True</Paket>
             </Reference>
@@ -225,7 +225,7 @@
         <When Condition="$(TargetFrameworkVersion) == 'v3.5'">
           <ItemGroup>
             <Reference Include="nunit.framework">
-              <HintPath>C:\Users\Steffen\AppData\Local\Temp\packages\NUnit\lib\nunit.framework.dll</HintPath>
+              <HintPath>..\..\packages\NUnit\lib\nunit.framework.dll</HintPath>
               <Private>True</Private>
               <Paket>True</Paket>
             </Reference>
@@ -234,12 +234,12 @@
         <When Condition="$(TargetFrameworkVersion) == 'v4.0' And $(TargetFrameworkProfile) == 'Client'">
           <ItemGroup>
             <Reference Include="FSharp.Core">
-              <HintPath>C:\Users\Steffen\AppData\Local\Temp\packages\FSharp.Core.Microsoft.Signed\lib\net40\FSharp.Core.dll</HintPath>
+              <HintPath>..\..\packages\FSharp.Core.Microsoft.Signed\lib\net40\FSharp.Core.dll</HintPath>
               <Private>True</Private>
               <Paket>True</Paket>
             </Reference>
             <Reference Include="nunit.framework">
-              <HintPath>C:\Users\Steffen\AppData\Local\Temp\packages\NUnit\lib\nunit.framework.dll</HintPath>
+              <HintPath>..\..\packages\NUnit\lib\nunit.framework.dll</HintPath>
               <Private>True</Private>
               <Paket>True</Paket>
             </Reference>
@@ -248,12 +248,12 @@
         <When Condition="$(TargetFrameworkVersion) == 'v4.0'">
           <ItemGroup>
             <Reference Include="FSharp.Core">
-              <HintPath>C:\Users\Steffen\AppData\Local\Temp\packages\FSharp.Core.Microsoft.Signed\lib\net40\FSharp.Core.dll</HintPath>
+              <HintPath>..\..\packages\FSharp.Core.Microsoft.Signed\lib\net40\FSharp.Core.dll</HintPath>
               <Private>True</Private>
               <Paket>True</Paket>
             </Reference>
             <Reference Include="nunit.framework">
-              <HintPath>C:\Users\Steffen\AppData\Local\Temp\packages\NUnit\lib\nunit.framework.dll</HintPath>
+              <HintPath>..\..\packages\NUnit\lib\nunit.framework.dll</HintPath>
               <Private>True</Private>
               <Paket>True</Paket>
             </Reference>
@@ -262,12 +262,12 @@
         <Otherwise>
           <ItemGroup>
             <Reference Include="FSharp.Core">
-              <HintPath>C:\Users\Steffen\AppData\Local\Temp\packages\FSharp.Core.Microsoft.Signed\lib\net45\FSharp.Core.dll</HintPath>
+              <HintPath>..\..\packages\FSharp.Core.Microsoft.Signed\lib\net45\FSharp.Core.dll</HintPath>
               <Private>True</Private>
               <Paket>True</Paket>
             </Reference>
             <Reference Include="nunit.framework">
-              <HintPath>C:\Users\Steffen\AppData\Local\Temp\packages\NUnit\lib\nunit.framework.dll</HintPath>
+              <HintPath>..\..\packages\NUnit\lib\nunit.framework.dll</HintPath>
               <Private>True</Private>
               <Paket>True</Paket>
             </Reference>
@@ -280,7 +280,7 @@
         <When Condition="$(TargetFrameworkProfile) == 'Profile7' And $(TargetPlatformIdentifier) == 'Portable' And $(TargetPlatformVersion) == '7.0'">
           <ItemGroup>
             <Reference Include="FSharp.Core">
-              <HintPath>C:\Users\Steffen\AppData\Local\Temp\packages\FSharp.Core.Microsoft.Signed\lib\portable-net45+netcore45+MonoAndroid1+MonoTouch1\FSharp.Core.dll</HintPath>
+              <HintPath>..\..\packages\FSharp.Core.Microsoft.Signed\lib\portable-net45+netcore45+MonoAndroid1+MonoTouch1\FSharp.Core.dll</HintPath>
               <Private>True</Private>
               <Paket>True</Paket>
             </Reference>
@@ -289,7 +289,7 @@
         <When Condition="$(TargetFrameworkProfile) == 'Profile78' And $(TargetPlatformIdentifier) == 'Portable' And $(TargetPlatformVersion) == '7.0'">
           <ItemGroup>
             <Reference Include="FSharp.Core">
-              <HintPath>C:\Users\Steffen\AppData\Local\Temp\packages\FSharp.Core.Microsoft.Signed\lib\portable-net45+netcore45+wp8+MonoAndroid1+MonoTouch1\FSharp.Core.dll</HintPath>
+              <HintPath>..\..\packages\FSharp.Core.Microsoft.Signed\lib\portable-net45+netcore45+wp8+MonoAndroid1+MonoTouch1\FSharp.Core.dll</HintPath>
               <Private>True</Private>
               <Paket>True</Paket>
             </Reference>
@@ -298,7 +298,7 @@
         <When Condition="$(TargetFrameworkProfile) == 'Profile259' And $(TargetPlatformIdentifier) == 'Portable' And $(TargetPlatformVersion) == '7.0'">
           <ItemGroup>
             <Reference Include="FSharp.Core">
-              <HintPath>C:\Users\Steffen\AppData\Local\Temp\packages\FSharp.Core.Microsoft.Signed\lib\portable-net45+netcore45+wpa81+wp8+MonoAndroid1+MonoTouch1\FSharp.Core.dll</HintPath>
+              <HintPath>..\..\packages\FSharp.Core.Microsoft.Signed\lib\portable-net45+netcore45+wpa81+wp8+MonoAndroid1+MonoTouch1\FSharp.Core.dll</HintPath>
               <Private>True</Private>
               <Paket>True</Paket>
             </Reference>
@@ -307,7 +307,7 @@
         <Otherwise>
           <ItemGroup>
             <Reference Include="FSharp.Core">
-              <HintPath>C:\Users\Steffen\AppData\Local\Temp\packages\FSharp.Core.Microsoft.Signed\lib\portable-net45+sl5+netcore45+MonoAndroid1+MonoTouch1\FSharp.Core.dll</HintPath>
+              <HintPath>..\..\packages\FSharp.Core.Microsoft.Signed\lib\portable-net45+sl5+netcore45+MonoAndroid1+MonoTouch1\FSharp.Core.dll</HintPath>
               <Private>True</Private>
               <Paket>True</Paket>
             </Reference>
@@ -318,12 +318,12 @@
     <When Condition="$(TargetFrameworkIdentifier) == 'MonoAndroid'">
       <ItemGroup>
         <Reference Include="FSharp.Core">
-          <HintPath>C:\Users\Steffen\AppData\Local\Temp\packages\FSharp.Core.Microsoft.Signed\lib\net45\FSharp.Core.dll</HintPath>
+          <HintPath>..\..\packages\FSharp.Core.Microsoft.Signed\lib\net45\FSharp.Core.dll</HintPath>
           <Private>True</Private>
           <Paket>True</Paket>
         </Reference>
         <Reference Include="nunit.framework">
-          <HintPath>C:\Users\Steffen\AppData\Local\Temp\packages\NUnit\lib\nunit.framework.dll</HintPath>
+          <HintPath>..\..\packages\NUnit\lib\nunit.framework.dll</HintPath>
           <Private>True</Private>
           <Paket>True</Paket>
         </Reference>
@@ -332,12 +332,12 @@
     <When Condition="$(TargetFrameworkIdentifier) == 'MonoTouch'">
       <ItemGroup>
         <Reference Include="FSharp.Core">
-          <HintPath>C:\Users\Steffen\AppData\Local\Temp\packages\FSharp.Core.Microsoft.Signed\lib\net45\FSharp.Core.dll</HintPath>
+          <HintPath>..\..\packages\FSharp.Core.Microsoft.Signed\lib\net45\FSharp.Core.dll</HintPath>
           <Private>True</Private>
           <Paket>True</Paket>
         </Reference>
         <Reference Include="nunit.framework">
-          <HintPath>C:\Users\Steffen\AppData\Local\Temp\packages\NUnit\lib\nunit.framework.dll</HintPath>
+          <HintPath>..\..\packages\NUnit\lib\nunit.framework.dll</HintPath>
           <Private>True</Private>
           <Paket>True</Paket>
         </Reference>
@@ -348,12 +348,12 @@
         <When Condition="$(SilverlightVersion) == 'v3.0'">
           <ItemGroup>
             <Reference Include="FSharp.Core">
-              <HintPath>C:\Users\Steffen\AppData\Local\Temp\packages\FSharp.Core.Microsoft.Signed\lib\net45\FSharp.Core.dll</HintPath>
+              <HintPath>..\..\packages\FSharp.Core.Microsoft.Signed\lib\net45\FSharp.Core.dll</HintPath>
               <Private>True</Private>
               <Paket>True</Paket>
             </Reference>
             <Reference Include="nunit.framework">
-              <HintPath>C:\Users\Steffen\AppData\Local\Temp\packages\NUnit\lib\nunit.framework.dll</HintPath>
+              <HintPath>..\..\packages\NUnit\lib\nunit.framework.dll</HintPath>
               <Private>True</Private>
               <Paket>True</Paket>
             </Reference>
@@ -362,12 +362,12 @@
         <When Condition="$(SilverlightVersion) == 'v4.0'">
           <ItemGroup>
             <Reference Include="FSharp.Core">
-              <HintPath>C:\Users\Steffen\AppData\Local\Temp\packages\FSharp.Core.Microsoft.Signed\lib\net45\FSharp.Core.dll</HintPath>
+              <HintPath>..\..\packages\FSharp.Core.Microsoft.Signed\lib\net45\FSharp.Core.dll</HintPath>
               <Private>True</Private>
               <Paket>True</Paket>
             </Reference>
             <Reference Include="nunit.framework">
-              <HintPath>C:\Users\Steffen\AppData\Local\Temp\packages\NUnit\lib\nunit.framework.dll</HintPath>
+              <HintPath>..\..\packages\NUnit\lib\nunit.framework.dll</HintPath>
               <Private>True</Private>
               <Paket>True</Paket>
             </Reference>
@@ -376,12 +376,12 @@
         <Otherwise>
           <ItemGroup>
             <Reference Include="FSharp.Core">
-              <HintPath>C:\Users\Steffen\AppData\Local\Temp\packages\FSharp.Core.Microsoft.Signed\lib\portable-net45+sl5+netcore45+MonoAndroid1+MonoTouch1\FSharp.Core.dll</HintPath>
+              <HintPath>..\..\packages\FSharp.Core.Microsoft.Signed\lib\portable-net45+sl5+netcore45+MonoAndroid1+MonoTouch1\FSharp.Core.dll</HintPath>
               <Private>True</Private>
               <Paket>True</Paket>
             </Reference>
             <Reference Include="nunit.framework">
-              <HintPath>C:\Users\Steffen\AppData\Local\Temp\packages\NUnit\lib\nunit.framework.dll</HintPath>
+              <HintPath>..\..\packages\NUnit\lib\nunit.framework.dll</HintPath>
               <Private>True</Private>
               <Paket>True</Paket>
             </Reference>
@@ -392,12 +392,12 @@
     <When Condition="$(TargetFrameworkIdentifier) == 'Windows'">
       <ItemGroup>
         <Reference Include="FSharp.Core">
-          <HintPath>C:\Users\Steffen\AppData\Local\Temp\packages\FSharp.Core.Microsoft.Signed\lib\net45\FSharp.Core.dll</HintPath>
+          <HintPath>..\..\packages\FSharp.Core.Microsoft.Signed\lib\net45\FSharp.Core.dll</HintPath>
           <Private>True</Private>
           <Paket>True</Paket>
         </Reference>
         <Reference Include="nunit.framework">
-          <HintPath>C:\Users\Steffen\AppData\Local\Temp\packages\NUnit\lib\nunit.framework.dll</HintPath>
+          <HintPath>..\..\packages\NUnit\lib\nunit.framework.dll</HintPath>
           <Private>True</Private>
           <Paket>True</Paket>
         </Reference>
@@ -408,12 +408,12 @@
         <When Condition="$(TargetPlatformVersion) == '7.1'">
           <ItemGroup>
             <Reference Include="FSharp.Core">
-              <HintPath>C:\Users\Steffen\AppData\Local\Temp\packages\FSharp.Core.Microsoft.Signed\lib\net45\FSharp.Core.dll</HintPath>
+              <HintPath>..\..\packages\FSharp.Core.Microsoft.Signed\lib\net45\FSharp.Core.dll</HintPath>
               <Private>True</Private>
               <Paket>True</Paket>
             </Reference>
             <Reference Include="nunit.framework">
-              <HintPath>C:\Users\Steffen\AppData\Local\Temp\packages\NUnit\lib\nunit.framework.dll</HintPath>
+              <HintPath>..\..\packages\NUnit\lib\nunit.framework.dll</HintPath>
               <Private>True</Private>
               <Paket>True</Paket>
             </Reference>
@@ -422,12 +422,12 @@
         <When Condition="$(TargetPlatformVersion) == 'v8.0'">
           <ItemGroup>
             <Reference Include="FSharp.Core">
-              <HintPath>C:\Users\Steffen\AppData\Local\Temp\packages\FSharp.Core.Microsoft.Signed\lib\portable-net45+netcore45+wp8+MonoAndroid1+MonoTouch1\FSharp.Core.dll</HintPath>
+              <HintPath>..\..\packages\FSharp.Core.Microsoft.Signed\lib\portable-net45+netcore45+wp8+MonoAndroid1+MonoTouch1\FSharp.Core.dll</HintPath>
               <Private>True</Private>
               <Paket>True</Paket>
             </Reference>
             <Reference Include="nunit.framework">
-              <HintPath>C:\Users\Steffen\AppData\Local\Temp\packages\NUnit\lib\nunit.framework.dll</HintPath>
+              <HintPath>..\..\packages\NUnit\lib\nunit.framework.dll</HintPath>
               <Private>True</Private>
               <Paket>True</Paket>
             </Reference>
@@ -436,12 +436,12 @@
         <Otherwise>
           <ItemGroup>
             <Reference Include="FSharp.Core">
-              <HintPath>C:\Users\Steffen\AppData\Local\Temp\packages\FSharp.Core.Microsoft.Signed\lib\portable-net45+netcore45+wpa81+wp8+MonoAndroid1+MonoTouch1\FSharp.Core.dll</HintPath>
+              <HintPath>..\..\packages\FSharp.Core.Microsoft.Signed\lib\portable-net45+netcore45+wpa81+wp8+MonoAndroid1+MonoTouch1\FSharp.Core.dll</HintPath>
               <Private>True</Private>
               <Paket>True</Paket>
             </Reference>
             <Reference Include="nunit.framework">
-              <HintPath>C:\Users\Steffen\AppData\Local\Temp\packages\NUnit\lib\nunit.framework.dll</HintPath>
+              <HintPath>..\..\packages\NUnit\lib\nunit.framework.dll</HintPath>
               <Private>True</Private>
               <Paket>True</Paket>
             </Reference>
@@ -452,12 +452,12 @@
     <Otherwise>
       <ItemGroup>
         <Reference Include="FSharp.Core">
-          <HintPath>C:\Users\Steffen\AppData\Local\Temp\packages\FSharp.Core.Microsoft.Signed\lib\net45\FSharp.Core.dll</HintPath>
+          <HintPath>..\..\packages\FSharp.Core.Microsoft.Signed\lib\net45\FSharp.Core.dll</HintPath>
           <Private>True</Private>
           <Paket>True</Paket>
         </Reference>
         <Reference Include="nunit.framework">
-          <HintPath>C:\Users\Steffen\AppData\Local\Temp\packages\NUnit\lib\nunit.framework.dll</HintPath>
+          <HintPath>..\..\packages\NUnit\lib\nunit.framework.dll</HintPath>
           <Private>True</Private>
           <Paket>True</Paket>
         </Reference>
