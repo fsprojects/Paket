@@ -154,7 +154,11 @@ let private convertNugetToRefFile(nugetPackagesConfig) =
 /// Converts all projects from NuGet to Paket
 let ConvertFromNuget(dependenciesFileName, force, installAfter, initAutoRestore) =
     if File.Exists dependenciesFileName && not force then failwithf "%s already exists, use --force to overwrite" dependenciesFileName
-    let root = Path.GetDirectoryName dependenciesFileName
+    let root =
+        if dependenciesFileName = Constants.DependenciesFileName then
+            "."
+        else
+            Path.GetDirectoryName dependenciesFileName
 
     let nugetPackagesConfigs = FindAllFiles(root, "packages.config") |> Seq.map Nuget.ReadPackagesConfig
     let nugetConfig = readNugetConfig()
