@@ -60,9 +60,17 @@ Dependencies.Add "FSharp.Data"
 Dependencies.Add "FSharp.Formatting"
 Dependencies.Add "FsUnit"
 
+// list all installed packages
 Dependencies.GetInstalledPackages()
 // [fsi:val it : (string * string) list =]
 // [fsi:  [("FSharp.Compiler.Service", "0.0.67"); ("FSharp.Data", "2.1.0");]
 // [fsi:   ("FSharp.Formatting", "2.4.36"); ("FsUnit", "1.3.0.1");]
 // [fsi:   ("Microsoft.AspNet.Razor", "2.0.30506.0"); ("NUnit", "2.6.3");]
 // [fsi:   ("RazorEngine", "3.3.0"); ("Zlib.Portable", "1.10.0")]]
+
+
+// list only the direct dependencies
+Dependencies.GetDirectDependencies()
+// [fsi:val it : (string * string) list =]
+// [fsi:  [("FSharp.Data", "2.1.0"); ("FSharp.Formatting", "2.4.36");]
+// [fsi:   ("FsUnit", "1.3.0.1")]]

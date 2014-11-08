@@ -33,6 +33,16 @@ type Dependencies private () =
         |> Seq.map (fun kv -> kv.Value.Name,kv.Value.Version.ToString())
         |> Seq.toList
 
+    /// Returns the installed versions of all direct dependencies.
+    static member GetDirectDependencies() = 
+        let dependenciesFile = DependenciesFile.ReadFromFile(Settings.DependenciesFile)
+        let lockFileName = DependenciesFile.FindLockfile Settings.DependenciesFile
+        let lockFile = LockFile.LoadFrom(lockFileName.FullName)
+        lockFile.ResolvedPackages
+        |> Seq.filter (fun kv -> dependenciesFile.DirectDependencies.ContainsKey kv.Key)
+        |> Seq.map (fun kv -> kv.Value.Name,kv.Value.Version.ToString())        
+        |> Seq.toList
+
     /// Removes the given package from dependencies file.
     static member Remove(package) = RemoveProcess.Remove(package, false, false, false, true)
     
