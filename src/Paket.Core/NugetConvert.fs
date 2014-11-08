@@ -172,6 +172,10 @@ let ConvertFromNuget(dependenciesFileName, force, installAfter, initAutoRestore,
     FindAllFiles(root, "nuget.config") |> Seq.iter (fun f -> removeFile f.FullName)
     
     let credsMigrationMode = defaultArg credsMigrationMode EncryptGlobal
+    nugetConfig.PackageSources
+    |> List.choose (fun ps -> match ps with | Nuget ps -> Option.map (fun a -> ps.Url,a) ps.Auth | _ -> None)
+    |> List.iter (fun (source, auth) -> ConfigFile.AddCredentials(source, auth.Username.Expanded, auth.Password.Expanded) |> ignore)
+
     convertNugetsToDepFile(dependenciesFileName, nugetPackagesConfigs, nugetConfig)
         
     for nugetPackagesConfig in nugetPackagesConfigs do

@@ -5,6 +5,7 @@ open System.Xml
 open System.Security.Cryptography
 open System.Text
 open System.IO
+open Xml
 
 let private rootElement = "configuration"
 
@@ -137,4 +138,14 @@ let GetCredentials (source : string) =
 
 let AddCredentials (source, username, password) =
     let credentialsNode = getConfigNode "credentials"
-    saveCredentials source username password credentialsNode
+    
+    match getSourceNodes credentialsNode source with
+    | existingNode::_ ->
+        let salt, encrypted = Encrypt password
+        existingNode.Attributes.["username"].Value <- username
+        existingNode.Attributes.["password"].Value <- encrypted
+        existingNode.Attributes.["salt"].Value <- salt
+        saveConfigNode credentialsNode
+        existingNode
+    | [] -> 
+        saveCredentials source username password credentialsNode :> XmlNode
