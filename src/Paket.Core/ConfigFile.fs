@@ -142,11 +142,18 @@ let AddCredentials (source, username, password) =
     
     match getSourceNodes credentialsNode source with
     | existingNode::_ ->
-        let salt, encrypted = Encrypt password
-        existingNode.Attributes.["username"].Value <- username
-        existingNode.Attributes.["password"].Value <- encrypted
-        existingNode.Attributes.["salt"].Value <- salt
-        saveConfigNode credentialsNode
+        let existingPassword = 
+            Decrypt 
+                existingNode.Attributes.["salt"].Value
+                existingNode.Attributes.["password"].Value
+
+        if existingPassword <> password then
+            let salt, encrypted = Encrypt password
+            existingNode.Attributes.["username"].Value <- username
+            existingNode.Attributes.["password"].Value <- encrypted
+            existingNode.Attributes.["salt"].Value <- salt
+            saveConfigNode credentialsNode
+            
         existingNode
     | [] -> 
         saveCredentials source username password credentialsNode :> XmlNode
