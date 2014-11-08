@@ -14,7 +14,7 @@ type Dependencies private () =
     static member Add(package) = Dependencies.Add(package,"")
 
     /// Adds the given package with the given version to the dependencies file.
-    static member Add(package,version) = AddProcess.Add(package, version, false, false, false, false)
+    static member Add(package,version) = AddProcess.Add(package, version, false, false, false, true)
     
     /// Returns the installed version of the given package.
     static member GetInstalledVersion(package) = 

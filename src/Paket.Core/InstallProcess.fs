@@ -64,25 +64,25 @@ let private removeCopiedFiles (project: ProjectFile) =
     |> List.filter (fun fi -> not <| fi.FullName.Contains("paket-files"))
     |> removeFilesAndTrimDirs
 
-let CreateInstallModel(sources, force, package) = 
+let CreateInstallModel(root, sources, force, package) = 
     async { 
         let! (package, files) = RestoreProcess.ExtractPackage(sources, force, package)
-        let nuspec = FileInfo(sprintf "./packages/%s/%s.nuspec" package.Name package.Name)
+        let nuspec = FileInfo(sprintf "%s/packages/%s/%s.nuspec" root package.Name package.Name)
         let nuspec = Nuspec.Load nuspec.FullName
         let files = files |> Seq.map (fun fi -> fi.FullName)
         return package, InstallModel.CreateFromLibs(package.Name, package.Version, files, nuspec)
     }
 
 /// Restores the given packages from the lock file.
-let createModel(sources,force, lockFile:LockFile) = 
+let createModel(root, sources,force, lockFile:LockFile) = 
     let sourceFileDownloads =
         lockFile.SourceFiles
-        |> Seq.map (fun file -> GitHub.DownloadSourceFile(Path.GetDirectoryName lockFile.FileName, file))        
+        |> Seq.map (fun file -> GitHub.DownloadSourceFile(root, file))        
         |> Async.Parallel
 
     let packageDownloads = 
         lockFile.ResolvedPackages
-        |> Seq.map (fun kv -> CreateInstallModel(sources,force,kv.Value))
+        |> Seq.map (fun kv -> CreateInstallModel(root,sources,force,kv.Value))
         |> Async.Parallel
 
     let _,extractedPackages =
@@ -93,7 +93,8 @@ let createModel(sources,force, lockFile:LockFile) =
 
 /// Installs the given all packages from the lock file.
 let Install(sources,force, hard, lockFile:LockFile) = 
-    let extractedPackages = createModel(sources,force, lockFile)
+    let root = FileInfo(lockFile.FileName).Directory.FullName 
+    let extractedPackages = createModel(root,sources,force, lockFile)
 
     let model =
         extractedPackages
@@ -101,7 +102,8 @@ let Install(sources,force, hard, lockFile:LockFile) =
         |> Map.ofArray
 
     let applicableProjects =
-        ProjectFile.FindAllProjects(".") 
+        root
+        |> ProjectFile.FindAllProjects
         |> List.choose (fun p -> ProjectFile.FindReferencesFile(FileInfo(p.FileName))
                                  |> Option.map (fun r -> p, ReferencesFile.FromFile(r)))
 
