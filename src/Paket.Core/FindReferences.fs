@@ -4,6 +4,19 @@ open System
 open System.IO
 open Logging
 
+let FindReferencesForPackage (dependenciesFileName, package:string) =
+    let root = Path.GetDirectoryName dependenciesFileName
+    let refFiles =
+        Directory.GetFiles(root, "paket.references", SearchOption.AllDirectories)
+        |> Seq.map ReferencesFile.FromFile
+            
+    refFiles
+    |> Seq.filter (fun r ->
+        r.NugetPackages
+        |> Seq.exists (fun np -> np.ToLower() = package.ToLower()))
+    |> Seq.map (fun r -> r.FileName)
+    |> Seq.toList
+
 let FindReferencesFor (dependenciesFileName, packages : string list) =
     let root = Path.GetDirectoryName dependenciesFileName
     let refFiles =
@@ -15,10 +28,11 @@ let FindReferencesFor (dependenciesFileName, packages : string list) =
             refFiles
             |> Seq.filter (fun r ->
                 r.NugetPackages
-                |> Seq.filter (fun np -> np.Equals(p))
-                |> Seq.isEmpty |> not)
-            |> Seq.map (fun r -> (p, r.FileName)))
+                |> Seq.exists (fun np -> np.ToLower() = p.ToLower()))
+            |> Seq.map (fun r -> (p, r.FileName)))            
     |> Seq.groupBy fst
+    |> Seq.toList
+    |> List.map (fun (g,values) -> g, Seq.toList values)
 
 
 let ShowReferencesFor (dependenciesFileName, packages : string list) =

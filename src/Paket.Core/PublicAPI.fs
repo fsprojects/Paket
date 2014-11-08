@@ -48,3 +48,9 @@ type Dependencies(dependenciesFileName) =
     /// Removes the given package from dependencies file.
     member this.Remove(package) = RemoveProcess.Remove(dependenciesFileName, package, false, false, false, true)
     
+    /// Find all references for a given package.
+    member this.FindReferencesFor(package) = FindReferences.FindReferencesForPackage(dependenciesFileName, package) 
+
+    /// Find all references for the given packages.
+    member this.FindReferencesFor(packages) = FindReferences.FindReferencesFor(dependenciesFileName, packages) 
+    
