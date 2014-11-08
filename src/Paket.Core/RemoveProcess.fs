@@ -29,19 +29,20 @@ let Remove(package:string, force, hard, interactive, installAfter) =
             if installed then
                 failwithf "%s is still installed in %s" package project.Name
 
+    let exisitingDependenciesFile = DependenciesFile.ReadFromFile(Settings.DependenciesFile)
     let dependenciesFile =
-        DependenciesFile.ReadFromFile(Constants.DependenciesFile)
+        exisitingDependenciesFile
           .Remove(package)
 
-    let lockFile = UpdateProcess.updateWithModifiedDependenciesFile(dependenciesFile,package,force)
+    if exisitingDependenciesFile <> dependenciesFile then
+        let lockFile = UpdateProcess.updateWithModifiedDependenciesFile(dependenciesFile,package,force)
 
-    if installAfter then
-        let sources =
-            Constants.DependenciesFile
-            |> File.ReadAllLines
-            |> PackageSourceParser.getSources 
+        if installAfter then
+            let sources =
+                Settings.DependenciesFile
+                |> File.ReadAllLines
+                |> PackageSourceParser.getSources 
 
-        InstallProcess.Install(sources, force, hard, lockFile)
+            InstallProcess.Install(sources, force, hard, lockFile)
 
-
-    dependenciesFile.Save()
+        dependenciesFile.Save()
