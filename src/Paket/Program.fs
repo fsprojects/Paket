@@ -24,6 +24,7 @@ type Command =
     | ConvertFromNuget
     | InitAutoRestore
     | Simplify
+    | FindRefs
     | Unknown
 
 type CLIArguments =
@@ -36,6 +37,7 @@ type CLIArguments =
     | [<First>][<NoAppSettings>][<CustomCommandLine("convert-from-nuget")>] ConvertFromNuget
     | [<First>][<NoAppSettings>][<CustomCommandLine("init-auto-restore")>] InitAutoRestore
     | [<First>][<NoAppSettings>][<CustomCommandLine("simplify")>] Simplify
+    | [<First>][<NoAppSettings>][<CustomCommandLine("find-refs")>] FindRefs
     | [<AltCommandLine("-v")>] Verbose
     | [<AltCommandLine("-i")>] Interactive
     | [<AltCommandLine("-f")>] Force
@@ -43,6 +45,7 @@ type CLIArguments =
     | [<CustomCommandLine("nuget")>] Nuget of string
     | [<CustomCommandLine("version")>] Version of string
     | [<Rest>]References_Files of string
+    | [<Rest>]Packages of string
     | No_Install
     | Ignore_Constraints
     | [<AltCommandLine("--pre")>] Include_Prereleases
@@ -57,6 +60,7 @@ with
             | Restore -> "restores all packages."
             | Update -> "updates the paket.lock file and installs all packages."
             | References_Files _ -> "allows to specify a list of references file names."
+            | Packages _ -> "allows to specify a list of Nuget package names."
             | Outdated -> "displays information about new packages."
             | ConvertFromNuget -> "converts all projects from NuGet to Paket."
             | InitAutoRestore -> "enables automatic restore for Visual Studio."
@@ -71,8 +75,9 @@ with
             | No_Auto_Restore -> "omits init-auto-restore after convert-from-nuget."
             | Nuget _ -> "allows to specify a nuget package."
             | Version _ -> "allows to specify a package version."
+            | FindRefs _ -> "finds all references to the given packages."
 
-let parser = UnionArgParser.Create<CLIArguments>("USAGE: paket [add|remove|install|update|outdated|convert-from-nuget|init-auto-restore|simplify] ... options")
+let parser = UnionArgParser.Create<CLIArguments>("USAGE: paket [add|remove|install|update|outdated|convert-from-nuget|init-auto-restore|simplify|find-refs] ... options")
  
 let results =
     try
@@ -87,6 +92,7 @@ let results =
             elif results.Contains <@ CLIArguments.ConvertFromNuget @> then Command.ConvertFromNuget
             elif results.Contains <@ CLIArguments.InitAutoRestore @> then Command.InitAutoRestore
             elif results.Contains <@ CLIArguments.Simplify @> then Command.Simplify
+            elif results.Contains <@ CLIArguments.FindRefs @> then Command.FindRefs
             else Command.Unknown
         if results.Contains <@ CLIArguments.Verbose @> then
             verbose <- true
@@ -135,6 +141,9 @@ try
         | Command.InitAutoRestore -> VSIntegration.InitAutoRestore()
         | Command.ConvertFromNuget -> NuGetConvert.ConvertFromNuget(force,noInstall |> not,noAutoRestore |> not)
         | Command.Simplify -> Simplifier.Simplify(interactive)
+        | Command.FindRefs ->
+            let packages = results.GetResults <@ CLIArguments.Packages @>
+            FindReferences.For(packages)
         | _ -> traceErrorfn "no command given.%s" (parser.Usage())
         
         let elapsedTime = Utils.TimeSpanToReadableString stopWatch.Elapsed
