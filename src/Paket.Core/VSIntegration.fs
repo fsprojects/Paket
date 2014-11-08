@@ -4,8 +4,8 @@ open System.IO
 open Logging
 open System
 
-let InitAutoRestore() =
-    let root = Settings.GetRoot()
+let InitAutoRestore(dependenciesFileName) =
+    let root = Path.GetDirectoryName dependenciesFileName
     CreateDir(Path.Combine(root,".paket"))
     use client = createWebClient None
 

@@ -6,6 +6,7 @@ open Nessos.UnionArgParser
 open Paket.Logging
 open System.Diagnostics
 open System.Reflection
+open System.IO
 
 let private stopWatch = new Stopwatch()
 stopWatch.Start()
@@ -103,6 +104,8 @@ let results =
         tracefn "%s %s%s" (String.Join(" ",Environment.GetCommandLineArgs())) Environment.NewLine (parser.Usage())
         None
 
+let getDependenciesFile() = Settings.FindDependenciesFileInPath false (DirectoryInfo Environment.CurrentDirectory)
+
 try
     match results with
     | Some(command,results) ->
@@ -120,30 +123,31 @@ try
                 match results.TryGetResult <@ CLIArguments.Version @> with
                 | Some x -> x
                 | _ -> ""
-            AddProcess.Add(packageName,version,force,hard,interactive,noInstall |> not)
+            
+            AddProcess.Add(getDependenciesFile(),packageName,version,force,hard,interactive,noInstall |> not)
         | Command.Remove -> 
             let packageName = results.GetResult <@ CLIArguments.Nuget @>            
-            RemoveProcess.Remove(packageName,force,hard,interactive,noInstall |> not)
-        | Command.Install -> UpdateProcess.Update(false,force,hard) 
+            RemoveProcess.Remove(getDependenciesFile(),packageName,force,hard,interactive,noInstall |> not)
+        | Command.Install -> UpdateProcess.Update(getDependenciesFile(),false,force,hard) 
         | Command.Restore -> 
             let files = results.GetResults <@ CLIArguments.References_Files @> 
-            RestoreProcess.Restore(force,files) 
+            RestoreProcess.Restore(getDependenciesFile(),force,files) 
         | Command.Update -> 
             match results.TryGetResult <@ CLIArguments.Nuget @> with
             | Some packageName -> 
                 let version = results.TryGetResult <@ CLIArguments.Version @>
-                UpdateProcess.UpdatePackage(packageName,version,force,hard)
-            | _ -> UpdateProcess.Update(true,force,hard)
+                UpdateProcess.UpdatePackage(getDependenciesFile(),packageName,version,force,hard)
+            | _ -> UpdateProcess.Update(getDependenciesFile(),true,force,hard)
             
         | Command.Outdated ->         
             let strict = results.Contains <@ CLIArguments.Ignore_Constraints @> |> not
-            FindOutdated.ListOutdated(strict,includePrereleases)
-        | Command.InitAutoRestore -> VSIntegration.InitAutoRestore()
-        | Command.ConvertFromNuget -> NuGetConvert.ConvertFromNuget(force,noInstall |> not,noAutoRestore |> not)
-        | Command.Simplify -> Simplifier.Simplify(interactive)
+            FindOutdated.ListOutdated(getDependenciesFile(),strict,includePrereleases)
+        | Command.InitAutoRestore -> VSIntegration.InitAutoRestore(getDependenciesFile())
+        | Command.ConvertFromNuget -> NuGetConvert.ConvertFromNuget(getDependenciesFile(),force,noInstall |> not,noAutoRestore |> not)
+        | Command.Simplify -> Simplifier.Simplify(getDependenciesFile(),interactive)
         | Command.FindRefs ->
             let packages = results.GetResults <@ CLIArguments.Packages @>
-            FindReferences.FindReferencesFor(packages)
+            FindReferences.ShowReferencesFor(getDependenciesFile(),packages)
         | _ -> traceErrorfn "no command given.%s" (parser.Usage())
         
         let elapsedTime = Utils.TimeSpanToReadableString stopWatch.Elapsed

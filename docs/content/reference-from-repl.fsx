@@ -12,7 +12,7 @@ This page demonstrates how to use `Paket` from the F# Interactive. First we have
 open Paket
 
 // locate the paket.dependencies file
-Dependencies.Locate(__SOURCE_DIRECTORY__)
+let dependencies = Dependencies.Locate(__SOURCE_DIRECTORY__)
 // [fsi:found: paket.dependencies]
 
 (**
@@ -22,7 +22,7 @@ Paket allows to install and uninstall NuGet packages programmatically:
 *)
 
 // install a package
-Dependencies.Add "FSharp.Data"
+dependencies.Add "FSharp.Data"
 // [fsi:Adding FSharp.Data to paket.dependencies]
 // [fsi:Resolving packages:]
 // [fsi:  - fetching versions for FSharp.Data]
@@ -35,18 +35,18 @@ Dependencies.Add "FSharp.Data"
 // [fsi:Dependencies files saved to paket.dependencies]
 
 // check which version is installed
-Dependencies.GetInstalledVersion "FSharp.Data"
+dependencies.GetInstalledVersion "FSharp.Data"
 // [fsi:val it : string option = Some "2.1.0"]
 
 // uninstall a package
-Dependencies.Remove "FSharp.Data"
+dependencies.Remove "FSharp.Data"
 // [fsi:Removing FSharp.Data from paket.dependencies]
 // [fsi:Resolving packages:]
 // [fsi:Locked version resolutions written to paket.lock]
 // [fsi:Dependencies files saved to paket.dependencies]
 
 // check again which version is installed
-Dependencies.GetInstalledVersion "FSharp.Data"
+dependencies.GetInstalledVersion "FSharp.Data"
 // [fsi:val it : string option = None]
 
 (**
@@ -56,12 +56,12 @@ It's possible to do queries against the installed NuGet packages:
 *)
 
 // install some packages
-Dependencies.Add "FSharp.Data"
-Dependencies.Add "FSharp.Formatting"
-Dependencies.Add "FsUnit"
+dependencies.Add "FSharp.Data"
+dependencies.Add "FSharp.Formatting"
+dependencies.Add "FsUnit"
 
 // list all installed packages
-Dependencies.GetInstalledPackages()
+dependencies.GetInstalledPackages()
 // [fsi:val it : (string * string) list =]
 // [fsi:  [("FSharp.Compiler.Service", "0.0.67"); ("FSharp.Data", "2.1.0");]
 // [fsi:   ("FSharp.Formatting", "2.4.36"); ("FsUnit", "1.3.0.1");]
@@ -69,7 +69,7 @@ Dependencies.GetInstalledPackages()
 // [fsi:   ("RazorEngine", "3.3.0"); ("Zlib.Portable", "1.10.0")]]
 
 // list only the direct dependencies
-Dependencies.GetDirectDependencies()
+dependencies.GetDirectDependencies()
 // [fsi:val it : (string * string) list =]
 // [fsi:  [("FSharp.Data", "2.1.0"); ("FSharp.Formatting", "2.4.36");]
 // [fsi:   ("FsUnit", "1.3.0.1")]]

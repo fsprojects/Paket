@@ -86,7 +86,7 @@ let removeFile file =
     File.Delete file
     tracefn "Deleted %s" file
 
-let private convertNugetsToDepFile(nugetPackagesConfigs, nugetConfig) =
+let private convertNugetsToDepFile(dependenciesFilename,nugetPackagesConfigs, nugetConfig) =
     let allVersions =
         nugetPackagesConfigs
         |> Seq.collect (fun c -> c.Packages)
@@ -103,8 +103,8 @@ let private convertNugetsToDepFile(nugetPackagesConfigs, nugetConfig) =
     let latestVersions = allVersions |> Seq.map (fun (name,versions) -> name, versions |> Seq.max |> string) |> Seq.toList
 
     let existingDepFile = 
-        if File.Exists Settings.DependenciesFile 
-        then Some(DependenciesFile.ReadFromFile(Settings.DependenciesFile)) 
+        if File.Exists dependenciesFilename
+        then Some(DependenciesFile.ReadFromFile dependenciesFilename) 
         else None
 
     let confictingPackages, packagesToAdd = 
@@ -112,19 +112,19 @@ let private convertNugetsToDepFile(nugetPackagesConfigs, nugetConfig) =
         | Some depFile -> latestVersions |> List.partition (fun (name,_) -> depFile.HasPackage name)
         | None -> [], latestVersions
     
-    for (name, _) in confictingPackages do traceWarnfn "Package %s is already defined in %s" name Settings.DependenciesFile
+    for (name, _) in confictingPackages do traceWarnfn "Package %s is already defined in %s" name dependenciesFilename
 
     let nugetPackageRequirement (name: string, v: string, sources : list<PackageSource>) =
         {Requirements.PackageRequirement.Name = name
          Requirements.PackageRequirement.VersionRequirement = VersionRequirement(VersionRange.Specific(SemVer.Parse v), PreReleaseStatus.No)
          Requirements.PackageRequirement.ResolverStrategy = Max
          Requirements.PackageRequirement.Sources = sources
-         Requirements.PackageRequirement.Parent = Requirements.PackageRequirementSource.DependenciesFile(Settings.DependenciesFile)}
+         Requirements.PackageRequirement.Parent = Requirements.PackageRequirementSource.DependenciesFile dependenciesFilename}
 
     match existingDepFile with
     | None ->
         let packages = packagesToAdd |> List.map (fun (name,v) -> nugetPackageRequirement(name,v,nugetConfig.PackageSources))
-        DependenciesFile(Settings.DependenciesFile, InstallOptions.Default, packages, []).Save()
+        DependenciesFile(dependenciesFilename, InstallOptions.Default, packages, []).Save()
     | Some depFile ->
         if not (packagesToAdd |> List.isEmpty)
             then (packagesToAdd |> List.fold (fun (d : DependenciesFile) (name,version) -> d.Add(name,version)) depFile).Save()
@@ -152,14 +152,15 @@ let private convertNugetToRefFile(nugetPackagesConfig) =
         else tracefn "%s is up to date" refFilePath
 
 /// Converts all projects from NuGet to Paket
-let ConvertFromNuget(force, installAfter, initAutoRestore) =
-    if File.Exists Settings.DependenciesFile && not force then failwithf "%s already exists, use --force to overwrite" Settings.DependenciesFile
+let ConvertFromNuget(dependenciesFileName, force, installAfter, initAutoRestore) =
+    if File.Exists dependenciesFileName && not force then failwithf "%s already exists, use --force to overwrite" dependenciesFileName
+    let root = Path.GetDirectoryName dependenciesFileName
 
-    let nugetPackagesConfigs = FindAllFiles(".", "packages.config") |> Seq.map Nuget.ReadPackagesConfig
+    let nugetPackagesConfigs = FindAllFiles(root, "packages.config") |> Seq.map Nuget.ReadPackagesConfig
     let nugetConfig = readNugetConfig()
-    FindAllFiles(".", "nuget.config") |> Seq.iter (fun f -> removeFile f.FullName)
+    FindAllFiles(root, "nuget.config") |> Seq.iter (fun f -> removeFile f.FullName)
     
-    convertNugetsToDepFile(nugetPackagesConfigs, nugetConfig)
+    convertNugetsToDepFile(dependenciesFileName, nugetPackagesConfigs, nugetConfig)
         
     for nugetPackagesConfig in nugetPackagesConfigs do
         let packageFile = nugetPackagesConfig.File
@@ -174,11 +175,11 @@ let ConvertFromNuget(force, installAfter, initAutoRestore) =
         let solution = SolutionFile(slnFile.FullName)
         solution.RemoveNugetEntries()
         let relativePath = createRelativePath solution.FileName Environment.CurrentDirectory 
-        solution.AddPaketFolder(Path.Combine(relativePath, Settings.DependenciesFile), 
+        solution.AddPaketFolder(Path.Combine(relativePath, dependenciesFileName), 
                                 if installAfter then Some(Path.Combine(relativePath, "paket.lock")) else None)
         solution.Save()
 
-    for project in ProjectFile.FindAllProjects(".") do
+    for project in ProjectFile.FindAllProjects root do
         project.ReplaceNugetPackagesFile()
         project.RemoveNugetTargetsEntries()
         project.Save()
@@ -187,7 +188,7 @@ let ConvertFromNuget(force, installAfter, initAutoRestore) =
         removeFile packagesConfigFile.FullName
 
     let autoVsNugetRestore = nugetConfig.PackageRestoreEnabled && nugetConfig.PackageRestoreAutomatic
-    let nugetTargets = FindAllFiles(".", "nuget.targets") |> Seq.firstOrDefault
+    let nugetTargets = FindAllFiles(root, "nuget.targets") |> Seq.firstOrDefault
     
     match nugetTargets with
     | Some nugetTargets ->
@@ -196,7 +197,7 @@ let ConvertFromNuget(force, installAfter, initAutoRestore) =
         if File.Exists nugetExe then 
             traceWarnfn "Removing NuGet.exe and adding Nuget.CommandLine as dependency instead. Please check all paths."
             removeFile nugetExe
-            let depFile = DependenciesFile.ReadFromFile(Settings.DependenciesFile)
+            let depFile = DependenciesFile.ReadFromFile dependenciesFileName
             if not <| depFile.HasPackage("NuGet.CommandLine") then 
                 depFile.Add("NuGet.CommandLine", "").Save()
             
@@ -205,7 +206,7 @@ let ConvertFromNuget(force, installAfter, initAutoRestore) =
     | None -> ()
 
     if initAutoRestore && (autoVsNugetRestore || nugetTargets.IsSome) then 
-        VSIntegration.InitAutoRestore()
+        VSIntegration.InitAutoRestore dependenciesFileName
 
     if installAfter then
-        UpdateProcess.Update(true,false,true)
+        UpdateProcess.Update(dependenciesFileName,true,false,true)

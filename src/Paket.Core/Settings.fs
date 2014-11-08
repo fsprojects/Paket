@@ -4,7 +4,7 @@ open System
 open System.IO
 open Paket.Logging
 
-let rec internal findDependenciesFileInPath withError (dir:DirectoryInfo) =
+let rec FindDependenciesFileInPath withError (dir:DirectoryInfo) =
     let path = Path.Combine(dir.FullName,Constants.DependenciesFileName)
     if File.Exists(path) then
         path
@@ -16,8 +16,4 @@ let rec internal findDependenciesFileInPath withError (dir:DirectoryInfo) =
             else 
                 Constants.DependenciesFileName
         else
-           findDependenciesFileInPath withError parent
-
-let mutable DependenciesFile = findDependenciesFileInPath false (DirectoryInfo Environment.CurrentDirectory)
-
-let GetRoot() = FileInfo(DependenciesFile).Directory.FullName
+           FindDependenciesFileInPath withError parent

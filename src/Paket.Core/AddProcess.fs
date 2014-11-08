@@ -4,8 +4,8 @@ module Paket.AddProcess
 open Paket
 open System.IO
 
-let Add(package, version, force, hard, interactive, installAfter) =
-    let exisitingDependenciesFile = DependenciesFile.ReadFromFile(Settings.DependenciesFile)
+let Add(dependenciesFileName, package, version, force, hard, interactive, installAfter) =
+    let exisitingDependenciesFile = DependenciesFile.ReadFromFile(dependenciesFileName)
     let dependenciesFile =
         exisitingDependenciesFile
           .Add(package,version)
@@ -15,7 +15,7 @@ let Add(package, version, force, hard, interactive, installAfter) =
         if changed then
             UpdateProcess.updateWithModifiedDependenciesFile(dependenciesFile,package,force)
         else
-            let lockFileName = DependenciesFile.FindLockfile Settings.DependenciesFile
+            let lockFileName = DependenciesFile.FindLockfile dependenciesFileName
             LockFile.LoadFrom(lockFileName.FullName)
     
     if interactive then
@@ -36,7 +36,7 @@ let Add(package, version, force, hard, interactive, installAfter) =
 
     if installAfter then
         let sources =
-            Settings.DependenciesFile
+            dependenciesFileName
             |> File.ReadAllLines
             |> PackageSourceParser.getSources 
 
