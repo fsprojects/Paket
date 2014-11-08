@@ -5,7 +5,8 @@ open Paket
 open System.IO
 
 let Remove(package:string, force, hard, interactive, installAfter) =
-    let allProjects = ProjectFile.FindAllProjects(".")
+    let root = Settings.GetRoot()
+    let allProjects = ProjectFile.FindAllProjects root
     for project in allProjects do
         let proj = FileInfo(project.FileName)
         match ProjectFile.FindReferencesFile proj with

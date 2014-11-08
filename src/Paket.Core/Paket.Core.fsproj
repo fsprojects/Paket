@@ -103,9 +103,9 @@
     <Compile Include="NugetConvert.fs" />
     <Compile Include="FindOutdated.fs" />
     <Compile Include="BindingRedirects.fs" />
+    <Compile Include="FindReferences.fs" />
     <Compile Include="PublicAPI.fs" />
     <None Include="paket.references" />
-    <Compile Include="FindReferences.fs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="FSharp.Data.TypeProviders" />

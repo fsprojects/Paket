@@ -143,7 +143,7 @@ try
         | Command.Simplify -> Simplifier.Simplify(interactive)
         | Command.FindRefs ->
             let packages = results.GetResults <@ CLIArguments.Packages @>
-            FindReferences.For(packages)
+            FindReferences.FindReferencesFor(packages)
         | _ -> traceErrorfn "no command given.%s" (parser.Usage())
         
         let elapsedTime = Utils.TimeSpanToReadableString stopWatch.Elapsed

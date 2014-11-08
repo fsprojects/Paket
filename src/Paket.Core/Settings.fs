@@ -19,3 +19,5 @@ let rec internal findDependenciesFileInPath withError (dir:DirectoryInfo) =
            findDependenciesFileInPath withError parent
 
 let mutable DependenciesFile = findDependenciesFileInPath false (DirectoryInfo Environment.CurrentDirectory)
+
+let GetRoot() = FileInfo(DependenciesFile).Directory.FullName

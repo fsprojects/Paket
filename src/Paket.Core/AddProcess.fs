@@ -19,7 +19,7 @@ let Add(package, version, force, hard, interactive, installAfter) =
             LockFile.LoadFrom(lockFileName.FullName)
     
     if interactive then
-        for project in ProjectFile.FindAllProjects(".") do
+        for project in ProjectFile.FindAllProjects(Path.GetDirectoryName lockFile.FileName) do
             if Utils.askYesNo(sprintf "  Install to %s?" project.Name) then
                 let proj = FileInfo(project.FileName)
                 match ProjectFile.FindReferencesFile proj with

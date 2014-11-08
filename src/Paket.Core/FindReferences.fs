@@ -4,9 +4,10 @@ open System
 open System.IO
 open Logging
 
-let For (packages : list<string>) =
+let FindReferencesFor (packages : string list) =
+    let root = Settings.GetRoot()
     let refFiles =
-        Directory.GetFiles(".", "paket.references", SearchOption.AllDirectories)
+        Directory.GetFiles(root, "paket.references", SearchOption.AllDirectories)
         |> Seq.map ReferencesFile.FromFile
 
     let packagesAndTheirRefFiles =
