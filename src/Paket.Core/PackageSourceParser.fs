@@ -26,12 +26,3 @@ let parseAuth (text : string) (source : string) =
         if text.Contains("username:") || text.Contains("password:") then 
             failwithf "Could not parse auth in \"%s\"" text
         None
-
-let getSources lines = 
-    [ for line : string in lines do
-          match line.Trim() with
-          | trimmed when trimmed.StartsWith "source" -> 
-              let parts = trimmed.Split ' '
-              let newSource = parts.[1].Replace("\"", "").TrimEnd([| '/' |])
-              yield PackageSource.Parse(newSource, (parseAuth trimmed newSource))
-          | _ -> () ]

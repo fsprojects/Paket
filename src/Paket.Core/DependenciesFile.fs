@@ -94,7 +94,7 @@ module DependenciesFileParser =
         | _ when String.IsNullOrWhiteSpace line -> Blank
         | trimmed when trimmed.StartsWith "source" ->
             let parts = trimmed.Split ' '
-            let source = parts.[1].Replace("\"","")
+            let source = parts.[1].Replace("\"","").TrimEnd([| '/' |])
             Remote (source,PackageSourceParser.parseAuth trimmed source)
         | trimmed when trimmed.StartsWith "nuget" -> 
             let parts = trimmed.Replace("nuget","").Trim().Replace("\"", "").Split([|' '|],StringSplitOptions.RemoveEmptyEntries) |> Seq.toList
@@ -304,6 +304,12 @@ type DependenciesFile(fileName,options,packages : PackageRequirement list, remot
         else
             traceWarnfn "%s doesn't contain package %s. ==> Ignored" fileName packageName
             this
+
+    member this.GetAllPackageSources() = 
+        this.Packages
+        |> List.collect (fun package -> package.Sources)
+        |> Seq.distinct
+        |> Seq.toList
 
     override __.ToString() =        
         let sources = 

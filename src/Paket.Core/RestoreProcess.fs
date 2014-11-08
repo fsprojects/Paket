@@ -55,10 +55,7 @@ let Restore(dependenciesFileName,force,referencesFileNames) =
         if not lockFileName.Exists then 
             failwithf "paket.lock doesn't exist."
         else 
-            let sources = 
-                dependenciesFileName
-                |> File.ReadAllLines
-                |> PackageSourceParser.getSources
+            let sources = DependenciesFile.ReadFromFile(dependenciesFileName).GetAllPackageSources()
             sources, LockFile.LoadFrom(lockFileName.FullName)
     
     let packages = 

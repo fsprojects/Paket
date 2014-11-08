@@ -19,10 +19,7 @@ let Update(dependenciesFileName, forceResolution, force, hard) =
             lockFile.Save()
             dependenciesFile.Sources, lockFile
         else 
-            let sources = 
-                dependenciesFileName
-                |> File.ReadAllLines
-                |> PackageSourceParser.getSources
+            let sources = DependenciesFile.ReadFromFile(dependenciesFileName).GetAllPackageSources()
             sources, LockFile.LoadFrom(lockFileName.FullName)
 
     InstallProcess.Install(sources, force, hard, lockFile)
