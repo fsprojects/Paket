@@ -18,7 +18,7 @@ Dependencies.Locate(__SOURCE_DIRECTORY__)
 (**
 ## Adding and removing NuGet packages
 
-Paket allows to install and uninstall NuGet packages programmatically.
+Paket allows to install and uninstall NuGet packages programmatically:
 *)
 
 // install a package
@@ -52,7 +52,7 @@ Dependencies.GetInstalledVersion "FSharp.Data"
 (**
 ## Query the install model
 
-Paket allows to do queries against the installed NuGet packages.
+It's possible to do queries against the installed NuGet packages:
 *)
 
 // install some packages
@@ -67,7 +67,6 @@ Dependencies.GetInstalledPackages()
 // [fsi:   ("FSharp.Formatting", "2.4.36"); ("FsUnit", "1.3.0.1");]
 // [fsi:   ("Microsoft.AspNet.Razor", "2.0.30506.0"); ("NUnit", "2.6.3");]
 // [fsi:   ("RazorEngine", "3.3.0"); ("Zlib.Portable", "1.10.0")]]
-
 
 // list only the direct dependencies
 Dependencies.GetDirectDependencies()
