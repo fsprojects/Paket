@@ -56,7 +56,10 @@ type Dependencies(dependenciesFileName) =
         LockFile.LoadFrom(lockFileName.FullName)
 
     /// Lists outdated packages.
-    member this.ListOutdated(strict,includePrereleases) = FindOutdated.ListOutdated(dependenciesFileName,strict,includePrereleases)
+    member this.ShowOutdated(strict,includePrereleases) = FindOutdated.ShowOutdated(dependenciesFileName,strict,includePrereleases)
+    
+    /// Finds outdated packages.
+    member this.FindOutdated(strict,includePrereleases) = FindOutdated.FindOutdated(dependenciesFileName,strict,includePrereleases)
 
     /// Pulls new paket.targets and bootstrapper and puts them into .paket folder.
     member this.InitAutoRestore() = VSIntegration.InitAutoRestore(dependenciesFileName)

@@ -37,7 +37,7 @@ let FindOutdated(dependenciesFileName, strict,includingPrereleases) =
         | _ -> ()]
 
 /// Prints all outdated packages.
-let ListOutdated(dependenciesFileName,strict,includingPrereleases) = 
+let ShowOutdated(dependenciesFileName,strict,includingPrereleases) = 
     let allOutdated = FindOutdated(dependenciesFileName,strict,includingPrereleases)
     if allOutdated = [] then
         tracefn "No outdated packages found."

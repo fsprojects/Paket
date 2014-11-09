@@ -141,7 +141,7 @@ try
             | _ -> Dependencies.Locate().Update(force,hard)            
         | Command.Outdated ->         
             let strict = results.Contains <@ CLIArguments.Ignore_Constraints @> |> not
-            Dependencies.Locate().ListOutdated(strict,includePrereleases)
+            Dependencies.Locate().ShowOutdated(strict,includePrereleases)
         | Command.InitAutoRestore -> Dependencies.Locate().InitAutoRestore()
         | Command.ConvertFromNuget -> 
             let credsMigrationMode = 
