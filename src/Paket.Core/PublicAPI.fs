@@ -2,15 +2,27 @@
 
 open System.IO
 open Paket.Logging
+open System
 
 /// Paket API which is optimized for F# Interactive use.
 type Dependencies(dependenciesFileName) =
     let rootPath = Path.GetDirectoryName dependenciesFileName
     
-    /// Tries to locate the paket.dependencies file in one the given folder or a parent folder.
+    /// Tries to locate the paket.dependencies file in the current folder or a parent folder.
+    static member Locate() = Dependencies.Locate(Environment.CurrentDirectory)
+
+    /// Tries to locate the paket.dependencies file in the given folder or a parent folder.
     static member Locate(path) = 
         let dependenciesFileName = Settings.FindDependenciesFileInPath true (DirectoryInfo path)
         tracefn "found: %s" dependenciesFileName
+        Dependencies(dependenciesFileName)
+
+    /// Tries to create a paket.dependencies file in the current folder.
+    static member Create() = Dependencies.Create(Environment.CurrentDirectory)
+
+    /// Tries to create a paket.dependencies file in the given folder.
+    static member Create(path) = 
+        let dependenciesFileName = Path.Combine(path,Constants.DependenciesFileName)
         Dependencies(dependenciesFileName)
         
     /// Adds the given package without version requirements to the dependencies file.
