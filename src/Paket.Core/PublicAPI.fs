@@ -17,19 +17,25 @@ type Dependencies(dependenciesFileName) =
     member this.Add(package) = this.Add(package,"")
 
     /// Adds the given package with the given version to the dependencies file.
-    member this.Add(package,version) = AddProcess.Add(dependenciesFileName, package, version, false, false, false, true)
+    member this.Add(package,version) = this.Add(package, version, false, false, false, true)
+
+    /// Adds the given package with the given version to the dependencies file.
+    member this.Add(package,version,force,hard,interactive,installAfter) = AddProcess.Add(dependenciesFileName, package, version, force, hard, interactive, installAfter)
         
     /// Install all dependencies
-    member this.Install() = UpdateProcess.Update(dependenciesFileName, false, false, false) 
+    member this.Install(force,hard) = UpdateProcess.Update(dependenciesFileName,false,force,hard)
 
     /// Update all dependencies
-    member this.Update() = UpdateProcess.Update(dependenciesFileName, true, false, false)
+    member this.Update(force,hard) = UpdateProcess.Update(dependenciesFileName,true,force,hard)
 
-    /// Update given package
-    member this.UpdatePackage(package,version) = UpdateProcess.UpdatePackage(dependenciesFileName,package,version,false,false) 
+    /// Updates the given package
+    member this.UpdatePackage(package,version,force,hard) = UpdateProcess.UpdatePackage(dependenciesFileName,package,version,force,hard) 
 
     /// Restore given files
-    member this.Restore(files) = RestoreProcess.Restore(dependenciesFileName,false,files) 
+    member this.Restore(files) = this.Restore(false,files) 
+
+    /// Restore given files
+    member this.Restore(force,files) = RestoreProcess.Restore(dependenciesFileName,force,files) 
 
     /// Returns the lock file.
     member this.GetLockFile() = 
@@ -37,17 +43,21 @@ type Dependencies(dependenciesFileName) =
         let lockFileName = DependenciesFile.FindLockfile dependenciesFileName
         LockFile.LoadFrom(lockFileName.FullName)
 
-    /// Identity outdated packages    
-    member this.ListOutdated() = FindOutdated.ListOutdated(dependenciesFileName,false,false)
+    /// Identify outdated packages    
+    member this.ListOutdated(strict,includePrereleases) = FindOutdated.ListOutdated(dependenciesFileName,strict,includePrereleases)
 
     /// Pull new paket.targets and bootstrapper
     member this.InitAutoRestore() = VSIntegration.InitAutoRestore(dependenciesFileName)
 
-    /// Converts all projects from NuGet to Paket
-    member this.ConvertFromNuGet() = NuGetConvert.ConvertFromNuget(dependenciesFileName,false,false |> not,false |> not)
+    /// Convert the current package dependency graph to the simplest dependency graph
+    member this.Simplify() = this.Simplify(false)
 
     /// Convert the current package dependency graph to the simplest dependency graph
-    member this.Simplify() = Simplifier.Simplify(dependenciesFileName,false)
+    member this.Simplify(interactive) = Simplifier.Simplify(dependenciesFileName,interactive)
+
+     /// Convert from nuget usage to paket
+    member this.ConvertFromNuget(force,installAfter,initAutoRestore,credsMigrationMode) =
+        NuGetConvert.ConvertFromNuget(dependenciesFileName, force, installAfter, initAutoRestore, credsMigrationMode)
 
     /// Returns the installed version of the given package.
     member this.GetInstalledVersion(packageName) = 
@@ -69,10 +79,13 @@ type Dependencies(dependenciesFileName) =
         |> Seq.toList
 
     /// Removes the given package from dependencies file.
-    member this.Remove(package) = RemoveProcess.Remove(dependenciesFileName, package, false, false, false, true)
+    member this.Remove(package) = this.Remove(package, false, false, false, true)
+    
+    /// Removes the given package from dependencies file.
+    member this.Remove(package,force,hard,interactive,installAfter) = RemoveProcess.Remove(dependenciesFileName, package, force, hard, interactive, installAfter)
 
-    /// Show references for given packages    
-    member this.FindReferencesFor(packages:string list) = FindReferences.ShowReferencesFor(dependenciesFileName,packages)
+    /// Show references for the given packages.
+    member this.ShowReferencesFor(packages:string list) = FindReferences.ShowReferencesFor(dependenciesFileName,packages)
 
     /// Find all references for a given package.
     member this.FindReferencesFor(package) = FindReferences.FindReferencesForPackage(dependenciesFileName, package)

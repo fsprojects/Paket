@@ -125,34 +125,34 @@ try
                 match results.TryGetResult <@ CLIArguments.Version @> with
                 | Some x -> x
                 | _ -> ""
-            getDependencies().Add(packageName, version)
+
+            getDependencies().Add(packageName, version, force, hard, interactive, noInstall |> not)
         | Command.Remove -> 
             let packageName = results.GetResult <@ CLIArguments.Nuget @>            
-            getDependencies().Remove(packageName)
-        | Command.Install -> getDependencies().Install()
+            getDependencies().Remove(packageName,force,hard,interactive,noInstall |> not)
+        | Command.Install -> getDependencies().Install(force,hard)
         | Command.Restore -> 
             let files = results.GetResults <@ CLIArguments.References_Files @> 
-            getDependencies().Restore(files)
+            getDependencies().Restore(force,files)
         | Command.Update -> 
             match results.TryGetResult <@ CLIArguments.Nuget @> with
             | Some packageName -> 
                 let version = results.TryGetResult <@ CLIArguments.Version @>
-                getDependencies().UpdatePackage(packageName, version)
-            | _ -> getDependencies() .Update()
-            
+                getDependencies().UpdatePackage(packageName, version, force, hard)
+            | _ -> getDependencies().Update(force,hard)            
         | Command.Outdated ->         
             let strict = results.Contains <@ CLIArguments.Ignore_Constraints @> |> not
-            FindOutdated.ListOutdated(getDependenciesFile(),strict,includePrereleases)
-        | Command.InitAutoRestore -> VSIntegration.InitAutoRestore(getDependenciesFile())
+            getDependencies().ListOutdated(strict,includePrereleases)
+        | Command.InitAutoRestore -> getDependencies().InitAutoRestore()
         | Command.ConvertFromNuget -> 
             let credsMigrationMode = 
                 results.TryGetResult <@ CLIArguments.Creds_Migration @>
                 |> Option.map NuGetConvert.CredsMigrationMode.Parse
-            NuGetConvert.ConvertFromNuget(getDependenciesFile(),force,noInstall |> not,noAutoRestore |> not, credsMigrationMode)
-        | Command.Simplify -> Simplifier.Simplify(getDependenciesFile(),interactive)
+            getDependencies().ConvertFromNuget(force, noInstall |> not, noAutoRestore |> not, credsMigrationMode)
+        | Command.Simplify -> getDependencies().Simplify(interactive)
         | Command.FindRefs ->
             let packages = results.GetResults <@ CLIArguments.Packages @>
-            FindReferences.ShowReferencesFor(getDependenciesFile(),packages)
+            getDependencies().ShowReferencesFor(packages)
         | _ -> traceErrorfn "no command given.%s" (parser.Usage())
         
         let elapsedTime = Utils.TimeSpanToReadableString stopWatch.Elapsed
