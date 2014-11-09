@@ -8,21 +8,21 @@ let FindOutdated(dependenciesFileName, strict,includingPrereleases) =
     //TODO: Anything we need to do for source files here?
     let loadedFile = DependenciesFile.ReadFromFile dependenciesFileName
     let dependenciesFile =
-            let newPackages =
-                loadedFile.Packages
-                |> List.map (fun p ->
-                    let v = p.VersionRequirement 
-                    let requirement =
-                        match strict,includingPrereleases with
-                        | true,true -> VersionRequirement.NoRestriction
-                        | true,false -> v
-                        | false,true -> 
-                            match v with
-                            | VersionRequirement(v,_) -> VersionRequirement(v,PreReleaseStatus.All)
-                        | false,false -> VersionRequirement.AllReleases
-                    { p with VersionRequirement = requirement})
+        let newPackages =
+            loadedFile.Packages
+            |> List.map (fun p ->
+                let v = p.VersionRequirement 
+                let requirement =
+                    match strict,includingPrereleases with
+                    | true,true -> VersionRequirement.NoRestriction
+                    | true,false -> v
+                    | false,true -> 
+                        match v with
+                        | VersionRequirement(v,_) -> VersionRequirement(v,PreReleaseStatus.All)
+                    | false,false -> VersionRequirement.AllReleases
+                { p with VersionRequirement = requirement})
 
-            DependenciesFile(loadedFile.FileName,loadedFile.Options,newPackages,loadedFile.RemoteFiles)
+        DependenciesFile(loadedFile.FileName,loadedFile.Options,newPackages,loadedFile.RemoteFiles)
             
     let resolution = dependenciesFile.Resolve(true) 
     let resolvedPackages = resolution.ResolvedPackages.GetModelOrFail()
