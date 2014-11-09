@@ -26,10 +26,7 @@ type ResolvedSourceFile =
     member this.FilePath = this.ComputeFilePath(this.Name)
 
     member this.ComputeFilePath(name:string) =
-        let path = name
-                    .TrimStart('/')
-                    .Replace("/", Path.DirectorySeparatorChar.ToString())
-                    .Replace("\\", Path.DirectorySeparatorChar.ToString())
+        let path = normalizePath (name.TrimStart('/'))
 
         let di = DirectoryInfo(Path.Combine(Constants.PaketFilesFolderName, this.Owner, this.Project, path))
         di.FullName
