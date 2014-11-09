@@ -1,17 +1,17 @@
 # paket find-refs
 
-Finds all [`paket.references` files](references-file.html) that contain the given Nuget packages.
+Finds all project files that have the given NuGet packages installed.
 
     [lang=batchfile]
     $ paket find-refs --packages PACKAGENAME1 PACKAGENAME1 ...
 
 ## Sample
-.src/Paket/paket.references contains:
+*.src/Paket/paket.references* contains:
 
 	UnionArgParser
 	FSharp.Core.Microsoft.Signed
 
-.src/Paket.Core/paket.references contains:
+*.src/Paket.Core/paket.references* contains:
 
 	Newtonsoft.Json
 	DotNetZip
@@ -20,8 +20,8 @@ Finds all [`paket.references` files](references-file.html) that contain the give
 Now we run `paket find-refs --packages DotNetZip FSharp.Core.Microsoft.Signed`:
 	
 	DotNetZip
-	.src/Paket.Core/paket.references
+	.src/Paket.Core/Paket.Core.fsproj
 
 	FSharp.Core.Microsoft.Signed
-	.src/Paket.Core/paket.references
-	.src/Paket/paket.references
+	.src/Paket.Core/Paket.Core.fsproj
+	.src/Paket/Paket.fsproj
