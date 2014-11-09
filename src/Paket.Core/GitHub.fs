@@ -17,6 +17,8 @@ let getSHA1OfBranch owner project branch =
         return json.["sha"].ToString()
     }
 
+let private rawFileUrl owner project branch fileName =
+    sprintf "https://github.com/%s/%s/raw/%s/%s" owner project branch fileName
 
 /// Gets a dependencies file from github.
 let downloadDependenciesFile(rootPath,remoteFile:ModuleResolver.ResolvedSourceFile) = async {
@@ -24,7 +26,7 @@ let downloadDependenciesFile(rootPath,remoteFile:ModuleResolver.ResolvedSourceFi
 
     let dependenciesFileName = remoteFile.Name.Replace(fi.Name,Constants.DependenciesFileName)
 
-    let url = sprintf "https://github.com/%s/%s/raw/%s/%s" remoteFile.Owner remoteFile.Project remoteFile.Commit dependenciesFileName
+    let url = rawFileUrl remoteFile.Owner remoteFile.Project remoteFile.Commit dependenciesFileName
     let! result = safeGetFromUrl(None,url)
 
     match result with
@@ -75,7 +77,7 @@ let downloadGithubFiles(remoteFile:ModuleResolver.ResolvedSourceFile,destitnatio
 
         Directory.Delete(source,true)
 
-    | _ ->  return! downloadFromUrl(None,sprintf "https://github.com/%s/%s/raw/%s/%s" remoteFile.Owner remoteFile.Project remoteFile.Commit remoteFile.Name) destitnation
+    | _ ->  return! downloadFromUrl(None,rawFileUrl remoteFile.Owner remoteFile.Project remoteFile.Commit remoteFile.Name) destitnation
 }
 
 let DownloadSourceFile(rootPath, source:ModuleResolver.ResolvedSourceFile) = 
