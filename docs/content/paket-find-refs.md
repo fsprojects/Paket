@@ -6,6 +6,7 @@ Finds all project files that have the given NuGet packages installed.
     $ paket find-refs --packages PACKAGENAME1 PACKAGENAME1 ...
 
 ## Sample
+
 *.src/Paket/paket.references* contains:
 
 	UnionArgParser
@@ -17,7 +18,11 @@ Finds all project files that have the given NuGet packages installed.
 	DotNetZip
 	FSharp.Core.Microsoft.Signed
 
-Now we run `paket find-refs --packages DotNetZip FSharp.Core.Microsoft.Signed`:
+Now we run
+	
+	paket find-refs --packages DotNetZip FSharp.Core.Microsoft.Signed
+
+and paket gives the following output:
 	
 	DotNetZip
 	.src/Paket.Core/Paket.Core.fsproj
