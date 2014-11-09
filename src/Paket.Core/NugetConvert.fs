@@ -22,10 +22,18 @@ type CredsMigrationMode =
         | "selective" -> Selective
         | _ -> failwithf "unknown credentials migration mode: %s" s
 
-let private tryGetValue key (node : XmlNode option) =
+let private tryGetValue key (node : XmlNode) =
     node 
-    |> Option.bind (getNode (sprintf "//add[@key='%s']" key)) 
+    |> getNode (sprintf "add[@key='%s']" key)
     |> Option.bind (getAttribute "value")
+
+let private getKeyValueList (node : XmlNode) =
+    node 
+    |> getNodes "add"
+    |> List.choose (fun node -> 
+        match node |> getAttribute "key", node |> getAttribute "value" with
+        | Some key, Some value -> Some(key, value)
+        | _ -> None)
 
 type NugetConfig = 
     { PackageSources : list<string * Auth option>
@@ -42,35 +50,38 @@ type NugetConfig =
         doc.Load(filename)
 
         let clearSources = doc.SelectSingleNode("//packageSources/clear") <> null
+
+        let getAuth key = 
+            let getAuth' authNode =
+                let userName = authNode |> tryGetValue "Username"
+                let clearTextPass = authNode |> tryGetValue "ClearTextPassword"
+                let encryptedPass = authNode |> tryGetValue "Password"
+
+                match userName, encryptedPass, clearTextPass with 
+                | Some userName, Some encryptedPass, _ -> 
+                    Some { Username = userName; Password = ConfigFile.DecryptNuget encryptedPass }
+                | Some userName, _, Some clearTextPass ->
+                    Some  { Username = userName; Password = clearTextPass }
+                | _ -> None
+
+            doc 
+            |> getNode (sprintf "//packageSourceCredentials/%s" (XmlConvert.EncodeLocalName key))
+            |> Option.bind getAuth'
+
         let sources = 
-            [ for node in doc.SelectNodes("//packageSources/add[@value]") do
-                match node |> getAttribute "value" with
-                | None -> ()
-                | Some url ->
-                    let authNode = node |> getAttribute "key" |> Option.bind (fun key ->
-                            let key = XmlConvert.EncodeLocalName key
-                            doc |> getNode (sprintf "//packageSourceCredentials/%s" key))
-                  
-                    let userName = authNode |> tryGetValue "Username"
-                    let clearTextPass = authNode |> tryGetValue "ClearTextPassword"
-                    let encryptedPass = authNode |> tryGetValue "Password"
-
-                    let auth = userName |> Option.bind (fun userName ->
-                            match encryptedPass with
-                            | Some encryptedPass -> Some(userName, ConfigFile.DecryptNuget encryptedPass)
-                            | None -> clearTextPass |> Option.map (fun clearTextPass -> userName, clearTextPass))
-                                |> Option.map (fun (userName,password) -> 
-                                    { Username = userName; Password = password })
-
-                    yield (url, auth) ]
+            doc 
+            |> getNode "//packageSources"
+            |> Option.toList
+            |> List.collect getKeyValueList
+            |> List.map (fun (key,value) -> value, getAuth key)
 
         { PackageSources = if clearSources then sources else this.PackageSources @ sources
           PackageRestoreEnabled = 
-            match doc |> getNode "//packageRestore" |> tryGetValue "enabled" with
+            match doc |> getNode "//packageRestore" |> Option.bind (tryGetValue "enabled") with
             | Some value -> bool.Parse(value)
             | None -> this.PackageRestoreEnabled
           PackageRestoreAutomatic = 
-            match doc |> getNode "//packageRestore" |> tryGetValue "automatic" with
+            match doc |> getNode "//packageRestore" |> Option.bind (tryGetValue "automatic") with
             | Some value -> bool.Parse(value)
             | None -> this.PackageRestoreAutomatic }
 
