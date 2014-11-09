@@ -114,7 +114,7 @@ try
         let noAutoRestore = results.Contains <@ CLIArguments.No_Auto_Restore @>
         let includePrereleases = results.Contains <@ CLIArguments.Include_Prereleases @>
     
-        let dependencies = Dependencies.Locate(Constants.DependenciesFileName)
+        let getDependencies() = Dependencies.Locate(Constants.DependenciesFileName)
 
         match command with
         | Command.Add -> 
@@ -123,30 +123,30 @@ try
                 match results.TryGetResult <@ CLIArguments.Version @> with
                 | Some x -> x
                 | _ -> ""
-            dependencies.Add(packageName, version)
+            getDependencies().Add(packageName, version)
         | Command.Remove -> 
             let packageName = results.GetResult <@ CLIArguments.Nuget @>            
-            dependencies.Remove(packageName)
-        | Command.Install -> dependencies.Install()
+            getDependencies().Remove(packageName)
+        | Command.Install -> getDependencies().Install()
         | Command.Restore -> 
             let files = results.GetResults <@ CLIArguments.References_Files @> 
-            dependencies.Restore(files)
+            getDependencies().Restore(files)
         | Command.Update -> 
             match results.TryGetResult <@ CLIArguments.Nuget @> with
             | Some packageName -> 
                 let version = results.TryGetResult <@ CLIArguments.Version @>
-                dependencies.UpdatePackage(packageName, version)
-            | _ -> dependencies.Update()
+                getDependencies().UpdatePackage(packageName, version)
+            | _ -> getDependencies() .Update()
             
         | Command.Outdated ->         
             let strict = results.Contains <@ CLIArguments.Ignore_Constraints @> |> not
-            dependencies.ListOutdated() 
-        | Command.InitAutoRestore -> dependencies.InitAutoRestore() 
-        | Command.ConvertFromNuget -> dependencies.ConvertFromNuGet()
-        | Command.Simplify -> dependencies.Simplify()
+            getDependencies().ListOutdated() 
+        | Command.InitAutoRestore -> getDependencies().InitAutoRestore() 
+        | Command.ConvertFromNuget -> getDependencies().ConvertFromNuGet()
+        | Command.Simplify -> getDependencies().Simplify()
         | Command.FindRefs ->
             let packages = results.GetResults <@ CLIArguments.Packages @>
-            dependencies.FindReferencesFor(packages)
+            getDependencies().FindReferencesFor(packages)
         | _ -> traceErrorfn "no command given.%s" (parser.Usage())
         
         let elapsedTime = Utils.TimeSpanToReadableString stopWatch.Elapsed
