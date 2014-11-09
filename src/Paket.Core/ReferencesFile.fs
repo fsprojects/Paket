@@ -13,7 +13,7 @@ type ReferencesFile =
       NugetPackages: list<string>
       GitHubFiles: list<GitHubReference> } 
     
-    static member DefaultLink = "paket-files"
+    static member DefaultLink = Constants.PaketFilesFolderName
 
     static member FromLines(lines : string[]) = 
         let isGitHubFile (line: string) = line.StartsWith "File:"

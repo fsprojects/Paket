@@ -125,7 +125,7 @@ module DependenciesFileParser =
                 | _ -> failwithf "invalid github specification:%s     %s" Environment.NewLine trimmed
             match parts with
             | [| _; projectSpec; fileSpec |] -> SourceFile(getParts projectSpec, fileSpec)
-            | [| _; projectSpec;  |] -> SourceFile(getParts projectSpec, "FULLPROJECT")
+            | [| _; projectSpec;  |] -> SourceFile(getParts projectSpec, GitHub.FullProjectSourceFileName)
             | _ -> failwithf "invalid github specification:%s     %s" Environment.NewLine trimmed
         | _ -> Blank
     

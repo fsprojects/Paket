@@ -20,7 +20,7 @@ let ``should parse lines correctly``() =
     refFile.NugetPackages.Tail.Tail.Head |> shouldEqual "jQuery"
     refFile.GitHubFiles.Length |> shouldEqual 1
     refFile.GitHubFiles.Head.Name |> shouldEqual "FsUnit.fs"
-    refFile.GitHubFiles.Head.Link |> shouldEqual "paket-files"
+    refFile.GitHubFiles.Head.Link |> shouldEqual ReferencesFile.DefaultLink
 
 [<Test>]
 let ``should serialize itself correctly``() = 

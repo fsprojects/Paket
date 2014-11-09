@@ -61,7 +61,7 @@ let private removeCopiedFiles (project: ProjectFile) =
             removeEmptyDirHierarchy (DirectoryInfo dirPath)
 
     project.GetPaketFileItems() 
-    |> List.filter (fun fi -> not <| fi.FullName.Contains("paket-files"))
+    |> List.filter (fun fi -> not <| fi.FullName.Contains(Constants.PaketFilesFolderName))
     |> removeFilesAndTrimDirs
 
 let CreateInstallModel(root, sources, force, package) = 
