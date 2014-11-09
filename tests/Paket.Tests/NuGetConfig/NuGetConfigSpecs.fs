@@ -28,11 +28,9 @@ let ``can detect encrypted passwords in nuget.config``() =
     parse "NuGetConfig/PasswordConfig.xml" 
     |> shouldEqual
         { PackageSources = 
-            [ PackageSource.Nuget { Url = "https://www.nuget.org/api/v2/"; Auth = None }
-                                                                  
-              PackageSource.Nuget 
-                    { Url = "https://tc/httpAuth/app/nuget/v1/FeedService.svc/"
-                      Auth = Some { Username = AuthEntry.Create "notty"; Password = AuthEntry.Create "secret" } } ]
+            [ "https://www.nuget.org/api/v2/",None
+              "https://tc/httpAuth/app/nuget/v1/FeedService.svc/",
+                      Some { Username = "notty"; Password = "secret" } ]
           PackageRestoreEnabled = false
           PackageRestoreAutomatic = false }
 
@@ -41,10 +39,8 @@ let ``can detect cleartextpasswords in nuget.config``() =
     parse "NuGetConfig/ClearTextPasswordConfig.xml" 
     |> shouldEqual
         { PackageSources = 
-            [ PackageSource.Nuget { Url = "https://www.nuget.org/api/v2/"; Auth = None }
-                                                                  
-              PackageSource.Nuget 
-                    { Url = "https://nuget/somewhere/"
-                      Auth = Some { Username = AuthEntry.Create "myUser"; Password = AuthEntry.Create "myPassword" } } ]
+            [ "https://www.nuget.org/api/v2/",None
+              "https://nuget/somewhere/",
+                      Some { Username = "myUser"; Password = "myPassword" } ]
           PackageRestoreEnabled = false
           PackageRestoreAutomatic = false }

@@ -26,8 +26,8 @@ let ``get username and password from node``() =
     let auth = getAuthFromNode node
 
     // Assert
-    auth.Value.Username.Expanded |> shouldEqual  "demo-user"
-    auth.Value.Password.Expanded |> shouldEqual  "demopassword"
+    auth |> fst |> shouldEqual  "demo-user"
+    auth |> snd |> shouldEqual  "demopassword"
 
     
 [<Test>]

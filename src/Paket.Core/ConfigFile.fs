@@ -84,8 +84,7 @@ let getAuthFromNode (node : XmlNode) =
     let password = node.Attributes.["password"].Value
     let salt = node.Attributes.["salt"].Value
 
-    Some { Username = AuthEntry.Create username
-           Password = AuthEntry.Create <| Decrypt salt password}
+    username, Decrypt salt password
            
 let private saveCredentials (source : string) (username : string) (password : string) (credentialsNode : XmlNode) =
     let salt, encrypedPassword = Encrypt password
@@ -109,7 +108,7 @@ let private askAndAddAuth (source : string) (credentialsNode : XmlNode) =
     getAuthFromNode (node :> XmlNode)
 
 /// Check if the provided credentials for a specific source are correct
-let checkCredentials source cred = 
+let checkCredentials(source, cred) = 
     let client = Utils.createWebClient cred
     try 
         client.DownloadData(Uri(source)) |> ignore
@@ -129,9 +128,10 @@ let GetCredentials (source : string) =
     
     match getSourceNodes credentialsNode source with
     | sourceNode::_ ->
-        let creds = getAuthFromNode sourceNode
-        if checkCredentials source creds then
-            creds 
+        let username,password = getAuthFromNode sourceNode
+        let auth = {Username = username; Password = password}
+        if checkCredentials(source, Some(auth)) then
+            Some(username,password)
         else
             traceWarnfn "credentials for %s source are invalid" source  
             None

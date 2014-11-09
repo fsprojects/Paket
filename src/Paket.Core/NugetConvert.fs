@@ -28,7 +28,7 @@ let private tryGetValue key (node : XmlNode option) =
     |> Option.bind (getAttribute "value")
 
 type NugetConfig = 
-    { PackageSources : list<PackageSource>
+    { PackageSources : list<string * Auth option>
       PackageRestoreEnabled : bool
       PackageRestoreAutomatic : bool }
 
@@ -60,9 +60,9 @@ type NugetConfig =
                             | Some encryptedPass -> Some(userName, ConfigFile.DecryptNuget encryptedPass)
                             | None -> clearTextPass |> Option.map (fun clearTextPass -> userName, clearTextPass))
                                 |> Option.map (fun (userName,password) -> 
-                                    { Username = AuthEntry.Create userName; Password = AuthEntry.Create password })
+                                    { Username = userName; Password = password })
 
-                    yield PackageSource.Parse(url, auth) ]
+                    yield (url, auth) ]
 
         { PackageSources = if clearSources then sources else this.PackageSources @ sources
           PackageRestoreEnabled = 
@@ -87,13 +87,13 @@ let private readNugetConfig() =
         |> List.filter (fun fi -> fi.Exists)
         |> List.fold (fun (config:NugetConfig) fi -> config.ApplyConfig fi.FullName) NugetConfig.empty
                      
-    {config with PackageSources = if config.PackageSources = [] then [Paket.PackageSources.DefaultNugetSource] else config.PackageSources }
+    {config with PackageSources = if config.PackageSources = [] then [Constants.DefaultNugetStream, None] else config.PackageSources }
 
 let removeFile file = 
     File.Delete file
     tracefn "Deleted %s" file
 
-let private convertNugetsToDepFile(dependenciesFilename,nugetPackagesConfigs, nugetConfig) =
+let private convertNugetsToDepFile(dependenciesFilename,nugetPackagesConfigs, sources) =
     let allVersions =
         nugetPackagesConfigs
         |> Seq.collect (fun c -> c.Packages)
@@ -121,7 +121,7 @@ let private convertNugetsToDepFile(dependenciesFilename,nugetPackagesConfigs, nu
     
     for (name, _) in confictingPackages do traceWarnfn "Package %s is already defined in %s" name dependenciesFilename
 
-    let nugetPackageRequirement (name: string, v: string, sources : list<PackageSource>) =
+    let nugetPackageRequirement (name: string, v: string) =
         {Requirements.PackageRequirement.Name = name
          Requirements.PackageRequirement.VersionRequirement = VersionRequirement(VersionRange.Specific(SemVer.Parse v), PreReleaseStatus.No)
          Requirements.PackageRequirement.ResolverStrategy = Max
@@ -130,7 +130,7 @@ let private convertNugetsToDepFile(dependenciesFilename,nugetPackagesConfigs, nu
 
     match existingDepFile with
     | None ->
-        let packages = packagesToAdd |> List.map (fun (name,v) -> nugetPackageRequirement(name,v,nugetConfig.PackageSources))
+        let packages = packagesToAdd |> List.map (fun (name,v) -> nugetPackageRequirement(name,v))
         DependenciesFile(dependenciesFilename, InstallOptions.Default, packages, []).Save()
     | Some depFile ->
         if not (packagesToAdd |> List.isEmpty)
@@ -170,31 +170,23 @@ let ConvertFromNuget(dependenciesFileName, force, installAfter, initAutoRestore,
     let nugetPackagesConfigs = FindAllFiles(root, "packages.config") |> Seq.map Nuget.ReadPackagesConfig
     let nugetConfig = readNugetConfig()
     FindAllFiles(root, "nuget.config") |> Seq.iter (fun f -> removeFile f.FullName)
-    
-    let credsMigrationMode = defaultArg credsMigrationMode EncryptGlobal
 
-    let updatedSources = 
-        [for source in nugetConfig.PackageSources do
-            match source with
-            | LocalNuget _ as localNuget -> yield localNuget
-            | Nuget nuget -> 
-                match nuget.Auth with 
-                | None -> yield Nuget nuget
-                | Some auth -> 
-                    match credsMigrationMode with
-                    | EncryptGlobal -> 
-                        ConfigFile.AddCredentials(
-                            nuget.Url, 
-                            auth.Username.Expanded, 
-                            auth.Password.Expanded) |> ignore
-                        yield Nuget {nuget with Auth = None}
-                    | PlaintextLocal -> yield Nuget nuget
-                    | Selective -> yield Nuget nuget]
+    let migrateCredentials (auth) =
+        let credsMigrationMode = defaultArg credsMigrationMode EncryptGlobal
+        match credsMigrationMode with
+        | EncryptGlobal -> 
+            ConfigAuthentication(auth.Username, auth.Password)
+        | PlaintextLocal -> 
+            PlainTextAuthentication(auth.Username, auth.Password)
+        | Selective -> 
+            failwith "Not implemented yet"
 
-    convertNugetsToDepFile(
-        dependenciesFileName, 
-        nugetPackagesConfigs, 
-        {nugetConfig with PackageSources = updatedSources})
+    let sources = 
+        nugetConfig.PackageSources 
+        |> List.map (fun (name,auth) -> 
+                        PackageSource.Parse(name, auth |> Option.map migrateCredentials))
+
+    convertNugetsToDepFile(dependenciesFileName, nugetPackagesConfigs, sources)
         
     for nugetPackagesConfig in nugetPackagesConfigs do
         let packageFile = nugetPackagesConfig.File

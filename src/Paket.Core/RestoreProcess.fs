@@ -17,7 +17,7 @@ let ExtractPackage(root, sources, force, package : ResolvedPackage) =
             let auth = 
                 sources |> List.tryPick (fun s -> 
                                match s with
-                               | Nuget s -> s.Auth
+                               | Nuget s -> s.Authentication |> Option.map toBasicAuth
                                | _ -> None)
             try 
                 let! folder = Nuget.DownloadPackage(root, auth, source.Url, package.Name, v, force)

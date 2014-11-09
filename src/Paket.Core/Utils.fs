@@ -8,18 +8,9 @@ open System.Net
 open System.Xml
 open System.Text
 
-type AuthEntry = 
-    { Original : string
-      Expanded : string }
-
-    static member Create (s : string) =
-        { Original = s
-          Expanded = Environment.ExpandEnvironmentVariables(s) } 
-
 type Auth = 
-    { Username : AuthEntry
-      Password : AuthEntry }
-
+    { Username : string
+      Password : string }
 
 let TimeSpanToReadableString(span:TimeSpan) =
     let pluralize x = if x = 1 then String.Empty else "s"
@@ -90,7 +81,7 @@ let createWebClient(auth:Auth option) =
         //client.Credentials <- new NetworkCredential(auth.Username,auth.Password)
 
         //so use THIS instead to send credenatials RIGHT AWAY
-        let credentials = Convert.ToBase64String(Encoding.ASCII.GetBytes(auth.Username.Expanded + ":" + auth.Password.Expanded))
+        let credentials = Convert.ToBase64String(Encoding.ASCII.GetBytes(auth.Username + ":" + auth.Password))
         client.Headers.[HttpRequestHeader.Authorization] <- String.Format("Basic {0}", credentials)
 
     client.Headers.Add("user-agent", "Paket")
