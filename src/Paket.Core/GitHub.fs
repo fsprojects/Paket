@@ -62,10 +62,10 @@ let rec DirectoryCopy(sourceDirName, destDirName, copySubDirs) =
             DirectoryCopy(subdir.FullName, Path.Combine(destDirName, subdir.Name), copySubDirs)
 
 /// Gets a single file from github.
-let downloadGithubFiles(remoteFile:ModuleResolver.ResolvedSourceFile,destitnation) = async {
+let downloadGithubFiles(remoteFile:ModuleResolver.ResolvedSourceFile,destination) = async {
     match remoteFile.Name with
     | FullProjectSourceFileName ->
-        let fi = FileInfo(destitnation)
+        let fi = FileInfo(destination)
         let projectPath = fi.Directory.FullName
         let zipFile = Path.Combine(projectPath,sprintf "%s.zip" remoteFile.Commit)
         do! downloadFromUrl(None,sprintf "https://github.com/%s/%s/archive/%s.zip" remoteFile.Owner remoteFile.Project remoteFile.Commit) zipFile
@@ -77,7 +77,7 @@ let downloadGithubFiles(remoteFile:ModuleResolver.ResolvedSourceFile,destitnatio
 
         Directory.Delete(source,true)
 
-    | _ ->  return! downloadFromUrl(None,rawFileUrl remoteFile.Owner remoteFile.Project remoteFile.Commit remoteFile.Name) destitnation
+    | _ ->  return! downloadFromUrl(None,rawFileUrl remoteFile.Owner remoteFile.Project remoteFile.Commit remoteFile.Name) destination
 }
 
 let DownloadSourceFile(rootPath, source:ModuleResolver.ResolvedSourceFile) = 
