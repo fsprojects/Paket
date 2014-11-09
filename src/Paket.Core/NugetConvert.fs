@@ -11,14 +11,14 @@ open Paket.Nuget
 open Paket.PackageSources
 
 type CredsMigrationMode =
-    | EncryptGlobal
-    | PlaintextLocal
+    | Encrypt
+    | Plaintext
     | Selective
 
     static member Parse(s : string) = 
         match s with 
-        | "encrypt-global" -> EncryptGlobal
-        | "plaintext-local" -> PlaintextLocal
+        | "encrypt" -> Encrypt
+        | "plaintext" -> Plaintext
         | "selective" -> Selective
         | _ -> failwithf "unknown credentials migration mode: %s" s
 
@@ -172,11 +172,11 @@ let ConvertFromNuget(dependenciesFileName, force, installAfter, initAutoRestore,
     FindAllFiles(root, "nuget.config") |> Seq.iter (fun f -> removeFile f.FullName)
 
     let migrateCredentials sourceName auth =
-        let credsMigrationMode = defaultArg credsMigrationMode EncryptGlobal
+        let credsMigrationMode = defaultArg credsMigrationMode Encrypt
         match credsMigrationMode with
-        | EncryptGlobal -> 
+        | Encrypt -> 
             ConfigAuthentication(auth.Username, auth.Password)
-        | PlaintextLocal -> 
+        | Plaintext -> 
             PlainTextAuthentication(auth.Username, auth.Password)
         | Selective -> 
             let question =

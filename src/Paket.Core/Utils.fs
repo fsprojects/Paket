@@ -162,21 +162,6 @@ let askYesNo question =
 
     getAnswer()
 
-
-/// If the guard is true then a [0] / .. / [n] question will be ask.
-/// Until the user pressed a valid number.
-let askNumberedQuestion question options =
-    let rec getAnswer() = 
-        Logging.tracef "%s\r\n  => " question
-        let answer = readKey()
-        Logging.tracefn ""
-        match System.Int32.TryParse answer with
-        | true, x when x >= 0 && x < options -> x
-        | _ -> getAnswer()
-
-    getAnswer()
-
-
 let normalizePath(path:string) = path.Replace("\\",Path.DirectorySeparatorChar.ToString()).Replace("/",Path.DirectorySeparatorChar.ToString())
 
 /// Enumerates all files with the given pattern
