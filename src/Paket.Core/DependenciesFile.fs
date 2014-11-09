@@ -320,7 +320,7 @@ type DependenciesFile(fileName,options,packages : PackageRequirement list, remot
                 | Some (PlainTextAuthentication(username,password)) -> 
                     sprintf " username: \"%s\" password: \"%s\"" username password
                 | Some (EnvVarAuthentication(usernameVar,passwordVar)) -> 
-                    sprintf " username: \"%s\" password: \"%s\"" usernameVar.Value passwordVar.Value
+                    sprintf " username: \"%s\" password: \"%s\"" usernameVar.Variable passwordVar.Variable
                 | _ -> ""
                  
         let all =
