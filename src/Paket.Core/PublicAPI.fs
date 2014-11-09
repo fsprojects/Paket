@@ -34,19 +34,19 @@ type Dependencies(dependenciesFileName) =
     /// Adds the given package with the given version to the dependencies file.
     member this.Add(package,version,force,hard,interactive,installAfter) = AddProcess.Add(dependenciesFileName, package, version, force, hard, interactive, installAfter)
         
-    /// Install all dependencies
+    /// Installs all dependencies.
     member this.Install(force,hard) = UpdateProcess.Update(dependenciesFileName,false,force,hard)
 
-    /// Update all dependencies
+    /// Updates all dependencies.
     member this.Update(force,hard) = UpdateProcess.Update(dependenciesFileName,true,force,hard)
 
-    /// Updates the given package
+    /// Updates the given package.
     member this.UpdatePackage(package,version,force,hard) = UpdateProcess.UpdatePackage(dependenciesFileName,package,version,force,hard) 
 
-    /// Restore given files
+    /// Restores the given paket.references files.
     member this.Restore(files) = this.Restore(false,files) 
 
-    /// Restore given files
+    /// Restores the given paket.references files.
     member this.Restore(force,files) = RestoreProcess.Restore(dependenciesFileName,force,files) 
 
     /// Returns the lock file.
@@ -55,19 +55,19 @@ type Dependencies(dependenciesFileName) =
         let lockFileName = DependenciesFile.FindLockfile dependenciesFileName
         LockFile.LoadFrom(lockFileName.FullName)
 
-    /// Identify outdated packages    
+    /// Lists outdated packages.
     member this.ListOutdated(strict,includePrereleases) = FindOutdated.ListOutdated(dependenciesFileName,strict,includePrereleases)
 
-    /// Pull new paket.targets and bootstrapper
+    /// Pulls new paket.targets and bootstrapper and puts them into .paket folder.
     member this.InitAutoRestore() = VSIntegration.InitAutoRestore(dependenciesFileName)
 
-    /// Convert the current package dependency graph to the simplest dependency graph
+    /// Converts the current package dependency graph to the simplest dependency graph.
     member this.Simplify() = this.Simplify(false)
 
-    /// Convert the current package dependency graph to the simplest dependency graph
+    /// Converts the current package dependency graph to the simplest dependency graph.
     member this.Simplify(interactive) = Simplifier.Simplify(dependenciesFileName,interactive)
 
-     /// Convert from nuget usage to paket
+     /// Converts the solution from NuGet to Paket.
     member this.ConvertFromNuget(force,installAfter,initAutoRestore,credsMigrationMode) =
         NuGetConvert.ConvertFromNuget(dependenciesFileName, force, installAfter, initAutoRestore, credsMigrationMode)
 
@@ -96,9 +96,9 @@ type Dependencies(dependenciesFileName) =
     /// Removes the given package from dependencies file.
     member this.Remove(package,force,hard,interactive,installAfter) = RemoveProcess.Remove(dependenciesFileName, package, force, hard, interactive, installAfter)
 
-    /// Show references for the given packages.
+    /// Shows all references for the given packages.
     member this.ShowReferencesFor(packages:string list) = FindReferences.ShowReferencesFor(dependenciesFileName,packages)
 
-    /// Find all references for a given package.
+    /// Finds all references for a given package.
     member this.FindReferencesFor(package) = FindReferences.FindReferencesForPackage(dependenciesFileName, package)
     
