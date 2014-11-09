@@ -171,7 +171,7 @@ let ConvertFromNuget(dependenciesFileName, force, installAfter, initAutoRestore,
     let nugetConfig = readNugetConfig()
     FindAllFiles(root, "nuget.config") |> Seq.iter (fun f -> removeFile f.FullName)
 
-    let migrateCredentials (auth) =
+    let migrateCredentials sourceName auth =
         let credsMigrationMode = defaultArg credsMigrationMode EncryptGlobal
         match credsMigrationMode with
         | EncryptGlobal -> 
@@ -179,12 +179,19 @@ let ConvertFromNuget(dependenciesFileName, force, installAfter, initAutoRestore,
         | PlaintextLocal -> 
             PlainTextAuthentication(auth.Username, auth.Password)
         | Selective -> 
-            failwith "Not implemented yet"
+            let question =
+                sprintf "Credentials for source '%s': " sourceName  + 
+                    "[encrypt and save in config (Yes) " + 
+                    sprintf "| save as plaintext in %s (No)]" Constants.DependenciesFileName
+                    
+            match Utils.askYesNo question with
+            | true -> ConfigAuthentication(auth.Username, auth.Password)
+            | false -> PlainTextAuthentication(auth.Username, auth.Password)
 
     let sources = 
         nugetConfig.PackageSources 
         |> List.map (fun (name,auth) -> 
-                        PackageSource.Parse(name, auth |> Option.map migrateCredentials))
+                        PackageSource.Parse(name, auth |> Option.map (migrateCredentials name)))
 
     convertNugetsToDepFile(dependenciesFileName, nugetPackagesConfigs, sources)
         
