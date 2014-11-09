@@ -18,7 +18,6 @@ type InstallOptions =
 
 /// [omit]
 module DependenciesFileParser = 
-
     let private basicOperators = ["~>";"==";"<=";">=";"=";">";"<"]
     let private operators = basicOperators @ (basicOperators |> List.map (fun o -> "!" + o))
 

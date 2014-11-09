@@ -13,7 +13,21 @@ type Dependencies(dependenciesFileName) =
 
     /// Tries to locate the paket.dependencies file in the given folder or a parent folder.
     static member Locate(path) = 
-        let dependenciesFileName = Settings.FindDependenciesFileInPath true (DirectoryInfo path)
+        let rec findInPath(dir:DirectoryInfo,withError) =
+            let path = Path.Combine(dir.FullName,Constants.DependenciesFileName)
+            if File.Exists(path) then
+                path
+            else
+                let parent = dir.Parent
+                if parent = null then
+                    if withError then
+                        failwithf "Could not find %s" Constants.DependenciesFileName
+                    else 
+                        Constants.DependenciesFileName
+                else
+                   findInPath(parent, withError)
+
+        let dependenciesFileName = findInPath(DirectoryInfo path,true)
         tracefn "found: %s" dependenciesFileName
         Dependencies(dependenciesFileName)
 

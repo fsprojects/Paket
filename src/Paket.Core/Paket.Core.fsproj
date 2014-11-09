@@ -73,7 +73,6 @@
     <Compile Include="VersionRange.fs" />
     <Compile Include="Constants.fs" />
     <Compile Include="Logging.fs" />
-    <Compile Include="Settings.fs" />
     <Compile Include="Xml.fs" />
     <Compile Include="Utils.fs" />
     <Compile Include="ConfigFile.fs" />
