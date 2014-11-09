@@ -39,6 +39,9 @@ type Dependencies(dependenciesFileName) =
             Dependencies.Create(Environment.CurrentDirectory)
 
     /// Tries to create a paket.dependencies file in the given folder.
+    static member Create() = Dependencies.Create(Environment.CurrentDirectory)
+
+    /// Tries to create a paket.dependencies file in the given folder.
     static member Create(path) = 
         let dependenciesFileName = Path.Combine(path,Constants.DependenciesFileName)
         Dependencies(dependenciesFileName)
