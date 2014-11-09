@@ -18,23 +18,21 @@ type ReferencesFile =
     static member FromLines(lines : string[]) = 
         let isGitHubFile (line: string) = line.StartsWith "File:"
         let notEmpty (line: string) = not <| String.IsNullOrWhiteSpace line
+        let githubLines,nugetLines =
+            lines 
+            |> Array.filter notEmpty 
+            |> Array.map (fun s -> s.Trim())
+            |> Array.toList
+            |> List.partition isGitHubFile 
 
         { FileName = ""
-          NugetPackages = 
-            lines 
-            |> Array.filter notEmpty 
-            |> Array.filter (isGitHubFile >> not) 
-            |> Array.map (fun s -> s.Trim()) 
-            |> Array.toList
+          NugetPackages = nugetLines
           GitHubFiles = 
-            lines 
-            |> Array.filter notEmpty 
-            |> Array.filter isGitHubFile 
-            |> Array.map (fun s -> s.Replace("File:","").Split([|' '|], StringSplitOptions.RemoveEmptyEntries))
-            |> Array.map (fun segments -> 
+            githubLines
+            |> List.map (fun s -> s.Replace("File:","").Split([|' '|], StringSplitOptions.RemoveEmptyEntries))
+            |> List.map (fun segments -> 
                             { Name = segments.[0]
-                              Link = if segments.Length = 2 then segments.[1] else ReferencesFile.DefaultLink } )
-            |> Array.toList }
+                              Link = if segments.Length = 2 then segments.[1] else ReferencesFile.DefaultLink } ) }
 
     static member FromFile(fileName : string) =
         let lines = File.ReadAllLines(fileName)
