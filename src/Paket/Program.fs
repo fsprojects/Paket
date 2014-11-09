@@ -147,7 +147,7 @@ try
             let credsMigrationMode = 
                 results.TryGetResult <@ CLIArguments.Creds_Migration @>
                 |> Option.map NuGetConvert.CredsMigrationMode.Parse
-            Dependencies.Create().ConvertFromNuget(force, noInstall |> not, noAutoRestore |> not, credsMigrationMode)
+            Dependencies.LocateOrCreate().ConvertFromNuget(force, noInstall |> not, noAutoRestore |> not, credsMigrationMode)
         | Command.Simplify -> Dependencies.Locate().Simplify(interactive)
         | Command.FindRefs ->
             let packages = results.GetResults <@ CLIArguments.Packages @>

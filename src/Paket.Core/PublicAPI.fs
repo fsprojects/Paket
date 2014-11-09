@@ -31,8 +31,12 @@ type Dependencies(dependenciesFileName) =
         tracefn "found: %s" dependenciesFileName
         Dependencies(dependenciesFileName)
 
-    /// Tries to create a paket.dependencies file in the current folder.
-    static member Create() = Dependencies.Create(Environment.CurrentDirectory)
+    /// Tries to locate the paket.dependencies file in the current folder, and if fails then creates one.
+    static member LocateOrCreate() = 
+        try
+            Dependencies.Locate()
+        with _ ->
+            Dependencies.Create(Environment.CurrentDirectory)
 
     /// Tries to create a paket.dependencies file in the given folder.
     static member Create(path) = 
