@@ -166,7 +166,7 @@ let private convertNugetToRefFile(nugetPackagesConfig) =
     | None -> {ReferencesFile.FileName = refFilePath; NugetPackages = refsToAdd |> List.map fst; GitHubFiles = []}.Save()
     | Some refFile ->
         if not (refsToAdd |> List.isEmpty)
-            then (refsToAdd |> List.fold (fun (refFile : ReferencesFile) (name,_) -> refFile.AddNugetRef(name)) refFile).Save()
+            then (refsToAdd |> List.fold (fun (refFile : ReferencesFile) (name,_) -> refFile.AddNuGetReference(name)) refFile).Save()
         else tracefn "%s is up to date" refFilePath
 
 /// Converts all projects from NuGet to Paket

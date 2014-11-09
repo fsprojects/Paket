@@ -38,7 +38,7 @@ type ReferencesFile =
         let lines = File.ReadAllLines(fileName)
         { ReferencesFile.FromLines lines with FileName = fileName }
 
-    member this.AddNugetRef(reference : string) =
+    member this.AddNuGetReference(reference : string) =
         tracefn "Adding %s to %s" reference (this.FileName)
         { this with NugetPackages = this.NugetPackages @ [reference] }
 
