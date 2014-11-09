@@ -30,7 +30,7 @@ Paket can assist you with the conversion. The `paket convert-from-nuget` command
 <div id="syntax"></div>
 
     [lang=batchfile]
-    $ paket convert-from-nuget [--force] [--no-install] [--no-auto-restore]
+    $ paket convert-from-nuget [--force] [--no-install] [--no-auto-restore] [--creds-migration MODE]
 
 Options:
 
@@ -39,3 +39,19 @@ Options:
   `--no-install`: Skips [`paket install --hard`](paket-install.html) process afterward generation of dependencies / references files.
 
   `--no-auto-restore`: Skips [`paket init-auto-restore`](paket-init-auto-restore.html) process afterward generation of dependencies / references files.
+
+  `--creds-migration`: Specify mode for migrating NuGet source credentials. Possible values for `MODE` are [`encrypt`|`plaintext`|`selective`]. The default `MODE` is `encrypt`.
+
+## Migrating NuGet source credentials
+
+If you are using authorized NuGet feeds, convert-from-nuget command will automatically migrate the credentials for you.
+Following are valid modes for `--creds-migration` option:
+
+1. `encrypt` -  Encrypt your credentials and save in [Paket configuration file](paket-config-file.html).
+2. `plaintext` - Include your credentials in plaintext in [`paket.dependencies`](dependencies-file.html) file. See [example](nuget-dependencies.html#plaintext-credentials)
+3. `selective` - Use this switch, if you're using more than one authorized NuGet feed, and want to apply different mode for each of them.
+
+## Simplify direct dependencies
+
+After converting your solution from NuGet, you may end up with many indirect dependencies in your Paket files.
+Consider using [`paket simplify`](paket-simplify.html) to remove unnecessary indirect dependencies from your [`paket.dependencies`](dependencies-file.html) and [`paket.references`](references-files.html) files.
