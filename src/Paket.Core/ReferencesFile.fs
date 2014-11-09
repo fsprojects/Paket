@@ -20,15 +20,20 @@ type ReferencesFile =
         let notEmpty (line: string) = not <| String.IsNullOrWhiteSpace line
 
         { FileName = ""
-          NugetPackages = lines |> Array.filter notEmpty |> Array.filter (isGitHubFile >> not) |> Array.toList
+          NugetPackages = 
+            lines 
+            |> Array.filter notEmpty 
+            |> Array.filter (isGitHubFile >> not) 
+            |> Array.map (fun s -> s.Trim()) 
+            |> Array.toList
           GitHubFiles = 
             lines 
             |> Array.filter notEmpty 
             |> Array.filter isGitHubFile 
             |> Array.map (fun s -> s.Replace("File:","").Split([|' '|], StringSplitOptions.RemoveEmptyEntries))
-            |> Array.map (fun segments -> { Name = segments.[0]; Link = if segments.Length = 2 
-                                                                        then segments.[1]
-                                                                        else ReferencesFile.DefaultLink} )
+            |> Array.map (fun segments -> 
+                            { Name = segments.[0]
+                              Link = if segments.Length = 2 then segments.[1] else ReferencesFile.DefaultLink } )
             |> Array.toList }
 
     static member FromFile(fileName : string) =
