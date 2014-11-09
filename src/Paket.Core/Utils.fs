@@ -8,18 +8,9 @@ open System.Net
 open System.Xml
 open System.Text
 
-type AuthEntry = 
-    { Original : string
-      Expanded : string }
-
-    static member Create (s : string) =
-        { Original = s
-          Expanded = Environment.ExpandEnvironmentVariables(s) } 
-
 type Auth = 
-    { Username : AuthEntry
-      Password : AuthEntry }
-
+    { Username : string
+      Password : string }
 
 let TimeSpanToReadableString(span:TimeSpan) =
     let pluralize x = if x = 1 then String.Empty else "s"
@@ -90,7 +81,7 @@ let createWebClient(auth:Auth option) =
         //client.Credentials <- new NetworkCredential(auth.Username,auth.Password)
 
         //so use THIS instead to send credenatials RIGHT AWAY
-        let credentials = Convert.ToBase64String(Encoding.ASCII.GetBytes(auth.Username.Expanded + ":" + auth.Password.Expanded))
+        let credentials = Convert.ToBase64String(Encoding.ASCII.GetBytes(auth.Username + ":" + auth.Password))
         client.Headers.[HttpRequestHeader.Authorization] <- String.Format("Basic {0}", credentials)
 
     client.Headers.Add("user-agent", "Paket")
@@ -171,22 +162,7 @@ let askYesNo question =
 
     getAnswer()
 
-
-/// If the guard is true then a [0] / .. / [n] question will be ask.
-/// Until the user pressed a valid number.
-let askNumberedQuestion question options =
-    let rec getAnswer() = 
-        Logging.tracef "%s\r\n  => " question
-        let answer = readKey()
-        Logging.tracefn ""
-        match System.Int32.TryParse answer with
-        | true, x when x >= 0 && x < options -> x
-        | _ -> getAnswer()
-
-    getAnswer()
-
-
-let normalizePath(path:string) = path.Replace('\\',Path.DirectorySeparatorChar).Replace('/',Path.DirectorySeparatorChar)
+let normalizePath(path:string) = path.Replace("\\",Path.DirectorySeparatorChar.ToString()).Replace("/",Path.DirectorySeparatorChar.ToString())
 
 /// Enumerates all files with the given pattern
 let FindAllFiles(folder, pattern) = DirectoryInfo(folder).EnumerateFiles(pattern, SearchOption.AllDirectories)

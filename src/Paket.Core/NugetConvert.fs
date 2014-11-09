@@ -6,11 +6,37 @@ open System
 open System.IO
 open System.Xml
 open Paket.Logging
+open Paket.Xml
 open Paket.Nuget
 open Paket.PackageSources
 
+type CredsMigrationMode =
+    | Encrypt
+    | Plaintext
+    | Selective
+
+    static member Parse(s : string) = 
+        match s with 
+        | "encrypt" -> Encrypt
+        | "plaintext" -> Plaintext
+        | "selective" -> Selective
+        | _ -> failwithf "unknown credentials migration mode: %s" s
+
+let private tryGetValue key (node : XmlNode) =
+    node 
+    |> getNode (sprintf "add[@key='%s']" key)
+    |> Option.bind (getAttribute "value")
+
+let private getKeyValueList (node : XmlNode) =
+    node 
+    |> getNodes "add"
+    |> List.choose (fun node -> 
+        match node |> getAttribute "key", node |> getAttribute "value" with
+        | Some key, Some value -> Some(key, value)
+        | _ -> None)
+
 type NugetConfig = 
-    { PackageSources : list<PackageSource>
+    { PackageSources : list<string * Auth option>
       PackageRestoreEnabled : bool
       PackageRestoreAutomatic : bool }
 
@@ -24,47 +50,39 @@ type NugetConfig =
         doc.Load(filename)
 
         let clearSources = doc.SelectSingleNode("//packageSources/clear") <> null
+
+        let getAuth key = 
+            let getAuth' authNode =
+                let userName = authNode |> tryGetValue "Username"
+                let clearTextPass = authNode |> tryGetValue "ClearTextPassword"
+                let encryptedPass = authNode |> tryGetValue "Password"
+
+                match userName, encryptedPass, clearTextPass with 
+                | Some userName, Some encryptedPass, _ -> 
+                    Some { Username = userName; Password = ConfigFile.DecryptNuget encryptedPass }
+                | Some userName, _, Some clearTextPass ->
+                    Some  { Username = userName; Password = clearTextPass }
+                | _ -> None
+
+            doc 
+            |> getNode (sprintf "//packageSourceCredentials/%s" (XmlConvert.EncodeLocalName key))
+            |> Option.bind getAuth'
+
         let sources = 
-            [ for node in doc.SelectNodes("//packageSources/add[@value]") do
-                if node.Attributes.["value"] <> null then 
-                    let url = node.Attributes.["value"].Value
-                  
-                    let authNode = 
-                        if node.Attributes.["key"] = null then None else 
-                        let key = XmlConvert.EncodeLocalName node.Attributes.["key"].Value
-                        doc.SelectNodes(sprintf "//packageSourceCredentials/%s" key)
-                        |> Seq.cast<XmlNode>
-                        |> Seq.firstOrDefault
-                  
-                    let auth =
-                        match authNode with
-                        | Some node ->
-                              let userNode = node.SelectSingleNode("//add[@key='Username']")
-                                                
-                              if userNode = null then None else
-                              let passwordNode = node.SelectSingleNode("//add[@key='ClearTextPassword']")
-                              let passwordNode = 
-                                  if passwordNode <> null then passwordNode else 
-                                  node.SelectSingleNode("//add[@key='Password']")
-
-                              if passwordNode = null then None else
-                              let usernameAttr = userNode.Attributes.["value"]
-                              let passwordAttr = passwordNode.Attributes.["value"]
-                          
-                              if usernameAttr = null || passwordAttr = null then None else
-                              Some { Username = AuthEntry.Create usernameAttr.Value; Password = AuthEntry.Create passwordAttr.Value }
-                        | None -> None
-
-                    yield PackageSource.Parse(url, auth) ]
+            doc 
+            |> getNode "//packageSources"
+            |> Option.toList
+            |> List.collect getKeyValueList
+            |> List.map (fun (key,value) -> value, getAuth key)
 
         { PackageSources = if clearSources then sources else this.PackageSources @ sources
           PackageRestoreEnabled = 
-            match doc.SelectNodes("//packageRestore/add[@key='enabled']") |> Seq.cast<XmlNode> |> Seq.firstOrDefault with
-            | Some node -> bool.Parse(node.Attributes.["value"].Value)
+            match doc |> getNode "//packageRestore" |> Option.bind (tryGetValue "enabled") with
+            | Some value -> bool.Parse(value)
             | None -> this.PackageRestoreEnabled
           PackageRestoreAutomatic = 
-            match doc.SelectNodes("//packageRestore/add[@key='automatic']") |> Seq.cast<XmlNode> |> Seq.firstOrDefault with
-            | Some node -> bool.Parse(node.Attributes.["value"].Value)
+            match doc |> getNode "//packageRestore" |> Option.bind (tryGetValue "automatic") with
+            | Some value -> bool.Parse(value)
             | None -> this.PackageRestoreAutomatic }
 
 let private readNugetConfig() =
@@ -80,13 +98,13 @@ let private readNugetConfig() =
         |> List.filter (fun fi -> fi.Exists)
         |> List.fold (fun (config:NugetConfig) fi -> config.ApplyConfig fi.FullName) NugetConfig.empty
                      
-    {config with PackageSources = if config.PackageSources = [] then [Paket.PackageSources.DefaultNugetSource] else config.PackageSources }
+    {config with PackageSources = if config.PackageSources = [] then [Constants.DefaultNugetStream, None] else config.PackageSources }
 
 let removeFile file = 
     File.Delete file
     tracefn "Deleted %s" file
 
-let private convertNugetsToDepFile(dependenciesFilename,nugetPackagesConfigs, nugetConfig) =
+let private convertNugetsToDepFile(dependenciesFilename,nugetPackagesConfigs, sources) =
     let allVersions =
         nugetPackagesConfigs
         |> Seq.collect (fun c -> c.Packages)
@@ -114,7 +132,7 @@ let private convertNugetsToDepFile(dependenciesFilename,nugetPackagesConfigs, nu
     
     for (name, _) in confictingPackages do traceWarnfn "Package %s is already defined in %s" name dependenciesFilename
 
-    let nugetPackageRequirement (name: string, v: string, sources : list<PackageSource>) =
+    let nugetPackageRequirement (name: string, v: string) =
         {Requirements.PackageRequirement.Name = name
          Requirements.PackageRequirement.VersionRequirement = VersionRequirement(VersionRange.Specific(SemVer.Parse v), PreReleaseStatus.No)
          Requirements.PackageRequirement.ResolverStrategy = Max
@@ -123,7 +141,7 @@ let private convertNugetsToDepFile(dependenciesFilename,nugetPackagesConfigs, nu
 
     match existingDepFile with
     | None ->
-        let packages = packagesToAdd |> List.map (fun (name,v) -> nugetPackageRequirement(name,v,nugetConfig.PackageSources))
+        let packages = packagesToAdd |> List.map (fun (name,v) -> nugetPackageRequirement(name,v))
         DependenciesFile(dependenciesFilename, InstallOptions.Default, packages, []).Save()
     | Some depFile ->
         if not (packagesToAdd |> List.isEmpty)
@@ -152,7 +170,7 @@ let private convertNugetToRefFile(nugetPackagesConfig) =
         else tracefn "%s is up to date" refFilePath
 
 /// Converts all projects from NuGet to Paket
-let ConvertFromNuget(dependenciesFileName, force, installAfter, initAutoRestore) =
+let ConvertFromNuget(dependenciesFileName, force, installAfter, initAutoRestore, credsMigrationMode) =
     if File.Exists dependenciesFileName && not force then failwithf "%s already exists, use --force to overwrite" dependenciesFileName
     let root =
         if dependenciesFileName = Constants.DependenciesFileName then
@@ -163,8 +181,30 @@ let ConvertFromNuget(dependenciesFileName, force, installAfter, initAutoRestore)
     let nugetPackagesConfigs = FindAllFiles(root, "packages.config") |> Seq.map Nuget.ReadPackagesConfig
     let nugetConfig = readNugetConfig()
     FindAllFiles(root, "nuget.config") |> Seq.iter (fun f -> removeFile f.FullName)
-    
-    convertNugetsToDepFile(dependenciesFileName, nugetPackagesConfigs, nugetConfig)
+
+    let migrateCredentials sourceName auth =
+        let credsMigrationMode = defaultArg credsMigrationMode Encrypt
+        match credsMigrationMode with
+        | Encrypt -> 
+            ConfigAuthentication(auth.Username, auth.Password)
+        | Plaintext -> 
+            PlainTextAuthentication(auth.Username, auth.Password)
+        | Selective -> 
+            let question =
+                sprintf "Credentials for source '%s': " sourceName  + 
+                    "[encrypt and save in config (Yes) " + 
+                    sprintf "| save as plaintext in %s (No)]" Constants.DependenciesFileName
+                    
+            match Utils.askYesNo question with
+            | true -> ConfigAuthentication(auth.Username, auth.Password)
+            | false -> PlainTextAuthentication(auth.Username, auth.Password)
+
+    let sources = 
+        nugetConfig.PackageSources 
+        |> List.map (fun (name,auth) -> 
+                        PackageSource.Parse(name, auth |> Option.map (migrateCredentials name)))
+
+    convertNugetsToDepFile(dependenciesFileName, nugetPackagesConfigs, sources)
         
     for nugetPackagesConfig in nugetPackagesConfigs do
         let packageFile = nugetPackagesConfig.File

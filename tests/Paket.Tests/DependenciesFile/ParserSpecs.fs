@@ -245,10 +245,10 @@ let ``should read config with encapsulated password source``() =
     let cfg = DependenciesFile.FromCode( configWithPassword)
     
     (cfg.Packages |> List.find (fun p -> p.Name = "Rx-Main")).Sources 
-    |> shouldEqual [ PackageSource.Nuget { Url = "http://nuget.org/api/v2"
-                                           Auth = 
-                                               Some { Username = { Original = "tatü tata"; Expanded = "tatü tata" }
-                                                      Password = { Original = "you got hacked!"; Expanded = "you got hacked!" } } } ]
+    |> shouldEqual [ 
+        PackageSource.Nuget { 
+            Url = "http://nuget.org/api/v2"
+            Authentication = Some (PlainTextAuthentication("tatü tata", "you got hacked!")) } ]
 
 let configWithPasswordInSingleQuotes = """
 source http://nuget.org/api/v2 username: 'tatü tata' password: 'you got hacked!'
@@ -275,10 +275,12 @@ let ``should read config with password in env variable``() =
     let cfg = DependenciesFile.FromCode( configWithPasswordInEnvVariable)
     
     (cfg.Packages |> List.find (fun p -> p.Name = "Rx-Main")).Sources 
-    |> shouldEqual [ PackageSource.Nuget { Url = "http://nuget.org/api/v2"
-                                           Auth = 
-                                               Some { Username = { Original = "%FEED_USERNAME%"; Expanded = "user XYZ"}
-                                                      Password = { Original = "%FEED_PASSWORD%"; Expanded = "pw Love"}  } } ]
+    |> shouldEqual [ 
+        PackageSource.Nuget { 
+            Url = "http://nuget.org/api/v2"
+            Authentication = Some (EnvVarAuthentication
+                                    ({Variable = "%FEED_USERNAME%"; Value = "user XYZ"},
+                                     {Variable = "%FEED_PASSWORD%"; Value = "pw Love"}))} ]
 
 let configWithExplicitVersions = """
 source "http://nuget.org/api/v2"

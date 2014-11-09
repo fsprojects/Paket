@@ -17,7 +17,7 @@ let ExtractPackage(root, sources, force, package : ResolvedPackage) =
             let auth = 
                 sources |> List.tryPick (fun s -> 
                                match s with
-                               | Nuget s -> s.Auth
+                               | Nuget s -> s.Authentication |> Option.map toBasicAuth
                                | _ -> None)
             try 
                 let! folder = Nuget.DownloadPackage(root, auth, source.Url, package.Name, v, force)
@@ -55,10 +55,7 @@ let Restore(dependenciesFileName,force,referencesFileNames) =
         if not lockFileName.Exists then 
             failwithf "paket.lock doesn't exist."
         else 
-            let sources = 
-                dependenciesFileName
-                |> File.ReadAllLines
-                |> PackageSourceParser.getSources
+            let sources = DependenciesFile.ReadFromFile(dependenciesFileName).GetAllPackageSources()
             sources, LockFile.LoadFrom(lockFileName.FullName)
     
     let packages = 

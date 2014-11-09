@@ -44,11 +44,7 @@ let Remove(dependenciesFileName, package:string, force, hard, interactive, insta
             LockFile.LoadFrom(lockFileName.FullName)
     
     if installAfter then
-        let sources =
-            dependenciesFileName
-            |> File.ReadAllLines
-            |> PackageSourceParser.getSources 
-
+        let sources = DependenciesFile.ReadFromFile(dependenciesFileName).GetAllPackageSources()
         InstallProcess.Install(sources, force, hard, lockFile)
 
     if changed then

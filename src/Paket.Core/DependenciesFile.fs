@@ -92,10 +92,7 @@ module DependenciesFileParser =
     let private (|Remote|Package|Blank|ReferencesMode|OmitContent|SourceFile|) (line:string) =
         match line.Trim() with
         | _ when String.IsNullOrWhiteSpace line -> Blank
-        | trimmed when trimmed.StartsWith "source" ->
-            let parts = trimmed.Split ' '
-            let source = parts.[1].Replace("\"","")
-            Remote (source,PackageSourceParser.parseAuth trimmed source)
+        | trimmed when trimmed.StartsWith "source" -> Remote(PackageSource.Parse(trimmed))
         | trimmed when trimmed.StartsWith "nuget" -> 
             let parts = trimmed.Replace("nuget","").Trim().Replace("\"", "").Split([|' '|],StringSplitOptions.RemoveEmptyEntries) |> Seq.toList
 
@@ -135,7 +132,7 @@ module DependenciesFileParser =
             let lineNo = lineNo + 1
             try
                 match line with
-                | Remote(newSource,auth) -> lineNo, options, sources @ [PackageSource.Parse(newSource.TrimEnd([|'/'|]),auth)], packages, sourceFiles
+                | Remote(newSource) -> lineNo, options, sources @ [newSource], packages, sourceFiles
                 | Blank -> lineNo, options, sources, packages, sourceFiles
                 | ReferencesMode mode -> lineNo, { options with Strict = mode }, sources, packages, sourceFiles
                 | OmitContent omit -> lineNo, { options with OmitContent = omit }, sources, packages, sourceFiles
@@ -305,12 +302,27 @@ type DependenciesFile(fileName,options,packages : PackageRequirement list, remot
             traceWarnfn "%s doesn't contain package %s. ==> Ignored" fileName packageName
             this
 
+    member this.GetAllPackageSources() = 
+        this.Packages
+        |> List.collect (fun package -> package.Sources)
+        |> Seq.distinct
+        |> Seq.toList
+
     override __.ToString() =        
         let sources = 
             packages
             |> Seq.map (fun package -> package.Sources,package)
             |> Seq.groupBy fst
 
+        let formatNugetSource source = 
+            "source " + source.Url +
+                match source.Authentication with
+                | Some (PlainTextAuthentication(username,password)) -> 
+                    sprintf " username: \"%s\" password: \"%s\"" username password
+                | Some (EnvVarAuthentication(usernameVar,passwordVar)) -> 
+                    sprintf " username: \"%s\" password: \"%s\"" usernameVar.Variable passwordVar.Variable
+                | _ -> ""
+                 
         let all =
             let hasReportedSource = ref false
             let hasReportedFirst = ref false
@@ -321,11 +333,7 @@ type DependenciesFile(fileName,options,packages : PackageRequirement list, remot
                   for source in sources do
                       hasReportedSource := true
                       match source with
-                      | Nuget source -> 
-                        match source.Auth with
-                        | None -> yield "source " + source.Url 
-                        | Some auth -> yield sprintf "source %s username: \"%s\" password: \"%s\"" source.Url <| auth.Username.Original <| auth.Password.Original
-                        
+                      | Nuget source -> yield formatNugetSource source
                       | LocalNuget source -> yield "source " + source
                   
                   for _,package in packages do

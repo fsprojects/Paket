@@ -315,7 +315,7 @@ let DownloadPackage(root, auth, url, name, version, force) =
                     //client.Credentials <- new NetworkCredential(auth.Username,auth.Password)
 
                     //so use THIS instead to send credenatials RIGHT AWAY
-                    let credentials = Convert.ToBase64String(Encoding.ASCII.GetBytes(auth.Username.Expanded + ":" + auth.Password.Expanded))
+                    let credentials = Convert.ToBase64String(Encoding.ASCII.GetBytes(auth.Username + ":" + auth.Password))
                     request.Headers.[HttpRequestHeader.Authorization] <- String.Format("Basic {0}", credentials)
 
                 request.Proxy <- Utils.defaultProxy
@@ -375,7 +375,13 @@ let GetPackageDetails force sources package version : PackageResolver.PackageDet
             try 
                 match source with
                 | Nuget source -> 
-                    getDetailsFromNuget force source.Auth source.Url package version |> Async.RunSynchronously
+                    getDetailsFromNuget 
+                        force 
+                        (source.Authentication |> Option.map toBasicAuth)
+                        source.Url 
+                        package 
+                        version 
+                    |> Async.RunSynchronously
                 | LocalNuget path -> 
                     getDetailsFromLocalFile path package version |> Async.RunSynchronously
                 |> fun x -> source,x
@@ -394,7 +400,10 @@ let GetVersions(sources, packageName) =
     sources
     |> Seq.map (fun source -> 
            match source with
-           | Nuget source -> getAllVersions (source.Auth, source.Url, packageName)
+           | Nuget source -> getAllVersions (
+                                source.Authentication |> Option.map toBasicAuth, 
+                                source.Url, 
+                                packageName)
            | LocalNuget path -> getAllVersionsFromLocalPath (path, packageName))
     |> Async.Parallel
     |> Async.RunSynchronously
