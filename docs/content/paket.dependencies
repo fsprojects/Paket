@@ -1,0 +1,5 @@
+source https://nuget.org/api/v2
+
+nuget FSharp.Formatting
+nuget FsUnit
+nuget FSharp.Data

@@ -6,14 +6,13 @@ open System
 
 /// Contains methods to read and manipulate solution files.
 type SolutionFile(fileName: string) =
-    [<Literal>] 
-    let slnFolderProjectGuid = "2150E333-8FDC-42A3-9474-1A3956D46DE8"
+   
     let originalContent = File.ReadAllLines fileName |> Array.toList
     let content = ResizeArray( originalContent )
     
     let removeNugetSlnFolderIfEmpty() =
         match content |> Seq.tryFindIndex (fun line -> 
-                line.StartsWith(sprintf "Project(\"{%s}\")" slnFolderProjectGuid) && line.Contains(".nuget")) with
+                line.StartsWith(sprintf "Project(\"{%s}\")" Constants.SolutionFolderProjectGuid) && line.Contains(".nuget")) with
         | Some(index) -> 
             if content.[index+1].Contains("ProjectSection(SolutionItems)") &&
                content.[index+2].Contains("EndProjectSection") &&
@@ -24,7 +23,7 @@ type SolutionFile(fileName: string) =
 
     let addPaketFolder () = 
         let lines = 
-            [sprintf   "Project(\"{%s}\") = \".paket\", \".paket\", \"{%s}\"" slnFolderProjectGuid (Guid.NewGuid().ToString("D").ToUpper());
+            [sprintf   "Project(\"{%s}\") = \".paket\", \".paket\", \"{%s}\"" Constants.SolutionFolderProjectGuid (Guid.NewGuid().ToString("D").ToUpper());
                        "	ProjectSection(SolutionItems) = preProject";
                        "	EndProjectSection";
                        "EndProject"]
@@ -70,7 +69,7 @@ type SolutionFile(fileName: string) =
     member __.AddPaketFolder(dependenciesFile, lockFile) =
         let paketProjectIndex, length = 
             match content |> Seq.tryFindIndex (fun line ->
-                line.StartsWith(sprintf   "Project(\"{%s}\") = \".paket\", \".paket\"" slnFolderProjectGuid)) with
+                line.StartsWith(sprintf   "Project(\"{%s}\") = \".paket\", \".paket\"" Constants.SolutionFolderProjectGuid)) with
             | Some paketProjectIndex -> 
                 let length = content |> Seq.skip paketProjectIndex |> Seq.findIndex (fun line -> line = "EndProject")
                 paketProjectIndex, length

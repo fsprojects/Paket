@@ -16,7 +16,7 @@ module LockFileSerializer =
             |> Seq.map (fun kv ->
                     let package = kv.Value
                     match package.Source with
-                    | Nuget source -> source.Url,source.Auth,package
+                    | Nuget source -> source.Url,source.Authentication,package
                     | LocalNuget path -> path,None,package
                 )
             |> Seq.groupBy (fun (a,b,_) -> a,b)

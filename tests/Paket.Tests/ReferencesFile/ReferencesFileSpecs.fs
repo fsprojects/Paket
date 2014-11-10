@@ -20,7 +20,7 @@ let ``should parse lines correctly``() =
     refFile.NugetPackages.Tail.Tail.Head |> shouldEqual "jQuery"
     refFile.RemoteFiles.Length |> shouldEqual 1
     refFile.RemoteFiles.Head.Name |> shouldEqual "FsUnit.fs"
-    refFile.RemoteFiles.Head.Link |> shouldEqual "paket-files"
+    refFile.RemoteFiles.Head.Link |> shouldEqual ReferencesFile.DefaultLink
 
 [<Test>]
 let ``should serialize itself correctly``() = 
@@ -47,3 +47,15 @@ let ``should serialize customPath correctly``() =
     let expected = [|"File:FromGithub.fs CustomPath\Dir"|]
 
     refFile.ToString() |> toLines |> shouldEqual expected
+
+let refFileWithTrailingWhitespace = """
+Castle.Windsor  
+Newtonsoft.Json 
+"""
+
+[<Test>]
+let ``should parse lines with trailing whitspace correctly``() = 
+    let refFile = ReferencesFile.FromLines(toLines refFileWithTrailingWhitespace)
+    refFile.NugetPackages.Length |> shouldEqual 2
+    refFile.NugetPackages.Head |> shouldEqual "Castle.Windsor"
+    refFile.NugetPackages.Tail.Head |> shouldEqual "Newtonsoft.Json"

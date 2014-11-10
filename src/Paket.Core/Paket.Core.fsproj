@@ -24,7 +24,8 @@
     <OutputPath>..\..\bin</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <WarningLevel>3</WarningLevel>
-    <DocumentationFile>..\..\bin\Paket.Core.XML</DocumentationFile>
+    <DocumentationFile>
+    </DocumentationFile>
     <StartArguments>update</StartArguments>
     <StartAction>Project</StartAction>
     <StartProgram>paket.exe</StartProgram>
@@ -72,9 +73,9 @@
     <Compile Include="VersionRange.fs" />
     <Compile Include="Constants.fs" />
     <Compile Include="Logging.fs" />
-    <Compile Include="Settings.fs" />
     <Compile Include="Xml.fs" />
     <Compile Include="Utils.fs" />
+    <Compile Include="ConfigFile.fs" />
     <Compile Include="PackageSources.fs" />
     <Compile Include="Requirements.fs" />
     <Compile Include="ModuleResolver.fs" />
@@ -86,8 +87,6 @@
     <Compile Include="ProjectFile.fs" />
     <Compile Include="SolutionFile.fs" />
     <Compile Include="Nuget.fs" />
-    <Compile Include="ConfigFile.fs" />
-    <Compile Include="PackageSourceParser.fs" />
     <Compile Include="DependenciesFile.fs" />
     <Compile Include="ReferencesFile.fs" />
     <Compile Include="DependencyModel.fs" />
@@ -102,7 +101,8 @@
     <Compile Include="NugetConvert.fs" />
     <Compile Include="FindOutdated.fs" />
     <Compile Include="BindingRedirects.fs" />
-    <Compile Include="Interactive.fs" />
+    <Compile Include="FindReferences.fs" />
+    <Compile Include="PublicAPI.fs" />
     <None Include="paket.references" />
   </ItemGroup>
   <ItemGroup>

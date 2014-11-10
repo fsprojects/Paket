@@ -4,8 +4,8 @@ module Paket.AddProcess
 open Paket
 open System.IO
 
-let Add(package, version, force, hard, interactive, installAfter) =
-    let exisitingDependenciesFile = DependenciesFile.ReadFromFile(Settings.DependenciesFile)
+let Add(dependenciesFileName, package, version, force, hard, interactive, installAfter) =
+    let exisitingDependenciesFile = DependenciesFile.ReadFromFile(dependenciesFileName)
     let dependenciesFile =
         exisitingDependenciesFile
           .Add(package,version)
@@ -15,11 +15,11 @@ let Add(package, version, force, hard, interactive, installAfter) =
         if changed then
             UpdateProcess.updateWithModifiedDependenciesFile(dependenciesFile,package,force)
         else
-            let lockFileName = DependenciesFile.FindLockfile Settings.DependenciesFile
+            let lockFileName = DependenciesFile.FindLockfile dependenciesFileName
             LockFile.LoadFrom(lockFileName.FullName)
     
     if interactive then
-        for project in ProjectFile.FindAllProjects(".") do
+        for project in ProjectFile.FindAllProjects(Path.GetDirectoryName lockFile.FileName) do
             if Utils.askYesNo(sprintf "  Install to %s?" project.Name) then
                 let proj = FileInfo(project.FileName)
                 match ProjectFile.FindReferencesFile proj with
@@ -35,11 +35,7 @@ let Add(package, version, force, hard, interactive, installAfter) =
                 | Some fileName -> File.AppendAllLines(fileName,["";package])
 
     if installAfter then
-        let sources =
-            Settings.DependenciesFile
-            |> File.ReadAllLines
-            |> PackageSourceParser.getSources 
-
+        let sources = DependenciesFile.ReadFromFile(dependenciesFileName).GetAllPackageSources()
         InstallProcess.Install(sources, force, hard, lockFile)
 
     if changed then

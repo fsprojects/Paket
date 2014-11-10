@@ -269,9 +269,9 @@ let ExtractPackage(fileName:string, targetFolder, name, version) =
     }
 
 /// Extracts the given package to the ./packages folder
-let CopyFromCache(cacheFileName, name, version, force) = 
+let CopyFromCache(root, cacheFileName, name, version, force) = 
     async { 
-        let targetFolder = DirectoryInfo(Path.Combine("packages", name)).FullName
+        let targetFolder = DirectoryInfo(Path.Combine(root, "packages", name)).FullName
         let fi = FileInfo(cacheFileName)
         let targetFile = FileInfo(Path.Combine(targetFolder, fi.Name))
         if not force && targetFile.Exists then           
@@ -290,7 +290,7 @@ let CopyFromCache(cacheFileName, name, version, force) =
     }
 
 /// Downloads the given package to the NuGet Cache folder
-let DownloadPackage(auth, url, name, version, force) = 
+let DownloadPackage(root, auth, url, name, version, force) = 
     async { 
         let targetFileName = Path.Combine(CacheFolder, name + "." + version + ".nupkg")
         let targetFile = FileInfo targetFileName
@@ -315,7 +315,7 @@ let DownloadPackage(auth, url, name, version, force) =
                     //client.Credentials <- new NetworkCredential(auth.Username,auth.Password)
 
                     //so use THIS instead to send credenatials RIGHT AWAY
-                    let credentials = Convert.ToBase64String(Encoding.ASCII.GetBytes(auth.Username.Expanded + ":" + auth.Password.Expanded))
+                    let credentials = Convert.ToBase64String(Encoding.ASCII.GetBytes(auth.Username + ":" + auth.Password))
                     request.Headers.[HttpRequestHeader.Authorization] <- String.Format("Basic {0}", credentials)
 
                 request.Proxy <- Utils.defaultProxy
@@ -336,7 +336,7 @@ let DownloadPackage(auth, url, name, version, force) =
 
             with
             | exn -> failwithf "Could not download %s %s.%s    %s" name version Environment.NewLine exn.Message
-        return! CopyFromCache(targetFile.FullName, name, version, force)
+        return! CopyFromCache(root, targetFile.FullName, name, version, force)
     }
 
 /// Finds all libraries in a nuget package.
@@ -375,7 +375,13 @@ let GetPackageDetails force sources package version : PackageResolver.PackageDet
             try 
                 match source with
                 | Nuget source -> 
-                    getDetailsFromNuget force source.Auth source.Url package version |> Async.RunSynchronously
+                    getDetailsFromNuget 
+                        force 
+                        (source.Authentication |> Option.map toBasicAuth)
+                        source.Url 
+                        package 
+                        version 
+                    |> Async.RunSynchronously
                 | LocalNuget path -> 
                     getDetailsFromLocalFile path package version |> Async.RunSynchronously
                 |> fun x -> source,x
@@ -394,7 +400,10 @@ let GetVersions(sources, packageName) =
     sources
     |> Seq.map (fun source -> 
            match source with
-           | Nuget source -> getAllVersions (source.Auth, source.Url, packageName)
+           | Nuget source -> getAllVersions (
+                                source.Authentication |> Option.map toBasicAuth, 
+                                source.Url, 
+                                packageName)
            | LocalNuget path -> getAllVersionsFromLocalPath (path, packageName))
     |> Async.Parallel
     |> Async.RunSynchronously

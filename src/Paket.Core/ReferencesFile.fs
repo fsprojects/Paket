@@ -13,29 +13,32 @@ type ReferencesFile =
       NugetPackages: list<string>
       RemoteFiles: list<RemoteFileReference> } 
     
-    static member DefaultLink = "paket-files"
+    static member DefaultLink = Constants.PaketFilesFolderName
 
     static member FromLines(lines : string[]) = 
         let isSingleFile (line: string) = line.StartsWith "File:"
         let notEmpty (line: string) = not <| String.IsNullOrWhiteSpace line
-
-        { FileName = ""
-          NugetPackages = lines |> Array.filter notEmpty |> Array.filter (isSingleFile >> not) |> Array.toList
-          RemoteFiles = 
+        let remoteLines,nugetLines =
             lines 
             |> Array.filter notEmpty 
-            |> Array.filter isSingleFile 
-            |> Array.map (fun s -> s.Replace("File:","").Split([|' '|], StringSplitOptions.RemoveEmptyEntries))
-            |> Array.map (fun segments -> { Name = segments.[0]; Link = if segments.Length = 2 
-                                                                        then segments.[1]
-                                                                        else ReferencesFile.DefaultLink} )
-            |> Array.toList }
+            |> Array.map (fun s -> s.Trim())
+            |> Array.toList
+            |> List.partition isSingleFile 
+
+        { FileName = ""
+          NugetPackages = nugetLines
+          RemoteFiles = 
+            remoteLines
+            |> List.map (fun s -> s.Replace("File:","").Split([|' '|], StringSplitOptions.RemoveEmptyEntries))
+            |> List.map (fun segments -> 
+                            { Name = segments.[0]
+                              Link = if segments.Length = 2 then segments.[1] else ReferencesFile.DefaultLink } ) }
 
     static member FromFile(fileName : string) =
         let lines = File.ReadAllLines(fileName)
         { ReferencesFile.FromLines lines with FileName = fileName }
 
-    member this.AddNugetRef(reference : string) =
+    member this.AddNuGetReference(reference : string) =
         tracefn "Adding %s to %s" reference (this.FileName)
         { this with NugetPackages = this.NugetPackages @ [reference] }
 

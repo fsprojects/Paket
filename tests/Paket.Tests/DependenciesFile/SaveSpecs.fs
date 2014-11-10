@@ -4,6 +4,7 @@ open Paket
 open NUnit.Framework
 open FsUnit
 open TestHelpers
+open System
 
 let config1 = """source http://nuget.org/api/v2
 
@@ -121,3 +122,22 @@ let ``should serialize config with password``() =
     
     cfg.ToString()
     |> shouldEqual (normalizeLineEndings configWithPassword)
+
+
+let configWithEnvVarPassword = """source http://nuget.org/api/v2 username: "%FEED_USERNAME%" password: "%FEED_PASSWORD%"
+
+nuget Example > 1.2.3
+nuget Example2 <= 1.2.3
+nuget Example3 < 2.2.3
+nuget Example3 == 2.2.3
+nuget Example3 !== 2.2.3
+nuget Example4 >= 1.2.3 < 1.5"""
+
+[<Test>]
+let ``should serialize config with envrionment variable password``() = 
+    Environment.SetEnvironmentVariable("FEED_USERNAME", "user XYZ", EnvironmentVariableTarget.Process)
+    Environment.SetEnvironmentVariable("FEED_PASSWORD", "pw Love", EnvironmentVariableTarget.Process)
+    let cfg = DependenciesFile.FromCode(configWithEnvVarPassword)
+    
+    cfg.ToString()
+    |> shouldEqual (normalizeLineEndings configWithEnvVarPassword)

@@ -16,14 +16,6 @@ type UnresolvedSourceFile =
       Name : string      
       Origin : SingleSourceFileOrigin
       Commit : string option }
-    member this.FilePath =
-        let path = this.Name
-                    .TrimStart('/')
-                    .Replace("/", Path.DirectorySeparatorChar.ToString())
-                    .Replace("\\", Path.DirectorySeparatorChar.ToString())
-
-        let di = DirectoryInfo(Path.Combine("paket-files", this.Owner, this.Project, path))
-        di.FullName
 
     override this.ToString() = 
         match this.Commit with
@@ -41,12 +33,9 @@ type ResolvedSourceFile =
     member this.FilePath = this.ComputeFilePath(this.Name)
 
     member this.ComputeFilePath(name:string) =
-        let path = name
-                    .TrimStart('/')
-                    .Replace("/", Path.DirectorySeparatorChar.ToString())
-                    .Replace("\\", Path.DirectorySeparatorChar.ToString())
+        let path = normalizePath (name.TrimStart('/'))
 
-        let di = DirectoryInfo(Path.Combine("paket-files", this.Owner, this.Project, path))
+        let di = DirectoryInfo(Path.Combine(Constants.PaketFilesFolderName, this.Owner, this.Project, path))
         di.FullName
 
     override this.ToString() =  sprintf "%s/%s:%s %s" this.Owner this.Project this.Commit this.Name

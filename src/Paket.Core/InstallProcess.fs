@@ -9,9 +9,9 @@ open System.IO
 open System.Collections.Generic
 open FSharp.Polyfill
 
-let private findPackagesWithContent (usedPackages:Dictionary<_,_>) = 
+let private findPackagesWithContent (root,usedPackages:Dictionary<_,_>) = 
     usedPackages
-    |> Seq.map (fun kv -> DirectoryInfo(Path.Combine("packages", kv.Key)))
+    |> Seq.map (fun kv -> DirectoryInfo(Path.Combine(root, "packages", kv.Key)))
     |> Seq.choose (fun packageDir -> packageDir.GetDirectories("Content") |> Array.tryFind (fun _ -> true))
     |> Seq.toList
 
@@ -61,28 +61,28 @@ let private removeCopiedFiles (project: ProjectFile) =
             removeEmptyDirHierarchy (DirectoryInfo dirPath)
 
     project.GetPaketFileItems() 
-    |> List.filter (fun fi -> not <| fi.FullName.Contains("paket-files"))
+    |> List.filter (fun fi -> not <| fi.FullName.Contains(Constants.PaketFilesFolderName))
     |> removeFilesAndTrimDirs
 
-let CreateInstallModel(sources, force, package) = 
+let CreateInstallModel(root, sources, force, package) = 
     async { 
-        let! (package, files) = RestoreProcess.ExtractPackage(sources, force, package)
-        let nuspec = FileInfo(sprintf "./packages/%s/%s.nuspec" package.Name package.Name)
+        let! (package, files) = RestoreProcess.ExtractPackage(root, sources, force, package)
+        let nuspec = FileInfo(sprintf "%s/packages/%s/%s.nuspec" root package.Name package.Name)
         let nuspec = Nuspec.Load nuspec.FullName
         let files = files |> Seq.map (fun fi -> fi.FullName)
         return package, InstallModel.CreateFromLibs(package.Name, package.Version, files, nuspec)
     }
 
 /// Restores the given packages from the lock file.
-let createModel(sources,force, lockFile:LockFile) = 
+let createModel(root, sources,force, lockFile:LockFile) = 
     let sourceFileDownloads =
         lockFile.SourceFiles
-        |> Seq.map (fun file -> RemoteDownload.DownloadSourceFile(Path.GetDirectoryName lockFile.FileName, file))        
+        |> Seq.map (fun file -> RemoteDownload.DownloadSourceFile(root, file))
         |> Async.Parallel
 
     let packageDownloads = 
         lockFile.ResolvedPackages
-        |> Seq.map (fun kv -> CreateInstallModel(sources,force,kv.Value))
+        |> Seq.map (fun kv -> CreateInstallModel(root,sources,force,kv.Value))
         |> Async.Parallel
 
     let _,extractedPackages =
@@ -93,7 +93,8 @@ let createModel(sources,force, lockFile:LockFile) =
 
 /// Installs the given all packages from the lock file.
 let Install(sources,force, hard, lockFile:LockFile) = 
-    let extractedPackages = createModel(sources,force, lockFile)
+    let root = FileInfo(lockFile.FileName).Directory.FullName 
+    let extractedPackages = createModel(root,sources,force, lockFile)
 
     let model =
         extractedPackages
@@ -101,7 +102,8 @@ let Install(sources,force, hard, lockFile:LockFile) =
         |> Map.ofArray
 
     let applicableProjects =
-        ProjectFile.FindAllProjects(".") 
+        root
+        |> ProjectFile.FindAllProjects
         |> List.choose (fun p -> ProjectFile.FindReferencesFile(FileInfo(p.FileName))
                                  |> Option.map (fun r -> p, ReferencesFile.FromFile(r)))
 
@@ -129,7 +131,7 @@ let Install(sources,force, hard, lockFile:LockFile) =
         
         let nuGetFileItems =
             if lockFile.Options.OmitContent then [] else
-            let files = copyContentFiles(project, findPackagesWithContent usedPackages)
+            let files = copyContentFiles(project, findPackagesWithContent(root,usedPackages))
             files |> List.map (fun file -> 
                                     { BuildAction = project.DetermineBuildAction file.Name
                                       Include = createRelativePath project.FileName file.FullName

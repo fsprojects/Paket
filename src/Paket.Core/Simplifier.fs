@@ -51,10 +51,10 @@ let Analyze(allPackages : list<ResolvedPackage>, depFile : DependenciesFile, ref
 
     DependenciesFile(depFile.FileName, depFile.Options, simplifiedDeps, depFile.RemoteFiles), refFiles'
 
-let Simplify (interactive) = 
-    if not <| File.Exists(Settings.DependenciesFile) then
-        failwithf "%s file not found." Settings.DependenciesFile
-    let depFile = DependenciesFile.ReadFromFile(Settings.DependenciesFile)
+let Simplify (dependenciesFileName,interactive) = 
+    if not <| File.Exists dependenciesFileName then
+        failwithf "%s file not found." dependenciesFileName
+    let depFile = DependenciesFile.ReadFromFile dependenciesFileName
     let lockFilePath = depFile.FindLockfile()
     if not <| File.Exists(lockFilePath.FullName) then 
         failwith "lock file not found. Create lock file by running paket install."
@@ -62,7 +62,7 @@ let Simplify (interactive) =
     let lockFile = LockFile.LoadFrom(lockFilePath.FullName)
     let packages = lockFile.ResolvedPackages |> Seq.map (fun kv -> kv.Value) |> List.ofSeq
     let refFiles = 
-        ProjectFile.FindAllProjects(".") 
+        ProjectFile.FindAllProjects(Path.GetDirectoryName lockFile.FileName) 
         |> List.choose (fun p -> ProjectFile.FindReferencesFile <| FileInfo(p.FileName))
         |> List.map ReferencesFile.FromFile
     let refFilesBefore = refFiles |> List.map (fun refFile -> refFile.FileName, refFile) |> Map.ofList

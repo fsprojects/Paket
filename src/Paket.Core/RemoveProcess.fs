@@ -4,8 +4,9 @@ module Paket.RemoveProcess
 open Paket
 open System.IO
 
-let Remove(package:string, force, hard, interactive, installAfter) =
-    let allProjects = ProjectFile.FindAllProjects(".")
+let Remove(dependenciesFileName, package:string, force, hard, interactive, installAfter) =
+    let root = Path.GetDirectoryName dependenciesFileName
+    let allProjects = ProjectFile.FindAllProjects root
     for project in allProjects do
         let proj = FileInfo(project.FileName)
         match ProjectFile.FindReferencesFile proj with
@@ -29,7 +30,7 @@ let Remove(package:string, force, hard, interactive, installAfter) =
             if installed then
                 failwithf "%s is still installed in %s" package project.Name
 
-    let exisitingDependenciesFile = DependenciesFile.ReadFromFile(Settings.DependenciesFile)
+    let exisitingDependenciesFile = DependenciesFile.ReadFromFile dependenciesFileName
     let dependenciesFile =
         exisitingDependenciesFile
           .Remove(package)
@@ -39,15 +40,11 @@ let Remove(package:string, force, hard, interactive, installAfter) =
         if changed then
             UpdateProcess.updateWithModifiedDependenciesFile(dependenciesFile,package,force)
         else
-            let lockFileName = DependenciesFile.FindLockfile Settings.DependenciesFile
+            let lockFileName = DependenciesFile.FindLockfile dependenciesFileName
             LockFile.LoadFrom(lockFileName.FullName)
     
     if installAfter then
-        let sources =
-            Settings.DependenciesFile
-            |> File.ReadAllLines
-            |> PackageSourceParser.getSources 
-
+        let sources = DependenciesFile.ReadFromFile(dependenciesFileName).GetAllPackageSources()
         InstallProcess.Install(sources, force, hard, lockFile)
 
     if changed then

@@ -6,6 +6,7 @@ open Nessos.UnionArgParser
 open Paket.Logging
 open System.Diagnostics
 open System.Reflection
+open System.IO
 
 let private stopWatch = new Stopwatch()
 stopWatch.Start()
@@ -24,6 +25,7 @@ type Command =
     | ConvertFromNuget
     | InitAutoRestore
     | Simplify
+    | FindRefs
     | Unknown
 
 type CLIArguments =
@@ -36,6 +38,7 @@ type CLIArguments =
     | [<First>][<NoAppSettings>][<CustomCommandLine("convert-from-nuget")>] ConvertFromNuget
     | [<First>][<NoAppSettings>][<CustomCommandLine("init-auto-restore")>] InitAutoRestore
     | [<First>][<NoAppSettings>][<CustomCommandLine("simplify")>] Simplify
+    | [<First>][<NoAppSettings>][<CustomCommandLine("find-refs")>] FindRefs
     | [<AltCommandLine("-v")>] Verbose
     | [<AltCommandLine("-i")>] Interactive
     | [<AltCommandLine("-f")>] Force
@@ -43,10 +46,12 @@ type CLIArguments =
     | [<CustomCommandLine("nuget")>] Nuget of string
     | [<CustomCommandLine("version")>] Version of string
     | [<Rest>]References_Files of string
+    | [<Rest>]Packages of string
     | No_Install
     | Ignore_Constraints
     | [<AltCommandLine("--pre")>] Include_Prereleases
     | No_Auto_Restore
+    | Creds_Migration of string
 with
     interface IArgParserTemplate with
         member s.Usage =
@@ -57,6 +62,7 @@ with
             | Restore -> "restores all packages."
             | Update -> "updates the paket.lock file and installs all packages."
             | References_Files _ -> "allows to specify a list of references file names."
+            | Packages _ -> "allows to specify a list of Nuget package names."
             | Outdated -> "displays information about new packages."
             | ConvertFromNuget -> "converts all projects from NuGet to Paket."
             | InitAutoRestore -> "enables automatic restore for Visual Studio."
@@ -71,8 +77,10 @@ with
             | No_Auto_Restore -> "omits init-auto-restore after convert-from-nuget."
             | Nuget _ -> "allows to specify a nuget package."
             | Version _ -> "allows to specify a package version."
+            | Creds_Migration _ -> "allows to specify credentials migration mode for convert-from-nuget."
+            | FindRefs _ -> "finds all references to the given packages."
 
-let parser = UnionArgParser.Create<CLIArguments>("USAGE: paket [add|remove|install|update|outdated|convert-from-nuget|init-auto-restore|simplify] ... options")
+let parser = UnionArgParser.Create<CLIArguments>("USAGE: paket [add|remove|install|update|outdated|convert-from-nuget|init-auto-restore|simplify|find-refs] ... options")
  
 let results =
     try
@@ -87,6 +95,7 @@ let results =
             elif results.Contains <@ CLIArguments.ConvertFromNuget @> then Command.ConvertFromNuget
             elif results.Contains <@ CLIArguments.InitAutoRestore @> then Command.InitAutoRestore
             elif results.Contains <@ CLIArguments.Simplify @> then Command.Simplify
+            elif results.Contains <@ CLIArguments.FindRefs @> then Command.FindRefs
             else Command.Unknown
         if results.Contains <@ CLIArguments.Verbose @> then
             verbose <- true
@@ -106,6 +115,7 @@ try
         let noInstall = results.Contains <@ CLIArguments.No_Install @>
         let noAutoRestore = results.Contains <@ CLIArguments.No_Auto_Restore @>
         let includePrereleases = results.Contains <@ CLIArguments.Include_Prereleases @>
+    
 
         match command with
         | Command.Add -> 
@@ -114,27 +124,36 @@ try
                 match results.TryGetResult <@ CLIArguments.Version @> with
                 | Some x -> x
                 | _ -> ""
-            AddProcess.Add(packageName,version,force,hard,interactive,noInstall |> not)
+
+            Dependencies.Locate().Add(packageName, version, force, hard, interactive, noInstall |> not)
         | Command.Remove -> 
             let packageName = results.GetResult <@ CLIArguments.Nuget @>            
-            RemoveProcess.Remove(packageName,force,hard,interactive,noInstall |> not)
-        | Command.Install -> UpdateProcess.Update(false,force,hard) 
+            Dependencies.Locate().Remove(packageName,force,hard,interactive,noInstall |> not)
+        | Command.Install -> Dependencies.Locate().Install(force,hard)
         | Command.Restore -> 
             let files = results.GetResults <@ CLIArguments.References_Files @> 
-            RestoreProcess.Restore(force,files) 
+            Dependencies.Locate().Restore(force,files)
         | Command.Update -> 
             match results.TryGetResult <@ CLIArguments.Nuget @> with
             | Some packageName -> 
                 let version = results.TryGetResult <@ CLIArguments.Version @>
-                UpdateProcess.UpdatePackage(packageName,version,force,hard)
-            | _ -> UpdateProcess.Update(true,force,hard)
-            
+                Dependencies.Locate().UpdatePackage(packageName, version, force, hard)
+            | _ -> Dependencies.Locate().Update(force,hard)            
         | Command.Outdated ->         
             let strict = results.Contains <@ CLIArguments.Ignore_Constraints @> |> not
-            FindOutdated.ListOutdated(strict,includePrereleases)
-        | Command.InitAutoRestore -> VSIntegration.InitAutoRestore()
-        | Command.ConvertFromNuget -> NuGetConvert.ConvertFromNuget(force,noInstall |> not,noAutoRestore |> not)
-        | Command.Simplify -> Simplifier.Simplify(interactive)
+            Dependencies.Locate().ShowOutdated(strict,includePrereleases)
+        | Command.InitAutoRestore -> Dependencies.Locate().InitAutoRestore()
+        | Command.ConvertFromNuget -> 
+            let credsMigrationMode = 
+                results.TryGetResult <@ CLIArguments.Creds_Migration @>
+                |> Option.map NuGetConvert.CredsMigrationMode.Parse
+
+            let dependencies = if force then Dependencies.LocateOrCreate() else Dependencies.Create()                
+            dependencies.ConvertFromNuget(force, noInstall |> not, noAutoRestore |> not, credsMigrationMode)
+        | Command.Simplify -> Dependencies.Locate().Simplify(interactive)
+        | Command.FindRefs ->
+            let packages = results.GetResults <@ CLIArguments.Packages @>
+            Dependencies.Locate().ShowReferencesFor(packages)
         | _ -> traceErrorfn "no command given.%s" (parser.Usage())
         
         let elapsedTime = Utils.TimeSpanToReadableString stopWatch.Elapsed

@@ -6,6 +6,9 @@ open System.IO
 open Ionic.Zip
 open Paket.Logging
 
+[<Literal>]
+let FullProjectSourceFileName = "FULLPROJECT"
+
 // Gets the sha1 of a branch
 let getSHA1OfBranch origin owner project branch = 
     async { 
@@ -23,18 +26,24 @@ let getSHA1OfBranch origin owner project branch =
         | ModuleResolver.SingleSourceFileOrigin.HttpLink _ -> return ""
     }
 
+let private rawFileUrl owner project branch fileName =
+    sprintf "https://github.com/%s/%s/raw/%s/%s" owner project branch fileName
+
+let private rawGistFileUrl owner project fileName =
+    sprintf "https://gist.githubusercontent.com/%s/%s/raw/%s" owner project fileName
+
 /// Gets a dependencies file from github.
 let downloadDependenciesFile(rootPath,remoteFile:ModuleResolver.ResolvedSourceFile) = async {
     let fi = FileInfo(remoteFile.Name)
 
-    let dependenciesFileName = remoteFile.Name.Replace(fi.Name,"paket.dependencies")
+    let dependenciesFileName = remoteFile.Name.Replace(fi.Name,Constants.DependenciesFileName)
 
     let url = 
         match remoteFile.Origin with
         | ModuleResolver.GitHubLink -> 
-            sprintf "https://github.com/%s/%s/raw/%s/%s" remoteFile.Owner remoteFile.Project remoteFile.Commit dependenciesFileName
+            rawFileUrl remoteFile.Owner remoteFile.Project remoteFile.Commit dependenciesFileName
         | ModuleResolver.GistLink -> 
-            sprintf "https://gist.githubusercontent.com/%s/%s/raw/%s" remoteFile.Owner remoteFile.Project dependenciesFileName
+            rawGistFileUrl remoteFile.Owner remoteFile.Project dependenciesFileName
         | ModuleResolver.HttpLink url -> sprintf "%s" url
     let! result = safeGetFromUrl(None,url)
 
@@ -74,7 +83,7 @@ open ModuleResolver
 /// Gets a single file from github.
 let downloadRemoteFiles(remoteFile:ResolvedSourceFile,destitnation) = async {
     match remoteFile.Origin, remoteFile.Name with
-    | SingleSourceFileOrigin.GistLink, "FULLPROJECT" ->
+    | SingleSourceFileOrigin.GistLink, FullProjectSourceFileName ->
         let fi = FileInfo(destitnation)
         let projectPath = fi.Directory.FullName
 
@@ -95,7 +104,7 @@ let downloadRemoteFiles(remoteFile:ResolvedSourceFile,destitnation) = async {
         // GIST currently does not support zip-packages, so now this fetches all files separately.
         // let downloadUrl = sprintf "https://gist.github.com/%s/%s/download" remoteFile.Owner remoteFile.Project //is a tar.gz
 
-    | SingleSourceFileOrigin.GitHubLink, "FULLPROJECT" -> 
+    | SingleSourceFileOrigin.GitHubLink, FullProjectSourceFileName -> 
         let fi = FileInfo(destitnation)
         let projectPath = fi.Directory.FullName
         let zipFile = Path.Combine(projectPath,sprintf "%s.zip" remoteFile.Commit)
@@ -110,8 +119,8 @@ let downloadRemoteFiles(remoteFile:ResolvedSourceFile,destitnation) = async {
 
         Directory.Delete(source,true)
 
-    | SingleSourceFileOrigin.GistLink, _ ->  return! downloadFromUrl(None,sprintf "https://gist.githubusercontent.com/%s/%s/raw/%s" remoteFile.Owner remoteFile.Project remoteFile.Name) destitnation
-    | SingleSourceFileOrigin.GitHubLink, _ -> return! downloadFromUrl(None,sprintf "https://github.com/%s/%s/raw/%s/%s" remoteFile.Owner remoteFile.Project remoteFile.Commit remoteFile.Name) destitnation
+    | SingleSourceFileOrigin.GistLink, _ ->  return! downloadFromUrl(None,rawGistFileUrl remoteFile.Owner remoteFile.Project remoteFile.Name) destitnation
+    | SingleSourceFileOrigin.GitHubLink, _ -> return! downloadFromUrl(None,rawFileUrl remoteFile.Owner remoteFile.Project remoteFile.Commit remoteFile.Name) destitnation
     | SingleSourceFileOrigin.HttpLink(url), _ ->  return! downloadFromUrl(None,sprintf "%s" url) destitnation
 }
 

@@ -5,6 +5,8 @@ open System.Xml
 open System.Security.Cryptography
 open System.Text
 open System.IO
+open Xml
+open Logging
 
 let private rootElement = "configuration"
 
@@ -54,6 +56,10 @@ let Decrypt (salt : string) (encrypted : string) =
     ProtectedData.Unprotect(Convert.FromBase64String encrypted, Convert.FromBase64String salt, DataProtectionScope.CurrentUser)
     |> Encoding.UTF8.GetString
 
+let DecryptNuget (encrypted : string) = 
+    ProtectedData.Unprotect(Convert.FromBase64String encrypted, Encoding.UTF8.GetBytes "NuGet", DataProtectionScope.CurrentUser)
+    |> Encoding.UTF8.GetString
+
 let private readPassword (message : string) : string = 
     Console.Write(message)
     let mutable continueLooping = true
@@ -78,8 +84,7 @@ let getAuthFromNode (node : XmlNode) =
     let password = node.Attributes.["password"].Value
     let salt = node.Attributes.["salt"].Value
 
-    Some { Username = AuthEntry.Create username
-           Password = AuthEntry.Create <| Decrypt salt password}
+    username, Decrypt salt password
            
 let private saveCredentials (source : string) (username : string) (password : string) (credentialsNode : XmlNode) =
     let salt, encrypedPassword = Encrypt password
@@ -103,7 +108,7 @@ let private askAndAddAuth (source : string) (credentialsNode : XmlNode) =
     getAuthFromNode (node :> XmlNode)
 
 /// Check if the provided credentials for a specific source are correct
-let checkCredentials source cred = 
+let checkCredentials(source, cred) = 
     let client = Utils.createWebClient cred
     try 
         client.DownloadData(Uri(source)) |> ignore
@@ -117,16 +122,38 @@ let getSourceNodes (credentialsNode : XmlNode) (source) =
     |> Seq.toList
 
 
-/// Get the credential from the credential store for a specific sourcee
+/// Get the credential from the credential store for a specific source
 let GetCredentials (source : string) =
     let credentialsNode = getConfigNode "credentials"
     
-    let sourceNodes = getSourceNodes credentialsNode source
-    if sourceNodes.IsEmpty then 
-        askAndAddAuth source credentialsNode
-    else 
-        let creds = getAuthFromNode sourceNodes.Head
-        if checkCredentials source creds then creds
-        else 
-            credentialsNode.RemoveChild sourceNodes.Head |> ignore
-            askAndAddAuth source credentialsNode
+    match getSourceNodes credentialsNode source with
+    | sourceNode::_ ->
+        let username,password = getAuthFromNode sourceNode
+        let auth = {Username = username; Password = password}
+        if checkCredentials(source, Some(auth)) then
+            Some(username,password)
+        else
+            traceWarnfn "credentials for %s source are invalid" source  
+            None
+    | [] -> None
+
+let AddCredentials (source, username, password) =
+    let credentialsNode = getConfigNode "credentials"
+    
+    match getSourceNodes credentialsNode source with
+    | existingNode::_ ->
+        let existingPassword = 
+            Decrypt 
+                existingNode.Attributes.["salt"].Value
+                existingNode.Attributes.["password"].Value
+
+        if existingPassword <> password then
+            let salt, encrypted = Encrypt password
+            existingNode.Attributes.["username"].Value <- username
+            existingNode.Attributes.["password"].Value <- encrypted
+            existingNode.Attributes.["salt"].Value <- salt
+            saveConfigNode credentialsNode
+            
+        existingNode
+    | [] -> 
+        saveCredentials source username password credentialsNode :> XmlNode
