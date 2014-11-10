@@ -44,22 +44,34 @@ module LockFileSerializer =
 
     let serializeSourceFiles (files:ResolvedSourceFile list) =    
         let all =
-            let hasReported = ref false
+            let updateHasReported = new List<SingleSourceFileOrigin>()
+
             [ for (owner,project,origin), files in files |> Seq.groupBy(fun f -> f.Owner, f.Project, f.Origin) do
                 match origin with
                 | GitHubLink -> 
-                    if not !hasReported then
+                    if not (updateHasReported.Contains(GitHubLink)) then
                         yield "GITHUB"
-                        hasReported := true
+                        updateHasReported.Remove (HttpLink "") |> ignore
+                        updateHasReported.Remove GistLink |> ignore
+                        updateHasReported.Add GitHubLink
                     yield sprintf "  remote: %s/%s" owner project
                     yield "  specs:"
-                | HttpLink ->
-                    if not !hasReported then
-                        yield "HTTP"
-                        hasReported := true
-                    yield sprintf "  remote: LINK"
+                | GistLink -> 
+                    if not (updateHasReported.Contains(GistLink)) then
+                        yield "GIST"
+                        updateHasReported.Remove GitHubLink |> ignore
+                        updateHasReported.Remove (HttpLink "") |> ignore
+                        updateHasReported.Add GistLink
+                    yield sprintf "  remote: %s/%s" owner project
                     yield "  specs:"
-                | NuGetPackage -> failwith("Referencing sigle file from NuGet is not supported.") 
+                | HttpLink url ->
+                    if not (updateHasReported.Contains(HttpLink(""))) then
+                        yield "HTTP"
+                        updateHasReported.Remove GitHubLink |> ignore
+                        updateHasReported.Remove GistLink |> ignore
+                        updateHasReported.Add (HttpLink "")
+                    yield sprintf "  remote: " + url
+                    yield "  specs:"
 
                 for file in files |> Seq.sortBy (fun f -> f.Owner.ToLower(),f.Project.ToLower(),f.Name.ToLower())  do
                     
@@ -87,6 +99,7 @@ module LockFileParser =
     let private (|Remote|NugetPackage|NugetDependency|SourceFile|RepositoryType|Blank|InstallOption|) (state, line:string) =
         match (state.RepositoryType, line.Trim()) with
         | _, "HTTP" -> RepositoryType "HTTP"
+        | _, "GIST" -> RepositoryType "GIST"
         | _, "NUGET" -> RepositoryType "NUGET"
         | _, "GITHUB" -> RepositoryType "GITHUB"
         | _, _ when String.IsNullOrWhiteSpace line -> Blank
@@ -98,8 +111,9 @@ module LockFileParser =
             let parts = trimmed.Split '(' 
             NugetDependency (parts.[0].Trim(),parts.[1].Replace("(", "").Replace(")", "").Trim())
         | Some "NUGET", trimmed -> NugetPackage trimmed
-        | Some "HTTP", trimmed  -> SourceFile(HttpLink, trimmed)
         | Some "GITHUB", trimmed -> SourceFile(GitHubLink, trimmed)
+        | Some "GIST", trimmed -> SourceFile(GistLink, trimmed)
+        | Some "HTTP", trimmed  -> SourceFile(HttpLink(String.Empty), trimmed)
         | Some _, _ -> failwith "unknown Repository Type."
         | _ -> failwith "unknown lock file format."
 
@@ -146,20 +160,54 @@ module LockFileParser =
                                             } :: rest }                    
                     | [] -> failwith "cannot set a dependency - no remote file has been specified."
             | SourceFile(origin, details) ->
-                match state.RemoteUrl |> Option.map(fun s -> s.Split '/') with
-                | Some [| owner; project |] ->
-                    let path, commit = match details.Split ' ' with
-                                        | [| filePath; commit |] -> filePath, commit |> removeBrackets                                       
-                                        | _ -> failwith "invalid file source details."
-                    { state with  
-                        LastWasPackage = false
-                        SourceFiles = { Commit = commit
-                                        Owner = owner
-                                        Origin = origin
-                                        Project = project
-                                        Dependencies = Set.empty
-                                        Name = path } :: state.SourceFiles }
-                | _ -> failwith "invalid remote details.")
+                match origin with
+                | GitHubLink | GistLink ->
+                    match state.RemoteUrl |> Option.map(fun s -> s.Split '/') with
+                    | Some [| owner; project |] ->
+                        let path, commit = match details.Split ' ' with
+                                            | [| filePath; commit |] -> filePath, commit |> removeBrackets                                       
+                                            | _ -> failwith "invalid file source details."
+                        { state with  
+                            LastWasPackage = false
+                            SourceFiles = { Commit = commit
+                                            Owner = owner
+                                            Origin = origin
+                                            Project = project
+                                            Dependencies = Set.empty
+                                            Name = path } :: state.SourceFiles }
+                    | _ -> failwith "invalid remote details."
+                | HttpLink x ->
+                    match state.RemoteUrl |> Option.map(fun s -> s.Split '/') with
+                    | Some [| protocol; _; domain; |] ->
+                        { state with  
+                            LastWasPackage = false
+                            SourceFiles = { Commit = String.Empty
+                                            Owner = domain
+                                            Origin = origin
+                                            Project = domain
+                                            Dependencies = Set.empty
+                                            Name = details } :: state.SourceFiles }
+                    | Some [| protocol; _; domain; project |] ->
+                        { state with  
+                            LastWasPackage = false
+                            SourceFiles = { Commit = String.Empty
+                                            Owner = domain
+                                            Origin = origin
+                                            Project = project
+                                            Dependencies = Set.empty
+                                            Name = details } :: state.SourceFiles }
+                    | Some [| protocol; _; domain; project; moredetails |] ->
+                        { state with  
+                            LastWasPackage = false
+                            SourceFiles = { Commit = String.Empty
+                                            Owner = domain
+                                            Origin = origin
+                                            Project = project+"/"+moredetails
+                                            Dependencies = Set.empty
+                                            Name = details } :: state.SourceFiles }
+                    | _ ->  failwith "invalid remote details."
+            )
+
 
 
 /// Allows to parse and analyze paket.lock files.

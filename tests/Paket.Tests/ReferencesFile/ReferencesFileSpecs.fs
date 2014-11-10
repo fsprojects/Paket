@@ -18,13 +18,13 @@ let ``should parse lines correctly``() =
     refFile.NugetPackages.Length |> shouldEqual 3
     refFile.NugetPackages.Head |> shouldEqual "Castle.Windsor"
     refFile.NugetPackages.Tail.Tail.Head |> shouldEqual "jQuery"
-    refFile.GitHubFiles.Length |> shouldEqual 1
-    refFile.GitHubFiles.Head.Name |> shouldEqual "FsUnit.fs"
-    refFile.GitHubFiles.Head.Link |> shouldEqual "paket-files"
+    refFile.RemoteFiles.Length |> shouldEqual 1
+    refFile.RemoteFiles.Head.Name |> shouldEqual "FsUnit.fs"
+    refFile.RemoteFiles.Head.Link |> shouldEqual "paket-files"
 
 [<Test>]
 let ``should serialize itself correctly``() = 
-    let refFile = {FileName = ""; NugetPackages = ["A"; "B"]; GitHubFiles = [{Name = "FromGithub.fs"; Link = ReferencesFile.DefaultLink}]}
+    let refFile = {FileName = ""; NugetPackages = ["A"; "B"]; RemoteFiles = [{Name = "FromGithub.fs"; Link = ReferencesFile.DefaultLink}]}
     let expected = [|"A"; "B"; "File:FromGithub.fs"|]
 
     refFile.ToString() |> toLines |> shouldEqual expected
@@ -37,13 +37,13 @@ File:FsUnit.fs Tests\Common
 let ``should parse custom path correctly``() = 
     let refFile = ReferencesFile.FromLines(toLines refFileWithCustomPath)
     refFile.NugetPackages.Length |> shouldEqual 0
-    refFile.GitHubFiles.Length |> shouldEqual 1
-    refFile.GitHubFiles.Head.Name |> shouldEqual "FsUnit.fs"
-    refFile.GitHubFiles.Head.Link |> shouldEqual "Tests\Common"
+    refFile.RemoteFiles.Length |> shouldEqual 1
+    refFile.RemoteFiles.Head.Name |> shouldEqual "FsUnit.fs"
+    refFile.RemoteFiles.Head.Link |> shouldEqual "Tests\Common"
 
 [<Test>]
 let ``should serialize customPath correctly``() = 
-    let refFile = {FileName = ""; NugetPackages = []; GitHubFiles = [{Name = "FromGithub.fs"; Link = "CustomPath\Dir"}]}
+    let refFile = {FileName = ""; NugetPackages = []; RemoteFiles = [{Name = "FromGithub.fs"; Link = "CustomPath\Dir"}]}
     let expected = [|"File:FromGithub.fs CustomPath\Dir"|]
 
     refFile.ToString() |> toLines |> shouldEqual expected

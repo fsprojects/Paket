@@ -77,7 +77,7 @@ let CreateInstallModel(sources, force, package) =
 let createModel(sources,force, lockFile:LockFile) = 
     let sourceFileDownloads =
         lockFile.SourceFiles
-        |> Seq.map (fun file -> GitHub.DownloadSourceFile(Path.GetDirectoryName lockFile.FileName, file))        
+        |> Seq.map (fun file -> RemoteDownload.DownloadSourceFile(Path.GetDirectoryName lockFile.FileName, file))        
         |> Async.Parallel
 
     let packageDownloads = 
@@ -114,14 +114,16 @@ let Install(sources,force, hard, lockFile:LockFile) =
         
         removeCopiedFiles project
 
-        let getGitHubFilePath name = 
+        let getSingleRemoteFilePath name = 
+            printf "\nFilename %s " name
+            lockFile.SourceFiles |> List.iter (fun i -> printf "\n %s %s " i.Name  i.FilePath)
             (lockFile.SourceFiles |> List.find (fun f -> Path.GetFileName(f.Name) = name)).FilePath
 
-        let gitHubFileItems =
-            referenceFile.GitHubFiles
+        let gitRemoteItems =
+            referenceFile.RemoteFiles
             |> List.map (fun file -> 
                              { BuildAction = project.DetermineBuildAction file.Name 
-                               Include = createRelativePath project.FileName (getGitHubFilePath file.Name)
+                               Include = createRelativePath project.FileName (getSingleRemoteFilePath file.Name)
                                Link = Some(if file.Link = "." then Path.GetFileName(file.Name)
                                            else Path.Combine(file.Link, Path.GetFileName(file.Name))) })
         
@@ -133,6 +135,6 @@ let Install(sources,force, hard, lockFile:LockFile) =
                                       Include = createRelativePath project.FileName file.FullName
                                       Link = None })
 
-        project.UpdateFileItems(gitHubFileItems @ nuGetFileItems, hard)
+        project.UpdateFileItems(gitRemoteItems @ nuGetFileItems, hard)
 
         project.Save()

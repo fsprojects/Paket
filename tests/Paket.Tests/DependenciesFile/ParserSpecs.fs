@@ -95,9 +95,11 @@ let ``should read source file from config``() =
         [ { Owner = "fsharp"
             Project = "FAKE"
             Name = "src/app/FAKE/Cli.fs"
+            Origin = ModuleResolver.SingleSourceFileOrigin.GitHubLink
             Commit = Some "master" }
           { Owner = "fsharp"
             Project = "FAKE"
+            Origin = ModuleResolver.SingleSourceFileOrigin.GitHubLink
             Name = "src/app/FAKE/FileWithCommit.fs"
             Commit = Some "bla123zxc" } ]
 
@@ -180,9 +182,11 @@ let ``should read github source file from config without quotes``() =
         [ { Owner = "fsharp"
             Project = "FAKE"
             Name = "src/app/FAKE/Cli.fs"
+            Origin = ModuleResolver.SingleSourceFileOrigin.GitHubLink
             Commit = Some "master" }
           { Owner = "fsharp"
             Project = "FAKE"
+            Origin = ModuleResolver.SingleSourceFileOrigin.GitHubLink
             Name = "src/app/FAKE/FileWithCommit.fs"
             Commit = Some "bla123zxc" } ]
 
@@ -196,10 +200,12 @@ let ``should read github source file from config with quotes``() =
         [ { Owner = "fsharp"
             Project = "FAKE"
             Name = "src/app/FAKE/Cli.fs"
+            Origin = ModuleResolver.SingleSourceFileOrigin.GitHubLink
             Commit = Some "master" }
           { Owner = "fsharp"
             Project = "FAKE"
             Name = "src/app/FAKE/FileWith Space.fs"
+            Origin = ModuleResolver.SingleSourceFileOrigin.GitHubLink
             Commit = Some "bla123zxc" } ]
 
 [<Test>]
@@ -212,32 +218,50 @@ let ``should read github source files withou sha1``() =
         [ { Owner = "fsharp"
             Project = "FAKE"
             Name = "src/app/FAKE/Cli.fs"
+            Origin = ModuleResolver.SingleSourceFileOrigin.GitHubLink
             Commit = None }
           { Owner = "fsharp"
             Project = "FAKE"
             Name = "src/app/FAKE/FileWithCommit.fs"
+            Origin = ModuleResolver.SingleSourceFileOrigin.GitHubLink
             Commit = Some "bla123zxc" } ]
 
 [<Test>]
-let ``should read http source file from config without quotes, simple real-life``() =
-    let config = """http http://www.fssnip.net/raw/1M
-                    http http://www.fssnip.net/raw/1M/1
-                    http https://gist.githubusercontent.com/Thorium/1972308/raw/629ed3119e18ec0629142fb30351e50ac688e7fd/gistfile1.fs """
+let ``should read http source file from config without quotes with file specs``() =
+    let config = """http http://www.fssnip.net/raw/1M test1.fs
+                    http http://www.fssnip.net/raw/1M/1 src/test2.fs """
     let dependencies = DependenciesFile.FromCode(config)
     dependencies.RemoteFiles
     |> shouldEqual
         [ { Owner = "www.fssnip.net/raw"
             Project = "raw/1M"
-            Name = "http://www.fssnip.net/raw/1M"
+            Name = "test1.fs"
+            Origin = ModuleResolver.SingleSourceFileOrigin.HttpLink "http://www.fssnip.net/raw/1M"
             Commit = None }
           { Owner = "www.fssnip.net/raw"
             Project = "raw/1M"
-            Name = "http://www.fssnip.net/raw/1M/1"
-            Commit = None }
-          { Owner = "gist.githubusercontent.com/Thorium"
-            Project = "Thorium/1972308"
-            Name = "https://gist.githubusercontent.com/Thorium/1972308/raw/629ed3119e18ec0629142fb30351e50ac688e7fd/gistfile1.fs"
+            Name = "src/test2.fs"
+            Origin = ModuleResolver.SingleSourceFileOrigin.HttpLink "http://www.fssnip.net/raw/1M/1"
             Commit = None } ]
+
+[<Test>]
+let ``should read gist source file from config without quotes with file specs``() =
+    let config = """gist Thorium/1972308 gistfile1.fs
+                    gist Thorium/6088882 """ //Gist supports multiple files also
+    let dependencies = DependenciesFile.FromCode(config)
+    dependencies.RemoteFiles
+    |> shouldEqual
+        [ { Owner = "Thorium"
+            Project = "1972308"
+            Name = "gistfile1.fs"
+            Origin = ModuleResolver.SingleSourceFileOrigin.GistLink
+            Commit = None }
+          { Owner = "Thorium"
+            Project = "6088882"
+            Name = "FULLPROJECT"
+            Origin = ModuleResolver.SingleSourceFileOrigin.GistLink
+            Commit = None } ]
+
 
 [<Test>]
 let ``should read http source file from config without quotes, parsing rules``() =
@@ -253,23 +277,28 @@ let ``should read http source file from config without quotes, parsing rules``()
     |> shouldEqual
         [ { Owner = "example"
             Project = "example"
-            Name = "http://example"
+            Name = "example.fs"
+            Origin = ModuleResolver.SingleSourceFileOrigin.HttpLink "http://example"
             Commit = None }
           { Owner = "example"
             Project = "item"
-            Name = "http://example/item"
+            Name = "item.fs"
+            Origin = ModuleResolver.SingleSourceFileOrigin.HttpLink "http://example/item"
             Commit = None }
           { Owner = "example"
             Project = "item"
-            Name = "http://example/item"
+            Name = "item.fs"
+            Origin = ModuleResolver.SingleSourceFileOrigin.HttpLink "http://example/item"
             Commit = None }
-          { Owner = "example/item"
+          { Owner = "example"
             Project = "item/3"
-            Name = "http://example/item/3"
+            Name = "3.fs"
+            Origin = ModuleResolver.SingleSourceFileOrigin.HttpLink "http://example/item/3"
             Commit = None }
-          { Owner = "example/item"
+          { Owner = "example"
             Project = "item/3"
-            Name = "http://example/item/3/1"
+            Name = "1.fs"
+            Origin = ModuleResolver.SingleSourceFileOrigin.HttpLink "http://example/item/3/1"
             Commit = None } ]
 
 

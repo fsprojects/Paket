@@ -89,6 +89,41 @@ module DependenciesFileParser =
         |> List.rev
         |> List.toArray
 
+
+    let private ``parse git source`` trimmed origin originTxt = 
+        let parts = parseDependencyLine trimmed
+        let getParts (projectSpec:string) =
+            match projectSpec.Split [|':'; '/'|] with
+            | [| owner; project |] -> owner, project, None
+            | [| owner; project; commit |] -> owner, project, Some commit
+            | _ -> failwithf "invalid %s specification:%s     %s" originTxt Environment.NewLine trimmed
+        match parts with
+        | [| _; projectSpec; fileSpec |] -> origin, getParts projectSpec, fileSpec
+        | [| _; projectSpec;  |] -> origin, getParts projectSpec, "FULLPROJECT"
+        | _ -> failwithf "invalid %s specification:%s     %s" originTxt Environment.NewLine trimmed
+
+    let private ``parse http source`` trimmed =
+        let parts = parseDependencyLine trimmed
+        let getParts (projectSpec:string) fileSpec =
+            let ``project spec`` = 
+                match projectSpec.EndsWith("/") with
+                | false -> projectSpec
+                | true ->  projectSpec.Substring(0, projectSpec.Length-1)
+            let splitted = ``project spec``.Split [|':'; '/'|]
+            let fileName = match String.IsNullOrEmpty(fileSpec) with
+                            | true -> (splitted |> Seq.last) + ".fs"
+                            | false -> fileSpec
+            match splitted |> Seq.truncate 6 |> Seq.toArray with
+            //SourceFile(origin(url), (owner,project, commit), path)
+            | [| protocol; x; y; domain |] -> HttpLink(``project spec``), (domain, domain, None), fileName
+            | [| protocol; x; y; domain; project |] -> HttpLink(``project spec``), (domain,project, None), fileName
+            | [| protocol; x; y; owner; project; details |] -> HttpLink(``project spec``), (owner,project+"/"+details, None), fileName
+            | _ -> failwithf "invalid http-reference specification:%s     %s" Environment.NewLine trimmed
+        match parts with
+        | [| _; projectSpec; |] -> getParts projectSpec String.Empty
+        | [| _; projectSpec; fileSpec |] -> getParts projectSpec fileSpec
+        | _ -> failwithf "invalid http-reference specification:%s     %s" Environment.NewLine trimmed
+
     let private (|Remote|Package|Blank|ReferencesMode|OmitContent|SourceFile|) (line:string) =
         match line.Trim() with
         | _ when String.IsNullOrWhiteSpace line -> Blank
@@ -116,34 +151,12 @@ module DependenciesFileParser =
             | _ -> failwithf "could not retrieve nuget package from %s" trimmed
         | trimmed when trimmed.StartsWith "references" -> ReferencesMode(trimmed.Replace("references","").Trim() = "strict")
         | trimmed when trimmed.StartsWith "content" -> OmitContent(trimmed.Replace("content","").Trim() = "none")
+        | trimmed when trimmed.StartsWith "gist" ->
+            SourceFile(``parse git source`` trimmed SingleSourceFileOrigin.GistLink "gist")
         | trimmed when trimmed.StartsWith "github" ->
-            let parts = parseDependencyLine trimmed
-            let getParts (projectSpec:string) =
-                match projectSpec.Split [|':'; '/'|] with
-                | [| owner; project |] -> owner, project, None
-                | [| owner; project; commit |] -> owner, project, Some commit
-                | _ -> failwithf "invalid github specification:%s     %s" Environment.NewLine trimmed
-            match parts with
-            | [| _; projectSpec; fileSpec |] -> SourceFile(getParts projectSpec, fileSpec)
-            | [| _; projectSpec;  |] -> SourceFile(getParts projectSpec, "FULLPROJECT")
-            | _ -> failwithf "invalid github specification:%s     %s" Environment.NewLine trimmed
+            SourceFile(``parse git source`` trimmed SingleSourceFileOrigin.GitHubLink "github")
         | trimmed when trimmed.StartsWith "http" ->
-            let parts = parseDependencyLine trimmed
-            let getParts (projectSpec:string) =
-                let ``project spec`` = 
-                    match projectSpec.EndsWith("/") with
-                    | false -> projectSpec
-                    | true ->  projectSpec.Substring(0, projectSpec.Length-1)
-                let splitted = ``project spec``.Split [|':'; '/'|]
-                match splitted |> Seq.truncate 6 |> Seq.toArray with
-                //SourceFile((owner,project, commit), path)
-                | [| protocol; x; y; domain |] -> SourceFile((domain, domain, None), ``project spec``)
-                | [| protocol; x; y; domain; project |] -> SourceFile((domain,project, None), ``project spec``)
-                | [| protocol; x; y; owner; project; details |] -> SourceFile((owner+"/"+project,project+"/"+details, None), ``project spec``)
-                | _ -> failwithf "invalid http-reference specification:%s     %s" Environment.NewLine trimmed
-            match parts with
-            | [| _; projectSpec;  |] -> getParts projectSpec
-            | _ -> failwithf "invalid http-reference specification:%s     %s" Environment.NewLine trimmed
+            SourceFile(``parse http source`` trimmed)
         | _ -> Blank
     
     let parseDependenciesFile fileName (lines:string seq) = 
@@ -163,8 +176,8 @@ module DependenciesFileParser =
                           ResolverStrategy = parseResolverStrategy version
                           Parent = DependenciesFile fileName
                           VersionRequirement = parseVersionRequirement(version.Trim '!') } :: packages, sourceFiles
-                | SourceFile((owner,project, commit), path) ->
-                    lineNo, options, sources, packages, { Owner = owner; Project = project; Commit = commit; Name = path } :: sourceFiles
+                | SourceFile(origin, (owner,project, commit), path) ->
+                    lineNo, options, sources, packages, { Owner = owner; Project = project; Commit = commit; Name = path; Origin = origin} :: sourceFiles
                     
             with
             | exn -> failwithf "Error in paket.dependencies line %d%s  %s" lineNo Environment.NewLine exn.Message)
@@ -220,12 +233,12 @@ type DependenciesFile(fileName,options,packages : PackageRequirement list, remot
     member __.FileName = fileName
     member __.Sources = sources
     member this.Resolve(force) = 
-        let getSha1 owner repo branch = GitHub.getSHA1OfBranch owner repo branch |> Async.RunSynchronously
+        let getSha1 origin owner repo branch = RemoteDownload.getSHA1OfBranch origin owner repo branch |> Async.RunSynchronously
         this.Resolve(getSha1,Nuget.GetVersions,Nuget.GetPackageDetails force)
 
     member __.Resolve(getSha1,getVersionF, getPackageDetailsF) =
         let resolveSourceFile(file:ResolvedSourceFile) : PackageRequirement list =
-            GitHub.downloadDependenciesFile(Path.GetDirectoryName fileName, file)
+            RemoteDownload.downloadDependenciesFile(Path.GetDirectoryName fileName, file)
             |> Async.RunSynchronously
             |> DependenciesFile.FromCode
             |> fun df -> df.Packages

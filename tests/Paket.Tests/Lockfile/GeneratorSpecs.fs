@@ -69,7 +69,7 @@ github "owner:project2:commit2" "folder/file.fs" """
         match f.Commit with
         | Some commit ->  { Commit = commit
                             Owner = f.Owner
-                            Origin = Paket.ModuleResolver.SourceFileOrigin.GitHubLink
+                            Origin = ModuleResolver.SingleSourceFileOrigin.GitHubLink
                             Project = f.Project
                             Dependencies = Set.empty
                             Name = f.Name } : ModuleResolver.ResolvedSourceFile
@@ -131,13 +131,13 @@ let ``should generate other version ranges for packages``() =
     |> shouldEqual (normalizeLineEndings expected3)
 
 let expectedWithHttp = """HTTP
-  remote: LINK
+  remote: http://www.fssnip.net/raw/1M
   specs:
-    http://www.fssnip.net/raw/1M"""
+    test.fs"""
     
 [<Test>]
 let ``should generate lock file for http source files``() = 
-    let config = """http "http://www.fssnip.net/raw/1M" """ 
+    let config = """http "http://www.fssnip.net/raw/1M" "test.fs" """ 
 
     let cfg = DependenciesFile.FromCode(config)
     
@@ -145,10 +145,54 @@ let ``should generate lock file for http source files``() =
     |> List.map (fun f -> 
           { Commit = ""
             Owner = f.Owner
-            Origin = Paket.ModuleResolver.SourceFileOrigin.HttpLink
+            Origin = ModuleResolver.SingleSourceFileOrigin.HttpLink "http://www.fssnip.net/raw/1M"
             Project = f.Project
             Dependencies = Set.empty
             Name = f.Name } : ModuleResolver.ResolvedSourceFile)
     |> LockFileSerializer.serializeSourceFiles
     |> shouldEqual (normalizeLineEndings expectedWithHttp)
+
+let expectedMultiple = """HTTP
+  remote: http://www.fssnip.net/raw/32
+  specs:
+    myFile2.fs
+GIST
+  remote: Thorium/1972308
+  specs:
+    gistfile1.fs
+  remote: Thorium/6088882
+  specs:
+    FULLPROJECT
+HTTP
+  remote: http://www.fssnip.net/raw/1M
+  specs:
+    myFile.fs
+  remote: http://www.fssnip.net/raw/15
+  specs:
+    myFile3.fs"""
+    
+[<Test>]
+let ``should generate lock file for http and gist source files``() = 
+    let config = """source "http://nuget.org/api/v2
+
+http http://www.fssnip.net/raw/32 myFile2.fs
+
+gist Thorium/1972308 gistfile1.fs
+gist Thorium/6088882 
+
+http http://www.fssnip.net/raw/1M myFile.fs
+http http://www.fssnip.net/raw/15 myFile3.fs """ 
+
+    let cfg = DependenciesFile.FromCode(config)
+    
+    cfg.RemoteFiles
+    |> List.map (fun f -> 
+          { Commit = ""
+            Owner = f.Owner
+            Origin = f.Origin
+            Project = f.Project
+            Dependencies = Set.empty
+            Name = f.Name } : ModuleResolver.ResolvedSourceFile)
+    |> LockFileSerializer.serializeSourceFiles
+    |> shouldEqual (normalizeLineEndings expectedMultiple)
 

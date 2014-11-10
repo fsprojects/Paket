@@ -52,14 +52,14 @@ let ``should parse lock file``() =
         [ { Owner = "fsharp"
             Project = "FAKE"
             Name = "src/app/FAKE/Cli.fs"
-            Origin = Paket.ModuleResolver.SourceFileOrigin.GitHubLink
+            Origin = ModuleResolver.SingleSourceFileOrigin.GitHubLink
             Dependencies = Set.empty
             Commit = "7699e40e335f3cc54ab382a8969253fecc1e08a9" }
           { Owner = "fsharp"
             Project = "FAKE"
             Dependencies = Set.empty
             Name = "src/app/Fake.Deploy.Lib/FakeDeployAgentHelper.fs"
-            Origin = Paket.ModuleResolver.SourceFileOrigin.GitHubLink
+            Origin = ModuleResolver.SingleSourceFileOrigin.GitHubLink
             Commit = "Globbing" } ]
     
     sourceFiles.[0].Commit |> shouldEqual "7699e40e335f3cc54ab382a8969253fecc1e08a9"
