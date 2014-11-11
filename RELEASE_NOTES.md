@@ -1,17 +1,13 @@
-#### 0.13.0-alpha009 - 09.11.2014
+#### 0.13.0-alpha009 - 11.11.2014
 * New support for general HTTP dependencies - http://fsprojects.github.io/Paket/http-dependencies.html
 * New F# Interactive support - http://fsprojects.github.io/Paket/reference-from-repl.html
-* New `paket find-refs` command - http://fsprojects.github.io/Paket/paket-find-refs.html
-* Bootstrapper uses .NET 4.0 
-* If `paket add` doesn't change the dependencies file then the resolver will be skipped
-* BUGFIX: Trailing whitespace is ignored in `paket.references`
-* Migration of NuGet source credentials on convert-from-nuget - http://fsprojects.github.io/Paket/convert-from-nuget.html#Migrating-NuGet-source-credentials
-
-#### 0.12.2 - 07.11.2014
+* New `paket find-refs` command - http://fsprojects.github.io/Paket/paket-find-refs.html 
+* Migration of NuGet source credentials during `paket convert-from-nuget` - http://fsprojects.github.io/Paket/convert-from-nuget.html#Migrating-NuGet-source-credentials
+* Bootstrapper uses .NET 4.0 - https://github.com/fsprojects/Paket/pull/355
 * Adding --ignore-constraints to `paket outdated` - https://github.com/fsprojects/Paket/issues/308 
-
-#### 0.12.1 - 07.11.2014
+* PERFORMANCE: If `paket add` doesn't change the `paket.dependencies` file then the resolver process will be skipped
 * BUGFIX: `paket update nuget [PACKAGENAME]` should use the same update strategy as `paket add` - https://github.com/fsprojects/Paket/issues/330
+* BUGFIX: Trailing whitespace is ignored in `paket.references`
 
 #### 0.12.0 - 07.11.2014
 * New global paket.config file - http://fsprojects.github.io/Paket/paket-config-file.html
