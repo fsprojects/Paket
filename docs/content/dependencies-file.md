@@ -33,7 +33,7 @@ Only direct dependencies should be listed and you can use the [`paket simplify` 
 Paket supports the following source types:
 
 * [NuGet](nuget-dependencies.html)
-* [GitHub and Gist](http-dependencies.html)
+* [GitHub and Gist](github-dependencies.html)
 * [HTTP](http-dependencies.html) (any single file from any site without version control)
  
 ## Strict references

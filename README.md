@@ -13,7 +13,7 @@ Even more importantly: If two packages reference conflicting versions of a packa
 Paket on the other hand maintains this information on a consistent and stable basis within the [`paket.lock` file][7] in the solution root.
 This file, together with the [`paket.dependencies` file][8] enables you to determine exactly what's happening with your dependencies.
 
-Paket also enables you to [reference files directly from GitHub (and Gist)][9] repositories or any http-resource.
+Paket also enables you to [reference files directly from GitHub (and Gist)][9] repositories or any [http-resource](11).
 
 For more reasons see the [FAQ][10].
 
@@ -60,5 +60,6 @@ The [MIT license][6]
  [6]: https://github.com/fsprojects/Paket/blob/master/LICENSE.txt
  [7]: http://fsprojects.github.io/Paket/lock-file.html
  [8]: http://fsprojects.github.io/Paket/dependencies-file.html
- [9]: http://fsprojects.github.io/Paket/http-dependencies.html
+ [9]: http://fsprojects.github.io/Paket/github-dependencies.html 
  [10]: http://fsprojects.github.io/Paket/faq.html
+ [11]: http://fsprojects.github.io/Paket/http-dependencies.html
