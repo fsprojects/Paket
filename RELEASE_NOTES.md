@@ -1,6 +1,7 @@
-#### 0.13.0-alpha006 - 09.11.2014
+#### 0.13.0-alpha007 - 09.11.2014
 * New F# Interactive support - http://fsprojects.github.io/Paket/reference-from-repl.html
 * New `paket find-refs` command - http://fsprojects.github.io/Paket/paket-find-refs.html
+* Bootstrapper uses .NET 4.0 
 * If `paket add` doesn't change the dependencies file then the resolver will be skipped
 * BUGFIX: Trailing whitespace is ignored in `paket.references`
 * Migration of NuGet source credentials on convert-from-nuget - http://fsprojects.github.io/Paket/convert-from-nuget.html#Migrating-NuGet-source-credentials
