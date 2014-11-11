@@ -38,7 +38,7 @@ type CLIArguments =
     | [<First>][<NoAppSettings>][<CustomCommandLine("convert-from-nuget")>] ConvertFromNuget
     | [<First>][<NoAppSettings>][<CustomCommandLine("init-auto-restore")>] InitAutoRestore
     | [<First>][<NoAppSettings>][<CustomCommandLine("simplify")>] Simplify
-    | [<First>][<NoAppSettings>][<CustomCommandLine("find-refs")>] FindRefs
+    | [<First>][<NoAppSettings>][<Rest>][<CustomCommandLine("find-refs")>] FindRefs of string
     | [<AltCommandLine("-v")>] Verbose
     | [<AltCommandLine("-i")>] Interactive
     | [<AltCommandLine("-f")>] Force
@@ -46,7 +46,6 @@ type CLIArguments =
     | [<CustomCommandLine("nuget")>] Nuget of string
     | [<CustomCommandLine("version")>] Version of string
     | [<Rest>]References_Files of string
-    | [<Rest>]Packages of string
     | No_Install
     | Ignore_Constraints
     | [<AltCommandLine("--pre")>] Include_Prereleases
@@ -62,7 +61,6 @@ with
             | Restore -> "restores all packages."
             | Update -> "updates the paket.lock file and installs all packages."
             | References_Files _ -> "allows to specify a list of references file names."
-            | Packages _ -> "allows to specify a list of Nuget package names."
             | Outdated -> "displays information about new packages."
             | ConvertFromNuget -> "converts all projects from NuGet to Paket."
             | InitAutoRestore -> "enables automatic restore for Visual Studio."
@@ -115,7 +113,6 @@ try
         let noInstall = results.Contains <@ CLIArguments.No_Install @>
         let noAutoRestore = results.Contains <@ CLIArguments.No_Auto_Restore @>
         let includePrereleases = results.Contains <@ CLIArguments.Include_Prereleases @>
-    
 
         match command with
         | Command.Add -> 
@@ -152,7 +149,7 @@ try
             dependencies.ConvertFromNuget(force, noInstall |> not, noAutoRestore |> not, credsMigrationMode)
         | Command.Simplify -> Dependencies.Locate().Simplify(interactive)
         | Command.FindRefs ->
-            let packages = results.GetResults <@ CLIArguments.Packages @>
+            let packages = results.GetResults <@ CLIArguments.FindRefs @>
             Dependencies.Locate().ShowReferencesFor(packages)
         | _ -> traceErrorfn "no command given.%s" (parser.Usage())
         

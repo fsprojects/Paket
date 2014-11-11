@@ -3,7 +3,7 @@
 Finds all project files that have the given NuGet packages installed.
 
     [lang=batchfile]
-    $ paket find-refs --packages PACKAGENAME1 PACKAGENAME1 ...
+    $ paket find-refs PACKAGENAME1 PACKAGENAME1 ...
 
 ## Sample
 
@@ -20,7 +20,7 @@ Finds all project files that have the given NuGet packages installed.
 
 Now we run
 	
-	paket find-refs --packages DotNetZip FSharp.Core.Microsoft.Signed
+	paket find-refs DotNetZip FSharp.Core.Microsoft.Signed
 
 and paket gives the following output:
 	
