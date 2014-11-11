@@ -1,6 +1,6 @@
 # GitHub dependencies
 
-Paket allows one to automatically manage the linking of files from [github.com](http://www.github.com) into your projects.
+Paket allows one to automatically manage the linking of files from [github.com](http://www.github.com) or [gist.github.com](https://gist.github.com/) into your projects.
 
 ## Referencing a single file
 
@@ -90,3 +90,20 @@ This generates the following [`paket.lock` file](lock-file.html):
 		  Octokit (>= 0)
 
 As you can see Paket also resolved the Octokit dependency.
+
+## Gist
+
+Gist works the same way. You can fetch single files or multi-file-gists as well:
+
+    gist Thorium/1972308 gistfile1.fs
+    gist Thorium/6088882
+
+If you run the [`paket update` command](paket-update.html), it will add a new section to your [`paket.lock` file](lock-file.html):
+
+    GIST
+      remote: Thorium/1972308
+      specs:
+        gistfile1.fs
+      remote: Thorium/6088882
+      specs:
+        FULLPROJECT

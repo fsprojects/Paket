@@ -4,12 +4,17 @@ module Paket.ModuleResolver
 open System.IO
 open Paket.Requirements
 
+type SingleSourceFileOrigin = 
+| GitHubLink 
+| GistLink 
+| HttpLink of string
+
 // Represents details on a dependent source file.
-//TODO: As new sources e.g. fssnip etc. are added, this should probably become a DU or perhaps have an enum marker.
 type UnresolvedSourceFile =
     { Owner : string
       Project : string
       Name : string      
+      Origin : SingleSourceFileOrigin
       Commit : string option }
 
     override this.ToString() = 
@@ -22,7 +27,9 @@ type ResolvedSourceFile =
       Project : string
       Name : string      
       Commit : string
-      Dependencies : Set<string*VersionRequirement> }
+      Dependencies : Set<string*VersionRequirement>
+      Origin : SingleSourceFileOrigin
+      }
     member this.FilePath = this.ComputeFilePath(this.Name)
 
     member this.ComputeFilePath(name:string) =
@@ -36,13 +43,15 @@ type ResolvedSourceFile =
 // TODO: github has a rate limit - try to convince them to whitelist Paket
 let Resolve(getPackages, getSha1, remoteFiles : UnresolvedSourceFile list) : ResolvedSourceFile list = 
     remoteFiles |> List.map (fun file -> 
-                       let sha = 
-                           file.Commit
-                           |> defaultArg <| "master"
-                           |> getSha1 file.Owner file.Project
+                       let sha =
+                            file.Commit
+                            |> defaultArg <| "master"
+                            |> getSha1 file.Origin file.Owner file.Project 
+
                        let naked =
                            { Commit = sha
                              Owner = file.Owner
+                             Origin = file.Origin
                              Project = file.Project
                              Dependencies = Set.empty
                              Name = file.Name }

@@ -4,31 +4,31 @@ open System
 open System.IO
 open Logging
 
-type GitHubReference = 
+type RemoteFileReference = 
     { Name : string
       Link : string }
 
 type ReferencesFile = 
     { FileName: string
       NugetPackages: list<string>
-      GitHubFiles: list<GitHubReference> } 
+      RemoteFiles: list<RemoteFileReference> } 
     
     static member DefaultLink = Constants.PaketFilesFolderName
 
     static member FromLines(lines : string[]) = 
-        let isGitHubFile (line: string) = line.StartsWith "File:"
+        let isSingleFile (line: string) = line.StartsWith "File:"
         let notEmpty (line: string) = not <| String.IsNullOrWhiteSpace line
-        let githubLines,nugetLines =
+        let remoteLines,nugetLines =
             lines 
             |> Array.filter notEmpty 
             |> Array.map (fun s -> s.Trim())
             |> Array.toList
-            |> List.partition isGitHubFile 
+            |> List.partition isSingleFile 
 
         { FileName = ""
           NugetPackages = nugetLines
-          GitHubFiles = 
-            githubLines
+          RemoteFiles = 
+            remoteLines
             |> List.map (fun s -> s.Replace("File:","").Split([|' '|], StringSplitOptions.RemoveEmptyEntries))
             |> List.map (fun segments -> 
                             { Name = segments.[0]
@@ -49,5 +49,5 @@ type ReferencesFile =
     override this.ToString() =
         List.append
             this.NugetPackages
-            (this.GitHubFiles |> List.map (fun s -> "File:" + s.Name + if s.Link <> ReferencesFile.DefaultLink then " " + s.Link else ""))
+            (this.RemoteFiles |> List.map (fun s -> "File:" + s.Name + if s.Link <> ReferencesFile.DefaultLink then " " + s.Link else ""))
             |> String.concat Environment.NewLine

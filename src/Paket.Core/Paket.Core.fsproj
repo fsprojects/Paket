@@ -79,7 +79,7 @@
     <Compile Include="PackageSources.fs" />
     <Compile Include="Requirements.fs" />
     <Compile Include="ModuleResolver.fs" />
-    <Compile Include="GitHub.fs" />
+    <Compile Include="RemoteDownload.fs" />
     <Compile Include="FrameworkHandling.fs" />
     <Compile Include="PackageResolver.fs" />
     <Compile Include="Nuspec.fs" />

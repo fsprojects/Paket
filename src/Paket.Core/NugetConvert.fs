@@ -163,7 +163,7 @@ let private convertNugetToRefFile(nugetPackagesConfig) =
     for (name,_) in confictingRefs do traceWarnfn "Reference %s is already defined in %s" name refFilePath
             
     match existingRefFile with 
-    | None -> {ReferencesFile.FileName = refFilePath; NugetPackages = refsToAdd |> List.map fst; GitHubFiles = []}.Save()
+    | None -> {ReferencesFile.FileName = refFilePath; NugetPackages = refsToAdd |> List.map fst; RemoteFiles = []}.Save()
     | Some refFile ->
         if not (refsToAdd |> List.isEmpty)
             then (refsToAdd |> List.fold (fun (refFile : ReferencesFile) (name,_) -> refFile.AddNuGetReference(name)) refFile).Save()

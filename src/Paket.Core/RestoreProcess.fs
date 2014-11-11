@@ -36,7 +36,7 @@ let ExtractPackage(root, sources, force, package : ResolvedPackage) =
 let internal restore(root, sources, force, lockFile:LockFile, packages:Set<string>) = 
     let sourceFileDownloads =
         lockFile.SourceFiles
-        |> Seq.map (fun file -> GitHub.DownloadSourceFile(Path.GetDirectoryName lockFile.FileName, file))        
+        |> Seq.map (fun file -> RemoteDownload.DownloadSourceFile(Path.GetDirectoryName lockFile.FileName, file))        
         |> Async.Parallel
 
     let packageDownloads = 

@@ -11,6 +11,8 @@ To give you an overview, consider the following `paket.dependencies` file:
     nuget DotNetZip >= 1.9
     nuget SourceLink.Fake
     github forki/FsUnit FsUnit.fs
+    gist Thorium/1972349 timestamp.fs
+    http http://www.fssnip.net/1n decrypt.fs
 
 The file specifies that Paket's NuGet dependencies should be downloaded from [nuget.org](http://www.nuget.org) and that we need: 
 
@@ -19,6 +21,8 @@ The file specifies that Paket's NuGet dependencies should be downloaded from [nu
   * [DotNetZip](http://dotnetzip.codeplex.com/) with version which is at [least 1.9](http://fsprojects.github.io/Paket/nuget-dependencies.html#Greater-than-or-equal-version-constraint)
   * [SourceLink.Fake](https://github.com/ctaggart/SourceLink) in the latest version
   * [FSUnit.fs](https://github.com/forki/FsUnit) from GitHub.
+  * Gist number [1972349](https://gist.github.com/Thorium/1972349) from GitHub Gist.
+  * External HTTP-resource, e.g. [1n](http://www.fssnip.net/1n) from [FSSnip](http://www.fssnip.net/) -site. 
 
 Paket uses this definition to compute a concrete dependency resolution, which also includes indirect dependencies. The resulting dependency graph is then persisted to the [`paket.lock` file](lock-file.html).
 
@@ -29,7 +33,8 @@ Only direct dependencies should be listed and you can use the [`paket simplify` 
 Paket supports the following source types:
 
 * [NuGet](nuget-dependencies.html)
-* [GitHub](github-dependencies.html)
+* [GitHub and Gist](github-dependencies.html)
+* HTTP (any single file from any site without version control)
  
 ## Strict references
 
