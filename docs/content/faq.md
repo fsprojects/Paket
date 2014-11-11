@@ -10,7 +10,7 @@ Paket on the other hand maintains this information on a consistent and stable ba
 
 The [`paket outdated` command](paket-outdated.html) lists packages that have new versions available.
 
-Paket also enables one to [reference files directly from GitHub repositories](github-dependencies.html).
+Paket also enables one to [reference files directly from GitHub repositories](http-dependencies.html).
 
 <div id="no-version"></div>
 ## NuGet puts the package version into the path. Is Paket doing the same?

@@ -43,7 +43,7 @@ Paket also supports file paths such as local directories or references to UNC sh
 
 The dependencies of your project are defined by the `nuget <package ID> <version constraint>` statement.
 
-Paket also supports file dependencies, such as [referencing files directly from GitHub repositories](github-dependencies.html).
+Paket also supports file dependencies, such as [referencing files directly from GitHub repositories](http-dependencies.html).
 
 <div id="package-id"></div>
 ### Package ID
