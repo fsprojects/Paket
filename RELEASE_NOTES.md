@@ -1,4 +1,4 @@
-#### 0.13.0-alpha010 - 11.11.2014
+#### 0.13.0 - 11.11.2014
 * New support for general HTTP dependencies - http://fsprojects.github.io/Paket/http-dependencies.html
 * New F# Interactive support - http://fsprojects.github.io/Paket/reference-from-repl.html
 * New `paket find-refs` command - http://fsprojects.github.io/Paket/paket-find-refs.html 
