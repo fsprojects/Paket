@@ -1,3 +1,6 @@
+#### 0.13.1 - 12.11.2014
+* Support unlisted dependencies if nothing else fits - https://github.com/fsprojects/Paket/issues/327
+
 #### 0.13.0 - 11.11.2014
 * New support for general HTTP dependencies - http://fsprojects.github.io/Paket/http-dependencies.html
 * New F# Interactive support - http://fsprojects.github.io/Paket/reference-from-repl.html

@@ -163,32 +163,37 @@ let Resolve(getVersionsF, getPackageDetailsF, rootDependencies:PackageRequiremen
                     | Max -> List.sort compatibleVersions |> List.rev
                     | Min -> List.sort compatibleVersions
 
-            sorted
-            |> List.fold (fun state versionToExplore ->
-                match state with
-                | ResolvedPackages.Conflict _ ->
-                    let exploredPackage = getExploredPackage(dependency.Sources,dependency.Name,versionToExplore)    
-                    if exploredPackage.Unlisted then state else                
-                    let newFilteredVersion = Map.add dependency.Name ([versionToExplore],globalOverride) filteredVersions
-                    let newDependencies =
-                        exploredPackage.Dependencies
-                        |> Set.map (fun (n,v,_) -> {dependency with Name = n; VersionRequirement = v; Parent = Package(dependency.Name,versionToExplore) })
-                        |> Set.filter (fun d -> Set.contains d closed |> not)
-                        |> Set.filter (fun d -> Set.contains d stillOpen |> not)
-                        |> Set.filter (fun d ->
-                            closed 
-                            |> Seq.filter (fun x -> x.Name = d.Name)
-                            |> Seq.exists (fun otherDep -> isIncluded (d.VersionRequirement.Range,otherDep.VersionRequirement.Range))
-                            |> not)
-                        |> Set.filter (fun d ->
-                            rest 
-                            |> Seq.filter (fun x -> x.Name = d.Name)
-                            |> Seq.exists (fun otherDep -> isIncluded (d.VersionRequirement.Range,otherDep.VersionRequirement.Range))
-                            |> not)
+            let tryToImprove useUnlisted =
+                sorted
+                |> List.fold (fun (allUnlisted,state) versionToExplore ->
+                    match state with
+                    | ResolvedPackages.Conflict _ ->
+                        let exploredPackage = getExploredPackage(dependency.Sources,dependency.Name,versionToExplore)    
+                        if exploredPackage.Unlisted && not useUnlisted then (allUnlisted,state) else                
+                        let newFilteredVersion = Map.add dependency.Name ([versionToExplore],globalOverride) filteredVersions
+                        let newDependencies =
+                            exploredPackage.Dependencies
+                            |> Set.map (fun (n,v,_) -> {dependency with Name = n; VersionRequirement = v; Parent = Package(dependency.Name,versionToExplore) })
+                            |> Set.filter (fun d -> Set.contains d closed |> not)
+                            |> Set.filter (fun d -> Set.contains d stillOpen |> not)
+                            |> Set.filter (fun d ->
+                                closed 
+                                |> Seq.filter (fun x -> x.Name = d.Name)
+                                |> Seq.exists (fun otherDep -> isIncluded (d.VersionRequirement.Range,otherDep.VersionRequirement.Range))
+                                |> not)
+                            |> Set.filter (fun d ->
+                                rest 
+                                |> Seq.filter (fun x -> x.Name = d.Name)
+                                |> Seq.exists (fun otherDep -> isIncluded (d.VersionRequirement.Range,otherDep.VersionRequirement.Range))
+                                |> not)
 
-                    improveModel (newFilteredVersion,exploredPackage::packages,Set.add dependency closed,Set.union rest newDependencies)
-                | ResolvedPackages.Ok _ -> state)
-                    (ResolvedPackages.Conflict(closed,stillOpen))
+                        (exploredPackage.Unlisted && allUnlisted),improveModel (newFilteredVersion,exploredPackage::packages,Set.add dependency closed,Set.union rest newDependencies)
+                    | ResolvedPackages.Ok _ -> allUnlisted,state)
+                        (true,ResolvedPackages.Conflict(closed,stillOpen))
+            
+            match tryToImprove false with
+            | true,ResolvedPackages.Conflict(x,y) -> tryToImprove true |> snd         
+            | _,x-> x
 
     match improveModel (Map.empty, [], Set.empty, Set.ofList rootDependencies) with
     | ResolvedPackages.Conflict(_) as c -> c
