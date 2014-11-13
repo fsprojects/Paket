@@ -87,9 +87,8 @@ let getAllVersionsFromNuGet2(auth,nugetURL,package) =
                 with _ -> let! result = getAllVersionsFromNugetOData(auth,nugetURL, package)
                           return result
             with exn -> 
-                failwithf "Could not get data from %s for package %s.%s Message: %s" nugetURL package 
+                return! failwithf "Could not get data from %s for package %s.%s Message: %s" nugetURL package 
                     Environment.NewLine exn.Message
-                return Seq.empty
     }
 
 
@@ -108,9 +107,8 @@ let getAllVersions(auth, nugetURL, package) =
                 with _ -> let! result = getAllVersionsFromNuGet2(auth,nugetURL, package)
                           return result
             with exn -> 
-                failwithf "Could not get data from %s for package %s.%s Message: %s" nugetURL package 
+                return! failwithf "Could not get data from %s for package %s.%s Message: %s" nugetURL package 
                     Environment.NewLine exn.Message
-                return Seq.empty
     }
 
 /// Gets versions of the given package from local Nuget feed.
@@ -148,6 +146,7 @@ let parseODataDetails(nugetURL,packageName,version,raw) =
             with exn ->
                 failwithf "Could not get official package name for package %s %O.%s Message: %s" packageName version
                     Environment.NewLine exn.Message
+
     let publishDate = 
         match [ for node in doc.SelectNodes("//ns:entry/m:properties/d:Published", manager) -> node.InnerText] with
         | id::_ -> 
@@ -310,8 +309,7 @@ let CopyFromCache(root, cacheFileName, name, version:SemVerInfo, force) =
         | exn -> 
             File.Delete targetFile.FullName
             Directory.Delete(targetFolder,true)
-            raise exn
-            return ""
+            return! raise exn
     }
 
 /// Downloads the given package to the NuGet Cache folder

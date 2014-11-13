@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
@@ -63,8 +63,139 @@
   <Target Name="AfterBuild">
   </Target>
   -->
-  
   <Import Project="$(SolutionDir)\.paket\paket.targets" />
+  <ItemGroup>
+    <Compile Include="..\..\paket-files\forki\FsUnit\FsUnit.fs">
+      <Paket>True</Paket>
+      <Link>FsUnit.fs</Link>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="TestHelpers.fs" />
+    <Compile Include="SemVerSpecs.fs" />
+    <Compile Include="ConfigFileSpecs.fs" />
+    <Compile Include="NugetVersionRangeParserSpecs.fs" />
+    <Compile Include="NugetVersionRangeSerializerSpecs.fs" />
+    <Compile Include="BindingRedirect.fs" />
+    <Content Include="Nuspec\FSharp.Data.nuspec">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Nuspec\FSharp.Data.Prerelease.nuspec">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Nuspec\Octokit.nuspec">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Nuspec\Fantomas.nuspec">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Nuspec\Microsoft.Net.Http.nuspec">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Nuspec\FsXaml.Wpf.nuspec">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Nuspec\log4net.nuspec">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Nuspec\FSharp.Data.SqlEnumProvider.nuspec">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Nuspec\ReadOnlyCollectionExtensions.nuspec">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Compile Include="Nuspec\NuspecSpecs.fs" />
+    <Content Include="NuGetOData\Fantomas.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="NuGetOData\Fleece.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="NuGetOData\ReadOnlyCollectionExtensions.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="NuGetOData\Rx-PlatformServices.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Compile Include="NuGetOData\ODataSpecs.fs" />
+    <Content Include="NuGetConfig\ClearTextPasswordConfig.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="NuGetConfig\PasswordConfig.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Compile Include="NuGetConfig\NuGetConfigSpecs.fs" />
+    <Content Include="JSON-LD\Rx-PlatformServices.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Compile Include="JSON-LD\JSONLD.fs" />
+    <Compile Include="FilterVersionSpecs.fs" />
+    <Compile Include="DependenciesFile\VersionRangeSpecs.fs" />
+    <Compile Include="DependenciesFile\VersionRequirementSpecs.fs" />
+    <Compile Include="DependenciesFile\ParserSpecs.fs" />
+    <Compile Include="DependenciesFile\SaveSpecs.fs" />
+    <Compile Include="DependenciesFile\AddPackageSpecs.fs" />
+    <Compile Include="Resolver\DependencyGraphSpecs.fs" />
+    <Compile Include="Resolver\SimpleDependenciesSpecs.fs" />
+    <Compile Include="Resolver\CyclicGraphSpecs.fs" />
+    <Compile Include="Resolver\ConflictGraphSpecs.fs" />
+    <Compile Include="Resolver\CasingSpecs.fs" />
+    <Compile Include="Resolver\PessimisticStrategySpecs.fs" />
+    <Compile Include="Resolver\AddingDependenciesSpecs.fs" />
+    <Compile Include="Lockfile\GeneratorSpecs.fs" />
+    <Compile Include="Lockfile\GenerateStrictModeSpecs.fs" />
+    <Compile Include="Lockfile\GenerateContentNoneOptionSpecs.fs" />
+    <Compile Include="Lockfile\GenerateAuthModeSpecs.fs" />
+    <Compile Include="Lockfile\GeneratorWithMutlipleSourcesSpecs.fs" />
+    <Compile Include="Lockfile\ParserSpecs.fs" />
+    <Compile Include="Lockfile\ParserWithMultipleSourcesSpecs.fs" />
+    <Compile Include="ReferencesFile\ReferencesFileSpecs.fs" />
+    <Compile Include="Simplifier\BasicScenarioSpecs.fs" />
+    <None Include="ProjectFile\TestData\Project1.fsprojtest">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="ProjectFile\TestData\Project2.fsprojtest">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="ProjectFile\TestData\ProjectWithConditions.fsprojtest">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="ProjectFile\TestData\Empty.fsprojtest">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="ProjectFile\TestData\CustomFantomasNode.fsprojtest">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="ProjectFile\TestData\NoCustomFantomasNode.fsprojtest">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <Compile Include="ProjectFile\ConditionSpecs.fs" />
+    <Compile Include="ProjectFile\FileBuildActionSpecs.fs" />
+    <Compile Include="ProjectFile\InterProjectDependencySpecs.fs" />
+    <Compile Include="ProjectFile\OutputSpecs.fs" />
+    <Compile Include="InstallModel\FrameworkIdentifierSpecs.fs" />
+    <Compile Include="InstallModel\ProcessingSpecs.fs" />
+    <Compile Include="InstallModel\Xml\Fantomas.fs" />
+    <Compile Include="InstallModel\Xml\FantomasLib.fs" />
+    <Compile Include="InstallModel\Xml\Fuchu.fs" />
+    <Compile Include="InstallModel\Xml\SystemNetHttp.fs" />
+    <Compile Include="InstallModel\Xml\SystemNetHttpWithFrameworkReferences.fs" />
+    <Compile Include="InstallModel\Xml\ManualNodes.fs" />
+    <Compile Include="DependencyModel\ProjectDependencySpecs.fs" />
+    <None Include="paket.references" />
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="mscorlib" />
+    <Reference Include="System" />
+    <Reference Include="System.Security" />
+    <Reference Include="System.Xml" />
+    <ProjectReference Include="..\..\src\Paket.Core\Paket.Core.fsproj">
+      <Name>Paket.Core</Name>
+      <Project>{7bab0ae2-089f-4761-b138-a717aa2f86c5}</Project>
+      <Private>True</Private>
+    </ProjectReference>
+    <Reference Include="System.Xml.Linq" />
+  </ItemGroup>
   <Choose>
     <When Condition="$(TargetFrameworkIdentifier) == '.NETFramework'">
       <Choose>
@@ -337,134 +468,4 @@
       </ItemGroup>
     </Otherwise>
   </Choose>
-  <ItemGroup>
-    <Compile Include="..\..\paket-files\forki\FsUnit\FsUnit.fs">
-      <Paket>True</Paket>
-      <Link>FsUnit.fs</Link>
-    </Compile>
-    <Compile Include="TestHelpers.fs" />
-    <Compile Include="SemVerSpecs.fs" />
-    <Compile Include="ConfigFileSpecs.fs" />
-    <Compile Include="NugetVersionRangeParserSpecs.fs" />
-    <Compile Include="NugetVersionRangeSerializerSpecs.fs" />
-    <Compile Include="BindingRedirect.fs" />
-    <Content Include="Nuspec\FSharp.Data.nuspec">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Nuspec\FSharp.Data.Prerelease.nuspec">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Nuspec\Octokit.nuspec">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Nuspec\Fantomas.nuspec">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Nuspec\Microsoft.Net.Http.nuspec">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Nuspec\FsXaml.Wpf.nuspec">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Nuspec\log4net.nuspec">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Nuspec\FSharp.Data.SqlEnumProvider.nuspec">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Nuspec\ReadOnlyCollectionExtensions.nuspec">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Compile Include="Nuspec\NuspecSpecs.fs" />
-    <Content Include="NuGetOData\Fantomas.xml">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="NuGetOData\Fleece.xml">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="NuGetOData\ReadOnlyCollectionExtensions.xml">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="NuGetOData\Rx-PlatformServices.xml">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Compile Include="NuGetOData\ODataSpecs.fs" />
-    <Content Include="NuGetConfig\ClearTextPasswordConfig.xml">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="NuGetConfig\PasswordConfig.xml">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Compile Include="NuGetConfig\NuGetConfigSpecs.fs" />
-    <Content Include="JSON-LD\Rx-PlatformServices.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Compile Include="JSON-LD\JSONLD.fs" />
-    <Compile Include="FilterVersionSpecs.fs" />
-    <Compile Include="DependenciesFile\VersionRangeSpecs.fs" />
-    <Compile Include="DependenciesFile\VersionRequirementSpecs.fs" />
-    <Compile Include="DependenciesFile\ParserSpecs.fs" />
-    <Compile Include="DependenciesFile\SaveSpecs.fs" />
-    <Compile Include="DependenciesFile\AddPackageSpecs.fs" />
-    <Compile Include="Resolver\DependencyGraphSpecs.fs" />
-    <Compile Include="Resolver\SimpleDependenciesSpecs.fs" />
-    <Compile Include="Resolver\CyclicGraphSpecs.fs" />
-    <Compile Include="Resolver\ConflictGraphSpecs.fs" />
-    <Compile Include="Resolver\CasingSpecs.fs" />
-    <Compile Include="Resolver\PessimisticStrategySpecs.fs" />
-    <Compile Include="Resolver\AddingDependenciesSpecs.fs" />
-    <Compile Include="Lockfile\GeneratorSpecs.fs" />
-    <Compile Include="Lockfile\GenerateStrictModeSpecs.fs" />
-    <Compile Include="Lockfile\GenerateContentNoneOptionSpecs.fs" />
-    <Compile Include="Lockfile\GenerateAuthModeSpecs.fs" />
-    <Compile Include="Lockfile\GeneratorWithMutlipleSourcesSpecs.fs" />
-    <Compile Include="Lockfile\ParserSpecs.fs" />
-    <Compile Include="Lockfile\ParserWithMultipleSourcesSpecs.fs" />
-    <Compile Include="ReferencesFile\ReferencesFileSpecs.fs" />
-    <Compile Include="Simplifier\BasicScenarioSpecs.fs" />
-    <None Include="ProjectFile\TestData\Project1.fsprojtest">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Include="ProjectFile\TestData\Project2.fsprojtest">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Include="ProjectFile\TestData\ProjectWithConditions.fsprojtest">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Include="ProjectFile\TestData\Empty.fsprojtest">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Include="ProjectFile\TestData\CustomFantomasNode.fsprojtest">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Include="ProjectFile\TestData\NoCustomFantomasNode.fsprojtest">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <Compile Include="ProjectFile\ConditionSpecs.fs" />
-    <Compile Include="ProjectFile\FileBuildActionSpecs.fs" />
-    <Compile Include="ProjectFile\InterProjectDependencySpecs.fs" />
-    <Compile Include="ProjectFile\OutputSpecs.fs" />
-    <Compile Include="InstallModel\FrameworkIdentifierSpecs.fs" />
-    <Compile Include="InstallModel\ProcessingSpecs.fs" />
-    <Compile Include="InstallModel\Xml\Fantomas.fs" />
-    <Compile Include="InstallModel\Xml\FantomasLib.fs" />
-    <Compile Include="InstallModel\Xml\Fuchu.fs" />
-    <Compile Include="InstallModel\Xml\SystemNetHttp.fs" />
-    <Compile Include="InstallModel\Xml\SystemNetHttpWithFrameworkReferences.fs" />
-    <Compile Include="InstallModel\Xml\ManualNodes.fs" />
-    <Compile Include="DependencyModel\ProjectDependencySpecs.fs" />
-    <None Include="paket.references" />
-  </ItemGroup>
-  <ItemGroup>
-    <Reference Include="mscorlib" />
-    <Reference Include="System" />
-    <Reference Include="System.Security" />
-    <Reference Include="System.Xml" />
-    <ProjectReference Include="..\..\src\Paket.Core\Paket.Core.fsproj">
-      <Name>Paket.Core</Name>
-      <Project>{7bab0ae2-089f-4761-b138-a717aa2f86c5}</Project>
-      <Private>True</Private>
-    </ProjectReference>
-    <Reference Include="System.Xml.Linq" />
-  </ItemGroup>
 </Project>

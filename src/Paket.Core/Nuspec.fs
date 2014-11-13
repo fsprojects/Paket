@@ -78,7 +78,6 @@ module NugetVersionRangeParser =
         
             sprintf "%s%s,%s%s" (getMinDelimiter fromB) (from.ToString()) (_to.ToString()) (getMaxDelimiter _toB) 
 
-
 type Nuspec = 
     { References : NuspecReferences 
       Dependencies : (string * VersionRequirement * (FrameworkIdentifier option)) list
