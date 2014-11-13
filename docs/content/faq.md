@@ -52,14 +52,6 @@ There is no reasonable way to make this work – and even NuGet.exe can't do it 
 
 Instead we encourage the .NET community to use a declarative install process and we will help to fix this in the affected packages.
 
-## When I resolve the dependencies from NuGet.org it is really slow. Why is that?
-
-Paket uses the NuGet OData API to discover package dependencies. Unfortunately this API is very slow.
-
-Some good news is that [the NuGet team is currently developing a faster API](http://blog.nuget.org/20140711/nuget-architecture.html). Paket may be able to take advantage of that in the future.
-
-Once the [`paket.lock` file](lock-file.html) is written, Paket no longer needs to use the OData API any futher; as a result, [`paket install`](paket-install.html) is very fast.
-
 ## I'm already using NuGet. How can I convert to Paket?
 
 The process is very easy and you can read more about it in the [convert from NuGet](convert-from-nuget.html) section.

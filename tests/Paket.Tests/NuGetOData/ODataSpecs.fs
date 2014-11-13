@@ -9,8 +9,7 @@ open Paket.Nuget
 let fakeUrl = "http://doesntmatter"
 
 let parse fileName =
-    File.ReadAllText fileName
-    |> getODataDetails fakeUrl
+    parseODataDetails(fakeUrl,"package",SemVer.Parse "0",File.ReadAllText fileName)
 
 [<Test>]
 let ``can detect explicit dependencies for Fantomas``() = 
@@ -60,3 +59,8 @@ let ``can detect explicit dependencies for ReadOnlyCollectionExtensions``() =
              "ReadOnlyCollectionInterfaces",DependenciesFileParser.parseVersionRequirement("1.0.0"), Some(DotNetFramework(FrameworkVersion.V3_5))
              "ReadOnlyCollectionInterfaces",DependenciesFileParser.parseVersionRequirement("1.0.0"), Some(DotNetFramework(FrameworkVersion.V4_Client))]
           SourceUrl = fakeUrl }
+
+[<Test>]
+let ``can calculate v3 path``() = 
+    calculateNuGet3Path "https://nuget.org/api/v2" |> shouldEqual (Some "http://preview.nuget.org/ver3-preview/index.json")
+    calculateNuGet3Path "http://nuget.org/api/v2" |> shouldEqual (Some "http://preview.nuget.org/ver3-preview/index.json")

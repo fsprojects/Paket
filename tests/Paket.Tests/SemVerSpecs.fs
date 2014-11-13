@@ -62,6 +62,16 @@ let ``can parse strange versions``() =
     (SemVer.Parse "2-alpha100").ToString() |> shouldEqual "2-alpha100"
 
 [<Test>]
-let ``can parse FSHarp.Data versions``() = 
+let ``can parse FSharp.Data versions``() = 
     (SemVer.Parse "2.1.0-beta3").ToString() |> shouldEqual "2.1.0-beta3"
     
+[<Test>]
+let ``can normalize versions``() =
+    (SemVer.Parse "2.3") |> shouldEqual (SemVer.Parse "2.3.0")
+    (SemVer.Parse "2.3").Normalize() |> shouldEqual ((SemVer.Parse "2.3.0").ToString())
+    (SemVer.Parse "3.1.1.1").Normalize() |> shouldEqual ((SemVer.Parse "3.1.1.1").ToString())
+    (SemVer.Parse "1.2.3").Normalize() |> shouldEqual ((SemVer.Parse "1.2.3").ToString())
+    (SemVer.Parse "1.0.0-rc.3").Normalize() |> shouldEqual ((SemVer.Parse "1.0.0-rc.3").ToString())
+    (SemVer.Parse "1.2.3-alpha.3").Normalize() |> shouldEqual ((SemVer.Parse "1.2.3-alpha.3").ToString())
+    (SemVer.Parse "1.0.0-alpha").Normalize() |> shouldEqual ((SemVer.Parse "1.0.0-alpha").ToString())
+    (SemVer.Parse "1.0.0-alpha.1").Normalize() |> shouldEqual ((SemVer.Parse "1.0.0-alpha.1").ToString())

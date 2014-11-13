@@ -11,7 +11,7 @@ open FSharp.Polyfill
 /// Downloads and extracts a package.
 let ExtractPackage(root, sources, force, package : ResolvedPackage) = 
     async { 
-        let v = package.Version.ToString()
+        let v = package.Version
         match package.Source with
         | Nuget source -> 
             let auth = 
@@ -23,11 +23,11 @@ let ExtractPackage(root, sources, force, package : ResolvedPackage) =
                 let! folder = Nuget.DownloadPackage(root, auth, source.Url, package.Name, v, force)
                 return package, Nuget.GetLibFiles folder
             with _ when force = false -> 
-                tracefn "Something went wrong with the download of %s %s - automatic retry with --force." package.Name v
+                tracefn "Something went wrong with the download of %s %A - automatic retry with --force." package.Name v
                 let! folder = Nuget.DownloadPackage(root, auth, source.Url, package.Name, v, true)
                 return package, Nuget.GetLibFiles folder
         | LocalNuget path -> 
-            let packageFile = Path.Combine(root, path, sprintf "%s.%s.nupkg" package.Name v)
+            let packageFile = Path.Combine(root, path, sprintf "%s.%A.nupkg" package.Name v)
             let! folder = Nuget.CopyFromCache(root, packageFile, package.Name, v, force)
             return package, Nuget.GetLibFiles folder
     }

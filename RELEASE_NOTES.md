@@ -1,3 +1,6 @@
+#### 0.14.0-alpha001 - 13.11.2014
+* Uses Nuget v3 API, which enables much faster resolver
+
 #### 0.13.1 - 12.11.2014
 * Support unlisted dependencies if nothing else fits - https://github.com/fsprojects/Paket/issues/327
 

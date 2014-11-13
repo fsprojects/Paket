@@ -38,7 +38,7 @@ type PreRelease =
             | _ -> invalidArg "yobj" "cannot compare values of different types"
 
 /// Contains the version information.
-[<CustomEquality; CustomComparison>]
+[<CustomEquality; CustomComparison; StructuredFormatDisplay("{AsString}")>]
 type SemVerInfo = 
     { /// MAJOR version when you make incompatible API changes.
       Major : int
@@ -53,21 +53,25 @@ type SemVerInfo =
       // The original version text
       Original : string option }
     
+    member x.Normalize() = 
+        let build = 
+            if String.IsNullOrEmpty x.Build |> not then "." + x.Build
+            else ""
+            
+        let pre = 
+            match x.PreRelease, String.IsNullOrEmpty x.Build |> not with
+            | Some preRelease, _ -> "-" + preRelease.Name + build
+            | None, true -> build
+            | _ -> build
+
+        sprintf "%d.%d.%d" x.Major x.Minor x.Patch + pre
+
+    member x.AsString = x.ToString()
+
     override x.ToString() = 
         match x.Original with
         | Some version -> version
-        | None -> 
-            let build = 
-                if String.IsNullOrEmpty x.Build |> not then "." + x.Build
-                else ""
-            
-            let pre = 
-                match x.PreRelease, String.IsNullOrEmpty x.Build |> not with
-                | Some preRelease, _ -> "-" + preRelease.Name
-                | None, true -> "-"
-                | _ -> ""
-            
-            sprintf "%d.%d.%d" x.Major x.Minor x.Patch + pre + build
+        | None -> x.Normalize()
     
     override x.Equals(yobj) = 
         match yobj with
