@@ -59,10 +59,10 @@ type SemVerInfo =
             else ""
             
         let pre = 
-            match x.PreRelease, String.IsNullOrEmpty x.Build |> not with
+            match x.PreRelease, (String.IsNullOrEmpty x.Build |> not && x.Build <> "0")  with
             | Some preRelease, _ -> "-" + preRelease.Name + build
             | None, true -> build
-            | _ -> build
+            | _ -> ""
 
         sprintf "%d.%d.%d" x.Major x.Minor x.Patch + pre
 

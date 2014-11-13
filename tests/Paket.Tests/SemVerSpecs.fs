@@ -75,3 +75,7 @@ let ``can normalize versions``() =
     (SemVer.Parse "1.2.3-alpha.3").Normalize() |> shouldEqual ((SemVer.Parse "1.2.3-alpha.3").ToString())
     (SemVer.Parse "1.0.0-alpha").Normalize() |> shouldEqual ((SemVer.Parse "1.0.0-alpha").ToString())
     (SemVer.Parse "1.0.0-alpha.1").Normalize() |> shouldEqual ((SemVer.Parse "1.0.0-alpha.1").ToString())
+
+[<Test>]
+let ``can normalize build zeros``() =
+    (SemVer.Parse "2.0.30506.0").Normalize() |> shouldEqual ((SemVer.Parse "2.0.30506").ToString())

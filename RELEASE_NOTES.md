@@ -1,4 +1,4 @@
-#### 0.14.0-alpha001 - 13.11.2014
+#### 0.14.0-alpha002 - 13.11.2014
 * Uses Nuget v3 API, which enables much faster resolver
 
 #### 0.13.1 - 12.11.2014
