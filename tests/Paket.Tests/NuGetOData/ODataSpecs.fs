@@ -6,6 +6,8 @@ open FsUnit
 open System.IO
 open Paket.Nuget
 
+open Paket.NuGetV3
+
 let fakeUrl = "http://doesntmatter"
 
 let parse fileName =

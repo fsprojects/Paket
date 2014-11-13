@@ -4,7 +4,8 @@ open Paket
 open NUnit.Framework
 open FsUnit
 open System.IO
-open Paket.Nuget
+
+open Paket.NuGetV3
 
 let parse fileName =
     File.ReadAllText fileName

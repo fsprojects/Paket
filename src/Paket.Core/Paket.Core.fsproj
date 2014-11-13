@@ -86,6 +86,7 @@
     <Compile Include="InstallModel.fs" />
     <Compile Include="ProjectFile.fs" />
     <Compile Include="SolutionFile.fs" />
+    <Compile Include="NuGetV3.fs" />
     <Compile Include="Nuget.fs" />
     <Compile Include="DependenciesFile.fs" />
     <Compile Include="ReferencesFile.fs" />
