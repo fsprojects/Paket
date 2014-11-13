@@ -7,7 +7,6 @@ nuget NUnit >= 2.6
 nuget FAKE
 nuget FSharp.Formatting
 nuget DotNetZip ~> 1.9.3
-nuget SourceLink.Fake
 nuget NuGet.CommandLine
 nuget FSharp.Core.Microsoft.Signed
 
