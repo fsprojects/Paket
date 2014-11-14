@@ -7,7 +7,7 @@ open System.IO
 open System.Xml
 open Paket.Logging
 open Paket.Xml
-open Paket.Nuget
+open Paket.NuGetV2
 open Paket.PackageSources
 
 type CredsMigrationMode =
@@ -178,7 +178,7 @@ let ConvertFromNuget(dependenciesFileName, force, installAfter, initAutoRestore,
         else
             Path.GetDirectoryName dependenciesFileName
 
-    let nugetPackagesConfigs = FindAllFiles(root, "packages.config") |> Seq.map Nuget.ReadPackagesConfig
+    let nugetPackagesConfigs = FindAllFiles(root, "packages.config") |> Seq.map NuGetV2.ReadPackagesConfig
     let nugetConfig = readNugetConfig()
     FindAllFiles(root, "nuget.config") |> Seq.iter (fun f -> removeFile f.FullName)
 

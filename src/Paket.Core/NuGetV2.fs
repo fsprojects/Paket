@@ -1,5 +1,5 @@
 /// Contains NuGet support.
-module Paket.Nuget
+module Paket.NuGetV2
 
 open System
 open System.IO

@@ -20,16 +20,16 @@ let ExtractPackage(root, sources, force, package : ResolvedPackage) =
                                | Nuget s -> s.Authentication |> Option.map toBasicAuth
                                | _ -> None)
             try 
-                let! folder = Nuget.DownloadPackage(root, auth, source.Url, package.Name, v, force)
-                return package, Nuget.GetLibFiles folder
+                let! folder = NuGetV2.DownloadPackage(root, auth, source.Url, package.Name, v, force)
+                return package, NuGetV2.GetLibFiles folder
             with _ when force = false -> 
                 tracefn "Something went wrong with the download of %s %A - automatic retry with --force." package.Name v
-                let! folder = Nuget.DownloadPackage(root, auth, source.Url, package.Name, v, true)
-                return package, Nuget.GetLibFiles folder
+                let! folder = NuGetV2.DownloadPackage(root, auth, source.Url, package.Name, v, true)
+                return package, NuGetV2.GetLibFiles folder
         | LocalNuget path -> 
             let packageFile = Path.Combine(root, path, sprintf "%s.%A.nupkg" package.Name v)
-            let! folder = Nuget.CopyFromCache(root, packageFile, package.Name, v, force)
-            return package, Nuget.GetLibFiles folder
+            let! folder = NuGetV2.CopyFromCache(root, packageFile, package.Name, v, force)
+            return package, NuGetV2.GetLibFiles folder
     }
 
 /// Retores the given packages from the lock file.

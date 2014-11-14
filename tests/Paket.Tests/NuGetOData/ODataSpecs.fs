@@ -4,7 +4,7 @@ open Paket
 open NUnit.Framework
 open FsUnit
 open System.IO
-open Paket.Nuget
+open Paket.NuGetV2
 
 open Paket.NuGetV3
 
