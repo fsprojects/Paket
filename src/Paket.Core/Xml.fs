@@ -36,6 +36,16 @@ let getNodes name (node:XmlNode) =
         |> Seq.cast<XmlNode>
         |> Seq.toList
 
+/// [omit]
+let getDescendants name (node:XmlNode) = 
+    let xpath = sprintf "//*[local-name() = '%s']" name
+    match node.SelectNodes(xpath) with
+    | null -> []
+    | nodeList -> 
+        nodeList
+        |> Seq.cast<XmlNode>
+        |> Seq.toList
+
 let createNode(doc:XmlDocument,name) = doc.CreateElement(name, Constants.ProjectDefaultNameSpace)
 
 let createNodeWithText(doc,name,text) = 

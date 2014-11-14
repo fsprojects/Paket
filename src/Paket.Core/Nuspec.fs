@@ -3,6 +3,7 @@
 open System
 open System.Xml
 open System.IO
+open Xml
 
 [<RequireQualifiedAccess>]
 type NuspecReferences = 
@@ -94,9 +95,9 @@ type Nuspec =
             doc.Load fi.FullName
 
             let dependencies = 
-                doc.SelectNodes "//*[local-name() = 'dependency']"
-                |> Seq.cast<XmlNode>
-                |> Seq.map (fun node -> 
+                doc 
+                |> getDescendants "dependency"
+                |> List.map (fun node -> 
                                 let name = node.Attributes.["id"].Value                            
                                 let version = 
                                     if node.Attributes.["version"] <> null then 
@@ -110,19 +111,21 @@ type Nuspec =
                                     else
                                         None
                                 name,version,restriction) 
-                |> Seq.toList
 
             let officialName = 
-                doc.SelectNodes "//*[local-name() = 'metadata']/*[local-name() = 'id']"
-                |> Seq.cast<XmlNode>
-                |> Seq.head
-                |> fun node -> node.InnerText
+                match doc
+                      |> getNode "package"
+                      |> Option.bind (getNode "metadata")
+                      |> Option.bind (getNode "id")
+                      |> Option.map (fun node -> node.InnerText) with
+                | Some name -> name
+                | None -> failwithf "unable to parse %s" fileName
 
-            let references =
-                if List.isEmpty [ for node in doc.SelectNodes "//*[local-name() = 'references']" -> node] then [] else
-                    [ for node in doc.SelectNodes "//*[local-name() = 'reference']" -> 
-                        node.Attributes.["file"].InnerText]
-            
+            let references = 
+                doc
+                |> getDescendants "reference"
+                |> List.choose (getAttribute "file")
+
             let frameworkAssemblyReferences =
                 if List.isEmpty [ for node in doc.SelectNodes "//*[local-name() = 'frameworkAssemblies']"  -> node] then [] else
                     [ for node in doc.SelectNodes "//*[local-name() = 'frameworkAssembly']" do
