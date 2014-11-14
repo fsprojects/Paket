@@ -98,14 +98,23 @@ type ProjectFile =
                      | Some link -> addChild (this.CreateNode("Link",link.Replace("\\","/"))) n
                      | _ -> n)
 
-    member this.UpdateFileItems(fileItems : list<FileItem>, hard) = 
+    member this.UpdateFileItems(fileItems : FileItem list, hard) = 
         this.DeletePaketNodes("Compile")
         this.DeletePaketNodes("Content")
 
-        let newItemGroups = ["Content", this.CreateNode("ItemGroup")
-                             "Compile", this.CreateNode("ItemGroup") ] |> dict
+        let firstItemGroup = this.Document.SelectNodes("//ns:Project/ns:ItemGroup", this.Namespaces) |> Seq.cast<XmlNode> |> Seq.firstOrDefault
 
-        for fileItem in fileItems do
+        let newItemGroups = 
+            match firstItemGroup with
+            | None ->
+                ["Content", this.CreateNode("ItemGroup")
+                 "Compile", this.CreateNode("ItemGroup") ] 
+            | Some node ->
+                ["Content", node :?> XmlElement
+                 "Compile", node :?> XmlElement ] 
+            |> dict
+
+        for fileItem in fileItems |> List.rev do
             let paketNode = this.createFileItemNode fileItem
             let xpath = sprintf "//ns:%s[starts-with(@Include, '%s')]" 
                                 fileItem.BuildAction 
@@ -113,7 +122,7 @@ type ProjectFile =
             let fileItemsInSameDir = this.Document.SelectNodes(xpath, this.Namespaces) |> Seq.cast<XmlNode>
             if fileItemsInSameDir |> Seq.isEmpty 
             then 
-                newItemGroups.[fileItem.BuildAction].AppendChild(paketNode) |> ignore
+                newItemGroups.[fileItem.BuildAction].PrependChild(paketNode) |> ignore
             else
                 let existingNode = fileItemsInSameDir 
                                    |> Seq.tryFind (fun n -> n.Attributes.["Include"].Value = fileItem.Include)
@@ -127,13 +136,6 @@ type ProjectFile =
                 | None  ->
                     let firstNode = fileItemsInSameDir |> Seq.head
                     firstNode.ParentNode.InsertBefore(paketNode, firstNode) |> ignore
-        
-        let firstItemGroup = this.Document.SelectNodes("//ns:ItemGroup", this.Namespaces) |> Seq.cast<XmlNode> |> Seq.firstOrDefault
-        for newItemGroup in newItemGroups.Values do
-            if newItemGroup.HasChildNodes then 
-                match firstItemGroup with
-                | Some firstItemGroup -> firstItemGroup.ParentNode.InsertBefore(newItemGroup, firstItemGroup) |> ignore
-                | None -> this.ProjectNode.AppendChild(newItemGroup) |> ignore
 
         this.DeleteIfEmpty("//ns:ItemGroup")
 
@@ -257,7 +259,10 @@ type ProjectFile =
                         (InstallModel.EmptyModel("",SemVer.Parse "0"))
 
         let chooseNode = this.GenerateXml(merged.FilterFallbacks())
-        this.ProjectNode.AppendChild(chooseNode) |> ignore
+        
+        match this.Document.SelectNodes("//ns:Project/ns:ItemGroup", this.Namespaces) |> Seq.cast<XmlNode> |> Seq.firstOrDefault with
+        | None -> this.ProjectNode.AppendChild(chooseNode) |> ignore
+        | Some firstNode -> firstNode.ParentNode.InsertBefore(chooseNode,firstNode) |> ignore
                 
     member this.Save() =
         if Utils.normalizeXml this.Document <> this.OriginalText then 
