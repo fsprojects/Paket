@@ -94,24 +94,6 @@ type Nuspec =
             let doc = new XmlDocument()
             doc.Load fi.FullName
 
-            let dependencies = 
-                doc 
-                |> getDescendants "dependency"
-                |> List.map (fun node -> 
-                                let name = node.Attributes.["id"].Value                            
-                                let version = 
-                                    if node.Attributes.["version"] <> null then 
-                                        NugetVersionRangeParser.parse node.Attributes.["version"].Value 
-                                    else 
-                                        NugetVersionRangeParser.parse "0"
-                                let restriction = 
-                                    if node.ParentNode.Name.ToLower() = "group" && node.ParentNode.Attributes.["targetFramework"] <> null then
-                                        let restriction = node.ParentNode.Attributes.["targetFramework"].InnerText
-                                        FrameworkIdentifier.Extract restriction
-                                    else
-                                        None
-                                name,version,restriction) 
-
             let officialName = 
                 match doc
                       |> getNode "package"
@@ -119,22 +101,50 @@ type Nuspec =
                       |> Option.bind (getNode "id")
                       |> Option.map (fun node -> node.InnerText) with
                 | Some name -> name
-                | None -> failwithf "unable to parse %s" fileName
+                | None -> failwithf "unable to find package id in %s" fileName
 
+            let dependency node = 
+                let name = 
+                    match node |> getAttribute "id" with
+                    | Some name -> name
+                    | None -> failwithf "unable to find dependency id in %s" fileName                            
+                let version = 
+                    match node |> getAttribute "version" with
+                    | Some version -> NugetVersionRangeParser.parse version
+                    | None ->         NugetVersionRangeParser.parse "0"
+                let restriction =
+                    let parent = node.ParentNode 
+                    match parent.Name.ToLower(), parent |> getAttribute "targetFramework" with
+                    | "group", Some framework -> FrameworkIdentifier.Extract framework
+                    | _ -> None
+                name,version,restriction
+
+            let dependencies = 
+                doc 
+                |> getDescendants "dependency"
+                |> List.map dependency
+            
             let references = 
                 doc
                 |> getDescendants "reference"
                 |> List.choose (getAttribute "file")
 
-            let frameworkAssemblyReferences =
-                if List.isEmpty [ for node in doc.SelectNodes "//*[local-name() = 'frameworkAssemblies']"  -> node] then [] else
-                    [ for node in doc.SelectNodes "//*[local-name() = 'frameworkAssembly']" do
-                        let name =  node.Attributes.["assemblyName"].InnerText
-                        for framework in node.Attributes.["targetFramework"].InnerText.Split([|','; ' '|],System.StringSplitOptions.RemoveEmptyEntries) do
-                            match FrameworkIdentifier.Extract framework with
-                            | Some fw -> yield { AssemblyName = name; TargetFramework = fw }                            
-                            | None -> () ]
+            let assemblyRefs node =
+                let name = node |> getAttribute "assemblyName"
+                let targetFrameworks = node |> getAttribute "targetFramework"
+                match name,targetFrameworks with
+                | Some name, Some targetFrameworks -> 
+                    targetFrameworks.Split([|','; ' '|],System.StringSplitOptions.RemoveEmptyEntries)
+                    |> Array.choose FrameworkIdentifier.Extract
+                    |> Array.map (fun fw -> { AssemblyName = name; TargetFramework = fw })
+                    |> Array.toList
+                | _ -> []
 
+            let frameworkAssemblyReferences =
+                doc
+                |> getDescendants "frameworkAssembly"
+                |> List.collect assemblyRefs
+           
             { References = if references = [] then NuspecReferences.All else NuspecReferences.Explicit references
               Dependencies = dependencies
               OfficialName = officialName
