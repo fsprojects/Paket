@@ -180,13 +180,21 @@ let parseODataDetails(nugetURL,packageName,version,raw) =
       SourceUrl = nugetURL
       Unlisted = publishDate = Constants.MagicUnlistingDate }
 
+
 /// Gets package details from Nuget via OData
-let getDetailsFromNugetViaOData auth nugetURL package (version:SemVerInfo) = 
+let getRawDetailsFromNuGetViaOData auth nugetURL package (version:SemVerInfo) = 
     async {         
-        let! raw = getFromUrl(auth,sprintf "%s/Packages?$filter=Id eq '%s' and NormalizedVersion eq '%s'" nugetURL package (version.Normalize()))
-        return parseODataDetails(nugetURL,package,version,raw)
+        try 
+            return! getFromUrl(auth,sprintf "%s/Packages?$filter=Id eq '%s' and NormalizedVersion eq '%s'" nugetURL package (version.Normalize()))
+        with _ -> 
+            return! getFromUrl(auth,sprintf "%s/Packages?$filter=Id eq '%s' and Version eq '%s'" nugetURL package (version.ToString()))
     }
 
+let getDetailsFromNuGetViaOData auth nugetURL package (version:SemVerInfo) = 
+    async {         
+        let! raw = getRawDetailsFromNuGetViaOData auth nugetURL package version    
+        return parseODataDetails(nugetURL,package,version,raw)
+    }
 
 /// The NuGet cache folder.
 let CacheFolder = 
@@ -203,15 +211,15 @@ let private loadFromCacheOrOData force fileName auth nugetURL package version =
                 let json = File.ReadAllText(fileName)
                 let cachedObject = JsonConvert.DeserializeObject<NugetPackageCache>(json)                
                 if cachedObject.Name = null || cachedObject.DownloadUrl = null || cachedObject.SourceUrl = null then
-                    let! details = getDetailsFromNugetViaOData auth nugetURL package version
+                    let! details = getDetailsFromNuGetViaOData auth nugetURL package version
                     return true,details
                 else
                     return false,cachedObject
             with _ -> 
-                let! details = getDetailsFromNugetViaOData auth nugetURL package version
+                let! details = getDetailsFromNuGetViaOData auth nugetURL package version
                 return true,details
         else
-            let! details = getDetailsFromNugetViaOData auth nugetURL package version
+            let! details = getDetailsFromNuGetViaOData auth nugetURL package version
             return true,details
     }
 
@@ -223,13 +231,13 @@ let getDetailsFromNuget force auth nugetURL package (version:SemVerInfo) =
             let fi = FileInfo(Path.Combine(CacheFolder,sprintf "%s.%s.json" package (version.Normalize())))
             let! (invalidCache,details) = loadFromCacheOrOData force fi.FullName auth nugetURL package version
             if details.SourceUrl <> nugetURL then
-                return! getDetailsFromNugetViaOData auth nugetURL package version 
+                return! getDetailsFromNuGetViaOData auth nugetURL package version 
             else
                 if invalidCache then
                     File.WriteAllText(fi.FullName,JsonConvert.SerializeObject(details))
                 return details
         with
-        | _ -> return! getDetailsFromNugetViaOData auth nugetURL package version 
+        | _ -> return! getDetailsFromNuGetViaOData auth nugetURL package version 
     }    
     
 /// Reads direct dependencies from a nupkg file

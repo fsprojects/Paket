@@ -1,4 +1,7 @@
-#### 0.14.0 - 13.11.2014
+#### 0.14.1 - 14.11.2014
+* Support feeds that don't support NormalizedVersion - https://github.com/fsprojects/Paket/issues/361#issuecomment-63048992
+
+#### 0.14.0 - 14.11.2014
 * Uses Nuget v3 API, which enables much faster resolver
 * BUGFIX: Keep project file order similar to VS order
 * Support unlisted dependencies if nothing else fits - https://github.com/fsprojects/Paket/issues/327
