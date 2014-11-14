@@ -20,13 +20,15 @@ let getAttribute name (node:XmlNode) =
     |> Option.map (fun a -> a.Value)
 
 /// [omit]
-let getNode xpath (node:XmlNode) =
+let getNode name (node:XmlNode) =
+    let xpath = sprintf "*[local-name() = '%s']" name
     match node.SelectSingleNode(xpath) with
     | null -> None
     | n -> Some(n)
 
 /// [omit]
-let getNodes xpath (node:XmlNode) =
+let getNodes name (node:XmlNode) =
+    let xpath = sprintf "*[local-name() = '%s']" name
     match node.SelectNodes(xpath) with
     | null -> []
     | nodeList -> 

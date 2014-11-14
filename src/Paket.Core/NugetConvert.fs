@@ -24,7 +24,8 @@ type CredsMigrationMode =
 
 let private tryGetValue key (node : XmlNode) =
     node 
-    |> getNode (sprintf "add[@key='%s']" key)
+    |> getNodes "add"
+    |> List.tryFind (getAttribute "key" >> (=) (Some key))
     |> Option.bind (getAttribute "value")
 
 let private getKeyValueList (node : XmlNode) =
@@ -48,6 +49,7 @@ type NugetConfig =
     member this.ApplyConfig (filename : string) =
         let doc = XmlDocument()
         doc.Load(filename)
+        let config = doc |> getNode "configuration"
 
         let clearSources = doc.SelectSingleNode("//packageSources/clear") <> null
 
@@ -64,24 +66,27 @@ type NugetConfig =
                     Some  { Username = userName; Password = clearTextPass }
                 | _ -> None
 
-            doc 
-            |> getNode (sprintf "//packageSourceCredentials/%s" (XmlConvert.EncodeLocalName key))
+            config
+            |> Option.bind (getNode "packageSourceCredentials")
+            |> Option.bind (getNode (XmlConvert.EncodeLocalName key))
             |> Option.bind getAuth'
 
         let sources = 
-            doc 
-            |> getNode "//packageSources"
+            config 
+            |> Option.bind (getNode "packageSources")
             |> Option.toList
             |> List.collect getKeyValueList
             |> List.map (fun (key,value) -> value, getAuth key)
 
+        let packageRestore = config |> Option.bind (getNode "packageRestore")
+
         { PackageSources = if clearSources then sources else this.PackageSources @ sources
           PackageRestoreEnabled = 
-            match doc |> getNode "//packageRestore" |> Option.bind (tryGetValue "enabled") with
+            match packageRestore |> Option.bind (tryGetValue "enabled") with
             | Some value -> bool.Parse(value)
             | None -> this.PackageRestoreEnabled
           PackageRestoreAutomatic = 
-            match doc |> getNode "//packageRestore" |> Option.bind (tryGetValue "automatic") with
+            match packageRestore |> Option.bind (tryGetValue "automatic") with
             | Some value -> bool.Parse(value)
             | None -> this.PackageRestoreAutomatic }
 
