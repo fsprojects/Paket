@@ -61,6 +61,45 @@
     </Otherwise>
   </Choose>
   <Import Project="$(FSharpTargetsPath)" Condition="Exists('$(FSharpTargetsPath)')" />
+  <ItemGroup>
+    <Compile Include="AssemblyInfo.fs" />
+    <Content Include="..\..\packages\FSharp.Core.Microsoft.Signed\lib\net40\FSharp.Core.optdata">
+      <Link>FSharp.Core.optdata</Link>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\..\packages\FSharp.Core.Microsoft.Signed\lib\net40\FSharp.Core.sigdata">
+      <Link>FSharp.Core.sigdata</Link>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Compile Include="Program.fs" />
+    <Content Include="App.config" />
+    <None Include="paket.references" />
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="FSharp.Data.TypeProviders" />
+    <Reference Include="mscorlib" />
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Data.Linq" />
+    <Reference Include="System.Numerics" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Paket.Core\Paket.Core.fsproj">
+      <Name>Paket.Core</Name>
+      <Project>{7bab0ae2-089f-4761-b138-a717aa2f86c5}</Project>
+      <Private>True</Private>
+    </ProjectReference>
+  </ItemGroup>
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it.
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+  <Import Project="$(SolutionDir)\.paket\paket.targets" />
   <Choose>
     <When Condition="$(TargetFrameworkIdentifier) == '.NETFramework'">
       <Choose>
@@ -312,43 +351,4 @@
       </ItemGroup>
     </Otherwise>
   </Choose>
-  <ItemGroup>
-    <Compile Include="AssemblyInfo.fs" />
-    <Content Include="..\..\packages\FSharp.Core.Microsoft.Signed\lib\net40\FSharp.Core.optdata">
-      <Link>FSharp.Core.optdata</Link>
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="..\..\packages\FSharp.Core.Microsoft.Signed\lib\net40\FSharp.Core.sigdata">
-      <Link>FSharp.Core.sigdata</Link>
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Compile Include="Program.fs" />
-    <Content Include="App.config" />
-    <None Include="paket.references" />
-  </ItemGroup>
-  <ItemGroup>
-    <Reference Include="FSharp.Data.TypeProviders" />
-    <Reference Include="mscorlib" />
-    <Reference Include="System" />
-    <Reference Include="System.Core" />
-    <Reference Include="System.Data" />
-    <Reference Include="System.Data.Linq" />
-    <Reference Include="System.Numerics" />
-    <Reference Include="System.Xml" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\Paket.Core\Paket.Core.fsproj">
-      <Name>Paket.Core</Name>
-      <Project>{7bab0ae2-089f-4761-b138-a717aa2f86c5}</Project>
-      <Private>True</Private>
-    </ProjectReference>
-  </ItemGroup>
-  <!-- To modify your build process, add your task inside one of the targets below and uncomment it.
-       Other similar extension points exist, see Microsoft.Common.targets.
-  <Target Name="BeforeBuild">
-  </Target>
-  <Target Name="AfterBuild">
-  </Target>
-  -->
-  <Import Project="$(SolutionDir)\.paket\paket.targets" />
 </Project>
