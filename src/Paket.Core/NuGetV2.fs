@@ -11,6 +11,8 @@ open System.Text.RegularExpressions
 open Paket.Logging
 open System.Text
 
+open Paket.Utils
+open Paket.Xml
 open Paket.PackageSources
 open Paket.NuGetV3
 
@@ -124,49 +126,39 @@ let getAllVersionsFromLocalPath (localNugetPath, package) =
 
 let parseODataDetails(nugetURL,packageName,version,raw) = 
     let doc,manager = loadNuGetOData raw
-            
-    let getAttribute name = 
-        seq { 
-                for node in doc.SelectNodes(sprintf "//ns:entry/m:properties/d:%s" name, manager) do
-                    yield node.InnerText
-            }
-            |> Seq.head
+                
+    let entry = 
+        match orElse (doc ./ "entry") (doc ./ "feed" ./? "entry" ) with
+        | Some node -> node
+        | _ -> failwithf "unable to find entry node for package %s %O" packageName version
 
-
-    let officialName = 
-        match [ for node in doc.SelectNodes("//ns:entry/m:properties/d:Id", manager) -> node.InnerText] with
-        | id::_ -> id
-        | [] ->
-            try
-                seq { 
-                        for node in doc.SelectNodes("//ns:entry/ns:title", manager) do
-                            yield node.InnerText
-                    }
-                    |> Seq.head
-            with exn ->
-                failwithf "Could not get official package name for package %s %O.%s Message: %s" packageName version
-                    Environment.NewLine exn.Message
-
-    let publishDate = 
-        match [ for node in doc.SelectNodes("//ns:entry/m:properties/d:Published", manager) -> node.InnerText] with
-        | id::_ -> 
-            match DateTime.TryParse id with
-            | true,date -> date
+    let officialName =
+        match orElse (entry ./ "properties" ./? "Id") (entry ./ "title") with
+        | Some node -> node.InnerText
+        | _ -> failwithf "Could not get official package name for package %s %O" packageName version
+        
+    let publishDate =
+        match entry ./ "properties" ./? "Published" with
+        | Some node -> 
+            match DateTime.TryParse node.InnerText with
+            | true, date -> date
             | _ -> DateTime.MinValue
-        | [] -> DateTime.MinValue
-
-    let downloadLink = 
-        seq { 
-                for node in doc.SelectNodes("//ns:entry/ns:content", manager) do
-                    let downloadType = node.Attributes.["type"].Value
-                    if downloadType = "application/zip" || downloadType = "binary/octet-stream" then
-                        yield node.Attributes.["src"].Value
-            }
-            |> Seq.head
-
+        | _ -> DateTime.MinValue
+    
+    let downloadLink =
+        match entry ./ "content" .@? "type", 
+              entry ./ "content" .@? "src"  with
+        | Some "application/zip", Some link -> link
+        | Some "binary/octet-stream", Some link -> link
+        | _ -> failwithf "unable to find downloadLink for package %s %O" packageName version
+        
+    let dependencies =
+        match entry ./ "properties" ./? "Dependencies" with
+        | Some node -> node.InnerText
+        | None -> failwithf "unable to find dependencies for package %s %O" packageName version
 
     let packages = 
-        getAttribute "Dependencies"
+        dependencies
         |> fun s -> s.Split([| '|' |], System.StringSplitOptions.RemoveEmptyEntries)
         |> Array.map (fun d -> d.Split ':')
         |> Array.filter (fun d -> Array.isEmpty d |> not && d.[0] <> "")

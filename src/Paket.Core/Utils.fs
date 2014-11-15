@@ -176,3 +176,8 @@ module String =
         if input.StartsWith prefix then
             Some (input.Substring(prefix.Length))
         else None
+
+let inline orElse v =
+    function
+    | Some x -> Some x
+    | None -> v
