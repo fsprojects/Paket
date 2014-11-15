@@ -26,15 +26,6 @@ type NugetPackagesConfig = {
     Type: NugetPackagesConfigType
 }
 
-let private loadNuGetOData raw =
-    let doc = XmlDocument()
-    doc.LoadXml raw
-    let manager = new XmlNamespaceManager(doc.NameTable)
-    manager.AddNamespace("ns", "http://www.w3.org/2005/Atom")
-    manager.AddNamespace("d", "http://schemas.microsoft.com/ado/2007/08/dataservices")
-    manager.AddNamespace("m", "http://schemas.microsoft.com/ado/2007/08/dataservices/metadata")
-    doc,manager
-
 type NugetPackageCache =
     { Dependencies : (string * VersionRequirement * (FrameworkIdentifier option)) list
       Name : string
@@ -45,18 +36,28 @@ type NugetPackageCache =
 let rec private followODataLink auth url = 
     async { 
         let! raw = getFromUrl (auth, url)
-        let doc, manager = loadNuGetOData raw
-        
-        let currentPage = 
-            [ for node in doc.SelectNodes("//ns:feed/ns:entry/m:properties/d:Version", manager) -> node.InnerText ]
+        let doc = XmlDocument()
+        doc.LoadXml raw
+        let feed = 
+            match doc |> getNode "feed" with
+            | Some node -> node
+            | None -> failwithf "unable to parse data from %s" url
 
-        return [ for linkNode in doc.SelectNodes("//ns:feed/ns:link[@rel=\"next\"]", manager) -> 
-                     linkNode.Attributes.["href"].Value ]
-               |> List.map (followODataLink auth)
-               |> Async.Parallel
-               |> Async.RunSynchronously
-               |> Seq.concat
-               |> Seq.append currentPage
+        let currentPage = 
+            feed ./ "entry" ./? "properties" ./? "Version" 
+            |> Option.map (fun node -> node.InnerText)
+            |> Option.toList
+
+        return 
+            feed 
+            |> getNodes "link"
+            |> List.filter (fun node -> node |> getAttribute "rel" = Some "next")
+            |> List.choose (getAttribute "href")
+            |> List.map (followODataLink auth)
+            |> Async.Parallel
+            |> Async.RunSynchronously
+            |> Seq.concat
+            |> Seq.append currentPage
     }
 
 /// Gets versions of the given package via OData via /Packages?$filter=Id eq 'packageId'
@@ -125,7 +126,8 @@ let getAllVersionsFromLocalPath (localNugetPath, package) =
 
 
 let parseODataDetails(nugetURL,packageName,version,raw) = 
-    let doc,manager = loadNuGetOData raw
+    let doc = XmlDocument()
+    doc.LoadXml raw
                 
     let entry = 
         match orElse (doc ./ "entry") (doc ./ "feed" ./? "entry" ) with
