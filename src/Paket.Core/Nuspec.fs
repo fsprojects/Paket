@@ -95,12 +95,8 @@ type Nuspec =
             doc.Load fi.FullName
 
             let officialName = 
-                match doc
-                      |> getNode "package"
-                      |> Option.bind (getNode "metadata")
-                      |> Option.bind (getNode "id")
-                      |> Option.map (fun node -> node.InnerText) with
-                | Some name -> name
+                match doc ./ "package" ./? "metadata" ./? "id" with
+                | Some node -> node.InnerText
                 | None -> failwithf "unable to find package id in %s" fileName
 
             let dependency node = 
