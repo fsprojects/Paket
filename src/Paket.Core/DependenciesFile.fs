@@ -126,9 +126,9 @@ module DependenciesFileParser =
     let private (|Remote|Package|Blank|ReferencesMode|OmitContent|SourceFile|) (line:string) =
         match line.Trim() with
         | _ when String.IsNullOrWhiteSpace line -> Blank
-        | trimmed when trimmed.StartsWith "source" -> Remote(PackageSource.Parse(trimmed))
-        | trimmed when trimmed.StartsWith "nuget" -> 
-            let parts = trimmed.Replace("nuget","").Trim().Replace("\"", "").Split([|' '|],StringSplitOptions.RemoveEmptyEntries) |> Seq.toList
+        | String.StartsWith "source" _ as trimmed -> Remote(PackageSource.Parse(trimmed))
+        | String.StartsWith "nuget" trimmed -> 
+            let parts = trimmed.Trim().Replace("\"", "").Split([|' '|],StringSplitOptions.RemoveEmptyEntries) |> Seq.toList
 
             let isVersion(text:string) = 
                 match Int32.TryParse(text.[0].ToString()) with
@@ -145,13 +145,13 @@ module DependenciesFileParser =
             | name :: rest -> Package(name,">= 0 " + String.Join(" ",rest))
             | name :: [] -> Package(name,">= 0")
             | _ -> failwithf "could not retrieve nuget package from %s" trimmed
-        | trimmed when trimmed.StartsWith "references" -> ReferencesMode(trimmed.Replace("references","").Trim() = "strict")
-        | trimmed when trimmed.StartsWith "content" -> OmitContent(trimmed.Replace("content","").Trim() = "none")
-        | trimmed when trimmed.StartsWith "gist" ->
+        | String.StartsWith "references" trimmed -> ReferencesMode(trimmed.Trim() = "strict")
+        | String.StartsWith "content" trimmed -> OmitContent(trimmed.Trim() = "none")
+        | String.StartsWith "gist" _ as trimmed ->
             SourceFile(``parse git source`` trimmed SingleSourceFileOrigin.GistLink "gist")
-        | trimmed when trimmed.StartsWith "github" ->
+        | String.StartsWith "github" _ as trimmed  ->
             SourceFile(``parse git source`` trimmed SingleSourceFileOrigin.GitHubLink "github")
-        | trimmed when trimmed.StartsWith "http" ->
+        | String.StartsWith "http" _ as trimmed  ->
             SourceFile(``parse http source`` trimmed)
         | _ -> Blank
     

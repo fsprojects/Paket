@@ -103,10 +103,10 @@ module LockFileParser =
         | _, "NUGET" -> RepositoryType "NUGET"
         | _, "GITHUB" -> RepositoryType "GITHUB"
         | _, _ when String.IsNullOrWhiteSpace line -> Blank
-        | _, trimmed when trimmed.StartsWith "remote:" -> Remote(trimmed.Substring(trimmed.IndexOf(": ") + 2).Split(' ').[0])
-        | _, trimmed when trimmed.StartsWith "specs:" -> Blank
-        | _, trimmed when trimmed.StartsWith "REFERENCES:" -> InstallOption(StrictCase,trimmed.Replace("REFERENCES:","").Trim() = "STRICT")
-        | _, trimmed when trimmed.StartsWith "CONTENT:" -> InstallOption(OmitContentCase,trimmed.Replace("CONTENT:","").Trim() = "NONE")
+        | _, String.StartsWith "remote:" trimmed -> Remote(trimmed.Trim().Split(' ').[0])
+        | _, String.StartsWith "specs:" _ -> Blank
+        | _, String.StartsWith "REFERENCES:" trimmed -> InstallOption(StrictCase,trimmed.Trim() = "STRICT")
+        | _, String.StartsWith "CONTENT:" trimmed -> InstallOption(OmitContentCase,trimmed.Trim() = "NONE")
         | _, trimmed when line.StartsWith "      " ->
             let parts = trimmed.Split '(' 
             NugetDependency (parts.[0].Trim(),parts.[1].Replace("(", "").Replace(")", "").Trim())
