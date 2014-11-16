@@ -48,9 +48,9 @@ type ProjectFile =
             if generalReferencesFile.Exists then Some generalReferencesFile.FullName
             else None
 
-    member this.DeleteIfEmpty xPath =
+    member this.DeleteIfEmpty name =
         let nodesToDelete = List<_>()
-        for node in this.Document.SelectNodes(xPath, this.Namespaces) do
+        for node in this.Document |> getDescendants name do
             if node.ChildNodes.Count = 0 then
                 nodesToDelete.Add node
 
@@ -59,7 +59,7 @@ type ProjectFile =
 
     member this.FindPaketNodes(name) = 
         [
-            for node in this.Document.SelectNodes(sprintf "//ns:%s" name, this.Namespaces) do
+            for node in this.Document |> getDescendants name do
                 let isPaketNode = ref false
                 for child in node.ChildNodes do
                         if child.Name = "Paket" then isPaketNode := true
@@ -81,14 +81,6 @@ type ProjectFile =
         let node = this.CreateNode(name)
         node.InnerText <- text
         node
-
-    member this.DeleteEmptyReferences() = 
-        this.DeleteIfEmpty("//ns:ItemGroup")
-        this.DeleteIfEmpty("//ns:When")
-        this.DeleteIfEmpty("//ns:Otherwise")
-        this.DeleteIfEmpty("//ns:Choose")
-        this.DeleteIfEmpty("//ns:When")
-        this.DeleteIfEmpty("//ns:Choose")
 
     member this.createFileItemNode fileItem =
         this.CreateNode(fileItem.BuildAction)
@@ -137,7 +129,7 @@ type ProjectFile =
                     let firstNode = fileItemsInSameDir |> Seq.head
                     firstNode.ParentNode.InsertBefore(paketNode, firstNode) |> ignore
 
-        this.DeleteIfEmpty("//ns:ItemGroup")
+        this.DeleteIfEmpty("ItemGroup")
 
     member this.HasCustomNodes(model:InstallModel) =
         let libs = model.GetReferenceNames.Force()
@@ -241,7 +233,9 @@ type ProjectFile =
 
     member this.UpdateReferences(completeModel: Map<string,InstallModel>, usedPackages : Dictionary<string,bool>, hard) = 
         this.DeletePaketNodes("Reference")  
-        this.DeleteEmptyReferences()
+        
+        ["ItemGroup";"When";"Otherwise";"Choose";"When";"Choose"]
+        |> List.iter this.DeleteIfEmpty
 
         if hard then
             for kv in usedPackages do
