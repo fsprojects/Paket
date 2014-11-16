@@ -391,3 +391,12 @@ let ``should read config with local source``() =
     let cfg = DependenciesFile.FromCode(configWithLocalSource)
 
     cfg.DirectDependencies.["Nancy.Owin"].Range |> shouldEqual (VersionRange.Specific (SemVer.Parse "0.22.2"))
+
+[<Test>]
+let ``should read config with package name containing nuget``() = 
+    let config = """
+    nuget nuget.Core 0.1
+    """
+    let cfg = DependenciesFile.FromCode(config)
+
+    cfg.DirectDependencies.["nuget.Core"].Range |> shouldEqual (VersionRange.Specific (SemVer.Parse "0.1"))

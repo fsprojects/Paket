@@ -170,3 +170,9 @@ let FindAllFiles(folder, pattern) = DirectoryInfo(folder).EnumerateFiles(pattern
 /// [omit]
 module Seq = 
     let firstOrDefault seq = Seq.tryFind (fun _ -> true) seq
+
+module String =
+    let (|StartsWith|_|) prefix (input: string) =
+        if input.StartsWith prefix then
+            Some (input.Substring(prefix.Length))
+        else None
