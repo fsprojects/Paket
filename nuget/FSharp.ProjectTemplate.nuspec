@@ -5,8 +5,8 @@
     <version>@build.number@</version>
     <authors>@authors@</authors>
     <owners>@authors@</owners>
-    <licenseUrl>http://github.com/fsprojects/fsldb/blob/master/LICENSE.txt</licenseUrl>
-    <projectUrl>http://fsprojects.github.com/fsldb</projectUrl>
+    <licenseUrl>http://github.com/fsprojects/FSharp.ProjectScaffold/blob/master/LICENSE.txt</licenseUrl>
+    <projectUrl>http://fsprojects.github.com/FSharp.ProjectScaffold</projectUrl>
     <iconUrl>https://raw.githubusercontent.com/fsprojects/ProjectScaffold/master/docs/files/img/logo.png</iconUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <summary>@summary@</summary>
@@ -17,7 +17,7 @@
     <dependencies />
   </metadata>
   <files>
-    <file src="..\bin\fsldb.dll" target="lib/net40" />
-    <file src="..\bin\fsldb.pdb" target="lib/net40" />
+    <file src="..\bin\FSharp.ProjectTemplate.dll" target="lib/net40" />
+    <file src="..\bin\FSharp.ProjectTemplate.pdb" target="lib/net40" />
   </files>
 </package>

@@ -1,6 +1,6 @@
-module fsldb.Tests
+﻿module FSharp.ProjectScaffold.Tests
 
-open fsldb
+open FSharp.ProjectTemplate
 open NUnit.Framework
 
 [<Test>]
