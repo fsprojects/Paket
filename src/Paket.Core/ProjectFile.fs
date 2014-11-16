@@ -28,8 +28,7 @@ type ProjectFile =
     { FileName: string
       OriginalText : string
       Document : XmlDocument
-      ProjectNode : XmlNode
-      Namespaces : XmlNamespaceManager }
+      ProjectNode : XmlNode }
 
     member this.Name = FileInfo(this.FileName).Name
 
@@ -276,11 +275,16 @@ type ProjectFile =
         |> List.map (fun n ->  FileInfo(Path.Combine(Path.GetDirectoryName(this.FileName), n.Attributes.["Include"].Value)))
 
     member this.GetInterProjectDependencies() =  
+        let forceGetInnerText node name =
+            match node |> getNode name with 
+            | Some n -> n.InnerText
+            | None -> failwithf "unable to parse %s" node.Name
+
         [for n in this.Document |> getDescendants "ProjectReference" -> 
             { Path = n.Attributes.["Include"].Value
-              Name = n.SelectSingleNode("ns:Name", this.Namespaces).InnerText
-              GUID = n.SelectSingleNode("ns:Project", this.Namespaces).InnerText |> Guid.Parse
-              Private = n.SelectSingleNode("ns:Private", this.Namespaces).InnerText |> bool.Parse }]
+              Name = forceGetInnerText n "Name"
+              GUID =  forceGetInnerText n "Project" |> Guid.Parse
+              Private =  forceGetInnerText n "Private" |> bool.Parse }]
 
     member this.ReplaceNugetPackagesFile() =
         let noneNodes = this.Document |> getDescendants "None"
@@ -318,7 +322,7 @@ type ProjectFile =
         |> Seq.head
 
     member this.GetTargetFramework() =
-        seq {for outputType in this.Document.SelectNodes("//ns:TargetFrameworkVersion", this.Namespaces) ->
+        seq {for outputType in this.Document |> getDescendants "TargetFrameworkVersion" ->
                 outputType.InnerText  }
         |> Seq.map (fun s -> // TODO make this a separate function
                         s.Replace("v","net")
@@ -327,12 +331,13 @@ type ProjectFile =
         |> Seq.head
     
     member this.AddImportForPaketTargets(relativeTargetsPath) =
-        match this.Document.SelectNodes(sprintf "//ns:Import[@Project='%s']" relativeTargetsPath, this.Namespaces)
-                            |> Seq.cast |> Seq.firstOrDefault with
+        match this.Document 
+              |> getDescendants "Import" 
+              |> List.tryFind (fun n -> n |> getAttribute "Project" = Some relativeTargetsPath) with
         | Some _ -> ()
         | None -> 
             let node = this.CreateNode("Import") |> addAttribute "Project" relativeTargetsPath
-            this.Document.SelectSingleNode("//ns:Project", this.Namespaces).AppendChild(node) |> ignore
+            this.ProjectNode.AppendChild(node) |> ignore
 
     member this.DetermineBuildAction fileName =
         if Path.GetExtension(this.FileName) = Path.GetExtension(fileName) + "proj" 
@@ -347,8 +352,11 @@ type ProjectFile =
 
             let manager = new XmlNamespaceManager(doc.NameTable)
             manager.AddNamespace("ns", Constants.ProjectDefaultNameSpace)
-            let projectNode = doc.SelectNodes("//ns:Project", manager).[0]
-            Some { FileName = fi.FullName; Document = doc; ProjectNode = projectNode; Namespaces = manager; OriginalText = Utils.normalizeXml doc }
+            let projectNode = 
+                match doc |> getNode "Project" with
+                | Some node -> node
+                | _ -> failwith "unable to find Project node in file %s" fileName
+            Some { FileName = fi.FullName; Document = doc; ProjectNode = projectNode; OriginalText = Utils.normalizeXml doc }
         with
         | exn -> 
             traceWarnfn "Unable to parse %s:%s      %s" fileName Environment.NewLine exn.Message
