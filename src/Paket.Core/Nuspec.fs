@@ -95,7 +95,7 @@ type Nuspec =
             doc.Load fi.FullName
 
             let officialName = 
-                match doc ./ "package" ./? "metadata" ./? "id" with
+                match doc |> getNode "package" |> optGetNode "metadata" |> optGetNode "id" with
                 | Some node -> node.InnerText
                 | None -> failwithf "unable to find package id in %s" fileName
 

@@ -20,10 +20,7 @@ let getAttribute name (node:XmlNode) =
     |> Option.map (fun a -> a.Value)
 
 /// [omit]
-let (.@) node name = node |> getAttribute name
-
-/// [omit]
-let (.@?) node name = node |> Option.bind (getAttribute name)
+let optGetAttribute name node = node |> Option.bind (getAttribute name)
 
 /// [omit]
 let getNode name (node:XmlNode) =
@@ -33,10 +30,7 @@ let getNode name (node:XmlNode) =
     | n -> Some(n)
 
 /// [omit]
-let (./) node name = node |> getNode name
-    
-/// [omit]
-let (./?) node name = node |> Option.bind (getNode name) 
+let optGetNode name node = node |> Option.bind (getNode name)
 
 /// [omit]
 let getNodes name (node:XmlNode) =

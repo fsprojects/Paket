@@ -44,7 +44,7 @@ let rec private followODataLink auth url =
             | None -> failwithf "unable to parse data from %s" url
 
         let currentPage = 
-            feed ./ "entry" ./? "properties" ./? "Version" 
+            feed |> getNode "entry" |> optGetNode "properties" |> optGetNode "Version" 
             |> Option.map (fun node -> node.InnerText)
             |> Option.toList
 
@@ -130,17 +130,17 @@ let parseODataDetails(nugetURL,packageName,version,raw) =
     doc.LoadXml raw
                 
     let entry = 
-        match orElse (doc ./ "entry") (doc ./ "feed" ./? "entry" ) with
+        match orElse (doc |> getNode "entry") (doc |> getNode "feed" |> optGetNode "entry" ) with
         | Some node -> node
         | _ -> failwithf "unable to find entry node for package %s %O" packageName version
 
     let officialName =
-        match orElse (entry ./ "properties" ./? "Id") (entry ./ "title") with
+        match orElse (entry |> getNode "properties" |> optGetNode "Id") (entry |> getNode "title") with
         | Some node -> node.InnerText
         | _ -> failwithf "Could not get official package name for package %s %O" packageName version
         
     let publishDate =
-        match entry ./ "properties" ./? "Published" with
+        match entry |> getNode "properties" |> optGetNode "Published" with
         | Some node -> 
             match DateTime.TryParse node.InnerText with
             | true, date -> date
@@ -148,14 +148,14 @@ let parseODataDetails(nugetURL,packageName,version,raw) =
         | _ -> DateTime.MinValue
     
     let downloadLink =
-        match entry ./ "content" .@? "type", 
-              entry ./ "content" .@? "src"  with
+        match entry |> getNode "content" |> optGetAttribute "type", 
+              entry |> getNode "content" |> optGetAttribute "src"  with
         | Some "application/zip", Some link -> link
         | Some "binary/octet-stream", Some link -> link
         | _ -> failwithf "unable to find downloadLink for package %s %O" packageName version
         
     let dependencies =
-        match entry ./ "properties" ./? "Dependencies" with
+        match entry |> getNode "properties" |> optGetNode "Dependencies" with
         | Some node -> node.InnerText
         | None -> failwithf "unable to find dependencies for package %s %O" packageName version
 

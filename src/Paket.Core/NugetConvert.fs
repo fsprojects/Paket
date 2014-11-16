@@ -50,7 +50,7 @@ type NugetConfig =
         let doc = XmlDocument()
         doc.Load(filename)
         let config = 
-            match doc ./ "configuration" with
+            match doc |> getNode "configuration" with
             | Some node -> node
             | None -> failwithf "unable to parse %s" filename
 
@@ -69,21 +69,24 @@ type NugetConfig =
                     Some  { Username = userName; Password = clearTextPass }
                 | _ -> None
 
-            config ./ "packageSourceCredentials" ./? (XmlConvert.EncodeLocalName key) |> Option.bind getAuth'
+            config 
+            |> getNode "packageSourceCredentials" 
+            |> optGetNode (XmlConvert.EncodeLocalName key) 
+            |> Option.bind getAuth'
 
         let sources = 
-            config ./ "packageSources"
+            config |> getNode "packageSources"
             |> Option.toList
             |> List.collect getKeyValueList
             |> List.map (fun (key,value) -> value, getAuth key)
 
         { PackageSources = if clearSources then sources else this.PackageSources @ sources
           PackageRestoreEnabled = 
-            match config ./ "packageRestore" |> Option.bind (tryGetValue "enabled") with
+            match config |> getNode "packageRestore" |> Option.bind (tryGetValue "enabled") with
             | Some value -> bool.Parse(value)
             | None -> this.PackageRestoreEnabled
           PackageRestoreAutomatic = 
-            match config ./ "packageRestore" |> Option.bind (tryGetValue "automatic") with
+            match config |> getNode "packageRestore" |> Option.bind (tryGetValue "automatic") with
             | Some value -> bool.Parse(value)
             | None -> this.PackageRestoreAutomatic }
 
