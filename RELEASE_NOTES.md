@@ -1,5 +1,8 @@
+#### 0.14.2 - 16.11.2014
+* BUGFIX: handling of package dependencies containing string "nuget" - https://github.com/fsprojects/Paket/pull/363
+
 #### 0.14.1 - 14.11.2014
-* Support feeds that don't support NormalizedVersion - https://github.com/fsprojects/Paket/issues/361#issuecomment-63048992
+* Support feeds that don't support NormalizedVersion - https://github.com/fsprojects/Paket/issues/361
 
 #### 0.14.0 - 14.11.2014
 * Uses Nuget v3 API, which enables much faster resolver
