@@ -48,6 +48,14 @@ type ProjectFile =
             if generalReferencesFile.Exists then Some generalReferencesFile.FullName
             else None
 
+    member this.CreateNode(name) = 
+        this.Document.CreateElement(name, Constants.ProjectDefaultNameSpace)
+
+    member this.CreateNode(name, text) = 
+        let node = this.CreateNode(name)
+        node.InnerText <- text
+        node
+
     member this.DeleteIfEmpty name =
         let nodesToDelete = List<_>()
         for node in this.Document |> getDescendants name do
@@ -75,19 +83,12 @@ type ProjectFile =
         for node in nodesToDelete do
             node.ParentNode.RemoveChild(node) |> ignore
 
-    member this.CreateNode(name) = this.Document.CreateElement(name, Constants.ProjectDefaultNameSpace)
-
-    member this.CreateNode(name,text) = 
-        let node = this.CreateNode(name)
-        node.InnerText <- text
-        node
-
     member this.createFileItemNode fileItem =
         this.CreateNode(fileItem.BuildAction)
         |> addAttribute "Include" fileItem.Include
         |> addChild (this.CreateNode("Paket","True"))
         |> (fun n -> match fileItem.Link with
-                     | Some link -> addChild (this.CreateNode("Link",link.Replace("\\","/"))) n
+                     | Some link -> addChild (this.CreateNode("Link" ,link.Replace("\\","/"))) n
                      | _ -> n)
 
     member this.UpdateFileItems(fileItems : FileItem list, hard) = 
@@ -123,7 +124,7 @@ type ProjectFile =
                     if hard 
                     then 
                         if not <| (existingNode.ChildNodes |> Seq.cast<XmlNode> |> Seq.exists (fun n -> n.Name = "Paket"))
-                        then existingNode :?> XmlElement |> addChild (this.CreateNode("Paket", "True")) |> ignore
+                        then existingNode :?> XmlElement |> addChild (this.CreateNode("Paket","True")) |> ignore
                     else verbosefn "  - custom nodes for %s in %s ==> skipping" fileItem.Include this.FileName
                 | None  ->
                     let firstNode = fileItemsInSameDir |> Seq.head
@@ -162,38 +163,38 @@ type ProjectFile =
 
     member this.GenerateXml(model:InstallModel) =
         let createItemGroup references = 
-            let itemGroup = createNode(this.Document,"ItemGroup")
+            let itemGroup = this.CreateNode("ItemGroup")
                                 
             for lib in references do
                 match lib with
                 | Reference.Library lib ->
                     let fi = new FileInfo(normalizePath lib)
                     
-                    createNode(this.Document,"Reference")
+                    this.CreateNode("Reference")
                     |> addAttribute "Include" (fi.Name.Replace(fi.Extension,""))
-                    |> addChild (createNodeWithText(this.Document,"HintPath",createRelativePath this.FileName fi.FullName))
-                    |> addChild (createNodeWithText(this.Document,"Private","True"))
-                    |> addChild (createNodeWithText(this.Document,"Paket","True"))
+                    |> addChild (this.CreateNode("HintPath", createRelativePath this.FileName fi.FullName))
+                    |> addChild (this.CreateNode("Private","True"))
+                    |> addChild (this.CreateNode("Paket","True"))
                     |> itemGroup.AppendChild
                     |> ignore
                 | Reference.FrameworkAssemblyReference frameworkAssembly ->              
-                    createNode(this.Document,"Reference")
+                    this.CreateNode("Reference")
                     |> addAttribute "Include" frameworkAssembly
-                    |> addChild (createNodeWithText(this.Document,"Paket","True"))
+                    |> addChild (this.CreateNode("Paket","True"))
                     |> itemGroup.AppendChild
                     |> ignore
             itemGroup
 
-        let groupChooseNode = this.Document.CreateElement("Choose", Constants.ProjectDefaultNameSpace)
+        let groupChooseNode = this.CreateNode("Choose")
         let foundCase = ref false
         for group in model.Groups do
             let frameworks = group.Value.Frameworks
             let groupWhenNode = 
-                createNode(this.Document,"When")
+                this.CreateNode("When")
                 |> addAttribute "Condition" group.Key
 
 
-            let chooseNode = this.Document.CreateElement("Choose", Constants.ProjectDefaultNameSpace)
+            let chooseNode = this.CreateNode("Choose")
 
             let foundSpecialCase = ref false
 
@@ -201,7 +202,7 @@ type ProjectFile =
                 let currentLibs = kv.Value.References
                 let condition = kv.Key.GetFrameworkCondition()
                 let whenNode = 
-                    createNode(this.Document,"When")
+                    this.CreateNode("When")
                     |> addAttribute "Condition" condition                
                
                 whenNode.AppendChild(createItemGroup currentLibs) |> ignore
@@ -213,7 +214,7 @@ type ProjectFile =
             let fallbackLibs = group.Value.Fallbacks.References
             
             if !foundSpecialCase then
-                let otherwiseNode = createNode(this.Document,"Otherwise")
+                let otherwiseNode = this.CreateNode("Otherwise")
                 otherwiseNode.AppendChild(createItemGroup fallbackLibs) |> ignore
                 chooseNode.AppendChild(otherwiseNode) |> ignore
                 groupWhenNode.AppendChild(chooseNode) |> ignore
@@ -223,7 +224,7 @@ type ProjectFile =
             groupChooseNode.AppendChild(groupWhenNode) |> ignore
 
         if !foundCase then
-            let otherwiseNode = createNode(this.Document,"Otherwise")
+            let otherwiseNode = this.CreateNode("Otherwise")
             otherwiseNode.AppendChild(createItemGroup model.DefaultFallback.References) |> ignore
             groupChooseNode.AppendChild(otherwiseNode) |> ignore
             groupChooseNode

@@ -51,10 +51,3 @@ let getDescendants name (node:XmlNode) =
         nodeList
         |> Seq.cast<XmlNode>
         |> Seq.toList
-
-let createNode(doc:XmlDocument,name) = doc.CreateElement(name, Constants.ProjectDefaultNameSpace)
-
-let createNodeWithText(doc,name,text) = 
-    let node = createNode(doc,name)
-    node.InnerText <- text
-    node
