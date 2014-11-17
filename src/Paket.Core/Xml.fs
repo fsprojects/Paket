@@ -20,13 +20,21 @@ let getAttribute name (node:XmlNode) =
     |> Option.map (fun a -> a.Value)
 
 /// [omit]
-let getNode xpath (node:XmlNode) =
+let optGetAttribute name node = node |> Option.bind (getAttribute name)
+
+/// [omit]
+let getNode name (node:XmlNode) =
+    let xpath = sprintf "*[local-name() = '%s']" name
     match node.SelectSingleNode(xpath) with
     | null -> None
     | n -> Some(n)
 
 /// [omit]
-let getNodes xpath (node:XmlNode) =
+let optGetNode name node = node |> Option.bind (getNode name)
+
+/// [omit]
+let getNodes name (node:XmlNode) =
+    let xpath = sprintf "*[local-name() = '%s']" name
     match node.SelectNodes(xpath) with
     | null -> []
     | nodeList -> 
@@ -34,9 +42,12 @@ let getNodes xpath (node:XmlNode) =
         |> Seq.cast<XmlNode>
         |> Seq.toList
 
-let createNode(doc:XmlDocument,name) = doc.CreateElement(name, Constants.ProjectDefaultNameSpace)
-
-let createNodeWithText(doc,name,text) = 
-    let node = createNode(doc,name)
-    node.InnerText <- text
-    node
+/// [omit]
+let getDescendants name (node:XmlNode) = 
+    let xpath = sprintf "//*[local-name() = '%s']" name
+    match node.SelectNodes(xpath) with
+    | null -> []
+    | nodeList -> 
+        nodeList
+        |> Seq.cast<XmlNode>
+        |> Seq.toList

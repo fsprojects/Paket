@@ -28,8 +28,7 @@ type ProjectFile =
     { FileName: string
       OriginalText : string
       Document : XmlDocument
-      ProjectNode : XmlNode
-      Namespaces : XmlNamespaceManager }
+      ProjectNode : XmlNode }
 
     member this.Name = FileInfo(this.FileName).Name
 
@@ -48,9 +47,17 @@ type ProjectFile =
             if generalReferencesFile.Exists then Some generalReferencesFile.FullName
             else None
 
-    member this.DeleteIfEmpty xPath =
+    member this.CreateNode(name) = 
+        this.Document.CreateElement(name, Constants.ProjectDefaultNameSpace)
+
+    member this.CreateNode(name, text) = 
+        let node = this.CreateNode(name)
+        node.InnerText <- text
+        node
+
+    member this.DeleteIfEmpty name =
         let nodesToDelete = List<_>()
-        for node in this.Document.SelectNodes(xPath, this.Namespaces) do
+        for node in this.Document |> getDescendants name do
             if node.ChildNodes.Count = 0 then
                 nodesToDelete.Add node
 
@@ -59,7 +66,7 @@ type ProjectFile =
 
     member this.FindPaketNodes(name) = 
         [
-            for node in this.Document.SelectNodes(sprintf "//ns:%s" name, this.Namespaces) do
+            for node in this.Document |> getDescendants name do
                 let isPaketNode = ref false
                 for child in node.ChildNodes do
                         if child.Name = "Paket" then isPaketNode := true
@@ -75,34 +82,19 @@ type ProjectFile =
         for node in nodesToDelete do
             node.ParentNode.RemoveChild(node) |> ignore
 
-    member this.CreateNode(name) = this.Document.CreateElement(name, Constants.ProjectDefaultNameSpace)
-
-    member this.CreateNode(name,text) = 
-        let node = this.CreateNode(name)
-        node.InnerText <- text
-        node
-
-    member this.DeleteEmptyReferences() = 
-        this.DeleteIfEmpty("//ns:ItemGroup")
-        this.DeleteIfEmpty("//ns:When")
-        this.DeleteIfEmpty("//ns:Otherwise")
-        this.DeleteIfEmpty("//ns:Choose")
-        this.DeleteIfEmpty("//ns:When")
-        this.DeleteIfEmpty("//ns:Choose")
-
     member this.createFileItemNode fileItem =
         this.CreateNode(fileItem.BuildAction)
         |> addAttribute "Include" fileItem.Include
         |> addChild (this.CreateNode("Paket","True"))
         |> (fun n -> match fileItem.Link with
-                     | Some link -> addChild (this.CreateNode("Link",link.Replace("\\","/"))) n
+                     | Some link -> addChild (this.CreateNode("Link" ,link.Replace("\\","/"))) n
                      | _ -> n)
 
     member this.UpdateFileItems(fileItems : FileItem list, hard) = 
         this.DeletePaketNodes("Compile")
         this.DeletePaketNodes("Content")
 
-        let firstItemGroup = this.Document.SelectNodes("//ns:Project/ns:ItemGroup", this.Namespaces) |> Seq.cast<XmlNode> |> Seq.firstOrDefault
+        let firstItemGroup = this.ProjectNode |> getNodes "ItemGroup" |> Seq.firstOrDefault
 
         let newItemGroups = 
             match firstItemGroup with
@@ -116,10 +108,16 @@ type ProjectFile =
 
         for fileItem in fileItems |> List.rev do
             let paketNode = this.createFileItemNode fileItem
-            let xpath = sprintf "//ns:%s[starts-with(@Include, '%s')]" 
-                                fileItem.BuildAction 
-                                (Path.GetDirectoryName(fileItem.Include))
-            let fileItemsInSameDir = this.Document.SelectNodes(xpath, this.Namespaces) |> Seq.cast<XmlNode>
+
+            let fileItemsInSameDir =
+                this.Document 
+                |> getDescendants fileItem.BuildAction
+                |> List.filter (fun node -> 
+                    match node |> getAttribute "Include" with
+                    | Some path when path.StartsWith(Path.GetDirectoryName(fileItem.Include)) ->
+                        true
+                    | _ -> false)
+
             if fileItemsInSameDir |> Seq.isEmpty 
             then 
                 newItemGroups.[fileItem.BuildAction].PrependChild(paketNode) |> ignore
@@ -131,19 +129,19 @@ type ProjectFile =
                     if hard 
                     then 
                         if not <| (existingNode.ChildNodes |> Seq.cast<XmlNode> |> Seq.exists (fun n -> n.Name = "Paket"))
-                        then existingNode :?> XmlElement |> addChild (this.CreateNode("Paket", "True")) |> ignore
+                        then existingNode :?> XmlElement |> addChild (this.CreateNode("Paket","True")) |> ignore
                     else verbosefn "  - custom nodes for %s in %s ==> skipping" fileItem.Include this.FileName
                 | None  ->
                     let firstNode = fileItemsInSameDir |> Seq.head
                     firstNode.ParentNode.InsertBefore(paketNode, firstNode) |> ignore
 
-        this.DeleteIfEmpty("//ns:ItemGroup")
+        this.DeleteIfEmpty("ItemGroup")
 
     member this.HasCustomNodes(model:InstallModel) =
         let libs = model.GetReferenceNames.Force()
         
         let hasCustom = ref false
-        for node in this.Document.SelectNodes("//ns:Reference", this.Namespaces) do
+        for node in this.Document |> getDescendants "Reference" do
             if Set.contains (node.Attributes.["Include"].InnerText.Split(',').[0]) libs then
                 let isPaket = ref false
                 for child in node.ChildNodes do
@@ -158,7 +156,7 @@ type ProjectFile =
         let nodesToDelete = List<_>()
         
         let libs = model.GetReferenceNames.Force()
-        for node in this.Document.SelectNodes("//ns:Reference", this.Namespaces) do
+        for node in this.Document |> getDescendants "Reference" do
             if Set.contains (node.Attributes.["Include"].InnerText.Split(',').[0]) libs then          
                 nodesToDelete.Add node
 
@@ -170,38 +168,38 @@ type ProjectFile =
 
     member this.GenerateXml(model:InstallModel) =
         let createItemGroup references = 
-            let itemGroup = createNode(this.Document,"ItemGroup")
+            let itemGroup = this.CreateNode("ItemGroup")
                                 
             for lib in references do
                 match lib with
                 | Reference.Library lib ->
                     let fi = new FileInfo(normalizePath lib)
                     
-                    createNode(this.Document,"Reference")
+                    this.CreateNode("Reference")
                     |> addAttribute "Include" (fi.Name.Replace(fi.Extension,""))
-                    |> addChild (createNodeWithText(this.Document,"HintPath",createRelativePath this.FileName fi.FullName))
-                    |> addChild (createNodeWithText(this.Document,"Private","True"))
-                    |> addChild (createNodeWithText(this.Document,"Paket","True"))
+                    |> addChild (this.CreateNode("HintPath", createRelativePath this.FileName fi.FullName))
+                    |> addChild (this.CreateNode("Private","True"))
+                    |> addChild (this.CreateNode("Paket","True"))
                     |> itemGroup.AppendChild
                     |> ignore
                 | Reference.FrameworkAssemblyReference frameworkAssembly ->              
-                    createNode(this.Document,"Reference")
+                    this.CreateNode("Reference")
                     |> addAttribute "Include" frameworkAssembly
-                    |> addChild (createNodeWithText(this.Document,"Paket","True"))
+                    |> addChild (this.CreateNode("Paket","True"))
                     |> itemGroup.AppendChild
                     |> ignore
             itemGroup
 
-        let groupChooseNode = this.Document.CreateElement("Choose", Constants.ProjectDefaultNameSpace)
+        let groupChooseNode = this.CreateNode("Choose")
         let foundCase = ref false
         for group in model.Groups do
             let frameworks = group.Value.Frameworks
             let groupWhenNode = 
-                createNode(this.Document,"When")
+                this.CreateNode("When")
                 |> addAttribute "Condition" group.Key
 
 
-            let chooseNode = this.Document.CreateElement("Choose", Constants.ProjectDefaultNameSpace)
+            let chooseNode = this.CreateNode("Choose")
 
             let foundSpecialCase = ref false
 
@@ -209,7 +207,7 @@ type ProjectFile =
                 let currentLibs = kv.Value.References
                 let condition = kv.Key.GetFrameworkCondition()
                 let whenNode = 
-                    createNode(this.Document,"When")
+                    this.CreateNode("When")
                     |> addAttribute "Condition" condition                
                
                 whenNode.AppendChild(createItemGroup currentLibs) |> ignore
@@ -221,7 +219,7 @@ type ProjectFile =
             let fallbackLibs = group.Value.Fallbacks.References
             
             if !foundSpecialCase then
-                let otherwiseNode = createNode(this.Document,"Otherwise")
+                let otherwiseNode = this.CreateNode("Otherwise")
                 otherwiseNode.AppendChild(createItemGroup fallbackLibs) |> ignore
                 chooseNode.AppendChild(otherwiseNode) |> ignore
                 groupWhenNode.AppendChild(chooseNode) |> ignore
@@ -231,7 +229,7 @@ type ProjectFile =
             groupChooseNode.AppendChild(groupWhenNode) |> ignore
 
         if !foundCase then
-            let otherwiseNode = createNode(this.Document,"Otherwise")
+            let otherwiseNode = this.CreateNode("Otherwise")
             otherwiseNode.AppendChild(createItemGroup model.DefaultFallback.References) |> ignore
             groupChooseNode.AppendChild(otherwiseNode) |> ignore
             groupChooseNode
@@ -241,7 +239,9 @@ type ProjectFile =
 
     member this.UpdateReferences(completeModel: Map<string,InstallModel>, usedPackages : Dictionary<string,bool>, hard) = 
         this.DeletePaketNodes("Reference")  
-        this.DeleteEmptyReferences()
+        
+        ["ItemGroup";"When";"Otherwise";"Choose";"When";"Choose"]
+        |> List.iter this.DeleteIfEmpty
 
         if hard then
             for kv in usedPackages do
@@ -259,8 +259,8 @@ type ProjectFile =
                         (InstallModel.EmptyModel("",SemVer.Parse "0"))
 
         let chooseNode = this.GenerateXml(merged.FilterFallbacks())
-        
-        match this.Document.SelectNodes("//ns:Project/ns:ItemGroup", this.Namespaces) |> Seq.cast<XmlNode> |> Seq.firstOrDefault with
+
+        match this.ProjectNode |> getNodes "ItemGroup" |> Seq.firstOrDefault with
         | None -> this.ProjectNode.AppendChild(chooseNode) |> ignore
         | Some firstNode -> firstNode.ParentNode.InsertBefore(chooseNode,firstNode) |> ignore
                 
@@ -275,44 +275,54 @@ type ProjectFile =
         |> List.map (fun n ->  FileInfo(Path.Combine(Path.GetDirectoryName(this.FileName), n.Attributes.["Include"].Value)))
 
     member this.GetInterProjectDependencies() =  
-        [for n in this.Document.SelectNodes("//ns:ProjectReference", this.Namespaces) -> 
+        let forceGetInnerText node name =
+            match node |> getNode name with 
+            | Some n -> n.InnerText
+            | None -> failwithf "unable to parse %s" node.Name
+
+        [for n in this.Document |> getDescendants "ProjectReference" -> 
             { Path = n.Attributes.["Include"].Value
-              Name = n.SelectSingleNode("ns:Name", this.Namespaces).InnerText
-              GUID = n.SelectSingleNode("ns:Project", this.Namespaces).InnerText |> Guid.Parse
-              Private = n.SelectSingleNode("ns:Private", this.Namespaces).InnerText |> bool.Parse }]
+              Name = forceGetInnerText n "Name"
+              GUID =  forceGetInnerText n "Project" |> Guid.Parse
+              Private =  forceGetInnerText n "Private" |> bool.Parse }]
 
     member this.ReplaceNugetPackagesFile() =
-        let nugetNode = this.Document.SelectSingleNode("//ns:*[@Include='packages.config']", this.Namespaces)
-        if nugetNode = null then () else
-        match [for node in this.Document.SelectNodes("//ns:*[@Include='" + Constants.ReferencesFile + "']", this.Namespaces) -> node] with 
-        | [_] -> nugetNode.ParentNode.RemoveChild(nugetNode) |> ignore
-        | [] -> nugetNode.Attributes.["Include"].Value <- Constants.ReferencesFile
-        | _::_ -> failwithf "multiple %s nodes in project file %s" Constants.ReferencesFile this.FileName
+        let noneNodes = this.Document |> getDescendants "None"
+        match noneNodes |> List.tryFind (fun n -> n |> getAttribute "Include" = Some "packages.config") with
+        | None -> ()
+        | Some nugetNode ->
+            match noneNodes |> List.filter (fun n -> n |> getAttribute "Include" = Some Constants.ReferencesFile) with 
+            | [_] -> nugetNode.ParentNode.RemoveChild(nugetNode) |> ignore
+            | [] -> nugetNode.Attributes.["Include"].Value <- Constants.ReferencesFile
+            | _::_ -> failwithf "multiple %s nodes in project file %s" Constants.ReferencesFile this.FileName
 
     member this.RemoveNugetTargetsEntries() =
         let toDelete = 
-            [ this.Document.SelectNodes("//ns:RestorePackages", this.Namespaces)
-              this.Document.SelectNodes("//ns:Import[@Project='$(SolutionDir)\\.nuget\\nuget.targets']", this.Namespaces) 
-              this.Document.SelectNodes("//ns:Target[@Name='EnsureNuGetPackageBuildImports']", this.Namespaces)]
-            |> List.map (Seq.cast<XmlNode> >> Seq.firstOrDefault)
+            [ this.Document |> getDescendants "RestorePackages" |> Seq.firstOrDefault
+              this.Document 
+              |> getDescendants "Import" 
+              |> List.tryFind (fun n -> n |> getAttribute "Project" = Some "$(SolutionDir)\\.nuget\\nuget.targets")
+              this.Document
+              |> getDescendants "Target"
+              |> List.tryFind (fun n -> n |> getAttribute "Name" = Some "EnsureNuGetPackageBuildImports") ]
+            |> List.choose id
+        
         toDelete
         |> List.iter 
-            (Option.iter 
-                (fun node -> 
-                     let parent = node.ParentNode
-                     node.ParentNode.RemoveChild(node) |> ignore
-                     if not parent.HasChildNodes then parent.ParentNode.RemoveChild(parent) |> ignore))
-
+            (fun node -> 
+                let parent = node.ParentNode
+                node.ParentNode.RemoveChild(node) |> ignore
+                if not parent.HasChildNodes then parent.ParentNode.RemoveChild(parent) |> ignore)
 
     member this.OutputType =
-        seq {for outputType in this.Document.SelectNodes("//ns:OutputType", this.Namespaces) ->
+        seq {for outputType in this.Document |> getDescendants "OutputType" ->
                 match outputType.InnerText with
                 | "Exe" -> ProjectOutputType.Exe
                 | _     -> ProjectOutputType.Library }
         |> Seq.head
 
     member this.GetTargetFramework() =
-        seq {for outputType in this.Document.SelectNodes("//ns:TargetFrameworkVersion", this.Namespaces) ->
+        seq {for outputType in this.Document |> getDescendants "TargetFrameworkVersion" ->
                 outputType.InnerText  }
         |> Seq.map (fun s -> // TODO make this a separate function
                         s.Replace("v","net")
@@ -321,12 +331,13 @@ type ProjectFile =
         |> Seq.head
     
     member this.AddImportForPaketTargets(relativeTargetsPath) =
-        match this.Document.SelectNodes(sprintf "//ns:Import[@Project='%s']" relativeTargetsPath, this.Namespaces)
-                            |> Seq.cast |> Seq.firstOrDefault with
+        match this.Document 
+              |> getDescendants "Import" 
+              |> List.tryFind (fun n -> n |> getAttribute "Project" = Some relativeTargetsPath) with
         | Some _ -> ()
         | None -> 
             let node = this.CreateNode("Import") |> addAttribute "Project" relativeTargetsPath
-            this.Document.SelectSingleNode("//ns:Project", this.Namespaces).AppendChild(node) |> ignore
+            this.ProjectNode.AppendChild(node) |> ignore
 
     member this.DetermineBuildAction fileName =
         if Path.GetExtension(this.FileName) = Path.GetExtension(fileName) + "proj" 
@@ -341,8 +352,11 @@ type ProjectFile =
 
             let manager = new XmlNamespaceManager(doc.NameTable)
             manager.AddNamespace("ns", Constants.ProjectDefaultNameSpace)
-            let projectNode = doc.SelectNodes("//ns:Project", manager).[0]
-            Some { FileName = fi.FullName; Document = doc; ProjectNode = projectNode; Namespaces = manager; OriginalText = Utils.normalizeXml doc }
+            let projectNode = 
+                match doc |> getNode "Project" with
+                | Some node -> node
+                | _ -> failwith "unable to find Project node in file %s" fileName
+            Some { FileName = fi.FullName; Document = doc; ProjectNode = projectNode; OriginalText = Utils.normalizeXml doc }
         with
         | exn -> 
             traceWarnfn "Unable to parse %s:%s      %s" fileName Environment.NewLine exn.Message
