@@ -14,6 +14,16 @@ let ``can parse semver strings and print the result``() =
     (SemVer.Parse "1.0.0-alpha.beta").ToString() |> shouldEqual "1.0.0-alpha.beta"
     (SemVer.Parse "1.0.0-rc.1").ToString() |> shouldEqual "1.0.0-rc.1"
     (SemVer.Parse "1.2.3-foo").ToString() |> shouldEqual "1.2.3-foo"
+    (SemVer.Parse "6.0.1302.0-Preview").PreRelease |> shouldEqual (PreRelease.TryParse "Preview")
+    (SemVer.Parse "1.2.3").ToString() |> shouldEqual "1.2.3"
+    (SemVer.Parse "1.2.3.0").ToString() |> shouldEqual "1.2.3.0"
+    (SemVer.Parse "1.2.3.0").Patch |> shouldEqual 3
+    (SemVer.Parse "1.2.3").Patch |> shouldEqual 3
+    (SemVer.Parse "1.2.3.0").Build |> shouldEqual "0"
+    (SemVer.Parse "1.2.3").Build |> shouldEqual "0"
+    (SemVer.Parse "3.1.1.1").Build |> shouldEqual "1"
+    (SemVer.Parse "1.0.0-rc.3").PreReleaseBuild |> shouldEqual "3"
+    (SemVer.Parse "1.0.0-rc.1").PreReleaseBuild |> shouldEqual "1"
 
 [<Test>]
 let ``can parse semver strings``() = 
@@ -24,7 +34,7 @@ let ``can parse semver strings``() =
     semVer.PreRelease |> shouldEqual (Some { Origin = "alpha"
                                              Name = "alpha"
                                              Number = None })
-    semVer.Build |> shouldEqual "beta"
+    semVer.PreReleaseBuild |> shouldEqual "beta"
 
 [<Test>]
 let ``can compare semvers``() =
@@ -69,6 +79,7 @@ let ``can parse FSharp.Data versions``() =
 let ``can normalize versions``() =
     (SemVer.Parse "2.3") |> shouldEqual (SemVer.Parse "2.3.0")
     (SemVer.Parse "2.3").Normalize() |> shouldEqual ((SemVer.Parse "2.3.0").ToString())
+    (SemVer.Parse "3.1.1.1").Normalize() |> shouldEqual "3.1.1.1"
     (SemVer.Parse "3.1.1.1").Normalize() |> shouldEqual ((SemVer.Parse "3.1.1.1").ToString())
     (SemVer.Parse "1.2.3").Normalize() |> shouldEqual ((SemVer.Parse "1.2.3").ToString())
     (SemVer.Parse "1.0.0-rc.3").Normalize() |> shouldEqual ((SemVer.Parse "1.0.0-rc.3").ToString())
@@ -79,3 +90,8 @@ let ``can normalize versions``() =
 [<Test>]
 let ``can normalize build zeros``() =
     (SemVer.Parse "2.0.30506.0").Normalize() |> shouldEqual ((SemVer.Parse "2.0.30506").ToString())
+
+
+[<Test>]
+let ``can normalize build zeros in prerelease``() =
+    (SemVer.Parse "6.0.1302.0-Preview").Normalize() |> shouldEqual "6.0.1302-Preview"

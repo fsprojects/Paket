@@ -50,21 +50,27 @@ type SemVerInfo =
       PreRelease : PreRelease option
       /// The optional build no.
       Build : string
+      /// The optional prerelease build no.
+      PreReleaseBuild : string
       // The original version text
       Original : string option }
     
     member x.Normalize() = 
         let build = 
-            if String.IsNullOrEmpty x.Build |> not then "." + x.Build
+            if String.IsNullOrEmpty x.Build |> not && x.Build <> "0" then "." + x.Build
+            else ""
+            
+        let preReleaseBuild = 
+            if String.IsNullOrEmpty x.PreReleaseBuild |> not  && x.PreReleaseBuild <> "0" then "." + x.PreReleaseBuild
             else ""
             
         let pre = 
-            match x.PreRelease, (String.IsNullOrEmpty x.Build |> not && x.Build <> "0")  with
-            | Some preRelease, _ -> "-" + preRelease.Name + build
-            | None, true -> build
+            match x.PreRelease, (String.IsNullOrEmpty x.PreReleaseBuild |> not)  with
+            | Some preRelease, _ -> "-" + preRelease.Name + preReleaseBuild
+            | None, true -> preReleaseBuild
             | _ -> ""
 
-        sprintf "%d.%d.%d" x.Major x.Minor x.Patch + pre
+        sprintf "%d.%d.%d" x.Major x.Minor x.Patch + build + pre
 
     member x.AsString = x.ToString()
 
@@ -76,8 +82,7 @@ type SemVerInfo =
     override x.Equals(yobj) = 
         match yobj with
         | :? SemVerInfo as y -> 
-            x.Major = y.Major && x.Minor = y.Minor && x.Patch = y.Patch && x.PreRelease = y.PreRelease 
-            && (x.Build = y.Build || (x.Build = "0" && y.Build = "") || (y.Build = "0" && x.Build = ""))
+            x.Major = y.Major && x.Minor = y.Minor && x.Patch = y.Patch && x.PreRelease = y.PreRelease && x.Build = y.Build && x.PreReleaseBuild = y.PreReleaseBuild 
         | _ -> false
     
     override x.GetHashCode() = hash (x.Minor, x.Minor, x.Patch, x.PreRelease, x.Build)
@@ -88,14 +93,18 @@ type SemVerInfo =
                 if x.Major <> y.Major then compare x.Major y.Major
                 else if x.Minor <> y.Minor then compare x.Minor y.Minor
                 else if x.Patch <> y.Patch then compare x.Patch y.Patch
-                else if x.PreRelease = y.PreRelease && x.Build = y.Build then 0
-                else if x.PreRelease.IsNone && not y.PreRelease.IsNone && x.Build = "" then 1
-                else if y.PreRelease.IsNone && not x.PreRelease.IsNone && y.Build = "" then -1
-                else if x.PreRelease <> y.PreRelease then compare x.PreRelease y.PreRelease
                 else if x.Build <> y.Build then 
                     match Int32.TryParse x.Build, Int32.TryParse y.Build with
                     | (true, b1), (true, b2) -> compare b1 b2
                     | _ -> compare x.Build y.Build
+                else if x.PreRelease = y.PreRelease && x.PreReleaseBuild = y.PreReleaseBuild then 0
+                else if x.PreRelease.IsNone && not y.PreRelease.IsNone && x.PreReleaseBuild = "0" then 1
+                else if y.PreRelease.IsNone && not x.PreRelease.IsNone && y.PreReleaseBuild = "0" then -1
+                else if x.PreRelease <> y.PreRelease then compare x.PreRelease y.PreRelease
+                else if x.PreReleaseBuild <> y.PreReleaseBuild then 
+                    match Int32.TryParse x.PreReleaseBuild, Int32.TryParse y.PreReleaseBuild with
+                    | (true, b1), (true, b2) -> compare b1 b2
+                    | _ -> compare x.PreReleaseBuild y.PreReleaseBuild
                 else 0
             | _ -> invalidArg "yobj" "cannot compare values of different types"
 
@@ -111,36 +120,16 @@ module SemVer =
     ///     parse "1.2.3-alpha002" > parse "1.2.3-alpha1"   // true
     ///     parse "1.5.0-beta.2"   > parse "1.5.0-rc.1"     // false
     let Parse(version : string) = 
-        let splitted = version.Split '.'
+        let dashSplitted = version.Split '-'
+        let splitted = dashSplitted.[0].Split '.'
         let l = splitted.Length
-        
-        let patch, preRelease = 
-            match l with
-            | 0 -> 0, ""
-            | 1 ->
-                let splitted' = splitted.[0].Split '-'
-                0, 
-                if splitted'.Length > 1 then splitted'.[1]
-                else ""
-            | 2 ->
-                let splitted' = splitted.[1].Split '-'
-                0, 
-                if splitted'.Length > 1 then splitted'.[1]
-                else ""
-            | _ ->
-                let splitted' = splitted.[2].Split '-'
-                Int32.Parse splitted'.[0], 
-                if splitted'.Length > 1 then splitted'.[1]
-                else ""
-        { Major = 
-              if l > 0 then Int32.Parse (splitted.[0].Split('-').[0])
-              else 0
-          Minor = 
-              if l > 1 then Int32.Parse (splitted.[1].Split('-').[0])
-              else 0
-          Patch = patch
-          PreRelease = PreRelease.TryParse preRelease
-          Build = 
-              if l > 3 then splitted.[3]
-              else String.Empty
+            
+        let prereleaseBuild = if dashSplitted.Length > 1 && dashSplitted.[1].Split('.').Length > 1 then dashSplitted.[1].Split('.').[1] else "0"
+
+        { Major = if l > 0 then Int32.Parse(splitted.[0]) else 0
+          Minor = if l > 1 then Int32.Parse(splitted.[1]) else 0
+          Patch = if l > 2 then Int32.Parse(splitted.[2]) else 0
+          PreRelease = PreRelease.TryParse(if dashSplitted.Length > 1 then dashSplitted.[1].Split('.').[0] else String.Empty)
+          Build = if l > 3 then splitted.[3] else "0"
+          PreReleaseBuild = prereleaseBuild
           Original = Some version }

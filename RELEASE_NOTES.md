@@ -1,3 +1,6 @@
+#### 0.14.3 - 17.11.2014
+* BUGFIX: Accept and normalize versions like 6.0.1302.0-Preview - https://github.com/fsprojects/Paket/issues/364
+
 #### 0.14.2 - 16.11.2014
 * BUGFIX: handling of package dependencies containing string "nuget" - https://github.com/fsprojects/Paket/pull/363
 
