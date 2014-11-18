@@ -175,14 +175,23 @@ let parseODataDetails(nugetURL,packageName,version,raw) =
       Unlisted = publishDate = Constants.MagicUnlistingDate }
 
 
-/// Gets package details from Nuget via OData
-let getDetailsFromNuGetViaOData auth nugetURL package (version:SemVerInfo) = 
+let getDetailsFromNuGetViaODataFast auth nugetURL package (version:SemVerInfo) = 
     async {         
         try 
             let! raw = getFromUrl(auth,sprintf "%s/Packages?$filter=Id eq '%s' and NormalizedVersion eq '%s'" nugetURL package (version.Normalize()))
             return parseODataDetails(nugetURL,package,version,raw)
         with _ ->         
             let! raw = getFromUrl(auth,sprintf "%s/Packages?$filter=Id eq '%s' and Version eq '%s'" nugetURL package (version.ToString()))
+            return parseODataDetails(nugetURL,package,version,raw)
+    }
+
+/// Gets package details from Nuget via OData
+let getDetailsFromNuGetViaOData auth nugetURL package (version:SemVerInfo) = 
+    async {         
+        try 
+            return! getDetailsFromNuGetViaODataFast auth nugetURL package version
+        with _ ->         
+            let! raw = getFromUrl(auth,sprintf "%s/Packages(Id='%s',Version='%s')" nugetURL package (version.ToString()))
             return parseODataDetails(nugetURL,package,version,raw)
     }
 
