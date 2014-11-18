@@ -1,3 +1,6 @@
+#### 0.14.4 - 18.11.2014
+* BUGFIX: Use Nuget v2 as default
+
 #### 0.14.3 - 17.11.2014
 * BUGFIX: Accept and normalize versions like 6.0.1302.0-Preview - https://github.com/fsprojects/Paket/issues/364
 

@@ -179,9 +179,9 @@ let parseODataDetails(nugetURL,packageName,version,raw) =
 let getRawDetailsFromNuGetViaOData auth nugetURL package (version:SemVerInfo) = 
     async {         
         try 
-            return! getFromUrl(auth,sprintf "%s/Packages?$filter=Id eq '%s' and NormalizedVersion eq '%s'" nugetURL package (version.Normalize()))
+            return! getFromUrl(auth,sprintf "%s/Packages?$filter=Id eq '%s' and Version eq '%s'" nugetURL package (version.ToString()))            
         with _ -> 
-            return! getFromUrl(auth,sprintf "%s/Packages?$filter=Id eq '%s' and Version eq '%s'" nugetURL package (version.ToString()))
+            return! getFromUrl(auth,sprintf "%s/Packages?$filter=Id eq '%s' and NormalizedVersion eq '%s'" nugetURL package (version.Normalize()))
     }
 
 let getDetailsFromNuGetViaOData auth nugetURL package (version:SemVerInfo) = 
