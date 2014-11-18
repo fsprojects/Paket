@@ -3,6 +3,7 @@
 open System.IO
 open Logging
 open System
+open Paket.Domain
 open Paket.PackageResolver
 
 let private formatDiff (before : string) (after : string) =
@@ -17,31 +18,33 @@ let private simplify file before after =
     else
         tracefn "%s is already simplified" file
 
-let private interactiveConfirm fileName (package : string) = 
+let private interactiveConfirm fileName (PackageName package) = 
         Utils.askYesNo(sprintf "Do you want to remove indirect dependency %s from file %s ?" package fileName)
 
 let Analyze(allPackages : list<ResolvedPackage>, depFile : DependenciesFile, refFiles : list<ReferencesFile>, interactive) = 
     
     let depsLookup =
         allPackages
-        |> Seq.map (fun package -> package.Name.ToLower(), 
+        |> Seq.map (fun package -> NormalizedPackageName package.Name,
                                                package.Dependencies 
-                                               |> Set.map (fun (name,_,_) -> name.ToLower()))
+                                               |> Set.map (fun (name,_,_) -> name))
         |> Map.ofSeq
 
-    let rec getAllDeps (package : string) =
-        Set.union depsLookup.[package.ToLower()]
-                  (Set.unionMany (depsLookup.[package.ToLower()] |> Set.map getAllDeps))
+    let rec getAllDeps (package : NormalizedPackageName) =
+        Set.union depsLookup.[package]
+                  (Set.unionMany (depsLookup.[package] |> Set.map NormalizedPackageName |> Set.map getAllDeps))
 
     let flattenedLookup = depsLookup |> Map.map (fun key _ -> getAllDeps key)
 
-    let getSimplifiedDeps (depNameFun : 'a -> string) fileName allDeps =
+    let getSimplifiedDeps (depNameFun : 'a -> PackageName) fileName allDeps =
         let indirectDeps = 
             allDeps 
             |> List.map depNameFun 
-            |> List.fold (fun set directDep -> Set.union set (flattenedLookup.[ directDep.ToLower() ])) Set.empty
-        let depsToRemove = if interactive then indirectDeps |> Set.filter (interactiveConfirm fileName) else indirectDeps
-        allDeps |> List.filter (fun dep -> not <| Set.contains ((depNameFun dep).ToLower()) depsToRemove)
+            |> List.fold (fun set directDep -> Set.union set (flattenedLookup.[ NormalizedPackageName directDep ])) Set.empty
+        let depsToRemove =
+            if interactive then indirectDeps |> Set.filter (interactiveConfirm fileName) else indirectDeps
+            |> Set.map NormalizedPackageName
+        allDeps |> List.filter (fun dep -> not <| Set.contains (NormalizedPackageName (depNameFun dep)) depsToRemove)
 
     let simplifiedDeps = depFile.Packages |> getSimplifiedDeps (fun p -> p.Name) depFile.FileName |> Seq.toList
     let refFiles' = if depFile.Options.Strict 

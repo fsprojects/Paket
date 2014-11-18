@@ -3,8 +3,10 @@ module Paket.RemoveProcess
 
 open Paket
 open System.IO
+open Paket.Domain
 
-let Remove(dependenciesFileName, package:string, force, hard, interactive, installAfter) =
+let Remove(dependenciesFileName, package:PackageName, force, hard, interactive, installAfter) =
+    let (PackageName name) = package
     let root = Path.GetDirectoryName dependenciesFileName
     let allProjects = ProjectFile.FindAllProjects root
     for project in allProjects do
@@ -13,10 +15,10 @@ let Remove(dependenciesFileName, package:string, force, hard, interactive, insta
         | None -> ()
         | Some fileName -> 
             let lines = File.ReadAllLines(fileName)
-            let installed = lines |> Seq.exists (fun l -> l.ToLower() = package.ToLower())
+            let installed = lines |> Seq.exists (fun l -> l.ToLower() = name.ToLower())
             if installed then
                 if (not interactive) || Utils.askYesNo(sprintf "  Remove from %s?" project.Name) then
-                    let newLines = lines |> Seq.filter (fun l -> l.ToLower() <> package.ToLower())
+                    let newLines = lines |> Seq.filter (fun l -> l.ToLower() <> name.ToLower())
                     File.WriteAllLines(fileName,newLines)
 
     // check we have it removed from paket.references files
@@ -26,9 +28,9 @@ let Remove(dependenciesFileName, package:string, force, hard, interactive, insta
         | None -> ()
         | Some fileName -> 
             let lines = File.ReadAllLines(fileName)
-            let installed = lines |> Seq.exists (fun l -> l.ToLower() = package.ToLower())
+            let installed = lines |> Seq.exists (fun l -> l.ToLower() = name.ToLower())
             if installed then
-                failwithf "%s is still installed in %s" package project.Name
+                failwithf "%s is still installed in %s" name project.Name
 
     let exisitingDependenciesFile = DependenciesFile.ReadFromFile dependenciesFileName
     let dependenciesFile =

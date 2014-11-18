@@ -2,11 +2,12 @@
 
 open System.IO
 open Paket
+open Paket.Domain
 
 /// Calculates the used dependencies for the given direct references.
 let CalcDependenciesForDirectPackages(dependenciesFile : DependenciesFile, references) = 
     dependenciesFile.DirectDependencies 
-    |> Map.filter (fun name _ -> references |> List.exists (fun (reference : string) -> name.ToLower() = reference.ToLower()))
+    |> Map.filter (fun (NormalizedPackageName name) _ -> references |> List.exists (fun (NormalizedPackageName reference) -> name = reference))
 
 /// Calculates the used dependencies for given references file.
 let CalcDependenciesForReferencesFile(dependenciesFile : DependenciesFile, referencesFile) = 

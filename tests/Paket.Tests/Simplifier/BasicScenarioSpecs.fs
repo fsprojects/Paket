@@ -4,15 +4,16 @@ open Paket
 
 open NUnit.Framework
 open FsUnit
+open Paket.Domain
 
 let toPackages = 
     List.map 
         (fun (name, ver, deps) -> 
-        { Name = name
+        { Name = PackageName name
           Version = SemVer.Parse ver
           Source = PackageSources.DefaultNugetSource
           Unlisted = false
-          Dependencies = deps |> List.map (fun (name, verRan) -> name, NugetVersionRangeParser.parse verRan,None) |> Set.ofList } : PackageResolver.ResolvedPackage)
+          Dependencies = deps |> List.map (fun (name, verRan) -> PackageName name, NugetVersionRangeParser.parse verRan,None) |> Set.ofList } : PackageResolver.ResolvedPackage)
 
 let graph1 = 
     ["A", "3.3.0", ["B", "3.3.0"; "C", "1.0"]
@@ -40,11 +41,11 @@ let ``should remove one level deep indirect dependencies from dep and ref files`
     let depFile,refFiles = Simplifier.Analyze(graph1, cfg, refFiles1, false)
     
     depFile.Packages |> List.length |> shouldEqual [|"A";"D"|].Length
-    depFile.DirectDependencies.["A"].Range |> shouldEqual (VersionRange.Exactly "3.3.0")
-    depFile.DirectDependencies.["D"].Range |> shouldEqual (VersionRange.Exactly "2.1")
+    depFile.DirectDependencies.[PackageName "A"].Range |> shouldEqual (VersionRange.Exactly "3.3.0")
+    depFile.DirectDependencies.[PackageName "D"].Range |> shouldEqual (VersionRange.Exactly "2.1")
 
-    refFiles.Head.NugetPackages |> shouldEqual ["A";"D"]
-    refFiles.Tail.Head.NugetPackages |> shouldEqual ["B";"C"]
+    refFiles.Head.NugetPackages |> shouldEqual [PackageName "A";PackageName "D"]
+    refFiles.Tail.Head.NugetPackages |> shouldEqual [PackageName "B";PackageName "C"]
 
 
 let graph2 = 
@@ -77,8 +78,8 @@ let ``should remove all indirect dependencies from dep file recursively``() =
     let depFile,refFiles  = Simplifier.Analyze(graph2, cfg2, refFiles2, false)
     
     depFile.Packages |> List.length |> shouldEqual [|"A";"c"|].Length
-    depFile.DirectDependencies.["A"].Range |> shouldEqual (VersionRange.Exactly "1.0")
-    depFile.DirectDependencies.["c"].Range |> shouldEqual (VersionRange.Exactly "2.0")
+    depFile.DirectDependencies.[PackageName "A"].Range |> shouldEqual (VersionRange.Exactly "1.0")
+    depFile.DirectDependencies.[PackageName "c"].Range |> shouldEqual (VersionRange.Exactly "2.0")
 
-    refFiles.Head.NugetPackages |>  shouldEqual ["A";"C"]
-    refFiles.Tail.Head.NugetPackages |>  shouldEqual ["C";"D"]
+    refFiles.Head.NugetPackages |>  shouldEqual [PackageName "A";PackageName "C"]
+    refFiles.Tail.Head.NugetPackages |>  shouldEqual [PackageName "C";PackageName "D"]

@@ -2,6 +2,7 @@
 module Paket.ModuleResolver
 
 open System.IO
+open Paket.Domain
 open Paket.Requirements
 
 type SingleSourceFileOrigin = 
@@ -27,7 +28,7 @@ type ResolvedSourceFile =
       Project : string
       Name : string      
       Commit : string
-      Dependencies : Set<string*VersionRequirement>
+      Dependencies : Set<PackageName*VersionRequirement>
       Origin : SingleSourceFileOrigin
       }
     member this.FilePath = this.ComputeFilePath(this.Name)

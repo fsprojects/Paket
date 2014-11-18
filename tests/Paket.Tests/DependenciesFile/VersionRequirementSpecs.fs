@@ -4,11 +4,12 @@ open Paket
 open NUnit.Framework
 open FsUnit
 open Paket.Requirements
+open Paket.Domain
 
 let parse text = DependenciesFileParser.parseVersionRequirement(text)
 
 let require packageName strategy text : PackageRequirement = 
-    { Name = packageName
+    { Name = PackageName packageName
       VersionRequirement = parse text
       ResolverStrategy = strategy
       Parent = PackageRequirementSource.DependenciesFile ""

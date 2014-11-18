@@ -3,6 +3,7 @@ namespace Paket
 open System
 open System.Collections.Generic
 open System.IO
+open Paket.Domain
 open Paket.Logging
 open Paket.PackageResolver
 open Paket.ModuleResolver
@@ -33,9 +34,10 @@ module LockFileSerializer =
                   yield "  remote: " + source
 
                   yield "  specs:"
-                  for _,_,package in packages |> Seq.sortBy (fun (_,_,p) -> p.Name.ToLower()) do
-                      yield sprintf "    %s (%s)" package.Name (package.Version.ToString()) 
-                      for name,v,restriction in package.Dependencies do
+                  for _,_,package in packages |> Seq.sortBy (fun (_,_,p) -> NormalizedPackageName p.Name) do
+                      let (PackageName packageName) = package.Name
+                      yield sprintf "    %s (%s)" (packageName) (package.Version.ToString()) 
+                      for (PackageName name),v,restriction in package.Dependencies do
                           match restriction with
                           | None -> yield sprintf "      %s (%s)" name (v.ToString())
                           | Some restriction -> yield sprintf "      %s (%s) - %s" name (v.ToString()) (restriction.ToString())]
@@ -79,7 +81,7 @@ module LockFileSerializer =
                     match String.IsNullOrEmpty(file.Commit) with
                     | false -> yield sprintf "    %s (%s)" path file.Commit 
                     | true -> yield sprintf "    %s" path 
-                    for (name,v) in file.Dependencies do
+                    for (PackageName name,v) in file.Dependencies do
                         yield sprintf "      %s (%s)" name (v.ToString())]
 
         String.Join(Environment.NewLine, all)
@@ -136,7 +138,7 @@ module LockFileParser =
                     { state with LastWasPackage = true
                                  Packages = 
                                      { Source = PackageSource.Parse(remote, None)
-                                       Name = parts.[0]
+                                       Name = PackageName parts.[0]
                                        Dependencies = Set.empty
                                        Unlisted = false
                                        Version = SemVer.Parse version } :: state.Packages }
@@ -147,7 +149,7 @@ module LockFileParser =
                     | currentPackage :: otherPackages -> 
                         { state with
                                 Packages = { currentPackage with
-                                                Dependencies = Set.add (name, VersionRequirement.AllReleases, None) currentPackage.Dependencies
+                                                Dependencies = Set.add (PackageName name, VersionRequirement.AllReleases, None) currentPackage.Dependencies
                                             } :: otherPackages }                    
                     | [] -> failwith "cannot set a dependency - no package has been specified."
                 else
@@ -156,7 +158,7 @@ module LockFileParser =
                         { state with
                                 SourceFiles = 
                                     { currentFile with
-                                                Dependencies = Set.add (name, VersionRequirement.AllReleases) currentFile.Dependencies
+                                                Dependencies = Set.add (PackageName name, VersionRequirement.AllReleases) currentFile.Dependencies
                                             } :: rest }                    
                     | [] -> failwith "cannot set a dependency - no remote file has been specified."
             | SourceFile(origin, details) ->
@@ -214,7 +216,7 @@ module LockFileParser =
 type LockFile(fileName:string,options,resolution:PackageResolution,remoteFiles:ResolvedSourceFile list) =
     let lowerCaseResolution =
         resolution
-        |> Map.fold (fun resolution name p -> Map.add (name.ToLower()) p resolution) Map.empty
+        |> Map.fold (fun resolution name p -> Map.add name p resolution) Map.empty
 
     member __.SourceFiles = remoteFiles
     member __.ResolvedPackages = resolution
@@ -234,13 +236,13 @@ type LockFile(fileName:string,options,resolution:PackageResolution,remoteFiles:R
     /// Parses a paket.lock file from lines
     static member LoadFrom(lockFileName) : LockFile =        
         LockFileParser.Parse(File.ReadAllLines lockFileName)
-        |> fun state -> LockFile(lockFileName, state.Options ,state.Packages |> Seq.fold (fun map p -> Map.add p.Name p map) Map.empty, List.rev state.SourceFiles)
+        |> fun state -> LockFile(lockFileName, state.Options ,state.Packages |> Seq.fold (fun map p -> Map.add (NormalizedPackageName p.Name) p map) Map.empty, List.rev state.SourceFiles)
 
     member this.GetPackageHull(referencesFile:ReferencesFile) =
         let usedPackages = Dictionary<_,_>()
 
-        let rec addPackage directly (name:string) =
-            let identity = name.ToLower()
+        let rec addPackage directly (name:PackageName) =
+            let identity = NormalizedPackageName name
             match lowerCaseResolution.TryFind identity with
             | Some package ->
                 match usedPackages.TryGetValue name with
@@ -250,7 +252,9 @@ type LockFile(fileName:string,options,resolution:PackageResolution,remoteFiles:R
                         for d,_,_ in package.Dependencies do
                             addPackage false d
                 | true,v -> usedPackages.[name] <- v || directly
-            | None -> failwithf "%s references package %s, but it was not found in the paket.lock file." referencesFile.FileName name
+            | None ->
+                let (PackageName packageName) = name
+                failwithf "%s references package %s, but it was not found in the paket.lock file." referencesFile.FileName packageName
 
         referencesFile.NugetPackages
         |> List.iter (addPackage true)

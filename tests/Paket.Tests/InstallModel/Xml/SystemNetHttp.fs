@@ -4,6 +4,7 @@ open Paket
 open NUnit.Framework
 open FsUnit
 open Paket.TestHelpers
+open Paket.Domain
 
 let expected = """
 <Choose xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
@@ -266,7 +267,7 @@ let expected = """
 [<Test>]
 let ``should generate Xml for System.Net.Http 2.2.8``() = 
     let model =     
-        InstallModel.CreateFromLibs("System.Net.Http", SemVer.Parse "2.2.8",        
+        InstallModel.CreateFromLibs(PackageName "System.Net.Http", SemVer.Parse "2.2.8",        
             [ @"..\Microsoft.Net.Http\lib\monoandroid\System.Net.Http.Extensions.dll" 
               @"..\Microsoft.Net.Http\lib\monoandroid\System.Net.Http.Primitives.dll" 
               

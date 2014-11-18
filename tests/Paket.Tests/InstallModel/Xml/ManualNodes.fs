@@ -3,11 +3,12 @@
 open Paket
 open NUnit.Framework
 open FsUnit
+open Paket.Domain
 
 [<Test>]
 let ``should find custom nodes in doc``() = 
     let model =
-        InstallModel.CreateFromLibs("Fantomas", SemVer.Parse "1.5.0",
+        InstallModel.CreateFromLibs(PackageName "Fantomas", SemVer.Parse "1.5.0",
             [ @"..\Fantomas\lib\FantomasLib.dll" 
               @"..\Fantomas\lib\FSharp.Core.dll" 
               @"..\Fantomas\lib\Fantomas.exe" ],
@@ -20,7 +21,7 @@ let ``should find custom nodes in doc``() =
 [<Test>]
 let ``should not find custom nodes if there are none``() = 
     let model =
-        InstallModel.CreateFromLibs("Fantomas", SemVer.Parse "1.5.0",
+        InstallModel.CreateFromLibs(PackageName "Fantomas", SemVer.Parse "1.5.0",
             [ @"..\Fantomas\lib\FantomasLib.dll" 
               @"..\Fantomas\lib\FSharp.Core.dll" 
               @"..\Fantomas\lib\Fantomas.exe" ],
@@ -33,7 +34,7 @@ let ``should not find custom nodes if there are none``() =
 [<Test>]
 let ``should delete custom nodes if there are some``() = 
     let model =
-        InstallModel.CreateFromLibs("Fantomas", SemVer.Parse "1.5.0",
+        InstallModel.CreateFromLibs(PackageName "Fantomas", SemVer.Parse "1.5.0",
             [ @"..\Fantomas\lib\FantomasLib.dll" 
               @"..\Fantomas\lib\FSharp.Core.dll" 
               @"..\Fantomas\lib\Fantomas.exe" ],

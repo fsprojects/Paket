@@ -5,6 +5,7 @@ open Paket
 open System
 open System.IO
 open System.Xml
+open Paket.Domain
 open Paket.Logging
 open Paket.Xml
 open Paket.NuGetV2
@@ -132,13 +133,13 @@ let private convertNugetsToDepFile(dependenciesFilename,nugetPackagesConfigs, so
 
     let confictingPackages, packagesToAdd = 
         match existingDepFile with
-        | Some depFile -> latestVersions |> List.partition (fun (name,_) -> depFile.HasPackage name)
+        | Some depFile -> latestVersions |> List.partition (fun (name,_) -> depFile.HasPackage (PackageName name))
         | None -> [], latestVersions
     
     for (name, _) in confictingPackages do traceWarnfn "Package %s is already defined in %s" name dependenciesFilename
 
     let nugetPackageRequirement (name: string, v: string) =
-        {Requirements.PackageRequirement.Name = name
+        {Requirements.PackageRequirement.Name = PackageName name
          Requirements.PackageRequirement.VersionRequirement = VersionRequirement(VersionRange.Specific(SemVer.Parse v), PreReleaseStatus.No)
          Requirements.PackageRequirement.ResolverStrategy = Max
          Requirements.PackageRequirement.Sources = sources
@@ -150,7 +151,7 @@ let private convertNugetsToDepFile(dependenciesFilename,nugetPackagesConfigs, so
         DependenciesFile(dependenciesFilename, InstallOptions.Default, packages, []).Save()
     | Some depFile ->
         if not (packagesToAdd |> List.isEmpty)
-            then (packagesToAdd |> List.fold (fun (d : DependenciesFile) (name,version) -> d.Add(name,version)) depFile).Save()
+            then (packagesToAdd |> List.fold (fun (d : DependenciesFile) (name,version) -> d.Add(PackageName name,version)) depFile).Save()
         else tracefn "%s is up to date" depFile.FileName
 
 let private convertNugetToRefFile(nugetPackagesConfig) =
@@ -162,16 +163,16 @@ let private convertNugetToRefFile(nugetPackagesConfig) =
         | Some refFile -> 
             nugetPackagesConfig.Packages 
             |> List.partition (fun (name,_) -> 
-                                    refFile.NugetPackages |> List.exists (fun np -> String.Equals(name,np,StringComparison.InvariantCultureIgnoreCase)))
+                                    refFile.NugetPackages |> List.exists (fun (NormalizedPackageName np) -> np = NormalizedPackageName (PackageName name)))
         | _ -> [], nugetPackagesConfig.Packages
     
     for (name,_) in confictingRefs do traceWarnfn "Reference %s is already defined in %s" name refFilePath
             
     match existingRefFile with 
-    | None -> {ReferencesFile.FileName = refFilePath; NugetPackages = refsToAdd |> List.map fst; RemoteFiles = []}.Save()
+    | None -> {ReferencesFile.FileName = refFilePath; NugetPackages = refsToAdd |> List.map fst |> List.map PackageName; RemoteFiles = []}.Save()
     | Some refFile ->
         if not (refsToAdd |> List.isEmpty)
-            then (refsToAdd |> List.fold (fun (refFile : ReferencesFile) (name,_) -> refFile.AddNuGetReference(name)) refFile).Save()
+            then (refsToAdd |> List.fold (fun (refFile : ReferencesFile) (name,_) -> refFile.AddNuGetReference(PackageName name)) refFile).Save()
         else tracefn "%s is up to date" refFilePath
 
 /// Converts all projects from NuGet to Paket
@@ -246,9 +247,10 @@ let ConvertFromNuget(dependenciesFileName, force, installAfter, initAutoRestore,
         if File.Exists nugetExe then 
             traceWarnfn "Removing NuGet.exe and adding Nuget.CommandLine as dependency instead. Please check all paths."
             removeFile nugetExe
+            let nugetCommandLine = PackageName "NuGet.CommandLine"
             let depFile = DependenciesFile.ReadFromFile dependenciesFileName
-            if not <| depFile.HasPackage("NuGet.CommandLine") then 
-                depFile.Add("NuGet.CommandLine", "").Save()
+            if not <| depFile.HasPackage(nugetCommandLine) then 
+                depFile.Add(nugetCommandLine, "").Save()
             
         if Directory.EnumerateFileSystemEntries(nugetTargets.DirectoryName) |> Seq.isEmpty 
             then Directory.Delete nugetTargets.DirectoryName

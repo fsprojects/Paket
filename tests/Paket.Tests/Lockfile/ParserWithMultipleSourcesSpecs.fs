@@ -4,6 +4,7 @@ open Paket
 open NUnit.Framework
 open FsUnit
 open TestHelpers
+open Paket.Domain
 
 let lockFile = """NUGET
   remote: https://nuget.org/api/v2
@@ -25,17 +26,17 @@ let ``should parse lock file``() =
     lockFile.Options.Strict |> shouldEqual false
 
     packages.[0].Source |> shouldEqual PackageSources.DefaultNugetSource
-    packages.[0].Name |> shouldEqual "Castle.Windsor"
+    packages.[0].Name |> shouldEqual (PackageName "Castle.Windsor")
     packages.[0].Version |> shouldEqual (SemVer.Parse "2.1")
 
     packages.[1].Source |> shouldEqual PackageSources.DefaultNugetSource
-    packages.[1].Name |> shouldEqual "Castle.Windsor-log4net"
+    packages.[1].Name |> shouldEqual (PackageName "Castle.Windsor-log4net")
     packages.[1].Version |> shouldEqual (SemVer.Parse "3.3")
     
     packages.[4].Source |> shouldEqual (PackageSources.PackageSource.NugetSource "http://nuget.org/api/v3")
-    packages.[4].Name |> shouldEqual "Rx-Core"
+    packages.[4].Name |> shouldEqual (PackageName "Rx-Core")
     packages.[4].Version |> shouldEqual (SemVer.Parse "2.1")
 
     packages.[5].Source |> shouldEqual (PackageSources.PackageSource.NugetSource "http://nuget.org/api/v3")
-    packages.[5].Name |> shouldEqual "Rx-Main"
+    packages.[5].Name |> shouldEqual (PackageName "Rx-Main")
     packages.[5].Version |> shouldEqual (SemVer.Parse "2.0")

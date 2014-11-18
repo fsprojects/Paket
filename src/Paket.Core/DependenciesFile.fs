@@ -3,6 +3,7 @@ namespace Paket
 open System
 open System.IO
 open Paket
+open Paket.Domain
 open Paket.Logging
 open Paket.Requirements
 open Paket.ModuleResolver
@@ -18,6 +19,7 @@ type InstallOptions =
 
 /// [omit]
 module DependenciesFileParser = 
+
     let private basicOperators = ["~>";"==";"<=";">=";"=";">";"<"]
     let private operators = basicOperators @ (basicOperators |> List.map (fun o -> "!" + o))
 
@@ -168,7 +170,7 @@ module DependenciesFileParser =
                 | Package(name,version) ->
                     lineNo, options, sources, 
                         { Sources = sources
-                          Name = name
+                          Name = PackageName name
                           ResolverStrategy = parseResolverStrategy version
                           Parent = DependenciesFile fileName
                           VersionRequirement = parseVersionRequirement(version.Trim '!') } :: packages, sourceFiles
@@ -223,7 +225,7 @@ type DependenciesFile(fileName,options,packages : PackageRequirement list, remot
             
     member __.DirectDependencies = dependencyMap
     member __.Packages = packages
-    member __.HasPackage (name : string) = packages |> List.exists (fun p -> p.Name.ToLower() = name.ToLower())
+    member __.HasPackage (name : PackageName) = packages |> List.exists (fun p -> NormalizedPackageName p.Name = NormalizedPackageName name)
     member __.RemoteFiles = remoteFiles
     member __.Options = options
     member __.FileName = fileName
@@ -254,7 +256,7 @@ type DependenciesFile(fileName,options,packages : PackageRequirement list, remot
         { ResolvedPackages = PackageResolver.Resolve(getVersionF, getPackageDetailsF, remoteDependencies @ packages)
           ResolvedSourceFiles = remoteFiles }        
 
-    member __.AddAdditionionalPackage(packageName:string,version:string) =
+    member __.AddAdditionionalPackage(packageName:PackageName,version:string) =
         let versionRange = DependenciesFileParser.parseVersionRequirement (version.Trim '!')
         let sources = 
             match packages |> List.rev with
@@ -270,7 +272,7 @@ type DependenciesFile(fileName,options,packages : PackageRequirement list, remot
 
         DependenciesFile(fileName,options,packages @ [newPackage], remoteFiles)
 
-    member __.AddFixedPackage(packageName:string,version:string) =
+    member __.AddFixedPackage(packageName:PackageName,version:string) =
         let versionRange = DependenciesFileParser.parseVersionRequirement (version.Trim '!')
         let sources = 
             match packages |> List.rev with
@@ -278,7 +280,7 @@ type DependenciesFile(fileName,options,packages : PackageRequirement list, remot
             | [] -> [PackageSources.DefaultNugetSource]
 
         let strategy = 
-            match packages |> List.tryFind (fun p -> p.Name.ToLower() = packageName.ToLower()) with
+            match packages |> List.tryFind (fun p -> NormalizedPackageName p.Name = NormalizedPackageName packageName) with
             | Some package -> package.ResolverStrategy
             | None -> DependenciesFileParser.parseResolverStrategy version
 
@@ -289,46 +291,49 @@ type DependenciesFile(fileName,options,packages : PackageRequirement list, remot
               ResolverStrategy = strategy
               Parent = PackageRequirementSource.DependenciesFile fileName }
 
-        DependenciesFile(fileName,options,(packages |> List.filter (fun p -> p.Name.ToLower() <> packageName.ToLower())) @ [newPackage], remoteFiles)
+        DependenciesFile(fileName,options,(packages |> List.filter (fun p -> NormalizedPackageName p.Name <> NormalizedPackageName packageName)) @ [newPackage], remoteFiles)
 
-    member __.RemovePackage(packageName:string) =
+    member __.RemovePackage(packageName:PackageName) =
         let newPackages = 
             packages
-            |> List.filter (fun p -> p.Name.ToLower() <> packageName.ToLower())
+            |> List.filter (fun p -> NormalizedPackageName p.Name <> NormalizedPackageName packageName)
 
         DependenciesFile(fileName,options,newPackages,remoteFiles)
 
     member this.Add(packageName,version:string) =
+        let (PackageName name) = packageName
         if this.HasPackage packageName then 
-            traceWarnfn "%s contains package %s already. ==> Ignored" fileName packageName
+            traceWarnfn "%s contains package %s already. ==> Ignored" fileName name
             this
         else
             if version = "" then
-                tracefn "Adding %s to %s" packageName fileName
+                tracefn "Adding %s to %s" name fileName
             else
-                tracefn "Adding %s %s to %s" packageName version fileName
+                tracefn "Adding %s %s to %s" name version fileName
             this.AddAdditionionalPackage(packageName,version)
 
     member this.Remove(packageName) =
+        let (PackageName name) = packageName
         if this.HasPackage packageName then         
-            tracefn "Removing %s from %s" packageName fileName
+            tracefn "Removing %s from %s" name fileName
             this.RemovePackage(packageName)
         else
-            traceWarnfn "%s doesn't contain package %s. ==> Ignored" fileName packageName
+            traceWarnfn "%s doesn't contain package %s. ==> Ignored" fileName name
             this
 
     member this.UpdatePackageVersion(packageName, version) =
+        let (PackageName name) = packageName
         if this.HasPackage(packageName) then
             let versionRequirement = DependenciesFileParser.parseVersionRequirement version
-            tracefn "Updating %s version to %s in %s" packageName version fileName
+            tracefn "Updating %s version to %s in %s" name version fileName
             let packages = 
                 this.Packages |> List.map (fun p -> 
-                                     if p.Name.ToLower() = packageName.ToLower() then 
+                                     if NormalizedPackageName p.Name = NormalizedPackageName packageName then 
                                          { p with VersionRequirement = versionRequirement }
                                      else p)
             DependenciesFile(this.FileName, this.Options, packages, this.RemoteFiles)
         else
-            traceWarnfn "%s doesn't contain package %s. ==> Ignored" fileName packageName
+            traceWarnfn "%s doesn't contain package %s. ==> Ignored" fileName name
             this
 
     member this.GetAllPackageSources() = 
@@ -370,8 +375,9 @@ type DependenciesFile(fileName,options,packages : PackageRequirement list, remot
                           yield ""
                           hasReportedFirst := true
 
+                      let (PackageName name) = package.Name
                       let version = DependenciesFileSerializer.formatVersionRange package.ResolverStrategy package.VersionRequirement
-                      yield sprintf "nuget %s%s" package.Name (if version <> "" then " " + version else "")
+                      yield sprintf "nuget %s%s" name (if version <> "" then " " + version else "")
                      
               for remoteFile in remoteFiles do
                   if (not !hasReportedSecond) && !hasReportedFirst then

@@ -7,12 +7,13 @@ open Paket.PackageSources
 open PackageResolver
 open System.Xml
 open System.IO
+open Paket.Domain
 
-let PackageDetailsFromGraph (graph : seq<string * string * (string * VersionRequirement) list>) sources (package:string) (version:SemVerInfo) = 
+let PackageDetailsFromGraph (graph : seq<string * string * (string * VersionRequirement) list>) sources (package:PackageName) (version:SemVerInfo) = 
     let name,dependencies = 
         graph
-        |> Seq.filter (fun (p, v, _) -> p.ToLower() = package.ToLower() && SemVer.Parse v = version)
-        |> Seq.map (fun (n, _, d) -> n,d |> List.map (fun (x,y) -> x,y,None))
+        |> Seq.filter (fun (p, v, _) -> NormalizedPackageName (PackageName p) = NormalizedPackageName package && SemVer.Parse v = version)
+        |> Seq.map (fun (n, _, d) -> PackageName n,d |> List.map (fun (x,y) -> PackageName x,y,None))
         |> Seq.head
 
     { Name = name
@@ -21,16 +22,16 @@ let PackageDetailsFromGraph (graph : seq<string * string * (string * VersionRequ
       Unlisted = false
       DirectDependencies = Set.ofList dependencies }
 
-let VersionsFromGraph (graph : seq<string * string * (string * VersionRequirement) list>) (sources, package : string) = 
+let VersionsFromGraph (graph : seq<string * string * (string * VersionRequirement) list>) (sources, package : PackageName) = 
     graph
-    |> Seq.filter (fun (p, _, _) -> p.ToLower() = package.ToLower())
+    |> Seq.filter (fun (p, _, _) -> NormalizedPackageName (PackageName p) = NormalizedPackageName package)
     |> Seq.map (fun (_, v, _) -> SemVer.Parse v)
     |> Seq.toList
 
 let safeResolve graph (dependencies : (string * VersionRange) list)  = 
     let packages = 
         dependencies |> List.map (fun (n, v) -> 
-                            { Name = n
+                            { Name = PackageName n
                               VersionRequirement = VersionRequirement(v,PreReleaseStatus.No)
                               Sources = [ PackageSource.NugetSource "" ]
                               Parent = PackageRequirementSource.DependenciesFile ""

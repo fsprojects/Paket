@@ -3,11 +3,20 @@
 open System.IO
 open Paket.Logging
 open System
+open Paket.Domain
 
 /// Paket API which is optimized for F# Interactive use.
 type Dependencies(dependenciesFileName) =
     let rootPath = Path.GetDirectoryName dependenciesFileName
-    
+
+    let listPackages (packages: System.Collections.Generic.KeyValuePair<_, PackageResolver.ResolvedPackage> seq) =
+        packages
+        |> Seq.map (fun kv -> kv.Value)
+        |> Seq.map (fun p ->
+                            let (PackageName name) = p.Name
+                            name, p.Version.ToString())
+        |> Seq.toList
+
     /// Tries to locate the paket.dependencies file in the current folder or a parent folder.
     static member Locate() = Dependencies.Locate(Environment.CurrentDirectory)
 
@@ -53,7 +62,7 @@ type Dependencies(dependenciesFileName) =
     member this.Add(package,version) = this.Add(package, version, false, false, false, true)
 
     /// Adds the given package with the given version to the dependencies file.
-    member this.Add(package,version,force,hard,interactive,installAfter) = AddProcess.Add(dependenciesFileName, package, version, force, hard, interactive, installAfter)
+    member this.Add(package,version,force,hard,interactive,installAfter) = AddProcess.Add(dependenciesFileName, PackageName package, version, force, hard, interactive, installAfter)
         
     /// Installs all dependencies.
     member this.Install(force,hard) = UpdateProcess.Update(dependenciesFileName,false,force,hard)
@@ -62,7 +71,7 @@ type Dependencies(dependenciesFileName) =
     member this.Update(force,hard) = UpdateProcess.Update(dependenciesFileName,true,force,hard)
 
     /// Updates the given package.
-    member this.UpdatePackage(package,version,force,hard) = UpdateProcess.UpdatePackage(dependenciesFileName,package,version,force,hard) 
+    member this.UpdatePackage(package,version,force,hard) = UpdateProcess.UpdatePackage(dependenciesFileName, PackageName package,version,force,hard) 
 
     /// Restores the given paket.references files.
     member this.Restore(files) = this.Restore(false,files) 
@@ -97,32 +106,31 @@ type Dependencies(dependenciesFileName) =
 
     /// Returns the installed version of the given package.
     member this.GetInstalledVersion(packageName) = 
-        this.GetLockFile().ResolvedPackages.TryFind packageName 
+        this.GetLockFile().ResolvedPackages.TryFind (NormalizedPackageName (PackageName packageName))
         |> Option.map (fun package -> package.Version.ToString())
 
     /// Returns the installed versions of all installed packages.
     member this.GetInstalledPackages() = 
         this.GetLockFile().ResolvedPackages
-        |> Seq.map (fun kv -> kv.Value.Name,kv.Value.Version.ToString())
-        |> Seq.toList
+        |> listPackages
 
     /// Returns the installed versions of all direct dependencies.
     member this.GetDirectDependencies() = 
         let dependenciesFile = DependenciesFile.ReadFromFile dependenciesFileName
+        let normalizedDependecies = dependenciesFile.DirectDependencies |> Seq.map (fun kv -> kv.Key) |> Seq.map NormalizedPackageName |> Seq.toList
         this.GetLockFile().ResolvedPackages
-        |> Seq.filter (fun kv -> dependenciesFile.DirectDependencies.ContainsKey kv.Key)
-        |> Seq.map (fun kv -> kv.Value.Name,kv.Value.Version.ToString())        
-        |> Seq.toList
+        |> Seq.filter (fun kv -> normalizedDependecies |> Seq.exists ((=) kv.Key))
+        |> listPackages
 
     /// Removes the given package from dependencies file.
     member this.Remove(package) = this.Remove(package, false, false, false, true)
     
     /// Removes the given package from dependencies file.
-    member this.Remove(package,force,hard,interactive,installAfter) = RemoveProcess.Remove(dependenciesFileName, package, force, hard, interactive, installAfter)
+    member this.Remove(package,force,hard,interactive,installAfter) = RemoveProcess.Remove(dependenciesFileName, PackageName package, force, hard, interactive, installAfter)
 
     /// Shows all references for the given packages.
-    member this.ShowReferencesFor(packages:string list) = FindReferences.ShowReferencesFor(dependenciesFileName,packages)
+    member this.ShowReferencesFor(packages:string list) = FindReferences.ShowReferencesFor(dependenciesFileName,packages |> List.map PackageName)
 
     /// Finds all references for a given package.
-    member this.FindReferencesFor(package) = FindReferences.FindReferencesForPackage(dependenciesFileName, package)
+    member this.FindReferencesFor(package) = FindReferences.FindReferencesForPackage(dependenciesFileName, PackageName package)
     

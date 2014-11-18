@@ -3,6 +3,7 @@
 open System
 open System.IO
 open Logging
+open Paket.Domain
 
 type RemoteFileReference = 
     { Name : string
@@ -10,7 +11,7 @@ type RemoteFileReference =
 
 type ReferencesFile = 
     { FileName: string
-      NugetPackages: list<string>
+      NugetPackages: list<PackageName>
       RemoteFiles: list<RemoteFileReference> } 
     
     static member DefaultLink = Constants.PaketFilesFolderName
@@ -26,7 +27,9 @@ type ReferencesFile =
             |> List.partition isSingleFile 
 
         { FileName = ""
-          NugetPackages = nugetLines
+          NugetPackages =
+            nugetLines
+            |> List.map PackageName
           RemoteFiles = 
             remoteLines
             |> List.map (fun s -> s.Replace("File:","").Split([|' '|], StringSplitOptions.RemoveEmptyEntries))
@@ -38,8 +41,9 @@ type ReferencesFile =
         let lines = File.ReadAllLines(fileName)
         { ReferencesFile.FromLines lines with FileName = fileName }
 
-    member this.AddNuGetReference(reference : string) =
-        tracefn "Adding %s to %s" reference (this.FileName)
+    member this.AddNuGetReference(reference : PackageName) =
+        let (PackageName referenceName) = reference
+        tracefn "Adding %s to %s" referenceName (this.FileName)
         { this with NugetPackages = this.NugetPackages @ [reference] }
 
     member this.Save() =
@@ -48,6 +52,6 @@ type ReferencesFile =
 
     override this.ToString() =
         List.append
-            this.NugetPackages
+            (this.NugetPackages |> List.map (|PackageName|))
             (this.RemoteFiles |> List.map (fun s -> "File:" + s.Name + if s.Link <> ReferencesFile.DefaultLink then " " + s.Link else ""))
             |> String.concat Environment.NewLine
