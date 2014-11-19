@@ -1,3 +1,6 @@
+#### 0.15.0 - 19.11.2014
+* Allow to use basic framework restrictions in NuGet packages - https://github.com/fsprojects/Paket/issues/307
+
 #### 0.14.6 - 18.11.2014
 * BUGFIX: Use Nuget v2 as fallback
 

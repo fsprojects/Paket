@@ -4,6 +4,7 @@ open System.IO
 open System.Collections.Generic
 
 open Paket.Domain
+open Paket.Requirements
 
 [<RequireQualifiedAccess>]
 type Reference = 
@@ -254,6 +255,17 @@ type InstallModel =
                    |> Seq.fold (fun (group : FrameworkGroup) framework -> 
                           if framework.Value.References <> fallbacks.References then group
                           else { group with Frameworks = Map.remove framework.Key group.Frameworks }) group)
+
+    member this.ApplyFrameworkRestriction(restriction:FrameworkRestriction) =
+        match restriction with
+        | None -> this
+        | Some fw ->
+            {this with DefaultFallback = InstallFiles.empty }
+              .MapGroups(fun _ group ->
+                   group.Frameworks 
+                   |> Seq.fold (fun (group : FrameworkGroup) framework -> 
+                          if framework.Key = fw then group
+                          else { group with Frameworks = Map.remove framework.Key group.Frameworks }) { group with Fallbacks = InstallFiles.empty })
     
     member this.UsePortableVersionLibIfEmpty() = 
         this.GetFrameworks() 
@@ -301,9 +313,10 @@ type InstallModel =
               |> List.map (fun lib -> lib.ReferenceName)
               |> Set.ofList)
     
-    static member CreateFromLibs(packageName, packageVersion, libs, nuspec : Nuspec) = 
+    static member CreateFromLibs(packageName, packageVersion, frameworkRestriction:FrameworkRestriction, libs, nuspec : Nuspec) = 
         InstallModel
             .EmptyModel(packageName, packageVersion)
             .AddReferences(libs, nuspec.References)
             .AddFrameworkAssemblyReferences(nuspec.FrameworkAssemblyReferences)
             .BuildUnfilteredModel()
+            .ApplyFrameworkRestriction(frameworkRestriction)

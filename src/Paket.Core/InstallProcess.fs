@@ -72,7 +72,7 @@ let CreateInstallModel(root, sources, force, package) =
         let nuspec = FileInfo(sprintf "%s/packages/%s/%s.nuspec" root name name)
         let nuspec = Nuspec.Load nuspec.FullName
         let files = files |> Seq.map (fun fi -> fi.FullName)
-        return package, InstallModel.CreateFromLibs(package.Name, package.Version, files, nuspec)
+        return package, InstallModel.CreateFromLibs(package.Name, package.Version, package.FrameworkRestriction, files, nuspec)
     }
 
 /// Restores the given packages from the lock file.

@@ -449,6 +449,7 @@
     <Compile Include="InstallModel\Xml\FantomasLib.fs" />
     <Compile Include="InstallModel\Xml\Fuchu.fs" />
     <Compile Include="InstallModel\Xml\SystemNetHttp.fs" />
+    <Compile Include="InstallModel\Xml\SystemNetHttpForNet4.fs" />
     <Compile Include="InstallModel\Xml\SystemNetHttpWithFrameworkReferences.fs" />
     <Compile Include="InstallModel\Xml\ManualNodes.fs" />
     <Compile Include="DependencyModel\ProjectDependencySpecs.fs" />

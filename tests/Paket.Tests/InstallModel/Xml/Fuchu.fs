@@ -18,7 +18,7 @@ let expected = """
 [<Test>]
 let ``should generate Xml for Fuchu 0.4``() = 
     let model =
-        InstallModel.CreateFromLibs(PackageName "Fuchu", SemVer.Parse "0.4.0",        
+        InstallModel.CreateFromLibs(PackageName "Fuchu", SemVer.Parse "0.4.0", None,
             [ @"..\Fuchu\lib\Fuchu.dll" 
               @"..\Fuchu\lib\Fuchu.XML" 
               @"..\Fuchu\lib\Fuchu.pdb" ],
