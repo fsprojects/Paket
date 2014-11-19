@@ -1,3 +1,6 @@
+#### 0.15.1 - 19.11.2014
+* Always control framework assemblies
+
 #### 0.15.0 - 19.11.2014
 * Allow to use basic framework restrictions in NuGet packages - https://github.com/fsprojects/Paket/issues/307
 

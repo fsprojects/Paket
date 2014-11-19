@@ -47,6 +47,11 @@ type InstallFiles =
     member this.AddFrameworkAssemblyReference assemblyName = 
         { this with References = Set.add (Reference.FrameworkAssemblyReference assemblyName) this.References }
 
+    member this.GetFrameworkAssemblies() =
+        this.References
+        |> Set.map (fun r -> r.FrameworkReferenceName)
+        |> Seq.choose id
+
     member this.MergeWith(that:InstallFiles)= 
         { this with 
             References = Set.union that.References this.References
@@ -311,6 +316,14 @@ type InstallModel =
                     yield! g.Value.Fallbacks.References 
                 yield! this.DefaultFallback.References]
               |> List.map (fun lib -> lib.ReferenceName)
+              |> Set.ofList)
+
+    member this.GetFrameworkAssemblies = 
+        lazy ([ for g in this.Groups do
+                    for f in g.Value.Frameworks do
+                        yield! f.Value.GetFrameworkAssemblies()
+                    yield! g.Value.Fallbacks.GetFrameworkAssemblies() 
+                yield! this.DefaultFallback.GetFrameworkAssemblies()]
               |> Set.ofList)
     
     static member CreateFromLibs(packageName, packageVersion, frameworkRestriction:FrameworkRestriction, libs, nuspec : Nuspec) = 

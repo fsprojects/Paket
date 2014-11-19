@@ -168,6 +168,21 @@ type ProjectFile =
         for node in nodesToDelete do            
             node.ParentNode.RemoveChild(node) |> ignore
 
+    member this.DeleteFrameworkAssemblies(model:InstallModel) =
+        let nodesToDelete = List<_>()
+        
+        let libs = model.GetFrameworkAssemblies.Force()
+        for node in this.Document |> getDescendants "Reference" do
+            if Set.contains (node.Attributes.["Include"].InnerText.Split(',').[0]) libs then          
+                nodesToDelete.Add node
+
+        if nodesToDelete |> Seq.isEmpty |> not then
+            let (PackageName name) = model.PackageName
+            verbosefn "    - Deleting custom projects nodes for %s" name
+
+        for node in nodesToDelete do            
+            node.ParentNode.RemoveChild(node) |> ignore
+
     member this.GenerateXml(model:InstallModel) =
         let createItemGroup references = 
             let itemGroup = this.CreateNode("ItemGroup")
@@ -245,9 +260,11 @@ type ProjectFile =
         ["ItemGroup";"When";"Otherwise";"Choose";"When";"Choose"]
         |> List.iter this.DeleteIfEmpty
 
-        if hard then
-            for kv in usedPackages do
-                let installModel = completeModel.[NormalizedPackageName kv.Key]
+        
+        for kv in usedPackages do
+            let installModel = completeModel.[NormalizedPackageName kv.Key]
+            this.DeleteFrameworkAssemblies(installModel)
+            if hard then
                 this.DeleteCustomNodes(installModel)
 
         let merged =
