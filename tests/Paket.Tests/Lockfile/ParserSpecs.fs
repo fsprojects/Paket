@@ -4,6 +4,7 @@ open Paket
 open NUnit.Framework
 open FsUnit
 open TestHelpers
+open Paket.Domain
 
 let lockFile = """NUGET
   remote: https://nuget.org/api/v2
@@ -33,19 +34,19 @@ let ``should parse lock file``() =
     lockFile.Options.Strict |> shouldEqual false
 
     packages.[0].Source |> shouldEqual PackageSources.DefaultNugetSource
-    packages.[0].Name |> shouldEqual "Castle.Windsor"
+    packages.[0].Name |> shouldEqual (PackageName "Castle.Windsor")
     packages.[0].Version |> shouldEqual (SemVer.Parse "2.1")
     packages.[0].Dependencies |> shouldEqual Set.empty
 
     packages.[1].Source |> shouldEqual PackageSources.DefaultNugetSource
-    packages.[1].Name |> shouldEqual "Castle.Windsor-log4net"
+    packages.[1].Name |> shouldEqual (PackageName "Castle.Windsor-log4net")
     packages.[1].Version |> shouldEqual (SemVer.Parse "3.3")
-    packages.[1].Dependencies |> shouldEqual (Set.ofList ["Castle.Windsor", VersionRequirement.AllReleases, None; "log4net", VersionRequirement.AllReleases, None])
+    packages.[1].Dependencies |> shouldEqual (Set.ofList [PackageName "Castle.Windsor", VersionRequirement.AllReleases, None; PackageName "log4net", VersionRequirement.AllReleases, None])
     
     packages.[5].Source |> shouldEqual PackageSources.DefaultNugetSource
-    packages.[5].Name |> shouldEqual "log4net"
+    packages.[5].Name |> shouldEqual (PackageName "log4net")
     packages.[5].Version |> shouldEqual (SemVer.Parse "1.1")
-    packages.[5].Dependencies |> shouldEqual (Set.ofList ["log", VersionRequirement.AllReleases, None])
+    packages.[5].Dependencies |> shouldEqual (Set.ofList [PackageName "log", VersionRequirement.AllReleases, None])
 
     let sourceFiles = List.rev lockFile.SourceFiles
     sourceFiles|> shouldEqual
@@ -90,9 +91,9 @@ let ``should parse strict lock file``() =
     lockFile.Options.Strict |> shouldEqual true
 
     packages.[5].Source |> shouldEqual PackageSources.DefaultNugetSource
-    packages.[5].Name |> shouldEqual "log4net"
+    packages.[5].Name |> shouldEqual (PackageName "log4net")
     packages.[5].Version |> shouldEqual (SemVer.Parse "1.1")
-    packages.[5].Dependencies |> shouldEqual (Set.ofList ["log", VersionRequirement.AllReleases, None])
+    packages.[5].Dependencies |> shouldEqual (Set.ofList [PackageName "log", VersionRequirement.AllReleases, None])
 
 let dogfood = """NUGET
   remote: https://nuget.org/api/v2
@@ -138,7 +139,7 @@ let ``should parse own lock file``() =
     lockFile.Options.Strict |> shouldEqual false
 
     packages.[1].Source |> shouldEqual PackageSources.DefaultNugetSource
-    packages.[1].Name |> shouldEqual "FAKE"
+    packages.[1].Name |> shouldEqual (PackageName "FAKE")
     packages.[1].Version |> shouldEqual (SemVer.Parse "3.5.5")
 
     lockFile.SourceFiles.[0].Name |> shouldEqual "modules/Octokit/Octokit.fsx"

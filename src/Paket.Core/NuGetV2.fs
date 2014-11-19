@@ -11,6 +11,7 @@ open System.Text.RegularExpressions
 open Paket.Logging
 open System.Text
 
+open Paket.Domain
 open Paket.Utils
 open Paket.Xml
 open Paket.PackageSources
@@ -109,8 +110,8 @@ let getAllVersions(auth, nugetURL, package) =
                     return (Array.toSeq result)
                 with _ -> let! result = getAllVersionsFromNuGet2(auth,nugetURL, package)
                           return result
-            with exn -> 
-                return! failwithf "Could not get data from %s for package %s.%s Message: %s" nugetURL package 
+            with exn ->
+                return! failwithf "Could not get data from %s for package %s.%s Message: %s" nugetURL package
                     Environment.NewLine exn.Message
     }
 
@@ -398,7 +399,7 @@ let ReadPackagesConfig(configFile : FileInfo) =
       Packages = [for node in doc.SelectNodes("//package") ->
                       node.Attributes.["id"].Value, node.Attributes.["version"].Value |> SemVer.Parse ]}
 
-let GetPackageDetails force sources package (version:SemVerInfo) : PackageResolver.PackageDetails= 
+let GetPackageDetails force sources (PackageName package) (version:SemVerInfo) : PackageResolver.PackageDetails= 
     let rec tryNext xs = 
         match xs with
         | source :: rest -> 
@@ -419,14 +420,14 @@ let GetPackageDetails force sources package (version:SemVerInfo) : PackageResolv
         | [] -> failwithf "Couldn't get package details for package %s on %A." package (sources |> List.map (fun (s:PackageSource) -> s.ToString()))
     
     let source,nugetObject = tryNext sources
-    { Name = nugetObject.Name
+    { Name = PackageName nugetObject.Name
       Source = source
       DownloadLink = nugetObject.DownloadUrl
       Unlisted = nugetObject.Unlisted
-      DirectDependencies = nugetObject.Dependencies |> Set.ofList } 
+      DirectDependencies = nugetObject.Dependencies |> List.map (fun (name, v, f) -> PackageName name, v, f) |> Set.ofList }
 
 /// Allows to retrieve all version no. for a package from the given sources.
-let GetVersions(sources, packageName) = 
+let GetVersions(sources, PackageName packageName) = 
     sources
     |> Seq.map (fun source -> 
            match source with

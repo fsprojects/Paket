@@ -3,6 +3,7 @@ module Paket.RestoreProcess
 
 open Paket
 open System.IO
+open Paket.Domain
 open Paket.Logging
 open Paket.PackageResolver
 open Paket.PackageSources
@@ -11,6 +12,7 @@ open FSharp.Polyfill
 /// Downloads and extracts a package.
 let ExtractPackage(root, sources, force, package : ResolvedPackage) = 
     async { 
+        let (PackageName name) = package.Name
         let v = package.Version
         match package.Source with
         | Nuget source -> 
@@ -20,20 +22,20 @@ let ExtractPackage(root, sources, force, package : ResolvedPackage) =
                                | Nuget s -> s.Authentication |> Option.map toBasicAuth
                                | _ -> None)
             try 
-                let! folder = NuGetV2.DownloadPackage(root, auth, source.Url, package.Name, v, force)
+                let! folder = NuGetV2.DownloadPackage(root, auth, source.Url, name, v, force)
                 return package, NuGetV2.GetLibFiles folder
             with _ when force = false -> 
-                tracefn "Something went wrong with the download of %s %A - automatic retry with --force." package.Name v
-                let! folder = NuGetV2.DownloadPackage(root, auth, source.Url, package.Name, v, true)
+                tracefn "Something went wrong with the download of %s %A - automatic retry with --force." name v
+                let! folder = NuGetV2.DownloadPackage(root, auth, source.Url, name, v, true)
                 return package, NuGetV2.GetLibFiles folder
         | LocalNuget path -> 
-            let packageFile = Path.Combine(root, path, sprintf "%s.%A.nupkg" package.Name v)
-            let! folder = NuGetV2.CopyFromCache(root, packageFile, package.Name, v, force)
+            let packageFile = Path.Combine(root, path, sprintf "%s.%A.nupkg" name v)
+            let! folder = NuGetV2.CopyFromCache(root, packageFile, name, v, force)
             return package, NuGetV2.GetLibFiles folder
     }
 
 /// Retores the given packages from the lock file.
-let internal restore(root, sources, force, lockFile:LockFile, packages:Set<string>) = 
+let internal restore(root, sources, force, lockFile:LockFile, packages:Set<NormalizedPackageName>) = 
     let sourceFileDownloads =
         lockFile.SourceFiles
         |> Seq.map (fun file -> RemoteDownload.DownloadSourceFile(Path.GetDirectoryName lockFile.FileName, file))        
@@ -41,7 +43,7 @@ let internal restore(root, sources, force, lockFile:LockFile, packages:Set<strin
 
     let packageDownloads = 
         lockFile.ResolvedPackages
-        |> Map.filter (fun name _ -> packages.Contains(name.ToLower()))
+        |> Map.filter (fun name _ -> packages.Contains(name))
         |> Seq.map (fun kv -> ExtractPackage(root,sources,force,kv.Value))
         |> Async.Parallel
 
@@ -59,12 +61,12 @@ let Restore(dependenciesFileName,force,referencesFileNames) =
             sources, LockFile.LoadFrom(lockFileName.FullName)
     
     let packages = 
-        if referencesFileNames = [] then lockFile.ResolvedPackages |> Seq.map (fun kv -> kv.Key.ToLower()) else
+        if referencesFileNames = [] then lockFile.ResolvedPackages |> Seq.map (fun kv -> kv.Key) else
         referencesFileNames
         |> List.map (fun fileName ->
             let referencesFile = ReferencesFile.FromFile fileName
             let references = lockFile.GetPackageHull(referencesFile)
-            references |> Seq.map (fun kv -> kv.Key.ToLower()))
+            references |> Seq.map (fun kv -> NormalizedPackageName kv.Key))
         |> Seq.concat
 
     restore(root, sources, force, lockFile,Set.ofSeq packages) 

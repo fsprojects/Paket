@@ -3,6 +3,7 @@ module Paket.UpdateProcess
 
 open Paket
 open System.IO
+open Paket.Domain
 
 /// Update command
 let Update(dependenciesFileName, forceResolution, force, hard) = 
@@ -24,18 +25,18 @@ let Update(dependenciesFileName, forceResolution, force, hard) =
 
     InstallProcess.Install(sources, force, hard, lockFile)
 
-let private fixOldDependencies (oldLockFile:LockFile) (dependenciesFile:DependenciesFile) (package:string) =
-    let packageKeys = dependenciesFile.DirectDependencies |> Seq.map (fun kv -> kv.Key.ToLower()) |> Set.ofSeq
+let private fixOldDependencies (oldLockFile:LockFile) (dependenciesFile:DependenciesFile) (package:PackageName) =
+    let packageKeys = dependenciesFile.DirectDependencies |> Seq.map (fun kv -> NormalizedPackageName kv.Key) |> Set.ofSeq
     oldLockFile.ResolvedPackages 
     |> Seq.fold 
             (fun (dependenciesFile : DependenciesFile) kv -> 
                 let resolvedPackage = kv.Value
-                let name = resolvedPackage.Name.ToLower()
-                if name = package.ToLower() || not <| packageKeys.Contains name then dependenciesFile else 
+                let name = NormalizedPackageName resolvedPackage.Name
+                if name = NormalizedPackageName package || not <| packageKeys.Contains name then dependenciesFile else 
                 dependenciesFile.AddFixedPackage(resolvedPackage.Name, "= " + resolvedPackage.Version.ToString()))
             dependenciesFile
 
-let updateWithModifiedDependenciesFile(dependenciesFile:DependenciesFile,packageName:string, force) =
+let updateWithModifiedDependenciesFile(dependenciesFile:DependenciesFile,packageName:PackageName, force) =
     let lockFileName = DependenciesFile.FindLockfile dependenciesFile.FileName
 
     if not lockFileName.Exists then 
@@ -58,7 +59,7 @@ let updateWithModifiedDependenciesFile(dependenciesFile:DependenciesFile,package
 
 
 /// Update a single package command
-let UpdatePackage(dependenciesFileName, packageName : string, newVersion, force, hard) = 
+let UpdatePackage(dependenciesFileName, packageName : PackageName, newVersion, force, hard) = 
     let lockFileName = DependenciesFile.FindLockfile dependenciesFileName
     if not lockFileName.Exists then Update(dependenciesFileName, true, force, hard) else
     

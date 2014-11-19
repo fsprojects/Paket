@@ -2,6 +2,7 @@
 module Paket.InstallProcess
 
 open Paket
+open Paket.Domain
 open Paket.Logging
 open Paket.ModuleResolver
 open Paket.PackageResolver
@@ -11,7 +12,7 @@ open FSharp.Polyfill
 
 let private findPackagesWithContent (root,usedPackages:Dictionary<_,_>) = 
     usedPackages
-    |> Seq.map (fun kv -> DirectoryInfo(Path.Combine(root, "packages", kv.Key)))
+    |> Seq.map (fun kv -> DirectoryInfo(Path.Combine(root, "packages", (|PackageName|) kv.Key)))
     |> Seq.choose (fun packageDir -> packageDir.GetDirectories("Content") |> Array.tryFind (fun _ -> true))
     |> Seq.toList
 
@@ -67,7 +68,8 @@ let private removeCopiedFiles (project: ProjectFile) =
 let CreateInstallModel(root, sources, force, package) = 
     async { 
         let! (package, files) = RestoreProcess.ExtractPackage(root, sources, force, package)
-        let nuspec = FileInfo(sprintf "%s/packages/%s/%s.nuspec" root package.Name package.Name)
+        let (PackageName name) = package.Name
+        let nuspec = FileInfo(sprintf "%s/packages/%s/%s.nuspec" root name name)
         let nuspec = Nuspec.Load nuspec.FullName
         let files = files |> Seq.map (fun fi -> fi.FullName)
         return package, InstallModel.CreateFromLibs(package.Name, package.Version, files, nuspec)
@@ -98,7 +100,7 @@ let Install(sources,force, hard, lockFile:LockFile) =
 
     let model =
         extractedPackages
-        |> Array.map (fun (p,m) -> p.Name.ToLower(),m)
+        |> Array.map (fun (p,m) -> NormalizedPackageName p.Name,m)
         |> Map.ofArray
 
     let applicableProjects =

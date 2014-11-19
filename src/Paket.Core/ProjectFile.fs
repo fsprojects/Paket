@@ -1,5 +1,6 @@
 ﻿namespace Paket
 
+open Paket.Domain
 open Paket.Logging
 open System
 open System.IO
@@ -161,7 +162,8 @@ type ProjectFile =
                 nodesToDelete.Add node
 
         if nodesToDelete |> Seq.isEmpty |> not then
-            verbosefn "    - Deleting custom projects nodes for %s" model.PackageName
+            let (PackageName name) = model.PackageName
+            verbosefn "    - Deleting custom projects nodes for %s" name
 
         for node in nodesToDelete do            
             node.ParentNode.RemoveChild(node) |> ignore
@@ -237,7 +239,7 @@ type ProjectFile =
             createItemGroup model.DefaultFallback.References
         
 
-    member this.UpdateReferences(completeModel: Map<string,InstallModel>, usedPackages : Dictionary<string,bool>, hard) = 
+    member this.UpdateReferences(completeModel: Map<NormalizedPackageName,InstallModel>, usedPackages : Dictionary<PackageName,bool>, hard) = 
         this.DeletePaketNodes("Reference")  
         
         ["ItemGroup";"When";"Otherwise";"Choose";"When";"Choose"]
@@ -245,18 +247,18 @@ type ProjectFile =
 
         if hard then
             for kv in usedPackages do
-                let installModel = completeModel.[kv.Key.ToLower()]
+                let installModel = completeModel.[NormalizedPackageName kv.Key]
                 this.DeleteCustomNodes(installModel)
 
         let merged =
             usedPackages
             |> Seq.fold (fun (model:InstallModel) kv -> 
-                            let installModel = completeModel.[kv.Key.ToLower()]
+                            let installModel = completeModel.[NormalizedPackageName kv.Key]
                             if this.HasCustomNodes(installModel) then 
-                                traceWarnfn "  - custom nodes for %s ==> skipping" kv.Key
+                                traceWarnfn "  - custom nodes for %s ==> skipping" ((|PackageName|) kv.Key)
                                 model
-                            else model.MergeWith(completeModel.[kv.Key.ToLower()])) 
-                        (InstallModel.EmptyModel("",SemVer.Parse "0"))
+                            else model.MergeWith(completeModel.[NormalizedPackageName kv.Key])) 
+                        (InstallModel.EmptyModel(PackageName "",SemVer.Parse "0"))
 
         let chooseNode = this.GenerateXml(merged.FilterFallbacks())
 

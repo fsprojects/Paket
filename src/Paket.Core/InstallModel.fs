@@ -3,6 +3,8 @@
 open System.IO
 open System.Collections.Generic
 
+open Paket.Domain
+
 [<RequireQualifiedAccess>]
 type Reference = 
     | Library of string
@@ -89,7 +91,7 @@ type FrameworkGroup =
             Fallbacks = this.Fallbacks.MergeWith(that.Fallbacks) }
 
 type InstallModel = 
-    { PackageName : string
+    { PackageName : PackageName
       PackageVersion : SemVerInfo
       Groups : Map<string, FrameworkGroup>
       DefaultFallback : InstallFiles }

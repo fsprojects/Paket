@@ -4,6 +4,7 @@ open Paket
 open NUnit.Framework
 open FsUnit
 open TestHelpers
+open Paket.Domain
 
 let config1 = """
 source "https://nuget.org/api/v2"
@@ -30,13 +31,13 @@ let graph = [
 let ``should resolve simple config1``() = 
     let cfg = DependenciesFile.FromCode(config1)
     let resolved = cfg.Resolve(noSha1,VersionsFromGraph graph, PackageDetailsFromGraph graph).ResolvedPackages.GetModelOrFail()
-    getVersion resolved.["Rx-Main"] |> shouldEqual "2.0"
-    getVersion resolved.["Rx-Core"] |> shouldEqual "2.1"
-    getVersion resolved.["Castle.Windsor-log4net"] |> shouldEqual "3.3"
-    getVersion resolved.["Castle.Windsor"] |> shouldEqual "2.1"
-    getVersion resolved.["log4net"] |> shouldEqual "1.1"
-    getVersion resolved.["log"] |> shouldEqual "1.2"
-    getSource resolved.["log"] |> shouldEqual PackageSources.DefaultNugetSource
+    getVersion resolved.[NormalizedPackageName (PackageName "Rx-Main")] |> shouldEqual "2.0"
+    getVersion resolved.[NormalizedPackageName (PackageName "Rx-Core")] |> shouldEqual "2.1"
+    getVersion resolved.[NormalizedPackageName (PackageName "Castle.Windsor-log4net")] |> shouldEqual "3.3"
+    getVersion resolved.[NormalizedPackageName (PackageName "Castle.Windsor")] |> shouldEqual "2.1"
+    getVersion resolved.[NormalizedPackageName (PackageName "log4net")] |> shouldEqual "1.1"
+    getVersion resolved.[NormalizedPackageName (PackageName "log")] |> shouldEqual "1.2"
+    getSource resolved.[NormalizedPackageName (PackageName "log")] |> shouldEqual PackageSources.DefaultNugetSource
 
 
 let config2 = """
@@ -56,8 +57,8 @@ let graph2 = [
 let ``should resolve simple config2``() = 
     let cfg = DependenciesFile.FromCode(config2)
     let resolved = cfg.Resolve(noSha1,VersionsFromGraph graph2, PackageDetailsFromGraph graph2).ResolvedPackages.GetModelOrFail()
-    getVersion resolved.["FsUnit"] |> shouldEqual "1.3.1"
-    getVersion resolved.["NUnit"] |> shouldEqual "2.6.3"
+    getVersion resolved.[NormalizedPackageName (PackageName "FsUnit")] |> shouldEqual "1.3.1"
+    getVersion resolved.[NormalizedPackageName (PackageName "NUnit")] |> shouldEqual "2.6.3"
 
 let config3 = """
 source "http://nuget.org/api/v2"
@@ -80,9 +81,9 @@ let graph3 = [
 let ``should resolve fixed config``() = 
     let cfg = DependenciesFile.FromCode(config3)
     let resolved = cfg.Resolve(noSha1,VersionsFromGraph graph3, PackageDetailsFromGraph graph3).ResolvedPackages.GetModelOrFail()
-    getVersion resolved.["Castle.Core"] |> shouldEqual "3.2.0"
-    getVersion resolved.["Castle.Windsor-log4net"] |> shouldEqual "3.2.0.1"
-    getVersion resolved.["Castle.Core-log4net"] |> shouldEqual "3.2.0"
+    getVersion resolved.[NormalizedPackageName (PackageName "Castle.Core")] |> shouldEqual "3.2.0"
+    getVersion resolved.[NormalizedPackageName (PackageName "Castle.Windsor-log4net")] |> shouldEqual "3.2.0.1"
+    getVersion resolved.[NormalizedPackageName (PackageName "Castle.Core-log4net")] |> shouldEqual "3.2.0"
 
 
 let config4 = """
@@ -96,6 +97,6 @@ nuget "Castle.Windsor-log4net" "~> 3.2"
 let ``should resolve fixed config4``() = 
     let cfg = DependenciesFile.FromCode(config4)
     let resolved = cfg.Resolve(noSha1,VersionsFromGraph graph3, PackageDetailsFromGraph graph3).ResolvedPackages.GetModelOrFail()
-    getVersion resolved.["Castle.Core"] |> shouldEqual "3.2.0"
-    getVersion resolved.["Castle.Windsor-log4net"] |> shouldEqual "3.2.0.1"
-    getVersion resolved.["Castle.Core-log4net"] |> shouldEqual "3.2.0"
+    getVersion resolved.[NormalizedPackageName (PackageName "Castle.Core")] |> shouldEqual "3.2.0"
+    getVersion resolved.[NormalizedPackageName (PackageName "Castle.Windsor-log4net")] |> shouldEqual "3.2.0.1"
+    getVersion resolved.[NormalizedPackageName (PackageName "Castle.Core-log4net")] |> shouldEqual "3.2.0"

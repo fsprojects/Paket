@@ -4,6 +4,7 @@ open Paket
 open NUnit.Framework
 open FsUnit
 open TestHelpers
+open Paket.Domain
 
 let refFileContent = """
 Castle.Windsor
@@ -16,15 +17,15 @@ File:FsUnit.fs
 let ``should parse lines correctly``() = 
     let refFile = ReferencesFile.FromLines(toLines refFileContent)
     refFile.NugetPackages.Length |> shouldEqual 3
-    refFile.NugetPackages.Head |> shouldEqual "Castle.Windsor"
-    refFile.NugetPackages.Tail.Tail.Head |> shouldEqual "jQuery"
+    refFile.NugetPackages.Head |> shouldEqual (PackageName "Castle.Windsor")
+    refFile.NugetPackages.Tail.Tail.Head |> shouldEqual (PackageName "jQuery")
     refFile.RemoteFiles.Length |> shouldEqual 1
     refFile.RemoteFiles.Head.Name |> shouldEqual "FsUnit.fs"
     refFile.RemoteFiles.Head.Link |> shouldEqual ReferencesFile.DefaultLink
 
 [<Test>]
 let ``should serialize itself correctly``() = 
-    let refFile = {FileName = ""; NugetPackages = ["A"; "B"]; RemoteFiles = [{Name = "FromGithub.fs"; Link = ReferencesFile.DefaultLink}]}
+    let refFile = {FileName = ""; NugetPackages = [PackageName "A"; PackageName "B"]; RemoteFiles = [{Name = "FromGithub.fs"; Link = ReferencesFile.DefaultLink}]}
     let expected = [|"A"; "B"; "File:FromGithub.fs"|]
 
     refFile.ToString() |> toLines |> shouldEqual expected
@@ -57,5 +58,5 @@ Newtonsoft.Json
 let ``should parse lines with trailing whitspace correctly``() = 
     let refFile = ReferencesFile.FromLines(toLines refFileWithTrailingWhitespace)
     refFile.NugetPackages.Length |> shouldEqual 2
-    refFile.NugetPackages.Head |> shouldEqual "Castle.Windsor"
-    refFile.NugetPackages.Tail.Head |> shouldEqual "Newtonsoft.Json"
+    refFile.NugetPackages.Head |> shouldEqual (PackageName "Castle.Windsor")
+    refFile.NugetPackages.Tail.Head |> shouldEqual (PackageName "Newtonsoft.Json")

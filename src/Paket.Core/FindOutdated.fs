@@ -1,6 +1,7 @@
 /// Contains methods to find outdated packages.
 module Paket.FindOutdated
 
+open Paket.Domain
 open Paket.Logging
 
 /// Finds all outdated packages.
@@ -30,7 +31,7 @@ let FindOutdated(dependenciesFileName, strict,includingPrereleases) =
 
     [for kv in lockFile.ResolvedPackages do
         let package = kv.Value
-        match resolvedPackages |> Map.tryFind package.Name with
+        match resolvedPackages |> Map.tryFind (NormalizedPackageName package.Name) with
         | Some newVersion -> 
             if package.Version <> newVersion.Version then 
                 yield package.Name,package.Version,newVersion.Version        
@@ -43,5 +44,5 @@ let ShowOutdated(dependenciesFileName,strict,includingPrereleases) =
         tracefn "No outdated packages found."
     else
         tracefn "Outdated packages found:"
-        for name,oldVersion,newVersion in allOutdated do
+        for (PackageName name),oldVersion,newVersion in allOutdated do
             tracefn "  * %s %s -> %s" name (oldVersion.ToString()) (newVersion.ToString())

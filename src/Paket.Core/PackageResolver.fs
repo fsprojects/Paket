@@ -2,6 +2,7 @@
 module Paket.PackageResolver
 
 open Paket
+open Paket.Domain
 open Paket.Requirements
 open Paket.Logging
 open System.Collections.Generic
@@ -10,23 +11,25 @@ open Paket.PackageSources
 
 /// Represents package details
 type PackageDetails =
-    { Name : string
+    { Name : PackageName
       Source : PackageSource
       DownloadLink : string
       Unlisted : bool
-      DirectDependencies :  (string * VersionRequirement * (FrameworkIdentifier option)) Set }
+      DirectDependencies : (PackageName * VersionRequirement * (FrameworkIdentifier option)) Set }
 
 /// Represents data about resolved packages
 type ResolvedPackage =
-    { Name : string
+    { Name : PackageName
       Version : SemVerInfo
-      Dependencies : (string * VersionRequirement * (FrameworkIdentifier option)) Set
+      Dependencies : (PackageName * VersionRequirement * (FrameworkIdentifier option)) Set
       Unlisted : bool
       Source : PackageSource }
 
-    override this.ToString() = sprintf "%s %s" this.Name (this.Version.ToString())
+    override this.ToString() =
+        let (PackageName name) = this.Name
+        sprintf "%s %s" name (this.Version.ToString())
 
-type PackageResolution = Map<string , ResolvedPackage>
+type PackageResolution = Map<NormalizedPackageName, ResolvedPackage>
 
 [<RequireQualifiedAccess>]
 type ResolvedPackages =
@@ -43,12 +46,13 @@ type ResolvedPackages =
             let addToError text = errorText := !errorText + Environment.NewLine + text
 
             let traceUnresolvedPackage (x : PackageRequirement) =
+                let (PackageName name) = x.Name
                 match x.Parent with
                 | DependenciesFile _ ->
-                    sprintf "    - %s %s" x.Name (x.VersionRequirement.ToString())
-                | Package(name,version) ->
-                    sprintf "    - %s %s%s       - from %s %s" x.Name (x.VersionRequirement.ToString()) Environment.NewLine 
-                        name (version.ToString())
+                    sprintf "    - %s %s" name (x.VersionRequirement.ToString())
+                | Package(PackageName parentName,version) ->
+                    sprintf "    - %s %s%s       - from %s %s" name (x.VersionRequirement.ToString()) Environment.NewLine 
+                        parentName (version.ToString())
                 |> addToError
 
             addToError "Error in resolution."
@@ -74,14 +78,16 @@ type Resolved = {
 /// Resolves all direct and indirect dependencies
 let Resolve(getVersionsF, getPackageDetailsF, rootDependencies:PackageRequirement list) =
     tracefn "Resolving packages:"
-    let exploredPackages = Dictionary<string*SemVerInfo,ResolvedPackage>()
-    let allVersions = new Dictionary<string,SemVerInfo list>()
+    let exploredPackages = Dictionary<NormalizedPackageName*SemVerInfo,ResolvedPackage>()
+    let allVersions = new Dictionary<NormalizedPackageName,SemVerInfo list>()
 
-    let getExploredPackage(sources,packageName:string,version) =
-        match exploredPackages.TryGetValue <| (packageName.ToLower(),version) with
+    let getExploredPackage(sources,packageName:PackageName,version) =
+        let normalizedPackageName = NormalizedPackageName packageName
+        match exploredPackages.TryGetValue <| (normalizedPackageName,version) with
         | true,package -> package
         | false,_ ->
-            tracefn "    - exploring %s %A" packageName version
+            let (PackageName name) = packageName
+            tracefn "    - exploring %s %A" name version
             let packageDetails : PackageDetails = getPackageDetailsF sources packageName version
             let explored =
                 { Name = packageDetails.Name
@@ -89,20 +95,22 @@ let Resolve(getVersionsF, getPackageDetailsF, rootDependencies:PackageRequiremen
                   Dependencies = packageDetails.DirectDependencies
                   Unlisted = packageDetails.Unlisted
                   Source = packageDetails.Source }
-            exploredPackages.Add((packageName.ToLower(),version),explored)
+            exploredPackages.Add((normalizedPackageName,version),explored)
             explored
 
-    let getAllVersions(sources,packageName:string,vr : VersionRange)  =
-        match allVersions.TryGetValue(packageName.ToLower()) with
+    let getAllVersions(sources,packageName:PackageName,vr : VersionRange)  =
+        let normalizedPackageName = NormalizedPackageName packageName
+        match allVersions.TryGetValue(normalizedPackageName) with
         | false,_ ->            
             let versions = 
                 match vr with
                 | OverrideAll v -> [v]
                 | Specific v -> [v]
                 | _ -> 
-                    tracefn "  - fetching versions for %s" packageName
+                    let (PackageName name) = packageName
+                    tracefn "  - fetching versions for %s" name
                     getVersionsF(sources,packageName)
-            allVersions.Add(packageName.ToLower(),versions)
+            allVersions.Add(normalizedPackageName,versions)
             versions
         | true,versions -> versions
 
@@ -116,7 +124,7 @@ let Resolve(getVersionsF, getPackageDetailsF, rootDependencies:PackageRequiremen
         | GreaterThan v1, Specific v2 when v1 < v2 -> true
         | _ -> false
 
-    let rec improveModel (filteredVersions:Map<string , (SemVerInfo list * bool)>,packages:ResolvedPackage list,closed:Set<PackageRequirement>,stillOpen:Set<PackageRequirement>) =
+    let rec improveModel (filteredVersions:Map<PackageName, (SemVerInfo list * bool)>,packages:ResolvedPackage list,closed:Set<PackageRequirement>,stillOpen:Set<PackageRequirement>) =
         if Set.isEmpty stillOpen then
             let isOk =
                 filteredVersions
@@ -126,7 +134,7 @@ let Resolve(getVersionsF, getPackageDetailsF, rootDependencies:PackageRequiremen
                     | _ -> false)
 
             if isOk then
-                ResolvedPackages.Ok(packages |> Seq.fold (fun map p -> Map.add (p.Name.ToLower()) p map) Map.empty)
+                ResolvedPackages.Ok(packages |> Seq.fold (fun map p -> Map.add (NormalizedPackageName p.Name) p map) Map.empty)
             else
                 ResolvedPackages.Conflict(closed,stillOpen)
         else
@@ -138,7 +146,8 @@ let Resolve(getVersionsF, getPackageDetailsF, rootDependencies:PackageRequiremen
                 | None ->
                     let versions = getAllVersions(dependency.Sources,dependency.Name,dependency.VersionRequirement.Range)
                     if Seq.isEmpty versions then
-                        failwithf "Couldn't retrieve versions for %s." dependency.Name
+                        let (PackageName dependencyName) = dependency.Name
+                        failwithf "Couldn't retrieve versions for %s." dependencyName
                     if dependency.VersionRequirement.Range.IsGlobalOverride then
                         versions,List.filter dependency.VersionRequirement.IsInRange versions,true
                     else
@@ -204,5 +213,5 @@ let Resolve(getVersionsF, getPackageDetailsF, rootDependencies:PackageRequiremen
                                          let cleanup = 
                                              { package with Dependencies = 
                                                                 package.Dependencies 
-                                                                |> Set.map (fun (name, v, d) -> model.[name.ToLower()].Name, v, d) }
-                                         Map.add package.Name cleanup map) Map.empty)
+                                                                |> Set.map (fun (NormalizedPackageName name, v, d) -> model.[name].Name, v, d) }
+                                         Map.add (NormalizedPackageName package.Name) cleanup map) Map.empty)

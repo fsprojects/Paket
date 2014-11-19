@@ -1,16 +1,17 @@
 ﻿module Paket.Requirements
 
 open Paket
+open Paket.Domain
 open Paket.PackageSources
 
 type PackageRequirementSource =
 | DependenciesFile of string
-| Package of string * SemVerInfo   
+| Package of PackageName * SemVerInfo   
 
 /// Represents an unresolved package.
 [<CustomEquality;CustomComparison>]
 type PackageRequirement =
-    { Name : string
+    { Name : PackageName
       VersionRequirement : VersionRequirement
       ResolverStrategy : ResolverStrategy
       Parent: PackageRequirementSource
@@ -21,8 +22,9 @@ type PackageRequirement =
         | :? PackageRequirement as that -> this.Name = that.Name && this.VersionRequirement = that.VersionRequirement
         | _ -> false
 
-    override this.ToString() = 
-        sprintf "%s %s" this.Name (this.VersionRequirement.ToString())
+    override this.ToString() =
+        let (PackageName name) = this.Name
+        sprintf "%s %s" name (this.VersionRequirement.ToString())
 
 
     override this.GetHashCode() = hash (this.Name,this.VersionRequirement)

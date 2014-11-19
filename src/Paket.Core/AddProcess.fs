@@ -3,6 +3,7 @@ module Paket.AddProcess
 
 open Paket
 open System.IO
+open Paket.Domain
 
 let Add(dependenciesFileName, package, version, force, hard, interactive, installAfter) =
     let exisitingDependenciesFile = DependenciesFile.ReadFromFile(dependenciesFileName)
@@ -19,6 +20,7 @@ let Add(dependenciesFileName, package, version, force, hard, interactive, instal
             LockFile.LoadFrom(lockFileName.FullName)
     
     if interactive then
+        let (PackageName package) = package
         for project in ProjectFile.FindAllProjects(Path.GetDirectoryName lockFile.FileName) do
             if Utils.askYesNo(sprintf "  Install to %s?" project.Name) then
                 let proj = FileInfo(project.FileName)

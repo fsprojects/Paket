@@ -6,6 +6,7 @@ open NUnit.Framework
 open FsUnit
 open TestHelpers
 open System
+open Paket.Domain
 
 [<Test>]
 let ``should read emptx config``() = 
@@ -29,10 +30,10 @@ let ``should read simple config``() =
     let cfg = DependenciesFile.FromCode(config1)
     cfg.Options.Strict |> shouldEqual false
 
-    cfg.DirectDependencies.["Rx-Main"].Range |> shouldEqual (VersionRange.Between("2.0", "3.0"))
-    cfg.DirectDependencies.["Castle.Windsor-log4net"].Range |> shouldEqual (VersionRange.Between("3.2", "4.0"))
-    cfg.DirectDependencies.["FAKE"].Range |> shouldEqual (VersionRange.Exactly "1.1")
-    cfg.DirectDependencies.["SignalR"].Range |> shouldEqual (VersionRange.Exactly "3.3.2")
+    cfg.DirectDependencies.[PackageName "Rx-Main"].Range |> shouldEqual (VersionRange.Between("2.0", "3.0"))
+    cfg.DirectDependencies.[PackageName "Castle.Windsor-log4net"].Range |> shouldEqual (VersionRange.Between("3.2", "4.0"))
+    cfg.DirectDependencies.[PackageName "FAKE"].Range |> shouldEqual (VersionRange.Exactly "1.1")
+    cfg.DirectDependencies.[PackageName "SignalR"].Range |> shouldEqual (VersionRange.Exactly "3.3.2")
 
 let config2 = """
 source "http://nuget.org/api/v2"
@@ -47,9 +48,9 @@ nuget "MinPackage" "1.1.3"
 [<Test>]
 let ``should read simple config with additional F# code``() = 
     let cfg = DependenciesFile.FromCode(config2)
-    cfg.DirectDependencies.["Rx-Main"].Range |> shouldEqual (VersionRange.Between("2.2", "3.0"))
-    cfg.DirectDependencies.["FAKE"].Range |> shouldEqual (VersionRange.Between("3.0", "4.0"))
-    cfg.DirectDependencies.["MinPackage"].Range |> shouldEqual (VersionRange.Exactly "1.1.3")
+    cfg.DirectDependencies.[PackageName "Rx-Main"].Range |> shouldEqual (VersionRange.Between("2.2", "3.0"))
+    cfg.DirectDependencies.[PackageName "FAKE"].Range |> shouldEqual (VersionRange.Between("3.0", "4.0"))
+    cfg.DirectDependencies.[PackageName "MinPackage"].Range |> shouldEqual (VersionRange.Exactly "1.1.3")
 
 let config3 = """
 source "https://nuget.org/api/v2" // here we are
@@ -62,10 +63,10 @@ nuget "MinPackage" "1.1.3"
 [<Test>]
 let ``should read simple config with comments``() = 
     let cfg = DependenciesFile.FromCode(config3)
-    cfg.DirectDependencies.["Rx-Main"].Range |> shouldEqual (VersionRange.Between("2.2", "3.0"))
-    (cfg.Packages |> List.find (fun p -> p.Name = "Rx-Main")).Sources |> List.head |> shouldEqual PackageSources.DefaultNugetSource
-    cfg.DirectDependencies.["FAKE"].Range |> shouldEqual (VersionRange.Between("3.0", "4.0"))
-    (cfg.Packages |> List.find (fun p -> p.Name = "FAKE")).Sources |> List.head  |> shouldEqual PackageSources.DefaultNugetSource
+    cfg.DirectDependencies.[PackageName "Rx-Main"].Range |> shouldEqual (VersionRange.Between("2.2", "3.0"))
+    (cfg.Packages |> List.find (fun p -> p.Name = PackageName "Rx-Main")).Sources |> List.head |> shouldEqual PackageSources.DefaultNugetSource
+    cfg.DirectDependencies.[PackageName "FAKE"].Range |> shouldEqual (VersionRange.Between("3.0", "4.0"))
+    (cfg.Packages |> List.find (fun p -> p.Name = PackageName "FAKE")).Sources |> List.head  |> shouldEqual PackageSources.DefaultNugetSource
 
 let config4 = """
 source "https://nuget.org/api/v2" // first source
@@ -81,9 +82,9 @@ let ``should read config with multiple sources``() =
     let cfg = DependenciesFile.FromCode(config4)
     cfg.Options.Strict |> shouldEqual false
 
-    (cfg.Packages |> List.find (fun p -> p.Name = "Rx-Main")).Sources |> shouldEqual [PackageSources.DefaultNugetSource; PackageSource.NugetSource "http://nuget.org/api/v3"]
-    (cfg.Packages |> List.find (fun p -> p.Name = "MinPackage")).Sources |> shouldEqual [PackageSources.DefaultNugetSource; PackageSource.NugetSource "http://nuget.org/api/v3"]
-    (cfg.Packages |> List.find (fun p -> p.Name = "FAKE")).Sources |> shouldEqual [PackageSources.DefaultNugetSource; PackageSource.NugetSource "http://nuget.org/api/v3"]
+    (cfg.Packages |> List.find (fun p -> p.Name = PackageName "Rx-Main")).Sources |> shouldEqual [PackageSources.DefaultNugetSource; PackageSource.NugetSource "http://nuget.org/api/v3"]
+    (cfg.Packages |> List.find (fun p -> p.Name = PackageName "MinPackage")).Sources |> shouldEqual [PackageSources.DefaultNugetSource; PackageSource.NugetSource "http://nuget.org/api/v3"]
+    (cfg.Packages |> List.find (fun p -> p.Name = PackageName "FAKE")).Sources |> shouldEqual [PackageSources.DefaultNugetSource; PackageSource.NugetSource "http://nuget.org/api/v3"]
 
 [<Test>]
 let ``should read source file from config``() =
@@ -115,7 +116,7 @@ let ``should read strict config``() =
     let cfg = DependenciesFile.FromCode(strictConfig)
     cfg.Options.Strict |> shouldEqual true
 
-    (cfg.Packages |> List.find (fun p -> p.Name = "FAKE")).Sources |> shouldEqual [PackageSource.NugetSource "http://nuget.org/api/v2"]
+    (cfg.Packages |> List.find (fun p -> p.Name = PackageName "FAKE")).Sources |> shouldEqual [PackageSource.NugetSource "http://nuget.org/api/v2"]
 
 let noneContentConfig = """
 content none
@@ -129,7 +130,7 @@ let ``should read content none config``() =
     let cfg = DependenciesFile.FromCode(noneContentConfig)
     cfg.Options.OmitContent |> shouldEqual true
 
-    (cfg.Packages |> List.find (fun p -> p.Name = "Microsoft.SqlServer.Types")).Sources |> shouldEqual [PackageSource.NugetSource "http://nuget.org/api/v2"]
+    (cfg.Packages |> List.find (fun p -> p.Name = PackageName "Microsoft.SqlServer.Types")).Sources |> shouldEqual [PackageSource.NugetSource "http://nuget.org/api/v2"]
 
 let configWithoutQuotes = """
 source http://nuget.org/api/v2
@@ -146,10 +147,10 @@ let ``should read config without quotes``() =
     cfg.Options.Strict |> shouldEqual false
     cfg.DirectDependencies.Count |> shouldEqual 4
 
-    cfg.DirectDependencies.["Rx-Main"].Range |> shouldEqual (VersionRange.Between("2.0", "3.0"))
-    cfg.DirectDependencies.["Castle.Windsor-log4net"].Range |> shouldEqual (VersionRange.Between("3.2", "4.0"))
-    cfg.DirectDependencies.["FAKE"].Range |> shouldEqual (VersionRange.Exactly "1.1")
-    cfg.DirectDependencies.["SignalR"].Range |> shouldEqual (VersionRange.Exactly "3.3.2")
+    cfg.DirectDependencies.[PackageName "Rx-Main"].Range |> shouldEqual (VersionRange.Between("2.0", "3.0"))
+    cfg.DirectDependencies.[PackageName "Castle.Windsor-log4net"].Range |> shouldEqual (VersionRange.Between("3.2", "4.0"))
+    cfg.DirectDependencies.[PackageName "FAKE"].Range |> shouldEqual (VersionRange.Exactly "1.1")
+    cfg.DirectDependencies.[PackageName "SignalR"].Range |> shouldEqual (VersionRange.Exactly "3.3.2")
 
 let configWithoutQuotesButLotsOfWhiteSpace = """
 source      http://nuget.org/api/v2
@@ -166,10 +167,10 @@ let ``should read config without quotes but lots of whitespace``() =
     cfg.Options.Strict |> shouldEqual false
     cfg.DirectDependencies.Count |> shouldEqual 4
 
-    cfg.DirectDependencies.["Rx-Main"].Range |> shouldEqual (VersionRange.Between("2.0", "3.0"))
-    cfg.DirectDependencies.["Castle.Windsor-log4net"].Range |> shouldEqual (VersionRange.Between("3.2", "4.0"))
-    cfg.DirectDependencies.["FAKE"].Range |> shouldEqual (VersionRange.Exactly "1.1")
-    cfg.DirectDependencies.["SignalR"].Range |> shouldEqual (VersionRange.Exactly "3.3.2")
+    cfg.DirectDependencies.[PackageName "Rx-Main"].Range |> shouldEqual (VersionRange.Between("2.0", "3.0"))
+    cfg.DirectDependencies.[PackageName "Castle.Windsor-log4net"].Range |> shouldEqual (VersionRange.Between("3.2", "4.0"))
+    cfg.DirectDependencies.[PackageName "FAKE"].Range |> shouldEqual (VersionRange.Exactly "1.1")
+    cfg.DirectDependencies.[PackageName "SignalR"].Range |> shouldEqual (VersionRange.Exactly "3.3.2")
 
 
 [<Test>]
@@ -314,9 +315,9 @@ nuget "FAKE"
 let ``should read config without versions``() = 
     let cfg = DependenciesFile.FromCode(configWithoutVersions)
 
-    cfg.DirectDependencies.["Rx-Main"] .Range|> shouldEqual (VersionRange.AtLeast "0")
-    cfg.DirectDependencies.["Castle.Windsor-log4net"].Range |> shouldEqual (VersionRange.AtLeast "0")
-    cfg.DirectDependencies.["FAKE"].Range |> shouldEqual (VersionRange.AtLeast "0")
+    cfg.DirectDependencies.[PackageName "Rx-Main"] .Range|> shouldEqual (VersionRange.AtLeast "0")
+    cfg.DirectDependencies.[PackageName "Castle.Windsor-log4net"].Range |> shouldEqual (VersionRange.AtLeast "0")
+    cfg.DirectDependencies.[PackageName "FAKE"].Range |> shouldEqual (VersionRange.AtLeast "0")
 
 
 let configWithPassword = """
@@ -328,7 +329,7 @@ nuget Rx-Main
 let ``should read config with encapsulated password source``() = 
     let cfg = DependenciesFile.FromCode( configWithPassword)
     
-    (cfg.Packages |> List.find (fun p -> p.Name = "Rx-Main")).Sources 
+    (cfg.Packages |> List.find (fun p -> p.Name = PackageName "Rx-Main")).Sources 
     |> shouldEqual [ 
         PackageSource.Nuget { 
             Url = "http://nuget.org/api/v2"
@@ -358,7 +359,7 @@ let ``should read config with password in env variable``() =
     Environment.SetEnvironmentVariable("FEED_PASSWORD", "pw Love", EnvironmentVariableTarget.Process)
     let cfg = DependenciesFile.FromCode( configWithPasswordInEnvVariable)
     
-    (cfg.Packages |> List.find (fun p -> p.Name = "Rx-Main")).Sources 
+    (cfg.Packages |> List.find (fun p -> p.Name = PackageName "Rx-Main")).Sources 
     |> shouldEqual [ 
         PackageSource.Nuget { 
             Url = "http://nuget.org/api/v2"
@@ -377,8 +378,8 @@ nuget FsReveal == 0.0.5-beta
 let ``should read config explicit versions``() = 
     let cfg = DependenciesFile.FromCode(configWithExplicitVersions)
 
-    cfg.DirectDependencies.["FSharp.Compiler.Service"].Range |> shouldEqual (VersionRange.OverrideAll (SemVer.Parse "0.0.62"))
-    cfg.DirectDependencies.["FsReveal"].Range |> shouldEqual (VersionRange.OverrideAll (SemVer.Parse "0.0.5-beta"))
+    cfg.DirectDependencies.[PackageName "FSharp.Compiler.Service"].Range |> shouldEqual (VersionRange.OverrideAll (SemVer.Parse "0.0.62"))
+    cfg.DirectDependencies.[PackageName "FsReveal"].Range |> shouldEqual (VersionRange.OverrideAll (SemVer.Parse "0.0.5-beta"))
 
 let configWithLocalSource = """
 source ./nugets
@@ -390,7 +391,7 @@ nuget Nancy.Owin 0.22.2
 let ``should read config with local source``() = 
     let cfg = DependenciesFile.FromCode(configWithLocalSource)
 
-    cfg.DirectDependencies.["Nancy.Owin"].Range |> shouldEqual (VersionRange.Specific (SemVer.Parse "0.22.2"))
+    cfg.DirectDependencies.[PackageName "Nancy.Owin"].Range |> shouldEqual (VersionRange.Specific (SemVer.Parse "0.22.2"))
 
 [<Test>]
 let ``should read config with package name containing nuget``() = 
@@ -399,4 +400,4 @@ let ``should read config with package name containing nuget``() =
     """
     let cfg = DependenciesFile.FromCode(config)
 
-    cfg.DirectDependencies.["nuget.Core"].Range |> shouldEqual (VersionRange.Specific (SemVer.Parse "0.1"))
+    cfg.DirectDependencies.[PackageName "nuget.Core"].Range |> shouldEqual (VersionRange.Specific (SemVer.Parse "0.1"))

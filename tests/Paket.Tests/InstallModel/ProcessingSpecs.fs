@@ -3,8 +3,9 @@
 open Paket
 open NUnit.Framework
 open FsUnit
+open Paket.Domain
 
-let emptymodel = InstallModel.EmptyModel("Unknown",SemVer.Parse "0.1")
+let emptymodel = InstallModel.EmptyModel(PackageName "Unknown",SemVer.Parse "0.1")
 
 [<Test>]
 let ``should create empty model with net40, net45 ...``() = 
