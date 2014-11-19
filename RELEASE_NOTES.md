@@ -1,3 +1,6 @@
+#### 0.15.2 - 19.11.2014
+* BUGFIX: Read sources even when we don't find packages - https://github.com/fsprojects/Paket/issues/372
+
 #### 0.15.1 - 19.11.2014
 * Always control framework assemblies
 

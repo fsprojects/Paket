@@ -180,9 +180,10 @@ module DependenciesFileParser =
                     
             with
             | exn -> failwithf "Error in paket.dependencies line %d%s  %s" lineNo Environment.NewLine exn.Message)
-        |> fun (_,options,_,packages,remoteFiles) ->
+        |> fun (_,options,sources,packages,remoteFiles) ->
             fileName,
             options,
+            sources,
             packages |> List.rev,
             remoteFiles |> List.rev
 
@@ -213,16 +214,9 @@ module DependenciesFileSerializer =
         if text <> "" && preReleases <> "" then text + " " + preReleases else text + preReleases
 
 /// Allows to parse and analyze paket.dependencies files.
-type DependenciesFile(fileName,options,packages : PackageRequirement list, remoteFiles : UnresolvedSourceFile list) = 
+type DependenciesFile(fileName,options,sources,packages : PackageRequirement list, remoteFiles : UnresolvedSourceFile list) = 
     let packages = packages |> Seq.toList
     let dependencyMap = Map.ofSeq (packages |> Seq.map (fun p -> p.Name, p.VersionRequirement))
-    
-    let sources =
-        packages 
-        |> Seq.map (fun p -> p.Sources)
-        |> Seq.concat
-        |> Set.ofSeq
-        |> Set.toList
             
     member __.DirectDependencies = dependencyMap
     member __.Packages = packages
@@ -272,7 +266,7 @@ type DependenciesFile(fileName,options,packages : PackageRequirement list, remot
               FrameworkRestriction = None
               Parent = PackageRequirementSource.DependenciesFile fileName }
 
-        DependenciesFile(fileName,options,packages @ [newPackage], remoteFiles)
+        DependenciesFile(fileName,options,sources,packages @ [newPackage], remoteFiles)
 
     member __.AddFixedPackage(packageName:PackageName,version:string) =
         let versionRange = DependenciesFileParser.parseVersionRequirement (version.Trim '!')
@@ -294,14 +288,14 @@ type DependenciesFile(fileName,options,packages : PackageRequirement list, remot
               FrameworkRestriction = None
               Parent = PackageRequirementSource.DependenciesFile fileName }
 
-        DependenciesFile(fileName,options,(packages |> List.filter (fun p -> NormalizedPackageName p.Name <> NormalizedPackageName packageName)) @ [newPackage], remoteFiles)
+        DependenciesFile(fileName,options,sources,(packages |> List.filter (fun p -> NormalizedPackageName p.Name <> NormalizedPackageName packageName)) @ [newPackage], remoteFiles)
 
     member __.RemovePackage(packageName:PackageName) =
         let newPackages = 
             packages
             |> List.filter (fun p -> NormalizedPackageName p.Name <> NormalizedPackageName packageName)
 
-        DependenciesFile(fileName,options,newPackages,remoteFiles)
+        DependenciesFile(fileName,options,sources,newPackages,remoteFiles)
 
     member this.Add(packageName,version:string) =
         let (PackageName name) = packageName
@@ -334,7 +328,7 @@ type DependenciesFile(fileName,options,packages : PackageRequirement list, remot
                                      if NormalizedPackageName p.Name = NormalizedPackageName packageName then 
                                          { p with VersionRequirement = versionRequirement }
                                      else p)
-            DependenciesFile(this.FileName, this.Options, packages, this.RemoteFiles)
+            DependenciesFile(this.FileName, this.Options, sources, packages, this.RemoteFiles)
         else
             traceWarnfn "%s doesn't contain package %s. ==> Ignored" fileName name
             this

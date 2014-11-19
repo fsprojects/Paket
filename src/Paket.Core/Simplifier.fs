@@ -52,7 +52,7 @@ let Analyze(allPackages : list<ResolvedPackage>, depFile : DependenciesFile, ref
                     else refFiles |> List.map (fun refFile -> {refFile with NugetPackages = 
                                                                             refFile.NugetPackages |> getSimplifiedDeps id refFile.FileName})
 
-    DependenciesFile(depFile.FileName, depFile.Options, simplifiedDeps, depFile.RemoteFiles), refFiles'
+    DependenciesFile(depFile.FileName, depFile.Options, depFile.Sources, simplifiedDeps, depFile.RemoteFiles), refFiles'
 
 let Simplify (dependenciesFileName,interactive) = 
     if not <| File.Exists dependenciesFileName then

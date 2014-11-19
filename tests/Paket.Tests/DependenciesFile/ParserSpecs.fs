@@ -16,6 +16,18 @@ let ``should read emptx config``() =
     cfg.Packages.Length |> shouldEqual 0
     cfg.RemoteFiles.Length |> shouldEqual 0
 
+let configWithSourceOnly = """
+source http://nuget.org/api/v2
+"""
+
+[<Test>]
+let ``should read config which only contains a source``() = 
+    let cfg = DependenciesFile.FromCode(configWithSourceOnly)
+    cfg.Options.Strict |> shouldEqual false
+
+    cfg.Sources.Length |> shouldEqual 1
+    cfg.Sources.Head  |> shouldEqual (Nuget({ Url = "http://nuget.org/api/v2"; Authentication = None }))
+
 let config1 = """
 source "http://nuget.org/api/v2"
 

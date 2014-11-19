@@ -149,7 +149,7 @@ let private convertNugetsToDepFile(dependenciesFilename,nugetPackagesConfigs, so
     match existingDepFile with
     | None ->
         let packages = packagesToAdd |> List.map (fun (name,v) -> nugetPackageRequirement(name,v))
-        DependenciesFile(dependenciesFilename, InstallOptions.Default, packages, []).Save()
+        DependenciesFile(dependenciesFilename, InstallOptions.Default, sources, packages, []).Save()
     | Some depFile ->
         if not (packagesToAdd |> List.isEmpty)
             then (packagesToAdd |> List.fold (fun (d : DependenciesFile) (name,version) -> d.Add(PackageName name,version)) depFile).Save()

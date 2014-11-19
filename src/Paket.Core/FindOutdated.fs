@@ -23,7 +23,7 @@ let FindOutdated(dependenciesFileName, strict,includingPrereleases) =
                     | false,false -> VersionRequirement.AllReleases
                 { p with VersionRequirement = requirement})
 
-        DependenciesFile(loadedFile.FileName,loadedFile.Options,newPackages,loadedFile.RemoteFiles)
+        DependenciesFile(loadedFile.FileName,loadedFile.Options,loadedFile.Sources,newPackages,loadedFile.RemoteFiles)
             
     let resolution = dependenciesFile.Resolve(true) 
     let resolvedPackages = resolution.ResolvedPackages.GetModelOrFail()
