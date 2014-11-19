@@ -4,6 +4,7 @@ open System
 open System.Xml
 open System.IO
 open Xml
+open Paket.Requirements
 
 [<RequireQualifiedAccess>]
 type NuspecReferences = 
@@ -12,7 +13,7 @@ type NuspecReferences =
 
 type FrameworkAssemblyReference = {
     AssemblyName: string
-    TargetFramework : FrameworkIdentifier }
+    TargetFramework : FrameworkRestriction }
 
 module NugetVersionRangeParser =
     
@@ -129,10 +130,14 @@ type Nuspec =
                 let name = node |> getAttribute "assemblyName"
                 let targetFrameworks = node |> getAttribute "targetFramework"
                 match name,targetFrameworks with
-                | Some name, Some targetFrameworks -> 
+                | Some name, Some targetFrameworks when targetFrameworks = "" ->
+                    [{ AssemblyName = name; TargetFramework = None }]
+                | Some name, None ->                     
+                    [{ AssemblyName = name; TargetFramework = None }]
+                | Some name, Some targetFrameworks ->                     
                     targetFrameworks.Split([|','; ' '|],System.StringSplitOptions.RemoveEmptyEntries)
                     |> Array.choose FrameworkIdentifier.Extract
-                    |> Array.map (fun fw -> { AssemblyName = name; TargetFramework = fw })
+                    |> Array.map (fun fw -> { AssemblyName = name; TargetFramework = Some fw })
                     |> Array.toList
                 | _ -> []
 

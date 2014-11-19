@@ -167,14 +167,18 @@ type InstallModel =
     member this.AddReferences(libs) = this.AddReferences(libs, NuspecReferences.All)
     
     member this.AddFrameworkAssemblyReference(reference) : InstallModel = 
-        this.AddOrReplaceGroup(
-            reference.TargetFramework.Group,
-            (fun group ->
-                group.ReplaceFramework(
-                    reference.TargetFramework,
-                    (fun _ -> InstallFiles.empty.AddFrameworkAssemblyReference reference.AssemblyName),
-                    (fun files -> files.AddFrameworkAssemblyReference reference.AssemblyName))),
-            (fun _ -> None))
+        match reference.TargetFramework with
+        | None -> 
+            this.MapGroupFrameworks(fun fw files -> files.AddFrameworkAssemblyReference(reference.AssemblyName))
+        | Some fw ->
+            this.AddOrReplaceGroup(
+                fw.Group,
+                (fun group ->
+                    group.ReplaceFramework(
+                        fw,
+                        (fun _ -> InstallFiles.empty.AddFrameworkAssemblyReference reference.AssemblyName),
+                        (fun files -> files.AddFrameworkAssemblyReference reference.AssemblyName))),
+                (fun _ -> None))
     
     member this.AddFrameworkAssemblyReferences(references) : InstallModel = 
         references 
@@ -315,8 +319,8 @@ type InstallModel =
                         yield! f.Value.References
                     yield! g.Value.Fallbacks.References 
                 yield! this.DefaultFallback.References]
-              |> List.map (fun lib -> lib.ReferenceName)
-              |> Set.ofList)
+              |> Set.ofList
+              |> Set.map (fun lib -> lib.ReferenceName))
 
     member this.GetFrameworkAssemblies = 
         lazy ([ for g in this.Groups do

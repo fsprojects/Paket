@@ -58,23 +58,30 @@ let ``if nuspec is not found we assume no framework references``() =
 let ``can detect framework assemblies for Microsoft.Net.Http``() = 
     Nuspec.Load("Nuspec/Microsoft.Net.Http.nuspec").FrameworkAssemblyReferences
     |> shouldEqual 
-        [{ AssemblyName = "System.Net.Http"; TargetFramework = DotNetFramework(FrameworkVersion.V4_5) }
-         { AssemblyName = "System.Net.Http.WebRequest"; TargetFramework = DotNetFramework(FrameworkVersion.V4_5) }
-         { AssemblyName = "System.Net.Http"; TargetFramework = MonoTouch }
-         { AssemblyName = "System.Net.Http"; TargetFramework = MonoAndroid } ]
+        [{ AssemblyName = "System.Net.Http"; TargetFramework = Some(DotNetFramework(FrameworkVersion.V4_5)) }
+         { AssemblyName = "System.Net.Http.WebRequest"; TargetFramework = Some(DotNetFramework(FrameworkVersion.V4_5)) }
+         { AssemblyName = "System.Net.Http"; TargetFramework = Some(MonoTouch) }
+         { AssemblyName = "System.Net.Http"; TargetFramework = Some(MonoAndroid) } ]
+
+[<Test>]
+let ``can detect framework assemblies for FluentAssertions``() = 
+    Nuspec.Load("Nuspec/FluentAssertions.nuspec").FrameworkAssemblyReferences
+    |> shouldEqual 
+        [{ AssemblyName = "System.Xml"; TargetFramework = None }
+         { AssemblyName = "System.Xml.Linq"; TargetFramework = None } ]
 
 [<Test>]
 let ``can detect framework assemblies for Octokit``() = 
     Nuspec.Load("Nuspec/Octokit.nuspec").FrameworkAssemblyReferences
     |> shouldEqual 
-        [{ AssemblyName = "System.Net.Http"; TargetFramework = DotNetFramework(FrameworkVersion.V4_5) }]
+        [{ AssemblyName = "System.Net.Http"; TargetFramework = Some(DotNetFramework(FrameworkVersion.V4_5)) }]
 
 [<Test>]
 let ``can detect framework assemblies for FSharp.Data.SqlEnumProvider``() = 
     Nuspec.Load("Nuspec/FSharp.Data.SqlEnumProvider.nuspec").FrameworkAssemblyReferences
     |> shouldEqual 
-        [{ AssemblyName = "System.Data"; TargetFramework = DotNetFramework(FrameworkVersion.V4_Client) }
-         { AssemblyName = "System.Xml"; TargetFramework = DotNetFramework(FrameworkVersion.V4_Client) }]
+        [{ AssemblyName = "System.Data"; TargetFramework = Some(DotNetFramework(FrameworkVersion.V4_Client)) }
+         { AssemblyName = "System.Xml"; TargetFramework = Some(DotNetFramework(FrameworkVersion.V4_Client)) }]
 
 [<Test>]
 let ``can detect empty framework assemblies for ReadOnlyCollectionExtensions``() = 
