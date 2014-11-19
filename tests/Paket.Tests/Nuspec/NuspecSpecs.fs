@@ -71,6 +71,24 @@ let ``can detect framework assemblies for FluentAssertions``() =
          { AssemblyName = "System.Xml.Linq"; TargetFramework = None } ]
 
 [<Test>]
+let ``can detect framework assemblies for SqlCLient``() = 
+    Nuspec.Load("Nuspec/FSharp.Data.SqlClient.nuspec").FrameworkAssemblyReferences
+    |> shouldEqual 
+        [{ AssemblyName = "System.Data"; TargetFramework = None }
+         { AssemblyName = "System.Xml"; TargetFramework = None } ]
+
+[<Test>]
+let ``can detect dependencies for SqlCLient``() = 
+    Nuspec.Load("Nuspec/FSharp.Data.SqlClient.nuspec").Dependencies
+    |> shouldEqual 
+        ["Microsoft.SqlServer.Types",DependenciesFileParser.parseVersionRequirement(">= 11.0.0"), None]
+
+[<Test>]
+let ``can detect reference files for SqlCLient``() = 
+    Nuspec.Load("Nuspec/FSharp.Data.SqlClient.nuspec").References
+    |> shouldEqual (NuspecReferences.Explicit ["FSharp.Data.SqlClient.dll"])
+
+[<Test>]
 let ``can detect framework assemblies for Octokit``() = 
     Nuspec.Load("Nuspec/Octokit.nuspec").FrameworkAssemblyReferences
     |> shouldEqual 

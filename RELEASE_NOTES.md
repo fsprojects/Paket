@@ -1,5 +1,5 @@
-#### 0.15.3 - 19.11.2014
-* BUGFIX: Detect FrameworkReferences without restrictions in nuspec file
+#### 0.15.4 - 19.11.2014
+* BUGFIX: Detect FrameworkReferences without restrictions in nuspec file and install these
 
 #### 0.15.2 - 19.11.2014
 * BUGFIX: Read sources even when we don't find packages - https://github.com/fsprojects/Paket/issues/372

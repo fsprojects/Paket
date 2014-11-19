@@ -274,7 +274,7 @@ type ProjectFile =
                             if this.HasCustomNodes(installModel) then 
                                 traceWarnfn "  - custom nodes for %s ==> skipping" ((|PackageName|) kv.Key)
                                 model
-                            else model.MergeWith(completeModel.[NormalizedPackageName kv.Key])) 
+                            else model.MergeWith(installModel)) 
                         (InstallModel.EmptyModel(PackageName "",SemVer.Parse "0"))
 
         let chooseNode = this.GenerateXml(merged.FilterFallbacks())

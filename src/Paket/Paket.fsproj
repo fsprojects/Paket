@@ -26,12 +26,12 @@
     <WarningLevel>3</WarningLevel>
     <DocumentationFile>
     </DocumentationFile>
-    <StartArguments>add nuget FluentAssertions --interactive</StartArguments>
+    <StartArguments>install --hard</StartArguments>
     <StartAction>Project</StartAction>
     <StartProgram>paket.exe</StartProgram>
     <StartWorkingDirectory>
     </StartWorkingDirectory>
-    <StartWorkingDirectory>D:\code\Paket-dependencies</StartWorkingDirectory>
+    <StartWorkingDirectory>D:\code\Paket09x</StartWorkingDirectory>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>

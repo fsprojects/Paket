@@ -303,13 +303,14 @@ type InstallModel =
                                     (fun files -> files))),
                             (fun _ -> Some(FrameworkGroup.singleton(framework,{ References = newFiles; ContentFiles = Set.empty }))))) model) this
     
-    member this.BuildUnfilteredModel() = 
+    member this.BuildUnfilteredModel(references) = 
         this
             .UseLowerVersionLibIfEmpty()
             .UsePortableVersionLibIfEmpty()
             .UseLowerVersionLibIfEmpty() // because we now might need to use portable
             .UseLowerVersionLibForSpecicalFrameworksIfEmpty()
             .FilterBlackList()
+            .AddFrameworkAssemblyReferences(references)
             .UseLastInGroupAsFallback()
             .UseLastGroupFallBackAsDefaultFallBack()    
 
@@ -333,7 +334,6 @@ type InstallModel =
     static member CreateFromLibs(packageName, packageVersion, frameworkRestriction:FrameworkRestriction, libs, nuspec : Nuspec) = 
         InstallModel
             .EmptyModel(packageName, packageVersion)
-            .AddReferences(libs, nuspec.References)
-            .AddFrameworkAssemblyReferences(nuspec.FrameworkAssemblyReferences)
-            .BuildUnfilteredModel()
+            .AddReferences(libs, nuspec.References)            
+            .BuildUnfilteredModel(nuspec.FrameworkAssemblyReferences)
             .ApplyFrameworkRestriction(frameworkRestriction)

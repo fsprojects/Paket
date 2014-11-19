@@ -377,6 +377,9 @@
     <Content Include="Nuspec\FluentAssertions.nuspec">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+    <Content Include="Nuspec\FSharp.Data.SqlClient.nuspec">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Compile Include="Nuspec\NuspecSpecs.fs" />
     <Content Include="NuGetOData\Fantomas.xml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
@@ -455,6 +458,7 @@
     <Compile Include="InstallModel\Xml\SystemNetHttpForNet4.fs" />
     <Compile Include="InstallModel\Xml\SystemNetHttpWithFrameworkReferences.fs" />
     <Compile Include="InstallModel\Xml\ManualNodes.fs" />
+    <Compile Include="InstallModel\Xml\FSharp.Data.SqlClient.fs" />    
     <Compile Include="DependencyModel\ProjectDependencySpecs.fs" />
     <None Include="paket.references" />
   </ItemGroup>

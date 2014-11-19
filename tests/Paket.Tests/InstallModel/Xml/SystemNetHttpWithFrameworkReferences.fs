@@ -70,7 +70,7 @@ let expected = """
           </Reference>
         </ItemGroup>
       </When>
-      <Otherwise>
+      <When Condition="$(TargetFrameworkVersion) == 'v4.5'">
         <ItemGroup>
           <Reference Include="System.Net.Http.Extensions">
             <HintPath>..\..\..\Microsoft.Net.Http\lib\net45\System.Net.Http.Extensions.dll</HintPath>
@@ -89,6 +89,20 @@ let expected = """
             <Paket>True</Paket>
           </Reference>
         </ItemGroup>
+      </When>
+      <Otherwise>
+        <ItemGroup>
+          <Reference Include="System.Net.Http.Extensions">
+            <HintPath>..\..\..\Microsoft.Net.Http\lib\net45\System.Net.Http.Extensions.dll</HintPath>
+            <Private>True</Private>
+            <Paket>True</Paket>
+          </Reference>
+          <Reference Include="System.Net.Http.Primitives">
+            <HintPath>..\..\..\Microsoft.Net.Http\lib\net45\System.Net.Http.Primitives.dll</HintPath>
+            <Private>True</Private>
+            <Paket>True</Paket>
+          </Reference>
+        </ItemGroup>
       </Otherwise>
     </Choose>
   </When>
@@ -102,12 +116,6 @@ let expected = """
       <Reference Include="System.Net.Http.Primitives">
         <HintPath>..\..\..\Microsoft.Net.Http\lib\net45\System.Net.Http.Primitives.dll</HintPath>
         <Private>True</Private>
-        <Paket>True</Paket>
-      </Reference>
-      <Reference Include="System.Net.Http">
-        <Paket>True</Paket>
-      </Reference>
-      <Reference Include="System.Net.Http.WebRequest">
         <Paket>True</Paket>
       </Reference>
     </ItemGroup>
@@ -124,12 +132,6 @@ let expected = """
         <Private>True</Private>
         <Paket>True</Paket>
       </Reference>
-      <Reference Include="System.Net.Http">
-        <Paket>True</Paket>
-      </Reference>
-      <Reference Include="System.Net.Http.WebRequest">
-        <Paket>True</Paket>
-      </Reference>
     </ItemGroup>
   </When>
   <When Condition="$(TargetFrameworkIdentifier) == 'Silverlight'">
@@ -142,12 +144,6 @@ let expected = """
       <Reference Include="System.Net.Http.Primitives">
         <HintPath>..\..\..\Microsoft.Net.Http\lib\net45\System.Net.Http.Primitives.dll</HintPath>
         <Private>True</Private>
-        <Paket>True</Paket>
-      </Reference>
-      <Reference Include="System.Net.Http">
-        <Paket>True</Paket>
-      </Reference>
-      <Reference Include="System.Net.Http.WebRequest">
         <Paket>True</Paket>
       </Reference>
     </ItemGroup>
@@ -164,12 +160,6 @@ let expected = """
         <Private>True</Private>
         <Paket>True</Paket>
       </Reference>
-      <Reference Include="System.Net.Http">
-        <Paket>True</Paket>
-      </Reference>
-      <Reference Include="System.Net.Http.WebRequest">
-        <Paket>True</Paket>
-      </Reference>
     </ItemGroup>
   </When>
   <When Condition="$(TargetFrameworkIdentifier) == 'WindowsPhoneApp'">
@@ -184,12 +174,6 @@ let expected = """
         <Private>True</Private>
         <Paket>True</Paket>
       </Reference>
-      <Reference Include="System.Net.Http">
-        <Paket>True</Paket>
-      </Reference>
-      <Reference Include="System.Net.Http.WebRequest">
-        <Paket>True</Paket>
-      </Reference>
     </ItemGroup>
   </When>
   <Otherwise>
@@ -202,12 +186,6 @@ let expected = """
       <Reference Include="System.Net.Http.Primitives">
         <HintPath>..\..\..\Microsoft.Net.Http\lib\net45\System.Net.Http.Primitives.dll</HintPath>
         <Private>True</Private>
-        <Paket>True</Paket>
-      </Reference>
-      <Reference Include="System.Net.Http">
-        <Paket>True</Paket>
-      </Reference>
-      <Reference Include="System.Net.Http.WebRequest">
         <Paket>True</Paket>
       </Reference>
     </ItemGroup>
