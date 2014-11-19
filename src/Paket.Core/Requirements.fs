@@ -4,6 +4,8 @@ open Paket
 open Paket.Domain
 open Paket.PackageSources
 
+type FrameworkRestriction = FrameworkIdentifier option
+
 type PackageRequirementSource =
 | DependenciesFile of string
 | Package of PackageName * SemVerInfo   
@@ -15,6 +17,7 @@ type PackageRequirement =
       VersionRequirement : VersionRequirement
       ResolverStrategy : ResolverStrategy
       Parent: PackageRequirementSource
+      FrameworkRestriction: FrameworkRestriction
       Sources : PackageSource list }
 
     override this.Equals(that) = 

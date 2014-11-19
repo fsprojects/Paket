@@ -173,6 +173,7 @@ module DependenciesFileParser =
                           Name = PackageName name
                           ResolverStrategy = parseResolverStrategy version
                           Parent = DependenciesFile fileName
+                          FrameworkRestriction = None
                           VersionRequirement = parseVersionRequirement(version.Trim '!') } :: packages, sourceFiles
                 | SourceFile(origin, (owner,project, commit), path) ->
                     lineNo, options, sources, packages, { Owner = owner; Project = project; Commit = commit; Name = path; Origin = origin} :: sourceFiles
@@ -268,6 +269,7 @@ type DependenciesFile(fileName,options,packages : PackageRequirement list, remot
               VersionRequirement = versionRange
               Sources = sources
               ResolverStrategy = DependenciesFileParser.parseResolverStrategy version
+              FrameworkRestriction = None
               Parent = PackageRequirementSource.DependenciesFile fileName }
 
         DependenciesFile(fileName,options,packages @ [newPackage], remoteFiles)
@@ -289,6 +291,7 @@ type DependenciesFile(fileName,options,packages : PackageRequirement list, remot
               VersionRequirement = versionRange
               Sources = sources
               ResolverStrategy = strategy
+              FrameworkRestriction = None
               Parent = PackageRequirementSource.DependenciesFile fileName }
 
         DependenciesFile(fileName,options,(packages |> List.filter (fun p -> NormalizedPackageName p.Name <> NormalizedPackageName packageName)) @ [newPackage], remoteFiles)

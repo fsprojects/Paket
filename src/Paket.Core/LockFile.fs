@@ -36,7 +36,9 @@ module LockFileSerializer =
                   yield "  specs:"
                   for _,_,package in packages |> Seq.sortBy (fun (_,_,p) -> NormalizedPackageName p.Name) do
                       let (PackageName packageName) = package.Name
-                      yield sprintf "    %s (%s)" (packageName) (package.Version.ToString()) 
+                      match package.FrameworkRestriction with
+                      | None -> yield sprintf "    %s (%s)" packageName (package.Version.ToString())
+                      | Some restriction -> yield sprintf "    %s (%s) - %s" packageName (package.Version.ToString()) (restriction.ToString())
                       for (PackageName name),v,restriction in package.Dependencies do
                           match restriction with
                           | None -> yield sprintf "      %s (%s)" name (v.ToString())
@@ -133,14 +135,16 @@ module LockFileParser =
             | NugetPackage details ->
                 match state.RemoteUrl with
                 | Some remote -> 
-                    let parts = details.Split ' '
-                    let version = parts.[1] |> removeBrackets
+                    let parts = details.Split([|" - "|],StringSplitOptions.None)
+                    let parts' = parts.[0].Split ' '
+                    let version = parts'.[1] |> removeBrackets
                     { state with LastWasPackage = true
                                  Packages = 
                                      { Source = PackageSource.Parse(remote, None)
-                                       Name = PackageName parts.[0]
+                                       Name = PackageName parts'.[0]
                                        Dependencies = Set.empty
                                        Unlisted = false
+                                       FrameworkRestriction = if parts.Length < 2 then None else FrameworkIdentifier.Extract(parts.[1].Trim())
                                        Version = SemVer.Parse version } :: state.Packages }
                 | None -> failwith "no source has been specified."
             | NugetDependency (name, _) ->

@@ -15,14 +15,15 @@ type PackageDetails =
       Source : PackageSource
       DownloadLink : string
       Unlisted : bool
-      DirectDependencies : (PackageName * VersionRequirement * (FrameworkIdentifier option)) Set }
+      DirectDependencies : (PackageName * VersionRequirement * FrameworkRestriction) Set }
 
 /// Represents data about resolved packages
 type ResolvedPackage =
     { Name : PackageName
       Version : SemVerInfo
-      Dependencies : (PackageName * VersionRequirement * (FrameworkIdentifier option)) Set
-      Unlisted : bool
+      Dependencies : (PackageName * VersionRequirement * FrameworkRestriction) Set
+      Unlisted : bool      
+      FrameworkRestriction: FrameworkRestriction
       Source : PackageSource }
 
     override this.ToString() =
@@ -81,7 +82,7 @@ let Resolve(getVersionsF, getPackageDetailsF, rootDependencies:PackageRequiremen
     let exploredPackages = Dictionary<NormalizedPackageName*SemVerInfo,ResolvedPackage>()
     let allVersions = new Dictionary<NormalizedPackageName,SemVerInfo list>()
 
-    let getExploredPackage(sources,packageName:PackageName,version) =
+    let getExploredPackage(sources,packageName:PackageName,version,frameworkRequirement) =
         let normalizedPackageName = NormalizedPackageName packageName
         match exploredPackages.TryGetValue <| (normalizedPackageName,version) with
         | true,package -> package
@@ -94,6 +95,7 @@ let Resolve(getVersionsF, getPackageDetailsF, rootDependencies:PackageRequiremen
                   Version = version
                   Dependencies = packageDetails.DirectDependencies
                   Unlisted = packageDetails.Unlisted
+                  FrameworkRestriction = frameworkRequirement
                   Source = packageDetails.Source }
             exploredPackages.Add((normalizedPackageName,version),explored)
             explored
@@ -177,12 +179,12 @@ let Resolve(getVersionsF, getPackageDetailsF, rootDependencies:PackageRequiremen
                 |> List.fold (fun (allUnlisted,state) versionToExplore ->
                     match state with
                     | ResolvedPackages.Conflict _ ->
-                        let exploredPackage = getExploredPackage(dependency.Sources,dependency.Name,versionToExplore)    
+                        let exploredPackage = getExploredPackage(dependency.Sources,dependency.Name,versionToExplore,dependency.FrameworkRestriction)    
                         if exploredPackage.Unlisted && not useUnlisted then (allUnlisted,state) else                
                         let newFilteredVersion = Map.add dependency.Name ([versionToExplore],globalOverride) filteredVersions
                         let newDependencies =
                             exploredPackage.Dependencies
-                            |> Set.map (fun (n,v,_) -> {dependency with Name = n; VersionRequirement = v; Parent = Package(dependency.Name,versionToExplore) })
+                            |> Set.map (fun (n,v,r) -> {dependency with Name = n; VersionRequirement = v; Parent = Package(dependency.Name,versionToExplore); FrameworkRestriction = r })
                             |> Set.filter (fun d -> Set.contains d closed |> not)
                             |> Set.filter (fun d -> Set.contains d stillOpen |> not)
                             |> Set.filter (fun d ->

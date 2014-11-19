@@ -143,6 +143,7 @@ let private convertNugetsToDepFile(dependenciesFilename,nugetPackagesConfigs, so
          Requirements.PackageRequirement.VersionRequirement = VersionRequirement(VersionRange.Specific(SemVer.Parse v), PreReleaseStatus.No)
          Requirements.PackageRequirement.ResolverStrategy = Max
          Requirements.PackageRequirement.Sources = sources
+         Requirements.PackageRequirement.FrameworkRestriction = None
          Requirements.PackageRequirement.Parent = Requirements.PackageRequirementSource.DependenciesFile dependenciesFilename}
 
     match existingDepFile with

@@ -141,5 +141,39 @@ let ``should parse own lock file``() =
     packages.[1].Source |> shouldEqual PackageSources.DefaultNugetSource
     packages.[1].Name |> shouldEqual (PackageName "FAKE")
     packages.[1].Version |> shouldEqual (SemVer.Parse "3.5.5")
+    packages.[3].FrameworkRestriction |> shouldEqual None
 
     lockFile.SourceFiles.[0].Name |> shouldEqual "modules/Octokit/Octokit.fsx"
+
+
+let frameworkRestricted = """NUGET
+  remote: https://nuget.org/api/v2
+  specs:
+    Fleece (0.4.0)
+      FSharpPlus (>= 0.0.4)
+      ReadOnlyCollectionExtensions (>= 1.2.0)
+      ReadOnlyCollectionInterfaces (1.0.0)
+      System.Json (>= 4.0.20126.16343)
+    FsControl (1.0.9)
+    FSharpPlus (0.0.4)
+      FsControl (>= 1.0.9)
+    LinqBridge (1.3.0) - net20
+    ReadOnlyCollectionExtensions (1.2.0)
+      LinqBridge (>= 1.3.0) - net20
+      ReadOnlyCollectionInterfaces (1.0.0) - net20
+      ReadOnlyCollectionInterfaces (1.0.0) - net35
+      ReadOnlyCollectionInterfaces (1.0.0) - net40
+    ReadOnlyCollectionInterfaces (1.0.0)
+    System.Json (4.0.20126.16343)
+"""
+
+[<Test>]
+let ``should parse framework restricted lock file``() = 
+    let lockFile = LockFileParser.Parse(toLines frameworkRestricted)
+    let packages = List.rev lockFile.Packages
+    packages.Length |> shouldEqual 7
+
+    packages.[3].Source |> shouldEqual PackageSources.DefaultNugetSource
+    packages.[3].Name |> shouldEqual (PackageName "LinqBridge")
+    packages.[3].Version |> shouldEqual (SemVer.Parse "1.3.0")
+    packages.[3].FrameworkRestriction |> shouldEqual (Some (FrameworkIdentifier.DotNetFramework(FrameworkVersion.V2)))
