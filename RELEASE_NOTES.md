@@ -9,18 +9,10 @@
 
 #### 0.15.0 - 19.11.2014
 * Allow to use basic framework restrictions in NuGet packages - https://github.com/fsprojects/Paket/issues/307
-
-#### 0.14.6 - 18.11.2014
-* BUGFIX: Use Nuget v2 as fallback
-
-#### 0.14.3 - 17.11.2014
-* BUGFIX: Accept and normalize versions like 6.0.1302.0-Preview - https://github.com/fsprojects/Paket/issues/364
-
-#### 0.14.2 - 16.11.2014
-* BUGFIX: handling of package dependencies containing string "nuget" - https://github.com/fsprojects/Paket/pull/363
-
-#### 0.14.1 - 14.11.2014
 * Support feeds that don't support NormalizedVersion - https://github.com/fsprojects/Paket/issues/361
+* BUGFIX: Use Nuget v2 as fallback
+* BUGFIX: Accept and normalize versions like 6.0.1302.0-Preview - https://github.com/fsprojects/Paket/issues/364
+* BUGFIX: Fixed handling of package dependencies containing string "nuget" - https://github.com/fsprojects/Paket/pull/363
 
 #### 0.14.0 - 14.11.2014
 * Uses Nuget v3 API, which enables much faster resolver
