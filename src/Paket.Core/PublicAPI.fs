@@ -7,7 +7,9 @@ open Paket.Domain
 
 /// Paket API which is optimized for F# Interactive use.
 type Dependencies(dependenciesFileName: string) =
-    let rootPath = Path.GetDirectoryName dependenciesFileName
+    let getLockFile() =
+        let lockFileName = DependenciesFile.FindLockfile dependenciesFileName
+        LockFile.LoadFrom(lockFileName.FullName)
 
     let listPackages (packages: System.Collections.Generic.KeyValuePair<_, PackageResolver.ResolvedPackage> seq) =
         packages
@@ -81,20 +83,10 @@ type Dependencies(dependenciesFileName: string) =
     /// Restores the given paket.references files.
     member this.Restore(force,files: string list): unit = RestoreProcess.Restore(dependenciesFileName,force,files)
 
-    /// Returns the lock file.
-    member this.GetLockFile(): LockFile =
-        let dependenciesFile = DependenciesFile.ReadFromFile dependenciesFileName
-        let lockFileName = DependenciesFile.FindLockfile dependenciesFileName
-        LockFile.LoadFrom(lockFileName.FullName)
-
     /// Lists outdated packages.
     member this.ShowOutdated(strict: bool,includePrereleases: bool): unit =
         FindOutdated.ShowOutdated(dependenciesFileName,strict,includePrereleases)
     
-    /// Finds outdated packages.
-    member this.FindOutdated(strict: bool,includePrereleases: bool): (PackageName * SemVerInfo * SemVerInfo) list =
-        FindOutdated.FindOutdated(dependenciesFileName,strict,includePrereleases)
-
     /// Pulls new paket.targets and bootstrapper and puts them into .paket folder.
     member this.InitAutoRestore(): unit = VSIntegration.InitAutoRestore(dependenciesFileName)
 
@@ -105,24 +97,25 @@ type Dependencies(dependenciesFileName: string) =
     member this.Simplify(interactive: bool): unit = Simplifier.Simplify(dependenciesFileName,interactive)
 
      /// Converts the solution from NuGet to Paket.
-    member this.ConvertFromNuget(force: bool,installAfter: bool,initAutoRestore: bool,credsMigrationMode: NuGetConvert.CredsMigrationMode option): unit =
+    member this.ConvertFromNuget(force: bool,installAfter: bool,initAutoRestore: bool,credsMigrationMode: string option): unit =
+        let credsMigrationMode = credsMigrationMode |> Option.map NuGetConvert.CredsMigrationMode.Parse
         NuGetConvert.ConvertFromNuget(dependenciesFileName, force, installAfter, initAutoRestore, credsMigrationMode)
 
     /// Returns the installed version of the given package.
     member this.GetInstalledVersion(packageName: string): string option =
-        this.GetLockFile().ResolvedPackages.TryFind (NormalizedPackageName (PackageName packageName))
+        getLockFile().ResolvedPackages.TryFind (NormalizedPackageName (PackageName packageName))
         |> Option.map (fun package -> package.Version.ToString())
 
     /// Returns the installed versions of all installed packages.
     member this.GetInstalledPackages(): (string * string) list =
-        this.GetLockFile().ResolvedPackages
+        getLockFile().ResolvedPackages
         |> listPackages
 
     /// Returns the installed versions of all direct dependencies.
     member this.GetDirectDependencies(): (string * string) list =
         let dependenciesFile = DependenciesFile.ReadFromFile dependenciesFileName
         let normalizedDependecies = dependenciesFile.DirectDependencies |> Seq.map (fun kv -> kv.Key) |> Seq.map NormalizedPackageName |> Seq.toList
-        this.GetLockFile().ResolvedPackages
+        getLockFile().ResolvedPackages
         |> Seq.filter (fun kv -> normalizedDependecies |> Seq.exists ((=) kv.Key))
         |> listPackages
 
