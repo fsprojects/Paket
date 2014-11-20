@@ -9,6 +9,7 @@ open Fake.Git
 open Fake.AssemblyInfoFile
 open Fake.ReleaseNotesHelper
 open Paket
+open Paket.Domain
 open Paket.PackageResolver
 open Paket.Requirements
 open System
@@ -214,9 +215,9 @@ let getDependencies projectName =
 
     let getReferencedPackagesFromProject projFile =    
         let normalizeVersionRequirementForNuget name (v:VersionRequirement)  =
-            let getCurrentlyInstalledVersion (packageName:string)  = 
+            let getCurrentlyInstalledVersion packageName  = 
                 let lockFile = LockFile.LoadFrom "paket.lock"
-                let _,v = lockFile.ResolvedPackages |> Map.toList |> List.find (fun (name, v) -> name.ToLower () = packageName.ToLower ())
+                let _,v = lockFile.ResolvedPackages |> Map.toList |> List.find (fun (name, v) -> name = NormalizedPackageName(packageName))
                 v.Version
 
             match v.Range with
@@ -225,9 +226,12 @@ let getDependencies projectName =
         
         let dependenciesFile = DependenciesFile.ReadFromFile "paket.dependencies"
         
+        let packageNameToString = function
+            | PackageName n -> n
+
         DependencyModel.CalcDependencies (dependenciesFile, projFile.FileName)
         |> Map.toList
-        |> List.map (fun (name, v) -> (name, v |> normalizeVersionRequirementForNuget name |> NugetVersionRangeParser.format)) 
+        |> List.map (fun (name, v) -> (name |> packageNameToString, v |> normalizeVersionRequirementForNuget name |> NugetVersionRangeParser.format)) 
 
     match getOutputType projectName with
     | ProjectOutputType.Exe, _  -> []
