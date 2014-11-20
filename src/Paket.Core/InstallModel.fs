@@ -1,5 +1,6 @@
 ﻿namespace Paket
 
+open System
 open System.IO
 open System.Collections.Generic
 
@@ -231,7 +232,7 @@ type InstallModel =
                         group.ReplaceFramework(
                             framework,
                             (fun _ -> { References = newFiles; ContentFiles = Set.empty }),
-                            (fun files -> files))),
+                            id)),
                     (fun _ -> Some(FrameworkGroup.singleton(framework,{ References = newFiles; ContentFiles = Set.empty }))))) this
     
 
@@ -289,7 +290,7 @@ type InstallModel =
                    let otherProfiles = 
                        match kv.Key with
                        | PortableFramework(_, f) -> 
-                           f.Split([| '+' |], System.StringSplitOptions.RemoveEmptyEntries)
+                           f.Split([| '+' |], StringSplitOptions.RemoveEmptyEntries)
                            |> Array.map FrameworkIdentifier.Extract
                            |> Array.choose id
                        | _ -> [||]
