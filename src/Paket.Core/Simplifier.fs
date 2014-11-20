@@ -21,7 +21,7 @@ let private simplify file before after =
 let private interactiveConfirm fileName (PackageName package) = 
         Utils.askYesNo(sprintf "Do you want to remove indirect dependency %s from file %s ?" package fileName)
 
-let Analyze(allPackages : list<ResolvedPackage>, depFile : DependenciesFile, refFiles : list<ReferencesFile>, interactive) = 
+let Analyze(allPackages : list<ResolvedPackage>, depFile : DependenciesFile, refFiles : ReferencesFile list, interactive) = 
     
     let depsLookup =
         allPackages
@@ -66,11 +66,11 @@ let Simplify (dependenciesFileName,interactive) =
     let packages = lockFile.ResolvedPackages |> Seq.map (fun kv -> kv.Value) |> List.ofSeq
     let refFiles = 
         ProjectFile.FindAllProjects(Path.GetDirectoryName lockFile.FileName) 
-        |> List.choose (fun p -> ProjectFile.FindReferencesFile <| FileInfo(p.FileName))
-        |> List.map ReferencesFile.FromFile
-    let refFilesBefore = refFiles |> List.map (fun refFile -> refFile.FileName, refFile) |> Map.ofList
+        |> Array.choose (fun p -> ProjectFile.FindReferencesFile <| FileInfo(p.FileName))
+        |> Array.map ReferencesFile.FromFile
+    let refFilesBefore = refFiles |> Array.map (fun refFile -> refFile.FileName, refFile) |> Map.ofArray
 
-    let simplifiedDepFile, simplifiedRefFiles = Analyze(packages, depFile, refFiles, interactive)
+    let simplifiedDepFile, simplifiedRefFiles = Analyze(packages, depFile, Array.toList refFiles, interactive)
     
     printfn ""
     simplify depFile.FileName <| depFile.ToString() <| simplifiedDepFile.ToString()

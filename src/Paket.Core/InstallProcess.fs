@@ -106,8 +106,8 @@ let Install(sources,force, hard, lockFile:LockFile) =
     let applicableProjects =
         root
         |> ProjectFile.FindAllProjects
-        |> List.choose (fun p -> ProjectFile.FindReferencesFile(FileInfo(p.FileName))
-                                 |> Option.map (fun r -> p, ReferencesFile.FromFile(r)))
+        |> Array.choose (fun p -> ProjectFile.FindReferencesFile(FileInfo(p.FileName))
+                                  |> Option.map (fun r -> p, ReferencesFile.FromFile(r)))
 
     for project,referenceFile in applicableProjects do    
         verbosefn "Installing to %s" project.FileName

@@ -198,11 +198,11 @@ type InstallModel =
                 this
     
     member this.UseLowerVersionLibIfEmpty() =
+        let knownVersions = List.rev FrameworkVersion.KnownDotNetFrameworks
         this.AddOrReplaceGroup(
             FrameworkIdentifier.DefaultGroup,
             (fun group -> 
-                FrameworkVersion.KnownDotNetFrameworks
-                |> List.rev
+                knownVersions
                 |> List.fold (fun (group : FrameworkGroup) lowerVersion -> 
                     let newFiles = group.GetReferences(DotNetFramework(lowerVersion))
                     if Set.isEmpty newFiles then group  else 
@@ -213,7 +213,7 @@ type InstallModel =
                             group.ReplaceFramework(
                                 framework,
                                 (fun _ -> { References = newFiles; ContentFiles = Set.empty }),
-                                (fun files -> files))) 
+                                id)) 
                             group) group),
             (fun _ -> None))
     

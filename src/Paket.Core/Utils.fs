@@ -162,14 +162,14 @@ let askYesNo question =
 
     getAnswer()
 
-let normalizePath(path:string) = path.Replace("\\",Path.DirectorySeparatorChar.ToString()).Replace("/",Path.DirectorySeparatorChar.ToString())
+let inline normalizePath(path:string) = path.Replace("\\",Path.DirectorySeparatorChar.ToString()).Replace("/",Path.DirectorySeparatorChar.ToString())
 
-/// Enumerates all files with the given pattern
-let FindAllFiles(folder, pattern) = DirectoryInfo(folder).EnumerateFiles(pattern, SearchOption.AllDirectories)
+/// Gets all files with the given pattern
+let inline FindAllFiles(folder, pattern) = DirectoryInfo(folder).GetFiles(pattern, SearchOption.AllDirectories)
 
 /// [omit]
 module Seq = 
-    let firstOrDefault seq = Seq.tryFind (fun _ -> true) seq
+    let inline firstOrDefault seq = Seq.tryFind (fun _ -> true) seq
 
 module String =
     let (|StartsWith|_|) prefix (input: string) =

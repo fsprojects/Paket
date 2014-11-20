@@ -35,10 +35,9 @@ type ProjectFile =
 
     /// Finds all project files
     static member FindAllProjects(folder) = 
-        ["*.csproj";"*.fsproj";"*.vbproj"]
-        |> List.map (fun projectType -> FindAllFiles(folder, projectType) |> Seq.toList)
-        |> List.concat
-        |> List.choose (fun fi -> ProjectFile.Load fi.FullName)
+        FindAllFiles(folder, "*.*proj")
+        |> Array.filter (fun f -> f.Extension = ".csproj" || f.Extension = ".fsproj" || f.Extension = ".vbproj")
+        |> Array.choose (fun fi -> ProjectFile.Load fi.FullName)
 
     static member FindReferencesFile (projectFile : FileInfo) =
         let specificReferencesFile = FileInfo(Path.Combine(projectFile.Directory.FullName, projectFile.Name + "." + Constants.ReferencesFile))

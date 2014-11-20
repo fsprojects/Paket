@@ -61,13 +61,13 @@ type SemVerInfo =
             else ""
             
         let preReleaseBuild = 
-            if String.IsNullOrEmpty x.PreReleaseBuild |> not  && x.PreReleaseBuild <> "0" then "." + x.PreReleaseBuild
+            if String.IsNullOrEmpty x.PreReleaseBuild |> not && x.PreReleaseBuild <> "0" then "." + x.PreReleaseBuild
             else ""
             
         let pre = 
-            match x.PreRelease, (String.IsNullOrEmpty x.PreReleaseBuild |> not)  with
+            match x.PreRelease, String.IsNullOrEmpty x.PreReleaseBuild  with
             | Some preRelease, _ -> "-" + preRelease.Name + preReleaseBuild
-            | None, true -> preReleaseBuild
+            | None, false -> preReleaseBuild
             | _ -> ""
 
         sprintf "%d.%d.%d" x.Major x.Minor x.Patch + build + pre

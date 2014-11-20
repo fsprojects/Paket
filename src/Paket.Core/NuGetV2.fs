@@ -264,12 +264,12 @@ let getDetailsFromLocalFile path package (version:SemVerInfo) =
     }
 
 
-let isExtracted fileName =
+let inline isExtracted fileName =
     let fi = FileInfo(fileName)
     if not fi.Exists then false else
     let di = fi.Directory
     di.EnumerateFileSystemInfos()
-    |> Seq.exists (fun f -> f.FullName <>fi.FullName)    
+    |> Seq.exists (fun f -> f.FullName <> fi.FullName)    
 
 /// Extracts the given package to the ./packages folder
 let ExtractPackage(fileName:string, targetFolder, name, version:SemVerInfo) =    
