@@ -103,11 +103,14 @@ type InstallModel =
       DefaultFallback : InstallFiles }
 
     static member EmptyModel(packageName, packageVersion) : InstallModel = 
-        let frameworks = FrameworkVersion.KnownDotNetFrameworks |> List.map (fun x -> DotNetFramework(x))
-        
+        let emptyFiles = InstallFiles.empty   
         let group : FrameworkGroup = 
-            { Frameworks = List.fold (fun map f -> Map.add f InstallFiles.empty map) Map.empty frameworks
+            { Frameworks = 
+                FrameworkVersion.KnownDotNetFrameworks
+                |> List.map (fun f -> DotNetFramework f,emptyFiles)
+                |> Map.ofList
               Fallbacks = InstallFiles.empty }
+
         { PackageName = packageName
           PackageVersion = packageVersion
           DefaultFallback = InstallFiles.empty
