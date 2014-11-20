@@ -1,5 +1,5 @@
 ### 1.0 - Unreleased
-* More awesome stuff comming
+* More awesome stuff coming
 * Added SourceLink for Source Indexing PDB
 
 #### 0.5.1-beta - November 6 2013
