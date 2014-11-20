@@ -8,28 +8,28 @@ let mutable verbose = false
 let monitor = new Object()
 
 /// [omit]
-let tracen (s : string) = lock monitor (fun () -> printfn "%s" s)
+let inline tracen (s : string) = lock monitor (fun () -> printfn "%s" s)
 
 /// [omit]
-let tracefn fmt = Printf.ksprintf tracen fmt
+let inline tracefn fmt = Printf.ksprintf tracen fmt
 
 /// [omit]
-let trace (s : string) = lock monitor (fun () -> printf "%s" s)
+let inline trace (s : string) = lock monitor (fun () -> printf "%s" s)
 
 /// [omit]
-let tracef fmt = Printf.ksprintf trace fmt
+let inline tracef fmt = Printf.ksprintf trace fmt
 
 
 /// [omit]
-let traceVerbose (s : string) =
+let inline traceVerbose (s : string) =
     if verbose then
         lock monitor (fun () -> printfn "%s" s)
 
 /// [omit]
-let verbosefn fmt = Printf.ksprintf traceVerbose fmt
+let inline verbosefn fmt = Printf.ksprintf traceVerbose fmt
 
 /// [omit]
-let traceColored color (s: string) = 
+let inline traceColored color (s: string) = 
     lock monitor 
         (fun () ->
             let curColor = Console.ForegroundColor
@@ -38,13 +38,13 @@ let traceColored color (s: string) =
             if curColor <> color then Console.ForegroundColor <- curColor)
 
 /// [omit]
-let traceError = traceColored ConsoleColor.Red
+let inline traceError s = traceColored ConsoleColor.Red s
 
 /// [omit]
-let traceWarn = traceColored ConsoleColor.Yellow
+let inline traceWarn s = traceColored ConsoleColor.Yellow s
 
 /// [omit]
-let traceErrorfn fmt = Printf.ksprintf traceError fmt
+let inline traceErrorfn fmt = Printf.ksprintf traceError fmt
 
 /// [omit]
-let traceWarnfn fmt = Printf.ksprintf traceWarn fmt
+let inline traceWarnfn fmt = Printf.ksprintf traceWarn fmt
