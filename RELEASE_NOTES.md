@@ -1,3 +1,6 @@
+#### 0.15.5 - 20.11.2014
+* BUGFIX: Restore command in targets file didn't work with spaces in paths - https://github.com/fsprojects/Paket/issues/375
+
 #### 0.15.4 - 19.11.2014
 * BUGFIX: Detect FrameworkReferences without restrictions in nuspec file and install these
 
