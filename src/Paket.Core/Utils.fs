@@ -44,12 +44,12 @@ let CleanDir path =
     File.SetAttributes(path, FileAttributes.Normal)
 
 /// [omit]
-let createRelativePath root path =
+let inline createRelativePath root path =
     let uri = Uri(if String.IsNullOrEmpty root then System.Environment.CurrentDirectory + Path.DirectorySeparatorChar.ToString() else root)
     uri.MakeRelativeUri(Uri(path)).ToString().Replace("/", "\\")
 
 /// [omit]
-let normalizeXml(doc:XmlDocument) =
+let inline normalizeXml(doc:XmlDocument) =
     use stringWriter = new StringWriter()
     let settings = XmlWriterSettings()
     settings.Indent <- true
@@ -69,7 +69,7 @@ let defaultProxy =
     proxy.Credentials <- CredentialCache.DefaultCredentials
     proxy
 
-let createWebClient(auth:Auth option) =
+let inline createWebClient(auth:Auth option) =
     let client = new WebClient()
     match auth with
     | None -> client.UseDefaultCredentials <- true
