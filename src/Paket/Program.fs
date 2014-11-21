@@ -141,10 +141,7 @@ try
             Dependencies.Locate().ShowOutdated(strict,includePrereleases)
         | Command.InitAutoRestore -> Dependencies.Locate().InitAutoRestore()
         | Command.ConvertFromNuget -> 
-            let credsMigrationMode = 
-                results.TryGetResult <@ CLIArguments.Creds_Migration @>
-                |> Option.map NuGetConvert.CredsMigrationMode.Parse
-
+            let credsMigrationMode = results.TryGetResult <@ CLIArguments.Creds_Migration @>
             let dependencies = if force then Dependencies.LocateOrCreate() else Dependencies.Create()                
             dependencies.ConvertFromNuget(force, noInstall |> not, noAutoRestore |> not, credsMigrationMode)
         | Command.Simplify -> Dependencies.Locate().Simplify(interactive)
