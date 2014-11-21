@@ -65,12 +65,11 @@ type SemVerInfo =
             else ""
             
         let pre = 
-            match x.PreRelease, String.IsNullOrEmpty x.PreReleaseBuild  with
-            | Some preRelease, _ -> "-" + preRelease.Name + preReleaseBuild
-            | None, false -> preReleaseBuild
-            | _ -> ""
+            match x.PreRelease with
+            | Some preRelease -> "-" + preRelease.Name + preReleaseBuild
+            | None -> preReleaseBuild
 
-        sprintf "%d.%d.%d" x.Major x.Minor x.Patch + build + pre
+        sprintf "%d.%d.%d%s%s" x.Major x.Minor x.Patch build pre
 
     member x.AsString = x.ToString()
 
