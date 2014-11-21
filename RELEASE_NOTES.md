@@ -1,3 +1,6 @@
+#### 0.15.6 - 21.11.2014
+* BUGFIX: Path to dependencies file is now relative after `convert-from-nuget` - https://github.com/fsprojects/Paket/pull/379
+
 #### 0.15.5 - 20.11.2014
 * BUGFIX: Restore command in targets file didn't work with spaces in paths - https://github.com/fsprojects/Paket/issues/375
 
