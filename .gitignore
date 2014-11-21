@@ -5,6 +5,7 @@
 *.suo
 *.user
 *.sln.docstates
+*.sln.ide/
 
 # Xamarin Studio / monodevelop user-specific
 *.userprefs
@@ -78,6 +79,7 @@ _TeamCity*
 # NCrunch
 *.ncrunch*
 .*crunch*.local.xml
+_NCrunch_*
 
 # Installshield output folder
 [Ee]xpress/
