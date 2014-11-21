@@ -222,12 +222,12 @@ let ConvertFromNuget(dependenciesFileName, force, installAfter, initAutoRestore,
             convertNugetToRefFile(nugetPackagesConfig)
         | SolutionLevel -> ()
 
-    for slnFile in FindAllFiles(".", "*.sln") do
+    for slnFile in FindAllFiles(root, "*.sln") do
         let solution = SolutionFile(slnFile.FullName)
         solution.RemoveNugetEntries()
-        let relativePath = createRelativePath solution.FileName Environment.CurrentDirectory 
-        solution.AddPaketFolder(Path.Combine(relativePath, dependenciesFileName), 
-                                if installAfter then Some(Path.Combine(relativePath, "paket.lock")) else None)
+        let dependenciesFileRef = createRelativePath solution.FileName dependenciesFileName
+        let lockFileRef = createRelativePath solution.FileName (Path.Combine(root,"paket.lock"))
+        solution.AddPaketFolder(dependenciesFileRef, if installAfter then Some(lockFileRef) else None)
         solution.Save()
 
     for project in ProjectFile.FindAllProjects root do
