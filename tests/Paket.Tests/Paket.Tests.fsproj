@@ -448,6 +448,7 @@
     <Compile Include="ProjectFile\ConditionSpecs.fs" />
     <Compile Include="ProjectFile\FileBuildActionSpecs.fs" />
     <Compile Include="ProjectFile\InterProjectDependencySpecs.fs" />
+    <Compile Include="ProjectFile\FrameworkReferencesSpecs.fs" />
     <Compile Include="ProjectFile\OutputSpecs.fs" />
     <Compile Include="InstallModel\FrameworkIdentifierSpecs.fs" />
     <Compile Include="InstallModel\ProcessingSpecs.fs" />
@@ -458,7 +459,7 @@
     <Compile Include="InstallModel\Xml\SystemNetHttpForNet4.fs" />
     <Compile Include="InstallModel\Xml\SystemNetHttpWithFrameworkReferences.fs" />
     <Compile Include="InstallModel\Xml\ManualNodes.fs" />
-    <Compile Include="InstallModel\Xml\FSharp.Data.SqlClient.fs" />    
+    <Compile Include="InstallModel\Xml\FSharp.Data.SqlClient.fs" />
     <Compile Include="DependencyModel\ProjectDependencySpecs.fs" />
     <None Include="paket.references" />
   </ItemGroup>

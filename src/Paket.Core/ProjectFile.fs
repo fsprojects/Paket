@@ -33,6 +33,16 @@ type ProjectFile =
 
     member this.Name = FileInfo(this.FileName).Name
 
+    member this.CustomReferenceNodes = lazy(
+        [for node in this.Document |> getDescendants "Reference" do
+            let isPaket = ref false
+            for child in node.ChildNodes do
+                if child.Name = "Paket" then 
+                    isPaket := true
+            if not !isPaket then
+                yield node]            
+        )
+
     /// Finds all project files
     static member FindAllProjects(folder) = 
         FindAllFiles(folder, "*.*proj")
@@ -69,10 +79,19 @@ type ProjectFile =
             for node in this.Document |> getDescendants name do
                 let isPaketNode = ref false
                 for child in node.ChildNodes do
-                        if child.Name = "Paket" then isPaketNode := true
+                    if child.Name = "Paket" then isPaketNode := true
             
                 if !isPaketNode then yield node
         ]
+
+    member this.GetFrameworkAssemblies() = 
+        [for node in this.Document |> getDescendants "Reference" do
+            let hasHintPath = ref false
+            for child in node.ChildNodes do
+                if child.Name = "HintPath" then 
+                    hasHintPath := true
+            if not !hasHintPath then
+                yield node.Attributes.["Include"].InnerText.Split(',').[0] ]
 
     member this.DeletePaketNodes(name) =    
         let nodesToDelete = this.FindPaketNodes(name) 
@@ -134,33 +153,19 @@ type ProjectFile =
                 | None  ->
                     let firstNode = fileItemsInSameDir |> Seq.head
                     firstNode.ParentNode.InsertBefore(paketNode, firstNode) |> ignore
-
+        
         this.DeleteIfEmpty("ItemGroup")
 
-    member this.HasCustomNodes(model:InstallModel) =
+    member this.GetCustomNodes(model:InstallModel) =
         let libs = model.GetReferenceNames.Force()
         
-        let hasCustom = ref false
-        for node in this.Document |> getDescendants "Reference" do
-            if Set.contains (node.Attributes.["Include"].InnerText.Split(',').[0]) libs then
-                let isPaket = ref false
-                for child in node.ChildNodes do
-                    if child.Name = "Paket" then 
-                        isPaket := true
-                if not !isPaket then
-                    hasCustom := true
-            
-        !hasCustom
-
+        this.CustomReferenceNodes.Force()
+        |> List.filter (fun node -> Set.contains (node.Attributes.["Include"].InnerText.Split(',').[0]) libs)
+    
     member this.DeleteCustomNodes(model:InstallModel) =
-        let nodesToDelete = List<_>()
+        let nodesToDelete = this.GetCustomNodes(model)
         
-        let libs = model.GetReferenceNames.Force()
-        for node in this.Document |> getDescendants "Reference" do
-            if Set.contains (node.Attributes.["Include"].InnerText.Split(',').[0]) libs then          
-                nodesToDelete.Add node
-
-        if nodesToDelete |> Seq.isEmpty |> not then
+        if nodesToDelete <> [] then
             let (PackageName name) = model.PackageName
             verbosefn "    - Deleting custom projects nodes for %s" name
 
@@ -270,7 +275,7 @@ type ProjectFile =
             usedPackages
             |> Seq.fold (fun (model:InstallModel) kv -> 
                             let installModel = completeModel.[NormalizedPackageName kv.Key]
-                            if this.HasCustomNodes(installModel) then 
+                            if this.GetCustomNodes(installModel) <> [] then 
                                 traceWarnfn "  - custom nodes for %s ==> skipping" ((|PackageName|) kv.Key)
                                 model
                             else model.MergeWith(installModel)) 

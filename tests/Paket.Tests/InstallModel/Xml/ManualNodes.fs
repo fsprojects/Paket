@@ -14,8 +14,8 @@ let ``should find custom nodes in doc``() =
               @"..\Fantomas\lib\Fantomas.exe" ],
               Nuspec.Explicit ["FantomasLib.dll"])
     
-    ProjectFile.Load("./ProjectFile/TestData/CustomFantomasNode.fsprojtest").Value.HasCustomNodes(model)
-    |> shouldEqual true
+    ProjectFile.Load("./ProjectFile/TestData/CustomFantomasNode.fsprojtest").Value.GetCustomNodes(model).IsEmpty
+    |> shouldEqual false
 
 
 [<Test>]
@@ -27,8 +27,8 @@ let ``should not find custom nodes if there are none``() =
               @"..\Fantomas\lib\Fantomas.exe" ],
               Nuspec.Explicit ["FantomasLib.dll"])
 
-    ProjectFile.Load("./ProjectFile/TestData/NoCustomFantomasNode.fsprojtest").Value.HasCustomNodes(model)
-    |> shouldEqual false
+    ProjectFile.Load("./ProjectFile/TestData/NoCustomFantomasNode.fsprojtest").Value.GetCustomNodes(model).IsEmpty
+    |> shouldEqual true
 
 
 [<Test>]
@@ -42,10 +42,10 @@ let ``should delete custom nodes if there are some``() =
 
     let project = ProjectFile.Load("./ProjectFile/TestData/CustomFantomasNode.fsprojtest").Value
 
-    project.HasCustomNodes(model)
-    |> shouldEqual true
+    project.GetCustomNodes(model).IsEmpty
+    |> shouldEqual false
 
     project.DeleteCustomNodes(model)
 
-    project.HasCustomNodes(model)
-    |> shouldEqual false
+    project.GetCustomNodes(model).IsEmpty
+    |> shouldEqual true
