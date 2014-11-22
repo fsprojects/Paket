@@ -201,51 +201,18 @@ type ProjectFile =
                     |> ignore
             itemGroup
 
-        let groupChooseNode = this.CreateNode("Choose")
-        let foundCase = ref false
-        for group in model.Groups do
-            let frameworks = group.Value.Frameworks
-            let groupWhenNode = 
+        let chooseNode = this.CreateNode("Choose")
+        for lib in model.LibFolders do
+            let currentLibs = lib.Files.References
+            let condition = lib.Targets |> List.ofSeq |> PlatformMatching.getCondition
+            let whenNode = 
                 this.CreateNode("When")
-                |> addAttribute "Condition" group.Key
-
-
-            let chooseNode = this.CreateNode("Choose")
-
-            let foundSpecialCase = ref false
-
-            for kv in frameworks do
-                let currentLibs = kv.Value.References
-                let condition = kv.Key.GetFrameworkCondition()
-                let whenNode = 
-                    this.CreateNode("When")
-                    |> addAttribute "Condition" condition                
+                |> addAttribute "Condition" condition                
                
-                whenNode.AppendChild(createItemGroup currentLibs) |> ignore
-                chooseNode.AppendChild(whenNode) |> ignore
-                foundSpecialCase := true
-                foundCase := true
+            whenNode.AppendChild(createItemGroup currentLibs) |> ignore
+            chooseNode.AppendChild(whenNode) |> ignore
 
-
-            let fallbackLibs = group.Value.Fallbacks.References
-            
-            if !foundSpecialCase then
-                let otherwiseNode = this.CreateNode("Otherwise")
-                otherwiseNode.AppendChild(createItemGroup fallbackLibs) |> ignore
-                chooseNode.AppendChild(otherwiseNode) |> ignore
-                groupWhenNode.AppendChild(chooseNode) |> ignore
-            else
-                groupWhenNode.AppendChild(createItemGroup fallbackLibs) |> ignore
-            
-            groupChooseNode.AppendChild(groupWhenNode) |> ignore
-
-        if !foundCase then
-            let otherwiseNode = this.CreateNode("Otherwise")
-            otherwiseNode.AppendChild(createItemGroup model.DefaultFallback.References) |> ignore
-            groupChooseNode.AppendChild(otherwiseNode) |> ignore
-            groupChooseNode
-        else
-            createItemGroup model.DefaultFallback.References
+        chooseNode
         
 
     member this.UpdateReferences(completeModel: Map<NormalizedPackageName,InstallModel>, usedPackages : Dictionary<PackageName,bool>, hard) = 
@@ -259,16 +226,12 @@ type ProjectFile =
                 let installModel = completeModel.[NormalizedPackageName kv.Key]
                 this.DeleteCustomModelNodes(installModel)
 
-        let merged =
-            usedPackages
-            |> Seq.fold (fun (model:InstallModel) kv -> model.MergeWith( completeModel.[NormalizedPackageName kv.Key])) 
-                        (InstallModel.EmptyModel(PackageName "",SemVer.Parse "0"))
-
-        let chooseNode = this.GenerateXml(merged)
-
-        match this.ProjectNode |> getNodes "ItemGroup" |> Seq.firstOrDefault with
-        | None -> this.ProjectNode.AppendChild(chooseNode) |> ignore
-        | Some firstNode -> firstNode.ParentNode.InsertBefore(chooseNode,firstNode) |> ignore
+        let packageNodes = completeModel |> Seq.map (fun kv -> this.GenerateXml(kv.Value))
+        
+        for chooseNode in packageNodes do
+            match this.ProjectNode |> getNodes "ItemGroup" |> Seq.firstOrDefault with
+            | None -> this.ProjectNode.AppendChild(chooseNode) |> ignore
+            | Some firstNode -> firstNode.ParentNode.InsertBefore(chooseNode,firstNode) |> ignore
                 
     member this.Save() =
         if Utils.normalizeXml this.Document <> this.OriginalText then 

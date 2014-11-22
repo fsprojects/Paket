@@ -194,31 +194,11 @@ type InstallModel =
                     | Some path -> model.AddPackageFiles(path, file, references)
                     | _ -> model) this files
 
-    member this.AddReference(framework : FrameworkIdentifier, lib : string, references) : InstallModel = 
-        let install = 
-            match references with
-            | NuspecReferences.All -> true
-            | NuspecReferences.Explicit list -> List.exists lib.EndsWith list
-
-        if not install then this else
-
-        this.AddOrReplaceGroup(
-            framework.Group,
-            (fun group -> 
-                group.ReplaceFramework(
-                    framework,
-                    (fun _ -> InstallFiles.singleton lib),
-                    (fun files -> files.AddReference lib))),
-            (fun _ -> Some(FrameworkGroup.singleton(framework,InstallFiles.singleton lib))))
-
     member this.AddReferences(libs, references) : InstallModel = 
-        Seq.fold (fun model lib -> 
-                    match FrameworkIdentifier.DetectFromPath lib with
-                    | Some framework -> model.AddReference(framework, lib, references)
-                    | _ -> model) this libs
+        this.AddLibFolders(libs)
+            .AddFiles(libs, references)
     
-    member this.AddReferences(libs) = this.AddLibFolders(libs)
-                                          .AddFiles(libs, NuspecReferences.All)
+    member this.AddReferences(libs) = this.AddReferences(libs, NuspecReferences.All)
     
     member this.AddFrameworkAssemblyReference(reference) : InstallModel = 
         match reference.TargetFramework with
@@ -278,9 +258,7 @@ type InstallModel =
 
     member this.FilterReferences(references) =
         let inline mapF (files:InstallFiles) = {files with References = files.References |> Set.filter (fun reference -> Set.contains reference.ReferenceName references |> not) }
-        this
-            .MapGroupFrameworks(fun _ files -> mapF files)
-            .MapFallbacks(mapF)
+        this.MapFiles(fun files -> mapF files)
     
     member this.DeleteEmptyGroupIfDefaultFallback() =
         this.MapGroups(fun _ group ->
@@ -328,8 +306,6 @@ type InstallModel =
     static member CreateFromLibs(packageName, packageVersion, frameworkRestriction:FrameworkRestriction, libs, nuspec : Nuspec) = 
         InstallModel
             .EmptyModel(packageName, packageVersion)
-            .AddLibFolders(libs)
-            .AddFiles(libs, nuspec.References)
             .AddReferences(libs, nuspec.References)            
             .BuildUnfilteredModel(nuspec.FrameworkAssemblyReferences)
             .ApplyFrameworkRestriction(frameworkRestriction)

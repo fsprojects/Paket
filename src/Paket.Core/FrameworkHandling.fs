@@ -22,6 +22,7 @@ type FrameworkVersion =
         | V1 -> "v1.0"
         | V1_1 -> "v1.1"
         | V2 -> "v2.0"
+        | V3 -> "v3.0"
         | V3_5 -> "v3.5"
         | V4_Client -> "v4.0"
         | V4 -> "v4.0"
@@ -364,3 +365,21 @@ module PlatformMatching =
         |> Seq.groupBy (fun (path, target) -> path)
         |> Seq.map (fun (path, group) -> (path, Seq.map (fun (_, target) -> target) group))
         |> Map.ofSeq
+
+    let getTargetCondition (target:TargetProfile) =
+        match target with
+        | SinglePlatform(platform) -> match platform with
+                                      | DotNetFramework(version) -> System.String.Format("$(TargetFrameworkIdentifier) == '.NETFramework' And $(TargetFrameworkVersion) == '{0}'", version)
+                                      | Windows(version) -> System.String.Format("$(TargetFrameworkIdentifier) == '.NETCore' And $(TargetFrameworkVersion) == '{0}'", version)
+                                      | Silverlight(version) -> System.String.Format("$(TargetFrameworkIdentifier) == 'Silverlight' And $(TargetFrameworkVersion) == '{0}'", version)
+                                      | WindowsPhoneApp(version) -> System.String.Format("$(TargetFrameworkIdentifier) == 'WindowsPhoneApp' And $(TargetFrameworkVersion) == '{0}'", version)
+                                      | WindowsPhoneSilverlight(version) -> System.String.Format("$(TargetFrameworkIdentifier) == 'WindowsPhone' And $(TargetFrameworkVersion) == '{0}'", version)
+                                      | MonoAndroid | MonoTouch -> "false" // should be covered by the .NET case above
+
+        | PortableProfile(name, _) -> System.String.Format("$(TargetFrameworkProfile) == '{0}'", name)
+
+    let rec getCondition (targets:TargetProfile list) =
+        match targets with
+        | [target] -> getTargetCondition target
+        | target::rest -> getTargetCondition target + " Or " + getCondition rest
+        | [] -> ""
