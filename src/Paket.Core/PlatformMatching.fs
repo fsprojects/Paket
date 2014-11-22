@@ -69,13 +69,13 @@ let getTargetCondition (target:TargetProfile) =
     match target with
     | SinglePlatform(platform) -> 
         match platform with
-        | DotNetFramework(version) -> System.String.Format("$(TargetFrameworkIdentifier) == '.NETFramework' And $(TargetFrameworkVersion) == '{0}'", version)
-        | Windows(version) -> System.String.Format("$(TargetFrameworkIdentifier) == '.NETCore' And $(TargetFrameworkVersion) == '{0}'", version)
-        | Silverlight(version) -> System.String.Format("$(TargetFrameworkIdentifier) == 'Silverlight' And $(TargetFrameworkVersion) == '{0}'", version)
-        | WindowsPhoneApp(version) -> System.String.Format("$(TargetFrameworkIdentifier) == 'WindowsPhoneApp' And $(TargetFrameworkVersion) == '{0}'", version)
-        | WindowsPhoneSilverlight(version) -> System.String.Format("$(TargetFrameworkIdentifier) == 'WindowsPhone' And $(TargetFrameworkVersion) == '{0}'", version)
+        | DotNetFramework(version) -> sprintf "$(TargetFrameworkIdentifier) == '.NETFramework' And $(TargetFrameworkVersion) == '%O'" version
+        | Windows(version) -> sprintf "$(TargetFrameworkIdentifier) == '.NETCore' And $(TargetFrameworkVersion) == '%O'" version
+        | Silverlight(version) -> sprintf "$(TargetFrameworkIdentifier) == 'Silverlight' And $(TargetFrameworkVersion) == '%O'" version
+        | WindowsPhoneApp(version) -> sprintf "$(TargetFrameworkIdentifier) == 'WindowsPhoneApp' And $(TargetFrameworkVersion) == '%O'" version
+        | WindowsPhoneSilverlight(version) -> sprintf "$(TargetFrameworkIdentifier) == 'WindowsPhone' And $(TargetFrameworkVersion) == '%O'" version
         | MonoAndroid | MonoTouch -> "false" // should be covered by the .NET case above
-    | PortableProfile(name, _) -> System.String.Format("$(TargetFrameworkProfile) == '{0}'", name)
+    | PortableProfile(name, _) -> sprintf "$(TargetFrameworkProfile) == '%O'" name
 
 let rec getCondition (targets : TargetProfile list) = 
     match targets with
