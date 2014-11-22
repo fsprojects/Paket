@@ -226,7 +226,10 @@ type ProjectFile =
                 let installModel = completeModel.[NormalizedPackageName kv.Key]
                 this.DeleteCustomModelNodes(installModel)
 
-        let packageNodes = completeModel |> Seq.map (fun kv -> this.GenerateXml(kv.Value))
+        let packageNodes =
+            completeModel
+            |> Seq.map (fun kv -> this.GenerateXml(kv.Value))
+            |> Seq.filter (fun node -> node.ChildNodes.Count > 0)
         
         for chooseNode in packageNodes do
             match this.ProjectNode |> getNodes "ItemGroup" |> Seq.firstOrDefault with
