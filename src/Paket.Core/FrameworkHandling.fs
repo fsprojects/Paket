@@ -306,12 +306,12 @@ type TargetProfile =
                                     | _ -> None)
 
 module PlatformMatching =
-    let split (path:string) =
-        path.Split('+') |> Array.map (fun s -> s.Replace("portable-", "")) |> Array.toList
-
-    let extractPlatforms path =
-        split path
-        |> List.choose FrameworkIdentifier.Extract
+    let inline split (path : string) = 
+        path.Split('+')
+        |> Array.map (fun s -> s.Replace("portable-", ""))
+        |> Array.toList
+    
+    let inline extractPlatforms path = split path |> List.choose FrameworkIdentifier.Extract
 
     let rec getPlatformPenalty (targetPlatform:FrameworkIdentifier) (packagePlatform:FrameworkIdentifier) =
         if packagePlatform = targetPlatform then
@@ -322,7 +322,7 @@ module PlatformMatching =
             List.min (1000::penalties) + 1
 
     let getPathPenalty (path:string) (platform:FrameworkIdentifier) =
-        if (System.String.IsNullOrWhiteSpace(path)) then
+        if String.IsNullOrWhiteSpace path then
             999 // an empty path is considered compatible with every target, but with a high penalty so explicit paths are preferred
         else
             extractPlatforms path
@@ -336,17 +336,18 @@ module PlatformMatching =
         |> List.map (getPathPenalty path)
         |> List.sum
 
-    let findBestMatch (paths:string list) (targetProfile:TargetProfile) =
-        let requiredPlatforms = match targetProfile with
-                                | PortableProfile(_, platforms) -> platforms
-                                | SinglePlatform(platform) -> [platform]
-
-        let pathPenalties = paths
-                            |> List.map (fun path -> (path, getPenalty requiredPlatforms path))
-
-        let minPenalty = pathPenalties
-                         |> List.map (fun (path, penalty) -> penalty)
-                         |> List.min
+    let findBestMatch (paths : string list) (targetProfile : TargetProfile) = 
+        let requiredPlatforms = 
+            match targetProfile with
+            | PortableProfile(_, platforms) -> platforms
+            | SinglePlatform(platform) -> [ platform ]
+        
+        let pathPenalties = paths |> List.map (fun path -> (path, getPenalty requiredPlatforms path))
+        
+        let minPenalty = 
+            pathPenalties
+            |> List.map (fun (path, penalty) -> penalty)
+            |> List.min
 
         pathPenalties
         |> List.filter (fun (path, penalty) -> penalty = minPenalty && minPenalty < 1000)
@@ -356,32 +357,32 @@ module PlatformMatching =
 
     // For a given list of paths and target profiles return tuples of paths with their supported target profiles.
     // Every target profile will only be listed for own path - the one that best supports it. 
-    let getSupportedTargetProfiles (paths:string list) =
-        let test = TargetProfile.KnownTargetProfiles
-                   |> List.map (fun target -> ((findBestMatch paths target), target))
+    let getSupportedTargetProfiles (paths : string list) = 
+        let test = TargetProfile.KnownTargetProfiles |> List.map (fun target -> ((findBestMatch paths target), target))
         TargetProfile.KnownTargetProfiles
         |> List.map (fun target -> ((findBestMatch paths target), target))
-        |> List.collect (fun (path, target) -> match path with
-                                               | Some(p) -> [(p, target)]
-                                               | _ -> [])
+        |> List.collect (fun (path, target) -> 
+               match path with
+               | Some(p) -> [ (p, target) ]
+               | _ -> [])
         |> Seq.groupBy (fun (path, target) -> path)
         |> Seq.map (fun (path, group) -> (path, Seq.map (fun (_, target) -> target) group))
         |> Map.ofSeq
 
     let getTargetCondition (target:TargetProfile) =
         match target with
-        | SinglePlatform(platform) -> match platform with
-                                      | DotNetFramework(version) -> System.String.Format("$(TargetFrameworkIdentifier) == '.NETFramework' And $(TargetFrameworkVersion) == '{0}'", version)
-                                      | Windows(version) -> System.String.Format("$(TargetFrameworkIdentifier) == '.NETCore' And $(TargetFrameworkVersion) == '{0}'", version)
-                                      | Silverlight(version) -> System.String.Format("$(TargetFrameworkIdentifier) == 'Silverlight' And $(TargetFrameworkVersion) == '{0}'", version)
-                                      | WindowsPhoneApp(version) -> System.String.Format("$(TargetFrameworkIdentifier) == 'WindowsPhoneApp' And $(TargetFrameworkVersion) == '{0}'", version)
-                                      | WindowsPhoneSilverlight(version) -> System.String.Format("$(TargetFrameworkIdentifier) == 'WindowsPhone' And $(TargetFrameworkVersion) == '{0}'", version)
-                                      | MonoAndroid | MonoTouch -> "false" // should be covered by the .NET case above
-
+        | SinglePlatform(platform) -> 
+            match platform with
+            | DotNetFramework(version) -> System.String.Format("$(TargetFrameworkIdentifier) == '.NETFramework' And $(TargetFrameworkVersion) == '{0}'", version)
+            | Windows(version) -> System.String.Format("$(TargetFrameworkIdentifier) == '.NETCore' And $(TargetFrameworkVersion) == '{0}'", version)
+            | Silverlight(version) -> System.String.Format("$(TargetFrameworkIdentifier) == 'Silverlight' And $(TargetFrameworkVersion) == '{0}'", version)
+            | WindowsPhoneApp(version) -> System.String.Format("$(TargetFrameworkIdentifier) == 'WindowsPhoneApp' And $(TargetFrameworkVersion) == '{0}'", version)
+            | WindowsPhoneSilverlight(version) -> System.String.Format("$(TargetFrameworkIdentifier) == 'WindowsPhone' And $(TargetFrameworkVersion) == '{0}'", version)
+            | MonoAndroid | MonoTouch -> "false" // should be covered by the .NET case above
         | PortableProfile(name, _) -> System.String.Format("$(TargetFrameworkProfile) == '{0}'", name)
 
-    let rec getCondition (targets:TargetProfile list) =
+    let rec getCondition (targets : TargetProfile list) = 
         match targets with
-        | [target] -> getTargetCondition target
-        | target::rest -> getTargetCondition target + " Or " + getCondition rest
+        | [ target ] -> getTargetCondition target
+        | target :: rest -> getTargetCondition target + " Or " + getCondition rest
         | [] -> ""
