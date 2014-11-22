@@ -15,13 +15,16 @@ let rec getPlatformPenalty (targetPlatform:FrameworkIdentifier) (packagePlatform
     if packagePlatform = targetPlatform then
         0
     else
-        let penalties = targetPlatform.SupportedPlatforms
-                        |> List.map (fun target -> getPlatformPenalty target packagePlatform)
-        List.min (maxPenalty::penalties) + 1
+        targetPlatform.SupportedPlatforms
+        |> List.map (fun target -> getPlatformPenalty target packagePlatform)
+        |> List.append [maxPenalty]
+        |> List.min
+        |> fun p -> p + 1
 
 let getPathPenalty (path:string) (platform:FrameworkIdentifier) =
     if String.IsNullOrWhiteSpace path then
-        maxPenalty - 1 // an empty path is considered compatible with every target, but with a high penalty so explicit paths are preferred
+        // an empty path is considered compatible with every target, but with a high penalty so explicit paths are preferred
+        maxPenalty - 1 
     else
         extractPlatforms path
         |> Array.map (getPlatformPenalty platform)
@@ -31,8 +34,7 @@ let getPathPenalty (path:string) (platform:FrameworkIdentifier) =
 // Checks wether a list of target platforms is supported by this path and with which penalty. 
 let getPenalty (requiredPlatforms:FrameworkIdentifier list) (path:string) =
     requiredPlatforms
-    |> List.map (getPathPenalty path)
-    |> List.sum
+    |> List.sumBy (getPathPenalty path)
 
 let findBestMatch (paths : string list) (targetProfile : TargetProfile) = 
     let requiredPlatforms = 
@@ -40,30 +42,31 @@ let findBestMatch (paths : string list) (targetProfile : TargetProfile) =
         | PortableProfile(_, platforms) -> platforms
         | SinglePlatform(platform) -> [ platform ]
     
-    let pathPenalties = paths |> List.map (fun path -> (path, getPenalty requiredPlatforms path))
+    let pathPenalties = 
+        paths 
+        |> List.map (fun path -> (path, getPenalty requiredPlatforms path))
     
     let minPenalty = 
         pathPenalties
-        |> List.map (fun (path, penalty) -> penalty)
-        |> List.min
+        |> Seq.map snd
+        |> Seq.min
 
     pathPenalties
-    |> List.filter (fun (path, penalty) -> penalty = minPenalty && minPenalty < 1000)
-    |> List.map (fun (path, penalty) -> path)
-    |> List.sortBy (fun path -> (extractPlatforms path).Length)
-    |> List.tryFind (fun _ -> true)
+    |> Seq.filter (fun (path, penalty) -> penalty = minPenalty && minPenalty < maxPenalty)
+    |> Seq.map fst
+    |> Seq.sortBy (fun path -> (extractPlatforms path).Length)
+    |> Seq.tryFind (fun _ -> true)
 
 // For a given list of paths and target profiles return tuples of paths with their supported target profiles.
 // Every target profile will only be listed for own path - the one that best supports it. 
-let getSupportedTargetProfiles (paths : string list) = 
-    let test = TargetProfile.KnownTargetProfiles |> List.map (fun target -> ((findBestMatch paths target), target))
+let getSupportedTargetProfiles (paths : string list) =     
     TargetProfile.KnownTargetProfiles
-    |> List.map (fun target -> ((findBestMatch paths target), target))
-    |> List.collect (fun (path, target) -> 
+    |> Seq.map (fun target -> findBestMatch paths target, target)
+    |> Seq.collect (fun (path, target) -> 
            match path with
            | Some(p) -> [ (p, target) ]
            | _ -> [])
-    |> Seq.groupBy (fun (path, target) -> path)
+    |> Seq.groupBy fst
     |> Seq.map (fun (path, group) -> (path, Seq.map (fun (_, target) -> target) group))
     |> Map.ofSeq
 
