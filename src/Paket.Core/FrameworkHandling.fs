@@ -211,19 +211,6 @@ type FrameworkIdentifier =
             | Some mappedProfile -> sprintf "$(TargetFrameworkProfile) == '%s'"  mappedProfile
         | _ -> ""
 
-    
-    static member KnownSpecialTargets = 
-        [ yield Silverlight "v3.0"
-          yield Silverlight "v4.0"
-          yield Silverlight "v5.0"
-          yield Silverlight "v5.0"
-          yield WindowsPhoneApp "7.1"
-          yield Windows "v8.0"
-          yield WindowsPhoneApp "v8.0"
-          yield WindowsPhoneApp "v8.1"
-          yield MonoAndroid
-          yield MonoTouch ]
-
     member x.GetPlatformIdentifier() =        
         match x with 
         | PortableFramework(_,_) -> sprintf "$(TargetPlatformIdentifier) == 'Portable'"
@@ -291,3 +278,16 @@ type FrameworkIdentifier =
                 |> FrameworkIdentifier.Extract
 
     static member DefaultGroup = DotNetFramework(FrameworkVersion.V4).Group
+
+module SpecialTargets =
+    let KnownSpecialTargets = 
+        [ Silverlight "v3.0"
+          Silverlight "v4.0"
+          Silverlight "v5.0"
+          Silverlight "v5.0"
+          WindowsPhoneApp "7.1"
+          Windows "v8.0"
+          WindowsPhoneApp "v8.0"
+          WindowsPhoneApp "v8.1"
+          MonoAndroid
+          MonoTouch ]

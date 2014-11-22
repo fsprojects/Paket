@@ -230,7 +230,7 @@ type InstallModel =
     member this.UseLowerVersionLibForSpecicalFrameworksIfEmpty() = 
         let newFiles = this.GetReferences(DotNetFramework(FrameworkVersion.V4_5))
         if Set.isEmpty newFiles then this else 
-        FrameworkIdentifier.KnownSpecialTargets 
+        SpecialTargets.KnownSpecialTargets 
         |> List.fold (fun (model : InstallModel) framework -> 
                 model.AddOrReplaceGroup(
                     framework.Group,
