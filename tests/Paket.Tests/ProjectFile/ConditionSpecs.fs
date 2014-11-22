@@ -48,8 +48,8 @@ let ``should detect Silverlight version from path``() =
 
 [<Test>]
 let ``should detect WindowsPhone version from path``() =
-    FrameworkIdentifier.DetectFromPath(@"..\..\packages\RestSharp\lib\sl4-wp71\RestSharp.WindowsPhone.dll")|> element |> shouldEqual (WindowsPhoneApp("7.1"))
-    FrameworkIdentifier.DetectFromPath(@"..\..\packages\RestSharp\lib\sl4-wp\TechTalk.SpecFlow.WindowsPhone7.dll")|> element |> shouldEqual (WindowsPhoneApp("7.1"))
+    FrameworkIdentifier.DetectFromPath(@"..\..\packages\RestSharp\lib\sl4-wp71\RestSharp.WindowsPhone.dll")|> element |> shouldEqual (WindowsPhoneSilverlight("v7.1"))
+    FrameworkIdentifier.DetectFromPath(@"..\..\packages\RestSharp\lib\sl4-wp\TechTalk.SpecFlow.WindowsPhone7.dll")|> element |> shouldEqual (WindowsPhoneSilverlight("v7.1"))
 
 [<Test>]
 let ``should detect framework version from uppercase path``() =
@@ -69,8 +69,3 @@ let ``should detect 35, 40 and 45``() =
     FrameworkIdentifier.DetectFromPath(@"..\packages\FSharpx.Core\lib\40\FSharp.Core.dll")|> element |> shouldEqual (DotNetFramework(FrameworkVersion.V4))
     FrameworkIdentifier.DetectFromPath(@"..\packages\FSharpx.Core\lib\45\FSharp.Core.dll")|> element |> shouldEqual (DotNetFramework(FrameworkVersion.V4_5))
     
-
-[<Test>]
-let ``should detect profile 328``() =
-    FrameworkIdentifier.DetectFromPath(@"..\packages\Janitor.Fody\Lib\portable-net4+sl5+wp8+win8+wpa81+MonoAndroid16+MonoTouch40\Janitor.dll") 
-        |> shouldEqual (Some(PortableFramework("7.0","net4+sl5+wp8+win8+wpa81+monoandroid16+monotouch40")))
