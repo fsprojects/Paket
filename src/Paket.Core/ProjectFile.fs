@@ -172,6 +172,12 @@ type ProjectFile =
             node.ParentNode.RemoveChild(node) |> ignore
 
     member this.GenerateXml(model:InstallModel) =
+        let references = 
+            this.GetCustomReferenceNodes()
+            |> List.map (fun node -> node.Attributes.["Include"].InnerText.Split(',').[0])
+            |> Set.ofList
+
+        let model = model.FilterReferences(references).FilterFallbacks()     
         let createItemGroup references = 
             let itemGroup = this.CreateNode("ItemGroup")
                                 
@@ -253,18 +259,12 @@ type ProjectFile =
                 let installModel = completeModel.[NormalizedPackageName kv.Key]
                 this.DeleteCustomModelNodes(installModel)
 
-        let references = 
-            this.GetCustomReferenceNodes()
-            |> List.map (fun node -> node.Attributes.["Include"].InnerText.Split(',').[0])
-            |> Set.ofList
-
         let merged =
             usedPackages
             |> Seq.fold (fun (model:InstallModel) kv -> model.MergeWith( completeModel.[NormalizedPackageName kv.Key])) 
                         (InstallModel.EmptyModel(PackageName "",SemVer.Parse "0"))
-            |> fun x -> x.FilterReferences(references)     
 
-        let chooseNode = this.GenerateXml(merged.FilterFallbacks())
+        let chooseNode = this.GenerateXml(merged)
 
         match this.ProjectNode |> getNodes "ItemGroup" |> Seq.firstOrDefault with
         | None -> this.ProjectNode.AppendChild(chooseNode) |> ignore

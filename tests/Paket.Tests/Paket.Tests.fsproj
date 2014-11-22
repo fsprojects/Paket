@@ -439,6 +439,9 @@
     <None Include="ProjectFile\TestData\Empty.fsprojtest">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+    <None Include="ProjectFile\TestData\FrameworkAssemblies.fsprojtest">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Include="ProjectFile\TestData\CustomFantomasNode.fsprojtest">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
@@ -458,6 +461,7 @@
     <Compile Include="InstallModel\Xml\SystemNetHttp.fs" />
     <Compile Include="InstallModel\Xml\SystemNetHttpForNet4.fs" />
     <Compile Include="InstallModel\Xml\SystemNetHttpWithFrameworkReferences.fs" />
+    <Compile Include="InstallModel\Xml\SystemNetHttpWithExistingFrameworkReferences.fs" />
     <Compile Include="InstallModel\Xml\ManualNodes.fs" />
     <Compile Include="InstallModel\Xml\FSharp.Data.SqlClient.fs" />
     <Compile Include="DependencyModel\ProjectDependencySpecs.fs" />
