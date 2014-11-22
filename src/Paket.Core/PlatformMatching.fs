@@ -2,12 +2,14 @@
 
 open System
 
+[<Literal>]
+let maxPenalty = 1000
+
 let inline split (path : string) = 
     path.Split('+')
     |> Array.map (fun s -> s.Replace("portable-", ""))
-    |> Array.toList
     
-let inline extractPlatforms path = split path |> List.choose FrameworkIdentifier.Extract
+let inline extractPlatforms path = split path |> Array.choose FrameworkIdentifier.Extract
 
 let rec getPlatformPenalty (targetPlatform:FrameworkIdentifier) (packagePlatform:FrameworkIdentifier) =
     if packagePlatform = targetPlatform then
@@ -15,16 +17,16 @@ let rec getPlatformPenalty (targetPlatform:FrameworkIdentifier) (packagePlatform
     else
         let penalties = targetPlatform.SupportedPlatforms
                         |> List.map (fun target -> getPlatformPenalty target packagePlatform)
-        List.min (1000::penalties) + 1
+        List.min (maxPenalty::penalties) + 1
 
 let getPathPenalty (path:string) (platform:FrameworkIdentifier) =
     if String.IsNullOrWhiteSpace path then
-        999 // an empty path is considered compatible with every target, but with a high penalty so explicit paths are preferred
+        maxPenalty - 1 // an empty path is considered compatible with every target, but with a high penalty so explicit paths are preferred
     else
         extractPlatforms path
-        |> List.map (getPlatformPenalty platform)
-        |> List.append [1000]
-        |> List.min
+        |> Array.map (getPlatformPenalty platform)
+        |> Array.append [| maxPenalty |]
+        |> Array.min
 
 // Checks wether a list of target platforms is supported by this path and with which penalty. 
 let getPenalty (requiredPlatforms:FrameworkIdentifier list) (path:string) =
