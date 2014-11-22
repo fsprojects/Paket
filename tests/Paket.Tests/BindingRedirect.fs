@@ -9,18 +9,20 @@ open FsUnit
 let defaultRedirect =
     {   AssemblyName = "Assembly"
         Version = "1.0.0"
-        PublicKeyToken = None
+        PublicKeyToken = "PUBLIC_KEY"
         Culture = None }
 
 let sampleDoc() = """<?xml version="1.0" encoding="utf-8"?>
 <configuration>
 </configuration>""" |> XDocument.Parse
 
-let private containsDescendents count elementName (doc:XDocument) =
-    Assert.AreEqual(count, doc.Descendants(XName.Get elementName) |> Seq.length)
-let private containsSingleDescendent = containsDescendents 1
-let private createSimpleBindingRedirectXml assembly version = sprintf "<dependentAssembly>\r\n  <assemblyIdentity name=\"%s\" />\r\n  <bindingRedirect oldVersion=\"0.0.0.0-%s\" newVersion=\"%s\" />\r\n</dependentAssembly>" assembly version version
-let private createFullBindingRedirectXml assembly version culture publicKey = sprintf "<dependentAssembly>\r\n  <assemblyIdentity name=\"%s\" publicKeyToken=\"%s\" culture=\"%s\" />\r\n  <bindingRedirect oldVersion=\"0.0.0.0-%s\" newVersion=\"%s\" />\r\n</dependentAssembly>" assembly publicKey culture version version
+let private bindingNs = "urn:schemas-microsoft-com:asm.v1"
+let private containsDescendents count ns elementName (doc:XDocument) =
+    Assert.AreEqual(count, doc.Descendants(XName.Get(elementName, ns)) |> Seq.length)
+let private containsSingleDescendent = containsDescendents 1 ""
+let private containsSingleDescendentWithNs = containsDescendents 1 bindingNs
+let private createBindingRedirectXml culture assembly version publicKey = sprintf "<dependentAssembly xmlns=\"urn:schemas-microsoft-com:asm.v1\">\r\n  <assemblyIdentity name=\"%s\" publicKeyToken=\"%s\" culture=\"%s\" />\r\n  <bindingRedirect oldVersion=\"0.0.0.0-%s\" newVersion=\"%s\" />\r\n</dependentAssembly>" assembly publicKey culture version version
+let private xNameForNs name = XName.Get(name, bindingNs)
 
 [<Test>]
 let ``add missing elements to configuration file``() = 
@@ -31,7 +33,7 @@ let ``add missing elements to configuration file``() =
 
     // Assert
     doc |> containsSingleDescendent "runtime"
-    doc |> containsSingleDescendent "assemblyBinding"
+    doc |> containsSingleDescendentWithNs "assemblyBinding"
 
 [<Test>]
 let ``add new binding redirect to configuration file``() = 
@@ -41,29 +43,30 @@ let ``add new binding redirect to configuration file``() =
     setRedirect doc defaultRedirect |> ignore
 
     // Assert
-    doc |> containsSingleDescendent "dependentAssembly"
+    doc |> containsSingleDescendentWithNs "dependentAssembly"
+
 
 [<Test>]
-let ``correctly creates a simple binding redirect``() = 
+let ``correctly creates a binding redirect``() = 
+    let doc = sampleDoc()
+    setRedirect doc { defaultRedirect with Culture = Some "en-gb"; PublicKeyToken = "123456" } |> ignore
+
+    // Act
+    let dependency = doc.Descendants(xNameForNs "dependentAssembly") |> Seq.head
+
+    // Assert
+    dependency.ToString() |> shouldEqual (createBindingRedirectXml "en-gb" "Assembly" "1.0.0" "123456")
+
+[<Test>]
+let ``correctly creates a binding redirect with default culture``() = 
     let doc = sampleDoc()
     setRedirect doc defaultRedirect |> ignore
 
     // Act
-    let dependency = doc.Descendants(XName.Get "dependentAssembly") |> Seq.head
+    let dependency = doc.Descendants(xNameForNs "dependentAssembly") |> Seq.head
 
     // Assert
-    dependency.ToString() |> shouldEqual (createSimpleBindingRedirectXml "Assembly" "1.0.0")
-
-[<Test>]
-let ``correctly creates a full binding redirect``() = 
-    let doc = sampleDoc()
-    setRedirect doc { defaultRedirect with Culture = Some "en-gb"; PublicKeyToken = Some "123456" } |> ignore
-
-    // Act
-    let dependency = doc.Descendants(XName.Get "dependentAssembly") |> Seq.head
-
-    // Assert
-    dependency.ToString() |> shouldEqual (createFullBindingRedirectXml "Assembly" "1.0.0" "en-gb" "123456")
+    dependency.ToString() |> shouldEqual (createBindingRedirectXml "neutral" "Assembly" "1.0.0" "PUBLIC_KEY")
 
 [<Test>]
 let ``does not overwrite existing binding redirects for a different assembly``() = 
@@ -74,7 +77,7 @@ let ``does not overwrite existing binding redirects for a different assembly``()
     setRedirect doc { defaultRedirect with AssemblyName = "OtherAssembly" } |> ignore
 
     // Assert
-    doc |> containsDescendents 2 "dependentAssembly"
+    doc |> containsDescendents 2 bindingNs "dependentAssembly"
 
 [<Test>]
 let ``does not add a new binding redirect if one already exists for the assembly``() = 
@@ -85,7 +88,7 @@ let ``does not add a new binding redirect if one already exists for the assembly
     setRedirect doc { defaultRedirect with Version = "2.0.0" } |> ignore
 
     // Assert
-    doc |> containsSingleDescendent "dependentAssembly"
+    doc |> containsSingleDescendentWithNs "dependentAssembly"
 
 [<Test>]
 let ``correctly updates an existing binding redirect``() = 
@@ -96,6 +99,6 @@ let ``correctly updates an existing binding redirect``() =
     setRedirect doc { defaultRedirect with Version = "2.0.0" } |> ignore
 
     // Assert
-    let dependency = doc.Descendants(XName.Get "dependentAssembly") |> Seq.head
-    dependency.ToString() |> shouldEqual (createSimpleBindingRedirectXml "Assembly" "2.0.0")
+    let dependency = doc.Descendants(xNameForNs "dependentAssembly") |> Seq.head
+    dependency.ToString() |> shouldEqual (createBindingRedirectXml "neutral" "Assembly" "2.0.0" "PUBLIC_KEY")
 

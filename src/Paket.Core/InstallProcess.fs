@@ -4,11 +4,13 @@ module Paket.InstallProcess
 open Paket
 open Paket.Domain
 open Paket.Logging
+open Paket.BindingRedirects
 open Paket.ModuleResolver
 open Paket.PackageResolver
 open System.IO
 open System.Collections.Generic
 open FSharp.Polyfill
+open System.Reflection
 
 let private findPackagesWithContent (root,usedPackages:Dictionary<_,_>) = 
     usedPackages
@@ -93,6 +95,24 @@ let createModel(root, sources,force, lockFile:LockFile) =
 
     extractedPackages
 
+/// Applies binding redirects for all strong-named default fallback references to all app. and web. config files.
+let private applyBindingRedirects root extractedPackages =
+    extractedPackages
+    |> Seq.map(fun (package, model) -> model.DefaultFallback.References)
+    |> Seq.reduce (+)
+    |> Set.toSeq
+    |> Seq.map(fun ref -> Assembly.LoadFrom ref.Path)
+    |> Seq.choose(fun assembly ->
+        assembly
+        |> BindingRedirects.getPublicKeyToken
+        |> Option.map(fun token -> assembly, token))
+    |> Seq.map(fun (assembly, token) ->
+        {   BindingRedirect.AssemblyName = assembly.GetName().Name
+            Version = assembly.GetName().Version.ToString()
+            PublicKeyToken = token
+            Culture = None })
+    |> applyBindingRedirectsToFolder root
+
 /// Installs the given all packages from the lock file.
 let Install(sources,force, hard, lockFile:LockFile) = 
     let root = FileInfo(lockFile.FileName).Directory.FullName 
@@ -109,7 +129,7 @@ let Install(sources,force, hard, lockFile:LockFile) =
         |> Array.choose (fun p -> ProjectFile.FindReferencesFile(FileInfo(p.FileName))
                                   |> Option.map (fun r -> p, ReferencesFile.FromFile(r)))
 
-    for project,referenceFile in applicableProjects do    
+    for project, referenceFile in applicableProjects do    
         verbosefn "Installing to %s" project.FileName
 
         let usedPackages = lockFile.GetPackageHull(referenceFile)
@@ -142,3 +162,5 @@ let Install(sources,force, hard, lockFile:LockFile) =
         project.UpdateFileItems(gitRemoteItems @ nuGetFileItems, hard)
 
         project.Save()
+
+    extractedPackages |> applyBindingRedirects root

@@ -3,20 +3,28 @@
 open System
 open System.Xml.Linq
 open System.IO
+open System.Reflection
 
 [<AutoOpen>]
-module private Helpers =
+module private XmlLinq =
     let asOption = function | null -> None | x -> Some x
-    let tryGetElement name (xe:XContainer) = xe.Element(XName.Get name) |> asOption
-    let getElements name (xe:XContainer) = xe.Elements(XName.Get name)
-    let tryGetAttribute name (xe:XElement) = xe.Attribute(XName.Get name) |> asOption
-    let createElement name attributes = XElement(XName.Get name, attributes |> Seq.map(fun (name,value) -> XAttribute(XName.Get name, value)))    
+    let private xname ns name = XName.Get(name, defaultArg ns "")
+    let tryGetElement ns name (xe:XContainer) =
+        let XName = xname ns name
+        xe.Element XName |> asOption
+    let getElements ns name (xe:XContainer) = xname ns name |> xe.Elements
+    let tryGetAttribute name (xe:XElement) = xe.Attribute(xname None name) |> asOption
+    let createElement ns name attributes = XElement(xname ns name, attributes |> Seq.map(fun (name,value) -> XAttribute(xname None name, value)))
     let ensurePathExists (xpath:string) (item:XContainer) =
         (item, xpath.Split([|'/'|], StringSplitOptions.RemoveEmptyEntries))
         ||> Seq.fold(fun parent node ->
-            match parent |> tryGetElement node with
+            let node, ns =
+                match node.Split '!' with
+                | [| node; ns |] -> node, Some ns
+                | _ -> node, None
+            match parent |> tryGetElement ns node with
             | None ->
-                let node = XElement(XName.Get node)
+                let node = XElement(XName.Get(node, defaultArg ns ""))
                 parent.Add node
                 node :> XContainer
             | Some existingNode -> existingNode :> XContainer)
@@ -25,46 +33,62 @@ module private Helpers =
 type BindingRedirect =
     {   AssemblyName : string
         Version : string
-        PublicKeyToken : string option
+        PublicKeyToken : string
         Culture : string option }
 
 /// Updates the supplied MSBuild document with the supplied binding redirect.
-let setRedirect (doc:XDocument) bindingRedirect =
-    let assemblyBinding = doc |> ensurePathExists "/configuration/runtime/assemblyBinding"
+let internal setRedirect (doc:XDocument) bindingRedirect =
+    let bindingNs = "urn:schemas-microsoft-com:asm.v1"
+    let createElementWithNs = createElement (Some bindingNs)
+    let tryGetElementWithNs = tryGetElement (Some bindingNs)
+    let getElementsWithNs = getElements (Some bindingNs)
+
+    let assemblyBinding = doc |> ensurePathExists ("/configuration/runtime/assemblyBinding!" + bindingNs)
     let dependentAssembly =
-        assemblyBinding |> getElements "dependentAssembly"
+        assemblyBinding
+        |> getElementsWithNs "dependentAssembly"
         |> Seq.tryFind(fun dependentAssembly ->
             defaultArg
                 (dependentAssembly
-                 |> tryGetElement "assemblyIdentity"
+                 |> tryGetElementWithNs "assemblyIdentity"
                  |> Option.bind(tryGetAttribute "name")
                  |> Option.map(fun attribute -> attribute.Value = bindingRedirect.AssemblyName))
                 false)
         |> function
            | Some dependentAssembly -> dependentAssembly
            | None ->
-                let dependentAssembly = createElement "dependentAssembly" []
-                dependentAssembly.Add(createElement "assemblyIdentity" ([ "name", Some bindingRedirect.AssemblyName
-                                                                          "publicKeyToken", bindingRedirect.PublicKeyToken
-                                                                          "culture", bindingRedirect.Culture ]
-                                                                        |> Seq.choose(fun (key,value) -> match value with Some v -> Some(key, v) | None -> None)))
+                let dependentAssembly = createElementWithNs "dependentAssembly" []
+                dependentAssembly.Add(createElementWithNs "assemblyIdentity" ([ "name", bindingRedirect.AssemblyName
+                                                                                "publicKeyToken", bindingRedirect.PublicKeyToken
+                                                                                "culture", defaultArg bindingRedirect.Culture "neutral" ]))
                 assemblyBinding.Add(dependentAssembly)
                 dependentAssembly
                 
-    let newRedirect = createElement "bindingRedirect" [ "oldVersion", sprintf "0.0.0.0-%s" bindingRedirect.Version
-                                                        "newVersion", bindingRedirect.Version ]
-    match dependentAssembly |> tryGetElement "bindingRedirect" with
+    let newRedirect = createElementWithNs "bindingRedirect" [ "oldVersion", sprintf "0.0.0.0-%s" bindingRedirect.Version
+                                                              "newVersion", bindingRedirect.Version ]
+    match dependentAssembly |> tryGetElementWithNs "bindingRedirect" with
     | Some redirect -> redirect.ReplaceWith(newRedirect)
     | None -> dependentAssembly.Add(newRedirect)
     doc
 
 /// Applies a set of binding redirects to a single configuration file.
-let applyBindingRedirects bindingRedirects (configFilePath:string) =
+let private applyBindingRedirects bindingRedirects (configFilePath:string) =
     let config = XDocument.Load configFilePath
     let config = Seq.fold setRedirect config bindingRedirects
     config.Save configFilePath
 
 /// Applies a set of binding redirects to all .config files in a specific folder.
-let applyBindingRedirectsToFolder bindingRedirects rootPath =
-    Directory.GetFiles(rootPath, "*.config", SearchOption.AllDirectories)
+let applyBindingRedirectsToFolder rootPath bindingRedirects =
+    let getFiles searchPattern = Directory.GetFiles(rootPath, searchPattern, SearchOption.AllDirectories) |> List.ofArray
+    
+    getFiles "web.config" @
+    getFiles "app.config"
     |> Seq.iter (applyBindingRedirects bindingRedirects)
+
+/// Calculates the short form of the public key token for use with binding redirects, if it exists.
+let getPublicKeyToken (assembly:Assembly) =
+    ("", assembly.GetName().GetPublicKeyToken())
+    ||> Array.fold(fun state b -> state + b.ToString("X2"))
+    |> function
+    | "" -> None
+    | token -> Some <| token.ToLower()
