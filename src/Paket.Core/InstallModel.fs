@@ -58,40 +58,6 @@ type InstallFiles =
             References = Set.union that.References this.References
             ContentFiles = Set.union that.ContentFiles this.ContentFiles }
 
-type FrameworkGroup = 
-    { Frameworks : Map<FrameworkIdentifier, InstallFiles>
-      Fallbacks : InstallFiles }
-    
-    member this.GetFiles(framework : FrameworkIdentifier) = 
-        match this.Frameworks.TryFind framework with
-        | Some x -> 
-            x.References
-            |> Seq.map (fun x -> 
-                   match x with
-                   | Reference.Library lib -> Some lib
-                   | _ -> None)
-            |> Seq.choose id
-        | None -> Seq.empty
-    
-    static member singleton(framework,libs) =
-        { Frameworks = Map.add framework libs Map.empty; Fallbacks = InstallFiles.empty }
-
-    member this.ReplaceFramework(framework,emptyReferencesF,mapReferencesF) =
-        { this with Frameworks = 
-                        match Map.tryFind framework this.Frameworks with
-                        | Some files when Set.isEmpty files.References |> not -> Map.add framework (mapReferencesF files) this.Frameworks
-                        | _ -> Map.add framework (emptyReferencesF()) this.Frameworks }
-
-    member this.MergeWith(that:FrameworkGroup) =
-        let mergedFrameworks =
-            that.Frameworks
-            |> Map.fold (fun group frameworkName framework ->            
-                            match Map.tryFind frameworkName this.Frameworks with
-                            | Some files -> { group with Frameworks = Map.add frameworkName (files.MergeWith framework) group.Frameworks }
-                            | None -> { group with Frameworks = Map.add frameworkName framework group.Frameworks }) this
-        { mergedFrameworks with
-            Fallbacks = this.Fallbacks.MergeWith(that.Fallbacks) }
-
 type LibFolder =
     { Name : string
       Targets : seq<TargetProfile>
@@ -100,24 +66,12 @@ type LibFolder =
 type InstallModel = 
     { PackageName : PackageName
       PackageVersion : SemVerInfo
-      Groups : Map<string, FrameworkGroup>
-      LibFolders : seq<LibFolder>
-      DefaultFallback : InstallFiles }
+      LibFolders : seq<LibFolder> }
 
     static member EmptyModel(packageName, packageVersion) : InstallModel = 
-        let emptyFiles = InstallFiles.empty   
-        let group : FrameworkGroup = 
-            { Frameworks = 
-                FrameworkVersion.KnownDotNetFrameworks
-                |> List.map (fun f -> DotNetFramework f,emptyFiles)
-                |> Map.ofList
-              Fallbacks = InstallFiles.empty }
-
         { PackageName = packageName
           PackageVersion = packageVersion
-          DefaultFallback = InstallFiles.empty
-          LibFolders = Seq.empty
-          Groups = Map.add FrameworkIdentifier.DefaultGroup group Map.empty }
+          LibFolders = Seq.empty }
    
     member this.GetTargets() = 
         this.LibFolders
@@ -150,25 +104,6 @@ type InstallModel =
         else 
             path.Substring(startPos + 4, endPos - startPos - 4)
 
-    member this.AddOrReplaceGroup(groupId,mapGroupF,newGroupF) =
-        match this.Groups.TryFind groupId with
-        | Some group -> { this with Groups = Map.add groupId (mapGroupF group) this.Groups } 
-        | None -> 
-            match newGroupF() with
-            | Some newGroup -> { this with Groups = Map.add groupId newGroup this.Groups }
-            | None -> this
-
-    member this.MapGroups(mapF) = { this with Groups = Map.map mapF this.Groups }
-
-    member this.MapGroupFrameworks(mapF) = 
-        this.MapGroups(fun _ group -> { group with Frameworks = Map.map mapF group.Frameworks })
-
-    member this.MapFallbacks(mapF) = 
-        let fallbackMapped = 
-            this.MapGroups(fun _ group -> { group with Fallbacks = mapF group.Fallbacks })
-        { fallbackMapped with DefaultFallback = mapF fallbackMapped.DefaultFallback }
-            
-
     member this.MapFolders(mapF) = { this with LibFolders = Seq.map mapF this.LibFolders }
     
     member this.MapFiles(mapF) = 
@@ -200,19 +135,9 @@ type InstallModel =
     
     member this.AddReferences(libs) = this.AddReferences(libs, NuspecReferences.All)
     
-    member this.AddFrameworkAssemblyReference(reference) : InstallModel = 
-        match reference.TargetFramework with
-        | None -> 
-            this.MapGroupFrameworks(fun fw files -> files.AddFrameworkAssemblyReference(reference.AssemblyName))
-        | Some fw ->
-            this.AddOrReplaceGroup(
-                fw.Group,
-                (fun group ->
-                    group.ReplaceFramework(
-                        fw,
-                        (fun _ -> InstallFiles.empty.AddFrameworkAssemblyReference reference.AssemblyName),
-                        (fun files -> files.AddFrameworkAssemblyReference reference.AssemblyName))),
-                (fun _ -> None))
+    member this.AddFrameworkAssemblyReference(reference) : InstallModel =
+        // TODO: respect FrameworkRestrictions again
+        this.MapFiles(fun files -> files.AddFrameworkAssemblyReference(reference.AssemblyName))
     
     member this.AddFrameworkAssemblyReferences(references) : InstallModel = 
         references 
@@ -231,81 +156,22 @@ type InstallModel =
                 model.MapFiles(fun files -> { files with References = Set.filter f files.References }) )
                 this
     
-    member this.MergeWith(that:InstallModel) =
-        let mergedGroups =
-            that.Groups
-            |> Map.fold (fun (model : InstallModel) groupName group -> 
-                            match this.Groups.TryFind groupName with
-                            | Some g -> { model with Groups = Map.add groupName (group.MergeWith(g)) model.Groups }
-                            | None -> { model with Groups = Map.add groupName group model.Groups }) this
-        { mergedGroups with
-            DefaultFallback = this.DefaultFallback.MergeWith(that.DefaultFallback) }
-
-    member this.UseLastInGroupAsFallback() = 
-        this.MapGroups(fun _ group -> { group with Fallbacks = (group.Frameworks |> Seq.last).Value })
-
-    member this.UseLastGroupFallBackAsDefaultFallBack() =
-        { this with DefaultFallback = this.Groups.[FrameworkIdentifier.DefaultGroup].Fallbacks }
-    
-    member this.FilterFallbacks() =
-        this.MapGroups(fun _ group -> 
-                   let fallbacks = group.Fallbacks
-                   { group with Frameworks = 
-                                    group.Frameworks |> Seq.fold (fun frameworks kv -> 
-                                                            let files = kv.Value
-                                                            if files.References <> fallbacks.References then frameworks
-                                                            else Map.remove kv.Key frameworks) group.Frameworks })
-
     member this.FilterReferences(references) =
         let inline mapF (files:InstallFiles) = {files with References = files.References |> Set.filter (fun reference -> Set.contains reference.ReferenceName references |> not) }
         this.MapFiles(fun files -> mapF files)
     
-    member this.DeleteEmptyGroupIfDefaultFallback() =
-        this.MapGroups(fun _ group ->
-                   let fallbacks = group.Fallbacks
-                   group.Frameworks 
-                   |> Seq.fold (fun (group : FrameworkGroup) framework -> 
-                          if framework.Value.References <> fallbacks.References then group
-                          else { group with Frameworks = Map.remove framework.Key group.Frameworks }) group)
-
-    member this.ApplyFrameworkRestriction(restriction:FrameworkRestriction) =
-        match restriction with
-        | None -> this
-        | Some fw ->
-            {this with DefaultFallback = InstallFiles.empty }
-              .MapGroups(fun _ group ->
-                   group.Frameworks 
-                   |> Seq.fold (fun (group : FrameworkGroup) framework -> 
-                          if framework.Key = fw then group
-                          else { group with Frameworks = Map.remove framework.Key group.Frameworks }) { group with Fallbacks = InstallFiles.empty })
-    
-    member this.BuildUnfilteredModel(references) = 
-        this
-            .FilterBlackList()
-            .AddFrameworkAssemblyReferences(references)
-            .UseLastInGroupAsFallback()
-            .UseLastGroupFallBackAsDefaultFallBack()    
-
     member this.GetReferenceNames = 
-        lazy ([ for g in this.Groups do
-                    for f in g.Value.Frameworks do
-                        yield! f.Value.References
-                    yield! g.Value.Fallbacks.References 
-                yield! this.DefaultFallback.References]
+        lazy ([ for lib in this.LibFolders do
+                    yield! lib.Files.References]
               |> Set.ofList
               |> Set.map (fun lib -> lib.ReferenceName))
 
     member this.GetFrameworkAssemblies = 
-        lazy ([ for g in this.Groups do
-                    for f in g.Value.Frameworks do
-                        yield! f.Value.GetFrameworkAssemblies()
-                    yield! g.Value.Fallbacks.GetFrameworkAssemblies() 
-                yield! this.DefaultFallback.GetFrameworkAssemblies()]
+        lazy ([ for lib in this.LibFolders do
+                    yield! lib.Files.GetFrameworkAssemblies()]
               |> Set.ofList)
     
     static member CreateFromLibs(packageName, packageVersion, frameworkRestriction:FrameworkRestriction, libs, nuspec : Nuspec) = 
         InstallModel
             .EmptyModel(packageName, packageVersion)
-            .AddReferences(libs, nuspec.References)            
-            .BuildUnfilteredModel(nuspec.FrameworkAssemblyReferences)
-            .ApplyFrameworkRestriction(frameworkRestriction)
+            .AddReferences(libs, nuspec.References)

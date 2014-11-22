@@ -177,7 +177,7 @@ type ProjectFile =
             |> List.map (fun node -> node.Attributes.["Include"].InnerText.Split(',').[0])
             |> Set.ofList
 
-        let model = model.FilterReferences(references).FilterFallbacks()     
+        let model = model.FilterReferences(references)
         let createItemGroup references = 
             let itemGroup = this.CreateNode("ItemGroup")
                                 
