@@ -9,6 +9,7 @@ type FrameworkVersion =
     | V1
     | V1_1
     | V2
+    | V3
     | V3_5
     | V4_Client
     | V4
@@ -21,6 +22,7 @@ type FrameworkVersion =
         | V1 -> "v1.0"
         | V1_1 -> "v1.1"
         | V2 -> "v2.0"
+        | V3 -> "v3.0"
         | V3_5 -> "v3.5"
         | V4_Client -> "v4.0"
         | V4 -> "v4.0"
@@ -48,87 +50,65 @@ type PortableFrameworkProfile = string
 /// Framework Identifier type.
 type FrameworkIdentifier = 
     | DotNetFramework of FrameworkVersion
-    | PortableFramework of PlatformVersion * PortableFrameworkProfile
     | MonoAndroid
     | MonoTouch
     | Windows of string
     | WindowsPhoneApp of string
+    | WindowsPhoneSilverlight of string
     | Silverlight of string
 
-    static member KnownAliases =
-        ["NET", "net"
-         ".NET", "net"
-         "NETFramework", "net"
-         ".NETFramework", "net"
-         "NETCore", "netcore"
-         ".NETCore", "netcore"
-         "WinRT", "netcore"
-         ".NETMicroFramework", "netmf"
-         "SL", "sl"
-         "Silverlight", "sl"
-         ".NETPortable", "portable-"
-         "NETPortable", "portable-"
-         "WindowsPhone", "wp"
-         "Windows", "win"
-         "WindowsPhoneApp", "wpa"
+    static member Extract(path:string) =
+        let knownAliases =
+            [".net", "net"
+             "netframework", "net"
+             ".netframework", "net"
+             ".netcore", "netcore"
+             "winrt", "netcore"
+             "silverlight", "sl"
+             "windowsphone", "wp"
+             "windows", "win"
+             "windowsPhoneApp", "wpa"
          
-         "1.0", "10" 
-         "1.1", "11" 
-         "2.0", "20" 
-         "3.5", "35" 
-         "4.0", "40" 
-         "4.5", "45" 
-         "0.0", "" ]
+             "1.0", "10" 
+             "1.1", "11" 
+             "2.0", "20" 
+             "3.5", "35" 
+             "4.0", "40" 
+             "4.5", "45" 
+             "0.0", "" ]
 
-    static member Extract(path:string) = 
         let path = 
-            FrameworkIdentifier.KnownAliases
+            knownAliases
             |> List.fold (fun (path:string) (pattern,replacement) -> path.Replace(pattern.ToLower(),replacement.ToLower())) (path.ToLower())
 
         match path with
-        | "net" -> Some(DotNetFramework(FrameworkVersion.V2)) // not sure here
-        | "10" -> Some(DotNetFramework(FrameworkVersion.V1))
-        | "11" -> Some(DotNetFramework(FrameworkVersion.V1_1))
-        | "20" -> Some(DotNetFramework(FrameworkVersion.V2))
-        | "net11" -> Some(DotNetFramework(FrameworkVersion.V1_1))
-        | "net20" -> Some(DotNetFramework(FrameworkVersion.V2))
-        | "net20-full" -> Some(DotNetFramework(FrameworkVersion.V2))
-        | "net35" -> Some(DotNetFramework(FrameworkVersion.V3_5))
-        | "net35-full" -> Some(DotNetFramework(FrameworkVersion.V3_5))
-        | "net4" -> Some(DotNetFramework(FrameworkVersion.V4_Client))
-        | "net40" -> Some(DotNetFramework(FrameworkVersion.V4_Client))
-        | "net40-full" -> Some(DotNetFramework(FrameworkVersion.V4))
-        | "net40-client" -> Some(DotNetFramework(FrameworkVersion.V4_Client))
-        | "net45" -> Some(DotNetFramework(FrameworkVersion.V4_5))
-        | "net45-full" -> Some(DotNetFramework(FrameworkVersion.V4_5))
-        | "net451" -> Some(DotNetFramework(FrameworkVersion.V4_5_1))
-        | "net452" -> Some(DotNetFramework(FrameworkVersion.V4_5_2))
-        | "net453" -> Some(DotNetFramework(FrameworkVersion.V4_5_3))
-        | "35" -> Some(DotNetFramework(FrameworkVersion.V3_5))
-        | "40" -> Some(DotNetFramework(FrameworkVersion.V4))
-        | "45" -> Some(DotNetFramework(FrameworkVersion.V4_5))
-        | "sl3" -> Some(Silverlight "v3.0")
-        | "sl4" -> Some(Silverlight "v4.0")
-        | "sl5" -> Some(Silverlight "v5.0")
-        | "sl50" -> Some(Silverlight "v5.0")
-        | "sl4-wp" -> Some(WindowsPhoneApp "7.1")
-        | "sl4-wp71" -> Some(WindowsPhoneApp "7.1")
-        | "sl4-windowsphone71" -> Some(WindowsPhoneApp "7.1")
-        | "win8" -> Some(Windows "v8.0")
-        | "wp8" -> Some(WindowsPhoneApp "v8.0")
-        | "wpa81" -> Some(WindowsPhoneApp "v8.1")
-        | "monoandroid" -> Some(MonoAndroid)
-        | "monotouch" -> Some(MonoTouch)
-        | _ ->                         
-            if path.ToLower().StartsWith("portable-") then
-                Some(PortableFramework("7.0", path.ToLower().Replace("portable-","")))
-            else None
+        | "net10" | "net1" | "10" -> Some (DotNetFramework FrameworkVersion.V1)
+        | "net11" | "11" -> Some (DotNetFramework FrameworkVersion.V1_1)
+        | "net20" | "net2" | "net20-full" | "20" -> Some (DotNetFramework FrameworkVersion.V2)
+        | "net35" | "net35-full" | "35" -> Some (DotNetFramework FrameworkVersion.V3_5)
+        | "net40" | "net4" | "40" | "net40-client" | "net4-client" -> Some (DotNetFramework FrameworkVersion.V4_Client)
+        | "net40-full" | "net403" -> Some (DotNetFramework FrameworkVersion.V4)
+        | "net45" | "45" -> Some (DotNetFramework FrameworkVersion.V4_5)
+        | "net451" -> Some (DotNetFramework FrameworkVersion.V4_5_1)
+        | "net452" -> Some (DotNetFramework FrameworkVersion.V4_5_2)
+        | "net453" -> Some (DotNetFramework FrameworkVersion.V4_5_3)
+        | "monotouch" -> Some MonoTouch
+        | "monoandroid" -> Some MonoAndroid
+        | "sl3" | "sl30" -> Some (Silverlight "v3.0")
+        | "sl4" | "sl40" -> Some (Silverlight "v4.0")
+        | "sl5" | "sl50" -> Some (Silverlight "v5.0")
+        | "win8" | "win80" | "netcore45" | "win" -> Some (Windows "v8.0")
+        | "win81" | "netcore46" -> Some (Windows "v8.1")
+        | "wp7" | "wp70" | "sl4-wp7"| "sl4-wp70" -> Some (WindowsPhoneSilverlight "v7.0")
+        | "wp71" | "sl4-wp71" -> Some (WindowsPhoneSilverlight "v7.1")
+        | "wp8" | "wp80" -> Some (WindowsPhoneSilverlight "v8.0")
+        | "wpa81" -> Some (WindowsPhoneApp "v8.1")
+        | _ -> None
     
     member x.Group =
         let group =
             match x with
             | DotNetFramework _ -> ".NETFramework"
-            | PortableFramework _ -> ".NETPortable"
             | WindowsPhoneApp _ -> "WindowsPhoneApp"
             | Windows _ -> "Windows"
             | Silverlight _ -> "Silverlight"
@@ -139,86 +119,19 @@ type FrameworkIdentifier =
 
     member x.GetFrameworkIdentifier() = x.Group
     member x.GetPortableProfile() =
-        match x with 
-        | PortableFramework(_,profile) -> 
-            let profileMapping = 
-                [ "Profile2", "net4+sl4+netcore45+wp7"
-                  "Profile3", "net4+sl4"
-                  "Profile4", "net45+sl4+netcore45+wp7"
-                  "Profile5", "net4+netcore45+MonoAndroid1+MonoTouch1"
-                  "Profile6", "net403+netcore45+MonoAndroid1+MonoTouch1"
-                  "Profile7", "net45+netcore45+MonoAndroid1+MonoTouch1"
-                  "Profile14", "net4+sl5+MonoAndroid1+MonoTouch1"
-                  "Profile18", "net403+sl4"
-                  "Profile19", "net403+sl5+MonoAndroid1+MonoTouch1"
-                  "Profile23", "net45+sl4"
-                  "Profile24", "net45+sl5+MonoAndroid1+MonoTouch1"
-                  "Profile31", "netcore451+wp81"
-                  "Profile32", "netcore451+wpa81"
-                  "Profile32", "win81+wpa81"
-                  "Profile36", "net4+sl4+netcore45+wp8"
-                  "Profile37", "net4+sl5+netcore45+MonoAndroid1+MonoTouch1"
-                  "Profile41", "net403+sl4+netcore45"
-                  "Profile42", "net403+sl5+netcore45+MonoAndroid1+MonoTouch1"
-                  "Profile44", "net451+netcore451"
-                  "Profile46", "net45+sl4+netcore45"
-                  "Profile47", "net45+sl5+netcore45+MonoAndroid1+MonoTouch1"
-                  "Profile49", "net45+wp8+MonoAndroid1+MonoTouch1"
-                  "Profile78", "net45+netcore45+wp8+MonoAndroid1+MonoTouch1"
-                  "Profile84", "wpa81+wp81"
-                  "Profile88", "net4+sl4+netcore45+wp71"
-                  "Profile92", "net4+netcore45+wpa81+MonoAndroid1+MonoTouch1"
-                  "Profile95", "net403+sl4+netcore45+wp7"
-                  "Profile96", "net403+sl4+netcore45+wp71"
-                  "Profile102", "net403+netcore45+wpa81+MonoAndroid1+MonoTouch1"
-                  "Profile104", "net45+sl4+netcore45+wp71"
-                  "Profile111", "net45+netcore45+wpa81+MonoAndroid1+MonoTouch1"
-                  "Profile136", "net4+sl5+netcore45+wp8+MonoAndroid1+MonoTouch1"
-                  "Profile136", "net4+sl5+wp8+win8+wpa81+MonoTouch+MonoAndroid"
-                  "Profile136", "net40+sl5+wp80+win8+wpa81"
-                  "Profile143", "net403+sl4+netcore45+wp8"
-                  "Profile147", "net403+sl5+netcore45+wp8+MonoAndroid1+MonoTouch1"
-                  "Profile151", "net451+netcore451+wpa81"
-                  "Profile154", "net45+sl4+netcore45+wp8"
-                  "Profile157", "netcore451+wpa81+wp81"
-                  "Profile158", "net45+sl5+netcore45+wp8+MonoAndroid1+MonoTouch1"
-                  "Profile225", "net4+sl5+netcore45+wpa81+MonoAndroid1+MonoTouch1"                  
-                  "Profile240", "net403+sl5+netcore45+wpa81"
-                  "Profile255", "net45+sl5+netcore45+wpa81+MonoAndroid1+MonoTouch1"
-                  "Profile259", "net45+netcore45+wpa81+wp8+MonoAndroid1+MonoTouch1"
-                  "Profile259", "net45+win8+wp8+wpa81"
-                  "Profile328", "net4+sl5+netcore45+wpa81+wp8+MonoAndroid1+MonoTouch1"
-                  "Profile328", "net4+sl5+wp8+win8+wpa81+monoandroid16+monotouch40"
-                  "Profile336", "net403+sl5+netcore45+wpa81+wp8+MonoAndroid1+MonoTouch1"
-                  "Profile344", "net45+sl5+netcore45+wpa81+wp8+MonoAndroid1+MonoTouch1"
-
-                  // unsure
-                  "Profile88", "net40+sl4+win8+wp71+wpa81"
-                  "Profile84", "net45+wp80+win8+wpa81" ]
-            
-            
-            match profileMapping |> Seq.tryFind (fun (_, p) -> profile.ToLower() = p.ToLower()) with
-            | None -> None
-            | Some(mappedProfile, _) -> Some mappedProfile
-        | _ -> None
+        None
 
     member x.GetFrameworkProfile() =        
         match x with 
         | DotNetFramework(FrameworkVersion.V4_Client) -> "$(TargetFrameworkProfile) == 'Client'" 
-        | PortableFramework(_,profile) -> 
-            match x.GetPortableProfile() with
-            | None -> sprintf "$(TargetFrameworkProfile) == '%s'"  profile
-            | Some mappedProfile -> sprintf "$(TargetFrameworkProfile) == '%s'"  mappedProfile
         | _ -> ""
 
     member x.GetPlatformIdentifier() =        
         match x with 
-        | PortableFramework(_,_) -> sprintf "$(TargetPlatformIdentifier) == 'Portable'"
         | _ -> ""
 
     member x.GetPlatformVersion() =        
         match x with 
-        | PortableFramework(v,_) -> sprintf "$(TargetPlatformVersion) == '%s'"  v
         | WindowsPhoneApp v -> sprintf "$(TargetPlatformVersion) == '%s'"  v
         | Windows v -> sprintf "$(TargetPlatformVersion) == '%s'"  v
         | _ -> ""
@@ -232,7 +145,6 @@ type FrameworkIdentifier =
            else x + " And " + y
         match x with
         | DotNetFramework(fw) -> sprintf "$(TargetFrameworkVersion) == '%s'" (fw.ToString()) ++ x.GetFrameworkProfile()
-        | PortableFramework _ -> x.GetFrameworkProfile() ++ x.GetPlatformIdentifier() ++ x.GetPlatformVersion()
         | WindowsPhoneApp _ -> x.GetPlatformVersion()
         | Windows _ -> x.GetPlatformVersion()
         | Silverlight v -> sprintf "$(SilverlightVersion) == '%s'" v
@@ -256,7 +168,6 @@ type FrameworkIdentifier =
                 | FrameworkVersion.V4_5_1 -> "451"
                 | FrameworkVersion.V4_5_2 -> "452"
                 | FrameworkVersion.V4_5_3 -> "453"
-        | PortableFramework(v,p) -> "portable-" + v.ToString()
         | MonoAndroid -> "monoandroid"
         | MonoTouch -> "monotouch"
         | Windows v -> "win" + v
@@ -279,15 +190,196 @@ type FrameworkIdentifier =
 
     static member DefaultGroup = DotNetFramework(FrameworkVersion.V4).Group
 
-module SpecialTargets =
-    let KnownSpecialTargets = 
-        [ Silverlight "v3.0"
-          Silverlight "v4.0"
-          Silverlight "v5.0"
-          Silverlight "v5.0"
-          WindowsPhoneApp "7.1"
-          Windows "v8.0"
-          WindowsPhoneApp "v8.0"
-          WindowsPhoneApp "v8.1"
-          MonoAndroid
-          MonoTouch ]
+    // returns a list of compatible platforms that this platform also supports
+    member x.SupportedPlatforms =
+        match x with
+        | MonoAndroid -> [ DotNetFramework FrameworkVersion.V4_5_3 ]
+        | MonoTouch -> [ DotNetFramework FrameworkVersion.V4_5_3 ]
+        | DotNetFramework FrameworkVersion.V1 -> [ ]
+        | DotNetFramework FrameworkVersion.V1_1 -> [ DotNetFramework FrameworkVersion.V1 ]
+        | DotNetFramework FrameworkVersion.V2 -> [ DotNetFramework FrameworkVersion.V1_1 ]
+        | DotNetFramework FrameworkVersion.V3 -> [ DotNetFramework FrameworkVersion.V2 ]
+        | DotNetFramework FrameworkVersion.V3_5 -> [ DotNetFramework FrameworkVersion.V3 ]
+        | DotNetFramework FrameworkVersion.V4_Client -> [ DotNetFramework FrameworkVersion.V3_5 ]
+        | DotNetFramework FrameworkVersion.V4 -> [ DotNetFramework FrameworkVersion.V4_Client ]
+        | DotNetFramework FrameworkVersion.V4_5 -> [ DotNetFramework FrameworkVersion.V4 ]
+        | DotNetFramework FrameworkVersion.V4_5_1 -> [ DotNetFramework FrameworkVersion.V4_5 ]
+        | DotNetFramework FrameworkVersion.V4_5_2 -> [ DotNetFramework FrameworkVersion.V4_5_1 ]
+        | DotNetFramework FrameworkVersion.V4_5_3 -> [ DotNetFramework FrameworkVersion.V4_5_2 ]
+        | Silverlight "v3.0" -> [ ]
+        | Silverlight "v4.0" -> [ Silverlight "v3.0" ]
+        | Silverlight "v5.0" -> [ Silverlight "v4.0" ]
+        | Windows "v8.0" -> [ ]
+        | Windows "v8.1" -> [ Windows "v8.0" ]
+        | WindowsPhoneApp "v8.1" -> [ ]
+        | WindowsPhoneSilverlight "v7.0" -> [ ]
+        | WindowsPhoneSilverlight "v7.1" -> [ WindowsPhoneSilverlight "v7.0" ]
+        | WindowsPhoneSilverlight "v8.0" -> [ WindowsPhoneSilverlight "v7.1" ]
+        | WindowsPhoneSilverlight "v8.1" -> [ WindowsPhoneSilverlight "v8.0" ]
+
+        // wildcards for future versions. new versions should be added above, though, so the penalty will be calculated correctly.
+        | Silverlight _ -> [ Silverlight "v5.0" ]
+        | Windows _ -> [ Windows "v8.1" ]
+        | WindowsPhoneApp _ -> [ WindowsPhoneApp "v8.1" ]
+        | WindowsPhoneSilverlight _ -> [ WindowsPhoneSilverlight "v8.1" ]
+
+type TargetProfile =
+    | SinglePlatform of FrameworkIdentifier
+    | PortableProfile of string * FrameworkIdentifier list
+
+    static member KnownTargetProfiles =
+       [SinglePlatform(DotNetFramework FrameworkVersion.V1)
+        SinglePlatform(DotNetFramework FrameworkVersion.V1_1)
+        SinglePlatform(DotNetFramework FrameworkVersion.V2)
+        SinglePlatform(DotNetFramework FrameworkVersion.V3)
+        SinglePlatform(DotNetFramework FrameworkVersion.V3_5)
+        SinglePlatform(DotNetFramework FrameworkVersion.V4_Client)
+        SinglePlatform(DotNetFramework FrameworkVersion.V4)
+        SinglePlatform(DotNetFramework FrameworkVersion.V4_5)
+        SinglePlatform(DotNetFramework FrameworkVersion.V4_5_1)
+        SinglePlatform(DotNetFramework FrameworkVersion.V4_5_2)
+        SinglePlatform(DotNetFramework FrameworkVersion.V4_5_3)
+        SinglePlatform(MonoAndroid)
+        SinglePlatform(MonoTouch)
+        SinglePlatform(Silverlight "v3.0")
+        SinglePlatform(Silverlight "v4.0")
+        SinglePlatform(Silverlight "v5.0")
+        SinglePlatform(Windows "v8.0")
+        SinglePlatform(Windows "v8.1")
+        SinglePlatform(WindowsPhoneSilverlight "v7.0")
+        SinglePlatform(WindowsPhoneSilverlight "v7.1")
+        SinglePlatform(WindowsPhoneSilverlight "v8.0")
+        SinglePlatform(WindowsPhoneSilverlight "v8.1")
+        SinglePlatform(WindowsPhoneApp "v8.1")
+        PortableProfile("Profile2", [ DotNetFramework FrameworkVersion.V4; Silverlight "v4.0"; Windows "v8.0"; WindowsPhoneSilverlight "v7.0" ])
+        PortableProfile("Profile3", [ DotNetFramework FrameworkVersion.V4; Silverlight "v4.0" ])
+        PortableProfile("Profile4", [ DotNetFramework FrameworkVersion.V4_5; Silverlight "v4.0"; Windows "v8.0"; WindowsPhoneSilverlight "v7.0" ])
+        PortableProfile("Profile5", [ DotNetFramework FrameworkVersion.V4; Windows "v8.0"; MonoAndroid; MonoTouch ])
+        PortableProfile("Profile5", [ DotNetFramework FrameworkVersion.V4; Windows "v8.0" ])
+        PortableProfile("Profile6", [ DotNetFramework FrameworkVersion.V4; Windows "v8.0" ])
+        PortableProfile("Profile7" , [ DotNetFramework FrameworkVersion.V4_5; Windows "v8.0" ])
+        PortableProfile("Profile14", [ DotNetFramework FrameworkVersion.V4; Silverlight "v5.0" ])
+        PortableProfile("Profile18", [ DotNetFramework FrameworkVersion.V4; Silverlight "v4.0" ])
+        PortableProfile("Profile19", [ DotNetFramework FrameworkVersion.V4; Silverlight "v5.0" ])
+        PortableProfile("Profile23", [ DotNetFramework FrameworkVersion.V4_5; Silverlight "v4.0" ])
+        PortableProfile("Profile24", [ DotNetFramework FrameworkVersion.V4_5; Silverlight "v5.0" ])
+        PortableProfile("Profile31", [ Windows "v8.1"; WindowsPhoneSilverlight "v8.1" ])
+        PortableProfile("Profile32", [ Windows "v8.1"; WindowsPhoneApp "v8.1" ])
+        PortableProfile("Profile36", [ DotNetFramework FrameworkVersion.V4; Silverlight "v4.0"; Windows "v8.0"; WindowsPhoneSilverlight "v8.0" ])
+        PortableProfile("Profile37", [ DotNetFramework FrameworkVersion.V4; Silverlight "v5.0"; Windows "v8.0" ])
+        PortableProfile("Profile41", [ DotNetFramework FrameworkVersion.V4; Silverlight "v4.0"; Windows "v8.0" ])
+        PortableProfile("Profile42", [ DotNetFramework FrameworkVersion.V4; Silverlight "v5.0"; Windows "v8.0" ])
+        PortableProfile("Profile44", [ DotNetFramework FrameworkVersion.V4_5_1; Windows "v8.1" ])
+        PortableProfile("Profile46", [ DotNetFramework FrameworkVersion.V4_5; Silverlight "v4.0"; Windows "v8.0" ])
+        PortableProfile("Profile47", [ DotNetFramework FrameworkVersion.V4_5; Silverlight "v5.0"; Windows "v8.0" ])
+        PortableProfile("Profile49", [ DotNetFramework FrameworkVersion.V4_5; WindowsPhoneSilverlight "v8.0" ])
+        PortableProfile("Profile78", [ DotNetFramework FrameworkVersion.V4_5; Windows "v8.0"; WindowsPhoneSilverlight "v8.0" ])
+        PortableProfile("Profile84", [ WindowsPhoneApp "v8.1"; WindowsPhoneSilverlight "v8.1" ])
+        PortableProfile("Profile88", [ DotNetFramework FrameworkVersion.V4; Silverlight "v4.0"; Windows "v8.0"; WindowsPhoneSilverlight "v7.1" ])
+        PortableProfile("Profile92", [ DotNetFramework FrameworkVersion.V4; Windows "v8.0"; WindowsPhoneApp "v8.1" ])
+        PortableProfile("Profile95", [ DotNetFramework FrameworkVersion.V4; Silverlight "v4.0"; Windows "v8.0"; WindowsPhoneSilverlight "v7.0" ])
+        PortableProfile("Profile96", [ DotNetFramework FrameworkVersion.V4; Silverlight "v4.0"; Windows "v8.0"; WindowsPhoneSilverlight "v7.1" ])
+        PortableProfile("Profile102", [ DotNetFramework FrameworkVersion.V4; Windows "v8.0"; WindowsPhoneApp "v8.1" ])
+        PortableProfile("Profile104", [ DotNetFramework FrameworkVersion.V4_5; Silverlight "v4.0"; Windows "v8.0"; WindowsPhoneSilverlight "v7.1" ])
+        PortableProfile("Profile111", [ DotNetFramework FrameworkVersion.V4_5; Windows "v8.0"; WindowsPhoneApp "v8.1" ])
+        PortableProfile("Profile136", [ DotNetFramework FrameworkVersion.V4; Silverlight "v5.0"; WindowsPhoneSilverlight "v8.0"; Windows "v8.0"; WindowsPhoneApp "v8.1" ])
+        PortableProfile("Profile143", [ DotNetFramework FrameworkVersion.V4; Silverlight "v4.0"; Windows "v8.0"; WindowsPhoneSilverlight "v8.0" ])
+        PortableProfile("Profile147", [ DotNetFramework FrameworkVersion.V4; Silverlight "v5.0"; Windows "v8.0"; WindowsPhoneSilverlight "v8.0" ])
+        PortableProfile("Profile151", [ DotNetFramework FrameworkVersion.V4_5_1; Windows "v8.1"; WindowsPhoneApp "v8.1" ])
+        PortableProfile("Profile154", [ DotNetFramework FrameworkVersion.V4_5; Silverlight "v4.0"; Windows "v8.0"; WindowsPhoneSilverlight "v8.0" ])
+        PortableProfile("Profile157", [ Windows "v8.1"; WindowsPhoneApp "v8.1"; WindowsPhoneSilverlight "v8.1" ])
+        PortableProfile("Profile158", [ DotNetFramework FrameworkVersion.V4_5; Silverlight "v5.0"; Windows "v8.0"; WindowsPhoneSilverlight "v8.0" ])
+        PortableProfile("Profile225", [ DotNetFramework  FrameworkVersion.V4; Silverlight "v5.0"; Windows "v8.0"; WindowsPhoneApp "v8.1" ])                  
+        PortableProfile("Profile240", [ DotNetFramework FrameworkVersion.V4; Silverlight "v5.0"; Windows "v8.0"; WindowsPhoneApp "v8.1" ])
+        PortableProfile("Profile255", [ DotNetFramework FrameworkVersion.V4_5; Silverlight "v5.0"; Windows "v8.0"; WindowsPhoneApp "v8.1" ])
+        PortableProfile("Profile259", [ DotNetFramework FrameworkVersion.V4_5; Windows "v8.0"; WindowsPhoneSilverlight "v8.0"; WindowsPhoneApp "v8.1" ])
+        PortableProfile("Profile328", [ DotNetFramework FrameworkVersion.V4; Silverlight "v5.0"; WindowsPhoneSilverlight "v8.0"; Windows "v8.0"; WindowsPhoneApp "v8.1" ])
+        PortableProfile("Profile336", [ DotNetFramework FrameworkVersion.V4; Silverlight "v5.0"; Windows "v8.0"; WindowsPhoneApp "v8.1"; WindowsPhoneSilverlight "v8.0" ])
+        PortableProfile("Profile344", [ DotNetFramework FrameworkVersion.V4_5; Silverlight "v5.0"; Windows "v8.0"; WindowsPhoneApp "v8.1"; WindowsPhoneSilverlight "v8.0" ])]
+
+    static member FindPortableProfile name =
+        TargetProfile.KnownTargetProfiles
+        |> List.pick (fun target -> match target with
+                                    | PortableProfile(n, _) as p -> if n = name then Some(p) else None
+                                    | _ -> None)
+
+module PlatformMatching =
+    let split (path:string) =
+        path.Split('+') |> Array.map (fun s -> s.Replace("portable-", "")) |> Array.toList
+
+    let extractPlatforms path =
+        split path
+        |> List.choose FrameworkIdentifier.Extract
+
+    let rec getPlatformPenalty (targetPlatform:FrameworkIdentifier) (packagePlatform:FrameworkIdentifier) =
+        if packagePlatform = targetPlatform then
+            0
+        else
+            let penalties = targetPlatform.SupportedPlatforms
+                            |> List.map (fun target -> getPlatformPenalty target packagePlatform)
+            List.min (1000::penalties) + 1
+
+    let getPathPenalty (path:string) (platform:FrameworkIdentifier) =
+        if (System.String.IsNullOrWhiteSpace(path)) then
+            999 // an empty path is considered compatible with every target, but with a high penalty so explicit paths are preferred
+        else
+            extractPlatforms path
+            |> List.map (getPlatformPenalty platform)
+            |> List.append [1000]
+            |> List.min
+
+    // Checks wether a list of target platforms is supported by this path and with which penalty. 
+    let getPenalty (requiredPlatforms:FrameworkIdentifier list) (path:string) =
+        requiredPlatforms
+        |> List.map (getPathPenalty path)
+        |> List.sum
+
+    let findBestMatch (paths:string list) (targetProfile:TargetProfile) =
+        let requiredPlatforms = match targetProfile with
+                                | PortableProfile(_, platforms) -> platforms
+                                | SinglePlatform(platform) -> [platform]
+
+        let pathPenalties = paths
+                            |> List.map (fun path -> (path, getPenalty requiredPlatforms path))
+
+        let minPenalty = pathPenalties
+                         |> List.map (fun (path, penalty) -> penalty)
+                         |> List.min
+
+        pathPenalties
+        |> List.filter (fun (path, penalty) -> penalty = minPenalty && minPenalty < 1000)
+        |> List.map (fun (path, penalty) -> path)
+        |> List.sortBy (fun path -> (extractPlatforms path).Length)
+        |> List.tryFind (fun _ -> true)
+
+    // For a given list of paths and target profiles return tuples of paths with their supported target profiles.
+    // Every target profile will only be listed for own path - the one that best supports it. 
+    let getSupportedTargetProfiles (paths:string list) =
+        let test = TargetProfile.KnownTargetProfiles
+                   |> List.map (fun target -> ((findBestMatch paths target), target))
+        TargetProfile.KnownTargetProfiles
+        |> List.map (fun target -> ((findBestMatch paths target), target))
+        |> List.collect (fun (path, target) -> match path with
+                                               | Some(p) -> [(p, target)]
+                                               | _ -> [])
+        |> Seq.groupBy (fun (path, target) -> path)
+        |> Seq.map (fun (path, group) -> (path, Seq.map (fun (_, target) -> target) group))
+        |> Map.ofSeq
+
+    let getTargetCondition (target:TargetProfile) =
+        match target with
+        | SinglePlatform(platform) -> match platform with
+                                      | DotNetFramework(version) -> System.String.Format("$(TargetFrameworkIdentifier) == '.NETFramework' And $(TargetFrameworkVersion) == '{0}'", version)
+                                      | Windows(version) -> System.String.Format("$(TargetFrameworkIdentifier) == '.NETCore' And $(TargetFrameworkVersion) == '{0}'", version)
+                                      | Silverlight(version) -> System.String.Format("$(TargetFrameworkIdentifier) == 'Silverlight' And $(TargetFrameworkVersion) == '{0}'", version)
+                                      | WindowsPhoneApp(version) -> System.String.Format("$(TargetFrameworkIdentifier) == 'WindowsPhoneApp' And $(TargetFrameworkVersion) == '{0}'", version)
+                                      | WindowsPhoneSilverlight(version) -> System.String.Format("$(TargetFrameworkIdentifier) == 'WindowsPhone' And $(TargetFrameworkVersion) == '{0}'", version)
+                                      | MonoAndroid | MonoTouch -> "false" // should be covered by the .NET case above
+
+        | PortableProfile(name, _) -> System.String.Format("$(TargetFrameworkProfile) == '{0}'", name)
+
+    let rec getCondition (targets:TargetProfile list) =
+        match targets with
+        | [target] -> getTargetCondition target
+        | target::rest -> getTargetCondition target + " Or " + getCondition rest
+        | [] -> ""

@@ -168,7 +168,7 @@ let ``should generate Xml for FSharp.Data.SqlClient 1.4.4``() =
               @"..\FSharp.Data.SqlClient\lib\net40\FSharp.Data.SqlClient.XML"
               @"..\FSharp.Data.SqlClient\lib\net40\Microsoft.SqlServer.TransactSql.ScriptDom.dll"
               @"..\FSharp.Data.SqlClient\lib\net40\Microsoft.SqlServer.Types.dll" ],
-              Nuspec.Load("Nuspec/FSharp.Data.SqlClient.nuspec")).FilterFallbacks()
+              Nuspec.Load("Nuspec/FSharp.Data.SqlClient.nuspec"))
     
     let chooseNode = ProjectFile.Load("./ProjectFile/TestData/Empty.fsprojtest").Value.GenerateXml(model)
     chooseNode.OuterXml

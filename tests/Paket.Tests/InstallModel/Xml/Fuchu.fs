@@ -22,7 +22,7 @@ let ``should generate Xml for Fuchu 0.4``() =
             [ @"..\Fuchu\lib\Fuchu.dll" 
               @"..\Fuchu\lib\Fuchu.XML" 
               @"..\Fuchu\lib\Fuchu.pdb" ],
-              Nuspec.All).FilterFallbacks()
+              Nuspec.All)
     
     let chooseNode = ProjectFile.Load("./ProjectFile/TestData/Empty.fsprojtest").Value.GenerateXml(model)
     chooseNode.OuterXml

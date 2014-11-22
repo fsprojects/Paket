@@ -196,7 +196,6 @@ let ``should generate Xml for System.Net.Http 2.2.8``() =
                  FrameworkAssemblyReferences =
                  [{ AssemblyName = "System.Net.Http"; TargetFramework = Some(DotNetFramework(FrameworkVersion.V4_5)) }
                   { AssemblyName = "System.Net.Http.WebRequest"; TargetFramework = Some(DotNetFramework(FrameworkVersion.V4_5)) }]})
-            .FilterFallbacks()
 
     let chooseNode = ProjectFile.Load("./ProjectFile/TestData/FrameworkAssemblies.fsprojtest").Value.GenerateXml(model)
     chooseNode.OuterXml
