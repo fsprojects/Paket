@@ -182,6 +182,7 @@ let ``should skip lib install of Microsoft.BCL for monotouch and monoandroid``()
               @"..\Microsoft.Bcl\lib\monoandroid\_._" 
               @"..\Microsoft.Bcl\lib\monotouch\_._" 
               @"..\Microsoft.Bcl\lib\net45\_._" ])
+            .FilterBlackList()
 
     model.GetFiles(SinglePlatform MonoAndroid) |> shouldBeEmpty
     model.GetFiles(SinglePlatform MonoTouch) |> shouldBeEmpty
@@ -215,13 +216,6 @@ let ``should handle lib install of DotNetZip 1.9.3``() =
     model.GetFiles(SinglePlatform (DotNetFramework FrameworkVersion.V3_5)) |> shouldContain @"..\DotNetZip\lib\net20\Ionic.Zip.dll"
     model.GetFiles(SinglePlatform (DotNetFramework FrameworkVersion.V4)) |> shouldContain @"..\DotNetZip\lib\net20\Ionic.Zip.dll"
     model.GetFiles(SinglePlatform (DotNetFramework FrameworkVersion.V4_5)) |> shouldContain @"..\DotNetZip\lib\net20\Ionic.Zip.dll"
-
-[<Test>]
-let ``should reduce lib install of DotNetZip 1.9.3``() = 
-    let model = emptymodel.AddReferences([ @"..\DotNetZip\lib\net20\Ionic.Zip.dll" ])
-
-    model.GetFiles(SinglePlatform (DotNetFramework FrameworkVersion.V2)) |> shouldNotContain @"..\DotNetZip\lib\net20\Ionic.Zip.dll"
-    model.GetFiles(SinglePlatform (DotNetFramework FrameworkVersion.V4_5)) |> shouldNotContain @"..\DotNetZip\lib\net20\Ionic.Zip.dll"
 
 [<Test>]
 let ``should handle lib install of NUnit 2.6 for windows 8``() = 
