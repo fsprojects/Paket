@@ -33,15 +33,14 @@ type ProjectFile =
 
     member this.Name = FileInfo(this.FileName).Name
 
-    member this.CustomReferenceNodes = lazy(
+    member this.GetCustomReferenceNodes() =
         [for node in this.Document |> getDescendants "Reference" do
             let isPaket = ref false
             for child in node.ChildNodes do
                 if child.Name = "Paket" then 
                     isPaket := true
             if not !isPaket then
-                yield node]            
-        )
+                yield node]
 
     /// Finds all project files
     static member FindAllProjects(folder) = 
@@ -156,31 +155,16 @@ type ProjectFile =
         
         this.DeleteIfEmpty("ItemGroup")
 
-    member this.GetCustomNodes(model:InstallModel) =
+    member this.GetCustomModelNodes(model:InstallModel) =
         let libs = model.GetReferenceNames.Force()
         
-        this.CustomReferenceNodes.Force()
+        this.GetCustomReferenceNodes()
         |> List.filter (fun node -> Set.contains (node.Attributes.["Include"].InnerText.Split(',').[0]) libs)
     
-    member this.DeleteCustomNodes(model:InstallModel) =
-        let nodesToDelete = this.GetCustomNodes(model)
+    member this.DeleteCustomModelNodes(model:InstallModel) =
+        let nodesToDelete = this.GetCustomModelNodes(model)
         
         if nodesToDelete <> [] then
-            let (PackageName name) = model.PackageName
-            verbosefn "    - Deleting custom projects nodes for %s" name
-
-        for node in nodesToDelete do            
-            node.ParentNode.RemoveChild(node) |> ignore
-
-    member this.DeleteFrameworkAssemblies(model:InstallModel) =
-        let nodesToDelete = List<_>()
-        
-        let libs = model.GetFrameworkAssemblies.Force()
-        for node in this.Document |> getDescendants "Reference" do
-            if Set.contains (node.Attributes.["Include"].InnerText.Split(',').[0]) libs then          
-                nodesToDelete.Add node
-
-        if nodesToDelete |> Seq.isEmpty |> not then
             let (PackageName name) = model.PackageName
             verbosefn "    - Deleting custom projects nodes for %s" name
 
@@ -264,22 +248,21 @@ type ProjectFile =
         ["ItemGroup";"When";"Otherwise";"Choose";"When";"Choose"]
         |> List.iter this.DeleteIfEmpty
 
-        
-        for kv in usedPackages do
-            let installModel = completeModel.[NormalizedPackageName kv.Key]
-            this.DeleteFrameworkAssemblies(installModel)
-            if hard then
-                this.DeleteCustomNodes(installModel)
+        if hard then
+            for kv in usedPackages do
+                let installModel = completeModel.[NormalizedPackageName kv.Key]
+                this.DeleteCustomModelNodes(installModel)
+
+        let references = 
+            this.GetCustomReferenceNodes()
+            |> List.map (fun node -> node.Attributes.["Include"].InnerText.Split(',').[0])
+            |> Set.ofList
 
         let merged =
             usedPackages
-            |> Seq.fold (fun (model:InstallModel) kv -> 
-                            let installModel = completeModel.[NormalizedPackageName kv.Key]
-                            if this.GetCustomNodes(installModel) <> [] then 
-                                traceWarnfn "  - custom nodes for %s ==> skipping" ((|PackageName|) kv.Key)
-                                model
-                            else model.MergeWith(installModel)) 
+            |> Seq.fold (fun (model:InstallModel) kv -> model.MergeWith( completeModel.[NormalizedPackageName kv.Key])) 
                         (InstallModel.EmptyModel(PackageName "",SemVer.Parse "0"))
+            |> fun x -> x.FilterReferences(references)     
 
         let chooseNode = this.GenerateXml(merged.FilterFallbacks())
 

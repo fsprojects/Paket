@@ -1,3 +1,6 @@
+#### 0.16.0-alpha001 - 22.11.2014
+* Don't remove custom framework references - https://github.com/fsprojects/Paket/issues/376
+
 #### 0.15.6 - 21.11.2014
 * BUGFIX: Path to dependencies file is now relative after `convert-from-nuget` - https://github.com/fsprojects/Paket/pull/379
 

@@ -145,6 +145,12 @@ type InstallModel =
     member this.MapGroupFrameworks(mapF) = 
         this.MapGroups(fun _ group -> { group with Frameworks = Map.map mapF group.Frameworks })
 
+    member this.MapFallbacks(mapF) = 
+        let fallbackMapped = 
+            this.MapGroups(fun _ group -> { group with Fallbacks = mapF group.Fallbacks })
+        { fallbackMapped with DefaultFallback = mapF fallbackMapped.DefaultFallback }
+            
+
     member this.AddReference(framework : FrameworkIdentifier, lib : string, references) : InstallModel = 
         let install = 
             match references with
@@ -260,6 +266,12 @@ type InstallModel =
                                                             let files = kv.Value
                                                             if files.References <> fallbacks.References then frameworks
                                                             else Map.remove kv.Key frameworks) group.Frameworks })
+
+    member this.FilterReferences(references) =
+        let inline mapF (files:InstallFiles) = {files with References = files.References |> Set.filter (fun reference -> Set.contains reference.ReferenceName references |> not) }
+        this
+            .MapGroupFrameworks(fun _ files -> mapF files)
+            .MapFallbacks(mapF)
     
     member this.DeleteEmptyGroupIfDefaultFallback() =
         this.MapGroups(fun _ group ->
