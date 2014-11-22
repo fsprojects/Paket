@@ -160,6 +160,7 @@ let ``should handle lib install of Microsoft.BCL for NET >= 40``() =
               @"..\Microsoft.Bcl\lib\net40\System.Threading.Tasks.dll" 
 
               @"..\Microsoft.Bcl\lib\net45\_._" ])
+              .FilterBlackList()
 
     model.GetFiles(SinglePlatform (DotNetFramework FrameworkVersion.V3_5)) |> shouldNotContain  @"..\Microsoft.Bcl\lib\net40\System.IO.dll" 
 
@@ -297,7 +298,7 @@ let ``should handle lib install of Microsoft.Net.Http 2.2.28``() =
 
 
 [<Test>]
-let ``should handle lib install of Microsoft.Bcl 1.1.9``() = 
+let ``should handle lib install of MicrosoftBcl``() = 
     let model = 
         emptymodel.AddReferences(
             [ @"..\Microsoft.Net.Http\lib\monoandroid\_._" 
@@ -331,7 +332,7 @@ let ``should handle lib install of Microsoft.Bcl 1.1.9``() =
               @"..\Microsoft.Bcl\lib\wpa81\_._"
               @"..\Microsoft.Bcl\lib\portable-net451+win81\_._"
               @"..\Microsoft.Bcl\lib\portable-net451+win81+wpa81\_._"
-               ])
+               ]).FilterBlackList()
 
     model.GetFiles(SinglePlatform (DotNetFramework FrameworkVersion.V4)) |> shouldContain @"..\Microsoft.Bcl\lib\net40\System.IO.dll"
     model.GetFiles(SinglePlatform (DotNetFramework FrameworkVersion.V4)) |> shouldContain @"..\Microsoft.Bcl\lib\net40\System.Runtime.dll" 

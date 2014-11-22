@@ -4,7 +4,10 @@ open Paket
 open NUnit.Framework
 open FsUnit
 
-let element x = match x with | Some y -> y
+let element x = 
+    match x with 
+    | Some y -> y
+    | None -> failwith "not found"
 
 [<Test>]
 let ``should detect framework version from path``() =
@@ -66,6 +69,6 @@ let ``should detect net``() =
 [<Test>]
 let ``should detect 35, 40 and 45``() =
     FrameworkIdentifier.DetectFromPath(@"..\packages\FSharpx.Core\lib\35\FSharp.Core.dll")|> element |> shouldEqual (DotNetFramework(FrameworkVersion.V3_5))
-    FrameworkIdentifier.DetectFromPath(@"..\packages\FSharpx.Core\lib\40\FSharp.Core.dll")|> element |> shouldEqual (DotNetFramework(FrameworkVersion.V4))
+    FrameworkIdentifier.DetectFromPath(@"..\packages\FSharpx.Core\lib\40\FSharp.Core.dll")|> element |> shouldEqual (DotNetFramework(FrameworkVersion.V4_Client))
     FrameworkIdentifier.DetectFromPath(@"..\packages\FSharpx.Core\lib\45\FSharp.Core.dll")|> element |> shouldEqual (DotNetFramework(FrameworkVersion.V4_5))
     

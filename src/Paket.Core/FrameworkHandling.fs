@@ -84,11 +84,11 @@ type FrameworkIdentifier =
         match path with
         | "net10" | "net1" | "10" -> Some (DotNetFramework FrameworkVersion.V1)
         | "net11" | "11" -> Some (DotNetFramework FrameworkVersion.V1_1)
-        | "net20" | "net2" | "net20-full" | "20" -> Some (DotNetFramework FrameworkVersion.V2)
+        | "net20" | "net2" | "net" | "net20-full" | "20" -> Some (DotNetFramework FrameworkVersion.V2)
         | "net35" | "net35-full" | "35" -> Some (DotNetFramework FrameworkVersion.V3_5)
         | "net40" | "net4" | "40" | "net40-client" | "net4-client" -> Some (DotNetFramework FrameworkVersion.V4_Client)
         | "net40-full" | "net403" -> Some (DotNetFramework FrameworkVersion.V4)
-        | "net45" | "45" -> Some (DotNetFramework FrameworkVersion.V4_5)
+        | "net45" | "net45-full" | "45" -> Some (DotNetFramework FrameworkVersion.V4_5)
         | "net451" -> Some (DotNetFramework FrameworkVersion.V4_5_1)
         | "net452" -> Some (DotNetFramework FrameworkVersion.V4_5_2)
         | "net453" -> Some (DotNetFramework FrameworkVersion.V4_5_3)
@@ -100,7 +100,7 @@ type FrameworkIdentifier =
         | "win8" | "win80" | "netcore45" | "win" -> Some (Windows "v8.0")
         | "win81" | "netcore46" -> Some (Windows "v8.1")
         | "wp7" | "wp70" | "sl4-wp7"| "sl4-wp70" -> Some (WindowsPhoneSilverlight "v7.0")
-        | "wp71" | "sl4-wp71" -> Some (WindowsPhoneSilverlight "v7.1")
+        | "wp71" | "sl4-wp71" | "sl4-wp"  -> Some (WindowsPhoneSilverlight "v7.1")
         | "wp8" | "wp80" -> Some (WindowsPhoneSilverlight "v8.0")
         | "wpa81" -> Some (WindowsPhoneApp "v8.1")
         | _ -> None
@@ -161,6 +161,7 @@ type FrameworkIdentifier =
                 | FrameworkVersion.V1 -> "10"
                 | FrameworkVersion.V1_1 -> "11"
                 | FrameworkVersion.V2 -> "20"
+                | FrameworkVersion.V3 -> "30"
                 | FrameworkVersion.V3_5 -> "35"
                 | FrameworkVersion.V4_Client -> "40"
                 | FrameworkVersion.V4 -> "40"
@@ -172,6 +173,7 @@ type FrameworkIdentifier =
         | MonoTouch -> "monotouch"
         | Windows v -> "win" + v
         | WindowsPhoneApp v -> "wp" + v
+        | WindowsPhoneSilverlight v -> "wp" + v
         | Silverlight v -> "sl" + v
 
     static member DetectFromPath(path : string) : FrameworkIdentifier option = 
