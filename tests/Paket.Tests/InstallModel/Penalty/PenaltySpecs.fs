@@ -18,7 +18,8 @@ module ``Given a target platform`` =
     
     [<Test>]
     let ``it should return > 1000 for an incompatible platform``() = 
-        getPlatformPenalty (DotNetFramework FrameworkVersion.V4_5) (Silverlight "v5.0") |> shouldBeGreaterThan 1000
+        getPlatformPenalty (DotNetFramework FrameworkVersion.V4_5) (Silverlight "v5.0")
+         |> shouldBeGreaterThan maxPenalty
 
 module ``Given a path`` = 
     [<Test>]
@@ -88,7 +89,7 @@ module ``Given a list of paths`` =
         
         [<Test>]
         let ``it should not contain profile 41``() = 
-            let flattend = 
+            let flattend =
                 seq { 
                     for item in supportedTargetProfiles do
                         yield! item.Value

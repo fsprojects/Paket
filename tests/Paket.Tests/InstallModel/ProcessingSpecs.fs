@@ -408,7 +408,8 @@ let ``should only handle dll and exe files``() =
               @"..\Fantomas\lib\FantomasLib.xml" 
               @"..\Fantomas\lib\FSharp.Core.dll" 
               @"..\Fantomas\lib\Fantomas.exe" ], NuspecReferences.All)
-            
+            .FilterBlackList()
+
     model.GetFiles(SinglePlatform (DotNetFramework FrameworkVersion.V2)) |> shouldContain @"..\Fantomas\lib\FantomasLib.dll" 
     model.GetFiles(SinglePlatform (DotNetFramework FrameworkVersion.V2)) |> shouldContain @"..\Fantomas\lib\FSharp.Core.dll" 
     model.GetFiles(SinglePlatform (DotNetFramework FrameworkVersion.V2)) |> shouldContain @"..\Fantomas\lib\Fantomas.exe" 

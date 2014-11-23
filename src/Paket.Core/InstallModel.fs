@@ -89,20 +89,31 @@ type InstallModel =
         | None -> Seq.empty
     
     member this.AddLibFolders(libs : seq<string>) : InstallModel =
-        let libs = libs |> Seq.map this.ExtractLibFolder |> Seq.distinct |> List.ofSeq
-        if libs.Length = 0 then this
-        else { this with LibFolders = PlatformMatching.getSupportedTargetProfiles libs
-                                      |> Seq.map (fun entry -> { Name = entry.Key; Targets = entry.Value; Files = InstallFiles.empty })}
+        let libFolders = 
+            libs 
+            |> Seq.map this.ExtractLibFolder
+            |> Seq.choose id
+            |> Seq.distinct 
+            |> List.ofSeq
+
+        if libFolders.Length = 0 then this
+        else
+            let libFolders =
+                PlatformMatching.getSupportedTargetProfiles libFolders
+                |> Seq.map (fun entry -> { Name = entry.Key; Targets = entry.Value; Files = InstallFiles.empty })
+
+            { this with LibFolders = libFolders}
     
-    member this.ExtractLibFolder(path : string) =
+    member this.ExtractLibFolder(path : string) : string option=
         let path = path.Replace("\\", "/").ToLower()
         let fi = new FileInfo(path)
 
         let startPos = path.LastIndexOf("lib/")
         let endPos = path.IndexOf('/', startPos + 4)
-        if startPos < 0 || endPos < 0 then ""
+        if startPos < 0 then None 
+        elif endPos < 0 then Some("")
         else 
-            path.Substring(startPos + 4, endPos - startPos - 4)
+            Some(path.Substring(startPos + 4, endPos - startPos - 4))
 
     member this.MapFolders(mapF) = { this with LibFolders = Seq.map mapF this.LibFolders }
     
@@ -124,10 +135,12 @@ type InstallModel =
 
     member this.AddFiles(files : seq<string>, references) : InstallModel =
         Seq.fold (fun model file ->
-                    let lib = model.ExtractLibFolder file
-                    match Seq.tryFind (fun folder -> folder.Name = lib) model.LibFolders with
-                    | Some path -> model.AddPackageFiles(path, file, references)
-                    | _ -> model) this files
+                    match model.ExtractLibFolder file with
+                    | Some folderName -> 
+                        match Seq.tryFind (fun folder -> folder.Name = folderName) model.LibFolders with
+                        | Some path -> model.AddPackageFiles(path, file, references)
+                        | _ -> model
+                    | None -> model) this files
 
     member this.AddReferences(libs, references) : InstallModel = 
         this.AddLibFolders(libs)
