@@ -82,14 +82,16 @@ let getTargetCondition (target:TargetProfile) =
         | MonoAndroid | MonoTouch -> "false" // should be covered by the .NET case above
     | PortableProfile(name, _) -> sprintf "$(TargetFrameworkProfile) == '%O'" name
 
-let rec getCondition (targets : TargetProfile list) =
-    let conditions = List.map getTargetCondition targets
-    
-     
+let getCondition (targets : TargetProfile list) =
+    let conditions = 
+        targets
+        |> List.map getTargetCondition
+        |> List.filter ((<>) "false")
+         
     match conditions with
     | [ condition ] -> condition
-    | [] -> ""
-    | conditions -> 
+    | [] -> "false"
+    | conditions ->
         conditions
         |> List.map (fun c -> sprintf "(%s)" c)
-        |> fun cs-> String.Join(" Or ",cs)    
+        |> fun cs-> String.Join(" Or ",cs)
