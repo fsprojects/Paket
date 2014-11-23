@@ -1,3 +1,6 @@
+#### 0.16.0-alpha003 - 23.11.2014
+* Downlod of GitHub files should clean it's own directory - https://github.com/fsprojects/Paket/issues/385
+
 #### 0.16.0-alpha002 - 23.11.2014
 * Integrate BindingRedirects into Paket install process - https://github.com/fsprojects/Paket/pull/383
 

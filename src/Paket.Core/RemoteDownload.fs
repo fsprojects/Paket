@@ -5,6 +5,7 @@ open Newtonsoft.Json.Linq
 open System.IO
 open Ionic.Zip
 open Paket.Logging
+open Paket.ModuleResolver
 
 [<Literal>]
 let FullProjectSourceFileName = "FULLPROJECT"
@@ -67,7 +68,6 @@ let rec DirectoryCopy(sourceDirName, destDirName, copySubDirs) =
     let dir = new DirectoryInfo(sourceDirName)
     let dirs = dir.GetDirectories()
 
-
     if not <| Directory.Exists(destDirName) then
         Directory.CreateDirectory(destDirName) |> ignore
 
@@ -78,7 +78,6 @@ let rec DirectoryCopy(sourceDirName, destDirName, copySubDirs) =
     if copySubDirs then
         for subdir in dirs do
             DirectoryCopy(subdir.FullName, Path.Combine(destDirName, subdir.Name), copySubDirs)
-open ModuleResolver
 
 /// Gets a single file from github.
 let downloadRemoteFiles(remoteFile:ResolvedSourceFile,destination) = async {
@@ -118,7 +117,6 @@ let downloadRemoteFiles(remoteFile:ResolvedSourceFile,destination) = async {
         DirectoryCopy(source,projectPath,true)
 
         Directory.Delete(source,true)
-
     | SingleSourceFileOrigin.GistLink, _ ->  return! downloadFromUrl(None,rawGistFileUrl remoteFile.Owner remoteFile.Project remoteFile.Name) destination
     | SingleSourceFileOrigin.GitHubLink, _ -> return! downloadFromUrl(None,rawFileUrl remoteFile.Owner remoteFile.Project remoteFile.Commit remoteFile.Name) destination
     | SingleSourceFileOrigin.HttpLink(url), _ ->  return! downloadFromUrl(None,sprintf "%s" url) destination
@@ -139,7 +137,8 @@ let DownloadSourceFile(rootPath, source:ModuleResolver.ResolvedSourceFile) =
         else 
             tracefn "Downloading %s to %s" (source.ToString()) destination
             
-            Directory.CreateDirectory(destination |> Path.GetDirectoryName) |> ignore
+            CleanDir (destination |> Path.GetDirectoryName)
+
             do! downloadRemoteFiles(source,destination)
             File.WriteAllText(versionFile.FullName, source.Commit)
     }
