@@ -74,13 +74,13 @@ let getTargetCondition (target:TargetProfile) =
     match target with
     | SinglePlatform(platform) -> 
         match platform with
-        | DotNetFramework(version) -> sprintf "$(TargetFrameworkIdentifier) == '.NETFramework' And $(TargetFrameworkVersion) == '%O'" version
-        | Windows(version) -> sprintf "$(TargetFrameworkIdentifier) == '.NETCore' And $(TargetFrameworkVersion) == '%O'" version
-        | Silverlight(version) -> sprintf "$(TargetFrameworkIdentifier) == 'Silverlight' And $(TargetFrameworkVersion) == '%O'" version
-        | WindowsPhoneApp(version) -> sprintf "$(TargetFrameworkIdentifier) == 'WindowsPhoneApp' And $(TargetFrameworkVersion) == '%O'" version
-        | WindowsPhoneSilverlight(version) -> sprintf "$(TargetFrameworkIdentifier) == 'WindowsPhone' And $(TargetFrameworkVersion) == '%O'" version
-        | MonoAndroid | MonoTouch -> "false" // should be covered by the .NET case above
-    | PortableProfile(name, _) -> sprintf "$(TargetFrameworkProfile) == '%O'" name
+        | DotNetFramework(version) ->"$(TargetFrameworkIdentifier) == '.NETFramework'", sprintf "$(TargetFrameworkVersion) == '%O'" version
+        | Windows(version) -> "$(TargetFrameworkIdentifier) == '.NETCore'", sprintf "$(TargetFrameworkVersion) == '%O'" version
+        | Silverlight(version) -> "$(TargetFrameworkIdentifier) == 'Silverlight'", sprintf "$(TargetFrameworkVersion) == '%O'" version
+        | WindowsPhoneApp(version) -> "$(TargetFrameworkIdentifier) == 'WindowsPhoneApp", sprintf "$(TargetFrameworkVersion) == '%O'" version
+        | WindowsPhoneSilverlight(version) -> "$(TargetFrameworkIdentifier) == 'WindowsPhone'", sprintf "$(TargetFrameworkVersion) == '%O'" version
+        | MonoAndroid | MonoTouch -> "","false" // should be covered by the .NET case above
+    | PortableProfile(name, _) -> sprintf "$(TargetFrameworkProfile) == '%O'" name,""
 
 let getCondition (targets : TargetProfile list) =
     let inline CheckIfFullyInGroup typeName matchF (processed,targets) =
@@ -95,7 +95,7 @@ let getCondition (targets : TargetProfile list) =
             |> List.forall (fun p -> targets |> Seq.exists ((=) p))
 
         if fullyContained then
-            sprintf "$(TargetFrameworkIdentifier) == '%s'" typeName :: processed,targets |> List.filter (filter >> not)
+            (sprintf "$(TargetFrameworkIdentifier) == '%s'" typeName,"") :: processed,targets |> List.filter (filter >> not)
         else
             processed,targets
 
@@ -110,13 +110,21 @@ let getCondition (targets : TargetProfile list) =
     let conditions = 
         targets
         |> List.map getTargetCondition
-        |> List.filter ((<>) "false")
+        |> List.filter (fun (_,v) -> v <> "false")
         |> List.append grouped
-         
-    match conditions with
-    | [ condition ] -> condition
-    | [] -> "false"
-    | conditions ->
-        conditions
-        |> List.map (fun c -> sprintf "(%s)" c)
-        |> fun cs-> String.Join(" Or ",cs)
+        |> Seq.groupBy fst
+
+    conditions
+    |> Seq.map (fun (group,conditions) ->
+        match List.ofSeq conditions with
+        | [ _,"" ] -> group
+        | [ _,detail ] -> sprintf "%s And %s" group detail
+        | [] -> "false"
+        | conditions ->
+            let detail =
+                conditions
+                |> List.map snd
+                |> Set.ofSeq
+                |> fun cs -> String.Join(" Or ",cs)
+            sprintf "%s And (%s)" group detail)    
+    |> fun cs -> String.Join(" Or ",cs)
