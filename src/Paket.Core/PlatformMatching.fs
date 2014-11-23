@@ -83,19 +83,35 @@ let getTargetCondition (target:TargetProfile) =
     | PortableProfile(name, _) -> sprintf "$(TargetFrameworkProfile) == '%O'" name
 
 let getCondition (targets : TargetProfile list) =
-    let containsFullDotNet = TargetProfile.KnownDotFrameworkProfiles |> List.forall (fun p -> targets |> Seq.exists ((=) p))
-    
-    let targets = 
-        if containsFullDotNet then
-            targets |> List.filter (fun target -> match target with | SinglePlatform(DotNetFramework(_)) -> false | _ -> true)
+    let inline CheckIfFullyInGroup typeName matchF (processed,targets) =
+        let inline filter target =
+            match target with 
+            | SinglePlatform(x) ->  matchF x
+            | _ -> false
+
+        let fullyContained = 
+            TargetProfile.KnownTargetProfiles 
+            |> List.filter filter
+            |> List.forall (fun p -> targets |> Seq.exists ((=) p))
+
+        if fullyContained then
+            sprintf "$(TargetFrameworkIdentifier) == '%s'" typeName :: processed,targets |> List.filter (filter >> not)
         else
-            targets 
+            processed,targets
+
+    let grouped,targets =
+        ([],targets)
+        |> CheckIfFullyInGroup ".NETFramework" (fun x -> match x with | DotNetFramework(_) -> true | _ -> false)
+        |> CheckIfFullyInGroup ".NETCore" (fun x -> match x with | Windows(_) -> true | _ -> false)
+        |> CheckIfFullyInGroup "Silverlight" (fun x -> match x with | Silverlight(_) -> true | _ -> false)
+        |> CheckIfFullyInGroup "WindowsPhoneApp" (fun x -> match x with | WindowsPhoneApp(_) -> true | _ -> false)
+        |> CheckIfFullyInGroup "WindowsPhone" (fun x -> match x with | WindowsPhoneSilverlight(_) -> true | _ -> false)
 
     let conditions = 
         targets
         |> List.map getTargetCondition
         |> List.filter ((<>) "false")
-        |> fun xs -> if containsFullDotNet then "$(TargetFrameworkIdentifier) == '.NETFramework'" :: xs else xs
+        |> List.append grouped
          
     match conditions with
     | [ condition ] -> condition

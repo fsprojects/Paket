@@ -229,7 +229,7 @@ type TargetProfile =
     | SinglePlatform of FrameworkIdentifier
     | PortableProfile of string * FrameworkIdentifier list
 
-    static member KnownDotFrameworkProfiles =
+    static member KnownTargetProfiles =
        [SinglePlatform(DotNetFramework FrameworkVersion.V1)
         SinglePlatform(DotNetFramework FrameworkVersion.V1_1)
         SinglePlatform(DotNetFramework FrameworkVersion.V2)
@@ -240,11 +240,8 @@ type TargetProfile =
         SinglePlatform(DotNetFramework FrameworkVersion.V4_5)
         SinglePlatform(DotNetFramework FrameworkVersion.V4_5_1)
         SinglePlatform(DotNetFramework FrameworkVersion.V4_5_2)
-        SinglePlatform(DotNetFramework FrameworkVersion.V4_5_3)]
-
-    static member KnownTargetProfiles =
-       TargetProfile.KnownDotFrameworkProfiles @ 
-       [SinglePlatform(MonoAndroid)
+        SinglePlatform(DotNetFramework FrameworkVersion.V4_5_3)
+        SinglePlatform(MonoAndroid)
         SinglePlatform(MonoTouch)
         SinglePlatform(Silverlight "v3.0")
         SinglePlatform(Silverlight "v4.0")
