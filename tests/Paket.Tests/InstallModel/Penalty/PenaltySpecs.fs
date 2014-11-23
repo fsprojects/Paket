@@ -25,11 +25,11 @@ module ``Given a path`` =
 
     [<Test>]
     let ``it should split it into the right platforms``() =
-        extractPlatforms "net40+win8" |> shouldEqual [| DotNetFramework FrameworkVersion.V4; Windows "v8.0" |]
+        extractPlatforms "net40+win8" |> shouldEqual [| DotNetFramework FrameworkVersion.V4_Client; Windows "v8.0" |]
 
     [<Test>]
     let ``it should ignore 'portable-'``() =
-        extractPlatforms "portable-net40+win8" |> shouldEqual [| DotNetFramework FrameworkVersion.V4; Windows "v8.0" |]
+        extractPlatforms "portable-net40+win8" |> shouldEqual [| DotNetFramework FrameworkVersion.V4_Client; Windows "v8.0" |]
         
     [<Test>]
     let ``it should return no penalty for a matching .NET framework``() =
@@ -38,21 +38,21 @@ module ``Given a path`` =
     
     [<Test>]
     let ``it should return no penalty for a matching portable profile``() =
-        getPenalty [ DotNetFramework FrameworkVersion.V4; Silverlight "v4.0" ] "net40+sl4"
+        getPenalty [ DotNetFramework FrameworkVersion.V4_Client; Silverlight "v4.0" ] "net40+sl4"
         |> shouldEqual 0
     
     [<Test>]
     let ``it should return 1 for a compatible portable profile``() =
-        getPenalty [ DotNetFramework FrameworkVersion.V4; Silverlight "v5.0" ] "net40+sl4"
+        getPenalty [ DotNetFramework FrameworkVersion.V4_Client; Silverlight "v5.0" ] "net40+sl4"
         |> shouldEqual 1
         
     [<Test>]
     let ``it should return the correct penalty for compatible .NET Frameworks``() =
         let path = "net20"
-        //getPenalty [ DotNetFramework FrameworkVersion.V2 ] path |> shouldEqual 0
-        //getPenalty [ DotNetFramework FrameworkVersion.V3 ] path |> shouldEqual 1
+        getPenalty [ DotNetFramework FrameworkVersion.V2 ] path |> shouldEqual 0
+        getPenalty [ DotNetFramework FrameworkVersion.V3 ] path |> shouldEqual 1
         getPenalty [ DotNetFramework FrameworkVersion.V3_5 ] path |> shouldEqual 2
-        getPenalty [ DotNetFramework FrameworkVersion.V4 ] path |> shouldEqual 3
+        getPenalty [ DotNetFramework FrameworkVersion.V4_Client ] path |> shouldEqual 3
 
 module ``Given an empty path`` =
 
