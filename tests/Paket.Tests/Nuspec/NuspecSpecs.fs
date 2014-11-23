@@ -92,7 +92,8 @@ let ``can detect reference files for SqlCLient``() =
 let ``can detect framework assemblies for Octokit``() = 
     Nuspec.Load("Nuspec/Octokit.nuspec").FrameworkAssemblyReferences
     |> shouldEqual 
-        [{ AssemblyName = "System.Net.Http"; TargetFramework = Some(DotNetFramework(FrameworkVersion.V4_5)) }]
+        [{ AssemblyName = "System.Net.Http"; TargetFramework = Some(DotNetFramework(FrameworkVersion.V4_5)) }
+         { AssemblyName = "System.Net.Http"; TargetFramework = Some(Windows("v8.0")) }]
 
 [<Test>]
 let ``can detect framework assemblies for FSharp.Data.SqlEnumProvider``() = 
@@ -124,3 +125,13 @@ let ``can detect explicit dependencies for ReadOnlyCollectionExtensions``() =
          "ReadOnlyCollectionInterfaces",DependenciesFileParser.parseVersionRequirement("1.0.0"), Some(DotNetFramework(FrameworkVersion.V2))
          "ReadOnlyCollectionInterfaces",DependenciesFileParser.parseVersionRequirement("1.0.0"), Some(DotNetFramework(FrameworkVersion.V3_5))
          "ReadOnlyCollectionInterfaces",DependenciesFileParser.parseVersionRequirement("1.0.0"), Some(DotNetFramework(FrameworkVersion.V4_Client))]
+
+[<Test>]
+let ``can detect framework assemblies for MathNet.Numerics``() = 
+    Nuspec.Load("Nuspec/MathNet.Numerics.nuspec").FrameworkAssemblyReferences
+    |> shouldEqual 
+        [{ AssemblyName = "System.Numerics"; TargetFramework = Some(DotNetFramework(FrameworkVersion.V4_Client)) }
+         { AssemblyName = "System.Numerics"; TargetFramework = Some(Windows("v8.0")) }
+         { AssemblyName = "System.Numerics"; TargetFramework = Some(Silverlight("v5.0")) }
+         { AssemblyName = "System.Numerics"; TargetFramework = Some(MonoAndroid) }
+         { AssemblyName = "System.Numerics"; TargetFramework = Some(MonoTouch) }]
