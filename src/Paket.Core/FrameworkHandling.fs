@@ -105,54 +105,6 @@ type FrameworkIdentifier =
         | "wpa81" -> Some (WindowsPhoneApp "v8.1")
         | _ -> None
     
-    member x.Group =
-        let group =
-            match x with
-            | DotNetFramework _ -> ".NETFramework"
-            | WindowsPhoneApp _ -> "WindowsPhoneApp"
-            | Windows _ -> "Windows"
-            | Silverlight _ -> "Silverlight"
-            | MonoAndroid -> "MonoAndroid"
-            | MonoTouch -> "MonoTouch"
-
-        sprintf "$(TargetFrameworkIdentifier) == '%s'" group
-
-    member x.GetFrameworkIdentifier() = x.Group
-    member x.GetPortableProfile() =
-        None
-
-    member x.GetFrameworkProfile() =        
-        match x with 
-        | DotNetFramework(FrameworkVersion.V4_Client) -> "$(TargetFrameworkProfile) == 'Client'" 
-        | _ -> ""
-
-    member x.GetPlatformIdentifier() =        
-        match x with 
-        | _ -> ""
-
-    member x.GetPlatformVersion() =        
-        match x with 
-        | WindowsPhoneApp v -> sprintf "$(TargetPlatformVersion) == '%s'"  v
-        | Windows v -> sprintf "$(TargetPlatformVersion) == '%s'"  v
-        | _ -> ""
-
-    member x.GetFrameworkCondition() =
-        let (++) x y = 
-           if String.IsNullOrEmpty y then 
-                x 
-           elif String.IsNullOrEmpty x then 
-                y 
-           else x + " And " + y
-        match x with
-        | DotNetFramework(fw) -> sprintf "$(TargetFrameworkVersion) == '%s'" (fw.ToString()) ++ x.GetFrameworkProfile()
-        | WindowsPhoneApp _ -> x.GetPlatformVersion()
-        | Windows _ -> x.GetPlatformVersion()
-        | Silverlight v -> sprintf "$(SilverlightVersion) == '%s'" v
-        | MonoAndroid -> ""
-        | MonoTouch -> ""
-
-    member x.GetGroupCondition() = sprintf "%s" (x.GetFrameworkIdentifier())
-
     override x.ToString() = 
         match x with
         | DotNetFramework v ->
@@ -189,8 +141,6 @@ type FrameworkIdentifier =
             else 
                 path.Substring(startPos + 4, endPos - startPos - 5) 
                 |> FrameworkIdentifier.Extract
-
-    static member DefaultGroup = DotNetFramework(FrameworkVersion.V4).Group
 
     // returns a list of compatible platforms that this platform also supports
     member x.SupportedPlatforms =
