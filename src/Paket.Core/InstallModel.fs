@@ -31,6 +31,10 @@ type Reference =
             let fi = new FileInfo(normalizePath lib)
             fi.Name.Replace(fi.Extension, "")
 
+    member this.Path =
+        match this with
+        | Library path -> path
+        | FrameworkAssemblyReference path -> path
 
 type InstallFiles = 
     { References : Reference Set

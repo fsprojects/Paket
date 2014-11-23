@@ -1,20 +1,11 @@
-#### 0.16.0-alpha001 - 22.11.2014
-* Don't remove custom framework references - https://github.com/fsprojects/Paket/issues/376
-
-#### 0.15.6 - 21.11.2014
+#### 0.16.0 - 23.11.2014
+* Integrate BindingRedirects into Paket install process - https://github.com/fsprojects/Paket/pull/383
+* BUGFIX: Download of GitHub files should clean it's own directory - https://github.com/fsprojects/Paket/issues/385
+* BUGFIX: Don't remove custom framework references - https://github.com/fsprojects/Paket/issues/376
 * BUGFIX: Path to dependencies file is now relative after `convert-from-nuget` - https://github.com/fsprojects/Paket/pull/379
-
-#### 0.15.5 - 20.11.2014
 * BUGFIX: Restore command in targets file didn't work with spaces in paths - https://github.com/fsprojects/Paket/issues/375
-
-#### 0.15.4 - 19.11.2014
 * BUGFIX: Detect FrameworkReferences without restrictions in nuspec file and install these
-
-#### 0.15.2 - 19.11.2014
-* BUGFIX: Read sources even when we don't find packages - https://github.com/fsprojects/Paket/issues/372
-
-#### 0.15.1 - 19.11.2014
-* Always control framework assemblies
+* BUGFIX: Read sources even if we don't find packages - https://github.com/fsprojects/Paket/issues/372
 
 #### 0.15.0 - 19.11.2014
 * Allow to use basic framework restrictions in NuGet packages - https://github.com/fsprojects/Paket/issues/307
