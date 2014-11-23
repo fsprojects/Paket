@@ -83,10 +83,19 @@ let getTargetCondition (target:TargetProfile) =
     | PortableProfile(name, _) -> sprintf "$(TargetFrameworkProfile) == '%O'" name
 
 let getCondition (targets : TargetProfile list) =
+    let containsFullDotNet = TargetProfile.KnownDotFrameworkProfiles |> List.forall (fun p -> targets |> Seq.exists ((=) p))
+    
+    let targets = 
+        if containsFullDotNet then
+            targets |> List.filter (fun target -> match target with | SinglePlatform(DotNetFramework(_)) -> false | _ -> true)
+        else
+            targets 
+
     let conditions = 
         targets
         |> List.map getTargetCondition
         |> List.filter ((<>) "false")
+        |> fun xs -> if containsFullDotNet then "$(TargetFrameworkIdentifier) == '.NETFramework'" :: xs else xs
          
     match conditions with
     | [ condition ] -> condition

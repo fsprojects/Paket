@@ -149,7 +149,6 @@ type InstallModel =
     member this.AddReferences(libs) = this.AddReferences(libs, NuspecReferences.All)
     
     member this.AddFrameworkAssemblyReference(reference) : InstallModel =
-        // TODO: respect FrameworkRestrictions again
         this.MapFiles(fun files -> files.AddFrameworkAssemblyReference(reference.AssemblyName))
     
     member this.AddFrameworkAssemblyReferences(references) : InstallModel = 
