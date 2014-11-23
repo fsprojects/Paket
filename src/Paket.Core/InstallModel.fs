@@ -175,12 +175,15 @@ type InstallModel =
     member this.FilterReferences(references) =
         let inline mapF (files:InstallFiles) = {files with References = files.References |> Set.filter (fun reference -> Set.contains reference.ReferenceName references |> not) }
         this.MapFiles(fun files -> mapF files)
-    
-    member this.GetReferenceNames = 
+
+    member this.GetReferences = 
         lazy ([ for lib in this.LibFolders do
-                    yield! lib.Files.References]
-              |> Set.ofList
-              |> Set.map (fun lib -> lib.ReferenceName))
+                    yield! lib.Files.References]                    
+              |> Set.ofList)
+    
+    member this.GetReferenceNames() = 
+        this.GetReferences.Force()
+        |> Set.map (fun lib -> lib.ReferenceName)
 
     member this.GetFrameworkAssemblies = 
         lazy ([ for lib in this.LibFolders do

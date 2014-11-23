@@ -156,7 +156,7 @@ type ProjectFile =
         this.DeleteIfEmpty("ItemGroup")
 
     member this.GetCustomModelNodes(model:InstallModel) =
-        let libs = model.GetReferenceNames.Force()
+        let libs = model.GetReferenceNames()
         
         this.GetCustomReferenceNodes()
         |> List.filter (fun node -> Set.contains (node.Attributes.["Include"].InnerText.Split(',').[0]) libs)

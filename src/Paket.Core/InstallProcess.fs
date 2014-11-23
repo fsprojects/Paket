@@ -95,12 +95,11 @@ let createModel(root, sources,force, lockFile:LockFile) =
 
     extractedPackages
 
-/// Applies binding redirects for all strong-named default fallback references to all app. and web. config files.
+/// Applies binding redirects for all strong-named references to all app. and web. config files.
 let private applyBindingRedirects root extractedPackages =
     extractedPackages
-    |> Seq.map(fun (package, model) -> model.DefaultFallback.References)
-    |> Seq.reduce (+)
-    |> Set.toSeq
+    |> Seq.map(fun (package, model:InstallModel) -> model.GetReferences.Force())
+    |> Seq.concat
     |> Seq.map(fun ref -> Assembly.LoadFrom ref.Path)
     |> Seq.choose(fun assembly ->
         assembly
@@ -163,4 +162,4 @@ let Install(sources,force, hard, lockFile:LockFile) =
 
         project.Save()
 
-    extractedPackages |> applyBindingRedirects root
+    applyBindingRedirects root extractedPackages
