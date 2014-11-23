@@ -100,7 +100,11 @@ let private applyBindingRedirects root extractedPackages =
     extractedPackages
     |> Seq.map(fun (package, model:InstallModel) -> model.GetReferences.Force())
     |> Seq.concat
-    |> Seq.map(fun ref -> Assembly.LoadFrom ref.Path)
+    |> Seq.choose(fun ref -> 
+            match ref with
+            | Reference.Library path -> Some path
+            | _-> None)
+    |> Seq.map Assembly.LoadFrom
     |> Seq.choose(fun assembly ->
         assembly
         |> BindingRedirects.getPublicKeyToken
