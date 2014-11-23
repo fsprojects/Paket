@@ -1,3 +1,6 @@
+#### 0.16.0-alpha002 - 23.11.2014
+* Integrate BindingRedirects into Paket install process - https://github.com/fsprojects/Paket/pull/383
+
 #### 0.16.0-alpha001 - 22.11.2014
 * Don't remove custom framework references - https://github.com/fsprojects/Paket/issues/376
 
