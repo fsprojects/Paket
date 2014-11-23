@@ -465,6 +465,7 @@
     <Compile Include="InstallModel\Xml\ManualNodes.fs" />
     <Compile Include="InstallModel\Xml\FSharp.Data.SqlClient.fs" />
     <Compile Include="InstallModel\Penalty\PenaltySpecs.fs" />
+    <Compile Include="InstallModel\Penalty\FrameworkConditionsSpecs.fs" />    
     <Compile Include="DependencyModel\ProjectDependencySpecs.fs" />
     <None Include="paket.references" />
   </ItemGroup>

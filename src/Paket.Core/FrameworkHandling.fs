@@ -229,7 +229,7 @@ type TargetProfile =
     | SinglePlatform of FrameworkIdentifier
     | PortableProfile of string * FrameworkIdentifier list
 
-    static member KnownTargetProfiles =
+    static member KnownDotNetFrameworkProfiles =
        [SinglePlatform(DotNetFramework FrameworkVersion.V1)
         SinglePlatform(DotNetFramework FrameworkVersion.V1_1)
         SinglePlatform(DotNetFramework FrameworkVersion.V2)
@@ -240,18 +240,30 @@ type TargetProfile =
         SinglePlatform(DotNetFramework FrameworkVersion.V4_5)
         SinglePlatform(DotNetFramework FrameworkVersion.V4_5_1)
         SinglePlatform(DotNetFramework FrameworkVersion.V4_5_2)
-        SinglePlatform(DotNetFramework FrameworkVersion.V4_5_3)
-        SinglePlatform(MonoAndroid)
-        SinglePlatform(MonoTouch)
-        SinglePlatform(Silverlight "v3.0")
+        SinglePlatform(DotNetFramework FrameworkVersion.V4_5_3)]
+
+    static member KnownWindowsProfiles =
+       [SinglePlatform(Windows "v8.0")
+        SinglePlatform(Windows "v8.1")]
+
+    static member KnownSilverlightProfiles =
+       [SinglePlatform(Silverlight "v3.0")
         SinglePlatform(Silverlight "v4.0")
-        SinglePlatform(Silverlight "v5.0")
-        SinglePlatform(Windows "v8.0")
-        SinglePlatform(Windows "v8.1")
-        SinglePlatform(WindowsPhoneSilverlight "v7.0")
+        SinglePlatform(Silverlight "v5.0")]
+
+    static member KnownWindowsPhoneSilverlightProfiles =
+       [SinglePlatform(WindowsPhoneSilverlight "v7.0")
         SinglePlatform(WindowsPhoneSilverlight "v7.1")
         SinglePlatform(WindowsPhoneSilverlight "v8.0")
-        SinglePlatform(WindowsPhoneSilverlight "v8.1")
+        SinglePlatform(WindowsPhoneSilverlight "v8.1")]
+
+    static member KnownTargetProfiles =
+       TargetProfile.KnownDotNetFrameworkProfiles @ 
+       TargetProfile.KnownWindowsProfiles @ 
+       TargetProfile.KnownSilverlightProfiles @
+       TargetProfile.KnownWindowsPhoneSilverlightProfiles @
+       [SinglePlatform(MonoAndroid)
+        SinglePlatform(MonoTouch)        
         SinglePlatform(WindowsPhoneApp "v8.1")
         PortableProfile("Profile2", [ DotNetFramework FrameworkVersion.V4; Silverlight "v4.0"; Windows "v8.0"; WindowsPhoneSilverlight "v7.0" ])
         PortableProfile("Profile3", [ DotNetFramework FrameworkVersion.V4; Silverlight "v4.0" ])

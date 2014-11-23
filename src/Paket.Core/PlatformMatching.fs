@@ -126,5 +126,10 @@ let getCondition (targets : TargetProfile list) =
                 |> List.map snd
                 |> Set.ofSeq
                 |> fun cs -> String.Join(" Or ",cs)
-            sprintf "%s And (%s)" group detail)    
-    |> fun cs -> String.Join(" Or ",cs)
+            sprintf "%s And (%s)" group detail)
+    |> Seq.toList
+    |> fun l -> 
+            match l with
+            | [] -> ""
+            | [x] -> x
+            | xs -> String.Join(" Or ", List.map (fun cs -> sprintf "(%s)" cs) xs)
