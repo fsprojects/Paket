@@ -81,10 +81,10 @@ let rec DirectoryCopy(sourceDirName, destDirName, copySubDirs) =
 open ModuleResolver
 
 /// Gets a single file from github.
-let downloadRemoteFiles(remoteFile:ResolvedSourceFile,destitnation) = async {
+let downloadRemoteFiles(remoteFile:ResolvedSourceFile,destination) = async {
     match remoteFile.Origin, remoteFile.Name with
     | SingleSourceFileOrigin.GistLink, FullProjectSourceFileName ->
-        let fi = FileInfo(destitnation)
+        let fi = FileInfo(destination)
         let projectPath = fi.Directory.FullName
 
         let url = sprintf "https://api.github.com/gists/%s" remoteFile.Project
@@ -105,7 +105,7 @@ let downloadRemoteFiles(remoteFile:ResolvedSourceFile,destitnation) = async {
         // let downloadUrl = sprintf "https://gist.github.com/%s/%s/download" remoteFile.Owner remoteFile.Project //is a tar.gz
 
     | SingleSourceFileOrigin.GitHubLink, FullProjectSourceFileName -> 
-        let fi = FileInfo(destitnation)
+        let fi = FileInfo(destination)
         let projectPath = fi.Directory.FullName
         let zipFile = Path.Combine(projectPath,sprintf "%s.zip" remoteFile.Commit)
         let downloadUrl = sprintf "https://github.com/%s/%s/archive/%s.zip" remoteFile.Owner remoteFile.Project remoteFile.Commit
@@ -119,9 +119,9 @@ let downloadRemoteFiles(remoteFile:ResolvedSourceFile,destitnation) = async {
 
         Directory.Delete(source,true)
 
-    | SingleSourceFileOrigin.GistLink, _ ->  return! downloadFromUrl(None,rawGistFileUrl remoteFile.Owner remoteFile.Project remoteFile.Name) destitnation
-    | SingleSourceFileOrigin.GitHubLink, _ -> return! downloadFromUrl(None,rawFileUrl remoteFile.Owner remoteFile.Project remoteFile.Commit remoteFile.Name) destitnation
-    | SingleSourceFileOrigin.HttpLink(url), _ ->  return! downloadFromUrl(None,sprintf "%s" url) destitnation
+    | SingleSourceFileOrigin.GistLink, _ ->  return! downloadFromUrl(None,rawGistFileUrl remoteFile.Owner remoteFile.Project remoteFile.Name) destination
+    | SingleSourceFileOrigin.GitHubLink, _ -> return! downloadFromUrl(None,rawFileUrl remoteFile.Owner remoteFile.Project remoteFile.Commit remoteFile.Name) destination
+    | SingleSourceFileOrigin.HttpLink(url), _ ->  return! downloadFromUrl(None,sprintf "%s" url) destination
 }
 
 let DownloadSourceFile(rootPath, source:ModuleResolver.ResolvedSourceFile) = 
