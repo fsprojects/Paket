@@ -436,7 +436,6 @@
       <Paket>True</Paket>
       <Link>Streams.fs</Link>
     </Compile>
-    <Compile Include="AssemblyInfo.fs" />
     <Content Include="..\..\packages\FSharp.Core.Microsoft.Signed\lib\net40\FSharp.Core.optdata">
       <Link>FSharp.Core.optdata</Link>
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
@@ -471,6 +470,7 @@
     <Compile Include="DependencyModel.fs" />
     <Compile Include="LockFile.fs" />
     <Compile Include="RestoreProcess.fs" />
+    <Compile Include="BindingRedirects.fs" />
     <Compile Include="InstallProcess.fs" />
     <Compile Include="UpdateProcess.fs" />
     <Compile Include="RemoveProcess.fs" />
@@ -479,10 +479,11 @@
     <Compile Include="VSIntegration.fs" />
     <Compile Include="NugetConvert.fs" />
     <Compile Include="FindOutdated.fs" />
-    <Compile Include="BindingRedirects.fs" />
     <Compile Include="FindReferences.fs" />
     <Compile Include="PublicAPI.fs" />
     <None Include="paket.references" />
+    <Compile Include="AssemblyInfo.fs" />
+    <Compile Include="CustomAssemblyInfo.fs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="mscorlib" />
