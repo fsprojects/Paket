@@ -188,4 +188,5 @@ type InstallModel =
         InstallModel
             .EmptyModel(packageName, packageVersion)
             .AddReferences(libs, nuspec.References)
+            .AddFrameworkAssemblyReferences(nuspec.FrameworkAssemblyReferences)
             .FilterBlackList()
