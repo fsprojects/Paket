@@ -31,8 +31,8 @@ GITHUB
     FsUnit.fs (a8830b5a70e72a1948592cfa1e43e3c5b0a31b92)
   remote: fsharp/FAKE
   specs:
-    modules/Octokit/Octokit.fsx (abd0b166a5ea6396c375d72ff74dc4d077f24ce8)
+    modules/Octokit/Octokit.fsx (2267f836a7a053f5caa8ac6dc7f897ea867ecb4c)
       Octokit (>= 0)
   remote: nessos/Streams
   specs:
-    src/Streams.Core/Streams.fs (71e4ffb0489766242e86601c05b48503c05a4aa4)
+    src/Streams.Core/Streams.fs (e608e7247534850f0e68db77c12aeb8f8febbb79)
