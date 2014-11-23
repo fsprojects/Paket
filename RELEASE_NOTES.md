@@ -1,6 +1,6 @@
 #### 0.16.0 - 23.11.2014
 * Integrate BindingRedirects into Paket install process - https://github.com/fsprojects/Paket/pull/383
-* BUGFIX: Downlod of GitHub files should clean it's own directory - https://github.com/fsprojects/Paket/issues/385
+* BUGFIX: Download of GitHub files should clean it's own directory - https://github.com/fsprojects/Paket/issues/385
 * BUGFIX: Don't remove custom framework references - https://github.com/fsprojects/Paket/issues/376
 * BUGFIX: Path to dependencies file is now relative after `convert-from-nuget` - https://github.com/fsprojects/Paket/pull/379
 * BUGFIX: Restore command in targets file didn't work with spaces in paths - https://github.com/fsprojects/Paket/issues/375
