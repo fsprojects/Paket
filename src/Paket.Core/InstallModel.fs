@@ -64,28 +64,28 @@ type InstallFiles =
 
 type LibFolder =
     { Name : string
-      Targets : seq<TargetProfile>
+      Targets : TargetProfile list
       Files : InstallFiles}
 
 type InstallModel = 
     { PackageName : PackageName
       PackageVersion : SemVerInfo
-      LibFolders : seq<LibFolder> }
+      LibFolders : LibFolder list }
 
     static member EmptyModel(packageName, packageVersion) : InstallModel = 
         { PackageName = packageName
           PackageVersion = packageVersion
-          LibFolders = Seq.empty }
+          LibFolders = [] }
    
     member this.GetTargets() = 
         this.LibFolders
-        |> Seq.map (fun folder -> folder.Targets)
-        |> Seq.concat
+        |> List.map (fun folder -> folder.Targets)
+        |> List.concat
     
     member this.GetFiles(target : TargetProfile) = 
         match Seq.tryFind (fun lib -> Seq.exists (fun t -> t = target) lib.Targets) this.LibFolders with
         | Some folder -> folder.Files.References
-                         |> Seq.map (fun x -> 
+                         |> Set.map (fun x -> 
                                 match x with
                                 | Reference.Library lib -> Some lib
                                 | _ -> None)
@@ -105,6 +105,7 @@ type InstallModel =
             let libFolders =
                 PlatformMatching.getSupportedTargetProfiles libFolders
                 |> Seq.map (fun entry -> { Name = entry.Key; Targets = entry.Value; Files = InstallFiles.empty })
+                |> Seq.toList
 
             { this with LibFolders = libFolders}
     
@@ -119,7 +120,7 @@ type InstallModel =
         else 
             Some(path.Substring(startPos + 4, endPos - startPos - 4))
 
-    member this.MapFolders(mapF) = { this with LibFolders = Seq.map mapF this.LibFolders }
+    member this.MapFolders(mapF) = { this with LibFolders = List.map mapF this.LibFolders }
     
     member this.MapFiles(mapF) = 
         this.MapFolders(fun folder -> { folder with Files = mapF folder.Files })
@@ -132,7 +133,7 @@ type InstallModel =
 
         if not install then this else
         
-        let folders = Seq.map (fun p -> 
+        let folders = List.map (fun p -> 
                                if p.Name = path.Name then { p with Files = p.Files.AddReference file }
                                else p) this.LibFolders
         { this with LibFolders = folders }

@@ -61,13 +61,13 @@ let findBestMatch (paths : string list) (targetProfile : TargetProfile) =
 // Every target profile will only be listed for own path - the one that best supports it. 
 let getSupportedTargetProfiles (paths : string list) =     
     TargetProfile.KnownTargetProfiles
-    |> Seq.map (fun target -> findBestMatch paths target, target)
-    |> Seq.collect (fun (path, target) -> 
+    |> List.map (fun target -> findBestMatch paths target, target)
+    |> List.collect (fun (path, target) -> 
            match path with
            | Some(p) -> [ (p, target) ]
            | _ -> [])
     |> Seq.groupBy fst
-    |> Seq.map (fun (path, group) -> (path, Seq.map (fun (_, target) -> target) group))
+    |> Seq.map (fun (path, group) -> (path, Seq.map snd group |> Seq.toList))
     |> Map.ofSeq
 
 let getTargetCondition (target:TargetProfile) =

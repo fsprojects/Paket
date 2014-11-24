@@ -106,7 +106,7 @@ let private applyBindingRedirects root extractedPackages =
             | _-> None)
     |> Seq.choose(fun assemblyFileName ->
         try
-            let assembly = Assembly.LoadFrom assemblyFileName
+            let assembly = Assembly.ReflectionOnlyLoadFrom assemblyFileName
             assembly
             |> BindingRedirects.getPublicKeyToken
             |> Option.map(fun token -> assembly, token)
