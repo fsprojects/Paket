@@ -43,10 +43,6 @@ type FrameworkVersion =
           FrameworkVersion.V4_5_2
           FrameworkVersion.V4_5_3 ]
 
-type PlatformVersion = string
-
-type PortableFrameworkProfile = string
-
 /// Framework Identifier type.
 type FrameworkIdentifier = 
     | DotNetFramework of FrameworkVersion
