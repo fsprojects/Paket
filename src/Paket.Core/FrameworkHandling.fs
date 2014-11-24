@@ -126,6 +126,7 @@ type FrameworkIdentifier =
                 | FrameworkVersion.V4_5_3 -> "453"
         | MonoAndroid -> "monoandroid"
         | MonoTouch -> "monotouch"
+        | MonoMac -> "monomac"
         | Windows v -> "win" + v
         | WindowsPhoneApp v -> "wp" + v
         | WindowsPhoneSilverlight v -> "wp" + v

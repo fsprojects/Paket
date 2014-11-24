@@ -88,6 +88,9 @@ let inline createWebClient(auth:Auth option) =
     client.Proxy <- defaultProxy
     client
 
+
+#nowarn "40"
+
 type System.Net.WebClient with
     member this.AsyncDownloadFile (address: Uri, filePath: string) : Async<unit> =
         let downloadAsync =

@@ -445,7 +445,6 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Compile Include="Async.fs" />
-    <Compile Include="List.fs" />
     <Compile Include="Domain.fs" />
     <Compile Include="SemVer.fs" />
     <Compile Include="VersionRange.fs" />
