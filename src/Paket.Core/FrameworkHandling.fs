@@ -78,6 +78,7 @@ type FrameworkIdentifier =
          "3.5", "35" 
          "4.0", "40" 
          "4.5", "45" 
+         "5.0", "50" 
          "0.0", "" ]
 
     static member Extract(path:string) = 
@@ -115,10 +116,13 @@ type FrameworkIdentifier =
         | "sl4-wp71" -> Some(WindowsPhoneApp "7.1")
         | "sl4-windowsphone71" -> Some(WindowsPhoneApp "7.1")
         | "win8" -> Some(Windows "v8.0")
+        | "netcore45" -> Some(Windows "v8.0")
         | "wp8" -> Some(WindowsPhoneApp "v8.0")
         | "wpa81" -> Some(WindowsPhoneApp "v8.1")
         | "monoandroid" -> Some(MonoAndroid)
+        | "monoandroid10" -> Some(MonoAndroid)
         | "monotouch" -> Some(MonoTouch)
+        | "monotouch10" -> Some(MonoTouch)
         | _ ->                         
             if path.ToLower().StartsWith("portable-") then
                 Some(PortableFramework("7.0", path.ToLower().Replace("portable-","")))

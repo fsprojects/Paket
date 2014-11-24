@@ -1,0 +1,27 @@
+<?xml version="1.0"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2012/06/nuspec.xsd">
+  <metadata>
+    <id>MathNet.Numerics</id>
+    <version>3.2.3</version>
+    <title>Math.NET Numerics</title>
+    <authors>Christoph Ruegg, Marcus Cuda, Jurgen Van Gael</authors>
+    <owners>Christoph Ruegg, Marcus Cuda, Jurgen Van Gael</owners>
+    <licenseUrl>http://numerics.mathdotnet.com/docs/License.html</licenseUrl>
+    <projectUrl>http://numerics.mathdotnet.com/</projectUrl>
+    <iconUrl>http://www.mathdotnet.com/images/MathNet128.png</iconUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>Math.NET Numerics is the numerical foundation of the Math.NET project, aiming to provide methods and algorithms for numerical computations in science, engineering and every day use. Supports .Net 4.0, .Net 3.5 and Mono on Windows, Linux and Mac; Silverlight 5, WindowsPhone/SL 8, WindowsPhone 8.1 and Windows 8 with PCL Portable Profiles 47 and 328; Android/iOS with Xamarin.</description>
+    <summary>Math.NET Numerics, providing methods and algorithms for numerical computations in science, engineering and every day use.</summary>
+    <releaseNotes>Bug fix: MatrixNormal distribution: density for non-square matrices ~Evelina Gabasova</releaseNotes>
+    <tags>math numeric statistics probability integration interpolation regression solve fit linear algebra matrix fft</tags>
+    <dependencies>
+      <group targetFramework=".NETFramework3.5">
+        <dependency id="TaskParallelLibrary" version="1.0.2856.0" />
+      </group>
+      <group targetFramework=".NETFramework4.0" />
+    </dependencies>
+    <frameworkAssemblies>
+      <frameworkAssembly assemblyName="System.Numerics" targetFramework=".NETFramework4.0, .NETCore4.5, Silverlight5.0, MonoAndroid1.0, MonoTouch1.0" />
+    </frameworkAssemblies>
+  </metadata>
+</package>
