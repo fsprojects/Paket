@@ -24,7 +24,7 @@ let rec getPlatformPenalty (targetPlatform:FrameworkIdentifier) (packagePlatform
 let getPathPenalty (path:string) (platform:FrameworkIdentifier) =
     if String.IsNullOrWhiteSpace path then
         // an empty path is considered compatible with every target, but with a high penalty so explicit paths are preferred
-        maxPenalty - 1 
+        10
     else
         extractPlatforms path
         |> Array.map (getPlatformPenalty platform)

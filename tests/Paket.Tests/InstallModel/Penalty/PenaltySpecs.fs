@@ -58,8 +58,12 @@ module ``Given a path`` =
 
 module ``Given an empty path`` = 
     [<Test>]
-    let ``it should be okay for every target``() = 
+    let ``it should be okay to use from .NET``() = 
         getPenalty [ DotNetFramework FrameworkVersion.V4_5 ] "" |> shouldBeSmallerThan 1000
+
+    [<Test>]
+    let ``it should be okay to use from a portable profile``() = 
+        getPenalty [ DotNetFramework FrameworkVersion.V4_5; Windows "v8.0"; WindowsPhoneApp "v8.1" ] "" |> shouldBeSmallerThan 1000
 
 module ``Given a list of paths`` = 
     let paths = 
