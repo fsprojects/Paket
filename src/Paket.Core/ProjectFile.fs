@@ -244,9 +244,7 @@ type ProjectFile =
             |> Seq.filter (fun node -> node.ChildNodes.Count > 0)
         
         for chooseNode in packageNodes do
-            match this.ProjectNode |> getNodes "ItemGroup" |> Seq.firstOrDefault with
-            | None -> this.ProjectNode.AppendChild(chooseNode) |> ignore
-            | Some firstNode -> firstNode.ParentNode.InsertBefore(chooseNode,firstNode) |> ignore
+            this.ProjectNode.AppendChild(chooseNode) |> ignore
                 
     member this.Save() =
         if Utils.normalizeXml this.Document <> this.OriginalText then 
