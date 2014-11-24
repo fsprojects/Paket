@@ -104,11 +104,13 @@ let private applyBindingRedirects root extractedPackages =
             match ref with
             | Reference.Library path -> Some path
             | _-> None)
-    |> Seq.map Assembly.LoadFrom
-    |> Seq.choose(fun assembly ->
-        assembly
-        |> BindingRedirects.getPublicKeyToken
-        |> Option.map(fun token -> assembly, token))
+    |> Seq.choose(fun assemblyFileName ->
+        try
+            let assembly = Assembly.LoadFrom assemblyFileName
+            assembly
+            |> BindingRedirects.getPublicKeyToken
+            |> Option.map(fun token -> assembly, token)
+        with exn -> None)
     |> Seq.map(fun (assembly, token) ->
         {   BindingRedirect.AssemblyName = assembly.GetName().Name
             Version = assembly.GetName().Version.ToString()
