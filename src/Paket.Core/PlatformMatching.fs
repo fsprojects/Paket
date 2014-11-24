@@ -79,7 +79,8 @@ let getTargetCondition (target:TargetProfile) =
         | Silverlight(version) -> "$(TargetFrameworkIdentifier) == 'Silverlight'", sprintf "$(TargetFrameworkVersion) == '%O'" version
         | WindowsPhoneApp(version) -> "$(TargetFrameworkIdentifier) == 'WindowsPhoneApp", sprintf "$(TargetFrameworkVersion) == '%O'" version
         | WindowsPhoneSilverlight(version) -> "$(TargetFrameworkIdentifier) == 'WindowsPhone'", sprintf "$(TargetFrameworkVersion) == '%O'" version
-        | MonoAndroid | MonoTouch -> "","false" // should be covered by the .NET case above
+        | MonoAndroid  -> "$(TargetFrameworkIdentifier) == 'MonoAndroid'",""
+        | MonoTouch -> "$(TargetFrameworkIdentifier) == 'MonoTouch'",""
     | PortableProfile(name, _) -> sprintf "$(TargetFrameworkProfile) == '%O'" name,""
 
 let getCondition (targets : TargetProfile list) =
