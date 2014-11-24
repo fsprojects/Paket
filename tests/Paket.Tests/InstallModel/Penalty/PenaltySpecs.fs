@@ -67,7 +67,7 @@ module ``Given an empty path`` =
 
 module ``Given a list of paths`` = 
     let paths = 
-        [ "net40"; "net45"; "portable-monotouch+monoandroid"; "portable-net40+sl5+win8+wp8+wpa81"; 
+        [ "net40"; "portable-monotouch+monoandroid"; "portable-net40+sl5+win8+wp8+wpa81"; 
           "portable-net45+winrt45+wp8+wpa81"; "portable-win81+wpa81"; "portable-windows8+net45+wp8"; "sl5"; "win8"; 
           "wp8" ]
     
@@ -82,6 +82,10 @@ module ``Given a list of paths`` =
     [<Test>]
     let ``it should find no match for Silverlight 4``() = 
         findBestMatch paths (SinglePlatform(Silverlight "v4.0")) |> shouldEqual None
+    
+    [<Test>]
+    let ``it should prefer (older) full .NET frameworks over portable class libraries``() = 
+        findBestMatch paths (SinglePlatform(DotNetFramework FrameworkVersion.V4_5)) |> shouldEqual (Some "net40")
     
     module ``when I get the supported target profiles`` = 
         let supportedTargetProfiles = getSupportedTargetProfiles paths
