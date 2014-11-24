@@ -77,10 +77,11 @@ let getTargetCondition (target:TargetProfile) =
         | DotNetFramework(version) ->"$(TargetFrameworkIdentifier) == '.NETFramework'", sprintf "$(TargetFrameworkVersion) == '%O'" version
         | Windows(version) -> "$(TargetFrameworkIdentifier) == '.NETCore'", sprintf "$(TargetFrameworkVersion) == '%O'" version
         | Silverlight(version) -> "$(TargetFrameworkIdentifier) == 'Silverlight'", sprintf "$(TargetFrameworkVersion) == '%O'" version
-        | WindowsPhoneApp(version) -> "$(TargetFrameworkIdentifier) == 'WindowsPhoneApp", sprintf "$(TargetFrameworkVersion) == '%O'" version
+        | WindowsPhoneApp(version) -> "$(TargetFrameworkIdentifier) == 'WindowsPhoneApp'", sprintf "$(TargetFrameworkVersion) == '%O'" version
         | WindowsPhoneSilverlight(version) -> "$(TargetFrameworkIdentifier) == 'WindowsPhone'", sprintf "$(TargetFrameworkVersion) == '%O'" version
-        | MonoAndroid  -> "$(TargetFrameworkIdentifier) == 'MonoAndroid'",""
-        | MonoTouch -> "$(TargetFrameworkIdentifier) == 'MonoTouch'",""
+        | MonoAndroid -> "$(TargetFrameworkIdentifier) == 'MonoAndroid'", ""
+        | MonoTouch -> "$(TargetFrameworkIdentifier) == 'MonoTouch'", ""
+        | MonoMac -> "$(TargetFrameworkIdentifier) == 'MonoMac'", ""
     | PortableProfile(name, _) -> sprintf "$(TargetFrameworkProfile) == '%O'" name,""
 
 let getCondition (targets : TargetProfile list) =
