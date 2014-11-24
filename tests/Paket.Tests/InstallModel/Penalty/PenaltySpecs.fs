@@ -25,12 +25,12 @@ module ``Given a path`` =
     [<Test>]
     let ``it should split it into the right platforms``() = 
         extractPlatforms "net40+win8" |> shouldEqual [| DotNetFramework FrameworkVersion.V4_Client
-                                                        Windows "v8.0" |]
+                                                        Windows "v4.5" |]
     
     [<Test>]
     let ``it should ignore 'portable-'``() = 
         extractPlatforms "portable-net40+win8" |> shouldEqual [| DotNetFramework FrameworkVersion.V4_Client
-                                                                 Windows "v8.0" |]
+                                                                 Windows "v4.5" |]
     
     [<Test>]
     let ``it should return no penalty for a matching .NET framework``() = 
@@ -63,7 +63,7 @@ module ``Given an empty path`` =
 
     [<Test>]
     let ``it should be okay to use from a portable profile``() = 
-        getPenalty [ DotNetFramework FrameworkVersion.V4_5; Windows "v8.0"; WindowsPhoneApp "v8.1" ] "" |> shouldBeSmallerThan 1000
+        getPenalty [ DotNetFramework FrameworkVersion.V4_5; Windows "v4.5"; WindowsPhoneApp "v8.1" ] "" |> shouldBeSmallerThan 1000
 
 module ``Given a list of paths`` = 
     let paths = 

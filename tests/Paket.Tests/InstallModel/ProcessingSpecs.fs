@@ -223,7 +223,7 @@ let ``should handle lib install of NUnit 2.6 for windows 8``() =
 
     model.GetFiles(SinglePlatform (DotNetFramework FrameworkVersion.V2)) |> shouldContain @"..\NUnit\lib\nunit.framework.dll"
     model.GetFiles(SinglePlatform (DotNetFramework FrameworkVersion.V4_5)) |> shouldContain @"..\NUnit\lib\nunit.framework.dll"
-    model.GetFiles(SinglePlatform (Windows "v8.0")) |> shouldContain @"..\NUnit\lib\nunit.framework.dll"
+    model.GetFiles(SinglePlatform (Windows "v4.5")) |> shouldContain @"..\NUnit\lib\nunit.framework.dll"
 
 
 [<Test>]
@@ -284,8 +284,8 @@ let ``should handle lib install of Microsoft.Net.Http 2.2.28``() =
     model.GetFiles(profile7) |> shouldContain @"..\Microsoft.Net.Http\lib\portable-net45+win8\System.Net.Http.Extensions.dll" 
     model.GetFiles(profile7) |> shouldContain @"..\Microsoft.Net.Http\lib\portable-net45+win8\System.Net.Http.Primitives.dll" 
 
-    model.GetFiles(SinglePlatform (Windows "v8.0")) |> shouldContain @"..\Microsoft.Net.Http\lib\win8\System.Net.Http.Extensions.dll" 
-    model.GetFiles(SinglePlatform (Windows "v8.0")) |> shouldContain @"..\Microsoft.Net.Http\lib\win8\System.Net.Http.Primitives.dll" 
+    model.GetFiles(SinglePlatform (Windows "v4.5")) |> shouldContain @"..\Microsoft.Net.Http\lib\win8\System.Net.Http.Extensions.dll" 
+    model.GetFiles(SinglePlatform (Windows "v4.5")) |> shouldContain @"..\Microsoft.Net.Http\lib\win8\System.Net.Http.Primitives.dll" 
 
     model.GetFiles(SinglePlatform (WindowsPhoneApp "v8.1")) |> shouldContain @"..\Microsoft.Net.Http\lib\wpa81\System.Net.Http.Extensions.dll" 
     model.GetFiles(SinglePlatform (WindowsPhoneApp "v8.1")) |> shouldContain @"..\Microsoft.Net.Http\lib\wpa81\System.Net.Http.Primitives.dll" 
@@ -335,7 +335,7 @@ let ``should handle lib install of MicrosoftBcl``() =
     model.GetFiles(SinglePlatform (DotNetFramework FrameworkVersion.V4_5)) |> shouldBeEmpty
     model.GetFiles(SinglePlatform MonoAndroid) |> shouldBeEmpty
     model.GetFiles(SinglePlatform MonoTouch) |> shouldBeEmpty
-    model.GetFiles(SinglePlatform (Windows "v8.0")) |> shouldBeEmpty
+    model.GetFiles(SinglePlatform (Windows "v4.5")) |> shouldBeEmpty
     model.GetFiles(SinglePlatform (WindowsPhoneSilverlight "v8.0")) |> shouldBeEmpty
     model.GetFiles(SinglePlatform (WindowsPhoneApp "v8.1")) |> shouldBeEmpty
     model.GetFiles(TargetProfile.FindPortableProfile "Profile44") |> shouldBeEmpty

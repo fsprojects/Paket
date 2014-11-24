@@ -93,7 +93,7 @@ let ``can detect framework assemblies for Octokit``() =
     Nuspec.Load("Nuspec/Octokit.nuspec").FrameworkAssemblyReferences
     |> shouldEqual 
         [{ AssemblyName = "System.Net.Http"; TargetFramework = Some(DotNetFramework(FrameworkVersion.V4_5)) }
-         { AssemblyName = "System.Net.Http"; TargetFramework = Some(Windows "v8.0") }]
+         { AssemblyName = "System.Net.Http"; TargetFramework = Some(Windows "v4.5") }]
 
 [<Test>]
 let ``can detect framework assemblies for FSharp.Data.SqlEnumProvider``() = 
@@ -131,7 +131,7 @@ let ``can detect framework assemblies for MathNet.Numerics``() =
     Nuspec.Load("Nuspec/MathNet.Numerics.nuspec").FrameworkAssemblyReferences
     |> shouldEqual 
         [{ AssemblyName = "System.Numerics"; TargetFramework = Some(DotNetFramework(FrameworkVersion.V4_Client)) }
-         { AssemblyName = "System.Numerics"; TargetFramework = Some(Windows("v8.0")) }
+         { AssemblyName = "System.Numerics"; TargetFramework = Some(Windows("v4.5")) }
          { AssemblyName = "System.Numerics"; TargetFramework = Some(Silverlight("v5.0")) }
          { AssemblyName = "System.Numerics"; TargetFramework = Some(MonoAndroid) }
          { AssemblyName = "System.Numerics"; TargetFramework = Some(MonoTouch) }]
