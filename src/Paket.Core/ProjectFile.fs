@@ -208,6 +208,7 @@ type ProjectFile =
                 let condition = lib.Targets |> List.ofSeq |> PlatformMatching.getCondition
                 condition,createItemGroup currentLibs)
             |> Seq.toList
+            |> List.sortBy fst
 
         match conditions with
         |  ["$(TargetFrameworkIdentifier) == 'true'",itemGroup] -> itemGroup
