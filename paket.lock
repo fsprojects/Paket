@@ -35,4 +35,4 @@ GITHUB
       Octokit (>= 0)
   remote: nessos/Streams
   specs:
-    src/Streams.Core/Streams.fs (e608e7247534850f0e68db77c12aeb8f8febbb79)
+    src/Streams.Core/Streams.fs (97dfab18c1a2743926b7658e9f962c4196a64575)
