@@ -380,6 +380,9 @@
     <Content Include="Nuspec\FSharp.Data.SqlClient.nuspec">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+    <Content Include="Nuspec\MathNet.Numerics.nuspec">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Compile Include="Nuspec\NuspecSpecs.fs" />
     <Content Include="NuGetOData\Fantomas.xml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>

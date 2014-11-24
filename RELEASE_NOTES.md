@@ -1,3 +1,6 @@
+#### 0.16.1 - 24.11.2014
+* FrameworkHandling: support extracting Silverlight5.0 and NetCore4.5 - https://github.com/fsprojects/Paket/pull/389
+
 #### 0.16.0 - 23.11.2014
 * Integrate BindingRedirects into Paket install process - https://github.com/fsprojects/Paket/pull/383
 * BUGFIX: Download of GitHub files should clean it's own directory - https://github.com/fsprojects/Paket/issues/385

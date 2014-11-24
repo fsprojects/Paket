@@ -75,6 +75,7 @@ type FrameworkIdentifier =
              "3.5", "35" 
              "4.0", "40" 
              "4.5", "45" 
+             "5.0", "50" 
              "0.0", "" ]
 
         let path = 
@@ -92,8 +93,8 @@ type FrameworkIdentifier =
         | "net451" -> Some (DotNetFramework FrameworkVersion.V4_5_1)
         | "net452" -> Some (DotNetFramework FrameworkVersion.V4_5_2)
         | "net453" -> Some (DotNetFramework FrameworkVersion.V4_5_3)
-        | "monotouch" -> Some MonoTouch
-        | "monoandroid" -> Some MonoAndroid
+        | "monotouch" | "monotouch10" -> Some MonoTouch
+        | "monoandroid" | "monoandroid10" -> Some MonoAndroid
         | "sl3" | "sl30" -> Some (Silverlight "v3.0")
         | "sl4" | "sl40" -> Some (Silverlight "v4.0")
         | "sl5" | "sl50" -> Some (Silverlight "v5.0")
