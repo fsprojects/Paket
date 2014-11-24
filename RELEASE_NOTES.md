@@ -1,4 +1,4 @@
-#### 0.17.0-alpha002 - 24.11.2014
+#### 0.17.0-alpha003 - 24.11.2014
 * FrameworkHandling: Support more portable profiles and reduce the impact in the XML file
 
 #### 0.16.1 - 24.11.2014
