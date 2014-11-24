@@ -131,12 +131,12 @@ let private convertNugetsToDepFile(dependenciesFilename,nugetPackagesConfigs, so
         then Some(DependenciesFile.ReadFromFile dependenciesFilename) 
         else None
 
-    let confictingPackages, packagesToAdd = 
+    let conflictingPackages, packagesToAdd = 
         match existingDepFile with
         | Some depFile -> latestVersions |> List.partition (fun (name,_) -> depFile.HasPackage (PackageName name))
         | None -> [], latestVersions
     
-    for (name, _) in confictingPackages do traceWarnfn "Package %s is already defined in %s" name dependenciesFilename
+    for (name, _) in conflictingPackages do traceWarnfn "Package %s is already defined in %s" name dependenciesFilename
 
     let nugetPackageRequirement (name: string, v: string) =
         {Requirements.PackageRequirement.Name = PackageName name
