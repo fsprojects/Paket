@@ -201,18 +201,30 @@ type ProjectFile =
                     |> ignore
             itemGroup
 
-        let chooseNode = this.CreateNode("Choose")
-        for lib in model.LibFolders do
-            let currentLibs = lib.Files.References
-            let condition = lib.Targets |> List.ofSeq |> PlatformMatching.getCondition
-            let whenNode = 
-                this.CreateNode("When")
-                |> addAttribute "Condition" condition                
-               
-            whenNode.AppendChild(createItemGroup currentLibs) |> ignore
-            chooseNode.AppendChild(whenNode) |> ignore
+        let conditions =
+            model.LibFolders
+            |> Seq.map (fun lib ->
+                let currentLibs = lib.Files.References
+                let condition = lib.Targets |> List.ofSeq |> PlatformMatching.getCondition
+                condition,createItemGroup currentLibs)
+            |> Seq.toList
 
-        chooseNode
+        match conditions with
+        |  ["$(TargetFrameworkIdentifier) == 'true'",itemGroup] -> itemGroup
+        |  _ ->
+            let chooseNode = this.CreateNode("Choose")
+
+            conditions
+            |> List.map (fun (condition,itemGroup) ->
+                let whenNode = 
+                    this.CreateNode("When")
+                    |> addAttribute "Condition" condition                
+               
+                whenNode.AppendChild(itemGroup) |> ignore
+                whenNode)
+            |> List.iter(fun node -> chooseNode.AppendChild(node) |> ignore)
+
+            chooseNode
         
 
     member this.UpdateReferences(completeModel: Map<NormalizedPackageName,InstallModel>, usedPackages : Dictionary<PackageName,bool>, hard) = 

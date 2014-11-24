@@ -86,28 +86,24 @@ let getTargetCondition (target:TargetProfile) =
 
 let getCondition (targets : TargetProfile list) =
     let inline CheckIfFullyInGroup typeName matchF (processed,targets) =
-        let inline filter target =
-            match target with 
-            | SinglePlatform(x) ->  matchF x
-            | _ -> false
-
         let fullyContained = 
             TargetProfile.KnownTargetProfiles 
-            |> List.filter filter
+            |> List.filter matchF
             |> List.forall (fun p -> targets |> Seq.exists ((=) p))
 
         if fullyContained then
-            (sprintf "$(TargetFrameworkIdentifier) == '%s'" typeName,"") :: processed,targets |> List.filter (filter >> not)
+            (sprintf "$(TargetFrameworkIdentifier) == '%s'" typeName,"") :: processed,targets |> List.filter (matchF >> not)
         else
             processed,targets
 
     let grouped,targets =
         ([],targets)
-        |> CheckIfFullyInGroup ".NETFramework" (fun x -> match x with | DotNetFramework(_) -> true | _ -> false)
-        |> CheckIfFullyInGroup ".NETCore" (fun x -> match x with | Windows(_) -> true | _ -> false)
-        |> CheckIfFullyInGroup "Silverlight" (fun x -> match x with | Silverlight(_) -> true | _ -> false)
-        |> CheckIfFullyInGroup "WindowsPhoneApp" (fun x -> match x with | WindowsPhoneApp(_) -> true | _ -> false)
-        |> CheckIfFullyInGroup "WindowsPhone" (fun x -> match x with | WindowsPhoneSilverlight(_) -> true | _ -> false)
+        |> CheckIfFullyInGroup "true" (fun _ -> true)
+        |> CheckIfFullyInGroup ".NETFramework" (fun x -> match x with | SinglePlatform(DotNetFramework(_)) -> true | _ -> false)
+        |> CheckIfFullyInGroup ".NETCore" (fun x -> match x with | SinglePlatform(Windows(_)) -> true | _ -> false)
+        |> CheckIfFullyInGroup "Silverlight" (fun x -> match x with |SinglePlatform(Silverlight(_)) -> true | _ -> false)
+        |> CheckIfFullyInGroup "WindowsPhoneApp" (fun x -> match x with | SinglePlatform(WindowsPhoneApp(_)) -> true | _ -> false)
+        |> CheckIfFullyInGroup "WindowsPhone" (fun x -> match x with | SinglePlatform(WindowsPhoneSilverlight(_)) -> true | _ -> false)
 
     let conditions = 
         targets

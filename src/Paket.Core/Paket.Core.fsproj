@@ -339,12 +339,12 @@
           <Paket>True</Paket>
         </Reference>
         <Reference Include="FSharp.Core">
-          <HintPath>..\..\packages\FSharp.Core.Microsoft.Signed\lib\net45\FSharp.Core.dll</HintPath>
+          <HintPath>..\..\packages\FSharp.Core.Microsoft.Signed\lib\portable-net45+netcore45+MonoAndroid1+MonoTouch1\FSharp.Core.dll</HintPath>
           <Private>True</Private>
           <Paket>True</Paket>
         </Reference>
         <Reference Include="Newtonsoft.Json">
-          <HintPath>..\..\packages\Newtonsoft.Json\lib\portable-net40+sl5+wp80+win8+wpa81\Newtonsoft.Json.dll</HintPath>
+          <HintPath>..\..\packages\Newtonsoft.Json\lib\netcore45\Newtonsoft.Json.dll</HintPath>
           <Private>True</Private>
           <Paket>True</Paket>
         </Reference>
