@@ -36,25 +36,41 @@ let getPenalty (requiredPlatforms:FrameworkIdentifier list) (path:string) =
     requiredPlatforms
     |> List.sumBy (getPathPenalty path)
 
+type PathPenalty = (string * int)
+
+let comparePaths (p1 : PathPenalty) (p2 : PathPenalty) =
+    let platformCount1 = (extractPlatforms (fst p1)).Length
+    let platformCount2 = (extractPlatforms (fst p2)).Length
+
+    // prefer full framwork over portable
+    if platformCount1 = 1 && platformCount2 > 1 then
+        -1
+    else if platformCount1 > 1 && platformCount2 = 1 then
+        1
+    // prefer lower version penalty
+    else if snd p1 < snd p2 then
+       -1
+    else if snd p1 > snd p2 then
+       1
+    // prefer portable platform whith less platforms
+    else if platformCount1 < platformCount2 then
+        -1
+    else if platformCount1 > platformCount2 then
+        1
+    else
+        0
+
 let findBestMatch (paths : string list) (targetProfile : TargetProfile) = 
     let requiredPlatforms = 
         match targetProfile with
         | PortableProfile(_, platforms) -> platforms
         | SinglePlatform(platform) -> [ platform ]
     
-    let pathPenalties = 
-        paths 
-        |> List.map (fun path -> (path, getPenalty requiredPlatforms path))
-    
-    let minPenalty = 
-        pathPenalties
-        |> Seq.map snd
-        |> Seq.min
-
-    pathPenalties
-    |> Seq.filter (fun (path, penalty) -> penalty = minPenalty && minPenalty < maxPenalty)
+    paths 
+    |> List.map (fun path -> path, (getPenalty requiredPlatforms path))
+    |> List.filter (fun (_, penalty) -> penalty < maxPenalty)
+    |> List.sortWith comparePaths
     |> Seq.map fst
-    |> Seq.sortBy (fun path -> (extractPlatforms path).Length)
     |> Seq.tryFind (fun _ -> true)
 
 // For a given list of paths and target profiles return tuples of paths with their supported target profiles.

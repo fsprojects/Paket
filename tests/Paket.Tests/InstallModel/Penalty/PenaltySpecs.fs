@@ -25,12 +25,12 @@ module ``Given a path`` =
     [<Test>]
     let ``it should split it into the right platforms``() = 
         extractPlatforms "net40+win8" |> shouldEqual [| DotNetFramework FrameworkVersion.V4_Client
-                                                        Windows "v8.0" |]
+                                                        Windows "v4.5" |]
     
     [<Test>]
     let ``it should ignore 'portable-'``() = 
         extractPlatforms "portable-net40+win8" |> shouldEqual [| DotNetFramework FrameworkVersion.V4_Client
-                                                                 Windows "v8.0" |]
+                                                                 Windows "v4.5" |]
     
     [<Test>]
     let ``it should return no penalty for a matching .NET framework``() = 
@@ -63,11 +63,11 @@ module ``Given an empty path`` =
 
     [<Test>]
     let ``it should be okay to use from a portable profile``() = 
-        getPenalty [ DotNetFramework FrameworkVersion.V4_5; Windows "v8.0"; WindowsPhoneApp "v8.1" ] "" |> shouldBeSmallerThan 1000
+        getPenalty [ DotNetFramework FrameworkVersion.V4_5; Windows "v4.5"; WindowsPhoneApp "v8.1" ] "" |> shouldBeSmallerThan 1000
 
 module ``Given a list of paths`` = 
     let paths = 
-        [ "net40"; "net45"; "portable-monotouch+monoandroid"; "portable-net40+sl5+win8+wp8+wpa81"; 
+        [ "net40"; "portable-monotouch+monoandroid"; "portable-net40+sl5+win8+wp8+wpa81"; 
           "portable-net45+winrt45+wp8+wpa81"; "portable-win81+wpa81"; "portable-windows8+net45+wp8"; "sl5"; "win8"; 
           "wp8" ]
     
@@ -82,6 +82,10 @@ module ``Given a list of paths`` =
     [<Test>]
     let ``it should find no match for Silverlight 4``() = 
         findBestMatch paths (SinglePlatform(Silverlight "v4.0")) |> shouldEqual None
+    
+    [<Test>]
+    let ``it should prefer (older) full .NET frameworks over portable class libraries``() = 
+        findBestMatch paths (SinglePlatform(DotNetFramework FrameworkVersion.V4_5)) |> shouldEqual (Some "net40")
     
     module ``when I get the supported target profiles`` = 
         let supportedTargetProfiles = getSupportedTargetProfiles paths
