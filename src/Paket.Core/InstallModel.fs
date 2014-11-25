@@ -9,32 +9,15 @@ open Paket.Requirements
 
 [<RequireQualifiedAccess>]
 type Reference = 
-    | Library of string
-    | FrameworkAssemblyReference of string
+    { Path : string }
 
     member this.LibName =
-        match this with
-        | Reference.Library lib -> 
-            let fi = new FileInfo(normalizePath lib)
-            Some(fi.Name.Replace(fi.Extension, ""))
-        | _ -> None
-
-    member this.FrameworkReferenceName =
-        match this with
-        | FrameworkAssemblyReference name -> Some name
-        | _ -> None
+        let fi = new FileInfo(normalizePath this.Path)
+        Some(fi.Name.Replace(fi.Extension, ""))
 
     member this.ReferenceName =
-        match this with
-        | FrameworkAssemblyReference name -> name
-        | Reference.Library lib -> 
-            let fi = new FileInfo(normalizePath lib)
-            fi.Name.Replace(fi.Extension, "")
-
-    member this.Path =
-        match this with
-        | Library path -> path
-        | FrameworkAssemblyReference path -> path
+        let fi = new FileInfo(normalizePath this.Path)
+        fi.Name.Replace(fi.Extension, "")
 
 type InstallFiles = 
     { References : Reference Set
@@ -47,15 +30,7 @@ type InstallFiles =
     static member singleton lib = InstallFiles.empty.AddReference lib
 
     member this.AddReference lib = 
-        { this with References = Set.add (Reference.Library lib) this.References }
-
-    member this.AddFrameworkAssemblyReference assemblyName = 
-        { this with References = Set.add (Reference.FrameworkAssemblyReference assemblyName) this.References }
-
-    member this.GetFrameworkAssemblies() =
-        this.References
-        |> Set.map (fun r -> r.FrameworkReferenceName)
-        |> Seq.choose id
+        { this with References = Set.add { Path = lib } this.References }
 
     member this.MergeWith(that:InstallFiles)= 
         { this with 
@@ -70,12 +45,14 @@ type LibFolder =
 type InstallModel = 
     { PackageName : PackageName
       PackageVersion : SemVerInfo
-      LibFolders : LibFolder list }
+      LibFolders : LibFolder list
+      FrameworkAssemblies : FrameworkAssemblyReference list }
 
     static member EmptyModel(packageName, packageVersion) : InstallModel = 
         { PackageName = packageName
           PackageVersion = packageVersion
-          LibFolders = [] }
+          LibFolders = []
+          FrameworkAssemblies = [] }
    
     member this.GetTargets() = 
         this.LibFolders
@@ -84,12 +61,7 @@ type InstallModel =
     
     member this.GetFiles(target : TargetProfile) = 
         match Seq.tryFind (fun lib -> Seq.exists (fun t -> t = target) lib.Targets) this.LibFolders with
-        | Some folder -> folder.Files.References
-                         |> Set.map (fun x -> 
-                                match x with
-                                | Reference.Library lib -> Some lib
-                                | _ -> None)
-                         |> Seq.choose id
+        | Some folder -> folder.Files.References |> Seq.map (fun r -> r.Path)
         | None -> Seq.empty
     
     member this.AddLibFolders(libs : seq<string>) : InstallModel =
@@ -153,19 +125,13 @@ type InstallModel =
     
     member this.AddReferences(libs) = this.AddReferences(libs, NuspecReferences.All)
     
-    member this.AddFrameworkAssemblyReference(reference) : InstallModel =
-        this.MapFiles(fun files -> files.AddFrameworkAssemblyReference(reference.AssemblyName))
-    
     member this.AddFrameworkAssemblyReferences(references) : InstallModel = 
-        references 
-        |> Seq.fold (fun model reference -> model.AddFrameworkAssemblyReference reference) this
+        { this with FrameworkAssemblies = references }
     
     member this.FilterBlackList() = 
         let blackList = 
             [ fun (reference : Reference) -> 
-                match reference with
-                | Reference.Library lib -> not (lib.EndsWith ".dll" || lib.EndsWith ".exe")
-                | _ -> false ]
+                not (reference.Path.EndsWith ".dll" || reference.Path.EndsWith ".exe") ]
 
         blackList
         |> List.map (fun f -> f >> not) // inverse
@@ -186,11 +152,6 @@ type InstallModel =
         this.GetReferences.Force()
         |> Set.map (fun lib -> lib.ReferenceName)
 
-    member this.GetFrameworkAssemblies = 
-        lazy ([ for lib in this.LibFolders do
-                    yield! lib.Files.GetFrameworkAssemblies()]
-              |> Set.ofList)
-    
     static member CreateFromLibs(packageName, packageVersion, frameworkRestriction:FrameworkRestriction, libs, nuspec : Nuspec) = 
         InstallModel
             .EmptyModel(packageName, packageVersion)

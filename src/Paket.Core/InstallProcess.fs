@@ -100,10 +100,7 @@ let private applyBindingRedirects root extractedPackages =
     extractedPackages
     |> Seq.map(fun (package, model:InstallModel) -> model.GetReferences.Force())
     |> Set.unionMany
-    |> Seq.choose(fun ref -> 
-            match ref with
-            | Reference.Library path -> Some path
-            | _-> None)
+    |> Seq.map (fun ref -> ref.Path)
     |> Seq.distinctBy (fun p -> FileInfo(p).Name)
     |> Seq.choose(fun assemblyFileName ->
         try
