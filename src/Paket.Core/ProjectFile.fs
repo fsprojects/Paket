@@ -202,10 +202,7 @@ type ProjectFile =
 
         let conditions =
             model.LibFolders
-            |> List.map (fun lib ->
-                let currentLibs = lib.Files.References
-                let condition = lib.Targets |> List.ofSeq |> PlatformMatching.getCondition
-                condition,createItemGroup currentLibs)
+            |> List.map (fun lib -> PlatformMatching.getCondition lib.Targets,createItemGroup lib.Files.References)
             |> List.sortBy fst
 
         match conditions with

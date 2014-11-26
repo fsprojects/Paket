@@ -245,20 +245,19 @@ type LockFile(fileName:string,options,resolution:PackageResolution,remoteFiles:R
     member this.GetPackageHull(referencesFile:ReferencesFile) =
         let usedPackages = Dictionary<_,_>()
 
-        let rec addPackage directly (name:PackageName) =
-            let identity = NormalizedPackageName name
+        let rec addPackage directly (packageName:PackageName) =
+            let identity = NormalizedPackageName packageName
             match lowerCaseResolution.TryFind identity with
             | Some package ->
-                match usedPackages.TryGetValue name with
+                match usedPackages.TryGetValue packageName with
                 | false,_ ->
-                    usedPackages.Add(name,directly)
+                    usedPackages.Add(packageName,directly)
                     if not this.Options.Strict then
                         for d,_,_ in package.Dependencies do
                             addPackage false d
-                | true,v -> usedPackages.[name] <- v || directly
+                | true,v -> usedPackages.[packageName] <- v || directly
             | None ->
-                let (PackageName packageName) = name
-                failwithf "%s references package %s, but it was not found in the paket.lock file." referencesFile.FileName packageName
+                failwithf "%s references package %O, but it was not found in the paket.lock file." referencesFile.FileName packageName
 
         referencesFile.NugetPackages
         |> List.iter (addPackage true)
