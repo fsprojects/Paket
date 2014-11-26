@@ -34,9 +34,9 @@ type NugetPackageCache =
       Unlisted : bool
       DownloadUrl : string}
 
-let rec private followODataLink auth url = 
+let rec private followODataLink getUrlContents url = 
     async { 
-        let! raw = getFromUrl (auth, url)
+        let! raw = getUrlContents url
         let doc = XmlDocument()
         doc.LoadXml raw
         let feed = 
@@ -56,7 +56,7 @@ let rec private followODataLink auth url =
             |> getNodes "link"
             |> List.filter (fun node -> node |> getAttribute "rel" = Some "next")
             |> List.choose (getAttribute "href")
-            |> List.map (followODataLink auth)
+            |> List.map (followODataLink getUrlContents)
             |> Async.Parallel
             |> Async.RunSynchronously
             |> Seq.concat
@@ -67,18 +67,20 @@ let rec private followODataLink auth url =
     }
 
 /// Gets versions of the given package via OData via /Packages?$filter=Id eq 'packageId'
-let getAllVersionsFromNugetODataWithFilter (auth, nugetURL, package) = 
+let getAllVersionsFromNugetODataWithFilter (getUrlContents, nugetURL, package) = 
     // we cannot cache this
-    followODataLink auth (sprintf "%s/Packages?$filter=Id eq '%s'" nugetURL package)
+    let url = sprintf "%s/Packages?$filter=Id eq '%s'" nugetURL package
+    followODataLink getUrlContents url
 
 /// Gets versions of the given package via OData via /FindPackagesById()?id='packageId'.
 let getAllVersionsFromNugetOData (auth, nugetURL, package) = 
     async { 
         // we cannot cache this
+        let getUrlContents url = getFromUrl(auth, url)
         try 
             let url = sprintf "%s/FindPackagesById()?id='%s'" nugetURL package
-            return! followODataLink auth url
-        with _ -> return! getAllVersionsFromNugetODataWithFilter (auth, nugetURL, package)
+            return! followODataLink getUrlContents url
+        with _ -> return! getAllVersionsFromNugetODataWithFilter (getUrlContents, nugetURL, package)
     }
 
 /// Gets all versions no. of the given package.
@@ -87,14 +89,14 @@ let getAllVersionsFromNuGet2(auth,nugetURL,package) =
     async { 
         let! raw = safeGetFromUrl(auth,sprintf "%s/package-versions/%s?includePrerelease=true" nugetURL package)
         match raw with
-        | None -> let! result = getAllVersionsFromNugetOData(auth,nugetURL, package)
+        | None -> let! result = getAllVersionsFromNugetOData(auth, nugetURL, package)
                   return result
         | Some data -> 
             try 
                 try 
                     let result = JsonConvert.DeserializeObject<string []>(data) |> Array.toSeq
                     return result
-                with _ -> let! result = getAllVersionsFromNugetOData(auth,nugetURL, package)
+                with _ -> let! result = getAllVersionsFromNugetOData(auth, nugetURL, package)
                           return result
             with exn -> 
                 return! failwithf "Could not get data from %s for package %s.%s Message: %s" nugetURL package 
