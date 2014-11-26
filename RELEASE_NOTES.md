@@ -1,6 +1,9 @@
 #### 0.17.0-alpha006 - 25.11.2014
 * FrameworkHandling: Support more portable profiles and reduce the impact in the XML file
 
+#### 0.16.2 - 26.11.2014
+* BUGFIX: Handle multiple version results from NuGet - https://github.com/fsprojects/Paket/pull/393
+
 #### 0.16.1 - 24.11.2014
 * FrameworkHandling: support extracting Silverlight5.0 and NetCore4.5 - https://github.com/fsprojects/Paket/pull/389
 
