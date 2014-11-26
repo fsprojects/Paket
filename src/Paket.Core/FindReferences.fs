@@ -18,7 +18,6 @@ let FindReferencesForPackage (dependenciesFileName, package:PackageName) =
                     referencesFile
                     |> ReferencesFile.FromFile
                     |> lockFile.GetPackageHull
-                    |> fun x -> x.Keys
                     |> Seq.map NormalizedPackageName
                     |> Set.ofSeq
 

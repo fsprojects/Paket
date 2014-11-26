@@ -12,9 +12,9 @@ open System.Collections.Generic
 open FSharp.Polyfill
 open System.Reflection
 
-let private findPackagesWithContent (root,usedPackages:Dictionary<_,_>) = 
+let private findPackagesWithContent (root,usedPackages:HashSet<_>) = 
     usedPackages
-    |> Seq.map (fun kv -> DirectoryInfo(Path.Combine(root, "packages", (|PackageName|) kv.Key)))
+    |> Seq.map (fun x -> DirectoryInfo(Path.Combine(root, "packages", (|PackageName|) x)))
     |> Seq.choose (fun packageDir -> packageDir.GetDirectories("Content") |> Array.tryFind (fun _ -> true))
     |> Seq.toList
 
@@ -141,7 +141,7 @@ let Install(sources,force, hard, lockFile:LockFile) =
         let usedPackages = lockFile.GetPackageHull(referenceFile)
 
         let usedPackageNames =
-            usedPackages.Keys
+            usedPackages
             |> Seq.map (fun x -> NormalizedPackageName x)
             |> Set.ofSeq
 

@@ -243,19 +243,16 @@ type LockFile(fileName:string,options,resolution:PackageResolution,remoteFiles:R
         |> fun state -> LockFile(lockFileName, state.Options ,state.Packages |> Seq.fold (fun map p -> Map.add (NormalizedPackageName p.Name) p map) Map.empty, List.rev state.SourceFiles)
 
     member this.GetPackageHull(referencesFile:ReferencesFile) =
-        let usedPackages = Dictionary<_,_>()
+        let usedPackages = HashSet<_>()
 
         let rec addPackage directly (packageName:PackageName) =
             let identity = NormalizedPackageName packageName
             match lowerCaseResolution.TryFind identity with
             | Some package ->
-                match usedPackages.TryGetValue packageName with
-                | false,_ ->
-                    usedPackages.Add(packageName,directly)
+                if usedPackages.Add packageName then
                     if not this.Options.Strict then
                         for d,_,_ in package.Dependencies do
                             addPackage false d
-                | true,v -> usedPackages.[packageName] <- v || directly
             | None ->
                 failwithf "%s references package %O, but it was not found in the paket.lock file." referencesFile.FileName packageName
 
