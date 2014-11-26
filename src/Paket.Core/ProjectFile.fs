@@ -249,7 +249,7 @@ type ProjectFile =
     member this.GetPaketFileItems() =
         this.FindPaketNodes("Content")
         |> List.append <| this.FindPaketNodes("Compile")
-        |> List.map (fun n ->  FileInfo(Path.Combine(Path.GetDirectoryName(this.FileName), n.Attributes.["Include"].Value)))
+        |> List.map (fun n -> FileInfo(Path.Combine(Path.GetDirectoryName(this.FileName), n.Attributes.["Include"].Value)))
 
     member this.GetInterProjectDependencies() =  
         let forceGetInnerText node name =
@@ -263,7 +263,7 @@ type ProjectFile =
               GUID =  forceGetInnerText n "Project" |> Guid.Parse
               Private =  forceGetInnerText n "Private" |> bool.Parse }]
 
-    member this.ReplaceNugetPackagesFile() =
+    member this.ReplaceNuGetPackagesFile() =
         let noneNodes = this.Document |> getDescendants "None"
         match noneNodes |> List.tryFind (fun n -> n |> getAttribute "Include" = Some "packages.config") with
         | None -> ()
@@ -273,7 +273,7 @@ type ProjectFile =
             | [] -> nugetNode.Attributes.["Include"].Value <- Constants.ReferencesFile
             | _::_ -> failwithf "multiple %s nodes in project file %s" Constants.ReferencesFile this.FileName
 
-    member this.RemoveNugetTargetsEntries() =
+    member this.RemoveNuGetTargetsEntries() =
         let toDelete = 
             [ this.Document |> getDescendants "RestorePackages" |> Seq.firstOrDefault
               this.Document 
@@ -288,8 +288,9 @@ type ProjectFile =
         |> List.iter 
             (fun node -> 
                 let parent = node.ParentNode
-                node.ParentNode.RemoveChild(node) |> ignore
-                if not parent.HasChildNodes then parent.ParentNode.RemoveChild(parent) |> ignore)
+                node.ParentNode.RemoveChild node |> ignore
+                if not parent.HasChildNodes then 
+                    parent.ParentNode.RemoveChild parent |> ignore)
 
     member this.OutputType =
         seq {for outputType in this.Document |> getDescendants "OutputType" ->
