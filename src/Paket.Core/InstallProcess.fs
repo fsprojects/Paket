@@ -140,7 +140,12 @@ let Install(sources,force, hard, lockFile:LockFile) =
 
         let usedPackages = lockFile.GetPackageHull(referenceFile)
 
-        project.UpdateReferences(model,usedPackages,hard)
+        let usedPackageNames =
+            usedPackages.Keys
+            |> Seq.map (fun x -> NormalizedPackageName x)
+            |> Set.ofSeq
+
+        project.UpdateReferences(model,usedPackageNames,hard)
         
         removeCopiedFiles project
 

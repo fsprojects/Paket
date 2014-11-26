@@ -45,7 +45,7 @@ let ``should delete custom nodes if there are some``() =
     project.GetCustomModelNodes(model).IsEmpty
     |> shouldEqual false
 
-    project.DeleteCustomModelNodes(model)
+    project.DeleteCustomNodes()
 
     project.GetCustomModelNodes(model).IsEmpty
     |> shouldEqual true

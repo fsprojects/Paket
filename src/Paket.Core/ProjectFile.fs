@@ -161,12 +161,11 @@ type ProjectFile =
         this.GetCustomReferenceNodes()
         |> List.filter (fun node -> Set.contains (node.Attributes.["Include"].InnerText.Split(',').[0]) libs)
     
-    member this.DeleteCustomModelNodes(model:InstallModel) =
-        let nodesToDelete = this.GetCustomModelNodes(model)
+    member this.DeleteCustomNodes() =
+        let nodesToDelete = this.GetCustomReferenceNodes()
         
         if nodesToDelete <> [] then
-            let (PackageName name) = model.PackageName
-            verbosefn "    - Deleting custom projects nodes for %s" name
+            verbosefn "    - Deleting custom projects nodes from %s" this.FileName
 
         for node in nodesToDelete do            
             node.ParentNode.RemoveChild(node) |> ignore
@@ -227,24 +226,20 @@ type ProjectFile =
             chooseNode
         
 
-    member this.UpdateReferences(completeModel: Map<NormalizedPackageName,InstallModel>, usedPackages : Dictionary<PackageName,bool>, hard) = 
+    member this.UpdateReferences(completeModel: Map<NormalizedPackageName,InstallModel>, usedPackages : Set<NormalizedPackageName>, hard) = 
         this.DeletePaketNodes("Reference")  
         
         ["ItemGroup";"When";"Otherwise";"Choose";"When";"Choose"]
         |> List.iter this.DeleteIfEmpty
 
         if hard then
-            for kv in usedPackages do
-                let installModel = completeModel.[NormalizedPackageName kv.Key]
-                this.DeleteCustomModelNodes(installModel)
+            this.DeleteCustomNodes()
 
-        let packageNodes =
-            completeModel
-            |> Seq.map (fun kv -> this.GenerateXml(kv.Value))
-            |> Seq.filter (fun node -> node.ChildNodes.Count > 0)
-        
-        for chooseNode in packageNodes do
-            this.ProjectNode.AppendChild(chooseNode) |> ignore
+        completeModel
+        |> Seq.filter (fun kv -> usedPackages.Contains kv.Key)
+        |> Seq.map (fun kv -> this.GenerateXml kv.Value)
+        |> Seq.filter (fun node -> node.ChildNodes.Count > 0)
+        |> Seq.iter (this.ProjectNode.AppendChild >> ignore)
                 
     member this.Save() =
         if Utils.normalizeXml this.Document <> this.OriginalText then 
