@@ -171,6 +171,46 @@ type ProjectFile =
         for node in nodesToDelete do            
             node.ParentNode.RemoveChild(node) |> ignore
 
+    member this.GenerateFrameworkAssemblyXml(references : FrameworkAssemblyReference list) =
+        let createItemGroup (assemblyNames : seq<string>) = 
+            let itemGroup = this.CreateNode("ItemGroup")
+                                
+            for name in assemblyNames do
+                this.CreateNode("Reference")
+                |> addAttribute "Include" name
+                |> addChild (this.CreateNode("Paket","True"))
+                |> itemGroup.AppendChild
+                |> ignore
+            itemGroup
+
+        let conditions =
+            references
+            |> List.map (fun reference ->
+                let condition =
+                    match reference.TargetFramework with
+                    | Some target -> [ SinglePlatform target ] |> PlatformMatching.getCondition
+                    | None -> ""
+                condition, createItemGroup [reference.AssemblyName])
+            |> List.sortBy fst
+
+        match conditions with
+        |  ["$(TargetFrameworkIdentifier) == 'true'", itemGroup] -> itemGroup
+        |  _ ->
+            let chooseNode = this.CreateNode("Choose")
+
+            conditions
+            |> List.map (fun (condition, itemGroup) ->
+                let whenNode = 
+                    this.CreateNode("When")
+                    |> addAttribute "Condition" condition                
+               
+                whenNode.AppendChild(itemGroup) |> ignore
+                whenNode)
+            |> List.iter(fun node -> chooseNode.AppendChild(node) |> ignore)
+
+            chooseNode
+        
+
     member this.GenerateXml(model:InstallModel) =
         let references = 
             this.GetCustomReferenceNodes()
@@ -178,27 +218,20 @@ type ProjectFile =
             |> Set.ofList
 
         let model = model.FilterReferences(references)
-        let createItemGroup references = 
+
+        let createItemGroup (references : seq<Reference>) = 
             let itemGroup = this.CreateNode("ItemGroup")
                                 
             for lib in references do
-                match lib with
-                | Reference.Library lib ->
-                    let fi = new FileInfo(normalizePath lib)
+                let fi = new FileInfo(normalizePath lib.Path)
                     
-                    this.CreateNode("Reference")
-                    |> addAttribute "Include" (fi.Name.Replace(fi.Extension,""))
-                    |> addChild (this.CreateNode("HintPath", createRelativePath this.FileName fi.FullName))
-                    |> addChild (this.CreateNode("Private","True"))
-                    |> addChild (this.CreateNode("Paket","True"))
-                    |> itemGroup.AppendChild
-                    |> ignore
-                | Reference.FrameworkAssemblyReference frameworkAssembly ->              
-                    this.CreateNode("Reference")
-                    |> addAttribute "Include" frameworkAssembly
-                    |> addChild (this.CreateNode("Paket","True"))
-                    |> itemGroup.AppendChild
-                    |> ignore
+                this.CreateNode("Reference")
+                |> addAttribute "Include" (fi.Name.Replace(fi.Extension,""))
+                |> addChild (this.CreateNode("HintPath", createRelativePath this.FileName fi.FullName))
+                |> addChild (this.CreateNode("Private","True"))
+                |> addChild (this.CreateNode("Paket","True"))
+                |> itemGroup.AppendChild
+                |> ignore
             itemGroup
 
         let conditions =
@@ -206,16 +239,16 @@ type ProjectFile =
             |> List.map (fun lib ->
                 let currentLibs = lib.Files.References
                 let condition = lib.Targets |> List.ofSeq |> PlatformMatching.getCondition
-                condition,createItemGroup currentLibs)
+                condition, createItemGroup currentLibs)
             |> List.sortBy fst
 
         match conditions with
-        |  ["$(TargetFrameworkIdentifier) == 'true'",itemGroup] -> itemGroup
+        |  ["$(TargetFrameworkIdentifier) == 'true'", itemGroup] -> itemGroup
         |  _ ->
             let chooseNode = this.CreateNode("Choose")
 
             conditions
-            |> List.map (fun (condition,itemGroup) ->
+            |> List.map (fun (condition, itemGroup) ->
                 let whenNode = 
                     this.CreateNode("When")
                     |> addAttribute "Condition" condition                
@@ -237,13 +270,21 @@ type ProjectFile =
             for kv in usedPackages do
                 let installModel = completeModel.[NormalizedPackageName kv.Key]
                 this.DeleteCustomModelNodes(installModel)
+        
+        let frameworkNodes =
+            completeModel
+            |> Map.toSeq
+            |> Seq.map (fun (_, model) -> Seq.ofList model.FrameworkAssemblies)
+            |> Seq.concat
+            |> Seq.toList
+            |> this.GenerateFrameworkAssemblyXml
 
         let packageNodes =
             completeModel
             |> Seq.map (fun kv -> this.GenerateXml(kv.Value))
             |> Seq.filter (fun node -> node.ChildNodes.Count > 0)
         
-        for chooseNode in packageNodes do
+        for chooseNode in Seq.append [ frameworkNodes ] packageNodes do
             this.ProjectNode.AppendChild(chooseNode) |> ignore
                 
     member this.Save() =
