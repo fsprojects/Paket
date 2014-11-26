@@ -150,8 +150,8 @@ let Install(sources,force, hard, lockFile:LockFile) =
         removeCopiedFiles project
 
         let getSingleRemoteFilePath name = 
-            printf "\nFilename %s " name
-            lockFile.SourceFiles |> List.iter (fun i -> printf "\n %s %s " i.Name  i.FilePath)
+            tracefn "Filename %s " name
+            lockFile.SourceFiles |> List.iter (fun i -> tracefn " %s %s " i.Name  i.FilePath)
             (lockFile.SourceFiles |> List.find (fun f -> Path.GetFileName(f.Name) = name)).FilePath
 
         let gitRemoteItems =
@@ -164,11 +164,11 @@ let Install(sources,force, hard, lockFile:LockFile) =
         
         let nuGetFileItems =
             if lockFile.Options.OmitContent then [] else
-            let files = copyContentFiles(project, findPackagesWithContent(root,usedPackages))
-            files |> List.map (fun file -> 
-                                    { BuildAction = project.DetermineBuildAction file.Name
-                                      Include = createRelativePath project.FileName file.FullName
-                                      Link = None })
+            copyContentFiles(project, findPackagesWithContent(root,usedPackages))
+            |> List.map (fun file -> 
+                                { BuildAction = project.DetermineBuildAction file.Name
+                                  Include = createRelativePath project.FileName file.FullName
+                                  Link = None })
 
         project.UpdateFileItems(gitRemoteItems @ nuGetFileItems, hard)
 
