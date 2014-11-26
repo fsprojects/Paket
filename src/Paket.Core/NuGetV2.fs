@@ -44,12 +44,14 @@ let rec private followODataLink auth url =
             | Some node -> node
             | None -> failwithf "unable to parse data from %s" url
 
-        let currentPage = 
-            feed |> getNode "entry" |> optGetNode "properties" |> optGetNode "Version" 
-            |> Option.map (fun node -> node.InnerText)
-            |> Option.toList
+        let readEntryVersion = optGetNode "properties" >> optGetNode "Version"
 
-        return 
+        let entriesVersions = 
+            feed
+            |> getNodes "entry"
+            |> List.choose (fun entry -> Some entry |> readEntryVersion |> Option.map (fun node -> node.InnerText))
+
+        let linksVersions = 
             feed 
             |> getNodes "link"
             |> List.filter (fun node -> node |> getAttribute "rel" = Some "next")
@@ -58,7 +60,10 @@ let rec private followODataLink auth url =
             |> Async.Parallel
             |> Async.RunSynchronously
             |> Seq.concat
-            |> Seq.append currentPage
+
+        return
+            entriesVersions
+            |> Seq.append linksVersions
     }
 
 /// Gets versions of the given package via OData via /Packages?$filter=Id eq 'packageId'
@@ -71,7 +76,8 @@ let getAllVersionsFromNugetOData (auth, nugetURL, package) =
     async { 
         // we cannot cache this
         try 
-            return! followODataLink auth (sprintf "%s/FindPackagesById()?id='%s'" nugetURL package)
+            let url = sprintf "%s/FindPackagesById()?id='%s'" nugetURL package
+            return! followODataLink auth url
         with _ -> return! getAllVersionsFromNugetODataWithFilter (auth, nugetURL, package)
     }
 
