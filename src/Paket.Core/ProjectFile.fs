@@ -161,11 +161,12 @@ type ProjectFile =
         this.GetCustomReferenceNodes()
         |> List.filter (fun node -> Set.contains (node.Attributes.["Include"].InnerText.Split(',').[0]) libs)
     
-    member this.DeleteCustomNodes() =
-        let nodesToDelete = this.GetCustomReferenceNodes()
+    member this.DeleteCustomModelNodes(model:InstallModel) =
+        let nodesToDelete = this.GetCustomModelNodes(model)
         
         if nodesToDelete <> [] then
-            verbosefn "    - Deleting custom projects nodes from %s" this.FileName
+            let (PackageName name) = model.PackageName
+            verbosefn "    - Deleting custom projects nodes for %s" name
 
         for node in nodesToDelete do            
             node.ParentNode.RemoveChild(node) |> ignore
@@ -229,12 +230,14 @@ type ProjectFile =
         ["ItemGroup";"When";"Otherwise";"Choose";"When";"Choose"]
         |> List.iter this.DeleteIfEmpty
 
-        if hard then
-            this.DeleteCustomNodes()
-
+        
         completeModel
         |> Seq.filter (fun kv -> usedPackages.Contains kv.Key)
-        |> Seq.map (fun kv -> this.GenerateXml kv.Value)
+        |> Seq.map (fun kv -> 
+            if hard then
+                this.DeleteCustomModelNodes(kv.Value)
+
+            this.GenerateXml kv.Value)
         |> Seq.filter (fun node -> node.ChildNodes.Count > 0)
         |> Seq.iter (this.ProjectNode.AppendChild >> ignore)
                 
