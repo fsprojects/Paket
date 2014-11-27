@@ -1,6 +1,9 @@
 #### 0.17.0-alpha010 - 27.11.2014
 * FrameworkHandling: Support more portable profiles and reduce the impact in the XML file
 
+#### 0.16.3 - 27.11.2014
+* BUGFIX: Crash on 'install' when input seq was empty - https://github.com/fsprojects/Paket/pull/395
+
 #### 0.16.2 - 26.11.2014
 * BUGFIX: Handle multiple version results from NuGet - https://github.com/fsprojects/Paket/pull/393
 
