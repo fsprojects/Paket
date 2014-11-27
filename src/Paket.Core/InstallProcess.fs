@@ -98,14 +98,20 @@ let createModel(root, sources,force, lockFile:LockFile) =
 /// Applies binding redirects for all strong-named default fallback references to all app. and web. config files.
 let private applyBindingRedirects root extractedPackages =
     extractedPackages
-    |> Seq.map(fun (package, model) -> model.DefaultFallback.References)
-    |> Seq.reduce (+)
-    |> Set.toSeq
-    |> Seq.map(fun ref -> Assembly.LoadFrom ref.Path)
-    |> Seq.choose(fun assembly ->
-        assembly
-        |> BindingRedirects.getPublicKeyToken
-        |> Option.map(fun token -> assembly, token))
+    |> Seq.map(fun (package, model:InstallModel) -> model.DefaultFallback.References)
+    |> Set.unionMany
+    |> Seq.choose(fun ref -> 
+            match ref with
+            | Reference.Library path -> Some path
+            | _-> None)
+    |> Seq.distinctBy (fun p -> FileInfo(p).Name)
+    |> Seq.choose(fun assemblyFileName ->
+        try
+            let assembly = Assembly.ReflectionOnlyLoadFrom assemblyFileName
+            assembly
+            |> BindingRedirects.getPublicKeyToken
+            |> Option.map(fun token -> assembly, token)
+        with exn -> None)
     |> Seq.map(fun (assembly, token) ->
         {   BindingRedirect.AssemblyName = assembly.GetName().Name
             Version = assembly.GetName().Version.ToString()
