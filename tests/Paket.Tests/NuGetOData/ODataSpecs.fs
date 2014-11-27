@@ -66,3 +66,20 @@ let ``can detect explicit dependencies for ReadOnlyCollectionExtensions``() =
 let ``can calculate v3 path``() = 
     calculateNuGet3Path "https://nuget.org/api/v2" |> shouldEqual (Some "http://preview.nuget.org/ver3-preview/index.json")
     calculateNuGet3Path "http://nuget.org/api/v2" |> shouldEqual (Some "http://preview.nuget.org/ver3-preview/index.json")
+
+[<Test>]
+let ``can read all versions from single page with multiple entries``() =
+    let getUrlContentsStub _ = async { return File.ReadAllText "NuGetOData/NUnit.xml" }
+    
+    let versions = getAllVersionsFromNugetOData(getUrlContentsStub, fakeUrl, "NUnit")
+                   |> Async.RunSynchronously
+
+    versions |> shouldContain "3.0.0-alpha-2"
+    versions |> shouldContain "3.0.0-alpha"
+    versions |> shouldContain "2.6.3"
+    versions |> shouldContain "2.6.2"
+    versions |> shouldContain "2.6.1"
+    versions |> shouldContain "2.6.0.12054"
+    versions |> shouldContain "2.5.10.11092"
+    versions |> shouldContain "2.5.9.10348"
+    versions |> shouldContain "2.5.7.10213"

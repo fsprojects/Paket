@@ -44,26 +44,25 @@ let rec private followODataLink getUrlContents url =
             | Some node -> node
             | None -> failwithf "unable to parse data from %s" url
 
-        let readEntryVersion = optGetNode "properties" >> optGetNode "Version"
+        let readEntryVersion = Some 
+                               >> optGetNode "properties"
+                               >> optGetNode "Version"
+                               >> Option.map (fun node -> node.InnerText)
 
-        let entriesVersions = 
-            feed
-            |> getNodes "entry"
-            |> List.choose (fun entry -> Some entry |> readEntryVersion |> Option.map (fun node -> node.InnerText))
+        let entriesVersions = feed |> getNodes "entry" |> List.choose readEntryVersion
 
-        let linksVersions = 
+        let! linksVersions = 
             feed 
             |> getNodes "link"
             |> List.filter (fun node -> node |> getAttribute "rel" = Some "next")
             |> List.choose (getAttribute "href")
             |> List.map (followODataLink getUrlContents)
             |> Async.Parallel
-            |> Async.RunSynchronously
-            |> Seq.concat
 
         return
-            entriesVersions
-            |> Seq.append linksVersions
+            linksVersions
+            |> Seq.collect id
+            |> Seq.append entriesVersions
     }
 
 /// Gets versions of the given package via OData via /Packages?$filter=Id eq 'packageId'
@@ -73,10 +72,9 @@ let getAllVersionsFromNugetODataWithFilter (getUrlContents, nugetURL, package) =
     followODataLink getUrlContents url
 
 /// Gets versions of the given package via OData via /FindPackagesById()?id='packageId'.
-let getAllVersionsFromNugetOData (auth, nugetURL, package) = 
+let getAllVersionsFromNugetOData (getUrlContents, nugetURL, package) = 
     async { 
         // we cannot cache this
-        let getUrlContents url = getFromUrl(auth, url)
         try 
             let url = sprintf "%s/FindPackagesById()?id='%s'" nugetURL package
             return! followODataLink getUrlContents url
@@ -88,15 +86,16 @@ let getAllVersionsFromNuGet2(auth,nugetURL,package) =
     // we cannot cache this
     async { 
         let! raw = safeGetFromUrl(auth,sprintf "%s/package-versions/%s?includePrerelease=true" nugetURL package)
+        let getUrlContents url = getFromUrl(auth, url)
         match raw with
-        | None -> let! result = getAllVersionsFromNugetOData(auth, nugetURL, package)
+        | None -> let! result = getAllVersionsFromNugetOData(getUrlContents, nugetURL, package)
                   return result
         | Some data -> 
             try 
                 try 
                     let result = JsonConvert.DeserializeObject<string []>(data) |> Array.toSeq
                     return result
-                with _ -> let! result = getAllVersionsFromNugetOData(auth, nugetURL, package)
+                with _ -> let! result = getAllVersionsFromNugetOData(getUrlContents, nugetURL, package)
                           return result
             with exn -> 
                 return! failwithf "Could not get data from %s for package %s.%s Message: %s" nugetURL package 
