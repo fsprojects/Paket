@@ -133,3 +133,9 @@ type Dependencies(dependenciesFileName: string) =
     member this.FindReferencesFor(package: string): string list =
         FindReferences.FindReferencesForPackage(dependenciesFileName, PackageName package)
     
+    /// Creates dependencies file with default NuGet feed
+    member this.Init() : unit =
+        if File.Exists dependenciesFileName then
+            Logging.tracef "%s already exists" dependenciesFileName
+        else
+            DependenciesFile(dependenciesFileName, InstallOptions.Default, [PackageSources.DefaultNugetSource], [], []).Save()

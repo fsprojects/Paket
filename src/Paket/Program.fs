@@ -16,6 +16,7 @@ let fvi = FileVersionInfo.GetVersionInfo(assembly.Location);
 tracefn "Paket version %s" fvi.FileVersion
 
 type Command =
+    | Init
     | Add
     | Remove
     | Install
@@ -29,6 +30,7 @@ type Command =
     | Unknown
 
 type CLIArguments =
+    | [<First>][<NoAppSettings>][<CustomCommandLine("init")>] Init
     | [<First>][<NoAppSettings>][<CustomCommandLine("add")>] Add
     | [<First>][<NoAppSettings>][<CustomCommandLine("remove")>] Remove
     | [<First>][<NoAppSettings>][<CustomCommandLine("install")>] Install
@@ -55,6 +57,7 @@ with
     interface IArgParserTemplate with
         member s.Usage =
             match s with
+            | Init -> "creates dependencies file."
             | Add -> "adds a package to the dependencies."
             | Remove -> "removes a package from the dependencies."
             | Install -> "installs all packages."
@@ -84,7 +87,8 @@ let results =
     try
         let results = parser.Parse()
         let command = 
-            if results.Contains <@ CLIArguments.Add @> then Command.Add
+            if results.Contains <@ CLIArguments.Init @> then Command.Init
+            elif results.Contains <@ CLIArguments.Add @> then Command.Add
             elif results.Contains <@ CLIArguments.Remove @> then Command.Remove
             elif results.Contains <@ CLIArguments.Install @> then Command.Install
             elif results.Contains <@ CLIArguments.Restore @> then Command.Restore
@@ -115,6 +119,7 @@ try
         let includePrereleases = results.Contains <@ CLIArguments.Include_Prereleases @>
 
         match command with
+        | Command.Init -> Dependencies.LocateOrCreate().Init()
         | Command.Add -> 
             let packageName = results.GetResult <@ CLIArguments.Nuget @>
             let version = 
@@ -148,7 +153,7 @@ try
         | Command.FindRefs ->
             let packages = results.GetResults <@ CLIArguments.FindRefs @>
             Dependencies.Locate().ShowReferencesFor(packages)
-        | _ -> traceErrorfn "no command given.%s" (parser.Usage())
+        | Command.Unknown -> traceErrorfn "no command given.%s" (parser.Usage())
         
         let elapsedTime = Utils.TimeSpanToReadableString stopWatch.Elapsed
 
