@@ -19,9 +19,6 @@ type Dependencies(dependenciesFileName: string) =
                             name, p.Version.ToString())
         |> Seq.toList
 
-    /// Get path to dependencies file
-    member this.DependenciesFile with get() = dependenciesFileName
-
     /// Tries to locate the paket.dependencies file in the current folder or a parent folder.
     static member Locate(): Dependencies = Dependencies.Locate(Environment.CurrentDirectory)
 
@@ -54,9 +51,31 @@ type Dependencies(dependenciesFileName: string) =
         if File.Exists dependenciesFileName then
             Logging.tracef "%s already exists" dependenciesFileName
         else
-            DependenciesFile(dependenciesFileName, InstallOptions.Default, [PackageSources.DefaultNugetSource], [], []).Save()
+            DependenciesFile(dependenciesFileName, InstallOptions.Default, [], [], []).Save()
         Dependencies(dependenciesFileName)
         
+    /// Converts the solution from NuGet to Paket.
+    static member ConvertFromNuget(force: bool,installAfter: bool,initAutoRestore: bool,credsMigrationMode: string option) : unit =
+        let credsMigrationMode = credsMigrationMode |> Option.map NuGetConvert.CredsMigrationMode.Parse
+        let dependencies = 
+            try Some <| Dependencies.Locate()
+            with _ -> None 
+        
+        let existingDependenciesFile = 
+            if force 
+            then dependencies |> Option.map (fun d -> d.DependenciesFile)
+            else dependencies |> Option.map (fun d -> failwithf "%s already exists, use --force to overwrite" d.DependenciesFile)
+        
+        let dependenciesFileName = 
+            match existingDependenciesFile with
+            | Some file -> file
+            | None -> Path.Combine(Environment.CurrentDirectory, Constants.DependenciesFileName)
+
+        NuGetConvert.ConvertFromNuget(dependenciesFileName, force, installAfter, initAutoRestore, credsMigrationMode)
+
+    /// Get path to dependencies file
+    member this.DependenciesFile with get() = dependenciesFileName
+
     /// Adds the given package without version requirements to the dependencies file.
     member this.Add(package: string): unit = this.Add(package,"")
 
@@ -95,25 +114,6 @@ type Dependencies(dependenciesFileName: string) =
 
     /// Converts the current package dependency graph to the simplest dependency graph.
     member this.Simplify(interactive: bool): unit = Simplifier.Simplify(dependenciesFileName,interactive)
-
-    /// Converts the solution from NuGet to Paket.
-    static member ConvertFromNuget(force: bool,installAfter: bool,initAutoRestore: bool,credsMigrationMode: string option) : unit =
-        let credsMigrationMode = credsMigrationMode |> Option.map NuGetConvert.CredsMigrationMode.Parse
-        let dependencies = 
-            try Some <| Dependencies.Locate()
-            with _ -> None 
-        
-        let existingDependenciesFile = 
-            if force 
-            then dependencies |> Option.map (fun d -> d.DependenciesFile)
-            else dependencies |> Option.map (fun d -> failwithf "%s already exists, use --force to overwrite" d.DependenciesFile)
-        
-        let dependenciesFileName = 
-            match existingDependenciesFile with
-            | Some file -> file
-            | None -> Path.Combine(Environment.CurrentDirectory, Constants.DependenciesFileName)
-
-        NuGetConvert.ConvertFromNuget(dependenciesFileName, force, installAfter, initAutoRestore, credsMigrationMode)
 
     /// Returns the installed version of the given package.
     member this.GetInstalledVersion(packageName: string): string option =
