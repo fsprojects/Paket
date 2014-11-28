@@ -67,6 +67,12 @@ type LibFolder =
       Targets : TargetProfile list
       Files : InstallFiles}
 
+    member this.GetSinglePlatforms() =
+        this.Targets |> List.choose (fun target ->
+            match target with
+            | SinglePlatform t -> Some t
+            | _ -> None)
+
 type InstallModel = 
     { PackageName : PackageName
       PackageVersion : SemVerInfo
@@ -154,7 +160,16 @@ type InstallModel =
     member this.AddReferences(libs) = this.AddReferences(libs, NuspecReferences.All)
     
     member this.AddFrameworkAssemblyReference(reference) : InstallModel =
-        this.MapFiles(fun files -> files.AddFrameworkAssemblyReference(reference.AssemblyName))
+        let inline referenceApplies (folder : LibFolder) reference =
+            match reference.TargetFramework with
+            | Some target -> folder.GetSinglePlatforms() |> List.exists (fun t -> t = target)
+            | None -> true
+        
+        this.MapFolders(fun folder ->
+            if referenceApplies folder reference then
+                { folder with Files = folder.Files.AddFrameworkAssemblyReference reference.AssemblyName }
+            else
+                folder)
     
     member this.AddFrameworkAssemblyReferences(references) : InstallModel = 
         references 
