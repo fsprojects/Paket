@@ -119,7 +119,7 @@ try
         let includePrereleases = results.Contains <@ CLIArguments.Include_Prereleases @>
 
         match command with
-        | Command.Init -> Dependencies.LocateOrCreate().Init()
+        | Command.Init -> Dependencies.Create() |> ignore
         | Command.Add -> 
             let packageName = results.GetResult <@ CLIArguments.Nuget @>
             let version = 
@@ -147,8 +147,7 @@ try
         | Command.InitAutoRestore -> Dependencies.Locate().InitAutoRestore()
         | Command.ConvertFromNuget -> 
             let credsMigrationMode = results.TryGetResult <@ CLIArguments.Creds_Migration @>
-            let dependencies = if force then Dependencies.LocateOrCreate() else Dependencies.Create()                
-            dependencies.ConvertFromNuget(force, noInstall |> not, noAutoRestore |> not, credsMigrationMode)
+            Dependencies.ConvertFromNuget(force, noInstall |> not, noAutoRestore |> not, credsMigrationMode)
         | Command.Simplify -> Dependencies.Locate().Simplify(interactive)
         | Command.FindRefs ->
             let packages = results.GetResults <@ CLIArguments.FindRefs @>
