@@ -52,6 +52,15 @@ If you want to contribute to the [docs][2] then please modify the markdown files
 
 The [MIT license][6]
 
+## Maintainer(s)
+
+- [@forki](https://github.com/forki)
+- [@agross](https://github.com/agross)
+- [@ilkerde](https://github.com/ilkerde)
+- [@shishkin](https://github.com/shishkin)
+
+The default maintainer account for projects under "fsprojects" is [@fsgit](https://github.com/fsgit) - F# Community Project Incubation Space (repo management)
+
  [1]: https://github.com/fsprojects/Paket/
  [2]: http://fsprojects.github.io/Paket/
  [3]: https://github.com/fsprojects/Paket/releases/latest
