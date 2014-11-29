@@ -201,6 +201,28 @@ type InstallModel =
         this.GetReferences.Force()
         |> Set.map (fun lib -> lib.ReferenceName)
 
+    member this.ApplyFrameworkRestriction(restriction:FrameworkRestriction) =
+        match restriction with
+        | None -> this
+        | Some fw ->
+            let folders =
+                this.LibFolders
+                |> List.fold 
+                    (fun folders folder ->
+                        let targets =
+                            folder.Targets 
+                                |> List.filter 
+                                    (fun x -> 
+                                        match x with 
+                                        | SinglePlatform pf -> pf = fw 
+                                        | _ -> false) 
+                        if targets = [] then folders else 
+                        {folder with Targets = targets} :: folders)
+                    []
+
+            {this with LibFolders = folders}
+    
+
     member this.GetFrameworkAssemblies = 
         lazy ([ for lib in this.LibFolders do
                     yield! lib.Files.GetFrameworkAssemblies()]
@@ -212,3 +234,4 @@ type InstallModel =
             .AddReferences(libs, nuspec.References)
             .AddFrameworkAssemblyReferences(nuspec.FrameworkAssemblyReferences)
             .FilterBlackList()
+            .ApplyFrameworkRestriction(frameworkRestriction)

@@ -1,16 +1,10 @@
-#### 0.17.0-alpha012 - 27.11.2014
+#### 0.17.0-alpha013 - 29.11.2014
 * FrameworkHandling: Support more portable profiles and reduce the impact in the XML file
-* Better error message for file missing in paket.lock file - https://github.com/fsprojects/Paket/pull/402
-* New command `paket init` - http://fsprojects.github.io/Paket/paket-init.html
-
-#### 0.16.3 - 27.11.2014
-* BUGFIX: Crash on 'install' when input seq was empty - https://github.com/fsprojects/Paket/pull/395
-
-#### 0.16.2 - 26.11.2014
-* BUGFIX: Handle multiple version results from NuGet - https://github.com/fsprojects/Paket/pull/393
-
-#### 0.16.1 - 24.11.2014
 * FrameworkHandling: support extracting Silverlight5.0 and NetCore4.5 - https://github.com/fsprojects/Paket/pull/389
+* New command `paket init` - http://fsprojects.github.io/Paket/paket-init.html
+* Better error message for missing files in paket.lock file - https://github.com/fsprojects/Paket/pull/402
+* BUGFIX: Crash on 'install' when input seq was empty - https://github.com/fsprojects/Paket/pull/395
+* BUGFIX: Handle multiple version results from NuGet - https://github.com/fsprojects/Paket/pull/393
 
 #### 0.16.0 - 23.11.2014
 * Integrate BindingRedirects into Paket install process - https://github.com/fsprojects/Paket/pull/383
