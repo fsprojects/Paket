@@ -153,7 +153,11 @@ let Resolve(getVersionsF, getPackageDetailsF, rootDependencies:PackageRequiremen
                     if dependency.VersionRequirement.Range.IsGlobalOverride then
                         versions,List.filter dependency.VersionRequirement.IsInRange versions,true
                     else
-                        versions,List.filter dependency.VersionRequirement.IsInRange versions,false
+                        let compatible = List.filter dependency.VersionRequirement.IsInRange versions
+                        if compatible = [] && versions |> List.filter (fun v -> v.PreRelease <> None) = versions then
+                            versions,versions,false
+                        else
+                            versions,compatible,false
                 | Some(versions,globalOverride) -> 
                     if globalOverride then versions,versions,true else versions,List.filter dependency.VersionRequirement.IsInRange versions,false
 

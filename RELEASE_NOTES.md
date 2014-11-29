@@ -1,3 +1,6 @@
+#### 0.17.1 - 29.11.2014
+* If there are only prereleases we should just take these
+
 #### 0.17.0 - 29.11.2014
 * FrameworkHandling: Support more portable profiles and reduce the impact in the XML file
 * FrameworkHandling: support extracting Silverlight5.0 and NetCore4.5 - https://github.com/fsprojects/Paket/pull/389
