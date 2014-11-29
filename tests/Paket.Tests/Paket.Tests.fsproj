@@ -198,6 +198,7 @@
     <Compile Include="InstallModel\Xml\SystemNetHttpWithExistingFrameworkReferences.fs" />
     <Compile Include="InstallModel\Xml\ManualNodes.fs" />
     <Compile Include="InstallModel\Xml\FSharp.Data.SqlClient.fs" />
+    <Compile Include="InstallModel\Xml\RxXaml.fs" />
     <Compile Include="InstallModel\Penalty\PenaltySpecs.fs" />
     <Compile Include="InstallModel\Penalty\FrameworkConditionsSpecs.fs" />
     <Compile Include="DependencyModel\ProjectDependencySpecs.fs" />
