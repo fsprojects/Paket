@@ -1,4 +1,4 @@
-#### 0.17.0-alpha011 - 27.11.2014
+#### 0.17.0-alpha012 - 27.11.2014
 * FrameworkHandling: Support more portable profiles and reduce the impact in the XML file
 * Better error message for file missing in paket.lock file - https://github.com/fsprojects/Paket/pull/402
 * New command `paket init` - http://fsprojects.github.io/Paket/paket-init.html
