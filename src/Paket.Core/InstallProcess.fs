@@ -152,7 +152,10 @@ let Install(sources,force, hard, lockFile:LockFile) =
         let getSingleRemoteFilePath name = 
             tracefn "Filename %s " name
             lockFile.SourceFiles |> List.iter (fun i -> tracefn " %s %s " i.Name  i.FilePath)
-            (lockFile.SourceFiles |> List.find (fun f -> Path.GetFileName(f.Name) = name)).FilePath
+            let sourceFile = lockFile.SourceFiles |> List.tryFind (fun f -> Path.GetFileName(f.Name) = name)
+            match sourceFile with
+            | Some file -> file.FilePath
+            | None -> failwithf "%s references file %s, but it was not found in the paket.lock file." referenceFile.FileName name
 
         let gitRemoteItems =
             referenceFile.RemoteFiles
