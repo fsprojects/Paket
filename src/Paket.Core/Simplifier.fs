@@ -37,10 +37,16 @@ let Analyze(allPackages : list<ResolvedPackage>, depFile : DependenciesFile, ref
     let flattenedLookup = depsLookup |> Map.map (fun key _ -> getAllDeps key)
 
     let getSimplifiedDeps (depNameFun : 'a -> PackageName) fileName allDeps =
+        let lookupDeps packageName =
+            match flattenedLookup |> Map.tryFind (NormalizedPackageName packageName) with
+            | Some deps -> deps
+            | None -> failwithf "unable to simplify %s - lock file doesn't include package %s, try running paket update"
+                                fileName
+                                (let (PackageName name) = packageName in name)
         let indirectDeps = 
             allDeps 
             |> List.map depNameFun 
-            |> List.fold (fun set directDep -> Set.union set (flattenedLookup.[ NormalizedPackageName directDep ])) Set.empty
+            |> List.fold (fun set directDep -> Set.union set (lookupDeps directDep)) Set.empty
         let depsToRemove =
             if interactive then indirectDeps |> Set.filter (interactiveConfirm fileName) else indirectDeps
             |> Set.map NormalizedPackageName

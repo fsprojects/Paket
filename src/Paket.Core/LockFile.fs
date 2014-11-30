@@ -257,6 +257,13 @@ type LockFile(fileName:string,options,resolution:PackageResolution,remoteFiles:R
         File.WriteAllText(fileName, output)
         tracefn "Locked version resolutions written to %s" fileName
 
+    /// Creates a paket.lock file at given location
+    static member Create (lockFileName: string, installOptions: InstallOptions, resolvedPackages: PackageResolver.ResolvedPackages, resolvedSourceFiles: ModuleResolver.ResolvedSourceFile list) : LockFile =
+        let resolvedPackages = resolvedPackages.GetModelOrFail()
+        let lockFile = LockFile(lockFileName, installOptions, resolvedPackages, resolvedSourceFiles)
+        lockFile.Save()
+        lockFile
+
     /// Parses a paket.lock file from file
     static member LoadFrom(lockFileName) : LockFile =        
         LockFile.Parse(lockFileName, File.ReadAllLines lockFileName)

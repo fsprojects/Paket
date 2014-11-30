@@ -1,3 +1,6 @@
+#### 0.17.3 - 30.11.2014
+* Clear failure message for `paket simplify`, when lock file is outdated - https://github.com/fsprojects/Paket/pull/403
+
 #### 0.17.1 - 29.11.2014
 * If there are only prereleases we should just take these
 
