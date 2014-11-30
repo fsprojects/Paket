@@ -55,6 +55,7 @@ type ProjectFile =
             let rec findInDir (currentDir:DirectoryInfo) = 
                 let generalReferencesFile = FileInfo(Path.Combine(currentDir.FullName, Constants.ReferencesFile))
                 if generalReferencesFile.Exists then Some generalReferencesFile.FullName
+                elif (FileInfo(Path.Combine(currentDir.FullName, Constants.DependenciesFileName))).Exists then None
                 elif currentDir.Parent = null then None
                 else findInDir currentDir.Parent 
                     
