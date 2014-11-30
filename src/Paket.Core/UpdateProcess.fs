@@ -32,6 +32,16 @@ let private fixOldDependencies (oldLockFile:LockFile) (dependenciesFile:Dependen
                 dependenciesFile.AddFixedPackage(resolvedPackage.Name, "= " + resolvedPackage.Version.ToString()))
             dependenciesFile
 
+let private update (lockFileName) (createDependenciesFile:LockFile -> DependenciesFile) force =
+    let oldLockFile = LockFile.LoadFrom(lockFileName)
+
+    let dependenciesFile = createDependenciesFile oldLockFile
+
+    let resolution = dependenciesFile.Resolve(force)
+    let newLockFile = LockFile.Create(lockFileName, dependenciesFile.Options, resolution.ResolvedPackages, oldLockFile.SourceFiles)
+    dependenciesFile.Sources, newLockFile
+
+
 let updateWithModifiedDependenciesFile(dependenciesFile:DependenciesFile,packageName:PackageName, force) =
     let lockFileName = DependenciesFile.FindLockfile dependenciesFile.FileName
 
@@ -39,12 +49,8 @@ let updateWithModifiedDependenciesFile(dependenciesFile:DependenciesFile,package
         let resolution = dependenciesFile.Resolve(force)
         LockFile.Create(lockFileName.FullName, dependenciesFile.Options, resolution.ResolvedPackages, resolution.ResolvedSourceFiles)
     else
-        let oldLockFile = LockFile.LoadFrom(lockFileName.FullName)
-
-        let updatedDependenciesFile = fixOldDependencies oldLockFile dependenciesFile packageName
-        
-        let resolution = updatedDependenciesFile.Resolve(force)
-        LockFile.Create(lockFileName.FullName, updatedDependenciesFile.Options, resolution.ResolvedPackages, oldLockFile.SourceFiles)
+        let updatedDependenciesFile oldLockFile = fixOldDependencies oldLockFile dependenciesFile packageName
+        update lockFileName.FullName updatedDependenciesFile force |> snd
 
 
 /// Update a single package command
@@ -62,11 +68,6 @@ let UpdatePackage(dependenciesFileName, packageName : PackageName, newVersion, f
                 depFile
             | None -> depFile
 
-        let oldLockFile = LockFile.LoadFrom(lockFileName.FullName)
-        
-        let updatedDependenciesFile = fixOldDependencies oldLockFile dependenciesFile packageName
-        
-        let resolution = updatedDependenciesFile.Resolve(force)
-        let newLockFile = LockFile.Create(lockFileName.FullName, updatedDependenciesFile.Options, resolution.ResolvedPackages, oldLockFile.SourceFiles)
-        updatedDependenciesFile.Sources, newLockFile
+        let updatedDependenciesFile oldLockFile = fixOldDependencies oldLockFile dependenciesFile packageName
+        update lockFileName.FullName updatedDependenciesFile force
     InstallProcess.Install(sources, force, hard, lockFile)
