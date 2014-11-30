@@ -218,14 +218,21 @@ module LockFileParser =
 
 /// Allows to parse and analyze paket.lock files.
 type LockFile(fileName:string,options,resolution:PackageResolution,remoteFiles:ResolvedSourceFile list) =
-    let lowerCaseResolution =
-        resolution
-        |> Map.fold (fun resolution name p -> Map.add name p resolution) Map.empty
 
     member __.SourceFiles = remoteFiles
     member __.ResolvedPackages = resolution
     member __.FileName = fileName
     member __.Options = options
+
+    /// Checks if the first package is a dependency of the second package
+    member this.IsDependencyOf(dependentPackage,package) = 
+        let start = NormalizedPackageName package
+        let target = NormalizedPackageName dependentPackage
+        let current = resolution.[start]
+        
+        if target = start then true else
+        current.Dependencies
+        |> Seq.exists (fun (d,_,_) -> this.IsDependencyOf(dependentPackage,d))
 
     /// Updates the Lock file with the analyzed dependencies from the paket.dependencies file.
     member __.Save() =
@@ -237,9 +244,13 @@ type LockFile(fileName:string,options,resolution:PackageResolution,remoteFiles:R
         File.WriteAllText(fileName, output)
         tracefn "Locked version resolutions written to %s" fileName
 
-    /// Parses a paket.lock file from lines
+    /// Parses a paket.lock file from file
     static member LoadFrom(lockFileName) : LockFile =        
-        LockFileParser.Parse(File.ReadAllLines lockFileName)
+        LockFile.Parse(lockFileName, File.ReadAllLines lockFileName)
+
+    /// Parses a paket.lock file from lines
+    static member Parse(lockFileName,lines) : LockFile =        
+        LockFileParser.Parse lines
         |> fun state -> LockFile(lockFileName, state.Options ,state.Packages |> Seq.fold (fun map p -> Map.add (NormalizedPackageName p.Name) p map) Map.empty, List.rev state.SourceFiles)
 
     member this.GetPackageHull(referencesFile:ReferencesFile) =
@@ -247,7 +258,7 @@ type LockFile(fileName:string,options,resolution:PackageResolution,remoteFiles:R
 
         let rec addPackage directly (packageName:PackageName) =
             let identity = NormalizedPackageName packageName
-            match lowerCaseResolution.TryFind identity with
+            match resolution.TryFind identity with
             | Some package ->
                 if usedPackages.Add packageName then
                     if not this.Options.Strict then

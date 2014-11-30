@@ -1,4 +1,4 @@
-module paket.lockFile.GenerateAuthModeSpecs
+module Paket.LockFile.GenerateAuthModeSpecs
 
 open Paket
 open NUnit.Framework
