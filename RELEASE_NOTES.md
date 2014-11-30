@@ -1,3 +1,6 @@
+#### 0.17.4 - 30.11.2014
+* Allow `paket.references` files in upper directories - https://github.com/fsprojects/Paket/pull/403
+
 #### 0.17.3 - 30.11.2014
 * Clear failure message for `paket simplify`, when lock file is outdated - https://github.com/fsprojects/Paket/pull/403
 
