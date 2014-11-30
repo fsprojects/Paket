@@ -27,9 +27,11 @@ let Update(dependenciesFileName, forceResolution, force, hard) =
     InstallProcess.Install(sources, force, hard, lockFile)
 
 let private fixOldDependencies (oldLockFile:LockFile) (dependenciesFile:DependenciesFile) (package:PackageName) =
+    let allDependencies = oldLockFile.GetAllDependenciesOf package
+
     oldLockFile.ResolvedPackages
     |> Seq.map (fun kv -> kv.Value)
-    |> Seq.filter (fun p -> not <| oldLockFile.IsDependencyOf(p.Name,package))
+    |> Seq.filter (fun p -> not <| allDependencies.Contains p.Name)
     |> Seq.fold 
             (fun (dependenciesFile : DependenciesFile) resolvedPackage ->                 
                     dependenciesFile.AddFixedPackage(resolvedPackage.Name, "= " + resolvedPackage.Version.ToString()))

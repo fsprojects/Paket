@@ -224,15 +224,28 @@ type LockFile(fileName:string,options,resolution:PackageResolution,remoteFiles:R
     member __.FileName = fileName
     member __.Options = options
 
+    /// Gets all dependencies of the given package
+    member this.GetAllDependenciesOf(package) = 
+        let usedPackages = HashSet<_>()
+
+        let rec addPackage (packageName:PackageName) =
+            let identity = NormalizedPackageName packageName
+            match resolution.TryFind identity with
+            | Some package ->
+                if usedPackages.Add packageName then
+                    if not this.Options.Strict then
+                        for d,_,_ in package.Dependencies do
+                            addPackage d
+            | None ->
+                failwithf "Package %O was referenced, but it was not found in the paket.lock file."  packageName
+
+        addPackage package
+
+        usedPackages
+
     /// Checks if the first package is a dependency of the second package
-    member this.IsDependencyOf(dependentPackage,package) = 
-        let start = NormalizedPackageName package
-        let target = NormalizedPackageName dependentPackage
-        let current = resolution.[start]
-        
-        if target = start then true else
-        current.Dependencies
-        |> Seq.exists (fun (d,_,_) -> this.IsDependencyOf(dependentPackage,d))
+    member this.IsDependencyOf(dependentPackage,package) =
+        this.GetAllDependenciesOf(package).Contains dependentPackage
 
     /// Updates the Lock file with the analyzed dependencies from the paket.dependencies file.
     member __.Save() =
@@ -256,18 +269,10 @@ type LockFile(fileName:string,options,resolution:PackageResolution,remoteFiles:R
     member this.GetPackageHull(referencesFile:ReferencesFile) =
         let usedPackages = HashSet<_>()
 
-        let rec addPackage directly (packageName:PackageName) =
-            let identity = NormalizedPackageName packageName
-            match resolution.TryFind identity with
-            | Some package ->
-                if usedPackages.Add packageName then
-                    if not this.Options.Strict then
-                        for d,_,_ in package.Dependencies do
-                            addPackage false d
-            | None ->
-                failwithf "%s references package %O, but it was not found in the paket.lock file." referencesFile.FileName packageName
-
         referencesFile.NugetPackages
-        |> List.iter (addPackage true)
+        |> List.iter (fun package -> 
+            try
+                usedPackages.UnionWith(this.GetAllDependenciesOf(package))
+            with exn -> failwithf "%s - in %s" exn.Message referencesFile.FileName)
 
-        usedPackages    
+        usedPackages   
