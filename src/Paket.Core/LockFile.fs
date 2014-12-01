@@ -218,14 +218,34 @@ module LockFileParser =
 
 /// Allows to parse and analyze paket.lock files.
 type LockFile(fileName:string,options,resolution:PackageResolution,remoteFiles:ResolvedSourceFile list) =
-    let lowerCaseResolution =
-        resolution
-        |> Map.fold (fun resolution name p -> Map.add name p resolution) Map.empty
 
     member __.SourceFiles = remoteFiles
     member __.ResolvedPackages = resolution
     member __.FileName = fileName
     member __.Options = options
+
+    /// Gets all dependencies of the given package
+    member this.GetAllDependenciesOf(package) = 
+        let usedPackages = HashSet<_>()
+
+        let rec addPackage (packageName:PackageName) =
+            let identity = NormalizedPackageName packageName
+            match resolution.TryFind identity with
+            | Some package ->
+                if usedPackages.Add packageName then
+                    if not this.Options.Strict then
+                        for d,_,_ in package.Dependencies do
+                            addPackage d
+            | None ->
+                failwithf "Package %O was referenced, but it was not found in the paket.lock file."  packageName
+
+        addPackage package
+
+        usedPackages
+
+    /// Checks if the first package is a dependency of the second package
+    member this.IsDependencyOf(dependentPackage,package) =
+        this.GetAllDependenciesOf(package).Contains dependentPackage
 
     /// Updates the Lock file with the analyzed dependencies from the paket.dependencies file.
     member __.Save() =
@@ -244,26 +264,22 @@ type LockFile(fileName:string,options,resolution:PackageResolution,remoteFiles:R
         lockFile.Save()
         lockFile
 
-    /// Parses a paket.lock file from lines
+    /// Parses a paket.lock file from file
     static member LoadFrom(lockFileName) : LockFile =        
-        LockFileParser.Parse(File.ReadAllLines lockFileName)
+        LockFile.Parse(lockFileName, File.ReadAllLines lockFileName)
+
+    /// Parses a paket.lock file from lines
+    static member Parse(lockFileName,lines) : LockFile =        
+        LockFileParser.Parse lines
         |> fun state -> LockFile(lockFileName, state.Options ,state.Packages |> Seq.fold (fun map p -> Map.add (NormalizedPackageName p.Name) p map) Map.empty, List.rev state.SourceFiles)
 
     member this.GetPackageHull(referencesFile:ReferencesFile) =
         let usedPackages = HashSet<_>()
 
-        let rec addPackage directly (packageName:PackageName) =
-            let identity = NormalizedPackageName packageName
-            match lowerCaseResolution.TryFind identity with
-            | Some package ->
-                if usedPackages.Add packageName then
-                    if not this.Options.Strict then
-                        for d,_,_ in package.Dependencies do
-                            addPackage false d
-            | None ->
-                failwithf "%s references package %O, but it was not found in the paket.lock file." referencesFile.FileName packageName
-
         referencesFile.NugetPackages
-        |> List.iter (addPackage true)
+        |> List.iter (fun package -> 
+            try
+                usedPackages.UnionWith(this.GetAllDependenciesOf(package))
+            with exn -> failwithf "%s - in %s" exn.Message referencesFile.FileName)
 
-        usedPackages    
+        usedPackages   

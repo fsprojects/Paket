@@ -1,4 +1,4 @@
-module paket.lockFile.GenerateContentNoneOptionSpecs
+module Paket.LockFile.GenerateContentNoneOptionSpecs
 
 open Paket
 open NUnit.Framework
