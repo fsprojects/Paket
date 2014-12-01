@@ -51,10 +51,15 @@ type ProjectFile =
     static member FindReferencesFile (projectFile : FileInfo) =
         let specificReferencesFile = FileInfo(Path.Combine(projectFile.Directory.FullName, projectFile.Name + "." + Constants.ReferencesFile))
         if specificReferencesFile.Exists then Some specificReferencesFile.FullName
-        else 
-            let generalReferencesFile = FileInfo(Path.Combine(projectFile.Directory.FullName, Constants.ReferencesFile))
-            if generalReferencesFile.Exists then Some generalReferencesFile.FullName
-            else None
+        else
+            let rec findInDir (currentDir:DirectoryInfo) = 
+                let generalReferencesFile = FileInfo(Path.Combine(currentDir.FullName, Constants.ReferencesFile))
+                if generalReferencesFile.Exists then Some generalReferencesFile.FullName
+                elif (FileInfo(Path.Combine(currentDir.FullName, Constants.DependenciesFileName))).Exists then None
+                elif currentDir.Parent = null then None
+                else findInDir currentDir.Parent 
+                    
+            findInDir projectFile.Directory
 
     member this.CreateNode(name) = 
         this.Document.CreateElement(name, Constants.ProjectDefaultNameSpace)
