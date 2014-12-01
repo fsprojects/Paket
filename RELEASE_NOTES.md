@@ -1,3 +1,8 @@
+#### 0.17.5 - 01.12.2014
+* BUGFIX: Unescape library filename - https://github.com/fsprojects/Paket/pull/412
+* Find the paket.references file in upper directories - https://github.com/fsprojects/Paket/pull/409
+* Selective update updates only dependent packages - https://github.com/fsprojects/Paket/pull/410
+
 #### 0.17.4 - 30.11.2014
 * Allow `paket.references` files in upper directories - https://github.com/fsprojects/Paket/pull/403
 
