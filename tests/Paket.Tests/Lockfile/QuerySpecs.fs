@@ -1,0 +1,50 @@
+module Paket.LockFile.QuerySpecs
+
+open Paket
+open NUnit.Framework
+open FsUnit
+open TestHelpers
+open Paket.Domain
+
+let data = """NUGET
+  remote: https://nuget.org/api/v2
+  specs:
+    Castle.Windsor (2.1)
+    Castle.Windsor-log4net (3.3)
+      Castle.Windsor (>= 2.0)
+      log4net (>= 1.0)
+    Rx-Core (2.1)
+    Rx-Main (2.0)
+      Rx-Core (>= 2.1)
+    log (1.2)
+    log4net (1.1)
+      log (>= 1.0)
+GITHUB
+  remote: fsharp/FAKE
+  specs:
+    src/app/FAKE/Cli.fs (7699e40e335f3cc54ab382a8969253fecc1e08a9)
+    src/app/Fake.Deploy.Lib/FakeDeployAgentHelper.fs (Globbing)
+"""
+
+let lockFile = LockFile.Parse("Test",toLines data)
+
+
+[<Test>]
+let ``should detect itself as dependency``() = 
+    lockFile.IsDependencyOf(PackageName "Rx-Core",PackageName "Rx-Core")
+    |> shouldEqual true
+
+[<Test>]
+let ``should detect direct dependencies``() = 
+    lockFile.IsDependencyOf(PackageName "Rx-Core",PackageName "Rx-Main")
+    |> shouldEqual true
+
+[<Test>]
+let ``should detect indirect dependencies``() = 
+    lockFile.IsDependencyOf(PackageName "log",PackageName "Castle.Windsor-log4net")
+    |> shouldEqual true
+    
+[<Test>]
+let ``should detect when packages are unrelated``() = 
+    lockFile.IsDependencyOf(PackageName "log",PackageName "Rx-Core")
+    |> shouldEqual false

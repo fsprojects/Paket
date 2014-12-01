@@ -1,4 +1,4 @@
-module paket.lockFile.GenerateStrictModeSpecs
+module Paket.LockFile.GenerateStrictModeSpecs
 
 open Paket
 open NUnit.Framework

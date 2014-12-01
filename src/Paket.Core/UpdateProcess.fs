@@ -4,6 +4,7 @@ module Paket.UpdateProcess
 open Paket
 open System.IO
 open Paket.Domain
+open Paket.PackageResolver
 
 /// Update command
 let Update(dependenciesFileName, forceResolution, force, hard) = 
@@ -22,14 +23,14 @@ let Update(dependenciesFileName, forceResolution, force, hard) =
     InstallProcess.Install(sources, force, hard, lockFile)
 
 let private fixOldDependencies (dependenciesFile:DependenciesFile) (package:PackageName) (oldLockFile:LockFile) =
-    let packageKeys = dependenciesFile.DirectDependencies |> Seq.map (fun kv -> NormalizedPackageName kv.Key) |> Set.ofSeq
-    oldLockFile.ResolvedPackages 
+    let allDependencies = oldLockFile.GetAllDependenciesOf package
+
+    oldLockFile.ResolvedPackages
+    |> Seq.map (fun kv -> kv.Value)
+    |> Seq.filter (fun p -> not <| allDependencies.Contains p.Name)
     |> Seq.fold 
-            (fun (dependenciesFile : DependenciesFile) kv -> 
-                let resolvedPackage = kv.Value
-                let name = NormalizedPackageName resolvedPackage.Name
-                if name = NormalizedPackageName package || not <| packageKeys.Contains name then dependenciesFile else 
-                dependenciesFile.AddFixedPackage(resolvedPackage.Name, "= " + resolvedPackage.Version.ToString()))
+            (fun (dependenciesFile : DependenciesFile) resolvedPackage ->                 
+                    dependenciesFile.AddFixedPackage(resolvedPackage.Name, "= " + resolvedPackage.Version.ToString()))
             dependenciesFile
 
 let private update (lockFileName) force (createDependenciesFile:LockFile -> DependenciesFile) =
