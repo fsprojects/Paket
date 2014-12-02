@@ -91,7 +91,7 @@ type Resolved = {
 let Resolve(getVersionsF, getPackageDetailsF, rootDependencies:PackageRequirement list) =
     tracefn "Resolving packages:"
     let exploredPackages = Dictionary<NormalizedPackageName*SemVerInfo,ResolvedPackage>()
-    let allVersions = new Dictionary<NormalizedPackageName,SemVerInfo list>()
+    let allVersions = Dictionary<NormalizedPackageName,SemVerInfo list>()
 
     let getExploredPackage(sources,packageName:PackageName,version,frameworkRequirement) =
         let normalizedPackageName = NormalizedPackageName packageName
@@ -121,10 +121,13 @@ let Resolve(getVersionsF, getPackageDetailsF, rootDependencies:PackageRequiremen
                 | _ -> 
                     tracefn "  - fetching versions for %O" packageName
                     getVersionsF(sources,packageName)
+
+            if Seq.isEmpty versions then
+                failwithf "Couldn't retrieve versions for %O." packageName
             allVersions.Add(normalizedPackageName,versions)
             versions
         | true,versions -> versions
-
+        
     let isIncluded (vr1 : VersionRange, vr2 : VersionRange) =         
         match vr1, vr2 with
         | Minimum v1, Minimum v2 when v1 <= v2 -> true
@@ -156,8 +159,6 @@ let Resolve(getVersionsF, getPackageDetailsF, rootDependencies:PackageRequiremen
                 match Map.tryFind dependency.Name filteredVersions with
                 | None ->
                     let versions = getAllVersions(dependency.Sources,dependency.Name,dependency.VersionRequirement.Range)
-                    if Seq.isEmpty versions then
-                        failwithf "Couldn't retrieve versions for %O." dependency.Name
                     if dependency.VersionRequirement.Range.IsGlobalOverride then
                         versions,List.filter dependency.VersionRequirement.IsInRange versions,true
                     else
