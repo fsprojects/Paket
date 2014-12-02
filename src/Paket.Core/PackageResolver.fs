@@ -32,6 +32,15 @@ type ResolvedPackage =
 
 type PackageResolution = Map<NormalizedPackageName, ResolvedPackage>
 
+let cleanupNames (model : PackageResolution) = 
+    model |> Seq.fold (fun map x -> 
+                 let package = x.Value
+                 let cleanup = 
+                     { package with Dependencies = 
+                                        package.Dependencies 
+                                        |> Set.map (fun ((NormalizedPackageName name), v, d) -> model.[name].Name, v, d) }
+                 Map.add (NormalizedPackageName package.Name) cleanup map) Map.empty
+
 [<RequireQualifiedAccess>]
 type ResolvedPackages =
 | Ok of PackageResolution
@@ -211,10 +220,4 @@ let Resolve(getVersionsF, getPackageDetailsF, rootDependencies:PackageRequiremen
     | ResolvedPackages.Conflict(_) as c -> c
     | ResolvedPackages.Ok model -> 
         // cleanup names
-        ResolvedPackages.Ok(model |> Seq.fold (fun map x -> 
-                                         let package = x.Value
-                                         let cleanup = 
-                                             { package with Dependencies = 
-                                                                package.Dependencies 
-                                                                |> Set.map (fun (NormalizedPackageName name, v, d) -> model.[name].Name, v, d) }
-                                         Map.add (NormalizedPackageName package.Name) cleanup map) Map.empty)
+        ResolvedPackages.Ok(cleanupNames model)
