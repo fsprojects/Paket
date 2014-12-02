@@ -152,7 +152,8 @@ let updateFiles =
   seq { yield solutionFile 
         yield! filesToReplace <| localFile "src"
         yield! filesToReplace <| localFile "nuget"
-        yield! filesToReplace <| localFile "tests" } 
+        yield! filesToReplace <| localFile "tests"
+        yield! filesToReplace <| localFile "docs/content" } 
         |> Seq.map replaceContent 
         |> Seq.iter print
 
