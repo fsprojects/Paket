@@ -43,7 +43,7 @@ let internal restore(root, sources, force, lockFile:LockFile, packages:Set<Norma
 
     let packageDownloads = 
         lockFile.ResolvedPackages
-        |> Map.filter (fun name _ -> packages.Contains(name))
+        |> Map.filter (fun name _ -> packages.Contains name)
         |> Seq.map (fun kv -> ExtractPackage(root,sources,force,kv.Value))
         |> Async.Parallel
 
@@ -61,13 +61,16 @@ let Restore(dependenciesFileName,force,referencesFileNames) =
             sources, LockFile.LoadFrom(lockFileName.FullName)
     
     let packages = 
-        if referencesFileNames = [] then lockFile.ResolvedPackages |> Seq.map (fun kv -> kv.Key) else
-        referencesFileNames
-        |> List.map (fun fileName ->
-            let referencesFile = ReferencesFile.FromFile fileName
-            let references = lockFile.GetPackageHull(referencesFile)
-            references |> Seq.map (fun x -> NormalizedPackageName x))
-        |> Seq.concat
+        if referencesFileNames = [] then 
+            lockFile.ResolvedPackages
+            |> Seq.map (fun kv -> kv.Key) 
+        else
+            referencesFileNames
+            |> List.map (fun fileName ->
+                ReferencesFile.FromFile fileName
+                |> lockFile.GetPackageHull
+                |> Seq.map NormalizedPackageName)
+            |> Seq.concat
 
     restore(root, sources, force, lockFile,Set.ofSeq packages) 
     |> Async.RunSynchronously

@@ -33,7 +33,7 @@ let private fixOldDependencies (dependenciesFile:DependenciesFile) (package:Pack
                     dependenciesFile.AddFixedPackage(resolvedPackage.Name, "= " + resolvedPackage.Version.ToString()))
             dependenciesFile
 
-let private update (lockFileName) force (createDependenciesFile:LockFile -> DependenciesFile) =
+let private update lockFileName force (createDependenciesFile:LockFile -> DependenciesFile) =
     let oldLockFile = LockFile.LoadFrom(lockFileName)
 
     let dependenciesFile = createDependenciesFile oldLockFile
@@ -53,7 +53,6 @@ let updateWithModifiedDependenciesFile(dependenciesFile:DependenciesFile,package
         fixOldDependencies dependenciesFile packageName
         |> update lockFileName.FullName force
         |> snd
-
 
 /// Update a single package command
 let UpdatePackage(dependenciesFileName, packageName : PackageName, newVersion, force, hard) = 

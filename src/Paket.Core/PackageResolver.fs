@@ -87,8 +87,7 @@ let Resolve(getVersionsF, getPackageDetailsF, rootDependencies:PackageRequiremen
         match exploredPackages.TryGetValue <| (normalizedPackageName,version) with
         | true,package -> package
         | false,_ ->
-            let (PackageName name) = packageName
-            tracefn "    - exploring %s %A" name version
+            tracefn "    - exploring %O %A" packageName version
             let packageDetails : PackageDetails = getPackageDetailsF sources packageName version
             let explored =
                 { Name = packageDetails.Name
@@ -109,8 +108,7 @@ let Resolve(getVersionsF, getPackageDetailsF, rootDependencies:PackageRequiremen
                 | OverrideAll v -> [v]
                 | Specific v -> [v]
                 | _ -> 
-                    let (PackageName name) = packageName
-                    tracefn "  - fetching versions for %s" name
+                    tracefn "  - fetching versions for %O" packageName
                     getVersionsF(sources,packageName)
             allVersions.Add(normalizedPackageName,versions)
             versions
@@ -148,8 +146,7 @@ let Resolve(getVersionsF, getPackageDetailsF, rootDependencies:PackageRequiremen
                 | None ->
                     let versions = getAllVersions(dependency.Sources,dependency.Name,dependency.VersionRequirement.Range)
                     if Seq.isEmpty versions then
-                        let (PackageName dependencyName) = dependency.Name
-                        failwithf "Couldn't retrieve versions for %s." dependencyName
+                        failwithf "Couldn't retrieve versions for %O." dependency.Name
                     if dependency.VersionRequirement.Range.IsGlobalOverride then
                         versions,List.filter dependency.VersionRequirement.IsInRange versions,true
                     else
