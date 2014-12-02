@@ -46,7 +46,7 @@ let CleanDir path =
 /// [omit]
 let inline createRelativePath root path =
     let uri = Uri(if String.IsNullOrEmpty root then System.Environment.CurrentDirectory + Path.DirectorySeparatorChar.ToString() else root)
-    uri.MakeRelativeUri(Uri(path)).ToString().Replace("/", "\\") |> Uri.UnescapeDataString
+    uri.MakeRelativeUri(Uri(path)).ToString().Replace("/", "\\")
 
 /// [omit]
 let inline normalizeXml(doc:XmlDocument) =
