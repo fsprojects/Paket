@@ -29,8 +29,10 @@ type PackageRequirement =
         let (PackageName name) = this.Name
         sprintf "%s %s" name (this.VersionRequirement.ToString())
 
-
     override this.GetHashCode() = hash (this.Name,this.VersionRequirement)
+
+    member this.IncludingPrereleases() = 
+        { this with VersionRequirement = VersionRequirement(this.VersionRequirement.Range,PreReleaseStatus.All) }
 
     interface System.IComparable with
        member this.CompareTo that = 

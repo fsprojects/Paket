@@ -32,6 +32,8 @@ type ResolvedPackage =
 
 type PackageResolution = Map<NormalizedPackageName, ResolvedPackage>
 
+let allPrereleases versions = versions |> List.filter (fun v -> v.PreRelease <> None) = versions
+
 let cleanupNames (model : PackageResolution) = 
     model |> Seq.fold (fun map x -> 
                  let package = x.Value
@@ -160,12 +162,18 @@ let Resolve(getVersionsF, getPackageDetailsF, rootDependencies:PackageRequiremen
                         versions,List.filter dependency.VersionRequirement.IsInRange versions,true
                     else
                         let compatible = List.filter dependency.VersionRequirement.IsInRange versions
-                        if compatible = [] && versions |> List.filter (fun v -> v.PreRelease <> None) = versions then
-                            versions,versions,false
+                        if compatible = [] then
+                            let prereleases = List.filter (dependency.IncludingPrereleases().VersionRequirement.IsInRange) versions
+                            if allPrereleases prereleases then
+                                prereleases,prereleases,false
+                            else
+                                versions,[],false
                         else
                             versions,compatible,false
                 | Some(versions,globalOverride) -> 
-                    if globalOverride then versions,versions,true else versions,List.filter dependency.VersionRequirement.IsInRange versions,false
+                    if globalOverride then 
+                        versions,versions,true 
+                    else versions,List.filter dependency.VersionRequirement.IsInRange versions,false
 
             if compatibleVersions = [] then
                 match dependency.Parent with
@@ -218,6 +226,4 @@ let Resolve(getVersionsF, getPackageDetailsF, rootDependencies:PackageRequiremen
 
     match improveModel (Map.empty, [], Set.empty, Set.ofList rootDependencies) with
     | ResolvedPackages.Conflict(_) as c -> c
-    | ResolvedPackages.Ok model -> 
-        // cleanup names
-        ResolvedPackages.Ok(cleanupNames model)
+    | ResolvedPackages.Ok model -> ResolvedPackages.Ok(cleanupNames model)
