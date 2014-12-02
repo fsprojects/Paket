@@ -289,9 +289,6 @@ let ExtractPackage(fileName:string, targetFolder, name, version:SemVerInfo) =
             for e in zip do
                 try
                     e.Extract(targetFolder, ExtractExistingFileAction.OverwriteSilently)
-                    let unescapedName = Uri.UnescapeDataString e.FileName
-                    if unescapedName <> e.FileName then
-                        File.Move(Path.Combine(targetFolder, e.FileName), Path.Combine(targetFolder, unescapedName))
                 with
                 | exn ->                    
                     failwithf "Error during unzipping %s in %s %A: %s" e.FileName name version exn.Message 
