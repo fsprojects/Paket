@@ -87,15 +87,27 @@ let ``should analyze graph2 completely with multiple starting nodes``() =
     getVersion resolved.[NormalizedPackageName (PackageName "D")] |> shouldEqual "1.5"
     getVersion resolved.[NormalizedPackageName (PackageName "E")] |> shouldEqual "1.0"
 
-let graphWithoutAnyVersion = [
+let graphWithoutAnyDependencyVersion = [
     "A","3.0",[("B",VersionRequirement(VersionRange.AtLeast "2.0",PreReleaseStatus.No))]
 ]
-
 
 [<Test>]
 let ``should analyze report missing versions``() = 
     try
-        resolve graphWithoutAnyVersion ["A",VersionRange.AtLeast "0"] |> ignore
+        resolve graphWithoutAnyDependencyVersion ["A",VersionRange.AtLeast "0"] |> ignore
         failwith "expected error"
     with exn ->
         exn.Message |> shouldEqual "Couldn't retrieve versions for B."
+
+let graphWithoutAnyTopLevelVersion = [
+    "A","3.0",[]
+]
+
+[<Test>]
+let ``should analyze report missing top-level versions``() = 
+    try
+        resolve graphWithoutAnyTopLevelVersion ["A",VersionRange.LessThan(SemVer.Parse "1.0")] |> ignore
+        failwith "expected error"
+    with exn ->
+        exn.Message.StartsWith("Could not find compatible versions for top level dependency") 
+        |> shouldEqual true
