@@ -10,7 +10,7 @@ open System.Collections.Generic
 // It generates the build.fsx and generate.fsx files 
 // --------------------------------
 
-let dirsWithProjects = ["src";"tests"] 
+let dirsWithProjects = ["src";"tests";"docs/content"] 
                        |> List.map (fun d -> directoryInfo (__SOURCE_DIRECTORY__ @@ d))
 
 // special funtions
