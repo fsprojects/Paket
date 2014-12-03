@@ -63,11 +63,11 @@
   <Import Project="$(FSharpTargetsPath)" Condition="Exists('$(FSharpTargetsPath)')" />
   <ItemGroup>
     <Compile Include="AssemblyInfo.fs" />
-    <Content Include="..\..\packages\FSharp.Core.Microsoft.Signed\lib\net40\FSharp.Core.optdata">
+    <Content Include="..\..\packages\FSharp.Core\lib\net40\FSharp.Core.optdata">
       <Link>FSharp.Core.optdata</Link>
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="..\..\packages\FSharp.Core.Microsoft.Signed\lib\net40\FSharp.Core.sigdata">
+    <Content Include="..\..\packages\FSharp.Core\lib\net40\FSharp.Core.sigdata">
       <Link>FSharp.Core.sigdata</Link>
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
