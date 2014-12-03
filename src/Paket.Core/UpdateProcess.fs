@@ -5,6 +5,7 @@ open Paket
 open System.IO
 open Paket.Domain
 open Paket.PackageResolver
+open System.Collections.Generic
 
 /// Update command
 let Update(dependenciesFileName, forceResolution, force, hard) = 
@@ -23,7 +24,11 @@ let Update(dependenciesFileName, forceResolution, force, hard) =
     InstallProcess.Install(sources, force, hard, lockFile)
 
 let private fixOldDependencies (dependenciesFile:DependenciesFile) (package:PackageName) (oldLockFile:LockFile) =
-    let allDependencies = oldLockFile.GetAllDependenciesOf package
+    let allDependencies = 
+        if oldLockFile.ResolvedPackages.ContainsKey(NormalizedPackageName package) then
+            oldLockFile.GetAllDependenciesOf package
+        else
+            HashSet<_>()
 
     oldLockFile.ResolvedPackages
     |> Seq.map (fun kv -> kv.Value)
