@@ -192,6 +192,7 @@
     <Compile Include="InstallModel\FrameworkIdentifierSpecs.fs" />
     <Compile Include="InstallModel\ProcessingSpecs.fs" />
     <Compile Include="InstallModel\Xml\Fantomas.fs" />
+    <Compile Include="InstallModel\Xml\Plossum.fs" />
     <Compile Include="InstallModel\Xml\FantomasLib.fs" />
     <Compile Include="InstallModel\Xml\Fuchu.fs" />
     <Compile Include="InstallModel\Xml\SystemNetHttp.fs" />
