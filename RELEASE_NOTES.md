@@ -1,5 +1,5 @@
-#### 0.17.6 - 02.12.2014
-* Revert BUGFIX: Unescape library filename - https://github.com/fsprojects/Paket/pull/412
+#### 0.17.7 - 03.12.2014
+* BUGFIX: Unescape library filename - https://github.com/fsprojects/Paket/pull/412
 
 #### 0.17.5 - 01.12.2014
 * BUGFIX: Unescape library filename - https://github.com/fsprojects/Paket/pull/412
