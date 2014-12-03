@@ -40,7 +40,7 @@ let Remove(dependenciesFileName, package:PackageName, force, hard, interactive, 
     let changed = exisitingDependenciesFile <> dependenciesFile
     let lockFile = 
         if changed then
-            UpdateProcess.updateWithModifiedDependenciesFile(dependenciesFile,package,force)
+            UpdateProcess.updateWithModifiedDependenciesFile(true,dependenciesFile,package,force)
         else
             let lockFileName = DependenciesFile.FindLockfile dependenciesFileName
             LockFile.LoadFrom(lockFileName.FullName)

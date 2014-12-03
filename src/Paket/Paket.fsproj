@@ -26,12 +26,12 @@
     <WarningLevel>3</WarningLevel>
     <DocumentationFile>
     </DocumentationFile>
-    <StartArguments>update -f</StartArguments>
+    <StartArguments>update nuget shizzle</StartArguments>
     <StartAction>Project</StartAction>
     <StartProgram>paket.exe</StartProgram>
     <StartWorkingDirectory>
     </StartWorkingDirectory>
-    <StartWorkingDirectory>c:\code\Paketkopie</StartWorkingDirectory>
+    <StartWorkingDirectory>d:\code\Paketkopie</StartWorkingDirectory>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>

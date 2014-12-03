@@ -1,3 +1,6 @@
+#### 0.17.10 - 03.12.2014
+* BUGFIX: `paket update nuget <name>` fails if <name> was not found in lockfile - https://github.com/fsprojects/Paket/issues/404
+
 #### 0.17.9 - 03.12.2014
 * BUGFIX: Fix selective update after add
 
