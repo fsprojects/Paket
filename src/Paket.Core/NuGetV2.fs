@@ -304,7 +304,7 @@ let ExtractPackage(fileName:string, targetFolder, name, version:SemVerInfo) =
                         cleanup sub
                 for file in dir.GetFiles() do
                     let newName = file.Name.Replace("%2B", "+").Replace("%20", " ")
-                    if file.Name <> newName then
+                    if file.Name <> newName && not (File.Exists <| Path.Combine(file.DirectoryName, newName)) then
                         File.Move(file.FullName, Path.Combine(file.DirectoryName, newName))
             cleanup (DirectoryInfo targetFolder)
             tracefn "%s %A unzipped to %s" name version targetFolder
