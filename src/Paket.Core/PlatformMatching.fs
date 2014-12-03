@@ -42,7 +42,7 @@ let comparePaths (p1 : PathPenalty) (p2 : PathPenalty) =
     let platformCount1 = (extractPlatforms (fst p1)).Length
     let platformCount2 = (extractPlatforms (fst p2)).Length
 
-    // prefer full framwork over portable
+    // prefer full framework over portable
     if platformCount1 = 1 && platformCount2 > 1 then
         -1
     else if platformCount1 > 1 && platformCount2 = 1 then
