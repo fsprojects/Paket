@@ -56,8 +56,9 @@ The [MIT license][6]
 
 - [@forki](https://github.com/forki)
 - [@agross](https://github.com/agross)
-- [@ilkerde](https://github.com/ilkerde)
-- [@shishkin](https://github.com/shishkin)
+- [@mexx](https://github.com/mexx)
+- [@isaacabraham](https://github.com/isaacabraham)
+- [@theimowski](https://github.com/theimowski)
 
 The default maintainer account for projects under "fsprojects" is [@fsgit](https://github.com/fsgit) - F# Community Project Incubation Space (repo management)
 
