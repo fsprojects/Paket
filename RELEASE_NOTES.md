@@ -1,4 +1,4 @@
-#### 0.17.11 - 03.12.2014
+#### 0.17.12 - 03.12.2014
 * Faster BindingRedirects - https://github.com/fsprojects/Paket/pull/414
 * Using different FSharp.Core NuGet package - https://github.com/fsprojects/Paket/pull/416
 
