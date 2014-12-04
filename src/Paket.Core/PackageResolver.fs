@@ -98,7 +98,7 @@ let Resolve(getVersionsF, getPackageDetailsF, rootDependencies:PackageRequiremen
         match exploredPackages.TryGetValue <| (normalizedPackageName,version) with
         | true,package -> package
         | false,_ ->
-            tracefn "    - exploring %O %A" packageName version
+            tracefn "    - exploring %s %A" ((|PackageName|) packageName) version
             let packageDetails : PackageDetails = getPackageDetailsF sources packageName version
             let explored =
                 { Name = packageDetails.Name
@@ -112,6 +112,7 @@ let Resolve(getVersionsF, getPackageDetailsF, rootDependencies:PackageRequiremen
 
     let getAllVersions(sources,packageName:PackageName,vr : VersionRange)  =
         let normalizedPackageName = NormalizedPackageName packageName
+        let (PackageName name) = packageName
         match allVersions.TryGetValue(normalizedPackageName) with
         | false,_ ->            
             let versions = 
@@ -119,11 +120,11 @@ let Resolve(getVersionsF, getPackageDetailsF, rootDependencies:PackageRequiremen
                 | OverrideAll v -> [v]
                 | Specific v -> [v]
                 | _ -> 
-                    tracefn "  - fetching versions for %O" packageName
+                    tracefn "  - fetching versions for %s" name
                     getVersionsF(sources,packageName)
 
             if Seq.isEmpty versions then
-                failwithf "Couldn't retrieve versions for %O." packageName
+                failwithf "Couldn't retrieve versions for %s." name
             allVersions.Add(normalizedPackageName,versions)
             versions
         | true,versions -> versions

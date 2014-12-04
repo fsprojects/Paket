@@ -298,29 +298,31 @@ type DependenciesFile(fileName,options,sources,packages : PackageRequirement lis
         DependenciesFile(fileName,options,sources,newPackages,remoteFiles)
 
     member this.Add(packageName,version:string) =
+        let (PackageName name) = packageName
         if this.HasPackage packageName then 
-            traceWarnfn "%s contains package %O already. ==> Ignored" fileName packageName
+            traceWarnfn "%s contains package %s already. ==> Ignored" fileName name
             this
         else
             if version = "" then
-                tracefn "Adding %O to %s" packageName fileName
+                tracefn "Adding %s to %s" name fileName
             else
-                tracefn "Adding %O %s to %s" packageName version fileName
+                tracefn "Adding %s %s to %s" name version fileName
             this.AddAdditionionalPackage(packageName,version)
 
     member this.Remove(packageName) =
+        let (PackageName name) = packageName
         if this.HasPackage packageName then         
-            tracefn "Removing %O from %s" packageName fileName
+            tracefn "Removing %s from %s" name fileName
             this.RemovePackage(packageName)
         else
-            traceWarnfn "%s doesn't contain package %O. ==> Ignored" fileName packageName
+            traceWarnfn "%s doesn't contain package %s. ==> Ignored" fileName name
             this
 
     member this.UpdatePackageVersion(packageName, version) =
-
+        let (PackageName name) = packageName
         if this.HasPackage(packageName) then
             let versionRequirement = DependenciesFileParser.parseVersionRequirement version
-            tracefn "Updating %O version to %s in %s" packageName version fileName
+            tracefn "Updating %s version to %s in %s" name version fileName
             let packages = 
                 this.Packages |> List.map (fun p -> 
                                      if NormalizedPackageName p.Name = NormalizedPackageName packageName then 
@@ -328,7 +330,7 @@ type DependenciesFile(fileName,options,sources,packages : PackageRequirement lis
                                      else p)
             DependenciesFile(this.FileName, this.Options, sources, packages, this.RemoteFiles)
         else
-            traceWarnfn "%s doesn't contain package %O. ==> Ignored" fileName packageName
+            traceWarnfn "%s doesn't contain package %s. ==> Ignored" fileName name
             this
 
     member this.GetAllPackageSources() = 

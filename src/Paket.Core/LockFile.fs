@@ -237,7 +237,7 @@ type LockFile(fileName:string,options,resolution:PackageResolution,remoteFiles:R
                         for d,_,_ in package.Dependencies do
                             addPackage d
             | None ->
-                failwithf "Package %O was referenced, but it was not found in the paket.lock file."  packageName
+                failwithf "Package %s was referenced, but it was not found in the paket.lock file." ((|PackageName|) packageName)
 
         addPackage package
 
