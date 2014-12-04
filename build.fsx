@@ -184,7 +184,7 @@ Target "NuGet" (fun _ ->
                  Dependencies = 
                     ["Newtonsoft.Json", GetPackageVersion "packages" "Newtonsoft.Json" 
                      "DotNetZip", GetPackageVersion "packages" "DotNetZip" 
-                     "FSharp.Core.Microsoft.Signed", GetPackageVersion "packages" "FSharp.Core.Microsoft.Signed" ]
+                     "FSharp.Core", GetPackageVersion "packages" "FSharp.Core" ]
                  AccessKey = getBuildParamOrDefault "nugetkey" ""
                  Publish = hasBuildParam "nugetkey" }) 
        "nuget/Paket.Core.nuspec"

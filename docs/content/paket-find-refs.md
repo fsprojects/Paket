@@ -10,23 +10,23 @@ Finds all project files that have the given NuGet packages installed.
 *.src/Paket/paket.references* contains:
 
 	UnionArgParser
-	FSharp.Core.Microsoft.Signed
+	FSharp.Core
 
 *.src/Paket.Core/paket.references* contains:
 
 	Newtonsoft.Json
 	DotNetZip
-	FSharp.Core.Microsoft.Signed
+	FSharp.Core
 
 Now we run
 	
-	paket find-refs DotNetZip FSharp.Core.Microsoft.Signed
+	paket find-refs DotNetZip FSharp.Core
 
 and paket gives the following output:
 	
 	DotNetZip
 	.src/Paket.Core/Paket.Core.fsproj
 
-	FSharp.Core.Microsoft.Signed
+	FSharp.Core
 	.src/Paket.Core/Paket.Core.fsproj
 	.src/Paket/Paket.fsproj
