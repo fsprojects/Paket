@@ -96,9 +96,9 @@ let createModel(root, sources,force, lockFile:LockFile) =
 
     extractedPackages
 
-/// Picks the highest version of a package
-let private pickHighestPackageVersion packages = 
-    packages
+/// Picks the highest version of a library
+let private pickHighestlibraryVersion libraries = 
+    libraries
     |> Seq.sortBy (fun p -> FileVersionInfo.GetVersionInfo(p).FileVersion)
     |> Seq.last
 
@@ -111,8 +111,8 @@ let private applyBindingRedirects root extractedPackages =
             match ref with
             | Reference.Library path -> Some path
             | _-> None)
-    |> Seq.groupBy (fun p -> FileInfo(p).Name)
-    |> Seq.map(fun (_,ps) ->  pickHighestPackageVersion ps)
+    |> Seq.groupBy (fun lib -> FileInfo(lib).Name)
+    |> Seq.map(fun (_,libraries) ->  pickHighestlibraryVersion libraries)
     |> Seq.choose(fun assemblyFileName ->
         try
             let assembly = Assembly.ReflectionOnlyLoadFrom assemblyFileName
