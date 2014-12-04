@@ -79,10 +79,8 @@ let private applyBindingRedirects bindingRedirects (configFilePath:string) =
 
 /// Applies a set of binding redirects to all .config files in a specific folder.
 let applyBindingRedirectsToFolder rootPath bindingRedirects =
-    let getFiles searchPattern = Directory.GetFiles(rootPath, searchPattern, SearchOption.AllDirectories) |> List.ofArray
-    
-    getFiles "web.config" @
-    getFiles "app.config"
+    Directory.GetFiles(rootPath, "*.config", SearchOption.AllDirectories) 
+    |> Seq.filter (fun x -> x.EndsWith "web.config" || x.EndsWith "app.config")
     |> Seq.iter (applyBindingRedirects bindingRedirects)
 
 /// Calculates the short form of the public key token for use with binding redirects, if it exists.
