@@ -1,3 +1,7 @@
+#### 0.17.11 - 03.12.2014
+* Faster BindingRedirects - https://github.com/fsprojects/Paket/pull/414
+* Using different FSharp.Core NuGet package - https://github.com/fsprojects/Paket/pull/416
+
 #### 0.17.10 - 03.12.2014
 * BUGFIX: `paket update nuget <name>` fails if <name> was not found in lockfile - https://github.com/fsprojects/Paket/issues/404
 
