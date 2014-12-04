@@ -111,7 +111,7 @@ let private applyBindingRedirects root extractedPackages =
             match ref with
             | Reference.Library path -> Some path
             | _-> None)
-    |> Seq.groupBy (fun lib -> FileInfo(lib).Name)
+    |> Seq.groupBy (fun p -> FileInfo(p).Name)
     |> Seq.map(fun (_,libraries) ->  pickHighestlibraryVersion libraries)
     |> Seq.choose(fun assemblyFileName ->
         try
