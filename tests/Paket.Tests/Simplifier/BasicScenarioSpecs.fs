@@ -5,22 +5,21 @@ open Paket
 open NUnit.Framework
 open FsUnit
 open Paket.Domain
+open Paket.TestHelpers
 
-let toPackages = 
-    List.map 
-        (fun (name, ver, deps) -> 
-        { Name = PackageName name
-          Version = SemVer.Parse ver
-          Source = PackageSources.DefaultNugetSource
-          Unlisted = false
-          FrameworkRestriction = None
-          Dependencies = deps |> List.map (fun (name, verRan) -> PackageName name, NugetVersionRangeParser.parse verRan,None) |> Set.ofList } : PackageResolver.ResolvedPackage)
 
-let graph1 = 
-    ["A", "3.3.0", ["B", "3.3.0"; "C", "1.0"]
-     "B", "3.3.0", []
-     "C", "1.0", []
-     "D", "2.1", ["B", "3.0"; "C", "1.0"]] |> toPackages
+let lockFile1 = """
+NUGET
+  remote: https://nuget.org/api/v2
+  specs:
+    A (1.0)
+      B (1.0)
+      C (1.0)
+    B (1.0)
+    C (1.0)
+    D (1.0)
+      B (1.0)
+      C (1.0)""" |> (fun x -> LockFile.Parse("", toLines x))
 
 let depFile1 = """
 source http://nuget.org/api/v2
@@ -39,33 +38,39 @@ let refFiles1 = [
 
 [<Test>]
 let ``should remove one level deep indirect dependencies from dep and ref files``() = 
-    let depFile,refFiles = Simplifier.Analyze(graph1, cfg, refFiles1, false)
+    let depFile,refFiles = Simplifier.Analyze(lockFile1, cfg, refFiles1, false)
     
-    depFile.Packages |> List.length |> shouldEqual [|"A";"D"|].Length
-    depFile.DirectDependencies.[PackageName "A"].Range |> shouldEqual (VersionRange.Exactly "3.3.0")
-    depFile.DirectDependencies.[PackageName "D"].Range |> shouldEqual (VersionRange.Exactly "2.1")
+    depFile.Packages |> List.map (fun p -> p.Name) |> shouldEqual [PackageName"A";PackageName"D"]
 
     refFiles.Head.NugetPackages |> shouldEqual [PackageName "A";PackageName "D"]
     refFiles.Tail.Head.NugetPackages |> shouldEqual [PackageName "B";PackageName "C"]
 
 
-let graph2 = 
-    ["A", "1.0", ["b", "1.5"]
-     "b", "1.5", ["D", "2.0"]
-     "C", "2.0", ["e", "3.0"]
-     "d", "2.0", ["E", "3.0"]
-     "E", "3.0", ["f", "4.0"]
-     "F", "4.0", []] |> toPackages
+let lockFile2 = """
+NUGET
+  remote: https://nuget.org/api/v2
+  specs:
+    A (1.0)
+      B (1.0)
+    B (1.0)
+      D (1.0)
+    C (1.0)
+      E (1.0)
+    D (1.0)
+      E (1.0)
+    E (1.0)
+      F (1.0)
+    F (1.0)""" |> (fun x -> LockFile.Parse("", toLines x))
 
 let depFile2 = """
 source http://nuget.org/api/v2
 
 nuget A 1.0
-nuget B 1.5
-nuget c 2.0
-nuget D 2.0
-nuget E 3.0
-nuget f 4.0""" 
+nuget B 1.0
+nuget C 1.0
+nuget D 1.0
+nuget E 1.0
+nuget F 1.0""" 
 
 let cfg2 = DependenciesFile.FromCode(depFile2)
 
@@ -76,11 +81,35 @@ let refFiles2 = [
 
 [<Test>]
 let ``should remove all indirect dependencies from dep file recursively``() =
-    let depFile,refFiles  = Simplifier.Analyze(graph2, cfg2, refFiles2, false)
+    let depFile,refFiles  = Simplifier.Analyze(lockFile2, cfg2, refFiles2, false)
     
-    depFile.Packages |> List.length |> shouldEqual [|"A";"c"|].Length
-    depFile.DirectDependencies.[PackageName "A"].Range |> shouldEqual (VersionRange.Exactly "1.0")
-    depFile.DirectDependencies.[PackageName "c"].Range |> shouldEqual (VersionRange.Exactly "2.0")
+    depFile.Packages |> List.map (fun p -> p.Name) |> shouldEqual [PackageName"A";PackageName"C"]
 
     refFiles.Head.NugetPackages |>  shouldEqual [PackageName "A";PackageName "C"]
     refFiles.Tail.Head.NugetPackages |>  shouldEqual [PackageName "C";PackageName "D"]
+
+
+
+let strictLockFile = """REFERENCES: STRICT
+NUGET
+  remote: https://nuget.org/api/v2
+  specs:
+    A (1.0)
+      B (1.0)
+    B (1.0)""" 
+    
+let strictDepFile = """
+references strict
+source http://nuget.org/api/v2
+
+nuget A 1.0
+nuget B 1.0""" 
+
+
+[<Test>]
+let ``should not remove dependency in strict mode``() =
+    let lockFile = strictLockFile |> (fun x -> LockFile.Parse("", toLines x))
+    let cfg = DependenciesFile.FromCode(strictDepFile)
+    let depFile,refFiles  = Simplifier.Analyze(lockFile, cfg, [], false)
+    
+    depFile.Packages |> List.map (fun p -> p.Name) |> shouldEqual [PackageName"A";PackageName"B"]
