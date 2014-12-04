@@ -31,16 +31,17 @@ type ProjectFile =
       Document : XmlDocument
       ProjectNode : XmlNode }
 
+    member private this.FindNodes paketOnes name =
+        [for node in this.Document |> getDescendants name do
+            let isPaketNode = ref false
+            for child in node.ChildNodes do
+                if child.Name = "Paket" then isPaketNode := true
+
+            if !isPaketNode = paketOnes then yield node]
+
     member this.Name = FileInfo(this.FileName).Name
 
-    member this.GetCustomReferenceNodes() =
-        [for node in this.Document |> getDescendants "Reference" do
-            let isPaket = ref false
-            for child in node.ChildNodes do
-                if child.Name = "Paket" then 
-                    isPaket := true
-            if not !isPaket then
-                yield node]
+    member this.GetCustomReferenceNodes() = this.FindNodes false "Reference"
 
     /// Finds all project files
     static member FindAllProjects(folder) = 
@@ -78,15 +79,7 @@ type ProjectFile =
         for node in nodesToDelete do
             node.ParentNode.RemoveChild(node) |> ignore
 
-    member this.FindPaketNodes(name) = 
-        [
-            for node in this.Document |> getDescendants name do
-                let isPaketNode = ref false
-                for child in node.ChildNodes do
-                    if child.Name = "Paket" then isPaketNode := true
-            
-                if !isPaketNode then yield node
-        ]
+    member this.FindPaketNodes(name) = this.FindNodes true name
 
     member this.GetFrameworkAssemblies() = 
         [for node in this.Document |> getDescendants "Reference" do
