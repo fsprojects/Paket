@@ -11,6 +11,7 @@ open System.IO
 open System.Collections.Generic
 open FSharp.Polyfill
 open System.Reflection
+open System.Diagnostics
 
 let private findPackagesWithContent (root,usedPackages:HashSet<_>) = 
     usedPackages
@@ -95,6 +96,12 @@ let createModel(root, sources,force, lockFile:LockFile) =
 
     extractedPackages
 
+/// Picks the highest version of a package
+let private pickHighestPackageVersion packages = 
+    packages
+    |> Seq.sortBy (fun p -> FileVersionInfo.GetVersionInfo(p).FileVersion)
+    |> Seq.last
+
 /// Applies binding redirects for all strong-named references to all app. and web. config files.
 let private applyBindingRedirects root extractedPackages =
     extractedPackages
@@ -104,7 +111,8 @@ let private applyBindingRedirects root extractedPackages =
             match ref with
             | Reference.Library path -> Some path
             | _-> None)
-    |> Seq.distinctBy (fun p -> FileInfo(p).Name)
+    |> Seq.groupBy (fun p -> FileInfo(p).Name)
+    |> Seq.map(fun (_,ps) ->  pickHighestPackageVersion ps)
     |> Seq.choose(fun assemblyFileName ->
         try
             let assembly = Assembly.ReflectionOnlyLoadFrom assemblyFileName
