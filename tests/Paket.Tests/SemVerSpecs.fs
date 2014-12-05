@@ -70,6 +70,7 @@ let ``trailing zeros are equal``() =
 let ``can parse strange versions``() = 
     (SemVer.Parse "2.1-alpha10").ToString() |> shouldEqual "2.1-alpha10"
     (SemVer.Parse "2-alpha100").ToString() |> shouldEqual "2-alpha100"
+    (SemVer.Parse "0.5.0-ci1411131947").ToString() |> shouldEqual "0.5.0-ci1411131947"
 
 [<Test>]
 let ``can parse FSharp.Data versions``() = 
@@ -95,3 +96,7 @@ let ``can normalize build zeros``() =
 [<Test>]
 let ``can normalize build zeros in prerelease``() =
     (SemVer.Parse "6.0.1302.0-Preview").Normalize() |> shouldEqual "6.0.1302-Preview"
+
+[<Test>]
+let ``can normalize CI versions in prerelease``() =
+    (SemVer.Parse "0.5.0-ci1411131947").Normalize() |> shouldEqual "0.5.0-ci1411131947"
