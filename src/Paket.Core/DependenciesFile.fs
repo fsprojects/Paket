@@ -106,19 +106,22 @@ module DependenciesFileParser =
     let private ``parse http source`` trimmed =
         let parts = parseDependencyLine trimmed
         let getParts (projectSpec:string) fileSpec =
-            let ``project spec`` = 
+            let ``project spec`` =
                 match projectSpec.EndsWith("/") with
                 | false -> projectSpec
                 | true ->  projectSpec.Substring(0, projectSpec.Length-1)
-            let splitted = ``project spec``.Split [|':'; '/'|]
-            let fileName = match String.IsNullOrEmpty(fileSpec) with
-                            | true -> (splitted |> Seq.last) + ".fs"
+            let splitted = ``project spec``.Split([|':'; '/'|], StringSplitOptions.RemoveEmptyEntries)
+            let fileName = match String.IsNullOrEmpty fileSpec with
+                            | true ->
+                                let name = Seq.last splitted
+                                if String.IsNullOrEmpty <| Path.GetExtension(name)
+                                then name + ".fs" else name
                             | false -> fileSpec
-            match splitted |> Seq.truncate 6 |> Seq.toArray with
+            match splitted |> Seq.truncate 4 |> Seq.toArray with
             //SourceFile(origin(url), (owner,project, commit), path)
-            | [| protocol; x; y; domain |] -> HttpLink(``project spec``), (domain, domain, None), fileName
-            | [| protocol; x; y; domain; project |] -> HttpLink(``project spec``), (domain,project, None), fileName
-            | [| protocol; x; y; owner; project; details |] -> HttpLink(``project spec``), (owner,project+"/"+details, None), fileName
+            | [| protocol; domain |] -> HttpLink(``project spec``), (domain, domain, None), fileName
+            | [| protocol; domain; project |] -> HttpLink(``project spec``), (domain,project, None), fileName
+            | [| protocol; owner; project; details |] -> HttpLink(``project spec``), (owner,project+"/"+details, None), fileName
             | _ -> failwithf "invalid http-reference specification:%s     %s" Environment.NewLine trimmed
         match parts with
         | [| _; projectSpec; |] -> getParts projectSpec String.Empty
