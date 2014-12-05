@@ -314,6 +314,25 @@ let ``should read http source file from config without quotes, parsing rules``()
             Origin = ModuleResolver.SingleSourceFileOrigin.HttpLink "http://example/item/3/1"
             Commit = None } ]
 
+[<Test>]
+let ``should read http binary references from config``() =
+    let config = """
+        http http://www.frijters.net/ikvmbin-8.0.5449.0.zip
+        http http://www.frijters.net/ikvmbin-8.0.5449.0.zip ikvmbin.zip"""
+    let dependencies = DependenciesFile.FromCode(config)
+    dependencies.RemoteFiles
+    |> shouldEqual
+        [ { Owner = "www.frijters.net"
+            Project = "ikvmbin-8.0.5449.0.zip"
+            Name = "ikvmbin-8.0.5449.0.zip"
+            Origin = ModuleResolver.SingleSourceFileOrigin.HttpLink "http://www.frijters.net/ikvmbin-8.0.5449.0.zip"
+            Commit = None }
+          { Owner = "www.frijters.net"
+            Project = "ikvmbin-8.0.5449.0.zip"
+            Name = "ikvmbin.zip"
+            Origin = ModuleResolver.SingleSourceFileOrigin.HttpLink "http://www.frijters.net/ikvmbin-8.0.5449.0.zip"
+            Commit = None } ]
+
 
 let configWithoutVersions = """
 source "http://nuget.org/api/v2"
