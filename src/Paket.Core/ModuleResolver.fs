@@ -39,23 +39,28 @@ type ResolvedSourceFile =
         let di = DirectoryInfo(Path.Combine(Constants.PaketFilesFolderName, this.Owner, this.Project, path))
         di.FullName
 
-    override this.ToString() =  sprintf "%s/%s:%s %s" this.Owner this.Project this.Commit this.Name
+    override this.ToString() = sprintf "%s/%s:%s %s" this.Owner this.Project this.Commit this.Name
+
+let resolve getDependencies getSha1 (file : UnresolvedSourceFile) : ResolvedSourceFile = 
+    let sha = 
+        defaultArg file.Commit "master"
+        |> getSha1 file.Origin file.Owner file.Project
+    
+    let resolved = 
+        { Commit = sha
+          Owner = file.Owner
+          Origin = file.Origin
+          Project = file.Project
+          Dependencies = Set.empty
+          Name = file.Name }
+    
+    let dependencies = 
+        getDependencies resolved 
+        |> List.map (fun (package:PackageRequirement) -> package.Name, package.VersionRequirement)
+        |> Set.ofList
+
+    { resolved with Dependencies = dependencies }
 
 // TODO: github has a rate limit - try to convince them to whitelist Paket
-let Resolve(getPackages, getSha1, remoteFiles : UnresolvedSourceFile list) : ResolvedSourceFile list = 
-    remoteFiles |> List.map (fun file -> 
-                       let sha =
-                            file.Commit
-                            |> defaultArg <| "master"
-                            |> getSha1 file.Origin file.Owner file.Project 
-
-                       let naked =
-                           { Commit = sha
-                             Owner = file.Owner
-                             Origin = file.Origin
-                             Project = file.Project
-                             Dependencies = Set.empty
-                             Name = file.Name }
-                       let packages:PackageRequirement list = getPackages naked
-
-                       {naked with Dependencies = packages |> Seq.fold (fun set package -> Set.add (package.Name,package.VersionRequirement) set) Set.empty })
+let Resolve(getDependencies, getSha1, remoteFiles : UnresolvedSourceFile list) : ResolvedSourceFile list = 
+    remoteFiles |> List.map (resolve getDependencies getSha1)
