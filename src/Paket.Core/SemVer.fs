@@ -66,7 +66,12 @@ type SemVerInfo =
             
         let pre = 
             match x.PreRelease with
-            | Some preRelease -> "-" + preRelease.Name + preReleaseBuild
+            | Some preRelease ->
+                let preReleaseNumber =
+                    match preRelease.Number with
+                    | Some number -> string number
+                    | None -> ""
+                "-" + preRelease.Name + preReleaseNumber + preReleaseBuild
             | None -> preReleaseBuild
 
         sprintf "%d.%d.%d%s%s" x.Major x.Minor x.Patch build pre
