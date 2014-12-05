@@ -1,3 +1,6 @@
+#### 0.17.14 - 05.12.2014
+* BUGFIX: Binding redirect version is picked from highest library version - https://github.com/fsprojects/Paket/pull/422
+
 #### 0.17.13 - 05.12.2014
 * BUGFIX: Handle numeric part of preRelease identifiers correctly - https://github.com/fsprojects/Paket/pull/426
 
