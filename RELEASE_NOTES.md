@@ -1,3 +1,6 @@
+#### 0.17.15 - 05.12.2014
+* Allow to reference binary files via http referene - https://github.com/fsprojects/Paket/pull/427
+
 #### 0.17.14 - 05.12.2014
 * BUGFIX: Binding redirect version is picked from highest library version - https://github.com/fsprojects/Paket/pull/422
 
