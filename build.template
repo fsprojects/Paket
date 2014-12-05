@@ -71,8 +71,8 @@ let release = LoadReleaseNotes "RELEASE_NOTES.md"
 let genFSAssemblyInfo (projectPath) =
     let projectName = System.IO.Path.GetFileNameWithoutExtension(projectPath)
     let folderName = System.IO.Path.GetDirectoryName(projectPath)
-    let basePath = "src/" + folderName
-    let fileName = basePath + "/AssemblyInfo.fs"
+    let basePath = "src" @@ folderName
+    let fileName = basePath @@ "AssemblyInfo.fs"
     CreateFSharpAssemblyInfo fileName
       [ Attribute.Title (projectName)
         Attribute.Product project
@@ -83,8 +83,8 @@ let genFSAssemblyInfo (projectPath) =
 let genCSAssemblyInfo (projectPath) =
     let projectName = System.IO.Path.GetFileNameWithoutExtension(projectPath)
     let folderName = System.IO.Path.GetDirectoryName(projectPath)
-    let basePath = folderName + "/Properties"
-    let fileName = basePath + "/AssemblyInfo.cs"
+    let basePath = folderName @@ "Properties"
+    let fileName = basePath @@ "AssemblyInfo.cs"
     CreateCSharpAssemblyInfo fileName
       [ Attribute.Title (projectName)
         Attribute.Product project
