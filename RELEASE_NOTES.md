@@ -1,3 +1,6 @@
+#### 0.17.13 - 05.12.2014
+* BUGFIX: Handle numeric part of preRelease identifiers correctly - https://github.com/fsprojects/Paket/pull/426
+
 #### 0.17.12 - 03.12.2014
 * Faster BindingRedirects - https://github.com/fsprojects/Paket/pull/414
 * Using different FSharp.Core NuGet package - https://github.com/fsprojects/Paket/pull/416
