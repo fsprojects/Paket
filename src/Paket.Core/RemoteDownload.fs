@@ -45,7 +45,7 @@ let downloadDependenciesFile(rootPath,remoteFile:ModuleResolver.ResolvedSourceFi
             rawFileUrl remoteFile.Owner remoteFile.Project remoteFile.Commit dependenciesFileName
         | ModuleResolver.GistLink -> 
             rawGistFileUrl remoteFile.Owner remoteFile.Project dependenciesFileName
-        | ModuleResolver.HttpLink url -> sprintf "%s" url
+        | ModuleResolver.HttpLink url -> url.Replace(remoteFile.Name,Constants.DependenciesFileName)
     let! result = safeGetFromUrl(None,url)
 
     match result with
