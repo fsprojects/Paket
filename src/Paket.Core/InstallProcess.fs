@@ -14,7 +14,7 @@ open System.Reflection
 
 let private findPackagesWithContent (root,usedPackages:HashSet<_>) = 
     usedPackages
-    |> Seq.map (fun x -> DirectoryInfo(Path.Combine(root, "packages", (|PackageName|) x)))
+    |> Seq.map (fun (PackageName x) -> DirectoryInfo(Path.Combine(root, "packages", x)))
     |> Seq.choose (fun packageDir -> packageDir.GetDirectories("Content") |> Array.tryFind (fun _ -> true))
     |> Seq.toList
 
