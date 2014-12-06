@@ -119,7 +119,13 @@ let downloadRemoteFiles(remoteFile:ResolvedSourceFile,destination) = async {
         Directory.Delete(source,true)
     | SingleSourceFileOrigin.GistLink, _ ->  return! downloadFromUrl(None,rawGistFileUrl remoteFile.Owner remoteFile.Project remoteFile.Name) destination
     | SingleSourceFileOrigin.GitHubLink, _ -> return! downloadFromUrl(None,rawFileUrl remoteFile.Owner remoteFile.Project remoteFile.Commit remoteFile.Name) destination
-    | SingleSourceFileOrigin.HttpLink(url), _ ->  return! downloadFromUrl(None,sprintf "%s" url) destination
+    | SingleSourceFileOrigin.HttpLink(url), _ ->
+        do! downloadFromUrl(None, url) destination
+        match Path.GetExtension(destination).ToLowerInvariant() with
+        | ".zip" ->
+            let targetFolder = FileInfo(destination).Directory.FullName
+            ExtractZip(destination, targetFolder)
+        | _ -> ignore()
 }
 
 let DownloadSourceFile(rootPath, source:ModuleResolver.ResolvedSourceFile) = 
