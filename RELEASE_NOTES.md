@@ -1,3 +1,7 @@
+#### 0.17.19 - 07.12.2014
+* Allow to remove nugets interactive - https://github.com/fsprojects/Paket/pull/432
+* BUGFIX: Fixed casing issue in selective update - https://github.com/fsprojects/Paket/pull/434
+
 #### 0.17.18 - 07.12.2014
 * BUGFIX: Parse http links from lockfile
 
