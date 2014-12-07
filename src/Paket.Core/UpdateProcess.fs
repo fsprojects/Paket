@@ -26,13 +26,13 @@ let Update(dependenciesFileName, forceResolution, force, hard) =
 let private fixOldDependencies failOnMissingPackage (dependenciesFile:DependenciesFile) (package:PackageName) (oldLockFile:LockFile) =
     let allDependencies = 
         if failOnMissingPackage || oldLockFile.ResolvedPackages.ContainsKey(NormalizedPackageName package) then
-            oldLockFile.GetAllDependenciesOf package
+            oldLockFile.GetAllNormalizedDependenciesOf package
         else
-            HashSet<_>()
+            Set.empty
 
     oldLockFile.ResolvedPackages
     |> Seq.map (fun kv -> kv.Value)
-    |> Seq.filter (fun p -> not <| allDependencies.Contains p.Name)
+    |> Seq.filter (fun p -> not <| allDependencies.Contains(NormalizedPackageName p.Name))
     |> Seq.fold 
             (fun (dependenciesFile : DependenciesFile) resolvedPackage ->                 
                     dependenciesFile.AddFixedPackage(resolvedPackage.Name, "= " + resolvedPackage.Version.ToString()))
