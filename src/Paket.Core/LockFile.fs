@@ -189,7 +189,7 @@ module LockFileParser =
                             LastWasPackage = false
                             SourceFiles = { Commit = String.Empty
                                             Owner = domain
-                                            Origin = origin
+                                            Origin = HttpLink(state.RemoteUrl.Value)
                                             Project = domain
                                             Dependencies = Set.empty
                                             Name = details } :: state.SourceFiles }
@@ -198,7 +198,7 @@ module LockFileParser =
                             LastWasPackage = false
                             SourceFiles = { Commit = String.Empty
                                             Owner = domain
-                                            Origin = origin
+                                            Origin = HttpLink(state.RemoteUrl.Value)
                                             Project = project
                                             Dependencies = Set.empty
                                             Name = details } :: state.SourceFiles }
@@ -207,7 +207,7 @@ module LockFileParser =
                             LastWasPackage = false
                             SourceFiles = { Commit = String.Empty
                                             Owner = domain
-                                            Origin = origin
+                                            Origin = HttpLink(state.RemoteUrl.Value)
                                             Project = project+"/"+moredetails
                                             Dependencies = Set.empty
                                             Name = details } :: state.SourceFiles }

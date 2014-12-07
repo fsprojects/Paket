@@ -5,6 +5,7 @@ open NUnit.Framework
 open FsUnit
 open TestHelpers
 open Paket.Domain
+open Paket.ModuleResolver
 
 let lockFile = """NUGET
   remote: https://nuget.org/api/v2
@@ -177,3 +178,18 @@ let ``should parse framework restricted lock file``() =
     packages.[3].Name |> shouldEqual (PackageName "LinqBridge")
     packages.[3].Version |> shouldEqual (SemVer.Parse "1.3.0")
     packages.[3].FrameworkRestriction |> shouldEqual (Some (FrameworkIdentifier.DotNetFramework(FrameworkVersion.V2)))
+
+let simpleHTTP = """
+HTTP
+  remote: http://www.frijters.net/ikvmbin-8.0.5449.0.zip
+  specs:
+    ikvmbin-8.0.5449.0.zip
+"""
+
+[<Test>]
+let ``should parse simple http reference``() = 
+    let lockFile = LockFileParser.Parse(toLines simpleHTTP)
+    let references = lockFile.SourceFiles
+
+    references.[0].Name |> shouldEqual "ikvmbin-8.0.5449.0.zip"  
+    references.[0].Origin |> shouldEqual (SingleSourceFileOrigin.HttpLink("http://www.frijters.net/ikvmbin-8.0.5449.0.zip"))

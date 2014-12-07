@@ -1,3 +1,6 @@
+#### 0.17.18 - 07.12.2014
+* BUGFIX: Parse http links from lockfile
+
 #### 0.17.17 - 07.12.2014
 * Added auto-unzip of downloaded archives - https://github.com/fsprojects/Paket/pull/430
 
