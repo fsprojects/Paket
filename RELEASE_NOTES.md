@@ -1,3 +1,6 @@
+#### 0.17.17 - 07.12.2014
+* Added auto-unzip of downloaded archives - https://github.com/fsprojects/Paket/pull/430
+
 #### 0.17.16 - 05.12.2014
 * BUGFIX: Calculate dependencies file name for http resources - https://github.com/fsprojects/Paket/pull/428
 
