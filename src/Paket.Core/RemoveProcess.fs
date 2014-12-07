@@ -21,33 +21,40 @@ let Remove(dependenciesFileName, package:PackageName, force, hard, interactive, 
                     let newLines = lines |> Seq.filter (fun l -> l.ToLower() <> name.ToLower())
                     File.WriteAllLines(fileName,newLines)
 
-    // check we have it removed from paket.references files
-    for project in allProjects do
-        let proj = FileInfo(project.FileName)
-        match ProjectFile.FindReferencesFile proj with
-        | None -> ()
-        | Some fileName -> 
-            let lines = File.ReadAllLines(fileName)
-            let installed = lines |> Seq.exists (fun l -> l.ToLower() = name.ToLower())
-            if installed then
-                failwithf "%s is still installed in %s" name project.Name
+    // check we have it removed from all paket.references files
+    let stillInstalled =
+        allProjects
+        |> Seq.exists (fun project -> 
+            let proj = FileInfo(project.FileName)
+            match ProjectFile.FindReferencesFile proj with
+            | None -> false 
+            | Some fileName -> 
+                let lines = File.ReadAllLines(fileName)
+                lines |> Seq.exists (fun l -> l.ToLower() = name.ToLower()))
 
-    let exisitingDependenciesFile = DependenciesFile.ReadFromFile dependenciesFileName
-    let dependenciesFile =
-        exisitingDependenciesFile
-          .Remove(package)
+    let oldLockFile =    
+        let lockFileName = DependenciesFile.FindLockfile dependenciesFileName
+        LockFile.LoadFrom(lockFileName.FullName)
 
-    let changed = exisitingDependenciesFile <> dependenciesFile
-    let lockFile = 
+    let lockFile =
+        if stillInstalled then oldLockFile else
+        let exisitingDependenciesFile = DependenciesFile.ReadFromFile dependenciesFileName
+        let dependenciesFile =
+            exisitingDependenciesFile
+                .Remove(package)
+
+        let changed = exisitingDependenciesFile <> dependenciesFile
+
         if changed then
-            UpdateProcess.updateWithModifiedDependenciesFile(true,dependenciesFile,package,force)
+            dependenciesFile.Save()
+        
+        if changed then
+            let lockFile = UpdateProcess.updateWithModifiedDependenciesFile(true,dependenciesFile,package,force)
+            lockFile.Save()
+            lockFile
         else
-            let lockFileName = DependenciesFile.FindLockfile dependenciesFileName
-            LockFile.LoadFrom(lockFileName.FullName)
+            oldLockFile
     
     if installAfter then
         let sources = DependenciesFile.ReadFromFile(dependenciesFileName).GetAllPackageSources()
         InstallProcess.Install(sources, force, hard, lockFile)
-
-    if changed then
-        dependenciesFile.Save()
