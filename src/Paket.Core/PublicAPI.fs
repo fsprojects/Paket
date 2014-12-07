@@ -87,10 +87,16 @@ type Dependencies(dependenciesFileName: string) =
         AddProcess.Add(dependenciesFileName, PackageName package, version, force, hard, interactive, installAfter)
         
     /// Installs all dependencies.
-    member this.Install(force: bool,hard: bool): unit = UpdateProcess.Update(dependenciesFileName,false,force,hard)
+    member this.Install(force: bool,hard: bool,withBindingRedirects:bool): unit = UpdateProcess.Update(dependenciesFileName,false,force,hard,withBindingRedirects)
+
+    /// Installs all dependencies.
+    member this.Install(force: bool,hard: bool): unit = this.Install(force,hard,false)
 
     /// Updates all dependencies.
-    member this.Update(force: bool,hard: bool): unit = UpdateProcess.Update(dependenciesFileName,true,force,hard)
+    member this.Update(force: bool,hard: bool,withBindingRedirects:bool): unit = UpdateProcess.Update(dependenciesFileName,true,force,hard,withBindingRedirects)
+
+    /// Updates all dependencies.
+    member this.Update(force: bool,hard: bool): unit = this.Update(force,hard,false)
 
     /// Updates the given package.
     member this.UpdatePackage(package: string,version: string option,force: bool,hard: bool): unit =

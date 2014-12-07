@@ -38,7 +38,7 @@ let Add(dependenciesFileName, package, version, force, hard, interactive, instal
 
     if installAfter then
         let sources = dependenciesFile.GetAllPackageSources()
-        InstallProcess.Install(sources, force, hard, lockFile)
+        InstallProcess.Install(sources, force, hard, false, lockFile)
 
     if changed then
         dependenciesFile.Save()

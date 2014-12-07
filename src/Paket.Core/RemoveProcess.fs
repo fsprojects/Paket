@@ -57,4 +57,4 @@ let Remove(dependenciesFileName, package:PackageName, force, hard, interactive, 
     
     if installAfter then
         let sources = DependenciesFile.ReadFromFile(dependenciesFileName).GetAllPackageSources()
-        InstallProcess.Install(sources, force, hard, lockFile)
+        InstallProcess.Install(sources, force, hard, false, lockFile)

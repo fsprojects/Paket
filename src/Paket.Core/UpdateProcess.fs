@@ -8,7 +8,7 @@ open Paket.PackageResolver
 open System.Collections.Generic
 
 /// Update command
-let Update(dependenciesFileName, forceResolution, force, hard) = 
+let Update(dependenciesFileName, forceResolution, force, hard, withBindingRedirects) = 
     let lockFileName = DependenciesFile.FindLockfile dependenciesFileName
     
     let sources, lockFile = 
@@ -21,7 +21,7 @@ let Update(dependenciesFileName, forceResolution, force, hard) =
             let sources = dependenciesFile.GetAllPackageSources()
             sources, LockFile.LoadFrom(lockFileName.FullName)
 
-    InstallProcess.Install(sources, force, hard, lockFile)
+    InstallProcess.Install(sources, force, hard, withBindingRedirects, lockFile)
 
 let private fixOldDependencies failOnMissingPackage (dependenciesFile:DependenciesFile) (package:PackageName) (oldLockFile:LockFile) =
     let allDependencies = 
@@ -62,7 +62,7 @@ let updateWithModifiedDependenciesFile(failOnMissingPackage,dependenciesFile:Dep
 /// Update a single package command
 let UpdatePackage(dependenciesFileName, packageName : PackageName, newVersion, force, hard) = 
     let lockFileName = DependenciesFile.FindLockfile dependenciesFileName
-    if not lockFileName.Exists then Update(dependenciesFileName, true, force, hard) else
+    if not lockFileName.Exists then Update(dependenciesFileName, true, force, hard, false) else
     
     let sources, lockFile = 
         let dependenciesFile = 
@@ -76,4 +76,4 @@ let UpdatePackage(dependenciesFileName, packageName : PackageName, newVersion, f
 
         fixOldDependencies true dependenciesFile packageName
         |> update lockFileName.FullName force
-    InstallProcess.Install(sources, force, hard, lockFile)
+    InstallProcess.Install(sources, force, hard, false, lockFile)
