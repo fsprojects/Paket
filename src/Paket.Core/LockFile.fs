@@ -244,6 +244,11 @@ type LockFile(fileName:string,options,resolution:PackageResolution,remoteFiles:R
 
         usedPackages
 
+    member this.GetAllNormalizedDependenciesOf(package) = 
+        this.GetAllDependenciesOf(package)
+        |> Seq.map NormalizedPackageName
+        |> Set.ofSeq
+
     /// Checks if the first package is a dependency of the second package
     member this.IsDependencyOf(dependentPackage,package) =
         this.GetAllDependenciesOf(package).Contains dependentPackage
