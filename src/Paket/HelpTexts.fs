@@ -1,7 +1,7 @@
 module Paket.HelpTexts
 
 let commands =
-    ["convert-from-nuget.md", """# Convert your solution from NuGet
+    ["convert-from-nuget", """# Convert your solution from NuGet
 
 ## Manual process
 
