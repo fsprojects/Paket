@@ -13,9 +13,10 @@ open Paket.PackageSources
 /// [omit]
 type InstallOptions = 
     { Strict : bool 
+      Redirects : bool 
       OmitContent : bool }
 
-    static member Default = { Strict = false; OmitContent = false}
+    static member Default = { Strict = false; OmitContent = false; Redirects = false}
 
 /// [omit]
 module DependenciesFileParser = 
@@ -128,7 +129,12 @@ module DependenciesFileParser =
         | [| _; projectSpec; fileSpec |] -> getParts projectSpec fileSpec
         | _ -> failwithf "invalid http-reference specification:%s     %s" Environment.NewLine trimmed
 
-    let private (|Remote|Package|Blank|ReferencesMode|OmitContent|SourceFile|) (line:string) =
+    type ParserOption =
+    | ReferencesMode of bool
+    | OmitContent of bool
+    | Redirects of bool
+
+    let private (|Remote|Package|Blank|ParserOptions|SourceFile|) (line:string) =
         match line.Trim() with
         | _ when String.IsNullOrWhiteSpace line -> Blank
         | String.StartsWith "source" _ as trimmed -> Remote(PackageSource.Parse(trimmed))
@@ -150,8 +156,9 @@ module DependenciesFileParser =
             | name :: rest -> Package(name,">= 0 " + String.Join(" ",rest))
             | name :: [] -> Package(name,">= 0")
             | _ -> failwithf "could not retrieve nuget package from %s" trimmed
-        | String.StartsWith "references" trimmed -> ReferencesMode(trimmed.Trim() = "strict")
-        | String.StartsWith "content" trimmed -> OmitContent(trimmed.Trim() = "none")
+        | String.StartsWith "references" trimmed -> ParserOptions(ParserOption.ReferencesMode(trimmed.Trim() = "strict"))
+        | String.StartsWith "redirects" trimmed -> ParserOptions(ParserOption.Redirects(trimmed.Trim() = "on"))
+        | String.StartsWith "content" trimmed -> ParserOptions(ParserOption.OmitContent(trimmed.Trim() = "none"))
         | String.StartsWith "gist" _ as trimmed ->
             SourceFile(``parse git source`` trimmed SingleSourceFileOrigin.GistLink "gist")
         | String.StartsWith "github" _ as trimmed  ->
@@ -168,8 +175,9 @@ module DependenciesFileParser =
                 match line with
                 | Remote(newSource) -> lineNo, options, sources @ [newSource], packages, sourceFiles
                 | Blank -> lineNo, options, sources, packages, sourceFiles
-                | ReferencesMode mode -> lineNo, { options with Strict = mode }, sources, packages, sourceFiles
-                | OmitContent omit -> lineNo, { options with OmitContent = omit }, sources, packages, sourceFiles
+                | ParserOptions(ParserOption.ReferencesMode mode) -> lineNo, { options with Strict = mode }, sources, packages, sourceFiles
+                | ParserOptions(ParserOption.Redirects mode) -> lineNo, { options with Redirects = mode }, sources, packages, sourceFiles
+                | ParserOptions(ParserOption.OmitContent omit) -> lineNo, { options with OmitContent = omit }, sources, packages, sourceFiles
                 | Package(name,version) ->
                     lineNo, options, sources, 
                         { Sources = sources
