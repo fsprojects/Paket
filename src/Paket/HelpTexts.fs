@@ -1,9 +1,15 @@
 module Paket.HelpTexts
 
-let commands =
-    ["convert-from-nuget", """# Convert your solution from NuGet
+type CommandHelpTopic = 
+    { Title : string
+      Text : string }
+    member this.ToMarkDown() =
+        sprintf "# %s%s%s" this.Title System.Environment.NewLine this.Text
 
-## Manual process
+let commands =
+    ["convert-from-nuget", 
+        { Title = "Convert your solution from NuGet"
+          Text = """## Manual process
 
 If you are already using `NuGet.exe` for package restore then it should be easy to convert to Paket.
 
@@ -57,11 +63,11 @@ Following are valid modes for `--creds-migration` option:
 ## Simplify direct dependencies
 
 After converting your solution from NuGet, you may end up with many indirect dependencies in your Paket files.
-Consider using [`paket simplify`](paket-simplify.html) to remove unnecessary indirect dependencies from your [`paket.dependencies`](dependencies-file.html) and [`paket.references`](references-files.html) files."""
+Consider using [`paket simplify`](paket-simplify.html) to remove unnecessary indirect dependencies from your [`paket.dependencies`](dependencies-file.html) and [`paket.references`](references-files.html) files."""}
 
-     "init-auto-restore", """# paket init-auto-restore
-
-Enables automatic Package Restore in Visual Studio during the build process. 
+     "init-auto-restore",
+        { Title = "paket init-auto-restore"
+          Text = """Enables automatic Package Restore in Visual Studio during the build process. 
 
     [lang=batchfile]
     $ paket init-auto-restore
@@ -70,11 +76,11 @@ The command:
 
   - creates a `.paket` directory in your solution root
   - downloads `paket.targets` and `paket.bootstrapper.exe` into it
-  - adds an `<Import>` statement for `paket.targets` to all projects under the working directory."""
+  - adds an `<Import>` statement for `paket.targets` to all projects under the working directory."""}
 
-     "restore", """# paket restore
-
-Ensures that all dependencies in your [`paket.dependencies` file](dependencies-file.html) are present in the `packages` directory .
+     "restore",
+        { Title = "paket restore"
+          Text = """Ensures that all dependencies in your [`paket.dependencies` file](dependencies-file.html) are present in the `packages` directory .
 
     [lang=batchfile]
     $ paket restore [--force] [--references-files REFERENCESFILE1 REFERENCESFILE2 ...]
@@ -83,11 +89,11 @@ Options:
 
   `--force`: Forces the download of all packages.
 
-  `--references-files`: Allows to restore all packages from the given `paket.references` files. If no `paket.references` file is given then all packages will be restored."""
+  `--references-files`: Allows to restore all packages from the given `paket.references` files. If no `paket.references` file is given then all packages will be restored."""}
 
-     "simplify", """# paket simplify
-
-Simplifies your [`paket.dependencies` file](dependencies-file.html) by removing indirect dependencies.
+     "simplify",
+        { Title = "paket simplify"
+          Text = """Simplifies your [`paket.dependencies` file](dependencies-file.html) by removing indirect dependencies.
 Does also simplify [`paket.references` files](references-files.html), unless [strict](dependencies-file.html#Strict-references) mode is used.
 
     [lang=batchfile]
@@ -117,7 +123,7 @@ After converting to Paket with [`paket convert-from-nuget command`](paket-conver
     nuget Castle.Core 3.3.1
     nuget Castle.Windsor 3.3.0
 
-and the NuGet `packages.config` should be converted to following [`paket.references` file](references-files.html) :
+and the NuGet `packages.config` should be converted to following [`paket.references` file](references-files.html):
 
     Castle.Core
     Castle.Windsor
@@ -144,18 +150,18 @@ The simplify command will help you maintain your direct dependencies.
 ## Interactive mode
 
 Sometimes, you may still want to have control over some of the indirect dependencies. In this case you can use the `--interactive` flag,
-which will ask you to confirm before deleting a dependency from a file."""
+which will ask you to confirm before deleting a dependency from a file."""}
 
-     "init", """# paket init
-
-Creates empty dependencies file in working directory.
+     "init",
+        { Title = "paket init"
+          Text = """Creates empty dependencies file in working directory.
 
     [lang=batchfile]
-    $ paket init"""
+    $ paket init"""}
 
-     "add", """# paket add
-
-Adds a new package to your [`paket.dependencies` file](dependencies-file.html).
+     "add",
+        { Title = "paket add"
+          Text = """Adds a new package to your [`paket.dependencies` file](dependencies-file.html).
 
     [lang=batchfile]
     $ paket add nuget PACKAGENAME [version VERSION] [--interactive] [--force] [--hard]
@@ -187,11 +193,11 @@ This will add the package to the selected [`paket.references` files](references-
 	source https://nuget.org/api/v2
 
 	nuget FAKE
-	nuget xunit"""
+	nuget xunit"""}
 
-     "find-refs", """# paket find-refs
-
-Finds all project files that have the given NuGet packages installed.
+     "find-refs",
+        { Title = "paket find-refs"
+          Text = """Finds all project files that have the given NuGet packages installed.
 
     [lang=batchfile]
     $ paket find-refs PACKAGENAME1 PACKAGENAME1 ...
@@ -220,11 +226,11 @@ and paket gives the following output:
 
 	FSharp.Core
 	.src/Paket.Core/Paket.Core.fsproj
-	.src/Paket/Paket.fsproj"""
+	.src/Paket/Paket.fsproj"""}
 
-     "update", """# paket update
-
-Recomputes the dependency resolution, updates the [`paket.lock` file](lock-file.html) and propagates any resulting package changes into all project files referencing updated packages.
+     "update",
+        { Title = "paket update"
+          Text = """Recomputes the dependency resolution, updates the [`paket.lock` file](lock-file.html) and propagates any resulting package changes into all project files referencing updated packages.
 
     [lang=batchfile]
     $ paket update [--force] [--hard]	
@@ -246,11 +252,11 @@ Options:
 
   `--force`: Forces the download and reinstallation of all packages.
 
-  `--hard`: Replaces package references within project files even if they are not yet adhering to to Paket's conventions (and hence considered manually managed). See [convert from NuGet](paket-convert-from-nuget.html)."""
+  `--hard`: Replaces package references within project files even if they are not yet adhering to to Paket's conventions (and hence considered manually managed). See [convert from NuGet](paket-convert-from-nuget.html)."""}
   
-     "outdated", """# paket outdated
-
-Lists all dependencies that have newer versions available.
+     "outdated",
+        { Title = "paket outdated"
+          Text = """Lists all dependencies that have newer versions available.
 
     [lang=batchfile]
     $ paket outdated [--pre] [--ignore-constraints]
@@ -281,11 +287,11 @@ and the following [`paket.lock` file](lock-file.html):
 
 Now we run `paket outdated`:
 
-![alt text](img/paket-outdated.png "paket outdated command")"""
+![alt text](img/paket-outdated.png "paket outdated command")"""}
 
-     "remove", """# paket remove
-
-Removes a package from your [`paket.dependencies` file](dependencies-file.html) and all [`paket.references` files](references-file.html).
+     "remove",
+        { Title = "paket remove"
+          Text = """Removes a package from your [`paket.dependencies` file](dependencies-file.html) and all [`paket.references` files](references-file.html).
 
     [lang=batchfile]
     $ paket remove nuget PACKAGENAME [--interactive] [--force] [--hard]
@@ -298,11 +304,11 @@ Options:
 
   `--hard`: Replaces package references within project files even if they are not yet adhering to to Paket's conventions (and hence considered manually managed). See [convert from NuGet](paket-convert-from-nuget.html).
 
-See also [paket add](paket-add.html)."""
+See also [paket add](paket-add.html)."""}
 
-     "install", """# paket install
-
-Ensures that all dependencies in your [`paket.dependencies` file](dependencies-file.html) are present in the `packages` directory and referenced correctly in all projects.
+     "install",
+        { Title = "paket install"
+          Text = """Ensures that all dependencies in your [`paket.dependencies` file](dependencies-file.html) are present in the `packages` directory and referenced correctly in all projects.
 
     [lang=batchfile]
     $ paket install [--force] [--hard]
@@ -311,6 +317,6 @@ Options:
 
   `--force`: Forces the download and reinstallation of all packages.
 
-  `--hard`: Replaces package references within project files even if they are not yet adhering to Paket's conventions (and hence considered manually managed). See [convert from NuGet](paket-convert-from-nuget.html)."""]
+  `--hard`: Replaces package references within project files even if they are not yet adhering to Paket's conventions (and hence considered manually managed). See [convert from NuGet](paket-convert-from-nuget.html)."""}]
 
   |> dict

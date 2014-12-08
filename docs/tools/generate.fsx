@@ -3,7 +3,7 @@
 open System.IO
 
 Paket.HelpTexts.commands
-|> Seq.iter (fun kv -> File.WriteAllText(sprintf "../content/paket-%s.md" kv.Key,kv.Value))
+|> Seq.iter (fun kv -> File.WriteAllText(sprintf "../content/paket-%s.md" kv.Key,kv.Value.ToMarkDown()))
 
 // --------------------------------------------------------------------------------------
 // Builds the documentation from `.fsx` and `.md` files in the 'docs/content' directory

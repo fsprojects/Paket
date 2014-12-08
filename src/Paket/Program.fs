@@ -119,7 +119,10 @@ try
         let includePrereleases = results.Contains <@ CLIArguments.Include_Prereleases @> 
 
         if results.IsUsageRequested then 
-            let showHelp s = tracefn "%s" s
+            let showHelp (helpTopic:HelpTexts.CommandHelpTopic) = 
+                tracefn "%s" helpTopic.Title
+                tracefn "%s" helpTopic.Text
+
             match command with
             | Command.Init -> showHelp HelpTexts.commands.["init"]
             | Command.Add -> showHelp HelpTexts.commands.["add"]
