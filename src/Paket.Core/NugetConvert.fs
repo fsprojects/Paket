@@ -110,6 +110,16 @@ let removeFile file =
     File.Delete file
     tracefn "Deleted %s" file
 
+/// Represents type of NuGet packages.config file
+type NugetPackagesConfigType = ProjectLevel | SolutionLevel
+
+/// Represents NuGet packages.config file
+type NugetPackagesConfig = {
+    File: FileInfo
+    Packages: (string*SemVerInfo) list
+    Type: NugetPackagesConfigType
+}
+
 let private convertNugetsToDepFile(dependenciesFilename,nugetPackagesConfigs, sources) =
     let allVersions =
         nugetPackagesConfigs
@@ -176,11 +186,20 @@ let private convertNugetToRefFile(nugetPackagesConfig) =
             then (refsToAdd |> List.fold (fun (refFile : ReferencesFile) (name,_) -> refFile.AddNuGetReference(PackageName name)) refFile).Save()
         else tracefn "%s is up to date" refFilePath
 
+/// Lists packages defined in a NuGet packages.config
+let ReadPackagesConfig(configFile : FileInfo) =
+    let doc = XmlDocument()
+    doc.Load configFile.FullName
+    { File = configFile
+      Type = if configFile.Directory.Name = ".nuget" then SolutionLevel else ProjectLevel
+      Packages = [for node in doc.SelectNodes("//package") ->
+                      node.Attributes.["id"].Value, node.Attributes.["version"].Value |> SemVer.Parse ]}
+
 /// Converts all projects from NuGet to Paket
 let ConvertFromNuget(dependenciesFileName, force, installAfter, initAutoRestore, credsMigrationMode) =
     let root = Path.GetDirectoryName dependenciesFileName
 
-    let nugetPackagesConfigs = FindAllFiles(root, "packages.config") |> Seq.map NuGetV2.ReadPackagesConfig
+    let nugetPackagesConfigs = FindAllFiles(root, "packages.config") |> Seq.map ReadPackagesConfig
     let nugetConfig = readNugetConfig()
     FindAllFiles(root, "nuget.config") |> Seq.iter (fun f -> removeFile f.FullName)
 

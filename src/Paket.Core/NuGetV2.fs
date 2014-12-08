@@ -17,16 +17,6 @@ open Paket.Xml
 open Paket.PackageSources
 open Paket.NuGetV3
 
-/// Represents type of NuGet packages.config file
-type NugetPackagesConfigType = ProjectLevel | SolutionLevel
-
-/// Represents NuGet packages.config file
-type NugetPackagesConfig = {
-    File: FileInfo;
-    Packages: (string*SemVerInfo) list
-    Type: NugetPackagesConfigType
-}
-
 type NugetPackageCache =
     { Dependencies : (string * VersionRequirement * (FrameworkIdentifier option)) list
       Name : string
@@ -400,15 +390,6 @@ let GetLibFiles(targetFolder) =
             verbosefn "Libraries found in %s:%s  - %s" targetFolder Environment.NewLine s
 
     libs
-
-/// Lists packages defined in a NuGet packages.config
-let ReadPackagesConfig(configFile : FileInfo) =
-    let doc = XmlDocument()
-    doc.Load configFile.FullName
-    { File = configFile
-      Type = if configFile.Directory.Name = ".nuget" then SolutionLevel else ProjectLevel
-      Packages = [for node in doc.SelectNodes("//package") ->
-                      node.Attributes.["id"].Value, node.Attributes.["version"].Value |> SemVer.Parse ]}
 
 let GetPackageDetails force sources (PackageName package) (version:SemVerInfo) : PackageResolver.PackageDetails= 
     let rec tryNext xs = 
