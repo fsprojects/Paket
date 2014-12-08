@@ -85,7 +85,7 @@ let parser = UnionArgParser.Create<CLIArguments>("USAGE: paket [add|remove|insta
  
 let results =
     try
-        let results = parser.Parse()
+        let results = parser.Parse(raiseOnUsage=false)
         let command = 
             if results.Contains <@ CLIArguments.Init @> then Command.Init
             elif results.Contains <@ CLIArguments.Add @> then Command.Add
@@ -116,47 +116,64 @@ try
         let hard = results.Contains <@ CLIArguments.Hard @> 
         let noInstall = results.Contains <@ CLIArguments.No_Install @>
         let noAutoRestore = results.Contains <@ CLIArguments.No_Auto_Restore @>
-        let includePrereleases = results.Contains <@ CLIArguments.Include_Prereleases @>
+        let includePrereleases = results.Contains <@ CLIArguments.Include_Prereleases @> 
 
-        match command with
-        | Command.Init -> Dependencies.Create() |> ignore
-        | Command.Add -> 
-            let packageName = results.GetResult <@ CLIArguments.Nuget @>
-            let version = 
-                match results.TryGetResult <@ CLIArguments.Version @> with
-                | Some x -> x
-                | _ -> ""
+        if results.IsUsageRequested then 
+            let showHelp s = tracefn "%s" s
+            match command with
+            | Command.Init -> showHelp HelpTexts.commands.["init"]
+            | Command.Add -> showHelp HelpTexts.commands.["add"]
+            | Command.Remove -> showHelp HelpTexts.commands.["remove"]
+            | Command.Install -> showHelp HelpTexts.commands.["install"]
+            | Command.Restore -> showHelp HelpTexts.commands.["restore"]
+            | Command.Update -> showHelp HelpTexts.commands.["update"]
+            | Command.Outdated -> showHelp HelpTexts.commands.["outdated"]
+            | Command.InitAutoRestore -> showHelp HelpTexts.commands.["init-auto-restore"]
+            | Command.ConvertFromNuget -> showHelp HelpTexts.commands.["convert-from-nuget"]
+            | Command.Simplify -> showHelp HelpTexts.commands.["simplify"]
+            | Command.FindRefs -> showHelp HelpTexts.commands.["find-refs"]
+            | Command.Unknown -> traceErrorfn "no command given.%s" (parser.Usage())
 
-            Dependencies.Locate().Add(packageName, version, force, hard, interactive, noInstall |> not)
-        | Command.Remove -> 
-            let packageName = results.GetResult <@ CLIArguments.Nuget @>            
-            Dependencies.Locate().Remove(packageName,force,hard,interactive,noInstall |> not)
-        | Command.Install -> Dependencies.Locate().Install(force,hard)
-        | Command.Restore -> 
-            let files = results.GetResults <@ CLIArguments.References_Files @> 
-            Dependencies.Locate().Restore(force,files)
-        | Command.Update -> 
-            match results.TryGetResult <@ CLIArguments.Nuget @> with
-            | Some packageName -> 
-                let version = results.TryGetResult <@ CLIArguments.Version @>
-                Dependencies.Locate().UpdatePackage(packageName, version, force, hard)
-            | _ -> Dependencies.Locate().Update(force,hard)            
-        | Command.Outdated ->         
-            let strict = results.Contains <@ CLIArguments.Ignore_Constraints @> |> not
-            Dependencies.Locate().ShowOutdated(strict,includePrereleases)
-        | Command.InitAutoRestore -> Dependencies.Locate().InitAutoRestore()
-        | Command.ConvertFromNuget -> 
-            let credsMigrationMode = results.TryGetResult <@ CLIArguments.Creds_Migration @>
-            Dependencies.ConvertFromNuget(force, noInstall |> not, noAutoRestore |> not, credsMigrationMode)
-        | Command.Simplify -> Dependencies.Locate().Simplify(interactive)
-        | Command.FindRefs ->
-            let packages = results.GetResults <@ CLIArguments.FindRefs @>
-            Dependencies.Locate().ShowReferencesFor(packages)
-        | Command.Unknown -> traceErrorfn "no command given.%s" (parser.Usage())
+        else
+            match command with
+            | Command.Init -> Dependencies.Create() |> ignore
+            | Command.Add -> 
+                let packageName = results.GetResult <@ CLIArguments.Nuget @>
+                let version = 
+                    match results.TryGetResult <@ CLIArguments.Version @> with
+                    | Some x -> x
+                    | _ -> ""
+
+                Dependencies.Locate().Add(packageName, version, force, hard, interactive, noInstall |> not)
+            | Command.Remove -> 
+                let packageName = results.GetResult <@ CLIArguments.Nuget @>            
+                Dependencies.Locate().Remove(packageName,force,hard,interactive,noInstall |> not)
+            | Command.Install -> Dependencies.Locate().Install(force,hard)
+            | Command.Restore -> 
+                let files = results.GetResults <@ CLIArguments.References_Files @> 
+                Dependencies.Locate().Restore(force,files)
+            | Command.Update -> 
+                match results.TryGetResult <@ CLIArguments.Nuget @> with
+                | Some packageName -> 
+                    let version = results.TryGetResult <@ CLIArguments.Version @>
+                    Dependencies.Locate().UpdatePackage(packageName, version, force, hard)
+                | _ -> Dependencies.Locate().Update(force,hard)            
+            | Command.Outdated ->         
+                let strict = results.Contains <@ CLIArguments.Ignore_Constraints @> |> not
+                Dependencies.Locate().ShowOutdated(strict,includePrereleases)
+            | Command.InitAutoRestore -> Dependencies.Locate().InitAutoRestore()
+            | Command.ConvertFromNuget -> 
+                let credsMigrationMode = results.TryGetResult <@ CLIArguments.Creds_Migration @>
+                Dependencies.ConvertFromNuget(force, noInstall |> not, noAutoRestore |> not, credsMigrationMode)
+            | Command.Simplify -> Dependencies.Locate().Simplify(interactive)
+            | Command.FindRefs ->
+                let packages = results.GetResults <@ CLIArguments.FindRefs @>
+                Dependencies.Locate().ShowReferencesFor(packages)
+            | Command.Unknown -> traceErrorfn "no command given.%s" (parser.Usage())
         
-        let elapsedTime = Utils.TimeSpanToReadableString stopWatch.Elapsed
+            let elapsedTime = Utils.TimeSpanToReadableString stopWatch.Elapsed
 
-        tracefn "%s - ready." elapsedTime
+            tracefn "%s - ready." elapsedTime
     | None -> ()
 with
 | exn -> 

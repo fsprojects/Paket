@@ -186,3 +186,14 @@ paket-files
 docs/content/license.md
 docs/content/release-notes.md
 _NCrunch_Paket
+docs/content/paket-init.md
+docs/content/paket-add.md
+docs/content/paket-find-refs.md
+docs/content/paket-install.md
+docs/content/paket-outdated.md
+docs/content/paket-remove.md
+docs/content/paket-update.md
+docs/content/paket-convert-from-nuget.md.md
+docs/content/paket-init-auto-restore.md
+docs/content/paket-restore.md
+docs/content/paket-simplify.md

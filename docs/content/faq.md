@@ -54,7 +54,7 @@ Instead we encourage the .NET community to use a declarative install process and
 
 ## I'm already using NuGet. How can I convert to Paket?
 
-The process is very easy and you can read more about it in the [convert from NuGet](convert-from-nuget.html) section.
+The process is very easy and you can read more about it in the [convert from NuGet](paket-convert-from-nuget.html) section.
 
 ## Why should I commit the lock file?
 

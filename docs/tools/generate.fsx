@@ -1,4 +1,11 @@
-﻿// --------------------------------------------------------------------------------------
+/// Getting help docs from Paket.exe
+#r "../../bin/Paket.exe"
+open System.IO
+
+Paket.HelpTexts.commands
+|> Seq.iter (fun kv -> File.WriteAllText(sprintf "../content/paket-%s.md" kv.Key,kv.Value))
+
+// --------------------------------------------------------------------------------------
 // Builds the documentation from `.fsx` and `.md` files in the 'docs/content' directory
 // (the generated documentation is stored in the 'docs/output' directory)
 // --------------------------------------------------------------------------------------
