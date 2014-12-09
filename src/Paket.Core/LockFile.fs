@@ -228,6 +228,7 @@ type LockFile(fileName:string,options,resolution:PackageResolution,remoteFiles:R
     member __.SourceFiles = remoteFiles
     member __.ResolvedPackages = resolution
     member __.FileName = fileName
+    member __.Directory = Path.GetDirectoryName fileName
     member __.Options = options
 
     /// Gets all dependencies of the given package

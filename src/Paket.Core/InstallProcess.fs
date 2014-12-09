@@ -150,7 +150,7 @@ let Install(sources,force, hard, withBindingRedirects, lockFile:LockFile) =
             |> Seq.map (fun x -> NormalizedPackageName x)
             |> Set.ofSeq
 
-        project.UpdateReferences(model,usedPackageNames,hard)
+        project.UpdateReferences(lockFile.Directory,model,usedPackageNames,hard)
         
         removeCopiedFiles project
 

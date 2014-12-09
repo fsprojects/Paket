@@ -176,6 +176,15 @@ type ProjectFile =
         for node in nodesToDelete do            
             node.ParentNode.RemoveChild(node) |> ignore
 
+    member this.GenerateTargetImport(filename:string) =        
+        let relativePath = createRelativePath this.FileName filename 
+
+        let importNode = this.Document.CreateElement("Import", Constants.ProjectDefaultNameSpace)
+        let condition = sprintf "Exists('%s')" relativePath
+        importNode |> addAttribute "Project" relativePath |> ignore
+        importNode |> addAttribute "Condition" condition |> ignore
+        importNode
+
     member this.GenerateXml(model:InstallModel) =
         let references = 
             this.GetCustomReferenceAndFrameworkNodes()
@@ -229,7 +238,9 @@ type ProjectFile =
             chooseNode
         
 
-    member this.UpdateReferences(completeModel: Map<NormalizedPackageName,InstallModel>, usedPackages : Set<NormalizedPackageName>, hard) = 
+    member this.GenerateReferences(rootPath:string,completeModel: Map<NormalizedPackageName,InstallModel>, usedPackages : Set<NormalizedPackageName>, hard) = 
+        let generateTargetsFiles = true // TODO: Make parameter
+
         this.DeletePaketNodes("Reference")  
         
         ["ItemGroup";"When";"Otherwise";"Choose";"When";"Choose"]
@@ -242,9 +253,30 @@ type ProjectFile =
             if hard then
                 this.DeleteCustomModelNodes(kv.Value)
 
-            this.GenerateXml kv.Value)
-        |> Seq.filter (fun node -> node.ChildNodes.Count > 0)
-        |> Seq.iter (this.ProjectNode.AppendChild >> ignore)
+            kv.Value.PackageName,this.GenerateXml kv.Value)
+        |> Seq.filter (fun (_,node) -> node.ChildNodes.Count > 0)
+        |> Seq.fold (fun targetFiles (packageName,node) ->
+            if generateTargetsFiles then
+                let (PackageName name) = packageName
+                let targetsFile = FileInfo(Path.Combine(rootPath,"packages",name,Constants.PackageTargetsFileName))
+
+                let doc = XmlDocument()
+                let project = doc.CreateElement("Project", Constants.ProjectDefaultNameSpace)
+                let tempNode = doc.ImportNode(node, true)
+                project.AppendChild tempNode |> ignore
+                doc.AppendChild project |> ignore                
+                
+                let targetsNode = this.GenerateTargetImport targetsFile.FullName
+                this.ProjectNode.AppendChild targetsNode |> ignore
+                (targetsFile.FullName,doc)::targetFiles
+            else
+                this.ProjectNode.AppendChild node |> ignore
+                targetFiles)
+                  []
+    
+    member this.UpdateReferences(rootPath:string,completeModel: Map<NormalizedPackageName,InstallModel>, usedPackages : Set<NormalizedPackageName>, hard) =
+        for targetFileName,doc in this.GenerateReferences(rootPath,completeModel, usedPackages, hard) do
+            doc.Save(targetFileName)
                 
     member this.Save() =
         if Utils.normalizeXml this.Document <> this.OriginalText then 
