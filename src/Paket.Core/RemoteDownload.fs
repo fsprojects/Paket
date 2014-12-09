@@ -143,8 +143,9 @@ let DownloadSourceFile(rootPath, source:ModuleResolver.ResolvedSourceFile) =
         else 
             tracefn "Downloading %s to %s" (source.ToString()) destination
             
-            CleanDir (destination |> Path.GetDirectoryName)
+            destination |> Path.GetDirectoryName |> CleanDir
 
             do! downloadRemoteFiles(source,destination)
-            File.WriteAllText(versionFile.FullName, source.Commit)
+            if not (versionFile.Exists && source.Commit = File.ReadAllText(versionFile.FullName)) then
+                File.WriteAllText(versionFile.FullName, source.Commit)
     }
