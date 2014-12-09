@@ -1,3 +1,6 @@
+#### 0.17.22 - 09.12.2014
+* BUGFIX: Allow to reference multiple files from same repository directory - https://github.com/fsprojects/Paket/pull/445
+
 #### 0.17.21 - 09.12.2014
 * BUGFIX: Don't reference satellite assemblies - https://github.com/fsprojects/Paket/pull/444
 
