@@ -1,3 +1,6 @@
+#### 0.17.21 - 09.12.2014
+* BUGFIX: Don't reference satellite assemblies - https://github.com/fsprojects/Paket/pull/444
+
 #### 0.17.20 - 09.12.2014
 * Don't run simplify in strict mode - https://github.com/fsprojects/Paket/pull/443
 
