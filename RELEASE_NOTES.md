@@ -1,3 +1,9 @@
+#### 0.18.0-alpha001 - 09.12.2014
+* Show command help on `--help` - https://github.com/fsprojects/Paket/pull/437
+
+#### 0.17.23 - 09.12.2014
+* BUGFIX: Allow to reference multiple files from same repository directory - https://github.com/fsprojects/Paket/pull/445
+
 #### 0.17.22 - 09.12.2014
 * BUGFIX: Allow to reference multiple files from same repository directory - https://github.com/fsprojects/Paket/pull/445
 
