@@ -56,3 +56,12 @@ This option disables the installation of any content files.
 
     nuget jQuery >= 0 // we don't install jQuery content files
     nuget UnionArgParser ~> 0.7
+
+## Redirects option
+
+This option tells paket to create AssemblyBindingRedirects for all referenced libraries.
+
+    redirects on
+    source https://nuget.org/api/v2
+
+    nuget UnionArgParser ~> 0.7
