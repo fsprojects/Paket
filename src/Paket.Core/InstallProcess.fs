@@ -185,5 +185,5 @@ let Install(sources,force, hard, withBindingRedirects, lockFile:LockFile) =
 
         project.Save()
 
-    if withBindingRedirects then
+    if withBindingRedirects || lockFile.Options.Redirects then
         applyBindingRedirects root extractedPackages
