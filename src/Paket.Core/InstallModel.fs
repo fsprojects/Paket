@@ -181,7 +181,7 @@ type InstallModel =
             | _ -> false
 
         let excludeSatelliteAssemblies = function
-            | Reference.Library lib -> lib.EndsWith "resources.dll"
+            | Reference.Library lib -> lib.EndsWith ".resources.dll"
             | _ -> false
 
         let blackList = 
