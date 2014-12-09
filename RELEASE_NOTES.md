@@ -1,4 +1,4 @@
-#### 0.18.0-alpha003 - 09.12.2014
+#### 0.18.0 - 09.12.2014
 * Show command help on `--help` - https://github.com/fsprojects/Paket/pull/437
 * Allow to opt in to BindingRedirects - https://github.com/fsprojects/Paket/pull/436
 * Don't run simplify in strict mode - https://github.com/fsprojects/Paket/pull/443
