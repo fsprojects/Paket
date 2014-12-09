@@ -1,3 +1,6 @@
+#### 0.17.20 - 09.12.2014
+* Don't run simplify in strict mode - https://github.com/fsprojects/Paket/pull/443
+
 #### 0.17.19 - 07.12.2014
 * Allow to remove nugets interactive - https://github.com/fsprojects/Paket/pull/432
 * BUGFIX: Fixed casing issue in selective update - https://github.com/fsprojects/Paket/pull/434
