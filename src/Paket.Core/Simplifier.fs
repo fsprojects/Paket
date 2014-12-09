@@ -47,6 +47,8 @@ let Simplify (dependenciesFileName,interactive) =
     if not <| File.Exists dependenciesFileName then
         failwithf "%s file not found." dependenciesFileName
     let depFile = DependenciesFile.ReadFromFile dependenciesFileName
+    if depFile.Options.Strict then
+        failwith "Strict mode detected. Will not attempt to simplify dependencies."
     let lockFilePath = depFile.FindLockfile()
     if not <| File.Exists(lockFilePath.FullName) then 
         failwith "lock file not found. Create lock file by running paket install."
