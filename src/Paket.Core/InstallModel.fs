@@ -176,11 +176,17 @@ type InstallModel =
         |> Seq.fold (fun model reference -> model.AddFrameworkAssemblyReference reference) this
     
     member this.FilterBlackList() = 
+        let includeLibs = function
+            | Reference.Library lib -> not (lib.EndsWith ".dll" || lib.EndsWith ".exe")
+            | _ -> false
+
+        let excludeSatelliteAssemblies = function
+            | Reference.Library lib -> lib.EndsWith "resources.dll"
+            | _ -> false
+
         let blackList = 
-            [ fun (reference : Reference) -> 
-                match reference with
-                | Reference.Library lib -> not (lib.EndsWith ".dll" || lib.EndsWith ".exe")
-                | _ -> false ]
+            [ includeLibs
+              excludeSatelliteAssemblies]
 
         blackList
         |> List.map (fun f -> f >> not) // inverse
