@@ -41,7 +41,7 @@ type ProjectFile =
 
     member this.Name = FileInfo(this.FileName).Name
 
-    member this.GetCustomReferenceNodes() = this.FindNodes false "Reference"
+    member this.GetCustomReferenceAndFrameworkNodes() = this.FindNodes false "Reference"
 
     /// Finds all project files
     static member FindAllProjects(folder) = 
@@ -156,11 +156,18 @@ type ProjectFile =
     member this.GetCustomModelNodes(model:InstallModel) =
         let libs = model.GetReferenceNames()
         
-        this.GetCustomReferenceNodes()
+        this.GetCustomReferenceAndFrameworkNodes()
         |> List.filter (fun node -> Set.contains (node.Attributes.["Include"].InnerText.Split(',').[0]) libs)
     
     member this.DeleteCustomModelNodes(model:InstallModel) =
-        let nodesToDelete = this.GetCustomModelNodes(model)
+        let nodesToDelete = 
+            this.GetCustomModelNodes(model)
+            |> List.filter (fun node ->
+                let isFrameworkNode = ref true
+                for child in node.ChildNodes do
+                    if child.Name = "HintPath" then isFrameworkNode := false
+
+                not !isFrameworkNode)
         
         if nodesToDelete <> [] then
             let (PackageName name) = model.PackageName
@@ -171,7 +178,7 @@ type ProjectFile =
 
     member this.GenerateXml(model:InstallModel) =
         let references = 
-            this.GetCustomReferenceNodes()
+            this.GetCustomReferenceAndFrameworkNodes()
             |> List.map (fun node -> node.Attributes.["Include"].InnerText.Split(',').[0])
             |> Set.ofList
 

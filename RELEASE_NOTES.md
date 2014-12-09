@@ -1,3 +1,6 @@
+#### 0.18.2 - 09.12.2014
+* BUGFIX: Don't touch framework assemblies if not needed
+
 #### 0.18.1 - 09.12.2014
 * BUGFIX: Check versions file synchronously
 

@@ -42,10 +42,10 @@ let ``should delete custom nodes if there are some``() =
 
     let project = ProjectFile.Load("./ProjectFile/TestData/CustomFantomasNode.fsprojtest").Value
 
-    project.GetCustomModelNodes(model).IsEmpty
-    |> shouldEqual false
+    project.GetCustomModelNodes(model).Length
+    |> shouldEqual 2
 
     project.DeleteCustomModelNodes model
 
-    project.GetCustomModelNodes(model).IsEmpty
-    |> shouldEqual true
+    project.GetCustomModelNodes(model).Length
+    |> shouldEqual 1
