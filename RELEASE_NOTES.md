@@ -89,7 +89,7 @@
 * New support for general HTTP dependencies - http://fsprojects.github.io/Paket/http-dependencies.html
 * New F# Interactive support - http://fsprojects.github.io/Paket/reference-from-repl.html
 * New `paket find-refs` command - http://fsprojects.github.io/Paket/paket-find-refs.html 
-* Migration of NuGet source credentials during `paket convert-from-nuget` - http://fsprojects.github.io/Paket/convert-from-nuget.html#Migrating-NuGet-source-credentials
+* Migration of NuGet source credentials during `paket convert-from-nuget` - http://fsprojects.github.io/Paket/paket-convert-from-nuget.html#Migrating-NuGet-source-credentials
 * Bootstrapper uses .NET 4.0 - https://github.com/fsprojects/Paket/pull/355
 * Adding --ignore-constraints to `paket outdated` - https://github.com/fsprojects/Paket/issues/308 
 * PERFORMANCE: If `paket add` doesn't change the `paket.dependencies` file then the resolver process will be skipped
@@ -142,7 +142,7 @@
 * More portable profiles - https://github.com/fsprojects/Paket/issues/281
 * Added net11 to framework handling - https://github.com/fsprojects/Paket/pull/269
 * Create references for Win8 - https://github.com/fsprojects/Paket/issues/280
-* Detect VS automatic nuget restore and create paket restore - http://fsprojects.github.io/Paket/convert-from-nuget.html#Automated-process
+* Detect VS automatic nuget restore and create paket restore - http://fsprojects.github.io/Paket/paket-convert-from-nuget.html#Automated-process
 * `paket convert-from-nuget` doesn't duplicate paket solution items - https://github.com/fsprojects/Paket/pull/286
 * BUGFIX: Paket removes old framework references if during install - https://github.com/fsprojects/Paket/issues/274
 * BUGFIX: Don't let the bootstrapper fail if we already have a paket.exe
@@ -193,7 +193,7 @@
 * Use credentials from nuget.config on paket convert-from-nuget - https://github.com/fsprojects/Paket/issues/198
 * Deploy fixed targets file - https://github.com/fsprojects/Paket/issues/172
 * New [--pre] and [--strict] modes for paket outdated - http://fsprojects.github.io/Paket/paket-outdated.html 
-* New --no-auto-restore option for `convert-from-nuget` command - http://fsprojects.github.io/Paket/convert-from-nuget.html#Automated-process
+* New --no-auto-restore option for `convert-from-nuget` command - http://fsprojects.github.io/Paket/paket-convert-from-nuget.html#Automated-process
 * Adding support for new portable profiles
 * paket.exe is now signed
 * Allow to reference .exe files from NuGet packages
@@ -222,7 +222,7 @@
 * Support for private NuGet feeds - http://fsprojects.github.io/Paket/nuget-dependencies.html#NuGet-feeds
 * New NuGet package version constraints - http://fsprojects.github.io/Paket/nuget-dependencies.html#Further-version-constraints
 * Respect case sensitivity for package paths for Linux - https://github.com/fsprojects/Paket/pull/137
-* Improved convert-from-nuget command - http://fsprojects.github.io/Paket/convert-from-nuget.html
+* Improved convert-from-nuget command - http://fsprojects.github.io/Paket/paket-convert-from-nuget.html
 * New paket.bootstrapper.exe (7KB) allows to download paket.exe from github.com - http://fsprojects.github.io/Paket/paket-init-auto-restore.html
 * New package resolver algorithm
 * Better verbose mode - use -v flag
@@ -234,7 +234,7 @@
 
 #### 0.2.0 - 17.09.2014
 * Allow to directly link GitHub files - http://fsprojects.github.io/Paket/http-dependencies.html
-* Automatic NuGet conversion - http://fsprojects.github.io/Paket/convert-from-nuget.html
+* Automatic NuGet conversion - http://fsprojects.github.io/Paket/paket-convert-from-nuget.html
 * Cleaner syntax in paket.dependencies - https://github.com/fsprojects/Paket/pull/95
 * Strict mode - https://github.com/fsprojects/Paket/pull/104
 * Detecting portable profiles
