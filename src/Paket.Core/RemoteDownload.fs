@@ -135,16 +135,17 @@ let DownloadSourceFile(rootPath, source:ModuleResolver.ResolvedSourceFile) =
         let destination = Path.Combine(rootPath, source.FilePath)
         
         let isInRightVersion = 
-            if not <| versionFile.Exists then false
-            else source.Commit = File.ReadAllText(versionFile.FullName)
+            versionFile.Exists && File.Exists destination &&
+                source.Commit = File.ReadAllText(versionFile.FullName)
 
         if isInRightVersion then 
             verbosefn "Sourcefile %s is already there." (source.ToString())
         else 
             tracefn "Downloading %s to %s" (source.ToString()) destination
             
-            CleanDir (destination |> Path.GetDirectoryName)
+            destination |> Path.GetDirectoryName |> CleanDir
 
             do! downloadRemoteFiles(source,destination)
-            File.WriteAllText(versionFile.FullName, source.Commit)
+            if not (versionFile.Exists && source.Commit = File.ReadAllText(versionFile.FullName)) then
+                File.WriteAllText(versionFile.FullName, source.Commit)
     }
