@@ -98,8 +98,11 @@ module LockFileParser =
           SourceFiles : ResolvedSourceFile list
           LastWasPackage : bool
           Options: InstallOptions }
-    
-    type private InstallOptionCase = StrictCase | OmitContentCase
+
+    type private ParserOption =
+    | ReferencesMode of bool
+    | OmitContent of bool
+    | Redirects of bool
 
     let private (|Remote|NugetPackage|NugetDependency|SourceFile|RepositoryType|Blank|InstallOption|) (state, line:string) =
         match (state.RepositoryType, line.Trim()) with
@@ -110,8 +113,9 @@ module LockFileParser =
         | _, _ when String.IsNullOrWhiteSpace line -> Blank
         | _, String.StartsWith "remote:" trimmed -> Remote(trimmed.Trim().Split(' ').[0])
         | _, String.StartsWith "specs:" _ -> Blank
-        | _, String.StartsWith "REFERENCES:" trimmed -> InstallOption(StrictCase,trimmed.Trim() = "STRICT")
-        | _, String.StartsWith "CONTENT:" trimmed -> InstallOption(OmitContentCase,trimmed.Trim() = "NONE")
+        | _, String.StartsWith "REFERENCES:" trimmed -> InstallOption(ReferencesMode(trimmed.Trim() = "STRICT"))
+        | _, String.StartsWith "REDIRECTS:" trimmed -> InstallOption(Redirects(trimmed.Trim() = "ON"))
+        | _, String.StartsWith "CONTENT:" trimmed -> InstallOption(OmitContent(trimmed.Trim() = "NONE"))
         | _, trimmed when line.StartsWith "      " ->
             let parts = trimmed.Split '(' 
             NugetDependency (parts.[0].Trim(),parts.[1].Replace("(", "").Replace(")", "").Trim())
@@ -130,8 +134,9 @@ module LockFileParser =
             match (state, line) with
             | Remote(url) -> { state with RemoteUrl = Some url }
             | Blank -> state
-            | InstallOption (StrictCase,mode) -> { state with Options = {state.Options with Strict = mode} }
-            | InstallOption (OmitContentCase,omit) -> { state with Options = {state.Options with OmitContent = omit} }
+            | InstallOption (ReferencesMode(mode)) -> { state with Options = {state.Options with Strict = mode} }
+            | InstallOption (Redirects(mode)) -> { state with Options = {state.Options with Redirects = mode} }
+            | InstallOption (OmitContent(omit)) -> { state with Options = {state.Options with OmitContent = omit} }
             | RepositoryType repoType -> { state with RepositoryType = Some repoType }
             | NugetPackage details ->
                 match state.RemoteUrl with

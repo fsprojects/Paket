@@ -90,11 +90,27 @@ let ``should parse strict lock file``() =
     let packages = List.rev lockFile.Packages
     packages.Length |> shouldEqual 6
     lockFile.Options.Strict |> shouldEqual true
+    lockFile.Options.Redirects |> shouldEqual false
 
     packages.[5].Source |> shouldEqual PackageSources.DefaultNugetSource
     packages.[5].Name |> shouldEqual (PackageName "log4net")
     packages.[5].Version |> shouldEqual (SemVer.Parse "1.1")
     packages.[5].Dependencies |> shouldEqual (Set.ofList [PackageName "log", VersionRequirement.AllReleases, None])
+
+let redirectsLockFile = """REDIRECTS: ON
+NUGET
+  remote: https://nuget.org/api/v2
+  specs:
+    Castle.Windsor (2.1)
+"""   
+
+[<Test>]
+let ``should parse redirects lock file``() = 
+    let lockFile = LockFileParser.Parse(toLines redirectsLockFile)
+    let packages = List.rev lockFile.Packages
+    packages.Length |> shouldEqual 1
+    lockFile.Options.Strict |> shouldEqual false
+    lockFile.Options.Redirects |> shouldEqual true
 
 let dogfood = """NUGET
   remote: https://nuget.org/api/v2

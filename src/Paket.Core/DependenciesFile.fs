@@ -129,7 +129,7 @@ module DependenciesFileParser =
         | [| _; projectSpec; fileSpec |] -> getParts projectSpec fileSpec
         | _ -> failwithf "invalid http-reference specification:%s     %s" Environment.NewLine trimmed
 
-    type ParserOption =
+    type private ParserOption =
     | ReferencesMode of bool
     | OmitContent of bool
     | Redirects of bool
