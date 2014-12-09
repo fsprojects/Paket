@@ -1,69 +1,26 @@
-#### 0.18.0-alpha002 - 09.12.2014
-* Allow to opt in to BindingRedirects - https://github.com/fsprojects/Paket/pull/436
-
-#### 0.18.0-alpha001 - 09.12.2014
+#### 0.18.0-alpha003 - 09.12.2014
 * Show command help on `--help` - https://github.com/fsprojects/Paket/pull/437
-
-#### 0.17.23 - 09.12.2014
-* BUGFIX: Allow to reference multiple files from same repository directory - https://github.com/fsprojects/Paket/pull/445
-
-#### 0.17.22 - 09.12.2014
-* BUGFIX: Allow to reference multiple files from same repository directory - https://github.com/fsprojects/Paket/pull/445
-
-#### 0.17.21 - 09.12.2014
-* BUGFIX: Don't reference satellite assemblies - https://github.com/fsprojects/Paket/pull/444
-
-#### 0.17.20 - 09.12.2014
+* Allow to opt in to BindingRedirects - https://github.com/fsprojects/Paket/pull/436
 * Don't run simplify in strict mode - https://github.com/fsprojects/Paket/pull/443
-
-#### 0.17.19 - 07.12.2014
-* Allow to remove nugets interactive - https://github.com/fsprojects/Paket/pull/432
-* BUGFIX: Fixed casing issue in selective update - https://github.com/fsprojects/Paket/pull/434
-
-#### 0.17.18 - 07.12.2014
-* BUGFIX: Parse http links from lockfile
-
-#### 0.17.17 - 07.12.2014
+* Allow to remove NuGet packages in interactive mode - https://github.com/fsprojects/Paket/pull/432
 * Added auto-unzip of downloaded archives - https://github.com/fsprojects/Paket/pull/430
-
-#### 0.17.16 - 05.12.2014
-* BUGFIX: Calculate dependencies file name for http resources - https://github.com/fsprojects/Paket/pull/428
-
-#### 0.17.15 - 05.12.2014
 * Allow to reference binary files via http reference - https://github.com/fsprojects/Paket/pull/427
-
-#### 0.17.14 - 05.12.2014
-* BUGFIX: Binding redirect version is picked from highest library version - https://github.com/fsprojects/Paket/pull/422
-
-#### 0.17.13 - 05.12.2014
-* BUGFIX: Handle numeric part of preRelease identifiers correctly - https://github.com/fsprojects/Paket/pull/426
-
-#### 0.17.12 - 03.12.2014
 * Faster BindingRedirects - https://github.com/fsprojects/Paket/pull/414
-* Using different FSharp.Core NuGet package - https://github.com/fsprojects/Paket/pull/416
-
-#### 0.17.10 - 03.12.2014
-* BUGFIX: `paket update nuget <name>` fails if <name> was not found in lockfile - https://github.com/fsprojects/Paket/issues/404
-
-#### 0.17.9 - 03.12.2014
-* BUGFIX: Fix selective update after add
-
-#### 0.17.8 - 03.12.2014
-* BUGFIX: Unescape library filename - https://github.com/fsprojects/Paket/pull/412
-
-#### 0.17.5 - 01.12.2014
-* BUGFIX: Unescape library filename - https://github.com/fsprojects/Paket/pull/412
+* Using a different FSharp.Core NuGet package - https://github.com/fsprojects/Paket/pull/416
 * Find the paket.references file in upper directories - https://github.com/fsprojects/Paket/pull/409
-* Selective update updates only dependent packages - https://github.com/fsprojects/Paket/pull/410
-
-#### 0.17.4 - 30.11.2014
 * Allow `paket.references` files in upper directories - https://github.com/fsprojects/Paket/pull/403
-
-#### 0.17.3 - 30.11.2014
 * Clear failure message for `paket simplify`, when lock file is outdated - https://github.com/fsprojects/Paket/pull/403
-
-#### 0.17.1 - 29.11.2014
-* If there are only prereleases we should just take these
+* BUGFIX: `Selective update` updates only dependent packages - https://github.com/fsprojects/Paket/pull/410
+* BUGFIX: If there are only prereleases we should just take these
+* BUGFIX: `paket update nuget <name>` fails if <name> was not found in lockfile - https://github.com/fsprojects/Paket/issues/404
+* BUGFIX: Unescape library filename - https://github.com/fsprojects/Paket/pull/412
+* BUGFIX: Allow to reference multiple files from same repository directory - https://github.com/fsprojects/Paket/pull/445
+* BUGFIX: Don't reference satellite assemblies - https://github.com/fsprojects/Paket/pull/444
+* BUGFIX: Binding redirect version is picked from highest library version - https://github.com/fsprojects/Paket/pull/422
+* BUGFIX: Handle numeric part of PreRelease identifiers correctly - https://github.com/fsprojects/Paket/pull/426
+* BUGFIX: Fixed casing issue in selective update - https://github.com/fsprojects/Paket/pull/434
+* BUGFIX: Parse http links from lockfile
+* BUGFIX: Calculate dependencies file name for http resources - https://github.com/fsprojects/Paket/pull/428
 
 #### 0.17.0 - 29.11.2014
 * FrameworkHandling: Support more portable profiles and reduce the impact in the XML file

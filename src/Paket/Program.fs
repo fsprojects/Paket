@@ -71,6 +71,7 @@ with
             | Simplify -> "analyzes dependencies and removes unnecessary indirect dependencies."
             | Verbose -> "displays verbose output."
             | Force -> "forces the download of all packages."
+            | Redirects -> "creates assembly binding redirects."
             | Interactive -> "interactive process."
             | Hard -> "overwrites manual package references."
             | No_Install -> "omits install --hard after convert-from-nuget."
