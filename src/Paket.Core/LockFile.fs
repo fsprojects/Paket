@@ -26,6 +26,7 @@ module LockFileSerializer =
             let hasReported = ref false
             [ if options.Strict then yield "REFERENCES: STRICT"
               if options.OmitContent then yield "CONTENT: NONE"
+              if options.Redirects then yield "REDIRECTS: ON"
               for (source, _), packages in sources do
                   if not !hasReported then
                     yield "NUGET"
