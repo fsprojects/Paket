@@ -36,10 +36,7 @@ let ExtractPackage(root, sources, force, package : ResolvedPackage) =
 
 /// Retores the given packages from the lock file.
 let internal restore(root, sources, force, lockFile:LockFile, packages:Set<NormalizedPackageName>) = 
-    let sourceFileDownloads =
-        lockFile.SourceFiles
-        |> Seq.map (fun file -> RemoteDownload.DownloadSourceFile(Path.GetDirectoryName lockFile.FileName, file))        
-        |> Async.Parallel
+    let sourceFileDownloads = RemoteDownload.DownloadSourceFiles(Path.GetDirectoryName lockFile.FileName, lockFile.SourceFiles)
 
     let packageDownloads = 
         lockFile.ResolvedPackages

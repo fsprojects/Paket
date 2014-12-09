@@ -1,3 +1,6 @@
+#### 0.18.1 - 09.12.2014
+* BUGFIX: Check versions file synchronously
+
 #### 0.18.0 - 09.12.2014
 * Show command help on `--help` - https://github.com/fsprojects/Paket/pull/437
 * Allow to opt in to BindingRedirects - https://github.com/fsprojects/Paket/pull/436

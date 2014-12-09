@@ -80,11 +80,8 @@ let CreateInstallModel(root, sources, force, package) =
 
 /// Restores the given packages from the lock file.
 let createModel(root, sources,force, lockFile:LockFile) = 
-    let sourceFileDownloads =
-        lockFile.SourceFiles
-        |> Seq.map (fun file -> RemoteDownload.DownloadSourceFile(root, file))
-        |> Async.Parallel
-
+    let sourceFileDownloads = RemoteDownload.DownloadSourceFiles(root, lockFile.SourceFiles)
+        
     let packageDownloads = 
         lockFile.ResolvedPackages
         |> Seq.map (fun kv -> CreateInstallModel(root,sources,force,kv.Value))

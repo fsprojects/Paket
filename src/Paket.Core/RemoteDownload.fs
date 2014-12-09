@@ -128,12 +128,12 @@ let downloadRemoteFiles(remoteFile:ResolvedSourceFile,destination) = async {
         | _ -> ignore()
 }
 
-let DownloadSourceFile(rootPath, source:ModuleResolver.ResolvedSourceFile) = 
-    async { 
+let DownloadSourceFiles(rootPath, sourceFiles:ModuleResolver.ResolvedSourceFile list) =
+    sourceFiles
+    |> List.map (fun source ->
         let path = FileInfo(Path.Combine(rootPath, source.FilePath)).Directory.FullName
-        let versionFile = FileInfo(Path.Combine(path, "paket.version"))
         let destination = Path.Combine(rootPath, source.FilePath)
-        
+        let versionFile = FileInfo(Path.Combine(path, "paket.version"))
         let isInRightVersion = versionFile.Exists && source.Commit = File.ReadAllText(versionFile.FullName)
 
         if not isInRightVersion then
@@ -143,9 +143,11 @@ let DownloadSourceFile(rootPath, source:ModuleResolver.ResolvedSourceFile) =
 
             File.WriteAllText(versionFile.FullName, source.Commit)
 
-        if File.Exists destination then 
-            verbosefn "Sourcefile %s is already there." (source.ToString())
-        else 
-            tracefn "Downloading %s to %s" (source.ToString()) destination
-            do! downloadRemoteFiles(source,destination)
-    }
+        async { 
+            if File.Exists destination then 
+                verbosefn "Sourcefile %s is already there." (source.ToString())
+            else 
+                tracefn "Downloading %s to %s" (source.ToString()) destination
+                do! downloadRemoteFiles(source,destination)
+        })
+    |> Async.Parallel
