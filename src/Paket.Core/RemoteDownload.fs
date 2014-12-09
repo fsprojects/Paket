@@ -135,8 +135,8 @@ let DownloadSourceFile(rootPath, source:ModuleResolver.ResolvedSourceFile) =
         let destination = Path.Combine(rootPath, source.FilePath)
         
         let isInRightVersion = 
-            if not <| versionFile.Exists then false
-            else source.Commit = File.ReadAllText(versionFile.FullName)
+            versionFile.Exists && File.Exists destination &&
+                source.Commit = File.ReadAllText(versionFile.FullName)
 
         if isInRightVersion then 
             verbosefn "Sourcefile %s is already there." (source.ToString())
