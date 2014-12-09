@@ -179,7 +179,7 @@ type InstallModel =
         let blackList = 
             [ fun (reference : Reference) -> 
                 match reference with
-                | Reference.Library lib -> not (lib.EndsWith ".dll" || lib.EndsWith ".exe")
+                | Reference.Library lib -> not (lib.EndsWith ".dll" || lib.EndsWith ".exe") || lib.EndsWith "resources.dll"
                 | _ -> false ]
 
         blackList
