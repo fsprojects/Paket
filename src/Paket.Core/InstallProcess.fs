@@ -128,7 +128,7 @@ let private applyBindingRedirects root extractedPackages =
     |> applyBindingRedirectsToFolder root
 
 /// Installs the given all packages from the lock file.
-let Install(sources,force, hard, lockFile:LockFile) = 
+let Install(sources,force, hard, withBindingRedirects, lockFile:LockFile) = 
     let root = FileInfo(lockFile.FileName).Directory.FullName 
     let extractedPackages = createModel(root,sources,force, lockFile)
 
@@ -185,4 +185,5 @@ let Install(sources,force, hard, lockFile:LockFile) =
 
         project.Save()
 
-    applyBindingRedirects root extractedPackages
+    if withBindingRedirects || lockFile.Options.Redirects then
+        applyBindingRedirects root extractedPackages

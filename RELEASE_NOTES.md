@@ -1,3 +1,6 @@
+#### 0.18.0-alpha002 - 09.12.2014
+* Allow to opt in to BindingRedirects - https://github.com/fsprojects/Paket/pull/436
+
 #### 0.18.0-alpha001 - 09.12.2014
 * Show command help on `--help` - https://github.com/fsprojects/Paket/pull/437
 

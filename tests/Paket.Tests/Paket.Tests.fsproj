@@ -154,8 +154,7 @@
     <Compile Include="Resolver\PessimisticStrategySpecs.fs" />
     <Compile Include="Resolver\AddingDependenciesSpecs.fs" />
     <Compile Include="Lockfile\GeneratorSpecs.fs" />
-    <Compile Include="Lockfile\GenerateStrictModeSpecs.fs" />
-    <Compile Include="Lockfile\GenerateContentNoneOptionSpecs.fs" />
+    <Compile Include="Lockfile\GenerateWithOptionsSpecs.fs" />
     <Compile Include="Lockfile\GenerateAuthModeSpecs.fs" />
     <Compile Include="Lockfile\GeneratorWithMutlipleSourcesSpecs.fs" />
     <Compile Include="Lockfile\ParserSpecs.fs" />

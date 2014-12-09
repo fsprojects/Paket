@@ -240,13 +240,15 @@ and paket gives the following output:
           Text = """Recomputes the dependency resolution, updates the paket.lock file and propagates any resulting package changes into all project files referencing updated packages.
 
     [lang=batchfile]
-    $ paket update [--force] [--hard]	
+    $ paket update [--force] [--hard] [--redirects]	
 
 Options:
 
   `--force`: Forces the download and reinstallation of all packages.
 
   `--hard`: Replaces package references within project files even if they are not yet adhering to to Paket's conventions (and hence considered manually managed). See [convert from NuGet](paket-convert-from-nuget.html).
+
+  `--redirects`: Creates binding redirects for the NuGet packages.
 
 ## Updating a single package
 
@@ -318,12 +320,14 @@ See also [paket add](paket-add.html)."""}
           Text = """Ensures that all dependencies in your paket.dependencies file are present in the `packages` directory and referenced correctly in all projects.
 
     [lang=batchfile]
-    $ paket install [--force] [--hard]
+    $ paket install [--force] [--hard] [--redirects]
 
 Options:
 
   `--force`: Forces the download and reinstallation of all packages.
 
-  `--hard`: Replaces package references within project files even if they are not yet adhering to Paket's conventions (and hence considered manually managed). See [convert from NuGet](paket-convert-from-nuget.html)."""}]
+  `--hard`: Replaces package references within project files even if they are not yet adhering to Paket's conventions (and hence considered manually managed). See [convert from NuGet](paket-convert-from-nuget.html).
+  
+  `--redirects`: Creates binding redirects for the NuGet packages."""}]
 
   |> dict

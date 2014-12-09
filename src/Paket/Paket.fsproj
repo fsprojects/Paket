@@ -26,12 +26,12 @@
     <WarningLevel>3</WarningLevel>
     <DocumentationFile>
     </DocumentationFile>
-    <StartArguments>update -f</StartArguments>
+    <StartArguments>remove nuget cs-script --interactive</StartArguments>
     <StartAction>Project</StartAction>
     <StartProgram>paket.exe</StartProgram>
     <StartWorkingDirectory>
     </StartWorkingDirectory>
-    <StartWorkingDirectory>d:\code\PaketTest</StartWorkingDirectory>
+    <StartWorkingDirectory>d:\code\paket-dependencies</StartWorkingDirectory>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>

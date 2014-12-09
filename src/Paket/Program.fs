@@ -43,6 +43,7 @@ type CLIArguments =
     | [<First>][<NoAppSettings>][<Rest>][<CustomCommandLine("find-refs")>] FindRefs of string
     | [<AltCommandLine("-v")>] Verbose
     | [<AltCommandLine("-i")>] Interactive
+    | Redirects
     | [<AltCommandLine("-f")>] Force
     | Hard
     | [<CustomCommandLine("nuget")>] Nuget of string
@@ -117,6 +118,7 @@ try
         let noInstall = results.Contains <@ CLIArguments.No_Install @>
         let noAutoRestore = results.Contains <@ CLIArguments.No_Auto_Restore @>
         let includePrereleases = results.Contains <@ CLIArguments.Include_Prereleases @> 
+        let withBindingRedirects = results.Contains <@ CLIArguments.Redirects @>
 
         if results.IsUsageRequested then 
             let showHelp (helpTopic:HelpTexts.CommandHelpTopic) = 
@@ -151,7 +153,7 @@ try
             | Command.Remove -> 
                 let packageName = results.GetResult <@ CLIArguments.Nuget @>            
                 Dependencies.Locate().Remove(packageName,force,hard,interactive,noInstall |> not)
-            | Command.Install -> Dependencies.Locate().Install(force,hard)
+            | Command.Install -> Dependencies.Locate().Install(force,hard,withBindingRedirects)
             | Command.Restore -> 
                 let files = results.GetResults <@ CLIArguments.References_Files @> 
                 Dependencies.Locate().Restore(force,files)
@@ -160,7 +162,7 @@ try
                 | Some packageName -> 
                     let version = results.TryGetResult <@ CLIArguments.Version @>
                     Dependencies.Locate().UpdatePackage(packageName, version, force, hard)
-                | _ -> Dependencies.Locate().Update(force,hard)            
+                | _ -> Dependencies.Locate().Update(force,hard,withBindingRedirects)
             | Command.Outdated ->         
                 let strict = results.Contains <@ CLIArguments.Ignore_Constraints @> |> not
                 Dependencies.Locate().ShowOutdated(strict,includePrereleases)

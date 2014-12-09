@@ -127,6 +127,37 @@ nuget "FAKE" "~> 3.0"
 let ``should read strict config``() = 
     let cfg = DependenciesFile.FromCode(strictConfig)
     cfg.Options.Strict |> shouldEqual true
+    cfg.Options.Redirects |> shouldEqual false
+
+    (cfg.Packages |> List.find (fun p -> p.Name = PackageName "FAKE")).Sources |> shouldEqual [PackageSource.NugetSource "http://nuget.org/api/v2"]
+
+let redirectsConfig = """
+redirects on
+source "http://nuget.org/api/v2" // first source
+
+nuget "FAKE" "~> 3.0"
+"""
+
+[<Test>]
+let ``should read config with redirects``() = 
+    let cfg = DependenciesFile.FromCode(redirectsConfig)
+    cfg.Options.Strict |> shouldEqual false
+    cfg.Options.Redirects |> shouldEqual true
+
+    (cfg.Packages |> List.find (fun p -> p.Name = PackageName "FAKE")).Sources |> shouldEqual [PackageSource.NugetSource "http://nuget.org/api/v2"]
+
+let noRedirectsConfig = """
+redirects off
+source "http://nuget.org/api/v2" // first source
+
+nuget "FAKE" "~> 3.0"
+"""
+
+[<Test>]
+let ``should read config with no redirects``() = 
+    let cfg = DependenciesFile.FromCode(noRedirectsConfig)
+    cfg.Options.Strict |> shouldEqual false
+    cfg.Options.Redirects |> shouldEqual false
 
     (cfg.Packages |> List.find (fun p -> p.Name = PackageName "FAKE")).Sources |> shouldEqual [PackageSource.NugetSource "http://nuget.org/api/v2"]
 
