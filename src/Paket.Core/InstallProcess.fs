@@ -68,9 +68,34 @@ let private removeCopiedFiles (project: ProjectFile) =
     |> List.filter (fun fi -> not <| fi.FullName.Contains(Constants.PaketFilesFolderName))
     |> removeFilesAndTrimDirs
 
+/// Downloads and extracts a package.
+let ExtractPackage(root, sources, force, package : ResolvedPackage) = 
+    async { 
+        let (PackageName name) = package.Name
+        let v = package.Version
+        match package.Source with
+        | PackageSources.Nuget source -> 
+            let auth = 
+                sources |> List.tryPick (fun s -> 
+                               match s with
+                               | PackageSources.Nuget s -> s.Authentication |> Option.map PackageSources.toBasicAuth
+                               | _ -> None)
+            try 
+                let! folder = NuGetV2.DownloadPackage(root, auth, source.Url, name, v, force)
+                return package, NuGetV2.GetLibFiles folder
+            with _ when force = false -> 
+                tracefn "Something went wrong with the download of %s %A - automatic retry with --force." name v
+                let! folder = NuGetV2.DownloadPackage(root, auth, source.Url, name, v, true)
+                return package, NuGetV2.GetLibFiles folder
+        | PackageSources.LocalNuget path -> 
+            let packageFile = Path.Combine(root, path, sprintf "%s.%A.nupkg" name v)
+            let! folder = NuGetV2.CopyFromCache(root, packageFile, name, v, force)
+            return package, NuGetV2.GetLibFiles folder
+    }
+
 let CreateInstallModel(root, sources, force, package) = 
     async { 
-        let! (package, files) = RestoreProcess.ExtractPackage(root, sources, force, package)
+        let! (package, files) = ExtractPackage(root, sources, force, package)
         let (PackageName name) = package.Name
         let nuspec = FileInfo(sprintf "%s/packages/%s/%s.nuspec" root name name)
         let nuspec = Nuspec.Load nuspec.FullName
@@ -150,7 +175,7 @@ let Install(sources,force, hard, withBindingRedirects, lockFile:LockFile) =
             |> Seq.map (fun x -> NormalizedPackageName x)
             |> Set.ofSeq
 
-        project.UpdateReferences(model,usedPackageNames,hard)
+        project.UpdateReferences(lockFile.Directory,model,usedPackageNames,hard)
         
         removeCopiedFiles project
 
@@ -180,7 +205,7 @@ let Install(sources,force, hard, withBindingRedirects, lockFile:LockFile) =
 
         project.UpdateFileItems(gitRemoteItems @ nuGetFileItems, hard)
 
-        project.Save()
+        project.SaveIfChanged()
 
     if withBindingRedirects || lockFile.Options.Redirects then
         applyBindingRedirects root extractedPackages

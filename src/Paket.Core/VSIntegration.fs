@@ -34,4 +34,4 @@ let InitAutoRestore(dependenciesFileName) =
         let relativePath = 
             createRelativePath project.FileName (Path.Combine(root, ".paket", "paket.targets")) 
         project.AddImportForPaketTargets(relativePath)
-        project.Save()
+        project.SaveIfChanged()

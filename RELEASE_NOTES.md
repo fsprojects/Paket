@@ -1,3 +1,6 @@
+#### 0.19.0-alpha002 - 10.12.2014
+* Create paket.targets file per package
+
 #### 0.18.3 - 10.12.2014
 * BUGFIX: Don't delete downloaded github zip file
 

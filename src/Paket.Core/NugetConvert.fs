@@ -247,7 +247,7 @@ let ConvertFromNuget(dependenciesFileName, force, installAfter, initAutoRestore,
     for project in ProjectFile.FindAllProjects root do
         project.ReplaceNuGetPackagesFile()
         project.RemoveNuGetTargetsEntries()
-        project.Save()
+        project.SaveIfChanged()
 
     for packagesConfigFile in nugetPackagesConfigs |> Seq.map (fun f -> f.File) do
         removeFile packagesConfigFile.FullName

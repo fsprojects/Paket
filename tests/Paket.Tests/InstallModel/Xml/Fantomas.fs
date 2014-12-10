@@ -5,6 +5,7 @@ open NUnit.Framework
 open FsUnit
 open Paket.TestHelpers
 open Paket.Domain
+open System.IO
 
 let expected = """
 <ItemGroup xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
@@ -35,9 +36,8 @@ let emptyDoc = """<?xml version="1.0" encoding="utf-8"?>
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
 </Project>"""
 
-let fullDoc = """<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+let fullDoc = """<?xml version="1.0" encoding="utf-16"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <Reference Include="FantomasLib">
       <HintPath>..\..\..\Fantomas\lib\FantomasLib.dll</HintPath>
@@ -45,6 +45,12 @@ let fullDoc = """<?xml version="1.0" encoding="utf-8"?>
       <Paket>True</Paket>
     </Reference>
   </ItemGroup>
+</Project>"""
+
+let docWithTargets = """<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <Import Project="Empty.paket.targets" Condition="Exists('Empty.paket.targets')" />
 </Project>"""
 
 [<Test>]
@@ -59,10 +65,15 @@ let ``should generate full Xml for Fantomas 1.5``() =
     let project = ProjectFile.Load("./ProjectFile/TestData/Empty.fsprojtest").Value
     let completeModel = [NormalizedPackageName (PackageName "Fantomas"),model] |> Map.ofSeq
     let used = [NormalizedPackageName (PackageName "fantoMas")] |> Set.ofSeq
-    project.UpdateReferences(completeModel,used,false)
+    let targetDoc = project.GenerateReferences(".",completeModel,used,false)
     
     project.Document.OuterXml
     |> normalizeXml
+    |> shouldEqual (normalizeXml docWithTargets)
+
+    project.TargetFileName.EndsWith("Empty.paket.targets") |> shouldEqual true
+    targetDoc.OuterXml
+    |> normalizeXml 
     |> shouldEqual (normalizeXml fullDoc)
 
 
@@ -78,7 +89,7 @@ let ``should not generate full Xml for Fantomas 1.5 if not referenced``() =
     let project = ProjectFile.Load("./ProjectFile/TestData/Empty.fsprojtest").Value
     let completeModel = [NormalizedPackageName (PackageName "Fantomas"),model] |> Map.ofSeq
     let used = [NormalizedPackageName (PackageName "blub")] |> Set.ofSeq
-    project.UpdateReferences(completeModel,used,false)
+    let targetDoc = project.GenerateReferences(".",completeModel,used,false)
     
     project.Document.OuterXml
     |> normalizeXml

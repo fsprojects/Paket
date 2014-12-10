@@ -198,3 +198,4 @@ docs/content/paket-init-auto-restore.md
 docs/content/paket-restore.md
 docs/content/paket-simplify.md
 docs/content/paket-convert-from-nuget.md
+*.paket.targets
