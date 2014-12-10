@@ -191,7 +191,6 @@ type ProjectFile =
         for node in nodesToDelete do            
             node.ParentNode.RemoveChild(node) |> ignore
 
-
     member this.GenerateTargetImport(filename:string) =        
         let relativePath = createRelativePath this.FileName filename 
 
@@ -258,7 +257,8 @@ type ProjectFile =
         let generateTargetsFiles = true // TODO: Make parameter
 
         this.DeletePaketNodes("Reference")
-        this.DeletePaketImportNodes(createRelativePath this.FileName this.TargetFileName)
+        let relativeTargetsFileName = createRelativePath this.FileName this.TargetFileName
+        this.DeletePaketImportNodes relativeTargetsFileName
         
         ["ItemGroup";"When";"Otherwise";"Choose";"When";"Choose"]
         |> List.iter this.DeleteIfEmpty
@@ -266,7 +266,7 @@ type ProjectFile =
         let targetsDocument = XmlDocument()
         let project = targetsDocument.CreateElement("Project", Constants.ProjectDefaultNameSpace)
         
-        let referenced = ref false
+        let targetsNode = this.GenerateTargetImport this.TargetFileName
             
         completeModel
         |> Seq.filter (fun kv -> usedPackages.Contains kv.Key)
@@ -277,11 +277,12 @@ type ProjectFile =
             kv.Value.PackageName,this.GenerateXml kv.Value)
         |> Seq.filter (fun (_,node) -> node.ChildNodes.Count > 0)
         |> Seq.iter (fun (packageName,node) ->
-            if generateTargetsFiles then
-                if not !referenced then
-                    let targetsNode = this.GenerateTargetImport this.TargetFileName
-                    this.ProjectNode.AppendChild targetsNode |> ignore
-                    referenced := true
+            if generateTargetsFiles then                
+                match this.Document 
+                        |> getDescendants "Import" 
+                        |> List.tryFind (fun n -> n |> getAttribute "Project" = Some relativeTargetsFileName) with
+                | Some _ -> ()
+                | None -> this.ProjectNode.AppendChild(targetsNode) |> ignore
 
                 let tempNode = targetsDocument.ImportNode(node, true)
                 project.AppendChild tempNode |> ignore
