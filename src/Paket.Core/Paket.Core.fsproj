@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
@@ -66,7 +66,6 @@
   </Target>
   -->
   <Import Project="$(SolutionDir)\.paket\paket.targets" />
-  <Import Project="Paket.Core.paket.targets" Condition="Exists('Paket.Core.paket.targets')" />
   <ItemGroup>
     <Compile Include="..\..\paket-files\nessos\Streams\src\Streams.Core\Streams.fs">
       <Paket>True</Paket>
@@ -132,5 +131,6 @@
     <Reference Include="System.Security" />
     <Reference Include="System.Xml" />
     <Reference Include="System.Xml.Linq" />
-  </ItemGroup>  
+  </ItemGroup>
+  <Import Project="Paket.Core.paket.targets" Condition="Exists('Paket.Core.paket.targets')" />
 </Project>
