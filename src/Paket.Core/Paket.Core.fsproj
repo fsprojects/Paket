@@ -66,13 +66,12 @@
   </Target>
   -->
   <Import Project="$(SolutionDir)\.paket\paket.targets" />
+  <Import Project="Paket.Core.paket.targets" Condition="Exists('Paket.Core.paket.targets')" />
   <ItemGroup>
     <Compile Include="..\..\paket-files\nessos\Streams\src\Streams.Core\Streams.fs">
       <Paket>True</Paket>
       <Link>Streams.fs</Link>
     </Compile>
-  </ItemGroup>
-  <ItemGroup>
     <Content Include="..\..\packages\FSharp.Core\lib\net40\FSharp.Core.optdata">
       <Link>FSharp.Core.optdata</Link>
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
@@ -107,9 +106,9 @@
     <Compile Include="ReferencesFile.fs" />
     <Compile Include="DependencyModel.fs" />
     <Compile Include="LockFile.fs" />
-    <Compile Include="RestoreProcess.fs" />
     <Compile Include="BindingRedirects.fs" />
     <Compile Include="InstallProcess.fs" />
+    <Compile Include="RestoreProcess.fs" />
     <Compile Include="UpdateProcess.fs" />
     <Compile Include="RemoveProcess.fs" />
     <Compile Include="AddProcess.fs" />
@@ -134,5 +133,4 @@
     <Reference Include="System.Xml" />
     <Reference Include="System.Xml.Linq" />
   </ItemGroup>
-  <Import Project="Paket.Core.paket.targets" Condition="Exists('Paket.Core.paket.targets')" />
 </Project>

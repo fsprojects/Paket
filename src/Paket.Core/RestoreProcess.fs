@@ -6,33 +6,7 @@ open System.IO
 open Paket.Domain
 open Paket.Logging
 open Paket.PackageResolver
-open Paket.PackageSources
 open FSharp.Polyfill
-
-/// Downloads and extracts a package.
-let ExtractPackage(root, sources, force, package : ResolvedPackage) = 
-    async { 
-        let (PackageName name) = package.Name
-        let v = package.Version
-        match package.Source with
-        | Nuget source -> 
-            let auth = 
-                sources |> List.tryPick (fun s -> 
-                               match s with
-                               | Nuget s -> s.Authentication |> Option.map toBasicAuth
-                               | _ -> None)
-            try 
-                let! folder = NuGetV2.DownloadPackage(root, auth, source.Url, name, v, force)
-                return package, NuGetV2.GetLibFiles folder
-            with _ when force = false -> 
-                tracefn "Something went wrong with the download of %s %A - automatic retry with --force." name v
-                let! folder = NuGetV2.DownloadPackage(root, auth, source.Url, name, v, true)
-                return package, NuGetV2.GetLibFiles folder
-        | LocalNuget path -> 
-            let packageFile = Path.Combine(root, path, sprintf "%s.%A.nupkg" name v)
-            let! folder = NuGetV2.CopyFromCache(root, packageFile, name, v, force)
-            return package, NuGetV2.GetLibFiles folder
-    }
 
 /// Retores the given packages from the lock file.
 let internal restore(root, sources, force, lockFile:LockFile, packages:Set<NormalizedPackageName>) = 
@@ -41,7 +15,7 @@ let internal restore(root, sources, force, lockFile:LockFile, packages:Set<Norma
     let packageDownloads = 
         lockFile.ResolvedPackages
         |> Map.filter (fun name _ -> packages.Contains name)
-        |> Seq.map (fun kv -> ExtractPackage(root,sources,force,kv.Value))
+        |> Seq.map (fun kv -> InstallProcess.ExtractPackage(root,sources,force,kv.Value))
         |> Async.Parallel
 
     Async.Parallel(sourceFileDownloads,packageDownloads) 
@@ -57,11 +31,11 @@ let Restore(dependenciesFileName,force,referencesFileNames) =
             let sources = DependenciesFile.ReadFromFile(dependenciesFileName).GetAllPackageSources()
             sources, LockFile.LoadFrom(lockFileName.FullName)
     
-    let packages = 
-        if referencesFileNames = [] then 
-            lockFile.ResolvedPackages
-            |> Seq.map (fun kv -> kv.Key) 
-        else
+   
+    if referencesFileNames = [] then 
+        InstallProcess.Install(sources,force,false,false,lockFile)
+    else
+        let packages =
             referencesFileNames
             |> List.map (fun fileName ->
                 ReferencesFile.FromFile fileName
@@ -69,6 +43,6 @@ let Restore(dependenciesFileName,force,referencesFileNames) =
                 |> Seq.map NormalizedPackageName)
             |> Seq.concat
 
-    restore(root, sources, force, lockFile,Set.ofSeq packages) 
-    |> Async.RunSynchronously
-    |> ignore
+        restore(root, sources, force, lockFile,Set.ofSeq packages) 
+        |> Async.RunSynchronously
+        |> ignore
