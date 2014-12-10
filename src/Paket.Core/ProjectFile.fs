@@ -43,6 +43,11 @@ type ProjectFile =
 
     member this.GetCustomReferenceAndFrameworkNodes() = this.FindNodes false "Reference"
 
+    member this.TargetFileName = 
+        let fi = FileInfo(this.FileName)
+        let name = fi.Name.Replace(fi.Extension,Constants.PackageTargetsFileName)
+        Path.Combine(fi.Directory.FullName,name)
+
     /// Finds all project files
     static member FindAllProjects(folder) = 
         FindAllFiles(folder, "*.*proj")
@@ -176,13 +181,12 @@ type ProjectFile =
         for node in nodesToDelete do            
             node.ParentNode.RemoveChild(node) |> ignore
 
-    member this.DeletePaketImportNodes() =
+    member this.DeletePaketImportNodes(fileName) =
         let nodesToDelete = 
             [for node in this.Document |> getDescendants "Import" do                
                 let attr = node.Attributes.["Project"]
-                if attr <> null then
-                    if attr.InnerText.EndsWith("\\" + Constants.PackageTargetsFileName) then
-                        yield node]
+                if attr <> null && attr.InnerText = fileName then
+                    yield node]
 
         for node in nodesToDelete do            
             node.ParentNode.RemoveChild(node) |> ignore
@@ -254,12 +258,16 @@ type ProjectFile =
         let generateTargetsFiles = true // TODO: Make parameter
 
         this.DeletePaketNodes("Reference")
-        this.DeletePaketImportNodes()
+        this.DeletePaketImportNodes(createRelativePath this.FileName this.TargetFileName)
         
         ["ItemGroup";"When";"Otherwise";"Choose";"When";"Choose"]
         |> List.iter this.DeleteIfEmpty
 
+        let targetsDocument = XmlDocument()
+        let project = targetsDocument.CreateElement("Project", Constants.ProjectDefaultNameSpace)
         
+        let referenced = ref false
+            
         completeModel
         |> Seq.filter (fun kv -> usedPackages.Contains kv.Key)
         |> Seq.map (fun kv -> 
@@ -268,44 +276,39 @@ type ProjectFile =
 
             kv.Value.PackageName,this.GenerateXml kv.Value)
         |> Seq.filter (fun (_,node) -> node.ChildNodes.Count > 0)
-        |> Seq.fold (fun targetFiles (packageName,node) ->
+        |> Seq.iter (fun (packageName,node) ->
             if generateTargetsFiles then
-                let (PackageName name) = packageName
-                let targetsFile = FileInfo(Path.Combine(rootPath,"packages",name,Constants.PackageTargetsFileName))
+                if not !referenced then
+                    let targetsNode = this.GenerateTargetImport this.TargetFileName
+                    this.ProjectNode.AppendChild targetsNode |> ignore
+                    referenced := true
 
-                let doc = XmlDocument()
-                let project = doc.CreateElement("Project", Constants.ProjectDefaultNameSpace)
-                let tempNode = doc.ImportNode(node, true)
+                let tempNode = targetsDocument.ImportNode(node, true)
                 project.AppendChild tempNode |> ignore
-                doc.AppendChild project |> ignore                
-                
-                let targetsNode = this.GenerateTargetImport targetsFile.FullName
-                this.ProjectNode.AppendChild targetsNode |> ignore
-                (targetsFile.FullName,doc)::targetFiles
+                targetsDocument.AppendChild project |> ignore
             else
-                this.ProjectNode.AppendChild node |> ignore
-                targetFiles)
-                  []
+                this.ProjectNode.AppendChild node |> ignore)
+        targetsDocument
     
     member this.UpdateReferences(rootPath:string,completeModel: Map<NormalizedPackageName,InstallModel>, usedPackages : Set<NormalizedPackageName>, hard) =
-        for targetFileName,doc in this.GenerateReferences(rootPath,completeModel, usedPackages, hard) do
-            let fi = FileInfo(targetFileName)
-            let originalText = 
-                if fi.Exists then
-                    try 
-                        let originalDoc = new XmlDocument()
-                        originalDoc.Load fi.FullName
-                        Utils.normalizeXml originalDoc
-                    with
-                    | _ -> ""
-                else
-                    ""
+        let targetsDocument = this.GenerateReferences(rootPath,completeModel, usedPackages, hard)
+        let fi = FileInfo(this.TargetFileName)
+        let originalText = 
+            if fi.Exists then
+                try 
+                    let originalDoc = new XmlDocument()
+                    originalDoc.Load fi.FullName
+                    Utils.normalizeXml originalDoc
+                with
+                | _ -> ""
+            else
+                ""
 
-            let newText = Utils.normalizeXml doc
+        let newText = Utils.normalizeXml targetsDocument
             
-            if newText <> originalText then
-                doc.Save(targetFileName)
-                this.Save() // Save in order to make Visual Studio reload the project
+        if newText <> originalText then
+            targetsDocument.Save(this.TargetFileName)
+            this.Save() // Save in order to make Visual Studio reload the project
                 
     member this.Save() = this.Document.Save(this.FileName)
 

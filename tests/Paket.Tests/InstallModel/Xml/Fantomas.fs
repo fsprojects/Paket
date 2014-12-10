@@ -50,7 +50,7 @@ let fullDoc = """<?xml version="1.0" encoding="utf-16"?>
 let docWithTargets = """<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
-  <Import Project="..\..\packages\Fantomas\generated.paket.targets" Condition="Exists('..\..\packages\Fantomas\generated.paket.targets')" />
+  <Import Project="Empty.paket.targets" Condition="Exists('Empty.paket.targets')" />
 </Project>"""
 
 [<Test>]
@@ -65,15 +65,13 @@ let ``should generate full Xml for Fantomas 1.5``() =
     let project = ProjectFile.Load("./ProjectFile/TestData/Empty.fsprojtest").Value
     let completeModel = [NormalizedPackageName (PackageName "Fantomas"),model] |> Map.ofSeq
     let used = [NormalizedPackageName (PackageName "fantoMas")] |> Set.ofSeq
-    let targetFiles = project.GenerateReferences(".",completeModel,used,false)
+    let targetDoc = project.GenerateReferences(".",completeModel,used,false)
     
     project.Document.OuterXml
     |> normalizeXml
     |> shouldEqual (normalizeXml docWithTargets)
 
-    let targetFileName,targetDoc = targetFiles |> List.head
-
-    targetFileName.EndsWith (Path.Combine("packages","Fantomas","generated.paket.targets")) |> shouldEqual true
+    project.TargetFileName.EndsWith("Empty.paket.targets") |> shouldEqual true
     targetDoc.OuterXml
     |> normalizeXml 
     |> shouldEqual (normalizeXml fullDoc)
@@ -91,7 +89,7 @@ let ``should not generate full Xml for Fantomas 1.5 if not referenced``() =
     let project = ProjectFile.Load("./ProjectFile/TestData/Empty.fsprojtest").Value
     let completeModel = [NormalizedPackageName (PackageName "Fantomas"),model] |> Map.ofSeq
     let used = [NormalizedPackageName (PackageName "blub")] |> Set.ofSeq
-    let targetFiles = project.GenerateReferences(".",completeModel,used,false)
+    let targetDoc = project.GenerateReferences(".",completeModel,used,false)
     
     project.Document.OuterXml
     |> normalizeXml
