@@ -1,3 +1,6 @@
+#### 0.18.3 - 10.12.2014
+* BUGFIX: Don't delete downloaded github zip file
+
 #### 0.18.2 - 09.12.2014
 * BUGFIX: Don't touch framework assemblies if not needed
 

@@ -72,7 +72,7 @@ let rec DirectoryCopy(sourceDirName, destDirName, copySubDirs) =
         Directory.CreateDirectory(destDirName) |> ignore
 
     for file in dir.GetFiles() do
-        file.CopyTo(Path.Combine(destDirName, file.Name), false) |> ignore
+        file.CopyTo(Path.Combine(destDirName, file.Name), true) |> ignore
 
     // If copying subdirectories, copy them and their contents to new location. 
     if copySubDirs then
@@ -114,9 +114,7 @@ let downloadRemoteFiles(remoteFile:ResolvedSourceFile,destination) = async {
         ExtractZip(zipFile,projectPath)
 
         let source = Path.Combine(projectPath, sprintf "%s-%s" remoteFile.Project remoteFile.Commit)
-        DirectoryCopy(source,projectPath,true)
-
-        Directory.Delete(source,true)
+        DirectoryCopy(source,projectPath,true)        
     | SingleSourceFileOrigin.GistLink, _ ->  return! downloadFromUrl(None,rawGistFileUrl remoteFile.Owner remoteFile.Project remoteFile.Name) destination
     | SingleSourceFileOrigin.GitHubLink, _ -> return! downloadFromUrl(None,rawFileUrl remoteFile.Owner remoteFile.Project remoteFile.Commit remoteFile.Name) destination
     | SingleSourceFileOrigin.HttpLink(url), _ ->
@@ -144,7 +142,7 @@ let DownloadSourceFiles(rootPath, sourceFiles:ModuleResolver.ResolvedSourceFile 
             File.WriteAllText(versionFile.FullName, source.Commit)
 
         async { 
-            if File.Exists destination then 
+            if File.Exists destination then
                 verbosefn "Sourcefile %s is already there." (source.ToString())
             else 
                 tracefn "Downloading %s to %s" (source.ToString()) destination
