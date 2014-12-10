@@ -180,7 +180,7 @@ let Install(sources,force, hard, withBindingRedirects, lockFile:LockFile) =
 
         project.UpdateFileItems(gitRemoteItems @ nuGetFileItems, hard)
 
-        project.Save()
+        project.SaveIfChanged()
 
     if withBindingRedirects || lockFile.Options.Redirects then
         applyBindingRedirects root extractedPackages

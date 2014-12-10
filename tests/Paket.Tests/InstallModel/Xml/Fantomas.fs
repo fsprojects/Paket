@@ -50,7 +50,7 @@ let fullDoc = """<?xml version="1.0" encoding="utf-16"?>
 let docWithTargets = """<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
-  <Import Project="..\..\packages\Fantomas\paket.targets" Condition="Exists('..\..\packages\Fantomas\paket.targets')" />
+  <Import Project="..\..\packages\Fantomas\generated.paket.targets" Condition="Exists('..\..\packages\Fantomas\generated.paket.targets')" />
 </Project>"""
 
 [<Test>]
@@ -73,7 +73,7 @@ let ``should generate full Xml for Fantomas 1.5``() =
 
     let targetFileName,targetDoc = targetFiles |> List.head
 
-    targetFileName.EndsWith (Path.Combine("packages","Fantomas","paket.targets")) |> shouldEqual true
+    targetFileName.EndsWith (Path.Combine("packages","Fantomas","generated.paket.targets")) |> shouldEqual true
     targetDoc.OuterXml
     |> normalizeXml 
     |> shouldEqual (normalizeXml fullDoc)
