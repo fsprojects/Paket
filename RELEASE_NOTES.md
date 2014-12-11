@@ -1,3 +1,6 @@
+#### 0.18.4 - 11.12.2014
+* Allow to extract PackageId
+
 #### 0.18.3 - 10.12.2014
 * BUGFIX: Don't delete downloaded github zip file
 

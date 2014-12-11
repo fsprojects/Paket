@@ -5,6 +5,10 @@
 type PackageName =
     private | PackageName of string
 
+    member this.Id = 
+        match this with
+        | PackageName id -> id
+
 /// Active recognizer to convert a NuGet package name into a string
 let (|PackageName|) (PackageName.PackageName name) = name
 
