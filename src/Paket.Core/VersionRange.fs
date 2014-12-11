@@ -79,7 +79,10 @@ type VersionRequirement =
         match this.Range with
         | Specific v -> v.ToString()
         | OverrideAll v -> "== " + v.ToString()
-        | Minimum v -> ">= " + v.ToString()
+        | Minimum v ->
+            match v.ToString() with
+            | "0" -> ""
+            |  x  -> ">= " + x
         | GreaterThan v -> "> " + v.ToString()
         | Maximum v -> "<= " + v.ToString()
         | LessThan v -> "< " + v.ToString()
