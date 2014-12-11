@@ -131,12 +131,19 @@ type Dependencies(dependenciesFileName: string) =
         getLockFile().ResolvedPackages
         |> listPackages
 
+    /// Returns the installed versions of all direct dependencies which are referneced in the references file
+    member this.GetDirectDependencies(referencesFile:ReferencesFile): (string * string) list =
+        let normalizedDependecies = referencesFile.NugetPackages |> List.map NormalizedPackageName
+        getLockFile().ResolvedPackages
+        |> Seq.filter (fun kv -> normalizedDependecies |> Seq.exists ((=) kv.Key))
+        |> listPackages
+
     /// Returns the installed versions of all direct dependencies.
     member this.GetDirectDependencies(): (string * string) list =
         let dependenciesFile = DependenciesFile.ReadFromFile dependenciesFileName
-        let normalizedDependecies = dependenciesFile.DirectDependencies |> Seq.map (fun kv -> kv.Key) |> Seq.map NormalizedPackageName |> Seq.toList
+        let normalizedDependencies = dependenciesFile.DirectDependencies |> Seq.map (fun kv -> kv.Key) |> Seq.map NormalizedPackageName |> Seq.toList
         getLockFile().ResolvedPackages
-        |> Seq.filter (fun kv -> normalizedDependecies |> Seq.exists ((=) kv.Key))
+        |> Seq.filter (fun kv -> normalizedDependencies |> Seq.exists ((=) kv.Key))
         |> listPackages
 
     /// Removes the given package from dependencies file.

@@ -1,3 +1,6 @@
+#### 0.18.5 - 11.12.2014
+* Extend Public API for plugin
+
 #### 0.18.4 - 11.12.2014
 * Allow to extract PackageId
 
