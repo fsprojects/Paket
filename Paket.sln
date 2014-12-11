@@ -12,6 +12,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "project", "project", "{BF60
 		docs\tools\generate.fsx = docs\tools\generate.fsx
 		LICENSE.txt = LICENSE.txt
 		nuget\Paket.Core.nuspec = nuget\Paket.Core.nuspec
+		paket.dependencies = paket.dependencies
 		nuget\Paket.nuspec = nuget\Paket.nuspec
 		README.md = README.md
 		RELEASE_NOTES.md = RELEASE_NOTES.md

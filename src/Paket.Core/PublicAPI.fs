@@ -146,6 +146,15 @@ type Dependencies(dependenciesFileName: string) =
         |> Seq.filter (fun kv -> normalizedDependencies |> Seq.exists ((=) kv.Key))
         |> listPackages
 
+    /// Returns the direct dependencies for the given package.
+    member this.GetDirectDependenciesForPackage(packageName:string): (string * string) list =
+        let resolvedPackages = getLockFile().ResolvedPackages
+        let package = resolvedPackages.[NormalizedPackageName (PackageName packageName)]
+        let normalizedDependencies = package.Dependencies |> Seq.map (fun (name,_,_) -> name) |> Seq.map NormalizedPackageName |> Seq.toList
+        resolvedPackages
+        |> Seq.filter (fun kv -> normalizedDependencies |> Seq.exists ((=) kv.Key))
+        |> listPackages
+
     /// Removes the given package from dependencies file.
     member this.Remove(package: string): unit = this.Remove(package, false, false, false, true)
     
