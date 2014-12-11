@@ -5,7 +5,7 @@ open Paket.Domain
 open Paket.Logging
 
 /// Finds all outdated packages.
-let FindOutdated(dependenciesFileName, strict,includingPrereleases) =     
+let FindOutdated(dependenciesFileName,strict,includingPrereleases) =     
     //TODO: Anything we need to do for source files here?
     let loadedFile = DependenciesFile.ReadFromFile dependenciesFileName
     let dependenciesFile =

@@ -111,6 +111,11 @@ type Dependencies(dependenciesFileName: string) =
     /// Lists outdated packages.
     member this.ShowOutdated(strict: bool,includePrereleases: bool): unit =
         FindOutdated.ShowOutdated(dependenciesFileName,strict,includePrereleases)
+
+    /// Finds all outdated packages.
+    member this.FindOutdated(strict: bool,includePrereleases: bool): (string * SemVerInfo) list =
+        FindOutdated.FindOutdated(dependenciesFileName,strict,includePrereleases)
+        |> List.map (fun (PackageName p,_,newVersion) -> p,newVersion)
     
     /// Pulls new paket.targets and bootstrapper and puts them into .paket folder.
     member this.InitAutoRestore(): unit = VSIntegration.InitAutoRestore(dependenciesFileName)
@@ -165,6 +170,7 @@ type Dependencies(dependenciesFileName: string) =
     /// Shows all references for the given packages.
     member this.ShowReferencesFor(packages: string list): unit =
         FindReferences.ShowReferencesFor(dependenciesFileName,packages |> List.map PackageName)
+
     /// Finds all references for a given package.
     member this.FindReferencesFor(package: string): string list =
         FindReferences.FindReferencesForPackage(dependenciesFileName, PackageName package)
