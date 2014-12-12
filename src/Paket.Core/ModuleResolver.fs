@@ -1,6 +1,7 @@
 ﻿/// Contains logic which helps to resolve the dependency graph for modules
 module Paket.ModuleResolver
 
+open System
 open System.IO
 open Paket.Domain
 open Paket.Requirements
@@ -41,9 +42,12 @@ type ResolvedSourceFile =
 
     override this.ToString() = sprintf "%s/%s:%s %s" this.Owner this.Project this.Commit this.Name
 
+let private getCommit (file : UnresolvedSourceFile) = defaultArg file.Commit "master"
+
 let resolve getDependencies getSha1 (file : UnresolvedSourceFile) : ResolvedSourceFile = 
     let sha = 
-        defaultArg file.Commit "master"
+        file
+        |> getCommit
         |> getSha1 file.Origin file.Owner file.Project
     
     let resolved = 
@@ -61,6 +65,31 @@ let resolve getDependencies getSha1 (file : UnresolvedSourceFile) : ResolvedSour
 
     { resolved with Dependencies = dependencies }
 
+let private detectConflicts (remoteFiles : UnresolvedSourceFile list) : unit =
+    let conflicts =
+        remoteFiles
+        |> Seq.groupBy (fun file ->
+            let directoryName =
+                let path = normalizePath (file.Name.TrimStart('/'))
+                match path.LastIndexOfAny([| '/'; '\\' |]) with
+                | -1 -> ""
+                | x  -> path.Substring(0, x)
+            file.Owner, file.Project, directoryName)
+        |> Seq.map (fun (key, files) -> key, files |> Seq.map getCommit |> Seq.distinct)
+        |> Seq.filter (snd >> Seq.length >> (<) 1)
+        |> Seq.toList
+        |> Seq.map (fun ((owner, project, directoryName), commits) ->
+            sprintf "   - %s/%s %s%s     Versions:%s     - %s" owner project directoryName
+                Environment.NewLine Environment.NewLine
+                (String.concat (Environment.NewLine + "     - ") commits))
+        |> String.concat Environment.NewLine
+
+    if conflicts <> "" then
+        failwithf "Found conflicting source file requirements:%s%s%s   Currently multiple versions for same source directory are not supported.%s   Please adjust the dependencies file."
+            Environment.NewLine conflicts Environment.NewLine Environment.NewLine
+
 // TODO: github has a rate limit - try to convince them to whitelist Paket
 let Resolve(getDependencies, getSha1, remoteFiles : UnresolvedSourceFile list) : ResolvedSourceFile list = 
+    detectConflicts remoteFiles
+
     remoteFiles |> List.map (resolve getDependencies getSha1)
