@@ -49,4 +49,5 @@ let ``can detect range version``() =
         
 [<Test>]
 let ``can detect "null" version``() = 
-    NugetVersionRangeParser.parse "null" |> shouldEqual (DependenciesFileParser.parseVersionRequirement ">= 0")
+    NugetVersionRangeParser.parse "null" 
+    |> shouldEqual (DependenciesFileParser.parseVersionRequirement ">= 0")

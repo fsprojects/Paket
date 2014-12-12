@@ -19,6 +19,7 @@ let ``can detect specific version``() =
 let ``can detect minimum version``() = 
     VersionRange.Minimum (SemVer.Parse "2.2") |> format |> shouldEqual "2.2"
     VersionRange.Minimum (SemVer.Parse "1.2") |> format |> shouldEqual "1.2"
+    VersionRange.Minimum (SemVer.Parse "0") |> format |> shouldEqual ""
 
 [<Test>]
 let ``can detect greater than version``() = 
@@ -28,6 +29,7 @@ let ``can detect greater than version``() =
 [<Test>]
 let ``can detect maximum version``() = 
     VersionRange.Maximum (SemVer.Parse "2.2") |> format |> shouldEqual "(,2.2]"
+    VersionRange.Maximum (SemVer.Parse "0") |> format |> shouldEqual "(,0]"
     VersionRange.Maximum (SemVer.Parse "1.2") |> format |> shouldEqual "(,1.2]"
 
 [<Test>]

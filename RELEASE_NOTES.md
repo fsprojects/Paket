@@ -1,3 +1,6 @@
+#### 0.18.8 - 11.12.2014
+* `>= 0` version range simplified to empty string - https://github.com/fsprojects/Paket/pull/449
+
 #### 0.18.7 - 11.12.2014
 * Extend Public API for plugin
 
