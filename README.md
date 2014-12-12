@@ -28,7 +28,8 @@ For more reasons see the [FAQ][10].
 
 ## Troubleshooting and support
 
- - Found a bug or missing a feature? Feed the [issue tracker][4] [![Issue Stats][badge-issue-stats]][link-issue-stats] [![Pull Requests Stats][badge-pr-stats]][link-issue-stats]
+ - Found a bug or missing a feature? 
+   Feed the [issue tracker][4] [![Issue Stats][badge-issue-stats]][link-issue-stats] [![Pull Requests Stats][badge-pr-stats]][link-issue-stats]
  - Announcements and related miscellanea through Twitter ([@PaketManager][5])
 
 ## Build status
