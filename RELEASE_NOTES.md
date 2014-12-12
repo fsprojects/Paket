@@ -1,4 +1,7 @@
-#### 0.18.8 - 11.12.2014
+#### 0.18.9 - 12.12.2014
+* Better handling for multiple files from same repository - https://github.com/fsprojects/Paket/pull/451
+
+#### 0.18.8 - 12.12.2014
 * `>= 0` version range simplified to empty string - https://github.com/fsprojects/Paket/pull/449
 
 #### 0.18.7 - 11.12.2014
