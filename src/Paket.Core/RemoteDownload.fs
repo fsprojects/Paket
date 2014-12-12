@@ -8,6 +8,9 @@ open Paket.Logging
 open Paket.ModuleResolver
 
 [<Literal>]
+let PaketVersionFileName = "paket.version"
+
+[<Literal>]
 let FullProjectSourceFileName = "FULLPROJECT"
 
 // Gets the sha1 of a branch
@@ -128,24 +131,35 @@ let downloadRemoteFiles(remoteFile:ResolvedSourceFile,destination) = async {
 
 let DownloadSourceFiles(rootPath, sourceFiles:ModuleResolver.ResolvedSourceFile list) =
     sourceFiles
-    |> List.map (fun source ->
-        let path = FileInfo(Path.Combine(rootPath, source.FilePath)).Directory.FullName
+    |> Seq.map (fun source ->
         let destination = Path.Combine(rootPath, source.FilePath)
-        let versionFile = FileInfo(Path.Combine(path, "paket.version"))
-        let isInRightVersion = versionFile.Exists && source.Commit = File.ReadAllText(versionFile.FullName)
+        let destinationDir = FileInfo(destination).Directory.FullName
+
+        (destinationDir, source.Commit), (destination, source))
+    |> Seq.groupBy fst
+    |> Seq.sortBy (fst >> fst)
+    |> Seq.map (fun ((destinationDir, version), sources) ->
+        let versionFile = FileInfo(Path.Combine(destinationDir, PaketVersionFileName))
+        let isInRightVersion = versionFile.Exists && version = File.ReadAllText(versionFile.FullName)
 
         if not isInRightVersion then
-            destination 
-            |> Path.GetDirectoryName 
-            |> CleanDir
+            CleanDir destinationDir
 
-            File.WriteAllText(versionFile.FullName, source.Commit)
+        (versionFile, version), sources)
+    |> Seq.map (fun ((versionFile, version), sources) ->
+        async {
+            let! downloaded =
+                sources
+                |> Seq.map (fun (_, (destination, source)) ->
+                    async {
+                        if File.Exists destination then
+                            verbosefn "Sourcefile %s is already there." (source.ToString())
+                        else 
+                            tracefn "Downloading %s to %s" (source.ToString()) destination
+                            do! downloadRemoteFiles(source,destination)
+                    })
+                |> Async.Parallel
 
-        async { 
-            if File.Exists destination then
-                verbosefn "Sourcefile %s is already there." (source.ToString())
-            else 
-                tracefn "Downloading %s to %s" (source.ToString()) destination
-                do! downloadRemoteFiles(source,destination)
+            File.WriteAllText(versionFile.FullName, version)
         })
     |> Async.Parallel
