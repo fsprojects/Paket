@@ -150,6 +150,7 @@
     <Compile Include="Resolver\SimpleDependenciesSpecs.fs" />
     <Compile Include="Resolver\CyclicGraphSpecs.fs" />
     <Compile Include="Resolver\ConflictGraphSpecs.fs" />
+    <Compile Include="Resolver\ConflictSourcesSpecs.fs" />
     <Compile Include="Resolver\CasingSpecs.fs" />
     <Compile Include="Resolver\PessimisticStrategySpecs.fs" />
     <Compile Include="Resolver\AddingDependenciesSpecs.fs" />

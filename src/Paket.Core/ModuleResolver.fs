@@ -79,7 +79,7 @@ let private detectConflicts (remoteFiles : UnresolvedSourceFile list) : unit =
         |> Seq.filter (snd >> Seq.length >> (<) 1)
         |> Seq.toList
         |> Seq.map (fun ((owner, project, directoryName), commits) ->
-            sprintf "   - %s/%s %s%s     Versions:%s     - %s" owner project directoryName
+            sprintf "   - %s/%s%s%s     Versions:%s     - %s" owner project directoryName
                 Environment.NewLine Environment.NewLine
                 (String.concat (Environment.NewLine + "     - ") commits))
         |> String.concat Environment.NewLine
