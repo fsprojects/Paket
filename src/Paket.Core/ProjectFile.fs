@@ -16,8 +16,7 @@ type FileItem =
 type ProjectReference = 
     { Path : string
       Name : string
-      GUID : Guid
-      Private : bool }
+      GUID : Guid }
 
 [<RequireQualifiedAccess>]
 type ProjectOutputType =
@@ -265,8 +264,7 @@ type ProjectFile =
         [for n in this.Document |> getDescendants "ProjectReference" -> 
             { Path = n.Attributes.["Include"].Value
               Name = forceGetInnerText n "Name"
-              GUID =  forceGetInnerText n "Project" |> Guid.Parse
-              Private =  forceGetInnerText n "Private" |> bool.Parse }]
+              GUID =  forceGetInnerText n "Project" |> Guid.Parse }]
 
     member this.ReplaceNuGetPackagesFile() =
         let noneNodes = this.Document |> getDescendants "None"
