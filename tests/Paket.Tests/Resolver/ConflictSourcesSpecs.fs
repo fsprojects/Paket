@@ -46,13 +46,7 @@ github fsprojects/FAKE:master test.fs
 github fsprojects/FAKE:vNext readme.md
 """
 
-[<Test>]
-let ``should fail resolving source files from same repository but different versions``() =
-    try
-        let cfg = DependenciesFile.FromCode(config2)
-        ModuleResolver.Resolve(noGitHubConfigured, noGitHubConfigured, cfg.RemoteFiles) |> ignore
-    with
-    | ex -> ex.Message |> shouldEqual """Found conflicting source file requirements:
+let expectedError = """Found conflicting source file requirements:
    - fsharp/fsharp
      Versions:
      - master
@@ -62,4 +56,12 @@ let ``should fail resolving source files from same repository but different vers
      - master
      - vNext
    Currently multiple versions for same source directory are not supported.
-   Please adjust the dependencies file."""
+   Please adjust the dependencies file.""" |> normalizeLineEndings
+
+[<Test>]
+let ``should fail resolving source files from same repository but different versions``() =
+    try
+        let cfg = DependenciesFile.FromCode(config2)
+        ModuleResolver.Resolve(noGitHubConfigured, noGitHubConfigured, cfg.RemoteFiles) |> ignore
+    with
+    | ex -> ex.Message |> shouldEqual expectedError
