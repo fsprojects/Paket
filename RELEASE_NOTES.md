@@ -1,3 +1,6 @@
+#### 0.18.10 - 17.12.2014
+* Remove parsing of invalid child element of ProjectReference - https://github.com/fsprojects/Paket/pull/453
+
 #### 0.18.9 - 12.12.2014
 * Better handling for multiple files from same repository - https://github.com/fsprojects/Paket/pull/451
 
