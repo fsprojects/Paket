@@ -15,7 +15,7 @@ type EnvironmentVariable =
             let expanded = Environment.GetEnvironmentVariable(trimmed)
             if expanded = null then 
                 traceWarnfn "environment variable '%s' not found" variable
-                None
+                Some { Variable = variable; Value = ""}
             else 
                 Some { Variable = variable; Value = expanded }
         else
@@ -46,12 +46,21 @@ let private parseAuth(text, source) =
         let username = userNameRegex.Match(text).Groups.[1].Value
         let password = passwordRegex.Match(text).Groups.[1].Value
 
-        match EnvironmentVariable.Create(username),
-              EnvironmentVariable.Create(password) with
-        | Some userNameVar, Some passwordVar ->
-            Some (EnvVarAuthentication(userNameVar, passwordVar))    
-        | _, _ -> 
-            Some (PlainTextAuthentication(username, password))
+        let auth = 
+            match EnvironmentVariable.Create(username),
+                  EnvironmentVariable.Create(password) with
+            | Some userNameVar, Some passwordVar ->
+                EnvVarAuthentication(userNameVar, passwordVar) 
+            | _, _ -> 
+                PlainTextAuthentication(username, password)
+
+        let basicAuth = toBasicAuth auth
+        if(basicAuth.Username = "" && basicAuth.Password = "") then
+            ConfigFile.GetCredentials source
+            |> Option.map (fun (username,password) -> 
+                            ConfigAuthentication(username, password))
+        else
+            Some(auth)
     else 
         if text.Contains("username:") || text.Contains("password:") then 
             failwithf "Could not parse auth in \"%s\"" text
