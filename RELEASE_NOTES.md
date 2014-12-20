@@ -1,3 +1,6 @@
+#### 0.18.11 - 20.12.2014
+* Fallback to config auth if environment variables are empty - https://github.com/fsprojects/Paket/pull/459
+
 #### 0.18.10 - 17.12.2014
 * Remove parsing of invalid child element of ProjectReference - https://github.com/fsprojects/Paket/pull/453
 
