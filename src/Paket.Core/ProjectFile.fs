@@ -61,6 +61,19 @@ type ProjectFile =
                     
             findInDir projectFile.Directory
 
+    static member FindOrCreateReferencesFile (projectFile : FileInfo) =
+        match ProjectFile.FindReferencesFile projectFile with
+        | None ->
+            let newFileName =
+                let fi = FileInfo(Path.Combine(projectFile.Directory.FullName,Constants.ReferencesFile))
+                if fi.Exists then
+                    Path.Combine(projectFile.Directory.FullName,projectFile.Name + "." + Constants.ReferencesFile)
+                else
+                    fi.FullName
+
+            ReferencesFile.New newFileName
+        | Some fileName -> ReferencesFile.FromFile fileName
+
     member this.CreateNode(name) = 
         this.Document.CreateElement(name, Constants.ProjectDefaultNameSpace)
 

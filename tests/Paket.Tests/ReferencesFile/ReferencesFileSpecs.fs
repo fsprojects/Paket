@@ -60,3 +60,31 @@ let ``should parse lines with trailing whitspace correctly``() =
     refFile.NugetPackages.Length |> shouldEqual 2
     refFile.NugetPackages.Head |> shouldEqual (PackageName "Castle.Windsor")
     refFile.NugetPackages.Tail.Head |> shouldEqual (PackageName "Newtonsoft.Json")
+
+[<Test>]
+let ``should add nuget package``() = 
+    let empty = ReferencesFile.New("file.txt")
+    empty.NugetPackages.Length |> shouldEqual 0
+    empty.RemoteFiles.Length |> shouldEqual 0
+    empty.FileName |> shouldEqual "file.txt"
+
+    let refFile = empty.AddNuGetReference(PackageName "NUnit")
+    refFile.NugetPackages.Length |> shouldEqual 1
+    refFile.NugetPackages.Head |> shouldEqual (PackageName "NUnit")
+
+    let refFile' = refFile.AddNuGetReference(PackageName "xUnit")
+    refFile'.NugetPackages.Length |> shouldEqual 2
+    refFile'.NugetPackages.Head |> shouldEqual (PackageName "NUnit")
+    refFile'.NugetPackages.Tail.Head |> shouldEqual (PackageName "xUnit")
+
+
+[<Test>]
+let ``should not add nuget package twice``() = 
+    let refFile = 
+        ReferencesFile.New("file.txt")
+          .AddNuGetReference(PackageName "NUnit")
+          .AddNuGetReference(PackageName "NUnit")
+          .AddNuGetReference(PackageName "NUnit")
+
+    refFile.NugetPackages.Length |> shouldEqual 1
+    refFile.NugetPackages.Head |> shouldEqual (PackageName "NUnit")
