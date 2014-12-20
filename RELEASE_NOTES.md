@@ -1,3 +1,6 @@
+#### 0.18.12 - 20.12.2014
+* Don't add NuGet packages twice to a references file - https://github.com/fsprojects/Paket/pull/460
+
 #### 0.18.11 - 20.12.2014
 * Fallback to config auth if environment variables are empty - https://github.com/fsprojects/Paket/pull/459
 
