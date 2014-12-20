@@ -11,10 +11,15 @@ type RemoteFileReference =
 
 type ReferencesFile = 
     { FileName: string
-      NugetPackages: list<PackageName>
-      RemoteFiles: list<RemoteFileReference> } 
+      NugetPackages: PackageName list
+      RemoteFiles: RemoteFileReference list } 
     
     static member DefaultLink = Constants.PaketFilesFolderName
+
+    static member New(fileName) = 
+        { FileName = fileName
+          NugetPackages = []
+          RemoteFiles = [] }
 
     static member FromLines(lines : string[]) = 
         let isSingleFile (line: string) = line.StartsWith "File:"
@@ -41,10 +46,14 @@ type ReferencesFile =
         let lines = File.ReadAllLines(fileName)
         { ReferencesFile.FromLines lines with FileName = fileName }
 
-    member this.AddNuGetReference(reference : PackageName) =
-        let (PackageName referenceName) = reference
-        tracefn "Adding %s to %s" referenceName (this.FileName)
-        { this with NugetPackages = this.NugetPackages @ [reference] }
+    member this.AddNuGetReference(packageName : PackageName) =
+        let (PackageName referenceName) = packageName
+        let normalized = NormalizedPackageName packageName
+        if this.NugetPackages |> Seq.exists (fun p -> NormalizedPackageName p = normalized) then
+            this
+        else
+            tracefn "Adding %s to %s" referenceName (this.FileName)
+            { this with NugetPackages = this.NugetPackages @ [packageName] }
 
     member this.Save() =
         File.WriteAllText(this.FileName, this.ToString())

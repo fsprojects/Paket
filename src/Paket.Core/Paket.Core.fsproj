@@ -66,74 +66,6 @@
   </Target>
   -->
   <Import Project="$(SolutionDir)\.paket\paket.targets" />
-  <ItemGroup>
-    <Compile Include="..\..\paket-files\nessos\Streams\src\Streams.Core\Streams.fs">
-      <Paket>True</Paket>
-      <Link>Streams.fs</Link>
-    </Compile>
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="..\..\packages\FSharp.Core\lib\net40\FSharp.Core.optdata">
-      <Link>FSharp.Core.optdata</Link>
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="..\..\packages\FSharp.Core\lib\net40\FSharp.Core.sigdata">
-      <Link>FSharp.Core.sigdata</Link>
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Compile Include="Async.fs" />
-    <Compile Include="Domain.fs" />
-    <Compile Include="SemVer.fs" />
-    <Compile Include="VersionRange.fs" />
-    <Compile Include="Constants.fs" />
-    <Compile Include="Logging.fs" />
-    <Compile Include="Xml.fs" />
-    <Compile Include="Utils.fs" />
-    <Compile Include="ConfigFile.fs" />
-    <Compile Include="PackageSources.fs" />
-    <Compile Include="FrameworkHandling.fs" />
-    <Compile Include="PlatformMatching.fs" />
-    <Compile Include="Requirements.fs" />
-    <Compile Include="ModuleResolver.fs" />
-    <Compile Include="RemoteDownload.fs" />
-    <Compile Include="PackageResolver.fs" />
-    <Compile Include="Nuspec.fs" />
-    <Compile Include="InstallModel.fs" />
-    <Compile Include="ProjectFile.fs" />
-    <Compile Include="SolutionFile.fs" />
-    <Compile Include="NuGetV3.fs" />
-    <Compile Include="NuGetV2.fs" />
-    <Compile Include="DependenciesFile.fs" />
-    <Compile Include="ReferencesFile.fs" />
-    <Compile Include="DependencyModel.fs" />
-    <Compile Include="LockFile.fs" />
-    <Compile Include="RestoreProcess.fs" />
-    <Compile Include="BindingRedirects.fs" />
-    <Compile Include="InstallProcess.fs" />
-    <Compile Include="UpdateProcess.fs" />
-    <Compile Include="RemoveProcess.fs" />
-    <Compile Include="AddProcess.fs" />
-    <Compile Include="Simplifier.fs" />
-    <Compile Include="VSIntegration.fs" />
-    <Compile Include="NugetConvert.fs" />
-    <Compile Include="FindOutdated.fs" />
-    <Compile Include="FindReferences.fs" />
-    <Compile Include="PublicAPI.fs" />
-    <None Include="paket.references" />
-    <Compile Include="AssemblyInfo.fs" />
-    <Compile Include="CustomAssemblyInfo.fs" />
-  </ItemGroup>
-  <ItemGroup>
-    <Reference Include="mscorlib" />
-    <Reference Include="System" />
-    <Reference Include="System.Core" />
-    <Reference Include="System.Data" />
-    <Reference Include="System.Data.Linq" />
-    <Reference Include="System.Numerics" />
-    <Reference Include="System.Security" />
-    <Reference Include="System.Xml" />
-    <Reference Include="System.Xml.Linq" />
-  </ItemGroup>
   <Import Project="Paket.Core.paket.targets" Condition="Exists('Paket.Core.paket.targets')" />
   <Choose>
     <When Condition="($(TargetFrameworkIdentifier) == '.NETFramework' And ($(TargetFrameworkVersion) == 'v2.0' Or $(TargetFrameworkVersion) == 'v3.0' Or $(TargetFrameworkVersion) == 'v3.5' Or $(TargetFrameworkVersion) == 'v4.0' Or $(TargetFrameworkVersion) == 'v4.5' Or $(TargetFrameworkVersion) == 'v4.5.1' Or $(TargetFrameworkVersion) == 'v4.5.2' Or $(TargetFrameworkVersion) == 'v4.5.3')) Or ($(TargetFrameworkIdentifier) == 'MonoAndroid') Or ($(TargetFrameworkIdentifier) == 'MonoTouch')">
@@ -276,4 +208,70 @@
       </ItemGroup>
     </When>
   </Choose>
+  <ItemGroup>
+    <Compile Include="..\..\paket-files\nessos\Streams\src\Streams.Core\Streams.fs">
+      <Paket>True</Paket>
+      <Link>Streams.fs</Link>
+    </Compile>
+    <Content Include="..\..\packages\FSharp.Core\lib\net40\FSharp.Core.optdata">
+      <Link>FSharp.Core.optdata</Link>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\..\packages\FSharp.Core\lib\net40\FSharp.Core.sigdata">
+      <Link>FSharp.Core.sigdata</Link>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Compile Include="Async.fs" />
+    <Compile Include="Domain.fs" />
+    <Compile Include="SemVer.fs" />
+    <Compile Include="VersionRange.fs" />
+    <Compile Include="Constants.fs" />
+    <Compile Include="Logging.fs" />
+    <Compile Include="Xml.fs" />
+    <Compile Include="Utils.fs" />
+    <Compile Include="ConfigFile.fs" />
+    <Compile Include="PackageSources.fs" />
+    <Compile Include="FrameworkHandling.fs" />
+    <Compile Include="PlatformMatching.fs" />
+    <Compile Include="Requirements.fs" />
+    <Compile Include="ModuleResolver.fs" />
+    <Compile Include="RemoteDownload.fs" />
+    <Compile Include="PackageResolver.fs" />
+    <Compile Include="Nuspec.fs" />
+    <Compile Include="InstallModel.fs" />
+    <Compile Include="ReferencesFile.fs" />
+    <Compile Include="ProjectFile.fs" />
+    <Compile Include="SolutionFile.fs" />
+    <Compile Include="NuGetV3.fs" />
+    <Compile Include="NuGetV2.fs" />
+    <Compile Include="DependenciesFile.fs" />
+    <Compile Include="DependencyModel.fs" />
+    <Compile Include="LockFile.fs" />
+    <Compile Include="RestoreProcess.fs" />
+    <Compile Include="BindingRedirects.fs" />
+    <Compile Include="InstallProcess.fs" />
+    <Compile Include="UpdateProcess.fs" />
+    <Compile Include="RemoveProcess.fs" />
+    <Compile Include="AddProcess.fs" />
+    <Compile Include="Simplifier.fs" />
+    <Compile Include="VSIntegration.fs" />
+    <Compile Include="NugetConvert.fs" />
+    <Compile Include="FindOutdated.fs" />
+    <Compile Include="FindReferences.fs" />
+    <Compile Include="PublicAPI.fs" />
+    <None Include="paket.references" />
+    <Compile Include="AssemblyInfo.fs" />
+    <Compile Include="CustomAssemblyInfo.fs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="mscorlib" />
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Data.Linq" />
+    <Reference Include="System.Numerics" />
+    <Reference Include="System.Security" />
+    <Reference Include="System.Xml" />
+    <Reference Include="System.Xml.Linq" />
+  </ItemGroup>
 </Project>

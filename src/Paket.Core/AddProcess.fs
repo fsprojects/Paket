@@ -20,21 +20,12 @@ let Add(dependenciesFileName, package, version, force, hard, interactive, instal
             LockFile.LoadFrom(lockFileName.FullName)
     
     if interactive then
-        let (PackageName package) = package
+        let (PackageName packageName) = package
         for project in ProjectFile.FindAllProjects(Path.GetDirectoryName lockFile.FileName) do
             if Utils.askYesNo(sprintf "  Install to %s?" project.Name) then
-                let proj = FileInfo(project.FileName)
-                match ProjectFile.FindReferencesFile proj with
-                | None ->
-                    let newFileName =
-                        let fi = FileInfo(Path.Combine(proj.Directory.FullName,Constants.ReferencesFile))
-                        if fi.Exists then
-                            Path.Combine(proj.Directory.FullName,proj.Name + "." + Constants.ReferencesFile)
-                        else
-                            fi.FullName
-
-                    File.WriteAllLines(newFileName,[package])
-                | Some fileName -> File.AppendAllLines(fileName,["";package])
+                ProjectFile.FindOrCreateReferencesFile(FileInfo(project.FileName))
+                    .AddNuGetReference(package)
+                    .Save()
 
     if installAfter then
         let sources = dependenciesFile.GetAllPackageSources()
