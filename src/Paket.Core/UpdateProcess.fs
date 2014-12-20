@@ -23,7 +23,7 @@ let Update(dependenciesFileName, forceResolution, force, hard, withBindingRedire
 
     InstallProcess.Install(sources, force, hard, withBindingRedirects, lockFile)
 
-let private fixOldDependencies failOnMissingPackage (dependenciesFile:DependenciesFile) (package:PackageName) (oldLockFile:LockFile) =
+let fixOldDependencies failOnMissingPackage (dependenciesFile:DependenciesFile) (package:PackageName) (oldLockFile:LockFile) =
     let allDependencies = 
         if failOnMissingPackage || oldLockFile.ResolvedPackages.ContainsKey(NormalizedPackageName package) then
             oldLockFile.GetAllNormalizedDependenciesOf package

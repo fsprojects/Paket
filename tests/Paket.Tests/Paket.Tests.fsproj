@@ -152,6 +152,7 @@
     <Compile Include="DependenciesFile\ParserSpecs.fs" />
     <Compile Include="DependenciesFile\SaveSpecs.fs" />
     <Compile Include="DependenciesFile\AddPackageSpecs.fs" />
+    <Compile Include="DependenciesFile\DependencyChangesSpecs.fs" />
     <Compile Include="Resolver\DependencyGraphSpecs.fs" />
     <Compile Include="Resolver\SimpleDependenciesSpecs.fs" />
     <Compile Include="Resolver\CyclicGraphSpecs.fs" />
