@@ -34,8 +34,8 @@ nuget Castle.Windsor-log4net"""
 
     let cfg = DependenciesFile.FromCode(after)
     let lockFile = LockFile.Parse("",toLines lockFileData)
-
-    let newDependencies = UpdateProcess.fixOldDependencies false cfg (PackageName "Castle.Windsor-log4net") lockFile
+   
+    let newDependencies = UpdateProcess.fixOldDependencies cfg lockFile
     newDependencies.DirectDependencies
     |> shouldEqual Map.empty
 
@@ -70,12 +70,8 @@ nuget NUnit"""
 
     let cfg = DependenciesFile.FromCode(after)
     let lockFile = LockFile.Parse("",toLines lockFileData)
-
-    let added,removed = DependencyChangeDetection.findChanges(cfg,lockFile)
-    added |> shouldEqual [PackageName "NUnit"]
-    removed |> shouldEqual []
-
-    let newDependencies = UpdateProcess.fixOldDependencies false cfg (PackageName "NUnit") lockFile
+   
+    let newDependencies = UpdateProcess.fixOldDependencies cfg lockFile
     let expected =
         Map.ofList
             ([(PackageName "Castle.Core", VersionRequirement (Specific(SemVer.Parse "3.3.3"),No));

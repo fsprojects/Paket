@@ -8,4 +8,14 @@ let findChanges(dependenciesFile:DependenciesFile,lockFile:LockFile) =
             if lockFile.ResolvedPackages.ContainsKey(NormalizedPackageName d.Key) |> not then
                 yield d.Key]
 
-    added,[]
+    let removed = 
+        let direct =
+            dependenciesFile.DirectDependencies
+            |> Seq.map (fun d -> NormalizedPackageName d.Key)
+            |> Set.ofSeq
+
+        [for d in lockFile.GetTopLevelDependencies() do
+            if direct.Contains d |> not then
+                yield d]
+
+    added,removed

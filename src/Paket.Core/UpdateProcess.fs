@@ -23,13 +23,20 @@ let Update(dependenciesFileName, forceResolution, force, hard, withBindingRedire
 
     InstallProcess.Install(sources, force, hard, withBindingRedirects, lockFile)
 
-let fixOldDependencies failOnMissingPackage (dependenciesFile:DependenciesFile) (package:PackageName) (oldLockFile:LockFile) =
-    let allDependencies = 
-        if failOnMissingPackage || oldLockFile.ResolvedPackages.ContainsKey(NormalizedPackageName package) then
-            oldLockFile.GetAllNormalizedDependenciesOf package
-        else
-            Set.empty
-
+let fixOldDependencies (dependenciesFile:DependenciesFile) (oldLockFile:LockFile) =
+    let allDependencies =        
+        let added,removed = DependencyChangeDetection.findChanges(dependenciesFile,oldLockFile)
+        let p1 =
+            added
+            |> List.map NormalizedPackageName
+            |> Set.ofSeq
+        let p2 =
+            removed
+            |> List.map oldLockFile.GetAllNormalizedDependenciesOf
+            |> Seq.concat
+            |> Set.ofSeq
+        Set.union p1 p2
+    
     oldLockFile.ResolvedPackages
     |> Seq.map (fun kv -> kv.Value)
     |> Seq.filter (fun p -> not <| allDependencies.Contains(NormalizedPackageName p.Name))
@@ -48,14 +55,14 @@ let private update lockFileName force (createDependenciesFile:LockFile -> Depend
     dependenciesFile.Sources, newLockFile
 
 
-let updateWithModifiedDependenciesFile(failOnMissingPackage,dependenciesFile:DependenciesFile,packageName:PackageName, force) =
+let updateWithModifiedDependenciesFile(dependenciesFile:DependenciesFile,packageName:PackageName, force) =
     let lockFileName = DependenciesFile.FindLockfile dependenciesFile.FileName
 
     if not lockFileName.Exists then 
         let resolution = dependenciesFile.Resolve(force)
         LockFile.Create(lockFileName.FullName, dependenciesFile.Options, resolution.ResolvedPackages, resolution.ResolvedSourceFiles)
     else
-        fixOldDependencies failOnMissingPackage dependenciesFile packageName
+        fixOldDependencies dependenciesFile
         |> update lockFileName.FullName force
         |> snd
 
@@ -74,6 +81,6 @@ let UpdatePackage(dependenciesFileName, packageName : PackageName, newVersion, f
                 depFile
             | None -> depFile
 
-        fixOldDependencies true dependenciesFile packageName
+        fixOldDependencies dependenciesFile
         |> update lockFileName.FullName force
     InstallProcess.Install(sources, force, hard, false, lockFile)
