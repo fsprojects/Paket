@@ -5,6 +5,7 @@ open NUnit.Framework
 open FsUnit
 open TestHelpers
 open Paket.Domain
+open Paket.Requirements
 
 let noGitHubConfigured _ = failwith "no GitHub configured"
 
@@ -23,7 +24,7 @@ let ``should resolve source files with correct sha``() =
         Requirements.PackageRequirement.Name = name
         Requirements.PackageRequirement.ResolverStrategy = Max
         Requirements.PackageRequirement.Parent = Requirements.PackageRequirementSource.DependenciesFile ""
-        Requirements.PackageRequirement.FrameworkRestriction = None
+        Requirements.PackageRequirement.FrameworkRestrictions = []
         Requirements.PackageRequirement.VersionRequirement = VersionRequirement.NoRestriction }
     let sha = "sha1"
     let cfg = DependenciesFile.FromCode(config1)

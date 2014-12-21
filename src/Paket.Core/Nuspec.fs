@@ -13,7 +13,7 @@ type NuspecReferences =
 
 type FrameworkAssemblyReference = {
     AssemblyName: string
-    TargetFramework : FrameworkRestriction }
+    FrameworkRestrictions : FrameworkRestrictions }
 
 module NugetVersionRangeParser =
     
@@ -82,7 +82,7 @@ module NugetVersionRangeParser =
 
 type Nuspec = 
     { References : NuspecReferences 
-      Dependencies : (string * VersionRequirement * (FrameworkIdentifier option)) list
+      Dependencies : (string * VersionRequirement * FrameworkRestrictions) list
       OfficialName : string
       FrameworkAssemblyReferences : FrameworkAssemblyReference list }
 
@@ -112,8 +112,11 @@ type Nuspec =
                 let restriction =
                     let parent = node.ParentNode 
                     match parent.Name.ToLower(), parent |> getAttribute "targetFramework" with
-                    | "group", Some framework -> FrameworkIdentifier.Extract framework
-                    | _ -> None
+                    | "group", Some framework -> 
+                        match FrameworkIdentifier.Extract framework with
+                        | Some x -> [FrameworkRestriction.Exactly x]
+                        | None -> []
+                    | _ -> []
                 name,version,restriction
 
             let dependencies = 
@@ -131,13 +134,13 @@ type Nuspec =
                 let targetFrameworks = node |> getAttribute "targetFramework"
                 match name,targetFrameworks with
                 | Some name, Some targetFrameworks when targetFrameworks = "" ->
-                    [{ AssemblyName = name; TargetFramework = None }]
+                    [{ AssemblyName = name; FrameworkRestrictions = [] }]
                 | Some name, None ->                     
-                    [{ AssemblyName = name; TargetFramework = None }]
+                    [{ AssemblyName = name; FrameworkRestrictions = [] }]
                 | Some name, Some targetFrameworks ->                     
                     targetFrameworks.Split([|','; ' '|],System.StringSplitOptions.RemoveEmptyEntries)
                     |> Array.choose FrameworkIdentifier.Extract
-                    |> Array.map (fun fw -> { AssemblyName = name; TargetFramework = Some fw })
+                    |> Array.map (fun fw -> { AssemblyName = name; FrameworkRestrictions = [FrameworkRestriction.Exactly fw] })
                     |> Array.toList
                 | _ -> []
 

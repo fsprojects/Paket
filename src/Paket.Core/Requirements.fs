@@ -4,7 +4,13 @@ open Paket
 open Paket.Domain
 open Paket.PackageSources
 
-type FrameworkRestriction = FrameworkIdentifier option
+[<RequireQualifiedAccess>]
+type FrameworkRestriction = 
+| Exactly of FrameworkIdentifier
+| AtLeast of FrameworkIdentifier
+| Between of FrameworkIdentifier * FrameworkIdentifier
+
+type FrameworkRestrictions = FrameworkRestriction list
 
 type PackageRequirementSource =
 | DependenciesFile of string
@@ -17,7 +23,7 @@ type PackageRequirement =
       VersionRequirement : VersionRequirement
       ResolverStrategy : ResolverStrategy
       Parent: PackageRequirementSource
-      FrameworkRestriction: FrameworkRestriction
+      FrameworkRestrictions: FrameworkRestrictions
       Sources : PackageSource list }
 
     override this.Equals(that) = 

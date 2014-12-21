@@ -10,6 +10,7 @@ open Paket.Logging
 open Paket.Xml
 open Paket.NuGetV2
 open Paket.PackageSources
+open Paket.Requirements
 
 type CredsMigrationMode =
     | Encrypt
@@ -148,18 +149,20 @@ let private convertNugetsToDepFile(dependenciesFilename,nugetPackagesConfigs, so
     
     for (name, _) in conflictingPackages do traceWarnfn "Package %s is already defined in %s" name dependenciesFilename
 
-    let nugetPackageRequirement (name: string, v: string) =
-        {Requirements.PackageRequirement.Name = PackageName name
-         Requirements.PackageRequirement.VersionRequirement = VersionRequirement(VersionRange.Specific(SemVer.Parse v), PreReleaseStatus.No)
-         Requirements.PackageRequirement.ResolverStrategy = Max
-         Requirements.PackageRequirement.Sources = sources
-         Requirements.PackageRequirement.FrameworkRestriction = None
-         Requirements.PackageRequirement.Parent = Requirements.PackageRequirementSource.DependenciesFile dependenciesFilename}
+    let nugetPackageRequirement (name : string, v : string) = 
+        { Requirements.PackageRequirement.Name = PackageName name
+          Requirements.PackageRequirement.VersionRequirement = 
+              VersionRequirement(VersionRange.Specific(SemVer.Parse v), PreReleaseStatus.No)
+          Requirements.PackageRequirement.ResolverStrategy = Max
+          Requirements.PackageRequirement.Sources = sources
+          Requirements.PackageRequirement.FrameworkRestrictions = []
+          Requirements.PackageRequirement.Parent = 
+              Requirements.PackageRequirementSource.DependenciesFile dependenciesFilename }
 
     match existingDepFile with
     | None ->
         let packages = packagesToAdd |> List.map (fun (name,v) -> nugetPackageRequirement(name,v))
-        DependenciesFile(dependenciesFilename, InstallOptions.Default, sources, packages, []).Save()
+        Paket.DependenciesFile(dependenciesFilename, InstallOptions.Default, sources, packages, []).Save()
     | Some depFile ->
         if not (packagesToAdd |> List.isEmpty)
             then (packagesToAdd |> List.fold (fun (d : DependenciesFile) (name,version) -> d.Add(PackageName name,version)) depFile).Save()

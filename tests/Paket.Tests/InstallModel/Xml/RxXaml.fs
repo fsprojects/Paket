@@ -5,6 +5,7 @@ open NUnit.Framework
 open FsUnit
 open Paket.TestHelpers
 open Paket.Domain
+open Paket.Requirements
 
 let expected = """
 <Choose xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
@@ -88,7 +89,7 @@ let expected = """
 [<Test>]
 let ``should generate Xml for Rx-XAML 2.2.4 with correct framework assembly references``() = 
     let model =     
-        InstallModel.CreateFromLibs(PackageName "Rx-XAML", SemVer.Parse "2.2.4", None,
+        InstallModel.CreateFromLibs(PackageName "Rx-XAML", SemVer.Parse "2.2.4", [],
             [ @"..\Rx-XAML\lib\net40\System.Reactive.Windows.Threading.dll" 
               @"..\Rx-XAML\lib\net45\System.Reactive.Windows.Threading.dll" 
               @"..\Rx-XAML\lib\portable-win81+wpa81\System.Reactive.Windows.Threading.dll" 
@@ -100,10 +101,10 @@ let ``should generate Xml for Rx-XAML 2.2.4 with correct framework assembly refe
                  OfficialName = "Reactive Extensions - XAML Support Library"
                  Dependencies = []
                  FrameworkAssemblyReferences =
-                 [{ AssemblyName = "WindowsBase"; TargetFramework = Some(DotNetFramework FrameworkVersion.V4_5) }
-                  { AssemblyName = "WindowsBase"; TargetFramework = Some(DotNetFramework FrameworkVersion.V4) }
-                  { AssemblyName = "System.Windows"; TargetFramework = Some(Silverlight "v5.0") }
-                  { AssemblyName = "System.Windows"; TargetFramework = Some(WindowsPhoneSilverlight "v7.1") }]})
+                 [{ AssemblyName = "WindowsBase"; FrameworkRestrictions = [FrameworkRestriction.Exactly(DotNetFramework FrameworkVersion.V4_5)] }
+                  { AssemblyName = "WindowsBase"; FrameworkRestrictions = [FrameworkRestriction.Exactly(DotNetFramework FrameworkVersion.V4)] }
+                  { AssemblyName = "System.Windows"; FrameworkRestrictions = [FrameworkRestriction.Exactly(Silverlight "v5.0")] }
+                  { AssemblyName = "System.Windows"; FrameworkRestrictions = [FrameworkRestriction.Exactly(WindowsPhoneSilverlight "v7.1")] }]})
 
     let chooseNode = ProjectFile.Load("./ProjectFile/TestData/Empty.fsprojtest").Value.GenerateXml(model)
     chooseNode.OuterXml

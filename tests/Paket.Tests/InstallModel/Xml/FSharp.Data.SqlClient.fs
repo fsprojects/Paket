@@ -5,6 +5,7 @@ open NUnit.Framework
 open FsUnit
 open Paket.TestHelpers
 open Paket.Domain
+open Paket.Requirements
 
 let expected = """
 <Choose xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
@@ -28,7 +29,7 @@ let expected = """
 [<Test>]
 let ``should generate Xml for FSharp.Data.SqlClient 1.4.4``() = 
     let model =
-        InstallModel.CreateFromLibs(PackageName "FSharp.Data.SqlClient", SemVer.Parse "1.4.4", None,
+        InstallModel.CreateFromLibs(PackageName "FSharp.Data.SqlClient", SemVer.Parse "1.4.4", [],
             [ @"..\FSharp.Data.SqlClient\lib\net40\FSharp.Data.SqlClient.dll" 
               @"..\FSharp.Data.SqlClient\lib\net40\FSharp.Data.SqlClient.pdb" 
               @"..\FSharp.Data.SqlClient\lib\net40\FSharp.Data.SqlClient.XML"

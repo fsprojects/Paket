@@ -5,6 +5,7 @@ open NUnit.Framework
 open FsUnit
 open Paket.TestHelpers
 open Paket.Domain
+open Paket.Requirements
 
 let expected = """
 <Choose xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
@@ -31,7 +32,7 @@ let expected = """
 [<Test>]
 let ``should generate Xml for System.Spatial``() = 
     let model =
-        InstallModel.CreateFromLibs(PackageName "System.Spatial", SemVer.Parse "5.6.3", None,
+        InstallModel.CreateFromLibs(PackageName "System.Spatial", SemVer.Parse "5.6.3", [],
             [ @"..\System.Spatial\lib\net40\System.Spatial.dll"
               @"..\System.Spatial\lib\net40\de\System.Spatial.resources.dll"
               @"..\System.Spatial\lib\net40\es\System.Spatial.resources.dll"

@@ -159,14 +159,14 @@ type InstallModel =
     
     member this.AddReferences(libs) = this.AddReferences(libs, NuspecReferences.All)
     
-    member this.AddFrameworkAssemblyReference(reference) : InstallModel =
-        let inline referenceApplies (folder : LibFolder) reference =
-            match reference.TargetFramework with
-            | Some target -> folder.GetSinglePlatforms() |> List.exists (fun t -> t = target)
-            | None -> true
-        
+    member this.AddFrameworkAssemblyReference(reference:FrameworkAssemblyReference) : InstallModel =
+        let inline referenceApplies (folder : LibFolder) =
+            match reference.FrameworkRestrictions with
+            | [FrameworkRestriction.Exactly target] -> folder.GetSinglePlatforms() |> List.exists (fun t -> t = target)
+            | [] -> true
+            
         this.MapFolders(fun folder ->
-            if referenceApplies folder reference then
+            if referenceApplies folder then
                 { folder with Files = folder.Files.AddFrameworkAssemblyReference reference.AssemblyName }
             else
                 folder)
@@ -207,10 +207,10 @@ type InstallModel =
         this.GetReferences.Force()
         |> Set.map (fun lib -> lib.ReferenceName)
 
-    member this.ApplyFrameworkRestriction(restriction:FrameworkRestriction) =
-        match restriction with
-        | None -> this
-        | Some fw ->
+    member this.ApplyFrameworkRestrictions(restrictions:FrameworkRestrictions) =
+        match restrictions with
+        | [] -> this
+        | [FrameworkRestriction.Exactly fw] ->
             let applRestriction folder =
                 { folder with 
                     Targets = 
@@ -231,10 +231,10 @@ type InstallModel =
                     yield! lib.Files.GetFrameworkAssemblies()]
               |> Set.ofList)
     
-    static member CreateFromLibs(packageName, packageVersion, frameworkRestriction:FrameworkRestriction, libs, nuspec : Nuspec) = 
+    static member CreateFromLibs(packageName, packageVersion, frameworkRestrictions:FrameworkRestrictions, libs, nuspec : Nuspec) = 
         InstallModel
             .EmptyModel(packageName, packageVersion)
             .AddReferences(libs, nuspec.References)
             .AddFrameworkAssemblyReferences(nuspec.FrameworkAssemblyReferences)
             .FilterBlackList()
-            .ApplyFrameworkRestriction(frameworkRestriction)            
+            .ApplyFrameworkRestrictions(frameworkRestrictions)            

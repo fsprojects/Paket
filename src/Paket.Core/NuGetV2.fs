@@ -16,9 +16,10 @@ open Paket.Utils
 open Paket.Xml
 open Paket.PackageSources
 open Paket.NuGetV3
+open Paket.Requirements
 
 type NugetPackageCache =
-    { Dependencies : (string * VersionRequirement * (FrameworkIdentifier option)) list
+    { Dependencies : (string * VersionRequirement * FrameworkRestrictions) list
       Name : string
       SourceUrl: string
       Unlisted : bool
@@ -162,7 +163,15 @@ let parseODataDetails(nugetURL,packageName,version,raw) =
         |> fun s -> s.Split([| '|' |], System.StringSplitOptions.RemoveEmptyEntries)
         |> Array.map (fun d -> d.Split ':')
         |> Array.filter (fun d -> Array.isEmpty d |> not && d.[0] <> "")
-        |> Array.map (fun a -> a.[0],(if a.Length > 1 then a.[1] else "0"),(if a.Length > 2 && a.[2] <> "" then FrameworkIdentifier.Extract a.[2] else None))
+        |> Array.map (fun a -> 
+                        a.[0],
+                        (if a.Length > 1 then a.[1] else "0"),
+                        (if a.Length > 2 && a.[2] <> "" then 
+                            match FrameworkIdentifier.Extract a.[2] with
+                            | Some x -> [FrameworkRestriction.Exactly x]
+                            | None -> []
+                         else 
+                            []))
         |> Array.map (fun (name, version, restricted) -> name, NugetVersionRangeParser.parse version, restricted)
         |> Array.toList
 

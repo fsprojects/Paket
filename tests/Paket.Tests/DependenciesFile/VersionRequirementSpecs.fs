@@ -13,7 +13,7 @@ let require packageName strategy text : PackageRequirement =
       VersionRequirement = parse text
       ResolverStrategy = strategy
       Parent = PackageRequirementSource.DependenciesFile ""
-      FrameworkRestriction = None
+      FrameworkRestrictions = []
       Sources = [] }
 
 [<Test>]

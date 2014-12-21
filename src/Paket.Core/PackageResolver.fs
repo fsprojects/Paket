@@ -15,15 +15,15 @@ type PackageDetails =
       Source : PackageSource
       DownloadLink : string
       Unlisted : bool
-      DirectDependencies : (PackageName * VersionRequirement * FrameworkRestriction) Set }
+      DirectDependencies : (PackageName * VersionRequirement * FrameworkRestrictions) Set }
 
 /// Represents data about resolved packages
 type ResolvedPackage =
     { Name : PackageName
       Version : SemVerInfo
-      Dependencies : (PackageName * VersionRequirement * FrameworkRestriction) Set
+      Dependencies : (PackageName * VersionRequirement * FrameworkRestrictions) Set
       Unlisted : bool      
-      FrameworkRestriction: FrameworkRestriction
+      FrameworkRestriction: FrameworkRestrictions
       Source : PackageSource }
 
     override this.ToString() =
@@ -200,12 +200,12 @@ let Resolve(getVersionsF, getPackageDetailsF, rootDependencies:PackageRequiremen
                 |> List.fold (fun (allUnlisted,state) versionToExplore ->
                     match state with
                     | ResolvedPackages.Conflict _ ->
-                        let exploredPackage = getExploredPackage(dependency.Sources,dependency.Name,versionToExplore,dependency.FrameworkRestriction)    
+                        let exploredPackage = getExploredPackage(dependency.Sources,dependency.Name,versionToExplore,dependency.FrameworkRestrictions)    
                         if exploredPackage.Unlisted && not useUnlisted then (allUnlisted,state) else                
                         let newFilteredVersion = Map.add dependency.Name ([versionToExplore],globalOverride) filteredVersions
                         let newDependencies =
                             exploredPackage.Dependencies
-                            |> Set.map (fun (n,v,r) -> {dependency with Name = n; VersionRequirement = v; Parent = Package(dependency.Name,versionToExplore); FrameworkRestriction = r })
+                            |> Set.map (fun (n,v,r) -> {dependency with Name = n; VersionRequirement = v; Parent = Package(dependency.Name,versionToExplore); FrameworkRestrictions = r })
                             |> Set.filter (fun d -> Set.contains d closed |> not)
                             |> Set.filter (fun d -> Set.contains d stillOpen |> not)
                             |> Set.filter (fun d ->

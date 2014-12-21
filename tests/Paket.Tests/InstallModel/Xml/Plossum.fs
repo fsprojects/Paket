@@ -5,6 +5,7 @@ open NUnit.Framework
 open FsUnit
 open Paket.TestHelpers
 open Paket.Domain
+open Paket.Requirements
 
 let expected = """
 <Choose xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
@@ -22,7 +23,7 @@ let expected = """
 [<Test>]
 let ``should generate Xml for Plossum``() = 
     let model =
-        InstallModel.CreateFromLibs(PackageName "Plossum.CommandLine", SemVer.Parse "1.5.0", None,
+        InstallModel.CreateFromLibs(PackageName "Plossum.CommandLine", SemVer.Parse "1.5.0", [],
             [ @"..\Plossum.CommandLine\lib\net40\Plossum CommandLine.dll" ],
               Nuspec.All)
     

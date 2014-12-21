@@ -13,7 +13,7 @@ let PackageDetailsFromGraph (graph : seq<string * string * (string * VersionRequ
     let name,dependencies = 
         graph
         |> Seq.filter (fun (p, v, _) -> NormalizedPackageName (PackageName p) = NormalizedPackageName package && SemVer.Parse v = version)
-        |> Seq.map (fun (n, _, d) -> PackageName n,d |> List.map (fun (x,y) -> PackageName x,y,None))
+        |> Seq.map (fun (n, _, d) -> PackageName n,d |> List.map (fun (x,y) -> PackageName x,y,[]))
         |> Seq.head
 
     { Name = name
@@ -35,7 +35,7 @@ let safeResolve graph (dependencies : (string * VersionRange) list)  =
                               VersionRequirement = VersionRequirement(v,PreReleaseStatus.No)
                               Sources = [ PackageSource.NugetSource "" ]
                               Parent = PackageRequirementSource.DependenciesFile ""
-                              FrameworkRestriction = None
+                              FrameworkRestrictions = []
                               ResolverStrategy = ResolverStrategy.Max })
     PackageResolver.Resolve(VersionsFromGraph graph, PackageDetailsFromGraph graph, packages)
 

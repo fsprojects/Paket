@@ -5,6 +5,7 @@ open NUnit.Framework
 open FsUnit
 open Paket.TestHelpers
 open Paket.Domain
+open Paket.Requirements
 
 let expected = """
 <ItemGroup xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
@@ -18,7 +19,7 @@ let expected = """
 [<Test>]
 let ``should generate Xml for Fantomas 1.5``() = 
     let model =
-        InstallModel.CreateFromLibs(PackageName "Fantomas", SemVer.Parse "1.5.0", None,
+        InstallModel.CreateFromLibs(PackageName "Fantomas", SemVer.Parse "1.5.0", [],
             [ @"..\Fantomas\lib\FantomasLib.dll" 
               @"..\Fantomas\lib\FSharp.Core.dll" 
               @"..\Fantomas\lib\Fantomas.exe" ],
@@ -50,7 +51,7 @@ let fullDoc = """<?xml version="1.0" encoding="utf-8"?>
 [<Test>]
 let ``should generate full Xml for Fantomas 1.5``() = 
     let model =
-        InstallModel.CreateFromLibs(PackageName "Fantomas", SemVer.Parse "1.5.0", None,
+        InstallModel.CreateFromLibs(PackageName "Fantomas", SemVer.Parse "1.5.0", [],
             [ @"..\Fantomas\lib\FantomasLib.dll" 
               @"..\Fantomas\lib\FSharp.Core.dll" 
               @"..\Fantomas\lib\Fantomas.exe" ],
@@ -69,7 +70,7 @@ let ``should generate full Xml for Fantomas 1.5``() =
 [<Test>]
 let ``should not generate full Xml for Fantomas 1.5 if not referenced``() = 
     let model =
-        InstallModel.CreateFromLibs(PackageName "Fantomas", SemVer.Parse "1.5.0", None,
+        InstallModel.CreateFromLibs(PackageName "Fantomas", SemVer.Parse "1.5.0", [],
             [ @"..\Fantomas\lib\FantomasLib.dll" 
               @"..\Fantomas\lib\FSharp.Core.dll" 
               @"..\Fantomas\lib\Fantomas.exe" ],
