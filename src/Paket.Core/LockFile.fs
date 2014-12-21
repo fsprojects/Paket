@@ -155,15 +155,15 @@ module LockFileParser =
                                             if parts.Length < 2 then 
                                                 [] 
                                             else
-                                                let parts'' = parts.[1].Trim().Split(',')
-                                                [for p in parts'' do
-                                                    let parts' = p.Trim().Split(' ')
+                                                let commaSplit = parts.[1].Trim().Split(',')
+                                                [for p in commaSplit do
+                                                    let operatorSplit = p.Trim().Split(' ')
                                                     let framework =
-                                                        if parts'.Length < 2 then parts'.[0] else parts'.[1]
+                                                        if operatorSplit.Length < 2 then operatorSplit.[0] else operatorSplit.[1]
                                                     match FrameworkIdentifier.Extract(framework) with
                                                     | None -> ()
                                                     | Some x -> 
-                                                        if parts'.[0] = ">=" then
+                                                        if operatorSplit.[0] = ">=" then
                                                             yield FrameworkRestriction.AtLeast x
                                                         else
                                                             yield FrameworkRestriction.Exactly x]

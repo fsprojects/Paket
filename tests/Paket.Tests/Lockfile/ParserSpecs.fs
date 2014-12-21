@@ -178,9 +178,7 @@ let frameworkRestricted = """NUGET
     LinqBridge (1.3.0) - net20
     ReadOnlyCollectionExtensions (1.2.0)
       LinqBridge (>= 1.3.0) - net20
-      ReadOnlyCollectionInterfaces (1.0.0) - net20
-      ReadOnlyCollectionInterfaces (1.0.0) - net35
-      ReadOnlyCollectionInterfaces (1.0.0) - >= net40
+      ReadOnlyCollectionInterfaces (1.0.0) - net20, net35, >= net40
     ReadOnlyCollectionInterfaces (1.0.0) - net20, net35, >= net40
     System.Json (4.0.20126.16343)
 """
