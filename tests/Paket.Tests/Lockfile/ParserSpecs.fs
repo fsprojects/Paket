@@ -181,7 +181,7 @@ let frameworkRestricted = """NUGET
       ReadOnlyCollectionInterfaces (1.0.0) - net20
       ReadOnlyCollectionInterfaces (1.0.0) - net35
       ReadOnlyCollectionInterfaces (1.0.0) - >= net40
-    ReadOnlyCollectionInterfaces (1.0.0) - >= net40
+    ReadOnlyCollectionInterfaces (1.0.0) - net20, net35, >= net40
     System.Json (4.0.20126.16343)
 """
 
@@ -199,7 +199,10 @@ let ``should parse framework restricted lock file``() =
     packages.[5].Source |> shouldEqual PackageSources.DefaultNugetSource
     packages.[5].Name |> shouldEqual (PackageName "ReadOnlyCollectionInterfaces")
     packages.[5].Version |> shouldEqual (SemVer.Parse "1.0.0")
-    packages.[5].FrameworkRestriction |> shouldEqual ([FrameworkRestriction.AtLeast(FrameworkIdentifier.DotNetFramework(FrameworkVersion.V4_Client))])
+    packages.[5].FrameworkRestriction 
+    |> shouldEqual ([FrameworkRestriction.Exactly(FrameworkIdentifier.DotNetFramework(FrameworkVersion.V2))
+                     FrameworkRestriction.Exactly(FrameworkIdentifier.DotNetFramework(FrameworkVersion.V3_5))
+                     FrameworkRestriction.AtLeast(FrameworkIdentifier.DotNetFramework(FrameworkVersion.V4_Client))])
 
 let simpleHTTP = """
 HTTP

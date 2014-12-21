@@ -160,10 +160,16 @@ type InstallModel =
     member this.AddReferences(libs) = this.AddReferences(libs, NuspecReferences.All)
     
     member this.AddFrameworkAssemblyReference(reference:FrameworkAssemblyReference) : InstallModel =
-        let inline referenceApplies (folder : LibFolder) =
+        let referenceApplies (folder : LibFolder) =
             match reference.FrameworkRestrictions with
-            | [FrameworkRestriction.Exactly target] -> folder.GetSinglePlatforms() |> List.exists (fun t -> t = target)
             | [] -> true
+            | restrictions ->
+                restrictions
+                |> List.exists (fun restriction ->
+                      match restriction with
+                      | FrameworkRestriction.Exactly target ->
+                            folder.GetSinglePlatforms() 
+                            |> List.exists (fun t -> t = target))
             
         this.MapFolders(fun folder ->
             if referenceApplies folder then
@@ -210,14 +216,18 @@ type InstallModel =
     member this.ApplyFrameworkRestrictions(restrictions:FrameworkRestrictions) =
         match restrictions with
         | [] -> this
-        | [FrameworkRestriction.Exactly fw] ->
+        | restrictions ->
             let applRestriction folder =
                 { folder with 
                     Targets = 
                         folder.Targets
                         |> List.filter 
                             (function 
-                             | SinglePlatform pf -> pf = fw 
+                             | SinglePlatform pf -> 
+                                restrictions
+                                |> List.exists (fun restriction ->
+                                        match restriction with
+                                        | FrameworkRestriction.Exactly fw -> pf = fw)
                              | _ -> false) }                
 
             {this with 
