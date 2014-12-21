@@ -59,10 +59,14 @@ let ``if nuspec is not found we assume no framework references``() =
 let ``can detect framework assemblies for Microsoft.Net.Http``() = 
     Nuspec.Load("Nuspec/Microsoft.Net.Http.nuspec").FrameworkAssemblyReferences
     |> shouldEqual 
-        [{ AssemblyName = "System.Net.Http"; FrameworkRestrictions = [FrameworkRestriction.Exactly(DotNetFramework(FrameworkVersion.V4_5))] }
-         { AssemblyName = "System.Net.Http.WebRequest"; FrameworkRestrictions = [FrameworkRestriction.Exactly(DotNetFramework(FrameworkVersion.V4_5))] }
-         { AssemblyName = "System.Net.Http"; FrameworkRestrictions = [FrameworkRestriction.Exactly(MonoTouch)] }
-         { AssemblyName = "System.Net.Http"; FrameworkRestrictions = [FrameworkRestriction.Exactly(MonoAndroid)] } ]
+        [{ AssemblyName = "System.Net.Http"
+           FrameworkRestrictions = 
+             [FrameworkRestriction.Exactly(DotNetFramework(FrameworkVersion.V4_5))
+              FrameworkRestriction.Exactly(MonoTouch)
+              FrameworkRestriction.Exactly(MonoAndroid)] }
+         { AssemblyName = "System.Net.Http.WebRequest"
+           FrameworkRestrictions = 
+             [FrameworkRestriction.Exactly(DotNetFramework(FrameworkVersion.V4_5))] }]
 
 [<Test>]
 let ``can detect framework assemblies for FluentAssertions``() = 
@@ -93,8 +97,10 @@ let ``can detect reference files for SqlCLient``() =
 let ``can detect framework assemblies for Octokit``() = 
     Nuspec.Load("Nuspec/Octokit.nuspec").FrameworkAssemblyReferences
     |> shouldEqual 
-        [{ AssemblyName = "System.Net.Http"; FrameworkRestrictions = [FrameworkRestriction.Exactly(DotNetFramework(FrameworkVersion.V4_5))] }
-         { AssemblyName = "System.Net.Http"; FrameworkRestrictions = [FrameworkRestriction.Exactly(Windows "v4.5")] }]
+        [{ AssemblyName = "System.Net.Http"
+           FrameworkRestrictions = 
+            [FrameworkRestriction.Exactly(DotNetFramework(FrameworkVersion.V4_5))
+             FrameworkRestriction.Exactly(Windows "v4.5")] }]
 
 [<Test>]
 let ``can detect framework assemblies for FSharp.Data.SqlEnumProvider``() = 
@@ -131,11 +137,14 @@ let ``can detect explicit dependencies for ReadOnlyCollectionExtensions``() =
 let ``can detect framework assemblies for MathNet.Numerics``() = 
     Nuspec.Load("Nuspec/MathNet.Numerics.nuspec").FrameworkAssemblyReferences
     |> shouldEqual 
-        [{ AssemblyName = "System.Numerics"; FrameworkRestrictions = [FrameworkRestriction.Exactly(DotNetFramework(FrameworkVersion.V4_Client))] }
-         { AssemblyName = "System.Numerics"; FrameworkRestrictions = [FrameworkRestriction.Exactly(Windows("v4.5"))] }
-         { AssemblyName = "System.Numerics"; FrameworkRestrictions = [FrameworkRestriction.Exactly(Silverlight("v5.0"))] }
-         { AssemblyName = "System.Numerics"; FrameworkRestrictions = [FrameworkRestriction.Exactly(MonoAndroid)] }
-         { AssemblyName = "System.Numerics"; FrameworkRestrictions = [FrameworkRestriction.Exactly(MonoTouch)] }]
+        [{ AssemblyName = "System.Numerics"
+           FrameworkRestrictions = 
+            [FrameworkRestriction.Exactly(DotNetFramework(FrameworkVersion.V4_Client))
+             FrameworkRestriction.Exactly(Windows("v4.5"))
+             FrameworkRestriction.Exactly(Silverlight("v5.0"))
+             FrameworkRestriction.Exactly(MonoAndroid)
+             FrameworkRestriction.Exactly(MonoTouch)] }]
+
 [<Test>]
 let ``can detect explicit dependencies for WindowsAzure.Storage``() = 
     Nuspec.Load("Nuspec/WindowsAzure.Storage.nuspec").Dependencies

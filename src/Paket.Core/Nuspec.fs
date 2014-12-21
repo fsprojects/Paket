@@ -145,9 +145,18 @@ type Nuspec =
                 | _ -> []
 
             let frameworkAssemblyReferences =
-                doc
-                |> getDescendants "frameworkAssembly"
-                |> List.collect assemblyRefs
+                let grouped =
+                    doc
+                    |> getDescendants "frameworkAssembly"
+                    |> List.collect assemblyRefs
+                    |> Seq.groupBy (fun r -> r.AssemblyName)
+
+                [for name,restrictions in grouped do
+                    yield { AssemblyName = name
+                            FrameworkRestrictions = 
+                                restrictions 
+                                |> Seq.collect (fun x -> x.FrameworkRestrictions) 
+                                |> Seq.toList} ]
            
             { References = if references = [] then NuspecReferences.All else NuspecReferences.Explicit references
               Dependencies = dependencies
