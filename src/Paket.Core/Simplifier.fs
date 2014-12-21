@@ -5,6 +5,18 @@ open Logging
 open System
 open Paket.Domain
 open Paket.PackageResolver
+open Rop
+
+
+type SimplifyResult = {
+    DependenciesFileSimplifyResult : (DependenciesFile * DependenciesFile) option
+    ReferencesFilesSimplifyResult : (ReferencesFile * ReferencesFile) list
+}
+
+type SimplifyMessage = 
+    | DependenciesFileMissing
+    | StrictModeDetected
+    | LockFileMissing
 
 let private formatDiff (before : string) (after : string) =
     let nl = Environment.NewLine
@@ -42,6 +54,18 @@ let Analyze(lockFile : LockFile, depFile : DependenciesFile, refFiles : Referenc
                                                                             refFile.NugetPackages |> getSimplifiedDeps id refFile.FileName})
 
     DependenciesFile(depFile.FileName, depFile.Options, depFile.Sources, simplifiedDeps, depFile.RemoteFiles), refFiles'
+
+let getDependenciesFile path =
+    if File.Exists path then succeed (DependenciesFile.ReadFromFile path)
+    else failure DependenciesFileMissing
+
+let ensureNoStrictMode (depFile : DependenciesFile) =
+    if not depFile.Options.Strict then succeed depFile
+    else failure StrictModeDetected
+
+let SimplifyR (dependenciesFileName,interactive) = 
+    dependenciesFileName
+    |> getDependenciesFile
 
 let Simplify (dependenciesFileName,interactive) = 
     if not <| File.Exists dependenciesFileName then

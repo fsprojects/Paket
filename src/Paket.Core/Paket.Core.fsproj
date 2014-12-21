@@ -71,6 +71,7 @@
     <Compile Include="Async.fs" />
     <Compile Include="AssemblyInfo.fs" />
     <Compile Include="CustomAssemblyInfo.fs" />
+    <Compile Include="Rop.fs" />
     <Compile Include="Domain.fs" />
     <Compile Include="SemVer.fs" />
     <Compile Include="VersionRange.fs" />
