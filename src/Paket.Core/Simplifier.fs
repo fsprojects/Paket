@@ -63,9 +63,33 @@ let ensureNoStrictMode (depFile : DependenciesFile) =
     if not depFile.Options.Strict then succeed depFile
     else failure StrictModeDetected
 
+let getLockFile (depFile : DependenciesFile) = 
+    let path = depFile.FindLockfile()
+    if File.Exists(path.FullName) then succeed (depFile, LockFile.LoadFrom(path.FullName))
+    else failure LockFileMissing
+
+let getRefFiles (depFile : DependenciesFile, lockFile : LockFile) =
+    depFile,lockFile,
+    ProjectFile.FindAllProjects(Path.GetDirectoryName lockFile.FileName) 
+    |> Array.choose (fun p -> ProjectFile.FindReferencesFile <| FileInfo(p.FileName))
+    |> Array.map ReferencesFile.FromFile
+    |> Array.toList
+    
+let analyzeR (depFile, lockFile, refFiles, interactive) = 
+    Analyze(lockFile, depFile, refFiles, interactive)
+    |> (fun (newDepFile, newRefFiles) -> 
+           { DependenciesFileSimplifyResult = Some(depFile, newDepFile)
+             ReferencesFilesSimplifyResult = List.zip refFiles newRefFiles })
+
 let SimplifyR (dependenciesFileName,interactive) = 
     dependenciesFileName
     |> getDependenciesFile
+    |> bind ensureNoStrictMode
+    |> bind getLockFile
+    |> lift getRefFiles
+    |> lift (fun (a,b,c) -> a,b,c,interactive)
+    |> lift analyzeR
+
 
 let Simplify (dependenciesFileName,interactive) = 
     if not <| File.Exists dependenciesFileName then
