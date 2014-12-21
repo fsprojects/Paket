@@ -211,23 +211,20 @@ type InstallModel =
         match restriction with
         | None -> this
         | Some fw ->
-            let folders =
-                this.LibFolders
-                |> List.fold 
-                    (fun folders folder ->
-                        let targets =
-                            folder.Targets 
-                                |> List.filter 
-                                    (fun x -> 
-                                        match x with 
-                                        | SinglePlatform pf -> pf = fw 
-                                        | _ -> false) 
-                        if targets = [] then folders else 
-                        {folder with Targets = targets} :: folders)
-                    []
+            let applRestriction folder =
+                { folder with 
+                    Targets = 
+                        folder.Targets
+                        |> List.filter 
+                            (function 
+                             | SinglePlatform pf -> pf = fw 
+                             | _ -> false) }                
 
-            {this with LibFolders = folders}
-    
+            {this with 
+                LibFolders = 
+                    this.LibFolders
+                    |> List.map applRestriction
+                    |> List.filter (fun folder -> folder.Targets <> [])}    
 
     member this.GetFrameworkAssemblies = 
         lazy ([ for lib in this.LibFolders do
@@ -240,4 +237,4 @@ type InstallModel =
             .AddReferences(libs, nuspec.References)
             .AddFrameworkAssemblyReferences(nuspec.FrameworkAssemblyReferences)
             .FilterBlackList()
-            .ApplyFrameworkRestriction(frameworkRestriction)
+            .ApplyFrameworkRestriction(frameworkRestriction)            
