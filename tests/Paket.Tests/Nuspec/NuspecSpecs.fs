@@ -135,3 +135,11 @@ let ``can detect framework assemblies for MathNet.Numerics``() =
          { AssemblyName = "System.Numerics"; TargetFramework = Some(Silverlight("v5.0")) }
          { AssemblyName = "System.Numerics"; TargetFramework = Some(MonoAndroid) }
          { AssemblyName = "System.Numerics"; TargetFramework = Some(MonoTouch) }]
+[<Test>]
+let ``can detect explicit dependencies for WindowsAzure.Storage``() = 
+    Nuspec.Load("Nuspec/WindowsAzure.Storage.nuspec").Dependencies
+    |> Seq.take 2
+    |> Seq.toList
+    |> shouldEqual 
+        ["Microsoft.Data.OData",DependenciesFileParser.parseVersionRequirement(">= 5.6.2"), Some(DotNetFramework(FrameworkVersion.V4_Client))
+         "Newtonsoft.Json",DependenciesFileParser.parseVersionRequirement(">= 5.0.8"), Some(DotNetFramework(FrameworkVersion.V4_Client))]
