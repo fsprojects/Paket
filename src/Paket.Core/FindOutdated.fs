@@ -13,15 +13,15 @@ let FindOutdated(dependenciesFileName,strict,includingPrereleases) =
             loadedFile.Packages
             |> List.map (fun p ->
                 let v = p.VersionRequirement 
-                let requirement =
+                let requirement,strategy =
                     match strict,includingPrereleases with
-                    | true,true -> VersionRequirement.NoRestriction
-                    | true,false -> v
+                    | true,true -> VersionRequirement.NoRestriction, p.ResolverStrategy
+                    | true,false -> v, p.ResolverStrategy
                     | false,true -> 
                         match v with
-                        | VersionRequirement(v,_) -> VersionRequirement(v,PreReleaseStatus.All)
-                    | false,false -> VersionRequirement.AllReleases
-                { p with VersionRequirement = requirement})
+                        | VersionRequirement(v,_) -> VersionRequirement(v,PreReleaseStatus.All), Max
+                    | false,false -> VersionRequirement.AllReleases, Max
+                { p with VersionRequirement = requirement; ResolverStrategy = strategy})
 
         DependenciesFile(loadedFile.FileName,loadedFile.Options,loadedFile.Sources,newPackages,loadedFile.RemoteFiles)
             
