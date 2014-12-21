@@ -169,7 +169,10 @@ type InstallModel =
                       match restriction with
                       | FrameworkRestriction.Exactly target ->
                             folder.GetSinglePlatforms() 
-                            |> List.exists (fun t -> t = target))
+                            |> List.exists (fun t -> t = target)
+                        | FrameworkRestriction.AtLeast target ->
+                            folder.GetSinglePlatforms() 
+                            |> List.exists (fun t -> t >= target))
             
         this.MapFolders(fun folder ->
             if referenceApplies folder then
@@ -227,7 +230,8 @@ type InstallModel =
                                 restrictions
                                 |> List.exists (fun restriction ->
                                         match restriction with
-                                        | FrameworkRestriction.Exactly fw -> pf = fw)
+                                        | FrameworkRestriction.Exactly fw -> pf = fw
+                                        | FrameworkRestriction.AtLeast fw -> pf >= fw)
                              | _ -> false) }                
 
             {this with 
