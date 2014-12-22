@@ -1,34 +1,14 @@
 #### 0.20.0-alpha001 - 22.12.2014
 * Inherit selective depencies and store the result in `paket.lock` - https://github.com/fsprojects/Paket/pull/462
-
-#### 0.18.12 - 20.12.2014
 * Don't add NuGet packages twice to a references file - https://github.com/fsprojects/Paket/pull/460
-
-#### 0.18.11 - 20.12.2014
 * Fallback to config auth if environment variables are empty - https://github.com/fsprojects/Paket/pull/459
-
-#### 0.18.10 - 17.12.2014
 * Remove parsing of invalid child element of ProjectReference - https://github.com/fsprojects/Paket/pull/453
-
-#### 0.18.9 - 12.12.2014
 * Better handling for multiple files from same repository - https://github.com/fsprojects/Paket/pull/451
-
-#### 0.18.8 - 12.12.2014
 * `>= 0` version range simplified to empty string - https://github.com/fsprojects/Paket/pull/449
-
-#### 0.18.7 - 11.12.2014
 * Extend Public API for plugin
-
-#### 0.18.4 - 11.12.2014
 * Allow to extract PackageId
-
-#### 0.18.3 - 10.12.2014
 * BUGFIX: Don't delete downloaded github zip file
-
-#### 0.18.2 - 09.12.2014
 * BUGFIX: Don't touch framework assemblies if not needed
-
-#### 0.18.1 - 09.12.2014
 * BUGFIX: Check versions file synchronously
 
 #### 0.18.0 - 09.12.2014
