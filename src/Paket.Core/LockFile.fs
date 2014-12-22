@@ -8,6 +8,7 @@ open Paket.Logging
 open Paket.PackageResolver
 open Paket.ModuleResolver
 open Paket.PackageSources
+open Paket.Requirements
 
 module LockFileSerializer =
     /// [omit]
@@ -37,13 +38,31 @@ module LockFileSerializer =
                   yield "  specs:"
                   for _,_,package in packages |> Seq.sortBy (fun (_,_,p) -> NormalizedPackageName p.Name) do
                       let (PackageName packageName) = package.Name
-                      match package.FrameworkRestriction with
-                      | None -> yield sprintf "    %s (%s)" packageName (package.Version.ToString())
-                      | Some restriction -> yield sprintf "    %s (%s) - %s" packageName (package.Version.ToString()) (restriction.ToString())
-                      for (PackageName name),v,restriction in package.Dependencies do
-                          match restriction with
-                          | None -> yield sprintf "      %s (%s)" name (v.ToString())
-                          | Some restriction -> yield sprintf "      %s (%s) - %s" name (v.ToString()) (restriction.ToString())]
+
+                      let restrictions =
+                        package.FrameworkRestrictions
+                        |> List.map (fun restriction ->
+                            match restriction with
+                            | FrameworkRestriction.Exactly r -> r.ToString()
+                            | FrameworkRestriction.AtLeast r -> ">= " + r.ToString()
+                            | FrameworkRestriction.Between(min,max) -> sprintf ">= %s < %s" (min.ToString()) (max.ToString()))
+                      
+                      match restrictions with
+                      | [] -> yield sprintf "    %s (%s)" packageName (package.Version.ToString())
+                      | _  -> yield sprintf "    %s (%s) - %s" packageName (package.Version.ToString()) (String.Join(", ",restrictions))
+
+                      for (PackageName name),v,restrictions in package.Dependencies do
+                          let restrictions =
+                            restrictions
+                            |> List.map (fun restriction ->
+                                match restriction with
+                                | FrameworkRestriction.Exactly r -> r.ToString()
+                                | FrameworkRestriction.AtLeast r -> ">= " + r.ToString()
+                                | FrameworkRestriction.Between(min,max) -> sprintf ">= %s < %s" (min.ToString()) (max.ToString()))
+
+                          match restrictions with
+                          | [] -> yield sprintf "      %s (%s)" name (v.ToString())
+                          | _  -> yield sprintf "      %s (%s) - %s" name (v.ToString()) (String.Join(", ",restrictions))]
     
         String.Join(Environment.NewLine, all)
 
@@ -150,7 +169,31 @@ module LockFileParser =
                                        Name = PackageName parts'.[0]
                                        Dependencies = Set.empty
                                        Unlisted = false
-                                       FrameworkRestriction = if parts.Length < 2 then None else FrameworkIdentifier.Extract(parts.[1].Trim())
+                                       FrameworkRestrictions = 
+                                            if parts.Length < 2 then 
+                                                [] 
+                                            else
+                                                let commaSplit = parts.[1].Trim().Split(',')
+                                                [for p in commaSplit do
+                                                    let operatorSplit = p.Trim().Split(' ')
+                                                    let framework =
+                                                        if operatorSplit.Length < 2 then 
+                                                           operatorSplit.[0] 
+                                                        else 
+                                                           operatorSplit.[1]
+                                                    match FrameworkIdentifier.Extract(framework) with
+                                                    | None -> ()
+                                                    | Some x -> 
+                                                        if operatorSplit.[0] = ">=" then
+                                                            if operatorSplit.Length < 4 then
+                                                                yield FrameworkRestriction.AtLeast x
+                                                            else
+                                                                match FrameworkIdentifier.Extract(operatorSplit.[3]) with
+                                                                | None -> ()
+                                                                | Some y -> yield FrameworkRestriction.Between(x,y)
+                                                        else
+                                                            yield FrameworkRestriction.Exactly x]
+
                                        Version = SemVer.Parse version } :: state.Packages }
                 | None -> failwith "no source has been specified."
             | NugetDependency (name, _) ->
@@ -159,7 +202,7 @@ module LockFileParser =
                     | currentPackage :: otherPackages -> 
                         { state with
                                 Packages = { currentPackage with
-                                                Dependencies = Set.add (PackageName name, VersionRequirement.AllReleases, None) currentPackage.Dependencies
+                                                Dependencies = Set.add (PackageName name, VersionRequirement.AllReleases, []) currentPackage.Dependencies
                                             } :: otherPackages }                    
                     | [] -> failwith "cannot set a dependency - no package has been specified."
                 else

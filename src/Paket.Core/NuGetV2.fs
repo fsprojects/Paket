@@ -16,13 +16,14 @@ open Paket.Utils
 open Paket.Xml
 open Paket.PackageSources
 open Paket.NuGetV3
+open Paket.Requirements
 
 type NugetPackageCache =
-    { Dependencies : (string * VersionRequirement * (FrameworkIdentifier option)) list
-      Name : string
+    { Dependencies : (PackageName * VersionRequirement * FrameworkRestrictions) list
+      PackageName : string
       SourceUrl: string
       Unlisted : bool
-      DownloadUrl : string}
+      DownloadUrl : string }
 
 let rec private followODataLink getUrlContents url = 
     async { 
@@ -161,14 +162,22 @@ let parseODataDetails(nugetURL,packageName,version,raw) =
         dependencies
         |> fun s -> s.Split([| '|' |], System.StringSplitOptions.RemoveEmptyEntries)
         |> Array.map (fun d -> d.Split ':')
-        |> Array.filter (fun d -> Array.isEmpty d |> not && d.[0] <> "")
-        |> Array.map (fun a -> a.[0],(if a.Length > 1 then a.[1] else "0"),(if a.Length > 2 && a.[2] <> "" then FrameworkIdentifier.Extract a.[2] else None))
-        |> Array.map (fun (name, version, restricted) -> name, NugetVersionRangeParser.parse version, restricted)
+        |> Array.map (fun a -> 
+                        a.[0],
+                        (if a.Length > 1 then a.[1] else "0"),
+                        (if a.Length > 2 && a.[2] <> "" then 
+                            match FrameworkIdentifier.Extract a.[2] with
+                            | Some x -> [FrameworkRestriction.Exactly x]
+                            | None -> []
+                         else 
+                            []))
+        |> Array.map (fun (name, version, restricted) -> PackageName name, NugetVersionRangeParser.parse version, restricted)
         |> Array.toList
 
-    { Name = officialName
+    
+    { PackageName = officialName
       DownloadUrl = downloadLink
-      Dependencies = packages
+      Dependencies = Requirements.optimizeRestrictions packages
       SourceUrl = nugetURL
       Unlisted = publishDate = Constants.MagicUnlistingDate }
 
@@ -207,7 +216,7 @@ let private loadFromCacheOrOData force fileName auth nugetURL package version =
             try 
                 let json = File.ReadAllText(fileName)
                 let cachedObject = JsonConvert.DeserializeObject<NugetPackageCache>(json)                
-                if cachedObject.Name = null || cachedObject.DownloadUrl = null || cachedObject.SourceUrl = null then
+                if cachedObject.PackageName = null || cachedObject.DownloadUrl = null || cachedObject.SourceUrl = null then
                     let! details = getDetailsFromNuGetViaOData auth nugetURL package version
                     return true,details
                 else
@@ -253,9 +262,9 @@ let getDetailsFromLocalFile path package (version:SemVerInfo) =
         File.Delete(fileName)
 
         return 
-            { Name = nuspec.OfficialName
+            { PackageName = nuspec.OfficialName
               DownloadUrl = package
-              Dependencies = nuspec.Dependencies
+              Dependencies = Requirements.optimizeRestrictions nuspec.Dependencies
               SourceUrl = path
               Unlisted = false }
     }
@@ -412,11 +421,14 @@ let GetPackageDetails force sources (PackageName package) (version:SemVerInfo) :
         | [] -> failwithf "Couldn't get package details for package %s on %A." package (sources |> List.map (fun (s:PackageSource) -> s.ToString()))
     
     let source,nugetObject = tryNext sources
-    { Name = PackageName nugetObject.Name
+    { Name = PackageName nugetObject.PackageName
       Source = source
       DownloadLink = nugetObject.DownloadUrl
       Unlisted = nugetObject.Unlisted
-      DirectDependencies = nugetObject.Dependencies |> List.map (fun (name, v, f) -> PackageName name, v, f) |> Set.ofList }
+      DirectDependencies = 
+        nugetObject.Dependencies
+        |> Requirements.optimizeRestrictions
+        |> Set.ofList }
 
 /// Allows to retrieve all version no. for a package from the given sources.
 let GetVersions(sources, PackageName packageName) = 

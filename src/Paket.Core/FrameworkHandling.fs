@@ -67,12 +67,15 @@ type FrameworkIdentifier =
              "windowsPhoneApp", "wpa"
          
              "1.0", "10" 
+             "0.0", "10" 
              "1.1", "11" 
              "2.0", "20" 
              "3.5", "35" 
              "4.0", "40" 
              "4.5", "45" 
              "5.0", "50" 
+             "8.0", "80" 
+             "8.1", "81" 
              "0.0", "" ]
 
         let path = 
@@ -101,7 +104,7 @@ type FrameworkIdentifier =
         | "wp7" | "wp70" | "sl4-wp7"| "sl4-wp70" -> Some (WindowsPhoneSilverlight "v7.0")
         | "wp71" | "sl4-wp71" | "sl4-wp"  -> Some (WindowsPhoneSilverlight "v7.1")
         | "wp8" | "wp80" -> Some (WindowsPhoneSilverlight "v8.0")
-        | "wpa81" -> Some (WindowsPhoneApp "v8.1")
+        | "wpa00" | "wpa81" -> Some (WindowsPhoneApp "v8.1")
         | _ -> None
     
     override x.ToString() = 

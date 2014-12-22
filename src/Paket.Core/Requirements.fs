@@ -4,7 +4,78 @@ open Paket
 open Paket.Domain
 open Paket.PackageSources
 
-type FrameworkRestriction = FrameworkIdentifier option
+[<RequireQualifiedAccess>]
+type FrameworkRestriction = 
+| Exactly of FrameworkIdentifier
+| AtLeast of FrameworkIdentifier
+| Between of FrameworkIdentifier * FrameworkIdentifier
+
+type FrameworkRestrictions = FrameworkRestriction list
+
+let private minRestriction = FrameworkRestriction.Exactly(DotNetFramework(FrameworkVersion.V1))
+
+let findMaxDotNetRestriction restrictions =
+    minRestriction :: restrictions
+    |> List.filter (fun (r:FrameworkRestriction) ->
+        match r with
+        | FrameworkRestriction.Exactly r -> r.ToString().StartsWith("net")
+        | _ -> false)
+    |> List.max
+    |> fun r ->
+        match r with
+        | FrameworkRestriction.Exactly r -> r
+        | _ -> failwith "error"
+
+let optimizeRestrictions packages =
+    let grouped = packages |> Seq.groupBy (fun (n,v,_) -> n,v) |> Seq.toList    
+
+    let invertedRestrictions =
+        let expanded =
+            [for (n,vr,r:FrameworkRestrictions) in packages do
+                for r' in r do
+                    yield n,vr,r']
+            |> Seq.groupBy (fun (_,_,r) -> r)
+
+        [for restriction,packages in expanded do
+            match restriction with
+            | FrameworkRestriction.Exactly r -> 
+                if r.ToString().StartsWith("net") then
+                    yield r,packages |> Seq.map (fun (n,v,_) -> n,v) |> Seq.toList
+            | _ -> () ]
+
+    [for (name,versionRequirement:VersionRequirement),group in grouped do
+        if name <> PackageName "" then
+            let plain = 
+                group 
+                |> Seq.map (fun (_,_,res) -> res) 
+                |> Seq.concat 
+                |> Seq.toList
+
+            let localMaxDotNetRestriction = findMaxDotNetRestriction plain
+        
+
+            let restrictions =
+                plain
+                |> List.map (fun restriction ->
+                    match restriction with
+                    | FrameworkRestriction.Exactly r ->                     
+                        if r = localMaxDotNetRestriction then
+                            let globalMax = 
+                                invertedRestrictions
+                                |> Seq.skipWhile (fun (r,l) -> r <= localMaxDotNetRestriction && l |> List.exists (fun (n,vr) -> n = name && vr = versionRequirement))
+                                |> Seq.map fst
+                                |> Seq.toList
+
+                            if globalMax = [] || r >= globalMax.Head then
+                                FrameworkRestriction.AtLeast r
+                            else
+                                FrameworkRestriction.Between(r,globalMax.Head)
+                        else
+                            restriction
+                    | _ -> restriction)
+                |> Seq.toList
+
+            yield name,versionRequirement,restrictions]
 
 type PackageRequirementSource =
 | DependenciesFile of string
@@ -17,7 +88,7 @@ type PackageRequirement =
       VersionRequirement : VersionRequirement
       ResolverStrategy : ResolverStrategy
       Parent: PackageRequirementSource
-      FrameworkRestriction: FrameworkRestriction
+      FrameworkRestrictions: FrameworkRestrictions
       Sources : PackageSource list }
 
     override this.Equals(that) = 

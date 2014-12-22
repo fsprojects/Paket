@@ -3,6 +3,8 @@
 open Paket
 open NUnit.Framework
 open FsUnit
+open Paket.Requirements
+open Domain
 
 [<Test>]
 let ``can detect explicit references``() = 
@@ -58,30 +60,34 @@ let ``if nuspec is not found we assume no framework references``() =
 let ``can detect framework assemblies for Microsoft.Net.Http``() = 
     Nuspec.Load("Nuspec/Microsoft.Net.Http.nuspec").FrameworkAssemblyReferences
     |> shouldEqual 
-        [{ AssemblyName = "System.Net.Http"; TargetFramework = Some(DotNetFramework(FrameworkVersion.V4_5)) }
-         { AssemblyName = "System.Net.Http.WebRequest"; TargetFramework = Some(DotNetFramework(FrameworkVersion.V4_5)) }
-         { AssemblyName = "System.Net.Http"; TargetFramework = Some(MonoTouch) }
-         { AssemblyName = "System.Net.Http"; TargetFramework = Some(MonoAndroid) } ]
+        [{ AssemblyName = "System.Net.Http"
+           FrameworkRestrictions = 
+             [FrameworkRestriction.Exactly(DotNetFramework(FrameworkVersion.V4_5))
+              FrameworkRestriction.Exactly(MonoTouch)
+              FrameworkRestriction.Exactly(MonoAndroid)] }
+         { AssemblyName = "System.Net.Http.WebRequest"
+           FrameworkRestrictions = 
+             [FrameworkRestriction.Exactly(DotNetFramework(FrameworkVersion.V4_5))] }]
 
 [<Test>]
 let ``can detect framework assemblies for FluentAssertions``() = 
     Nuspec.Load("Nuspec/FluentAssertions.nuspec").FrameworkAssemblyReferences
     |> shouldEqual 
-        [{ AssemblyName = "System.Xml"; TargetFramework = None }
-         { AssemblyName = "System.Xml.Linq"; TargetFramework = None } ]
+        [{ AssemblyName = "System.Xml"; FrameworkRestrictions = [] }
+         { AssemblyName = "System.Xml.Linq"; FrameworkRestrictions = [] } ]
 
 [<Test>]
 let ``can detect framework assemblies for SqlCLient``() = 
     Nuspec.Load("Nuspec/FSharp.Data.SqlClient.nuspec").FrameworkAssemblyReferences
     |> shouldEqual 
-        [{ AssemblyName = "System.Data"; TargetFramework = None }
-         { AssemblyName = "System.Xml"; TargetFramework = None } ]
+        [{ AssemblyName = "System.Data"; FrameworkRestrictions = [] }
+         { AssemblyName = "System.Xml"; FrameworkRestrictions = [] } ]
 
 [<Test>]
 let ``can detect dependencies for SqlCLient``() = 
     Nuspec.Load("Nuspec/FSharp.Data.SqlClient.nuspec").Dependencies
     |> shouldEqual 
-        ["Microsoft.SqlServer.Types",DependenciesFileParser.parseVersionRequirement(">= 11.0.0"), None]
+        [PackageName "Microsoft.SqlServer.Types",DependenciesFileParser.parseVersionRequirement(">= 11.0.0"), []]
 
 [<Test>]
 let ``can detect reference files for SqlCLient``() = 
@@ -92,15 +98,17 @@ let ``can detect reference files for SqlCLient``() =
 let ``can detect framework assemblies for Octokit``() = 
     Nuspec.Load("Nuspec/Octokit.nuspec").FrameworkAssemblyReferences
     |> shouldEqual 
-        [{ AssemblyName = "System.Net.Http"; TargetFramework = Some(DotNetFramework(FrameworkVersion.V4_5)) }
-         { AssemblyName = "System.Net.Http"; TargetFramework = Some(Windows "v4.5") }]
+        [{ AssemblyName = "System.Net.Http"
+           FrameworkRestrictions = 
+            [FrameworkRestriction.Exactly(DotNetFramework(FrameworkVersion.V4_5))
+             FrameworkRestriction.Exactly(Windows "v4.5")] }]
 
 [<Test>]
 let ``can detect framework assemblies for FSharp.Data.SqlEnumProvider``() = 
     Nuspec.Load("Nuspec/FSharp.Data.SqlEnumProvider.nuspec").FrameworkAssemblyReferences
     |> shouldEqual 
-        [{ AssemblyName = "System.Data"; TargetFramework = Some(DotNetFramework(FrameworkVersion.V4_Client)) }
-         { AssemblyName = "System.Xml"; TargetFramework = Some(DotNetFramework(FrameworkVersion.V4_Client)) }]
+        [{ AssemblyName = "System.Data"; FrameworkRestrictions = [FrameworkRestriction.Exactly(DotNetFramework(FrameworkVersion.V4_Client))] }
+         { AssemblyName = "System.Xml"; FrameworkRestrictions = [FrameworkRestriction.Exactly(DotNetFramework(FrameworkVersion.V4_Client))] }]
 
 [<Test>]
 let ``can detect empty framework assemblies for ReadOnlyCollectionExtensions``() = 
@@ -115,23 +123,49 @@ let ``can detect empty dependencies for log4net``() =
 [<Test>]
 let ``can detect explicit dependencies for Fantomas``() = 
     Nuspec.Load("Nuspec/Fantomas.nuspec").Dependencies
-    |> shouldEqual ["FSharp.Compiler.Service",DependenciesFileParser.parseVersionRequirement(">= 0.0.57"), None]
+    |> shouldEqual [PackageName "FSharp.Compiler.Service",DependenciesFileParser.parseVersionRequirement(">= 0.0.57"), []]
 
 [<Test>]
 let ``can detect explicit dependencies for ReadOnlyCollectionExtensions``() = 
     Nuspec.Load("Nuspec/ReadOnlyCollectionExtensions.nuspec").Dependencies
     |> shouldEqual 
-        ["LinqBridge",DependenciesFileParser.parseVersionRequirement(">= 1.3.0"), Some(DotNetFramework(FrameworkVersion.V2))
-         "ReadOnlyCollectionInterfaces",DependenciesFileParser.parseVersionRequirement("1.0.0"), Some(DotNetFramework(FrameworkVersion.V2))
-         "ReadOnlyCollectionInterfaces",DependenciesFileParser.parseVersionRequirement("1.0.0"), Some(DotNetFramework(FrameworkVersion.V3_5))
-         "ReadOnlyCollectionInterfaces",DependenciesFileParser.parseVersionRequirement("1.0.0"), Some(DotNetFramework(FrameworkVersion.V4_Client))]
+        [PackageName "LinqBridge",DependenciesFileParser.parseVersionRequirement(">= 1.3.0"), 
+            [FrameworkRestriction.Between(DotNetFramework(FrameworkVersion.V2),DotNetFramework(FrameworkVersion.V3_5))]
+         PackageName "ReadOnlyCollectionInterfaces",DependenciesFileParser.parseVersionRequirement("1.0.0"),
+            [FrameworkRestriction.Exactly(DotNetFramework(FrameworkVersion.V2))
+             FrameworkRestriction.Exactly(DotNetFramework(FrameworkVersion.V3_5))
+             FrameworkRestriction.AtLeast(DotNetFramework(FrameworkVersion.V4_Client))]]
 
 [<Test>]
 let ``can detect framework assemblies for MathNet.Numerics``() = 
     Nuspec.Load("Nuspec/MathNet.Numerics.nuspec").FrameworkAssemblyReferences
     |> shouldEqual 
-        [{ AssemblyName = "System.Numerics"; TargetFramework = Some(DotNetFramework(FrameworkVersion.V4_Client)) }
-         { AssemblyName = "System.Numerics"; TargetFramework = Some(Windows("v4.5")) }
-         { AssemblyName = "System.Numerics"; TargetFramework = Some(Silverlight("v5.0")) }
-         { AssemblyName = "System.Numerics"; TargetFramework = Some(MonoAndroid) }
-         { AssemblyName = "System.Numerics"; TargetFramework = Some(MonoTouch) }]
+        [{ AssemblyName = "System.Numerics"
+           FrameworkRestrictions = 
+            [FrameworkRestriction.Exactly(DotNetFramework(FrameworkVersion.V4_Client))
+             FrameworkRestriction.Exactly(Windows("v4.5"))
+             FrameworkRestriction.Exactly(Silverlight("v5.0"))
+             FrameworkRestriction.Exactly(MonoAndroid)
+             FrameworkRestriction.Exactly(MonoTouch)] }]
+
+
+[<Test>]
+let ``can detect dependencies for MathNet.Numerics``() = 
+    Nuspec.Load("Nuspec/MathNet.Numerics.nuspec").Dependencies
+    |> shouldEqual 
+        [ PackageName "TaskParallelLibrary",
+          DependenciesFileParser.parseVersionRequirement(">= 1.0.2856.0"),
+            [FrameworkRestriction.Between(
+                DotNetFramework(FrameworkVersion.V3_5),
+                DotNetFramework(FrameworkVersion.V4_Client))] ]
+
+[<Test>]
+let ``can detect explicit dependencies for WindowsAzure.Storage``() = 
+    Nuspec.Load("Nuspec/WindowsAzure.Storage.nuspec").Dependencies
+    |> Seq.skip 1
+    |> Seq.head
+    |> shouldEqual 
+        (PackageName "Newtonsoft.Json",
+          DependenciesFileParser.parseVersionRequirement(">= 5.0.8"),
+          [FrameworkRestriction.AtLeast(DotNetFramework(FrameworkVersion.V4_Client))
+           FrameworkRestriction.Exactly(WindowsPhoneSilverlight("v8.0"))])

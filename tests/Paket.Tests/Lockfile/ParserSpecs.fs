@@ -6,6 +6,7 @@ open FsUnit
 open TestHelpers
 open Paket.Domain
 open Paket.ModuleResolver
+open Paket.Requirements
 
 let lockFile = """NUGET
   remote: https://nuget.org/api/v2
@@ -42,12 +43,12 @@ let ``should parse lock file``() =
     packages.[1].Source |> shouldEqual PackageSources.DefaultNugetSource
     packages.[1].Name |> shouldEqual (PackageName "Castle.Windsor-log4net")
     packages.[1].Version |> shouldEqual (SemVer.Parse "3.3")
-    packages.[1].Dependencies |> shouldEqual (Set.ofList [PackageName "Castle.Windsor", VersionRequirement.AllReleases, None; PackageName "log4net", VersionRequirement.AllReleases, None])
+    packages.[1].Dependencies |> shouldEqual (Set.ofList [PackageName "Castle.Windsor", VersionRequirement.AllReleases, []; PackageName "log4net", VersionRequirement.AllReleases, []])
     
     packages.[5].Source |> shouldEqual PackageSources.DefaultNugetSource
     packages.[5].Name |> shouldEqual (PackageName "log4net")
     packages.[5].Version |> shouldEqual (SemVer.Parse "1.1")
-    packages.[5].Dependencies |> shouldEqual (Set.ofList [PackageName "log", VersionRequirement.AllReleases, None])
+    packages.[5].Dependencies |> shouldEqual (Set.ofList [PackageName "log", VersionRequirement.AllReleases, []])
 
     let sourceFiles = List.rev lockFile.SourceFiles
     sourceFiles|> shouldEqual
@@ -95,7 +96,7 @@ let ``should parse strict lock file``() =
     packages.[5].Source |> shouldEqual PackageSources.DefaultNugetSource
     packages.[5].Name |> shouldEqual (PackageName "log4net")
     packages.[5].Version |> shouldEqual (SemVer.Parse "1.1")
-    packages.[5].Dependencies |> shouldEqual (Set.ofList [PackageName "log", VersionRequirement.AllReleases, None])
+    packages.[5].Dependencies |> shouldEqual (Set.ofList [PackageName "log", VersionRequirement.AllReleases, []])
 
 let redirectsLockFile = """REDIRECTS: ON
 NUGET
@@ -158,7 +159,7 @@ let ``should parse own lock file``() =
     packages.[1].Source |> shouldEqual PackageSources.DefaultNugetSource
     packages.[1].Name |> shouldEqual (PackageName "FAKE")
     packages.[1].Version |> shouldEqual (SemVer.Parse "3.5.5")
-    packages.[3].FrameworkRestriction |> shouldEqual None
+    packages.[3].FrameworkRestrictions |> shouldEqual []
 
     lockFile.SourceFiles.[0].Name |> shouldEqual "modules/Octokit/Octokit.fsx"
 
@@ -169,18 +170,16 @@ let frameworkRestricted = """NUGET
     Fleece (0.4.0)
       FSharpPlus (>= 0.0.4)
       ReadOnlyCollectionExtensions (>= 1.2.0)
-      ReadOnlyCollectionInterfaces (1.0.0)
+      ReadOnlyCollectionInterfaces (1.0.0) - >= net40
       System.Json (>= 4.0.20126.16343)
     FsControl (1.0.9)
     FSharpPlus (0.0.4)
       FsControl (>= 1.0.9)
-    LinqBridge (1.3.0) - net20
+    LinqBridge (1.3.0) - >= net20 < net35
     ReadOnlyCollectionExtensions (1.2.0)
-      LinqBridge (>= 1.3.0) - net20
-      ReadOnlyCollectionInterfaces (1.0.0) - net20
-      ReadOnlyCollectionInterfaces (1.0.0) - net35
-      ReadOnlyCollectionInterfaces (1.0.0) - net40
-    ReadOnlyCollectionInterfaces (1.0.0)
+      LinqBridge (>= 1.3.0) - >= net20 < net35
+      ReadOnlyCollectionInterfaces (1.0.0) - net20, net35, >= net40
+    ReadOnlyCollectionInterfaces (1.0.0) - net20, net35, >= net40
     System.Json (4.0.20126.16343)
 """
 
@@ -193,7 +192,15 @@ let ``should parse framework restricted lock file``() =
     packages.[3].Source |> shouldEqual PackageSources.DefaultNugetSource
     packages.[3].Name |> shouldEqual (PackageName "LinqBridge")
     packages.[3].Version |> shouldEqual (SemVer.Parse "1.3.0")
-    packages.[3].FrameworkRestriction |> shouldEqual (Some (FrameworkIdentifier.DotNetFramework(FrameworkVersion.V2)))
+    packages.[3].FrameworkRestrictions |> shouldEqual ([FrameworkRestriction.Between(FrameworkIdentifier.DotNetFramework(FrameworkVersion.V2),FrameworkIdentifier.DotNetFramework(FrameworkVersion.V3_5))])
+
+    packages.[5].Source |> shouldEqual PackageSources.DefaultNugetSource
+    packages.[5].Name |> shouldEqual (PackageName "ReadOnlyCollectionInterfaces")
+    packages.[5].Version |> shouldEqual (SemVer.Parse "1.0.0")
+    packages.[5].FrameworkRestrictions 
+    |> shouldEqual ([FrameworkRestriction.Exactly(FrameworkIdentifier.DotNetFramework(FrameworkVersion.V2))
+                     FrameworkRestriction.Exactly(FrameworkIdentifier.DotNetFramework(FrameworkVersion.V3_5))
+                     FrameworkRestriction.AtLeast(FrameworkIdentifier.DotNetFramework(FrameworkVersion.V4_Client))])
 
 let simpleHTTP = """
 HTTP

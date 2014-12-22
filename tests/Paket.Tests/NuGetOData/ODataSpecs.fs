@@ -7,6 +7,8 @@ open System.IO
 open Paket.NuGetV2
 
 open Paket.NuGetV3
+open Paket.Requirements
+open Domain
 
 let fakeUrl = "http://doesntmatter"
 
@@ -17,9 +19,9 @@ let parse fileName =
 let ``can detect explicit dependencies for Fantomas``() = 
     parse "NuGetOData/Fantomas.xml"
     |> shouldEqual 
-        { Name = "Fantomas"
+        { PackageName = "Fantomas"
           DownloadUrl = "http://www.nuget.org/api/v2/package/Fantomas/1.6.0"
-          Dependencies = ["FSharp.Compiler.Service",DependenciesFileParser.parseVersionRequirement(">= 0.0.73"), None]
+          Dependencies = [PackageName "FSharp.Compiler.Service",DependenciesFileParser.parseVersionRequirement(">= 0.0.73"), []]
           Unlisted = false
           SourceUrl = fakeUrl }
 
@@ -27,10 +29,11 @@ let ``can detect explicit dependencies for Fantomas``() =
 let ``can detect explicit dependencies for Rx-PlaformServices``() = 
     parse "NuGetOData/Rx-PlatformServices.xml"
     |> shouldEqual 
-        { Name = "Rx-PlatformServices"
+        { PackageName = "Rx-PlatformServices"
           DownloadUrl = "https://www.nuget.org/api/v2/package/Rx-PlatformServices/2.3.0"
-          Dependencies = ["Rx-Interfaces",DependenciesFileParser.parseVersionRequirement(">= 2.2"), None
-                          "Rx-Core",DependenciesFileParser.parseVersionRequirement(">= 2.2"), None]
+          Dependencies = 
+                [PackageName "Rx-Interfaces",DependenciesFileParser.parseVersionRequirement(">= 2.2"), []
+                 PackageName "Rx-Core",DependenciesFileParser.parseVersionRequirement(">= 2.2"), []]
           Unlisted = true
           SourceUrl = fakeUrl }
 
@@ -38,28 +41,42 @@ let ``can detect explicit dependencies for Rx-PlaformServices``() =
 let ``can detect explicit dependencies for Fleece``() = 
     parse "NuGetOData/Fleece.xml"
     |> shouldEqual 
-        { Name = "Fleece"
+        { PackageName = "Fleece"
           DownloadUrl = "http://www.nuget.org/api/v2/package/Fleece/0.4.0"
           Unlisted = false
           Dependencies = 
-            ["FSharpPlus",DependenciesFileParser.parseVersionRequirement(">= 0.0.4"), None
-             "ReadOnlyCollectionInterfaces",DependenciesFileParser.parseVersionRequirement("1.0.0"), None
-             "ReadOnlyCollectionExtensions",DependenciesFileParser.parseVersionRequirement(">= 1.2.0"), None
-             "System.Json",DependenciesFileParser.parseVersionRequirement(">= 4.0.20126.16343"), None]
+            [PackageName "FSharpPlus",DependenciesFileParser.parseVersionRequirement(">= 0.0.4"), []
+             PackageName "ReadOnlyCollectionInterfaces",DependenciesFileParser.parseVersionRequirement("1.0.0"), []
+             PackageName "ReadOnlyCollectionExtensions",DependenciesFileParser.parseVersionRequirement(">= 1.2.0"), []
+             PackageName "System.Json",DependenciesFileParser.parseVersionRequirement(">= 4.0.20126.16343"), []]
           SourceUrl = fakeUrl }
 
 [<Test>]
 let ``can detect explicit dependencies for ReadOnlyCollectionExtensions``() = 
     parse "NuGetOData/ReadOnlyCollectionExtensions.xml"
     |> shouldEqual 
-        { Name = "ReadOnlyCollectionExtensions"
+        { PackageName = "ReadOnlyCollectionExtensions"
           DownloadUrl = "http://www.nuget.org/api/v2/package/ReadOnlyCollectionExtensions/1.2.0"
           Unlisted = false
           Dependencies = 
-            ["LinqBridge",DependenciesFileParser.parseVersionRequirement(">= 1.3.0"), Some(DotNetFramework(FrameworkVersion.V2))
-             "ReadOnlyCollectionInterfaces",DependenciesFileParser.parseVersionRequirement("1.0.0"), Some(DotNetFramework(FrameworkVersion.V2))
-             "ReadOnlyCollectionInterfaces",DependenciesFileParser.parseVersionRequirement("1.0.0"), Some(DotNetFramework(FrameworkVersion.V3_5))
-             "ReadOnlyCollectionInterfaces",DependenciesFileParser.parseVersionRequirement("1.0.0"), Some(DotNetFramework(FrameworkVersion.V4_Client))]
+            [PackageName "LinqBridge",DependenciesFileParser.parseVersionRequirement(">= 1.3.0"), 
+               [FrameworkRestriction.Between(DotNetFramework(FrameworkVersion.V2),DotNetFramework(FrameworkVersion.V3_5))]
+             PackageName "ReadOnlyCollectionInterfaces",DependenciesFileParser.parseVersionRequirement("1.0.0"), 
+               [FrameworkRestriction.Exactly(DotNetFramework(FrameworkVersion.V2))
+                FrameworkRestriction.Exactly(DotNetFramework(FrameworkVersion.V3_5))
+                FrameworkRestriction.AtLeast(DotNetFramework(FrameworkVersion.V4_Client))]]
+          SourceUrl = fakeUrl }
+
+[<Test>]
+let ``can detect explicit dependencies for Math.Numerics``() = 
+    parse "NuGetOData/Math.Numerics.xml"
+    |> shouldEqual 
+        { PackageName = "MathNet.Numerics"
+          DownloadUrl = "http://www.nuget.org/api/v2/package/MathNet.Numerics/3.3.0"
+          Unlisted = false
+          Dependencies = 
+            [PackageName "TaskParallelLibrary",DependenciesFileParser.parseVersionRequirement(">= 1.0.2856"), 
+               [FrameworkRestriction.Between(DotNetFramework(FrameworkVersion.V3_5),DotNetFramework(FrameworkVersion.V4_Client))]]
           SourceUrl = fakeUrl }
 
 [<Test>]
