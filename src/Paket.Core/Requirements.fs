@@ -16,10 +16,30 @@ let optimizeRestrictions packages =
     let grouped = packages |> Seq.groupBy (fun (n,v,_) -> n,v)
 
     [for (name,versionRequirement),group in grouped do
-        let plain = Seq.map (fun (_,_,res) -> res) group
+        let plain = 
+            group 
+            |> Seq.map (fun (_,_,res) -> res) 
+            |> Seq.concat 
+            |> Seq.toList
+
+        let netRestrictions =
+            FrameworkRestriction.Exactly(DotNetFramework(FrameworkVersion.V1)) :: plain
+            |> List.filter (fun (r:FrameworkRestriction) ->
+                match r with
+                | FrameworkRestriction.Exactly r -> r.ToString().StartsWith("net")
+                | _ -> false)
+            |> List.max
+
         let restrictions =
             plain
-            |> Seq.concat
+            |> List.map (fun r ->
+                match r with
+                | FrameworkRestriction.Exactly r' ->
+                    if r = netRestrictions then
+                        FrameworkRestriction.AtLeast r'
+                    else
+                        r
+                | _ -> r)
             |> Seq.toList
 
         yield name,versionRequirement,restrictions]
