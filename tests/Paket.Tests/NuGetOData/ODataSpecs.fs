@@ -68,6 +68,18 @@ let ``can detect explicit dependencies for ReadOnlyCollectionExtensions``() =
           SourceUrl = fakeUrl }
 
 [<Test>]
+let ``can detect explicit dependencies for Math.Numerics``() = 
+    parse "NuGetOData/Math.Numerics.xml"
+    |> shouldEqual 
+        { PackageName = "MathNet.Numerics"
+          DownloadUrl = "http://www.nuget.org/api/v2/package/MathNet.Numerics/3.3.0"
+          Unlisted = false
+          Dependencies = 
+            [PackageName "TaskParallelLibrary",DependenciesFileParser.parseVersionRequirement(">= 1.0.2856"), 
+               [FrameworkRestriction.Between(DotNetFramework(FrameworkVersion.V3_5),DotNetFramework(FrameworkVersion.V4_Client))]]
+          SourceUrl = fakeUrl }
+
+[<Test>]
 let ``can calculate v3 path``() = 
     calculateNuGet3Path "https://nuget.org/api/v2" |> shouldEqual (Some "http://preview.nuget.org/ver3-preview/index.json")
     calculateNuGet3Path "http://nuget.org/api/v2" |> shouldEqual (Some "http://preview.nuget.org/ver3-preview/index.json")

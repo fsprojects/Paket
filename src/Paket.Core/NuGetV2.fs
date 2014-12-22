@@ -162,7 +162,6 @@ let parseODataDetails(nugetURL,packageName,version,raw) =
         dependencies
         |> fun s -> s.Split([| '|' |], System.StringSplitOptions.RemoveEmptyEntries)
         |> Array.map (fun d -> d.Split ':')
-        |> Array.filter (fun d -> Array.isEmpty d |> not && d.[0] <> "")
         |> Array.map (fun a -> 
                         a.[0],
                         (if a.Length > 1 then a.[1] else "0"),

@@ -1,0 +1,70 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<feed xml:base="http://www.nuget.org/api/v2/" xmlns="http://www.w3.org/2005/Atom" xmlns:d="http://schemas.microsoft.com/ado/2007/08/dataservices" xmlns:m="http://schemas.microsoft.com/ado/2007/08/dataservices/metadata">
+  <id>http://www.nuget.org/api/v2/Packages</id>
+  <title type="text">Packages</title>
+  <updated>2014-12-22T15:41:22Z</updated>
+  <link rel="self" title="Packages" href="Packages" />
+  <entry>
+    <id>http://www.nuget.org/api/v2/Packages(Id='MathNet.Numerics',Version='3.3.0')</id>
+    <category term="NuGetGallery.V2FeedPackage" scheme="http://schemas.microsoft.com/ado/2007/08/dataservices/scheme" />
+    <link rel="edit" title="V2FeedPackage" href="Packages(Id='MathNet.Numerics',Version='3.3.0')" />
+    <title type="text">MathNet.Numerics</title>
+    <summary type="text">Math.NET Numerics, providing methods and algorithms for numerical computations in science, engineering and every day use.</summary>
+    <updated>2014-12-22T15:40:02Z</updated>
+    <author>
+      <name>Christoph Ruegg,  Marcus Cuda,  Jurgen Van Gael</name>
+    </author>
+    <link rel="edit-media" title="V2FeedPackage" href="Packages(Id='MathNet.Numerics',Version='3.3.0')/$value" />
+    <content type="application/zip" src="http://www.nuget.org/api/v2/package/MathNet.Numerics/3.3.0" />
+    <m:properties>
+      <d:Version>3.3.0</d:Version>
+      <d:NormalizedVersion>3.3.0</d:NormalizedVersion>
+      <d:Copyright m:null="true" />
+      <d:Created m:type="Edm.DateTime">2014-11-26T14:48:41.073</d:Created>
+      <d:Dependencies>TaskParallelLibrary:1.0.2856:net35|::net40</d:Dependencies>
+      <d:Description>Math.NET Numerics is the numerical foundation of the Math.NET project, aiming to provide methods and algorithms for numerical computations in science, engineering and every day use. Supports .Net 4.0, .Net 3.5 and Mono on Windows, Linux and Mac; Silverlight 5, WindowsPhone/SL 8, WindowsPhone 8.1 and Windows 8 with PCL portable profiles 7, 47, 78, 259 and 328; Android/iOS with Xamarin.</d:Description>
+      <d:DownloadCount m:type="Edm.Int32">69334</d:DownloadCount>
+      <d:GalleryDetailsUrl>http://www.nuget.org/packages/MathNet.Numerics/3.3.0</d:GalleryDetailsUrl>
+      <d:IconUrl>http://www.mathdotnet.com/images/MathNet128.png</d:IconUrl>
+      <d:IsLatestVersion m:type="Edm.Boolean">true</d:IsLatestVersion>
+      <d:IsAbsoluteLatestVersion m:type="Edm.Boolean">true</d:IsAbsoluteLatestVersion>
+      <d:IsPrerelease m:type="Edm.Boolean">false</d:IsPrerelease>
+      <d:Language m:null="true" />
+      <d:Published m:type="Edm.DateTime">2014-11-26T14:48:41.073</d:Published>
+      <d:PackageHash>TC9ioJZmxqpfUfjmEBKEUExNsN5Rp2lpt3/TsAWWjfoFsHwvcqNiihjMhHgCInZA1aYPc/1EulNp784bVfBHMQ==</d:PackageHash>
+      <d:PackageHashAlgorithm>SHA512</d:PackageHashAlgorithm>
+      <d:PackageSize m:type="Edm.Int64">4184180</d:PackageSize>
+      <d:ProjectUrl>http://numerics.mathdotnet.com/</d:ProjectUrl>
+      <d:ReportAbuseUrl>http://www.nuget.org/package/ReportAbuse/MathNet.Numerics/3.3.0</d:ReportAbuseUrl>
+      <d:ReleaseNotes>
+        Linear Algebra: Vector.Fold2 (fold2 in F#), storage optimized
+        Linear Algebra: Minor change how matrix products call the LA provider
+        Linear Algebra: Random generation now leveraging array sampling routines
+        Linear Algebra: fix bug when manually assigning System.Random to random distribution
+        Root Finding: Change Brent tolerance check, add bracked check ~Hythen Sidky
+        Root Finding: Auto zero-crossing bracketing in FindRoots facade (not in algorithms)
+        Statistics: RootMeanSquare (RMS)
+        Distributions: Array sampling routines now available through interface
+        Distributions: Categorical sampling now explicitly skips p=0 categories
+        Generate: leverage array sampling routines for random data generation
+        Generate: square, triangle and sawtooth waves
+        Distance: Jaccard Index
+        F#: explicitly depend on official FSharp.Core NuGet packages
+        F#: NuGet package with iPython IfSharp F# module integration load script
+        F#: load scripts with better packet support (and NuGet with -ExcludeVersion)
+        Build: unified build.sh and buildn.sh into combined build.sh
+        Build: use Paket instead of NuGet to maintain NuGet dependencies
+        Build: for core add PCL profiles 7, 78 and 259; for F# extensions drop PCL profile 328
+      </d:ReleaseNotes>
+      <d:RequireLicenseAcceptance m:type="Edm.Boolean">false</d:RequireLicenseAcceptance>
+      <d:Tags>math numeric statistics probability integration interpolation regression solve fit linear algebra matrix fft</d:Tags>
+      <d:Title>Math.NET Numerics</d:Title>
+      <d:VersionDownloadCount m:type="Edm.Int32">2082</d:VersionDownloadCount>
+      <d:MinClientVersion m:null="true" />
+      <d:LastEdited m:type="Edm.DateTime" m:null="true" />
+      <d:LicenseUrl>http://numerics.mathdotnet.com/docs/License.html</d:LicenseUrl>
+      <d:LicenseNames m:null="true" />
+      <d:LicenseReportUrl m:null="true" />
+    </m:properties>
+  </entry>
+</feed>
