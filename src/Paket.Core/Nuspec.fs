@@ -5,6 +5,7 @@ open System.Xml
 open System.IO
 open Xml
 open Paket.Requirements
+open Paket.Domain
 
 [<RequireQualifiedAccess>]
 type NuspecReferences = 
@@ -82,7 +83,7 @@ module NugetVersionRangeParser =
 
 type Nuspec = 
     { References : NuspecReferences 
-      Dependencies : (string * VersionRequirement * FrameworkRestrictions) list
+      Dependencies : (PackageName * VersionRequirement * FrameworkRestrictions) list
       OfficialName : string
       FrameworkAssemblyReferences : FrameworkAssemblyReference list }
 
@@ -103,7 +104,7 @@ type Nuspec =
             let dependency node = 
                 let name = 
                     match node |> getAttribute "id" with
-                    | Some name -> name
+                    | Some name -> PackageName name
                     | None -> failwithf "unable to find dependency id in %s" fileName                            
                 let version = 
                     match node |> getAttribute "version" with
@@ -119,10 +120,24 @@ type Nuspec =
                     | _ -> []
                 name,version,restriction
 
+            let frameworks =
+                doc 
+                |> getDescendants "group" 
+                |> Seq.map (fun node ->
+                    match node |> getAttribute "targetFramework" with
+                    | Some framework ->
+                        match FrameworkIdentifier.Extract framework with
+                        | Some x -> [PackageName "",VersionRequirement.NoRestriction,[FrameworkRestriction.Exactly x]]
+                        | None -> []
+                    | _ -> [])
+                |> Seq.concat
+                |> Seq.toList
+
             let dependencies = 
                 doc 
                 |> getDescendants "dependency"
                 |> List.map dependency
+                |> List.append frameworks
                 |> Requirements.optimizeRestrictions 
             
             let references = 

@@ -175,9 +175,9 @@ let frameworkRestricted = """NUGET
     FsControl (1.0.9)
     FSharpPlus (0.0.4)
       FsControl (>= 1.0.9)
-    LinqBridge (1.3.0) - net20
+    LinqBridge (1.3.0) - >= net20 < net35
     ReadOnlyCollectionExtensions (1.2.0)
-      LinqBridge (>= 1.3.0) - net20
+      LinqBridge (>= 1.3.0) - >= net20 < net35
       ReadOnlyCollectionInterfaces (1.0.0) - net20, net35, >= net40
     ReadOnlyCollectionInterfaces (1.0.0) - net20, net35, >= net40
     System.Json (4.0.20126.16343)
@@ -192,7 +192,7 @@ let ``should parse framework restricted lock file``() =
     packages.[3].Source |> shouldEqual PackageSources.DefaultNugetSource
     packages.[3].Name |> shouldEqual (PackageName "LinqBridge")
     packages.[3].Version |> shouldEqual (SemVer.Parse "1.3.0")
-    packages.[3].FrameworkRestrictions |> shouldEqual ([FrameworkRestriction.Exactly(FrameworkIdentifier.DotNetFramework(FrameworkVersion.V2))])
+    packages.[3].FrameworkRestrictions |> shouldEqual ([FrameworkRestriction.Between(FrameworkIdentifier.DotNetFramework(FrameworkVersion.V2),FrameworkIdentifier.DotNetFramework(FrameworkVersion.V3_5))])
 
     packages.[5].Source |> shouldEqual PackageSources.DefaultNugetSource
     packages.[5].Name |> shouldEqual (PackageName "ReadOnlyCollectionInterfaces")

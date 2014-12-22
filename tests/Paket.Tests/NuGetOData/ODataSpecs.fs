@@ -8,6 +8,7 @@ open Paket.NuGetV2
 
 open Paket.NuGetV3
 open Paket.Requirements
+open Domain
 
 let fakeUrl = "http://doesntmatter"
 
@@ -20,7 +21,7 @@ let ``can detect explicit dependencies for Fantomas``() =
     |> shouldEqual 
         { PackageName = "Fantomas"
           DownloadUrl = "http://www.nuget.org/api/v2/package/Fantomas/1.6.0"
-          Dependencies = ["FSharp.Compiler.Service",DependenciesFileParser.parseVersionRequirement(">= 0.0.73"), []]
+          Dependencies = [PackageName "FSharp.Compiler.Service",DependenciesFileParser.parseVersionRequirement(">= 0.0.73"), []]
           Unlisted = false
           SourceUrl = fakeUrl }
 
@@ -31,8 +32,8 @@ let ``can detect explicit dependencies for Rx-PlaformServices``() =
         { PackageName = "Rx-PlatformServices"
           DownloadUrl = "https://www.nuget.org/api/v2/package/Rx-PlatformServices/2.3.0"
           Dependencies = 
-                ["Rx-Interfaces",DependenciesFileParser.parseVersionRequirement(">= 2.2"), []
-                 "Rx-Core",DependenciesFileParser.parseVersionRequirement(">= 2.2"), []]
+                [PackageName "Rx-Interfaces",DependenciesFileParser.parseVersionRequirement(">= 2.2"), []
+                 PackageName "Rx-Core",DependenciesFileParser.parseVersionRequirement(">= 2.2"), []]
           Unlisted = true
           SourceUrl = fakeUrl }
 
@@ -44,10 +45,10 @@ let ``can detect explicit dependencies for Fleece``() =
           DownloadUrl = "http://www.nuget.org/api/v2/package/Fleece/0.4.0"
           Unlisted = false
           Dependencies = 
-            ["FSharpPlus",DependenciesFileParser.parseVersionRequirement(">= 0.0.4"), []
-             "ReadOnlyCollectionInterfaces",DependenciesFileParser.parseVersionRequirement("1.0.0"), []
-             "ReadOnlyCollectionExtensions",DependenciesFileParser.parseVersionRequirement(">= 1.2.0"), []
-             "System.Json",DependenciesFileParser.parseVersionRequirement(">= 4.0.20126.16343"), []]
+            [PackageName "FSharpPlus",DependenciesFileParser.parseVersionRequirement(">= 0.0.4"), []
+             PackageName "ReadOnlyCollectionInterfaces",DependenciesFileParser.parseVersionRequirement("1.0.0"), []
+             PackageName "ReadOnlyCollectionExtensions",DependenciesFileParser.parseVersionRequirement(">= 1.2.0"), []
+             PackageName "System.Json",DependenciesFileParser.parseVersionRequirement(">= 4.0.20126.16343"), []]
           SourceUrl = fakeUrl }
 
 [<Test>]
@@ -58,9 +59,9 @@ let ``can detect explicit dependencies for ReadOnlyCollectionExtensions``() =
           DownloadUrl = "http://www.nuget.org/api/v2/package/ReadOnlyCollectionExtensions/1.2.0"
           Unlisted = false
           Dependencies = 
-            ["LinqBridge",DependenciesFileParser.parseVersionRequirement(">= 1.3.0"), 
-               [FrameworkRestriction.AtLeast(DotNetFramework(FrameworkVersion.V2))]
-             "ReadOnlyCollectionInterfaces",DependenciesFileParser.parseVersionRequirement("1.0.0"), 
+            [PackageName "LinqBridge",DependenciesFileParser.parseVersionRequirement(">= 1.3.0"), 
+               [FrameworkRestriction.Between(DotNetFramework(FrameworkVersion.V2),DotNetFramework(FrameworkVersion.V3_5))]
+             PackageName "ReadOnlyCollectionInterfaces",DependenciesFileParser.parseVersionRequirement("1.0.0"), 
                [FrameworkRestriction.Exactly(DotNetFramework(FrameworkVersion.V2))
                 FrameworkRestriction.Exactly(DotNetFramework(FrameworkVersion.V3_5))
                 FrameworkRestriction.AtLeast(DotNetFramework(FrameworkVersion.V4_Client))]]

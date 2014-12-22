@@ -19,7 +19,7 @@ open Paket.NuGetV3
 open Paket.Requirements
 
 type NugetPackageCache =
-    { Dependencies : (string * VersionRequirement * FrameworkRestrictions) list
+    { Dependencies : (PackageName * VersionRequirement * FrameworkRestrictions) list
       PackageName : string
       SourceUrl: string
       Unlisted : bool
@@ -172,7 +172,7 @@ let parseODataDetails(nugetURL,packageName,version,raw) =
                             | None -> []
                          else 
                             []))
-        |> Array.map (fun (name, version, restricted) -> name, NugetVersionRangeParser.parse version, restricted)
+        |> Array.map (fun (name, version, restricted) -> PackageName name, NugetVersionRangeParser.parse version, restricted)
         |> Array.toList
 
     
@@ -427,8 +427,7 @@ let GetPackageDetails force sources (PackageName package) (version:SemVerInfo) :
       DownloadLink = nugetObject.DownloadUrl
       Unlisted = nugetObject.Unlisted
       DirectDependencies = 
-        nugetObject.Dependencies 
-        |> List.map (fun (name, v, f) -> PackageName name, v, f) 
+        nugetObject.Dependencies
         |> Requirements.optimizeRestrictions
         |> Set.ofList }
 

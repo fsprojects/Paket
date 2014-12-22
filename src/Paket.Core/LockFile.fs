@@ -177,12 +177,20 @@ module LockFileParser =
                                                 [for p in commaSplit do
                                                     let operatorSplit = p.Trim().Split(' ')
                                                     let framework =
-                                                        if operatorSplit.Length < 2 then operatorSplit.[0] else operatorSplit.[1]
+                                                        if operatorSplit.Length < 2 then 
+                                                           operatorSplit.[0] 
+                                                        else 
+                                                           operatorSplit.[1]
                                                     match FrameworkIdentifier.Extract(framework) with
                                                     | None -> ()
                                                     | Some x -> 
                                                         if operatorSplit.[0] = ">=" then
-                                                            yield FrameworkRestriction.AtLeast x
+                                                            if operatorSplit.Length < 4 then
+                                                                yield FrameworkRestriction.AtLeast x
+                                                            else
+                                                                match FrameworkIdentifier.Extract(operatorSplit.[3]) with
+                                                                | None -> ()
+                                                                | Some y -> yield FrameworkRestriction.Between(x,y)
                                                         else
                                                             yield FrameworkRestriction.Exactly x]
 

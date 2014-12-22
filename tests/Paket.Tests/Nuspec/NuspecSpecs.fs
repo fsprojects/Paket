@@ -4,6 +4,7 @@ open Paket
 open NUnit.Framework
 open FsUnit
 open Paket.Requirements
+open Domain
 
 [<Test>]
 let ``can detect explicit references``() = 
@@ -86,7 +87,7 @@ let ``can detect framework assemblies for SqlCLient``() =
 let ``can detect dependencies for SqlCLient``() = 
     Nuspec.Load("Nuspec/FSharp.Data.SqlClient.nuspec").Dependencies
     |> shouldEqual 
-        ["Microsoft.SqlServer.Types",DependenciesFileParser.parseVersionRequirement(">= 11.0.0"), []]
+        [PackageName "Microsoft.SqlServer.Types",DependenciesFileParser.parseVersionRequirement(">= 11.0.0"), []]
 
 [<Test>]
 let ``can detect reference files for SqlCLient``() = 
@@ -122,14 +123,15 @@ let ``can detect empty dependencies for log4net``() =
 [<Test>]
 let ``can detect explicit dependencies for Fantomas``() = 
     Nuspec.Load("Nuspec/Fantomas.nuspec").Dependencies
-    |> shouldEqual ["FSharp.Compiler.Service",DependenciesFileParser.parseVersionRequirement(">= 0.0.57"), []]
+    |> shouldEqual [PackageName "FSharp.Compiler.Service",DependenciesFileParser.parseVersionRequirement(">= 0.0.57"), []]
 
 [<Test>]
 let ``can detect explicit dependencies for ReadOnlyCollectionExtensions``() = 
     Nuspec.Load("Nuspec/ReadOnlyCollectionExtensions.nuspec").Dependencies
     |> shouldEqual 
-        ["LinqBridge",DependenciesFileParser.parseVersionRequirement(">= 1.3.0"), [FrameworkRestriction.AtLeast(DotNetFramework(FrameworkVersion.V2))]
-         "ReadOnlyCollectionInterfaces",DependenciesFileParser.parseVersionRequirement("1.0.0"),
+        [PackageName "LinqBridge",DependenciesFileParser.parseVersionRequirement(">= 1.3.0"), 
+            [FrameworkRestriction.Between(DotNetFramework(FrameworkVersion.V2),DotNetFramework(FrameworkVersion.V3_5))]
+         PackageName "ReadOnlyCollectionInterfaces",DependenciesFileParser.parseVersionRequirement("1.0.0"),
             [FrameworkRestriction.Exactly(DotNetFramework(FrameworkVersion.V2))
              FrameworkRestriction.Exactly(DotNetFramework(FrameworkVersion.V3_5))
              FrameworkRestriction.AtLeast(DotNetFramework(FrameworkVersion.V4_Client))]]
@@ -146,13 +148,24 @@ let ``can detect framework assemblies for MathNet.Numerics``() =
              FrameworkRestriction.Exactly(MonoAndroid)
              FrameworkRestriction.Exactly(MonoTouch)] }]
 
+
+[<Test>]
+let ``can detect dependencies for MathNet.Numerics``() = 
+    Nuspec.Load("Nuspec/MathNet.Numerics.nuspec").Dependencies
+    |> shouldEqual 
+        [ PackageName "TaskParallelLibrary",
+          DependenciesFileParser.parseVersionRequirement(">= 1.0.2856.0"),
+            [FrameworkRestriction.Between(
+                DotNetFramework(FrameworkVersion.V3_5),
+                DotNetFramework(FrameworkVersion.V4_Client))] ]
+
 [<Test>]
 let ``can detect explicit dependencies for WindowsAzure.Storage``() = 
     Nuspec.Load("Nuspec/WindowsAzure.Storage.nuspec").Dependencies
     |> Seq.skip 1
     |> Seq.head
     |> shouldEqual 
-        ("Newtonsoft.Json",
+        (PackageName "Newtonsoft.Json",
           DependenciesFileParser.parseVersionRequirement(">= 5.0.8"),
           [FrameworkRestriction.AtLeast(DotNetFramework(FrameworkVersion.V4_Client))
            FrameworkRestriction.Exactly(WindowsPhoneSilverlight("v8.0"))])

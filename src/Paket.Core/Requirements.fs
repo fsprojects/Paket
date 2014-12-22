@@ -12,37 +12,70 @@ type FrameworkRestriction =
 
 type FrameworkRestrictions = FrameworkRestriction list
 
+let private minRestriction = FrameworkRestriction.Exactly(DotNetFramework(FrameworkVersion.V1))
+
+let findMaxDotNetRestriction restrictions =
+    minRestriction :: restrictions
+    |> List.filter (fun (r:FrameworkRestriction) ->
+        match r with
+        | FrameworkRestriction.Exactly r -> r.ToString().StartsWith("net")
+        | _ -> false)
+    |> List.max
+    |> fun r ->
+        match r with
+        | FrameworkRestriction.Exactly r -> r
+        | _ -> failwith "error"
+
 let optimizeRestrictions packages =
-    let grouped = packages |> Seq.groupBy (fun (n,v,_) -> n,v)
+    let grouped = packages |> Seq.groupBy (fun (n,v,_) -> n,v) |> Seq.toList    
 
-    [for (name,versionRequirement),group in grouped do
-        let plain = 
-            group 
-            |> Seq.map (fun (_,_,res) -> res) 
-            |> Seq.concat 
-            |> Seq.toList
+    let invertedRestrictions =
+        let expanded =
+            [for (n,vr,r:FrameworkRestrictions) in packages do
+                for r' in r do
+                    yield n,vr,r']
+            |> Seq.groupBy (fun (_,_,r) -> r)
 
-        let netRestrictions =
-            FrameworkRestriction.Exactly(DotNetFramework(FrameworkVersion.V1)) :: plain
-            |> List.filter (fun (r:FrameworkRestriction) ->
-                match r with
-                | FrameworkRestriction.Exactly r -> r.ToString().StartsWith("net")
-                | _ -> false)
-            |> List.max
+        [for restriction,packages in expanded do
+            match restriction with
+            | FrameworkRestriction.Exactly r -> 
+                if r.ToString().StartsWith("net") then
+                    yield r,packages |> Seq.map (fun (n,v,_) -> n,v) |> Seq.toList
+            | _ -> () ]
 
-        let restrictions =
-            plain
-            |> List.map (fun r ->
-                match r with
-                | FrameworkRestriction.Exactly r' ->
-                    if r = netRestrictions then
-                        FrameworkRestriction.AtLeast r'
-                    else
-                        r
-                | _ -> r)
-            |> Seq.toList
+    [for (name,versionRequirement:VersionRequirement),group in grouped do
+        if name <> PackageName "" then
+            let plain = 
+                group 
+                |> Seq.map (fun (_,_,res) -> res) 
+                |> Seq.concat 
+                |> Seq.toList
 
-        yield name,versionRequirement,restrictions]
+            let localMaxDotNetRestriction = findMaxDotNetRestriction plain
+        
+
+            let restrictions =
+                plain
+                |> List.map (fun restriction ->
+                    match restriction with
+                    | FrameworkRestriction.Exactly r ->                     
+                        if r = localMaxDotNetRestriction then
+                            let globalMax = 
+                                invertedRestrictions
+                                |> Seq.skipWhile (fun (r,l) -> r <= localMaxDotNetRestriction && l |> List.exists (fun (n,vr) -> n = name && vr = versionRequirement))
+                                |> Seq.map fst
+                                |> Seq.toList
+
+                            if globalMax = [] || r >= globalMax.Head then
+                                FrameworkRestriction.AtLeast r
+                            else
+                                FrameworkRestriction.Between(r,globalMax.Head)
+                        else
+                            restriction
+                    | _ -> restriction)
+                |> Seq.toList
+
+            yield name,versionRequirement,restrictions]
 
 type PackageRequirementSource =
 | DependenciesFile of string
