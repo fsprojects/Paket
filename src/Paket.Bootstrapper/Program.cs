@@ -122,8 +122,10 @@ namespace Paket.Bootstrapper
             {
                 if (!File.Exists(target))
                     Environment.ExitCode = 1;
+                var oldColor = Console.ForegroundColor;
                 Console.ForegroundColor = ConsoleColor.Red;
                 Console.WriteLine(exn.Message);
+                Console.ForegroundColor = oldColor;
             }
         }
     }
