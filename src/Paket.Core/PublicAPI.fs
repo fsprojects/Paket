@@ -4,6 +4,7 @@ open System.IO
 open Paket.Logging
 open System
 open Paket.Domain
+open Paket.Rop
 
 /// Paket API which is optimized for F# Interactive use.
 type Dependencies(dependenciesFileName: string) =
@@ -55,7 +56,7 @@ type Dependencies(dependenciesFileName: string) =
         Dependencies(dependenciesFileName)
         
     /// Converts the solution from NuGet to Paket.
-    static member ConvertFromNuget(force: bool,installAfter: bool,initAutoRestore: bool,credsMigrationMode: string option) : unit =        
+    static member ConvertFromNuget(force: bool,installAfter: bool,initAutoRestore: bool,credsMigrationMode: string option) : unit =
         let credsMigrationMode = credsMigrationMode |> Option.map NuGetConvert.CredsMigrationMode.Parse
         let dependencies = 
             try Some <| Dependencies.Locate()
@@ -146,9 +147,41 @@ type Dependencies(dependenciesFileName: string) =
 
     /// Converts the current package dependency graph to the simplest dependency graph.
     member this.Simplify(interactive: bool): unit = 
-        Utils.RunInLockedAccessMode(
-            this.RootPath,
-            fun () -> Simplifier.Simplify(dependenciesFileName,interactive))
+        let errString = function
+        | Simplifier.DependenciesFileMissing -> sprintf "%s file not found." dependenciesFileName
+        | Simplifier.StrictModeDetected -> "Strict mode detected. Will not attempt to simplify dependencies."
+        | Simplifier.LockFileMissing -> "Lock file not found. Create lock file by running paket install."
+        | Simplifier.DependenciesFileParseError -> sprintf "Unable to parse %s." dependenciesFileName
+        | Simplifier.LockFileParseError -> "Unable to parse lock file."
+        | Simplifier.ReferencesFileParseError(name) -> sprintf "Unable to parse %s" name
+        | Simplifier.DependencyNotLocked(PackageName name) -> sprintf "Dependency %s from %s not found in lock file." name dependenciesFileName
+        | Simplifier.ReferenceNotLocked(referencesFile, PackageName name) -> sprintf "Reference %s from %s not found in lock file." name referencesFile.FileName
+        
+        let formatDiff (before : string) (after : string) =
+            let nl = Environment.NewLine
+            nl + "Before:" + nl + nl + before + nl + nl + nl + "After:" + nl + nl + after + nl + nl
+
+        let simplify(file,before,after) =
+            if before <> after then
+                File.WriteAllText(file, after)
+                tracefn "Simplified %s" file
+                traceVerbose (formatDiff before after)
+            else
+                tracefn "%s is already simplified" file
+
+        let result =
+            Utils.RunInLockedAccessMode(
+                this.RootPath,
+                fun () -> Simplifier.simplify(dependenciesFileName,interactive))
+
+        match result with 
+        | Success (result, _) -> 
+            let depFileBefore, depFileAfter = result.DependenciesFileSimplifyResult
+            simplify(depFileBefore.FileName,depFileBefore.ToString(),depFileAfter.ToString())
+            result.ReferencesFilesSimplifyResult
+            |> List.map (fun (before,after) -> before.FileName, before.ToString(), after.ToString())
+            |> List.iter simplify
+        | Failure msgs -> msgs |> List.map errString |> List.iter Logging.traceError
 
     /// Returns the installed version of the given package.
     member this.GetInstalledVersion(packageName: string): string option =
