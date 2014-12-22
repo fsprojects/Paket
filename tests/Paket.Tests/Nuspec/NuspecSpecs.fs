@@ -129,9 +129,10 @@ let ``can detect explicit dependencies for ReadOnlyCollectionExtensions``() =
     Nuspec.Load("Nuspec/ReadOnlyCollectionExtensions.nuspec").Dependencies
     |> shouldEqual 
         ["LinqBridge",DependenciesFileParser.parseVersionRequirement(">= 1.3.0"), [FrameworkRestriction.Exactly(DotNetFramework(FrameworkVersion.V2))]
-         "ReadOnlyCollectionInterfaces",DependenciesFileParser.parseVersionRequirement("1.0.0"), [FrameworkRestriction.Exactly(DotNetFramework(FrameworkVersion.V2))]
-         "ReadOnlyCollectionInterfaces",DependenciesFileParser.parseVersionRequirement("1.0.0"), [FrameworkRestriction.Exactly(DotNetFramework(FrameworkVersion.V3_5))]
-         "ReadOnlyCollectionInterfaces",DependenciesFileParser.parseVersionRequirement("1.0.0"), [FrameworkRestriction.Exactly(DotNetFramework(FrameworkVersion.V4_Client))]]
+         "ReadOnlyCollectionInterfaces",DependenciesFileParser.parseVersionRequirement("1.0.0"),
+            [FrameworkRestriction.Exactly(DotNetFramework(FrameworkVersion.V2))
+             FrameworkRestriction.Exactly(DotNetFramework(FrameworkVersion.V3_5))
+             FrameworkRestriction.Exactly(DotNetFramework(FrameworkVersion.V4_Client))]]
 
 [<Test>]
 let ``can detect framework assemblies for MathNet.Numerics``() = 

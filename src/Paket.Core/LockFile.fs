@@ -44,8 +44,7 @@ module LockFileSerializer =
                         |> List.map (fun restriction ->
                             match restriction with
                             | FrameworkRestriction.Exactly r -> r.ToString()
-                            | FrameworkRestriction.AtLeast r -> ">= " + r.ToString())
-                     
+                            | FrameworkRestriction.AtLeast r -> ">= " + r.ToString())                     
                       
                       match restrictions with
                       | [] -> yield sprintf "    %s (%s)" packageName (package.Version.ToString())

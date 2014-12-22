@@ -175,9 +175,10 @@ let parseODataDetails(nugetURL,packageName,version,raw) =
         |> Array.map (fun (name, version, restricted) -> name, NugetVersionRangeParser.parse version, restricted)
         |> Array.toList
 
+    
     { PackageName = officialName
       DownloadUrl = downloadLink
-      Dependencies = packages
+      Dependencies = Requirements.groupRestrictions packages
       SourceUrl = nugetURL
       Unlisted = publishDate = Constants.MagicUnlistingDate }
 

@@ -12,6 +12,18 @@ type FrameworkRestriction =
 
 type FrameworkRestrictions = FrameworkRestriction list
 
+let groupRestrictions packages =
+    let grouped = packages |> Seq.groupBy (fun (n,v,_) -> n,v)
+
+    [for (name,versionRequirement),group in grouped do
+        let restrictions =
+            group 
+            |> Seq.map (fun (_,_,res) -> res)
+            |> Seq.concat
+            |> Seq.toList
+
+        yield name,versionRequirement,restrictions]
+
 type PackageRequirementSource =
 | DependenciesFile of string
 | Package of PackageName * SemVerInfo   

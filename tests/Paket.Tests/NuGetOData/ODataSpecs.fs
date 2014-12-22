@@ -59,9 +59,10 @@ let ``can detect explicit dependencies for ReadOnlyCollectionExtensions``() =
           Unlisted = false
           Dependencies = 
             ["LinqBridge",DependenciesFileParser.parseVersionRequirement(">= 1.3.0"), [FrameworkRestriction.Exactly(DotNetFramework(FrameworkVersion.V2))]
-             "ReadOnlyCollectionInterfaces",DependenciesFileParser.parseVersionRequirement("1.0.0"), [FrameworkRestriction.Exactly(DotNetFramework(FrameworkVersion.V2))]
-             "ReadOnlyCollectionInterfaces",DependenciesFileParser.parseVersionRequirement("1.0.0"), [FrameworkRestriction.Exactly(DotNetFramework(FrameworkVersion.V3_5))]
-             "ReadOnlyCollectionInterfaces",DependenciesFileParser.parseVersionRequirement("1.0.0"), [FrameworkRestriction.Exactly(DotNetFramework(FrameworkVersion.V4_Client))]]
+             "ReadOnlyCollectionInterfaces",DependenciesFileParser.parseVersionRequirement("1.0.0"), 
+               [FrameworkRestriction.Exactly(DotNetFramework(FrameworkVersion.V2))
+                FrameworkRestriction.Exactly(DotNetFramework(FrameworkVersion.V3_5))
+                FrameworkRestriction.Exactly(DotNetFramework(FrameworkVersion.V4_Client))]]
           SourceUrl = fakeUrl }
 
 [<Test>]
