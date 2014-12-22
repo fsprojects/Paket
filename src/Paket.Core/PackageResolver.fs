@@ -23,7 +23,7 @@ type ResolvedPackage =
       Version : SemVerInfo
       Dependencies : (PackageName * VersionRequirement * FrameworkRestrictions) Set
       Unlisted : bool      
-      FrameworkRestriction: FrameworkRestrictions
+      FrameworkRestrictions: FrameworkRestrictions
       Source : PackageSource }
 
     override this.ToString() =
@@ -106,7 +106,7 @@ let Resolve(getVersionsF, getPackageDetailsF, rootDependencies:PackageRequiremen
                   Version = version
                   Dependencies = packageDetails.DirectDependencies
                   Unlisted = packageDetails.Unlisted
-                  FrameworkRestriction = frameworkRequirement
+                  FrameworkRestrictions = frameworkRequirement
                   Source = packageDetails.Source }
             exploredPackages.Add((normalizedPackageName,version),explored)
             explored

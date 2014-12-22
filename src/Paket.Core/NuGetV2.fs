@@ -20,10 +20,10 @@ open Paket.Requirements
 
 type NugetPackageCache =
     { Dependencies : (string * VersionRequirement * FrameworkRestrictions) list
-      Name : string
+      PackageName : string
       SourceUrl: string
       Unlisted : bool
-      DownloadUrl : string}
+      DownloadUrl : string }
 
 let rec private followODataLink getUrlContents url = 
     async { 
@@ -175,7 +175,7 @@ let parseODataDetails(nugetURL,packageName,version,raw) =
         |> Array.map (fun (name, version, restricted) -> name, NugetVersionRangeParser.parse version, restricted)
         |> Array.toList
 
-    { Name = officialName
+    { PackageName = officialName
       DownloadUrl = downloadLink
       Dependencies = packages
       SourceUrl = nugetURL
@@ -216,7 +216,7 @@ let private loadFromCacheOrOData force fileName auth nugetURL package version =
             try 
                 let json = File.ReadAllText(fileName)
                 let cachedObject = JsonConvert.DeserializeObject<NugetPackageCache>(json)                
-                if cachedObject.Name = null || cachedObject.DownloadUrl = null || cachedObject.SourceUrl = null then
+                if cachedObject.PackageName = null || cachedObject.DownloadUrl = null || cachedObject.SourceUrl = null then
                     let! details = getDetailsFromNuGetViaOData auth nugetURL package version
                     return true,details
                 else
@@ -262,7 +262,7 @@ let getDetailsFromLocalFile path package (version:SemVerInfo) =
         File.Delete(fileName)
 
         return 
-            { Name = nuspec.OfficialName
+            { PackageName = nuspec.OfficialName
               DownloadUrl = package
               Dependencies = nuspec.Dependencies
               SourceUrl = path
@@ -421,11 +421,14 @@ let GetPackageDetails force sources (PackageName package) (version:SemVerInfo) :
         | [] -> failwithf "Couldn't get package details for package %s on %A." package (sources |> List.map (fun (s:PackageSource) -> s.ToString()))
     
     let source,nugetObject = tryNext sources
-    { Name = PackageName nugetObject.Name
+    { Name = PackageName nugetObject.PackageName
       Source = source
       DownloadLink = nugetObject.DownloadUrl
       Unlisted = nugetObject.Unlisted
-      DirectDependencies = nugetObject.Dependencies |> List.map (fun (name, v, f) -> PackageName name, v, f) |> Set.ofList }
+      DirectDependencies = 
+        nugetObject.Dependencies 
+        |> List.map (fun (name, v, f) -> PackageName name, v, f) 
+        |> Set.ofList }
 
 /// Allows to retrieve all version no. for a package from the given sources.
 let GetVersions(sources, PackageName packageName) = 

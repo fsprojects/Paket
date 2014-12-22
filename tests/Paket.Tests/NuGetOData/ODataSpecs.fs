@@ -18,7 +18,7 @@ let parse fileName =
 let ``can detect explicit dependencies for Fantomas``() = 
     parse "NuGetOData/Fantomas.xml"
     |> shouldEqual 
-        { Name = "Fantomas"
+        { PackageName = "Fantomas"
           DownloadUrl = "http://www.nuget.org/api/v2/package/Fantomas/1.6.0"
           Dependencies = ["FSharp.Compiler.Service",DependenciesFileParser.parseVersionRequirement(">= 0.0.73"), []]
           Unlisted = false
@@ -28,10 +28,11 @@ let ``can detect explicit dependencies for Fantomas``() =
 let ``can detect explicit dependencies for Rx-PlaformServices``() = 
     parse "NuGetOData/Rx-PlatformServices.xml"
     |> shouldEqual 
-        { Name = "Rx-PlatformServices"
+        { PackageName = "Rx-PlatformServices"
           DownloadUrl = "https://www.nuget.org/api/v2/package/Rx-PlatformServices/2.3.0"
-          Dependencies = ["Rx-Interfaces",DependenciesFileParser.parseVersionRequirement(">= 2.2"), []
-                          "Rx-Core",DependenciesFileParser.parseVersionRequirement(">= 2.2"), []]
+          Dependencies = 
+                ["Rx-Interfaces",DependenciesFileParser.parseVersionRequirement(">= 2.2"), []
+                 "Rx-Core",DependenciesFileParser.parseVersionRequirement(">= 2.2"), []]
           Unlisted = true
           SourceUrl = fakeUrl }
 
@@ -39,7 +40,7 @@ let ``can detect explicit dependencies for Rx-PlaformServices``() =
 let ``can detect explicit dependencies for Fleece``() = 
     parse "NuGetOData/Fleece.xml"
     |> shouldEqual 
-        { Name = "Fleece"
+        { PackageName = "Fleece"
           DownloadUrl = "http://www.nuget.org/api/v2/package/Fleece/0.4.0"
           Unlisted = false
           Dependencies = 
@@ -53,7 +54,7 @@ let ``can detect explicit dependencies for Fleece``() =
 let ``can detect explicit dependencies for ReadOnlyCollectionExtensions``() = 
     parse "NuGetOData/ReadOnlyCollectionExtensions.xml"
     |> shouldEqual 
-        { Name = "ReadOnlyCollectionExtensions"
+        { PackageName = "ReadOnlyCollectionExtensions"
           DownloadUrl = "http://www.nuget.org/api/v2/package/ReadOnlyCollectionExtensions/1.2.0"
           Unlisted = false
           Dependencies = 

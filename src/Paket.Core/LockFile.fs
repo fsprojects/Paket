@@ -38,13 +38,30 @@ module LockFileSerializer =
                   yield "  specs:"
                   for _,_,package in packages |> Seq.sortBy (fun (_,_,p) -> NormalizedPackageName p.Name) do
                       let (PackageName packageName) = package.Name
-                      match package.FrameworkRestriction with
+
+                      let restrictions =
+                        package.FrameworkRestrictions
+                        |> List.map (fun restriction ->
+                            match restriction with
+                            | FrameworkRestriction.Exactly r -> r.ToString()
+                            | FrameworkRestriction.AtLeast r -> ">= " + r.ToString())
+                     
+                      
+                      match restrictions with
                       | [] -> yield sprintf "    %s (%s)" packageName (package.Version.ToString())
-                      | [FrameworkRestriction.Exactly restriction] -> yield sprintf "    %s (%s) - %s" packageName (package.Version.ToString()) (restriction.ToString())
-                      for (PackageName name),v,restriction in package.Dependencies do
-                          match restriction with
+                      | _  -> yield sprintf "    %s (%s) - %s" packageName (package.Version.ToString()) (String.Join(", ",restrictions))
+
+                      for (PackageName name),v,restrictions in package.Dependencies do
+                          let restrictions =
+                            restrictions
+                            |> List.map (fun restriction ->
+                                match restriction with
+                                | FrameworkRestriction.Exactly r -> r.ToString()
+                                | FrameworkRestriction.AtLeast r -> ">= " + r.ToString())
+
+                          match restrictions with
                           | [] -> yield sprintf "      %s (%s)" name (v.ToString())
-                          | [FrameworkRestriction.Exactly restriction] -> yield sprintf "      %s (%s) - %s" name (v.ToString()) (restriction.ToString())]
+                          | _  -> yield sprintf "      %s (%s) - %s" name (v.ToString()) (String.Join(", ",restrictions))]
     
         String.Join(Environment.NewLine, all)
 
@@ -151,7 +168,7 @@ module LockFileParser =
                                        Name = PackageName parts'.[0]
                                        Dependencies = Set.empty
                                        Unlisted = false
-                                       FrameworkRestriction = 
+                                       FrameworkRestrictions = 
                                             if parts.Length < 2 then 
                                                 [] 
                                             else
