@@ -12,13 +12,13 @@ type FrameworkRestriction =
 
 type FrameworkRestrictions = FrameworkRestriction list
 
-let groupRestrictions packages =
+let optimizeRestrictions packages =
     let grouped = packages |> Seq.groupBy (fun (n,v,_) -> n,v)
 
     [for (name,versionRequirement),group in grouped do
+        let plain = Seq.map (fun (_,_,res) -> res) group
         let restrictions =
-            group 
-            |> Seq.map (fun (_,_,res) -> res)
+            plain
             |> Seq.concat
             |> Seq.toList
 

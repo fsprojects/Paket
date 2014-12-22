@@ -123,7 +123,7 @@ type Nuspec =
                 doc 
                 |> getDescendants "dependency"
                 |> List.map dependency
-                |> Requirements.groupRestrictions 
+                |> Requirements.optimizeRestrictions 
             
             let references = 
                 doc

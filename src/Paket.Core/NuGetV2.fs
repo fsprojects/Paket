@@ -178,7 +178,7 @@ let parseODataDetails(nugetURL,packageName,version,raw) =
     
     { PackageName = officialName
       DownloadUrl = downloadLink
-      Dependencies = Requirements.groupRestrictions packages
+      Dependencies = Requirements.optimizeRestrictions packages
       SourceUrl = nugetURL
       Unlisted = publishDate = Constants.MagicUnlistingDate }
 
@@ -265,7 +265,7 @@ let getDetailsFromLocalFile path package (version:SemVerInfo) =
         return 
             { PackageName = nuspec.OfficialName
               DownloadUrl = package
-              Dependencies = nuspec.Dependencies
+              Dependencies = Requirements.optimizeRestrictions nuspec.Dependencies
               SourceUrl = path
               Unlisted = false }
     }
@@ -429,6 +429,7 @@ let GetPackageDetails force sources (PackageName package) (version:SemVerInfo) :
       DirectDependencies = 
         nugetObject.Dependencies 
         |> List.map (fun (name, v, f) -> PackageName name, v, f) 
+        |> Requirements.optimizeRestrictions
         |> Set.ofList }
 
 /// Allows to retrieve all version no. for a package from the given sources.

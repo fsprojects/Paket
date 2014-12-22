@@ -149,8 +149,10 @@ let ``can detect framework assemblies for MathNet.Numerics``() =
 [<Test>]
 let ``can detect explicit dependencies for WindowsAzure.Storage``() = 
     Nuspec.Load("Nuspec/WindowsAzure.Storage.nuspec").Dependencies
-    |> Seq.take 2
-    |> Seq.toList
+    |> Seq.skip 1
+    |> Seq.head
     |> shouldEqual 
-        ["Microsoft.Data.OData",DependenciesFileParser.parseVersionRequirement(">= 5.6.2"), [FrameworkRestriction.Exactly(DotNetFramework(FrameworkVersion.V4_Client))]
-         "Newtonsoft.Json",DependenciesFileParser.parseVersionRequirement(">= 5.0.8"), [FrameworkRestriction.Exactly(DotNetFramework(FrameworkVersion.V4_Client))]]
+        ("Newtonsoft.Json",
+          DependenciesFileParser.parseVersionRequirement(">= 5.0.8"),
+          [FrameworkRestriction.Exactly(DotNetFramework(FrameworkVersion.V4_Client))
+           FrameworkRestriction.Exactly(WindowsPhoneSilverlight("v8.0"))])
