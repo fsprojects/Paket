@@ -47,9 +47,13 @@ module LockFileSerializer =
                             | FrameworkRestriction.AtLeast r -> ">= " + r.ToString()
                             | FrameworkRestriction.Between(min,max) -> sprintf ">= %s < %s" (min.ToString()) (max.ToString()))
                       
+                      let versionStr = 
+                          let s = package.Version.ToString()
+                          if s = "" then s else "(" + s + ")"
+
                       match restrictions with
-                      | [] -> yield sprintf "    %s (%s)" packageName (package.Version.ToString())
-                      | _  -> yield sprintf "    %s (%s) - %s" packageName (package.Version.ToString()) (String.Join(", ",restrictions))
+                      | [] -> yield sprintf "    %s %s" packageName versionStr
+                      | _  -> yield sprintf "    %s %s - %s" packageName versionStr (String.Join(", ",restrictions))
 
                       for (PackageName name),v,restrictions in package.Dependencies do
                           let restrictions =
