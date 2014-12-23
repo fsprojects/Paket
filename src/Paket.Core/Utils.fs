@@ -178,7 +178,7 @@ let inline normalizePath(path:string) = path.Replace("\\",Path.DirectorySeparato
 let inline FindAllFiles(folder, pattern) = DirectoryInfo(folder).GetFiles(pattern, SearchOption.AllDirectories)
 
 
-let RunInLockedAccessMode rootFolder action =
+let RunInLockedAccessMode(rootFolder,action) =
     let packagesFolder = Path.Combine(rootFolder,"packages")
     if Directory.Exists packagesFolder |> not then
         Directory.CreateDirectory packagesFolder |> ignore
@@ -216,9 +216,7 @@ let RunInLockedAccessMode rootFolder action =
     try
         acquireLock 5
 
-        let result =
-            action
-            |> Async.RunSynchronously
+        let result = action()
         
         releaseLock()
         result
