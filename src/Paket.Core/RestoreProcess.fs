@@ -52,7 +52,7 @@ let Restore(dependenciesFileName,force,referencesFileNames) =
     
     let sources, lockFile = 
         if not lockFileName.Exists then 
-            failwithf "paket.lock doesn't exist."
+            failwithf "%s doesn't exist." lockFileName.FullName
         else 
             let sources = DependenciesFile.ReadFromFile(dependenciesFileName).GetAllPackageSources()
             sources, LockFile.LoadFrom(lockFileName.FullName)
@@ -70,5 +70,5 @@ let Restore(dependenciesFileName,force,referencesFileNames) =
             |> Seq.concat
 
     restore(root, sources, force, lockFile,Set.ofSeq packages) 
-    |> Async.RunSynchronously
+    |> Utils.RunInLockedAccessMode root
     |> ignore

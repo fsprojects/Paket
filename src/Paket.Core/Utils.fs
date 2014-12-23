@@ -178,12 +178,16 @@ let inline normalizePath(path:string) = path.Replace("\\",Path.DirectorySeparato
 let inline FindAllFiles(folder, pattern) = DirectoryInfo(folder).GetFiles(pattern, SearchOption.AllDirectories)
 
 
-let lockedAccess packagesFolder f =
+let RunInLockedAccessMode rootFolder action =
+    let packagesFolder = Path.Combine(rootFolder,"packages")
+    if Directory.Exists packagesFolder |> not then
+        Directory.CreateDirectory packagesFolder |> ignore
+
     let p = Process.GetCurrentProcess()
-    let fileName = Path.Combine(packagesFolder,"paket.locked")
+    let fileName = Path.Combine(packagesFolder,Constants.AccessLockFileName)
 
     // Checks the packagesFolder for a paket.locked file or waits until it get access to it.
-    let rec requireLock trials =
+    let rec acquireLock trials =
         try
             let rec waitForUnlocked () =
                 if File.Exists fileName then
@@ -199,9 +203,9 @@ let lockedAccess packagesFolder f =
         with
         | _ -> 
             if trials > 0 then
-                requireLock (trials - 1)
+                acquireLock (trials - 1)
             else
-                failwithf "Could not require paket.locked file in %s." packagesFolder
+                failwithf "Could not acquire %s file in %s." Constants.AccessLockFileName packagesFolder
     
     let releaseLock() =
          if File.Exists fileName then
@@ -210,9 +214,14 @@ let lockedAccess packagesFolder f =
                File.Delete fileName
 
     try
-        requireLock 5
-        f()
-        requireLock
+        acquireLock 5
+
+        let result =
+            action
+            |> Async.RunSynchronously
+        
+        releaseLock()
+        result
     with
     | exn ->
             releaseLock()
