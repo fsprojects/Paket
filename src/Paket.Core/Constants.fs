@@ -13,6 +13,9 @@ let DependenciesFileName = "paket.dependencies"
 let ReferencesFile = "paket.references"
 
 [<Literal>]
+let AccessLockFileName = "paket.locked"
+
+[<Literal>]
 let PaketFilesFolderName = "paket-files"
 
 [<Literal>] 

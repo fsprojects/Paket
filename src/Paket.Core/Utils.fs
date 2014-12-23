@@ -95,6 +95,9 @@ let inline createWebClient(auth:Auth option) =
 
 #nowarn "40"
 
+open System.Diagnostics
+open System.Threading
+
 type System.Net.WebClient with
     member this.AsyncDownloadFile (address: Uri, filePath: string) : Async<unit> =
         let downloadAsync =
@@ -173,6 +176,56 @@ let inline normalizePath(path:string) = path.Replace("\\",Path.DirectorySeparato
 
 /// Gets all files with the given pattern
 let inline FindAllFiles(folder, pattern) = DirectoryInfo(folder).GetFiles(pattern, SearchOption.AllDirectories)
+
+
+let RunInLockedAccessMode rootFolder action =
+    let packagesFolder = Path.Combine(rootFolder,"packages")
+    if Directory.Exists packagesFolder |> not then
+        Directory.CreateDirectory packagesFolder |> ignore
+
+    let p = Process.GetCurrentProcess()
+    let fileName = Path.Combine(packagesFolder,Constants.AccessLockFileName)
+
+    // Checks the packagesFolder for a paket.locked file or waits until it get access to it.
+    let rec acquireLock trials =
+        try
+            let rec waitForUnlocked () =
+                if File.Exists fileName then
+                    let content = File.ReadAllText fileName
+                    if content <> p.Id.ToString() then
+                        let processes = Process.GetProcessesByName(p.ProcessName)
+                        if processes |> Array.exists (fun p -> p.Id = p.Id) then
+                            Thread.Sleep(100)
+                            waitForUnlocked()
+
+            waitForUnlocked()
+            File.WriteAllText(fileName,p.Id.ToString())
+        with
+        | _ -> 
+            if trials > 0 then
+                acquireLock (trials - 1)
+            else
+                failwithf "Could not acquire %s file in %s." Constants.AccessLockFileName packagesFolder
+    
+    let releaseLock() =
+         if File.Exists fileName then
+            let content = File.ReadAllText fileName
+            if content = p.Id.ToString() then
+               File.Delete fileName
+
+    try
+        acquireLock 5
+
+        let result =
+            action
+            |> Async.RunSynchronously
+        
+        releaseLock()
+        result
+    with
+    | exn ->
+            releaseLock()
+            raise exn
 
 /// [omit]
 module Seq = 
