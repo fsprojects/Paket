@@ -60,25 +60,6 @@ let DecryptNuget (encrypted : string) =
     ProtectedData.Unprotect(Convert.FromBase64String encrypted, Encoding.UTF8.GetBytes "NuGet", DataProtectionScope.CurrentUser)
     |> Encoding.UTF8.GetString
 
-let private readPassword (message : string) : string = 
-    Console.Write(message)
-    let mutable continueLooping = true
-    let mutable password = ""
-    while continueLooping do
-        let key = Console.ReadKey(true)
-        continueLooping <- key.Key <> ConsoleKey.Enter
-        if continueLooping then 
-            password <- 
-                if key.Key <> ConsoleKey.Backspace then 
-                    Console.Write("*")
-                    password + key.KeyChar.ToString()
-                else if password.Length > 0 then 
-                    Console.Write("\b \b")
-                    password.Substring(0, (password.Length - 1))
-                else ""
-        else Console.Write("\r")
-    password
-
 let getAuthFromNode (node : XmlNode) = 
     let username = node.Attributes.["username"].Value
     let password = node.Attributes.["password"].Value
@@ -96,16 +77,6 @@ let private saveCredentials (source : string) (username : string) (password : st
     credentialsNode.AppendChild node |> ignore
     saveConfigNode credentialsNode
     node
-
-let private askAndAddAuth (source : string) (credentialsNode : XmlNode) = 
-    if not Environment.UserInteractive then
-        failwithf "No credentials could be found for source %s" source
-
-    Console.Write("Username: ")
-    let userName = Console.ReadLine()
-    let password = readPassword "Password: "
-    let node = saveCredentials source userName password credentialsNode
-    getAuthFromNode (node :> XmlNode)
 
 /// Check if the provided credentials for a specific source are correct
 let checkCredentials(source, cred) = 
