@@ -1,4 +1,4 @@
-#### 0.20.0-alpha004 - 22.12.2014
+#### 0.20.0-alpha005 - 23.12.2014
 * Selective restore runs sequentially - https://github.com/fsprojects/Paket/pull/469
 * Inherit selective depencies and store the result in `paket.lock` - https://github.com/fsprojects/Paket/pull/462
 * Don't add NuGet packages twice to a references file - https://github.com/fsprojects/Paket/pull/460
@@ -12,6 +12,7 @@
 * BUGFIX: Don't delete downloaded github zip file
 * BUGFIX: Don't touch framework assemblies if not needed
 * BUGFIX: Check versions file synchronously
+* BUGFIX: Restore console color after handling exception - https://github.com/fsprojects/Paket/pull/467
 
 #### 0.18.0 - 09.12.2014
 * Show command help on `--help` - https://github.com/fsprojects/Paket/pull/437
