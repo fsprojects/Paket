@@ -70,5 +70,5 @@ let Restore(dependenciesFileName,force,referencesFileNames) =
             |> Seq.concat
 
     restore(root, sources, force, lockFile,Set.ofSeq packages) 
-    |> Utils.RunInLockedAccessMode root
+    |> Async.RunSynchronously
     |> ignore

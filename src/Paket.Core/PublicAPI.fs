@@ -55,7 +55,7 @@ type Dependencies(dependenciesFileName: string) =
         Dependencies(dependenciesFileName)
         
     /// Converts the solution from NuGet to Paket.
-    static member ConvertFromNuget(force: bool,installAfter: bool,initAutoRestore: bool,credsMigrationMode: string option) : unit =
+    static member ConvertFromNuget(force: bool,installAfter: bool,initAutoRestore: bool,credsMigrationMode: string option) : unit =        
         let credsMigrationMode = credsMigrationMode |> Option.map NuGetConvert.CredsMigrationMode.Parse
         let dependencies = 
             try Some <| Dependencies.Locate()
@@ -71,10 +71,15 @@ type Dependencies(dependenciesFileName: string) =
             | Some file -> file
             | None -> Path.Combine(Environment.CurrentDirectory, Constants.DependenciesFileName)
 
-        NuGetConvert.ConvertFromNuget(dependenciesFileName, force, installAfter, initAutoRestore, credsMigrationMode)
+        Utils.RunInLockedAccessMode(
+            Path.GetDirectoryName(dependenciesFileName),
+            fun () ->  NuGetConvert.ConvertFromNuget(dependenciesFileName, force, installAfter, initAutoRestore, credsMigrationMode))
 
     /// Get path to dependencies file
     member this.DependenciesFile with get() = dependenciesFileName
+
+    /// Get the root path
+    member this.RootPath with get() = Path.GetDirectoryName(dependenciesFileName)
 
     /// Adds the given package without version requirements to the dependencies file.
     member this.Add(package: string): unit = this.Add(package,"")
@@ -84,29 +89,42 @@ type Dependencies(dependenciesFileName: string) =
 
     /// Adds the given package with the given version to the dependencies file.
     member this.Add(package: string,version: string,force: bool,hard: bool,interactive: bool,installAfter: bool): unit =
-        AddProcess.Add(dependenciesFileName, PackageName package, version, force, hard, interactive, installAfter)
+        Utils.RunInLockedAccessMode(
+            this.RootPath,
+            fun () -> AddProcess.Add(dependenciesFileName, PackageName package, version, force, hard, interactive, installAfter))
         
     /// Installs all dependencies.
-    member this.Install(force: bool,hard: bool,withBindingRedirects:bool): unit = UpdateProcess.Update(dependenciesFileName,false,force,hard,withBindingRedirects)
+    member this.Install(force: bool,hard: bool,withBindingRedirects:bool): unit = 
+        Utils.RunInLockedAccessMode(
+            this.RootPath,
+            fun () -> UpdateProcess.Update(dependenciesFileName,false,force,hard,withBindingRedirects))
 
     /// Installs all dependencies.
     member this.Install(force: bool,hard: bool): unit = this.Install(force,hard,false)
 
     /// Updates all dependencies.
-    member this.Update(force: bool,hard: bool,withBindingRedirects:bool): unit = UpdateProcess.Update(dependenciesFileName,true,force,hard,withBindingRedirects)
+    member this.Update(force: bool,hard: bool,withBindingRedirects:bool): unit = 
+        Utils.RunInLockedAccessMode(
+            this.RootPath,
+            fun () -> UpdateProcess.Update(dependenciesFileName,true,force,hard,withBindingRedirects))
 
     /// Updates all dependencies.
     member this.Update(force: bool,hard: bool): unit = this.Update(force,hard,false)
 
     /// Updates the given package.
     member this.UpdatePackage(package: string,version: string option,force: bool,hard: bool): unit =
-        UpdateProcess.UpdatePackage(dependenciesFileName,PackageName package,version,force,hard)
+        Utils.RunInLockedAccessMode(
+            this.RootPath,
+            fun () -> UpdateProcess.UpdatePackage(dependenciesFileName,PackageName package,version,force,hard))
 
     /// Restores the given paket.references files.
     member this.Restore(files: string list): unit = this.Restore(false,files)
 
     /// Restores the given paket.references files.
-    member this.Restore(force,files: string list): unit = RestoreProcess.Restore(dependenciesFileName,force,files)
+    member this.Restore(force,files: string list): unit =
+        Utils.RunInLockedAccessMode(
+            this.RootPath,
+            fun () -> RestoreProcess.Restore(dependenciesFileName,force,files))
 
     /// Lists outdated packages.
     member this.ShowOutdated(strict: bool,includePrereleases: bool): unit =
@@ -118,13 +136,19 @@ type Dependencies(dependenciesFileName: string) =
         |> List.map (fun (PackageName p,_,newVersion) -> p,newVersion)
     
     /// Pulls new paket.targets and bootstrapper and puts them into .paket folder.
-    member this.InitAutoRestore(): unit = VSIntegration.InitAutoRestore(dependenciesFileName)
+    member this.InitAutoRestore(): unit = 
+        Utils.RunInLockedAccessMode(
+            this.RootPath,
+            fun () -> VSIntegration.InitAutoRestore(dependenciesFileName))
 
     /// Converts the current package dependency graph to the simplest dependency graph.
     member this.Simplify(): unit = this.Simplify(false)
 
     /// Converts the current package dependency graph to the simplest dependency graph.
-    member this.Simplify(interactive: bool): unit = Simplifier.Simplify(dependenciesFileName,interactive)
+    member this.Simplify(interactive: bool): unit = 
+        Utils.RunInLockedAccessMode(
+            this.RootPath,
+            fun () -> Simplifier.Simplify(dependenciesFileName,interactive))
 
     /// Returns the installed version of the given package.
     member this.GetInstalledVersion(packageName: string): string option =
@@ -165,7 +189,9 @@ type Dependencies(dependenciesFileName: string) =
     
     /// Removes the given package from dependencies file.
     member this.Remove(package: string,force: bool,hard: bool,interactive: bool,installAfter: bool): unit =
-        RemoveProcess.Remove(dependenciesFileName, PackageName package, force, hard, interactive, installAfter)
+        Utils.RunInLockedAccessMode(
+            this.RootPath,
+            fun () -> RemoveProcess.Remove(dependenciesFileName, PackageName package, force, hard, interactive, installAfter))
 
     /// Shows all references for the given packages.
     member this.ShowReferencesFor(packages: string list): unit =
