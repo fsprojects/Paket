@@ -1,4 +1,4 @@
-#### 0.20.0-alpha006 - 23.12.2014
+#### 0.20.0-alpha007 - 23.12.2014
 * Paket.exe acuires a lock for all write processes - https://github.com/fsprojects/Paket/pull/469
 * Inherit selective depencies and store the result in `paket.lock` - https://github.com/fsprojects/Paket/pull/462
 * Don't add NuGet packages twice to a references file - https://github.com/fsprojects/Paket/pull/460

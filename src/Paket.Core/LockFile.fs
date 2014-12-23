@@ -148,8 +148,11 @@ module LockFileParser =
         | _, String.StartsWith "REDIRECTS:" trimmed -> InstallOption(Redirects(trimmed.Trim() = "ON"))
         | _, String.StartsWith "CONTENT:" trimmed -> InstallOption(OmitContent(trimmed.Trim() = "NONE"))
         | _, trimmed when line.StartsWith "      " ->
-            let parts = trimmed.Split '(' 
-            NugetDependency (parts.[0].Trim(),parts.[1].Replace("(", "").Replace(")", "").Trim())
+            if trimmed.Contains("(") then
+                let parts = trimmed.Split '(' 
+                NugetDependency (parts.[0].Trim(),parts.[1].Replace("(", "").Replace(")", "").Trim())
+            else
+                NugetDependency (trimmed,">= 0")                
         | Some "NUGET", trimmed -> NugetPackage trimmed
         | Some "GITHUB", trimmed -> SourceFile(GitHubLink, trimmed)
         | Some "GIST", trimmed -> SourceFile(GistLink, trimmed)

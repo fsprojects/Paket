@@ -163,6 +163,56 @@ let ``should parse own lock file``() =
 
     lockFile.SourceFiles.[0].Name |> shouldEqual "modules/Octokit/Octokit.fsx"
 
+let dogfood2 = """NUGET
+  remote: https://nuget.org/api/v2
+  specs:
+    DotNetZip (1.9.3)
+    FAKE (3.5.5)
+    FSharp.Compiler.Service (0.0.62)
+    FSharp.Formatting (2.4.25)
+      Microsoft.AspNet.Razor (2.0.30506.0)
+      RazorEngine (3.3.0)
+      FSharp.Compiler.Service (>= 0.0.59)
+    Microsoft.AspNet.Razor (2.0.30506.0)
+    Microsoft.Bcl (1.1.9)
+      Microsoft.Bcl.Build (>= 1.0.14)
+    Microsoft.Bcl.Build (1.0.21)
+    Microsoft.Net.Http (2.2.28)
+      Microsoft.Bcl (>= 1.1.9)
+      Microsoft.Bcl.Build (>= 1.0.14)
+    Newtonsoft.Json (6.0.5)
+    NuGet.CommandLine (2.8.2)
+    NUnit (2.6.3)
+    NUnit.Runners (2.6.3)
+    Octokit (0.4.1)
+      Microsoft.Net.Http
+    RazorEngine (3.3.0)
+      Microsoft.AspNet.Razor (>= 2.0.30506.0)
+    SourceLink.Fake (0.3.4)
+    UnionArgParser (0.8.0)
+GITHUB
+  remote: forki/FsUnit
+  specs:
+    FsUnit.fs (7623fc13439f0e60bd05c1ed3b5f6dcb937fe468)
+  remote: fsharp/FAKE
+  specs:
+    modules/Octokit/Octokit.fsx (a25c2f256a99242c1106b5a3478aae6bb68c7a93)
+      Octokit"""
+
+[<Test>]
+let ``should parse own lock file2``() = 
+    let lockFile = LockFileParser.Parse(toLines dogfood2)
+    let packages = List.rev lockFile.Packages
+    packages.Length |> shouldEqual 16
+    lockFile.Options.Strict |> shouldEqual false
+
+    packages.[1].Source |> shouldEqual PackageSources.DefaultNugetSource
+    packages.[1].Name |> shouldEqual (PackageName "FAKE")
+    packages.[1].Version |> shouldEqual (SemVer.Parse "3.5.5")
+    packages.[3].FrameworkRestrictions |> shouldEqual []
+
+    lockFile.SourceFiles.[0].Name |> shouldEqual "modules/Octokit/Octokit.fsx"
+
 
 let frameworkRestricted = """NUGET
   remote: https://nuget.org/api/v2
