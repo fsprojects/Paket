@@ -32,22 +32,24 @@ let ensureNoStrictMode (depFile : DependenciesFile) =
     if not depFile.Options.Strict then succeed depFile
     else failure StrictModeDetected
 
-let getLockFile (depFile : DependenciesFile) = 
-    let path = depFile.FindLockfile()
-    if File.Exists(path.FullName) then 
-        try succeed (depFile, LockFile.LoadFrom(path.FullName))
-        with _ -> failure LockFileParseError
-    else failure LockFileMissing
-
-let getRefFiles (depFile : DependenciesFile, lockFile : LockFile) =
-    ProjectFile.FindAllProjects(Path.GetDirectoryName lockFile.FileName) 
+let getRefFiles (depFile : DependenciesFile) =
+    ProjectFile.FindAllProjects(Path.GetDirectoryName depFile.FileName) 
     |> Array.choose (fun p -> ProjectFile.FindReferencesFile <| FileInfo(p.FileName))
     |> Array.map (fun file -> try succeed <| ReferencesFile.FromFile(file)
                               with _ -> failure <| ReferencesFileParseError file)
     |> Rop.collect
-    |> bind (fun refFiles -> succeed (depFile,lockFile,refFiles))
+    |> bind (fun refFiles -> succeed (depFile,refFiles))
 
-let getDependencyLookup(depFile : DependenciesFile, lockFile : LockFile, refFiles : ReferencesFile list) =
+let getLockFile (depFile : DependenciesFile, refFiles : ReferencesFile list) = 
+    let path = depFile.FindLockfile()
+    if File.Exists(path.FullName) then 
+        try succeed (depFile, refFiles, LockFile.LoadFrom(path.FullName))
+        with _ -> failure LockFileParseError
+    else failure LockFileMissing
+
+
+
+let getDependencyLookup(depFile : DependenciesFile,  refFiles : ReferencesFile list, lockFile : LockFile) =
     let lookupDeps packageName =
         try
             lockFile.GetAllDependenciesOf packageName 
@@ -119,7 +121,7 @@ let simplify (dependenciesFileName,interactive) =
     succeed dependenciesFileName
     |> bind getDependenciesFile
     |> bind ensureNoStrictMode
-    |> bind getLockFile
     |> bind getRefFiles
+    |> bind getLockFile
     |> bind getDependencyLookup
     |> lift (fun (d,r,l) -> analyze(d,r,l,interactive))
