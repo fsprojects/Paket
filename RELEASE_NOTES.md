@@ -1,5 +1,6 @@
-#### 0.20.0-alpha007 - 23.12.2014
+#### 0.20.0-alpha008 - 26.12.2014
 * Paket.exe acuires a lock for all write processes - https://github.com/fsprojects/Paket/pull/469
+* New command to add credentials - https://github.com/fsprojects/Paket/pull/458
 * Inherit selective depencies and store the result in `paket.lock` - https://github.com/fsprojects/Paket/pull/462
 * Don't add NuGet packages twice to a references file - https://github.com/fsprojects/Paket/pull/460
 * Fallback to config auth if environment variables are empty - https://github.com/fsprojects/Paket/pull/459
