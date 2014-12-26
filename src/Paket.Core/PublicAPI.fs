@@ -54,10 +54,31 @@ type Dependencies(dependenciesFileName: string) =
         else
             DependenciesFile(dependenciesFileName, InstallOptions.Default, [], [], []).Save()
         Dependencies(dependenciesFileName)
+     
+    /// Converts the solution from NuGet to Paket.
+    static member ConvertFromNugetRRRRR(force: bool,installAfter: bool,initAutoRestore: bool,credsMigrationMode: string option) : unit =
+        let dependencies = 
+            try Some <| Dependencies.Locate()
+            with _ -> None 
+        
+        let existingDependenciesFile = 
+            dependencies |> Option.map (fun d -> d.DependenciesFile)
+        
+        let dependenciesFileName = 
+            match existingDependenciesFile with
+            | Some file -> file
+            | None -> Path.Combine(Environment.CurrentDirectory, Constants.DependenciesFileName)
+        
+        let result = 
+            Utils.RunInLockedAccessMode(
+                Path.GetDirectoryName(dependenciesFileName),
+                fun () ->  NuGetConvert.convert(dependenciesFileName, force, credsMigrationMode))
+
+        ()
         
     /// Converts the solution from NuGet to Paket.
     static member ConvertFromNuget(force: bool,installAfter: bool,initAutoRestore: bool,credsMigrationMode: string option) : unit =
-        let credsMigrationMode = credsMigrationMode |> Option.map NuGetConvert.CredsMigrationMode.Parse
+        let credsMigrationMode = None //credsMigrationMode |> Option.map NuGetConvert.CredsMigrationMode.Parse
         let dependencies = 
             try Some <| Dependencies.Locate()
             with _ -> None 
