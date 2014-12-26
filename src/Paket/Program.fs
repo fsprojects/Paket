@@ -27,6 +27,7 @@ type Command =
     | InitAutoRestore
     | Simplify
     | FindRefs
+    | Config
     | Unknown
 
 type CLIArguments =
@@ -40,6 +41,7 @@ type CLIArguments =
     | [<First>][<NoAppSettings>][<CustomCommandLine("convert-from-nuget")>] ConvertFromNuget
     | [<First>][<NoAppSettings>][<CustomCommandLine("init-auto-restore")>] InitAutoRestore
     | [<First>][<NoAppSettings>][<CustomCommandLine("simplify")>] Simplify
+    | [<First>][<NoAppSettings>][<CustomCommandLine("config")>] Config
     | [<First>][<NoAppSettings>][<Rest>][<CustomCommandLine("find-refs")>] FindRefs of string
     | [<AltCommandLine("-v")>] Verbose
     | [<AltCommandLine("-i")>] Interactive
@@ -48,6 +50,7 @@ type CLIArguments =
     | Hard
     | [<CustomCommandLine("nuget")>] Nuget of string
     | [<CustomCommandLine("version")>] Version of string
+    | [<CustomCommandLine("add-credentials")>] AddCredentials of string
     | [<Rest>]References_Files of string
     | No_Install
     | Ignore_Constraints
@@ -69,6 +72,7 @@ with
             | ConvertFromNuget -> "converts all projects from NuGet to Paket."
             | InitAutoRestore -> "enables automatic restore for Visual Studio."
             | Simplify -> "analyzes dependencies and removes unnecessary indirect dependencies."
+            | Config -> "sets config values."
             | Verbose -> "displays verbose output."
             | Force -> "forces the download of all packages."
             | Redirects -> "creates assembly binding redirects."
@@ -82,8 +86,10 @@ with
             | Version _ -> "allows to specify a package version."
             | Creds_Migration _ -> "allows to specify credentials migration mode for convert-from-nuget."
             | FindRefs _ -> "finds all references to the given packages."
+            | AddCredentials _ -> "add credentials to config file for the specified source."
 
-let parser = UnionArgParser.Create<CLIArguments>("USAGE: paket [add|remove|install|update|outdated|convert-from-nuget|init-auto-restore|simplify|find-refs] ... options")
+
+let parser = UnionArgParser.Create<CLIArguments>("USAGE: paket [add|remove|install|update|outdated|convert-from-nuget|init-auto-restore|simplify|find-refs|config] ... options")
  
 let results =
     try
@@ -99,6 +105,7 @@ let results =
             elif results.Contains <@ CLIArguments.ConvertFromNuget @> then Command.ConvertFromNuget
             elif results.Contains <@ CLIArguments.InitAutoRestore @> then Command.InitAutoRestore
             elif results.Contains <@ CLIArguments.Simplify @> then Command.Simplify
+            elif results.Contains <@ CLIArguments.Config @> then Command.Config
             elif results.Contains <@ CLIArguments.FindRefs @> then Command.FindRefs
             else Command.Unknown
         if results.Contains <@ CLIArguments.Verbose @> then
@@ -138,6 +145,7 @@ try
             | Command.ConvertFromNuget -> showHelp HelpTexts.commands.["convert-from-nuget"]
             | Command.Simplify -> showHelp HelpTexts.commands.["simplify"]
             | Command.FindRefs -> showHelp HelpTexts.commands.["find-refs"]
+            | Command.Config -> showHelp HelpTexts.commands.["config"]
             | Command.Unknown -> traceErrorfn "no command given.%s" (parser.Usage())
 
         else
@@ -175,6 +183,16 @@ try
             | Command.FindRefs ->
                 let packages = results.GetResults <@ CLIArguments.FindRefs @>
                 Dependencies.Locate().ShowReferencesFor(packages)
+            | Command.Config -> 
+                let args = results.GetResults <@ CLIArguments.AddCredentials @> 
+                let source = args.Item 0
+                let username = 
+                    if(args.Length > 1) then
+                        args.Item 1
+                    else
+                        ""
+                Paket.ConfigFile.askAndAddAuth(source)(username)
+
             | Command.Unknown -> traceErrorfn "no command given.%s" (parser.Usage())
         
             let elapsedTime = Utils.TimeSpanToReadableString stopWatch.Elapsed
