@@ -97,15 +97,6 @@ let private saveCredentials (source : string) (username : string) (password : st
     saveConfigNode credentialsNode
     node
 
-let private askAndAddAuth (source : string) (credentialsNode : XmlNode) = 
-    if not Environment.UserInteractive then
-        failwithf "No credentials could be found for source %s" source
-
-    Console.Write("Username: ")
-    let userName = Console.ReadLine()
-    let password = readPassword "Password: "
-    let node = saveCredentials source userName password credentialsNode
-    getAuthFromNode (node :> XmlNode)
 
 /// Check if the provided credentials for a specific source are correct
 let checkCredentials(source, cred) = 
@@ -157,3 +148,19 @@ let AddCredentials (source, username, password) =
         existingNode
     | [] -> 
         saveCredentials source username password credentialsNode :> XmlNode
+
+
+let askAndAddAuth (source : string) (username : string) : unit = 
+    if not Environment.UserInteractive then
+        failwithf "No credentials could be found for source %s" source
+
+    let username =
+        if(username = "") then
+            Console.Write("Username: ")
+            Console.ReadLine()
+        else 
+            username
+
+    let password = readPassword "Password: "
+    AddCredentials (source, username, password) |> ignore
+ 
