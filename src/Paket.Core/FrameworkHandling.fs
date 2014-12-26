@@ -67,7 +67,6 @@ type FrameworkIdentifier =
              "windowsPhoneApp", "wpa"
          
              "1.0", "10" 
-             "0.0", "10" 
              "1.1", "11" 
              "2.0", "20" 
              "3.5", "35" 
