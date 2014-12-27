@@ -57,14 +57,10 @@ type Dependencies(dependenciesFileName: string) =
      
     /// Converts the solution from NuGet to Paket.
     static member ConvertFromNuget(force: bool,installAfter: bool,initAutoRestore: bool,credsMigrationMode: string option) : unit =
-        let dependencies = 
-            try Some <| Dependencies.Locate()
-            with _ -> None 
-        
         let dependenciesFileName = 
-            match dependencies  with
-            | Some dependencies -> dependencies.DependenciesFile
-            | None -> Path.Combine(Environment.CurrentDirectory, Constants.DependenciesFileName)
+            try 
+                Dependencies.Locate().DependenciesFile
+            with _ -> Path.Combine(Environment.CurrentDirectory, Constants.DependenciesFileName)
         
         let result = 
             Utils.RunInLockedAccessMode(
@@ -80,6 +76,8 @@ type Dependencies(dependenciesFileName: string) =
             sprintf "Unable to parse %s" fi.FullName
         | NuGetConvert.ConvertMessage.ReferencesFileAlreadyExists fi -> 
             sprintf "%s already exists, use --force to overwrite" fi.FullName
+        | NuGetConvert.ConvertMessage.NugetConfigFileParseError fi -> 
+            sprintf "Unable to parse %s" fi.FullName
 
         let remove (fi : FileInfo) = 
             tracefn "Removing %s" fi.FullName
@@ -96,23 +94,24 @@ type Dependencies(dependenciesFileName: string) =
                    remove nugetExe
                    traceWarnfn "Removed %s and added %s as dependency instead. Please check all paths." 
                        nugetExe.FullName "Nuget.CommandLine")
-            match result.NugetTargets, result.NugetExe with
-            | Some fi, _ | _, Some fi ->
-                if fi.Directory.EnumerateFileSystemInfos() |> Seq.isEmpty then
-                    fi.Directory.Delete()
+            match result.NugetTargets |> orElse result.NugetExe with
+            | Some fi when fi.Directory.EnumerateFileSystemInfos() |> Seq.isEmpty ->
+                fi.Directory.Delete()
             | _ -> ()
-
 
             result.DependenciesFile.Save()
             result.ReferencesFiles |> List.iter (fun r -> r.Save())
             result.ProjectFiles |> List.iter (fun p -> p.Save())
             result.SolutionFiles |> List.iter (fun s -> s.Save())
 
-            if initAutoRestore && (result.AutoVSPackageRestore || result.NugetTargets.IsSome) then 
+            let autoVSPackageRestore = 
+                result.NugetConfig.PackageRestoreAutomatic &&
+                result.NugetConfig.PackageRestoreEnabled
+            if initAutoRestore && (autoVSPackageRestore || result.NugetTargets.IsSome) then 
                 VSIntegration.InitAutoRestore dependenciesFileName
 
             if installAfter then
-                UpdateProcess.Update(dependenciesFileName,true,false,true,true)
+                UpdateProcess.Update(dependenciesFileName,true,true,true)
             
         | Rop.Failure(msgs) ->
             msgs |> List.map stringErr |> List.iter Logging.traceError

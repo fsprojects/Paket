@@ -15,6 +15,7 @@ open Paket.Requirements
 type ConvertMessage =
     | UnknownCredentialsMigrationMode of string
     | NugetPackagesConfigParseError of FileInfo
+    | NugetConfigFileParseError  of FileInfo
     | DependenciesFileAlreadyExists of FileInfo
     | ReferencesFileAlreadyExists of FileInfo
 
@@ -23,12 +24,28 @@ type CredsMigrationMode =
     | Plaintext
     | Selective
 
-    static member Parse(s : string) = 
+    static member parse(s : string) = 
         match s with 
         | "encrypt" -> Rop.succeed Encrypt
         | "plaintext" -> Rop.succeed  Plaintext
         | "selective" -> Rop.succeed Selective
         | _ ->  UnknownCredentialsMigrationMode s |> Rop.failure
+
+    static member toAuthentication mode sourceName auth =
+        match mode with
+        | Encrypt -> 
+            ConfigAuthentication(auth.Username, auth.Password)
+        | Plaintext -> 
+            PlainTextAuthentication(auth.Username, auth.Password)
+        | Selective -> 
+            let question =
+                sprintf "Credentials for source '%s': " sourceName  + 
+                    "[encrypt and save in config (Yes) " + 
+                    sprintf "| save as plaintext in %s (No)]" Constants.DependenciesFileName
+                    
+            match Utils.askYesNo question with
+            | true -> ConfigAuthentication(auth.Username, auth.Password)
+            | false -> PlainTextAuthentication(auth.Username, auth.Password)
 
 /// Represents type of NuGet packages.config file
 type NugetPackagesConfigType = ProjectLevel | SolutionLevel
@@ -40,38 +57,6 @@ type NugetPackagesConfig = {
     Type: NugetPackagesConfigType
 }
     
-type ConvertResult = 
-    { DependenciesFile : DependenciesFile
-      ReferencesFiles : list<ReferencesFile>
-      ProjectFiles : list<ProjectFile>
-      SolutionFiles : list<SolutionFile>
-      NugetConfigFiles : list<FileInfo>
-      NugetPackagesFiles : list<NugetPackagesConfig>
-      Force : bool
-      CredsMigrationMode: CredsMigrationMode
-      AutoVSPackageRestore : bool
-      NugetTargets : option<FileInfo>
-      NugetExe : option<FileInfo> }
-    
-    static member Empty(dependenciesFileName, force, credsMigrationMode) = 
-        { DependenciesFile = 
-            Paket.DependenciesFile(
-                dependenciesFileName, 
-                InstallOptions.Default, 
-                [],
-                [],
-                [])
-          ReferencesFiles = []
-          ProjectFiles = []
-          SolutionFiles = []
-          NugetConfigFiles = []
-          NugetPackagesFiles = [] 
-          Force = force
-          CredsMigrationMode = credsMigrationMode
-          AutoVSPackageRestore = false
-          NugetTargets = None
-          NugetExe = None }
-
 let private tryGetValue key (node : XmlNode) =
     node 
     |> getNodes "add"
@@ -96,15 +81,18 @@ type NugetConfig =
           PackageRestoreEnabled = false 
           PackageRestoreAutomatic = false }
 
-    member this.ApplyConfig (filename : string) =
-        let doc = XmlDocument()
-        doc.Load(filename)
-        let config = 
-            match doc |> getNode "configuration" with
-            | Some node -> node
-            | None -> failwithf "unable to parse %s" filename
+    static member getConfigNode (file : FileInfo) =  
+        try 
+            let doc = XmlDocument()
+            doc.Load(file.FullName)
+            (doc |> getNode "configuration").Value |> Rop.succeed
+        with _ -> 
+            file
+            |> NugetConfigFileParseError
+            |> Rop.failure
 
-        let clearSources = doc.SelectSingleNode("//packageSources/clear") <> null
+    static member overrideConfig nugetConfig (configNode : XmlNode) =
+        let clearSources = configNode.SelectSingleNode("//packageSources/clear") <> null
 
         let getAuth key = 
             let getAuth' authNode =
@@ -119,31 +107,63 @@ type NugetConfig =
                     Some  { Username = userName; Password = clearTextPass }
                 | _ -> None
 
-            config 
+            configNode 
             |> getNode "packageSourceCredentials" 
             |> optGetNode (XmlConvert.EncodeLocalName key) 
             |> Option.bind getAuth'
 
         let sources = 
-            config |> getNode "packageSources"
+            configNode |> getNode "packageSources"
             |> Option.toList
             |> List.collect getKeyValueList
             |> List.map (fun (key,value) -> value, getAuth key)
 
-        { PackageSources = if clearSources then sources else this.PackageSources @ sources
+        { PackageSources = if clearSources then sources else nugetConfig.PackageSources @ sources
           PackageRestoreEnabled = 
-            match config |> getNode "packageRestore" |> Option.bind (tryGetValue "enabled") with
+            match configNode |> getNode "packageRestore" |> Option.bind (tryGetValue "enabled") with
             | Some value -> bool.Parse(value)
-            | None -> this.PackageRestoreEnabled
+            | None -> nugetConfig.PackageRestoreEnabled
           PackageRestoreAutomatic = 
-            match config |> getNode "packageRestore" |> Option.bind (tryGetValue "automatic") with
+            match configNode |> getNode "packageRestore" |> Option.bind (tryGetValue "automatic") with
             | Some value -> bool.Parse(value)
-            | None -> this.PackageRestoreAutomatic }
+            | None -> nugetConfig.PackageRestoreAutomatic }
 
-let private readNugetConfig() =
+type ConvertResult = 
+    { DependenciesFile : DependenciesFile
+      ReferencesFiles : list<ReferencesFile>
+      ProjectFiles : list<ProjectFile>
+      SolutionFiles : list<SolutionFile>
+      NugetConfig : NugetConfig
+      NugetConfigFiles : list<FileInfo>
+      NugetPackagesFiles : list<NugetPackagesConfig>
+      Force : bool
+      CredsMigrationMode: CredsMigrationMode
+      NugetTargets : option<FileInfo>
+      NugetExe : option<FileInfo> }
     
-    let config = 
-        DirectoryInfo(".nuget")
+    static member empty(dependenciesFileName, force, credsMigrationMode) = 
+        { DependenciesFile = 
+            Paket.DependenciesFile(
+                dependenciesFileName, 
+                InstallOptions.Default, 
+                [],
+                [],
+                [])
+          ReferencesFiles = []
+          ProjectFiles = []
+          SolutionFiles = []
+          NugetConfig = NugetConfig.empty
+          NugetConfigFiles = []
+          NugetPackagesFiles = [] 
+          Force = force
+          CredsMigrationMode = credsMigrationMode
+          NugetTargets = None
+          NugetExe = None }
+
+let readNugetConfig(convertResult) =
+    let root = Path.GetDirectoryName(convertResult.DependenciesFile.FileName)
+    
+    DirectoryInfo(Path.Combine(root, ".nuget"))
         |> Seq.unfold (fun di -> if di = null 
                                  then None 
                                  else Some(FileInfo(Path.Combine(di.FullName, "nuget.config")), di.Parent)) 
@@ -151,25 +171,30 @@ let private readNugetConfig() =
         |> List.rev
         |> List.append [FileInfo(Path.Combine(Constants.AppDataFolder, "nuget", "nuget.config"))]
         |> List.filter (fun fi -> fi.Exists)
-        |> List.fold (fun (config:NugetConfig) fi -> config.ApplyConfig fi.FullName) NugetConfig.empty
+    |> List.fold (fun config file -> 
+                    config
+                    |> Rop.bind (fun config ->
+                        file 
+                        |> NugetConfig.getConfigNode 
+                        |> Rop.lift (fun node -> NugetConfig.overrideConfig config node)))
+                    (Rop.succeed NugetConfig.empty)
+    |> Rop.lift (fun config -> {convertResult with NugetConfig = config})
                      
-    {config with PackageSources = if config.PackageSources = [] then [Constants.DefaultNugetStream, None] else config.PackageSources }
-
-let readNugetPackagesConfig(file : FileInfo) = 
-    try
-        let doc = XmlDocument()
-        doc.Load file.FullName
-    
-        { File = file
-          Type = if file.Directory.Name = ".nuget" then SolutionLevel else ProjectLevel
-          Packages = [for node in doc.SelectNodes("//package") ->
-                            node.Attributes.["id"].Value, node.Attributes.["version"].Value |> SemVer.Parse ]}
-        |> Rop.succeed 
-    with _ -> Rop.failure (NugetPackagesConfigParseError file)
-
 let readNugetPackages(convertResult) =
+    let readSingle(file : FileInfo) = 
+        try
+            let doc = XmlDocument()
+            doc.Load file.FullName
+    
+            { File = file
+              Type = if file.Directory.Name = ".nuget" then SolutionLevel else ProjectLevel
+              Packages = [for node in doc.SelectNodes("//package") ->
+                                node.Attributes.["id"].Value, node.Attributes.["version"].Value |> SemVer.Parse ]}
+            |> Rop.succeed 
+        with _ -> Rop.failure (NugetPackagesConfigParseError file)
+
     FindAllFiles(Path.GetDirectoryName convertResult.DependenciesFile.FileName, "packages.config")
-    |> Array.map readNugetPackagesConfig
+    |> Array.map readSingle
     |> Rop.collect
     |> Rop.lift (fun xs -> {convertResult with NugetPackagesFiles = xs})
 
@@ -190,7 +215,7 @@ let ensureNotAlreadyConverted(convertResult) =
 
         let refFiles =
             convertResult.NugetPackagesFiles
-            |> List.map (fun c -> Path.Combine(c.File.Directory.Name, Constants.ReferencesFile))
+            |> List.map (fun fi -> Path.Combine(fi.File.Directory.Name, Constants.ReferencesFile))
             |> List.map (fun r -> 
                    if File.Exists(r) then Rop.failure (ReferencesFileAlreadyExists <| FileInfo(r))
                    else Rop.succeed ())
@@ -204,29 +229,16 @@ let ensureNotAlreadyConverted(convertResult) =
 let createDependenciesFile(convertResult) =
     
     let dependenciesFileName = convertResult.DependenciesFile.FileName
-    let nugetConfig = readNugetConfig()
-
-    let migrateCredentials sourceName auth =
-        let credsMigrationMode = convertResult.CredsMigrationMode
-        match credsMigrationMode with
-        | Encrypt -> 
-            ConfigAuthentication(auth.Username, auth.Password)
-        | Plaintext -> 
-            PlainTextAuthentication(auth.Username, auth.Password)
-        | Selective -> 
-            let question =
-                sprintf "Credentials for source '%s': " sourceName  + 
-                    "[encrypt and save in config (Yes) " + 
-                    sprintf "| save as plaintext in %s (No)]" Constants.DependenciesFileName
-                    
-            match Utils.askYesNo question with
-            | true -> ConfigAuthentication(auth.Username, auth.Password)
-            | false -> PlainTextAuthentication(auth.Username, auth.Password)
+    let root = Path.GetDirectoryName dependenciesFileName
 
     let sources = 
-        nugetConfig.PackageSources 
-        |> List.map (fun (name,auth) -> 
-                        PackageSource.Parse(name, auth |> Option.map (migrateCredentials name)))
+        convertResult.NugetConfig.PackageSources
+        |> List.map 
+               (fun (name, auth) -> 
+               name, 
+               auth 
+               |> Option.map (CredsMigrationMode.toAuthentication convertResult.CredsMigrationMode name))
+        |> List.map PackageSource.Parse
     
     let allVersions =
         convertResult.NugetPackagesFiles
@@ -241,55 +253,32 @@ let createDependenciesFile(convertResult) =
                             name    
                             (versions |> Seq.map string |> Seq.toList)
     
-    let latestVersions = allVersions |> Seq.map (fun (name,versions) -> name, versions |> Seq.max |> string) |> Seq.toList
+    let latestVersions = 
+        allVersions
+        |> Seq.map (fun (name, versions) -> name, versions |> Seq.max |> string)
+        |> Seq.toList
 
-    let existingDepFile = 
-        if File.Exists dependenciesFileName
-        then Some(DependenciesFile.ReadFromFile dependenciesFileName) 
-        else None
+    let nugetTargets = FindAllFiles(root, "nuget.targets") |> Seq.firstOrDefault
+    let nugetExe = FindAllFiles(root, "nuget.exe") |> Seq.firstOrDefault
 
-    let conflictingPackages, packages = 
-        match existingDepFile with
-        | Some depFile -> latestVersions |> List.partition (fun (name,_) -> depFile.HasPackage (PackageName name))
-        | None -> [], latestVersions
+    let packages = 
+        match nugetExe with 
+        | Some _ -> ("Nuget.CommandLine","") :: latestVersions
+        | _ -> latestVersions
     
-    for (name, _) in conflictingPackages do traceWarnfn "Package %s is already defined in %s" name dependenciesFileName
-
-    let requirement (name : string, v : string) = 
-        { Requirements.PackageRequirement.Name = PackageName name
-          Requirements.PackageRequirement.VersionRequirement = 
-              VersionRequirement(VersionRange.Specific(SemVer.Parse v), PreReleaseStatus.No)
-          Requirements.PackageRequirement.ResolverStrategy = Max
-          Requirements.PackageRequirement.Sources = sources
-          Requirements.PackageRequirement.FrameworkRestrictions = []
-          Requirements.PackageRequirement.Parent = 
-              Requirements.PackageRequirementSource.DependenciesFile dependenciesFileName }
-
-    let autoVsNugetRestore = nugetConfig.PackageRestoreEnabled && nugetConfig.PackageRestoreAutomatic
-    let nugetTargets = FindAllFiles(Path.GetDirectoryName dependenciesFileName, "nuget.targets") |> Seq.firstOrDefault
-    let nugetExe = FindAllFiles(Path.GetDirectoryName dependenciesFileName, "nuget.exe") |> Seq.firstOrDefault
-
+    let old = 
+        if File.Exists dependenciesFileName
+        then DependenciesFile.ReadFromFile dependenciesFileName
+        else Paket.DependenciesFile(dependenciesFileName, InstallOptions.Default, sources, [], [])
 
     let dependenciesFile =
-        match existingDepFile with
-        | Some depFile ->
-            packages 
-            |> List.fold (fun (d : DependenciesFile) (name,version) -> d.Add(PackageName name,version)) depFile
-        | None -> 
-            Paket.DependenciesFile(
-                dependenciesFileName, 
-                InstallOptions.Default, 
-                sources, 
-                packages |> List.map requirement, 
-                []) 
+        packages 
+        |> List.map (fun (name,v) -> PackageName name, v)
+        |> List.fold DependenciesFile.add old
     
-        |> (fun d -> if nugetExe.IsSome then d.Add(PackageName "Nuget.CommandLine","") else d)
-    
-
     Rop.succeed 
         {convertResult with 
             DependenciesFile = dependenciesFile
-            AutoVSPackageRestore = autoVsNugetRestore
             NugetTargets = nugetTargets
             NugetExe = nugetExe}
 
@@ -336,11 +325,12 @@ let convertProjects(convertResult) =
 let convert(dependenciesFileName, force, credsMigrationMode) =
     let credsMigrationMode =
         defaultArg 
-            (credsMigrationMode |> Option.map CredsMigrationMode.Parse)
+            (credsMigrationMode |> Option.map CredsMigrationMode.parse)
             (Rop.succeed Encrypt)
     
     credsMigrationMode 
-    |> Rop.bind (fun mode -> ConvertResult.Empty(dependenciesFileName, force, mode) |> Rop.succeed)
+    |> Rop.bind (fun mode -> ConvertResult.empty(dependenciesFileName, force, mode) |> Rop.succeed)
+    |> Rop.bind readNugetConfig
     |> Rop.bind readNugetPackages
     |> Rop.bind collectNugetConfigs
     |> Rop.bind ensureNotAlreadyConverted

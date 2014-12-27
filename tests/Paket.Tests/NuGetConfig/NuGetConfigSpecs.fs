@@ -10,7 +10,10 @@ open System.Security.Cryptography
 open System.Text
 open System
 
-let parse fileName = NugetConfig.empty.ApplyConfig fileName
+let parse fileName = 
+    match NugetConfig.getConfigNode <| FileInfo(fileName) with
+    | Rop.Success(node,_) -> NugetConfig.overrideConfig NugetConfig.empty node
+    | _ -> failwithf "unable to parse %s" fileName
 
 [<Test>]
 let ``can detect encrypted passwords in nuget.config``() = 
