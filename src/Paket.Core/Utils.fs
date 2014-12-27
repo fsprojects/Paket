@@ -194,7 +194,7 @@ let RunInLockedAccessMode(rootFolder,action) =
                     let content = File.ReadAllText fileName
                     if content <> p.Id.ToString() then
                         let processes = Process.GetProcessesByName(p.ProcessName)
-                        if processes |> Array.exists (fun p -> p.Id = p.Id) then
+                        if processes |> Array.exists (fun p -> content = p.Id.ToString()) then
                             Thread.Sleep(100)
                             waitForUnlocked()
 
