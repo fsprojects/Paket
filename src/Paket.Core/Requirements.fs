@@ -43,39 +43,48 @@ let optimizeRestrictions packages =
                     yield r,packages |> Seq.map (fun (n,v,_) -> n,v) |> Seq.toList
             | _ -> () ]
 
+
+    let emptyRestrictions =
+        [for (n,vr,r:FrameworkRestrictions) in packages do
+            if r = [] then
+                yield n,vr]
+        |> Set.ofList
+
     [for (name,versionRequirement:VersionRequirement),group in grouped do
         if name <> PackageName "" then
-            let plain = 
-                group 
-                |> Seq.map (fun (_,_,res) -> res) 
-                |> Seq.concat 
-                |> Seq.toList
+            if not (Set.isEmpty emptyRestrictions) && Set.contains (name,versionRequirement) emptyRestrictions then
+                yield name,versionRequirement,[]
+            else
+                let plain = 
+                    group 
+                    |> Seq.map (fun (_,_,res) -> res) 
+                    |> Seq.concat 
+                    |> Seq.toList
 
-            let localMaxDotNetRestriction = findMaxDotNetRestriction plain
-        
+                let localMaxDotNetRestriction = findMaxDotNetRestriction plain        
 
-            let restrictions =
-                plain
-                |> List.map (fun restriction ->
-                    match restriction with
-                    | FrameworkRestriction.Exactly r ->                     
-                        if r = localMaxDotNetRestriction then
-                            let globalMax = 
-                                invertedRestrictions
-                                |> Seq.skipWhile (fun (r,l) -> r <= localMaxDotNetRestriction && l |> List.exists (fun (n,vr) -> n = name && vr = versionRequirement))
-                                |> Seq.map fst
-                                |> Seq.toList
+                let restrictions =
+                    plain
+                    |> List.map (fun restriction ->
+                        match restriction with
+                        | FrameworkRestriction.Exactly r ->                     
+                            if r = localMaxDotNetRestriction then
+                                let globalMax = 
+                                    invertedRestrictions
+                                    |> Seq.skipWhile (fun (r,l) -> r <= localMaxDotNetRestriction && l |> List.exists (fun (n,vr) -> n = name && vr = versionRequirement))
+                                    |> Seq.map fst
+                                    |> Seq.toList
 
-                            if globalMax = [] || r >= globalMax.Head then
-                                FrameworkRestriction.AtLeast r
+                                if globalMax = [] || r >= globalMax.Head then
+                                    FrameworkRestriction.AtLeast r
+                                else
+                                    FrameworkRestriction.Between(r,globalMax.Head)
                             else
-                                FrameworkRestriction.Between(r,globalMax.Head)
-                        else
-                            restriction
-                    | _ -> restriction)
-                |> Seq.toList
+                                restriction
+                        | _ -> restriction)
+                    |> Seq.toList
 
-            yield name,versionRequirement,restrictions]
+                yield name,versionRequirement,restrictions]
 
 type PackageRequirementSource =
 | DependenciesFile of string

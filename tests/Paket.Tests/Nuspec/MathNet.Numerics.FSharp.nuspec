@@ -1,0 +1,51 @@
+<?xml version="1.0"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2012/06/nuspec.xsd">
+  <metadata>
+    <id>MathNet.Numerics.FSharp</id>
+    <version>3.3.0</version>
+    <title>Math.NET Numerics for F#</title>
+    <authors>Christoph Ruegg, Marcus Cuda, Jurgen Van Gael</authors>
+    <owners>Christoph Ruegg, Marcus Cuda, Jurgen Van Gael</owners>
+    <licenseUrl>http://numerics.mathdotnet.com/docs/License.html</licenseUrl>
+    <projectUrl>http://numerics.mathdotnet.com/</projectUrl>
+    <iconUrl>http://www.mathdotnet.com/images/MathNet128.png</iconUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>Math.NET Numerics is the numerical foundation of the Math.NET project, aiming to provide methods and algorithms for numerical computations in science, engineering and every day use. Supports F# 3.0 on .Net 4.0, .Net 3.5 and Mono on Windows, Linux and Mac; Silverlight 5 and Windows 8 with PCL portable profile 47; Android/iOS with Xamarin.</description>
+    <summary>F# Modules for Math.NET Numerics, providing methods and algorithms for numerical computations in science, engineering and every day use.</summary>
+    <releaseNotes>Linear Algebra: Vector.Fold2 (fold2 in F#), storage optimized
+Linear Algebra: Minor change how matrix products call the LA provider
+Linear Algebra: Random generation now leveraging array sampling routines
+Linear Algebra: fix bug when manually assigning System.Random to random distribution
+Root Finding: Change Brent tolerance check, add bracked check ~Hythen Sidky
+Root Finding: Auto zero-crossing bracketing in FindRoots facade (not in algorithms)
+Statistics: RootMeanSquare (RMS)
+Distributions: Array sampling routines now available through interface
+Distributions: Categorical sampling now explicitly skips p=0 categories
+Generate: leverage array sampling routines for random data generation
+Generate: square, triangle and sawtooth waves
+Distance: Jaccard Index
+F#: explicitly depend on official FSharp.Core NuGet packages
+F#: NuGet package with iPython IfSharp F# module integration load script
+F#: load scripts with better packet support (and NuGet with -ExcludeVersion)
+Build: unified build.sh and buildn.sh into combined build.sh
+Build: use Paket instead of NuGet to maintain NuGet dependencies
+Build: for core add PCL profiles 7, 78 and 259; for F# extensions drop PCL profile 328</releaseNotes>
+    <tags>fsharp F# math numeric statistics probability integration interpolation regression solve fit linear algebra matrix fft</tags>
+    <dependencies>
+      <group>
+        <dependency id="MathNet.Numerics" version="[3.3.0]" />
+        <dependency id="FSharp.Core.Microsoft.Signed" version="3.1.1.1" />
+      </group>
+      <group targetFramework=".NETFramework3.5">
+        <dependency id="MathNet.Numerics" version="[3.3.0]" />
+      </group>
+      <group targetFramework=".NETFramework4.0">
+        <dependency id="MathNet.Numerics" version="[3.3.0]" />
+        <dependency id="FSharp.Core.Microsoft.Signed" version="3.1.1.1" />
+      </group>
+    </dependencies>
+    <frameworkAssemblies>
+      <frameworkAssembly assemblyName="System.Numerics" targetFramework=".NETFramework4.0, Windows8.0, Silverlight5.0, MonoAndroid1.0, MonoTouch1.0" />
+    </frameworkAssemblies>
+  </metadata>
+</package>

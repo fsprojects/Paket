@@ -80,6 +80,13 @@ let ``can detect explicit dependencies for Math.Numerics``() =
           SourceUrl = fakeUrl }
 
 [<Test>]
+let ``can detect explicit dependencies for Math.Numerics.FSharp``() = 
+    (parse "NuGetOData/Math.Numerics.FSharp.xml").Dependencies |> Seq.head
+    |> shouldEqual 
+        (PackageName "MathNet.Numerics",
+         DependenciesFileParser.parseVersionRequirement("3.3.0"),[])
+
+[<Test>]
 let ``can calculate v3 path``() = 
     calculateNuGet3Path "https://nuget.org/api/v2" |> shouldEqual (Some "http://preview.nuget.org/ver3-preview/index.json")
     calculateNuGet3Path "http://nuget.org/api/v2" |> shouldEqual (Some "http://preview.nuget.org/ver3-preview/index.json")

@@ -160,6 +160,14 @@ let ``can detect dependencies for MathNet.Numerics``() =
                 DotNetFramework(FrameworkVersion.V4_Client))] ]
 
 [<Test>]
+let ``can detect dependencies for MathNet.Numerics.FSharp``() = 
+    Nuspec.Load("Nuspec/MathNet.Numerics.FSharp.nuspec").Dependencies
+    |> Seq.head
+    |> shouldEqual 
+        (PackageName "MathNet.Numerics",
+         DependenciesFileParser.parseVersionRequirement("3.3.0"),[])
+
+[<Test>]
 let ``can detect explicit dependencies for WindowsAzure.Storage``() = 
     Nuspec.Load("Nuspec/WindowsAzure.Storage.nuspec").Dependencies
     |> Seq.skip 1
