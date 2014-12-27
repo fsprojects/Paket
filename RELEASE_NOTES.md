@@ -1,4 +1,4 @@
-#### 0.20.0-alpha008 - 26.12.2014
+#### 0.20.0-alpha009 - 26.12.2014
 * Paket.exe acuires a lock for all write processes - https://github.com/fsprojects/Paket/pull/469
 * New command to add credentials - https://github.com/fsprojects/Paket/pull/458
 * Inherit selective depencies and store the result in `paket.lock` - https://github.com/fsprojects/Paket/pull/462
@@ -9,6 +9,7 @@
 * `>= 0` version range simplified to empty string - https://github.com/fsprojects/Paket/pull/449
 * Extend Public API for plugin
 * Allow to extract PackageId
+* Paket.exe and paket.bootstrapper.exe have a logo - https://github.com/fsprojects/Paket/pull/473
 * BUGFIX: Use Max strategy for `paket outdated --ingore-constraints` - https://github.com/fsprojects/Paket/pull/463
 * BUGFIX: Don't delete downloaded github zip file
 * BUGFIX: Don't touch framework assemblies if not needed
