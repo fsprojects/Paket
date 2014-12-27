@@ -28,7 +28,7 @@
     <DocumentationFile>
     </DocumentationFile>
     <StartArguments>update -f</StartArguments>
-    <StartArguments>update</StartArguments>
+    <StartArguments>install</StartArguments>
     <StartAction>Project</StartAction>
     <StartProgram>paket.exe</StartProgram>
     <StartWorkingDirectory>
