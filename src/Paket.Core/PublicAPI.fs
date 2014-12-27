@@ -97,7 +97,7 @@ type Dependencies(dependenciesFileName: string) =
     member this.Install(force: bool,hard: bool,withBindingRedirects:bool): unit = 
         Utils.RunInLockedAccessMode(
             this.RootPath,
-            fun () -> UpdateProcess.Update(dependenciesFileName,false,force,hard,withBindingRedirects))
+            fun () -> SmartInstallProcess.SmartInstall(dependenciesFileName,force,hard,withBindingRedirects))
 
     /// Installs all dependencies.
     member this.Install(force: bool,hard: bool): unit = this.Install(force,hard,false)
@@ -106,7 +106,7 @@ type Dependencies(dependenciesFileName: string) =
     member this.Update(force: bool,hard: bool,withBindingRedirects:bool): unit = 
         Utils.RunInLockedAccessMode(
             this.RootPath,
-            fun () -> UpdateProcess.Update(dependenciesFileName,true,force,hard,withBindingRedirects))
+            fun () -> UpdateProcess.Update(dependenciesFileName,force,hard,withBindingRedirects))
 
     /// Updates all dependencies.
     member this.Update(force: bool,hard: bool): unit = this.Update(force,hard,false)

@@ -14,7 +14,7 @@ let Add(dependenciesFileName, package, version, force, hard, interactive, instal
     let changed = existingDependenciesFile <> dependenciesFile
     let lockFile = 
         if changed then
-            UpdateProcess.updateWithModifiedDependenciesFile(dependenciesFile,package,force)
+            UpdateProcess.SelectiveUpdate(dependenciesFile,force)
         else
             let lockFileName = DependenciesFile.FindLockfile dependenciesFileName
             LockFile.LoadFrom(lockFileName.FullName)

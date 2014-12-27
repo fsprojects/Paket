@@ -49,7 +49,7 @@ let Remove(dependenciesFileName, package:PackageName, force, hard, interactive, 
             dependenciesFile.Save()
         
         if changed then
-            let lockFile = UpdateProcess.updateWithModifiedDependenciesFile(dependenciesFile,package,force)
+            let lockFile = UpdateProcess.SelectiveUpdate(dependenciesFile,force)
             lockFile.Save()
             lockFile
         else
