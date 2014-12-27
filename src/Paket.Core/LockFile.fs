@@ -289,6 +289,24 @@ type LockFile(fileName:string,options,resolution:PackageResolution,remoteFiles:R
     member __.Options = options
 
     /// Gets all dependencies of the given package
+    member this.GetAllNormalizedDependenciesOf(package:NormalizedPackageName) = 
+        let usedPackages = HashSet<_>()
+
+        let rec addPackage (identity:NormalizedPackageName) =
+            match resolution.TryFind identity with
+            | Some package ->
+                if usedPackages.Add identity then
+                    if not this.Options.Strict then
+                        for d,_,_ in package.Dependencies do
+                            addPackage(NormalizedPackageName d)
+            | None ->
+                failwithf "A package was referenced, but it was not found in the paket.lock file." 
+
+        addPackage package
+
+        usedPackages
+
+    /// Gets all dependencies of the given package
     member this.GetAllDependenciesOf(package) = 
         let usedPackages = HashSet<_>()
 
@@ -308,10 +326,25 @@ type LockFile(fileName:string,options,resolution:PackageResolution,remoteFiles:R
 
         usedPackages
 
-    member this.GetAllNormalizedDependenciesOf(package) = 
+    member this.GetAllNormalizedDependenciesOf(package:PackageName) = 
         this.GetAllDependenciesOf(package)
         |> Seq.map NormalizedPackageName
         |> Set.ofSeq
+
+    member this.GetIndirectDependencies() = 
+        this.ResolvedPackages 
+        |> Seq.map (fun d -> d.Value.Dependencies |> Seq.map (fun (n,_,_) -> n))
+        |> Seq.concat
+
+    member this.GetTopLevelDependencies() = 
+        let indirect = 
+            this.GetIndirectDependencies() 
+            |> Seq.map NormalizedPackageName 
+            |> Set.ofSeq
+
+        this.ResolvedPackages 
+        |> Seq.map (fun d -> d.Key)
+        |> Seq.filter (indirect.Contains >> not)
 
     /// Checks if the first package is a dependency of the second package
     member this.IsDependencyOf(dependentPackage,package) =
