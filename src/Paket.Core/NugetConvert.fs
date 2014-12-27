@@ -12,7 +12,6 @@ open Paket.NuGetV2
 open Paket.PackageSources
 open Paket.Requirements
 
-
 type ConvertMessage =
     | UnknownCredentialsMigrationMode of string
     | NugetPackagesConfigParseError of FileInfo
@@ -30,6 +29,48 @@ type CredsMigrationMode =
         | "plaintext" -> Rop.succeed  Plaintext
         | "selective" -> Rop.succeed Selective
         | _ ->  UnknownCredentialsMigrationMode s |> Rop.failure
+
+/// Represents type of NuGet packages.config file
+type NugetPackagesConfigType = ProjectLevel | SolutionLevel
+
+/// Represents NuGet packages.config file
+type NugetPackagesConfig = {
+    File: FileInfo
+    Packages: (string*SemVerInfo) list
+    Type: NugetPackagesConfigType
+}
+    
+type ConvertResult = 
+    { DependenciesFile : DependenciesFile
+      ReferencesFiles : list<ReferencesFile>
+      ProjectFiles : list<ProjectFile>
+      SolutionFiles : list<SolutionFile>
+      NugetConfigFiles : list<FileInfo>
+      NugetPackagesFiles : list<NugetPackagesConfig>
+      Force : bool
+      CredsMigrationMode: CredsMigrationMode
+      AutoVSPackageRestore : bool
+      NugetTargets : option<FileInfo>
+      NugetExe : option<FileInfo> }
+    
+    static member Empty(dependenciesFileName, force, credsMigrationMode) = 
+        { DependenciesFile = 
+            Paket.DependenciesFile(
+                dependenciesFileName, 
+                InstallOptions.Default, 
+                [],
+                [],
+                [])
+          ReferencesFiles = []
+          ProjectFiles = []
+          SolutionFiles = []
+          NugetConfigFiles = []
+          NugetPackagesFiles = [] 
+          Force = force
+          CredsMigrationMode = credsMigrationMode
+          AutoVSPackageRestore = false
+          NugetTargets = None
+          NugetExe = None }
 
 let private tryGetValue key (node : XmlNode) =
     node 
@@ -114,133 +155,6 @@ let private readNugetConfig() =
                      
     {config with PackageSources = if config.PackageSources = [] then [Constants.DefaultNugetStream, None] else config.PackageSources }
 
-let removeFile file = 
-    File.Delete file
-    tracefn "Deleted %s" file
-
-/// Represents type of NuGet packages.config file
-type NugetPackagesConfigType = ProjectLevel | SolutionLevel
-
-/// Represents NuGet packages.config file
-type NugetPackagesConfig = {
-    File: FileInfo
-    Packages: (string*SemVerInfo) list
-    Type: NugetPackagesConfigType
-}
-
-let private convertNugetsToDepFile(dependenciesFilename,nugetPackagesConfigs, sources) =
-    let allVersions =
-        nugetPackagesConfigs
-        |> Seq.collect (fun c -> c.Packages)
-        |> Seq.groupBy fst
-        |> Seq.map (fun (name, packages) -> name, packages |> Seq.map snd |> Seq.distinct)
-        |> Seq.sortBy (fun (name,_) -> name.ToLower())
-    
-    for (name, versions) in allVersions do
-        if Seq.length versions > 1 
-        then traceWarnfn "Package %s is referenced multiple times in different versions: %A. Paket will choose the latest one." 
-                            name    
-                            (versions |> Seq.map string |> Seq.toList)
-    
-    let latestVersions = allVersions |> Seq.map (fun (name,versions) -> name, versions |> Seq.max |> string) |> Seq.toList
-
-    let existingDepFile = 
-        if File.Exists dependenciesFilename
-        then Some(DependenciesFile.ReadFromFile dependenciesFilename) 
-        else None
-
-    let conflictingPackages, packagesToAdd = 
-        match existingDepFile with
-        | Some depFile -> latestVersions |> List.partition (fun (name,_) -> depFile.HasPackage (PackageName name))
-        | None -> [], latestVersions
-    
-    for (name, _) in conflictingPackages do traceWarnfn "Package %s is already defined in %s" name dependenciesFilename
-
-    let nugetPackageRequirement (name : string, v : string) = 
-        { Requirements.PackageRequirement.Name = PackageName name
-          Requirements.PackageRequirement.VersionRequirement = 
-              VersionRequirement(VersionRange.Specific(SemVer.Parse v), PreReleaseStatus.No)
-          Requirements.PackageRequirement.ResolverStrategy = Max
-          Requirements.PackageRequirement.Sources = sources
-          Requirements.PackageRequirement.FrameworkRestrictions = []
-          Requirements.PackageRequirement.Parent = 
-              Requirements.PackageRequirementSource.DependenciesFile dependenciesFilename }
-
-    match existingDepFile with
-    | None ->
-        let packages = packagesToAdd |> List.map (fun (name,v) -> nugetPackageRequirement(name,v))
-        Paket.DependenciesFile(dependenciesFilename, InstallOptions.Default, sources, packages, []).Save()
-    | Some depFile ->
-        if not (packagesToAdd |> List.isEmpty)
-            then (packagesToAdd |> List.fold (fun (d : DependenciesFile) (name,version) -> d.Add(PackageName name,version)) depFile).Save()
-        else tracefn "%s is up to date" depFile.FileName
-
-let private convertNugetToRefFile(nugetPackagesConfig) =
-    let refFilePath = Path.Combine(nugetPackagesConfig.File.DirectoryName, Constants.ReferencesFile)
-    let existingRefFile = if File.Exists refFilePath then Some <| ReferencesFile.FromFile(refFilePath) else None
-
-    let confictingRefs, refsToAdd =
-        match existingRefFile with
-        | Some refFile -> 
-            nugetPackagesConfig.Packages 
-            |> List.partition (fun (name,_) -> 
-                                    refFile.NugetPackages |> List.exists (fun (NormalizedPackageName np) -> np = NormalizedPackageName (PackageName name)))
-        | _ -> [], nugetPackagesConfig.Packages
-    
-    for (name,_) in confictingRefs do traceWarnfn "Reference %s is already defined in %s" name refFilePath
-            
-    match existingRefFile with 
-    | None -> {ReferencesFile.FileName = refFilePath; NugetPackages = refsToAdd |> List.map fst |> List.map PackageName; RemoteFiles = []}.Save()
-    | Some refFile ->
-        if not (refsToAdd |> List.isEmpty)
-            then (refsToAdd |> List.fold (fun (refFile : ReferencesFile) (name,_) -> refFile.AddNuGetReference(PackageName name)) refFile).Save()
-        else tracefn "%s is up to date" refFilePath
-
-        
-
-/// Lists packages defined in a NuGet packages.config
-let ReadPackagesConfig(configFile : FileInfo) =
-    let doc = XmlDocument()
-    doc.Load configFile.FullName
-    
-    { File = configFile
-      Type = if configFile.Directory.Name = ".nuget" then SolutionLevel else ProjectLevel
-      Packages = [for node in doc.SelectNodes("//package") ->
-                        node.Attributes.["id"].Value, node.Attributes.["version"].Value |> SemVer.Parse ]}
-
-
-type ConvertResult = 
-    { DependenciesFile : DependenciesFile
-      ReferencesFiles : list<ReferencesFile>
-      ProjectFiles : list<ProjectFile>
-      SolutionFiles : list<SolutionFile>
-      NugetConfigFiles : list<FileInfo>
-      NugetPackagesFiles : list<NugetPackagesConfig>
-      Force : bool
-      CredsMigrationMode: CredsMigrationMode
-      AutoVSPackageRestore : bool
-      NugetTargets : option<FileInfo>
-      NugetExe : option<FileInfo> }
-    
-    static member Empty(dependenciesFileName, force, credsMigrationMode) = 
-        { DependenciesFile = 
-            Paket.DependenciesFile(
-                dependenciesFileName, 
-                InstallOptions.Default, 
-                [],
-                [],
-                [])
-          ReferencesFiles = []
-          ProjectFiles = []
-          SolutionFiles = []
-          NugetConfigFiles = []
-          NugetPackagesFiles = [] 
-          Force = force
-          CredsMigrationMode = credsMigrationMode
-          AutoVSPackageRestore = false
-          NugetTargets = None
-          NugetExe = None }
-
 let readNugetPackagesConfig(file : FileInfo) = 
     try
         let doc = XmlDocument()
@@ -252,8 +166,6 @@ let readNugetPackagesConfig(file : FileInfo) =
                             node.Attributes.["id"].Value, node.Attributes.["version"].Value |> SemVer.Parse ]}
         |> Rop.succeed 
     with _ -> Rop.failure (NugetPackagesConfigParseError file)
-
-
 
 let readNugetPackages(convertResult) =
     FindAllFiles(Path.GetDirectoryName convertResult.DependenciesFile.FileName, "packages.config")
@@ -278,13 +190,16 @@ let ensureNotAlreadyConverted(convertResult) =
 
         let refFiles =
             convertResult.NugetPackagesFiles
-            |> List.map (fun c -> c, Path.Combine(c.File.Directory.Name, Constants.ReferencesFile))
-            |> List.map (fun (c, r) -> 
+            |> List.map (fun c -> Path.Combine(c.File.Directory.Name, Constants.ReferencesFile))
+            |> List.map (fun r -> 
                    if File.Exists(r) then Rop.failure (ReferencesFileAlreadyExists <| FileInfo(r))
-                   else Rop.succeed c)
+                   else Rop.succeed ())
             |> Rop.collect
 
-        depFile |> Rop.bind(fun _ -> Rop.succeed convertResult)
+        depFile 
+        |> Rop.bind(fun _ -> 
+            refFiles 
+            |> Rop.bind (fun _ -> Rop.succeed convertResult))
 
 let createDependenciesFile(convertResult) =
     
@@ -350,6 +265,11 @@ let createDependenciesFile(convertResult) =
           Requirements.PackageRequirement.Parent = 
               Requirements.PackageRequirementSource.DependenciesFile dependenciesFileName }
 
+    let autoVsNugetRestore = nugetConfig.PackageRestoreEnabled && nugetConfig.PackageRestoreAutomatic
+    let nugetTargets = FindAllFiles(Path.GetDirectoryName dependenciesFileName, "nuget.targets") |> Seq.firstOrDefault
+    let nugetExe = FindAllFiles(Path.GetDirectoryName dependenciesFileName, "nuget.exe") |> Seq.firstOrDefault
+
+
     let dependenciesFile =
         match existingDepFile with
         | Some depFile ->
@@ -363,9 +283,8 @@ let createDependenciesFile(convertResult) =
                 packages |> List.map requirement, 
                 []) 
     
-    let autoVsNugetRestore = nugetConfig.PackageRestoreEnabled && nugetConfig.PackageRestoreAutomatic
-    let nugetTargets = FindAllFiles(Path.GetDirectoryName dependenciesFileName, "nuget.targets") |> Seq.firstOrDefault
-    let nugetExe = FindAllFiles(Path.GetDirectoryName dependenciesFileName, "nuget.exe") |> Seq.firstOrDefault
+        |> (fun d -> if nugetExe.IsSome then d.Add(PackageName "Nuget.CommandLine","") else d)
+    
 
     Rop.succeed 
         {convertResult with 
@@ -429,86 +348,3 @@ let convert(dependenciesFileName, force, credsMigrationMode) =
     |> Rop.bind createReferencesFiles
     |> Rop.bind convertSolutions
     |> Rop.bind convertProjects
-    
-
-/// Converts all projects from NuGet to Paket
-let ConvertFromNuget(dependenciesFileName, force, installAfter, initAutoRestore, credsMigrationMode) =
-    let root = Path.GetDirectoryName dependenciesFileName
-
-    let nugetPackagesConfigs = FindAllFiles(root, "packages.config") |> Seq.map ReadPackagesConfig
-    let nugetConfig = readNugetConfig()
-    FindAllFiles(root, "nuget.config") |> Seq.iter (fun f -> removeFile f.FullName)
-
-    let migrateCredentials sourceName auth =
-        let credsMigrationMode = defaultArg credsMigrationMode Encrypt
-        match credsMigrationMode with
-        | Encrypt -> 
-            ConfigAuthentication(auth.Username, auth.Password)
-        | Plaintext -> 
-            PlainTextAuthentication(auth.Username, auth.Password)
-        | Selective -> 
-            let question =
-                sprintf "Credentials for source '%s': " sourceName  + 
-                    "[encrypt and save in config (Yes) " + 
-                    sprintf "| save as plaintext in %s (No)]" Constants.DependenciesFileName
-                    
-            match Utils.askYesNo question with
-            | true -> ConfigAuthentication(auth.Username, auth.Password)
-            | false -> PlainTextAuthentication(auth.Username, auth.Password)
-
-    let sources = 
-        nugetConfig.PackageSources 
-        |> List.map (fun (name,auth) -> 
-                        PackageSource.Parse(name, auth |> Option.map (migrateCredentials name)))
-
-    convertNugetsToDepFile(dependenciesFileName, nugetPackagesConfigs, sources)
-        
-    for nugetPackagesConfig in nugetPackagesConfigs do
-        let packageFile = nugetPackagesConfig.File
-        match nugetPackagesConfig.Type with
-        | ProjectLevel ->
-            let refFile = Path.Combine(packageFile.DirectoryName, Constants.ReferencesFile)
-            if File.Exists refFile && not force then failwithf "%s already exists, use --force to overwrite" refFile
-            convertNugetToRefFile(nugetPackagesConfig)
-        | SolutionLevel -> ()
-
-    for slnFile in FindAllFiles(root, "*.sln") do
-        let solution = SolutionFile(slnFile.FullName)
-        solution.RemoveNugetEntries()
-        let dependenciesFileRef = createRelativePath solution.FileName dependenciesFileName
-        let lockFileRef = createRelativePath solution.FileName (Path.Combine(root,"paket.lock"))
-        solution.AddPaketFolder(dependenciesFileRef, if installAfter then Some(lockFileRef) else None)
-        solution.Save()
-
-    for project in ProjectFile.FindAllProjects root do
-        project.ReplaceNuGetPackagesFile()
-        project.RemoveNuGetTargetsEntries()
-        project.Save()
-
-    for packagesConfigFile in nugetPackagesConfigs |> Seq.map (fun f -> f.File) do
-        removeFile packagesConfigFile.FullName
-
-    let autoVsNugetRestore = nugetConfig.PackageRestoreEnabled && nugetConfig.PackageRestoreAutomatic
-    let nugetTargets = FindAllFiles(root, "nuget.targets") |> Seq.firstOrDefault
-    
-    match nugetTargets with
-    | Some nugetTargets ->
-        removeFile nugetTargets.FullName
-        let nugetExe = Path.Combine(nugetTargets.DirectoryName, "nuget.exe")
-        if File.Exists nugetExe then 
-            traceWarnfn "Removing NuGet.exe and adding Nuget.CommandLine as dependency instead. Please check all paths."
-            removeFile nugetExe
-            let nugetCommandLine = PackageName "NuGet.CommandLine"
-            let depFile = DependenciesFile.ReadFromFile dependenciesFileName
-            if not <| depFile.HasPackage(nugetCommandLine) then 
-                depFile.Add(nugetCommandLine, "").Save()
-            
-        if Directory.EnumerateFileSystemEntries(nugetTargets.DirectoryName) |> Seq.isEmpty 
-            then Directory.Delete nugetTargets.DirectoryName
-    | None -> ()
-
-    if initAutoRestore && (autoVsNugetRestore || nugetTargets.IsSome) then 
-        VSIntegration.InitAutoRestore dependenciesFileName
-
-    if installAfter then
-        UpdateProcess.Update(dependenciesFileName,false,true,true)
