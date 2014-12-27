@@ -8,18 +8,15 @@ open Paket.PackageResolver
 open System.Collections.Generic
 
 /// Update command
-let Update(dependenciesFileName, forceResolution, force, hard, withBindingRedirects) = 
+let Update(dependenciesFileName, force, hard, withBindingRedirects) = 
     let lockFileName = DependenciesFile.FindLockfile dependenciesFileName
     
     let sources, lockFile = 
         let dependenciesFile = DependenciesFile.ReadFromFile dependenciesFileName
-        if forceResolution || not lockFileName.Exists then 
-            let resolution = dependenciesFile.Resolve(force)
-            let lockFile = LockFile.Create(lockFileName.FullName, dependenciesFile.Options, resolution.ResolvedPackages, resolution.ResolvedSourceFiles)
-            dependenciesFile.Sources, lockFile
-        else 
-            let sources = dependenciesFile.GetAllPackageSources()
-            sources, LockFile.LoadFrom(lockFileName.FullName)
+        
+        let resolution = dependenciesFile.Resolve(force)
+        let lockFile = LockFile.Create(lockFileName.FullName, dependenciesFile.Options, resolution.ResolvedPackages, resolution.ResolvedSourceFiles)
+        dependenciesFile.Sources, lockFile
 
     InstallProcess.Install(sources, force, hard, withBindingRedirects, lockFile)
 
@@ -55,7 +52,7 @@ let private update lockFileName force (createDependenciesFile:LockFile -> Depend
     dependenciesFile.Sources, newLockFile
 
 
-let updateWithModifiedDependenciesFile(dependenciesFile:DependenciesFile,packageName:PackageName, force) =
+let SelectiveUpdate(dependenciesFile:DependenciesFile, force) =
     let lockFileName = DependenciesFile.FindLockfile dependenciesFile.FileName
 
     if not lockFileName.Exists then 
@@ -69,7 +66,7 @@ let updateWithModifiedDependenciesFile(dependenciesFile:DependenciesFile,package
 /// Update a single package command
 let UpdatePackage(dependenciesFileName, packageName : PackageName, newVersion, force, hard) = 
     let lockFileName = DependenciesFile.FindLockfile dependenciesFileName
-    if not lockFileName.Exists then Update(dependenciesFileName, true, force, hard, false) else
+    if not lockFileName.Exists then Update(dependenciesFileName, force, hard, false) else
     
     let sources, lockFile = 
         let dependenciesFile = 

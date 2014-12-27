@@ -6,15 +6,15 @@ open System.IO
 open Paket.Domain
 
 let Add(dependenciesFileName, package, version, force, hard, interactive, installAfter) =
-    let exisitingDependenciesFile = DependenciesFile.ReadFromFile(dependenciesFileName)
+    let existingDependenciesFile = DependenciesFile.ReadFromFile(dependenciesFileName)
     let dependenciesFile =
-        exisitingDependenciesFile
+        existingDependenciesFile
           .Add(package,version)
 
-    let changed = exisitingDependenciesFile <> dependenciesFile
+    let changed = existingDependenciesFile <> dependenciesFile
     let lockFile = 
         if changed then
-            UpdateProcess.updateWithModifiedDependenciesFile(dependenciesFile,package,force)
+            UpdateProcess.SelectiveUpdate(dependenciesFile,force)
         else
             let lockFileName = DependenciesFile.FindLockfile dependenciesFileName
             LockFile.LoadFrom(lockFileName.FullName)

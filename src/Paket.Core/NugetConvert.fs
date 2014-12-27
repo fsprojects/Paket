@@ -278,4 +278,4 @@ let ConvertFromNuget(dependenciesFileName, force, installAfter, initAutoRestore,
         VSIntegration.InitAutoRestore dependenciesFileName
 
     if installAfter then
-        UpdateProcess.Update(dependenciesFileName,true,false,true,true)
+        UpdateProcess.Update(dependenciesFileName,false,true,true)
