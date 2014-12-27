@@ -18,6 +18,8 @@ type ConvertMessage =
     | NugetConfigFileParseError  of FileInfo
     | DependenciesFileAlreadyExists of FileInfo
     | ReferencesFileAlreadyExists of FileInfo
+    | DependenciesFileParseError of string
+    | PackageSourceParseError of string
 
 type CredsMigrationMode =
     | Encrypt
@@ -164,13 +166,13 @@ let readNugetConfig(convertResult) =
     let root = Path.GetDirectoryName(convertResult.DependenciesFile.FileName)
     
     DirectoryInfo(Path.Combine(root, ".nuget"))
-        |> Seq.unfold (fun di -> if di = null 
-                                 then None 
-                                 else Some(FileInfo(Path.Combine(di.FullName, "nuget.config")), di.Parent)) 
-        |> Seq.toList
-        |> List.rev
-        |> List.append [FileInfo(Path.Combine(Constants.AppDataFolder, "nuget", "nuget.config"))]
-        |> List.filter (fun fi -> fi.Exists)
+    |> Seq.unfold (fun di -> if di = null 
+                                then None 
+                                else Some(FileInfo(Path.Combine(di.FullName, "nuget.config")), di.Parent)) 
+    |> Seq.toList
+    |> List.rev
+    |> List.append [FileInfo(Path.Combine(Constants.AppDataFolder, "nuget", "nuget.config"))]
+    |> List.filter (fun fi -> fi.Exists)
     |> List.fold (fun config file -> 
                     config
                     |> Rop.bind (fun config ->
@@ -230,15 +232,6 @@ let createDependenciesFile(convertResult) =
     
     let dependenciesFileName = convertResult.DependenciesFile.FileName
     let root = Path.GetDirectoryName dependenciesFileName
-
-    let sources = 
-        convertResult.NugetConfig.PackageSources
-        |> List.map 
-               (fun (name, auth) -> 
-               name, 
-               auth 
-               |> Option.map (CredsMigrationMode.toAuthentication convertResult.CredsMigrationMode name))
-        |> List.map PackageSource.Parse
     
     let allVersions =
         convertResult.NugetPackagesFiles
@@ -265,22 +258,35 @@ let createDependenciesFile(convertResult) =
         match nugetExe with 
         | Some _ -> ("Nuget.CommandLine","") :: latestVersions
         | _ -> latestVersions
-    
-    let old = 
-        if File.Exists dependenciesFileName
-        then DependenciesFile.ReadFromFile dependenciesFileName
-        else Paket.DependenciesFile(dependenciesFileName, InstallOptions.Default, sources, [], [])
 
-    let dependenciesFile =
-        packages 
-        |> List.map (fun (name,v) -> PackageName name, v)
-        |> List.fold DependenciesFile.add old
-    
-    Rop.succeed 
-        {convertResult with 
-            DependenciesFile = dependenciesFile
-            NugetTargets = nugetTargets
-            NugetExe = nugetExe}
+    let addPackages dependenciesFile = 
+        packages
+        |> List.map (fun (name, v) -> PackageName name, v)
+        |> List.fold DependenciesFile.add dependenciesFile
+
+    let read() =
+        try DependenciesFile.ReadFromFile dependenciesFileName |> Rop.succeed
+        with _ -> DependenciesFileParseError dependenciesFileName |> Rop.failure
+
+    let create() =
+        let mode = convertResult.CredsMigrationMode
+        let sources = 
+            convertResult.NugetConfig.PackageSources
+            |> List.map (fun (n, auth) -> n, auth |> Option.map (CredsMigrationMode.toAuthentication mode n))
+            |> List.map (fun source -> 
+                            try source |> PackageSource.Parse |> Rop.succeed
+                            with _ -> source |> fst |> PackageSourceParseError |> Rop.failure)
+            |> Rop.collect
+
+        sources
+        |> Rop.lift (fun sources -> 
+            Paket.DependenciesFile(dependenciesFileName, InstallOptions.Default, sources, [], []))
+
+    if File.Exists dependenciesFileName then read() else create()
+    |> Rop.lift (fun dependenciesFile -> 
+           { convertResult with DependenciesFile = addPackages dependenciesFile
+                                NugetTargets = nugetTargets
+                                NugetExe = nugetExe })
 
 let createReferencesFiles(convertResult) =
     let createSingle packagesConfig = 

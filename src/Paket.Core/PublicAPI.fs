@@ -78,6 +78,10 @@ type Dependencies(dependenciesFileName: string) =
             sprintf "%s already exists, use --force to overwrite" fi.FullName
         | NuGetConvert.ConvertMessage.NugetConfigFileParseError fi -> 
             sprintf "Unable to parse %s" fi.FullName
+        | NuGetConvert.ConvertMessage.DependenciesFileParseError fi ->
+            sprintf "Unable to parse %s" fi
+        | NuGetConvert.ConvertMessage.PackageSourceParseError source -> 
+            sprintf "Unable to parse packages source %s" source
 
         let remove (fi : FileInfo) = 
             tracefn "Removing %s" fi.FullName

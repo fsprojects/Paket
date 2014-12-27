@@ -5,7 +5,6 @@ open Logging
 open System
 open Paket.Domain
 open Paket.PackageResolver
-open Rop
 
 type SimplifyResult = {
     DependenciesFileSimplifyResult : DependenciesFile * DependenciesFile
@@ -24,28 +23,28 @@ type SimplifyMessage =
 
 let getDependenciesFile path =
     if File.Exists path then 
-        try succeed (DependenciesFile.ReadFromFile path)
-        with _ -> failure DependenciesFileParseError
-    else failure DependenciesFileMissing
+        try Rop.succeed (DependenciesFile.ReadFromFile path)
+        with _ -> Rop.failure DependenciesFileParseError
+    else Rop.failure DependenciesFileMissing
 
 let ensureNoStrictMode (depFile : DependenciesFile) =
-    if not depFile.Options.Strict then succeed depFile
-    else failure StrictModeDetected
+    if not depFile.Options.Strict then Rop.succeed depFile
+    else Rop.failure StrictModeDetected
 
 let getRefFiles (depFile : DependenciesFile) =
     ProjectFile.FindAllProjects(Path.GetDirectoryName depFile.FileName) 
     |> Array.choose (fun p -> ProjectFile.FindReferencesFile <| FileInfo(p.FileName))
-    |> Array.map (fun file -> try succeed <| ReferencesFile.FromFile(file)
-                              with _ -> failure <| ReferencesFileParseError file)
+    |> Array.map (fun file -> try Rop.succeed <| ReferencesFile.FromFile(file)
+                              with _ -> Rop.failure <| ReferencesFileParseError file)
     |> Rop.collect
-    |> bind (fun refFiles -> succeed (depFile,refFiles))
+    |> Rop.bind (fun refFiles -> Rop.succeed (depFile,refFiles))
 
 let getLockFile (depFile : DependenciesFile, refFiles : ReferencesFile list) = 
     let path = depFile.FindLockfile()
     if File.Exists(path.FullName) then 
-        try succeed (depFile, refFiles, LockFile.LoadFrom(path.FullName))
-        with _ -> failure LockFileParseError
-    else failure LockFileMissing
+        try Rop.succeed (depFile, refFiles, LockFile.LoadFrom(path.FullName))
+        with _ -> Rop.failure LockFileParseError
+    else Rop.failure LockFileMissing
 
 
 
@@ -63,16 +62,16 @@ let getDependencyLookup(depFile : DependenciesFile,  refFiles : ReferencesFile l
         depFile.Packages
         |> List.map (fun p -> 
             match lookupDeps(p.Name) with
-            | Some deps -> (NormalizedPackageName p.Name, deps) |> succeed
-            | None -> DependencyNotLocked(p.Name) |> failure)
+            | Some deps -> (NormalizedPackageName p.Name, deps) |> Rop.succeed
+            | None -> DependencyNotLocked(p.Name) |> Rop.failure)
 
     let refs =
         refFiles 
         |> List.collect (fun r -> r.NugetPackages |> List.map (fun p -> r,p))
         |> List.map (fun (r,p) ->
             match lookupDeps(p) with
-            | Some deps -> (NormalizedPackageName p, deps) |> succeed
-            | None -> ReferenceNotLocked(r, p) |> failure)
+            | Some deps -> (NormalizedPackageName p, deps) |> Rop.succeed
+            | None -> ReferenceNotLocked(r, p) |> Rop.failure)
     
     deps @ refs
     |> Rop.collect
@@ -118,10 +117,10 @@ let analyze(depFile : DependenciesFile, refFiles : ReferencesFile list, lookup :
       ReferencesFilesSimplifyResult = List.zip refFiles simplifiedReferencesFiles }
              
 let simplify (dependenciesFileName,interactive) = 
-    succeed dependenciesFileName
-    |> bind getDependenciesFile
-    |> bind ensureNoStrictMode
-    |> bind getRefFiles
-    |> bind getLockFile
-    |> bind getDependencyLookup
-    |> lift (fun (d,r,l) -> analyze(d,r,l,interactive))
+    Rop.succeed dependenciesFileName
+    |> Rop.bind getDependenciesFile
+    |> Rop.bind ensureNoStrictMode
+    |> Rop.bind getRefFiles
+    |> Rop.bind getLockFile
+    |> Rop.bind getDependencyLookup
+    |> Rop.lift (fun (d,r,l) -> analyze(d,r,l,interactive))
