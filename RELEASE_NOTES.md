@@ -1,4 +1,4 @@
-#### 0.20.0-alpha010 - 27.12.2014
+#### 0.20.0-alpha011 - 27.12.2014
 * Paket.exe acuires a lock for all write processes - https://github.com/fsprojects/Paket/pull/469
 * New command to add credentials - https://github.com/fsprojects/Paket/pull/458
 * Inherit selective depencies and store the result in `paket.lock` - https://github.com/fsprojects/Paket/pull/462
