@@ -313,7 +313,7 @@ let ExtractPackage(fileName:string, targetFolder, name, version:SemVerInfo) =
 /// Extracts the given package to the ./packages folder
 let CopyFromCache(root, cacheFileName, name, version:SemVerInfo, force) = 
     async { 
-        let targetFolder = DirectoryInfo(Path.Combine(root, "packages", name)).FullName
+        let targetFolder = DirectoryInfo(Path.Combine(root, Constants.PackagesFolderName, name)).FullName
         let fi = FileInfo(cacheFileName)
         let targetFile = FileInfo(Path.Combine(targetFolder, fi.Name))
         if not force && targetFile.Exists then           

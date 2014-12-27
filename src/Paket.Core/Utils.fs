@@ -179,7 +179,7 @@ let inline FindAllFiles(folder, pattern) = DirectoryInfo(folder).GetFiles(patter
 
 
 let RunInLockedAccessMode(rootFolder,action) =
-    let packagesFolder = Path.Combine(rootFolder,"packages")
+    let packagesFolder = Path.Combine(rootFolder,Constants.PackagesFolderName)
     if Directory.Exists packagesFolder |> not then
         Directory.CreateDirectory packagesFolder |> ignore
 
