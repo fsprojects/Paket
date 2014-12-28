@@ -20,16 +20,6 @@ let Update(dependenciesFileName, force, hard, withBindingRedirects) =
 
     InstallProcess.Install(sources, force, hard, withBindingRedirects, lockFile)
 
-let fixOldDependencies (dependenciesFile:DependenciesFile) (oldLockFile:LockFile) =
-    let changedDependencies = DependencyChangeDetection.findChanges(dependenciesFile,oldLockFile)
-            
-    oldLockFile.ResolvedPackages
-    |> Seq.map (fun kv -> kv.Value)
-    |> Seq.filter (fun p -> not <| changedDependencies.Contains(NormalizedPackageName p.Name))
-    |> Seq.fold 
-            (fun (dependenciesFile : DependenciesFile) resolvedPackage ->                 
-                    dependenciesFile.AddFixedPackage(resolvedPackage.Name, "= " + resolvedPackage.Version.ToString()))
-            dependenciesFile
 
 let private update lockFileName force (createDependenciesFile:LockFile -> DependenciesFile) =
     let oldLockFile = LockFile.LoadFrom(lockFileName)
@@ -48,7 +38,7 @@ let SelectiveUpdate(dependenciesFile:DependenciesFile, force) =
         let resolution = dependenciesFile.Resolve(force)
         LockFile.Create(lockFileName.FullName, dependenciesFile.Options, resolution.ResolvedPackages, resolution.ResolvedSourceFiles)
     else
-        fixOldDependencies dependenciesFile
+        DependencyChangeDetection.fixOldDependencies dependenciesFile
         |> update lockFileName.FullName force
         |> snd
 
@@ -67,6 +57,6 @@ let UpdatePackage(dependenciesFileName, packageName : PackageName, newVersion, f
                 depFile
             | None -> depFile
 
-        fixOldDependencies dependenciesFile
+        DependencyChangeDetection.fixOldDependencies dependenciesFile
         |> update lockFileName.FullName force
     InstallProcess.Install(sources, force, hard, false, lockFile)

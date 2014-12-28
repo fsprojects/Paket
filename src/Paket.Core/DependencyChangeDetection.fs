@@ -20,3 +20,14 @@ let findChanges(dependenciesFile:DependenciesFile,lockFile:LockFile) =
         |> Set.ofSeq
 
     Set.union added removed
+
+let fixOldDependencies (dependenciesFile:DependenciesFile) (oldLockFile:LockFile) =
+    let changedDependencies = findChanges(dependenciesFile,oldLockFile)
+            
+    oldLockFile.ResolvedPackages
+    |> Seq.map (fun kv -> kv.Value)
+    |> Seq.filter (fun p -> not <| changedDependencies.Contains(NormalizedPackageName p.Name))
+    |> Seq.fold 
+            (fun (dependenciesFile : DependenciesFile) resolvedPackage ->                 
+                    dependenciesFile.AddFixedPackage(resolvedPackage.Name, "= " + resolvedPackage.Version.ToString()))
+            dependenciesFile
