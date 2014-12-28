@@ -1,12 +1,6 @@
-language: objective-c
+language: csharp
 
-env:
-  matrix:
-    - MONO_VERSION="3.10.0"
-
-install:
-  - wget "http://download.mono-project.com/archive/${MONO_VERSION}/macos-10-x86/MonoFramework-MDK-${MONO_VERSION}.macos10.xamarin.x86.pkg"
-  - sudo installer -pkg "MonoFramework-MDK-${MONO_VERSION}.macos10.xamarin.x86.pkg" -target /
+sudo: false  # use the new container-based Travis infrastructure
 
 script: 
   - ./build.sh All
