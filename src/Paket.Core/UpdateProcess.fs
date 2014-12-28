@@ -21,22 +21,11 @@ let Update(dependenciesFileName, force, hard, withBindingRedirects) =
     InstallProcess.Install(sources, force, hard, withBindingRedirects, lockFile)
 
 let fixOldDependencies (dependenciesFile:DependenciesFile) (oldLockFile:LockFile) =
-    let allDependencies =        
-        let added,removed = DependencyChangeDetection.findChanges(dependenciesFile,oldLockFile)
-        let p1 =
-            added
-            |> List.map NormalizedPackageName
-            |> Set.ofSeq
-        let p2 =
-            removed
-            |> List.map oldLockFile.GetAllNormalizedDependenciesOf
-            |> Seq.concat
-            |> Set.ofSeq
-        Set.union p1 p2
-    
+    let changedDependencies = DependencyChangeDetection.findChanges(dependenciesFile,oldLockFile)
+            
     oldLockFile.ResolvedPackages
     |> Seq.map (fun kv -> kv.Value)
-    |> Seq.filter (fun p -> not <| allDependencies.Contains(NormalizedPackageName p.Name))
+    |> Seq.filter (fun p -> not <| changedDependencies.Contains(NormalizedPackageName p.Name))
     |> Seq.fold 
             (fun (dependenciesFile : DependenciesFile) resolvedPackage ->                 
                     dependenciesFile.AddFixedPackage(resolvedPackage.Name, "= " + resolvedPackage.Version.ToString()))
