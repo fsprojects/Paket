@@ -1,21 +1,21 @@
 #### 0.20.0 - 29.12.2014
-* `paket install` performs a selective update based on the changes in the dependencies file - https://github.com/fsprojects/Paket/pull/474
-* Paket.exe acuires a lock for all write processes - https://github.com/fsprojects/Paket/pull/469
-* New command to add credentials - https://github.com/fsprojects/Paket/pull/458
-* Inherit selective dependencies and store the result in `paket.lock` - https://github.com/fsprojects/Paket/pull/462
-* Don't add NuGet packages twice to a references file - https://github.com/fsprojects/Paket/pull/460
-* Fallback to config auth if environment variables are empty - https://github.com/fsprojects/Paket/pull/459
-* Remove parsing of invalid child element of ProjectReference - https://github.com/fsprojects/Paket/pull/453
-* Better handling for multiple files from same repository - https://github.com/fsprojects/Paket/pull/451
-* `>= 0` version range simplified to empty string - https://github.com/fsprojects/Paket/pull/449
+* `paket install` performs a selective update based on the changes in the dependencies file - http://fsprojects.github.io/Paket/lock-file.html#Performing-updates
+* Paket.exe acquires a lock for all write processes - https://github.com/fsprojects/Paket/pull/469
+* New command to add credentials - http://fsprojects.github.io/Paket/paket-config-file.html#Add-credentials
+* Smarter conditional NuGet dependencies - https://github.com/fsprojects/Paket/pull/462
+* If environment auth variables are empty a fallback to the config is used- https://github.com/fsprojects/Paket/pull/459
+* Better handling for multiple files from same GitHub repository - https://github.com/fsprojects/Paket/pull/451
 * Extend Public API for plugin
-* Paket.exe and paket.bootstrapper.exe have a logo - https://github.com/fsprojects/Paket/pull/473
+* BUGFIX: Remove parsing of invalid child element of ProjectReference - https://github.com/fsprojects/Paket/pull/453
+* BUGFIX: Don't add NuGet packages twice to a references file - https://github.com/fsprojects/Paket/pull/460
 * BUGFIX: Use Max strategy for `paket outdated --ingore-constraints` - https://github.com/fsprojects/Paket/pull/463
 * BUGFIX: Don't delete downloaded github zip file
 * BUGFIX: Cannot install nuget packages from local TeamCity feeds due to proxy - https://github.com/fsprojects/Paket/pull/482
 * BUGFIX: Don't touch framework assemblies if not needed
 * BUGFIX: Check versions file synchronously
 * BUGFIX: Restore console color after handling exception - https://github.com/fsprojects/Paket/pull/467
+* COSMETICS: `>= 0` version range simplified to empty string - https://github.com/fsprojects/Paket/pull/449
+* COSMETICS: Paket.exe and paket.bootstrapper.exe have a logo - https://github.com/fsprojects/Paket/pull/473
 
 #### 0.18.0 - 09.12.2014
 * Show command help on `--help` - https://github.com/fsprojects/Paket/pull/437
