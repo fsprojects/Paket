@@ -8,39 +8,26 @@ let findChangesInDependenciesFile(dependenciesFile:DependenciesFile,lockFile:Loc
         |> Seq.map (fun d -> NormalizedPackageName d.Key,d.Value)
         |> Map.ofSeq
 
-    let direct =
+    let added =
         dependenciesFile.DirectDependencies
         |> Seq.map (fun d -> NormalizedPackageName d.Key)
+        |> Seq.filter (lockFile.ResolvedPackages.ContainsKey >> not)
         |> Set.ofSeq
-
-    let topLevel = lockFile.GetTopLevelDependencies()
-
-    let added =
-        direct
-        |> Set.filter (lockFile.ResolvedPackages.ContainsKey >> not)
-        
-    let removed =
-        topLevel
-        |> Seq.map (fun d -> d.Key)
-        |> Seq.filter (direct.Contains >> not)
-        |> Seq.map lockFile.GetAllNormalizedDependenciesOf
-        |> Seq.concat
-        |> Set.ofSeq
-
+    
     let modified =
-        [for t in topLevel do 
+        [for t in lockFile.GetTopLevelDependencies() do 
             let name = t.Key
             match directMap.TryFind name with
-            | Some p ->
-                if p.IsInRange (t.Value.Version) |> not then
-                    yield name
-            | _ -> ()]
+            | Some range ->
+                if range.IsInRange t.Value.Version |> not then
+                    yield name // Modified
+            | _ -> yield name // Removed
+        ]
         |> List.map lockFile.GetAllNormalizedDependenciesOf
         |> Seq.concat
         |> Set.ofSeq           
 
-    added
-    |> Set.union removed
+    added 
     |> Set.union modified
 
 let FixUnchangedDependencies (dependenciesFile:DependenciesFile) (oldLockFile:LockFile) =
