@@ -71,6 +71,7 @@ let defaultProxy =
     if address = irrelevantDestination then null else
     let proxy = new WebProxy(address)
     proxy.Credentials <- CredentialCache.DefaultCredentials
+    proxy.BypassProxyOnLocal <- true
     proxy
 
 let inline createWebClient(auth:Auth option) =
