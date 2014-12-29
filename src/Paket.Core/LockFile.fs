@@ -342,9 +342,8 @@ type LockFile(fileName:string,options,resolution:PackageResolution,remoteFiles:R
             |> Seq.map NormalizedPackageName 
             |> Set.ofSeq
 
-        this.ResolvedPackages 
-        |> Seq.map (fun d -> d.Key)
-        |> Seq.filter (indirect.Contains >> not)
+        this.ResolvedPackages
+        |> Map.filter (fun name _ -> indirect.Contains name |> not)
 
     /// Checks if the first package is a dependency of the second package
     member this.IsDependencyOf(dependentPackage,package) =
