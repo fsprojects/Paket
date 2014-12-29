@@ -124,6 +124,12 @@ let private applyBindingRedirects root extractedPackages =
             Culture = None })
     |> applyBindingRedirectsToFolder root
 
+let findAllReferencesFiles root =
+    root
+    |> ProjectFile.FindAllProjects
+    |> Array.choose (fun p -> ProjectFile.FindReferencesFile(FileInfo(p.FileName))
+                                |> Option.map (fun r -> p, ReferencesFile.FromFile(r)))
+
 /// Installs the given all packages from the lock file.
 let Install(sources,force, hard, withBindingRedirects, lockFile:LockFile) = 
     let root = FileInfo(lockFile.FileName).Directory.FullName 
@@ -134,13 +140,7 @@ let Install(sources,force, hard, withBindingRedirects, lockFile:LockFile) =
         |> Array.map (fun (p,m) -> NormalizedPackageName p.Name,m)
         |> Map.ofArray
 
-    let applicableProjects =
-        root
-        |> ProjectFile.FindAllProjects
-        |> Array.choose (fun p -> ProjectFile.FindReferencesFile(FileInfo(p.FileName))
-                                  |> Option.map (fun r -> p, ReferencesFile.FromFile(r)))
-
-    for project, referenceFile in applicableProjects do    
+    for project, referenceFile in findAllReferencesFiles root do    
         verbosefn "Installing to %s" project.FileName
 
         let usedPackages = lockFile.GetPackageHull(referenceFile)
