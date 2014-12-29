@@ -34,13 +34,12 @@ let SmartInstall(dependenciesFileName, force, hard, withBindingRedirects) =
             
             let allExistingPackages =
                 oldLockFile.ResolvedPackages
-                |> Seq.map (fun d -> d.Key)
+                |> Seq.map (fun d -> d.Value.Name)
                 |> Set.ofSeq
 
             let allReferencedPackages = 
                 InstallProcess.findAllReferencesFiles(Path.GetDirectoryName dependenciesFileName)
                 |> Seq.collect (fun (_,referencesFile) -> referencesFile.NugetPackages)
-                |> Seq.map NormalizedPackageName
                 |> Set.ofSeq
 
             let diff = Set.difference allReferencedPackages allExistingPackages
@@ -50,7 +49,7 @@ let SmartInstall(dependenciesFileName, force, hard, withBindingRedirects) =
 
                 let newDependenciesFile =
                     diff
-                    |> Seq.fold (fun (dependenciesFile:DependenciesFile) dep -> dependenciesFile.Add dep) dependenciesFile
+                    |> Seq.fold (fun (dependenciesFile:DependenciesFile) dep -> dependenciesFile.AddAdditionionalPackage(dep,"")) dependenciesFile
                 newDependenciesFile.Save()
                 newDependenciesFile
 
