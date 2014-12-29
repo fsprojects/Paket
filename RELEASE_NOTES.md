@@ -1,4 +1,4 @@
-#### 0.20.0-alpha016 - 29.12.2014
+#### 0.20.0 - 29.12.2014
 * `paket install` performs a selective update based on the changes in the dependencies file - https://github.com/fsprojects/Paket/pull/474
 * Paket.exe acuires a lock for all write processes - https://github.com/fsprojects/Paket/pull/469
 * New command to add credentials - https://github.com/fsprojects/Paket/pull/458
@@ -9,7 +9,6 @@
 * Better handling for multiple files from same repository - https://github.com/fsprojects/Paket/pull/451
 * `>= 0` version range simplified to empty string - https://github.com/fsprojects/Paket/pull/449
 * Extend Public API for plugin
-* Allow to extract PackageId
 * Paket.exe and paket.bootstrapper.exe have a logo - https://github.com/fsprojects/Paket/pull/473
 * BUGFIX: Use Max strategy for `paket outdated --ingore-constraints` - https://github.com/fsprojects/Paket/pull/463
 * BUGFIX: Don't delete downloaded github zip file
