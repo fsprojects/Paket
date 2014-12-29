@@ -43,13 +43,12 @@ The `paket.lock` file records the concrete dependency resolution of all direct *
           Rx-Core (>= 2.2.5)
         log4net (1.2.10)
 
-If the `paket.lock` file is not present when [paket install](paket-install.html) is requested, it will be generated. Subsequent runs of [paket install](paket-install.html) will not reanalyze the `paket.dependencies` file or touch `paket.lock`.
+If the `paket.lock` file is not present when [paket install](paket-install.html) is requested, it will be generated. Subsequent runs of [paket install](paket-install.html) will only perform updates according to the latest changes in the [`paket.dependencies`](dependencies-file.html) file.
 
-All changes after the initial generation will be as a result of [paket update](paket-update.html) commands.
-
-As a result, committing the `paket.lock` file to your version control system guarantees that other developers and/or build servers will always end up with a reliable and consistent set of packages regardless of where or when a [paket install](paket-install.html) occurs.
+Committing the `paket.lock` file to your version control system guarantees that other developers and/or build servers will always end up with a reliable and consistent set of packages regardless of where or when a [paket restore](paket-restore.html) occurs.
 
 If you make changes to [`paket.dependencies`](dependencies-file.html) or you want Paket to check for newer versions of the direct and indirect dependencies as specified in [`paket.dependencies`](dependencies-file.html), run:
 
   - [`paket outdated`](paket-outdated.html) to check for new versions, and report what's available.
+  - [`paket install`](paket-install.html) to analyze the modifications in the [`paket.dependencies`](dependencies-file.html) file and perform a selective update (only changed dependencies are updated).
   - [`paket update`](paket-update.html) to check for new versions, download any that fit the criteria, and update the references within the project files as specified by their associated [`paket.references`](references-files.html).
