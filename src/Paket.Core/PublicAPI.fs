@@ -115,7 +115,7 @@ type Dependencies(dependenciesFileName: string) =
     member this.UpdatePackage(package: string,version: string option,force: bool,hard: bool): unit =
         Utils.RunInLockedAccessMode(
             this.RootPath,
-            fun () -> UpdateProcess.UpdatePackage(dependenciesFileName,PackageName package,version,force,hard))
+            fun () -> UpdateProcess.UpdatePackage(dependenciesFileName,PackageName package,version,force,hard,false))
 
     /// Restores the given paket.references files.
     member this.Restore(files: string list): unit = this.Restore(false,files)
