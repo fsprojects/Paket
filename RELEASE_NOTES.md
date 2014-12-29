@@ -1,3 +1,6 @@
+#### 0.18.13 - 29.12.2014
+* BUGFIX: Cannot install nuget packages from local TeamCity feeds due to proxy - https://github.com/fsprojects/Paket/pull/482 
+
 #### 0.18.12 - 20.12.2014
 * Don't add NuGet packages twice to a references file - https://github.com/fsprojects/Paket/pull/460
 
