@@ -7,6 +7,33 @@ open Paket.Domain
 open Paket.PackageResolver
 open System.Collections.Generic
 
+let addPackagesFromReferenceFiles(dependenciesFile:DependenciesFile) =
+    let lockFileName = DependenciesFile.FindLockfile dependenciesFile.FileName
+    if not <| lockFileName.Exists then 
+        dependenciesFile
+    else
+        let oldLockFile = LockFile.LoadFrom(lockFileName.FullName)
+            
+        let allExistingPackages =
+            oldLockFile.ResolvedPackages
+            |> Seq.map (fun d -> d.Value.Name)
+            |> Set.ofSeq
+
+        let allReferencedPackages = 
+            InstallProcess.findAllReferencesFiles(Path.GetDirectoryName dependenciesFile.FileName)
+            |> Seq.collect (fun (_,referencesFile) -> referencesFile.NugetPackages)
+            |> Set.ofSeq
+
+        let diff = Set.difference allReferencedPackages allExistingPackages
+        if Set.isEmpty diff then 
+            dependenciesFile
+        else
+            let newDependenciesFile =
+                diff
+                |> Seq.fold (fun (dependenciesFile:DependenciesFile) dep -> dependenciesFile.AddAdditionionalPackage(dep,"")) dependenciesFile
+            newDependenciesFile.Save()
+            newDependenciesFile
+
 let SelectiveUpdate(dependenciesFile:DependenciesFile, force) =
     let lockFileName = DependenciesFile.FindLockfile dependenciesFile.FileName
 
@@ -24,35 +51,9 @@ let SelectiveUpdate(dependenciesFile:DependenciesFile, force) =
 /// Smart install command
 let SmartInstall(dependenciesFileName, force, hard, withBindingRedirects) = 
     let dependenciesFile = 
-        let dependenciesFile = DependenciesFile.ReadFromFile(dependenciesFileName)
-
-        let lockFileName = DependenciesFile.FindLockfile dependenciesFile.FileName
-        if not <| lockFileName.Exists then 
-            dependenciesFile
-        else
-            let oldLockFile = LockFile.LoadFrom(lockFileName.FullName)
-            
-            let allExistingPackages =
-                oldLockFile.ResolvedPackages
-                |> Seq.map (fun d -> d.Value.Name)
-                |> Set.ofSeq
-
-            let allReferencedPackages = 
-                InstallProcess.findAllReferencesFiles(Path.GetDirectoryName dependenciesFileName)
-                |> Seq.collect (fun (_,referencesFile) -> referencesFile.NugetPackages)
-                |> Set.ofSeq
-
-            let diff = Set.difference allReferencedPackages allExistingPackages
-            if Set.isEmpty diff then 
-                dependenciesFile
-            else
-
-                let newDependenciesFile =
-                    diff
-                    |> Seq.fold (fun (dependenciesFile:DependenciesFile) dep -> dependenciesFile.AddAdditionionalPackage(dep,"")) dependenciesFile
-                newDependenciesFile.Save()
-                newDependenciesFile
-
+        DependenciesFile.ReadFromFile(dependenciesFileName)
+        |> addPackagesFromReferenceFiles
+        
     let lockFile = SelectiveUpdate(dependenciesFile,force)
     
     let sources = dependenciesFile.GetAllPackageSources()
