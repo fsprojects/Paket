@@ -14,15 +14,15 @@ let FindReferencesForPackage (dependenciesFileName, package:PackageName) =
         match ProjectFile.FindReferencesFile(FileInfo(project.FileName)) with
         | None -> ()
         | Some referencesFile ->
-                let installedPackages = 
-                    referencesFile
-                    |> ReferencesFile.FromFile
-                    |> lockFile.GetPackageHull
-                    |> Seq.map NormalizedPackageName
-                    |> Set.ofSeq
+            let installedPackages = 
+                referencesFile
+                |> ReferencesFile.FromFile
+                |> lockFile.GetPackageHull
+                |> Seq.map NormalizedPackageName
+                |> Set.ofSeq
 
-                if installedPackages.Contains(NormalizedPackageName package) then
-                    yield project.FileName ]
+            if installedPackages.Contains(NormalizedPackageName package) then
+                yield project.FileName ]
 
 let ShowReferencesFor (dependenciesFileName, packages : PackageName list) =
     packages
