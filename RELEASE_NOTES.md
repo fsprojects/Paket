@@ -13,6 +13,8 @@
 * Paket.exe and paket.bootstrapper.exe have a logo - https://github.com/fsprojects/Paket/pull/473
 * BUGFIX: Use Max strategy for `paket outdated --ingore-constraints` - https://github.com/fsprojects/Paket/pull/463
 * BUGFIX: Don't delete downloaded github zip file
+* BUGFIX: Cannot install nuget packages from local TeamCity feeds due to proxy - https://github.com/fsprojects/Paket/pull/482 
+
 * BUGFIX: Don't touch framework assemblies if not needed
 * BUGFIX: Check versions file synchronously
 * BUGFIX: Restore console color after handling exception - https://github.com/fsprojects/Paket/pull/467
