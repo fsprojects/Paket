@@ -1,4 +1,4 @@
-#### 0.20.0-alpha015 - 29.12.2014
+#### 0.20.0-alpha016 - 29.12.2014
 * `paket install` performs a selective update based on the changes in the dependencies file - https://github.com/fsprojects/Paket/pull/474
 * Paket.exe acuires a lock for all write processes - https://github.com/fsprojects/Paket/pull/469
 * New command to add credentials - https://github.com/fsprojects/Paket/pull/458

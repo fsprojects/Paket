@@ -10,19 +10,15 @@ let FindReferencesForPackage (dependenciesFileName, package:PackageName) =
     let projectFiles = ProjectFile.FindAllProjects root
     let lockFile = LockFile.LoadFrom((DependenciesFile.FindLockfile dependenciesFileName).FullName)
 
-    [for project in ProjectFile.FindAllProjects root do
-        match ProjectFile.FindReferencesFile(FileInfo(project.FileName)) with
-        | None -> ()
-        | Some referencesFile ->
-            let installedPackages = 
-                referencesFile
-                |> ReferencesFile.FromFile
-                |> lockFile.GetPackageHull
-                |> Seq.map NormalizedPackageName
-                |> Set.ofSeq
+    [for project,referencesFile in InstallProcess.findAllReferencesFiles root do
+        let installedPackages = 
+            referencesFile
+            |> lockFile.GetPackageHull
+            |> Seq.map NormalizedPackageName
+            |> Set.ofSeq
 
-            if installedPackages.Contains(NormalizedPackageName package) then
-                yield project.FileName ]
+        if installedPackages.Contains(NormalizedPackageName package) then
+            yield project.FileName ]
 
 let ShowReferencesFor (dependenciesFileName, packages : PackageName list) =
     packages
