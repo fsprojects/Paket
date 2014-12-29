@@ -17,7 +17,10 @@ namespace Paket.Bootstrapper
             if (address == irrelevantDestination)
                 return null;
 
-            return new WebProxy(address) { Credentials = CredentialCache.DefaultCredentials };
+            return new WebProxy(address) { 
+                Credentials = CredentialCache.DefaultCredentials,
+                BypassProxyOnLocal = true
+            };
         }
 
         static void Main(string[] args)

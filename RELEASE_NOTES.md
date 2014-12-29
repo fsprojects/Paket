@@ -1,4 +1,4 @@
-#### 0.20.0-alpha013 - 29.12.2014
+#### 0.20.0-alpha014 - 29.12.2014
 * `paket install` performs a selective update based on the changes in the dependencies file - https://github.com/fsprojects/Paket/pull/474
 * Paket.exe acuires a lock for all write processes - https://github.com/fsprojects/Paket/pull/469
 * New command to add credentials - https://github.com/fsprojects/Paket/pull/458
@@ -13,8 +13,7 @@
 * Paket.exe and paket.bootstrapper.exe have a logo - https://github.com/fsprojects/Paket/pull/473
 * BUGFIX: Use Max strategy for `paket outdated --ingore-constraints` - https://github.com/fsprojects/Paket/pull/463
 * BUGFIX: Don't delete downloaded github zip file
-* BUGFIX: Cannot install nuget packages from local TeamCity feeds due to proxy - https://github.com/fsprojects/Paket/pull/482 
-
+* BUGFIX: Cannot install nuget packages from local TeamCity feeds due to proxy - https://github.com/fsprojects/Paket/pull/482
 * BUGFIX: Don't touch framework assemblies if not needed
 * BUGFIX: Check versions file synchronously
 * BUGFIX: Restore console color after handling exception - https://github.com/fsprojects/Paket/pull/467
