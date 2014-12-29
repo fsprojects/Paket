@@ -59,4 +59,15 @@ let UpdatePackage(dependenciesFileName, packageName : PackageName, newVersion, f
 
         DependencyChangeDetection.fixOldDependencies dependenciesFile
         |> update lockFileName.FullName force
+
+    InstallProcess.Install(sources, force, hard, false, lockFile)
+
+
+/// Smart install command
+let SmartInstall(dependenciesFileName, force, hard, withBindingRedirects) = 
+    let dependenciesFile = DependenciesFile.ReadFromFile(dependenciesFileName)
+    
+    let lockFile = SelectiveUpdate(dependenciesFile,force)
+    
+    let sources = dependenciesFile.GetAllPackageSources()
     InstallProcess.Install(sources, force, hard, false, lockFile)

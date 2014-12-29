@@ -109,7 +109,6 @@
     <Compile Include="BindingRedirects.fs" />
     <Compile Include="InstallProcess.fs" />
     <Compile Include="UpdateProcess.fs" />
-    <Compile Include="SmartInstallProcess.fs" />
     <Compile Include="RemoveProcess.fs" />
     <Compile Include="AddProcess.fs" />
     <Compile Include="Simplifier.fs" />
