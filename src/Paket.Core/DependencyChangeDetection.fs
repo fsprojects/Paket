@@ -2,7 +2,7 @@
 
 open Paket.Domain
 
-let findChanges(dependenciesFile:DependenciesFile,lockFile:LockFile) =   
+let findChangesInDependenciesFile(dependenciesFile:DependenciesFile,lockFile:LockFile) =   
     let direct =
         dependenciesFile.DirectDependencies
         |> Seq.map (fun d -> NormalizedPackageName d.Key)
@@ -21,8 +21,8 @@ let findChanges(dependenciesFile:DependenciesFile,lockFile:LockFile) =
 
     Set.union added removed
 
-let fixOldDependencies (dependenciesFile:DependenciesFile) (oldLockFile:LockFile) =
-    let changedDependencies = findChanges(dependenciesFile,oldLockFile)
+let FixUnchangedDependencies (dependenciesFile:DependenciesFile) (oldLockFile:LockFile) =
+    let changedDependencies = findChangesInDependenciesFile(dependenciesFile,oldLockFile)
             
     oldLockFile.ResolvedPackages
     |> Seq.map (fun kv -> kv.Value)

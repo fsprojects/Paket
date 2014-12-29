@@ -23,7 +23,10 @@ type NugetPackageCache =
       PackageName : string
       SourceUrl: string
       Unlisted : bool
-      DownloadUrl : string }
+      DownloadUrl : string;
+      CacheVersion: string }
+
+    static member CurrentCacheVersion = "1.0"
 
 let rec private followODataLink getUrlContents url = 
     async { 
@@ -179,6 +182,7 @@ let parseODataDetails(nugetURL,packageName,version,raw) =
       DownloadUrl = downloadLink
       Dependencies = Requirements.optimizeRestrictions packages
       SourceUrl = nugetURL
+      CacheVersion = NugetPackageCache.CurrentCacheVersion
       Unlisted = publishDate = Constants.MagicUnlistingDate }
 
 
@@ -216,7 +220,7 @@ let private loadFromCacheOrOData force fileName auth nugetURL package version =
             try 
                 let json = File.ReadAllText(fileName)
                 let cachedObject = JsonConvert.DeserializeObject<NugetPackageCache>(json)                
-                if cachedObject.PackageName = null || cachedObject.DownloadUrl = null || cachedObject.SourceUrl = null then
+                if cachedObject.CacheVersion <> NugetPackageCache.CurrentCacheVersion then
                     let! details = getDetailsFromNuGetViaOData auth nugetURL package version
                     return true,details
                 else
@@ -266,6 +270,7 @@ let getDetailsFromLocalFile path package (version:SemVerInfo) =
               DownloadUrl = package
               Dependencies = Requirements.optimizeRestrictions nuspec.Dependencies
               SourceUrl = path
+              CacheVersion = NugetPackageCache.CurrentCacheVersion
               Unlisted = false }
     }
 

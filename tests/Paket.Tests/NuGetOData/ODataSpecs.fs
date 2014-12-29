@@ -23,6 +23,7 @@ let ``can detect explicit dependencies for Fantomas``() =
           DownloadUrl = "http://www.nuget.org/api/v2/package/Fantomas/1.6.0"
           Dependencies = [PackageName "FSharp.Compiler.Service",DependenciesFileParser.parseVersionRequirement(">= 0.0.73"), []]
           Unlisted = false
+          CacheVersion = NugetPackageCache.CurrentCacheVersion
           SourceUrl = fakeUrl }
 
 [<Test>]
@@ -35,6 +36,7 @@ let ``can detect explicit dependencies for Rx-PlaformServices``() =
                 [PackageName "Rx-Interfaces",DependenciesFileParser.parseVersionRequirement(">= 2.2"), []
                  PackageName "Rx-Core",DependenciesFileParser.parseVersionRequirement(">= 2.2"), []]
           Unlisted = true
+          CacheVersion = NugetPackageCache.CurrentCacheVersion
           SourceUrl = fakeUrl }
 
 [<Test>]
@@ -44,6 +46,7 @@ let ``can detect explicit dependencies for Fleece``() =
         { PackageName = "Fleece"
           DownloadUrl = "http://www.nuget.org/api/v2/package/Fleece/0.4.0"
           Unlisted = false
+          CacheVersion = NugetPackageCache.CurrentCacheVersion
           Dependencies = 
             [PackageName "FSharpPlus",DependenciesFileParser.parseVersionRequirement(">= 0.0.4"), []
              PackageName "ReadOnlyCollectionInterfaces",DependenciesFileParser.parseVersionRequirement("1.0.0"), []
@@ -58,6 +61,7 @@ let ``can detect explicit dependencies for ReadOnlyCollectionExtensions``() =
         { PackageName = "ReadOnlyCollectionExtensions"
           DownloadUrl = "http://www.nuget.org/api/v2/package/ReadOnlyCollectionExtensions/1.2.0"
           Unlisted = false
+          CacheVersion = NugetPackageCache.CurrentCacheVersion
           Dependencies = 
             [PackageName "LinqBridge",DependenciesFileParser.parseVersionRequirement(">= 1.3.0"), 
                [FrameworkRestriction.Between(DotNetFramework(FrameworkVersion.V2),DotNetFramework(FrameworkVersion.V3_5))]
@@ -74,6 +78,7 @@ let ``can detect explicit dependencies for Math.Numerics``() =
         { PackageName = "MathNet.Numerics"
           DownloadUrl = "http://www.nuget.org/api/v2/package/MathNet.Numerics/3.3.0"
           Unlisted = false
+          CacheVersion = NugetPackageCache.CurrentCacheVersion
           Dependencies = 
             [PackageName "TaskParallelLibrary",DependenciesFileParser.parseVersionRequirement(">= 1.0.2856"), 
                [FrameworkRestriction.Between(DotNetFramework(FrameworkVersion.V3_5),DotNetFramework(FrameworkVersion.V4_Client))]]
