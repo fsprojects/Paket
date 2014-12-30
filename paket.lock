@@ -32,7 +32,7 @@ GITHUB
   remote: fsharp/FAKE
   specs:
     modules/Octokit/Octokit.fsx (875c384b04eb7cdee601b8c99852bba2d5e2142b)
-      Octokit 
+      Octokit
   remote: nessos/Streams
   specs:
     src/Streams.Core/Streams.fs (57648b98a016131fd0b9f3de0d985182e85af51e)
