@@ -118,7 +118,7 @@ module LockFileSerializer =
                             if s = "" then s else "(" + s + ")"
                         yield sprintf "      %s %s" name versionStr]
 
-        String.Join(Environment.NewLine, all)
+        String.Join(Environment.NewLine, all |> List.map (fun s -> s.TrimEnd()))
 
 module LockFileParser =
 

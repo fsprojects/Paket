@@ -1,3 +1,6 @@
+#### 0.20.1 - 30.12.2014
+* COSMETICS: Trim end of line in lockfile.
+
 #### 0.20.0 - 29.12.2014
 * `paket install` performs a selective update based on the changes in the dependencies file - http://fsprojects.github.io/Paket/lock-file.html#Performing-updates
 * Paket.exe acquires a lock for all write processes - https://github.com/fsprojects/Paket/pull/469
