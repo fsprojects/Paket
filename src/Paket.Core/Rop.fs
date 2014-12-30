@@ -47,3 +47,16 @@ let collect xs =
                     | Success(_), Failure(m) 
                     | Failure(m), Success(_) -> Failure(m)
                     | Failure(m1), Failure(m2) -> Failure(m1@m2)) (succeed []) xs
+
+let failIfNone message = function
+    | Some x -> succeed x
+    | None -> failure message 
+
+/// infix version of Rop.bind
+let (>>=) result f = bind f result
+
+/// infix version of Rop.lift
+let (<!>) = lift
+
+/// infix version of Rop.apply
+let (<*>) = apply

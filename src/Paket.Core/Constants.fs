@@ -7,6 +7,9 @@ open System.IO
 let DefaultNugetStream = "https://nuget.org/api/v2"
 
 [<Literal>]
+let LockFileName = "paket.lock"
+
+[<Literal>]
 let DependenciesFileName = "paket.dependencies"
 
 [<Literal>]
