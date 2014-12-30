@@ -14,6 +14,10 @@ type Environment = {
 type EnvironmentMessage = 
     | DirectoryDoesntExist of DirectoryInfo
     | DependenciesFileNotFound of DirectoryInfo
+    | DependenciesFileParseError of FileInfo
+    | LockFileNotFound of DirectoryInfo
+    | LockFileParseError of FileInfo
+    | ReferencesFileParseError of FileInfo
 
 [<CompilationRepresentation(CompilationRepresentationFlags.ModuleSuffix)>]
 module Environment = 
@@ -27,12 +31,32 @@ module Environment =
     let private locateInDir (directory : DirectoryInfo) = 
         
         let dependenciesFile = 
-            Rop.succeed <| DependenciesFile.ReadFromFile(Path.Combine(directory.FullName,Constants.DependenciesFileName))
+            let fi = FileInfo(Path.Combine(directory.FullName, Constants.DependenciesFileName))
+            try 
+                succeed (DependenciesFile.ReadFromFile(fi.FullName))
+            with _ ->
+                failure (DependenciesFileParseError fi)
 
         let lockFile =
-            Rop.succeed <| LockFile.LoadFrom(Path.Combine(directory.FullName,Constants.LockFileName))
+            let fi = FileInfo(Path.Combine(directory.FullName, Constants.LockFileName))
+            if not fi.Exists then
+                failure (LockFileNotFound directory)
+            else
+                try
+                    succeed <| LockFile.LoadFrom(fi.FullName)
+                with _ ->
+                    failure (LockFileParseError fi)
 
-        let projects = Rop.succeed []
+        let projects = 
+            ProjectFile.FindAllProjects(directory.FullName) 
+            |> Array.choose (fun project -> ProjectFile.FindReferencesFile(FileInfo(project.FileName))
+                                            |> Option.map (fun refFile -> project,refFile))
+            |> Array.map (fun (project,file) -> 
+                try 
+                    succeed <| (project, ReferencesFile.FromFile(file))
+                with _ -> 
+                    failure <| ReferencesFileParseError (FileInfo(file)))
+            |> collect
 
         create
         <!> succeed directory
@@ -41,8 +65,8 @@ module Environment =
         <*> projects
 
     let locateInThisOrParentDirs (directory : DirectoryInfo) = 
-        if directory.Exists |> not then 
-            failure (DependenciesFileNotFound directory)
+        if not directory.Exists then 
+            failure (DirectoryDoesntExist directory)
         else
             directory
             |> Seq.unfold (function
