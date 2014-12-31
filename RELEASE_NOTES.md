@@ -1,3 +1,6 @@
+#### 0.20.5 - 31.12.2014
+* BUGFIX: Make the file search for app.config and web.config case insensitive - https://github.com/fsprojects/Paket/issues/493
+
 #### 0.20.4 - 31.12.2014
 * PERFORMANCE: Don't parse project files twice - https://github.com/fsprojects/Paket/issues/487
 
