@@ -279,7 +279,7 @@ type DependenciesFile(fileName,options,sources,packages : PackageRequirement lis
 
         DependenciesFile(fileName,options,sources,packages @ [newPackage], remoteFiles)
 
-    member __.AddFixedPackage(packageName:PackageName,version:string) =
+    member __.AddFixedPackage(packageName:PackageName,version:string,frameworkRestrictions) =
         let versionRange = DependenciesFileParser.parseVersionRequirement (version.Trim '!')
         let sources = 
             match packages |> List.rev with
@@ -296,10 +296,13 @@ type DependenciesFile(fileName,options,sources,packages : PackageRequirement lis
               VersionRequirement = versionRange
               Sources = sources
               ResolverStrategy = strategy
-              FrameworkRestrictions = []
+              FrameworkRestrictions = frameworkRestrictions
               Parent = PackageRequirementSource.DependenciesFile fileName }
 
         DependenciesFile(fileName,options,sources,(packages |> List.filter (fun p -> NormalizedPackageName p.Name <> NormalizedPackageName packageName)) @ [newPackage], remoteFiles)
+
+    member this.AddFixedPackage(packageName:PackageName,version:string) =
+        this.AddFixedPackage(packageName,version,[])
 
     member __.RemovePackage(packageName:PackageName) =
         let newPackages = 

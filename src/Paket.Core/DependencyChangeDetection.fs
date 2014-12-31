@@ -38,5 +38,8 @@ let FixUnchangedDependencies (dependenciesFile:DependenciesFile) (oldLockFile:Lo
     |> Seq.filter (fun p -> not <| changedDependencies.Contains(NormalizedPackageName p.Name))
     |> Seq.fold 
             (fun (dependenciesFile : DependenciesFile) resolvedPackage ->                 
-                    dependenciesFile.AddFixedPackage(resolvedPackage.Name, "= " + resolvedPackage.Version.ToString()))
+                    dependenciesFile.AddFixedPackage(
+                        resolvedPackage.Name,
+                        "= " + resolvedPackage.Version.ToString(),
+                        resolvedPackage.FrameworkRestrictions))
             dependenciesFile

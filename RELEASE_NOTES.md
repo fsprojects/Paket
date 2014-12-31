@@ -1,3 +1,6 @@
+#### 0.20.2 - 31.12.2014
+* BUGFIX: Keep framework restrictions in `paket install`- https://github.com/fsprojects/Paket/issues/486
+
 #### 0.20.1 - 30.12.2014
 * COSMETICS: Trim end of line in lockfile.
 
