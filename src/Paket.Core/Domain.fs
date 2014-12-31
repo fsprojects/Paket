@@ -3,7 +3,7 @@
 /// Represents a NuGet package name
 [<System.Diagnostics.DebuggerDisplay("{Item}")>]
 type PackageName =
-    private | PackageName of string
+| PackageName of string
 
     member this.Id = 
         match this with
@@ -18,7 +18,7 @@ let PackageName name = PackageName.PackageName name
 /// Represents a normalized NuGet package name
 [<System.Diagnostics.DebuggerDisplay("{Item}")>]
 type NormalizedPackageName =
-    private | NormalizedPackageName of string
+| NormalizedPackageName of string
 
 /// Active recognizer to convert a NuGet package name into a normalized one
 let (|NormalizedPackageName|) (PackageName name) =
