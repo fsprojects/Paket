@@ -33,7 +33,7 @@
     <StartProgram>paket.exe</StartProgram>
     <StartWorkingDirectory>
     </StartWorkingDirectory>
-    <StartWorkingDirectory>c:\code\ToySharp</StartWorkingDirectory>
+    <StartWorkingDirectory>c:\code\PaketKopie</StartWorkingDirectory>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>

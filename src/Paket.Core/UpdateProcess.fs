@@ -7,7 +7,7 @@ open Paket.Domain
 open Paket.PackageResolver
 open System.Collections.Generic
 
-let addPackagesFromReferenceFiles(dependenciesFile:DependenciesFile) =
+let addPackagesFromReferenceFiles projects (dependenciesFile:DependenciesFile) =
     let lockFileName = DependenciesFile.FindLockfile dependenciesFile.FileName
     if not <| lockFileName.Exists then 
         dependenciesFile
@@ -20,7 +20,7 @@ let addPackagesFromReferenceFiles(dependenciesFile:DependenciesFile) =
             |> Set.ofSeq
 
         let allReferencedPackages = 
-            InstallProcess.findAllReferencesFiles(Path.GetDirectoryName dependenciesFile.FileName)
+            projects
             |> Seq.collect (fun (_,referencesFile) -> referencesFile.NugetPackages)
 
         let diff =
@@ -55,14 +55,23 @@ let SelectiveUpdate(dependenciesFile:DependenciesFile, force) =
 
 /// Smart install command
 let SmartInstall(dependenciesFileName, force, hard, withBindingRedirects) = 
+    let root = Path.GetDirectoryName dependenciesFileName
+    let projects = InstallProcess.findAllReferencesFiles(root)
     let dependenciesFile = 
         DependenciesFile.ReadFromFile(dependenciesFileName)
-        |> addPackagesFromReferenceFiles
+        |> addPackagesFromReferenceFiles projects
         
     let lockFile = SelectiveUpdate(dependenciesFile,force)
     
     let sources = dependenciesFile.GetAllPackageSources()
-    InstallProcess.Install(sources, force, hard, withBindingRedirects, lockFile)
+    InstallProcess.InstallIntoProjects(
+        sources,
+        force,
+        hard,
+        withBindingRedirects,
+        lockFile,
+        root,
+        projects)
         
 /// Update a single package command
 let UpdatePackage(dependenciesFileName, packageName : PackageName, newVersion, force, hard, withBindingRedirects) =  

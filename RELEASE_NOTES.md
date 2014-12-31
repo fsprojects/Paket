@@ -1,3 +1,6 @@
+#### 0.20.4 - 31.12.2014
+* PERFORMANCE: Don't parse project files twice - https://github.com/fsprojects/Paket/issues/487
+
 #### 0.20.3 - 31.12.2014
 * BUGFIX: Don't add duplicate lines in `packet.dependencies` - https://github.com/fsprojects/Paket/issues/492
 
