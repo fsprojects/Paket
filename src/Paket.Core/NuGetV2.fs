@@ -214,6 +214,8 @@ let CacheFolder =
         di.Create()
     di.FullName
 
+let inline normalizeUrl(url:string) = url.Replace("https","http").Replace("www.","")
+
 let private loadFromCacheOrOData force fileName auth nugetURL package version = 
     async {
         if not force && File.Exists fileName then
@@ -238,9 +240,12 @@ let private loadFromCacheOrOData force fileName auth nugetURL package version =
 let getDetailsFromNuget force auth nugetURL package (version:SemVerInfo) = 
     async {
         try            
-            let fi = FileInfo(Path.Combine(CacheFolder,sprintf "%s.%s.json" package (version.Normalize())))
+            let fi = 
+                let packageUrl = sprintf "%s.%s.json" package (version.Normalize())
+                FileInfo(Path.Combine(CacheFolder,packageUrl))
+
             let! (invalidCache,details) = loadFromCacheOrOData force fi.FullName auth nugetURL package version
-            if details.SourceUrl <> nugetURL then
+            if normalizeUrl details.SourceUrl <> normalizeUrl nugetURL then
                 return! getDetailsFromNuGetViaOData auth nugetURL package version 
             else
                 if invalidCache then
@@ -420,7 +425,8 @@ let GetPackageDetails force sources (PackageName package) (version:SemVerInfo) :
                         version 
                     |> Async.RunSynchronously
                 | LocalNuget path -> 
-                    getDetailsFromLocalFile path package version |> Async.RunSynchronously
+                    getDetailsFromLocalFile path package version 
+                    |> Async.RunSynchronously
                 |> fun x -> source,x
             with _ -> tryNext rest
         | [] -> failwithf "Couldn't get package details for package %s on %A." package (sources |> List.map (fun (s:PackageSource) -> s.ToString()))
