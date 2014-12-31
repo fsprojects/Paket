@@ -147,7 +147,7 @@ let InstallIntoProjects(sources,force, hard, withBindingRedirects, lockFile:Lock
 
         let usedPackageNames =
             usedPackages
-            |> Seq.map (fun x -> NormalizedPackageName x)
+            |> Seq.map NormalizedPackageName
             |> Set.ofSeq
 
         project.UpdateReferences(model,usedPackageNames,hard)
