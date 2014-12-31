@@ -16,16 +16,21 @@ let addPackagesFromReferenceFiles(dependenciesFile:DependenciesFile) =
             
         let allExistingPackages =
             oldLockFile.ResolvedPackages
-            |> Seq.map (fun d -> d.Value.Name)
+            |> Seq.map (fun d -> NormalizedPackageName d.Value.Name)
             |> Set.ofSeq
 
         let allReferencedPackages = 
             InstallProcess.findAllReferencesFiles(Path.GetDirectoryName dependenciesFile.FileName)
             |> Seq.collect (fun (_,referencesFile) -> referencesFile.NugetPackages)
-            |> Set.ofSeq
 
-        let diff = Set.difference allReferencedPackages allExistingPackages
-        if Set.isEmpty diff then 
+        let diff =
+            allReferencedPackages
+            |> Seq.filter (
+                NormalizedPackageName >>
+                  allExistingPackages.Contains >>
+                  not)
+
+        if Seq.isEmpty diff then 
             dependenciesFile
         else
             let newDependenciesFile =

@@ -1,3 +1,6 @@
+#### 0.20.3 - 31.12.2014
+* BUGFIX: Don't add duplicate lines in `packet.dependencies` - https://github.com/fsprojects/Paket/issues/492
+
 #### 0.20.2 - 31.12.2014
 * BUGFIX: Keep framework restrictions in `paket install`- https://github.com/fsprojects/Paket/issues/486
 
