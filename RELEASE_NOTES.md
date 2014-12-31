@@ -1,3 +1,7 @@
+#### 0.20.6 - 31.12.2014
+* BUGFIX: fix priority of parsing atom nuget feed for package Id - https://github.com/fsprojects/Paket/issues/494
+* BUGFIX: fix JSON deserializer and reactivate cache - https://github.com/fsprojects/Paket/pull/495
+
 #### 0.20.5 - 31.12.2014
 * BUGFIX: Make the file search for app.config and web.config case insensitive - https://github.com/fsprojects/Paket/issues/493
 
