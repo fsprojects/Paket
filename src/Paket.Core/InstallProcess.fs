@@ -131,7 +131,8 @@ let findAllReferencesFiles root =
                                 |> Option.map (fun r -> p, ReferencesFile.FromFile(r)))
 
 /// Installs the given all packages from the lock file.
-let InstallIntoProjects(sources,force, hard, withBindingRedirects, lockFile:LockFile,root,projects) =     
+let InstallIntoProjects(sources,force, hard, withBindingRedirects, lockFile:LockFile, projects) =
+    let root = Path.GetDirectoryName lockFile.FileName
     let extractedPackages = createModel(root,sources,force, lockFile)
 
     let model =
@@ -193,5 +194,4 @@ let Install(sources,force, hard, withBindingRedirects, lockFile:LockFile) =
         hard,
         withBindingRedirects,
         lockFile,
-        root,
         findAllReferencesFiles root)

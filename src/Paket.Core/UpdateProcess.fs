@@ -62,15 +62,13 @@ let SmartInstall(dependenciesFileName, force, hard, withBindingRedirects) =
         |> addPackagesFromReferenceFiles projects
         
     let lockFile = SelectiveUpdate(dependenciesFile,force)
-    
-    let sources = dependenciesFile.GetAllPackageSources()
+     
     InstallProcess.InstallIntoProjects(
-        sources,
+        dependenciesFile.GetAllPackageSources(),
         force,
         hard,
         withBindingRedirects,
         lockFile,
-        root,
         projects)
         
 /// Update a single package command
