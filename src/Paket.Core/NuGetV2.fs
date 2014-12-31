@@ -137,7 +137,7 @@ let parseODataDetails(nugetURL,packageName,version,raw) =
         | _ -> failwithf "unable to find entry node for package %s %O" packageName version
 
     let officialName =
-        match orElse (entry |> getNode "properties" |> optGetNode "Id") (entry |> getNode "title") with
+        match (entry |> getNode "properties" |> optGetNode "Id") |> orElse (entry |> getNode "title") with
         | Some node -> node.InnerText
         | _ -> failwithf "Could not get official package name for package %s %O" packageName version
         
