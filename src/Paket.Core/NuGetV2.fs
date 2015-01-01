@@ -97,24 +97,25 @@ let getAllVersionsFromNuGet2(auth,nugetURL,package) =
     }
 
 
-let getAllVersions(auth, nugetURL, package) = 
-    async { 
-        let! raw = getViaNuGet3(auth, nugetURL, package)
-
-        match raw with
-        | None -> let! result = getAllVersionsFromNuGet2(auth,nugetURL,package)
-                  return result
-        | Some data -> 
-            try 
-                try 
-                    let result = getJSONLDDetails data
-                    return (Array.toSeq result)
-                with _ -> let! result = getAllVersionsFromNuGet2(auth,nugetURL, package)
-                          return result
-            with exn ->
-                return! failwithf "Could not get data from %s for package %s.%s Message: %s" nugetURL package
-                    Environment.NewLine exn.Message
-    }
+let getAllVersions(auth, nugetURL, package) =
+    getAllVersionsFromNuGet2(auth,nugetURL,package)
+//    async { 
+//        let! raw = getViaNuGet3(auth, nugetURL, package)
+//
+//        match raw with
+//        | None -> let! result = getAllVersionsFromNuGet2(auth,nugetURL,package)
+//                  return result
+//        | Some data -> 
+//            try 
+//                try 
+//                    let result = getJSONLDDetails data
+//                    return (Array.toSeq result)
+//                with _ -> let! result = getAllVersionsFromNuGet2(auth,nugetURL, package)
+//                          return result
+//            with exn ->
+//                return! failwithf "Could not get data from %s for package %s.%s Message: %s" nugetURL package
+//                    Environment.NewLine exn.Message
+//    }
 
 /// Gets versions of the given package from local Nuget feed.
 let getAllVersionsFromLocalPath (localNugetPath, package) =

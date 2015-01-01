@@ -1,3 +1,6 @@
+#### 0.20.8 - 01.01.2015
+* Disable NuGet v3 for now - seems to be unreliable.
+
 #### 0.20.7 - 01.01.2015
 * BUGFIX: Don't relax "OverrideAll" conditions during `paket install`
 
