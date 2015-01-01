@@ -1,3 +1,6 @@
+#### 0.20.11 - 01.01.2015
+* PERFORMANCE: Use StringBuilder for path replacement - https://github.com/fsprojects/Paket/issues/487
+
 #### 0.20.10 - 01.01.2015
 * PERFORMANCE: Cache feed errors - https://github.com/fsprojects/Paket/issues/487
 

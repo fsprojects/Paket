@@ -43,6 +43,31 @@ type FrameworkVersion =
           FrameworkVersion.V4_5_2
           FrameworkVersion.V4_5_3 ]
 
+module KnownAliases =
+    let Data =
+        [".net", "net"
+         "netframework", "net"
+         ".netframework", "net"
+         ".netcore", "netcore"
+         "winrt", "netcore"
+         "silverlight", "sl"
+         "windowsphone", "wp"
+         "windows", "win"
+         "windowsPhoneApp", "wpa"
+          
+         "1.0", "10" 
+         "1.1", "11" 
+         "2.0", "20" 
+         "3.5", "35" 
+         "4.0", "40" 
+         "4.5", "45" 
+         "5.0", "50" 
+         "8.0", "80" 
+         "8.1", "81" 
+         "0.0", "" ]
+        |> List.map (fun (p,r) -> p.ToLower(),r.ToLower())
+
+
 /// Framework Identifier type.
 type FrameworkIdentifier = 
     | DotNetFramework of FrameworkVersion
@@ -55,31 +80,12 @@ type FrameworkIdentifier =
     | Silverlight of string
 
     static member Extract(path:string) =
-        let knownAliases =
-            [".net", "net"
-             "netframework", "net"
-             ".netframework", "net"
-             ".netcore", "netcore"
-             "winrt", "netcore"
-             "silverlight", "sl"
-             "windowsphone", "wp"
-             "windows", "win"
-             "windowsPhoneApp", "wpa"
-         
-             "1.0", "10" 
-             "1.1", "11" 
-             "2.0", "20" 
-             "3.5", "35" 
-             "4.0", "40" 
-             "4.5", "45" 
-             "5.0", "50" 
-             "8.0", "80" 
-             "8.1", "81" 
-             "0.0", "" ]
-
+        
         let path = 
-            knownAliases
-            |> List.fold (fun (path:string) (pattern,replacement) -> path.Replace(pattern.ToLower(),replacement.ToLower())) (path.ToLower())
+            let sb = new Text.StringBuilder(path.ToLower())
+            for pattern,replacement in KnownAliases.Data do
+                 sb.Replace(pattern,replacement) |> ignore
+            sb.ToString()
 
         match path with
         | "net10" | "net1" | "10" -> Some (DotNetFramework FrameworkVersion.V1)
