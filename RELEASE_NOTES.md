@@ -1,3 +1,6 @@
+#### 0.20.9 - 01.01.2015
+* PERFORMANCE: Put feed url into cache filename - https://github.com/fsprojects/Paket/issues/487
+
 #### 0.20.8 - 01.01.2015
 * Disable NuGet v3 for now - seems to be unreliable.
 

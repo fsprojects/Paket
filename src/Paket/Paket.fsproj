@@ -28,12 +28,12 @@
     <DocumentationFile>
     </DocumentationFile>
     <StartArguments>update -f</StartArguments>
-    <StartArguments>update</StartArguments>
+    <StartArguments>install</StartArguments>
     <StartAction>Project</StartAction>
     <StartProgram>paket.exe</StartProgram>
     <StartWorkingDirectory>
     </StartWorkingDirectory>
-    <StartWorkingDirectory>c:\code\suave</StartWorkingDirectory>
+    <StartWorkingDirectory>c:\code\PaketKopie</StartWorkingDirectory>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>

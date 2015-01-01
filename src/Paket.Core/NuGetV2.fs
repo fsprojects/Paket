@@ -241,17 +241,16 @@ let private loadFromCacheOrOData force fileName auth nugetURL package version =
 let getDetailsFromNuget force auth nugetURL package (version:SemVerInfo) = 
     async {
         try            
-            let fi = 
-                let packageUrl = sprintf "%s.%s.json" package (version.Normalize())
+            let cacheFile = 
+                let h = nugetURL |> normalizeUrl |> hash |> abs
+                let packageUrl = sprintf "%s.%s.s%d.json" package (version.Normalize()) h
                 FileInfo(Path.Combine(CacheFolder,packageUrl))
 
-            let! (invalidCache,details) = loadFromCacheOrOData force fi.FullName auth nugetURL package version
-            if normalizeUrl details.SourceUrl <> normalizeUrl nugetURL then
-                return! getDetailsFromNuGetViaOData auth nugetURL package version 
-            else
-                if invalidCache then
-                    File.WriteAllText(fi.FullName,JsonConvert.SerializeObject(details))
-                return details
+            let! (invalidCache,details) = loadFromCacheOrOData force cacheFile.FullName auth nugetURL package version
+            
+            if invalidCache then
+                File.WriteAllText(cacheFile.FullName,JsonConvert.SerializeObject(details))
+            return details
         with
         | _ -> return! getDetailsFromNuGetViaOData auth nugetURL package version 
     }    
