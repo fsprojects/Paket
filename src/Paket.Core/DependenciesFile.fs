@@ -286,14 +286,18 @@ type DependenciesFile(fileName,options,sources,packages : PackageRequirement lis
             | lastPackage::_ -> lastPackage.Sources
             | [] -> [PackageSources.DefaultNugetSource]
 
-        let strategy = 
+        let strategy,newVersionRange = 
             match packages |> List.tryFind (fun p -> NormalizedPackageName p.Name = NormalizedPackageName packageName) with
-            | Some package -> package.ResolverStrategy
-            | None -> DependenciesFileParser.parseResolverStrategy version
+            | Some package -> 
+                package.ResolverStrategy,
+                match package.VersionRequirement.Range with
+                | OverrideAll(_) -> package.VersionRequirement
+                | _ -> versionRange
+            | None -> DependenciesFileParser.parseResolverStrategy version,versionRange
 
         let newPackage = 
             { Name = packageName
-              VersionRequirement = versionRange
+              VersionRequirement = newVersionRange
               Sources = sources
               ResolverStrategy = strategy
               FrameworkRestrictions = frameworkRestrictions

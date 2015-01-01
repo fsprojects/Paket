@@ -1,3 +1,6 @@
+#### 0.20.7 - 01.01.2015
+* BUGFIX: Don't relax "OverrideAll" conditions during `paket install`
+
 #### 0.20.6 - 31.12.2014
 * BUGFIX: fix priority of parsing atom nuget feed for package Id - https://github.com/fsprojects/Paket/issues/494
 * BUGFIX: fix JSON deserializer and reactivate cache - https://github.com/fsprojects/Paket/pull/495
