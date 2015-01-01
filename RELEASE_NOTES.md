@@ -1,3 +1,6 @@
+#### 0.20.10 - 01.01.2015
+* PERFORMANCE: Cache feed errors - https://github.com/fsprojects/Paket/issues/487
+
 #### 0.20.9 - 01.01.2015
 * PERFORMANCE: Put feed url into cache filename - https://github.com/fsprojects/Paket/issues/487
 

@@ -239,21 +239,30 @@ let private loadFromCacheOrOData force fileName auth nugetURL package version =
 /// Tries to get download link and direct dependencies from Nuget
 /// Caches calls into json file
 let getDetailsFromNuget force auth nugetURL package (version:SemVerInfo) = 
+    let cacheFile = 
+        let h = nugetURL |> normalizeUrl |> hash |> abs
+        let packageUrl = sprintf "%s.%s.s%d.json" package (version.Normalize()) h
+        FileInfo(Path.Combine(CacheFolder,packageUrl))
+
+    let errorFile = FileInfo(cacheFile.FullName + ".failed")
+
     async {
-        try            
-            let cacheFile = 
-                let h = nugetURL |> normalizeUrl |> hash |> abs
-                let packageUrl = sprintf "%s.%s.s%d.json" package (version.Normalize()) h
-                FileInfo(Path.Combine(CacheFolder,packageUrl))
+        try
+            if not force && errorFile.Exists then
+                failwithf "errorfile for %s exists" package
 
             let! (invalidCache,details) = loadFromCacheOrOData force cacheFile.FullName auth nugetURL package version
             
+            errorFile.Delete()
             if invalidCache then
                 File.WriteAllText(cacheFile.FullName,JsonConvert.SerializeObject(details))
             return details
         with
-        | _ -> return! getDetailsFromNuGetViaOData auth nugetURL package version 
-    }    
+        | exn -> 
+            File.WriteAllText(errorFile.FullName,"")
+            raise exn
+            return! getDetailsFromNuGetViaOData auth nugetURL package version
+    } 
     
 /// Reads direct dependencies from a nupkg file
 let getDetailsFromLocalFile path package (version:SemVerInfo) =
