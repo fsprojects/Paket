@@ -20,7 +20,7 @@ type UnresolvedSourceFile =
       Commit : string option }
 
     override this.ToString() =
-        let name = if this.Name = "FULLPROJECT" then "" else " " + this.Name
+        let name = if this.Name = Constants.FullProjectSourceFileName then "" else " " + this.Name
         match this.Origin with
         | HttpLink url -> sprintf "http %s%s" url name
         | _ ->

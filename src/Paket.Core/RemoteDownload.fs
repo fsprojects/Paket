@@ -7,12 +7,6 @@ open Ionic.Zip
 open Paket.Logging
 open Paket.ModuleResolver
 
-[<Literal>]
-let PaketVersionFileName = "paket.version"
-
-[<Literal>]
-let FullProjectSourceFileName = "FULLPROJECT"
-
 // Gets the sha1 of a branch
 let getSHA1OfBranch origin owner project branch = 
     async { 
@@ -86,7 +80,7 @@ let rec DirectoryCopy(sourceDirName, destDirName, copySubDirs) =
 /// Gets a single file from github.
 let downloadRemoteFiles(remoteFile:ResolvedSourceFile,destination) = async {
     match remoteFile.Origin, remoteFile.Name with
-    | SingleSourceFileOrigin.GistLink, FullProjectSourceFileName ->
+    | SingleSourceFileOrigin.GistLink, Constants.FullProjectSourceFileName ->
         let fi = FileInfo(destination)
         let projectPath = fi.Directory.FullName
 
@@ -107,7 +101,7 @@ let downloadRemoteFiles(remoteFile:ResolvedSourceFile,destination) = async {
         // GIST currently does not support zip-packages, so now this fetches all files separately.
         // let downloadUrl = sprintf "https://gist.github.com/%s/%s/download" remoteFile.Owner remoteFile.Project //is a tar.gz
 
-    | SingleSourceFileOrigin.GitHubLink, FullProjectSourceFileName -> 
+    | SingleSourceFileOrigin.GitHubLink, Constants.FullProjectSourceFileName -> 
         let fi = FileInfo(destination)
         let projectPath = fi.Directory.FullName
         let zipFile = Path.Combine(projectPath,sprintf "%s.zip" remoteFile.Commit)
@@ -140,7 +134,7 @@ let DownloadSourceFiles(rootPath, sourceFiles:ModuleResolver.ResolvedSourceFile 
     |> Seq.groupBy fst
     |> Seq.sortBy (fst >> fst)
     |> Seq.map (fun ((destinationDir, version), sources) ->
-        let versionFile = FileInfo(Path.Combine(destinationDir, PaketVersionFileName))
+        let versionFile = FileInfo(Path.Combine(destinationDir, Constants.PaketVersionFileName))
         let isInRightVersion = versionFile.Exists && version = File.ReadAllText(versionFile.FullName)
 
         if not isInRightVersion then

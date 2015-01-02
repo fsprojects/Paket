@@ -25,6 +25,12 @@ let PackagesFolderName = "packages"
 let SolutionFolderProjectGuid = "2150E333-8FDC-42A3-9474-1A3956D46DE8"
 
 [<Literal>]
+let PaketVersionFileName = "paket.version"
+
+[<Literal>]
+let FullProjectSourceFileName = "FULLPROJECT"
+
+[<Literal>]
 let ProjectDefaultNameSpace = "http://schemas.microsoft.com/developer/msbuild/2003"
 
 let AppDataFolder = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData)

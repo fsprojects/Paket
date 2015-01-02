@@ -101,7 +101,7 @@ module DependenciesFileParser =
             | _ -> failwithf "invalid %s specification:%s     %s" originTxt Environment.NewLine trimmed
         match parts with
         | [| _; projectSpec; fileSpec |] -> origin, getParts projectSpec, fileSpec
-        | [| _; projectSpec;  |] -> origin, getParts projectSpec, RemoteDownload.FullProjectSourceFileName
+        | [| _; projectSpec;  |] -> origin, getParts projectSpec, Constants.FullProjectSourceFileName
         | _ -> failwithf "invalid %s specification:%s     %s" originTxt Environment.NewLine trimmed
 
     let private ``parse http source`` trimmed =
