@@ -1,3 +1,6 @@
+#### 0.20.21 - 02.01.2015
+* PERFORMANCE: Relax prerelease requirements for pinned versions - https://github.com/fsprojects/Paket/issues/487
+
 #### 0.20.20 - 02.01.2015
 * PERFORMANCE: Don't enumerate all files, since we only need lib files - https://github.com/fsprojects/Paket/issues/487
 

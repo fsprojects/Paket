@@ -48,7 +48,7 @@ let SelectiveUpdate(dependenciesFile:DependenciesFile, force) =
     else
         let oldLockFile = LockFile.LoadFrom(lockFileName.FullName)
 
-        let dependenciesFile = DependencyChangeDetection.FixUnchangedDependencies dependenciesFile oldLockFile
+        let dependenciesFile = DependencyChangeDetection.PinUnchangedDependencies dependenciesFile oldLockFile
 
         let resolution = dependenciesFile.Resolve(force)
         LockFile.Create(lockFileName.FullName, dependenciesFile.Options, resolution.ResolvedPackages, oldLockFile.SourceFiles)

@@ -18,8 +18,9 @@ let findChangesInDependenciesFile(dependenciesFile:DependenciesFile,lockFile:Loc
         [for t in lockFile.GetTopLevelDependencies() do 
             let name = t.Key
             match directMap.TryFind name with
-            | Some range ->
-                if range.IsInRange t.Value.Version |> not then
+            | Some r ->
+                let vr = VersionRequirement(r.Range,PreReleaseStatus.All)
+                if vr.IsInRange t.Value.Version |> not then
                     yield name // Modified
             | _ -> yield name // Removed
         ]
@@ -30,7 +31,7 @@ let findChangesInDependenciesFile(dependenciesFile:DependenciesFile,lockFile:Loc
     added 
     |> Set.union modified
 
-let FixUnchangedDependencies (dependenciesFile:DependenciesFile) (oldLockFile:LockFile) =
+let PinUnchangedDependencies (dependenciesFile:DependenciesFile) (oldLockFile:LockFile) =
     let changedDependencies = findChangesInDependenciesFile(dependenciesFile,oldLockFile)
             
     oldLockFile.ResolvedPackages
