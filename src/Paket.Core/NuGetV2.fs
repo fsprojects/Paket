@@ -404,10 +404,11 @@ let DownloadPackage(root, auth, url, name, version:SemVerInfo, force) =
 let GetLibFiles(targetFolder) =    
     let libs = 
         let dir = DirectoryInfo(targetFolder)
-        let libPath = dir.FullName.ToLower() + Path.DirectorySeparatorChar.ToString() + "lib" + Path.DirectorySeparatorChar.ToString()
+        let libPath = dir.FullName.ToLower() + Path.DirectorySeparatorChar.ToString() + "lib" 
         if dir.Exists then
-            dir.GetFiles("*.*",SearchOption.AllDirectories)
-            |> Array.filter (fun fi -> fi.FullName.ToLower().Contains(libPath))
+            dir.GetDirectories()
+            |> Array.filter (fun fi -> fi.FullName.ToLower() = libPath)
+            |> Array.collect (fun dir -> dir.GetFiles("*.*",SearchOption.AllDirectories))
         else
             Array.empty
 
