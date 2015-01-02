@@ -308,8 +308,9 @@ let ExtractPackage(fileName:string, targetFolder, name, version:SemVerInfo) =
                 try
                     e.Extract(targetFolder, ExtractExistingFileAction.OverwriteSilently)
                 with
-                | exn ->                    
-                    failwithf "Error during unzipping %s in %s %A: %s" e.FileName name version exn.Message 
+                | :? Ionic.Zip.BadCrcException as exn -> 
+                    traceWarnfn "Bad Crc during unzipping %s in %s %A: %s" e.FileName name version exn.Message 
+                | exn -> failwithf "Error during unzipping %s in %s %A: %s" e.FileName name version exn.Message 
 
             // cleanup folder structure
             let rec cleanup (dir : DirectoryInfo) = 

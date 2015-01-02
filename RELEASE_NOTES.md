@@ -1,3 +1,6 @@
+#### 0.20.13 - 02.01.2015
+* Do not fail on BadCrcException during unzip and only show a warning - https://github.com/fsprojects/Paket/issues/484
+
 #### 0.20.12 - 02.01.2015
 * BUGFIX: Dependencies file saves http and gist links correctly - https://github.com/fsprojects/Paket/issues/498
 
