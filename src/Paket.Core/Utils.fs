@@ -197,7 +197,7 @@ let RunInLockedAccessMode(rootFolder,action) =
                     if content <> p.Id.ToString() then
                         let processes = Process.GetProcessesByName(p.ProcessName)
                         if processes |> Array.exists (fun p -> p.HasExited = false && content = p.Id.ToString()) then
-                            if startTime + timeOut > DateTime.Now then
+                            if startTime + timeOut <= DateTime.Now then
                                 failwith "timeout"
                             if counter % 10 = 0 then
                                 traceWarnfn "packages folder is locked by paket.exe (PID = %s). Waiting..." content
