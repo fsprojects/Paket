@@ -28,7 +28,7 @@
     <DocumentationFile>
     </DocumentationFile>
     <StartArguments>update -f</StartArguments>
-    <StartArguments>install</StartArguments>
+    <StartArguments>install --log-file "C:\temp\log.txt"</StartArguments>
     <StartAction>Project</StartAction>
     <StartProgram>paket.exe</StartProgram>
     <StartWorkingDirectory>

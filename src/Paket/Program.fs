@@ -57,6 +57,7 @@ type CLIArguments =
     | [<AltCommandLine("--pre")>] Include_Prereleases
     | No_Auto_Restore
     | Creds_Migration of string
+    | Log_File of string
 with
     interface IArgParserTemplate with
         member s.Usage =
@@ -85,6 +86,7 @@ with
             | Nuget _ -> "allows to specify a nuget package."
             | Version _ -> "allows to specify a package version."
             | Creds_Migration _ -> "allows to specify credentials migration mode for convert-from-nuget."
+            | Log_File _ -> "allows to specify a log file."
             | FindRefs _ -> "finds all references to the given packages."
             | AddCredentials _ -> "add credentials to config file for the specified source."
 
@@ -110,6 +112,9 @@ let results =
             else Command.Unknown
         if results.Contains <@ CLIArguments.Verbose @> then
             verbose <- true
+
+        if results.Contains <@ CLIArguments.Log_File @> then
+            setLogFile <| results.GetResult <@ CLIArguments.Log_File @> 
 
         Some(command,results)
     with
