@@ -398,8 +398,9 @@ type DependenciesFile(fileName,options,sources,packages : PackageRequirement lis
                   if (not !hasReportedSecond) && !hasReportedFirst then
                       yield ""
                       hasReportedSecond := true
-
-                  yield sprintf "github %s" (remoteFile.ToString())]
+                      
+                  yield remoteFile.ToString() ]
+                  
                   
         String.Join(Environment.NewLine, all)                                 
 

@@ -19,10 +19,21 @@ type UnresolvedSourceFile =
       Origin : SingleSourceFileOrigin
       Commit : string option }
 
-    override this.ToString() = 
-        match this.Commit with
-        | Some commit -> sprintf "%s/%s:%s %s" this.Owner this.Project commit this.Name
-        | None -> sprintf "%s/%s %s" this.Owner this.Project this.Name
+    override this.ToString() =
+        let name = if this.Name = "FULLPROJECT" then "" else " " + this.Name
+        match this.Origin with
+        | HttpLink url -> sprintf "http %s%s" url name
+        | _ ->
+            let link = 
+                match this.Origin with
+                | GitHubLink -> "github"
+                | GistLink -> "gist"
+                | _ -> failwithf "invalid linktype %A" this.Origin
+
+            match this.Commit with
+            | Some commit -> sprintf "%s %s/%s:%s%s" link this.Owner this.Project commit name
+            | None -> sprintf "%s %s/%s%s" link this.Owner this.Project name
+
 
 type ResolvedSourceFile =
     { Owner : string

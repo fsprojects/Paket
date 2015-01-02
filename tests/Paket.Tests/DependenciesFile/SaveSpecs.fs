@@ -158,3 +158,47 @@ let ``should serialize config with envrionment variable password``() =
     
     cfg.ToString()
     |> shouldEqual (normalizeLineEndings configWithEnvVarPassword)
+
+
+
+let withGist = """source https://www.nuget.org/api/v2
+
+nuget FakeItEasy 1.24.0
+nuget json-ld.net 1.0.3
+
+gist misterx/55555555"""
+
+[<Test>]
+let ``should serialize config with gist``() = 
+    let cfg = DependenciesFile.FromCode(withGist)
+    
+    cfg.ToString()
+    |> shouldEqual (normalizeLineEndings withGist)
+
+let withGistAndFile = """source https://www.nuget.org/api/v2
+
+nuget FakeItEasy 1.24.0
+nuget json-ld.net 1.0.3
+
+gist Thorium/1972308 gistfile1.fs"""
+
+[<Test>]
+let ``should serialize config with gist and file``() = 
+    let cfg = DependenciesFile.FromCode(withGistAndFile)
+    
+    cfg.ToString()
+    |> shouldEqual (normalizeLineEndings withGistAndFile)
+
+let withHTTPLink = """source https://www.nuget.org/api/v2
+
+nuget FakeItEasy 1.24.0
+nuget json-ld.net 1.0.3
+
+http http://www.fssnip.net/raw/1M test1.fs"""
+
+[<Test>]
+let ``should serialize config with http link``() = 
+    let cfg = DependenciesFile.FromCode(withHTTPLink)
+    
+    cfg.ToString()
+    |> shouldEqual (normalizeLineEndings withHTTPLink)

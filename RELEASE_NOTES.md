@@ -1,3 +1,6 @@
+#### 0.20.12 - 02.01.2015
+* BUGFIX: Dependencies file saves http and gist links correctly - https://github.com/fsprojects/Paket/issues/498
+
 #### 0.20.11 - 01.01.2015
 * PERFORMANCE: Use StringBuilder for path replacement - https://github.com/fsprojects/Paket/issues/487
 
