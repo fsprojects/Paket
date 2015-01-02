@@ -11,13 +11,9 @@ let Add(dependenciesFileName, package, version, force, hard, interactive, instal
         existingDependenciesFile
           .Add(package,version)
 
-    let changed = existingDependenciesFile <> dependenciesFile
-    let lockFile = 
-        if changed then
-            UpdateProcess.SelectiveUpdate(dependenciesFile,force)
-        else
-            let lockFileName = DependenciesFile.FindLockfile dependenciesFileName
-            LockFile.LoadFrom(lockFileName.FullName)
+    dependenciesFile.Save()
+
+    let lockFile = UpdateProcess.SelectiveUpdate(dependenciesFile,force)
     
     if interactive then
         let (PackageName packageName) = package
@@ -30,6 +26,3 @@ let Add(dependenciesFileName, package, version, force, hard, interactive, instal
     if installAfter then
         let sources = dependenciesFile.GetAllPackageSources()
         InstallProcess.Install(sources, force, hard, false, lockFile)
-
-    if changed then
-        dependenciesFile.Save()
