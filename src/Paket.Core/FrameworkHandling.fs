@@ -31,18 +31,6 @@ type FrameworkVersion =
         | V4_5_2 -> "v4.5.2"
         | V4_5_3 -> "v4.5.3"
 
-    static member KnownDotNetFrameworks = 
-        [ FrameworkVersion.V1
-          FrameworkVersion.V1_1
-          FrameworkVersion.V2
-          FrameworkVersion.V3_5
-          FrameworkVersion.V4_Client
-          FrameworkVersion.V4
-          FrameworkVersion.V4_5
-          FrameworkVersion.V4_5_1
-          FrameworkVersion.V4_5_2
-          FrameworkVersion.V4_5_3 ]
-
 module KnownAliases =
     let Data =
         [".net", "net"
