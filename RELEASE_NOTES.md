@@ -1,3 +1,6 @@
+#### 0.20.19 - 02.01.2015
+* PERFORMANCE: Pin sourcefile dependencies - https://github.com/fsprojects/Paket/issues/487
+
 #### 0.20.18 - 02.01.2015
 * PERFORMANCE: Cache path penalty calculation - https://github.com/fsprojects/Paket/issues/487
 

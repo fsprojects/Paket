@@ -9,6 +9,8 @@ type PackageName =
         match this with
         | PackageName id -> id
 
+    override this.ToString() = this.Id
+
 /// Active recognizer to convert a NuGet package name into a string
 let (|PackageName|) (PackageName.PackageName name) = name
 
@@ -19,6 +21,10 @@ let PackageName name = PackageName.PackageName name
 [<System.Diagnostics.DebuggerDisplay("{Item}")>]
 type NormalizedPackageName =
 | NormalizedPackageName of string
+
+    override this.ToString() = 
+        match this with
+        | NormalizedPackageName id -> id
 
 /// Active recognizer to convert a NuGet package name into a normalized one
 let (|NormalizedPackageName|) (PackageName name) =

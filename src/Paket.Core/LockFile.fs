@@ -332,10 +332,20 @@ type LockFile(fileName:string,options,resolution:PackageResolution,remoteFiles:R
         |> Seq.map NormalizedPackageName
         |> Set.ofSeq
 
-    member this.GetIndirectDependencies() = 
-        this.ResolvedPackages 
-        |> Seq.map (fun d -> d.Value.Dependencies |> Seq.map (fun (n,_,_) -> n))
-        |> Seq.concat
+    member this.GetIndirectDependencies() =
+        let fromNuGets =
+            this.ResolvedPackages 
+            |> Seq.map (fun d -> d.Value.Dependencies |> Seq.map (fun (n,_,_) -> n))
+            |> Seq.concat
+            |> Set.ofSeq
+
+        let fromSourceFiles =
+            this.SourceFiles 
+            |> Seq.map (fun d -> d.Dependencies |> Seq.map fst)
+            |> Seq.concat
+            |> Set.ofSeq
+
+        Set.union fromNuGets fromSourceFiles
 
     member this.GetTopLevelDependencies() = 
         let indirect = 
