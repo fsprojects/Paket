@@ -49,7 +49,7 @@ type Dependencies(dependenciesFileName: string) =
     static member Create(path: string): Dependencies =
         let dependenciesFileName = Path.Combine(path,Constants.DependenciesFileName)
         if File.Exists dependenciesFileName then
-            Logging.tracef "%s already exists" dependenciesFileName
+            Logging.tracefn "%s already exists" dependenciesFileName
         else
             DependenciesFile(dependenciesFileName, InstallOptions.Default, [], [], []).Save()
         Dependencies(dependenciesFileName)
