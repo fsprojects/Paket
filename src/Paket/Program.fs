@@ -205,9 +205,9 @@ try
             tracefn "%s - ready." elapsedTime
     | None -> ()
 with
-| exn -> 
+| exn when not (exn :? System.NullReferenceException) -> 
     Environment.ExitCode <- 1
     traceErrorfn "Paket failed with:%s   %s" Environment.NewLine exn.Message
 
-    if verbose || (exn :? System.NullReferenceException) then
+    if verbose then
         traceErrorfn "StackTrace:%s  %s" Environment.NewLine exn.StackTrace

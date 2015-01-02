@@ -1,3 +1,6 @@
+#### 0.21.1 - 02.01.2015
+* Don't catch NullReferenceExceptions for now - https://github.com/fsprojects/Paket/issues/505
+
 #### 0.21.0 - 02.01.2015
 * New `--log-file` parameter allows to trace into logfile - https://github.com/fsprojects/Paket/pull/502
 * Trace stacktrace on all NullReferenceExceptions - https://github.com/fsprojects/Paket/issues/500
