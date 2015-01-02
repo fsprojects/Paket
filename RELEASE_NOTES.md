@@ -1,3 +1,7 @@
+#### 0.20.22 - 02.01.2015
+* Paket.locked file has 2 minute timeout
+* New `--log-file` parameter allows to trace into logfile - https://github.com/fsprojects/Paket/pull/502
+
 #### 0.20.21 - 02.01.2015
 * PERFORMANCE: Relax prerelease requirements for pinned versions - https://github.com/fsprojects/Paket/issues/487
 
