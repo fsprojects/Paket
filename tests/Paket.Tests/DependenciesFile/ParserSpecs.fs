@@ -306,6 +306,21 @@ let ``should read gist source file from config without quotes with file specs``(
             Origin = ModuleResolver.SingleSourceFileOrigin.GistLink
             Commit = None } ]
 
+[<Test>]
+let ``should read gist source file``() =
+    let config = """source https://www.nuget.org/api/v2
+
+nuget JetBrainsAnnotations.Fody
+
+gist misterx/5d9c6983004c1c9ec91f""" 
+    let dependencies = DependenciesFile.FromCode(config)
+    dependencies.RemoteFiles
+    |> shouldEqual
+        [ { Owner = "misterx"
+            Project = "5d9c6983004c1c9ec91f"
+            Name = "FULLPROJECT"
+            Origin = ModuleResolver.SingleSourceFileOrigin.GistLink
+            Commit = None } ]
 
 [<Test>]
 let ``should read http source file from config without quotes, parsing rules``() =

@@ -1,3 +1,6 @@
+#### 0.20.14 - 02.01.2015
+* BUGFIX: Detect the version of a GitHub gist correctly - https://github.com/fsprojects/Paket/issues/499
+
 #### 0.20.13 - 02.01.2015
 * Do not fail on BadCrcException during unzip and only show a warning - https://github.com/fsprojects/Paket/issues/484
 

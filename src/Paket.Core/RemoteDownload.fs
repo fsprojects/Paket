@@ -26,7 +26,8 @@ let getSHA1OfBranch origin owner project branch =
             let url = sprintf "https://api.github.com/gists/%s/%s" project branch
             let! document = getFromUrl(None, url)
             let json = JObject.Parse(document)
-            return json.["id"].ToString()
+            let latest = json.["history"].First.["version"]
+            return latest.ToString()
         | ModuleResolver.SingleSourceFileOrigin.HttpLink _ -> return ""
     }
 

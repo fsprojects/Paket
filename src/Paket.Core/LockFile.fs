@@ -111,7 +111,8 @@ module LockFileSerializer =
                     let path = file.Name.TrimStart '/'
                     match String.IsNullOrEmpty(file.Commit) with
                     | false -> yield sprintf "    %s (%s)" path file.Commit 
-                    | true -> yield sprintf "    %s" path 
+                    | true -> yield sprintf "    %s" path
+
                     for (PackageName name,v) in file.Dependencies do
                         let versionStr = 
                             let s = v.ToString()

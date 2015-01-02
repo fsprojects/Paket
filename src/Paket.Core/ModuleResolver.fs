@@ -34,23 +34,21 @@ type UnresolvedSourceFile =
             | Some commit -> sprintf "%s %s/%s:%s%s" link this.Owner this.Project commit name
             | None -> sprintf "%s %s/%s%s" link this.Owner this.Project name
 
-
-type ResolvedSourceFile =
+type ResolvedSourceFile = 
     { Owner : string
       Project : string
-      Name : string      
+      Name : string
       Commit : string
-      Dependencies : Set<PackageName*VersionRequirement>
-      Origin : SingleSourceFileOrigin
-      }
+      Dependencies : Set<PackageName * VersionRequirement>
+      Origin : SingleSourceFileOrigin }
+
     member this.FilePath = this.ComputeFilePath(this.Name)
-
-    member this.ComputeFilePath(name:string) =
+    
+    member this.ComputeFilePath(name : string) = 
         let path = normalizePath (name.TrimStart('/'))
-
         let di = DirectoryInfo(Path.Combine(Constants.PaketFilesFolderName, this.Owner, this.Project, path))
         di.FullName
-
+    
     override this.ToString() = sprintf "%s/%s:%s %s" this.Owner this.Project this.Commit this.Name
 
 let private getCommit (file : UnresolvedSourceFile) = defaultArg file.Commit "master"
