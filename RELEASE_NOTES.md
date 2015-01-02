@@ -1,3 +1,6 @@
+#### 0.20.15 - 02.01.2015
+* PERFORMANCE: Cache platform penalty calculation - https://github.com/fsprojects/Paket/issues/487
+
 #### 0.20.14 - 02.01.2015
 * BUGFIX: Detect the version of a GitHub gist correctly - https://github.com/fsprojects/Paket/issues/499
 

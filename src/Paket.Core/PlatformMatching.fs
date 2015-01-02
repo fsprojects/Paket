@@ -11,15 +11,24 @@ let inline split (path : string) =
     
 let inline extractPlatforms path = split path |> Array.choose FrameworkIdentifier.Extract
 
+let private penalties = Collections.Generic.Dictionary<_,_>()
+
 let rec getPlatformPenalty (targetPlatform:FrameworkIdentifier) (packagePlatform:FrameworkIdentifier) =
     if packagePlatform = targetPlatform then
         0
     else
-        targetPlatform.SupportedPlatforms
-        |> List.map (fun target -> getPlatformPenalty target packagePlatform)
-        |> List.append [maxPenalty]
-        |> List.min
-        |> fun p -> p + 1
+        let key = targetPlatform,packagePlatform
+        match penalties.TryGetValue key with
+        | true, penalty -> penalty
+        | _ ->
+            let penalty =
+                targetPlatform.SupportedPlatforms
+                |> List.map (fun target -> getPlatformPenalty target packagePlatform)
+                |> List.append [maxPenalty]
+                |> List.min
+                |> fun p -> p + 1
+            penalties.[key] <- penalty
+            penalty
 
 let getPathPenalty (path:string) (platform:FrameworkIdentifier) =
     if String.IsNullOrWhiteSpace path then
