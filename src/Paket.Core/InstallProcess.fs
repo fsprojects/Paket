@@ -93,30 +93,26 @@ let createModel(root, sources,force, lockFile:LockFile) =
 
     extractedPackages
 
-/// Picks the highest version of a library
-let private pickHighestLibraryVersion libraries = 
-    libraries
-    |> Seq.sortBy (fun p -> FileVersionInfo.GetVersionInfo(p).FileVersion)
-    |> Seq.last
-
 /// Applies binding redirects for all strong-named references to all app. and web. config files.
 let private applyBindingRedirects root extractedPackages =
     extractedPackages
     |> Seq.map(fun (package, model:InstallModel) -> model.GetReferences.Force())
     |> Set.unionMany
-    |> Seq.choose(fun ref -> 
-            match ref with
-            | Reference.Library path -> Some path
-            | _-> None)
+    |> Seq.choose(function | Reference.Library path -> Some path | _-> None)
     |> Seq.groupBy (fun p -> FileInfo(p).Name)
-    |> Seq.map(fun (_,libraries) ->  pickHighestLibraryVersion libraries)
-    |> Seq.choose(fun assemblyFileName ->
-        try
-            let assembly = Assembly.ReflectionOnlyLoadFrom assemblyFileName
-            assembly
-            |> BindingRedirects.getPublicKeyToken
-            |> Option.map(fun token -> assembly, token)
-        with exn -> None)
+    |> Seq.choose(fun (_,librariesForPackage) ->
+        librariesForPackage
+        |> Seq.choose(fun library ->
+            try
+                let assembly = Assembly.ReflectionOnlyLoadFrom library
+                assembly
+                |> BindingRedirects.getPublicKeyToken
+                |> Option.map(fun token -> assembly, token)
+            with exn -> None)
+        |> Seq.sortBy(fun (assembly,_) -> assembly.GetName().Version)
+        |> Seq.toList
+        |> List.rev
+        |> function | head :: _ -> Some head | _ -> None)
     |> Seq.map(fun (assembly, token) ->
         {   BindingRedirect.AssemblyName = assembly.GetName().Name
             Version = assembly.GetName().Version.ToString()
