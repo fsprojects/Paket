@@ -197,14 +197,14 @@ module LockFileParser =
                                                            operatorSplit.[0] 
                                                         else 
                                                            operatorSplit.[1]
-                                                    match FrameworkIdentifier.Extract(framework) with
+                                                    match FrameworkDetection.Extract(framework) with
                                                     | None -> ()
                                                     | Some x -> 
                                                         if operatorSplit.[0] = ">=" then
                                                             if operatorSplit.Length < 4 then
                                                                 yield FrameworkRestriction.AtLeast x
                                                             else
-                                                                match FrameworkIdentifier.Extract(operatorSplit.[3]) with
+                                                                match FrameworkDetection.Extract(operatorSplit.[3]) with
                                                                 | None -> ()
                                                                 | Some y -> yield FrameworkRestriction.Between(x,y)
                                                         else

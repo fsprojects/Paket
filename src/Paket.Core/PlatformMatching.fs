@@ -9,7 +9,7 @@ let inline split (path : string) =
     path.Split('+')
     |> Array.map (fun s -> s.Replace("portable-", ""))
     
-let inline extractPlatforms path = split path |> Array.choose FrameworkIdentifier.Extract
+let inline extractPlatforms path = split path |> Array.choose FrameworkDetection.Extract
 
 let private penalties = Collections.Generic.Dictionary<_,_>()
 

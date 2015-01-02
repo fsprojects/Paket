@@ -114,7 +114,7 @@ type Nuspec =
                     let parent = node.ParentNode 
                     match parent.Name.ToLower(), parent |> getAttribute "targetFramework" with
                     | "group", Some framework -> 
-                        match FrameworkIdentifier.Extract framework with
+                        match FrameworkDetection.Extract framework with
                         | Some x -> [FrameworkRestriction.Exactly x]
                         | None -> []
                     | _ -> []
@@ -126,7 +126,7 @@ type Nuspec =
                 |> Seq.map (fun node ->
                     match node |> getAttribute "targetFramework" with
                     | Some framework ->
-                        match FrameworkIdentifier.Extract framework with
+                        match FrameworkDetection.Extract framework with
                         | Some x -> [PackageName "",VersionRequirement.NoRestriction,[FrameworkRestriction.Exactly x]]
                         | None -> []
                     | _ -> [])
@@ -155,7 +155,7 @@ type Nuspec =
                     [{ AssemblyName = name; FrameworkRestrictions = [] }]
                 | Some name, Some targetFrameworks ->                     
                     targetFrameworks.Split([|','; ' '|],System.StringSplitOptions.RemoveEmptyEntries)
-                    |> Array.choose FrameworkIdentifier.Extract
+                    |> Array.choose FrameworkDetection.Extract
                     |> Array.map (fun fw -> { AssemblyName = name; FrameworkRestrictions = [FrameworkRestriction.Exactly fw] })
                     |> Array.toList
                 | _ -> []

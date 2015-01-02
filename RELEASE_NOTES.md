@@ -1,3 +1,6 @@
+#### 0.20.17 - 02.01.2015
+* PERFORMANCE: Cache path extraction - https://github.com/fsprojects/Paket/issues/487
+
 #### 0.20.16 - 02.01.2015
 * Trace stacktrace on all NullReferenceExceptions - https://github.com/fsprojects/Paket/issues/500
 

@@ -67,38 +67,6 @@ type FrameworkIdentifier =
     | WindowsPhoneSilverlight of string
     | Silverlight of string
 
-    static member Extract(path:string) =
-        
-        let path = 
-            let sb = new Text.StringBuilder(path.ToLower())
-            for pattern,replacement in KnownAliases.Data do
-                 sb.Replace(pattern,replacement) |> ignore
-            sb.ToString()
-
-        match path with
-        | "net10" | "net1" | "10" -> Some (DotNetFramework FrameworkVersion.V1)
-        | "net11" | "11" -> Some (DotNetFramework FrameworkVersion.V1_1)
-        | "net20" | "net2" | "net" | "net20-full" | "20" -> Some (DotNetFramework FrameworkVersion.V2)
-        | "net35" | "net35-full" | "35" -> Some (DotNetFramework FrameworkVersion.V3_5)
-        | "net40" | "net4" | "40" | "net40-client" | "net4-client" -> Some (DotNetFramework FrameworkVersion.V4_Client)
-        | "net40-full" | "net403" -> Some (DotNetFramework FrameworkVersion.V4)
-        | "net45" | "net45-full" | "45" -> Some (DotNetFramework FrameworkVersion.V4_5)
-        | "net451" -> Some (DotNetFramework FrameworkVersion.V4_5_1)
-        | "net452" -> Some (DotNetFramework FrameworkVersion.V4_5_2)
-        | "net453" -> Some (DotNetFramework FrameworkVersion.V4_5_3)
-        | "monotouch" | "monotouch10" -> Some MonoTouch
-        | "monoandroid" | "monoandroid10" -> Some MonoAndroid
-        | "monomac" | "monomac10" -> Some MonoMac
-        | "sl3" | "sl30" -> Some (Silverlight "v3.0")
-        | "sl4" | "sl40" -> Some (Silverlight "v4.0")
-        | "sl5" | "sl50" -> Some (Silverlight "v5.0")
-        | "win8" | "win80" | "netcore45" | "win" -> Some (Windows "v4.5")
-        | "win81" | "netcore46" -> Some (Windows "v4.5.1")
-        | "wp7" | "wp70" | "sl4-wp7"| "sl4-wp70" -> Some (WindowsPhoneSilverlight "v7.0")
-        | "wp71" | "sl4-wp71" | "sl4-wp"  -> Some (WindowsPhoneSilverlight "v7.1")
-        | "wp8" | "wp80" -> Some (WindowsPhoneSilverlight "v8.0")
-        | "wpa00" | "wpa81" -> Some (WindowsPhoneApp "v8.1")
-        | _ -> None
     
     override x.ToString() = 
         match x with
@@ -124,19 +92,6 @@ type FrameworkIdentifier =
         | WindowsPhoneSilverlight v -> "wp" + v
         | Silverlight v -> "sl" + v
 
-    static member DetectFromPath(path : string) : FrameworkIdentifier option = 
-        
-        let path = path.Replace("\\", "/").ToLower()
-        let fi = new FileInfo(path)
-        
-        if path.Contains("lib/" + fi.Name.ToLower()) then Some(DotNetFramework(FrameworkVersion.V1))
-        else 
-            let startPos = path.LastIndexOf("lib/")
-            let endPos = path.LastIndexOf(fi.Name.ToLower())
-            if startPos < 0 || endPos < 0 then None
-            else 
-                path.Substring(startPos + 4, endPos - startPos - 5) 
-                |> FrameworkIdentifier.Extract
 
     // returns a list of compatible platforms that this platform also supports
     member x.SupportedPlatforms =
@@ -171,6 +126,63 @@ type FrameworkIdentifier =
         | Windows _ -> [ Windows "v4.5.1" ]
         | WindowsPhoneApp _ -> [ WindowsPhoneApp "v8.1" ]
         | WindowsPhoneSilverlight _ -> [ WindowsPhoneSilverlight "v8.1" ]
+
+
+module FrameworkDetection =
+    let private cache = System.Collections.Generic.Dictionary<_,_>()
+
+    let Extract(path:string) =
+        match cache.TryGetValue path with
+        | true,x -> x
+        | _ ->
+            let path = 
+                let sb = new Text.StringBuilder(path.ToLower())
+                for pattern,replacement in KnownAliases.Data do
+                     sb.Replace(pattern,replacement) |> ignore
+                sb.ToString()
+
+            let result = 
+                match path with
+                | "net10" | "net1" | "10" -> Some (DotNetFramework FrameworkVersion.V1)
+                | "net11" | "11" -> Some (DotNetFramework FrameworkVersion.V1_1)
+                | "net20" | "net2" | "net" | "net20-full" | "20" -> Some (DotNetFramework FrameworkVersion.V2)
+                | "net35" | "net35-full" | "35" -> Some (DotNetFramework FrameworkVersion.V3_5)
+                | "net40" | "net4" | "40" | "net40-client" | "net4-client" -> Some (DotNetFramework FrameworkVersion.V4_Client)
+                | "net40-full" | "net403" -> Some (DotNetFramework FrameworkVersion.V4)
+                | "net45" | "net45-full" | "45" -> Some (DotNetFramework FrameworkVersion.V4_5)
+                | "net451" -> Some (DotNetFramework FrameworkVersion.V4_5_1)
+                | "net452" -> Some (DotNetFramework FrameworkVersion.V4_5_2)
+                | "net453" -> Some (DotNetFramework FrameworkVersion.V4_5_3)
+                | "monotouch" | "monotouch10" -> Some MonoTouch
+                | "monoandroid" | "monoandroid10" -> Some MonoAndroid
+                | "monomac" | "monomac10" -> Some MonoMac
+                | "sl3" | "sl30" -> Some (Silverlight "v3.0")
+                | "sl4" | "sl40" -> Some (Silverlight "v4.0")
+                | "sl5" | "sl50" -> Some (Silverlight "v5.0")
+                | "win8" | "win80" | "netcore45" | "win" -> Some (Windows "v4.5")
+                | "win81" | "netcore46" -> Some (Windows "v4.5.1")
+                | "wp7" | "wp70" | "sl4-wp7"| "sl4-wp70" -> Some (WindowsPhoneSilverlight "v7.0")
+                | "wp71" | "sl4-wp71" | "sl4-wp"  -> Some (WindowsPhoneSilverlight "v7.1")
+                | "wp8" | "wp80" -> Some (WindowsPhoneSilverlight "v8.0")
+                | "wpa00" | "wpa81" -> Some (WindowsPhoneApp "v8.1")
+                | _ -> None
+
+            cache.[path] <- result
+            result
+
+    let DetectFromPath(path : string) : FrameworkIdentifier option =         
+        let path = path.Replace("\\", "/").ToLower()
+        let fi = new FileInfo(path)
+        
+        if path.Contains("lib/" + fi.Name.ToLower()) then Some(DotNetFramework(FrameworkVersion.V1))
+        else 
+            let startPos = path.LastIndexOf("lib/")
+            let endPos = path.LastIndexOf(fi.Name.ToLower())
+            if startPos < 0 || endPos < 0 then None
+            else 
+                path.Substring(startPos + 4, endPos - startPos - 5) 
+                |> Extract
+
 
 type TargetProfile =
     | SinglePlatform of FrameworkIdentifier

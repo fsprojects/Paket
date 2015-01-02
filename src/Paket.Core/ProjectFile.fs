@@ -320,7 +320,7 @@ type ProjectFile =
                 outputType.InnerText  }
         |> Seq.map (fun s -> // TODO make this a separate function
                         s.Replace("v","net")
-                        |> FrameworkIdentifier.Extract)                        
+                        |> FrameworkDetection.Extract)                        
         |> Seq.map (fun o -> o.Value)
         |> Seq.head
     

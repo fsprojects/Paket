@@ -6,9 +6,9 @@ open FsUnit
 
 [<Test>]
 let ``should understand basic framework versions net20, net40, net45 ...``() = 
-    FrameworkIdentifier.Extract("net20").Value |> shouldEqual (DotNetFramework(FrameworkVersion.V2))
-    FrameworkIdentifier.Extract("net40").Value |> shouldEqual (DotNetFramework(FrameworkVersion.V4_Client))
-    FrameworkIdentifier.Extract("net45").Value |> shouldEqual (DotNetFramework(FrameworkVersion.V4_5))
+    FrameworkDetection.Extract("net20").Value |> shouldEqual (DotNetFramework(FrameworkVersion.V2))
+    FrameworkDetection.Extract("net40").Value |> shouldEqual (DotNetFramework(FrameworkVersion.V4_Client))
+    FrameworkDetection.Extract("net45").Value |> shouldEqual (DotNetFramework(FrameworkVersion.V4_5))
 
 [<Test>]
 let ``should serialize basic framework versions net20, net40, net45 ...``() = 
