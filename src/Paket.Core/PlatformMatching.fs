@@ -11,14 +11,14 @@ let inline split (path : string) =
     
 let inline extractPlatforms path = split path |> Array.choose FrameworkDetection.Extract
 
-let private penalties = Collections.Generic.Dictionary<_,_>()
+let private platformPenalties = Collections.Generic.Dictionary<_,_>()
 
 let rec getPlatformPenalty (targetPlatform:FrameworkIdentifier) (packagePlatform:FrameworkIdentifier) =
     if packagePlatform = targetPlatform then
         0
     else
         let key = targetPlatform,packagePlatform
-        match penalties.TryGetValue key with
+        match platformPenalties.TryGetValue key with
         | true, penalty -> penalty
         | _ ->
             let penalty =
@@ -27,18 +27,27 @@ let rec getPlatformPenalty (targetPlatform:FrameworkIdentifier) (packagePlatform
                 |> List.append [maxPenalty]
                 |> List.min
                 |> fun p -> p + 1
-            penalties.[key] <- penalty
+            platformPenalties.[key] <- penalty
             penalty
+
+let private pathPenalties = Collections.Generic.Dictionary<_,_>()
 
 let getPathPenalty (path:string) (platform:FrameworkIdentifier) =
     if String.IsNullOrWhiteSpace path then
         // an empty path is considered compatible with every target, but with a high penalty so explicit paths are preferred
         10
     else
-        extractPlatforms path
-        |> Array.map (getPlatformPenalty platform)
-        |> Array.append [| maxPenalty |]
-        |> Array.min
+        let key = path,platform
+        match pathPenalties.TryGetValue key with
+        | true,penalty -> penalty
+        | _ ->
+            let penalty =
+                extractPlatforms path
+                |> Array.map (getPlatformPenalty platform)
+                |> Array.append [| maxPenalty |]
+                |> Array.min
+            pathPenalties.[key] <- penalty
+            penalty
 
 // Checks wether a list of target platforms is supported by this path and with which penalty. 
 let getPenalty (requiredPlatforms:FrameworkIdentifier list) (path:string) =
