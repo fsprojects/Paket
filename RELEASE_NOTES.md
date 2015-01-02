@@ -1,4 +1,4 @@
-#### 0.21.1 - 02.01.2015
+#### 0.21.2 - 02.01.2015
 * Don't catch NullReferenceExceptions for now - https://github.com/fsprojects/Paket/issues/505
 
 #### 0.21.0 - 02.01.2015
