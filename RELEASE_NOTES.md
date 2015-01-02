@@ -1,67 +1,27 @@
-#### 0.20.22 - 02.01.2015
-* Paket.locked file has 2 minute timeout
+#### 0.21.0 - 02.01.2015
 * New `--log-file` parameter allows to trace into logfile - https://github.com/fsprojects/Paket/pull/502
-
-#### 0.20.21 - 02.01.2015
-* PERFORMANCE: Relax prerelease requirements for pinned versions - https://github.com/fsprojects/Paket/issues/487
-
-#### 0.20.20 - 02.01.2015
-* PERFORMANCE: Don't enumerate all files, since we only need lib files - https://github.com/fsprojects/Paket/issues/487
-
-#### 0.20.19 - 02.01.2015
-* PERFORMANCE: Pin sourcefile dependencies - https://github.com/fsprojects/Paket/issues/487
-
-#### 0.20.18 - 02.01.2015
-* PERFORMANCE: Cache path penalty calculation - https://github.com/fsprojects/Paket/issues/487
-
-#### 0.20.17 - 02.01.2015
-* PERFORMANCE: Cache path extraction - https://github.com/fsprojects/Paket/issues/487
-
-#### 0.20.16 - 02.01.2015
 * Trace stacktrace on all NullReferenceExceptions - https://github.com/fsprojects/Paket/issues/500
-
-#### 0.20.15 - 02.01.2015
-* PERFORMANCE: Cache platform penalty calculation - https://github.com/fsprojects/Paket/issues/487
-
-#### 0.20.14 - 02.01.2015
+* Paket.locked file has 2 minute timeout
 * BUGFIX: Detect the version of a GitHub gist correctly - https://github.com/fsprojects/Paket/issues/499
-
-#### 0.20.13 - 02.01.2015
-* Do not fail on BadCrcException during unzip and only show a warning - https://github.com/fsprojects/Paket/issues/484
-
-#### 0.20.12 - 02.01.2015
 * BUGFIX: Dependencies file saves http and gist links correctly - https://github.com/fsprojects/Paket/issues/498
-
-#### 0.20.11 - 01.01.2015
-* PERFORMANCE: Use StringBuilder for path replacement - https://github.com/fsprojects/Paket/issues/487
-
-#### 0.20.10 - 01.01.2015
-* PERFORMANCE: Cache feed errors - https://github.com/fsprojects/Paket/issues/487
-
-#### 0.20.9 - 01.01.2015
-* PERFORMANCE: Put feed url into cache filename - https://github.com/fsprojects/Paket/issues/487
-
-#### 0.20.8 - 01.01.2015
-* Disable NuGet v3 for now - seems to be unreliable.
-
-#### 0.20.7 - 01.01.2015
 * BUGFIX: Don't relax "OverrideAll" conditions during `paket install`
-
-#### 0.20.6 - 31.12.2014
 * BUGFIX: fix priority of parsing atom nuget feed for package Id - https://github.com/fsprojects/Paket/issues/494
 * BUGFIX: fix JSON deserializer and reactivate cache - https://github.com/fsprojects/Paket/pull/495
-
-#### 0.20.5 - 31.12.2014
 * BUGFIX: Make the file search for app.config and web.config case insensitive - https://github.com/fsprojects/Paket/issues/493
-
-#### 0.20.4 - 31.12.2014
-* PERFORMANCE: Don't parse project files twice - https://github.com/fsprojects/Paket/issues/487
-
-#### 0.20.3 - 31.12.2014
 * BUGFIX: Don't add duplicate lines in `packet.dependencies` - https://github.com/fsprojects/Paket/issues/492
-
-#### 0.20.2 - 31.12.2014
 * BUGFIX: Keep framework restrictions in `paket install`- https://github.com/fsprojects/Paket/issues/486
+* WORKAROUND: Do not fail on BadCrcException during unzip and only show a warning - https://github.com/fsprojects/Paket/issues/484
+* WORKAROUND: Disable NuGet v3 feed for now - seems to be unreliable.
+* PERFORMANCE: Don't parse project files twice - https://github.com/fsprojects/Paket/issues/487
+* PERFORMANCE: Cache platform penalty calculation - https://github.com/fsprojects/Paket/issues/487
+* PERFORMANCE: Use StringBuilder for path replacement - https://github.com/fsprojects/Paket/issues/487
+* PERFORMANCE: Cache feed errors - https://github.com/fsprojects/Paket/issues/487
+* PERFORMANCE: Put feed url into cache filename - https://github.com/fsprojects/Paket/issues/487
+* PERFORMANCE: Relax prerelease requirements for pinned versions - https://github.com/fsprojects/Paket/issues/487
+* PERFORMANCE: Don't enumerate all files, since we only need lib files - https://github.com/fsprojects/Paket/issues/487
+* PERFORMANCE: Pin sourcefile dependencies - https://github.com/fsprojects/Paket/issues/487
+* PERFORMANCE: Cache path penalty calculation - https://github.com/fsprojects/Paket/issues/487
+* PERFORMANCE: Cache path extraction - https://github.com/fsprojects/Paket/issues/487
 
 #### 0.20.1 - 30.12.2014
 * COSMETICS: Trim end of line in lockfile.
