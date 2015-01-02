@@ -129,7 +129,7 @@ type FrameworkIdentifier =
 
 
 module FrameworkDetection =
-    let private cache = System.Collections.Generic.Dictionary<_,_>()
+    let private cache = System.Collections.Concurrent.ConcurrentDictionary<_,_>()
 
     let Extract(path:string) =
         match cache.TryGetValue path with

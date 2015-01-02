@@ -11,7 +11,7 @@ let inline split (path : string) =
     
 let inline extractPlatforms path = split path |> Array.choose FrameworkDetection.Extract
 
-let private platformPenalties = Collections.Generic.Dictionary<_,_>()
+let private platformPenalties = System.Collections.Concurrent.ConcurrentDictionary<_,_>()
 
 let rec getPlatformPenalty (targetPlatform:FrameworkIdentifier) (packagePlatform:FrameworkIdentifier) =
     if packagePlatform = targetPlatform then
@@ -30,7 +30,7 @@ let rec getPlatformPenalty (targetPlatform:FrameworkIdentifier) (packagePlatform
             platformPenalties.[key] <- penalty
             penalty
 
-let private pathPenalties = Collections.Generic.Dictionary<_,_>()
+let private pathPenalties = System.Collections.Concurrent.ConcurrentDictionary<_,_>()
 
 let getPathPenalty (path:string) (platform:FrameworkIdentifier) =
     if String.IsNullOrWhiteSpace path then

@@ -21,7 +21,7 @@ let getSearchAutocompleteService (data : string) =
     |> Array.tryFind (fun x -> x.Type <> null && x.Type.ToLower() = "searchautocompleteservice")
     |> Option.map (fun x -> x.ID)
 
-let private searchDict = new Dictionary<_,_>()
+let private searchDict = new System.Collections.Concurrent.ConcurrentDictionary<_,_>()
 
 let calculateNuGet3Path nugetUrl = 
     match nugetUrl with
@@ -45,7 +45,7 @@ let getSeachAPI(auth,nugetUrl) =
                 | None -> None
                 | Some data -> getSearchAutocompleteService data
 
-        searchDict.Add(nugetUrl,result)
+        searchDict.[nugetUrl] <- result
         result
 
 
