@@ -7,6 +7,7 @@ open System.IO
 open System.Net
 open System.Xml
 open System.Text
+open Paket.Logging
 
 type Auth = 
     { Username : string
@@ -188,25 +189,25 @@ let RunInLockedAccessMode(rootFolder,action) =
     let fileName = Path.Combine(packagesFolder,Constants.AccessLockFileName)
 
     // Checks the packagesFolder for a paket.locked file or waits until it get access to it.
-    let rec acquireLock trials =
+    let rec acquireLock (startTime:DateTime) (timeOut:TimeSpan) =
         try
-            let rec waitForUnlocked () =
+            let rec waitForUnlocked counter =
                 if File.Exists fileName then
                     let content = File.ReadAllText fileName
                     if content <> p.Id.ToString() then
                         let processes = Process.GetProcessesByName(p.ProcessName)
                         if processes |> Array.exists (fun p -> content = p.Id.ToString()) then
+                            if startTime + timeOut > DateTime.Now then
+                                failwith "timeout"
+                            if counter % 10 = 0 then
+                                traceWarnfn "packages folder is locked by paket.exe (PID = %s). Waiting..." content
                             Thread.Sleep(100)
-                            waitForUnlocked()
+                            waitForUnlocked(counter + 1)
 
-            waitForUnlocked()
+            waitForUnlocked 0
             File.WriteAllText(fileName,p.Id.ToString())
         with
-        | _ -> 
-            if trials > 0 then
-                acquireLock (trials - 1)
-            else
-                failwithf "Could not acquire %s file in %s." Constants.AccessLockFileName packagesFolder
+        | _ -> failwithf "Could not acquire %s file in %s." Constants.AccessLockFileName packagesFolder
     
     let releaseLock() =
          if File.Exists fileName then
@@ -215,7 +216,7 @@ let RunInLockedAccessMode(rootFolder,action) =
                File.Delete fileName
 
     try
-        acquireLock 5
+        acquireLock DateTime.Now (TimeSpan.FromMinutes 2.)
 
         let result = action()
         
