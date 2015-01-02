@@ -1,3 +1,6 @@
+#### 0.20.16 - 02.01.2015
+* Trace stacktrace on all NullReferenceExceptions - https://github.com/fsprojects/Paket/issues/500
+
 #### 0.20.15 - 02.01.2015
 * PERFORMANCE: Cache platform penalty calculation - https://github.com/fsprojects/Paket/issues/487
 

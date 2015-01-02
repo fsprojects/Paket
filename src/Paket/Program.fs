@@ -204,5 +204,5 @@ with
     Environment.ExitCode <- 1
     traceErrorfn "Paket failed with:%s   %s" Environment.NewLine exn.Message
 
-    if verbose then
+    if verbose || (exn :? System.NullReferenceException) then
         traceErrorfn "StackTrace:%s  %s" Environment.NewLine exn.StackTrace
