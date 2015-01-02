@@ -34,12 +34,12 @@ let ``should create nested condition for multiple .NET Frameworks``() =
 
 [<Test>]
 let ``should minimize condition if we have all .NET Frameworks``() = 
-    getCondition TargetProfile.KnownDotNetFrameworkProfiles
+    getCondition KnownTargetProfiles.DotNetFrameworkProfiles
     |> shouldEqual "$(TargetFrameworkIdentifier) == '.NETFramework'"
 
 [<Test>]
 let ``should minimize condition if we have all WindowsProfiles``() = 
-    getCondition TargetProfile.KnownWindowsProfiles
+    getCondition KnownTargetProfiles.WindowsProfiles
     |> shouldEqual "$(TargetFrameworkIdentifier) == '.NETCore'"
 
 [<Test>]
@@ -52,6 +52,6 @@ let ``should create nested condition for .NET Framework and Silverlight``() =
 
 [<Test>]
 let ``should create nested condition for full .NET Framework and Silverlight``() = 
-    SinglePlatform(Silverlight("v3.0")) :: TargetProfile.KnownDotNetFrameworkProfiles
+    SinglePlatform(Silverlight("v3.0")) :: KnownTargetProfiles.DotNetFrameworkProfiles
     |> getCondition 
     |> shouldEqual "($(TargetFrameworkIdentifier) == '.NETFramework') Or ($(TargetFrameworkIdentifier) == 'Silverlight' And $(TargetFrameworkVersion) == 'v3.0')"

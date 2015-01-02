@@ -137,7 +137,7 @@ let ``should add portable lib``() =
     let model = 
         emptymodel.AddReferences([ @"..\Jint\lib\portable-net40+sl50+win+wp80\Jint.dll" ])
 
-    model.GetFiles(TargetProfile.FindPortableProfile "Profile147") |> shouldContain @"..\Jint\lib\portable-net40+sl50+win+wp80\Jint.dll" 
+    model.GetFiles(KnownTargetProfiles.FindPortableProfile "Profile147") |> shouldContain @"..\Jint\lib\portable-net40+sl50+win+wp80\Jint.dll" 
 
 [<Test>]
 let ``should handle lib install of Jint for NET >= 40 and SL >= 50``() = 
@@ -149,7 +149,7 @@ let ``should handle lib install of Jint for NET >= 40 and SL >= 50``() =
     model.GetFiles(SinglePlatform (Silverlight "v5.0")) |> shouldContain @"..\Jint\lib\portable-net40+sl50+win+wp80\Jint.dll"
     
     model.GetFiles(SinglePlatform (DotNetFramework FrameworkVersion.V3_5)) |> shouldNotContain @"..\Jint\lib\portable-net40+sl50+win+wp80\Jint.dll" 
-    model.GetFiles(TargetProfile.FindPortableProfile "Profile147") |> shouldContain @"..\Jint\lib\portable-net40+sl50+win+wp80\Jint.dll" 
+    model.GetFiles(KnownTargetProfiles.FindPortableProfile "Profile147") |> shouldContain @"..\Jint\lib\portable-net40+sl50+win+wp80\Jint.dll" 
 
 [<Test>]
 let ``should handle lib install of Microsoft.BCL for NET >= 40``() = 
@@ -203,7 +203,7 @@ let ``should not use portable-net40 if we have net40``() =
     model.GetFiles(SinglePlatform (DotNetFramework FrameworkVersion.V4_Client)) |> shouldContain @"..\Microsoft.Bcl\lib\net40\System.Runtime.dll" 
     model.GetFiles(SinglePlatform (DotNetFramework FrameworkVersion.V4_Client)) |> shouldContain @"..\Microsoft.Bcl\lib\net40\System.Threading.Tasks.dll" 
 
-    let profile41 = TargetProfile.FindPortableProfile "Profile41"
+    let profile41 = KnownTargetProfiles.FindPortableProfile "Profile41"
     model.GetFiles(profile41) |> shouldContain @"..\Microsoft.Bcl\lib\portable-net40+sl4+win8\System.IO.dll" 
     model.GetFiles(profile41) |> shouldContain @"..\Microsoft.Bcl\lib\portable-net40+sl4+win8\System.Runtime.dll" 
     model.GetFiles(profile41) |> shouldContain @"..\Microsoft.Bcl\lib\portable-net40+sl4+win8\System.Threading.Tasks.dll" 
@@ -275,12 +275,12 @@ let ``should handle lib install of Microsoft.Net.Http 2.2.28``() =
     model.GetFiles(SinglePlatform (DotNetFramework FrameworkVersion.V4_5)) |> shouldNotContain @"..\Microsoft.Net.Http\lib\net40\System.Net.Http.dll" 
     model.GetFiles(SinglePlatform (DotNetFramework FrameworkVersion.V4_5)) |> shouldContain @"..\Microsoft.Net.Http\lib\net45\System.Net.Http.Primitives.dll"  
     
-    let profile88 = TargetProfile.FindPortableProfile "Profile88"
+    let profile88 = KnownTargetProfiles.FindPortableProfile "Profile88"
     model.GetFiles(profile88) |> shouldContain @"..\Microsoft.Net.Http\lib\portable-net40+sl4+win8+wp71+wpa81\System.Net.Http.dll"
     model.GetFiles(profile88) |> shouldContain @"..\Microsoft.Net.Http\lib\portable-net40+sl4+win8+wp71+wpa81\System.Net.Http.Extensions.dll" 
     model.GetFiles(profile88) |> shouldContain @"..\Microsoft.Net.Http\lib\portable-net40+sl4+win8+wp71+wpa81\System.Net.Http.Primitives.dll" 
 
-    let profile7 = TargetProfile.FindPortableProfile "Profile7"
+    let profile7 = KnownTargetProfiles.FindPortableProfile "Profile7"
     model.GetFiles(profile7) |> shouldContain @"..\Microsoft.Net.Http\lib\portable-net45+win8\System.Net.Http.Extensions.dll" 
     model.GetFiles(profile7) |> shouldContain @"..\Microsoft.Net.Http\lib\portable-net45+win8\System.Net.Http.Primitives.dll" 
 
@@ -338,10 +338,10 @@ let ``should handle lib install of MicrosoftBcl``() =
     model.GetFiles(SinglePlatform (Windows "v4.5")) |> shouldBeEmpty
     model.GetFiles(SinglePlatform (WindowsPhoneSilverlight "v8.0")) |> shouldBeEmpty
     model.GetFiles(SinglePlatform (WindowsPhoneApp "v8.1")) |> shouldBeEmpty
-    model.GetFiles(TargetProfile.FindPortableProfile "Profile44") |> shouldBeEmpty
-    model.GetFiles(TargetProfile.FindPortableProfile "Profile151") |> shouldBeEmpty
+    model.GetFiles(KnownTargetProfiles.FindPortableProfile "Profile44") |> shouldBeEmpty
+    model.GetFiles(KnownTargetProfiles.FindPortableProfile "Profile151") |> shouldBeEmpty
     
-    let profile41 = TargetProfile.FindPortableProfile "Profile41"
+    let profile41 = KnownTargetProfiles.FindPortableProfile "Profile41"
     model.GetFiles(profile41) |> shouldContain @"..\Microsoft.Bcl\lib\portable-net40+sl4+win8\System.IO.dll"
     model.GetFiles(profile41) |> shouldContain @"..\Microsoft.Bcl\lib\portable-net40+sl4+win8\System.Runtime.dll"
     model.GetFiles(profile41) |> shouldContain @"..\Microsoft.Bcl\lib\portable-net40+sl4+win8\System.Threading.Tasks.dll" 

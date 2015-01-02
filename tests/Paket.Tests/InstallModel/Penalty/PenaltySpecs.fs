@@ -93,7 +93,7 @@ module ``Given a list of paths`` =
         [<Test>]
         let ``it should contain profile 32``() = 
             supportedTargetProfiles.["portable-win81+wpa81"] 
-            |> shouldContain (TargetProfile.FindPortableProfile "Profile32")
+            |> shouldContain (KnownTargetProfiles.FindPortableProfile "Profile32")
         
         [<Test>]
         let ``it should not contain profile 41``() = 
@@ -102,4 +102,4 @@ module ``Given a list of paths`` =
                     for item in supportedTargetProfiles do
                         yield! item.Value
                 }
-            flattend |> shouldNotContain (TargetProfile.FindPortableProfile "Profile41")
+            flattend |> shouldNotContain (KnownTargetProfiles.FindPortableProfile "Profile41")

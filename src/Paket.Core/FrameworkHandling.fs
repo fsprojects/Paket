@@ -188,7 +188,8 @@ type TargetProfile =
     | SinglePlatform of FrameworkIdentifier
     | PortableProfile of string * FrameworkIdentifier list
 
-    static member KnownDotNetFrameworkProfiles =
+module KnownTargetProfiles =
+    let DotNetFrameworkProfiles =
        [SinglePlatform(DotNetFramework FrameworkVersion.V1)
         SinglePlatform(DotNetFramework FrameworkVersion.V1_1)
         SinglePlatform(DotNetFramework FrameworkVersion.V2)
@@ -201,26 +202,26 @@ type TargetProfile =
         SinglePlatform(DotNetFramework FrameworkVersion.V4_5_2)
         SinglePlatform(DotNetFramework FrameworkVersion.V4_5_3)]
 
-    static member KnownWindowsProfiles =
+    let WindowsProfiles =
        [SinglePlatform(Windows "v4.5")
         SinglePlatform(Windows "v4.5.1")]
 
-    static member KnownSilverlightProfiles =
+    let SilverlightProfiles =
        [SinglePlatform(Silverlight "v3.0")
         SinglePlatform(Silverlight "v4.0")
         SinglePlatform(Silverlight "v5.0")]
 
-    static member KnownWindowsPhoneSilverlightProfiles =
+    let WindowsPhoneSilverlightProfiles =
        [SinglePlatform(WindowsPhoneSilverlight "v7.0")
         SinglePlatform(WindowsPhoneSilverlight "v7.1")
         SinglePlatform(WindowsPhoneSilverlight "v8.0")
         SinglePlatform(WindowsPhoneSilverlight "v8.1")]
 
-    static member KnownTargetProfiles =
-       TargetProfile.KnownDotNetFrameworkProfiles @ 
-       TargetProfile.KnownWindowsProfiles @ 
-       TargetProfile.KnownSilverlightProfiles @
-       TargetProfile.KnownWindowsPhoneSilverlightProfiles @
+    let AllProfiles =
+       DotNetFrameworkProfiles @ 
+       WindowsProfiles @ 
+       SilverlightProfiles @
+       WindowsPhoneSilverlightProfiles @
        [SinglePlatform(MonoAndroid)
         SinglePlatform(MonoTouch)        
         SinglePlatform(WindowsPhoneApp "v8.1")
@@ -269,9 +270,8 @@ type TargetProfile =
         PortableProfile("Profile336", [ DotNetFramework FrameworkVersion.V4; Silverlight "v5.0"; Windows "v4.5"; WindowsPhoneApp "v8.1"; WindowsPhoneSilverlight "v8.0" ])
         PortableProfile("Profile344", [ DotNetFramework FrameworkVersion.V4_5; Silverlight "v5.0"; Windows "v4.5"; WindowsPhoneApp "v8.1"; WindowsPhoneSilverlight "v8.0" ])]
 
-    static member FindPortableProfile name =
-        TargetProfile.KnownTargetProfiles
-        |> List.pick (fun target -> match target with
-                                    | PortableProfile(n, _) as p -> if n = name then Some(p) else None
-                                    | _ -> None)
-
+    let FindPortableProfile name =
+        AllProfiles
+        |> List.pick (function
+                      | PortableProfile(n, _) as p when n = name -> Some p
+                      | _ -> None)

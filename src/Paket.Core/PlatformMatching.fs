@@ -85,7 +85,7 @@ let findBestMatch (paths : string list) (targetProfile : TargetProfile) =
 // For a given list of paths and target profiles return tuples of paths with their supported target profiles.
 // Every target profile will only be listed for own path - the one that best supports it. 
 let getSupportedTargetProfiles (paths : string list) =     
-    TargetProfile.KnownTargetProfiles
+    KnownTargetProfiles.AllProfiles
     |> List.map (fun target -> findBestMatch paths target, target)
     |> List.collect (fun (path, target) -> 
            match path with
@@ -112,7 +112,7 @@ let getTargetCondition (target:TargetProfile) =
 let getCondition (targets : TargetProfile list) =
     let inline CheckIfFullyInGroup typeName matchF (processed,targets) =
         let fullyContained = 
-            TargetProfile.KnownTargetProfiles 
+            KnownTargetProfiles.AllProfiles 
             |> List.filter matchF
             |> List.forall (fun p -> targets |> Seq.exists ((=) p))
 
