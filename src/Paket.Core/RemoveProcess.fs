@@ -43,17 +43,9 @@ let Remove(dependenciesFileName, package:PackageName, force, hard, interactive, 
             exisitingDependenciesFile
                 .Remove(package)
 
-        let changed = exisitingDependenciesFile <> dependenciesFile
-
-        if changed then
-            dependenciesFile.Save()
+        dependenciesFile.Save()
         
-        if changed then
-            let lockFile = UpdateProcess.SelectiveUpdate(dependenciesFile,force)
-            lockFile.Save()
-            lockFile
-        else
-            oldLockFile
+        UpdateProcess.SelectiveUpdate(dependenciesFile,force)
     
     if installAfter then
         let sources = DependenciesFile.ReadFromFile(dependenciesFileName).GetAllPackageSources()
