@@ -1,4 +1,10 @@
-#### 0.21.1 - 02.01.2015
+#### 0.21.5 - 03.01.2015
+* Always trim line end in lockfile
+
+#### 0.21.4 - 02.01.2015
+* Improved binding redirects detection - https://github.com/fsprojects/Paket/pull/507
+
+#### 0.21.2 - 02.01.2015
 * Don't catch NullReferenceExceptions for now - https://github.com/fsprojects/Paket/issues/505
 
 #### 0.21.0 - 02.01.2015
