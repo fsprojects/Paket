@@ -3,10 +3,10 @@ NUGET
   specs:
     DotNetZip (1.9.3)
     FAKE (3.12.2)
-    FSharp.Compiler.Service (0.0.67)
+    FSharp.Compiler.Service (0.0.81)
     FSharp.Core (3.1.2.1)
-    FSharp.Formatting (2.4.37)
-      FSharp.Compiler.Service (0.0.67)
+    FSharp.Formatting (2.4.38)
+      FSharp.Compiler.Service (>= 0.0.81)
       Microsoft.AspNet.Razor (2.0.30506)
       RazorEngine (3.3.0)
     Microsoft.AspNet.Razor (2.0.30506)
@@ -35,4 +35,4 @@ GITHUB
       Octokit
   remote: nessos/Streams
   specs:
-    src/Streams.Core/Streams.fs (57648b98a016131fd0b9f3de0d985182e85af51e)
+    src/Streams.Core/Streams.fs (6ed7b7cf09ee5ca7887d2bf3a5296f3ab36f07b9)
