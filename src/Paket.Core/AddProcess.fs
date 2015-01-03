@@ -16,7 +16,6 @@ let Add(dependenciesFileName, package, version, force, hard, interactive, instal
     let lockFile = UpdateProcess.SelectiveUpdate(dependenciesFile,force)
     
     if interactive then
-        let (PackageName packageName) = package
         for project in ProjectFile.FindAllProjects(Path.GetDirectoryName lockFile.FileName) do
             if Utils.askYesNo(sprintf "  Install to %s?" project.Name) then
                 ProjectFile.FindOrCreateReferencesFile(FileInfo(project.FileName))
