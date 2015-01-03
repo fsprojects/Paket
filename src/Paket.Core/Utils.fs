@@ -189,7 +189,7 @@ let RunInLockedAccessMode(rootFolder,action) =
     let fileName = Path.Combine(packagesFolder,Constants.AccessLockFileName)
 
     // Checks the packagesFolder for a paket.locked file or waits until it get access to it.
-    let rec acquireLock (startTime:DateTime) (timeOut:TimeSpan) =
+    let rec acquireLock (startTime:DateTime) (timeOut:TimeSpan) trials =
         try
             let rec waitForUnlocked counter =
                 if File.Exists fileName then
@@ -207,7 +207,12 @@ let RunInLockedAccessMode(rootFolder,action) =
             waitForUnlocked 0
             File.WriteAllText(fileName,p.Id.ToString())
         with
-        | _ -> failwithf "Could not acquire %s file in %s." Constants.AccessLockFileName packagesFolder
+        | exn ->
+            if trials > 0 && (startTime + timeOut) > DateTime.Now then 
+                acquireLock startTime timeOut (trials - 1)
+            else
+                failwithf "Could not acquire %s file in %s.%s%s" 
+                    Constants.AccessLockFileName packagesFolder Environment.NewLine exn.Message
     
     let releaseLock() =
          if File.Exists fileName then
@@ -216,7 +221,7 @@ let RunInLockedAccessMode(rootFolder,action) =
                File.Delete fileName
 
     try
-        acquireLock DateTime.Now (TimeSpan.FromMinutes 2.)
+        acquireLock DateTime.Now (TimeSpan.FromMinutes 2.) 5
 
         let result = action()
         

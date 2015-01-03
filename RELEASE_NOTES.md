@@ -1,3 +1,6 @@
+#### 0.21.4 - 02.01.2015
+* Improved binding redirects detection - https://github.com/fsprojects/Paket/pull/507
+
 #### 0.21.2 - 02.01.2015
 * Don't catch NullReferenceExceptions for now - https://github.com/fsprojects/Paket/issues/505
 
