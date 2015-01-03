@@ -92,6 +92,10 @@ type Dependencies(dependenciesFileName: string) =
         Utils.RunInLockedAccessMode(
             this.RootPath,
             fun () -> AddProcess.Add(dependenciesFileName, PackageName package, version, force, hard, interactive, installAfter))
+
+    /// Adds the given remote dependency (gist, github or http) to the dependencies file.
+    member this.AddRemote() =
+        ()
         
     /// Installs all dependencies.
     member this.Install(force: bool,hard: bool,withBindingRedirects:bool): unit = 

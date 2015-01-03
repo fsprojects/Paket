@@ -49,6 +49,7 @@ type CLIArguments =
     | [<AltCommandLine("-f")>] Force
     | Hard
     | [<CustomCommandLine("nuget")>] Nuget of string
+    | [<CustomCommandLine("url")>] Url of string * string
     | [<CustomCommandLine("version")>] Version of string
     | [<CustomCommandLine("add-credentials")>] AddCredentials of string
     | [<Rest>]References_Files of string
@@ -84,6 +85,7 @@ with
             | Include_Prereleases -> "includes prereleases when searching for outdated packages."
             | No_Auto_Restore -> "omits init-auto-restore after convert-from-nuget."
             | Nuget _ -> "allows to specify a nuget package."
+            | Url (_, _) -> "allows to specify an HTTP resource."
             | Version _ -> "allows to specify a package version."
             | Creds_Migration _ -> "allows to specify credentials migration mode for convert-from-nuget."
             | Log_File _ -> "allows to specify a log file."
@@ -156,14 +158,18 @@ try
         else
             match command with
             | Command.Init -> Dependencies.Create() |> ignore
-            | Command.Add -> 
-                let packageName = results.GetResult <@ CLIArguments.Nuget @>
-                let version = 
-                    match results.TryGetResult <@ CLIArguments.Version @> with
-                    | Some x -> x
-                    | _ -> ""
+            | Command.Add ->
+                match results.TryGetResult <@ CLIArguments.Nuget @> with
+                | Some packageName ->
+                    let version = match results.TryGetResult <@ CLIArguments.Version @> with
+                                  | Some x -> x
+                                  | _ -> ""
 
-                Dependencies.Locate().Add(packageName, version, force, hard, interactive, noInstall |> not)
+                    Dependencies.Locate().Add(packageName, version, force, hard, interactive, noInstall |> not)
+                | None -> match results.TryGetResult <@ CLIArguments.Url @> with
+                          | Some (url, remoteFileName) -> ()
+                          | None -> () // TODO github, gist
+
             | Command.Remove -> 
                 let packageName = results.GetResult <@ CLIArguments.Nuget @>            
                 Dependencies.Locate().Remove(packageName,force,hard,interactive,noInstall |> not)
