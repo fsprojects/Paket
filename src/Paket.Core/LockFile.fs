@@ -73,7 +73,7 @@ module LockFileSerializer =
                           | [] -> yield sprintf "      %s %s" name versionStr
                           | _  -> yield sprintf "      %s %s - %s" name versionStr (String.Join(", ",restrictions))]
     
-        String.Join(Environment.NewLine, all)
+        String.Join(Environment.NewLine, all |> List.map (fun s -> s.TrimEnd()))
 
     let serializeSourceFiles (files:ResolvedSourceFile list) =    
         let all =

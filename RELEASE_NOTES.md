@@ -1,3 +1,6 @@
+#### 0.21.5 - 03.01.2015
+* Always trim line end in lockfile
+
 #### 0.21.4 - 02.01.2015
 * Improved binding redirects detection - https://github.com/fsprojects/Paket/pull/507
 
