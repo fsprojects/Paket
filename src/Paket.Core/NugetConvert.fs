@@ -31,7 +31,7 @@ type CredsMigrationMode =
         | "encrypt" -> Rop.succeed Encrypt
         | "plaintext" -> Rop.succeed  Plaintext
         | "selective" -> Rop.succeed Selective
-        | _ ->  UnknownCredentialsMigrationMode s |> Rop.failure
+        | _ ->  UnknownCredentialsMigrationMode s |> Rop.fail
 
     static member toAuthentication mode sourceName auth =
         match mode with
@@ -91,7 +91,7 @@ type NugetConfig =
         with _ -> 
             file
             |> NugetConfigFileParseError
-            |> Rop.failure
+            |> Rop.fail
 
     static member overrideConfig nugetConfig (configNode : XmlNode) =
         let clearSources = configNode.SelectSingleNode("//packageSources/clear") <> null
@@ -193,7 +193,7 @@ let readNugetPackages(convertResult) =
               Packages = [for node in doc.SelectNodes("//package") ->
                                 node.Attributes.["id"].Value, node.Attributes.["version"].Value |> SemVer.Parse ]}
             |> Rop.succeed 
-        with _ -> Rop.failure (NugetPackagesConfigParseError file)
+        with _ -> Rop.fail (NugetPackagesConfigParseError file)
 
     FindAllFiles(Path.GetDirectoryName convertResult.DependenciesFile.FileName, "packages.config")
     |> Array.map readSingle
@@ -212,14 +212,14 @@ let ensureNotAlreadyConverted(convertResult) =
     else 
         let depFile = 
             if File.Exists(convertResult.DependenciesFile.FileName) then 
-                Rop.failure (DependenciesFileAlreadyExists(FileInfo(convertResult.DependenciesFile.FileName)))
+                Rop.fail (DependenciesFileAlreadyExists(FileInfo(convertResult.DependenciesFile.FileName)))
             else Rop.succeed()
 
         let refFiles =
             convertResult.NugetPackagesFiles
             |> List.map (fun fi -> Path.Combine(fi.File.Directory.Name, Constants.ReferencesFile))
             |> List.map (fun r -> 
-                   if File.Exists(r) then Rop.failure (ReferencesFileAlreadyExists <| FileInfo(r))
+                   if File.Exists(r) then Rop.fail (ReferencesFileAlreadyExists <| FileInfo(r))
                    else Rop.succeed ())
             |> Rop.collect
 
@@ -266,7 +266,7 @@ let createDependenciesFile(convertResult) =
 
     let read() =
         try DependenciesFile.ReadFromFile dependenciesFileName |> Rop.succeed
-        with _ -> DependenciesFileParseError dependenciesFileName |> Rop.failure
+        with _ -> DependenciesFileParseError dependenciesFileName |> Rop.fail
 
     let create() =
         let mode = convertResult.CredsMigrationMode
@@ -275,7 +275,7 @@ let createDependenciesFile(convertResult) =
             |> List.map (fun (n, auth) -> n, auth |> Option.map (CredsMigrationMode.toAuthentication mode n))
             |> List.map (fun source -> 
                             try source |> PackageSource.Parse |> Rop.succeed
-                            with _ -> source |> fst |> PackageSourceParseError |> Rop.failure)
+                            with _ -> source |> fst |> PackageSourceParseError |> Rop.fail)
             |> Rop.collect
 
         sources

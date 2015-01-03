@@ -120,6 +120,12 @@ type Dependencies(dependenciesFileName: string) =
         | Rop.Failure(msgs) ->
             msgs |> List.map stringErr |> List.iter Logging.traceError
     
+
+    static member SimplifyR(interactive : bool) =
+        Paket.Environment.locateInDir(DirectoryInfo(Environment.CurrentDirectory))
+        >>= Simplifier.ensureNotInStrictMode
+        >>= Simplifier.s interactive
+
     /// Get path to dependencies file
     member this.DependenciesFile with get() = dependenciesFileName
 

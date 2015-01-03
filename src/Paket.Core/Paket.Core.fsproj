@@ -104,12 +104,12 @@
     <Compile Include="UpdateProcess.fs" />
     <Compile Include="RemoveProcess.fs" />
     <Compile Include="AddProcess.fs" />
+    <Compile Include="Environment.fs" />
     <Compile Include="Simplifier.fs" />
     <Compile Include="VSIntegration.fs" />
     <Compile Include="NugetConvert.fs" />
     <Compile Include="FindOutdated.fs" />
     <Compile Include="FindReferences.fs" />
-    <Compile Include="Environment.fs" />
     <Compile Include="PublicAPI.fs" />
     <None Include="paket.references" />
   </ItemGroup>

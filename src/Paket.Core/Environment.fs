@@ -3,6 +3,7 @@
 open System.IO
 
 open Paket.Rop
+open Paket.Domain
 
 type Environment = {
     RootDirectory : DirectoryInfo
@@ -19,6 +20,10 @@ type EnvironmentMessage =
     | LockFileParseError of FileInfo
     | ReferencesFileParseError of FileInfo
 
+    | StrictModeDetected2
+    | DependencyNotFoundInLockFile of PackageName
+    | ReferenceNotFoundInLockFile of ReferencesFile * PackageName
+
 [<CompilationRepresentation(CompilationRepresentationFlags.ModuleSuffix)>]
 module Environment = 
     
@@ -28,45 +33,49 @@ module Environment =
           LockFile = lockFile
           Projects = projects }       
 
-    let private locateInDir (directory : DirectoryInfo) = 
-        
-        let dependenciesFile = 
-            let fi = FileInfo(Path.Combine(directory.FullName, Constants.DependenciesFileName))
-            try 
-                succeed (DependenciesFile.ReadFromFile(fi.FullName))
-            with _ ->
-                failure (DependenciesFileParseError fi)
+    let locateInDir (directory : DirectoryInfo) = 
+        if not directory.Exists then 
+            fail (DirectoryDoesntExist directory)
+        else
+            let dependenciesFile = 
+                let fi = FileInfo(Path.Combine(directory.FullName, Constants.DependenciesFileName))
+                if not fi.Exists then
+                    fail (DependenciesFileNotFound directory)
+                else
+                    try
+                        succeed (DependenciesFile.ReadFromFile(fi.FullName))
+                    with _ ->
+                        fail (DependenciesFileParseError fi)
 
-        let lockFile =
-            let fi = FileInfo(Path.Combine(directory.FullName, Constants.LockFileName))
-            if not fi.Exists then
-                failure (LockFileNotFound directory)
-            else
-                try
-                    succeed <| LockFile.LoadFrom(fi.FullName)
-                with _ ->
-                    failure (LockFileParseError fi)
+            let lockFile =
+                let fi = FileInfo(Path.Combine(directory.FullName, Constants.LockFileName))
+                if not fi.Exists then
+                    fail (LockFileNotFound directory)
+                else
+                    try
+                        succeed <| LockFile.LoadFrom(fi.FullName)
+                    with _ ->
+                        fail (LockFileParseError fi)
 
-        let projects = 
-            ProjectFile.FindAllProjects(directory.FullName) 
-            |> Array.choose (fun project -> ProjectFile.FindReferencesFile(FileInfo(project.FileName))
-                                            |> Option.map (fun refFile -> project,refFile))
-            |> Array.map (fun (project,file) -> 
-                try 
-                    succeed <| (project, ReferencesFile.FromFile(file))
-                with _ -> 
-                    failure <| ReferencesFileParseError (FileInfo(file)))
-            |> collect
+            let projects = 
+                ProjectFile.FindAllProjects(directory.FullName) 
+                |> Array.choose (fun project -> ProjectFile.FindReferencesFile(FileInfo(project.FileName))
+                                                |> Option.map (fun refFile -> project,refFile))
+                |> Array.map (fun (project,file) -> 
+                    try 
+                        succeed <| (project, ReferencesFile.FromFile(file))
+                    with _ -> 
+                        fail <| ReferencesFileParseError (FileInfo(file)))
+                |> collect
 
-        create
-        <!> succeed directory
-        <*> dependenciesFile
-        <*> lockFile
-        <*> projects
+            create directory
+            <!> dependenciesFile
+            <*> lockFile
+            <*> projects
 
     let locateInThisOrParentDirs (directory : DirectoryInfo) = 
         if not directory.Exists then 
-            failure (DirectoryDoesntExist directory)
+            fail (DirectoryDoesntExist directory)
         else
             directory
             |> Seq.unfold (function

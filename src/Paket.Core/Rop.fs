@@ -6,7 +6,7 @@ type RopResult<'TSuccess, 'TMessage> =
 
 let succeed x = Success(x,[])
 
-let failure msg = Failure([msg])
+let fail msg = Failure([msg])
 
 let either fSuccess fFailure = function
     | Success(x, msgs) -> fSuccess(x,msgs)
@@ -50,7 +50,7 @@ let collect xs =
 
 let failIfNone message = function
     | Some x -> succeed x
-    | None -> failure message 
+    | None -> fail message 
 
 /// infix version of Rop.bind
 let (>>=) result f = bind f result
