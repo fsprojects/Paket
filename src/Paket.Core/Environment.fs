@@ -12,9 +12,9 @@ type Environment = {
     Projects : list<ProjectFile * ReferencesFile>
 }
 
-type EnvironmentMessage = 
+type DomainMessage = 
     | DirectoryDoesntExist of DirectoryInfo
-    | DependenciesFileNotFound of DirectoryInfo
+    | DependenciesFileNotFoundInDir of DirectoryInfo
     | DependenciesFileParseError of FileInfo
     | LockFileNotFound of DirectoryInfo
     | LockFileParseError of FileInfo
@@ -23,6 +23,29 @@ type EnvironmentMessage =
     | StrictModeDetected2
     | DependencyNotFoundInLockFile of PackageName
     | ReferenceNotFoundInLockFile of ReferencesFile * PackageName
+
+    override this.ToString() = 
+        match this with
+        | DirectoryDoesntExist(di) -> 
+            sprintf "Directory %s does not exist." di.FullName
+        | DependenciesFileNotFoundInDir(di) -> 
+            sprintf "Dependencies file not found in %s." di.FullName
+        | DependenciesFileParseError(fi) -> 
+            sprintf "Unable to parse %s." fi.FullName
+        | LockFileNotFound(di) -> 
+            sprintf "Lock file not found in %s. Create lock file by running paket install." di.FullName
+        | LockFileParseError(fi) -> 
+            sprintf "Unable to parse lock %s." fi.FullName
+        | ReferencesFileParseError(fi) -> 
+            sprintf "Unable to parse %s" fi.FullName
+        
+        | StrictModeDetected2 -> 
+            "Strict mode detected. Command will not be executed."
+        | DependencyNotFoundInLockFile(PackageName name) -> 
+            sprintf "Dependency %s from %s not found in lock file." name Constants.DependenciesFileName
+        | ReferenceNotFoundInLockFile(referencesFile, PackageName name) -> 
+            sprintf "Reference %s from %s not found in lock file." name referencesFile.FileName
+            
 
 [<CompilationRepresentation(CompilationRepresentationFlags.ModuleSuffix)>]
 module Environment = 
@@ -33,14 +56,14 @@ module Environment =
           LockFile = lockFile
           Projects = projects }       
 
-    let locateInDir (directory : DirectoryInfo) = 
+    let fromRootDirectory (directory : DirectoryInfo) = 
         if not directory.Exists then 
             fail (DirectoryDoesntExist directory)
         else
             let dependenciesFile = 
                 let fi = FileInfo(Path.Combine(directory.FullName, Constants.DependenciesFileName))
                 if not fi.Exists then
-                    fail (DependenciesFileNotFound directory)
+                    fail (DependenciesFileNotFoundInDir directory)
                 else
                     try
                         succeed (DependenciesFile.ReadFromFile(fi.FullName))
@@ -73,9 +96,9 @@ module Environment =
             <*> lockFile
             <*> projects
 
-    let locateInThisOrParentDirs (directory : DirectoryInfo) = 
+    let locatePaketRootDirectory (directory : DirectoryInfo) = 
         if not directory.Exists then 
-            fail (DirectoryDoesntExist directory)
+            None
         else
             directory
             |> Seq.unfold (function
@@ -83,5 +106,3 @@ module Environment =
                 | dir -> Some(Path.Combine(dir.FullName, Constants.DependenciesFileName), dir.Parent))
             |> Seq.tryFind File.Exists
             |> Option.map (fun f -> DirectoryInfo(Path.GetDirectoryName(f)))
-            |> failIfNone (DependenciesFileNotFound directory)
-            >>= locateInDir

@@ -19,6 +19,7 @@ type Dependencies(dependenciesFileName: string) =
                             let (PackageName name) = p.Name
                             name, p.Version.ToString())
         |> Seq.toList
+    
 
     /// Tries to locate the paket.dependencies file in the current folder or a parent folder.
     static member Locate(): Dependencies = Dependencies.Locate(Environment.CurrentDirectory)
@@ -122,9 +123,19 @@ type Dependencies(dependenciesFileName: string) =
     
 
     static member SimplifyR(interactive : bool) =
-        Paket.Environment.locateInDir(DirectoryInfo(Environment.CurrentDirectory))
-        >>= Simplifier.ensureNotInStrictMode
-        >>= Simplifier.s interactive
+        
+        match Paket.Environment.locatePaketRootDirectory(DirectoryInfo(Environment.CurrentDirectory)) with
+        | Some rootDir ->
+            Utils.RunInLockedAccessMode(
+                rootDir.FullName,
+                fun () -> 
+                    Paket.Environment.fromRootDirectory rootDir
+                    >>= Simplifier.ensureNotInStrictMode
+                    >>= Simplifier.simplifyR interactive
+                    |> either (Simplifier.updateEnvironment) (List.iter (string >> Logging.traceError))
+            )
+        | None ->
+            Logging.traceErrorfn "Unable to find %s in current directory and parent directories" Constants.DependenciesFileName
 
     /// Get path to dependencies file
     member this.DependenciesFile with get() = dependenciesFileName

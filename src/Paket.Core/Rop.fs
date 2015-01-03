@@ -40,13 +40,28 @@ let lift f result =
     let f' = f |> succeed
     apply f' result
 
+let successTee f result = 
+    let fSuccess (x,msgs) = 
+        f (x,msgs)
+        Success (x,msgs) 
+    let fFailure errs = Failure errs 
+    either fSuccess fFailure result
+
+let failureTee f result = 
+    let fSuccess (x,msgs) = Success (x,msgs) 
+    let fFailure errs = 
+        f errs
+        Failure errs 
+    either fSuccess fFailure result
+
 let collect xs =
     Seq.fold (fun result next -> 
                     match result, next with
                     | Success(rs,m1), Success(r,m2) -> Success(r::rs,m1@m2)
-                    | Success(_), Failure(m) 
-                    | Failure(m), Success(_) -> Failure(m)
+                    | Success(_,m1), Failure(m2) 
+                    | Failure(m1), Success(_,m2) -> Failure(m1@m2)
                     | Failure(m1), Failure(m2) -> Failure(m1@m2)) (succeed []) xs
+    |> lift List.rev
 
 let failIfNone message = function
     | Some x -> succeed x
