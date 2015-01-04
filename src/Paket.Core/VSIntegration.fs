@@ -30,7 +30,11 @@ let InitAutoRestore(dependenciesFileName) =
             tracefn "Downloaded %s" file
         with _ -> traceErrorfn "Unable to download %s for version %s" file latestVersion
 
-    for project in ProjectFile.FindAllProjects root do
+    let projectsUnderPaket =
+        ProjectFile.FindAllProjects root
+        |> Array.filter (fun project -> ProjectFile.FindReferencesFile(FileInfo(project.FileName)).IsSome)
+
+    for project in projectsUnderPaket do
         let relativePath = 
             createRelativePath project.FileName (Path.Combine(root, ".paket", "paket.targets")) 
         project.AddImportForPaketTargets(relativePath)
