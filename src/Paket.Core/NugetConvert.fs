@@ -212,6 +212,14 @@ let ensureNoPaketEnv rootDirectory =
         if filtered |> List.isEmpty then succeed rootDirectory
         else Failure(filtered)
 
+let createPackageRequirement packageName version sources dependenciesFileName = 
+     { Name = PackageName packageName
+       VersionRequirement = VersionRequirement(VersionRange.Exactly version, PreReleaseStatus.No)
+       Sources = sources
+       ResolverStrategy = Max
+       FrameworkRestrictions = []
+       Parent = PackageRequirementSource.DependenciesFile dependenciesFileName }
+
 let createDependenciesFileR (rootDirectory : DirectoryInfo) nugetEnv mode =
     
     let dependenciesFileName = Path.Combine(rootDirectory.FullName, Constants.DependenciesFileName)
@@ -239,14 +247,16 @@ let createDependenciesFileR (rootDirectory : DirectoryInfo) nugetEnv mode =
         | Some _ -> ("Nuget.CommandLine","") :: latestVersions
         | _ -> latestVersions
 
-    let addPackages dependenciesFile = 
-        packages
-        |> List.map (fun (name, v) -> PackageName name, v)
-        |> List.fold DependenciesFile.add dependenciesFile
-
     let read() =
-        try DependenciesFile.ReadFromFile dependenciesFileName |> Rop.succeed
+        let addPackages dependenciesFile = 
+            packages
+            |> List.map (fun (name, v) -> PackageName name, v)
+            |> List.fold DependenciesFile.add dependenciesFile
+        try 
+            DependenciesFile.ReadFromFile dependenciesFileName
+            |> Rop.succeed
         with _ -> DependenciesFileParseError (FileInfo(dependenciesFileName)) |> Rop.fail
+        |> lift addPackages
 
     let create() =
         let sources = 
@@ -259,7 +269,8 @@ let createDependenciesFileR (rootDirectory : DirectoryInfo) nugetEnv mode =
 
         sources
         |> Rop.lift (fun sources -> 
-            Paket.DependenciesFile(dependenciesFileName, InstallOptions.Default, sources, [], []))
+            let packages = packages |> List.map (fun (name,v) -> createPackageRequirement name v sources dependenciesFileName)
+            Paket.DependenciesFile(dependenciesFileName, InstallOptions.Default, sources, packages, []))
 
     if File.Exists dependenciesFileName then read() else create()
 
@@ -298,7 +309,7 @@ let updateSolutions (rootDirectory : DirectoryInfo) =
 
     solutions |> succeed
 
-let createResult rootDirectory nugetEnv credsMirationMode =
+let createResult(rootDirectory, nugetEnv, credsMirationMode) =
 
     ConvertResultR.create nugetEnv
     <!> createPaketEnv rootDirectory nugetEnv credsMirationMode
@@ -317,10 +328,13 @@ let convertR rootDirectory force credsMigrationMode  =
         if force then succeed rootDirectory
         else ensureNoPaketEnv rootDirectory
 
-    rootDirectory >>= (fun rootDirectory ->
-        nugetEnv >>= (fun nugetEnv ->
-            credsMigrationMode >>= (fun credsMigrationMode -> 
-                createResult rootDirectory nugetEnv credsMigrationMode)))
+    let triple x y z = x,y,z
+
+    triple
+    <!> rootDirectory
+    <*> nugetEnv
+    <*> credsMigrationMode
+    >>= createResult
 
 let replaceNugetWithPaket initAutoRestore installAfter (result,_) = 
     

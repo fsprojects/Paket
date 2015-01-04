@@ -65,8 +65,11 @@ type Dependencies(dependenciesFileName: string) =
             rootDirectory.FullName,
             fun () ->
                 NuGetConvert.convertR rootDirectory force credsMigrationMode
-                |> either (NuGetConvert.replaceNugetWithPaket initAutoRestore installAfter) (List.iter (string >> Logging.traceError))
+                |> either 
+                    (NuGetConvert.replaceNugetWithPaket initAutoRestore installAfter) 
+                    (List.iter (string >> Logging.traceError))
         )
+
      /// Converts the current package dependency graph to the simplest dependency graph.
     static member Simplify(): unit = Dependencies.Simplify(false)
 

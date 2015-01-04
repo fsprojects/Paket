@@ -54,7 +54,9 @@ let simplifyReferencesFile (refFile, flatLookup, interactive) =
             |> List.filter (fun p -> not <| removePackage(p, indirect, refFile.FileName, interactive))
         { refFile with NugetPackages = newPackages }
 
-    let indirect = findIndirect(refFile.NugetPackages, flatLookup, (fun p -> ReferenceNotFoundInLockFile(refFile,p)))
+    let indirect = findIndirect(refFile.NugetPackages, 
+                                flatLookup, 
+                                (fun p -> ReferenceNotFoundInLockFile(refFile.FileName,p)))
                  
     create refFile
     <!> indirect

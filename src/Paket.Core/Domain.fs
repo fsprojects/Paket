@@ -1,5 +1,7 @@
 ﻿module Paket.Domain
 
+open System.IO
+
 /// Represents a NuGet package name
 [<System.Diagnostics.DebuggerDisplay("{Item}")>]
 type PackageName =
@@ -32,3 +34,57 @@ let (|NormalizedPackageName|) (PackageName name) =
 
 /// Function to convert a NuGet package name into a normalized one
 let NormalizedPackageName = (|NormalizedPackageName|)
+
+
+type DomainMessage = 
+    | DirectoryDoesntExist of DirectoryInfo
+    | DependenciesFileNotFoundInDir of DirectoryInfo
+    | DependenciesFileParseError of FileInfo
+    | LockFileNotFound of DirectoryInfo
+    | LockFileParseError of FileInfo
+    | ReferencesFileParseError of FileInfo
+
+    | PackageSourceParseError of string
+    
+    | InvalidCredentialsMigrationMode of string
+    | PaketEnvAlreadyExistsInDirectory of DirectoryInfo
+    | NugetConfigFileParseError of FileInfo
+    | NugetPackagesConfigParseError of FileInfo
+
+    | StrictModeDetected
+    | DependencyNotFoundInLockFile of PackageName
+    | ReferenceNotFoundInLockFile of string * PackageName
+
+    override this.ToString() = 
+        match this with
+        | DirectoryDoesntExist(di) -> 
+            sprintf "Directory %s does not exist." di.FullName
+        | DependenciesFileNotFoundInDir(di) -> 
+            sprintf "Dependencies file not found in %s." di.FullName
+        | DependenciesFileParseError(fi) -> 
+            sprintf "Unable to parse %s." fi.FullName
+        | LockFileNotFound(di) -> 
+            sprintf "Lock file not found in %s. Create lock file by running paket install." di.FullName
+        | LockFileParseError(fi) -> 
+            sprintf "Unable to parse lock %s." fi.FullName
+        | ReferencesFileParseError(fi) -> 
+            sprintf "Unable to parse %s" fi.FullName
+        
+        | PackageSourceParseError(source) -> 
+            sprintf "Unable to parse package source: %s." source
+
+        | InvalidCredentialsMigrationMode(mode) ->
+            sprintf "Invalid credentials migration mode: %s." mode
+        | PaketEnvAlreadyExistsInDirectory(di) ->
+            sprintf "Paket is already present in %s. Run with --force to overwrite." di.FullName
+        | NugetConfigFileParseError(fi) ->
+            sprintf "Unable to parse %s" fi.FullName
+        | NugetPackagesConfigParseError(fi) ->
+            sprintf "Unable to parse %s" fi.FullName
+
+        | StrictModeDetected -> 
+            "Strict mode detected. Command not executed."
+        | DependencyNotFoundInLockFile(PackageName name) -> 
+            sprintf "Dependency %s from %s not found in lock file." name Constants.DependenciesFileName
+        | ReferenceNotFoundInLockFile(path, PackageName name) -> 
+            sprintf "Reference %s from %s not found in lock file." name path

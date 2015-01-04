@@ -280,11 +280,12 @@ type ProjectFile =
               GUID =  forceGetInnerText n "Project" |> Guid.Parse }]
 
     member this.ReplaceNuGetPackagesFile() =
-        let noneNodes = this.Document |> getDescendants "None"
-        match noneNodes |> List.tryFind (fun n -> n |> getAttribute "Include" = Some "packages.config") with
+        let noneAndContentNodes = 
+            (this.Document |> getDescendants "None") @ (this.Document |> getDescendants "Content")
+        match noneAndContentNodes |> List.tryFind (fun n -> n |> getAttribute "Include" = Some "packages.config") with
         | None -> ()
         | Some nugetNode ->
-            match noneNodes |> List.filter (fun n -> n |> getAttribute "Include" = Some Constants.ReferencesFile) with 
+            match noneAndContentNodes |> List.filter (fun n -> n |> getAttribute "Include" = Some Constants.ReferencesFile) with 
             | [_] -> nugetNode.ParentNode.RemoveChild(nugetNode) |> ignore
             | [] -> nugetNode.Attributes.["Include"].Value <- Constants.ReferencesFile
             | _::_ -> failwithf "multiple %s nodes in project file %s" Constants.ReferencesFile this.FileName
