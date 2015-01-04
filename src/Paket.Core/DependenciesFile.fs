@@ -166,6 +166,11 @@ module DependenciesFileParser =
         | String.StartsWith "http" _ as trimmed  ->
             SourceFile(``parse http source`` trimmed)
         | _ -> Blank
+
+    let parseSourceFileDependency source: UnresolvedSourceFile =
+        match source with
+        | SourceFile (origin, (owner, project, commit), path) -> { Owner = owner; Project = project; Commit = commit; Name = path; Origin = origin }
+        | _ -> failwithf "invalid dependency specification:%s     %s" Environment.NewLine source
     
     let parseDependenciesFile fileName (lines:string seq) = 
         ((0, InstallOptions.Default, [], [], []), lines)
@@ -233,6 +238,7 @@ type DependenciesFile(fileName,options,sources,packages : PackageRequirement lis
     member __.Packages = packages
     member __.HasPackage (name : PackageName) = packages |> List.exists (fun p -> NormalizedPackageName p.Name = NormalizedPackageName name)
     member __.RemoteFiles = remoteFiles
+    member __.HasRemoteFile name = remoteFiles |> List.exists (fun r -> r.Name = name)
     member __.Options = options
     member __.FileName = fileName
     member __.Sources = sources
@@ -261,6 +267,16 @@ type DependenciesFile(fileName,options,sources,packages : PackageRequirement lis
 
         { ResolvedPackages = PackageResolver.Resolve(getVersionF, getPackageDetailsF, remoteDependencies @ packages)
           ResolvedSourceFiles = remoteFiles }        
+
+    member __.AddAdditionalRemote(origin, url, remoteFileName) =
+        let sources = 
+            match packages |> List.rev with
+            | lastPackage::_ -> lastPackage.Sources
+            | [] -> [PackageSources.DefaultNugetSource]
+      
+        let newRemoteFile = sprintf "%s %s %s" origin url remoteFileName |> DependenciesFileParser.parseSourceFileDependency
+         
+        DependenciesFile(fileName, options, sources, packages, remoteFiles @ [newRemoteFile])
 
     member __.AddAdditionionalPackage(packageName:PackageName,version:string) =
         let versionRange = DependenciesFileParser.parseVersionRequirement (version.Trim '!')
@@ -326,6 +342,14 @@ type DependenciesFile(fileName,options,sources,packages : PackageRequirement lis
             else
                 tracefn "Adding %s %s to %s" name version fileName
             this.AddAdditionionalPackage(packageName,version)
+
+    member this.AddRemoteReference(origin, url, remoteFileName) =
+        if this.HasRemoteFile remoteFileName then
+            traceWarnfn "%s contains file %s already. ==> Ignored" fileName remoteFileName
+            this
+        else
+            tracefn "Adding %s to %s" remoteFileName fileName
+            this.AddAdditionalRemote(origin, url, remoteFileName)
 
     member this.Remove(packageName) =
         let (PackageName name) = packageName

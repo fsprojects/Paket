@@ -5,6 +5,10 @@ open Paket
 open System.IO
 open Paket.Domain
 
+let install(dependenciesFile: DependenciesFile, force, hard, withBindingRedirects, lockFile) =
+    let sources = dependenciesFile.GetAllPackageSources()
+    InstallProcess.Install(sources, force, hard, withBindingRedirects, lockFile)
+
 let Add(dependenciesFileName, package, version, force, hard, interactive, installAfter) =
     let existingDependenciesFile = DependenciesFile.ReadFromFile(dependenciesFileName)
     let dependenciesFile =
@@ -23,5 +27,24 @@ let Add(dependenciesFileName, package, version, force, hard, interactive, instal
                     .Save()
 
     if installAfter then
-        let sources = dependenciesFile.GetAllPackageSources()
-        InstallProcess.Install(sources, force, hard, false, lockFile)
+        install(dependenciesFile, force, hard, false, lockFile)
+
+let AddRemoteReference(dependenciesFileName, origin, url, remoteFileName, force, hard, interactive, installAfter) =
+    let existingDependenciesFile = DependenciesFile.ReadFromFile(dependenciesFileName)
+    let dependenciesFile =
+        existingDependenciesFile
+          .AddRemoteReference(origin, url, remoteFileName)
+
+    dependenciesFile.Save()
+
+    let lockFile = UpdateProcess.SelectiveUpdate(dependenciesFile,force)
+    
+    if interactive then
+        for project in ProjectFile.FindAllProjects(Path.GetDirectoryName lockFile.FileName) do
+            if Utils.askYesNo(sprintf "  Install to %s?" project.Name) then
+                ProjectFile.FindOrCreateReferencesFile(FileInfo(project.FileName))
+                    .AddRemoteReference(url, remoteFileName)
+                    .Save()
+
+    if installAfter then
+        install(dependenciesFile, force, hard, false, lockFile)

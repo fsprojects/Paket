@@ -55,6 +55,13 @@ type ReferencesFile =
             tracefn "Adding %s to %s" referenceName (this.FileName)
             { this with NugetPackages = this.NugetPackages @ [packageName] }
 
+    member this.AddRemoteReference(url: string, remoteFileName: string) =
+        if this.RemoteFiles |> Seq.exists (fun r -> r.Name = remoteFileName) then
+            this
+        else
+            tracefn "Adding %s to %s" remoteFileName this.FileName
+            { this with RemoteFiles = this.RemoteFiles @ [ { Name = remoteFileName; Link = ReferencesFile.DefaultLink } ] }
+
     member this.Save() =
         File.WriteAllText(this.FileName, this.ToString())
         tracefn "References file saved to %s" this.FileName
