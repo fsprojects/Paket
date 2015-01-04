@@ -244,7 +244,7 @@ let createDependenciesFileR (rootDirectory : DirectoryInfo) nugetEnv mode =
 
     let packages = 
         match nugetEnv.NugetExe with 
-        | Some _ -> ("Nuget.CommandLine","") :: latestVersions
+        | Some _ -> ("Nuget.CommandLine","2.8.3") :: latestVersions
         | _ -> latestVersions
 
     let read() =
