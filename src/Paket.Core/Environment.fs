@@ -13,6 +13,13 @@ type DomainMessage =
     | LockFileParseError of FileInfo
     | ReferencesFileParseError of FileInfo
 
+    | PackageSourceParseError of string
+    
+    | InvalidCredentialsMigrationMode of string
+    | PaketEnvAlreadyExistsInDirectory of DirectoryInfo
+    | NugetConfigFileParseError of FileInfo
+    | NugetPackagesConfigParseError of FileInfo
+
     | StrictModeDetected
     | DependencyNotFoundInLockFile of PackageName
     | ReferenceNotFoundInLockFile of ReferencesFile * PackageName
@@ -32,6 +39,18 @@ type DomainMessage =
         | ReferencesFileParseError(fi) -> 
             sprintf "Unable to parse %s" fi.FullName
         
+        | PackageSourceParseError(source) -> 
+            sprintf "Unable to parse package source: %s." source
+
+        | InvalidCredentialsMigrationMode(mode) ->
+            sprintf "Invalid credentials migration mode: %s." mode
+        | PaketEnvAlreadyExistsInDirectory(di) ->
+            sprintf "Paket is already present in %s. Run with --force to overwrite." di.FullName
+        | NugetConfigFileParseError(fi) ->
+            sprintf "Unable to parse %s" fi.FullName
+        | NugetPackagesConfigParseError(fi) ->
+            sprintf "Unable to parse %s" fi.FullName
+
         | StrictModeDetected -> 
             "Strict mode detected. Command not executed."
         | DependencyNotFoundInLockFile(PackageName name) -> 

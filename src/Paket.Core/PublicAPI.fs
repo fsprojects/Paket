@@ -55,84 +55,29 @@ type Dependencies(dependenciesFileName: string) =
         else
             DependenciesFile(dependenciesFileName, InstallOptions.Default, [], [], []).Save()
         Dependencies(dependenciesFileName)
-     
+    
     /// Converts the solution from NuGet to Paket.
     static member ConvertFromNuget(force: bool,installAfter: bool,initAutoRestore: bool,credsMigrationMode: string option) : unit =
-        let dependenciesFileName = 
-            try 
-                Dependencies.Locate().DependenciesFile
-            with _ -> Path.Combine(Environment.CurrentDirectory, Constants.DependenciesFileName)
-        
-        let result = 
-            Utils.RunInLockedAccessMode(
-                Path.GetDirectoryName(dependenciesFileName),
-                fun () ->  NuGetConvert.convert(dependenciesFileName, force, credsMigrationMode))
-        
-        let stringErr = function
-        | NuGetConvert.ConvertMessage.DependenciesFileAlreadyExists fi -> 
-            sprintf "%s already exists, use --force to overwrite" fi.FullName
-        | NuGetConvert.ConvertMessage.UnknownCredentialsMigrationMode mode -> 
-            sprintf "Unknown credentials migration mode: %s" mode
-        | NuGetConvert.ConvertMessage.NugetPackagesConfigParseError fi -> 
-            sprintf "Unable to parse %s" fi.FullName
-        | NuGetConvert.ConvertMessage.ReferencesFileAlreadyExists fi -> 
-            sprintf "%s already exists, use --force to overwrite" fi.FullName
-        | NuGetConvert.ConvertMessage.NugetConfigFileParseError fi -> 
-            sprintf "Unable to parse %s" fi.FullName
-        | NuGetConvert.ConvertMessage.DependenciesFileParseError fi ->
-            sprintf "Unable to parse %s" fi
-        | NuGetConvert.ConvertMessage.PackageSourceParseError source -> 
-            sprintf "Unable to parse packages source %s" source
+        let currentDirectory = DirectoryInfo(Environment.CurrentDirectory)
+        let rootDirectory = defaultArg (PaketEnv.locatePaketRootDirectory(currentDirectory)) currentDirectory
 
-        let remove (fi : FileInfo) = 
-            tracefn "Removing %s" fi.FullName
-            fi.Delete()
-
-        match result with
-        | Rop.Success(result, _) ->
-            result.NugetConfigFiles |> List.iter remove
-            result.NugetPackagesFiles |> List.map (fun n -> n.File) |> List.iter remove
-            result.NugetTargets |> Option.iter remove
-            result.NugetExe 
-            |> Option.iter 
-                   (fun nugetExe -> 
-                   remove nugetExe
-                   traceWarnfn "Removed %s and added %s as dependency instead. Please check all paths." 
-                       nugetExe.FullName "Nuget.CommandLine")
-            match result.NugetTargets |> orElse result.NugetExe with
-            | Some fi when fi.Directory.EnumerateFileSystemInfos() |> Seq.isEmpty ->
-                fi.Directory.Delete()
-            | _ -> ()
-
-            result.DependenciesFile.Save()
-            result.ReferencesFiles |> List.iter (fun r -> r.Save())
-            result.ProjectFiles |> List.iter (fun p -> p.Save())
-            result.SolutionFiles |> List.iter (fun s -> s.Save())
-
-            let autoVSPackageRestore = 
-                result.NugetConfig.PackageRestoreAutomatic &&
-                result.NugetConfig.PackageRestoreEnabled
-            if initAutoRestore && (autoVSPackageRestore || result.NugetTargets.IsSome) then 
-                VSIntegration.InitAutoRestore dependenciesFileName
-
-            if installAfter then
-                UpdateProcess.Update(dependenciesFileName,true,true,true)
-            
-        | Rop.Failure(msgs) ->
-            msgs |> List.map stringErr |> List.iter Logging.traceError
-    
+        Utils.RunInLockedAccessMode(
+            rootDirectory.FullName,
+            fun () ->
+                NuGetConvert.convertR rootDirectory force credsMigrationMode
+                |> either (NuGetConvert.replaceNugetWithPaket initAutoRestore installAfter) (List.iter (string >> Logging.traceError))
+        )
      /// Converts the current package dependency graph to the simplest dependency graph.
-    static member Simplify(): unit = Dependencies.SimplifyR(false)
+    static member Simplify(): unit = Dependencies.Simplify(false)
 
     /// Converts the current package dependency graph to the simplest dependency graph.
-    static member SimplifyR(interactive : bool) =
-        
-        match Paket.PaketEnv.locatePaketRootDirectory(DirectoryInfo(Environment.CurrentDirectory)) with
-        | Some rootDir ->
+    static member Simplify(interactive : bool) =
+        match PaketEnv.locatePaketRootDirectory(DirectoryInfo(Environment.CurrentDirectory)) with
+        | Some rootDirectory ->
             Utils.RunInLockedAccessMode(
-                rootDir.FullName,
+                rootDirectory.FullName,
                 fun () -> 
-                    Paket.PaketEnv.fromRootDirectory rootDir
+                    PaketEnv.fromRootDirectory rootDirectory
                     >>= Simplifier.ensureNotInStrictMode
                     >>= Simplifier.simplify interactive
                     |> either (Simplifier.updateEnvironment) (List.iter (string >> Logging.traceError))
