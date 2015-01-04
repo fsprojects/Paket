@@ -5,13 +5,6 @@ open System.IO
 open Paket.Rop
 open Paket.Domain
 
-type Environment = {
-    RootDirectory : DirectoryInfo
-    DependenciesFile : DependenciesFile
-    LockFile : LockFile
-    Projects : list<ProjectFile * ReferencesFile>
-}
-
 type DomainMessage = 
     | DirectoryDoesntExist of DirectoryInfo
     | DependenciesFileNotFoundInDir of DirectoryInfo
@@ -20,7 +13,7 @@ type DomainMessage =
     | LockFileParseError of FileInfo
     | ReferencesFileParseError of FileInfo
 
-    | StrictModeDetected2
+    | StrictModeDetected
     | DependencyNotFoundInLockFile of PackageName
     | ReferenceNotFoundInLockFile of ReferencesFile * PackageName
 
@@ -39,13 +32,19 @@ type DomainMessage =
         | ReferencesFileParseError(fi) -> 
             sprintf "Unable to parse %s" fi.FullName
         
-        | StrictModeDetected2 -> 
+        | StrictModeDetected -> 
             "Strict mode detected. Command will not be executed."
         | DependencyNotFoundInLockFile(PackageName name) -> 
             sprintf "Dependency %s from %s not found in lock file." name Constants.DependenciesFileName
         | ReferenceNotFoundInLockFile(referencesFile, PackageName name) -> 
             sprintf "Reference %s from %s not found in lock file." name referencesFile.FileName
-            
+
+type Environment = {
+    RootDirectory : DirectoryInfo
+    DependenciesFile : DependenciesFile
+    LockFile : LockFile
+    Projects : list<ProjectFile * ReferencesFile>
+}
 
 [<CompilationRepresentation(CompilationRepresentationFlags.ModuleSuffix)>]
 module Environment = 
