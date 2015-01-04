@@ -276,10 +276,14 @@ let createDependenciesFileR (rootDirectory : DirectoryInfo) nugetEnv mode =
 
 let convertPackagesConfigToReferences packagesConfig = 
     let fileName = Path.Combine(packagesConfig.File.Directory.Name, Constants.ReferencesFile)
+    let referencesFile = 
+        if File.Exists fileName then ReferencesFile.FromFile fileName
+        else ReferencesFile.New(fileName)
+
     packagesConfig.Packages
     |> List.map (fst >> PackageName)
     |> List.fold (fun (r : ReferencesFile) packageName -> r.AddNuGetReference(packageName)) 
-                    (ReferencesFile.New(fileName))
+                 referencesFile
 
 let convertProjects nugetEnv =
     [for project,packagesConfig in nugetEnv.NugetProjectFiles do 
