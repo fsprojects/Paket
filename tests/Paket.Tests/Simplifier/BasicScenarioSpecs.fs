@@ -42,7 +42,7 @@ let projects1 = [
 
 [<Test>]
 let ``should remove one level deep indirect dependencies from dep and ref files``() = 
-    let before = Environment.create dummyDir depFile1 lockFile1 projects1
+    let before = PaketEnv.create dummyDir depFile1 lockFile1 projects1
     
     match Simplifier.simplify false before with
     | Rop.Failure(msgs) -> 
@@ -85,7 +85,7 @@ let projects2 = [
 
 [<Test>]
 let ``should remove all indirect dependencies from dep file recursively``() =
-    let before = Environment.create dummyDir depFile2 lockFile2 projects2
+    let before = PaketEnv.create dummyDir depFile2 lockFile2 projects2
     
     match Simplifier.simplify false before with
     | Rop.Failure(msgs) -> 

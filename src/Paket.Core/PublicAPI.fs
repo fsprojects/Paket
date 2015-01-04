@@ -127,12 +127,12 @@ type Dependencies(dependenciesFileName: string) =
     /// Converts the current package dependency graph to the simplest dependency graph.
     static member SimplifyR(interactive : bool) =
         
-        match Paket.Environment.locatePaketRootDirectory(DirectoryInfo(Environment.CurrentDirectory)) with
+        match Paket.PaketEnv.locatePaketRootDirectory(DirectoryInfo(Environment.CurrentDirectory)) with
         | Some rootDir ->
             Utils.RunInLockedAccessMode(
                 rootDir.FullName,
                 fun () -> 
-                    Paket.Environment.fromRootDirectory rootDir
+                    Paket.PaketEnv.fromRootDirectory rootDir
                     >>= Simplifier.ensureNotInStrictMode
                     >>= Simplifier.simplify interactive
                     |> either (Simplifier.updateEnvironment) (List.iter (string >> Logging.traceError))

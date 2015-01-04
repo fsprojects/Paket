@@ -39,7 +39,7 @@ type DomainMessage =
         | ReferenceNotFoundInLockFile(referencesFile, PackageName name) -> 
             sprintf "Reference %s from %s not found in lock file." name referencesFile.FileName
 
-type Environment = {
+type PaketEnv = {
     RootDirectory : DirectoryInfo
     DependenciesFile : DependenciesFile
     LockFile : LockFile
@@ -47,7 +47,7 @@ type Environment = {
 }
 
 [<CompilationRepresentation(CompilationRepresentationFlags.ModuleSuffix)>]
-module Environment = 
+module PaketEnv = 
     
     let create root dependenciesFile lockFile projects = 
         { RootDirectory = root

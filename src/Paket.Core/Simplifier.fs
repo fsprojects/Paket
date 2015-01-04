@@ -6,7 +6,6 @@ open System.IO
 open Paket.Domain
 open Paket.Logging
 open Paket.PackageResolver
-open Paket.Environment
 open Paket.Rop
 
 let getFlatLookup (lockFile : LockFile) = 
