@@ -26,7 +26,7 @@ NUGET
     C (1.0)
     D (1.0)
       B (1.0)
-      C (1.0)""" |> (fun x -> LockFile.Parse("", toLines x))
+      C (1.0)""" |> (fun x -> LockFile.Parse("", toLines x)) |> Some
 
 let depFile1 = """
 source http://nuget.org/api/v2
@@ -67,7 +67,7 @@ NUGET
       E (1.0)
     E (1.0)
       F (1.0)
-    F (1.0)""" |> (fun x -> LockFile.Parse("", toLines x))
+    F (1.0)""" |> (fun x -> LockFile.Parse("", toLines x)) |> Some
 
 let depFile2 = """
 source http://nuget.org/api/v2

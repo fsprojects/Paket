@@ -33,7 +33,7 @@ type DomainMessage =
             sprintf "Unable to parse %s" fi.FullName
         
         | StrictModeDetected -> 
-            "Strict mode detected. Command will not be executed."
+            "Strict mode detected. Command not executed."
         | DependencyNotFoundInLockFile(PackageName name) -> 
             sprintf "Dependency %s from %s not found in lock file." name Constants.DependenciesFileName
         | ReferenceNotFoundInLockFile(referencesFile, PackageName name) -> 
@@ -42,7 +42,7 @@ type DomainMessage =
 type PaketEnv = {
     RootDirectory : DirectoryInfo
     DependenciesFile : DependenciesFile
-    LockFile : LockFile
+    LockFile : option<LockFile>
     Projects : list<ProjectFile * ReferencesFile>
 }
 
@@ -72,10 +72,10 @@ module PaketEnv =
             let lockFile =
                 let fi = FileInfo(Path.Combine(directory.FullName, Constants.LockFileName))
                 if not fi.Exists then
-                    fail (LockFileNotFound directory)
+                    None |> succeed
                 else
                     try
-                        succeed <| LockFile.LoadFrom(fi.FullName)
+                        LockFile.LoadFrom(fi.FullName) |> Some |> succeed
                     with _ ->
                         fail (LockFileParseError fi)
 

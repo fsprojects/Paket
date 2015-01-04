@@ -135,6 +135,7 @@ type ConvertResult =
       ReferencesFiles : list<ReferencesFile>
       ProjectFiles : list<ProjectFile>
       SolutionFiles : list<SolutionFile>
+
       NugetConfig : NugetConfig
       NugetConfigFiles : list<FileInfo>
       NugetPackagesFiles : list<NugetPackagesConfig>

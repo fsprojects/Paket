@@ -69,20 +69,23 @@ let ensureNotInStrictMode environment =
     else fail StrictModeDetected
 
 let simplify interactive environment =
-    let flatLookup = getFlatLookup environment.LockFile
-    let dependenciesFile = simplifyDependenciesFile(environment.DependenciesFile, flatLookup, interactive)
-    let projectFiles, referencesFiles = List.unzip environment.Projects
+    match environment.LockFile with
+    | Some lockFile ->
+        let flatLookup = getFlatLookup lockFile
+        let dependenciesFile = simplifyDependenciesFile(environment.DependenciesFile, flatLookup, interactive)
+        let projectFiles, referencesFiles = List.unzip environment.Projects
 
-    let referencesFiles' =
-        referencesFiles
-        |> List.map (fun refFile -> simplifyReferencesFile(refFile, flatLookup, interactive))
-        |> Rop.collect
+        let referencesFiles' =
+            referencesFiles
+            |> List.map (fun refFile -> simplifyReferencesFile(refFile, flatLookup, interactive))
+            |> Rop.collect
 
-    let projects = List.zip projectFiles <!> referencesFiles'
+        let projects = List.zip projectFiles <!> referencesFiles'
 
-    beforeAndAfter environment
-    <!> dependenciesFile
-    <*> projects
+        beforeAndAfter environment
+        <!> dependenciesFile
+        <*> projects
+    | None -> fail (LockFileNotFound environment.RootDirectory)
 
 let updateEnvironment ((before,after), _ ) =
     if before.DependenciesFile.ToString() = after.DependenciesFile.ToString() then
