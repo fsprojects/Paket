@@ -94,8 +94,10 @@ type Dependencies(dependenciesFileName: string) =
             fun () -> AddProcess.Add(dependenciesFileName, PackageName package, version, force, hard, interactive, installAfter))
 
     /// Adds the given remote dependency (gist, github or http) to the dependencies file.
-    member this.AddRemote() =
-        ()
+    member this.AddRemoteReference(origin: string, url: string, remoteFileName: string, force: bool, hard: bool, interactive: bool, installafter: bool): unit =
+        Utils.RunInLockedAccessMode(
+            this.RootPath,
+            fun () -> AddProcess.AddRemoteReference(dependenciesFileName, origin, url, remoteFileName, force, hard, interactive, installafter))
         
     /// Installs all dependencies.
     member this.Install(force: bool,hard: bool,withBindingRedirects:bool): unit = 

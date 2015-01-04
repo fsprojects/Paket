@@ -51,7 +51,7 @@ let SelectiveUpdate(dependenciesFile:DependenciesFile, force) =
         let dependenciesFile = DependencyChangeDetection.PinUnchangedDependencies dependenciesFile oldLockFile
 
         let resolution = dependenciesFile.Resolve(force)
-        LockFile.Create(lockFileName.FullName, dependenciesFile.Options, resolution.ResolvedPackages, oldLockFile.SourceFiles)
+        LockFile.Create(lockFileName.FullName, dependenciesFile.Options, resolution.ResolvedPackages, resolution.ResolvedSourceFiles)
 
 /// Smart install command
 let SmartInstall(dependenciesFileName, force, hard, withBindingRedirects) = 

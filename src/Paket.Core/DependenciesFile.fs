@@ -343,7 +343,7 @@ type DependenciesFile(fileName,options,sources,packages : PackageRequirement lis
                 tracefn "Adding %s %s to %s" name version fileName
             this.AddAdditionionalPackage(packageName,version)
 
-    member this.AddRemote(origin, url, remoteFileName) =
+    member this.AddRemoteReference(origin, url, remoteFileName) =
         if this.HasRemoteFile remoteFileName then
             traceWarnfn "%s contains file %s already. ==> Ignored" fileName remoteFileName
             this

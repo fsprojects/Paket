@@ -21,7 +21,7 @@ NUGET
     NUnit (2.6.4)
     NUnit.Runners (2.6.4)
     Octokit (0.6.1)
-      Microsoft.Net.Http 
+      Microsoft.Net.Http
     RazorEngine (3.3.0)
       Microsoft.AspNet.Razor (>= 2.0.30506.0)
     UnionArgParser (0.8.2)
