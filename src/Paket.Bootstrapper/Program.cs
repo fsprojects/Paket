@@ -2,7 +2,7 @@
 using System.Diagnostics;
 using System.IO;
 using System.Net;
-
+using System.Reflection;
 
 namespace Paket.Bootstrapper
 {
@@ -25,7 +25,7 @@ namespace Paket.Bootstrapper
 
         static void Main(string[] args)
         {
-            var folder = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
+            var folder = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
             var target = Path.Combine(folder, "paket.exe");
              
             try
@@ -71,12 +71,12 @@ namespace Paket.Bootstrapper
                         client.UseDefaultCredentials = true;
                         client.Proxy = proxy;
 
-                        var releasesUrl = "https://api.github.com/repos/fsprojects/Paket/releases";
+                        var releasesUrl = "https://github.com/fsprojects/Paket/releases";
                         var data = client.DownloadString(releasesUrl);
                         var start = 0;
                         while (latestVersion == "")
                         {
-                            start = data.IndexOf("tag_name", start) + 11;
+                            start = data.IndexOf("Paket/tree/", start) + 11;
                             var end = data.IndexOf("\"", start);
                             latestVersion = data.Substring(start, end - start);
                             if (latestVersion.Contains("-") && ignorePrerelease)

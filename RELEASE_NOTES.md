@@ -1,4 +1,5 @@
-#### 0.22.0-alpha001 - 05.01.2015
+#### 0.22.0-alpha003 - 05.01.2015
+* Bootstrapper avoids github API - https://github.com/fsprojects/Paket/issues/510
 * Refactoring to Railwal Oriented Programming - http://fsharpforfunandprofit.com/rop/
 * Always trim line end in lockfile
 * Improved binding redirects detection - https://github.com/fsprojects/Paket/pull/507
