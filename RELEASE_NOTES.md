@@ -1,3 +1,6 @@
+#### 0.22.1 - 05.01.2015
+* Remove icon from bootstrapper to make impact smaller
+
 #### 0.22.0 - 05.01.2015
 * Bootstrapper avoids github API - https://github.com/fsprojects/Paket/issues/510
 * Refactoring to Railwal Oriented Programming - http://fsharpforfunandprofit.com/rop/
