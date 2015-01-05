@@ -97,7 +97,7 @@ type Dependencies(dependenciesFileName: string) =
     member this.Install(force: bool,hard: bool,withBindingRedirects:bool): unit = 
         Utils.RunInLockedAccessMode(
             this.RootPath,
-            fun () -> UpdateProcess.SmartInstall(dependenciesFileName,force,hard,withBindingRedirects))
+            fun () -> UpdateProcess.SmartInstall(dependenciesFileName,None,force,hard,withBindingRedirects))
 
     /// Installs all dependencies.
     member this.Install(force: bool,hard: bool): unit = this.Install(force,hard,false)

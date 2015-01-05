@@ -1,3 +1,6 @@
+#### 0.21.6 - 05.01.2015
+* BUGFIX: Paket update nuget X doesn't work - https://github.com/fsprojects/Paket/issues/512
+
 #### 0.21.5 - 03.01.2015
 * Always trim line end in lockfile
 

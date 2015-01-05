@@ -39,7 +39,7 @@ let addPackagesFromReferenceFiles projects (dependenciesFile:DependenciesFile) =
             newDependenciesFile.Save()
             newDependenciesFile
 
-let SelectiveUpdate(dependenciesFile:DependenciesFile, force) =
+let SelectiveUpdate(dependenciesFile:DependenciesFile, exclude, force) =
     let lockFileName = DependenciesFile.FindLockfile dependenciesFile.FileName
 
     if not lockFileName.Exists then 
@@ -47,21 +47,27 @@ let SelectiveUpdate(dependenciesFile:DependenciesFile, force) =
         LockFile.Create(lockFileName.FullName, dependenciesFile.Options, resolution.ResolvedPackages, resolution.ResolvedSourceFiles)
     else
         let oldLockFile = LockFile.LoadFrom(lockFileName.FullName)
+        let changedDependencies = DependencyChangeDetection.findChangesInDependenciesFile(dependenciesFile,oldLockFile)
 
-        let dependenciesFile = DependencyChangeDetection.PinUnchangedDependencies dependenciesFile oldLockFile
+        let changed =
+            match exclude with
+            | None -> changedDependencies
+            | Some package -> Set.add package changedDependencies
+
+        let dependenciesFile = DependencyChangeDetection.PinUnchangedDependencies dependenciesFile oldLockFile changed
 
         let resolution = dependenciesFile.Resolve(force)
         LockFile.Create(lockFileName.FullName, dependenciesFile.Options, resolution.ResolvedPackages, oldLockFile.SourceFiles)
 
 /// Smart install command
-let SmartInstall(dependenciesFileName, force, hard, withBindingRedirects) = 
+let SmartInstall(dependenciesFileName, exclude, force, hard, withBindingRedirects) = 
     let root = Path.GetDirectoryName dependenciesFileName
     let projects = InstallProcess.findAllReferencesFiles(root)
     let dependenciesFile = 
         DependenciesFile.ReadFromFile(dependenciesFileName)
         |> addPackagesFromReferenceFiles projects
         
-    let lockFile = SelectiveUpdate(dependenciesFile,force)
+    let lockFile = SelectiveUpdate(dependenciesFile,exclude,force)
      
     InstallProcess.InstallIntoProjects(
         dependenciesFile.GetAllPackageSources(),
@@ -80,7 +86,7 @@ let UpdatePackage(dependenciesFileName, packageName : PackageName, newVersion, f
             .Save()
     | None -> ()
 
-    SmartInstall(dependenciesFileName,force,hard,withBindingRedirects)
+    SmartInstall(dependenciesFileName,Some(NormalizedPackageName packageName),force,hard,withBindingRedirects)
 
 /// Update command
 let Update(dependenciesFileName, force, hard, withBindingRedirects) = 
@@ -88,4 +94,4 @@ let Update(dependenciesFileName, force, hard, withBindingRedirects) =
     if lockFileName.Exists then
         lockFileName.Delete()
     
-    SmartInstall(dependenciesFileName,force,hard,withBindingRedirects)
+    SmartInstall(dependenciesFileName,None,force,hard,withBindingRedirects)

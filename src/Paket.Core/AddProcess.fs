@@ -13,7 +13,7 @@ let Add(dependenciesFileName, package, version, force, hard, interactive, instal
 
     dependenciesFile.Save()
 
-    let lockFile = UpdateProcess.SelectiveUpdate(dependenciesFile,force)
+    let lockFile = UpdateProcess.SelectiveUpdate(dependenciesFile,Some(NormalizedPackageName package),force)
     
     if interactive then
         for project in ProjectFile.FindAllProjects(Path.GetDirectoryName lockFile.FileName) do

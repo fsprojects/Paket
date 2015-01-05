@@ -31,9 +31,7 @@ let findChangesInDependenciesFile(dependenciesFile:DependenciesFile,lockFile:Loc
     added 
     |> Set.union modified
 
-let PinUnchangedDependencies (dependenciesFile:DependenciesFile) (oldLockFile:LockFile) =
-    let changedDependencies = findChangesInDependenciesFile(dependenciesFile,oldLockFile)
-            
+let PinUnchangedDependencies (dependenciesFile:DependenciesFile) (oldLockFile:LockFile) (changedDependencies:Set<NormalizedPackageName>) =
     oldLockFile.ResolvedPackages
     |> Seq.map (fun kv -> kv.Value)
     |> Seq.filter (fun p -> not <| changedDependencies.Contains(NormalizedPackageName p.Name))

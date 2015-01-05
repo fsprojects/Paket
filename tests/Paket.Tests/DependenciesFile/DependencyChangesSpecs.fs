@@ -35,7 +35,8 @@ nuget Castle.Windsor-log4net"""
     let cfg = DependenciesFile.FromCode(after)
     let lockFile = LockFile.Parse("",toLines lockFileData)
    
-    let newDependencies = DependencyChangeDetection.PinUnchangedDependencies cfg lockFile
+    let changedDependencies = DependencyChangeDetection.findChangesInDependenciesFile(cfg,lockFile)
+    let newDependencies = DependencyChangeDetection.PinUnchangedDependencies cfg lockFile changedDependencies
     newDependencies.DirectDependencies
     |> shouldEqual Map.empty
 
@@ -70,8 +71,9 @@ nuget NUnit"""
 
     let cfg = DependenciesFile.FromCode(after)
     let lockFile = LockFile.Parse("",toLines lockFileData)
+    let changedDependencies = DependencyChangeDetection.findChangesInDependenciesFile(cfg,lockFile)
    
-    let newDependencies = DependencyChangeDetection.PinUnchangedDependencies cfg lockFile
+    let newDependencies = DependencyChangeDetection.PinUnchangedDependencies cfg lockFile changedDependencies
     let expected =
         Map.ofList
             ([(PackageName "Castle.Core", VersionRequirement (Specific(SemVer.Parse "3.3.3"),No));
@@ -116,8 +118,9 @@ nuget Castle.Windsor-log4net >= 3.3.0"""
 
     let cfg = DependenciesFile.FromCode(after)
     let lockFile = LockFile.Parse("",toLines lockFileData)
+    let changedDependencies = DependencyChangeDetection.findChangesInDependenciesFile(cfg,lockFile)
    
-    let newDependencies = DependencyChangeDetection.PinUnchangedDependencies cfg lockFile
+    let newDependencies = DependencyChangeDetection.PinUnchangedDependencies cfg lockFile changedDependencies
     let expected =
         Map.ofList
             ([(PackageName "Castle.Core", VersionRequirement (Specific(SemVer.Parse "3.3.3"),No));
@@ -161,8 +164,9 @@ nuget Castle.Windsor-log4net >= 3.4.0"""
 
     let cfg = DependenciesFile.FromCode(after)
     let lockFile = LockFile.Parse("",toLines lockFileData)
+    let changedDependencies = DependencyChangeDetection.findChangesInDependenciesFile(cfg,lockFile)
    
-    let newDependencies = DependencyChangeDetection.PinUnchangedDependencies cfg lockFile
+    let newDependencies = DependencyChangeDetection.PinUnchangedDependencies cfg lockFile changedDependencies
     let expected =
         Map.ofList
             ([(PackageName "Castle.Windsor-log4net", VersionRequirement (Minimum(SemVer.Parse "3.4.0"),No));])
@@ -170,4 +174,3 @@ nuget Castle.Windsor-log4net >= 3.4.0"""
     
     newDependencies.DirectDependencies
     |> shouldEqual expected
-
