@@ -1,14 +1,9 @@
-#### 0.21.6 - 05.01.2015
-* BUGFIX: Paket update nuget X doesn't work - https://github.com/fsprojects/Paket/issues/512
-
-#### 0.21.5 - 03.01.2015
+#### 0.22.0-alpha001 - 05.01.2015
+* Refactoring to Railwal Oriented Programming - http://fsharpforfunandprofit.com/rop/
 * Always trim line end in lockfile
-
-#### 0.21.4 - 02.01.2015
 * Improved binding redirects detection - https://github.com/fsprojects/Paket/pull/507
-
-#### 0.21.2 - 02.01.2015
 * Don't catch NullReferenceExceptions for now - https://github.com/fsprojects/Paket/issues/505
+* BUGFIX: Paket update nuget X doesn't work - https://github.com/fsprojects/Paket/issues/512
 
 #### 0.21.0 - 02.01.2015
 * New `--log-file` parameter allows to trace into logfile - https://github.com/fsprojects/Paket/pull/502
