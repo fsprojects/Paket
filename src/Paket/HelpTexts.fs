@@ -168,18 +168,19 @@ which will ask you to confirm before deleting a dependency from a file."""}
 
      "add",
         { Title = "paket add"
-          Text = """Adds a new package to your paket.dependencies file.
+          Text = """Adds a new package or HTTP dependency to your paket.dependencies file.
 
     [lang=batchfile]
     $ paket add nuget PACKAGENAME [version VERSION] [--interactive] [--force] [--hard]
+    $ paket add url URL FILENAME [--interactive] [--force] [--hard]
 
 Options:
 
-  `--interactive`: Asks the user for every project if he or she wants to add the package to the projects's paket.references file.
+  `--interactive`: Asks the user for every project if he or she wants to add the dependency to the projects's paket.references file.
 
-  `--force`: Forces the download and reinstallation of all packages.
+  `--force`: Forces the download and reinstallation of all dependencies.
 
-  `--hard`: Replaces package references within project files even if they are not yet adhering to to Paket's conventions (and hence considered manually managed). See [convert from NuGet](paket-convert-from-nuget.html).
+  `--hard`: Replaces dependency references within project files even if they are not yet adhering to to Paket's conventions (and hence considered manually managed). See [convert from NuGet](paket-convert-from-nuget.html).
 
   See also [paket remove](paket-remove.html).
 
@@ -191,7 +192,7 @@ Consider the following paket.dependencies file:
 
 	nuget FAKE
 
-Now we run `paket add nuget xunit --interactive` install the package:
+Now we run `paket add nuget xunit --interactive` to install the package:
 
 ![alt text](img/interactive-add.png "Interactive paket add")
 
@@ -200,7 +201,16 @@ This will add the package to the selected paket.references files and also to the
 	source https://nuget.org/api/v2
 
 	nuget FAKE
-	nuget xunit"""}
+	nuget xunit
+
+Finally, if we run `paket add url http://www.fssnip.net/raw/1M test1.fs`, the resulting dependencies will look like the following:
+
+    source https://nuget.org/api/v2
+
+    nuget FAKE
+    nuget xunit
+
+    http http://www.fssnip.net/raw/1M test1.fs"""}
 
      "find-refs",
         { Title = "paket find-refs"
