@@ -315,6 +315,9 @@ type DependenciesFile(fileName,options,sources,packages : PackageRequirement lis
 
         DependenciesFile(fileName,options,sources,newPackages,remoteFiles)
 
+    static member add (dependenciesFile : DependenciesFile) (packageName,version) =
+        dependenciesFile.Add(packageName,version)
+
     member this.Add(packageName,version:string) =
         let (PackageName name) = packageName
         if this.HasPackage packageName then 

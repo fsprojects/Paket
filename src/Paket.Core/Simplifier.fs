@@ -1,69 +1,104 @@
 ﻿module Paket.Simplifier
 
-open System.IO
-open Logging
 open System
+open System.IO
+
 open Paket.Domain
+open Paket.Logging
 open Paket.PackageResolver
+open Paket.Rop
 
-let private formatDiff (before : string) (after : string) =
-    let nl = Environment.NewLine
-    nl + "Before:" + nl + nl + before + nl + nl + nl + "After:" + nl + nl + after + nl + nl
+let getFlatLookup (lockFile : LockFile) = 
+    lockFile.ResolvedPackages
+    |> Map.map (fun name package -> 
+                    lockFile.GetAllDependenciesOf package.Name
+                    |> Set.ofSeq
+                    |> Set.remove package.Name)
 
-let private simplify file before after =
-    if before <> after then
-        File.WriteAllText(file, after)
-        tracefn "Simplified %s" file
-        traceVerbose (formatDiff before after)
+let findIndirect (packages, flatLookup, failureF) = 
+    packages
+    |> List.map (fun packageName -> 
+        flatLookup 
+        |> Map.tryFind (NormalizedPackageName packageName)
+        |> failIfNone (failureF packageName))
+    |> Rop.collect
+    |> lift Seq.concat
+
+let removePackage(packageName, indirectPackages, fileName, interactive) =
+    if indirectPackages |> Seq.exists (fun p -> NormalizedPackageName p = NormalizedPackageName packageName) then
+        if interactive then
+            let message = sprintf "Do you want to remove indirect dependency %s from file %s ?" packageName.Id fileName 
+            Utils.askYesNo(message)
+        else 
+            true
     else
-        tracefn "%s is already simplified" file
+        false
 
-let private interactiveConfirm fileName (PackageName package) = 
-        Utils.askYesNo(sprintf "Do you want to remove indirect dependency %s from file %s ?" package fileName)
+let simplifyDependenciesFile (dependenciesFile : DependenciesFile, flatLookup, interactive) =
+    let create (d : DependenciesFile) indirect =
+        let newPackages = 
+            dependenciesFile.Packages
+            |> List.filter (fun package -> not <| removePackage(package.Name, indirect, dependenciesFile.FileName, interactive))
+        DependenciesFile(d.FileName, d.Options, d.Sources, newPackages, d.RemoteFiles)
 
-let Analyze(lockFile : LockFile, depFile : DependenciesFile, refFiles : ReferencesFile list, interactive) = 
-    let lookupDeps packageName =
-        let deps = lockFile.GetAllDependenciesOf packageName
-        deps.Remove(packageName) |> ignore
-        deps |> Set.ofSeq
-    
-    let getSimplifiedDeps (depNameFun : 'a -> PackageName) fileName allDeps =
-        let indirectDeps = 
-            allDeps 
-            |> List.map depNameFun 
-            |> List.fold (fun set directDep -> Set.union set (lookupDeps directDep)) Set.empty
-        let depsToRemove =
-            if interactive then indirectDeps |> Set.filter (interactiveConfirm fileName) else indirectDeps
-            |> Set.map NormalizedPackageName
-        allDeps |> List.filter (fun dep -> not <| Set.contains (NormalizedPackageName (depNameFun dep)) depsToRemove)
+    let packages = dependenciesFile.Packages |> List.map (fun p -> p.Name)
+    let indirect = findIndirect(packages, flatLookup, DependencyNotFoundInLockFile)
+        
+    create dependenciesFile
+    <!> indirect
 
-    let simplifiedDeps = depFile.Packages |> getSimplifiedDeps (fun p -> p.Name) depFile.FileName |> Seq.toList
-    let refFiles' = refFiles |> List.map (fun refFile -> {refFile with NugetPackages = 
-                                                                            refFile.NugetPackages |> getSimplifiedDeps id refFile.FileName})
+let simplifyReferencesFile (refFile, flatLookup, interactive) =
+    let create refFile indirect =
+        let newPackages = 
+            refFile.NugetPackages 
+            |> List.filter (fun p -> not <| removePackage(p, indirect, refFile.FileName, interactive))
+        { refFile with NugetPackages = newPackages }
 
-    DependenciesFile(depFile.FileName, depFile.Options, depFile.Sources, simplifiedDeps, depFile.RemoteFiles), refFiles'
+    let indirect = findIndirect(refFile.NugetPackages, 
+                                flatLookup, 
+                                (fun p -> ReferenceNotFoundInLockFile(refFile.FileName,p)))
+                 
+    create refFile
+    <!> indirect
 
-let Simplify (dependenciesFileName,interactive) = 
-    if not <| File.Exists dependenciesFileName then
-        failwithf "%s file not found." dependenciesFileName
-    let depFile = DependenciesFile.ReadFromFile dependenciesFileName
-    if depFile.Options.Strict then
-        failwith "Strict mode detected. Will not attempt to simplify dependencies."
-    let lockFilePath = depFile.FindLockfile()
-    if not <| File.Exists(lockFilePath.FullName) then 
-        failwith "lock file not found. Create lock file by running paket install."
+let beforeAndAfter environment dependenciesFile projects =
+        environment,
+        { environment with DependenciesFile = dependenciesFile
+                           Projects = projects }
 
-    let lockFile = LockFile.LoadFrom(lockFilePath.FullName)
-    let refFiles = 
-        ProjectFile.FindAllProjects(Path.GetDirectoryName lockFile.FileName) 
-        |> Array.choose (fun p -> ProjectFile.FindReferencesFile <| FileInfo(p.FileName))
-        |> Array.map ReferencesFile.FromFile
-    let refFilesBefore = refFiles |> Array.map (fun refFile -> refFile.FileName, refFile) |> Map.ofArray
+let ensureNotInStrictMode environment =
+    if not environment.DependenciesFile.Options.Strict then succeed environment
+    else fail StrictModeDetected
 
-    let simplifiedDepFile, simplifiedRefFiles = Analyze(lockFile, depFile, Array.toList refFiles, interactive)
-    
-    printfn ""
-    simplify depFile.FileName <| depFile.ToString() <| simplifiedDepFile.ToString()
+let simplify interactive environment =
+    match environment.LockFile with
+    | Some lockFile ->
+        let flatLookup = getFlatLookup lockFile
+        let dependenciesFile = simplifyDependenciesFile(environment.DependenciesFile, flatLookup, interactive)
+        let projectFiles, referencesFiles = List.unzip environment.Projects
 
-    for refFile in simplifiedRefFiles do
-        simplify refFile.FileName <| refFilesBefore.[refFile.FileName].ToString() <| refFile.ToString()
+        let referencesFiles' =
+            referencesFiles
+            |> List.map (fun refFile -> simplifyReferencesFile(refFile, flatLookup, interactive))
+            |> Rop.collect
+
+        let projects = List.zip projectFiles <!> referencesFiles'
+
+        beforeAndAfter environment
+        <!> dependenciesFile
+        <*> projects
+    | None -> fail (LockFileNotFound environment.RootDirectory)
+
+let updateEnvironment ((before,after), _ ) =
+    if before.DependenciesFile.ToString() = after.DependenciesFile.ToString() then
+        tracefn "%s is already simplified" before.DependenciesFile.FileName
+    else
+        tracefn "Simplifying %s" after.DependenciesFile.FileName
+        after.DependenciesFile.Save()
+
+    for (_,refFileBefore),(_,refFileAfter) in List.zip before.Projects after.Projects do
+        if refFileBefore = refFileAfter then
+            tracefn "%s is already simplified" refFileBefore.FileName
+        else
+            tracefn "Simplifying %s" refFileAfter.FileName
+            refFileAfter.Save()

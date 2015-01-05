@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
@@ -71,10 +71,11 @@
     <Compile Include="Async.fs" />
     <Compile Include="AssemblyInfo.fs" />
     <Compile Include="CustomAssemblyInfo.fs" />
+    <Compile Include="Rop.fs" />
+    <Compile Include="Constants.fs" />
     <Compile Include="Domain.fs" />
     <Compile Include="SemVer.fs" />
     <Compile Include="VersionRange.fs" />
-    <Compile Include="Constants.fs" />
     <Compile Include="Logging.fs" />
     <Compile Include="Xml.fs" />
     <Compile Include="Utils.fs" />
@@ -103,6 +104,7 @@
     <Compile Include="UpdateProcess.fs" />
     <Compile Include="RemoveProcess.fs" />
     <Compile Include="AddProcess.fs" />
+    <Compile Include="Environment.fs" />
     <Compile Include="Simplifier.fs" />
     <Compile Include="VSIntegration.fs" />
     <Compile Include="NugetConvert.fs" />

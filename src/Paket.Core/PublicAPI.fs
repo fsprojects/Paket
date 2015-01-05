@@ -4,6 +4,7 @@ open System.IO
 open Paket.Logging
 open System
 open Paket.Domain
+open Paket.Rop
 
 /// Paket API which is optimized for F# Interactive use.
 type Dependencies(dependenciesFileName: string) =
@@ -18,6 +19,7 @@ type Dependencies(dependenciesFileName: string) =
                             let (PackageName name) = p.Name
                             name, p.Version.ToString())
         |> Seq.toList
+    
 
     /// Tries to locate the paket.dependencies file in the current folder or a parent folder.
     static member Locate(): Dependencies = Dependencies.Locate(Environment.CurrentDirectory)
@@ -53,27 +55,38 @@ type Dependencies(dependenciesFileName: string) =
         else
             DependenciesFile(dependenciesFileName, InstallOptions.Default, [], [], []).Save()
         Dependencies(dependenciesFileName)
-        
+    
     /// Converts the solution from NuGet to Paket.
-    static member ConvertFromNuget(force: bool,installAfter: bool,initAutoRestore: bool,credsMigrationMode: string option) : unit =        
-        let credsMigrationMode = credsMigrationMode |> Option.map NuGetConvert.CredsMigrationMode.Parse
-        let dependencies = 
-            try Some <| Dependencies.Locate()
-            with _ -> None 
-        
-        let existingDependenciesFile = 
-            if force 
-            then dependencies |> Option.map (fun d -> d.DependenciesFile)
-            else dependencies |> Option.map (fun d -> failwithf "%s already exists, use --force to overwrite" d.DependenciesFile)
-        
-        let dependenciesFileName = 
-            match existingDependenciesFile with
-            | Some file -> file
-            | None -> Path.Combine(Environment.CurrentDirectory, Constants.DependenciesFileName)
+    static member ConvertFromNuget(force: bool,installAfter: bool,initAutoRestore: bool,credsMigrationMode: string option) : unit =
+        let currentDirectory = DirectoryInfo(Environment.CurrentDirectory)
+        let rootDirectory = defaultArg (PaketEnv.locatePaketRootDirectory(currentDirectory)) currentDirectory
 
         Utils.RunInLockedAccessMode(
-            Path.GetDirectoryName(dependenciesFileName),
-            fun () ->  NuGetConvert.ConvertFromNuget(dependenciesFileName, force, installAfter, initAutoRestore, credsMigrationMode))
+            rootDirectory.FullName,
+            fun () ->
+                NuGetConvert.convertR rootDirectory force credsMigrationMode
+                |> either 
+                    (NuGetConvert.replaceNugetWithPaket initAutoRestore installAfter) 
+                    (List.iter (string >> Logging.traceError))
+        )
+
+     /// Converts the current package dependency graph to the simplest dependency graph.
+    static member Simplify(): unit = Dependencies.Simplify(false)
+
+    /// Converts the current package dependency graph to the simplest dependency graph.
+    static member Simplify(interactive : bool) =
+        match PaketEnv.locatePaketRootDirectory(DirectoryInfo(Environment.CurrentDirectory)) with
+        | Some rootDirectory ->
+            Utils.RunInLockedAccessMode(
+                rootDirectory.FullName,
+                fun () -> 
+                    PaketEnv.fromRootDirectory rootDirectory
+                    >>= Simplifier.ensureNotInStrictMode
+                    >>= Simplifier.simplify interactive
+                    |> either (Simplifier.updateEnvironment) (List.iter (string >> Logging.traceError))
+            )
+        | None ->
+            Logging.traceErrorfn "Unable to find %s in current directory and parent directories" Constants.DependenciesFileName
 
     /// Get path to dependencies file
     member this.DependenciesFile with get() = dependenciesFileName
@@ -140,15 +153,6 @@ type Dependencies(dependenciesFileName: string) =
         Utils.RunInLockedAccessMode(
             this.RootPath,
             fun () -> VSIntegration.InitAutoRestore(dependenciesFileName))
-
-    /// Converts the current package dependency graph to the simplest dependency graph.
-    member this.Simplify(): unit = this.Simplify(false)
-
-    /// Converts the current package dependency graph to the simplest dependency graph.
-    member this.Simplify(interactive: bool): unit = 
-        Utils.RunInLockedAccessMode(
-            this.RootPath,
-            fun () -> Simplifier.Simplify(dependenciesFileName,interactive))
 
     /// Returns the installed version of the given package.
     member this.GetInstalledVersion(packageName: string): string option =
