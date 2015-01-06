@@ -14,7 +14,13 @@ let either fSuccess fFailure = function
     | Success(x, msgs) -> fSuccess(x,msgs)
     | Failure(msgs) -> fFailure(msgs)
 
-let returnOrFail result = either fst (fun msgs -> String.Join(Environment.NewLine,msgs |> Seq.map (sprintf "%O")) |> failwith) result
+let returnOrFail result = 
+    let raiseExn msgs = 
+        msgs 
+        |> Seq.map (sprintf "%O")
+        |> String.concat (Environment.NewLine + "\t")
+        |> failwith
+    either fst raiseExn result
 
 let mergeMessages msgs result =
     let fSuccess (x,msgs2) = 
