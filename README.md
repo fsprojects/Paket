@@ -4,8 +4,8 @@ A package dependency manager for .NET with support for NuGet packages and GitHub
 
 ## Why Paket?
 
-NuGet does not separate out the concept of indirect dependencies. 
-If you install a package into your project and that package has further dependencies then all indirect packages are included in the packages.config. 
+NuGet does not separate out the concept of indirect dependencies.
+If you install a package into your project and that package has further dependencies then all indirect packages are included in the packages.config.
 There is no way to tell which packages are only indirect dependencies.
 
 Even more importantly: If two packages reference conflicting versions of a package, NuGet will silently take the latest version ([read more](http://fsprojects.github.io/Paket/controlling-nuget-resolution.html)). You have no control over this process.
@@ -23,12 +23,12 @@ For more reasons see the [FAQ][10].
  - [Documentation][2]
  - Download [paket.exe][3]
  - Download [paket.bootstrapper.exe][3]
- 
+
 [![NuGet Status](http://img.shields.io/nuget/v/Paket.svg?style=flat)](https://www.nuget.org/packages/Paket/)
 
 ## Troubleshooting and support
 
- - Found a bug or missing a feature? 
+ - Found a bug or missing a feature?
    Feed the [issue tracker][4] [![Issue Stats][badge-issue-stats]][link-issue-stats] [![Pull Requests Stats][badge-pr-stats]][link-issue-stats]
  - Announcements and related miscellanea through Twitter ([@PaketManager][5])
 
@@ -47,7 +47,7 @@ For more reasons see the [FAQ][10].
  - Run `build.cmd` (`build.sh` on Mono) to make sure all tests are still passing.
  - Send a Pull Request.
 
-If you want to contribute to the [docs][2] then please modify the markdown files in `/docs/content` and send a pull request.
+If you want to contribute to the [docs][2] then please modify [HelpTexts.fs](src/Paket/HelpTexts.fs) (the actual documentation is generated from the contents of this file) and send a pull request.
 
 ## License
 
@@ -71,7 +71,7 @@ The default maintainer account for projects under "fsprojects" is [@fsgit](https
  [6]: https://github.com/fsprojects/Paket/blob/master/LICENSE.txt
  [7]: http://fsprojects.github.io/Paket/lock-file.html
  [8]: http://fsprojects.github.io/Paket/dependencies-file.html
- [9]: http://fsprojects.github.io/Paket/github-dependencies.html 
+ [9]: http://fsprojects.github.io/Paket/github-dependencies.html
  [10]: http://fsprojects.github.io/Paket/faq.html
  [11]: http://fsprojects.github.io/Paket/http-dependencies.html
  [badge-pr-stats]: http://www.issuestats.com/github/fsprojects/Paket/badge/pr
