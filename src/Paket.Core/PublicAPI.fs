@@ -43,19 +43,19 @@ type Dependencies(dependenciesFileName: string) =
         let dependenciesFileName = findInPath(DirectoryInfo path,true)
         tracefn "found: %s" dependenciesFileName
         Dependencies(dependenciesFileName)
-        
-    /// Tries to create a paket.dependencies file in the given folder.
-    static member Create(): Dependencies = Dependencies.Create(Environment.CurrentDirectory)
 
-    /// Tries to create a paket.dependencies file in the given folder.
-    static member Create(path: string): Dependencies =
-        let dependenciesFileName = Path.Combine(path,Constants.DependenciesFileName)
-        if File.Exists dependenciesFileName then
-            Logging.tracefn "%s already exists" dependenciesFileName
-        else
-            DependenciesFile(dependenciesFileName, InstallOptions.Default, [], [], []).Save()
-        Dependencies(dependenciesFileName)
-    
+    /// Initialize Paket in current directory
+    static member Init() =
+        let currentDirectory = DirectoryInfo(Environment.CurrentDirectory)
+
+        Utils.RunInLockedAccessMode(
+            currentDirectory.FullName,
+            fun () ->
+                PaketEnv.init currentDirectory
+                |> returnOrFail
+                |> PaketEnv.save
+        )
+
     /// Converts the solution from NuGet to Paket.
     static member ConvertFromNuget(force: bool,installAfter: bool,initAutoRestore: bool,credsMigrationMode: string option) : unit =
         let currentDirectory = DirectoryInfo(Environment.CurrentDirectory)

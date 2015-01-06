@@ -155,7 +155,7 @@ try
 
         else
             match command with
-            | Command.Init -> Dependencies.Create() |> ignore
+            | Command.Init -> Dependencies.Init()
             | Command.Add -> 
                 let packageName = results.GetResult <@ CLIArguments.Nuget @>
                 let version = 

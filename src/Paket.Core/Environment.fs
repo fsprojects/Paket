@@ -14,12 +14,12 @@ type PaketEnv = {
 
 [<CompilationRepresentation(CompilationRepresentationFlags.ModuleSuffix)>]
 module PaketEnv = 
-
+    
     let create root dependenciesFile lockFile projects = 
         { RootDirectory = root
           DependenciesFile = dependenciesFile
           LockFile = lockFile
-          Projects = projects }
+          Projects = projects }       
 
     let fromRootDirectory (directory : DirectoryInfo) = rop {
         if not directory.Exists then 
@@ -61,6 +61,7 @@ module PaketEnv =
             |> Seq.tryFind File.Exists
             |> Option.map (fun f -> DirectoryInfo(Path.GetDirectoryName(f)))
 
+
     let ensureNotExists (directory : DirectoryInfo) =
         match fromRootDirectory directory with
         | Success(_) -> fail (PaketEnvAlreadyExistsInDirectory directory)
@@ -80,3 +81,42 @@ module PaketEnv =
     let ensureLockFileExists environment =
         environment.LockFile
         |> failIfNone (LockFileNotFound environment.RootDirectory)
+
+    let init (directory : DirectoryInfo) =
+        match locatePaketRootDirectory directory with
+        | Some rootDirectory -> 
+            fromRootDirectory rootDirectory
+            |> successTee (fun (env,_) -> Logging.tracefn "Paket is already initialized in %s" env.RootDirectory.FullName)
+        | None -> 
+            create 
+                directory 
+                (DependenciesFile(Path.Combine(directory.FullName, Constants.DependenciesFileName), InstallOptions.Default, [], [], []))
+                None
+                []
+            |> succeed
+
+    let save env =
+        let overwrite (currentEnv,_) = 
+            if currentEnv.DependenciesFile.ToString() <> env.DependenciesFile.ToString() 
+            then env.DependenciesFile.Save()
+            
+            match currentEnv.LockFile, env.LockFile with
+            | Some currentLockFile, Some lockFile ->
+                if currentLockFile.ToString() <> lockFile.ToString() 
+                then lockFile.Save()
+            | Some currentLockFile, None -> 
+                File.Delete currentLockFile.FileName
+            | None, Some lockFile ->
+                lockFile.Save()
+            | _ ->
+                ()
+
+            // TODO: save Projects and their References
+
+        let justSave _ =
+            env.DependenciesFile.Save()
+            env.LockFile |> Option.iter (fun l -> l.Save())
+            env.Projects |> List.iter (fun (project,references) -> project.Save(); references.Save())
+
+        fromRootDirectory env.RootDirectory
+        |> either overwrite justSave
