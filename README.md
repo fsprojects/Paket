@@ -47,7 +47,7 @@ For more reasons see the [FAQ][10].
  - Run `build.cmd` (`build.sh` on Mono) to make sure all tests are still passing.
  - Send a Pull Request.
 
-If you want to contribute to the [docs][2] then please modify [HelpTexts.fs](src/Paket/HelpTexts.fs) (the actual documentation is generated from the contents of this file) and send a pull request.
+If you want to contribute to the [docs][2] then please the modify markdown files in `/docs/content` (some help texts are also generated from `/src/Paket/HelpTexts.fs`) and send a pull request.
 
 ## License
 
