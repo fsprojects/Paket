@@ -2,6 +2,7 @@
 module Paket.InstallProcess
 
 open Paket
+open Paket.Rop
 open Paket.Domain
 open Paket.Logging
 open Paket.BindingRedirects
@@ -124,7 +125,13 @@ let findAllReferencesFiles root =
     root
     |> ProjectFile.FindAllProjects
     |> Array.choose (fun p -> ProjectFile.FindReferencesFile(FileInfo(p.FileName))
-                                |> Option.map (fun r -> p, ReferencesFile.FromFile(r)))
+                                |> Option.map (fun r -> p, r))
+    |> Array.map (fun (project,file) -> 
+        try 
+            succeed <| (project, ReferencesFile.FromFile(file))
+        with _ -> 
+            fail <| ReferencesFileParseError (FileInfo(file)))
+    |> collect
 
 /// Installs the given all packages from the lock file.
 let InstallIntoProjects(sources,force, hard, withBindingRedirects, lockFile:LockFile, projects) =
@@ -184,10 +191,5 @@ let InstallIntoProjects(sources,force, hard, withBindingRedirects, lockFile:Lock
 /// Installs the given all packages from the lock file.
 let Install(sources,force, hard, withBindingRedirects, lockFile:LockFile) = 
     let root = FileInfo(lockFile.FileName).Directory.FullName 
-    InstallIntoProjects(
-        sources,
-        force,
-        hard,
-        withBindingRedirects,
-        lockFile,
-        findAllReferencesFiles root)
+    let projects = findAllReferencesFiles root |> returnOrFail
+    InstallIntoProjects(sources,force,hard,withBindingRedirects,lockFile,projects)

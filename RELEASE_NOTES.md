@@ -1,3 +1,7 @@
+#### 0.22.2 - 06.01.2015
+* BUGFIX: Detect correct `paket.references` filenames during convert-from-nuget
+* BUGFIX: If no package source is found during convert-from-nuget we use the default NuGet feed
+
 #### 0.22.1 - 05.01.2015
 * Remove icon from bootstrapper to make impact smaller
 

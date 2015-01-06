@@ -260,7 +260,7 @@ let createDependenciesFileR (rootDirectory : DirectoryInfo) nugetEnv mode =
 
     let create() =
         let sources = 
-            nugetEnv.NugetConfig.PackageSources
+            if nugetEnv.NugetConfig.PackageSources = [] then [Constants.DefaultNugetStream,None] else nugetEnv.NugetConfig.PackageSources
             |> List.map (fun (n, auth) -> n, auth |> Option.map (CredsMigrationMode.toAuthentication mode n))
             |> List.map (fun source -> 
                             try source |> PackageSource.Parse |> Rop.succeed
@@ -274,11 +274,8 @@ let createDependenciesFileR (rootDirectory : DirectoryInfo) nugetEnv mode =
 
     if File.Exists dependenciesFileName then read() else create()
 
-let convertPackagesConfigToReferences packagesConfig = 
-    let fileName = Path.Combine(packagesConfig.File.Directory.Name, Constants.ReferencesFile)
-    let referencesFile = 
-        if File.Exists fileName then ReferencesFile.FromFile fileName
-        else ReferencesFile.New(fileName)
+let convertPackagesConfigToReferences projectFileName packagesConfig =     
+    let referencesFile = ProjectFile.FindOrCreateReferencesFile(FileInfo projectFileName)
 
     packagesConfig.Packages
     |> List.map (fst >> PackageName)
@@ -289,7 +286,7 @@ let convertProjects nugetEnv =
     [for project,packagesConfig in nugetEnv.NugetProjectFiles do 
         project.ReplaceNuGetPackagesFile()
         project.RemoveNuGetTargetsEntries()
-        yield project, convertPackagesConfigToReferences packagesConfig] |> succeed
+        yield project, convertPackagesConfigToReferences project.FileName packagesConfig] |> succeed
 
 let createPaketEnv rootDirectory nugetEnv credsMirationMode = 
     

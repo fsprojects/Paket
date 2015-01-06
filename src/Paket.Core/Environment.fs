@@ -45,16 +45,7 @@ module PaketEnv =
                     with _ ->
                         fail (LockFileParseError fi)
 
-            let projects = 
-                ProjectFile.FindAllProjects(directory.FullName) 
-                |> Array.choose (fun project -> ProjectFile.FindReferencesFile(FileInfo(project.FileName))
-                                                |> Option.map (fun refFile -> project,refFile))
-                |> Array.map (fun (project,file) -> 
-                    try 
-                        succeed <| (project, ReferencesFile.FromFile(file))
-                    with _ -> 
-                        fail <| ReferencesFileParseError (FileInfo(file)))
-                |> collect
+            let projects = InstallProcess.findAllReferencesFiles(directory.FullName)
 
             create directory
             <!> dependenciesFile
