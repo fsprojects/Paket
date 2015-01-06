@@ -248,6 +248,12 @@ type InstallModel =
         lazy ([ for lib in this.LibFolders do
                     yield! lib.Files.GetFrameworkAssemblies()]
               |> Set.ofList)
+
+    member this.RemoveIfCompletelyEmpty() = 
+        if Set.isEmpty (this.GetFrameworkAssemblies.Force()) &&  Set.isEmpty (this.GetReferences.Force()) then
+            InstallModel.EmptyModel(this.PackageName,this.PackageVersion)
+        else
+            this
     
     static member CreateFromLibs(packageName, packageVersion, frameworkRestrictions:FrameworkRestrictions, libs, nuspec : Nuspec) = 
         InstallModel
@@ -255,4 +261,5 @@ type InstallModel =
             .AddReferences(libs, nuspec.References)
             .AddFrameworkAssemblyReferences(nuspec.FrameworkAssemblyReferences)
             .FilterBlackList()
-            .ApplyFrameworkRestrictions(frameworkRestrictions)            
+            .ApplyFrameworkRestrictions(frameworkRestrictions)
+            .RemoveIfCompletelyEmpty()       
