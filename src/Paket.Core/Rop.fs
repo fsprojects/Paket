@@ -1,5 +1,7 @@
 ﻿module Paket.Rop
 
+open System
+
 type RopResult<'TSuccess, 'TMessage> =    
     | Success of 'TSuccess * 'TMessage list
     | Failure of 'TMessage list
@@ -11,6 +13,8 @@ let fail msg = Failure([msg])
 let either fSuccess fFailure = function
     | Success(x, msgs) -> fSuccess(x,msgs)
     | Failure(msgs) -> fFailure(msgs)
+
+let returnOrFail result = either fst (fun msgs -> String.Join(Environment.NewLine,msgs |> Seq.map (sprintf "%O")) |> failwith) result
 
 let mergeMessages msgs result =
     let fSuccess (x,msgs2) = 

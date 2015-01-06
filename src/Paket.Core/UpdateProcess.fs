@@ -6,6 +6,7 @@ open System.IO
 open Paket.Domain
 open Paket.PackageResolver
 open System.Collections.Generic
+open Paket.Rop
 
 let addPackagesFromReferenceFiles projects (dependenciesFile:DependenciesFile) =
     let lockFileName = DependenciesFile.FindLockfile dependenciesFile.FileName
@@ -62,7 +63,7 @@ let SelectiveUpdate(dependenciesFile:DependenciesFile, exclude, force) =
 /// Smart install command
 let SmartInstall(dependenciesFileName, exclude, force, hard, withBindingRedirects) = 
     let root = Path.GetDirectoryName dependenciesFileName
-    let projects = InstallProcess.findAllReferencesFiles(root)
+    let projects = InstallProcess.findAllReferencesFiles root |> returnOrFail
     let dependenciesFile = 
         DependenciesFile.ReadFromFile(dependenciesFileName)
         |> addPackagesFromReferenceFiles projects
