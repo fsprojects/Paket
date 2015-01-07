@@ -200,18 +200,6 @@ module ConvertResultR =
           PaketEnv = paketEnv
           SolutionFiles = solutionFiles }
 
-let ensureNoPaketEnv rootDirectory =
-    match PaketEnv.fromRootDirectory rootDirectory with
-    | Success(_) -> fail (PaketEnvAlreadyExistsInDirectory rootDirectory)
-    | Failure(msgs) -> 
-        let filtered = 
-            msgs
-            |> List.filter (function
-                | DependenciesFileNotFoundInDir _ -> false
-                | _ -> true )
-        if filtered |> List.isEmpty then succeed rootDirectory
-        else Failure(filtered)
-
 let createPackageRequirement packageName version sources dependenciesFileName = 
      { Name = PackageName packageName
        VersionRequirement = VersionRequirement(VersionRange.Exactly version, PreReleaseStatus.No)
@@ -325,7 +313,7 @@ let convertR rootDirectory force credsMigrationMode = rop {
 
     let! rootDirectory = 
         if force then succeed rootDirectory
-        else ensureNoPaketEnv rootDirectory
+        else PaketEnv.ensureNotExists rootDirectory
 
     return! createResult(rootDirectory, nugetEnv, credsMigrationMode)
 }
