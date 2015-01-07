@@ -85,16 +85,18 @@ let getAuthFromNode (node : XmlNode) =
     let salt = node.Attributes.["salt"].Value
 
     username, Decrypt salt password
-           
-let private saveCredentials (source : string) (username : string) (password : string) (credentialsNode : XmlNode) =
-    let salt, encrypedPassword = Encrypt password
+
+let private createSourceNode (credentialsNode : XmlNode) source =
     let node = credentialsNode.OwnerDocument.CreateElement("credential")
     node.SetAttribute("source", source)
+    credentialsNode.AppendChild node |> ignore
+    node
+
+let private setCredentials (username : string) (password : string) (node : XmlElement) =
+    let salt, encrypedPassword = Encrypt password
     node.SetAttribute("username", username)
     node.SetAttribute("password", encrypedPassword)
     node.SetAttribute("salt", salt)
-    credentialsNode.AppendChild node |> ignore
-    saveConfigNode credentialsNode
     node
 
 
@@ -108,7 +110,7 @@ let checkCredentials(source, cred) =
 
 let getSourceNodes (credentialsNode : XmlNode) (source) = 
     credentialsNode.SelectNodes "//credential"
-    |> Seq.cast<XmlNode>
+    |> Seq.cast<XmlElement>
     |> Seq.filter (fun n -> n.Attributes.["source"].Value = source)
     |> Seq.toList
 
@@ -130,25 +132,17 @@ let GetCredentials (source : string) =
 
 let AddCredentials (source, username, password) =
     let credentialsNode = getConfigNode "credentials"
-    
-    match getSourceNodes credentialsNode source with
-    | existingNode::_ ->
-        let existingPassword = 
-            Decrypt 
-                existingNode.Attributes.["salt"].Value
-                existingNode.Attributes.["password"].Value
+
+    match getSourceNodes credentialsNode source |> Seq.firstOrDefault with
+    | None -> createSourceNode credentialsNode source |> Some
+    | Some existingNode ->
+        let _,existingPassword = getAuthFromNode existingNode
 
         if existingPassword <> password then
-            let salt, encrypted = Encrypt password
-            existingNode.Attributes.["username"].Value <- username
-            existingNode.Attributes.["password"].Value <- encrypted
-            existingNode.Attributes.["salt"].Value <- salt
-            saveConfigNode credentialsNode
-            
-        existingNode
-    | [] -> 
-        saveCredentials source username password credentialsNode :> XmlNode
-
+            existingNode |> Some
+        else None
+    |> Option.map (setCredentials username password)
+    |> Option.iter saveConfigNode
 
 let askAndAddAuth (source : string) (username : string) : unit = 
     if not Environment.UserInteractive then
