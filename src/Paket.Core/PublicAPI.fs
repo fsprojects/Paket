@@ -97,6 +97,13 @@ type Dependencies(dependenciesFileName: string) =
     /// Get the root directory
     member private this.RootDirectory with get() = DirectoryInfo(this.RootPath)
 
+    /// Binds the given processing ROP function to current environment and executes it.
+    /// Throws on failure.
+    member private this.Process f =
+        PaketEnv.fromRootDirectory(this.RootDirectory)
+        >>= f
+        |> returnOrFail
+
     /// Adds the given package without version requirements to the dependencies file.
     member this.Add(package: string): unit = this.Add(package,"")
 
@@ -202,10 +209,8 @@ type Dependencies(dependenciesFileName: string) =
 
     /// Shows all references for the given packages.
     member this.ShowReferencesFor(packages: string list): unit =
-        FindReferences.ShowReferencesFor(dependenciesFileName,packages |> List.map PackageName)
+        FindReferences.ShowReferencesFor (packages |> List.map PackageName) |> this.Process
 
     /// Finds all references for a given package.
     member this.FindReferencesFor(package: string): string list =
-        PaketEnv.fromRootDirectory(this.RootDirectory)
-        >>= FindReferences.FindReferencesForPackage (PackageName package)
-        |> returnOrFail
+        FindReferences.FindReferencesForPackage (PackageName package) |> this.Process

@@ -23,17 +23,13 @@ let FindReferencesForPackage package environment = rop {
     return findReferencesFor package lockFile environment.Projects
 }
 
-let private findReferencesForPackageOld (dependenciesFileName, package:PackageName) =
-    let root = Path.GetDirectoryName dependenciesFileName
-    let projectFiles = ProjectFile.FindAllProjects root
-    let lockFile = LockFile.LoadFrom((DependenciesFile.FindLockfile dependenciesFileName).FullName)
+let ShowReferencesFor packages environment = rop {
+    let! lockFile = environment |> PaketEnv.ensureLockFileExists
 
-    findReferencesFor package lockFile (InstallProcess.findAllReferencesFiles root |> returnOrFail)
-
-let ShowReferencesFor (dependenciesFileName, packages : PackageName list) =
     packages
-    |> Seq.map (fun package -> package,findReferencesForPackageOld(dependenciesFileName,package))
+    |> Seq.map (fun package -> package, findReferencesFor package lockFile environment.Projects)
     |> Seq.iter (fun (PackageName k, vs) ->
         tracefn "%s" k
-        vs |> Seq.iter (tracefn "%s")        
+        vs |> Seq.iter (tracefn "%s")
         tracefn "")
+}
