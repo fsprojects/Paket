@@ -69,12 +69,12 @@ let simplify interactive environment = rop {
     let! dependenciesFile = simplifyDependenciesFile(environment.DependenciesFile, flatLookup, interactive)
     let projectFiles, referencesFiles = List.unzip environment.Projects
 
-    let referencesFiles' =
+    let! referencesFiles' =
         referencesFiles
         |> List.map (fun refFile -> simplifyReferencesFile(refFile, flatLookup, interactive))
         |> Rop.collect
 
-    let! projects = List.zip projectFiles <!> referencesFiles'
+    let projects = List.zip projectFiles referencesFiles'
 
     return beforeAndAfter environment dependenciesFile projects
 }
