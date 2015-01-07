@@ -44,7 +44,7 @@ type Dependencies(dependenciesFileName: string) =
         tracefn "found: %s" dependenciesFileName
         Dependencies(dependenciesFileName)
 
-    /// Initialize Paket in current directory
+    /// Initialize paket.dependencies file in current directory
     static member Init() =
         let currentDirectory = DirectoryInfo(Environment.CurrentDirectory)
 
@@ -52,6 +52,20 @@ type Dependencies(dependenciesFileName: string) =
             currentDirectory.FullName,
             fun () -> PaketEnv.init currentDirectory
         )
+
+     /// Pulls new paket.targets and bootstrapper and puts them into .paket folder.
+    static member InitAutoRestore(): unit = 
+        rop {
+            let currentDir = DirectoryInfo(Environment.CurrentDirectory)
+            let! rootDir = 
+                PaketEnv.locatePaketRootDirectory(currentDir)
+                |> failIfNone (DependenciesFileNotFoundInDir currentDir)
+
+            return! Utils.RunInLockedAccessMode(
+                rootDir.FullName,
+                fun () -> VSIntegration.InitAutoRestoreR(rootDir)
+            )
+        } |> returnOrFail    
 
     /// Converts the solution from NuGet to Paket.
     static member ConvertFromNuget(force: bool,installAfter: bool,initAutoRestore: bool,credsMigrationMode: string option) : unit =

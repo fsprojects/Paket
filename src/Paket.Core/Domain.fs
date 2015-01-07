@@ -55,6 +55,10 @@ type DomainMessage =
     | DependencyNotFoundInLockFile of PackageName
     | ReferenceNotFoundInLockFile of string * PackageName
 
+    | DownloadError of string
+    | ReleasesJsonParseError
+    | FileDeleteError of string
+
     override this.ToString() = 
         match this with
         | DirectoryDoesntExist(di) -> 
