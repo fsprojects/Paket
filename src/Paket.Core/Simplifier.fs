@@ -62,16 +62,8 @@ let beforeAndAfter environment dependenciesFile projects =
         { environment with DependenciesFile = dependenciesFile
                            Projects = projects }
 
-let ensureNotInStrictMode environment =
-    if not environment.DependenciesFile.Options.Strict then succeed environment
-    else fail StrictModeDetected
-
-let ensureLockFileExists environment =
-    environment.LockFile
-    |> failIfNone (LockFileNotFound environment.RootDirectory)
-
 let simplify interactive environment = rop {
-    let! lockFile = ensureLockFileExists environment
+    let! lockFile = environment |> PaketEnv.ensureLockFileExists
 
     let flatLookup = getFlatLookup lockFile
     let! dependenciesFile = simplifyDependenciesFile(environment.DependenciesFile, flatLookup, interactive)

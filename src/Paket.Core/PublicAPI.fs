@@ -80,7 +80,7 @@ type Dependencies(dependenciesFileName: string) =
                 rootDirectory.FullName,
                 fun () -> 
                     PaketEnv.fromRootDirectory rootDirectory
-                    >>= Simplifier.ensureNotInStrictMode
+                    >>= PaketEnv.ensureNotInStrictMode
                     >>= Simplifier.simplify interactive
                     |> returnOrFail
                     |> Simplifier.updateEnvironment

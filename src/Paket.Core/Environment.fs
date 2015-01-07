@@ -62,3 +62,11 @@ module PaketEnv =
                 | dir -> Some(Path.Combine(dir.FullName, Constants.DependenciesFileName), dir.Parent))
             |> Seq.tryFind File.Exists
             |> Option.map (fun f -> DirectoryInfo(Path.GetDirectoryName(f)))
+
+    let ensureNotInStrictMode environment =
+        if not environment.DependenciesFile.Options.Strict then succeed environment
+        else fail StrictModeDetected
+
+    let ensureLockFileExists environment =
+        environment.LockFile
+        |> failIfNone (LockFileNotFound environment.RootDirectory)
