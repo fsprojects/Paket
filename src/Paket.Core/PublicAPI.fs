@@ -94,6 +94,9 @@ type Dependencies(dependenciesFileName: string) =
     /// Get the root path
     member this.RootPath with get() = Path.GetDirectoryName(dependenciesFileName)
 
+    /// Get the root directory
+    member private this.RootDirectory with get() = DirectoryInfo(this.RootPath)
+
     /// Adds the given package without version requirements to the dependencies file.
     member this.Add(package: string): unit = this.Add(package,"")
 
@@ -203,4 +206,6 @@ type Dependencies(dependenciesFileName: string) =
 
     /// Finds all references for a given package.
     member this.FindReferencesFor(package: string): string list =
-        FindReferences.FindReferencesForPackage(dependenciesFileName, PackageName package)
+        PaketEnv.fromRootDirectory(this.RootDirectory)
+        >>= FindReferences.FindReferencesForPackage (PackageName package)
+        |> returnOrFail
