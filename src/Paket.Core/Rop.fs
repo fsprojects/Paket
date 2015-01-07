@@ -85,3 +85,10 @@ let (<!>) = lift
 
 /// infix version of Rop.apply
 let (<*>) = apply
+
+type RopBuilder() =
+    member __.Bind(m, f) = bind f m
+    member __.Return(x) = succeed x
+    member __.ReturnFrom(x) = x
+
+let rop = RopBuilder()
