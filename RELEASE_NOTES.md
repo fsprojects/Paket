@@ -1,4 +1,4 @@
-#### 0.22.3 - 06.01.2015
+#### 0.22.4 - 07.01.2015
 * COSMETICS: Ignore completely empty lib folders
 
 #### 0.22.2 - 06.01.2015
