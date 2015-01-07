@@ -63,6 +63,18 @@ module PaketEnv =
             |> Seq.tryFind File.Exists
             |> Option.map (fun f -> DirectoryInfo(Path.GetDirectoryName(f)))
 
+    let ensureNotExists (directory : DirectoryInfo) =
+        match fromRootDirectory directory with
+        | Success(_) -> fail (PaketEnvAlreadyExistsInDirectory directory)
+        | Failure(msgs) -> 
+            let filtered = 
+                msgs
+                |> List.filter (function
+                    | DependenciesFileNotFoundInDir _ -> false
+                    | _ -> true )
+            if filtered |> List.isEmpty then succeed directory
+            else Failure(filtered)
+
     let ensureNotInStrictMode environment =
         if not environment.DependenciesFile.Options.Strict then succeed environment
         else fail StrictModeDetected
