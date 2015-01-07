@@ -12,18 +12,13 @@ let private rootElement = "configuration"
 
 let private getConfigNode (nodeName : string) =
     let rootNode = 
+        let doc = new XmlDocument()
         if File.Exists Constants.PaketConfigFile then 
-            let doc = new XmlDocument()
             doc.Load Constants.PaketConfigFile
             doc.DocumentElement
-        else 
-            if not (Directory.Exists Constants.PaketConfigFile) then 
-                Directory.CreateDirectory Constants.PaketConfigFolder |> ignore
-
-            let doc = new XmlDocument()
+        else
             let element = doc.CreateElement rootElement
             doc.AppendChild(element) |> ignore
-            doc.Save Constants.PaketConfigFile
             element
 
     let node = rootNode.SelectSingleNode(sprintf "//%s" nodeName)
@@ -34,7 +29,11 @@ let private getConfigNode (nodeName : string) =
         |> rootNode.AppendChild
 
 
-let private saveConfigNode (node : XmlNode) = node.OwnerDocument.Save Constants.PaketConfigFile
+let private saveConfigNode (node : XmlNode) =
+    if not (Directory.Exists Constants.PaketConfigFolder) then
+        Directory.CreateDirectory Constants.PaketConfigFolder |> ignore
+
+    node.OwnerDocument.Save Constants.PaketConfigFile
 
 let private cryptoServiceProvider = new RNGCryptoServiceProvider()
 
@@ -157,4 +156,3 @@ let askAndAddAuth (source : string) (username : string) : unit =
 
     let password = readPassword "Password: "
     AddCredentials (source, username, password) |> ignore
- 
