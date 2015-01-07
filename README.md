@@ -28,10 +28,8 @@ For more reasons see the [FAQ][10].
 
 ## Troubleshooting and support
 
- - Found a bug or missing a feature?
+ - Found a bug or missing a feature? Feed the [issue tracker][4].
  - Announcements and related miscellanea through Twitter ([@PaketManager][5])
-  
- Feed the [issue tracker][4] [![Issue Stats][badge-issue-stats]][link-issue-stats] [![Pull Requests Stats][badge-pr-stats]][link-issue-stats]
 
 ## Build status
 
@@ -39,6 +37,8 @@ For more reasons see the [FAQ][10].
 | :------ | :------: | :------: |
 | **Mono** | [build.sh](https://github.com/fsprojects/Paket/blob/master/build.sh) | [![Travis build status](https://travis-ci.org/fsprojects/Paket.png)](https://travis-ci.org/fsprojects/Paket) |
 | **Windows** | [build.cmd](https://github.com/fsprojects/Paket/blob/master/build.cmd) | [![AppVeyor Build status](https://ci.appveyor.com/api/projects/status/aqs8eux16x4g5p47/branch/master)](https://ci.appveyor.com/project/SteffenForkmann/paket/branch/master) |
+
+[![Issue Stats][badge-issue-stats]][link-issue-stats] [![Pull Requests Stats][badge-pr-stats]][link-issue-stats]
 
 ## Quick contributing guide
 
