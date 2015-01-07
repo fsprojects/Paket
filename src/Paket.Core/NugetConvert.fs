@@ -178,15 +178,15 @@ module NugetEnv =
         |> List.map (fun (p,packages) -> readSingle(FileInfo(packages)) |> lift (fun packages -> (p,packages)))
         |> Rop.collect
 
-    let read (rootDirectory : DirectoryInfo) = 
-        let configs = FindAllFiles(rootDirectory.FullName, "nuget.config") |> Array.toList 
+    let read (rootDirectory : DirectoryInfo) = rop {
+        let configs = FindAllFiles(rootDirectory.FullName, "nuget.config") |> Array.toList
         let targets = FindAllFiles(rootDirectory.FullName, "nuget.targets") |> Seq.firstOrDefault
         let exe = FindAllFiles(rootDirectory.FullName, "nuget.exe") |> Seq.firstOrDefault
+        let! config = readNugetConfig rootDirectory
+        let! packages = readNugetPackages rootDirectory
 
-        create rootDirectory configs targets exe
-        <!> readNugetConfig rootDirectory
-        <*> readNugetPackages rootDirectory
-
+        return create rootDirectory configs targets exe config packages
+    }
 
 type ConvertResultR = 
     { NugetEnv : NugetEnv
@@ -286,18 +286,16 @@ let convertProjects nugetEnv =
     [for project,packagesConfig in nugetEnv.NugetProjectFiles do 
         project.ReplaceNuGetPackagesFile()
         project.RemoveNuGetTargetsEntries()
-        yield project, convertPackagesConfigToReferences project.FileName packagesConfig] |> succeed
+        yield project, convertPackagesConfigToReferences project.FileName packagesConfig]
 
-let createPaketEnv rootDirectory nugetEnv credsMirationMode = 
-    
-    PaketEnv.create rootDirectory
-    <!> createDependenciesFileR rootDirectory nugetEnv credsMirationMode
-    <*> succeed None
-    <*> convertProjects nugetEnv
+let createPaketEnv rootDirectory nugetEnv credsMirationMode = rop {
+
+    let! depFile = createDependenciesFileR rootDirectory nugetEnv credsMirationMode
+    return PaketEnv.create rootDirectory depFile None (convertProjects nugetEnv)
+}
 
 let updateSolutions (rootDirectory : DirectoryInfo) = 
     let dependenciesFileName = Path.Combine(rootDirectory.FullName, Constants.DependenciesFileName)
-    let root = Path.GetDirectoryName dependenciesFileName
     let solutions =
         FindAllFiles(rootDirectory.FullName, "*.sln")
         |> Array.map(fun fi -> SolutionFile(fi.FullName))
@@ -308,34 +306,29 @@ let updateSolutions (rootDirectory : DirectoryInfo) =
         solution.RemoveNugetEntries()
         solution.AddPaketFolder(dependenciesFileRef, None)
 
-    solutions |> succeed
+    solutions
 
-let createResult(rootDirectory, nugetEnv, credsMirationMode) =
+let createResult(rootDirectory, nugetEnv, credsMirationMode) = rop {
 
-    ConvertResultR.create nugetEnv
-    <!> createPaketEnv rootDirectory nugetEnv credsMirationMode
-    <*> updateSolutions rootDirectory
+    let! paketEnv = createPaketEnv rootDirectory nugetEnv credsMirationMode
+    return ConvertResultR.create nugetEnv paketEnv (updateSolutions rootDirectory)
+}
 
-let convertR rootDirectory force credsMigrationMode  =
+let convertR rootDirectory force credsMigrationMode = rop {
 
-    let credsMigrationMode =
+    let! credsMigrationMode =
         defaultArg 
             (credsMigrationMode |> Option.map CredsMigrationMode.parse)
             (Rop.succeed Encrypt)
-    
-    let nugetEnv = NugetEnv.read rootDirectory
 
-    let rootDirectory = 
+    let! nugetEnv = NugetEnv.read rootDirectory
+
+    let! rootDirectory = 
         if force then succeed rootDirectory
         else ensureNoPaketEnv rootDirectory
 
-    let triple x y z = x,y,z
-
-    triple
-    <!> rootDirectory
-    <*> nugetEnv
-    <*> credsMigrationMode
-    >>= createResult
+    return! createResult(rootDirectory, nugetEnv, credsMigrationMode)
+}
 
 let replaceNugetWithPaket initAutoRestore installAfter result = 
     
