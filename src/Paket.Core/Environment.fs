@@ -14,18 +14,18 @@ type PaketEnv = {
 
 [<CompilationRepresentation(CompilationRepresentationFlags.ModuleSuffix)>]
 module PaketEnv = 
-    
+
     let create root dependenciesFile lockFile projects = 
         { RootDirectory = root
           DependenciesFile = dependenciesFile
           LockFile = lockFile
-          Projects = projects }       
+          Projects = projects }
 
-    let fromRootDirectory (directory : DirectoryInfo) = 
+    let fromRootDirectory (directory : DirectoryInfo) = rop {
         if not directory.Exists then 
-            fail (DirectoryDoesntExist directory)
+            return! fail (DirectoryDoesntExist directory)
         else
-            let dependenciesFile = 
+            let! dependenciesFile = 
                 let fi = FileInfo(Path.Combine(directory.FullName, Constants.DependenciesFileName))
                 if not fi.Exists then
                     fail (DependenciesFileNotFoundInDir directory)
@@ -35,7 +35,7 @@ module PaketEnv =
                     with _ ->
                         fail (DependenciesFileParseError fi)
 
-            let lockFile =
+            let! lockFile =
                 let fi = FileInfo(Path.Combine(directory.FullName, Constants.LockFileName))
                 if not fi.Exists then
                     None |> succeed
@@ -45,12 +45,10 @@ module PaketEnv =
                     with _ ->
                         fail (LockFileParseError fi)
 
-            let projects = InstallProcess.findAllReferencesFiles(directory.FullName)
+            let! projects = InstallProcess.findAllReferencesFiles(directory.FullName)
 
-            create directory
-            <!> dependenciesFile
-            <*> lockFile
-            <*> projects
+            return create directory dependenciesFile lockFile projects
+    }
 
     let locatePaketRootDirectory (directory : DirectoryInfo) = 
         if not directory.Exists then 
