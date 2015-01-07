@@ -337,7 +337,7 @@ let convertR rootDirectory force credsMigrationMode  =
     <*> credsMigrationMode
     >>= createResult
 
-let replaceNugetWithPaket initAutoRestore installAfter (result,_) = 
+let replaceNugetWithPaket initAutoRestore installAfter result = 
     
     let remove (fi : FileInfo) = 
         tracefn "Removing %s" fi.FullName

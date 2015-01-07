@@ -230,7 +230,7 @@ let RunInLockedAccessMode(rootFolder,action) =
     with
     | exn ->
             releaseLock()
-            raise exn
+            reraise()
 
 /// [omit]
 module Seq = 

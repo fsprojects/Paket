@@ -89,7 +89,7 @@ let simplify interactive environment =
         <*> projects
     | None -> fail (LockFileNotFound environment.RootDirectory)
 
-let updateEnvironment ((before,after), _ ) =
+let updateEnvironment (before,after) =
     if before.DependenciesFile.ToString() = after.DependenciesFile.ToString() then
         tracefn "%s is already simplified" before.DependenciesFile.FileName
     else

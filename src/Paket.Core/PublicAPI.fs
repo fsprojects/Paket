@@ -65,9 +65,8 @@ type Dependencies(dependenciesFileName: string) =
             rootDirectory.FullName,
             fun () ->
                 NuGetConvert.convertR rootDirectory force credsMigrationMode
-                |> either 
-                    (NuGetConvert.replaceNugetWithPaket initAutoRestore installAfter) 
-                    (List.iter (string >> Logging.traceError))
+                |> returnOrFail
+                |> NuGetConvert.replaceNugetWithPaket initAutoRestore installAfter
         )
 
      /// Converts the current package dependency graph to the simplest dependency graph.
@@ -83,7 +82,8 @@ type Dependencies(dependenciesFileName: string) =
                     PaketEnv.fromRootDirectory rootDirectory
                     >>= Simplifier.ensureNotInStrictMode
                     >>= Simplifier.simplify interactive
-                    |> either (Simplifier.updateEnvironment) (List.iter (string >> Logging.traceError))
+                    |> returnOrFail
+                    |> Simplifier.updateEnvironment
             )
         | None ->
             Logging.traceErrorfn "Unable to find %s in current directory and parent directories" Constants.DependenciesFileName
