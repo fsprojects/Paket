@@ -50,10 +50,7 @@ type Dependencies(dependenciesFileName: string) =
 
         Utils.RunInLockedAccessMode(
             currentDirectory.FullName,
-            fun () ->
-                PaketEnv.init currentDirectory
-                |> returnOrFail
-                |> PaketEnv.save
+            fun () -> PaketEnv.init currentDirectory
         )
 
     /// Converts the solution from NuGet to Paket.

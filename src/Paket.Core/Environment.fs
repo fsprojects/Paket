@@ -85,38 +85,10 @@ module PaketEnv =
     let init (directory : DirectoryInfo) =
         match locatePaketRootDirectory directory with
         | Some rootDirectory -> 
-            fromRootDirectory rootDirectory
-            |> successTee (fun (env,_) -> Logging.tracefn "Paket is already initialized in %s" env.RootDirectory.FullName)
+            Logging.tracefn "Paket is already initialized in %s" rootDirectory.FullName
         | None -> 
-            create 
-                directory 
-                (DependenciesFile(Path.Combine(directory.FullName, Constants.DependenciesFileName), InstallOptions.Default, [], [], []))
-                None
-                []
-            |> succeed
-
-    let save env =
-        let overwrite (currentEnv,_) = 
-            if currentEnv.DependenciesFile.ToString() <> env.DependenciesFile.ToString() 
-            then env.DependenciesFile.Save()
-            
-            match currentEnv.LockFile, env.LockFile with
-            | Some currentLockFile, Some lockFile ->
-                if currentLockFile.ToString() <> lockFile.ToString() 
-                then lockFile.Save()
-            | Some currentLockFile, None -> 
-                File.Delete currentLockFile.FileName
-            | None, Some lockFile ->
-                lockFile.Save()
-            | _ ->
-                ()
-
-            // TODO: save Projects and their References
-
-        let justSave _ =
-            env.DependenciesFile.Save()
-            env.LockFile |> Option.iter (fun l -> l.Save())
-            env.Projects |> List.iter (fun (project,references) -> project.Save(); references.Save())
-
-        fromRootDirectory env.RootDirectory
-        |> either overwrite justSave
+            let dependenciesFile = 
+                DependenciesFile(
+                    Path.Combine(directory.FullName, Constants.DependenciesFileName), 
+                    InstallOptions.Default, [], [], [])
+            dependenciesFile.Save()
