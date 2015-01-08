@@ -1,3 +1,6 @@
+#### 0.22.6 - 08.01.2015
+* Refactored FindRefs to Railwal Oriented Programming - https://github.com/fsprojects/Paket/pull/529
+
 #### 0.22.5 - 08.01.2015
 * COSMETICS: Config file is only saved when needed
 
