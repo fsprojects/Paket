@@ -284,6 +284,27 @@ module LockFileParser =
 /// Allows to parse and analyze paket.lock files.
 type LockFile(fileName:string,options,resolution:PackageResolution,remoteFiles:ResolvedSourceFile list) =
 
+    let dependenciesByPackageLazy = lazy (
+        let allDependenciesOf package =
+            let usedPackages = HashSet<_>()
+
+            let rec addPackage packageName =
+                let identity = NormalizedPackageName packageName
+                match resolution.TryFind identity with
+                | Some package ->
+                    if usedPackages.Add packageName then
+                        if not options.Strict then
+                            for d,_,_ in package.Dependencies do
+                                addPackage d
+                | None -> ()
+
+            addPackage package
+
+            usedPackages
+
+        resolution
+        |> Map.map (fun _ package -> allDependenciesOf package.Name))
+
     member __.SourceFiles = remoteFiles
     member __.ResolvedPackages = resolution
     member __.FileName = fileName
@@ -308,24 +329,17 @@ type LockFile(fileName:string,options,resolution:PackageResolution,remoteFiles:R
         usedPackages
 
     /// Gets all dependencies of the given package
-    member this.GetAllDependenciesOf(package) = 
-        let usedPackages = HashSet<_>()
+    member this.GetAllDependenciesOf(package) =
+        match this.GetAllDependenciesOfSafe package with
+        | Some packages -> packages
+        | None ->
+            let (PackageName name) = package
+            failwithf "Package %s was referenced, but it was not found in the paket.lock file." name
 
-        let rec addPackage (packageName:PackageName) =
-            let identity = NormalizedPackageName packageName
-            match resolution.TryFind identity with
-            | Some package ->
-                if usedPackages.Add packageName then
-                    if not this.Options.Strict then
-                        for d,_,_ in package.Dependencies do
-                            addPackage d
-            | None ->
-                let (PackageName name) = packageName
-                failwithf "Package %s was referenced, but it was not found in the paket.lock file." name
-
-        addPackage package
-
-        usedPackages
+    /// Gets all dependencies of the given package
+    member this.GetAllDependenciesOfSafe(package) =
+        dependenciesByPackageLazy.Value
+        |> Map.tryFind (NormalizedPackageName package)
 
     member this.GetAllNormalizedDependenciesOf(package:PackageName) = 
         this.GetAllDependenciesOf(package)
@@ -396,3 +410,11 @@ type LockFile(fileName:string,options,resolution:PackageResolution,remoteFiles:R
             with exn -> failwithf "%s - in %s" exn.Message referencesFile.FileName)
 
         usedPackages   
+
+    member this.GetPackageHullSafe referencesFile =
+        referencesFile.NugetPackages
+        |> Seq.map (fun package ->
+            this.GetAllDependenciesOfSafe(package)
+            |> Rop.failIfNone (ReferenceNotFoundInLockFile(referencesFile.FileName, package)))
+        |> Rop.collect
+        |> Rop.lift (Seq.concat >> Set.ofSeq)
