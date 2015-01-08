@@ -155,9 +155,10 @@ type Dependencies(dependenciesFileName: string) =
 
     /// Finds all outdated packages.
     member this.FindOutdated(strict: bool,includePrereleases: bool): (string * SemVerInfo) list =
-        FindOutdated.FindOutdated(dependenciesFileName,strict,includePrereleases)
+        FindOutdated.FindOutdated strict includePrereleases
+        |> this.Process
         |> List.map (fun (PackageName p,_,newVersion) -> p,newVersion)
-    
+
     /// Pulls new paket.targets and bootstrapper and puts them into .paket folder.
     member this.InitAutoRestore(): unit = 
         Utils.RunInLockedAccessMode(
