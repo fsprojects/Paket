@@ -143,7 +143,7 @@ If you want to dependend on prereleases then Paket can assist you. In contrast t
     nuget Example >= 1.2.3 alpha      // at least 1.2.3 including alpha versions
     nuget Example >= 2 beta rc        // at least 2.0 including rc and beta versions
     nuget Example >= 3 rc             // at least 3.0 but including rc versions 
-    nuget Example >= 3 prerelease      // at least 3.0 but including all prerelease versions
+    nuget Example >= 3 prerelease     // at least 3.0 but including all prerelease versions
 
 ### Paket's NuGet-style dependency resolution for indirect dependencies
 
