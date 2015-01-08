@@ -4,28 +4,31 @@ module Paket.FindOutdated
 open Paket.Domain
 open Paket.Logging
 
-/// Finds all outdated packages.
-let FindOutdated(dependenciesFileName,strict,includingPrereleases) =     
+let private adjustVersionRequirements strict includingPrereleases (dependenciesFile: DependenciesFile) =
     //TODO: Anything we need to do for source files here?
-    let loadedFile = DependenciesFile.ReadFromFile dependenciesFileName
-    let dependenciesFile =
-        let newPackages =
-            loadedFile.Packages
-            |> List.map (fun p ->
-                let v = p.VersionRequirement 
-                let requirement,strategy =
-                    match strict,includingPrereleases with
-                    | true,true -> VersionRequirement.NoRestriction, p.ResolverStrategy
-                    | true,false -> v, p.ResolverStrategy
-                    | false,true -> 
-                        match v with
-                        | VersionRequirement(v,_) -> VersionRequirement(v,PreReleaseStatus.All), Max
-                    | false,false -> VersionRequirement.AllReleases, Max
-                { p with VersionRequirement = requirement; ResolverStrategy = strategy})
+    let newPackages =
+        dependenciesFile.Packages
+        |> List.map (fun p ->
+            let v = p.VersionRequirement 
+            let requirement,strategy =
+                match strict,includingPrereleases with
+                | true,true -> VersionRequirement.NoRestriction, p.ResolverStrategy
+                | true,false -> v, p.ResolverStrategy
+                | false,true -> 
+                    match v with
+                    | VersionRequirement(v,_) -> VersionRequirement(v,PreReleaseStatus.All), Max
+                | false,false -> VersionRequirement.AllReleases, Max
+            { p with VersionRequirement = requirement; ResolverStrategy = strategy})
 
-        DependenciesFile(loadedFile.FileName,loadedFile.Options,loadedFile.Sources,newPackages,loadedFile.RemoteFiles)
-            
-    let resolution = dependenciesFile.Resolve(true) 
+    DependenciesFile(dependenciesFile.FileName, dependenciesFile.Options, dependenciesFile.Sources, newPackages, dependenciesFile.RemoteFiles)
+
+/// Finds all outdated packages.
+let FindOutdated(dependenciesFileName,strict,includingPrereleases) =
+    let dependenciesFile =
+        DependenciesFile.ReadFromFile dependenciesFileName
+        |> adjustVersionRequirements strict includingPrereleases
+
+    let resolution = dependenciesFile.Resolve(true)
     let resolvedPackages = resolution.ResolvedPackages.GetModelOrFail()
     let lockFile = LockFile.LoadFrom(dependenciesFile.FindLockfile().FullName)
 
@@ -34,11 +37,11 @@ let FindOutdated(dependenciesFileName,strict,includingPrereleases) =
         match resolvedPackages |> Map.tryFind (NormalizedPackageName package.Name) with
         | Some newVersion -> 
             if package.Version <> newVersion.Version then 
-                yield package.Name,package.Version,newVersion.Version        
+                yield package.Name,package.Version,newVersion.Version
         | _ -> ()]
 
 /// Prints all outdated packages.
-let ShowOutdated(dependenciesFileName,strict,includingPrereleases) = 
+let ShowOutdated(dependenciesFileName,strict,includingPrereleases) =
     let allOutdated = FindOutdated(dependenciesFileName,strict,includingPrereleases)
     if allOutdated = [] then
         tracefn "No outdated packages found."
