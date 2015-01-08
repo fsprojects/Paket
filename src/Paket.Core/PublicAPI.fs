@@ -151,7 +151,7 @@ type Dependencies(dependenciesFileName: string) =
 
     /// Lists outdated packages.
     member this.ShowOutdated(strict: bool,includePrereleases: bool): unit =
-        FindOutdated.ShowOutdated(dependenciesFileName,strict,includePrereleases)
+        FindOutdated.ShowOutdated strict includePrereleases |> this.Process
 
     /// Finds all outdated packages.
     member this.FindOutdated(strict: bool,includePrereleases: bool): (string * SemVerInfo) list =

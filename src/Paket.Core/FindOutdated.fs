@@ -46,24 +46,16 @@ let FindOutdated strict includingPrereleases environment = rop {
     return detectOutdated lockFile.ResolvedPackages resolvedPackages
 }
 
-/// Finds all outdated packages.
-let FindOutdatedOld(dependenciesFileName,strict,includingPrereleases) =
-    let dependenciesFile =
-        DependenciesFile.ReadFromFile dependenciesFileName
-        |> adjustVersionRequirements strict includingPrereleases
-
-    let resolution = dependenciesFile.Resolve(true)
-    let resolvedPackages = resolution.ResolvedPackages.GetModelOrFail()
-    let lockFile = LockFile.LoadFrom(dependenciesFile.FindLockfile().FullName)
-
-    detectOutdated lockFile.ResolvedPackages resolvedPackages
-
-/// Prints all outdated packages.
-let ShowOutdated(dependenciesFileName,strict,includingPrereleases) =
-    let allOutdated = FindOutdatedOld(dependenciesFileName,strict,includingPrereleases)
-    if allOutdated = [] then
+let private printOutdated packages =
+    if packages = [] then
         tracefn "No outdated packages found."
     else
         tracefn "Outdated packages found:"
-        for (PackageName name),oldVersion,newVersion in allOutdated do
+        for (PackageName name),oldVersion,newVersion in packages do
             tracefn "  * %s %s -> %s" name (oldVersion.ToString()) (newVersion.ToString())
+
+/// Prints all outdated packages.
+let ShowOutdated strict includingPrereleases environment = rop {
+    let! allOutdated = FindOutdated strict includingPrereleases environment
+    printOutdated allOutdated
+}
