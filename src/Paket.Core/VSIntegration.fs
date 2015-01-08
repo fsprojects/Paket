@@ -38,14 +38,10 @@ let InitAutoRestore environment =
             |> List.map (download latestVersion)
             |> collect
 
-        let projectsUnderPaket =
-            ProjectFile.FindAllProjects environment.RootDirectory.FullName
-            |> Array.filter (fun project -> ProjectFile.FindReferencesFile(FileInfo(project.FileName)).IsSome)
-
-        projectsUnderPaket
-        |> Array.iter (fun project ->
-            let relativePath = 
-                createRelativePath project.FileName (Path.Combine(exeDir, "paket.targets")) 
+        environment.Projects
+        |> List.map fst
+        |> List.iter (fun project ->
+            let relativePath = createRelativePath project.FileName (Path.Combine(exeDir, "paket.targets")) 
             project.AddImportForPaketTargets(relativePath)
             project.Save()
         )
