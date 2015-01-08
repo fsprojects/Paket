@@ -1,3 +1,6 @@
+#### 0.22.5 - 08.01.2015
+* COSMETICS: Config file is only saved when needed
+
 #### 0.22.4 - 07.01.2015
 * COSMETICS: Ignore completely empty lib folders
 
