@@ -53,20 +53,6 @@ type Dependencies(dependenciesFileName: string) =
             fun () -> PaketEnv.init currentDirectory
         )
 
-     /// Pulls new paket.targets and bootstrapper and puts them into .paket folder.
-    static member InitAutoRestore(): unit = 
-        rop {
-            let currentDir = DirectoryInfo(Environment.CurrentDirectory)
-            let! rootDir = 
-                PaketEnv.locatePaketRootDirectory(currentDir)
-                |> failIfNone (DependenciesFileNotFoundInDir currentDir)
-
-            return! Utils.RunInLockedAccessMode(
-                rootDir.FullName,
-                fun () -> VSIntegration.InitAutoRestoreR(rootDir)
-            )
-        } |> returnOrFail    
-
     /// Converts the solution from NuGet to Paket.
     static member ConvertFromNuget(force: bool,installAfter: bool,initAutoRestore: bool,credsMigrationMode: string option) : unit =
         let currentDirectory = DirectoryInfo(Environment.CurrentDirectory)
@@ -174,7 +160,7 @@ type Dependencies(dependenciesFileName: string) =
     member this.InitAutoRestore(): unit = 
         Utils.RunInLockedAccessMode(
             this.RootPath,
-            fun () -> VSIntegration.InitAutoRestore(dependenciesFileName))
+            fun () -> VSIntegration.InitAutoRestore |> this.Process)
 
     /// Returns the installed version of the given package.
     member this.GetInstalledVersion(packageName: string): string option =

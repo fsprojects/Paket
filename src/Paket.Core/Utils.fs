@@ -8,6 +8,8 @@ open System.Net
 open System.Xml
 open System.Text
 open Paket.Logging
+open Paket.Rop
+open Paket.Domain
 
 type Auth = 
     { Username : string
@@ -246,3 +248,22 @@ let inline orElse v =
     function
     | Some x -> Some x
     | None -> v
+
+let downloadStringSync (url : string) (client : System.Net.WebClient) = 
+    try 
+        client.DownloadString url |> succeed
+    with _ ->
+        DownloadError url |> fail 
+
+let downloadFileSync (url : string) (fileName : string) (client : System.Net.WebClient) = 
+    tracefn "Downloading file from %s to %s" url fileName
+    try 
+        client.DownloadFile(url, fileName) |> succeed
+    with _ ->
+        DownloadError url |> fail 
+
+let deleteFile (fileName : string) =
+    try 
+        File.Delete fileName |> succeed
+    with _ ->
+        FileDeleteError fileName |> fail

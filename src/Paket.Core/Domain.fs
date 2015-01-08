@@ -92,3 +92,10 @@ type DomainMessage =
             sprintf "Dependency %s from %s not found in lock file." name Constants.DependenciesFileName
         | ReferenceNotFoundInLockFile(path, PackageName name) -> 
             sprintf "Reference %s from %s not found in lock file." name path
+
+        | DownloadError url ->
+            sprintf "Error occured while downloading from %s." url
+        | ReleasesJsonParseError ->
+            "Unable to parse Json from GitHub releases API."
+        | FileDeleteError path ->
+            sprintf "Unable to delete file %s." path

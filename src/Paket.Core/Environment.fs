@@ -14,12 +14,12 @@ type PaketEnv = {
 
 [<CompilationRepresentation(CompilationRepresentationFlags.ModuleSuffix)>]
 module PaketEnv = 
-    
+
     let create root dependenciesFile lockFile projects = 
         { RootDirectory = root
           DependenciesFile = dependenciesFile
           LockFile = lockFile
-          Projects = projects }       
+          Projects = projects }
 
     let fromRootDirectory (directory : DirectoryInfo) = rop {
         if not directory.Exists then 
@@ -60,7 +60,6 @@ module PaketEnv =
                 | dir -> Some(Path.Combine(dir.FullName, Constants.DependenciesFileName), dir.Parent))
             |> Seq.tryFind File.Exists
             |> Option.map (fun f -> DirectoryInfo(Path.GetDirectoryName(f)))
-
 
     let ensureNotExists (directory : DirectoryInfo) =
         match fromRootDirectory directory with
