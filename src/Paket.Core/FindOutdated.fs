@@ -22,6 +22,15 @@ let private adjustVersionRequirements strict includingPrereleases (dependenciesF
 
     DependenciesFile(dependenciesFile.FileName, dependenciesFile.Options, dependenciesFile.Sources, newPackages, dependenciesFile.RemoteFiles)
 
+let private detectOutdated (oldResolution: PackageResolver.PackageResolution) (newResolution: PackageResolver.PackageResolution) =
+    [for kv in oldResolution do
+        let package = kv.Value
+        match newResolution |> Map.tryFind (NormalizedPackageName package.Name) with
+        | Some newVersion -> 
+            if package.Version <> newVersion.Version then 
+                yield package.Name,package.Version,newVersion.Version
+        | _ -> ()]
+
 /// Finds all outdated packages.
 let FindOutdated(dependenciesFileName,strict,includingPrereleases) =
     let dependenciesFile =
@@ -32,13 +41,7 @@ let FindOutdated(dependenciesFileName,strict,includingPrereleases) =
     let resolvedPackages = resolution.ResolvedPackages.GetModelOrFail()
     let lockFile = LockFile.LoadFrom(dependenciesFile.FindLockfile().FullName)
 
-    [for kv in lockFile.ResolvedPackages do
-        let package = kv.Value
-        match resolvedPackages |> Map.tryFind (NormalizedPackageName package.Name) with
-        | Some newVersion -> 
-            if package.Version <> newVersion.Version then 
-                yield package.Name,package.Version,newVersion.Version
-        | _ -> ()]
+    detectOutdated lockFile.ResolvedPackages resolvedPackages
 
 /// Prints all outdated packages.
 let ShowOutdated(dependenciesFileName,strict,includingPrereleases) =
