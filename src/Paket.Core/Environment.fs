@@ -80,3 +80,15 @@ module PaketEnv =
     let ensureLockFileExists environment =
         environment.LockFile
         |> failIfNone (LockFileNotFound environment.RootDirectory)
+
+    let init (directory : DirectoryInfo) =
+        match locatePaketRootDirectory directory with
+        | Some rootDirectory -> 
+            Logging.tracefn "Paket is already initialized in %s" rootDirectory.FullName
+            succeed ()
+        | None -> 
+            let dependenciesFile = 
+                DependenciesFile(
+                    Path.Combine(directory.FullName, Constants.DependenciesFileName), 
+                    InstallOptions.Default, [], [], [])
+            dependenciesFile.ToString() |> saveFile dependenciesFile.FileName

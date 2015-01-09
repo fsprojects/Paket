@@ -3,39 +3,45 @@
 open System.IO
 open Logging
 open System
+open Rop
+open Domain
 
-let InitAutoRestore(dependenciesFileName) =
-    let root =
-        if dependenciesFileName = Constants.DependenciesFileName then
-            "."
-        else
-            Path.GetDirectoryName dependenciesFileName
 
-    CreateDir(Path.Combine(root,".paket"))
+let private getLatestVersionFromJson (data : string) =
+    try 
+        let start = data.IndexOf("tag_name") + 11
+        let end' = data.IndexOf("\"", start)
+        (data.Substring(start, end' - start)) |> SemVer.Parse |> succeed
+    with _ ->
+        fail ReleasesJsonParseError
+
+let InitAutoRestore environment =
+    let exeDir = Path.Combine(environment.RootDirectory.FullName, ".paket")
     use client = createWebClient None
 
-    let releasesUrl = "https://api.github.com/repos/fsprojects/Paket/releases";
-    let data = client.DownloadString(releasesUrl)
-    let start = data.IndexOf("tag_name") + 11
-    let end' = data.IndexOf("\"", start)
-    let latestVersion = data.Substring(start, end' - start);
-    
-    for file in ["paket.targets"; "paket.bootstrapper.exe"] do
-        try
-            File.Delete(Path.Combine(root, ".paket", file))
-        with _ -> traceErrorfn "Unable to delete %s" file
-        try 
-            client.DownloadFile(sprintf "https://github.com/fsprojects/Paket/releases/download/%s/%s" latestVersion file, 
-                        Path.Combine(root, ".paket", file))
-            tracefn "Downloaded %s" file
-        with _ -> traceErrorfn "Unable to download %s for version %s" file latestVersion
+    let download version file = 
+        rop {
+            do! createDir(exeDir)
+            let fileName = Path.Combine(exeDir, file)
+            let url = sprintf "https://github.com/fsprojects/Paket/releases/download/%s/%s" (string version) file
+            do! downloadFileSync url fileName client
+        }
 
-    let projectsUnderPaket =
-        ProjectFile.FindAllProjects root
-        |> Array.filter (fun project -> ProjectFile.FindReferencesFile(FileInfo(project.FileName)).IsSome)
+    rop { 
+        let releasesUrl = "https://api.github.com/repos/fsprojects/Paket/releases";
+        let! data = client |> downloadStringSync releasesUrl
+        let! latestVersion = getLatestVersionFromJson data
 
-    for project in projectsUnderPaket do
-        let relativePath = 
-            createRelativePath project.FileName (Path.Combine(root, ".paket", "paket.targets")) 
-        project.AddImportForPaketTargets(relativePath)
-        project.Save()
+        let! downloads = 
+            ["paket.targets"; "paket.bootstrapper.exe"] 
+            |> List.map (download latestVersion)
+            |> collect
+
+        environment.Projects
+        |> List.map fst
+        |> List.iter (fun project ->
+            let relativePath = createRelativePath project.FileName (Path.Combine(exeDir, "paket.targets")) 
+            project.AddImportForPaketTargets(relativePath)
+            project.Save()
+        )
+    } 

@@ -43,19 +43,18 @@ type Dependencies(dependenciesFileName: string) =
         let dependenciesFileName = findInPath(DirectoryInfo path,true)
         tracefn "found: %s" dependenciesFileName
         Dependencies(dependenciesFileName)
-        
-    /// Tries to create a paket.dependencies file in the given folder.
-    static member Create(): Dependencies = Dependencies.Create(Environment.CurrentDirectory)
 
-    /// Tries to create a paket.dependencies file in the given folder.
-    static member Create(path: string): Dependencies =
-        let dependenciesFileName = Path.Combine(path,Constants.DependenciesFileName)
-        if File.Exists dependenciesFileName then
-            Logging.tracefn "%s already exists" dependenciesFileName
-        else
-            DependenciesFile(dependenciesFileName, InstallOptions.Default, [], [], []).Save()
-        Dependencies(dependenciesFileName)
-    
+    /// Initialize paket.dependencies file in current directory
+    static member Init() =
+        let currentDirectory = DirectoryInfo(Environment.CurrentDirectory)
+
+        Utils.RunInLockedAccessMode(
+            currentDirectory.FullName,
+            fun () -> 
+                PaketEnv.init currentDirectory
+                |> returnOrFail
+        )
+
     /// Converts the solution from NuGet to Paket.
     static member ConvertFromNuget(force: bool,installAfter: bool,initAutoRestore: bool,credsMigrationMode: string option) : unit =
         let currentDirectory = DirectoryInfo(Environment.CurrentDirectory)
@@ -163,7 +162,7 @@ type Dependencies(dependenciesFileName: string) =
     member this.InitAutoRestore(): unit = 
         Utils.RunInLockedAccessMode(
             this.RootPath,
-            fun () -> VSIntegration.InitAutoRestore(dependenciesFileName))
+            fun () -> VSIntegration.InitAutoRestore |> this.Process)
 
     /// Returns the installed version of the given package.
     member this.GetInstalledVersion(packageName: string): string option =

@@ -8,6 +8,8 @@ open System.Net
 open System.Xml
 open System.Text
 open Paket.Logging
+open Paket.Rop
+open Paket.Domain
 
 type Auth = 
     { Username : string
@@ -28,9 +30,13 @@ let TimeSpanToReadableString(span:TimeSpan) =
     if String.IsNullOrEmpty(formatted) then "0 seconds" else formatted
 
 /// Creates a directory if it does not exist.
-let CreateDir path = 
-    let dir = DirectoryInfo path
-    if not dir.Exists then dir.Create()
+let createDir path = 
+    try
+        let dir = DirectoryInfo path
+        if not dir.Exists then dir.Create()
+        succeed ()
+    with _ ->
+        DirectoryCreateError path |> fail
 
 /// Cleans a directory by deleting it and recreating it.
 let CleanDir path = 
@@ -40,7 +46,7 @@ let CleanDir path =
             di.Delete(true)
         with
         | exn -> failwithf "Error during deletion of %s%s  - %s" di.FullName Environment.NewLine exn.Message 
-    CreateDir path
+    createDir path |> returnOrFail
     // set writeable
     File.SetAttributes(path, FileAttributes.Normal)
 
@@ -246,3 +252,23 @@ let inline orElse v =
     function
     | Some x -> Some x
     | None -> v
+
+let downloadStringSync (url : string) (client : System.Net.WebClient) = 
+    try 
+        client.DownloadString url |> succeed
+    with _ ->
+        DownloadError url |> fail 
+
+let downloadFileSync (url : string) (fileName : string) (client : System.Net.WebClient) = 
+    tracefn "Downloading file from %s to %s" url fileName
+    try 
+        client.DownloadFile(url, fileName) |> succeed
+    with _ ->
+        DownloadError url |> fail 
+
+let saveFile (fileName : string) (contents : string) =
+    tracefn "Saving file %s" fileName
+    try 
+        File.WriteAllText(fileName, contents) |> succeed
+    with _ ->
+        FileSaveError fileName |> fail

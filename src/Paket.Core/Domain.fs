@@ -55,6 +55,13 @@ type DomainMessage =
     | DependencyNotFoundInLockFile of PackageName
     | ReferenceNotFoundInLockFile of string * PackageName
 
+    | DownloadError of string
+    | ReleasesJsonParseError
+    
+    | DirectoryCreateError of string 
+    | FileDeleteError of string
+    | FileSaveError of string
+
     override this.ToString() = 
         match this with
         | DirectoryDoesntExist(di) -> 
@@ -88,3 +95,15 @@ type DomainMessage =
             sprintf "Dependency %s from %s not found in lock file." name Constants.DependenciesFileName
         | ReferenceNotFoundInLockFile(path, PackageName name) -> 
             sprintf "Reference %s from %s not found in lock file." name path
+
+        | DownloadError url ->
+            sprintf "Error occured while downloading from %s." url
+        | ReleasesJsonParseError ->
+            "Unable to parse Json from GitHub releases API."
+        
+        | DirectoryCreateError path ->
+            sprintf "Unable to create directory %s." path
+        | FileDeleteError path ->
+            sprintf "Unable to delete file %s." path
+        | FileSaveError path ->
+            sprintf "Unable to save file %s." path
