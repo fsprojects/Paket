@@ -149,7 +149,8 @@ let DownloadSourceFiles(rootPath, sourceFiles:ModuleResolver.ResolvedSourceFile 
                     async {
                         let exists =
                             if destination.EndsWith Constants.FullProjectSourceFileName then
-                                FileInfo(destination).Directory.Exists
+                                let di = FileInfo(destination).Directory
+                                di.Exists && FileInfo(Path.Combine(di.FullName, Constants.PaketVersionFileName)).Exists
                             else
                                 File.Exists destination
 

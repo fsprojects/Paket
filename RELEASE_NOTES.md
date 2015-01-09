@@ -1,3 +1,6 @@
+#### 0.22.9 - 09.01.2015
+* BUGFIX: Don't download gists that are up-to-date - https://github.com/fsprojects/Paket/issues/513
+
 #### 0.22.8 - 09.01.2015
 * BUGFIX: fix parsing of longer http links - https://github.com/fsprojects/Paket/pull/536
 
