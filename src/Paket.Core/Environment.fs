@@ -85,9 +85,10 @@ module PaketEnv =
         match locatePaketRootDirectory directory with
         | Some rootDirectory -> 
             Logging.tracefn "Paket is already initialized in %s" rootDirectory.FullName
+            succeed ()
         | None -> 
             let dependenciesFile = 
                 DependenciesFile(
                     Path.Combine(directory.FullName, Constants.DependenciesFileName), 
                     InstallOptions.Default, [], [], [])
-            dependenciesFile.Save()
+            dependenciesFile.ToString() |> saveFile dependenciesFile.FileName

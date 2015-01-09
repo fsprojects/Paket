@@ -58,6 +58,7 @@ type DomainMessage =
     | DownloadError of string
     | ReleasesJsonParseError
     | FileDeleteError of string
+    | FileSaveError of string
 
     override this.ToString() = 
         match this with
@@ -99,3 +100,5 @@ type DomainMessage =
             "Unable to parse Json from GitHub releases API."
         | FileDeleteError path ->
             sprintf "Unable to delete file %s." path
+        | FileSaveError path ->
+            sprintf "Unable to save file %s." path

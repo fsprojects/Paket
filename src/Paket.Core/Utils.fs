@@ -262,7 +262,15 @@ let downloadFileSync (url : string) (fileName : string) (client : System.Net.Web
     with _ ->
         DownloadError url |> fail 
 
+let saveFile (fileName : string) (contents : string) =
+    tracefn "Saving file %s" fileName
+    try 
+        File.WriteAllText(fileName, contents) |> succeed
+    with _ ->
+        FileSaveError fileName |> fail
+
 let deleteFile (fileName : string) =
+    tracefn "Deleting file %s" fileName
     try 
         File.Delete fileName |> succeed
     with _ ->

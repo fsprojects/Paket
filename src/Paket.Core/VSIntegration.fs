@@ -7,7 +7,7 @@ open Rop
 open Domain
 
 
-let getLatestVersionFromJson (data : string) =
+let private getLatestVersionFromJson (data : string) =
     try 
         let start = data.IndexOf("tag_name") + 11
         let end' = data.IndexOf("\"", start)
