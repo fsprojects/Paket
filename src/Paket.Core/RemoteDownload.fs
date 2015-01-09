@@ -147,7 +147,14 @@ let DownloadSourceFiles(rootPath, sourceFiles:ModuleResolver.ResolvedSourceFile 
                 sources
                 |> Seq.map (fun (_, (destination, source)) ->
                     async {
-                        if File.Exists destination then
+                        let exists =
+                            if destination.EndsWith Constants.FullProjectSourceFileName then
+                                let di = FileInfo(destination).Directory
+                                di.Exists && FileInfo(Path.Combine(di.FullName, Constants.PaketVersionFileName)).Exists
+                            else
+                                File.Exists destination
+
+                        if exists then
                             verbosefn "Sourcefile %s is already there." (source.ToString())
                         else 
                             tracefn "Downloading %s to %s" (source.ToString()) destination
