@@ -266,3 +266,54 @@ let ``should parse simple http reference``() =
 
     references.[0].Name |> shouldEqual "ikvmbin-8.0.5449.0.zip"  
     references.[0].Origin |> shouldEqual (SingleSourceFileOrigin.HttpLink("http://www.frijters.net/ikvmbin-8.0.5449.0.zip"))
+
+let realWorldHTTP = """
+NUGET
+  remote: https://nuget.org/api/v2
+  specs:
+    Costura.Fody (1.3.3.0)
+      Fody (>= 1.26.1)
+    dotNetRDF (1.0.6.3421)
+      HtmlAgilityPack (>= 1.4.6)
+      Newtonsoft.Json (>= 6.0.3)
+      VDS.Common (1.3.0)
+    Eto.Parse (1.3.1.0)
+    FakeItEasy (1.25.1)
+    Fody (1.26.4)
+    gitlink (2.1.0)
+    HtmlAgilityPack (1.4.6)
+    ImpromptuInterface (6.2.2)
+    InfoOf.Fody (0.11.2.0)
+      Fody
+    json-ld.net (1.0.4)
+      Newtonsoft.Json (>= 4.0.1)
+    MethodTimer.Fody (1.15.2.0)
+      Fody
+    MSBuildTasks (1.4.0.88)
+    Newtonsoft.Json (6.0.7)
+    NullGuard.Fody (1.2.0.0)
+      Fody
+    NUnit (2.6.4)
+    SpecFlow (1.9.0)
+    StyleCop.MSBuild (4.7.49.0)
+    StyleCopPlus.MSBuild (4.7.49.5)
+      StyleCop.MSBuild (>= 4.7.49.0)
+    VDS.Common (1.3.0)
+    Zoltu.Versioning (1.2.15.0)
+GITHUB
+  remote: tpluscode/FileVersionExtractor
+  specs:
+    FULLPROJECT (b1126aa31f362d0cd1e19e7abe1acd30da35ab6a)
+HTTP
+  remote: http://www.w3.org/2013/N-QuadsTests/TESTS.zip
+  specs:
+    TESTS.zip
+"""
+
+[<Test>]
+let ``should parse real world http reference``() = 
+    let lockFile = LockFileParser.Parse(toLines realWorldHTTP)
+    let references = lockFile.SourceFiles
+
+    references.[0].Name |> shouldEqual "TESTS.zip"  
+    references.[0].Origin |> shouldEqual (SingleSourceFileOrigin.HttpLink("http://www.w3.org/2013/N-QuadsTests/TESTS.zip"))

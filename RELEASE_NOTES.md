@@ -1,4 +1,7 @@
-#### 0.22.7 - 0.01.2015
+#### 0.22.8 - 09.01.2015
+* BUGFIX: fix parsing of longer http links - https://github.com/fsprojects/Paket/pull/536
+
+#### 0.22.7 - 09.01.2015
 * Refactored `init` & `init auto restore` to Railwal Oriented Programming - https://github.com/fsprojects/Paket/pull/533
 
 #### 0.22.6 - 08.01.2015
