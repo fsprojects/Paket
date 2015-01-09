@@ -1,3 +1,6 @@
+#### 0.22.7 - 0.01.2015
+* Refactored `init` & `init auto restore` to Railwal Oriented Programming - https://github.com/fsprojects/Paket/pull/533
+
 #### 0.22.6 - 08.01.2015
 * Refactored FindRefs to Railwal Oriented Programming - https://github.com/fsprojects/Paket/pull/529
 
