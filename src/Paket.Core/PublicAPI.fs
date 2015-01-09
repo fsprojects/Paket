@@ -43,19 +43,18 @@ type Dependencies(dependenciesFileName: string) =
         let dependenciesFileName = findInPath(DirectoryInfo path,true)
         tracefn "found: %s" dependenciesFileName
         Dependencies(dependenciesFileName)
-        
-    /// Tries to create a paket.dependencies file in the given folder.
-    static member Create(): Dependencies = Dependencies.Create(Environment.CurrentDirectory)
 
-    /// Tries to create a paket.dependencies file in the given folder.
-    static member Create(path: string): Dependencies =
-        let dependenciesFileName = Path.Combine(path,Constants.DependenciesFileName)
-        if File.Exists dependenciesFileName then
-            Logging.tracefn "%s already exists" dependenciesFileName
-        else
-            DependenciesFile(dependenciesFileName, InstallOptions.Default, [], [], []).Save()
-        Dependencies(dependenciesFileName)
-    
+    /// Initialize paket.dependencies file in current directory
+    static member Init() =
+        let currentDirectory = DirectoryInfo(Environment.CurrentDirectory)
+
+        Utils.RunInLockedAccessMode(
+            currentDirectory.FullName,
+            fun () -> 
+                PaketEnv.init currentDirectory
+                |> returnOrFail
+        )
+
     /// Converts the solution from NuGet to Paket.
     static member ConvertFromNuget(force: bool,installAfter: bool,initAutoRestore: bool,credsMigrationMode: string option) : unit =
         let currentDirectory = DirectoryInfo(Environment.CurrentDirectory)
@@ -151,18 +150,19 @@ type Dependencies(dependenciesFileName: string) =
 
     /// Lists outdated packages.
     member this.ShowOutdated(strict: bool,includePrereleases: bool): unit =
-        FindOutdated.ShowOutdated(dependenciesFileName,strict,includePrereleases)
+        FindOutdated.ShowOutdated strict includePrereleases |> this.Process
 
     /// Finds all outdated packages.
     member this.FindOutdated(strict: bool,includePrereleases: bool): (string * SemVerInfo) list =
-        FindOutdated.FindOutdated(dependenciesFileName,strict,includePrereleases)
+        FindOutdated.FindOutdated strict includePrereleases
+        |> this.Process
         |> List.map (fun (PackageName p,_,newVersion) -> p,newVersion)
-    
+
     /// Pulls new paket.targets and bootstrapper and puts them into .paket folder.
     member this.InitAutoRestore(): unit = 
         Utils.RunInLockedAccessMode(
             this.RootPath,
-            fun () -> VSIntegration.InitAutoRestore(dependenciesFileName))
+            fun () -> VSIntegration.InitAutoRestore |> this.Process)
 
     /// Returns the installed version of the given package.
     member this.GetInstalledVersion(packageName: string): string option =
