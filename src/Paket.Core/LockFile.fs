@@ -248,8 +248,8 @@ module LockFileParser =
                                             Name = path } :: state.SourceFiles }
                     | _ -> failwith "invalid remote details."
                 | HttpLink x ->
-                    match state.RemoteUrl |> Option.map(fun s -> s.Split '/') with
-                    | Some [| protocol; _; domain; |] ->
+                    match state.RemoteUrl |> Option.map(fun s -> s.Split '/' |> Array.toList) with
+                    | Some [ protocol; _; domain; ] ->
                         { state with  
                             LastWasPackage = false
                             SourceFiles = { Commit = String.Empty
@@ -258,7 +258,7 @@ module LockFileParser =
                                             Project = domain
                                             Dependencies = Set.empty
                                             Name = details } :: state.SourceFiles }
-                    | Some [| protocol; _; domain; project |] ->
+                    | Some [ protocol; _; domain; project ] ->
                         { state with  
                             LastWasPackage = false
                             SourceFiles = { Commit = String.Empty
@@ -267,13 +267,13 @@ module LockFileParser =
                                             Project = project
                                             Dependencies = Set.empty
                                             Name = details } :: state.SourceFiles }
-                    | Some [| protocol; _; domain; project; moredetails |] ->
+                    | Some (protocol :: _ :: domain :: project :: moredetails) ->
                         { state with  
                             LastWasPackage = false
                             SourceFiles = { Commit = String.Empty
                                             Owner = domain
                                             Origin = HttpLink(state.RemoteUrl.Value)
-                                            Project = project+"/"+moredetails
+                                            Project = project + "/" + String.Join("/",moredetails)
                                             Dependencies = Set.empty
                                             Name = details } :: state.SourceFiles }
                     | _ ->  failwith "invalid remote details."
