@@ -17,13 +17,12 @@ let private getLatestVersionFromJson (data : string) =
 
 let InitAutoRestore environment =
     let exeDir = Path.Combine(environment.RootDirectory.FullName, ".paket")
-    CreateDir(exeDir)
     use client = createWebClient None
 
     let download version file = 
         rop {
+            do! createDir(exeDir)
             let fileName = Path.Combine(exeDir, file)
-            do! deleteFile fileName
             let url = sprintf "https://github.com/fsprojects/Paket/releases/download/%s/%s" (string version) file
             do! downloadFileSync url fileName client
         }

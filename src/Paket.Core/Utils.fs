@@ -30,9 +30,13 @@ let TimeSpanToReadableString(span:TimeSpan) =
     if String.IsNullOrEmpty(formatted) then "0 seconds" else formatted
 
 /// Creates a directory if it does not exist.
-let CreateDir path = 
-    let dir = DirectoryInfo path
-    if not dir.Exists then dir.Create()
+let createDir path = 
+    try
+        let dir = DirectoryInfo path
+        if not dir.Exists then dir.Create()
+        succeed ()
+    with _ ->
+        DirectoryCreateError path |> fail
 
 /// Cleans a directory by deleting it and recreating it.
 let CleanDir path = 
@@ -42,7 +46,7 @@ let CleanDir path =
             di.Delete(true)
         with
         | exn -> failwithf "Error during deletion of %s%s  - %s" di.FullName Environment.NewLine exn.Message 
-    CreateDir path
+    createDir path |> returnOrFail
     // set writeable
     File.SetAttributes(path, FileAttributes.Normal)
 
@@ -268,10 +272,3 @@ let saveFile (fileName : string) (contents : string) =
         File.WriteAllText(fileName, contents) |> succeed
     with _ ->
         FileSaveError fileName |> fail
-
-let deleteFile (fileName : string) =
-    tracefn "Deleting file %s" fileName
-    try 
-        File.Delete fileName |> succeed
-    with _ ->
-        FileDeleteError fileName |> fail

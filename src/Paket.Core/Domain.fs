@@ -57,6 +57,8 @@ type DomainMessage =
 
     | DownloadError of string
     | ReleasesJsonParseError
+    
+    | DirectoryCreateError of string 
     | FileDeleteError of string
     | FileSaveError of string
 
@@ -98,6 +100,9 @@ type DomainMessage =
             sprintf "Error occured while downloading from %s." url
         | ReleasesJsonParseError ->
             "Unable to parse Json from GitHub releases API."
+        
+        | DirectoryCreateError path ->
+            sprintf "Unable to create directory %s." path
         | FileDeleteError path ->
             sprintf "Unable to delete file %s." path
         | FileSaveError path ->
