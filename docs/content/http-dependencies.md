@@ -6,12 +6,12 @@ Paket allows one to automatically manage the linking of files from HTTP resource
 
 You can reference a single file from a HTTP resource simply by specifying the url in the [`paket.dependencies` file](dependencies-file.html):
 
-    http http://www.fssnip.net/raw/1M test1.fs
+    http http://www.fssnip.net/raw/1M/test1.fs
 
 If you run the [`paket update` command](paket-update.html), it will add a new section to your [`paket.lock` file](lock-file.html):
 
     HTTP
-      remote: http://www.fssnip.net/raw/1M
+      remote: http://www.fssnip.net/raw/1M/test1.fs
       specs:
         test1.fs
 
