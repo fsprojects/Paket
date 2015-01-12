@@ -72,18 +72,23 @@ Following are valid modes for `--creds-migration` option:
 After converting your solution from NuGet, you may end up with many transitive dependencies in your Paket files.
 Consider using [`paket simplify`](paket-simplify.html) to remove unnecessary transitive dependencies from your paket.dependencies file and paket.references files."""}
 
-     "init-auto-restore",
-        { Title = "paket init-auto-restore"
-          Text = """Enables automatic Package Restore in Visual Studio during the build process. 
+     "auto-restore",
+        { Title = "paket auto-restore"
+          Text = """Enables or disables automatic Package Restore in Visual Studio during the build process. 
 
     [lang=batchfile]
-    $ paket init-auto-restore
+    $ paket auto-restore [on|off]
 
-The command:
+Auto-restore on:
 
-  - creates a `.paket` directory in your solution root
-  - downloads `paket.targets` and `paket.bootstrapper.exe` into it
-  - adds an `<Import>` statement for `paket.targets` to all projects under the working directory."""}
+  - creates a `.paket` directory in your root directory,
+  - downloads `paket.targets` and `paket.bootstrapper.exe` into the `.paket` directory,
+  - adds an `<Import>` statement for `paket.targets` to projects that have the [references file](references-files.html).
+  
+Auto-restore off:
+
+  - removes `paket.targets` from the `.paket` directory,
+  - removes the `<Import>` statement for `paket.targets` from projects that have the [references file](references-files.html)."""}
 
      "restore",
         { Title = "paket restore"
