@@ -120,11 +120,16 @@ let getAllVersions(auth, nugetURL, package) =
 /// Gets versions of the given package from local Nuget feed.
 let getAllVersionsFromLocalPath (localNugetPath, package) =
     async {
-        return Directory.EnumerateFiles(localNugetPath,"*.nupkg",SearchOption.AllDirectories)
-               |> Seq.choose (fun fileName ->
-                                   let fi = FileInfo(fileName)
-                                   let _match = Regex(sprintf @"^%s\.(\d.*)\.nupkg" package, RegexOptions.IgnoreCase).Match(fi.Name)
-                                   if _match.Groups.Count > 1 then Some _match.Groups.[1].Value else None)
+        let di = DirectoryInfo(localNugetPath)
+        if not di.Exists then
+            failwithf "The directory %s doesn't exist.%sPlease check the NuGet source feed definition in your paket.dependencies file." localNugetPath Environment.NewLine
+
+        return 
+            Directory.EnumerateFiles(di.FullName,"*.nupkg",SearchOption.AllDirectories)
+            |> Seq.choose (fun fileName ->
+                            let fi = FileInfo(fileName)
+                            let _match = Regex(sprintf @"^%s\.(\d.*)\.nupkg" package, RegexOptions.IgnoreCase).Match(fi.Name)
+                            if _match.Groups.Count > 1 then Some _match.Groups.[1].Value else None)
     }
 
 
@@ -265,9 +270,12 @@ let getDetailsFromNuget force auth nugetURL package (version:SemVerInfo) =
     } 
     
 /// Reads direct dependencies from a nupkg file
-let getDetailsFromLocalFile path package (version:SemVerInfo) =
+let getDetailsFromLocalFile localNugetPath package (version:SemVerInfo) =
     async {
-        let nupkg = FileInfo(Path.Combine(path, sprintf "%s.%s.nupkg" package (version.Normalize())))
+        let version = version.Normalize()
+        let nupkg = FileInfo(Path.Combine(localNugetPath, sprintf "%s.%s.nupkg" package version))
+        if not nupkg.Exists then
+            failwithf "The package %s %s can't be found in %s.%sPlease check the feed definition in your paket.dependencies file." package version localNugetPath Environment.NewLine
         let zip = ZipFile.Read(nupkg.FullName)
         let zippedNuspec = (zip |> Seq.find (fun f -> f.FileName.EndsWith ".nuspec"))
 
@@ -283,7 +291,7 @@ let getDetailsFromLocalFile path package (version:SemVerInfo) =
             { PackageName = nuspec.OfficialName
               DownloadUrl = package
               Dependencies = Requirements.optimizeRestrictions nuspec.Dependencies
-              SourceUrl = path
+              SourceUrl = localNugetPath
               CacheVersion = NugetPackageCache.CurrentCacheVersion
               Unlisted = false }
     }

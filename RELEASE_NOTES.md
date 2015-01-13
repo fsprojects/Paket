@@ -1,3 +1,6 @@
+#### 0.22.10 - 13.01.2015
+* BUGFIX: Give better error message when package is not found in a local feed - https://github.com/fsprojects/Paket/issues/545
+
 #### 0.22.9 - 09.01.2015
 * BUGFIX: Don't download gists that are up-to-date - https://github.com/fsprojects/Paket/issues/513
 
