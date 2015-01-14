@@ -55,6 +55,15 @@ type ReferencesFile =
             tracefn "Adding %s to %s" referenceName (this.FileName)
             { this with NugetPackages = this.NugetPackages @ [packageName] }
 
+    member this.RemoveNuGetReference(packageName : PackageName) =
+        let (PackageName referenceName) = packageName
+        let normalized = NormalizedPackageName packageName
+        if this.NugetPackages |> Seq.exists (fun p -> NormalizedPackageName p = normalized) |> not then
+            this
+        else
+            tracefn "Removing %s from %s" referenceName (this.FileName)
+            { this with NugetPackages = this.NugetPackages |> List.filter (fun p -> NormalizedPackageName p <> normalized) }
+
     member this.Save() =
         File.WriteAllText(this.FileName, this.ToString())
         tracefn "References file saved to %s" this.FileName

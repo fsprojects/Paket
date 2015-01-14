@@ -1,3 +1,6 @@
+#### 0.22.12 - 14.01.2015
+* BUGFIX: `paket add` offered to add dependencies even when they are already added - https://github.com/fsprojects/Paket/issues/550
+
 #### 0.22.11 - 14.01.2015
 * BUGFIX: Detect `Net20-client` - https://github.com/fsprojects/Paket/issues/547
 

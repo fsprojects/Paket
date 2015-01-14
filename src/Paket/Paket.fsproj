@@ -28,7 +28,7 @@
     <DocumentationFile>
     </DocumentationFile>
     <StartArguments>update -f</StartArguments>
-    <StartArguments>add nuget NUnit -i</StartArguments>
+    <StartArguments>remove nuget nunit -i</StartArguments>
     <StartAction>Project</StartAction>
     <StartProgram>paket.exe</StartProgram>
     <StartWorkingDirectory>

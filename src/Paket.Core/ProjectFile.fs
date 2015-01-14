@@ -82,8 +82,8 @@ type ProjectFile =
         match ProjectFile.FindReferencesFile proj with
         | None -> false
         | Some fileName -> 
-            let lines = File.ReadAllLines(fileName)
-            lines |> Seq.exists (fun l -> l.ToLower() = package.ToString().ToLower())
+            let referencesFile = ReferencesFile.FromFile fileName
+            referencesFile.NugetPackages |> Seq.exists (fun p -> NormalizedPackageName p = package)
 
     member this.CreateNode(name, text) = 
         let node = this.CreateNode(name)

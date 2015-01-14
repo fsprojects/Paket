@@ -9,18 +9,13 @@ let Remove(dependenciesFileName, package:PackageName, force, hard, interactive, 
     let (PackageName name) = package
     let root = Path.GetDirectoryName dependenciesFileName
     let allProjects = ProjectFile.FindAllProjects root
-    for project in allProjects do
-        let proj = FileInfo(project.FileName)
-        match ProjectFile.FindReferencesFile proj with
-        | None -> ()
-        | Some fileName -> 
-            let lines = File.ReadAllLines(fileName)
-            let installed = lines |> Seq.exists (fun l -> l.ToLower() = name.ToLower())
-            if installed then
-                if (not interactive) || Utils.askYesNo(sprintf "  Remove from %s?" project.Name) then
-                    let newLines = lines |> Seq.filter (fun l -> l.ToLower() <> name.ToLower())
-                    File.WriteAllLines(fileName,newLines)
-
+    for project in allProjects do        
+        if project.HasPackageInstalled(NormalizedPackageName package) then
+            if (not interactive) || Utils.askYesNo(sprintf "  Remove from %s?" project.Name) then
+                ProjectFile.FindOrCreateReferencesFile(FileInfo(project.FileName))
+                    .RemoveNuGetReference(package)
+                    .Save()
+            
     // check we have it removed from all paket.references files
     let stillInstalled =
         allProjects
