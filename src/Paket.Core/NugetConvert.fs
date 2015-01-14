@@ -251,8 +251,10 @@ let createDependenciesFileR (rootDirectory : DirectoryInfo) nugetEnv mode =
             if nugetEnv.NugetConfig.PackageSources = [] then [Constants.DefaultNugetStream,None] else nugetEnv.NugetConfig.PackageSources
             |> List.map (fun (n, auth) -> n, auth |> Option.map (CredsMigrationMode.toAuthentication mode n))
             |> List.map (fun source -> 
-                            try source |> PackageSource.Parse |> Rop.succeed
-                            with _ -> source |> fst |> PackageSourceParseError |> Rop.fail)
+                            try source |> PackageSource.Parse |> succeed
+                            with _ -> source |> fst |> PackageSourceParseError |> fail
+                            |> successTee PackageSource.warnIfNoConnection)
+                            
             |> Rop.collect
 
         sources
