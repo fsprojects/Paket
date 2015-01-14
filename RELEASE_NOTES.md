@@ -1,3 +1,6 @@
+#### 0.22.13 - 14.01.2015
+* COSMETICS: `paket convert-from-nuget` warns if it can't find a NuGet feed - https://github.com/fsprojects/Paket/issues/548
+
 #### 0.22.12 - 14.01.2015
 * BUGFIX: `paket add` offered to add dependencies even when they are already added - https://github.com/fsprojects/Paket/issues/550
 
