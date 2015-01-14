@@ -119,13 +119,85 @@ let filterGlobalArgs args =
 
     verbose, logFile, rest
 
+type AddArgs =
+    | [<First>][<CustomCommandLine("nuget")>][<Mandatory>] Nuget of string
+    | [<CustomCommandLine("version")>] Version of string
+    | [<AltCommandLine("-f")>] Force
+    | [<AltCommandLine("-i")>] Interactive
+    | Hard
+    | No_Install
+with 
+    interface IArgParserTemplate with
+        member __.Usage = ""
+
+type ConvertFromNugetArgs =
+    | [<AltCommandLine("-f")>] Force
+    | No_Install
+    | No_Auto_Restore
+    | Creds_Migration of string
+with 
+    interface IArgParserTemplate with
+        member __.Usage = ""
+
+type FindRefsArgs =
+    | [<Rest>][<CustomCommandLine("nuget")>][<Mandatory>] Packages of string
+with 
+    interface IArgParserTemplate with
+        member __.Usage = ""
+
+type InitArgs =
+    | [<Hidden>] NoArg
+with 
+    interface IArgParserTemplate with
+        member __.Usage = ""
+
+type InstallArgs =
+    | [<AltCommandLine("-f")>] Force
+    | Hard
+    | Redirects
+with 
+    interface IArgParserTemplate with
+        member __.Usage = ""
+
+type OutdatedArgs =
+    | Ignore_Constraints
+    | [<AltCommandLine("--pre")>] Include_Prereleases
+with 
+    interface IArgParserTemplate with
+        member __.Usage = ""
+
+type RemoveArgs =
+    | [<First>][<CustomCommandLine("nuget")>][<Mandatory>] Nuget of string
+    | [<AltCommandLine("-f")>] Force
+    | [<AltCommandLine("-i")>] Interactive
+    | Hard
+    | No_Install
+with 
+    interface IArgParserTemplate with
+        member __.Usage = ""
+
+type RestoreArgs =
+    | [<AltCommandLine("-f")>] Force
+    | [<Rest>] References_Files of string
+with 
+    interface IArgParserTemplate with
+        member __.Usage = ""
+
 type SimplifyArgs =
     | [<AltCommandLine("-i")>] Interactive
 with 
     interface IArgParserTemplate with
-        member x.Usage = 
-            match x with
-            | Interactive -> ""
+        member __.Usage = ""
+
+type UpdateArgs =
+    | [<First>][<CustomCommandLine("nuget")>] Nuget of string
+    | [<CustomCommandLine("version")>] Version of string
+    | [<AltCommandLine("-f")>] Force
+    | Hard
+    | Redirects
+with 
+    interface IArgParserTemplate with
+        member __.Usage = ""
 
 
 let showHelp (helpTopic:HelpTexts.CommandHelpTopic) = 
@@ -134,21 +206,126 @@ let showHelp (helpTopic:HelpTexts.CommandHelpTopic) =
 
 let v, logFile, args = filterGlobalArgs (Environment.GetCommandLineArgs() |> Seq.skip 1 |> Seq.toList)
 
+let commandArgs<'T when 'T :> IArgParserTemplate> args = 
+    UnionArgParser
+        .Create<'T>()
+        .Parse(inputs = Array.ofList args, raiseOnUsage = false, errorHandler = ProcessExiter())
+
 Logging.verbose <- v
 Option.iter setLogFile logFile
 
 match args with
-    | "simplify" :: args ->
-        let results = 
-            UnionArgParser
-                .Create<SimplifyArgs>()
-                .Parse(inputs = Array.ofList args, raiseOnUsage = false, errorHandler = ProcessExiter())
+    | "add" :: args ->
+        let results = commandArgs<AddArgs> args
+
+        if results.IsUsageRequested then
+            showHelp HelpTexts.commands.["add"]
+        else
+            let packageName = results.GetResult <@ AddArgs.Nuget @>
+            let version = defaultArg (results.TryGetResult <@ AddArgs.Version @>) ""
+            let force = results.Contains <@ AddArgs.Force @>
+            let hard = results.Contains <@ AddArgs.Hard @>
+            let interactive = results.Contains <@ AddArgs.Interactive @>
+            let noInstall = results.Contains <@ AddArgs.No_Install @>
+            Dependencies.Locate().Add(packageName, version, force, hard, interactive, noInstall |> not)
         
+    | "convert-from-nuget" :: args ->
+        let results = commandArgs<ConvertFromNugetArgs> args
+
+        if results.IsUsageRequested then
+            showHelp HelpTexts.commands.["convert-from-nuget"]
+        else
+            let force = results.Contains <@ ConvertFromNugetArgs.Force @>
+            let noInstall = results.Contains <@ ConvertFromNugetArgs.No_Install @>
+            let noAutoRestore = results.Contains <@ ConvertFromNugetArgs.No_Install @>
+            let credsMigrationMode = results.TryGetResult <@ ConvertFromNugetArgs.Creds_Migration @>
+            Dependencies.ConvertFromNuget(force, noInstall |> not, noAutoRestore |> not, credsMigrationMode)
+    
+    | "find-refs" :: args ->
+        let results = commandArgs<FindRefsArgs> args
+
+        if results.IsUsageRequested then
+            showHelp HelpTexts.commands.["find-refs"]
+        else
+            let packages = results.GetResults <@ FindRefsArgs.Packages @>
+            Dependencies.Locate().ShowReferencesFor(packages)
+        
+    | "init" :: args ->
+        let results = commandArgs<InitArgs> args
+
+        if results.IsUsageRequested then
+            showHelp HelpTexts.commands.["init"]
+        else
+            Dependencies.Init()
+
+    | "install" :: args ->
+        let results = commandArgs<InstallArgs> args
+            
+        if results.IsUsageRequested then
+            showHelp HelpTexts.commands.["install"]
+        else
+            let force = results.Contains <@ InstallArgs.Force @>
+            let hard = results.Contains <@ InstallArgs.Hard @>
+            let withBindingRedirects = results.Contains <@ InstallArgs.Redirects @>
+            Dependencies.Locate().Install(force,hard,withBindingRedirects)
+
+    | "outdated" :: args ->
+        let results = commandArgs<OutdatedArgs> args
+
+        if results.IsUsageRequested then
+            showHelp HelpTexts.commands.["outdated"]
+        else
+            let strict = results.Contains <@ OutdatedArgs.Ignore_Constraints @> |> not
+            let includePrereleases = results.Contains <@ OutdatedArgs.Include_Prereleases @>
+            Dependencies.Locate().ShowOutdated(strict,includePrereleases)
+
+    | "remove" :: args ->
+        let results = commandArgs<RemoveArgs> args
+
+        if results.IsUsageRequested then
+            showHelp HelpTexts.commands.["remove"]
+        else 
+            let packageName = results.GetResult <@ RemoveArgs.Nuget @>
+            let force = results.Contains <@ RemoveArgs.Force @>
+            let hard = results.Contains <@ RemoveArgs.Hard @>
+            let interactive = results.Contains <@ RemoveArgs.Interactive @>
+            let noInstall = results.Contains <@ RemoveArgs.No_Install @>
+            Dependencies.Locate().Remove(packageName, force, hard, interactive, noInstall |> not)
+
+    | "restore" :: args ->
+        let results = commandArgs<RestoreArgs> args
+
+        if results.IsUsageRequested then
+            showHelp HelpTexts.commands.["restore"]
+        else 
+            let force = results.Contains <@ RestoreArgs.Force @>
+            let files = results.GetResults <@ RestoreArgs.References_Files @> 
+            Dependencies.Locate().Restore(force,files)
+
+    | "simplify" :: args ->
+        let results = commandArgs<SimplifyArgs> args
+
         if results.IsUsageRequested then
             showHelp HelpTexts.commands.["simplify"]
         else 
             let interactive = results.Contains <@ SimplifyArgs.Interactive @>
             Dependencies.Simplify(interactive)
+
+    | "update" :: args ->
+        let results = commandArgs<UpdateArgs> args
+
+        if results.IsUsageRequested then
+            showHelp HelpTexts.commands.["update"]
+        else 
+            let hard = results.Contains <@ UpdateArgs.Hard @>
+            let force = results.Contains <@ UpdateArgs.Force @>
+            match results.TryGetResult <@ UpdateArgs.Nuget @> with
+            | Some packageName -> 
+                let version = results.TryGetResult <@ UpdateArgs.Version @>
+                Dependencies.Locate().UpdatePackage(packageName, version, force, hard)
+            | _ -> 
+                let withBindingRedirects = results.Contains <@ UpdateArgs.Redirects @>
+                Dependencies.Locate().Update(force,hard,withBindingRedirects)
 
     | _ ->
 
