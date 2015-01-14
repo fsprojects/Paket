@@ -77,6 +77,14 @@ type ProjectFile =
     member this.CreateNode(name) = 
         this.Document.CreateElement(name, Constants.ProjectDefaultNameSpace)
 
+    member this.HasPackageInstalled(package:NormalizedPackageName) =        
+        let proj = FileInfo(this.FileName)
+        match ProjectFile.FindReferencesFile proj with
+        | None -> false
+        | Some fileName -> 
+            let lines = File.ReadAllLines(fileName)
+            lines |> Seq.exists (fun l -> l.ToLower() = package.ToString().ToLower())
+
     member this.CreateNode(name, text) = 
         let node = this.CreateNode(name)
         node.InnerText <- text

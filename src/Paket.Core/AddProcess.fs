@@ -17,7 +17,8 @@ let Add(dependenciesFileName, package, version, force, hard, interactive, instal
     
     if interactive then
         for project in ProjectFile.FindAllProjects(Path.GetDirectoryName lockFile.FileName) do
-            if Utils.askYesNo(sprintf "  Install to %s?" project.Name) then
+            let notInstalled = project.HasPackageInstalled(NormalizedPackageName package) |> not
+            if notInstalled && Utils.askYesNo(sprintf "  Install to %s?" project.Name) then
                 ProjectFile.FindOrCreateReferencesFile(FileInfo(project.FileName))
                     .AddNuGetReference(package)
                     .Save()

@@ -28,12 +28,12 @@
     <DocumentationFile>
     </DocumentationFile>
     <StartArguments>update -f</StartArguments>
-    <StartArguments>restore</StartArguments>
+    <StartArguments>add nuget NUnit -i</StartArguments>
     <StartAction>Project</StartAction>
     <StartProgram>paket.exe</StartProgram>
     <StartWorkingDirectory>
     </StartWorkingDirectory>
-    <StartWorkingDirectory>d:\code\jsonLD.Entities\src</StartWorkingDirectory>
+    <StartWorkingDirectory>d:\code\paketkopie</StartWorkingDirectory>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
