@@ -3,7 +3,7 @@ NUGET
   specs:
     FAKE (3.13.4)
     FSharp.Compiler.Service (0.0.81)
-    FSharp.Formatting (2.6.0)
+    FSharp.Formatting (2.6.1)
       FSharp.Compiler.Service (>= 0.0.81)
     Microsoft.Bcl (1.1.9)
       Microsoft.Bcl.Build (>= 1.0.14)
