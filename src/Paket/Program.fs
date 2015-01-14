@@ -273,6 +273,9 @@ try
                 Environment.NewLine
                 allCommands
                 Environment.NewLine
+
+    let elapsedTime = Utils.TimeSpanToReadableString stopWatch.Elapsed
+    tracefn "%s - ready." elapsedTime
 with
 | exn when not (exn :? System.NullReferenceException) -> 
     Environment.ExitCode <- 1
