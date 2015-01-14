@@ -1,3 +1,6 @@
+#### 0.22.11 - 14.01.2015
+* BUGFIX: Detect `Net20-client` - https://github.com/fsprojects/Paket/issues/547
+
 #### 0.22.10 - 13.01.2015
 * BUGFIX: Give better error message when package is not found in a local feed - https://github.com/fsprojects/Paket/issues/545
 
