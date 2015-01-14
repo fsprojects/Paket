@@ -1,8 +1,11 @@
 ﻿module Paket.PackageSources
 
 open System
+open System.IO
 open System.Text.RegularExpressions
-open Logging
+
+open Paket.Logging
+open Paket.Rop
 
 type EnvironmentVariable = 
     { Variable : string
@@ -90,5 +93,16 @@ type PackageSource =
                 | _ -> failwithf "unable to parse package source: %s" source
 
     static member NugetSource url = Nuget { Url = url; Authentication = None }
+
+    static member warnIfNoConnection (source,_) = 
+        match source with
+        | Nuget {Url = url; Authentication = auth} -> 
+            use client = Utils.createWebClient (auth |> Option.map toBasicAuth)
+            try client.DownloadData url |> ignore 
+            with _ ->
+                traceWarnfn "Unable to ping remote Nuget feed: %s." url
+        | LocalNuget path -> 
+            if not <| File.Exists path then 
+                traceWarnfn "Local Nuget feed doesn't exist: %s." path            
 
 let DefaultNugetSource = PackageSource.NugetSource Constants.DefaultNugetStream
