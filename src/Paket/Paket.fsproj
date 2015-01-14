@@ -30,12 +30,14 @@
     <StartArguments>update -f</StartArguments>
     <StartArguments>remove nuget nunit -i</StartArguments>
     <StartArguments>simplify -i -v --log-file "C:\sandbox\la"</StartArguments>
+    <StartArguments>restore</StartArguments>
     <StartAction>Project</StartAction>
     <StartProgram>paket.exe</StartProgram>
     <StartWorkingDirectory>
     </StartWorkingDirectory>
     <StartWorkingDirectory>d:\code\paketkopie</StartWorkingDirectory>
     <StartWorkingDirectory>D:\skyDrive\Dev\sandbox\Solution1</StartWorkingDirectory>
+    <StartWorkingDirectory>d:\code\jsonLD.Entities\src</StartWorkingDirectory>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
