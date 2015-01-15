@@ -8,13 +8,13 @@ namespace Paket.Bootstrapper
 {
     class Program
     {
-        static IWebProxy GetDefaultWebProxy()
+        static IWebProxy GetDefaultWebProxyFor(String url)
         {
             IWebProxy result = WebRequest.GetSystemWebProxy();
-            Uri irrelevantDestination = new Uri(@"http://google.com");
-            Uri address = result.GetProxy(irrelevantDestination);
+            Uri relevantDestination = new Uri(url);
+            Uri address = result.GetProxy(relevantDestination);
 
-            if (address == irrelevantDestination)
+            if (address == relevantDestination)
                 return null;
 
             return new WebProxy(address) { 
@@ -61,17 +61,16 @@ namespace Paket.Bootstrapper
                     }
                 }
 
-                var proxy = GetDefaultWebProxy();
-
                 if (latestVersion == "")
                 {
                     using (WebClient client = new WebClient())
                     {
+                        var releasesUrl = "https://github.com/fsprojects/Paket/releases";
+						
                         client.Headers.Add("user-agent", "Paket.Bootstrapper");
                         client.UseDefaultCredentials = true;
-                        client.Proxy = proxy;
+                        client.Proxy = GetDefaultWebProxyFor(releasesUrl);
 
-                        var releasesUrl = "https://github.com/fsprojects/Paket/releases";
                         var data = client.DownloadString(releasesUrl);
                         var start = 0;
                         while (latestVersion == "")
@@ -94,7 +93,7 @@ namespace Paket.Bootstrapper
                     var request = (HttpWebRequest)HttpWebRequest.Create(url);
 
                     request.UseDefaultCredentials = true;
-                    request.Proxy = proxy;
+                    request.Proxy = GetDefaultWebProxyFor(url);
 
                     request.AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate;
                     using (HttpWebResponse httpResponse = (HttpWebResponse)request.GetResponse())
