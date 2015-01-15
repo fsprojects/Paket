@@ -387,7 +387,7 @@ let DownloadPackage(root, auth, url, name, version:SemVerInfo, force) =
                     let credentials = Convert.ToBase64String(Encoding.ASCII.GetBytes(auth.Username + ":" + auth.Password))
                     request.Headers.[HttpRequestHeader.Authorization] <- String.Format("Basic {0}", credentials)
 
-                request.Proxy <- Utils.defaultProxy
+                request.Proxy <- Utils.getDefaultProxyFor url
                 use! httpResponse = request.AsyncGetResponse()
             
                 use httpResponseStream = httpResponse.GetResponseStream()

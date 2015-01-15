@@ -70,18 +70,18 @@ let inline normalizeXml(doc:XmlDocument) =
     xmlTextWriter.Flush()
     stringWriter.GetStringBuilder().ToString()
 
-let defaultProxy =
+let getDefaultProxyFor url =
     let result = WebRequest.GetSystemWebProxy()
-    let irrelevantDestination = new Uri(@"http://google.com")
-    let address = result.GetProxy(irrelevantDestination)
+    let uri = new Uri(url)
+    let address = result.GetProxy(uri)
 
-    if address = irrelevantDestination then null else
+    if address = uri then null else
     let proxy = new WebProxy(address)
     proxy.Credentials <- CredentialCache.DefaultCredentials
     proxy.BypassProxyOnLocal <- true
     proxy
 
-let inline createWebClient(auth:Auth option) =
+let inline createWebClient(url,auth:Auth option) =
     let client = new WebClient()
     match auth with
     | None -> client.UseDefaultCredentials <- true
@@ -97,7 +97,7 @@ let inline createWebClient(auth:Auth option) =
         client.Headers.[HttpRequestHeader.Authorization] <- String.Format("Basic {0}", credentials)
 
     client.Headers.Add("user-agent", "Paket")
-    client.Proxy <- defaultProxy
+    client.Proxy <- getDefaultProxyFor url
     client
 
 
@@ -134,7 +134,7 @@ type System.Net.WebClient with
 let downloadFromUrl (auth:Auth option, url : string) (filePath: string) =
     async {
         try
-            use client = createWebClient auth
+            use client = createWebClient(url,auth)
             do! client.AsyncDownloadFile(Uri(url), filePath)
         with
         | exn ->
@@ -145,7 +145,7 @@ let downloadFromUrl (auth:Auth option, url : string) (filePath: string) =
 let getFromUrl (auth:Auth option, url : string) = 
     async { 
         try
-            use client = createWebClient auth
+            use client = createWebClient(url,auth)
             return! client.AsyncDownloadString(Uri(url))
         with
         | exn -> 
@@ -157,7 +157,7 @@ let getFromUrl (auth:Auth option, url : string) =
 let safeGetFromUrl (auth:Auth option, url : string) = 
     async { 
         try 
-            use client = createWebClient auth
+            use client = createWebClient(url,auth)
             let! raw = client.AsyncDownloadString(Uri(url))
             return Some raw
         with _ -> return None

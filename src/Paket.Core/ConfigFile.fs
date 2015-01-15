@@ -100,10 +100,10 @@ let private setCredentials (username : string) (password : string) (node : XmlEl
 
 
 /// Check if the provided credentials for a specific source are correct
-let checkCredentials(source, cred) = 
-    let client = Utils.createWebClient cred
+let checkCredentials(url, cred) = 
+    let client = Utils.createWebClient(url,cred)
     try 
-        client.DownloadData(Uri(source)) |> ignore
+        client.DownloadData(Uri(url)) |> ignore
         true
     with _ -> false
 

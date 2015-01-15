@@ -11,10 +11,10 @@ namespace Paket.Bootstrapper
         static IWebProxy GetDefaultWebProxyFor(String url)
         {
             IWebProxy result = WebRequest.GetSystemWebProxy();
-            Uri relevantDestination = new Uri(url);
-            Uri address = result.GetProxy(relevantDestination);
+            Uri uri = new Uri(url);
+            Uri address = result.GetProxy(uri);
 
-            if (address == relevantDestination)
+            if (address == uri)
                 return null;
 
             return new WebProxy(address) { 
