@@ -18,68 +18,6 @@ let assembly = Assembly.GetExecutingAssembly()
 let fvi = FileVersionInfo.GetVersionInfo(assembly.Location);
 tracefn "Paket version %s" fvi.FileVersion
 
-
-type CLIArguments =
-    | [<First>][<NoAppSettings>][<CustomCommandLine("init")>] Init
-    | [<First>][<NoAppSettings>][<CustomCommandLine("add")>] Add
-    | [<First>][<NoAppSettings>][<CustomCommandLine("remove")>] Remove
-    | [<First>][<NoAppSettings>][<CustomCommandLine("install")>] Install
-    | [<First>][<NoAppSettings>][<CustomCommandLine("restore")>] Restore
-    | [<First>][<NoAppSettings>][<CustomCommandLine("update")>] Update
-    | [<First>][<NoAppSettings>][<CustomCommandLine("outdated")>] Outdated
-    | [<First>][<NoAppSettings>][<CustomCommandLine("convert-from-nuget")>] ConvertFromNuget
-    | [<First>][<NoAppSettings>][<CustomCommandLine("init-auto-restore")>] InitAutoRestore
-    | [<First>][<NoAppSettings>][<CustomCommandLine("simplify")>] Simplify
-    | [<First>][<NoAppSettings>][<CustomCommandLine("config")>] Config
-    | [<First>][<NoAppSettings>][<Rest>][<CustomCommandLine("find-refs")>] FindRefs of string
-    | [<AltCommandLine("-v")>] Verbose
-    | [<AltCommandLine("-i")>] Interactive
-    | Redirects
-    | [<AltCommandLine("-f")>] Force
-    | Hard
-    | [<CustomCommandLine("nuget")>] Nuget of string
-    | [<CustomCommandLine("version")>] Version of string
-    | [<CustomCommandLine("add-credentials")>] AddCredentials of string
-    | [<Rest>]References_Files of string
-    | No_Install
-    | Ignore_Constraints
-    | [<AltCommandLine("--pre")>] Include_Prereleases
-    | No_Auto_Restore
-    | Creds_Migration of string
-    | Log_File of string
-with
-    interface IArgParserTemplate with
-        member s.Usage =
-            match s with
-            | Init -> "creates dependencies file."
-            | Add -> "adds a package to the dependencies."
-            | Remove -> "removes a package from the dependencies."
-            | Install -> "installs all packages."
-            | Restore -> "restores all packages."
-            | Update -> "updates the paket.lock file and installs all packages."
-            | References_Files _ -> "allows to specify a list of references file names."
-            | Outdated -> "displays information about new packages."
-            | ConvertFromNuget -> "converts all projects from NuGet to Paket."
-            | InitAutoRestore -> "enables automatic restore for Visual Studio."
-            | Simplify -> "analyzes dependencies and removes unnecessary transitive dependencies."
-            | Config -> "sets config values."
-            | Verbose -> "displays verbose output."
-            | Force -> "forces the download of all packages."
-            | Redirects -> "creates assembly binding redirects."
-            | Interactive -> "interactive process."
-            | Hard -> "overwrites manual package references."
-            | No_Install -> "omits install --hard after convert-from-nuget."
-            | Ignore_Constraints -> "ignores the version requirements when searching for outdated packages."
-            | Include_Prereleases -> "includes prereleases when searching for outdated packages."
-            | No_Auto_Restore -> "omits init-auto-restore after convert-from-nuget."
-            | Nuget _ -> "allows to specify a nuget package."
-            | Version _ -> "allows to specify a package version."
-            | Creds_Migration _ -> "allows to specify credentials migration mode for convert-from-nuget."
-            | Log_File _ -> "allows to specify a log file."
-            | FindRefs _ -> "finds all references to the given packages."
-            | AddCredentials _ -> "add credentials to config file for the specified source."
-
-
 type Command =
     | [<First>][<CustomCommandLine("add")>]                 Add
     | [<First>][<CustomCommandLine("config")>]              Config
@@ -119,28 +57,32 @@ let (|Command|_|) args =
 
 
 let filterGlobalArgs args = 
-
     let globalResults = 
-        UnionArgParser.Create<GlobalArgs>().Parse(ignoreMissing = true, ignoreUnrecognized = true, raiseOnUsage = false)
+        UnionArgParser.Create<GlobalArgs>()
+            .Parse(ignoreMissing = true, 
+                   ignoreUnrecognized = true, 
+                   raiseOnUsage = false)
     let verbose = globalResults.Contains <@ GlobalArgs.Verbose @>
-    let logFile = globalResults.TryGetResult <@ GlobalArgs.Log_File @> 
-
+    let logFile = globalResults.TryGetResult <@ GlobalArgs.Log_File @>
+    
     let rest = 
         match logFile with
-        | Some file -> args |> Array.filter (fun a -> a <> "--log-file" && a <> file)
+        | Some file -> 
+            args |> Array.filter (fun a -> a <> "--log-file" && a <> file)
         | None -> args
-
+    
     let rest = 
-        if verbose then rest |> Array.filter (fun a -> a <> "-v" && a <> "--verbose")
+        if verbose then 
+            rest |> Array.filter (fun a -> a <> "-v" && a <> "--verbose")
         else rest
-
+    
     verbose, logFile, rest
 
     
 let commandArgs<'T when 'T :> IArgParserTemplate> args = 
-    UnionArgParser
-        .Create<'T>()
-        .Parse(inputs = args, raiseOnUsage = false, errorHandler = ProcessExiter())
+    UnionArgParser.Create<'T>()
+        .Parse(inputs = args, raiseOnUsage = false, ignoreMissing = true, 
+               errorHandler = ProcessExiter())
 
 
 let showHelp (helpTopic:HelpTexts.CommandHelpTopic) = 
