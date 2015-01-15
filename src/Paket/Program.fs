@@ -18,30 +18,6 @@ let assembly = Assembly.GetExecutingAssembly()
 let fvi = FileVersionInfo.GetVersionInfo(assembly.Location);
 tracefn "Paket version %s" fvi.FileVersion
 
-type Command =
-    | [<First>][<CustomCommandLine("add")>]                 Add
-    | [<First>][<CustomCommandLine("config")>]              Config
-    | [<First>][<CustomCommandLine("convert-from-nuget")>]  ConvertFromNuget
-    | [<First>][<CustomCommandLine("find-refs")>]           FindRefs 
-    | [<First>][<CustomCommandLine("init")>]                Init
-    | [<First>][<CustomCommandLine("init-auto-restore")>]   InitAutoRestore
-    | [<First>][<CustomCommandLine("install")>]             Install
-    | [<First>][<CustomCommandLine("outdated")>]            Outdated
-    | [<First>][<CustomCommandLine("remove")>]              Remove
-    | [<First>][<CustomCommandLine("restore")>]             Restore
-    | [<First>][<CustomCommandLine("simplify")>]            Simplify
-    | [<First>][<CustomCommandLine("update")>]              Update
-with 
-    interface IArgParserTemplate with
-        member __.Usage = ""
- 
-type GlobalArgs =
-    | [<AltCommandLine("-v")>] Verbose
-    | Log_File of string
-with
-    interface IArgParserTemplate with
-        member __.Usage = ""
-
 let (|Command|_|) args = 
     let results = 
         UnionArgParser.Create<Command>()
