@@ -56,7 +56,7 @@ One key feature of Paket is that it separates the definition of dependencies fro
 
 With Paket you do not need to pin specific versions (although you can). Paket allows you to leverage [semantic versioning](http://semver.org) and define version constraints in a very flexible manner.
 
-You can also [influence the resolution of indirect dependencies](#Paket-s-NuGet-style-dependency-resolution-for-indirect-dependencies).
+You can also [influence the resolution of transitive dependencies](#Paket-s-NuGet-style-dependency-resolution-for-transitive-dependencies).
 
 #### Pinned version constraint
 
@@ -75,7 +75,7 @@ If you omit the version constraint then Paket will assume `>= 0`:
 
 #### "Use exactly this version" constraint
 
-If your indirect dependencies result in a version conflict you might want to instruct Paket to use a specific version. The `==` operator allows you to manually resolve the conflict:
+If your transitive dependencies result in a version conflict you might want to instruct Paket to use a specific version. The `==` operator allows you to manually resolve the conflict:
 
     nuget Example == 1.2.3 // take exactly this version
 
@@ -145,11 +145,11 @@ If you want to dependend on prereleases then Paket can assist you. In contrast t
     nuget Example >= 3 rc             // at least 3.0 but including rc versions 
     nuget Example >= 3 prerelease     // at least 3.0 but including all prerelease versions
 
-### Paket's NuGet-style dependency resolution for indirect dependencies
+### Paket's NuGet-style dependency resolution for transitive dependencies
 
-NuGet's dependency syntax led to a lot of incompatible packages on Nuget.org ([read more](controlling-nuget-resolution.html)). To make your transition to Paket easier and to allow package authors to correct their version constraints you can have Paket behave like NuGet when resolving indirect dependencies (i.e. defaulting to lowest matching versions).
+NuGet's dependency syntax led to a lot of incompatible packages on Nuget.org ([read more](controlling-nuget-resolution.html)). To make your transition to Paket easier and to allow package authors to correct their version constraints you can have Paket behave like NuGet when resolving transitive dependencies (i.e. defaulting to lowest matching versions).
 
-To request that Paket applies NuGet-style dependency resolution for indirect dependencies, use the `!` operator in your version constraint.
+To request that Paket applies NuGet-style dependency resolution for transitive dependencies, use the `!` operator in your version constraint.
 
     source https://nuget.org/api/v2
 

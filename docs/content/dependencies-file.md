@@ -24,9 +24,9 @@ The file specifies that Paket's NuGet dependencies should be downloaded from [nu
   * Gist number [1972349](https://gist.github.com/Thorium/1972349) from GitHub Gist.
   * External HTTP-resource, e.g. [1n](http://www.fssnip.net/1n) from [FSSnip](http://www.fssnip.net/) -site. 
 
-Paket uses this definition to compute a concrete dependency resolution, which also includes indirect dependencies. The resulting dependency graph is then persisted to the [`paket.lock` file](lock-file.html).
+Paket uses this definition to compute a concrete dependency resolution, which also includes transitive dependencies. The resulting dependency graph is then persisted to the [`paket.lock` file](lock-file.html).
 
-Only direct dependencies should be listed and you can use the [`paket simplify` command](paket-simplify.html) to remove indirect dependencies.
+Only direct dependencies should be listed and you can use the [`paket simplify` command](paket-simplify.html) to remove transitive dependencies.
 
 ## Sources
 
@@ -38,7 +38,7 @@ Paket supports the following source types:
  
 ## Strict references
 
-Paket usually references all direct and indirect dependencies that are listed in your [paket.references](references-files.md) files to your project file.
+Paket usually references all direct and transitive dependencies that are listed in your [paket.references](references-files.md) files to your project file.
 In `strict` mode it will **only** reference *direct* dependencies.
 
     references strict

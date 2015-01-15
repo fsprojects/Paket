@@ -1,4 +1,4 @@
-﻿module Paket.Simplifier
+module Paket.Simplifier
 
 open System
 open System.IO
@@ -15,7 +15,7 @@ let getFlatLookup (lockFile : LockFile) =
                     |> Set.ofSeq
                     |> Set.remove package.Name)
 
-let findIndirect (packages, flatLookup, failureF) = 
+let findTransitive (packages, flatLookup, failureF) = 
     packages
     |> List.map (fun packageName -> 
         flatLookup 
@@ -24,10 +24,10 @@ let findIndirect (packages, flatLookup, failureF) =
     |> Rop.collect
     |> lift Seq.concat
 
-let removePackage(packageName, indirectPackages, fileName, interactive) =
-    if indirectPackages |> Seq.exists (fun p -> NormalizedPackageName p = NormalizedPackageName packageName) then
+let removePackage(packageName, transitivePackages, fileName, interactive) =
+    if transitivePackages |> Seq.exists (fun p -> NormalizedPackageName p = NormalizedPackageName packageName) then
         if interactive then
-            let message = sprintf "Do you want to remove indirect dependency %s from file %s ?" packageName.Id fileName 
+            let message = sprintf "Do you want to remove transitive dependency %s from file %s ?" packageName.Id fileName 
             Utils.askYesNo(message)
         else 
             true
@@ -36,23 +36,23 @@ let removePackage(packageName, indirectPackages, fileName, interactive) =
 
 let simplifyDependenciesFile (dependenciesFile : DependenciesFile, flatLookup, interactive) = rop {
     let packages = dependenciesFile.Packages |> List.map (fun p -> p.Name)
-    let! indirect = findIndirect(packages, flatLookup, DependencyNotFoundInLockFile)
+    let! transitive = findTransitive(packages, flatLookup, DependencyNotFoundInLockFile)
 
     let newPackages = 
         dependenciesFile.Packages
-        |> List.filter (fun package -> not <| removePackage(package.Name, indirect, dependenciesFile.FileName, interactive))
+        |> List.filter (fun package -> not <| removePackage(package.Name, transitive, dependenciesFile.FileName, interactive))
     let d = dependenciesFile
     return DependenciesFile(d.FileName, d.Options, d.Sources, newPackages, d.RemoteFiles)
 }
 
 let simplifyReferencesFile (refFile, flatLookup, interactive) = rop {
-    let! indirect = findIndirect(refFile.NugetPackages, 
+    let! transitive = findTransitive(refFile.NugetPackages, 
                             flatLookup, 
                             (fun p -> ReferenceNotFoundInLockFile(refFile.FileName,p)))
 
     let newPackages = 
         refFile.NugetPackages 
-        |> List.filter (fun p -> not <| removePackage(p, indirect, refFile.FileName, interactive))
+        |> List.filter (fun p -> not <| removePackage(p, transitive, refFile.FileName, interactive))
 
     return { refFile with NugetPackages = newPackages }
 }

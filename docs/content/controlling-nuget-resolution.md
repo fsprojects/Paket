@@ -12,7 +12,7 @@ Installing packages like this is almost always a two-step operation: install and
 
 Paket uses the definitions from `paket.dependencies` to compute the dependency graph.
 
-The resolution algorithm balances direct and indirect dependencies such that you will get the *latest matching versions* of direct dependencies (defined using the [`nuget` statement](#dependencies)) and indirect dependencies (defined by your direct dependency's [nuspec](http://docs.nuget.org/docs/reference/nuspec-reference)). Paket checks compatibility by comparing available versions to the constraints of either source, `paket.dependencies`, or [nuspec](http://docs.nuget.org/docs/reference/nuspec-reference).
+The resolution algorithm balances direct and transitive dependencies such that you will get the *latest matching versions* of direct dependencies (defined using the [`nuget` statement](#dependencies)) and transitive dependencies (defined by your direct dependency's [nuspec](http://docs.nuget.org/docs/reference/nuspec-reference)). Paket checks compatibility by comparing available versions to the constraints of either source, `paket.dependencies`, or [nuspec](http://docs.nuget.org/docs/reference/nuspec-reference).
 
 As stated above, the algorithm defaults to resolving the latest versions matching the constraints.
 
@@ -26,4 +26,4 @@ For example, an assembly inside a NuGet package `A` might have a reference to a 
 
 This might be due to the fact that the [nuspec file format](http://docs.nuget.org/docs/reference/nuspec-reference) requires you to pin the dependency version using double brackets: `<dependency id="B" version="[1.2.3]" />`. Many package authors made the mistake of omitting the brackets, effectively specifying `>= 1.2.3` when they wanted to specify `= 1.2.3`. Newer releases of `B` package might still work together with `A` using [assembly binding redirects](http://msdn.microsoft.com/en-us/library/7wd6ex19(v=vs.110).aspx), a feature of .NET that the authors of Paket are not very fond of. Even if you are OK with binding redirects, what would happen after `B` `2.0` is released? If you assume that `B` follows [SemVer](http://semver.org), the `2.0` version, by definition, **will** have breaking changes. NuGet will allow the update regardless, giving the false impression that your app still works.
 
-To make your transition to Paket easier and to allow package authors to correct their version constraints you can have Paket behave like NuGet by using the [! prefix](nuget-dependencies.html#Paket-s-NuGet-style-dependency-resolution-for-indirect-dependencies).
+To make your transition to Paket easier and to allow package authors to correct their version constraints you can have Paket behave like NuGet by using the [! prefix](nuget-dependencies.html#Paket-s-NuGet-style-dependency-resolution-for-transitive-dependencies).

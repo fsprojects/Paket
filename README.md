@@ -4,9 +4,9 @@ A package dependency manager for .NET with support for NuGet packages and GitHub
 
 ## Why Paket?
 
-NuGet does not separate out the concept of indirect dependencies.
-If you install a package into your project and that package has further dependencies then all indirect packages are included in the packages.config.
-There is no way to tell which packages are only indirect dependencies.
+NuGet does not separate out the concept of transitive dependencies.
+If you install a package into your project and that package has further dependencies then all transitive packages are included in the packages.config.
+There is no way to tell which packages are only transitive dependencies.
 
 Even more importantly: If two packages reference conflicting versions of a package, NuGet will silently take the latest version ([read more](http://fsprojects.github.io/Paket/controlling-nuget-resolution.html)). You have no control over this process.
 

@@ -1,4 +1,4 @@
-﻿/// Contains logic which helps to resolve the dependency graph.
+/// Contains logic which helps to resolve the dependency graph.
 module Paket.PackageResolver
 
 open Paket
@@ -87,7 +87,7 @@ type Resolved = {
     ResolvedPackages : ResolvedPackages
     ResolvedSourceFiles : ModuleResolver.ResolvedSourceFile list }
 
-/// Resolves all direct and indirect dependencies
+/// Resolves all direct and transitive dependencies
 let Resolve(getVersionsF, getPackageDetailsF, rootDependencies:PackageRequirement list) =
     tracefn "Resolving packages:"
     let exploredPackages = Dictionary<NormalizedPackageName*SemVerInfo,ResolvedPackage>()

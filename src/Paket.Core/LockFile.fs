@@ -346,7 +346,7 @@ type LockFile(fileName:string,options,resolution:PackageResolution,remoteFiles:R
         |> Seq.map NormalizedPackageName
         |> Set.ofSeq
 
-    member this.GetIndirectDependencies() =
+    member this.GetTransitiveDependencies() =
         let fromNuGets =
             this.ResolvedPackages 
             |> Seq.map (fun d -> d.Value.Dependencies |> Seq.map (fun (n,_,_) -> n))
@@ -362,13 +362,13 @@ type LockFile(fileName:string,options,resolution:PackageResolution,remoteFiles:R
         Set.union fromNuGets fromSourceFiles
 
     member this.GetTopLevelDependencies() = 
-        let indirect = 
-            this.GetIndirectDependencies() 
+        let transitive = 
+            this.GetTransitiveDependencies() 
             |> Seq.map NormalizedPackageName 
             |> Set.ofSeq
 
         this.ResolvedPackages
-        |> Map.filter (fun name _ -> indirect.Contains name |> not)
+        |> Map.filter (fun name _ -> transitive.Contains name |> not)
 
     /// Checks if the first package is a dependency of the second package
     member this.IsDependencyOf(dependentPackage,package) =

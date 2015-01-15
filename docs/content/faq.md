@@ -2,7 +2,7 @@
 
 ## I don't understand why I need Paket to manage my packages. Why can't I just use NuGet?
 
-NuGet does not separate out the concept of indirect dependencies; if you install a package into your project and that package has further dependencies then all indirect packages are included in the `packages.config`. There is no way to tell which packages are only indirect dependencies.
+NuGet does not separate out the concept of transitive dependencies; if you install a package into your project and that package has further dependencies then all transitive packages are included in the `packages.config`. There is no way to tell which packages are only transitive dependencies.
 
 Even more importantly: If two packages reference conflicting versions of a package, NuGet will silently take the latest version ([read more](controlling-nuget-resolution.html)). You have no control over this process.
 
@@ -30,7 +30,7 @@ See [`paket.references`](references-files.html) for more information.
 
 ## Why does Paket use a different package resolution strategy than NuGet?
 
-Paket tries to embrace [SemVer](http://semver.org/) while NuGet uses a pessimistic version resolution strategy. You can prefix your version constraints with `!` if you need to use [NuGet compatibility](dependencies-file.html#Paket-s-NuGet-style-dependency-resolution-for-indirect-dependencies).
+Paket tries to embrace [SemVer](http://semver.org/) while NuGet uses a pessimistic version resolution strategy. You can prefix your version constraints with `!` if you need to use [NuGet compatibility](dependencies-file.html#Paket-s-NuGet-style-dependency-resolution-for-transitive-dependencies).
 
 ## Does Paket run install.ps1 scripts?
 <div id="paket-vs-powershell-install-scripts"></div>

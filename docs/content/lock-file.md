@@ -10,7 +10,7 @@ Consider the following [`paket.dependencies`](dependencies-file.html) file:
 
 Here we [specify dependencies](dependencies-file.html) on the default NuGet feed's [`Castle.Windsor-log4net`](https://www.nuget.org/packages/Castle.Windsor-log4net/) and [`Rx-Main`](https://www.nuget.org/packages/Rx-Main/) packages; both these packages have dependencies on further NuGet packages.
 
-The `paket.lock` file records the concrete dependency resolution of all direct *and indirect* dependencies of your project:
+The `paket.lock` file records the concrete dependency resolution of all direct *and transitive* dependencies of your project:
 
     NUGET
       remote: https://nuget.org/api/v2
@@ -50,7 +50,7 @@ Committing the `paket.lock` file to your version control system guarantees that 
 Performing updates
 ------------------
 
-If you make changes to [`paket.dependencies`](dependencies-file.html) or you want Paket to check for newer versions of the direct and indirect dependencies as specified in [`paket.dependencies`](dependencies-file.html), run:
+If you make changes to [`paket.dependencies`](dependencies-file.html) or you want Paket to check for newer versions of the direct and transitive dependencies as specified in [`paket.dependencies`](dependencies-file.html), run:
 
   - [`paket outdated`](paket-outdated.html) to check for new versions, and report what's available.
   - [`paket install`](paket-install.html) to analyze the modifications in the [`paket.dependencies`](dependencies-file.html) file and perform a selective update (only changed dependencies are updated).

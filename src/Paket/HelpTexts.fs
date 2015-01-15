@@ -69,8 +69,8 @@ Following are valid modes for `--creds-migration` option:
 
 ## Simplify direct dependencies
 
-After converting your solution from NuGet, you may end up with many indirect dependencies in your Paket files.
-Consider using [`paket simplify`](paket-simplify.html) to remove unnecessary indirect dependencies from your paket.dependencies file and paket.references files."""}
+After converting your solution from NuGet, you may end up with many transitive dependencies in your Paket files.
+Consider using [`paket simplify`](paket-simplify.html) to remove unnecessary transitive dependencies from your paket.dependencies file and paket.references files."""}
 
      "init-auto-restore",
         { Title = "paket init-auto-restore"
@@ -100,7 +100,7 @@ Options:
 
      "simplify",
         { Title = "paket simplify"
-          Text = """Simplifies your paket.dependencies file by removing indirect dependencies.
+          Text = """Simplifies your paket.dependencies file by removing transitive dependencies.
 Does also simplify paket.references files, unless [strict](dependencies-file.html#Strict-references) mode is used.
 
     [lang=batchfile]
@@ -110,7 +110,7 @@ Options:
 
   `-v`: Verbose - output the difference in content before and after running simplify command.
 
-  `--interactive`: Asks to confirm to delete every indirect dependency from each of the files. See [Interactive Mode](paket-simplify.html#Interactive-mode).
+  `--interactive`: Asks to confirm to delete every transitive dependency from each of the files. See [Interactive Mode](paket-simplify.html#Interactive-mode).
 
 ## Sample
 
@@ -156,7 +156,7 @@ The simplify command will help you maintain your direct dependencies.
 
 ## Interactive mode
 
-Sometimes, you may still want to have control over some of the indirect dependencies. In this case you can use the `--interactive` flag,
+Sometimes, you may still want to have control over some of the transitive dependencies. In this case you can use the `--interactive` flag,
 which will ask you to confirm before deleting a dependency from a file."""}
 
      "init",

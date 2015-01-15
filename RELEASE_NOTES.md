@@ -154,7 +154,7 @@
 * Build a merged install model with all packages - https://github.com/fsprojects/Paket/issues/297
 * `paket update` command allows to set a version - http://fsprojects.github.io/Paket/paket-update.html#Updating-a-single-package
 * `paket.targets` is compatible with specific references files - https://github.com/fsprojects/Paket/issues/301
-* BUGFIX: Paket no longer leaves indirect dependencies in lockfile after remove command - https://github.com/fsprojects/Paket/pull/306 
+* BUGFIX: Paket no longer leaves transitive dependencies in lockfile after remove command - https://github.com/fsprojects/Paket/pull/306 
 * BUGFIX: Don't use "global override" for selective update process - https://github.com/fsprojects/Paket/issues/310
 * BUGFIX: Allow spaces in quoted parameter parsing - https://github.com/fsprojects/Paket/pull/311
 
@@ -224,7 +224,7 @@
 * No -D needed for Linux installer - https://github.com/fsprojects/Paket/pull/210
 * Content files like `_._`, `*.transform` and `*.pp` are ignored - https://github.com/fsprojects/Paket/issues/207
 * The `convert-from-nuget` command adds .paket folder to the sln - https://github.com/fsprojects/Paket/issues/206
-* Removed duplicate indirect dependencies from lock file - https://github.com/fsprojects/Paket/issues/200
+* Removed duplicate transitive dependencies from lock file - https://github.com/fsprojects/Paket/issues/200
 * If the package download failed Paket retries with force flag
 * The `convert-from-nuget` commands sorts the dependencies file
 * Use credentials from nuget.config on paket convert-from-nuget - https://github.com/fsprojects/Paket/issues/198

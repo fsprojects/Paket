@@ -40,7 +40,7 @@ let ``should detect direct dependencies``() =
     |> shouldEqual true
 
 [<Test>]
-let ``should detect indirect dependencies``() = 
+let ``should detect transitive dependencies``() = 
     lockFile.IsDependencyOf(PackageName "log",PackageName "Castle.Windsor-log4net")
     |> shouldEqual true
     

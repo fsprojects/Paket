@@ -24,7 +24,7 @@ The file whitelists any dependencies from the [`paket.lock`](lock-file.html) set
     DotNetZip
     RestSharp
 
-For each MSBuild project alongside a `paket.references`, [`paket install`](paket-install.html) and [`paket update`](paket-update.html) will add references to the dependencies listed in `paket.references` *and all their indirect dependencies*.
+For each MSBuild project alongside a `paket.references`, [`paket install`](paket-install.html) and [`paket update`](paket-update.html) will add references to the dependencies listed in `paket.references` *and all their transitive dependencies*.
 
 The references injected into the MSBuild project reflect the complete set of rules specified within the package for each `lib` and `Content` item; each reference is `Condition`al on an MSBuild expression predicated on the project's active framework etc. This allows you to change the target version of the MSBuild project (either within Visual Studio or e.g. as part of a multi-pass build) without reinstalling dependencies or incurring an impenetrable set of diffs.
 

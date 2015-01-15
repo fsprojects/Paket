@@ -72,7 +72,7 @@ with
             | Outdated -> "displays information about new packages."
             | ConvertFromNuget -> "converts all projects from NuGet to Paket."
             | InitAutoRestore -> "enables automatic restore for Visual Studio."
-            | Simplify -> "analyzes dependencies and removes unnecessary indirect dependencies."
+            | Simplify -> "analyzes dependencies and removes unnecessary transitive dependencies."
             | Config -> "sets config values."
             | Verbose -> "displays verbose output."
             | Force -> "forces the download of all packages."
