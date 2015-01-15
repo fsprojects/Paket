@@ -1,39 +1,18 @@
-#### 0.22.13 - 14.01.2015
-* COSMETICS: `paket convert-from-nuget` warns if it can't find a NuGet feed - https://github.com/fsprojects/Paket/issues/548
-
-#### 0.22.12 - 14.01.2015
+#### 0.23.0 - 15.01.2015
+* Refactored `init` & `init auto restore` to Railway Oriented Programming - https://github.com/fsprojects/Paket/pull/533
+* Refactored FindRefs to Railway Oriented Programming - https://github.com/fsprojects/Paket/pull/529
+* BUGFIX: paket.bootstrapper.exe and paket.exe use better proxy detection - https://github.com/fsprojects/Paket/pull/552
 * BUGFIX: `paket add` offered to add dependencies even when they are already added - https://github.com/fsprojects/Paket/issues/550
-
-#### 0.22.11 - 14.01.2015
 * BUGFIX: Detect `Net20-client` - https://github.com/fsprojects/Paket/issues/547
-
-#### 0.22.10 - 13.01.2015
 * BUGFIX: Give better error message when package is not found in a local feed - https://github.com/fsprojects/Paket/issues/545
-
-#### 0.22.9 - 09.01.2015
 * BUGFIX: Don't download gists that are up-to-date - https://github.com/fsprojects/Paket/issues/513
-
-#### 0.22.8 - 09.01.2015
 * BUGFIX: fix parsing of longer http links - https://github.com/fsprojects/Paket/pull/536
-
-#### 0.22.7 - 09.01.2015
-* Refactored `init` & `init auto restore` to Railwal Oriented Programming - https://github.com/fsprojects/Paket/pull/533
-
-#### 0.22.6 - 08.01.2015
-* Refactored FindRefs to Railwal Oriented Programming - https://github.com/fsprojects/Paket/pull/529
-
-#### 0.22.5 - 08.01.2015
-* COSMETICS: Config file is only saved when needed
-
-#### 0.22.4 - 07.01.2015
-* COSMETICS: Ignore completely empty lib folders
-
-#### 0.22.2 - 06.01.2015
 * BUGFIX: Detect correct `paket.references` filenames during convert-from-nuget
 * BUGFIX: If no package source is found during convert-from-nuget we use the default NuGet feed
-
-#### 0.22.1 - 05.01.2015
-* Remove icon from bootstrapper to make impact smaller
+* COSMETICS: Config file is only saved when needed
+* COSMETICS: Ignore completely empty lib folders
+* COSMETICS: `paket convert-from-nuget` warns if it can't find a NuGet feed - https://github.com/fsprojects/Paket/issues/548
+* COSMETICS: Remove icon from bootstrapper to make file size much smaller
 
 #### 0.22.0 - 05.01.2015
 * Bootstrapper avoids github API - https://github.com/fsprojects/Paket/issues/510
