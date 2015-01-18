@@ -23,7 +23,6 @@ let info =
 // --------------------------------------------------------------------------------------
 
 #I "../../packages/FSharp.Formatting/lib/net40"
-#I "../../packages/RazorEngine/lib/net40"
 #I "../../packages/FSharp.Compiler.Service/lib/net40"
 #r "../../packages/FAKE/tools/NuGet.Core.dll"
 #r "../../packages/FAKE/tools/FakeLib.dll"
@@ -75,6 +74,24 @@ let copyFiles () =
   CopyRecursive (formatting @@ "styles") (output @@ "content") true 
     |> Log "Copying styles and scripts: "
 
+let references =
+ if isMono then
+  // Workaround compiler errors in Razor-ViewEngine
+  let d = RazorEngine.Compilation.Resolver.UseCurrentAssembliesReferenceResolver()
+  let loadedList = d.GetReferences () |> Seq.cache
+  //// We replace the list and add required items manually as mcs doesn't like duplicates...
+  let getItem name =
+      loadedList |> Seq.find (fun l -> l.Contains name)
+  [ (getItem "FSharp.Core").Replace("4.3.0.0", "4.3.1.0")
+    Path.GetFullPath "./../../packages/FSharp.Compiler.Service/lib/net40/FSharp.Compiler.Service.dll"
+    Path.GetFullPath "./../../packages/FSharp.Formatting/lib/net40/System.Web.Razor.dll"
+    Path.GetFullPath "./../../packages/FSharp.Formatting/lib/net40/RazorEngine.dll"
+    Path.GetFullPath "./../../packages/FSharp.Formatting/lib/net40/FSharp.Literate.dll"
+    Path.GetFullPath "./../../packages/FSharp.Formatting/lib/net40/FSharp.CodeFormat.dll"
+    Path.GetFullPath "./../../packages/FSharp.Formatting/lib/net40/FSharp.MetadataFormat.dll" ]
+  |> Some
+ else None
+
 // Build API reference from XML comments
 let buildReference () =
   CleanDir (output @@ "reference")
@@ -86,7 +103,8 @@ let buildReference () =
       parameters = ("root", root)::info,
       sourceRepo = githubLink @@ "tree/master",
       sourceFolder = __SOURCE_DIRECTORY__ @@ ".." @@ "..",
-      publicOnly = true, libDirs = [bin] )
+      publicOnly = true, libDirs = [bin],
+      ?assemblyReferences = references )
 
 // Build documentation from `fsx` and `md` files in `docs/content`
 let buildDocumentation () =
@@ -103,7 +121,8 @@ let buildDocumentation () =
         | None -> layoutRootsAll.["en"] // "en" is the default language
     Literate.ProcessDirectory
       ( dir, docTemplate, output @@ sub, replacements = ("root", root)::info,
-        layoutRoots = layoutRoots )
+        layoutRoots = layoutRoots,
+        ?assemblyReferences = references )
 
 // Generate
 copyFiles()

@@ -2,8 +2,8 @@ NUGET
   remote: https://nuget.org/api/v2
   specs:
     FAKE (3.14.0)
-    FSharp.Compiler.Service (0.0.81)
-    FSharp.Formatting (2.6.1)
+    FSharp.Compiler.Service (0.0.82)
+    FSharp.Formatting (2.6.2)
       FSharp.Compiler.Service (>= 0.0.81)
     Microsoft.Bcl (1.1.9)
       Microsoft.Bcl.Build (>= 1.0.14)
