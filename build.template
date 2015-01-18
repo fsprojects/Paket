@@ -164,6 +164,7 @@ Target "NuGet" (fun _ ->
             Description = description
             Version = release.NugetVersion
             ReleaseNotes = String.Join(Environment.NewLine, release.Notes)
+            WorkingDir = "."
             Tags = tags
             OutputPath = "bin"
             AccessKey = getBuildParamOrDefault "nugetkey" ""
