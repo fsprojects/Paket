@@ -63,6 +63,7 @@
   <ItemGroup>
     <Compile Include="AssemblyInfo.fs" />
     <Compile Include="HelpTexts.fs" />
+    <Compile Include="Commands.fs" />
     <Compile Include="Program.fs" />
     <Content Include="App.config" />
     <None Include="paket.references" />

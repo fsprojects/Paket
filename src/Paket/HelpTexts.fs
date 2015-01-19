@@ -207,7 +207,7 @@ This will add the package to the selected paket.references files and also to the
           Text = """Finds all project files that have the given NuGet packages installed.
 
     [lang=batchfile]
-    $ paket find-refs PACKAGENAME1 PACKAGENAME1 ...
+    $ paket find-refs nuget PACKAGENAME1 PACKAGENAME1 ...
 
 ## Sample
 
