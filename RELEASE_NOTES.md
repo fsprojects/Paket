@@ -1,3 +1,6 @@
+#### 0.23.1 - 19.01.2015
+* Probe for unnormalized and normalized versions in local NuGet feeds - https://github.com/fsprojects/Paket/issues/556
+
 #### 0.23.0 - 15.01.2015
 * Refactored `init` & `init auto restore` to Railway Oriented Programming - https://github.com/fsprojects/Paket/pull/533
 * Refactored FindRefs to Railway Oriented Programming - https://github.com/fsprojects/Paket/pull/529

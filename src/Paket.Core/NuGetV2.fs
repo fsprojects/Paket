@@ -271,11 +271,15 @@ let getDetailsFromNuget force auth nugetURL package (version:SemVerInfo) =
     
 /// Reads direct dependencies from a nupkg file
 let getDetailsFromLocalFile localNugetPath package (version:SemVerInfo) =
-    async {
-        let version = version.Normalize()
-        let nupkg = FileInfo(Path.Combine(localNugetPath, sprintf "%s.%s.nupkg" package version))
+    async {        
+        let nupkg = 
+            let v1 = FileInfo(Path.Combine(localNugetPath, sprintf "%s.%s.nupkg" package (version.ToString())))
+            if v1.Exists then v1 else
+            let version = version.Normalize()
+            FileInfo(Path.Combine(localNugetPath, sprintf "%s.%s.nupkg" package version))
+
         if not nupkg.Exists then
-            failwithf "The package %s %s can't be found in %s.%sPlease check the feed definition in your paket.dependencies file." package version localNugetPath Environment.NewLine
+            failwithf "The package %s %s can't be found in %s.%sPlease check the feed definition in your paket.dependencies file." package (version.ToString()) localNugetPath Environment.NewLine
         let zip = ZipFile.Read(nupkg.FullName)
         let zippedNuspec = (zip |> Seq.find (fun f -> f.FileName.EndsWith ".nuspec"))
 
