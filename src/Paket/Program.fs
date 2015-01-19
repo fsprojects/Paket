@@ -130,13 +130,13 @@ try
         else
             Dependencies.Init()
 
-    | Command(InitAutoRestore, args) ->
-        let results = commandArgs<InitAutoRestoreArgs> args
+    | Command(AutoRestore, args) ->
+        let results = commandArgs<AutoRestoreArgs> args
 
-        if results.IsUsageRequested then
-            showHelp HelpTexts.commands.["init-auto-restore"]
-        else
-            Dependencies.Locate().InitAutoRestore()
+        match results.GetAllResults() with
+        | [On] -> Dependencies.Locate().TurnOnAutoRestore()
+        | [Off] -> Dependencies.Locate().TurnOffAutoRestore()
+        | _ -> showHelp HelpTexts.commands.["auto-restore"]
 
     | Command(Install, args) ->
         let results = commandArgs<InstallArgs> args

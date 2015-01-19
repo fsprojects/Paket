@@ -352,7 +352,7 @@ let replaceNugetWithPaket initAutoRestore installAfter result =
         result.NugetEnv.NugetConfig.PackageRestoreEnabled
     
     if initAutoRestore && (autoVSPackageRestore || result.NugetEnv.NugetTargets.IsSome) then 
-        VSIntegration.InitAutoRestore result.PaketEnv |> returnOrFail
+        VSIntegration.TurnOnAutoRestore result.PaketEnv |> returnOrFail
 
     if installAfter then
         UpdateProcess.Update(result.PaketEnv.DependenciesFile.FileName,true,true,true)

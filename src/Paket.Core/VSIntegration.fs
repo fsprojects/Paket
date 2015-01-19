@@ -15,7 +15,7 @@ let private getLatestVersionFromJson (data : string) =
     with _ ->
         fail ReleasesJsonParseError
 
-let InitAutoRestore environment =
+let TurnOnAutoRestore environment =
     let exeDir = Path.Combine(environment.RootDirectory.FullName, ".paket")
     
     use client = createWebClient("https://github.com",None)
@@ -48,3 +48,6 @@ let InitAutoRestore environment =
             project.Save()
         )
     } 
+
+let TurnOffAutoRestore environment = 
+    succeed ()

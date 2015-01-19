@@ -8,7 +8,7 @@ type Command =
     | [<First>][<CustomCommandLine("convert-from-nuget")>]  ConvertFromNuget
     | [<First>][<CustomCommandLine("find-refs")>]           FindRefs 
     | [<First>][<CustomCommandLine("init")>]                Init
-    | [<First>][<CustomCommandLine("init-auto-restore")>]   InitAutoRestore
+    | [<First>][<CustomCommandLine("auto-restore")>]        AutoRestore
     | [<First>][<CustomCommandLine("install")>]             Install
     | [<First>][<CustomCommandLine("outdated")>]            Outdated
     | [<First>][<CustomCommandLine("remove")>]              Remove
@@ -64,8 +64,9 @@ with
     interface IArgParserTemplate with
         member __.Usage = ""
 
-type InitAutoRestoreArgs =
-    | [<Hidden>] NoArg
+type AutoRestoreArgs =
+    | [<First>][<CustomCommandLine("on")>] On
+    | [<First>][<CustomCommandLine("off")>] Off
 with 
     interface IArgParserTemplate with
         member __.Usage = ""

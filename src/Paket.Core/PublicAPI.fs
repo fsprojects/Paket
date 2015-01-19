@@ -159,10 +159,16 @@ type Dependencies(dependenciesFileName: string) =
         |> List.map (fun (PackageName p,_,newVersion) -> p,newVersion)
 
     /// Pulls new paket.targets and bootstrapper and puts them into .paket folder.
-    member this.InitAutoRestore(): unit = 
+    member this.TurnOnAutoRestore(): unit = 
         Utils.RunInLockedAccessMode(
             this.RootPath,
-            fun () -> VSIntegration.InitAutoRestore |> this.Process)
+            fun () -> VSIntegration.TurnOnAutoRestore |> this.Process)
+
+    /// Removes paket.targets file and Import section from project files.
+    member this.TurnOffAutoRestore(): unit = 
+        Utils.RunInLockedAccessMode(
+            this.RootPath,
+            fun () -> VSIntegration.TurnOffAutoRestore |> this.Process)
 
     /// Returns the installed version of the given package.
     member this.GetInstalledVersion(packageName: string): string option =
