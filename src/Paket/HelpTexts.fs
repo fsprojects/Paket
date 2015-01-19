@@ -31,7 +31,7 @@ Paket can assist you with the conversion. The `paket convert-from-nuget` command
 
 1. Finds all `packages.config` files, generates a paket.dependencies file in the solution root and replaces each `packages.config` with an equivalent paket.references file. 
 2. If there is a solution-level `packages.config`, then it will be removed and its dependencies will be included into the paket.dependencies file.
-3. If you use NuGet Package Restore ([MSBuild-Integrated or Automatic Visual Studio Package Restore](http://docs.nuget.org/docs/workflows/migrating-to-automatic-package-restore)), then the [`paket init-auto-restore`](paket-init-auto-restore.html) command will be invoked.
+3. If you use NuGet Package Restore ([MSBuild-Integrated or Automatic Visual Studio Package Restore](http://docs.nuget.org/docs/workflows/migrating-to-automatic-package-restore)), then the [`paket auto-restore`](paket-auto-restore.html) command will be invoked.
 4. Next (unless `--no-install` is specified), the [paket install](paket-install.html) process with the `--hard` flag will be executed. This will:
 
   - analyze the dependencies.
@@ -54,7 +54,7 @@ Options:
 
   `--no-install`: Skips [`paket install --hard`](paket-install.html) process afterward generation of dependencies / references files.
 
-  `--no-auto-restore`: Skips [`paket init-auto-restore`](paket-init-auto-restore.html) process afterward generation of dependencies / references files.
+  `--no-auto-restore`: Skips [`paket auto-restore`](paket-auto-restore.html) process afterward generation of dependencies / references files.
 
   `--creds-migration`: Specify mode for migrating NuGet source credentials. Possible values for `MODE` are [`encrypt`|`plaintext`|`selective`]. The default `MODE` is `encrypt`.
 
