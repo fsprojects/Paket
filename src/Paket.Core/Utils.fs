@@ -272,3 +272,12 @@ let saveFile (fileName : string) (contents : string) =
         File.WriteAllText(fileName, contents) |> succeed
     with _ ->
         FileSaveError fileName |> fail
+
+let removeFile (fileName : string) =
+    if File.Exists fileName then
+        tracefn "Removing file %s" fileName
+        try
+            File.Delete(fileName) |> succeed
+        with _ ->
+            FileDeleteError fileName |> fail
+    else succeed ()

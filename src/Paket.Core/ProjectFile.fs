@@ -342,6 +342,12 @@ type ProjectFile =
             let node = this.CreateNode("Import") |> addAttribute "Project" relativeTargetsPath
             this.ProjectNode.AppendChild(node) |> ignore
 
+    member this.RemoveImportForPaketTargets(relativeTargetsPath) =
+        this.Document
+        |> getDescendants "Import"
+        |> List.tryFind (fun n -> n |> getAttribute "Project" = Some relativeTargetsPath)
+        |> Option.iter (fun n -> n.ParentNode.RemoveChild(n) |> ignore)
+
     member this.DetermineBuildAction fileName =
         if Path.GetExtension(this.FileName) = Path.GetExtension(fileName) + "proj" 
         then "Compile"

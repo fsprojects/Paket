@@ -50,4 +50,17 @@ let TurnOnAutoRestore environment =
     } 
 
 let TurnOffAutoRestore environment = 
-    succeed ()
+    let exeDir = Path.Combine(environment.RootDirectory.FullName, ".paket")
+    
+    rop {
+        let paketTargetsPath = Path.Combine(exeDir, "paket.targets")
+        do! removeFile paketTargetsPath
+
+        environment.Projects
+        |> List.map fst
+        |> List.iter (fun project ->
+            let relativePath = createRelativePath project.FileName paketTargetsPath
+            project.RemoveImportForPaketTargets(relativePath)
+            project.Save()
+        )
+    }
