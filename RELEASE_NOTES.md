@@ -1,5 +1,6 @@
-#### 0.23.1 - 19.01.2015
-* Probe for unnormalized and normalized versions in local NuGet feeds - https://github.com/fsprojects/Paket/issues/556
+#### 0.24.0 - 19.01.2015
+* Allow to disable Visual Studio NuGet package restore - http://fsprojects.github.io/Paket/paket-auto-restore.html
+* BUGFIX: Probe for unnormalized and normalized versions in local NuGet feeds - https://github.com/fsprojects/Paket/issues/556
 
 #### 0.23.0 - 15.01.2015
 * Refactored `init` & `init auto restore` to Railway Oriented Programming - https://github.com/fsprojects/Paket/pull/533
