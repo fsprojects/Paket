@@ -132,11 +132,14 @@ try
 
     | Command(AutoRestore, args) ->
         let results = commandArgs<AutoRestoreArgs> args
-
-        match results.GetAllResults() with
-        | [On] -> Dependencies.Locate().TurnOnAutoRestore()
-        | [Off] -> Dependencies.Locate().TurnOffAutoRestore()
-        | _ -> showHelp HelpTexts.commands.["auto-restore"]
+        
+        if results.IsUsageRequested then
+            showHelp HelpTexts.commands.["auto-restore"]
+        else
+            match results.GetAllResults() with
+            | [On] -> Dependencies.Locate().TurnOnAutoRestore()
+            | [Off] -> Dependencies.Locate().TurnOffAutoRestore()
+            | _ -> showHelp HelpTexts.commands.["auto-restore"]
 
     | Command(Install, args) ->
         let results = commandArgs<InstallArgs> args
