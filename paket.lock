@@ -7,6 +7,7 @@ NUGET
     FSharp.Core (3.1.2.1)
     FSharp.Formatting (2.6.1)
       FSharp.Compiler.Service (>= 0.0.81)
+    ILRepack (1.25.0)
     Microsoft.Bcl (1.1.9)
       Microsoft.Bcl.Build (>= 1.0.14)
     Microsoft.Bcl.Build (1.0.21)
