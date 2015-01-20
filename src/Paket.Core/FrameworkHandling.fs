@@ -146,7 +146,7 @@ module FrameworkDetection =
                 | "net10" | "net1" | "10" -> Some (DotNetFramework FrameworkVersion.V1)
                 | "net11" | "11" -> Some (DotNetFramework FrameworkVersion.V1_1)
                 | "net20" | "net2" | "net" | "net20-full" | "net20-client" | "20" -> Some (DotNetFramework FrameworkVersion.V2)
-                | "net35" | "net35-full" | "35" -> Some (DotNetFramework FrameworkVersion.V3_5)
+                | "net35" | "net35-client" | "net35-full" | "35" -> Some (DotNetFramework FrameworkVersion.V3_5)
                 | "net40" | "net4" | "40" | "net40-client" | "net4-client" -> Some (DotNetFramework FrameworkVersion.V4_Client)
                 | "net40-full" | "net403" -> Some (DotNetFramework FrameworkVersion.V4)
                 | "net45" | "net45-full" | "45" -> Some (DotNetFramework FrameworkVersion.V4_5)

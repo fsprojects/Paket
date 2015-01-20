@@ -1,3 +1,7 @@
+#### 0.24.1 - 20.01.2015
+* BUGFIX: Detect `net35-client` - https://github.com/fsprojects/Paket/issues/559
+* BUGFIX: Show help for `auto-restore` command - https://github.com/fsprojects/Paket/pull/558
+
 #### 0.24.0 - 19.01.2015
 * Allow to disable Visual Studio NuGet package restore - http://fsprojects.github.io/Paket/paket-auto-restore.html
 * BUGFIX: Probe for unnormalized and normalized versions in local NuGet feeds - https://github.com/fsprojects/Paket/issues/556
