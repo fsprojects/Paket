@@ -1,3 +1,6 @@
+#### 0.24.2 - 22.01.2015
+* BUGFIX: Can parse open NuGet ranges in brackets - https://github.com/fsprojects/Paket/issues/560
+
 #### 0.24.1 - 20.01.2015
 * BUGFIX: Detect `net35-client` - https://github.com/fsprojects/Paket/issues/559
 * BUGFIX: Show help for `auto-restore` command - https://github.com/fsprojects/Paket/pull/558

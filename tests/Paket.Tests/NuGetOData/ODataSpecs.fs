@@ -40,6 +40,18 @@ let ``can detect explicit dependencies for Rx-PlaformServices``() =
           SourceUrl = fakeUrl }
 
 [<Test>]
+let ``can detect explicit dependencies for EasyNetQ``() = 
+    parse "NuGetOData/EasyNetQ.xml"
+    |> shouldEqual 
+        { PackageName = "EasyNetQ"
+          DownloadUrl = "https://www.nuget.org/api/v2/package/EasyNetQ/0.40.3.352"
+          Dependencies = 
+                [PackageName "RabbitMQ.Client",DependenciesFileParser.parseVersionRequirement(">= 3.4.3"), []]
+          Unlisted = false
+          CacheVersion = NugetPackageCache.CurrentCacheVersion
+          SourceUrl = fakeUrl }
+
+[<Test>]
 let ``can detect explicit dependencies for Fleece``() = 
     parse "NuGetOData/Fleece.xml"
     |> shouldEqual 

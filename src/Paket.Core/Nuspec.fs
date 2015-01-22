@@ -39,6 +39,7 @@ module NugetVersionRangeParser =
                 let versions = text
                                 .Trim([|'['; ']';'(';')'|])
                                 .Split([|','|], StringSplitOptions.RemoveEmptyEntries)
+                                |> Array.filter (fun s -> String.IsNullOrWhiteSpace s |> not)
                                 |> Array.map SemVer.Parse
                 match versions.Length with
                 | 2 ->
@@ -48,10 +49,12 @@ module NugetVersionRangeParser =
                         match fromB, toB with
                         | VersionRangeBound.Excluding, VersionRangeBound.Including -> Maximum(versions.[0])
                         | VersionRangeBound.Excluding, VersionRangeBound.Excluding -> LessThan(versions.[0])
+                        | VersionRangeBound.Including, VersionRangeBound.Including -> Maximum(versions.[0])
                         | _ -> failParse()
                     else 
                         match fromB, toB with
                         | VersionRangeBound.Excluding, VersionRangeBound.Excluding -> GreaterThan(versions.[0])
+                        | VersionRangeBound.Including, VersionRangeBound.Including -> Minimum(versions.[0])
                         | _ -> failParse()
                 | _ -> failParse()
         VersionRequirement(parseRange text,PreReleaseStatus.No)
