@@ -1,3 +1,6 @@
+#### 0.24.3 - 23.01.2015
+* BUGFIX: Removes interactive-shell-check on `add auth` - https://github.com/fsprojects/Paket/pull/565
+
 #### 0.24.2 - 22.01.2015
 * BUGFIX: Can parse open NuGet ranges in brackets - https://github.com/fsprojects/Paket/issues/560
 
