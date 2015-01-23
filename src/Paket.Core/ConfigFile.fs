@@ -144,9 +144,6 @@ let AddCredentials (source, username, password) =
     |> Option.iter saveConfigNode
 
 let askAndAddAuth (source : string) (username : string) : unit = 
-    if not Environment.UserInteractive then
-        failwithf "No credentials could be found for source %s" source
-
     let username =
         if(username = "") then
             Console.Write("Username: ")
