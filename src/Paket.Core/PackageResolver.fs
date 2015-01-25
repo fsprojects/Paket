@@ -204,7 +204,7 @@ let Resolve(getVersionsF, getPackageDetailsF, rootDependencies:PackageRequiremen
                         if exploredPackage.Unlisted && not useUnlisted then (allUnlisted,state) else                
                         let newFilteredVersion = Map.add dependency.Name ([versionToExplore],globalOverride) filteredVersions
                         let dependenciesByName =
-                            // thete are packages which define multiple dependencies to the same package
+                            // there are packages which define multiple dependencies to the same package
                             // we just take the latest one - see #567
                             let hashSet = new HashSet<_>()
                             exploredPackage.Dependencies
