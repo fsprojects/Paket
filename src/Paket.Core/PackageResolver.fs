@@ -203,8 +203,15 @@ let Resolve(getVersionsF, getPackageDetailsF, rootDependencies:PackageRequiremen
                         let exploredPackage = getExploredPackage(dependency.Sources,dependency.Name,versionToExplore,dependency.FrameworkRestrictions)    
                         if exploredPackage.Unlisted && not useUnlisted then (allUnlisted,state) else                
                         let newFilteredVersion = Map.add dependency.Name ([versionToExplore],globalOverride) filteredVersions
-                        let newDependencies =
+                        let dependenciesByName =
+                            // thete are packages which define multiple dependencies to the same package
+                            // we just take the latest one - see #567
+                            let hashSet = new HashSet<_>()
                             exploredPackage.Dependencies
+                            |> Set.filter (fun (name,_,_) -> hashSet.Add name)
+                            
+                        let newDependencies =
+                            dependenciesByName
                             |> Set.map (fun (n,v,r) -> {dependency with Name = n; VersionRequirement = v; Parent = Package(dependency.Name,versionToExplore); FrameworkRestrictions = r })
                             |> Set.filter (fun d -> Set.contains d closed |> not)
                             |> Set.filter (fun d -> Set.contains d stillOpen |> not)

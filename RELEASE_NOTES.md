@@ -1,3 +1,6 @@
+#### 0.24.4 - 25.01.2015
+* BUGFIX: If more than one TargetFramework-specific dependency to the same package exist, we take the latest one - https://github.com/fsprojects/Paket/pull/567
+
 #### 0.24.3 - 23.01.2015
 * BUGFIX: Removes interactive-shell-check on `add auth` - https://github.com/fsprojects/Paket/pull/565
 
