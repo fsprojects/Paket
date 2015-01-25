@@ -213,7 +213,8 @@ type ProjectFile =
                     
                     this.CreateNode("Reference")
                     |> addAttribute "Include" (fi.Name.Replace(fi.Extension,""))
-                    |> addChild (this.CreateNode("HintPath", createRelativePath this.FileName fi.FullName))                    
+                    |> addChild (this.CreateNode("HintPath", createRelativePath this.FileName fi.FullName))
+                    |> addChild (this.CreateNode("Private","True"))
                     |> addChild (this.CreateNode("Paket","True"))
                     |> itemGroup.AppendChild
                     |> ignore

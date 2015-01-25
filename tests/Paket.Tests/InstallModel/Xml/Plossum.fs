@@ -13,6 +13,7 @@ let expected = """
     <ItemGroup>
       <Reference Include="Plossum CommandLine">
         <HintPath>..\..\..\Plossum.CommandLine\lib\net40\Plossum CommandLine.dll</HintPath>
+        <Private>True</Private>
         <Paket>True</Paket>
       </Reference>
     </ItemGroup>

@@ -13,6 +13,7 @@ let expected = """
     <ItemGroup>
       <Reference Include="System.Spatial">
         <HintPath>..\..\..\System.Spatial\lib\sl4\System.Spatial.dll</HintPath>
+        <Private>True</Private>
         <Paket>True</Paket>
       </Reference>
     </ItemGroup>
@@ -21,6 +22,7 @@ let expected = """
     <ItemGroup>
       <Reference Include="System.Spatial">
         <HintPath>..\..\..\System.Spatial\lib\net40\System.Spatial.dll</HintPath>
+        <Private>True</Private>
         <Paket>True</Paket>
       </Reference>
     </ItemGroup>

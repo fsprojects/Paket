@@ -11,6 +11,7 @@ let expected = """
 <ItemGroup xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Reference Include="Fuchu">
     <HintPath>..\..\..\Fuchu\lib\Fuchu.dll</HintPath>
+    <Private>True</Private>
     <Paket>True</Paket>
   </Reference>
 </ItemGroup>"""

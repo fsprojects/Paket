@@ -11,6 +11,7 @@ let expected = """
 <ItemGroup xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Reference Include="FantomasLib">
     <HintPath>..\..\..\Fantomas\lib\FantomasLib.dll</HintPath>
+    <Private>True</Private>
     <Paket>True</Paket>
   </Reference>
 </ItemGroup>"""
@@ -41,6 +42,7 @@ let fullDoc = """<?xml version="1.0" encoding="utf-8"?>
   <ItemGroup>
     <Reference Include="FantomasLib">
       <HintPath>..\..\..\Fantomas\lib\FantomasLib.dll</HintPath>
+      <Private>True</Private>
       <Paket>True</Paket>
     </Reference>
   </ItemGroup>
