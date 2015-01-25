@@ -1,16 +1,8 @@
-#### 0.25.0-alpha001 - 25.01.2015
+#### 0.25.0 - 25.01.2015
 * Paket doesn't generate `<Private>True</Private>` any more - https://github.com/fsprojects/Paket/issues/566
-
-#### 0.24.4 - 25.01.2015
 * BUGFIX: If more than one TargetFramework-specific dependency to the same package exist, we take the latest one - https://github.com/fsprojects/Paket/pull/567
-
-#### 0.24.3 - 23.01.2015
 * BUGFIX: Removes interactive-shell-check on `add auth` - https://github.com/fsprojects/Paket/pull/565
-
-#### 0.24.2 - 22.01.2015
 * BUGFIX: Can parse open NuGet ranges in brackets - https://github.com/fsprojects/Paket/issues/560
-
-#### 0.24.1 - 20.01.2015
 * BUGFIX: Detect `net35-client` - https://github.com/fsprojects/Paket/issues/559
 * BUGFIX: Show help for `auto-restore` command - https://github.com/fsprojects/Paket/pull/558
 
