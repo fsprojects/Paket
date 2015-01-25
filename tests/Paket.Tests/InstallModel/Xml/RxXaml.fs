@@ -13,7 +13,6 @@ let expected = """
     <ItemGroup>
       <Reference Include="System.Reactive.Windows.Threading">
         <HintPath>..\..\..\Rx-XAML\lib\windows8\System.Reactive.Windows.Threading.dll</HintPath>
-        <Private>True</Private>
         <Paket>True</Paket>
       </Reference>
     </ItemGroup>
@@ -22,7 +21,6 @@ let expected = """
     <ItemGroup>
       <Reference Include="System.Reactive.Windows.Threading">
         <HintPath>..\..\..\Rx-XAML\lib\net40\System.Reactive.Windows.Threading.dll</HintPath>
-        <Private>True</Private>
         <Paket>True</Paket>
       </Reference>
       <Reference Include="WindowsBase">
@@ -34,7 +32,6 @@ let expected = """
     <ItemGroup>
       <Reference Include="System.Reactive.Windows.Threading">
         <HintPath>..\..\..\Rx-XAML\lib\sl5\System.Reactive.Windows.Threading.dll</HintPath>
-        <Private>True</Private>
         <Paket>True</Paket>
       </Reference>
       <Reference Include="System.Windows">
@@ -46,7 +43,6 @@ let expected = """
     <ItemGroup>
       <Reference Include="System.Reactive.Windows.Threading">
         <HintPath>..\..\..\Rx-XAML\lib\windowsphone71\System.Reactive.Windows.Threading.dll</HintPath>
-        <Private>True</Private>
         <Paket>True</Paket>
       </Reference>
       <Reference Include="System.Windows">
@@ -58,7 +54,6 @@ let expected = """
     <ItemGroup>
       <Reference Include="System.Reactive.Windows.Threading">
         <HintPath>..\..\..\Rx-XAML\lib\windowsphone8\System.Reactive.Windows.Threading.dll</HintPath>
-        <Private>True</Private>
         <Paket>True</Paket>
       </Reference>
     </ItemGroup>
@@ -67,7 +62,6 @@ let expected = """
     <ItemGroup>
       <Reference Include="System.Reactive.Windows.Threading">
         <HintPath>..\..\..\Rx-XAML\lib\net45\System.Reactive.Windows.Threading.dll</HintPath>
-        <Private>True</Private>
         <Paket>True</Paket>
       </Reference>
       <Reference Include="WindowsBase">
@@ -79,7 +73,6 @@ let expected = """
     <ItemGroup>
       <Reference Include="System.Reactive.Windows.Threading">
         <HintPath>..\..\..\Rx-XAML\lib\portable-win81+wpa81\System.Reactive.Windows.Threading.dll</HintPath>
-        <Private>True</Private>
         <Paket>True</Paket>
       </Reference>
     </ItemGroup>

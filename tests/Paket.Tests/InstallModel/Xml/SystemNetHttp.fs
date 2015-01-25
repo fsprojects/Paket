@@ -13,12 +13,10 @@ let expected = """
     <ItemGroup>
       <Reference Include="System.Net.Http.Extensions">
         <HintPath>..\..\..\Microsoft.Net.Http\lib\win8\System.Net.Http.Extensions.dll</HintPath>
-        <Private>True</Private>
         <Paket>True</Paket>
       </Reference>
       <Reference Include="System.Net.Http.Primitives">
         <HintPath>..\..\..\Microsoft.Net.Http\lib\win8\System.Net.Http.Primitives.dll</HintPath>
-        <Private>True</Private>
         <Paket>True</Paket>
       </Reference>
     </ItemGroup>
@@ -27,22 +25,18 @@ let expected = """
     <ItemGroup>
       <Reference Include="System.Net.Http.Extensions">
         <HintPath>..\..\..\Microsoft.Net.Http\lib\net40\System.Net.Http.Extensions.dll</HintPath>
-        <Private>True</Private>
         <Paket>True</Paket>
       </Reference>
       <Reference Include="System.Net.Http.Primitives">
         <HintPath>..\..\..\Microsoft.Net.Http\lib\net40\System.Net.Http.Primitives.dll</HintPath>
-        <Private>True</Private>
         <Paket>True</Paket>
       </Reference>
       <Reference Include="System.Net.Http.WebRequest">
         <HintPath>..\..\..\Microsoft.Net.Http\lib\net40\System.Net.Http.WebRequest.dll</HintPath>
-        <Private>True</Private>
         <Paket>True</Paket>
       </Reference>
       <Reference Include="System.Net.Http">
         <HintPath>..\..\..\Microsoft.Net.Http\lib\net40\System.Net.Http.dll</HintPath>
-        <Private>True</Private>
         <Paket>True</Paket>
       </Reference>
     </ItemGroup>
@@ -51,12 +45,10 @@ let expected = """
     <ItemGroup>
       <Reference Include="System.Net.Http.Extensions">
         <HintPath>..\..\..\Microsoft.Net.Http\lib\net45\System.Net.Http.Extensions.dll</HintPath>
-        <Private>True</Private>
         <Paket>True</Paket>
       </Reference>
       <Reference Include="System.Net.Http.Primitives">
         <HintPath>..\..\..\Microsoft.Net.Http\lib\net45\System.Net.Http.Primitives.dll</HintPath>
-        <Private>True</Private>
         <Paket>True</Paket>
       </Reference>
     </ItemGroup>
@@ -65,12 +57,10 @@ let expected = """
     <ItemGroup>
       <Reference Include="System.Net.Http.Extensions">
         <HintPath>..\..\..\Microsoft.Net.Http\lib\monoandroid\System.Net.Http.Extensions.dll</HintPath>
-        <Private>True</Private>
         <Paket>True</Paket>
       </Reference>
       <Reference Include="System.Net.Http.Primitives">
         <HintPath>..\..\..\Microsoft.Net.Http\lib\monoandroid\System.Net.Http.Primitives.dll</HintPath>
-        <Private>True</Private>
         <Paket>True</Paket>
       </Reference>
     </ItemGroup>
@@ -79,12 +69,10 @@ let expected = """
     <ItemGroup>
       <Reference Include="System.Net.Http.Extensions">
         <HintPath>..\..\..\Microsoft.Net.Http\lib\monotouch\System.Net.Http.Extensions.dll</HintPath>
-        <Private>True</Private>
         <Paket>True</Paket>
       </Reference>
       <Reference Include="System.Net.Http.Primitives">
         <HintPath>..\..\..\Microsoft.Net.Http\lib\monotouch\System.Net.Http.Primitives.dll</HintPath>
-        <Private>True</Private>
         <Paket>True</Paket>
       </Reference>
     </ItemGroup>
@@ -93,12 +81,10 @@ let expected = """
     <ItemGroup>
       <Reference Include="System.Net.Http.Extensions">
         <HintPath>..\..\..\Microsoft.Net.Http\lib\wpa81\System.Net.Http.Extensions.dll</HintPath>
-        <Private>True</Private>
         <Paket>True</Paket>
       </Reference>
       <Reference Include="System.Net.Http.Primitives">
         <HintPath>..\..\..\Microsoft.Net.Http\lib\wpa81\System.Net.Http.Primitives.dll</HintPath>
-        <Private>True</Private>
         <Paket>True</Paket>
       </Reference>
     </ItemGroup>
@@ -107,17 +93,14 @@ let expected = """
     <ItemGroup>
       <Reference Include="System.Net.Http.Extensions">
         <HintPath>..\..\..\Microsoft.Net.Http\lib\portable-net40+sl4+win8+wp71+wpa81\System.Net.Http.Extensions.dll</HintPath>
-        <Private>True</Private>
         <Paket>True</Paket>
       </Reference>
       <Reference Include="System.Net.Http.Primitives">
         <HintPath>..\..\..\Microsoft.Net.Http\lib\portable-net40+sl4+win8+wp71+wpa81\System.Net.Http.Primitives.dll</HintPath>
-        <Private>True</Private>
         <Paket>True</Paket>
       </Reference>
       <Reference Include="System.Net.Http">
         <HintPath>..\..\..\Microsoft.Net.Http\lib\portable-net40+sl4+win8+wp71+wpa81\System.Net.Http.dll</HintPath>
-        <Private>True</Private>
         <Paket>True</Paket>
       </Reference>
     </ItemGroup>
@@ -126,12 +109,10 @@ let expected = """
     <ItemGroup>
       <Reference Include="System.Net.Http.Extensions">
         <HintPath>..\..\..\Microsoft.Net.Http\lib\portable-net45+win8\System.Net.Http.Extensions.dll</HintPath>
-        <Private>True</Private>
         <Paket>True</Paket>
       </Reference>
       <Reference Include="System.Net.Http.Primitives">
         <HintPath>..\..\..\Microsoft.Net.Http\lib\portable-net45+win8\System.Net.Http.Primitives.dll</HintPath>
-        <Private>True</Private>
         <Paket>True</Paket>
       </Reference>
     </ItemGroup>

@@ -13,17 +13,14 @@ let expected = """
     <ItemGroup>
       <Reference Include="System.Net.Http.Extensions">
         <HintPath>..\..\..\Microsoft.Net.Http\lib\net40\System.Net.Http.Extensions.dll</HintPath>
-        <Private>True</Private>
         <Paket>True</Paket>
       </Reference>
       <Reference Include="System.Net.Http.Primitives">
         <HintPath>..\..\..\Microsoft.Net.Http\lib\net40\System.Net.Http.Primitives.dll</HintPath>
-        <Private>True</Private>
         <Paket>True</Paket>
       </Reference>
       <Reference Include="System.Net.Http">
         <HintPath>..\..\..\Microsoft.Net.Http\lib\net40\System.Net.Http.dll</HintPath>
-        <Private>True</Private>
         <Paket>True</Paket>
       </Reference>
     </ItemGroup>
@@ -32,12 +29,10 @@ let expected = """
     <ItemGroup>
       <Reference Include="System.Net.Http.Extensions">
         <HintPath>..\..\..\Microsoft.Net.Http\lib\net45\System.Net.Http.Extensions.dll</HintPath>
-        <Private>True</Private>
         <Paket>True</Paket>
       </Reference>
       <Reference Include="System.Net.Http.Primitives">
         <HintPath>..\..\..\Microsoft.Net.Http\lib\net45\System.Net.Http.Primitives.dll</HintPath>
-        <Private>True</Private>
         <Paket>True</Paket>
       </Reference>
       <Reference Include="System.Net.Http">

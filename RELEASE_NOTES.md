@@ -1,3 +1,6 @@
+#### 0.25.0-alpha001 - 25.01.2015
+* Paket doesn't generate `<Private>True</Private>` any more - https://github.com/fsprojects/Paket/issues/566
+
 #### 0.24.4 - 25.01.2015
 * BUGFIX: If more than one TargetFramework-specific dependency to the same package exist, we take the latest one - https://github.com/fsprojects/Paket/pull/567
 

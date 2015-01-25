@@ -13,7 +13,6 @@ let expected = """
     <ItemGroup>
       <Reference Include="FSharp.Data.SqlClient">
         <HintPath>..\..\..\FSharp.Data.SqlClient\lib\net40\FSharp.Data.SqlClient.dll</HintPath>
-        <Private>True</Private>
         <Paket>True</Paket>
       </Reference>
       <Reference Include="System.Data">
