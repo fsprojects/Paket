@@ -114,6 +114,12 @@ type Dependencies(dependenciesFileName: string) =
         Utils.RunInLockedAccessMode(
             this.RootPath,
             fun () -> AddProcess.Add(dependenciesFileName, PackageName package, version, force, hard, interactive, installAfter))
+      
+    /// Adds credentials for a Nuget feed
+    member this.AddCredentials(source: string, username: string) : unit =
+        Utils.RunInLockedAccessMode(
+            this.RootPath,
+            fun () -> ConfigFile.askAndAddAuth source username |> returnOrFail )
         
     /// Installs all dependencies.
     member this.Install(force: bool,hard: bool,withBindingRedirects:bool): unit = 
