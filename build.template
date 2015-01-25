@@ -12,7 +12,7 @@ open System
 open System.IO
 #if MONO
 #else
-#load "packages/SourceLink.Fake/Tools/Fake.fsx"
+#load "packages/SourceLink.Fake/tools/Fake.fsx"
 open SourceLink
 #endif
 
