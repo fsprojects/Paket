@@ -93,13 +93,16 @@ try
             trace <| results.Usage("paket config")
         else
             let args = results.GetResults <@ ConfigArgs.AddCredentials @> 
-            let source = args.Item 0
-            let username = 
-                if(args.Length > 1) then
-                    args.Item 1
-                else
-                    ""
-            Paket.ConfigFile.askAndAddAuth(source)(username)
+            if args.Length = 0 then
+                trace <| results.Usage("paket config")
+            else
+                let source = args.Item 0
+                let username = 
+                    if(args.Length > 1) then
+                        args.Item 1
+                    else
+                        ""
+                Dependencies.Locate().AddCredentials(source, username)
 
     | Command(ConvertFromNuget, args) ->
         let results = commandArgs<ConvertFromNugetArgs> args

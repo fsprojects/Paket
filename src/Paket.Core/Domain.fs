@@ -62,6 +62,8 @@ type DomainMessage =
     | FileDeleteError of string
     | FileSaveError of string
 
+    | ConfigFileParseError
+
     override this.ToString() = 
         match this with
         | DirectoryDoesntExist(di) -> 
@@ -107,3 +109,6 @@ type DomainMessage =
             sprintf "Unable to delete file %s." path
         | FileSaveError path ->
             sprintf "Unable to save file %s." path
+
+        | ConfigFileParseError ->
+            sprintf "Unable to parse Paket configuration file %s." Constants.PaketConfigFile

@@ -5,8 +5,12 @@ open System.Xml
 open System.Security.Cryptography
 open System.Text
 open System.IO
-open Xml
-open Logging
+
+open Paket.Rop
+open Paket.Domain
+open Paket.Xml
+open Paket.Logging
+open Paket.Utils
 
 let private rootElement = "configuration"
 
@@ -14,26 +18,31 @@ let private getConfigNode (nodeName : string) =
     let rootNode = 
         let doc = new XmlDocument()
         if File.Exists Constants.PaketConfigFile then 
-            doc.Load Constants.PaketConfigFile
-            doc.DocumentElement
+            try 
+                doc.Load Constants.PaketConfigFile
+                succeed doc.DocumentElement
+            with _ -> fail ConfigFileParseError
         else
             let element = doc.CreateElement rootElement
             doc.AppendChild(element) |> ignore
-            element
+            succeed element
 
-    let node = rootNode.SelectSingleNode(sprintf "//%s" nodeName)
-    if node <> null then
-        node
-    else
-        rootNode.OwnerDocument.CreateElement nodeName
-        |> rootNode.AppendChild
+    rop {
+        let! root = rootNode
+        let node = 
+            match root |> getNode nodeName with
+            | None -> root.OwnerDocument.CreateElement nodeName
+                      |> root.AppendChild
+            | Some node -> node
+        return node
+    }
 
 
 let private saveConfigNode (node : XmlNode) =
-    if not (Directory.Exists Constants.PaketConfigFolder) then
-        Directory.CreateDirectory Constants.PaketConfigFolder |> ignore
-
-    node.OwnerDocument.Save Constants.PaketConfigFile
+    rop {
+        do! createDir Constants.PaketConfigFolder
+        do! saveFile Constants.PaketConfigFile (node.OwnerDocument.OuterXml)
+    }
 
 let private cryptoServiceProvider = new RNGCryptoServiceProvider()
 
@@ -116,7 +125,7 @@ let getSourceNodes (credentialsNode : XmlNode) (source) =
 
 /// Get the credential from the credential store for a specific source
 let GetCredentials (source : string) =
-    let credentialsNode = getConfigNode "credentials"
+    let credentialsNode = getConfigNode "credentials" |> returnOrFail
     
     match getSourceNodes credentialsNode source with
     | sourceNode::_ ->
@@ -129,21 +138,27 @@ let GetCredentials (source : string) =
             None
     | [] -> None
 
-let AddCredentials (source, username, password) =
-    let credentialsNode = getConfigNode "credentials"
+let AddCredentials (source, username, password) = rop {
+        let! credentialsNode = getConfigNode "credentials"
+        
+        let newCredentials = 
+            match getSourceNodes credentialsNode source |> Seq.firstOrDefault with
+            | None -> createSourceNode credentialsNode source |> Some
+            | Some existingNode ->
+                let _,existingPassword = getAuthFromNode existingNode
 
-    match getSourceNodes credentialsNode source |> Seq.firstOrDefault with
-    | None -> createSourceNode credentialsNode source |> Some
-    | Some existingNode ->
-        let _,existingPassword = getAuthFromNode existingNode
+                if existingPassword <> password then
+                    existingNode |> Some
+                else None
+            |> Option.map (setCredentials username password)
 
-        if existingPassword <> password then
-            existingNode |> Some
-        else None
-    |> Option.map (setCredentials username password)
-    |> Option.iter saveConfigNode
+        match newCredentials with
+        | Some credentials -> 
+            do! saveConfigNode credentials
+        | None -> ()
+    }
 
-let askAndAddAuth (source : string) (username : string) : unit = 
+let askAndAddAuth (source : string) (username : string) = 
     let username =
         if(username = "") then
             Console.Write("Username: ")
@@ -152,4 +167,4 @@ let askAndAddAuth (source : string) (username : string) : unit =
             username
 
     let password = readPassword "Password: "
-    AddCredentials (source, username, password) |> ignore
+    AddCredentials (source, username, password)
