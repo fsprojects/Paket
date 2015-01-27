@@ -130,10 +130,21 @@ let ``should generate other version ranges for packages``() =
     |> LockFileSerializer.serializePackages cfg.Options
     |> shouldEqual (normalizeLineEndings expected3)
 
+let trivialResolve (f:ModuleResolver.UnresolvedSourceFile) =
+    { Commit =
+        match f.Commit with
+        | Some(v) -> v
+        | None -> ""
+      Owner = f.Owner
+      Origin = f.Origin
+      Project = f.Project
+      Dependencies = Set.empty
+      Name = f.Name } : ModuleResolver.ResolvedSourceFile
+
 let expectedWithHttp = """HTTP
-  remote: http://www.fssnip.net/raw/1M
+  remote: http://www.fssnip.net
   specs:
-    test.fs"""
+    test.fs (/raw/1M)"""
     
 [<Test>]
 let ``should generate lock file for http source files``() = 
@@ -142,34 +153,23 @@ let ``should generate lock file for http source files``() =
     let cfg = DependenciesFile.FromCode(config)
     
     cfg.RemoteFiles
-    |> List.map (fun f -> 
-          { Commit = ""
-            Owner = f.Owner
-            Origin = ModuleResolver.SingleSourceFileOrigin.HttpLink "http://www.fssnip.net/raw/1M"
-            Project = f.Project
-            Dependencies = Set.empty
-            Name = f.Name } : ModuleResolver.ResolvedSourceFile)
+    |> List.map trivialResolve
     |> LockFileSerializer.serializeSourceFiles
     |> shouldEqual (normalizeLineEndings expectedWithHttp)
 
 let expectedMultiple = """HTTP
-  remote: http://www.fssnip.net/raw/32
+  remote: http://www.fssnip.net
   specs:
-    myFile2.fs
+    myFile.fs (/raw/1M)
+    myFile2.fs (/raw/32)
+    myFile3.fs (/raw/15)
 GIST
   remote: Thorium/1972308
   specs:
     gistfile1.fs
   remote: Thorium/6088882
   specs:
-    FULLPROJECT
-HTTP
-  remote: http://www.fssnip.net/raw/1M
-  specs:
-    myFile.fs
-  remote: http://www.fssnip.net/raw/15
-  specs:
-    myFile3.fs"""
+    FULLPROJECT"""
     
 [<Test>]
 let ``should generate lock file for http and gist source files``() = 
@@ -186,13 +186,35 @@ http http://www.fssnip.net/raw/15 myFile3.fs """
     let cfg = DependenciesFile.FromCode(config)
     
     cfg.RemoteFiles
-    |> List.map (fun f -> 
-          { Commit = ""
-            Owner = f.Owner
-            Origin = f.Origin
-            Project = f.Project
-            Dependencies = Set.empty
-            Name = f.Name } : ModuleResolver.ResolvedSourceFile)
+    |> List.map trivialResolve
     |> LockFileSerializer.serializeSourceFiles
     |> shouldEqual (normalizeLineEndings expectedMultiple)
 
+
+let expectedForStanfordNLPdotNET = """HTTP
+  remote: http://www.frijters.net
+  specs:
+    ikvmbin-8.0.5449.0.zip (/ikvmbin-8.0.5449.0.zip)
+  remote: http://nlp.stanford.edu
+  specs:
+    stanford-corenlp-full-2014-10-31.zip (/software/stanford-corenlp-full-2014-10-31.zip)
+    stanford-ner-2014-10-26.zip (/software/stanford-ner-2014-10-26.zip)
+    stanford-parser-full-2014-10-31.zip (/software/stanford-parser-full-2014-10-31.zip)
+    stanford-postagger-full-2014-10-26.zip (/software/stanford-postagger-full-2014-10-26.zip)
+    stanford-segmenter-2014-10-26.zip (/software/stanford-segmenter-2014-10-26.zip)"""
+
+[<Test>]
+let ``should generate lock file for http Stanford.NLP.NET project``() =
+    let config = """http http://www.frijters.net/ikvmbin-8.0.5449.0.zip
+http http://nlp.stanford.edu/software/stanford-corenlp-full-2014-10-31.zip
+http http://nlp.stanford.edu/software/stanford-ner-2014-10-26.zip
+http http://nlp.stanford.edu/software/stanford-parser-full-2014-10-31.zip
+http http://nlp.stanford.edu/software/stanford-postagger-full-2014-10-26.zip
+http http://nlp.stanford.edu/software/stanford-segmenter-2014-10-26.zip"""
+
+    let cfg = DependenciesFile.FromCode(config)
+
+    cfg.RemoteFiles
+    |> List.map trivialResolve
+    |> LockFileSerializer.serializeSourceFiles
+    |> shouldEqual (normalizeLineEndings expectedForStanfordNLPdotNET)
