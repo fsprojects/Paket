@@ -30,7 +30,7 @@ The references injected into the MSBuild project reflect the complete set of rul
 
 ### CopyLocal
 
-It's possible to influence the `Private' property for references in project files:
+It's possible to influence the `Private` property for references in project files:
 
     Newtonsoft.Json CopyLocal=False
 
