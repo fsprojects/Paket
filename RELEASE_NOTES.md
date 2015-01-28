@@ -1,5 +1,5 @@
 #### 0.26.0-alpha001 - 25.01.2015
-* CopyLocal settings in `paket.references` - https://github.com/fsprojects/Paket/pull/572
+* CopyLocal settings in `paket.references` - http://fsprojects.github.io/Paket/references-files.html#CopyLocal
 * COSMETICS: `paket.lock` beautification for HTTP specs - https://github.com/fsprojects/Paket/pull/571
 
 #### 0.25.1 - 25.01.2015
