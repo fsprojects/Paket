@@ -1,3 +1,0 @@
-source http://nuget.org/api/v2
-
-nuget Castle.Windsor 3.3.0

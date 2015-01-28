@@ -1,3 +1,0 @@
-source https://www.myget.org/F/paket-test/ username: "paket" password: "[REPLACEME]"
-
-nuget GoogleAnalyticsTracker.Core

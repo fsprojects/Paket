@@ -1,6 +1,0 @@
-NUGET
-  remote: http://nuget.org/api/v2
-  specs:
-    FSharp.Actor-logary (2.0.0-alpha5)
-      FSharp.Core.3 (>= 0.0.2)
-    FSharp.Core.3 (0.0.2)

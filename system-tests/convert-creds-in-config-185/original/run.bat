@@ -1,1 +1,0 @@
-paket convert-from-nuget --no-install
