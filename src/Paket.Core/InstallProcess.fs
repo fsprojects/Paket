@@ -148,12 +148,16 @@ let InstallIntoProjects(sources,force, hard, withBindingRedirects, lockFile:Lock
 
         let usedPackages = lockFile.GetPackageHull(referenceFile)
 
-        let usedPackageNames =
+        let usedPackageSettings =
             usedPackages
-            |> Seq.map NormalizedPackageName
-            |> Set.ofSeq
+            |> Seq.map (fun u ->
+                        NormalizedPackageName u,
+                        match referenceFile.NugetPackages |> List.tryFind (fun p -> NormalizedPackageName p.Name = NormalizedPackageName u) with
+                        | Some up -> up
+                        | _ -> { Name = u; CopyLocal = CopyLocal.True })
+            |> Map.ofSeq
 
-        project.UpdateReferences(model,usedPackageNames,hard)
+        project.UpdateReferences(model,usedPackageSettings,hard)
         
         removeCopiedFiles project
 

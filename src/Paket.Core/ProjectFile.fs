@@ -196,7 +196,7 @@ type ProjectFile =
         for node in nodesToDelete do            
             node.ParentNode.RemoveChild(node) |> ignore
 
-    member this.GenerateXml(model:InstallModel) =
+    member this.GenerateXml(model:InstallModel,copyLocal:CopyLocal) =
         let references = 
             this.GetCustomReferenceAndFrameworkNodes()
             |> List.map (fun node -> node.Attributes.["Include"].InnerText.Split(',').[0])
@@ -214,7 +214,7 @@ type ProjectFile =
                     this.CreateNode("Reference")
                     |> addAttribute "Include" (fi.Name.Replace(fi.Extension,""))
                     |> addChild (this.CreateNode("HintPath", createRelativePath this.FileName fi.FullName))
-                    |> addChild (this.CreateNode("Private","True"))
+                    |> addChild (this.CreateNode("Private",sprintf "%A" copyLocal))
                     |> addChild (this.CreateNode("Paket","True"))
                     |> itemGroup.AppendChild
                     |> ignore
@@ -249,7 +249,7 @@ type ProjectFile =
             chooseNode
         
 
-    member this.UpdateReferences(completeModel: Map<NormalizedPackageName,InstallModel>, usedPackages : Set<NormalizedPackageName>, hard) = 
+    member this.UpdateReferences(completeModel: Map<NormalizedPackageName,InstallModel>, usedPackages : Map<NormalizedPackageName,PackageInstallSettings>, hard) = 
         this.DeletePaketNodes("Reference")  
         
         ["ItemGroup";"When";"Otherwise";"Choose";"When";"Choose"]
@@ -257,12 +257,12 @@ type ProjectFile =
 
         
         completeModel
-        |> Seq.filter (fun kv -> usedPackages.Contains kv.Key)
+        |> Seq.filter (fun kv -> usedPackages.ContainsKey kv.Key)
         |> Seq.map (fun kv -> 
             if hard then
                 this.DeleteCustomModelNodes(kv.Value)
-
-            this.GenerateXml kv.Value)
+            let up = usedPackages.[kv.Key]
+            this.GenerateXml(kv.Value,up.CopyLocal))
         |> Seq.filter (fun node -> node.ChildNodes.Count > 0)
         |> Seq.iter (this.ProjectNode.AppendChild >> ignore)
                 

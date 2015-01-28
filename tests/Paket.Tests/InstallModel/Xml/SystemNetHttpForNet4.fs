@@ -67,7 +67,7 @@ let ``should generate Xml for System.Net.Http 2.2.8``() =
               @"..\Microsoft.Net.Http\lib\wpa81\System.Net.Http.Primitives.dll" ],
               Nuspec.All)
 
-    let chooseNode = ProjectFile.Load("./ProjectFile/TestData/Empty.fsprojtest").Value.GenerateXml(model)
+    let chooseNode = ProjectFile.Load("./ProjectFile/TestData/Empty.fsprojtest").Value.GenerateXml(model,CopyLocal.True)
     chooseNode.OuterXml
     |> normalizeXml
     |> shouldEqual (normalizeXml expected)

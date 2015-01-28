@@ -8,6 +8,7 @@ open Paket.Domain
 type RemoteFileReference = 
     { Name : string
       Link : string }
+
 [<RequireQualifiedAccess>]
 type CopyLocal = 
     | True
