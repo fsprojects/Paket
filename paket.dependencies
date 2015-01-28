@@ -2,11 +2,11 @@ source https://nuget.org/api/v2
 
 nuget Newtonsoft.Json
 nuget UnionArgParser
-nuget NUnit.Runners >= 2.6
-nuget NUnit >= 2.6
+nuget NUnit.Runners
+nuget NUnit
 nuget FAKE
 nuget FSharp.Formatting
-nuget DotNetZip ~> 1.9.3
+nuget DotNetZip
 nuget NuGet.CommandLine
 nuget FSharp.Core
 
