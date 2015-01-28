@@ -1,3 +1,7 @@
+#### 0.26.0-alpha001 - 25.01.2015
+* CopyLocal settings in `paket.references` - https://github.com/fsprojects/Paket/pull/572
+* COSMETICS: `paket.lock` beautification for HTTP specs - https://github.com/fsprojects/Paket/pull/571
+
 #### 0.25.1 - 25.01.2015
 * BUGFIX: If more than one TargetFramework-specific dependency to the same package exist, we take the latest one - https://github.com/fsprojects/Paket/pull/567
 * BUGFIX: Removes interactive-shell-check on `add auth` - https://github.com/fsprojects/Paket/pull/565
