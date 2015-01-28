@@ -401,12 +401,17 @@ type LockFile(fileName:string,options,resolution:PackageResolution,remoteFiles:R
         |> fun state -> LockFile(lockFileName, state.Options ,state.Packages |> Seq.fold (fun map p -> Map.add (NormalizedPackageName p.Name) p map) Map.empty, List.rev state.SourceFiles)
 
     member this.GetPackageHull(referencesFile:ReferencesFile) =
-        let usedPackages = HashSet<_>()
+        let usedPackages = Dictionary<_,_>()
+
+        for p in referencesFile.NugetPackages do
+            usedPackages.Add(p.Name,p.CopyLocal)
 
         referencesFile.NugetPackages
         |> List.iter (fun package -> 
             try
-                usedPackages.UnionWith(this.GetAllDependenciesOf(package.Name))
+                for d in this.GetAllDependenciesOf(package.Name) do
+                    if usedPackages.ContainsKey d |> not then
+                        usedPackages.Add(d,package.CopyLocal)
             with exn -> failwithf "%s - in %s" exn.Message referencesFile.FileName)
 
         usedPackages   

@@ -14,7 +14,7 @@ open FSharp.Polyfill
 open System.Reflection
 open System.Diagnostics
 
-let private findPackagesWithContent (root,usedPackages:HashSet<_>) = 
+let private findPackagesWithContent (root,usedPackages) = 
     usedPackages
     |> Seq.map (fun (PackageName x) -> DirectoryInfo(Path.Combine(root, Constants.PackagesFolderName, x)))
     |> Seq.choose (fun packageDir -> packageDir.GetDirectories("Content") |> Array.tryFind (fun _ -> true))
@@ -150,11 +150,7 @@ let InstallIntoProjects(sources,force, hard, withBindingRedirects, lockFile:Lock
 
         let usedPackageSettings =
             usedPackages
-            |> Seq.map (fun u ->
-                        NormalizedPackageName u,
-                        match referenceFile.NugetPackages |> List.tryFind (fun p -> NormalizedPackageName p.Name = NormalizedPackageName u) with
-                        | Some up -> up
-                        | _ -> { Name = u; CopyLocal = CopyLocal.True })
+            |> Seq.map (fun u -> NormalizedPackageName u.Key,{ Name = u.Key; CopyLocal = u.Value })
             |> Map.ofSeq
 
         project.UpdateReferences(model,usedPackageSettings,hard)
@@ -179,7 +175,7 @@ let InstallIntoProjects(sources,force, hard, withBindingRedirects, lockFile:Lock
         
         let nuGetFileItems =
             if lockFile.Options.OmitContent then [] else
-            copyContentFiles(project, findPackagesWithContent(root,usedPackages))
+            copyContentFiles(project, findPackagesWithContent(root,usedPackages.Keys))
             |> List.map (fun file -> 
                                 { BuildAction = project.DetermineBuildAction file.Name
                                   Include = createRelativePath project.FileName file.FullName

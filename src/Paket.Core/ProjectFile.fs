@@ -261,8 +261,8 @@ type ProjectFile =
         |> Seq.map (fun kv -> 
             if hard then
                 this.DeleteCustomModelNodes(kv.Value)
-            let up = usedPackages.[kv.Key]
-            this.GenerateXml(kv.Value,up.CopyLocal))
+            let package = usedPackages.[kv.Key]
+            this.GenerateXml(kv.Value,package.CopyLocal))
         |> Seq.filter (fun node -> node.ChildNodes.Count > 0)
         |> Seq.iter (this.ProjectNode.AppendChild >> ignore)
                 
