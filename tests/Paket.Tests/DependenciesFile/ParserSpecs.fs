@@ -278,15 +278,15 @@ let ``should read http source file from config without quotes with file specs``(
     dependencies.RemoteFiles
     |> shouldEqual
         [ { Owner = "www.fssnip.net"
-            Project = "raw/1M"
+            Project = ""
             Name = "test1.fs"
-            Origin = ModuleResolver.SingleSourceFileOrigin.HttpLink "http://www.fssnip.net/raw/1M"
-            Commit = None }
+            Origin = ModuleResolver.SingleSourceFileOrigin.HttpLink "http://www.fssnip.net"
+            Commit = Some "/raw/1M" }
           { Owner = "www.fssnip.net"
-            Project = "raw/1M"
+            Project = ""
             Name = "src/test2.fs"
-            Origin = ModuleResolver.SingleSourceFileOrigin.HttpLink "http://www.fssnip.net/raw/1M/1"
-            Commit = None } ]
+            Origin = ModuleResolver.SingleSourceFileOrigin.HttpLink "http://www.fssnip.net"
+            Commit = Some "/raw/1M/1" } ]
 
 [<Test>]
 let ``should read gist source file from config without quotes with file specs``() =
@@ -335,30 +335,30 @@ let ``should read http source file from config without quotes, parsing rules``()
     dependencies.RemoteFiles
     |> shouldEqual
         [ { Owner = "example"
-            Project = "example"
+            Project = ""
             Name = "example.fs"
             Origin = ModuleResolver.SingleSourceFileOrigin.HttpLink "http://example"
-            Commit = None }
+            Commit = Some "/" }
           { Owner = "example"
-            Project = "item"
+            Project = ""
             Name = "item.fs"
-            Origin = ModuleResolver.SingleSourceFileOrigin.HttpLink "http://example/item"
-            Commit = None }
+            Origin = ModuleResolver.SingleSourceFileOrigin.HttpLink "http://example"
+            Commit = Some "/item" }
           { Owner = "example"
-            Project = "item"
+            Project = ""
             Name = "item.fs"
-            Origin = ModuleResolver.SingleSourceFileOrigin.HttpLink "http://example/item"
-            Commit = None }
+            Origin = ModuleResolver.SingleSourceFileOrigin.HttpLink "http://example"
+            Commit = Some "/item" }
           { Owner = "example"
-            Project = "item/3"
+            Project = ""
             Name = "3.fs"
-            Origin = ModuleResolver.SingleSourceFileOrigin.HttpLink "http://example/item/3"
-            Commit = None }
+            Origin = ModuleResolver.SingleSourceFileOrigin.HttpLink "http://example"
+            Commit = Some "/item/3" }
           { Owner = "example"
-            Project = "item/3"
+            Project = ""
             Name = "1.fs"
-            Origin = ModuleResolver.SingleSourceFileOrigin.HttpLink "http://example/item/3/1"
-            Commit = None } ]
+            Origin = ModuleResolver.SingleSourceFileOrigin.HttpLink "http://example"
+            Commit = Some "/item/3/1" } ]
 
 [<Test>]
 let ``should read http binary references from config``() =
@@ -369,15 +369,15 @@ let ``should read http binary references from config``() =
     dependencies.RemoteFiles
     |> shouldEqual
         [ { Owner = "www.frijters.net"
-            Project = "ikvmbin-8.0.5449.0.zip"
+            Project = ""
             Name = "ikvmbin-8.0.5449.0.zip"
-            Origin = ModuleResolver.SingleSourceFileOrigin.HttpLink "http://www.frijters.net/ikvmbin-8.0.5449.0.zip"
-            Commit = None }
+            Origin = ModuleResolver.SingleSourceFileOrigin.HttpLink "http://www.frijters.net"
+            Commit = Some "/ikvmbin-8.0.5449.0.zip" }
           { Owner = "www.frijters.net"
-            Project = "ikvmbin-8.0.5449.0.zip"
+            Project = ""
             Name = "ikvmbin.zip"
-            Origin = ModuleResolver.SingleSourceFileOrigin.HttpLink "http://www.frijters.net/ikvmbin-8.0.5449.0.zip"
-            Commit = None } ]
+            Origin = ModuleResolver.SingleSourceFileOrigin.HttpLink "http://www.frijters.net"
+            Commit = Some "/ikvmbin-8.0.5449.0.zip" } ]
 
 
 let configWithoutVersions = """

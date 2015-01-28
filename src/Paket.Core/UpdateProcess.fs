@@ -26,17 +26,17 @@ let addPackagesFromReferenceFiles projects (dependenciesFile:DependenciesFile) =
 
         let diff =
             allReferencedPackages
-            |> Seq.filter (
-                NormalizedPackageName >>
-                  allExistingPackages.Contains >>
-                  not)
+            |> Seq.filter (fun p ->
+                NormalizedPackageName p.Name
+                |> allExistingPackages.Contains
+                |> not)
 
         if Seq.isEmpty diff then 
             dependenciesFile
         else
             let newDependenciesFile =
                 diff
-                |> Seq.fold (fun (dependenciesFile:DependenciesFile) dep -> dependenciesFile.AddAdditionionalPackage(dep,"")) dependenciesFile
+                |> Seq.fold (fun (dependenciesFile:DependenciesFile) dep -> dependenciesFile.AddAdditionionalPackage(dep.Name,"")) dependenciesFile
             newDependenciesFile.Save()
             newDependenciesFile
 

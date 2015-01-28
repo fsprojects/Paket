@@ -28,6 +28,12 @@ For each MSBuild project alongside a `paket.references`, [`paket install`](paket
 
 The references injected into the MSBuild project reflect the complete set of rules specified within the package for each `lib` and `Content` item; each reference is `Condition`al on an MSBuild expression predicated on the project's active framework etc. This allows you to change the target version of the MSBuild project (either within Visual Studio or e.g. as part of a multi-pass build) without reinstalling dependencies or incurring an impenetrable set of diffs.
 
+### CopyLocal
+
+It's possible to influence the `Private' property for references in project files:
+
+    Newtonsoft.Json CopyLocal=False
+
 ## File name conventions
 
 If Paket finds `paket.references` in a folder, the dependencies it specifies will be added to all MSBuild projects in that folder.

@@ -115,7 +115,8 @@ let downloadRemoteFiles(remoteFile:ResolvedSourceFile,destination) = async {
         DirectoryCopy(source,projectPath,true)        
     | SingleSourceFileOrigin.GistLink, _ ->  return! downloadFromUrl(None,rawGistFileUrl remoteFile.Owner remoteFile.Project remoteFile.Name) destination
     | SingleSourceFileOrigin.GitHubLink, _ -> return! downloadFromUrl(None,rawFileUrl remoteFile.Owner remoteFile.Project remoteFile.Commit remoteFile.Name) destination
-    | SingleSourceFileOrigin.HttpLink(url), _ ->
+    | SingleSourceFileOrigin.HttpLink(origin), _ ->
+        let url = origin + remoteFile.Commit
         do! downloadFromUrl(None, url) destination
         match Path.GetExtension(destination).ToLowerInvariant() with
         | ".zip" ->
