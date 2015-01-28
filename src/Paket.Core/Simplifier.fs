@@ -46,13 +46,13 @@ let simplifyDependenciesFile (dependenciesFile : DependenciesFile, flatLookup, i
 }
 
 let simplifyReferencesFile (refFile, flatLookup, interactive) = rop {
-    let! transitive = findTransitive(refFile.NugetPackages, 
+    let! transitive = findTransitive(refFile.NugetPackages |> List.map (fun p -> p.Name), 
                             flatLookup, 
                             (fun p -> ReferenceNotFoundInLockFile(refFile.FileName,p)))
 
     let newPackages = 
         refFile.NugetPackages 
-        |> List.filter (fun p -> not <| removePackage(p, transitive, refFile.FileName, interactive))
+        |> List.filter (fun p -> not <| removePackage(p.Name, transitive, refFile.FileName, interactive))
 
     return { refFile with NugetPackages = newPackages }
 }

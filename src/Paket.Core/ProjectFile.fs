@@ -83,7 +83,7 @@ type ProjectFile =
         | None -> false
         | Some fileName -> 
             let referencesFile = ReferencesFile.FromFile fileName
-            referencesFile.NugetPackages |> Seq.exists (fun p -> NormalizedPackageName p = package)
+            referencesFile.NugetPackages |> Seq.exists (fun p -> NormalizedPackageName p.Name = package)
 
     member this.CreateNode(name, text) = 
         let node = this.CreateNode(name)

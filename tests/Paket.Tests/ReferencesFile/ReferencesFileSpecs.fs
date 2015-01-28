@@ -17,15 +17,15 @@ File:FsUnit.fs
 let ``should parse lines correctly``() = 
     let refFile = ReferencesFile.FromLines(toLines refFileContent)
     refFile.NugetPackages.Length |> shouldEqual 3
-    refFile.NugetPackages.Head |> shouldEqual (PackageName "Castle.Windsor")
-    refFile.NugetPackages.Tail.Tail.Head |> shouldEqual (PackageName "jQuery")
+    refFile.NugetPackages.Head.Name |> shouldEqual (PackageName "Castle.Windsor")
+    refFile.NugetPackages.Tail.Tail.Head.Name |> shouldEqual (PackageName "jQuery")
     refFile.RemoteFiles.Length |> shouldEqual 1
     refFile.RemoteFiles.Head.Name |> shouldEqual "FsUnit.fs"
     refFile.RemoteFiles.Head.Link |> shouldEqual ReferencesFile.DefaultLink
 
 [<Test>]
 let ``should serialize itself correctly``() = 
-    let refFile = {FileName = ""; NugetPackages = [PackageName "A"; PackageName "B"]; RemoteFiles = [{Name = "FromGithub.fs"; Link = ReferencesFile.DefaultLink}]}
+    let refFile = {FileName = ""; NugetPackages = [{Name = PackageName "A"; CopyLocal = CopyLocal.True }; {Name = PackageName "B"; CopyLocal = CopyLocal.True }]; RemoteFiles = [{Name = "FromGithub.fs"; Link = ReferencesFile.DefaultLink}]}
     let expected = [|"A"; "B"; "File:FromGithub.fs"|]
 
     refFile.ToString() |> toLines |> shouldEqual expected
@@ -58,8 +58,8 @@ Newtonsoft.Json
 let ``should parse lines with trailing whitspace correctly``() = 
     let refFile = ReferencesFile.FromLines(toLines refFileWithTrailingWhitespace)
     refFile.NugetPackages.Length |> shouldEqual 2
-    refFile.NugetPackages.Head |> shouldEqual (PackageName "Castle.Windsor")
-    refFile.NugetPackages.Tail.Head |> shouldEqual (PackageName "Newtonsoft.Json")
+    refFile.NugetPackages.Head.Name |> shouldEqual (PackageName "Castle.Windsor")
+    refFile.NugetPackages.Tail.Head.Name |> shouldEqual (PackageName "Newtonsoft.Json")
 
 [<Test>]
 let ``should add nuget package``() = 
@@ -70,12 +70,12 @@ let ``should add nuget package``() =
 
     let refFile = empty.AddNuGetReference(PackageName "NUnit")
     refFile.NugetPackages.Length |> shouldEqual 1
-    refFile.NugetPackages.Head |> shouldEqual (PackageName "NUnit")
+    refFile.NugetPackages.Head.Name |> shouldEqual (PackageName "NUnit")
 
     let refFile' = refFile.AddNuGetReference(PackageName "xUnit")
     refFile'.NugetPackages.Length |> shouldEqual 2
-    refFile'.NugetPackages.Head |> shouldEqual (PackageName "NUnit")
-    refFile'.NugetPackages.Tail.Head |> shouldEqual (PackageName "xUnit")
+    refFile'.NugetPackages.Head.Name |> shouldEqual (PackageName "NUnit")
+    refFile'.NugetPackages.Tail.Head.Name |> shouldEqual (PackageName "xUnit")
 
 
 [<Test>]
@@ -87,4 +87,24 @@ let ``should not add nuget package twice``() =
           .AddNuGetReference(PackageName "NUnit")
 
     refFile.NugetPackages.Length |> shouldEqual 1
-    refFile.NugetPackages.Head |> shouldEqual (PackageName "NUnit")
+    refFile.NugetPackages.Head.Name |> shouldEqual (PackageName "NUnit")
+
+let refFileContentWithCopyLocalFalse = """Castle.Windsor CopyLocal=False
+Newtonsoft.Json"""
+
+[<Test>]
+let ``should parse lines with CopyLocal settings correctly``() = 
+    let refFile = ReferencesFile.FromLines(toLines refFileContentWithCopyLocalFalse)
+    refFile.NugetPackages.Length |> shouldEqual 2
+    refFile.NugetPackages.Head.Name |> shouldEqual (PackageName "Castle.Windsor")
+    refFile.NugetPackages.Head.CopyLocal |> shouldEqual CopyLocal.False
+    refFile.NugetPackages.Tail.Head.Name |> shouldEqual (PackageName "Newtonsoft.Json")
+    refFile.NugetPackages.Tail.Head.CopyLocal |> shouldEqual CopyLocal.True
+
+[<Test>]
+let ``should serialize CopyLocal correctly``() = 
+    let refFile = ReferencesFile.FromLines(toLines refFileContentWithCopyLocalFalse)
+
+    refFile.ToString()
+    |> normalizeLineEndings
+    |> shouldEqual (normalizeLineEndings refFileContentWithCopyLocalFalse)

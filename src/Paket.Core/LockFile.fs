@@ -406,7 +406,7 @@ type LockFile(fileName:string,options,resolution:PackageResolution,remoteFiles:R
         referencesFile.NugetPackages
         |> List.iter (fun package -> 
             try
-                usedPackages.UnionWith(this.GetAllDependenciesOf(package))
+                usedPackages.UnionWith(this.GetAllDependenciesOf(package.Name))
             with exn -> failwithf "%s - in %s" exn.Message referencesFile.FileName)
 
         usedPackages   
@@ -414,7 +414,7 @@ type LockFile(fileName:string,options,resolution:PackageResolution,remoteFiles:R
     member this.GetPackageHullSafe referencesFile =
         referencesFile.NugetPackages
         |> Seq.map (fun package ->
-            this.GetAllDependenciesOfSafe(package)
-            |> Rop.failIfNone (ReferenceNotFoundInLockFile(referencesFile.FileName, package)))
+            this.GetAllDependenciesOfSafe(package.Name)
+            |> Rop.failIfNone (ReferenceNotFoundInLockFile(referencesFile.FileName, package.Name)))
         |> Rop.collect
         |> Rop.lift (Seq.concat >> Set.ofSeq)

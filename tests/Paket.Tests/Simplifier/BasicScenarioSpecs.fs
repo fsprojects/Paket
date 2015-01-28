@@ -50,8 +50,8 @@ let ``should remove one level deep transitive dependencies from dep and ref file
     | Rop.Success((_,after),_) ->
         let depFile,refFiles = after.DependenciesFile, after.Projects |> List.map snd
         depFile.Packages |> List.map (fun p -> p.Name) |> shouldEqual [PackageName"A";PackageName"D"]
-        refFiles.Head.NugetPackages |> shouldEqual [PackageName "A";PackageName "D"]
-        refFiles.Tail.Head.NugetPackages |> shouldEqual [PackageName "B";PackageName "C"]
+        refFiles.Head.NugetPackages |> shouldEqual [{ Name = PackageName "A"; CopyLocal = CopyLocal.True };{ Name = PackageName "D"; CopyLocal = CopyLocal.True }]
+        refFiles.Tail.Head.NugetPackages |> shouldEqual [{ Name = PackageName "B"; CopyLocal = CopyLocal.True };{ Name = PackageName "C"; CopyLocal = CopyLocal.True }]
 
 let lockFile2 = """
 NUGET
@@ -93,5 +93,5 @@ let ``should remove all transitive dependencies from dep file recursively``() =
     | Rop.Success((_,after),_) ->
         let depFile,refFiles = after.DependenciesFile, after.Projects |> List.map snd
         depFile.Packages |> List.map (fun p -> p.Name) |> shouldEqual [PackageName"A";PackageName"C"]
-        refFiles.Head.NugetPackages |>  shouldEqual [PackageName "A";PackageName "C"]
-        refFiles.Tail.Head.NugetPackages |>  shouldEqual [PackageName "C";PackageName "D"]
+        refFiles.Head.NugetPackages |>  shouldEqual [{Name = PackageName "A"; CopyLocal = CopyLocal.True }; { Name = PackageName "C"; CopyLocal = CopyLocal.True }]
+        refFiles.Tail.Head.NugetPackages |>  shouldEqual [{ Name = PackageName "C"; CopyLocal = CopyLocal.True };{ Name = PackageName "D"; CopyLocal = CopyLocal.True }]

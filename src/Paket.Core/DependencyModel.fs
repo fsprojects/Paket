@@ -11,7 +11,9 @@ let CalcDependenciesForDirectPackages(dependenciesFile : DependenciesFile, refer
 
 /// Calculates the used dependencies for given references file.
 let CalcDependenciesForReferencesFile(dependenciesFile : DependenciesFile, referencesFile) = 
-    CalcDependenciesForDirectPackages(dependenciesFile, (ReferencesFile.FromFile referencesFile).NugetPackages)
+    CalcDependenciesForDirectPackages(
+        dependenciesFile, 
+        (ReferencesFile.FromFile referencesFile).NugetPackages |> List.map (fun p -> p.Name))
 
 /// Calculates the used dependencies for a project.
 let CalcDependencies(dependenciesFile : DependenciesFile, projectFileName) = 
