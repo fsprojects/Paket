@@ -66,7 +66,7 @@ let Restore(dependenciesFileName,force,referencesFileNames) =
             |> List.map (fun fileName ->
                 ReferencesFile.FromFile fileName
                 |> lockFile.GetPackageHull
-                |> Seq.map NormalizedPackageName)
+                |> Seq.map (fun p -> NormalizedPackageName p.Key))
             |> Seq.concat
 
     restore(root, sources, force, lockFile,Set.ofSeq packages) 

@@ -65,7 +65,7 @@ let ``should generate Xml for System.Net.Http 2.2.8``() =
                  [{ AssemblyName = "System.Net.Http"; FrameworkRestrictions = [FrameworkRestriction.Exactly(DotNetFramework(FrameworkVersion.V4_5))] }
                   { AssemblyName = "System.Net.Http.WebRequest"; FrameworkRestrictions = [FrameworkRestriction.Exactly(DotNetFramework(FrameworkVersion.V4_5))] }]})
 
-    let chooseNode = ProjectFile.Load("./ProjectFile/TestData/FrameworkAssemblies.fsprojtest").Value.GenerateXml(model)
+    let chooseNode = ProjectFile.Load("./ProjectFile/TestData/FrameworkAssemblies.fsprojtest").Value.GenerateXml(model,CopyLocal.True)
     chooseNode.OuterXml
     |> normalizeXml
     |> shouldEqual (normalizeXml expected)

@@ -11,7 +11,7 @@ let expected = """
 <ItemGroup xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Reference Include="FantomasLib">
     <HintPath>..\..\..\Fantomas\Lib\FantomasLib.dll</HintPath>
-    <Private>True</Private>
+    <Private>False</Private>
     <Paket>True</Paket>
   </Reference>
 </ItemGroup>"""
@@ -25,7 +25,7 @@ let ``should generate Xml for Fantomas 1.5``() =
               @"..\Fantomas\Lib\Fantomas.exe" ],
               Nuspec.Explicit ["FantomasLib.dll"])
     
-    let chooseNode = ProjectFile.Load("./ProjectFile/TestData/Empty.fsprojtest").Value.GenerateXml(model)
+    let chooseNode = ProjectFile.Load("./ProjectFile/TestData/Empty.fsprojtest").Value.GenerateXml(model,CopyLocal.False)
     chooseNode.OuterXml
     |> normalizeXml
     |> shouldEqual (normalizeXml expected)

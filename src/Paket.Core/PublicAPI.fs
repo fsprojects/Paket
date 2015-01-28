@@ -188,7 +188,7 @@ type Dependencies(dependenciesFileName: string) =
 
     /// Returns the installed versions of all direct dependencies which are referneced in the references file
     member this.GetDirectDependencies(referencesFile:ReferencesFile): (string * string) list =
-        let normalizedDependecies = referencesFile.NugetPackages |> List.map NormalizedPackageName
+        let normalizedDependecies = referencesFile.NugetPackages |> List.map (fun p -> NormalizedPackageName p.Name)
         getLockFile().ResolvedPackages
         |> Seq.filter (fun kv -> normalizedDependecies |> Seq.exists ((=) kv.Key))
         |> listPackages

@@ -27,7 +27,7 @@ let ``should generate Xml for Plossum``() =
             [ @"..\Plossum.CommandLine\lib\net40\Plossum CommandLine.dll" ],
               Nuspec.All)
     
-    let chooseNode = ProjectFile.Load("./ProjectFile/TestData/Empty.fsprojtest").Value.GenerateXml(model)
+    let chooseNode = ProjectFile.Load("./ProjectFile/TestData/Empty.fsprojtest").Value.GenerateXml(model,CopyLocal.True)
     chooseNode.OuterXml
     |> normalizeXml
     |> shouldEqual (normalizeXml expected)
