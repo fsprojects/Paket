@@ -22,7 +22,7 @@ type UnresolvedSourceFile =
     override this.ToString() =
         let name = if this.Name = Constants.FullProjectSourceFileName then "" else " " + this.Name
         match this.Origin with
-        | HttpLink url -> sprintf "http %s%s" url name
+        | HttpLink url -> sprintf "http %s%s %s" url this.Commit.Value this.Name
         | _ ->
             let link = 
                 match this.Origin with
@@ -54,10 +54,11 @@ type ResolvedSourceFile =
 let private getCommit (file : UnresolvedSourceFile) = defaultArg file.Commit "master"
 
 let resolve getDependencies getSha1 (file : UnresolvedSourceFile) : ResolvedSourceFile = 
-    let sha = 
-        file
-        |> getCommit
-        |> getSha1 file.Origin file.Owner file.Project
+    let sha =
+        let commit = getCommit file
+        match file.Origin with
+        | SingleSourceFileOrigin.HttpLink _  ->  commit
+        | _ -> getSha1 file.Origin file.Owner file.Project commit
     
     let resolved = 
         { Commit = sha
@@ -79,10 +80,7 @@ let private detectConflicts (remoteFiles : UnresolvedSourceFile list) : unit =
         remoteFiles
         |> Seq.groupBy (fun file ->
             let directoryName =
-                let path = normalizePath (file.Name.TrimStart('/'))
-                match path.LastIndexOfAny([| '/'; '\\' |]) with
-                | -1 -> ""
-                | x  -> path.Substring(0, x)
+                normalizePath (file.Name.TrimStart('/'))
             file.Owner, file.Project, directoryName)
         |> Seq.map (fun (key, files) -> key, files |> Seq.map getCommit |> Seq.distinct)
         |> Seq.filter (snd >> Seq.length >> (<) 1)

@@ -107,23 +107,24 @@ module DependenciesFileParser =
     let private ``parse http source`` trimmed =
         let parts = parseDependencyLine trimmed
         let getParts (projectSpec:string) fileSpec =
-            let ``project spec`` =
-                match projectSpec.EndsWith("/") with
-                | false -> projectSpec
-                | true ->  projectSpec.Substring(0, projectSpec.Length-1)
-            let splitted = ``project spec``.Split([|':'; '/'|], StringSplitOptions.RemoveEmptyEntries)
+            let projectSpec = projectSpec.TrimEnd('/')
+            let ``project spec``, commit =
+                match projectSpec.IndexOf('/', 8) with // 8 = "https://".Length
+                | -1 -> projectSpec, "/"
+                | pos ->  projectSpec.Substring(0, pos), projectSpec.Substring(pos)
+            let splitted = projectSpec.TrimEnd('/').Split([|':'; '/'|], StringSplitOptions.RemoveEmptyEntries)
             let fileName = match String.IsNullOrEmpty fileSpec with
                             | true ->
                                 let name = Seq.last splitted
                                 if String.IsNullOrEmpty <| Path.GetExtension(name)
                                 then name + ".fs" else name
                             | false -> fileSpec
-            match splitted |> Seq.truncate 4 |> Seq.toArray with
+            let owner =
+                match ``project spec``.IndexOf("://") with
+                | -1 -> ``project spec``
+                | pos ->  ``project spec``.Substring(pos+3)
             //SourceFile(origin(url), (owner,project, commit), path)
-            | [| protocol; domain |] -> HttpLink(``project spec``), (domain, domain, None), fileName
-            | [| protocol; domain; project |] -> HttpLink(``project spec``), (domain,project, None), fileName
-            | [| protocol; owner; project; details |] -> HttpLink(``project spec``), (owner,project+"/"+details, None), fileName
-            | _ -> failwithf "invalid http-reference specification:%s     %s" Environment.NewLine trimmed
+            HttpLink(``project spec``), (owner, "", Some commit), fileName
         match parts with
         | [| _; projectSpec; |] -> getParts projectSpec String.Empty
         | [| _; projectSpec; fileSpec |] -> getParts projectSpec fileSpec
