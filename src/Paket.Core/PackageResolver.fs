@@ -192,8 +192,8 @@ let Resolve(getVersionsF, getPackageDetailsF, rootDependencies:PackageRequiremen
                     List.sort compatibleVersions |> List.rev
                 | _ ->
                     match dependency.ResolverStrategy with
-                    | Max -> List.sort compatibleVersions |> List.rev
-                    | Min -> List.sort compatibleVersions
+                    | ResolverStrategy.Max -> List.sort compatibleVersions |> List.rev
+                    | ResolverStrategy.Min -> List.sort compatibleVersions
 
             let tryToImprove useUnlisted =
                 sorted

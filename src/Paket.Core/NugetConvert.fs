@@ -204,7 +204,7 @@ let createPackageRequirement packageName version sources dependenciesFileName =
      { Name = PackageName packageName
        VersionRequirement = VersionRequirement(VersionRange.Exactly version, PreReleaseStatus.No)
        Sources = sources
-       ResolverStrategy = Max
+       ResolverStrategy = ResolverStrategy.Max
        FrameworkRestrictions = []
        Parent = PackageRequirementSource.DependenciesFile dependenciesFileName }
 

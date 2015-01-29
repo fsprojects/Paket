@@ -100,6 +100,7 @@ type VersionRequirement =
             from + " " + _to
 
 /// Represents a resolver strategy.
+[<RequireQualifiedAccess>]
 type ResolverStrategy =
 | Max
 | Min

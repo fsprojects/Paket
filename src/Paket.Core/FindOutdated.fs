@@ -17,8 +17,8 @@ let private adjustVersionRequirements strict includingPrereleases (dependenciesF
                 | true,false -> v, p.ResolverStrategy
                 | false,true -> 
                     match v with
-                    | VersionRequirement(v,_) -> VersionRequirement(v,PreReleaseStatus.All), Max
-                | false,false -> VersionRequirement.AllReleases, Max
+                    | VersionRequirement(v,_) -> VersionRequirement(v,PreReleaseStatus.All), ResolverStrategy.Max
+                | false,false -> VersionRequirement.AllReleases, ResolverStrategy.Max
             { p with VersionRequirement = requirement; ResolverStrategy = strategy})
 
     DependenciesFile(dependenciesFile.FileName, dependenciesFile.Options, dependenciesFile.Sources, newPackages, dependenciesFile.RemoteFiles)
