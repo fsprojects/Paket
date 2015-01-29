@@ -30,6 +30,16 @@ type VersionRange =
 
     member x.IsGlobalOverride = match x with | OverrideAll _ -> true | _ -> false
 
+    member this.IsIncludedIn (other : VersionRange) =
+        match other, this with
+        | Minimum v1, Minimum v2 when v1 <= v2 -> true
+        | Minimum v1, Specific v2 when v1 <= v2 -> true
+        | Specific v1, Specific v2 when v1 = v2 -> true
+        | Range(_, min1, max1, _), Specific v2 when min1 <= v2 && max1 >= v2 -> true
+        | GreaterThan v1, GreaterThan v2 when v1 < v2 -> true
+        | GreaterThan v1, Specific v2 when v1 < v2 -> true
+        | _ -> false
+
 type VersionRequirement =
 | VersionRequirement of VersionRange * PreReleaseStatus
     /// Checks wether the given version is in the version range

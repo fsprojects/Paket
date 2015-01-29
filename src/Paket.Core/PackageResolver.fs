@@ -128,17 +128,7 @@ let Resolve(getVersionsF, getPackageDetailsF, rootDependencies:PackageRequiremen
                 failwithf "Couldn't retrieve versions for %s." name
             allVersions.Add(normalizedPackageName,versions)
             versions
-        | true,versions -> versions
-        
-    let isIncluded (vr1 : VersionRange, vr2 : VersionRange) =         
-        match vr1, vr2 with
-        | Minimum v1, Minimum v2 when v1 <= v2 -> true
-        | Minimum v1, Specific v2 when v1 <= v2 -> true
-        | Specific v1, Specific v2 when v1 = v2 -> true
-        | Range(_, min1, max1, _), Specific v2 when min1 <= v2 && max1 >= v2 -> true
-        | GreaterThan v1, GreaterThan v2 when v1 < v2 -> true
-        | GreaterThan v1, Specific v2 when v1 < v2 -> true
-        | _ -> false
+        | true,versions -> versions        
 
     let rec improveModel (filteredVersions:Map<PackageName, (SemVerInfo list * bool)>,packages:ResolvedPackage list,closed:Set<PackageRequirement>,stillOpen:Set<PackageRequirement>) =
         if Set.isEmpty stillOpen then
@@ -218,12 +208,12 @@ let Resolve(getVersionsF, getPackageDetailsF, rootDependencies:PackageRequiremen
                             |> Set.filter (fun d ->
                                 closed 
                                 |> Seq.filter (fun x -> x.Name = d.Name)
-                                |> Seq.exists (fun otherDep -> isIncluded (d.VersionRequirement.Range,otherDep.VersionRequirement.Range))
+                                |> Seq.exists (fun otherDep -> otherDep.VersionRequirement.Range.IsIncludedIn(d.VersionRequirement.Range))
                                 |> not)
                             |> Set.filter (fun d ->
                                 rest 
                                 |> Seq.filter (fun x -> x.Name = d.Name)
-                                |> Seq.exists (fun otherDep -> isIncluded (d.VersionRequirement.Range,otherDep.VersionRequirement.Range))
+                                |> Seq.exists (fun otherDep -> otherDep.VersionRequirement.Range.IsIncludedIn(d.VersionRequirement.Range))
                                 |> not)
 
                         (exploredPackage.Unlisted && allUnlisted),improveModel (newFilteredVersion,exploredPackage::packages,Set.add dependency closed,Set.union rest newDependencies)
