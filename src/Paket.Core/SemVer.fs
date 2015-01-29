@@ -80,7 +80,7 @@ type SemVerInfo =
 
     override x.ToString() = 
         match x.Original with
-        | Some version -> version
+        | Some version -> version.Trim()
         | None -> x.Normalize()
     
     override x.Equals(yobj) = 

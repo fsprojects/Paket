@@ -89,13 +89,13 @@ type VersionRequirement =
         | Range(fromB, from, _to, _toB) ->
             let from = 
                 match fromB with
-                 | VersionRangeBound.Excluding -> "> " + from.ToString()
-                 | VersionRangeBound.Including -> ">= " + from.ToString()
+                | VersionRangeBound.Excluding -> "> " + from.ToString()
+                | VersionRangeBound.Including -> ">= " + from.ToString()
 
             let _to = 
                 match _toB with
-                 | VersionRangeBound.Excluding -> "< " + _to.ToString()
-                 | VersionRangeBound.Including -> "<= " + _to.ToString()
+                | VersionRangeBound.Excluding -> "< " + _to.ToString()
+                | VersionRangeBound.Including -> "<= " + _to.ToString()
 
             from + " " + _to
 
