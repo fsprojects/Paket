@@ -249,3 +249,8 @@ type Dependencies(dependenciesFileName: string) =
     /// Finds all references for a given package.
     member this.FindReferencesFor(package: string): string list =
         FindReferences.FindReferencesForPackage (PackageName package) |> this.Process
+
+    // Pack all paket.template files.
+    member this.Pack(config, outputPath) =
+        let dependenciesFile = DependenciesFile.ReadFromFile dependenciesFileName
+        PackageProcess.Pack(dependenciesFile, config, outputPath)

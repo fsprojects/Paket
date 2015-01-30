@@ -347,6 +347,18 @@ Options:
 
   `--hard`: Replaces package references within project files even if they are not yet adhering to Paket's conventions (and hence considered manually managed). See [convert from NuGet](paket-convert-from-nuget.html).
   
-  `--redirects`: Creates binding redirects for the NuGet packages."""}]
+  `--redirects`: Creates binding redirects for the NuGet packages."""}
+     "pack",
+        { Title = "paket pack"
+          Text = """Packs all paket.template files within this repository
+
+    [lang=batchfile]
+    $ paket pack output "outputDirectory" buildconfig Debug
+
+Options:
+
+  `output`: Output directory to put nupkgs
+
+  `buildconfig`: Optionally specify build configuration that should be packaged (defaults to Release)."""}]
 
   |> dict

@@ -62,6 +62,8 @@ type DomainMessage =
     | FileSaveError of string
 
     | ConfigFileParseError
+    
+    | PackagingConfigParseError of string
 
     override this.ToString() = 
         match this with
@@ -111,3 +113,6 @@ type DomainMessage =
 
         | ConfigFileParseError ->
             sprintf "Unable to parse Paket configuration file %s." Constants.PaketConfigFile
+
+        | PackagingConfigParseError error ->
+            sprintf "Unable to parse packaging config file: %s." error

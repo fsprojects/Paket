@@ -155,7 +155,7 @@ let InstallIntoProjects(sources,force, hard, withBindingRedirects, lockFile:Lock
         |> Array.map (fun (p,m) -> NormalizedPackageName p.Name,p)
         |> Map.ofArray
 
-    for project, referenceFile in projects do    
+    for project : ProjectFile, referenceFile in projects do    
         verbosefn "Installing to %s" project.FileName
         
         let usedPackages =

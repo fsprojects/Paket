@@ -99,10 +99,13 @@
     <Compile Include="DependencyChangeDetection.fs" />
     <Compile Include="RestoreProcess.fs" />
     <Compile Include="BindingRedirects.fs" />
+    <Compile Include="TemplateFile.fs" />
+    <Compile Include="NupkgWriter.fs" />
     <Compile Include="InstallProcess.fs" />
     <Compile Include="UpdateProcess.fs" />
     <Compile Include="RemoveProcess.fs" />
     <Compile Include="AddProcess.fs" />
+    <Compile Include="PackageProcess.fs" />
     <Compile Include="Environment.fs" />
     <Compile Include="Simplifier.fs" />
     <Compile Include="VSIntegration.fs" />
