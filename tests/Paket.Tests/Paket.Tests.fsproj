@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
@@ -74,6 +74,7 @@
     <Compile Include="ConfigFileSpecs.fs" />
     <Compile Include="NugetVersionRangeParserSpecs.fs" />
     <Compile Include="NugetVersionRangeSerializerSpecs.fs" />
+    <Compile Include="DependencySetSpecs.fs" />
     <Compile Include="BindingRedirect.fs" />
     <Compile Include="UtilsSpecs.fs" />
     <Content Include="Nuspec\FSharp.Data.nuspec">
@@ -137,7 +138,7 @@
     <Content Include="NuGetOData\Rx-PlatformServices.xml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="NuGetOData\EasyNetQ.xml" >
+    <Content Include="NuGetOData\EasyNetQ.xml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="NuGetOData\NUnit.xml">
