@@ -1,5 +1,6 @@
-#### 0.26.0-alpha002 - 31.01.2015
-* CopyLocal settings in `paket.references` - http://fsprojects.github.io/Paket/references-files.html#copy_local
+#### 0.26.0-alpha003 - 31.01.2015
+* Allow to opt-out of old frameworks in `paket.dependencies` - https://github.com/fsprojects/Paket/pull/575
+* `copy_local` settings in `paket.references` - http://fsprojects.github.io/Paket/references-files.html#copy_local
 * COSMETICS: `paket.lock` beautification for HTTP specs - https://github.com/fsprojects/Paket/pull/571
 
 #### 0.25.1 - 25.01.2015
