@@ -48,7 +48,7 @@ let optimizeRestrictions packages =
                 if r.ToString().StartsWith("net") then
                     yield r,packages |> Seq.map (fun (n,v,_) -> n,v) |> Seq.toList
             | _ -> () ]
-
+        |> List.sortBy fst
 
     let emptyRestrictions =
         [for (n,vr,r:FrameworkRestrictions) in packages do
@@ -89,6 +89,7 @@ let optimizeRestrictions packages =
                                 restriction
                         | _ -> restriction)
                     |> Seq.toList
+                    |> List.sort
 
                 yield name,versionRequirement,restrictions]
 

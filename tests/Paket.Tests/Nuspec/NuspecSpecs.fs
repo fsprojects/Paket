@@ -175,5 +175,5 @@ let ``can detect explicit dependencies for WindowsAzure.Storage``() =
     |> shouldEqual 
         (PackageName "Newtonsoft.Json",
           DependenciesFileParser.parseVersionRequirement(">= 5.0.8"),
-          [FrameworkRestriction.AtLeast(DotNetFramework(FrameworkVersion.V4_Client))
-           FrameworkRestriction.Exactly(WindowsPhoneSilverlight("v8.0"))])
+          [FrameworkRestriction.Exactly(WindowsPhoneSilverlight("v8.0"))
+           FrameworkRestriction.AtLeast(DotNetFramework(FrameworkVersion.V4_Client))])
