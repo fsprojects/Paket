@@ -107,3 +107,29 @@ let ``filtered with concrete restriction should filter non-matching``() =
     original
     |> DependencySetFilter.filterByRestrictions [FrameworkRestriction.Exactly (DotNetFramework(FrameworkVersion.V4))]
     |> shouldEqual expected
+
+[<Test>]
+let ``filtered with AtLeast restriction should filter non-matching``() = 
+    let original = 
+      [PackageName("P1"), VersionRequirement.AllReleases, []
+       PackageName("P2"), VersionRequirement.AllReleases, [FrameworkRestriction.AtLeast (DotNetFramework(FrameworkVersion.V4))]
+       PackageName("P3"), VersionRequirement.AllReleases, [FrameworkRestriction.Exactly (DotNetFramework(FrameworkVersion.V4_5))]
+       PackageName("P4"), VersionRequirement.AllReleases, [FrameworkRestriction.AtLeast (DotNetFramework(FrameworkVersion.V4_5))]
+       PackageName("P5"), VersionRequirement.AllReleases, [FrameworkRestriction.Between (DotNetFramework(FrameworkVersion.V4_5),DotNetFramework(FrameworkVersion.V4_5_2))]
+       PackageName("P6"), VersionRequirement.AllReleases, [FrameworkRestriction.Between (DotNetFramework(FrameworkVersion.V4),DotNetFramework(FrameworkVersion.V4_5_2))]
+       PackageName("P7"), VersionRequirement.AllReleases, [FrameworkRestriction.Between (DotNetFramework(FrameworkVersion.V3),DotNetFramework(FrameworkVersion.V3_5))]]
+      |> Set.ofList
+
+    let expected = 
+      [PackageName("P1"), VersionRequirement.AllReleases, []
+       PackageName("P2"), VersionRequirement.AllReleases, [FrameworkRestriction.AtLeast (DotNetFramework(FrameworkVersion.V4))]
+       PackageName("P3"), VersionRequirement.AllReleases, [FrameworkRestriction.Exactly (DotNetFramework(FrameworkVersion.V4_5))]
+       PackageName("P4"), VersionRequirement.AllReleases, [FrameworkRestriction.AtLeast (DotNetFramework(FrameworkVersion.V4_5))]
+       PackageName("P5"), VersionRequirement.AllReleases, [FrameworkRestriction.Between (DotNetFramework(FrameworkVersion.V4_5),DotNetFramework(FrameworkVersion.V4_5_2))]
+       PackageName("P6"), VersionRequirement.AllReleases, [FrameworkRestriction.Between (DotNetFramework(FrameworkVersion.V4),DotNetFramework(FrameworkVersion.V4_5_2))]]
+      |> Set.ofList
+
+
+    original
+    |> DependencySetFilter.filterByRestrictions [FrameworkRestriction.AtLeast (DotNetFramework(FrameworkVersion.V4))]
+    |> shouldEqual expected
