@@ -38,33 +38,16 @@ module LockFileSerializer =
                   yield "  specs:"
                   for _,_,package in packages |> Seq.sortBy (fun (_,_,p) -> NormalizedPackageName p.Name) do
                       let (PackageName packageName) = package.Name
-
-                      let restrictions =
-                        package.FrameworkRestrictions
-                        |> List.map (fun restriction ->
-                            match restriction with
-                            | FrameworkRestriction.Exactly r -> r.ToString()
-                            | FrameworkRestriction.AtLeast r -> ">= " + r.ToString()
-                            | FrameworkRestriction.Between(min,max) -> sprintf ">= %s < %s" (min.ToString()) (max.ToString()))
                       
                       let versionStr = 
                           let s = package.Version.ToString()
                           if s = "" then s else "(" + s + ")"
 
-                      match restrictions with
+                      match package.FrameworkRestrictions with
                       | [] -> yield sprintf "    %s %s" packageName versionStr
-                      | _  -> yield sprintf "    %s %s - %s" packageName versionStr (String.Join(", ",restrictions))
+                      | _  -> yield sprintf "    %s %s - %s" packageName versionStr (String.Join(", ",package.FrameworkRestrictions))
 
                       for (PackageName name),v,restrictions in package.Dependencies do
-                          let restrictions =
-                            restrictions
-                            |> List.map (fun restriction ->
-                                match restriction with
-                                | FrameworkRestriction.Exactly r -> r.ToString()
-                                | FrameworkRestriction.AtLeast r -> ">= " + r.ToString()
-                                | FrameworkRestriction.Between(min,max) -> sprintf ">= %s < %s" (min.ToString()) (max.ToString()))
-
-                          
                           let versionStr = 
                               let s = v.ToString()
                               if s = "" then s else "(" + s + ")"
