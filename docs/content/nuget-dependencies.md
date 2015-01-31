@@ -145,6 +145,13 @@ If you want to dependend on prereleases then Paket can assist you. In contrast t
     nuget Example >= 3 rc             // at least 3.0 but including rc versions 
     nuget Example >= 3 prerelease     // at least 3.0 but including all prerelease versions
 
+### Framework restrictions
+
+Sometimes you don't want to generate dependencies for older framework versions. You can control this in the [`paket.dependencies` file](dependencies-file.html):
+
+    nuget Example >= 2.0 framework: net35, net40  // .NET 3.5 and .NET 4.0
+	nuget Example >= 2.0 framework: >= net45      // .NET 4.5 and above
+
 ### Paket's NuGet-style dependency resolution for transitive dependencies
 
 NuGet's dependency syntax led to a lot of incompatible packages on Nuget.org ([read more](controlling-nuget-resolution.html)). To make your transition to Paket easier and to allow package authors to correct their version constraints you can have Paket behave like NuGet when resolving transitive dependencies (i.e. defaulting to lowest matching versions).
