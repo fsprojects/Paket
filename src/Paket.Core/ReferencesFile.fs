@@ -35,12 +35,13 @@ type ReferencesFile =
         let notEmpty (line: string) = not <| String.IsNullOrWhiteSpace line
         let parsePackageInstallSettings (line: string) = 
             let parts = line.Split(' ')
+            let kvPairs = line.Replace(parts.[0],"") |> parseKeyValuePairs
             { Name = PackageName parts.[0]
-              CopyLocal = 
-                if parts.Length < 2 then CopyLocal.True else
-                    let parts' = line.Replace(parts.[0],"").Split(':') |> Array.map (fun x -> x.ToLower().Trim())
-                    if parts'.[0] = "copy_local" && parts'.[1] = "false" then 
-                        CopyLocal.False else CopyLocal.True }
+              CopyLocal =         
+                match kvPairs.TryGetValue "copy_local" with
+                | true, "false" -> CopyLocal.False 
+                | _ -> CopyLocal.True }
+
 
         let remoteLines,nugetLines =
             lines 

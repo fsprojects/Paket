@@ -253,6 +253,12 @@ let inline orElse v =
     | Some x -> Some x
     | None -> v
 
+let parseKeyValuePairs(s:string) =
+    [for p in s.ToLower().Split([|','|], StringSplitOptions.RemoveEmptyEntries) do
+        let parts = p.Split(':') |> Array.map (fun x -> x.Trim())
+        yield parts.[0],parts.[1]]
+    |> dict
+
 let downloadStringSync (url : string) (client : System.Net.WebClient) = 
     try 
         client.DownloadString url |> succeed
