@@ -9,19 +9,50 @@ open System.Collections.Generic
 open System
 open Paket.PackageSources
 
+type DependencySet = Set<PackageName * VersionRequirement * FrameworkRestrictions>
+
+module DependencySetFilter = 
+    let isIncluded (restriction:FrameworkRestriction) (dependency:PackageName * VersionRequirement * FrameworkRestrictions) =
+        let _,_,restrictions = dependency
+        if Seq.isEmpty restrictions then true else
+        match restriction with
+        | FrameworkRestriction.Exactly v1 -> 
+            restrictions 
+            |> Seq.exists (fun r2 ->
+                match r2 with
+                | FrameworkRestriction.Exactly v2 when v1 = v2 -> true
+                | FrameworkRestriction.AtLeast v2 when v1 >= v2 -> true
+                | FrameworkRestriction.Between(v2,v3) when v1 >= v2 && v1 < v3 -> true
+                | _ -> false)
+        | FrameworkRestriction.AtLeast v1 -> 
+            restrictions 
+            |> Seq.exists (fun r2 ->
+                match r2 with
+                | FrameworkRestriction.Exactly v2 when v1 <= v2 -> true
+                | FrameworkRestriction.AtLeast v2 when v1 <= v2 -> true
+                | FrameworkRestriction.Between(v2,v3) when v1 <= v2 && v1 < v3 -> true
+                | _ -> false)
+        | _ -> true
+
+    let filterByRestrictions (restrictions:FrameworkRestriction seq) (dependencies:DependencySet) : DependencySet = 
+        restrictions
+        |> Seq.fold (fun currentSet restriction -> 
+            currentSet
+            |> Set.filter (isIncluded restriction)) dependencies
+
 /// Represents package details
 type PackageDetails =
     { Name : PackageName
       Source : PackageSource
       DownloadLink : string
       Unlisted : bool
-      DirectDependencies : (PackageName * VersionRequirement * FrameworkRestrictions) Set }
+      DirectDependencies : DependencySet }
 
 /// Represents data about resolved packages
 type ResolvedPackage =
     { Name : PackageName
       Version : SemVerInfo
-      Dependencies : (PackageName * VersionRequirement * FrameworkRestrictions) Set
+      Dependencies : DependencySet
       Unlisted : bool      
       FrameworkRestrictions: FrameworkRestrictions
       Source : PackageSource }
@@ -34,7 +65,7 @@ type PackageResolution = Map<NormalizedPackageName, ResolvedPackage>
 
 let allPrereleases versions = versions |> List.filter (fun v -> v.PreRelease <> None) = versions
 
-let cleanupNames (model : PackageResolution) = 
+let cleanupNames (model : PackageResolution) : PackageResolution = 
     model |> Seq.fold (fun map x -> 
                  let package = x.Value
                  let cleanup = 
@@ -93,7 +124,7 @@ let Resolve(getVersionsF, getPackageDetailsF, rootDependencies:PackageRequiremen
     let exploredPackages = Dictionary<NormalizedPackageName*SemVerInfo,ResolvedPackage>()
     let allVersions = Dictionary<NormalizedPackageName,SemVerInfo list>()
 
-    let getExploredPackage(sources,packageName:PackageName,version,frameworkRequirement) =
+    let getExploredPackage(sources,packageName:PackageName,version,frameworkRestrictions) =
         let normalizedPackageName = NormalizedPackageName packageName
         match exploredPackages.TryGetValue <| (normalizedPackageName,version) with
         | true,package -> package
@@ -101,12 +132,13 @@ let Resolve(getVersionsF, getPackageDetailsF, rootDependencies:PackageRequiremen
             let (PackageName name) = packageName
             tracefn "    - exploring %s %A" name version
             let packageDetails : PackageDetails = getPackageDetailsF sources packageName version
+            let restrictedDependencies = DependencySetFilter.filterByRestrictions frameworkRestrictions packageDetails.DirectDependencies
             let explored =
                 { Name = packageDetails.Name
                   Version = version
-                  Dependencies = packageDetails.DirectDependencies
+                  Dependencies = restrictedDependencies
                   Unlisted = packageDetails.Unlisted
-                  FrameworkRestrictions = frameworkRequirement
+                  FrameworkRestrictions = frameworkRestrictions
                   Source = packageDetails.Source }
             exploredPackages.Add((normalizedPackageName,version),explored)
             explored

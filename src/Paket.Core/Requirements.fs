@@ -9,8 +9,36 @@ type FrameworkRestriction =
 | Exactly of FrameworkIdentifier
 | AtLeast of FrameworkIdentifier
 | Between of FrameworkIdentifier * FrameworkIdentifier
+    
+    override this.ToString() =
+        match this with    
+        | FrameworkRestriction.Exactly r -> r.ToString()
+        | FrameworkRestriction.AtLeast r -> ">= " + r.ToString()
+        | FrameworkRestriction.Between(min,max) -> sprintf ">= %s < %s" (min.ToString()) (max.ToString())
 
 type FrameworkRestrictions = FrameworkRestriction list
+
+let parseRestrictions(text:string) =
+    let commaSplit = text.Trim().Split(',')
+    [for p in commaSplit do
+        let operatorSplit = p.Trim().Split(' ')
+        let framework =
+            if operatorSplit.Length < 2 then 
+                operatorSplit.[0] 
+            else 
+                operatorSplit.[1]
+        match FrameworkDetection.Extract(framework) with
+        | None -> ()
+        | Some x -> 
+            if operatorSplit.[0] = ">=" then
+                if operatorSplit.Length < 4 then
+                    yield FrameworkRestriction.AtLeast x
+                else
+                    match FrameworkDetection.Extract(operatorSplit.[3]) with
+                    | None -> ()
+                    | Some y -> yield FrameworkRestriction.Between(x,y)
+            else
+                yield FrameworkRestriction.Exactly x]
 
 let private minRestriction = FrameworkRestriction.Exactly(DotNetFramework(FrameworkVersion.V1))
 
@@ -42,7 +70,7 @@ let optimizeRestrictions packages =
                 if r.ToString().StartsWith("net") then
                     yield r,packages |> Seq.map (fun (n,v,_) -> n,v) |> Seq.toList
             | _ -> () ]
-
+        |> List.sortBy fst
 
     let emptyRestrictions =
         [for (n,vr,r:FrameworkRestrictions) in packages do
@@ -83,6 +111,7 @@ let optimizeRestrictions packages =
                                 restriction
                         | _ -> restriction)
                     |> Seq.toList
+                    |> List.sort
 
                 yield name,versionRequirement,restrictions]
 

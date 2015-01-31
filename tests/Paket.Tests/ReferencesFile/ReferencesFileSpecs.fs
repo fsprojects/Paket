@@ -89,7 +89,7 @@ let ``should not add nuget package twice``() =
     refFile.NugetPackages.Length |> shouldEqual 1
     refFile.NugetPackages.Head.Name |> shouldEqual (PackageName "NUnit")
 
-let refFileContentWithCopyLocalFalse = """Castle.Windsor CopyLocal=False
+let refFileContentWithCopyLocalFalse = """Castle.Windsor copy_local : false
 Newtonsoft.Json"""
 
 [<Test>]
@@ -104,7 +104,9 @@ let ``should parse lines with CopyLocal settings correctly``() =
 [<Test>]
 let ``should serialize CopyLocal correctly``() = 
     let refFile = ReferencesFile.FromLines(toLines refFileContentWithCopyLocalFalse)
+    let expected = """Castle.Windsor copy_local:false
+Newtonsoft.Json"""
 
     refFile.ToString()
     |> normalizeLineEndings
-    |> shouldEqual (normalizeLineEndings refFileContentWithCopyLocalFalse)
+    |> shouldEqual (normalizeLineEndings expected)

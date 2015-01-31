@@ -202,3 +202,21 @@ let ``should serialize config with http link``() =
     
     cfg.ToString()
     |> shouldEqual (normalizeLineEndings withHTTPLink)
+
+
+let withFrameworkRestrictions = """source https://www.nuget.org/api/v2
+
+nuget FakeItEasy 1.24.0
+nuget json-ld.net 1.0.3 framework: net35, net40
+nuget Example3 !== 2.2.3 alpha beta framework: >= net40
+nuget Example4 framework: net40
+nuget Example5 prerelease framework: net40
+
+http http://www.fssnip.net/raw/1M test1.fs"""
+
+[<Test>]
+let ``should serialize config with framework restrictions``() = 
+    let cfg = DependenciesFile.FromCode(withFrameworkRestrictions)
+    
+    cfg.ToString()
+    |> shouldEqual (normalizeLineEndings withFrameworkRestrictions)

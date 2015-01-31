@@ -35,11 +35,13 @@ type ReferencesFile =
         let notEmpty (line: string) = not <| String.IsNullOrWhiteSpace line
         let parsePackageInstallSettings (line: string) = 
             let parts = line.Split(' ')
+            let kvPairs = line.Replace(parts.[0],"") |> parseKeyValuePairs
             { Name = PackageName parts.[0]
-              CopyLocal = 
-                if parts.Length < 2 then CopyLocal.True else 
-                    if parts.[1].ToLower() = "copylocal=false" then CopyLocal.False else // super naive
-                    CopyLocal.True }
+              CopyLocal =         
+                match kvPairs.TryGetValue "copy_local" with
+                | true, "false" -> CopyLocal.False 
+                | _ -> CopyLocal.True }
+
 
         let remoteLines,nugetLines =
             lines 
@@ -89,6 +91,6 @@ type ReferencesFile =
 
     override this.ToString() =
         List.append
-            (this.NugetPackages |> List.map (fun p -> p.Name.ToString() + if p.CopyLocal = CopyLocal.False then " CopyLocal=False" else ""))
+            (this.NugetPackages |> List.map (fun p -> p.Name.ToString() + if p.CopyLocal = CopyLocal.False then " copy_local:false" else ""))
             (this.RemoteFiles |> List.map (fun s -> "File:" + s.Name + if s.Link <> ReferencesFile.DefaultLink then " " + s.Link else ""))
             |> String.concat Environment.NewLine

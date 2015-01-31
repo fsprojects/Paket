@@ -38,33 +38,16 @@ module LockFileSerializer =
                   yield "  specs:"
                   for _,_,package in packages |> Seq.sortBy (fun (_,_,p) -> NormalizedPackageName p.Name) do
                       let (PackageName packageName) = package.Name
-
-                      let restrictions =
-                        package.FrameworkRestrictions
-                        |> List.map (fun restriction ->
-                            match restriction with
-                            | FrameworkRestriction.Exactly r -> r.ToString()
-                            | FrameworkRestriction.AtLeast r -> ">= " + r.ToString()
-                            | FrameworkRestriction.Between(min,max) -> sprintf ">= %s < %s" (min.ToString()) (max.ToString()))
                       
                       let versionStr = 
                           let s = package.Version.ToString()
                           if s = "" then s else "(" + s + ")"
 
-                      match restrictions with
+                      match package.FrameworkRestrictions with
                       | [] -> yield sprintf "    %s %s" packageName versionStr
-                      | _  -> yield sprintf "    %s %s - %s" packageName versionStr (String.Join(", ",restrictions))
+                      | _  -> yield sprintf "    %s %s - %s" packageName versionStr (String.Join(", ",package.FrameworkRestrictions))
 
                       for (PackageName name),v,restrictions in package.Dependencies do
-                          let restrictions =
-                            restrictions
-                            |> List.map (fun restriction ->
-                                match restriction with
-                                | FrameworkRestriction.Exactly r -> r.ToString()
-                                | FrameworkRestriction.AtLeast r -> ">= " + r.ToString()
-                                | FrameworkRestriction.Between(min,max) -> sprintf ">= %s < %s" (min.ToString()) (max.ToString()))
-
-                          
                           let versionStr = 
                               let s = v.ToString()
                               if s = "" then s else "(" + s + ")"
@@ -185,30 +168,7 @@ module LockFileParser =
                                        Name = PackageName parts'.[0]
                                        Dependencies = Set.empty
                                        Unlisted = false
-                                       FrameworkRestrictions = 
-                                            if parts.Length < 2 then 
-                                                [] 
-                                            else
-                                                let commaSplit = parts.[1].Trim().Split(',')
-                                                [for p in commaSplit do
-                                                    let operatorSplit = p.Trim().Split(' ')
-                                                    let framework =
-                                                        if operatorSplit.Length < 2 then 
-                                                           operatorSplit.[0] 
-                                                        else 
-                                                           operatorSplit.[1]
-                                                    match FrameworkDetection.Extract(framework) with
-                                                    | None -> ()
-                                                    | Some x -> 
-                                                        if operatorSplit.[0] = ">=" then
-                                                            if operatorSplit.Length < 4 then
-                                                                yield FrameworkRestriction.AtLeast x
-                                                            else
-                                                                match FrameworkDetection.Extract(operatorSplit.[3]) with
-                                                                | None -> ()
-                                                                | Some y -> yield FrameworkRestriction.Between(x,y)
-                                                        else
-                                                            yield FrameworkRestriction.Exactly x]
+                                       FrameworkRestrictions = if parts.Length < 2 then [] else Requirements.parseRestrictions parts.[1]
 
                                        Version = SemVer.Parse version } :: state.Packages }
                 | None -> failwith "no source has been specified."
