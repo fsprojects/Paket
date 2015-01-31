@@ -1,9 +1,9 @@
-#### 0.26.0-alpha003 - 31.01.2015
+#### 0.26.0 - 31.01.2015
 * Allow to opt-out of old frameworks in `paket.dependencies` - http://fsprojects.github.io/Paket/nuget-dependencies.html#Framework-restrictions
-* `copy_local` settings in `paket.references` - http://fsprojects.github.io/Paket/references-files.html#copy_local
+* Allow `copy_local` settings in `paket.references` - http://fsprojects.github.io/Paket/references-files.html#copy_local
 * COSMETICS: `paket.lock` beautification for HTTP specs - https://github.com/fsprojects/Paket/pull/571
 
-#### 0.25.1 - 25.01.2015
+#### 0.25.0 - 25.01.2015
 * BUGFIX: If more than one TargetFramework-specific dependency to the same package exist, we take the latest one - https://github.com/fsprojects/Paket/pull/567
 * BUGFIX: Removes interactive-shell-check on `add auth` - https://github.com/fsprojects/Paket/pull/565
 * BUGFIX: Can parse open NuGet ranges in brackets - https://github.com/fsprojects/Paket/issues/560
