@@ -168,30 +168,7 @@ module LockFileParser =
                                        Name = PackageName parts'.[0]
                                        Dependencies = Set.empty
                                        Unlisted = false
-                                       FrameworkRestrictions = 
-                                            if parts.Length < 2 then 
-                                                [] 
-                                            else
-                                                let commaSplit = parts.[1].Trim().Split(',')
-                                                [for p in commaSplit do
-                                                    let operatorSplit = p.Trim().Split(' ')
-                                                    let framework =
-                                                        if operatorSplit.Length < 2 then 
-                                                           operatorSplit.[0] 
-                                                        else 
-                                                           operatorSplit.[1]
-                                                    match FrameworkDetection.Extract(framework) with
-                                                    | None -> ()
-                                                    | Some x -> 
-                                                        if operatorSplit.[0] = ">=" then
-                                                            if operatorSplit.Length < 4 then
-                                                                yield FrameworkRestriction.AtLeast x
-                                                            else
-                                                                match FrameworkDetection.Extract(operatorSplit.[3]) with
-                                                                | None -> ()
-                                                                | Some y -> yield FrameworkRestriction.Between(x,y)
-                                                        else
-                                                            yield FrameworkRestriction.Exactly x]
+                                       FrameworkRestrictions = if parts.Length < 2 then [] else Requirements.parseRestrictions parts.[1]
 
                                        Version = SemVer.Parse version } :: state.Packages }
                 | None -> failwith "no source has been specified."

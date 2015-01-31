@@ -7,6 +7,7 @@ open FsUnit
 open TestHelpers
 open System
 open Paket.Domain
+open Paket.Requirements
 
 [<Test>]
 let ``should read emptx config``() = 
@@ -468,7 +469,10 @@ nuget Nancy.Owin 0.22.2
 let ``should read config with local source``() = 
     let cfg = DependenciesFile.FromCode(configWithLocalSource)
 
-    cfg.DirectDependencies.[PackageName "Nancy.Owin"].Range |> shouldEqual (VersionRange.Specific (SemVer.Parse "0.22.2"))
+    let p = cfg.Packages |> List.find (fun x-> x.Name = PackageName "Nancy.Owin")
+    p.VersionRequirement.Range |> shouldEqual (VersionRange.Specific (SemVer.Parse "0.22.2"))
+    p.FrameworkRestrictions |> shouldEqual []
+
 
 [<Test>]
 let ``should read config with package name containing nuget``() = 
@@ -478,3 +482,26 @@ let ``should read config with package name containing nuget``() =
     let cfg = DependenciesFile.FromCode(config)
 
     cfg.DirectDependencies.[PackageName "nuget.Core"].Range |> shouldEqual (VersionRange.Specific (SemVer.Parse "0.1"))
+
+[<Test>]
+let ``should read config with single framework restriction``() = 
+    let config = """
+    nuget Foobar 1.2.3 framework: >= net40
+    """
+    let cfg = DependenciesFile.FromCode(config)
+
+    let p = cfg.Packages |> List.find (fun x-> x.Name = PackageName "Foobar")
+    p.VersionRequirement.Range |> shouldEqual (VersionRange.Specific (SemVer.Parse "1.2.3"))
+    p.FrameworkRestrictions |> shouldEqual [FrameworkRestriction.AtLeast(DotNetFramework(FrameworkVersion.V4_Client))]
+
+
+[<Test>]
+let ``should read config with framework restriction``() = 
+    let config = """
+    nuget Foobar 1.2.3 alpha beta framework: net35, >= net40
+    """
+    let cfg = DependenciesFile.FromCode(config)
+
+    let p = cfg.Packages |> List.find (fun x-> x.Name = PackageName "Foobar")
+    p.VersionRequirement.Range |> shouldEqual (VersionRange.Specific (SemVer.Parse "1.2.3"))
+    p.FrameworkRestrictions |> shouldEqual [FrameworkRestriction.Exactly(DotNetFramework(FrameworkVersion.V3_5)); FrameworkRestriction.AtLeast(DotNetFramework(FrameworkVersion.V4_Client))]

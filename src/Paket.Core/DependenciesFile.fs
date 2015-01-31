@@ -148,13 +148,15 @@ module DependenciesFileParser =
            
             match parts with
             | name :: operator1 :: version1  :: operator2 :: version2 :: rest
-                when List.exists ((=) operator1) operators && List.exists ((=) operator2) operators -> Package(name,operator1 + " " + version1 + " " + operator2 + " " + version2 + " " + String.Join(" ",rest))
+                when List.exists ((=) operator1) operators && List.exists ((=) operator2) operators -> 
+                Package(name,operator1 + " " + version1 + " " + operator2 + " " + version2, String.Join(" ",rest))
             | name :: operator :: version  :: rest 
-                when List.exists ((=) operator) operators -> Package(name,operator + " " + version + " " + String.Join(" ",rest))
+                when List.exists ((=) operator) operators ->
+                Package(name,operator + " " + version, String.Join(" ",rest))
             | name :: version :: rest when isVersion version -> 
-                Package(name,version + " " + String.Join(" ",rest))
-            | name :: rest -> Package(name,">= 0 " + String.Join(" ",rest))
-            | name :: [] -> Package(name,">= 0")
+                Package(name,version,String.Join(" ",rest))
+            | name :: rest -> Package(name,">= 0", String.Join(" ",rest))
+            | name :: [] -> Package(name,">= 0","")
             | _ -> failwithf "could not retrieve nuget package from %s" trimmed
         | String.StartsWith "references" trimmed -> ParserOptions(ParserOption.ReferencesMode(trimmed.Trim() = "strict"))
         | String.StartsWith "redirects" trimmed -> ParserOptions(ParserOption.Redirects(trimmed.Trim() = "on"))
@@ -178,14 +180,31 @@ module DependenciesFileParser =
                 | ParserOptions(ParserOption.ReferencesMode mode) -> lineNo, { options with Strict = mode }, sources, packages, sourceFiles
                 | ParserOptions(ParserOption.Redirects mode) -> lineNo, { options with Redirects = mode }, sources, packages, sourceFiles
                 | ParserOptions(ParserOption.OmitContent omit) -> lineNo, { options with OmitContent = omit }, sources, packages, sourceFiles
-                | Package(name,version) ->
+                | Package(name,version,rest) ->
+                    let prereleases,kvPairs =
+                        if rest.Contains ":" then
+                            // boah that's reaaaally ugly, but keeps backwards compat
+                            let pos = rest.IndexOf ':'
+                            let s = rest.Substring(0,pos).TrimEnd()
+                            let pos' = s.LastIndexOf(' ')
+                            let prereleases = if pos' > 0 then s.Substring(0,pos') else ""
+                            let s' = if prereleases <> "" then rest.Replace(prereleases,"") else rest
+                            prereleases,Utils.parseKeyValuePairs s'
+                        else
+                            rest,new System.Collections.Generic.Dictionary<_,_>()
+
+                    let restrictions =
+                        match kvPairs.TryGetValue "framework" with
+                        | true, s -> Requirements.parseRestrictions s
+                        | _ -> []
+                    
                     lineNo, options, sources, 
                         { Sources = sources
                           Name = PackageName name
                           ResolverStrategy = parseResolverStrategy version
                           Parent = DependenciesFile fileName
-                          FrameworkRestrictions = []
-                          VersionRequirement = parseVersionRequirement(version.Trim '!') } :: packages, sourceFiles
+                          FrameworkRestrictions = restrictions
+                          VersionRequirement = parseVersionRequirement((version + " " + prereleases).Trim '!') } :: packages, sourceFiles
                 | SourceFile(origin, (owner,project, commit), path) ->
                     lineNo, options, sources, packages, { Owner = owner; Project = project; Commit = commit; Name = path; Origin = origin} :: sourceFiles
                     
@@ -395,7 +414,11 @@ type DependenciesFile(fileName,options,sources,packages : PackageRequirement lis
 
                       let (PackageName name) = package.Name
                       let version = DependenciesFileSerializer.formatVersionRange package.ResolverStrategy package.VersionRequirement
-                      yield sprintf "nuget %s%s" name (if version <> "" then " " + version else "")
+                      let frameworks =
+                        if package.FrameworkRestrictions = [] then "" else
+                        " framework: " + String.Join(", ", package.FrameworkRestrictions)
+
+                      yield sprintf "nuget %s%s%s" name (if version <> "" then " " + version else "") frameworks
                      
               for remoteFile in remoteFiles do
                   if (not !hasReportedSecond) && !hasReportedFirst then

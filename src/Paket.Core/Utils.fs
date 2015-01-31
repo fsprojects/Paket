@@ -254,10 +254,20 @@ let inline orElse v =
     | None -> v
 
 let parseKeyValuePairs(s:string) =
-    [for p in s.ToLower().Split([|','|], StringSplitOptions.RemoveEmptyEntries) do
-        let parts = p.Split(':') |> Array.map (fun x -> x.Trim())
-        yield parts.[0],parts.[1]]
-    |> dict
+    let s = s.Trim().ToLower()
+    let parts = s.Split([|','|], StringSplitOptions.RemoveEmptyEntries)
+    let dict = new System.Collections.Generic.Dictionary<_,_>()
+
+    let lastKey = ref ""
+
+    for p in parts do
+        if p.Contains ":" then
+            let parts = p.Split(':') |> Array.map (fun x -> x.Trim())
+            dict.Add(parts.[0],parts.[1])
+            lastKey := parts.[0]
+        else
+            dict.[!lastKey] <- dict.[!lastKey] + ", " + p
+    dict
 
 let downloadStringSync (url : string) (client : System.Net.WebClient) = 
     try 

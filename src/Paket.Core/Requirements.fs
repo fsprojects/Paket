@@ -18,6 +18,28 @@ type FrameworkRestriction =
 
 type FrameworkRestrictions = FrameworkRestriction list
 
+let parseRestrictions(text:string) =
+    let commaSplit = text.Trim().Split(',')
+    [for p in commaSplit do
+        let operatorSplit = p.Trim().Split(' ')
+        let framework =
+            if operatorSplit.Length < 2 then 
+                operatorSplit.[0] 
+            else 
+                operatorSplit.[1]
+        match FrameworkDetection.Extract(framework) with
+        | None -> ()
+        | Some x -> 
+            if operatorSplit.[0] = ">=" then
+                if operatorSplit.Length < 4 then
+                    yield FrameworkRestriction.AtLeast x
+                else
+                    match FrameworkDetection.Extract(operatorSplit.[3]) with
+                    | None -> ()
+                    | Some y -> yield FrameworkRestriction.Between(x,y)
+            else
+                yield FrameworkRestriction.Exactly x]
+
 let private minRestriction = FrameworkRestriction.Exactly(DotNetFramework(FrameworkVersion.V1))
 
 let findMaxDotNetRestriction restrictions =
