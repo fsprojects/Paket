@@ -123,7 +123,6 @@ module DependenciesFileParser =
                 match ``project spec``.IndexOf("://") with
                 | -1 -> ``project spec``
                 | pos ->  ``project spec``.Substring(pos+3)
-            //SourceFile(origin(url), (owner,project, commit), path)
             HttpLink(``project spec``), (owner, "", Some commit), fileName
         match parts with
         | [| _; projectSpec; |] -> getParts projectSpec String.Empty
