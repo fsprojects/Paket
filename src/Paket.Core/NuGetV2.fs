@@ -377,6 +377,7 @@ let DownloadPackage(root, auth, url, name, version:SemVerInfo, force) =
 
                 let request = HttpWebRequest.Create(Uri nugetPackage.DownloadUrl) :?> HttpWebRequest
                 request.AutomaticDecompression <- DecompressionMethods.GZip ||| DecompressionMethods.Deflate
+                request.UserAgent <- "Paket"
 
                 match auth with
                 | None -> request.UseDefaultCredentials <- true

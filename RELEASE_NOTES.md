@@ -1,3 +1,6 @@
+#### 0.26.1 - 01.02.2015
+* Allow to download from pre-authenticated MyGet feed - https://github.com/fsprojects/Paket/issues/466
+
 #### 0.26.0 - 31.01.2015
 * Allow to opt-out of old frameworks in `paket.dependencies` - http://fsprojects.github.io/Paket/nuget-dependencies.html#Framework-restrictions
 * Allow `copy_local` settings in `paket.references` - http://fsprojects.github.io/Paket/references-files.html#copy_local-settings
