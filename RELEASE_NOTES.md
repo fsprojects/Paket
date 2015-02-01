@@ -1,3 +1,6 @@
+#### 0.26.2 - 01.02.2015
+* Don't internalize in paket.exe
+
 #### 0.26.1 - 01.02.2015
 * Allow to download from pre-authenticated MyGet feed - https://github.com/fsprojects/Paket/issues/466
 
