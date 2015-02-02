@@ -224,8 +224,8 @@ type InstallModel =
     
     member this.FilterBlackList() = 
         let includeLibs = function
-            | Reference.Library lib -> not (lib.EndsWith ".dll" || lib.EndsWith ".exe")
-            | Reference.TargetsFile targetsFile -> not (targetsFile.EndsWith ".props" || targetsFile.EndsWith ".targets")
+            | Reference.Library lib -> not (lib.ToLower().EndsWith ".dll" || lib.ToLower().EndsWith ".exe")
+            | Reference.TargetsFile targetsFile -> not (targetsFile.ToLower().EndsWith ".props" || targetsFile.ToLower().EndsWith ".targets")
             | _ -> false
 
         let excludeSatelliteAssemblies = function
