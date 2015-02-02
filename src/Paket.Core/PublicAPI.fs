@@ -127,6 +127,16 @@ type Dependencies(dependenciesFileName: string) =
             this.RootPath,
             fun () -> UpdateProcess.SmartInstall(dependenciesFileName,None,force,hard,withBindingRedirects))
 
+    /// Creates a paket.dependencies file with the given text in the current directory and installs it.
+    static member Install(dependencies, ?force, ?hard, ?withBindingRedirects) = 
+        let fileName = Path.Combine(Environment.CurrentDirectory, Constants.DependenciesFileName)
+        File.WriteAllText(fileName, dependencies)
+        let dependencies = Dependencies.Locate()
+        dependencies.Install(
+            force = defaultArg force false,
+            hard = defaultArg hard false,
+            withBindingRedirects = defaultArg withBindingRedirects false)
+
     /// Installs all dependencies.
     member this.Install(force: bool,hard: bool): unit = this.Install(force,hard,false)
 

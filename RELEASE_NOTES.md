@@ -1,3 +1,6 @@
+#### 0.26.3 - 02.02.2015
+* Create a install function in the api which takes a `paket.dependencies` file as text - https://github.com/fsprojects/Paket/issues/576
+
 #### 0.26.2 - 01.02.2015
 * Don't internalize in paket.exe
 
