@@ -71,12 +71,13 @@ let private removeCopiedFiles (project: ProjectFile) =
 
 let CreateInstallModel(root, sources, force, package) = 
     async { 
-        let! (package, files) = RestoreProcess.ExtractPackage(root, sources, force, package)
+        let! (package, files, targetsFiles) = RestoreProcess.ExtractPackage(root, sources, force, package)
         let (PackageName name) = package.Name
         let nuspec = FileInfo(sprintf "%s/packages/%s/%s.nuspec" root name name)
         let nuspec = Nuspec.Load nuspec.FullName
-        let files = files |> Seq.map (fun fi -> fi.FullName)
-        return package, InstallModel.CreateFromLibs(package.Name, package.Version, package.FrameworkRestrictions, files, nuspec)
+        let files = files |> Array.map (fun fi -> fi.FullName)
+        let targetsFiles = targetsFiles |> Array.map (fun fi -> fi.FullName)
+        return package, InstallModel.CreateFromLibs(package.Name, package.Version, package.FrameworkRestrictions, files, targetsFiles, nuspec)
     }
 
 /// Restores the given packages from the lock file.

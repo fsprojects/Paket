@@ -82,8 +82,6 @@ let ``should install single client profile lib for everything``() =
     let model = 
         emptymodel.AddReferences([ @"..\Castle.Core\lib\net40-client\Castle.Core.dll" ])
 
-    // TODO: not sure it makes sense to include a 4.0 dll into a 3.5 project
-    // model.GetFiles(SinglePlatform (DotNetFramework FrameworkVersion.V3_5)) |> shouldNotContain @"..\Castle.Core\lib\net40-client\Castle.Core.dll"
     model.GetFiles(SinglePlatform (DotNetFramework FrameworkVersion.V4_Client)) |> shouldContain @"..\Castle.Core\lib\net40-client\Castle.Core.dll" 
     model.GetFiles(SinglePlatform (DotNetFramework FrameworkVersion.V4)) |> shouldContain @"..\Castle.Core\lib\net40-client\Castle.Core.dll"
     model.GetFiles(SinglePlatform (DotNetFramework FrameworkVersion.V4_5)) |> shouldContain @"..\Castle.Core\lib\net40-client\Castle.Core.dll"
@@ -439,3 +437,21 @@ let ``should not install tools``() =
     |> Seq.forall (fun folder -> folder.Files.References.IsEmpty)
     |> shouldEqual true
 
+[<Test>]
+let ``should handle props files``() = 
+    let model = 
+        emptymodel.AddTargetsFiles(
+            [ @"..\xunit.runner.visualstudio\build\net20\xunit.runner.visualstudio.props" 
+              @"..\xunit.runner.visualstudio\build\portable-net45+aspnetcore50+win+wpa81+wp80+monotouch+monoandroid\xunit.runner.visualstudio.props" ])
+            .FilterBlackList()
+
+    model.GetTargetsFiles(SinglePlatform (DotNetFramework FrameworkVersion.V2)) |> shouldContain @"..\xunit.runner.visualstudio\build\net20\xunit.runner.visualstudio.props"
+
+[<Test>]
+let ``should handle Targets files``() = 
+    let model = 
+        emptymodel.AddTargetsFiles(
+            [ @"..\StyleCop.MSBuild\build\StyleCop.MSBuild.Targets" ])
+            .FilterBlackList()
+
+    model.GetTargetsFiles(SinglePlatform (DotNetFramework FrameworkVersion.V2)) |> shouldContain @"..\StyleCop.MSBuild\build\StyleCop.MSBuild.Targets"

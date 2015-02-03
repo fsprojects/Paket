@@ -38,6 +38,15 @@ type ProjectFile =
 
             if !isPaketNode = paketOnes then yield node]
 
+    member private this.FindPaketPrefixNodes() = 
+        let rec subNodes (node:XmlNode) =
+            [for node in node.ChildNodes do
+                if node.Name.StartsWith("__paket__") || (node.Name = "Import" && node.Attributes.["Project"].Value.Contains("__paket__")) then
+                    yield node
+                yield! subNodes node]
+
+        subNodes this.Document
+
     member this.Name = FileInfo(this.FileName).Name
 
     member this.GetCustomReferenceAndFrameworkNodes() = this.FindNodes false "Reference"
@@ -111,7 +120,7 @@ type ProjectFile =
                 yield node.Attributes.["Include"].InnerText.Split(',').[0] ]
 
     member this.DeletePaketNodes(name) =    
-        let nodesToDelete = this.FindPaketNodes(name) 
+        let nodesToDelete = this.FindPaketNodes(name)
         if nodesToDelete |> Seq.isEmpty |> not then
             verbosefn "    - Deleting Paket %s nodes" name
 
@@ -171,7 +180,10 @@ type ProjectFile =
                     let firstNode = fileItemsInSameDir |> Seq.head
                     firstNode.ParentNode.InsertBefore(paketNode, firstNode) |> ignore
         
+        this.DeleteIfEmpty("PropertyGroup")
         this.DeleteIfEmpty("ItemGroup")
+        this.DeleteIfEmpty("When")
+        this.DeleteIfEmpty("Choose")
 
     member this.GetCustomModelNodes(model:InstallModel) =
         let libs = model.GetReferenceNames()
@@ -224,33 +236,76 @@ type ProjectFile =
                     |> addChild (this.CreateNode("Paket","True"))
                     |> itemGroup.AppendChild
                     |> ignore
+                | Reference.TargetsFile _ -> ()
             itemGroup
+
+        let createPropertyGroup references = 
+            let propertyGroup = this.CreateNode("PropertyGroup")
+                      
+            let propertyNames =          
+                references
+                |> Seq.choose (fun lib ->
+                    match lib with
+                    | Reference.Library _ -> None
+                    | Reference.FrameworkAssemblyReference _ -> None
+                    | Reference.TargetsFile targetsFile -> 
+                        let fi = new FileInfo(normalizePath targetsFile)
+                        let propertyName = "__paket__" + fi.Name.ToString().Replace(" ","_").Replace(".","_")
+
+                        let node = this.CreateNode propertyName
+                        node.InnerText <- createRelativePath this.FileName fi.FullName
+                        node
+                        |> propertyGroup.AppendChild 
+                        |> ignore
+                        Some(propertyName))
+                |> Set.ofSeq
+                    
+            propertyNames,propertyGroup
 
         let conditions =
             model.LibFolders
-            |> List.map (fun lib -> PlatformMatching.getCondition lib.Targets,createItemGroup lib.Files.References)
-            |> List.sortBy fst
+            |> List.map (fun lib -> PlatformMatching.getCondition lib.Targets,createItemGroup lib.Files.References,createPropertyGroup lib.Files.References)
+            |> List.sortBy (fun (x,_,_) -> x)
 
-        match conditions with
-        |  ["$(TargetFrameworkIdentifier) == 'true'",itemGroup] -> itemGroup
-        |  _ ->
-            let chooseNode = this.CreateNode("Choose")
+        let chooseNode,additionalPropertyGroup =
+            match conditions with
+            |  ["$(TargetFrameworkIdentifier) == 'true'",itemGroup,(propertyNames,propertyGroup)] -> itemGroup,if Set.isEmpty propertyNames then None else Some propertyGroup
+            |  _ ->
+                let chooseNode = this.CreateNode("Choose")
 
-            conditions
-            |> List.map (fun (condition,itemGroup) ->
-                let whenNode = 
-                    this.CreateNode("When")
-                    |> addAttribute "Condition" condition                
+                conditions
+                |> List.map (fun (condition,itemGroup,(propertyNames,propertyGroup)) ->
+                    let whenNode = 
+                        this.CreateNode("When")
+                        |> addAttribute "Condition" condition                
                
-                whenNode.AppendChild(itemGroup) |> ignore
-                whenNode)
-            |> List.iter(fun node -> chooseNode.AppendChild(node) |> ignore)
+                    if not itemGroup.IsEmpty then
+                        whenNode.AppendChild(itemGroup) |> ignore
+                    if not <| Set.isEmpty propertyNames then
+                        whenNode.AppendChild(propertyGroup) |> ignore
+                    whenNode)
+                |> List.iter(fun node -> chooseNode.AppendChild(node) |> ignore)
+                                
+                chooseNode,None
 
-            chooseNode
+        let propertyNameNodes = 
+            conditions
+            |> List.map (fun (_,_,(propertyNames,_)) -> propertyNames)
+            |> Set.unionMany
+            |> Seq.map (fun propertyName -> 
+                this.CreateNode("Import")
+                |> addAttribute "Project" (sprintf "$(%s)" propertyName)
+                |> addAttribute "Condition" (sprintf "Exists('$(%s)')" propertyName))
+            |> Seq.toList
+
+        propertyNameNodes,chooseNode,additionalPropertyGroup
         
 
     member this.UpdateReferences(completeModel: Map<NormalizedPackageName,InstallModel>, usedPackages : Map<NormalizedPackageName,PackageInstallSettings>, hard) = 
-        this.DeletePaketNodes("Reference")  
+        this.DeletePaketNodes("Reference")
+        
+        for node in this.FindPaketPrefixNodes() do
+            node.ParentNode.RemoveChild(node) |> ignore
         
         ["ItemGroup";"When";"Otherwise";"Choose";"When";"Choose"]
         |> List.iter this.DeleteIfEmpty
@@ -263,8 +318,16 @@ type ProjectFile =
                 this.DeleteCustomModelNodes(kv.Value)
             let package = usedPackages.[kv.Key]
             this.GenerateXml(kv.Value,package.CopyLocal))
-        |> Seq.filter (fun node -> node.ChildNodes.Count > 0)
-        |> Seq.iter (this.ProjectNode.AppendChild >> ignore)
+        |> Seq.iter (fun (propertyNameNodes,node,additionalPropertyGroup) -> 
+            if node.ChildNodes.Count > 0 then
+                this.ProjectNode.AppendChild node |> ignore
+
+            match additionalPropertyGroup with
+            | Some node -> this.ProjectNode.AppendChild node |> ignore
+            | None -> ()
+
+            propertyNameNodes
+            |> Seq.iter (this.ProjectNode.AppendChild >> ignore))
                 
     member this.Save() =
         if Utils.normalizeXml this.Document <> this.OriginalText then 

@@ -23,15 +23,15 @@ let ExtractPackage(root, sources, force, package : ResolvedPackage) =
                                | _ -> None)
             try 
                 let! folder = NuGetV2.DownloadPackage(root, auth, source.Url, name, v, force)
-                return package, NuGetV2.GetLibFiles folder
+                return package, NuGetV2.GetLibFiles folder, NuGetV2.GetTargetsFiles folder
             with _ when force = false -> 
                 tracefn "Something went wrong with the download of %s %A - automatic retry with --force." name v
                 let! folder = NuGetV2.DownloadPackage(root, auth, source.Url, name, v, true)
-                return package, NuGetV2.GetLibFiles folder
+                return package, NuGetV2.GetLibFiles folder, NuGetV2.GetTargetsFiles folder
         | LocalNuget path -> 
             let packageFile = Path.Combine(root, path, sprintf "%s.%A.nupkg" name v)
             let! folder = NuGetV2.CopyFromCache(root, packageFile, name, v, force)
-            return package, NuGetV2.GetLibFiles folder
+            return package, NuGetV2.GetLibFiles folder, NuGetV2.GetTargetsFiles folder
     }
 
 /// Retores the given packages from the lock file.

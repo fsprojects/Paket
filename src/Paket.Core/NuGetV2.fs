@@ -414,7 +414,7 @@ let DownloadPackage(root, auth, url, name, version:SemVerInfo, force) =
     }
 
 /// Finds all libraries in a nuget package.
-let GetLibFiles(targetFolder) =    
+let GetLibFiles(targetFolder) = 
     let libs = 
         let dir = DirectoryInfo(targetFolder)
         let libPath = dir.FullName.ToLower() + Path.DirectorySeparatorChar.ToString() + "lib" 
@@ -433,6 +433,27 @@ let GetLibFiles(targetFolder) =
             verbosefn "Libraries found in %s:%s  - %s" targetFolder Environment.NewLine s
 
     libs
+
+/// Finds all targets files in a nuget package.
+let GetTargetsFiles(targetFolder) = 
+    let targetsFiles = 
+        let dir = DirectoryInfo(targetFolder)
+        let path = dir.FullName.ToLower() + Path.DirectorySeparatorChar.ToString() + "build" 
+        if dir.Exists then
+            dir.GetDirectories()
+            |> Array.filter (fun fi -> fi.FullName.ToLower() = path)
+            |> Array.collect (fun dir -> dir.GetFiles("*.*",SearchOption.AllDirectories))
+        else
+            Array.empty
+
+    if Logging.verbose then
+        if Array.isEmpty targetsFiles then
+            verbosefn "No .targets files found in %s" targetFolder 
+        else
+            let s = String.Join(Environment.NewLine + "  - ",targetsFiles |> Array.map (fun l -> l.FullName))
+            verbosefn ".targets files found in %s:%s  - %s" targetFolder Environment.NewLine s
+
+    targetsFiles
 
 let GetPackageDetails force sources (PackageName package) (version:SemVerInfo) : PackageResolver.PackageDetails= 
     let rec tryNext xs = 

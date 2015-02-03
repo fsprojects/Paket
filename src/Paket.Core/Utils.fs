@@ -59,6 +59,17 @@ let inline createRelativePath root path =
     let uri = Uri(basePath)
     uri.MakeRelativeUri(Uri(path)).ToString().Replace("/", "\\").Replace("%20", " ")    
 
+let extractPath infix (fileName : string) : string option=
+    let path = fileName.Replace("\\", "/").ToLower()
+    let fi = new FileInfo(path)
+
+    let startPos = path.LastIndexOf(sprintf "%s/" infix)
+    let endPos = path.IndexOf('/', startPos + infix.Length + 1)
+    if startPos < 0 then None 
+    elif endPos < 0 then Some("")
+    else 
+        Some(path.Substring(startPos + infix.Length + 1, endPos - startPos - infix.Length - 1))
+
 /// [omit]
 let inline normalizeXml(doc:XmlDocument) =
     use stringWriter = new StringWriter()
