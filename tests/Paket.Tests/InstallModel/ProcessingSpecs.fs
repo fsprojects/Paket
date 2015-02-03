@@ -383,7 +383,7 @@ let ``should handle lib install of Fantomas 1.5.0 with explicit references``() =
         emptymodel.AddReferences(
             [ @"..\Fantomas\lib\FantomasLib.dll" 
               @"..\Fantomas\lib\FSharp.Core.dll" 
-              @"..\Fantomas\lib\Fantomas.exe" ], NuspecReferences.Explicit ["FantomasLib.dll"])
+              @"..\Fantomas\lib\Fantomas.exe" ], [], NuspecReferences.Explicit ["FantomasLib.dll"])
             
     model.GetFiles(SinglePlatform (DotNetFramework FrameworkVersion.V2)) |> shouldContain @"..\Fantomas\lib\FantomasLib.dll" 
     model.GetFiles(SinglePlatform (DotNetFramework FrameworkVersion.V2)) |> shouldNotContain @"..\Fantomas\lib\FSharp.Core.dll" 
@@ -405,7 +405,7 @@ let ``should only handle dll and exe files``() =
             [ @"..\Fantomas\lib\FantomasLib.dll" 
               @"..\Fantomas\lib\FantomasLib.xml" 
               @"..\Fantomas\lib\FSharp.Core.dll" 
-              @"..\Fantomas\lib\Fantomas.exe" ], NuspecReferences.All)
+              @"..\Fantomas\lib\Fantomas.exe" ], [], NuspecReferences.All)
             .FilterBlackList()
 
     model.GetFiles(SinglePlatform (DotNetFramework FrameworkVersion.V2)) |> shouldContain @"..\Fantomas\lib\FantomasLib.dll" 
@@ -417,7 +417,7 @@ let ``should only handle dll and exe files``() =
 let ``should use portable net40 in net45 when don't have other files``() = 
     let model = 
         emptymodel.AddReferences(
-            [ @"..\Google.Apis.Core\lib\portable-net40+sl50+win+wpa81+wp80\Google.Apis.Core.dll" ], NuspecReferences.All)
+            [ @"..\Google.Apis.Core\lib\portable-net40+sl50+win+wpa81+wp80\Google.Apis.Core.dll" ], [], NuspecReferences.All)
             
     model.GetFiles(SinglePlatform (DotNetFramework FrameworkVersion.V4)) |> shouldContain @"..\Google.Apis.Core\lib\portable-net40+sl50+win+wpa81+wp80\Google.Apis.Core.dll"
     model.GetFiles(SinglePlatform (DotNetFramework FrameworkVersion.V4_5)) |> shouldContain @"..\Google.Apis.Core\lib\portable-net40+sl50+win+wpa81+wp80\Google.Apis.Core.dll"
@@ -440,9 +440,11 @@ let ``should not install tools``() =
 [<Test>]
 let ``should handle props files``() = 
     let model = 
-        emptymodel.AddTargetsFiles(
+        emptymodel.AddReferences(
+            [],
             [ @"..\xunit.runner.visualstudio\build\net20\xunit.runner.visualstudio.props" 
-              @"..\xunit.runner.visualstudio\build\portable-net45+aspnetcore50+win+wpa81+wp80+monotouch+monoandroid\xunit.runner.visualstudio.props" ])
+              @"..\xunit.runner.visualstudio\build\portable-net45+aspnetcore50+win+wpa81+wp80+monotouch+monoandroid\xunit.runner.visualstudio.props" ],
+            NuspecReferences.All)
             .FilterBlackList()
 
     model.GetTargetsFiles(SinglePlatform (DotNetFramework FrameworkVersion.V2)) |> shouldContain @"..\xunit.runner.visualstudio\build\net20\xunit.runner.visualstudio.props"
@@ -450,8 +452,10 @@ let ``should handle props files``() =
 [<Test>]
 let ``should handle Targets files``() = 
     let model = 
-        emptymodel.AddTargetsFiles(
-            [ @"..\StyleCop.MSBuild\build\StyleCop.MSBuild.Targets" ])
+        emptymodel.AddReferences(
+            [],
+            [ @"..\StyleCop.MSBuild\build\StyleCop.MSBuild.Targets" ],
+            NuspecReferences.All)
             .FilterBlackList()
 
     model.GetTargetsFiles(SinglePlatform (DotNetFramework FrameworkVersion.V2)) |> shouldContain @"..\StyleCop.MSBuild\build\StyleCop.MSBuild.Targets"

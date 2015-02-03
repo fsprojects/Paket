@@ -116,39 +116,47 @@ type InstallModel =
                          |> Seq.choose id
         | None -> Seq.empty
     
-    member this.AddLibFolders(libs : seq<string>) : InstallModel =
+    member this.AddReferences(libs : seq<string>, targetsFiles : seq<string>, references) : InstallModel =
         let libFolders = 
             libs 
             |> Seq.map this.ExtractLibFolder
             |> Seq.choose id
-            |> Seq.distinct 
-            |> List.ofSeq
 
-        if libFolders.Length = 0 then this
-        else
-            let libFolders =
-                PlatformMatching.getSupportedTargetProfiles libFolders
-                |> Seq.map (fun entry -> { Name = entry.Key; Targets = entry.Value; Files = InstallFiles.empty })
-                |> Seq.toList
-
-            { this with LibFolders = libFolders}
-
-    member this.AddBuildFolders(libs : seq<string>) : InstallModel =
-        let libFolders = 
-            libs 
+        let targetsFileFolders = 
+            targetsFiles 
             |> Seq.map this.ExtractBuildFolder
             |> Seq.choose id
+
+        let allFolders = 
+            libFolders
+            |> Seq.append targetsFileFolders
             |> Seq.distinct 
             |> List.ofSeq
 
-        if libFolders.Length = 0 then this
-        else
-            let libFolders =
-                PlatformMatching.getSupportedTargetProfiles libFolders
-                |> Seq.map (fun entry -> { Name = entry.Key; Targets = entry.Value; Files = InstallFiles.empty })
-                |> Seq.toList
+        if allFolders.Length = 0 then this else
+        let libFolders =
+            PlatformMatching.getSupportedTargetProfiles allFolders
+            |> Seq.map (fun entry -> { Name = entry.Key; Targets = entry.Value; Files = InstallFiles.empty })
+            |> Seq.toList
 
-            { this with LibFolders = libFolders}    
+
+        let modelWithReferences =
+            Seq.fold (fun (model:InstallModel) file ->
+                        match model.ExtractLibFolder file with
+                        | Some folderName -> 
+                            match Seq.tryFind (fun folder -> folder.Name = folderName) model.LibFolders with
+                            | Some path -> model.AddPackageFile(path, file, references)
+                            | _ -> model
+                        | None -> model) { this with LibFolders = libFolders} libs
+
+        Seq.fold (fun model file ->
+                    match model.ExtractBuildFolder file with
+                    | Some folderName -> 
+                        match Seq.tryFind (fun folder -> folder.Name = folderName) model.LibFolders with
+                        | Some path -> model.AddTargetsFile(path, file)
+                        | _ -> model
+                    | None -> model) modelWithReferences targetsFiles
+
     
     member this.ExtractLibFolder path = Utils.extractPath "lib" path
 
@@ -175,15 +183,6 @@ type InstallModel =
 
         { this with LibFolders = folders }
 
-    member this.AddReferences(libs, references) : InstallModel = 
-        Seq.fold (fun model file ->
-                    match model.ExtractLibFolder file with
-                    | Some folderName -> 
-                        match Seq.tryFind (fun folder -> folder.Name = folderName) model.LibFolders with
-                        | Some path -> model.AddPackageFile(path, file, references)
-                        | _ -> model
-                    | None -> model) (this.AddLibFolders(libs)) libs
-
     member this.AddTargetsFile(path : LibFolder, file : string) : InstallModel =        
         let folders = 
             this.LibFolders
@@ -191,18 +190,8 @@ type InstallModel =
                                if p.Name = path.Name then { p with Files = p.Files.AddTargetsFile file }
                                else p) 
         { this with LibFolders = folders }
-
-
-    member this.AddTargetsFiles(libs) : InstallModel = 
-        Seq.fold (fun model file ->
-                    match model.ExtractBuildFolder file with
-                    | Some folderName -> 
-                        match Seq.tryFind (fun folder -> folder.Name = folderName) model.LibFolders with
-                        | Some path -> model.AddTargetsFile(path, file)
-                        | _ -> model
-                    | None -> model) (this.AddBuildFolders(libs)) libs
     
-    member this.AddReferences(libs) = this.AddReferences(libs, NuspecReferences.All)
+    member this.AddReferences(libs) = this.AddReferences(libs,[], NuspecReferences.All)
     
     member this.AddFrameworkAssemblyReference(reference:FrameworkAssemblyReference) : InstallModel =
         let referenceApplies (folder : LibFolder) =
@@ -304,8 +293,7 @@ type InstallModel =
     static member CreateFromLibs(packageName, packageVersion, frameworkRestrictions:FrameworkRestrictions, libs, targetsFiles, nuspec : Nuspec) = 
         InstallModel
             .EmptyModel(packageName, packageVersion)
-            .AddReferences(libs, nuspec.References)
-            .AddTargetsFiles(targetsFiles)
+            .AddReferences(libs, targetsFiles, nuspec.References)
             .AddFrameworkAssemblyReferences(nuspec.FrameworkAssemblyReferences)
             .FilterBlackList()
             .ApplyFrameworkRestrictions(frameworkRestrictions)
