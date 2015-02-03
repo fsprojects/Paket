@@ -40,6 +40,31 @@ type VersionRange =
         | GreaterThan v1, Specific v2 when v1 < v2 -> true
         | _ -> false
 
+
+    override this.ToString() =
+        match this with
+        | Specific v -> v.ToString()
+        | OverrideAll v -> "== " + v.ToString()
+        | Minimum v ->
+            match v.ToString() with
+            | "0" -> ""
+            |  x  -> ">= " + x
+        | GreaterThan v -> "> " + v.ToString()
+        | Maximum v -> "<= " + v.ToString()
+        | LessThan v -> "< " + v.ToString()
+        | Range(fromB, from, _to, _toB) ->
+            let from = 
+                match fromB with
+                | VersionRangeBound.Excluding -> "> " + from.ToString()
+                | VersionRangeBound.Including -> ">= " + from.ToString()
+
+            let _to = 
+                match _toB with
+                | VersionRangeBound.Excluding -> "< " + _to.ToString()
+                | VersionRangeBound.Including -> "<= " + _to.ToString()
+
+            from + " " + _to
+
 type VersionRequirement =
 | VersionRequirement of VersionRange * PreReleaseStatus
     /// Checks wether the given version is in the version range
@@ -85,29 +110,7 @@ type VersionRequirement =
     static member AllReleases = VersionRequirement(Minimum(SemVer.Parse "0"),PreReleaseStatus.No)
     static member NoRestriction = VersionRequirement(Minimum(SemVer.Parse "0"),PreReleaseStatus.All)
 
-    override this.ToString() =
-        match this.Range with
-        | Specific v -> v.ToString()
-        | OverrideAll v -> "== " + v.ToString()
-        | Minimum v ->
-            match v.ToString() with
-            | "0" -> ""
-            |  x  -> ">= " + x
-        | GreaterThan v -> "> " + v.ToString()
-        | Maximum v -> "<= " + v.ToString()
-        | LessThan v -> "< " + v.ToString()
-        | Range(fromB, from, _to, _toB) ->
-            let from = 
-                match fromB with
-                | VersionRangeBound.Excluding -> "> " + from.ToString()
-                | VersionRangeBound.Including -> ">= " + from.ToString()
-
-            let _to = 
-                match _toB with
-                | VersionRangeBound.Excluding -> "< " + _to.ToString()
-                | VersionRangeBound.Including -> "<= " + _to.ToString()
-
-            from + " " + _to
+    override this.ToString() = this.Range.ToString()
 
 /// Represents a resolver strategy.
 [<RequireQualifiedAccess>]

@@ -10,7 +10,7 @@ open Paket.Domain
 open Paket.Requirements
 
 [<Test>]
-let ``should read emptx config``() = 
+let ``should read empty config``() = 
     let cfg = DependenciesFile.FromCode("")
     cfg.Options.Strict |> shouldEqual false
 
