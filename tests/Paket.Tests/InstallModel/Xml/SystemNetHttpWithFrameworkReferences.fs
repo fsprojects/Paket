@@ -66,6 +66,7 @@ let ``should generate Xml for System.Net.Http 2.2.8``() =
                      
               @"..\Microsoft.Net.Http\lib\net45\System.Net.Http.Extensions.dll" 
               @"..\Microsoft.Net.Http\lib\net45\System.Net.Http.Primitives.dll"],
+               [],
                { References = NuspecReferences.All
                  OfficialName = "Microsoft.Net.Http"
                  Dependencies = []
@@ -73,7 +74,7 @@ let ``should generate Xml for System.Net.Http 2.2.8``() =
                  [{ AssemblyName = "System.Net.Http"; FrameworkRestrictions = [FrameworkRestriction.AtLeast(DotNetFramework(FrameworkVersion.V4_5))] }
                   { AssemblyName = "System.Net.Http.WebRequest"; FrameworkRestrictions = [FrameworkRestriction.Exactly(DotNetFramework(FrameworkVersion.V4_5))] }]})
 
-    let chooseNode = ProjectFile.Load("./ProjectFile/TestData/Empty.fsprojtest").Value.GenerateXml(model,CopyLocal.True)
+    let _,chooseNode,_ = ProjectFile.Load("./ProjectFile/TestData/Empty.fsprojtest").Value.GenerateXml(model,CopyLocal.True)
     chooseNode.OuterXml
     |> normalizeXml
     |> shouldEqual (normalizeXml expected)
