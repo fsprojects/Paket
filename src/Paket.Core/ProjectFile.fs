@@ -182,7 +182,6 @@ type ProjectFile =
         
         this.DeleteIfEmpty("PropertyGroup")
         this.DeleteIfEmpty("ItemGroup")
-        this.DeleteIfEmpty("When")
         this.DeleteIfEmpty("Choose")
 
     member this.GetCustomModelNodes(model:InstallModel) =
