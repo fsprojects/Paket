@@ -1,3 +1,6 @@
+#### 0.26.5 - 03.02.2015
+* Fix `paket install --hard` for FSharp.Core - https://github.com/fsprojects/Paket/issues/579
+
 #### 0.26.4 - 02.02.2015
 * Create a install function in the api which takes a `paket.dependencies` file as text - https://github.com/fsprojects/Paket/issues/576
 

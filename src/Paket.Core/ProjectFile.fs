@@ -186,6 +186,7 @@ type ProjectFile =
                 let isFrameworkNode = ref true
                 for child in node.ChildNodes do
                     if child.Name = "HintPath" then isFrameworkNode := false
+                    if child.Name = "Private" then isFrameworkNode := false
 
                 not !isFrameworkNode)
         
