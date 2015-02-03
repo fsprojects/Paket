@@ -366,7 +366,11 @@ type ProjectFile =
             [ this.Document |> getDescendants "RestorePackages" |> Seq.firstOrDefault
               this.Document 
               |> getDescendants "Import" 
-              |> List.tryFind (fun n -> n |> getAttribute "Project" = Some "$(SolutionDir)\\.nuget\\nuget.targets")
+              |> List.tryFind (fun n -> 
+                    match n |> getAttribute "Project" with
+                    | Some p -> p.Equals("$(SolutionDir)\\.nuget\\nuget.targets", 
+                                         StringComparison.InvariantCultureIgnoreCase)
+                    | None -> false)
               this.Document
               |> getDescendants "Target"
               |> List.tryFind (fun n -> n |> getAttribute "Name" = Some "EnsureNuGetPackageBuildImports") ]
