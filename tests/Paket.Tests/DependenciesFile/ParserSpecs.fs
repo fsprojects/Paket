@@ -505,3 +505,16 @@ let ``should read config with framework restriction``() =
     let p = cfg.Packages |> List.find (fun x-> x.Name = PackageName "Foobar")
     p.VersionRequirement.Range |> shouldEqual (VersionRange.Specific (SemVer.Parse "1.2.3"))
     p.FrameworkRestrictions |> shouldEqual [FrameworkRestriction.Exactly(DotNetFramework(FrameworkVersion.V3_5)); FrameworkRestriction.AtLeast(DotNetFramework(FrameworkVersion.V4_Client))]
+
+
+let configWithbang = """
+    nuget Plossum.CommandLine !0.3.0.14
+"""
+
+[<Test>]
+let ``should read config with bang``() = 
+    try
+        DependenciesFile.FromCode(configWithbang) |> ignore
+        failwith "error"
+    with
+    | exn -> Assert.IsTrue(exn.Message.Contains("Invalid prerelease version !0.3.0.14")) |> ignore

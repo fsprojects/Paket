@@ -193,6 +193,9 @@ module DependenciesFileParser =
                         else
                             rest,new System.Collections.Generic.Dictionary<_,_>()
 
+                    if operators |> Seq.exists (fun x -> prereleases.Contains x) || prereleases.Contains("!") then
+                        failwithf "Invalid prerelease version %s" prereleases
+
                     let restrictions =
                         match kvPairs.TryGetValue "framework" with
                         | true, s -> Requirements.parseRestrictions s
