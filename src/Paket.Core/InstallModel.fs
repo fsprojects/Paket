@@ -105,6 +105,16 @@ type InstallModel =
                                 | _ -> None)
                          |> Seq.choose id
         | None -> Seq.empty
+
+    member this.GetTargetsFiles(target : TargetProfile) = 
+        match Seq.tryFind (fun lib -> Seq.exists (fun t -> t = target) lib.Targets) this.LibFolders with
+        | Some folder -> folder.Files.References
+                         |> Set.map (fun x -> 
+                                match x with
+                                | Reference.TargetsFile targetsFile -> Some targetsFile
+                                | _ -> None)
+                         |> Seq.choose id
+        | None -> Seq.empty
     
     member this.AddLibFolders(libs : seq<string>) : InstallModel =
         let libFolders = 

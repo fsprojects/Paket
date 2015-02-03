@@ -107,7 +107,7 @@ let ``should generate Xml for Rx-XAML 2.2.4 with correct framework assembly refe
                   { AssemblyName = "System.Windows"; FrameworkRestrictions = [FrameworkRestriction.Exactly(Silverlight "v5.0")] }
                   { AssemblyName = "System.Windows"; FrameworkRestrictions = [FrameworkRestriction.Exactly(WindowsPhoneSilverlight "v7.1")] }]})
 
-    let chooseNode = ProjectFile.Load("./ProjectFile/TestData/Empty.fsprojtest").Value.GenerateXml(model,CopyLocal.True) |> snd
+    let _,chooseNode,_ = ProjectFile.Load("./ProjectFile/TestData/Empty.fsprojtest").Value.GenerateXml(model,CopyLocal.True)
     chooseNode.OuterXml
     |> normalizeXml
     |> shouldEqual (normalizeXml expected)

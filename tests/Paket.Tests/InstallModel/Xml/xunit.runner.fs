@@ -32,10 +32,12 @@ let ``should generate Xml for xunit.runner.visualstudio 2.0.0``() =
               @"..\xunit.runner.visualstudio\build\portable-net45+aspnetcore50+win+wpa81+wp80+monotouch+monoandroid\xunit.runner.visualstudio.props"  ],
               Nuspec.All)
     
-    let propertyNodes,chooseNode = ProjectFile.Load("./ProjectFile/TestData/Empty.fsprojtest").Value.GenerateXml(model,CopyLocal.True)
+    let propertyNodes,chooseNode,additionalNode = ProjectFile.Load("./ProjectFile/TestData/Empty.fsprojtest").Value.GenerateXml(model,CopyLocal.True)
     chooseNode.OuterXml
     |> normalizeXml
     |> shouldEqual (normalizeXml expected)
+
+    additionalNode |> shouldEqual None
 
     propertyNodes |> Seq.length |> shouldEqual 1
 

@@ -210,6 +210,7 @@
     <Compile Include="InstallModel\ProcessingSpecs.fs" />
     <Compile Include="InstallModel\Xml\Fantomas.fs" />
     <Compile Include="InstallModel\Xml\xunit.runner.fs" />
+    <Compile Include="InstallModel\Xml\StyleCop.MSBuild.fs" />
     <Compile Include="InstallModel\Xml\Plossum.fs" />
     <Compile Include="InstallModel\Xml\System.Spatial.fs" />
     <Compile Include="InstallModel\Xml\FantomasLib.fs" />

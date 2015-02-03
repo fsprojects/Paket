@@ -26,7 +26,7 @@ let ``should generate Xml for Fantomas 1.5``() =
               [],
               Nuspec.Explicit ["FantomasLib.dll"])
     
-    let chooseNode = ProjectFile.Load("./ProjectFile/TestData/Empty.fsprojtest").Value.GenerateXml(model,CopyLocal.False) |> snd
+    let _,chooseNode,_ = ProjectFile.Load("./ProjectFile/TestData/Empty.fsprojtest").Value.GenerateXml(model,CopyLocal.False)
     chooseNode.OuterXml
     |> normalizeXml
     |> shouldEqual (normalizeXml expected)
