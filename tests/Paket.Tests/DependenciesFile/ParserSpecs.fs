@@ -507,14 +507,14 @@ let ``should read config with framework restriction``() =
     p.FrameworkRestrictions |> shouldEqual [FrameworkRestriction.Exactly(DotNetFramework(FrameworkVersion.V3_5)); FrameworkRestriction.AtLeast(DotNetFramework(FrameworkVersion.V4_Client))]
 
 
-let configWithbang = """
+let configWithInvalidPrereleaseString = """
     nuget Plossum.CommandLine !0.3.0.14
 """
 
 [<Test>]
-let ``should read config with bang``() = 
+let ``should report error on invalid prerelease string``() = 
     try
-        DependenciesFile.FromCode(configWithbang) |> ignore
+        DependenciesFile.FromCode(configWithInvalidPrereleaseString) |> ignore
         failwith "error"
     with
     | exn -> Assert.IsTrue(exn.Message.Contains("Invalid prerelease version !0.3.0.14")) |> ignore
