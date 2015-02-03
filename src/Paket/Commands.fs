@@ -87,7 +87,7 @@ with
         member __.Usage = ""
 
 type RemoveArgs =
-    | [<First>][<CustomCommandLine("nuget")>][<Mandatory>] Nuget of string
+    | [<CustomCommandLine("nuget")>][<Mandatory>] Nuget of string
     | [<AltCommandLine("-f")>] Force
     | [<AltCommandLine("-i")>] Interactive
     | Hard
@@ -110,7 +110,7 @@ with
         member __.Usage = ""
 
 type UpdateArgs =
-    | [<First>][<CustomCommandLine("nuget")>] Nuget of string
+    | [<CustomCommandLine("nuget")>] Nuget of string
     | [<CustomCommandLine("version")>] Version of string
     | [<AltCommandLine("-f")>] Force
     | Hard
