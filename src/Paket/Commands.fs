@@ -27,7 +27,7 @@ with
         member __.Usage = ""
 
 type AddArgs =
-    | [<First>][<CustomCommandLine("nuget")>][<Mandatory>] Nuget of string
+    | [<CustomCommandLine("nuget")>][<Mandatory>] Nuget of string
     | [<CustomCommandLine("version")>] Version of string
     | [<AltCommandLine("-f")>] Force
     | [<AltCommandLine("-i")>] Interactive
