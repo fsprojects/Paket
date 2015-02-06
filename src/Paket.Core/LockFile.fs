@@ -210,14 +210,22 @@ module LockFileParser =
                 | HttpLink x ->
                     match state.RemoteUrl |> Option.map(fun s -> s.Split '/' |> Array.toList) with
                     | Some [ protocol; _; domain; ] ->
+                        let name, path = 
+                            match details.Split ' ' with
+                            | [| filePath; path |] -> filePath, path |> removeBrackets
+                            | _ -> failwith "invalid file source details."
+
+                        let sourceFile =
+                            { Commit = String.Empty
+                              Owner = domain
+                              Origin = HttpLink(state.RemoteUrl.Value + path)
+                              Project = domain
+                              Dependencies = Set.empty
+                              Name = name } 
+
                         { state with  
                             LastWasPackage = false
-                            SourceFiles = { Commit = String.Empty
-                                            Owner = domain
-                                            Origin = HttpLink(state.RemoteUrl.Value)
-                                            Project = domain
-                                            Dependencies = Set.empty
-                                            Name = details } :: state.SourceFiles }
+                            SourceFiles = sourceFile :: state.SourceFiles }
                     | Some [ protocol; _; domain; project ] ->
                         { state with  
                             LastWasPackage = false
@@ -358,7 +366,12 @@ type LockFile(fileName:string,options,resolution:PackageResolution,remoteFiles:R
     /// Parses a paket.lock file from lines
     static member Parse(lockFileName,lines) : LockFile =        
         LockFileParser.Parse lines
-        |> fun state -> LockFile(lockFileName, state.Options ,state.Packages |> Seq.fold (fun map p -> Map.add (NormalizedPackageName p.Name) p map) Map.empty, List.rev state.SourceFiles)
+        |> fun state -> 
+            LockFile(
+                lockFileName, 
+                state.Options,
+                state.Packages |> Seq.fold (fun map p -> Map.add (NormalizedPackageName p.Name) p map) Map.empty, 
+                List.rev state.SourceFiles)
 
     member this.GetPackageHull(referencesFile:ReferencesFile) =
         let usedPackages = Dictionary<_,_>()

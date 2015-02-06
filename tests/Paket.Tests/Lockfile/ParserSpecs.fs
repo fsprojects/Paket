@@ -267,6 +267,31 @@ let ``should parse simple http reference``() =
     references.[0].Name |> shouldEqual "ikvmbin-8.0.5449.0.zip"  
     references.[0].Origin |> shouldEqual (SingleSourceFileOrigin.HttpLink("http://www.frijters.net/ikvmbin-8.0.5449.0.zip"))
 
+
+let lockFileForStanfordNLPdotNET = """HTTP
+  remote: http://www.frijters.net
+  specs:
+    ikvmbin-8.0.5449.0.zip (/ikvmbin-8.0.5449.0.zip)
+  remote: http://nlp.stanford.edu
+  specs:
+    stanford-corenlp-full-2014-10-31.zip (/software/stanford-corenlp-full-2014-10-31.zip)
+    stanford-ner-2014-10-26.zip (/software/stanford-ner-2014-10-26.zip)
+    stanford-parser-full-2014-10-31.zip (/software/stanford-parser-full-2014-10-31.zip)
+    stanford-postagger-full-2014-10-26.zip (/software/stanford-postagger-full-2014-10-26.zip)
+    stanford-segmenter-2014-10-26.zip (/software/stanford-segmenter-2014-10-26.zip)"""
+
+[<Test>]
+let ``should parse lock file for http Stanford.NLP.NET project``() =
+    let lockFile = LockFileParser.Parse(toLines lockFileForStanfordNLPdotNET)
+    let references = lockFile.SourceFiles
+
+    references.Length |> shouldEqual 6
+
+    references.[0].Origin |> shouldEqual (SingleSourceFileOrigin.HttpLink("http://nlp.stanford.edu/software/stanford-segmenter-2014-10-26.zip"))
+    references.[0].Name |> shouldEqual "stanford-segmenter-2014-10-26.zip"  
+    
+    ()
+
 let realWorldHTTP = """
 NUGET
   remote: https://nuget.org/api/v2
@@ -308,6 +333,9 @@ HTTP
   remote: http://www.w3.org/2013/N-QuadsTests/TESTS.zip
   specs:
     TESTS.zip
+  remote: https://gist.githubusercontent.com
+  specs:
+    paket.txt (/JonCanning/37769e635aaece6dcef3/raw/adffa54dd02f94e5b06667700ef44e1a5feded73/paket.txt)
 """
 
 [<Test>]
@@ -315,5 +343,10 @@ let ``should parse real world http reference``() =
     let lockFile = LockFileParser.Parse(toLines realWorldHTTP)
     let references = lockFile.SourceFiles
 
-    references.[0].Name |> shouldEqual "TESTS.zip"  
-    references.[0].Origin |> shouldEqual (SingleSourceFileOrigin.HttpLink("http://www.w3.org/2013/N-QuadsTests/TESTS.zip"))
+    references.Length |> shouldEqual 3
+    
+    references.[0].Origin |> shouldEqual (SingleSourceFileOrigin.HttpLink("https://gist.githubusercontent.com/JonCanning/37769e635aaece6dcef3/raw/adffa54dd02f94e5b06667700ef44e1a5feded73/paket.txt"))
+    references.[0].Name |> shouldEqual "paket.txt"  
+
+    references.[1].Name |> shouldEqual "TESTS.zip"  
+    references.[1].Origin |> shouldEqual (SingleSourceFileOrigin.HttpLink("http://www.w3.org/2013/N-QuadsTests/TESTS.zip"))
