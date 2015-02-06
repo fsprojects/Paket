@@ -24,7 +24,7 @@ let expected = """<?xml version="1.0" encoding="utf-16"?>
 </Choose>"""
 
 let expectedPropertyNdoes = """<?xml version="1.0" encoding="utf-16"?>
-<Import Project="..\..\..\LibGit2Sharp\$(__paket__LibGit2Sharp_props).targets" Condition="Exists('..\..\..\LibGit2Sharp\$(__paket__LibGit2Sharp_props).targets')" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" />"""
+<Import Project="..\..\..\LibGit2Sharp\$(__paket__LibGit2Sharp_props).props" Condition="Exists('..\..\..\LibGit2Sharp\$(__paket__LibGit2Sharp_props).props')" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" />"""
 
 [<Test>]
 let ``should generate Xml for LibGit2Sharp 2.0.0``() = 

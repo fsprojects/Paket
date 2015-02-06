@@ -296,7 +296,7 @@ type ProjectFile =
             |> Set.unionMany
             |> Seq.map (fun (propertyName,buildPath) -> 
                 let fileName = 
-                    if buildPath.ToLower().EndsWith "props" then
+                    if propertyName.ToLower().EndsWith "props" then
                         sprintf "%s$(%s).props" buildPath propertyName 
                     else
                         sprintf "%s$(%s).targets" buildPath propertyName 

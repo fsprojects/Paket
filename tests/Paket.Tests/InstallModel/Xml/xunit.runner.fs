@@ -22,7 +22,7 @@ let expected = """<?xml version="1.0" encoding="utf-16"?>
 </Choose>"""
 
 let expectedPropertyNdoes = """<?xml version="1.0" encoding="utf-16"?>
-<Import Project="..\..\..\xunit.runner.visualstudio\$(__paket__xunit_runner_visualstudio_props).targets" Condition="Exists('..\..\..\xunit.runner.visualstudio\$(__paket__xunit_runner_visualstudio_props).targets')" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" />"""
+<Import Project="..\..\..\xunit.runner.visualstudio\$(__paket__xunit_runner_visualstudio_props).props" Condition="Exists('..\..\..\xunit.runner.visualstudio\$(__paket__xunit_runner_visualstudio_props).props')" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" />"""
 
 [<Test>]
 let ``should generate Xml for xunit.runner.visualstudio 2.0.0``() = 
