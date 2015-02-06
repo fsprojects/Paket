@@ -1,4 +1,4 @@
-#### 0.27.0-alpha011 - 06.02.2015
+#### 0.27.0-alpha012 - 06.02.2015
 * Allow to reference `.props` and `.targets` files - https://github.com/fsprojects/Paket/issues/516
 * Create a install function in the api which takes a `paket.dependencies` file as text - https://github.com/fsprojects/Paket/issues/576
 * Don't internalize in paket.exe during ILMerge

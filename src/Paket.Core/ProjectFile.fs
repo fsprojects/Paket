@@ -312,7 +312,10 @@ type ProjectFile =
         this.DeletePaketNodes("Reference")
         
         for node in this.FindPaketPrefixNodes() do
+            let parent = node.ParentNode
             node.ParentNode.RemoveChild(node) |> ignore
+            if parent.ChildNodes.Count = 0 then
+                parent.ParentNode.RemoveChild(parent) |> ignore
         
         ["ItemGroup";"When";"Otherwise";"Choose";"When";"Choose"]
         |> List.iter this.DeleteIfEmpty
