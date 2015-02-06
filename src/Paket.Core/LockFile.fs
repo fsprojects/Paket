@@ -216,10 +216,10 @@ module LockFileParser =
                             | _ -> failwith "invalid file source details."
 
                         let sourceFile =
-                            { Commit = String.Empty
+                            { Commit = path
                               Owner = domain
-                              Origin = HttpLink(state.RemoteUrl.Value + path)
-                              Project = domain
+                              Origin = HttpLink(state.RemoteUrl.Value)
+                              Project = ""
                               Dependencies = Set.empty
                               Name = name } 
 
@@ -244,9 +244,7 @@ module LockFileParser =
                                             Project = project + "/" + String.Join("/",moredetails)
                                             Dependencies = Set.empty
                                             Name = details } :: state.SourceFiles }
-                    | _ ->  failwith "invalid remote details."
-            )
-
+                    | _ ->  failwith "invalid remote details.")
 
 
 /// Allows to parse and analyze paket.lock files.

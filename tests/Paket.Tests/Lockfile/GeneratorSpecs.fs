@@ -4,6 +4,7 @@ open Paket
 open NUnit.Framework
 open FsUnit
 open TestHelpers
+open Paket.ModuleResolver
 
 let config1 = """
 source "http://nuget.org/api/v2"
@@ -214,7 +215,25 @@ http http://nlp.stanford.edu/software/stanford-segmenter-2014-10-26.zip"""
 
     let cfg = DependenciesFile.FromCode(config)
 
-    cfg.RemoteFiles
-    |> List.map trivialResolve
+    let references =
+        cfg.RemoteFiles
+        |> List.map trivialResolve
+    
+    references.Length |> shouldEqual 6
+
+    references.[5].Origin |> shouldEqual (SingleSourceFileOrigin.HttpLink("http://nlp.stanford.edu"))
+    references.[5].Commit |> shouldEqual ("/software/stanford-segmenter-2014-10-26.zip")  // That's strange
+    references.[5].Name |> shouldEqual "stanford-segmenter-2014-10-26.zip"  
+
+    references
+    |> LockFileSerializer.serializeSourceFiles
+    |> shouldEqual (normalizeLineEndings expectedForStanfordNLPdotNET)
+
+[<Test>]
+let ``should parse and regenerate http Stanford.NLP.NET project``() =
+    let lockFile = LockFileParser.Parse(toLines expectedForStanfordNLPdotNET)
+    
+    lockFile.SourceFiles
+    |> List.rev
     |> LockFileSerializer.serializeSourceFiles
     |> shouldEqual (normalizeLineEndings expectedForStanfordNLPdotNET)

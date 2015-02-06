@@ -287,66 +287,7 @@ let ``should parse lock file for http Stanford.NLP.NET project``() =
 
     references.Length |> shouldEqual 6
 
-    references.[0].Origin |> shouldEqual (SingleSourceFileOrigin.HttpLink("http://nlp.stanford.edu/software/stanford-segmenter-2014-10-26.zip"))
+    references.[0].Origin |> shouldEqual (SingleSourceFileOrigin.HttpLink("http://nlp.stanford.edu"))
+    references.[0].Commit |> shouldEqual ("/software/stanford-segmenter-2014-10-26.zip")  // That's strange
+    references.[0].Project |> shouldEqual ""
     references.[0].Name |> shouldEqual "stanford-segmenter-2014-10-26.zip"  
-    
-    ()
-
-let realWorldHTTP = """
-NUGET
-  remote: https://nuget.org/api/v2
-  specs:
-    Costura.Fody (1.3.3.0)
-      Fody (>= 1.26.1)
-    dotNetRDF (1.0.6.3421)
-      HtmlAgilityPack (>= 1.4.6)
-      Newtonsoft.Json (>= 6.0.3)
-      VDS.Common (1.3.0)
-    Eto.Parse (1.3.1.0)
-    FakeItEasy (1.25.1)
-    Fody (1.26.4)
-    gitlink (2.1.0)
-    HtmlAgilityPack (1.4.6)
-    ImpromptuInterface (6.2.2)
-    InfoOf.Fody (0.11.2.0)
-      Fody
-    json-ld.net (1.0.4)
-      Newtonsoft.Json (>= 4.0.1)
-    MethodTimer.Fody (1.15.2.0)
-      Fody
-    MSBuildTasks (1.4.0.88)
-    Newtonsoft.Json (6.0.7)
-    NullGuard.Fody (1.2.0.0)
-      Fody
-    NUnit (2.6.4)
-    SpecFlow (1.9.0)
-    StyleCop.MSBuild (4.7.49.0)
-    StyleCopPlus.MSBuild (4.7.49.5)
-      StyleCop.MSBuild (>= 4.7.49.0)
-    VDS.Common (1.3.0)
-    Zoltu.Versioning (1.2.15.0)
-GITHUB
-  remote: tpluscode/FileVersionExtractor
-  specs:
-    FULLPROJECT (b1126aa31f362d0cd1e19e7abe1acd30da35ab6a)
-HTTP
-  remote: http://www.w3.org/2013/N-QuadsTests/TESTS.zip
-  specs:
-    TESTS.zip
-  remote: https://gist.githubusercontent.com
-  specs:
-    paket.txt (/JonCanning/37769e635aaece6dcef3/raw/adffa54dd02f94e5b06667700ef44e1a5feded73/paket.txt)
-"""
-
-[<Test>]
-let ``should parse real world http reference``() = 
-    let lockFile = LockFileParser.Parse(toLines realWorldHTTP)
-    let references = lockFile.SourceFiles
-
-    references.Length |> shouldEqual 3
-    
-    references.[0].Origin |> shouldEqual (SingleSourceFileOrigin.HttpLink("https://gist.githubusercontent.com/JonCanning/37769e635aaece6dcef3/raw/adffa54dd02f94e5b06667700ef44e1a5feded73/paket.txt"))
-    references.[0].Name |> shouldEqual "paket.txt"  
-
-    references.[1].Name |> shouldEqual "TESTS.zip"  
-    references.[1].Origin |> shouldEqual (SingleSourceFileOrigin.HttpLink("http://www.w3.org/2013/N-QuadsTests/TESTS.zip"))

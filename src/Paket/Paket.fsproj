@@ -27,7 +27,7 @@
     <WarningLevel>3</WarningLevel>
     <DocumentationFile>
     </DocumentationFile>
-    <StartArguments>update</StartArguments>
+    <StartArguments>install</StartArguments>
     <StartAction>Project</StartAction>
     <StartProgram>paket.exe</StartProgram>
     <StartWorkingDirectory>d:\code\paketkopie</StartWorkingDirectory>
