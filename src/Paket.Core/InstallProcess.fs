@@ -159,8 +159,8 @@ let InstallIntoProjects(sources,force, hard, withBindingRedirects, lockFile:Lock
         removeCopiedFiles project
 
         let getSingleRemoteFilePath name = 
-            tracefn "Filename %s " name
-            lockFile.SourceFiles |> List.iter (fun i -> tracefn " %s %s " i.Name  i.FilePath)
+            traceVerbose <| sprintf "Filename %s " name
+            lockFile.SourceFiles |> List.iter (fun i -> traceVerbose <| sprintf " %s %s " i.Name i.FilePath)
             let sourceFile = lockFile.SourceFiles |> List.tryFind (fun f -> Path.GetFileName(f.Name) = name)
             match sourceFile with
             | Some file -> file.FilePath
