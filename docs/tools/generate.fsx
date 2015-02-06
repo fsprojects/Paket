@@ -29,15 +29,9 @@ let info =
 // For typical project, no changes are needed below
 // --------------------------------------------------------------------------------------
 
-#I "../../packages/FSharp.Formatting/lib/net40"
-#I "../../packages/FSharp.Compiler.Service/lib/net40"
+#load "../../packages/FSharp.Formatting/FSharp.Formatting.fsx"
 #r "../../packages/FAKE/tools/NuGet.Core.dll"
 #r "../../packages/FAKE/tools/FakeLib.dll"
-#r "System.Web.Razor.dll"
-#r "RazorEngine.dll"
-#r "FSharp.Literate.dll"
-#r "FSharp.CodeFormat.dll"
-#r "FSharp.MetadataFormat.dll"
 open Fake
 open System.IO
 open Fake.FileHelper
