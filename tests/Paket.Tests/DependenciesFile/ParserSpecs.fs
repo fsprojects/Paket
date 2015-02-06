@@ -51,15 +51,14 @@ let ``should read simple config``() =
 let config2 = """
 source "http://nuget.org/api/v2"
 
-printfn "hello world from config"
-
+// this rocks
 nuget "FAKE" "~> 3.0"
 nuget "Rx-Main" "~> 2.2"
 nuget "MinPackage" "1.1.3"
 """
 
 [<Test>]
-let ``should read simple config with additional F# code``() = 
+let ``should read simple config with additional comment``() = 
     let cfg = DependenciesFile.FromCode(config2)
     cfg.DirectDependencies.[PackageName "Rx-Main"].Range |> shouldEqual (VersionRange.Between("2.2", "3.0"))
     cfg.DirectDependencies.[PackageName "FAKE"].Range |> shouldEqual (VersionRange.Between("3.0", "4.0"))
@@ -508,7 +507,7 @@ let ``should read config with framework restriction``() =
 
 
 let configWithInvalidPrereleaseString = """
-    nuget Plossum.CommandLine !0.3.0.14
+    nuget Plossum.CommandLine !0.3.0.14    
 """
 
 [<Test>]
@@ -518,3 +517,15 @@ let ``should report error on invalid prerelease string``() =
         failwith "error"
     with
     | exn -> Assert.IsTrue(exn.Message.Contains("Invalid prerelease version !0.3.0.14")) |> ignore
+
+let html = """
+<!DOCTYPE html><html><head></head></html>"
+"""
+
+[<Test>]
+let ``should not read hhtml``() = 
+    try
+        DependenciesFile.FromCode(html) |> ignore
+        failwith "error"
+    with
+    | exn -> Assert.IsTrue(exn.Message.Contains"Unrecognized token")

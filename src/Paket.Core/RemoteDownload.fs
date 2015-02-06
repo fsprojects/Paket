@@ -31,8 +31,8 @@ let private rawFileUrl owner project branch fileName =
 let private rawGistFileUrl owner project fileName =
     sprintf "https://gist.githubusercontent.com/%s/%s/raw/%s" owner project fileName
 
-/// Gets a dependencies file from github.
-let downloadDependenciesFile(rootPath,remoteFile:ModuleResolver.ResolvedSourceFile) = async {
+/// Gets a dependencies file from the remote source and tries to parse it.
+let downloadDependenciesFile(rootPath,parserF,remoteFile:ModuleResolver.ResolvedSourceFile) = async {
     let fi = FileInfo(remoteFile.Name)
 
     let dependenciesFileName = remoteFile.Name.Replace(fi.Name,Constants.DependenciesFileName)
@@ -47,13 +47,13 @@ let downloadDependenciesFile(rootPath,remoteFile:ModuleResolver.ResolvedSourceFi
     let! result = safeGetFromUrl(None,url)
 
     match result with
-    | Some text ->
+    | Some text when parserF text ->        
         let destination = Path.Combine(rootPath, remoteFile.ComputeFilePath(dependenciesFileName))
 
         Directory.CreateDirectory(destination |> Path.GetDirectoryName) |> ignore
         File.WriteAllText(destination, text)
         return text
-    | None -> return "" }
+    | _ -> return "" }
 
 
 let ExtractZip(fileName : string, targetFolder) = 
@@ -113,8 +113,10 @@ let downloadRemoteFiles(remoteFile:ResolvedSourceFile,destination) = async {
 
         let source = Path.Combine(projectPath, sprintf "%s-%s" remoteFile.Project remoteFile.Commit)
         DirectoryCopy(source,projectPath,true)        
-    | SingleSourceFileOrigin.GistLink, _ ->  return! downloadFromUrl(None,rawGistFileUrl remoteFile.Owner remoteFile.Project remoteFile.Name) destination
-    | SingleSourceFileOrigin.GitHubLink, _ -> return! downloadFromUrl(None,rawFileUrl remoteFile.Owner remoteFile.Project remoteFile.Commit remoteFile.Name) destination
+    | SingleSourceFileOrigin.GistLink, _ -> 
+        return! downloadFromUrl(None,rawGistFileUrl remoteFile.Owner remoteFile.Project remoteFile.Name) destination
+    | SingleSourceFileOrigin.GitHubLink, _ ->
+        return! downloadFromUrl(None,rawFileUrl remoteFile.Owner remoteFile.Project remoteFile.Commit remoteFile.Name) destination
     | SingleSourceFileOrigin.HttpLink(origin), _ ->
         let url = origin + remoteFile.Commit
         do! downloadFromUrl(None, url) destination

@@ -34,7 +34,7 @@ let ExtractPackage(root, sources, force, package : ResolvedPackage) =
             return package, NuGetV2.GetLibFiles folder, NuGetV2.GetTargetsFiles folder
     }
 
-/// Retores the given packages from the lock file.
+/// Restores the given dependencies from the lock file.
 let internal restore(root, sources, force, lockFile:LockFile, packages:Set<NormalizedPackageName>) = 
     let sourceFileDownloads = RemoteDownload.DownloadSourceFiles(Path.GetDirectoryName lockFile.FileName, lockFile.SourceFiles)
 

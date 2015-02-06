@@ -167,7 +167,9 @@ module DependenciesFileParser =
             SourceFile(``parse git source`` trimmed SingleSourceFileOrigin.GitHubLink "github")
         | String.StartsWith "http" _ as trimmed  ->
             SourceFile(``parse http source`` trimmed)
-        | _ -> Blank
+        | line when String.IsNullOrWhiteSpace line -> Blank
+        | String.StartsWith "//" _ -> Blank
+        | _ -> failwithf "Unrecognized token: %s" line
     
     let parseDependenciesFile fileName (lines:string seq) = 
         ((0, InstallOptions.Default, [], [], []), lines)
@@ -264,7 +266,14 @@ type DependenciesFile(fileName,options,sources,packages : PackageRequirement lis
 
     member __.Resolve(getSha1,getVersionF, getPackageDetailsF) =
         let resolveSourceFile(file:ResolvedSourceFile) : PackageRequirement list =
-            RemoteDownload.downloadDependenciesFile(Path.GetDirectoryName fileName, file)
+            let parserF text =
+                try
+                    DependenciesFile.FromCode(text) |> ignore
+                    true
+                with 
+                | _ -> false
+
+            RemoteDownload.downloadDependenciesFile(Path.GetDirectoryName fileName,parserF, file)
             |> Async.RunSynchronously
             |> DependenciesFile.FromCode
             |> fun df -> df.Packages
