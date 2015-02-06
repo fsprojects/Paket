@@ -41,7 +41,7 @@ type ProjectFile =
     member private this.FindPaketPrefixNodes() = 
         let rec subNodes (node:XmlNode) =
             [for node in node.ChildNodes do
-                if node.Name.StartsWith("__paket__") || (node.Name = "Import" && node.Attributes.["Project"].Value.Contains("__paket__")) then
+                if node.Name.Contains("__paket__") || (node.Name = "Import" && node.Attributes.["Project"].Value.Contains("__paket__")) then
                     yield node
                 yield! subNodes node]
 
@@ -259,7 +259,7 @@ type ProjectFile =
                         node
                         |> propertyGroup.AppendChild 
                         |> ignore
-                        Some(propertyName,path.Substring(0,path.LastIndexOf("build\\"))))
+                        Some(propertyName,path.Substring(0,path.LastIndexOf("build\\") + 6)))
                 |> Set.ofSeq
                     
             propertyNames,propertyGroup
