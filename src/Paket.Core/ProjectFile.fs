@@ -251,13 +251,15 @@ type ProjectFile =
                     | Reference.TargetsFile targetsFile -> 
                         let fi = new FileInfo(normalizePath targetsFile)
                         let propertyName = "__paket__" + fi.Name.ToString().Replace(" ","_").Replace(".","_")
-
+                        
+                        let path = createRelativePath this.FileName (fi.FullName.Replace(fi.Extension,""))
+                        let s = path.Substring(path.LastIndexOf("build\\") + 6)
                         let node = this.CreateNode propertyName
-                        node.InnerText <- createRelativePath this.FileName fi.FullName
+                        node.InnerText <- s
                         node
                         |> propertyGroup.AppendChild 
                         |> ignore
-                        Some(propertyName))
+                        Some(propertyName,path.Substring(0,path.LastIndexOf("build\\"))))
                 |> Set.ofSeq
                     
             propertyNames,propertyGroup
@@ -292,10 +294,15 @@ type ProjectFile =
             conditions
             |> List.map (fun (_,_,(propertyNames,_)) -> propertyNames)
             |> Set.unionMany
-            |> Seq.map (fun propertyName -> 
+            |> Seq.map (fun (propertyName,buildPath) -> 
+                let fileName = 
+                    if buildPath.ToLower().EndsWith "props" then
+                        sprintf "%s$(%s).props" buildPath propertyName 
+                    else
+                        sprintf "%s$(%s).targets" buildPath propertyName 
                 this.CreateNode("Import")
-                |> addAttribute "Project" (sprintf "$(%s)" propertyName)
-                |> addAttribute "Condition" (sprintf "Exists('$(%s)')" propertyName))
+                |> addAttribute "Project" fileName
+                |> addAttribute "Condition" (sprintf "Exists('%s')" fileName))
             |> Seq.toList
 
         propertyNameNodes,chooseNode,additionalPropertyGroup

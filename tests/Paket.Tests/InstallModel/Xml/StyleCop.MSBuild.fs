@@ -9,11 +9,11 @@ open Paket.Requirements
 
 let expected = """<?xml version="1.0" encoding="utf-16"?>
 <PropertyGroup xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <__paket__StyleCop_MSBuild_Targets>..\..\..\StyleCop.MSBuild\build\StyleCop.MSBuild.Targets</__paket__StyleCop_MSBuild_Targets>
+  <__paket__StyleCop_MSBuild_Targets>StyleCop.MSBuild</__paket__StyleCop_MSBuild_Targets>
 </PropertyGroup>"""
 
 let expectedPropertyNdoes = """<?xml version="1.0" encoding="utf-16"?>
-<Import Project="$(__paket__StyleCop_MSBuild_Targets)" Condition="Exists('$(__paket__StyleCop_MSBuild_Targets)')" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" />"""
+<Import Project="..\..\..\StyleCop.MSBuild\$(__paket__StyleCop_MSBuild_Targets).targets" Condition="Exists('..\..\..\StyleCop.MSBuild\$(__paket__StyleCop_MSBuild_Targets).targets')" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" />"""
 
 [<Test>]
 let ``should generate Xml for StyleCop.MSBuild``() = 

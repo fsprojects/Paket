@@ -18,13 +18,13 @@ let expected = """<?xml version="1.0" encoding="utf-16"?>
       </Reference>
     </ItemGroup>
     <PropertyGroup>
-      <__paket__LibGit2Sharp_props>..\..\..\LibGit2Sharp\build\net40\LibGit2Sharp.props</__paket__LibGit2Sharp_props>
+      <__paket__LibGit2Sharp_props>net40\LibGit2Sharp</__paket__LibGit2Sharp_props>
     </PropertyGroup>
   </When>
 </Choose>"""
 
 let expectedPropertyNdoes = """<?xml version="1.0" encoding="utf-16"?>
-<Import Project="$(__paket__LibGit2Sharp_props)" Condition="Exists('$(__paket__LibGit2Sharp_props)')" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" />"""
+<Import Project="..\..\..\LibGit2Sharp\$(__paket__LibGit2Sharp_props).targets" Condition="Exists('..\..\..\LibGit2Sharp\$(__paket__LibGit2Sharp_props).targets')" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" />"""
 
 [<Test>]
 let ``should generate Xml for LibGit2Sharp 2.0.0``() = 
