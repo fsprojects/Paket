@@ -433,7 +433,7 @@ let ``should not install tools``() =
               @"..\FAKE\tools\FakeLib.dll" 
               @"..\FAKE\tools\Fake.SQL.dll" ])
 
-    model.LibFolders
+    model.ReferenceFileFolders
     |> Seq.forall (fun folder -> folder.Files.References.IsEmpty)
     |> shouldEqual true
 

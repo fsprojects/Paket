@@ -265,21 +265,25 @@ type ProjectFile =
             propertyNames,propertyGroup
 
         let conditions =
-            model.LibFolders
-            |> List.map (fun lib -> PlatformMatching.getCondition lib.Targets,createItemGroup lib.Files.References,createPropertyGroup lib.Files.References)
-            |> List.sortBy (fun (x,_,_) -> x)
+            model.ReferenceFileFolders
+            |> List.map (fun lib -> PlatformMatching.getCondition lib.Targets,createItemGroup lib.Files.References)
+            |> List.sortBy fst
 
-        let chooseNode,propertyNames,propertyChooseNode =
+        let targetsFileConditions =
+            model.TargetsFileFolders
+            |> List.map (fun lib -> PlatformMatching.getCondition lib.Targets,createPropertyGroup lib.Files.References)
+            |> List.sortBy fst
+
+        let chooseNode =
             match conditions with
-            |  ["$(TargetFrameworkIdentifier) == 'true'",itemGroup,(propertyNames,propertyGroup)] ->                
-                itemGroup,[propertyNames],propertyGroup
+            |  ["$(TargetFrameworkIdentifier) == 'true'",itemGroup] -> itemGroup
             |  _ ->
                 let chooseNode = this.CreateNode("Choose")
 
                 let containsReferences = ref false
 
                 conditions
-                |> List.map (fun (condition,itemGroup,(propertyNames,propertyGroup)) ->
+                |> List.map (fun (condition,itemGroup) ->
                     let whenNode = 
                         this.CreateNode("When")
                         |> addAttribute "Condition" condition 
@@ -288,13 +292,20 @@ type ProjectFile =
                         whenNode.AppendChild(itemGroup) |> ignore
                         containsReferences := true
                     whenNode)
-                |> List.iter(fun node -> chooseNode.AppendChild(node) |> ignore)
+                |> List.iter(fun node -> chooseNode.AppendChild(node) |> ignore)              
+                                
+                if !containsReferences then chooseNode else this.CreateNode("Choose")
 
+        let propertyNames,propertyChooseNode =
+            match targetsFileConditions with
+            |  ["$(TargetFrameworkIdentifier) == 'true'",(propertyNames,propertyGroup)] ->
+                [propertyNames],propertyGroup
+            |  _ ->
                 let propertyChooseNode = this.CreateNode("Choose")
 
                 let containsProperties = ref false
-                conditions
-                |> List.map (fun (condition,itemGroup,(propertyNames,propertyGroup)) ->
+                targetsFileConditions
+                |> List.map (fun (condition,(propertyNames,propertyGroup)) ->
                     let whenNode = 
                         this.CreateNode("When")
                         |> addAttribute "Condition" condition 
@@ -302,12 +313,10 @@ type ProjectFile =
                         whenNode.AppendChild(propertyGroup) |> ignore
                         containsProperties := true
                     whenNode)
-                |> List.iter(fun node -> propertyChooseNode.AppendChild(node) |> ignore)
-                                
-                                
-                (if !containsReferences then chooseNode else this.CreateNode("Choose")),
-                 (conditions |> List.map (fun (_,_,(propertyNames,_)) -> propertyNames)),
-                 (if !containsProperties then propertyChooseNode else this.CreateNode("Choose"))
+                |> List.iter(fun node -> propertyChooseNode.AppendChild(node) |> ignore)                                                               
+                
+                (targetsFileConditions |> List.map (fun (_,(propertyNames,_)) -> propertyNames)),
+                (if !containsProperties then propertyChooseNode else this.CreateNode("Choose"))
                 
 
         let propertyNameNodes = 

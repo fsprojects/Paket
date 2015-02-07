@@ -84,20 +84,22 @@ type LibFolder =
 type InstallModel = 
     { PackageName : PackageName
       PackageVersion : SemVerInfo
-      LibFolders : LibFolder list }
+      ReferenceFileFolders : LibFolder list
+      TargetsFileFolders : LibFolder list }
 
     static member EmptyModel(packageName, packageVersion) : InstallModel = 
         { PackageName = packageName
           PackageVersion = packageVersion
-          LibFolders = [] }
+          ReferenceFileFolders = []
+          TargetsFileFolders = [] }
    
     member this.GetTargets() = 
-        this.LibFolders
+        this.ReferenceFileFolders
         |> List.map (fun folder -> folder.Targets)
         |> List.concat
     
     member this.GetFiles(target : TargetProfile) = 
-        match Seq.tryFind (fun lib -> Seq.exists (fun t -> t = target) lib.Targets) this.LibFolders with
+        match Seq.tryFind (fun lib -> Seq.exists (fun t -> t = target) lib.Targets) this.ReferenceFileFolders with
         | Some folder -> folder.Files.References
                          |> Set.map (fun x -> 
                                 match x with
@@ -107,7 +109,7 @@ type InstallModel =
         | None -> Seq.empty
 
     member this.GetTargetsFiles(target : TargetProfile) = 
-        match Seq.tryFind (fun lib -> Seq.exists (fun t -> t = target) lib.Targets) this.LibFolders with
+        match Seq.tryFind (fun lib -> Seq.exists (fun t -> t = target) lib.Targets) this.TargetsFileFolders with
         | Some folder -> folder.Files.References
                          |> Set.map (fun x -> 
                                 match x with
@@ -121,38 +123,35 @@ type InstallModel =
             libs 
             |> Seq.map this.ExtractLibFolder
             |> Seq.choose id
+            |> Seq.distinct 
+            |> List.ofSeq
+            |> PlatformMatching.getSupportedTargetProfiles 
+            |> Seq.map (fun entry -> { Name = entry.Key; Targets = entry.Value; Files = InstallFiles.empty })
+            |> Seq.toList
 
         let targetsFileFolders = 
             targetsFiles 
             |> Seq.map this.ExtractBuildFolder
             |> Seq.choose id
-
-        let allFolders = 
-            libFolders
-            |> Seq.append targetsFileFolders
             |> Seq.distinct 
             |> List.ofSeq
-
-        if allFolders.Length = 0 then this else
-        let libFolders =
-            PlatformMatching.getSupportedTargetProfiles allFolders
+            |> PlatformMatching.getSupportedTargetProfiles 
             |> Seq.map (fun entry -> { Name = entry.Key; Targets = entry.Value; Files = InstallFiles.empty })
-            |> Seq.toList
-
+            |> Seq.toList            
 
         let modelWithReferences =
             Seq.fold (fun (model:InstallModel) file ->
                         match model.ExtractLibFolder file with
                         | Some folderName -> 
-                            match Seq.tryFind (fun folder -> folder.Name = folderName) model.LibFolders with
+                            match Seq.tryFind (fun folder -> folder.Name = folderName) model.ReferenceFileFolders with
                             | Some path -> model.AddPackageFile(path, file, references)
                             | _ -> model
-                        | None -> model) { this with LibFolders = libFolders} libs
+                        | None -> model) { this with ReferenceFileFolders = libFolders; TargetsFileFolders = targetsFileFolders } libs
 
         Seq.fold (fun model file ->
                     match model.ExtractBuildFolder file with
                     | Some folderName -> 
-                        match Seq.tryFind (fun folder -> folder.Name = folderName) model.LibFolders with
+                        match Seq.tryFind (fun folder -> folder.Name = folderName) model.TargetsFileFolders with
                         | Some path -> model.AddTargetsFile(path, file)
                         | _ -> model
                     | None -> model) modelWithReferences targetsFiles
@@ -162,7 +161,7 @@ type InstallModel =
 
     member this.ExtractBuildFolder path = Utils.extractPath "build" path
 
-    member this.MapFolders(mapF) = { this with LibFolders = List.map mapF this.LibFolders }
+    member this.MapFolders(mapF) = { this with ReferenceFileFolders = List.map mapF this.ReferenceFileFolders; TargetsFileFolders = List.map mapF this.TargetsFileFolders  }
     
     member this.MapFiles(mapF) = 
         this.MapFolders(fun folder -> { folder with Files = mapF folder.Files })
@@ -176,20 +175,20 @@ type InstallModel =
         if not install then this else
         
         let folders = 
-            this.LibFolders
+            this.ReferenceFileFolders
             |> List.map (fun p -> 
                                if p.Name = path.Name then { p with Files = p.Files.AddReference file }
                                else p)
 
-        { this with LibFolders = folders }
+        { this with ReferenceFileFolders = folders }
 
     member this.AddTargetsFile(path : LibFolder, file : string) : InstallModel =        
         let folders = 
-            this.LibFolders
+            this.TargetsFileFolders
             |> List.map (fun p -> 
                                if p.Name = path.Name then { p with Files = p.Files.AddTargetsFile file }
                                else p) 
-        { this with LibFolders = folders }
+        { this with TargetsFileFolders = folders }
     
     member this.AddReferences(libs) = this.AddReferences(libs,[], NuspecReferences.All)
     
@@ -246,8 +245,13 @@ type InstallModel =
         this.MapFiles(fun files -> mapF files)
 
     member this.GetReferences = 
-        lazy ([ for lib in this.LibFolders do
-                    yield! lib.Files.References]                    
+        lazy ([ for lib in this.ReferenceFileFolders do
+                    yield! lib.Files.References] 
+              |> Set.ofList)
+
+    member this.GetTargetsFilesLazy = 
+        lazy ([ for lib in this.TargetsFileFolders do
+                    yield! lib.Files.References] 
               |> Set.ofList)
     
     member this.GetReferenceNames() = 
@@ -274,18 +278,23 @@ type InstallModel =
                              | _ -> false) }                
 
             {this with 
-                LibFolders = 
-                    this.LibFolders
+                ReferenceFileFolders = 
+                    this.ReferenceFileFolders
                     |> List.map applRestriction
-                    |> List.filter (fun folder -> folder.Targets <> [])}    
+                    |> List.filter (fun folder -> folder.Targets <> []) 
+
+                TargetsFileFolders = 
+                    this.TargetsFileFolders
+                    |> List.map applRestriction
+                    |> List.filter (fun folder -> folder.Targets <> [])                     }    
 
     member this.GetFrameworkAssemblies = 
-        lazy ([ for lib in this.LibFolders do
+        lazy ([ for lib in this.ReferenceFileFolders do
                     yield! lib.Files.GetFrameworkAssemblies()]
               |> Set.ofList)
 
     member this.RemoveIfCompletelyEmpty() = 
-        if Set.isEmpty (this.GetFrameworkAssemblies.Force()) && Set.isEmpty (this.GetReferences.Force()) then
+        if Set.isEmpty (this.GetFrameworkAssemblies.Force()) && Set.isEmpty (this.GetReferences.Force()) && Set.isEmpty (this.GetTargetsFilesLazy.Force()) then
             InstallModel.EmptyModel(this.PackageName,this.PackageVersion)
         else
             this

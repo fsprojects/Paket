@@ -212,6 +212,7 @@
     <Compile Include="InstallModel\Xml\xunit.runner.fs" />
     <Compile Include="InstallModel\Xml\StyleCop.MSBuild.fs" />
     <Compile Include="InstallModel\Xml\SQLite.fs" />
+    <Compile Include="InstallModel\Xml\GitInfoPlanter.fs" />
     <Compile Include="InstallModel\Xml\LibGit2Sharp.fs" />
     <Compile Include="InstallModel\Xml\Plossum.fs" />
     <Compile Include="InstallModel\Xml\System.Spatial.fs" />
