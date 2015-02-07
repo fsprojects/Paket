@@ -94,7 +94,7 @@ type InstallModel =
           ReferenceFileFolders = []
           TargetsFileFolders = [] }
     
-    member this.GetFiles(target : TargetProfile) = 
+    member this.GetLibReferences(target : TargetProfile) = 
         match Seq.tryFind (fun lib -> Seq.exists (fun t -> t = target) lib.Targets) this.ReferenceFileFolders with
         | Some folder -> folder.Files.References
                          |> Set.map (fun x -> 
@@ -240,20 +240,6 @@ type InstallModel =
         let inline mapF (files:InstallFiles) = {files with References = files.References |> Set.filter (fun reference -> Set.contains reference.ReferenceName references |> not) }
         this.MapFiles(fun files -> mapF files)
 
-    member this.GetReferences = 
-        lazy ([ for lib in this.ReferenceFileFolders do
-                    yield! lib.Files.References] 
-              |> Set.ofList)
-
-    member this.GetTargetsFilesLazy = 
-        lazy ([ for lib in this.TargetsFileFolders do
-                    yield! lib.Files.References] 
-              |> Set.ofList)
-    
-    member this.GetReferenceNames() = 
-        this.GetReferences.Force()
-        |> Set.map (fun lib -> lib.ReferenceName)
-
     member this.ApplyFrameworkRestrictions(restrictions:FrameworkRestrictions) =
         match restrictions with
         | [] -> this
@@ -284,13 +270,23 @@ type InstallModel =
                     |> List.map applRestriction
                     |> List.filter (fun folder -> folder.Targets <> [])                     }    
 
-    member this.GetFrameworkAssemblies = 
+    member this.GetFrameworkAssembliesLazy = 
         lazy ([ for lib in this.ReferenceFileFolders do
                     yield! lib.Files.GetFrameworkAssemblies()]
               |> Set.ofList)
 
+    member this.GetLibReferencesLazy = 
+        lazy ([ for lib in this.ReferenceFileFolders do
+                    yield! lib.Files.References] 
+              |> Set.ofList)
+
+    member this.GetTargetsFilesLazy = 
+        lazy ([ for lib in this.TargetsFileFolders do
+                    yield! lib.Files.References] 
+              |> Set.ofList)
+
     member this.RemoveIfCompletelyEmpty() = 
-        if Set.isEmpty (this.GetFrameworkAssemblies.Force()) && Set.isEmpty (this.GetReferences.Force()) && Set.isEmpty (this.GetTargetsFilesLazy.Force()) then
+        if Set.isEmpty (this.GetFrameworkAssembliesLazy.Force()) && Set.isEmpty (this.GetLibReferencesLazy.Force()) && Set.isEmpty (this.GetTargetsFilesLazy.Force()) then
             InstallModel.EmptyModel(this.PackageName,this.PackageVersion)
         else
             this

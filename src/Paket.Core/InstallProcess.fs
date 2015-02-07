@@ -98,7 +98,7 @@ let createModel(root, sources,force, lockFile:LockFile) =
 /// Applies binding redirects for all strong-named references to all app. and web. config files.
 let private applyBindingRedirects root extractedPackages =
     extractedPackages
-    |> Seq.map(fun (package, model:InstallModel) -> model.GetReferences.Force())
+    |> Seq.map(fun (package, model:InstallModel) -> model.GetLibReferencesLazy.Force())
     |> Set.unionMany
     |> Seq.choose(function | Reference.Library path -> Some path | _-> None)
     |> Seq.groupBy (fun p -> FileInfo(p).Name)

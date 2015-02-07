@@ -185,7 +185,9 @@ type ProjectFile =
         this.DeleteIfEmpty("Choose")
 
     member this.GetCustomModelNodes(model:InstallModel) =
-        let libs = model.GetReferenceNames()
+        let libs =
+            model.GetLibReferencesLazy.Force()
+            |> Set.map (fun lib -> lib.ReferenceName)
         
         this.GetCustomReferenceAndFrameworkNodes()
         |> List.filter (fun node -> Set.contains (node.Attributes.["Include"].InnerText.Split(',').[0]) libs)
