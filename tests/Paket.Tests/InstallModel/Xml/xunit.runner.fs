@@ -7,7 +7,13 @@ open Paket.TestHelpers
 open Paket.Domain
 open Paket.Requirements
 
-let expected = """<?xml version="1.0" encoding="utf-16"?>
+let emptyReferenceNodes = """<?xml version="1.0" encoding="utf-16"?>
+<Choose xmlns="http://schemas.microsoft.com/developer/msbuild/2003" />"""
+
+let expectedPropertyNodes = """<?xml version="1.0" encoding="utf-16"?>
+<Import Project="..\..\..\xunit.runner.visualstudio\build\$(__paket__xunit_runner_visualstudio_props).props" Condition="Exists('..\..\..\xunit.runner.visualstudio\build\$(__paket__xunit_runner_visualstudio_props).props')" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" />"""
+
+let expectedPropertyDefinitionNodes = """<?xml version="1.0" encoding="utf-16"?>
 <Choose xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <When Condition="($(TargetFrameworkIdentifier) == '.NETFramework' And ($(TargetFrameworkVersion) == 'v2.0' Or $(TargetFrameworkVersion) == 'v3.0' Or $(TargetFrameworkVersion) == 'v3.5' Or $(TargetFrameworkVersion) == 'v4.0' Or $(TargetFrameworkVersion) == 'v4.5' Or $(TargetFrameworkVersion) == 'v4.5.1' Or $(TargetFrameworkVersion) == 'v4.5.2' Or $(TargetFrameworkVersion) == 'v4.5.3')) Or ($(TargetFrameworkIdentifier) == 'MonoAndroid') Or ($(TargetFrameworkIdentifier) == 'MonoTouch')">
     <PropertyGroup>
@@ -21,9 +27,6 @@ let expected = """<?xml version="1.0" encoding="utf-16"?>
   </When>
 </Choose>"""
 
-let expectedPropertyNdoes = """<?xml version="1.0" encoding="utf-16"?>
-<Import Project="..\..\..\xunit.runner.visualstudio\build\$(__paket__xunit_runner_visualstudio_props).props" Condition="Exists('..\..\..\xunit.runner.visualstudio\build\$(__paket__xunit_runner_visualstudio_props).props')" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" />"""
-
 [<Test>]
 let ``should generate Xml for xunit.runner.visualstudio 2.0.0``() = 
     let model =
@@ -32,15 +35,17 @@ let ``should generate Xml for xunit.runner.visualstudio 2.0.0``() =
               @"..\xunit.runner.visualstudio\build\portable-net45+aspnetcore50+win+wpa81+wp80+monotouch+monoandroid\xunit.runner.visualstudio.props"  ],
               Nuspec.All)
     
-    let propertyNodes,chooseNode,additionalNode = ProjectFile.Load("./ProjectFile/TestData/Empty.fsprojtest").Value.GenerateXml(model,CopyLocal.True)
+    let propertyNodes,chooseNode,propertyChooseNode = ProjectFile.Load("./ProjectFile/TestData/Empty.fsprojtest").Value.GenerateXml(model,CopyLocal.True)
     chooseNode.OuterXml
     |> normalizeXml
-    |> shouldEqual (normalizeXml expected)
+    |> shouldEqual (normalizeXml emptyReferenceNodes)
 
-    additionalNode |> shouldEqual None
-
+    propertyChooseNode.OuterXml
+    |> normalizeXml
+    |> shouldEqual (normalizeXml expectedPropertyDefinitionNodes)
+    
     propertyNodes |> Seq.length |> shouldEqual 1
 
     (propertyNodes |> Seq.head).OuterXml
     |> normalizeXml
-    |> shouldEqual (normalizeXml expectedPropertyNdoes)
+    |> shouldEqual (normalizeXml expectedPropertyNodes)

@@ -12,7 +12,7 @@ let expected = """<?xml version="1.0" encoding="utf-16"?>
   <__paket__StyleCop_MSBuild_Targets>StyleCop.MSBuild</__paket__StyleCop_MSBuild_Targets>
 </PropertyGroup>"""
 
-let expectedPropertyNdoes = """<?xml version="1.0" encoding="utf-16"?>
+let expectedPropertyNodes = """<?xml version="1.0" encoding="utf-16"?>
 <Import Project="..\..\..\StyleCop.MSBuild\build\$(__paket__StyleCop_MSBuild_Targets).targets" Condition="Exists('..\..\..\StyleCop.MSBuild\build\$(__paket__StyleCop_MSBuild_Targets).targets')" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" />"""
 
 [<Test>]
@@ -22,17 +22,15 @@ let ``should generate Xml for StyleCop.MSBuild``() =
             [ @"..\StyleCop.MSBuild\build\StyleCop.MSBuild.Targets" ],
               Nuspec.All)
     
-    let propertyNodes,chooseNode,additionalNode = ProjectFile.Load("./ProjectFile/TestData/Empty.fsprojtest").Value.GenerateXml(model,CopyLocal.True)
-    match additionalNode with
-    | Some node -> 
-        node.OuterXml
-        |> normalizeXml
-        |> shouldEqual (normalizeXml expected)
-    | None -> failwith "error"
-
+    let propertyNodes,chooseNode,propertyChooseNode = ProjectFile.Load("./ProjectFile/TestData/Empty.fsprojtest").Value.GenerateXml(model,CopyLocal.True)
+    
+    propertyChooseNode.OuterXml
+    |> normalizeXml
+    |> shouldEqual (normalizeXml expected)
+    
     
     propertyNodes |> Seq.length |> shouldEqual 1
 
     (propertyNodes |> Seq.head).OuterXml
     |> normalizeXml
-    |> shouldEqual (normalizeXml expectedPropertyNdoes)
+    |> shouldEqual (normalizeXml expectedPropertyNodes)

@@ -7,7 +7,7 @@ open Paket.TestHelpers
 open Paket.Domain
 open Paket.Requirements
 
-let expected = """<?xml version="1.0" encoding="utf-16"?>
+let expectedReferenceNodes = """<?xml version="1.0" encoding="utf-16"?>
 <Choose xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <When Condition="($(TargetFrameworkIdentifier) == '.NETFramework' And ($(TargetFrameworkVersion) == 'v4.0' Or $(TargetFrameworkVersion) == 'v4.5' Or $(TargetFrameworkVersion) == 'v4.5.1' Or $(TargetFrameworkVersion) == 'v4.5.2' Or $(TargetFrameworkVersion) == 'v4.5.3')) Or ($(TargetFrameworkIdentifier) == 'MonoAndroid') Or ($(TargetFrameworkIdentifier) == 'MonoTouch')">
     <ItemGroup>
@@ -17,13 +17,19 @@ let expected = """<?xml version="1.0" encoding="utf-16"?>
         <Paket>True</Paket>
       </Reference>
     </ItemGroup>
+  </When>
+</Choose>"""
+
+let expectedPropertyDefinitionNodes = """<?xml version="1.0" encoding="utf-16"?>
+<Choose xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <When Condition="($(TargetFrameworkIdentifier) == '.NETFramework' And ($(TargetFrameworkVersion) == 'v4.0' Or $(TargetFrameworkVersion) == 'v4.5' Or $(TargetFrameworkVersion) == 'v4.5.1' Or $(TargetFrameworkVersion) == 'v4.5.2' Or $(TargetFrameworkVersion) == 'v4.5.3')) Or ($(TargetFrameworkIdentifier) == 'MonoAndroid') Or ($(TargetFrameworkIdentifier) == 'MonoTouch')">
     <PropertyGroup>
       <__paket__LibGit2Sharp_props>net40\LibGit2Sharp</__paket__LibGit2Sharp_props>
     </PropertyGroup>
   </When>
 </Choose>"""
 
-let expectedPropertyNdoes = """<?xml version="1.0" encoding="utf-16"?>
+let expectedPropertyNodes = """<?xml version="1.0" encoding="utf-16"?>
 <Import Project="..\..\..\LibGit2Sharp\build\$(__paket__LibGit2Sharp_props).props" Condition="Exists('..\..\..\LibGit2Sharp\build\$(__paket__LibGit2Sharp_props).props')" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" />"""
 
 [<Test>]
@@ -36,15 +42,17 @@ let ``should generate Xml for LibGit2Sharp 2.0.0``() =
     
     model.GetFiles(SinglePlatform (DotNetFramework FrameworkVersion.V4_Client)) |> shouldContain @"..\LibGit2Sharp\lib\net40\LibGit2Sharp.dll"
 
-    let propertyNodes,chooseNode,additionalNode = ProjectFile.Load("./ProjectFile/TestData/Empty.fsprojtest").Value.GenerateXml(model,CopyLocal.True)
+    let propertyNodes,chooseNode,propertyChooseNode = ProjectFile.Load("./ProjectFile/TestData/Empty.fsprojtest").Value.GenerateXml(model,CopyLocal.True)
     chooseNode.OuterXml
     |> normalizeXml
-    |> shouldEqual (normalizeXml expected)
+    |> shouldEqual (normalizeXml expectedReferenceNodes)
 
-    additionalNode |> shouldEqual None
+    propertyChooseNode.OuterXml
+    |> normalizeXml
+    |> shouldEqual (normalizeXml expectedPropertyDefinitionNodes)
 
     propertyNodes |> Seq.length |> shouldEqual 1
 
     (propertyNodes |> Seq.head).OuterXml
     |> normalizeXml
-    |> shouldEqual (normalizeXml expectedPropertyNdoes)
+    |> shouldEqual (normalizeXml expectedPropertyNodes)

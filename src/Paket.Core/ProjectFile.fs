@@ -269,26 +269,44 @@ type ProjectFile =
             |> List.map (fun lib -> PlatformMatching.getCondition lib.Targets,createItemGroup lib.Files.References,createPropertyGroup lib.Files.References)
             |> List.sortBy (fun (x,_,_) -> x)
 
-        let chooseNode,additionalPropertyGroup =
+        let chooseNode,propertyChooseNode =
             match conditions with
-            |  ["$(TargetFrameworkIdentifier) == 'true'",itemGroup,(propertyNames,propertyGroup)] -> itemGroup,if Set.isEmpty propertyNames then None else Some propertyGroup
+            |  ["$(TargetFrameworkIdentifier) == 'true'",itemGroup,(propertyNames,propertyGroup)] -> 
+                itemGroup,propertyGroup
             |  _ ->
                 let chooseNode = this.CreateNode("Choose")
+
+                let containsReferences = ref false
 
                 conditions
                 |> List.map (fun (condition,itemGroup,(propertyNames,propertyGroup)) ->
                     let whenNode = 
                         this.CreateNode("When")
-                        |> addAttribute "Condition" condition                
+                        |> addAttribute "Condition" condition 
                
                     if not itemGroup.IsEmpty then
                         whenNode.AppendChild(itemGroup) |> ignore
-                    if not <| Set.isEmpty propertyNames then
-                        whenNode.AppendChild(propertyGroup) |> ignore
+                        containsReferences := true
                     whenNode)
                 |> List.iter(fun node -> chooseNode.AppendChild(node) |> ignore)
+
+                let propertyChooseNode = this.CreateNode("Choose")
+
+                let containsProperties = ref false
+                conditions
+                |> List.map (fun (condition,itemGroup,(propertyNames,propertyGroup)) ->
+                    let whenNode = 
+                        this.CreateNode("When")
+                        |> addAttribute "Condition" condition 
+                    if not <| Set.isEmpty propertyNames then
+                        whenNode.AppendChild(propertyGroup) |> ignore
+                        containsProperties := true
+                    whenNode)
+                |> List.iter(fun node -> propertyChooseNode.AppendChild(node) |> ignore)
                                 
-                chooseNode,None
+                                
+                (if !containsReferences then chooseNode else this.CreateNode("Choose")),(if !containsProperties then propertyChooseNode else this.CreateNode("Choose"))
+                
 
         let propertyNameNodes = 
             conditions
@@ -305,7 +323,7 @@ type ProjectFile =
                 |> addAttribute "Condition" (sprintf "Exists('%s')" fileName))
             |> Seq.toList
 
-        propertyNameNodes,chooseNode,additionalPropertyGroup
+        propertyNameNodes,chooseNode,propertyChooseNode
         
 
     member this.UpdateReferences(completeModel: Map<NormalizedPackageName,InstallModel>, usedPackages : Map<NormalizedPackageName,PackageInstallSettings>, hard) = 
@@ -328,13 +346,12 @@ type ProjectFile =
                 this.DeleteCustomModelNodes(kv.Value)
             let package = usedPackages.[kv.Key]
             this.GenerateXml(kv.Value,package.CopyLocal))
-        |> Seq.iter (fun (propertyNameNodes,node,additionalPropertyGroup) -> 
-            if node.ChildNodes.Count > 0 then
-                this.ProjectNode.AppendChild node |> ignore
+        |> Seq.iter (fun (propertyNameNodes,chooseNode,propertyChooseNode) -> 
+            if chooseNode.ChildNodes.Count > 0 then
+                this.ProjectNode.AppendChild chooseNode |> ignore
 
-            match additionalPropertyGroup with
-            | Some node -> this.ProjectNode.AppendChild node |> ignore
-            | None -> ()
+            if propertyChooseNode.ChildNodes.Count > 0 then
+                this.ProjectNode.AppendChild propertyChooseNode |> ignore
 
             propertyNameNodes
             |> Seq.iter (this.ProjectNode.AppendChild >> ignore))
