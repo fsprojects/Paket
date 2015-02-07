@@ -10,13 +10,11 @@ open Paket.Requirements
 let emptyReferences = """<?xml version="1.0" encoding="utf-16"?>
 <Choose xmlns="http://schemas.microsoft.com/developer/msbuild/2003" />"""
 
-let expectedPropertyDefinitionNodes = """<?xml version="1.0" encoding="utf-16"?>
-<PropertyGroup xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <__paket__GitInfoPlanter_targets>GitInfoPlanter</__paket__GitInfoPlanter_targets>
-</PropertyGroup>"""
+let emptyPropertyDefinitionNodes = """<?xml version="1.0" encoding="utf-16"?>
+<Choose xmlns="http://schemas.microsoft.com/developer/msbuild/2003" />"""
 
 let expectedPropertyNodes = """<?xml version="1.0" encoding="utf-16"?>
-<Import Project="..\..\..\GitInfoPlanter\build\$(__paket__GitInfoPlanter_targets).targets" Condition="Exists('..\..\..\GitInfoPlanter\build\$(__paket__GitInfoPlanter_targets).targets')" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" />"""
+<Import Project="..\..\..\GitInfoPlanter\build\GitInfoPlanter" Condition="Exists('..\..\..\GitInfoPlanter\build\GitInfoPlanter')" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" />"""
 
 [<Test>]
 let ``should generate Xml for GitInfoPlanter2.0.0``() = 
@@ -33,7 +31,7 @@ let ``should generate Xml for GitInfoPlanter2.0.0``() =
 
     propertyChooseNode.OuterXml
     |> normalizeXml
-    |> shouldEqual (normalizeXml expectedPropertyDefinitionNodes)
+    |> shouldEqual (normalizeXml emptyPropertyDefinitionNodes)
 
     propertyNodes |> Seq.length |> shouldEqual 1
 

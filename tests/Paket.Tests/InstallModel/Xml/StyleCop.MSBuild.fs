@@ -7,13 +7,11 @@ open Paket.TestHelpers
 open Paket.Domain
 open Paket.Requirements
 
-let expected = """<?xml version="1.0" encoding="utf-16"?>
-<PropertyGroup xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <__paket__StyleCop_MSBuild_Targets>StyleCop.MSBuild</__paket__StyleCop_MSBuild_Targets>
-</PropertyGroup>"""
+let emptyPropertyNameNodes = """<?xml version="1.0" encoding="utf-16"?>
+<Choose xmlns="http://schemas.microsoft.com/developer/msbuild/2003" />"""
 
 let expectedPropertyNodes = """<?xml version="1.0" encoding="utf-16"?>
-<Import Project="..\..\..\StyleCop.MSBuild\build\$(__paket__StyleCop_MSBuild_Targets).targets" Condition="Exists('..\..\..\StyleCop.MSBuild\build\$(__paket__StyleCop_MSBuild_Targets).targets')" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" />"""
+<Import Project="..\..\..\StyleCop.MSBuild\build\StyleCop.MSBuild" Condition="Exists('..\..\..\StyleCop.MSBuild\build\StyleCop.MSBuild')" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" />"""
 
 [<Test>]
 let ``should generate Xml for StyleCop.MSBuild``() = 
@@ -28,7 +26,7 @@ let ``should generate Xml for StyleCop.MSBuild``() =
     
     propertyChooseNode.OuterXml
     |> normalizeXml
-    |> shouldEqual (normalizeXml expected)
+    |> shouldEqual (normalizeXml emptyPropertyNameNodes)
         
     propertyNodes |> Seq.length |> shouldEqual 1
 

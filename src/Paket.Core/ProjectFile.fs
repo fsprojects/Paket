@@ -261,7 +261,7 @@ type ProjectFile =
                         node
                         |> propertyGroup.AppendChild 
                         |> ignore
-                        Some(propertyName,path.Substring(0,path.LastIndexOf("build\\") + 6)))
+                        Some(propertyName,path,path.Substring(0,path.LastIndexOf("build\\") + 6)))
                 |> Set.ofSeq
                     
             propertyNames,propertyGroup
@@ -301,7 +301,7 @@ type ProjectFile =
         let propertyNames,propertyChooseNode =
             match targetsFileConditions with
             |  ["$(TargetFrameworkIdentifier) == 'true'",(propertyNames,propertyGroup)] ->
-                [propertyNames],propertyGroup
+                [propertyNames],this.CreateNode("Choose")
             |  _ ->
                 let propertyChooseNode = this.CreateNode("Choose")
 
@@ -323,13 +323,18 @@ type ProjectFile =
 
         let propertyNameNodes = 
             propertyNames
-            |> Set.unionMany
-            |> Seq.map (fun (propertyName,buildPath) -> 
+            |> Seq.concat
+            |> Seq.distinctBy (fun (x,_,_) -> x)
+            |> Seq.map (fun (propertyName,path,buildPath) -> 
                 let fileName = 
-                    if propertyName.ToLower().EndsWith "props" then
+                    match propertyName.ToLower() with
+                    | _ when propertyChooseNode.ChildNodes.Count = 0 -> path
+                    | name when name.EndsWith "props" ->
                         sprintf "%s$(%s).props" buildPath propertyName 
-                    else
-                        sprintf "%s$(%s).targets" buildPath propertyName 
+                    | name when name.EndsWith "targets" ->
+                        sprintf "%s$(%s).targets" buildPath propertyName
+                    | _ -> failwithf "Unknown .targets filename %s" propertyName
+
                 this.CreateNode("Import")
                 |> addAttribute "Project" fileName
                 |> addAttribute "Condition" (sprintf "Exists('%s')" fileName))
