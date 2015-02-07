@@ -261,7 +261,7 @@ type ProjectFile =
                         node
                         |> propertyGroup.AppendChild 
                         |> ignore
-                        Some(propertyName,path,path.Substring(0,path.LastIndexOf("build\\") + 6)))
+                        Some(propertyName,createRelativePath this.FileName fi.FullName,path.Substring(0,path.LastIndexOf("build\\") + 6)))
                 |> Set.ofSeq
                     
             propertyNames,propertyGroup

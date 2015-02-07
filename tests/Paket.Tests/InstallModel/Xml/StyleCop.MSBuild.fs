@@ -11,7 +11,7 @@ let emptyPropertyNameNodes = """<?xml version="1.0" encoding="utf-16"?>
 <Choose xmlns="http://schemas.microsoft.com/developer/msbuild/2003" />"""
 
 let expectedPropertyNodes = """<?xml version="1.0" encoding="utf-16"?>
-<Import Project="..\..\..\StyleCop.MSBuild\build\StyleCop.MSBuild" Condition="Exists('..\..\..\StyleCop.MSBuild\build\StyleCop.MSBuild')" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" />"""
+<Import Project="..\..\..\StyleCop.MSBuild\build\StyleCop.MSBuild.Targets" Condition="Exists('..\..\..\StyleCop.MSBuild\build\StyleCop.MSBuild.Targets')" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" />"""
 
 [<Test>]
 let ``should generate Xml for StyleCop.MSBuild``() = 
