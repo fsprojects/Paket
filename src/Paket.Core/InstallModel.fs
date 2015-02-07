@@ -114,7 +114,7 @@ type InstallModel =
                          |> Seq.choose id
         | None -> Seq.empty
     
-    member this.AddReferences(libs : seq<string>, targetsFiles : seq<string>, references) : InstallModel =
+    member this.AddLibReferences(libs : seq<string>, references) : InstallModel =
         let libFolders = 
             libs 
             |> Seq.map this.ExtractLibFolder
@@ -123,8 +123,17 @@ type InstallModel =
             |> List.ofSeq
             |> PlatformMatching.getSupportedTargetProfiles 
             |> Seq.map (fun entry -> { Name = entry.Key; Targets = entry.Value; Files = InstallFiles.empty })
-            |> Seq.toList
+            |> Seq.toList  
 
+        Seq.fold (fun (model:InstallModel) file ->
+                    match model.ExtractLibFolder file with
+                    | Some folderName -> 
+                        match Seq.tryFind (fun folder -> folder.Name = folderName) model.ReferenceFileFolders with
+                        | Some path -> model.AddPackageFile(path, file, references)
+                        | _ -> model
+                    | None -> model) { this with ReferenceFileFolders = libFolders } libs
+
+    member this.AddTargetsFiles(targetsFiles : seq<string>) : InstallModel =
         let targetsFileFolders = 
             targetsFiles 
             |> Seq.map this.ExtractBuildFolder
@@ -135,14 +144,6 @@ type InstallModel =
             |> Seq.map (fun entry -> { Name = entry.Key; Targets = entry.Value; Files = InstallFiles.empty })
             |> Seq.toList            
 
-        let modelWithReferences =
-            Seq.fold (fun (model:InstallModel) file ->
-                        match model.ExtractLibFolder file with
-                        | Some folderName -> 
-                            match Seq.tryFind (fun folder -> folder.Name = folderName) model.ReferenceFileFolders with
-                            | Some path -> model.AddPackageFile(path, file, references)
-                            | _ -> model
-                        | None -> model) { this with ReferenceFileFolders = libFolders; TargetsFileFolders = targetsFileFolders } libs
 
         Seq.fold (fun model file ->
                     match model.ExtractBuildFolder file with
@@ -150,8 +151,7 @@ type InstallModel =
                         match Seq.tryFind (fun folder -> folder.Name = folderName) model.TargetsFileFolders with
                         | Some path -> model.AddTargetsFile(path, file)
                         | _ -> model
-                    | None -> model) modelWithReferences targetsFiles
-
+                    | None -> model) { this with TargetsFileFolders = targetsFileFolders } targetsFiles
     
     member this.ExtractLibFolder path = Utils.extractPath "lib" path
 
@@ -186,7 +186,7 @@ type InstallModel =
                                else p) 
         { this with TargetsFileFolders = folders }
     
-    member this.AddReferences(libs) = this.AddReferences(libs,[], NuspecReferences.All)
+    member this.AddReferences(libs) = this.AddLibReferences(libs, NuspecReferences.All)
     
     member this.AddFrameworkAssemblyReference(reference:FrameworkAssemblyReference) : InstallModel =
         let referenceApplies (folder : LibFolder) =
@@ -294,7 +294,8 @@ type InstallModel =
     static member CreateFromLibs(packageName, packageVersion, frameworkRestrictions:FrameworkRestrictions, libs, targetsFiles, nuspec : Nuspec) = 
         InstallModel
             .EmptyModel(packageName, packageVersion)
-            .AddReferences(libs, targetsFiles, nuspec.References)
+            .AddLibReferences(libs, nuspec.References)
+            .AddTargetsFiles(targetsFiles)
             .AddFrameworkAssemblyReferences(nuspec.FrameworkAssemblyReferences)
             .FilterBlackList()
             .ApplyFrameworkRestrictions(frameworkRestrictions)
