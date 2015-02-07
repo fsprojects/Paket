@@ -1,13 +1,13 @@
-#### 0.27.0-alpha018 - 07.02.2015
-* Allow to reference `.props` and `.targets` files - https://github.com/fsprojects/Paket/issues/516
-* Create a install function in the api which takes a `paket.dependencies` file as text - https://github.com/fsprojects/Paket/issues/576
+#### 0.27.0 - 07.02.2015
+* Install process will reference `.props` and `.targets` files from NuGet packages - https://github.com/fsprojects/Paket/issues/516
 * Don't internalize in paket.exe during ILMerge
 * Allow to download from pre-authenticated MyGet feed - https://github.com/fsprojects/Paket/issues/466
 * BUGFIX: Fix `paket install --hard` for FSharp.Core - https://github.com/fsprojects/Paket/issues/579
 * BUGFIX: `paket convert-from-nuget` ignores casing when looking for nuget.targets - https://github.com/fsprojects/Paket/issues/580
 * BUGFIX: `paket install` correctly parses HTTP references - https://github.com/fsprojects/Paket/pull/571
-* BUGFIX: `paket.dependencies` parser fails if tokens are not valid
-* COSMETICS: Prerelease strings are checked if they contain operators
+* BUGFIX: `paket.dependencies` parser now fails if tokens are not valid
+* COSMETICS: Prerelease strings are checked that they don't contain operators
+* COSMETICS: Create an install function in the API which takes a `paket.dependencies` file as text - https://github.com/fsprojects/Paket/issues/576
 
 #### 0.26.0 - 31.01.2015
 * Allow to opt-out of old frameworks in `paket.dependencies` - http://fsprojects.github.io/Paket/nuget-dependencies.html#Framework-restrictions
