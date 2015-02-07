@@ -269,10 +269,10 @@ type ProjectFile =
             |> List.map (fun lib -> PlatformMatching.getCondition lib.Targets,createItemGroup lib.Files.References,createPropertyGroup lib.Files.References)
             |> List.sortBy (fun (x,_,_) -> x)
 
-        let chooseNode,propertyChooseNode =
+        let chooseNode,propertyNames,propertyChooseNode =
             match conditions with
-            |  ["$(TargetFrameworkIdentifier) == 'true'",itemGroup,(propertyNames,propertyGroup)] -> 
-                itemGroup,propertyGroup
+            |  ["$(TargetFrameworkIdentifier) == 'true'",itemGroup,(propertyNames,propertyGroup)] ->                
+                itemGroup,[propertyNames],propertyGroup
             |  _ ->
                 let chooseNode = this.CreateNode("Choose")
 
@@ -305,12 +305,13 @@ type ProjectFile =
                 |> List.iter(fun node -> propertyChooseNode.AppendChild(node) |> ignore)
                                 
                                 
-                (if !containsReferences then chooseNode else this.CreateNode("Choose")),(if !containsProperties then propertyChooseNode else this.CreateNode("Choose"))
+                (if !containsReferences then chooseNode else this.CreateNode("Choose")),
+                 (conditions |> List.map (fun (_,_,(propertyNames,_)) -> propertyNames)),
+                 (if !containsProperties then propertyChooseNode else this.CreateNode("Choose"))
                 
 
         let propertyNameNodes = 
-            conditions
-            |> List.map (fun (_,_,(propertyNames,_)) -> propertyNames)
+            propertyNames
             |> Set.unionMany
             |> Seq.map (fun (propertyName,buildPath) -> 
                 let fileName = 

@@ -27,8 +27,7 @@ let ``should generate Xml for StyleCop.MSBuild``() =
     propertyChooseNode.OuterXml
     |> normalizeXml
     |> shouldEqual (normalizeXml expected)
-    
-    
+        
     propertyNodes |> Seq.length |> shouldEqual 1
 
     (propertyNodes |> Seq.head).OuterXml
