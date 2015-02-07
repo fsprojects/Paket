@@ -11,8 +11,13 @@ let emptymodel = InstallModel.EmptyModel(PackageName "Unknown",SemVer.Parse "0.1
 let ``should create empty model with net40, net45 ...``() = 
     let model = emptymodel.AddReferences [ @"..\Rx-Main\lib\net40\Rx.dll"; @"..\Rx-Main\lib\net45\Rx.dll" ] 
 
-    model.GetTargets() |> shouldContain (SinglePlatform (DotNetFramework FrameworkVersion.V4))
-    model.GetTargets() |> shouldContain (SinglePlatform (DotNetFramework FrameworkVersion.V4_5))
+    let targets =
+        model.ReferenceFileFolders
+        |> List.map (fun folder -> folder.Targets)
+        |> List.concat
+
+    targets |> shouldContain (SinglePlatform (DotNetFramework FrameworkVersion.V4))
+    targets |> shouldContain (SinglePlatform (DotNetFramework FrameworkVersion.V4_5))
 
 [<Test>]
 let ``should understand net40 and net45``() = 

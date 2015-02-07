@@ -76,7 +76,8 @@ type LibFolder =
       Files : InstallFiles}
 
     member this.GetSinglePlatforms() =
-        this.Targets |> List.choose (fun target ->
+        this.Targets 
+        |> List.choose (fun target ->
             match target with
             | SinglePlatform t -> Some t
             | _ -> None)
@@ -92,11 +93,6 @@ type InstallModel =
           PackageVersion = packageVersion
           ReferenceFileFolders = []
           TargetsFileFolders = [] }
-   
-    member this.GetTargets() = 
-        this.ReferenceFileFolders
-        |> List.map (fun folder -> folder.Targets)
-        |> List.concat
     
     member this.GetFiles(target : TargetProfile) = 
         match Seq.tryFind (fun lib -> Seq.exists (fun t -> t = target) lib.Targets) this.ReferenceFileFolders with
