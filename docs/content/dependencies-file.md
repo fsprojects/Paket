@@ -66,7 +66,7 @@ This option disables the installation of any content files.
 
 ## Redirects option
 
-This option tells paket to create AssemblyBindingRedirects for all referenced libraries.
+This option tells paket to create [Assembly Binding Redirects](https://msdn.microsoft.com/en-us/library/433ysdt1(v=vs.110).aspx) for all referenced libraries.
 
     redirects on
     source https://nuget.org/api/v2
