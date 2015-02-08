@@ -38,18 +38,6 @@ type ProjectFile =
 
             if !isPaketNode = paketOnes then yield node]
 
-    member private this.FindPaketPrefixNodes() = 
-        let rec subNodes (node:XmlNode) =
-            [for node in node.ChildNodes do
-                if node.Name.Contains("__paket__") || 
-                    (node.Name = "Import" && node.Attributes.["Project"].Value.Contains("__paket__")) ||
-                    ((node |> getAttribute "Label") = Some("Paket"))
-                then
-                    yield node
-                yield! subNodes node]
-
-        subNodes this.Document
-
     member this.Name = FileInfo(this.FileName).Name
 
     member this.GetCustomReferenceAndFrameworkNodes() = this.FindNodes false "Reference"
@@ -346,11 +334,19 @@ type ProjectFile =
 
         propertyNameNodes,chooseNode,propertyChooseNode
         
-
-    member this.UpdateReferences(completeModel: Map<NormalizedPackageName,InstallModel>, usedPackages : Map<NormalizedPackageName,PackageInstallSettings>, hard) = 
+    member this.RemovePaketNodes() =
         this.DeletePaketNodes("Reference")
+
+        let rec PaketNodes (node:XmlNode) =
+            [for node in node.ChildNodes do
+                if node.Name.Contains("__paket__") || 
+                    (node.Name = "Import" && node.Attributes.["Project"].Value.Contains("__paket__")) ||
+                    ((node |> getAttribute "Label") = Some("Paket"))
+                then
+                    yield node
+                yield! PaketNodes node]
         
-        for node in this.FindPaketPrefixNodes() do
+        for node in PaketNodes this.Document do
             let parent = node.ParentNode
             node.ParentNode.RemoveChild(node) |> ignore
             if parent.ChildNodes.Count = 0 then
@@ -359,6 +355,8 @@ type ProjectFile =
         ["ItemGroup";"When";"Otherwise";"Choose";"When";"Choose"]
         |> List.iter this.DeleteIfEmpty
 
+    member this.UpdateReferences(completeModel: Map<NormalizedPackageName,InstallModel>, usedPackages : Map<NormalizedPackageName,PackageInstallSettings>, hard) =
+        this.RemovePaketNodes() 
         
         completeModel
         |> Seq.filter (fun kv -> usedPackages.ContainsKey kv.Key)
