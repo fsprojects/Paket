@@ -9,6 +9,7 @@ nuget FSharp.Formatting
 nuget DotNetZip
 nuget NuGet.CommandLine
 nuget FSharp.Core
+nuget FSharpLint
 
 github forki/FsUnit FsUnit.fs
 github fsharp/FAKE modules/Octokit/Octokit.fsx
