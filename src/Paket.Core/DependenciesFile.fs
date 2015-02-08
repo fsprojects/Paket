@@ -168,6 +168,7 @@ module DependenciesFileParser =
         | String.StartsWith "http" _ as trimmed  ->
             SourceFile(``parse http source`` trimmed)
         | String.StartsWith "//" _ -> Comment(line)
+        | String.StartsWith "#" _ -> Comment(line)
         | _ -> failwithf "Unrecognized token: %s" line
     
     let parseDependenciesFile fileName (lines:string seq) = 
