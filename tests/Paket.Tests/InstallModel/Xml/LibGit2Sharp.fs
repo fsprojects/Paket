@@ -30,7 +30,7 @@ let expectedPropertyDefinitionNodes = """<?xml version="1.0" encoding="utf-16"?>
 </Choose>"""
 
 let expectedPropertyNodes = """<?xml version="1.0" encoding="utf-16"?>
-<Import Project="..\..\..\LibGit2Sharp\build\$(__paket__LibGit2Sharp_props).props" Condition="Exists('..\..\..\LibGit2Sharp\build\$(__paket__LibGit2Sharp_props).props')" Paket="true" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" />"""
+<Import Project="..\..\..\LibGit2Sharp\build\$(__paket__LibGit2Sharp_props).props" Condition="Exists('..\..\..\LibGit2Sharp\build\$(__paket__LibGit2Sharp_props).props')" Label="Paket" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" />"""
 
 [<Test>]
 let ``should generate Xml for LibGit2Sharp 2.0.0``() = 
