@@ -96,7 +96,8 @@ let buildDocumentation () =
         | None -> layoutRootsAll.["en"] // "en" is the default language
     Literate.ProcessDirectory
       ( dir, docTemplate, output @@ sub, replacements = ("root", root)::info,
-        layoutRoots = layoutRoots )
+        layoutRoots = layoutRoots,
+        generateAnchors = true )
 
 // Generate
 copyFiles()
