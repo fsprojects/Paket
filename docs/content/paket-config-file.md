@@ -14,4 +14,4 @@ Credentials for a specific source can be added with the following command:
 
 Paket will then ask for username and password.
 
-This credentials will be used if no username and password for the source are configured in a [paket.dependencies](nuget-dependencies.html).
+This credentials will be used if no username and password for the source are configured in the [`paket.dependencies` file](nuget-dependencies.html).
