@@ -14,7 +14,7 @@ let emptyPropertyDefinitionNodes = """<?xml version="1.0" encoding="utf-16"?>
 <Choose xmlns="http://schemas.microsoft.com/developer/msbuild/2003" />"""
 
 let expectedPropertyNodes = """<?xml version="1.0" encoding="utf-16"?>
-<Import Project="..\..\..\GitInfoPlanter\build\GitInfoPlanter.targets" Condition="Exists('..\..\..\GitInfoPlanter\build\GitInfoPlanter.targets')" Paket="true" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" />"""
+<Import Project="..\..\..\GitInfoPlanter\build\GitInfoPlanter.targets" Condition="Exists('..\..\..\GitInfoPlanter\build\GitInfoPlanter.targets')" Label="Paket" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" />"""
 
 [<Test>]
 let ``should generate Xml for GitInfoPlanter2.0.0``() = 
