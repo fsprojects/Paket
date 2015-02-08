@@ -41,7 +41,10 @@ type ProjectFile =
     member private this.FindPaketPrefixNodes() = 
         let rec subNodes (node:XmlNode) =
             [for node in node.ChildNodes do
-                if node.Name.Contains("__paket__") || (node.Name = "Import" && node.Attributes.["Project"].Value.Contains("__paket__")) then
+                if node.Name.Contains("__paket__") || 
+                    (node.Name = "Import" && node.Attributes.["Project"].Value.Contains("__paket__")) ||
+                    (node |> hasAttribute "Paket") 
+                then
                     yield node
                 yield! subNodes node]
 
@@ -337,7 +340,8 @@ type ProjectFile =
 
                 this.CreateNode("Import")
                 |> addAttribute "Project" fileName
-                |> addAttribute "Condition" (sprintf "Exists('%s')" fileName))
+                |> addAttribute "Condition" (sprintf "Exists('%s')" fileName)
+                |> addAttribute "Paket" "true")
             |> Seq.toList
 
         propertyNameNodes,chooseNode,propertyChooseNode

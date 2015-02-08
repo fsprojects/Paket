@@ -73,7 +73,7 @@ let expectedPropertyDefinitionNodes = """<?xml version="1.0" encoding="utf-16"?>
 </Choose>"""
 
 let expectedPropertyNodes = """<?xml version="1.0" encoding="utf-16"?>
-<Import Project="..\..\..\System.Data.SQLite.Core\build\$(__paket__System_Data_SQLite_Core_targets).targets" Condition="Exists('..\..\..\System.Data.SQLite.Core\build\$(__paket__System_Data_SQLite_Core_targets).targets')" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" />"""
+<Import Project="..\..\..\System.Data.SQLite.Core\build\$(__paket__System_Data_SQLite_Core_targets).targets" Condition="Exists('..\..\..\System.Data.SQLite.Core\build\$(__paket__System_Data_SQLite_Core_targets).targets')" Paket="true" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" />"""
 
 [<Test>]
 let ``should generate Xml for SQLite``() = 

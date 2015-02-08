@@ -11,7 +11,7 @@ let emptyReferenceNodes = """<?xml version="1.0" encoding="utf-16"?>
 <Choose xmlns="http://schemas.microsoft.com/developer/msbuild/2003" />"""
 
 let expectedPropertyNodes = """<?xml version="1.0" encoding="utf-16"?>
-<Import Project="..\..\..\xunit.runner.visualstudio\build\$(__paket__xunit_runner_visualstudio_props).props" Condition="Exists('..\..\..\xunit.runner.visualstudio\build\$(__paket__xunit_runner_visualstudio_props).props')" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" />"""
+<Import Project="..\..\..\xunit.runner.visualstudio\build\$(__paket__xunit_runner_visualstudio_props).props" Condition="Exists('..\..\..\xunit.runner.visualstudio\build\$(__paket__xunit_runner_visualstudio_props).props')" Paket="true" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" />"""
 
 let expectedPropertyDefinitionNodes = """<?xml version="1.0" encoding="utf-16"?>
 <Choose xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
