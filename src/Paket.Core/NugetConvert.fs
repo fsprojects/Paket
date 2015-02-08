@@ -260,7 +260,7 @@ let createDependenciesFileR (rootDirectory : DirectoryInfo) nugetEnv mode =
         sources
         |> Rop.lift (fun sources -> 
             let packages = packages |> List.map (fun (name,v) -> createPackageRequirement name v sources dependenciesFileName)
-            Paket.DependenciesFile(dependenciesFileName, InstallOptions.Default, sources, packages, []))
+            Paket.DependenciesFile(dependenciesFileName, InstallOptions.Default, sources, packages, [], []))
 
     if File.Exists dependenciesFileName then read() else create()
 

@@ -42,7 +42,7 @@ let simplifyDependenciesFile (dependenciesFile : DependenciesFile, flatLookup, i
         dependenciesFile.Packages
         |> List.filter (fun package -> not <| removePackage(package.Name, transitive, dependenciesFile.FileName, interactive))
     let d = dependenciesFile
-    return DependenciesFile(d.FileName, d.Options, d.Sources, newPackages, d.RemoteFiles)
+    return DependenciesFile(d.FileName, d.Options, d.Sources, newPackages, d.RemoteFiles, d.Comments)
 }
 
 let simplifyReferencesFile (refFile, flatLookup, interactive) = rop {

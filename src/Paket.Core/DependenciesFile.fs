@@ -134,9 +134,9 @@ module DependenciesFileParser =
     | OmitContent of bool
     | Redirects of bool
 
-    let private (|Remote|Package|Blank|ParserOptions|SourceFile|) (line:string) =
+    let private (|Remote|Package|Comment|ParserOptions|SourceFile|) (line:string) =
         match line.Trim() with
-        | _ when String.IsNullOrWhiteSpace line -> Blank
+        | _ when String.IsNullOrWhiteSpace line -> Comment(line)
         | String.StartsWith "source" _ as trimmed -> Remote(PackageSource.Parse(trimmed))
         | String.StartsWith "nuget" trimmed -> 
             let parts = trimmed.Trim().Replace("\"", "").Split([|' '|],StringSplitOptions.RemoveEmptyEntries) |> Seq.toList
@@ -167,21 +167,20 @@ module DependenciesFileParser =
             SourceFile(``parse git source`` trimmed SingleSourceFileOrigin.GitHubLink "github")
         | String.StartsWith "http" _ as trimmed  ->
             SourceFile(``parse http source`` trimmed)
-        | line when String.IsNullOrWhiteSpace line -> Blank
-        | String.StartsWith "//" _ -> Blank
+        | String.StartsWith "//" _ -> Comment(line)
         | _ -> failwithf "Unrecognized token: %s" line
     
     let parseDependenciesFile fileName (lines:string seq) = 
-        ((0, InstallOptions.Default, [], [], []), lines)
-        ||> Seq.fold(fun (lineNo, options, sources: PackageSource list, packages, sourceFiles: UnresolvedSourceFile list) line ->
+        ((0, InstallOptions.Default, [], [], [],[]), lines)
+        ||> Seq.fold(fun (lineNo, options, sources: PackageSource list, packages, sourceFiles: UnresolvedSourceFile list,comments) line ->
             let lineNo = lineNo + 1
             try
                 match line with
-                | Remote(newSource) -> lineNo, options, sources @ [newSource], packages, sourceFiles
-                | Blank -> lineNo, options, sources, packages, sourceFiles
-                | ParserOptions(ParserOption.ReferencesMode mode) -> lineNo, { options with Strict = mode }, sources, packages, sourceFiles
-                | ParserOptions(ParserOption.Redirects mode) -> lineNo, { options with Redirects = mode }, sources, packages, sourceFiles
-                | ParserOptions(ParserOption.OmitContent omit) -> lineNo, { options with OmitContent = omit }, sources, packages, sourceFiles
+                | Remote(newSource) -> lineNo, options, sources @ [newSource], packages, sourceFiles, comments
+                | Comment(line) -> lineNo, options, sources, packages, sourceFiles, if line <> "" then (lineNo,line)::comments else comments
+                | ParserOptions(ParserOption.ReferencesMode mode) -> lineNo, { options with Strict = mode }, sources, packages, sourceFiles, comments
+                | ParserOptions(ParserOption.Redirects mode) -> lineNo, { options with Redirects = mode }, sources, packages, sourceFiles, comments
+                | ParserOptions(ParserOption.OmitContent omit) -> lineNo, { options with OmitContent = omit }, sources, packages, sourceFiles, comments
                 | Package(name,version,rest) ->
                     let prereleases,kvPairs =
                         if rest.Contains ":" then
@@ -209,18 +208,19 @@ module DependenciesFileParser =
                           ResolverStrategy = parseResolverStrategy version
                           Parent = DependenciesFile fileName
                           FrameworkRestrictions = restrictions
-                          VersionRequirement = parseVersionRequirement((version + " " + prereleases).Trim '!') } :: packages, sourceFiles
+                          VersionRequirement = parseVersionRequirement((version + " " + prereleases).Trim '!') } :: packages, sourceFiles, comments
                 | SourceFile(origin, (owner,project, commit), path) ->
-                    lineNo, options, sources, packages, { Owner = owner; Project = project; Commit = commit; Name = path; Origin = origin} :: sourceFiles
+                    lineNo, options, sources, packages, { Owner = owner; Project = project; Commit = commit; Name = path; Origin = origin} :: sourceFiles, comments
                     
             with
             | exn -> failwithf "Error in paket.dependencies line %d%s  %s" lineNo Environment.NewLine exn.Message)
-        |> fun (_,options,sources,packages,remoteFiles) ->
+        |> fun (_,options,sources,packages,remoteFiles,comments) ->
             fileName,
             options,
             sources,
             packages |> List.rev,
-            remoteFiles |> List.rev
+            remoteFiles |> List.rev,
+            comments
 
 module DependenciesFileSerializer = 
     let formatVersionRange strategy (version : VersionRequirement) : string =          
@@ -249,12 +249,13 @@ module DependenciesFileSerializer =
         if text <> "" && preReleases <> "" then text + " " + preReleases else text + preReleases
 
 /// Allows to parse and analyze paket.dependencies files.
-type DependenciesFile(fileName,options,sources,packages : PackageRequirement list, remoteFiles : UnresolvedSourceFile list) = 
+type DependenciesFile(fileName,options,sources,packages : PackageRequirement list, remoteFiles : UnresolvedSourceFile list, comments) = 
     let packages = packages |> Seq.toList
     let dependencyMap = Map.ofSeq (packages |> Seq.map (fun p -> p.Name, p.VersionRequirement))
             
     member __.DirectDependencies = dependencyMap
     member __.Packages = packages
+    member __.Comments = comments
     member __.HasPackage (name : PackageName) = packages |> List.exists (fun p -> NormalizedPackageName p.Name = NormalizedPackageName name)
     member __.RemoteFiles = remoteFiles
     member __.Options = options
@@ -308,7 +309,7 @@ type DependenciesFile(fileName,options,sources,packages : PackageRequirement lis
               FrameworkRestrictions = []
               Parent = PackageRequirementSource.DependenciesFile fileName }
 
-        DependenciesFile(fileName,options,sources,packages @ [newPackage], remoteFiles)
+        DependenciesFile(fileName,options,sources,packages @ [newPackage], remoteFiles, comments)
 
     member __.AddFixedPackage(packageName:PackageName,version:string,frameworkRestrictions) =
         let versionRange = DependenciesFileParser.parseVersionRequirement (version.Trim '!')
@@ -334,7 +335,7 @@ type DependenciesFile(fileName,options,sources,packages : PackageRequirement lis
               FrameworkRestrictions = frameworkRestrictions
               Parent = PackageRequirementSource.DependenciesFile fileName }
 
-        DependenciesFile(fileName,options,sources,(packages |> List.filter (fun p -> NormalizedPackageName p.Name <> NormalizedPackageName packageName)) @ [newPackage], remoteFiles)
+        DependenciesFile(fileName,options,sources,(packages |> List.filter (fun p -> NormalizedPackageName p.Name <> NormalizedPackageName packageName)) @ [newPackage], remoteFiles, comments)
 
     member this.AddFixedPackage(packageName:PackageName,version:string) =
         this.AddFixedPackage(packageName,version,[])
@@ -344,7 +345,7 @@ type DependenciesFile(fileName,options,sources,packages : PackageRequirement lis
             packages
             |> List.filter (fun p -> NormalizedPackageName p.Name <> NormalizedPackageName packageName)
 
-        DependenciesFile(fileName,options,sources,newPackages,remoteFiles)
+        DependenciesFile(fileName,options,sources,newPackages,remoteFiles, comments)
 
     static member add (dependenciesFile : DependenciesFile) (packageName,version) =
         dependenciesFile.Add(packageName,version)
@@ -380,7 +381,7 @@ type DependenciesFile(fileName,options,sources,packages : PackageRequirement lis
                                      if NormalizedPackageName p.Name = NormalizedPackageName packageName then 
                                          { p with VersionRequirement = versionRequirement }
                                      else p)
-            DependenciesFile(this.FileName, this.Options, sources, packages, this.RemoteFiles)
+            DependenciesFile(this.FileName, this.Options, sources, packages, this.RemoteFiles, comments)
         else
             traceWarnfn "%s doesn't contain package %s. ==> Ignored" fileName name
             this
@@ -439,8 +440,23 @@ type DependenciesFile(fileName,options,sources,packages : PackageRequirement lis
                       
                   yield remoteFile.ToString() ]
                   
-                  
-        String.Join(Environment.NewLine, all)                                 
+        let comments = comments |> dict
+
+        let withComments =
+            let lineNo = ref 1
+            [for line in all do
+                let rec checkForComment() =
+                    [match comments.TryGetValue !lineNo with
+                     | true,line -> 
+                        yield line
+                        lineNo := !lineNo + 1
+                        yield! checkForComment()
+                     | _ -> ()]
+                yield! checkForComment()
+                yield line
+                lineNo := !lineNo + 1]
+
+        String.Join(Environment.NewLine, withComments)
 
     member this.Save() =
         File.WriteAllText(fileName, this.ToString())

@@ -1,3 +1,7 @@
+#### 0.27.1 - 08.02.2015
+* Allow unix-style comments in `paket.depndencies` file
+* Don't remove comments from `paket.dependencies` file - https://github.com/fsprojects/Paket/issues/584
+
 #### 0.27.0 - 07.02.2015
 * Install process will reference `.props` and `.targets` files from NuGet packages - https://github.com/fsprojects/Paket/issues/516
 * Don't internalize in paket.exe during ILMerge
