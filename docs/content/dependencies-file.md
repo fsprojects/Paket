@@ -21,7 +21,7 @@ To give you an overview, consider the following `paket.dependencies` file:
     // HTTP resources
     http http://www.fssnip.net/1n decrypt.fs
 
-The file specifies that Paket's NuGet dependencies should be downloaded from [nuget.org](http://www.nuget.org) and that we need: 
+The file specifies that Paket's NuGet dependencies should be downloaded from [nuget.org](http://www.nuget.org) and that we need:
 
   * [NUnit](http://www.nunit.org/) in version [2.6.3 <= x < 2.7](nuget-dependencies.html#Pessimistic-version-constraint)
   * [FAKE](http://fsharp.github.io/FAKE/) in version [3.4 <= x < 4.0](nuget-dependencies.html#Pessimistic-version-constraint) as a build tool
@@ -29,7 +29,7 @@ The file specifies that Paket's NuGet dependencies should be downloaded from [nu
   * [SourceLink.Fake](https://github.com/ctaggart/SourceLink) in the latest version
   * [FSUnit.fs](https://github.com/forki/FsUnit) from GitHub.
   * Gist number [1972349](https://gist.github.com/Thorium/1972349) from GitHub Gist.
-  * External HTTP-resource, e.g. [1n](http://www.fssnip.net/1n) from [FSSnip](http://www.fssnip.net/) -site. 
+  * External HTTP resource, e.g. [1n](http://www.fssnip.net/1n) from [FSSnip](http://www.fssnip.net/).
 
 Paket uses this definition to compute a concrete dependency resolution, which also includes transitive dependencies. The resulting dependency graph is then persisted to the [`paket.lock` file](lock-file.html).
 
@@ -42,7 +42,7 @@ Paket supports the following source types:
 * [NuGet](nuget-dependencies.html)
 * [GitHub and Gist](github-dependencies.html)
 * [HTTP](http-dependencies.html) (any single file from any site without version control)
- 
+
 ## Strict references
 
 Paket usually references all direct and transitive dependencies that are listed in your [paket.references](references-files.md) files to your project file.
@@ -53,7 +53,7 @@ In `strict` mode it will **only** reference *direct* dependencies.
 
     nuget Newtonsoft.Json ~> 6.0
     nuget UnionArgParser ~> 0.7
-    
+
 ## No content option
 
 This option disables the installation of any content files.
