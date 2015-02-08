@@ -17,7 +17,10 @@ open System.Diagnostics
 let private findPackagesWithContent (root,usedPackages) = 
     usedPackages
     |> Seq.map (fun (PackageName x) -> DirectoryInfo(Path.Combine(root, Constants.PackagesFolderName, x)))
-    |> Seq.choose (fun packageDir -> packageDir.GetDirectories("Content") |> Array.tryFind (fun _ -> true))
+    |> Seq.choose (fun packageDir -> 
+            packageDir.GetDirectories("Content") 
+            |> Array.append (packageDir.GetDirectories("content"))
+            |> Array.tryFind (fun _ -> true))
     |> Seq.toList
 
 let private copyContentFiles (project : ProjectFile, packagesWithContent) = 

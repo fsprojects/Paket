@@ -1,3 +1,6 @@
+#### 0.27.5 - 08.02.2015
+* BUGFIX: Install content files on mono - https://github.com/fsprojects/Paket/issues/561
+
 #### 0.27.4 - 08.02.2015
 * BUGFIX: Install process doesn't duplicate Imports of targets files any more - https://github.com/fsprojects/Paket/issues/588
 
