@@ -31,6 +31,10 @@ let inline getAttribute name (node:XmlNode) =
     |> Option.map (fun a -> a.Value)
 
 /// [omit]
+let inline withAttributeValue attributeName valueText node =
+    getAttribute attributeName node = Some valueText
+
+/// [omit]
 let inline optGetAttribute name node = node |> Option.bind (getAttribute name)
 
 /// [omit]

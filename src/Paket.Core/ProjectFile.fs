@@ -149,8 +149,7 @@ type ProjectFile =
                 |> getDescendants fileItem.BuildAction
                 |> List.filter (fun node -> 
                     match node |> getAttribute "Include" with
-                    | Some path when path.StartsWith(Path.GetDirectoryName(fileItem.Include)) ->
-                        true
+                    | Some path when path.StartsWith(Path.GetDirectoryName(fileItem.Include)) -> true
                     | _ -> false)
 
             if Seq.isEmpty  fileItemsInSameDir then 
@@ -158,7 +157,7 @@ type ProjectFile =
             else
                 let existingNode = 
                     fileItemsInSameDir 
-                    |> Seq.tryFind (fun node -> node |> getAttribute "Include" = Some fileItem.Include)
+                    |> Seq.tryFind (withAttributeValue "Include" fileItem.Include)
 
                 match existingNode with
                 | Some existingNode ->
@@ -341,7 +340,7 @@ type ProjectFile =
             [for node in node.ChildNodes do
                 if node.Name.Contains("__paket__") || 
                     (node.Name = "Import" && node.Attributes.["Project"].Value.Contains("__paket__")) ||
-                    (node |> getAttribute "Label" = Some "Paket")
+                    (node |> withAttributeValue "Label" "Paket")
                 then
                     yield node
                 yield! PaketNodes node]
@@ -391,18 +390,20 @@ type ProjectFile =
             | Some n -> n.InnerText
             | None -> failwithf "unable to parse %s" node.Name
 
-        [for n in this.Document |> getDescendants "ProjectReference" -> 
-            { Path = n.Attributes.["Include"].Value
-              Name = forceGetInnerText n "Name"
-              GUID =  forceGetInnerText n "Project" |> Guid.Parse }]
+        [for node in this.Document |> getDescendants "ProjectReference" -> 
+            { Path = node.Attributes.["Include"].Value
+              Name = forceGetInnerText node "Name"
+              GUID =  forceGetInnerText node "Project" |> Guid.Parse }]
 
     member this.ReplaceNuGetPackagesFile() =
         let noneAndContentNodes = 
-            (this.Document |> getDescendants "None") @ (this.Document |> getDescendants "Content")
-        match noneAndContentNodes |> List.tryFind (fun n -> n |> getAttribute "Include" = Some "packages.config") with
+            (this.Document |> getDescendants "None") @ 
+            (this.Document |> getDescendants "Content")
+
+        match noneAndContentNodes |> List.tryFind (withAttributeValue "Include" "packages.config") with
         | None -> ()
         | Some nugetNode ->
-            match noneAndContentNodes |> List.filter (fun n -> n |> getAttribute "Include" = Some Constants.ReferencesFile) with 
+            match noneAndContentNodes |> List.filter (withAttributeValue "Include" Constants.ReferencesFile) with 
             | [_] -> nugetNode.ParentNode.RemoveChild(nugetNode) |> ignore
             | [] -> nugetNode.Attributes.["Include"].Value <- Constants.ReferencesFile
             | _::_ -> failwithf "multiple %s nodes in project file %s" Constants.ReferencesFile this.FileName
@@ -419,7 +420,7 @@ type ProjectFile =
                     | None -> false)
               this.Document
               |> getDescendants "Target"
-              |> List.tryFind (fun n -> n |> getAttribute "Name" = Some "EnsureNuGetPackageBuildImports") ]
+              |> List.tryFind (withAttributeValue "Name" "EnsureNuGetPackageBuildImports") ]
             |> List.choose id
         
         toDelete
@@ -449,7 +450,7 @@ type ProjectFile =
     member this.AddImportForPaketTargets(relativeTargetsPath) =
         match this.Document 
               |> getDescendants "Import" 
-              |> List.tryFind (fun n -> n |> getAttribute "Project" = Some relativeTargetsPath) with
+              |> List.tryFind (withAttributeValue "Project" relativeTargetsPath) with
         | Some _ -> ()
         | None -> 
             let node = this.CreateNode("Import") |> addAttribute "Project" relativeTargetsPath
@@ -458,7 +459,7 @@ type ProjectFile =
     member this.RemoveImportForPaketTargets(relativeTargetsPath) =
         this.Document
         |> getDescendants "Import"
-        |> List.tryFind (fun n -> n |> getAttribute "Project" = Some relativeTargetsPath)
+        |> List.tryFind (withAttributeValue "Project" relativeTargetsPath)
         |> Option.iter (fun n -> n.ParentNode.RemoveChild(n) |> ignore)
 
     member this.DetermineBuildAction fileName =
