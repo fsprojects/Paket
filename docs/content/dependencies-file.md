@@ -28,8 +28,8 @@ The file specifies that Paket's NuGet dependencies should be downloaded from [nu
   * [DotNetZip](http://dotnetzip.codeplex.com/) with version which is at [least 1.9](http://fsprojects.github.io/Paket/nuget-dependencies.html#Greater-than-or-equal-version-constraint)
   * [SourceLink.Fake](https://github.com/ctaggart/SourceLink) in the latest version
   * [FSUnit.fs](https://github.com/forki/FsUnit) from GitHub.
-  * Gist number [1972349](https://gist.github.com/Thorium/1972349) from GitHub Gist.
-  * External HTTP resource, e.g. [1n](http://www.fssnip.net/1n) from [FSSnip](http://www.fssnip.net/).
+  * Gist number [1972349](https://gist.github.com/Thorium/1972349) from GitHub Gist
+  * External HTTP resource, e.g. [1n](http://www.fssnip.net/1n) from [FSSnip](http://www.fssnip.net/)
 
 Paket uses this definition to compute a concrete dependency resolution, which also includes transitive dependencies. The resulting dependency graph is then persisted to the [`paket.lock` file](lock-file.html).
 
@@ -45,7 +45,7 @@ Paket supports the following source types:
 
 ## Strict references
 
-Paket usually references all direct and transitive dependencies that are listed in your [paket.references](references-files.md) files to your project file.
+Paket usually references all direct and transitive dependencies that are listed in your [`paket.references` files](references-files.md) to your project file.
 In `strict` mode it will **only** reference *direct* dependencies.
 
     references strict
