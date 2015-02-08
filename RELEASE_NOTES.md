@@ -1,5 +1,5 @@
-#### 0.27.2 - 08.02.2015
-* BUGFIX: Install process doesn't duplicate Imports of targets files any more - https://github.com/fsprojects/Paket/issues/585
+#### 0.27.3 - 08.02.2015
+* BUGFIX: Install process doesn't duplicate Imports of targets files any more - https://github.com/fsprojects/Paket/issues/588
 
 #### 0.27.1 - 08.02.2015
 * Allow unix-style comments in `paket.depndencies` file
