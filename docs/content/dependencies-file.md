@@ -6,12 +6,19 @@ To give you an overview, consider the following `paket.dependencies` file:
 
     source https://nuget.org/api/v2
 
+    // NuGet packages
     nuget NUnit ~> 2.6.3
     nuget FAKE ~> 3.4
     nuget DotNetZip >= 1.9
     nuget SourceLink.Fake
+
+    // Files from GitHub repositories
     github forki/FsUnit FsUnit.fs
+
+    // Gist files
     gist Thorium/1972349 timestamp.fs
+
+    // HTTP resources
     http http://www.fssnip.net/1n decrypt.fs
 
 The file specifies that Paket's NuGet dependencies should be downloaded from [nuget.org](http://www.nuget.org) and that we need: 
@@ -65,3 +72,7 @@ This option tells paket to create AssemblyBindingRedirects for all referenced li
     source https://nuget.org/api/v2
 
     nuget UnionArgParser ~> 0.7
+
+## Comments
+
+All lines starting with with `//` or `#` are considered comments.
