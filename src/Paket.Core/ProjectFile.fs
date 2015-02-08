@@ -118,14 +118,6 @@ type ProjectFile =
         for node in nodesToDelete do
             node.ParentNode.RemoveChild(node) |> ignore
 
-    member this.createFileItemNode fileItem =
-        this.CreateNode(fileItem.BuildAction)
-        |> addAttribute "Include" fileItem.Include
-        |> addChild (this.CreateNode("Paket","True"))
-        |> (fun n -> match fileItem.Link with
-                     | Some link -> addChild (this.CreateNode("Link" ,link.Replace("\\","/"))) n
-                     | _ -> n)
-
     member this.UpdateFileItems(fileItems : FileItem list, hard) = 
         this.DeletePaketNodes("Compile")
         this.DeletePaketNodes("Content")
@@ -142,8 +134,15 @@ type ProjectFile =
                  "Compile", node :?> XmlElement ] 
             |> dict
 
+
         for fileItem in fileItems |> List.rev do
-            let paketNode = this.createFileItemNode fileItem
+            let libReferenceNode = 
+                this.CreateNode(fileItem.BuildAction)
+                |> addAttribute "Include" fileItem.Include
+                |> addChild (this.CreateNode("Paket","True"))
+                |> (fun n -> match fileItem.Link with
+                             | Some link -> addChild (this.CreateNode("Link" ,link.Replace("\\","/"))) n
+                             | _ -> n)
 
             let fileItemsInSameDir =
                 this.Document 
@@ -156,7 +155,7 @@ type ProjectFile =
 
             if fileItemsInSameDir |> Seq.isEmpty 
             then 
-                newItemGroups.[fileItem.BuildAction].PrependChild(paketNode) |> ignore
+                newItemGroups.[fileItem.BuildAction].PrependChild(libReferenceNode) |> ignore
             else
                 let existingNode = fileItemsInSameDir 
                                    |> Seq.tryFind (fun n -> n.Attributes.["Include"].Value = fileItem.Include)
@@ -169,7 +168,7 @@ type ProjectFile =
                     else verbosefn "  - custom nodes for %s in %s ==> skipping" fileItem.Include this.FileName
                 | None  ->
                     let firstNode = fileItemsInSameDir |> Seq.head
-                    firstNode.ParentNode.InsertBefore(paketNode, firstNode) |> ignore
+                    firstNode.ParentNode.InsertBefore(libReferenceNode, firstNode) |> ignore
         
         this.DeleteIfEmpty("PropertyGroup")
         this.DeleteIfEmpty("ItemGroup")
