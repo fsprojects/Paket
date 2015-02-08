@@ -153,12 +153,13 @@ type ProjectFile =
                         true
                     | _ -> false)
 
-            if fileItemsInSameDir |> Seq.isEmpty 
-            then 
+            if Seq.isEmpty  fileItemsInSameDir then 
                 newItemGroups.[fileItem.BuildAction].PrependChild(libReferenceNode) |> ignore
             else
-                let existingNode = fileItemsInSameDir 
-                                   |> Seq.tryFind (fun n -> n.Attributes.["Include"].Value = fileItem.Include)
+                let existingNode = 
+                    fileItemsInSameDir 
+                    |> Seq.tryFind (fun node -> node |> getAttribute "Include" = Some fileItem.Include)
+
                 match existingNode with
                 | Some existingNode ->
                     if hard 
@@ -340,7 +341,7 @@ type ProjectFile =
             [for node in node.ChildNodes do
                 if node.Name.Contains("__paket__") || 
                     (node.Name = "Import" && node.Attributes.["Project"].Value.Contains("__paket__")) ||
-                    ((node |> getAttribute "Label") = Some("Paket"))
+                    (node |> getAttribute "Label" = Some "Paket")
                 then
                     yield node
                 yield! PaketNodes node]
