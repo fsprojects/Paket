@@ -50,7 +50,7 @@ let getSearchAPI(auth,nugetUrl) =
 
 
 let extractVersions(response:string) =
-    JsonConvert.DeserializeObject<JSONVersionData>(response.Replace("@id","ID").Replace("@type","Type")).Data
+    JsonConvert.DeserializeObject<JSONVersionData>(response).Data
 
 let FindVersionsForPackage(auth, nugetURL, package) =
     async {
@@ -64,13 +64,13 @@ let FindVersionsForPackage(auth, nugetURL, package) =
     }
 
 let extractPackages(response:string) =
-    JsonConvert.DeserializeObject<JSONVersionData>(response.Replace("@id","ID").Replace("@type","Type")).Data
+    JsonConvert.DeserializeObject<JSONVersionData>(response).Data
 
-let FindPackages(auth, nugetURL, packagenNamePrefix) =
+let FindPackages(auth, nugetURL, packageNamePrefix) =
     async {
         match getSearchAPI(auth,nugetURL) with
         | Some url -> 
-            let! response = safeGetFromUrl(auth,sprintf "%s?q=%s&take=10000" url packagenNamePrefix)
+            let! response = safeGetFromUrl(auth,sprintf "%s?q=%s&take=10000" url packageNamePrefix)
             match response with
             | Some text -> return extractPackages text
             | None -> return [||]
