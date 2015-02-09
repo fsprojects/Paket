@@ -4,7 +4,7 @@ module Paket.NuGetV3
 open Newtonsoft.Json
 open System.Collections.Generic
 
-type JSONResouce = 
+type JSONResource = 
     { Type : string;
       ID: string }
 
@@ -14,7 +14,7 @@ type JSONVersionData =
 let getJSONLDDetails (data : string) = JsonConvert.DeserializeObject<JSONVersionData>(data).Data
 
 type JSONRootData = 
-    { Resources : JSONResouce [] }
+    { Resources : JSONResource [] }
 
 let getSearchAutocompleteService (data : string) =  
     JsonConvert.DeserializeObject<JSONRootData>(data.Replace("@id","ID").Replace("@type","Type")).Resources
