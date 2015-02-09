@@ -1,3 +1,6 @@
+#### 0.27.6 - 09.02.2015
+* BUGFIX: Make DeletePaketNodes more robust - https://github.com/fsprojects/Paket/issues/591
+
 #### 0.27.5 - 08.02.2015
 * BUGFIX: Install content files on mono - https://github.com/fsprojects/Paket/issues/561
 

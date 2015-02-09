@@ -337,9 +337,9 @@ type ProjectFile =
         this.DeletePaketNodes("Reference")
 
         let rec PaketNodes (node:XmlNode) =
-            [for node in node.ChildNodes do
+            [for node in node.ChildNodes do                
                 if node.Name.Contains("__paket__") || 
-                    (node.Name = "Import" && node.Attributes.["Project"].Value.Contains("__paket__")) ||
+                    (node.Name = "Import" && match node |> getAttribute "Project" with Some v -> v.Contains("__paket__") | None -> false) ||
                     (node |> withAttributeValue "Label" "Paket")
                 then
                     yield node
@@ -347,10 +347,17 @@ type ProjectFile =
         
         for node in PaketNodes this.Document do
             let parent = node.ParentNode
-            node.ParentNode.RemoveChild(node) |> ignore
-            if parent.ChildNodes.Count = 0 then
-                parent.ParentNode.RemoveChild(parent) |> ignore
-        
+            try                
+                node.ParentNode.RemoveChild(node) |> ignore
+            with
+            | _ -> ()
+
+            try
+                if parent.ChildNodes.Count = 0 then
+                    parent.ParentNode.RemoveChild(parent) |> ignore
+            with
+            | _ -> ()
+
         ["ItemGroup";"When";"Otherwise";"Choose";"When";"Choose"]
         |> List.iter this.DeleteIfEmpty
 

@@ -27,7 +27,7 @@ let inline getAttribute name (node:XmlNode) =
     if node = null || node.Attributes = null then None else
     node.Attributes 
     |> Seq.cast<XmlAttribute> 
-    |> Seq.tryFind (fun a -> a.Name = name) 
+    |> Seq.tryFind (fun a -> a.Name = name && a.Value <> null) 
     |> Option.map (fun a -> a.Value)
 
 /// [omit]
