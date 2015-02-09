@@ -1,3 +1,6 @@
+#### 0.27.8 - 10.02.2015
+* Add a simple API which allows to retrieves NuGet v3 autocomplete
+
 #### 0.27.7 - 09.02.2015
 * BUGFIX: Make DeletePaketNodes more robust - https://github.com/fsprojects/Paket/issues/591
 

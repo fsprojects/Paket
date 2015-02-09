@@ -29,7 +29,7 @@ let calculateNuGet3Path nugetUrl =
     | "https://nuget.org/api/v2" -> Some "http://preview.nuget.org/ver3-preview/index.json"
     | _ -> None
 
-let getSeachAPI(auth,nugetUrl) = 
+let getSearchAPI(auth,nugetUrl) = 
     match searchDict.TryGetValue nugetUrl with
     | true,v -> v
     | _ ->
@@ -49,9 +49,30 @@ let getSeachAPI(auth,nugetUrl) =
         result
 
 
-let getViaNuGet3(auth, nugetURL, package) =
+let extractVersions(response:string) =
+    JsonConvert.DeserializeObject<JSONVersionData>(response.Replace("@id","ID").Replace("@type","Type")).Data
+
+let FindVersionsForPackage(auth, nugetURL, package) =
     async {
-        match getSeachAPI(auth,nugetURL) with        
-        | Some url -> return! safeGetFromUrl(auth,sprintf "%s?id=%s&take=10000" url package)
-        | None -> return None
+        match getSearchAPI(auth,nugetURL) with        
+        | Some url ->
+            let! response = safeGetFromUrl(auth,sprintf "%s?id=%s&take=10000" url package)
+            match response with
+            | Some text -> return extractVersions text
+            | None -> return [||]
+        | None -> return [||]
+    }
+
+let extractPackages(response:string) =
+    JsonConvert.DeserializeObject<JSONVersionData>(response.Replace("@id","ID").Replace("@type","Type")).Data
+
+let FindPackages(auth, nugetURL, packagenNamePrefix) =
+    async {
+        match getSearchAPI(auth,nugetURL) with
+        | Some url -> 
+            let! response = safeGetFromUrl(auth,sprintf "%s?q=%s&take=10000" url packagenNamePrefix)
+            match response with
+            | Some text -> return extractPackages text
+            | None -> return [||]
+        | None -> return [||]
     }
