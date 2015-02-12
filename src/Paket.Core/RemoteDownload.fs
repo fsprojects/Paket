@@ -138,7 +138,7 @@ let DownloadSourceFiles(rootPath, sourceFiles:ModuleResolver.ResolvedSourceFile 
     |> Seq.sortBy (fst >> fst)
     |> Seq.map (fun ((destinationDir, version), sources) ->
         let versionFile = FileInfo(Path.Combine(destinationDir, Constants.PaketVersionFileName))
-        let isInRightVersion = versionFile.Exists && version = File.ReadAllText(versionFile.FullName)
+        let isInRightVersion = versionFile.Exists && File.ReadAllText(versionFile.FullName).Contains(version)
 
         if not isInRightVersion then
             CleanDir destinationDir
@@ -165,6 +165,7 @@ let DownloadSourceFiles(rootPath, sourceFiles:ModuleResolver.ResolvedSourceFile 
                     })
                 |> Async.Parallel
 
-            File.WriteAllText(versionFile.FullName, version)
+            if not <| File.ReadAllText(versionFile.FullName).Contains(version)
+                then File.AppendAllLines(versionFile.FullName, [version])
         })
     |> Async.Parallel
