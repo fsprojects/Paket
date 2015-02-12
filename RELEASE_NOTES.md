@@ -1,3 +1,6 @@
+#### 0.27.11 - 12.02.2015
+* BUGFIX:`paket restore` does not re-download http references - https://github.com/fsprojects/Paket/issues/592
+
 #### 0.27.10 - 12.02.2015
 * BUGFIX: Don't call HasExited on CurrentProcess - https://github.com/fsprojects/Paket/issues/599
 
