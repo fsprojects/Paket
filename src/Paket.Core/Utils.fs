@@ -212,7 +212,8 @@ let RunInLockedAccessMode(rootFolder,action) =
                 if File.Exists fileName then
                     let content = File.ReadAllText fileName
                     if content <> p.Id.ToString() then
-                        let processes = Process.GetProcessesByName(p.ProcessName)
+                        let currentProcess = Process.GetCurrentProcess()
+                        let processes = Process.GetProcessesByName(p.ProcessName) |> Array.filter (fun p -> p <> currentProcess)
                         if processes |> Array.exists (fun p -> p.HasExited = false && content = p.Id.ToString()) then
                             if startTime + timeOut <= DateTime.Now then
                                 failwith "timeout"

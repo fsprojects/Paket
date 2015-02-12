@@ -1,3 +1,6 @@
+#### 0.27.10 - 12.02.2015
+* BUGFIX: Don't call HasExited on CurrentProcess - https://github.com/fsprojects/Paket/issues/599
+
 #### 0.27.9 - 10.02.2015
 * Add a simple API which allows to retrieves NuGet v3 autocomplete
 
