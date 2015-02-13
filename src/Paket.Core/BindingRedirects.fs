@@ -50,7 +50,7 @@ let internal setRedirect (doc:XDocument) bindingRedirect =
 
 /// Applies a set of binding redirects to a single configuration file.
 let private applyBindingRedirects bindingRedirects (configFilePath:string) =
-    let config = XDocument.Load configFilePath
+    let config = XDocument.Load(configFilePath, LoadOptions.PreserveWhitespace)
     let config = Seq.fold setRedirect config bindingRedirects
     config.Save configFilePath
 

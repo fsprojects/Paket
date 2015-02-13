@@ -1,3 +1,6 @@
+#### 0.27.16 - 13.02.2015
+* COSMETICS: Paket should not reformat app/web.config files while changing assembly redirects - https://github.com/fsprojects/Paket/issues/597
+
 #### 0.27.15 - 13.02.2015
 * BUGFIX: Parsing of conditional dependencies should detect portable case - https://github.com/fsprojects/Paket/issues/594
 
