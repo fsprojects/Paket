@@ -1,8 +1,8 @@
+#### 0.27.14 - 13.02.2015
+* BUGFIX: `paket restore` does not fail on missing `paket.version` files - https://github.com/fsprojects/Paket/issues/600
+
 #### 0.27.13 - 13.02.2015
 * BUGFIX: Try to ease the pain with mono bug in Process class - https://github.com/fsprojects/Paket/issues/599
-
-#### 0.27.12 - 13.02.2015
-* BUGFIX: `paket restore` does not fail on missing `paket.version` files - https://github.com/fsprojects/Paket/issues/600
 
 #### 0.27.11 - 12.02.2015
 * BUGFIX: `paket restore` does not re-download http references - https://github.com/fsprojects/Paket/issues/592
