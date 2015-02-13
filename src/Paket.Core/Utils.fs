@@ -215,7 +215,7 @@ let RunInLockedAccessMode(rootFolder,action) =
                         let currentProcess = Process.GetCurrentProcess()
                         let hasRunningPaketProcess = 
                             Process.GetProcessesByName(p.ProcessName) 
-                            |> Array.filter (fun p -> p <> currentProcess)
+                            |> Array.filter (fun p -> p.Id <> currentProcess.Id)
                             |> Array.exists (fun p -> content = p.Id.ToString() && (not p.HasExited))
 
                         if hasRunningPaketProcess then
