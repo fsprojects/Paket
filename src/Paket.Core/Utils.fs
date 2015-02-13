@@ -213,8 +213,12 @@ let RunInLockedAccessMode(rootFolder,action) =
                     let content = File.ReadAllText fileName
                     if content <> p.Id.ToString() then
                         let currentProcess = Process.GetCurrentProcess()
-                        let processes = Process.GetProcessesByName(p.ProcessName) |> Array.filter (fun p -> p <> currentProcess)
-                        if processes |> Array.exists (fun p -> p.HasExited = false && content = p.Id.ToString()) then
+                        let hasRunningPaketProcess = 
+                            Process.GetProcessesByName(p.ProcessName) 
+                            |> Array.filter (fun p -> p <> currentProcess)
+                            |> Array.exists (fun p -> content = p.Id.ToString() && (not p.HasExited))
+
+                        if hasRunningPaketProcess then
                             if startTime + timeOut <= DateTime.Now then
                                 failwith "timeout"
                             if counter % 10 = 0 then
