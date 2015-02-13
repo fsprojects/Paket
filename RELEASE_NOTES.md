@@ -1,3 +1,6 @@
+#### 0.27.15 - 13.02.2015
+* BUGFIX: Parsing of conditional dependencies should detect portable case - https://github.com/fsprojects/Paket/issues/594
+
 #### 0.27.14 - 13.02.2015
 * BUGFIX: `paket restore` does not fail on missing `paket.version` files - https://github.com/fsprojects/Paket/issues/600
 

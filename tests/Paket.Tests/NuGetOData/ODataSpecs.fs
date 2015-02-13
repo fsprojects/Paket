@@ -124,3 +124,17 @@ let ``can read all versions from single page with multiple entries``() =
     versions |> shouldContain "2.5.10.11092"
     versions |> shouldContain "2.5.9.10348"
     versions |> shouldContain "2.5.7.10213"
+
+
+[<Test>]
+let ``can detect explicit dependencies for Microsoft.AspNet.WebApi.Client``() = 
+    let odata = parse "NuGetOData/Microsoft.AspNet.WebApi.Client.xml"
+    odata.PackageName |> shouldEqual "Microsoft.AspNet.WebApi.Client"
+    odata.DownloadUrl |> shouldEqual"https://www.nuget.org/api/v2/package/Microsoft.AspNet.WebApi.Client/5.2.3"
+    let dependencies = odata.Dependencies |> Array.ofList
+    dependencies.[0] |> shouldEqual 
+        (PackageName "Newtonsoft.Json", DependenciesFileParser.parseVersionRequirement(">= 6.0.4"), 
+                [FrameworkRestriction.Portable("portable-wp80+win+net45+wp81+wpa81"); FrameworkRestriction.AtLeast(DotNetFramework(FrameworkVersion.V4_5))])
+    dependencies.[1] |> shouldEqual
+        (PackageName "Microsoft.Net.Http", DependenciesFileParser.parseVersionRequirement(">= 2.2.22"), 
+                [FrameworkRestriction.Portable("portable-wp80+win+net45+wp81+wpa81")])

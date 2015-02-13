@@ -175,6 +175,7 @@ let parseODataDetails(nugetURL,packageName,version,raw) =
                         a.[0],
                         (if a.Length > 1 then a.[1] else "0"),
                         (if a.Length > 2 && a.[2] <> "" then 
+                            if a.[2].ToLower().StartsWith("portable") then [FrameworkRestriction.Portable(a.[2])] else
                             match FrameworkDetection.Extract a.[2] with
                             | Some x -> [FrameworkRestriction.Exactly x]
                             | None -> []

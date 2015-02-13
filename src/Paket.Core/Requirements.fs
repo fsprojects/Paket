@@ -7,12 +7,14 @@ open Paket.PackageSources
 [<RequireQualifiedAccess>]
 type FrameworkRestriction = 
 | Exactly of FrameworkIdentifier
+| Portable of string
 | AtLeast of FrameworkIdentifier
 | Between of FrameworkIdentifier * FrameworkIdentifier
     
     override this.ToString() =
         match this with    
         | FrameworkRestriction.Exactly r -> r.ToString()
+        | FrameworkRestriction.Portable r -> r
         | FrameworkRestriction.AtLeast r -> ">= " + r.ToString()
         | FrameworkRestriction.Between(min,max) -> sprintf ">= %s < %s" (min.ToString()) (max.ToString())
 

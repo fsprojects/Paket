@@ -27,10 +27,10 @@
     <WarningLevel>3</WarningLevel>
     <DocumentationFile>
     </DocumentationFile>
-    <StartArguments>update</StartArguments>
+    <StartArguments>update -f</StartArguments>
     <StartAction>Project</StartAction>
     <StartProgram>paket.exe</StartProgram>
-    <StartWorkingDirectory>d:\code\paketkopie</StartWorkingDirectory>
+    <StartWorkingDirectory>d:\code\Paket09x</StartWorkingDirectory>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>

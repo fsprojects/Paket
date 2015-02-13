@@ -196,6 +196,12 @@ type InstallModel =
                 restrictions
                 |> List.exists (fun restriction ->
                       match restriction with
+                      | FrameworkRestriction.Portable p ->
+                            folder.Targets 
+                            |> List.exists (fun target ->
+                                match target with
+                                | SinglePlatform t -> false
+                                | _ -> true)
                       | FrameworkRestriction.Exactly target ->
                             folder.GetSinglePlatforms() 
                             |> List.exists (fun t -> t = target)
@@ -255,9 +261,15 @@ type InstallModel =
                                 |> List.exists (fun restriction ->
                                         match restriction with
                                         | FrameworkRestriction.Exactly fw -> pf = fw
+                                        | FrameworkRestriction.Portable r -> false
                                         | FrameworkRestriction.AtLeast fw -> pf >= fw                
                                         | FrameworkRestriction.Between(min,max) -> pf >= min && pf < max)
-                             | _ -> false) }                
+                             | _ -> 
+                                restrictions
+                                |> List.exists (fun restriction ->
+                                        match restriction with
+                                        | FrameworkRestriction.Portable r -> true
+                                        | _ -> false))}
 
             {this with 
                 ReferenceFileFolders = 
