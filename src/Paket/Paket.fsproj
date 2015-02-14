@@ -30,7 +30,7 @@
     <StartArguments>update -f</StartArguments>
     <StartAction>Project</StartAction>
     <StartProgram>paket.exe</StartProgram>
-    <StartWorkingDirectory>d:\code\Paket09x</StartWorkingDirectory>
+    <StartWorkingDirectory>c:\code\Paket09x</StartWorkingDirectory>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>

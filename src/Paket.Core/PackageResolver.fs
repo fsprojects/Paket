@@ -198,7 +198,10 @@ let Resolve(getVersionsF, getPackageDetailsF, rootDependencies:PackageRequiremen
                 | Some(versions,globalOverride) -> 
                     if globalOverride then 
                         versions,versions,true 
-                    else versions,List.filter dependency.VersionRequirement.IsInRange versions,false
+                    else
+                        let filtered = 
+                            List.filter (fun v -> dependency.VersionRequirement.IsInRange(v,dependency.Parent.IsRootRequirement() |> not)) versions
+                        versions,filtered,false
 
             if compatibleVersions = [] then
                 match dependency.Parent with

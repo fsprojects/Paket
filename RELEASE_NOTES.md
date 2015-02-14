@@ -1,3 +1,6 @@
+#### 0.27.17 - 14.02.2015
+* BUGFIX: Prerelease requirements in `paket.dependencies` should override package dependencies - https://github.com/fsprojects/Paket/issues/607
+
 #### 0.27.16 - 13.02.2015
 * COSMETICS: Paket should not reformat app/web.config files while changing assembly redirects - https://github.com/fsprojects/Paket/issues/597
 

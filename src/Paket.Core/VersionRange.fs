@@ -68,9 +68,11 @@ type VersionRange =
 type VersionRequirement =
 | VersionRequirement of VersionRange * PreReleaseStatus
     /// Checks wether the given version is in the version range
-    member this.IsInRange(version : SemVerInfo) =         
+    member this.IsInRange(version : SemVerInfo,?ignorePrerelease) =         
+        let ignorePrerelease = defaultArg ignorePrerelease false
         let (VersionRequirement (range,prerelease)) = this
-        let checkPrerelease prerelease version = 
+        let checkPrerelease prerelease version =
+            if ignorePrerelease then true else
             match prerelease with
             | PreReleaseStatus.All -> true
             | PreReleaseStatus.No -> version.PreRelease = None
