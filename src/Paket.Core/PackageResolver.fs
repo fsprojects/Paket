@@ -114,6 +114,30 @@ type ResolvedPackages =
             failwith !errorText
 
 
+let calcOpenRequirements (exploredPackage:ResolvedPackage,versionToExplore,dependency,closed:Set<PackageRequirement>,stillOpen:Set<PackageRequirement>,rest:Set<PackageRequirement>) =
+    let dependenciesByName =
+        // there are packages which define multiple dependencies to the same package
+        // we just take the latest one - see #567
+        let hashSet = new HashSet<_>()
+        exploredPackage.Dependencies
+        |> Set.filter (fun (name,_,_) -> hashSet.Add name)
+                        
+    dependenciesByName
+    |> Set.map (fun (n,v,r) -> {dependency with Name = n; VersionRequirement = v; Parent = Package(dependency.Name,versionToExplore); FrameworkRestrictions = r })
+    |> Set.filter (fun d -> Set.contains d closed |> not)
+    |> Set.filter (fun d -> Set.contains d stillOpen |> not)
+    |> Set.filter (fun d ->
+        closed 
+        |> Seq.filter (fun x -> x.Name = d.Name)
+        |> Seq.exists (fun otherDep -> otherDep.VersionRequirement.Range.IsIncludedIn(d.VersionRequirement.Range))
+        |> not)
+    |> Set.filter (fun d ->
+        rest 
+        |> Seq.filter (fun x -> x.Name = d.Name)
+        |> Seq.exists (fun otherDep -> otherDep.VersionRequirement.Range.IsIncludedIn(d.VersionRequirement.Range))
+        |> not)
+    |> Set.union rest
+
 type Resolved = {
     ResolvedPackages : ResolvedPackages
     ResolvedSourceFiles : ModuleResolver.ResolvedSourceFile list }
@@ -228,30 +252,10 @@ let Resolve(getVersionsF, getPackageDetailsF, rootDependencies:PackageRequiremen
                         let exploredPackage = getExploredPackage(dependency.Sources,dependency.Name,versionToExplore,dependency.FrameworkRestrictions)    
                         if exploredPackage.Unlisted && not useUnlisted then (allUnlisted,state) else                
                         let newFilteredVersion = Map.add dependency.Name ([versionToExplore],globalOverride) filteredVersions
-                        let dependenciesByName =
-                            // there are packages which define multiple dependencies to the same package
-                            // we just take the latest one - see #567
-                            let hashSet = new HashSet<_>()
-                            exploredPackage.Dependencies
-                            |> Set.filter (fun (name,_,_) -> hashSet.Add name)
+                        
+                        let newOpen = calcOpenRequirements(exploredPackage,versionToExplore,dependency,closed,stillOpen,rest)
                             
-                        let newDependencies =
-                            dependenciesByName
-                            |> Set.map (fun (n,v,r) -> {dependency with Name = n; VersionRequirement = v; Parent = Package(dependency.Name,versionToExplore); FrameworkRestrictions = r })
-                            |> Set.filter (fun d -> Set.contains d closed |> not)
-                            |> Set.filter (fun d -> Set.contains d stillOpen |> not)
-                            |> Set.filter (fun d ->
-                                closed 
-                                |> Seq.filter (fun x -> x.Name = d.Name)
-                                |> Seq.exists (fun otherDep -> otherDep.VersionRequirement.Range.IsIncludedIn(d.VersionRequirement.Range))
-                                |> not)
-                            |> Set.filter (fun d ->
-                                rest 
-                                |> Seq.filter (fun x -> x.Name = d.Name)
-                                |> Seq.exists (fun otherDep -> otherDep.VersionRequirement.Range.IsIncludedIn(d.VersionRequirement.Range))
-                                |> not)
-
-                        (exploredPackage.Unlisted && allUnlisted),improveModel (newFilteredVersion,exploredPackage::packages,Set.add dependency closed,Set.union rest newDependencies)
+                        (exploredPackage.Unlisted && allUnlisted),improveModel (newFilteredVersion,exploredPackage::packages,Set.add dependency closed,newOpen)
                     | ResolvedPackages.Ok _ -> allUnlisted,state)
                         (true,ResolvedPackages.Conflict(closed,stillOpen))
             
