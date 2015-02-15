@@ -234,7 +234,7 @@ let Resolve(getVersionsF, getPackageDetailsF, rootDependencies:PackageRequiremen
                 failwithf "Could not find compatible versions for top level dependency:%s     %A%s   Available versions:%s     - %s%s   Try to relax the dependency or allow prereleases." 
                     Environment.NewLine (dependency.ToString()) Environment.NewLine Environment.NewLine versionText Environment.NewLine
                 
-            let sorted =                
+            let sortedVersions =                
                 if dependency.Parent.IsRootRequirement() then
                     List.sort compatibleVersions |> List.rev
                 else
@@ -243,17 +243,19 @@ let Resolve(getVersionsF, getPackageDetailsF, rootDependencies:PackageRequiremen
                     | ResolverStrategy.Min -> List.sort compatibleVersions
 
             let tryToImprove useUnlisted =
-                sorted
+                sortedVersions
                 |> List.fold (fun (allUnlisted,state) versionToExplore ->
                     match state with
                     | ResolvedPackages.Conflict _ ->
                         let exploredPackage = getExploredPackage(dependency.Sources,dependency.Name,versionToExplore,dependency.FrameworkRestrictions)    
-                        if exploredPackage.Unlisted && not useUnlisted then (allUnlisted,state) else                
-                        let newFilteredVersion = Map.add dependency.Name ([versionToExplore],globalOverride) filteredVersions
+                        if exploredPackage.Unlisted && not useUnlisted then 
+                            allUnlisted,state 
+                        else                
+                            let newFilteredVersions = Map.add dependency.Name ([versionToExplore],globalOverride) filteredVersions
                         
-                        let newOpen = calcOpenRequirements(exploredPackage,versionToExplore,dependency,closed,stillOpen)
+                            let newOpen = calcOpenRequirements(exploredPackage,versionToExplore,dependency,closed,stillOpen)
                             
-                        (exploredPackage.Unlisted && allUnlisted),improveModel (newFilteredVersion,exploredPackage::packages,Set.add dependency closed,newOpen)
+                            (exploredPackage.Unlisted && allUnlisted),improveModel (newFilteredVersions,exploredPackage::packages,Set.add dependency closed,newOpen)
                     | ResolvedPackages.Ok _ -> allUnlisted,state)
                         (true,ResolvedPackages.Conflict(closed,stillOpen))
             
