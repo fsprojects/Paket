@@ -1,5 +1,5 @@
 #### 0.28.0 - 16.02.2015
-* Add a simple API which allows to retrieves NuGet v3 autocomplete
+* Add a simple API which allows to retrieve NuGet v3 autocomplete
 * Allow unix-style comments in `paket.dependencies` file
 * BUGFIX: `paket restore` does not fail on missing `paket.version` files - https://github.com/fsprojects/Paket/issues/600
 * BUGFIX: Parsing of conditional dependencies should detect portable case - https://github.com/fsprojects/Paket/issues/594
@@ -9,8 +9,8 @@
 * BUGFIX: Make DeletePaketNodes more robust - https://github.com/fsprojects/Paket/issues/591
 * BUGFIX: Install content files on mono - https://github.com/fsprojects/Paket/issues/561
 * BUGFIX: Install process doesn't duplicate Imports of targets files any more - https://github.com/fsprojects/Paket/issues/588
-* COSMETICS: Paket should not reformat app/web.config files while changing assembly redirects - https://github.com/fsprojects/Paket/issues/597
 * BUGFIX: Don't remove comments from `paket.dependencies` file - https://github.com/fsprojects/Paket/issues/584
+* COSMETICS: Paket should not reformat app/web.config files while changing assembly redirects - https://github.com/fsprojects/Paket/issues/597
 
 #### 0.27.0 - 07.02.2015
 * Install process will reference `.props` and `.targets` files from NuGet packages - https://github.com/fsprojects/Paket/issues/516
