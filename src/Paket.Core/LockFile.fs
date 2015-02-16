@@ -385,7 +385,14 @@ type LockFile(fileName:string,options,resolution:PackageResolution,remoteFiles:R
                         usedPackages.Add(d,package.CopyLocal)
             with exn -> failwithf "%s - in %s" exn.Message referencesFile.FileName)
 
-        usedPackages   
+        usedPackages
+
+    member this.GetDependencyLookupTable() = 
+        this.ResolvedPackages
+        |> Map.map (fun name package -> 
+                        (this.GetAllDependenciesOf package.Name)
+                        |> Set.ofSeq
+                        |> Set.remove package.Name)
 
     member this.GetPackageHullSafe referencesFile =
         referencesFile.NugetPackages

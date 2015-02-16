@@ -8,13 +8,6 @@ open Paket.Logging
 open Paket.PackageResolver
 open Paket.Rop
 
-let getFlatLookup (lockFile : LockFile) = 
-    lockFile.ResolvedPackages
-    |> Map.map (fun name package -> 
-                    lockFile.GetAllDependenciesOf package.Name
-                    |> Set.ofSeq
-                    |> Set.remove package.Name)
-
 let findTransitive (packages, flatLookup, failureF) = 
     packages
     |> List.map (fun packageName -> 
@@ -65,7 +58,7 @@ let beforeAndAfter environment dependenciesFile projects =
 let simplify interactive environment = rop {
     let! lockFile = environment |> PaketEnv.ensureLockFileExists
 
-    let flatLookup = getFlatLookup lockFile
+    let flatLookup = lockFile.GetDependencyLookupTable()
     let! dependenciesFile = simplifyDependenciesFile(environment.DependenciesFile, flatLookup, interactive)
     let projectFiles, referencesFiles = List.unzip environment.Projects
 
