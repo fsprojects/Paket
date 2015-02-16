@@ -204,43 +204,44 @@ let Resolve(getVersionsF, getPackageDetailsF, rootDependencies:PackageRequiremen
                 ResolvedPackages.Conflict(closed,stillOpen)
         else
             let dependency = Seq.head stillOpen
-     
-            let allVersions,compatibleVersions,globalOverride = 
-                match Map.tryFind dependency.Name filteredVersions with
-                | None ->
-                    let versions = getAllVersions(dependency.Sources,dependency.Name,dependency.VersionRequirement.Range)
-                    if dependency.VersionRequirement.Range.IsGlobalOverride then
-                        versions,List.filter dependency.VersionRequirement.IsInRange versions,true
-                    else
-                        let compatible = List.filter dependency.VersionRequirement.IsInRange versions
-                        if compatible = [] then
-                            let prereleases = List.filter (dependency.IncludingPrereleases().VersionRequirement.IsInRange) versions
-                            if allPrereleases prereleases then
-                                prereleases,prereleases,false
-                            else
-                                versions,[],false
-                        else
-                            versions,compatible,false
-                | Some(versions,globalOverride) -> 
-                    if globalOverride then 
-                        versions,versions,true 
-                    else
-                        let filtered = 
-                            List.filter (fun v -> dependency.VersionRequirement.IsInRange(v,dependency.Parent.IsRootRequirement() |> not)) versions
-                        versions,filtered,false
 
-            if compatibleVersions = [] && dependency.Parent.IsRootRequirement() then    
-                let versionText = String.Join(Environment.NewLine + "     - ",List.sort allVersions)
+            let allVersions = ref []
+            let compatibleVersions = ref []
+            let globalOverride = ref false
+     
+            match Map.tryFind dependency.Name filteredVersions with
+            | None ->
+                allVersions := getAllVersions(dependency.Sources,dependency.Name,dependency.VersionRequirement.Range)
+                compatibleVersions := List.filter dependency.VersionRequirement.IsInRange (!allVersions)
+                if dependency.VersionRequirement.Range.IsGlobalOverride then
+                    globalOverride := true
+                else
+                    if !compatibleVersions = [] then
+                        let prereleases = List.filter (dependency.IncludingPrereleases().VersionRequirement.IsInRange) (!allVersions)
+                        if allPrereleases prereleases then
+                            allVersions := prereleases
+                            compatibleVersions := prereleases
+            | Some(versions,globalOverride') -> 
+                globalOverride := globalOverride'
+                allVersions := versions
+                if globalOverride' then
+                    compatibleVersions := versions
+                else
+                    compatibleVersions := 
+                        List.filter (fun v -> dependency.VersionRequirement.IsInRange(v,dependency.Parent.IsRootRequirement() |> not)) versions
+
+            if !compatibleVersions = [] && dependency.Parent.IsRootRequirement() then    
+                let versionText = String.Join(Environment.NewLine + "     - ",List.sort !allVersions)
                 failwithf "Could not find compatible versions for top level dependency:%s     %A%s   Available versions:%s     - %s%s   Try to relax the dependency or allow prereleases." 
                     Environment.NewLine (dependency.ToString()) Environment.NewLine Environment.NewLine versionText Environment.NewLine
                 
             let sortedVersions =                
                 if dependency.Parent.IsRootRequirement() then
-                    List.sort compatibleVersions |> List.rev
+                    List.sort !compatibleVersions |> List.rev
                 else
                     match dependency.ResolverStrategy with
-                    | ResolverStrategy.Max -> List.sort compatibleVersions |> List.rev
-                    | ResolverStrategy.Min -> List.sort compatibleVersions
+                    | ResolverStrategy.Max -> List.sort !compatibleVersions |> List.rev
+                    | ResolverStrategy.Min -> List.sort !compatibleVersions
 
             let tryToImprove useUnlisted =
                 sortedVersions
@@ -251,7 +252,7 @@ let Resolve(getVersionsF, getPackageDetailsF, rootDependencies:PackageRequiremen
                         if exploredPackage.Unlisted && not useUnlisted then 
                             allUnlisted,state 
                         else                
-                            let newFilteredVersions = Map.add dependency.Name ([versionToExplore],globalOverride) filteredVersions
+                            let newFilteredVersions = Map.add dependency.Name ([versionToExplore],!globalOverride) filteredVersions
                         
                             let newOpen = calcOpenRequirements(exploredPackage,versionToExplore,dependency,closed,stillOpen)
                             
