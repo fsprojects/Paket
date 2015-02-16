@@ -1,3 +1,6 @@
+#### 0.28.1 - 16.02.2015
+* `paket add` inserts package in alphabetical position - https://github.com/fsprojects/Paket/issues/596
+
 #### 0.28.0 - 16.02.2015
 * Add a simple API which allows to retrieve NuGet v3 autocomplete
 * Allow unix-style comments in `paket.dependencies` file

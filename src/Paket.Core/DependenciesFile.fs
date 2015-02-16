@@ -310,7 +310,13 @@ type DependenciesFile(fileName,options,sources,packages : PackageRequirement lis
               FrameworkRestrictions = []
               Parent = PackageRequirementSource.DependenciesFile fileName }
 
-        DependenciesFile(fileName,options,sources,packages @ [newPackage], remoteFiles, comments)
+        // Try to find alphabetical matching position to insert the package
+        let smaller = Seq.takeWhile (fun (p:PackageRequirement) -> p.Name <= packageName) packages |> List.ofSeq
+        let bigger = Seq.skipWhile (fun (p:PackageRequirement) -> p.Name <= packageName) packages |> List.ofSeq
+
+        let newPackages = smaller @ [newPackage] @ bigger
+
+        DependenciesFile(fileName,options,sources,newPackages, remoteFiles, comments)
 
     member __.AddFixedPackage(packageName:PackageName,version:string,frameworkRestrictions) =
         let versionRange = DependenciesFileParser.parseVersionRequirement (version.Trim '!')
