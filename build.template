@@ -166,6 +166,7 @@ Target "NuGet" (fun _ ->
             Description = description
             Version = release.NugetVersion
             ReleaseNotes = String.Join(Environment.NewLine, release.Notes)
+            WorkingDir = "."
             Tags = tags
             OutputPath = "bin"
             AccessKey = getBuildParamOrDefault "nugetkey" ""
@@ -323,10 +324,10 @@ Target "All" DoNothing
   ==> "AssemblyInfo"
   ==> "Build"
   ==> "RunTests"
-  =?> ("GenerateReferenceDocs",isLocalBuild && not isMono)
-  =?> ("GenerateDocs",isLocalBuild && not isMono)
+  =?> ("GenerateReferenceDocs",isLocalBuild)
+  =?> ("GenerateDocs",isLocalBuild)
   ==> "All"
-  =?> ("ReleaseDocs",isLocalBuild && not isMono)
+  =?> ("ReleaseDocs",isLocalBuild)
 
 "All" 
 #if MONO
