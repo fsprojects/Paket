@@ -36,7 +36,11 @@ let addPackagesFromReferenceFiles projects (dependenciesFile:DependenciesFile) =
         else
             let newDependenciesFile =
                 diff
-                |> Seq.fold (fun (dependenciesFile:DependenciesFile) dep -> dependenciesFile.AddAdditionionalPackage(dep.Name,"")) dependenciesFile
+                |> Seq.fold (fun (dependenciesFile:DependenciesFile) dep -> 
+                    if dependenciesFile.HasPackage dep.Name then 
+                        dependenciesFile
+                    else
+                        dependenciesFile.AddAdditionionalPackage(dep.Name,"")) dependenciesFile
             newDependenciesFile.Save()
             newDependenciesFile
 

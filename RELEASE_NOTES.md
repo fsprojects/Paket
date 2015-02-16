@@ -1,3 +1,6 @@
+#### 0.28.2 - 16.02.2015
+* BUGFIX: Selective update doesn't add package twice from `paket.references`
+
 #### 0.28.1 - 16.02.2015
 * `paket add` inserts package in alphabetical position - https://github.com/fsprojects/Paket/issues/596
 
