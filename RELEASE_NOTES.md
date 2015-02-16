@@ -1,42 +1,16 @@
-#### 0.27.18 - 16.02.2015
-* BUGFIX: `paket restore` does not fail on missing `paket.version` files - https://github.com/fsprojects/Paket/issues/600
-
-#### 0.27.17 - 14.02.2015
-* BUGFIX: Prerelease requirements in `paket.dependencies` should override package dependencies - https://github.com/fsprojects/Paket/issues/607
-
-#### 0.27.16 - 13.02.2015
-* COSMETICS: Paket should not reformat app/web.config files while changing assembly redirects - https://github.com/fsprojects/Paket/issues/597
-
-#### 0.27.15 - 13.02.2015
-* BUGFIX: Parsing of conditional dependencies should detect portable case - https://github.com/fsprojects/Paket/issues/594
-
-#### 0.27.14 - 13.02.2015
-* BUGFIX: `paket restore` does not fail on missing `paket.version` files - https://github.com/fsprojects/Paket/issues/600
-
-#### 0.27.13 - 13.02.2015
-* BUGFIX: Try to ease the pain with mono bug in Process class - https://github.com/fsprojects/Paket/issues/599
-
-#### 0.27.11 - 12.02.2015
-* BUGFIX: `paket restore` does not re-download http references - https://github.com/fsprojects/Paket/issues/592
-
-#### 0.27.10 - 12.02.2015
-* BUGFIX: Don't call HasExited on CurrentProcess - https://github.com/fsprojects/Paket/issues/599
-
-#### 0.27.9 - 10.02.2015
+#### 0.28.0 - 16.02.2015
 * Add a simple API which allows to retrieves NuGet v3 autocomplete
-
-#### 0.27.7 - 09.02.2015
+* Allow unix-style comments in `paket.dependencies` file
+* BUGFIX: `paket restore` does not fail on missing `paket.version` files - https://github.com/fsprojects/Paket/issues/600
+* BUGFIX: Parsing of conditional dependencies should detect portable case - https://github.com/fsprojects/Paket/issues/594
+* BUGFIX: Prerelease requirements in `paket.dependencies` should override package dependencies - https://github.com/fsprojects/Paket/issues/607
+* BUGFIX: Try to ease the pain with mono bug in Process class - https://github.com/fsprojects/Paket/issues/599
+* BUGFIX: `paket restore` does not re-download http references - https://github.com/fsprojects/Paket/issues/592
 * BUGFIX: Make DeletePaketNodes more robust - https://github.com/fsprojects/Paket/issues/591
-
-#### 0.27.5 - 08.02.2015
 * BUGFIX: Install content files on mono - https://github.com/fsprojects/Paket/issues/561
-
-#### 0.27.4 - 08.02.2015
 * BUGFIX: Install process doesn't duplicate Imports of targets files any more - https://github.com/fsprojects/Paket/issues/588
-
-#### 0.27.1 - 08.02.2015
-* Allow unix-style comments in `paket.depndencies` file
-* Don't remove comments from `paket.dependencies` file - https://github.com/fsprojects/Paket/issues/584
+* COSMETICS: Paket should not reformat app/web.config files while changing assembly redirects - https://github.com/fsprojects/Paket/issues/597
+* BUGFIX: Don't remove comments from `paket.dependencies` file - https://github.com/fsprojects/Paket/issues/584
 
 #### 0.27.0 - 07.02.2015
 * Install process will reference `.props` and `.targets` files from NuGet packages - https://github.com/fsprojects/Paket/issues/516
