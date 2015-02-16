@@ -1,3 +1,6 @@
+#### 0.27.18 - 16.02.2015
+* BUGFIX: `paket restore` does not fail on missing `paket.version` files - https://github.com/fsprojects/Paket/issues/600
+
 #### 0.27.17 - 14.02.2015
 * BUGFIX: Prerelease requirements in `paket.dependencies` should override package dependencies - https://github.com/fsprojects/Paket/issues/607
 

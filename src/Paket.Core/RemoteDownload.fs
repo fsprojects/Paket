@@ -165,7 +165,10 @@ let DownloadSourceFiles(rootPath, sourceFiles:ModuleResolver.ResolvedSourceFile 
                     })
                 |> Async.Parallel
 
-            if not <| (versionFile.Exists && File.ReadAllText(versionFile.FullName).Contains(version))
-                then File.AppendAllLines(versionFile.FullName, [version])
+            if File.Exists(versionFile.FullName) then
+                if not <| File.ReadAllText(versionFile.FullName).Contains(version) then
+                    File.AppendAllLines(versionFile.FullName, [version])
+            else
+                File.AppendAllLines(versionFile.FullName, [version])
         })
     |> Async.Parallel

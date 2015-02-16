@@ -27,10 +27,10 @@
     <WarningLevel>3</WarningLevel>
     <DocumentationFile>
     </DocumentationFile>
-    <StartArguments>update -f</StartArguments>
+    <StartArguments>update</StartArguments>
     <StartAction>Project</StartAction>
     <StartProgram>paket.exe</StartProgram>
-    <StartWorkingDirectory>c:\code\Paket09x</StartWorkingDirectory>
+    <StartWorkingDirectory>c:\code\fsharp.projectScaffold</StartWorkingDirectory>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
