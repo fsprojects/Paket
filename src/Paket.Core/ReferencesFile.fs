@@ -102,16 +102,16 @@ type ReferencesFile =
 
     override this.ToString() =
         List.append
-            (this.NugetPackages |> List.map (fun p ->                 
-                let s1 = if p.CopyLocal = false then "copy_local: false" else ""
-                let s2 = if p.ImportTargets = false then "import_targets: false" else ""
-                let s3 = if p.OmitContent = true then "content: none" else ""
-                let s4 =
+            (this.NugetPackages |> List.map (fun p ->
+                let options =
+                    [ if p.CopyLocal = false then yield "copy_local: false"
+                      if p.ImportTargets = false then yield "import_targets: false"
+                      if p.OmitContent = true then yield "content: none"
                       match p.FrameworkRestrictions with
-                      | [] -> ""
-                      | _  -> "framework: " + (String.Join(", ",p.FrameworkRestrictions))
+                      | [] -> ()
+                      | _  -> yield "framework: " + (String.Join(", ",p.FrameworkRestrictions))]
 
-                let s = String.Join(", ",[s1; s2; s3; s4] |> List.filter (fun s -> s <> ""))
+                let s = String.Join(", ",options)
                 
                 String.Join(" ",[p.Name.ToString(); s] |> List.filter (fun s -> s <> ""))))
             (this.RemoteFiles |> List.map (fun s -> "File:" + s.Name + if s.Link <> ReferencesFile.DefaultLink then " " + s.Link else ""))
