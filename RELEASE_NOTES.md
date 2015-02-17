@@ -1,4 +1,5 @@
-#### 0.28.2 - 16.02.2015
+#### 0.28.2 - 17.02.2015
+* New option to add/remove packages for a single project - https://github.com/fsprojects/Paket/pull/610
 * BUGFIX: Selective update doesn't add package twice from `paket.references`
 * BUGFIX: `paket install` should also install GitHub source files
 
