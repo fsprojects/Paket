@@ -375,14 +375,14 @@ type LockFile(fileName:string,options,resolution:PackageResolution,remoteFiles:R
         let usedPackages = Dictionary<_,_>()
 
         for p in referencesFile.NugetPackages do
-            usedPackages.Add(p.Name,(p.CopyLocal,p.ImportTargets))
+            usedPackages.Add(p.Name,p)
 
         referencesFile.NugetPackages
         |> List.iter (fun package -> 
             try
                 for d in this.GetAllDependenciesOf(package.Name) do
                     if usedPackages.ContainsKey d |> not then
-                        usedPackages.Add(d,(package.CopyLocal,package.ImportTargets))
+                        usedPackages.Add(d,package)
             with exn -> failwithf "%s - in %s" exn.Message referencesFile.FileName)
 
         usedPackages
