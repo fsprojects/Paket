@@ -25,7 +25,7 @@ let ``should parse lines correctly``() =
 
 [<Test>]
 let ``should serialize itself correctly``() = 
-    let refFile = {FileName = ""; NugetPackages = [{Name = PackageName "A"; CopyLocal = true; ImportTargets = true; FrameworkRestrictions = [] }; {Name = PackageName "B"; CopyLocal = true; ImportTargets = true; FrameworkRestrictions = [] }]; RemoteFiles = [{Name = "FromGithub.fs"; Link = ReferencesFile.DefaultLink}]}
+    let refFile = {FileName = ""; NugetPackages = [{Name = PackageName "A"; CopyLocal = true; ImportTargets = true; FrameworkRestrictions = []; OmitContent = false }; {Name = PackageName "B"; CopyLocal = true; ImportTargets = true; FrameworkRestrictions = []; OmitContent = false }]; RemoteFiles = [{Name = "FromGithub.fs"; Link = ReferencesFile.DefaultLink}]}
     let expected = [|"A"; "B"; "File:FromGithub.fs"|]
 
     refFile.ToString() |> toLines |> shouldEqual expected
@@ -153,7 +153,7 @@ xUnit import_targets: false"""
 
 
 let refFileContentWithMultipleSettings = """Castle.Windsor copy_local: false, import_targets: false, framework: net35, >= net40
-Newtonsoft.Json framework: net40
+Newtonsoft.Json content: none, framework: net40
 xUnit import_targets: false"""
 
 [<Test>]
@@ -163,9 +163,16 @@ let ``should parse and serialize lines with multiple settings settings correctly
     refFile.NugetPackages.Head.Name |> shouldEqual (PackageName "Castle.Windsor")
     refFile.NugetPackages.Head.CopyLocal |> shouldEqual false
     refFile.NugetPackages.Head.ImportTargets |> shouldEqual false
+
     refFile.NugetPackages.Tail.Head.Name |> shouldEqual (PackageName "Newtonsoft.Json")
     refFile.NugetPackages.Tail.Head.CopyLocal |> shouldEqual true
     refFile.NugetPackages.Tail.Head.ImportTargets |> shouldEqual true
+    refFile.NugetPackages.Tail.Head.OmitContent |> shouldEqual true
+
+    refFile.NugetPackages.Tail.Tail.Head.Name |> shouldEqual (PackageName "xUnit")
+    refFile.NugetPackages.Tail.Tail.Head.CopyLocal |> shouldEqual true
+    refFile.NugetPackages.Tail.Tail.Head.ImportTargets |> shouldEqual false
+    refFile.NugetPackages.Tail.Tail.Head.OmitContent |> shouldEqual false
 
     refFile.ToString()
     |> normalizeLineEndings
