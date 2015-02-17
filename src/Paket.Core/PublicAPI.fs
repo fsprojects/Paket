@@ -114,6 +114,12 @@ type Dependencies(dependenciesFileName: string) =
         Utils.RunInLockedAccessMode(
             this.RootPath,
             fun () -> AddProcess.Add(dependenciesFileName, PackageName package, version, force, hard, interactive, installAfter))
+
+    /// Adds the given package with the given version to the dependencies file.
+    member this.AddToProject(package: string,version: string,force: bool,hard: bool,projectName: string,installAfter: bool): unit =
+        Utils.RunInLockedAccessMode(
+            this.RootPath,
+            fun () -> AddProcess.AddToProject(dependenciesFileName, PackageName package, version, force, hard, projectName, installAfter))
       
     /// Adds credentials for a Nuget feed
     member this.AddCredentials(source: string, username: string) : unit =
@@ -229,6 +235,12 @@ type Dependencies(dependenciesFileName: string) =
         Utils.RunInLockedAccessMode(
             this.RootPath,
             fun () -> RemoveProcess.Remove(dependenciesFileName, PackageName package, force, hard, interactive, installAfter))
+
+    /// Removes the given package from the specified project
+    member this.RemoveFromProject(package: string,force: bool,hard: bool,projectName: string,installAfter: bool): unit =
+        Utils.RunInLockedAccessMode(
+            this.RootPath,
+            fun () -> RemoveProcess.RemoveFromProject(dependenciesFileName, PackageName package, force, hard, projectName, installAfter))
 
     /// Shows all references for the given packages.
     member this.ShowReferencesFor(packages: string list): unit =

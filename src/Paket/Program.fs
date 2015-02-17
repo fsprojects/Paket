@@ -82,9 +82,13 @@ try
             let version = defaultArg (results.TryGetResult <@ AddArgs.Version @>) ""
             let force = results.Contains <@ AddArgs.Force @>
             let hard = results.Contains <@ AddArgs.Hard @>
-            let interactive = results.Contains <@ AddArgs.Interactive @>
             let noInstall = results.Contains <@ AddArgs.No_Install @>
-            Dependencies.Locate().Add(packageName, version, force, hard, interactive, noInstall |> not)
+            match results.TryGetResult <@ AddArgs.Project @> with
+            | Some projectName ->
+                Dependencies.Locate().AddToProject(packageName, version, force, hard, projectName, noInstall |> not)
+            | None ->
+                let interactive = results.Contains <@ AddArgs.Interactive @>
+                Dependencies.Locate().Add(packageName, version, force, hard, interactive, noInstall |> not)
         
     | Command(Config, args) ->
         let results = commandArgs<ConfigArgs> args
@@ -174,9 +178,13 @@ try
             let packageName = results.GetResult <@ RemoveArgs.Nuget @>
             let force = results.Contains <@ RemoveArgs.Force @>
             let hard = results.Contains <@ RemoveArgs.Hard @>
-            let interactive = results.Contains <@ RemoveArgs.Interactive @>
             let noInstall = results.Contains <@ RemoveArgs.No_Install @>
-            Dependencies.Locate().Remove(packageName, force, hard, interactive, noInstall |> not)
+            match results.TryGetResult <@ RemoveArgs.Project @> with
+            | Some projectName ->
+                Dependencies.Locate().RemoveFromProject(packageName, force, hard, projectName, noInstall |> not)
+            | None ->
+                let interactive = results.Contains <@ RemoveArgs.Interactive @>
+                Dependencies.Locate().Remove(packageName, force, hard, interactive, noInstall |> not)
 
     | Command(Restore, args) ->
         let results = commandArgs<RestoreArgs> args

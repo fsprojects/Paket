@@ -186,7 +186,14 @@ Options:
 
   `--hard`: Replaces package references within project files even if they are not yet adhering to to Paket's conventions (and hence considered manually managed). See [convert from NuGet](paket-convert-from-nuget.html).
 
-  See also [paket remove](paket-remove.html).
+## Adding to a single project
+
+It's also possible to add a package to a specified project only: 
+
+    [lang=batchfile]
+    $ paket add nuget PACKAGENAME [version VERSION] [project PROJECT] [--force] [--hard]
+
+See also [paket remove](paket-remove.html).
 
 ## Sample
 
@@ -317,6 +324,13 @@ Options:
   `--force`: Forces the download and reinstallation of all packages.
 
   `--hard`: Replaces package references within project files even if they are not yet adhering to to Paket's conventions (and hence considered manually managed). See [convert from NuGet](paket-convert-from-nuget.html).
+
+## Removing from a single project
+
+It's also possible to remove a package from a specified project only: 
+
+    [lang=batchfile]
+    $ paket remove nuget PACKAGENAME [project PROJECT] [--force] [--hard]
 
 See also [paket add](paket-add.html)."""}
 

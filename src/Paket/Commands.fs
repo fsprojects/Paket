@@ -29,6 +29,7 @@ with
 type AddArgs =
     | [<CustomCommandLine("nuget")>][<Mandatory>] Nuget of string
     | [<CustomCommandLine("version")>] Version of string
+    | [<CustomCommandLine("project")>] Project of string
     | [<AltCommandLine("-f")>] Force
     | [<AltCommandLine("-i")>] Interactive
     | Hard
@@ -88,6 +89,7 @@ with
 
 type RemoveArgs =
     | [<CustomCommandLine("nuget")>][<Mandatory>] Nuget of string
+    | [<CustomCommandLine("project")>] Project of string
     | [<AltCommandLine("-f")>] Force
     | [<AltCommandLine("-i")>] Interactive
     | Hard
