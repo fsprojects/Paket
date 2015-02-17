@@ -7,6 +7,7 @@ open TestHelpers
 
 let config1 = """
 references strict
+copy_local false
 source "http://nuget.org/api/v2"
 
 nuget "Castle.Windsor-log4net" "~> 3.2"
@@ -17,6 +18,7 @@ let graph1 = [
 ]
 
 let expected1 = """REFERENCES: STRICT
+COPY-LOCAL: FALSE
 NUGET
   remote: http://nuget.org/api/v2
   specs:

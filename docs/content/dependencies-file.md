@@ -74,6 +74,15 @@ If you don't want to import `.targets` and `.props` files you can disable it via
     nuget Microsoft.Bcl.Build // we don't import .targets and .props
     nuget UnionArgParser ~> 0.7
 
+## copy_local settings
+
+It's possible to influence the `Private` property for references via the `copy_local` switch:
+
+    copy_local false
+    source https://nuget.org/api/v2
+
+    nuget Newtonsoft.Json
+
 ## Redirects option
 
 This option tells paket to create [Assembly Binding Redirects](https://msdn.microsoft.com/en-us/library/433ysdt1(v=vs.110).aspx) for all referenced libraries.

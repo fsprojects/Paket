@@ -8,7 +8,8 @@ open Paket.Domain
 open Paket.ModuleResolver
 open Paket.Requirements
 
-let lockFile = """NUGET
+let lockFile = """COPY-LOCAL: FALSE
+NUGET
   remote: https://nuget.org/api/v2
   specs:
     Castle.Windsor (2.1)
@@ -34,6 +35,7 @@ let ``should parse lock file``() =
     let packages = List.rev lockFile.Packages
     packages.Length |> shouldEqual 6
     lockFile.Options.Strict |> shouldEqual false
+    lockFile.Options.CopyLocal |> shouldEqual false
     lockFile.Options.ImportTargets |> shouldEqual true
 
     packages.[0].Source |> shouldEqual PackageSources.DefaultNugetSource
@@ -95,6 +97,7 @@ let ``should parse strict lock file``() =
     lockFile.Options.Strict |> shouldEqual true
     lockFile.Options.Redirects |> shouldEqual false
     lockFile.Options.ImportTargets |> shouldEqual false
+    lockFile.Options.CopyLocal |> shouldEqual true
 
     packages.[5].Source |> shouldEqual PackageSources.DefaultNugetSource
     packages.[5].Name |> shouldEqual (PackageName "log4net")
@@ -103,6 +106,7 @@ let ``should parse strict lock file``() =
 
 let redirectsLockFile = """REDIRECTS: ON
 IMPORT-TARGETS: TRUE
+COPY-LOCAL: TRUE
 NUGET
   remote: https://nuget.org/api/v2
   specs:
@@ -117,6 +121,7 @@ let ``should parse redirects lock file``() =
     lockFile.Options.Strict |> shouldEqual false
     lockFile.Options.Redirects |> shouldEqual true
     lockFile.Options.ImportTargets |> shouldEqual true
+    lockFile.Options.CopyLocal |> shouldEqual true
 
 let dogfood = """NUGET
   remote: https://nuget.org/api/v2

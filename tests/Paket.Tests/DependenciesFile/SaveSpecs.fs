@@ -77,6 +77,19 @@ let ``should serialize no targets config``() =
     cfg.ToString()
     |> shouldEqual (normalizeLineEndings noTargetsConfig)
 
+let noLocalCopyConfig = """copy_local false
+source http://nuget.org/api/v2
+
+nuget FAKE ~> 3.0"""
+
+
+[<Test>]
+let ``should serialize no local copy config``() = 
+    let cfg = DependenciesFile.FromCode(noLocalCopyConfig)
+    
+    cfg.ToString()
+    |> shouldEqual (normalizeLineEndings noLocalCopyConfig)
+
 let simplestConfig = """nuget FAKE ~> 3.0"""
 
 [<Test>]
