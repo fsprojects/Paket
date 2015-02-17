@@ -115,7 +115,7 @@ let buildDocumentation () =
     Literate.ProcessDirectory
       ( dir, docTemplate, output @@ sub, replacements = ("root", root)::info,
         layoutRoots = layoutRoots,
-        ?assemblyReferences = references
+        ?assemblyReferences = references,
         generateAnchors = true )
 
 // Generate
