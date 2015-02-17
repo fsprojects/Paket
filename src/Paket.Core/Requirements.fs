@@ -119,7 +119,11 @@ let optimizeRestrictions packages =
 
 type PackageRequirementSource =
 | DependenciesFile of string
-| Package of PackageName * SemVerInfo   
+| Package of PackageName * SemVerInfo 
+    member this.IsRootRequirement() =
+        match this with
+        | DependenciesFile _ -> true
+        | _ -> false  
 
 /// Represents an unresolved package.
 [<CustomEquality;CustomComparison>]

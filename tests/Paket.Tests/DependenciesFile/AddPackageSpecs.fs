@@ -29,6 +29,28 @@ nuget xunit"""
     |> shouldEqual (normalizeLineEndings expected)
 
 [<Test>]
+let ``should add new packages to alphabetical position``() = 
+    let config = """source http://nuget.org/api/v2
+
+nuget Castle.Windsor-log4net ~> 3.2
+nuget FAKE = 1.1
+nuget Rx-Main ~> 2.0
+nuget SignalR = 3.3.2"""
+
+    let cfg = DependenciesFile.FromCode(config).Add(PackageName "Rz","")
+    
+    let expected = """source http://nuget.org/api/v2
+
+nuget Castle.Windsor-log4net ~> 3.2
+nuget FAKE 1.1
+nuget Rx-Main ~> 2.0
+nuget Rz
+nuget SignalR 3.3.2"""
+
+    cfg.ToString()
+    |> shouldEqual (normalizeLineEndings expected)
+
+[<Test>]
 let ``should add new packages before github files``() = 
     let config = """source http://nuget.org/api/v2
 

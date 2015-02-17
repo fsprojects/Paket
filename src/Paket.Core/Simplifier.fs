@@ -8,14 +8,7 @@ open Paket.Logging
 open Paket.PackageResolver
 open Paket.Rop
 
-let getFlatLookup (lockFile : LockFile) = 
-    lockFile.ResolvedPackages
-    |> Map.map (fun name package -> 
-                    lockFile.GetAllDependenciesOf package.Name
-                    |> Set.ofSeq
-                    |> Set.remove package.Name)
-
-let findTransitive (packages, flatLookup, failureF) = 
+let private findTransitive (packages, flatLookup, failureF) = 
     packages
     |> List.map (fun packageName -> 
         flatLookup 
@@ -24,10 +17,10 @@ let findTransitive (packages, flatLookup, failureF) =
     |> Rop.collect
     |> lift Seq.concat
 
-let removePackage(packageName, transitivePackages, fileName, interactive) =
+let private removePackage(packageName, transitivePackages, fileName, interactive) =
     if transitivePackages |> Seq.exists (fun p -> NormalizedPackageName p = NormalizedPackageName packageName) then
         if interactive then
-            let message = sprintf "Do you want to remove transitive dependency %s from file %s ?" packageName.Id fileName 
+            let message = sprintf "Do you want to remove transitive dependency %s from file %s?" packageName.Id fileName 
             Utils.askYesNo(message)
         else 
             true
@@ -58,14 +51,15 @@ let simplifyReferencesFile (refFile, flatLookup, interactive) = rop {
 }
 
 let beforeAndAfter environment dependenciesFile projects =
-        environment,
-        { environment with DependenciesFile = dependenciesFile
-                           Projects = projects }
+    environment,
+    { environment with 
+        DependenciesFile = dependenciesFile
+        Projects = projects }
 
 let simplify interactive environment = rop {
     let! lockFile = environment |> PaketEnv.ensureLockFileExists
 
-    let flatLookup = getFlatLookup lockFile
+    let flatLookup = lockFile.GetDependencyLookupTable()
     let! dependenciesFile = simplifyDependenciesFile(environment.DependenciesFile, flatLookup, interactive)
     let projectFiles, referencesFiles = List.unzip environment.Projects
 
