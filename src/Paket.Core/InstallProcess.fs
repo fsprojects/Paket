@@ -137,7 +137,7 @@ let findAllReferencesFiles root =
             fail <| ReferencesFileParseError (FileInfo(file)))
     |> collect
 
-/// Installs the given all packages from the lock file.
+/// Installs all packages from the lock file.
 let InstallIntoProjects(sources,force, hard, withBindingRedirects, lockFile:LockFile, projects) =
     let root = Path.GetDirectoryName lockFile.FileName
     let extractedPackages = createModel(root,sources,force, lockFile)
@@ -192,7 +192,7 @@ let InstallIntoProjects(sources,force, hard, withBindingRedirects, lockFile:Lock
     if withBindingRedirects || lockFile.Options.Redirects then
         applyBindingRedirects root extractedPackages
 
-/// Installs the given all packages from the lock file.
+/// Installs all packages from the lock file.
 let Install(sources,force, hard, withBindingRedirects, lockFile:LockFile) = 
     let root = FileInfo(lockFile.FileName).Directory.FullName 
     let projects = findAllReferencesFiles root |> returnOrFail
