@@ -50,8 +50,8 @@ let ``should remove one level deep transitive dependencies from dep and ref file
     | Rop.Success((_,after),_) ->
         let depFile,refFiles = after.DependenciesFile, after.Projects |> List.map snd
         depFile.Packages |> List.map (fun p -> p.Name) |> shouldEqual [PackageName"A";PackageName"D"]
-        refFiles.Head.NugetPackages |> shouldEqual [{ Name = PackageName "A"; CopyLocal = true; ImportTargets = true; FrameworkRestrictions = []; OmitContent = false };{ Name = PackageName "D"; CopyLocal = true; ImportTargets = true; FrameworkRestrictions = []; OmitContent = false }]
-        refFiles.Tail.Head.NugetPackages |> shouldEqual [{ Name = PackageName "B"; CopyLocal = true; ImportTargets = true; FrameworkRestrictions = []; OmitContent = false };{ Name = PackageName "C"; CopyLocal = true; ImportTargets = true; FrameworkRestrictions = []; OmitContent = false }]
+        refFiles.Head.NugetPackages |> shouldEqual [PackageInstallSettings.Default("A"); PackageInstallSettings.Default("D")]
+        refFiles.Tail.Head.NugetPackages |> shouldEqual [PackageInstallSettings.Default("B"); PackageInstallSettings.Default("C")]
 
 let lockFile2 = """
 NUGET
@@ -93,5 +93,5 @@ let ``should remove all transitive dependencies from dep file recursively``() =
     | Rop.Success((_,after),_) ->
         let depFile,refFiles = after.DependenciesFile, after.Projects |> List.map snd
         depFile.Packages |> List.map (fun p -> p.Name) |> shouldEqual [PackageName"A";PackageName"C"]
-        refFiles.Head.NugetPackages |>  shouldEqual [{Name = PackageName "A"; CopyLocal = true; ImportTargets = true; FrameworkRestrictions = []; OmitContent = false }; { Name = PackageName "C"; CopyLocal = true; ImportTargets = true; FrameworkRestrictions = []; OmitContent = false }]
-        refFiles.Tail.Head.NugetPackages |>  shouldEqual [{ Name = PackageName "C"; CopyLocal = true; ImportTargets = true; FrameworkRestrictions = []; OmitContent = false };{ Name = PackageName "D"; CopyLocal = true; ImportTargets = true; FrameworkRestrictions = []; OmitContent = false }]
+        refFiles.Head.NugetPackages |>  shouldEqual [PackageInstallSettings.Default("A"); PackageInstallSettings.Default("C")]
+        refFiles.Tail.Head.NugetPackages |>  shouldEqual [PackageInstallSettings.Default("C"); PackageInstallSettings.Default("D")]

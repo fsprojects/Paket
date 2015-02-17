@@ -25,7 +25,7 @@ let ``should parse lines correctly``() =
 
 [<Test>]
 let ``should serialize itself correctly``() = 
-    let refFile = {FileName = ""; NugetPackages = [{Name = PackageName "A"; CopyLocal = true; ImportTargets = true; FrameworkRestrictions = []; OmitContent = false }; {Name = PackageName "B"; CopyLocal = true; ImportTargets = true; FrameworkRestrictions = []; OmitContent = false }]; RemoteFiles = [{Name = "FromGithub.fs"; Link = ReferencesFile.DefaultLink}]}
+    let refFile = {FileName = ""; NugetPackages = [ PackageInstallSettings.Default("A"); PackageInstallSettings.Default("B")]; RemoteFiles = [{Name = "FromGithub.fs"; Link = ReferencesFile.DefaultLink}]}
     let expected = [|"A"; "B"; "File:FromGithub.fs"|]
 
     refFile.ToString() |> toLines |> shouldEqual expected

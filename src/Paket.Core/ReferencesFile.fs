@@ -17,6 +17,13 @@ type PackageInstallSettings =
       OmitContent : bool 
       CopyLocal : bool }
 
+    static member Default(name) =
+        { Name = PackageName name
+          CopyLocal = true
+          ImportTargets = true
+          FrameworkRestrictions = []
+          OmitContent = false }
+
 type ReferencesFile = 
     { FileName: string
       NugetPackages: PackageInstallSettings list
