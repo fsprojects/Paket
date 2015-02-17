@@ -370,8 +370,13 @@ type ProjectFile =
         |> Seq.map (fun kv -> 
             if hard then
                 this.DeleteCustomModelNodes(kv.Value)
-            let package = usedPackages.[kv.Key]
-            this.GenerateXml(kv.Value,package.CopyLocal,package.ImportTargets))
+            let installSettings = usedPackages.[kv.Key]
+            let projectModel =
+                kv.Value
+                    .ApplyFrameworkRestrictions(installSettings.FrameworkRestrictions)
+                    .RemoveIfCompletelyEmpty()
+
+            this.GenerateXml(projectModel,installSettings.CopyLocal,installSettings.ImportTargets))
         |> Seq.iter (fun (propertyNameNodes,chooseNode,propertyChooseNode) -> 
             if chooseNode.ChildNodes.Count > 0 then
                 this.ProjectNode.AppendChild chooseNode |> ignore

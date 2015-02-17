@@ -1,3 +1,6 @@
+#### 0.28.5 - 17.02.2015
+* Allow to restrict target frameworks in `paket.references` - https://github.com/fsprojects/Paket/issues/587
+
 #### 0.28.4 - 17.02.2015
 * Allow to opt-out of targets import via switch in `paket.references` - https://github.com/fsprojects/Paket/issues/615
 
