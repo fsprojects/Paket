@@ -120,6 +120,7 @@ let getAllVersions(auth, nugetURL, package) =
 /// Gets versions of the given package from local Nuget feed.
 let getAllVersionsFromLocalPath (localNugetPath, package) =
     async {
+        let localNugetPath = Utils.normalizeLocalPath localNugetPath
         let di = DirectoryInfo(localNugetPath)
         if not di.Exists then
             failwithf "The directory %s doesn't exist.%sPlease check the NuGet source feed definition in your paket.dependencies file." localNugetPath Environment.NewLine
@@ -273,6 +274,7 @@ let getDetailsFromNuget force auth nugetURL package (version:SemVerInfo) =
 /// Reads direct dependencies from a nupkg file
 let getDetailsFromLocalFile localNugetPath package (version:SemVerInfo) =
     async {        
+        let localNugetPath = Utils.normalizeLocalPath localNugetPath
         let nupkg = 
             let v1 = FileInfo(Path.Combine(localNugetPath, sprintf "%s.%s.nupkg" package (version.ToString())))
             if v1.Exists then v1 else

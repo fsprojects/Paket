@@ -28,7 +28,8 @@ let ExtractPackage(root, sources, force, package : ResolvedPackage) =
                 tracefn "Something went wrong with the download of %s %A - automatic retry with --force." name v
                 let! folder = NuGetV2.DownloadPackage(root, auth, source.Url, name, v, true)
                 return package, NuGetV2.GetLibFiles folder, NuGetV2.GetTargetsFiles folder
-        | LocalNuget path -> 
+        | LocalNuget path ->         
+            let path = Utils.normalizeLocalPath path
             let packageFile = Path.Combine(root, path, sprintf "%s.%A.nupkg" name v)
             let! folder = NuGetV2.CopyFromCache(root, packageFile, name, v, force)
             return package, NuGetV2.GetLibFiles folder, NuGetV2.GetTargetsFiles folder

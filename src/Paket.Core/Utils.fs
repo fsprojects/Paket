@@ -29,6 +29,18 @@ let TimeSpanToReadableString(span:TimeSpan) =
 
     if String.IsNullOrEmpty(formatted) then "0 seconds" else formatted
 
+let GetHomeDirectory() =
+    if (Environment.OSVersion.Platform = PlatformID.Unix || Environment.OSVersion.Platform = PlatformID.MacOSX) then
+        Environment.GetEnvironmentVariable("HOME")
+    else
+        Environment.ExpandEnvironmentVariables("%HOMEDRIVE%%HOMEPATH%")
+
+let normalizeLocalPath(path:string) =
+    if path.StartsWith("~/") then
+        GetHomeDirectory() + path.Substring(1)
+    else
+        path
+
 /// Creates a directory if it does not exist.
 let createDir path = 
     try
