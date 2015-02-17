@@ -25,6 +25,7 @@ let ``should resolve source files with correct sha``() =
         Requirements.PackageRequirement.ResolverStrategy = ResolverStrategy.Max
         Requirements.PackageRequirement.Parent = Requirements.PackageRequirementSource.DependenciesFile ""
         Requirements.PackageRequirement.FrameworkRestrictions = []
+        Requirements.PackageRequirement.ImportTargets = true
         Requirements.PackageRequirement.VersionRequirement = VersionRequirement.NoRestriction }
     let sha = "sha1"
     let cfg = DependenciesFile.FromCode(config1)

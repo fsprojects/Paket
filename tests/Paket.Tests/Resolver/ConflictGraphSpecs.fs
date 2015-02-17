@@ -30,6 +30,7 @@ let defaultPackage =
       VersionRequirement = VersionRequirement(VersionRange.Exactly "1.0", PreReleaseStatus.No)
       Sources = [ PackageSource.NugetSource "" ]
       FrameworkRestrictions = []
+      ImportTargets = true
       ResolverStrategy = ResolverStrategy.Max }
 
 [<Test>]

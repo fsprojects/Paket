@@ -247,6 +247,23 @@ let ``should serialize config with framework restrictions``() =
     cfg.ToString()
     |> shouldEqual (normalizeLineEndings withFrameworkRestrictions)
 
+let withNoImportsRestrictions = """source https://www.nuget.org/api/v2
+
+nuget FakeItEasy 1.24.0
+nuget json-ld.net 1.0.3 import_targets: false, framework: net35, net40
+nuget Example3 !== 2.2.3 alpha beta import_targets: false
+nuget Example4 import_targets: false
+nuget Example5 prerelease import_targets: false
+
+http http://www.fssnip.net/raw/1M test1.fs"""
+
+[<Test>]
+let ``should serialize config with no imports``() = 
+    let cfg = DependenciesFile.FromCode(withNoImportsRestrictions)
+    
+    cfg.ToString()
+    |> shouldEqual (normalizeLineEndings withNoImportsRestrictions)
+
 let withComments = """source https://www.nuget.org/api/v2
 
 // ignore me

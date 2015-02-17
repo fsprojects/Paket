@@ -206,17 +206,19 @@ module DependenciesFileParser =
                     if operators |> Seq.exists (fun x -> prereleases.Contains x) || prereleases.Contains("!") then
                         failwithf "Invalid prerelease version %s" prereleases
 
-                    let restrictions =
-                        match kvPairs.TryGetValue "framework" with
-                        | true, s -> Requirements.parseRestrictions s
-                        | _ -> []
-                    
                     lineNo, options, sources, 
                         { Sources = sources
                           Name = PackageName name
                           ResolverStrategy = parseResolverStrategy version
                           Parent = DependenciesFile fileName
-                          FrameworkRestrictions = restrictions
+                          FrameworkRestrictions = 
+                            match kvPairs.TryGetValue "framework" with
+                            | true, s -> Requirements.parseRestrictions s
+                            | _ -> []
+                          ImportTargets = 
+                            match kvPairs.TryGetValue "import_targets" with
+                            | true, "false" -> false
+                            | _ -> true
                           VersionRequirement = parseVersionRequirement((version + " " + prereleases).Trim '!') } :: packages, sourceFiles, comments
                 | SourceFile(origin, (owner,project, commit), path) ->
                     lineNo, options, sources, packages, { Owner = owner; Project = project; Commit = commit; Name = path; Origin = origin} :: sourceFiles, comments
@@ -303,7 +305,7 @@ type DependenciesFile(fileName,options,sources,packages : PackageRequirement lis
         { ResolvedPackages = PackageResolver.Resolve(getVersionF, getPackageDetailsF, remoteDependencies @ packages)
           ResolvedSourceFiles = remoteFiles }        
 
-    member __.AddAdditionionalPackage(packageName:PackageName,version:string) =
+    member __.AddAdditionionalPackage(packageName:PackageName,version:string,importTargets) =
         let versionRange = DependenciesFileParser.parseVersionRequirement (version.Trim '!')
         let sources = 
             match packages |> List.rev with
@@ -316,6 +318,7 @@ type DependenciesFile(fileName,options,sources,packages : PackageRequirement lis
               Sources = sources
               ResolverStrategy = DependenciesFileParser.parseResolverStrategy version
               FrameworkRestrictions = []
+              ImportTargets = importTargets
               Parent = PackageRequirementSource.DependenciesFile fileName }
 
         // Try to find alphabetical matching position to insert the package
@@ -326,7 +329,7 @@ type DependenciesFile(fileName,options,sources,packages : PackageRequirement lis
 
         DependenciesFile(fileName,options,sources,newPackages, remoteFiles, comments)
 
-    member __.AddFixedPackage(packageName:PackageName,version:string,frameworkRestrictions) =
+    member __.AddFixedPackage(packageName:PackageName,version:string,frameworkRestrictions,importTargets) =
         let versionRange = DependenciesFileParser.parseVersionRequirement (version.Trim '!')
         let sources = 
             match packages |> List.rev with
@@ -348,12 +351,13 @@ type DependenciesFile(fileName,options,sources,packages : PackageRequirement lis
               Sources = sources
               ResolverStrategy = strategy
               FrameworkRestrictions = frameworkRestrictions
+              ImportTargets = importTargets
               Parent = PackageRequirementSource.DependenciesFile fileName }
 
         DependenciesFile(fileName,options,sources,(packages |> List.filter (fun p -> NormalizedPackageName p.Name <> NormalizedPackageName packageName)) @ [newPackage], remoteFiles, comments)
 
     member this.AddFixedPackage(packageName:PackageName,version:string) =
-        this.AddFixedPackage(packageName,version,[])
+        this.AddFixedPackage(packageName,version,[],true)
 
     member __.RemovePackage(packageName:PackageName) =
         let newPackages = 
@@ -375,7 +379,7 @@ type DependenciesFile(fileName,options,sources,packages : PackageRequirement lis
                 tracefn "Adding %s to %s" name fileName
             else
                 tracefn "Adding %s %s to %s" name version fileName
-            this.AddAdditionionalPackage(packageName,version)
+            this.AddAdditionionalPackage(packageName,version,true)
 
     member this.Remove(packageName) =
         let (PackageName name) = packageName
@@ -444,11 +448,15 @@ type DependenciesFile(fileName,options,sources,packages : PackageRequirement lis
 
                       let (PackageName name) = package.Name
                       let version = DependenciesFileSerializer.formatVersionRange package.ResolverStrategy package.VersionRequirement
-                      let frameworks =
-                        if package.FrameworkRestrictions = [] then "" else
-                        " framework: " + String.Join(", ", package.FrameworkRestrictions)
+                      
+                      let options =
+                           [if package.ImportTargets = false then yield "import_targets: false"
+                            if package.FrameworkRestrictions <> [] then
+                                yield "framework: " + String.Join(", ", package.FrameworkRestrictions)]
 
-                      yield sprintf "nuget %s%s%s" name (if version <> "" then " " + version else "") frameworks
+                      let s = String.Join(", ",options)
+
+                      yield sprintf "nuget %s%s%s" name (if version <> "" then " " + version else "") (if s <> "" then " " + s else s)
                      
               for remoteFile in remoteFiles do
                   if (not !hasReportedSecond) && !hasReportedFirst then

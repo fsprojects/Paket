@@ -14,6 +14,7 @@ let require packageName strategy text : PackageRequirement =
       ResolverStrategy = strategy
       Parent = PackageRequirementSource.DependenciesFile ""
       FrameworkRestrictions = []
+      ImportTargets = true
       Sources = [] }
 
 [<Test>]

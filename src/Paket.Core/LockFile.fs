@@ -177,7 +177,7 @@ module LockFileParser =
                                        Dependencies = Set.empty
                                        Unlisted = false
                                        FrameworkRestrictions = if parts.Length < 2 then [] else Requirements.parseRestrictions parts.[1]
-
+                                       ImportTargets = if parts.Length < 2 then true else false // TODO
                                        Version = SemVer.Parse version } :: state.Packages }
                 | None -> failwith "no source has been specified."
             | NugetDependency (name, _) ->

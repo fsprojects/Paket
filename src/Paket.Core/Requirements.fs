@@ -133,6 +133,7 @@ type PackageRequirement =
       ResolverStrategy : ResolverStrategy
       Parent: PackageRequirementSource
       FrameworkRestrictions: FrameworkRestrictions
+      ImportTargets: bool
       Sources : PackageSource list }
 
     override this.Equals(that) = 

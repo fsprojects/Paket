@@ -511,6 +511,7 @@ let ``should read config with single framework restriction``() =
     let p = cfg.Packages |> List.find (fun x-> x.Name = PackageName "Foobar")
     p.VersionRequirement.Range |> shouldEqual (VersionRange.Specific (SemVer.Parse "1.2.3"))
     p.FrameworkRestrictions |> shouldEqual [FrameworkRestriction.AtLeast(DotNetFramework(FrameworkVersion.V4_Client))]
+    p.ImportTargets |> shouldEqual true
 
 
 [<Test>]
@@ -523,6 +524,19 @@ let ``should read config with framework restriction``() =
     let p = cfg.Packages |> List.find (fun x-> x.Name = PackageName "Foobar")
     p.VersionRequirement.Range |> shouldEqual (VersionRange.Specific (SemVer.Parse "1.2.3"))
     p.FrameworkRestrictions |> shouldEqual [FrameworkRestriction.Exactly(DotNetFramework(FrameworkVersion.V3_5)); FrameworkRestriction.AtLeast(DotNetFramework(FrameworkVersion.V4_Client))]
+    p.ImportTargets |> shouldEqual true
+
+[<Test>]
+let ``should read config with no targets import``() = 
+    let config = """
+    nuget Foobar 1.2.3 alpha beta import_targets: false
+    """
+    let cfg = DependenciesFile.FromCode(config)
+
+    let p = cfg.Packages |> List.find (fun x-> x.Name = PackageName "Foobar")
+    p.VersionRequirement.Range |> shouldEqual (VersionRange.Specific (SemVer.Parse "1.2.3"))
+    p.FrameworkRestrictions |> shouldEqual []
+    p.ImportTargets |> shouldEqual false
 
 
 let configWithInvalidPrereleaseString = """
