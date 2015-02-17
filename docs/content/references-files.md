@@ -34,6 +34,12 @@ It's possible to influence the `Private` property for references in project file
 
     Newtonsoft.Json copy_local:false
 
+## import_targets settings
+
+If you don't want to import `.targets` and `.props` files you can disable it via the `import_targets` switch:
+
+    Microsoft.Bcl.Build import_targets:false
+
 ## File name conventions
 
 If Paket finds `paket.references` in a folder, the dependencies it specifies will be added to all MSBuild projects in that folder.

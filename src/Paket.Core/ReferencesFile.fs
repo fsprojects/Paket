@@ -9,14 +9,10 @@ type RemoteFileReference =
     { Name : string
       Link : string }
 
-[<RequireQualifiedAccess>]
-type CopyLocal = 
-    | True
-    | False
-
 type PackageInstallSettings = 
     { Name : PackageName
-      CopyLocal : CopyLocal }
+      ImportTargets : bool
+      CopyLocal : bool }
 
 type ReferencesFile = 
     { FileName: string
@@ -37,10 +33,14 @@ type ReferencesFile =
             let parts = line.Split(' ')
             let kvPairs = line.Replace(parts.[0],"") |> parseKeyValuePairs
             { Name = PackageName parts.[0]
+              ImportTargets =
+                match kvPairs.TryGetValue "import_targets" with
+                | true, "false" -> false
+                | _ -> true
               CopyLocal =         
                 match kvPairs.TryGetValue "copy_local" with
-                | true, "false" -> CopyLocal.False 
-                | _ -> CopyLocal.True }
+                | true, "false" -> false 
+                | _ -> true }
 
 
         let remoteLines,nugetLines =
@@ -65,16 +65,16 @@ type ReferencesFile =
         let lines = File.ReadAllLines(fileName)
         { ReferencesFile.FromLines lines with FileName = fileName }
 
-    member this.AddNuGetReference(packageName : PackageName, copyLocal: CopyLocal) =
+    member this.AddNuGetReference(packageName : PackageName, copyLocal: bool, importTargets: bool) =
         let (PackageName referenceName) = packageName
         let normalized = NormalizedPackageName packageName
         if this.NugetPackages |> Seq.exists (fun p -> NormalizedPackageName p.Name = normalized) then
             this
         else
             tracefn "Adding %s to %s" referenceName (this.FileName)
-            { this with NugetPackages = this.NugetPackages @ [{ Name = packageName; CopyLocal = copyLocal }] }
+            { this with NugetPackages = this.NugetPackages @ [{ Name = packageName; CopyLocal = copyLocal; ImportTargets = importTargets }] }
 
-    member this.AddNuGetReference(packageName : PackageName) = this.AddNuGetReference(packageName, CopyLocal.True)
+    member this.AddNuGetReference(packageName : PackageName) = this.AddNuGetReference(packageName, true, true)
 
     member this.RemoveNuGetReference(packageName : PackageName) =
         let (PackageName referenceName) = packageName
@@ -91,6 +91,11 @@ type ReferencesFile =
 
     override this.ToString() =
         List.append
-            (this.NugetPackages |> List.map (fun p -> p.Name.ToString() + if p.CopyLocal = CopyLocal.False then " copy_local:false" else ""))
+            (this.NugetPackages |> List.map (fun p -> 
+                let s1 = if p.CopyLocal = false then "copy_local:false" else ""
+                let s2 = if p.ImportTargets = false then "import_targets:false" else ""
+                let s = String.Join(", ",[s1; s2] |> List.filter (fun s -> s <> ""))
+                
+                String.Join(" ",[p.Name.ToString(); s] |> List.filter (fun s -> s <> ""))))
             (this.RemoteFiles |> List.map (fun s -> "File:" + s.Name + if s.Link <> ReferencesFile.DefaultLink then " " + s.Link else ""))
             |> String.concat Environment.NewLine

@@ -24,7 +24,7 @@ let ``should generate Xml for GitInfoPlanter2.0.0``() =
             [ @"..\GitInfoPlanter\build\GitInfoPlanter.targets" ],
               Nuspec.All)
 
-    let propertyNodes,chooseNode,propertyChooseNode = ProjectFile.Load("./ProjectFile/TestData/Empty.fsprojtest").Value.GenerateXml(model,CopyLocal.True)
+    let propertyNodes,chooseNode,propertyChooseNode = ProjectFile.Load("./ProjectFile/TestData/Empty.fsprojtest").Value.GenerateXml(model,true,true)
     chooseNode.OuterXml
     |> normalizeXml
     |> shouldEqual (normalizeXml emptyReferences)

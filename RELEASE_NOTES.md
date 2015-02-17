@@ -1,3 +1,6 @@
+#### 0.28.4 - 17.02.2015
+* Allow to opt-out of targets import via switch in `paket.references` - https://github.com/fsprojects/Paket/issues/615
+
 #### 0.28.3 - 17.02.2015
 * Respect home directories on mono - https://github.com/fsprojects/Paket/issues/612
 

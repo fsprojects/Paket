@@ -25,7 +25,7 @@ let ``should parse lines correctly``() =
 
 [<Test>]
 let ``should serialize itself correctly``() = 
-    let refFile = {FileName = ""; NugetPackages = [{Name = PackageName "A"; CopyLocal = CopyLocal.True }; {Name = PackageName "B"; CopyLocal = CopyLocal.True }]; RemoteFiles = [{Name = "FromGithub.fs"; Link = ReferencesFile.DefaultLink}]}
+    let refFile = {FileName = ""; NugetPackages = [{Name = PackageName "A"; CopyLocal = true; ImportTargets = true }; {Name = PackageName "B"; CopyLocal = true; ImportTargets = true }]; RemoteFiles = [{Name = "FromGithub.fs"; Link = ReferencesFile.DefaultLink}]}
     let expected = [|"A"; "B"; "File:FromGithub.fs"|]
 
     refFile.ToString() |> toLines |> shouldEqual expected
@@ -97,15 +97,55 @@ let ``should parse lines with CopyLocal settings correctly``() =
     let refFile = ReferencesFile.FromLines(toLines refFileContentWithCopyLocalFalse)
     refFile.NugetPackages.Length |> shouldEqual 2
     refFile.NugetPackages.Head.Name |> shouldEqual (PackageName "Castle.Windsor")
-    refFile.NugetPackages.Head.CopyLocal |> shouldEqual CopyLocal.False
+    refFile.NugetPackages.Head.CopyLocal |> shouldEqual false
     refFile.NugetPackages.Tail.Head.Name |> shouldEqual (PackageName "Newtonsoft.Json")
-    refFile.NugetPackages.Tail.Head.CopyLocal |> shouldEqual CopyLocal.True
+    refFile.NugetPackages.Tail.Head.CopyLocal |> shouldEqual true
 
 [<Test>]
 let ``should serialize CopyLocal correctly``() = 
     let refFile = ReferencesFile.FromLines(toLines refFileContentWithCopyLocalFalse)
     let expected = """Castle.Windsor copy_local:false
 Newtonsoft.Json"""
+
+    refFile.ToString()
+    |> normalizeLineEndings
+    |> shouldEqual (normalizeLineEndings expected)
+
+let refFileContentWithNoTargetsImport = """Castle.Windsor import_targets: false
+Newtonsoft.Json"""
+
+[<Test>]
+let ``should parse lines with import_targets settings correctly``() = 
+    let refFile = ReferencesFile.FromLines(toLines refFileContentWithNoTargetsImport)
+    refFile.NugetPackages.Length |> shouldEqual 2
+    refFile.NugetPackages.Head.Name |> shouldEqual (PackageName "Castle.Windsor")
+    refFile.NugetPackages.Head.CopyLocal |> shouldEqual true
+    refFile.NugetPackages.Head.ImportTargets |> shouldEqual false
+    refFile.NugetPackages.Tail.Head.Name |> shouldEqual (PackageName "Newtonsoft.Json")
+    refFile.NugetPackages.Tail.Head.CopyLocal |> shouldEqual true
+    refFile.NugetPackages.Tail.Head.ImportTargets |> shouldEqual true
+
+let refFileContentWithCopyLocalFalseAndNoTargetsImport = """Castle.Windsor copy_local : false, import_targets: false
+Newtonsoft.Json
+xUnit import_targets:false"""
+
+[<Test>]
+let ``should parse lines with CopyLocal and import_targets settings correctly``() = 
+    let refFile = ReferencesFile.FromLines(toLines refFileContentWithCopyLocalFalseAndNoTargetsImport)
+    refFile.NugetPackages.Length |> shouldEqual 3
+    refFile.NugetPackages.Head.Name |> shouldEqual (PackageName "Castle.Windsor")
+    refFile.NugetPackages.Head.CopyLocal |> shouldEqual false
+    refFile.NugetPackages.Head.ImportTargets |> shouldEqual false
+    refFile.NugetPackages.Tail.Head.Name |> shouldEqual (PackageName "Newtonsoft.Json")
+    refFile.NugetPackages.Tail.Head.CopyLocal |> shouldEqual true
+    refFile.NugetPackages.Tail.Head.ImportTargets |> shouldEqual true
+
+[<Test>]
+let ``should serialize import_targets correctly``() = 
+    let refFile = ReferencesFile.FromLines(toLines refFileContentWithCopyLocalFalseAndNoTargetsImport)
+    let expected = """Castle.Windsor copy_local:false, import_targets:false
+Newtonsoft.Json
+xUnit import_targets:false"""
 
     refFile.ToString()
     |> normalizeLineEndings

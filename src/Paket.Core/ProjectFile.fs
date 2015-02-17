@@ -152,7 +152,7 @@ type ProjectFile =
                     | Some path when path.StartsWith(Path.GetDirectoryName(fileItem.Include)) -> true
                     | _ -> false)
 
-            if Seq.isEmpty  fileItemsInSameDir then 
+            if Seq.isEmpty fileItemsInSameDir then 
                 newItemGroups.[fileItem.BuildAction].PrependChild(libReferenceNode) |> ignore
             else
                 let existingNode = 
@@ -200,7 +200,7 @@ type ProjectFile =
         for node in nodesToDelete do            
             node.ParentNode.RemoveChild(node) |> ignore
 
-    member this.GenerateXml(model:InstallModel,copyLocal:CopyLocal) =
+    member this.GenerateXml(model:InstallModel,copyLocal:bool,importTargets:bool) =
         let references = 
             this.GetCustomReferenceAndFrameworkNodes()
             |> List.map (fun node -> node.Attributes.["Include"].InnerText.Split(',').[0])
@@ -218,7 +218,7 @@ type ProjectFile =
                     this.CreateNode("Reference")
                     |> addAttribute "Include" (fi.Name.Replace(fi.Extension,""))
                     |> addChild (this.CreateNode("HintPath", createRelativePath this.FileName fi.FullName))
-                    |> addChild (this.CreateNode("Private",sprintf "%A" copyLocal))
+                    |> addChild (this.CreateNode("Private",if copyLocal then "True" else "False"))
                     |> addChild (this.CreateNode("Paket","True"))
                     |> itemGroup.AppendChild
                     |> ignore
@@ -237,10 +237,11 @@ type ProjectFile =
             let propertyNames =          
                 references
                 |> Seq.choose (fun lib ->
+                    if not importTargets then None else
                     match lib with
                     | Reference.Library _ -> None
                     | Reference.FrameworkAssemblyReference _ -> None
-                    | Reference.TargetsFile targetsFile -> 
+                    | Reference.TargetsFile targetsFile ->                        
                         let fi = new FileInfo(normalizePath targetsFile)
                         let propertyName = "__paket__" + fi.Name.ToString().Replace(" ","_").Replace(".","_")
                         
@@ -370,7 +371,7 @@ type ProjectFile =
             if hard then
                 this.DeleteCustomModelNodes(kv.Value)
             let package = usedPackages.[kv.Key]
-            this.GenerateXml(kv.Value,package.CopyLocal))
+            this.GenerateXml(kv.Value,package.CopyLocal,package.ImportTargets))
         |> Seq.iter (fun (propertyNameNodes,chooseNode,propertyChooseNode) -> 
             if chooseNode.ChildNodes.Count > 0 then
                 this.ProjectNode.AppendChild chooseNode |> ignore

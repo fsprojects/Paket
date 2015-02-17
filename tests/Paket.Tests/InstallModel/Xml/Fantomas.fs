@@ -26,7 +26,7 @@ let ``should generate Xml for Fantomas 1.5``() =
               [],
               Nuspec.Explicit ["FantomasLib.dll"])
     
-    let propertyNodes,chooseNode,additionalNode = ProjectFile.Load("./ProjectFile/TestData/Empty.fsprojtest").Value.GenerateXml(model,CopyLocal.True)
+    let propertyNodes,chooseNode,additionalNode = ProjectFile.Load("./ProjectFile/TestData/Empty.fsprojtest").Value.GenerateXml(model,true,true)
     chooseNode.OuterXml
     |> normalizeXml
     |> shouldEqual (normalizeXml expected)
@@ -63,7 +63,7 @@ let ``should generate full Xml for Fantomas 1.5``() =
     
     let project = ProjectFile.Load("./ProjectFile/TestData/Empty.fsprojtest").Value
     let completeModel = [NormalizedPackageName (PackageName "Fantomas"),model] |> Map.ofSeq
-    let used = [NormalizedPackageName (PackageName "fantoMas"), { Name = PackageName "fantoMas" ; CopyLocal = CopyLocal.True }] |> Map.ofSeq
+    let used = [NormalizedPackageName (PackageName "fantoMas"), { Name = PackageName "fantoMas" ; CopyLocal = true; ImportTargets = true }] |> Map.ofSeq
     project.UpdateReferences(completeModel,used,false)
     
     project.Document.OuterXml
@@ -83,7 +83,7 @@ let ``should not generate full Xml for Fantomas 1.5 if not referenced``() =
     
     let project = ProjectFile.Load("./ProjectFile/TestData/Empty.fsprojtest").Value
     let completeModel = [NormalizedPackageName (PackageName "Fantomas"),model] |> Map.ofSeq
-    let used = [NormalizedPackageName (PackageName "blub"), { Name = PackageName "blub"; CopyLocal = CopyLocal.True } ] |> Map.ofSeq
+    let used = [NormalizedPackageName (PackageName "blub"), { Name = PackageName "blub"; CopyLocal = true; ImportTargets = true } ] |> Map.ofSeq
     project.UpdateReferences(completeModel,used,false)
     
     project.Document.OuterXml
