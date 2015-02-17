@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
@@ -125,7 +125,7 @@
     </Content>
     <Content Include="NuGetOData\Microsoft.AspNet.WebApi.Client.xml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>    
+    </Content>
     <Content Include="NuGetOData\Fleece.xml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
@@ -228,6 +228,7 @@
     <Compile Include="InstallModel\Xml\ManualNodes.fs" />
     <Compile Include="InstallModel\Xml\FSharp.Data.SqlClient.fs" />
     <Compile Include="InstallModel\Xml\RxXaml.fs" />
+    <Compile Include="InstallModel\Xml\Microsoft.Bcl.Build.fs" />
     <Compile Include="InstallModel\Penalty\PenaltySpecs.fs" />
     <Compile Include="InstallModel\Penalty\FrameworkConditionsSpecs.fs" />
     <Compile Include="DependencyModel\ProjectDependencySpecs.fs" />
