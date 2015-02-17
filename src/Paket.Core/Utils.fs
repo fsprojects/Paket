@@ -37,7 +37,7 @@ let GetHomeDirectory() =
 
 let normalizeLocalPath(path:string) =
     if path.StartsWith("~/") then
-        GetHomeDirectory() + path.Substring(1)
+        Path.Combine(GetHomeDirectory(),path.Substring(1))
     else
         path
 
