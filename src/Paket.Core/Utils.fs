@@ -263,8 +263,8 @@ let RunInLockedAccessMode(rootFolder,action) =
         result
     with
     | exn ->
-            releaseLock()
-            reraise()
+        releaseLock()
+        reraise()
 
 /// [omit]
 module Seq = 
