@@ -1,3 +1,6 @@
+#### 0.28.6 - 17.02.2015
+* Allow to restrict content files in `paket.references` - https://github.com/fsprojects/Paket/issues/587
+
 #### 0.28.5 - 17.02.2015
 * Allow to restrict target frameworks in `paket.references` - https://github.com/fsprojects/Paket/issues/587
 

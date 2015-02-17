@@ -14,9 +14,12 @@ open FSharp.Polyfill
 open System.Reflection
 open System.Diagnostics
 
-let private findPackagesWithContent (root,usedPackages) = 
+let private findPackagesWithContent (root,usedPackages:Dictionary<PackageName,PackageInstallSettings>) = 
     usedPackages
-    |> Seq.map (fun (PackageName x) -> DirectoryInfo(Path.Combine(root, Constants.PackagesFolderName, x)))
+    |> Seq.filter (fun kv -> not kv.Value.OmitContent)
+    |> Seq.map (fun kv -> 
+        let (PackageName name) = kv.Key
+        DirectoryInfo(Path.Combine(root, Constants.PackagesFolderName, name)))
     |> Seq.choose (fun packageDir -> 
             packageDir.GetDirectories("Content") 
             |> Array.append (packageDir.GetDirectories("content"))
@@ -179,7 +182,7 @@ let InstallIntoProjects(sources,force, hard, withBindingRedirects, lockFile:Lock
         
         let nuGetFileItems =
             if lockFile.Options.OmitContent then [] else
-            copyContentFiles(project, findPackagesWithContent(root,usedPackages.Keys))
+            copyContentFiles(project, findPackagesWithContent(root,usedPackages))
             |> List.map (fun file -> 
                                 { BuildAction = project.DetermineBuildAction file.Name
                                   Include = createRelativePath project.FileName file.FullName
