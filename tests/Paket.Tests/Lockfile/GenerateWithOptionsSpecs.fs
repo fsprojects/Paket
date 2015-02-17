@@ -32,6 +32,7 @@ let ``should generate strict lock file``() =
 
 let configWithContent = """
 content none
+import_targets false
 source "http://nuget.org/api/v2"
 
 nuget "Microsoft.SqlServer.Types"
@@ -42,6 +43,7 @@ let graph2 = [
 ]
 
 let expected2 = """CONTENT: NONE
+IMPORT-TARGETS: FALSE
 NUGET
   remote: http://nuget.org/api/v2
   specs:

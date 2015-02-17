@@ -28,6 +28,7 @@ module LockFileSerializer =
             [ if options.Strict then yield "REFERENCES: STRICT"
               if options.OmitContent then yield "CONTENT: NONE"
               if options.Redirects then yield "REDIRECTS: ON"
+              if not options.ImportTargets then yield "IMPORT-TARGETS: FALSE"
               for (source, _), packages in sources do
                   if not !hasReported then
                     yield "NUGET"
@@ -117,6 +118,7 @@ module LockFileParser =
     type private ParserOption =
     | ReferencesMode of bool
     | OmitContent of bool
+    | ImportTargets of bool
     | Redirects of bool
 
     let private (|Remote|NugetPackage|NugetDependency|SourceFile|RepositoryType|Blank|InstallOption|) (state, line:string) =
@@ -130,6 +132,7 @@ module LockFileParser =
         | _, String.StartsWith "specs:" _ -> Blank
         | _, String.StartsWith "REFERENCES:" trimmed -> InstallOption(ReferencesMode(trimmed.Trim() = "STRICT"))
         | _, String.StartsWith "REDIRECTS:" trimmed -> InstallOption(Redirects(trimmed.Trim() = "ON"))
+        | _, String.StartsWith "IMPORT-TARGETS:" trimmed -> InstallOption(ImportTargets(trimmed.Trim() = "TRUE"))
         | _, String.StartsWith "CONTENT:" trimmed -> InstallOption(OmitContent(trimmed.Trim() = "NONE"))
         | _, trimmed when line.StartsWith "      " ->
             if trimmed.Contains("(") then
@@ -154,6 +157,7 @@ module LockFileParser =
             | Blank -> state
             | InstallOption (ReferencesMode(mode)) -> { state with Options = {state.Options with Strict = mode} }
             | InstallOption (Redirects(mode)) -> { state with Options = {state.Options with Redirects = mode} }
+            | InstallOption (ImportTargets(mode)) -> { state with Options = {state.Options with ImportTargets = mode} }
             | InstallOption (OmitContent(omit)) -> { state with Options = {state.Options with OmitContent = omit} }
             | RepositoryType repoType -> { state with RepositoryType = Some repoType }
             | NugetPackage details ->
@@ -248,7 +252,7 @@ module LockFileParser =
 
 
 /// Allows to parse and analyze paket.lock files.
-type LockFile(fileName:string,options,resolution:PackageResolution,remoteFiles:ResolvedSourceFile list) =
+type LockFile(fileName:string,options:InstallOptions,resolution:PackageResolution,remoteFiles:ResolvedSourceFile list) =
 
     let dependenciesByPackageLazy = lazy (
         let allDependenciesOf package =

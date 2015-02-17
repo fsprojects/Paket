@@ -1,3 +1,6 @@
+#### 0.28.7 - 17.02.2015
+* Allow to opt-out of targets import via global switch in `paket.dependencies` - https://github.com/fsprojects/Paket/issues/615
+
 #### 0.28.6 - 17.02.2015
 * Allow to restrict content files in `paket.references` - https://github.com/fsprojects/Paket/issues/587
 

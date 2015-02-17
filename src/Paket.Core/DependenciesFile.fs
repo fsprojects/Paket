@@ -14,9 +14,10 @@ open Paket.PackageSources
 type InstallOptions = 
     { Strict : bool 
       Redirects : bool 
+      ImportTargets : bool
       OmitContent : bool }
 
-    static member Default = { Strict = false; OmitContent = false; Redirects = false}
+    static member Default = { Strict = false; OmitContent = false; Redirects = false; ImportTargets = true}
 
 /// [omit]
 module DependenciesFileParser = 
@@ -132,6 +133,7 @@ module DependenciesFileParser =
     type private ParserOption =
     | ReferencesMode of bool
     | OmitContent of bool
+    | ImportTargets of bool
     | Redirects of bool
 
     let private (|Remote|Package|Comment|ParserOptions|SourceFile|) (line:string) =
@@ -161,6 +163,7 @@ module DependenciesFileParser =
         | String.StartsWith "references" trimmed -> ParserOptions(ParserOption.ReferencesMode(trimmed.Trim() = "strict"))
         | String.StartsWith "redirects" trimmed -> ParserOptions(ParserOption.Redirects(trimmed.Trim() = "on"))
         | String.StartsWith "content" trimmed -> ParserOptions(ParserOption.OmitContent(trimmed.Trim() = "none"))
+        | String.StartsWith "import_targets" trimmed -> ParserOptions(ParserOption.ImportTargets(trimmed.Trim() = "true"))
         | String.StartsWith "gist" _ as trimmed ->
             SourceFile(``parse git source`` trimmed SingleSourceFileOrigin.GistLink "gist")
         | String.StartsWith "github" _ as trimmed  ->
@@ -181,6 +184,7 @@ module DependenciesFileParser =
                 | Comment(line) -> lineNo, options, sources, packages, sourceFiles, if line <> "" then (lineNo,line)::comments else comments
                 | ParserOptions(ParserOption.ReferencesMode mode) -> lineNo, { options with Strict = mode }, sources, packages, sourceFiles, comments
                 | ParserOptions(ParserOption.Redirects mode) -> lineNo, { options with Redirects = mode }, sources, packages, sourceFiles, comments
+                | ParserOptions(ParserOption.ImportTargets mode) -> lineNo, { options with ImportTargets = mode }, sources, packages, sourceFiles, comments
                 | ParserOptions(ParserOption.OmitContent omit) -> lineNo, { options with OmitContent = omit }, sources, packages, sourceFiles, comments
                 | Package(name,version,rest) ->
                     let prereleases,kvPairs =
@@ -419,6 +423,7 @@ type DependenciesFile(fileName,options,sources,packages : PackageRequirement lis
             let hasReportedFirst = ref false
             let hasReportedSecond = ref false
             [ if options.Strict then yield "references strict"
+              if not options.ImportTargets then yield "import_targets false"
               if options.OmitContent then yield "content none"
               for sources, packages in sources do
                   for source in sources do

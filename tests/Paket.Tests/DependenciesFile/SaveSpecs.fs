@@ -64,6 +64,19 @@ let ``should serialize content none config``() =
     cfg.ToString()
     |> shouldEqual (normalizeLineEndings contentNoneConfig)
 
+let noTargetsConfig = """import_targets false
+source http://nuget.org/api/v2
+
+nuget FAKE ~> 3.0"""
+
+
+[<Test>]
+let ``should serialize no targets config``() = 
+    let cfg = DependenciesFile.FromCode(noTargetsConfig)
+    
+    cfg.ToString()
+    |> shouldEqual (normalizeLineEndings noTargetsConfig)
+
 let simplestConfig = """nuget FAKE ~> 3.0"""
 
 [<Test>]

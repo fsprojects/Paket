@@ -157,7 +157,9 @@ let InstallIntoProjects(sources,force, hard, withBindingRedirects, lockFile:Lock
 
         let usedPackageSettings =
             usedPackages
-            |> Seq.map (fun u -> NormalizedPackageName u.Key,u.Value)
+            |> Seq.map (fun u -> NormalizedPackageName u.Key,
+                { u.Value
+                    with ImportTargets = u.Value.ImportTargets && lockFile.Options.ImportTargets })
             |> Map.ofSeq
 
         project.UpdateReferences(model,usedPackageSettings,hard)

@@ -34,6 +34,7 @@ let ``should parse lock file``() =
     let packages = List.rev lockFile.Packages
     packages.Length |> shouldEqual 6
     lockFile.Options.Strict |> shouldEqual false
+    lockFile.Options.ImportTargets |> shouldEqual true
 
     packages.[0].Source |> shouldEqual PackageSources.DefaultNugetSource
     packages.[0].Name |> shouldEqual (PackageName "Castle.Windsor")
@@ -70,6 +71,7 @@ let ``should parse lock file``() =
     sourceFiles.[0].ToString() |> shouldEqual "fsharp/FAKE:7699e40e335f3cc54ab382a8969253fecc1e08a9 src/app/FAKE/Cli.fs"
 
 let strictLockFile = """REFERENCES: STRICT
+IMPORT-TARGETS: FALSE
 NUGET
   remote: https://nuget.org/api/v2
   specs:
@@ -92,6 +94,7 @@ let ``should parse strict lock file``() =
     packages.Length |> shouldEqual 6
     lockFile.Options.Strict |> shouldEqual true
     lockFile.Options.Redirects |> shouldEqual false
+    lockFile.Options.ImportTargets |> shouldEqual false
 
     packages.[5].Source |> shouldEqual PackageSources.DefaultNugetSource
     packages.[5].Name |> shouldEqual (PackageName "log4net")
@@ -99,6 +102,7 @@ let ``should parse strict lock file``() =
     packages.[5].Dependencies |> shouldEqual (Set.ofList [PackageName "log", VersionRequirement.AllReleases, []])
 
 let redirectsLockFile = """REDIRECTS: ON
+IMPORT-TARGETS: TRUE
 NUGET
   remote: https://nuget.org/api/v2
   specs:
@@ -112,6 +116,7 @@ let ``should parse redirects lock file``() =
     packages.Length |> shouldEqual 1
     lockFile.Options.Strict |> shouldEqual false
     lockFile.Options.Redirects |> shouldEqual true
+    lockFile.Options.ImportTargets |> shouldEqual true
 
 let dogfood = """NUGET
   remote: https://nuget.org/api/v2

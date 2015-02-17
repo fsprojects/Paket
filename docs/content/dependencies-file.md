@@ -64,6 +64,16 @@ This option disables the installation of any content files.
     nuget jQuery >= 0 // we don't install jQuery content files
     nuget UnionArgParser ~> 0.7
 
+## import_targets settings
+
+If you don't want to import `.targets` and `.props` files you can disable it via the `import_targets` switch:
+
+    import_targets false
+    source https://nuget.org/api/v2
+
+    nuget Microsoft.Bcl.Build // we don't import .targets and .props
+    nuget UnionArgParser ~> 0.7
+
 ## Redirects option
 
 This option tells paket to create [Assembly Binding Redirects](https://msdn.microsoft.com/en-us/library/433ysdt1(v=vs.110).aspx) for all referenced libraries.
