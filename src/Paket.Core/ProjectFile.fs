@@ -492,12 +492,15 @@ type ProjectFile =
         |> List.map (fun pg -> pg |> getNodes "OutputPath")
         |> List.concat
         |> fun outputPaths ->
+               let clean (p : string) =
+                   p.TrimEnd [|'\\'|] |> normalizePath
                match outputPaths with
                | [] -> failwith "Unable to find %s output path node in file %s" buildConfiguration this.FileName
-               | [output] -> output.InnerText
+               | [output] ->
+                    clean output.InnerText
                | output::_ ->
                     traceWarnfn "Found multiple %s output path nodes in file %s, using first" buildConfiguration this.FileName
-                    output.InnerText
+                    clean output.InnerText
 
     member this.GetAssemblyName () =
         let assemblyName =

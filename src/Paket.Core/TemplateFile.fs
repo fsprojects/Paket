@@ -58,7 +58,7 @@ module TemplateFile =
 
     let private (!<) prefix lines =
         let singleLine str =
-            let regex = sprintf "%s (?<%s>.*)" prefix prefix
+            let regex = sprintf "^%s (?<%s>.*)" prefix prefix
             let reg = Regex(regex, RegexOptions.Compiled ||| RegexOptions.CultureInvariant ||| RegexOptions.IgnoreCase)
             if reg.IsMatch str then
                 Some <| (reg.Match str).Groups.[prefix].Value
@@ -69,8 +69,8 @@ module TemplateFile =
                 | h::t when h.StartsWith " " -> findBody (h.Trim()::acc) t
                 | _ -> Some (acc |> List.rev |> String.concat "\n")
             let rec findStart lines =
-                match lines with
-                | h::t when h = prefix ->
+                match (lines : String list) with
+                | h::t when h.ToLowerInvariant() = prefix.ToLowerInvariant() ->
                     findBody [] t
                 | h::t ->
                     findStart t

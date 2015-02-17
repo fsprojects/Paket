@@ -29,7 +29,7 @@ let ``should detect output path for proj file``
         ([<Values("Project1", "Project2")>] project)
         ([<Values("Debug", "Release")>] configuration) =
     ProjectFile.Load(sprintf "./ProjectFile/TestData/%s.fsprojtest" project).Value.GetOutputDirectory configuration
-    |> shouldEqual (sprintf @"bin\%s\" configuration)
+    |> shouldEqual (System.IO.Path.Combine(@"bin", configuration) |> normalizePath)
 
 [<Test>]
 let ``should detect assembly name for Project1 proj file`` () =

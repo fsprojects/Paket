@@ -85,6 +85,7 @@ let internal loadAssemblyMetadata buildConfig (projectFile : ProjectFile) =
             projectFile.FileName |> Path.GetDirectoryName,
             projectFile.GetOutputDirectory buildConfig,
             projectFile.GetAssemblyName())
+        |> normalizePath
     let bytes = File.ReadAllBytes output
     let assembly = Assembly.Load bytes
     let attribs = assembly.GetCustomAttributes(true)

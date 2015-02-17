@@ -36,7 +36,8 @@ let ``Loading id from assembly works`` () =
 let ``Loading assembly metadata works`` () =
     let workingDir = Path.GetFullPath(".")
     let projFile =
-        Path.Combine(workingDir, "..\\..", "Paket.Tests.fsproj")
+        Path.Combine(workingDir, "..", "..", "Paket.Tests.fsproj")
+        |> normalizePath
         |> ProjectFile.Load
     let config = if workingDir.Contains "Debug" then "Debug" else "Release"
     let sut =

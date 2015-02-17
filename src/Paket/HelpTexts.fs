@@ -353,7 +353,7 @@ Options:
           Text = """Packs all paket.template files within this repository
 
     [lang=batchfile]
-    $ paket pack output "outputDirectory" buildconfig Debug
+    $ paket pack output outputDirectory [buildconfig Debug]
 
 Options:
 

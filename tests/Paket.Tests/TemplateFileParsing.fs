@@ -36,11 +36,21 @@ version 1.0
 
 [<Literal>]
 let FileBasedLongDesc3 = """type file
+ID My.Thing
+authors Bob McBob
+DESCRIPTION
+    A longer description
+    on two lines.
+version
+    1.0
+"""
+
+[<Literal>]
+let FileBasedLongDesc4 = """type file
 id My.Thing
 authors Bob McBob
 description
-    A longer description
-    on two lines.
+    description starting with description
 version
     1.0
 """
@@ -59,6 +69,7 @@ let strToStream (str : string) =
 [<TestCase(FileBasedLongDesc, "A longer description\non two lines.")>]
 [<TestCase(FileBasedLongDesc2, "A longer description\non two lines.")>]
 [<TestCase(FileBasedLongDesc3, "A longer description\non two lines.")>]
+[<TestCase(FileBasedLongDesc4, "description starting with description")>]
 let ``Parsing minimal file based packages works`` (fileContent, desc) =
     let result =
         TemplateFile.Parse (strToStream fileContent)
