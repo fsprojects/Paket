@@ -50,7 +50,7 @@ Paket supports the following source types:
 Paket usually references all direct and transitive dependencies that are listed in your [`paket.references` files](references-files.md) to your project file.
 In `strict` mode it will **only** reference *direct* dependencies.
 
-    references strict
+    references: strict
     source https://nuget.org/api/v2
 
     nuget Newtonsoft.Json ~> 6.0
@@ -61,7 +61,7 @@ In `strict` mode it will **only** reference *direct* dependencies.
 Sometimes you don't want to generate dependencies for older framework versions. You can control this in the [`paket.dependencies` file](dependencies-file.html):
 
     framework: net35, net40
-	source https://nuget.org/api/v2
+    source https://nuget.org/api/v2
 
     nuget Example >= 2.0 // only .NET 3.5 and .NET 4.0
 
@@ -69,7 +69,7 @@ Sometimes you don't want to generate dependencies for older framework versions. 
 
 This option disables the installation of any content files:
 
-    content none
+    content: none
     source https://nuget.org/api/v2
 
     nuget jQuery >= 0 // we don't install jQuery content files
@@ -79,7 +79,7 @@ This option disables the installation of any content files:
 
 If you don't want to import `.targets` and `.props` files you can disable it via the `import_targets` switch:
 
-    import_targets false
+    import_targets: false
     source https://nuget.org/api/v2
 
     nuget Microsoft.Bcl.Build // we don't import .targets and .props
@@ -89,7 +89,7 @@ If you don't want to import `.targets` and `.props` files you can disable it via
 
 It's possible to influence the `Private` property for references via the `copy_local` switch:
 
-    copy_local false
+    copy_local: false
     source https://nuget.org/api/v2
 
     nuget Newtonsoft.Json
@@ -98,7 +98,7 @@ It's possible to influence the `Private` property for references via the `copy_l
 
 This option tells paket to create [Assembly Binding Redirects](https://msdn.microsoft.com/en-us/library/433ysdt1(v=vs.110).aspx) for all referenced libraries.
 
-    redirects on
+    redirects: on
     source https://nuget.org/api/v2
 
     nuget UnionArgParser ~> 0.7
