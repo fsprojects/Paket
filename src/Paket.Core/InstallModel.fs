@@ -232,9 +232,17 @@ type InstallModel =
             | Reference.Library lib -> lib.EndsWith ".resources.dll"
             | _ -> false
 
+        let blacklisted (blacklist : string list) (file : string) = blacklist |> List.exists (fun blf -> file.ToLower().EndsWith (blf.ToLower()))
+
+        let excludeBlacklistedTargets = function
+            | Reference.TargetsFile targetsFile -> targetsFile |> blacklisted Blacklist.TheBlacklist.TargetsFiles 
+            | Reference.Library lib -> lib |> blacklisted Blacklist.TheBlacklist.LibraryFiles
+            | _ -> false
+
         let blackList = 
             [ includeLibs
-              excludeSatelliteAssemblies]
+              excludeSatelliteAssemblies
+              excludeBlacklistedTargets ]
 
         blackList
         |> List.map (fun f -> f >> not) // inverse
