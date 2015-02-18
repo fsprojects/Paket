@@ -8,6 +8,7 @@ type CommandHelpTopic =
             this.Text
                 .Replace("paket.dependencies file","[`paket.dependencies` file](dependencies-file.html)")
                 .Replace("paket.lock file","[`paket.lock` file](lock-file.html)")
+                .Replace("paket.template files","[`paket.template` files](template-files.html)")
                 .Replace("paket.references files","[`paket.references` files](references-files.html)")
                 .Replace("paket.references file","[`paket.references` file](references-files.html)")
                 
