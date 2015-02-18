@@ -177,6 +177,22 @@ let ``should read content none config``() =
 
     (cfg.Packages |> List.find (fun p -> p.Name = PackageName "Microsoft.SqlServer.Types")).Sources |> shouldEqual [PackageSource.NugetSource "http://nuget.org/api/v2"]
 
+let specificFrameworkConfig = """
+framework net40 net35
+source "http://nuget.org/api/v2" // first source
+
+nuget "Microsoft.SqlServer.Types"
+"""
+
+[<Test>]
+let ``should read config with specific framework``() = 
+    let cfg = DependenciesFile.FromCode(specificFrameworkConfig)
+    cfg.Options.OmitContent |> shouldEqual false
+    cfg.Options.CopyLocal |> shouldEqual true
+    cfg.Options.ImportTargets |> shouldEqual true
+
+    (cfg.Packages |> List.find (fun p -> p.Name = PackageName "Microsoft.SqlServer.Types")).Sources |> shouldEqual [PackageSource.NugetSource "http://nuget.org/api/v2"]
+
 let noTargetsImportConfig = """
 import_targets false
 copy_local false

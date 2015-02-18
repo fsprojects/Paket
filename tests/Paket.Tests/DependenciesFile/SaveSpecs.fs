@@ -283,3 +283,24 @@ let ``should serialize config with comments``() =
     
     cfg.ToString()
     |> shouldEqual (normalizeLineEndings withComments)
+
+let withFrameworkRestriction = """framework >= net40
+source https://www.nuget.org/api/v2
+
+// ignore me
+nuget FakeItEasy 1.24.0
+nuget json-ld.net 1.0.3 framework: net35, net40
+nuget Example3 !== 2.2.3 alpha beta framework: >= net40
+// ... but save me
+# and me too!
+nuget Example4 framework: net40
+nuget Example5 prerelease framework: net40
+
+http http://www.fssnip.net/raw/1M test1.fs"""
+
+[<Test>]
+let ``should serialize config with framework restriction``() = 
+    let cfg = DependenciesFile.FromCode(withFrameworkRestriction)
+    
+    cfg.ToString()
+    |> shouldEqual (normalizeLineEndings withFrameworkRestriction)
