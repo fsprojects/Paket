@@ -4,6 +4,7 @@ The `paket.template` files are used to specify rules to create nupkgs.
 
 An example `paket.template` file might look like the following:
 
+  [lang=batchfile]
 	type file
 	id Test.Paket.Package
 	version 1.0
@@ -90,6 +91,7 @@ to decide on the files and dependencies added.
 
 A files block looks like this:
 
+  [lang=batchfile]
 	files
 	  from relative/to/template/file
 	  to folder/in/nupkg
