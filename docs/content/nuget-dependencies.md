@@ -152,6 +152,15 @@ Sometimes you don't want to generate dependencies for older framework versions. 
     nuget Example >= 2.0 framework: net35, net40  // .NET 3.5 and .NET 4.0
     nuget Example >= 2.0 framework: >= net45      // .NET 4.5 and above
 
+## import_targets settings
+
+If you don't want to import `.targets` and `.props` files you can disable it via the `import_targets` switch:
+
+    source https://nuget.org/api/v2
+
+    nuget Microsoft.Bcl.Build import_targets: false // we don't import .targets and .props
+    nuget UnionArgParser ~> 0.7
+
 ### Paket's NuGet-style dependency resolution for transitive dependencies
 
 NuGet's dependency syntax led to a lot of incompatible packages on Nuget.org ([read more](controlling-nuget-resolution.html)). To make your transition to Paket easier and to allow package authors to correct their version constraints you can have Paket behave like NuGet when resolving transitive dependencies (i.e. defaulting to lowest matching versions).

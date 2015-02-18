@@ -26,7 +26,9 @@ let graph = [
     "log","1.2",[]
 ]
 
-let expected = """NUGET
+[<Test>]
+let ``should generate lock file for packages``() = 
+    let expected = """NUGET
   remote: http://nuget.org/api/v2
   specs:
     Castle.Windsor (2.1)
@@ -39,14 +41,63 @@ let expected = """NUGET
     Rx-Core (2.1)
     Rx-Main (2.0)
       Rx-Core (>= 2.1)"""
-
-[<Test>]
-let ``should generate lock file for packages``() = 
     let cfg = DependenciesFile.FromCode(config1)
     cfg.Resolve(noSha1,VersionsFromGraph graph, PackageDetailsFromGraph graph).ResolvedPackages.GetModelOrFail()
     |> LockFileSerializer.serializePackages cfg.Options
     |> shouldEqual (normalizeLineEndings expected)
 
+let configWithRestrictions = """
+source "http://nuget.org/api/v2"
+
+nuget "Castle.Windsor-log4net" ~> 3.2 framework: net35
+nuget "Rx-Main" "~> 2.0" framework: >= net40 """
+
+[<Test>]
+let ``should generate lock file with framework restrictions for packages``() = 
+    let expected = """NUGET
+  remote: http://nuget.org/api/v2
+  specs:
+    Castle.Windsor (2.1)
+    Castle.Windsor-log4net (3.3) - framework: net35
+      Castle.Windsor (>= 2.0)
+      log4net (>= 1.0)
+    log (1.2)
+    log4net (1.1)
+      log (>= 1.0)
+    Rx-Core (2.1)
+    Rx-Main (2.0) - framework: >= net40
+      Rx-Core (>= 2.1)"""
+    let cfg = DependenciesFile.FromCode(configWithRestrictions)
+    cfg.Resolve(noSha1,VersionsFromGraph graph, PackageDetailsFromGraph graph).ResolvedPackages.GetModelOrFail()
+    |> LockFileSerializer.serializePackages cfg.Options
+    |> shouldEqual (normalizeLineEndings expected)
+
+
+let configWithNoImport = """
+source "http://nuget.org/api/v2"
+
+nuget "Castle.Windsor-log4net" ~> 3.2 import_targets: false, framework: net35
+nuget "Rx-Main" "~> 2.0" framework: >= net40 """
+
+[<Test>]
+let ``should generate lock file with no targets import for packages``() = 
+    let expected = """NUGET
+  remote: http://nuget.org/api/v2
+  specs:
+    Castle.Windsor (2.1) - import_targets: false
+    Castle.Windsor-log4net (3.3) - import_targets: false, framework: net35
+      Castle.Windsor (>= 2.0)
+      log4net (>= 1.0)
+    log (1.2) - import_targets: false
+    log4net (1.1) - import_targets: false
+      log (>= 1.0)
+    Rx-Core (2.1)
+    Rx-Main (2.0) - framework: >= net40
+      Rx-Core (>= 2.1)"""
+    let cfg = DependenciesFile.FromCode(configWithNoImport)
+    cfg.Resolve(noSha1,VersionsFromGraph graph, PackageDetailsFromGraph graph).ResolvedPackages.GetModelOrFail()
+    |> LockFileSerializer.serializePackages cfg.Options
+    |> shouldEqual (normalizeLineEndings expected)
 
 let expectedWithGitHub = """GITHUB
   remote: owner/project1

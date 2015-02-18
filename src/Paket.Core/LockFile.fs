@@ -45,9 +45,18 @@ module LockFileSerializer =
                           let s = package.Version.ToString()
                           if s = "" then s else "(" + s + ")"
 
-                      match package.FrameworkRestrictions with
-                      | [] -> yield sprintf "    %s %s" packageName versionStr
-                      | _  -> yield sprintf "    %s %s - %s" packageName versionStr (String.Join(", ",package.FrameworkRestrictions))
+                      let options =
+                        [ if package.ImportTargets = false then yield "import_targets: false"
+                          match package.FrameworkRestrictions with
+                          | [] -> ()
+                          | _  -> yield "framework: " + (String.Join(", ",package.FrameworkRestrictions))]
+
+                      let s = String.Join(", ",options)
+
+                      if s = "" then 
+                        yield sprintf "    %s %s" packageName versionStr 
+                      else
+                        yield sprintf "    %s %s - %s" packageName versionStr s
 
                       for (PackageName name),v,restrictions in package.Dependencies do
                           let versionStr = 
@@ -56,7 +65,7 @@ module LockFileSerializer =
 
                           match restrictions with
                           | [] -> yield sprintf "      %s %s" name versionStr
-                          | _  -> yield sprintf "      %s %s - %s" name versionStr (String.Join(", ",restrictions))]
+                          | _  -> yield sprintf "      %s %s - framework: %s" name versionStr (String.Join(", ",restrictions))]
     
         String.Join(Environment.NewLine, all |> List.map (fun s -> s.TrimEnd()))
 
@@ -170,14 +179,27 @@ module LockFileParser =
                     let parts = details.Split([|" - "|],StringSplitOptions.None)
                     let parts' = parts.[0].Split ' '
                     let version = parts'.[1] |> removeBrackets
+                    let kvPairs = 
+                        if parts.Length < 2 then Dictionary<_,_>() else 
+                        if parts.[1] <> "" && parts.[1].Contains(":") |> not then
+                            parseKeyValuePairs ("framework: " + parts.[1]) // TODO: This is for backwards-compat and should be removed later
+                        else
+                            parseKeyValuePairs parts.[1]
+
                     { state with LastWasPackage = true
                                  Packages = 
                                      { Source = PackageSource.Parse(remote, None)
                                        Name = PackageName parts'.[0]
                                        Dependencies = Set.empty
                                        Unlisted = false
-                                       FrameworkRestrictions = if parts.Length < 2 then [] else Requirements.parseRestrictions parts.[1]
-                                       ImportTargets = if parts.Length < 2 then true else false // TODO
+                                       FrameworkRestrictions =
+                                        match kvPairs.TryGetValue "framework" with
+                                        | true, s -> Requirements.parseRestrictions s
+                                        | _ -> []
+                                       ImportTargets = 
+                                        match kvPairs.TryGetValue "import_targets" with
+                                        | true, "false" -> false
+                                        | _ -> true
                                        Version = SemVer.Parse version } :: state.Packages }
                 | None -> failwith "no source has been specified."
             | NugetDependency (name, _) ->

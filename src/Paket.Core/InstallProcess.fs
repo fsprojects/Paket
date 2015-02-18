@@ -150,6 +150,11 @@ let InstallIntoProjects(sources,force, hard, withBindingRedirects, lockFile:Lock
         |> Array.map (fun (p,m) -> NormalizedPackageName p.Name,m)
         |> Map.ofArray
 
+    let packages =
+        extractedPackages
+        |> Array.map (fun (p,m) -> NormalizedPackageName p.Name,p)
+        |> Map.ofArray
+
     for project, referenceFile in projects do    
         verbosefn "Installing to %s" project.FileName
 
@@ -157,10 +162,13 @@ let InstallIntoProjects(sources,force, hard, withBindingRedirects, lockFile:Lock
 
         let usedPackageSettings =
             usedPackages
-            |> Seq.map (fun u -> NormalizedPackageName u.Key,
-                                    { u.Value with 
-                                        ImportTargets = u.Value.ImportTargets && lockFile.Options.ImportTargets
-                                        CopyLocal = u.Value.CopyLocal && lockFile.Options.CopyLocal })
+            |> Seq.map (fun u -> 
+                let name = NormalizedPackageName u.Key
+                let package = packages.[name]
+                name,
+                    { u.Value with 
+                        ImportTargets = u.Value.ImportTargets && lockFile.Options.ImportTargets && package.ImportTargets
+                        CopyLocal = u.Value.CopyLocal && lockFile.Options.CopyLocal })
             |> Map.ofSeq
 
         project.UpdateReferences(model,usedPackageSettings,hard)

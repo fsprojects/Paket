@@ -253,10 +253,51 @@ let ``should parse framework restricted lock file``() =
     packages.[3].Name |> shouldEqual (PackageName "LinqBridge")
     packages.[3].Version |> shouldEqual (SemVer.Parse "1.3.0")
     packages.[3].FrameworkRestrictions |> shouldEqual ([FrameworkRestriction.Between(FrameworkIdentifier.DotNetFramework(FrameworkVersion.V2),FrameworkIdentifier.DotNetFramework(FrameworkVersion.V3_5))])
+    packages.[3].ImportTargets |> shouldEqual true
 
     packages.[5].Source |> shouldEqual PackageSources.DefaultNugetSource
     packages.[5].Name |> shouldEqual (PackageName "ReadOnlyCollectionInterfaces")
     packages.[5].Version |> shouldEqual (SemVer.Parse "1.0.0")
+    packages.[5].FrameworkRestrictions 
+    |> shouldEqual ([FrameworkRestriction.Exactly(FrameworkIdentifier.DotNetFramework(FrameworkVersion.V2))
+                     FrameworkRestriction.Exactly(FrameworkIdentifier.DotNetFramework(FrameworkVersion.V3_5))
+                     FrameworkRestriction.AtLeast(FrameworkIdentifier.DotNetFramework(FrameworkVersion.V4_Client))])
+
+let frameworkRestricted' = """NUGET
+  remote: https://nuget.org/api/v2
+  specs:
+    Fleece (0.4.0)
+      FSharpPlus (>= 0.0.4)
+      ReadOnlyCollectionExtensions (>= 1.2.0)
+      ReadOnlyCollectionInterfaces (1.0.0) - framework: >= net40
+      System.Json (>= 4.0.20126.16343)
+    FsControl (1.0.9)
+    FSharpPlus (0.0.4)
+      FsControl (>= 1.0.9)
+    LinqBridge (1.3.0) - import_targets: false, framework: >= net20 < net35
+    ReadOnlyCollectionExtensions (1.2.0)
+      LinqBridge (>= 1.3.0) - framework: >= net20 < net35
+      ReadOnlyCollectionInterfaces (1.0.0) - framework: net20, net35, >= net40
+    ReadOnlyCollectionInterfaces (1.0.0) - import_targets: false, framework: net20, net35, >= net40
+    System.Json (4.0.20126.16343)
+"""
+
+[<Test>]
+let ``should parse framework restricted lock file in new syntax``() = 
+    let lockFile = LockFileParser.Parse(toLines frameworkRestricted')
+    let packages = List.rev lockFile.Packages
+    packages.Length |> shouldEqual 7
+
+    packages.[3].Source |> shouldEqual PackageSources.DefaultNugetSource
+    packages.[3].Name |> shouldEqual (PackageName "LinqBridge")
+    packages.[3].Version |> shouldEqual (SemVer.Parse "1.3.0")
+    packages.[3].FrameworkRestrictions |> shouldEqual ([FrameworkRestriction.Between(FrameworkIdentifier.DotNetFramework(FrameworkVersion.V2),FrameworkIdentifier.DotNetFramework(FrameworkVersion.V3_5))])
+    packages.[3].ImportTargets |> shouldEqual false
+
+    packages.[5].Source |> shouldEqual PackageSources.DefaultNugetSource
+    packages.[5].Name |> shouldEqual (PackageName "ReadOnlyCollectionInterfaces")
+    packages.[5].Version |> shouldEqual (SemVer.Parse "1.0.0")
+    packages.[5].ImportTargets |> shouldEqual false
     packages.[5].FrameworkRestrictions 
     |> shouldEqual ([FrameworkRestriction.Exactly(FrameworkIdentifier.DotNetFramework(FrameworkVersion.V2))
                      FrameworkRestriction.Exactly(FrameworkIdentifier.DotNetFramework(FrameworkVersion.V3_5))

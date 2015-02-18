@@ -1,3 +1,6 @@
+#### 0.28.9 - 18.02.2015
+* Allow to opt-out of targets import via package specific switch in `paket.dependencies` - https://github.com/fsprojects/Paket/issues/587
+
 #### 0.28.8 - 17.02.2015
 * Allow to opt-out of private references via global switch in `paket.dependencies` - https://github.com/fsprojects/Paket/issues/587
 
