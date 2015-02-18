@@ -114,7 +114,7 @@ type ResolvedPackages =
             failwith !errorText
 
 
-let calcOpenRequirements (exploredPackage:ResolvedPackage,versionToExplore,dependency,closed:Set<PackageRequirement>,stillOpen:Set<PackageRequirement>) =
+let calcOpenRequirements (exploredPackage:ResolvedPackage,globalFrameworkRestrictions,versionToExplore,dependency,closed:Set<PackageRequirement>,stillOpen:Set<PackageRequirement>) =
     let dependenciesByName =
         // there are packages which define multiple dependencies to the same package
         // we just take the latest one - see #567
@@ -125,7 +125,7 @@ let calcOpenRequirements (exploredPackage:ResolvedPackage,versionToExplore,depen
     let rest = Set.remove dependency stillOpen
                         
     dependenciesByName
-    |> Set.map (fun (n,v,r) -> {dependency with Name = n; VersionRequirement = v; Parent = Package(dependency.Name,versionToExplore); Settings = { dependency.Settings with FrameworkRestrictions = r }})
+    |> Set.map (fun (n,v,r) -> {dependency with Name = n; VersionRequirement = v; Parent = Package(dependency.Name,versionToExplore); Settings = { dependency.Settings with FrameworkRestrictions = r @ globalFrameworkRestrictions }})
     |> Set.filter (fun d -> Set.contains d closed |> not)
     |> Set.filter (fun d -> Set.contains d stillOpen |> not)
     |> Set.filter (fun d ->
@@ -145,7 +145,7 @@ type Resolved = {
     ResolvedSourceFiles : ModuleResolver.ResolvedSourceFile list }
 
 /// Resolves all direct and transitive dependencies
-let Resolve(getVersionsF, getPackageDetailsF, rootDependencies:PackageRequirement list) =
+let Resolve(getVersionsF, getPackageDetailsF, globalFrameworkRestrictions, rootDependencies:PackageRequirement list) =
     tracefn "Resolving packages:"
     let exploredPackages = Dictionary<NormalizedPackageName*SemVerInfo,ResolvedPackage>()
     let allVersions = Dictionary<NormalizedPackageName,SemVerInfo list>()
@@ -158,7 +158,7 @@ let Resolve(getVersionsF, getPackageDetailsF, rootDependencies:PackageRequiremen
             let (PackageName name) = packageName
             tracefn "    - exploring %s %A" name version
             let packageDetails : PackageDetails = getPackageDetailsF sources packageName version
-            let restrictedDependencies = DependencySetFilter.filterByRestrictions settings.FrameworkRestrictions packageDetails.DirectDependencies
+            let restrictedDependencies = DependencySetFilter.filterByRestrictions (settings.FrameworkRestrictions @ globalFrameworkRestrictions) packageDetails.DirectDependencies
             let explored =
                 { Name = packageDetails.Name
                   Version = version
@@ -254,7 +254,7 @@ let Resolve(getVersionsF, getPackageDetailsF, rootDependencies:PackageRequiremen
                         else                
                             let newFilteredVersions = Map.add dependency.Name ([versionToExplore],!globalOverride) filteredVersions
                         
-                            let newOpen = calcOpenRequirements(exploredPackage,versionToExplore,dependency,closed,stillOpen)
+                            let newOpen = calcOpenRequirements(exploredPackage,globalFrameworkRestrictions,versionToExplore,dependency,closed,stillOpen)
                             
                             (exploredPackage.Unlisted && allUnlisted),improveModel (newFilteredVersions,exploredPackage::packages,Set.add dependency closed,newOpen)
                     | ResolvedPackages.Ok _ -> allUnlisted,state)

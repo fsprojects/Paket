@@ -123,6 +123,24 @@ let ``should parse redirects lock file``() =
     lockFile.Options.Settings.ImportTargets |> shouldEqual true
     lockFile.Options.Settings.CopyLocal |> shouldEqual true
 
+let lockFileWithFrameworkRestrictions = """FRAMEWORK: >= NET45
+IMPORT-TARGETS: TRUE
+NUGET
+  remote: https://nuget.org/api/v2
+  specs:
+    Castle.Windsor (2.1)
+"""   
+
+[<Test>]
+let ``should parse lock file with framework restrictions``() = 
+    let lockFile = LockFileParser.Parse(toLines lockFileWithFrameworkRestrictions)
+    let packages = List.rev lockFile.Packages
+    packages.Length |> shouldEqual 1
+    lockFile.Options.Strict |> shouldEqual false
+    lockFile.Options.Redirects |> shouldEqual false
+    lockFile.Options.Settings.ImportTargets |> shouldEqual true
+    lockFile.Options.Settings.CopyLocal |> shouldEqual true
+
 let dogfood = """NUGET
   remote: https://nuget.org/api/v2
   specs:

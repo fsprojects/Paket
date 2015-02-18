@@ -7,6 +7,7 @@ open TestHelpers
 
 let config1 = """
 references strict
+framework: >= net45
 copy_local false
 source "http://nuget.org/api/v2"
 
@@ -19,6 +20,7 @@ let graph1 = [
 
 let expected1 = """REFERENCES: STRICT
 COPY-LOCAL: FALSE
+FRAMEWORK: >= NET45
 NUGET
   remote: http://nuget.org/api/v2
   specs:
@@ -44,8 +46,8 @@ let graph2 = [
     "Microsoft.SqlServer.Types","1.0",[]
 ]
 
-let expected2 = """CONTENT: NONE
-IMPORT-TARGETS: FALSE
+let expected2 = """IMPORT-TARGETS: FALSE
+CONTENT: NONE
 NUGET
   remote: http://nuget.org/api/v2
   specs:

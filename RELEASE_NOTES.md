@@ -1,3 +1,6 @@
+#### 0.28.13 - 18.02.2015
+* Allow to restrict target frameworks via global switch in `paket.dependencies` - https://github.com/fsprojects/Paket/issues/587
+
 #### 0.28.12 - 18.02.2015
 * BUGFIX: Blacklisted Microsoft.Bcl.Build.targets - https://github.com/fsprojects/Paket/issues/618
 

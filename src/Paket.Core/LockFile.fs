@@ -26,10 +26,13 @@ module LockFileSerializer =
         let all = 
             let hasReported = ref false
             [ if options.Strict then yield "REFERENCES: STRICT"
-              if options.Settings.OmitContent then yield "CONTENT: NONE"
               if options.Redirects then yield "REDIRECTS: ON"
+              if not options.Settings.CopyLocal then yield "COPY-LOCAL: FALSE"   
               if not options.Settings.ImportTargets then yield "IMPORT-TARGETS: FALSE"
-              if not options.Settings.CopyLocal then yield "COPY-LOCAL: FALSE"
+              if options.Settings.OmitContent then yield "CONTENT: NONE"      
+              match options.Settings.FrameworkRestrictions with
+              | [] -> ()
+              | _  -> yield "FRAMEWORK: " + (String.Join(", ",options.Settings.FrameworkRestrictions)).ToUpper()
               for (source, _), packages in sources do
                   if not !hasReported then
                     yield "NUGET"
@@ -123,6 +126,7 @@ module LockFileParser =
     | ReferencesMode of bool
     | OmitContent of bool
     | ImportTargets of bool
+    | FrameworkRestrictions of FrameworkRestrictions
     | CopyLocal of bool
     | Redirects of bool
 
@@ -139,6 +143,7 @@ module LockFileParser =
         | _, String.StartsWith "REDIRECTS:" trimmed -> InstallOption(Redirects(trimmed.Trim() = "ON"))
         | _, String.StartsWith "IMPORT-TARGETS:" trimmed -> InstallOption(ImportTargets(trimmed.Trim() = "TRUE"))
         | _, String.StartsWith "COPY-LOCAL:" trimmed -> InstallOption(CopyLocal(trimmed.Trim() = "TRUE"))
+        | _, String.StartsWith "FRAMEWORK:" trimmed -> InstallOption(FrameworkRestrictions(trimmed.Trim() |> Requirements.parseRestrictions))
         | _, String.StartsWith "CONTENT:" trimmed -> InstallOption(OmitContent(trimmed.Trim() = "NONE"))
         | _, trimmed when line.StartsWith "      " ->
             if trimmed.Contains("(") then
@@ -165,6 +170,7 @@ module LockFileParser =
             | InstallOption (Redirects(mode)) -> { state with Options = {state.Options with Redirects = mode} }
             | InstallOption (ImportTargets(mode)) -> { state with Options = {state.Options with Settings = { state.Options.Settings with ImportTargets = mode} } }
             | InstallOption (CopyLocal(mode)) -> { state with Options = {state.Options with Settings = { state.Options.Settings with CopyLocal = mode}} }
+            | InstallOption (FrameworkRestrictions(r)) -> { state with Options = {state.Options with Settings = { state.Options.Settings with FrameworkRestrictions = r}} }
             | InstallOption (OmitContent(omit)) -> { state with Options = {state.Options with Settings = { state.Options.Settings with OmitContent = omit} }}
             | RepositoryType repoType -> { state with RepositoryType = Some repoType }
             | NugetPackage details ->

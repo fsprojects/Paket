@@ -299,7 +299,7 @@ type DependenciesFile(fileName,options,sources,packages : PackageRequirement lis
                             VersionRequirement = v })
             |> Seq.toList
 
-        { ResolvedPackages = PackageResolver.Resolve(getVersionF, getPackageDetailsF, remoteDependencies @ packages)
+        { ResolvedPackages = PackageResolver.Resolve(getVersionF, getPackageDetailsF, options.Settings.FrameworkRestrictions, remoteDependencies @ packages)
           ResolvedSourceFiles = remoteFiles }        
 
     member __.AddAdditionionalPackage(packageName:PackageName,version:string,settings) =
