@@ -480,6 +480,40 @@ type ProjectFile =
         then "Compile"
         else "Content"
 
+    member this.GetOutputDirectory buildConfiguration =
+        this.Document
+        |> getDescendants "PropertyGroup"
+        |> List.filter (fun pg ->
+            pg
+            |> getAttribute "Condition"
+            |> function
+               | None -> false
+               | Some s -> s.Contains "$(Configuration)" && s.Contains buildConfiguration)
+        |> List.map (fun pg -> pg |> getNodes "OutputPath")
+        |> List.concat
+        |> fun outputPaths ->
+               let clean (p : string) =
+                   p.TrimEnd [|'\\'|] |> normalizePath
+               match outputPaths with
+               | [] -> failwith "Unable to find %s output path node in file %s" buildConfiguration this.FileName
+               | [output] ->
+                    clean output.InnerText
+               | output::_ ->
+                    traceWarnfn "Found multiple %s output path nodes in file %s, using first" buildConfiguration this.FileName
+                    clean output.InnerText
+
+    member this.GetAssemblyName () =
+        let assemblyName =
+            this.Document
+            |> getDescendants "AssemblyName"
+            |> function
+               | [] -> failwith "Project %s has no AssemblyName set" this.FileName
+               | [assemblyName] -> assemblyName.InnerText
+               | assemblyName::_ ->
+                    traceWarnfn "Found multiple AssemblyName nodes in file %s, using first" this.FileName
+                    assemblyName.InnerText
+        sprintf "%s.%s" assemblyName (this.OutputType |> function ProjectOutputType.Library -> "dll" | ProjectOutputType.Exe -> "exe")
+
     static member Load(fileName:string) =
         try
             let fi = FileInfo(fileName)

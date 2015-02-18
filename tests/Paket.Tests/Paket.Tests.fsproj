@@ -65,6 +65,7 @@
   -->
   <Import Project="$(SolutionDir)\.paket\paket.targets" />
   <ItemGroup>
+    <Compile Include="AssemblyInfo.fs" />
     <Compile Include="..\..\paket-files\forki\FsUnit\FsUnit.fs">
       <Paket>True</Paket>
       <Link>FsUnit.fs</Link>
@@ -77,6 +78,8 @@
     <Compile Include="DependencySetSpecs.fs" />
     <Compile Include="BindingRedirect.fs" />
     <Compile Include="UtilsSpecs.fs" />
+    <Compile Include="TemplateFileParsing.fs" />
+    <Compile Include="PackageProcessSpecs.fs" />
     <Content Include="Nuspec\FSharp.Data.nuspec">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>

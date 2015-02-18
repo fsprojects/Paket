@@ -8,7 +8,7 @@ open Paket.Logging
 
 let private notInstalled (project : ProjectFile) package = project.HasPackageInstalled(NormalizedPackageName package) |> not
 
-let private addToProject project package =
+let private addToProject (project : ProjectFile) package =
     ProjectFile.FindOrCreateReferencesFile(FileInfo(project.FileName))
         .AddNuGetReference(package)
         .Save()

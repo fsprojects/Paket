@@ -23,3 +23,21 @@ let ``should detect target framework for Project1 proj file``() =
 let ``should detect target framework for Project2 proj file``() =
     ProjectFile.Load("./ProjectFile/TestData/Project2.fsprojtest").Value.GetTargetFramework()
     |> shouldEqual (DotNetFramework(FrameworkVersion.V4_Client))
+
+[<Test>]
+let ``should detect output path for proj file``
+        ([<Values("Project1", "Project2")>] project)
+        ([<Values("Debug", "Release")>] configuration) =
+    ProjectFile.Load(sprintf "./ProjectFile/TestData/%s.fsprojtest" project).Value.GetOutputDirectory configuration
+    |> shouldEqual (System.IO.Path.Combine(@"bin", configuration) |> normalizePath)
+
+[<Test>]
+let ``should detect assembly name for Project1 proj file`` () =
+    ProjectFile.Load("./ProjectFile/TestData/Project1.fsprojtest").Value.GetAssemblyName()
+    |> shouldEqual ("Paket.Tests.dll")
+
+[<Test>]
+let ``should detect assembly name for Project2 proj file`` () =
+    ProjectFile.Load("./ProjectFile/TestData/Project2.fsprojtest").Value.GetAssemblyName()
+    |> shouldEqual ("Paket.Tests.exe")
+
