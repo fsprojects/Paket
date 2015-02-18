@@ -209,9 +209,9 @@ let Write (core : CompleteCoreInfo) optional workingDir outputDir =
             |> List.iter (fun (f, t) ->
                   let source = Path.Combine(workingDir, f)
                   if Directory.Exists source then
-                      zipFile.AddDirectory(source, t) |> ignore
+                      zipFile.AddDirectory(source, t.Replace(" ", "%20")) |> ignore
                   else if File.Exists source then
-                      zipFile.AddFile(source, t) |> ignore
+                      zipFile.AddFile(source, t.Replace(" ", "%20")) |> ignore
                   else failwithf "Could not find source file %s" source))
 
     writeNupkg core optional
