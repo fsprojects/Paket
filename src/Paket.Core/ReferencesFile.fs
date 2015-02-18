@@ -111,9 +111,9 @@ type ReferencesFile =
         List.append
             (this.NugetPackages |> List.map (fun p ->
                 let options =
-                    [ if p.CopyLocal = false then yield "copy_local: false"
-                      if p.ImportTargets = false then yield "import_targets: false"
-                      if p.OmitContent = true then yield "content: none"
+                    [ if not p.CopyLocal then yield "copy_local: false"
+                      if not p.ImportTargets then yield "import_targets: false"
+                      if p.OmitContent then yield "content: none"
                       match p.FrameworkRestrictions with
                       | [] -> ()
                       | _  -> yield "framework: " + (String.Join(", ",p.FrameworkRestrictions))]

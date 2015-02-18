@@ -250,7 +250,7 @@ let ``should serialize config with framework restrictions``() =
 let withNoImportsRestrictions = """source https://www.nuget.org/api/v2
 
 nuget FakeItEasy 1.24.0
-nuget json-ld.net 1.0.3 import_targets: false, framework: net35, net40
+nuget json-ld.net 1.0.3 copy_local: false, import_targets: false, framework: net35, net40
 nuget Example3 !== 2.2.3 alpha beta import_targets: false
 nuget Example4 import_targets: false
 nuget Example5 prerelease import_targets: false

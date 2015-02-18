@@ -168,7 +168,7 @@ let InstallIntoProjects(sources,force, hard, withBindingRedirects, lockFile:Lock
                 name,
                     { u.Value with 
                         ImportTargets = u.Value.ImportTargets && lockFile.Options.ImportTargets && package.ImportTargets
-                        CopyLocal = u.Value.CopyLocal && lockFile.Options.CopyLocal })
+                        CopyLocal = u.Value.CopyLocal && lockFile.Options.CopyLocal && package.CopyLocal })
             |> Map.ofSeq
 
         project.UpdateReferences(model,usedPackageSettings,hard)

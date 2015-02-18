@@ -46,7 +46,8 @@ module LockFileSerializer =
                           if s = "" then s else "(" + s + ")"
 
                       let options =
-                        [ if package.ImportTargets = false then yield "import_targets: false"
+                        [ if not package.CopyLocal then yield "copy_local: false"
+                          if not package.ImportTargets then yield "import_targets: false"
                           match package.FrameworkRestrictions with
                           | [] -> ()
                           | _  -> yield "framework: " + (String.Join(", ",package.FrameworkRestrictions))]
@@ -198,6 +199,10 @@ module LockFileParser =
                                         | _ -> []
                                        ImportTargets = 
                                         match kvPairs.TryGetValue "import_targets" with
+                                        | true, "false" -> false
+                                        | _ -> true
+                                       CopyLocal = 
+                                        match kvPairs.TryGetValue "copy_local" with
                                         | true, "false" -> false
                                         | _ -> true
                                        Version = SemVer.Parse version } :: state.Packages }

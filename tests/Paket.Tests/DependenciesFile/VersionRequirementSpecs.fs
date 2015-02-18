@@ -15,6 +15,7 @@ let require packageName strategy text : PackageRequirement =
       Parent = PackageRequirementSource.DependenciesFile ""
       FrameworkRestrictions = []
       ImportTargets = true
+      CopyLocal = true
       Sources = [] }
 
 [<Test>]

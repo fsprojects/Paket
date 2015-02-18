@@ -219,6 +219,10 @@ module DependenciesFileParser =
                             match kvPairs.TryGetValue "import_targets" with
                             | true, "false" -> false
                             | _ -> true
+                          CopyLocal = 
+                            match kvPairs.TryGetValue "copy_local" with
+                            | true, "false" -> false
+                            | _ -> true
                           VersionRequirement = parseVersionRequirement((version + " " + prereleases).Trim '!') } :: packages, sourceFiles, comments
                 | SourceFile(origin, (owner,project, commit), path) ->
                     lineNo, options, sources, packages, { Owner = owner; Project = project; Commit = commit; Name = path; Origin = origin} :: sourceFiles, comments
@@ -305,7 +309,7 @@ type DependenciesFile(fileName,options,sources,packages : PackageRequirement lis
         { ResolvedPackages = PackageResolver.Resolve(getVersionF, getPackageDetailsF, remoteDependencies @ packages)
           ResolvedSourceFiles = remoteFiles }        
 
-    member __.AddAdditionionalPackage(packageName:PackageName,version:string,importTargets) =
+    member __.AddAdditionionalPackage(packageName:PackageName,version:string,copyLocal,importTargets) =
         let versionRange = DependenciesFileParser.parseVersionRequirement (version.Trim '!')
         let sources = 
             match packages |> List.rev with
@@ -319,6 +323,7 @@ type DependenciesFile(fileName,options,sources,packages : PackageRequirement lis
               ResolverStrategy = DependenciesFileParser.parseResolverStrategy version
               FrameworkRestrictions = []
               ImportTargets = importTargets
+              CopyLocal = copyLocal
               Parent = PackageRequirementSource.DependenciesFile fileName }
 
         // Try to find alphabetical matching position to insert the package
@@ -329,7 +334,7 @@ type DependenciesFile(fileName,options,sources,packages : PackageRequirement lis
 
         DependenciesFile(fileName,options,sources,newPackages, remoteFiles, comments)
 
-    member __.AddFixedPackage(packageName:PackageName,version:string,frameworkRestrictions,importTargets) =
+    member __.AddFixedPackage(packageName:PackageName,version:string,frameworkRestrictions,copyLocal,importTargets) =
         let versionRange = DependenciesFileParser.parseVersionRequirement (version.Trim '!')
         let sources = 
             match packages |> List.rev with
@@ -352,12 +357,13 @@ type DependenciesFile(fileName,options,sources,packages : PackageRequirement lis
               ResolverStrategy = strategy
               FrameworkRestrictions = frameworkRestrictions
               ImportTargets = importTargets
+              CopyLocal = copyLocal
               Parent = PackageRequirementSource.DependenciesFile fileName }
 
         DependenciesFile(fileName,options,sources,(packages |> List.filter (fun p -> NormalizedPackageName p.Name <> NormalizedPackageName packageName)) @ [newPackage], remoteFiles, comments)
 
     member this.AddFixedPackage(packageName:PackageName,version:string) =
-        this.AddFixedPackage(packageName,version,[],true)
+        this.AddFixedPackage(packageName,version,[],true,true)
 
     member __.RemovePackage(packageName:PackageName) =
         let newPackages = 
@@ -379,7 +385,7 @@ type DependenciesFile(fileName,options,sources,packages : PackageRequirement lis
                 tracefn "Adding %s to %s" name fileName
             else
                 tracefn "Adding %s %s to %s" name version fileName
-            this.AddAdditionionalPackage(packageName,version,true)
+            this.AddAdditionionalPackage(packageName,version,true,true)
 
     member this.Remove(packageName) =
         let (PackageName name) = packageName
@@ -450,7 +456,8 @@ type DependenciesFile(fileName,options,sources,packages : PackageRequirement lis
                       let version = DependenciesFileSerializer.formatVersionRange package.ResolverStrategy package.VersionRequirement
                       
                       let options =
-                           [if package.ImportTargets = false then yield "import_targets: false"
+                           [if not package.CopyLocal then yield "copy_local: false"
+                            if not package.ImportTargets then yield "import_targets: false"
                             if package.FrameworkRestrictions <> [] then
                                 yield "framework: " + String.Join(", ", package.FrameworkRestrictions)]
 

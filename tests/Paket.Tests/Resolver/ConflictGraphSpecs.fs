@@ -31,6 +31,7 @@ let defaultPackage =
       Sources = [ PackageSource.NugetSource "" ]
       FrameworkRestrictions = []
       ImportTargets = true
+      CopyLocal = true
       ResolverStrategy = ResolverStrategy.Max }
 
 [<Test>]
