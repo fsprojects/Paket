@@ -125,6 +125,33 @@ let ``should generate lock file with no copy local for packages``() =
     |> LockFileSerializer.serializePackages cfg.Options
     |> shouldEqual (normalizeLineEndings expected)
 
+
+let configWithDisabledContent = """
+source "http://nuget.org/api/v2"
+
+nuget "Castle.Windsor-log4net" ~> 3.2 framework: net35
+nuget "Rx-Main" "~> 2.0" content: none, framework: >= net40 """
+
+[<Test>]
+let ``should generate lock file with disabled content for packages``() = 
+    let expected = """NUGET
+  remote: http://nuget.org/api/v2
+  specs:
+    Castle.Windsor (2.1)
+    Castle.Windsor-log4net (3.3) - framework: net35
+      Castle.Windsor (>= 2.0)
+      log4net (>= 1.0)
+    log (1.2)
+    log4net (1.1)
+      log (>= 1.0)
+    Rx-Core (2.1) - content: none
+    Rx-Main (2.0) - content: none, framework: >= net40
+      Rx-Core (>= 2.1)"""
+    let cfg = DependenciesFile.FromCode(configWithDisabledContent)
+    cfg.Resolve(noSha1,VersionsFromGraph graph, PackageDetailsFromGraph graph).ResolvedPackages.GetModelOrFail()
+    |> LockFileSerializer.serializePackages cfg.Options
+    |> shouldEqual (normalizeLineEndings expected)
+
 let expectedWithGitHub = """GITHUB
   remote: owner/project1
   specs:

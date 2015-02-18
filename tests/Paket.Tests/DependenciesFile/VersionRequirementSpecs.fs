@@ -16,6 +16,7 @@ let require packageName strategy text : PackageRequirement =
       FrameworkRestrictions = []
       ImportTargets = true
       CopyLocal = true
+      OmitContent = false
       Sources = [] }
 
 [<Test>]

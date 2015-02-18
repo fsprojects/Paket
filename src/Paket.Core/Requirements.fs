@@ -135,6 +135,7 @@ type PackageRequirement =
       FrameworkRestrictions: FrameworkRestrictions
       ImportTargets: bool
       CopyLocal: bool
+      OmitContent: bool
       Sources : PackageSource list }
 
     override this.Equals(that) = 

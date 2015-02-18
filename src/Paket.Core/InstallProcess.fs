@@ -14,7 +14,7 @@ open FSharp.Polyfill
 open System.Reflection
 open System.Diagnostics
 
-let private findPackagesWithContent (root,usedPackages:Dictionary<PackageName,PackageInstallSettings>) = 
+let private findPackagesWithContent (root,usedPackages:Map<PackageName,PackageInstallSettings>) = 
     usedPackages
     |> Seq.filter (fun kv -> not kv.Value.OmitContent)
     |> Seq.map (fun kv -> 
@@ -157,18 +157,21 @@ let InstallIntoProjects(sources,force, hard, withBindingRedirects, lockFile:Lock
 
     for project, referenceFile in projects do    
         verbosefn "Installing to %s" project.FileName
-
-        let usedPackages = lockFile.GetPackageHull(referenceFile)
+        
+        let usedPackages =
+            lockFile.GetPackageHull(referenceFile)
+            |> Seq.map (fun u -> 
+                let package = packages.[NormalizedPackageName u.Key]
+                u.Key,
+                    { u.Value with
+                        ImportTargets = u.Value.ImportTargets && lockFile.Options.ImportTargets && package.ImportTargets
+                        CopyLocal = u.Value.CopyLocal && lockFile.Options.CopyLocal && package.CopyLocal 
+                        OmitContent = u.Value.OmitContent || lockFile.Options.OmitContent || package.OmitContent })
+            |> Map.ofSeq
 
         let usedPackageSettings =
             usedPackages
-            |> Seq.map (fun u -> 
-                let name = NormalizedPackageName u.Key
-                let package = packages.[name]
-                name,
-                    { u.Value with 
-                        ImportTargets = u.Value.ImportTargets && lockFile.Options.ImportTargets && package.ImportTargets
-                        CopyLocal = u.Value.CopyLocal && lockFile.Options.CopyLocal && package.CopyLocal })
+            |> Seq.map (fun u -> NormalizedPackageName u.Key,u.Value)
             |> Map.ofSeq
 
         project.UpdateReferences(model,usedPackageSettings,hard)
@@ -192,7 +195,6 @@ let InstallIntoProjects(sources,force, hard, withBindingRedirects, lockFile:Lock
                                            else Path.Combine(file.Link, Path.GetFileName(file.Name))) })
         
         let nuGetFileItems =
-            if lockFile.Options.OmitContent then [] else
             copyContentFiles(project, findPackagesWithContent(root,usedPackages))
             |> List.map (fun file -> 
                                 { BuildAction = project.DetermineBuildAction file.Name

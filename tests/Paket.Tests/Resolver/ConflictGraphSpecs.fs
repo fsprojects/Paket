@@ -32,6 +32,7 @@ let defaultPackage =
       FrameworkRestrictions = []
       ImportTargets = true
       CopyLocal = true
+      OmitContent = false
       ResolverStrategy = ResolverStrategy.Max }
 
 [<Test>]

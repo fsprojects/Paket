@@ -539,6 +539,21 @@ let ``should read config with no targets import``() =
     p.FrameworkRestrictions |> shouldEqual []
     p.ImportTargets |> shouldEqual false
     p.CopyLocal |> shouldEqual false
+    p.OmitContent |> shouldEqual false
+
+[<Test>]
+let ``should read config with content none``() = 
+    let config = """
+    nuget Foobar 1.2.3 alpha beta content: none, copy_local: false
+    """
+    let cfg = DependenciesFile.FromCode(config)
+
+    let p = cfg.Packages |> List.find (fun x-> x.Name = PackageName "Foobar")
+    p.VersionRequirement.Range |> shouldEqual (VersionRange.Specific (SemVer.Parse "1.2.3"))
+    p.FrameworkRestrictions |> shouldEqual []
+    p.ImportTargets |> shouldEqual true
+    p.CopyLocal |> shouldEqual false
+    p.OmitContent |> shouldEqual true
 
 
 let configWithInvalidPrereleaseString = """

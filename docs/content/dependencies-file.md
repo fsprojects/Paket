@@ -56,7 +56,7 @@ In `strict` mode it will **only** reference *direct* dependencies.
 
 ## No content option
 
-This option disables the installation of any content files.
+This option disables the installation of any content files:
 
     content none
     source https://nuget.org/api/v2

@@ -48,6 +48,7 @@ module LockFileSerializer =
                       let options =
                         [ if not package.CopyLocal then yield "copy_local: false"
                           if not package.ImportTargets then yield "import_targets: false"
+                          if package.OmitContent then yield "content: none"
                           match package.FrameworkRestrictions with
                           | [] -> ()
                           | _  -> yield "framework: " + (String.Join(", ",package.FrameworkRestrictions))]
@@ -205,6 +206,10 @@ module LockFileParser =
                                         match kvPairs.TryGetValue "copy_local" with
                                         | true, "false" -> false
                                         | _ -> true
+                                       OmitContent =
+                                        match kvPairs.TryGetValue "content" with
+                                        | true, "none" -> true 
+                                        | _ -> false 
                                        Version = SemVer.Parse version } :: state.Packages }
                 | None -> failwith "no source has been specified."
             | NugetDependency (name, _) ->

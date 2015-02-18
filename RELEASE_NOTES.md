@@ -1,3 +1,6 @@
+#### 0.28.11 - 18.02.2015
+* Allow to restrict content files via package specific switch in `paket.dependencies` - https://github.com/fsprojects/Paket/issues/587
+
 #### 0.28.10 - 18.02.2015
 * Allow to opt-out of private references via package specific switch in `paket.dependencies` - https://github.com/fsprojects/Paket/issues/587
 

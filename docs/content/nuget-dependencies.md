@@ -152,7 +152,16 @@ Sometimes you don't want to generate dependencies for older framework versions. 
     nuget Example >= 2.0 framework: net35, net40  // .NET 3.5 and .NET 4.0
     nuget Example >= 2.0 framework: >= net45      // .NET 4.5 and above
 
-## copy_local settings
+### No content option
+
+This option disables the installation of any content files:
+    
+    source https://nuget.org/api/v2
+
+    nuget jQuery >= 0 content: none // we don't install jQuery content files
+    nuget UnionArgParser ~> 0.7
+
+### copy_local settings
 
 It's possible to influence the `Private` property for references in project files:
 
@@ -160,7 +169,7 @@ It's possible to influence the `Private` property for references in project file
 
     nuget Newtonsoft.Json copy_local: false
 
-## import_targets settings
+### import_targets settings
 
 If you don't want to import `.targets` and `.props` files you can disable it via the `import_targets` switch:
 

@@ -56,6 +56,7 @@ type ResolvedPackage =
       Unlisted : bool 
       ImportTargets : bool
       CopyLocal : bool
+      OmitContent : bool
       FrameworkRestrictions: FrameworkRestrictions
       Source : PackageSource }
 
@@ -152,7 +153,7 @@ let Resolve(getVersionsF, getPackageDetailsF, rootDependencies:PackageRequiremen
     let exploredPackages = Dictionary<NormalizedPackageName*SemVerInfo,ResolvedPackage>()
     let allVersions = Dictionary<NormalizedPackageName,SemVerInfo list>()
 
-    let getExploredPackage(sources,packageName:PackageName,version,frameworkRestrictions,copyLocal,importTargets) =
+    let getExploredPackage(sources,packageName:PackageName,version,frameworkRestrictions,omitContent,copyLocal,importTargets) =
         let normalizedPackageName = NormalizedPackageName packageName
         match exploredPackages.TryGetValue <| (normalizedPackageName,version) with
         | true,package -> package
@@ -169,6 +170,7 @@ let Resolve(getVersionsF, getPackageDetailsF, rootDependencies:PackageRequiremen
                   FrameworkRestrictions = frameworkRestrictions
                   ImportTargets = importTargets
                   CopyLocal = copyLocal
+                  OmitContent = omitContent
                   Source = packageDetails.Source }
             exploredPackages.Add((normalizedPackageName,version),explored)
             explored
@@ -252,7 +254,7 @@ let Resolve(getVersionsF, getPackageDetailsF, rootDependencies:PackageRequiremen
                 |> List.fold (fun (allUnlisted,state) versionToExplore ->
                     match state with
                     | ResolvedPackages.Conflict _ ->
-                        let exploredPackage = getExploredPackage(dependency.Sources,dependency.Name,versionToExplore,dependency.FrameworkRestrictions,dependency.CopyLocal,dependency.ImportTargets)
+                        let exploredPackage = getExploredPackage(dependency.Sources,dependency.Name,versionToExplore,dependency.FrameworkRestrictions,dependency.OmitContent,dependency.CopyLocal,dependency.ImportTargets)
                         if exploredPackage.Unlisted && not useUnlisted then 
                             allUnlisted,state 
                         else                

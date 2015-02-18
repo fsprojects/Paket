@@ -208,6 +208,7 @@ let createPackageRequirement packageName version sources dependenciesFileName =
        FrameworkRestrictions = []
        ImportTargets = true
        CopyLocal = true
+       OmitContent = false
        Parent = PackageRequirementSource.DependenciesFile dependenciesFileName }
 
 let createDependenciesFileR (rootDirectory : DirectoryInfo) nugetEnv mode =

@@ -38,6 +38,7 @@ let safeResolve graph (dependencies : (string * VersionRange) list)  =
                               FrameworkRestrictions = []
                               ImportTargets = true
                               CopyLocal = true
+                              OmitContent = false
                               ResolverStrategy = ResolverStrategy.Max })
     PackageResolver.Resolve(VersionsFromGraph graph, PackageDetailsFromGraph graph, packages)
 
