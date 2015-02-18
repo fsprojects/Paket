@@ -413,7 +413,7 @@ type DependenciesFile(fileName,options,sources,packages : PackageRequirement lis
             |> Seq.groupBy fst
 
         let formatNugetSource source = 
-            "source " + source.Url +
+            "source " + String.quoted source.Url +
                 match source.Authentication with
                 | Some (PlainTextAuthentication(username,password)) -> 
                     sprintf " username: \"%s\" password: \"%s\"" username password
@@ -434,7 +434,7 @@ type DependenciesFile(fileName,options,sources,packages : PackageRequirement lis
                       hasReportedSource := true
                       match source with
                       | Nuget source -> yield formatNugetSource source
-                      | LocalNuget source -> yield "source " + source
+                      | LocalNuget source -> yield "source " + String.quoted source
                   
                   for _,package in packages do
                       if (not !hasReportedFirst) && !hasReportedSource  then

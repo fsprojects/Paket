@@ -230,6 +230,26 @@ let ``should read config without quotes``() =
     cfg.DirectDependencies.[PackageName "FAKE"].Range |> shouldEqual (VersionRange.Exactly "1.1")
     cfg.DirectDependencies.[PackageName "SignalR"].Range |> shouldEqual (VersionRange.Exactly "3.3.2")
 
+let configLocalQuotedSource = """source "D:\code\temp with space"
+
+nuget Castle.Windsor-log4net ~> 3.2
+nuget Rx-Main ~> 2.0
+nuget FAKE = 1.1
+nuget SignalR = 3.3.2
+"""
+
+[<Test>]
+let ``should read config local quoted source``() = 
+    let cfg = DependenciesFile.FromCode(configLocalQuotedSource)
+    cfg.Sources.Head |> shouldEqual (LocalNuget("D:\code\\temp with space"))
+    cfg.Options.Strict |> shouldEqual false
+    cfg.DirectDependencies.Count |> shouldEqual 4
+
+    cfg.DirectDependencies.[PackageName "Rx-Main"].Range |> shouldEqual (VersionRange.Between("2.0", "3.0"))
+    cfg.DirectDependencies.[PackageName "Castle.Windsor-log4net"].Range |> shouldEqual (VersionRange.Between("3.2", "4.0"))
+    cfg.DirectDependencies.[PackageName "FAKE"].Range |> shouldEqual (VersionRange.Exactly "1.1")
+    cfg.DirectDependencies.[PackageName "SignalR"].Range |> shouldEqual (VersionRange.Exactly "3.3.2")
+
 let configWithoutQuotesButLotsOfWhiteSpace = """
 source      http://nuget.org/api/v2
 

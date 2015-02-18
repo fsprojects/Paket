@@ -74,7 +74,7 @@ let ``should generate lock file with framework restrictions for packages``() =
 
 
 let configWithNoImport = """
-source "http://nuget.org/api/v2"
+source "D:\code\temp with space"
 
 nuget "Castle.Windsor-log4net" ~> 3.2 import_targets: false, framework: net35
 nuget "Rx-Main" "~> 2.0" framework: >= net40 """
@@ -82,7 +82,7 @@ nuget "Rx-Main" "~> 2.0" framework: >= net40 """
 [<Test>]
 let ``should generate lock file with no targets import for packages``() = 
     let expected = """NUGET
-  remote: http://nuget.org/api/v2
+  remote: "D:\code\temp with space"
   specs:
     Castle.Windsor (2.1) - import_targets: false
     Castle.Windsor-log4net (3.3) - import_targets: false, framework: net35

@@ -67,7 +67,7 @@ let ``should serialize content none config``() =
 
 let noTargetsConfig = """import_targets: false
 framework: >= net45
-source http://nuget.org/api/v2
+source "D:\code\temp with space"
 
 nuget FAKE ~> 3.0"""
 

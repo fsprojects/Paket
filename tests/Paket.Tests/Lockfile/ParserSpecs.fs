@@ -7,6 +7,7 @@ open TestHelpers
 open Paket.Domain
 open Paket.ModuleResolver
 open Paket.Requirements
+open Paket.PackageSources
 
 let lockFile = """COPY-LOCAL: FALSE
 NUGET
@@ -108,7 +109,7 @@ let redirectsLockFile = """REDIRECTS: ON
 IMPORT-TARGETS: TRUE
 COPY-LOCAL: TRUE
 NUGET
-  remote: https://nuget.org/api/v2
+  remote: "D:\code\temp with space"
   specs:
     Castle.Windsor (2.1)
 """   
@@ -117,11 +118,14 @@ NUGET
 let ``should parse redirects lock file``() = 
     let lockFile = LockFileParser.Parse(toLines redirectsLockFile)
     let packages = List.rev lockFile.Packages
+    
     packages.Length |> shouldEqual 1
     lockFile.Options.Strict |> shouldEqual false
     lockFile.Options.Redirects |> shouldEqual true
     lockFile.Options.Settings.ImportTargets |> shouldEqual true
     lockFile.Options.Settings.CopyLocal |> shouldEqual true
+
+    packages.Head.Source |> shouldEqual (PackageSource.LocalNuget("D:\code\\temp with space"))
 
 let lockFileWithFrameworkRestrictions = """FRAMEWORK: >= NET45
 IMPORT-TARGETS: TRUE

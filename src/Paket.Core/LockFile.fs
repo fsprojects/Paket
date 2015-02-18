@@ -38,7 +38,7 @@ module LockFileSerializer =
                     yield "NUGET"
                     hasReported := true
 
-                  yield "  remote: " + source
+                  yield "  remote: " + String.quoted source
 
                   yield "  specs:"
                   for _,_,package in packages |> Seq.sortBy (fun (_,_,p) -> NormalizedPackageName p.Name) do
@@ -137,7 +137,7 @@ module LockFileParser =
         | _, "NUGET" -> RepositoryType "NUGET"
         | _, "GITHUB" -> RepositoryType "GITHUB"
         | _, _ when String.IsNullOrWhiteSpace line -> Blank
-        | _, String.StartsWith "remote:" trimmed -> Remote(trimmed.Trim().Split(' ').[0])
+        | _, String.StartsWith "remote:" trimmed -> Remote(PackageSource.Parse("source " + trimmed.Trim()).ToString())
         | _, String.StartsWith "specs:" _ -> Blank
         | _, String.StartsWith "REFERENCES:" trimmed -> InstallOption(ReferencesMode(trimmed.Trim() = "STRICT"))
         | _, String.StartsWith "REDIRECTS:" trimmed -> InstallOption(Redirects(trimmed.Trim() = "ON"))

@@ -276,6 +276,8 @@ module String =
             Some (input.Substring(prefix.Length))
         else None
 
+    let quoted(text:string) = (if text.Contains(" ") then "\"" + text + "\"" else text) 
+
 let inline orElse v =
     function
     | Some x -> Some x

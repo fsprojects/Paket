@@ -1,3 +1,6 @@
+#### 0.28.14 - 18.02.2015
+* Allow local NuGet sources with spaces in `paket.dependencies` - https://github.com/fsprojects/Paket/issues/616
+
 #### 0.28.13 - 18.02.2015
 * Allow to restrict target frameworks via global switch in `paket.dependencies` - https://github.com/fsprojects/Paket/issues/587
 
