@@ -191,7 +191,7 @@ module DependenciesFileParser =
                 | ParserOptions(ParserOption.ImportTargets mode) -> lineNo, { options with ImportTargets = mode }, sources, packages, sourceFiles, comments
                 | ParserOptions(ParserOption.OmitContent omit) -> lineNo, { options with OmitContent = omit }, sources, packages, sourceFiles, comments
                 | Package(name,version,rest) ->
-                    let prereleases,kvPairs =
+                    let prereleases,optionsText =
                         if rest.Contains ":" then
                             // boah that's reaaaally ugly, but keeps backwards compat
                             let pos = rest.IndexOf ':'
@@ -199,9 +199,9 @@ module DependenciesFileParser =
                             let pos' = s.LastIndexOf(' ')
                             let prereleases = if pos' > 0 then s.Substring(0,pos') else ""
                             let s' = if prereleases <> "" then rest.Replace(prereleases,"") else rest
-                            prereleases,Utils.parseKeyValuePairs s'
+                            prereleases,s'
                         else
-                            rest,new System.Collections.Generic.Dictionary<_,_>()
+                            rest,""
 
                     if operators |> Seq.exists (fun x -> prereleases.Contains x) || prereleases.Contains("!") then
                         failwithf "Invalid prerelease version %s" prereleases
@@ -211,22 +211,7 @@ module DependenciesFileParser =
                           Name = PackageName name
                           ResolverStrategy = parseResolverStrategy version
                           Parent = DependenciesFile fileName
-                          FrameworkRestrictions = 
-                            match kvPairs.TryGetValue "framework" with
-                            | true, s -> Requirements.parseRestrictions s
-                            | _ -> []
-                          ImportTargets = 
-                            match kvPairs.TryGetValue "import_targets" with
-                            | true, "false" -> false
-                            | _ -> true
-                          CopyLocal = 
-                            match kvPairs.TryGetValue "copy_local" with
-                            | true, "false" -> false
-                            | _ -> true
-                          OmitContent = 
-                            match kvPairs.TryGetValue "content" with
-                            | true, "none" -> true 
-                            | _ -> false 
+                          Settings = InstallSettings.Parse(optionsText)
                           VersionRequirement = parseVersionRequirement((version + " " + prereleases).Trim '!') } :: packages, sourceFiles, comments
                 | SourceFile(origin, (owner,project, commit), path) ->
                     lineNo, options, sources, packages, { Owner = owner; Project = project; Commit = commit; Name = path; Origin = origin} :: sourceFiles, comments
@@ -313,7 +298,7 @@ type DependenciesFile(fileName,options,sources,packages : PackageRequirement lis
         { ResolvedPackages = PackageResolver.Resolve(getVersionF, getPackageDetailsF, remoteDependencies @ packages)
           ResolvedSourceFiles = remoteFiles }        
 
-    member __.AddAdditionionalPackage(packageName:PackageName,version:string,omitContent,copyLocal,importTargets) =
+    member __.AddAdditionionalPackage(packageName:PackageName,version:string,settings) =
         let versionRange = DependenciesFileParser.parseVersionRequirement (version.Trim '!')
         let sources = 
             match packages |> List.rev with
@@ -325,10 +310,7 @@ type DependenciesFile(fileName,options,sources,packages : PackageRequirement lis
               VersionRequirement = versionRange
               Sources = sources
               ResolverStrategy = DependenciesFileParser.parseResolverStrategy version
-              FrameworkRestrictions = []
-              ImportTargets = importTargets
-              CopyLocal = copyLocal
-              OmitContent = omitContent              
+              Settings = settings
               Parent = PackageRequirementSource.DependenciesFile fileName }
 
         // Try to find alphabetical matching position to insert the package
@@ -339,7 +321,7 @@ type DependenciesFile(fileName,options,sources,packages : PackageRequirement lis
 
         DependenciesFile(fileName,options,sources,newPackages, remoteFiles, comments)
 
-    member __.AddFixedPackage(packageName:PackageName,version:string,frameworkRestrictions,omitContent,copyLocal,importTargets) =
+    member __.AddFixedPackage(packageName:PackageName,version:string,settings) =
         let versionRange = DependenciesFileParser.parseVersionRequirement (version.Trim '!')
         let sources = 
             match packages |> List.rev with
@@ -360,16 +342,13 @@ type DependenciesFile(fileName,options,sources,packages : PackageRequirement lis
               VersionRequirement = newVersionRange
               Sources = sources
               ResolverStrategy = strategy
-              FrameworkRestrictions = frameworkRestrictions
-              ImportTargets = importTargets
-              CopyLocal = copyLocal
-              OmitContent = omitContent
+              Settings = settings
               Parent = PackageRequirementSource.DependenciesFile fileName }
 
         DependenciesFile(fileName,options,sources,(packages |> List.filter (fun p -> NormalizedPackageName p.Name <> NormalizedPackageName packageName)) @ [newPackage], remoteFiles, comments)
 
     member this.AddFixedPackage(packageName:PackageName,version:string) =
-        this.AddFixedPackage(packageName,version,[],false,true,true)
+        this.AddFixedPackage(packageName,version,InstallSettings.Default)
 
     member __.RemovePackage(packageName:PackageName) =
         let newPackages = 
@@ -391,7 +370,7 @@ type DependenciesFile(fileName,options,sources,packages : PackageRequirement lis
                 tracefn "Adding %s to %s" name fileName
             else
                 tracefn "Adding %s %s to %s" name version fileName
-            this.AddAdditionionalPackage(packageName,version,false,true,true)
+            this.AddAdditionionalPackage(packageName,version,InstallSettings.Default)
 
     member this.Remove(packageName) =
         let (PackageName name) = packageName
@@ -460,15 +439,7 @@ type DependenciesFile(fileName,options,sources,packages : PackageRequirement lis
 
                       let (PackageName name) = package.Name
                       let version = DependenciesFileSerializer.formatVersionRange package.ResolverStrategy package.VersionRequirement
-                      
-                      let options =
-                           [if not package.CopyLocal then yield "copy_local: false"
-                            if not package.ImportTargets then yield "import_targets: false"
-                            if package.OmitContent then yield "content: none"
-                            if package.FrameworkRestrictions <> [] then
-                                yield "framework: " + String.Join(", ", package.FrameworkRestrictions)]
-
-                      let s = String.Join(", ",options)
+                      let s = package.Settings.ToString()
 
                       yield sprintf "nuget %s%s%s" name (if version <> "" then " " + version else "") (if s <> "" then " " + s else s)
                      

@@ -167,7 +167,7 @@ type PackageRequirementSource =
     member this.IsRootRequirement() =
         match this with
         | DependenciesFile _ -> true
-        | _ -> false  
+        | _ -> false
 
 /// Represents an unresolved package.
 [<CustomEquality;CustomComparison>]
@@ -176,10 +176,7 @@ type PackageRequirement =
       VersionRequirement : VersionRequirement
       ResolverStrategy : ResolverStrategy
       Parent: PackageRequirementSource
-      FrameworkRestrictions: FrameworkRestrictions
-      ImportTargets: bool
-      CopyLocal: bool
-      OmitContent: bool
+      Settings: InstallSettings
       Sources : PackageSource list }
 
     override this.Equals(that) = 

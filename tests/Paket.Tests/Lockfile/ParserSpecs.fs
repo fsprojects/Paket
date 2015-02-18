@@ -169,7 +169,7 @@ let ``should parse own lock file``() =
     packages.[1].Source |> shouldEqual PackageSources.DefaultNugetSource
     packages.[1].Name |> shouldEqual (PackageName "FAKE")
     packages.[1].Version |> shouldEqual (SemVer.Parse "3.5.5")
-    packages.[3].FrameworkRestrictions |> shouldEqual []
+    packages.[1].Settings.FrameworkRestrictions |> shouldEqual []
 
     lockFile.SourceFiles.[0].Name |> shouldEqual "modules/Octokit/Octokit.fsx"
 
@@ -219,7 +219,7 @@ let ``should parse own lock file2``() =
     packages.[1].Source |> shouldEqual PackageSources.DefaultNugetSource
     packages.[1].Name |> shouldEqual (PackageName "FAKE")
     packages.[1].Version |> shouldEqual (SemVer.Parse "3.5.5")
-    packages.[3].FrameworkRestrictions |> shouldEqual []
+    packages.[3].Settings.FrameworkRestrictions |> shouldEqual []
 
     lockFile.SourceFiles.[0].Name |> shouldEqual "modules/Octokit/Octokit.fsx"
 
@@ -252,13 +252,13 @@ let ``should parse framework restricted lock file``() =
     packages.[3].Source |> shouldEqual PackageSources.DefaultNugetSource
     packages.[3].Name |> shouldEqual (PackageName "LinqBridge")
     packages.[3].Version |> shouldEqual (SemVer.Parse "1.3.0")
-    packages.[3].FrameworkRestrictions |> shouldEqual ([FrameworkRestriction.Between(FrameworkIdentifier.DotNetFramework(FrameworkVersion.V2),FrameworkIdentifier.DotNetFramework(FrameworkVersion.V3_5))])
-    packages.[3].ImportTargets |> shouldEqual true
+    packages.[3].Settings.FrameworkRestrictions |> shouldEqual ([FrameworkRestriction.Between(FrameworkIdentifier.DotNetFramework(FrameworkVersion.V2),FrameworkIdentifier.DotNetFramework(FrameworkVersion.V3_5))])
+    packages.[3].Settings.ImportTargets |> shouldEqual true
 
     packages.[5].Source |> shouldEqual PackageSources.DefaultNugetSource
     packages.[5].Name |> shouldEqual (PackageName "ReadOnlyCollectionInterfaces")
     packages.[5].Version |> shouldEqual (SemVer.Parse "1.0.0")
-    packages.[5].FrameworkRestrictions 
+    packages.[5].Settings.FrameworkRestrictions 
     |> shouldEqual ([FrameworkRestriction.Exactly(FrameworkIdentifier.DotNetFramework(FrameworkVersion.V2))
                      FrameworkRestriction.Exactly(FrameworkIdentifier.DotNetFramework(FrameworkVersion.V3_5))
                      FrameworkRestriction.AtLeast(FrameworkIdentifier.DotNetFramework(FrameworkVersion.V4_Client))])
@@ -291,18 +291,18 @@ let ``should parse framework restricted lock file in new syntax``() =
     packages.[3].Source |> shouldEqual PackageSources.DefaultNugetSource
     packages.[3].Name |> shouldEqual (PackageName "LinqBridge")
     packages.[3].Version |> shouldEqual (SemVer.Parse "1.3.0")
-    packages.[3].FrameworkRestrictions |> shouldEqual ([FrameworkRestriction.Between(FrameworkIdentifier.DotNetFramework(FrameworkVersion.V2),FrameworkIdentifier.DotNetFramework(FrameworkVersion.V3_5))])
-    packages.[3].CopyLocal |> shouldEqual true
-    packages.[3].ImportTargets |> shouldEqual false
-    packages.[3].OmitContent |> shouldEqual true
+    packages.[3].Settings.FrameworkRestrictions |> shouldEqual ([FrameworkRestriction.Between(FrameworkIdentifier.DotNetFramework(FrameworkVersion.V2),FrameworkIdentifier.DotNetFramework(FrameworkVersion.V3_5))])
+    packages.[3].Settings.CopyLocal |> shouldEqual true
+    packages.[3].Settings.ImportTargets |> shouldEqual false
+    packages.[3].Settings.OmitContent |> shouldEqual true
 
     packages.[5].Source |> shouldEqual PackageSources.DefaultNugetSource
     packages.[5].Name |> shouldEqual (PackageName "ReadOnlyCollectionInterfaces")
     packages.[5].Version |> shouldEqual (SemVer.Parse "1.0.0")
-    packages.[5].ImportTargets |> shouldEqual false
-    packages.[5].CopyLocal |> shouldEqual false
-    packages.[5].OmitContent |> shouldEqual false
-    packages.[5].FrameworkRestrictions 
+    packages.[5].Settings.ImportTargets |> shouldEqual false
+    packages.[5].Settings.CopyLocal |> shouldEqual false
+    packages.[5].Settings.OmitContent |> shouldEqual false
+    packages.[5].Settings.FrameworkRestrictions 
     |> shouldEqual ([FrameworkRestriction.Exactly(FrameworkIdentifier.DotNetFramework(FrameworkVersion.V2))
                      FrameworkRestriction.Exactly(FrameworkIdentifier.DotNetFramework(FrameworkVersion.V3_5))
                      FrameworkRestriction.AtLeast(FrameworkIdentifier.DotNetFramework(FrameworkVersion.V4_Client))])

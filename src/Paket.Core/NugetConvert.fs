@@ -205,10 +205,7 @@ let createPackageRequirement packageName version sources dependenciesFileName =
        VersionRequirement = VersionRequirement(VersionRange.Exactly version, PreReleaseStatus.No)
        Sources = sources
        ResolverStrategy = ResolverStrategy.Max
-       FrameworkRestrictions = []
-       ImportTargets = true
-       CopyLocal = true
-       OmitContent = false
+       Settings = InstallSettings.Default
        Parent = PackageRequirementSource.DependenciesFile dependenciesFileName }
 
 let createDependenciesFileR (rootDirectory : DirectoryInfo) nugetEnv mode =

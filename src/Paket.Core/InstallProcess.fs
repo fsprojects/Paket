@@ -83,7 +83,7 @@ let CreateInstallModel(root, sources, force, package) =
         let nuspec = Nuspec.Load nuspec.FullName
         let files = files |> Array.map (fun fi -> fi.FullName)
         let targetsFiles = targetsFiles |> Array.map (fun fi -> fi.FullName)
-        return package, InstallModel.CreateFromLibs(package.Name, package.Version, package.FrameworkRestrictions, files, targetsFiles, nuspec)
+        return package, InstallModel.CreateFromLibs(package.Name, package.Version, package.Settings.FrameworkRestrictions, files, targetsFiles, nuspec)
     }
 
 /// Restores the given packages from the lock file.
@@ -166,9 +166,9 @@ let InstallIntoProjects(sources,force, hard, withBindingRedirects, lockFile:Lock
                     { u.Value with
                         Settings =
                             { u.Value.Settings with 
-                                ImportTargets = u.Value.Settings.ImportTargets && lockFile.Options.ImportTargets && package.ImportTargets
-                                CopyLocal = u.Value.Settings.CopyLocal && lockFile.Options.CopyLocal && package.CopyLocal 
-                                OmitContent = u.Value.Settings.OmitContent || lockFile.Options.OmitContent || package.OmitContent }})
+                                ImportTargets = u.Value.Settings.ImportTargets && lockFile.Options.ImportTargets && package.Settings.ImportTargets
+                                CopyLocal = u.Value.Settings.CopyLocal && lockFile.Options.CopyLocal && package.Settings.CopyLocal 
+                                OmitContent = u.Value.Settings.OmitContent || lockFile.Options.OmitContent || package.Settings.OmitContent }})
             |> Map.ofSeq
 
         let usedPackageSettings =

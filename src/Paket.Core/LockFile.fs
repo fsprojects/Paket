@@ -45,15 +45,7 @@ module LockFileSerializer =
                           let s = package.Version.ToString()
                           if s = "" then s else "(" + s + ")"
 
-                      let options =
-                        [ if not package.CopyLocal then yield "copy_local: false"
-                          if not package.ImportTargets then yield "import_targets: false"
-                          if package.OmitContent then yield "content: none"
-                          match package.FrameworkRestrictions with
-                          | [] -> ()
-                          | _  -> yield "framework: " + (String.Join(", ",package.FrameworkRestrictions))]
-
-                      let s = String.Join(", ",options)
+                      let s = package.Settings.ToString()
 
                       if s = "" then 
                         yield sprintf "    %s %s" packageName versionStr 
@@ -181,12 +173,12 @@ module LockFileParser =
                     let parts = details.Split([|" - "|],StringSplitOptions.None)
                     let parts' = parts.[0].Split ' '
                     let version = parts'.[1] |> removeBrackets
-                    let kvPairs = 
-                        if parts.Length < 2 then Dictionary<_,_>() else 
+                    let optionsString = 
+                        if parts.Length < 2 then "" else 
                         if parts.[1] <> "" && parts.[1].Contains(":") |> not then
-                            parseKeyValuePairs ("framework: " + parts.[1]) // TODO: This is for backwards-compat and should be removed later
+                            ("framework: " + parts.[1]) // TODO: This is for backwards-compat and should be removed later
                         else
-                            parseKeyValuePairs parts.[1]
+                            parts.[1]
 
                     { state with LastWasPackage = true
                                  Packages = 
@@ -194,22 +186,7 @@ module LockFileParser =
                                        Name = PackageName parts'.[0]
                                        Dependencies = Set.empty
                                        Unlisted = false
-                                       FrameworkRestrictions =
-                                        match kvPairs.TryGetValue "framework" with
-                                        | true, s -> Requirements.parseRestrictions s
-                                        | _ -> []
-                                       ImportTargets = 
-                                        match kvPairs.TryGetValue "import_targets" with
-                                        | true, "false" -> false
-                                        | _ -> true
-                                       CopyLocal = 
-                                        match kvPairs.TryGetValue "copy_local" with
-                                        | true, "false" -> false
-                                        | _ -> true
-                                       OmitContent =
-                                        match kvPairs.TryGetValue "content" with
-                                        | true, "none" -> true 
-                                        | _ -> false 
+                                       Settings = InstallSettings.Parse(optionsString)
                                        Version = SemVer.Parse version } :: state.Packages }
                 | None -> failwith "no source has been specified."
             | NugetDependency (name, _) ->

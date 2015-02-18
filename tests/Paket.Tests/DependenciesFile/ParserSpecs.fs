@@ -489,7 +489,7 @@ let ``should read config with local source``() =
 
     let p = cfg.Packages |> List.find (fun x-> x.Name = PackageName "Nancy.Owin")
     p.VersionRequirement.Range |> shouldEqual (VersionRange.Specific (SemVer.Parse "0.22.2"))
-    p.FrameworkRestrictions |> shouldEqual []
+    p.Settings.FrameworkRestrictions |> shouldEqual []
 
 
 [<Test>]
@@ -510,8 +510,8 @@ let ``should read config with single framework restriction``() =
 
     let p = cfg.Packages |> List.find (fun x-> x.Name = PackageName "Foobar")
     p.VersionRequirement.Range |> shouldEqual (VersionRange.Specific (SemVer.Parse "1.2.3"))
-    p.FrameworkRestrictions |> shouldEqual [FrameworkRestriction.AtLeast(DotNetFramework(FrameworkVersion.V4_Client))]
-    p.ImportTargets |> shouldEqual true
+    p.Settings.FrameworkRestrictions |> shouldEqual [FrameworkRestriction.AtLeast(DotNetFramework(FrameworkVersion.V4_Client))]
+    p.Settings.ImportTargets |> shouldEqual true
 
 
 [<Test>]
@@ -523,9 +523,9 @@ let ``should read config with framework restriction``() =
 
     let p = cfg.Packages |> List.find (fun x-> x.Name = PackageName "Foobar")
     p.VersionRequirement.Range |> shouldEqual (VersionRange.Specific (SemVer.Parse "1.2.3"))
-    p.FrameworkRestrictions |> shouldEqual [FrameworkRestriction.Exactly(DotNetFramework(FrameworkVersion.V3_5)); FrameworkRestriction.AtLeast(DotNetFramework(FrameworkVersion.V4_Client))]
-    p.ImportTargets |> shouldEqual true
-    p.CopyLocal |> shouldEqual true
+    p.Settings.FrameworkRestrictions |> shouldEqual [FrameworkRestriction.Exactly(DotNetFramework(FrameworkVersion.V3_5)); FrameworkRestriction.AtLeast(DotNetFramework(FrameworkVersion.V4_Client))]
+    p.Settings.ImportTargets |> shouldEqual true
+    p.Settings.CopyLocal |> shouldEqual true
 
 [<Test>]
 let ``should read config with no targets import``() = 
@@ -536,10 +536,10 @@ let ``should read config with no targets import``() =
 
     let p = cfg.Packages |> List.find (fun x-> x.Name = PackageName "Foobar")
     p.VersionRequirement.Range |> shouldEqual (VersionRange.Specific (SemVer.Parse "1.2.3"))
-    p.FrameworkRestrictions |> shouldEqual []
-    p.ImportTargets |> shouldEqual false
-    p.CopyLocal |> shouldEqual false
-    p.OmitContent |> shouldEqual false
+    p.Settings.FrameworkRestrictions |> shouldEqual []
+    p.Settings.ImportTargets |> shouldEqual false
+    p.Settings.CopyLocal |> shouldEqual false
+    p.Settings.OmitContent |> shouldEqual false
 
 [<Test>]
 let ``should read config with content none``() = 
@@ -550,10 +550,10 @@ let ``should read config with content none``() =
 
     let p = cfg.Packages |> List.find (fun x-> x.Name = PackageName "Foobar")
     p.VersionRequirement.Range |> shouldEqual (VersionRange.Specific (SemVer.Parse "1.2.3"))
-    p.FrameworkRestrictions |> shouldEqual []
-    p.ImportTargets |> shouldEqual true
-    p.CopyLocal |> shouldEqual false
-    p.OmitContent |> shouldEqual true
+    p.Settings.FrameworkRestrictions |> shouldEqual []
+    p.Settings.ImportTargets |> shouldEqual true
+    p.Settings.CopyLocal |> shouldEqual false
+    p.Settings.OmitContent |> shouldEqual true
 
 
 let configWithInvalidPrereleaseString = """
