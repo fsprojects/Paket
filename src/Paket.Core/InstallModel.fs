@@ -223,9 +223,11 @@ type InstallModel =
         |> Seq.fold (fun model reference -> model.AddFrameworkAssemblyReference reference) this
     
     member this.FilterBlackList() = 
-        let includeLibs = function
+        let includeReferences = function
             | Reference.Library lib -> not (lib.ToLower().EndsWith ".dll" || lib.ToLower().EndsWith ".exe")
-            | Reference.TargetsFile targetsFile -> not (targetsFile.ToLower().EndsWith ".props" || targetsFile.ToLower().EndsWith ".targets")
+            | Reference.TargetsFile targetsFile -> 
+                (not (targetsFile.ToLower().EndsWith ".props" || targetsFile.ToLower().EndsWith ".targets")) ||
+                targetsFile.ToLower().EndsWith("microsoft.bcl.build.targets") // would install a targets file causing the build to fail in VS
             | _ -> false
 
         let excludeSatelliteAssemblies = function
@@ -234,15 +236,9 @@ type InstallModel =
 
         let blacklisted (blacklist : string list) (file : string) = blacklist |> List.exists (fun blf -> file.ToLower().EndsWith (blf.ToLower()))
 
-        let excludeBlacklistedTargets = function
-            | Reference.TargetsFile targetsFile -> targetsFile |> blacklisted Blacklist.TheBlacklist.TargetsFiles 
-            | Reference.Library lib -> lib |> blacklisted Blacklist.TheBlacklist.LibraryFiles
-            | _ -> false
-
         let blackList = 
-            [ includeLibs
-              excludeSatelliteAssemblies
-              excludeBlacklistedTargets ]
+            [ includeReferences
+              excludeSatelliteAssemblies]
 
         blackList
         |> List.map (fun f -> f >> not) // inverse

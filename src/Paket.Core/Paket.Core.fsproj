@@ -87,7 +87,6 @@
     <Compile Include="RemoteDownload.fs" />
     <Compile Include="PackageResolver.fs" />
     <Compile Include="Nuspec.fs" />
-    <Compile Include="Blacklist.fs" />
     <Compile Include="InstallModel.fs" />
     <Compile Include="ReferencesFile.fs" />
     <Compile Include="ProjectFile.fs" />
