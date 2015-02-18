@@ -1,46 +1,13 @@
-#### 0.28.14 - 18.02.2015
+#### 0.29.0 - 18.02.2015
 * Allow local NuGet sources with spaces in `paket.dependencies` - https://github.com/fsprojects/Paket/issues/616
-
-#### 0.28.13 - 18.02.2015
-* Allow to restrict target frameworks via global switch in `paket.dependencies` - https://github.com/fsprojects/Paket/issues/587
-
-#### 0.28.12 - 18.02.2015
-* BUGFIX: Blacklisted Microsoft.Bcl.Build.targets - https://github.com/fsprojects/Paket/issues/618
-
-#### 0.28.11 - 18.02.2015
-* Allow to restrict content files via package specific switch in `paket.dependencies` - https://github.com/fsprojects/Paket/issues/587
-
-#### 0.28.10 - 18.02.2015
-* Allow to opt-out of private references via package specific switch in `paket.dependencies` - https://github.com/fsprojects/Paket/issues/587
-
-#### 0.28.9 - 18.02.2015
-* Allow to opt-out of targets import via package specific switch in `paket.dependencies` - https://github.com/fsprojects/Paket/issues/587
-
-#### 0.28.8 - 17.02.2015
-* Allow to opt-out of private references via global switch in `paket.dependencies` - https://github.com/fsprojects/Paket/issues/587
-
-#### 0.28.7 - 17.02.2015
-* Allow to opt-out of targets import via global switch in `paket.dependencies` - https://github.com/fsprojects/Paket/issues/587
-
-#### 0.28.6 - 17.02.2015
-* Allow to restrict content files in `paket.references` - https://github.com/fsprojects/Paket/issues/587
-
-#### 0.28.5 - 17.02.2015
-* Allow to restrict target frameworks in `paket.references` - https://github.com/fsprojects/Paket/issues/587
-
-#### 0.28.4 - 17.02.2015
-* Allow to opt-out of targets import via switch in `paket.references` - https://github.com/fsprojects/Paket/issues/615
-
-#### 0.28.3 - 17.02.2015
-* Respect home directories on mono - https://github.com/fsprojects/Paket/issues/612
-
-#### 0.28.2 - 17.02.2015
+* Streamlined install options in `paket.dependencies` and `paket.references` - https://github.com/fsprojects/Paket/issues/587
+* Allow to opt-out of targets import - https://github.com/fsprojects/Paket/issues/587
 * New option to add/remove packages for a single project - https://github.com/fsprojects/Paket/pull/610
-* BUGFIX: Selective update doesn't add package twice from `paket.references`
-* BUGFIX: `paket install` should also install GitHub source files
-
-#### 0.28.1 - 16.02.2015
-* `paket add` inserts package in alphabetical position - https://github.com/fsprojects/Paket/issues/596
+* BUGFIX: Blacklisted Microsoft.Bcl.Build.targets - https://github.com/fsprojects/Paket/issues/618
+* BUGFIX: Selective update doesn't add package twice from `paket.references` anymore
+* BUGFIX: `paket install` installs GitHub source files
+* COSMETICS: Respect home directories on mono - https://github.com/fsprojects/Paket/issues/612
+* COSMETICS: `paket add` inserts the new package in alphabetical position - https://github.com/fsprojects/Paket/issues/596
 
 #### 0.28.0 - 16.02.2015
 * Add a simple API which allows to retrieve NuGet v3 autocomplete
