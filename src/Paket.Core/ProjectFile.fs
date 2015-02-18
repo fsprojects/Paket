@@ -373,10 +373,10 @@ type ProjectFile =
             let installSettings = usedPackages.[kv.Key]
             let projectModel =
                 kv.Value
-                    .ApplyFrameworkRestrictions(installSettings.FrameworkRestrictions)
+                    .ApplyFrameworkRestrictions(installSettings.Settings.FrameworkRestrictions)
                     .RemoveIfCompletelyEmpty()
 
-            this.GenerateXml(projectModel,installSettings.CopyLocal,installSettings.ImportTargets))
+            this.GenerateXml(projectModel,installSettings.Settings.CopyLocal,installSettings.Settings.ImportTargets))
         |> Seq.iter (fun (propertyNameNodes,chooseNode,propertyChooseNode) -> 
             if chooseNode.ChildNodes.Count > 0 then
                 this.ProjectNode.AppendChild chooseNode |> ignore

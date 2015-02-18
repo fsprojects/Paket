@@ -16,7 +16,7 @@ open System.Diagnostics
 
 let private findPackagesWithContent (root,usedPackages:Map<PackageName,PackageInstallSettings>) = 
     usedPackages
-    |> Seq.filter (fun kv -> not kv.Value.OmitContent)
+    |> Seq.filter (fun kv -> not kv.Value.Settings.OmitContent)
     |> Seq.map (fun kv -> 
         let (PackageName name) = kv.Key
         DirectoryInfo(Path.Combine(root, Constants.PackagesFolderName, name)))
@@ -164,9 +164,11 @@ let InstallIntoProjects(sources,force, hard, withBindingRedirects, lockFile:Lock
                 let package = packages.[NormalizedPackageName u.Key]
                 u.Key,
                     { u.Value with
-                        ImportTargets = u.Value.ImportTargets && lockFile.Options.ImportTargets && package.ImportTargets
-                        CopyLocal = u.Value.CopyLocal && lockFile.Options.CopyLocal && package.CopyLocal 
-                        OmitContent = u.Value.OmitContent || lockFile.Options.OmitContent || package.OmitContent })
+                        Settings =
+                            { u.Value.Settings with 
+                                ImportTargets = u.Value.Settings.ImportTargets && lockFile.Options.ImportTargets && package.ImportTargets
+                                CopyLocal = u.Value.Settings.CopyLocal && lockFile.Options.CopyLocal && package.CopyLocal 
+                                OmitContent = u.Value.Settings.OmitContent || lockFile.Options.OmitContent || package.OmitContent }})
             |> Map.ofSeq
 
         let usedPackageSettings =

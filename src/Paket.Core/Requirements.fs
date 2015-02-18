@@ -1,5 +1,6 @@
 ﻿module Paket.Requirements
 
+open System
 open Paket
 open Paket.Domain
 open Paket.PackageSources
@@ -117,6 +118,49 @@ let optimizeRestrictions packages =
 
                 yield name,versionRequirement,restrictions]
 
+type InstallSettings = 
+    { ImportTargets : bool
+      FrameworkRestrictions: FrameworkRestrictions
+      OmitContent : bool 
+      CopyLocal : bool }
+
+    static member Default =
+        { CopyLocal = true
+          ImportTargets = true
+          FrameworkRestrictions = []
+          OmitContent = false }
+
+    override this.ToString() =
+        let options =
+            [ if not this.CopyLocal then yield "copy_local: false"
+              if not this.ImportTargets then yield "import_targets: false"
+              if this.OmitContent then yield "content: none"
+              match this.FrameworkRestrictions with
+              | [] -> ()
+              | _  -> yield "framework: " + (String.Join(", ",this.FrameworkRestrictions))]
+
+        String.Join(", ",options)
+
+    static member Parse(text:string) =
+        let kvPairs = parseKeyValuePairs text
+
+        { ImportTargets =
+            match kvPairs.TryGetValue "import_targets" with
+            | true, "false" -> false
+            | _ -> true
+          FrameworkRestrictions =
+            match kvPairs.TryGetValue "framework" with
+            | true, s -> parseRestrictions s
+            | _ -> []
+          OmitContent =
+            match kvPairs.TryGetValue "content" with
+            | true, "none" -> true 
+            | _ -> false 
+          CopyLocal =         
+            match kvPairs.TryGetValue "copy_local" with
+            | true, "false" -> false 
+            | _ -> true }
+
 type PackageRequirementSource =
 | DependenciesFile of string
 | Package of PackageName * SemVerInfo 
@@ -168,4 +212,4 @@ type PackageRequirement =
                 if c3 <> 0 then c3 else
                 compare this.Name that.Name
                 
-          | _ -> invalidArg "that" "cannot compare value of different types" 
+          | _ -> invalidArg "that" "cannot compare value of different types"

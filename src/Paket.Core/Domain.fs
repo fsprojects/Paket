@@ -35,7 +35,6 @@ let (|NormalizedPackageName|) (PackageName name) =
 /// Function to convert a NuGet package name into a normalized one
 let NormalizedPackageName = (|NormalizedPackageName|)
 
-
 type DomainMessage = 
     | DirectoryDoesntExist of DirectoryInfo
     | DependenciesFileNotFoundInDir of DirectoryInfo
