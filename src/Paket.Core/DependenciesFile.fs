@@ -13,19 +13,13 @@ open Paket.PackageSources
 /// [omit]
 type InstallOptions = 
     { Strict : bool 
-      Redirects : bool 
-      ImportTargets : bool
-      CopyLocal : bool
-      FrameworkRestrictions: FrameworkRestrictions
-      OmitContent : bool }
+      Redirects : bool
+      Settings : InstallSettings }
 
     static member Default = { 
         Strict = false
-        OmitContent = false
         Redirects = false
-        ImportTargets = true
-        CopyLocal = true
-        FrameworkRestrictions = [] }
+        Settings = InstallSettings.Default }
 
 /// [omit]
 module DependenciesFileParser = 
@@ -170,12 +164,12 @@ module DependenciesFileParser =
             | name :: rest -> Package(name,">= 0", String.Join(" ",rest))
             | name :: [] -> Package(name,">= 0","")
             | _ -> failwithf "could not retrieve nuget package from %s" trimmed
-        | String.StartsWith "references" trimmed -> ParserOptions(ParserOption.ReferencesMode(trimmed.Trim() = "strict"))
-        | String.StartsWith "redirects" trimmed -> ParserOptions(ParserOption.Redirects(trimmed.Trim() = "on"))
-        | String.StartsWith "framework" trimmed -> ParserOptions(ParserOption.FrameworkRestrictions(trimmed.Trim() |> Requirements.parseRestrictions))
-        | String.StartsWith "content" trimmed -> ParserOptions(ParserOption.OmitContent(trimmed.Trim() = "none"))
-        | String.StartsWith "import_targets" trimmed -> ParserOptions(ParserOption.ImportTargets(trimmed.Trim() = "true"))
-        | String.StartsWith "copy_local" trimmed -> ParserOptions(ParserOption.CopyLocal(trimmed.Trim() = "true"))
+        | String.StartsWith "references" trimmed -> ParserOptions(ParserOption.ReferencesMode(trimmed.Replace(":","").Trim() = "strict"))
+        | String.StartsWith "redirects" trimmed -> ParserOptions(ParserOption.Redirects(trimmed.Replace(":","").Trim() = "on"))
+        | String.StartsWith "framework" trimmed -> ParserOptions(ParserOption.FrameworkRestrictions(trimmed.Replace(":","").Trim() |> Requirements.parseRestrictions))
+        | String.StartsWith "content" trimmed -> ParserOptions(ParserOption.OmitContent(trimmed.Replace(":","").Trim() = "none"))
+        | String.StartsWith "import_targets" trimmed -> ParserOptions(ParserOption.ImportTargets(trimmed.Replace(":","").Trim() = "true"))
+        | String.StartsWith "copy_local" trimmed -> ParserOptions(ParserOption.CopyLocal(trimmed.Replace(":","").Trim() = "true"))
         | String.StartsWith "gist" _ as trimmed ->
             SourceFile(``parse git source`` trimmed SingleSourceFileOrigin.GistLink "gist")
         | String.StartsWith "github" _ as trimmed  ->
@@ -196,10 +190,10 @@ module DependenciesFileParser =
                 | Comment(line) -> lineNo, options, sources, packages, sourceFiles, if line <> "" then (lineNo,line)::comments else comments
                 | ParserOptions(ParserOption.ReferencesMode mode) -> lineNo, { options with Strict = mode }, sources, packages, sourceFiles, comments
                 | ParserOptions(ParserOption.Redirects mode) -> lineNo, { options with Redirects = mode }, sources, packages, sourceFiles, comments
-                | ParserOptions(ParserOption.CopyLocal mode) -> lineNo, { options with CopyLocal = mode }, sources, packages, sourceFiles, comments
-                | ParserOptions(ParserOption.ImportTargets mode) -> lineNo, { options with ImportTargets = mode }, sources, packages, sourceFiles, comments
-                | ParserOptions(ParserOption.FrameworkRestrictions r) -> lineNo, { options with FrameworkRestrictions = r }, sources, packages, sourceFiles, comments
-                | ParserOptions(ParserOption.OmitContent omit) -> lineNo, { options with OmitContent = omit }, sources, packages, sourceFiles, comments
+                | ParserOptions(ParserOption.CopyLocal mode) -> lineNo, { options with Settings = { options.Settings with CopyLocal = mode }}, sources, packages, sourceFiles, comments
+                | ParserOptions(ParserOption.ImportTargets mode) -> lineNo, { options with Settings = { options.Settings with ImportTargets = mode }}, sources, packages, sourceFiles, comments
+                | ParserOptions(ParserOption.FrameworkRestrictions r) -> lineNo, { options with Settings = { options.Settings with FrameworkRestrictions = r }}, sources, packages, sourceFiles, comments
+                | ParserOptions(ParserOption.OmitContent omit) -> lineNo, { options with Settings = { options.Settings with  OmitContent = omit }}, sources, packages, sourceFiles, comments
                 | Package(name,version,rest) ->
                     let prereleases,optionsText =
                         if rest.Contains ":" then
@@ -431,13 +425,10 @@ type DependenciesFile(fileName,options,sources,packages : PackageRequirement lis
             let hasReportedSource = ref false
             let hasReportedFirst = ref false
             let hasReportedSecond = ref false
-            [ if options.Strict then yield "references strict"
-              if not options.ImportTargets then yield "import_targets false"
-              if not options.CopyLocal then yield "copy_local false"
-              if options.OmitContent then yield "content none"
-              match options.FrameworkRestrictions with
-              | [] -> ()
-              | _  -> yield "framework " + (String.Join(", ",options.FrameworkRestrictions))
+            [ if options.Strict then yield "references: strict"
+              if options.Redirects then yield "redirects: on"
+              let optionsString = options.Settings.ToString(true)
+              if optionsString <> "" then yield optionsString
               for sources, packages in sources do
                   for source in sources do
                       hasReportedSource := true

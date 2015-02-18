@@ -26,10 +26,10 @@ module LockFileSerializer =
         let all = 
             let hasReported = ref false
             [ if options.Strict then yield "REFERENCES: STRICT"
-              if options.OmitContent then yield "CONTENT: NONE"
+              if options.Settings.OmitContent then yield "CONTENT: NONE"
               if options.Redirects then yield "REDIRECTS: ON"
-              if not options.ImportTargets then yield "IMPORT-TARGETS: FALSE"
-              if not options.CopyLocal then yield "COPY-LOCAL: FALSE"
+              if not options.Settings.ImportTargets then yield "IMPORT-TARGETS: FALSE"
+              if not options.Settings.CopyLocal then yield "COPY-LOCAL: FALSE"
               for (source, _), packages in sources do
                   if not !hasReported then
                     yield "NUGET"
@@ -163,9 +163,9 @@ module LockFileParser =
             | Blank -> state
             | InstallOption (ReferencesMode(mode)) -> { state with Options = {state.Options with Strict = mode} }
             | InstallOption (Redirects(mode)) -> { state with Options = {state.Options with Redirects = mode} }
-            | InstallOption (ImportTargets(mode)) -> { state with Options = {state.Options with ImportTargets = mode} }
-            | InstallOption (CopyLocal(mode)) -> { state with Options = {state.Options with CopyLocal = mode} }
-            | InstallOption (OmitContent(omit)) -> { state with Options = {state.Options with OmitContent = omit} }
+            | InstallOption (ImportTargets(mode)) -> { state with Options = {state.Options with Settings = { state.Options.Settings with ImportTargets = mode} } }
+            | InstallOption (CopyLocal(mode)) -> { state with Options = {state.Options with Settings = { state.Options.Settings with CopyLocal = mode}} }
+            | InstallOption (OmitContent(omit)) -> { state with Options = {state.Options with Settings = { state.Options.Settings with OmitContent = omit} }}
             | RepositoryType repoType -> { state with RepositoryType = Some repoType }
             | NugetPackage details ->
                 match state.RemoteUrl with

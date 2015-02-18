@@ -21,7 +21,7 @@ let ``should serialize simple config``() =
     |> shouldEqual (normalizeLineEndings config1)
 
 
-let strictConfig = """references strict
+let strictConfig = """references: strict
 source http://nuget.org/api/v2
 
 nuget FAKE ~> 3.0"""
@@ -51,7 +51,8 @@ let ``should remove >= 0 from config``() =
     cfg.ToString()
     |> shouldEqual (normalizeLineEndings configWithNoRestriction2)
 
-let contentNoneConfig = """content none
+let contentNoneConfig = """redirects: on
+content: none
 source http://nuget.org/api/v2
 
 nuget FAKE ~> 3.0"""
@@ -64,7 +65,8 @@ let ``should serialize content none config``() =
     cfg.ToString()
     |> shouldEqual (normalizeLineEndings contentNoneConfig)
 
-let noTargetsConfig = """import_targets false
+let noTargetsConfig = """import_targets: false
+framework: >= net45
 source http://nuget.org/api/v2
 
 nuget FAKE ~> 3.0"""
@@ -77,7 +79,7 @@ let ``should serialize no targets config``() =
     cfg.ToString()
     |> shouldEqual (normalizeLineEndings noTargetsConfig)
 
-let noLocalCopyConfig = """copy_local false
+let noLocalCopyConfig = """copy_local: false
 source http://nuget.org/api/v2
 
 nuget FAKE ~> 3.0"""
@@ -284,7 +286,7 @@ let ``should serialize config with comments``() =
     cfg.ToString()
     |> shouldEqual (normalizeLineEndings withComments)
 
-let withFrameworkRestriction = """framework >= net40
+let withFrameworkRestriction = """framework: >= net40
 source https://www.nuget.org/api/v2
 
 // ignore me

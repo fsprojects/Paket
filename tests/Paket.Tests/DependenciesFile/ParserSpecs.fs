@@ -171,9 +171,9 @@ nuget "Microsoft.SqlServer.Types"
 [<Test>]
 let ``should read content none config``() = 
     let cfg = DependenciesFile.FromCode(noneContentConfig)
-    cfg.Options.OmitContent |> shouldEqual true
-    cfg.Options.CopyLocal |> shouldEqual true
-    cfg.Options.ImportTargets |> shouldEqual true
+    cfg.Options.Settings.OmitContent |> shouldEqual true
+    cfg.Options.Settings.CopyLocal |> shouldEqual true
+    cfg.Options.Settings.ImportTargets |> shouldEqual true
 
     (cfg.Packages |> List.find (fun p -> p.Name = PackageName "Microsoft.SqlServer.Types")).Sources |> shouldEqual [PackageSource.NugetSource "http://nuget.org/api/v2"]
 
@@ -187,9 +187,9 @@ nuget "Microsoft.SqlServer.Types"
 [<Test>]
 let ``should read config with specific framework``() = 
     let cfg = DependenciesFile.FromCode(specificFrameworkConfig)
-    cfg.Options.OmitContent |> shouldEqual false
-    cfg.Options.CopyLocal |> shouldEqual true
-    cfg.Options.ImportTargets |> shouldEqual true
+    cfg.Options.Settings.OmitContent |> shouldEqual false
+    cfg.Options.Settings.CopyLocal |> shouldEqual true
+    cfg.Options.Settings.ImportTargets |> shouldEqual true
 
     (cfg.Packages |> List.find (fun p -> p.Name = PackageName "Microsoft.SqlServer.Types")).Sources |> shouldEqual [PackageSource.NugetSource "http://nuget.org/api/v2"]
 
@@ -204,9 +204,9 @@ nuget "Microsoft.SqlServer.Types"
 [<Test>]
 let ``should read no targets import config``() = 
     let cfg = DependenciesFile.FromCode(noTargetsImportConfig)
-    cfg.Options.ImportTargets |> shouldEqual false
-    cfg.Options.CopyLocal |> shouldEqual false
-    cfg.Options.OmitContent |> shouldEqual false
+    cfg.Options.Settings.ImportTargets |> shouldEqual false
+    cfg.Options.Settings.CopyLocal |> shouldEqual false
+    cfg.Options.Settings.OmitContent |> shouldEqual false
 
     (cfg.Packages |> List.find (fun p -> p.Name = PackageName "Microsoft.SqlServer.Types")).Sources |> shouldEqual [PackageSource.NugetSource "http://nuget.org/api/v2"]
 

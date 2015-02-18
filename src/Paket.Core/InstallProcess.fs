@@ -166,9 +166,9 @@ let InstallIntoProjects(sources,force, hard, withBindingRedirects, lockFile:Lock
                     { u.Value with
                         Settings =
                             { u.Value.Settings with 
-                                ImportTargets = u.Value.Settings.ImportTargets && lockFile.Options.ImportTargets && package.Settings.ImportTargets
-                                CopyLocal = u.Value.Settings.CopyLocal && lockFile.Options.CopyLocal && package.Settings.CopyLocal 
-                                OmitContent = u.Value.Settings.OmitContent || lockFile.Options.OmitContent || package.Settings.OmitContent }})
+                                ImportTargets = u.Value.Settings.ImportTargets && lockFile.Options.Settings.ImportTargets && package.Settings.ImportTargets
+                                CopyLocal = u.Value.Settings.CopyLocal && lockFile.Options.Settings.CopyLocal && package.Settings.CopyLocal 
+                                OmitContent = u.Value.Settings.OmitContent || lockFile.Options.Settings.OmitContent || package.Settings.OmitContent }})
             |> Map.ofSeq
 
         let usedPackageSettings =

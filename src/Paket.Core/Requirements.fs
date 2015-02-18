@@ -130,7 +130,7 @@ type InstallSettings =
           FrameworkRestrictions = []
           OmitContent = false }
 
-    override this.ToString() =
+    member this.ToString(asLines) =
         let options =
             [ if not this.CopyLocal then yield "copy_local: false"
               if not this.ImportTargets then yield "import_targets: false"
@@ -139,7 +139,10 @@ type InstallSettings =
               | [] -> ()
               | _  -> yield "framework: " + (String.Join(", ",this.FrameworkRestrictions))]
 
-        String.Join(", ",options)
+        let separator = if asLines then Environment.NewLine else ", "
+        String.Join(separator,options)
+
+    override this.ToString() = this.ToString(false)
 
     static member Parse(text:string) =
         let kvPairs = parseKeyValuePairs text
