@@ -101,7 +101,7 @@ A files block looks like this:
 If the from line specifies the path to a file, that file will be copied into the folder in the to line. If it
 refers to a directory, the contents of the directory will be copied into the to folder.
 
-There is no currently no support for wild cards, exclusion filters or renaming during copying.
+There is currently no support for wild cards, exclusion filters or renaming during copying.
 
 In a project template, the files included will be:
 
@@ -115,9 +115,9 @@ A dependency block looks like this:
 	  Other.Dep ~> 2.5
 	  Any.Version
 
-The syntax for specifying allowed dependency ranges are identical to in paket.dependency files.
+The syntax for specifying allowed dependency ranges are identical to in the ranges in [`paket.dependencies` files](dependencies-file.html).
 
 In a project file, the following dependencies will be added:
 
-* any paket dependency with the range specified in paket.dependencies.
+* any paket dependency with the range specified in the [`paket.dependencies` file](dependencies-file.html).
 * any project reference with a matching paket.template file with a minimum version requirement of the version currently being packaged.
