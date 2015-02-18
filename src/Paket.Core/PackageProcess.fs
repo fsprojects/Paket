@@ -218,6 +218,7 @@ let internal findDependencies (dependencies : DependenciesFile) config (template
         withDepsAndIncluded
 
 let Pack(dependencies : DependenciesFile, buildConfig, packageOutputPath) =
+    Utils.createDir packageOutputPath |> Rop.returnOrFail
     let rootPath = dependencies.FileName |> Path.GetDirectoryName
     let templates = TemplateFile.FindTemplateFiles rootPath |> Seq.map TemplateFile.Load
     let complete, incomplete =
