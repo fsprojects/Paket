@@ -119,7 +119,7 @@ let internal mergeMetadata template md' =
                     Authors = md.Authors ++ md'.Authors
                     Description = md.Description ++ md'.Description
                   } with
-            | Invalid -> failwithf "Incomplete manditory metadata in template file %s (even including assembly attributes)\nTemplate: %A\nAssembly: %A" template.FileName md md'
+            | Invalid -> failwithf "Incomplete mandatory metadata in template file %s (even including assembly attributes)\nTemplate: %A\nAssembly: %A" template.FileName md md'
             | Valid c -> c
         { template with Contents = CompleteInfo (completeCore, opt) }
     | _ -> template
