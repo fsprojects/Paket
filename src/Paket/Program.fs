@@ -232,6 +232,19 @@ try
                 | Some c -> c
                 | None -> "Release"
             Dependencies.Locate().Pack(buildConfig, outputPath)
+    | Command(Push, args) ->
+        let results = commandArgs<PushArgs> args
+        
+        if results.IsUsageRequested then
+            showHelp HelpTexts.commands.["push"]
+        else
+            let url = results.GetResult <@ PushArgs.Url @>
+            let apikey =
+                match results.TryGetResult <@ PushArgs.ApiKey @> with
+                | Some k -> k
+                | None ->
+                    Environment.GetEnvironmentVariable("NugetApiKey")
+            Dependencies.Locate().Push(url, apikey)
     | _ ->
         let allCommands = 
             Microsoft.FSharp.Reflection.FSharpType.GetUnionCases(typeof<Command>)

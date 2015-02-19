@@ -254,3 +254,7 @@ type Dependencies(dependenciesFileName: string) =
     member this.Pack(config, outputPath) =
         let dependenciesFile = DependenciesFile.ReadFromFile dependenciesFileName
         PackageProcess.Pack(dependenciesFile, config, outputPath)
+
+    // Push all nupkg files.
+    member this.Push(url, apiKey) =
+        RemoteUpload.PushAll this.RootPath url apiKey
