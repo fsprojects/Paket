@@ -247,7 +247,7 @@ let Pack(dependencies : DependenciesFile, buildConfig, packageOutputPath) =
         |> Array.map (fun (t, p) ->
             mergeMetadata t (loadAssemblyMetadata buildConfig p), p)
         |> Array.map (fun (t, p) ->
-            (match t.Contents with CompleteInfo (c, _) -> c.Id | _ -> failwith "Wut?"), (t, p))
+            (match t.Contents with CompleteInfo (c, _) -> c.Id | x -> failwithf "unexpected failure: %A" x), (t, p))
         |> Map.ofArray
 
     // add dependencies
