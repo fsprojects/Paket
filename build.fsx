@@ -75,9 +75,11 @@ let genFSAssemblyInfo (projectPath) =
     CreateFSharpAssemblyInfo fileName
       [ Attribute.Title (projectName)
         Attribute.Product project
+        Attribute.Company (authors |> String.concat ", ")
         Attribute.Description summary
         Attribute.Version release.AssemblyVersion
-        Attribute.FileVersion release.AssemblyVersion ]
+        Attribute.FileVersion release.AssemblyVersion
+        Attribute.InformationalVersion release.NugetVersion ]
 
 let genCSAssemblyInfo (projectPath) =
     let projectName = System.IO.Path.GetFileNameWithoutExtension(projectPath)
@@ -89,7 +91,8 @@ let genCSAssemblyInfo (projectPath) =
         Attribute.Product project
         Attribute.Description summary
         Attribute.Version release.AssemblyVersion
-        Attribute.FileVersion release.AssemblyVersion ]
+        Attribute.FileVersion release.AssemblyVersion
+        Attribute.InformationalVersion release.NugetVersion ]
 
 // Generate assembly info files with the right version & up-to-date information
 Target "AssemblyInfo" (fun _ ->
@@ -173,37 +176,67 @@ Target "SignAssemblies" (fun _ ->
 )
 
 Target "NuGet" (fun _ ->
+    let indent (str : string) =
+        str.Split([|"\r\n";"\n"|], StringSplitOptions.None)        
+        |> Array.map (fun line -> "    " + line)
+        |> fun line -> String.Join(Environment.NewLine, line)
 
-    NuGet (fun p -> 
-        { p with Authors = authors
-                 Project = "Paket.Core"
-                 Summary = summary
-                 Description = description
-                 Version = release.NugetVersion
-                 ReleaseNotes = toLines release.Notes
-                 Tags = tags
-                 OutputPath = "bin"
-                 Dependencies = 
-                    ["Newtonsoft.Json", GetPackageVersion "packages" "Newtonsoft.Json" 
-                     "DotNetZip", GetPackageVersion "packages" "DotNetZip" 
-                     "FSharp.Core", GetPackageVersion "packages" "FSharp.Core" ]
-                 AccessKey = getBuildParamOrDefault "nugetkey" ""
-                 Publish = hasBuildParam "nugetkey" }) 
-       "nuget/Paket.Core.nuspec"
+    let sharedMetadata =
+        sprintf """releasenotes
+%s
+summary
+%s
+licenseurl http://fsprojects.github.io/Paket/license.html
+projecturl http://fsprojects.github.com/Paket
+iconurl https://raw.githubusercontent.com/fsprojects/Paket/master/docs/files/img/logo.png
+tags
+%s"""
+            (indent <| toLines release.Notes) (indent summary) (indent tags)
 
-    NuGet (fun p -> 
-        { p with Authors = authors
-                 Project = "Paket"
-                 Summary = summary
-                 Description = description
-                 Version = release.NugetVersion
-                 ReleaseNotes = toLines release.Notes
-                 Tags = tags
-                 OutputPath = "bin"
-                 AccessKey = getBuildParamOrDefault "nugetkey" ""
-                 Publish = hasBuildParam "nugetkey"
-                 Dependencies = [] }) 
-       "nuget/Paket.nuspec"
+    let coreTemplate =
+        sprintf """type project
+%s"""
+            sharedMetadata
+
+    File.WriteAllText("src/Paket.Core/paket.template", coreTemplate)
+
+    let exeTemplate =
+        sprintf """type file
+id Paket
+description
+%s
+version
+%s
+authors
+%s
+%s
+files
+    from ../bin/merged/paket.exe
+    to tools"""
+            (indent description)
+            (indent release.NugetVersion)
+            (indent (authors |> String.concat ", "))
+            sharedMetadata
+
+    File.WriteAllText("nuget/paket.template", exeTemplate)
+
+    let packResult =
+        ExecProcess (fun info ->
+            info.FileName <- ".paket/paket.exe"
+            info.Arguments <- "pack output bin") System.TimeSpan.MaxValue
+    if packResult <> 0 then failwith "Error during packing."
+
+    let apikey = environVarOrNone "nugetkey"
+    match apikey with
+    | Some key ->
+        setEnvironVar "NugetApiKey" key
+        let pushResult =
+            ExecProcess (fun info ->
+                info.FileName <- ".paket/paket.exe"
+                info.Arguments <- "push url https://nuget.org packagedir bin") System.TimeSpan.MaxValue
+        if pushResult <> 0 then failwith "Error during pushing."
+    | None ->
+        ()
 )
 
 // --------------------------------------------------------------------------------------
