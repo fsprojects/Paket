@@ -1,4 +1,4 @@
-#### 0.30.0-alpha001 - 18.02.2015
+#### 0.30.0-alpha002 - 18.02.2015
 * New command: `paket pack` - http://fsprojects.github.io/Paket/paket-pack.html
 
 #### 0.29.0 - 18.02.2015
