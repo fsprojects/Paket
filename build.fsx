@@ -176,6 +176,55 @@ Target "SignAssemblies" (fun _ ->
             if result <> 0 then failwithf "Error during signing %s with %s" executable pfx)
 )
 
+/// Paket parameter type
+type PaketPackParams = 
+    { ToolPath : string
+      TimeOut : TimeSpan
+      Version : string
+      Authors : string list
+      Project : string
+      Title : string
+      Summary : string
+      Description : string
+      Tags : string
+      ReleaseNotes : string
+      Copyright : string
+      OutputPath : string }
+
+/// Paket pack default parameters  
+let PaketPackDefaults() : PaketPackParams = 
+    { ToolPath = findToolFolderInSubPath "paket.exe" (currentDirectory @@ ".paket" @@ "paket.exe")
+      TimeOut = TimeSpan.FromMinutes 5.
+      Version = 
+          if not isLocalBuild then buildVersion
+          else "0.1.0.0"
+      Authors = []
+      Project = ""
+      Title = ""
+      Summary = null
+      Description = null
+      Tags = null
+      ReleaseNotes = null
+      Copyright = null
+      OutputPath = "./temp" }
+
+/// Creates a new NuGet package by using Paket.
+/// ## Parameters
+/// 
+///  - `setParams` - Function used to manipulate the default parameters.
+let PacketPack setParams = 
+    traceStartTask "Paket Pack" ""
+    let parameters : PaketPackParams = PaketPackDefaults() |> setParams
+
+    let packResult =
+        ExecProcess (fun info ->
+            info.FileName <- parameters.ToolPath
+            info.Arguments <- sprintf "pack output %s" parameters.OutputPath ) parameters.TimeOut
+
+    if packResult <> 0 then failwith "Error during packing."
+
+    traceEndTask "Paket Pack" ""
+
 Target "NuGet" (fun _ ->    
     let indent (str : string) =
         str.Split([|"\r\n";"\n"|], StringSplitOptions.None)        
@@ -214,11 +263,7 @@ files
 
     File.WriteAllText(tempDir @@ "paket.template", exeTemplate)
 
-    let packResult =
-        ExecProcess (fun info ->
-            info.FileName <- "bin/merged/paket.exe"
-            info.Arguments <- "pack output bin") System.TimeSpan.MaxValue
-    if packResult <> 0 then failwith "Error during packing."
+    PacketPack (fun p -> { p with ToolPath = "bin/merged/paket.exe" })
 
     let apikey = environVarOrNone "nugetkey"
     match apikey with
