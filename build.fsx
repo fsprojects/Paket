@@ -194,13 +194,6 @@ tags
 %s"""
             (indent <| toLines release.Notes) (indent summary) (indent tags)
 
-    let coreTemplate =
-        sprintf """type project
-%s"""
-            sharedMetadata
-
-    File.WriteAllText("src/Paket.Core/paket.template", coreTemplate)
-
     let exeTemplate =
         sprintf """type file
 id Paket

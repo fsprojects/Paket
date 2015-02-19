@@ -114,6 +114,7 @@
     <Compile Include="FindOutdated.fs" />
     <Compile Include="FindReferences.fs" />
     <Compile Include="PublicAPI.fs" />
+    <None Include="paket.template" />
     <None Include="paket.references" />
   </ItemGroup>
   <ItemGroup>
