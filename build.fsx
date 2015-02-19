@@ -222,7 +222,7 @@ files
 
     let packResult =
         ExecProcess (fun info ->
-            info.FileName <- ".paket/paket.exe"
+            info.FileName <- "bin/merged/paket.exe"
             info.Arguments <- "pack output bin") System.TimeSpan.MaxValue
     if packResult <> 0 then failwith "Error during packing."
 
@@ -232,7 +232,7 @@ files
         setEnvironVar "NugetApiKey" key
         let pushResult =
             ExecProcess (fun info ->
-                info.FileName <- ".paket/paket.exe"
+                info.FileName <- "bin/merged/paket.exe"
                 info.Arguments <- "push url https://nuget.org packagedir bin") System.TimeSpan.MaxValue
         if pushResult <> 0 then failwith "Error during pushing."
     | None ->
