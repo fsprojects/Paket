@@ -360,6 +360,18 @@ Options:
 
   `output`: Output directory to put nupkgs
 
-  `buildconfig`: Optionally specify build configuration that should be packaged (defaults to Release)."""}]
+  `buildconfig`: Optionally specify build configuration that should be packaged (defaults to Release)."""}
+     "push",
+        { Title = "paket push"
+          Text = """Push all nupkg files within this repository
+
+    [lang=batchfile]
+    $ paket push url https://nuget.org [apikey YourApiKey]
+
+Options:
+
+  `url`: root url of the nuget repository you are pushing too
+
+  `apikey`: Optionally specify your API key on the command line. Otherwise uses the value of the `NugetApiKey` environment variable."""}]
 
   |> dict

@@ -16,6 +16,7 @@ type Command =
     | [<First>][<CustomCommandLine("simplify")>]            Simplify
     | [<First>][<CustomCommandLine("update")>]              Update
     | [<First>][<CustomCommandLine("pack")>]                Pack
+    | [<First>][<CustomCommandLine("push")>]                Push
 with 
     interface IArgParserTemplate with
         member __.Usage = ""
@@ -125,6 +126,13 @@ with
 type PackArgs =
     | [<CustomCommandLine("output")>][<Mandatory>] Output of string
     | [<CustomCommandLine("buildconfig")>] BuildConfig of string
+with
+    interface IArgParserTemplate with
+        member __.Usage = ""
+
+type PushArgs =
+    | [<CustomCommandLine("url")>][<Mandatory>] Url of string
+    | [<CustomCommandLine("apikey")>] ApiKey of string
 with
     interface IArgParserTemplate with
         member __.Usage = ""

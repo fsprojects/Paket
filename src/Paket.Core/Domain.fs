@@ -1,6 +1,7 @@
 ﻿module Paket.Domain
 
 open System.IO
+open Paket
 
 /// Represents a NuGet package name
 [<System.Diagnostics.DebuggerDisplay("{Item}")>]

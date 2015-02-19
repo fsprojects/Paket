@@ -199,4 +199,5 @@ docs/content/paket-restore.md
 docs/content/paket-simplify.md
 docs/content/paket-convert-from-nuget.md
 docs/content/paket-pack.md
+docs/content/paket-push.md
 *.bak
