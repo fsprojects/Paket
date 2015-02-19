@@ -7,18 +7,16 @@ open System.Reflection
 open Paket.Domain
 open Paket.Logging
 
-let internal (|Complete|Incomplete|) templateFile =
+let internal (|CompleteTemplate|IncompleteTemplate|) templateFile = 
     match templateFile with
-    | { Contents = (CompleteInfo (core, optional)) } ->
-        Complete (core, optional)
-    | _ ->
-        Incomplete
+    | { Contents = (CompleteInfo(core, optional)) } -> CompleteTemplate(core, optional)
+    | _ -> IncompleteTemplate
 
 let internal pack outputPath templateFile =
     match templateFile with
-    | Complete (core, optional) ->
+    | CompleteTemplate(core, optional) ->
         NupkgWriter.Write core optional (Path.GetDirectoryName templateFile.FileName) outputPath
-    | Incomplete ->
+    | IncompleteTemplate ->
         failwithf "There was an attempt to pack incomplete template file %s" templateFile.FileName
 
 let (|Title|Description|Version|InformationalVersion|Company|Ignore|) (att : obj) =
@@ -126,20 +124,20 @@ let internal mergeMetadata template md' =
 
 let internal toDep (t : TemplateFile) =
     match t with
-    | Complete (core, opt) ->
+    | CompleteTemplate(core, opt) ->
         core.Id, VersionRequirement(Minimum (core.Version), PreReleaseStatus.All)
-    | Incomplete ->
+    | IncompleteTemplate ->
         failwith "You cannot create a dependency on a template file with incomplete metadata."
 
 let internal addDep (t: TemplateFile) (d : string * VersionRequirement) =
     match t with
-    | Complete (core, opt) ->
+    | CompleteTemplate(core, opt) ->
         let deps = 
             match opt.Dependencies with
             | Some ds -> Some (d::ds)
             | None -> Some [d]
         { FileName = t.FileName; Contents = CompleteInfo (core, { opt with Dependencies = deps }) }
-    | Incomplete ->
+    | IncompleteTemplate ->
         failwith "You should only try and add dependencies to template files with complete metadata."
 
 let internal toFile config targetDir (p : ProjectFile) =
@@ -154,13 +152,13 @@ let internal toFile config targetDir (p : ProjectFile) =
 
 let internal addFile (t: TemplateFile) (f : string * string) =
     match t with
-    | Complete (core, opt) ->
+    | CompleteTemplate(core, opt) ->
         let files = 
             match opt.Files with
             | Some fs -> Some (f::fs)
             | None -> Some [f]
         { FileName = t.FileName; Contents = CompleteInfo (core, { opt with Files = files }) }
-    | Incomplete ->
+    | IncompleteTemplate ->
         failwith "You should only try and add dependencies to template files with complete metadata."
 
 let internal findDependencies (dependencies : DependenciesFile) config (template : TemplateFile) (project : ProjectFile) (map : Map<string, TemplateFile * ProjectFile>) =
@@ -224,7 +222,7 @@ let Pack(dependencies : DependenciesFile, buildConfig, packageOutputPath) =
     let complete, incomplete =
         templates
         |> List.ofSeq
-        |> List.partition (function Complete _ -> true | Incomplete -> false)
+        |> List.partition (function CompleteTemplate _ -> true | IncompleteTemplate -> false)
 
     // load up project files and grab meta data
     let projectTemplates =
@@ -235,8 +233,8 @@ let Pack(dependencies : DependenciesFile, buildConfig, packageOutputPath) =
             | Some fileName ->
                 let templateFile = TemplateFile.Load fileName
                 match templateFile with
-                | Complete _ -> None
-                | Incomplete ->
+                | CompleteTemplate _ -> None
+                | IncompleteTemplate ->
                     let merged = 
                         projectFile
                         |> loadAssemblyMetadata buildConfig
