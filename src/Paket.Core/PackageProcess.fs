@@ -260,11 +260,11 @@ let Pack(dependencies : DependenciesFile, buildConfig, packageOutputPath) =
     // Package all templates
     projectTemplatesWithDeps @ complete
     |> Array.ofList
-    |> Array.map (fun t -> async {pack packageOutputPath t })
+    |> Array.map (fun t -> 
+           async { 
+               pack packageOutputPath t
+               tracefn "Packed: %s" t.FileName
+           })
     |> Async.Parallel
-    |> Async.Ignore
     |> Async.RunSynchronously
-
-    [complete;projectTemplatesWithDeps]
-    |> List.concat
-    |> List.iter (fun t -> verbosefn "Packed: %s" t.FileName)
+    |> ignore
