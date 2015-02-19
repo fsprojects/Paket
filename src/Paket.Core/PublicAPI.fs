@@ -257,12 +257,12 @@ type Dependencies(dependenciesFileName: string) =
 
     // Push a nupkg file.
     member this.Push(fileName, url, ?apiKey, ?maxTrials) =
-        let apiKey = defaultArg apiKey (Environment.GetEnvironmentVariable("NugetApiKey"))
+        let apiKey = defaultArg apiKey (Environment.GetEnvironmentVariable("nugetkey"))
         let maxTrials = defaultArg maxTrials 5
         RemoteUpload.Push maxTrials fileName url apiKey
 
     // Push all nupkg files.
     member this.PushAll(url, dir, ?apiKey, ?maxTrials) =
-        let apiKey = defaultArg apiKey (Environment.GetEnvironmentVariable("NugetApiKey"))
+        let apiKey = defaultArg apiKey (Environment.GetEnvironmentVariable("nugetkey"))
         let maxTrials = defaultArg maxTrials 5
         RemoteUpload.PushAll maxTrials (Path.Combine(this.RootPath, dir)) url apiKey
