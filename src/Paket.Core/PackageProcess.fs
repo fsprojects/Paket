@@ -229,18 +229,25 @@ let Pack(dependencies : DependenciesFile, buildConfig, packageOutputPath) =
     // load up project files and grab meta data
     let projectTemplates =
         ProjectFile.FindAllProjects rootPath
-        |> Array.choose (fun p ->
-            match ProjectFile.FindTemplatesFile(FileInfo(p.FileName)) with
+        |> Array.choose (fun projectFile ->
+            match ProjectFile.FindTemplatesFile(FileInfo(projectFile.FileName)) with
             | None -> None
             | Some fileName ->
-                let templatesFile = TemplateFile.Load fileName
-                match templatesFile with
+                let templateFile = TemplateFile.Load fileName
+                match templateFile with
                 | Complete _ -> None
-                | Incomplete -> Some(templatesFile,p))
-        |> Array.map (fun (t, p) ->
-            mergeMetadata t (loadAssemblyMetadata buildConfig p), p)
-        |> Array.map (fun (t, p) ->
-            (match t.Contents with CompleteInfo (c, _) -> c.Id | x -> failwithf "unexpected failure: %A" x), (t, p))
+                | Incomplete ->
+                    let merged = 
+                        projectFile
+                        |> loadAssemblyMetadata buildConfig
+                        |> mergeMetadata templateFile
+
+                    let id = 
+                        match merged.Contents with 
+                        | CompleteInfo (c, _) -> c.Id 
+                        | x -> failwithf "unexpected failure while merging meta data: %A" x
+
+                    Some(id,(merged,projectFile)))
         |> Map.ofArray
 
     // add dependencies
