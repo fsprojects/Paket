@@ -48,31 +48,22 @@ type ProjectFile =
         |> Array.filter (fun f -> f.Extension = ".csproj" || f.Extension = ".fsproj" || f.Extension = ".vbproj")
         |> Array.choose (fun fi -> ProjectFile.Load fi.FullName)
 
-    static member FindReferencesFile (projectFile : FileInfo) =
-        let specificReferencesFile = FileInfo(Path.Combine(projectFile.Directory.FullName, projectFile.Name + "." + Constants.ReferencesFile))
-        if specificReferencesFile.Exists then Some specificReferencesFile.FullName
+    static member FindCorrespondingFile (projectFile : FileInfo, correspondingFile:string) =
+        let specificFile = FileInfo(Path.Combine(projectFile.Directory.FullName, projectFile.Name + "." + correspondingFile))
+        if specificFile.Exists then Some specificFile.FullName
         else
             let rec findInDir (currentDir:DirectoryInfo) = 
-                let generalReferencesFile = FileInfo(Path.Combine(currentDir.FullName, Constants.ReferencesFile))
-                if generalReferencesFile.Exists then Some generalReferencesFile.FullName
+                let generalFile = FileInfo(Path.Combine(currentDir.FullName, correspondingFile))
+                if generalFile.Exists then Some generalFile.FullName
                 elif (FileInfo(Path.Combine(currentDir.FullName, Constants.DependenciesFileName))).Exists then None
                 elif currentDir.Parent = null then None
                 else findInDir currentDir.Parent 
                     
             findInDir projectFile.Directory
 
-    static member FindTemplatesFile (projectFile : FileInfo) =
-        let specificReferencesFile = FileInfo(Path.Combine(projectFile.Directory.FullName, projectFile.Name + "." + Constants.TemplateFile))
-        if specificReferencesFile.Exists then Some specificReferencesFile.FullName
-        else
-            let rec findInDir (currentDir:DirectoryInfo) = 
-                let generalReferencesFile = FileInfo(Path.Combine(currentDir.FullName, Constants.TemplateFile))
-                if generalReferencesFile.Exists then Some generalReferencesFile.FullName
-                elif (FileInfo(Path.Combine(currentDir.FullName, Constants.DependenciesFileName))).Exists then None
-                elif currentDir.Parent = null then None
-                else findInDir currentDir.Parent 
-                    
-            findInDir projectFile.Directory
+    static member FindReferencesFile (projectFile : FileInfo) = ProjectFile.FindCorrespondingFile(projectFile, Constants.ReferencesFile)
+
+    static member FindTemplatesFile (projectFile : FileInfo) = ProjectFile.FindCorrespondingFile(projectFile, Constants.TemplateFile)
 
     static member FindOrCreateReferencesFile (projectFile : FileInfo) =
         match ProjectFile.FindReferencesFile projectFile with
