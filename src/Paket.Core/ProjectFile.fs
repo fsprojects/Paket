@@ -61,6 +61,19 @@ type ProjectFile =
                     
             findInDir projectFile.Directory
 
+    static member FindTemplatesFile (projectFile : FileInfo) =
+        let specificReferencesFile = FileInfo(Path.Combine(projectFile.Directory.FullName, projectFile.Name + "." + Constants.TemplateFile))
+        if specificReferencesFile.Exists then Some specificReferencesFile.FullName
+        else
+            let rec findInDir (currentDir:DirectoryInfo) = 
+                let generalReferencesFile = FileInfo(Path.Combine(currentDir.FullName, Constants.TemplateFile))
+                if generalReferencesFile.Exists then Some generalReferencesFile.FullName
+                elif (FileInfo(Path.Combine(currentDir.FullName, Constants.DependenciesFileName))).Exists then None
+                elif currentDir.Parent = null then None
+                else findInDir currentDir.Parent 
+                    
+            findInDir projectFile.Directory
+
     static member FindOrCreateReferencesFile (projectFile : FileInfo) =
         match ProjectFile.FindReferencesFile projectFile with
         | None ->

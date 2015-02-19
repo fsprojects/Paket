@@ -25,8 +25,8 @@ values:
 * file - All of the information to build the nupkg is contained within the template file
 * project - Paket will look for a matching project file, and infer dependencies and metadata from the project
 
-Matching project and template files must be in the same directory, and the name of the
-template file must be the name of the project file with ".paket.template" added to the end.
+Matching project and template files must be in the same directory. If only one project is in the directory the template file
+can becalled `paket.template`, otherwise the name of the template file must be the name of the project file with ".paket.template" added to the end.
 
 For example:
 
