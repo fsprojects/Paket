@@ -9,7 +9,7 @@ open Paket.Rop
 let private findReferencesFor package (lockFile: LockFile) projects = rop {
     let! referencedIn =
         projects
-        |> Seq.map (fun (project, referencesFile) -> rop {
+        |> Seq.map (fun (project : ProjectFile, referencesFile) -> rop {
             let! installedPackages =
                 referencesFile
                 |> lockFile.GetPackageHullSafe

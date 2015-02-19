@@ -31,6 +31,9 @@ let SolutionFolderProjectGuid = "2150E333-8FDC-42A3-9474-1A3956D46DE8"
 let PaketVersionFileName = "paket.version"
 
 [<Literal>]
+let TemplateFile = "paket.template"
+
+[<Literal>]
 let FullProjectSourceFileName = "FULLPROJECT"
 
 [<Literal>]

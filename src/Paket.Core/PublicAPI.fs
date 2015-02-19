@@ -249,3 +249,20 @@ type Dependencies(dependenciesFileName: string) =
     /// Finds all references for a given package.
     member this.FindReferencesFor(package: string): string list =
         FindReferences.FindReferencesForPackage (PackageName package) |> this.Process
+
+    // Pack all paket.template files.
+    member this.Pack(config, outputPath) =
+        let dependenciesFile = DependenciesFile.ReadFromFile dependenciesFileName
+        PackageProcess.Pack(dependenciesFile, config, outputPath)
+
+    // Push a nupkg file.
+    member this.Push(fileName, url, ?apiKey, ?maxTrials) =
+        let apiKey = defaultArg apiKey (Environment.GetEnvironmentVariable("NugetApiKey"))
+        let maxTrials = defaultArg maxTrials 5
+        RemoteUpload.Push maxTrials fileName url apiKey
+
+    // Push all nupkg files.
+    member this.PushAll(url, dir, ?apiKey, ?maxTrials) =
+        let apiKey = defaultArg apiKey (Environment.GetEnvironmentVariable("NugetApiKey"))
+        let maxTrials = defaultArg maxTrials 5
+        RemoteUpload.PushAll maxTrials (Path.Combine(this.RootPath, dir)) url apiKey

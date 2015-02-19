@@ -83,7 +83,7 @@ let buildReference () =
     |> List.map (fun lib-> bin @@ lib)
   MetadataFormat.Generate
     ( binaries, output @@ "reference", layoutRootsAll.["en"],
-      parameters = ("root", root)::info,
+      parameters = ("root", "../" + root)::info,
       sourceRepo = githubLink @@ "tree/master",
       sourceFolder = __SOURCE_DIRECTORY__ @@ ".." @@ "..",
       publicOnly = true, libDirs = [bin] )

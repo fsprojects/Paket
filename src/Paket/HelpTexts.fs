@@ -8,6 +8,7 @@ type CommandHelpTopic =
             this.Text
                 .Replace("paket.dependencies file","[`paket.dependencies` file](dependencies-file.html)")
                 .Replace("paket.lock file","[`paket.lock` file](lock-file.html)")
+                .Replace("paket.template files","[`paket.template` files](template-files.html)")
                 .Replace("paket.references files","[`paket.references` files](references-files.html)")
                 .Replace("paket.references file","[`paket.references` file](references-files.html)")
                 
@@ -347,6 +348,32 @@ Options:
 
   `--hard`: Replaces package references within project files even if they are not yet adhering to Paket's conventions (and hence considered manually managed). See [convert from NuGet](paket-convert-from-nuget.html).
   
-  `--redirects`: Creates binding redirects for the NuGet packages."""}]
+  `--redirects`: Creates binding redirects for the NuGet packages."""}
+     "pack",
+        { Title = "paket pack"
+          Text = """Packs all paket.template files within this repository
+
+    [lang=batchfile]
+    $ paket pack output outputDirectory [buildconfig Debug]
+
+Options:
+
+  `output`: Output directory to put nupkgs
+
+  `buildconfig`: Optionally specify build configuration that should be packaged (defaults to Release)."""}
+     "push",
+        { Title = "paket push"
+          Text = """Push nupkg files beneath a directory
+
+    [lang=batchfile]
+    $ paket push url https://nuget.org packagedir path/to/packages [apikey YourApiKey]
+
+Options:
+
+  `url`: root url of the nuget repository you are pushing too
+
+  `packagedir`: a directory; every nupkg file in this directory or it's children will be pushed
+
+  `apikey`: Optionally specify your API key on the command line. Otherwise uses the value of the `NugetApiKey` environment variable."""}]
 
   |> dict

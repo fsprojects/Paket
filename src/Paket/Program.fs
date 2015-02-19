@@ -220,7 +220,29 @@ try
             | _ -> 
                 let withBindingRedirects = results.Contains <@ UpdateArgs.Redirects @>
                 Dependencies.Locate().Update(force,hard,withBindingRedirects)
-
+    | Command(Pack, args) ->
+        let results = commandArgs<PackArgs> args
+        
+        if results.IsUsageRequested then
+            showHelp HelpTexts.commands.["pack"]
+        else
+            let outputPath = results.GetResult <@ PackArgs.Output @>
+            let buildConfig =
+                match results.TryGetResult <@ PackArgs.BuildConfig @> with
+                | Some c -> c
+                | None -> "Release"
+            Dependencies.Locate().Pack(buildConfig, outputPath)
+    | Command(Push, args) ->
+        let results = commandArgs<PushArgs> args
+        
+        if results.IsUsageRequested then
+            showHelp HelpTexts.commands.["push"]
+        else
+            let url = results.GetResult <@ PushArgs.Url @>
+            let dir = results.GetResult <@ PushArgs.PackageDir @>
+            match results.TryGetResult <@ PushArgs.ApiKey @> with
+            | Some apikey -> Dependencies.Locate().PushAll(url, dir, apikey)
+            | None -> Dependencies.Locate().PushAll(url, dir)
     | _ ->
         let allCommands = 
             Microsoft.FSharp.Reflection.FSharpType.GetUnionCases(typeof<Command>)

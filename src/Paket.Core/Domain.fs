@@ -1,6 +1,7 @@
 ﻿module Paket.Domain
 
 open System.IO
+open Paket
 
 /// Represents a NuGet package name
 [<System.Diagnostics.DebuggerDisplay("{Item}")>]
@@ -62,6 +63,8 @@ type DomainMessage =
     | FileSaveError of string
 
     | ConfigFileParseError
+    
+    | PackagingConfigParseError of string
 
     override this.ToString() = 
         match this with
@@ -111,3 +114,6 @@ type DomainMessage =
 
         | ConfigFileParseError ->
             sprintf "Unable to parse Paket configuration file %s." Constants.PaketConfigFile
+
+        | PackagingConfigParseError error ->
+            sprintf "Unable to parse template file: %s." error

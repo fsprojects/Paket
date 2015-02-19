@@ -6,7 +6,7 @@ open System.IO
 open Paket.Domain
 open Paket.Logging
 
-let private removePackageFromProject project package = 
+let private removePackageFromProject (project : ProjectFile) package = 
     ProjectFile.FindOrCreateReferencesFile(FileInfo(project.FileName))
         .RemoveNuGetReference(package)
         .Save()

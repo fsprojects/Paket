@@ -48,18 +48,22 @@ type ProjectFile =
         |> Array.filter (fun f -> f.Extension = ".csproj" || f.Extension = ".fsproj" || f.Extension = ".vbproj")
         |> Array.choose (fun fi -> ProjectFile.Load fi.FullName)
 
-    static member FindReferencesFile (projectFile : FileInfo) =
-        let specificReferencesFile = FileInfo(Path.Combine(projectFile.Directory.FullName, projectFile.Name + "." + Constants.ReferencesFile))
-        if specificReferencesFile.Exists then Some specificReferencesFile.FullName
+    static member FindCorrespondingFile (projectFile : FileInfo, correspondingFile:string) =
+        let specificFile = FileInfo(Path.Combine(projectFile.Directory.FullName, projectFile.Name + "." + correspondingFile))
+        if specificFile.Exists then Some specificFile.FullName
         else
             let rec findInDir (currentDir:DirectoryInfo) = 
-                let generalReferencesFile = FileInfo(Path.Combine(currentDir.FullName, Constants.ReferencesFile))
-                if generalReferencesFile.Exists then Some generalReferencesFile.FullName
+                let generalFile = FileInfo(Path.Combine(currentDir.FullName, correspondingFile))
+                if generalFile.Exists then Some generalFile.FullName
                 elif (FileInfo(Path.Combine(currentDir.FullName, Constants.DependenciesFileName))).Exists then None
                 elif currentDir.Parent = null then None
                 else findInDir currentDir.Parent 
                     
             findInDir projectFile.Directory
+
+    static member FindReferencesFile (projectFile : FileInfo) = ProjectFile.FindCorrespondingFile(projectFile, Constants.ReferencesFile)
+
+    static member FindTemplatesFile (projectFile : FileInfo) = ProjectFile.FindCorrespondingFile(projectFile, Constants.TemplateFile)
 
     static member FindOrCreateReferencesFile (projectFile : FileInfo) =
         match ProjectFile.FindReferencesFile projectFile with
@@ -479,6 +483,40 @@ type ProjectFile =
         if Path.GetExtension(this.FileName) = Path.GetExtension(fileName) + "proj" 
         then "Compile"
         else "Content"
+
+    member this.GetOutputDirectory buildConfiguration =
+        this.Document
+        |> getDescendants "PropertyGroup"
+        |> List.filter (fun pg ->
+            pg
+            |> getAttribute "Condition"
+            |> function
+               | None -> false
+               | Some s -> s.Contains "$(Configuration)" && s.Contains buildConfiguration)
+        |> List.map (fun pg -> pg |> getNodes "OutputPath")
+        |> List.concat
+        |> fun outputPaths ->
+               let clean (p : string) =
+                   p.TrimEnd [|'\\'|] |> normalizePath
+               match outputPaths with
+               | [] -> failwith "Unable to find %s output path node in file %s" buildConfiguration this.FileName
+               | [output] ->
+                    clean output.InnerText
+               | output::_ ->
+                    traceWarnfn "Found multiple %s output path nodes in file %s, using first" buildConfiguration this.FileName
+                    clean output.InnerText
+
+    member this.GetAssemblyName () =
+        let assemblyName =
+            this.Document
+            |> getDescendants "AssemblyName"
+            |> function
+               | [] -> failwith "Project %s has no AssemblyName set" this.FileName
+               | [assemblyName] -> assemblyName.InnerText
+               | assemblyName::_ ->
+                    traceWarnfn "Found multiple AssemblyName nodes in file %s, using first" this.FileName
+                    assemblyName.InnerText
+        sprintf "%s.%s" assemblyName (this.OutputType |> function ProjectOutputType.Library -> "dll" | ProjectOutputType.Exe -> "exe")
 
     static member Load(fileName:string) =
         try

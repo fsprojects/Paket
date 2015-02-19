@@ -100,9 +100,6 @@ publish/
 # Publish Web Output
 *.Publish.xml
 
-# Enable nuget.exe in the .nuget folder (though normally executables are not tracked)
-!.nuget/NuGet.exe
-
 # Windows Azure Build Output
 csx
 *.build.csdef
@@ -176,7 +173,6 @@ temp/
 TestResults.xml
 
 # Nuget outputs
-nuget/*.nupkg
 release.cmd
 release.sh
 localpackages/
@@ -198,4 +194,6 @@ docs/content/paket-auto-restore.md
 docs/content/paket-restore.md
 docs/content/paket-simplify.md
 docs/content/paket-convert-from-nuget.md
+docs/content/paket-pack.md
+docs/content/paket-push.md
 *.bak
