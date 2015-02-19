@@ -233,7 +233,7 @@ files
         let pushResult =
             ExecProcess (fun info ->
                 info.FileName <- ".paket/paket.exe"
-                info.Arguments <- "push url https://nuget.org") System.TimeSpan.MaxValue
+                info.Arguments <- "push url https://nuget.org packagedir bin") System.TimeSpan.MaxValue
         if pushResult <> 0 then failwith "Error during pushing."
     | None ->
         ()
