@@ -226,15 +226,6 @@ let Pack(dependencies : DependenciesFile, buildConfig, packageOutputPath) =
         |> List.ofSeq
         |> List.partition (function Complete _ -> true | Incomplete -> false)
 
-    // start packaging the templates that don't require
-    // any project analysis
-    let fileTemplatesTask =
-        complete
-        |> Array.ofList
-        |> Array.map (fun t -> async { pack packageOutputPath t })
-        |> Async.Parallel
-        |> Async.StartAsTask
-
     // load up project files and grab meta data
     let projectTemplates =
         ProjectFile.FindAllProjects rootPath
@@ -259,15 +250,13 @@ let Pack(dependencies : DependenciesFile, buildConfig, packageOutputPath) =
         |> Map.toList
         |> List.map snd
 
-    // Package the rest
-    projectTemplatesWithDeps
+    // Package all templates
+    projectTemplatesWithDeps @ complete
     |> Array.ofList
     |> Array.map (fun t -> async {pack packageOutputPath t })
     |> Async.Parallel
     |> Async.Ignore
     |> Async.RunSynchronously
-
-    fileTemplatesTask.Wait()
 
     [complete;projectTemplatesWithDeps]
     |> List.concat
