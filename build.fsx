@@ -208,12 +208,12 @@ let PaketPackDefaults() : PaketPackParams =
       Copyright = null
       OutputPath = "./temp" }
 
-/// Creates a new NuGet package by using Paket.
+/// Creates a new NuGet package by using Paket pack.
 /// ## Parameters
 /// 
 ///  - `setParams` - Function used to manipulate the default parameters.
 let PacketPack setParams = 
-    traceStartTask "Paket Pack" ""
+    traceStartTask "PaketPack" ""
     let parameters : PaketPackParams = PaketPackDefaults() |> setParams
 
     let packResult =
@@ -223,7 +223,38 @@ let PacketPack setParams =
 
     if packResult <> 0 then failwith "Error during packing."
 
-    traceEndTask "Paket Pack" ""
+    traceEndTask "PaketPack" ""
+
+
+/// Paket parameter type
+type PaketPushParams = 
+    { ToolPath : string
+      TimeOut : TimeSpan
+      PublishUrl : string
+      AccessKey : string }
+
+/// Paket push default parameters
+let PaketPushDefaults() : PaketPushParams = 
+    { ToolPath = findToolFolderInSubPath "paket.exe" (currentDirectory @@ ".paket" @@ "paket.exe")
+      TimeOut = TimeSpan.FromMinutes 5.
+      PublishUrl = "https://nuget.org"
+      AccessKey = null }
+
+/// Pushes a NuGet package to the server by using Paket push.
+/// ## Parameters
+/// 
+///  - `setParams` - Function used to manipulate the default parameters.
+let PacketPush setParams packageDir = 
+    traceStartTask "PaketPush" packageDir
+    let parameters : PaketPushParams = PaketPushDefaults() |> setParams
+
+    let pushResult =
+        ExecProcess (fun info ->
+            info.FileName <- parameters.ToolPath
+            info.Arguments <- sprintf "push url %s packagedir %s" parameters.PublishUrl packageDir) System.TimeSpan.MaxValue
+    if pushResult <> 0 then failwith "Error during pushing."
+
+    traceEndTask "PaketPush" packageDir
 
 Target "NuGet" (fun _ ->    
     let indent (str : string) =
@@ -265,17 +296,7 @@ files
 
     PacketPack (fun p -> { p with ToolPath = "bin/merged/paket.exe" })
 
-    let apikey = environVarOrNone "nugetkey"
-    match apikey with
-    | Some key ->
-        setEnvironVar "NugetApiKey" key
-        let pushResult =
-            ExecProcess (fun info ->
-                info.FileName <- "bin/merged/paket.exe"
-                info.Arguments <- "push url https://nuget.org packagedir bin") System.TimeSpan.MaxValue
-        if pushResult <> 0 then failwith "Error during pushing."
-    | None ->
-        ()
+    PacketPush (fun p -> { p with ToolPath = "bin/merged/paket.exe" }) tempDir
 )
 
 // --------------------------------------------------------------------------------------
