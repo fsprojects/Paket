@@ -212,7 +212,7 @@ let PaketPackDefaults() : PaketPackParams =
 /// ## Parameters
 /// 
 ///  - `setParams` - Function used to manipulate the default parameters.
-let PacketPack setParams = 
+let PaketPack setParams = 
     traceStartTask "PaketPack" ""
     let parameters : PaketPackParams = PaketPackDefaults() |> setParams
 
@@ -244,17 +244,19 @@ let PaketPushDefaults() : PaketPushParams =
 /// ## Parameters
 /// 
 ///  - `setParams` - Function used to manipulate the default parameters.
-let PacketPush setParams packageDir = 
-    traceStartTask "PaketPush" packageDir
+let PaketPush setParams packages = 
+    let packges = Seq.toList packages
+    traceStartTask "PaketPush" (separated ", " packages)
     let parameters : PaketPushParams = PaketPushDefaults() |> setParams
 
-    let pushResult =
-        ExecProcess (fun info ->
-            info.FileName <- parameters.ToolPath
-            info.Arguments <- sprintf "push url %s packagedir %s" parameters.PublishUrl packageDir) System.TimeSpan.MaxValue
-    if pushResult <> 0 then failwith "Error during pushing."
+    for package in packages do
+        let pushResult =
+            ExecProcess (fun info ->
+                info.FileName <- parameters.ToolPath
+                info.Arguments <- sprintf "push url %s file %s" parameters.PublishUrl package) System.TimeSpan.MaxValue
+        if pushResult <> 0 then failwithf "Error during pushing %s." package
 
-    traceEndTask "PaketPush" packageDir
+    traceEndTask "PaketPush" (separated ", " packages)
 
 Target "NuGet" (fun _ ->    
     let indent (str : string) =
@@ -294,9 +296,10 @@ files
 
     File.WriteAllText(tempDir @@ "paket.template", exeTemplate)
 
-    PacketPack (fun p -> { p with ToolPath = "bin/merged/paket.exe" })
+    PaketPack (fun p -> { p with ToolPath = "bin/merged/paket.exe" })
 
-    PacketPush (fun p -> { p with ToolPath = "bin/merged/paket.exe" }) tempDir
+    !! (tempDir @@ "*.nupkg")
+    |> PaketPush (fun p -> { p with ToolPath = "bin/merged/paket.exe" }) 
 )
 
 // --------------------------------------------------------------------------------------

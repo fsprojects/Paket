@@ -132,7 +132,7 @@ with
 
 type PushArgs =
     | [<CustomCommandLine("url")>][<Mandatory>] Url of string
-    | [<CustomCommandLine("packagedir")>][<Mandatory>] PackageDir of string
+    | [<CustomCommandLine("file")>][<Mandatory>] FileName of string
     | [<CustomCommandLine("apikey")>] ApiKey of string
 with
     interface IArgParserTemplate with

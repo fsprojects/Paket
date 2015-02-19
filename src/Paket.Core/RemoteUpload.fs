@@ -19,8 +19,4 @@ let Push maxTrials url apiKey packageFileName =
             traceWarnfn "Could not push %s: %s" packageFileName exn.Message            
             push (trial + 1)
         
-    push 1    
-
-let PushAll maxTrials root url apiKey =
-    Directory.GetFiles(root, "*.nupkg", SearchOption.AllDirectories)
-    |> Seq.iter (fun p -> Push maxTrials url apiKey <| Path.Combine(root, p))
+    push 1
