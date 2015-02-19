@@ -1,5 +1,6 @@
-#### 0.30.0-alpha002 - 18.02.2015
+#### 0.30.0-alpha003 - 19.02.2015
 * New command: `paket pack` - http://fsprojects.github.io/Paket/paket-pack.html
+* New command: `paket push` - http://fsprojects.github.io/Paket/paket-push.html
 
 #### 0.29.0 - 18.02.2015
 * Allow local NuGet sources with spaces in `paket.dependencies` - https://github.com/fsprojects/Paket/issues/616
