@@ -239,11 +239,13 @@ let Pack(dependencies : DependenciesFile, buildConfig, packageOutputPath) =
     let projectTemplates =
         ProjectFile.FindAllProjects rootPath
         |> Array.choose (fun p ->
-            incomplete
-            |> Seq.tryFind(fun t -> p.FileName + ".paket.template" = t.FileName)
-            |> function
-               | Some i -> Some (i, p)
-               | None -> None)
+            match ProjectFile.FindTemplatesFile(FileInfo(p.FileName)) with
+            | None -> None
+            | Some fileName ->
+                let templatesFile = TemplateFile.Load fileName
+                match templatesFile with
+                | Complete _ -> None
+                | Incomplete -> Some(templatesFile,p))
         |> Array.map (fun (t, p) ->
             mergeMetadata t (loadAssemblyMetadata buildConfig p), p)
         |> Array.map (fun (t, p) ->
