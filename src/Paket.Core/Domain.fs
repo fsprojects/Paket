@@ -116,4 +116,4 @@ type DomainMessage =
             sprintf "Unable to parse Paket configuration file %s." Constants.PaketConfigFile
 
         | PackagingConfigParseError error ->
-            sprintf "Unable to parse packaging config file: %s." error
+            sprintf "Unable to parse template file: %s." error
