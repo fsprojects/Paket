@@ -6,6 +6,7 @@ open System.IO
 open System.Reflection
 open Paket.Domain
 open Paket.Logging
+open System.Collections.Generic
 
 let internal (|CompleteTemplate|IncompleteTemplate|) templateFile = 
     match templateFile with
@@ -218,25 +219,27 @@ let internal findDependencies (dependencies : DependenciesFile) config (template
 let Pack(dependencies : DependenciesFile, buildConfig, packageOutputPath) =
     Utils.createDir packageOutputPath |> Rop.returnOrFail
     let rootPath = dependencies.FileName |> Path.GetDirectoryName
-    let templates = 
+
+    let allTemplateFiles = 
+        let hashSet = new HashSet<_>()
+        for template in TemplateFile.FindTemplateFiles rootPath do
+            hashSet.Add template |> ignore
+        hashSet
+    
+    // load up project files and grab meta data
+    let projectTemplates =
         ProjectFile.FindAllProjects rootPath
         |> Array.choose (fun projectFile ->
             match ProjectFile.FindTemplatesFile(FileInfo(projectFile.FileName)) with
             | None -> None
-            | Some fileName -> Some(projectFile,TemplateFile.Load fileName))
-        |> Array.toList
-
-    let complete, incomplete =
-        templates
-        |> List.partition (fun (_,templateFile) -> 
+            | Some fileName ->                
+                Some(projectFile,TemplateFile.Load fileName))
+        |> Array.filter (fun (_,templateFile) -> 
             match templateFile with
-            | CompleteTemplate _ -> true 
-            | IncompleteTemplate -> false)
-
-    // load up project files and grab meta data
-    let projectTemplates =
-        incomplete
-        |> List.map (fun (projectFile,templateFile) ->
+            | CompleteTemplate _ -> false 
+            | IncompleteTemplate -> true)
+        |> Array.map (fun (projectFile,templateFile) ->
+            allTemplateFiles.Remove(templateFile.FileName) |> ignore
             let merged = 
                 projectFile
                 |> loadAssemblyMetadata buildConfig
@@ -248,7 +251,7 @@ let Pack(dependencies : DependenciesFile, buildConfig, packageOutputPath) =
                 | x -> failwithf "unexpected failure while merging meta data: %A" x
 
             id,(merged,projectFile))
-        |> Map.ofList
+        |> Map.ofArray
 
     // add dependencies
     let projectTemplatesWithDeps =
@@ -257,9 +260,14 @@ let Pack(dependencies : DependenciesFile, buildConfig, packageOutputPath) =
         |> Map.toList
         |> List.map snd
 
+    let templateFilesWithoutProject = 
+        [for fileName in allTemplateFiles -> TemplateFile.Load fileName]
+
     // Package all templates
-    projectTemplatesWithDeps @ complete
-    |> List.map (fun (projectFile,templateFile) -> 
+    projectTemplatesWithDeps
+    |> List.map snd
+    |> List.append templateFilesWithoutProject
+    |> List.map (fun templateFile -> 
            async { 
                pack packageOutputPath templateFile
                tracefn "Packed: %s" templateFile.FileName
