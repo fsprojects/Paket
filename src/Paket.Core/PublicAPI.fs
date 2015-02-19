@@ -256,11 +256,13 @@ type Dependencies(dependenciesFileName: string) =
         PackageProcess.Pack(dependenciesFile, config, outputPath)
 
     // Push a nupkg file.
-    member this.Push(fileName, url, apiKey, ?maxTrials) =
+    member this.Push(fileName, url, ?apiKey, ?maxTrials) =
+        let apiKey = defaultArg apiKey (Environment.GetEnvironmentVariable("NugetApiKey"))
         let maxTrials = defaultArg maxTrials 5
         RemoteUpload.Push maxTrials fileName url apiKey
 
     // Push all nupkg files.
-    member this.PushAll(url, apiKey, ?maxTrials) =
+    member this.PushAll(url, ?apiKey, ?maxTrials) =
+        let apiKey = defaultArg apiKey (Environment.GetEnvironmentVariable("NugetApiKey"))
         let maxTrials = defaultArg maxTrials 5
         RemoteUpload.PushAll maxTrials this.RootPath url apiKey

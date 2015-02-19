@@ -239,12 +239,9 @@ try
             showHelp HelpTexts.commands.["push"]
         else
             let url = results.GetResult <@ PushArgs.Url @>
-            let apikey =
-                match results.TryGetResult <@ PushArgs.ApiKey @> with
-                | Some k -> k
-                | None ->
-                    Environment.GetEnvironmentVariable("NugetApiKey")
-            Dependencies.Locate().PushAll(url, apikey)
+            match results.TryGetResult <@ PushArgs.ApiKey @> with
+            | Some apikey -> Dependencies.Locate().PushAll(url, apikey)
+            | None -> Dependencies.Locate().PushAll(url)
     | _ ->
         let allCommands = 
             Microsoft.FSharp.Reflection.FSharpType.GetUnionCases(typeof<Command>)
