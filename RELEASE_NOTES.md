@@ -1,3 +1,6 @@
+#### 0.29.1 - 19.02.2015
+* BUGFIX: fix no_auto_restore option parsing  - https://github.com/fsprojects/Paket/issues/632
+
 #### 0.29.0 - 18.02.2015
 * Allow local NuGet sources with spaces in `paket.dependencies` - https://github.com/fsprojects/Paket/issues/616
 * Streamlined install options in `paket.dependencies` and `paket.references` - https://github.com/fsprojects/Paket/issues/587

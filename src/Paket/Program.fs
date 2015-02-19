@@ -116,7 +116,7 @@ try
         else
             let force = results.Contains <@ ConvertFromNugetArgs.Force @>
             let noInstall = results.Contains <@ ConvertFromNugetArgs.No_Install @>
-            let noAutoRestore = results.Contains <@ ConvertFromNugetArgs.No_Install @>
+            let noAutoRestore = results.Contains <@ ConvertFromNugetArgs.No_Auto_Restore @>
             let credsMigrationMode = results.TryGetResult <@ ConvertFromNugetArgs.Creds_Migration @>
             Dependencies.ConvertFromNuget(force, noInstall |> not, noAutoRestore |> not, credsMigrationMode)
     
