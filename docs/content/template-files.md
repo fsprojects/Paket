@@ -1,6 +1,6 @@
 # The paket.template files
 
-The `paket.template` files are used to specify rules to create nupkgs.
+The `paket.template` files are used to specify rules to create nupkgs by using the [`paket pack` command](paket-pack.html).
 
 An example `paket.template` file might look like the following:
 
