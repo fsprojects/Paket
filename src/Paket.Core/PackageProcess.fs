@@ -218,50 +218,51 @@ let internal findDependencies (dependencies : DependenciesFile) config (template
 let Pack(dependencies : DependenciesFile, buildConfig, packageOutputPath) =
     Utils.createDir packageOutputPath |> Rop.returnOrFail
     let rootPath = dependencies.FileName |> Path.GetDirectoryName
-    let templates = TemplateFile.FindTemplateFiles rootPath |> Seq.map TemplateFile.Load
-    let complete, incomplete =
-        templates
-        |> List.ofSeq
-        |> List.partition (function CompleteTemplate _ -> true | IncompleteTemplate -> false)
-
-    // load up project files and grab meta data
-    let projectTemplates =
+    let templates = 
         ProjectFile.FindAllProjects rootPath
         |> Array.choose (fun projectFile ->
             match ProjectFile.FindTemplatesFile(FileInfo(projectFile.FileName)) with
             | None -> None
-            | Some fileName ->
-                let templateFile = TemplateFile.Load fileName
-                match templateFile with
-                | CompleteTemplate _ -> None
-                | IncompleteTemplate ->
-                    let merged = 
-                        projectFile
-                        |> loadAssemblyMetadata buildConfig
-                        |> mergeMetadata templateFile
+            | Some fileName -> Some(projectFile,TemplateFile.Load fileName))
+        |> Array.toList
 
-                    let id = 
-                        match merged.Contents with 
-                        | CompleteInfo (c, _) -> c.Id 
-                        | x -> failwithf "unexpected failure while merging meta data: %A" x
+    let complete, incomplete =
+        templates
+        |> List.partition (fun (_,templateFile) -> 
+            match templateFile with
+            | CompleteTemplate _ -> true 
+            | IncompleteTemplate -> false)
 
-                    Some(id,(merged,projectFile)))
-        |> Map.ofArray
+    // load up project files and grab meta data
+    let projectTemplates =
+        incomplete
+        |> List.map (fun (projectFile,templateFile) ->
+            let merged = 
+                projectFile
+                |> loadAssemblyMetadata buildConfig
+                |> mergeMetadata templateFile
+
+            let id = 
+                match merged.Contents with 
+                | CompleteInfo (c, _) -> c.Id 
+                | x -> failwithf "unexpected failure while merging meta data: %A" x
+
+            id,(merged,projectFile))
+        |> Map.ofList
 
     // add dependencies
     let projectTemplatesWithDeps =
         projectTemplates
-        |> Map.map (fun _ (t, p) -> findDependencies dependencies buildConfig t p projectTemplates)
+        |> Map.map (fun _ (t, p) -> p,findDependencies dependencies buildConfig t p projectTemplates)
         |> Map.toList
         |> List.map snd
 
     // Package all templates
     projectTemplatesWithDeps @ complete
-    |> Array.ofList
-    |> Array.map (fun t -> 
+    |> List.map (fun (projectFile,templateFile) -> 
            async { 
-               pack packageOutputPath t
-               tracefn "Packed: %s" t.FileName
+               pack packageOutputPath templateFile
+               tracefn "Packed: %s" templateFile.FileName
            })
     |> Async.Parallel
     |> Async.RunSynchronously
