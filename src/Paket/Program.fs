@@ -244,7 +244,7 @@ try
                 | Some k -> k
                 | None ->
                     Environment.GetEnvironmentVariable("NugetApiKey")
-            Dependencies.Locate().Push(url, apikey)
+            Dependencies.Locate().PushAll(url, apikey)
     | _ ->
         let allCommands = 
             Microsoft.FSharp.Reflection.FSharpType.GetUnionCases(typeof<Command>)
