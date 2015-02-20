@@ -238,9 +238,11 @@ try
         if results.IsUsageRequested then
             showHelp HelpTexts.commands.["push"]
         else
-            let url = results.GetResult <@ PushArgs.Url @>
             let fileName = results.GetResult <@ PushArgs.FileName @>
-            Dependencies.Locate().Push(fileName, url, ?apiKey = results.TryGetResult <@ PushArgs.ApiKey @>)
+            Dependencies.Locate().Push(
+                fileName, 
+                ?url = results.TryGetResult <@ PushArgs.Url @>, 
+                ?apiKey = results.TryGetResult <@ PushArgs.ApiKey @>)
     | _ ->
         let allCommands = 
             Microsoft.FSharp.Reflection.FSharpType.GetUnionCases(typeof<Command>)
