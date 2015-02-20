@@ -44,7 +44,7 @@ let private contentTypeDoc fileList =
     XDocument(declaration, box root)
 
 let private nuspecPath (core : CompleteCoreInfo) =
-    sprintf "/%s.nuspec" core.Id
+    sprintf "/%s.%O.nuspec" core.Id core.Version
 
 let private nuspecDoc (core : CompleteCoreInfo) optional =
     let declaration = XDeclaration("1.0", "UTF-8", "yes")
@@ -194,7 +194,7 @@ let private writeNupkg core optional =
     ]
 
 let Write (core : CompleteCoreInfo) optional workingDir outputDir =
-    let outputPath = Path.Combine(outputDir, core.Id + ".nupkg")
+    let outputPath = Path.Combine(outputDir, sprintf "%s.%O.nupkg" core.Id core.Version)
     if File.Exists outputPath then
         File.Delete outputPath
     use zipFile = new ZipFile(outputPath)
