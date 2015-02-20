@@ -264,17 +264,6 @@ Target "NuGet" (fun _ ->
         |> Array.map (fun line -> "    " + line)
         |> fun line -> String.Join(Environment.NewLine, line)
 
-    let sharedMetadata =
-        sprintf """releasenotes
-%s
-summary
-%s
-licenseurl http://fsprojects.github.io/Paket/license.html
-projecturl http://fsprojects.github.com/Paket
-iconurl https://raw.githubusercontent.com/fsprojects/Paket/master/docs/files/img/logo.png
-tags
-%s"""
-            (indent <| toLines release.Notes) (indent summary) (indent tags)
 
     let exeTemplate =
         sprintf """type file
@@ -285,6 +274,14 @@ version
 %s
 authors
 %s
+releasenotes
+%s
+summary
+%s
+licenseurl http://fsprojects.github.io/Paket/license.html
+projecturl http://fsprojects.github.com/Paket
+iconurl https://raw.githubusercontent.com/fsprojects/Paket/master/docs/files/img/logo.png
+tags
 %s
 files
     from ../bin/merged/paket.exe
@@ -292,7 +289,9 @@ files
             (indent description)
             (indent release.NugetVersion)
             (indent (authors |> String.concat ", "))
-            sharedMetadata
+            (indent <| toLines release.Notes) 
+            (indent summary) 
+            (indent tags)
 
     File.WriteAllText(tempDir @@ "paket.template", exeTemplate)
 
