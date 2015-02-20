@@ -66,7 +66,15 @@ let buildMergedDir = buildDir @@ "merged"
 
 
 // Read additional information from the release notes document
-let release = LoadReleaseNotes "RELEASE_NOTES.md"
+let releaseNotesData = 
+    File.ReadAllLines "RELEASE_NOTES.md"
+    |> parseAllReleaseNotes
+
+let release = List.head releaseNotesData
+let stable = 
+    match releaseNotesData |> List.tryFind (fun r -> r.NugetVersion.Contains("-") |> not) with
+    | Some stable -> stable
+    | _ -> release
 
 let genFSAssemblyInfo (projectPath) =
     let projectName = System.IO.Path.GetFileNameWithoutExtension(projectPath)
@@ -266,7 +274,11 @@ Target "ReleaseDocs" (fun _ ->
     CleanDir tempDocsDir
     Repository.cloneSingleBranch "" (gitHome + "/" + gitName + ".git") "gh-pages" tempDocsDir
 
-    CopyRecursive "docs/output" tempDocsDir true |> tracefn "%A"
+    CopyRecursive "docs/output" tempDocsDir true |> tracefn "%A"    
+    
+    File.WriteAllText("temp/gh-pages/latest",sprintf "https://github.com/fsprojects/Paket/releases/download/%s/paket.exe" release.NugetVersion)
+    File.WriteAllText("temp/gh-pages/stable",sprintf "https://github.com/fsprojects/Paket/releases/download/%s/paket.exe" stable.NugetVersion)
+
     StageAll tempDocsDir
     Git.Commit.Commit tempDocsDir (sprintf "Update generated documentation for version %s" release.NugetVersion)
     Branches.push tempDocsDir
