@@ -126,6 +126,8 @@ with
 type PackArgs =
     | [<CustomCommandLine("output")>][<Mandatory>] Output of string
     | [<CustomCommandLine("buildconfig")>] BuildConfig of string
+    | [<CustomCommandLine("version")>] Version of string
+    | [<CustomCommandLine("releaseNotes")>] ReleaseNotes of string
 with
     interface IArgParserTemplate with
         member __.Usage = ""

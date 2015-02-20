@@ -251,9 +251,9 @@ type Dependencies(dependenciesFileName: string) =
         FindReferences.FindReferencesForPackage (PackageName package) |> this.Process
 
     // Pack all paket.template files.
-    member this.Pack(config, outputPath) =
+    member this.Pack(outputPath, ?buildConfig, ?version, ?releaseNotes) = 
         let dependenciesFile = DependenciesFile.ReadFromFile dependenciesFileName
-        PackageProcess.Pack(dependenciesFile, config, outputPath)
+        PackageProcess.Pack(dependenciesFile, outputPath, buildConfig, version, releaseNotes)
 
     // Push a nupkg file.
     member this.Push(packageFileName, url, ?apiKey, ?maxTrials) =

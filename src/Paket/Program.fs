@@ -226,12 +226,12 @@ try
         if results.IsUsageRequested then
             showHelp HelpTexts.commands.["pack"]
         else
-            let outputPath = results.GetResult <@ PackArgs.Output @>
-            let buildConfig =
-                match results.TryGetResult <@ PackArgs.BuildConfig @> with
-                | Some c -> c
-                | None -> "Release"
-            Dependencies.Locate().Pack(buildConfig, outputPath)
+            let outputPath = results.GetResult <@ PackArgs.Output @>            
+            Dependencies.Locate().Pack(
+                outputPath, 
+                ?buildConfig = results.TryGetResult <@ PackArgs.BuildConfig @>,
+                ?version = results.TryGetResult <@ PackArgs.Version @>,
+                ?releaseNotes = results.TryGetResult <@ PackArgs.ReleaseNotes @>)
     | Command(Push, args) ->
         let results = commandArgs<PushArgs> args
         
@@ -240,9 +240,7 @@ try
         else
             let url = results.GetResult <@ PushArgs.Url @>
             let fileName = results.GetResult <@ PushArgs.FileName @>
-            match results.TryGetResult <@ PushArgs.ApiKey @> with
-            | Some apikey -> Dependencies.Locate().Push(fileName, url, apiKey = apikey)
-            | None -> Dependencies.Locate().Push(fileName, url)
+            Dependencies.Locate().Push(fileName, url, ?apiKey = results.TryGetResult <@ PushArgs.ApiKey @>)
     | _ ->
         let allCommands = 
             Microsoft.FSharp.Reflection.FSharpType.GetUnionCases(typeof<Command>)

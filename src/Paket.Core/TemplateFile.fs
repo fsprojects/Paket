@@ -53,6 +53,28 @@ module TemplateFile =
     open Paket.Rop
     open Paket.Domain
 
+    let setVersion version templateFile =
+        let contents =
+            match templateFile.Contents with
+            | CompleteInfo(core,optional) ->
+                 CompleteInfo({ core with Version = version },optional)
+            | ProjectInfo(core,optional) -> 
+                 ProjectInfo({ core with Version = Some version },optional)
+
+        { templateFile with
+            Contents = contents}
+
+    let setReleaseNotes releaseNotes templateFile =
+        let contents =
+            match templateFile.Contents with
+            | CompleteInfo(core,optional) ->
+                 CompleteInfo(core,{ optional with ReleaseNotes = releaseNotes })
+            | ProjectInfo(core,optional) -> 
+                 ProjectInfo(core,{ optional with ReleaseNotes = releaseNotes })
+
+        { templateFile with
+            Contents = contents}
+        
     let private basicOperators = ["~>";"==";"<=";">=";"=";">";"<"]
     let private operators = basicOperators @ (basicOperators |> List.map (fun o -> "!" + o))
 

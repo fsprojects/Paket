@@ -216,7 +216,8 @@ let internal findDependencies (dependencies : DependenciesFile) config (template
     | None ->
         withDepsAndIncluded
 
-let Pack(dependencies : DependenciesFile, buildConfig, packageOutputPath) =
+let Pack(dependencies : DependenciesFile, packageOutputPath, buildConfig, version, releaseNotes) =
+    let buildConfig = defaultArg buildConfig "Release"  
     Utils.createDir packageOutputPath |> Rop.returnOrFail
     let rootPath = dependencies.FileName |> Path.GetDirectoryName
 
@@ -254,21 +255,31 @@ let Pack(dependencies : DependenciesFile, buildConfig, packageOutputPath) =
         |> Map.ofArray
 
     // add dependencies
-    let projectTemplatesWithDeps =
+    let allTemplates =
         projectTemplates
         |> Map.map (fun _ (t, p) -> p,findDependencies dependencies buildConfig t p projectTemplates)
         |> Map.toList
-        |> List.map snd
+        |> List.map (fun (_,(_,x)) -> x)
+        |> List.append [for fileName in allTemplateFiles -> TemplateFile.Load fileName]
+    
+    // set version
+    let templatesWithVersion =
+        match version with
+        | None -> allTemplates
+        | Some v ->
+            let version = SemVer.Parse v
+            allTemplates |> List.map (TemplateFile.setVersion version)
 
-    let templateFilesWithoutProject = 
-        [for fileName in allTemplateFiles -> TemplateFile.Load fileName]
+     // set release notes
+    let processedTemplates =
+        match releaseNotes with
+        | None ->   templatesWithVersion
+        | Some v -> templatesWithVersion |> List.map (TemplateFile.setReleaseNotes releaseNotes)
 
     // Package all templates
-    projectTemplatesWithDeps
-    |> List.map snd
-    |> List.append templateFilesWithoutProject
+    processedTemplates
     |> List.map (fun templateFile -> 
-           async { 
+           async {
                pack packageOutputPath templateFile
                tracefn "Packed: %s" templateFile.FileName
            })

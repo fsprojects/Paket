@@ -181,14 +181,7 @@ type PaketPackParams =
     { ToolPath : string
       TimeOut : TimeSpan
       Version : string
-      Authors : string list
-      Project : string
-      Title : string
-      Summary : string
-      Description : string
-      Tags : string
       ReleaseNotes : string
-      Copyright : string
       OutputPath : string }
 
 /// Paket pack default parameters  
@@ -198,15 +191,12 @@ let PaketPackDefaults() : PaketPackParams =
       Version = 
           if not isLocalBuild then buildVersion
           else "0.1.0.0"
-      Authors = []
-      Project = ""
-      Title = ""
-      Summary = null
-      Description = null
-      Tags = null
       ReleaseNotes = null
-      Copyright = null
       OutputPath = "./temp" }
+
+#r @"System.Xml.Linq"
+open System.Xml.Linq
+
 
 /// Creates a new NuGet package by using Paket pack on all paket.template files in the given root directory.
 /// ## Parameters
@@ -217,10 +207,14 @@ let PaketPack setParams rootDir =
     traceStartTask "PaketPack" rootDir
     let parameters : PaketPackParams = PaketPackDefaults() |> setParams
 
+    let xmlEncode (notEncodedText : string) = 
+        if System.String.IsNullOrWhiteSpace notEncodedText then ""
+        else XText(notEncodedText).ToString().Replace("ß","&szlig;")
+
     let packResult =
         ExecProcess (fun info ->
             info.FileName <- parameters.ToolPath
-            info.Arguments <- sprintf "pack output %s" parameters.OutputPath) parameters.TimeOut
+            info.Arguments <- sprintf "pack output %s version \"%s\" releaseNotes \"%s\"" parameters.OutputPath parameters.Version (xmlEncode parameters.ReleaseNotes)) parameters.TimeOut
 
     if packResult <> 0 then failwithf "Error during packing %s." rootDir
 
@@ -261,45 +255,15 @@ let PaketPush setParams packages =
     traceEndTask "PaketPush" (separated ", " packages)
 
 Target "NuGet" (fun _ ->    
-    let indent (str : string) =
-        str.Split([|"\r\n";"\n"|], StringSplitOptions.None)        
-        |> Array.map (fun line -> "    " + line)
-        |> fun line -> String.Join(Environment.NewLine, line)
+    PaketPack (fun p -> 
+        { p with 
+            ToolPath = "bin/merged/paket.exe" 
+            Version = release.NugetVersion
+            ReleaseNotes = toLines release.Notes
+            }) "."
+)
 
-
-    let exeTemplate =
-        sprintf """type file
-id Paket
-description
-%s
-version
-%s
-authors
-%s
-releasenotes
-%s
-summary
-%s
-licenseurl http://fsprojects.github.io/Paket/license.html
-projecturl http://fsprojects.github.com/Paket
-iconurl https://raw.githubusercontent.com/fsprojects/Paket/master/docs/files/img/logo.png
-tags
-%s
-files
-    from ../bin/merged/paket.exe
-    to tools"""
-            (indent description)
-            (indent release.NugetVersion)
-            (indent (authors |> String.concat ", "))
-            (indent <| toLines release.Notes) 
-            (indent summary) 
-            (indent tags)
-
-    File.WriteAllText(tempDir @@ "paket.template", exeTemplate)
-
-    
-    PaketPack (fun p -> { p with ToolPath = "bin/merged/paket.exe" }) "."
-
+Target "PublishNuGet" (fun _ ->
     !! (tempDir @@ "*.nupkg")
     |> PaketPush (fun p -> { p with ToolPath = "bin/merged/paket.exe" }) 
 )
@@ -444,6 +408,7 @@ Target "All" DoNothing
   ==> "Release"
 
 "BuildPackage"
+  ==> "PublishNuGet"
   ==> "Release"
 
 RunTargetOrDefault "All"
