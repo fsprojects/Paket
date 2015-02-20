@@ -363,17 +363,17 @@ Options:
   `buildconfig`: Optionally specify build configuration that should be packaged (defaults to Release)."""}
      "push",
         { Title = "paket push"
-          Text = """Push nupkg files beneath a directory
+          Text = """Pushes all `.nupkg` files from the given directory.
 
     [lang=batchfile]
-    $ paket push url https://nuget.org packagedir path/to/packages [apikey YourApiKey]
+    $ paket push packagedir path/to/packages [apikey YourApiKey] [url NuGetFeed]
 
 Options:
 
-  `url`: root url of the nuget repository you are pushing too
+  `packagedir`: a directory; every `.nupkg` file in this directory or it's children will be pushed.
 
-  `packagedir`: a directory; every nupkg file in this directory or it's children will be pushed
-
-  `apikey`: Optionally specify your API key on the command line. Otherwise uses the value of the `NugetApiKey` environment variable."""}]
+  `apikey`: Optionally specify your API key on the command line. Otherwise uses the value of the `NugetApiKey` environment variable.
+  
+  `url`: Optionally specify root url of the nuget repository you are pushing too. Defaults to [https://nuget.org](https://nuget.org)."""}]
 
   |> dict
