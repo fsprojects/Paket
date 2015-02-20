@@ -347,7 +347,7 @@ Options:
   `--force`: Forces the download and reinstallation of all packages.
 
   `--hard`: Replaces package references within project files even if they are not yet adhering to Paket's conventions (and hence considered manually managed). See [convert from NuGet](paket-convert-from-nuget.html).
-  
+
   `--redirects`: Creates binding redirects for the NuGet packages."""}
      "pack",
         { Title = "paket pack"

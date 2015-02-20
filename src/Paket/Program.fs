@@ -61,7 +61,7 @@ let commandArgs<'T when 'T :> IArgParserTemplate> args =
                errorHandler = ProcessExiter())
 
 
-let showHelp (helpTopic:HelpTexts.CommandHelpTopic) = 
+let showHelp (helpTopic:HelpTexts.CommandHelpTopic<_>) = 
                         tracefn "%s" helpTopic.Title
                         tracefn "%s" helpTopic.Text
 

@@ -1,4 +1,5 @@
 /// Getting help docs from Paket.exe
+#r "../../bin/UnionArgParser.dll"
 #r "../../bin/Paket.exe"
 open System.IO
 
