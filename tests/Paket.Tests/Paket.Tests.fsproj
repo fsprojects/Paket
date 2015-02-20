@@ -65,11 +65,11 @@
   -->
   <Import Project="$(SolutionDir)\.paket\paket.targets" />
   <ItemGroup>
-    <Compile Include="AssemblyInfo.fs" />
     <Compile Include="..\..\paket-files\forki\FsUnit\FsUnit.fs">
       <Paket>True</Paket>
       <Link>FsUnit.fs</Link>
     </Compile>
+    <Compile Include="AssemblyInfo.fs" />
     <Compile Include="TestHelpers.fs" />
     <Compile Include="SemVerSpecs.fs" />
     <Compile Include="ConfigFileSpecs.fs" />

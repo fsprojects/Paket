@@ -176,86 +176,8 @@ Target "SignAssemblies" (fun _ ->
             if result <> 0 then failwithf "Error during signing %s with %s" executable pfx)
 )
 
-/// Paket parameter type
-type PaketPackParams = 
-    { ToolPath : string
-      TimeOut : TimeSpan
-      Version : string
-      ReleaseNotes : string
-      OutputPath : string }
-
-/// Paket pack default parameters  
-let PaketPackDefaults() : PaketPackParams = 
-    { ToolPath = findToolFolderInSubPath "paket.exe" (currentDirectory @@ ".paket" @@ "paket.exe")
-      TimeOut = TimeSpan.FromMinutes 5.
-      Version = 
-          if not isLocalBuild then buildVersion
-          else "0.1.0.0"
-      ReleaseNotes = null
-      OutputPath = "./temp" }
-
-#r @"System.Xml.Linq"
-open System.Xml.Linq
-
-
-/// Creates a new NuGet package by using Paket pack on all paket.template files in the given root directory.
-/// ## Parameters
-/// 
-///  - `setParams` - Function used to manipulate the default parameters.
-///  - `rootDir` - The paket.template files.
-let PaketPack setParams rootDir = 
-    traceStartTask "PaketPack" rootDir
-    let parameters : PaketPackParams = PaketPackDefaults() |> setParams
-
-    let xmlEncode (notEncodedText : string) = 
-        if System.String.IsNullOrWhiteSpace notEncodedText then ""
-        else XText(notEncodedText).ToString().Replace("ß","&szlig;")
-
-    let packResult =
-        ExecProcess (fun info ->
-            info.FileName <- parameters.ToolPath
-            info.Arguments <- sprintf "pack output %s version \"%s\" releaseNotes \"%s\"" parameters.OutputPath parameters.Version (xmlEncode parameters.ReleaseNotes)) parameters.TimeOut
-
-    if packResult <> 0 then failwithf "Error during packing %s." rootDir
-
-    traceEndTask "PaketPack" rootDir
-
-
-/// Paket parameter type
-type PaketPushParams = 
-    { ToolPath : string
-      TimeOut : TimeSpan
-      PublishUrl : string
-      AccessKey : string }
-
-/// Paket push default parameters
-let PaketPushDefaults() : PaketPushParams = 
-    { ToolPath = findToolFolderInSubPath "paket.exe" (currentDirectory @@ ".paket" @@ "paket.exe")
-      TimeOut = TimeSpan.FromMinutes 5.
-      PublishUrl = "https://nuget.org"
-      AccessKey = null }
-
-/// Pushes a NuGet package to the server by using Paket push.
-/// ## Parameters
-/// 
-///  - `setParams` - Function used to manipulate the default parameters.
-///  - `packages` - The .nupkg files.
-let PaketPush setParams packages =
-    let packages = Seq.toList packages
-    traceStartTask "PaketPush" (separated ", " packages)
-    let parameters : PaketPushParams = PaketPushDefaults() |> setParams
-
-    for package in packages do
-        let pushResult =
-            ExecProcess (fun info ->
-                info.FileName <- parameters.ToolPath
-                info.Arguments <- sprintf "push url %s file %s" parameters.PublishUrl package) System.TimeSpan.MaxValue
-        if pushResult <> 0 then failwithf "Error during pushing %s." package
-
-    traceEndTask "PaketPush" (separated ", " packages)
-
 Target "NuGet" (fun _ ->    
-    PaketPack (fun p -> 
+    Paket.Pack (fun p -> 
         { p with 
             ToolPath = "bin/merged/paket.exe" 
             Version = release.NugetVersion
@@ -265,7 +187,7 @@ Target "NuGet" (fun _ ->
 
 Target "PublishNuGet" (fun _ ->
     !! (tempDir @@ "*.nupkg")
-    |> PaketPush (fun p -> { p with ToolPath = "bin/merged/paket.exe" }) 
+    |> Paket.Push (fun p -> { p with ToolPath = "bin/merged/paket.exe" }) 
 )
 
 // --------------------------------------------------------------------------------------
