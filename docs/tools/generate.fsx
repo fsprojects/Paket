@@ -12,8 +12,6 @@ Paket.HelpTexts.commands
 
 // Binaries that have XML documentation (in a corresponding generated XML file)
 let referenceBinaries = [ "Paket.Core.dll" ]
-// Web site location for the generated documentation
-let website = "."
 
 let githubLink = "http://github.com/fsprojects/Paket"
 
@@ -37,14 +35,6 @@ open System.IO
 open Fake.FileHelper
 open FSharp.Literate
 open FSharp.MetadataFormat
-
-// When called from 'build.fsx', use the public project URL as <root>
-// otherwise, use the current 'output' directory.
-#if RELEASE
-let root = website
-#else
-let root = "file://" + (__SOURCE_DIRECTORY__ @@ "../output")
-#endif
 
 // Paths with template/source/output locations
 let bin        = __SOURCE_DIRECTORY__ @@ "../../bin"
@@ -83,7 +73,7 @@ let buildReference () =
     |> List.map (fun lib-> bin @@ lib)
   MetadataFormat.Generate
     ( binaries, output @@ "reference", layoutRootsAll.["en"],
-      parameters = ("root", "../" + root)::info,
+      parameters = ("root", "../")::info,
       sourceRepo = githubLink @@ "tree/master",
       sourceFolder = __SOURCE_DIRECTORY__ @@ ".." @@ "..",
       publicOnly = true, libDirs = [bin] )
@@ -102,7 +92,7 @@ let buildDocumentation () =
         | Some lang -> layoutRootsAll.[lang]
         | None -> layoutRootsAll.["en"] // "en" is the default language
     Literate.ProcessDirectory
-      ( dir, docTemplate, output @@ sub, replacements = ("root", root)::info,
+      ( dir, docTemplate, output @@ sub, replacements = ("root", ".")::info,
         layoutRoots = layoutRoots,
         generateAnchors = true )
 
