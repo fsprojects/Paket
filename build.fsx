@@ -208,22 +208,23 @@ let PaketPackDefaults() : PaketPackParams =
       Copyright = null
       OutputPath = "./temp" }
 
-/// Creates a new NuGet package by using Paket pack.
+/// Creates a new NuGet package by using Paket pack on all paket.template files in the given root directory.
 /// ## Parameters
 /// 
 ///  - `setParams` - Function used to manipulate the default parameters.
-let PaketPack setParams = 
-    traceStartTask "PaketPack" ""
+///  - `rootDir` - The paket.template files.
+let PaketPack setParams rootDir = 
+    traceStartTask "PaketPack" rootDir
     let parameters : PaketPackParams = PaketPackDefaults() |> setParams
 
     let packResult =
         ExecProcess (fun info ->
             info.FileName <- parameters.ToolPath
-            info.Arguments <- sprintf "pack output %s" parameters.OutputPath ) parameters.TimeOut
+            info.Arguments <- sprintf "pack output %s" parameters.OutputPath) parameters.TimeOut
 
-    if packResult <> 0 then failwith "Error during packing."
+    if packResult <> 0 then failwithf "Error during packing %s." rootDir
 
-    traceEndTask "PaketPack" ""
+    traceEndTask "PaketPack" rootDir
 
 
 /// Paket parameter type
@@ -244,8 +245,9 @@ let PaketPushDefaults() : PaketPushParams =
 /// ## Parameters
 /// 
 ///  - `setParams` - Function used to manipulate the default parameters.
-let PaketPush setParams packages = 
-    let packges = Seq.toList packages
+///  - `packages` - The .nupkg files.
+let PaketPush setParams packages =
+    let packages = Seq.toList packages
     traceStartTask "PaketPush" (separated ", " packages)
     let parameters : PaketPushParams = PaketPushDefaults() |> setParams
 
@@ -295,7 +297,8 @@ files
 
     File.WriteAllText(tempDir @@ "paket.template", exeTemplate)
 
-    PaketPack (fun p -> { p with ToolPath = "bin/merged/paket.exe" })
+    
+    PaketPack (fun p -> { p with ToolPath = "bin/merged/paket.exe" }) "."
 
     !! (tempDir @@ "*.nupkg")
     |> PaketPush (fun p -> { p with ToolPath = "bin/merged/paket.exe" }) 
