@@ -373,7 +373,26 @@ Options:
   `packagedir`: a directory; every `.nupkg` file in this directory or it's children will be pushed.
 
   `apikey`: Optionally specify your API key on the command line. Otherwise uses the value of the `nugetkey` environment variable.
-  
-  `url`: Optionally specify root url of the nuget repository you are pushing too. Defaults to [https://nuget.org](https://nuget.org)."""}]
+
+  `url`: Optionally specify root url of the nuget repository you are pushing too. Defaults to [https://nuget.org](https://nuget.org)."""}
+     "config",
+        { Title = "paket config"
+          Text = """# paket.config file
+
+Allows to store global configuration values like NuGet credentials. It can be found in:
+
+	let AppDataFolder = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData)
+	let PaketConfigFolder = Path.Combine(AppDataFolder, "Paket")
+	let PaketConfigFile = Path.Combine(PaketConfigFolder, "paket.config")
+
+## Add credentials
+
+Credentials for a specific source can be added with the following command:
+
+	paket config add-credentials http://myserver.com/myfeed
+
+Paket will then ask for username and password.
+
+This credentials will be used if no username and password for the source are configured in the [`paket.dependencies` file](nuget-dependencies.html)."""}]
 
   |> dict

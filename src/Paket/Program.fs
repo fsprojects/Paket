@@ -94,11 +94,11 @@ try
         let results = commandArgs<ConfigArgs> args
 
         if results.IsUsageRequested then
-            trace <| results.Usage("paket config")
+            showHelp HelpTexts.commands.["config"]
         else
             let args = results.GetResults <@ ConfigArgs.AddCredentials @> 
             if args.Length = 0 then
-                trace <| results.Usage("paket config")
+                showHelp HelpTexts.commands.["config"]
             else
                 let source = args.Item 0
                 let username = 
