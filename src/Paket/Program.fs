@@ -239,10 +239,10 @@ try
             showHelp HelpTexts.commands.["push"]
         else
             let url = results.GetResult <@ PushArgs.Url @>
-            let dir = results.GetResult <@ PushArgs.PackageDir @>
+            let fileName = results.GetResult <@ PushArgs.FileName @>
             match results.TryGetResult <@ PushArgs.ApiKey @> with
-            | Some apikey -> Dependencies.Locate().PushAll(url, dir, apikey)
-            | None -> Dependencies.Locate().PushAll(url, dir)
+            | Some apikey -> Dependencies.Locate().Push(fileName, url, apiKey = apikey)
+            | None -> Dependencies.Locate().Push(fileName, url)
     | _ ->
         let allCommands = 
             Microsoft.FSharp.Reflection.FSharpType.GetUnionCases(typeof<Command>)
