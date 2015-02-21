@@ -106,6 +106,7 @@
     <Compile Include="UpdateProcess.fs" />
     <Compile Include="RemoveProcess.fs" />
     <Compile Include="AddProcess.fs" />
+    <Compile Include="PackageMetaData.fs" />
     <Compile Include="PackageProcess.fs" />
     <Compile Include="Environment.fs" />
     <Compile Include="Simplifier.fs" />

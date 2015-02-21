@@ -6,43 +6,43 @@ open Paket
 open FsUnit
 open NUnit.Framework
 
-let ass = Assembly.GetExecutingAssembly()
+let assembly = Assembly.GetExecutingAssembly()
 
 [<Test>]
-let ``Loading description from assembly works`` () =
-    let sut =
-        PackageProcess.getDescription (ass.GetCustomAttributes(true)) ProjectCoreInfo.Empty
+let ``Loading description from assembly works``() = 
+    let sut = PackageMetaData.getDescription (assembly.GetCustomAttributes(true)) ProjectCoreInfo.Empty
     sut.Description.Value |> shouldEqual "A description"
 
 [<Test>]
-let ``Loading version from assembly works`` () =
-    let sut =
-        PackageProcess.getVersion ass (ass.GetCustomAttributes(true)) ProjectCoreInfo.Empty
+let ``Loading version from assembly works``() = 
+    let sut = PackageMetaData.getVersion assembly (assembly.GetCustomAttributes(true)) ProjectCoreInfo.Empty
     sut.Version.Value |> shouldEqual (SemVer.Parse "1.0.0.0")
 
 [<Test>]
-let ``Loading authors from assembly works`` () =
-    let sut =
-        PackageProcess.getAuthors (ass.GetCustomAttributes(true)) ProjectCoreInfo.Empty
-    sut.Authors.Value |> shouldEqual ["Two";"Authors"]
+let ``Loading authors from assembly works``() = 
+    let sut = PackageMetaData.getAuthors (assembly.GetCustomAttributes(true)) ProjectCoreInfo.Empty
+    sut.Authors.Value |> shouldEqual [ "Two"; "Authors" ]
 
 [<Test>]
-let ``Loading id from assembly works`` () =
-    let sut =
-        PackageProcess.getId ass ProjectCoreInfo.Empty
+let ``Loading id from assembly works``() = 
+    let sut = PackageMetaData.getId assembly ProjectCoreInfo.Empty
     sut.Id.Value |> shouldEqual "Paket.Tests"
 
 [<Test>]
-let ``Loading assembly metadata works`` () =
+let ``Loading assembly metadata works``() = 
     let workingDir = Path.GetFullPath(".")
-    let projFile =
+    
+    let projFile = 
         Path.Combine(workingDir, "..", "..", "Paket.Tests.fsproj")
         |> normalizePath
         |> ProjectFile.Load
-    let config = if workingDir.Contains "Debug" then "Debug" else "Release"
-    let sut =
-         PackageProcess.loadAssemblyMetadata config projFile.Value
-    sut |> shouldEqual { Id = Some "Paket.Tests" 
+    
+    let config = 
+        if workingDir.Contains "Debug" then "Debug"
+        else "Release"
+    
+    let sut = PackageMetaData.loadAssemblyMetadata config projFile.Value
+    sut |> shouldEqual { Id = Some "Paket.Tests"
                          Version = SemVer.Parse "1.0.0.0" |> Some
-                         Authors = Some ["Two";"Authors"]
+                         Authors = Some [ "Two"; "Authors" ]
                          Description = Some "A description" }
