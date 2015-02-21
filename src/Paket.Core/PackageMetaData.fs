@@ -113,10 +113,8 @@ let addDependency (templateFile : TemplateFile) (dependency : string * VersionRe
     | IncompleteTemplate -> 
         failwith "You should only try and add dependencies to template files with complete metadata."
 
-let toFile config targetDir (p : ProjectFile) = 
-    let src = Path.Combine(p.FileName |> Path.GetDirectoryName, p.GetOutputDirectory(config), p.GetAssemblyName())
-    let dest = targetDir
-    src, dest
+let toFile config (p : ProjectFile) = 
+    Path.Combine(Path.GetDirectoryName p.FileName, p.GetOutputDirectory(config), p.GetAssemblyName())
 
 let addFile (t : TemplateFile) (f : string * string) = 
     match t with
@@ -155,9 +153,8 @@ let findDependencies (dependencies : DependenciesFile) config (template : Templa
     
     // Add the assembly from this project
     let withOutput = 
-        project
-        |> toFile config targetDir
-        |> addFile template
+        let file = toFile config project
+        addFile template (file,targetDir)
     
     // If project refs will also be packaged, add dependency
     let withDeps = 
@@ -171,8 +168,8 @@ let findDependencies (dependencies : DependenciesFile) config (template : Templa
     // If project refs will not be packaged, add the assembly to the package
     let withDepsAndIncluded = 
         files
-        |> List.map (toFile config targetDir)
-        |> List.fold addFile withDeps
+        |> List.map (toFile config)
+        |> List.fold (fun templatefile file -> addFile templatefile (file,targetDir)) withDeps
     
     // Add any paket references
     let referenceFile = 
