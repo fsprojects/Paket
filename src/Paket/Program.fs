@@ -123,13 +123,10 @@ try
             Dependencies.ConvertFromNuget(force, noInstall |> not, noAutoRestore |> not, credsMigrationMode))
     
     | Command(FindRefs, args) ->
-        let results = commandArgs<FindRefsArgs> args
-
-        if results.IsUsageRequested then
-            showHelp HelpTexts.commands.["find-refs"]
-        else
+         processCommand<FindRefsArgs> args "find-refs"
+            (fun results ->
             let packages = results.GetResults <@ FindRefsArgs.Packages @>
-            Dependencies.Locate().ShowReferencesFor(packages)
+            Dependencies.Locate().ShowReferencesFor(packages))
         
     | Command(Init, args) ->
         let results = commandArgs<InitArgs> args

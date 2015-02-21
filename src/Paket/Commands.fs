@@ -74,7 +74,9 @@ type FindRefsArgs =
     | [<Rest>][<CustomCommandLine("nuget")>][<Mandatory>] Packages of string
 with 
     interface IArgParserTemplate with
-        member __.Usage = ""
+        member this.Usage = 
+            match this with
+            | Packages(_) -> "List of packages."
 
 type InitArgs =
     | [<Hidden>] NoArg

@@ -17,7 +17,7 @@ let formatCommandSyntax (parser : UnionArgParser<_>) title =
     let options =
         parser.Usage() 
         |> replace @"\s\t--help.*" ""
-        |> replace @"\t([-\w \[\]|\/\?<>]+):" (System.Environment.NewLine + @"  `$1`:")
+        |> replace @"\t([-\w \[\]|\/\?<>\.]+):" (System.Environment.NewLine + @"  `$1`:")
     sprintf """    [lang=batchfile]
     %s
 
@@ -230,11 +230,10 @@ This will add the package to the selected paket.references files and also to the
 
      "find-refs",
         { Title = "paket find-refs"
-          Syntax = formatCommandSyntax (UnionArgParser.Create<InstallArgs>())
+          Syntax = formatCommandSyntax (UnionArgParser.Create<FindRefsArgs>())
           Text = """Finds all project files that have the given NuGet packages installed.
 
-    [lang=batchfile]
-    $ paket find-refs nuget PACKAGENAME1 PACKAGENAME1 ...
+<<syntax goes here>>
 
 ## Sample
 
