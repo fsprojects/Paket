@@ -46,11 +46,18 @@ let internal getVersion (assembly : Assembly) attributes (md : ProjectCoreInfo) 
                                   | _ -> None)
     { md with Version = version }
 
-let internal getAuthors attributes (md : ProjectCoreInfo) =
-    let authors =
+let internal getAuthors attributes (md : ProjectCoreInfo) = 
+    let authors = 
         attributes
-        |> Seq.tryPick (function Company a -> Some a | _ -> None)
-    { md with Authors = authors |> Option.map (fun a -> a.Split(',') |> Array.map (fun s -> s.Trim()) |> List.ofArray) }
+        |> Seq.tryPick (function 
+               | Company a -> Some a
+               | _ -> None)
+        |> Option.map (fun a -> 
+               a.Split(',')
+               |> Array.map (fun s -> s.Trim())
+               |> List.ofArray) 
+
+    { md with Authors = authors }
 
 let internal getDescription attributes (md : ProjectCoreInfo) =
     let desc =
