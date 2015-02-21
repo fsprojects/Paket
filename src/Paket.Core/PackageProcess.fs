@@ -59,20 +59,21 @@ let internal getAuthors attributes (md : ProjectCoreInfo) =
 
     { md with Authors = authors }
 
-let internal getDescription attributes (md : ProjectCoreInfo) =
-    let desc =
-        attributes
-        |> Seq.tryPick (function Description d -> Some d | _ -> None)
-    { md with Description = desc }
+let internal getDescription attributes (md : ProjectCoreInfo) = 
+    { md with Description = 
+                  attributes |> Seq.tryPick (function 
+                                    | Description d -> Some d
+                                    | _ -> None) }
 
-let internal loadAssemblyMetadata buildConfig (projectFile : ProjectFile) =
-    let output =
-        Path.Combine(
-            projectFile.FileName |> Path.GetDirectoryName,
-            projectFile.GetOutputDirectory buildConfig,
-            projectFile.GetAssemblyName())
+let internal loadAssemblyMetadata buildConfig (projectFile : ProjectFile) = 
+    let bytes = 
+        Path.Combine
+            (Path.GetDirectoryName projectFile.FileName, 
+             projectFile.GetOutputDirectory buildConfig, 
+             projectFile.GetAssemblyName())
         |> normalizePath
-    let bytes = File.ReadAllBytes output
+        |> File.ReadAllBytes
+
     let assembly = Assembly.Load bytes
     let attribs = assembly.GetCustomAttributes(true)
 
@@ -82,18 +83,14 @@ let internal loadAssemblyMetadata buildConfig (projectFile : ProjectFile) =
     |> getAuthors attribs
     |> getDescription attribs
 
-let internal (|Valid|Invalid|) md =
+let internal (|Valid|Invalid|) md = 
     match md with
-    | { ProjectCoreInfo.Id = None }
-    | { Version = None }
-    | { Authors = None }
-    | { Description = None } ->
-        Invalid
-    | { Id = Some id'
-        Version = Some v
-        Authors = Some a
-        Description = Some d } ->
-            Valid { CompleteCoreInfo.Id = id'; Version = v; Authors = a; Description = d }
+    | { ProjectCoreInfo.Id = Some id'; Version = Some v; Authors = Some a; Description = Some d } -> 
+        Valid { CompleteCoreInfo.Id = id'
+                Version = v
+                Authors = a
+                Description = d }
+    | _ -> Invalid
 
 let internal mergeMetadata template md' =
     match template with
