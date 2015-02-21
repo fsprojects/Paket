@@ -60,6 +60,16 @@ let commandArgs<'T when 'T :> IArgParserTemplate> args =
         .Parse(inputs = args, raiseOnUsage = false, ignoreMissing = true, 
                errorHandler = ProcessExiter())
 
+let processCommand<'T when 'T :> IArgParserTemplate> args commandName commandF =
+    let parser = UnionArgParser.Create<'T>()
+    let results = 
+        parser.Parse(inputs = args, raiseOnUsage = false, ignoreMissing = true, 
+                        errorHandler = ProcessExiter())
+            
+    if results.IsUsageRequested then
+        parser.Usage(HelpTexts.formatSyntax parser ("paket " + commandName)) |> trace
+    else
+        commandF results
 
 let showHelp (helpTopic:HelpTexts.CommandHelpTopic) = 
                         tracefn "%s" helpTopic.Title
@@ -149,18 +159,12 @@ try
             | _ -> showHelp HelpTexts.commands.["auto-restore"]
 
     | Command(Install, args) ->
-        let parser = UnionArgParser.Create<InstallArgs>()
-        let results = 
-            parser.Parse(inputs = args, raiseOnUsage = false, ignoreMissing = true, 
-                         errorHandler = ProcessExiter())
-            
-        if results.IsUsageRequested then
-            parser.Usage(HelpTexts.formatSyntax parser "paket install") |> trace
-        else
-            let force = results.Contains <@ InstallArgs.Force @>
-            let hard = results.Contains <@ InstallArgs.Hard @>
-            let withBindingRedirects = results.Contains <@ InstallArgs.Redirects @>
-            Dependencies.Locate().Install(force,hard,withBindingRedirects)
+        processCommand<InstallArgs> args "install"
+            (fun results -> 
+                let force = results.Contains <@ InstallArgs.Force @>
+                let hard = results.Contains <@ InstallArgs.Hard @>
+                let withBindingRedirects = results.Contains <@ InstallArgs.Redirects @>
+                Dependencies.Locate().Install(force,hard,withBindingRedirects))
 
     | Command(Outdated, args) ->
         let results = commandArgs<OutdatedArgs> args
