@@ -5,10 +5,10 @@ open Paket
 open Paket.Rop
 open FsUnit
 open NUnit.Framework
-
+open TestHelpers
 
 [<Test>]
-let ``should serialize cor info`` () =
+let ``should serialize cor info``() = 
     let result = """<package xmlns="http://schemas.microsoft.com/packaging/2011/10/nuspec.xsd">
   <metadata>
     <id>Paket.Tests</id>
@@ -17,21 +17,20 @@ let ``should serialize cor info`` () =
     <description>A description</description>
   </metadata>
 </package>"""
-
-    let core =
-      { Id = "Paket.Tests"
-        Version = SemVer.Parse "1.0.0.0"
-        Authors = [ "Two"; "Authors" ]
-        Description = "A description" }
-
-    let doc = NupkgWriter.nuspecDoc(core,OptionalPackagingInfo.Epmty)
-
+    
+    let core = 
+        { Id = "Paket.Tests"
+          Version = SemVer.Parse "1.0.0.0"
+          Authors = [ "Two"; "Authors" ]
+          Description = "A description" }
+    
+    let doc = NupkgWriter.nuspecDoc (core, OptionalPackagingInfo.Epmty)
     doc.ToString()
+    |> normalizeLineEndings
     |> shouldEqual result
 
-
 [<Test>]
-let ``should serialize dependency info`` () =
+let ``should serialize dependencies``() = 
     let result = """<package xmlns="http://schemas.microsoft.com/packaging/2011/10/nuspec.xsd">
   <metadata>
     <id>Paket.Tests</id>
@@ -45,22 +44,49 @@ let ``should serialize dependency info`` () =
     </dependencies>
   </metadata>
 </package>"""
+    
+    let core = 
+        { Id = "Paket.Tests"
+          Version = SemVer.Parse "1.0.0.0"
+          Authors = [ "Two"; "Authors" ]
+          Description = "A description" }
+    
+    let optional = 
+        { OptionalPackagingInfo.Epmty with 
+            Tags = Some([ "f#"; "rules" ])
+            Dependencies = 
+                [ "Paket.Core", NugetVersionRangeParser.parse "[3.1]"
+                  "xUnit", NugetVersionRangeParser.parse "2.0" ] }
+    
+    let doc = NupkgWriter.nuspecDoc (core, optional)
+    doc.ToString() 
+    |> normalizeLineEndings
+    |> shouldEqual result
 
-    let core =
-      { Id = "Paket.Tests"
-        Version = SemVer.Parse "1.0.0.0"
-        Authors = [ "Two"; "Authors" ]
-        Description = "A description" }
-
-    let optional =
-     { OptionalPackagingInfo.Epmty
-        with         
-          Tags = Some ([ "f#"; "rules"])
-          Dependencies = 
-            ["Paket.Core",  NugetVersionRangeParser.parse "[3.1]"
-             "xUnit",  NugetVersionRangeParser.parse "2.0" ] }
-
-    let doc = NupkgWriter.nuspecDoc(core,optional)
-
+[<Test>]
+let ``should not serialize files``() = 
+    let result = """<package xmlns="http://schemas.microsoft.com/packaging/2011/10/nuspec.xsd">
+  <metadata>
+    <id>Paket.Core</id>
+    <version>4.2</version>
+    <authors>Miacheal, Steffen</authors>
+    <description>A description</description>
+  </metadata>
+</package>"""
+    
+    let core = 
+        { Id = "Paket.Core"
+          Version = SemVer.Parse "4.2"
+          Authors = [ "Miacheal"; "Steffen" ]
+          Description = "A description" }
+    
+    let optional = 
+        { OptionalPackagingInfo.Epmty with 
+            Files = 
+                [ "Paket.Core.del", "lib"
+                  "bin/xUnit.64.dll", "lib40" ] }
+                       
+    let doc = NupkgWriter.nuspecDoc (core, optional)
     doc.ToString()
+    |> normalizeLineEndings
     |> shouldEqual result
