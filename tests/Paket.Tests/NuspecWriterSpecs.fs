@@ -26,8 +26,7 @@ let ``should serialize cor info``() =
     
     let doc = NupkgWriter.nuspecDoc (core, OptionalPackagingInfo.Epmty)
     doc.ToString()
-    |> normalizeLineEndings
-    |> shouldEqual result
+    |> shouldEqual (normalizeLineEndings result)
 
 [<Test>]
 let ``should serialize dependencies``() = 
@@ -60,8 +59,7 @@ let ``should serialize dependencies``() =
     
     let doc = NupkgWriter.nuspecDoc (core, optional)
     doc.ToString() 
-    |> normalizeLineEndings
-    |> shouldEqual result
+    |> shouldEqual (normalizeLineEndings result)
 
 [<Test>]
 let ``should not serialize files``() = 
@@ -90,5 +88,4 @@ let ``should not serialize files``() =
                        
     let doc = NupkgWriter.nuspecDoc (core, optional)
     doc.ToString()
-    |> normalizeLineEndings
-    |> shouldEqual result
+    |> shouldEqual (normalizeLineEndings result)
