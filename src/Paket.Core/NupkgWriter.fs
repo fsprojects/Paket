@@ -1,4 +1,4 @@
-﻿module private Paket.NupkgWriter
+﻿module internal Paket.NupkgWriter
 
 open System.IO
 open System.Xml.Linq
@@ -43,7 +43,8 @@ let contentTypeDoc fileList =
     
     XDocument(declaration, box root)
 
-let nuspecDoc (core : CompleteCoreInfo) optional = 
+let nuspecDoc (info:CompleteInfo) = 
+    let core,optional = info
     let declaration = XDeclaration("1.0", "UTF-8", "yes")
     let ns = XNamespace.Get "http://schemas.microsoft.com/packaging/2011/10/nuspec.xsd"
     let root = XElement(ns + "package")
@@ -90,6 +91,7 @@ let nuspecDoc (core : CompleteCoreInfo) optional =
         dep
     
     let buildDependenciesNode dependencyList = 
+        if dependencyList = [] then () else
         let d = XElement(ns + "dependencies")
         dependencyList |> List.iter (buildDependencyNode >> d.Add)
         metadataNode.Add d
@@ -164,7 +166,7 @@ let xDocWriter (xDoc : XDocument) (stream : System.IO.Stream) =
     xmlWriter.Flush()
 
 let writeNupkg  (core : CompleteCoreInfo) optional = 
-    [ core.NuspecFileName, nuspecDoc core optional |> xDocWriter
+    [ core.NuspecFileName, nuspecDoc(core,optional) |> xDocWriter
       corePropsPath, corePropsDoc core |> xDocWriter
       relsPath, relsDoc core |> xDocWriter ]
 

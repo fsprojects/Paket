@@ -36,9 +36,26 @@ type OptionalPackagingInfo =
       DevelopmentDependency : bool option
       Dependencies : (string * VersionRequirement) list
       Files : (string * string) list }
+    static member Epmty : OptionalPackagingInfo = 
+        { Title = None
+          Owners = None
+          ReleaseNotes = None
+          Summary = None
+          Language = None
+          ProjectUrl = None
+          LicenseUrl = None
+          IconUrl = None
+          Copyright = None
+          RequireLicenseAcceptance = None
+          Tags = None
+          DevelopmentDependency = None
+          Dependencies = []
+          Files = [] }
+
+type CompleteInfo = CompleteCoreInfo * OptionalPackagingInfo
 
 type TemplateFileContents = 
-    | CompleteInfo of CompleteCoreInfo * OptionalPackagingInfo
+    | CompleteInfo of CompleteInfo
     | ProjectInfo of ProjectCoreInfo * OptionalPackagingInfo
 
 type TemplateFile = 
