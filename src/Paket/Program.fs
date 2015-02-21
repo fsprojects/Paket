@@ -145,15 +145,14 @@ try
             Dependencies.Init()
 
     | Command(AutoRestore, args) ->
-        let results = commandArgs<AutoRestoreArgs> args
-        
-        if results.IsUsageRequested then
-            showHelp HelpTexts.commands.["auto-restore"]
-        else
+        processCommand<AutoRestoreArgs> args "add"
+            (fun results -> 
             match results.GetAllResults() with
             | [On] -> Dependencies.Locate().TurnOnAutoRestore()
             | [Off] -> Dependencies.Locate().TurnOffAutoRestore()
-            | _ -> showHelp HelpTexts.commands.["auto-restore"]
+            | _ ->
+                let parser = UnionArgParser.Create<AutoRestoreArgs>()
+                parser.Usage(HelpTexts.formatSyntax parser "paket auto-restore") |> trace)
 
     | Command(Install, args) ->
         processCommand<InstallArgs> args "install"

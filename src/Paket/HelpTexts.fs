@@ -104,11 +104,10 @@ Consider using [`paket simplify`](paket-simplify.html) to remove unnecessary tra
 
      "auto-restore",
         { Title = "paket auto-restore"
-          Syntax = formatCommandSyntax (UnionArgParser.Create<InstallArgs>())
+          Syntax = formatCommandSyntax (UnionArgParser.Create<AutoRestoreArgs>())
           Text = """Enables or disables automatic Package Restore in Visual Studio during the build process. 
 
-    [lang=batchfile]
-    $ paket auto-restore [on|off]
+<<syntax goes here>>
 
 Auto-restore on:
 

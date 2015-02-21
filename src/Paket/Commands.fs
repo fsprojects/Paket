@@ -80,7 +80,10 @@ type AutoRestoreArgs =
     | [<First>][<CustomCommandLine("off")>] Off
 with 
     interface IArgParserTemplate with
-        member __.Usage = ""
+        member this.Usage = 
+            match this with
+            | On -> "Turns auto restore on"
+            | Off -> "Turns auto restore off"
 
 type InstallArgs =
     | [<AltCommandLine("-f")>] Force
