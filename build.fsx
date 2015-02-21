@@ -189,13 +189,14 @@ Target "NuGet" (fun _ ->
         { p with 
             ToolPath = "bin/merged/paket.exe" 
             Version = release.NugetVersion
-            ReleaseNotes = toLines release.Notes
-            }) "."
+            ReleaseNotes = toLines release.Notes })
 )
 
 Target "PublishNuGet" (fun _ ->
-    !! (tempDir @@ "*.nupkg")
-    |> Paket.Push (fun p -> { p with ToolPath = "bin/merged/paket.exe" }) 
+    Paket.Push (fun p -> 
+        { p with 
+            ToolPath = "bin/merged/paket.exe"
+            WorkingDir = tempDir }) 
 )
 
 // --------------------------------------------------------------------------------------
