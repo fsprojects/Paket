@@ -38,7 +38,15 @@ type AddArgs =
     | No_Install
 with 
     interface IArgParserTemplate with
-        member __.Usage = ""
+        member this.Usage = 
+            match this with
+            | Nuget(_) -> "Nuget package id."
+            | Version(_) -> "Allows to specify version of the package."
+            | Project(_) -> "Allows to add the package to a single project only."
+            | Force -> "Forces the download and reinstallation of all packages."
+            | Interactive -> "Asks the user for every project if he or she wants to add the package to the projects's paket.references file."
+            | Hard -> "Replaces package references within project files even if they are not yet adhering to to Paket's conventions (and hence considered manually managed)."
+            | No_Install -> "Skips paket install --hard process afterward generation of dependencies / references files."
 
 type ConfigArgs = 
     | [<CustomCommandLine("add-credentials")>] AddCredentials of string

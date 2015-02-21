@@ -17,7 +17,7 @@ let formatCommandSyntax (parser : UnionArgParser<_>) title =
     let options =
         parser.Usage() 
         |> replace @"\s\t--help.*" ""
-        |> replace @"\t([-\w \[\]|\/\?]+):" (System.Environment.NewLine + @"  `$1`:")
+        |> replace @"\t([-\w \[\]|\/\?<>]+):" (System.Environment.NewLine + @"  `$1`:")
     sprintf """    [lang=batchfile]
     %s
 
@@ -207,19 +207,10 @@ which will ask you to confirm before deleting a dependency from a file."""}
 
      "add",
         { Title = "paket add"
-          Syntax = formatCommandSyntax (UnionArgParser.Create<InstallArgs>())
+          Syntax = formatCommandSyntax (UnionArgParser.Create<AddArgs>())
           Text = """Adds a new package to your paket.dependencies file.
 
-    [lang=batchfile]
-    $ paket add nuget PACKAGENAME [version VERSION] [--interactive] [--force] [--hard]
-
-Options:
-
-  `--interactive`: Asks the user for every project if he or she wants to add the package to the projects's paket.references file.
-
-  `--force`: Forces the download and reinstallation of all packages.
-
-  `--hard`: Replaces package references within project files even if they are not yet adhering to to Paket's conventions (and hence considered manually managed). See [convert from NuGet](paket-convert-from-nuget.html).
+<<syntax goes here>>
 
 ## Adding to a single project
 

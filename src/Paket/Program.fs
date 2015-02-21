@@ -83,11 +83,8 @@ Option.iter setLogFile logFile
 try
     match args with
     | Command(Add, args) ->
-        let results = commandArgs<AddArgs> args
-
-        if results.IsUsageRequested then
-            showHelp HelpTexts.commands.["add"]
-        else
+        processCommand<AddArgs> args "add"
+            (fun results -> 
             let packageName = results.GetResult <@ AddArgs.Nuget @>
             let version = defaultArg (results.TryGetResult <@ AddArgs.Version @>) ""
             let force = results.Contains <@ AddArgs.Force @>
@@ -98,7 +95,7 @@ try
                 Dependencies.Locate().AddToProject(packageName, version, force, hard, projectName, noInstall |> not)
             | None ->
                 let interactive = results.Contains <@ AddArgs.Interactive @>
-                Dependencies.Locate().Add(packageName, version, force, hard, interactive, noInstall |> not)
+                Dependencies.Locate().Add(packageName, version, force, hard, interactive, noInstall |> not))
         
     | Command(Config, args) ->
         let results = commandArgs<ConfigArgs> args
