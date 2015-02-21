@@ -149,10 +149,13 @@ try
             | _ -> showHelp HelpTexts.commands.["auto-restore"]
 
     | Command(Install, args) ->
-        let results = commandArgs<InstallArgs> args
+        let parser = UnionArgParser.Create<InstallArgs>()
+        let results = 
+            parser.Parse(inputs = args, raiseOnUsage = false, ignoreMissing = true, 
+                         errorHandler = ProcessExiter())
             
         if results.IsUsageRequested then
-            showHelp HelpTexts.commands.["install"]
+            parser.Usage(HelpTexts.formatSyntax parser "paket install") |> trace
         else
             let force = results.Contains <@ InstallArgs.Force @>
             let hard = results.Contains <@ InstallArgs.Hard @>
