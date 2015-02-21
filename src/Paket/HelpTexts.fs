@@ -291,17 +291,10 @@ Options:
   
      "outdated",
         { Title = "paket outdated"
-          Syntax = formatCommandSyntax (UnionArgParser.Create<InstallArgs>())
+          Syntax = formatCommandSyntax (UnionArgParser.Create<OutdatedArgs>())
           Text = """Lists all dependencies that have newer versions available.
 
-    [lang=batchfile]
-    $ paket outdated [--pre] [--ignore-constraints]
-
-Options:
-
-  `--pre`: Includes prereleases.
-
-  `--ignore-constraints`: Ignores the version requirement as in the paket.dependencies file.
+<<syntax goes here>>
 
 ## Sample
 

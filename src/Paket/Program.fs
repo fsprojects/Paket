@@ -152,14 +152,11 @@ try
                 Dependencies.Locate().Install(force,hard,withBindingRedirects))
 
     | Command(Outdated, args) ->
-        let results = commandArgs<OutdatedArgs> args
-
-        if results.IsUsageRequested then
-            showHelp HelpTexts.commands.["outdated"]
-        else
+        processCommand<OutdatedArgs> args "outdated"
+            (fun results -> 
             let strict = results.Contains <@ OutdatedArgs.Ignore_Constraints @> |> not
             let includePrereleases = results.Contains <@ OutdatedArgs.Include_Prereleases @>
-            Dependencies.Locate().ShowOutdated(strict,includePrereleases)
+            Dependencies.Locate().ShowOutdated(strict,includePrereleases))
 
     | Command(Remove, args) ->
         let results = commandArgs<RemoveArgs> args
