@@ -37,7 +37,7 @@ let Pack(dependencies : DependenciesFile, packageOutputPath, buildConfig, versio
             let merged = 
                 projectFile
                 |> loadAssemblyMetadata buildConfig
-                |> mergeMetadata templateFile
+                |> merge templateFile
 
             let id = 
                 match merged.Contents with 

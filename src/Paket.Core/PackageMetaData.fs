@@ -89,7 +89,7 @@ let (|Valid|Invalid|) md =
                 Description = d }
     | _ -> Invalid
 
-let mergeMetadata templateFile metaData = 
+let merge templateFile metaData = 
     match templateFile with
     | { Contents = ProjectInfo(md, opt) } -> 
         let merged = 
