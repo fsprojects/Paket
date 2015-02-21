@@ -54,12 +54,6 @@ let filterGlobalArgs args =
     
     verbose, logFile, rest
 
-    
-let commandArgs<'T when 'T :> IArgParserTemplate> args = 
-    UnionArgParser.Create<'T>()
-        .Parse(inputs = args, raiseOnUsage = false, ignoreMissing = true, 
-               errorHandler = ProcessExiter())
-
 let processCommand<'T when 'T :> IArgParserTemplate> args commandName commandF =
     let parser = UnionArgParser.Create<'T>()
     let results = 
@@ -70,10 +64,6 @@ let processCommand<'T when 'T :> IArgParserTemplate> args commandName commandF =
         parser.Usage(HelpTexts.formatSyntax parser ("paket " + commandName)) |> trace
     else
         commandF results
-
-let showHelp (helpTopic:HelpTexts.CommandHelpTopic) = 
-                        tracefn "%s" helpTopic.Title
-                        tracefn "%s" helpTopic.Text
 
 let v, logFile, args = filterGlobalArgs (Environment.GetCommandLineArgs().[1..])
 
@@ -159,11 +149,8 @@ try
             Dependencies.Locate().ShowOutdated(strict,includePrereleases))
 
     | Command(Remove, args) ->
-        let results = commandArgs<RemoveArgs> args
-
-        if results.IsUsageRequested then
-            showHelp HelpTexts.commands.["remove"]
-        else 
+        processCommand<RemoveArgs> args "remove"
+            (fun results -> 
             let packageName = results.GetResult <@ RemoveArgs.Nuget @>
             let force = results.Contains <@ RemoveArgs.Force @>
             let hard = results.Contains <@ RemoveArgs.Hard @>
@@ -173,33 +160,24 @@ try
                 Dependencies.Locate().RemoveFromProject(packageName, force, hard, projectName, noInstall |> not)
             | None ->
                 let interactive = results.Contains <@ RemoveArgs.Interactive @>
-                Dependencies.Locate().Remove(packageName, force, hard, interactive, noInstall |> not)
+                Dependencies.Locate().Remove(packageName, force, hard, interactive, noInstall |> not))
 
     | Command(Restore, args) ->
-        let results = commandArgs<RestoreArgs> args
-
-        if results.IsUsageRequested then
-            showHelp HelpTexts.commands.["restore"]
-        else 
+        processCommand<RestoreArgs> args "restore"
+            (fun results -> 
             let force = results.Contains <@ RestoreArgs.Force @>
             let files = results.GetResults <@ RestoreArgs.References_Files @> 
-            Dependencies.Locate().Restore(force,files)
+            Dependencies.Locate().Restore(force,files))
 
     | Command(Simplify, args) ->
-        let results = commandArgs<SimplifyArgs> args
-
-        if results.IsUsageRequested then
-            showHelp HelpTexts.commands.["simplify"]
-        else 
+        processCommand<SimplifyArgs> args "simplify"
+            (fun results -> 
             let interactive = results.Contains <@ SimplifyArgs.Interactive @>
-            Dependencies.Simplify(interactive)
+            Dependencies.Simplify(interactive))
 
     | Command(Update, args) ->
-        let results = commandArgs<UpdateArgs> args
-
-        if results.IsUsageRequested then
-            showHelp HelpTexts.commands.["update"]
-        else 
+        processCommand<UpdateArgs> args "update"
+            (fun results -> 
             let hard = results.Contains <@ UpdateArgs.Hard @>
             let force = results.Contains <@ UpdateArgs.Force @>
             match results.TryGetResult <@ UpdateArgs.Nuget @> with
@@ -208,30 +186,24 @@ try
                 Dependencies.Locate().UpdatePackage(packageName, version, force, hard)
             | _ -> 
                 let withBindingRedirects = results.Contains <@ UpdateArgs.Redirects @>
-                Dependencies.Locate().Update(force,hard,withBindingRedirects)
+                Dependencies.Locate().Update(force,hard,withBindingRedirects))
     | Command(Pack, args) ->
-        let results = commandArgs<PackArgs> args
-        
-        if results.IsUsageRequested then
-            showHelp HelpTexts.commands.["pack"]
-        else
+        processCommand<PackArgs> args "pack"
+            (fun results -> 
             let outputPath = results.GetResult <@ PackArgs.Output @>            
             Dependencies.Locate().Pack(
                 outputPath, 
                 ?buildConfig = results.TryGetResult <@ PackArgs.BuildConfig @>,
                 ?version = results.TryGetResult <@ PackArgs.Version @>,
-                ?releaseNotes = results.TryGetResult <@ PackArgs.ReleaseNotes @>)
+                ?releaseNotes = results.TryGetResult <@ PackArgs.ReleaseNotes @>))
     | Command(Push, args) ->
-        let results = commandArgs<PushArgs> args
-        
-        if results.IsUsageRequested then
-            showHelp HelpTexts.commands.["push"]
-        else
+        processCommand<PushArgs> args "push"
+            (fun results -> 
             let fileName = results.GetResult <@ PushArgs.FileName @>
             Dependencies.Locate().Push(
                 fileName, 
                 ?url = results.TryGetResult <@ PushArgs.Url @>, 
-                ?apiKey = results.TryGetResult <@ PushArgs.ApiKey @>)
+                ?apiKey = results.TryGetResult <@ PushArgs.ApiKey @>))
     | _ ->
         let allCommands = 
             Microsoft.FSharp.Reflection.FSharpType.GetUnionCases(typeof<Command>)

@@ -111,32 +111,18 @@ Auto-restore off:
 
      "restore",
         { Title = "paket restore"
-          Syntax = formatCommandSyntax (UnionArgParser.Create<InstallArgs>())
+          Syntax = formatCommandSyntax (UnionArgParser.Create<RestoreArgs>())
           Text = """Ensures that all dependencies in your paket.dependencies file are present in the `packages` directory .
 
-    [lang=batchfile]
-    $ paket restore [--force] [--references-files REFERENCESFILE1 REFERENCESFILE2 ...]
-
-Options:
-
-  `--force`: Forces the download of all packages.
-
-  `--references-files`: Allows to restore all packages from the given paket.references files. If no paket.references file is given then all packages will be restored."""}
+<<syntax goes here>>"""}
 
      "simplify",
         { Title = "paket simplify"
-          Syntax = formatCommandSyntax (UnionArgParser.Create<InstallArgs>())
+          Syntax = formatCommandSyntax (UnionArgParser.Create<SimplifyArgs>())
           Text = """Simplifies your paket.dependencies file by removing transitive dependencies.
 Does also simplify paket.references files, unless [strict](dependencies-file.html#Strict-references) mode is used.
 
-    [lang=batchfile]
-    $ paket simplify [-v] [--interactive]
-
-Options:
-
-  `-v`: Verbose - output the difference in content before and after running simplify command.
-
-  `--interactive`: Asks to confirm to delete every transitive dependency from each of the files. See [Interactive Mode](paket-simplify.html#Interactive-mode).
+<<syntax goes here>>
 
 ## Sample
 
@@ -262,19 +248,10 @@ and paket gives the following output:
 
      "update",
         { Title = "paket update"
-          Syntax = formatCommandSyntax (UnionArgParser.Create<InstallArgs>())
+          Syntax = formatCommandSyntax (UnionArgParser.Create<UpdateArgs>())
           Text = """Recomputes the dependency resolution, updates the paket.lock file and propagates any resulting package changes into all project files referencing updated packages.
 
-    [lang=batchfile]
-    $ paket update [--force] [--hard] [--redirects]	
-
-Options:
-
-  `--force`: Forces the download and reinstallation of all packages.
-
-  `--hard`: Replaces package references within project files even if they are not yet adhering to to Paket's conventions (and hence considered manually managed). See [convert from NuGet](paket-convert-from-nuget.html).
-
-  `--redirects`: Creates binding redirects for the NuGet packages.
+<<syntax goes here>>
 
 ## Updating a single package
 
@@ -320,19 +297,10 @@ Now we run `paket outdated`:
 
      "remove",
         { Title = "paket remove"
-          Syntax = formatCommandSyntax (UnionArgParser.Create<InstallArgs>())
+          Syntax = formatCommandSyntax (UnionArgParser.Create<RemoveArgs>())
           Text = """Removes a package from your paket.dependencies file and all paket.references files.
 
-    [lang=batchfile]
-    $ paket remove nuget PACKAGENAME [--interactive] [--force] [--hard]
-
-Options:
-
-  `--interactive`: Asks the user for every project if he or she wants to remove the package from the projects's paket.references file. By default every installation of the package is removed.
-
-  `--force`: Forces the download and reinstallation of all packages.
-
-  `--hard`: Replaces package references within project files even if they are not yet adhering to to Paket's conventions (and hence considered manually managed). See [convert from NuGet](paket-convert-from-nuget.html).
+<<syntax goes here>>
 
 ## Removing from a single project
 
@@ -351,32 +319,16 @@ See also [paket add](paket-add.html)."""}
 <<syntax goes here>>"""}
      "pack",
         { Title = "paket pack"
-          Syntax = formatCommandSyntax (UnionArgParser.Create<InstallArgs>())
+          Syntax = formatCommandSyntax (UnionArgParser.Create<PackArgs>())
           Text = """Packs all paket.template files within this repository
 
-    [lang=batchfile]
-    $ paket pack output outputDirectory [buildconfig Debug]
-
-Options:
-
-  `output`: Output directory to put nupkgs
-
-  `buildconfig`: Optionally specify build configuration that should be packaged (defaults to Release)."""}
+<<syntax goes here>>"""}
      "push",
         { Title = "paket push"
-          Syntax = formatCommandSyntax (UnionArgParser.Create<InstallArgs>())
+          Syntax = formatCommandSyntax (UnionArgParser.Create<PushArgs>())
           Text = """Pushes all `.nupkg` files from the given directory.
 
-    [lang=batchfile]
-    $ paket push packagedir path/to/packages [apikey YourApiKey] [url NuGetFeed]
-
-Options:
-
-  `packagedir`: a directory; every `.nupkg` file in this directory or it's children will be pushed.
-
-  `apikey`: Optionally specify your API key on the command line. Otherwise uses the value of the `nugetkey` environment variable.
-
-  `url`: Optionally specify root url of the nuget repository you are pushing too. Defaults to [https://nuget.org](https://nuget.org)."""}
+<<syntax goes here>>"""}
      "config",
         { Title = "paket config"
           Syntax = formatCommandSyntax (UnionArgParser.Create<ConfigArgs>())

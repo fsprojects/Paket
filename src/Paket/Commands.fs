@@ -116,6 +116,21 @@ with
             | Ignore_Constraints -> "Ignores the version requirement as in the paket.dependencies file."
             | Include_Prereleases -> "Includes prereleases."
 
+(*
+
+    [lang=batchfile]
+    $ paket remove nuget PACKAGENAME [--interactive] [--force] [--hard]
+
+Options:
+
+  `--interactive`: Asks the user for every project if he or she wants to remove the package from the projects's paket.references file. By default every installation of the package is removed.
+
+  `--force`: Forces the download and reinstallation of all packages.
+
+  `--hard`: Replaces package references within project files even if they are not yet adhering to to Paket's conventions (and hence considered manually managed). See [convert from NuGet](paket-convert-from-nuget.html).
+
+*)
+
 type RemoveArgs =
     | [<CustomCommandLine("nuget")>][<Mandatory>] Nuget of string
     | [<CustomCommandLine("project")>] Project of string
@@ -127,6 +142,17 @@ with
     interface IArgParserTemplate with
         member __.Usage = ""
 
+(*
+    [lang=batchfile]
+    $ paket restore [--force] [--references-files REFERENCESFILE1 REFERENCESFILE2 ...]
+
+Options:
+
+  `--force`: Forces the download of all packages.
+
+  `--references-files`: Allows to restore all packages from the given paket.references files. If no paket.references file is given then all packages will be restored.
+  *)
+
 type RestoreArgs =
     | [<AltCommandLine("-f")>] Force
     | [<Rest>] References_Files of string
@@ -134,11 +160,38 @@ with
     interface IArgParserTemplate with
         member __.Usage = ""
 
+(*
+
+    [lang=batchfile]
+    $ paket simplify [-v] [--interactive]
+
+Options:
+
+  `-v`: Verbose - output the difference in content before and after running simplify command.
+
+  `--interactive`: Asks to confirm to delete every transitive dependency from each of the files. See [Interactive Mode](paket-simplify.html#Interactive-mode).
+
+*)
+
 type SimplifyArgs =
     | [<AltCommandLine("-i")>] Interactive
 with 
     interface IArgParserTemplate with
         member __.Usage = ""
+
+(*
+
+    [lang=batchfile]
+    $ paket update [--force] [--hard] [--redirects]	
+
+Options:
+
+  `--force`: Forces the download and reinstallation of all packages.
+
+  `--hard`: Replaces package references within project files even if they are not yet adhering to to Paket's conventions (and hence considered manually managed). See [convert from NuGet](paket-convert-from-nuget.html).
+
+  `--redirects`: Creates binding redirects for the NuGet packages.
+*)
 
 type UpdateArgs =
     | [<CustomCommandLine("nuget")>] Nuget of string
@@ -150,6 +203,18 @@ with
     interface IArgParserTemplate with
         member __.Usage = ""
 
+(*
+
+    [lang=batchfile]
+    $ paket pack output outputDirectory [buildconfig Debug]
+
+Options:
+
+  `output`: Output directory to put nupkgs
+
+  `buildconfig`: Optionally specify build configuration that should be packaged (defaults to Release).
+*)
+
 type PackArgs =
     | [<CustomCommandLine("output")>][<Mandatory>] Output of string
     | [<CustomCommandLine("buildconfig")>] BuildConfig of string
@@ -158,6 +223,21 @@ type PackArgs =
 with
     interface IArgParserTemplate with
         member __.Usage = ""
+
+
+(*
+
+    [lang=batchfile]
+    $ paket push packagedir path/to/packages [apikey YourApiKey] [url NuGetFeed]
+
+Options:
+
+  `packagedir`: a directory; every `.nupkg` file in this directory or it's children will be pushed.
+
+  `apikey`: Optionally specify your API key on the command line. Otherwise uses the value of the `nugetkey` environment variable.
+
+  `url`: Optionally specify root url of the nuget repository you are pushing too. Defaults to [https://nuget.org](https://nuget.org).
+*)
 
 type PushArgs =
     | [<CustomCommandLine("url")>][<Mandatory>] Url of string
