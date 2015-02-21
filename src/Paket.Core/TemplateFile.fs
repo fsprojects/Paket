@@ -9,13 +9,16 @@ type CompleteCoreInfo =
         Description : string
     }
 
-type ProjectCoreInfo =
-    {
-        Id : string option
-        Version : SemVerInfo option
-        Authors : string list option
-        Description : string option
-    }
+type ProjectCoreInfo = 
+    { Id : string option
+      Version : SemVerInfo option
+      Authors : string list option
+      Description : string option }
+    static member Empty = 
+        { Id = None
+          Authors = None
+          Version = None
+          Description = None }
 
 type OptionalPackagingInfo =
     {

@@ -11,25 +11,25 @@ let ass = Assembly.GetExecutingAssembly()
 [<Test>]
 let ``Loading description from assembly works`` () =
     let sut =
-        PackageProcess.getDescription (ass.GetCustomAttributes(true)) PackageProcess.emptyMetadata
+        PackageProcess.getDescription (ass.GetCustomAttributes(true)) ProjectCoreInfo.Empty
     sut.Description.Value |> shouldEqual "A description"
 
 [<Test>]
 let ``Loading version from assembly works`` () =
     let sut =
-        PackageProcess.getVersion ass (ass.GetCustomAttributes(true)) PackageProcess.emptyMetadata
+        PackageProcess.getVersion ass (ass.GetCustomAttributes(true)) ProjectCoreInfo.Empty
     sut.Version.Value |> shouldEqual (SemVer.Parse "1.0.0.0")
 
 [<Test>]
 let ``Loading authors from assembly works`` () =
     let sut =
-        PackageProcess.getAuthors (ass.GetCustomAttributes(true)) PackageProcess.emptyMetadata
+        PackageProcess.getAuthors (ass.GetCustomAttributes(true)) ProjectCoreInfo.Empty
     sut.Authors.Value |> shouldEqual ["Two";"Authors"]
 
 [<Test>]
 let ``Loading id from assembly works`` () =
     let sut =
-        PackageProcess.getId ass PackageProcess.emptyMetadata
+        PackageProcess.getId ass ProjectCoreInfo.Empty
     sut.Id.Value |> shouldEqual "Paket.Tests"
 
 [<Test>]

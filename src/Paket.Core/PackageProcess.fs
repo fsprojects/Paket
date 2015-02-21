@@ -23,12 +23,6 @@ let (|Title|Description|Version|InformationalVersion|Company|Ignore|) (attribute
     | :? AssemblyCompanyAttribute as company -> Company company.Company
     | _ -> Ignore
 
-let internal emptyMetadata = 
-    { Id = None
-      Authors = None
-      Version = None
-      Description = None }
-
 let internal getId (assembly : Assembly) (md : ProjectCoreInfo) = { md with Id = Some(assembly.GetName().Name) }
 
 let internal getVersion (ass : Assembly) attributes (md : ProjectCoreInfo) =
@@ -69,7 +63,7 @@ let internal loadAssemblyMetadata buildConfig (projectFile : ProjectFile) =
     let assembly = Assembly.Load bytes
     let attribs = assembly.GetCustomAttributes(true)
 
-    emptyMetadata
+    ProjectCoreInfo.Empty
     |> getId assembly
     |> getVersion assembly attribs
     |> getAuthors attribs
