@@ -131,7 +131,7 @@ let findDependencies (dependencies : DependenciesFile) config (template : Templa
         | ProjectOutputType.Exe -> "tools/"
         | ProjectOutputType.Library -> sprintf "lib/%s/" (project.GetTargetFramework().ToString())
     
-    let projectDir = project.FileName |> Path.GetDirectoryName
+    let projectDir = Path.GetDirectoryName project.FileName
     
     let deps, files = 
         project.GetInterProjectDependencies() 
@@ -139,13 +139,12 @@ let findDependencies (dependencies : DependenciesFile) config (template : Templa
             match Map.tryFind p.Name map with
             | Some packagedRef -> packagedRef :: deps, files
             | None -> 
-                deps, 
-                (ProjectFile.Load(Path.Combine(projectDir, p.Path)) 
-                |> function 
-                | Some p -> p
-                | None -> 
-                    failwithf "Missing project reference proj file %s" p.Path)
-                :: files) ([], [])
+                let p = 
+                    match ProjectFile.Load(Path.Combine(projectDir, p.Path)) with
+                    | Some p -> p
+                    | _ -> failwithf "Missing project reference in proj file %s" p.Path
+                    
+                deps, p :: files) ([], [])
     
     // Add the assembly from this project
     let withOutput = addFile (toFile config project) targetDir template
