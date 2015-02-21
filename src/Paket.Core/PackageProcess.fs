@@ -26,25 +26,25 @@ let (|Title|Description|Version|InformationalVersion|Company|Ignore|) (attribute
 let internal getId (assembly : Assembly) (md : ProjectCoreInfo) = { md with Id = Some(assembly.GetName().Name) }
 
 let internal getVersion (assembly : Assembly) attributes (md : ProjectCoreInfo) = 
-    let informational = 
-        attributes |> Seq.tryPick (function 
-                          | InformationalVersion v -> Some v
-                          | _ -> None)
-    
-    let normal = 
-        let fromAss = 
-            match assembly.GetName().Version with
-            | null -> None
-            | v -> SemVer.Parse(v.ToString()) |> Some
-        
-        let fromAtt = 
+    let version = 
+        let informational = 
             attributes |> Seq.tryPick (function 
-                              | Version v -> Some v
+                              | InformationalVersion v -> Some v
                               | _ -> None)
-        
-        fromAss ++ fromAtt
-    
-    { md with Version = informational ++ normal }
+        match informational with
+        | Some v -> informational
+        | None -> 
+            let fromAssembly = 
+                match assembly.GetName().Version with
+                | null -> None
+                | v -> Some(SemVer.Parse(v.ToString()))
+            match fromAssembly with
+            | Some v -> fromAssembly
+            | None -> 
+                attributes |> Seq.tryPick (function 
+                                  | Version v -> Some v
+                                  | _ -> None)
+    { md with Version = version }
 
 let internal getAuthors attributes (md : ProjectCoreInfo) =
     let authors =
