@@ -35,7 +35,7 @@ type OptionalPackagingInfo =
         Tags : string list option
         DevelopmentDependency : bool option
         Dependencies : (string * VersionRequirement) list
-        Files : (string * string) list option
+        Files : (string * string) list
     }
 
 type TemplateFileContents =
@@ -193,6 +193,7 @@ module TemplateFile =
                             fromReg.Match(from).Groups.["from"].Value,
                             toReg.Match(to').Groups.["to"].Value))
         |> Option.map List.ofSeq
+        |> fun x -> defaultArg x []
 
     let private getOptionalInfo configLines =
         let title = !< "title" configLines
@@ -227,10 +228,6 @@ module TemplateFile =
         let developmentDependency =
             !< "developmentDependency" configLines
             |> Option.map Boolean.Parse
-        let dependencies =
-            getDependencies configLines
-        let files =
-            getFiles configLines
 
         {
             Title = title
@@ -245,8 +242,8 @@ module TemplateFile =
             RequireLicenseAcceptance = requireLicenseAcceptance
             Tags = tags
             DevelopmentDependency = developmentDependency
-            Dependencies = dependencies
-            Files = files
+            Dependencies = getDependencies configLines
+            Files = getFiles configLines
         }
         
     let Parse (contentStream : Stream) =

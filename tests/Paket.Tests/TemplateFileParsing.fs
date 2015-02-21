@@ -166,12 +166,10 @@ let ``Detect files correctly`` fileContent =
            | CompleteInfo (_, opt)
            | ProjectInfo (_, opt) -> opt
     match sut.Files with
-    | Some [from,to'] ->
+    | [from,to'] ->
         from |> shouldEqual "someDir"
         to' |> shouldEqual "lib"
-    | Some _
-    | None ->
-        Assert.Fail()
+    | _ ->  Assert.Fail()
 
 [<Literal>]
 let ProjectType1 = """type project

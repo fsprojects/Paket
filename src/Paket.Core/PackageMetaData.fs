@@ -116,15 +116,11 @@ let addDependency (templateFile : TemplateFile) (dependency : string * VersionRe
 let toFile config (p : ProjectFile) = 
     Path.Combine(Path.GetDirectoryName p.FileName, p.GetOutputDirectory(config), p.GetAssemblyName())
 
-let addFile (t : TemplateFile) (f : string * string) = 
-    match t with
+let addFile (source : string) (dest : string) (templateFile : TemplateFile) = 
+    match templateFile with
     | CompleteTemplate(core, opt) -> 
-        let files = 
-            match opt.Files with
-            | Some fs -> Some(f :: fs)
-            | None -> Some [ f ]
-        { FileName = t.FileName
-          Contents = CompleteInfo(core, { opt with Files = files }) }
+        { FileName = templateFile.FileName
+          Contents = CompleteInfo(core, { opt with Files = (source,dest) :: opt.Files }) }
     | IncompleteTemplate -> 
         failwith "You should only try and add dependencies to template files with complete metadata."
 
@@ -152,9 +148,7 @@ let findDependencies (dependencies : DependenciesFile) config (template : Templa
                 :: files) ([], [])
     
     // Add the assembly from this project
-    let withOutput = 
-        let file = toFile config project
-        addFile template (file,targetDir)
+    let withOutput = addFile (toFile config project) targetDir template
     
     // If project refs will also be packaged, add dependency
     let withDeps = 
@@ -168,8 +162,7 @@ let findDependencies (dependencies : DependenciesFile) config (template : Templa
     // If project refs will not be packaged, add the assembly to the package
     let withDepsAndIncluded = 
         files
-        |> List.map (toFile config)
-        |> List.fold (fun templatefile file -> addFile templatefile (file,targetDir)) withDeps
+        |> List.fold (fun templatefile file -> addFile (toFile config file) targetDir templatefile) withDeps
     
     // Add any paket references
     let referenceFile = 
