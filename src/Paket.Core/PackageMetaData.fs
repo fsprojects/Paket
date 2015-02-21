@@ -89,35 +89,35 @@ let (|Valid|Invalid|) md =
                 Description = d }
     | _ -> Invalid
 
-let mergeMetadata template md' = 
-    match template with
+let mergeMetadata templateFile metaData = 
+    match templateFile with
     | { Contents = ProjectInfo(md, opt) } -> 
-        let completeCore = 
-            match { Id = md.Id ++ md'.Id
-                    Version = md.Version ++ md'.Version
-                    Authors = md.Authors ++ md'.Authors
-                    Description = md.Description ++ md'.Description } with
-            | Invalid -> 
-                failwithf 
-                    "Incomplete mandatory metadata in template file %s (even including assembly attributes)\nTemplate: %A\nAssembly: %A" 
-                    template.FileName md md'
-            | Valid c -> c
-        { template with Contents = CompleteInfo(completeCore, opt) }
-    | _ -> template
+        let merged = 
+            { Id = md.Id ++ metaData.Id
+              Version = md.Version ++ metaData.Version
+              Authors = md.Authors ++ metaData.Authors
+              Description = md.Description ++ metaData.Description }
+        match merged with
+        | Invalid -> 
+            failwithf 
+                "Incomplete mandatory metadata in template file %s (even including assembly attributes)\nTemplate: %A\nAssembly: %A" 
+                templateFile.FileName md metaData
+        | Valid completeCore -> { templateFile with Contents = CompleteInfo(completeCore, opt) }
+    | _ -> templateFile
 
 let toDependency (templateFile : TemplateFile) = 
     match templateFile with
     | CompleteTemplate(core, opt) -> core.Id, VersionRequirement(Minimum(core.Version), PreReleaseStatus.All)
     | IncompleteTemplate -> failwith "You cannot create a dependency on a template file with incomplete metadata."
 
-let addDep (t : TemplateFile) (d : string * VersionRequirement) = 
-    match t with
+let addDependency (templateFile : TemplateFile) (dependency : string * VersionRequirement) = 
+    match templateFile with
     | CompleteTemplate(core, opt) -> 
         let deps = 
             match opt.Dependencies with
-            | Some ds -> Some(d :: ds)
-            | None -> Some [ d ]
-        { FileName = t.FileName
+            | Some ds -> Some(dependency :: ds)
+            | None -> Some [ dependency ]
+        { FileName = templateFile.FileName
           Contents = CompleteInfo(core, { opt with Dependencies = deps }) }
     | IncompleteTemplate -> 
         failwith "You should only try and add dependencies to template files with complete metadata."
@@ -171,7 +171,7 @@ let findDependencies (dependencies : DependenciesFile) config (template : Templa
     let withDeps = 
         deps
         |> List.map (fst >> toDependency)
-        |> List.fold addDep withOutput
+        |> List.fold addDependency withOutput
     
     // If project refs will not be packaged, add the assembly to the package
     let withDepsAndIncluded = 
@@ -186,5 +186,5 @@ let findDependencies (dependencies : DependenciesFile) config (template : Templa
     | Some r -> 
         r.NugetPackages
         |> List.map (fun np -> np.Name.Id, dependencies.DirectDependencies.[np.Name])
-        |> List.fold addDep withDepsAndIncluded
+        |> List.fold addDependency withDepsAndIncluded
     | None -> withDepsAndIncluded
