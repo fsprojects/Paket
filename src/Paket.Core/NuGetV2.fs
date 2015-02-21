@@ -139,12 +139,12 @@ let parseODataDetails(nugetURL,packageName,version,raw) =
     doc.LoadXml raw
                 
     let entry = 
-        match orElse (doc |> getNode "entry") (doc |> getNode "feed" |> optGetNode "entry" ) with
+        match (doc |> getNode "entry") ++ (doc |> getNode "feed" |> optGetNode "entry" ) with
         | Some node -> node
         | _ -> failwithf "unable to find entry node for package %s %O" packageName version
 
     let officialName =
-        match (entry |> getNode "properties" |> optGetNode "Id") |> orElse (entry |> getNode "title") with
+        match (entry |> getNode "title") ++ (entry |> getNode "properties" |> optGetNode "Id") with
         | Some node -> node.InnerText
         | _ -> failwithf "Could not get official package name for package %s %O" packageName version
         

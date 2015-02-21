@@ -279,7 +279,8 @@ module String =
 
     let quoted(text:string) = (if text.Contains(" ") then "\"" + text + "\"" else text) 
 
-let inline orElse v =
+// MonadPlus - "or else"
+let inline (++) v =
     function
     | Some x -> Some x
     | None -> v

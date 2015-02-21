@@ -336,7 +336,7 @@ let replaceNugetWithPaket initAutoRestore installAfter result =
             traceWarnfn "Removed %s and added %s as dependency instead. Please check all paths." 
                 nugetExe.FullName "Nuget.CommandLine")
 
-    match result.NugetEnv.NugetTargets |> orElse result.NugetEnv.NugetExe with
+    match result.NugetEnv.NugetExe ++ result.NugetEnv.NugetTargets with
     | Some fi when fi.Directory.EnumerateFileSystemInfos() |> Seq.isEmpty ->
         fi.Directory.Delete()
     | _ -> ()

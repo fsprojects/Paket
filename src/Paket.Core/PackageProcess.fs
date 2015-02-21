@@ -13,43 +13,29 @@ let internal (|CompleteTemplate|IncompleteTemplate|) templateFile =
     | { Contents = (CompleteInfo(core, optional)) } -> CompleteTemplate(core, optional)
     | _ -> IncompleteTemplate
 
-let internal pack outputPath templateFile =
+let internal pack outputPath templateFile = 
     match templateFile with
-    | CompleteTemplate(core, optional) ->
+    | CompleteTemplate(core, optional) -> 
         NupkgWriter.Write core optional (Path.GetDirectoryName templateFile.FileName) outputPath
-    | IncompleteTemplate ->
-        failwithf "There was an attempt to pack incomplete template file %s" templateFile.FileName
+    | IncompleteTemplate -> failwithf "There was an attempt to pack incomplete template file %s" templateFile.FileName
 
-let (|Title|Description|Version|InformationalVersion|Company|Ignore|) (att : obj) =
-    match att with
-    | :? AssemblyTitleAttribute as title ->
-        Title title.Title
-    | :? AssemblyDescriptionAttribute as description ->
-        Description description.Description
-    | :? AssemblyVersionAttribute as version ->
-        Version (version.Version |> SemVer.Parse)
-    | :? AssemblyInformationalVersionAttribute as version ->
-        InformationalVersion (version.InformationalVersion |> SemVer.Parse)
-    | :? AssemblyCompanyAttribute as company ->
-        Company company.Company
-    | _ ->
-        Ignore
+let (|Title|Description|Version|InformationalVersion|Company|Ignore|) (attribute : obj) = 
+    match attribute with
+    | :? AssemblyTitleAttribute as title -> Title title.Title
+    | :? AssemblyDescriptionAttribute as description -> Description description.Description
+    | :? AssemblyVersionAttribute as version -> Version(SemVer.Parse version.Version)
+    | :? AssemblyInformationalVersionAttribute as version -> 
+        InformationalVersion(SemVer.Parse version.InformationalVersion)
+    | :? AssemblyCompanyAttribute as company -> Company company.Company
+    | _ -> Ignore
 
-let internal emptyMetadata =
-    {
-        Id = None
-        Authors = None
-        Version = None
-        Description = None
-    }
+let internal emptyMetadata = 
+    { Id = None
+      Authors = None
+      Version = None
+      Description = None }
 
-let internal getId (assembly : Assembly) (md : ProjectCoreInfo) =
-    { md with Id = Some <| assembly.GetName().Name }
-
-let internal (++) opt opt' =
-    match opt with
-    | Some v -> Some v
-    | None -> opt'
+let internal getId (assembly : Assembly) (md : ProjectCoreInfo) = { md with Id = Some(assembly.GetName().Name) }
 
 let internal getVersion (ass : Assembly) attributes (md : ProjectCoreInfo) =
     let informational =
