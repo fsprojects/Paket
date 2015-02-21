@@ -399,10 +399,8 @@ Options:
   `url`: Optionally specify root url of the nuget repository you are pushing too. Defaults to [https://nuget.org](https://nuget.org)."""}
      "config",
         { Title = "paket config"
-          Syntax = formatCommandSyntax (UnionArgParser.Create<InstallArgs>())
-          Text = """# paket.config file
-
-Allows to store global configuration values like NuGet credentials. It can be found in:
+          Syntax = formatCommandSyntax (UnionArgParser.Create<ConfigArgs>())
+          Text = """Allows to store global configuration values like NuGet credentials. It can be found in:
 
 	let AppDataFolder = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData)
 	let PaketConfigFolder = Path.Combine(AppDataFolder, "Paket")
@@ -412,7 +410,7 @@ Allows to store global configuration values like NuGet credentials. It can be fo
 
 Credentials for a specific source can be added with the following command:
 
-	paket config add-credentials http://myserver.com/myfeed
+<<syntax goes here>>
 
 Paket will then ask for username and password.
 

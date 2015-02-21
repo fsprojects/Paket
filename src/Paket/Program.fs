@@ -98,14 +98,12 @@ try
                 Dependencies.Locate().Add(packageName, version, force, hard, interactive, noInstall |> not))
         
     | Command(Config, args) ->
-        let results = commandArgs<ConfigArgs> args
-
-        if results.IsUsageRequested then
-            showHelp HelpTexts.commands.["config"]
-        else
+        processCommand<ConfigArgs> args "config"
+            (fun results ->
             let args = results.GetResults <@ ConfigArgs.AddCredentials @> 
             if args.Length = 0 then
-                showHelp HelpTexts.commands.["config"]
+                let parser = UnionArgParser.Create<ConfigArgs>()
+                parser.Usage(HelpTexts.formatSyntax parser "paket config") |> trace
             else
                 let source = args.Item 0
                 let username = 
@@ -113,7 +111,7 @@ try
                         args.Item 1
                     else
                         ""
-                Dependencies.Locate().AddCredentials(source, username)
+                Dependencies.Locate().AddCredentials(source, username))
 
     | Command(ConvertFromNuget, args) ->
         let results = commandArgs<ConvertFromNugetArgs> args

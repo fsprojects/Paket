@@ -52,7 +52,9 @@ type ConfigArgs =
     | [<CustomCommandLine("add-credentials")>] AddCredentials of string
 with 
     interface IArgParserTemplate with
-        member __.Usage = ""
+        member this.Usage = 
+            match this with
+            | AddCredentials(_) -> "Add credentials for the specified Nuget feed"
 
 type ConvertFromNugetArgs =
     | [<AltCommandLine("-f")>] Force
