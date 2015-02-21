@@ -13,12 +13,6 @@ let internal (|CompleteTemplate|IncompleteTemplate|) templateFile =
     | { Contents = (CompleteInfo(core, optional)) } -> CompleteTemplate(core, optional)
     | _ -> IncompleteTemplate
 
-let internal pack outputPath templateFile = 
-    match templateFile with
-    | CompleteTemplate(core, optional) -> 
-        NupkgWriter.Write core optional (Path.GetDirectoryName templateFile.FileName) outputPath
-    | IncompleteTemplate -> failwithf "There was an attempt to pack incomplete template file %s" templateFile.FileName
-
 let (|Title|Description|Version|InformationalVersion|Company|Ignore|) (attribute : obj) = 
     match attribute with
     | :? AssemblyTitleAttribute as title -> Title title.Title
@@ -265,9 +259,13 @@ let Pack(dependencies : DependenciesFile, packageOutputPath, buildConfig, versio
     // Package all templates
     processedTemplates
     |> List.map (fun templateFile -> 
-           async {
-               pack packageOutputPath templateFile
-               tracefn "Packed: %s" templateFile.FileName
+           async { 
+               match templateFile with
+               | CompleteTemplate(core, optional) -> 
+                   NupkgWriter.Write core optional (Path.GetDirectoryName templateFile.FileName) packageOutputPath
+                   verbosefn "Packed: %s" templateFile.FileName
+               | IncompleteTemplate -> 
+                   failwithf "There was an attempt to pack incomplete template file %s." templateFile.FileName
            })
     |> Async.Parallel
     |> Async.RunSynchronously
