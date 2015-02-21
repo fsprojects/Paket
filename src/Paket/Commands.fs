@@ -116,21 +116,6 @@ with
             | Ignore_Constraints -> "Ignores the version requirement as in the paket.dependencies file."
             | Include_Prereleases -> "Includes prereleases."
 
-(*
-
-    [lang=batchfile]
-    $ paket remove nuget PACKAGENAME [--interactive] [--force] [--hard]
-
-Options:
-
-  `--interactive`: Asks the user for every project if he or she wants to remove the package from the projects's paket.references file. By default every installation of the package is removed.
-
-  `--force`: Forces the download and reinstallation of all packages.
-
-  `--hard`: Replaces package references within project files even if they are not yet adhering to to Paket's conventions (and hence considered manually managed). See [convert from NuGet](paket-convert-from-nuget.html).
-
-*)
-
 type RemoveArgs =
     | [<CustomCommandLine("nuget")>][<Mandatory>] Nuget of string
     | [<CustomCommandLine("project")>] Project of string
@@ -140,25 +125,24 @@ type RemoveArgs =
     | No_Install
 with 
     interface IArgParserTemplate with
-        member __.Usage = ""
-
-(*
-    [lang=batchfile]
-    $ paket restore [--force] [--references-files REFERENCESFILE1 REFERENCESFILE2 ...]
-
-Options:
-
-  `--force`: Forces the download of all packages.
-
-  `--references-files`: Allows to restore all packages from the given paket.references files. If no paket.references file is given then all packages will be restored.
-  *)
+        member this.Usage =
+            match this with
+            | Nuget(_) -> "Nuget package id."
+            | Project(_) -> "Allows to add the package to a single project only."
+            | Force -> "Forces the download and reinstallation of all packages."
+            | Interactive -> "sks the user for every project if he or she wants to remove the package from the projects's paket.references file. By default every installation of the package is removed."
+            | Hard -> "Replaces package references within project files even if they are not yet adhering to to Paket's conventions (and hence considered manually managed)."
+            | No_Install -> "Skips paket install --hard process afterward generation of dependencies / references files."
 
 type RestoreArgs =
     | [<AltCommandLine("-f")>] Force
     | [<Rest>] References_Files of string
 with 
     interface IArgParserTemplate with
-        member __.Usage = ""
+        member this.Usage =
+            match this with
+            | Force -> "Forces the download of all packages."
+            | References_Files(_) -> "Allows to restore all packages from the given paket.references files. If no paket.references file is given then all packages will be restored."
 
 (*
 
