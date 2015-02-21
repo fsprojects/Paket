@@ -66,25 +66,8 @@ let nuspecDoc (info:CompleteInfo) =
     let buildDependencyNode (Id, (VersionRequirement(range, _))) = 
         let dep = XElement(ns + "dependency")
         dep.SetAttributeValue(XName.Get "id", Id)
-        let versionStr = 
-            match range with
-            | Minimum v -> v.ToString()
-            | GreaterThan v -> sprintf "(%A,)" v
-            | Maximum v -> sprintf "(,%A]" v
-            | LessThan v -> sprintf "(,%A)" v
-            | OverrideAll v | Specific v -> sprintf "[%A]" v
-            | Range(fromB, from, to', toB) -> 
-                let opening = 
-                    match fromB with
-                    | VersionRangeBound.Excluding -> "("
-                    | VersionRangeBound.Including -> "["
-                
-                let closing = 
-                    match toB with
-                    | VersionRangeBound.Excluding -> ")"
-                    | VersionRangeBound.Including -> "]"
-                
-                sprintf "%s%A, %A%s" opening from to' closing
+        let versionStr = NugetVersionRangeParser.format range
+
         match versionStr with
         | "0" -> ()
         | _ -> dep.SetAttributeValue(XName.Get "version", versionStr)
