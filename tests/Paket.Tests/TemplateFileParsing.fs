@@ -143,8 +143,9 @@ let ``Detect dependencies correctly`` fileContent =
         range2.Range |> shouldEqual (Minimum (SemVer.Parse "0"))
     | _ -> Assert.Fail()
 
-[<Literal>]
-let Files1 = """type file
+[<Test>]
+let ``Detect single file correctly``() =
+    let text = """type file
 id My.Thing
 authors Bob McBob
 description
@@ -153,14 +154,10 @@ description
 version
     1.0
 files
-    from someDir
-    to lib
+    someDir ==> lib
 """
-
-[<TestCase(Files1)>]
-let ``Detect files correctly`` fileContent =
     let sut =
-        fileContent |> strToStream |> TemplateFile.Parse
+        text |> strToStream |> TemplateFile.Parse
         |> returnOrFail
         |> function
            | CompleteInfo (_, opt)
@@ -169,6 +166,34 @@ let ``Detect files correctly`` fileContent =
     | [from,to'] ->
         from |> shouldEqual "someDir"
         to' |> shouldEqual "lib"
+    | _ ->  Assert.Fail()
+
+[<Test>]
+let ``Detect multiple files correctly``() =
+    let text = """type file
+id My.Thing
+authors Bob McBob
+description
+    A longer description
+    on two lines.
+version
+    1.0
+files
+    someDir
+    anotherDir ==> someLib
+"""
+    let sut =
+        text |> strToStream |> TemplateFile.Parse
+        |> returnOrFail
+        |> function
+           | CompleteInfo (_, opt)
+           | ProjectInfo (_, opt) -> opt
+    match sut.Files with
+    | [from1,to1;from2,to2] ->
+        from1 |> shouldEqual "someDir"
+        to1 |> shouldEqual "lib"
+        from2 |> shouldEqual "anotherDir"
+        to2 |> shouldEqual "someLib"
     | _ ->  Assert.Fail()
 
 [<Literal>]

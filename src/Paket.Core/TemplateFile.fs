@@ -160,11 +160,15 @@ module TemplateFile =
     
     let private getFiles lines = 
         (!<) "files" lines
-        |> Option.map (fun f -> f.Split '\n' |> Seq.pairwise)
-        |> Option.map (Seq.filter (fun (one, two) -> one.StartsWith "from "))
+        |> Option.map (fun d -> d.Split '\n')
         |> Option.map 
                (Seq.map 
-                    (fun (from, to') -> fromReg.Match(from).Groups.["from"].Value, toReg.Match(to').Groups.["to"].Value))
+                    (fun (line:string) -> 
+                        let splitted = line.Split([|"==>"|],StringSplitOptions.None) |> Array.map (fun s -> s.Trim())
+                        if splitted.Length < 2 then
+                            splitted.[0],"lib"
+                        else
+                            splitted.[0],splitted.[1]))
         |> Option.map List.ofSeq
         |> fun x -> defaultArg x []
     

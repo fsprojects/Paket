@@ -12,11 +12,10 @@ An example `paket.template` file might look like the following:
 	  description
 		  description of this test package
 	  files
-		  from src/Test.Paket.Package/bin/Debug
-		  to lib
+		  src/Test.Paket.Package/bin/Debug ==> lib
 
 This template file will create a nupkg called `Test.Paket.Package.nupkg` with the
-contents of the `src/Test.Paket.Package/bin/Debug` directory in the lib directory
+contents of the `src/Test.Paket.Package/bin/Debug` directory in the `lib` directory
 of the package file.
 
 The `type` specifier must be the first line of the template file. It has two possible
@@ -92,14 +91,13 @@ to decide on the files and dependencies added.
 A files block looks like this:
 
     [lang=batchfile]
-	  files
-	    from relative/to/template/file
-	    to folder/in/nupkg
-	    from second/thing/to/pack
-	    to folder/in/nupkg
+    files
+	    relative/to/template/file ==> folder/in/nupkg
+	    second/thing/to/pack ==> folder/in/nupkg
 
-If the from line specifies the path to a file, that file will be copied into the folder in the to line. If it
-refers to a directory, the contents of the directory will be copied into the to folder.
+If the source part refers to a file then it is copied into the target directory. If it
+refers to a directory, the contents of the directory will be copied into the target folder.
+If you omit the target folder, then the source is copied into the `lib` fodler of the package.
 
 There is currently no support for wild cards, exclusion filters or renaming during copying.
 
