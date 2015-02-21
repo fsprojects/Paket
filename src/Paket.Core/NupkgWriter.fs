@@ -1,5 +1,6 @@
 ﻿module internal Paket.NupkgWriter
 
+open System
 open System.IO
 open System.Xml.Linq
 open Ionic.Zip
@@ -79,21 +80,21 @@ let nuspecDoc (info:CompleteInfo) =
         dependencyList |> List.iter (buildDependencyNode >> d.Add)
         metadataNode.Add d
     
-    (!!) "id" core.Id
-    !!"version" <| core.Version.ToString()
+    !! "id" core.Id
+    !! "version" <| core.Version.ToString()
     (!!?) "title" optional.Title
-    (!!) "authors" (core.Authors |> String.concat ", ")
-    (!!?) "owners" (optional.Owners |> Option.map (fun o -> o |> String.concat ", "))
+    !! "authors" (core.Authors |> String.concat ", ")
+    if optional.Owners <> [] then !! "owners" (String.Join(", ",optional.Owners))
     (!!?) "licenseUrl" optional.LicenseUrl
     (!!?) "projectUrl" optional.ProjectUrl
     (!!?) "iconUrl" optional.IconUrl
     (!!?) "requireLicenseAcceptance" (optional.RequireLicenseAcceptance |> Option.map (fun b -> b.ToString()))
-    (!!) "description" core.Description
+    !! "description" core.Description
     (!!?) "summary" optional.Summary
     (!!?) "releaseNotes" optional.ReleaseNotes
     (!!?) "copyright" optional.Copyright
     (!!?) "language" optional.Language
-    (!!?) "tags" (optional.Tags |> Option.map (fun t -> t |> String.concat " "))
+    if optional.Tags <> [] then !! "tags" (String.Join(" ",optional.Tags))
     (!!?) "developmentDependency" (optional.DevelopmentDependency |> Option.map (fun b -> b.ToString()))
     optional.Dependencies |> buildDependenciesNode
     XDocument(declaration, box root)

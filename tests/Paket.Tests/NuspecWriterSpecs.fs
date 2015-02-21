@@ -53,7 +53,7 @@ let ``should serialize dependencies``() =
     
     let optional = 
         { OptionalPackagingInfo.Epmty with 
-            Tags = Some([ "f#"; "rules" ])
+            Tags = [ "f#"; "rules" ]
             Dependencies = 
                 [ "Paket.Core", NugetVersionRangeParser.parse "[3.1]"
                   "xUnit", NugetVersionRangeParser.parse "2.0" ] }
@@ -69,7 +69,8 @@ let ``should not serialize files``() =
   <metadata>
     <id>Paket.Core</id>
     <version>4.2</version>
-    <authors>Miacheal, Steffen</authors>
+    <authors>Michael, Steffen</authors>
+    <owners>Michael, Steffen</owners>
     <description>A description</description>
   </metadata>
 </package>"""
@@ -77,11 +78,12 @@ let ``should not serialize files``() =
     let core = 
         { Id = "Paket.Core"
           Version = SemVer.Parse "4.2"
-          Authors = [ "Miacheal"; "Steffen" ]
+          Authors = [ "Michael"; "Steffen" ]
           Description = "A description" }
     
     let optional = 
         { OptionalPackagingInfo.Epmty with 
+            Owners = [ "Michael"; "Steffen" ]
             Files = 
                 [ "Paket.Core.del", "lib"
                   "bin/xUnit.64.dll", "lib40" ] }

@@ -23,7 +23,7 @@ type ProjectCoreInfo =
 
 type OptionalPackagingInfo = 
     { Title : string option
-      Owners : string list option
+      Owners : string list
       ReleaseNotes : string option
       Summary : string option
       Language : string option
@@ -32,13 +32,13 @@ type OptionalPackagingInfo =
       LicenseUrl : string option
       Copyright : string option
       RequireLicenseAcceptance : string option
-      Tags : string list option
+      Tags : string list
       DevelopmentDependency : bool option
       Dependencies : (string * VersionRequirement) list
       Files : (string * string) list }
     static member Epmty : OptionalPackagingInfo = 
         { Title = None
-          Owners = None
+          Owners = []
           ReleaseNotes = None
           Summary = None
           Language = None
@@ -47,7 +47,7 @@ type OptionalPackagingInfo =
           IconUrl = None
           Copyright = None
           RequireLicenseAcceptance = None
-          Tags = None
+          Tags = []
           DevelopmentDependency = None
           Dependencies = []
           Files = [] }
@@ -193,10 +193,12 @@ module TemplateFile =
         let title = (!<) "title" configLines
         
         let owners = 
-            (!<) "owners" configLines |> Option.map (fun o -> 
-                                             o.Split(',')
-                                             |> Array.map (fun o -> o.Trim())
-                                             |> Array.toList)
+            (!<) "owners" configLines 
+            |> Option.map (fun o -> 
+                o.Split(',')
+                |> Array.map (fun o -> o.Trim())
+                |> Array.toList)
+            |> fun x -> defaultArg x []
         
         let releaseNotes = (!<) "releaseNotes" configLines
         let summary = (!<) "summary" configLines
@@ -208,10 +210,12 @@ module TemplateFile =
         let requireLicenseAcceptance = (!<) "requireLicenseAcceptance" configLines
         
         let tags = 
-            (!<) "tags" configLines |> Option.map (fun t -> 
-                                           t.Split ' '
-                                           |> Array.map (fun t -> t.Trim())
-                                           |> Array.toList)
+            (!<) "tags" configLines 
+            |> Option.map (fun t -> 
+                t.Split ' '
+                |> Array.map (fun t -> t.Trim())
+                |> Array.toList)
+            |> fun x -> defaultArg x []
         
         let developmentDependency = (!<) "developmentDependency" configLines |> Option.map Boolean.Parse
         { Title = title
