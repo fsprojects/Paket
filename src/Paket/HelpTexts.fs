@@ -44,7 +44,7 @@ type CommandHelpTopic =
 
 let commands =
     ["convert-from-nuget", 
-        { Title = "Convert your solution from NuGet"
+        { Title = "paket convert-from-nuget"
           Syntax = formatCommandSyntax (UnionArgParser.Create<InstallArgs>())
           Text = """## Manual process
 
