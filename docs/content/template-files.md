@@ -7,12 +7,12 @@ An example `paket.template` file might look like the following:
     [lang=batchfile]
     type file
     id Test.Paket.Package
-	  version 1.0
-	  authors Michael Newton
-	  description
-		  description of this test package
-	  files
-		  src/Test.Paket.Package/bin/Debug ==> lib
+    version 1.0
+    authors Michael Newton
+    description
+		    description of this test package
+    files
+        src/Test.Paket.Package/bin/Debug ==> lib
 
 This template file will create a nupkg called `Test.Paket.Package.nupkg` with the
 contents of the `src/Test.Paket.Package/bin/Debug` directory in the `lib` directory
