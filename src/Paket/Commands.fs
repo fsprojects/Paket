@@ -80,7 +80,11 @@ type InstallArgs =
     | Redirects
 with 
     interface IArgParserTemplate with
-        member __.Usage = ""
+        member this.Usage =
+            match this with
+            | Force -> "Forces the download and reinstallation of all packages."
+            | Hard -> "Replaces package references within project files even if they are not yet adhering to Paket's conventions (and hence considered manually managed)."            
+            | Redirects -> "Creates binding redirects for the NuGet packages."
 
 type OutdatedArgs =
     | Ignore_Constraints
