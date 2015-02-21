@@ -63,7 +63,12 @@ type ConvertFromNugetArgs =
     | Creds_Migration of string
 with 
     interface IArgParserTemplate with
-        member __.Usage = ""
+        member this.Usage = 
+            match this with
+            | Force -> "Forces the conversion, even if a paket.dependencies file or paket.references files are present."
+            | No_Install -> "Skips paket install --hard process afterward generation of dependencies / references files."
+            | No_Auto_Restore -> "Skips paket auto-restore process afterward generation of dependencies / references files."
+            | Creds_Migration(_) -> "Specify mode for migrating NuGet source credentials. Possible values are [`encrypt`|`plaintext`|`selective`]. The default mode is `encrypt`."
 
 type FindRefsArgs =
     | [<Rest>][<CustomCommandLine("nuget")>][<Mandatory>] Packages of string

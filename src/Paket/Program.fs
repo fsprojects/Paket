@@ -114,16 +114,13 @@ try
                 Dependencies.Locate().AddCredentials(source, username))
 
     | Command(ConvertFromNuget, args) ->
-        let results = commandArgs<ConvertFromNugetArgs> args
-
-        if results.IsUsageRequested then
-            showHelp HelpTexts.commands.["convert-from-nuget"]
-        else
+        processCommand<ConvertFromNugetArgs> args "convert-from-nuget"
+            (fun results ->
             let force = results.Contains <@ ConvertFromNugetArgs.Force @>
             let noInstall = results.Contains <@ ConvertFromNugetArgs.No_Install @>
             let noAutoRestore = results.Contains <@ ConvertFromNugetArgs.No_Auto_Restore @>
             let credsMigrationMode = results.TryGetResult <@ ConvertFromNugetArgs.Creds_Migration @>
-            Dependencies.ConvertFromNuget(force, noInstall |> not, noAutoRestore |> not, credsMigrationMode)
+            Dependencies.ConvertFromNuget(force, noInstall |> not, noAutoRestore |> not, credsMigrationMode))
     
     | Command(FindRefs, args) ->
         let results = commandArgs<FindRefsArgs> args

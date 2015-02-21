@@ -45,7 +45,7 @@ type CommandHelpTopic =
 let commands =
     ["convert-from-nuget", 
         { Title = "paket convert-from-nuget"
-          Syntax = formatCommandSyntax (UnionArgParser.Create<InstallArgs>())
+          Syntax = formatCommandSyntax (UnionArgParser.Create<ConvertFromNugetArgs>())
           Text = """## Manual process
 
 If you are already using `NuGet.exe` for package restore then it should be easy to convert to Paket.
@@ -75,19 +75,8 @@ Paket can assist you with the conversion. The `paket convert-from-nuget` command
 
 <div id="syntax"></div>
 
-    [lang=batchfile]
-    $ paket convert-from-nuget [--force] [--no-install] [--no-auto-restore] [--creds-migration MODE]
-
-Options:
-
-  `--force`: Forces the conversion, even if a paket.dependencies file or paket.references files are present.
-
-  `--no-install`: Skips [`paket install --hard`](paket-install.html) process afterward generation of dependencies / references files.
-
-  `--no-auto-restore`: Skips [`paket auto-restore`](paket-auto-restore.html) process afterward generation of dependencies / references files.
-
-  `--creds-migration`: Specify mode for migrating NuGet source credentials. Possible values for `MODE` are [`encrypt`|`plaintext`|`selective`]. The default `MODE` is `encrypt`.
-
+<<syntax goes here>>
+    
 ## Migrating NuGet source credentials
 
 If you are using authorized NuGet feeds, convert-from-nuget command will automatically migrate the credentials for you.
