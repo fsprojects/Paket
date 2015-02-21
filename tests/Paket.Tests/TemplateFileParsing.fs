@@ -136,14 +136,12 @@ let ``Detect dependencies correctly`` fileContent =
            | CompleteInfo (_, opt)
            | ProjectInfo (_, opt) -> opt
     match sut.Dependencies with
-    | Some [name1,range1;name2,range2] ->
+    | [name1,range1;name2,range2] ->
         name1 |> shouldEqual "FSharp.Core"
         range1.Range |> shouldEqual (Specific (SemVer.Parse "4.3.1"))
         name2 |> shouldEqual "My.OtherThing"
         range2.Range |> shouldEqual (Minimum (SemVer.Parse "0"))
-    | Some _
-    | None ->
-        Assert.Fail()
+    | _ -> Assert.Fail()
 
 [<Literal>]
 let Files1 = """type file

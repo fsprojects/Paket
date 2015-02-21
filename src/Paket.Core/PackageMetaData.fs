@@ -105,20 +105,11 @@ let mergeMetadata templateFile metaData =
         | Valid completeCore -> { templateFile with Contents = CompleteInfo(completeCore, opt) }
     | _ -> templateFile
 
-let toDependency (templateFile : TemplateFile) = 
-    match templateFile with
-    | CompleteTemplate(core, opt) -> core.Id, VersionRequirement(Minimum(core.Version), PreReleaseStatus.All)
-    | IncompleteTemplate -> failwith "You cannot create a dependency on a template file with incomplete metadata."
-
 let addDependency (templateFile : TemplateFile) (dependency : string * VersionRequirement) = 
     match templateFile with
     | CompleteTemplate(core, opt) -> 
-        let deps = 
-            match opt.Dependencies with
-            | Some ds -> Some(dependency :: ds)
-            | None -> Some [ dependency ]
         { FileName = templateFile.FileName
-          Contents = CompleteInfo(core, { opt with Dependencies = deps }) }
+          Contents = CompleteInfo(core, { opt with Dependencies = dependency :: opt.Dependencies }) }
     | IncompleteTemplate -> 
         failwith "You should only try and add dependencies to template files with complete metadata."
 
@@ -149,17 +140,18 @@ let findDependencies (dependencies : DependenciesFile) config (template : Templa
     let projectDir = project.FileName |> Path.GetDirectoryName
     
     let deps, files = 
-        project.GetInterProjectDependencies() |> Seq.fold (fun (deps, files) p -> 
-                                                     match Map.tryFind p.Name map with
-                                                     | Some packagedRef -> packagedRef :: deps, files
-                                                     | None -> 
-                                                         deps, 
-                                                         (ProjectFile.Load(Path.Combine(projectDir, p.Path)) 
-                                                          |> function 
-                                                          | Some p -> p
-                                                          | None -> 
-                                                              failwithf "Missing project reference proj file %s" p.Path)
-                                                         :: files) ([], [])
+        project.GetInterProjectDependencies() 
+        |> Seq.fold (fun (deps, files) p -> 
+            match Map.tryFind p.Name map with
+            | Some packagedRef -> packagedRef :: deps, files
+            | None -> 
+                deps, 
+                (ProjectFile.Load(Path.Combine(projectDir, p.Path)) 
+                |> function 
+                | Some p -> p
+                | None -> 
+                    failwithf "Missing project reference proj file %s" p.Path)
+                :: files) ([], [])
     
     // Add the assembly from this project
     let withOutput = 
@@ -170,7 +162,10 @@ let findDependencies (dependencies : DependenciesFile) config (template : Templa
     // If project refs will also be packaged, add dependency
     let withDeps = 
         deps
-        |> List.map (fst >> toDependency)
+        |> List.map (fun (templateFile,_) ->
+            match templateFile with
+            | CompleteTemplate(core, opt) -> core.Id, VersionRequirement(Minimum(core.Version), PreReleaseStatus.All)
+            | IncompleteTemplate -> failwithf "You cannot create a dependency on a template file (%s) with incomplete metadata." templateFile.FileName)
         |> List.fold addDependency withOutput
     
     // If project refs will not be packaged, add the assembly to the package

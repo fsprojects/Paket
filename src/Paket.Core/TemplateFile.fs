@@ -34,7 +34,7 @@ type OptionalPackagingInfo =
         RequireLicenseAcceptance : string option
         Tags : string list option
         DevelopmentDependency : bool option
-        Dependencies : (string * VersionRequirement) list option
+        Dependencies : (string * VersionRequirement) list
         Files : (string * string) list option
     }
 
@@ -180,6 +180,7 @@ module TemplateFile =
                         |> DependenciesFileParser.parseVersionRequirement
                     id', versionRequirement))
         |> Option.map Array.toList
+        |> fun x -> defaultArg x []
 
     let private fromReg = Regex("from (?<from>.*)", RegexOptions.Compiled)
     let private toReg = Regex("to (?<to>.*)", RegexOptions.Compiled)

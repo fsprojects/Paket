@@ -123,7 +123,7 @@ let private nuspecDoc (core : CompleteCoreInfo) optional =
     !!? "language" optional.Language
     !!? "tags" (optional.Tags |> Option.map (fun t -> t |> String.concat " "))
     !!? "developmentDependency" (optional.DevelopmentDependency |> Option.map (fun b -> b.ToString()))
-    optional.Dependencies |> Option.iter buildDependenciesNode
+    optional.Dependencies |> buildDependenciesNode
 
     XDocument(declaration, box root)
 
