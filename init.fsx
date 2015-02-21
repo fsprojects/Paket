@@ -24,7 +24,9 @@ let outputPath = localFile "build.fsx"
 
 let prompt (msg:string) = 
   Console.Write(msg)
-  Console.ReadLine().Trim() |> function | "" -> None | s -> Some s
+  Console.ReadLine().Trim() 
+  |> function | "" -> None | s -> Some s
+  |> Option.map (fun s -> s.Replace ("\"","\\\""))
 let runningOnAppveyor =
   not <| String.IsNullOrEmpty(Environment.GetEnvironmentVariable("CI"))
 let runningOnTravis =
