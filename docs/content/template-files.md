@@ -108,6 +108,8 @@ In a project template, the files included will be:
 * the output assembly of the matching project (in the correct lib directory if a library, or tools if an exe)
 * the output assemblies of any project references which do not have a matching template file
 
+#### Dependencies
+
 A dependency block looks like this:
 
 	dependencies
