@@ -1,13 +1,13 @@
 ﻿namespace Paket
 open Paket
 
-type CompleteCoreInfo =
-    {
-        Id : string
-        Version : SemVerInfo
-        Authors : string list
-        Description : string
-    }
+type CompleteCoreInfo = 
+    { Id : string
+      Version : SemVerInfo
+      Authors : string list
+      Description : string }
+    member this.PackageFileName = sprintf "%s.%O.nupkg" this.Id this.Version
+    member this.NuspecFileName = sprintf "/%s.%O.nuspec" this.Id this.Version
 
 type ProjectCoreInfo = 
     { Id : string option

@@ -43,8 +43,6 @@ let contentTypeDoc fileList =
     
     XDocument(declaration, box root)
 
-let nuspecPath (core : CompleteCoreInfo) = sprintf "/%s.%O.nuspec" core.Id core.Version
-
 let nuspecDoc (core : CompleteCoreInfo) optional = 
     let declaration = XDeclaration("1.0", "UTF-8", "yes")
     let ns = XNamespace.Get "http://schemas.microsoft.com/packaging/2011/10/nuspec.xsd"
@@ -145,7 +143,7 @@ let corePropsDoc (core : CompleteCoreInfo) =
 
 let relsPath = "/_rels/.rels"
 
-let relsDoc core = 
+let relsDoc (core : CompleteCoreInfo) = 
     let declaration = XDeclaration("1.0", "UTF-8", "yes")
     let ns = XNamespace.Get "http://schemas.openxmlformats.org/package/2006/relationships"
     let root = XElement(ns + "Relationships")
@@ -156,7 +154,7 @@ let relsDoc core =
         rel.SetAttributeValue(XName.Get "Target", target)
         rel.SetAttributeValue(XName.Get "Id", id')
         root.Add rel
-    r "http://schemas.microsoft.com/packaging/2010/07/manifest" (nuspecPath core) nuspecId
+    r "http://schemas.microsoft.com/packaging/2010/07/manifest" core.NuspecFileName nuspecId
     r "http://schemas.openxmlformats.org/package/2006/relationships/metadata/core-properties" corePropsPath corePropsId
     XDocument(declaration, box root)
 
@@ -165,13 +163,13 @@ let xDocWriter (xDoc : XDocument) (stream : System.IO.Stream) =
     xDoc.WriteTo xmlWriter
     xmlWriter.Flush()
 
-let writeNupkg core optional = 
-    [ nuspecPath core, nuspecDoc core optional |> xDocWriter
+let writeNupkg  (core : CompleteCoreInfo) optional = 
+    [ core.NuspecFileName, nuspecDoc core optional |> xDocWriter
       corePropsPath, corePropsDoc core |> xDocWriter
       relsPath, relsDoc core |> xDocWriter ]
 
 let Write (core : CompleteCoreInfo) optional workingDir outputDir = 
-    let outputPath = Path.Combine(outputDir, sprintf "%s.%O.nupkg" core.Id core.Version)
+    let outputPath = Path.Combine(outputDir, core.PackageFileName)
     if File.Exists outputPath then File.Delete outputPath
     use zipFile = new ZipFile(outputPath)
     
