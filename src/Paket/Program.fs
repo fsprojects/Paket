@@ -129,12 +129,9 @@ try
             Dependencies.Locate().ShowReferencesFor(packages))
         
     | Command(Init, args) ->
-        let results = commandArgs<InitArgs> args
-
-        if results.IsUsageRequested then
-            showHelp HelpTexts.commands.["init"]
-        else
-            Dependencies.Init()
+        processCommand<InitArgs> args "init"
+            (fun results ->
+            Dependencies.Init())
 
     | Command(AutoRestore, args) ->
         processCommand<AutoRestoreArgs> args "add"

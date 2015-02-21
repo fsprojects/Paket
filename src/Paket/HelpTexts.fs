@@ -187,11 +187,10 @@ which will ask you to confirm before deleting a dependency from a file."""}
 
      "init",
         { Title = "paket init"
-          Syntax = formatCommandSyntax (UnionArgParser.Create<InstallArgs>())
+          Syntax = formatCommandSyntax (UnionArgParser.Create<InitArgs>())
           Text = """Creates empty paket.dependencies file in the working directory.
 
-    [lang=batchfile]
-    $ paket init"""}
+<<syntax goes here>>"""}
 
      "add",
         { Title = "paket add"
