@@ -1,11 +1,39 @@
 module Paket.HelpTexts
 
+open Paket.Commands
+
+open Nessos.UnionArgParser
+
+let formatSyntax (parser:UnionArgParser<'TArgs>) commandName = 
+    "$ " + commandName + " " + parser.PrintCommandLineSyntax()
+
+let formatUsage (parser:UnionArgParser<'TArgs>)  commandName =
+    parser.Usage(formatSyntax parser commandName)
+    
+let replace (pattern : string) (replacement : string) input = 
+    System.Text.RegularExpressions.Regex.Replace(input, pattern, replacement)
+
+let formatCommandSyntax (parser : UnionArgParser<_>) title = 
+    let options =
+        parser.Usage() 
+        |> replace @"\s\t--help.*" ""
+        |> replace @"\t([-\w \[\]|\/\?]+):" (System.Environment.NewLine + @"  `$1`:")
+    sprintf """    [lang=batchfile]
+    %s
+
+Options:
+%s"""
+        (formatSyntax parser title)
+        options
+
 type CommandHelpTopic = 
     { Title : string
+      Syntax : string -> string
       Text : string }
     member this.ToMarkDown() =
         let text =
             this.Text
+                .Replace("<<syntax goes here>>", this.Syntax this.Title)
                 .Replace("paket.dependencies file","[`paket.dependencies` file](dependencies-file.html)")
                 .Replace("paket.lock file","[`paket.lock` file](lock-file.html)")
                 .Replace("paket.template files","[`paket.template` files](template-files.html)")
@@ -17,6 +45,7 @@ type CommandHelpTopic =
 let commands =
     ["convert-from-nuget", 
         { Title = "Convert your solution from NuGet"
+          Syntax = formatCommandSyntax (UnionArgParser.Create<InstallArgs>())
           Text = """## Manual process
 
 If you are already using `NuGet.exe` for package restore then it should be easy to convert to Paket.
@@ -75,6 +104,7 @@ Consider using [`paket simplify`](paket-simplify.html) to remove unnecessary tra
 
      "auto-restore",
         { Title = "paket auto-restore"
+          Syntax = formatCommandSyntax (UnionArgParser.Create<InstallArgs>())
           Text = """Enables or disables automatic Package Restore in Visual Studio during the build process. 
 
     [lang=batchfile]
@@ -93,6 +123,7 @@ Auto-restore off:
 
      "restore",
         { Title = "paket restore"
+          Syntax = formatCommandSyntax (UnionArgParser.Create<InstallArgs>())
           Text = """Ensures that all dependencies in your paket.dependencies file are present in the `packages` directory .
 
     [lang=batchfile]
@@ -106,6 +137,7 @@ Options:
 
      "simplify",
         { Title = "paket simplify"
+          Syntax = formatCommandSyntax (UnionArgParser.Create<InstallArgs>())
           Text = """Simplifies your paket.dependencies file by removing transitive dependencies.
 Does also simplify paket.references files, unless [strict](dependencies-file.html#Strict-references) mode is used.
 
@@ -167,6 +199,7 @@ which will ask you to confirm before deleting a dependency from a file."""}
 
      "init",
         { Title = "paket init"
+          Syntax = formatCommandSyntax (UnionArgParser.Create<InstallArgs>())
           Text = """Creates empty paket.dependencies file in the working directory.
 
     [lang=batchfile]
@@ -174,6 +207,7 @@ which will ask you to confirm before deleting a dependency from a file."""}
 
      "add",
         { Title = "paket add"
+          Syntax = formatCommandSyntax (UnionArgParser.Create<InstallArgs>())
           Text = """Adds a new package to your paket.dependencies file.
 
     [lang=batchfile]
@@ -217,6 +251,7 @@ This will add the package to the selected paket.references files and also to the
 
      "find-refs",
         { Title = "paket find-refs"
+          Syntax = formatCommandSyntax (UnionArgParser.Create<InstallArgs>())
           Text = """Finds all project files that have the given NuGet packages installed.
 
     [lang=batchfile]
@@ -250,6 +285,7 @@ and paket gives the following output:
 
      "update",
         { Title = "paket update"
+          Syntax = formatCommandSyntax (UnionArgParser.Create<InstallArgs>())
           Text = """Recomputes the dependency resolution, updates the paket.lock file and propagates any resulting package changes into all project files referencing updated packages.
 
     [lang=batchfile]
@@ -278,6 +314,7 @@ Options:
   
      "outdated",
         { Title = "paket outdated"
+          Syntax = formatCommandSyntax (UnionArgParser.Create<InstallArgs>())
           Text = """Lists all dependencies that have newer versions available.
 
     [lang=batchfile]
@@ -313,6 +350,7 @@ Now we run `paket outdated`:
 
      "remove",
         { Title = "paket remove"
+          Syntax = formatCommandSyntax (UnionArgParser.Create<InstallArgs>())
           Text = """Removes a package from your paket.dependencies file and all paket.references files.
 
     [lang=batchfile]
@@ -337,6 +375,7 @@ See also [paket add](paket-add.html)."""}
 
      "install",
         { Title = "paket install"
+          Syntax = formatCommandSyntax (UnionArgParser.Create<InstallArgs>())
           Text = """Ensures that all dependencies in your paket.dependencies file are present in the `packages` directory and referenced correctly in all projects.
 
     [lang=batchfile]
@@ -351,6 +390,7 @@ Options:
   `--redirects`: Creates binding redirects for the NuGet packages."""}
      "pack",
         { Title = "paket pack"
+          Syntax = formatCommandSyntax (UnionArgParser.Create<InstallArgs>())
           Text = """Packs all paket.template files within this repository
 
     [lang=batchfile]
@@ -363,6 +403,7 @@ Options:
   `buildconfig`: Optionally specify build configuration that should be packaged (defaults to Release)."""}
      "push",
         { Title = "paket push"
+          Syntax = formatCommandSyntax (UnionArgParser.Create<InstallArgs>())
           Text = """Pushes all `.nupkg` files from the given directory.
 
     [lang=batchfile]
@@ -377,6 +418,7 @@ Options:
   `url`: Optionally specify root url of the nuget repository you are pushing too. Defaults to [https://nuget.org](https://nuget.org)."""}
      "config",
         { Title = "paket config"
+          Syntax = formatCommandSyntax (UnionArgParser.Create<InstallArgs>())
           Text = """# paket.config file
 
 Allows to store global configuration values like NuGet credentials. It can be found in:
