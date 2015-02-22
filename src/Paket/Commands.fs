@@ -1,5 +1,7 @@
 ﻿module Paket.Commands
 
+open System
+
 open Nessos.UnionArgParser
 
 type Command =
@@ -35,7 +37,13 @@ with
             | Update -> "Recomputes the dependency resolution, updates the paket.lock file and propagates any resulting package changes into all project files referencing updated packages."
             | Pack -> "Packs all paket.template files within this repository"
             | Push -> "Pushes all `.nupkg` files from the given directory."
- 
+    
+    member this.Name = 
+        let uci,_ = Microsoft.FSharp.Reflection.FSharpValue.GetUnionFields(this, typeof<Command>)
+        (uci.GetCustomAttributes(typeof<CustomCommandLineAttribute>) 
+        |> Seq.head 
+        :?> CustomCommandLineAttribute).Name
+
 type GlobalArgs =
     | [<AltCommandLine("-v")>] Verbose
     | Log_File of string
@@ -208,3 +216,72 @@ with
             | Url(_) -> "Url of the Nuget feed."
             | FileName(_) -> "Path to the package."
             | ApiKey(_) -> "Optionally specify your API key on the command line. Otherwise uses the value of the `nugetkey` environment variable."
+
+let cmdLineSyntax (parser:UnionArgParser<_>) commandName = 
+    "$ paket " + commandName + " " + parser.PrintCommandLineSyntax()
+
+let cmdLineUsageMessage (command : Command) parser =
+    System.Text.StringBuilder()
+        .Append("Paket ")
+        .AppendLine(command.Name)
+        .AppendLine()
+        .AppendLine((command :> IArgParserTemplate).Usage)
+        .AppendLine()
+        .Append(cmdLineSyntax parser command.Name)
+        .ToString()
+    
+let markdown (command : Command) (additionalText : string) =
+    let replace (pattern : string) (replacement : string) input = 
+        System.Text.RegularExpressions.Regex.Replace(input, pattern, replacement)
+    
+    let syntaxAndOptions (parser : UnionArgParser<_>) = 
+        let options =
+            parser.Usage() 
+            |> replace @"\s\t--help.*" ""
+            |> replace @"\t([-\w \[\]|\/\?<>\.]+):" (System.Environment.NewLine + @"  `$1`:")
+
+        let syntax = cmdLineSyntax parser command.Name
+        syntax, options
+    
+    let getSyntax = function
+        | Add -> syntaxAndOptions (UnionArgParser.Create<AddArgs>())
+        | Config -> syntaxAndOptions (UnionArgParser.Create<ConfigArgs>())
+        | ConvertFromNuget -> syntaxAndOptions (UnionArgParser.Create<ConvertFromNugetArgs>())
+        | FindRefs -> syntaxAndOptions (UnionArgParser.Create<FindRefsArgs>())
+        | Init -> syntaxAndOptions (UnionArgParser.Create<InitArgs>())
+        | AutoRestore -> syntaxAndOptions (UnionArgParser.Create<AutoRestoreArgs>())
+        | Install -> syntaxAndOptions (UnionArgParser.Create<InstallArgs>())
+        | Outdated -> syntaxAndOptions (UnionArgParser.Create<OutdatedArgs>())
+        | Remove -> syntaxAndOptions (UnionArgParser.Create<RemoveArgs>())
+        | Restore -> syntaxAndOptions (UnionArgParser.Create<RestoreArgs>())
+        | Simplify -> syntaxAndOptions (UnionArgParser.Create<SimplifyArgs>())
+        | Update -> syntaxAndOptions (UnionArgParser.Create<UpdateArgs>())
+        | Pack -> syntaxAndOptions (UnionArgParser.Create<PackArgs>())
+        | Push -> syntaxAndOptions (UnionArgParser.Create<PushArgs>())
+
+    
+    let replaceLinks (text : string) =
+        text
+            .Replace("paket.dependencies file","[`paket.dependencies` file](dependencies-file.html)")
+            .Replace("paket.lock file","[`paket.lock` file](lock-file.html)")
+            .Replace("paket.template files","[`paket.template` files](template-files.html)")
+            .Replace("paket.references files","[`paket.references` files](references-files.html)")
+            .Replace("paket.references file","[`paket.references` file](references-files.html)")
+    
+    let syntax, options = getSyntax command
+
+    System.Text.StringBuilder()
+        .Append("# paket ")
+        .AppendLine(command.Name)       
+        .AppendLine()
+        .AppendLine((command :> IArgParserTemplate).Usage)
+        .AppendLine()
+        .AppendLine("    [lang=batchfile]")
+        .Append("    ")
+        .AppendLine(syntax)
+        .AppendLine()
+        .AppendLine("Options:")
+        .AppendLine(options)
+        .Append(additionalText)
+        .ToString()
+    |> replaceLinks

@@ -2,64 +2,13 @@ module Paket.HelpTexts
 
 open Paket.Commands
 
-open Nessos.UnionArgParser
-
-let commandName (command : Command) = 
-    let uci,_ = Microsoft.FSharp.Reflection.FSharpValue.GetUnionFields(command, typeof<Command>)
-    (uci.GetCustomAttributes(typeof<CustomCommandLineAttribute>) 
-    |> Seq.head 
-    :?> CustomCommandLineAttribute).Name
-
-let formatSyntax (parser:UnionArgParser<'TArgs>) commandName = 
-    "$ " + commandName + " " + parser.PrintCommandLineSyntax()
-
-let replace (pattern : string) (replacement : string) input = 
-    System.Text.RegularExpressions.Regex.Replace(input, pattern, replacement)
-
-let formatCommandSyntax (parser : UnionArgParser<_>) title = 
-    let options =
-        parser.Usage() 
-        |> replace @"\s\t--help.*" ""
-        |> replace @"\t([-\w \[\]|\/\?<>\.]+):" (System.Environment.NewLine + @"  `$1`:")
-    sprintf """    [lang=batchfile]
-    %s
-
-Options:
-%s"""
-        (formatSyntax parser title)
-        options
-
 type CommandHelpTopic = 
     { Command : Command
-      Syntax : string -> string
       Text : string }
-    member this.ToMarkDown() =
-        let replaceLinks (text : string) =
-            text
-                .Replace("paket.dependencies file","[`paket.dependencies` file](dependencies-file.html)")
-                .Replace("paket.lock file","[`paket.lock` file](lock-file.html)")
-                .Replace("paket.template files","[`paket.template` files](template-files.html)")
-                .Replace("paket.references files","[`paket.references` files](references-files.html)")
-                .Replace("paket.references file","[`paket.references` file](references-files.html)")
-                
-        sprintf 
-            "# %s%s%s%s%s%s%s%s%s%s" 
-            ("paket " + (commandName this.Command))
-            System.Environment.NewLine 
-            System.Environment.NewLine 
-            (this.Command :> IArgParserTemplate).Usage
-            System.Environment.NewLine 
-            System.Environment.NewLine 
-            (this.Syntax (commandName this.Command))
-            System.Environment.NewLine 
-            System.Environment.NewLine 
-            this.Text
-        |> replaceLinks
 
 let commands = 
     lazy
     [   { Command = ConvertFromNuget
-          Syntax = formatCommandSyntax (UnionArgParser.Create<ConvertFromNugetArgs>())
           Text = """## Command steps
 
 The `paket convert-from-nuget` command:
@@ -93,7 +42,6 @@ After converting your solution from NuGet, you may end up with many transitive d
 Consider using [`paket simplify`](paket-simplify.html) to remove unnecessary transitive dependencies from your paket.dependencies file and paket.references files."""}
 
         { Command = AutoRestore
-          Syntax = formatCommandSyntax (UnionArgParser.Create<AutoRestoreArgs>())
           Text = """Auto-restore on:
 
   - creates a `.paket` directory in your root directory,
@@ -106,11 +54,9 @@ Auto-restore off:
   - removes the `<Import>` statement for `paket.targets` from projects that have the [references file](references-files.html)."""}
 
         { Command = Restore
-          Syntax = formatCommandSyntax (UnionArgParser.Create<RestoreArgs>())
           Text = """"""}
 
         { Command = Simplify
-          Syntax = formatCommandSyntax (UnionArgParser.Create<SimplifyArgs>())
           Text = """Simplify will also affect paket.references files, unless [strict](dependencies-file.html#Strict-references) mode is used.
 
 ## Sample
@@ -161,11 +107,9 @@ Sometimes, you may still want to have control over some of the transitive depend
 which will ask you to confirm before deleting a dependency from a file."""}
 
         { Command = Init
-          Syntax = formatCommandSyntax (UnionArgParser.Create<InitArgs>())
           Text = """"""}
 
         { Command = Add
-          Syntax = formatCommandSyntax (UnionArgParser.Create<AddArgs>())
           Text = """## Adding to a single project
 
 It's also possible to add a package to a specified project only: 
@@ -195,7 +139,6 @@ This will add the package to the selected paket.references files and also to the
 	nuget xunit"""}
 
         { Command = FindRefs
-          Syntax = formatCommandSyntax (UnionArgParser.Create<FindRefsArgs>())
           Text = """## Sample
 
 *.src/Paket/paket.references* contains:
@@ -223,7 +166,6 @@ and paket gives the following output:
 	.src/Paket/Paket.fsproj"""}
 
         { Command = Update
-          Syntax = formatCommandSyntax (UnionArgParser.Create<UpdateArgs>())
           Text = """## Updating a single package
 
 It's also possible to update only a single package and to keep all other dependencies fixed:
@@ -238,7 +180,6 @@ Options:
   `--hard`: Replaces package references within project files even if they are not yet adhering to to Paket's conventions (and hence considered manually managed). See [convert from NuGet](paket-convert-from-nuget.html)."""}
   
         { Command = Outdated
-          Syntax = formatCommandSyntax (UnionArgParser.Create<OutdatedArgs>())
           Text = """## Sample
 
 Consider the following paket.dependencies file:
@@ -262,7 +203,6 @@ Now we run `paket outdated`:
 ![alt text](img/paket-outdated.png "paket outdated command")"""}
 
         { Command = Remove
-          Syntax = formatCommandSyntax (UnionArgParser.Create<RemoveArgs>())
           Text = """## Removing from a single project
 
 It's also possible to remove a package from a specified project only: 
@@ -273,16 +213,12 @@ It's also possible to remove a package from a specified project only:
 See also [paket add](paket-add.html)."""}
 
         { Command = Install
-          Syntax = formatCommandSyntax (UnionArgParser.Create<InstallArgs>())
           Text = """"""}
         { Command = Pack
-          Syntax = formatCommandSyntax (UnionArgParser.Create<PackArgs>())
           Text = """"""}
         { Command = Push
-          Syntax = formatCommandSyntax (UnionArgParser.Create<PushArgs>())
           Text = """"""}
         { Command = Config
-          Syntax = formatCommandSyntax (UnionArgParser.Create<ConfigArgs>())
           Text = """Paket will then ask for username and password.
 
 This credentials will be used if no username and password for the source are configured in the [`paket.dependencies` file](nuget-dependencies.html).

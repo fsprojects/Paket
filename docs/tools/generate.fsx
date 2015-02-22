@@ -4,7 +4,7 @@
 open System.IO
 
 Paket.HelpTexts.commands.Force()
-|> Seq.iter (fun ht -> File.WriteAllText(sprintf "../content/paket-%s.md" (Paket.HelpTexts.commandName ht.Command), ht.ToMarkDown()))
+|> Seq.iter (fun ht -> File.WriteAllText(sprintf "../content/paket-%s.md" ht.Command.Name, Paket.Commands.markdown ht.Command ht.Text))
 
 // --------------------------------------------------------------------------------------
 // Builds the documentation from `.fsx` and `.md` files in the 'docs/content' directory

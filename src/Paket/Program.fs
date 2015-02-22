@@ -40,7 +40,7 @@ let filterGlobalArgs args =
     
     verbose, logFile, rest
 
-let processWithValidation<'T when 'T :> IArgParserTemplate> validateF commandF commandName usage 
+let processWithValidation<'T when 'T :> IArgParserTemplate> validateF commandF command 
     args = 
     let parser = UnionArgParser.Create<'T>()
     let results = 
@@ -49,10 +49,7 @@ let processWithValidation<'T when 'T :> IArgParserTemplate> validateF commandF c
              errorHandler = ProcessExiter())
     let resultsValid = validateF (results)
     if results.IsUsageRequested || not resultsValid then 
-        parser.Usage
-            ("Paket " + commandName + Environment.NewLine + Environment.NewLine + usage 
-             + Environment.NewLine + Environment.NewLine 
-             + HelpTexts.formatSyntax parser ("paket " + commandName)) |> trace
+        parser.Usage(Commands.cmdLineUsageMessage command parser) |> trace
     else 
         commandF results
         let elapsedTime = Utils.TimeSpanToReadableString stopWatch.Elapsed
@@ -183,9 +180,6 @@ try
 
     match results.GetAllResults() with
     | [ command ] -> 
-        let args = args.[1..]
-        let commandName = HelpTexts.commandName command
-        let usage = (command :> IArgParserTemplate).Usage
         let handler =
             match command with
             | Add -> processCommand add
@@ -193,7 +187,7 @@ try
             | ConvertFromNuget -> processCommand convert
             | FindRefs -> processCommand findRefs
             | Init -> processCommand init
-            | AutoRestore -> processCommand autoRestore
+            | AutoRestore -> processWithValidation validateAutoRestore autoRestore
             | Install -> processCommand install
             | Outdated -> processCommand outdated
             | Remove -> processCommand remove
@@ -203,7 +197,8 @@ try
             | Pack -> processCommand pack
             | Push -> processCommand push
 
-        handler commandName usage args
+        let args = args.[1..]
+        handler command args
     | [] -> 
         parser.Usage("available commands:") |> trace
     | _ -> failwith "expected only one command"
