@@ -42,22 +42,19 @@ type CommandHelpTopic =
                 
         sprintf "# %s%s%s" this.Title System.Environment.NewLine text
 
-let commands =
+let commands = 
     ["convert-from-nuget", 
         { Title = "paket convert-from-nuget"
           Syntax = formatCommandSyntax (UnionArgParser.Create<ConvertFromNugetArgs>())
-          Text = """## Manual process
+          Text = """Converts from using NuGet to Paket.
 
-If you are already using `NuGet.exe` for package restore then it should be easy to convert to Paket.
+<div id="syntax"></div>
 
-1. Analyse your `packages.config` files and extract the referenced packages into a paket.dependencies file.
-2. Convert each `packages.config` file to a paket.references file. This is very easy - you just have to remove all the XML and keep the package names.
-3. Run [paket install](paket-install.html) with the `--hard` flag. This will analyze the dependencies, generate a paket.lock file, remove all the old package references from your project files and replace them with equivalent `Reference`s in a syntax that can be managed automatically by Paket.
+<<syntax goes here>>
 
-<div id="automatic"></div>
-## Automated process
+## Command steps
 
-Paket can assist you with the conversion. The `paket convert-from-nuget` command:
+The `paket convert-from-nuget` command:
 
 1. Finds all `packages.config` files, generates a paket.dependencies file in the solution root and replaces each `packages.config` with an equivalent paket.references file. 
 2. If there is a solution-level `packages.config`, then it will be removed and its dependencies will be included into the paket.dependencies file.
@@ -72,10 +69,6 @@ Paket can assist you with the conversion. The `paket convert-from-nuget` command
 
   - add any newly discovered dependencies to the end of an existing `paket.dependencies` file.
   - transfer/append references from the `packages.config` files into `paket.references` files alongside.
-
-<div id="syntax"></div>
-
-<<syntax goes here>>
     
 ## Migrating NuGet source credentials
 
