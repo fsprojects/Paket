@@ -19,7 +19,7 @@ type Command =
     | [<First>][<CustomCommandLine("push")>]                Push
 with 
     interface IArgParserTemplate with
-        member __.Usage = ""
+        member __.Usage = "Converts from using NuGet to Paket."
  
 type GlobalArgs =
     | [<AltCommandLine("-v")>] Verbose

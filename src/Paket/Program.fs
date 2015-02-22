@@ -205,21 +205,8 @@ try
                 ?url = results.TryGetResult <@ PushArgs.Url @>, 
                 ?apiKey = results.TryGetResult <@ PushArgs.ApiKey @>))
     | _ ->
-        let allCommands = 
-            Microsoft.FSharp.Reflection.FSharpType.GetUnionCases(typeof<Command>)
-            |> Array.map (fun command -> 
-                   let attr = 
-                       command.GetCustomAttributes(typeof<CustomCommandLineAttribute>)
-                       |> Seq.cast<CustomCommandLineAttribute>
-                       |> Seq.head
-                   attr.Name)
-            |> String.concat Environment.NewLine
-
-        tracefn "available commands: %s%s%s%s" 
-            Environment.NewLine
-            Environment.NewLine
-            allCommands
-            Environment.NewLine
+        let parser = UnionArgParser.Create<Command>()
+        parser.Usage("available commands:") |> trace
 
     let elapsedTime = Utils.TimeSpanToReadableString stopWatch.Elapsed
     tracefn "%s - ready." elapsedTime
