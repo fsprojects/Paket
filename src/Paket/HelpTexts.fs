@@ -327,20 +327,19 @@ See also [paket add](paket-add.html)."""}
      "config",
         { Title = "paket config"
           Syntax = formatCommandSyntax (UnionArgParser.Create<ConfigArgs>())
-          Text = """Allows to store global configuration values like NuGet credentials. It can be found in:
-
-	let AppDataFolder = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData)
-	let PaketConfigFolder = Path.Combine(AppDataFolder, "Paket")
-	let PaketConfigFile = Path.Combine(PaketConfigFolder, "paket.config")
-
-## Add credentials
-
-Credentials for a specific source can be added with the following command:
+          Text = """Allows to store global configuration values like NuGet credentials.
 
 <<syntax goes here>>
 
 Paket will then ask for username and password.
 
-This credentials will be used if no username and password for the source are configured in the [`paket.dependencies` file](nuget-dependencies.html)."""}]
+This credentials will be used if no username and password for the source are configured in the [`paket.dependencies` file](nuget-dependencies.html).
+
+The configuration file can be found in:
+
+	let AppDataFolder = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData)
+	let PaketConfigFolder = Path.Combine(AppDataFolder, "Paket")
+	let PaketConfigFile = Path.Combine(PaketConfigFolder, "paket.config")
+"""}]
 
   |> dict
