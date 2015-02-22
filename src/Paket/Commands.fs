@@ -144,38 +144,13 @@ with
             | Force -> "Forces the download of all packages."
             | References_Files(_) -> "Allows to restore all packages from the given paket.references files. If no paket.references file is given then all packages will be restored."
 
-(*
-
-    [lang=batchfile]
-    $ paket simplify [-v] [--interactive]
-
-Options:
-
-  `-v`: Verbose - output the difference in content before and after running simplify command.
-
-  `--interactive`: Asks to confirm to delete every transitive dependency from each of the files. See [Interactive Mode](paket-simplify.html#Interactive-mode).
-
-*)
-
 type SimplifyArgs =
     | [<AltCommandLine("-i")>] Interactive
 with 
     interface IArgParserTemplate with
-        member __.Usage = ""
-
-(*
-
-    [lang=batchfile]
-    $ paket update [--force] [--hard] [--redirects]	
-
-Options:
-
-  `--force`: Forces the download and reinstallation of all packages.
-
-  `--hard`: Replaces package references within project files even if they are not yet adhering to the Paket's conventions (and hence considered manually managed). See [convert from NuGet](paket-convert-from-nuget.html).
-
-  `--redirects`: Creates binding redirects for the NuGet packages.
-*)
+        member this.Usage =
+            match this with
+            | Interactive -> "Asks to confirm to delete every transitive dependency from each of the files."
 
 type UpdateArgs =
     | [<CustomCommandLine("nuget")>] Nuget of string
@@ -185,19 +160,13 @@ type UpdateArgs =
     | Redirects
 with 
     interface IArgParserTemplate with
-        member __.Usage = ""
-
-(*
-
-    [lang=batchfile]
-    $ paket pack output outputDirectory [buildconfig Debug]
-
-Options:
-
-  `output`: Output directory to put nupkgs
-
-  `buildconfig`: Optionally specify build configuration that should be packaged (defaults to Release).
-*)
+        member this.Usage =
+            match this with
+            | Nuget(_) -> "Nuget package id"
+            | Version(_) -> "Allows to specify version of the package."
+            | Force -> "Forces the download and reinstallation of all packages."
+            | Hard -> "Replaces package references within project files even if they are not yet adhering to the Paket's conventions (and hence considered manually managed)."
+            | Redirects -> "Creates binding redirects for the NuGet packages."
 
 type PackArgs =
     | [<CustomCommandLine("output")>][<Mandatory>] Output of string
@@ -206,22 +175,12 @@ type PackArgs =
     | [<CustomCommandLine("releaseNotes")>] ReleaseNotes of string
 with
     interface IArgParserTemplate with
-        member __.Usage = ""
-
-
-(*
-
-    [lang=batchfile]
-    $ paket push packagedir path/to/packages [apikey YourApiKey] [url NuGetFeed]
-
-Options:
-
-  `packagedir`: a directory; every `.nupkg` file in this directory or it's children will be pushed.
-
-  `apikey`: Optionally specify your API key on the command line. Otherwise uses the value of the `nugetkey` environment variable.
-
-  `url`: Optionally specify root url of the nuget repository you are pushing too. Defaults to [https://nuget.org](https://nuget.org).
-*)
+        member this.Usage =
+            match this with
+            | Output(_) -> "Output directory to put nupkgs."
+            | BuildConfig(_) -> "Optionally specify build configuration that should be packaged (defaults to Release)."
+            | Version(_) -> "Specify version of the package."
+            | ReleaseNotes(_) -> "Specify relase notes for the package."
 
 type PushArgs =
     | [<CustomCommandLine("url")>][<Mandatory>] Url of string
@@ -229,4 +188,8 @@ type PushArgs =
     | [<CustomCommandLine("apikey")>] ApiKey of string
 with
     interface IArgParserTemplate with
-        member __.Usage = ""
+        member this.Usage =
+            match this with
+            | Url(_) -> "Url of the Nuget feed."
+            | FileName(_) -> "Path to the package."
+            | ApiKey(_) -> "Optionally specify your API key on the command line. Otherwise uses the value of the `nugetkey` environment variable."
