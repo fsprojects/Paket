@@ -1,7 +1,6 @@
 /// [omit]
 module Paket.Program
 
-open Microsoft.FSharp.Reflection
 open System
 open System.Diagnostics
 open System.Reflection
@@ -56,12 +55,7 @@ let filterGlobalArgs args =
     verbose, logFile, rest
 
 let processCommand<'T when 'T :> IArgParserTemplate> (command : Command) args commandF =
-    let uci,_ = FSharpValue.GetUnionFields(command, typeof<Command>)
-    let commandName = 
-        (uci.GetCustomAttributes(typeof<CustomCommandLineAttribute>) 
-        |> Seq.head 
-        :?> CustomCommandLineAttribute).Name
-
+    let commandName = HelpTexts.commandName command
     let parser = UnionArgParser.Create<'T>()
     let results = 
         parser.Parse(inputs = args, raiseOnUsage = false, ignoreMissing = true, 

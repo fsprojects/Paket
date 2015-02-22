@@ -4,12 +4,15 @@ open Paket.Commands
 
 open Nessos.UnionArgParser
 
+let commandName (command : Command) = 
+    let uci,_ = Microsoft.FSharp.Reflection.FSharpValue.GetUnionFields(command, typeof<Command>)
+    (uci.GetCustomAttributes(typeof<CustomCommandLineAttribute>) 
+    |> Seq.head 
+    :?> CustomCommandLineAttribute).Name
+
 let formatSyntax (parser:UnionArgParser<'TArgs>) commandName = 
     "$ " + commandName + " " + parser.PrintCommandLineSyntax()
 
-let formatUsage (parser:UnionArgParser<'TArgs>)  commandName =
-    parser.Usage(formatSyntax parser commandName)
-    
 let replace (pattern : string) (replacement : string) input = 
     System.Text.RegularExpressions.Regex.Replace(input, pattern, replacement)
 
@@ -27,33 +30,38 @@ Options:
         options
 
 type CommandHelpTopic = 
-    { Title : string
+    { Command : Command
       Syntax : string -> string
       Text : string }
     member this.ToMarkDown() =
-        let text =
-            this.Text
-                .Replace("<<syntax goes here>>", this.Syntax this.Title)
+        let replaceLinks (text : string) =
+            text
                 .Replace("paket.dependencies file","[`paket.dependencies` file](dependencies-file.html)")
                 .Replace("paket.lock file","[`paket.lock` file](lock-file.html)")
                 .Replace("paket.template files","[`paket.template` files](template-files.html)")
                 .Replace("paket.references files","[`paket.references` files](references-files.html)")
                 .Replace("paket.references file","[`paket.references` file](references-files.html)")
                 
-        sprintf "# %s%s%s" this.Title System.Environment.NewLine text
+        sprintf 
+            "# %s%s%s%s%s%s%s%s%s%s" 
+            ("paket " + (commandName this.Command))
+            System.Environment.NewLine 
+            System.Environment.NewLine 
+            (this.Command :> IArgParserTemplate).Usage
+            System.Environment.NewLine 
+            System.Environment.NewLine 
+            (this.Syntax (commandName this.Command))
+            System.Environment.NewLine 
+            System.Environment.NewLine 
+            this.Text
+        |> replaceLinks
 
 let commands = 
     lazy
     ["convert-from-nuget", 
-        { Title = "paket convert-from-nuget"
+        { Command = ConvertFromNuget
           Syntax = formatCommandSyntax (UnionArgParser.Create<ConvertFromNugetArgs>())
-          Text = """Converts from using NuGet to Paket.
-
-<div id="syntax"></div>
-
-<<syntax goes here>>
-
-## Command steps
+          Text = """## Command steps
 
 The `paket convert-from-nuget` command:
 
@@ -86,13 +94,9 @@ After converting your solution from NuGet, you may end up with many transitive d
 Consider using [`paket simplify`](paket-simplify.html) to remove unnecessary transitive dependencies from your paket.dependencies file and paket.references files."""}
 
      "auto-restore",
-        { Title = "paket auto-restore"
+        { Command = AutoRestore
           Syntax = formatCommandSyntax (UnionArgParser.Create<AutoRestoreArgs>())
-          Text = """Enables or disables automatic Package Restore in Visual Studio during the build process. 
-
-<<syntax goes here>>
-
-Auto-restore on:
+          Text = """Auto-restore on:
 
   - creates a `.paket` directory in your root directory,
   - downloads `paket.targets` and `paket.bootstrapper.exe` into the `.paket` directory,
@@ -104,20 +108,14 @@ Auto-restore off:
   - removes the `<Import>` statement for `paket.targets` from projects that have the [references file](references-files.html)."""}
 
      "restore",
-        { Title = "paket restore"
+        { Command = Restore
           Syntax = formatCommandSyntax (UnionArgParser.Create<RestoreArgs>())
-          Text = """Ensures that all dependencies in your paket.dependencies file are present in the `packages` directory .
-
-<<syntax goes here>>"""}
+          Text = """"""}
 
      "simplify",
-        { Title = "paket simplify"
+        { Command = Simplify
           Syntax = formatCommandSyntax (UnionArgParser.Create<SimplifyArgs>())
-          Text = """Simplifies your paket.dependencies file by removing transitive dependencies.
-
-<<syntax goes here>>
-
-Simplify will also affect paket.references files, unless [strict](dependencies-file.html#Strict-references) mode is used.
+          Text = """Simplify will also affect paket.references files, unless [strict](dependencies-file.html#Strict-references) mode is used.
 
 ## Sample
 
@@ -167,20 +165,14 @@ Sometimes, you may still want to have control over some of the transitive depend
 which will ask you to confirm before deleting a dependency from a file."""}
 
      "init",
-        { Title = "paket init"
+        { Command = Init
           Syntax = formatCommandSyntax (UnionArgParser.Create<InitArgs>())
-          Text = """Creates empty paket.dependencies file in the working directory.
-
-<<syntax goes here>>"""}
+          Text = """"""}
 
      "add",
-        { Title = "paket add"
+        { Command = Add
           Syntax = formatCommandSyntax (UnionArgParser.Create<AddArgs>())
-          Text = """Adds a new package to your paket.dependencies file.
-
-<<syntax goes here>>
-
-## Adding to a single project
+          Text = """## Adding to a single project
 
 It's also possible to add a package to a specified project only: 
 
@@ -209,13 +201,9 @@ This will add the package to the selected paket.references files and also to the
 	nuget xunit"""}
 
      "find-refs",
-        { Title = "paket find-refs"
+        { Command = FindRefs
           Syntax = formatCommandSyntax (UnionArgParser.Create<FindRefsArgs>())
-          Text = """Finds all project files that have the given NuGet packages installed.
-
-<<syntax goes here>>
-
-## Sample
+          Text = """## Sample
 
 *.src/Paket/paket.references* contains:
 
@@ -242,13 +230,9 @@ and paket gives the following output:
 	.src/Paket/Paket.fsproj"""}
 
      "update",
-        { Title = "paket update"
+        { Command = Update
           Syntax = formatCommandSyntax (UnionArgParser.Create<UpdateArgs>())
-          Text = """Recomputes the dependency resolution, updates the paket.lock file and propagates any resulting package changes into all project files referencing updated packages.
-
-<<syntax goes here>>
-
-## Updating a single package
+          Text = """## Updating a single package
 
 It's also possible to update only a single package and to keep all other dependencies fixed:
 
@@ -262,13 +246,9 @@ Options:
   `--hard`: Replaces package references within project files even if they are not yet adhering to to Paket's conventions (and hence considered manually managed). See [convert from NuGet](paket-convert-from-nuget.html)."""}
   
      "outdated",
-        { Title = "paket outdated"
+        { Command = Outdated
           Syntax = formatCommandSyntax (UnionArgParser.Create<OutdatedArgs>())
-          Text = """Lists all dependencies that have newer versions available.
-
-<<syntax goes here>>
-
-## Sample
+          Text = """## Sample
 
 Consider the following paket.dependencies file:
 
@@ -291,13 +271,9 @@ Now we run `paket outdated`:
 ![alt text](img/paket-outdated.png "paket outdated command")"""}
 
      "remove",
-        { Title = "paket remove"
+        { Command = Remove
           Syntax = formatCommandSyntax (UnionArgParser.Create<RemoveArgs>())
-          Text = """Removes a package from your paket.dependencies file and all paket.references files.
-
-<<syntax goes here>>
-
-## Removing from a single project
+          Text = """## Removing from a single project
 
 It's also possible to remove a package from a specified project only: 
 
@@ -307,31 +283,21 @@ It's also possible to remove a package from a specified project only:
 See also [paket add](paket-add.html)."""}
 
      "install",
-        { Title = "paket install"
+        { Command = Install
           Syntax = formatCommandSyntax (UnionArgParser.Create<InstallArgs>())
-          Text = """Ensures that all dependencies in your paket.dependencies file are present in the `packages` directory and referenced correctly in all projects.
-
-<<syntax goes here>>"""}
+          Text = """"""}
      "pack",
-        { Title = "paket pack"
+        { Command = Pack
           Syntax = formatCommandSyntax (UnionArgParser.Create<PackArgs>())
-          Text = """Packs all paket.template files within this repository
-
-<<syntax goes here>>"""}
+          Text = """"""}
      "push",
-        { Title = "paket push"
+        { Command = Push
           Syntax = formatCommandSyntax (UnionArgParser.Create<PushArgs>())
-          Text = """Pushes all `.nupkg` files from the given directory.
-
-<<syntax goes here>>"""}
+          Text = """"""}
      "config",
-        { Title = "paket config"
+        { Command = Config
           Syntax = formatCommandSyntax (UnionArgParser.Create<ConfigArgs>())
-          Text = """Allows to store global configuration values like NuGet credentials.
-
-<<syntax goes here>>
-
-Paket will then ask for username and password.
+          Text = """Paket will then ask for username and password.
 
 This credentials will be used if no username and password for the source are configured in the [`paket.dependencies` file](nuget-dependencies.html).
 
