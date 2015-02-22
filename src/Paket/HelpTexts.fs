@@ -58,8 +58,7 @@ type CommandHelpTopic =
 
 let commands = 
     lazy
-    ["convert-from-nuget", 
-        { Command = ConvertFromNuget
+    [   { Command = ConvertFromNuget
           Syntax = formatCommandSyntax (UnionArgParser.Create<ConvertFromNugetArgs>())
           Text = """## Command steps
 
@@ -93,7 +92,6 @@ Following are valid modes for `--creds-migration` option:
 After converting your solution from NuGet, you may end up with many transitive dependencies in your Paket files.
 Consider using [`paket simplify`](paket-simplify.html) to remove unnecessary transitive dependencies from your paket.dependencies file and paket.references files."""}
 
-     "auto-restore",
         { Command = AutoRestore
           Syntax = formatCommandSyntax (UnionArgParser.Create<AutoRestoreArgs>())
           Text = """Auto-restore on:
@@ -107,12 +105,10 @@ Auto-restore off:
   - removes `paket.targets` from the `.paket` directory,
   - removes the `<Import>` statement for `paket.targets` from projects that have the [references file](references-files.html)."""}
 
-     "restore",
         { Command = Restore
           Syntax = formatCommandSyntax (UnionArgParser.Create<RestoreArgs>())
           Text = """"""}
 
-     "simplify",
         { Command = Simplify
           Syntax = formatCommandSyntax (UnionArgParser.Create<SimplifyArgs>())
           Text = """Simplify will also affect paket.references files, unless [strict](dependencies-file.html#Strict-references) mode is used.
@@ -164,12 +160,10 @@ The simplify command will help you maintain your direct dependencies.
 Sometimes, you may still want to have control over some of the transitive dependencies. In this case you can use the `--interactive` flag,
 which will ask you to confirm before deleting a dependency from a file."""}
 
-     "init",
         { Command = Init
           Syntax = formatCommandSyntax (UnionArgParser.Create<InitArgs>())
           Text = """"""}
 
-     "add",
         { Command = Add
           Syntax = formatCommandSyntax (UnionArgParser.Create<AddArgs>())
           Text = """## Adding to a single project
@@ -200,7 +194,6 @@ This will add the package to the selected paket.references files and also to the
 	nuget FAKE
 	nuget xunit"""}
 
-     "find-refs",
         { Command = FindRefs
           Syntax = formatCommandSyntax (UnionArgParser.Create<FindRefsArgs>())
           Text = """## Sample
@@ -229,7 +222,6 @@ and paket gives the following output:
 	.src/Paket.Core/Paket.Core.fsproj
 	.src/Paket/Paket.fsproj"""}
 
-     "update",
         { Command = Update
           Syntax = formatCommandSyntax (UnionArgParser.Create<UpdateArgs>())
           Text = """## Updating a single package
@@ -245,7 +237,6 @@ Options:
 
   `--hard`: Replaces package references within project files even if they are not yet adhering to to Paket's conventions (and hence considered manually managed). See [convert from NuGet](paket-convert-from-nuget.html)."""}
   
-     "outdated",
         { Command = Outdated
           Syntax = formatCommandSyntax (UnionArgParser.Create<OutdatedArgs>())
           Text = """## Sample
@@ -270,7 +261,6 @@ Now we run `paket outdated`:
 
 ![alt text](img/paket-outdated.png "paket outdated command")"""}
 
-     "remove",
         { Command = Remove
           Syntax = formatCommandSyntax (UnionArgParser.Create<RemoveArgs>())
           Text = """## Removing from a single project
@@ -282,19 +272,15 @@ It's also possible to remove a package from a specified project only:
 
 See also [paket add](paket-add.html)."""}
 
-     "install",
         { Command = Install
           Syntax = formatCommandSyntax (UnionArgParser.Create<InstallArgs>())
           Text = """"""}
-     "pack",
         { Command = Pack
           Syntax = formatCommandSyntax (UnionArgParser.Create<PackArgs>())
           Text = """"""}
-     "push",
         { Command = Push
           Syntax = formatCommandSyntax (UnionArgParser.Create<PushArgs>())
           Text = """"""}
-     "config",
         { Command = Config
           Syntax = formatCommandSyntax (UnionArgParser.Create<ConfigArgs>())
           Text = """Paket will then ask for username and password.
@@ -307,5 +293,3 @@ The configuration file can be found in:
 	let PaketConfigFolder = Path.Combine(AppDataFolder, "Paket")
 	let PaketConfigFile = Path.Combine(PaketConfigFolder, "paket.config")
 """}]
-
-  |> dict
