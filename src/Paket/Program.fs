@@ -1,6 +1,7 @@
 /// [omit]
 module Paket.Program
 
+open Microsoft.FSharp.Reflection
 open System
 open System.Diagnostics
 open System.Reflection
@@ -54,14 +55,25 @@ let filterGlobalArgs args =
     
     verbose, logFile, rest
 
-let processCommand<'T when 'T :> IArgParserTemplate> args commandName commandF =
+let processCommand<'T when 'T :> IArgParserTemplate> (command : Command) args commandF =
+    let uci,_ = FSharpValue.GetUnionFields(command, typeof<Command>)
+    let commandName = 
+        (uci.GetCustomAttributes(typeof<CustomCommandLineAttribute>) 
+        |> Seq.head 
+        :?> CustomCommandLineAttribute).Name
+
     let parser = UnionArgParser.Create<'T>()
     let results = 
         parser.Parse(inputs = args, raiseOnUsage = false, ignoreMissing = true, 
                         errorHandler = ProcessExiter())
             
     if results.IsUsageRequested then
-        parser.Usage(HelpTexts.formatSyntax parser ("paket " + commandName)) |> trace
+        parser.Usage(
+                        "Paket " + commandName +
+                        Environment.NewLine + Environment.NewLine + 
+                        (command :> IArgParserTemplate).Usage + 
+                        Environment.NewLine + Environment.NewLine + 
+                        HelpTexts.formatSyntax parser ("paket " + commandName)) |> trace
     else
         commandF results
 
@@ -73,7 +85,7 @@ Option.iter setLogFile logFile
 try
     match args with
     | Command(Add, args) ->
-        processCommand<AddArgs> args "add"
+        processCommand<AddArgs> Add args
             (fun results -> 
             let packageName = results.GetResult <@ AddArgs.Nuget @>
             let version = defaultArg (results.TryGetResult <@ AddArgs.Version @>) ""
@@ -88,7 +100,7 @@ try
                 Dependencies.Locate().Add(packageName, version, force, hard, interactive, noInstall |> not))
         
     | Command(Config, args) ->
-        processCommand<ConfigArgs> args "config"
+        processCommand<ConfigArgs> Config args
             (fun results ->
             let args = results.GetResults <@ ConfigArgs.AddCredentials @> 
             if args.Length = 0 then
@@ -104,7 +116,7 @@ try
                 Dependencies.Locate().AddCredentials(source, username))
 
     | Command(ConvertFromNuget, args) ->
-        processCommand<ConvertFromNugetArgs> args "convert-from-nuget"
+        processCommand<ConvertFromNugetArgs> ConvertFromNuget args
             (fun results ->
             let force = results.Contains <@ ConvertFromNugetArgs.Force @>
             let noInstall = results.Contains <@ ConvertFromNugetArgs.No_Install @>
@@ -113,18 +125,18 @@ try
             Dependencies.ConvertFromNuget(force, noInstall |> not, noAutoRestore |> not, credsMigrationMode))
     
     | Command(FindRefs, args) ->
-         processCommand<FindRefsArgs> args "find-refs"
+         processCommand<FindRefsArgs> FindRefs args
             (fun results ->
             let packages = results.GetResults <@ FindRefsArgs.Packages @>
             Dependencies.Locate().ShowReferencesFor(packages))
         
     | Command(Init, args) ->
-        processCommand<InitArgs> args "init"
+        processCommand<InitArgs> Init args
             (fun results ->
             Dependencies.Init())
 
     | Command(AutoRestore, args) ->
-        processCommand<AutoRestoreArgs> args "add"
+        processCommand<AutoRestoreArgs> AutoRestore args
             (fun results -> 
             match results.GetAllResults() with
             | [On] -> Dependencies.Locate().TurnOnAutoRestore()
@@ -134,7 +146,7 @@ try
                 parser.Usage(HelpTexts.formatSyntax parser "paket auto-restore") |> trace)
 
     | Command(Install, args) ->
-        processCommand<InstallArgs> args "install"
+        processCommand<InstallArgs> Install args
             (fun results -> 
                 let force = results.Contains <@ InstallArgs.Force @>
                 let hard = results.Contains <@ InstallArgs.Hard @>
@@ -142,14 +154,14 @@ try
                 Dependencies.Locate().Install(force,hard,withBindingRedirects))
 
     | Command(Outdated, args) ->
-        processCommand<OutdatedArgs> args "outdated"
+        processCommand<OutdatedArgs> Outdated args
             (fun results -> 
             let strict = results.Contains <@ OutdatedArgs.Ignore_Constraints @> |> not
             let includePrereleases = results.Contains <@ OutdatedArgs.Include_Prereleases @>
             Dependencies.Locate().ShowOutdated(strict,includePrereleases))
 
     | Command(Remove, args) ->
-        processCommand<RemoveArgs> args "remove"
+        processCommand<RemoveArgs> Remove args
             (fun results -> 
             let packageName = results.GetResult <@ RemoveArgs.Nuget @>
             let force = results.Contains <@ RemoveArgs.Force @>
@@ -163,20 +175,20 @@ try
                 Dependencies.Locate().Remove(packageName, force, hard, interactive, noInstall |> not))
 
     | Command(Restore, args) ->
-        processCommand<RestoreArgs> args "restore"
+        processCommand<RestoreArgs> Restore args
             (fun results -> 
             let force = results.Contains <@ RestoreArgs.Force @>
             let files = results.GetResults <@ RestoreArgs.References_Files @> 
             Dependencies.Locate().Restore(force,files))
 
     | Command(Simplify, args) ->
-        processCommand<SimplifyArgs> args "simplify"
+        processCommand<SimplifyArgs> Simplify args
             (fun results -> 
             let interactive = results.Contains <@ SimplifyArgs.Interactive @>
             Dependencies.Simplify(interactive))
 
     | Command(Update, args) ->
-        processCommand<UpdateArgs> args "update"
+        processCommand<UpdateArgs> Update args
             (fun results -> 
             let hard = results.Contains <@ UpdateArgs.Hard @>
             let force = results.Contains <@ UpdateArgs.Force @>
@@ -188,7 +200,7 @@ try
                 let withBindingRedirects = results.Contains <@ UpdateArgs.Redirects @>
                 Dependencies.Locate().Update(force,hard,withBindingRedirects))
     | Command(Pack, args) ->
-        processCommand<PackArgs> args "pack"
+        processCommand<PackArgs> Pack args
             (fun results -> 
             let outputPath = results.GetResult <@ PackArgs.Output @>            
             Dependencies.Locate().Pack(
@@ -197,7 +209,7 @@ try
                 ?version = results.TryGetResult <@ PackArgs.Version @>,
                 ?releaseNotes = results.TryGetResult <@ PackArgs.ReleaseNotes @>))
     | Command(Push, args) ->
-        processCommand<PushArgs> args "push"
+        processCommand<PushArgs> Push args
             (fun results -> 
             let fileName = results.GetResult <@ PushArgs.FileName @>
             Dependencies.Locate().Push(
