@@ -114,9 +114,10 @@ Auto-restore off:
         { Title = "paket simplify"
           Syntax = formatCommandSyntax (UnionArgParser.Create<SimplifyArgs>())
           Text = """Simplifies your paket.dependencies file by removing transitive dependencies.
-Does also simplify paket.references files, unless [strict](dependencies-file.html#Strict-references) mode is used.
 
 <<syntax goes here>>
+
+Simplify will also affect paket.references files, unless [strict](dependencies-file.html#Strict-references) mode is used.
 
 ## Sample
 

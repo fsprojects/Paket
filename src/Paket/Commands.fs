@@ -19,7 +19,22 @@ type Command =
     | [<First>][<CustomCommandLine("push")>]                Push
 with 
     interface IArgParserTemplate with
-        member __.Usage = "Converts from using NuGet to Paket."
+        member this.Usage = 
+            match this with
+            | Add -> "Adds a new package to your paket.dependencies file."
+            | Config -> "Allows to store global configuration values like NuGet credentials."
+            | ConvertFromNuget -> "Converts from using NuGet to Paket."
+            | FindRefs -> "Finds all project files that have the given NuGet packages installed."
+            | Init -> "Creates empty paket.dependencies file in the working directory."
+            | AutoRestore -> "Enables or disables automatic Package Restore in Visual Studio during the build process."
+            | Install -> "Ensures that all dependencies in your paket.dependencies file are present in the `packages` directory and referenced correctly in all projects."
+            | Outdated -> "Lists all dependencies that have newer versions available."
+            | Remove -> "Removes a package from your paket.dependencies file and all paket.references files."
+            | Restore -> "Ensures that all dependencies in your paket.dependencies file are present in the `packages` directory."
+            | Simplify -> "Simplifies your paket.dependencies file by removing transitive dependencies."
+            | Update -> "Recomputes the dependency resolution, updates the paket.lock file and propagates any resulting package changes into all project files referencing updated packages."
+            | Pack -> "Packs all paket.template files within this repository"
+            | Push -> "Pushes all `.nupkg` files from the given directory."
  
 type GlobalArgs =
     | [<AltCommandLine("-v")>] Verbose
