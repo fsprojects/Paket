@@ -45,7 +45,7 @@ with
             | Project(_) -> "Allows to add the package to a single project only."
             | Force -> "Forces the download and reinstallation of all packages."
             | Interactive -> "Asks the user for every project if he or she wants to add the package to the projects's paket.references file."
-            | Hard -> "Replaces package references within project files even if they are not yet adhering to to Paket's conventions (and hence considered manually managed)."
+            | Hard -> "Replaces package references within project files even if they are not yet adhering to the Paket's conventions (and hence considered manually managed)."
             | No_Install -> "Skips paket install --hard process afterward generation of dependencies / references files."
 
 type ConfigArgs = 
@@ -103,7 +103,7 @@ with
         member this.Usage =
             match this with
             | Force -> "Forces the download and reinstallation of all packages."
-            | Hard -> "Replaces package references within project files even if they are not yet adhering to Paket's conventions (and hence considered manually managed)."            
+            | Hard -> "Replaces package references within project files even if they are not yet adhering to the Paket's conventions (and hence considered manually managed)."            
             | Redirects -> "Creates binding redirects for the NuGet packages."
 
 type OutdatedArgs =
@@ -130,8 +130,8 @@ with
             | Nuget(_) -> "Nuget package id."
             | Project(_) -> "Allows to add the package to a single project only."
             | Force -> "Forces the download and reinstallation of all packages."
-            | Interactive -> "sks the user for every project if he or she wants to remove the package from the projects's paket.references file. By default every installation of the package is removed."
-            | Hard -> "Replaces package references within project files even if they are not yet adhering to to Paket's conventions (and hence considered manually managed)."
+            | Interactive -> "Asks the user for every project if he or she wants to remove the package from the projects's paket.references file. By default every installation of the package is removed."
+            | Hard -> "Replaces package references within project files even if they are not yet adhering to the Paket's conventions (and hence considered manually managed)."
             | No_Install -> "Skips paket install --hard process afterward generation of dependencies / references files."
 
 type RestoreArgs =
@@ -172,7 +172,7 @@ Options:
 
   `--force`: Forces the download and reinstallation of all packages.
 
-  `--hard`: Replaces package references within project files even if they are not yet adhering to to Paket's conventions (and hence considered manually managed). See [convert from NuGet](paket-convert-from-nuget.html).
+  `--hard`: Replaces package references within project files even if they are not yet adhering to the Paket's conventions (and hence considered manually managed). See [convert from NuGet](paket-convert-from-nuget.html).
 
   `--redirects`: Creates binding redirects for the NuGet packages.
 *)
