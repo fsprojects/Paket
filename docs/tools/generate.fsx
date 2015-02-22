@@ -3,7 +3,7 @@
 #r "../../bin/Paket.exe"
 open System.IO
 
-Paket.HelpTexts.commands
+Paket.HelpTexts.commands.Force()
 |> Seq.iter (fun kv -> File.WriteAllText(sprintf "../content/paket-%s.md" kv.Key,kv.Value.ToMarkDown()))
 
 // --------------------------------------------------------------------------------------

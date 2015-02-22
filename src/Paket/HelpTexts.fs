@@ -43,6 +43,7 @@ type CommandHelpTopic =
         sprintf "# %s%s%s" this.Title System.Environment.NewLine text
 
 let commands = 
+    lazy
     ["convert-from-nuget", 
         { Title = "paket convert-from-nuget"
           Syntax = formatCommandSyntax (UnionArgParser.Create<ConvertFromNugetArgs>())
