@@ -18,20 +18,6 @@ let assembly = Assembly.GetExecutingAssembly()
 let fvi = FileVersionInfo.GetVersionInfo(assembly.Location);
 tracefn "Paket version %s" fvi.FileVersion
 
-let (|Command|_|) args = 
-    let results = 
-        UnionArgParser.Create<Command>()
-            .Parse(inputs = args,
-                   ignoreMissing = true, 
-                   ignoreUnrecognized = true, 
-                   raiseOnUsage = false)
-
-    match results.GetAllResults() with
-    | [ command ] -> Some (command, args.[1..])
-    | [] -> None
-    | _ -> failwith "expected only one command"
-
-
 let filterGlobalArgs args = 
     let globalResults = 
         UnionArgParser.Create<GlobalArgs>()
@@ -54,168 +40,173 @@ let filterGlobalArgs args =
     
     verbose, logFile, rest
 
-let processCommand<'T when 'T :> IArgParserTemplate> (command : Command) args commandF =
-    let commandName = HelpTexts.commandName command
+let processWithValidation<'T when 'T :> IArgParserTemplate> validateF commandF commandName usage 
+    args = 
     let parser = UnionArgParser.Create<'T>()
     let results = 
-        parser.Parse(inputs = args, raiseOnUsage = false, ignoreMissing = true, 
-                        errorHandler = ProcessExiter())
-            
-    if results.IsUsageRequested then
-        parser.Usage(
-                        "Paket " + commandName +
-                        Environment.NewLine + Environment.NewLine + 
-                        (command :> IArgParserTemplate).Usage + 
-                        Environment.NewLine + Environment.NewLine + 
-                        HelpTexts.formatSyntax parser ("paket " + commandName)) |> trace
-    else
+        parser.Parse
+            (inputs = args, raiseOnUsage = false, ignoreMissing = true, 
+             errorHandler = ProcessExiter())
+    let resultsValid = validateF (results)
+    if results.IsUsageRequested || not resultsValid then 
+        parser.Usage
+            ("Paket " + commandName + Environment.NewLine + Environment.NewLine + usage 
+             + Environment.NewLine + Environment.NewLine 
+             + HelpTexts.formatSyntax parser ("paket " + commandName)) |> trace
+    else 
         commandF results
+        let elapsedTime = Utils.TimeSpanToReadableString stopWatch.Elapsed
+        tracefn "%s - ready." elapsedTime
+
+let processCommand<'T when 'T :> IArgParserTemplate> (commandF : ArgParseResults<'T> -> unit) = 
+    processWithValidation (fun _ -> true) commandF 
 
 let v, logFile, args = filterGlobalArgs (Environment.GetCommandLineArgs().[1..])
 
 Logging.verbose <- v
 Option.iter setLogFile logFile
 
-try
-    match args with
-    | Command(Add, args) ->
-        processCommand<AddArgs> Add args
-            (fun results -> 
-            let packageName = results.GetResult <@ AddArgs.Nuget @>
-            let version = defaultArg (results.TryGetResult <@ AddArgs.Version @>) ""
-            let force = results.Contains <@ AddArgs.Force @>
-            let hard = results.Contains <@ AddArgs.Hard @>
-            let noInstall = results.Contains <@ AddArgs.No_Install @>
-            match results.TryGetResult <@ AddArgs.Project @> with
-            | Some projectName ->
-                Dependencies.Locate().AddToProject(packageName, version, force, hard, projectName, noInstall |> not)
-            | None ->
-                let interactive = results.Contains <@ AddArgs.Interactive @>
-                Dependencies.Locate().Add(packageName, version, force, hard, interactive, noInstall |> not))
-        
-    | Command(Config, args) ->
-        processCommand<ConfigArgs> Config args
-            (fun results ->
-            let args = results.GetResults <@ ConfigArgs.AddCredentials @> 
-            if args.Length = 0 then
-                let parser = UnionArgParser.Create<ConfigArgs>()
-                parser.Usage(HelpTexts.formatSyntax parser "paket config") |> trace
-            else
-                let source = args.Item 0
-                let username = 
-                    if(args.Length > 1) then
-                        args.Item 1
-                    else
-                        ""
-                Dependencies.Locate().AddCredentials(source, username))
+let add (results : ArgParseResults<_>) =
+    let packageName = results.GetResult <@ AddArgs.Nuget @>
+    let version = defaultArg (results.TryGetResult <@ AddArgs.Version @>) ""
+    let force = results.Contains <@ AddArgs.Force @>
+    let hard = results.Contains <@ AddArgs.Hard @>
+    let noInstall = results.Contains <@ AddArgs.No_Install @>
+    match results.TryGetResult <@ AddArgs.Project @> with
+    | Some projectName ->
+        Dependencies.Locate().AddToProject(packageName, version, force, hard, projectName, noInstall |> not)
+    | None ->
+        let interactive = results.Contains <@ AddArgs.Interactive @>
+        Dependencies.Locate().Add(packageName, version, force, hard, interactive, noInstall |> not)
 
-    | Command(ConvertFromNuget, args) ->
-        processCommand<ConvertFromNugetArgs> ConvertFromNuget args
-            (fun results ->
-            let force = results.Contains <@ ConvertFromNugetArgs.Force @>
-            let noInstall = results.Contains <@ ConvertFromNugetArgs.No_Install @>
-            let noAutoRestore = results.Contains <@ ConvertFromNugetArgs.No_Auto_Restore @>
-            let credsMigrationMode = results.TryGetResult <@ ConvertFromNugetArgs.Creds_Migration @>
-            Dependencies.ConvertFromNuget(force, noInstall |> not, noAutoRestore |> not, credsMigrationMode))
+let validateConfig (results : ArgParseResults<_>) =
+    let args = results.GetResults <@ ConfigArgs.AddCredentials @> 
+    args.Length > 0
+
+let config (results : ArgParseResults<_>) =
+    let args = results.GetResults <@ ConfigArgs.AddCredentials @> 
+    let source = args.Item 0
+    let username = 
+        if(args.Length > 1) then
+            args.Item 1
+        else
+            ""
+    Dependencies.Locate().AddCredentials(source, username)
+
+let validateAutoRestore (results : ArgParseResults<_>) =
+    results.GetAllResults().Length = 1
+
+let autoRestore (results : ArgParseResults<_>) =
+    match results.GetAllResults() with
+    | [On] -> Dependencies.Locate().TurnOnAutoRestore()
+    | [Off] -> Dependencies.Locate().TurnOffAutoRestore()
+    | _ -> failwith "expected only one argument"
+
+let convert (results : ArgParseResults<_>) =
+    let force = results.Contains <@ ConvertFromNugetArgs.Force @>
+    let noInstall = results.Contains <@ ConvertFromNugetArgs.No_Install @>
+    let noAutoRestore = results.Contains <@ ConvertFromNugetArgs.No_Auto_Restore @>
+    let credsMigrationMode = results.TryGetResult <@ ConvertFromNugetArgs.Creds_Migration @>
+    Dependencies.ConvertFromNuget(force, noInstall |> not, noAutoRestore |> not, credsMigrationMode)
     
-    | Command(FindRefs, args) ->
-         processCommand<FindRefsArgs> FindRefs args
-            (fun results ->
-            let packages = results.GetResults <@ FindRefsArgs.Packages @>
-            Dependencies.Locate().ShowReferencesFor(packages))
+let findRefs (results : ArgParseResults<_>) =
+    let packages = results.GetResults <@ FindRefsArgs.Packages @>
+    Dependencies.Locate().ShowReferencesFor(packages)
         
-    | Command(Init, args) ->
-        processCommand<InitArgs> Init args
-            (fun results ->
-            Dependencies.Init())
+let init (results : ArgParseResults<_>) =
+    Dependencies.Init()
 
-    | Command(AutoRestore, args) ->
-        processCommand<AutoRestoreArgs> AutoRestore args
-            (fun results -> 
-            match results.GetAllResults() with
-            | [On] -> Dependencies.Locate().TurnOnAutoRestore()
-            | [Off] -> Dependencies.Locate().TurnOffAutoRestore()
-            | _ ->
-                let parser = UnionArgParser.Create<AutoRestoreArgs>()
-                parser.Usage(HelpTexts.formatSyntax parser "paket auto-restore") |> trace)
+let install (results : ArgParseResults<_>) = 
+    let force = results.Contains <@ InstallArgs.Force @>
+    let hard = results.Contains <@ InstallArgs.Hard @>
+    let withBindingRedirects = results.Contains <@ InstallArgs.Redirects @>
+    Dependencies.Locate().Install(force, hard, withBindingRedirects)
 
-    | Command(Install, args) ->
-        processCommand<InstallArgs> Install args
-            (fun results -> 
-                let force = results.Contains <@ InstallArgs.Force @>
-                let hard = results.Contains <@ InstallArgs.Hard @>
-                let withBindingRedirects = results.Contains <@ InstallArgs.Redirects @>
-                Dependencies.Locate().Install(force,hard,withBindingRedirects))
+let outdated (results : ArgParseResults<_>) = 
+    let strict = results.Contains <@ OutdatedArgs.Ignore_Constraints @> |> not
+    let includePrereleases = results.Contains <@ OutdatedArgs.Include_Prereleases @>
+    Dependencies.Locate().ShowOutdated(strict, includePrereleases)
 
-    | Command(Outdated, args) ->
-        processCommand<OutdatedArgs> Outdated args
-            (fun results -> 
-            let strict = results.Contains <@ OutdatedArgs.Ignore_Constraints @> |> not
-            let includePrereleases = results.Contains <@ OutdatedArgs.Include_Prereleases @>
-            Dependencies.Locate().ShowOutdated(strict,includePrereleases))
+let remove (results : ArgParseResults<_>) = 
+    let packageName = results.GetResult <@ RemoveArgs.Nuget @>
+    let force = results.Contains <@ RemoveArgs.Force @>
+    let hard = results.Contains <@ RemoveArgs.Hard @>
+    let noInstall = results.Contains <@ RemoveArgs.No_Install @>
+    match results.TryGetResult <@ RemoveArgs.Project @> with
+    | Some projectName -> 
+        Dependencies.Locate()
+                    .RemoveFromProject(packageName, force, hard, projectName, noInstall |> not)
+    | None -> 
+        let interactive = results.Contains <@ RemoveArgs.Interactive @>
+        Dependencies.Locate().Remove(packageName, force, hard, interactive, noInstall |> not)
 
-    | Command(Remove, args) ->
-        processCommand<RemoveArgs> Remove args
-            (fun results -> 
-            let packageName = results.GetResult <@ RemoveArgs.Nuget @>
-            let force = results.Contains <@ RemoveArgs.Force @>
-            let hard = results.Contains <@ RemoveArgs.Hard @>
-            let noInstall = results.Contains <@ RemoveArgs.No_Install @>
-            match results.TryGetResult <@ RemoveArgs.Project @> with
-            | Some projectName ->
-                Dependencies.Locate().RemoveFromProject(packageName, force, hard, projectName, noInstall |> not)
-            | None ->
-                let interactive = results.Contains <@ RemoveArgs.Interactive @>
-                Dependencies.Locate().Remove(packageName, force, hard, interactive, noInstall |> not))
+let restore (results : ArgParseResults<_>) = 
+    let force = results.Contains <@ RestoreArgs.Force @>
+    let files = results.GetResults <@ RestoreArgs.References_Files @>
+    Dependencies.Locate().Restore(force, files)
 
-    | Command(Restore, args) ->
-        processCommand<RestoreArgs> Restore args
-            (fun results -> 
-            let force = results.Contains <@ RestoreArgs.Force @>
-            let files = results.GetResults <@ RestoreArgs.References_Files @> 
-            Dependencies.Locate().Restore(force,files))
+let simplify (results : ArgParseResults<_>) = 
+    let interactive = results.Contains <@ SimplifyArgs.Interactive @>
+    Dependencies.Simplify(interactive)
 
-    | Command(Simplify, args) ->
-        processCommand<SimplifyArgs> Simplify args
-            (fun results -> 
-            let interactive = results.Contains <@ SimplifyArgs.Interactive @>
-            Dependencies.Simplify(interactive))
+let update (results : ArgParseResults<_>) = 
+    let hard = results.Contains <@ UpdateArgs.Hard @>
+    let force = results.Contains <@ UpdateArgs.Force @>
+    match results.TryGetResult <@ UpdateArgs.Nuget @> with
+    | Some packageName -> 
+        let version = results.TryGetResult <@ UpdateArgs.Version @>
+        Dependencies.Locate().UpdatePackage(packageName, version, force, hard)
+    | _ -> 
+        let withBindingRedirects = results.Contains <@ UpdateArgs.Redirects @>
+        Dependencies.Locate().Update(force, hard, withBindingRedirects)
 
-    | Command(Update, args) ->
-        processCommand<UpdateArgs> Update args
-            (fun results -> 
-            let hard = results.Contains <@ UpdateArgs.Hard @>
-            let force = results.Contains <@ UpdateArgs.Force @>
-            match results.TryGetResult <@ UpdateArgs.Nuget @> with
-            | Some packageName -> 
-                let version = results.TryGetResult <@ UpdateArgs.Version @>
-                Dependencies.Locate().UpdatePackage(packageName, version, force, hard)
-            | _ -> 
-                let withBindingRedirects = results.Contains <@ UpdateArgs.Redirects @>
-                Dependencies.Locate().Update(force,hard,withBindingRedirects))
-    | Command(Pack, args) ->
-        processCommand<PackArgs> Pack args
-            (fun results -> 
-            let outputPath = results.GetResult <@ PackArgs.Output @>            
-            Dependencies.Locate().Pack(
-                outputPath, 
-                ?buildConfig = results.TryGetResult <@ PackArgs.BuildConfig @>,
-                ?version = results.TryGetResult <@ PackArgs.Version @>,
-                ?releaseNotes = results.TryGetResult <@ PackArgs.ReleaseNotes @>))
-    | Command(Push, args) ->
-        processCommand<PushArgs> Push args
-            (fun results -> 
-            let fileName = results.GetResult <@ PushArgs.FileName @>
-            Dependencies.Locate().Push(
-                fileName, 
-                ?url = results.TryGetResult <@ PushArgs.Url @>, 
-                ?apiKey = results.TryGetResult <@ PushArgs.ApiKey @>))
-    | _ ->
-        let parser = UnionArgParser.Create<Command>()
+let pack (results : ArgParseResults<_>) = 
+    let outputPath = results.GetResult <@ PackArgs.Output @>
+    Dependencies.Locate()
+                .Pack(outputPath, ?buildConfig = results.TryGetResult <@ PackArgs.BuildConfig @>, 
+                      ?version = results.TryGetResult <@ PackArgs.Version @>, 
+                      ?releaseNotes = results.TryGetResult <@ PackArgs.ReleaseNotes @>)
+
+let push (results : ArgParseResults<_>) = 
+    let fileName = results.GetResult <@ PushArgs.FileName @>
+    Dependencies.Locate()
+                .Push(fileName, ?url = results.TryGetResult <@ PushArgs.Url @>, 
+                      ?apiKey = results.TryGetResult <@ PushArgs.ApiKey @>)
+
+try
+    let parser = UnionArgParser.Create<Command>()
+    let results = 
+        parser.Parse(inputs = args,
+                   ignoreMissing = true, 
+                   ignoreUnrecognized = true, 
+                   raiseOnUsage = false)
+
+    match results.GetAllResults() with
+    | [ command ] -> 
+        let args = args.[1..]
+        let commandName = HelpTexts.commandName command
+        let usage = (command :> IArgParserTemplate).Usage
+        let handler =
+            match command with
+            | Add -> processCommand add
+            | Config -> processWithValidation validateConfig config
+            | ConvertFromNuget -> processCommand convert
+            | FindRefs -> processCommand findRefs
+            | Init -> processCommand init
+            | AutoRestore -> processCommand autoRestore
+            | Install -> processCommand install
+            | Outdated -> processCommand outdated
+            | Remove -> processCommand remove
+            | Restore -> processCommand restore
+            | Simplify -> processCommand simplify
+            | Update -> processCommand update
+            | Pack -> processCommand pack
+            | Push -> processCommand push
+
+        handler commandName usage args
+    | [] -> 
         parser.Usage("available commands:") |> trace
-
-    let elapsedTime = Utils.TimeSpanToReadableString stopWatch.Elapsed
-    tracefn "%s - ready." elapsedTime
+    | _ -> failwith "expected only one command"
 with
 | exn when not (exn :? System.NullReferenceException) -> 
     Environment.ExitCode <- 1
