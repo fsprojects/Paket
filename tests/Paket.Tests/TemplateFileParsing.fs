@@ -81,7 +81,7 @@ let ``Parsing minimal file based packages works`` (fileContent, desc) =
         Assert.Fail("File package detected as project package")
     | CompleteInfo (core, _) ->
         core.Id |> shouldEqual "My.Thing"
-        core.Version |> shouldEqual v1
+        core.Version |> shouldEqual (Some v1)
         core.Authors |> shouldEqual ["Bob McBob"]
         core.Description |> normalizeLineEndings |> shouldEqual (normalizeLineEndings desc)
 
@@ -94,13 +94,6 @@ description A short description
 """
 
 [<Literal>]
-let Invalid2 = """type file
-id My.Thing
-authors Bob McBob
-description A short description
-"""
-
-[<Literal>]
 let Invalid3 = """type file
 id My.Thing
 version 1.0
@@ -108,10 +101,21 @@ description A short description
 """
 
 [<TestCase(Invalid1)>]
-[<TestCase(Invalid2)>]
 [<TestCase(Invalid3)>]
 let ``Invalid file input recognised as invalid`` (fileContent : string) =
     fileContent |> strToStream |> TemplateFile.Parse |> (function | Failure _ -> true | Success _ -> false)
+    |> shouldEqual true
+
+[<Literal>]
+let ValidWithoutVersion = """type file
+id My.Thing
+authors Bob McBob
+description A short description
+"""
+
+[<TestCase(ValidWithoutVersion)>]
+let ``Valid file input recognised as valid`` (fileContent : string) =
+    fileContent |> strToStream |> TemplateFile.Parse |> (function | Failure _ -> false | Success _ -> true)
     |> shouldEqual true
 
 [<Literal>]

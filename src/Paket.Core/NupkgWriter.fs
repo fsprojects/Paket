@@ -81,7 +81,9 @@ let nuspecDoc (info:CompleteInfo) =
         metadataNode.Add d
     
     !! "id" core.Id
-    !! "version" <| core.Version.ToString()
+    match core.Version with
+    | Some v -> !! "version" <| v.ToString()
+    | None -> failwithf "No version was given for %s" core.PackageFileName
     (!!?) "title" optional.Title
     !! "authors" (core.Authors |> String.concat ", ")
     if optional.Owners <> [] then !! "owners" (String.Join(", ",optional.Owners))
