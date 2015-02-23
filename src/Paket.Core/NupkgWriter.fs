@@ -123,13 +123,13 @@ let corePropsDoc (core : CompleteCoreInfo) =
         let node = XElement(ns + name)
         node.SetValue value
         root.Add node
-    (!!) dc "creator" core.Authors
-    (!!) dc "description" core.Description
-    (!!) dc "identifier" core.Id
-    (!!) ns "version" core.Version
+    !! dc "creator" core.Authors
+    !! dc "description" core.Description
+    !! dc "identifier" core.Id
+    !! ns "version" core.Version
     XElement(ns + "keywords") |> root.Add
-    (!!) dc "title" core.Id
-    (!!) ns "lastModifiedBy" "paket"
+    !! dc "title" core.Id
+    !! ns "lastModifiedBy" "paket"
     XDocument(declaration, box root)
 
 let relsPath = "/_rels/.rels"

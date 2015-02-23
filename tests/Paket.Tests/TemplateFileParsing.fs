@@ -113,7 +113,31 @@ authors Bob McBob
 description A short description
 """
 
+[<Literal>]
+let DescriptionTest = """type project
+id
+    15below.TravelStatus.CommonMessages
+title
+    15below.TravelStatus.CommonMessages
+authors
+    15below
+owners
+    15below
+requireLicenseAcceptance
+    false
+description
+    Common messages for Travel Status
+projectUrl
+    https://github.com/15below/Pasngr.TravelStatus/tree/master/src/15below.TravelStatus.CommonMessages
+iconUrl
+    https://si0.twimg.com/profile_images/3046082295/a10bd2175096bd5faebbd8285e319d54_bigger.png
+copyright
+    Copyright 2013
+
+"""
+
 [<TestCase(ValidWithoutVersion)>]
+[<TestCase(DescriptionTest)>]
 let ``Valid file input recognised as valid`` (fileContent : string) =
     fileContent |> strToStream |> TemplateFile.Parse |> (function | Failure _ -> false | Success _ -> true)
     |> shouldEqual true
