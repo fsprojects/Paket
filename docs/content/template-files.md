@@ -14,7 +14,7 @@ An example `paket.template` file might look like the following:
     files
         src/Test.Paket.Package/bin/Debug ==> lib
 
-This template file will create a nupkg called `Test.Paket.Package.nupkg` with the
+This template file will create a nupkg called `Test.Paket.Package.[Version].nupkg` with the
 contents of the `src/Test.Paket.Package/bin/Debug` directory in the `lib` directory
 of the package file.
 
