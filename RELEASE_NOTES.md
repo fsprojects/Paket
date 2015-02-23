@@ -1,6 +1,7 @@
 #### 0.30.0-alpha025 - 23.02.2015
 * New command: `paket pack` - http://fsprojects.github.io/Paket/paket-pack.html
 * New command: `paket push` - http://fsprojects.github.io/Paket/paket-push.html
+* Improved command line help - https://github.com/fsprojects/Paket/pull/639
 * BUGFIX: fix no_auto_restore option parsing  - https://github.com/fsprojects/Paket/issues/632
 
 #### 0.29.0 - 18.02.2015
