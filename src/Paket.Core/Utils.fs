@@ -280,10 +280,10 @@ module String =
     let quoted(text:string) = (if text.Contains(" ") then "\"" + text + "\"" else text) 
 
 // MonadPlus - "or else"
-let inline (++) v =
-    function
-    | Some x -> Some x
-    | None -> v
+let inline (++) x y =
+    match x with
+    | None -> y
+    | _ -> x
 
 let parseKeyValuePairs(s:string) =
     let s = s.Trim().ToLower()

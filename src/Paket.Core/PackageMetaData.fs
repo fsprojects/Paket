@@ -115,10 +115,10 @@ let merge templateFile metaData =
     match templateFile with
     | { Contents = ProjectInfo(md, opt) } -> 
         let merged = 
-            { Id = metaData.Id ++ md.Id
-              Version = metaData.Version ++ md.Version
-              Authors = metaData.Authors ++ md.Authors
-              Description = metaData.Description ++ md.Description }
+            { Id = md.Id ++ metaData.Id
+              Version = md.Version ++ metaData.Version
+              Authors = md.Authors ++ metaData.Authors
+              Description = md.Description ++ metaData.Description }
         match merged with
         | Invalid -> 
             failwithf 
