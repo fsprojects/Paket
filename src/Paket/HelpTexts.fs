@@ -1,34 +1,17 @@
 module Paket.HelpTexts
 
+open Paket.Commands
+
 type CommandHelpTopic = 
-    { Title : string
+    { Command : Command
       Text : string }
-    member this.ToMarkDown() =
-        let text =
-            this.Text
-                .Replace("paket.dependencies file","[`paket.dependencies` file](dependencies-file.html)")
-                .Replace("paket.lock file","[`paket.lock` file](lock-file.html)")
-                .Replace("paket.template files","[`paket.template` files](template-files.html)")
-                .Replace("paket.references files","[`paket.references` files](references-files.html)")
-                .Replace("paket.references file","[`paket.references` file](references-files.html)")
-                
-        sprintf "# %s%s%s" this.Title System.Environment.NewLine text
 
-let commands =
-    ["convert-from-nuget", 
-        { Title = "Convert your solution from NuGet"
-          Text = """## Manual process
+let commands = 
+    lazy
+    [   { Command = ConvertFromNuget
+          Text = """## Command steps
 
-If you are already using `NuGet.exe` for package restore then it should be easy to convert to Paket.
-
-1. Analyse your `packages.config` files and extract the referenced packages into a paket.dependencies file.
-2. Convert each `packages.config` file to a paket.references file. This is very easy - you just have to remove all the XML and keep the package names.
-3. Run [paket install](paket-install.html) with the `--hard` flag. This will analyze the dependencies, generate a paket.lock file, remove all the old package references from your project files and replace them with equivalent `Reference`s in a syntax that can be managed automatically by Paket.
-
-<div id="automatic"></div>
-## Automated process
-
-Paket can assist you with the conversion. The `paket convert-from-nuget` command:
+The `paket convert-from-nuget` command:
 
 1. Finds all `packages.config` files, generates a paket.dependencies file in the solution root and replaces each `packages.config` with an equivalent paket.references file. 
 2. If there is a solution-level `packages.config`, then it will be removed and its dependencies will be included into the paket.dependencies file.
@@ -43,22 +26,7 @@ Paket can assist you with the conversion. The `paket convert-from-nuget` command
 
   - add any newly discovered dependencies to the end of an existing `paket.dependencies` file.
   - transfer/append references from the `packages.config` files into `paket.references` files alongside.
-
-<div id="syntax"></div>
-
-    [lang=batchfile]
-    $ paket convert-from-nuget [--force] [--no-install] [--no-auto-restore] [--creds-migration MODE]
-
-Options:
-
-  `--force`: Forces the conversion, even if a paket.dependencies file or paket.references files are present.
-
-  `--no-install`: Skips [`paket install --hard`](paket-install.html) process afterward generation of dependencies / references files.
-
-  `--no-auto-restore`: Skips [`paket auto-restore`](paket-auto-restore.html) process afterward generation of dependencies / references files.
-
-  `--creds-migration`: Specify mode for migrating NuGet source credentials. Possible values for `MODE` are [`encrypt`|`plaintext`|`selective`]. The default `MODE` is `encrypt`.
-
+    
 ## Migrating NuGet source credentials
 
 If you are using authorized NuGet feeds, convert-from-nuget command will automatically migrate the credentials for you.
@@ -73,14 +41,8 @@ Following are valid modes for `--creds-migration` option:
 After converting your solution from NuGet, you may end up with many transitive dependencies in your Paket files.
 Consider using [`paket simplify`](paket-simplify.html) to remove unnecessary transitive dependencies from your paket.dependencies file and paket.references files."""}
 
-     "auto-restore",
-        { Title = "paket auto-restore"
-          Text = """Enables or disables automatic Package Restore in Visual Studio during the build process. 
-
-    [lang=batchfile]
-    $ paket auto-restore [on|off]
-
-Auto-restore on:
+        { Command = AutoRestore
+          Text = """Auto-restore on:
 
   - creates a `.paket` directory in your root directory,
   - downloads `paket.targets` and `paket.bootstrapper.exe` into the `.paket` directory,
@@ -91,32 +53,11 @@ Auto-restore off:
   - removes `paket.targets` from the `.paket` directory,
   - removes the `<Import>` statement for `paket.targets` from projects that have the [references file](references-files.html)."""}
 
-     "restore",
-        { Title = "paket restore"
-          Text = """Ensures that all dependencies in your paket.dependencies file are present in the `packages` directory .
+        { Command = Restore
+          Text = """"""}
 
-    [lang=batchfile]
-    $ paket restore [--force] [--references-files REFERENCESFILE1 REFERENCESFILE2 ...]
-
-Options:
-
-  `--force`: Forces the download of all packages.
-
-  `--references-files`: Allows to restore all packages from the given paket.references files. If no paket.references file is given then all packages will be restored."""}
-
-     "simplify",
-        { Title = "paket simplify"
-          Text = """Simplifies your paket.dependencies file by removing transitive dependencies.
-Does also simplify paket.references files, unless [strict](dependencies-file.html#Strict-references) mode is used.
-
-    [lang=batchfile]
-    $ paket simplify [-v] [--interactive]
-
-Options:
-
-  `-v`: Verbose - output the difference in content before and after running simplify command.
-
-  `--interactive`: Asks to confirm to delete every transitive dependency from each of the files. See [Interactive Mode](paket-simplify.html#Interactive-mode).
+        { Command = Simplify
+          Text = """Simplify will also affect paket.references files, unless [strict](dependencies-file.html#Strict-references) mode is used.
 
 ## Sample
 
@@ -165,29 +106,11 @@ The simplify command will help you maintain your direct dependencies.
 Sometimes, you may still want to have control over some of the transitive dependencies. In this case you can use the `--interactive` flag,
 which will ask you to confirm before deleting a dependency from a file."""}
 
-     "init",
-        { Title = "paket init"
-          Text = """Creates empty paket.dependencies file in the working directory.
+        { Command = Init
+          Text = """"""}
 
-    [lang=batchfile]
-    $ paket init"""}
-
-     "add",
-        { Title = "paket add"
-          Text = """Adds a new package to your paket.dependencies file.
-
-    [lang=batchfile]
-    $ paket add nuget PACKAGENAME [version VERSION] [--interactive] [--force] [--hard]
-
-Options:
-
-  `--interactive`: Asks the user for every project if he or she wants to add the package to the projects's paket.references file.
-
-  `--force`: Forces the download and reinstallation of all packages.
-
-  `--hard`: Replaces package references within project files even if they are not yet adhering to to Paket's conventions (and hence considered manually managed). See [convert from NuGet](paket-convert-from-nuget.html).
-
-## Adding to a single project
+        { Command = Add
+          Text = """## Adding to a single project
 
 It's also possible to add a package to a specified project only: 
 
@@ -215,14 +138,8 @@ This will add the package to the selected paket.references files and also to the
 	nuget FAKE
 	nuget xunit"""}
 
-     "find-refs",
-        { Title = "paket find-refs"
-          Text = """Finds all project files that have the given NuGet packages installed.
-
-    [lang=batchfile]
-    $ paket find-refs nuget PACKAGENAME1 PACKAGENAME1 ...
-
-## Sample
+        { Command = FindRefs
+          Text = """## Sample
 
 *.src/Paket/paket.references* contains:
 
@@ -248,22 +165,8 @@ and paket gives the following output:
 	.src/Paket.Core/Paket.Core.fsproj
 	.src/Paket/Paket.fsproj"""}
 
-     "update",
-        { Title = "paket update"
-          Text = """Recomputes the dependency resolution, updates the paket.lock file and propagates any resulting package changes into all project files referencing updated packages.
-
-    [lang=batchfile]
-    $ paket update [--force] [--hard] [--redirects]	
-
-Options:
-
-  `--force`: Forces the download and reinstallation of all packages.
-
-  `--hard`: Replaces package references within project files even if they are not yet adhering to to Paket's conventions (and hence considered manually managed). See [convert from NuGet](paket-convert-from-nuget.html).
-
-  `--redirects`: Creates binding redirects for the NuGet packages.
-
-## Updating a single package
+        { Command = Update
+          Text = """## Updating a single package
 
 It's also possible to update only a single package and to keep all other dependencies fixed:
 
@@ -276,20 +179,8 @@ Options:
 
   `--hard`: Replaces package references within project files even if they are not yet adhering to to Paket's conventions (and hence considered manually managed). See [convert from NuGet](paket-convert-from-nuget.html)."""}
   
-     "outdated",
-        { Title = "paket outdated"
-          Text = """Lists all dependencies that have newer versions available.
-
-    [lang=batchfile]
-    $ paket outdated [--pre] [--ignore-constraints]
-
-Options:
-
-  `--pre`: Includes prereleases.
-
-  `--ignore-constraints`: Ignores the version requirement as in the paket.dependencies file.
-
-## Sample
+        { Command = Outdated
+          Text = """## Sample
 
 Consider the following paket.dependencies file:
 
@@ -311,22 +202,8 @@ Now we run `paket outdated`:
 
 ![alt text](img/paket-outdated.png "paket outdated command")"""}
 
-     "remove",
-        { Title = "paket remove"
-          Text = """Removes a package from your paket.dependencies file and all paket.references files.
-
-    [lang=batchfile]
-    $ paket remove nuget PACKAGENAME [--interactive] [--force] [--hard]
-
-Options:
-
-  `--interactive`: Asks the user for every project if he or she wants to remove the package from the projects's paket.references file. By default every installation of the package is removed.
-
-  `--force`: Forces the download and reinstallation of all packages.
-
-  `--hard`: Replaces package references within project files even if they are not yet adhering to to Paket's conventions (and hence considered manually managed). See [convert from NuGet](paket-convert-from-nuget.html).
-
-## Removing from a single project
+        { Command = Remove
+          Text = """## Removing from a single project
 
 It's also possible to remove a package from a specified project only: 
 
@@ -335,45 +212,20 @@ It's also possible to remove a package from a specified project only:
 
 See also [paket add](paket-add.html)."""}
 
-     "install",
-        { Title = "paket install"
-          Text = """Ensures that all dependencies in your paket.dependencies file are present in the `packages` directory and referenced correctly in all projects.
+        { Command = Install
+          Text = """"""}
+        { Command = Pack
+          Text = """"""}
+        { Command = Push
+          Text = """"""}
+        { Command = Config
+          Text = """Paket will then ask for username and password.
 
-    [lang=batchfile]
-    $ paket install [--force] [--hard] [--redirects]
+This credentials will be used if no username and password for the source are configured in the [`paket.dependencies` file](nuget-dependencies.html).
 
-Options:
+The configuration file can be found in:
 
-  `--force`: Forces the download and reinstallation of all packages.
-
-  `--hard`: Replaces package references within project files even if they are not yet adhering to Paket's conventions (and hence considered manually managed). See [convert from NuGet](paket-convert-from-nuget.html).
-  
-  `--redirects`: Creates binding redirects for the NuGet packages."""}
-     "pack",
-        { Title = "paket pack"
-          Text = """Packs all paket.template files within this repository
-
-    [lang=batchfile]
-    $ paket pack output outputDirectory [buildconfig Debug]
-
-Options:
-
-  `output`: Output directory to put nupkgs
-
-  `buildconfig`: Optionally specify build configuration that should be packaged (defaults to Release)."""}
-     "push",
-        { Title = "paket push"
-          Text = """Pushes all `.nupkg` files from the given directory.
-
-    [lang=batchfile]
-    $ paket push packagedir path/to/packages [apikey YourApiKey] [url NuGetFeed]
-
-Options:
-
-  `packagedir`: a directory; every `.nupkg` file in this directory or it's children will be pushed.
-
-  `apikey`: Optionally specify your API key on the command line. Otherwise uses the value of the `nugetkey` environment variable.
-  
-  `url`: Optionally specify root url of the nuget repository you are pushing too. Defaults to [https://nuget.org](https://nuget.org)."""}]
-
-  |> dict
+	let AppDataFolder = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData)
+	let PaketConfigFolder = Path.Combine(AppDataFolder, "Paket")
+	let PaketConfigFile = Path.Combine(PaketConfigFolder, "paket.config")
+"""}]

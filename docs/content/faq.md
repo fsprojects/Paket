@@ -54,7 +54,14 @@ Instead we encourage the .NET community to use a declarative install process and
 
 ## I'm already using NuGet. How can I convert to Paket?
 
-The process is very easy and you can read more about it in the [convert from NuGet](paket-convert-from-nuget.html) section.
+The process can be automated with [paket convert-from-nuget](paket-convert-from-nuget.html) command.
+
+In case of the command's failure, you can fallback to manual approach:
+
+1. Analyse your `packages.config` files and extract the referenced packages into a paket.dependencies file.
+2. Convert each `packages.config` file to a paket.references file. This is very easy - you just have to remove all the XML and keep the package names.
+3. Run [paket install](paket-install.html) with the `--hard` flag. This will analyze the dependencies, generate a paket.lock file, remove all the old package references from your project files and replace them with equivalent `Reference`s in a syntax that can be managed automatically by Paket.
+4. (Optional) Raise corresponding issue [here](https://github.com/fsprojects/Paket/issues) so that we can make the comand even better.
 
 ## Why should I commit the lock file?
 

@@ -1,9 +1,10 @@
 /// Getting help docs from Paket.exe
+#r "../../bin/UnionArgParser.dll"
 #r "../../bin/Paket.exe"
 open System.IO
 
-Paket.HelpTexts.commands
-|> Seq.iter (fun kv -> File.WriteAllText(sprintf "../content/paket-%s.md" kv.Key,kv.Value.ToMarkDown()))
+Paket.HelpTexts.commands.Force()
+|> Seq.iter (fun ht -> File.WriteAllText(sprintf "../content/paket-%s.md" ht.Command.Name, Paket.Commands.markdown ht.Command ht.Text))
 
 // --------------------------------------------------------------------------------------
 // Builds the documentation from `.fsx` and `.md` files in the 'docs/content' directory
