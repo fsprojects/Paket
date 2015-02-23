@@ -15,12 +15,34 @@ let (|CompleteTemplate|IncompleteTemplate|) templateFile =
 
 let (|Title|Description|Version|InformationalVersion|Company|Ignore|) (attribute : obj) = 
     match attribute with
-    | :? AssemblyTitleAttribute as title -> Title title.Title
-    | :? AssemblyDescriptionAttribute as description -> Description description.Description
-    | :? AssemblyVersionAttribute as version -> Version(SemVer.Parse version.Version)
+    | :? AssemblyTitleAttribute as title ->
+        match title.Title with
+        | x when String.IsNullOrWhiteSpace x ->
+            Ignore
+        | x ->
+            Title x
+    | :? AssemblyDescriptionAttribute as description ->
+        match description.Description with
+        | x when String.IsNullOrWhiteSpace x ->
+            Ignore
+        | x ->
+            Description x
+    | :? AssemblyVersionAttribute as version ->
+        match version.Version with
+        | x when String.IsNullOrWhiteSpace x ->
+            Ignore
+        | x -> Version(SemVer.Parse x)
     | :? AssemblyInformationalVersionAttribute as version -> 
-        InformationalVersion(SemVer.Parse version.InformationalVersion)
-    | :? AssemblyCompanyAttribute as company -> Company company.Company
+        match version.InformationalVersion with
+        | x when String.IsNullOrWhiteSpace x ->
+            Ignore
+        | x ->
+            InformationalVersion(SemVer.Parse x)
+    | :? AssemblyCompanyAttribute as company ->
+        match company.Company with
+        | x when String.IsNullOrWhiteSpace x ->
+            Ignore
+        | x -> Company x
     | _ -> Ignore
 
 let getId (assembly : Assembly) (md : ProjectCoreInfo) = { md with Id = Some(assembly.GetName().Name) }
@@ -93,10 +115,10 @@ let merge templateFile metaData =
     match templateFile with
     | { Contents = ProjectInfo(md, opt) } -> 
         let merged = 
-            { Id = md.Id ++ metaData.Id
-              Version = md.Version ++ metaData.Version
-              Authors = md.Authors ++ metaData.Authors
-              Description = md.Description ++ metaData.Description }
+            { Id = metaData.Id ++ md.Id
+              Version = metaData.Version ++ md.Version
+              Authors = metaData.Authors ++ md.Authors
+              Description = metaData.Description ++ md.Description }
         match merged with
         | Invalid -> 
             failwithf 
