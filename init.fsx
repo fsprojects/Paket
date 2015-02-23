@@ -24,7 +24,9 @@ let outputPath = localFile "build.fsx"
 
 let prompt (msg:string) = 
   Console.Write(msg)
-  Console.ReadLine().Trim() |> function | "" -> None | s -> Some s
+  Console.ReadLine().Trim() 
+  |> function | "" -> None | s -> Some s
+  |> Option.map (fun s -> s.Replace ("\"","\\\""))
 let runningOnAppveyor =
   not <| String.IsNullOrEmpty(Environment.GetEnvironmentVariable("CI"))
 let runningOnTravis =
@@ -77,6 +79,10 @@ vars.["##GitName##"]     <- promptFor "Github Project Name (leave blank to use P
 let solutionTemplateName = "FSharp.ProjectScaffold"
 let projectTemplateName = "FSharp.ProjectTemplate"
 let testTemplateProjectName = "FSharp.ProjectTemplate.Tests"
+let oldProjectGuid = "7E90D6CE-A10B-4858-A5BC-41DF7250CBCA"
+let projectGuid = Guid.NewGuid().ToString()
+let oldTestProjectGuid = "E789C72A-5CFD-436B-8EF1-61AA2852A89F"
+let testProjectGuid = Guid.NewGuid().ToString()
 
 //Rename solution file
 let templateSolutionFile = localFile (sprintf "%s.sln" solutionTemplateName)
@@ -138,6 +144,10 @@ let overwrite file content = File.WriteAllLines(file, content |> Seq.toArray); f
 let replaceContent file = 
   File.ReadAllLines(file) |> Array.toSeq
   |> replace projectTemplateName projectName
+  |> replace (oldProjectGuid.ToLowerInvariant()) (projectGuid.ToLowerInvariant())
+  |> replace (oldTestProjectGuid.ToLowerInvariant()) (testProjectGuid.ToLowerInvariant())
+  |> replace (oldProjectGuid.ToUpperInvariant()) (projectGuid.ToUpperInvariant())
+  |> replace (oldTestProjectGuid.ToUpperInvariant()) (testProjectGuid.ToUpperInvariant())
   |> replace solutionTemplateName projectName
   |> overwrite file
   |> sprintf "%s updated"
