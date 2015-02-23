@@ -1,7 +1,12 @@
 ﻿namespace Paket
 
 open Paket
-
+open System
+open System.IO
+open System.Text.RegularExpressions
+open Paket.Rop
+open Paket.Domain
+    
 type CompleteCoreInfo = 
     { Id : string
       Version : SemVerInfo
@@ -64,12 +69,6 @@ type TemplateFile =
 
 [<CompilationRepresentationAttribute(CompilationRepresentationFlags.ModuleSuffix)>]
 module TemplateFile = 
-    open System
-    open System.IO
-    open System.Text.RegularExpressions
-    open Paket.Rop
-    open Paket.Domain
-    
     let setVersion version templateFile = 
         let contents = 
             match templateFile.Contents with
