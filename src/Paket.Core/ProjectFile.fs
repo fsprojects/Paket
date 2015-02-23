@@ -8,16 +8,19 @@ open System.Xml
 open System.Collections.Generic
 open Paket.Xml
 
+/// File item inside of project files.
 type FileItem = 
     { BuildAction : string
       Include : string 
       Link : string option }
 
+/// Project references inside of project files.
 type ProjectReference = 
     { Path : string
       Name : string
       GUID : Guid }
 
+/// Project output type.
 [<RequireQualifiedAccess>]
 type ProjectOutputType =
 | Exe 

@@ -67,11 +67,10 @@ let nuspecDoc (info:CompleteInfo) =
     let buildDependencyNode (Id, (VersionRequirement(range, _))) = 
         let dep = XElement(ns + "dependency")
         dep.SetAttributeValue(XName.Get "id", Id)
-        let versionStr = NugetVersionRangeParser.format range
 
-        match versionStr with
+        match range.FormatInNuGetSyntax() with
         | "0" -> ()
-        | _ -> dep.SetAttributeValue(XName.Get "version", versionStr)
+        | versionStr -> dep.SetAttributeValue(XName.Get "version", versionStr)
         dep
     
     let buildDependenciesNode dependencyList = 

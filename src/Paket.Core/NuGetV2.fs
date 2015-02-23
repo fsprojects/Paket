@@ -182,7 +182,7 @@ let parseODataDetails(nugetURL,packageName,version,raw) =
                             | None -> []
                          else 
                             []))
-        |> Array.map (fun (name, version, restricted) -> PackageName name, NugetVersionRangeParser.parse version, restricted)
+        |> Array.map (fun (name, version, restricted) -> PackageName name, VersionRequirement.Parse version, restricted)
         |> Array.toList
 
     

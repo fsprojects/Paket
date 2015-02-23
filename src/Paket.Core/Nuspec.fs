@@ -7,82 +7,16 @@ open Xml
 open Paket.Requirements
 open Paket.Domain
 
+///  Nuspec reference type inside of nuspec files.
 [<RequireQualifiedAccess>]
 type NuspecReferences = 
     | All
     | Explicit of string list
 
+/// Framework assembly reference inside of nuspec files.
 type FrameworkAssemblyReference = {
     AssemblyName: string
     FrameworkRestrictions : FrameworkRestrictions }
-
-module NugetVersionRangeParser =
-    
-    /// Parses NuGet version ranges.
-    let parse (text:string) = 
-        if  text = null || text = "" || text = "null" then VersionRequirement.AllReleases else
-
-        let parseRange text = 
-            let failParse() = failwithf "unable to parse %s" text
-
-            let parseBound  = function
-                | '[' | ']' -> VersionRangeBound.Including
-                | '(' | ')' -> VersionRangeBound.Excluding
-                | _         -> failParse()
-        
-            if not <| text.Contains "," then
-                if text.StartsWith "[" then Specific(text.Trim([|'['; ']'|]) |> SemVer.Parse)
-                else Minimum(SemVer.Parse text)
-            else
-                let fromB = parseBound text.[0]
-                let toB   = parseBound (Seq.last text)
-                let versions = text
-                                .Trim([|'['; ']';'(';')'|])
-                                .Split([|','|], StringSplitOptions.RemoveEmptyEntries)
-                                |> Array.filter (fun s -> String.IsNullOrWhiteSpace s |> not)
-                                |> Array.map SemVer.Parse
-                match versions.Length with
-                | 2 ->
-                    Range(fromB, versions.[0], versions.[1], toB)
-                | 1 ->
-                    if text.[1] = ',' then
-                        match fromB, toB with
-                        | VersionRangeBound.Excluding, VersionRangeBound.Including -> Maximum(versions.[0])
-                        | VersionRangeBound.Excluding, VersionRangeBound.Excluding -> LessThan(versions.[0])
-                        | VersionRangeBound.Including, VersionRangeBound.Including -> Maximum(versions.[0])
-                        | _ -> failParse()
-                    else 
-                        match fromB, toB with
-                        | VersionRangeBound.Excluding, VersionRangeBound.Excluding -> GreaterThan(versions.[0])
-                        | VersionRangeBound.Including, VersionRangeBound.Including -> Minimum(versions.[0])
-                        | _ -> failParse()
-                | _ -> failParse()
-        VersionRequirement(parseRange text,PreReleaseStatus.No)
-
-    /// formats a VersionRange in NuGet syntax
-    let format (v:VersionRange) =
-        match v with
-        | Minimum(version) -> 
-            match version.ToString() with
-            | "0" -> ""
-            | x  -> x
-        | GreaterThan(version) -> sprintf "(%s,)" (version.ToString())
-        | Maximum(version) -> sprintf "(,%s]" (version.ToString())
-        | LessThan(version) -> sprintf "(,%s)" (version.ToString())
-        | Specific(version) -> sprintf "[%s]" (version.ToString())
-        | OverrideAll(version) -> sprintf "[%s]" (version.ToString()) 
-        | Range(fromB, from,_to,_toB) -> 
-            let getMinDelimiter (v:VersionRangeBound) =
-                match v with
-                | VersionRangeBound.Including -> "["
-                | VersionRangeBound.Excluding -> "("
-
-            let getMaxDelimiter (v:VersionRangeBound) =
-                match v with
-                | VersionRangeBound.Including -> "]"
-                | VersionRangeBound.Excluding -> ")"
-        
-            sprintf "%s%s,%s%s" (getMinDelimiter fromB) (from.ToString()) (_to.ToString()) (getMaxDelimiter _toB) 
 
 type Nuspec = 
     { References : NuspecReferences 
@@ -111,8 +45,8 @@ type Nuspec =
                     | None -> failwithf "unable to find dependency id in %s" fileName                            
                 let version = 
                     match node |> getAttribute "version" with
-                    | Some version -> NugetVersionRangeParser.parse version
-                    | None ->         NugetVersionRangeParser.parse "0"
+                    | Some version -> VersionRequirement.Parse version
+                    | None ->         VersionRequirement.Parse "0"
                 let restriction =
                     let parent = node.ParentNode 
                     match parent.Name.ToLower(), parent |> getAttribute "targetFramework" with

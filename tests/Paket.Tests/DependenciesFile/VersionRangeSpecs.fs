@@ -57,9 +57,9 @@ let ``can detect range``() =
 
 [<Test>]
 let ``can detect minimum NuGet version``() = 
-    NugetVersionRangeParser.parse "0" |> shouldEqual (DependenciesFileParser.parseVersionRequirement ">= 0")
-    NugetVersionRangeParser.parse "" |> shouldEqual (DependenciesFileParser.parseVersionRequirement ">= 0")
-    NugetVersionRangeParser.parse null |> shouldEqual (DependenciesFileParser.parseVersionRequirement ">= 0")
+    VersionRequirement.Parse "0" |> shouldEqual (DependenciesFileParser.parseVersionRequirement ">= 0")
+    VersionRequirement.Parse "" |> shouldEqual (DependenciesFileParser.parseVersionRequirement ">= 0")
+    VersionRequirement.Parse null |> shouldEqual (DependenciesFileParser.parseVersionRequirement ">= 0")
 
     parseRange "" |> shouldEqual (parseRange ">= 0")
     parseRange null |> shouldEqual (parseRange ">= 0")

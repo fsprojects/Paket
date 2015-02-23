@@ -1,5 +1,7 @@
 ﻿namespace Paket
 
+open System
+
 /// Defines if the range bound is including or excluding.
 [<RequireQualifiedAccess>]
 type VersionRangeBound = 
@@ -65,6 +67,31 @@ type VersionRange =
 
             from + " " + _to
 
+    /// formats a VersionRange in NuGet syntax
+    member this.FormatInNuGetSyntax() =
+        match this with
+        | Minimum(version) -> 
+            match version.ToString() with
+            | "0" -> ""
+            | x  -> x
+        | GreaterThan(version) -> sprintf "(%s,)" (version.ToString())
+        | Maximum(version) -> sprintf "(,%s]" (version.ToString())
+        | LessThan(version) -> sprintf "(,%s)" (version.ToString())
+        | Specific(version) -> sprintf "[%s]" (version.ToString())
+        | OverrideAll(version) -> sprintf "[%s]" (version.ToString()) 
+        | Range(fromB, from,_to,_toB) -> 
+            let getMinDelimiter (v:VersionRangeBound) =
+                match v with
+                | VersionRangeBound.Including -> "["
+                | VersionRangeBound.Excluding -> "("
+
+            let getMaxDelimiter (v:VersionRangeBound) =
+                match v with
+                | VersionRangeBound.Including -> "]"
+                | VersionRangeBound.Excluding -> ")"
+        
+            sprintf "%s%s,%s%s" (getMinDelimiter fromB) (from.ToString()) (_to.ToString()) (getMaxDelimiter _toB) 
+
 type VersionRequirement =
 | VersionRequirement of VersionRange * PreReleaseStatus
     /// Checks wether the given version is in the version range
@@ -113,6 +140,49 @@ type VersionRequirement =
     static member NoRestriction = VersionRequirement(Minimum(SemVer.Parse "0"),PreReleaseStatus.All)
 
     override this.ToString() = this.Range.ToString()
+
+    /// Parses NuGet version range
+    static member Parse (text:string) = 
+        if  text = null || text = "" || text = "null" then VersionRequirement.AllReleases else
+
+        let parseRange (text:string) = 
+            let failParse() = failwithf "unable to parse %s" text
+
+            let parseBound  = function
+                | '[' | ']' -> VersionRangeBound.Including
+                | '(' | ')' -> VersionRangeBound.Excluding
+                | _         -> failParse()
+        
+            if not <| text.Contains "," then
+                if text.StartsWith "[" then Specific(text.Trim([|'['; ']'|]) |> SemVer.Parse)
+                else Minimum(SemVer.Parse text)
+            else
+                let fromB = parseBound text.[0]
+                let toB   = parseBound (Seq.last text)
+                let versions = 
+                    text
+                        .Trim([|'['; ']';'(';')'|])
+                        .Split([|','|], StringSplitOptions.RemoveEmptyEntries)
+                        |> Array.filter (fun s -> String.IsNullOrWhiteSpace s |> not)
+                        |> Array.map SemVer.Parse
+
+                match versions.Length with
+                | 2 ->
+                    Range(fromB, versions.[0], versions.[1], toB)
+                | 1 ->
+                    if text.[1] = ',' then
+                        match fromB, toB with
+                        | VersionRangeBound.Excluding, VersionRangeBound.Including -> Maximum(versions.[0])
+                        | VersionRangeBound.Excluding, VersionRangeBound.Excluding -> LessThan(versions.[0])
+                        | VersionRangeBound.Including, VersionRangeBound.Including -> Maximum(versions.[0])
+                        | _ -> failParse()
+                    else 
+                        match fromB, toB with
+                        | VersionRangeBound.Excluding, VersionRangeBound.Excluding -> GreaterThan(versions.[0])
+                        | VersionRangeBound.Including, VersionRangeBound.Including -> Minimum(versions.[0])
+                        | _ -> failParse()
+                | _ -> failParse()
+        VersionRequirement(parseRange text,PreReleaseStatus.No)
 
 /// Represents a resolver strategy.
 [<RequireQualifiedAccess>]

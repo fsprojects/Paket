@@ -55,8 +55,8 @@ let ``should serialize dependencies``() =
         { OptionalPackagingInfo.Epmty with 
             Tags = [ "f#"; "rules" ]
             Dependencies = 
-                [ "Paket.Core", NugetVersionRangeParser.parse "[3.1]"
-                  "xUnit", NugetVersionRangeParser.parse "2.0" ] }
+                [ "Paket.Core", VersionRequirement.Parse "[3.1]"
+                  "xUnit", VersionRequirement.Parse "2.0" ] }
     
     let doc = NupkgWriter.nuspecDoc (core, optional)
     doc.ToString() 
