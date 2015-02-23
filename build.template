@@ -155,6 +155,7 @@ Target "RunTests" (fun _ ->
 Target "SourceLink" (fun _ ->
     let baseUrl = sprintf "%s/%s/{0}/%%var2%%" gitRaw (project.ToLower())
     use repo = new GitRepo(__SOURCE_DIRECTORY__)
+    //F# projects
     !! "src/**/*.fsproj"
     |> Seq.iter (fun f ->
         let proj = VsProj.LoadRelease f
@@ -165,7 +166,19 @@ Target "SourceLink" (fun _ ->
         proj.CreateSrcSrv baseUrl repo.Revision (repo.Paths files)
         Pdbstr.exec proj.OutputFilePdb proj.OutputFilePdbSrcSrv
     )
+    //C# projects
+    !! "src/**/*.csproj"
+    |> Seq.iter (fun f ->
+        let proj = VsProj.LoadRelease f
+        logfn "source linking %s" proj.OutputFilePdb
+        let files = proj.Compiles -- "**/AssemblyInfo.cs"
+        repo.VerifyChecksums files
+        proj.VerifyPdbChecksums files
+        proj.CreateSrcSrv baseUrl repo.Revision (repo.Paths files)
+        Pdbstr.exec proj.OutputFilePdb proj.OutputFilePdbSrcSrv
+    )
 )
+
 #endif
 
 // --------------------------------------------------------------------------------------
