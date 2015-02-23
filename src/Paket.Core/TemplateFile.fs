@@ -84,9 +84,6 @@ module TemplateFile =
             | ProjectInfo(core, optional) -> ProjectInfo(core, { optional with ReleaseNotes = releaseNotes })
         { templateFile with Contents = contents }
     
-    let private basicOperators = [ "~>"; "=="; "<="; ">="; "="; ">"; "<" ]
-    let private operators = basicOperators @ (basicOperators |> List.map (fun o -> "!" + o))
-    
     let private (!<) prefix lines = 
         let singleLine str = 
             let regex = sprintf "^%s (?<%s>.*)" prefix prefix
