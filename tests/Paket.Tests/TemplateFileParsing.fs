@@ -5,6 +5,7 @@ open Paket
 open Paket.Rop
 open FsUnit
 open NUnit.Framework
+open Paket.TestHelpers
 
 [<Literal>]
 let FileBasedShortDesc = """type file
@@ -82,7 +83,7 @@ let ``Parsing minimal file based packages works`` (fileContent, desc) =
         core.Id |> shouldEqual "My.Thing"
         core.Version |> shouldEqual v1
         core.Authors |> shouldEqual ["Bob McBob"]
-        core.Description |> shouldEqual desc
+        core.Description |> normalizeLineEndings |> shouldEqual (normalizeLineEndings desc)
 
 [<Literal>]
 let Invalid1 = """type fil

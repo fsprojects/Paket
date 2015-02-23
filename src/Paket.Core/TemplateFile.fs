@@ -101,7 +101,7 @@ module TemplateFile =
                 | _ -> 
                     Some(acc
                          |> List.rev
-                         |> String.concat "\n")
+                         |> String.concat Environment.NewLine)
             
             let rec findStart lines = 
                 match (lines : String list) with
