@@ -9,11 +9,14 @@ open Paket.Domain
     
 type CompleteCoreInfo = 
     { Id : string
-      Version : SemVerInfo
+      Version : SemVerInfo option
       Authors : string list
       Description : string }
-    member this.PackageFileName = sprintf "%s.%O.nupkg" this.Id this.Version
-    member this.NuspecFileName = sprintf "/%s.%O.nuspec" this.Id this.Version
+    member this.PackageFileName = 
+        match this.Version with
+        | Some v -> sprintf "%s.%O.nupkg" this.Id v
+        | None -> failwithf "No version given for %s" this.Id
+    member this.NuspecFileName = this.Id + ".nuspec" 
 
 type ProjectCoreInfo = 
     { Id : string option
@@ -72,7 +75,7 @@ module TemplateFile =
     let setVersion version templateFile = 
         let contents = 
             match templateFile.Contents with
-            | CompleteInfo(core, optional) -> CompleteInfo({ core with Version = version }, optional)
+            | CompleteInfo(core, optional) -> CompleteInfo({ core with Version = Some version }, optional)
             | ProjectInfo(core, optional) -> ProjectInfo({ core with Version = Some version }, optional)
         { templateFile with Contents = contents }
     
@@ -134,13 +137,6 @@ module TemplateFile =
         (!<) "id" lines |> function 
         | Some m -> succeed <| m
         | None -> failP "No id line in paket.packaging file."
-    
-    let private getVersion lines = 
-        (!<) "version" lines |> function 
-        | Some m -> 
-            let versionString = m
-            succeed <| SemVer.Parse versionString
-        | None -> failP "No version line in paket.packaging file."
     
     let private getAuthors lines = 
         (!<) "authors" lines |> function 
@@ -264,14 +260,13 @@ module TemplateFile =
                 
                 let optionalInfo = getOptionalInfo configLines
                 return ProjectInfo(core, optionalInfo)
-            | FileType -> 
-                let! id' = getId configLines
-                let! version = getVersion configLines
+            | FileType ->                 
+                let! id' = getId configLines                
                 let! authors = getAuthors configLines
                 let! description = getDescription configLines
                 let core : CompleteCoreInfo = 
                     { Id = id'
-                      Version = version
+                      Version = (!<) "version" configLines |> Option.map SemVer.Parse
                       Authors = authors
                       Description = description }
                 

@@ -84,7 +84,7 @@ let (|Valid|Invalid|) md =
     match md with
     | { ProjectCoreInfo.Id = Some id'; Version = Some v; Authors = Some a; Description = Some d } -> 
         Valid { CompleteCoreInfo.Id = id'
-                Version = v
+                Version = Some v
                 Authors = a
                 Description = d }
     | _ -> Invalid
@@ -154,7 +154,10 @@ let findDependencies (dependencies : DependenciesFile) config (template : Templa
         deps
         |> List.map (fun (templateFile,_) ->
             match templateFile with
-            | CompleteTemplate(core, opt) -> core.Id, VersionRequirement(Minimum(core.Version), PreReleaseStatus.All)
+            | CompleteTemplate(core, opt) -> 
+                match core.Version with
+                | Some v -> core.Id, VersionRequirement(Minimum(v), PreReleaseStatus.All)
+                | none ->failwithf "There was no versin given for %s." templateFile.FileName
             | IncompleteTemplate -> failwithf "You cannot create a dependency on a template file (%s) with incomplete metadata." templateFile.FileName)
         |> List.fold addDependency withOutput
     

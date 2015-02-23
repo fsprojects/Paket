@@ -20,7 +20,7 @@ let ``should serialize cor info``() =
     
     let core = 
         { Id = "Paket.Tests"
-          Version = SemVer.Parse "1.0.0.0"
+          Version = SemVer.Parse "1.0.0.0" |> Some
           Authors = [ "Two"; "Authors" ]
           Description = "A description" }
     
@@ -47,7 +47,7 @@ let ``should serialize dependencies``() =
     
     let core = 
         { Id = "Paket.Tests"
-          Version = SemVer.Parse "1.0.0.0"
+          Version = SemVer.Parse "1.0.0.0" |> Some
           Authors = [ "Two"; "Authors" ]
           Description = "A description" }
     
@@ -77,7 +77,7 @@ let ``should not serialize files``() =
     
     let core = 
         { Id = "Paket.Core"
-          Version = SemVer.Parse "4.2"
+          Version = SemVer.Parse "4.2" |> Some
           Authors = [ "Michael"; "Steffen" ]
           Description = "A description" }
     
@@ -119,7 +119,7 @@ second line</releaseNotes>
     
     let core = 
         { Id = "Paket.Core"
-          Version = SemVer.Parse "4.2"
+          Version = SemVer.Parse "4.2" |> Some
           Authors = [ "Michael"; "Steffen" ]
           Description = "A description" }
     
