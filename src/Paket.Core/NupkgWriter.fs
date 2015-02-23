@@ -88,14 +88,17 @@ let nuspecDoc (info:CompleteInfo) =
     (!!?) "licenseUrl" optional.LicenseUrl
     (!!?) "projectUrl" optional.ProjectUrl
     (!!?) "iconUrl" optional.IconUrl
-    (!!?) "requireLicenseAcceptance" (optional.RequireLicenseAcceptance |> Option.map (fun b -> b.ToString()))
+    if optional.RequireLicenseAcceptance then
+        !! "requireLicenseAcceptance" "true"
     !! "description" core.Description
     (!!?) "summary" optional.Summary
     (!!?) "releaseNotes" optional.ReleaseNotes
     (!!?) "copyright" optional.Copyright
     (!!?) "language" optional.Language
     if optional.Tags <> [] then !! "tags" (String.Join(" ",optional.Tags))
-    (!!?) "developmentDependency" (optional.DevelopmentDependency |> Option.map (fun b -> b.ToString()))
+    if optional.DevelopmentDependency  then
+        !! "developmentDependency" "true"
+
     optional.Dependencies |> buildDependenciesNode
     XDocument(declaration, box root)
 

@@ -31,9 +31,9 @@ type OptionalPackagingInfo =
       IconUrl : string option
       LicenseUrl : string option
       Copyright : string option
-      RequireLicenseAcceptance : string option
+      RequireLicenseAcceptance : bool
       Tags : string list
-      DevelopmentDependency : bool option
+      DevelopmentDependency : bool
       Dependencies : (string * VersionRequirement) list
       Files : (string * string) list }
     static member Epmty : OptionalPackagingInfo = 
@@ -46,9 +46,9 @@ type OptionalPackagingInfo =
           LicenseUrl = None
           IconUrl = None
           Copyright = None
-          RequireLicenseAcceptance = None
+          RequireLicenseAcceptance = false
           Tags = []
-          DevelopmentDependency = None
+          DevelopmentDependency = false
           Dependencies = []
           Files = [] }
 
@@ -207,7 +207,10 @@ module TemplateFile =
         let iconUrl = (!<) "iconUrl" configLines
         let licenseUrl = (!<) "licenseUrl" configLines
         let copyright = (!<) "copyright" configLines
-        let requireLicenseAcceptance = (!<) "requireLicenseAcceptance" configLines
+        let requireLicenseAcceptance = 
+            match (!<) "requireLicenseAcceptance" configLines with
+            | Some x when x.ToLower() = "true" -> true
+            | _ -> false
         
         let tags = 
             (!<) "tags" configLines 
@@ -217,7 +220,11 @@ module TemplateFile =
                 |> Array.toList)
             |> fun x -> defaultArg x []
         
-        let developmentDependency = (!<) "developmentDependency" configLines |> Option.map Boolean.Parse
+        let developmentDependency = 
+            match (!<) "developmentDependency" configLines with
+            | Some x when x.ToLower() = "true" -> true
+            | _ -> false
+
         { Title = title
           Owners = owners
           ReleaseNotes = releaseNotes

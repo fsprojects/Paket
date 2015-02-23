@@ -92,3 +92,53 @@ let ``should not serialize files``() =
     doc.ToString()
     |> normalizeLineEndings
     |> shouldEqual (normalizeLineEndings result)
+
+[<Test>]
+let ``should not serialize all properties``() = 
+    let result = """<package xmlns="http://schemas.microsoft.com/packaging/2011/10/nuspec.xsd">
+  <metadata>
+    <id>Paket.Core</id>
+    <version>4.2</version>
+    <title>A title</title>
+    <authors>Michael, Steffen</authors>
+    <owners>Steffen, Alex</owners>
+    <licenseUrl>http://www.somewhere.com/license.html</licenseUrl>
+    <projectUrl>http://www.somewhere.com</projectUrl>
+    <iconUrl>http://www.somewhere.com/Icon</iconUrl>
+    <requireLicenseAcceptance>true</requireLicenseAcceptance>
+    <description>A description</description>
+    <summary>summary</summary>
+    <releaseNotes>A release notes
+second line</releaseNotes>
+    <copyright>Paket owners 2015</copyright>
+    <language>en-US</language>
+    <tags>aa bb</tags>
+    <developmentDependency>true</developmentDependency>
+  </metadata>
+</package>"""
+    
+    let core = 
+        { Id = "Paket.Core"
+          Version = SemVer.Parse "4.2"
+          Authors = [ "Michael"; "Steffen" ]
+          Description = "A description" }
+    
+    let optional = 
+        { OptionalPackagingInfo.Epmty with 
+              Title = Some "A title"
+              Owners = ["Steffen"; "Alex"]
+              ReleaseNotes = Some"A release notes\r\nsecond line"
+              Summary = Some "summary"
+              Language = Some "en-US"
+              ProjectUrl = Some "http://www.somewhere.com"
+              LicenseUrl = Some "http://www.somewhere.com/license.html"
+              IconUrl = Some "http://www.somewhere.com/Icon"
+              Copyright = Some "Paket owners 2015"
+              RequireLicenseAcceptance = true
+              Tags = ["aa"; "bb"]
+              DevelopmentDependency = true }
+                       
+    let doc = NupkgWriter.nuspecDoc (core, optional)
+    doc.ToString()
+    |> normalizeLineEndings
+    |> shouldEqual (normalizeLineEndings result)
