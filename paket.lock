@@ -1,9 +1,12 @@
 NUGET
   remote: https://nuget.org/api/v2
   specs:
-    FAKE (3.14.0)
-    FSharp.Compiler.Service (0.0.81)
-    FSharp.Formatting (2.6.1)
+    FAKE (3.17.0)
+    FSharp.Compiler.Service (0.0.82)
+    FSharp.Formatting (2.7.4)
+      FSharp.Compiler.Service (>= 0.0.82)
+      FSharpVSPowerTools.Core (>= 1.7.0)
+    FSharpVSPowerTools.Core (1.7.0)
       FSharp.Compiler.Service (>= 0.0.81)
     Microsoft.Bcl (1.1.9)
       Microsoft.Bcl.Build (>= 1.0.14)
@@ -20,5 +23,5 @@ NUGET
 GITHUB
   remote: fsharp/FAKE
   specs:
-    modules/Octokit/Octokit.fsx (4a80fa4c081a42f3211033fb0465e2f924d8bdb8)
+    modules/Octokit/Octokit.fsx (412ed0da4a9a8635e243e2ea06cf654ca805f6d8)
       Octokit

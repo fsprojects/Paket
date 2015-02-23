@@ -1,3 +1,6 @@
+[![Issue Stats](http://issuestats.com/github/fsprojects/ProjectScaffold/badge/issue)](http://issuestats.com/github/fsprojects/ProjectScaffold)
+[![Issue Stats](http://issuestats.com/github/fsprojects/ProjectScaffold/badge/pr)](http://issuestats.com/github/fsprojects/ProjectScaffold)
+
 # ProjectScaffold
 
 This project can be used to scaffold a prototypical .NET solution including file system layout and tooling. This includes a build process that: 
