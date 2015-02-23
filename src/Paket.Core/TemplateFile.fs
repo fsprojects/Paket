@@ -16,10 +16,7 @@ type CompleteCoreInfo =
         match this.Version with
         | Some v -> sprintf "%s.%O.nupkg" this.Id v
         | None -> failwithf "No version given for %s" this.Id
-    member this.NuspecFileName =     
-        match this.Version with
-        | Some v -> sprintf "%s.%O.nuspec" this.Id v
-        | None -> failwithf "No version given for %s" this.Id
+    member this.NuspecFileName = this.Id + ".nuspec" 
 
 type ProjectCoreInfo = 
     { Id : string option
