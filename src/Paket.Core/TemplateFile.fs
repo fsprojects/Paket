@@ -7,7 +7,7 @@ open System.Text.RegularExpressions
 open Paket.Rop
 open Paket.Domain
     
-type CompleteCoreInfo = 
+type internal CompleteCoreInfo = 
     { Id : string
       Version : SemVerInfo option
       Authors : string list
@@ -18,7 +18,7 @@ type CompleteCoreInfo =
         | None -> failwithf "No version given for %s" this.Id
     member this.NuspecFileName = this.Id + ".nuspec" 
 
-type ProjectCoreInfo = 
+type internal ProjectCoreInfo = 
     { Id : string option
       Version : SemVerInfo option
       Authors : string list option
@@ -29,7 +29,7 @@ type ProjectCoreInfo =
           Version = None
           Description = None }
 
-type OptionalPackagingInfo = 
+type internal OptionalPackagingInfo = 
     { Title : string option
       Owners : string list
       ReleaseNotes : string option
@@ -60,18 +60,18 @@ type OptionalPackagingInfo =
           Dependencies = []
           Files = [] }
 
-type CompleteInfo = CompleteCoreInfo * OptionalPackagingInfo
+type internal CompleteInfo = CompleteCoreInfo * OptionalPackagingInfo
 
-type TemplateFileContents = 
+type internal TemplateFileContents = 
     | CompleteInfo of CompleteInfo
     | ProjectInfo of ProjectCoreInfo * OptionalPackagingInfo
 
-type TemplateFile = 
+type internal TemplateFile = 
     { FileName : string
       Contents : TemplateFileContents }
 
 [<CompilationRepresentationAttribute(CompilationRepresentationFlags.ModuleSuffix)>]
-module TemplateFile = 
+module internal TemplateFile = 
     let setVersion version templateFile = 
         let contents = 
             match templateFile.Contents with
