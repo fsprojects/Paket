@@ -1,4 +1,4 @@
-#### 0.30.0 - 23.02.2015
+#### 0.30.1 - 23.02.2015
 * New command: `paket pack` - http://fsprojects.github.io/Paket/paket-pack.html
 * New command: `paket push` - http://fsprojects.github.io/Paket/paket-push.html
 * Improved command line help - https://github.com/fsprojects/Paket/pull/639
