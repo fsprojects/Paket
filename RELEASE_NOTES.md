@@ -1,3 +1,6 @@
+#### 0.30.7 - 24.02.2015
+* BUGFIX: Detect 4.5.1 - https://github.com/fsprojects/Paket/pull/647
+
 #### 0.30.6 - 23.02.2015
 * New command: `paket pack` - http://fsprojects.github.io/Paket/paket-pack.html
 * New command: `paket push` - http://fsprojects.github.io/Paket/paket-push.html
