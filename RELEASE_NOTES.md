@@ -1,3 +1,6 @@
+#### 0.30.11 - 24.02.2015
+* BUGFIX: Handle transient dependencies better in pack command - https://github.com/fsprojects/Paket/pull/649
+
 #### 0.30.10 - 24.02.2015
 * BUGFIX: Only load custom attributes if not given in TemplateFile or cmd parameter
 
