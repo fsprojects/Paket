@@ -1,2 +1,6 @@
 type project
-authors ##Author##
+authors 
+    ##Author##
+description
+    ##Description##
+

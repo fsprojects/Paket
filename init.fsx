@@ -142,6 +142,7 @@ let replaceContent file =
   |> replace (oldTestProjectGuid.ToUpperInvariant()) (testProjectGuid.ToUpperInvariant())
   |> replace solutionTemplateName projectName
   |> replaceWithVarOrMsg "##Author##" "Author Not Set" 
+  |> replaceWithVarOrMsg "##Description##" "Description Not Set" 
   |> overwrite file
   |> sprintf "%s updated"
 
