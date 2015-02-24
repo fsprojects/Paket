@@ -1,3 +1,7 @@
+#### 0.30.12 - 24.02.2015
+* BUGFIX: paket add/remove with just project name - https://github.com/fsprojects/Paket/pull/650
+* BUGFIX: Uploading packages as multiform content type - https://github.com/fsprojects/Paket/pull/651
+
 #### 0.30.11 - 24.02.2015
 * BUGFIX: Handle transient dependencies better in pack command - https://github.com/fsprojects/Paket/pull/649
 
