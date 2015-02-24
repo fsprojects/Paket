@@ -42,17 +42,8 @@ module KnownAliases =
          "windowsphone", "wp"
          "windows", "win"
          "windowsPhoneApp", "wpa"
-          
-         "1.0", "10" 
-         "1.1", "11" 
-         "2.0", "20" 
-         "3.5", "35" 
-         "4.0", "40" 
-         "4.5", "45" 
-         "5.0", "50" 
-         "8.0", "80" 
-         "8.1", "81" 
-         "0.0", "" ]
+         "0.0", ""
+         ".", "" ]
         |> List.map (fun (p,r) -> p.ToLower(),r.ToLower())
 
 

@@ -40,7 +40,7 @@ let addPackagesFromReferenceFiles projects (dependenciesFile:DependenciesFile) =
                     if dependenciesFile.HasPackage dep.Name then 
                         dependenciesFile
                     else
-                        dependenciesFile.AddAdditionionalPackage(dep.Name,"",dep.Settings)) dependenciesFile
+                        dependenciesFile.AddAdditionalPackage(dep.Name,"",dep.Settings)) dependenciesFile
             newDependenciesFile.Save()
             newDependenciesFile
 
