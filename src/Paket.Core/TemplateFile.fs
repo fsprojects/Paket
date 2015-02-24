@@ -131,12 +131,12 @@ module internal TemplateFile =
                 | "project" -> succeed ProjectType
                 | s -> failP (sprintf "Unknown package config type.")
             | None -> failP (sprintf "First line of paket.package file had no 'type' declaration.")
-        | [] -> failP "Empty paket.packaging file."
+        | [] -> failP "Empty paket.template file."
     
     let private getId lines = 
         (!<) "id" lines |> function 
         | Some m -> succeed <| m
-        | None -> failP "No id line in paket.packaging file."
+        | None -> failP "No id line in paket.template file."
     
     let private getAuthors lines = 
         (!<) "authors" lines |> function 
@@ -145,12 +145,12 @@ module internal TemplateFile =
             |> Array.map (fun s -> s.Trim())
             |> List.ofArray
             |> succeed
-        | None -> failP "No authors line in paket.packaging file."
+        | None -> failP "No authors line in paket.template file."
     
     let private getDescription lines = 
         (!<) "description" lines |> function 
         | Some m -> succeed m
-        | None -> failP "No description line in paket.packaging file."
+        | None -> failP "No description line in paket.template file."
     
     let private getDependencies lines = 
         (!<) "dependencies" lines
