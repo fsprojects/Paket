@@ -95,7 +95,13 @@ let loadAssemblyMetadata buildConfig (projectFile : ProjectFile) =
     traceVerbose <| sprintf "Loading assembly metadata for %s" fileName
     let bytes = File.ReadAllBytes fileName
     let assembly = Assembly.Load bytes
-    let attribs = assembly.GetCustomAttributes(true)
+    let attribs = 
+        try
+            assembly.GetCustomAttributes(true)
+        with
+        | exn -> 
+            traceWarnfn "Loading custom attributes failed for %s.%sMessage: %s" assembly.FullName Environment.NewLine exn.Message
+            assembly.GetCustomAttributes(false)
 
     ProjectCoreInfo.Empty
     |> getId assembly
