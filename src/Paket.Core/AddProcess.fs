@@ -37,7 +37,7 @@ let AddToProject(dependenciesFileName, package, version, force, hard, projectNam
         let project = 
             projects
             |> Seq.tryFind (fun p -> 
-                let name = p.Name.Split('.').[0]
+                let name = Path.GetFileNameWithoutExtension p.Name
                 name = projectName || p.Name = projectName)
 
         match project with
