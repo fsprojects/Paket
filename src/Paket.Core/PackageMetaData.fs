@@ -186,7 +186,7 @@ let findDependencies (dependencies : DependenciesFile) config (template : Templa
                 let dep =
                     match Map.tryFind np.Name dependencies.DirectDependencies with
                     | Some direct -> direct
-                    // If it's a transiant dependency set
+                    // If it's a transient dependency set
                     // min version to current locked version
                     | None -> 
                         let resolved =
