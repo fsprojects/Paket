@@ -82,8 +82,8 @@ module internal TemplateFile =
     let setReleaseNotes releaseNotes templateFile = 
         let contents = 
             match templateFile.Contents with
-            | CompleteInfo(core, optional) -> CompleteInfo(core, { optional with ReleaseNotes = releaseNotes })
-            | ProjectInfo(core, optional) -> ProjectInfo(core, { optional with ReleaseNotes = releaseNotes })
+            | CompleteInfo(core, optional) -> CompleteInfo(core, { optional with ReleaseNotes = Some releaseNotes })
+            | ProjectInfo(core, optional) -> ProjectInfo(core, { optional with ReleaseNotes = Some releaseNotes })
         { templateFile with Contents = contents }
     
     let private (!<) prefix lines = 

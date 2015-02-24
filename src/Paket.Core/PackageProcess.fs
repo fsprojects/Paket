@@ -14,6 +14,8 @@ let Pack(dependencies : DependenciesFile, packageOutputPath, buildConfig, versio
     Utils.createDir packageOutputPath |> Rop.returnOrFail
     let rootPath = dependencies.FileName |> Path.GetDirectoryName
 
+    let version = version |> Option.map SemVer.Parse
+
     let allTemplateFiles = 
         let hashSet = new HashSet<_>()
         for template in TemplateFile.FindTemplateFiles rootPath do
@@ -34,13 +36,46 @@ let Pack(dependencies : DependenciesFile, packageOutputPath, buildConfig, versio
             | IncompleteTemplate -> true)
         |> Array.map (fun (projectFile,templateFile) ->
             allTemplateFiles.Remove(templateFile.FileName) |> ignore
+
             let merged = 
-                projectFile
-                |> loadAssemblyMetadata buildConfig
-                |> merge templateFile
+                let withVersion =  
+                    match version with
+                    | None -> templateFile
+                    | Some v -> templateFile |> TemplateFile.setVersion v
+
+                match withVersion with
+                | { Contents = ProjectInfo(md, opt) } -> 
+                    match md with
+                    | Valid completeCore -> { templateFile with Contents = CompleteInfo(completeCore, opt) }
+                    | _ ->
+                        let metaData = loadAssemblyMetadata buildConfig projectFile
+                        let merged = 
+                            { Id = md.Id ++ metaData.Id
+                              Version = md.Version ++ metaData.Version
+                              Authors = md.Authors ++ metaData.Authors
+                              Description = md.Description ++ metaData.Description }
+
+                        match merged with
+                        | Invalid ->
+                            let missing =
+                                [ if merged.Id = None then yield "Id"
+                                  if merged.Version = None then yield "Version"
+                                  if merged.Authors = None then yield "Authors"
+                                  if merged.Description = None then yield "Description" ]
+                                |> fun xs -> String.Join(", ",xs)
+
+                            failwithf 
+                                "Incomplete mandatory metadata in template file %s (even including assembly attributes)%sTemplate: %A%sAssembly: %A%sMissing: %s" 
+                                templateFile.FileName 
+                                Environment.NewLine md 
+                                Environment.NewLine metaData
+                                Environment.NewLine missing
+
+                        | Valid completeCore -> { templateFile with Contents = CompleteInfo(completeCore, opt) }
+                | _ -> templateFile
 
             let id = 
-                match merged.Contents with 
+                match merged.Contents with
                 | CompleteInfo (c, _) -> c.Id 
                 | x -> failwithf "unexpected failure while merging meta data: %A" x
 
@@ -59,15 +94,13 @@ let Pack(dependencies : DependenciesFile, packageOutputPath, buildConfig, versio
     let templatesWithVersion =
         match version with
         | None -> allTemplates
-        | Some v ->
-            let version = SemVer.Parse v
-            allTemplates |> List.map (TemplateFile.setVersion version)
+        | Some v -> allTemplates |> List.map (TemplateFile.setVersion v)
 
         // set release notes
     let processedTemplates =
         match releaseNotes with
         | None ->   templatesWithVersion
-        | Some v -> templatesWithVersion |> List.map (TemplateFile.setReleaseNotes releaseNotes)
+        | Some r -> templatesWithVersion |> List.map (TemplateFile.setReleaseNotes r)
 
     // Package all templates
     processedTemplates
