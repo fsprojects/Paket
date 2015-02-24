@@ -53,6 +53,7 @@ The [MIT license][6]
 
 - [@forki](https://github.com/forki)
 - [@agross](https://github.com/agross)
+- [@mavnn](https://github.com/mavnn)
 - [@mexx](https://github.com/mexx)
 - [@isaacabraham](https://github.com/isaacabraham)
 - [@theimowski](https://github.com/theimowski)
