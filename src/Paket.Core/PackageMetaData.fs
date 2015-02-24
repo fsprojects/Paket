@@ -86,7 +86,7 @@ let getDescription attributes (md : ProjectCoreInfo) =
                                     | Description d -> Some d
                                     | _ -> None) }
 
-let loadAssemblyMetadata buildConfig (projectFile : ProjectFile) = 
+let loadAssemblyId buildConfig (projectFile : ProjectFile) = 
     let fileName = 
         Path.Combine
             (Path.GetDirectoryName projectFile.FileName, projectFile.GetOutputDirectory buildConfig, 
@@ -95,6 +95,10 @@ let loadAssemblyMetadata buildConfig (projectFile : ProjectFile) =
     traceVerbose <| sprintf "Loading assembly metadata for %s" fileName
     let bytes = File.ReadAllBytes fileName
     let assembly = Assembly.Load bytes
+
+    assembly,assembly.GetName().Name
+
+let loadAssemblyAttributes (assembly:Assembly) = 
     let attribs = 
         try
             assembly.GetCustomAttributes(true)

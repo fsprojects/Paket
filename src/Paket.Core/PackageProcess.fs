@@ -48,30 +48,36 @@ let Pack(dependencies : DependenciesFile, packageOutputPath, buildConfig, versio
                     match md with
                     | Valid completeCore -> { templateFile with Contents = CompleteInfo(completeCore, opt) }
                     | _ ->
-                        let metaData = loadAssemblyMetadata buildConfig projectFile
-                        let merged = 
-                            { Id = md.Id ++ metaData.Id
-                              Version = md.Version ++ metaData.Version
-                              Authors = md.Authors ++ metaData.Authors
-                              Description = md.Description ++ metaData.Description }
+                        let assembly,id = loadAssemblyId buildConfig projectFile
+                        let md = { md with Id = md.Id ++ Some id }
 
-                        match merged with
-                        | Invalid ->
-                            let missing =
-                                [ if merged.Id = None then yield "Id"
-                                  if merged.Version = None then yield "Version"
-                                  if merged.Authors = None then yield "Authors"
-                                  if merged.Description = None then yield "Description" ]
-                                |> fun xs -> String.Join(", ",xs)
-
-                            failwithf 
-                                "Incomplete mandatory metadata in template file %s (even including assembly attributes)%sTemplate: %A%sAssembly: %A%sMissing: %s" 
-                                templateFile.FileName 
-                                Environment.NewLine md 
-                                Environment.NewLine metaData
-                                Environment.NewLine missing
-
+                        match md with
                         | Valid completeCore -> { templateFile with Contents = CompleteInfo(completeCore, opt) }
+                        | _ ->
+                            let metaData = loadAssemblyAttributes assembly
+                            let merged = 
+                                { Id = md.Id ++ metaData.Id
+                                  Version = md.Version ++ metaData.Version
+                                  Authors = md.Authors ++ metaData.Authors
+                                  Description = md.Description ++ metaData.Description }
+
+                            match merged with
+                            | Invalid ->
+                                let missing =
+                                    [ if merged.Id = None then yield "Id"
+                                      if merged.Version = None then yield "Version"
+                                      if merged.Authors = None then yield "Authors"
+                                      if merged.Description = None then yield "Description" ]
+                                    |> fun xs -> String.Join(", ",xs)
+
+                                failwithf 
+                                    "Incomplete mandatory metadata in template file %s (even including assembly attributes)%sTemplate: %A%sAssembly: %A%sMissing: %s" 
+                                    templateFile.FileName 
+                                    Environment.NewLine md 
+                                    Environment.NewLine metaData
+                                    Environment.NewLine missing
+
+                            | Valid completeCore -> { templateFile with Contents = CompleteInfo(completeCore, opt) }
                 | _ -> templateFile
 
             let id = 
