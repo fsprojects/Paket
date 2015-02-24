@@ -171,13 +171,27 @@ let findDependencies (dependencies : DependenciesFile) config (template : Templa
     let withDepsAndIncluded = 
         files
         |> List.fold (fun templatefile file -> addFile (toFile config file) targetDir templatefile) withDeps
-    
+
+    let locked =
+        (dependencies.FindLockfile().FullName
+         |> LockFile.LoadFrom).ResolvedPackages
+
     // Add any paket references
     let referenceFile = 
         ProjectFile.FindReferencesFile <| FileInfo project.FileName |> Option.map (ReferencesFile.FromFile)
     match referenceFile with
     | Some r -> 
         r.NugetPackages
-        |> List.map (fun np -> np.Name.Id, dependencies.DirectDependencies.[np.Name])
+        |> List.map (fun np ->
+                let dep =
+                    match Map.tryFind np.Name dependencies.DirectDependencies with
+                    | Some direct -> direct
+                    // If it's a transient dependency set
+                    // min version to current locked version
+                    | None -> 
+                        let resolved =
+                            locked |> Map.find (NormalizedPackageName np.Name)
+                        VersionRequirement(Minimum resolved.Version, PreReleaseStatus.All)
+                np.Name.Id, dep)
         |> List.fold addDependency withDepsAndIncluded
     | None -> withDepsAndIncluded
