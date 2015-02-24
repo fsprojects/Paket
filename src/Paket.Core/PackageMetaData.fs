@@ -47,44 +47,39 @@ let (|Title|Description|Version|InformationalVersion|Company|Ignore|) (attribute
 
 let getId (assembly : Assembly) (md : ProjectCoreInfo) = { md with Id = Some(assembly.GetName().Name) }
 
-let getVersion (assembly : Assembly) attributes (md : ProjectCoreInfo) = 
-    let version = 
-        let informational = 
-            attributes |> Seq.tryPick (function 
-                              | InformationalVersion v -> Some v
-                              | _ -> None)
-        match informational with
-        | Some v -> informational
+let getVersion (assembly : Assembly) attributes = 
+    let informational = 
+        attributes |> Seq.tryPick (function 
+                            | InformationalVersion v -> Some v
+                            | _ -> None)
+    match informational with
+    | Some v -> informational
+    | None -> 
+        let fromAssembly = 
+            match assembly.GetName().Version with
+            | null -> None
+            | v -> Some(SemVer.Parse(v.ToString()))
+        match fromAssembly with
+        | Some v -> fromAssembly
         | None -> 
-            let fromAssembly = 
-                match assembly.GetName().Version with
-                | null -> None
-                | v -> Some(SemVer.Parse(v.ToString()))
-            match fromAssembly with
-            | Some v -> fromAssembly
-            | None -> 
-                attributes |> Seq.tryPick (function 
-                                  | Version v -> Some v
-                                  | _ -> None)
-    { md with Version = version }
+            attributes |> Seq.tryPick (function 
+                                | Version v -> Some v
+                                | _ -> None)
 
-let getAuthors attributes (md : ProjectCoreInfo) = 
-    let authors = 
-        attributes
-        |> Seq.tryPick (function 
-               | Company a -> Some a
-               | _ -> None)
-        |> Option.map (fun a -> 
-               a.Split(',')
-               |> Array.map (fun s -> s.Trim())
-               |> List.ofArray)
-    { md with Authors = authors }
+let getAuthors attributes = 
+    attributes
+    |> Seq.tryPick (function 
+            | Company a -> Some a
+            | _ -> None)
+    |> Option.map (fun a -> 
+            a.Split(',')
+            |> Array.map (fun s -> s.Trim())
+            |> List.ofArray)
 
-let getDescription attributes (md : ProjectCoreInfo) = 
-    { md with Description = 
-                  attributes |> Seq.tryPick (function 
-                                    | Description d -> Some d
-                                    | _ -> None) }
+let getDescription attributes = 
+    attributes |> Seq.tryPick (function 
+                      | Description d -> Some d
+                      | _ -> None) 
 
 let loadAssemblyId buildConfig (projectFile : ProjectFile) = 
     let fileName = 
@@ -99,19 +94,13 @@ let loadAssemblyId buildConfig (projectFile : ProjectFile) =
     assembly,assembly.GetName().Name
 
 let loadAssemblyAttributes (assembly:Assembly) = 
-    let attribs = 
-        try
-            assembly.GetCustomAttributes(true)
-        with
-        | exn -> 
-            traceWarnfn "Loading custom attributes failed for %s.%sMessage: %s" assembly.FullName Environment.NewLine exn.Message
-            assembly.GetCustomAttributes(false)
+    try
+        assembly.GetCustomAttributes(true)
+    with
+    | exn -> 
+        traceWarnfn "Loading custom attributes failed for %s.%sMessage: %s" assembly.FullName Environment.NewLine exn.Message
+        assembly.GetCustomAttributes(false)
 
-    ProjectCoreInfo.Empty
-    |> getId assembly
-    |> getVersion assembly attribs
-    |> getAuthors attribs
-    |> getDescription attribs
 
 let (|Valid|Invalid|) md = 
     match md with

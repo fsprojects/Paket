@@ -1,4 +1,4 @@
-#### 0.30.9 - 24.02.2015
+#### 0.30.10 - 24.02.2015
 * BUGFIX: Only load custom attributes if not given in TemplateFile or cmd parameter
 
 #### 0.30.7 - 24.02.2015

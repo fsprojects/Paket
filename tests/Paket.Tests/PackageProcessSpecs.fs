@@ -10,18 +10,18 @@ let assembly = Assembly.GetExecutingAssembly()
 
 [<Test>]
 let ``Loading description from assembly works``() = 
-    let sut = PackageMetaData.getDescription (assembly.GetCustomAttributes(true)) ProjectCoreInfo.Empty
-    sut.Description.Value |> shouldEqual "A description"
+    let sut = PackageMetaData.getDescription (assembly.GetCustomAttributes(true)) 
+    sut.Value |> shouldEqual "A description"
 
 [<Test>]
 let ``Loading version from assembly works``() = 
-    let sut = PackageMetaData.getVersion assembly (assembly.GetCustomAttributes(true)) ProjectCoreInfo.Empty
-    sut.Version.Value |> shouldEqual (SemVer.Parse "1.0.0.0")
+    let sut = PackageMetaData.getVersion assembly (assembly.GetCustomAttributes(true)) 
+    sut.Value |> shouldEqual (SemVer.Parse "1.0.0.0")
 
 [<Test>]
 let ``Loading authors from assembly works``() = 
-    let sut = PackageMetaData.getAuthors (assembly.GetCustomAttributes(true)) ProjectCoreInfo.Empty
-    sut.Authors.Value |> shouldEqual [ "Two"; "Authors" ]
+    let sut = PackageMetaData.getAuthors (assembly.GetCustomAttributes(true))
+    sut.Value |> shouldEqual [ "Two"; "Authors" ]
 
 [<Test>]
 let ``Loading id from assembly works``() = 
@@ -44,8 +44,7 @@ let ``Loading assembly metadata works``() =
     let assembly,id = PackageMetaData.loadAssemblyId config projFile.Value
     id |> shouldEqual "Paket.Tests"
     
-    let sut = PackageMetaData.loadAssemblyAttributes assembly
-    sut |> shouldEqual { Id = Some "Paket.Tests"
-                         Version = SemVer.Parse "1.0.0.0" |> Some
-                         Authors = Some [ "Two"; "Authors" ]
-                         Description = Some "A description" }
+    let attribs = PackageMetaData.loadAssemblyAttributes assembly
+    PackageMetaData.getVersion assembly attribs |> shouldEqual <| Some(SemVer.Parse "1.0.0.0")
+    PackageMetaData.getAuthors attribs |> shouldEqual <| Some([ "Two"; "Authors" ])
+    PackageMetaData.getDescription attribs |> shouldEqual <| Some("A description")

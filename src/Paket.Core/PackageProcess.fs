@@ -54,12 +54,13 @@ let Pack(dependencies : DependenciesFile, packageOutputPath, buildConfig, versio
                         match md with
                         | Valid completeCore -> { templateFile with Contents = CompleteInfo(completeCore, opt) }
                         | _ ->
-                            let metaData = loadAssemblyAttributes assembly
+                            let attribs = loadAssemblyAttributes assembly
+
                             let merged = 
-                                { Id = md.Id ++ metaData.Id
-                                  Version = md.Version ++ metaData.Version
-                                  Authors = md.Authors ++ metaData.Authors
-                                  Description = md.Description ++ metaData.Description }
+                                { Id = md.Id
+                                  Version = md.Version ++ getVersion assembly attribs
+                                  Authors = md.Authors ++ getAuthors attribs
+                                  Description = md.Description ++ getDescription attribs }
 
                             match merged with
                             | Invalid ->
@@ -71,10 +72,9 @@ let Pack(dependencies : DependenciesFile, packageOutputPath, buildConfig, versio
                                     |> fun xs -> String.Join(", ",xs)
 
                                 failwithf 
-                                    "Incomplete mandatory metadata in template file %s (even including assembly attributes)%sTemplate: %A%sAssembly: %A%sMissing: %s" 
+                                    "Incomplete mandatory metadata in template file %s (even including assembly attributes)%sTemplate: %A%sMissing: %s" 
                                     templateFile.FileName 
                                     Environment.NewLine md 
-                                    Environment.NewLine metaData
                                     Environment.NewLine missing
 
                             | Valid completeCore -> { templateFile with Contents = CompleteInfo(completeCore, opt) }
