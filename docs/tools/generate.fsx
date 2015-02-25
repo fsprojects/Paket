@@ -3,8 +3,14 @@
 #r "../../bin/Paket.exe"
 open System.IO
 
-Paket.HelpTexts.commands.Force()
-|> Seq.iter (fun ht -> File.WriteAllText(sprintf "../content/paket-%s.md" ht.Command.Name, Paket.Commands.markdown ht.Command ht.Text))
+Paket.Commands.getAllCommands()
+|> Array.iter (fun command ->
+    let additionalText = 
+        let optFile = sprintf "../content/commands/%s.md" command.Name
+        if File.Exists optFile
+        then File.ReadAllText optFile
+        else ""
+    File.WriteAllText(sprintf "../content/paket-%s.md" command.Name, Paket.Commands.markdown command additionalText))
 
 // --------------------------------------------------------------------------------------
 // Builds the documentation from `.fsx` and `.md` files in the 'docs/content' directory

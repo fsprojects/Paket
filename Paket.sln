@@ -50,6 +50,11 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Paket.Bootstrapper", "src\P
 EndProject
 Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Paket.Core", "src\Paket.Core\Paket.Core.fsproj", "{7BAB0AE2-089F-4761-B138-A717AA2F86C5}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "commands", "commands", "{4425A246-BD18-4622-86B5-0154F19165E4}"
+	ProjectSection(SolutionItems) = preProject
+		docs\content\commands\convert-from-nuget.md = docs\content\commands\convert-from-nuget.md
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -80,5 +85,6 @@ Global
 		{83F16175-43B1-4C90-A1EE-8E351C33435D} = {A6A6AF7D-D6E3-442D-9B1E-58CC91879BE1}
 		{8E6D5255-776D-4B61-85F9-73C37AA1FB9A} = {A6A6AF7D-D6E3-442D-9B1E-58CC91879BE1}
 		{E789C72A-5CFD-436B-8EF1-61AA2852A89F} = {ED8079DD-2B06-4030-9F0F-DC548F98E1C4}
+		{4425A246-BD18-4622-86B5-0154F19165E4} = {8E6D5255-776D-4B61-85F9-73C37AA1FB9A}
 	EndGlobalSection
 EndGlobal
