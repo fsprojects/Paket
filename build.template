@@ -171,22 +171,19 @@ Target "SourceLink" (fun _ ->
 // Build a NuGet package
 
 Target "NuGet" (fun _ ->
-    NuGet (fun p ->
+    Paket.Pack(fun p -> 
         { p with
-            Authors = authors
-            Project = project
-            Summary = summary
-            Description = description
-            Version = release.NugetVersion
-            ReleaseNotes = String.Join(Environment.NewLine, release.Notes)
-            WorkingDir = "."
-            Tags = tags
             OutputPath = "bin"
-            AccessKey = getBuildParamOrDefault "nugetkey" ""
-            Publish = hasBuildParam "nugetkey"
-            Dependencies = [] })
-        ("nuget/" + project + ".nuspec")
+            Version = release.NugetVersion
+            ReleaseNotes = toLines release.Notes})
 )
+
+Target "PublishNuget" (fun _ ->
+    Paket.Push(fun p -> 
+        { p with
+            WorkingDir = "bin"})
+)
+
 
 // --------------------------------------------------------------------------------------
 // Generate the documentation
@@ -365,6 +362,7 @@ Target "All" DoNothing
   ==> "Release"
 
 "BuildPackage"
+  ==> "PublishNuget"
   ==> "Release"
 
 RunTargetOrDefault "All"
