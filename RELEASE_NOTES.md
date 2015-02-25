@@ -1,3 +1,6 @@
+#### 0.31.1 - 25.02.2015
+* Use latest FAKE tasks
+
 #### 0.31.0 - 25.02.2015
 * BUGFIX: Fix help for init command - https://github.com/fsprojects/Paket/pull/654
 * BUGFIX: Allow non-standard API endpoint for push - https://github.com/fsprojects/Paket/pull/652
