@@ -168,6 +168,7 @@ let push (results : ArgParseResults<_>) =
     let fileName = results.GetResult <@ PushArgs.FileName @>
     Dependencies.Locate()
                 .Push(fileName, ?url = results.TryGetResult <@ PushArgs.Url @>, 
+                      ?endPoint = results.TryGetResult <@ PushArgs.EndPoint @>,
                       ?apiKey = results.TryGetResult <@ PushArgs.ApiKey @>)
 
 try
