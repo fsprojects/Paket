@@ -121,17 +121,15 @@ dirsWithProjects
     |> Array.iter (fun d -> d.MoveTo(pd.FullName @@ (d.Name.Replace(projectTemplateName, projectName))))
     )
 
-//nuget files
-let nuspecTemplateFile = fileInfo ((__SOURCE_DIRECTORY__ @@ "nuget") @@ (projectTemplateName + ".nuspec"))
-let nuspecPath = nuspecTemplateFile.Directory.FullName @@ (projectName + ".nuspec")
-nuspecTemplateFile.MoveTo(nuspecPath)
-
 //Now that everything is renamed, we need to update the content of some files
 let replace t r (lines:seq<string>) = 
   seq { 
     for s in lines do 
       if s.Contains(t) then yield s.Replace(t, r) 
       else yield s }
+
+let replaceWithVarOrMsg t n lines = 
+    replace t (vars.[t] |> function | None -> n | Some s -> s) lines
 
 let overwrite file content = File.WriteAllLines(file, content |> Seq.toArray); file 
 
@@ -143,6 +141,11 @@ let replaceContent file =
   |> replace (oldProjectGuid.ToUpperInvariant()) (projectGuid.ToUpperInvariant())
   |> replace (oldTestProjectGuid.ToUpperInvariant()) (testProjectGuid.ToUpperInvariant())
   |> replace solutionTemplateName projectName
+  |> replaceWithVarOrMsg "##Author##" "Author not set" 
+  |> replaceWithVarOrMsg "##Description##" "Description not set" 
+  |> replaceWithVarOrMsg "##Summary##" ""
+  |> replaceWithVarOrMsg "##Tags##" "" 
+  |> replaceWithVarOrMsg "##GitHome##" "[github-user]"
   |> overwrite file
   |> sprintf "%s updated"
 
@@ -152,10 +155,11 @@ let rec filesToReplace dir = seq {
   yield! Directory.GetFiles(dir, "*.cs")
   yield! Directory.GetFiles(dir, "*.xaml")
   yield! Directory.GetFiles(dir, "*.fsx")
+  yield! Directory.GetFiles(dir, "paket.template")
   yield! Directory.EnumerateDirectories(dir) |> Seq.collect filesToReplace
 }
 
-[solutionFile; nuspecPath] @ (dirsWithProjects  
+[solutionFile] @ (dirsWithProjects  
     |> List.collect (fun d -> d.FullName |> filesToReplace |> List.ofSeq)) 
 |> List.map replaceContent
 |> List.iter print
@@ -163,9 +167,7 @@ let rec filesToReplace dir = seq {
 //Replace tokens in build template
 let generate templatePath generatedFilePath = 
   failfUnlessExists templatePath "Cannot find template %s" (templatePath |> Path.GetFullPath)
-  let replaceWithVarOrMsg t n lines = 
-    replace t (vars.[t] |> function | None -> n | Some s -> s) lines
-
+  
   let newContent = 
     File.ReadAllLines(templatePath) |> Array.toSeq 
     |> replace "##ProjectName##" projectName
