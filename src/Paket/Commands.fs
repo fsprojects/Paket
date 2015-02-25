@@ -287,3 +287,8 @@ let markdown (command : Command) (additionalText : string) =
         .Append(additionalText)
         .ToString()
     |> replaceLinks
+
+let getAllCommands () =
+    Microsoft.FSharp.Reflection.FSharpType.GetUnionCases(typeof<Command>)
+    |> Array.map (fun uci -> 
+        Microsoft.FSharp.Reflection.FSharpValue.MakeUnion(uci, [||]) :?> Command)
