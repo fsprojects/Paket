@@ -143,6 +143,10 @@ let replaceContent file =
   |> replace solutionTemplateName projectName
   |> replaceWithVarOrMsg "##Author##" "Author Not Set" 
   |> replaceWithVarOrMsg "##Description##" "Description Not Set" 
+  |> replaceWithVarOrMsg "##Summary##" "Project has no summmaryrt"
+  |> replaceWithVarOrMsg "##Author##" "Author missing" 
+  |> replaceWithVarOrMsg "##Tags##" "" 
+  |> replaceWithVarOrMsg "##GitHome##" "[github-user]"
   |> overwrite file
   |> sprintf "%s updated"
 

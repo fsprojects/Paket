@@ -1,6 +1,23 @@
 type project
+owners
+    ##Author##
 authors 
     ##Author##
+projectUrl
+    http://github.com/##GitHome##/FSharp.ProjectScaffold
+iconUrl
+    https://raw.githubusercontent.com/fsprojects/ProjectScaffold/master/docs/files/img/logo.png
+licenseUrl
+    http://github.com/##GitHomet stat##/FSharp.ProjectScaffold/blob/master/LICENSE.txt
+requireLicenseAcceptance
+    false
+copyright
+    Copyright 2015
+tags
+    ##Tags##
+summary
+    ##Summary##
 description
     ##Description##
+
 
