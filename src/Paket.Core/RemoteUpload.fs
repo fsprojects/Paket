@@ -30,7 +30,6 @@ let Push maxTrials url apiKey packageFileName =
     let rec push trial =
         tracefn "Pushing package %s to %s - trial %d" packageFileName url trial
         try
-            let url = if url.Contains("nuget.org") then url + "/api/v2/package" else url
             let client = Utils.createWebClient(url, None)
             client.Headers.Add("X-NuGet-ApiKey", apiKey)
             client.UploadFileAsMultipart (new Uri(url)) packageFileName

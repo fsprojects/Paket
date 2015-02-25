@@ -209,6 +209,7 @@ type PushArgs =
     | [<CustomCommandLine("url")>][<Mandatory>] Url of string
     | [<CustomCommandLine("file")>][<Mandatory>] FileName of string
     | [<CustomCommandLine("apikey")>] ApiKey of string
+    | [<CustomCommandLine("endpoint")>] EndPoint of string
 with
     interface IArgParserTemplate with
         member this.Usage =
@@ -216,6 +217,7 @@ with
             | Url(_) -> "Url of the Nuget feed."
             | FileName(_) -> "Path to the package."
             | ApiKey(_) -> "Optionally specify your API key on the command line. Otherwise uses the value of the `nugetkey` environment variable."
+            | EndPoint(_) -> "Optionally specify a custom api endpoint to push to. Defaults to `/api/v2/package`"
 
 let cmdLineSyntax (parser:UnionArgParser<_>) commandName = 
     "$ paket " + commandName + " " + parser.PrintCommandLineSyntax()
