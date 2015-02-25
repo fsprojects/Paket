@@ -1,3 +1,6 @@
+#### 0.30.16 - 25.02.2015
+* BUGFIX: Fix help for init command - https://github.com/fsprojects/Paket/pull/654
+
 #### 0.30.15 - 25.02.2015
 * BUGFIX: Allow non-standard API endpoint for push - https://github.com/fsprojects/Paket/pull/652
 
