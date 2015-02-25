@@ -141,10 +141,9 @@ let replaceContent file =
   |> replace (oldProjectGuid.ToUpperInvariant()) (projectGuid.ToUpperInvariant())
   |> replace (oldTestProjectGuid.ToUpperInvariant()) (testProjectGuid.ToUpperInvariant())
   |> replace solutionTemplateName projectName
-  |> replaceWithVarOrMsg "##Author##" "Author Not Set" 
-  |> replaceWithVarOrMsg "##Description##" "Description Not Set" 
-  |> replaceWithVarOrMsg "##Summary##" "Project has no summmaryrt"
-  |> replaceWithVarOrMsg "##Author##" "Author missing" 
+  |> replaceWithVarOrMsg "##Author##" "Author not set" 
+  |> replaceWithVarOrMsg "##Description##" "Description not set" 
+  |> replaceWithVarOrMsg "##Summary##" ""
   |> replaceWithVarOrMsg "##Tags##" "" 
   |> replaceWithVarOrMsg "##GitHome##" "[github-user]"
   |> overwrite file
