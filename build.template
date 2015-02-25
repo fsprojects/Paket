@@ -3,7 +3,7 @@
 // --------------------------------------------------------------------------------------
 
 #r @"packages/FAKE/tools/FakeLib.dll"
-#r @"packages/Paket.Core/lib/Paket.Core.dll"
+#r @"packages/Paket.Core/lib/net40/Paket.Core.dll"
 open Fake
 open Fake.Git
 open Fake.AssemblyInfoFile
@@ -217,8 +217,7 @@ let getFilenames projectName =
     let (output, fwVersion) = getOutputType projectName
     let files = match output with 
                 | ProjectOutputType.Exe     -> !! (sprintf "bin/%s/*.*" projectName)
-                | ProjectOutputType.Library -> !! (sprintf "bin/%s/%s.dll" projectName projectName) 
-                                                  ++ (sprintf "bin/%s/%s.pdb" projectName projectName)
+                | ProjectOutputType.Library -> (!! (sprintf "bin/%s/%s.dll" projectName projectName)).And (sprintf "bin/%s/%s.pdb" projectName projectName)
     files |> Seq.map(fun f -> (f, Some("lib" @@ fwVersion), None))
     |> Seq.toList
 
@@ -236,8 +235,8 @@ let getDependencies projectName =
                 v.Version
 
             match v.Range with
-            | Minimum(semver) when (semver.ToString()) = "0" -> Minimum(getCurrentlyInstalledVersion name)
-            | version                                        -> version
+            | Minimum(semver) when (semver.ToString()) = "0" -> Minimum(getCurrentlyInstalledVersion name).FormatInNuGetSyntax ()
+            | version                                        -> version.FormatInNuGetSyntax ()
         
         let dependenciesFile = DependenciesFile.ReadFromFile "paket.dependencies"
         
@@ -246,7 +245,7 @@ let getDependencies projectName =
 
         DependencyModel.CalcDependencies (dependenciesFile, projFile.FileName)
         |> Map.toList
-        |> List.map (fun (name, v) -> (name |> packageNameToString, v |> normalizeVersionRequirementForNuget name |> NugetVersionRangeParser.format)) 
+        |> List.map (fun (name, v) -> (name |> packageNameToString, v |> normalizeVersionRequirementForNuget name)) 
 
     match getOutputType projectName with
     | ProjectOutputType.Exe, _  -> []

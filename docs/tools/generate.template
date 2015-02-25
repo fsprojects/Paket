@@ -104,7 +104,7 @@ let buildReference () =
       parameters = ("root", root)::info,
       sourceRepo = githubLink @@ "tree/master",
       sourceFolder = __SOURCE_DIRECTORY__ @@ ".." @@ "..",
-      ?assemblyReferences = references )
+      ?assemblyReferences = references,
       publicOnly = true,libDirs = (findLibDirs ()) )
 
 // Build documentation from `fsx` and `md` files in `docs/content`
