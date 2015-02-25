@@ -110,7 +110,7 @@ let findRefs (results : ArgParseResults<_>) =
     let packages = results.GetResults <@ FindRefsArgs.Packages @>
     Dependencies.Locate().ShowReferencesFor(packages)
         
-let init (results : ArgParseResults<_>) =
+let init (results : ArgParseResults<InitArgs>) =
     Dependencies.Init()
 
 let install (results : ArgParseResults<_>) = 
