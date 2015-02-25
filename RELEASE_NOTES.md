@@ -1,3 +1,6 @@
+#### 0.30.15 - 25.02.2015
+* BUGFIX: Allow non-standard API endpoint for push - https://github.com/fsprojects/Paket/pull/652
+
 #### 0.30.14 - 24.02.2015
 * BUGFIX: Special case nuget.org
 
