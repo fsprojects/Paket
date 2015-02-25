@@ -52,7 +52,15 @@ Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Paket.Core", "src\Paket.Cor
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "commands", "commands", "{4425A246-BD18-4622-86B5-0154F19165E4}"
 	ProjectSection(SolutionItems) = preProject
+		docs\content\commands\add.md = docs\content\commands\add.md
+		docs\content\commands\auto-restore.md = docs\content\commands\auto-restore.md
+		docs\content\commands\config.md = docs\content\commands\config.md
 		docs\content\commands\convert-from-nuget.md = docs\content\commands\convert-from-nuget.md
+		docs\content\commands\find-refs.md = docs\content\commands\find-refs.md
+		docs\content\commands\outdated.md = docs\content\commands\outdated.md
+		docs\content\commands\remove.md = docs\content\commands\remove.md
+		docs\content\commands\simplify.md = docs\content\commands\simplify.md
+		docs\content\commands\update.md = docs\content\commands\update.md
 	EndProjectSection
 EndProject
 Global
