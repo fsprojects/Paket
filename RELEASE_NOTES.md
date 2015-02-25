@@ -1,24 +1,12 @@
-#### 0.30.16 - 25.02.2015
+#### 0.31.0 - 25.02.2015
 * BUGFIX: Fix help for init command - https://github.com/fsprojects/Paket/pull/654
-
-#### 0.30.15 - 25.02.2015
 * BUGFIX: Allow non-standard API endpoint for push - https://github.com/fsprojects/Paket/pull/652
-
-#### 0.30.14 - 24.02.2015
 * BUGFIX: Special case nuget.org
-
-#### 0.30.13 - 24.02.2015
 * BUGFIX: paket add/remove with just project name - https://github.com/fsprojects/Paket/pull/650
 * BUGFIX: Uploading packages as multiform content type - https://github.com/fsprojects/Paket/pull/651
-
-#### 0.30.11 - 24.02.2015
 * BUGFIX: Handle transient dependencies better in pack command - https://github.com/fsprojects/Paket/pull/649
-
-#### 0.30.10 - 24.02.2015
 * BUGFIX: Only load custom attributes if not given in TemplateFile or cmd parameter
-
-#### 0.30.7 - 24.02.2015
-* BUGFIX: Detect 4.5.1 - https://github.com/fsprojects/Paket/pull/647
+* BUGFIX: Detect .NET 4.5.1 - https://github.com/fsprojects/Paket/pull/647
 
 #### 0.30.0 - 23.02.2015
 * New command: `paket pack` - http://fsprojects.github.io/Paket/paket-pack.html
