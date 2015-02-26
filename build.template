@@ -3,15 +3,10 @@
 // --------------------------------------------------------------------------------------
 
 #r @"packages/FAKE/tools/FakeLib.dll"
-#r @"packages/Paket.Core/lib/net40/Paket.Core.dll"
 open Fake
 open Fake.Git
 open Fake.AssemblyInfoFile
 open Fake.ReleaseNotesHelper
-open Paket
-open Paket.Domain
-open Paket.PackageResolver
-open Paket.Requirements
 open System
 open System.IO
 #if MONO
@@ -184,74 +179,6 @@ Target "SourceLink" (fun _ ->
 // --------------------------------------------------------------------------------------
 // Build a NuGet package
 
-// Helper function to get the correct project file
-// according to src fir directory name convention
-// Basically we feed the directory of the bin/[ProjName]
-// and we convert to src/[ProjecName] and in this directory
-// we expect to find exactly ONE project file.
-let getProjectFile projectName =
-    let dirI = directoryInfo ((__SOURCE_DIRECTORY__ @@ "src") @@ projectName)
-    if not dirI.Exists then failwith (sprintf "%s does not exist" dirI.FullName )
-    let pfile =  match dirI.GetFiles("*.?sproj") with
-                 | [|unique|] -> ProjectFile.Load unique.FullName
-                 | [||]       -> failwith (sprintf "No project files found in %s" dirI.FullName)
-                 | many       -> failwith (sprintf "More than one project file was found in %s: %A" dirI.FullName many)
-
-    match pfile with
-    | Some(p) -> p
-    | None    -> failwith "Unable to load project file"
-
-// helper function to get output type and target fw
-let getOutputType projectName =
-    let fwToNugetFriendlyString (fw:FrameworkIdentifier) = 
-        match fw with
-        | DotNetFramework(version) -> (version.ToString ()).Replace("v","net")
-        | _                        -> failwith (sprintf "%s not yet supported" (fw.ToString ())) //TODO other platforms like Mono
-    
-    let projFile = getProjectFile projectName
-    (projFile.OutputType, projFile.GetTargetFramework () |> fwToNugetFriendlyString)
-
-
-// helper function to get files to include in nuget package
-let getFilenames projectName =
-    let (output, fwVersion) = getOutputType projectName
-    let files = match output with 
-                | ProjectOutputType.Exe     -> !! (sprintf "bin/%s/*.*" projectName)
-                | ProjectOutputType.Library -> (!! (sprintf "bin/%s/%s.dll" projectName projectName)).And (sprintf "bin/%s/%s.pdb" projectName projectName)
-    files |> Seq.map(fun f -> (f, Some("lib" @@ fwVersion), None))
-    |> Seq.toList
-
-// helper function to determine dependencies of nuget package  
-let getDependencies projectName =
-    let getInterProjectDependencies (projFile:ProjectFile) =    
-        projFile.GetInterProjectDependencies () 
-        |> List.map (fun d -> (d.Name, release.NugetVersion)) 
-
-    let getReferencedPackagesFromProject projFile =    
-        let normalizeVersionRequirementForNuget name (v:VersionRequirement)  =
-            let getCurrentlyInstalledVersion packageName  = 
-                let lockFile = LockFile.LoadFrom "paket.lock"
-                let _,v = lockFile.ResolvedPackages |> Map.toList |> List.find (fun (name, v) -> name = NormalizedPackageName(packageName))
-                v.Version
-
-            match v.Range with
-            | Minimum(semver) when (semver.ToString()) = "0" -> Minimum(getCurrentlyInstalledVersion name).FormatInNuGetSyntax ()
-            | version                                        -> version.FormatInNuGetSyntax ()
-        
-        let dependenciesFile = DependenciesFile.ReadFromFile "paket.dependencies"
-        
-        let packageNameToString = function
-            | PackageName n -> n
-
-        DependencyModel.CalcDependencies (dependenciesFile, projFile.FileName)
-        |> Map.toList
-        |> List.map (fun (name, v) -> (name |> packageNameToString, v |> normalizeVersionRequirementForNuget name)) 
-
-    match getOutputType projectName with
-    | ProjectOutputType.Exe, _  -> []
-    |  _ ,_                     -> let p = getProjectFile projectName
-                                   (getInterProjectDependencies p) @ (getReferencedPackagesFromProject p)
-    
 Target "NuGet" (fun _ ->
     Paket.Pack(fun p -> 
         { p with
