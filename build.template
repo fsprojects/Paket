@@ -1,4 +1,4 @@
-﻿// --------------------------------------------------------------------------------------
+// --------------------------------------------------------------------------------------
 // FAKE build script
 // --------------------------------------------------------------------------------------
 
@@ -253,27 +253,19 @@ let getDependencies projectName =
                                    (getInterProjectDependencies p) @ (getReferencedPackagesFromProject p)
     
 Target "NuGet" (fun _ ->
-    directoryInfo "bin" 
-    |> subDirectories
-    |> Array.iter (fun d ->      
-        NuGet (fun p ->
-            { p with
-                Authors = authors
-                Project = d.Name
-                Summary = summary
-                Description = description
-                Version = release.NugetVersion
-                ReleaseNotes = String.Join(Environment.NewLine, release.Notes)
-                WorkingDir = "."
-                Tags = tags
-                Files = getFilenames d.Name
-                OutputPath = "bin" @@ d.Name
-                AccessKey = getBuildParamOrDefault "nugetkey" ""
-                Publish = hasBuildParam "nugetkey"
-                Dependencies = getDependencies d.Name })
-            ("nuget/" + project + ".nuspec")
-        )
+    Paket.Pack(fun p -> 
+        { p with
+            OutputPath = "bin"
+            Version = release.NugetVersion
+            ReleaseNotes = toLines release.Notes})
 )
+
+Target "PublishNuget" (fun _ ->
+    Paket.Push(fun p -> 
+        { p with
+            WorkingDir = "./temp" })
+)
+
 
 // --------------------------------------------------------------------------------------
 // Generate the documentation
@@ -453,6 +445,7 @@ Target "All" DoNothing
   ==> "Release"
 
 "BuildPackage"
+  ==> "PublishNuget"
   ==> "Release"
 
 RunTargetOrDefault "All"
