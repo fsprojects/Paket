@@ -15,8 +15,8 @@ module private TemplateParser =
             Line : int
         }
 
-    let private single = Regex("^(\S+)\s*$", RegexOptions.Compiled)
-    let private multi = Regex("^(\S+)\s+(\S.*)", RegexOptions.Compiled)
+    let private single = Regex(@"^(\S+)\s*$", RegexOptions.Compiled)
+    let private multi = Regex(@"^(\S+)\s+(\S.*)", RegexOptions.Compiled)
 
     let private (!!) (i : int) (m : Match) =
         m.Groups.[i].Value.Trim().ToLowerInvariant()
@@ -34,7 +34,7 @@ module private TemplateParser =
             Some (!! 1 m, m.Groups.[2].Value.Trim())
         | false -> None
 
-    let private indented = Regex("^\s+(.*)", RegexOptions.Compiled)
+    let private indented = Regex(@"^\s+(.*)", RegexOptions.Compiled)
     let private (|Indented|_|) line =
         let i = indented.Match line
         match i.Success with
