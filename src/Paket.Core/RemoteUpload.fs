@@ -25,7 +25,29 @@ type System.Net.WebClient with
             stream.Write(newlineBytes, 0, newlineBytes.Length)
             stream.Write(trailerbytes, 0, trailerbytes.Length)
             ()
-            
+
+let GetUrlWithEndpoint (url: string option) (endPoint: string option) =
+    let (|UrlWithEndpoint|_|) url = 
+        match url with
+        | Some url when not (String.IsNullOrEmpty(Uri(url).AbsolutePath.TrimStart('/'))) -> Some(Uri(url)) 
+        | _                                                                              -> None  
+
+    let (|IsUrl|_|) (url: string option) =
+        match url with
+        | Some url -> Uri(url.TrimEnd('/') + "/") |> Some
+        | _        -> None
+    
+    let defaultEndpoint = "/api/v2/package" 
+    let urlWithEndpoint = 
+        match (url, endPoint) with
+        | None                   , _                   -> Uri(Uri("https://nuget.org"), defaultEndpoint)
+        | IsUrl baseUrl          , Some customEndpoint -> Uri(baseUrl, customEndpoint.TrimStart('/'))
+        | UrlWithEndpoint baseUrl, _                   -> baseUrl
+        | IsUrl baseUrl          , None                -> Uri(baseUrl, defaultEndpoint)
+        | Some whyIsThisNeeded   , _                   -> failwith "Url and endpoint combination not supported"  
+    urlWithEndpoint.ToString ()
+
+  
 let Push maxTrials url apiKey packageFileName =
     let rec push trial =
         tracefn "Pushing package %s to %s - trial %d" packageFileName url trial
