@@ -6,6 +6,80 @@ open System.IO
 open System.Text.RegularExpressions
 open Paket.Rop
 open Paket.Domain
+
+module private TemplateParser =
+    type private ParserState =
+        {
+            Remaining : string list
+            Map : Map<string, string>
+            Line : int
+        }
+
+    let private single = Regex("^(\S+)\s*$", RegexOptions.Compiled)
+    let private multi = Regex("^(\S+)\s+(\S.*)", RegexOptions.Compiled)
+
+    let private (!!) (i : int) (m : Match) =
+        m.Groups.[i].Value.Trim().ToLowerInvariant()
+
+    let private (|SingleToken|_|) line =
+        let m = single.Match line
+        match m.Success with
+        | true -> Some (!! 1 m)
+        | false -> None
+
+    let private (|MultiToken|_|) line =
+        let m = multi.Match line
+        match m.Success with
+        | true ->
+            Some (!! 1 m, m.Groups.[2].Value.Trim())
+        | false -> None
+
+    let private indented = Regex("^\s+(.*)", RegexOptions.Compiled)
+    let private (|Indented|_|) line =
+        let i = indented.Match line
+        match i.Success with
+        | true -> i.Groups.[1].Value.Trim() |> Some
+        | false -> None
+
+    let rec private indentedBlock acc i lines =
+        match lines with
+        | (Indented h)::t ->
+            indentedBlock (h::acc) (i + 1) t
+        | _ -> acc |> List.rev |> String.concat "\n", i, lines
+
+    let rec private inner state =
+        match state with
+        | { Remaining = [] } -> Choice1Of2 state.Map
+        | { Remaining = h::t } ->
+            match h with
+            | Indented _ -> Choice2Of2 <| sprintf "Indented block with no name line %d" state.Line
+            | MultiToken (key, value) ->
+                inner { state with
+                            Remaining = t
+                            Map = Map.add key value state.Map
+                            Line = state.Line + 1 }
+            | SingleToken key ->
+                let value, line, remaining = indentedBlock [] state.Line t
+                if value = "" then
+                    Choice2Of2 <| sprintf "No indented block following name '%s' line %d" key line
+                else
+                    inner { state with
+                                Remaining = remaining 
+                                Map = Map.add key value state.Map
+                                Line = line }
+            | "" ->
+                inner { state with Line = state.Line + 1; Remaining = t }
+            | _ ->
+                Choice2Of2 <| sprintf "Invalid syntax line %d" state.Line
+
+    let parse (contents : string) =
+        inner {
+            Remaining =
+                contents.Split('\n')
+                |> Array.toList
+            Line = 1
+            Map = Map.empty
+        }
     
 type internal CompleteCoreInfo = 
     { Id : string
@@ -86,60 +160,29 @@ module internal TemplateFile =
             | ProjectInfo(core, optional) -> ProjectInfo(core, { optional with ReleaseNotes = Some releaseNotes })
         { templateFile with Contents = contents }
     
-    let private (!<) prefix lines = 
-        let singleLine str = 
-            let regex = sprintf "^%s (?<%s>.*)" prefix prefix
-            let reg = Regex(regex, RegexOptions.Compiled ||| RegexOptions.CultureInvariant ||| RegexOptions.IgnoreCase)
-            if reg.IsMatch str then Some <| (reg.Match str).Groups.[prefix].Value
-            else None
-        
-        let multiLine lines = 
-            let rec findBody acc (lines : string list) = 
-                match lines with
-                | h :: t when h.StartsWith " " -> findBody (h.Trim() :: acc) t
-                | _ -> 
-                    Some(acc
-                         |> List.rev
-                         |> String.concat Environment.NewLine)
-            
-            let rec findStart lines = 
-                match (lines : String list) with
-                | h :: t when h.ToLowerInvariant() = prefix.ToLowerInvariant() -> findBody [] t
-                | h :: t -> findStart t
-                | [] -> None
-            
-            findStart lines
-        
-        [ lines |> List.tryPick singleLine
-          multiLine lines ]
-        |> List.tryPick id
-    
     let private failP str = fail <| PackagingConfigParseError str
     
     type private PackageConfigType = 
         | FileType
         | ProjectType
+
+    let private parsePackageConfigType map = 
+        let t' = Map.tryFind "type" map
+        t' |> function 
+        | Some s -> 
+            match s with
+            | "file" -> succeed FileType
+            | "project" -> succeed ProjectType
+            | s -> failP (sprintf "Unknown package config type.")
+        | None -> failP (sprintf "First line of paket.package file had no 'type' declaration.")
     
-    let private parsePackageConfigType contents = 
-        match contents with
-        | firstLine :: _ -> 
-            let t' = (!<) "type" [ firstLine ]
-            t' |> function 
-            | Some s -> 
-                match s with
-                | "file" -> succeed FileType
-                | "project" -> succeed ProjectType
-                | s -> failP (sprintf "Unknown package config type.")
-            | None -> failP (sprintf "First line of paket.package file had no 'type' declaration.")
-        | [] -> failP "Empty paket.template file."
-    
-    let private getId lines = 
-        (!<) "id" lines |> function 
+    let private getId map = 
+        Map.tryFind "id" map |> function 
         | Some m -> succeed <| m
         | None -> failP "No id line in paket.template file."
     
-    let private getAuthors lines = 
-        (!<) "authors" lines |> function 
+    let private getAuthors (map : Map<string, string>) = 
+        Map.tryFind "authors" map |> function 
         | Some m -> 
             m.Split ','
             |> Array.map (fun s -> s.Trim())
@@ -147,13 +190,13 @@ module internal TemplateFile =
             |> succeed
         | None -> failP "No authors line in paket.template file."
     
-    let private getDescription lines = 
-        (!<) "description" lines |> function 
+    let private getDescription map = 
+        Map.tryFind "description" map |> function 
         | Some m -> succeed m
         | None -> failP "No description line in paket.template file."
     
-    let private getDependencies lines = 
-        (!<) "dependencies" lines
+    let private getDependencies (map : Map<string, string>) = 
+        Map.tryFind "dependencies" map
         |> Option.map (fun d -> d.Split '\n')
         |> Option.map (Array.map (fun d -> 
                            let reg = Regex(@"(?<id>\S+)(?<version>.*)").Match d
@@ -167,8 +210,8 @@ module internal TemplateFile =
     let private fromReg = Regex("from (?<from>.*)", RegexOptions.Compiled)
     let private toReg = Regex("to (?<to>.*)", RegexOptions.Compiled)
     
-    let private getFiles lines = 
-        (!<) "files" lines
+    let private getFiles (map : Map<string, string>) = 
+        Map.tryFind "files" map
         |> Option.map (fun d -> d.Split '\n')
         |> Option.map 
                (Seq.map 
@@ -181,31 +224,31 @@ module internal TemplateFile =
         |> Option.map List.ofSeq
         |> fun x -> defaultArg x []
     
-    let private getOptionalInfo configLines = 
-        let title = (!<) "title" configLines
+    let private getOptionalInfo (map : Map<string, string>) = 
+        let title = Map.tryFind "title" map
         
         let owners = 
-            (!<) "owners" configLines 
+            Map.tryFind "owners" map
             |> Option.map (fun o -> 
                 o.Split(',')
                 |> Array.map (fun o -> o.Trim())
                 |> Array.toList)
             |> fun x -> defaultArg x []
         
-        let releaseNotes = (!<) "releaseNotes" configLines
-        let summary = (!<) "summary" configLines
-        let language = (!<) "language" configLines
-        let projectUrl = (!<) "projectUrl" configLines
-        let iconUrl = (!<) "iconUrl" configLines
-        let licenseUrl = (!<) "licenseUrl" configLines
-        let copyright = (!<) "copyright" configLines
+        let releaseNotes = Map.tryFind "releaseNotes" map
+        let summary = Map.tryFind "summary" map
+        let language = Map.tryFind "language" map
+        let projectUrl = Map.tryFind "projectUrl" map
+        let iconUrl = Map.tryFind "iconUrl" map
+        let licenseUrl = Map.tryFind "licenseUrl" map
+        let copyright = Map.tryFind "copyright" map
         let requireLicenseAcceptance = 
-            match (!<) "requireLicenseAcceptance" configLines with
+            match Map.tryFind "requireLicenseAcceptance" map with
             | Some x when x.ToLower() = "true" -> true
             | _ -> false
         
         let tags = 
-            (!<) "tags" configLines 
+            Map.tryFind "tags" map 
             |> Option.map (fun t -> 
                 t.Split ' '
                 |> Array.map (fun t -> t.Trim())
@@ -213,7 +256,7 @@ module internal TemplateFile =
             |> fun x -> defaultArg x []
         
         let developmentDependency = 
-            match (!<) "developmentDependency" configLines with
+            match Map.tryFind "developmentDependency" map with
             | Some x when x.ToLower() = "true" -> true
             | _ -> false
 
@@ -229,48 +272,44 @@ module internal TemplateFile =
           RequireLicenseAcceptance = requireLicenseAcceptance
           Tags = tags
           DevelopmentDependency = developmentDependency
-          Dependencies = getDependencies configLines
-          Files = getFiles configLines }
+          Dependencies = getDependencies map
+          Files = getFiles map }
     
     let Parse(contentStream : Stream) = 
         rop { 
-            let configLines = 
-                use sr = new StreamReader(contentStream, System.Text.Encoding.UTF8)
-                
-                let rec inner (s : StreamReader) = 
-                    seq { 
-                        let line = s.ReadLine()
-                        if line <> null then 
-                            yield line
-                            yield! inner s
-                    }
-                inner sr |> Seq.toList
-            let! type' = parsePackageConfigType configLines
+            let sr = new StreamReader(contentStream)
+            let! map =
+                match TemplateParser.parse (sr.ReadToEnd()) with
+                | Choice1Of2 m -> succeed m
+                | Choice2Of2 f -> failP f
+            sr.Dispose()
+            let! type' = parsePackageConfigType map
             match type' with
             | ProjectType -> 
                 let core : ProjectCoreInfo = 
-                    { Id = (!<) "id" configLines
-                      Version = (!<) "version" configLines |> Option.map SemVer.Parse
+                    { Id = Map.tryFind "id" map
+                      Version = Map.tryFind "version" map |> Option.map SemVer.Parse
                       Authors = 
-                          (!<) "authors" configLines |> Option.map (fun s -> 
-                                                            s.Split(',')
-                                                            |> Array.map (fun s -> s.Trim())
-                                                            |> Array.toList)
-                      Description = (!<) "description" configLines }
+                          Map.tryFind "authors" map
+                          |> Option.map (fun s -> 
+                                            s.Split(',')
+                                            |> Array.map (fun s -> s.Trim())
+                                            |> Array.toList)
+                      Description = Map.tryFind "description" map }
                 
-                let optionalInfo = getOptionalInfo configLines
+                let optionalInfo = getOptionalInfo map
                 return ProjectInfo(core, optionalInfo)
             | FileType ->                 
-                let! id' = getId configLines                
-                let! authors = getAuthors configLines
-                let! description = getDescription configLines
+                let! id' = getId map                
+                let! authors = getAuthors map
+                let! description = getDescription map
                 let core : CompleteCoreInfo = 
                     { Id = id'
-                      Version = (!<) "version" configLines |> Option.map SemVer.Parse
+                      Version = Map.tryFind "version" map |> Option.map SemVer.Parse
                       Authors = authors
                       Description = description }
                 
-                let optionalInfo = getOptionalInfo configLines
+                let optionalInfo = getOptionalInfo map
                 return CompleteInfo(core, optionalInfo)
         }
     
