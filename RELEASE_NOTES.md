@@ -1,3 +1,6 @@
+#### 0.31.2 - 26.02.2015
+* BUGFIX: Robust and much faster template file parser - https://github.com/fsprojects/Paket/pull/660
+
 #### 0.31.1 - 25.02.2015
 * Use latest FAKE tasks
 
