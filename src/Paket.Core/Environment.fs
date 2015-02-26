@@ -2,7 +2,7 @@
 
 open System.IO
 
-open Paket.Rop
+open Chessie.Rop
 open Paket.Domain
 
 type PaketEnv = {

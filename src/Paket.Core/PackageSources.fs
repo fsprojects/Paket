@@ -5,7 +5,7 @@ open System.IO
 open System.Text.RegularExpressions
 
 open Paket.Logging
-open Paket.Rop
+open Chessie.Rop
 
 type EnvironmentVariable = 
     { Variable : string

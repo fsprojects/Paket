@@ -4,7 +4,7 @@ open System
 open System.IO
 open Logging
 open Paket.Domain
-open Paket.Rop
+open Chessie.Rop
 
 let private findReferencesFor package (lockFile: LockFile) projects = rop {
     let! referencedIn =
@@ -20,7 +20,7 @@ let private findReferencesFor package (lockFile: LockFile) projects = rop {
                 |> Set.contains (NormalizedPackageName package)
 
             return if referenced then Some project.FileName else None })
-        |> Rop.collect
+        |> collect
 
     return referencedIn |> List.choose id
 }
@@ -38,7 +38,7 @@ let ShowReferencesFor packages environment = rop {
         |> Seq.map (fun package -> rop {
             let! projects = findReferencesFor package lockFile environment.Projects
             return package, projects })
-        |> Rop.collect
+        |> collect
 
     projectsPerPackage
     |> Seq.iter (fun (PackageName k, vs) ->

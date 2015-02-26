@@ -1,3 +1,6 @@
+#### 0.31.3 - 26.02.2015
+* Use Chessie for ROP - https://github.com/fsprojects/Chessie
+
 #### 0.31.2 - 26.02.2015
 * BUGFIX: Robust and much faster template file parser - https://github.com/fsprojects/Paket/pull/660
 

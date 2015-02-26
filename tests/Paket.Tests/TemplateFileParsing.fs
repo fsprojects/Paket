@@ -2,7 +2,7 @@
 
 open System.IO
 open Paket
-open Paket.Rop
+open Chessie.Rop
 open FsUnit
 open NUnit.Framework
 open Paket.TestHelpers

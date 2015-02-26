@@ -9,7 +9,7 @@ open System.Xml
 open System.Text
 open Paket
 open Paket.Logging
-open Paket.Rop
+open Chessie.Rop
 open Paket.Domain
 
 type Auth = 

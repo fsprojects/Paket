@@ -8,10 +8,11 @@ open Paket.Domain
 open Paket.Logging
 open System.Collections.Generic
 open Paket.PackageMetaData
+open Chessie.Rop
 
 let Pack(dependencies : DependenciesFile, packageOutputPath, buildConfig, version, releaseNotes) =
     let buildConfig = defaultArg buildConfig "Release"  
-    Utils.createDir packageOutputPath |> Rop.returnOrFail
+    Utils.createDir packageOutputPath |> returnOrFail
     let rootPath = dependencies.FileName |> Path.GetDirectoryName
 
     let version = version |> Option.map SemVer.Parse

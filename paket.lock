@@ -30,3 +30,6 @@ GITHUB
   specs:
     modules/Octokit/Octokit.fsx (99bf805630805455031684c9369b1872d14a4fdd)
       Octokit
+  remote: fsprojects/Chessie
+  specs:
+    src/Chessie/Rop.fs (0548b341df592013efcf9894ace3717a9841cb1c)

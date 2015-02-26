@@ -45,9 +45,9 @@ let ``should remove one level deep transitive dependencies from dep and ref file
     let before = PaketEnv.create dummyDir depFile1 lockFile1 projects1
     
     match Simplifier.simplify false before with
-    | Rop.Failure(msgs) -> 
+    | Chessie.Rop.Failure(msgs) -> 
         failwith (String.concat Environment.NewLine (msgs |> List.map string))
-    | Rop.Success((_,after),_) ->
+    | Chessie.Rop.Success((_,after),_) ->
         let depFile,refFiles = after.DependenciesFile, after.Projects |> List.map snd
         depFile.Packages |> List.map (fun p -> p.Name) |> shouldEqual [PackageName"A";PackageName"D"]
         refFiles.Head.NugetPackages |> shouldEqual [PackageInstallSettings.Default("A"); PackageInstallSettings.Default("D")]
@@ -88,9 +88,9 @@ let ``should remove all transitive dependencies from dep file recursively``() =
     let before = PaketEnv.create dummyDir depFile2 lockFile2 projects2
     
     match Simplifier.simplify false before with
-    | Rop.Failure(msgs) -> 
+    | Chessie.Rop.Failure(msgs) -> 
         failwith (String.concat Environment.NewLine (msgs |> List.map string))
-    | Rop.Success((_,after),_) ->
+    | Chessie.Rop.Success((_,after),_) ->
         let depFile,refFiles = after.DependenciesFile, after.Projects |> List.map snd
         depFile.Packages |> List.map (fun p -> p.Name) |> shouldEqual [PackageName"A";PackageName"C"]
         refFiles.Head.NugetPackages |>  shouldEqual [PackageInstallSettings.Default("A"); PackageInstallSettings.Default("C")]

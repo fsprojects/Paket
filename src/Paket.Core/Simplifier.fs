@@ -6,7 +6,7 @@ open System.IO
 open Paket.Domain
 open Paket.Logging
 open Paket.PackageResolver
-open Paket.Rop
+open Chessie.Rop
 
 let private findTransitive (packages, flatLookup, failureF) = 
     packages
@@ -14,7 +14,7 @@ let private findTransitive (packages, flatLookup, failureF) =
         flatLookup 
         |> Map.tryFind (NormalizedPackageName packageName)
         |> failIfNone (failureF packageName))
-    |> Rop.collect
+    |> collect
     |> lift Seq.concat
 
 let private removePackage(packageName, transitivePackages, fileName, interactive) =
@@ -66,7 +66,7 @@ let simplify interactive environment = rop {
     let! referencesFiles' =
         referencesFiles
         |> List.map (fun refFile -> simplifyReferencesFile(refFile, flatLookup, interactive))
-        |> Rop.collect
+        |> collect
 
     let projects = List.zip projectFiles referencesFiles'
 

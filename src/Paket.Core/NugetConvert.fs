@@ -11,7 +11,7 @@ open Paket.Xml
 open Paket.NuGetV2
 open Paket.PackageSources
 open Paket.Requirements
-open Rop
+open Chessie.Rop
 
 type CredsMigrationMode =
     | Encrypt
@@ -20,10 +20,10 @@ type CredsMigrationMode =
 
     static member parse(s : string) = 
         match s with 
-        | "encrypt" -> Rop.succeed Encrypt
-        | "plaintext" -> Rop.succeed  Plaintext
-        | "selective" -> Rop.succeed Selective
-        | _ ->  InvalidCredentialsMigrationMode s |> Rop.fail
+        | "encrypt" -> succeed Encrypt
+        | "plaintext" -> succeed  Plaintext
+        | "selective" -> succeed Selective
+        | _ ->  InvalidCredentialsMigrationMode s |> fail
 
     static member toAuthentication mode sourceName auth =
         match mode with
@@ -79,11 +79,11 @@ type NugetConfig =
         try 
             let doc = XmlDocument()
             doc.Load(file.FullName)
-            (doc |> getNode "configuration").Value |> Rop.succeed
+            (doc |> getNode "configuration").Value |> succeed
         with _ -> 
             file
             |> NugetConfigFileParseError
-            |> Rop.fail
+            |> fail
 
     static member overrideConfig nugetConfig (configNode : XmlNode) =
         let clearSources = configNode.SelectSingleNode("//packageSources/clear") <> null
@@ -152,11 +152,11 @@ module NugetEnv =
         |> List.filter (fun fi -> fi.Exists)
         |> List.fold (fun config file -> 
                         config
-                        |> Rop.bind (fun config ->
+                        |> bind (fun config ->
                             file 
                             |> NugetConfig.getConfigNode 
-                            |> Rop.lift (fun node -> NugetConfig.overrideConfig config node)))
-                        (Rop.succeed NugetConfig.empty)
+                            |> lift (fun node -> NugetConfig.overrideConfig config node)))
+                        (succeed NugetConfig.empty)
 
     let readNugetPackages(rootDirectory : DirectoryInfo) =
         let readSingle(file : FileInfo) = 
@@ -168,15 +168,15 @@ module NugetEnv =
                   Type = if file.Directory.Name = ".nuget" then SolutionLevel else ProjectLevel
                   Packages = [for node in doc.SelectNodes("//package") ->
                                     node.Attributes.["id"].Value, node.Attributes.["version"].Value |> SemVer.Parse ]}
-                |> Rop.succeed 
-            with _ -> Rop.fail (NugetPackagesConfigParseError file)
+                |> succeed 
+            with _ -> fail (NugetPackagesConfigParseError file)
 
         ProjectFile.FindAllProjects rootDirectory.FullName 
         |> List.ofArray
         |> List.map (fun p -> p, Path.Combine(Path.GetDirectoryName(p.FileName), "packages.config"))
         |> List.filter (fun (p,packages) -> File.Exists packages)
         |> List.map (fun (p,packages) -> readSingle(FileInfo(packages)) |> lift (fun packages -> (p,packages)))
-        |> Rop.collect
+        |> collect
 
     let read (rootDirectory : DirectoryInfo) = rop {
         let configs = FindAllFiles(rootDirectory.FullName, "nuget.config") |> Array.toList
@@ -242,8 +242,8 @@ let createDependenciesFileR (rootDirectory : DirectoryInfo) nugetEnv mode =
             |> List.fold DependenciesFile.add dependenciesFile
         try 
             DependenciesFile.ReadFromFile dependenciesFileName
-            |> Rop.succeed
-        with _ -> DependenciesFileParseError (FileInfo(dependenciesFileName)) |> Rop.fail
+            |> succeed
+        with _ -> DependenciesFileParseError (FileInfo(dependenciesFileName)) |> fail
         |> lift addPackages
 
     let create() =
@@ -255,10 +255,10 @@ let createDependenciesFileR (rootDirectory : DirectoryInfo) nugetEnv mode =
                             with _ -> source |> fst |> PackageSourceParseError |> fail
                             |> successTee PackageSource.warnIfNoConnection)
                             
-            |> Rop.collect
+            |> collect
 
         sources
-        |> Rop.lift (fun sources -> 
+        |> lift (fun sources -> 
             let packages = packages |> List.map (fun (name,v) -> createPackageRequirement name v sources dependenciesFileName)
             Paket.DependenciesFile(dependenciesFileName, InstallOptions.Default, sources, packages, [], []))
 
@@ -309,7 +309,7 @@ let convertR rootDirectory force credsMigrationMode = rop {
     let! credsMigrationMode =
         defaultArg 
             (credsMigrationMode |> Option.map CredsMigrationMode.parse)
-            (Rop.succeed Encrypt)
+            (succeed Encrypt)
 
     let! nugetEnv = NugetEnv.read rootDirectory
 

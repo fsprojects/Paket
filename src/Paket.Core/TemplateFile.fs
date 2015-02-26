@@ -4,7 +4,7 @@ open Paket
 open System
 open System.IO
 open System.Text.RegularExpressions
-open Paket.Rop
+open Chessie.Rop
 open Paket.Domain
 
 module private TemplateParser =

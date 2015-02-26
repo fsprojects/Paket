@@ -3,7 +3,7 @@
 open System.IO
 open Logging
 open System
-open Rop
+open Chessie.Rop
 open Domain
 
 

@@ -67,10 +67,13 @@
   -->
   <Import Project="$(SolutionDir)\.paket\paket.targets" />
   <ItemGroup>
+    <Compile Include="..\..\paket-files\fsprojects\Chessie\src\Chessie\Rop.fs">
+      <Paket>True</Paket>
+      <Link>Rop.fs</Link>
+    </Compile>
     <Compile Include="Async.fs" />
     <Compile Include="AssemblyInfo.fs" />
     <Compile Include="CustomAssemblyInfo.fs" />
-    <Compile Include="Rop.fs" />
     <Compile Include="Constants.fs" />
     <Compile Include="Domain.fs" />
     <Compile Include="SemVer.fs" />

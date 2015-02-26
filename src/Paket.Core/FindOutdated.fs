@@ -3,7 +3,7 @@ module Paket.FindOutdated
 
 open Paket.Domain
 open Paket.Logging
-open Paket.Rop
+open Chessie.Rop
 
 let private adjustVersionRequirements strict includingPrereleases (dependenciesFile: DependenciesFile) =
     //TODO: Anything we need to do for source files here?

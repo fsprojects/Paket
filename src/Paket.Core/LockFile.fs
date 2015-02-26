@@ -9,6 +9,7 @@ open Paket.PackageResolver
 open Paket.ModuleResolver
 open Paket.PackageSources
 open Paket.Requirements
+open Chessie.Rop
 
 module LockFileSerializer =
     /// [omit]
@@ -421,6 +422,6 @@ type LockFile(fileName:string,options:InstallOptions,resolution:PackageResolutio
         referencesFile.NugetPackages
         |> Seq.map (fun package ->
             this.GetAllDependenciesOfSafe(package.Name)
-            |> Rop.failIfNone (ReferenceNotFoundInLockFile(referencesFile.FileName, package.Name)))
-        |> Rop.collect
-        |> Rop.lift (Seq.concat >> Set.ofSeq)
+            |> failIfNone (ReferenceNotFoundInLockFile(referencesFile.FileName, package.Name)))
+        |> collect
+        |> lift (Seq.concat >> Set.ofSeq)

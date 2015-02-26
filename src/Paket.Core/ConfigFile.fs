@@ -6,7 +6,7 @@ open System.Security.Cryptography
 open System.Text
 open System.IO
 
-open Paket.Rop
+open Chessie.Rop
 open Paket.Domain
 open Paket.Xml
 open Paket.Logging

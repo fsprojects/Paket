@@ -2,7 +2,7 @@
 module Paket.InstallProcess
 
 open Paket
-open Paket.Rop
+open Chessie.Rop
 open Paket.Domain
 open Paket.Logging
 open Paket.BindingRedirects
