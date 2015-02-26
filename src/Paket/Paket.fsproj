@@ -27,10 +27,10 @@
     <WarningLevel>3</WarningLevel>
     <DocumentationFile>
     </DocumentationFile>
-    <StartArguments>update</StartArguments>
+    <StartArguments>pack output temp version 1.0.0.0</StartArguments>
     <StartAction>Project</StartAction>
     <StartProgram>paket.exe</StartProgram>
-    <StartWorkingDirectory>d:\code\Paket09x</StartWorkingDirectory>
+    <StartWorkingDirectory>c:\rip\FSharpx.Async</StartWorkingDirectory>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>

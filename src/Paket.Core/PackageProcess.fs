@@ -67,7 +67,7 @@ let Pack(dependencies : DependenciesFile, packageOutputPath, buildConfig, versio
                                 let missing =
                                     [ if merged.Id = None then yield "Id"
                                       if merged.Version = None then yield "Version"
-                                      if merged.Authors = None then yield "Authors"
+                                      if merged.Authors = None || merged.Authors = Some [] then yield "Authors"
                                       if merged.Description = None then yield "Description" ]
                                     |> fun xs -> String.Join(", ",xs)
 

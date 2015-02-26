@@ -20,7 +20,7 @@ let FileBasedLongDesc = """type file
 id My.Thing
 version 1.0
 authors Bob McBob
-description
+description  
     A longer description
     on two lines.
 """
@@ -115,24 +115,26 @@ description A short description
 
 [<Literal>]
 let DescriptionTest = """type project
-id
-    15below.TravelStatus.CommonMessages
-title
-    15below.TravelStatus.CommonMessages
-authors
-    15below
 owners
-    15below
+    Thomas Petricek, David Thomas, Ryan Riley, Steffen Forkmann
+authors 
+    Thomas Petricek, David Thomas, Ryan Riley, Steffen Forkmann
+projectUrl
+    http://fsprojects.github.io/FSharpx.Async/
+iconUrl
+    http://fsprojects.github.io/FSharpx.Async/img/logo.png
+licenseUrl
+    http://fsprojects.github.io/FSharpx.Async/license.html
 requireLicenseAcceptance
     false
-description
-    Common messages for Travel Status
-projectUrl
-    https://github.com/15below/Pasngr.TravelStatus/tree/master/src/15below.TravelStatus.CommonMessages
-iconUrl
-    https://si0.twimg.com/profile_images/3046082295/a10bd2175096bd5faebbd8285e319d54_bigger.png
 copyright
-    Copyright 2013
+    Copyright 2015
+tags
+    F#, async, fsharpx
+summary
+    Async extensions for F#
+description
+    Async extensions for F#
 
 """
 
