@@ -105,7 +105,7 @@ Target "AssemblyInfo" (fun _ ->
 Target "CopyBinaries" (fun _ ->
     directoryInfo "src" 
     |> subDirectories 
-    |> Array.map (fun d -> (d.Name,  sprintf "%s/Bin/Release" d.FullName)) 
+    |> Array.map (fun d -> (d.Name,  sprintf "%s/bin/Release" d.FullName)) 
     |> Array.iter (fun (n, p) -> CopyDir (sprintf "bin/%s" n) p (fun _ -> true)) 
 )
 
