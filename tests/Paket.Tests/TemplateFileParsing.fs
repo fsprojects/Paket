@@ -114,7 +114,7 @@ description A short description
 """
 
 [<Literal>]
-let DescriptionTest = """type project
+let RealTest = """type project
 owners
     Thomas Petricek, David Thomas, Ryan Riley, Steffen Forkmann
 authors 
@@ -138,11 +138,58 @@ description
 
 """
 
+[<Literal>]
+let FullTest = """type project
+title Chessie.Rop
+owners
+    Steffen Forkmann, Max Malook, Tomasz Heimowski
+authors 
+    Steffen Forkmann, Max Malook, Tomasz Heimowski
+projectUrl
+    http://github.com/fsprojects/Chessie
+iconUrl
+    https://raw.githubusercontent.com/fsprojects/Chessie/master/docs/files/img/logo.png
+licenseUrl
+    http://github.com/fsprojects/Chessie/blob/master/LICENSE.txt
+requireLicenseAcceptance
+    false
+copyright
+    Copyright 2015
+LANGUAGE
+    en-gb
+tags
+    rop fsharp F#
+summary
+    Railway-oriented programming for .NET
+description
+    Railway-oriented programming for .NET"""
+
 [<TestCase(ValidWithoutVersion)>]
-[<TestCase(DescriptionTest)>]
+[<TestCase(RealTest)>]
+[<TestCase(FullTest)>]
 let ``Valid file input recognised as valid`` (fileContent : string) =
     fileContent |> strToStream |> TemplateFile.Parse |> (function | Failure _ -> false | Success _ -> true)
     |> shouldEqual true
+
+[<TestCase(FullTest)>]
+let ``Optional fields are read`` (fileContent : string) =
+    let sut =
+        fileContent |> strToStream |> TemplateFile.Parse
+        |> returnOrFail
+        |> function
+           | CompleteInfo (_, opt)
+           | ProjectInfo (_, opt) -> opt
+    sut.Title |> shouldEqual (Some "Chessie.Rop")
+    sut.Copyright |> shouldEqual (Some "Copyright 2015")
+    sut.Summary |> shouldEqual (Some "Railway-oriented programming for .NET")
+    sut.IconUrl |> shouldEqual (Some "https://raw.githubusercontent.com/fsprojects/Chessie/master/docs/files/img/logo.png")
+    sut.LicenseUrl |> shouldEqual (Some "http://github.com/fsprojects/Chessie/blob/master/LICENSE.txt")
+    sut.ProjectUrl |> shouldEqual (Some "http://github.com/fsprojects/Chessie")
+    sut.Tags |> shouldEqual ["rop";"fsharp";"F#"]
+    sut.Owners |> shouldEqual ["Steffen Forkmann";"Max Malook";"Tomasz Heimowski"]
+    sut.RequireLicenseAcceptance |> shouldEqual false
+    sut.DevelopmentDependency |> shouldEqual false
+    sut.Language |> shouldEqual (Some "en-gb")
 
 [<Literal>]
 let Dependency1 = """type file

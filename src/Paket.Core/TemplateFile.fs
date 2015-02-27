@@ -225,7 +225,9 @@ module internal TemplateFile =
         |> fun x -> defaultArg x []
     
     let private getOptionalInfo (map : Map<string, string>) = 
-        let title = Map.tryFind "title" map
+        let get (n : string) = Map.tryFind (n.ToLowerInvariant()) map
+
+        let title = get "title"
         
         let owners = 
             Map.tryFind "owners" map
@@ -235,20 +237,20 @@ module internal TemplateFile =
                 |> Array.toList)
             |> fun x -> defaultArg x []
         
-        let releaseNotes = Map.tryFind "releaseNotes" map
-        let summary = Map.tryFind "summary" map
-        let language = Map.tryFind "language" map
-        let projectUrl = Map.tryFind "projectUrl" map
-        let iconUrl = Map.tryFind "iconUrl" map
-        let licenseUrl = Map.tryFind "licenseUrl" map
-        let copyright = Map.tryFind "copyright" map
+        let releaseNotes = get "releaseNotes"
+        let summary = get "summary"
+        let language = get "language"
+        let projectUrl = get "projectUrl"
+        let iconUrl = get "iconUrl"
+        let licenseUrl = get "licenseUrl"
+        let copyright = get "copyright"
         let requireLicenseAcceptance = 
-            match Map.tryFind "requireLicenseAcceptance" map with
+            match get "requireLicenseAcceptance" with
             | Some x when x.ToLower() = "true" -> true
             | _ -> false
         
         let tags = 
-            Map.tryFind "tags" map 
+            get "tags"
             |> Option.map (fun t -> 
                 t.Split ' '
                 |> Array.map (fun t -> t.Trim())
@@ -256,7 +258,7 @@ module internal TemplateFile =
             |> fun x -> defaultArg x []
         
         let developmentDependency = 
-            match Map.tryFind "developmentDependency" map with
+            match get "developmentDependency" with
             | Some x when x.ToLower() = "true" -> true
             | _ -> false
 
