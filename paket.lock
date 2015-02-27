@@ -3,7 +3,7 @@ NUGET
   specs:
     DotNetZip (1.9.3)
     FAKE (3.17.13)
-    FSharp.Compiler.Service (0.0.82)
+    FSharp.Compiler.Service (0.0.84)
     FSharp.Core (3.1.2.1)
     FSharp.Formatting (2.7.4)
       FSharp.Compiler.Service (>= 0.0.82)
@@ -32,4 +32,4 @@ GITHUB
       Octokit
   remote: fsprojects/Chessie
   specs:
-    src/Chessie/Rop.fs (0548b341df592013efcf9894ace3717a9841cb1c)
+    src/Chessie/Rop.fs (63066e7e0ca53985babe6021dcbb0ab2c636f937)
