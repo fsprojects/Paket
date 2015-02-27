@@ -32,4 +32,4 @@ GITHUB
       Octokit
   remote: fsprojects/Chessie
   specs:
-    src/Chessie/ErrorHandling.fs (89c3ccc50a725ac0b4e3c73ff383611ff510860f)
+    src/Chessie/ErrorHandling.fs (d5c7fa81abf4abad3d5affd42cd56afcc12eef8b)

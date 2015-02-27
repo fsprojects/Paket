@@ -106,7 +106,7 @@ let ``Invalid file input recognised as invalid`` (fileContent : string) =
     fileContent 
     |> strToStream 
     |> TemplateFile.Parse 
-    |> (function | Fail _ -> true | Ok _ -> false)
+    |> failed
     |> shouldEqual true
 
 [<Literal>]
@@ -171,8 +171,11 @@ description
 [<TestCase(RealTest)>]
 [<TestCase(FullTest)>]
 let ``Valid file input recognised as valid`` (fileContent : string) =
-    fileContent |> strToStream |> TemplateFile.Parse |> (function | Fail _ -> false | Ok _ -> true)
-    |> shouldEqual true
+    fileContent 
+    |> strToStream 
+    |> TemplateFile.Parse
+    |> failed
+    |> shouldEqual false
 
 [<TestCase(FullTest)>]
 let ``Optional fields are read`` (fileContent : string) =
