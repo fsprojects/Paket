@@ -158,7 +158,7 @@ copyright
 LANGUAGE
     en-gb
 tags
-    rop fsharp F#
+    rop, fsharp F#
 summary
     Railway-oriented programming for .NET
 description

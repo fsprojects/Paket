@@ -253,7 +253,7 @@ module internal TemplateFile =
             get "tags"
             |> Option.map (fun t -> 
                 t.Split ' '
-                |> Array.map (fun t -> t.Trim())
+                |> Array.map (fun t -> t.Trim().Trim(','))
                 |> Array.toList)
             |> fun x -> defaultArg x []
         
