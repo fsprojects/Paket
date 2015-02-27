@@ -1,3 +1,6 @@
+#### 0.31.4 - 26.02.2015
+* Better url and endpoint handling in `paket push` - https://github.com/fsprojects/Paket/pull/663
+
 #### 0.31.3 - 26.02.2015
 * Use Chessie for ROP - https://github.com/fsprojects/Chessie
 
