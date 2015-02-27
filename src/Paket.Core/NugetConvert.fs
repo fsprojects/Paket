@@ -11,7 +11,7 @@ open Paket.Xml
 open Paket.NuGetV2
 open Paket.PackageSources
 open Paket.Requirements
-open Chessie.Rop
+open Chessie.ErrorHandling
 
 type CredsMigrationMode =
     | Encrypt
@@ -178,7 +178,7 @@ module NugetEnv =
         |> List.map (fun (p,packages) -> readSingle(FileInfo(packages)) |> lift (fun packages -> (p,packages)))
         |> collect
 
-    let read (rootDirectory : DirectoryInfo) = rop {
+    let read (rootDirectory : DirectoryInfo) = attempt {
         let configs = FindAllFiles(rootDirectory.FullName, "nuget.config") |> Array.toList
         let targets = FindAllFiles(rootDirectory.FullName, "nuget.targets") |> Seq.firstOrDefault
         let exe = FindAllFiles(rootDirectory.FullName, "nuget.exe") |> Seq.firstOrDefault
@@ -278,7 +278,7 @@ let convertProjects nugetEnv =
         project.RemoveNuGetTargetsEntries()
         yield project, convertPackagesConfigToReferences project.FileName packagesConfig]
 
-let createPaketEnv rootDirectory nugetEnv credsMirationMode = rop {
+let createPaketEnv rootDirectory nugetEnv credsMirationMode = attempt {
 
     let! depFile = createDependenciesFileR rootDirectory nugetEnv credsMirationMode
     return PaketEnv.create rootDirectory depFile None (convertProjects nugetEnv)
@@ -298,13 +298,13 @@ let updateSolutions (rootDirectory : DirectoryInfo) =
 
     solutions
 
-let createResult(rootDirectory, nugetEnv, credsMirationMode) = rop {
+let createResult(rootDirectory, nugetEnv, credsMirationMode) = attempt {
 
     let! paketEnv = createPaketEnv rootDirectory nugetEnv credsMirationMode
     return ConvertResultR.create nugetEnv paketEnv (updateSolutions rootDirectory)
 }
 
-let convertR rootDirectory force credsMigrationMode = rop {
+let convertR rootDirectory force credsMigrationMode = attempt {
 
     let! credsMigrationMode =
         defaultArg 

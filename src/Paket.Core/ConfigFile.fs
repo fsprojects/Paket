@@ -6,7 +6,7 @@ open System.Security.Cryptography
 open System.Text
 open System.IO
 
-open Chessie.Rop
+open Chessie.ErrorHandling
 open Paket.Domain
 open Paket.Xml
 open Paket.Logging
@@ -27,7 +27,7 @@ let private getConfigNode (nodeName : string) =
             doc.AppendChild(element) |> ignore
             succeed element
 
-    rop {
+    attempt {
         let! root = rootNode
         let node = 
             match root |> getNode nodeName with
@@ -39,7 +39,7 @@ let private getConfigNode (nodeName : string) =
 
 
 let private saveConfigNode (node : XmlNode) =
-    rop {
+    attempt {
         do! createDir Constants.PaketConfigFolder
         do! saveFile Constants.PaketConfigFile (node.OwnerDocument.OuterXml)
     }
@@ -138,7 +138,7 @@ let GetCredentials (source : string) =
             None
     | [] -> None
 
-let AddCredentials (source, username, password) = rop {
+let AddCredentials (source, username, password) = attempt {
         let! credentialsNode = getConfigNode "credentials"
         
         let newCredentials = 

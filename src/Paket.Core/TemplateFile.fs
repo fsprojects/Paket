@@ -4,7 +4,7 @@ open Paket
 open System
 open System.IO
 open System.Text.RegularExpressions
-open Chessie.Rop
+open Chessie.ErrorHandling
 open Paket.Domain
 
 module private TemplateParser =
@@ -278,7 +278,7 @@ module internal TemplateFile =
           Files = getFiles map }
     
     let Parse(contentStream : Stream) = 
-        rop { 
+        attempt { 
             let sr = new StreamReader(contentStream)
             let! map =
                 match TemplateParser.parse (sr.ReadToEnd()) with

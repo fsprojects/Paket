@@ -3,7 +3,7 @@
 open System.IO
 open Logging
 open System
-open Chessie.Rop
+open Chessie.ErrorHandling
 open Domain
 
 
@@ -21,7 +21,7 @@ let TurnOnAutoRestore environment =
     use client = createWebClient("https://github.com",None)
 
     let download version file = 
-        rop {
+        attempt {
             do! createDir(exeDir)
             let fileName = Path.Combine(exeDir, file)
             let url = sprintf "https://github.com/fsprojects/Paket/releases/download/%s/%s" (string version) file
@@ -29,7 +29,7 @@ let TurnOnAutoRestore environment =
             do! downloadFileSync url fileName client
         }
 
-    rop { 
+    attempt { 
         let releasesUrl = "https://api.github.com/repos/fsprojects/Paket/releases";
      
         let! data = client |> downloadStringSync releasesUrl
@@ -52,7 +52,7 @@ let TurnOnAutoRestore environment =
 let TurnOffAutoRestore environment = 
     let exeDir = Path.Combine(environment.RootDirectory.FullName, ".paket")
     
-    rop {
+    attempt {
         let paketTargetsPath = Path.Combine(exeDir, "paket.targets")
         do! removeFile paketTargetsPath
 

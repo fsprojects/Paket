@@ -4,7 +4,7 @@ open System.IO
 open Paket.Logging
 open System
 open Paket.Domain
-open Chessie.Rop
+open Chessie.ErrorHandling
 
 /// Paket API which is optimized for F# Interactive use.
 type Dependencies(dependenciesFileName: string) =

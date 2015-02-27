@@ -9,7 +9,7 @@ open Paket.PackageResolver
 open Paket.ModuleResolver
 open Paket.PackageSources
 open Paket.Requirements
-open Chessie.Rop
+open Chessie.ErrorHandling
 
 module LockFileSerializer =
     /// [omit]

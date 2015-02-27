@@ -2,7 +2,7 @@
 
 open System.IO
 
-open Chessie.Rop
+open Chessie.ErrorHandling
 open Paket.Domain
 
 type PaketEnv = {
@@ -21,7 +21,7 @@ module PaketEnv =
           LockFile = lockFile
           Projects = projects }
 
-    let fromRootDirectory (directory : DirectoryInfo) = rop {
+    let fromRootDirectory (directory : DirectoryInfo) = attempt {
         if not directory.Exists then 
             return! fail (DirectoryDoesntExist directory)
         else

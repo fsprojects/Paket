@@ -8,7 +8,7 @@ open Paket.Domain
 open Paket.Logging
 open System.Collections.Generic
 open Paket.PackageMetaData
-open Chessie.Rop
+open Chessie.ErrorHandling
 
 let Pack(dependencies : DependenciesFile, packageOutputPath, buildConfig, version, releaseNotes) =
     let buildConfig = defaultArg buildConfig "Release"  
