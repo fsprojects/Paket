@@ -81,6 +81,7 @@
     <Compile Include="TemplateFileParsing.fs" />
     <Compile Include="NuspecWriterSpecs.fs" />
     <Compile Include="PackageProcessSpecs.fs" />
+    <Compile Include="RemotePushUrlSpecs.fs" />
     <Content Include="Nuspec\FSharp.Data.nuspec">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
