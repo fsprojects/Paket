@@ -20,14 +20,14 @@ let private getConfigNode (nodeName : string) =
         if File.Exists Constants.PaketConfigFile then 
             try 
                 doc.Load Constants.PaketConfigFile
-                succeed doc.DocumentElement
+                ok doc.DocumentElement
             with _ -> fail ConfigFileParseError
         else
             let element = doc.CreateElement rootElement
             doc.AppendChild(element) |> ignore
-            succeed element
+            ok element
 
-    attempt {
+    trial {
         let! root = rootNode
         let node = 
             match root |> getNode nodeName with
@@ -39,7 +39,7 @@ let private getConfigNode (nodeName : string) =
 
 
 let private saveConfigNode (node : XmlNode) =
-    attempt {
+    trial {
         do! createDir Constants.PaketConfigFolder
         do! saveFile Constants.PaketConfigFile (node.OwnerDocument.OuterXml)
     }
@@ -138,7 +138,7 @@ let GetCredentials (source : string) =
             None
     | [] -> None
 
-let AddCredentials (source, username, password) = attempt {
+let AddCredentials (source, username, password) = trial {
         let! credentialsNode = getConfigNode "credentials"
         
         let newCredentials = 

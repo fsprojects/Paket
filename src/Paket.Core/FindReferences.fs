@@ -6,10 +6,10 @@ open Logging
 open Paket.Domain
 open Chessie.ErrorHandling
 
-let private findReferencesFor package (lockFile: LockFile) projects = attempt {
+let private findReferencesFor package (lockFile: LockFile) projects = trial {
     let! referencedIn =
         projects
-        |> Seq.map (fun (project : ProjectFile, referencesFile) -> attempt {
+        |> Seq.map (fun (project : ProjectFile, referencesFile) -> trial {
             let! installedPackages =
                 referencesFile
                 |> lockFile.GetPackageHullSafe
@@ -25,17 +25,17 @@ let private findReferencesFor package (lockFile: LockFile) projects = attempt {
     return referencedIn |> List.choose id
 }
 
-let FindReferencesForPackage package environment = attempt {
+let FindReferencesForPackage package environment = trial {
     let! lockFile = environment |> PaketEnv.ensureLockFileExists
 
     return! findReferencesFor package lockFile environment.Projects
 }
 
-let ShowReferencesFor packages environment = attempt {
+let ShowReferencesFor packages environment = trial {
     let! lockFile = environment |> PaketEnv.ensureLockFileExists
     let! projectsPerPackage =
         packages
-        |> Seq.map (fun package -> attempt {
+        |> Seq.map (fun package -> trial {
             let! projects = findReferencesFor package lockFile environment.Projects
             return package, projects })
         |> collect

@@ -135,7 +135,7 @@ let findAllReferencesFiles root =
                                 |> Option.map (fun r -> p, r))
     |> Array.map (fun (project,file) -> 
         try 
-            succeed <| (project, ReferencesFile.FromFile(file))
+            ok <| (project, ReferencesFile.FromFile(file))
         with _ -> 
             fail <| ReferencesFileParseError (FileInfo(file)))
     |> collect

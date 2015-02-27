@@ -20,9 +20,9 @@ type CredsMigrationMode =
 
     static member parse(s : string) = 
         match s with 
-        | "encrypt" -> succeed Encrypt
-        | "plaintext" -> succeed  Plaintext
-        | "selective" -> succeed Selective
+        | "encrypt" -> ok Encrypt
+        | "plaintext" -> ok  Plaintext
+        | "selective" -> ok Selective
         | _ ->  InvalidCredentialsMigrationMode s |> fail
 
     static member toAuthentication mode sourceName auth =
@@ -79,7 +79,7 @@ type NugetConfig =
         try 
             let doc = XmlDocument()
             doc.Load(file.FullName)
-            (doc |> getNode "configuration").Value |> succeed
+            (doc |> getNode "configuration").Value |> ok
         with _ -> 
             file
             |> NugetConfigFileParseError
@@ -156,7 +156,7 @@ module NugetEnv =
                             file 
                             |> NugetConfig.getConfigNode 
                             |> lift (fun node -> NugetConfig.overrideConfig config node)))
-                        (succeed NugetConfig.empty)
+                        (ok NugetConfig.empty)
 
     let readNugetPackages(rootDirectory : DirectoryInfo) =
         let readSingle(file : FileInfo) = 
@@ -168,7 +168,7 @@ module NugetEnv =
                   Type = if file.Directory.Name = ".nuget" then SolutionLevel else ProjectLevel
                   Packages = [for node in doc.SelectNodes("//package") ->
                                     node.Attributes.["id"].Value, node.Attributes.["version"].Value |> SemVer.Parse ]}
-                |> succeed 
+                |> ok 
             with _ -> fail (NugetPackagesConfigParseError file)
 
         ProjectFile.FindAllProjects rootDirectory.FullName 
@@ -178,7 +178,7 @@ module NugetEnv =
         |> List.map (fun (p,packages) -> readSingle(FileInfo(packages)) |> lift (fun packages -> (p,packages)))
         |> collect
 
-    let read (rootDirectory : DirectoryInfo) = attempt {
+    let read (rootDirectory : DirectoryInfo) = trial {
         let configs = FindAllFiles(rootDirectory.FullName, "nuget.config") |> Array.toList
         let targets = FindAllFiles(rootDirectory.FullName, "nuget.targets") |> Seq.firstOrDefault
         let exe = FindAllFiles(rootDirectory.FullName, "nuget.exe") |> Seq.firstOrDefault
@@ -242,7 +242,7 @@ let createDependenciesFileR (rootDirectory : DirectoryInfo) nugetEnv mode =
             |> List.fold DependenciesFile.add dependenciesFile
         try 
             DependenciesFile.ReadFromFile dependenciesFileName
-            |> succeed
+            |> ok
         with _ -> DependenciesFileParseError (FileInfo(dependenciesFileName)) |> fail
         |> lift addPackages
 
@@ -251,7 +251,7 @@ let createDependenciesFileR (rootDirectory : DirectoryInfo) nugetEnv mode =
             if nugetEnv.NugetConfig.PackageSources = [] then [Constants.DefaultNugetStream,None] else nugetEnv.NugetConfig.PackageSources
             |> List.map (fun (n, auth) -> n, auth |> Option.map (CredsMigrationMode.toAuthentication mode n))
             |> List.map (fun source -> 
-                            try source |> PackageSource.Parse |> succeed
+                            try source |> PackageSource.Parse |> ok
                             with _ -> source |> fst |> PackageSourceParseError |> fail
                             |> successTee PackageSource.warnIfNoConnection)
                             
@@ -278,7 +278,7 @@ let convertProjects nugetEnv =
         project.RemoveNuGetTargetsEntries()
         yield project, convertPackagesConfigToReferences project.FileName packagesConfig]
 
-let createPaketEnv rootDirectory nugetEnv credsMirationMode = attempt {
+let createPaketEnv rootDirectory nugetEnv credsMirationMode = trial {
 
     let! depFile = createDependenciesFileR rootDirectory nugetEnv credsMirationMode
     return PaketEnv.create rootDirectory depFile None (convertProjects nugetEnv)
@@ -298,23 +298,23 @@ let updateSolutions (rootDirectory : DirectoryInfo) =
 
     solutions
 
-let createResult(rootDirectory, nugetEnv, credsMirationMode) = attempt {
+let createResult(rootDirectory, nugetEnv, credsMirationMode) = trial {
 
     let! paketEnv = createPaketEnv rootDirectory nugetEnv credsMirationMode
     return ConvertResultR.create nugetEnv paketEnv (updateSolutions rootDirectory)
 }
 
-let convertR rootDirectory force credsMigrationMode = attempt {
+let convertR rootDirectory force credsMigrationMode = trial {
 
     let! credsMigrationMode =
         defaultArg 
             (credsMigrationMode |> Option.map CredsMigrationMode.parse)
-            (succeed Encrypt)
+            (ok Encrypt)
 
     let! nugetEnv = NugetEnv.read rootDirectory
 
     let! rootDirectory = 
-        if force then succeed rootDirectory
+        if force then ok rootDirectory
         else PaketEnv.ensureNotExists rootDirectory
 
     return! createResult(rootDirectory, nugetEnv, credsMigrationMode)

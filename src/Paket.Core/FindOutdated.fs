@@ -33,7 +33,7 @@ let private detectOutdated (oldResolution: PackageResolver.PackageResolution) (n
         | _ -> ()]
 
 /// Finds all outdated packages.
-let FindOutdated strict includingPrereleases environment = attempt {
+let FindOutdated strict includingPrereleases environment = trial {
     let! lockFile = environment |> PaketEnv.ensureLockFileExists
 
     let dependenciesFile =
@@ -55,7 +55,7 @@ let private printOutdated packages =
             tracefn "  * %s %s -> %s" name (oldVersion.ToString()) (newVersion.ToString())
 
 /// Prints all outdated packages.
-let ShowOutdated strict includingPrereleases environment = attempt {
+let ShowOutdated strict includingPrereleases environment = trial {
     let! allOutdated = FindOutdated strict includingPrereleases environment
     printOutdated allOutdated
 }

@@ -47,7 +47,7 @@ let createDir path =
     try
         let dir = DirectoryInfo path
         if not dir.Exists then dir.Create()
-        succeed ()
+        ok ()
     with _ ->
         DirectoryCreateError path |> fail
 
@@ -303,21 +303,21 @@ let parseKeyValuePairs(s:string) =
 
 let downloadStringSync (url : string) (client : System.Net.WebClient) = 
     try 
-        client.DownloadString url |> succeed
+        client.DownloadString url |> ok
     with _ ->
         DownloadError url |> fail 
 
 let downloadFileSync (url : string) (fileName : string) (client : System.Net.WebClient) = 
     tracefn "Downloading file from %s to %s" url fileName
     try 
-        client.DownloadFile(url, fileName) |> succeed
+        client.DownloadFile(url, fileName) |> ok
     with _ ->
         DownloadError url |> fail 
 
 let saveFile (fileName : string) (contents : string) =
     tracefn "Saving file %s" fileName
     try 
-        File.WriteAllText(fileName, contents) |> succeed
+        File.WriteAllText(fileName, contents) |> ok
     with _ ->
         FileSaveError fileName |> fail
 
@@ -325,7 +325,7 @@ let removeFile (fileName : string) =
     if File.Exists fileName then
         tracefn "Removing file %s" fileName
         try
-            File.Delete(fileName) |> succeed
+            File.Delete(fileName) |> ok
         with _ ->
             FileDeleteError fileName |> fail
-    else succeed ()
+    else ok ()

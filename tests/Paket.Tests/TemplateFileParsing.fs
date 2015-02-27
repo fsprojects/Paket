@@ -103,7 +103,10 @@ description A short description
 [<TestCase(Invalid1)>]
 [<TestCase(Invalid3)>]
 let ``Invalid file input recognised as invalid`` (fileContent : string) =
-    fileContent |> strToStream |> TemplateFile.Parse |> (function | Failure _ -> true | Success _ -> false)
+    fileContent 
+    |> strToStream 
+    |> TemplateFile.Parse 
+    |> (function | Fail _ -> true | Ok _ -> false)
     |> shouldEqual true
 
 [<Literal>]
@@ -168,7 +171,7 @@ description
 [<TestCase(RealTest)>]
 [<TestCase(FullTest)>]
 let ``Valid file input recognised as valid`` (fileContent : string) =
-    fileContent |> strToStream |> TemplateFile.Parse |> (function | Failure _ -> false | Success _ -> true)
+    fileContent |> strToStream |> TemplateFile.Parse |> (function | Fail _ -> false | Ok _ -> true)
     |> shouldEqual true
 
 [<TestCase(FullTest)>]

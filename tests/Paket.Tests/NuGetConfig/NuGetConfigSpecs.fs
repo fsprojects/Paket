@@ -12,7 +12,7 @@ open System
 
 let parse fileName = 
     match NugetConfig.getConfigNode <| FileInfo(fileName) with
-    | Chessie.ErrorHandling.Success(node,_) -> NugetConfig.overrideConfig NugetConfig.empty node
+    | Chessie.ErrorHandling.Ok(node,_) -> NugetConfig.overrideConfig NugetConfig.empty node
     | _ -> failwithf "unable to parse %s" fileName
 
 [<Test>]
