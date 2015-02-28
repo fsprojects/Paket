@@ -8,7 +8,7 @@ open System.Text.RegularExpressions
 type PreRelease = 
     { Origin : string
       Name : string
-      Number : int option }
+      Number : bigint option }
     
     static member TryParse str = 
         let m = Regex("^(?<name>[a-zA-Z]+)(?<number>\d*)$").Match(str)
@@ -20,7 +20,7 @@ type PreRelease =
         | true, name, number -> 
             Some { Origin = str
                    Name = name
-                   Number = Some(int number) }
+                   Number = Some(bigint.Parse number) }
         | _ -> None
     
     override x.Equals(yobj) = 
