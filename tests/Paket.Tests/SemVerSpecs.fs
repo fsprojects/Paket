@@ -100,3 +100,8 @@ let ``can normalize build zeros in prerelease``() =
 [<Test>]
 let ``can normalize CI versions in prerelease``() =
     (SemVer.Parse "0.5.0-ci1411131947").Normalize() |> shouldEqual "0.5.0-ci1411131947"
+
+
+[<Test>]
+let ``should parse very large prerelease numbers (aka timestamps)``() =
+    (SemVer.Parse "0.22.0-pre20150223185624").Normalize() |> shouldEqual "0.22.0-pre20150223185624"
