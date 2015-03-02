@@ -125,3 +125,60 @@ let ``pre-release identifiers must not contain invalid characters (SemVer 2.0.0/
 let ``pre-release identifiers must not be empty (SemVer 2.0.0/9)`` () =
     shouldFail<exn>(fun () -> SemVer.Parse "1.0.0-a..c" |> ignore)
 
+// Build Validity
+[<Test>]
+let ``build identifiers must not contain invalid characters (SemVer 2.0.0/10)`` () =
+    shouldFail<exn>(fun () -> SemVer.Parse "1.0.0+a.c" |> ignore)
+
+[<Test>]
+let ``build identifiers must not be empty (SemVer 2.0.0/10)`` () =
+    shouldFail<exn>(fun () -> SemVer.Parse "1.0.0+a.c" |> ignore)
+
+// Precedence
+
+[<Test>]
+let ``core version exhibits correct (numeric) precedence (SemVer 2.0.0/11)`` () =
+    (SemVer.Parse "2.1.1") |> shouldBeGreaterThan (SemVer.Parse "2.1.0")
+    (SemVer.Parse "2.1.0") |> shouldBeGreaterThan (SemVer.Parse "2.0.0")
+    (SemVer.Parse "2.0.0") |> shouldBeGreaterThan (SemVer.Parse "1.0.0")
+
+[<Test>]
+let ``pre-release versions have lower precedence (SemVer 2.0.0/9,11)`` () =
+    (SemVer.Parse "1.0.0") |> shouldBeGreaterThan (SemVer.Parse "1.0.0-alpha")
+
+[<Test>]
+let ``larger pre-release identifiers have higher precedence (SemVer 2.0.0/11)`` () =
+    (SemVer.Parse "1.0.0-alpha") |> shouldBeSmallerThan (SemVer.Parse "1.0.0-alpha.1")
+
+[<Test>]
+let ``alpha pre-release identifiers have higher precedence than numeric (SemVer 2.0.0/11)`` () =
+    (SemVer.Parse "1.0.0-alpha.1") |> shouldBeSmallerThan ("1.0.0-alpha.beta")
+
+[<Test>]
+let ``earlier pre-release identifiers have higher precedence (SemVer 2.0.0/11)`` () =
+    (SemVer.Parse "1.0.0-alpha.beta") |> shouldBeSmallerThan ("1.0.0-beta")
+
+[<Test>]
+let ``numeric pre-release identifiers exhibit correct (numeric) precedence (SemVer 2.0.0/11)`` () =
+    (SemVer.Parse "1.0.0-beta.2") |> shouldBeSmallerThan ("1.0.0-beta.11")
+    
+//[<Test>]
+//let ``build is ignored for precedence (equality) (SemVer 2.0.0/10)`` () =
+//    (SemVer.Parse "1.0.0+001" =? SV "1.0.0+20130313144700"
+//    (SemVer.Parse "1.0.0+20130313144700" =? SV "1.0.0+exp.sha.5114f85"
+//
+//// String Conversion
+//
+//[<Test>]
+//let ``ToString returns equivalent semantic version string as used for construction`` () =
+//    string ((SemVer.Parse "1.2.3-a.12.c+build.13123") =? "1.2.3-a.12.c+build.13123"
+//
+//// Convenience Methods
+//
+//[<Test>]
+//let ``TryParse returns true for valid semantic version string`` () =
+//    fst (SemanticVersion.TryParse "1.0.0") =? true
+//
+//[<Test>]
+//let ``TryParse returns false for valid semantic version string`` () =
+//    fst (SemanticVersion.TryParse "1.0") =? false
