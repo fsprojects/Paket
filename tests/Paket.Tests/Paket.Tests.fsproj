@@ -242,6 +242,7 @@
   <ItemGroup>
     <Reference Include="mscorlib" />
     <Reference Include="System" />
+    <Reference Include="System.Numerics" />
     <Reference Include="System.Security" />
     <Reference Include="System.Xml" />
     <ProjectReference Include="..\..\src\Paket.Core\Paket.Core.fsproj">

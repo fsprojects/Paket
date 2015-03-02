@@ -2,7 +2,7 @@
 
 open System.IO
 
-open Chessie.Rop
+open Chessie.ErrorHandling
 open Paket.Domain
 
 type PaketEnv = {
@@ -21,7 +21,7 @@ module PaketEnv =
           LockFile = lockFile
           Projects = projects }
 
-    let fromRootDirectory (directory : DirectoryInfo) = rop {
+    let fromRootDirectory (directory : DirectoryInfo) = trial {
         if not directory.Exists then 
             return! fail (DirectoryDoesntExist directory)
         else
@@ -31,17 +31,17 @@ module PaketEnv =
                     fail (DependenciesFileNotFoundInDir directory)
                 else
                     try
-                        succeed (DependenciesFile.ReadFromFile(fi.FullName))
+                        ok (DependenciesFile.ReadFromFile(fi.FullName))
                     with _ ->
                         fail (DependenciesFileParseError fi)
 
             let! lockFile =
                 let fi = FileInfo(Path.Combine(directory.FullName, Constants.LockFileName))
                 if not fi.Exists then
-                    None |> succeed
+                    None |> ok
                 else
                     try
-                        LockFile.LoadFrom(fi.FullName) |> Some |> succeed
+                        LockFile.LoadFrom(fi.FullName) |> Some |> ok
                     with _ ->
                         fail (LockFileParseError fi)
 
@@ -63,18 +63,18 @@ module PaketEnv =
 
     let ensureNotExists (directory : DirectoryInfo) =
         match fromRootDirectory directory with
-        | Success(_) -> fail (PaketEnvAlreadyExistsInDirectory directory)
-        | Failure(msgs) -> 
+        | Ok(_) -> fail (PaketEnvAlreadyExistsInDirectory directory)
+        | Fail(msgs) -> 
             let filtered = 
                 msgs
                 |> List.filter (function
                     | DependenciesFileNotFoundInDir _ -> false
                     | _ -> true )
-            if filtered |> List.isEmpty then succeed directory
-            else Failure(filtered)
+            if filtered |> List.isEmpty then ok directory
+            else Fail filtered
 
     let ensureNotInStrictMode environment =
-        if not environment.DependenciesFile.Options.Strict then succeed environment
+        if not environment.DependenciesFile.Options.Strict then ok environment
         else fail StrictModeDetected
 
     let ensureLockFileExists environment =
@@ -85,7 +85,7 @@ module PaketEnv =
         match locatePaketRootDirectory directory with
         | Some rootDirectory -> 
             Logging.tracefn "Paket is already initialized in %s" rootDirectory.FullName
-            succeed ()
+            ok ()
         | None -> 
             let dependenciesFile = 
                 DependenciesFile(

@@ -6,7 +6,7 @@ open System.IO
 open Paket.Domain
 open Paket.PackageResolver
 open System.Collections.Generic
-open Chessie.Rop
+open Chessie.ErrorHandling
 
 let addPackagesFromReferenceFiles projects (dependenciesFile:DependenciesFile) =
     let lockFileName = DependenciesFile.FindLockfile dependenciesFile.FileName

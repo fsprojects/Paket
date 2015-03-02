@@ -3,7 +3,7 @@ module Paket.FindOutdated
 
 open Paket.Domain
 open Paket.Logging
-open Chessie.Rop
+open Chessie.ErrorHandling
 
 let private adjustVersionRequirements strict includingPrereleases (dependenciesFile: DependenciesFile) =
     //TODO: Anything we need to do for source files here?
@@ -33,7 +33,7 @@ let private detectOutdated (oldResolution: PackageResolver.PackageResolution) (n
         | _ -> ()]
 
 /// Finds all outdated packages.
-let FindOutdated strict includingPrereleases environment = rop {
+let FindOutdated strict includingPrereleases environment = trial {
     let! lockFile = environment |> PaketEnv.ensureLockFileExists
 
     let dependenciesFile =
@@ -55,7 +55,7 @@ let private printOutdated packages =
             tracefn "  * %s %s -> %s" name (oldVersion.ToString()) (newVersion.ToString())
 
 /// Prints all outdated packages.
-let ShowOutdated strict includingPrereleases environment = rop {
+let ShowOutdated strict includingPrereleases environment = trial {
     let! allOutdated = FindOutdated strict includingPrereleases environment
     printOutdated allOutdated
 }

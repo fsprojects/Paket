@@ -67,9 +67,9 @@
   -->
   <Import Project="$(SolutionDir)\.paket\paket.targets" />
   <ItemGroup>
-    <Compile Include="..\..\paket-files\fsprojects\Chessie\src\Chessie\Rop.fs">
+    <Compile Include="..\..\paket-files\fsprojects\Chessie\src\Chessie\ErrorHandling.fs">
       <Paket>True</Paket>
-      <Link>Rop.fs</Link>
+      <Link>ErrorHandling.fs</Link>
     </Compile>
     <Compile Include="Async.fs" />
     <Compile Include="AssemblyInfo.fs" />

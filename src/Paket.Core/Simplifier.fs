@@ -6,7 +6,7 @@ open System.IO
 open Paket.Domain
 open Paket.Logging
 open Paket.PackageResolver
-open Chessie.Rop
+open Chessie.ErrorHandling
 
 let private findTransitive (packages, flatLookup, failureF) = 
     packages
@@ -27,7 +27,7 @@ let private removePackage(packageName, transitivePackages, fileName, interactive
     else
         false
 
-let simplifyDependenciesFile (dependenciesFile : DependenciesFile, flatLookup, interactive) = rop {
+let simplifyDependenciesFile (dependenciesFile : DependenciesFile, flatLookup, interactive) = trial {
     let packages = dependenciesFile.Packages |> List.map (fun p -> p.Name)
     let! transitive = findTransitive(packages, flatLookup, DependencyNotFoundInLockFile)
 
@@ -38,7 +38,7 @@ let simplifyDependenciesFile (dependenciesFile : DependenciesFile, flatLookup, i
     return DependenciesFile(d.FileName, d.Options, d.Sources, newPackages, d.RemoteFiles, d.Comments)
 }
 
-let simplifyReferencesFile (refFile, flatLookup, interactive) = rop {
+let simplifyReferencesFile (refFile, flatLookup, interactive) = trial {
     let! transitive = findTransitive(refFile.NugetPackages |> List.map (fun p -> p.Name), 
                             flatLookup, 
                             (fun p -> ReferenceNotFoundInLockFile(refFile.FileName,p)))
@@ -56,7 +56,7 @@ let beforeAndAfter environment dependenciesFile projects =
         DependenciesFile = dependenciesFile
         Projects = projects }
 
-let simplify interactive environment = rop {
+let simplify interactive environment = trial {
     let! lockFile = environment |> PaketEnv.ensureLockFileExists
 
     let flatLookup = lockFile.GetDependencyLookupTable()

@@ -4,7 +4,7 @@ open Paket
 open System
 open System.IO
 open System.Text.RegularExpressions
-open Chessie.Rop
+open Chessie.ErrorHandling
 open Paket.Domain
 
 module private TemplateParser =
@@ -171,14 +171,14 @@ module internal TemplateFile =
         t' |> function 
         | Some s -> 
             match s with
-            | "file" -> succeed FileType
-            | "project" -> succeed ProjectType
+            | "file" -> ok FileType
+            | "project" -> ok ProjectType
             | s -> failP (sprintf "Unknown package config type.")
         | None -> failP (sprintf "First line of paket.package file had no 'type' declaration.")
     
     let private getId map = 
         Map.tryFind "id" map |> function 
-        | Some m -> succeed <| m
+        | Some m -> ok <| m
         | None -> failP "No id line in paket.template file."
     
     let private getAuthors (map : Map<string, string>) = 
@@ -187,12 +187,12 @@ module internal TemplateFile =
             m.Split ','
             |> Array.map (fun s -> s.Trim())
             |> List.ofArray
-            |> succeed
+            |> ok
         | None -> failP "No authors line in paket.template file."
     
     let private getDescription map = 
         Map.tryFind "description" map |> function 
-        | Some m -> succeed m
+        | Some m -> ok m
         | None -> failP "No description line in paket.template file."
     
     let private getDependencies (map : Map<string, string>) = 
@@ -278,11 +278,11 @@ module internal TemplateFile =
           Files = getFiles map }
     
     let Parse(contentStream : Stream) = 
-        rop { 
+        trial { 
             let sr = new StreamReader(contentStream)
             let! map =
                 match TemplateParser.parse (sr.ReadToEnd()) with
-                | Choice1Of2 m -> succeed m
+                | Choice1Of2 m -> ok m
                 | Choice2Of2 f -> failP f
             sr.Dispose()
             let! type' = parsePackageConfigType map

@@ -2,7 +2,7 @@
 
 open System.IO
 open Paket
-open Chessie.Rop
+open Chessie.ErrorHandling
 open FsUnit
 open NUnit.Framework
 open Paket.TestHelpers
@@ -103,7 +103,10 @@ description A short description
 [<TestCase(Invalid1)>]
 [<TestCase(Invalid3)>]
 let ``Invalid file input recognised as invalid`` (fileContent : string) =
-    fileContent |> strToStream |> TemplateFile.Parse |> (function | Failure _ -> true | Success _ -> false)
+    fileContent 
+    |> strToStream 
+    |> TemplateFile.Parse 
+    |> failed
     |> shouldEqual true
 
 [<Literal>]
@@ -168,8 +171,11 @@ description
 [<TestCase(RealTest)>]
 [<TestCase(FullTest)>]
 let ``Valid file input recognised as valid`` (fileContent : string) =
-    fileContent |> strToStream |> TemplateFile.Parse |> (function | Failure _ -> false | Success _ -> true)
-    |> shouldEqual true
+    fileContent 
+    |> strToStream 
+    |> TemplateFile.Parse
+    |> failed
+    |> shouldEqual false
 
 [<TestCase(FullTest)>]
 let ``Optional fields are read`` (fileContent : string) =

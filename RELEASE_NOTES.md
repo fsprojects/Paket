@@ -1,5 +1,8 @@
+#### 0.31.6 - 28.02.2015
+* BUGFIX: Parse prerelease numbers into bigint since ints might overflow - https://github.com/fsprojects/Paket/pull/667
+
 #### 0.31.5 - 27.02.2015
-* BUGGFIX:	Optional fields in template files are read correctly - https://github.com/fsprojects/Paket/pull/666
+* BUGFIX: Optional fields in template files are read correctly - https://github.com/fsprojects/Paket/pull/666
 
 #### 0.31.4 - 26.02.2015
 * Better url and endpoint handling in `paket push` - https://github.com/fsprojects/Paket/pull/663

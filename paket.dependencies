@@ -11,4 +11,4 @@ nuget FSharp.Core
 
 github forki/FsUnit FsUnit.fs
 github fsharp/FAKE modules/Octokit/Octokit.fsx
-github fsprojects/Chessie src/Chessie/Rop.fs
+github fsprojects/Chessie src/Chessie/ErrorHandling.fs
