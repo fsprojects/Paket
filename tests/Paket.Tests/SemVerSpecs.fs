@@ -100,3 +100,19 @@ let ``can normalize build zeros in prerelease``() =
 [<Test>]
 let ``can normalize CI versions in prerelease``() =
     (SemVer.Parse "0.5.0-ci1411131947").Normalize() |> shouldEqual "0.5.0-ci1411131947"
+
+// Core Element Validity
+
+[<Test>]
+let ``version core elements must be non-negative (SemVer 2.0.0/2)`` () =
+    shouldFail<exn>(fun () -> SemVer.Parse "1.1.-1" |> ignore)
+    shouldFail<exn>(fun () -> SemVer.Parse "1.-1.1" |> ignore)
+    shouldFail<exn>(fun () -> SemVer.Parse "-1.1.1" |> ignore)
+    
+
+[<Test>]
+let ``version core elements must not contain leading zeroes (SemVer 2.0.0/2)`` () =
+    shouldFail<exn>(fun () -> SemVer.Parse "01.1.1" |> ignore)
+    shouldFail<exn>(fun () -> SemVer.Parse "1.01.1" |> ignore)
+    shouldFail<exn>(fun () -> SemVer.Parse "1.1.01" |> ignore)
+
