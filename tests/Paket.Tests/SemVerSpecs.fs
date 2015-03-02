@@ -116,3 +116,8 @@ let ``version core elements must not contain leading zeroes (SemVer 2.0.0/2)`` (
     shouldFail<exn>(fun () -> SemVer.Parse "1.01.1" |> ignore)
     shouldFail<exn>(fun () -> SemVer.Parse "1.1.01" |> ignore)
 
+
+[<Test>]
+let ``pre-release identifiers must not contain invalid characters (SemVer 2.0.0/9)`` () =
+    shouldFail<exn>(fun () -> SemVer.Parse "1.0.0-a.!.c" |> ignore)
+

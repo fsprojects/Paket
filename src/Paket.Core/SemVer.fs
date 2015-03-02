@@ -124,6 +124,9 @@ module SemVer =
     ///     parse "1.2.3-alpha002" > parse "1.2.3-alpha1"   // true
     ///     parse "1.5.0-beta.2"   > parse "1.5.0-rc.1"     // false
     let Parse(version : string) = 
+        if version.Contains("!") then 
+            failwithf "Invalid character found in %s" version
+        
         let dashSplitted = version.Split '-'
         let splitted = dashSplitted.[0].Split '.'
         let l = splitted.Length
