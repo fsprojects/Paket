@@ -126,6 +126,8 @@ module SemVer =
     let Parse(version : string) = 
         if version.Contains("!") then 
             failwithf "Invalid character found in %s" version
+        if version.Contains("..") then 
+            failwithf "Empty version part found in %s" version
         
         let dashSplitted = version.Split '-'
         let splitted = dashSplitted.[0].Split '.'
