@@ -53,10 +53,7 @@ let RemoveFromProject(dependenciesFileName, package:PackageName, force, hard, pr
     
     let removeFromSpecifiedProject (projects : ProjectFile seq) =    
         let project = 
-            projects
-            |> Seq.tryFind (fun p -> 
-                let name = Path.GetFileNameWithoutExtension p.Name
-                name = projectName || p.Name = projectName)
+            projects |> Seq.tryFind (fun p -> p.NameWithoutExtension = projectName || p.Name = projectName)
 
         match project with
         | Some p ->

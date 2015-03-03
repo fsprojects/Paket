@@ -35,10 +35,7 @@ let AddToProject(dependenciesFileName, package, version, force, hard, projectNam
     
     let addToSpecifiedProject (projects : ProjectFile seq) package =    
         let project = 
-            projects
-            |> Seq.tryFind (fun p -> 
-                let name = Path.GetFileNameWithoutExtension p.Name
-                name = projectName || p.Name = projectName)
+            projects |> Seq.tryFind (fun p -> p.NameWithoutExtension = projectName || p.Name = projectName)
 
         match project with
         | Some p ->
