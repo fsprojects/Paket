@@ -43,6 +43,8 @@ type ProjectFile =
 
     member this.Name = FileInfo(this.FileName).Name
 
+    member this.NameWithoutExtension = Path.GetFileNameWithoutExtension this.Name
+
     member this.GetCustomReferenceAndFrameworkNodes() = this.FindNodes false "Reference"
 
     /// Finds all project files
