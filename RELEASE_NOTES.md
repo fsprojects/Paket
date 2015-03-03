@@ -1,3 +1,6 @@
+#### 0.31.7 - 03.03.2015
+* BUGFIX: Detect inter project dependencies without matching package id - https://github.com/fsprojects/Paket/pull/671
+
 #### 0.31.6 - 28.02.2015
 * BUGFIX: Parse prerelease numbers into bigint since ints might overflow - https://github.com/fsprojects/Paket/pull/667
 
