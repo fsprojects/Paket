@@ -135,14 +135,9 @@ module SemVer =
             
         let prereleaseBuild = if dashSplitted.Length > 1 && dashSplitted.[1].Split('.').Length > 1 then dashSplitted.[1].Split('.').[1] else "0"
 
-        let parseInt(s:string) =
-            if s <> "0" && s.StartsWith "0" then 
-                failwithf "Leading zeros are not allowed as version parts in %s" version
-            Int32.Parse s
-
-        { Major = if l > 0 then parseInt splitted.[0] else 0
-          Minor = if l > 1 then parseInt splitted.[1] else 0
-          Patch = if l > 2 then parseInt splitted.[2] else 0
+        { Major = if l > 0 then Int32.Parse splitted.[0] else 0
+          Minor = if l > 1 then Int32.Parse splitted.[1] else 0
+          Patch = if l > 2 then Int32.Parse splitted.[2] else 0
           PreRelease = PreRelease.TryParse(if dashSplitted.Length > 1 then dashSplitted.[1].Split('.').[0] else String.Empty)
           Build = if l > 3 then splitted.[3] else "0"
           PreReleaseBuild = prereleaseBuild

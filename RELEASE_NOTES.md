@@ -1,3 +1,6 @@
+#### 0.31.8 - 03.03.2015
+* BUGFIX: Fix Nuget compat issue with leading zeros - https://github.com/fsprojects/Paket/pull/672
+
 #### 0.31.7 - 03.03.2015
 * BUGFIX: Detect inter project dependencies without matching package id - https://github.com/fsprojects/Paket/pull/671
 

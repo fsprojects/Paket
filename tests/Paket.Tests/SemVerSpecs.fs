@@ -115,10 +115,10 @@ let ``version core elements must be non-negative (SemVer 2.0.0/2)`` () =
     
 
 [<Test>]
-let ``version core elements must not contain leading zeroes (SemVer 2.0.0/2)`` () =
-    shouldFail<exn>(fun () -> SemVer.Parse "01.1.1" |> ignore)
-    shouldFail<exn>(fun () -> SemVer.Parse "1.01.1" |> ignore)
-    shouldFail<exn>(fun () -> SemVer.Parse "1.1.01" |> ignore)
+let ``version core elements should accept leading zeroes (NuGet compat)`` () =
+    SemVer.Parse "01.1.1" |> ignore
+    SemVer.Parse "1.01.1" |> ignore
+    SemVer.Parse "1.1.01" |> ignore
 
 [<Test>]
 let ``pre-release identifiers must not contain invalid characters (SemVer 2.0.0/9)`` () =
