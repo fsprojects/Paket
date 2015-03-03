@@ -83,7 +83,7 @@ let Pack(dependencies : DependenciesFile, packageOutputPath, buildConfig, versio
 
             let id = 
                 match merged.Contents with
-                | CompleteInfo (c, _) -> c.Id 
+                | CompleteInfo _ -> projectFile.NameWithoutExtension
                 | x -> failwithf "unexpected failure while merging meta data: %A" x
 
             id,(merged,projectFile))
