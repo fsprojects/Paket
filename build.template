@@ -68,36 +68,42 @@ let gitRaw = environVarOrDefault "gitRaw" "https://raw.github.com/##GitHome##"
 // Read additional information from the release notes document
 let release = LoadReleaseNotes "RELEASE_NOTES.md"
 
+let getAssemblyInfoAttributes projectName =
+    [ Attribute.Title (projectName)
+      Attribute.Product project
+      Attribute.Description summary
+      Attribute.Version release.AssemblyVersion
+      Attribute.FileVersion release.AssemblyVersion ]
+
 let genFSAssemblyInfo (projectPath) =
     let projectName = System.IO.Path.GetFileNameWithoutExtension(projectPath)
     let folderName = System.IO.Path.GetDirectoryName(projectPath)
     let basePath = "src" @@ folderName
     let fileName = basePath @@ "AssemblyInfo.fs"
-    CreateFSharpAssemblyInfo fileName
-      [ Attribute.Title (projectName)
-        Attribute.Product project
-        Attribute.Description summary
-        Attribute.Version release.AssemblyVersion
-        Attribute.FileVersion release.AssemblyVersion ]
+    CreateFSharpAssemblyInfo fileName (getAssemblyInfoAttributes projectName)
 
 let genCSAssemblyInfo (projectPath) =
     let projectName = System.IO.Path.GetFileNameWithoutExtension(projectPath)
     let folderName = System.IO.Path.GetDirectoryName(projectPath)
     let basePath = folderName @@ "Properties"
     let fileName = basePath @@ "AssemblyInfo.cs"
-    CreateCSharpAssemblyInfo fileName
-      [ Attribute.Title (projectName)
-        Attribute.Product project
-        Attribute.Description summary
-        Attribute.Version release.AssemblyVersion
-        Attribute.FileVersion release.AssemblyVersion ]
+    CreateCSharpAssemblyInfo fileName (getAssemblyInfoAttributes projectName)
+
+let genVBAssemblyInfo (projectPath) = 
+    let projectName = System.IO.Path.GetFileNameWithoutExtension(projectPath)
+    let folderName = System.IO.Path.GetDirectoryName(projectPath)
+    let basePath = folderName @@ "My Project"
+    let fileName = basePath @@ "AssemblyInfo.vb"
+    CreateVisualBasicAssemblyInfoWithConfig fileName (getAssemblyInfoAttributes projectName) (AssemblyInfoFileConfig(false))
 
 // Generate assembly info files with the right version & up-to-date information
 Target "AssemblyInfo" (fun _ ->
   let fsProjs =  !! "src/**/*.fsproj"
   let csProjs = !! "src/**/*.csproj"
+  let vbProjs = !! "src/**/*.vbproj"
   fsProjs |> Seq.iter genFSAssemblyInfo
   csProjs |> Seq.iter genCSAssemblyInfo
+  vbProjs |> Seq.iter genVBAssemblyInfo
 )
 
 // --------------------------------------------------------------------------------------
@@ -158,6 +164,17 @@ Target "SourceLink" (fun _ ->
         let proj = VsProj.LoadRelease f
         logfn "source linking %s" proj.OutputFilePdb
         let files = proj.Compiles -- "**/AssemblyInfo.cs"
+        repo.VerifyChecksums files
+        proj.VerifyPdbChecksums files
+        proj.CreateSrcSrv baseUrl repo.Revision (repo.Paths files)
+        Pdbstr.exec proj.OutputFilePdb proj.OutputFilePdbSrcSrv
+    )
+    //VB projects
+    !! "src/**/*.vbproj"
+    |> Seq.iter (fun f ->
+        let proj = VsProj.LoadRelease f
+        logfn "source linking %s" proj.OutputFilePdb
+        let files = proj.Compiles -- "**/AssemblyInfo.vb"
         repo.VerifyChecksums files
         proj.VerifyPdbChecksums files
         proj.CreateSrcSrv baseUrl repo.Revision (repo.Paths files)
