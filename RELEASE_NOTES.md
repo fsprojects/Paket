@@ -1,3 +1,6 @@
+#### 0.31.9 - 04.03.2015
+* Support for WinExe output type - https://github.com/fsprojects/Paket/pull/675
+
 #### 0.31.8 - 03.03.2015
 * BUGFIX: Fix Nuget compat issue with leading zeros - https://github.com/fsprojects/Paket/pull/672
 
