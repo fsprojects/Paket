@@ -94,7 +94,7 @@ let genVBAssemblyInfo (projectPath) =
     let folderName = System.IO.Path.GetDirectoryName(projectPath)
     let basePath = folderName @@ "My Project"
     let fileName = basePath @@ "AssemblyInfo.vb"
-    CreateVisualBasicAssemblyInfoWithConfig fileName (getAssemblyInfoAttributes projectName) (AssemblyInfoFileConfig(false))
+    CreateVisualBasicAssemblyInfo fileName (getAssemblyInfoAttributes projectName)
 
 // Generate assembly info files with the right version & up-to-date information
 Target "AssemblyInfo" (fun _ ->
