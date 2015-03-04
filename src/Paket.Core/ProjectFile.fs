@@ -456,8 +456,9 @@ type ProjectFile =
     member this.OutputType =
         seq {for outputType in this.Document |> getDescendants "OutputType" ->
                 match outputType.InnerText with
-                | "Exe" -> ProjectOutputType.Exe
-                | _     -> ProjectOutputType.Library }
+                | "Exe"    -> ProjectOutputType.Exe
+                | "WinExe" -> ProjectOutputType.Exe
+                | _        -> ProjectOutputType.Library }
         |> Seq.head
 
     member this.GetTargetFramework() =

@@ -15,6 +15,11 @@ let ``should detect exe output type for Project2 proj file``() =
     |> shouldEqual ProjectOutputType.Exe
 
 [<Test>]
+let ``should detect exe output type for Project3 proj file``() =
+    ProjectFile.Load("./ProjectFile/TestData/Project3.fsprojtest").Value.OutputType
+    |> shouldEqual ProjectOutputType.Exe
+
+[<Test>]
 let ``should detect target framework for Project1 proj file``() =
     ProjectFile.Load("./ProjectFile/TestData/Project1.fsprojtest").Value.GetTargetFramework()
     |> shouldEqual (DotNetFramework(FrameworkVersion.V4_5))
@@ -40,4 +45,9 @@ let ``should detect assembly name for Project1 proj file`` () =
 let ``should detect assembly name for Project2 proj file`` () =
     ProjectFile.Load("./ProjectFile/TestData/Project2.fsprojtest").Value.GetAssemblyName()
     |> shouldEqual ("Paket.Tests.exe")
+
+[<Test>]
+let ``should detect assembly name for Project3 proj file`` () =
+    ProjectFile.Load("./ProjectFile/TestData/Project3.fsprojtest").Value.GetAssemblyName()
+    |> shouldEqual ("Paket.Tests.Win.exe")
 

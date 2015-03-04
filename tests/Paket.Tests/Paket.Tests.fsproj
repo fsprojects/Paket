@@ -194,6 +194,9 @@
     <None Include="ProjectFile\TestData\Project2.fsprojtest">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+    <None Include="ProjectFile\TestData\Project3.fsprojtest">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Include="ProjectFile\TestData\ProjectWithConditions.fsprojtest">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
