@@ -3,8 +3,6 @@
 // (the generated documentation is stored in the 'docs/output' directory)
 // --------------------------------------------------------------------------------------
 
-// Binaries that have XML documentation (in a corresponding generated XML file)
-let referenceBinaries = [ "##ProjectName##.dll" ]
 // Web site location for the generated documentation
 let website = "/##ProjectName##"
 
@@ -86,19 +84,28 @@ let references =
     |> Some
   else None
 
+let binaries =
+    directoryInfo bin 
+    |> subDirectories
+    |> Array.map (fun d -> d.FullName @@ (sprintf "%s.dll" d.Name))
+    |> List.ofArray
+
+let libDirs =
+    directoryInfo bin 
+    |> subDirectories
+    |> Array.map (fun d -> d.FullName)
+    |> List.ofArray
+
 // Build API reference from XML comments
 let buildReference () =
   CleanDir (output @@ "reference")
-  let binaries =
-    referenceBinaries
-    |> List.map (fun lib-> bin @@ lib)
   MetadataFormat.Generate
     ( binaries, output @@ "reference", layoutRootsAll.["en"],
       parameters = ("root", root)::info,
       sourceRepo = githubLink @@ "tree/master",
       sourceFolder = __SOURCE_DIRECTORY__ @@ ".." @@ "..",
-      publicOnly = true, libDirs = [bin],
-      ?assemblyReferences = references )
+      ?assemblyReferences = references,
+      publicOnly = true,libDirs = libDirs )
 
 // Build documentation from `fsx` and `md` files in `docs/content`
 let buildDocumentation () =

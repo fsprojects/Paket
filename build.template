@@ -3,7 +3,6 @@
 // --------------------------------------------------------------------------------------
 
 #r @"packages/FAKE/tools/FakeLib.dll"
-
 open Fake
 open Fake.Git
 open Fake.AssemblyInfoFile
@@ -98,6 +97,15 @@ Target "AssemblyInfo" (fun _ ->
   let csProjs = !! "src/**/*.csproj"
   fsProjs |> Seq.iter genFSAssemblyInfo
   csProjs |> Seq.iter genCSAssemblyInfo
+)
+
+// Copies binaries from default VS location to exepcted bin folder
+// But keeps a subdirectory structure for each project in the 
+// src folder to support multiple project outputs
+Target "CopyBinaries" (fun _ ->
+    !! "src/**/*.??proj"
+    |>  Seq.map (fun f -> ((System.IO.Path.GetDirectoryName f) @@ "bin/Release", "bin" @@ (System.IO.Path.GetFileNameWithoutExtension f)))
+    |>  Seq.iter (fun (fromDir, toDir) -> CopyDir toDir fromDir (fun _ -> true))
 )
 
 // --------------------------------------------------------------------------------------
@@ -333,6 +341,7 @@ Target "All" DoNothing
 "Clean"
   ==> "AssemblyInfo"
   ==> "Build"
+  ==> "CopyBinaries"
   ==> "RunTests"
   =?> ("GenerateReferenceDocs",isLocalBuild)
   =?> ("GenerateDocs",isLocalBuild)
