@@ -83,13 +83,14 @@ let references =
       Path.GetFullPath "./../../packages/FSharp.Formatting/lib/net40/FSharp.MetadataFormat.dll" ]
     |> Some
   else None
-let findBinaries () =
+
+let binaries =
     directoryInfo bin 
     |> subDirectories
     |> Array.map (fun d -> d.FullName @@ (sprintf "%s.dll" d.Name))
     |> List.ofArray
 
-let findLibDirs () =
+let libDirs =
     directoryInfo bin 
     |> subDirectories
     |> Array.map (fun d -> d.FullName)
@@ -98,14 +99,13 @@ let findLibDirs () =
 // Build API reference from XML comments
 let buildReference () =
   CleanDir (output @@ "reference")
-  let binaries = findBinaries ()
   MetadataFormat.Generate
     ( binaries, output @@ "reference", layoutRootsAll.["en"],
       parameters = ("root", root)::info,
       sourceRepo = githubLink @@ "tree/master",
       sourceFolder = __SOURCE_DIRECTORY__ @@ ".." @@ "..",
       ?assemblyReferences = references,
-      publicOnly = true,libDirs = (findLibDirs ()) )
+      publicOnly = true,libDirs = libDirs )
 
 // Build documentation from `fsx` and `md` files in `docs/content`
 let buildDocumentation () =
