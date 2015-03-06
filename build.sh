@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 if test "$OS" = "Windows_NT"
 then
   # use .Net
