@@ -1,3 +1,6 @@
+#### 0.31.10 - 06.03.2015
+* BUGFIX: Fixed Linux install scripts - https://github.com/fsprojects/Paket/pull/681
+
 #### 0.31.9 - 04.03.2015
 * Support for WinExe output type - https://github.com/fsprojects/Paket/pull/675
 
