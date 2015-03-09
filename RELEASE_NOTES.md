@@ -1,35 +1,15 @@
-#### 0.31.13 - 09.03.2015
-* PERFORMANCE: If resolver runs into conflict then use then boost the package - https://github.com/fsprojects/Paket/pull/684
-
-#### 0.31.12 - 09.03.2015
-* COSMETICS: Better tracing when resolver runs into conflict - https://github.com/fsprojects/Paket/pull/684
-
-#### 0.31.11 - 09.03.2015
-* COSMETICS: Better error message when a package is listed twice in `paket.references` - https://github.com/fsprojects/Paket/pull/686
-
-#### 0.31.10 - 06.03.2015
+#### 0.32.0 - 09.03.2015
+* PERFORMANCE: If resolver runs into conflict then use Warnsdorff's rule - https://github.com/fsprojects/Paket/pull/684
 * BUGFIX: Fixed Linux install scripts - https://github.com/fsprojects/Paket/pull/681
-
-#### 0.31.9 - 04.03.2015
 * Support for WinExe output type - https://github.com/fsprojects/Paket/pull/675
-
-#### 0.31.8 - 03.03.2015
 * BUGFIX: Fix Nuget compat issue with leading zeros - https://github.com/fsprojects/Paket/pull/672
-
-#### 0.31.7 - 03.03.2015
 * BUGFIX: Detect inter project dependencies without matching package id - https://github.com/fsprojects/Paket/pull/671
-
-#### 0.31.6 - 28.02.2015
 * BUGFIX: Parse prerelease numbers into bigint since ints might overflow - https://github.com/fsprojects/Paket/pull/667
-
-#### 0.31.5 - 27.02.2015
 * BUGFIX: Optional fields in template files are read correctly - https://github.com/fsprojects/Paket/pull/666
-
-#### 0.31.4 - 26.02.2015
-* Better url and endpoint handling in `paket push` - https://github.com/fsprojects/Paket/pull/663
-
-#### 0.31.3 - 26.02.2015
-* Use Chessie for ROP - https://github.com/fsprojects/Chessie
+* BUGFIX: Better url and endpoint handling in `paket push` - https://github.com/fsprojects/Paket/pull/663
+* COSMETICS: Better tracing when resolver runs into conflict - https://github.com/fsprojects/Paket/pull/684
+* COSMETICS: Better error message when a package is listed twice in `paket.references` - https://github.com/fsprojects/Paket/pull/686
+* COSMETICS: Use Chessie for ROP - https://github.com/fsprojects/Chessie
 
 #### 0.31.2 - 26.02.2015
 * BUGFIX: Robust and much faster template file parser - https://github.com/fsprojects/Paket/pull/660
