@@ -399,6 +399,8 @@ type LockFile(fileName:string,options:InstallOptions,resolution:PackageResolutio
         let usedPackages = Dictionary<_,_>()
 
         for p in referencesFile.NugetPackages do
+            if usedPackages.ContainsKey p.Name then
+                failwithf "Package %s is referenced more than once in %s" (p.Name.ToString()) referencesFile.FileName
             usedPackages.Add(p.Name,p)
 
         referencesFile.NugetPackages

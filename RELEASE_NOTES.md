@@ -1,3 +1,6 @@
+#### 0.31.11 - 09.03.2015
+* COSMETICS: Better error message when a package is listed twice in `paket.references` - https://github.com/fsprojects/Paket/pull/686
+
 #### 0.31.10 - 06.03.2015
 * BUGFIX: Fixed Linux install scripts - https://github.com/fsprojects/Paket/pull/681
 
