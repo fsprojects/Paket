@@ -149,6 +149,7 @@ let Resolve(getVersionsF, getPackageDetailsF, globalFrameworkRestrictions, rootD
     tracefn "Resolving packages:"
     let exploredPackages = Dictionary<NormalizedPackageName*SemVerInfo,ResolvedPackage>()
     let allVersions = Dictionary<NormalizedPackageName,SemVerInfo list>()
+    let conflictHistory = Dictionary<NormalizedPackageName,int>()
 
     let getExploredPackage(packageCount,sources,packageName:PackageName,version,settings:InstallSettings) =
         let normalizedPackageName = NormalizedPackageName packageName
@@ -203,7 +204,18 @@ let Resolve(getVersionsF, getPackageDetailsF, globalFrameworkRestrictions, rootD
             else
                 ResolvedPackages.Conflict(closed,stillOpen)
         else
-            let dependency = Seq.head stillOpen
+            let dependency =
+                let currentMin = ref (Seq.head stillOpen)
+                let currentBoost = ref 0
+                for d in stillOpen do
+                    let boost = 
+                        match conflictHistory.TryGetValue(NormalizedPackageName d.Name) with
+                        | true,c -> -c
+                        | _ -> 0
+                    if PackageRequirement.Compare(d,!currentMin,boost,!currentBoost) = -1 then
+                        currentMin := d
+                        currentBoost := boost
+                !currentMin
 
             let allVersions = ref []
             let compatibleVersions = ref []
@@ -236,11 +248,15 @@ let Resolve(getVersionsF, getPackageDetailsF, globalFrameworkRestrictions, rootD
                     failwithf "Could not find compatible versions for top level dependency:%s     %A%s   Available versions:%s     - %s%s   Try to relax the dependency or allow prereleases." 
                         Environment.NewLine (dependency.ToString()) Environment.NewLine Environment.NewLine versionText Environment.NewLine
                 else
-                    tracefn "  Could not find compatible versions for:%s     %A%sConflicts with:" Environment.NewLine (dependency.ToString()) Environment.NewLine
+                    match conflictHistory.TryGetValue(NormalizedPackageName dependency.Name) with
+                    | true,count -> conflictHistory.[NormalizedPackageName dependency.Name] <- count + 1
+                    | _ -> conflictHistory.Add(NormalizedPackageName dependency.Name, 1)
+                    tracefn "  Could not find compatible versions for:%s     %A%s  Conflicts with:" Environment.NewLine (dependency.ToString()) Environment.NewLine
+                    
                     closed
                     |> Seq.filter (fun d -> d.Name = dependency.Name)
                     |> fun xs -> String.Join(Environment.NewLine + "    ",xs)
-                    |> tracefn "%s"
+                    |> tracefn "  %s"
 
 
             let sortedVersions =                

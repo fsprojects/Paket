@@ -202,21 +202,25 @@ type PackageRequirement =
 
     member this.IncludingPrereleases() = 
         { this with VersionRequirement = VersionRequirement(this.VersionRequirement.Range,PreReleaseStatus.All) }
+    
+    static member Compare(x,y,boostX,boostY) =        
+        if x = y then 0 else
+        let c1 =
+            compare 
+                (not x.VersionRequirement.Range.IsGlobalOverride,x.Parent)
+                (not y.VersionRequirement.Range.IsGlobalOverride,x.Parent)
+        if c1 <> 0 then c1 else
+        let c2 = -1 * compare x.ResolverStrategy y.ResolverStrategy        
+        if c2 <> 0 then c2 else
+        let cBoost = compare boostX boostY
+        if cBoost <> 0 then cBoost else
+        let c3 = -1 * compare x.VersionRequirement y.VersionRequirement
+        if c3 <> 0 then c3 else
+        compare x.Name y.Name
 
     interface System.IComparable with
        member this.CompareTo that = 
           match that with 
-          | :? PackageRequirement as that -> 
-                if this = that then 0 else
-                let c1 =
-                    compare 
-                       (not this.VersionRequirement.Range.IsGlobalOverride,this.Parent)
-                       (not that.VersionRequirement.Range.IsGlobalOverride,this.Parent)
-                if c1 <> 0 then c1 else
-                let c2 = -1 * compare this.ResolverStrategy that.ResolverStrategy
-                if c2 <> 0 then c2 else
-                let c3 = -1 * compare this.VersionRequirement that.VersionRequirement
-                if c3 <> 0 then c3 else
-                compare this.Name that.Name
-                
+          | :? PackageRequirement as that ->
+                PackageRequirement.Compare(this,that,0,0)
           | _ -> invalidArg "that" "cannot compare value of different types"

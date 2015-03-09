@@ -1,3 +1,6 @@
+#### 0.31.13 - 09.03.2015
+* PERFORMANCE: If resolver runs into conflict then use then boost the package - https://github.com/fsprojects/Paket/pull/684
+
 #### 0.31.12 - 09.03.2015
 * COSMETICS: Better tracing when resolver runs into conflict - https://github.com/fsprojects/Paket/pull/684
 
