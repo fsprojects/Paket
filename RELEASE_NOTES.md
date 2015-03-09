@@ -1,3 +1,6 @@
+#### 0.31.12 - 09.03.2015
+* COSMETICS: Better tracing when resolver runs into conflict - https://github.com/fsprojects/Paket/pull/684
+
 #### 0.31.11 - 09.03.2015
 * COSMETICS: Better error message when a package is listed twice in `paket.references` - https://github.com/fsprojects/Paket/pull/686
 

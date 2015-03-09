@@ -172,6 +172,13 @@ type PackageRequirementSource =
         | DependenciesFile _ -> true
         | _ -> false
 
+    override this.ToString() =
+        match this with
+        | DependenciesFile x -> x
+        | Package(name,version) ->
+          sprintf "%s %s" (name.ToString()) (version.ToString())
+
+
 /// Represents an unresolved package.
 [<CustomEquality;CustomComparison>]
 type PackageRequirement =
@@ -189,7 +196,7 @@ type PackageRequirement =
 
     override this.ToString() =
         let (PackageName name) = this.Name
-        sprintf "%s %s" name (this.VersionRequirement.ToString())
+        sprintf "%s %s (from %s)" name (this.VersionRequirement.ToString()) (this.Parent.ToString())
 
     override this.GetHashCode() = hash (this.Name,this.VersionRequirement)
 
