@@ -103,7 +103,7 @@ let Pack(dependencies : DependenciesFile, packageOutputPath, buildConfig, versio
         | None -> allTemplates
         | Some v -> allTemplates |> List.map (TemplateFile.setVersion v)
 
-        // set release notes
+    // set release notes
     let processedTemplates =
         match releaseNotes with
         | None ->   templatesWithVersion

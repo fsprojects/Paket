@@ -160,22 +160,36 @@ let writeNupkg  (core : CompleteCoreInfo) optional =
 
 let Write (core : CompleteCoreInfo) optional workingDir outputDir = 
     let outputPath = Path.Combine(outputDir, core.PackageFileName)
-    if File.Exists outputPath then File.Delete outputPath
+    if File.Exists outputPath then
+        File.Delete outputPath
+
     use zipFile = new ZipFile(outputPath)
     
     let addEntry (zipFile : ZipFile) path writer = 
         let writeDel _ stream = writer stream
-        zipFile.AddEntry(path, WriteDelegate(writeDel))
-    optional.Files |> List.iter (fun (f, t) -> 
-                          let source = Path.Combine(workingDir, f)
-                          if Directory.Exists source then zipFile.AddDirectory(source, t.Replace(" ", "%20")) |> ignore
-                          else if File.Exists source then zipFile.AddFile(source, t.Replace(" ", "%20")) |> ignore
-                          else failwithf "Could not find source file %s" source)
-    writeNupkg core optional |> List.iter (fun (path, writer) -> addEntry zipFile path writer |> ignore)
+        zipFile.AddEntry(path, WriteDelegate(writeDel)) |> ignore
+
+    // add files
+    for fileName,targetFileName in optional.Files do
+        let source = Path.Combine(workingDir, fileName)
+        if Directory.Exists source then 
+            zipFile.AddDirectory(source, targetFileName.Replace(" ", "%20")) |> ignore
+        else 
+            if File.Exists source then 
+                zipFile.AddFile(source, targetFileName.Replace(" ", "%20")) |> ignore
+            else 
+                failwithf "Could not find source file %s" source
+
+    // add metadata
+    for path, writer in writeNupkg core optional do 
+        addEntry zipFile path writer
+
     let fileList = 
         zipFile.Entries
         |> Seq.filter (fun e -> not e.IsDirectory)
         |> Seq.map (fun e -> e.FileName)
     
-    let contentTypesDoc = addEntry zipFile contentTypePath (contentTypeDoc fileList |> xDocWriter)
+    contentTypeDoc fileList
+    |> xDocWriter
+    |> addEntry zipFile contentTypePath
     zipFile.Save()
