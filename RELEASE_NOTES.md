@@ -1,4 +1,5 @@
-#### 0.32.1 - 10.03.2015
+#### 0.33.0 - 10.03.2015
+* Paket packs XML docs into the nupkg - https://github.com/fsprojects/Paket/issues/689
 * BUGFIX: Install settings from `paket.dependencies` should override package settings - https://github.com/fsprojects/Paket/issues/688
 
 #### 0.32.0 - 09.03.2015
