@@ -152,8 +152,17 @@ let findDependencies (dependencies : DependenciesFile) config (template : Templa
                     
                 deps, p :: files) ([], [])
     
-    // Add the assembly from this project
-    let withOutput = addFile (toFile config project) targetDir template
+    // Add the assembly + pdb + dll from this project
+    let withOutput =
+        let assemblyFileName = toFile config project
+        let fi = FileInfo(assemblyFileName)
+
+        let additionalFiles =
+            fi.Directory.GetFiles(fi.Name.Replace(fi.Extension,"") + ".*")
+            |> Array.filter (fun f -> [".xml"; ".dll"; ".exe"; ".pdb"] |> List.exists ((=) (f.Extension.ToLower())))
+        
+        additionalFiles
+        |> Array.fold (fun template file -> addFile file.FullName targetDir template) template
     
     // If project refs will also be packaged, add dependency
     let withDeps = 
