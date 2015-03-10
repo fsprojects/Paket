@@ -1,3 +1,6 @@
+#### 0.32.1 - 10.03.2015
+* BUGFIX: Install settings from `paket.dependencies` should override package settings - https://github.com/fsprojects/Paket/issues/688
+
 #### 0.32.0 - 09.03.2015
 * PERFORMANCE: If resolver runs into conflict then use Warnsdorff's rule - https://github.com/fsprojects/Paket/pull/684
 * BUGFIX: Fixed Linux install scripts - https://github.com/fsprojects/Paket/pull/681
