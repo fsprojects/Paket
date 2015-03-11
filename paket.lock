@@ -4,6 +4,11 @@ NUGET
     DotNetZip (1.9.3)
     FAKE (3.21.0)
     FSharp.Compiler.Service (0.0.86)
+    FSharp.Control.Reactive (3.1.1)
+      FSharp.Core (>= 3.1.2)
+      Rx-Core (>= 2.2.5)
+      Rx-Interfaces (>= 2.2.5)
+      Rx-Linq (>= 2.2.5)
     FSharp.Core (3.1.2.1)
     FSharp.Formatting (2.7.5)
       FSharp.Compiler.Service (>= 0.0.82)
@@ -21,6 +26,12 @@ NUGET
     NUnit.Runners (2.6.4)
     Octokit (0.7.3)
       Microsoft.Net.Http
+    Rx-Core (2.2.5)
+      Rx-Interfaces (>= 2.2.5)
+    Rx-Interfaces (2.2.5)
+    Rx-Linq (2.2.5)
+      Rx-Core (>= 2.2.5)
+      Rx-Interfaces (>= 2.2.5)
     UnionArgParser (0.8.6)
 GITHUB
   remote: forki/FsUnit
@@ -33,4 +44,4 @@ GITHUB
     src/app/FakeLib/Globbing/Globbing.fs (5df0a99e789975e9e5da219e987e079a44615f4d)
   remote: fsprojects/Chessie
   specs:
-    src/Chessie/ErrorHandling.fs (26018bb2c91eceb14eb68b4b31d7cb3342339d38)
+    src/Chessie/ErrorHandling.fs (63bed6ae27cdb340157b4713f8a4e4532e2a6088)
