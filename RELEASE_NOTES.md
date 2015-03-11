@@ -1,3 +1,6 @@
+#### 0.33.1 - 11.03.2015
+* Paket packs .MDBs docs into the nupkg - https://github.com/fsprojects/Paket/issues/693
+
 #### 0.33.0 - 10.03.2015
 * Paket packs XML docs into the nupkg - https://github.com/fsprojects/Paket/issues/689
 * BUGFIX: Install settings from `paket.dependencies` should override package settings - https://github.com/fsprojects/Paket/issues/688
