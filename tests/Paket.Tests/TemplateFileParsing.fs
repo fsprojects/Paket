@@ -294,3 +294,61 @@ let ``Parsing minimal project based packages works`` (fileContent) =
         core.Version |> shouldEqual None
         core.Authors |> shouldEqual None
         core.Description |> shouldEqual None
+
+[<Test>]
+let ``skip empty lines correctly``() =
+    let text = """type file
+id GROSSWEBER.Angebot.Contracts
+version 1.0
+
+title
+  grossweber.com Angebot contracts
+
+description
+  Contracts to talk to the Angebot service
+
+authors
+  GROSSWEBER
+
+owners
+  GROSSWEBER
+
+projectUrl
+  http://grossweber.com/
+
+iconUrl
+  http://grossweber.com/favicon.ico
+
+copyright
+  Copyright GROSSWEBER. All rights reserved.
+
+files
+  ../../build/bin/Angebot.Contracts.dll ==> lib
+  ../../build/bin/Angebot.Contracts.pdb ==> lib
+"""
+    let sut =
+        TemplateFile.Parse("file1.template", strToStream text)
+        |> returnOrFail
+        |> function
+           | CompleteInfo (_, opt)
+           | ProjectInfo (_, opt) -> opt
+
+    sut.Title |> shouldEqual (Some "grossweber.com Angebot contracts")
+    sut.Copyright |> shouldEqual (Some "Copyright GROSSWEBER. All rights reserved.")
+    sut.Summary |> shouldEqual None
+    sut.IconUrl |> shouldEqual (Some "http://grossweber.com/favicon.ico")
+    sut.LicenseUrl |> shouldEqual None
+    sut.ProjectUrl |> shouldEqual (Some "http://grossweber.com/")
+    sut.Tags |> shouldEqual []
+    sut.Owners |> shouldEqual ["GROSSWEBER"]
+    sut.RequireLicenseAcceptance |> shouldEqual false
+    sut.DevelopmentDependency |> shouldEqual false
+    sut.Language |> shouldEqual None
+
+    match sut.Files with
+    | [from1,to1;from2,to2] ->
+        from1 |> shouldEqual "../../build/bin/Angebot.Contracts.dll"
+        to1 |> shouldEqual "lib"
+        from2 |> shouldEqual "../../build/bin/Angebot.Contracts.pdb"
+        to2 |> shouldEqual "lib"
+    | _ ->  Assert.Fail()

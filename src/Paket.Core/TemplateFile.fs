@@ -49,14 +49,17 @@ module private TemplateParser =
 
     let rec private inner state =
         match state with
+
         | { Remaining = [] } -> Choice1Of2 state.Map
         | { Remaining = h::t } ->
             match h with
+            | empty when String.IsNullOrWhiteSpace empty ->
+                inner { state with Line = state.Line + 1; Remaining = t }
             | Indented _ -> Choice2Of2 <| sprintf "Indented block with no name line %d" state.Line
             | MultiToken (key, value) ->
                 inner { state with
                             Remaining = t
-                            Map = Map.add key value state.Map
+                            Map = Map.add key (value.TrimEnd()) state.Map
                             Line = state.Line + 1 }
             | SingleToken key ->
                 let value, line, remaining = indentedBlock [] state.Line t
@@ -65,10 +68,8 @@ module private TemplateParser =
                 else
                     inner { state with
                                 Remaining = remaining 
-                                Map = Map.add key value state.Map
+                                Map = Map.add key (value.TrimEnd()) state.Map
                                 Line = line }
-            | "" ->
-                inner { state with Line = state.Line + 1; Remaining = t }
             | _ ->
                 Choice2Of2 <| sprintf "Invalid syntax line %d" state.Line
 
@@ -278,7 +279,7 @@ module internal TemplateFile =
     
     let Parse(file,contentStream : Stream) = 
         trial { 
-            let sr = new StreamReader(contentStream)
+            use sr = new StreamReader(contentStream)
             let! map =
                 match TemplateParser.parse (sr.ReadToEnd()) with
                 | Choice1Of2 m -> ok m

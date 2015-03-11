@@ -1,3 +1,6 @@
+#### 0.33.7 - 11.03.2015
+* Allow empty lines in `paket.template` and report file name if parser fails - https://github.com/fsprojects/Paket/issues/692
+
 #### 0.33.6 - 11.03.2015
 * paket pack / paket.template support wildcard patterns - https://github.com/fsprojects/Paket/issues/690
 
