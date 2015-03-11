@@ -50,7 +50,7 @@ For example:
 	description This would
 	  cause an error
 
-There are 4 compulsary fields required to create a nupkg. These can always be specified in the
+There are 4 compulsory fields required to create a nupkg. These can always be specified in the
 template file, or in a project based template can be omitted and an attempt will be made to infer
 them as below:
 
@@ -97,7 +97,7 @@ A files block looks like this:
 
 If the source part refers to a file then it is copied into the target directory. If it
 refers to a directory, the contents of the directory will be copied into the target folder.
-If you omit the target folder, then the source is copied into the `lib` fodler of the package.
+If you omit the target folder, then the source is copied into the `lib` folder of the package.
 
 There is currently no support for wild cards, exclusion filters or renaming during copying.
 
