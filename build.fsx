@@ -3,6 +3,8 @@
 // --------------------------------------------------------------------------------------
 
 #r @"packages/FAKE/tools/FakeLib.dll"
+#I @"packages/FSharpLint"
+#r @"packages/FSharpLint/FSharpLint.FAKE.dll"
 
 open Fake
 open Fake.Git
@@ -10,6 +12,7 @@ open Fake.AssemblyInfoFile
 open Fake.ReleaseNotesHelper
 open System
 open System.IO
+open FSharpLint.FAKE
 
 // --------------------------------------------------------------------------------------
 // START TODO: Provide project-specific details below
@@ -129,6 +132,11 @@ Target "Build" (fun _ ->
     !! solutionFile
     |> MSBuildRelease "" "Rebuild"
     |> ignore
+)
+
+Target "Lint" (fun _ ->
+    !! "**/*.fsproj" 
+    |> Seq.iter (FSharpLint (fun options -> { options with FailBuildIfAnyWarrnings = true })) 
 )
 
 // --------------------------------------------------------------------------------------
@@ -317,6 +325,7 @@ Target "All" DoNothing
   ==> "AssemblyInfo"
   ==> "Build"
   ==> "RunTests"
+  ==> "Lint"
   =?> ("GenerateReferenceDocs",isLocalBuild && not isMono)
   =?> ("GenerateDocs",isLocalBuild && not isMono)
   ==> "All"
