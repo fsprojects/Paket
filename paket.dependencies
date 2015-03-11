@@ -8,7 +8,6 @@ nuget FAKE
 nuget FSharp.Formatting
 nuget DotNetZip
 nuget FSharp.Core
-nuget FSharp.Control.Reactive
 
 github forki/FsUnit FsUnit.fs
 github fsharp/FAKE modules/Octokit/Octokit.fsx

@@ -1,6 +1,5 @@
 Newtonsoft.Json
 DotNetZip
 FSharp.Core
-FSharp.Control.Reactive
 File:ErrorHandling.fs .
 File:Globbing.fs .
