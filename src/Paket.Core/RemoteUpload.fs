@@ -30,11 +30,13 @@ type System.Net.WebClient with
             while !read > 0 do 
                 totalSoFar := !totalSoFar + (int64 !read)
                 stream.Write(buffer, 0, !read)
-
-                let progress = !totalSoFar * (int64 100) / totalLength
+                
+                let progress = !totalSoFar * (int64 10) / totalLength
                 if progress <> !lastReported then
-                    tracefn "  Progress: %d%%" progress
-                    lastReported := progress
+                    stream.Flush()
+                    tracefn "  Progress: %d%%" (progress * (int64 10))
+                    lastReported := progress                    
+
                 read := fileStream.Read(buffer, 0, buffer.Length)
 
             stream.Write(newlineBytes, 0, newlineBytes.Length)
