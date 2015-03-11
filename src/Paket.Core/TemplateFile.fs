@@ -160,40 +160,40 @@ module internal TemplateFile =
             | ProjectInfo(core, optional) -> ProjectInfo(core, { optional with ReleaseNotes = Some releaseNotes })
         { templateFile with Contents = contents }
     
-    let private failP str = fail <| PackagingConfigParseError str
+    let private failP file str = fail <| PackagingConfigParseError(file,str)
     
     type private PackageConfigType = 
         | FileType
         | ProjectType
 
-    let private parsePackageConfigType map = 
+    let private parsePackageConfigType file map = 
         let t' = Map.tryFind "type" map
         t' |> function 
         | Some s -> 
             match s with
             | "file" -> ok FileType
             | "project" -> ok ProjectType
-            | s -> failP (sprintf "Unknown package config type.")
-        | None -> failP (sprintf "First line of paket.package file had no 'type' declaration.")
+            | s -> failP file (sprintf "Unknown package config type.")
+        | None -> failP file (sprintf "First line of paket.package file had no 'type' declaration.")
     
-    let private getId map = 
+    let private getId file map = 
         Map.tryFind "id" map |> function 
         | Some m -> ok <| m
-        | None -> failP "No id line in paket.template file."
+        | None -> failP file "No id line in paket.template file."
     
-    let private getAuthors (map : Map<string, string>) = 
+    let private getAuthors file (map : Map<string, string>) = 
         Map.tryFind "authors" map |> function 
         | Some m -> 
             m.Split ','
             |> Array.map (fun s -> s.Trim())
             |> List.ofArray
             |> ok
-        | None -> failP "No authors line in paket.template file."
+        | None -> failP file "No authors line in paket.template file."
     
-    let private getDescription map = 
+    let private getDescription file map = 
         Map.tryFind "description" map |> function 
         | Some m -> ok m
-        | None -> failP "No description line in paket.template file."
+        | None -> failP file "No description line in paket.template file."
     
     let private getDependencies (map : Map<string, string>) = 
         Map.tryFind "dependencies" map
@@ -276,15 +276,15 @@ module internal TemplateFile =
           Dependencies = getDependencies map
           Files = getFiles map }
     
-    let Parse(contentStream : Stream) = 
+    let Parse(file,contentStream : Stream) = 
         trial { 
             let sr = new StreamReader(contentStream)
             let! map =
                 match TemplateParser.parse (sr.ReadToEnd()) with
                 | Choice1Of2 m -> ok m
-                | Choice2Of2 f -> failP f
+                | Choice2Of2 f -> failP file f
             sr.Dispose()
-            let! type' = parsePackageConfigType map
+            let! type' = parsePackageConfigType file map
             match type' with
             | ProjectType -> 
                 let core : ProjectCoreInfo = 
@@ -301,9 +301,9 @@ module internal TemplateFile =
                 let optionalInfo = getOptionalInfo map
                 return ProjectInfo(core, optionalInfo)
             | FileType ->                 
-                let! id' = getId map                
-                let! authors = getAuthors map
-                let! description = getDescription map
+                let! id' = getId file map                
+                let! authors = getAuthors file map
+                let! description = getDescription file map
                 let core : CompleteCoreInfo = 
                     { Id = id'
                       Version = Map.tryFind "version" map |> Option.map SemVer.Parse
@@ -314,10 +314,11 @@ module internal TemplateFile =
                 return CompleteInfo(core, optionalInfo)
         }
 
-    let Load(filename) = 
-        let root = (FileInfo filename).Directory.FullName
-        let contents = Parse(File.OpenRead filename) |> returnOrFail
-        { FileName = filename
+    let Load(fileName) = 
+        let fi = FileInfo fileName
+        let root = fi.Directory.FullName
+        let contents = Parse(fi.FullName, File.OpenRead fileName) |> returnOrFail
+        { FileName = fileName
           Contents = 
               match contents with
               | CompleteInfo(core, optionalInfo) -> 

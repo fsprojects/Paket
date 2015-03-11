@@ -64,7 +64,7 @@ type DomainMessage =
 
     | ConfigFileParseError
     
-    | PackagingConfigParseError of string
+    | PackagingConfigParseError of string * string
 
     override this.ToString() = 
         match this with
@@ -115,5 +115,5 @@ type DomainMessage =
         | ConfigFileParseError ->
             sprintf "Unable to parse Paket configuration file %s." Constants.PaketConfigFile
 
-        | PackagingConfigParseError error ->
-            sprintf "Unable to parse template file: %s." error
+        | PackagingConfigParseError(file,error) ->
+            sprintf "Unable to parse template file %s: %s." file error
