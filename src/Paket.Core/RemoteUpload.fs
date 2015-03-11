@@ -20,8 +20,23 @@ type System.Net.WebClient with
             x.Headers.Add(HttpRequestHeader.ContentType, "multipart/form-data; boundary=" + boundary);
             use stream = x.OpenWrite(url, "PUT")
             stream.Write(fileHeaderBytes,0,fileHeaderBytes.Length)
+
             use fileStream = File.OpenRead fileInfo.FullName
-            fileStream.CopyTo(stream, (4*1024))
+            let totalLength = fileStream.Length
+            let buffer = Array.zeroCreate<byte> 4096
+            let totalSoFar = ref (int64 0)
+            let read = ref (fileStream.Read(buffer, 0, buffer.Length))
+            let lastReported = ref (int64 0)
+            while !read > 0 do 
+                totalSoFar := !totalSoFar + (int64 !read)
+                stream.Write(buffer, 0, !read)
+
+                let progress = !totalSoFar * (int64 100) / totalLength
+                if progress <> !lastReported then
+                    tracefn "  Progress: %d%%" progress
+                    lastReported := progress
+                read := fileStream.Read(buffer, 0, buffer.Length)
+
             stream.Write(newlineBytes, 0, newlineBytes.Length)
             stream.Write(trailerbytes, 0, trailerbytes.Length)
             ()
@@ -54,7 +69,6 @@ let Push maxTrials url apiKey packageFileName =
         try
             let client = Utils.createWebClient(url, None)
             client.Headers.Add("X-NuGet-ApiKey", apiKey)
-            client.UploadProgressChanged.Add(fun arg -> tracefn "  Progress: %d%%" arg.ProgressPercentage)
             client.UploadFileAsMultipart (new Uri(url)) packageFileName
             |> ignore
             tracefn "Pushing %s complete." packageFileName
