@@ -1,3 +1,6 @@
+#### 0.33.13 - 11.03.2015
+* BUGFIX: paket-files folder is alwaays relative to `paket.dependencies` - https://github.com/fsprojects/Paket/issues/564
+
 #### 0.33.12 - 11.03.2015
 * Allow empty lines in `paket.template` and report file name if parser fails - https://github.com/fsprojects/Paket/issues/692
 
