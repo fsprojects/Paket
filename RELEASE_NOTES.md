@@ -1,4 +1,4 @@
-#### 0.33.2 - 11.03.2015
+#### 0.33.3 - 11.03.2015
 * `paket pack` pretty-prints it's nuspec - https://github.com/fsprojects/Paket/issues/691
 
 #### 0.33.1 - 11.03.2015
