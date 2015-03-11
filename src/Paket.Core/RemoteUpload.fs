@@ -54,6 +54,7 @@ let Push maxTrials url apiKey packageFileName =
         try
             let client = Utils.createWebClient(url, None)
             client.Headers.Add("X-NuGet-ApiKey", apiKey)
+            client.UploadProgressChanged.Add(fun arg -> tracefn "  Progress: %d%%" arg.ProgressPercentage)
             client.UploadFileAsMultipart (new Uri(url)) packageFileName
             |> ignore
             tracefn "Pushing %s complete." packageFileName

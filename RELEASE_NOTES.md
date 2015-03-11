@@ -1,3 +1,6 @@
+#### 0.33.8 - 11.03.2015
+* Showing progress on `paket push` - https://github.com/fsprojects/Paket/issues/664
+
 #### 0.33.7 - 11.03.2015
 * Allow empty lines in `paket.template` and report file name if parser fails - https://github.com/fsprojects/Paket/issues/692
 
