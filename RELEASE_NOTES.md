@@ -1,3 +1,6 @@
+#### 0.33.2 - 11.03.2015
+* `paket pack` pretty-prints it's nuspec - https://github.com/fsprojects/Paket/issues/691
+
 #### 0.33.1 - 11.03.2015
 * Paket packs .MDBs docs into the nupkg - https://github.com/fsprojects/Paket/issues/693
 

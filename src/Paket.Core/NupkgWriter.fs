@@ -5,6 +5,7 @@ open System.IO
 open System.Xml.Linq
 open Ionic.Zip
 open Paket
+open System.Text
 
 let nuspecId = "nuspec"
 let corePropsId = "coreProp"
@@ -149,7 +150,8 @@ let relsDoc (core : CompleteCoreInfo) =
     XDocument(declaration, box root)
 
 let xDocWriter (xDoc : XDocument) (stream : System.IO.Stream) = 
-    let xmlWriter = new System.Xml.XmlTextWriter(stream, System.Text.Encoding.UTF8)
+    let xmlWriter = new System.Xml.XmlTextWriter(stream, Encoding.UTF8)
+    xmlWriter.Formatting <- Xml.Formatting.Indented
     xDoc.WriteTo xmlWriter
     xmlWriter.Flush()
 
