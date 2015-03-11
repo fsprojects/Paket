@@ -329,3 +329,46 @@ let removeFile (fileName : string) =
         with _ ->
             FileDeleteError fileName |> fail
     else ok ()
+
+[<AutoOpen>]
+module ObservableExtensions =
+
+    let private synchronize f = 
+        let ctx = System.Threading.SynchronizationContext.Current 
+        f (fun g arg ->
+            let nctx = System.Threading.SynchronizationContext.Current 
+            if ctx <> null && ctx <> nctx then 
+                ctx.Post((fun _ -> g(arg)), null)
+            else 
+                g(arg))
+
+    type Microsoft.FSharp.Control.Async with 
+      static member AwaitObservable(ev1:IObservable<'a>) =
+        synchronize (fun f ->
+          Async.FromContinuations((fun (cont,econt,ccont) -> 
+            let rec callback = (fun value ->
+              remover.Dispose()
+              f cont value )
+            and remover : IDisposable  = ev1.Subscribe(callback) 
+            () )))
+
+    [<RequireQualifiedAccess>]
+    module Observable =
+        let sample milliseconds source =
+            let relay (observer:IObserver<'T>) =
+                let rec loop () = async {
+                    let! value = Async.AwaitObservable source
+                    observer.OnNext value
+                    do! Async.Sleep milliseconds
+                    return! loop() 
+                }
+                loop ()
+
+            { new IObservable<'T> with
+                member this.Subscribe(observer:IObserver<'T>) =
+                    let cts = new System.Threading.CancellationTokenSource()
+                    Async.StartImmediate(relay observer, cts.Token)
+                    { new IDisposable with 
+                        member this.Dispose() = cts.Cancel() 
+                    }
+            }
