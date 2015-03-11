@@ -1,3 +1,6 @@
+#### 0.33.4 - 11.03.2015
+* BUGFIX: `paket install` respects manual paket nodes - https://github.com/fsprojects/Paket/issues/679
+
 #### 0.33.3 - 11.03.2015
 * `paket pack` pretty-prints it's nuspec - https://github.com/fsprojects/Paket/issues/691
 

@@ -37,7 +37,8 @@ type ProjectFile =
         [for node in this.Document |> getDescendants name do
             let isPaketNode = ref false
             for child in node.ChildNodes do
-                if child.Name = "Paket" then isPaketNode := true
+                if child.Name = "Paket" && child.InnerText.ToLower() = "true" then 
+                    isPaketNode := true
 
             if !isPaketNode = paketOnes then yield node]
 
@@ -187,10 +188,12 @@ type ProjectFile =
         let libs =
             model.GetLibReferencesLazy.Force()
             |> Set.map (fun lib -> lib.ReferenceName)
-        
+       
         this.GetCustomReferenceAndFrameworkNodes()
-        |> List.filter (fun node -> Set.contains (node.Attributes.["Include"].InnerText.Split(',').[0]) libs)
-    
+        |> List.filter (fun node -> 
+            let libName = node.Attributes.["Include"].InnerText.Split(',').[0]
+            Set.contains libName libs)
+
     member this.DeleteCustomModelNodes(model:InstallModel) =
         let nodesToDelete = 
             this.GetCustomModelNodes(model)
