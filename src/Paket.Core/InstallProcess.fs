@@ -183,10 +183,10 @@ let InstallIntoProjects(sources,force, hard, withBindingRedirects, lockFile:Lock
 
         let getSingleRemoteFilePath name = 
             traceVerbose <| sprintf "Filename %s " name
-            lockFile.SourceFiles |> List.iter (fun i -> traceVerbose <| sprintf " %s %s " i.Name i.FilePath)
+            lockFile.SourceFiles |> List.iter (fun i -> traceVerbose <| sprintf " %s %s " i.Name (i.FilePath root))
             let sourceFile = lockFile.SourceFiles |> List.tryFind (fun f -> Path.GetFileName(f.Name) = name)
             match sourceFile with
-            | Some file -> file.FilePath
+            | Some file -> file.FilePath(root)
             | None -> failwithf "%s references file %s, but it was not found in the paket.lock file." referenceFile.FileName name
 
         let gitRemoteItems =
