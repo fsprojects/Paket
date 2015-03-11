@@ -73,7 +73,7 @@ let strToStream (str : string) =
 [<TestCase(FileBasedLongDesc4, "description starting with description")>]
 let ``Parsing minimal file based packages works`` (fileContent, desc) =
     let result =
-        TemplateFile.Parse (strToStream fileContent)
+        TemplateFile.Parse(strToStream fileContent)
         |> returnOrFail
 
     match result with
@@ -103,9 +103,7 @@ description A short description
 [<TestCase(Invalid1)>]
 [<TestCase(Invalid3)>]
 let ``Invalid file input recognised as invalid`` (fileContent : string) =
-    fileContent 
-    |> strToStream 
-    |> TemplateFile.Parse 
+    TemplateFile.Parse(strToStream fileContent)
     |> failed
     |> shouldEqual true
 
@@ -171,16 +169,14 @@ description
 [<TestCase(RealTest)>]
 [<TestCase(FullTest)>]
 let ``Valid file input recognised as valid`` (fileContent : string) =
-    fileContent 
-    |> strToStream 
-    |> TemplateFile.Parse
+   TemplateFile.Parse(strToStream fileContent)
     |> failed
     |> shouldEqual false
 
 [<TestCase(FullTest)>]
 let ``Optional fields are read`` (fileContent : string) =
     let sut =
-        fileContent |> strToStream |> TemplateFile.Parse
+        TemplateFile.Parse(strToStream fileContent)
         |> returnOrFail
         |> function
            | CompleteInfo (_, opt)
@@ -214,7 +210,7 @@ dependencies
 [<TestCase(Dependency1)>]
 let ``Detect dependencies correctly`` fileContent =
     let sut =
-        fileContent |> strToStream |> TemplateFile.Parse
+        TemplateFile.Parse(strToStream fileContent)
         |> returnOrFail
         |> function
            | CompleteInfo (_, opt)
@@ -241,7 +237,7 @@ files
     someDir ==> lib
 """
     let sut =
-        text |> strToStream |> TemplateFile.Parse
+        TemplateFile.Parse(strToStream text)
         |> returnOrFail
         |> function
            | CompleteInfo (_, opt)
@@ -267,7 +263,7 @@ files
     anotherDir ==> someLib
 """
     let sut =
-        text |> strToStream |> TemplateFile.Parse
+        TemplateFile.Parse(strToStream text)
         |> returnOrFail
         |> function
            | CompleteInfo (_, opt)
@@ -287,7 +283,7 @@ let ProjectType1 = """type project
 [<TestCase(ProjectType1)>]
 let ``Parsing minimal project based packages works`` (fileContent) =
     let result =
-        TemplateFile.Parse (strToStream fileContent)
+        TemplateFile.Parse(strToStream fileContent)
         |> returnOrFail
 
     match result with

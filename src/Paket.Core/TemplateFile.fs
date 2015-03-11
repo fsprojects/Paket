@@ -217,10 +217,9 @@ module internal TemplateFile =
                (Seq.map 
                     (fun (line:string) -> 
                         let splitted = line.Split([|"==>"|],StringSplitOptions.None) |> Array.map (fun s -> s.Trim())
-                        if splitted.Length < 2 then
-                            splitted.[0],"lib"
-                        else
-                            splitted.[0],splitted.[1]))
+                        let target = if splitted.Length < 2 then "lib" else splitted.[1]
+
+                        splitted.[0],target))
         |> Option.map List.ofSeq
         |> fun x -> defaultArg x []
     
@@ -314,14 +313,20 @@ module internal TemplateFile =
                 let optionalInfo = getOptionalInfo map
                 return CompleteInfo(core, optionalInfo)
         }
-    
-    let Load filename = 
-        let contents = 
-            File.OpenRead filename
-            |> Parse
-            |> returnOrFail
+
+    let Load(filename) = 
+        let root = (FileInfo filename).Directory.FullName
+        let contents = Parse(File.OpenRead filename) |> returnOrFail
         { FileName = filename
-          Contents = contents }
+          Contents = 
+              match contents with
+              | CompleteInfo(core, optionalInfo) -> 
+                  let files = 
+                      [ for source, target in optionalInfo.Files do
+                            for file in Fake.Globbing.search root source do
+                                yield file, target ]
+                  CompleteInfo(core, { optionalInfo with Files = files })
+              | _ -> contents }
     
     let FindTemplateFiles root = 
         Directory.EnumerateFiles(root, "*" + Constants.TemplateFile, SearchOption.AllDirectories)

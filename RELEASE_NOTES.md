@@ -1,3 +1,6 @@
+#### 0.33.6 - 11.03.2015
+* paket pack / paket.template support wildcard patterns - https://github.com/fsprojects/Paket/issues/690
+
 #### 0.33.4 - 11.03.2015
 * BUGFIX: `paket install` respects manual paket nodes - https://github.com/fsprojects/Paket/issues/679
 

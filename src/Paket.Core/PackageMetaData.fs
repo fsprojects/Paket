@@ -122,11 +122,11 @@ let addDependency (templateFile : TemplateFile) (dependency : string * VersionRe
 let toFile config (p : ProjectFile) = 
     Path.Combine(Path.GetDirectoryName p.FileName, p.GetOutputDirectory(config), p.GetAssemblyName())
 
-let addFile (source : string) (dest : string) (templateFile : TemplateFile) = 
+let addFile (source : string) (target : string) (templateFile : TemplateFile) = 
     match templateFile with
     | CompleteTemplate(core, opt) -> 
         { FileName = templateFile.FileName
-          Contents = CompleteInfo(core, { opt with Files = (source,dest) :: opt.Files }) }
+          Contents = CompleteInfo(core, { opt with Files = (source,target) :: opt.Files }) }
     | IncompleteTemplate -> 
         failwith "You should only try and add dependencies to template files with complete metadata."
 
@@ -153,7 +153,7 @@ let findDependencies (dependencies : DependenciesFile) config (template : Templa
                 deps, p :: files) ([], [])
     
     // Add the assembly + pdb + dll from this project
-    let withOutput =
+    let templateWithOutput =
         let assemblyFileName = toFile config project
         let fi = FileInfo(assemblyFileName)
 
@@ -174,7 +174,7 @@ let findDependencies (dependencies : DependenciesFile) config (template : Templa
                 | Some v -> core.Id, VersionRequirement(Minimum(v), PreReleaseStatus.All)
                 | none ->failwithf "There was no versin given for %s." templateFile.FileName
             | IncompleteTemplate -> failwithf "You cannot create a dependency on a template file (%s) with incomplete metadata." templateFile.FileName)
-        |> List.fold addDependency withOutput
+        |> List.fold addDependency templateWithOutput
     
     // If project refs will not be packaged, add the assembly to the package
     let withDepsAndIncluded = 
