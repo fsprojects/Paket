@@ -2,3 +2,4 @@ Newtonsoft.Json
 DotNetZip
 FSharp.Core
 File:ErrorHandling.fs .
+File:Globbing.fs .
