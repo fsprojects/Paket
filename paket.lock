@@ -28,9 +28,9 @@ GITHUB
     FsUnit.fs (81d27fd09575a32c4ed52eadb2eeac5f365b8348)
   remote: fsharp/FAKE
   specs:
-    modules/Octokit/Octokit.fsx (5df0a99e789975e9e5da219e987e079a44615f4d)
+    modules/Octokit/Octokit.fsx (7f323ca8e7c0e559078b2293db7066c927cec6d4)
       Octokit
-    src/app/FakeLib/Globbing/Globbing.fs (5df0a99e789975e9e5da219e987e079a44615f4d)
+    src/app/FakeLib/Globbing/Globbing.fs (7f323ca8e7c0e559078b2293db7066c927cec6d4)
   remote: fsprojects/Chessie
   specs:
-    src/Chessie/ErrorHandling.fs (26018bb2c91eceb14eb68b4b31d7cb3342339d38)
+    src/Chessie/ErrorHandling.fs (63bed6ae27cdb340157b4713f8a4e4532e2a6088)

@@ -325,10 +325,6 @@ module internal TemplateFile =
               | CompleteInfo(core, optionalInfo) -> 
                   let files = 
                       [ for source, target in optionalInfo.Files do
-                            // workaround for #698
-                            let source = if DirectoryInfo(Path.Combine(root, source)).Exists && not (source.EndsWith("/"))
-                                         then source + "/"
-                                         else source
                             for file in Fake.Globbing.search root source do
                                 yield file, target ]
                   CompleteInfo(core, { optionalInfo with Files = files })
