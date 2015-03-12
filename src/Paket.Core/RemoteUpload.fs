@@ -95,14 +95,32 @@ let Push maxTrials url apiKey packageFileName =
         try
             let client = Utils.createWebClient(url, None)
             client.Headers.Add("X-NuGet-ApiKey", apiKey)
-            let uploadAsync, progressReport = client.UploadFileAsMultipartAsync (new Uri(url)) packageFileName
+            let uploadAsync, progressReport = 
+                client.UploadFileAsMultipartAsync (new Uri(url)) packageFileName
+            // report progress every second
+            let reportProgressInterval = 1000
             use progressSubscription = 
                 progressReport 
-                // report progress every 2 seconds
-                |> Observable.sample 2000
+                |> Observable.sample reportProgressInterval
+                |> Observable.pairwise
+                |> Observable.map 
+                    (fun ((bytesWrittenPrev,_), (bytesWritten, fileSize)) ->
+                        let kb bytes = (bytes |> float) / 1024. 
+                        let bytesWrittenKb = bytesWritten |> kb
+                        let fileSizeKb = fileSize |> kb
+                        let uploadSpeed = 
+                            (bytesWrittenKb - (bytesWrittenPrev |> kb)) / 
+                            ((reportProgressInterval |> float) / 1000.)
+                        let progressPercentage = (bytesWrittenKb / fileSizeKb) * 100.
+                        progressPercentage, uploadSpeed, bytesWrittenKb, fileSizeKb) 
                 |> Observable.subscribe 
-                    (fun (bytesWritten, fileSize) ->
-                         tracefn @"Pushing %s:  %i/%i KB uploaded " packageFileName (bytesWritten / 1024L) (fileSize / 1024L))
+                    (fun (progressPercentage, uploadSpeed, bytesWrittenKb, fileSizeKb) ->
+                         tracefn @"Pushing %s:  %.0f of %.0f KB uploaded [%.0f %%] [%.0f KB/s]" 
+                            packageFileName 
+                            bytesWrittenKb 
+                            fileSizeKb 
+                            progressPercentage  
+                            uploadSpeed)
             do! uploadAsync
             tracefn "Pushing %s complete." packageFileName
         with
