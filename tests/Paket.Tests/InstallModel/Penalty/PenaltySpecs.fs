@@ -19,7 +19,7 @@ module ``Given a target platform`` =
     [<Test>]
     let ``it should return > 1000 for an incompatible platform``() = 
         getPlatformPenalty (DotNetFramework FrameworkVersion.V4_5) (Silverlight "v5.0")
-         |> shouldBeGreaterThan maxPenalty
+         |> shouldBeGreaterThan MaxPenalty
 
 module ``Given a path`` = 
     [<Test>]
