@@ -1,23 +1,11 @@
-#### 0.33.15 - 12.03.2015
-* BUGFIX: paket.template - file type respects dir without slash at the end - https://github.com/fsprojects/Paket/issues/698
-
-#### 0.33.13 - 11.03.2015
-* BUGFIX: paket-files folder is alwaays relative to `paket.dependencies` - https://github.com/fsprojects/Paket/issues/564
-
-#### 0.33.12 - 11.03.2015
-* Allow empty lines in `paket.template` and report file name if parser fails - https://github.com/fsprojects/Paket/issues/692
-
-#### 0.33.6 - 11.03.2015
-* paket pack / paket.template support wildcard patterns - https://github.com/fsprojects/Paket/issues/690
-
-#### 0.33.4 - 11.03.2015
-* BUGFIX: `paket install` respects manual paket nodes - https://github.com/fsprojects/Paket/issues/679
-
-#### 0.33.3 - 11.03.2015
+#### 0.34.0 - 12.03.2015
 * `paket pack` pretty-prints it's nuspec - https://github.com/fsprojects/Paket/issues/691
-
-#### 0.33.1 - 11.03.2015
 * Paket packs .MDBs docs into the nupkg - https://github.com/fsprojects/Paket/issues/693
+* paket pack / paket.template support wildcard patterns - https://github.com/fsprojects/Paket/issues/690
+* Allow empty lines in `paket.template` and report file name if parser fails - https://github.com/fsprojects/Paket/issues/692
+* BUGFIX: paket.template - file type respects dir without slash at the end - https://github.com/fsprojects/Paket/issues/698
+* BUGFIX: paket-files folder is alwaays relative to `paket.dependencies` - https://github.com/fsprojects/Paket/issues/564
+* BUGFIX: `paket install` respects manual paket nodes - https://github.com/fsprojects/Paket/issues/679
 
 #### 0.33.0 - 10.03.2015
 * Paket packs XML docs into the nupkg - https://github.com/fsprojects/Paket/issues/689
