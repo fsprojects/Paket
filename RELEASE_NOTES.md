@@ -1,3 +1,6 @@
+#### 0.33.14 - 12.03.2015
+* BUGFIX: paket.template - file type respects dir without slash at the end - https://github.com/fsprojects/Paket/issues/698
+
 #### 0.33.13 - 11.03.2015
 * BUGFIX: paket-files folder is alwaays relative to `paket.dependencies` - https://github.com/fsprojects/Paket/issues/564
 
