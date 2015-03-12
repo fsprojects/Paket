@@ -1,3 +1,6 @@
+#### 0.35.0 - 12.03.2015
+* `paket push` status information - https://github.com/fsprojects/Paket/pull/695
+
 #### 0.34.0 - 12.03.2015
 * `paket pack` pretty-prints it's nuspec - https://github.com/fsprojects/Paket/issues/691
 * Paket packs .MDBs docs into the nupkg - https://github.com/fsprojects/Paket/issues/693
