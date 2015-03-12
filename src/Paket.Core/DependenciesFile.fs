@@ -162,7 +162,7 @@ module DependenciesFileParser =
             | name :: version :: rest when isVersion version -> 
                 Package(name,version,String.Join(" ",rest))
             | name :: rest -> Package(name,">= 0", String.Join(" ",rest))
-            | name :: [] -> Package(name,">= 0","")
+            | [name] -> Package(name,">= 0","")
             | _ -> failwithf "could not retrieve nuget package from %s" trimmed
         | String.StartsWith "references" trimmed -> ParserOptions(ParserOption.ReferencesMode(trimmed.Replace(":","").Trim() = "strict"))
         | String.StartsWith "redirects" trimmed -> ParserOptions(ParserOption.Redirects(trimmed.Replace(":","").Trim() = "on"))

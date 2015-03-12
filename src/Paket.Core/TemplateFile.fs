@@ -326,7 +326,13 @@ module internal TemplateFile =
                   let files = 
                       [ for source, target in optionalInfo.Files do
                             for file in Fake.Globbing.search root source do
-                                yield file, target ]
+                                if source.Contains("**") then
+                                    let sourceRoot = FileInfo(Path.Combine(root,source.Substring(0,source.IndexOf("**")))).FullName |> normalizePath
+                                    let fullFile = FileInfo(file).Directory.FullName |> normalizePath
+                                    let newTarget = Path.Combine(target,fullFile.Replace(sourceRoot,"").TrimStart(Path.DirectorySeparatorChar))
+                                    yield file, newTarget
+                                else
+                                    yield file, target ]
                   CompleteInfo(core, { optionalInfo with Files = files })
               | _ -> contents }
     

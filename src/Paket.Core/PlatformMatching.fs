@@ -3,7 +3,7 @@
 open System
 
 [<Literal>]
-let maxPenalty = 1000
+let MaxPenalty = 1000
 
 let inline split (path : string) = 
     path.Split('+')
@@ -24,7 +24,7 @@ let rec getPlatformPenalty (targetPlatform:FrameworkIdentifier) (packagePlatform
             let penalty =
                 targetPlatform.SupportedPlatforms
                 |> List.map (fun target -> getPlatformPenalty target packagePlatform)
-                |> List.append [maxPenalty]
+                |> List.append [MaxPenalty]
                 |> List.min
                 |> fun p -> p + 1
             platformPenalties.[key] <- penalty
@@ -44,7 +44,7 @@ let getPathPenalty (path:string) (platform:FrameworkIdentifier) =
             let penalty =
                 extractPlatforms path
                 |> Array.map (getPlatformPenalty platform)
-                |> Array.append [| maxPenalty |]
+                |> Array.append [| MaxPenalty |]
                 |> Array.min
             pathPenalties.[key] <- penalty
             penalty
@@ -86,7 +86,7 @@ let findBestMatch (paths : string list) (targetProfile : TargetProfile) =
     
     paths 
     |> List.map (fun path -> path, (getPenalty requiredPlatforms path))
-    |> List.filter (fun (_, penalty) -> penalty < maxPenalty)
+    |> List.filter (fun (_, penalty) -> penalty < MaxPenalty)
     |> List.sortWith comparePaths
     |> Seq.map fst
     |> Seq.tryFind (fun _ -> true)

@@ -508,7 +508,7 @@ type ProjectFile =
                let clean (p : string) =
                    p.TrimEnd [|'\\'|] |> normalizePath
                match outputPaths with
-               | [] -> failwith "Unable to find %s output path node in file %s" buildConfiguration this.FileName
+               | [] -> failwithf "Unable to find %s output path node in file %s" buildConfiguration this.FileName
                | [output] ->
                     clean output.InnerText
                | output::_ ->
@@ -520,7 +520,7 @@ type ProjectFile =
             this.Document
             |> getDescendants "AssemblyName"
             |> function
-               | [] -> failwith "Project %s has no AssemblyName set" this.FileName
+               | [] -> failwithf "Project %s has no AssemblyName set" this.FileName
                | [assemblyName] -> assemblyName.InnerText
                | assemblyName::_ ->
                     traceWarnfn "Found multiple AssemblyName nodes in file %s, using first" this.FileName
@@ -538,7 +538,7 @@ type ProjectFile =
             let projectNode = 
                 match doc |> getNode "Project" with
                 | Some node -> node
-                | _ -> failwith "unable to find Project node in file %s" fileName
+                | _ -> failwithf "unable to find Project node in file %s" fileName
             Some { FileName = fi.FullName; Document = doc; ProjectNode = projectNode; OriginalText = Utils.normalizeXml doc }
         with
         | exn -> 
