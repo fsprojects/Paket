@@ -25,7 +25,7 @@ values:
 * project - Paket will look for a matching project file, and infer dependencies and metadata from the project
 
 Matching project and template files must be in the same directory. If only one project is in the directory the template file
-can becalled `paket.template`, otherwise the name of the template file must be the name of the project file with ".paket.template" added to the end.
+can be called `paket.template`, otherwise the name of the template file must be the name of the project file with ".paket.template" added to the end.
 
 For example:
 
@@ -94,12 +94,11 @@ A files block looks like this:
     files
 	    relative/to/template/file ==> folder/in/nupkg
 	    second/thing/to/pack ==> folder/in/nupkg
+		second/thing/**/file.* ==> folder/in/nupkg
 
 If the source part refers to a file then it is copied into the target directory. If it
 refers to a directory, the contents of the directory will be copied into the target folder.
 If you omit the target folder, then the source is copied into the `lib` folder of the package.
-
-There is currently no support for wild cards, exclusion filters or renaming during copying.
 
 In a project template, the files included will be:
 
