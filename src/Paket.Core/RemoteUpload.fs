@@ -9,23 +9,6 @@ open Paket
 open Paket.Logging
 
 type System.Net.WebClient with
-        member x.UploadFileAsMultipart (url:Uri) filename =
-            let fileTemplate = "--{0}\r\nContent-Disposition: form-data; name=\"{1}\"; filename=\"{2}\"\r\nContent-Type: {3}\r\n\r\n"
-            let boundary = "---------------------------" + DateTime.Now.Ticks.ToString("x", CultureInfo.InvariantCulture)
-            let fileInfo = (new FileInfo(Path.GetFullPath(filename)))
-            let fileHeaderBytes = String.Format(CultureInfo.InvariantCulture, fileTemplate, boundary, "package", "package", "application/octet-stream")
-                                  |> Encoding.UTF8.GetBytes
-            let newlineBytes = Environment.NewLine |> Encoding.UTF8.GetBytes
-            let trailerbytes = String.Format(CultureInfo.InvariantCulture, "--{0}--", boundary) |> Encoding.UTF8.GetBytes
-            x.Headers.Add(HttpRequestHeader.ContentType, "multipart/form-data; boundary=" + boundary);
-            use stream = x.OpenWrite(url, "PUT")
-            stream.Write(fileHeaderBytes,0,fileHeaderBytes.Length)
-            use fileStream = File.OpenRead fileInfo.FullName
-            fileStream.CopyTo(stream, (4*1024))
-            stream.Write(newlineBytes, 0, newlineBytes.Length)
-            stream.Write(trailerbytes, 0, trailerbytes.Length)
-            ()
-
         member x.UploadFileAsMultipartAsync (url:Uri) filename = 
             // event to report back completion of upload
             let progressReport = new Event<int64 * int64>()
