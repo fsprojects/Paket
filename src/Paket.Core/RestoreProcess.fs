@@ -24,7 +24,7 @@ let ExtractPackage(root, sources, force, package : ResolvedPackage) =
             try 
                 let! folder = NuGetV2.DownloadPackage(root, auth, source.Url, name, v, force)
                 return package, NuGetV2.GetLibFiles folder, NuGetV2.GetTargetsFiles folder
-            with _ when force = false -> 
+            with _ when not force -> 
                 tracefn "Something went wrong with the download of %s %A - automatic retry with --force." name v
                 let! folder = NuGetV2.DownloadPackage(root, auth, source.Url, name, v, true)
                 return package, NuGetV2.GetLibFiles folder, NuGetV2.GetTargetsFiles folder

@@ -426,7 +426,7 @@ let GetLibFiles(targetFolder) =
             |> Array.filter (fun fi -> fi.FullName.ToLower() = libPath)
             |> Array.collect (fun dir -> dir.GetFiles("*.*",SearchOption.AllDirectories))
         else
-            Array.empty
+            [||]
 
     if Logging.verbose then
         if Array.isEmpty libs then 
@@ -447,7 +447,7 @@ let GetTargetsFiles(targetFolder) =
             |> Array.filter (fun fi -> fi.FullName.ToLower() = path)
             |> Array.collect (fun dir -> dir.GetFiles("*.*",SearchOption.AllDirectories))
         else
-            Array.empty
+            [||]
 
     if Logging.verbose then
         if Array.isEmpty targetsFiles then
