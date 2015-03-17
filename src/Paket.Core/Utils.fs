@@ -330,6 +330,8 @@ let removeFile (fileName : string) =
             FileDeleteError fileName |> fail
     else ok ()
 
+// adapted from MiniRx
+// http://minirx.codeplex.com/
 [<AutoOpen>]
 module ObservableExtensions =
 
@@ -367,7 +369,7 @@ module ObservableExtensions =
             { new IObservable<'T> with
                 member this.Subscribe(observer:IObserver<'T>) =
                     let cts = new System.Threading.CancellationTokenSource()
-                    Async.StartImmediate(relay observer, cts.Token)
+                    Async.Start(relay observer, cts.Token)
                     { new IDisposable with 
                         member this.Dispose() = cts.Cancel() 
                     }
