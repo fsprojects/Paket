@@ -259,7 +259,9 @@ let getDetailsFromNuget force auth nugetURL package (version:SemVerInfo) =
                 failwithf "errorfile for %s exists" package
 
             let! (invalidCache,details) = loadFromCacheOrOData force cacheFile.FullName auth nugetURL package version
-            
+
+            verbosefn "loaded details for '%s@%O' from url '%s'" package version nugetURL
+
             errorFile.Delete()
             if invalidCache then
                 File.WriteAllText(cacheFile.FullName,JsonConvert.SerializeObject(details))
@@ -462,6 +464,7 @@ let GetPackageDetails force sources (PackageName package) (version:SemVerInfo) :
     let rec tryNext xs = 
         match xs with
         | source :: rest -> 
+            verbosefn "trying source '%O'" source
             try 
                 match source with
                 | Nuget source -> 
@@ -476,7 +479,9 @@ let GetPackageDetails force sources (PackageName package) (version:SemVerInfo) :
                     getDetailsFromLocalFile path package version 
                     |> Async.RunSynchronously
                 |> fun x -> source,x
-            with _ -> tryNext rest
+            with e ->
+              verbosefn "trying source '%O' exception: %O" source e
+              tryNext rest
         | [] -> failwithf "Couldn't get package details for package %s on %A." package (sources |> List.map (fun (s:PackageSource) -> s.ToString()))
     
     let source,nugetObject = tryNext sources
