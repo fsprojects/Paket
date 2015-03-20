@@ -63,14 +63,16 @@ let rec private followODataLink getUrlContents url =
 let getAllVersionsFromNugetODataWithFilter (getUrlContents, nugetURL, package) = 
     // we cannot cache this
     let url = sprintf "%s/Packages?$filter=Id eq '%s'" nugetURL package
+    verbosefn "getAllVersionsFromNugetODataWithFilter from url '%s'" url
     followODataLink getUrlContents url
 
 /// Gets versions of the given package via OData via /FindPackagesById()?id='packageId'.
 let getAllVersionsFromNugetOData (getUrlContents, nugetURL, package) = 
-    async { 
+    async {
         // we cannot cache this
         try 
             let url = sprintf "%s/FindPackagesById()?id='%s'" nugetURL package
+            verbosefn "getAllVersionsFromNugetOData from url '%s'" url
             return! followODataLink getUrlContents url
         with _ -> return! getAllVersionsFromNugetODataWithFilter (getUrlContents, nugetURL, package)
     }
@@ -79,7 +81,9 @@ let getAllVersionsFromNugetOData (getUrlContents, nugetURL, package) =
 let getAllVersionsFromNuGet2(auth,nugetURL,package) = 
     // we cannot cache this
     async { 
-        let! raw = safeGetFromUrl(auth,sprintf "%s/package-versions/%s?includePrerelease=true" nugetURL package)
+        let url = sprintf "%s/package-versions/%s?includePrerelease=true" nugetURL package
+        verbosefn "getAllVersionsFromNuGet2 from url '%s'" url
+        let! raw = safeGetFromUrl(auth, url)
         let getUrlContents url = getFromUrl(auth, url)
         match raw with
         | None -> let! result = getAllVersionsFromNugetOData(getUrlContents, nugetURL, package)
@@ -89,7 +93,8 @@ let getAllVersionsFromNuGet2(auth,nugetURL,package) =
                 try 
                     let result = JsonConvert.DeserializeObject<string []>(data) |> Array.toSeq
                     return result
-                with _ -> let! result = getAllVersionsFromNugetOData(getUrlContents, nugetURL, package)
+                with _ -> verbosefn "exn when deserialising data '%s'" data
+                          let! result = getAllVersionsFromNugetOData(getUrlContents, nugetURL, package)
                           return result
             with exn -> 
                 return! failwithf "Could not get data from %s for package %s.%s Message: %s" nugetURL package 
