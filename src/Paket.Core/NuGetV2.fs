@@ -261,7 +261,7 @@ let getDetailsFromNuget force auth nugetURL package (version:SemVerInfo) =
     async {
         try
             if not force && errorFile.Exists then
-                failwithf "errorfile for %s exists" package
+                failwithf "errorfile for %s exists at %s" package errorFile.FullName
 
             let! (invalidCache,details) = loadFromCacheOrOData force cacheFile.FullName auth nugetURL package version
 
@@ -469,7 +469,7 @@ let GetPackageDetails force sources (PackageName package) (version:SemVerInfo) :
     let rec tryNext xs = 
         match xs with
         | source :: rest -> 
-            verbosefn "trying source '%O'" source
+            verbosefn "Trying source '%O'" source
             try 
                 match source with
                 | Nuget source -> 
@@ -485,9 +485,9 @@ let GetPackageDetails force sources (PackageName package) (version:SemVerInfo) :
                     |> Async.RunSynchronously
                 |> fun x -> source,x
             with e ->
-              verbosefn "trying source '%O' exception: %O" source e
+              verbosefn "Source '%O' exception: %O" source e
               tryNext rest
-        | [] -> failwithf "Couldn't get package details for package %s on %A." package (sources |> List.map (fun (s:PackageSource) -> s.ToString()))
+        | [] -> failwithf "Couldn't get package details for package %s on any of %A." package (sources |> List.map (fun (s:PackageSource) -> s.ToString()))
     
     let source,nugetObject = tryNext sources
     { Name = PackageName nugetObject.PackageName
