@@ -41,7 +41,7 @@ type Dependencies(dependenciesFileName: string) =
                    findInPath(parent, withError)
 
         let dependenciesFileName = findInPath(DirectoryInfo path,true)
-        tracefn "found: %s" dependenciesFileName
+        verbosefn "found: %s" dependenciesFileName
         Dependencies(dependenciesFileName)
 
     /// Initialize paket.dependencies file in current directory
