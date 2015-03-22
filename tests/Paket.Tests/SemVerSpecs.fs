@@ -128,15 +128,6 @@ let ``pre-release identifiers must not contain invalid characters (SemVer 2.0.0/
 let ``pre-release identifiers must not be empty (SemVer 2.0.0/9)`` () =
     shouldFail<exn>(fun () -> SemVer.Parse "1.0.0-a..c" |> ignore)
 
-// Build Validity
-[<Test>]
-let ``build identifiers must not contain invalid characters (SemVer 2.0.0/10)`` () =
-    shouldFail<exn>(fun () -> SemVer.Parse "1.0.0+a.c" |> ignore)
-
-[<Test>]
-let ``build identifiers must not be empty (SemVer 2.0.0/10)`` () =
-    shouldFail<exn>(fun () -> SemVer.Parse "1.0.0+a.c" |> ignore)
-
 // Precedence
 
 [<Test>]
