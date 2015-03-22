@@ -261,15 +261,24 @@ let Resolve(getVersionsF, getPackageDetailsF, globalFrameworkRestrictions, rootD
                     failwithf "Could not find compatible versions for top level dependency:%s     %A%s   Available versions:%s     - %s%s   Try to relax the dependency or allow prereleases." 
                         Environment.NewLine (dependency.ToString()) Environment.NewLine Environment.NewLine versionText Environment.NewLine
                 else
+                    // boost the conflicting package, in order to solve conflicts faster
                     match conflictHistory.TryGetValue(NormalizedPackageName dependency.Name) with
                     | true,count -> conflictHistory.[NormalizedPackageName dependency.Name] <- count + 1
                     | _ -> conflictHistory.Add(NormalizedPackageName dependency.Name, 1)
-                    tracefn "  Could not find compatible versions for:%s     %A%s  Conflicts with:" Environment.NewLine (dependency.ToString()) Environment.NewLine
                     
-                    closed
-                    |> Seq.filter (fun d -> d.Name = dependency.Name)
-                    |> fun xs -> String.Join(Environment.NewLine + "    ",xs)
-                    |> tracefn "  %s"
+                    if verbose then
+                        tracefn "  Could not find compatible versions for:%s    %O%s  Conflicts with:" Environment.NewLine dependency Environment.NewLine
+                    
+                        closed
+                        |> Seq.filter (fun d -> d.Name = dependency.Name)
+                        |> fun xs -> String.Join(Environment.NewLine + "    ",xs)
+                        |> tracefn "    %s"
+
+                        match filteredVersions |> Map.tryFind dependency.Name with
+                        | Some (v,_) -> tracefn "    Package %O was already pinned to %O" dependency.Name v
+                        | None -> ()
+
+                        tracefn "    ==> Trying different resolution."
 
 
             let sortedVersions =                

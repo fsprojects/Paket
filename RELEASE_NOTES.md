@@ -1,3 +1,6 @@
+#### 0.35.3 - 22.03.2015
+* COSMETICS: better tracing of intermediate resolution conflicts
+
 #### 0.35.2 - 22.03.2015
 * SemVer allows "number + build metadata" format - https://github.com/fsprojects/Paket/issues/704
 
