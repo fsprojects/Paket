@@ -1,3 +1,6 @@
+#### 0.35.2 - 22.03.2015
+* SemVer allows "number + build metadata" format - https://github.com/fsprojects/Paket/issues/704
+
 #### 0.35.1 - 22.03.2015
 * `paket push` shows status information - https://github.com/fsprojects/Paket/pull/695
 

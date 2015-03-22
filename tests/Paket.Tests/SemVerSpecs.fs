@@ -155,3 +155,13 @@ let ``earlier pre-release identifiers have higher precedence (SemVer 2.0.0/11)``
 [<Test>]
 let ``numeric pre-release identifiers exhibit correct (numeric) precedence (SemVer 2.0.0/11)`` () =
     (SemVer.Parse "1.0.0-beta.2") |> shouldBeSmallerThan (SemVer.Parse "1.0.0-beta.11")
+
+[<Test>]
+let ``should accept SemVer2 prereleases`` () =
+    let semVer = SemVer.Parse("1.0.0+foobar")
+    semVer.Major |> shouldEqual 1
+    semVer.Minor |> shouldEqual 0
+    semVer.Patch |> shouldEqual 0
+    semVer.PreRelease |> shouldEqual (Some { Origin = "foobar"
+                                             Name = "foobar"
+                                             Number = None })
