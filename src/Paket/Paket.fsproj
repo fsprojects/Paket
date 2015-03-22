@@ -41,8 +41,8 @@
     <WarningLevel>3</WarningLevel>
     <DocumentationFile>
     </DocumentationFile>
-    <StartArguments>pack output ./temp version "0.7.0" releaseNotes "BREAKING API: Use optional parameters and allow speechifying FSI evaluator - https://github.com/fsprojects/FsReveal/pull/51"</StartArguments>
-    <StartWorkingDirectory>D:\code\FsRevealDevelop\</StartWorkingDirectory>
+    <StartArguments>update -v</StartArguments>
+    <StartWorkingDirectory>D:\code\Paket09x</StartWorkingDirectory>
   </PropertyGroup>
   <PropertyGroup>
     <MinimumVisualStudioVersion Condition="'$(MinimumVisualStudioVersion)' == ''">11</MinimumVisualStudioVersion>

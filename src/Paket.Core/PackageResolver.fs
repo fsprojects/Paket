@@ -105,7 +105,7 @@ type ResolvedPackages =
                 for x in closed do
                    traceUnresolvedPackage x
 
-            addToError "  Can't resolve:"
+            addToError "  Could not resolve:"
             stillOpen
             |> Seq.head
             |> traceUnresolvedPackage
@@ -215,7 +215,7 @@ let Resolve(getVersionsF, getPackageDetailsF, globalFrameworkRestrictions, rootD
                 ResolvedPackages.Conflict(closed,stillOpen)
         else
             let packageCount = packages |> List.length
-            verbosefn "    %d packages in resolution. %d requirements left" packageCount stillOpen.Count
+            verbosefn "  %d packages in resolution. %d requirements left" packageCount stillOpen.Count
             
             let dependency =
                 let currentMin = ref (Seq.head stillOpen)
@@ -229,6 +229,7 @@ let Resolve(getVersionsF, getPackageDetailsF, globalFrameworkRestrictions, rootD
                         currentMin := d
                         currentBoost := boost
                 !currentMin
+            verbosefn "  Trying to resolve %O" dependency
 
             let allVersions = ref []
             let compatibleVersions = ref []
@@ -267,7 +268,7 @@ let Resolve(getVersionsF, getPackageDetailsF, globalFrameworkRestrictions, rootD
                     | _ -> conflictHistory.Add(NormalizedPackageName dependency.Name, 1)
                     
                     if verbose then
-                        tracefn "  Could not find compatible versions for:%s    %O%s  Conflicts with:" Environment.NewLine dependency Environment.NewLine
+                        tracefn "  Conflicts with:"
                     
                         closed
                         |> Seq.filter (fun d -> d.Name = dependency.Name)
