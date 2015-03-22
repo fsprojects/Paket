@@ -261,7 +261,7 @@ let getDetailsFromNuget force auth nugetURL package (version:SemVerInfo) =
     async {
         try
             if not force && errorFile.Exists then
-                failwithf "errorfile for %s exists at %s" package errorFile.FullName
+                failwithf "Error file for %s exists at %s" package errorFile.FullName
 
             let! (invalidCache,details) = loadFromCacheOrOData force cacheFile.FullName auth nugetURL package version
 
@@ -273,7 +273,7 @@ let getDetailsFromNuget force auth nugetURL package (version:SemVerInfo) =
             return details
         with
         | exn -> 
-            File.WriteAllText(errorFile.FullName,"")
+            File.AppendAllText(errorFile.FullName,exn.ToString())
             raise exn
             return! getDetailsFromNuGetViaOData auth nugetURL package version
     } 

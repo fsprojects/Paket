@@ -1,4 +1,4 @@
-#### 0.35.5 - 22.03.2015
+#### 0.35.6 - 22.03.2015
 * COSMETICS: better tracing of intermediate resolution conflicts
 
 #### 0.35.2 - 22.03.2015
