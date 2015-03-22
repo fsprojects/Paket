@@ -2,7 +2,7 @@ NUGET
   remote: https://nuget.org/api/v2
   specs:
     DotNetZip (1.9.3)
-    FAKE (3.21.0)
+    FAKE (3.24.0)
     FSharp.Compiler.Service (0.0.86)
     FSharp.Core (3.1.2.1)
     FSharp.Formatting (2.7.5)
@@ -19,7 +19,7 @@ NUGET
     Newtonsoft.Json (6.0.8)
     NUnit (2.6.4)
     NUnit.Runners (2.6.4)
-    Octokit (0.7.3)
+    Octokit (0.8.0)
       Microsoft.Net.Http
     UnionArgParser (0.8.6)
 GITHUB
@@ -28,9 +28,9 @@ GITHUB
     FsUnit.fs (81d27fd09575a32c4ed52eadb2eeac5f365b8348)
   remote: fsharp/FAKE
   specs:
-    modules/Octokit/Octokit.fsx (7f323ca8e7c0e559078b2293db7066c927cec6d4)
+    modules/Octokit/Octokit.fsx (91bc57badb88b7adb163fb8d26db85ef270fd8bb)
       Octokit
-    src/app/FakeLib/Globbing/Globbing.fs (7f323ca8e7c0e559078b2293db7066c927cec6d4)
+    src/app/FakeLib/Globbing/Globbing.fs (91bc57badb88b7adb163fb8d26db85ef270fd8bb)
   remote: fsprojects/Chessie
   specs:
-    src/Chessie/ErrorHandling.fs (63bed6ae27cdb340157b4713f8a4e4532e2a6088)
+    src/Chessie/ErrorHandling.fs (ffd2991eae688d1ff3d51cf93383cdcd400d6c0f)
