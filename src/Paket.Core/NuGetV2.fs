@@ -63,14 +63,16 @@ let rec private followODataLink getUrlContents url =
 let getAllVersionsFromNugetODataWithFilter (getUrlContents, nugetURL, package) = 
     // we cannot cache this
     let url = sprintf "%s/Packages?$filter=Id eq '%s'" nugetURL package
+    verbosefn "getAllVersionsFromNugetODataWithFilter from url '%s'" url
     followODataLink getUrlContents url
 
 /// Gets versions of the given package via OData via /FindPackagesById()?id='packageId'.
 let getAllVersionsFromNugetOData (getUrlContents, nugetURL, package) = 
-    async { 
+    async {
         // we cannot cache this
         try 
             let url = sprintf "%s/FindPackagesById()?id='%s'" nugetURL package
+            verbosefn "getAllVersionsFromNugetOData from url '%s'" url
             return! followODataLink getUrlContents url
         with _ -> return! getAllVersionsFromNugetODataWithFilter (getUrlContents, nugetURL, package)
     }
@@ -79,7 +81,9 @@ let getAllVersionsFromNugetOData (getUrlContents, nugetURL, package) =
 let getAllVersionsFromNuGet2(auth,nugetURL,package) = 
     // we cannot cache this
     async { 
-        let! raw = safeGetFromUrl(auth,sprintf "%s/package-versions/%s?includePrerelease=true" nugetURL package)
+        let url = sprintf "%s/package-versions/%s?includePrerelease=true" nugetURL package
+        verbosefn "getAllVersionsFromNuGet2 from url '%s'" url
+        let! raw = safeGetFromUrl(auth, url)
         let getUrlContents url = getFromUrl(auth, url)
         match raw with
         | None -> let! result = getAllVersionsFromNugetOData(getUrlContents, nugetURL, package)
@@ -89,7 +93,8 @@ let getAllVersionsFromNuGet2(auth,nugetURL,package) =
                 try 
                     let result = JsonConvert.DeserializeObject<string []>(data) |> Array.toSeq
                     return result
-                with _ -> let! result = getAllVersionsFromNugetOData(getUrlContents, nugetURL, package)
+                with _ -> verbosefn "exn when deserialising data '%s'" data
+                          let! result = getAllVersionsFromNugetOData(getUrlContents, nugetURL, package)
                           return result
             with exn -> 
                 return! failwithf "Could not get data from %s for package %s.%s Message: %s" nugetURL package 
@@ -259,7 +264,9 @@ let getDetailsFromNuget force auth nugetURL package (version:SemVerInfo) =
                 failwithf "errorfile for %s exists" package
 
             let! (invalidCache,details) = loadFromCacheOrOData force cacheFile.FullName auth nugetURL package version
-            
+
+            verbosefn "loaded details for '%s@%O' from url '%s'" package version nugetURL
+
             errorFile.Delete()
             if invalidCache then
                 File.WriteAllText(cacheFile.FullName,JsonConvert.SerializeObject(details))
@@ -462,6 +469,7 @@ let GetPackageDetails force sources (PackageName package) (version:SemVerInfo) :
     let rec tryNext xs = 
         match xs with
         | source :: rest -> 
+            verbosefn "trying source '%O'" source
             try 
                 match source with
                 | Nuget source -> 
@@ -476,7 +484,9 @@ let GetPackageDetails force sources (PackageName package) (version:SemVerInfo) :
                     getDetailsFromLocalFile path package version 
                     |> Async.RunSynchronously
                 |> fun x -> source,x
-            with _ -> tryNext rest
+            with e ->
+              verbosefn "trying source '%O' exception: %O" source e
+              tryNext rest
         | [] -> failwithf "Couldn't get package details for package %s on %A." package (sources |> List.map (fun (s:PackageSource) -> s.ToString()))
     
     let source,nugetObject = tryNext sources
