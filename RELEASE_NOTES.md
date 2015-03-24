@@ -1,3 +1,6 @@
+#### 0.35.7 - 24.03.2015
+* BUGFIX: `Convert-from-nuget` ignores disabled NuGet feeds - https://github.com/fsprojects/Paket/pull/720
+
 #### 0.35.6 - 22.03.2015
 * COSMETICS: better tracing of intermediate resolution conflicts
 
