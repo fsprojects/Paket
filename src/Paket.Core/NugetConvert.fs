@@ -106,10 +106,19 @@ type NugetConfig =
             |> optGetNode (XmlConvert.EncodeLocalName key) 
             |> Option.bind getAuth'
 
+        let disabledSources =
+            configNode |> getNode "disabledPackageSources"
+            |> Option.toList
+            |> List.collect getKeyValueList
+            |> List.filter (fun (_,disabled) -> disabled.Equals("true", StringComparison.OrdinalIgnoreCase))
+            |> List.map fst
+            |> Set.ofList
+            
         let sources = 
             configNode |> getNode "packageSources"
             |> Option.toList
             |> List.collect getKeyValueList
+            |> List.filter (fun (key,_) -> Set.contains key disabledSources |> not)
             |> List.map (fun (key,value) -> value, getAuth key)
 
         { PackageSources = if clearSources then sources else nugetConfig.PackageSources @ sources
