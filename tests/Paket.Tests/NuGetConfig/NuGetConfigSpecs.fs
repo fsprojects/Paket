@@ -48,3 +48,12 @@ let ``can detect cleartextpasswords in nuget.config``() =
                       Some { Username = "myUser"; Password = "myPassword" } ]
           PackageRestoreEnabled = false
           PackageRestoreAutomatic = false }
+
+[<Test>]
+let ``ignores disabled nuget feed`` () =
+    parse "NuGetConfig/ConfigWithDisabledFeed.xml"
+    |> shouldEqual
+        { PackageSources = 
+            [ "https://www.nuget.org/api/v2/",None]
+          PackageRestoreEnabled = true
+          PackageRestoreAutomatic = true }
