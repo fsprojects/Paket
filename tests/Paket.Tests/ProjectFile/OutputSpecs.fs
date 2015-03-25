@@ -100,3 +100,39 @@ let ``should maintain order when updating project file items`` () =
          "ProviderEntryPoint.fs"
         ]
     CollectionAssert.AreEqual(expected, actual)
+
+[<Test>]
+let ``should remove missing files that exist in the project`` () = 
+    
+    let projFile =  ProjectFile.Load("./ProjectFile/TestData/MaintainsOrdering.fsprojtest").Value
+    let fileItems = [
+        { BuildAction = "Compile"; Include = "DebugProvidedTypes.fs"; Link = None }
+        { BuildAction = "Compile"; Include = "ProvidedTypes.fs"; Link = None }
+        { BuildAction = "Content"; Include = "ProvidedTypes.fsi"; Link = None }
+    ]
+    projFile.UpdateFileItems(fileItems, false)
+
+    let rec nodes node = 
+        seq {
+            for node in node |> Seq.cast<XmlNode> do
+                if node.Name = "Compile" || node.Name = "Content"
+                then yield Paket.Xml.getAttribute "Include" node
+                yield! nodes node 
+        }
+    
+    let actual = 
+        nodes projFile.Document  
+        |> Seq.choose id  
+        |> Seq.toList
+    let expected = 
+        [
+         "ProvidedTypes.fsi"
+         "ProvidedTypes.fs"
+         "DebugProvidedTypes.fs"
+         "QuotationHelpers.fs"
+         "CommonTypes.fs"
+         "ExcelProvider.fs"
+         "WordProvider.fs"
+         "ProviderEntryPoint.fs"
+        ]
+    CollectionAssert.AreEqual(expected, actual)

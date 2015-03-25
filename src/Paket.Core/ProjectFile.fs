@@ -177,6 +177,19 @@ type ProjectFile =
                 | None  ->
                     let firstNode = fileItemsInSameDir |> Seq.head 
                     firstNode.ParentNode.InsertBefore(libReferenceNode, firstNode) |> ignore
+        
+        let paketNodes = 
+            this.FindPaketNodes("Compile")
+            @ this.FindPaketNodes("Content")
+           
+        //remove uneeded files
+        for paketNode in paketNodes do
+            match getAttribute "Include" paketNode with
+            | Some path ->
+                if not(fileItems |> List.exists (fun fi -> fi.Include = path))
+                then paketNode.ParentNode.RemoveChild(paketNode) |> ignore
+                else ()
+            | _ -> ()
 
         this.DeleteIfEmpty("PropertyGroup")
         this.DeleteIfEmpty("ItemGroup")
