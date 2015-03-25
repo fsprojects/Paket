@@ -129,8 +129,6 @@ type ProjectFile =
             node.ParentNode.RemoveChild(node) |> ignore
 
     member this.UpdateFileItems(fileItems : FileItem list, hard) = 
-        this.DeletePaketNodes("Compile")
-        this.DeletePaketNodes("Content")
 
         let firstItemGroup = this.ProjectNode |> getNodes "ItemGroup" |> Seq.firstOrDefault
 
@@ -143,7 +141,6 @@ type ProjectFile =
                 ["Content", node :?> XmlElement
                  "Compile", node :?> XmlElement ] 
             |> dict
-
 
         for fileItem in fileItems |> List.rev do
             let libReferenceNode = 
@@ -161,6 +158,7 @@ type ProjectFile =
                     match node |> getAttribute "Include" with
                     | Some path when path.StartsWith(Path.GetDirectoryName(fileItem.Include)) -> true
                     | _ -> false)
+            
 
             if Seq.isEmpty fileItemsInSameDir then 
                 newItemGroups.[fileItem.BuildAction].PrependChild(libReferenceNode) |> ignore
@@ -177,9 +175,9 @@ type ProjectFile =
                         then existingNode :?> XmlElement |> addChild (this.CreateNode("Paket","True")) |> ignore
                     else verbosefn "  - custom nodes for %s in %s ==> skipping" fileItem.Include this.FileName
                 | None  ->
-                    let firstNode = fileItemsInSameDir |> Seq.head
+                    let firstNode = fileItemsInSameDir |> Seq.head 
                     firstNode.ParentNode.InsertBefore(libReferenceNode, firstNode) |> ignore
-        
+
         this.DeleteIfEmpty("PropertyGroup")
         this.DeleteIfEmpty("ItemGroup")
         this.DeleteIfEmpty("Choose")

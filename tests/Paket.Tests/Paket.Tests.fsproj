@@ -218,6 +218,9 @@
     <None Include="ProjectFile\TestData\NoCustomFantomasNode.fsprojtest">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+    <None Include="ProjectFile\TestData\MaintainsOrdering.fsprojtest">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <Compile Include="ProjectFile\ConditionSpecs.fs" />
     <Compile Include="ProjectFile\FileBuildActionSpecs.fs" />
     <Compile Include="ProjectFile\InterProjectDependencySpecs.fs" />
