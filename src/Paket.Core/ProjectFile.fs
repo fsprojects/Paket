@@ -182,13 +182,12 @@ type ProjectFile =
             this.FindPaketNodes("Compile")
             @ this.FindPaketNodes("Content")
            
-        //remove uneeded files
+        // remove unneeded files
         for paketNode in paketNodes do
             match getAttribute "Include" paketNode with
             | Some path ->
-                if not(fileItems |> List.exists (fun fi -> fi.Include = path))
-                then paketNode.ParentNode.RemoveChild(paketNode) |> ignore
-                else ()
+                if not (fileItems |> List.exists (fun fi -> fi.Include = path)) then 
+                  paketNode.ParentNode.RemoveChild(paketNode) |> ignore
             | _ -> ()
 
         this.DeleteIfEmpty("PropertyGroup")

@@ -1,3 +1,6 @@
+#### 0.35.8 - 26.03.2015
+* BUGFIX: Maintain order of content file items - https://github.com/fsprojects/Paket/pull/722
+
 #### 0.35.7 - 24.03.2015
 * BUGFIX: `Convert-from-nuget` ignores disabled NuGet feeds - https://github.com/fsprojects/Paket/pull/720
 
