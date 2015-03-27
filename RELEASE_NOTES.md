@@ -1,3 +1,6 @@
+#### 0.35.9 - 27.03.2015
+* Detect .NET 4.6 - https://github.com/fsprojects/Paket/issues/727
+
 #### 0.35.8 - 26.03.2015
 * BUGFIX: Maintain order of content file items - https://github.com/fsprojects/Paket/pull/722
 

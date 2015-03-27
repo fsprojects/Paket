@@ -17,6 +17,7 @@ type FrameworkVersion =
     | V4_5_1
     | V4_5_2
     | V4_5_3
+    | V4_6
     override this.ToString() =
         match this with
         | V1 -> "v1.0"
@@ -30,6 +31,7 @@ type FrameworkVersion =
         | V4_5_1 -> "v4.5.1"
         | V4_5_2 -> "v4.5.2"
         | V4_5_3 -> "v4.5.3"
+        | V4_6 -> "v4.6"
 
 module KnownAliases =
     let Data =
@@ -75,6 +77,7 @@ type FrameworkIdentifier =
                 | FrameworkVersion.V4_5_1 -> "451"
                 | FrameworkVersion.V4_5_2 -> "452"
                 | FrameworkVersion.V4_5_3 -> "453"
+                | FrameworkVersion.V4_6 -> "46"
         | MonoAndroid -> "monoandroid"
         | MonoTouch -> "monotouch"
         | MonoMac -> "monomac"
@@ -101,6 +104,7 @@ type FrameworkIdentifier =
         | DotNetFramework FrameworkVersion.V4_5_1 -> [ DotNetFramework FrameworkVersion.V4_5 ]
         | DotNetFramework FrameworkVersion.V4_5_2 -> [ DotNetFramework FrameworkVersion.V4_5_1 ]
         | DotNetFramework FrameworkVersion.V4_5_3 -> [ DotNetFramework FrameworkVersion.V4_5_2 ]
+        | DotNetFramework FrameworkVersion.V4_6 -> [ DotNetFramework FrameworkVersion.V4_5_3 ]
         | Silverlight "v3.0" -> [ ]
         | Silverlight "v4.0" -> [ Silverlight "v3.0" ]
         | Silverlight "v5.0" -> [ Silverlight "v4.0" ]
@@ -144,6 +148,7 @@ module FrameworkDetection =
                 | "net451" -> Some (DotNetFramework FrameworkVersion.V4_5_1)
                 | "net452" -> Some (DotNetFramework FrameworkVersion.V4_5_2)
                 | "net453" -> Some (DotNetFramework FrameworkVersion.V4_5_3)
+                | "net46" -> Some (DotNetFramework FrameworkVersion.V4_6)
                 | "monotouch" | "monotouch10" -> Some MonoTouch
                 | "monoandroid" | "monoandroid10" -> Some MonoAndroid
                 | "monomac" | "monomac10" -> Some MonoMac
@@ -191,7 +196,8 @@ module KnownTargetProfiles =
         SinglePlatform(DotNetFramework FrameworkVersion.V4_5)
         SinglePlatform(DotNetFramework FrameworkVersion.V4_5_1)
         SinglePlatform(DotNetFramework FrameworkVersion.V4_5_2)
-        SinglePlatform(DotNetFramework FrameworkVersion.V4_5_3)]
+        SinglePlatform(DotNetFramework FrameworkVersion.V4_5_3)
+        SinglePlatform(DotNetFramework FrameworkVersion.V4_6)]
 
     let WindowsProfiles =
        [SinglePlatform(Windows "v4.5")
