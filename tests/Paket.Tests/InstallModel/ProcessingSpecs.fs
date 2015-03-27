@@ -467,7 +467,7 @@ let ``should handle Targets files``() =
     model.GetTargetsFiles(SinglePlatform (DotNetFramework FrameworkVersion.V2)) |> shouldContain @"..\StyleCop.MSBuild\build\StyleCop.MSBuild.Targets"
 
 [<Test>]
-let ``should filter dlls for System.Net.Http 2.2.8``() = 
+let ``should filter .NET 4.0 dlls for System.Net.Http 2.2.8``() = 
     let expected = 
         [ @"..\Microsoft.Net.Http\lib\net40\System.Net.Http.Extensions.dll"; 
           @"..\Microsoft.Net.Http\lib\net40\System.Net.Http.Primitives.dll"; 
@@ -500,4 +500,41 @@ let ``should filter dlls for System.Net.Http 2.2.8``() =
                @"..\Microsoft.Net.Http\lib\wpa81\System.Net.Http.Primitives.dll" ], [], Nuspec.All)
 
     model.GetLibReferences(SinglePlatform(DotNetFramework(FrameworkVersion.V4)))
+    |> shouldEqual expected
+
+[<Test>]
+let ``should filter .NET 4.5 dlls for System.Net.Http 2.2.8``() = 
+    let expected = 
+        [ @"..\Microsoft.Net.Http\lib\net45\System.Net.Http.Extensions.dll" 
+          @"..\Microsoft.Net.Http\lib\net45\System.Net.Http.Primitives.dll"]
+        |> Seq.ofList
+
+    let model = 
+        InstallModel.CreateFromLibs
+            (PackageName "System.Net.Http", SemVer.Parse "2.2.8", 
+             [ ], 
+             [ @"..\Microsoft.Net.Http\lib\monoandroid\System.Net.Http.Extensions.dll"; 
+               @"..\Microsoft.Net.Http\lib\monoandroid\System.Net.Http.Primitives.dll"; 
+               @"..\Microsoft.Net.Http\lib\monotouch\System.Net.Http.Extensions.dll"; 
+               @"..\Microsoft.Net.Http\lib\monotouch\System.Net.Http.Primitives.dll"; 
+               @"..\Microsoft.Net.Http\lib\net40\System.Net.Http.dll"; 
+               @"..\Microsoft.Net.Http\lib\net40\System.Net.Http.Extensions.dll"; 
+               @"..\Microsoft.Net.Http\lib\net40\System.Net.Http.Primitives.dll"; 
+               @"..\Microsoft.Net.Http\lib\net40\System.Net.Http.WebRequest.dll"; 
+               @"..\Microsoft.Net.Http\lib\net45\System.Net.Http.Extensions.dll"; 
+               @"..\Microsoft.Net.Http\lib\net45\System.Net.Http.Primitives.dll"; 
+               @"..\Microsoft.Net.Http\lib\portable-net40+sl4+win8+wp71+wpa81\System.Net.Http.dll"; 
+               @"..\Microsoft.Net.Http\lib\portable-net40+sl4+win8+wp71+wpa81\System.Net.Http.Extensions.dll"; 
+               @"..\Microsoft.Net.Http\lib\portable-net40+sl4+win8+wp71+wpa81\System.Net.Http.Primitives.dll"; 
+               @"..\Microsoft.Net.Http\lib\portable-net45+win8\System.Net.Http.Extensions.dll"; 
+               @"..\Microsoft.Net.Http\lib\portable-net45+win8\System.Net.Http.Primitives.dll"; 
+               @"..\Microsoft.Net.Http\lib\win8\System.Net.Http.Extensions.dll"; 
+               @"..\Microsoft.Net.Http\lib\win8\System.Net.Http.Primitives.dll"; 
+               @"..\Microsoft.Net.Http\lib\wpa81\System.Net.Http.Extensions.dll"; 
+               @"..\Microsoft.Net.Http\lib\wpa81\System.Net.Http.Primitives.dll" ], [], Nuspec.All)
+
+    model.GetLibReferences(SinglePlatform(DotNetFramework(FrameworkVersion.V4_5)))
+    |> shouldEqual expected
+
+    model.GetLibReferences(SinglePlatform(DotNetFramework(FrameworkVersion.V4_5_2)))
     |> shouldEqual expected
