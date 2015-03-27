@@ -55,7 +55,7 @@ let private applyBindingRedirects bindingRedirects (configFilePath:string) =
             XDocument.Load(configFilePath, LoadOptions.PreserveWhitespace)
         with
         | :? System.Xml.XmlException as ex ->
-            printfn "Illegal xml in file: %s" configFilePath
+            Logging.verbosefn "Illegal xml in file: %s" configFilePath
             raise ex
 
     let config = Seq.fold setRedirect config bindingRedirects
