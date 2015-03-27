@@ -1,3 +1,6 @@
+#### 0.35.10 - 27.03.2015
+* BUGFIX: Smart install should create paket.lock if we have references files - closes #725
+
 #### 0.35.9 - 27.03.2015
 * Detect .NET 4.6 - https://github.com/fsprojects/Paket/issues/727
 

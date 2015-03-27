@@ -10,39 +10,40 @@ open Chessie.ErrorHandling
 
 let addPackagesFromReferenceFiles projects (dependenciesFile:DependenciesFile) =
     let lockFileName = DependenciesFile.FindLockfile dependenciesFile.FileName
-    if not <| lockFileName.Exists then 
+    let oldLockFile =
+        if lockFileName.Exists then 
+            LockFile.LoadFrom(lockFileName.FullName)
+        else
+            LockFile.Create(lockFileName.FullName, dependenciesFile.Options, ResolvedPackages.Ok(Map.empty), [])
+            
+    let allExistingPackages =
+        oldLockFile.ResolvedPackages
+        |> Seq.map (fun d -> NormalizedPackageName d.Value.Name)
+        |> Set.ofSeq
+
+    let allReferencedPackages = 
+        projects
+        |> Seq.collect (fun (_,referencesFile) -> referencesFile.NugetPackages)
+
+    let diff =
+        allReferencedPackages
+        |> Seq.filter (fun p ->
+            NormalizedPackageName p.Name
+            |> allExistingPackages.Contains
+            |> not)
+
+    if Seq.isEmpty diff then 
         dependenciesFile
     else
-        let oldLockFile = LockFile.LoadFrom(lockFileName.FullName)
-            
-        let allExistingPackages =
-            oldLockFile.ResolvedPackages
-            |> Seq.map (fun d -> NormalizedPackageName d.Value.Name)
-            |> Set.ofSeq
-
-        let allReferencedPackages = 
-            projects
-            |> Seq.collect (fun (_,referencesFile) -> referencesFile.NugetPackages)
-
-        let diff =
-            allReferencedPackages
-            |> Seq.filter (fun p ->
-                NormalizedPackageName p.Name
-                |> allExistingPackages.Contains
-                |> not)
-
-        if Seq.isEmpty diff then 
-            dependenciesFile
-        else
-            let newDependenciesFile =
-                diff
-                |> Seq.fold (fun (dependenciesFile:DependenciesFile) dep -> 
-                    if dependenciesFile.HasPackage dep.Name then 
-                        dependenciesFile
-                    else
-                        dependenciesFile.AddAdditionalPackage(dep.Name,"",dep.Settings)) dependenciesFile
-            newDependenciesFile.Save()
-            newDependenciesFile
+        let newDependenciesFile =
+            diff
+            |> Seq.fold (fun (dependenciesFile:DependenciesFile) dep -> 
+                if dependenciesFile.HasPackage dep.Name then 
+                    dependenciesFile
+                else
+                    dependenciesFile.AddAdditionalPackage(dep.Name,"",dep.Settings)) dependenciesFile
+        newDependenciesFile.Save()
+        newDependenciesFile
 
 let SelectiveUpdate(dependenciesFile:DependenciesFile, exclude, force) =
     let lockFileName = DependenciesFile.FindLockfile dependenciesFile.FileName
