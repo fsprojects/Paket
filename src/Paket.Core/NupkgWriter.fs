@@ -80,6 +80,17 @@ let nuspecDoc (info:CompleteInfo) =
         let d = XElement(ns + "dependencies")
         dependencyList |> List.iter (buildDependencyNode >> d.Add)
         metadataNode.Add d
+
+    let buildReferenceNode (fileName) = 
+        let dep = XElement(ns + "reference")
+        dep.SetAttributeValue(XName.Get "file", fileName)
+        dep
+
+    let buildReferencesNode referenceList = 
+        if referenceList = [] then () else
+        let d = XElement(ns + "references")
+        referenceList |> List.iter (buildReferenceNode >> d.Add)
+        metadataNode.Add d
     
     !! "id" core.Id
     match core.Version with
@@ -102,6 +113,7 @@ let nuspecDoc (info:CompleteInfo) =
     if optional.DevelopmentDependency  then
         !! "developmentDependency" "true"
 
+    optional.References |> buildReferencesNode
     optional.Dependencies |> buildDependenciesNode
     XDocument(declaration, box root)
 

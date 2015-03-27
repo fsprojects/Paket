@@ -1,3 +1,6 @@
+#### 0.36.0 - 27.03.2015
+* Allow to add references section to paket.template file - https://github.com/fsprojects/Paket/issues/721
+
 #### 0.35.13 - 27.03.2015
 * Allow to compute libraries for specific framework - https://github.com/fsprojects/Paket/issues/723
 

@@ -8,7 +8,7 @@ open NUnit.Framework
 open TestHelpers
 
 [<Test>]
-let ``should serialize cor info``() = 
+let ``should serialize core info``() = 
     let result = """<package xmlns="http://schemas.microsoft.com/packaging/2011/10/nuspec.xsd">
   <metadata>
     <id>Paket.Tests</id>
@@ -114,6 +114,10 @@ second line</releaseNotes>
     <language>en-US</language>
     <tags>aa bb</tags>
     <developmentDependency>true</developmentDependency>
+    <references>
+      <reference file="file1.dll" />
+      <reference file="file2.dll" />
+    </references>
   </metadata>
 </package>"""
     
@@ -135,6 +139,7 @@ second line</releaseNotes>
               IconUrl = Some "http://www.somewhere.com/Icon"
               Copyright = Some "Paket owners 2015"
               RequireLicenseAcceptance = true
+              References = ["file1.dll";"file2.dll"]
               Tags = ["aa"; "bb"]
               DevelopmentDependency = true }
                        
