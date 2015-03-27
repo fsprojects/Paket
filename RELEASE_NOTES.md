@@ -1,32 +1,14 @@
 #### 0.36.0 - 27.03.2015
 * Allow to add references section to paket.template file - https://github.com/fsprojects/Paket/issues/721
-
-#### 0.35.13 - 27.03.2015
 * Allow to compute libraries for specific framework - https://github.com/fsprojects/Paket/issues/723
-
-#### 0.35.12 - 27.03.2015
-* BUGFIX: Smart install should not remove sources from `paket.dependencies` - https://github.com/fsprojects/Paket/pull/726
-
-#### 0.35.10 - 27.03.2015
-* BUGFIX: Smart install should create paket.lock if we have references files - https://github.com/fsprojects/Paket/pull/725
-
-#### 0.35.9 - 27.03.2015
 * Detect .NET 4.6 - https://github.com/fsprojects/Paket/issues/727
-
-#### 0.35.8 - 26.03.2015
-* BUGFIX: Maintain order of content file items - https://github.com/fsprojects/Paket/pull/722
-
-#### 0.35.7 - 24.03.2015
-* BUGFIX: `Convert-from-nuget` ignores disabled NuGet feeds - https://github.com/fsprojects/Paket/pull/720
-
-#### 0.35.6 - 22.03.2015
-* COSMETICS: better tracing of intermediate resolution conflicts
-
-#### 0.35.2 - 22.03.2015
 * SemVer allows "number + build metadata" format - https://github.com/fsprojects/Paket/issues/704
-
-#### 0.35.1 - 22.03.2015
 * `paket push` shows status information - https://github.com/fsprojects/Paket/pull/695
+* BUGFIX: Maintain order of content file items - https://github.com/fsprojects/Paket/pull/722
+* BUGFIX: `Convert-from-nuget` ignores disabled NuGet feeds - https://github.com/fsprojects/Paket/pull/720
+* BUGFIX: Smart install should not remove sources from `paket.dependencies` - https://github.com/fsprojects/Paket/pull/726
+* BUGFIX: Smart install should create paket.lock if we have references files - https://github.com/fsprojects/Paket/pull/725
+* COSMETICS: better tracing of intermediate resolution conflicts
 
 #### 0.34.0 - 12.03.2015
 * `paket pack` pretty-prints it's nuspec - https://github.com/fsprojects/Paket/issues/691
