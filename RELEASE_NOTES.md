@@ -1,3 +1,6 @@
+#### 0.35.13 - 27.03.2015
+* Allow to compute libraries for specific framework - https://github.com/fsprojects/Paket/issues/723
+
 #### 0.35.12 - 27.03.2015
 * BUGFIX: Smart install should not remove sources from `paket.dependencies` - https://github.com/fsprojects/Paket/pull/726
 

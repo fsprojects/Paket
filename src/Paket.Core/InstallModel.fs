@@ -104,6 +104,8 @@ type InstallModel =
                          |> Seq.choose id
         | None -> Seq.empty
 
+    member this.GetLibReferences(frameworkIdentifier) = this.GetLibReferences(SinglePlatform(frameworkIdentifier))
+
     member this.GetTargetsFiles(target : TargetProfile) = 
         match Seq.tryFind (fun lib -> Seq.exists (fun t -> t = target) lib.Targets) this.TargetsFileFolders with
         | Some folder -> folder.Files.References
