@@ -304,15 +304,17 @@ type DependenciesFile(fileName,options,sources,packages : PackageRequirement lis
 
     member __.AddAdditionalPackage(packageName:PackageName,version:string,settings) =
         let versionRange = DependenciesFileParser.parseVersionRequirement (version.Trim '!')
-        let sources = 
+        let sources',sources = 
             match packages |> List.rev with
-            | lastPackage::_ -> lastPackage.Sources
-            | [] -> [PackageSources.DefaultNugetSource]
+            | lastPackage::_ -> lastPackage.Sources,sources
+            | [] -> 
+                [PackageSources.DefaultNugetSource],
+                if sources |> List.exists ((=) PackageSources.DefaultNugetSource) then sources else PackageSources.DefaultNugetSource :: sources
 
         let newPackage = 
             { Name = packageName
               VersionRequirement = versionRange
-              Sources = sources
+              Sources = sources'
               ResolverStrategy = DependenciesFileParser.parseResolverStrategy version
               Settings = settings
               Parent = PackageRequirementSource.DependenciesFile fileName }

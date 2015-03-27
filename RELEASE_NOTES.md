@@ -1,5 +1,8 @@
+#### 0.35.11 - 27.03.2015
+* BUGFIX: Smart install should not remove sources from `paket.dependencies` - https://github.com/fsprojects/Paket/pull/726
+
 #### 0.35.10 - 27.03.2015
-* BUGFIX: Smart install should create paket.lock if we have references files - closes #725
+* BUGFIX: Smart install should create paket.lock if we have references files - https://github.com/fsprojects/Paket/pull/725
 
 #### 0.35.9 - 27.03.2015
 * Detect .NET 4.6 - https://github.com/fsprojects/Paket/issues/727
