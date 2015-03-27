@@ -162,7 +162,7 @@ let downloadFromUrl (auth:Auth option, url : string) (filePath: string) =
             do! client.AsyncDownloadFile(Uri(url), filePath)
         with
         | exn ->
-            failwithf "Could not retrieve data from %s%s Message: %s" url Environment.NewLine exn.Message
+            failwithf "Could not download from %s%s Message: %s" url Environment.NewLine exn.Message
     }
 
 /// [omit]

@@ -102,8 +102,14 @@ let getAllVersionsFromNuGet2(auth,nugetURL,package) =
     }
 
 
-let getAllVersions(auth, nugetURL, package) =
-    getAllVersionsFromNuGet2(auth,nugetURL,package)
+let getAllVersions(auth, nugetURL, package) = async {
+        try
+            let! versions = getAllVersionsFromNuGet2(auth,nugetURL,package) 
+            return Some versions
+        with
+        | exn -> return None
+    }
+
 //    async { 
 //        let! raw = getViaNuGet3(auth, nugetURL, package)
 //
@@ -124,18 +130,19 @@ let getAllVersions(auth, nugetURL, package) =
 
 /// Gets versions of the given package from local Nuget feed.
 let getAllVersionsFromLocalPath (localNugetPath, package) =
-    async {
+    async {        
         let localNugetPath = Utils.normalizeLocalPath localNugetPath
         let di = DirectoryInfo(localNugetPath)
         if not di.Exists then
             failwithf "The directory %s doesn't exist.%sPlease check the NuGet source feed definition in your paket.dependencies file." localNugetPath Environment.NewLine
 
-        return 
+        let versions= 
             Directory.EnumerateFiles(di.FullName,"*.nupkg",SearchOption.AllDirectories)
             |> Seq.choose (fun fileName ->
                             let fi = FileInfo(fileName)
                             let _match = Regex(sprintf @"^%s\.(\d.*)\.nupkg" package, RegexOptions.IgnoreCase).Match(fi.Name)
                             if _match.Groups.Count > 1 then Some _match.Groups.[1].Value else None)
+        return Some versions
     }
 
 
@@ -501,16 +508,23 @@ let GetPackageDetails force sources (PackageName package) (version:SemVerInfo) :
 
 /// Allows to retrieve all version no. for a package from the given sources.
 let GetVersions(sources, PackageName packageName) = 
-    sources
-    |> Seq.map (fun source -> 
-           match source with
-           | Nuget source -> getAllVersions (
-                                source.Authentication |> Option.map toBasicAuth, 
-                                source.Url, 
-                                packageName)
-           | LocalNuget path -> getAllVersionsFromLocalPath (path, packageName))
-    |> Async.Parallel
-    |> Async.RunSynchronously
+    let versions =
+        sources
+        |> Seq.map (fun source -> 
+               match source with
+               | Nuget source -> getAllVersions (
+                                    source.Authentication |> Option.map toBasicAuth, 
+                                    source.Url, 
+                                    packageName)
+               | LocalNuget path -> getAllVersionsFromLocalPath (path, packageName))
+        |> Async.Parallel
+        |> Async.RunSynchronously
+        |> Seq.choose id
+
+    if Seq.isEmpty versions then
+        failwith "Could not find versions for package %s in any of the sources in %A." packageName sources
+
+    versions
     |> Seq.concat
     |> Seq.toList
     |> List.map SemVer.Parse

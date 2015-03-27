@@ -1,4 +1,4 @@
-#### 0.35.11 - 27.03.2015
+#### 0.35.12 - 27.03.2015
 * BUGFIX: Smart install should not remove sources from `paket.dependencies` - https://github.com/fsprojects/Paket/pull/726
 
 #### 0.35.10 - 27.03.2015
