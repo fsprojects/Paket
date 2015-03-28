@@ -191,8 +191,11 @@ let Write (core : CompleteCoreInfo) optional workingDir outputDir =
         File.Delete outputPath
 
     use zipFile = ZipFile.Open(outputPath,ZipArchiveMode.Create)
+
+    let entries = System.Collections.Generic.List<_>()
     
     let addEntry (zipFile : ZipArchive) path writerF = 
+        entries.Add path |> ignore
         let entry = zipFile.CreateEntry(path)        
         use stream = entry.Open()
         writerF stream
@@ -202,7 +205,9 @@ let Write (core : CompleteCoreInfo) optional workingDir outputDir =
     let rec addDir source target =
         for file in Directory.EnumerateFiles(source,"*.*",SearchOption.TopDirectoryOnly) do
             let fi = FileInfo file
-            zipFile.CreateEntryFromFile(fi.FullName,Path.Combine(target,fi.Name)) |> ignore
+            let path = Path.Combine(target,fi.Name)
+            entries.Add path |> ignore
+            zipFile.CreateEntryFromFile(fi.FullName,path) |> ignore
 
         for dir in Directory.EnumerateDirectories(source,"*",SearchOption.TopDirectoryOnly) do
             let di = DirectoryInfo dir
@@ -216,18 +221,17 @@ let Write (core : CompleteCoreInfo) optional workingDir outputDir =
             addDir source targetFileName
         else 
             if File.Exists source then
-                zipFile.CreateEntryFromFile(source, targetFileName) |> ignore
+                let fi = FileInfo(source)
+                let path = Path.Combine(targetFileName,fi.Name)
+                entries.Add path |> ignore
+                zipFile.CreateEntryFromFile(source, path) |> ignore
             else 
                 failwithf "Could not find source file %s" source
 
     // add metadata
     for path, writer in writeNupkg core optional do 
         addEntry zipFile path writer
-
-    let fileList = 
-        zipFile.Entries
-        |> Seq.map (fun e -> e.FullName)
     
-    contentTypeDoc fileList
+    contentTypeDoc (Seq.toList entries)
     |> xDocWriter
     |> addEntry zipFile contentTypePath
