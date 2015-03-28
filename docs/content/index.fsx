@@ -4,8 +4,8 @@
 #I "../../bin"
 
 (**
-F# Project Scaffold
-===================
+FSharp.ProjectScaffold
+======================
 
 Documentation
 
@@ -13,8 +13,8 @@ Documentation
   <div class="span1"></div>
   <div class="span6">
     <div class="well well-small" id="nuget">
-      The F# ProjectTemplate library can be <a href="https://nuget.org/packages/FSharp.ProjectTemplate">installed from NuGet</a>:
-      <pre>PM> Install-Package FSharp.ProjectTemplate</pre>
+      The FSharp.ProjectScaffold library can be <a href="https://nuget.org/packages/FSharp.ProjectScaffold">installed from NuGet</a>:
+      <pre>PM> Install-Package FSharp.ProjectScaffold</pre>
     </div>
   </div>
   <div class="span1"></div>
@@ -26,8 +26,8 @@ Example
 This example demonstrates using a function defined in this sample library.
 
 *)
-#r "FSharp.ProjectTemplate.dll"
-open FSharp.ProjectTemplate
+#r "FSharp.ProjectScaffold.dll"
+open FSharp.ProjectScaffold
 
 printfn "hello = %i" <| Library.hello 0
 

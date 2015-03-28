@@ -6,7 +6,7 @@ authors
 projectUrl
     http://github.com/##GitHome##/FSharp.ProjectScaffold
 iconUrl
-    https://raw.githubusercontent.com/fsprojects/ProjectScaffold/master/docs/files/img/logo.png
+    https://raw.githubusercontent.com/##GitHome##/FSharp.ProjectScaffold/master/docs/files/img/logo.png
 licenseUrl
     http://github.com/##GitHome##/FSharp.ProjectScaffold/blob/master/LICENSE.txt
 requireLicenseAcceptance
