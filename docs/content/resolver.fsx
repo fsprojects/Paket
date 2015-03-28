@@ -7,9 +7,6 @@ type VersionRequirement = string
 type PackageSource = string
 type SemVerInfo = string
 
-type ResolverStrategy =
-| Max
-| Min
 
 (**
 # Package resolution
@@ -41,12 +38,16 @@ Answering these questions is a very expensive operation since it involves a HTTP
 
 ## Basic algorithm
 
-Starting from the [`paket.dependencies` file](dependencies-file.html) we have a list of package requirements. Every requirement
+Starting from the [`paket.dependencies` file](dependencies-file.html) we have a list of package requirements. 
+Every requirement specifies a valid version range and a resolver strategy for a package:
+
 *)
 
 type PackageRequirementSource =
 | DependenciesFile of string
 | Package of PackageName * SemVerInfo 
+
+type ResolverStrategy = Max | Min
 
 type PackageRequirement =
     { Name : PackageName
@@ -54,6 +55,11 @@ type PackageRequirement =
       ResolverStrategy : ResolverStrategy
       Parent: PackageRequirementSource      
       Sources : PackageSource list }
+
+(**
+ttt
+
+*)
 
 type DependencySet = Set<PackageName * VersionRequirement * FrameworkRestrictions>
 

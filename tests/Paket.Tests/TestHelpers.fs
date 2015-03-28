@@ -32,7 +32,7 @@ let safeResolve graph (dependencies : (string * VersionRange) list)  =
     let packages = 
         dependencies |> List.map (fun (n, v) -> 
                             { Name = PackageName n
-                              VersionRequirement = VersionRequirement(v,PreReleaseStatus.No)
+                              VersionRequirement = VersionRequirement.New(v,PreReleaseStatus.No)
                               Sources = [ PackageSource.NugetSource "" ]
                               Parent = PackageRequirementSource.DependenciesFile ""
                               Settings = InstallSettings.Default

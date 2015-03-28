@@ -5,7 +5,7 @@ open NUnit.Framework
 open FsUnit
 
 let isInRangeNoPreRelease (versionRange:VersionRange) semVer =
-    VersionRequirement(versionRange,PreReleaseStatus.No).IsInRange (SemVer.Parse semVer)
+    VersionRequirement.New(versionRange,PreReleaseStatus.No).IsInRange (SemVer.Parse semVer)
 
 let isInRange (version:VersionRequirement) semVer =
     version.IsInRange (SemVer.Parse semVer)

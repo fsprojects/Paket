@@ -67,13 +67,13 @@ let ``can detect minimum NuGet version``() =
 [<Test>]
 let ``can detect prereleases``() = 
     DependenciesFileParser.parseVersionRequirement "<= 3.1" 
-    |> shouldEqual (VersionRequirement(VersionRange.Maximum(SemVer.Parse "3.1"),PreReleaseStatus.No))
+    |> shouldEqual (VersionRequirement.New(VersionRange.Maximum(SemVer.Parse "3.1"),PreReleaseStatus.No))
 
     DependenciesFileParser.parseVersionRequirement "<= 3.1 prerelease" 
-    |> shouldEqual (VersionRequirement(VersionRange.Maximum(SemVer.Parse "3.1"),PreReleaseStatus.All))
+    |> shouldEqual (VersionRequirement.New(VersionRange.Maximum(SemVer.Parse "3.1"),PreReleaseStatus.All))
 
     DependenciesFileParser.parseVersionRequirement "> 3.1 alpha beta"
-    |> shouldEqual (VersionRequirement(VersionRange.GreaterThan(SemVer.Parse "3.1"),(PreReleaseStatus.Concrete ["alpha"; "beta"])))
+    |> shouldEqual (VersionRequirement.New(VersionRange.GreaterThan(SemVer.Parse "3.1"),(PreReleaseStatus.Concrete ["alpha"; "beta"])))
 
 [<Test>]
 let ``can detect override operator``() = 

@@ -76,13 +76,13 @@ nuget NUnit"""
     let newDependencies = DependencyChangeDetection.PinUnchangedDependencies cfg lockFile changedDependencies
     let expected =
         Map.ofList
-            ([(PackageName "Castle.Core", VersionRequirement (Specific(SemVer.Parse "3.3.3"),No));
-              (PackageName "Castle.Core-log4net", VersionRequirement (Specific(SemVer.Parse "3.3.3"),No));
-              (PackageName "Castle.LoggingFacility", VersionRequirement (Specific(SemVer.Parse "3.3.0"),No));
-              (PackageName "Castle.Windsor", VersionRequirement (Specific(SemVer.Parse "3.3.0"),No));
-              (PackageName "Castle.Windsor-log4net", VersionRequirement (Specific(SemVer.Parse "3.3.0"),No));
-              (PackageName "NUnit", VersionRequirement (Minimum(SemVer.Parse "0"),No));
-              (PackageName "log4net", VersionRequirement (Specific(SemVer.Parse "1.2.10"),No))])
+            ([(PackageName "Castle.Core", VersionRequirement.New(Specific(SemVer.Parse "3.3.3"),No));
+              (PackageName "Castle.Core-log4net", VersionRequirement.New(Specific(SemVer.Parse "3.3.3"),No));
+              (PackageName "Castle.LoggingFacility", VersionRequirement.New(Specific(SemVer.Parse "3.3.0"),No));
+              (PackageName "Castle.Windsor", VersionRequirement.New(Specific(SemVer.Parse "3.3.0"),No));
+              (PackageName "Castle.Windsor-log4net", VersionRequirement.New(Specific(SemVer.Parse "3.3.0"),No));
+              (PackageName "NUnit", VersionRequirement.New(Minimum(SemVer.Parse "0"),No));
+              (PackageName "log4net", VersionRequirement.New(Specific(SemVer.Parse "1.2.10"),No))])
 
     
     newDependencies.DirectDependencies
@@ -123,12 +123,12 @@ nuget Castle.Windsor-log4net >= 3.3.0"""
     let newDependencies = DependencyChangeDetection.PinUnchangedDependencies cfg lockFile changedDependencies
     let expected =
         Map.ofList
-            ([(PackageName "Castle.Core", VersionRequirement (Specific(SemVer.Parse "3.3.3"),No));
-              (PackageName "Castle.Core-log4net", VersionRequirement (Specific(SemVer.Parse "3.3.3"),No));
-              (PackageName "Castle.LoggingFacility", VersionRequirement (Specific(SemVer.Parse "3.3.0"),No));
-              (PackageName "Castle.Windsor", VersionRequirement (Specific(SemVer.Parse "3.3.0"),No));
-              (PackageName "Castle.Windsor-log4net", VersionRequirement (Specific(SemVer.Parse "3.3.0"),No));
-              (PackageName "log4net", VersionRequirement (Specific(SemVer.Parse "1.2.10"),No))])
+            ([(PackageName "Castle.Core", VersionRequirement.New(Specific(SemVer.Parse "3.3.3"),No));
+              (PackageName "Castle.Core-log4net", VersionRequirement.New(Specific(SemVer.Parse "3.3.3"),No));
+              (PackageName "Castle.LoggingFacility", VersionRequirement.New(Specific(SemVer.Parse "3.3.0"),No));
+              (PackageName "Castle.Windsor", VersionRequirement.New(Specific(SemVer.Parse "3.3.0"),No));
+              (PackageName "Castle.Windsor-log4net", VersionRequirement.New(Specific(SemVer.Parse "3.3.0"),No));
+              (PackageName "log4net", VersionRequirement.New(Specific(SemVer.Parse "1.2.10"),No))])
 
     
     newDependencies.DirectDependencies
@@ -169,7 +169,7 @@ nuget Castle.Windsor-log4net >= 3.4.0"""
     let newDependencies = DependencyChangeDetection.PinUnchangedDependencies cfg lockFile changedDependencies
     let expected =
         Map.ofList
-            ([(PackageName "Castle.Windsor-log4net", VersionRequirement (Minimum(SemVer.Parse "3.4.0"),No));])
+            ([(PackageName "Castle.Windsor-log4net", VersionRequirement.New(Minimum(SemVer.Parse "3.4.0"),No));])
 
     
     newDependencies.DirectDependencies

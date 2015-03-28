@@ -15,9 +15,7 @@ let private adjustVersionRequirements strict includingPrereleases (dependenciesF
                 match strict,includingPrereleases with
                 | true,true -> VersionRequirement.NoRestriction, p.ResolverStrategy
                 | true,false -> v, p.ResolverStrategy
-                | false,true -> 
-                    match v with
-                    | VersionRequirement(v,_) -> VersionRequirement(v,PreReleaseStatus.All), ResolverStrategy.Max
+                | false,true -> { v with PreReleases = PreReleaseStatus.All }, ResolverStrategy.Max
                 | false,false -> VersionRequirement.AllReleases, ResolverStrategy.Max
             { p with VersionRequirement = requirement; ResolverStrategy = strategy})
 

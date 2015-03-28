@@ -8,8 +8,8 @@ open TestHelpers
 open Paket.Domain
 
 let graph = [
-    "Castle.Windsor","3.2.1",[("Castle.Core",VersionRequirement(VersionRange.AtLeast "3.2.0",PreReleaseStatus.No) )]
-    "Castle.Windsor","3.3.0",[("Castle.Core",VersionRequirement(VersionRange.AtLeast "3.3.0",PreReleaseStatus.No) )]
+    "Castle.Windsor","3.2.1",[("Castle.Core",VersionRequirement.New(VersionRange.AtLeast "3.2.0",PreReleaseStatus.No) )]
+    "Castle.Windsor","3.3.0",[("Castle.Core",VersionRequirement.New(VersionRange.AtLeast "3.3.0",PreReleaseStatus.No) )]
     "Castle.Core","3.2.0",[]
     "Castle.Core","3.2.1",[]
     "Castle.Core","3.2.2",[]
