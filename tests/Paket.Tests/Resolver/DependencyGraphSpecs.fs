@@ -7,17 +7,17 @@ open TestHelpers
 open Paket.Domain
 
 let graph = [
-    "FAKE","3.3",[("A",VersionRequirement.New(VersionRange.AtLeast "3.0",PreReleaseStatus.No))]
-    "FAKE","3.7",[("A",VersionRequirement.New(VersionRange.AtLeast "3.1",PreReleaseStatus.No)); ("B",VersionRequirement.New(VersionRange.Exactly "1.1",PreReleaseStatus.No))]
-    "FAKE","4.0",[("A",VersionRequirement.New(VersionRange.AtLeast "3.3",PreReleaseStatus.No)); ("B",VersionRequirement.New(VersionRange.Exactly "1.3",PreReleaseStatus.No)); ("E",VersionRequirement.New(VersionRange.AtLeast "2.0",PreReleaseStatus.No))]
+    "FAKE","3.3",[("A",VersionRequirement(VersionRange.AtLeast "3.0",PreReleaseStatus.No))]
+    "FAKE","3.7",[("A",VersionRequirement(VersionRange.AtLeast "3.1",PreReleaseStatus.No)); ("B",VersionRequirement(VersionRange.Exactly "1.1",PreReleaseStatus.No))]
+    "FAKE","4.0",[("A",VersionRequirement(VersionRange.AtLeast "3.3",PreReleaseStatus.No)); ("B",VersionRequirement(VersionRange.Exactly "1.3",PreReleaseStatus.No)); ("E",VersionRequirement(VersionRange.AtLeast "2.0",PreReleaseStatus.No))]
 
-    "A","3.0",[("B",VersionRequirement.New(VersionRange.AtLeast "1.0",PreReleaseStatus.No))]
-    "A","3.1",[("B",VersionRequirement.New(VersionRange.AtLeast "1.0",PreReleaseStatus.No))]
-    "A","3.3",[("B",VersionRequirement.New(VersionRange.AtLeast "1.0",PreReleaseStatus.No))]
+    "A","3.0",[("B",VersionRequirement(VersionRange.AtLeast "1.0",PreReleaseStatus.No))]
+    "A","3.1",[("B",VersionRequirement(VersionRange.AtLeast "1.0",PreReleaseStatus.No))]
+    "A","3.3",[("B",VersionRequirement(VersionRange.AtLeast "1.0",PreReleaseStatus.No))]
 
     "B","1.1",[]
     "B","1.2",[]
-    "B","1.3",["C",VersionRequirement.New(VersionRange.AtLeast "1.0",PreReleaseStatus.No)]
+    "B","1.3",["C",VersionRequirement(VersionRange.AtLeast "1.0",PreReleaseStatus.No)]
 
     "C","1.0",[]
     "C","1.1",[]
@@ -28,10 +28,10 @@ let graph = [
     "E","1.0",[]
     "E","1.1",[]
     "E","2.0",[]
-    "E","2.1",[("F",VersionRequirement.New(VersionRange.AtLeast "1.0",PreReleaseStatus.No))]
+    "E","2.1",[("F",VersionRequirement(VersionRange.AtLeast "1.0",PreReleaseStatus.No))]
 
     "F","1.0",[]
-    "F","1.1",[("G",VersionRequirement.New(VersionRange.AtLeast "1.0",PreReleaseStatus.No))]
+    "F","1.1",[("G",VersionRequirement(VersionRange.AtLeast "1.0",PreReleaseStatus.No))]
 
     "G","1.0",[]
 ]
@@ -56,10 +56,10 @@ let ``should analyze graph completly``() =
     getVersion resolved.[NormalizedPackageName (PackageName "G")] |> shouldEqual "1.0"
 
 let graph2 = [
-    "A","1.0",["B",VersionRequirement.New(VersionRange.Exactly "1.1",PreReleaseStatus.No);"C",VersionRequirement.New(VersionRange.Exactly "2.4",PreReleaseStatus.No)]
-    "A","1.1",["B",VersionRequirement.New(VersionRange.Exactly "1.1",PreReleaseStatus.No);"C",VersionRequirement.New(VersionRange.Exactly "2.4",PreReleaseStatus.No)]
-    "B","1.1",["D",VersionRequirement.New(VersionRange.Between("1.3","1.6"),PreReleaseStatus.No)]
-    "C","2.4",["D",VersionRequirement.New(VersionRange.Between("1.4","1.7"),PreReleaseStatus.No)]
+    "A","1.0",["B",VersionRequirement(VersionRange.Exactly "1.1",PreReleaseStatus.No);"C",VersionRequirement(VersionRange.Exactly "2.4",PreReleaseStatus.No)]
+    "A","1.1",["B",VersionRequirement(VersionRange.Exactly "1.1",PreReleaseStatus.No);"C",VersionRequirement(VersionRange.Exactly "2.4",PreReleaseStatus.No)]
+    "B","1.1",["D",VersionRequirement(VersionRange.Between("1.3","1.6"),PreReleaseStatus.No)]
+    "C","2.4",["D",VersionRequirement(VersionRange.Between("1.4","1.7"),PreReleaseStatus.No)]
     "D","1.3",[]
     "D","1.4",[]
     "D","1.5",[]
@@ -88,7 +88,7 @@ let ``should analyze graph2 completely with multiple starting nodes``() =
     getVersion resolved.[NormalizedPackageName (PackageName "E")] |> shouldEqual "1.0"
 
 let graphWithoutAnyDependencyVersion = [
-    "A","3.0",[("B",VersionRequirement.New(VersionRange.AtLeast "2.0",PreReleaseStatus.No))]
+    "A","3.0",[("B",VersionRequirement(VersionRange.AtLeast "2.0",PreReleaseStatus.No))]
 ]
 
 [<Test>]

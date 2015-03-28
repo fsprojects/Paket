@@ -92,16 +92,12 @@ type VersionRange =
         
             sprintf "%s%s,%s%s" (getMinDelimiter fromB) (from.ToString()) (_to.ToString()) (getMaxDelimiter _toB) 
 
-type VersionRequirement = {
-    Range: VersionRange
-    PreReleases: PreReleaseStatus }
-
-  with
-    static member New(range,prereleases) :VersionRequirement = { Range = range; PreReleases = prereleases }
-
+type VersionRequirement =
+| VersionRequirement of VersionRange * PreReleaseStatus
     /// Checks wether the given version is in the version range
     member this.IsInRange(version : SemVerInfo,?ignorePrerelease) =         
         let ignorePrerelease = defaultArg ignorePrerelease false
+        let (VersionRequirement (range,prerelease)) = this
         let checkPrerelease prerelease version =
             if ignorePrerelease then true else
             match prerelease with
@@ -112,13 +108,13 @@ type VersionRequirement = {
                  | None -> true
                  | Some pre -> List.exists ((=) pre.Name) list
 
-        match this.Range with
+        match range with
         | Specific v -> v = version
         | OverrideAll v -> v = version
-        | Minimum v -> v = version || (v <= version && checkPrerelease this.PreReleases version)
-        | GreaterThan v -> v < version && checkPrerelease this.PreReleases version
-        | Maximum v -> v = version || (v >= version && checkPrerelease this.PreReleases version)
-        | LessThan v -> v > version && checkPrerelease this.PreReleases version
+        | Minimum v -> v = version || (v <= version && checkPrerelease prerelease version)
+        | GreaterThan v -> v < version && checkPrerelease prerelease version
+        | Maximum v -> v = version || (v >= version && checkPrerelease prerelease version)
+        | LessThan v -> v > version && checkPrerelease prerelease version
         | Range(fromB, from, _to, _toB) ->
             let isInUpperBound = 
                 match _toB with
@@ -130,10 +126,18 @@ type VersionRequirement = {
                 | VersionRangeBound.Including -> version >= from
                 | VersionRangeBound.Excluding -> version > from
 
-            isInLowerBound && isInUpperBound  && checkPrerelease this.PreReleases version
+            isInLowerBound && isInUpperBound  && checkPrerelease prerelease version
 
-    static member AllReleases = { Range = Minimum(SemVer.Parse "0"); PreReleases = PreReleaseStatus.No }
-    static member NoRestriction = { Range = Minimum(SemVer.Parse "0"); PreReleases = PreReleaseStatus.All }
+    member this.Range =
+        match this with
+        | VersionRequirement(range,_) -> range
+
+    member this.PreReleases =
+        match this with
+        | VersionRequirement(_,prereleases) -> prereleases
+
+    static member AllReleases = VersionRequirement(Minimum(SemVer.Parse "0"),PreReleaseStatus.No)
+    static member NoRestriction = VersionRequirement(Minimum(SemVer.Parse "0"),PreReleaseStatus.All)
 
     override this.ToString() = this.Range.ToString()
 
@@ -178,8 +182,10 @@ type VersionRequirement = {
                         | VersionRangeBound.Including, VersionRangeBound.Including -> Minimum(versions.[0])
                         | _ -> failParse()
                 | _ -> failParse()
-        { Range = parseRange text; PreReleases = PreReleaseStatus.No}
+        VersionRequirement(parseRange text,PreReleaseStatus.No)
 
 /// Represents a resolver strategy.
 [<RequireQualifiedAccess>]
-type ResolverStrategy = Max | Min
+type ResolverStrategy =
+| Max
+| Min

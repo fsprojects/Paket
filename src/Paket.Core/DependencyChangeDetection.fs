@@ -19,7 +19,7 @@ let findChangesInDependenciesFile(dependenciesFile:DependenciesFile,lockFile:Loc
             let name = t.Key
             match directMap.TryFind name with
             | Some r ->
-                let vr = { r with PreReleases = PreReleaseStatus.All }
+                let vr = VersionRequirement(r.Range,PreReleaseStatus.All)
                 if vr.IsInRange t.Value.Version |> not then
                     yield name // Modified
             | _ -> yield name // Removed

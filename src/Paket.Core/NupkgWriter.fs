@@ -66,11 +66,11 @@ let nuspecDoc (info:CompleteInfo) =
         | Some s -> addChildNode metadataNode nodeName s
         | None -> ()
     
-    let buildDependencyNode (Id, versionRequirement:VersionRequirement) = 
+    let buildDependencyNode (Id, (VersionRequirement(range, _))) = 
         let dep = XElement(ns + "dependency")
         dep.SetAttributeValue(XName.Get "id", Id)
 
-        match versionRequirement.Range.FormatInNuGetSyntax() with
+        match range.FormatInNuGetSyntax() with
         | "0" -> ()
         | versionStr -> dep.SetAttributeValue(XName.Get "version", versionStr)
         dep

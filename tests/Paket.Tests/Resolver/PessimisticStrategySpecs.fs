@@ -7,7 +7,7 @@ open TestHelpers
 open Paket.Domain
 
 let graph = [
-    "Nancy.Bootstrappers.Windsor","0.23",["Castle.Windsor",VersionRequirement.New(VersionRange.AtLeast "3.2.1",PreReleaseStatus.No)]
+    "Nancy.Bootstrappers.Windsor","0.23",["Castle.Windsor",VersionRequirement(VersionRange.AtLeast "3.2.1",PreReleaseStatus.No)]
     "Castle.Windsor","3.2.1",[]
     "Castle.Windsor","3.3.0",[]
 ]
@@ -56,15 +56,15 @@ let ``should resolve simple config3``() =
 
 
 let graph2 = [
-    "Nancy.Bootstrappers.Windsor","0.23",["Castle.Windsor",VersionRequirement.New(VersionRange.AtLeast "3.2.1",PreReleaseStatus.No)]
-    "Castle.Windsor","3.2.0",["Castle.Core",VersionRequirement.New(VersionRange.AtLeast "3.2.0",PreReleaseStatus.No)]
-    "Castle.Windsor","3.2.1",["Castle.Core",VersionRequirement.New(VersionRange.AtLeast "3.2.0",PreReleaseStatus.No)]
-    "Castle.Windsor","3.3.0",["Castle.Core",VersionRequirement.New(VersionRange.AtLeast "3.3.0",PreReleaseStatus.No)]
-    "Castle.Windsor-NLog","3.2.0.1",["Castle.Core-NLog",VersionRequirement.New(VersionRange.AtLeast "3.2.0",PreReleaseStatus.No)]
-    "Castle.Windsor-NLog","3.3.0",["Castle.Core-NLog",VersionRequirement.New(VersionRange.AtLeast "3.3.0",PreReleaseStatus.No)]
-    "Castle.Core-NLog","3.2.0",["Castle.Core",VersionRequirement.New(VersionRange.AtLeast "3.2.0",PreReleaseStatus.No)]
-    "Castle.Core-NLog","3.3.0",["Castle.Core",VersionRequirement.New(VersionRange.AtLeast "3.3.0",PreReleaseStatus.No)]
-    "Castle.Core-NLog","3.3.1",["Castle.Core",VersionRequirement.New(VersionRange.AtLeast "3.3.1",PreReleaseStatus.No)]
+    "Nancy.Bootstrappers.Windsor","0.23",["Castle.Windsor",VersionRequirement(VersionRange.AtLeast "3.2.1",PreReleaseStatus.No)]
+    "Castle.Windsor","3.2.0",["Castle.Core",VersionRequirement(VersionRange.AtLeast "3.2.0",PreReleaseStatus.No)]
+    "Castle.Windsor","3.2.1",["Castle.Core",VersionRequirement(VersionRange.AtLeast "3.2.0",PreReleaseStatus.No)]
+    "Castle.Windsor","3.3.0",["Castle.Core",VersionRequirement(VersionRange.AtLeast "3.3.0",PreReleaseStatus.No)]
+    "Castle.Windsor-NLog","3.2.0.1",["Castle.Core-NLog",VersionRequirement(VersionRange.AtLeast "3.2.0",PreReleaseStatus.No)]
+    "Castle.Windsor-NLog","3.3.0",["Castle.Core-NLog",VersionRequirement(VersionRange.AtLeast "3.3.0",PreReleaseStatus.No)]
+    "Castle.Core-NLog","3.2.0",["Castle.Core",VersionRequirement(VersionRange.AtLeast "3.2.0",PreReleaseStatus.No)]
+    "Castle.Core-NLog","3.3.0",["Castle.Core",VersionRequirement(VersionRange.AtLeast "3.3.0",PreReleaseStatus.No)]
+    "Castle.Core-NLog","3.3.1",["Castle.Core",VersionRequirement(VersionRange.AtLeast "3.3.1",PreReleaseStatus.No)]
     "Castle.Core","3.2.0",[]
     "Castle.Core","3.2.1",[]
     "Castle.Core","3.2.2",[]

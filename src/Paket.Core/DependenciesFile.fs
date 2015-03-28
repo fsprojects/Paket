@@ -48,15 +48,15 @@ module DependenciesFileParser =
             if Seq.head(texts).ToLower() = "prerelease" then PreReleaseStatus.All else
             PreReleaseStatus.Concrete(texts |> Seq.toList)
 
-        if text = "" || text = null then VersionRequirement.New(VersionRange.AtLeast("0"),PreReleaseStatus.No) else
+        if text = "" || text = null then VersionRequirement(VersionRange.AtLeast("0"),PreReleaseStatus.No) else
 
         match text.Split(' ') |> Array.toList with
-        |  ">=" :: v1 :: "<" :: v2 :: rest -> VersionRequirement.New(VersionRange.Range(VersionRangeBound.Including,SemVer.Parse v1,SemVer.Parse v2,VersionRangeBound.Excluding),parsePrerelease rest)
-        |  ">=" :: v1 :: "<=" :: v2 :: rest -> VersionRequirement.New(VersionRange.Range(VersionRangeBound.Including,SemVer.Parse v1,SemVer.Parse v2,VersionRangeBound.Including),parsePrerelease rest)
-        |  "~>" :: v1 :: ">=" :: v2 :: rest -> VersionRequirement.New(VersionRange.Range(VersionRangeBound.Including,SemVer.Parse v2,SemVer.Parse(twiddle v1),VersionRangeBound.Excluding),parsePrerelease rest)
-        |  "~>" :: v1 :: ">" :: v2 :: rest -> VersionRequirement.New(VersionRange.Range(VersionRangeBound.Excluding,SemVer.Parse v2,SemVer.Parse(twiddle v1),VersionRangeBound.Excluding),parsePrerelease rest)
-        |  ">" :: v1 :: "<" :: v2 :: rest -> VersionRequirement.New(VersionRange.Range(VersionRangeBound.Excluding,SemVer.Parse v1,SemVer.Parse v2,VersionRangeBound.Excluding),parsePrerelease rest)
-        |  ">" :: v1 :: "<=" :: v2 :: rest -> VersionRequirement.New(VersionRange.Range(VersionRangeBound.Excluding,SemVer.Parse v1,SemVer.Parse v2,VersionRangeBound.Including),parsePrerelease rest)
+        |  ">=" :: v1 :: "<" :: v2 :: rest -> VersionRequirement(VersionRange.Range(VersionRangeBound.Including,SemVer.Parse v1,SemVer.Parse v2,VersionRangeBound.Excluding),parsePrerelease rest)
+        |  ">=" :: v1 :: "<=" :: v2 :: rest -> VersionRequirement(VersionRange.Range(VersionRangeBound.Including,SemVer.Parse v1,SemVer.Parse v2,VersionRangeBound.Including),parsePrerelease rest)
+        |  "~>" :: v1 :: ">=" :: v2 :: rest -> VersionRequirement(VersionRange.Range(VersionRangeBound.Including,SemVer.Parse v2,SemVer.Parse(twiddle v1),VersionRangeBound.Excluding),parsePrerelease rest)
+        |  "~>" :: v1 :: ">" :: v2 :: rest -> VersionRequirement(VersionRange.Range(VersionRangeBound.Excluding,SemVer.Parse v2,SemVer.Parse(twiddle v1),VersionRangeBound.Excluding),parsePrerelease rest)
+        |  ">" :: v1 :: "<" :: v2 :: rest -> VersionRequirement(VersionRange.Range(VersionRangeBound.Excluding,SemVer.Parse v1,SemVer.Parse v2,VersionRangeBound.Excluding),parsePrerelease rest)
+        |  ">" :: v1 :: "<=" :: v2 :: rest -> VersionRequirement(VersionRange.Range(VersionRangeBound.Excluding,SemVer.Parse v1,SemVer.Parse v2,VersionRangeBound.Including),parsePrerelease rest)
         | _ -> 
             let splitVersion (text:string) =            
                 match basicOperators |> List.tryFind(text.StartsWith) with
@@ -65,13 +65,13 @@ module DependenciesFileParser =
 
             try
                 match splitVersion text with
-                | "==", version :: rest -> VersionRequirement.New(VersionRange.OverrideAll(SemVer.Parse version),parsePrerelease rest)
-                | ">=", version :: rest -> VersionRequirement.New(VersionRange.AtLeast(version),parsePrerelease rest)
-                | ">", version :: rest -> VersionRequirement.New(VersionRange.GreaterThan(SemVer.Parse version),parsePrerelease rest)
-                | "<", version :: rest -> VersionRequirement.New(VersionRange.LessThan(SemVer.Parse version),parsePrerelease rest)
-                | "<=", version :: rest -> VersionRequirement.New(VersionRange.Maximum(SemVer.Parse version),parsePrerelease rest)
-                | "~>", minimum :: rest -> VersionRequirement.New(VersionRange.Between(minimum,twiddle minimum),parsePrerelease rest)
-                | _, version :: rest -> VersionRequirement.New(VersionRange.Exactly(version),parsePrerelease rest)
+                | "==", version :: rest -> VersionRequirement(VersionRange.OverrideAll(SemVer.Parse version),parsePrerelease rest)
+                | ">=", version :: rest -> VersionRequirement(VersionRange.AtLeast(version),parsePrerelease rest)
+                | ">", version :: rest -> VersionRequirement(VersionRange.GreaterThan(SemVer.Parse version),parsePrerelease rest)
+                | "<", version :: rest -> VersionRequirement(VersionRange.LessThan(SemVer.Parse version),parsePrerelease rest)
+                | "<=", version :: rest -> VersionRequirement(VersionRange.Maximum(SemVer.Parse version),parsePrerelease rest)
+                | "~>", minimum :: rest -> VersionRequirement(VersionRange.Between(minimum,twiddle minimum),parsePrerelease rest)
+                | _, version :: rest -> VersionRequirement(VersionRange.Exactly(version),parsePrerelease rest)
                 | _ -> failwithf "could not parse version range \"%s\"" text
             with
             | _ -> failwithf "could not parse version range \"%s\"" text

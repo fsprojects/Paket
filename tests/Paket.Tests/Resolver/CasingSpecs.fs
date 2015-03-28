@@ -7,7 +7,7 @@ open TestHelpers
 open Paket.Domain
 
 let graph = [
-    "Nancy.Bootstrappers.Windsor","0.23",["Castle.Windsor",VersionRequirement.New(VersionRange.AtLeast "3.2.1",PreReleaseStatus.No)]
+    "Nancy.Bootstrappers.Windsor","0.23",["Castle.Windsor",VersionRequirement(VersionRange.AtLeast "3.2.1",PreReleaseStatus.No)]
     "Castle.Windsor","3.2.1",[]
     "Castle.Windsor","3.3.0",[]
 ]
@@ -26,7 +26,7 @@ let ``should resolve wrong casing in config file``() =
     getVersion resolved.[NormalizedPackageName (PackageName "Nancy.Bootstrappers.Windsor")] |> shouldEqual "0.23"
 
 let graph2 = [
-    "Nancy.Bootstrappers.Windsor","0.23",["castle.windsor",VersionRequirement.New(VersionRange.AtLeast "3.2.1",PreReleaseStatus.No)]
+    "Nancy.Bootstrappers.Windsor","0.23",["castle.windsor",VersionRequirement(VersionRange.AtLeast "3.2.1",PreReleaseStatus.No)]
     "Castle.Windsor","3.2.1",[]
     "Castle.Windsor","3.3.0",[]
 ]
@@ -39,8 +39,8 @@ let ``should resolve wrong casing in package dependency``() =
     getVersion resolved.[NormalizedPackageName (PackageName "Nancy.Bootstrappers.Windsor")] |> shouldEqual "0.23"
 
 let graph3 = [
-    "Nancy.Bootstrappers.Windsor","0.21",["Castle.Windsor",VersionRequirement.New(VersionRange.AtLeast "3.2.1",PreReleaseStatus.No)]
-    "Nancy.Bootstrappers.Windsor","0.23",["Castle.Windsor",VersionRequirement.New(VersionRange.AtLeast "3.2.1",PreReleaseStatus.No)]
+    "Nancy.Bootstrappers.Windsor","0.21",["Castle.Windsor",VersionRequirement(VersionRange.AtLeast "3.2.1",PreReleaseStatus.No)]
+    "Nancy.Bootstrappers.Windsor","0.23",["Castle.Windsor",VersionRequirement(VersionRange.AtLeast "3.2.1",PreReleaseStatus.No)]
     "Castle.Windsor","3.2.1",[]
     "castle.windsor","3.3.0",[]
 ]

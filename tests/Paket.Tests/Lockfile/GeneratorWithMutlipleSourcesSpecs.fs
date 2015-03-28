@@ -15,14 +15,14 @@ nuget "Rx-Main" "~> 2.0"
 
 let graph = [
     "Castle.Windsor-log4net","3.2",[]
-    "Castle.Windsor-log4net","3.3",["Castle.Windsor",VersionRequirement.New(VersionRange.AtLeast "2.0",PreReleaseStatus.No);"log4net",VersionRequirement.New(VersionRange.AtLeast "1.0",PreReleaseStatus.No)]
+    "Castle.Windsor-log4net","3.3",["Castle.Windsor",VersionRequirement(VersionRange.AtLeast "2.0",PreReleaseStatus.No);"log4net",VersionRequirement(VersionRange.AtLeast "1.0",PreReleaseStatus.No)]
     "Castle.Windsor","2.0",[]
     "Castle.Windsor","2.1",[]
-    "Rx-Main","2.0",["Rx-Core",VersionRequirement.New(VersionRange.AtLeast "2.1",PreReleaseStatus.No)]
+    "Rx-Main","2.0",["Rx-Core",VersionRequirement(VersionRange.AtLeast "2.1",PreReleaseStatus.No)]
     "Rx-Core","2.0",[]
     "Rx-Core","2.1",[]
-    "log4net","1.0",["log",VersionRequirement.New(VersionRange.AtLeast "1.0",PreReleaseStatus.No)]
-    "log4net","1.1",["log",VersionRequirement.New(VersionRange.AtLeast "1.0",PreReleaseStatus.No)]
+    "log4net","1.0",["log",VersionRequirement(VersionRange.AtLeast "1.0",PreReleaseStatus.No)]
+    "log4net","1.1",["log",VersionRequirement(VersionRange.AtLeast "1.0",PreReleaseStatus.No)]
     "log","1.0",[]
     "log","1.2",[]
 ]

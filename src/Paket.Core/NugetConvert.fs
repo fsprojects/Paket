@@ -211,7 +211,7 @@ module ConvertResultR =
 
 let createPackageRequirement packageName version sources dependenciesFileName = 
      { Name = PackageName packageName
-       VersionRequirement = VersionRequirement.New(VersionRange.Exactly version, PreReleaseStatus.No)
+       VersionRequirement = VersionRequirement(VersionRange.Exactly version, PreReleaseStatus.No)
        Sources = sources
        ResolverStrategy = ResolverStrategy.Max
        Settings = InstallSettings.Default

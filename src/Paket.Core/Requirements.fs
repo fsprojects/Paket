@@ -201,7 +201,7 @@ type PackageRequirement =
     override this.GetHashCode() = hash (this.Name,this.VersionRequirement)
 
     member this.IncludingPrereleases() = 
-        { this with VersionRequirement = VersionRequirement.New(this.VersionRequirement.Range,PreReleaseStatus.All) }
+        { this with VersionRequirement = VersionRequirement(this.VersionRequirement.Range,PreReleaseStatus.All) }
     
     static member Compare(x,y,boostX,boostY) =        
         if x = y then 0 else

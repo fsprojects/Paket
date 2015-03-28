@@ -171,7 +171,7 @@ let findDependencies (dependencies : DependenciesFile) config (template : Templa
             match templateFile with
             | CompleteTemplate(core, opt) -> 
                 match core.Version with
-                | Some v -> core.Id, VersionRequirement.New(Minimum(v), PreReleaseStatus.All)
+                | Some v -> core.Id, VersionRequirement(Minimum(v), PreReleaseStatus.All)
                 | none ->failwithf "There was no versin given for %s." templateFile.FileName
             | IncompleteTemplate -> failwithf "You cannot create a dependency on a template file (%s) with incomplete metadata." templateFile.FileName)
         |> List.fold addDependency templateWithOutput
@@ -200,7 +200,7 @@ let findDependencies (dependencies : DependenciesFile) config (template : Templa
                     | None -> 
                         let resolved =
                             locked |> Map.find (NormalizedPackageName np.Name)
-                        VersionRequirement.New(Minimum resolved.Version, PreReleaseStatus.All)
+                        VersionRequirement(Minimum resolved.Version, PreReleaseStatus.All)
                 np.Name.Id, dep)
         |> List.fold addDependency withDepsAndIncluded
     | None -> withDepsAndIncluded
