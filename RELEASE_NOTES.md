@@ -1,3 +1,7 @@
+#### 0.37.0 - 28.03.2015
+* Fallback to NuGet.exe if the bootstrapper fails to download from GitHub - https://github.com/fsprojects/Paket/pull/733
+* COSMETICS: Display the file name if Paket crashes on some invalid file - https://github.com/fsprojects/Paket/pull/730
+
 #### 0.36.0 - 27.03.2015
 * Allow to add references section to paket.template file - https://github.com/fsprojects/Paket/issues/721
 * Allow to compute libraries for specific framework - https://github.com/fsprojects/Paket/issues/723
