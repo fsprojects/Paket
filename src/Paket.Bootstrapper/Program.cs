@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
 using System.IO;
+using System.IO.Compression;
 using System.Net;
 using System.Reflection;
 
@@ -139,25 +140,20 @@ namespace Paket.Bootstrapper
             {
                 using (WebClient client = new WebClient())
                 {
-                    var nugetExeUrl = "https://nuget.org/nuget.exe";
-
-                    PrepareWebClient(client, nugetExeUrl);
+                    var getLatestFromNugetUrl = "https://www.nuget.org/api/v2/package/Paket";
+                    var paketDownloadUrl = getLatestFromNugetUrl;
+                    var paketNupkgFile = "paket.latest.nupkg";
+                    
+                    PrepareWebClient(client, paketDownloadUrl);
 
                     var randomFullPath = Path.Combine(folder, Path.GetRandomFileName());
                     Directory.CreateDirectory(randomFullPath);
-                    var nugetExePath = Path.Combine(randomFullPath, "nuget.exe");
-                    client.DownloadFile(nugetExeUrl, nugetExePath);
-                    
-                    var psi = new ProcessStartInfo(nugetExePath, String.Format("install Paket -ExcludeVersion -SolutionDirectory \"{0}\"", randomFullPath));
-                    psi.CreateNoWindow = true;
-                    psi.WindowStyle = ProcessWindowStyle.Hidden;
-                    var process = Process.Start(psi);
-                    process.WaitForExit();
-                    if (process.ExitCode == 0)
-                    {
-                        var paketSourceFile = Path.Combine(randomFullPath, "packages", "Paket", "Tools", "Paket.exe");
-                        File.Copy(paketSourceFile, target);
-                    }
+                    var paketPackageFile = Path.Combine(randomFullPath, paketNupkgFile);
+                    client.DownloadFile(paketDownloadUrl, paketPackageFile);
+
+                    ZipFile.ExtractToDirectory(paketPackageFile, randomFullPath);
+                    var paketSourceFile = Path.Combine(randomFullPath, "Tools", "Paket.exe");
+                    File.Copy(paketSourceFile, target);
                     Directory.Delete(randomFullPath, true);
                 }
             }
