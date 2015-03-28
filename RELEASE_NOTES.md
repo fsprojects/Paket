@@ -1,3 +1,7 @@
+#### 0.38.0-alpha001 - 28.03.2015
+* Upgrading to .NET 4.5
+* Removing DotNetZip and using the .NET 4.5 Zip APIs instead - https://github.com/fsprojects/Paket/pull/732
+
 #### 0.37.0 - 28.03.2015
 * Fallback to NuGet.exe if the bootstrapper fails to download from GitHub - https://github.com/fsprojects/Paket/pull/733
 * COSMETICS: Display the file name if Paket crashes on some invalid file - https://github.com/fsprojects/Paket/pull/730
