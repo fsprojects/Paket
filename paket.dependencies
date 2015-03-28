@@ -6,7 +6,6 @@ nuget NUnit.Runners
 nuget NUnit
 nuget FAKE
 nuget FSharp.Formatting
-nuget DotNetZip
 nuget FSharp.Core
 
 github forki/FsUnit FsUnit.fs

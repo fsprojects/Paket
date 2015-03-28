@@ -3,9 +3,9 @@
 open Paket
 open Newtonsoft.Json.Linq
 open System.IO
-open Ionic.Zip
 open Paket.Logging
 open Paket.ModuleResolver
+open System.IO.Compression
 
 // Gets the sha1 of a branch
 let getSHA1OfBranch origin owner project branch = 
@@ -57,10 +57,8 @@ let downloadDependenciesFile(rootPath,parserF,remoteFile:ModuleResolver.Resolved
 
 
 let ExtractZip(fileName : string, targetFolder) = 
-    let zip = ZipFile.Read(fileName)
     Directory.CreateDirectory(targetFolder) |> ignore
-    for zipEntry in zip do
-        zipEntry.Extract(targetFolder, ExtractExistingFileAction.OverwriteSilently)
+    ZipFile.ExtractToDirectory(fileName,targetFolder)
 
 let rec DirectoryCopy(sourceDirName, destDirName, copySubDirs) =
     let dir = new DirectoryInfo(sourceDirName)
