@@ -2,6 +2,7 @@
 using System.Diagnostics;
 using System.IO;
 using System.IO.Compression;
+using System.Linq;
 using System.Net;
 using System.Reflection;
 
@@ -28,11 +29,11 @@ namespace Paket.Bootstrapper
         {
             var folder = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
             var target = Path.Combine(folder, "paket.exe");
-             
+            var latestVersion = "";
+            var ignorePrerelease = true;
+            
             try
-            {   var latestVersion = "";
-                var ignorePrerelease = true;
-
+            {
                 if (args.Length >= 1)
                 {
                     if (args[0] == "prerelease")
@@ -123,7 +124,7 @@ namespace Paket.Bootstrapper
                 if (!File.Exists(target))
                 {
                     Console.WriteLine("Github download failed. Try downloading Paket directly from 'nuget.org'.");
-                    NugetAlternativeDownload(folder, target);
+                    NugetAlternativeDownload(folder, target, latestVersion, ignorePrerelease);
                 }
             }
             catch (Exception exn)
@@ -134,21 +135,41 @@ namespace Paket.Bootstrapper
             }
         }
 
-        private static void NugetAlternativeDownload(string folder, string target)
+        private static void NugetAlternativeDownload(string folder, string target, string latestVersion, bool ignorePrereleases)
         {
             try
             {
                 using (WebClient client = new WebClient())
                 {
-                    var getLatestFromNugetUrl = "https://www.nuget.org/api/v2/package/Paket";
+                    const string getLatestFromNugetUrl = "https://www.nuget.org/api/v2/package/Paket";
+                    const string getVersionsFromNugetUrl = "https://www.nuget.org/api/v2/package-versions/Paket?includePrereleases=true";
+                    const string getSpecificFromNugetUrlTemplate = "https://www.nuget.org/api/v2/package/Paket/{0}";
+                    const string paketNupkgFile = "paket.latest.nupkg";
+                    const string paketNupkgFileTemplate = "paket.{0}.nupkg";
+
                     var paketDownloadUrl = getLatestFromNugetUrl;
-                    var paketNupkgFile = "paket.latest.nupkg";
-                    
-                    PrepareWebClient(client, paketDownloadUrl);
+                    var paketFile = paketNupkgFile;
+                    if (latestVersion == "" && !ignorePrereleases)
+                    {
+                        PrepareWebClient(client, getVersionsFromNugetUrl);
+                        var versions = client.DownloadString(getVersionsFromNugetUrl);
+                        latestVersion = versions.
+                                            Trim('[', ']').
+                                            Split(new[] {','}, StringSplitOptions.RemoveEmptyEntries).
+                                            Select(x => x.Trim('"')).
+                                            LastOrDefault(x => !String.IsNullOrWhiteSpace(x)) ?? String.Empty;
+                    }
+                    if (latestVersion != "")
+                    {
+                        paketDownloadUrl = String.Format(getSpecificFromNugetUrlTemplate, latestVersion);
+                        paketFile = String.Format(paketNupkgFileTemplate, latestVersion);
+                    }
 
                     var randomFullPath = Path.Combine(folder, Path.GetRandomFileName());
                     Directory.CreateDirectory(randomFullPath);
-                    var paketPackageFile = Path.Combine(randomFullPath, paketNupkgFile);
+                    var paketPackageFile = Path.Combine(randomFullPath, paketFile);
+                    Console.WriteLine("Starting download from {0}", paketDownloadUrl);
+                    PrepareWebClient(client, paketDownloadUrl);
                     client.DownloadFile(paketDownloadUrl, paketPackageFile);
 
                     ZipFile.ExtractToDirectory(paketPackageFile, randomFullPath);
