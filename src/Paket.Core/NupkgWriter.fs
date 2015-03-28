@@ -3,7 +3,7 @@
 open System
 open System.IO
 open System.Xml.Linq
-open Ionic.Zip
+open System.IO.Compression
 open Paket
 open System.Text
 open System.Xml
@@ -178,20 +178,33 @@ let Write (core : CompleteCoreInfo) optional workingDir outputDir =
     if File.Exists outputPath then
         File.Delete outputPath
 
-    use zipFile = new ZipFile(outputPath)
+    use zipFile = ZipFile.Open(outputPath,ZipArchiveMode.Create)
     
-    let addEntry (zipFile : ZipFile) path writer = 
-        let writeDel _ stream = writer stream
-        zipFile.AddEntry(path, WriteDelegate(writeDel)) |> ignore
+    let addEntry (zipFile : ZipArchive) path writerF = 
+        let entry = zipFile.CreateEntry(path)        
+        use stream = entry.Open()
+        writerF stream
+        stream.Close()
+
+    // adds all files in a directory to the zipFile
+    let rec addDir source target =
+        for file in Directory.EnumerateFiles(source,"*.*",SearchOption.TopDirectoryOnly) do
+            let fi = FileInfo file
+            zipFile.CreateEntryFromFile(fi.FullName,Path.Combine(target,fi.Name)) |> ignore
+
+        for dir in Directory.EnumerateDirectories(source,"*",SearchOption.TopDirectoryOnly) do
+            let di = DirectoryInfo dir
+            addDir di.FullName (Path.Combine(target,di.Name))
 
     // add files
     for fileName,targetFileName in optional.Files do
+        let targetFileName = targetFileName.Replace(" ", "%20")
         let source = Path.Combine(workingDir, fileName)
-        if Directory.Exists source then 
-            zipFile.AddDirectory(source, targetFileName.Replace(" ", "%20")) |> ignore
+        if Directory.Exists source then
+            addDir source targetFileName
         else 
-            if File.Exists source then 
-                zipFile.AddFile(source, targetFileName.Replace(" ", "%20")) |> ignore
+            if File.Exists source then
+                zipFile.CreateEntryFromFile(source, targetFileName) |> ignore
             else 
                 failwithf "Could not find source file %s" source
 
@@ -201,10 +214,8 @@ let Write (core : CompleteCoreInfo) optional workingDir outputDir =
 
     let fileList = 
         zipFile.Entries
-        |> Seq.filter (fun e -> not e.IsDirectory)
-        |> Seq.map (fun e -> e.FileName)
+        |> Seq.map (fun e -> e.FullName)
     
     contentTypeDoc fileList
     |> xDocWriter
     |> addEntry zipFile contentTypePath
-    zipFile.Save()

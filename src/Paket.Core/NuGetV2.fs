@@ -5,7 +5,7 @@ open System
 open System.IO
 open System.Net
 open Newtonsoft.Json
-open Ionic.Zip
+open System.IO.Compression
 open System.Xml
 open System.Text.RegularExpressions
 open Paket.Logging
@@ -297,12 +297,11 @@ let getDetailsFromLocalFile localNugetPath package (version:SemVerInfo) =
 
         if not nupkg.Exists then
             failwithf "The package %s %s can't be found in %s.%sPlease check the feed definition in your paket.dependencies file." package (version.ToString()) localNugetPath Environment.NewLine
-        let zip = ZipFile.Read(nupkg.FullName)
-        let zippedNuspec = (zip |> Seq.find (fun f -> f.FileName.EndsWith ".nuspec"))
+        let zip = ZipFile.OpenRead(nupkg.FullName)
+        let zippedNuspec = zip.Entries |> Seq.find (fun f -> f.FullName.EndsWith ".nuspec")
+        let fileName = FileInfo(Path.Combine(Path.GetTempPath(), zippedNuspec.Name)).FullName
 
-        zippedNuspec.Extract(Path.GetTempPath(), ExtractExistingFileAction.OverwriteSilently)
-
-        let fileName = FileInfo(Path.Combine(Path.GetTempPath(), zippedNuspec.FileName)).FullName
+        zippedNuspec.ExtractToFile(fileName, true)
 
         let nuspec = Nuspec.Load fileName        
 
@@ -331,15 +330,8 @@ let ExtractPackage(fileName:string, targetFolder, name, version:SemVerInfo) =
         if  isExtracted fileName then
              verbosefn "%s %A already extracted" name version
         else
-            use zip = ZipFile.Read(fileName)
             Directory.CreateDirectory(targetFolder) |> ignore
-            for e in zip do
-                try
-                    e.Extract(targetFolder, ExtractExistingFileAction.OverwriteSilently)
-                with
-                | :? Ionic.Zip.BadCrcException as exn -> 
-                    traceWarnfn "Bad Crc during unzipping %s in %s %A: %s" e.FileName name version exn.Message 
-                | exn -> failwithf "Error during unzipping %s in %s %A: %s" e.FileName name version exn.Message 
+            ZipFile.ExtractToDirectory(fileName, targetFolder)
 
             // cleanup folder structure
             let rec cleanup (dir : DirectoryInfo) = 
@@ -354,6 +346,7 @@ let ExtractPackage(fileName:string, targetFolder, name, version:SemVerInfo) =
                     let newName = file.Name.Replace("%2B", "+").Replace("%20", " ")
                     if file.Name <> newName && not (File.Exists <| Path.Combine(file.DirectoryName, newName)) then
                         File.Move(file.FullName, Path.Combine(file.DirectoryName, newName))
+
             cleanup (DirectoryInfo targetFolder)
             tracefn "%s %A unzipped to %s" name version targetFolder
         return targetFolder
