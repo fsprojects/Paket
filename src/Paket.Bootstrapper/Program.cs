@@ -66,10 +66,8 @@ namespace Paket.Bootstrapper
                     using (WebClient client = new WebClient())
                     {
                         var releasesUrl = "https://github.com/fsprojects/Paket/releases";
-						
-                        client.Headers.Add("user-agent", "Paket.Bootstrapper");
-                        client.UseDefaultCredentials = true;
-                        client.Proxy = GetDefaultWebProxyFor(releasesUrl);
+
+                        PrepareWebClient(client, releasesUrl);
 
                         var data = client.DownloadString(releasesUrl);
                         var start = 0;
@@ -118,17 +116,72 @@ namespace Paket.Bootstrapper
                 {
                     Console.WriteLine("Paket.exe {0} is up to date.", localVersion);
                 }
-
+            }
+            catch (WebException)
+            {
+                if (!File.Exists(target))
+                {
+                    Console.WriteLine("Github download failed. Try downloading Paket directly from 'nuget.org'.");
+                    NugetAlternativeDownload(folder, target);
+                }
             }
             catch (Exception exn)
             {
                 if (!File.Exists(target))
                     Environment.ExitCode = 1;
-                var oldColor = Console.ForegroundColor;
-                Console.ForegroundColor = ConsoleColor.Red;
-                Console.WriteLine(exn.Message);
-                Console.ForegroundColor = oldColor;
+                WriteConsoleError(exn.Message);
             }
+        }
+
+        private static void NugetAlternativeDownload(string folder, string target)
+        {
+            try
+            {
+                using (WebClient client = new WebClient())
+                {
+                    var nugetExeUrl = "https://nuget.org/nuget.exe";
+
+                    PrepareWebClient(client, nugetExeUrl);
+
+                    var randomFullPath = Path.Combine(folder, Path.GetRandomFileName());
+                    Directory.CreateDirectory(randomFullPath);
+                    var nugetExePath = Path.Combine(randomFullPath, "nuget.exe");
+                    client.DownloadFile(nugetExeUrl, nugetExePath);
+                    
+                    var psi = new ProcessStartInfo(nugetExePath, String.Format("install Paket -ExcludeVersion -SolutionDirectory \"{0}\"", randomFullPath));
+                    psi.CreateNoWindow = true;
+                    psi.WindowStyle = ProcessWindowStyle.Hidden;
+                    var process = Process.Start(psi);
+                    process.WaitForExit();
+                    if (process.ExitCode == 0)
+                    {
+                        var paketSourceFile = Path.Combine(randomFullPath, "packages", "Paket", "Tools", "Paket.exe");
+                        File.Copy(paketSourceFile, target);
+                    }
+                    Directory.Delete(randomFullPath, true);
+                }
+            }
+            catch (Exception exn)
+            {
+                if (!File.Exists(target))
+                    Environment.ExitCode = 1;
+                WriteConsoleError(exn.Message);
+            }
+        }
+
+        private static void PrepareWebClient(WebClient client, string url)
+        {
+            client.Headers.Add("user-agent", "Paket.Bootstrapper");
+            client.UseDefaultCredentials = true;
+            client.Proxy = GetDefaultWebProxyFor(url);
+        }
+
+        private static void WriteConsoleError(string message)
+        {
+            var oldColor = Console.ForegroundColor;
+            Console.ForegroundColor = ConsoleColor.Red;
+            Console.WriteLine(message);
+            Console.ForegroundColor = oldColor;
         }
     }
 }
