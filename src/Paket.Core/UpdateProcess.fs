@@ -14,7 +14,7 @@ let addPackagesFromReferenceFiles projects (dependenciesFile:DependenciesFile) =
         if lockFileName.Exists then 
             LockFile.LoadFrom(lockFileName.FullName)
         else
-            LockFile.Create(lockFileName.FullName, dependenciesFile.Options, ResolvedPackages.Ok(Map.empty), [])
+            LockFile.Create(lockFileName.FullName, dependenciesFile.Options, Resolution.Ok(Map.empty), [])
             
     let allExistingPackages =
         oldLockFile.ResolvedPackages

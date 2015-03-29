@@ -2,11 +2,11 @@
 
 type FrameworkRestriction = string 
 type PackageName = string
+type SemVerInfo = string
 type FrameworkRestrictions = FrameworkRestriction list
 type VersionRequirement = string
 type PackageSource = string
-type SemVerInfo = string
-
+type ResolvedPackage = PackageName * SemVerInfo
 
 (**
 # Package resolution
@@ -56,6 +56,66 @@ type PackageRequirement =
       Parent: PackageRequirementSource
       Sources : PackageSource list }
 
+(*** hide ***)
+
+let selectMin (xs: Set<PackageRequirement>) = Seq.head xs,xs
+
+let getAllVersionsFromNuget (x:PackageName) :SemVerInfo list = []
+
+let isInRange (vr:VersionRequirement) (v:SemVerInfo) : bool = true
+
+let getPackageDetails(name:PackageName,version:SemVerInfo) : ResolvedPackage = Unchecked.defaultof<_>
+
+let calcOpenRequirements(packageDetails:ResolvedPackage,closed:Set<PackageRequirement>,stillOpen:Set<PackageRequirement>) : Set<PackageRequirement> = Set.empty
+
+type Resolution =
+| Ok of ResolvedPackage list
+| Conflict of Set<PackageRequirement>
+
+(**
+
+The algorithm consists of two phases.
+
+*)
+
+let rec improveModel(selectedPackageVersions:ResolvedPackage list,
+                     closed:Set<PackageRequirement>,
+                     stillOpen:Set<PackageRequirement>) =
+
+    if Set.isEmpty stillOpen then
+        // we are done - return the selected versions
+        Resolution.Ok(selectedPackageVersions)
+    else
+        // select the next package requirement
+        let currentRequirement,rest = selectMin stillOpen
+        
+        let compatibleVersions =
+            getAllVersionsFromNuget currentRequirement.Name
+            |> List.filter (isInRange currentRequirement.VersionRequirement)
+
+        let sortedVersions =                
+            match currentRequirement.ResolverStrategy with
+            | ResolverStrategy.Max -> List.sort compatibleVersions |> List.rev
+            | ResolverStrategy.Min -> List.sort compatibleVersions
+
+        let mutable state = Resolution.Conflict(stillOpen)
+
+        for versionToExplore in sortedVersions do
+            match state with
+            | Resolution.Conflict _ ->
+                let packageDetails = getPackageDetails(currentRequirement.Name,versionToExplore)
+                
+                state <- 
+                    improveModel(
+                        packageDetails :: selectedPackageVersions,
+                        Set.add currentRequirement closed,
+                        calcOpenRequirements(packageDetails,closed,stillOpen))
+            | Resolution.Ok _ -> ()
+
+        state
+    
+
+
 (**
 
 ### Sorting package requirements
@@ -73,6 +133,16 @@ Therefor it orders the requirements based on:
 
 ### Package conflict boost
 
-*ssss
+Whenever Paket encounters a package version conflict in the search tree it increases a boost factor for the involved packages. 
+This heuristic influences the [package evaluation order](resolver.html#Sorting-package-requirements) and forces the resolver to deal with conflicts much earlier in the search tree.
+
+### Caching
+
+Since the HTTP requests to NuGet are very expensive Paket tries to cache as much as possible:
+
+* The function `getAllVersionsFromNuget` will only call the NuGet API once per package and Paket run.
+* The function `getPackageDetails` will only call the NuGet API when the package details are not found in the RAM or on disk.
+
+The second caching improvement means that subsequent runs of `paket update` can get faster since package details are already stored on disk.
 
 *)
