@@ -34,7 +34,7 @@ The two important questions are:
 * What versions of a package are available?
 * Given a concrete version of a package, what further dependencies are required?
 
-Answering these questions is a very expensive operation since it involves a HTTP request and therefore the resolver needs to minimize these requests.
+Answering these questions is a very expensive operation since it involves a HTTP request and therefore the resolver has to minimize these requests and only access the API when really needed.
 
 ## Basic algorithm
 
