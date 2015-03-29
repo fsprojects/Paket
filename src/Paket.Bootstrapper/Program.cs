@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
 using System.IO;
-using System.IO.Compression;
 using System.Linq;
 using System.Net;
 using System.Reflection;
@@ -10,6 +9,9 @@ namespace Paket.Bootstrapper
 {
     class Program
     {
+        const string PreferNugetCommandArg = "--prefer-nuget";
+        const string PrereleaseCommandArg = "prerelease";
+
         static IWebProxy GetDefaultWebProxyFor(String url)
         {
             IWebProxy result = WebRequest.GetSystemWebProxy();
@@ -19,7 +21,8 @@ namespace Paket.Bootstrapper
             if (address == uri)
                 return null;
 
-            return new WebProxy(address) { 
+            return new WebProxy(address)
+            {
                 Credentials = CredentialCache.DefaultCredentials,
                 BypassProxyOnLocal = true
             };
@@ -27,163 +30,132 @@ namespace Paket.Bootstrapper
 
         static void Main(string[] args)
         {
-            var folder = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
-            var target = Path.Combine(folder, "paket.exe");
-            var latestVersion = "";
-            var ignorePrerelease = true;
-            
+            var commandArgs = args;
+            bool preferNuget = false;
+            if (commandArgs.Contains(PreferNugetCommandArg))
+            {
+                preferNuget = true;
+                commandArgs = args.Where(x => x != PreferNugetCommandArg).ToArray();
+            }
+            var dlArgs = EvaluateCommandArgs(commandArgs);
+
+            var effectiveStrategy = GetEffectiveDownloadStrategy(dlArgs, preferNuget);
+
+            StartPaketBootstrapping(effectiveStrategy, dlArgs);
+        }
+
+        private static void StartPaketBootstrapping(IDownloadStrategy downloadStrategy, DownloadArguments dlArgs)
+        {
+            Action<Exception> handleException = exception =>
+            {
+                if (!File.Exists(dlArgs.Target))
+                    Environment.ExitCode = 1;
+                WriteConsoleError(String.Format("{0} ({1})", exception.Message, downloadStrategy.Name));
+            };
             try
             {
-                if (args.Length >= 1)
-                {
-                    if (args[0] == "prerelease")
-                    {
-                        ignorePrerelease = false;
-                        Console.WriteLine("Prerelease requested. Looking for latest prerelease.");
-                    }
-                    else
-                    {
-                        latestVersion = args[0];
-                        Console.WriteLine("Version {0} requested.", latestVersion);
-                    }
-                }
-                else Console.WriteLine("No version specified. Downloading latest stable.");
-                var localVersion = "";
+                var localVersion = GetLocalFileVersion(dlArgs.Target);
 
-                if (File.Exists(target))
-                {
-                    try
-                    {
-                        FileVersionInfo fvi = FileVersionInfo.GetVersionInfo(target);
-                        if (fvi.FileVersion != null)
-                            localVersion = fvi.FileVersion;
-                    }
-                    catch (Exception)
-                    {
-                    }
-                }
-
+                var latestVersion = dlArgs.LatestVersion;
                 if (latestVersion == "")
                 {
-                    using (WebClient client = new WebClient())
-                    {
-                        var releasesUrl = "https://github.com/fsprojects/Paket/releases";
-
-                        PrepareWebClient(client, releasesUrl);
-
-                        var data = client.DownloadString(releasesUrl);
-                        var start = 0;
-                        while (latestVersion == "")
-                        {
-                            start = data.IndexOf("Paket/tree/", start) + 11;
-                            var end = data.IndexOf("\"", start);
-                            latestVersion = data.Substring(start, end - start);
-                            if (latestVersion.Contains("-") && ignorePrerelease)
-                                latestVersion = "";
-                        }
-                    }
+                    latestVersion = downloadStrategy.GetLatestVersion(dlArgs.IgnorePrerelease);
                 }
 
                 if (!localVersion.StartsWith(latestVersion))
                 {
-                    var url = String.Format("https://github.com/fsprojects/Paket/releases/download/{0}/paket.exe", latestVersion);
-
-                    Console.WriteLine("Starting download from {0}", url);
-
-                    var request = (HttpWebRequest)HttpWebRequest.Create(url);
-
-                    request.UseDefaultCredentials = true;
-                    request.Proxy = GetDefaultWebProxyFor(url);
-
-                    request.AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate;
-                    using (HttpWebResponse httpResponse = (HttpWebResponse)request.GetResponse())
-                    {
-                        using (Stream httpResponseStream = httpResponse.GetResponseStream())
-                        {
-                            const int bufferSize = 4096;
-                            byte[] buffer = new byte[bufferSize];
-                            int bytesRead = 0;
-
-                            using (FileStream fileStream = File.Create(target))
-                            {
-                                while ((bytesRead = httpResponseStream.Read(buffer, 0, bufferSize)) != 0)
-                                {
-                                    fileStream.Write(buffer, 0, bytesRead);
-                                }
-                            }
-                        }
-                    }
+                    downloadStrategy.DownloadVersion(latestVersion, dlArgs.Target);
                 }
                 else
                 {
                     Console.WriteLine("Paket.exe {0} is up to date.", localVersion);
                 }
             }
-            catch (WebException)
+            catch (WebException exn)
             {
-                if (!File.Exists(target))
+                var shouldHandleException = true;
+                if (!File.Exists(dlArgs.Target))
                 {
-                    Console.WriteLine("Github download failed. Try downloading Paket directly from 'nuget.org'.");
-                    NugetAlternativeDownload(folder, target, latestVersion, ignorePrerelease);
+                    if (downloadStrategy.FallbackStrategy != null)
+                    {
+                        var fallbackStrategy = downloadStrategy.FallbackStrategy;
+                        Console.WriteLine("'{0}' download failed. Try fallback download from '{1}'.", downloadStrategy.Name, fallbackStrategy.Name);
+                        StartPaketBootstrapping(fallbackStrategy, dlArgs);
+                        shouldHandleException = !File.Exists(dlArgs.Target);
+                    }
                 }
+                if (shouldHandleException)
+                    handleException(exn);
             }
             catch (Exception exn)
             {
-                if (!File.Exists(target))
-                    Environment.ExitCode = 1;
-                WriteConsoleError(exn.Message);
+                handleException(exn);
             }
         }
 
-        private static void NugetAlternativeDownload(string folder, string target, string latestVersion, bool ignorePrereleases)
+        private static IDownloadStrategy GetEffectiveDownloadStrategy(DownloadArguments dlArgs, bool preferNuget)
         {
-            try
+            var gitHubDownloadStrategy = new GitHubDownloadStrategy(PrepareWebClient, GetDefaultWebProxyFor);
+            var nugetDownloadStrategy = new NugetDownloadStrategy(PrepareWebClient, GetDefaultWebProxyFor, dlArgs.Folder);
+
+            IDownloadStrategy effectiveStrategy;
+            if (preferNuget)
             {
-                using (WebClient client = new WebClient())
+                effectiveStrategy = nugetDownloadStrategy;
+                nugetDownloadStrategy.FallbackStrategy = gitHubDownloadStrategy;
+            }
+            else
+            {
+                effectiveStrategy = gitHubDownloadStrategy;
+                gitHubDownloadStrategy.FallbackStrategy = nugetDownloadStrategy;
+            }
+            return effectiveStrategy;
+        }
+
+        private static string GetLocalFileVersion(string target)
+        {
+            var localVersion = "";
+
+            if (File.Exists(target))
+            {
+                try
                 {
-                    const string getLatestFromNugetUrl = "https://www.nuget.org/api/v2/package/Paket";
-                    const string getVersionsFromNugetUrl = "https://www.nuget.org/api/v2/package-versions/Paket?includePrereleases=true";
-                    const string getSpecificFromNugetUrlTemplate = "https://www.nuget.org/api/v2/package/Paket/{0}";
-                    const string paketNupkgFile = "paket.latest.nupkg";
-                    const string paketNupkgFileTemplate = "paket.{0}.nupkg";
-
-                    var paketDownloadUrl = getLatestFromNugetUrl;
-                    var paketFile = paketNupkgFile;
-                    if (latestVersion == "" && !ignorePrereleases)
-                    {
-                        PrepareWebClient(client, getVersionsFromNugetUrl);
-                        var versions = client.DownloadString(getVersionsFromNugetUrl);
-                        latestVersion = versions.
-                                            Trim('[', ']').
-                                            Split(new[] {','}, StringSplitOptions.RemoveEmptyEntries).
-                                            Select(x => x.Trim('"')).
-                                            LastOrDefault(x => !String.IsNullOrWhiteSpace(x)) ?? String.Empty;
-                    }
-                    if (latestVersion != "")
-                    {
-                        paketDownloadUrl = String.Format(getSpecificFromNugetUrlTemplate, latestVersion);
-                        paketFile = String.Format(paketNupkgFileTemplate, latestVersion);
-                    }
-
-                    var randomFullPath = Path.Combine(folder, Path.GetRandomFileName());
-                    Directory.CreateDirectory(randomFullPath);
-                    var paketPackageFile = Path.Combine(randomFullPath, paketFile);
-                    Console.WriteLine("Starting download from {0}", paketDownloadUrl);
-                    PrepareWebClient(client, paketDownloadUrl);
-                    client.DownloadFile(paketDownloadUrl, paketPackageFile);
-
-                    ZipFile.ExtractToDirectory(paketPackageFile, randomFullPath);
-                    var paketSourceFile = Path.Combine(randomFullPath, "Tools", "Paket.exe");
-                    File.Copy(paketSourceFile, target);
-                    Directory.Delete(randomFullPath, true);
+                    FileVersionInfo fvi = FileVersionInfo.GetVersionInfo(target);
+                    if (fvi.FileVersion != null)
+                        localVersion = fvi.FileVersion;
+                }
+                catch (Exception)
+                {
                 }
             }
-            catch (Exception exn)
+            return localVersion;
+        }
+
+        private static DownloadArguments EvaluateCommandArgs(string[] args)
+        {
+            var folder = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+            var target = Path.Combine(folder, "paket.exe");
+
+            var latestVersion = "";
+            var ignorePrerelease = true;
+
+            if (args.Length >= 1)
             {
-                if (!File.Exists(target))
-                    Environment.ExitCode = 1;
-                WriteConsoleError(exn.Message);
+                if (args[0] == PrereleaseCommandArg)
+                {
+                    ignorePrerelease = false;
+                    Console.WriteLine("Prerelease requested. Looking for latest prerelease.");
+                }
+                else
+                {
+                    latestVersion = args[0];
+                    Console.WriteLine("Version {0} requested.", latestVersion);
+                }
             }
+            else Console.WriteLine("No version specified. Downloading latest stable.");
+
+
+            return new DownloadArguments(latestVersion, ignorePrerelease, folder, target);
         }
 
         private static void PrepareWebClient(WebClient client, string url)
@@ -201,4 +173,5 @@ namespace Paket.Bootstrapper
             Console.ForegroundColor = oldColor;
         }
     }
+
 }
