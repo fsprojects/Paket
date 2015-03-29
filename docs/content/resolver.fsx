@@ -15,14 +15,14 @@ type ResolvedPackage = PackageName * SemVerInfo
 
 Paket uses the [`paket.dependencies` file](dependencies-file.html) to specify project dependencies.
 Usually only direct dependencies are specified and often a broad range of package versions is allowed.
-During [`paket install`](paket-install.html) Paket needs to figure out which concrete versions of the specified packages and their transisitve dependencies it needs to install.
+During [`paket install`](paket-install.html) Paket needs to figure out concrete versions of the specified packages and their transisitive dependencies.
 These versions are then persisted to the [`paket.lock` file](lock-file.html).
 
-In order to figure out the concrete versions it needs to solve the following constraint satisfaction problem:
+In order to figure out the concrete versions Paket needs to solve the following constraint satisfaction problem:
 
 * Select the highest version for each of the packages in the [`paket.dependencies` file](dependencies-file.html), plus all their transitive dependencies, such that all version constraints are satisfied. 
 
-Note: In general more than one solution to this problem can exist and the solver will take the first solution that it finds.
+Note: In general, more than one solution to this problem can exist and the solver will take the first solution that it finds.
 
 ## Getting data
 
@@ -78,8 +78,8 @@ type Resolution =
 
 The algorithm works as a [Depth-first search](http://en.wikipedia.org/wiki/Depth-first_search).
 In every step it selects a requirement from the set of `open` requirements and checks if the requirement can be satisfied.
-If not conflict arises then a package version gets seletected and all it's dependencies are added to the `open` requirements.
-If the selected requirement results in a conflict then algorithm backtrack in the search tree and selects the next version.
+If no conflict arises then a package version gets selected and all it's dependencies are added to the `open` requirements.
+If the selected requirement results in a conflict then the algorithm backtracks in the search tree and selects the next version.
 
 *)
 
@@ -99,11 +99,11 @@ let rec step(selectedPackageVersions:Set<ResolvedPackage>,
                 getAllVersionsFromNuget currentRequirement.Name
 
         let compatibleVersions =
-            // consider only versions which match the current requirement
+            // consider only versions, which match the current requirement
             availableVersions
             |> List.filter (isInRange currentRequirement.VersionRequirement)
 
-        let sortedVersions =                
+        let sortedVersions =
             match currentRequirement.ResolverStrategy with
             | ResolverStrategy.Max -> List.sort compatibleVersions |> List.rev
             | ResolverStrategy.Min -> List.sort compatibleVersions
@@ -132,9 +132,9 @@ let rec step(selectedPackageVersions:Set<ResolvedPackage>,
 
 ### Sorting package requirements
 
-In order to make progress in the search tree the algorithm needs to determine which package is next.
-Paket uses a heuristic which tries to process packages with small version ranges and high conflict potential first.
-Therefor it orders the requirements based on:
+In order to make progress in the search tree the algorithm needs to determine the next package.
+Paket uses a heuristic, which tries to process packages with small version ranges and high conflict potential first.
+Therefor, it orders the requirements based on:
 
 * Is the [version pinned](nuget-dependencies.html#Use-exactly-this-version-constraint)?
 * Is it a direct requirement coming from the dependencies file?
@@ -150,10 +150,10 @@ This heuristic influences the [package evaluation order](resolver.html#Sorting-p
 
 ### Caching
 
-Since the HTTP requests to NuGet are very expensive Paket tries to cache as much as possible:
+Paket tries to cache as much as possible since HTTP requests to NuGet are very expensive:
 
 * The function `getAllVersionsFromNuget` will only call the NuGet API once per package and Paket run.
-* The function `getPackageDetails` will only call the NuGet API when the package details are not found in the RAM or on disk.
+* The function `getPackageDetails` will only call the NuGet API if package details are not found in the RAM or on disk.
 
 The second caching improvement means that subsequent runs of `paket update` can get faster since package details are already stored on disk.
 

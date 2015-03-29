@@ -284,7 +284,7 @@ let Resolve(getVersionsF, getPackageDetailsF, globalFrameworkRestrictions, rootD
                         tracefn "    ==> Trying different resolution."
 
 
-            let sortedVersions =                
+            let sortedVersions =
                 if currentRequirement.Parent.IsRootRequirement() then
                     List.sort !compatibleVersions |> List.rev
                 else
