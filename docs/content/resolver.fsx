@@ -38,8 +38,8 @@ Answering these questions is a very expensive operation since it involves a HTTP
 
 ## Basic algorithm
 
-Starting from the [`paket.dependencies` file](dependencies-file.html) we have a list of package requirements. 
-Every requirement specifies a valid version range and a resolver strategy for a package:
+Starting from the [`paket.dependencies` file](dependencies-file.html) we have a set of package requirements. 
+Every requirement specifies a version range and a resolver strategy for a package:
 
 *)
 
@@ -53,17 +53,26 @@ type PackageRequirement =
     { Name : PackageName
       VersionRequirement : VersionRequirement
       ResolverStrategy : ResolverStrategy
-      Parent: PackageRequirementSource      
+      Parent: PackageRequirementSource
       Sources : PackageSource list }
 
 (**
-ttt
 
-*)
+### Sorting package requirements
 
-type DependencySet = Set<PackageName * VersionRequirement * FrameworkRestrictions>
+In order to make progress in the search tree the algorithm needs to determine which package is next.
+Paket uses a heuristic which tries to process packages with small version ranges and high conflict potential first.
+Therefor it orders the requirements based on:
 
-(**
-ttt
+* Is the [version pinned](nuget-dependencies.html#Use-exactly-this-version-constraint)?
+* Is it a direct requirement coming from the dependencies file?
+* Is the [resolver strategy](nuget-dependencies.html#Paket-s-NuGet-style-dependency-resolution-for-transitive-dependencies) `Min` or `Max`?
+* How big is the current [package specific boost factor](resolver.html#Package-conflict-boost)?
+* How big is the specified version range?
+* The package name (alphabetically) as a tie breaker.
+
+### Package conflict boost
+
+*ssss
 
 *)
