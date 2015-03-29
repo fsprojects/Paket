@@ -9,7 +9,7 @@ type PackageSource = string
 type ResolvedPackage = PackageName * SemVerInfo
 
 (**
-# Package resolution
+# Package resolution algorithm
 
 ## Overview
 
