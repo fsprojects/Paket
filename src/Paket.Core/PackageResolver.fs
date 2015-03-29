@@ -195,9 +195,9 @@ let Resolve(getVersionsF, getPackageDetailsF, globalFrameworkRestrictions, rootD
             versions
         | true,versions -> versions        
 
-    let rec improveModel (filteredVersions:Map<PackageName, (SemVerInfo list * bool)>,selectedPackageVersions:ResolvedPackage list,closed:Set<PackageRequirement>,stillOpen:Set<PackageRequirement>) =
-        if Set.isEmpty stillOpen then
-            // we're done. check if we have a valid resolution and return it
+    let rec step (filteredVersions:Map<PackageName, (SemVerInfo list * bool)>,selectedPackageVersions:ResolvedPackage list,closedRequirements:Set<PackageRequirement>,openRequirements:Set<PackageRequirement>) =
+        if Set.isEmpty openRequirements then
+            // we're done. re-check if we have a valid resolution and return it
             let isOk =
                 filteredVersions
                 |> Map.forall (fun _ v ->
@@ -212,15 +212,15 @@ let Resolve(getVersionsF, getPackageDetailsF, globalFrameworkRestrictions, rootD
 
                 Resolution.Ok(resolution)
             else
-                Resolution.Conflict(closed,stillOpen)
+                Resolution.Conflict(closedRequirements,openRequirements)
         else
             let packageCount = selectedPackageVersions |> List.length
-            verbosefn "  %d packages in resolution. %d requirements left" packageCount stillOpen.Count
+            verbosefn "  %d packages in resolution. %d requirements left" packageCount openRequirements.Count
             
             let currentRequirement =
-                let currentMin = ref (Seq.head stillOpen)
+                let currentMin = ref (Seq.head openRequirements)
                 let currentBoost = ref 0
-                for d in stillOpen do
+                for d in openRequirements do
                     let boost = 
                         match conflictHistory.TryGetValue(NormalizedPackageName d.Name) with
                         | true,c -> -c
@@ -231,25 +231,27 @@ let Resolve(getVersionsF, getPackageDetailsF, globalFrameworkRestrictions, rootD
                 !currentMin
             verbosefn "  Trying to resolve %O" currentRequirement
 
-            let allVersions = ref []
+            let availableVersions = ref []
             let compatibleVersions = ref []
             let globalOverride = ref false
      
             match Map.tryFind currentRequirement.Name filteredVersions with
             | None ->
-                allVersions := getAllVersions(currentRequirement.Sources,currentRequirement.Name,currentRequirement.VersionRequirement.Range)
-                compatibleVersions := List.filter currentRequirement.VersionRequirement.IsInRange (!allVersions)
+                // we didn't select a version yet so all versions are possible
+                availableVersions := getAllVersions(currentRequirement.Sources,currentRequirement.Name,currentRequirement.VersionRequirement.Range)
+                compatibleVersions := List.filter currentRequirement.VersionRequirement.IsInRange (!availableVersions)
                 if currentRequirement.VersionRequirement.Range.IsGlobalOverride then
                     globalOverride := true
                 else
                     if !compatibleVersions = [] then
-                        let prereleases = List.filter (currentRequirement.IncludingPrereleases().VersionRequirement.IsInRange) (!allVersions)
+                        let prereleases = List.filter (currentRequirement.IncludingPrereleases().VersionRequirement.IsInRange) (!availableVersions)
                         if allPrereleases prereleases then
-                            allVersions := prereleases
+                            availableVersions := prereleases
                             compatibleVersions := prereleases
             | Some(versions,globalOverride') -> 
+                // we already selected a version so we can't pick a different
                 globalOverride := globalOverride'
-                allVersions := versions
+                availableVersions := versions
                 if globalOverride' then
                     compatibleVersions := versions
                 else
@@ -258,7 +260,7 @@ let Resolve(getVersionsF, getPackageDetailsF, globalFrameworkRestrictions, rootD
 
             if !compatibleVersions = [] then
                 if currentRequirement.Parent.IsRootRequirement() then    
-                    let versionText = String.Join(Environment.NewLine + "     - ",List.sort !allVersions)
+                    let versionText = String.Join(Environment.NewLine + "     - ",List.sort !availableVersions)
                     failwithf "Could not find compatible versions for top level dependency:%s     %A%s   Available versions:%s     - %s%s   Try to relax the dependency or allow prereleases." 
                         Environment.NewLine (currentRequirement.ToString()) Environment.NewLine Environment.NewLine versionText Environment.NewLine
                 else
@@ -270,7 +272,7 @@ let Resolve(getVersionsF, getPackageDetailsF, globalFrameworkRestrictions, rootD
                     if verbose then
                         tracefn "  Conflicts with:"
                     
-                        closed
+                        closedRequirements
                         |> Seq.filter (fun d -> d.Name = currentRequirement.Name)
                         |> fun xs -> String.Join(Environment.NewLine + "    ",xs)
                         |> tracefn "    %s"
@@ -301,20 +303,20 @@ let Resolve(getVersionsF, getPackageDetailsF, globalFrameworkRestrictions, rootD
                         else                
                             let newFilteredVersions = Map.add currentRequirement.Name ([versionToExplore],!globalOverride) filteredVersions
                         
-                            let newOpen = calcOpenRequirements(exploredPackage,globalFrameworkRestrictions,versionToExplore,currentRequirement,closed,stillOpen)
+                            let newOpen = calcOpenRequirements(exploredPackage,globalFrameworkRestrictions,versionToExplore,currentRequirement,closedRequirements,openRequirements)
                             let newPackages =
                                 exploredPackage::(selectedPackageVersions |> List.filter (fun p -> NormalizedPackageName p.Name <> NormalizedPackageName exploredPackage.Name || p.Version <> exploredPackage.Version))
 
-                            let improved = improveModel (newFilteredVersions,newPackages,Set.add currentRequirement closed,newOpen)                            
+                            let improved = step (newFilteredVersions,newPackages,Set.add currentRequirement closedRequirements,newOpen)                            
                             (exploredPackage.Unlisted && allUnlisted),improved
                             
                     | Resolution.Ok _ -> allUnlisted,state)
-                        (true,Resolution.Conflict(closed,stillOpen))
+                        (true,Resolution.Conflict(closedRequirements,openRequirements))
             
             match tryToImprove false with
             | true,Resolution.Conflict(_) -> tryToImprove true |> snd       
             | _,x-> x
 
-    match improveModel (Map.empty, [], Set.empty, Set.ofList rootDependencies) with
+    match step (Map.empty, [], Set.empty, Set.ofList rootDependencies) with
     | Resolution.Conflict(_) as c -> c
     | Resolution.Ok model -> Resolution.Ok(cleanupNames model)

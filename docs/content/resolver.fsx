@@ -58,7 +58,7 @@ type PackageRequirement =
 
 (*** hide ***)
 
-let selectMin (xs: Set<PackageRequirement>) = Seq.head xs,xs
+let selectNextRequirement (xs: Set<PackageRequirement>) = Some(Seq.head xs,xs)
 
 let getAllVersionsFromNuget (x:PackageName) :SemVerInfo list = []
 
@@ -66,55 +66,67 @@ let isInRange (vr:VersionRequirement) (v:SemVerInfo) : bool = true
 
 let getPackageDetails(name:PackageName,version:SemVerInfo) : ResolvedPackage = Unchecked.defaultof<_>
 
-let calcOpenRequirements(packageDetails:ResolvedPackage,closed:Set<PackageRequirement>,stillOpen:Set<PackageRequirement>) : Set<PackageRequirement> = Set.empty
+let getSelectedPackageVersion (name:PackageName) (selectedPackageVersions:Set<ResolvedPackage>) : SemVerInfo option = None
+
+let addDependenciesToOpenList(packageDetails:ResolvedPackage,closed:Set<PackageRequirement>,stillOpen:Set<PackageRequirement>) : Set<PackageRequirement> = Set.empty
 
 type Resolution =
-| Ok of ResolvedPackage list
+| Ok of Set<ResolvedPackage>
 | Conflict of Set<PackageRequirement>
 
 (**
 
-The algorithm consists of two phases.
+The algorithm works as a [Depth-first search](http://en.wikipedia.org/wiki/Depth-first_search).
+In every step it selects a requirement from the set of `open` requirements and checks if the requirement can be satisfied.
+If not conflict arises then a package version gets seletected and all it's dependencies are added to the `open` requirements.
+If the selected requirement results in a conflict then algorithm backtrack in the search tree and selects the next version.
 
 *)
 
-let rec improveModel(selectedPackageVersions:ResolvedPackage list,
-                     closed:Set<PackageRequirement>,
-                     stillOpen:Set<PackageRequirement>) =
+let rec step(selectedPackageVersions:Set<ResolvedPackage>,
+             closedRequirements:Set<PackageRequirement>,
+             openRequirements:Set<PackageRequirement>) =
 
-    if Set.isEmpty stillOpen then
-        // we are done - return the selected versions
-        Resolution.Ok(selectedPackageVersions)
-    else
-        // select the next package requirement
-        let currentRequirement,rest = selectMin stillOpen
-        
+    match selectNextRequirement openRequirements with
+    | Some(currentRequirement,stillOpen) ->
+        let availableVersions =
+            match getSelectedPackageVersion currentRequirement.Name selectedPackageVersions with
+            | Some version ->
+                // we already selected a version so we can't pick a different
+                [version]
+            | None ->
+                // we didn't select a version yet so all versions are possible
+                getAllVersionsFromNuget currentRequirement.Name
+
         let compatibleVersions =
-            getAllVersionsFromNuget currentRequirement.Name
+            // consider only versions which match the current requirement
+            availableVersions
             |> List.filter (isInRange currentRequirement.VersionRequirement)
 
         let sortedVersions =                
             match currentRequirement.ResolverStrategy with
             | ResolverStrategy.Max -> List.sort compatibleVersions |> List.rev
             | ResolverStrategy.Min -> List.sort compatibleVersions
-
-        let mutable state = Resolution.Conflict(stillOpen)
+        
+        let mutable conflictState = Resolution.Conflict(stillOpen)
 
         for versionToExplore in sortedVersions do
-            match state with
+            match conflictState with
             | Resolution.Conflict _ ->
                 let packageDetails = getPackageDetails(currentRequirement.Name,versionToExplore)
                 
-                state <- 
-                    improveModel(
-                        packageDetails :: selectedPackageVersions,
-                        Set.add currentRequirement closed,
-                        calcOpenRequirements(packageDetails,closed,stillOpen))
+                conflictState <- 
+                    step(
+                        Set.add packageDetails selectedPackageVersions,
+                        Set.add currentRequirement closedRequirements,
+                        addDependenciesToOpenList(packageDetails,closedRequirements,stillOpen))
             | Resolution.Ok _ -> ()
 
-        state
-    
-
+        conflictState
+    | None ->
+        // we are done - return the selected versions
+        Resolution.Ok(selectedPackageVersions)
+   
 
 (**
 
