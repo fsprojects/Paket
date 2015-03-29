@@ -39,6 +39,10 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="DownloadArguments.cs" />
+    <Compile Include="GitHubDownloadStrategy.cs" />
+    <Compile Include="IDownloadStrategy.cs" />
+    <Compile Include="NugetDownloadStrategy.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
