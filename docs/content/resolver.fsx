@@ -26,7 +26,7 @@ Note: In general, more than one solution to this problem can exist and the solve
 
 ## Getting data
 
-The "constraint satisfaction problem" is covererd by many [scientific papers](resolver.html#Further-reading), but
+The [constraint satisfaction problem](http://en.wikipedia.org/wiki/Constraint_satisfaction_problem) is covererd by many [scientific papers](resolver.html#Further-reading), but
 a big challenge for Paket's resolver is that it doesn't have the full constraints available.
 The algorithm needs to evaluate the package dependency graph along the way by retrieving data from the [NuGet](nuget-dependencies.html) source feeds.
 
@@ -117,10 +117,9 @@ let rec step(selectedPackageVersions:Set<ResolvedPackage>,
                 let packageDetails = getPackageDetails(currentRequirement.Name,versionToExplore)
                 
                 conflictState <- 
-                    step(
-                        Set.add packageDetails selectedPackageVersions,
-                        Set.add currentRequirement closedRequirements,
-                        addDependenciesToOpenList(packageDetails,closedRequirements,stillOpen))
+                    step(Set.add packageDetails selectedPackageVersions,
+                         Set.add currentRequirement closedRequirements,
+                         addDependenciesToOpenList(packageDetails,closedRequirements,stillOpen))
             | Resolution.Ok _ -> ()
 
         conflictState
