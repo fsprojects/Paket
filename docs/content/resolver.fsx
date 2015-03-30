@@ -149,7 +149,7 @@ Therefore, it orders the requirements based on:
 Whenever Paket encounters a package version conflict in the search tree it increases a boost factor for the involved packages. 
 This heuristic influences the [package evaluation order](resolver.html#Sorting-package-requirements) and forces the resolver to deal with conflicts much earlier in the search tree.
 
-### Caching
+## Caching
 
 Paket tries to cache as much as possible since HTTP requests to NuGet are very expensive:
 
@@ -158,12 +158,13 @@ Paket tries to cache as much as possible since HTTP requests to NuGet are very e
 
 The second caching improvement means that subsequent runs of `paket update` can get faster since package details are already stored on disk.
 
-### Error reporting
+## Error reporting
 
 If the resolver can't find a valid solution, then it needs to report an error to the user.
 Since the search tree can be very large and might contain lots of different kinds of failures, reporting a good error message is difficult.
+Paket will only report the last conflict that it can't resolve and also some information about the origin of this conflict.
 
-Paket will only report the last conflict that can't resolve, if you need more information you can try the verbose by using the `-v` parameter.
+If you need more information you can try the verbose mode by using the `-v` parameter.
 
 ## Further reading
 
