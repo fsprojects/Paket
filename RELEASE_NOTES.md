@@ -1,3 +1,6 @@
+#### 0.38.0 - 30.03.2015
+* The restore process downloads package licenses automatically - https://github.com/fsprojects/Paket/pull/737
+
 #### 0.37.0 - 28.03.2015
 * Fallback to NuGet.exe if the bootstrapper fails to download from GitHub - https://github.com/fsprojects/Paket/pull/733
 * COSMETICS: Display the file name if Paket crashes on some invalid file - https://github.com/fsprojects/Paket/pull/730
