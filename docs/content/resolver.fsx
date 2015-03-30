@@ -20,14 +20,15 @@ These versions are then persisted to the [`paket.lock` file](lock-file.html).
 
 In order to figure out the concrete versions Paket needs to solve the following constraint satisfaction problem:
 
-* Select the highest version for each of the packages in the [`paket.dependencies` file](dependencies-file.html), plus all their transitive dependencies, such that all version constraints are satisfied. 
+* Select the highest version for each of the packages in the [`paket.dependencies` file](dependencies-file.html), plus all their transitive dependencies, such that all version constraints are satisfied.
 
 Note: In general, more than one solution to this problem can exist and the solver will take the first solution that it finds.
 
 ## Getting data
 
-A big challenge for Paket's resolver is that it doesn't have the full constraints available. 
-It needs to figure these out along the way by retrieving data from the [NuGet](nuget-dependencies.html) source feeds.
+The "constraint satisfaction problem" is covererd by many scientific papers (see [Further reading](resolver.html#Further-reading)), but
+a big challenge for Paket's resolver is that it doesn't have the full constraints available.
+The algorithm needs to evaluate the package dependency graph along the way by retrieving data from the [NuGet](nuget-dependencies.html) source feeds.
 
 The two important questions are:
 
