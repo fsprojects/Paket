@@ -31,7 +31,7 @@ let ExtractPackage(root, sources, force, package : ResolvedPackage) =
         | LocalNuget path ->         
             let path = Utils.normalizeLocalPath path
             let packageFile = Path.Combine(root, path, sprintf "%s.%A.nupkg" name v)
-            let! folder = NuGetV2.CopyFromCache(root, packageFile, name, v, force)
+            let! folder = NuGetV2.CopyFromCache(root, packageFile, "", name, v, force) // TODO: Restore license
             return package, NuGetV2.GetLibFiles folder, NuGetV2.GetTargetsFiles folder
     }
 

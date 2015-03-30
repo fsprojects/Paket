@@ -54,7 +54,7 @@ type ResolvedPackage =
     { Name : PackageName
       Version : SemVerInfo
       Dependencies : DependencySet
-      Unlisted : bool 
+      Unlisted : bool
       Settings : InstallSettings
       Source : PackageSource }
 
