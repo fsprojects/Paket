@@ -157,4 +157,11 @@ Paket tries to cache as much as possible since HTTP requests to NuGet are very e
 
 The second caching improvement means that subsequent runs of `paket update` can get faster since package details are already stored on disk.
 
+## Further reading
+
+* [Modular lazy search for Constraint Satisfaction Problems](http://journals.cambridge.org/action/displayAbstract?fromPage=online&aid=83363&fileId=S0956796801004051) by T. Nordin and A. Tolmach ([PDF](http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.34.4704&rep=rep1&type=pdf))
+* [On The Forward Checking Algorithm](http://citeseerx.ist.psu.edu/viewdoc/summary?doi=10.1.1.45.2528) by F. Bacchus and A. Grove ([PDF](http://www.cs.toronto.edu/~fbacchus/Papers/BGCP95.pdf))
+* [Structuring Depth-First Search Algorithms in Haskell](http://citeseerx.ist.psu.edu/viewdoc/summary?doi=10.1.1.52.6526) by D. King and J. Launchbury ([PDF](http://galois.com/wp-content/uploads/2014/08/pub_JL_StructuringDFSAlgorithms.pdf))
+* [Qualified Goals in the Cabal Solver](http://www.well-typed.com/blog/2015/03/qualified-goals/) ([Video](https://vimeo.com/31846783))
+
 *)
