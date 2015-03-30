@@ -23,10 +23,11 @@ type NugetPackageCache =
       PackageName : string
       SourceUrl: string
       Unlisted : bool
-      DownloadUrl : string;
+      DownloadUrl : string
+      LicenseUrl : string
       CacheVersion: string }
 
-    static member CurrentCacheVersion = "1.0"
+    static member CurrentCacheVersion = "1.1"
 
 let rec private followODataLink getUrlContents url = 
     async { 
@@ -175,6 +176,11 @@ let parseODataDetails(nugetURL,packageName,version,raw) =
         | Some "binary/octet-stream", Some link -> link
         | _ -> failwithf "unable to find downloadLink for package %s %O" packageName version
         
+    let licenseUrl =
+        match entry |> getNode "properties" |> optGetNode "LicenseUrl" with
+        | Some node -> node.InnerText 
+        | _ -> ""
+
     let dependencies =
         match entry |> getNode "properties" |> optGetNode "Dependencies" with
         | Some node -> node.InnerText
@@ -203,6 +209,7 @@ let parseODataDetails(nugetURL,packageName,version,raw) =
       Dependencies = Requirements.optimizeRestrictions packages
       SourceUrl = nugetURL
       CacheVersion = NugetPackageCache.CurrentCacheVersion
+      LicenseUrl = licenseUrl
       Unlisted = publishDate = Constants.MagicUnlistingDate }
 
 
@@ -314,6 +321,7 @@ let getDetailsFromLocalFile localNugetPath package (version:SemVerInfo) =
               Dependencies = Requirements.optimizeRestrictions nuspec.Dependencies
               SourceUrl = localNugetPath
               CacheVersion = NugetPackageCache.CurrentCacheVersion
+              LicenseUrl = nuspec.LicenseUrl
               Unlisted = false }
     }
 
@@ -472,7 +480,7 @@ let GetTargetsFiles(targetFolder) =
 
     targetsFiles
 
-let GetPackageDetails force sources (PackageName package) (version:SemVerInfo) : PackageResolver.PackageDetails= 
+let GetPackageDetails force sources (PackageName package) (version:SemVerInfo) : PackageResolver.PackageDetails = 
     let rec tryNext xs = 
         match xs with
         | source :: rest -> 
@@ -501,6 +509,7 @@ let GetPackageDetails force sources (PackageName package) (version:SemVerInfo) :
       Source = source
       DownloadLink = nugetObject.DownloadUrl
       Unlisted = nugetObject.Unlisted
+      LicenseUrl = nugetObject.LicenseUrl
       DirectDependencies = 
         nugetObject.Dependencies
         |> Requirements.optimizeRestrictions

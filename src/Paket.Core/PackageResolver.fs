@@ -45,6 +45,7 @@ type PackageDetails =
     { Name : PackageName
       Source : PackageSource
       DownloadLink : string
+      LicenseUrl : string
       Unlisted : bool
       DirectDependencies : DependencySet }
 
