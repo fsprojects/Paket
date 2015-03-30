@@ -78,8 +78,10 @@ type Resolution =
 (**
 
 The algorithm works as a [Depth-first search](http://en.wikipedia.org/wiki/Depth-first_search).
-In every step it selects a requirement from the set of `open` requirements and checks if the requirement can be satisfied.
-If no conflict arises then a package version gets selected and all it's dependencies are added to the `open` requirements.
+In every step it selects a requirement from the set of *open* requirements and checks if the requirement can be satisfied.
+If no conflict arises then a package version gets selected and all it's dependencies are added to the *open* requirements.
+A set of *closed* requirements is maintained in order to prevent cycles in the search graph.
+
 If the selected requirement results in a conflict then the algorithm backtracks in the search tree and selects the next version.
 
 *)
