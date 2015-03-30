@@ -15,7 +15,7 @@ type ResolvedPackage = PackageName * SemVerInfo
 
 Paket uses the [`paket.dependencies` file](dependencies-file.html) to specify project dependencies.
 Usually only direct dependencies are specified and often a broad range of package versions is allowed.
-During [`paket install`](paket-install.html) Paket needs to figure out concrete versions of the specified packages and their transisitive dependencies.
+During [`paket install`](paket-install.html) Paket needs to figure out concrete versions of the specified packages and their transitive dependencies.
 These versions are then persisted to the [`paket.lock` file](lock-file.html).
 
 In order to figure out the concrete versions Paket needs to solve the following constraint satisfaction problem:
@@ -134,7 +134,7 @@ let rec step(selectedPackageVersions:Set<ResolvedPackage>,
 
 In order to make progress in the search tree the algorithm needs to determine the next package.
 Paket uses a heuristic, which tries to process packages with small version ranges and high conflict potential first.
-Therefor, it orders the requirements based on:
+Therefore, it orders the requirements based on:
 
 * Is the [version pinned](nuget-dependencies.html#Use-exactly-this-version-constraint)?
 * Is it a direct requirement coming from the dependencies file?
