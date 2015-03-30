@@ -26,7 +26,7 @@ Note: In general, more than one solution to this problem can exist and the solve
 
 ## Getting data
 
-The "constraint satisfaction problem" is covererd by many scientific papers (see [Further reading](resolver.html#Further-reading)), but
+The "constraint satisfaction problem" is covererd by many [scientific papers](resolver.html#Further-reading), but
 a big challenge for Paket's resolver is that it doesn't have the full constraints available.
 The algorithm needs to evaluate the package dependency graph along the way by retrieving data from the [NuGet](nuget-dependencies.html) source feeds.
 
@@ -157,6 +157,13 @@ Paket tries to cache as much as possible since HTTP requests to NuGet are very e
 * The function `getPackageDetails` will only call the NuGet API if package details are not found in the RAM or on disk.
 
 The second caching improvement means that subsequent runs of `paket update` can get faster since package details are already stored on disk.
+
+### Error reporting
+
+If the resolver can't find a valid solution, then it needs to report an error to the user.
+Since the search tree can be very large and might contain lots of different kinds of failures, reporting a good error message is difficult.
+
+Paket will only report the last conflict that can't resolve, if you need more information you can try the verbose by using the `-v` parameter.
 
 ## Further reading
 
