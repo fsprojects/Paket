@@ -59,17 +59,23 @@ type PackageRequirement =
 
 (*** hide ***)
 
+/// Orders the requirement set with a heuristic and selects the next requirement
 let selectNextRequirement (xs: Set<PackageRequirement>) = Some(Seq.head xs,xs)
 
+/// Calls the NuGet API and retrieves all versions for a package
 let getAllVersionsFromNuget (x:PackageName) :SemVerInfo list = []
 
+/// Checks if the given version is in the specified verion range
 let isInRange (vr:VersionRequirement) (v:SemVerInfo) : bool = true
 
+// Calls the NuGet API and returns package details for the given package version
 let getPackageDetails(name:PackageName,version:SemVerInfo) : ResolvedPackage = Unchecked.defaultof<_>
 
+/// Looks into the cache if the algorithm already selected that package
 let getSelectedPackageVersion (name:PackageName) (selectedPackageVersions:Set<ResolvedPackage>) : SemVerInfo option = None
 
-let addDependenciesToOpenList(packageDetails:ResolvedPackage,closed:Set<PackageRequirement>,stillOpen:Set<PackageRequirement>) : Set<PackageRequirement> = Set.empty
+/// Puts all dependencies of the package into the open set
+let addDependenciesToOpenSet(packageDetails:ResolvedPackage,closed:Set<PackageRequirement>,stillOpen:Set<PackageRequirement>) : Set<PackageRequirement> = Set.empty
 
 type Resolution =
 | Ok of Set<ResolvedPackage>
@@ -121,7 +127,7 @@ let rec step(selectedPackageVersions:Set<ResolvedPackage>,
                 conflictState <- 
                     step(Set.add packageDetails selectedPackageVersions,
                          Set.add currentRequirement closedRequirements,
-                         addDependenciesToOpenList(packageDetails,closedRequirements,stillOpen))
+                         addDependenciesToOpenSet(packageDetails,closedRequirements,stillOpen))
             | Resolution.Ok _ -> ()
 
         conflictState
