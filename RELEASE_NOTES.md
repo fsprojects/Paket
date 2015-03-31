@@ -1,3 +1,6 @@
+#### 0.38.1 - 31.03.2015
+* Added frameworkAssemblies to nuspec templating - https://github.com/fsprojects/Paket/issues/740
+
 #### 0.38.0 - 30.03.2015
 * The restore process downloads package licenses automatically - https://github.com/fsprojects/Paket/pull/737
 

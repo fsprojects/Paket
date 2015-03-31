@@ -66,6 +66,18 @@ let nuspecDoc (info:CompleteInfo) =
         | Some s -> addChildNode metadataNode nodeName s
         | None -> ()
     
+    let buildFrameworkReferencesNode libName = 
+        let element = XElement(ns + "frameworkAssembly")
+        element.SetAttributeValue(XName.Get "assemblyName", libName)
+        element.SetAttributeValue(XName.Get "targetFramework", "")
+        element
+    
+    let buildFrameworkReferencesNode frameworkAssembliesList = 
+        if frameworkAssembliesList = [] then () else
+        let d = XElement(ns + "frameworkAssemblies")
+        frameworkAssembliesList |> List.iter (buildFrameworkReferencesNode >> d.Add)
+        metadataNode.Add d
+
     let buildDependencyNode (Id, (VersionRequirement(range, _))) = 
         let dep = XElement(ns + "dependency")
         dep.SetAttributeValue(XName.Get "id", Id)
@@ -114,6 +126,7 @@ let nuspecDoc (info:CompleteInfo) =
         !! "developmentDependency" "true"
 
     optional.References |> buildReferencesNode
+    optional.FrameworkAssemblyReferences |> buildFrameworkReferencesNode
     optional.Dependencies |> buildDependenciesNode
     XDocument(declaration, box root)
 

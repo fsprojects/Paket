@@ -63,6 +63,40 @@ let ``should serialize dependencies``() =
     |> normalizeLineEndings
     |> shouldEqual (normalizeLineEndings result)
 
+
+[<Test>]
+let ``should serialize frameworkAssemblues``() = 
+    let result = """<package xmlns="http://schemas.microsoft.com/packaging/2011/10/nuspec.xsd">
+  <metadata>
+    <id>Paket.Tests</id>
+    <version>1.0.0.0</version>
+    <authors>Two, Authors</authors>
+    <description>A description</description>
+    <tags>f# rules</tags>
+    <frameworkAssemblies>
+      <frameworkAssembly assemblyName="System.Xml" targetFramework="" />
+      <frameworkAssembly assemblyName="System.Xml.Linq" targetFramework="" />
+    </frameworkAssemblies>
+  </metadata>
+</package>"""
+    
+    let core = 
+        { Id = "Paket.Tests"
+          Version = SemVer.Parse "1.0.0.0" |> Some
+          Authors = [ "Two"; "Authors" ]
+          Description = "A description" }
+    
+    let optional = 
+        { OptionalPackagingInfo.Epmty with 
+            Tags = [ "f#"; "rules" ]
+            FrameworkAssemblyReferences = 
+                [ "System.Xml"; "System.Xml.Linq" ] }
+    
+    let doc = NupkgWriter.nuspecDoc (core, optional)
+    doc.ToString() 
+    |> normalizeLineEndings
+    |> shouldEqual (normalizeLineEndings result)
+
 [<Test>]
 let ``should not serialize files``() = 
     let result = """<package xmlns="http://schemas.microsoft.com/packaging/2011/10/nuspec.xsd">

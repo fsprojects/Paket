@@ -116,6 +116,17 @@ A references block looks like this:
 
 If you omit the references block then all libraries in the packages will get referenced.
 
+#### Framework assembly references
+
+A block with framework assembly references looks like this:
+
+    [lang=batchfile]
+    frameworkAssemblies
+	    System.Xml
+		System.Xml.Linq	    
+
+If you omit the references block then all libraries in the packages will get referenced.
+
 #### Dependencies
 
 A dependency block looks like this:
