@@ -69,7 +69,6 @@ let nuspecDoc (info:CompleteInfo) =
     let buildFrameworkReferencesNode libName = 
         let element = XElement(ns + "frameworkAssembly")
         element.SetAttributeValue(XName.Get "assemblyName", libName)
-        element.SetAttributeValue(XName.Get "targetFramework", "")
         element
     
     let buildFrameworkReferencesNode frameworkAssembliesList = 

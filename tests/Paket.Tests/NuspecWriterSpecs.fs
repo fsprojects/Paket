@@ -74,8 +74,8 @@ let ``should serialize frameworkAssemblues``() =
     <description>A description</description>
     <tags>f# rules</tags>
     <frameworkAssemblies>
-      <frameworkAssembly assemblyName="System.Xml" targetFramework="" />
-      <frameworkAssembly assemblyName="System.Xml.Linq" targetFramework="" />
+      <frameworkAssembly assemblyName="System.Xml" />
+      <frameworkAssembly assemblyName="System.Xml.Linq" />
     </frameworkAssemblies>
   </metadata>
 </package>"""

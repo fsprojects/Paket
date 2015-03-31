@@ -1,4 +1,4 @@
-#### 0.38.1 - 31.03.2015
+#### 0.38.2 - 31.03.2015
 * Added frameworkAssemblies to nuspec templating - https://github.com/fsprojects/Paket/issues/740
 
 #### 0.38.0 - 30.03.2015
