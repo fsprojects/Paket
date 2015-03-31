@@ -10,7 +10,7 @@ open System.Xml
 
 let nuspecId = "nuspec"
 let corePropsId = "coreProp"
-let contentTypePath = "/[Content_Types].xml"
+let contentTypePath = "[Content_Types].xml"
 
 let contentTypeDoc fileList = 
     let declaration = XDeclaration("1.0", "UTF-8", "yes")
@@ -117,7 +117,7 @@ let nuspecDoc (info:CompleteInfo) =
     optional.Dependencies |> buildDependenciesNode
     XDocument(declaration, box root)
 
-let corePropsPath = sprintf "/package/services/metadata/core-properties/%s.psmdcp" corePropsId
+let corePropsPath = sprintf "package/services/metadata/core-properties/%s.psmdcp" corePropsId
 
 let corePropsDoc (core : CompleteCoreInfo) = 
     let declaration = XDeclaration("1.0", "UTF-8", "yes")
@@ -145,7 +145,7 @@ let corePropsDoc (core : CompleteCoreInfo) =
     !! ns "lastModifiedBy" "paket"
     XDocument(declaration, box root)
 
-let relsPath = "/_rels/.rels"
+let relsPath = "_rels/.rels"
 
 let relsDoc (core : CompleteCoreInfo) = 
     let declaration = XDeclaration("1.0", "UTF-8", "yes")
