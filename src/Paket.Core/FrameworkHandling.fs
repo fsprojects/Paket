@@ -152,7 +152,7 @@ module FrameworkDetection =
                 | "monotouch" | "monotouch10" -> Some MonoTouch
                 | "monoandroid" | "monoandroid10" -> Some MonoAndroid
                 | "monomac" | "monomac10" -> Some MonoMac
-                | "sl3" | "sl30" -> Some (Silverlight "v3.0")
+                | "sl"  | "sl3" | "sl30" -> Some (Silverlight "v3.0")
                 | "sl4" | "sl40" -> Some (Silverlight "v4.0")
                 | "sl5" | "sl50" -> Some (Silverlight "v5.0")
                 | "win8" | "win80" | "netcore45" | "win" -> Some (Windows "v4.5")

@@ -1,3 +1,6 @@
+#### 0.38.3 - 01.04.2015
+* Detect `sl` as Silverlight - https://github.com/fsprojects/Paket/issues/744
+
 #### 0.38.2 - 31.03.2015
 * Added frameworkAssemblies to nuspec templating - https://github.com/fsprojects/Paket/issues/740
 
