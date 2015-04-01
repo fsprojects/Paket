@@ -1,6 +1,7 @@
 #### 0.39.0-alpha001 - 01.04.2015
 * Upgrading to .NET 4.5
 * Removing DotNetZip and using the .NET 4.5 Zip APIs instead - https://github.com/fsprojects/Paket/pull/732
+* Boostrapper download without `nuget.exe` - https://github.com/fsprojects/Paket/pull/734
 
 #### 0.38.3 - 01.04.2015
 * Detect `sl` as Silverlight - https://github.com/fsprojects/Paket/issues/744
