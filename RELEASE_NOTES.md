@@ -1,6 +1,7 @@
 #### 0.39.0-alpha001 - 08.04.2015
 * Upgrading to .NET 4.5
 * Removing DotNetZip and using the .NET 4.5 Zip APIs instead - https://github.com/fsprojects/Paket/pull/732
+* Boostrapper download without `nuget.exe` - https://github.com/fsprojects/Paket/pull/734
 
 #### 0.38.6 - 07.04.2015
 * BUGFIX: Only pick up project output files for pack that exactly match assembly filename - https://github.com/fsprojects/Paket/issues/752
