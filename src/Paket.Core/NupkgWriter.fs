@@ -171,7 +171,7 @@ let relsDoc (core : CompleteCoreInfo) =
         rel.SetAttributeValue(XName.Get "Id", id')
         root.Add rel
     r "http://schemas.microsoft.com/packaging/2010/07/manifest" ("/" + core.NuspecFileName) nuspecId
-    r "http://schemas.openxmlformats.org/package/2006/relationships/metadata/core-properties" corePropsPath corePropsId
+    r "http://schemas.openxmlformats.org/package/2006/relationships/metadata/core-properties" ("/" + corePropsPath) corePropsId
     XDocument(declaration, box root)
 
 let xDocWriter (xDoc : XDocument) (stream : System.IO.Stream) = 
