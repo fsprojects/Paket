@@ -375,7 +375,7 @@ type LockFile(fileName:string,options:InstallOptions,resolution:PackageResolutio
         tracefn "Locked version resolutions written to %s" fileName
 
     /// Creates a paket.lock file at given location
-    static member Create (lockFileName: string, installOptions: InstallOptions, resolvedPackages: PackageResolver.ResolvedPackages, resolvedSourceFiles: ModuleResolver.ResolvedSourceFile list) : LockFile =
+    static member Create (lockFileName: string, installOptions: InstallOptions, resolvedPackages: PackageResolver.Resolution, resolvedSourceFiles: ModuleResolver.ResolvedSourceFile list) : LockFile =
         let resolvedPackages = resolvedPackages.GetModelOrFail()
         let lockFile = LockFile(lockFileName, installOptions, resolvedPackages, resolvedSourceFiles)
         lockFile.Save()

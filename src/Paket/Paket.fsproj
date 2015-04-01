@@ -37,6 +37,7 @@ COSMETICS: Display the file name if Paket crashes on some invalid file - https:/
     <StartAction>Project</StartAction>
     <StartProgram>paket.exe</StartProgram>
     <StartWorkingDirectory>D:\code\Paket</StartWorkingDirectory>
+    <StartWorkingDirectory>D:\code\Pakettest</StartWorkingDirectory>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>

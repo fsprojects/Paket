@@ -11,6 +11,12 @@ let ``should understand basic framework versions net20, net40, net45 ...``() =
     FrameworkDetection.Extract("net45").Value |> shouldEqual (DotNetFramework(FrameworkVersion.V4_5))
 
 [<Test>]
+let ``should understand basic silverlight``() = 
+    FrameworkDetection.Extract("sl").Value |> shouldEqual (Silverlight "v3.0")
+    FrameworkDetection.Extract("sl3").Value |> shouldEqual (Silverlight "v3.0")
+    FrameworkDetection.Extract("sl4").Value |> shouldEqual (Silverlight "v4.0")
+
+[<Test>]
 let ``should serialize basic framework versions net20, net40, net45 ...``() = 
     DotNetFramework(FrameworkVersion.V2).ToString() |> shouldEqual "net20"
     DotNetFramework(FrameworkVersion.V4_Client).ToString() |> shouldEqual "net40"

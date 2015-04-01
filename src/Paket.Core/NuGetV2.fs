@@ -23,10 +23,11 @@ type NugetPackageCache =
       PackageName : string
       SourceUrl: string
       Unlisted : bool
-      DownloadUrl : string;
+      DownloadUrl : string
+      LicenseUrl : string
       CacheVersion: string }
 
-    static member CurrentCacheVersion = "1.0"
+    static member CurrentCacheVersion = "1.1"
 
 let rec private followODataLink getUrlContents url = 
     async { 
@@ -175,6 +176,11 @@ let parseODataDetails(nugetURL,packageName,version,raw) =
         | Some "binary/octet-stream", Some link -> link
         | _ -> failwithf "unable to find downloadLink for package %s %O" packageName version
         
+    let licenseUrl =
+        match entry |> getNode "properties" |> optGetNode "LicenseUrl" with
+        | Some node -> node.InnerText 
+        | _ -> ""
+
     let dependencies =
         match entry |> getNode "properties" |> optGetNode "Dependencies" with
         | Some node -> node.InnerText
@@ -203,6 +209,7 @@ let parseODataDetails(nugetURL,packageName,version,raw) =
       Dependencies = Requirements.optimizeRestrictions packages
       SourceUrl = nugetURL
       CacheVersion = NugetPackageCache.CurrentCacheVersion
+      LicenseUrl = licenseUrl
       Unlisted = publishDate = Constants.MagicUnlistingDate }
 
 
@@ -313,6 +320,7 @@ let getDetailsFromLocalFile localNugetPath package (version:SemVerInfo) =
               Dependencies = Requirements.optimizeRestrictions nuspec.Dependencies
               SourceUrl = localNugetPath
               CacheVersion = NugetPackageCache.CurrentCacheVersion
+              LicenseUrl = nuspec.LicenseUrl
               Unlisted = false }
     }
 
@@ -327,7 +335,7 @@ let inline isExtracted fileName =
 /// Extracts the given package to the ./packages folder
 let ExtractPackage(fileName:string, targetFolder, name, version:SemVerInfo) =    
     async {
-        if  isExtracted fileName then
+        if isExtracted fileName then
              verbosefn "%s %A already extracted" name version
         else
             Directory.CreateDirectory(targetFolder) |> ignore
@@ -352,8 +360,24 @@ let ExtractPackage(fileName:string, targetFolder, name, version:SemVerInfo) =
         return targetFolder
     }
 
+let CopyLicenseFromCache(root, cacheFileName, name, version:SemVerInfo, force) = 
+    async {
+        try
+            if String.IsNullOrWhiteSpace cacheFileName then return () else
+            let cacheFile = FileInfo cacheFileName
+            if cacheFile.Exists then
+                let targetFolder = DirectoryInfo(Path.Combine(root, Constants.PackagesFolderName, name)).FullName
+                let targetFile = FileInfo(Path.Combine(targetFolder, "license.html"))
+                if not force && targetFile.Exists then
+                    verbosefn "License %s %A already copied" name version        
+                else                    
+                    File.Copy(cacheFile.FullName, targetFile.FullName, true)
+        with
+        | exn -> traceWarnfn "Could not copy license for %s %A from %s.%s    %s" name version cacheFileName Environment.NewLine exn.Message
+    }
+
 /// Extracts the given package to the ./packages folder
-let CopyFromCache(root, cacheFileName, name, version:SemVerInfo, force) = 
+let CopyFromCache(root, cacheFileName, licenseCacheFile, name, version:SemVerInfo, force) = 
     async { 
         let targetFolder = DirectoryInfo(Path.Combine(root, Constants.PackagesFolderName, name)).FullName
         let fi = FileInfo(cacheFileName)
@@ -363,8 +387,10 @@ let CopyFromCache(root, cacheFileName, name, version:SemVerInfo, force) =
         else
             CleanDir targetFolder
             File.Copy(cacheFileName, targetFile.FullName)            
-        try
-            return! ExtractPackage(targetFile.FullName,targetFolder,name,version)            
+        try 
+            let! extracted = ExtractPackage(targetFile.FullName,targetFolder,name,version)
+            do! CopyLicenseFromCache(root, licenseCacheFile, name, version, force)
+            return extracted
         with
         | exn -> 
             File.Delete targetFile.FullName
@@ -372,11 +398,47 @@ let CopyFromCache(root, cacheFileName, name, version:SemVerInfo, force) =
             return! raise exn
     }
 
+let DownloadLicense(root,force,name,version:SemVerInfo,licenseUrl,targetFileName) =
+    async { 
+        if String.IsNullOrWhiteSpace licenseUrl then return () else
+        
+        let targetFile = FileInfo targetFileName
+        if not force && targetFile.Exists && targetFile.Length > 0L then 
+            verbosefn "License for %s %A already downloaded" name version
+        else             
+            try
+                verbosefn "Downloading license for %s %A to %s" name version targetFileName
+
+                let request = HttpWebRequest.Create(Uri licenseUrl) :?> HttpWebRequest
+                request.AutomaticDecompression <- DecompressionMethods.GZip ||| DecompressionMethods.Deflate
+                request.UserAgent <- "Paket"
+                request.UseDefaultCredentials <- true
+                request.Proxy <- Utils.getDefaultProxyFor licenseUrl
+                use! httpResponse = request.AsyncGetResponse()
+            
+                use httpResponseStream = httpResponse.GetResponseStream()
+            
+                let bufferSize = 4096
+                let buffer : byte [] = Array.zeroCreate bufferSize
+                let bytesRead = ref -1
+
+                use fileStream = File.Create(targetFileName)
+            
+                while !bytesRead <> 0 do
+                    let! bytes = httpResponseStream.AsyncRead(buffer, 0, bufferSize)
+                    bytesRead := bytes
+                    do! fileStream.AsyncWrite(buffer, 0, !bytesRead)
+
+            with
+            | exn -> traceWarnfn "Could not download license for %s %A from %s.%s    %s" name version licenseUrl Environment.NewLine exn.Message
+    }
+
 /// Downloads the given package to the NuGet Cache folder
 let DownloadPackage(root, auth, url, name, version:SemVerInfo, force) = 
     async { 
         let targetFileName = Path.Combine(CacheFolder, name + "." + version.Normalize() + ".nupkg")
         let targetFile = FileInfo targetFileName
+        let licenseFileName = Path.Combine(CacheFolder, name + "." + version.Normalize() + ".license.html")
         if not force && targetFile.Exists && targetFile.Length > 0L then 
             verbosefn "%s %A already downloaded" name version            
         else 
@@ -417,10 +479,12 @@ let DownloadPackage(root, auth, url, name, version:SemVerInfo, force) =
                     let! bytes = httpResponseStream.AsyncRead(buffer, 0, bufferSize)
                     bytesRead := bytes
                     do! fileStream.AsyncWrite(buffer, 0, !bytesRead)
-
+                                
+                do! DownloadLicense(root,force,name,version,nugetPackage.LicenseUrl,licenseFileName)
             with
             | exn -> failwithf "Could not download %s %A.%s    %s" name version Environment.NewLine exn.Message
-        return! CopyFromCache(root, targetFile.FullName, name, version, force)
+                
+        return! CopyFromCache(root, targetFile.FullName, licenseFileName, name, version, force)
     }
 
 /// Finds all libraries in a nuget package.
@@ -465,7 +529,7 @@ let GetTargetsFiles(targetFolder) =
 
     targetsFiles
 
-let GetPackageDetails force sources (PackageName package) (version:SemVerInfo) : PackageResolver.PackageDetails= 
+let GetPackageDetails force sources (PackageName package) (version:SemVerInfo) : PackageResolver.PackageDetails = 
     let rec tryNext xs = 
         match xs with
         | source :: rest -> 
@@ -494,6 +558,7 @@ let GetPackageDetails force sources (PackageName package) (version:SemVerInfo) :
       Source = source
       DownloadLink = nugetObject.DownloadUrl
       Unlisted = nugetObject.Unlisted
+      LicenseUrl = nugetObject.LicenseUrl
       DirectDependencies = 
         nugetObject.Dependencies
         |> Requirements.optimizeRestrictions

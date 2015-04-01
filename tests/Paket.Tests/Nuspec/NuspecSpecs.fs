@@ -84,6 +84,11 @@ let ``can detect framework assemblies for SqlCLient``() =
          { AssemblyName = "System.Xml"; FrameworkRestrictions = [] } ]
 
 [<Test>]
+let ``can detect license for SqlCLient``() = 
+    Nuspec.Load("Nuspec/FSharp.Data.SqlClient.nuspec").LicenseUrl
+    |> shouldEqual "http://github.com/fsprojects/FSharp.Data.SqlClient/blob/master/LICENSE.md"
+
+[<Test>]
 let ``can detect dependencies for SqlCLient``() = 
     Nuspec.Load("Nuspec/FSharp.Data.SqlClient.nuspec").Dependencies
     |> shouldEqual 

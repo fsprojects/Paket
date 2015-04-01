@@ -275,6 +275,34 @@ version
         reference2 |> shouldEqual "someOtherFile.dll"
     | _ ->  Assert.Fail()
 
+
+[<Test>]
+let ``Detect framework references correctly``() =
+    let text = """type file
+id My.Thing
+authors Bob McBob
+description
+    A longer description
+    on two lines.
+frameworkAssemblies
+    somefile
+    someOtherFile.dll
+version
+    1.0
+"""
+    let sut =
+        TemplateFile.Parse("file1.template", strToStream text)
+        |> returnOrFail
+        |> function
+           | CompleteInfo (_, opt)
+           | ProjectInfo (_, opt) -> opt
+
+    match sut.FrameworkAssemblyReferences with
+    | reference1::reference2::[] ->
+        reference1 |> shouldEqual "somefile"
+        reference2 |> shouldEqual "someOtherFile.dll"
+    | _ ->  Assert.Fail()
+
 [<Test>]
 let ``Detect multiple files correctly``() =
     let text = """type file

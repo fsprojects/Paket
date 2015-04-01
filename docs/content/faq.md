@@ -31,6 +31,7 @@ See [`paket.references`](references-files.html) for more information.
 ## Why does Paket use a different package resolution strategy than NuGet?
 
 Paket tries to embrace [SemVer](http://semver.org/) while NuGet uses a pessimistic version resolution strategy. You can prefix your version constraints with `!` if you need to use [NuGet compatibility](dependencies-file.html#Paket-s-NuGet-style-dependency-resolution-for-transitive-dependencies).
+If you want to know more about Paket's resolver algorithm, then you can read [this article](resolver.html).
 
 ## Does Paket run install.ps1 scripts?
 <div id="paket-vs-powershell-install-scripts"></div>
