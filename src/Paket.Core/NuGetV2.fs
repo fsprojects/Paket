@@ -453,7 +453,7 @@ let DownloadPackage(root, auth, url, name, version:SemVerInfo, force) =
             // discover the link on the fly
             let! nugetPackage = getDetailsFromNuget force auth url name version
             try
-                let! license = Async.StartChild(DownloadLicense(root,force,name,version,nugetPackage.LicenseUrl,licenseFileName), 3000)
+                let! license = Async.StartChild(DownloadLicense(root,force,name,version,nugetPackage.LicenseUrl,licenseFileName), 5000)
 
                 tracefn "Downloading %s %A to %s" name version targetFileName
 
@@ -490,7 +490,10 @@ let DownloadPackage(root, auth, url, name, version:SemVerInfo, force) =
                     bytesRead := bytes
                     do! fileStream.AsyncWrite(buffer, 0, !bytesRead)
 
-                do! license
+                try
+                    do! license
+                with
+                | exn -> traceWarnfn "Could not download license for %s %A from %s.%s    %s" name version nugetPackage.LicenseUrl Environment.NewLine exn.Message 
             with
             | exn -> failwithf "Could not download %s %A.%s    %s" name version Environment.NewLine exn.Message
                 
