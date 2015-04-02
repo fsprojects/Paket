@@ -1,3 +1,6 @@
+#### 0.38.4 - 02.04.2015
+* Fix mono timeout during license download - https://github.com/fsprojects/Paket/issues/746
+
 #### 0.38.3 - 01.04.2015
 * Detect `sl` as Silverlight - https://github.com/fsprojects/Paket/issues/744
 
