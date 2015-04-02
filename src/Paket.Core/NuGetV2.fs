@@ -421,6 +421,7 @@ let DownloadLicense(root,force,name,version:SemVerInfo,licenseUrl,targetFileName
                 request.UserAgent <- "Paket"
                 request.UseDefaultCredentials <- true
                 request.Proxy <- Utils.getDefaultProxyFor licenseUrl
+                request.Timeout <- 3000
                 use! httpResponse = request.AsyncGetResponse()
             
                 use httpResponseStream = httpResponse.GetResponseStream()
@@ -452,6 +453,8 @@ let DownloadPackage(root, auth, url, name, version:SemVerInfo, force) =
             // discover the link on the fly
             let! nugetPackage = getDetailsFromNuget force auth url name version
             try
+                let! license = Async.StartChild(DownloadLicense(root,force,name,version,nugetPackage.LicenseUrl,licenseFileName), 5000)
+
                 tracefn "Downloading %s %A to %s" name version targetFileName
 
                 let request = HttpWebRequest.Create(Uri nugetPackage.DownloadUrl) :?> HttpWebRequest
@@ -486,8 +489,11 @@ let DownloadPackage(root, auth, url, name, version:SemVerInfo, force) =
                     let! bytes = httpResponseStream.AsyncRead(buffer, 0, bufferSize)
                     bytesRead := bytes
                     do! fileStream.AsyncWrite(buffer, 0, !bytesRead)
-                                
-                do! DownloadLicense(root,force,name,version,nugetPackage.LicenseUrl,licenseFileName)
+
+                try
+                    do! license
+                with
+                | exn -> traceWarnfn "Could not download license for %s %A from %s.%s    %s" name version nugetPackage.LicenseUrl Environment.NewLine exn.Message 
             with
             | exn -> failwithf "Could not download %s %A.%s    %s" name version Environment.NewLine exn.Message
                 
