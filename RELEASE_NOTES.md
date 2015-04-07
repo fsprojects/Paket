@@ -1,11 +1,14 @@
+#### 0.38.6 - 07.04.2015
+* BUGFIX: Only pick up project output files for pack that exactly match assembly filename - https://github.com/fsprojects/Paket/issues/752
+
 #### 0.38.5 - 07.04.2015
-* Detect Silverlight version in csproj files - https://github.com/fsprojects/Paket/issues/751
+* BUGFIX: Detect Silverlight version in csproj files - https://github.com/fsprojects/Paket/issues/751
 
 #### 0.38.4 - 02.04.2015
-* Fix mono timeout during license download - https://github.com/fsprojects/Paket/issues/746
+* BUGFIX: Fix mono timeout during license download - https://github.com/fsprojects/Paket/issues/746
 
 #### 0.38.3 - 01.04.2015
-* Detect `sl` as Silverlight - https://github.com/fsprojects/Paket/issues/744
+* BUGFIX: Detect `sl` as Silverlight - https://github.com/fsprojects/Paket/issues/744
 
 #### 0.38.2 - 31.03.2015
 * Added frameworkAssemblies to nuspec templating - https://github.com/fsprojects/Paket/issues/740
