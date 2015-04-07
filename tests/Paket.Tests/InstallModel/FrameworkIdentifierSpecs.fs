@@ -21,3 +21,7 @@ let ``should serialize basic framework versions net20, net40, net45 ...``() =
     DotNetFramework(FrameworkVersion.V2).ToString() |> shouldEqual "net20"
     DotNetFramework(FrameworkVersion.V4_Client).ToString() |> shouldEqual "net40"
     DotNetFramework(FrameworkVersion.V4_5).ToString() |> shouldEqual "net45"
+
+[<Test>]
+let ``should serialize silverlight framework identifier correctly``() =
+    Silverlight("v5.0").ToString() |> shouldEqual "sl50"
