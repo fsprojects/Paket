@@ -156,13 +156,17 @@ let findDependencies (dependencies : DependenciesFile) config (template : Templa
     let templateWithOutput =
         let assemblyFileName = toFile config project
         let fi = FileInfo(assemblyFileName)
+        let name = Path.GetFileNameWithoutExtension fi.Name
 
         let additionalFiles =
-            fi.Directory.GetFiles(fi.Name.Replace(fi.Extension,"") + ".*")
+            fi.Directory.GetFiles(name + ".*")
             |> Array.filter (fun f -> 
-                let sameFileName = (Path.GetFileNameWithoutExtension f.Name) = (Path.GetFileNameWithoutExtension fi.Name)
-                let validExtension = [".xml"; ".dll"; ".exe"; ".pdb"; ".mdb"] |> List.exists ((=) (f.Extension.ToLower()))
-                sameFileName && validExtension)        
+                let isSameFileName = Path.GetFileNameWithoutExtension f.Name = name
+                let isValidExtension = 
+                    [".xml"; ".dll"; ".exe"; ".pdb"; ".mdb"] 
+                    |> List.exists ((=) (f.Extension.ToLower()))
+
+                isSameFileName && isValidExtension)        
         additionalFiles
         |> Array.fold (fun template file -> addFile file.FullName targetDir template) template
     
