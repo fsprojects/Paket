@@ -84,7 +84,7 @@ type FrameworkIdentifier =
         | Windows v -> "win" + v
         | WindowsPhoneApp v -> "wp" + v
         | WindowsPhoneSilverlight v -> "wp" + v
-        | Silverlight v -> "sl" + v
+        | Silverlight v -> "sl" + v.Replace("v","").Replace(".","")
 
 
     // returns a list of compatible platforms that this platform also supports

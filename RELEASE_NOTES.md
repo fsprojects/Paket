@@ -1,3 +1,6 @@
+#### 0.38.5 - 07.04.2015
+* Detect Silverlight version in csproj files - https://github.com/fsprojects/Paket/issues/751
+
 #### 0.38.4 - 02.04.2015
 * Fix mono timeout during license download - https://github.com/fsprojects/Paket/issues/746
 

@@ -474,12 +474,23 @@ type ProjectFile =
                 | _        -> ProjectOutputType.Library }
         |> Seq.head
 
+    member this.GetTargetFrameworkIdentifier() =
+        seq {for outputType in this.Document |> getDescendants "TargetFrameworkIdentifier" ->
+                outputType.InnerText  }
+        |> Seq.firstOrDefault
+
     member this.GetTargetFramework() =
         let framework =
             seq {for outputType in this.Document |> getDescendants "TargetFrameworkVersion" ->
                     outputType.InnerText  }
-            |> Seq.map (fun s -> // TODO make this a separate function
-                            s.Replace("v","net")
+            |> Seq.map (fun s -> 
+                            // TODO make this a separate function
+                            let prefix = 
+                                match this.GetTargetFrameworkIdentifier() with
+                                | None -> "net"
+                                | Some x -> x
+
+                            prefix + s.Replace("v","")
                             |> FrameworkDetection.Extract)
             |> Seq.map (fun o -> o.Value)
             |> Seq.firstOrDefault
