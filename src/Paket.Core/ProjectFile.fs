@@ -475,13 +475,15 @@ type ProjectFile =
         |> Seq.head
 
     member this.GetTargetFramework() =
-        seq {for outputType in this.Document |> getDescendants "TargetFrameworkVersion" ->
-                outputType.InnerText  }
-        |> Seq.map (fun s -> // TODO make this a separate function
-                        s.Replace("v","net")
-                        |> FrameworkDetection.Extract)                        
-        |> Seq.map (fun o -> o.Value)
-        |> Seq.head
+        let framework =
+            seq {for outputType in this.Document |> getDescendants "TargetFrameworkVersion" ->
+                    outputType.InnerText  }
+            |> Seq.map (fun s -> // TODO make this a separate function
+                            s.Replace("v","net")
+                            |> FrameworkDetection.Extract)
+            |> Seq.map (fun o -> o.Value)
+            |> Seq.firstOrDefault
+        defaultArg framework (DotNetFramework(FrameworkVersion.V4))
     
     member this.AddImportForPaketTargets(relativeTargetsPath) =
         match this.Document 
