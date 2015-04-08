@@ -1,22 +1,12 @@
-#### 0.39.0-alpha001 - 08.04.2015
+#### 0.39.0-alpha002 - 08.04.2015
 * Upgrading to .NET 4.5
 * Removing DotNetZip and using the .NET 4.5 Zip APIs instead - https://github.com/fsprojects/Paket/pull/732
 * Boostrapper download without `nuget.exe` - https://github.com/fsprojects/Paket/pull/734
-
-#### 0.38.6 - 07.04.2015
+* Added frameworkAssemblies to nuspec templating - https://github.com/fsprojects/Paket/issues/740 
 * BUGFIX: Only pick up project output files for pack that exactly match assembly filename - https://github.com/fsprojects/Paket/issues/752
-
-#### 0.38.5 - 07.04.2015
 * BUGFIX: Detect Silverlight version in csproj files - https://github.com/fsprojects/Paket/issues/751
-
-#### 0.38.4 - 02.04.2015
 * BUGFIX: Fix mono timeout during license download - https://github.com/fsprojects/Paket/issues/746
-
-#### 0.38.3 - 01.04.2015
 * BUGFIX: Detect `sl` as Silverlight - https://github.com/fsprojects/Paket/issues/744
-
-#### 0.38.2 - 31.03.2015
-* Added frameworkAssemblies to nuspec templating - https://github.com/fsprojects/Paket/issues/740
 
 #### 0.38.0 - 30.03.2015
 * The restore process downloads package licenses automatically - https://github.com/fsprojects/Paket/pull/737
