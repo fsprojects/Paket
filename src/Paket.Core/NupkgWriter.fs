@@ -203,8 +203,10 @@ let Write (core : CompleteCoreInfo) optional workingDir outputDir =
 
     let ensureValidTargetName (target:string) =
         match target.Replace(" ", "%20") with
-        | t when t.EndsWith("/") -> t
-        | t                      -> t + "/"
+        | t when t.EndsWith("/")         -> t
+        | t when String.IsNullOrEmpty(t) -> ""
+        | "."                            -> "."
+        | t                              -> t + "/"
 
     // adds all files in a directory to the zipFile
     let rec addDir source target =

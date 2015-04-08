@@ -1,3 +1,6 @@
+#### 0.39.1 - 08.04.2015
+* Allow . in target file names for pack - https://github.com/fsprojects/Paket/issues/756
+
 #### 0.39.0 - 08.04.2015
 * Upgrading to .NET 4.5
 * Removing DotNetZip and using the .NET 4.5 Zip APIs instead - https://github.com/fsprojects/Paket/pull/732
