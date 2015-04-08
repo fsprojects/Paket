@@ -201,6 +201,11 @@ let Write (core : CompleteCoreInfo) optional workingDir outputDir =
         writerF stream
         stream.Close()
 
+    let ensureValidTargetName (target:string) =
+        match target.Replace(" ", "%20") with
+        | t when t.EndsWith("/") -> t
+        | t                      -> t + "/"
+
     // adds all files in a directory to the zipFile
     let rec addDir source target =
         for file in Directory.EnumerateFiles(source,"*.*",SearchOption.TopDirectoryOnly) do
@@ -215,7 +220,7 @@ let Write (core : CompleteCoreInfo) optional workingDir outputDir =
 
     // add files
     for fileName,targetFileName in optional.Files do
-        let targetFileName = targetFileName.Replace(" ", "%20")
+        let targetFileName = ensureValidTargetName targetFileName
         let source = Path.Combine(workingDir, fileName)
         if Directory.Exists source then
             addDir source targetFileName
