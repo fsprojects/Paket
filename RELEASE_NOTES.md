@@ -1,7 +1,6 @@
-#### 0.39.4 - 10.04.2015
+#### 0.40.0 - 09.04.2015
 * Try to fix dates in Nuget packages - https://github.com/fsprojects/Paket/issues/761
-
-#### 0.39.2 - 09.04.2015
+* `convert-from-nuget` reads target framework from packages.config files - https://github.com/fsprojects/Paket/pull/760
 * Allow . in target file names for pack - https://github.com/fsprojects/Paket/issues/756
 
 #### 0.39.0 - 08.04.2015
