@@ -32,12 +32,10 @@
     <StartProgram>paket.exe</StartProgram>
     <StartWorkingDirectory>D:\code\Pakettest</StartWorkingDirectory>
     <StartWorkingDirectory>D:\code\Paketkopie</StartWorkingDirectory>
-    <StartArguments>pack output ./temp version  0.37.0 releaseNotes  "Fallback
-to NuGet.exe if the bootstrapper fails to download from GitHub - https://github.com/fsprojects/Paket/pull/733
-COSMETICS: Display the file name if Paket crashes on some invalid file - https://github.com/fsprojects/Paket/pull/730"</StartArguments>
+    <StartArguments>update</StartArguments>
     <StartAction>Project</StartAction>
     <StartProgram>paket.exe</StartProgram>
-    <StartWorkingDirectory>D:\code\Paket</StartWorkingDirectory>
+    <StartWorkingDirectory>D:\code\Pakettest</StartWorkingDirectory>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>

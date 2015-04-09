@@ -332,6 +332,16 @@ let inline isExtracted fileName =
     di.EnumerateFileSystemInfos()
     |> Seq.exists (fun f -> f.FullName <> fi.FullName)    
 
+let fixDatesInArchive fileName =
+    use archive = ZipFile.Open(fileName,ZipArchiveMode.Update)
+    for e in archive.Entries do
+        try
+            let d = e.LastWriteTime
+            ()
+        with
+        | xn -> e.LastWriteTime <- DateTimeOffset.Now
+
+
 /// Extracts the given package to the ./packages folder
 let ExtractPackage(fileName:string, targetFolder, name, version:SemVerInfo) =    
     async {
@@ -339,6 +349,8 @@ let ExtractPackage(fileName:string, targetFolder, name, version:SemVerInfo) =
              verbosefn "%s %A already extracted" name version
         else
             Directory.CreateDirectory(targetFolder) |> ignore
+
+            fixDatesInArchive fileName            
             ZipFile.ExtractToDirectory(fileName, targetFolder)
 
             // cleanup folder structure
