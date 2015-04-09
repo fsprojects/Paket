@@ -333,7 +333,8 @@ let inline isExtracted fileName =
     |> Seq.exists (fun f -> f.FullName <> fi.FullName)    
 
 let fixDatesInArchive fileName =
-    use archive = ZipFile.Open(fileName,ZipArchiveMode.Update)
+    use zipToOpen = new FileStream(fileName, FileMode.Open)
+    use archive = new ZipArchive(zipToOpen, ZipArchiveMode.Update)
     for e in archive.Entries do
         try
             let d = e.LastWriteTime

@@ -1,4 +1,4 @@
-#### 0.39.3 - 10.04.2015
+#### 0.39.4 - 10.04.2015
 * Try to fix dates in Nuget packages - https://github.com/fsprojects/Paket/issues/761
 
 #### 0.39.2 - 09.04.2015
