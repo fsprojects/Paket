@@ -363,10 +363,11 @@ type DependenciesFile(fileName,options,sources,packages : PackageRequirement lis
 
         DependenciesFile(fileName,options,sources,newPackages,remoteFiles, comments)
 
-    static member add (dependenciesFile : DependenciesFile) (packageName,version) =
-        dependenciesFile.Add(packageName,version)
+    static member add (dependenciesFile : DependenciesFile) (packageName,version,installSettings) =
+        dependenciesFile.Add(packageName,version,installSettings)
 
-    member this.Add(packageName,version:string) =
+    member this.Add(packageName,version:string,?installSettings : InstallSettings) =
+        let installSettings = defaultArg installSettings InstallSettings.Default
         let (PackageName name) = packageName
         if this.HasPackage packageName then 
             traceWarnfn "%s contains package %s already. ==> Ignored" fileName name
@@ -376,7 +377,7 @@ type DependenciesFile(fileName,options,sources,packages : PackageRequirement lis
                 tracefn "Adding %s to %s" name fileName
             else
                 tracefn "Adding %s %s to %s" name version fileName
-            this.AddAdditionalPackage(packageName,version,InstallSettings.Default)
+            this.AddAdditionalPackage(packageName,version,installSettings)
 
     member this.Remove(packageName) =
         let (PackageName name) = packageName
