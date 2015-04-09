@@ -44,10 +44,16 @@ type CredsMigrationMode =
 /// Represents type of NuGet packages.config file
 type NugetPackagesConfigType = ProjectLevel | SolutionLevel
 
+type NugetPackage = {
+    Id : string
+    Version : SemVerInfo
+    TargetFramework : string option
+}
+
 /// Represents NuGet packages.config file
 type NugetPackagesConfig = {
     File: FileInfo
-    Packages: (string*SemVerInfo) list
+    Packages: NugetPackage list
     Type: NugetPackagesConfigType
 }
     
@@ -176,7 +182,9 @@ module NugetEnv =
                 { File = file
                   Type = if file.Directory.Name = ".nuget" then SolutionLevel else ProjectLevel
                   Packages = [for node in doc.SelectNodes("//package") ->
-                                    node.Attributes.["id"].Value, node.Attributes.["version"].Value |> SemVer.Parse ]}
+                                    { Id = node.Attributes.["id"].Value
+                                      Version = node.Attributes.["version"].Value |> SemVer.Parse
+                                      TargetFramework = node |> getAttribute "targetFramework" } ]}
                 |> ok 
             with _ -> fail (NugetPackagesConfigParseError file)
 
@@ -209,12 +217,12 @@ module ConvertResultR =
           PaketEnv = paketEnv
           SolutionFiles = solutionFiles }
 
-let createPackageRequirement packageName version sources dependenciesFileName = 
+let createPackageRequirement (packageName, version, restrictions) sources dependenciesFileName = 
      { Name = PackageName packageName
        VersionRequirement = VersionRequirement(VersionRange.Exactly version, PreReleaseStatus.No)
        Sources = sources
        ResolverStrategy = ResolverStrategy.Max
-       Settings = InstallSettings.Default
+       Settings = { InstallSettings.Default with FrameworkRestrictions = restrictions }
        Parent = PackageRequirementSource.DependenciesFile dependenciesFileName }
 
 let createDependenciesFileR (rootDirectory : DirectoryInfo) nugetEnv mode =
@@ -222,32 +230,40 @@ let createDependenciesFileR (rootDirectory : DirectoryInfo) nugetEnv mode =
     let dependenciesFileName = Path.Combine(rootDirectory.FullName, Constants.DependenciesFileName)
     
     let allVersions =
+
         nugetEnv.NugetProjectFiles
         |> Seq.collect (fun (_,c) -> c.Packages)
-        |> Seq.groupBy fst
-        |> Seq.map (fun (name, packages) -> name, packages |> Seq.map snd |> Seq.distinct)
+        |> Seq.groupBy (fun p -> p.Id)
+        |> Seq.map (fun (name, packages) -> name, packages |> Seq.map (fun p -> p.Version, p.TargetFramework) |> Seq.distinct)
         |> Seq.sortBy (fun (name,_) -> name.ToLower())
     
     for (name, versions) in allVersions do
         if Seq.length versions > 1 
-        then traceWarnfn "Package %s is referenced multiple times in different versions: %A. Paket will choose the latest one." 
-                            name    
-                            (versions |> Seq.map string |> Seq.toList)
+        then traceWarnfn 
+                "Package %s is referenced multiple times with different versions or target frameworks : %A. Paket will choose the latest version and disregard target framework." 
+                    name    
+                    (versions |> Seq.map string |> Seq.toList)
     
     let latestVersions = 
         allVersions
-        |> Seq.map (fun (name, versions) -> name, versions |> Seq.max |> string)
+        |> Seq.map (fun (name, versions) ->
+            let latestVersion, _ = versions |> Seq.maxBy fst
+            let restrictions =
+                match versions |> Seq.toList with
+                | [ version, targetFramework ] -> targetFramework |> Option.toList |> List.collect Requirements.parseRestrictions 
+                | _ -> []
+            name, string latestVersion, restrictions)
         |> Seq.toList
 
     let packages = 
         match nugetEnv.NugetExe with 
-        | Some _ -> ("Nuget.CommandLine","2.8.3") :: latestVersions
+        | Some _ -> ("Nuget.CommandLine","2.8.3",[]) :: latestVersions
         | _ -> latestVersions
 
     let read() =
         let addPackages dependenciesFile = 
             packages
-            |> List.map (fun (name, v) -> PackageName name, v)
+            |> List.map (fun (name, v, restrictions) -> PackageName name, v, { InstallSettings.Default with FrameworkRestrictions = restrictions})
             |> List.fold DependenciesFile.add dependenciesFile
         try 
             DependenciesFile.ReadFromFile dependenciesFileName
@@ -268,7 +284,7 @@ let createDependenciesFileR (rootDirectory : DirectoryInfo) nugetEnv mode =
 
         sources
         |> lift (fun sources -> 
-            let packages = packages |> List.map (fun (name,v) -> createPackageRequirement name v sources dependenciesFileName)
+            let packages = packages |> List.map (fun (name,v,restr) -> createPackageRequirement (name, v, restr)  sources dependenciesFileName)
             Paket.DependenciesFile(dependenciesFileName, InstallOptions.Default, sources, packages, [], []))
 
     if File.Exists dependenciesFileName then read() else create()
@@ -277,7 +293,7 @@ let convertPackagesConfigToReferences projectFileName packagesConfig =
     let referencesFile = ProjectFile.FindOrCreateReferencesFile(FileInfo projectFileName)
 
     packagesConfig.Packages
-    |> List.map (fst >> PackageName)
+    |> List.map ((fun p -> p.Id) >> PackageName)
     |> List.fold (fun (r : ReferencesFile) packageName -> r.AddNuGetReference(packageName)) 
                  referencesFile
 
