@@ -234,20 +234,25 @@ let createDependenciesFileR (rootDirectory : DirectoryInfo) nugetEnv mode =
         nugetEnv.NugetProjectFiles
         |> Seq.collect (fun (_,c) -> c.Packages)
         |> Seq.groupBy (fun p -> p.Id)
-        |> Seq.map (fun (name, packages) -> name, packages |> Seq.map (fun p -> p.Version, p.TargetFramework) |> Seq.distinctBy fst)
+        |> Seq.map (fun (name, packages) -> name, packages |> Seq.map (fun p -> p.Version, p.TargetFramework) |> Seq.distinct)
         |> Seq.sortBy (fun (name,_) -> name.ToLower())
     
     for (name, versions) in allVersions do
         if Seq.length versions > 1 
-        then traceWarnfn "Package %s is referenced multiple times in different versions: %A. Paket will choose the latest one." 
-                            name    
-                            (versions |> Seq.map (fst >> string) |> Seq.toList)
+        then traceWarnfn 
+                "Package %s is referenced multiple times with different versions or target frameworks : %A. Paket will choose the latest version and disregard target framework." 
+                    name    
+                    (versions |> Seq.map string |> Seq.toList)
     
     let latestVersions = 
         allVersions
         |> Seq.map (fun (name, versions) ->
-            let latestVersion, targetFramework = versions |> Seq.maxBy fst
-            name, string latestVersion, targetFramework |> Option.toList |> List.collect Requirements.parseRestrictions)
+            let latestVersion, _ = versions |> Seq.maxBy fst
+            let restrictions =
+                match versions |> Seq.toList with
+                | [ version, targetFramework ] -> targetFramework |> Option.toList |> List.collect Requirements.parseRestrictions 
+                | _ -> []
+            name, string latestVersion, restrictions)
         |> Seq.toList
 
     let packages = 
