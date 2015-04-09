@@ -205,7 +205,7 @@ let Write (core : CompleteCoreInfo) optional workingDir outputDir =
         match target.Replace(" ", "%20") with
         | t when t.EndsWith("/")         -> t
         | t when String.IsNullOrEmpty(t) -> ""
-        | "."                            -> "."
+        | "."                            -> ""
         | t                              -> t + "/"
 
     // adds all files in a directory to the zipFile

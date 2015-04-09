@@ -1,4 +1,4 @@
-#### 0.39.1 - 08.04.2015
+#### 0.39.2 - 09.04.2015
 * Allow . in target file names for pack - https://github.com/fsprojects/Paket/issues/756
 
 #### 0.39.0 - 08.04.2015
