@@ -1,3 +1,6 @@
+#### 0.40.2 - 10.04.2015
+* `convert-from-nuget` aggregates target framework from packages.config files - https://github.com/fsprojects/Paket/pull/768
+
 #### 0.40.1 - 10.04.2015
 * COSMETICS: Better error message when `paket.dependencies` is missing - https://github.com/fsprojects/Paket/issues/764
 
