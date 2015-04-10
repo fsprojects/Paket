@@ -152,6 +152,21 @@ namespace Paket.Bootstrapper
                     return false;
                 return Major == y.Major && Minor == y.Minor && Patch == y.Patch && PreRelease == y.PreRelease && Build == y.Build && PreReleaseBuild == y.PreReleaseBuild;
             }
+
+            public override int GetHashCode()
+            {
+                unchecked
+                {
+                    var hashCode = Major;
+                    hashCode = (hashCode * 397) ^ Minor;
+                    hashCode = (hashCode * 397) ^ Patch;
+                    hashCode = (hashCode * 397) ^ (PreRelease != null ? PreRelease.GetHashCode() : 0);
+                    hashCode = (hashCode * 397) ^ (Original != null ? Original.GetHashCode() : 0);
+                    hashCode = (hashCode * 397) ^ (PreReleaseBuild != null ? PreReleaseBuild.GetHashCode() : 0);
+                    hashCode = (hashCode * 397) ^ (Build != null ? Build.GetHashCode() : 0);
+                    return hashCode;
+                }
+            }
         }
 
         private class PreRelease : IComparable
