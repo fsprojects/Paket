@@ -34,7 +34,7 @@ type Dependencies(dependenciesFileName: string) =
                 let parent = dir.Parent
                 if parent = null then
                     if withError then
-                        failwithf "Could not find %s" Constants.DependenciesFileName
+                        failwithf "Could not find '%s'. To use Paket with this solution, please run 'paket init' first." Constants.DependenciesFileName
                     else 
                         Constants.DependenciesFileName
                 else
