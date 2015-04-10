@@ -230,37 +230,30 @@ let createDependenciesFileR (rootDirectory : DirectoryInfo) nugetEnv mode =
     
     let dependenciesFileName = Path.Combine(rootDirectory.FullName, Constants.DependenciesFileName)
 
-    let allVersionsById =
-
+    let allVersionsGroupped =
         nugetEnv.NugetProjectFiles
         |> Seq.collect (fun (_,c) -> c.Packages)
         |> Seq.groupBy (fun p -> p.Id)
 
-    let allVersionsByName =
-        allVersionsById
-        |> Seq.map (fun (name, packages) -> name, packages |> Seq.map (fun p -> p.Version) |> Seq.distinct)
+    let findDistinctsPackages selector =
+        allVersionsGroupped
+        |> Seq.map (fun (name, packages) -> name, packages |> selector)
         |> Seq.sortBy (fun (name,_) -> name.ToLower())
-    
-    for (name, versions) in allVersionsByName do
-        if Seq.length versions > 1 
-        then traceWarnfn "Package %s is referenced multiple times in different versions: %A. Paket will choose the latest one." 
-                            name    
-                            (versions |> Seq.map string |> Seq.toList)    
-    let allVersions =
-        allVersionsById
-        |> Seq.map (fun (name, packages) -> name, packages |> Seq.map (fun p -> p.Version, p.TargetFramework) |> Seq.distinct)
-        |> Seq.sortBy (fun (name,_) -> name.ToLower())
-    
-    for (name, versions) in allVersions do
-        let targets = versions |> Seq.choose(fun (p,target) -> target)
-        if Seq.length targets > 1 
-        then traceWarnfn 
-                "Package %s is referenced multiple times with different target frameworks : %A. Paket may disregard target framework." 
-                    name
-                    (targets |> Seq.map string |> Seq.toList)
+
+    let findWarnings searchBy message =
+        for (name, versions) in 
+            findDistinctsPackages searchBy 
+            do
+                if Seq.length versions > 1 
+                then traceWarnfn message name (versions |> Seq.toList)    
+
+    findWarnings (Seq.map (fun p -> p.Version) >> Seq.distinct >> Seq.map string) 
+        "Package %s is referenced multiple times in different versions: %A. Paket will choose the latest one." 
+    findWarnings (Seq.map (fun p -> p.TargetFramework) >> Seq.distinct >> Seq.choose(fun target -> target) >> Seq.map string) 
+        "Package %s is referenced multiple times with different target frameworks : %A. Paket may disregard target framework."
     
     let latestVersions = 
-        allVersions
+        findDistinctsPackages (Seq.map (fun p -> p.Version, p.TargetFramework) >> Seq.distinct)
         |> Seq.map (fun (name, versions) ->
             let latestVersion, _ = versions |> Seq.maxBy fst
             let restrictions =
