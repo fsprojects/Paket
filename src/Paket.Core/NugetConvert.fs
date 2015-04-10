@@ -184,7 +184,8 @@ module NugetEnv =
                   Packages = [for node in doc.SelectNodes("//package") ->
                                     { Id = node.Attributes.["id"].Value
                                       Version = node.Attributes.["version"].Value |> SemVer.Parse
-                                      TargetFramework = node |> getAttribute "targetFramework" } ]}
+                                      TargetFramework = 
+                                        node |> getAttribute "targetFramework" |> Option.map (fun t -> ">= " + t) } ]}
                 |> ok 
             with _ -> fail (NugetPackagesConfigParseError file)
 
@@ -228,21 +229,35 @@ let createPackageRequirement (packageName, version, restrictions) sources depend
 let createDependenciesFileR (rootDirectory : DirectoryInfo) nugetEnv mode =
     
     let dependenciesFileName = Path.Combine(rootDirectory.FullName, Constants.DependenciesFileName)
-    
-    let allVersions =
+
+    let allVersionsById =
 
         nugetEnv.NugetProjectFiles
         |> Seq.collect (fun (_,c) -> c.Packages)
         |> Seq.groupBy (fun p -> p.Id)
+
+    let allVersionsByName =
+        allVersionsById
+        |> Seq.map (fun (name, packages) -> name, packages |> Seq.map (fun p -> p.Version) |> Seq.distinct)
+        |> Seq.sortBy (fun (name,_) -> name.ToLower())
+    
+    for (name, versions) in allVersionsByName do
+        if Seq.length versions > 1 
+        then traceWarnfn "Package %s is referenced multiple times in different versions: %A. Paket will choose the latest one." 
+                            name    
+                            (versions |> Seq.map string |> Seq.toList)    
+    let allVersions =
+        allVersionsById
         |> Seq.map (fun (name, packages) -> name, packages |> Seq.map (fun p -> p.Version, p.TargetFramework) |> Seq.distinct)
         |> Seq.sortBy (fun (name,_) -> name.ToLower())
     
     for (name, versions) in allVersions do
-        if Seq.length versions > 1 
+        let targets = versions |> Seq.choose(fun (p,target) -> target)
+        if Seq.length targets > 1 
         then traceWarnfn 
-                "Package %s is referenced multiple times with different versions or target frameworks : %A. Paket will choose the latest version and disregard target framework." 
-                    name    
-                    (versions |> Seq.map string |> Seq.toList)
+                "Package %s is referenced multiple times with different target frameworks : %A. Paket may disregard target framework." 
+                    name
+                    (targets |> Seq.map string |> Seq.toList)
     
     let latestVersions = 
         allVersions
