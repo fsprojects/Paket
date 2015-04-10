@@ -1,3 +1,6 @@
+#### 0.40.1 - 10.04.2015
+* COSMETICS: Better error message when `paket.dependencies` is missing - https://github.com/fsprojects/Paket/issues/764
+
 #### 0.40.0 - 09.04.2015
 * Try to fix dates in Nuget packages - https://github.com/fsprojects/Paket/issues/761
 * `convert-from-nuget` reads target framework from packages.config files - https://github.com/fsprojects/Paket/pull/760
