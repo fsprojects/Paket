@@ -65,9 +65,8 @@ let internal indentAssemblyBindings config =
                                                         tempAssemblyBindingNode.WriteTo writer)
     let parent = assemblyBinding.Parent
     assemblyBinding.Remove()
-    printfn "%s" (sb.ToString())
-    let newNode = XElement.Parse(sb.ToString(), LoadOptions.PreserveWhitespace)
-    parent.Add(newNode)
+    let newAssemblyBindingNode = XElement.Parse(sb.ToString(), LoadOptions.PreserveWhitespace)
+    parent.Add(newAssemblyBindingNode)
 
 /// Applies a set of binding redirects to a single configuration file.
 let private applyBindingRedirects bindingRedirects (configFilePath:string) =
