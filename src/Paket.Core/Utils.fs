@@ -36,12 +36,12 @@ let GetHomeDirectory() =
     else
         Environment.ExpandEnvironmentVariables("%HOMEDRIVE%%HOMEPATH%")
 
-let normalizeLocalPath(path:string) =
+let normalizeLocalPath(path:string)=
     if path.StartsWith("~/") then
-        Path.Combine(GetHomeDirectory(),path.Substring(1))
-    else
+        Path.Combine(GetHomeDirectory(), path.Substring(2))
+    else 
         path
-
+        
 /// Creates a directory if it does not exist.
 let createDir path = 
     try
