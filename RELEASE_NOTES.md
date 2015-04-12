@@ -1,3 +1,6 @@
+#### 0.40.3 - 12.04.2015
+* Improved config file formatting with indented binding redirects - https://github.com/fsprojects/Paket/pull/769
+
 #### 0.40.2 - 10.04.2015
 * `convert-from-nuget` aggregates target framework from packages.config files - https://github.com/fsprojects/Paket/pull/768
 
