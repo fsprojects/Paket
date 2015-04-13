@@ -4,7 +4,7 @@
 
 <blockquote><p>Paket solves dependency resolution very elegantly.</p></blockquote>
 
-We are fans command line tools that serve a single purpose, like [git](http://grossweber.com/git). Paket is such a tool that works extremely well when compared to other solutions available on the .NET platform. We use Paket not only to manage dependencies, but also to create our own NuGet packages. All in an easy-to-use, consistent, reliable and fast way. Anybody who has been working with dependency managers on other platforms like npm, bundler and pip will be pleased to find a similar workflow with Paket.
+We at [GROSSWEBER](http://grossweber.com/en) are fans of command line tools that serve a single purpose, like [git](http://grossweber.com/git). Paket is such a tool that works extremely well when compared to other solutions available on the .NET platform. We use Paket not only to manage dependencies, but also to create our own NuGet packages. All in an easy-to-use, consistent, reliable and fast way. Anybody who has been working with dependency managers on other platforms like npm, bundler and pip will be pleased to find a similar workflow with Paket.
 
 We love what we do and with love comes passion. This passion drives us to actively engage in our client projects and to design and develop as if they were our own. Spreading the word about Paket in our [trainings](http://grossweber.com/trainings) comes naturally.
 
