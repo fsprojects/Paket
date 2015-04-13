@@ -271,7 +271,8 @@ type DependenciesFile(fileName,options,sources,packages : PackageRequirement lis
     member __.Sources = sources
     member this.Resolve(force) = 
         let getSha1 origin owner repo branch = RemoteDownload.getSHA1OfBranch origin owner repo branch |> Async.RunSynchronously
-        this.Resolve(getSha1,NuGetV2.GetVersions,NuGetV2.GetPackageDetails force)
+        let root = Path.GetDirectoryName this.FileName
+        this.Resolve(getSha1,NuGetV2.GetVersions root,NuGetV2.GetPackageDetails root force)
 
     member __.Resolve(getSha1,getVersionF, getPackageDetailsF) =
         let resolveSourceFile(file:ResolvedSourceFile) : PackageRequirement list =

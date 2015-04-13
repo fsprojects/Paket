@@ -36,11 +36,22 @@ let GetHomeDirectory() =
     else
         Environment.ExpandEnvironmentVariables("%HOMEDRIVE%%HOMEPATH%")
 
+type PathReference =
+    | AbsolutePath of string
+    | RelativePath of string
+
 let normalizeLocalPath(path:string) =
     if path.StartsWith("~/") then
-        Path.Combine(GetHomeDirectory(),path.Substring(1))
+        AbsolutePath (Path.Combine(GetHomeDirectory(),path.Substring(1)))
+    else if Path.IsPathRooted(path) then
+        AbsolutePath path
     else
-        path
+        RelativePath path
+        
+let getDirectoryInfo pathInfo root =
+    match pathInfo with
+            | AbsolutePath s -> DirectoryInfo(s)
+            | RelativePath s -> DirectoryInfo(Path.Combine(root, s))
 
 /// Creates a directory if it does not exist.
 let createDir path = 

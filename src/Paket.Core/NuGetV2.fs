@@ -130,12 +130,12 @@ let getAllVersions(auth, nugetURL, package) = async {
 //    }
 
 /// Gets versions of the given package from local Nuget feed.
-let getAllVersionsFromLocalPath (localNugetPath, package) =
+let getAllVersionsFromLocalPath (localNugetPath, package, root) =
     async {        
         let localNugetPath = Utils.normalizeLocalPath localNugetPath
-        let di = DirectoryInfo(localNugetPath)
+        let di = getDirectoryInfo localNugetPath root
         if not di.Exists then
-            failwithf "The directory %s doesn't exist.%sPlease check the NuGet source feed definition in your paket.dependencies file." localNugetPath Environment.NewLine
+            failwithf "The directory %s doesn't exist.%sPlease check the NuGet source feed definition in your paket.dependencies file." di.FullName Environment.NewLine
 
         let versions= 
             Directory.EnumerateFiles(di.FullName,"*.nupkg",SearchOption.AllDirectories)
@@ -293,17 +293,18 @@ let getDetailsFromNuget force auth nugetURL package (version:SemVerInfo) =
     } 
     
 /// Reads direct dependencies from a nupkg file
-let getDetailsFromLocalFile localNugetPath package (version:SemVerInfo) =
+let getDetailsFromLocalFile root localNugetPath package (version:SemVerInfo) =
     async {        
         let localNugetPath = Utils.normalizeLocalPath localNugetPath
+        let di = getDirectoryInfo localNugetPath root
         let nupkg = 
-            let v1 = FileInfo(Path.Combine(localNugetPath, sprintf "%s.%s.nupkg" package (version.ToString())))
+            let v1 = FileInfo(Path.Combine(di.FullName, sprintf "%s.%s.nupkg" package (version.ToString())))
             if v1.Exists then v1 else
             let version = version.Normalize()
-            FileInfo(Path.Combine(localNugetPath, sprintf "%s.%s.nupkg" package version))
+            FileInfo(Path.Combine(di.FullName, sprintf "%s.%s.nupkg" package version))
 
         if not nupkg.Exists then
-            failwithf "The package %s %s can't be found in %s.%sPlease check the feed definition in your paket.dependencies file." package (version.ToString()) localNugetPath Environment.NewLine
+            failwithf "The package %s %s can't be found in %s.%sPlease check the feed definition in your paket.dependencies file." package (version.ToString()) di.FullName Environment.NewLine
         let zip = ZipFile.OpenRead(nupkg.FullName)
         let zippedNuspec = zip.Entries |> Seq.find (fun f -> f.FullName.EndsWith ".nuspec")
         let fileName = FileInfo(Path.Combine(Path.GetTempPath(), zippedNuspec.Name)).FullName
@@ -318,7 +319,7 @@ let getDetailsFromLocalFile localNugetPath package (version:SemVerInfo) =
             { PackageName = nuspec.OfficialName
               DownloadUrl = package
               Dependencies = Requirements.optimizeRestrictions nuspec.Dependencies
-              SourceUrl = localNugetPath
+              SourceUrl = di.FullName
               CacheVersion = NugetPackageCache.CurrentCacheVersion
               LicenseUrl = nuspec.LicenseUrl
               Unlisted = false }
@@ -548,7 +549,7 @@ let GetTargetsFiles(targetFolder) =
 
     targetsFiles
 
-let GetPackageDetails force sources (PackageName package) (version:SemVerInfo) : PackageResolver.PackageDetails = 
+let GetPackageDetails root force sources (PackageName package) (version:SemVerInfo) : PackageResolver.PackageDetails = 
     let rec tryNext xs = 
         match xs with
         | source :: rest -> 
@@ -564,7 +565,7 @@ let GetPackageDetails force sources (PackageName package) (version:SemVerInfo) :
                         version 
                     |> Async.RunSynchronously
                 | LocalNuget path -> 
-                    getDetailsFromLocalFile path package version 
+                    getDetailsFromLocalFile root path package version 
                     |> Async.RunSynchronously
                 |> fun x -> source,x
             with e ->
@@ -584,7 +585,7 @@ let GetPackageDetails force sources (PackageName package) (version:SemVerInfo) :
         |> Set.ofList }
 
 /// Allows to retrieve all version no. for a package from the given sources.
-let GetVersions(sources, PackageName packageName) = 
+let GetVersions root (sources, PackageName packageName) = 
     let versions =
         sources
         |> Seq.map (fun source -> 
@@ -593,7 +594,7 @@ let GetVersions(sources, PackageName packageName) =
                                     source.Authentication |> Option.map toBasicAuth, 
                                     source.Url, 
                                     packageName)
-               | LocalNuget path -> getAllVersionsFromLocalPath (path, packageName))
+               | LocalNuget path -> getAllVersionsFromLocalPath (path, packageName, root))
         |> Async.Parallel
         |> Async.RunSynchronously
         |> Seq.choose id
