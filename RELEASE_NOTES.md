@@ -1,10 +1,9 @@
-#### 0.40.4 - 12.04.2015
-* Improved config file formatting with indented binding redirects - https://github.com/fsprojects/Paket/pull/769
-
-#### 0.40.2 - 10.04.2015
+#### 0.41.0 - 13.04.2015
+* New Testimonials page - http://fsprojects.github.io/Paket/testimonials.html
+* New `PAKET.VERSION` environment variable for bootstraper - https://github.com/fsprojects/Paket/pull/771
 * `convert-from-nuget` aggregates target framework from packages.config files - https://github.com/fsprojects/Paket/pull/768
-
-#### 0.40.1 - 10.04.2015
+* Improved config file formatting with indented binding redirects - https://github.com/fsprojects/Paket/pull/769
+* BUGFIX: Fixed home path detection - https://github.com/fsprojects/Paket/pull/770
 * COSMETICS: Better error message when `paket.dependencies` is missing - https://github.com/fsprojects/Paket/issues/764
 
 #### 0.40.0 - 09.04.2015

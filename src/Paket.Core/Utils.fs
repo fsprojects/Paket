@@ -42,7 +42,7 @@ type PathReference =
 
 let normalizeLocalPath(path:string) =
     if path.StartsWith("~/") then
-        AbsolutePath (Path.Combine(GetHomeDirectory(),path.Substring(1)))
+        AbsolutePath (Path.Combine(GetHomeDirectory(), path.Substring(2)))
     else if Path.IsPathRooted(path) then
         AbsolutePath path
     else
@@ -52,7 +52,7 @@ let getDirectoryInfo pathInfo root =
     match pathInfo with
             | AbsolutePath s -> DirectoryInfo(s)
             | RelativePath s -> DirectoryInfo(Path.Combine(root, s))
-
+        
 /// Creates a directory if it does not exist.
 let createDir path = 
     try

@@ -1,5 +1,6 @@
 ﻿module Paket.UtilsSpecs
 
+open System.IO
 open Paket
 open NUnit.Framework
 open FsUnit
@@ -9,8 +10,13 @@ let ``createRelativePath should handle spaces``() =
     "C:/some file" 
     |> createRelativePath "C:/a/b" 
     |> shouldEqual "..\\some file"
-
-    
+        
+[<Test>]
+let ``normalize path with home directory``() =
+    "~/data" 
+    |> Utils.normalizeLocalPath
+    |> shouldEqual (AbsolutePath (GetHomeDirectory() + Path.DirectorySeparatorChar.ToString()  +  "data"))
+        
 [<Test>]
 let ``relative local path is returned as is``() =
     "Externals/NugetStore" 
