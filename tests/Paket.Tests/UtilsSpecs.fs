@@ -30,6 +30,12 @@ let ``absolute path with drive letter``() =
     |> shouldEqual (AbsolutePath "c:\\Store")
     
 [<Test>]
+let ``relative path with drive letter``() =
+    "..\\Store" 
+    |> normalizeLocalPath
+    |> shouldEqual (RelativePath "..\\Store")
+    
+[<Test>]
 let ``SMB path is returned as absolute path``() =
     "\\\\server\\Store" 
     |> normalizeLocalPath
