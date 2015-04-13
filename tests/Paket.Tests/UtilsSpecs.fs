@@ -25,9 +25,9 @@ let ``relative local path is returned as is``() =
     
 [<Test>]
 let ``absolute path with drive letter``() =
-    "c:\Store" 
+    "c:\\Store" 
     |> normalizeLocalPath
-    |> shouldEqual (AbsolutePath "c:\Store")
+    |> shouldEqual (AbsolutePath "c:\\Store")
     
 [<Test>]
 let ``SMB path is returned as absolute path``() =
