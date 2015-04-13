@@ -11,6 +11,7 @@ namespace Paket.Bootstrapper
     {
         const string PreferNugetCommandArg = "--prefer-nuget";
         const string PrereleaseCommandArg = "prerelease";
+        const string PaketVersionEnv = "PAKET.VERSION";
 
         static IWebProxy GetDefaultWebProxyFor(String url)
         {
@@ -136,7 +137,7 @@ namespace Paket.Bootstrapper
             var folder = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
             var target = Path.Combine(folder, "paket.exe");
 
-            var latestVersion = "";
+            var latestVersion = Environment.GetEnvironmentVariable(PaketVersionEnv) ?? "";
             var ignorePrerelease = true;
 
             if (args.Length >= 1)
@@ -144,6 +145,7 @@ namespace Paket.Bootstrapper
                 if (args[0] == PrereleaseCommandArg)
                 {
                     ignorePrerelease = false;
+                    latestVersion = "";
                     Console.WriteLine("Prerelease requested. Looking for latest prerelease.");
                 }
                 else
@@ -152,6 +154,8 @@ namespace Paket.Bootstrapper
                     Console.WriteLine("Version {0} requested.", latestVersion);
                 }
             }
+            else if (!String.IsNullOrWhiteSpace(latestVersion))
+                Console.WriteLine("Version {0} requested.", latestVersion);
             else Console.WriteLine("No version specified. Downloading latest stable.");
 
 
