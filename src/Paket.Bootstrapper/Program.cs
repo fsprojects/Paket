@@ -145,6 +145,7 @@ namespace Paket.Bootstrapper
                 if (args[0] == PrereleaseCommandArg)
                 {
                     ignorePrerelease = false;
+                    latestVersion = "";
                     Console.WriteLine("Prerelease requested. Looking for latest prerelease.");
                 }
                 else
