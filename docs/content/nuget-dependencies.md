@@ -38,6 +38,10 @@ Paket also supports file paths such as local directories or references to UNC sh
 
     source C:\Nugets
     source ~/project/nugets
+    
+As well Paket supports the source directory to be specified relative to the `paket.dependencies` file: 
+
+    source ext/nugets
 
 ## Dependencies
 
