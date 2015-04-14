@@ -32,10 +32,10 @@
     <StartProgram>paket.exe</StartProgram>
     <StartWorkingDirectory>D:\code\Pakettest</StartWorkingDirectory>
     <StartWorkingDirectory>D:\code\Paketkopie</StartWorkingDirectory>
-    <StartArguments>update</StartArguments>
+    <StartArguments>convert-from-nuget</StartArguments>
     <StartAction>Project</StartAction>
     <StartProgram>paket.exe</StartProgram>
-    <StartWorkingDirectory>D:\code\Pakettest</StartWorkingDirectory>
+    <StartWorkingDirectory>D:\code\gitlab-ci-runner-win</StartWorkingDirectory>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>

@@ -1,3 +1,7 @@
+#### 0.41.1 - 14.04.2015
+* BUGFIX: Fixing wrong local path detection with `paket install` - https://github.com/fsprojects/Paket/pull/773
+* BUGFIX: Fixed zip opening on mono - https://github.com/fsprojects/Paket/pull/774
+
 #### 0.41.0 - 13.04.2015
 * New Testimonials page - http://fsprojects.github.io/Paket/testimonials.html
 * New `PAKET.VERSION` environment variable for bootstraper - https://github.com/fsprojects/Paket/pull/771
