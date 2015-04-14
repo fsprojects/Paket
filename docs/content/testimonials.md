@@ -12,6 +12,16 @@ We love what we do and with love comes passion. This passion drives us to active
 
 ![alt text](img/testimonials-grossweber.png "GROSSWEBER likes Paket")
 
+## 15below
+
+> Paket has removed the pain from disciplined dependency management.
+
+[15below](http://15below.com) started moving from copying binary dependencies around to nuget dependencies several years ago, and it's been a massive help with our internal coding discipline. But the time overheads added to development by versioned path merge conflicts and the confusion caused by multiple versions within solutions was becoming more and more of a pain point. It reached the stage where we were considering moving back to a method of working we knew was less efficient just to avoid the pain of the tooling.
+
+Paket has removed the pain from disciplined dependency management. Sensible design for large, shared projects protects us from insane merge conflicts and on the few occasions that we have discovered bugs or missing features the clean codebase and responsive maintainers have enabled us to fill those gaps rapidly - often with a new release the same day.
+
+Michael Newton (Technical Architect) [@mavnn](https://twitter.com/mavnn), [15below](http://15below.com)
+
 ## Please contribute your testimonials!
 
 Adding new testimonials to this page is easy. Just write your quote in plain text, using some Markdown formatting and send a pull request to [docs/content/testimonials.md](https://github.com/fsprojects/Paket/blob/master/docs/content/testimonials.md).
