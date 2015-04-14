@@ -190,7 +190,8 @@ let Write (core : CompleteCoreInfo) optional workingDir outputDir =
     if File.Exists outputPath then
         File.Delete outputPath
 
-    use zipFile = ZipFile.Open(outputPath,ZipArchiveMode.Create)
+    use zipToCreate = new FileStream(outputPath, FileMode.Create)
+    use zipFile = new ZipArchive(zipToCreate,ZipArchiveMode.Create)
 
     let entries = System.Collections.Generic.List<_>()
     
