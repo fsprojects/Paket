@@ -10,8 +10,12 @@ let findChangesInDependenciesFile(dependenciesFile:DependenciesFile,lockFile:Loc
 
     let added =
         dependenciesFile.DirectDependencies
-        |> Seq.map (fun d -> NormalizedPackageName d.Key)
-        |> Seq.filter (lockFile.ResolvedPackages.ContainsKey >> not)
+        |> Seq.map (fun d -> NormalizedPackageName d.Key,d.Value)
+        |> Seq.filter (fun (name,vr) ->
+            match lockFile.ResolvedPackages.TryFind name with
+            | Some p -> not (vr.IsInRange p.Version) 
+            | _ -> true)
+        |> Seq.map fst
         |> Set.ofSeq
     
     let modified =

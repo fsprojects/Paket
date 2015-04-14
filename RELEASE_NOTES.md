@@ -1,3 +1,6 @@
+## 0.41.3 - 14.04.2015
+* BUGFIX: Fix smart install when we add a pinned version - https://github.com/fsprojects/Paket/issues/777
+
 #### 0.41.2 - 14.04.2015
 * Trace NuGet server response in verbose mode - https://github.com/fsprojects/Paket/issues/775
 
