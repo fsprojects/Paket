@@ -216,10 +216,20 @@ let parseODataDetails(nugetURL,packageName,version,raw) =
 let getDetailsFromNuGetViaODataFast auth nugetURL package (version:SemVerInfo) = 
     async {         
         try 
-            let! raw = getFromUrl(auth,sprintf "%s/Packages?$filter=Id eq '%s' and NormalizedVersion eq '%s'" nugetURL package (version.Normalize()))
+            let url = sprintf "%s/Packages?$filter=Id eq '%s' and NormalizedVersion eq '%s'" nugetURL package (version.Normalize())
+            let! raw = getFromUrl(auth,url)
+            if verbose then
+                tracefn "Response from %s:" url
+                tracefn ""
+                tracefn "%s" raw
             return parseODataDetails(nugetURL,package,version,raw)
         with _ ->         
-            let! raw = getFromUrl(auth,sprintf "%s/Packages?$filter=Id eq '%s' and Version eq '%s'" nugetURL package (version.ToString()))
+            let url = sprintf "%s/Packages?$filter=Id eq '%s' and Version eq '%s'" nugetURL package (version.ToString())
+            let! raw = getFromUrl(auth,url)
+            if verbose then
+                tracefn "Response from %s:" url
+                tracefn ""
+                tracefn "%s" raw
             return parseODataDetails(nugetURL,package,version,raw)
     }
 
@@ -229,7 +239,12 @@ let getDetailsFromNuGetViaOData auth nugetURL package (version:SemVerInfo) =
         try 
             return! getDetailsFromNuGetViaODataFast auth nugetURL package version
         with _ ->         
-            let! raw = getFromUrl(auth,sprintf "%s/Packages(Id='%s',Version='%s')" nugetURL package (version.ToString()))
+            let url = sprintf "%s/Packages(Id='%s',Version='%s')" nugetURL package (version.ToString())
+            let! raw = getFromUrl(auth,url)
+            if verbose then
+                tracefn "Response from %s:" url
+                tracefn ""
+                tracefn "%s" raw
             return parseODataDetails(nugetURL,package,version,raw)
     }
 

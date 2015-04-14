@@ -1,3 +1,6 @@
+#### 0.41.2 - 14.04.2015
+* Trace NuGet server response in verbose mode - https://github.com/fsprojects/Paket/issues/775
+
 #### 0.41.1 - 14.04.2015
 * BUGFIX: Fixing wrong local path detection with `paket install` - https://github.com/fsprojects/Paket/pull/773
 * BUGFIX: Fixed zip opening on mono - https://github.com/fsprojects/Paket/pull/774
