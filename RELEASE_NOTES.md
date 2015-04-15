@@ -1,4 +1,7 @@
-## 0.41.4 - 14.04.2015
+#### 0.42.0 - 15.04.2015
+* BUGFIX: Smart Install is no longer adding dependencies to paket.dependencies if specified in paket.references but not in paket.dependencies - https://github.com/fsprojects/Paket/issues/779
+
+#### 0.41.3 - 14.04.2015
 * BUGFIX: Fix smart install when we add a pinned version - https://github.com/fsprojects/Paket/issues/777
 
 #### 0.41.2 - 14.04.2015
