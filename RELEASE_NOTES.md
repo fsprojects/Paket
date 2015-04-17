@@ -1,4 +1,4 @@
-## 0.41.4 - 14.04.2015
+## 0.41.5 - 14.04.2015
 * BUGFIX: Fix smart install when we add a pinned version - https://github.com/fsprojects/Paket/issues/777
 
 #### 0.41.2 - 14.04.2015
