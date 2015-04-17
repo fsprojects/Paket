@@ -69,9 +69,7 @@ let SelectiveUpdate(dependenciesFile:DependenciesFile, exclude, force) =
 let SmartInstall(dependenciesFileName, exclude, force, hard, withBindingRedirects) = 
     let root = Path.GetDirectoryName dependenciesFileName
     let projects = InstallProcess.findAllReferencesFiles root |> returnOrFail
-    let dependenciesFile = 
-        DependenciesFile.ReadFromFile(dependenciesFileName)
-        |> addPackagesFromReferenceFiles projects
+    let dependenciesFile = DependenciesFile.ReadFromFile(dependenciesFileName)
         
     let lockFile = SelectiveUpdate(dependenciesFile,exclude,force)
      
