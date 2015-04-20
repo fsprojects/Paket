@@ -58,14 +58,18 @@ namespace Paket.Bootstrapper
                     const int bufferSize = 4096;
                     byte[] buffer = new byte[bufferSize];
                     int bytesRead = 0;
+                    var tmpFile = Path.GetTempFileName();
 
-                    using (FileStream fileStream = File.Create(target))
+                    using (FileStream fileStream = File.Create(tmpFile))
                     {
                         while ((bytesRead = httpResponseStream.Read(buffer, 0, bufferSize)) != 0)
                         {
                             fileStream.Write(buffer, 0, bytesRead);
                         }
                     }
+
+                    File.Copy(tmpFile, target, true);
+                    File.Delete(tmpFile);
                 }
             }
         }
