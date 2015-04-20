@@ -10,7 +10,7 @@ We love what we do and with love comes passion. This passion drives us to active
 
 [@agross](https://github.com/agross), [GROSSWEBER](http://grossweber.com/en), Germany/Leipzig
 
-![alt text](img/testimonials-grossweber.png "GROSSWEBER likes Paket")
+![alt text](../files/img/testimonials-grossweber.png "GROSSWEBER likes Paket")
 
 ## 15below
 
