@@ -1,3 +1,6 @@
+#### 1.0.1 - 20.04.2015
+* New bootstrapper protects paket.exe from incomplete github downloads - https://github.com/fsprojects/Paket/pull/788 
+
 #### 1.0.0 - 17.04.2015
 * Big release from fsharpex
 
