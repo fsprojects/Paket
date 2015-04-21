@@ -101,6 +101,12 @@ namespace Paket.Bootstrapper
             }
         }
 
+        public bool SelfUpdate(string latestVersion)
+        {
+            Console.WriteLine("self update of bootstrapper via nuget is currently not possible");
+            return false;
+        }
+
         private class SemVer : IComparable
         {
             public int Major { get; set; }

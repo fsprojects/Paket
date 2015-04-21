@@ -12,6 +12,7 @@ namespace Paket.Bootstrapper
         const string PreferNugetCommandArg = "--prefer-nuget";
         const string PrereleaseCommandArg = "prerelease";
         const string PaketVersionEnv = "PAKET.VERSION";
+        const string SelfUpdateCommandArg = "--self";
 
         static IWebProxy GetDefaultWebProxyFor(String url)
         {
@@ -41,8 +42,19 @@ namespace Paket.Bootstrapper
             var dlArgs = EvaluateCommandArgs(commandArgs);
 
             var effectiveStrategy = GetEffectiveDownloadStrategy(dlArgs, preferNuget);
-
-            StartPaketBootstrapping(effectiveStrategy, dlArgs);
+            try
+            {
+                StartPaketBootstrapping(effectiveStrategy, dlArgs);
+            }
+            catch (RestartException)
+            {
+                Console.WriteLine("Restarting bootstrapper.");
+                ProcessStartInfo s = new ProcessStartInfo();
+                s.FileName = Assembly.GetExecutingAssembly().Location;
+                s.UseShellExecute = false;
+                s.Arguments = String.Join(" ", args.Where(x => x != SelfUpdateCommandArg).Select(x => String.Format("\"{0}\"", x)));
+                Process.Start(s);
+            }
         }
 
         private static void StartPaketBootstrapping(IDownloadStrategy downloadStrategy, DownloadArguments dlArgs)
@@ -63,6 +75,12 @@ namespace Paket.Bootstrapper
                     latestVersion = downloadStrategy.GetLatestVersion(dlArgs.IgnorePrerelease);
                 }
 
+                if (dlArgs.DoSelfUpdate)
+                {
+                    Console.WriteLine("Trying self update");
+                    if (downloadStrategy.SelfUpdate(latestVersion))
+                        throw new RestartException();
+                }
                 if (!localVersion.StartsWith(latestVersion))
                 {
                     downloadStrategy.DownloadVersion(latestVersion, dlArgs.Target);
@@ -87,6 +105,10 @@ namespace Paket.Bootstrapper
                 }
                 if (shouldHandleException)
                     handleException(exn);
+            }
+            catch (RestartException)
+            {
+                throw;
             }
             catch (Exception exn)
             {
@@ -113,7 +135,7 @@ namespace Paket.Bootstrapper
             return effectiveStrategy;
         }
 
-        private static string GetLocalFileVersion(string target)
+        protected internal static string GetLocalFileVersion(string target)
         {
             var localVersion = "";
 
@@ -139,6 +161,7 @@ namespace Paket.Bootstrapper
 
             var latestVersion = Environment.GetEnvironmentVariable(PaketVersionEnv) ?? "";
             var ignorePrerelease = true;
+            bool doSelfUpdate = false;
 
             if (args.Length >= 1)
             {
@@ -153,13 +176,17 @@ namespace Paket.Bootstrapper
                     latestVersion = args[0];
                     Console.WriteLine("Version {0} requested.", latestVersion);
                 }
+                if (args.Contains(SelfUpdateCommandArg))
+                {
+                    doSelfUpdate = true;
+                }
             }
             else if (!String.IsNullOrWhiteSpace(latestVersion))
                 Console.WriteLine("Version {0} requested.", latestVersion);
             else Console.WriteLine("No version specified. Downloading latest stable.");
 
 
-            return new DownloadArguments(latestVersion, ignorePrerelease, folder, target);
+            return new DownloadArguments(latestVersion, ignorePrerelease, folder, target, doSelfUpdate);
         }
 
         private static void PrepareWebClient(WebClient client, string url)
@@ -177,5 +204,4 @@ namespace Paket.Bootstrapper
             Console.ForegroundColor = oldColor;
         }
     }
-
 }

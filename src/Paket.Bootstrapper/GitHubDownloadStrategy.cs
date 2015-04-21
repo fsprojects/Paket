@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Net;
+using System.Reflection;
 
 namespace Paket.Bootstrapper
 {
@@ -72,6 +73,71 @@ namespace Paket.Bootstrapper
                     File.Delete(tmpFile);
                 }
             }
+        }
+
+        public bool SelfUpdate(string latestVersion)
+        {
+            bool updateSuccess = false;
+            var executingAssembly = Assembly.GetExecutingAssembly();
+            string exePath = executingAssembly.Location;
+            var localVersion = Program.GetLocalFileVersion(exePath);
+            if (localVersion.StartsWith(latestVersion))
+            {
+                Console.WriteLine("Bootstrapper is up to date. Nothing to do.");
+                return updateSuccess;
+            }
+
+            var url = String.Format("https://github.com/fsprojects/Paket/releases/download/{0}/paket.bootstrapper.exe", latestVersion);
+            Console.WriteLine("Starting download of bootstrapper from {0}", url);
+
+            var request = (HttpWebRequest)HttpWebRequest.Create(url);
+
+            request.UseDefaultCredentials = true;
+            request.Proxy = GetDefaultWebProxyFor(url);
+
+            request.AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate;
+
+
+            string renamedPath = exePath + ".old";
+            Move(exePath, renamedPath);
+            try
+            {
+                using (HttpWebResponse httpResponse = (HttpWebResponse)request.GetResponse())
+                {
+                    using (Stream httpResponseStream = httpResponse.GetResponseStream(), toStream = File.Create(exePath))
+                    {
+                        httpResponseStream.CopyTo(toStream);
+                        updateSuccess = true;
+                    }
+                }
+                if (updateSuccess)
+                    File.Delete(renamedPath);
+            }
+            catch (Exception)
+            {
+                Console.WriteLine("Self update failed. Resetting bootstrapper.");
+                Move(renamedPath, exePath);
+                throw;
+            }
+            
+            return updateSuccess;
+        }
+
+        protected void Move(string oldPath, string newPath)
+        {
+            try
+            {
+                if (File.Exists(newPath))
+                {
+                    File.Delete(newPath);
+                }
+            }
+            catch (FileNotFoundException)
+            {
+
+            }
+
+            File.Move(oldPath, newPath);
         }
     }
 }

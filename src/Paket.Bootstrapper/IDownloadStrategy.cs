@@ -8,6 +8,7 @@ namespace Paket.Bootstrapper
         IDownloadStrategy FallbackStrategy { get; set; }
         string GetLatestVersion(bool ignorePrerelease);
         void DownloadVersion(string latestVersion, string target);
+        bool SelfUpdate(string latestVersion);
     }
 
     public delegate void PrepareWebClientDelegate(WebClient client, string url);
