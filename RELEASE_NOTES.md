@@ -1,3 +1,6 @@
+#### 1.1.0 - 23.04.2015
+* Pack command is able to detect portable frameworks - https://github.com/fsprojects/Paket/issues/797
+
 #### 1.0.2 - 23.04.2015
 * `Convert-from-nuget` removes custom import and targets - https://github.com/fsprojects/Paket/pull/792
 

@@ -188,7 +188,38 @@ type TargetProfile =
         match this with
         | SinglePlatform x -> x.ToString()
         | PortableProfile(name,elements) ->
-            "portable-net45+netcore45+wpa81+wp8+MonoAndroid1+MonoTouch1" // TODO: Implement ToString() for portable projects
+            match name with
+            | "Profile5" -> "portable-net4+netcore45+MonoAndroid1+MonoTouch1"
+            | "Profile6" -> "portable-net403+netcore45+MonoAndroid1+MonoTouch1"
+            | "Profile7" -> "portable-net45+netcore45+MonoAndroid1+MonoTouch1"
+            | "Profile14" -> "portable-net4+sl5+MonoAndroid1+MonoTouch1"
+            | "Profile19" -> "portable-net403+sl5+MonoAndroid1+MonoTouch1"
+            | "Profile24" -> "portable-net45+sl5+MonoAndroid1+MonoTouch1"
+            | "Profile31" -> "portable-netcore451+wp81"
+            | "Profile32" -> "portable-netcore451+wpa81"
+            | "Profile37" -> "portable-net4+sl5+netcore45+MonoAndroid1+MonoTouch1"
+            | "Profile42" -> "portable-net403+sl5+netcore45+MonoAndroid1+MonoTouch1"
+            | "Profile44" -> "portable-net451+netcore451"
+            | "Profile47" -> "portable-net45+sl5+netcore45+MonoAndroid1+MonoTouch1"
+            | "Profile49" -> "portable-net45+wp8+MonoAndroid1+MonoTouch1"
+            | "Profile78" -> "portable-net45+netcore45+wp8+MonoAndroid1+MonoTouch1"
+            | "Profile84" -> "portable-wpa81+wp81"
+            | "Profile92" -> "portable-net4+netcore45+wpa81+MonoAndroid1+MonoTouch1"
+            | "Profile102" -> "portable-net403+netcore45+wpa81+MonoAndroid1+MonoTouch1"
+            | "Profile111" -> "portable-net45+netcore45+wpa81+MonoAndroid1+MonoTouch1"
+            | "Profile136" -> "portable-net4+sl5+netcore45+wp8+MonoAndroid1+MonoTouch1"
+            | "Profile147" -> "portable-net403+sl5+netcore45+wp8+MonoAndroid1+MonoTouch1"
+            | "Profile151" -> "portable-net451+netcore451+wpa81"
+            | "Profile157" -> "portable-netcore451+wpa81+wp81"
+            | "Profile158" -> "portable-net45+sl5+netcore45+wp8+MonoAndroid1+MonoTouch1"
+            | "Profile225" -> "portable-net4+sl5+netcore45+wpa81+MonoAndroid1+MonoTouch1"
+            | "Profile240" -> "portable-net403+sl5+netcore45+wpa81"
+            | "Profile255" -> "portable-net45+sl5+netcore45+wpa81+MonoAndroid1+MonoTouch1"
+            | "Profile259" -> "portable-net45+netcore45+wpa81+wp8+MonoAndroid1+MonoTouch1"
+            | "Profile328" -> "portable-net4+sl5+netcore45+wpa81+wp8+MonoAndroid1+MonoTouch1"
+            | "Profile336" -> "portable-net403+sl5+netcore45+wpa81+wp8+MonoAndroid1+MonoTouch1"
+            | "Profile344" -> "portable-net45+sl5+netcore45+wpa81+wp8+MonoAndroid1+MonoTouch1"
+            | _ -> "portable-net45+netcore45+wpa81+wp8+MonoAndroid1+MonoTouch1" // Use Portable259 as default
 
 module KnownTargetProfiles =
     let DotNetFrameworkProfiles =
