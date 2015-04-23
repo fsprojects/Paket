@@ -14,22 +14,6 @@ namespace Paket.Bootstrapper
         const string PaketVersionEnv = "PAKET.VERSION";
         const string SelfUpdateCommandArg = "--self";
 
-        static IWebProxy GetDefaultWebProxyFor(String url)
-        {
-            IWebProxy result = WebRequest.GetSystemWebProxy();
-            Uri uri = new Uri(url);
-            Uri address = result.GetProxy(uri);
-
-            if (address == uri)
-                return null;
-
-            return new WebProxy(address)
-            {
-                Credentials = CredentialCache.DefaultCredentials,
-                BypassProxyOnLocal = true
-            };
-        }
-
         static void Main(string[] args)
         {
             var commandArgs = args;
@@ -63,11 +47,11 @@ namespace Paket.Bootstrapper
             {
                 if (!File.Exists(dlArgs.Target))
                     Environment.ExitCode = 1;
-                WriteConsoleError(String.Format("{0} ({1})", exception.Message, downloadStrategy.Name));
+                BootstrapperHelper.WriteConsoleError(String.Format("{0} ({1})", exception.Message, downloadStrategy.Name));
             };
             try
             {
-                var localVersion = GetLocalFileVersion(dlArgs.Target);
+                var localVersion = BootstrapperHelper.GetLocalFileVersion(dlArgs.Target);
 
                 var latestVersion = dlArgs.LatestVersion;
                 if (latestVersion == "")
@@ -118,8 +102,8 @@ namespace Paket.Bootstrapper
 
         private static IDownloadStrategy GetEffectiveDownloadStrategy(DownloadArguments dlArgs, bool preferNuget)
         {
-            var gitHubDownloadStrategy = new GitHubDownloadStrategy(PrepareWebClient, GetDefaultWebProxyFor);
-            var nugetDownloadStrategy = new NugetDownloadStrategy(PrepareWebClient, GetDefaultWebProxyFor, dlArgs.Folder);
+            var gitHubDownloadStrategy = new GitHubDownloadStrategy(BootstrapperHelper.PrepareWebClient, BootstrapperHelper.GetDefaultWebProxyFor);
+            var nugetDownloadStrategy = new NugetDownloadStrategy(BootstrapperHelper.PrepareWebClient, BootstrapperHelper.GetDefaultWebProxyFor, dlArgs.Folder);
 
             IDownloadStrategy effectiveStrategy;
             if (preferNuget)
@@ -133,25 +117,6 @@ namespace Paket.Bootstrapper
                 gitHubDownloadStrategy.FallbackStrategy = nugetDownloadStrategy;
             }
             return effectiveStrategy;
-        }
-
-        protected internal static string GetLocalFileVersion(string target)
-        {
-            var localVersion = "";
-
-            if (File.Exists(target))
-            {
-                try
-                {
-                    FileVersionInfo fvi = FileVersionInfo.GetVersionInfo(target);
-                    if (fvi.FileVersion != null)
-                        localVersion = fvi.FileVersion;
-                }
-                catch (Exception)
-                {
-                }
-            }
-            return localVersion;
         }
 
         private static DownloadArguments EvaluateCommandArgs(string[] args)
@@ -187,21 +152,6 @@ namespace Paket.Bootstrapper
 
 
             return new DownloadArguments(latestVersion, ignorePrerelease, folder, target, doSelfUpdate);
-        }
-
-        private static void PrepareWebClient(WebClient client, string url)
-        {
-            client.Headers.Add("user-agent", "Paket.Bootstrapper");
-            client.UseDefaultCredentials = true;
-            client.Proxy = GetDefaultWebProxyFor(url);
-        }
-
-        private static void WriteConsoleError(string message)
-        {
-            var oldColor = Console.ForegroundColor;
-            Console.ForegroundColor = ConsoleColor.Red;
-            Console.WriteLine(message);
-            Console.ForegroundColor = oldColor;
         }
     }
 }

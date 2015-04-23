@@ -39,6 +39,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="BootstrapperHelper.cs" />
     <Compile Include="DownloadArguments.cs" />
     <Compile Include="GitHubDownloadStrategy.cs" />
     <Compile Include="IDownloadStrategy.cs" />
