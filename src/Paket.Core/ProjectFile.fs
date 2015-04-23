@@ -466,6 +466,35 @@ type ProjectFile =
                 if not parent.HasChildNodes then 
                     parent.ParentNode.RemoveChild parent |> ignore)
 
+    member this.RemoveImportAndTargetEntries(packages : list<string * SemVerInfo> ) =
+        let toDelete = 
+            this.Document 
+            |> getDescendants "Import"
+            |> List.filter (fun node -> 
+                match node |> getAttribute "Project" with
+                | Some p -> packages |> List.exists (fun (id, version) ->
+                    p.IndexOf(sprintf "%s.%O" id version, StringComparison.OrdinalIgnoreCase) >= 0)
+                | None -> false)
+        
+        toDelete
+        |> List.iter
+            (fun node -> 
+                let sibling = node.NextSibling
+                tracefn "Removing 'Import' entry from %s for project %s" 
+                    this.FileName 
+                    (node |> getAttribute "Project" |> Option.get)
+                node.ParentNode.RemoveChild node |> ignore
+                match sibling with
+                | sibling when sibling.Name.Equals("Target") ->
+                    let deleteTarget = 
+                        Utils.askYesNo
+                            (sprintf "Do you want to delete Target named '%s' from %s ?" 
+                                (sibling |> getAttribute "Name" |> Option.get)
+                                this.FileName)
+                    if deleteTarget then
+                        sibling.ParentNode.RemoveChild sibling |> ignore
+                | _ -> ())
+
     member this.OutputType =
         seq {for outputType in this.Document |> getDescendants "OutputType" ->
                 match outputType.InnerText with
