@@ -23,10 +23,17 @@ type Nuspec =
       Dependencies : (PackageName * VersionRequirement * FrameworkRestrictions) list
       OfficialName : string
       LicenseUrl : string
+      IsDevelopmentDependency : bool
       FrameworkAssemblyReferences : FrameworkAssemblyReference list }
 
-    static member All = { References = NuspecReferences.All; Dependencies = []; FrameworkAssemblyReferences = []; OfficialName = ""; LicenseUrl = "" }
-    static member Explicit references = { References = NuspecReferences.Explicit references; Dependencies = []; FrameworkAssemblyReferences = []; OfficialName = ""; LicenseUrl = "" }
+    static member All = { References = NuspecReferences.All; Dependencies = []; FrameworkAssemblyReferences = []; OfficialName = ""; LicenseUrl = ""; IsDevelopmentDependency = false }
+    static member Explicit references = { References = NuspecReferences.Explicit references; Dependencies = []; FrameworkAssemblyReferences = []; OfficialName = ""; LicenseUrl = ""; IsDevelopmentDependency = false }
+
+    static member Load(root,name:PackageName) =
+        let (PackageName name) = name
+        let nuspec = FileInfo(sprintf "%s/packages/%s/%s.nuspec" root name name)
+        Nuspec.Load nuspec.FullName
+
     static member Load(fileName : string) = 
         let fi = FileInfo(fileName)
         if not fi.Exists then Nuspec.All
@@ -81,7 +88,12 @@ type Nuspec =
             let licenseUrl =                 
                 match doc |> getNode "package" |> optGetNode "metadata" |> optGetNode "licenseUrl" with
                 | Some link -> link.InnerText
-                | None -> ""     
+                | None -> ""
+
+            let isDevelopmentDependency =                 
+                match doc |> getNode "package" |> optGetNode "metadata" |> optGetNode "developmentDependency" with
+                | Some link -> link.InnerText.ToLower() = "true"
+                | None -> false
             
             let references = 
                 doc
@@ -121,4 +133,5 @@ type Nuspec =
               Dependencies = dependencies
               OfficialName = officialName
               LicenseUrl = licenseUrl
+              IsDevelopmentDependency = isDevelopmentDependency
               FrameworkAssemblyReferences = frameworkAssemblyReferences }

@@ -102,6 +102,7 @@ let ``should generate Xml for Rx-XAML 2.2.4 with correct framework assembly refe
                  OfficialName = "Reactive Extensions - XAML Support Library"
                  Dependencies = []
                  LicenseUrl = ""
+                 IsDevelopmentDependency = false
                  FrameworkAssemblyReferences =
                  [{ AssemblyName = "WindowsBase"; FrameworkRestrictions = [FrameworkRestriction.Exactly(DotNetFramework FrameworkVersion.V4_5)] }
                   { AssemblyName = "WindowsBase"; FrameworkRestrictions = [FrameworkRestriction.Exactly(DotNetFramework FrameworkVersion.V4)] }

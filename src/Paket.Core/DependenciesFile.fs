@@ -410,6 +410,10 @@ type DependenciesFile(fileName,options,sources,packages : PackageRequirement lis
         |> Seq.distinct
         |> Seq.toList
 
+    member this.RootPath =
+        let fi = FileInfo(fileName)
+        fi.Directory.FullName
+
     override __.ToString() =        
         let sources = 
             packages

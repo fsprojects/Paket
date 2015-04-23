@@ -187,16 +187,27 @@ let findDependencies (dependencies : DependenciesFile) config (template : Templa
         files
         |> List.fold (fun templatefile file -> addFile (toFile config file) targetDir templatefile) withDeps
 
-    let locked =
-        (dependencies.FindLockfile().FullName
-         |> LockFile.LoadFrom).ResolvedPackages
+    let lockFile = 
+        dependencies.FindLockfile().FullName
+        |> LockFile.LoadFrom
 
     // Add any paket references
     let referenceFile = 
-        ProjectFile.FindReferencesFile <| FileInfo project.FileName |> Option.map (ReferencesFile.FromFile)
+        FileInfo project.FileName
+        |> ProjectFile.FindReferencesFile 
+        |> Option.map (ReferencesFile.FromFile)
+
     match referenceFile with
     | Some r -> 
         r.NugetPackages
+        |> List.filter (fun np ->
+            try
+                // TODO: it would be nice if this data would be in the NuGet OData feed,
+                // then we would not need to parse every nuspec here
+                let nuspec = Nuspec.Load(dependencies.RootPath,np.Name)
+                not nuspec.IsDevelopmentDependency
+            with
+            | _ -> true)
         |> List.map (fun np ->
                 let dep =
                     match Map.tryFind np.Name dependencies.DirectDependencies with
@@ -205,7 +216,9 @@ let findDependencies (dependencies : DependenciesFile) config (template : Templa
                     // min version to current locked version
                     | None -> 
                         let resolved =
-                            locked |> Map.find (NormalizedPackageName np.Name)
+                            lockFile.ResolvedPackages 
+                            |> Map.find (NormalizedPackageName np.Name)
+
                         VersionRequirement(Minimum resolved.Version, PreReleaseStatus.All)
                 np.Name.Id, dep)
         |> List.fold addDependency withDepsAndIncluded

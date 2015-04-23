@@ -123,6 +123,9 @@
     </Content>
     <Content Include="Nuspec\WindowsAzure.Storage.nuspec">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>  
+    <Content Include="Nuspec\LiteGuard.Source.nuspec">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Compile Include="Nuspec\NuspecSpecs.fs" />
     <Content Include="NuGetOData\Fantomas.xml">

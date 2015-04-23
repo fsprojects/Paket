@@ -1,3 +1,6 @@
+#### 1.1.1 - 24.04.2015
+* Support developmentDependency nuget dependencies - https://github.com/fsprojects/Paket/issues/796
+
 #### 1.1.0 - 23.04.2015
 * Pack command is able to detect portable frameworks - https://github.com/fsprojects/Paket/issues/797
 

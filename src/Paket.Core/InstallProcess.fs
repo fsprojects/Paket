@@ -78,9 +78,8 @@ let private removeCopiedFiles (project: ProjectFile) =
 let CreateInstallModel(root, sources, force, package) = 
     async { 
         let! (package, files, targetsFiles) = RestoreProcess.ExtractPackage(root, sources, force, package)
-        let (PackageName name) = package.Name
-        let nuspec = FileInfo(sprintf "%s/packages/%s/%s.nuspec" root name name)
-        let nuspec = Nuspec.Load nuspec.FullName
+        let (PackageName name) = package.Name        
+        let nuspec = Nuspec.Load(root,package.Name)
         let files = files |> Array.map (fun fi -> fi.FullName)
         let targetsFiles = targetsFiles |> Array.map (fun fi -> fi.FullName)
         return package, InstallModel.CreateFromLibs(package.Name, package.Version, package.Settings.FrameworkRestrictions, files, targetsFiles, nuspec)
