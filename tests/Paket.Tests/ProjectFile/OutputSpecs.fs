@@ -23,13 +23,13 @@ let ``should detect exe output type for Project3 proj file``() =
 
 [<Test>]
 let ``should detect target framework for Project1 proj file``() =
-    ProjectFile.Load("./ProjectFile/TestData/Project1.fsprojtest").Value.GetTargetFramework()
-    |> shouldEqual (DotNetFramework(FrameworkVersion.V4_5))
+    ProjectFile.Load("./ProjectFile/TestData/Project1.fsprojtest").Value.GetTargetProfile()
+    |> shouldEqual (SinglePlatform(DotNetFramework(FrameworkVersion.V4_5)))
 
 [<Test>]
 let ``should detect target framework for Project2 proj file``() =
-    ProjectFile.Load("./ProjectFile/TestData/Project2.fsprojtest").Value.GetTargetFramework()
-    |> shouldEqual (DotNetFramework(FrameworkVersion.V4_Client))
+    ProjectFile.Load("./ProjectFile/TestData/Project2.fsprojtest").Value.GetTargetProfile()
+    |> shouldEqual (SinglePlatform(DotNetFramework(FrameworkVersion.V4_Client)))
 
 [<Test>]
 let ``should detect output path for proj file``

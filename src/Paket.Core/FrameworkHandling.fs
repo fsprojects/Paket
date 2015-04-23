@@ -184,6 +184,12 @@ type TargetProfile =
     | SinglePlatform of FrameworkIdentifier
     | PortableProfile of string * FrameworkIdentifier list
 
+    override this.ToString() =
+        match this with
+        | SinglePlatform x -> x.ToString()
+        | PortableProfile(name,elements) ->
+            "portable-net45+netcore45+wpa81+wp8+MonoAndroid1+MonoTouch1" // TODO: Implement ToString() for portable projects
+
 module KnownTargetProfiles =
     let DotNetFrameworkProfiles =
        [SinglePlatform(DotNetFramework FrameworkVersion.V1)

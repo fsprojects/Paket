@@ -32,10 +32,10 @@
     <StartProgram>paket.exe</StartProgram>
     <StartWorkingDirectory>D:\code\Pakettest</StartWorkingDirectory>
     <StartWorkingDirectory>D:\code\Paketkopie</StartWorkingDirectory>
-    <StartArguments>convert-from-nuget</StartArguments>
+    <StartArguments>pack output "temp" version  1.0.0.0 releaseNotes  "Initial release"</StartArguments>
     <StartAction>Project</StartAction>
     <StartProgram>paket.exe</StartProgram>
-    <StartWorkingDirectory>D:\code\gitlab-ci-runner-win</StartWorkingDirectory>
+    <StartWorkingDirectory>D:\code\FSharp.Core.Fluent</StartWorkingDirectory>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>

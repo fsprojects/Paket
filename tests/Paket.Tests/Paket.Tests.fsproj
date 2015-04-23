@@ -223,6 +223,9 @@
     </None>                              
     <None Include="ProjectFile\TestData\NewSilverlightClassLibrary.csprojtest">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>                              
+    <None Include="ProjectFile\TestData\FSharp.Core.Fluent-3.1.fsprojtest">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <Compile Include="ProjectFile\ConditionSpecs.fs" />
     <Compile Include="ProjectFile\TargetFrameworkSpecs.fs" />

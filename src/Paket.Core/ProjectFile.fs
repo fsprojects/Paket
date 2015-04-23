@@ -508,22 +508,32 @@ type ProjectFile =
                 outputType.InnerText  }
         |> Seq.firstOrDefault
 
-    member this.GetTargetFramework() =
-        let framework =
-            seq {for outputType in this.Document |> getDescendants "TargetFrameworkVersion" ->
-                    outputType.InnerText  }
-            |> Seq.map (fun s -> 
-                            // TODO make this a separate function
-                            let prefix = 
-                                match this.GetTargetFrameworkIdentifier() with
-                                | None -> "net"
-                                | Some x -> x
+    member this.GetTargetFrameworkProfile() =
+        seq {for outputType in this.Document |> getDescendants "TargetFrameworkProfile" ->
+                outputType.InnerText  }
+        |> Seq.firstOrDefault
 
-                            prefix + s.Replace("v","")
-                            |> FrameworkDetection.Extract)
-            |> Seq.map (fun o -> o.Value)
-            |> Seq.firstOrDefault
-        defaultArg framework (DotNetFramework(FrameworkVersion.V4))
+    member this.GetTargetProfile() =
+        match this.GetTargetFrameworkProfile() with
+        | Some profile when String.IsNullOrWhiteSpace profile |> not ->
+            KnownTargetProfiles.FindPortableProfile profile
+        | _ ->
+            let framework =
+                seq {for outputType in this.Document |> getDescendants "TargetFrameworkVersion" ->
+                        outputType.InnerText  }
+                |> Seq.map (fun s -> 
+                                // TODO make this a separate function
+                                let prefix = 
+                                    match this.GetTargetFrameworkIdentifier() with
+                                    | None -> "net"
+                                    | Some x -> x
+
+                                prefix + s.Replace("v","")
+                                |> FrameworkDetection.Extract)
+                |> Seq.map (fun o -> o.Value)
+                |> Seq.firstOrDefault
+            SinglePlatform(defaultArg framework (DotNetFramework(FrameworkVersion.V4)))
+
     
     member this.AddImportForPaketTargets(relativeTargetsPath) =
         match this.Document 
