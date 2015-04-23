@@ -127,10 +127,16 @@ namespace Paket.Bootstrapper
             var latestVersion = Environment.GetEnvironmentVariable(PaketVersionEnv) ?? "";
             var ignorePrerelease = true;
             bool doSelfUpdate = false;
+            var commandArgs = args;
 
-            if (args.Length >= 1)
+            if (commandArgs.Contains(SelfUpdateCommandArg))
             {
-                if (args[0] == PrereleaseCommandArg)
+                commandArgs = commandArgs.Where(x => x != SelfUpdateCommandArg).ToArray();
+                doSelfUpdate = true;
+            }
+            if (commandArgs.Length >= 1)
+            {
+                if (commandArgs[0] == PrereleaseCommandArg)
                 {
                     ignorePrerelease = false;
                     latestVersion = "";
@@ -138,12 +144,8 @@ namespace Paket.Bootstrapper
                 }
                 else
                 {
-                    latestVersion = args[0];
+                    latestVersion = commandArgs[0];
                     Console.WriteLine("Version {0} requested.", latestVersion);
-                }
-                if (args.Contains(SelfUpdateCommandArg))
-                {
-                    doSelfUpdate = true;
                 }
             }
             else if (!String.IsNullOrWhiteSpace(latestVersion))

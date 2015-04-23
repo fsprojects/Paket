@@ -103,7 +103,7 @@ namespace Paket.Bootstrapper
 
         public bool SelfUpdate(string latestVersion)
         {
-            Console.WriteLine("self update of bootstrapper via nuget is currently not possible");
+            BootstrapperHelper.WriteConsoleInfo("self update of bootstrapper via nuget is currently not possible");
             return false;
         }
 
