@@ -1,3 +1,6 @@
+#### 1.0.2 - 23.04.2015
+* `Convert-from-nuget` removes custom import and targets - https://github.com/fsprojects/Paket/pull/792
+
 #### 1.0.1 - 20.04.2015
 * New bootstrapper protects paket.exe from incomplete github downloads - https://github.com/fsprojects/Paket/pull/788 
 
