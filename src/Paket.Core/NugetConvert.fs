@@ -309,6 +309,7 @@ let convertProjects nugetEnv =
     [for project,packagesConfig in nugetEnv.NugetProjectFiles do 
         project.ReplaceNuGetPackagesFile()
         project.RemoveNuGetTargetsEntries()
+        project.RemoveImportAndTargetEntries(packagesConfig.Packages |> List.map (fun p -> p.Id, p.Version))
         yield project, convertPackagesConfigToReferences project.FileName packagesConfig]
 
 let createPaketEnv rootDirectory nugetEnv credsMirationMode = trial {
