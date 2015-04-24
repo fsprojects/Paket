@@ -78,5 +78,22 @@ namespace Paket.Bootstrapper
                 BypassProxyOnLocal = true
             };
         }
+
+        internal static void FileMove(string oldPath, string newPath)
+        {
+            try
+            {
+                if (File.Exists(newPath))
+                {
+                    File.Delete(newPath);
+                }
+            }
+            catch (FileNotFoundException)
+            {
+
+            }
+
+            File.Move(oldPath, newPath);
+        }
     }
 }

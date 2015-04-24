@@ -12,5 +12,6 @@ namespace Paket.Bootstrapper
     }
 
     public delegate void PrepareWebClientDelegate(WebClient client, string url);
+    public delegate HttpWebRequest PrepareWebRequestDelegate(string url);
     public delegate IWebProxy GetDefaultWebProxyForDelegate(string url);
 }

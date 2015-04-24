@@ -8,24 +8,26 @@ namespace Paket.Bootstrapper
     internal class GitHubDownloadStrategy : IDownloadStrategy
     {
         private PrepareWebClientDelegate PrepareWebClient { get; set; }
+        private PrepareWebRequestDelegate PrepareWebRequest { get; set; }
         private GetDefaultWebProxyForDelegate GetDefaultWebProxyFor { get; set; }
         public string Name { get { return "Github"; } }
         public IDownloadStrategy FallbackStrategy { get; set; }
 
-        public GitHubDownloadStrategy(PrepareWebClientDelegate prepareWebClient, GetDefaultWebProxyForDelegate getDefaultWebProxyFor)
+        public GitHubDownloadStrategy(PrepareWebClientDelegate prepareWebClient, PrepareWebRequestDelegate prepareWebRequest, GetDefaultWebProxyForDelegate getDefaultWebProxyFor)
         {
             PrepareWebClient = prepareWebClient;
+            PrepareWebRequest = prepareWebRequest;
             GetDefaultWebProxyFor = getDefaultWebProxyFor;
         }
 
         public string GetLatestVersion(bool ignorePrerelease)
         {
             string latestVersion = "";
-            using (WebClient client = new WebClient())
+            using (var client = new WebClient())
             {
                 const string releasesUrl = "https://github.com/fsprojects/Paket/releases";
                 PrepareWebClient(client, releasesUrl);
-
+                
                 var data = client.DownloadString(releasesUrl);
                 var start = 0;
                 while (latestVersion == "")
@@ -46,19 +48,19 @@ namespace Paket.Bootstrapper
 
             Console.WriteLine("Starting download from {0}", url);
 
-            var request = BootstrapperHelper.PrepareWebRequest(url); 
+            var request = PrepareWebRequest(url);
 
-            using (HttpWebResponse httpResponse = (HttpWebResponse)request.GetResponse())
+            using (var httpResponse = (HttpWebResponse)request.GetResponse())
             {
-                using (Stream httpResponseStream = httpResponse.GetResponseStream())
+                using (var httpResponseStream = httpResponse.GetResponseStream())
                 {
                     const int bufferSize = 4096;
                     byte[] buffer = new byte[bufferSize];
-                    int bytesRead = 0;
                     var tmpFile = Path.GetTempFileName();
 
-                    using (FileStream fileStream = File.Create(tmpFile))
+                    using (var fileStream = File.Create(tmpFile))
                     {
+                        int bytesRead;
                         while ((bytesRead = httpResponseStream.Read(buffer, 0, bufferSize)) != 0)
                         {
                             fileStream.Write(buffer, 0, bytesRead);
@@ -86,49 +88,34 @@ namespace Paket.Bootstrapper
             var url = String.Format("https://github.com/fsprojects/Paket/releases/download/{0}/paket.bootstrapper.exe", latestVersion);
             Console.WriteLine("Starting download of bootstrapper from {0}", url);
 
-            var request = BootstrapperHelper.PrepareWebRequest(url);
+            var request = PrepareWebRequest(url);
 
             string renamedPath = Path.GetTempFileName();
             string tmpDownloadPath = Path.GetTempFileName();
+
+            using (var httpResponse = (HttpWebResponse)request.GetResponse())
+            {
+                using (Stream httpResponseStream = httpResponse.GetResponseStream(), toStream = File.Create(tmpDownloadPath))
+                {
+                    httpResponseStream.CopyTo(toStream);
+                }
+            }
             try
             {
-                using (HttpWebResponse httpResponse = (HttpWebResponse)request.GetResponse())
-                {
-                    using (Stream httpResponseStream = httpResponse.GetResponseStream(), toStream = File.Create(tmpDownloadPath))
-                    {
-                        httpResponseStream.CopyTo(toStream);
-                    }
-                }
-                Move(exePath, renamedPath);
-                Move(tmpDownloadPath, exePath);
-                Console.WriteLine("Self update of bootstrapper successful");
+                BootstrapperHelper.FileMove(exePath, renamedPath);
+                BootstrapperHelper.FileMove(tmpDownloadPath, exePath);
+                Console.WriteLine("Self update of bootstrapper was successful.");
                 updateSuccess = true;
             }
             catch (Exception)
             {
                 Console.WriteLine("Self update failed. Resetting bootstrapper.");
-                Move(renamedPath, exePath);
+                BootstrapperHelper.FileMove(renamedPath, exePath);
                 throw;
             }
 
             return updateSuccess;
         }
 
-        protected void Move(string oldPath, string newPath)
-        {
-            try
-            {
-                if (File.Exists(newPath))
-                {
-                    File.Delete(newPath);
-                }
-            }
-            catch (FileNotFoundException)
-            {
-
-            }
-
-            File.Move(oldPath, newPath);
-        }
     }
 }
