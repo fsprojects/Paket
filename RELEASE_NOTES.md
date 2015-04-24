@@ -1,3 +1,6 @@
+#### 1.1.3 - 24.04.2015
+* Fix StackOverflowException when using local path - https://github.com/fsprojects/Paket/issues/795
+
 #### 1.1.2 - 24.04.2015
 * `paket add` should not change dependencies file if the package is misspelled - https://github.com/fsprojects/Paket/issues/798
 

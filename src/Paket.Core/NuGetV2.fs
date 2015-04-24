@@ -320,7 +320,10 @@ let getDetailsFromLocalFile root localNugetPath package (version:SemVerInfo) =
 
         if not nupkg.Exists then
             failwithf "The package %s %s can't be found in %s.%sPlease check the feed definition in your paket.dependencies file." package (version.ToString()) di.FullName Environment.NewLine
-        let zip = ZipFile.OpenRead(nupkg.FullName)
+        
+        use zipToCreate = new FileStream(nupkg.FullName, FileMode.Open)
+        use zip = new ZipArchive(zipToCreate,ZipArchiveMode.Read)
+        
         let zippedNuspec = zip.Entries |> Seq.find (fun f -> f.FullName.EndsWith ".nuspec")
         let fileName = FileInfo(Path.Combine(Path.GetTempPath(), zippedNuspec.Name)).FullName
 

@@ -17,7 +17,7 @@ let contentTypeDoc fileList =
     let ns = XNamespace.Get "http://schemas.openxmlformats.org/package/2006/content-types"
     let root = XElement(ns + "Types")
     
-    let defaultNode extension contentType = 
+    let defaultNode extension contentType =
         let def = XElement(ns + "Default")
         def.SetAttributeValue(XName.Get "Extension", extension)
         def.SetAttributeValue(XName.Get "ContentType", contentType)
