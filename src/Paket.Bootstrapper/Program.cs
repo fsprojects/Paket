@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -26,19 +25,8 @@ namespace Paket.Bootstrapper
             var dlArgs = EvaluateCommandArgs(commandArgs);
 
             var effectiveStrategy = GetEffectiveDownloadStrategy(dlArgs, preferNuget);
-            try
-            {
-                StartPaketBootstrapping(effectiveStrategy, dlArgs);
-            }
-            catch (RestartException)
-            {
-                Console.WriteLine("Restarting bootstrapper.");
-                ProcessStartInfo s = new ProcessStartInfo();
-                s.FileName = Assembly.GetExecutingAssembly().Location;
-                s.UseShellExecute = false;
-                s.Arguments = String.Join(" ", args.Where(x => x != SelfUpdateCommandArg).Select(x => String.Format("\"{0}\"", x)));
-                Process.Start(s);
-            }
+        
+            StartPaketBootstrapping(effectiveStrategy, dlArgs);
         }
 
         private static void StartPaketBootstrapping(IDownloadStrategy downloadStrategy, DownloadArguments dlArgs)
@@ -62,16 +50,18 @@ namespace Paket.Bootstrapper
                 if (dlArgs.DoSelfUpdate)
                 {
                     Console.WriteLine("Trying self update");
-                    if (downloadStrategy.SelfUpdate(latestVersion))
-                        throw new RestartException();
-                }
-                if (!localVersion.StartsWith(latestVersion))
-                {
-                    downloadStrategy.DownloadVersion(latestVersion, dlArgs.Target);
+                    downloadStrategy.SelfUpdate(latestVersion);
                 }
                 else
                 {
-                    Console.WriteLine("Paket.exe {0} is up to date.", localVersion);
+                    if (!localVersion.StartsWith(latestVersion))
+                    {
+                        downloadStrategy.DownloadVersion(latestVersion, dlArgs.Target);
+                    }
+                    else
+                    {
+                        Console.WriteLine("Paket.exe {0} is up to date.", localVersion);
+                    }
                 }
             }
             catch (WebException exn)
@@ -90,10 +80,6 @@ namespace Paket.Bootstrapper
                 if (shouldHandleException)
                     handleException(exn);
             }
-            catch (RestartException)
-            {
-                throw;
-            }
             catch (Exception exn)
             {
                 handleException(exn);
@@ -102,7 +88,7 @@ namespace Paket.Bootstrapper
 
         private static IDownloadStrategy GetEffectiveDownloadStrategy(DownloadArguments dlArgs, bool preferNuget)
         {
-            var gitHubDownloadStrategy = new GitHubDownloadStrategy(BootstrapperHelper.PrepareWebClient, BootstrapperHelper.PrepareWebRequest,  BootstrapperHelper.GetDefaultWebProxyFor);
+            var gitHubDownloadStrategy = new GitHubDownloadStrategy(BootstrapperHelper.PrepareWebClient, BootstrapperHelper.PrepareWebRequest, BootstrapperHelper.GetDefaultWebProxyFor);
             var nugetDownloadStrategy = new NugetDownloadStrategy(BootstrapperHelper.PrepareWebClient, BootstrapperHelper.GetDefaultWebProxyFor, dlArgs.Folder);
 
             IDownloadStrategy effectiveStrategy;

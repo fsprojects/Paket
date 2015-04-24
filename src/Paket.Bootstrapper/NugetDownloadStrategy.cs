@@ -132,17 +132,15 @@ namespace Paket.Bootstrapper
             }
         }
 
-        public bool SelfUpdate(string latestVersion)
+        public void SelfUpdate(string latestVersion)
         {
-            bool updateSuccess = false;
-
             var executingAssembly = Assembly.GetExecutingAssembly();
             string target = executingAssembly.Location;
             var localVersion = BootstrapperHelper.GetLocalFileVersion(target);
             if (localVersion.StartsWith(latestVersion))
             {
                 Console.WriteLine("Bootstrapper is up to date. Nothing to do.");
-                return updateSuccess;
+                return;
             }
             var apiHelper = new NugetApiHelper(PaketBootstrapperNugetPackageName);
 
@@ -176,7 +174,6 @@ namespace Paket.Bootstrapper
                 BootstrapperHelper.FileMove(target, renamedPath);
                 BootstrapperHelper.FileMove(paketSourceFile, target);
                 Console.WriteLine("Self update of bootstrapper was successful.");
-                updateSuccess = true;
             }
             catch (Exception)
             {
@@ -185,7 +182,6 @@ namespace Paket.Bootstrapper
                 throw;
             }
             Directory.Delete(randomFullPath, true);
-            return updateSuccess;
         }
 
         private class SemVer : IComparable

@@ -73,16 +73,15 @@ namespace Paket.Bootstrapper
             }
         }
 
-        public bool SelfUpdate(string latestVersion)
+        public void SelfUpdate(string latestVersion)
         {
-            bool updateSuccess = false;
             var executingAssembly = Assembly.GetExecutingAssembly();
             string exePath = executingAssembly.Location;
             var localVersion = BootstrapperHelper.GetLocalFileVersion(exePath);
             if (localVersion.StartsWith(latestVersion))
             {
                 Console.WriteLine("Bootstrapper is up to date. Nothing to do.");
-                return updateSuccess;
+                return;
             }
 
             var url = String.Format("https://github.com/fsprojects/Paket/releases/download/{0}/paket.bootstrapper.exe", latestVersion);
@@ -105,7 +104,6 @@ namespace Paket.Bootstrapper
                 BootstrapperHelper.FileMove(exePath, renamedPath);
                 BootstrapperHelper.FileMove(tmpDownloadPath, exePath);
                 Console.WriteLine("Self update of bootstrapper was successful.");
-                updateSuccess = true;
             }
             catch (Exception)
             {
@@ -113,8 +111,6 @@ namespace Paket.Bootstrapper
                 BootstrapperHelper.FileMove(renamedPath, exePath);
                 throw;
             }
-
-            return updateSuccess;
         }
 
     }
