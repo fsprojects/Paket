@@ -278,6 +278,6 @@ type Dependencies(dependenciesFileName: string) =
         let urlWithEndpoint = RemoteUpload.GetUrlWithEndpoint url endPoint
         let apiKey = defaultArg apiKey (Environment.GetEnvironmentVariable("nugetkey"))
         if String.IsNullOrEmpty apiKey then
-            failwithf "Could not push package %s. Please specify an NuGet API key via environment variable \"nugetkey\"." packageFileName
+            failwithf "Could not push package %s. Please specify a NuGet API key via environment variable \"nugetkey\"." packageFileName
         let maxTrials = defaultArg maxTrials 5
         RemoteUpload.Push maxTrials urlWithEndpoint apiKey packageFileName
