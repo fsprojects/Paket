@@ -18,11 +18,11 @@ let private add addToProjects dependenciesFileName package version force hard in
     let dependenciesFile =
         existingDependenciesFile
             .Add(package,version)
-
-    dependenciesFile.Save()
-
+    
     let lockFile = UpdateProcess.SelectiveUpdate(dependenciesFile,Some(NormalizedPackageName package),force)
     let projects = seq { for p in ProjectFile.FindAllProjects(Path.GetDirectoryName lockFile.FileName) -> p } // lazy sequence in case no project install required
+
+    dependenciesFile.Save()
     
     package |> addToProjects projects
 

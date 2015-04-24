@@ -1,3 +1,6 @@
+#### 1.1.2 - 24.04.2015
+* `paket add` should not change dependencies file if the package is misspelled - https://github.com/fsprojects/Paket/issues/798
+
 #### 1.1.1 - 24.04.2015
 * Support developmentDependency nuget dependencies - https://github.com/fsprojects/Paket/issues/796
 
