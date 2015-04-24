@@ -1,3 +1,6 @@
+#### 1.2.0 - 24.04.2015
+* Add Paket.BootStrapper NuGet package - https://github.com/fsprojects/Paket/issues/790
+
 #### 1.1.3 - 24.04.2015
 * Fix StackOverflowException when using local path - https://github.com/fsprojects/Paket/issues/795
 
