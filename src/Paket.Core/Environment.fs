@@ -64,14 +64,14 @@ module PaketEnv =
     let ensureNotExists (directory : DirectoryInfo) =
         match fromRootDirectory directory with
         | Result.Ok(_) -> fail (PaketEnvAlreadyExistsInDirectory directory)
-        | Result.Fail(msgs) -> 
+        | Result.Bad(msgs) -> 
             let filtered = 
                 msgs
                 |> List.filter (function
                     | DependenciesFileNotFoundInDir _ -> false
                     | _ -> true )
             if filtered |> List.isEmpty then ok directory
-            else Fail filtered
+            else Result.Bad filtered
 
     let ensureNotInStrictMode environment =
         if not environment.DependenciesFile.Options.Strict then ok environment

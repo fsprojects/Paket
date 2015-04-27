@@ -45,7 +45,7 @@ let ``should remove one level deep transitive dependencies from dep and ref file
     let before = PaketEnv.create dummyDir depFile1 lockFile1 projects1
     
     match Simplifier.simplify false before with
-    | Chessie.ErrorHandling.Fail(msgs) -> 
+    | Chessie.ErrorHandling.Bad(msgs) -> 
         failwith (String.concat Environment.NewLine (msgs |> List.map string))
     | Chessie.ErrorHandling.Ok((_,after),_) ->
         let depFile,refFiles = after.DependenciesFile, after.Projects |> List.map snd
@@ -88,7 +88,7 @@ let ``should remove all transitive dependencies from dep file recursively``() =
     let before = PaketEnv.create dummyDir depFile2 lockFile2 projects2
     
     match Simplifier.simplify false before with
-    | Chessie.ErrorHandling.Fail(msgs) -> 
+    | Chessie.ErrorHandling.Bad(msgs) -> 
         failwith (String.concat Environment.NewLine (msgs |> List.map string))
     | Chessie.ErrorHandling.Ok((_,after),_) ->
         let depFile,refFiles = after.DependenciesFile, after.Projects |> List.map snd
