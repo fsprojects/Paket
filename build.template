@@ -164,7 +164,7 @@ Target "SourceLink" (fun _ ->
     |> Seq.iter (fun (projFile, assemblyInfo) ->
         let proj = VsProj.LoadRelease projFile 
         logfn "source linking %s" proj.OutputFilePdb
-        let files = proj.Compiles -- assemblyInfo
+        let files = proj.CompilesNotLinked -- assemblyInfo
         repo.VerifyChecksums files
         proj.VerifyPdbChecksums files
         proj.CreateSrcSrv baseUrl repo.Revision (repo.Paths files)
