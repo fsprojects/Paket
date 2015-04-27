@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -12,22 +11,7 @@ namespace Paket.Bootstrapper
         const string PreferNugetCommandArg = "--prefer-nuget";
         const string PrereleaseCommandArg = "prerelease";
         const string PaketVersionEnv = "PAKET.VERSION";
-
-        static IWebProxy GetDefaultWebProxyFor(String url)
-        {
-            IWebProxy result = WebRequest.GetSystemWebProxy();
-            Uri uri = new Uri(url);
-            Uri address = result.GetProxy(uri);
-
-            if (address == uri)
-                return null;
-
-            return new WebProxy(address)
-            {
-                Credentials = CredentialCache.DefaultCredentials,
-                BypassProxyOnLocal = true
-            };
-        }
+        const string SelfUpdateCommandArg = "--self";
 
         static void Main(string[] args)
         {
@@ -41,7 +25,7 @@ namespace Paket.Bootstrapper
             var dlArgs = EvaluateCommandArgs(commandArgs);
 
             var effectiveStrategy = GetEffectiveDownloadStrategy(dlArgs, preferNuget);
-
+        
             StartPaketBootstrapping(effectiveStrategy, dlArgs);
         }
 
@@ -51,11 +35,11 @@ namespace Paket.Bootstrapper
             {
                 if (!File.Exists(dlArgs.Target))
                     Environment.ExitCode = 1;
-                WriteConsoleError(String.Format("{0} ({1})", exception.Message, downloadStrategy.Name));
+                BootstrapperHelper.WriteConsoleError(String.Format("{0} ({1})", exception.Message, downloadStrategy.Name));
             };
             try
             {
-                var localVersion = GetLocalFileVersion(dlArgs.Target);
+                var localVersion = BootstrapperHelper.GetLocalFileVersion(dlArgs.Target);
 
                 var latestVersion = dlArgs.LatestVersion;
                 if (latestVersion == "")
@@ -63,13 +47,21 @@ namespace Paket.Bootstrapper
                     latestVersion = downloadStrategy.GetLatestVersion(dlArgs.IgnorePrerelease);
                 }
 
-                if (!localVersion.StartsWith(latestVersion))
+                if (dlArgs.DoSelfUpdate)
                 {
-                    downloadStrategy.DownloadVersion(latestVersion, dlArgs.Target);
+                    Console.WriteLine("Trying self update");
+                    downloadStrategy.SelfUpdate(latestVersion);
                 }
                 else
                 {
-                    Console.WriteLine("Paket.exe {0} is up to date.", localVersion);
+                    if (!localVersion.StartsWith(latestVersion))
+                    {
+                        downloadStrategy.DownloadVersion(latestVersion, dlArgs.Target);
+                    }
+                    else
+                    {
+                        Console.WriteLine("Paket.exe {0} is up to date.", localVersion);
+                    }
                 }
             }
             catch (WebException exn)
@@ -96,8 +88,8 @@ namespace Paket.Bootstrapper
 
         private static IDownloadStrategy GetEffectiveDownloadStrategy(DownloadArguments dlArgs, bool preferNuget)
         {
-            var gitHubDownloadStrategy = new GitHubDownloadStrategy(PrepareWebClient, GetDefaultWebProxyFor);
-            var nugetDownloadStrategy = new NugetDownloadStrategy(PrepareWebClient, GetDefaultWebProxyFor, dlArgs.Folder);
+            var gitHubDownloadStrategy = new GitHubDownloadStrategy(BootstrapperHelper.PrepareWebClient, BootstrapperHelper.PrepareWebRequest, BootstrapperHelper.GetDefaultWebProxyFor);
+            var nugetDownloadStrategy = new NugetDownloadStrategy(BootstrapperHelper.PrepareWebClient, BootstrapperHelper.GetDefaultWebProxyFor, dlArgs.Folder);
 
             IDownloadStrategy effectiveStrategy;
             if (preferNuget)
@@ -113,25 +105,6 @@ namespace Paket.Bootstrapper
             return effectiveStrategy;
         }
 
-        private static string GetLocalFileVersion(string target)
-        {
-            var localVersion = "";
-
-            if (File.Exists(target))
-            {
-                try
-                {
-                    FileVersionInfo fvi = FileVersionInfo.GetVersionInfo(target);
-                    if (fvi.FileVersion != null)
-                        localVersion = fvi.FileVersion;
-                }
-                catch (Exception)
-                {
-                }
-            }
-            return localVersion;
-        }
-
         private static DownloadArguments EvaluateCommandArgs(string[] args)
         {
             var folder = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
@@ -139,10 +112,17 @@ namespace Paket.Bootstrapper
 
             var latestVersion = Environment.GetEnvironmentVariable(PaketVersionEnv) ?? "";
             var ignorePrerelease = true;
+            bool doSelfUpdate = false;
+            var commandArgs = args;
 
-            if (args.Length >= 1)
+            if (commandArgs.Contains(SelfUpdateCommandArg))
             {
-                if (args[0] == PrereleaseCommandArg)
+                commandArgs = commandArgs.Where(x => x != SelfUpdateCommandArg).ToArray();
+                doSelfUpdate = true;
+            }
+            if (commandArgs.Length >= 1)
+            {
+                if (commandArgs[0] == PrereleaseCommandArg)
                 {
                     ignorePrerelease = false;
                     latestVersion = "";
@@ -150,7 +130,7 @@ namespace Paket.Bootstrapper
                 }
                 else
                 {
-                    latestVersion = args[0];
+                    latestVersion = commandArgs[0];
                     Console.WriteLine("Version {0} requested.", latestVersion);
                 }
             }
@@ -159,23 +139,7 @@ namespace Paket.Bootstrapper
             else Console.WriteLine("No version specified. Downloading latest stable.");
 
 
-            return new DownloadArguments(latestVersion, ignorePrerelease, folder, target);
-        }
-
-        private static void PrepareWebClient(WebClient client, string url)
-        {
-            client.Headers.Add("user-agent", "Paket.Bootstrapper");
-            client.UseDefaultCredentials = true;
-            client.Proxy = GetDefaultWebProxyFor(url);
-        }
-
-        private static void WriteConsoleError(string message)
-        {
-            var oldColor = Console.ForegroundColor;
-            Console.ForegroundColor = ConsoleColor.Red;
-            Console.WriteLine(message);
-            Console.ForegroundColor = oldColor;
+            return new DownloadArguments(latestVersion, ignorePrerelease, folder, target, doSelfUpdate);
         }
     }
-
 }
