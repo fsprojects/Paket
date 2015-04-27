@@ -1,3 +1,6 @@
+#### 1.2.3 - 27.04.2015
+* Increase timeout for paket push
+
 #### 1.2.2 - 27.04.2015
 * Added `--self` for self update of bootstrapper - https://github.com/fsprojects/Paket/issues/791
 
