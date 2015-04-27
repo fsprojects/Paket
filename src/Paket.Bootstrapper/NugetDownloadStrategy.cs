@@ -3,15 +3,51 @@ using System.IO;
 using System.IO.Compression;
 using System.Linq;
 using System.Net;
+using System.Reflection;
 using System.Text.RegularExpressions;
 
 namespace Paket.Bootstrapper
 {
     internal class NugetDownloadStrategy : IDownloadStrategy
     {
+        internal class NugetApiHelper
+        {
+            private readonly string packageName;
+            const string GetPackageVersionTemplate = "https://www.nuget.org/api/v2/package-versions/{0}";
+            const string GetLatestFromNugetUrlTemplate = "https://www.nuget.org/api/v2/package/{0}";
+            const string GetSpecificFromNugetUrlTemplate = "https://www.nuget.org/api/v2/package/{0}/{1}";
+
+            public NugetApiHelper(string packageName)
+            {
+                this.packageName = packageName;
+            }
+
+            internal string GetAllPackageVersions(bool includePrerelease)
+            {
+                var request = String.Format(GetPackageVersionTemplate, packageName);
+                const string withPrereleases = "?includePrerelease=true";
+                if (includePrerelease)
+                    request += withPrereleases;
+                return request;
+            }
+
+            internal string GetLatestPackage()
+            {
+                return String.Format(GetLatestFromNugetUrlTemplate, packageName);
+            }
+
+            internal string GetSpecificPackageVersion(string version)
+            {
+                return String.Format(GetSpecificFromNugetUrlTemplate, packageName, version);
+            }
+        }
+
+
         private PrepareWebClientDelegate PrepareWebClient { get; set; }
         private GetDefaultWebProxyForDelegate GetDefaultWebProxyFor { get; set; }
         private string Folder { get; set; }
+        private const string PaketNugetPackageName = "Paket";
+        private const string PaketBootstrapperNugetPackageName = "Paket.Bootstrapper";
 
         public NugetDownloadStrategy(PrepareWebClientDelegate prepareWebClient, GetDefaultWebProxyForDelegate getDefaultWebProxyFor, string folder)
         {
@@ -29,14 +65,10 @@ namespace Paket.Bootstrapper
 
         public string GetLatestVersion(bool ignorePrerelease)
         {
-            using (WebClient client = new WebClient())
+            var apiHelper = new NugetApiHelper(PaketNugetPackageName);
+            using (var client = new WebClient())
             {
-                const string getVersionsFromNugetUrl = "https://www.nuget.org/api/v2/package-versions/Paket";
-                const string withPrereleases = "?includePrerelease=true";
-
-                var versionRequestUrl = getVersionsFromNugetUrl;
-                if (!ignorePrerelease)
-                    versionRequestUrl += withPrereleases;
+                var versionRequestUrl = apiHelper.GetAllPackageVersions(!ignorePrerelease);
                 PrepareWebClient(client, versionRequestUrl);
                 var versions = client.DownloadString(versionRequestUrl);
                 var latestVersion = versions.
@@ -72,18 +104,17 @@ namespace Paket.Bootstrapper
 
         public void DownloadVersion(string latestVersion, string target)
         {
+            var apiHelper = new NugetApiHelper(PaketNugetPackageName);
             using (WebClient client = new WebClient())
             {
-                const string getLatestFromNugetUrl = "https://www.nuget.org/api/v2/package/Paket";
-                const string getSpecificFromNugetUrlTemplate = "https://www.nuget.org/api/v2/package/Paket/{0}";
                 const string paketNupkgFile = "paket.latest.nupkg";
                 const string paketNupkgFileTemplate = "paket.{0}.nupkg";
 
-                var paketDownloadUrl = getLatestFromNugetUrl;
+                var paketDownloadUrl = apiHelper.GetLatestPackage();
                 var paketFile = paketNupkgFile;
-                if (latestVersion != "")
+                if (latestVersion != String.Empty)
                 {
-                    paketDownloadUrl = String.Format(getSpecificFromNugetUrlTemplate, latestVersion);
+                    paketDownloadUrl = apiHelper.GetSpecificPackageVersion(latestVersion);
                     paketFile = String.Format(paketNupkgFileTemplate, latestVersion);
                 }
 
@@ -99,6 +130,58 @@ namespace Paket.Bootstrapper
                 File.Copy(paketSourceFile, target, true);
                 Directory.Delete(randomFullPath, true);
             }
+        }
+
+        public void SelfUpdate(string latestVersion)
+        {
+            var executingAssembly = Assembly.GetExecutingAssembly();
+            string target = executingAssembly.Location;
+            var localVersion = BootstrapperHelper.GetLocalFileVersion(target);
+            if (localVersion.StartsWith(latestVersion))
+            {
+                Console.WriteLine("Bootstrapper is up to date. Nothing to do.");
+                return;
+            }
+            var apiHelper = new NugetApiHelper(PaketBootstrapperNugetPackageName);
+
+            const string paketNupkgFile = "paket.bootstrapper.latest.nupkg";
+            const string paketNupkgFileTemplate = "paket.bootstrapper.{0}.nupkg";
+            var getLatestFromNugetUrl = apiHelper.GetLatestPackage();
+
+            var paketDownloadUrl = getLatestFromNugetUrl;
+            var paketFile = paketNupkgFile;
+            if (latestVersion != String.Empty)
+            {
+                paketDownloadUrl = apiHelper.GetSpecificPackageVersion(latestVersion);
+                paketFile = String.Format(paketNupkgFileTemplate, latestVersion);
+            }
+
+            var randomFullPath = Path.Combine(Folder, Path.GetRandomFileName());
+            Directory.CreateDirectory(randomFullPath);
+            var paketPackageFile = Path.Combine(randomFullPath, paketFile);
+            Console.WriteLine("Starting download from {0}", paketDownloadUrl);
+            using (var client = new WebClient())
+            {
+                PrepareWebClient(client, paketDownloadUrl);
+                client.DownloadFile(paketDownloadUrl, paketPackageFile);
+            }
+            ZipFile.ExtractToDirectory(paketPackageFile, randomFullPath);
+
+            var paketSourceFile = Path.Combine(randomFullPath, "Tools", "Paket.Bootstrapper.exe");
+            var renamedPath = Path.GetTempFileName();
+            try
+            {
+                BootstrapperHelper.FileMove(target, renamedPath);
+                BootstrapperHelper.FileMove(paketSourceFile, target);
+                Console.WriteLine("Self update of bootstrapper was successful.");
+            }
+            catch (Exception)
+            {
+                Console.WriteLine("Self update failed. Resetting bootstrapper.");
+                BootstrapperHelper.FileMove(renamedPath, target);
+                throw;
+            }
+            Directory.Delete(randomFullPath, true);
         }
 
         private class SemVer : IComparable

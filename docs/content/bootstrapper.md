@@ -12,6 +12,8 @@ Options:
   `version`: Downloads the given version of paket.exe from github.com.
 
   `--prefer-nuget`: Downloads the given version of paket.exe from nuget.org instead of github.com.
+  
+  `--self`: Self updating the paket.bootstrapper.exe. When this option is used the download of paket.exe will be skipped.
 
 Environment Variables:
 

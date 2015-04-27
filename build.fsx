@@ -313,6 +313,28 @@ Target "Release" (fun _ ->
     |> Async.RunSynchronously
 )
 
+Target "DetectBootstrapperChanges" (fun _ -> 
+    let test = 1
+    let allTags = getGitResult "" "tag -l \"*\""
+    let latestVersion = allTags
+                        |> Seq.map (fun x -> try 
+                                                let ver = SemVerHelper.parse(x)
+                                                Some ver
+                                             with
+                                              | :? Exception -> None)
+                        |> Seq.filter (fun x -> match x with | Some _ -> true| None -> false)
+                        |> Seq.map (fun x -> match x with | Some y -> y | None -> failwith "Should never happen")
+                        |> Seq.filter (fun x -> match x.PreRelease with | Some _ -> false | None -> true)
+                        |> Seq.sort
+                        |> Seq.toList
+                        |> List.rev
+                        |> List.head
+
+    let res = runSimpleGitCommand "" (String.Format("diff --shortstat {0} src/Paket.Bootstrapper/", latestVersion))
+    if not (String.IsNullOrWhiteSpace(res)) then
+        DeleteFile "./bin/paket.bootstrapper.exe"
+)
+
 Target "BuildPackage" DoNothing
 
 // --------------------------------------------------------------------------------------
