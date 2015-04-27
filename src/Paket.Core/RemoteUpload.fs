@@ -64,8 +64,9 @@ let Push maxTrials url apiKey packageFileName =
 
             tracefn "Pushing %s complete." packageFileName
         with
-        | exn when trial < maxTrials ->             
-            traceWarnfn "Could not push %s: %s" packageFileName exn.Message            
-            push (trial + 1)
+        | exn when trial < maxTrials ->
+            traceWarnfn "Could not push %s: %s" packageFileName exn.Message
+            if exn.Message.Contains("(409)") |> not then // exclude conflicts
+                push (trial + 1)
 
     push 1 
