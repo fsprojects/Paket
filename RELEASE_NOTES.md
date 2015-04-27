@@ -1,4 +1,4 @@
-#### 1.2.1 - 27.04.2015
+#### 1.2.2 - 27.04.2015
 * Added `--self` for self update of bootstrapper - https://github.com/fsprojects/Paket/issues/791
 
 #### 1.2.0 - 24.04.2015
