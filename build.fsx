@@ -193,6 +193,10 @@ Target "NuGet" (fun _ ->
 )
 
 Target "PublishNuGet" (fun _ ->
+    if hasBuildParam "PublishBootstrapper" |> not then
+        !! (tempDir </> "*bootstrapper*")
+        |> Seq.iter File.Delete
+
     Paket.Push (fun p -> 
         { p with 
             ToolPath = "bin/merged/paket.exe"
@@ -300,8 +304,11 @@ Target "Release" (fun _ ->
     createClient (getBuildParamOrDefault "github-user" "") (getBuildParamOrDefault "github-pw" "")
     |> createDraft gitOwner gitName release.NugetVersion (release.SemVer.PreRelease <> None) release.Notes 
     |> uploadFile "./bin/merged/paket.exe"
-    |> uploadFile "./bin/paket.bootstrapper.exe"
-    |> uploadFile ".paket/paket.targets"
+    |> fun x ->
+        if hasBuildParam "PublishBootstrapper" |> not then x else
+            x
+            |> uploadFile "./bin/paket.bootstrapper.exe"
+            |> uploadFile ".paket/paket.targets"
     |> releaseDraft
     |> Async.RunSynchronously
 )
