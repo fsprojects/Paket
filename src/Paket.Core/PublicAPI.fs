@@ -273,16 +273,6 @@ type Dependencies(dependenciesFileName: string) =
         let dependenciesFile = DependenciesFile.ReadFromFile dependenciesFileName
         PackageProcess.Pack(dependenciesFile, outputPath, buildConfig, version, releaseNotes)
 
-    // Push a nupkg file.
-    [<Obsolete("Use static Dependencies.Push")>]
-    member this.Push(packageFileName, ?url, ?apiKey, (?endPoint: string), ?maxTrials) =
-        let urlWithEndpoint = RemoteUpload.GetUrlWithEndpoint url endPoint
-        let apiKey = defaultArg apiKey (Environment.GetEnvironmentVariable("nugetkey"))
-        if String.IsNullOrEmpty apiKey then
-            failwithf "Could not push package %s. Please specify a NuGet API key via environment variable \"nugetkey\"." packageFileName
-        let maxTrials = defaultArg maxTrials 5
-        RemoteUpload.Push maxTrials urlWithEndpoint apiKey packageFileName
-
     /// Pushes a nupkg file.
     static member Push(packageFileName, ?url, ?apiKey, (?endPoint: string), ?maxTrials) =
         let currentDirectory = DirectoryInfo(Environment.CurrentDirectory)
