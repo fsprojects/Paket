@@ -1,3 +1,6 @@
+#### 1.2.7 - 28.04.2015
+* `paket push` doesn't need a dependencies file any more - https://github.com/fsprojects/Paket/issues/800
+
 #### 1.2.6 - 27.04.2015
 * Increase timeout for paket push
 
