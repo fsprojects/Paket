@@ -21,6 +21,10 @@ type InstallOptions =
         Redirects = false
         Settings = InstallSettings.Default }
 
+type VersionStrategy = {
+    VersionRequirement : VersionRequirement
+    ResolverStrategy : ResolverStrategy }
+            
 /// [omit]
 module DependenciesFileParser = 
 
@@ -231,7 +235,10 @@ module DependenciesFileParser =
             packages |> List.rev,
             remoteFiles |> List.rev,
             lines
-
+    
+    let parseVersionString (version : string) = 
+        { VersionRequirement = parseVersionRequirement (version.Trim '!')
+          ResolverStrategy = parseResolverStrategy version }
 
 module DependenciesFileSerializer = 
     let formatVersionRange strategy (version : VersionRequirement) : string =          
@@ -363,13 +370,12 @@ type DependenciesFile(fileName,options,sources,packages : PackageRequirement lis
 
 
     member this.AddAdditionalPackage(packageName:PackageName,version:string,settings) =
-        let versionRequirement = DependenciesFileParser.parseVersionRequirement (version.Trim '!')
-        let resolverStrategy = DependenciesFileParser.parseResolverStrategy version
+        let vr = DependenciesFileParser.parseVersionString version
 
-        this.AddAdditionalPackage(packageName,versionRequirement,resolverStrategy,settings)
+        this.AddAdditionalPackage(packageName,vr.VersionRequirement,vr.ResolverStrategy,settings)
 
     member this.AddFixedPackage(packageName:PackageName,version:string,settings) =
-        let versionRange = DependenciesFileParser.parseVersionRequirement (version.Trim '!')
+        let vr = DependenciesFileParser.parseVersionString version
 
         let resolverStrategy,versionRequirement = 
             match packages |> List.tryFind (fun p -> NormalizedPackageName p.Name = NormalizedPackageName packageName) with
@@ -377,8 +383,8 @@ type DependenciesFile(fileName,options,sources,packages : PackageRequirement lis
                 package.ResolverStrategy,
                 match package.VersionRequirement.Range with
                 | OverrideAll(_) -> package.VersionRequirement
-                | _ -> versionRange
-            | None -> DependenciesFileParser.parseResolverStrategy version,versionRange
+                | _ -> vr.VersionRequirement
+            | None -> vr.ResolverStrategy,vr.VersionRequirement
 
         this.AddAdditionalPackage(packageName,versionRequirement,resolverStrategy,settings)
 
@@ -424,8 +430,7 @@ type DependenciesFile(fileName,options,sources,packages : PackageRequirement lis
     member this.UpdatePackageVersion(packageName, version:string) = 
         let (PackageName name) = packageName
         if this.HasPackage(packageName) then
-            let versionRequirement = DependenciesFileParser.parseVersionRequirement (version.Trim '!')
-            let resolverStrategy = DependenciesFileParser.parseResolverStrategy version
+            let vr = DependenciesFileParser.parseVersionString version
 
             tracefn "Updating %s version to %s in %s" name version fileName
             let newLines = 
@@ -433,7 +438,7 @@ type DependenciesFile(fileName,options,sources,packages : PackageRequirement lis
                                   let name = packageName.ToString().ToLower()
                                   if isPackageLine name l then 
                                       let p = this.GetPackage packageName
-                                      DependenciesFileSerializer.packageString packageName versionRequirement resolverStrategy p.Settings
+                                      DependenciesFileSerializer.packageString packageName vr.VersionRequirement vr.ResolverStrategy p.Settings
                                   else l)
 
             DependenciesFile(DependenciesFileParser.parseDependenciesFile this.FileName newLines)
