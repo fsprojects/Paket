@@ -273,16 +273,19 @@ type DependenciesFile(fileName,options,sources,packages : PackageRequirement lis
     let packages = packages |> Seq.toList
     let dependencyMap = Map.ofSeq (packages |> Seq.map (fun p -> p.Name, p.VersionRequirement))
 
+    let isPackageLine name (l : string) = 
+        let splitted = l.Split(' ') |> Array.map (fun s -> s.ToLower())
+        splitted |> Array.exists ((=) "nuget") && splitted |> Array.exists ((=) name)          
+
     let tryFindPackageLine (packageName:PackageName) =
         let name = packageName.ToString().ToLower()
         textRepresentation
-        |> Array.tryFindIndex (fun (l:string) -> 
-            let splitted = l.Split(' ') |> Array.map (fun s -> s.ToLower())
-            splitted |> Array.exists ((=) "nuget") && splitted |> Array.exists ((=) name))
+        |> Array.tryFindIndex (isPackageLine name)
             
     member __.DirectDependencies = dependencyMap
     member __.Packages = packages
     member __.HasPackage (name : PackageName) = packages |> List.exists (fun p -> NormalizedPackageName p.Name = NormalizedPackageName name)
+    member __.GetPackage (name : PackageName) = packages |> List.find (fun p -> NormalizedPackageName p.Name = NormalizedPackageName name)
     member __.RemoteFiles = remoteFiles
     member __.Options = options
     member __.FileName = fileName
@@ -418,18 +421,23 @@ type DependenciesFile(fileName,options,sources,packages : PackageRequirement lis
             traceWarnfn "%s doesn't contain package %s. ==> Ignored" fileName name
             this
 
-    member this.UpdatePackageVersion(packageName, version) =
+    member this.UpdatePackageVersion(packageName, version:string) = 
         let (PackageName name) = packageName
         if this.HasPackage(packageName) then
-            let versionRequirement = DependenciesFileParser.parseVersionRequirement version
+            let versionRequirement = DependenciesFileParser.parseVersionRequirement (version.Trim '!')
+            let resolverStrategy = DependenciesFileParser.parseResolverStrategy version
+
             tracefn "Updating %s version to %s in %s" name version fileName
-            let packages = 
-                this.Packages |> List.map (fun p -> 
-                                     if NormalizedPackageName p.Name = NormalizedPackageName packageName then 
-                                         { p with VersionRequirement = versionRequirement }
-                                     else p)
-            DependenciesFile(this.FileName, this.Options, sources, packages, this.RemoteFiles, textRepresentation)
-        else
+            let newLines = 
+                this.Lines |> Array.map (fun l -> 
+                                  let name = packageName.ToString().ToLower()
+                                  if isPackageLine name l then 
+                                      let p = this.GetPackage packageName
+                                      DependenciesFileSerializer.packageString packageName versionRequirement resolverStrategy p.Settings
+                                  else l)
+
+            DependenciesFile(DependenciesFileParser.parseDependenciesFile this.FileName newLines)
+        else 
             traceWarnfn "%s doesn't contain package %s. ==> Ignored" fileName name
             this
 

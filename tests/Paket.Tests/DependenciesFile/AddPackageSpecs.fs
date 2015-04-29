@@ -188,3 +188,37 @@ nuget FAKE"""
       .Add(PackageName "FAKE","")
       .ToString()
     |> shouldEqual (normalizeLineEndings expected)
+
+[<Test>]
+let ``should update packages with new version``() = 
+    let config = """source https://nuget.org/api/v2
+
+nuget FAKE 1.1
+"""
+
+    let cfg = DependenciesFile.FromCode(config).UpdatePackageVersion(PackageName "FAKE","1.2")
+    
+    let expected = """source https://nuget.org/api/v2
+
+nuget FAKE 1.2
+"""
+
+    cfg.ToString()
+    |> shouldEqual (normalizeLineEndings expected)
+
+[<Test>]
+let ``should update packages with nuget package resolution strategy``() = 
+    let config = """source https://nuget.org/api/v2
+
+nuget FAKE ~> 1.1
+"""
+
+    let cfg = DependenciesFile.FromCode(config).UpdatePackageVersion(PackageName "FAKE","!~> 1.2")
+    
+    let expected = """source https://nuget.org/api/v2
+
+nuget FAKE !~> 1.2
+"""
+
+    cfg.ToString()
+    |> shouldEqual (normalizeLineEndings expected)
