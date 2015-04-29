@@ -292,8 +292,16 @@ let createDependenciesFileR (rootDirectory : DirectoryInfo) nugetEnv mode =
 
         sources
         |> lift (fun sources -> 
-            let packages = packages |> List.map (fun (name,v,restr) -> createPackageRequirement (name, v, restr)  sources dependenciesFileName)
-            Paket.DependenciesFile(dependenciesFileName, InstallOptions.Default, sources, packages, [], []))
+            let sourceLines = sources |> List.map (fun s -> DependenciesFileSerializer.sourceString(s.ToString()))
+            let packageLines = 
+                packages 
+                |> List.map (fun (name,v,restr) -> 
+                    let vr = createPackageRequirement (name, v, restr) sources dependenciesFileName
+                    DependenciesFileSerializer.packageString vr.Name vr.VersionRequirement vr.ResolverStrategy vr.Settings)
+
+            let newLines = sourceLines @ [""] @ packageLines |> Seq.toArray
+
+            Paket.DependenciesFile(DependenciesFileParser.parseDependenciesFile dependenciesFileName newLines))
 
     if File.Exists dependenciesFileName then read() else create()
 

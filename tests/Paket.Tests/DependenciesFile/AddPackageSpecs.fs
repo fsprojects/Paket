@@ -21,8 +21,8 @@ nuget SignalR = 3.3.2"""
 
 nuget Castle.Windsor-log4net ~> 3.2
 nuget Rx-Main ~> 2.0
-nuget FAKE 1.1
-nuget SignalR 3.3.2
+nuget FAKE = 1.1
+nuget SignalR = 3.3.2
 nuget xunit"""
 
     cfg.ToString()
@@ -42,10 +42,10 @@ nuget SignalR = 3.3.2"""
     let expected = """source http://nuget.org/api/v2
 
 nuget Castle.Windsor-log4net ~> 3.2
-nuget FAKE 1.1
+nuget FAKE = 1.1
 nuget Rx-Main ~> 2.0
 nuget Rz
-nuget SignalR 3.3.2"""
+nuget SignalR = 3.3.2"""
 
     cfg.ToString()
     |> shouldEqual (normalizeLineEndings expected)
@@ -67,7 +67,7 @@ github forki/FsUnit FsUnit.fs"""
 
 nuget Castle.Windsor-log4net ~> 3.2
 nuget Rx-Main ~> 2.0
-nuget FAKE 1.1
+nuget FAKE = 1.1
 nuget NuGet.CommandLine
 nuget xunit
 
@@ -105,7 +105,6 @@ nuget Castle.Windsor-log4net ~> 3.2"""
     let cfg = DependenciesFile.FromCode(config).Add(PackageName "FAKE","1.2")
     
     let expected = """source http://nuget.org/api/v2
-
 nuget Castle.Windsor-log4net ~> 3.2
 nuget FAKE 1.2"""
 
@@ -129,13 +128,14 @@ github forki/FsUnit FsUnit.fs"""
 
 [<Test>]
 let ``should add new packages with nuget package resolution strategy``() = 
-    let config = """"""
+    let config = ""
 
     let cfg = DependenciesFile.FromCode(config).Add(PackageName "FAKE","!~> 1.2")
     
     let expected = """source https://nuget.org/api/v2
 
-nuget FAKE !~> 1.2"""
+nuget FAKE !~> 1.2
+"""
 
     cfg.ToString()
     |> shouldEqual (normalizeLineEndings expected)
@@ -162,3 +162,29 @@ nuget FAKE = 1.1
 nuget SignalR = 3.3.2"""
 
     DependenciesFile.FromCode(config).Add(PackageName "fAKe","") |> ignore
+
+[<Test>]
+let ``should keep sources stable``() = 
+    let before = """source https://www.nuget.org/api/v2
+
+nuget quicksilver
+nuget FsCheck
+
+source https://www.nuget.org/api/v3
+
+nuget NUnit"""
+
+    let expected = """source https://www.nuget.org/api/v2
+
+nuget quicksilver
+nuget FsCheck
+
+source https://www.nuget.org/api/v3
+
+nuget NUnit
+nuget FAKE"""
+
+    DependenciesFile.FromCode(before)
+      .Add(PackageName "FAKE","")
+      .ToString()
+    |> shouldEqual (normalizeLineEndings expected)

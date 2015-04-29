@@ -95,3 +95,12 @@ let ``should remove all transitive dependencies from dep file recursively``() =
         depFile.Packages |> List.map (fun p -> p.Name) |> shouldEqual [PackageName"A";PackageName"C"]
         refFiles.Head.NugetPackages |>  shouldEqual [PackageInstallSettings.Default("A"); PackageInstallSettings.Default("C")]
         refFiles.Tail.Head.NugetPackages |>  shouldEqual [PackageInstallSettings.Default("C"); PackageInstallSettings.Default("D")]
+
+        let expected = """
+source http://nuget.org/api/v2
+
+nuget A 1.0
+nuget C 1.0"""
+
+        depFile.ToString()
+        |> shouldEqual (normalizeLineEndings expected)

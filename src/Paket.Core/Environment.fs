@@ -90,5 +90,5 @@ module PaketEnv =
             let dependenciesFile = 
                 DependenciesFile(
                     Path.Combine(directory.FullName, Constants.DependenciesFileName), 
-                    InstallOptions.Default, [], [], [], [])
+                    InstallOptions.Default, [], [], [], [||])
             dependenciesFile.ToString() |> saveFile dependenciesFile.FileName

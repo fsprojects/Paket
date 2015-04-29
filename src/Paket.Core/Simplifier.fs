@@ -31,11 +31,12 @@ let simplifyDependenciesFile (dependenciesFile : DependenciesFile, flatLookup, i
     let packages = dependenciesFile.Packages |> List.map (fun p -> p.Name)
     let! transitive = findTransitive(packages, flatLookup, DependencyNotFoundInLockFile)
 
-    let newPackages = 
+    return
         dependenciesFile.Packages
-        |> List.filter (fun package -> not <| removePackage(package.Name, transitive, dependenciesFile.FileName, interactive))
-    let d = dependenciesFile
-    return DependenciesFile(d.FileName, d.Options, d.Sources, newPackages, d.RemoteFiles, d.Comments)
+        |> List.fold  (fun (d:DependenciesFile) package ->
+                if removePackage(package.Name, transitive, dependenciesFile.FileName, interactive) then
+                    d.Remove(package.Name)
+                else d) dependenciesFile
 }
 
 let simplifyReferencesFile (refFile, flatLookup, interactive) = trial {
