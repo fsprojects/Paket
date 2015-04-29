@@ -206,7 +206,7 @@ type Dependencies(dependenciesFileName: string) =
     /// Returns an InstallModel for the given package.
     member this.GetInstalledPackageModel(packageName) =        
         match this.GetInstalledVersion(packageName) with
-        | None -> failwithf "Packge %s is not installed" packageName
+        | None -> failwithf "Package %s is not installed" packageName
         | Some version ->
             let folder = DirectoryInfo(sprintf "%s/packages/%s" this.RootPath packageName)
             let nuspec = FileInfo(sprintf "%s/packages/%s/%s.nuspec" this.RootPath packageName packageName)
