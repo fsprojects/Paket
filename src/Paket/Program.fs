@@ -170,6 +170,10 @@ let push (results : ArgParseResults<_>) =
                       ?endPoint = results.TryGetResult <@ PushArgs.EndPoint @>,
                       ?apiKey = results.TryGetResult <@ PushArgs.ApiKey @>)
 
+let emitfsx (results: ArgParseResults<_>) =
+    let projectFile = results.GetResult <@ EmitFsxArgs.Nuget @>
+    EmitFsx.PrintFsx projectFile []
+
 try
     let parser = UnionArgParser.Create<Command>()
     let results = 
@@ -196,6 +200,7 @@ try
             | Update -> processCommand update
             | Pack -> processCommand pack
             | Push -> processCommand push
+            | EmitFsx -> processCommand emitfsx
 
         let args = args.[1..]
         handler command args
