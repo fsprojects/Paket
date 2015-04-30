@@ -1,7 +1,8 @@
-#### 1.3.0-alpha001 - 30.04.2015
+#### 1.3.0 - 30.04.2015
 * Paket keeps paket.dependencies as stable as possible during edits - https://github.com/fsprojects/Paket/pull/802
 * `paket push` doesn't need a dependencies file any more - https://github.com/fsprojects/Paket/issues/800
 * Added `--self` for self update of bootstrapper - https://github.com/fsprojects/Paket/issues/791
+* BUGFIX: `convert-from-nuget` doen`t duplicate sources anymore - https://github.com/fsprojects/Paket/pull/804
 
 #### 1.2.0 - 24.04.2015
 * Add Paket.BootStrapper NuGet package - https://github.com/fsprojects/Paket/issues/790
