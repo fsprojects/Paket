@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
@@ -123,7 +123,7 @@
     </Content>
     <Content Include="Nuspec\WindowsAzure.Storage.nuspec">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>  
+    </Content>
     <Content Include="Nuspec\LiteGuard.Source.nuspec">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
@@ -178,6 +178,7 @@
     <Compile Include="DependenciesFile\AddPackageSpecs.fs" />
     <Compile Include="DependenciesFile\RemovePackageSpecs.fs" />
     <Compile Include="DependenciesFile\DependencyChangesSpecs.fs" />
+    <Compile Include="DependenciesFile\PropertyTests.fs" />
     <Compile Include="Resolver\DependencyGraphSpecs.fs" />
     <Compile Include="Resolver\SimpleDependenciesSpecs.fs" />
     <Compile Include="Resolver\CyclicGraphSpecs.fs" />
@@ -224,10 +225,10 @@
     </None>
     <None Include="ProjectFile\TestData\MaintainsOrdering.fsprojtest">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>                              
+    </None>
     <None Include="ProjectFile\TestData\NewSilverlightClassLibrary.csprojtest">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>                              
+    </None>
     <None Include="ProjectFile\TestData\FSharp.Core.Fluent-3.1.fsprojtest">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
@@ -276,6 +277,17 @@
     <Reference Include="System.Xml.Linq" />
   </ItemGroup>
   <Import Project="Paket.Tests.paket.targets" Condition="Exists('Paket.Tests.paket.targets')" />
+  <Choose>
+    <When Condition="($(TargetFrameworkIdentifier) == '.NETFramework' And ($(TargetFrameworkVersion) == 'v4.5' Or $(TargetFrameworkVersion) == 'v4.5.1' Or $(TargetFrameworkVersion) == 'v4.5.2' Or $(TargetFrameworkVersion) == 'v4.5.3' Or $(TargetFrameworkVersion) == 'v4.6')) Or ($(TargetFrameworkIdentifier) == 'MonoAndroid') Or ($(TargetFrameworkIdentifier) == 'MonoTouch')">
+      <ItemGroup>
+        <Reference Include="FsCheck">
+          <HintPath>..\..\packages\FsCheck\lib\net45\FsCheck.dll</HintPath>
+          <Private>True</Private>
+          <Paket>True</Paket>
+        </Reference>
+      </ItemGroup>
+    </When>
+  </Choose>
   <Choose>
     <When Condition="$(TargetFrameworkIdentifier) == '.NETFramework' And ($(TargetFrameworkVersion) == 'v4.0' Or $(TargetFrameworkVersion) == 'v4.5' Or $(TargetFrameworkVersion) == 'v4.5.1' Or $(TargetFrameworkVersion) == 'v4.5.2' Or $(TargetFrameworkVersion) == 'v4.5.3' Or $(TargetFrameworkVersion) == 'v4.6')">
       <ItemGroup>
