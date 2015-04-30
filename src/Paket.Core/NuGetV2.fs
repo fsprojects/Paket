@@ -618,7 +618,7 @@ let GetVersions root (sources, PackageName packageName) =
         |> Seq.choose id
 
     if Seq.isEmpty versions then
-        failwith "Could not find versions for package %s in any of the sources in %A." packageName sources
+        failwithf "Could not find versions for package %s in any of the sources in %A." packageName sources
 
     versions
     |> Seq.concat
