@@ -127,7 +127,11 @@ type NugetConfig =
             |> List.filter (fun (key,_) -> Set.contains key disabledSources |> not)
             |> List.map (fun (key,value) -> value, getAuth key)
 
-        { PackageSources = if clearSources then sources else nugetConfig.PackageSources @ sources
+        { PackageSources = if clearSources then sources
+                           else 
+                               nugetConfig.PackageSources @ sources
+                               |> Seq.distinct
+                               |> List.ofSeq
           PackageRestoreEnabled = 
             match configNode |> getNode "packageRestore" |> Option.bind (tryGetValue "enabled") with
             | Some value -> bool.Parse(value)
