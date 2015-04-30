@@ -1,10 +1,6 @@
-#### 1.2.7 - 28.04.2015
+#### 1.3.0-alpha001 - 30.04.2015
+* Paket keeps paket.dependencies as stable as possible during edits - https://github.com/fsprojects/Paket/pull/802
 * `paket push` doesn't need a dependencies file any more - https://github.com/fsprojects/Paket/issues/800
-
-#### 1.2.6 - 27.04.2015
-* Increase timeout for paket push
-
-#### 1.2.2 - 27.04.2015
 * Added `--self` for self update of bootstrapper - https://github.com/fsprojects/Paket/issues/791
 
 #### 1.2.0 - 24.04.2015
