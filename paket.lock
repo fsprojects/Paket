@@ -3,6 +3,10 @@ NUGET
   specs:
     FAKE (3.30.3)
     FsCheck (1.0.4)
+    FsCheck.Nunit (1.0.4)
+      FsCheck (>= 1.0.4)
+      NUnit (>= 2.6.3)
+      NUnit.Runners (>= 2.6.3)
     FSharp.Compiler.Service (0.0.89)
     FSharp.Core (3.1.2.1)
     FSharp.Formatting (2.9.4)

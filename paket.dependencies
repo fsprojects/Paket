@@ -14,3 +14,4 @@ github fsharp/FAKE modules/Octokit/Octokit.fsx
 github fsharp/FAKE src/app/FakeLib/Globbing/Globbing.fs
 github fsprojects/Chessie src/Chessie/ErrorHandling.fs
 nuget FsCheck
+nuget FsCheck.NUnit
