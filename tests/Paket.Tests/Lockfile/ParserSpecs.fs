@@ -368,3 +368,25 @@ let ``should parse lock file for http Stanford.NLP.NET project``() =
     references.[0].Commit |> shouldEqual ("/software/stanford-segmenter-2014-10-26.zip")  // That's strange
     references.[0].Project |> shouldEqual ""
     references.[0].Name |> shouldEqual "stanford-segmenter-2014-10-26.zip"  
+
+let portableLockFile = """NUGET
+  remote: https://nuget.org/api/v2
+  specs:
+    FSharp.Data (2.0.14)
+      Zlib.Portable (>= 1.10.0) - framework: portable-net40+sl50+wp80+win80
+    Zlib.Portable (1.10.0) - framework: portable-net40+sl50+wp80+win80
+"""
+
+[<Test>]
+let ``should parse portable lockfile``() =
+    let lockFile = LockFileParser.Parse(toLines portableLockFile)
+    let references = lockFile.SourceFiles
+
+    references.Length |> shouldEqual 0
+
+    let packages = List.rev lockFile.Packages
+    packages.Length |> shouldEqual 2
+    
+    packages.[1].Name |> shouldEqual (PackageName "Zlib.Portable")
+    packages.[1].Version |> shouldEqual (SemVer.Parse "1.10.0")
+    packages.[1].Settings.FrameworkRestrictions.ToString() |> shouldEqual "[portable-net40+sl50+wp80+win80]"

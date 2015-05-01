@@ -1,3 +1,6 @@
+#### 1.3.1 - 01.05.2015
+* BUGFIX: Portable framework restrictions were not parsed from lockfile - https://github.com/fsprojects/Paket/issues/810
+
 #### 1.3.0 - 30.04.2015
 * Paket keeps paket.dependencies as stable as possible during edits - https://github.com/fsprojects/Paket/pull/802
 * `paket push` doesn't need a dependencies file any more - https://github.com/fsprojects/Paket/issues/800

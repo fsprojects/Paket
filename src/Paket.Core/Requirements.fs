@@ -30,8 +30,12 @@ let parseRestrictions(text:string) =
                 operatorSplit.[0] 
             else 
                 operatorSplit.[1]
+
+
         match FrameworkDetection.Extract(framework) with
-        | None -> ()
+        | None -> 
+                if PlatformMatching.extractPlatforms framework |> Array.isEmpty |> not then
+                    yield FrameworkRestriction.Portable framework
         | Some x -> 
             if operatorSplit.[0] = ">=" then
                 if operatorSplit.Length < 4 then
