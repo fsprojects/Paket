@@ -38,9 +38,11 @@ let contentTypeDoc fileList =
     
     let contentTypes = 
         fileList
-        |> Seq.map (fun f -> 
+        |> Seq.choose (fun f -> 
                let e = ext f
-               e, fType e)
+               if String.IsNullOrWhiteSpace e then 
+                 None
+               else Some(e, fType e))
         |> Seq.distinct
         |> Seq.iter (fun (ex, ct) -> defaultNode ex ct |> root.Add)
     

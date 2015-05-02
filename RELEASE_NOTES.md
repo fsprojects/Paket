@@ -1,3 +1,6 @@
+#### 1.3.2 - 02.05.2015
+* BUGFIX: Do not generate entries for empty extensions in nupkg
+
 #### 1.3.1 - 01.05.2015
 * BUGFIX: Portable framework restrictions were not parsed from lockfile - https://github.com/fsprojects/Paket/issues/810
 
