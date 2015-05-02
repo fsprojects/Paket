@@ -4,7 +4,7 @@ NUGET
     FAKE (3.30.1)
     FSharp.Compiler.Service (0.0.89)
     FSharp.Core (3.1.2.1)
-    FSharp.Formatting (2.9.3)
+    FSharp.Formatting (2.9.4)
       FSharp.Compiler.Service (>= 0.0.87)
       FSharpVSPowerTools.Core (1.8.0)
     FSharpVSPowerTools.Core (1.8.0)
@@ -27,9 +27,9 @@ GITHUB
     FsUnit.fs (81d27fd09575a32c4ed52eadb2eeac5f365b8348)
   remote: fsharp/FAKE
   specs:
-    modules/Octokit/Octokit.fsx (3a37084ec188ad359b6c7f7badb900a64f4b4322)
+    modules/Octokit/Octokit.fsx (1dfe9577722ac2c4fade24fd53e2c4d91349142f)
       Octokit
-    src/app/FakeLib/Globbing/Globbing.fs (3a37084ec188ad359b6c7f7badb900a64f4b4322)
+    src/app/FakeLib/Globbing/Globbing.fs (1dfe9577722ac2c4fade24fd53e2c4d91349142f)
   remote: fsprojects/Chessie
   specs:
     src/Chessie/ErrorHandling.fs (3017092260b4a59a3b4b25bf8fca6be6eb7487eb)
