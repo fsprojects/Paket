@@ -176,13 +176,13 @@ nuget NUnit"""
 
     let expected = """source https://www.nuget.org/api/v2
 
+nuget FAKE
 nuget quicksilver
 nuget FsCheck
 
 source https://www.nuget.org/api/v3
 
-nuget NUnit
-nuget FAKE"""
+nuget NUnit"""
 
     DependenciesFile.FromCode(before)
       .Add(PackageName "FAKE","")
@@ -219,6 +219,45 @@ nuget FAKE ~> 1.1
 
 nuget FAKE !~> 1.2
 """
+
+    cfg.ToString()
+    |> shouldEqual (normalizeLineEndings expected)
+
+
+[<Test>]
+let ``should add FsCheck package in first position (if smaller than first)``() = 
+    let config = """source https://nuget.org/api/v2
+
+nuget Newtonsoft.Json
+nuget UnionArgParser
+nuget NUnit.Runners
+nuget NUnit
+nuget FAKE
+nuget FSharp.Formatting
+nuget FSharp.Core
+
+github forki/FsUnit FsUnit.fs
+github fsharp/FAKE modules/Octokit/Octokit.fsx
+github fsharp/FAKE src/app/FakeLib/Globbing/Globbing.fs
+github fsprojects/Chessie src/Chessie/ErrorHandling.fs"""
+
+    let cfg = DependenciesFile.FromCode(config).Add(PackageName "FsCheck","")
+    
+    let expected = """source https://nuget.org/api/v2
+
+nuget FsCheck
+nuget Newtonsoft.Json
+nuget UnionArgParser
+nuget NUnit.Runners
+nuget NUnit
+nuget FAKE
+nuget FSharp.Formatting
+nuget FSharp.Core
+
+github forki/FsUnit FsUnit.fs
+github fsharp/FAKE modules/Octokit/Octokit.fsx
+github fsharp/FAKE src/app/FakeLib/Globbing/Globbing.fs
+github fsprojects/Chessie src/Chessie/ErrorHandling.fs"""
 
     cfg.ToString()
     |> shouldEqual (normalizeLineEndings expected)

@@ -1,3 +1,6 @@
+#### 1.3.3 - 02.05.2015
+* BUGFIX: Paket tries to keep the alphabetical order when using `paket add` 
+
 #### 1.3.2 - 02.05.2015
 * BUGFIX: Do not generate entries for empty extensions in nupkg
 

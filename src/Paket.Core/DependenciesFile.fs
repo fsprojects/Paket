@@ -355,8 +355,10 @@ type DependenciesFile(fileName,options,sources,packages : PackageRequirement lis
                         list.Insert(0,"")
                         list.Insert(0,DependenciesFileSerializer.sourceString Constants.DefaultNugetStream)
                     | _ -> ()
-                | _ -> list.Add packageString
-
+                | p::_ -> 
+                    match tryFindPackageLine p.Name with
+                    | None -> list.Add packageString
+                    | Some pos -> list.Insert(pos,packageString)
             | _ -> 
                 let p = Seq.last smaller
 
