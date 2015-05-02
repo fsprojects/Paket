@@ -167,7 +167,7 @@ Target "SourceLink" (fun _ ->
         let files = proj.Compiles -- assemblyInfo
         repo.VerifyChecksums files
         proj.VerifyPdbChecksums files
-        proj.CreateSrcSrv baseUrl repo.Revision (repo.Paths files)
+        proj.CreateSrcSrv baseUrl repo.Commit (repo.Paths files)
         Pdbstr.exec proj.OutputFilePdb proj.OutputFilePdbSrcSrv
     )
 )
