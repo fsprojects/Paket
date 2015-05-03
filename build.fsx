@@ -211,10 +211,12 @@ Target "GenerateReferenceDocs" (fun _ ->
       failwith "generating reference documentation failed"
 )
 
-let generateHelp' fail debug =
+let generateHelp' commands fail debug =
     let args =
-        if debug then ["--define:HELP"]
-        else ["--define:RELEASE"; "--define:HELP"]
+        [ if not debug then yield "--define:RELEASE"
+          if commands then yield "--define:COMANNDS"
+          yield "--define:HELP"]
+
     if executeFSIWithArgs "docs/tools" "generate.fsx" args [] then
         traceImportant "Help generated"
     else
@@ -223,8 +225,8 @@ let generateHelp' fail debug =
         else
             traceImportant "generating help documentation failed"
 
-let generateHelp fail =
-    generateHelp' fail false
+let generateHelp commands fail =
+    generateHelp' commands fail false
 
 Target "GenerateHelp" (fun _ ->
     DeleteFile "docs/content/release-notes.md"
@@ -238,7 +240,7 @@ Target "GenerateHelp" (fun _ ->
     CopyFile buildDir "packages/FSharp.Core/lib/net40/FSharp.Core.sigdata"
     CopyFile buildDir "packages/FSharp.Core/lib/net40/FSharp.Core.optdata"
 
-    generateHelp true
+    generateHelp true true
 )
 
 Target "GenerateHelpDebug" (fun _ ->
@@ -250,13 +252,13 @@ Target "GenerateHelpDebug" (fun _ ->
     CopyFile "docs/content/" "LICENSE.txt"
     Rename "docs/content/license.md" "docs/content/LICENSE.txt"
 
-    generateHelp' true true
+    generateHelp' true true true
 )
 
 Target "KeepRunning" (fun _ ->    
     use watcher = !! "docs/content/**/*.*" |> WatchChanges (fun changes -> 
          tracefn "%A" changes
-         generateHelp false
+         generateHelp false false
     )
 
     traceImportant "Waiting for help edits. Press any key to stop."
