@@ -240,18 +240,14 @@ Target "GenerateHelpDebug" (fun _ ->
 )
 
 Target "KeepRunning" (fun _ ->    
-    use watcher = new FileSystemWatcher(DirectoryInfo("docs/content").FullName,"*.*")
-    watcher.EnableRaisingEvents <- true
-    watcher.Changed.Add(fun e -> generateHelp false)
-    watcher.Created.Add(fun e -> generateHelp false)
-    watcher.Renamed.Add(fun e -> generateHelp false)
-    watcher.Deleted.Add(fun e -> generateHelp false)
+    use watcher = !! "docs/content/**/*.*" |> WatchChanges (fun changes ->
+         generateHelp false
+    )
 
     traceImportant "Waiting for help edits. Press any key to stop."
 
     System.Console.ReadKey() |> ignore
 
-    watcher.EnableRaisingEvents <- false
     watcher.Dispose()
 )
 
