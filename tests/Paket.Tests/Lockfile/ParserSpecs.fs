@@ -390,3 +390,54 @@ let ``should parse portable lockfile``() =
     packages.[1].Name |> shouldEqual (PackageName "Zlib.Portable")
     packages.[1].Version |> shouldEqual (SemVer.Parse "1.10.0")
     packages.[1].Settings.FrameworkRestrictions.ToString() |> shouldEqual "[portable-net40+sl50+wp80+win80]"
+
+let reactiveuiLockFile = """NUGET
+  remote: https://nuget.org/api/v2
+  specs:
+    reactiveui (5.5.1)
+      reactiveui-core (5.5.1)
+      reactiveui-platforms (5.5.1)
+    reactiveui-core (5.5.1)
+      Rx-Main (>= 2.1.30214.0) - framework: portable-net45+win+wp80
+      Rx-WindowStoreApps (>= 2.1.30214.0) - framework: winv4.5
+    reactiveui-platforms (5.5.1)
+      Rx-Xaml (>= 2.1.30214.0) - framework: winv4.5, wpv8.0, >= net45
+      reactiveui-core (5.5.1) - framework: monoandroid, monotouch, monomac, winv4.5, wpv8.0, >= net45
+    Rx-Core (2.2.5)
+      Rx-Interfaces (>= 2.2.5)
+    Rx-Interfaces (2.2.5)
+    Rx-Linq (2.2.5)
+      Rx-Core (>= 2.2.5)
+      Rx-Interfaces (>= 2.2.5)
+    Rx-Main (2.2.5) - framework: portable-net45+win+wp80
+      Rx-Core (>= 2.2.5)
+      Rx-Interfaces (>= 2.2.5)
+      Rx-Linq (>= 2.2.5)
+      Rx-PlatformServices (>= 2.2.5)
+    Rx-PlatformServices (2.2.5)
+      Rx-Core (>= 2.2.5)
+      Rx-Interfaces (>= 2.2.5)
+    Rx-WindowStoreApps (2.2.5) - framework: winv4.5
+      Rx-Main (>= 2.2.5)
+      Rx-WinRT (>= 2.2.5)
+    Rx-WinRT (2.2.5)
+      Rx-Main (>= 2.2.5)
+    Rx-Xaml (2.2.5) - framework: winv4.5, wpv8.0, >= net45
+      Rx-Main (>= 2.2.5)"""
+
+[<Test>]
+let ``should parse reactiveui lockfile``() =
+    let lockFile = LockFileParser.Parse(toLines reactiveuiLockFile)
+    let references = lockFile.SourceFiles
+
+    references.Length |> shouldEqual 0
+
+    let packages = List.rev lockFile.Packages
+    
+    packages.[8].Name |> shouldEqual (PackageName "Rx-WindowStoreApps")
+    packages.[8].Version |> shouldEqual (SemVer.Parse "2.2.5")
+    packages.[8].Settings.FrameworkRestrictions.ToString() |> shouldEqual "[winv4.5]"
+
+    packages.[10].Name |> shouldEqual (PackageName "Rx-Xaml")
+    packages.[10].Version |> shouldEqual (SemVer.Parse "2.2.5")
+    packages.[10].Settings.FrameworkRestrictions.ToString() |> shouldEqual "[winv4.5; wpv8.0; >= net45]"

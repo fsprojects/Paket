@@ -155,11 +155,11 @@ module FrameworkDetection =
                 | "sl"  | "sl3" | "sl30" -> Some (Silverlight "v3.0")
                 | "sl4" | "sl40" -> Some (Silverlight "v4.0")
                 | "sl5" | "sl50" -> Some (Silverlight "v5.0")
-                | "win8" | "win80" | "netcore45" | "win" -> Some (Windows "v4.5")
+                | "win8" | "win80" | "netcore45" | "win" | "winv45" -> Some (Windows "v4.5")
                 | "win81" | "netcore46" -> Some (Windows "v4.5.1")
                 | "wp7" | "wp70" | "sl4-wp7"| "sl4-wp70" -> Some (WindowsPhoneSilverlight "v7.0")
                 | "wp71" | "sl4-wp71" | "sl4-wp"  -> Some (WindowsPhoneSilverlight "v7.1")
-                | "wp8" | "wp80" -> Some (WindowsPhoneSilverlight "v8.0")
+                | "wp8" | "wp80"  | "wpv80" -> Some (WindowsPhoneSilverlight "v8.0")
                 | "wpa00" | "wpa81" -> Some (WindowsPhoneApp "v8.1")
                 | _ -> None
 

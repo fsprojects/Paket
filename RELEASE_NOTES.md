@@ -1,3 +1,6 @@
+#### 1.3.4 - 04.05.2015
+* BUGFIX: Windows restrictions were not parsed from lockfile - https://github.com/fsprojects/Paket/issues/810
+
 #### 1.3.3 - 02.05.2015
 * BUGFIX: Paket tries to keep the alphabetical order when using `paket add` 
 
