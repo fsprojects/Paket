@@ -57,6 +57,7 @@ namespace Paket.Bootstrapper
                     if (!localVersion.StartsWith(latestVersion))
                     {
                         downloadStrategy.DownloadVersion(latestVersion, dlArgs.Target);
+                        Console.WriteLine("Done.");
                     }
                     else
                     {

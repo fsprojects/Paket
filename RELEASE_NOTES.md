@@ -1,3 +1,6 @@
+#### 1.3.5 - 04.05.2015
+* COSMETICS: Done message in bootstrapper
+
 #### 1.3.4 - 04.05.2015
 * BUGFIX: Windows restrictions were not parsed from lockfile - https://github.com/fsprojects/Paket/issues/810
 
