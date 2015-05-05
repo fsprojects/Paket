@@ -32,7 +32,7 @@
     <StartProgram>paket.exe</StartProgram>
     <StartWorkingDirectory>D:\code\Pakettest</StartWorkingDirectory>
     <StartWorkingDirectory>D:\code\Paketkopie</StartWorkingDirectory>
-    <StartArguments>find-package-versions name FAKE -s max 10</StartArguments>
+    <StartArguments>add nuget FAKE</StartArguments>
     <StartAction>Project</StartAction>
     <StartProgram>paket.exe</StartProgram>
     <StartWorkingDirectory>D:\code\gitnav</StartWorkingDirectory>

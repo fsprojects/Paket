@@ -1,3 +1,6 @@
+#### 1.3.11 - 05.05.2015
+* COSMETICS: Don't perform unnecessary installs during `paket add`
+
 #### 1.3.10 - 05.05.2015
 * EXPERIMENTAL: Find-Package-Versions command
 
