@@ -65,7 +65,7 @@ let FindVersionsForPackage(auth, nugetURL, package, maxResults) =
             let! response = safeGetFromUrl(auth,sprintf "%s?id=%s&take=%d" url package 100000) // Nuget is showing old versions first
             match response with
             | Some text -> 
-                let r = extractVersions text |> Array.rev 
+                let r = extractVersions text
                 if r.Length > maxResults then
                     return r |> Seq.take maxResults |> Seq.toArray
                 else

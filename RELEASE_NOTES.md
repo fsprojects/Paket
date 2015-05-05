@@ -1,3 +1,6 @@
+#### 1.3.19 - 05.05.2015
+* Fix: Find-Package-Versions command
+
 #### 1.3.18 - 05.05.2015
 * Use https://api.nuget.org/v3/index.json for Autocomplete
 

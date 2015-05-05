@@ -43,7 +43,7 @@ let AddToProject(dependenciesFileName, package, version, force, hard, projectNam
             | Some p -> Some p
             | None ->
                 try
-                    let fi = FileInfo (normalizePath projectName) // check if we can detect the path
+                    let fi = FileInfo (normalizePath (projectName.Trim().Trim([|'\"'|]))) // check if we can detect the path
                     let rec checkDir (dir:DirectoryInfo) = 
                        match projects |> Seq.tryFind (fun p -> (FileInfo p.FileName).Directory.ToString().ToLower() = dir.ToString().ToLower()) with
                        | Some p -> Some p
