@@ -9,7 +9,30 @@ open TestHelpers
 let nl = Environment.NewLine
 let linesToString s = String.concat nl s
 
-let source = Gen.constant "source https://nuget.org/api/v2"
+let alphaNumString =
+    Arb.generate<char> 
+    |> Gen.suchThat Char.IsLetterOrDigit 
+    |> Gen.nonEmptyListOf 
+    |> Gen.map (fun xs -> String(xs |> Array.ofList))
+
+
+let remoteSource = gen {
+    let builder = UriBuilder()
+    let! host = alphaNumString
+    builder.Host <- host
+    let! scheme = Gen.elements ["http"; "https"]
+    builder.Scheme <- scheme
+    let! path =
+        alphaNumString
+        |> Gen.nonEmptyListOf
+        |> Gen.map (String.concat "/")
+    builder.Path <- path
+    return "source " + builder.ToString()
+}
+
+let pathSource = Gen.constant "source C:"
+
+let source = Gen.oneof [remoteSource; pathSource] 
 
 let nuget = Gen.constant "nuget FsCheck"
 
