@@ -214,7 +214,7 @@ Target "GenerateReferenceDocs" (fun _ ->
 let generateHelp' commands fail debug =
     let args =
         [ if not debug then yield "--define:RELEASE"
-          if commands then yield "--define:COMANNDS"
+          if commands then yield "--define:COMMANDS"
           yield "--define:HELP"]
 
     if executeFSIWithArgs "docs/tools" "generate.fsx" args [] then
