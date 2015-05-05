@@ -36,6 +36,14 @@ let filterGlobalArgs args =
     
     verbose, logFile, rest
 
+let v, logFile, args = filterGlobalArgs (Environment.GetCommandLineArgs().[1..])
+let silent = args |> Array.exists ((=) "-s") 
+
+if not silent then
+    let assembly = Assembly.GetExecutingAssembly()
+    let fvi = FileVersionInfo.GetVersionInfo(assembly.Location);
+    tracefn "Paket version %s" fvi.FileVersion
+
 let processWithValidation<'T when 'T :> IArgParserTemplate> validateF commandF command 
     args = 
     let parser = UnionArgParser.Create<'T>()
@@ -54,16 +62,11 @@ let processWithValidation<'T when 'T :> IArgParserTemplate> validateF commandF c
     else 
         commandF results
         let elapsedTime = Utils.TimeSpanToReadableString stopWatch.Elapsed
-        tracefn "%s - ready." elapsedTime
+        if not silent then
+            tracefn "%s - ready." elapsedTime
 
 let processCommand<'T when 'T :> IArgParserTemplate> (commandF : ArgParseResults<'T> -> unit) = 
-    processWithValidation (fun _ -> true) commandF 
-
-let v, logFile, args = filterGlobalArgs (Environment.GetCommandLineArgs().[1..])
-if args |> Array.forall ((<>) "-s") then
-    let assembly = Assembly.GetExecutingAssembly()
-    let fvi = FileVersionInfo.GetVersionInfo(assembly.Location);
-    tracefn "Paket version %s" fvi.FileVersion
+    processWithValidation (fun _ -> true) commandF
 
 Logging.verbose <- v
 Option.iter setLogFile logFile

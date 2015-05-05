@@ -1,3 +1,6 @@
+#### 1.3.9 - 05.05.2015
+* Improve silent mode
+
 #### 1.3.8 - 05.05.2015
 * Set exit code to 1 if the command line parser finds error
 
