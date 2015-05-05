@@ -21,7 +21,7 @@ type JSONRootData =
 let getSearchAutocompleteService (data : string) =  
     JsonConvert.DeserializeObject<JSONRootData>(data.Replace("@id","ID").Replace("@type","Type")).Resources
     |> Array.tryFind (fun x -> x.Type <> null && x.Type.ToLower() = "searchautocompleteservice")
-    |> Option.map (fun x -> x.ID.Replace("https","http")) // Fix SSL issue
+    |> Option.map (fun x -> x.ID)
 
 /// [omit]
 let private searchDict = new System.Collections.Concurrent.ConcurrentDictionary<_,_>()
@@ -29,8 +29,8 @@ let private searchDict = new System.Collections.Concurrent.ConcurrentDictionary<
 /// Calculates the NuGet v3 URL from a NuGet v2 URL.
 let calculateNuGet3Path nugetUrl = 
     match nugetUrl with
-    | "http://nuget.org/api/v2" -> Some "http://preview.nuget.org/ver3-preview/index.json"
-    | "https://nuget.org/api/v2" -> Some "http://preview.nuget.org/ver3-preview/index.json"
+    | "http://nuget.org/api/v2" -> Some "http://api.nuget.org/v3/index.json"
+    | "https://nuget.org/api/v2" -> Some "https://api.nuget.org/v3/index.json"
     | _ -> None
 
 /// [omit]

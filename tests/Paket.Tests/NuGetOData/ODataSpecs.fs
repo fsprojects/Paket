@@ -111,8 +111,8 @@ let ``can detect explicit dependencies for Math.Numerics.FSharp``() =
 
 [<Test>]
 let ``can calculate v3 path``() = 
-    calculateNuGet3Path "https://nuget.org/api/v2" |> shouldEqual (Some "http://preview.nuget.org/ver3-preview/index.json")
-    calculateNuGet3Path "http://nuget.org/api/v2" |> shouldEqual (Some "http://preview.nuget.org/ver3-preview/index.json")
+    calculateNuGet3Path "https://nuget.org/api/v2" |> shouldEqual (Some "https://api.nuget.org/v3/index.json")
+    calculateNuGet3Path "http://nuget.org/api/v2" |> shouldEqual (Some "http://api.nuget.org/v3/index.json")
 
 [<Test>]
 let ``can read all versions from single page with multiple entries``() =

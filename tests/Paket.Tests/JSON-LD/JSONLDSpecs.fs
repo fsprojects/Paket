@@ -61,7 +61,7 @@ let rootJSON = """{
 let ``can extract search service``() = 
     rootJSON
     |> getSearchAutocompleteService
-    |> shouldEqual (Some "http://preview-search.nuget.org/search/autocomplete")
+    |> shouldEqual (Some "https://preview-search.nuget.org/search/autocomplete")
   
 [<Test>]
 let ``can parse autocomplete response for packages``() =

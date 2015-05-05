@@ -1,3 +1,6 @@
+#### 1.3.16 - 05.05.2015
+* Use https://api.nuget.org/v3/index.json for Autocomplete
+
 #### 1.3.15 - 05.05.2015
 * Fix max parameter for Find-Package-Versions command
 
