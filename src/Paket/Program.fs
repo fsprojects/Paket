@@ -43,6 +43,7 @@ let processWithValidation<'T when 'T :> IArgParserTemplate> validateF commandF c
         parser.Parse
             (inputs = args, raiseOnUsage = false, ignoreMissing = true, 
              errorHandler = ProcessExiter())
+
     let resultsValid = validateF (results)
     if results.IsUsageRequested || not resultsValid then
         if not resultsValid then
@@ -210,7 +211,8 @@ try
 
         handler command args
     | [] -> 
-        parser.Usage("available commands:") |> trace
+        Environment.ExitCode <- 1
+        parser.Usage("available commands:") |> traceError
     | _ -> failwith "expected only one command"
 with
 | exn when not (exn :? System.NullReferenceException) -> 
