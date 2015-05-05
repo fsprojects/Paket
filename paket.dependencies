@@ -1,5 +1,7 @@
 source https://nuget.org/api/v2
 
+nuget FsCheck
+nuget FsCheck.NUnit
 nuget Newtonsoft.Json
 nuget UnionArgParser
 nuget NUnit.Runners
@@ -13,5 +15,3 @@ github forki/FsUnit FsUnit.fs
 github fsharp/FAKE modules/Octokit/Octokit.fsx
 github fsharp/FAKE src/app/FakeLib/Globbing/Globbing.fs
 github fsprojects/Chessie src/Chessie/ErrorHandling.fs
-nuget FsCheck
-nuget FsCheck.NUnit
