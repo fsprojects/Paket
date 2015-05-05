@@ -14,10 +14,6 @@ open Nessos.UnionArgParser
 let private stopWatch = new Stopwatch()
 stopWatch.Start()
 
-let assembly = Assembly.GetExecutingAssembly()
-let fvi = FileVersionInfo.GetVersionInfo(assembly.Location);
-tracefn "Paket version %s" fvi.FileVersion
-
 let filterGlobalArgs args = 
     let globalResults = 
         UnionArgParser.Create<GlobalArgs>()
@@ -59,6 +55,10 @@ let processCommand<'T when 'T :> IArgParserTemplate> (commandF : ArgParseResults
     processWithValidation (fun _ -> true) commandF 
 
 let v, logFile, args = filterGlobalArgs (Environment.GetCommandLineArgs().[1..])
+if args |> Array.forall ((<>) "-s") then
+    let assembly = Assembly.GetExecutingAssembly()
+    let fvi = FileVersionInfo.GetVersionInfo(assembly.Location);
+    tracefn "Paket version %s" fvi.FileVersion
 
 Logging.verbose <- v
 Option.iter setLogFile logFile
@@ -164,6 +164,10 @@ let pack (results : ArgParseResults<_>) =
                       ?version = results.TryGetResult <@ PackArgs.Version @>, 
                       ?releaseNotes = results.TryGetResult <@ PackArgs.ReleaseNotes @>)
 
+let findPackages (results : ArgParseResults<_>) = 
+    Dependencies.FindPackages(?searchText = results.TryGetResult <@ FindPackagesArgs.SearchText @>,
+                              silent = results.Contains <@ FindPackagesArgs.Silent @>)
+
 let push (results : ArgParseResults<_>) = 
     let fileName = results.GetResult <@ PushArgs.FileName @>
     Dependencies.Push(fileName, ?url = results.TryGetResult <@ PushArgs.Url @>, 
@@ -194,10 +198,12 @@ try
             | Restore -> processCommand restore
             | Simplify -> processCommand simplify
             | Update -> processCommand update
+            | FindPackages -> processCommand findPackages
             | Pack -> processCommand pack
             | Push -> processCommand push
 
-        let args = args.[1..]
+        let args = args.[1..]      
+
         handler command args
     | [] -> 
         parser.Usage("available commands:") |> trace

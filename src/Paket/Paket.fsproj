@@ -32,7 +32,7 @@
     <StartProgram>paket.exe</StartProgram>
     <StartWorkingDirectory>D:\code\Pakettest</StartWorkingDirectory>
     <StartWorkingDirectory>D:\code\Paketkopie</StartWorkingDirectory>
-    <StartArguments>add nuget FSharp.Core</StartArguments>
+    <StartArguments>find-packages</StartArguments>
     <StartAction>Project</StartAction>
     <StartProgram>paket.exe</StartProgram>
     <StartWorkingDirectory>D:\code\Pakettest</StartWorkingDirectory>

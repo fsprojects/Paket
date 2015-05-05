@@ -17,6 +17,7 @@ type Command =
     | [<First>][<CustomCommandLine("restore")>]             Restore
     | [<First>][<CustomCommandLine("simplify")>]            Simplify
     | [<First>][<CustomCommandLine("update")>]              Update
+    | [<First>][<CustomCommandLine("find-packages")>]       FindPackages
     | [<First>][<CustomCommandLine("pack")>]                Pack
     | [<First>][<CustomCommandLine("push")>]                Push
 with 
@@ -35,6 +36,7 @@ with
             | Restore -> "Ensures that all dependencies in your paket.dependencies file are present in the `packages` directory."
             | Simplify -> "Simplifies your paket.dependencies file by removing transitive dependencies."
             | Update -> "Recomputes the dependency resolution, updates the paket.lock file and propagates any resulting package changes into all project files referencing updated packages."
+            | FindPackages -> "EXERIMENTAL: Allows to search for packages."
             | Pack -> "Packs all paket.template files within this repository"
             | Push -> "Pushes all `.nupkg` files from the given directory."
     
@@ -191,6 +193,16 @@ with
             | Hard -> "Replaces package references within project files even if they are not yet adhering to the Paket's conventions (and hence considered manually managed)."
             | Redirects -> "Creates binding redirects for the NuGet packages."
 
+type FindPackagesArgs =
+    | [<CustomCommandLine("searchtext")>] SearchText of string
+    | [<AltCommandLine("-s")>] Silent
+with
+    interface IArgParserTemplate with
+        member this.Usage =
+            match this with
+            | SearchText(_) -> "Search text of a Package"
+            | Silent -> "Doesn't trace other output than the search result"
+
 type PackArgs =
     | [<CustomCommandLine("output")>][<Mandatory>] Output of string
     | [<CustomCommandLine("buildconfig")>] BuildConfig of string
@@ -258,9 +270,9 @@ let markdown (command : Command) (additionalText : string) =
         | Restore -> syntaxAndOptions (UnionArgParser.Create<RestoreArgs>())
         | Simplify -> syntaxAndOptions (UnionArgParser.Create<SimplifyArgs>())
         | Update -> syntaxAndOptions (UnionArgParser.Create<UpdateArgs>())
+        | FindPackages -> syntaxAndOptions (UnionArgParser.Create<FindPackagesArgs>())
         | Pack -> syntaxAndOptions (UnionArgParser.Create<PackArgs>())
         | Push -> syntaxAndOptions (UnionArgParser.Create<PushArgs>())
-
     
     let replaceLinks (text : string) =
         text

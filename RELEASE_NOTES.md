@@ -1,3 +1,6 @@
+#### 1.3.6 - 04.05.2015
+* EXPERIMENTAL: FindPackages command
+
 #### 1.3.5 - 04.05.2015
 * COSMETICS: Done message in bootstrapper
 

@@ -21,7 +21,7 @@ type JSONRootData =
 let getSearchAutocompleteService (data : string) =  
     JsonConvert.DeserializeObject<JSONRootData>(data.Replace("@id","ID").Replace("@type","Type")).Resources
     |> Array.tryFind (fun x -> x.Type <> null && x.Type.ToLower() = "searchautocompleteservice")
-    |> Option.map (fun x -> x.ID)
+    |> Option.map (fun x -> x.ID.Replace("https","http")) // Fix SSL issue
 
 /// [omit]
 let private searchDict = new System.Collections.Concurrent.ConcurrentDictionary<_,_>()
@@ -78,7 +78,8 @@ let FindPackages(auth, nugetURL, packageNamePrefix) =
     async {
         match getSearchAPI(auth,nugetURL) with
         | Some url -> 
-            let! response = safeGetFromUrl(auth,sprintf "%s?q=%s&take=10000" url packageNamePrefix)
+            let query = sprintf "%s?q=%s&take=10000" url packageNamePrefix
+            let! response = safeGetFromUrl(auth,query)
             match response with
             | Some text -> return extractPackages text
             | None -> return [||]
