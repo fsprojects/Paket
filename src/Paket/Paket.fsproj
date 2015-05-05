@@ -32,10 +32,10 @@
     <StartProgram>paket.exe</StartProgram>
     <StartWorkingDirectory>D:\code\Pakettest</StartWorkingDirectory>
     <StartWorkingDirectory>D:\code\Paketkopie</StartWorkingDirectory>
-    <StartArguments>find-packages</StartArguments>
+    <StartArguments>add nuget fsunit project "D:\code\gitnav\src\app\GitNav\Program.fs "</StartArguments>
     <StartAction>Project</StartAction>
     <StartProgram>paket.exe</StartProgram>
-    <StartWorkingDirectory>D:\code\gitnav</StartWorkingDirectory>
+    <StartWorkingDirectory>D:\code\gitnav\src\app\GitNav\</StartWorkingDirectory>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>

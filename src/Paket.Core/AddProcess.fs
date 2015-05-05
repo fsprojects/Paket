@@ -42,15 +42,18 @@ let AddToProject(dependenciesFileName, package, version, force, hard, projectNam
             match projects |> Seq.tryFind (fun p -> p.NameWithoutExtension = projectName || p.Name = projectName) with
             | Some p -> Some p
             | None ->
-                let fi = FileInfo projectName // check if we can detect the path
-                let rec checkDir (dir:DirectoryInfo) = 
-                   match projects |> Seq.tryFind (fun p -> (FileInfo p.FileName).Directory.ToString().ToLower() = dir.ToString().ToLower()) with
-                   | Some p -> Some p
-                   | None ->
-                        if dir.Parent = null then None else
-                        checkDir dir.Parent
+                try
+                    let fi = FileInfo (normalizePath projectName) // check if we can detect the path
+                    let rec checkDir (dir:DirectoryInfo) = 
+                       match projects |> Seq.tryFind (fun p -> (FileInfo p.FileName).Directory.ToString().ToLower() = dir.ToString().ToLower()) with
+                       | Some p -> Some p
+                       | None ->
+                            if dir.Parent = null then None else
+                            checkDir dir.Parent
 
-                checkDir fi.Directory
+                    checkDir fi.Directory
+                with
+                | _ -> None
 
         match project with
         | Some p ->
