@@ -15,29 +15,31 @@ let alphaNumString =
     |> Gen.nonEmptyListOf 
     |> Gen.map (fun xs -> String(xs |> Array.ofList))
 
-let remoteSource = gen {
+let smallAlphaNum size = alphaNumString |> Gen.resize (size |> float |> sqrt |> int)
+
+let remoteSource = Gen.sized (fun size -> gen {
     let builder = UriBuilder()
-    let! host = alphaNumString
+    let! host = smallAlphaNum size
     builder.Host <- host
     let! scheme = Gen.elements ["http"; "https"]
     builder.Scheme <- scheme
     let! path =
-        alphaNumString
+        smallAlphaNum size
         |> Gen.nonEmptyListOf
         |> Gen.map (String.concat "/")
     builder.Path <- path
     let! creds = 
         Gen.frequency [
             70, Gen.constant ""
-            15, alphaNumString 
+            15, smallAlphaNum size
                 |> Gen.two
                 |> Gen.map (fun (x,y) -> sprintf " username: \"%s\" password: \"%s\"" x y)
-            15, alphaNumString 
+            15, smallAlphaNum size
                 |> Gen.two
                 |> Gen.map (fun (x,y) -> sprintf " username: \"%%%s%%\" password: \"%%%s%%\"" x y)
         ]
     return "source " + builder.ToString() + creds
-}
+})
 
 let pathSource = Gen.constant "source C:"
 
@@ -59,9 +61,10 @@ let semVer = gen {
 
 let nuget = 
     let packageId =
-        alphaNumString
+        Gen.sized (fun size -> 
+        smallAlphaNum size
         |> Gen.nonEmptyListOf
-        |> Gen.map (String.concat ".")
+        |> Gen.map (String.concat "."))
 
     let g = Gen.elements [">"; ">="]
     let l = Gen.elements ["<"; "<="]
