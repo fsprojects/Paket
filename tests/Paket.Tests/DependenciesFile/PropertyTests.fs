@@ -34,11 +34,24 @@ let comment = Gen.oneof [slashComment; hashComment]
 
 let depLine = Gen.frequency [80, line; 10, lineWComment; 10, comment]
 
+let framework = 
+    Arb.generate<FrameworkVersion>
+    |> Gen.nonEmptyListOf
+    |> Gen.map (Seq.distinct 
+                >> Array.ofSeq 
+                >> Array.map (DotNetFramework >> string)
+                >> String.concat ", " 
+                >> (fun x -> "framework: ", x))
+
 let globalOpts = 
-    Gen.elements 
-        [ "references: strict"; "framework: net35, net40"; "content: none"; "import_targets: false"; "copy_local: false" ]
+    Gen.oneof 
+        [ Gen.constant ("references: ", "strict")
+          framework
+          Gen.constant ("content: ", "none")
+          Gen.constant ("import_targets: ", "false")
+          Gen.constant ("copy_local: ", "false") ]
     |> Gen.arrayOf
-    |> Gen.map (Seq.distinct >> Array.ofSeq)
+    |> Gen.map (Seq.distinctBy fst >> Seq.map (fun (a,b) -> a+b) >> Array.ofSeq)
 
 let generator = 
     (Gen.arrayOf depLine, globalOpts)
