@@ -15,7 +15,6 @@ let alphaNumString =
     |> Gen.nonEmptyListOf 
     |> Gen.map (fun xs -> String(xs |> Array.ofList))
 
-
 let remoteSource = gen {
     let builder = UriBuilder()
     let! host = alphaNumString
@@ -27,14 +26,59 @@ let remoteSource = gen {
         |> Gen.nonEmptyListOf
         |> Gen.map (String.concat "/")
     builder.Path <- path
-    return "source " + builder.ToString()
+    let! creds = 
+        Gen.frequency [
+            70, Gen.constant ""
+            15, alphaNumString 
+                |> Gen.two
+                |> Gen.map (fun (x,y) -> sprintf " username: \"%s\" password: \"%s\"" x y)
+            15, alphaNumString 
+                |> Gen.two
+                |> Gen.map (fun (x,y) -> sprintf " username: \"%%%s%%\" password: \"%%%s%%\"" x y)
+        ]
+    return "source " + builder.ToString() + creds
 }
 
 let pathSource = Gen.constant "source C:"
 
 let source = Gen.oneof [remoteSource; pathSource] 
 
-let nuget = Gen.constant "nuget FsCheck"
+let semVer = gen {
+    let! major = Arb.generate<PositiveInt>
+    let! minor = Arb.generate<PositiveInt>
+    let! patch = Arb.generate<PositiveInt>
+    return { 
+        Major = major.Get
+        Minor = minor.Get
+        Patch = patch.Get
+        PreRelease = None
+        Build = ""
+        PreReleaseBuild = ""
+        Original = None }
+}
+
+let nuget = 
+    let packageId =
+        alphaNumString
+        |> Gen.nonEmptyListOf
+        |> Gen.map (String.concat ".")
+
+    let g = Gen.elements [">"; ">="]
+    let l = Gen.elements ["<"; "<="]
+    let gOrL = Gen.oneof [g; l]
+
+    let _constraint =
+        Gen.oneof [
+            Gen.constant ""
+            semVer |> Gen.map (sprintf " ~> %O")
+            semVer |> Gen.map (sprintf " == %O")
+            (gOrL, semVer) ||> Gen.map2  (sprintf " %s %O")
+            Gen.map2 (sprintf " %s %O") gOrL semVer
+            Gen.map4 (sprintf " %s %O %s %O") g semVer l semVer
+        ]
+
+    (packageId, _constraint)
+    ||> Gen.map2 (fun p c -> sprintf "nuget %s%s" p c)
 
 let github = Gen.constant "github forki/FsUnit FsUnit.fs"
 
