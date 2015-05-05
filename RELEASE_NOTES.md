@@ -1,4 +1,4 @@
-#### 1.3.14 - 05.05.2015
+#### 1.3.15 - 05.05.2015
 * Fix max parameter for Find-Package-Versions command
 
 #### 1.3.13 - 05.05.2015
