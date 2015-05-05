@@ -174,7 +174,12 @@ let pack (results : ArgParseResults<_>) =
 
 let findPackages (results : ArgParseResults<_>) = 
     Dependencies.FindPackages(?searchText = results.TryGetResult <@ FindPackagesArgs.SearchText @>,
-                              silent = results.Contains <@ FindPackagesArgs.Silent @>)
+                              silent = results.Contains <@ FindPackagesArgs.Silent @>,
+                              ?maxResults = results.TryGetResult <@ FindPackagesArgs.MaxResults @>)
+
+let findPackageVersions (results : ArgParseResults<_>) = 
+    Dependencies.FindPackageVersions(name = results.GetResult <@ FindPackageVersionsArgs.Name @>,
+                                     ?maxResults = results.TryGetResult <@ FindPackageVersionsArgs.MaxResults @>)
 
 let push (results : ArgParseResults<_>) = 
     let fileName = results.GetResult <@ PushArgs.FileName @>
@@ -207,6 +212,7 @@ try
             | Simplify -> processCommand simplify
             | Update -> processCommand update
             | FindPackages -> processCommand findPackages
+            | FindPackageVersions -> processCommand findPackageVersions
             | Pack -> processCommand pack
             | Push -> processCommand push
 

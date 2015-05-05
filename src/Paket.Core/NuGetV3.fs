@@ -58,13 +58,13 @@ let extractVersions(response:string) =
     JsonConvert.DeserializeObject<JSONVersionData>(response).Data
 
 /// Uses the NuGet v3 autocomplete service to retrieve all package versions for the given package.
-let FindVersionsForPackage(auth, nugetURL, package) =
+let FindVersionsForPackage(auth, nugetURL, package, maxResults) =
     async {
         match getSearchAPI(auth,nugetURL) with        
         | Some url ->
-            let! response = safeGetFromUrl(auth,sprintf "%s?id=%s&take=10000" url package)
+            let! response = safeGetFromUrl(auth,sprintf "%s?id=%s&take=%d" url package 100000) // Nuget is showing old versions first
             match response with
-            | Some text -> return extractVersions text
+            | Some text -> return (extractVersions text) |> Array.rev |> Seq.take maxResults |> Seq.toArray
             | None -> return [||]
         | None -> return [||]
     }
@@ -74,11 +74,11 @@ let extractPackages(response:string) =
     JsonConvert.DeserializeObject<JSONVersionData>(response).Data
 
 /// Uses the NuGet v3 autocomplete service to retrieve all packages with the given prefix.
-let FindPackages(auth, nugetURL, packageNamePrefix) =
+let FindPackages(auth, nugetURL, packageNamePrefix, maxResults) =
     async {
         match getSearchAPI(auth,nugetURL) with
         | Some url -> 
-            let query = sprintf "%s?q=%s&take=10000" url packageNamePrefix
+            let query = sprintf "%s?q=%s&take=%d" url packageNamePrefix maxResults
             let! response = safeGetFromUrl(auth,query)
             match response with
             | Some text -> return extractPackages text

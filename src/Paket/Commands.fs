@@ -18,6 +18,7 @@ type Command =
     | [<First>][<CustomCommandLine("simplify")>]            Simplify
     | [<First>][<CustomCommandLine("update")>]              Update
     | [<First>][<CustomCommandLine("find-packages")>]       FindPackages
+    | [<First>][<CustomCommandLine("find-package-versions")>] FindPackageVersions
     | [<First>][<CustomCommandLine("pack")>]                Pack
     | [<First>][<CustomCommandLine("push")>]                Push
 with 
@@ -37,6 +38,7 @@ with
             | Simplify -> "Simplifies your paket.dependencies file by removing transitive dependencies."
             | Update -> "Recomputes the dependency resolution, updates the paket.lock file and propagates any resulting package changes into all project files referencing updated packages."
             | FindPackages -> "EXERIMENTAL: Allows to search for packages."
+            | FindPackageVersions -> "EXERIMENTAL: Allows to search for package versions."
             | Pack -> "Packs all paket.template files within this repository"
             | Push -> "Pushes all `.nupkg` files from the given directory."
     
@@ -195,12 +197,26 @@ with
 
 type FindPackagesArgs =
     | [<CustomCommandLine("searchtext")>] SearchText of string
+    | [<CustomCommandLine("max")>] MaxResults of int
     | [<AltCommandLine("-s")>] Silent
 with
     interface IArgParserTemplate with
         member this.Usage =
             match this with
             | SearchText(_) -> "Search text of a Package"
+            | MaxResults(_) -> "Max. No. of results"
+            | Silent -> "Doesn't trace other output than the search result"
+
+type FindPackageVersionsArgs =
+    | [<CustomCommandLine("name")>][<Mandatory>] Name of string
+    | [<CustomCommandLine("max")>] MaxResults of int
+    | [<AltCommandLine("-s")>] Silent
+with
+    interface IArgParserTemplate with
+        member this.Usage =
+            match this with
+            | Name(_) -> "Name of the Package"
+            | MaxResults(_) -> "Max. No. of results"
             | Silent -> "Doesn't trace other output than the search result"
 
 type PackArgs =
@@ -271,6 +287,7 @@ let markdown (command : Command) (additionalText : string) =
         | Simplify -> syntaxAndOptions (UnionArgParser.Create<SimplifyArgs>())
         | Update -> syntaxAndOptions (UnionArgParser.Create<UpdateArgs>())
         | FindPackages -> syntaxAndOptions (UnionArgParser.Create<FindPackagesArgs>())
+        | FindPackageVersions -> syntaxAndOptions (UnionArgParser.Create<FindPackageVersionsArgs>())
         | Pack -> syntaxAndOptions (UnionArgParser.Create<PackArgs>())
         | Push -> syntaxAndOptions (UnionArgParser.Create<PushArgs>())
     

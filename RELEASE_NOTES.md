@@ -1,3 +1,6 @@
+#### 1.3.10 - 05.05.2015
+* EXPERIMENTAL: Find-Package-Versions command
+
 #### 1.3.9 - 05.05.2015
 * Improve silent mode
 
@@ -5,7 +8,7 @@
 * Set exit code to 1 if the command line parser finds error
 
 #### 1.3.6 - 05.05.2015
-* EXPERIMENTAL: FindPackages command
+* EXPERIMENTAL: Find-Packages command
 
 #### 1.3.5 - 04.05.2015
 * COSMETICS: Done message in bootstrapper
