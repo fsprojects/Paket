@@ -102,7 +102,7 @@ namespace Paket.Bootstrapper
             };
         }
 
-        public void DownloadVersion(string latestVersion, string target)
+        public void DownloadVersion(string latestVersion, string target, bool silent)
         {
             var apiHelper = new NugetApiHelper(PaketNugetPackageName);
             using (WebClient client = new WebClient())
@@ -121,7 +121,8 @@ namespace Paket.Bootstrapper
                 var randomFullPath = Path.Combine(Folder, Path.GetRandomFileName());
                 Directory.CreateDirectory(randomFullPath);
                 var paketPackageFile = Path.Combine(randomFullPath, paketFile);
-                Console.WriteLine("Starting download from {0}", paketDownloadUrl);
+                if (!silent)
+                    Console.WriteLine("Starting download from {0}", paketDownloadUrl);
                 PrepareWebClient(client, paketDownloadUrl);
                 client.DownloadFile(paketDownloadUrl, paketPackageFile);
 
@@ -132,14 +133,15 @@ namespace Paket.Bootstrapper
             }
         }
 
-        public void SelfUpdate(string latestVersion)
+        public void SelfUpdate(string latestVersion, bool silent)
         {
             var executingAssembly = Assembly.GetExecutingAssembly();
             string target = executingAssembly.Location;
             var localVersion = BootstrapperHelper.GetLocalFileVersion(target);
             if (localVersion.StartsWith(latestVersion))
             {
-                Console.WriteLine("Bootstrapper is up to date. Nothing to do.");
+                if (!silent)
+                    Console.WriteLine("Bootstrapper is up to date. Nothing to do.");
                 return;
             }
             var apiHelper = new NugetApiHelper(PaketBootstrapperNugetPackageName);
@@ -159,7 +161,8 @@ namespace Paket.Bootstrapper
             var randomFullPath = Path.Combine(Folder, Path.GetRandomFileName());
             Directory.CreateDirectory(randomFullPath);
             var paketPackageFile = Path.Combine(randomFullPath, paketFile);
-            Console.WriteLine("Starting download from {0}", paketDownloadUrl);
+            if (!silent)
+                Console.WriteLine("Starting download from {0}", paketDownloadUrl);
             using (var client = new WebClient())
             {
                 PrepareWebClient(client, paketDownloadUrl);
@@ -173,11 +176,13 @@ namespace Paket.Bootstrapper
             {
                 BootstrapperHelper.FileMove(target, renamedPath);
                 BootstrapperHelper.FileMove(paketSourceFile, target);
-                Console.WriteLine("Self update of bootstrapper was successful.");
+                if (!silent)
+                    Console.WriteLine("Self update of bootstrapper was successful.");
             }
             catch (Exception)
             {
-                Console.WriteLine("Self update failed. Resetting bootstrapper.");
+                if (!silent)
+                    Console.WriteLine("Self update failed. Resetting bootstrapper.");
                 BootstrapperHelper.FileMove(renamedPath, target);
                 throw;
             }

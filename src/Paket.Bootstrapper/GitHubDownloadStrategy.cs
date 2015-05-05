@@ -42,11 +42,11 @@ namespace Paket.Bootstrapper
             return latestVersion;
         }
 
-        public void DownloadVersion(string latestVersion, string target)
+        public void DownloadVersion(string latestVersion, string target, bool silent)
         {
             var url = String.Format("https://github.com/fsprojects/Paket/releases/download/{0}/paket.exe", latestVersion);
-
-            Console.WriteLine("Starting download from {0}", url);
+            if (!silent)
+                Console.WriteLine("Starting download from {0}", url);
 
             var request = PrepareWebRequest(url);
 
@@ -73,19 +73,21 @@ namespace Paket.Bootstrapper
             }
         }
 
-        public void SelfUpdate(string latestVersion)
+        public void SelfUpdate(string latestVersion, bool silent)
         {
             var executingAssembly = Assembly.GetExecutingAssembly();
             string exePath = executingAssembly.Location;
             var localVersion = BootstrapperHelper.GetLocalFileVersion(exePath);
             if (localVersion.StartsWith(latestVersion))
             {
-                Console.WriteLine("Bootstrapper is up to date. Nothing to do.");
+                if (!silent)
+                    Console.WriteLine("Bootstrapper is up to date. Nothing to do.");
                 return;
             }
 
             var url = String.Format("https://github.com/fsprojects/Paket/releases/download/{0}/paket.bootstrapper.exe", latestVersion);
-            Console.WriteLine("Starting download of bootstrapper from {0}", url);
+            if (!silent)
+                Console.WriteLine("Starting download of bootstrapper from {0}", url);
 
             var request = PrepareWebRequest(url);
 
@@ -103,11 +105,13 @@ namespace Paket.Bootstrapper
             {
                 BootstrapperHelper.FileMove(exePath, renamedPath);
                 BootstrapperHelper.FileMove(tmpDownloadPath, exePath);
-                Console.WriteLine("Self update of bootstrapper was successful.");
+                if (!silent)
+                    Console.WriteLine("Self update of bootstrapper was successful.");
             }
             catch (Exception)
             {
-                Console.WriteLine("Self update failed. Resetting bootstrapper.");
+                if (!silent)
+                    Console.WriteLine("Self update failed. Resetting bootstrapper.");
                 BootstrapperHelper.FileMove(renamedPath, exePath);
                 throw;
             }

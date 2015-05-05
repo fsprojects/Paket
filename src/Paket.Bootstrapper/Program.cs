@@ -58,13 +58,13 @@ namespace Paket.Bootstrapper
                 {
                     if(!silent)
                         Console.WriteLine("Trying self update");
-                    downloadStrategy.SelfUpdate(latestVersion);
+                    downloadStrategy.SelfUpdate(latestVersion, silent);
                 }
                 else
                 {
                     if (!localVersion.StartsWith(latestVersion))
                     {
-                        downloadStrategy.DownloadVersion(latestVersion, dlArgs.Target);
+                        downloadStrategy.DownloadVersion(latestVersion, dlArgs.Target, silent);
                         if (!silent)
                             Console.WriteLine("Done.");
                     }
