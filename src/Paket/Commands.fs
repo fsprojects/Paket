@@ -5,22 +5,22 @@ open System
 open Nessos.UnionArgParser
 
 type Command =
-    | [<First>][<CustomCommandLine("add")>]                 Add
-    | [<First>][<CustomCommandLine("config")>]              Config
-    | [<First>][<CustomCommandLine("convert-from-nuget")>]  ConvertFromNuget
-    | [<First>][<CustomCommandLine("find-refs")>]           FindRefs 
-    | [<First>][<CustomCommandLine("init")>]                Init
-    | [<First>][<CustomCommandLine("auto-restore")>]        AutoRestore
-    | [<First>][<CustomCommandLine("install")>]             Install
-    | [<First>][<CustomCommandLine("outdated")>]            Outdated
-    | [<First>][<CustomCommandLine("remove")>]              Remove
-    | [<First>][<CustomCommandLine("restore")>]             Restore
-    | [<First>][<CustomCommandLine("simplify")>]            Simplify
-    | [<First>][<CustomCommandLine("update")>]              Update
-    | [<First>][<CustomCommandLine("find-packages")>]       FindPackages
+    | [<First>][<CustomCommandLine("add")>]                   Add
+    | [<First>][<CustomCommandLine("config")>]                Config
+    | [<First>][<CustomCommandLine("convert-from-nuget")>]    ConvertFromNuget
+    | [<First>][<CustomCommandLine("find-refs")>]             FindRefs 
+    | [<First>][<CustomCommandLine("init")>]                  Init
+    | [<First>][<CustomCommandLine("auto-restore")>]          AutoRestore
+    | [<First>][<CustomCommandLine("install")>]               Install
+    | [<First>][<CustomCommandLine("outdated")>]              Outdated
+    | [<First>][<CustomCommandLine("remove")>]                Remove
+    | [<First>][<CustomCommandLine("restore")>]               Restore
+    | [<First>][<CustomCommandLine("simplify")>]              Simplify
+    | [<First>][<CustomCommandLine("update")>]                Update
+    | [<First>][<CustomCommandLine("find-packages")>]         FindPackages
     | [<First>][<CustomCommandLine("find-package-versions")>] FindPackageVersions
-    | [<First>][<CustomCommandLine("pack")>]                Pack
-    | [<First>][<CustomCommandLine("push")>]                Push
+    | [<First>][<CustomCommandLine("pack")>]                  Pack
+    | [<First>][<CustomCommandLine("push")>]                  Push
 with 
     interface IArgParserTemplate with
         member this.Usage = 
