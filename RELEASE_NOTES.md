@@ -1,3 +1,6 @@
+#### 1.3.15 - 05.05.2015
+* Allow to detect the project file from a given file during add
+
 #### 1.3.14 - 05.05.2015
 * Fix max parameter for Find-Package-Versions command
 
