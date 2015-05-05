@@ -113,7 +113,7 @@ type Dependencies(dependenciesFileName: string) =
     member this.Add(package: string,version: string,force: bool,hard: bool,interactive: bool,installAfter: bool): unit =
         Utils.RunInLockedAccessMode(
             this.RootPath,
-            fun () -> AddProcess.Add(dependenciesFileName, PackageName package, version, force, hard, interactive, installAfter))
+            fun () -> AddProcess.Add(dependenciesFileName, PackageName(package.Trim()), version, force, hard, interactive, installAfter))
 
     /// Adds the given package with the given version to the dependencies file.
     member this.AddToProject(package: string,version: string,force: bool,hard: bool,projectName: string,installAfter: bool): unit =
