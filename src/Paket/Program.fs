@@ -44,8 +44,12 @@ let processWithValidation<'T when 'T :> IArgParserTemplate> validateF commandF c
             (inputs = args, raiseOnUsage = false, ignoreMissing = true, 
              errorHandler = ProcessExiter())
     let resultsValid = validateF (results)
-    if results.IsUsageRequested || not resultsValid then 
-        parser.Usage(Commands.cmdLineUsageMessage command parser) |> trace
+    if results.IsUsageRequested || not resultsValid then
+        if not resultsValid then
+            parser.Usage(Commands.cmdLineUsageMessage command parser) |> traceError
+            Environment.ExitCode <- 1
+        else
+            parser.Usage(Commands.cmdLineUsageMessage command parser) |> trace
     else 
         commandF results
         let elapsedTime = Utils.TimeSpanToReadableString stopWatch.Elapsed

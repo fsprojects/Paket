@@ -1,4 +1,7 @@
-#### 1.3.6 - 04.05.2015
+#### 1.3.7 - 05.05.2015
+* Set exit code to 1 if the command line parser finds error
+
+#### 1.3.6 - 05.05.2015
 * EXPERIMENTAL: FindPackages command
 
 #### 1.3.5 - 04.05.2015
