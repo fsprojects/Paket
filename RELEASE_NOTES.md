@@ -1,3 +1,6 @@
+#### 1.3.12 - 05.05.2015
+* COSMETICS: -s parameter for Bootstrapper
+
 #### 1.3.11 - 05.05.2015
 * COSMETICS: Don't perform unnecessary installs during `paket add`
 

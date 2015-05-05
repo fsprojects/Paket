@@ -12,7 +12,8 @@ namespace Paket.Bootstrapper
         const string PrereleaseCommandArg = "prerelease";
         const string PaketVersionEnv = "PAKET.VERSION";
         const string SelfUpdateCommandArg = "--self";
-
+        const string SilentCommandArg = "-s";
+        
         static void Main(string[] args)
         {
             var commandArgs = args;
@@ -22,14 +23,20 @@ namespace Paket.Bootstrapper
                 preferNuget = true;
                 commandArgs = args.Where(x => x != PreferNugetCommandArg).ToArray();
             }
-            var dlArgs = EvaluateCommandArgs(commandArgs);
+            bool silent = false;
+            if (commandArgs.Contains(SilentCommandArg))
+            {
+                silent = true;
+                commandArgs = args.Where(x => x != SilentCommandArg).ToArray();
+            }
+            var dlArgs = EvaluateCommandArgs(commandArgs,silent);
 
             var effectiveStrategy = GetEffectiveDownloadStrategy(dlArgs, preferNuget);
         
-            StartPaketBootstrapping(effectiveStrategy, dlArgs);
+            StartPaketBootstrapping(effectiveStrategy, dlArgs, silent);
         }
 
-        private static void StartPaketBootstrapping(IDownloadStrategy downloadStrategy, DownloadArguments dlArgs)
+        private static void StartPaketBootstrapping(IDownloadStrategy downloadStrategy, DownloadArguments dlArgs, bool silent)
         {
             Action<Exception> handleException = exception =>
             {
@@ -49,7 +56,8 @@ namespace Paket.Bootstrapper
 
                 if (dlArgs.DoSelfUpdate)
                 {
-                    Console.WriteLine("Trying self update");
+                    if(!silent)
+                        Console.WriteLine("Trying self update");
                     downloadStrategy.SelfUpdate(latestVersion);
                 }
                 else
@@ -57,11 +65,13 @@ namespace Paket.Bootstrapper
                     if (!localVersion.StartsWith(latestVersion))
                     {
                         downloadStrategy.DownloadVersion(latestVersion, dlArgs.Target);
-                        Console.WriteLine("Done.");
+                        if (!silent)
+                            Console.WriteLine("Done.");
                     }
                     else
                     {
-                        Console.WriteLine("Paket.exe {0} is up to date.", localVersion);
+                        if (!silent)
+                            Console.WriteLine("Paket.exe {0} is up to date.", localVersion);
                     }
                 }
             }
@@ -73,8 +83,9 @@ namespace Paket.Bootstrapper
                     if (downloadStrategy.FallbackStrategy != null)
                     {
                         var fallbackStrategy = downloadStrategy.FallbackStrategy;
-                        Console.WriteLine("'{0}' download failed. Try fallback download from '{1}'.", downloadStrategy.Name, fallbackStrategy.Name);
-                        StartPaketBootstrapping(fallbackStrategy, dlArgs);
+                        if (!silent)
+                            Console.WriteLine("'{0}' download failed. Try fallback download from '{1}'.", downloadStrategy.Name, fallbackStrategy.Name);
+                        StartPaketBootstrapping(fallbackStrategy, dlArgs, silent);
                         shouldHandleException = !File.Exists(dlArgs.Target);
                     }
                 }
@@ -106,7 +117,7 @@ namespace Paket.Bootstrapper
             return effectiveStrategy;
         }
 
-        private static DownloadArguments EvaluateCommandArgs(string[] args)
+        private static DownloadArguments EvaluateCommandArgs(string[] args, bool silent)
         {
             var folder = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
             var target = Path.Combine(folder, "paket.exe");
@@ -126,18 +137,32 @@ namespace Paket.Bootstrapper
                 if (commandArgs[0] == PrereleaseCommandArg)
                 {
                     ignorePrerelease = false;
-                    latestVersion = "";
-                    Console.WriteLine("Prerelease requested. Looking for latest prerelease.");
+                    latestVersion = ""; 
+                    if (!silent)
+                        Console.WriteLine("Prerelease requested. Looking for latest prerelease.");
                 }
                 else
                 {
                     latestVersion = commandArgs[0];
-                    Console.WriteLine("Version {0} requested.", latestVersion);
+                    if (!silent)
+                    {
+                        if (!String.IsNullOrWhiteSpace(latestVersion))
+                            Console.WriteLine("Version {0} requested.", latestVersion);
+                        else
+                            Console.WriteLine("No version specified. Downloading latest stable.");
+                    }
                 }
             }
-            else if (!String.IsNullOrWhiteSpace(latestVersion))
-                Console.WriteLine("Version {0} requested.", latestVersion);
-            else Console.WriteLine("No version specified. Downloading latest stable.");
+            else
+            {
+                if (!silent)
+                {
+                    if (!String.IsNullOrWhiteSpace(latestVersion))
+                        Console.WriteLine("Version {0} requested.", latestVersion);
+                    else
+                        Console.WriteLine("No version specified. Downloading latest stable.");
+                }
+            }
 
 
             return new DownloadArguments(latestVersion, ignorePrerelease, folder, target, doSelfUpdate);
