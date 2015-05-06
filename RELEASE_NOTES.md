@@ -1,3 +1,6 @@
+#### 1.3.27 - 06.05.2015
+* EXPERIMENTAL: Show-Installed-Packages command
+
 #### 1.3.26 - 06.05.2015
 * BUGFIX: Always add to last source
 

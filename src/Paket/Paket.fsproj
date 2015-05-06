@@ -32,10 +32,10 @@
     <StartProgram>paket.exe</StartProgram>
     <StartWorkingDirectory>D:\code\Pakettest</StartWorkingDirectory>
     <StartWorkingDirectory>D:\code\Paketkopie</StartWorkingDirectory>
-    <StartArguments>install</StartArguments>
+    <StartArguments>show-installed-packages -s</StartArguments>
     <StartAction>Project</StartAction>
     <StartProgram>paket.exe</StartProgram>
-    <StartWorkingDirectory>D:\temp\PaketTest</StartWorkingDirectory>
+    <StartWorkingDirectory>d:\code\paket</StartWorkingDirectory>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>

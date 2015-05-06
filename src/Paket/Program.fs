@@ -177,6 +177,17 @@ let findPackages (results : ArgParseResults<_>) =
                               silent = results.Contains <@ FindPackagesArgs.Silent @>,
                               ?maxResults = results.TryGetResult <@ FindPackagesArgs.MaxResults @>)
 
+let showInstalledPackages (results : ArgParseResults<_>) =
+    let dependenciesFile = Dependencies.Locate()
+    let packages = 
+        if results.Contains <@ ShowInstalledPackagesArgs.All @> then
+            dependenciesFile.GetInstalledPackages()
+        else
+            dependenciesFile.GetDirectDependencies()
+
+    for name,version in packages do
+        tracefn "%s - %s" name version
+
 let findPackageVersions (results : ArgParseResults<_>) = 
     Dependencies.FindPackageVersions(name = results.GetResult <@ FindPackageVersionsArgs.Name @>,
                                      ?maxResults = results.TryGetResult <@ FindPackageVersionsArgs.MaxResults @>)
@@ -213,6 +224,7 @@ try
             | Update -> processCommand update
             | FindPackages -> processCommand findPackages
             | FindPackageVersions -> processCommand findPackageVersions
+            | ShowInstalledPackages -> processCommand showInstalledPackages
             | Pack -> processCommand pack
             | Push -> processCommand push
 

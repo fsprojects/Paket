@@ -5,22 +5,23 @@ open System
 open Nessos.UnionArgParser
 
 type Command =
-    | [<First>][<CustomCommandLine("add")>]                   Add
-    | [<First>][<CustomCommandLine("config")>]                Config
-    | [<First>][<CustomCommandLine("convert-from-nuget")>]    ConvertFromNuget
-    | [<First>][<CustomCommandLine("find-refs")>]             FindRefs 
-    | [<First>][<CustomCommandLine("init")>]                  Init
-    | [<First>][<CustomCommandLine("auto-restore")>]          AutoRestore
-    | [<First>][<CustomCommandLine("install")>]               Install
-    | [<First>][<CustomCommandLine("outdated")>]              Outdated
-    | [<First>][<CustomCommandLine("remove")>]                Remove
-    | [<First>][<CustomCommandLine("restore")>]               Restore
-    | [<First>][<CustomCommandLine("simplify")>]              Simplify
-    | [<First>][<CustomCommandLine("update")>]                Update
-    | [<First>][<CustomCommandLine("find-packages")>]         FindPackages
-    | [<First>][<CustomCommandLine("find-package-versions")>] FindPackageVersions
-    | [<First>][<CustomCommandLine("pack")>]                  Pack
-    | [<First>][<CustomCommandLine("push")>]                  Push
+    | [<First>][<CustomCommandLine("add")>]                     Add
+    | [<First>][<CustomCommandLine("config")>]                  Config
+    | [<First>][<CustomCommandLine("convert-from-nuget")>]      ConvertFromNuget
+    | [<First>][<CustomCommandLine("find-refs")>]               FindRefs 
+    | [<First>][<CustomCommandLine("init")>]                    Init
+    | [<First>][<CustomCommandLine("auto-restore")>]            AutoRestore
+    | [<First>][<CustomCommandLine("install")>]                 Install
+    | [<First>][<CustomCommandLine("outdated")>]                Outdated
+    | [<First>][<CustomCommandLine("remove")>]                  Remove
+    | [<First>][<CustomCommandLine("restore")>]                 Restore
+    | [<First>][<CustomCommandLine("simplify")>]                Simplify
+    | [<First>][<CustomCommandLine("update")>]                  Update
+    | [<First>][<CustomCommandLine("find-packages")>]           FindPackages
+    | [<First>][<CustomCommandLine("find-package-versions")>]   FindPackageVersions
+    | [<First>][<CustomCommandLine("show-installed-packages")>] ShowInstalledPackages
+    | [<First>][<CustomCommandLine("pack")>]                    Pack
+    | [<First>][<CustomCommandLine("push")>]                    Push
 with 
     interface IArgParserTemplate with
         member this.Usage = 
@@ -39,6 +40,7 @@ with
             | Update -> "Recomputes the dependency resolution, updates the paket.lock file and propagates any resulting package changes into all project files referencing updated packages."
             | FindPackages -> "EXERIMENTAL: Allows to search for packages."
             | FindPackageVersions -> "EXERIMENTAL: Allows to search for package versions."
+            | ShowInstalledPackages -> "EXERIMENTAL: Shows all installed top-level packages."
             | Pack -> "Packs all paket.template files within this repository"
             | Push -> "Pushes all `.nupkg` files from the given directory."
     
@@ -207,6 +209,16 @@ with
             | MaxResults(_) -> "Max. No. of results"
             | Silent -> "Doesn't trace other output than the search result"
 
+type ShowInstalledPackagesArgs =
+    | All
+    | [<AltCommandLine("-s")>] Silent
+with
+    interface IArgParserTemplate with
+        member this.Usage =
+            match this with
+            | All -> "Shows all installed packages (incl. transitive dependencies)."
+            | Silent -> "Doesn't trace other output than installed packages"
+
 type FindPackageVersionsArgs =
     | [<CustomCommandLine("name")>][<Mandatory>] Name of string
     | [<CustomCommandLine("max")>] MaxResults of int
@@ -288,6 +300,7 @@ let markdown (command : Command) (additionalText : string) =
         | Update -> syntaxAndOptions (UnionArgParser.Create<UpdateArgs>())
         | FindPackages -> syntaxAndOptions (UnionArgParser.Create<FindPackagesArgs>())
         | FindPackageVersions -> syntaxAndOptions (UnionArgParser.Create<FindPackageVersionsArgs>())
+        | ShowInstalledPackages -> syntaxAndOptions (UnionArgParser.Create<ShowInstalledPackagesArgs>())
         | Pack -> syntaxAndOptions (UnionArgParser.Create<PackArgs>())
         | Push -> syntaxAndOptions (UnionArgParser.Create<PushArgs>())
     
