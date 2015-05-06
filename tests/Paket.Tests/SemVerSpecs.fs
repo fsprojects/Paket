@@ -165,3 +165,7 @@ let ``should accept SemVer2 prereleases`` () =
     semVer.PreRelease |> shouldEqual (Some { Origin = "foobar"
                                              Name = "foobar"
                                              Number = None })
+
+[<Test>]
+let ``should accept version with leading zero`` () =
+    SemVer.Parse("1.0.071.9556").ToString() |> shouldEqual "1.0.071.9556"
