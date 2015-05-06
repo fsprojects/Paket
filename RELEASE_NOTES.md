@@ -1,3 +1,6 @@
+#### 1.3.30 - 06.05.2015
+* BUGFIX: Don't shortcut conflicting addition
+
 #### 1.3.29 - 06.05.2015
 * BUGFIX: Always print the command on error
 

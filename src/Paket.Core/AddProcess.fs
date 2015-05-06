@@ -2,6 +2,7 @@
 module Paket.AddProcess
 
 open Paket
+open System
 open System.IO
 open Paket.Domain
 open Paket.Logging
@@ -16,7 +17,7 @@ let private addToProject (project : ProjectFile) package =
 let private add installToProjects addToProjectsF dependenciesFileName package version force hard installAfter =
     let existingDependenciesFile = DependenciesFile.ReadFromFile(dependenciesFileName)
     let (PackageName name) = package
-    if (not installToProjects) && existingDependenciesFile.HasPackage package then 
+    if (not installToProjects) && existingDependenciesFile.HasPackage package && String.IsNullOrWhiteSpace version then 
         traceWarnfn "%s contains package %s already." dependenciesFileName name
     else
         let dependenciesFile =
