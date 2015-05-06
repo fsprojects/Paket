@@ -1,3 +1,6 @@
+#### 1.3.22 - 06.05.2015
+* BUGFIX: Fix `paket add` if package is already there - https://github.com/fsprojects/Paket/issues/814
+
 #### 1.3.21 - 06.05.2015
 * BUGFIX: Fix `paket add` for very first dependency - https://github.com/fsprojects/Paket/issues/814
 

@@ -337,35 +337,39 @@ type DependenciesFile(fileName,options,sources,packages : PackageRequirement lis
 
         // Try to find alphabetical matching position to insert the package
         let smaller = Seq.takeWhile (fun (p:PackageRequirement) -> p.Name <= packageName) packages |> List.ofSeq
+        let containsLine = Seq.exists (fun (p:PackageRequirement) -> p.Name = packageName) packages 
 
         let newLines =
             let list = new System.Collections.Generic.List<_>()
             list.AddRange textRepresentation
-            match smaller with
-            | [] -> 
-                match packages with
-                | [] ->
-                    if remoteFiles <> [] then
-                        list.Insert(0,"")
+            match tryFindPackageLine packageName with                        
+            | Some pos -> list.[pos] <- packageString
+            | None -> 
+                match smaller with
+                | [] -> 
+                    match packages with
+                    | [] ->
+                        if remoteFiles <> [] then
+                            list.Insert(0,"")
                     
-                    match sources with
-                    | [] -> 
-                        list.Insert(0,packageString)
-                        list.Insert(0,"")
-                        list.Insert(0,DependenciesFileSerializer.sourceString Constants.DefaultNugetStream)
-                    | _ -> 
-                        list.Add("")
-                        list.Add(packageString)
-                | p::_ -> 
+                        match sources with
+                        | [] -> 
+                            list.Insert(0,packageString)
+                            list.Insert(0,"")
+                            list.Insert(0,DependenciesFileSerializer.sourceString Constants.DefaultNugetStream)
+                        | _ -> 
+                            list.Add("")
+                            list.Add(packageString)
+                    | p::_ -> 
+                        match tryFindPackageLine p.Name with
+                        | None -> list.Add packageString
+                        | Some pos -> list.Insert(pos,packageString)
+                | _ -> 
+                    let p = Seq.last smaller
+
                     match tryFindPackageLine p.Name with
                     | None -> list.Add packageString
-                    | Some pos -> list.Insert(pos,packageString)
-            | _ -> 
-                let p = Seq.last smaller
-
-                match tryFindPackageLine p.Name with
-                | None -> list.Add packageString
-                | Some pos -> list.Insert(pos + 1,packageString)
+                    | Some pos -> list.Insert(pos + 1,packageString)
             
             list |> Seq.toArray
 
@@ -411,7 +415,7 @@ type DependenciesFile(fileName,options,sources,packages : PackageRequirement lis
     member this.Add(packageName,version:string,?installSettings : InstallSettings) =
         let installSettings = defaultArg installSettings InstallSettings.Default
         let (PackageName name) = packageName
-        if this.HasPackage packageName then 
+        if this.HasPackage packageName && String.IsNullOrWhiteSpace version then 
             traceWarnfn "%s contains package %s already. ==> Ignored" fileName name
             this
         else

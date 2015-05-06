@@ -441,3 +441,37 @@ let ``should parse reactiveui lockfile``() =
     packages.[10].Name |> shouldEqual (PackageName "Rx-Xaml")
     packages.[10].Version |> shouldEqual (SemVer.Parse "2.2.5")
     packages.[10].Settings.FrameworkRestrictions.ToString() |> shouldEqual "[winv4.5; wpv8.0; >= net45]"
+
+let multipleFeedLockFile = """NUGET
+  remote: http://internalfeed/NugetWebFeed/nuget
+  specs:
+    Internal_1 (1.2.10)
+      Newtonsoft.Json (>= 6.0.0 < 6.1.0)
+    log4net (1.2.10)
+    Newtonsoft.Json (6.0.6)
+  remote: https://www.nuget.org/api/v2
+  specs:
+    Microsoft.AspNet.WebApi (5.2.3)
+      Microsoft.AspNet.WebApi.WebHost (>= 5.2.3 < 5.3.0)
+    Microsoft.AspNet.WebApi.Client (5.2.3)
+      Microsoft.Net.Http (>= 2.2.22) - framework: portable-wp80+win+net45+wp81+wpa81
+      Newtonsoft.Json (>= 6.0.4) - framework: portable-wp80+win+net45+wp81+wpa81, >= net45
+    Microsoft.AspNet.WebApi.Core (5.2.3)
+      Microsoft.AspNet.WebApi.Client (>= 5.2.3)
+    Microsoft.AspNet.WebApi.WebHost (5.2.3)
+      Microsoft.AspNet.WebApi.Core (>= 5.2.3 < 5.3.0)"""
+
+[<Test>]
+let ``should parse lockfile with multiple feeds``() =
+    let lockFile = LockFileParser.Parse(toLines multipleFeedLockFile)
+    let references = lockFile.SourceFiles
+
+    references.Length |> shouldEqual 0
+
+    let packages = List.rev lockFile.Packages
+    packages.Length |> shouldEqual 7
+    
+    packages.[3].Name |> shouldEqual (PackageName "Microsoft.AspNet.WebApi")
+    packages.[3].Version |> shouldEqual (SemVer.Parse "5.2.3")
+    packages.[3].Settings.FrameworkRestrictions.ToString() |> shouldEqual "[]"
+    packages.[3].Source.ToString() |> shouldEqual "https://www.nuget.org/api/v2"
