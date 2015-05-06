@@ -304,3 +304,31 @@ nuget log4net 1.2.10"""
     cfg.ToString()
     |> shouldEqual (normalizeLineEndings expected)
 
+[<Test>]
+let ``should pin Microsoft.AspNet.WebApi.Client package in correct position``() = 
+    let config = """source http://internalfeed/NugetWebFeed/nuget
+
+nuget Microsoft.AspNet.WebApi.Core 5.2.3
+nuget Microsoft.AspNet.WebApi.WebHost 5.2.3
+nuget log4net
+
+source https://nuget.org/api/v2
+nuget Microsoft.AspNet.WebApi
+nuget log4net 1.2.10"""
+
+    let cfg = DependenciesFile.FromCode(config).AddFixedPackage(PackageName "Microsoft.AspNet.WebApi.Client","5.2.3")
+    
+    let expected = """source http://internalfeed/NugetWebFeed/nuget
+
+nuget Microsoft.AspNet.WebApi.Core 5.2.3
+nuget Microsoft.AspNet.WebApi.WebHost 5.2.3
+nuget log4net
+
+source https://nuget.org/api/v2
+nuget Microsoft.AspNet.WebApi
+nuget log4net 1.2.10
+nuget Microsoft.AspNet.WebApi.Client 5.2.3"""
+
+    cfg.ToString()
+    |> shouldEqual (normalizeLineEndings expected)
+

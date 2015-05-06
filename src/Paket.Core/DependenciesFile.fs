@@ -332,7 +332,8 @@ type DependenciesFile(fileName,options,sources,packages : PackageRequirement lis
         { ResolvedPackages = PackageResolver.Resolve(getVersionF, getPackageDetailsF, options.Settings.FrameworkRestrictions, remoteDependencies @ packages)
           ResolvedSourceFiles = remoteFiles }        
 
-    member __.AddAdditionalPackage(packageName:PackageName,versionRequirement,resolverStrategy,settings) =
+    member __.AddAdditionalPackage(packageName:PackageName,versionRequirement,resolverStrategy,settings,?toTheEnd) =
+        let toTheEnd = defaultArg toTheEnd false
         let packageString = DependenciesFileSerializer.packageString packageName versionRequirement resolverStrategy settings
 
         // Try to find alphabetical matching position to insert the package
@@ -342,34 +343,37 @@ type DependenciesFile(fileName,options,sources,packages : PackageRequirement lis
         let newLines =
             let list = new System.Collections.Generic.List<_>()
             list.AddRange textRepresentation
-            match tryFindPackageLine packageName with                        
-            | Some pos -> list.[pos] <- packageString
-            | None -> 
-                match smaller with
-                | [] -> 
-                    match packages with
-                    | [] ->
-                        if remoteFiles <> [] then
-                            list.Insert(0,"")
+            if toTheEnd then 
+                list.Add(packageString) 
+            else
+                match tryFindPackageLine packageName with                        
+                | Some pos -> list.[pos] <- packageString
+                | None -> 
+                    match smaller with
+                    | [] -> 
+                        match packages with
+                        | [] ->
+                            if remoteFiles <> [] then
+                                list.Insert(0,"")
                     
-                        match sources with
-                        | [] -> 
-                            list.Insert(0,packageString)
-                            list.Insert(0,"")
-                            list.Insert(0,DependenciesFileSerializer.sourceString Constants.DefaultNugetStream)
-                        | _ -> 
-                            list.Add("")
-                            list.Add(packageString)
-                    | p::_ -> 
+                            match sources with
+                            | [] -> 
+                                list.Insert(0,packageString)
+                                list.Insert(0,"")
+                                list.Insert(0,DependenciesFileSerializer.sourceString Constants.DefaultNugetStream)
+                            | _ -> 
+                                list.Add("")
+                                list.Add(packageString)
+                        | p::_ -> 
+                            match tryFindPackageLine p.Name with
+                            | None -> list.Add packageString
+                            | Some pos -> list.Insert(pos,packageString)
+                    | _ -> 
+                        let p = Seq.last smaller
+
                         match tryFindPackageLine p.Name with
                         | None -> list.Add packageString
-                        | Some pos -> list.Insert(pos,packageString)
-                | _ -> 
-                    let p = Seq.last smaller
-
-                    match tryFindPackageLine p.Name with
-                    | None -> list.Add packageString
-                    | Some pos -> list.Insert(pos + 1,packageString)
+                        | Some pos -> list.Insert(pos + 1,packageString)
             
             list |> Seq.toArray
 
@@ -393,7 +397,7 @@ type DependenciesFile(fileName,options,sources,packages : PackageRequirement lis
                 | _ -> vr.VersionRequirement
             | None -> vr.ResolverStrategy,vr.VersionRequirement
 
-        this.AddAdditionalPackage(packageName,versionRequirement,resolverStrategy,settings)
+        this.AddAdditionalPackage(packageName,versionRequirement,resolverStrategy,settings,true)
 
     member this.AddFixedPackage(packageName:PackageName,version:string) =
         this.AddFixedPackage(packageName,version,InstallSettings.Default)

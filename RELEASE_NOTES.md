@@ -1,3 +1,6 @@
+#### 1.3.23 - 06.05.2015
+* BUGFIX: Put fixed packages to the end - https://github.com/fsprojects/Paket/issues/814
+
 #### 1.3.22 - 06.05.2015
 * BUGFIX: Fix `paket add` if package is already there - https://github.com/fsprojects/Paket/issues/814
 
