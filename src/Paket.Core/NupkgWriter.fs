@@ -205,7 +205,7 @@ let Write (core : CompleteCoreInfo) optional workingDir outputDir =
         stream.Close()
 
     let ensureValidTargetName (target:string) =
-        match target.Replace(" ", "%20") with
+        match target.Replace(" ", "%20").Replace("\\", "/") with
         | t when t.EndsWith("/")         -> t
         | t when String.IsNullOrEmpty(t) -> ""
         | "."                            -> ""

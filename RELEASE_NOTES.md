@@ -1,5 +1,8 @@
+#### 1.3.20 - 06.05.2015
+* BUGFIX: Paket pack had issues with \ in subfolders - https://github.com/fsprojects/Paket/issues/812
+
 #### 1.3.19 - 05.05.2015
-* Fix: Find-Package-Versions command
+* BUGFIX: Find-Package-Versions command
 
 #### 1.3.18 - 05.05.2015
 * Use https://api.nuget.org/v3/index.json for Autocomplete
