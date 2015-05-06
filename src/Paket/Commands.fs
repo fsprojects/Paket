@@ -211,12 +211,14 @@ with
 
 type ShowInstalledPackagesArgs =
     | All
+    | [<CustomCommandLine("project")>] Project of string
     | [<AltCommandLine("-s")>] Silent
 with
     interface IArgParserTemplate with
         member this.Usage =
             match this with
             | All -> "Shows all installed packages (incl. transitive dependencies)."
+            | Project(_) -> "Show only packages that are installed in the given project."
             | Silent -> "Doesn't trace other output than installed packages"
 
 type FindPackageVersionsArgs =

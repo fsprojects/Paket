@@ -236,6 +236,17 @@ type Dependencies(dependenciesFileName: string) =
         getLockFile().ResolvedPackages
         |> listPackages
 
+    /// Returns the installed versions of all installed packages which are referenced in the references file.
+    member this.GetInstalledPackages(referencesFile:ReferencesFile): (string * string) list =
+        let lockFile = getLockFile()
+        let resolved = lockFile.ResolvedPackages
+        referencesFile    
+        |> lockFile.GetPackageHull
+        |> Seq.map (fun kv -> 
+                        let name = kv.Key
+                        name.ToString(),resolved.[NormalizedPackageName name].Version.ToString())
+        |> Seq.toList
+
     /// Returns an InstallModel for the given package.
     member this.GetInstalledPackageModel(packageName) =        
         match this.GetInstalledVersion(packageName) with
@@ -254,11 +265,14 @@ type Dependencies(dependenciesFileName: string) =
           .GetInstalledPackageModel(packageName)
           .GetLibReferences(frameworkIdentifier)
 
-    /// Returns the installed versions of all direct dependencies which are referneced in the references file
+    /// Returns the installed versions of all direct dependencies which are referenced in the references file.
     member this.GetDirectDependencies(referencesFile:ReferencesFile): (string * string) list =
-        let normalizedDependecies = referencesFile.NugetPackages |> List.map (fun p -> NormalizedPackageName p.Name)
+        let dependenciesFile = DependenciesFile.ReadFromFile dependenciesFileName
+        let normalizedDependencies = dependenciesFile.DirectDependencies |> Seq.map (fun kv -> kv.Key) |> Seq.map NormalizedPackageName |> Seq.toList
+        let normalizedDependendenciesFromRefFile = referencesFile.NugetPackages |> List.map (fun p -> NormalizedPackageName p.Name)
         getLockFile().ResolvedPackages
-        |> Seq.filter (fun kv -> normalizedDependecies |> Seq.exists ((=) kv.Key))
+        |> Seq.filter (fun kv -> normalizedDependendenciesFromRefFile |> Seq.exists ((=) kv.Key))
+        |> Seq.filter (fun kv -> normalizedDependencies |> Seq.exists ((=) kv.Key))
         |> listPackages
 
     /// Returns the installed versions of all direct dependencies.

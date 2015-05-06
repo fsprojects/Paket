@@ -1,3 +1,6 @@
+#### 1.3.28 - 06.05.2015
+* EXPERIMENTAL: Show-Installed-Packages for given project command
+
 #### 1.3.27 - 06.05.2015
 * EXPERIMENTAL: Show-Installed-Packages command
 

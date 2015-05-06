@@ -606,3 +606,20 @@ type ProjectFile =
         | exn -> 
             traceWarnfn "Unable to parse %s:%s      %s" fileName Environment.NewLine exn.Message
             None
+
+    static member TryFindProject(projects: ProjectFile seq,projectName) =
+        match projects |> Seq.tryFind (fun p -> p.NameWithoutExtension = projectName || p.Name = projectName) with
+        | Some p -> Some p
+        | None ->
+            try
+                let fi = FileInfo (normalizePath (projectName.Trim().Trim([|'\"'|]))) // check if we can detect the path
+                let rec checkDir (dir:DirectoryInfo) = 
+                    match projects |> Seq.tryFind (fun p -> (FileInfo p.FileName).Directory.ToString().ToLower() = dir.ToString().ToLower()) with
+                    | Some p -> Some p
+                    | None ->
+                        if dir.Parent = null then None else
+                        checkDir dir.Parent
+
+                checkDir fi.Directory
+            with
+            | _ -> None

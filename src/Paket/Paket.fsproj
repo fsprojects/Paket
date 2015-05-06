@@ -32,7 +32,7 @@
     <StartProgram>paket.exe</StartProgram>
     <StartWorkingDirectory>D:\code\Pakettest</StartWorkingDirectory>
     <StartWorkingDirectory>D:\code\Paketkopie</StartWorkingDirectory>
-    <StartArguments>show-installed-packages -s</StartArguments>
+    <StartArguments>show-installed-packages -s --all project D:\code\Paket\tests\Paket.Tests\FilterVersionSpecs.fs</StartArguments>
     <StartAction>Project</StartAction>
     <StartProgram>paket.exe</StartProgram>
     <StartWorkingDirectory>d:\code\paket</StartWorkingDirectory>
