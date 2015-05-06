@@ -347,14 +347,15 @@ type DependenciesFile(fileName,options,sources,packages : PackageRequirement lis
                 | [] ->
                     if remoteFiles <> [] then
                         list.Insert(0,"")
-
-                    list.Insert(0,packageString)
                     
                     match sources with
                     | [] -> 
+                        list.Insert(0,packageString)
                         list.Insert(0,"")
                         list.Insert(0,DependenciesFileSerializer.sourceString Constants.DefaultNugetStream)
-                    | _ -> ()
+                    | _ -> 
+                        list.Add("")
+                        list.Add(packageString)
                 | p::_ -> 
                     match tryFindPackageLine p.Name with
                     | None -> list.Add packageString

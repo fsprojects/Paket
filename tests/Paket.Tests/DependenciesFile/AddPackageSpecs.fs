@@ -261,3 +261,16 @@ github fsprojects/Chessie src/Chessie/ErrorHandling.fs"""
 
     cfg.ToString()
     |> shouldEqual (normalizeLineEndings expected)
+
+[<Test>]
+let ``should add Microsoft.AspNet.WebApi package in first position if only souce is given``() = 
+    let config = """source https://nuget.org/api/v2"""
+
+    let cfg = DependenciesFile.FromCode(config).Add(PackageName "Microsoft.AspNet.WebApi","")
+    
+    let expected = """source https://nuget.org/api/v2
+
+nuget Microsoft.AspNet.WebApi"""
+
+    cfg.ToString()
+    |> shouldEqual (normalizeLineEndings expected)

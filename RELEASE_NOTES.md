@@ -1,3 +1,6 @@
+#### 1.3.21 - 06.05.2015
+* BUGFIX: Fix `paket add` for very first dependency - https://github.com/fsprojects/Paket/issues/814
+
 #### 1.3.20 - 06.05.2015
 * BUGFIX: Paket pack had issues with \ in subfolders - https://github.com/fsprojects/Paket/issues/812
 
