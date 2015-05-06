@@ -1,3 +1,6 @@
+#### 1.3.29 - 06.05.2015
+* BUGFIX: Always print the command on error
+
 #### 1.3.28 - 06.05.2015
 * EXPERIMENTAL: Show-Installed-Packages for given project command
 

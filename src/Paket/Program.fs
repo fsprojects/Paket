@@ -55,6 +55,8 @@ let processWithValidation<'T when 'T :> IArgParserTemplate> validateF commandF c
     let resultsValid = validateF (results)
     if results.IsUsageRequested || not resultsValid then
         if not resultsValid then
+            traceError "Command was:"
+            traceError ("  " + String.Join(" ",Environment.GetCommandLineArgs()))
             parser.Usage(Commands.cmdLineUsageMessage command parser) |> traceError
             Environment.ExitCode <- 1
         else
@@ -244,6 +246,8 @@ try
         handler command args
     | [] -> 
         Environment.ExitCode <- 1
+        traceError "Command was:"
+        traceError ("  " + String.Join(" ",Environment.GetCommandLineArgs()))
         parser.Usage("available commands:") |> traceError
     | _ -> failwith "expected only one command"
 with
