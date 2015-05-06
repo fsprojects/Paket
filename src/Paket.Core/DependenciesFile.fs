@@ -338,7 +338,6 @@ type DependenciesFile(fileName,options,sources,packages : PackageRequirement lis
 
         // Try to find alphabetical matching position to insert the package
         let smaller = Seq.takeWhile (fun (p:PackageRequirement) -> p.Name <= packageName) packages |> List.ofSeq
-        let containsLine = Seq.exists (fun (p:PackageRequirement) -> p.Name = packageName) packages 
 
         let newLines =
             let list = new System.Collections.Generic.List<_>()
@@ -347,7 +346,11 @@ type DependenciesFile(fileName,options,sources,packages : PackageRequirement lis
                 list.Add(packageString) 
             else
                 match tryFindPackageLine packageName with                        
-                | Some pos -> list.[pos] <- packageString
+                | Some pos -> 
+                    if list.[pos].ToLower().Trim() = ("nuget " + packageName.ToString()).ToLower() then
+                        list.[pos] <- packageString
+                    else
+                        list.Insert(pos + 1, packageString)
                 | None -> 
                     match smaller with
                     | [] -> 

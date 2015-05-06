@@ -1,3 +1,6 @@
+#### 1.3.24 - 06.05.2015
+* BUGFIX: Only replace nuget package during add if the old one had no version
+
 #### 1.3.23 - 06.05.2015
 * BUGFIX: Put fixed packages to the end - https://github.com/fsprojects/Paket/issues/814
 
