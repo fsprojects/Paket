@@ -176,12 +176,12 @@ nuget NUnit"""
 
     let expected = """source https://www.nuget.org/api/v2
 
-nuget FAKE
 nuget quicksilver
 nuget FsCheck
 
 source https://www.nuget.org/api/v3
 
+nuget FAKE
 nuget NUnit"""
 
     DependenciesFile.FromCode(before)
@@ -372,6 +372,36 @@ nuget Microsoft.AspNet.WebApi ~> 1.0"""
     
     let expected = """source https://nuget.org/api/v2
 nuget Microsoft.AspNet.WebApi 1.0.071.9432"""
+
+    cfg.ToString()
+    |> shouldEqual (normalizeLineEndings expected)
+
+[<Test>]
+let ``should add Moq to second feed``() = 
+    let config = """source http://internalfeed/NugetWebFeed/nuget
+
+nuget Microsoft.AspNet.WebApi.Client 5.2.3
+nuget Microsoft.AspNet.WebApi.Core 5.2.3
+nuget Microsoft.AspNet.WebApi.WebHost 5.2.3
+nuget log4net
+
+source https://nuget.org/api/v2
+nuget Microsoft.AspNet.WebApi 5.2.1
+nuget log4net 1.2.10"""
+
+    let cfg = DependenciesFile.FromCode(config).Add(PackageName "Moq","")
+    
+    let expected = """source http://internalfeed/NugetWebFeed/nuget
+
+nuget Microsoft.AspNet.WebApi.Client 5.2.3
+nuget Microsoft.AspNet.WebApi.Core 5.2.3
+nuget Microsoft.AspNet.WebApi.WebHost 5.2.3
+nuget log4net
+
+source https://nuget.org/api/v2
+nuget Microsoft.AspNet.WebApi 5.2.1
+nuget Moq
+nuget log4net 1.2.10"""
 
     cfg.ToString()
     |> shouldEqual (normalizeLineEndings expected)

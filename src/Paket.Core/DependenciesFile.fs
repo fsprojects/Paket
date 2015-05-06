@@ -346,7 +346,14 @@ type DependenciesFile(fileName,options,sources,packages : PackageRequirement lis
         let packageString = DependenciesFileSerializer.packageString packageName versionRequirement resolverStrategy settings
 
         // Try to find alphabetical matching position to insert the package
-        let smaller = Seq.takeWhile (fun (p:PackageRequirement) -> p.Name <= packageName) packages |> List.ofSeq
+        let isPackageInLastSource (p:PackageRequirement) =
+            match sources with
+            | [] -> true
+            | _ -> 
+                let lastSource =  Seq.last sources
+                p.Sources |> Seq.exists (fun s -> s = lastSource)
+
+        let smaller = Seq.takeWhile (fun (p:PackageRequirement) -> p.Name <= packageName || not (isPackageInLastSource p)) packages |> List.ofSeq
 
         let newLines =
             let list = new System.Collections.Generic.List<_>()
@@ -388,7 +395,18 @@ type DependenciesFile(fileName,options,sources,packages : PackageRequirement lis
 
                         match tryFindPackageLine p.Name with
                         | None -> list.Add packageString
-                        | Some pos -> list.Insert(pos + 1,packageString)
+                        | Some found -> 
+                            let pos = ref (found + 1)
+                            let skipped = ref false
+                            while !pos < textRepresentation.Length - 1 && (String.IsNullOrWhiteSpace textRepresentation.[!pos] || textRepresentation.[!pos].ToLower().StartsWith("source")) do
+                                if textRepresentation.[!pos].ToLower().StartsWith("source") then
+                                    skipped := true
+                                pos := !pos + 1
+                            
+                            if !skipped then
+                                list.Insert(!pos,packageString)
+                            else
+                                list.Insert(found + 1,packageString)
             
             list |> Seq.toArray
 

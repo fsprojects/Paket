@@ -1,3 +1,6 @@
+#### 1.3.26 - 06.05.2015
+* BUGFIX: Always add to last source
+
 #### 1.3.25 - 06.05.2015
 * BUGFIX: Better pin down behaviour during smart update
 
