@@ -1,4 +1,4 @@
-﻿module Paket.Commands
+module Paket.Commands
 
 open System
 
@@ -38,9 +38,9 @@ with
             | Restore -> "Ensures that all dependencies in your paket.dependencies file are present in the `packages` directory."
             | Simplify -> "Simplifies your paket.dependencies file by removing transitive dependencies."
             | Update -> "Recomputes the dependency resolution, updates the paket.lock file and propagates any resulting package changes into all project files referencing updated packages."
-            | FindPackages -> "EXERIMENTAL: Allows to search for packages."
-            | FindPackageVersions -> "EXERIMENTAL: Allows to search for package versions."
-            | ShowInstalledPackages -> "EXERIMENTAL: Shows all installed top-level packages."
+            | FindPackages -> "EXPERIMENTAL: Allows to search for packages."
+            | FindPackageVersions -> "EXPERIMENTAL: Allows to search for package versions."
+            | ShowInstalledPackages -> "EXPERIMENTAL: Shows all installed top-level packages."
             | Pack -> "Packs all paket.template files within this repository"
             | Push -> "Pushes all `.nupkg` files from the given directory."
     
