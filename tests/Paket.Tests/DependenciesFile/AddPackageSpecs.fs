@@ -362,3 +362,16 @@ nuget log4net 1.2.10"""
 
     cfg.ToString()
     |> shouldEqual (normalizeLineEndings expected)
+
+[<Test>]
+let ``should pin down version requirement during add``() = 
+    let config = """source https://nuget.org/api/v2
+nuget Microsoft.AspNet.WebApi ~> 1.0"""
+
+    let cfg = DependenciesFile.FromCode(config).AddFixedPackage(PackageName "Microsoft.AspNet.WebApi","1.0.071.9432")
+    
+    let expected = """source https://nuget.org/api/v2
+nuget Microsoft.AspNet.WebApi 1.0.071.9432"""
+
+    cfg.ToString()
+    |> shouldEqual (normalizeLineEndings expected)

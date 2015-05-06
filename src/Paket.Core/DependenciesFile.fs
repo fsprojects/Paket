@@ -184,6 +184,34 @@ module DependenciesFileParser =
         | String.StartsWith "#" _ -> Empty(line)
         | _ -> failwithf "Unrecognized token: %s" line
     
+    let parsePackage(sources,parent,name,version,rest:string) =
+        let prereleases,optionsText =
+            if rest.Contains ":" then
+                // boah that's reaaaally ugly, but keeps backwards compat
+                let pos = rest.IndexOf ':'
+                let s = rest.Substring(0,pos).TrimEnd()
+                let pos' = s.LastIndexOf(' ')
+                let prereleases = if pos' > 0 then s.Substring(0,pos') else ""
+                let s' = if prereleases <> "" then rest.Replace(prereleases,"") else rest
+                prereleases,s'
+            else
+                rest,""
+
+        if operators |> Seq.exists (fun x -> prereleases.Contains x) || prereleases.Contains("!") then
+            failwithf "Invalid prerelease version %s" prereleases
+
+        { Sources = sources
+          Name = PackageName name
+          ResolverStrategy = parseResolverStrategy version
+          Parent = parent
+          Settings = InstallSettings.Parse(optionsText)
+          VersionRequirement = parseVersionRequirement((version + " " + prereleases).Trim '!') } 
+
+    let parsePackageLine(sources,parent,line:string) =
+        match line with 
+        | Package(name,version,rest) -> parsePackage(sources,parent,name,version,rest)
+        | _ -> failwithf "Not a package line: %s" line
+
     let parseDependenciesFile fileName (lines:string seq) =
         let lines = lines |> Seq.toArray
          
@@ -201,28 +229,9 @@ module DependenciesFileParser =
                 | ParserOptions(ParserOption.FrameworkRestrictions r) -> lineNo, { options with Settings = { options.Settings with FrameworkRestrictions = r }}, sources, packages, sourceFiles
                 | ParserOptions(ParserOption.OmitContent omit) -> lineNo, { options with Settings = { options.Settings with  OmitContent = omit }}, sources, packages, sourceFiles
                 | Package(name,version,rest) ->
-                    let prereleases,optionsText =
-                        if rest.Contains ":" then
-                            // boah that's reaaaally ugly, but keeps backwards compat
-                            let pos = rest.IndexOf ':'
-                            let s = rest.Substring(0,pos).TrimEnd()
-                            let pos' = s.LastIndexOf(' ')
-                            let prereleases = if pos' > 0 then s.Substring(0,pos') else ""
-                            let s' = if prereleases <> "" then rest.Replace(prereleases,"") else rest
-                            prereleases,s'
-                        else
-                            rest,""
+                    let package = parsePackage(sources,DependenciesFile fileName,name,version,rest)
 
-                    if operators |> Seq.exists (fun x -> prereleases.Contains x) || prereleases.Contains("!") then
-                        failwithf "Invalid prerelease version %s" prereleases
-
-                    lineNo, options, sources, 
-                        { Sources = sources
-                          Name = PackageName name
-                          ResolverStrategy = parseResolverStrategy version
-                          Parent = DependenciesFile fileName
-                          Settings = InstallSettings.Parse(optionsText)
-                          VersionRequirement = parseVersionRequirement((version + " " + prereleases).Trim '!') } :: packages, sourceFiles
+                    lineNo, options, sources, package :: packages, sourceFiles
                 | SourceFile(origin, (owner,project, commit), path) ->
                     lineNo, options, sources, packages, { Owner = owner; Project = project; Commit = commit; Name = path; Origin = origin} :: sourceFiles
                     
@@ -332,8 +341,8 @@ type DependenciesFile(fileName,options,sources,packages : PackageRequirement lis
         { ResolvedPackages = PackageResolver.Resolve(getVersionF, getPackageDetailsF, options.Settings.FrameworkRestrictions, remoteDependencies @ packages)
           ResolvedSourceFiles = remoteFiles }        
 
-    member __.AddAdditionalPackage(packageName:PackageName,versionRequirement,resolverStrategy,settings,?toTheEnd) =
-        let toTheEnd = defaultArg toTheEnd false
+    member __.AddAdditionalPackage(packageName:PackageName,versionRequirement,resolverStrategy,settings,?pinDown) =
+        let pinDown = defaultArg pinDown false
         let packageString = DependenciesFileSerializer.packageString packageName versionRequirement resolverStrategy settings
 
         // Try to find alphabetical matching position to insert the package
@@ -342,16 +351,19 @@ type DependenciesFile(fileName,options,sources,packages : PackageRequirement lis
         let newLines =
             let list = new System.Collections.Generic.List<_>()
             list.AddRange textRepresentation
-            if toTheEnd then 
-                list.Add(packageString) 
-            else
-                match tryFindPackageLine packageName with                        
-                | Some pos -> 
-                    if list.[pos].ToLower().Trim() = ("nuget " + packageName.ToString()).ToLower() then
-                        list.[pos] <- packageString
-                    else
-                        list.Insert(pos + 1, packageString)
-                | None -> 
+
+            match tryFindPackageLine packageName with                        
+            | Some pos -> 
+                let package = DependenciesFileParser.parsePackageLine(sources,PackageRequirementSource.DependenciesFile fileName,list.[pos])
+
+                if versionRequirement.Range.IsIncludedIn(package.VersionRequirement.Range) then
+                    list.[pos] <- packageString
+                else
+                    list.Insert(pos + 1, packageString)
+            | None -> 
+                if pinDown then 
+                    list.Add(packageString) 
+                else
                     match smaller with
                     | [] -> 
                         match packages with

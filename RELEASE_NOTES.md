@@ -1,3 +1,6 @@
+#### 1.3.25 - 06.05.2015
+* BUGFIX: Better pin down behaviour during smart update
+
 #### 1.3.24 - 06.05.2015
 * BUGFIX: Only replace nuget package during add if the old one had no version
 
