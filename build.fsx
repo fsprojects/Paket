@@ -278,6 +278,7 @@ Target "ReleaseDocs" (fun _ ->
     CleanDir tempDocsDir
     Repository.cloneSingleBranch "" (gitHome + "/" + gitName + ".git") "gh-pages" tempDocsDir
 
+    Git.CommandHelper.runSimpleGitCommand tempDocsDir "rm . -f -r" |> ignore
     CopyRecursive "docs/output" tempDocsDir true |> tracefn "%A"    
     
     File.WriteAllText("temp/gh-pages/latest",sprintf "https://github.com/fsprojects/Paket/releases/download/%s/paket.exe" release.NugetVersion)
