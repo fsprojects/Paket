@@ -4,7 +4,7 @@
 
 * Project site: https://github.com/fsprojects/Paket.Atom
 * Status: In Development
-* Installation: Availabe in Atom's plugin manager
+* Installation: Availabe in [Atom's plugin manager](https://atom.io/packages/paket)
 * Features:
   * Paket commands available in Atom's Command Palette
 
