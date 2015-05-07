@@ -2,7 +2,7 @@
 
 ## Atom
 
-Project site: https://github.com/hmemcpy/Paket.VisualStudio
+Project site: https://github.com/Krzysztof-Cieslak/FSharp.Atom
 Status: In Development
 Features:
 
@@ -20,7 +20,7 @@ Features:
 
 ## Visual Studio
 
-Project site: https://github.com/Krzysztof-Cieslak/FSharp.Atom
+Project site: https://github.com/hmemcpy/Paket.VisualStudio
 Status: In Development
 Features:
 
