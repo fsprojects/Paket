@@ -1,6 +1,6 @@
 # GitHub dependencies
 
-Paket allows one to automatically manage the linking of files from [github.com](http://www.github.com) or [gist.github.com](https://gist.github.com/) into your projects.
+Paket allows you to automatically manage the linking of files from [github.com](http://www.github.com) or [gist.github.com](https://gist.github.com/) into your projects.
 
 ## Referencing a single file
 
@@ -8,7 +8,7 @@ You can reference a single file from [github.com](http://www.github.com) simply 
 
     github forki/FsUnit FsUnit.fs
 
-If you run the [`paket update` command](paket-update.html), it will add a new section to your [`paket.lock` file](lock-file.html):
+If you run the [`paket update` command](paket-update.html), it will download the file to a sub folder in ``paket-files`` and also add a new section to your [`paket.lock` file](lock-file.html):
 
     GITHUB
       remote: forki/FsUnit
@@ -26,8 +26,7 @@ If you want to reference the file in one of your project files then add an entry
     
     File:FsUnit.fs
 
-This will reference the linked file directly into your project.
-By default the linked file will be visible under ``paket-files`` folder in project.
+and run [`paket install` command](paket-install.html). This will reference the linked file directly into your project and by default, be visible under ``paket-files`` folder in project.
 
 ![alt text](img/github_ref_default_link.png "GitHub file referenced in project with default link")
 
