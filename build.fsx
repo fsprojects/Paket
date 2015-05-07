@@ -317,7 +317,7 @@ Target "DetectBootstrapperChanges" (fun _ ->
                                                 let ver = SemVerHelper.parse(x)
                                                 Some ver
                                              with
-                                              | :? Exception -> None)
+                                             | _ -> None)
                         |> Seq.filter (fun x -> match x with | Some _ -> true| None -> false)
                         |> Seq.map (fun x -> match x with | Some y -> y | None -> failwith "Should never happen")
                         |> Seq.filter (fun x -> match x.PreRelease with | Some _ -> false | None -> true)

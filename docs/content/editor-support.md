@@ -2,10 +2,11 @@
 
 ## Atom
 
-* Project site: https://github.com/Krzysztof-Cieslak/FSharp.Atom
+* Project site: https://github.com/fsprojects/Paket.Atom
 * Status: In Development
+* Installation: Availabe in Atom's plugin manager
 * Features:
-  * Paket commands available in Atom`s Command Palette
+  * Paket commands available in Atom's Command Palette
 
 <a href="img/paket-add-atom.gif"><img src="img/paket-add-atom.gif" alt="alt text" title="paket add command in Atom" width="500"></a>
 
