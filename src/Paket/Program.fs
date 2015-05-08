@@ -175,9 +175,26 @@ let pack (results : ArgParseResults<_>) =
                       ?releaseNotes = results.TryGetResult <@ PackArgs.ReleaseNotes @>)
 
 let findPackages (results : ArgParseResults<_>) = 
-    Dependencies.FindPackages(?searchText = results.TryGetResult <@ FindPackagesArgs.SearchText @>,
-                              silent = results.Contains <@ FindPackagesArgs.Silent @>,
-                              ?maxResults = results.TryGetResult <@ FindPackagesArgs.MaxResults @>)
+        let maxResults = defaultArg (results.TryGetResult <@ FindPackagesArgs.MaxResults @>) 10000
+        let silent = results.Contains <@ FindPackagesArgs.Silent @>
+        let searchAndPrint searchText =
+            let result =
+                NuGetV3.FindPackages(None,Constants.DefaultNugetStream,searchText, maxResults)
+                |> Async.RunSynchronously
+        
+            for p in result do
+                tracefn "%s" p
+
+        match results.TryGetResult <@ FindPackagesArgs.SearchText @> with
+        | None ->             
+            let searchText = ref ""
+            while !searchText <> ":q" do
+                if not silent then
+                    tracefn " - Please enter search text (:q for exit):"
+                searchText := Console.ReadLine()
+                searchAndPrint !searchText
+
+        | Some searchText -> searchAndPrint searchText
 
 let showInstalledPackages (results : ArgParseResults<_>) =    
     let dependenciesFile = Dependencies.Locate()
@@ -201,9 +218,15 @@ let showInstalledPackages (results : ArgParseResults<_>) =
     for name,version in packages do
         tracefn "%s - %s" name version
 
-let findPackageVersions (results : ArgParseResults<_>) =     
-    Dependencies.FindPackageVersions(name = results.GetResult <@ FindPackageVersionsArgs.Name @>,
-                                     ?maxResults = results.TryGetResult <@ FindPackageVersionsArgs.MaxResults @>)
+let findPackageVersions (results : ArgParseResults<_>) =
+        let maxResults = defaultArg (results.TryGetResult <@ FindPackageVersionsArgs.MaxResults @>) 10000
+        let name = results.GetResult <@ FindPackageVersionsArgs.Name @>
+        let result =
+            NuGetV3.FindVersionsForPackage(None,Constants.DefaultNugetStream,name,maxResults)
+            |> Async.RunSynchronously
+        
+        for p in result do
+            tracefn "%s" p
 
 let push (results : ArgParseResults<_>) = 
     let fileName = results.GetResult <@ PushArgs.FileName @>

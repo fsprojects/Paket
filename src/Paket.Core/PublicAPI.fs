@@ -144,39 +144,6 @@ type Dependencies(dependenciesFileName: string) =
             hard = defaultArg hard false,
             withBindingRedirects = defaultArg withBindingRedirects false)
 
-    /// EXPERIMENTAL - Finds packages with the given name
-    static member FindPackages(?searchText,?silent,?maxResults) =
-        let maxResults = defaultArg maxResults 10000
-        let silent = defaultArg silent false
-        let searchAndPrint searchText =
-            let result =
-                NuGetV3.FindPackages(None,Constants.DefaultNugetStream,searchText, maxResults)
-                |> Async.RunSynchronously
-        
-            for p in result do
-                tracefn "%s" p
-
-        match searchText with
-        | None ->             
-            let searchText = ref ""
-            while !searchText <> ":q" do
-                if not silent then
-                    tracefn " - Please enter search text (:q for exit):"
-                searchText := Console.ReadLine()
-                searchAndPrint !searchText
-
-        | Some searchText -> searchAndPrint searchText
-
-    /// EXPERIMENTAL - Finds package versions for the given package
-    static member FindPackageVersions(name,?maxResults) =
-        let maxResults = defaultArg maxResults 10000
-        let result =
-            NuGetV3.FindVersionsForPackage(None,Constants.DefaultNugetStream,name,maxResults)
-            |> Async.RunSynchronously
-        
-        for p in result do
-            tracefn "%s" p
-
     /// Installs all dependencies.
     member this.Install(force: bool,hard: bool): unit = this.Install(force,hard,false)
 
