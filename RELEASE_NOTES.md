@@ -1,8 +1,7 @@
 #### 1.4.0 - 08.05.2015
-* EXPERIMENTAL: Find-Packages command
-* EXPERIMENTAL: Find-Package-Versions command
-* EXPERIMENTAL: Show-Installed-Packages for given project command
-* EXPERIMENTAL: Show-Installed-Packages command
+* EXPERIMENTAL: Find-Packages command - http://fsprojects.github.io/Paket/paket-find-packages.html
+* EXPERIMENTAL: Find-Package-Versions command - http://fsprojects.github.io/Paket/paket-find-package-versions.html
+* EXPERIMENTAL: Show-Installed-Packages command - http://fsprojects.github.io/Paket/paket-show-installed-packages.html
 * Expose GetDefinedNuGetFeeds in Public API
 * Expose GetSources in Public API
 * BUGFIX: NuGet Convert works with empty version strings - https://github.com/fsprojects/Paket/pull/821
