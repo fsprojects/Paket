@@ -224,7 +224,11 @@ module ConvertResultR =
 
 let createPackageRequirement (packageName, version, restrictions) sources dependenciesFileName = 
      { Name = PackageName packageName
-       VersionRequirement = VersionRequirement(VersionRange.Exactly version, PreReleaseStatus.No)
+       VersionRequirement =
+            if version = "" then
+                VersionRequirement(VersionRange.Minimum <| SemVer.Parse "0", PreReleaseStatus.No)
+            else
+                VersionRequirement(VersionRange.Exactly version, PreReleaseStatus.No)
        Sources = sources
        ResolverStrategy = ResolverStrategy.Max
        Settings = { InstallSettings.Default with FrameworkRestrictions = restrictions }
