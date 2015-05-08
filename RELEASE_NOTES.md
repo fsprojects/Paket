@@ -1,3 +1,6 @@
+#### 1.3.35 - 08.05.2015
+* BUGFIX: NuGet Convert works with empty version strings - https://github.com/fsprojects/Paket/pull/821
+
 #### 1.3.34 - 08.05.2015
 * Expose GetDefinedNuGetFeeds in Public API
 
