@@ -242,9 +242,9 @@ type Dependencies(dependenciesFileName: string) =
         dependenciesFile.Sources
 
     /// Returns all system-wide defined NuGet feeds. (Can be used for Autocompletion)
-    member this.GetDefinedNuGetFeeds() : (string * Auth option) list = 
+    member this.GetDefinedNuGetFeeds() : string list = 
         match NuGetConvert.NugetEnv.readNugetConfig(this.RootDirectory) with
-        | Result.Ok(config,_) -> config.PackageSources
+        | Result.Ok(config,_) -> config.PackageSources |> List.map fst
         | _ -> []
 
     /// Returns the installed versions of all installed packages which are referenced in the references file.
