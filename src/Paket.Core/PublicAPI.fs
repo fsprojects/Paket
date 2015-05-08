@@ -236,6 +236,11 @@ type Dependencies(dependenciesFileName: string) =
         getLockFile().ResolvedPackages
         |> listPackages
 
+    /// Returns all sources from the dependencies file.
+    member this.GetSources() = 
+        let dependenciesFile = DependenciesFile.ReadFromFile dependenciesFileName
+        dependenciesFile.Sources
+
     /// Returns the installed versions of all installed packages which are referenced in the references file.
     member this.GetInstalledPackages(referencesFile:ReferencesFile): (string * string) list =
         let lockFile = getLockFile()

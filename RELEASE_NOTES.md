@@ -1,3 +1,6 @@
+#### 1.3.32 - 08.05.2015
+* Expose GetSources in Public API
+
 #### 1.3.30 - 06.05.2015
 * BUGFIX: Don't shortcut conflicting addition
 
