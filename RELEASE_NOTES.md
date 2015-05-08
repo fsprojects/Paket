@@ -1,86 +1,28 @@
-#### 1.3.35 - 08.05.2015
-* BUGFIX: NuGet Convert works with empty version strings - https://github.com/fsprojects/Paket/pull/821
-
-#### 1.3.34 - 08.05.2015
-* Expose GetDefinedNuGetFeeds in Public API
-
-#### 1.3.32 - 08.05.2015
-* Expose GetSources in Public API
-
-#### 1.3.30 - 06.05.2015
-* BUGFIX: Don't shortcut conflicting addition
-
-#### 1.3.29 - 06.05.2015
-* BUGFIX: Always print the command on error
-
-#### 1.3.28 - 06.05.2015
-* EXPERIMENTAL: Show-Installed-Packages for given project command
-
-#### 1.3.27 - 06.05.2015
-* EXPERIMENTAL: Show-Installed-Packages command
-
-#### 1.3.26 - 06.05.2015
-* BUGFIX: Always add to last source
-
-#### 1.3.25 - 06.05.2015
-* BUGFIX: Better pin down behaviour during smart update
-
-#### 1.3.24 - 06.05.2015
-* BUGFIX: Only replace nuget package during add if the old one had no version
-
-#### 1.3.23 - 06.05.2015
-* BUGFIX: Put fixed packages to the end - https://github.com/fsprojects/Paket/issues/814
-
-#### 1.3.22 - 06.05.2015
-* BUGFIX: Fix `paket add` if package is already there - https://github.com/fsprojects/Paket/issues/814
-
-#### 1.3.21 - 06.05.2015
-* BUGFIX: Fix `paket add` for very first dependency - https://github.com/fsprojects/Paket/issues/814
-
-#### 1.3.20 - 06.05.2015
-* BUGFIX: Paket pack had issues with \ in subfolders - https://github.com/fsprojects/Paket/issues/812
-
-#### 1.3.19 - 05.05.2015
-* BUGFIX: Find-Package-Versions command
-
-#### 1.3.18 - 05.05.2015
-* Use https://api.nuget.org/v3/index.json for Autocomplete
-
-#### 1.3.15 - 05.05.2015
-* Fix max parameter for Find-Package-Versions command
-
-#### 1.3.13 - 05.05.2015
-* COSMETICS: -s parameter for Bootstrapper
-
-#### 1.3.11 - 05.05.2015
-* COSMETICS: Don't perform unnecessary installs during `paket add`
-
-#### 1.3.10 - 05.05.2015
-* EXPERIMENTAL: Find-Package-Versions command
-
-#### 1.3.9 - 05.05.2015
-* Improve silent mode
-
-#### 1.3.8 - 05.05.2015
-* Set exit code to 1 if the command line parser finds error
-
-#### 1.3.6 - 05.05.2015
+#### 1.4.0 - 08.05.2015
 * EXPERIMENTAL: Find-Packages command
-
-#### 1.3.5 - 04.05.2015
-* COSMETICS: Done message in bootstrapper
-
-#### 1.3.4 - 04.05.2015
+* EXPERIMENTAL: Find-Package-Versions command
+* EXPERIMENTAL: Show-Installed-Packages for given project command
+* EXPERIMENTAL: Show-Installed-Packages command
+* Expose GetDefinedNuGetFeeds in Public API
+* Expose GetSources in Public API
+* BUGFIX: NuGet Convert works with empty version strings - https://github.com/fsprojects/Paket/pull/821
+* BUGFIX: Don't shortcut conflicting addition
+* BUGFIX: Better pin down behaviour during "Smart Update""
+* BUGFIX: Only replace nuget package during add if the old one had no version
+* BUGFIX: Put fixed packages to the end - https://github.com/fsprojects/Paket/issues/814
+* BUGFIX: Fix `paket add` if package is already there - https://github.com/fsprojects/Paket/issues/814
+* BUGFIX: Fix `paket add` for very first dependency - https://github.com/fsprojects/Paket/issues/814
+* BUGFIX: Paket pack had issues with \ in subfolders - https://github.com/fsprojects/Paket/issues/812
+* BZGFIX: Use https://api.nuget.org/v3/index.json for Autocomplete
+* BUGFIX: Set exit code to 1 if the command line parser finds error
 * BUGFIX: Windows restrictions were not parsed from lockfile - https://github.com/fsprojects/Paket/issues/810
-
-#### 1.3.3 - 02.05.2015
 * BUGFIX: Paket tries to keep the alphabetical order when using `paket add` 
-
-#### 1.3.2 - 02.05.2015
 * BUGFIX: Do not generate entries for empty extensions in nupkg
-
-#### 1.3.1 - 01.05.2015
 * BUGFIX: Portable framework restrictions were not parsed from lockfile - https://github.com/fsprojects/Paket/issues/810
+* COSMETICS: "Done" message in bootstrapper
+* COSMETICS: -s parameter for Bootstrapper
+* COSMETICS: Don't perform unnecessary installs during `paket add`
+* COSMETICS: Always print the command on command parser error
 
 #### 1.3.0 - 30.04.2015
 * Paket keeps paket.dependencies as stable as possible during edits - https://github.com/fsprojects/Paket/pull/802
