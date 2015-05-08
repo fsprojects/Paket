@@ -241,6 +241,12 @@ type Dependencies(dependenciesFileName: string) =
         let dependenciesFile = DependenciesFile.ReadFromFile dependenciesFileName
         dependenciesFile.Sources
 
+    /// Returns all system-wide defined NuGet feeds. (Can be used for Autocompletion)
+    member this.GetDefinedNuGetFeeds() : (string * Auth option) list = 
+        match NuGetConvert.NugetEnv.readNugetConfig(this.RootDirectory) with
+        | Result.Ok(config,_) -> config.PackageSources
+        | _ -> []
+
     /// Returns the installed versions of all installed packages which are referenced in the references file.
     member this.GetInstalledPackages(referencesFile:ReferencesFile): (string * string) list =
         let lockFile = getLockFile()

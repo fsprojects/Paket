@@ -1,3 +1,6 @@
+#### 1.3.33 - 08.05.2015
+* Expose GetDefinedNuGetFeeds in Public API
+
 #### 1.3.32 - 08.05.2015
 * Expose GetSources in Public API
 
