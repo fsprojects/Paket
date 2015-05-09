@@ -1,3 +1,6 @@
+#### 1.4.2 - 09.05.2015
+* Always show default nuget stream in completion
+
 #### 1.4.1 - 09.05.2015
 * Allow to specify a source feed for Find-Packages and Find-Package-Versions command
 
