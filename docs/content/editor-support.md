@@ -3,9 +3,10 @@
 ## Atom
 
 * Project site: https://github.com/fsprojects/Paket.Atom
-* Status: In Development
+* Status: Released
 * Installation: Availabe in [Atom's plugin manager](https://atom.io/packages/paket)
 * Features:
+  * Syntax highlighting for `paket.dependencies`
   * Paket commands available in Atom's Command Palette
 
 <a href="img/paket-add-atom.gif"><img src="img/paket-add-atom.gif" alt="alt text" title="paket add command in Atom" width="500"></a>
