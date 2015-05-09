@@ -27,10 +27,11 @@ let getSearchAutocompleteService (data : string) =
 let private searchDict = new System.Collections.Concurrent.ConcurrentDictionary<_,_>()
 
 /// Calculates the NuGet v3 URL from a NuGet v2 URL.
-let calculateNuGet3Path nugetUrl = 
-    match nugetUrl with
+let calculateNuGet3Path(nugetUrl:string) = 
+    match nugetUrl.TrimEnd([|'/'|]) with
     | "http://nuget.org/api/v2" -> Some "http://api.nuget.org/v3/index.json"
     | "https://nuget.org/api/v2" -> Some "https://api.nuget.org/v3/index.json"
+    | url when url.EndsWith("api/v2") && url.Contains("myget.org") -> Some (url.Replace("api/v2","api/v3/index.json"))
     | _ -> None
 
 /// [omit]

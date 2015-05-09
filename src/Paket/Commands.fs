@@ -199,14 +199,16 @@ with
 
 type FindPackagesArgs =
     | [<CustomCommandLine("searchtext")>] SearchText of string
+    | [<CustomCommandLine("source")>] Source of string
     | [<CustomCommandLine("max")>] MaxResults of int
     | [<AltCommandLine("-s")>] Silent
 with
     interface IArgParserTemplate with
         member this.Usage =
             match this with
-            | SearchText(_) -> "Search text of a Package"
-            | MaxResults(_) -> "Max. No. of results"
+            | SearchText(_) -> "Search text of a Package."
+            | Source(_) -> "Allows to specify the package source feed."
+            | MaxResults(_) -> "Max. No. of results."
             | Silent -> "Doesn't trace other output than the search result"
 
 type ShowInstalledPackagesArgs =
@@ -223,6 +225,7 @@ with
 
 type FindPackageVersionsArgs =
     | [<CustomCommandLine("name")>][<Mandatory>] Name of string
+    | [<CustomCommandLine("source")>] Source of string
     | [<CustomCommandLine("max")>] MaxResults of int
     | [<AltCommandLine("-s")>] Silent
 with
@@ -230,6 +233,7 @@ with
         member this.Usage =
             match this with
             | Name(_) -> "Name of the Package"
+            | Source(_) -> "Allows to specify the package source feed."
             | MaxResults(_) -> "Max. No. of results"
             | Silent -> "Doesn't trace other output than the search result"
 

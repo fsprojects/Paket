@@ -175,26 +175,27 @@ let pack (results : ArgParseResults<_>) =
                       ?releaseNotes = results.TryGetResult <@ PackArgs.ReleaseNotes @>)
 
 let findPackages (results : ArgParseResults<_>) = 
-        let maxResults = defaultArg (results.TryGetResult <@ FindPackagesArgs.MaxResults @>) 10000
-        let silent = results.Contains <@ FindPackagesArgs.Silent @>
-        let searchAndPrint searchText =
-            let result =
-                NuGetV3.FindPackages(None,Constants.DefaultNugetStream,searchText, maxResults)
-                |> Async.RunSynchronously
+    let maxResults = defaultArg (results.TryGetResult <@ FindPackagesArgs.MaxResults @>) 10000
+    let silent = results.Contains <@ FindPackagesArgs.Silent @>
+    let source = defaultArg (results.TryGetResult <@ FindPackagesArgs.Source @>) Constants.DefaultNugetStream
+    let searchAndPrint searchText =
+        let result =
+            NuGetV3.FindPackages(None,source,searchText, maxResults)
+            |> Async.RunSynchronously
         
-            for p in result do
-                tracefn "%s" p
+        for p in result do
+            tracefn "%s" p
 
-        match results.TryGetResult <@ FindPackagesArgs.SearchText @> with
-        | None ->             
-            let searchText = ref ""
-            while !searchText <> ":q" do
-                if not silent then
-                    tracefn " - Please enter search text (:q for exit):"
-                searchText := Console.ReadLine()
-                searchAndPrint !searchText
+    match results.TryGetResult <@ FindPackagesArgs.SearchText @> with
+    | None ->             
+        let searchText = ref ""
+        while !searchText <> ":q" do
+            if not silent then
+                tracefn " - Please enter search text (:q for exit):"
+            searchText := Console.ReadLine()
+            searchAndPrint !searchText
 
-        | Some searchText -> searchAndPrint searchText
+    | Some searchText -> searchAndPrint searchText
 
 let showInstalledPackages (results : ArgParseResults<_>) =    
     let dependenciesFile = Dependencies.Locate()
@@ -219,14 +220,15 @@ let showInstalledPackages (results : ArgParseResults<_>) =
         tracefn "%s - %s" name version
 
 let findPackageVersions (results : ArgParseResults<_>) =
-        let maxResults = defaultArg (results.TryGetResult <@ FindPackageVersionsArgs.MaxResults @>) 10000
-        let name = results.GetResult <@ FindPackageVersionsArgs.Name @>
-        let result =
-            NuGetV3.FindVersionsForPackage(None,Constants.DefaultNugetStream,name,maxResults)
-            |> Async.RunSynchronously
+    let maxResults = defaultArg (results.TryGetResult <@ FindPackageVersionsArgs.MaxResults @>) 10000
+    let name = results.GetResult <@ FindPackageVersionsArgs.Name @>
+    let source = defaultArg (results.TryGetResult <@ FindPackageVersionsArgs.Source @>) Constants.DefaultNugetStream
+    let result =
+        NuGetV3.FindVersionsForPackage(None,source,name,maxResults)
+        |> Async.RunSynchronously
         
-        for p in result do
-            tracefn "%s" p
+    for p in result do
+        tracefn "%s" p
 
 let push (results : ArgParseResults<_>) = 
     let fileName = results.GetResult <@ PushArgs.FileName @>

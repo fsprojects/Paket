@@ -1,3 +1,6 @@
+#### 1.4.1 - 09.05.2015
+* Allow to specify a source feed for Find-Packages and Find-Package-Versions command
+
 #### 1.4.0 - 08.05.2015
 * EXPERIMENTAL: Find-Packages command - http://fsprojects.github.io/Paket/paket-find-packages.html
 * EXPERIMENTAL: Find-Package-Versions command - http://fsprojects.github.io/Paket/paket-find-package-versions.html

@@ -32,7 +32,7 @@
     <StartProgram>paket.exe</StartProgram>
     <StartWorkingDirectory>D:\code\Pakettest</StartWorkingDirectory>
     <StartWorkingDirectory>D:\code\Paketkopie</StartWorkingDirectory>
-    <StartArguments>show-installed-packages -s --all project D:\code\Paket\tests\Paket.Tests\FilterVersionSpecs.fs</StartArguments>
+    <StartArguments>find-packages source https://www.myget.org/F/paket-test/auth/7933c7d0-3b73-472b-9ccd-9c115a9dc558/api/v2</StartArguments>
     <StartAction>Project</StartAction>
     <StartProgram>paket.exe</StartProgram>
     <StartWorkingDirectory>d:\code\paket</StartWorkingDirectory>
