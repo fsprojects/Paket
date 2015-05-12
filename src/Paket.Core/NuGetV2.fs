@@ -137,7 +137,7 @@ let getAllVersionsFromLocalPath (localNugetPath, package, root) =
         if not di.Exists then
             failwithf "The directory %s doesn't exist.%sPlease check the NuGet source feed definition in your paket.dependencies file." di.FullName Environment.NewLine
 
-        let versions= 
+        let versions = 
             Directory.EnumerateFiles(di.FullName,"*.nupkg",SearchOption.AllDirectories)
             |> Seq.choose (fun fileName ->
                             let fi = FileInfo(fileName)
@@ -308,18 +308,28 @@ let getDetailsFromNuget force auth nugetURL package (version:SemVerInfo) =
     } 
     
 /// Reads direct dependencies from a nupkg file
-let getDetailsFromLocalFile root localNugetPath package (version:SemVerInfo) =
+let getDetailsFromLocalFile root localNugetPath (packageName:PackageName) (version:SemVerInfo) =
     async {        
         let localNugetPath = Utils.normalizeLocalPath localNugetPath
         let di = getDirectoryInfo localNugetPath root
+        let package = packageName.ToString()
         let nupkg = 
             let v1 = FileInfo(Path.Combine(di.FullName, sprintf "%s.%s.nupkg" package (version.ToString())))
             if v1.Exists then v1 else
-            let version = version.Normalize()
-            FileInfo(Path.Combine(di.FullName, sprintf "%s.%s.nupkg" package version))
+            let normalizedVersion = version.Normalize()
+            let v2 = FileInfo(Path.Combine(di.FullName, sprintf "%s.%s.nupkg" package normalizedVersion))
+            if v2.Exists then v2 else
 
-        if not nupkg.Exists then
-            failwithf "The package %s %s can't be found in %s.%sPlease check the feed definition in your paket.dependencies file." package (version.ToString()) di.FullName Environment.NewLine
+            let v3 =
+                Directory.EnumerateFiles(di.FullName,"*.nupkg",SearchOption.AllDirectories)
+                |> Seq.map (fun x -> FileInfo(x))
+                |> Seq.filter (fun fi -> fi.Name.ToLower().Contains(package.ToLower()))
+                |> Seq.filter (fun fi -> fi.Name.Contains(normalizedVersion) || fi.Name.Contains(version.ToString()))
+                |> Seq.firstOrDefault
+
+            match v3 with
+            | None -> failwithf "The package %s %s can't be found in %s.%sPlease check the feed definition in your paket.dependencies file." package (version.ToString()) di.FullName Environment.NewLine
+            | Some x -> x
         
         use zipToCreate = new FileStream(nupkg.FullName, FileMode.Open)
         use zip = new ZipArchive(zipToCreate,ZipArchiveMode.Read)
@@ -567,7 +577,8 @@ let GetTargetsFiles(targetFolder) =
 
     targetsFiles
 
-let GetPackageDetails root force sources (PackageName package) (version:SemVerInfo) : PackageResolver.PackageDetails = 
+let GetPackageDetails root force sources packageName (version:SemVerInfo) : PackageResolver.PackageDetails = 
+    let package = packageName.ToString()
     let rec tryNext xs = 
         match xs with
         | source :: rest -> 
@@ -579,11 +590,11 @@ let GetPackageDetails root force sources (PackageName package) (version:SemVerIn
                         force 
                         (source.Authentication |> Option.map toBasicAuth)
                         source.Url 
-                        package 
-                        version 
+                        (package.ToString())
+                        version
                     |> Async.RunSynchronously
                 | LocalNuget path -> 
-                    getDetailsFromLocalFile root path package version 
+                    getDetailsFromLocalFile root path packageName version 
                     |> Async.RunSynchronously
                 |> fun x -> source,x
             with e ->

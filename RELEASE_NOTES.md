@@ -1,3 +1,6 @@
+#### 1.4.6 - 12.05.2015
+* Fix local path issue on Mono
+
 #### 1.4.5 - 12.05.2015
 * Better tracing during "update package"
 
