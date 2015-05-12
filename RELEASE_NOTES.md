@@ -1,3 +1,6 @@
+#### 1.4.10 - 12.05.2015
+* Allow simplify on concrete dependencies file.
+
 #### 1.4.9 - 12.05.2015
 * Allow to specify a concrete template file for `paket pack`
 

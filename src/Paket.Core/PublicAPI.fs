@@ -74,18 +74,21 @@ type Dependencies(dependenciesFileName: string) =
     /// Converts the current package dependency graph to the simplest dependency graph.
     static member Simplify(interactive : bool) =
         match PaketEnv.locatePaketRootDirectory(DirectoryInfo(Environment.CurrentDirectory)) with
-        | Some rootDirectory ->
-            Utils.RunInLockedAccessMode(
-                rootDirectory.FullName,
-                fun () -> 
-                    PaketEnv.fromRootDirectory rootDirectory
-                    >>= PaketEnv.ensureNotInStrictMode
-                    >>= Simplifier.simplify interactive
-                    |> returnOrFail
-                    |> Simplifier.updateEnvironment
-            )
+        | Some rootDirectory -> Dependencies.Locate(rootDirectory.FullName).Simplify(interactive)
         | None ->
             Logging.traceErrorfn "Unable to find %s in current directory and parent directories" Constants.DependenciesFileName
+
+    /// Converts the current package dependency graph to the simplest dependency graph.
+    member this.Simplify(interactive : bool) =
+        Utils.RunInLockedAccessMode(
+            this.RootPath,
+            fun () -> 
+                PaketEnv.fromRootDirectory this.RootDirectory
+                >>= PaketEnv.ensureNotInStrictMode
+                >>= Simplifier.simplify interactive
+                |> returnOrFail
+                |> Simplifier.updateEnvironment
+        )
 
     /// Get path to dependencies file
     member this.DependenciesFile with get() = dependenciesFileName
