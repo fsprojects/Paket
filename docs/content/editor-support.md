@@ -24,4 +24,5 @@
 * Status: In Development
 * Features:
   * Solution Explorer Extensions for Paket files
+  * Paket commands in Solution Explorer menu  
   * Syntax highlighting in `paket.dependencies`
