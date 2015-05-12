@@ -1,3 +1,6 @@
+#### 1.4.5 - 12.05.2015
+* Better tracing during "update package"
+
 #### 1.4.4 - 12.05.2015
 * Allow to register trace functions
 

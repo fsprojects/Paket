@@ -7,6 +7,7 @@ open Paket.Domain
 open Paket.PackageResolver
 open System.Collections.Generic
 open Chessie.ErrorHandling
+open Paket.Logging
 
 let addPackagesFromReferenceFiles projects (dependenciesFile:DependenciesFile) =
     let lockFileName = DependenciesFile.FindLockfile dependenciesFile.FileName
@@ -88,7 +89,7 @@ let UpdatePackage(dependenciesFileName, packageName : PackageName, newVersion, f
         DependenciesFile.ReadFromFile(dependenciesFileName)
             .UpdatePackageVersion(packageName, v)
             .Save()
-    | None -> ()
+    | None -> tracefn "Updating %s in %s" (packageName.ToString()) dependenciesFileName
 
     SmartInstall(dependenciesFileName,Some(NormalizedPackageName packageName),force,hard,withBindingRedirects)
 

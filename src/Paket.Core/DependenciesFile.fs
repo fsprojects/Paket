@@ -476,7 +476,7 @@ type DependenciesFile(fileName,options,sources,packages : PackageRequirement lis
         if this.HasPackage(packageName) then
             let vr = DependenciesFileParser.parseVersionString version
 
-            tracefn "Updating %s version to %s in %s" name version fileName
+            tracefn "Updating %s to version %s in %s" name version fileName
             let newLines = 
                 this.Lines |> Array.map (fun l -> 
                                   let name = packageName.ToString().ToLower()
