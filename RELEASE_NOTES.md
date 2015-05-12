@@ -1,5 +1,6 @@
 #### 1.4.7 - 12.05.2015
 * Add overload in PublicAPI for default Restore
+* BUGFIX: Fix dates in local nuget packages
 
 #### 1.4.6 - 12.05.2015
 * Fix local path issue on Mono

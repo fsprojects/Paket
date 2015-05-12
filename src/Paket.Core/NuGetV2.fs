@@ -307,6 +307,16 @@ let getDetailsFromNuget force auth nugetURL package (version:SemVerInfo) =
             return! getDetailsFromNuGetViaOData auth nugetURL package version
     } 
     
+let fixDatesInArchive fileName =
+    use zipToOpen = new FileStream(fileName, FileMode.Open)
+    use archive = new ZipArchive(zipToOpen, ZipArchiveMode.Update)
+    for e in archive.Entries do
+        try
+            let d = e.LastWriteTime
+            ()
+        with
+        | xn -> e.LastWriteTime <- DateTimeOffset.Now
+
 /// Reads direct dependencies from a nupkg file
 let getDetailsFromLocalFile root localNugetPath (packageName:PackageName) (version:SemVerInfo) =
     async {        
@@ -331,6 +341,7 @@ let getDetailsFromLocalFile root localNugetPath (packageName:PackageName) (versi
             | None -> failwithf "The package %s %s can't be found in %s.%sPlease check the feed definition in your paket.dependencies file." package (version.ToString()) di.FullName Environment.NewLine
             | Some x -> x
         
+        fixDatesInArchive nupkg.FullName
         use zipToCreate = new FileStream(nupkg.FullName, FileMode.Open)
         use zip = new ZipArchive(zipToCreate,ZipArchiveMode.Read)
         
@@ -361,15 +372,7 @@ let inline isExtracted fileName =
     di.EnumerateFileSystemInfos()
     |> Seq.exists (fun f -> f.FullName <> fi.FullName)    
 
-let fixDatesInArchive fileName =
-    use zipToOpen = new FileStream(fileName, FileMode.Open)
-    use archive = new ZipArchive(zipToOpen, ZipArchiveMode.Update)
-    for e in archive.Entries do
-        try
-            let d = e.LastWriteTime
-            ()
-        with
-        | xn -> e.LastWriteTime <- DateTimeOffset.Now
+
 
 
 /// Extracts the given package to the ./packages folder
