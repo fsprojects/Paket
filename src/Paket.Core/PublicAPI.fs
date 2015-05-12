@@ -162,6 +162,9 @@ type Dependencies(dependenciesFileName: string) =
             this.RootPath,
             fun () -> UpdateProcess.UpdatePackage(dependenciesFileName,PackageName package,version,force,hard,false))
 
+    /// Restores all dependencies.
+    member this.Restore(): unit = this.Restore(false,[])
+
     /// Restores the given paket.references files.
     member this.Restore(files: string list): unit = this.Restore(false,files)
 
