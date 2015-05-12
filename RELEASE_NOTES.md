@@ -1,3 +1,6 @@
+#### 1.4.3 - 12.05.2015
+* Always trim package names
+
 #### 1.4.2 - 09.05.2015
 * Always show default nuget stream in completion
 
