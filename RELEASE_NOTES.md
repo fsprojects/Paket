@@ -1,3 +1,6 @@
+#### 1.4.9 - 12.05.2015
+* Allow to specify a concrete template file for `paket pack`
+
 #### 1.4.8 - 12.05.2015
 * BUGFIX: Fix dates after creating a package
 

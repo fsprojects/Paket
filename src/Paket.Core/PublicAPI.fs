@@ -300,10 +300,10 @@ type Dependencies(dependenciesFileName: string) =
     member this.FindReferencesFor(package: string): string list =
         FindReferences.FindReferencesForPackage (PackageName package) |> this.Process
 
-    // Pack all paket.template files.
-    member this.Pack(outputPath, ?buildConfig, ?version, ?releaseNotes) = 
+    // Packs all paket.template files.
+    member this.Pack(outputPath, ?buildConfig, ?version, ?releaseNotes, ?templateFile) = 
         let dependenciesFile = DependenciesFile.ReadFromFile dependenciesFileName
-        PackageProcess.Pack(dependenciesFile, outputPath, buildConfig, version, releaseNotes)
+        PackageProcess.Pack(dependenciesFile, outputPath, buildConfig, version, releaseNotes, templateFile)
 
     /// Pushes a nupkg file.
     static member Push(packageFileName, ?url, ?apiKey, (?endPoint: string), ?maxTrials) =

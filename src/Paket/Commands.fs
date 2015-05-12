@@ -241,6 +241,7 @@ type PackArgs =
     | [<CustomCommandLine("output")>][<Mandatory>] Output of string
     | [<CustomCommandLine("buildconfig")>] BuildConfig of string
     | [<CustomCommandLine("version")>] Version of string
+    | [<CustomCommandLine("templatefile")>] TemplateFile of string
     | [<CustomCommandLine("releaseNotes")>] ReleaseNotes of string
 with
     interface IArgParserTemplate with
@@ -249,6 +250,7 @@ with
             | Output(_) -> "Output directory to put nupkgs."
             | BuildConfig(_) -> "Optionally specify build configuration that should be packaged (defaults to Release)."
             | Version(_) -> "Specify version of the package."
+            | TemplateFile(_) -> "Allows to specify a single template file."
             | ReleaseNotes(_) -> "Specify relase notes for the package."
 
 type PushArgs =

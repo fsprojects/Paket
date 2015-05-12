@@ -170,9 +170,11 @@ let update (results : ArgParseResults<_>) =
 let pack (results : ArgParseResults<_>) = 
     let outputPath = results.GetResult <@ PackArgs.Output @>
     Dependencies.Locate()
-                .Pack(outputPath, ?buildConfig = results.TryGetResult <@ PackArgs.BuildConfig @>, 
+                .Pack(outputPath, 
+                      ?buildConfig = results.TryGetResult <@ PackArgs.BuildConfig @>, 
                       ?version = results.TryGetResult <@ PackArgs.Version @>, 
-                      ?releaseNotes = results.TryGetResult <@ PackArgs.ReleaseNotes @>)
+                      ?releaseNotes = results.TryGetResult <@ PackArgs.ReleaseNotes @>,
+                      ?templateFile = results.TryGetResult <@ PackArgs.TemplateFile @>)
 
 let findPackages (results : ArgParseResults<_>) = 
     let maxResults = defaultArg (results.TryGetResult <@ FindPackagesArgs.MaxResults @>) 10000
