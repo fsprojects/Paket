@@ -26,3 +26,5 @@
   * Solution Explorer Extensions for Paket files
   * Paket commands in Solution Explorer menu  
   * Syntax highlighting in `paket.dependencies`
+
+<a href="img/paket.visualstudio.png"><img src="img/paket.visualstudio.png" alt="alt text" title="Paket in VisualStudio" width="500"></a>
