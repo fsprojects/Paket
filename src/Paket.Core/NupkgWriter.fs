@@ -245,3 +245,5 @@ let Write (core : CompleteCoreInfo) optional workingDir outputDir =
     contentTypeDoc (Seq.toList entries)
     |> xDocWriter
     |> addEntry zipFile contentTypePath
+
+    outputPath

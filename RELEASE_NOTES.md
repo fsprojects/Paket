@@ -1,3 +1,6 @@
+#### 1.4.8 - 12.05.2015
+* BUGFIX: Fix dates after creating a package
+
 #### 1.4.7 - 12.05.2015
 * Add overload in PublicAPI for default Restore
 * BUGFIX: Fix dates in local nuget packages
