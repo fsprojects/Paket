@@ -154,7 +154,7 @@ let restore (results : ArgParseResults<_>) =
 
 let simplify (results : ArgParseResults<_>) = 
     let interactive = results.Contains <@ SimplifyArgs.Interactive @>
-    Dependencies.Simplify(interactive)
+    Dependencies.Locate().Simplify(interactive)
 
 let update (results : ArgParseResults<_>) = 
     let hard = results.Contains <@ UpdateArgs.Hard @>
