@@ -6,6 +6,7 @@ open System.IO
 let mutable verbose = false
 
 let mutable logFile : string option = None
+let traceFunctions = System.Collections.Generic.List<_>()
 
 let setLogFile fileName =
     let fi = FileInfo fileName
@@ -21,17 +22,28 @@ let inline traceToFile (text:string) =
     | Some fileName -> try File.AppendAllLines(fileName,[text]) with | _ -> ()
     | _ -> ()
 
+let RegisterTraceFunction(traceFunction:Action<string>) =
+    traceFunctions.Add(traceFunction)
+
+let RemoveTraceFunction(traceFunction:Action<string>) =
+    traceFunctions.Remove(traceFunction)
+
+let inline traceToRegisteredFunctions (text:string) =
+    traceToFile text
+    for f in traceFunctions do
+        f.Invoke(text)
+
 /// [omit]
 let monitor = new Object()
 
 /// [omit]
-let inline tracen (s : string) = lock monitor (fun () -> traceToFile s; Console.WriteLine s)
+let inline tracen (s : string) = lock monitor (fun () -> traceToRegisteredFunctions s; Console.WriteLine s)
 
 /// [omit]
 let inline tracefn fmt = Printf.ksprintf tracen fmt
 
 /// [omit]
-let inline trace (s : string) = lock monitor (fun () -> traceToFile s; Console.Write s)
+let inline trace (s : string) = lock monitor (fun () -> traceToRegisteredFunctions s; Console.Write s)
 
 /// [omit]
 let inline tracef fmt = Printf.ksprintf trace fmt
@@ -39,7 +51,7 @@ let inline tracef fmt = Printf.ksprintf trace fmt
 /// [omit]
 let inline traceVerbose (s : string) =
     if verbose then
-        lock monitor (fun () -> traceToFile s; Console.WriteLine s)
+        lock monitor (fun () -> traceToRegisteredFunctions s; Console.WriteLine s)
 
 /// [omit]
 let inline verbosefn fmt = Printf.ksprintf traceVerbose fmt
@@ -50,7 +62,7 @@ let inline traceColored color (s: string) =
         (fun () ->
             let curColor = Console.ForegroundColor
             if curColor <> color then Console.ForegroundColor <- color
-            traceToFile s
+            traceToRegisteredFunctions s
             use textWriter = 
                 match color with
                 | ConsoleColor.Red -> Console.Error

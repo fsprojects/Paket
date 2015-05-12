@@ -1,3 +1,6 @@
+#### 1.4.4 - 12.05.2015
+* Allow to register trace functions
+
 #### 1.4.3 - 12.05.2015
 * Always trim package names
 
