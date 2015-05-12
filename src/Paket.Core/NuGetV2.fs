@@ -15,7 +15,6 @@ open Paket.Domain
 open Paket.Utils
 open Paket.Xml
 open Paket.PackageSources
-open Paket.NuGetV3
 open Paket.Requirements
 
 type NugetPackageCache =
@@ -371,9 +370,6 @@ let inline isExtracted fileName =
     let di = fi.Directory
     di.EnumerateFileSystemInfos()
     |> Seq.exists (fun f -> f.FullName <> fi.FullName)    
-
-
-
 
 /// Extracts the given package to the ./packages folder
 let ExtractPackage(fileName:string, targetFolder, name, version:SemVerInfo) =    
