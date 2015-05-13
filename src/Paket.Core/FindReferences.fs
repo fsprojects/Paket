@@ -19,7 +19,7 @@ let private findReferencesFor package (lockFile: LockFile) projects = trial {
                 |> Set.map NormalizedPackageName
                 |> Set.contains (NormalizedPackageName package)
 
-            return if referenced then Some project.FileName else None })
+            return if referenced then Some project else None })
         |> collect
 
     return referencedIn |> List.choose id
@@ -43,6 +43,6 @@ let ShowReferencesFor packages environment = trial {
     projectsPerPackage
     |> Seq.iter (fun (PackageName k, vs) ->
         tracefn "%s" k
-        vs |> Seq.iter (tracefn "%s")
+        vs |> Seq.map (fun p -> p.FileName) |> Seq.iter (tracefn "%s")
         tracefn "")
 }

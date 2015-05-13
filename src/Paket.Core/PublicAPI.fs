@@ -285,12 +285,16 @@ type Dependencies(dependenciesFileName: string) =
             this.RootPath,
             fun () -> RemoveProcess.RemoveFromProject(dependenciesFileName, PackageName package, force, hard, projectName, installAfter))
 
-    /// Shows all references for the given packages.
+    /// Shows all references files where the given package is referenced.
     member this.ShowReferencesFor(packages: string list): unit =
         FindReferences.ShowReferencesFor (packages |> List.map PackageName) |> this.Process
 
-    /// Finds all references for a given package.
+    /// Finds all references files where the given package is referenced.
     member this.FindReferencesFor(package: string): string list =
+        FindReferences.FindReferencesForPackage (PackageName package) |> this.Process |> List.map (fun p -> p.FileName)
+
+    /// Finds all projects where the given package is referenced.
+    member this.FindProjecsFor(package: string): ProjectFile list =
         FindReferences.FindReferencesForPackage (PackageName package) |> this.Process
 
     // Packs all paket.template files.

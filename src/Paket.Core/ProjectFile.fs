@@ -419,6 +419,18 @@ type ProjectFile =
         |> List.append <| this.FindPaketNodes("Compile")
         |> List.map (fun n -> FileInfo(Path.Combine(Path.GetDirectoryName(this.FileName), n.Attributes.["Include"].Value)))
 
+    member this.GetProjectGuid() = 
+        try
+            let forceGetInnerText node name =
+                match node |> getNode name with 
+                | Some n -> n.InnerText
+                | None -> failwithf "unable to parse %s" node.Name
+
+            let node = this.Document |> getDescendants "PropertyGroup" |> Seq.head
+            forceGetInnerText node "ProjectGuid" |> Guid.Parse
+        with
+        | _ -> Guid.Empty
+
     member this.GetInterProjectDependencies() =  
         let forceGetInnerText node name =
             match node |> getNode name with 

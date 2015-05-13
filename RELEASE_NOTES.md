@@ -1,3 +1,6 @@
+#### 1.4.12 - 13.05.2015
+* Expose project Guids
+
 #### 1.4.11 - 12.05.2015
 * Allow simplify on concrete dependencies file.
 
