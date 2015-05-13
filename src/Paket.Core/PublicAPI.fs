@@ -294,7 +294,7 @@ type Dependencies(dependenciesFileName: string) =
         FindReferences.FindReferencesForPackage (PackageName package) |> this.Process |> List.map (fun p -> p.FileName)
 
     /// Finds all projects where the given package is referenced.
-    member this.FindProjecsFor(package: string): ProjectFile list =
+    member this.FindProjectsFor(package: string): ProjectFile list =
         FindReferences.FindReferencesForPackage (PackageName package) |> this.Process
 
     // Packs all paket.template files.
