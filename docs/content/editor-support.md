@@ -20,7 +20,7 @@
 
 ## Visual Studio
 
-* Project site: https://github.com/hmemcpy/Paket.VisualStudio
+* Project site: https://github.com/fsprojects/Paket.VisualStudio
 * Status: In Development
 * Features:
   * Solution Explorer Extensions for Paket files
