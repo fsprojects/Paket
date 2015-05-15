@@ -1,3 +1,6 @@
+#### 1.4.14 - 15.05.2015
+* Allow to specify the directory for `Convert to NuGet` in PublicAPI
+
 #### 1.4.13 - 13.05.2015
 * Expose project Guids
 
