@@ -17,7 +17,7 @@ then
   
   [ ! -e build.fsx ] && .paket/paket.exe update
   [ ! -e build.fsx ] && packages/FAKE/tools/FAKE.exe init.fsx
-  packages/FAKE/tools/FAKE.exe $@ --fsiargs -d:MONO build.fsx 
+  packages/FAKE/tools/FAKE.exe $@ --fsiargs build.fsx 
 else
   # use mono
   mono .paket/paket.bootstrapper.exe
@@ -25,6 +25,9 @@ else
   if [ $exit_code -ne 0 ]; then
   	exit $exit_code
   fi
+  
+  # Ensure SSL certificates up to date
+  [ ! -e ~/.config/.mono/certs ] && mozroots --import --sync --quiet
 
   mono .paket/paket.exe restore
   exit_code=$?
