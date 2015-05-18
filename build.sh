@@ -5,20 +5,33 @@ set -o pipefail
 
 cd `dirname $0`
 
-
-LOADER=""
 FSIARGS=""
 OS=${OS:-"unknown"}
-if test "$OS" != "Windows_NT"
+if [[ "$OS" != "Windows_NT" ]]
 then
-  LOADER=mono
-  FSIARGS="-d:MONO"
+  FSIARGS="--fsiargs -d:MONO"
 fi
 
-"$LOADER" .paket/paket.bootstrapper.exe
+function run() {
+  if [[ "$OS" != "Windows_NT" ]]
+  then
+    mono "$@"
+  else
+    "$@"
+  fi
+}
 
-[ ! -e ~/.config/.mono/certs ] && mozroots --import --sync --quiet
+run .paket/paket.bootstrapper.exe
 
-"$LOADER" .paket/paket.exe restore
+if [[ "$OS" != "Windows_NT" ]] &&
+       [ ! -e ~/.config/.mono/certs ]
+then
+  mozroots --import --sync --quiet
+fi
 
-"$LOADER" packages/FAKE/tools/FAKE.exe "$@" "$FSIARGS" build.fsx
+run .paket/paket.exe restore
+
+[ ! -e build.fsx ] && run .paket/paket.exe update
+[ ! -e build.fsx ] && run packages/FAKE/tools/FAKE.exe init.fsx
+run packages/FAKE/tools/FAKE.exe "$@" $FSIARGS build.fsx
+
