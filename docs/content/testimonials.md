@@ -22,6 +22,18 @@ Paket has removed the pain from disciplined dependency management. Sensible desi
 
 Michael Newton (Technical Architect) [@mavnn](https://twitter.com/mavnn), [15below](http://15below.com)
 
+## Basware
+
+> Paket is a tool which makes it easy to manage enterprise application dependencies and component upgrades.
+
+[Basware](http://www.basware.com/) Purchase to Pay is a large scale enterprise application for simplifying and streamlining key financial processes.  
+
+Managing the 3rd-party component dependencies over more than 100 solutions can be challenging, however Paket handles this well, and guarantees that the dll-libraries are all the correct version.
+
+With over 80 third party components in use, Paket gives us a clear vision of the dependency tree. This helps when making work estimates for major component version upgrades. Before taking Paket into use, making work estimates for component upgrades was painful, as the dependencies were not always clearly understood.
+
+Tuomas Hietanen (Lead Software Engineer) [Basware](http://www.basware.com/)
+
 ## Please contribute your testimonials!
 
 Adding new testimonials to this page is easy. Just write your quote in plain text, using some Markdown formatting and send a pull request to [docs/content/testimonials.md](https://github.com/fsprojects/Paket/blob/master/docs/content/testimonials.md).
