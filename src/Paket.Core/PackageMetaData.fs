@@ -91,16 +91,19 @@ let loadAssemblyId buildConfig (projectFile : ProjectFile) =
     let bytes = File.ReadAllBytes fileName
     let assembly = Assembly.Load bytes
 
-    assembly,assembly.GetName().Name
+    assembly,assembly.GetName().Name,fileName
 
-let loadAssemblyAttributes (assembly:Assembly) = 
+let loadAssemblyAttributes fileName (assembly:Assembly) = 
     try
         assembly.GetCustomAttributes(true)
     with
-    | exn -> 
-        traceWarnfn "Loading custom attributes failed for %s.%sMessage: %s" assembly.FullName Environment.NewLine exn.Message
+    | :? FileNotFoundException -> 
+        // retrieving via path
+        let assembly = Assembly.LoadFrom fileName            
+        assembly.GetCustomAttributes(true)
+    | exn ->
+        traceWarnfn "Loading custom attributes failed for %s.%sMessage: %s" fileName Environment.NewLine exn.Message
         assembly.GetCustomAttributes(false)
-
 
 let (|Valid|Invalid|) md = 
     match md with

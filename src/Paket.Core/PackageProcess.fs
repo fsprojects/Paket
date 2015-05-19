@@ -52,13 +52,13 @@ let Pack(dependencies : DependenciesFile, packageOutputPath, buildConfig, versio
                     match md with
                     | Valid completeCore -> { templateFile with Contents = CompleteInfo(completeCore, opt) }
                     | _ ->
-                        let assembly,id = loadAssemblyId buildConfig projectFile
+                        let assembly,id,assemblyFileName = loadAssemblyId buildConfig projectFile
                         let md = { md with Id = md.Id ++ Some id }
 
                         match md with
                         | Valid completeCore -> { templateFile with Contents = CompleteInfo(completeCore, opt) }
                         | _ ->
-                            let attribs = loadAssemblyAttributes assembly
+                            let attribs = loadAssemblyAttributes assemblyFileName assembly
 
                             let merged = 
                                 { Id = md.Id
