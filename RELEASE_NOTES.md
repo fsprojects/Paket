@@ -1,3 +1,6 @@
+#### 1.4.15 - 19.05.2015
+* Work around issue with CustomAssemblyAttributes during `paket pack` - https://github.com/fsprojects/Paket/issues/827 
+
 #### 1.4.14 - 15.05.2015
 * Allow to specify the directory for `Convert to NuGet` in PublicAPI
 
