@@ -22,6 +22,7 @@
 
 * Project site: https://github.com/fsprojects/Paket.VisualStudio
 * Status: In Development
+* Installation: Availabe in [Visual Studio Gallery](https://visualstudiogallery.msdn.microsoft.com/ce104917-e8b3-4365-9490-8432c6e75c36)
 * Features:
   * Solution Explorer Extensions for Paket files
   * Paket commands in Solution Explorer menu  
