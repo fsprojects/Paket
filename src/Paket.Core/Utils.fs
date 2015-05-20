@@ -398,3 +398,27 @@ module ObservableExtensions =
             let evt = new Event<_>()
             evt.Publish |> guard (fun o ->
                 for n in s do evt.Trigger(n))
+
+        let ofAsync a: IObservable<'a> =
+            { new IObservable<'a> with 
+                member __.Subscribe obs =
+                    let token = new CancellationTokenSource()
+                    Async.StartWithContinuations(a, obs.OnNext, obs.OnError, obs.OnError, token.Token)
+                    { new IDisposable with
+                        member __.Dispose() = 
+                            token.Cancel |> ignore
+                            token.Dispose() }}
+    
+        let ofAsyncWithToken (token:CancellationToken) a: IObservable<'a> =
+            { new IObservable<'a> with 
+                member __.Subscribe obs =
+                    Async.StartWithContinuations(a, obs.OnNext, obs.OnError, obs.OnError, token)
+                    { new IDisposable with
+                        member __.Dispose() = () }}
+
+        let flatten (a: IObservable<#seq<'a>>): IObservable<'a> =
+            { new IObservable<'a> with
+                member __.Subscribe obs =
+                    let sub = a |> Observable.subscribe (Seq.iter obs.OnNext)
+                    { new IDisposable with member __.Dispose() = sub.Dispose() }}
+ 

@@ -294,17 +294,17 @@ type Dependencies(dependenciesFileName: string) =
     member this.FindReferencesFor(package: string): string list =
         FindReferences.FindReferencesForPackage (PackageName package) |> this.Process |> List.map (fun p -> p.FileName)
 
-    member this.SearchPackagesByName(searchTerm,?cancellationToken,?maxResults) =
+    member this.SearchPackagesByName(searchTerm,?cancellationToken,?maxResults) : IObservable<string> =
         let cancellationToken = defaultArg cancellationToken (System.Threading.CancellationToken())
         let maxResults = defaultArg maxResults 1000
         PackageSources.DefaultNugetSource :: this.GetSources()
         |> List.choose (fun x -> match x with | Nuget s -> Some s.Url | _ -> None)
         |> Seq.distinct
-        |> Observable.ofSeq
-        |> Observable.map (fun url ->
-                Async.RunSynchronously(
-                    NuGetV3.FindPackages(None, url, searchTerm, maxResults),
-                    cancellationToken = cancellationToken))
+        |> Seq.map (fun url ->
+                    NuGetV3.FindPackages(None, url, searchTerm, maxResults)
+                    |> Observable.ofAsyncWithToken cancellationToken)
+        |> Seq.reduce Observable.merge
+        |> Observable.flatten
 
     /// Finds all projects where the given package is referenced.
     member this.FindProjectsFor(package: string): ProjectFile list =
