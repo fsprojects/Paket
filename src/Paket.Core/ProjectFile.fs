@@ -497,6 +497,7 @@ type ProjectFile =
                     (node |> getAttribute "Project" |> Option.get)
                 node.ParentNode.RemoveChild node |> ignore
                 match sibling with
+                | null -> ()
                 | sibling when sibling.Name.Equals("Target") ->
                     let deleteTarget = 
                         Utils.askYesNo
