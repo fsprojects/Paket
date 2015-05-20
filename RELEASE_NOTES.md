@@ -1,4 +1,4 @@
-#### 1.4.17 - 20.05.2015
+#### 1.4.18 - 20.05.2015
 * EXPERIMENTAL: Query NuGet feeds in parallel
 
 #### 1.4.16 - 20.05.2015
