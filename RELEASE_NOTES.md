@@ -1,3 +1,6 @@
+#### 1.4.16 - 20.05.2015
+* Create easy data extraction for C# interop with sources
+
 #### 1.4.15 - 19.05.2015
 * Work around issue with CustomAssemblyAttributes during `paket pack` - https://github.com/fsprojects/Paket/issues/827 
 
