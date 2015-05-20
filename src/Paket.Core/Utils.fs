@@ -367,6 +367,14 @@ module ObservableExtensions =
 
     [<RequireQualifiedAccess>]
     module Observable =
+        /// Creates an observable that calls the specified function after someone
+        /// subscribes to it (useful for waiting using 'let!' when we need to start
+        /// operation after 'let!' attaches handler)
+        let guard f (e:IObservable<'Args>) =  
+          { new IObservable<'Args> with  
+              member x.Subscribe(observer) =  
+                let rm = e.Subscribe(observer) in f(); rm } 
+
         let sample milliseconds source =
             let relay (observer:IObserver<'T>) =
                 let rec loop () = async {
@@ -385,3 +393,8 @@ module ObservableExtensions =
                         member this.Dispose() = cts.Cancel() 
                     }
             }
+
+        let ofSeq s = 
+            let evt = new Event<_>()
+            evt.Publish |> guard (fun o ->
+                for n in s do evt.Trigger(n))
