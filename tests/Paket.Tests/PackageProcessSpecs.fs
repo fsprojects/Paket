@@ -41,10 +41,10 @@ let ``Loading assembly metadata works``() =
         if workingDir.Contains "Debug" then "Debug"
         else "Release"
 
-    let assembly,id = PackageMetaData.loadAssemblyId config projFile.Value
+    let assembly,id,fileName = PackageMetaData.loadAssemblyId config projFile.Value
     id |> shouldEqual "Paket.Tests"
     
-    let attribs = PackageMetaData.loadAssemblyAttributes assembly
+    let attribs = PackageMetaData.loadAssemblyAttributes fileName assembly
     PackageMetaData.getVersion assembly attribs |> shouldEqual <| Some(SemVer.Parse "1.0.0.0")
     PackageMetaData.getAuthors attribs |> shouldEqual <| Some([ "Two"; "Authors" ])
     PackageMetaData.getDescription attribs |> shouldEqual <| Some("A description")
