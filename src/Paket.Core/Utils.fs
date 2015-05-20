@@ -367,6 +367,8 @@ module ObservableExtensions =
 
     [<RequireQualifiedAccess>]
     module Observable =
+        open System.Collections.Generic
+
         /// Creates an observable that calls the specified function after someone
         /// subscribes to it (useful for waiting using 'let!' when we need to start
         /// operation after 'let!' attaches handler)
@@ -421,4 +423,8 @@ module ObservableExtensions =
                 member __.Subscribe obs =
                     let sub = a |> Observable.subscribe (Seq.iter obs.OnNext)
                     { new IDisposable with member __.Dispose() = sub.Dispose() }}
+
+        let distinct (a: IObservable<'a>): IObservable<'a> =
+            let seen = HashSet()
+            Observable.filter seen.Add a
  

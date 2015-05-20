@@ -305,6 +305,7 @@ type Dependencies(dependenciesFileName: string) =
                     |> Observable.ofAsyncWithToken cancellationToken)
         |> Seq.reduce Observable.merge
         |> Observable.flatten
+        |> Observable.distinct
 
     /// Finds all projects where the given package is referenced.
     member this.FindProjectsFor(package: string): ProjectFile list =
