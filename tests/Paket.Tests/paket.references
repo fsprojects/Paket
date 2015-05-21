@@ -1,4 +1,6 @@
 NUnit
 NUnit.Runners
-File:FsUnit.fs .
 FSharp.Core
+FsCheck
+FsCheck.NUnit
+File:FsUnit.fs .
