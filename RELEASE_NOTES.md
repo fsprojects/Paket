@@ -1,48 +1,22 @@
-#### 1.4.18 - 20.05.2015
+#### 1.5.0-alpha001 - 21.05.2015
+* Property tests for dependencies files parser - https://github.com/fsprojects/Paket/pull/807
 * EXPERIMENTAL: Query NuGet feeds in parallel
-
-#### 1.4.16 - 20.05.2015
-* Create easy data extraction for C# interop with sources
-
-#### 1.4.15 - 19.05.2015
-* Work around issue with CustomAssemblyAttributes during `paket pack` - https://github.com/fsprojects/Paket/issues/827 
-
-#### 1.4.14 - 15.05.2015
-* Allow to specify the directory for `Convert to NuGet` in PublicAPI
-
-#### 1.4.13 - 13.05.2015
-* Expose project Guids
-
-#### 1.4.11 - 12.05.2015
-* Allow simplify on concrete dependencies file.
-
-#### 1.4.9 - 12.05.2015
+* Allow to specify the directory for `convert-to-nuget` in PublicAPI
+* Expose project Guids from project files
+* Allow simplify on concrete dependencies file
 * Allow to specify a concrete template file for `paket pack`
-
-#### 1.4.8 - 12.05.2015
-* BUGFIX: Fix dates after creating a package
-
-#### 1.4.7 - 12.05.2015
 * Add overload in PublicAPI for default Restore
-* BUGFIX: Fix dates in local nuget packages
-
-#### 1.4.6 - 12.05.2015
-* Fix local path issue on Mono
-
-#### 1.4.5 - 12.05.2015
 * Better tracing during "update package"
-
-#### 1.4.4 - 12.05.2015
 * Allow to register trace functions
-
-#### 1.4.3 - 12.05.2015
-* Always trim package names
-
-#### 1.4.2 - 09.05.2015
-* Always show default nuget stream in completion
-
-#### 1.4.1 - 09.05.2015
 * Allow to specify a source feed for Find-Packages and Find-Package-Versions command
+* BUGFIX: Fix dates in local nuget packages
+* BUGFIX: NullReferenceException in `convert-from-nuget` - https://github.com/fsprojects/Paket/pull/831
+* BUGFIX: `Convert-from-nuget` quotes source feeds - https://github.com/fsprojects/Paket/pull/833
+* BUGFIX: Observable.ofAsync fires OnCompleted - https://github.com/fsprojects/Paket/pull/835
+* BUGFIX: Work around issue with CustomAssemblyAttributes during `paket pack` - https://github.com/fsprojects/Paket/issues/827
+* BUGFIX: Fix dates after creating a package
+* BUGFIX: Always trim package names from command line
+* BUGFIX: Always show default nuget stream in completion
 
 #### 1.4.0 - 08.05.2015
 * EXPERIMENTAL: Find-Packages command - http://fsprojects.github.io/Paket/paket-find-packages.html
