@@ -125,7 +125,7 @@ type NugetConfig =
             |> Option.toList
             |> List.collect getKeyValueList
             |> List.filter (fun (key,_) -> Set.contains key disabledSources |> not)
-            |> List.map (fun (key,value) -> value, getAuth key)
+            |> List.map (fun (key,value) -> String.quoted value, getAuth key)
 
         { PackageSources = if clearSources then sources
                            else 
