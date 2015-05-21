@@ -1,4 +1,4 @@
-#### 1.5.0-alpha001 - 21.05.2015
+#### 1.5.0 - 21.05.2015
 * Property tests for dependencies files parser - https://github.com/fsprojects/Paket/pull/807
 * EXPERIMENTAL: Query NuGet feeds in parallel
 * Allow to specify the directory for `convert-to-nuget` in PublicAPI
