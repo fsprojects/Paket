@@ -199,3 +199,4 @@ docs/content/paket-restore.md
 docs/content/paket-simplify.md
 docs/content/paket-convert-from-nuget.md
 *.bak
+System.Management.Automation.dll
