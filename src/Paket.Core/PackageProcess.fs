@@ -122,7 +122,7 @@ let Pack(dependencies : DependenciesFile, packageOutputPath, buildConfig, versio
                     |> NuGetV2.fixDatesInArchive 
                     verbosefn "Packed: %s" templateFile.FileName
                 | IncompleteTemplate -> 
-                    failwithf "There was an trial to pack incomplete template file %s." templateFile.FileName
+                    failwithf "There was an attempt to pack incomplete template file %s." templateFile.FileName
             })
     |> Async.Parallel
     |> Async.RunSynchronously
