@@ -28,7 +28,9 @@ module LockFileSerializer =
             let hasReported = ref false
             [ if options.Strict then yield "REFERENCES: STRICT"
               if options.Redirects then yield "REDIRECTS: ON"
-              if not options.Settings.CopyLocal then yield "COPY-LOCAL: FALSE"   
+              match options.Settings.CopyLocal with
+              | Some x -> yield "COPY-LOCAL: " + x.ToString().ToUpper()
+              | None -> ()
               if not options.Settings.ImportTargets then yield "IMPORT-TARGETS: FALSE"
               if options.Settings.OmitContent then yield "CONTENT: NONE"      
               match options.Settings.FrameworkRestrictions with
@@ -170,7 +172,7 @@ module LockFileParser =
             | InstallOption (ReferencesMode(mode)) -> { state with Options = {state.Options with Strict = mode} }
             | InstallOption (Redirects(mode)) -> { state with Options = {state.Options with Redirects = mode} }
             | InstallOption (ImportTargets(mode)) -> { state with Options = {state.Options with Settings = { state.Options.Settings with ImportTargets = mode} } }
-            | InstallOption (CopyLocal(mode)) -> { state with Options = {state.Options with Settings = { state.Options.Settings with CopyLocal = mode}} }
+            | InstallOption (CopyLocal(mode)) -> { state with Options = {state.Options with Settings = { state.Options.Settings with CopyLocal = Some mode}} }
             | InstallOption (FrameworkRestrictions(r)) -> { state with Options = {state.Options with Settings = { state.Options.Settings with FrameworkRestrictions = r}} }
             | InstallOption (OmitContent(omit)) -> { state with Options = {state.Options with Settings = { state.Options.Settings with OmitContent = omit} }}
             | RepositoryType repoType -> { state with RepositoryType = Some repoType }

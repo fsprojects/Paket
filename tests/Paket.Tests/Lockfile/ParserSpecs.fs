@@ -36,7 +36,7 @@ let ``should parse lock file``() =
     let packages = List.rev lockFile.Packages
     packages.Length |> shouldEqual 6
     lockFile.Options.Strict |> shouldEqual false
-    lockFile.Options.Settings.CopyLocal |> shouldEqual false
+    lockFile.Options.Settings.CopyLocal |> shouldEqual (Some false)
     lockFile.Options.Settings.ImportTargets |> shouldEqual true
 
     packages.[0].Source |> shouldEqual PackageSources.DefaultNugetSource
@@ -98,7 +98,7 @@ let ``should parse strict lock file``() =
     lockFile.Options.Strict |> shouldEqual true
     lockFile.Options.Redirects |> shouldEqual false
     lockFile.Options.Settings.ImportTargets |> shouldEqual false
-    lockFile.Options.Settings.CopyLocal |> shouldEqual true
+    lockFile.Options.Settings.CopyLocal |> shouldEqual None
 
     packages.[5].Source |> shouldEqual PackageSources.DefaultNugetSource
     packages.[5].Name |> shouldEqual (PackageName "log4net")
@@ -123,7 +123,7 @@ let ``should parse redirects lock file``() =
     lockFile.Options.Strict |> shouldEqual false
     lockFile.Options.Redirects |> shouldEqual true
     lockFile.Options.Settings.ImportTargets |> shouldEqual true
-    lockFile.Options.Settings.CopyLocal |> shouldEqual true
+    lockFile.Options.Settings.CopyLocal |> shouldEqual (Some true)
 
     packages.Head.Source |> shouldEqual (PackageSource.LocalNuget("D:\code\\temp with space"))
 
@@ -143,7 +143,7 @@ let ``should parse lock file with framework restrictions``() =
     lockFile.Options.Strict |> shouldEqual false
     lockFile.Options.Redirects |> shouldEqual false
     lockFile.Options.Settings.ImportTargets |> shouldEqual true
-    lockFile.Options.Settings.CopyLocal |> shouldEqual true
+    lockFile.Options.Settings.CopyLocal |> shouldEqual None
 
 let dogfood = """NUGET
   remote: https://nuget.org/api/v2
@@ -314,7 +314,7 @@ let ``should parse framework restricted lock file in new syntax``() =
     packages.[3].Name |> shouldEqual (PackageName "LinqBridge")
     packages.[3].Version |> shouldEqual (SemVer.Parse "1.3.0")
     packages.[3].Settings.FrameworkRestrictions |> shouldEqual ([FrameworkRestriction.Between(FrameworkIdentifier.DotNetFramework(FrameworkVersion.V2),FrameworkIdentifier.DotNetFramework(FrameworkVersion.V3_5))])
-    packages.[3].Settings.CopyLocal |> shouldEqual true
+    packages.[3].Settings.CopyLocal |> shouldEqual None
     packages.[3].Settings.ImportTargets |> shouldEqual false
     packages.[3].Settings.OmitContent |> shouldEqual true
 
@@ -322,7 +322,7 @@ let ``should parse framework restricted lock file in new syntax``() =
     packages.[5].Name |> shouldEqual (PackageName "ReadOnlyCollectionInterfaces")
     packages.[5].Version |> shouldEqual (SemVer.Parse "1.0.0")
     packages.[5].Settings.ImportTargets |> shouldEqual false
-    packages.[5].Settings.CopyLocal |> shouldEqual false
+    packages.[5].Settings.CopyLocal |> shouldEqual (Some false)
     packages.[5].Settings.OmitContent |> shouldEqual false
     packages.[5].Settings.FrameworkRestrictions 
     |> shouldEqual ([FrameworkRestriction.Exactly(FrameworkIdentifier.DotNetFramework(FrameworkVersion.V2))

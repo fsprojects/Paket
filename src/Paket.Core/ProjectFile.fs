@@ -398,7 +398,8 @@ type ProjectFile =
                     .ApplyFrameworkRestrictions(installSettings.Settings.FrameworkRestrictions)
                     .RemoveIfCompletelyEmpty()
 
-            this.GenerateXml(projectModel,installSettings.Settings.CopyLocal,installSettings.Settings.ImportTargets))
+            let copyLocal = defaultArg installSettings.Settings.CopyLocal true
+            this.GenerateXml(projectModel,copyLocal,installSettings.Settings.ImportTargets))
         |> Seq.iter (fun (propertyNameNodes,chooseNode,propertyChooseNode) -> 
             if chooseNode.ChildNodes.Count > 0 then
                 this.ProjectNode.AppendChild chooseNode |> ignore

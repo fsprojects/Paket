@@ -126,17 +126,20 @@ type InstallSettings =
     { ImportTargets : bool
       FrameworkRestrictions: FrameworkRestrictions
       OmitContent : bool 
-      CopyLocal : bool }
+      CopyLocal : bool option }
 
     static member Default =
-        { CopyLocal = true
+        { CopyLocal = None
           ImportTargets = true
           FrameworkRestrictions = []
           OmitContent = false }
 
     member this.ToString(asLines) =
         let options =
-            [ if not this.CopyLocal then yield "copy_local: false"
+            [ 
+              match this.CopyLocal with
+              | Some x -> yield "copy_local: " + x.ToString().ToLower()
+              | None -> ()
               if not this.ImportTargets then yield "import_targets: false"
               if this.OmitContent then yield "content: none"
               match this.FrameworkRestrictions with
@@ -165,8 +168,9 @@ type InstallSettings =
             | _ -> false 
           CopyLocal =         
             match kvPairs.TryGetValue "copy_local" with
-            | true, "false" -> false 
-            | _ -> true }
+            | true, "false" -> Some false 
+            | true, "true" -> Some true
+            | _ -> None }
 
 type PackageRequirementSource =
 | DependenciesFile of string

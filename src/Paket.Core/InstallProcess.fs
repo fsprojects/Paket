@@ -167,7 +167,15 @@ let InstallIntoProjects(sources,force, hard, withBindingRedirects, lockFile:Lock
                             { u.Value.Settings with 
                                 FrameworkRestrictions = u.Value.Settings.FrameworkRestrictions @ lockFile.Options.Settings.FrameworkRestrictions @ package.Settings.FrameworkRestrictions // TODO: This should filter
                                 ImportTargets = u.Value.Settings.ImportTargets && lockFile.Options.Settings.ImportTargets && package.Settings.ImportTargets
-                                CopyLocal = u.Value.Settings.CopyLocal && lockFile.Options.Settings.CopyLocal && package.Settings.CopyLocal 
+                                CopyLocal = 
+                                    match package.Settings.CopyLocal with
+                                    | Some x -> Some x
+                                    | _ -> match lockFile.Options.Settings.CopyLocal with
+                                           | Some x -> Some x
+                                           | None -> match u.Value.Settings.CopyLocal with
+                                                     | Some x -> Some x
+                                                     | _ -> None
+
                                 OmitContent = u.Value.Settings.OmitContent || lockFile.Options.Settings.OmitContent || package.Settings.OmitContent }})
             |> Map.ofSeq
 
