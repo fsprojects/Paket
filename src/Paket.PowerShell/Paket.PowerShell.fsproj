@@ -49,11 +49,10 @@
   </Choose>
   <Import Project="$(FSharpTargetsPath)" />
   <ItemGroup>
+    <Compile Include="CmdletExt.fs" />
     <Compile Include="PowerShell.fs" />
     <None Include="init.ps1" />
-    <None Include="Paket.PowerShell.psd1">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
+    <None Include="paket.template" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="mscorlib" />
