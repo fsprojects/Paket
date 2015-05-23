@@ -1,3 +1,6 @@
+#### 1.5.3 - 23.05.2015
+* BUGFIX: `paket install` fails if package version doesn't match .nupkg file - https://github.com/fsprojects/Paket/issues/834
+
 #### 1.5.2 - 23.05.2015
 * Allow to override install settings in 'paket.dependencies' with values from 'paket.references' - https://github.com/fsprojects/Paket/issues/836
 
