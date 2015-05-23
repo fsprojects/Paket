@@ -399,7 +399,9 @@ type ProjectFile =
                     .RemoveIfCompletelyEmpty()
 
             let copyLocal = defaultArg installSettings.Settings.CopyLocal true
-            this.GenerateXml(projectModel,copyLocal,installSettings.Settings.ImportTargets))
+            let importTargets = defaultArg installSettings.Settings.ImportTargets true
+
+            this.GenerateXml(projectModel,copyLocal,importTargets))
         |> Seq.iter (fun (propertyNameNodes,chooseNode,propertyChooseNode) -> 
             if chooseNode.ChildNodes.Count > 0 then
                 this.ProjectNode.AppendChild chooseNode |> ignore

@@ -120,10 +120,10 @@ let ``should parse lines with import_targets settings correctly``() =
     refFile.NugetPackages.Length |> shouldEqual 2
     refFile.NugetPackages.Head.Name |> shouldEqual (PackageName "Castle.Windsor")
     refFile.NugetPackages.Head.Settings.CopyLocal |> shouldEqual None
-    refFile.NugetPackages.Head.Settings.ImportTargets |> shouldEqual false
+    refFile.NugetPackages.Head.Settings.ImportTargets |> shouldEqual (Some false)
     refFile.NugetPackages.Tail.Head.Name |> shouldEqual (PackageName "Newtonsoft.Json")
     refFile.NugetPackages.Tail.Head.Settings.CopyLocal |> shouldEqual None
-    refFile.NugetPackages.Tail.Head.Settings.ImportTargets |> shouldEqual true
+    refFile.NugetPackages.Tail.Head.Settings.ImportTargets |> shouldEqual None
 
 let refFileContentWithCopyLocalFalseAndNoTargetsImport = """Castle.Windsor copy_local : false, import_targets: false
 Newtonsoft.Json
@@ -135,10 +135,10 @@ let ``should parse lines with CopyLocal and import_targets settings correctly``(
     refFile.NugetPackages.Length |> shouldEqual 3
     refFile.NugetPackages.Head.Name |> shouldEqual (PackageName "Castle.Windsor")
     refFile.NugetPackages.Head.Settings.CopyLocal |> shouldEqual (Some false)
-    refFile.NugetPackages.Head.Settings.ImportTargets |> shouldEqual false
+    refFile.NugetPackages.Head.Settings.ImportTargets |> shouldEqual (Some false)
     refFile.NugetPackages.Tail.Head.Name |> shouldEqual (PackageName "Newtonsoft.Json")
     refFile.NugetPackages.Tail.Head.Settings.CopyLocal |> shouldEqual None
-    refFile.NugetPackages.Tail.Head.Settings.ImportTargets |> shouldEqual true
+    refFile.NugetPackages.Tail.Head.Settings.ImportTargets |> shouldEqual None
 
 [<Test>]
 let ``should serialize import_targets correctly``() = 
@@ -162,17 +162,17 @@ let ``should parse and serialize lines with multiple settings settings correctly
     refFile.NugetPackages.Length |> shouldEqual 3
     refFile.NugetPackages.Head.Name |> shouldEqual (PackageName "Castle.Windsor")
     refFile.NugetPackages.Head.Settings.CopyLocal |> shouldEqual (Some false)
-    refFile.NugetPackages.Head.Settings.ImportTargets |> shouldEqual false
+    refFile.NugetPackages.Head.Settings.ImportTargets |> shouldEqual (Some false)
 
     refFile.NugetPackages.Tail.Head.Name |> shouldEqual (PackageName "Newtonsoft.Json")
     refFile.NugetPackages.Tail.Head.Settings.CopyLocal |> shouldEqual None
-    refFile.NugetPackages.Tail.Head.Settings.ImportTargets |> shouldEqual true
-    refFile.NugetPackages.Tail.Head.Settings.OmitContent |> shouldEqual true
+    refFile.NugetPackages.Tail.Head.Settings.ImportTargets |> shouldEqual None
+    refFile.NugetPackages.Tail.Head.Settings.OmitContent |> shouldEqual (Some true)
 
     refFile.NugetPackages.Tail.Tail.Head.Name |> shouldEqual (PackageName "xUnit")
     refFile.NugetPackages.Tail.Tail.Head.Settings.CopyLocal |> shouldEqual None
-    refFile.NugetPackages.Tail.Tail.Head.Settings.ImportTargets |> shouldEqual false
-    refFile.NugetPackages.Tail.Tail.Head.Settings.OmitContent |> shouldEqual false
+    refFile.NugetPackages.Tail.Tail.Head.Settings.ImportTargets |> shouldEqual (Some false)
+    refFile.NugetPackages.Tail.Tail.Head.Settings.OmitContent |> shouldEqual None
 
     refFile.ToString()
     |> normalizeLineEndings

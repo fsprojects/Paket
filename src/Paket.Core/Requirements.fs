@@ -123,16 +123,16 @@ let optimizeRestrictions packages =
                 yield name,versionRequirement,restrictions]
 
 type InstallSettings = 
-    { ImportTargets : bool
+    { ImportTargets : bool option
       FrameworkRestrictions: FrameworkRestrictions
-      OmitContent : bool 
+      OmitContent : bool option
       CopyLocal : bool option }
 
     static member Default =
         { CopyLocal = None
-          ImportTargets = true
+          ImportTargets = None
           FrameworkRestrictions = []
-          OmitContent = false }
+          OmitContent = None }
 
     member this.ToString(asLines) =
         let options =
@@ -140,8 +140,13 @@ type InstallSettings =
               match this.CopyLocal with
               | Some x -> yield "copy_local: " + x.ToString().ToLower()
               | None -> ()
-              if not this.ImportTargets then yield "import_targets: false"
-              if this.OmitContent then yield "content: none"
+              match this.ImportTargets with
+              | Some x -> yield "import_targets: " + x.ToString().ToLower()
+              | None -> ()
+              match this.OmitContent with
+              | Some true -> yield "content: none"
+              | Some false -> yield "content: true"
+              | None -> ()
               match this.FrameworkRestrictions with
               | [] -> ()
               | _  -> yield "framework: " + (String.Join(", ",this.FrameworkRestrictions))]
@@ -156,16 +161,18 @@ type InstallSettings =
 
         { ImportTargets =
             match kvPairs.TryGetValue "import_targets" with
-            | true, "false" -> false
-            | _ -> true
+            | true, "false" -> Some false 
+            | true, "true" -> Some true
+            | _ -> None
           FrameworkRestrictions =
             match kvPairs.TryGetValue "framework" with
             | true, s -> parseRestrictions s
             | _ -> []
           OmitContent =
             match kvPairs.TryGetValue "content" with
-            | true, "none" -> true 
-            | _ -> false 
+            | true, "none" -> Some true 
+            | true, "true" -> Some false 
+            | _ ->  None
           CopyLocal =         
             match kvPairs.TryGetValue "copy_local" with
             | true, "false" -> Some false 

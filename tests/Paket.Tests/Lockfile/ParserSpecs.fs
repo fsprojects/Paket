@@ -37,7 +37,7 @@ let ``should parse lock file``() =
     packages.Length |> shouldEqual 6
     lockFile.Options.Strict |> shouldEqual false
     lockFile.Options.Settings.CopyLocal |> shouldEqual (Some false)
-    lockFile.Options.Settings.ImportTargets |> shouldEqual true
+    lockFile.Options.Settings.ImportTargets |> shouldEqual None
 
     packages.[0].Source |> shouldEqual PackageSources.DefaultNugetSource
     packages.[0].Name |> shouldEqual (PackageName "Castle.Windsor")
@@ -97,7 +97,7 @@ let ``should parse strict lock file``() =
     packages.Length |> shouldEqual 6
     lockFile.Options.Strict |> shouldEqual true
     lockFile.Options.Redirects |> shouldEqual false
-    lockFile.Options.Settings.ImportTargets |> shouldEqual false
+    lockFile.Options.Settings.ImportTargets |> shouldEqual (Some false)
     lockFile.Options.Settings.CopyLocal |> shouldEqual None
 
     packages.[5].Source |> shouldEqual PackageSources.DefaultNugetSource
@@ -122,7 +122,7 @@ let ``should parse redirects lock file``() =
     packages.Length |> shouldEqual 1
     lockFile.Options.Strict |> shouldEqual false
     lockFile.Options.Redirects |> shouldEqual true
-    lockFile.Options.Settings.ImportTargets |> shouldEqual true
+    lockFile.Options.Settings.ImportTargets |> shouldEqual (Some true)
     lockFile.Options.Settings.CopyLocal |> shouldEqual (Some true)
 
     packages.Head.Source |> shouldEqual (PackageSource.LocalNuget("D:\code\\temp with space"))
@@ -142,7 +142,7 @@ let ``should parse lock file with framework restrictions``() =
     packages.Length |> shouldEqual 1
     lockFile.Options.Strict |> shouldEqual false
     lockFile.Options.Redirects |> shouldEqual false
-    lockFile.Options.Settings.ImportTargets |> shouldEqual true
+    lockFile.Options.Settings.ImportTargets |> shouldEqual (Some true)
     lockFile.Options.Settings.CopyLocal |> shouldEqual None
 
 let dogfood = """NUGET
@@ -275,7 +275,7 @@ let ``should parse framework restricted lock file``() =
     packages.[3].Name |> shouldEqual (PackageName "LinqBridge")
     packages.[3].Version |> shouldEqual (SemVer.Parse "1.3.0")
     packages.[3].Settings.FrameworkRestrictions |> shouldEqual ([FrameworkRestriction.Between(FrameworkIdentifier.DotNetFramework(FrameworkVersion.V2),FrameworkIdentifier.DotNetFramework(FrameworkVersion.V3_5))])
-    packages.[3].Settings.ImportTargets |> shouldEqual true
+    packages.[3].Settings.ImportTargets |> shouldEqual None
 
     packages.[5].Source |> shouldEqual PackageSources.DefaultNugetSource
     packages.[5].Name |> shouldEqual (PackageName "ReadOnlyCollectionInterfaces")
@@ -315,15 +315,15 @@ let ``should parse framework restricted lock file in new syntax``() =
     packages.[3].Version |> shouldEqual (SemVer.Parse "1.3.0")
     packages.[3].Settings.FrameworkRestrictions |> shouldEqual ([FrameworkRestriction.Between(FrameworkIdentifier.DotNetFramework(FrameworkVersion.V2),FrameworkIdentifier.DotNetFramework(FrameworkVersion.V3_5))])
     packages.[3].Settings.CopyLocal |> shouldEqual None
-    packages.[3].Settings.ImportTargets |> shouldEqual false
-    packages.[3].Settings.OmitContent |> shouldEqual true
+    packages.[3].Settings.ImportTargets |> shouldEqual (Some false)
+    packages.[3].Settings.OmitContent |> shouldEqual (Some true)
 
     packages.[5].Source |> shouldEqual PackageSources.DefaultNugetSource
     packages.[5].Name |> shouldEqual (PackageName "ReadOnlyCollectionInterfaces")
     packages.[5].Version |> shouldEqual (SemVer.Parse "1.0.0")
-    packages.[5].Settings.ImportTargets |> shouldEqual false
+    packages.[5].Settings.ImportTargets |> shouldEqual (Some false)
     packages.[5].Settings.CopyLocal |> shouldEqual (Some false)
-    packages.[5].Settings.OmitContent |> shouldEqual false
+    packages.[5].Settings.OmitContent |> shouldEqual None
     packages.[5].Settings.FrameworkRestrictions 
     |> shouldEqual ([FrameworkRestriction.Exactly(FrameworkIdentifier.DotNetFramework(FrameworkVersion.V2))
                      FrameworkRestriction.Exactly(FrameworkIdentifier.DotNetFramework(FrameworkVersion.V3_5))

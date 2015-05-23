@@ -1,5 +1,5 @@
-#### 1.5.1 - 23.05.2015
-* Allow to override 'copy_local' in 'paket.dependencies' with values from 'paket.references' - https://github.com/fsprojects/Paket/issues/836
+#### 1.5.2 - 23.05.2015
+* Allow to override install settings in 'paket.dependencies' with values from 'paket.references' - https://github.com/fsprojects/Paket/issues/836
 
 #### 1.5.0 - 21.05.2015
 * Property tests for dependencies files parser - https://github.com/fsprojects/Paket/pull/807

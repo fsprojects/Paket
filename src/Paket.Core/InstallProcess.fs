@@ -16,7 +16,7 @@ open System.Diagnostics
 
 let private findPackagesWithContent (root,usedPackages:Map<PackageName,PackageInstallSettings>) = 
     usedPackages
-    |> Seq.filter (fun kv -> not kv.Value.Settings.OmitContent)
+    |> Seq.filter (fun kv -> defaultArg kv.Value.Settings.OmitContent false |> not)
     |> Seq.map (fun kv -> 
         let (PackageName name) = kv.Key
         DirectoryInfo(Path.Combine(root, Constants.PackagesFolderName, name)))
@@ -166,8 +166,15 @@ let InstallIntoProjects(sources,force, hard, withBindingRedirects, lockFile:Lock
                         Settings =
                             { u.Value.Settings with 
                                 FrameworkRestrictions = u.Value.Settings.FrameworkRestrictions @ lockFile.Options.Settings.FrameworkRestrictions @ package.Settings.FrameworkRestrictions // TODO: This should filter
-                                ImportTargets = u.Value.Settings.ImportTargets && lockFile.Options.Settings.ImportTargets && package.Settings.ImportTargets
-                                CopyLocal = 
+                                ImportTargets =
+                                    match package.Settings.ImportTargets with
+                                    | Some x -> Some x
+                                    | _ -> match lockFile.Options.Settings.ImportTargets with
+                                           | Some x -> Some x
+                                           | None -> match u.Value.Settings.ImportTargets with
+                                                     | Some x -> Some x
+                                                     | _ -> None
+                                CopyLocal =
                                     match package.Settings.CopyLocal with
                                     | Some x -> Some x
                                     | _ -> match lockFile.Options.Settings.CopyLocal with
@@ -176,7 +183,14 @@ let InstallIntoProjects(sources,force, hard, withBindingRedirects, lockFile:Lock
                                                      | Some x -> Some x
                                                      | _ -> None
 
-                                OmitContent = u.Value.Settings.OmitContent || lockFile.Options.Settings.OmitContent || package.Settings.OmitContent }})
+                                OmitContent =
+                                    match package.Settings.OmitContent with
+                                    | Some x -> Some x
+                                    | _ -> match lockFile.Options.Settings.OmitContent with
+                                           | Some x -> Some x
+                                           | None -> match u.Value.Settings.OmitContent with
+                                                     | Some x -> Some x
+                                                     | _ -> None }})
             |> Map.ofSeq
 
         let usedPackageSettings =

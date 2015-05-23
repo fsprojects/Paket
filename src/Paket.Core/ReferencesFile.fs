@@ -60,14 +60,17 @@ type ReferencesFile =
         let lines = File.ReadAllLines(fileName)
         { ReferencesFile.FromLines lines with FileName = fileName }
 
-    member this.AddNuGetReference(packageName : PackageName, copyLocal: bool, importTargets: bool, frameworkRestrictions, omitContent) =
+    member this.AddNuGetReference(packageName : PackageName, copyLocal: bool, importTargets: bool, frameworkRestrictions, omitContent : bool) =
         let (PackageName referenceName) = packageName
         let normalized = NormalizedPackageName packageName
         if this.NugetPackages |> Seq.exists (fun p -> NormalizedPackageName p.Name = normalized) then
             this
         else
             tracefn "Adding %s to %s" referenceName (this.FileName)
-            { this with NugetPackages = this.NugetPackages @ [{ Name = packageName; Settings = { CopyLocal = Some copyLocal; ImportTargets = importTargets; FrameworkRestrictions = frameworkRestrictions; OmitContent = omitContent }}] }
+            let copyLocal = if not copyLocal then Some copyLocal else None
+            let importTargets = if not importTargets then Some importTargets else None
+            let omitContent = if omitContent then Some omitContent else None
+            { this with NugetPackages = this.NugetPackages @ [{ Name = packageName; Settings = { CopyLocal = copyLocal; ImportTargets = importTargets; FrameworkRestrictions = frameworkRestrictions; OmitContent = omitContent }}] }
 
     member this.AddNuGetReference(packageName : PackageName) = this.AddNuGetReference(packageName, true, true, [], false)
 
