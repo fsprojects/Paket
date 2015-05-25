@@ -1,3 +1,6 @@
+#### 1.5.6 - 25.05.2015
+* Paket init - init dependencies file with default NuGet source
+
 #### 1.5.5 - 25.05.2015
 * Allow to init paket in given directory
 
