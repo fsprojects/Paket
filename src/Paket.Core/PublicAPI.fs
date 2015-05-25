@@ -46,13 +46,16 @@ type Dependencies(dependenciesFileName: string) =
         Dependencies(dependenciesFileName)
 
     /// Initialize paket.dependencies file in current directory
-    static member Init() =
-        let currentDirectory = DirectoryInfo(Environment.CurrentDirectory)
+    static member Init() = Dependencies.Init(Environment.CurrentDirectory)
+
+    /// Initialize paket.dependencies file in the given directory
+    static member Init(directory) =
+        let directory = DirectoryInfo(directory)
 
         Utils.RunInLockedAccessMode(
-            currentDirectory.FullName,
+            directory.FullName,
             fun () -> 
-                PaketEnv.init currentDirectory
+                PaketEnv.init directory
                 |> returnOrFail
         )
 

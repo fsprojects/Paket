@@ -1,3 +1,6 @@
+#### 1.5.5 - 25.05.2015
+* Allow to init paket in given directory
+
 #### 1.5.4 - 25.05.2015
 * Automatically query all package feeds in "Find packages"
  
