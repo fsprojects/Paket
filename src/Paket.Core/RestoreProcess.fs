@@ -32,23 +32,7 @@ let ExtractPackage(root, sources, force, package : ResolvedPackage) =
         | LocalNuget path ->         
             let path = Utils.normalizeLocalPath path
             let di = Utils.getDirectoryInfo path root
-            let nupkg = 
-                let v1 = FileInfo(Path.Combine(di.FullName, sprintf "%s.%s.nupkg" name (v.ToString())))
-                if v1.Exists then v1 else
-                let normalizedVersion = v.Normalize()
-                let v2 = FileInfo(Path.Combine(di.FullName, sprintf "%s.%s.nupkg" name normalizedVersion))
-                if v2.Exists then v2 else
-
-                let v3 =
-                    Directory.EnumerateFiles(di.FullName,"*.nupkg",SearchOption.AllDirectories)
-                    |> Seq.map (fun x -> FileInfo(x))
-                    |> Seq.filter (fun fi -> fi.Name.ToLower().Contains(name.ToLower()))
-                    |> Seq.filter (fun fi -> fi.Name.Contains(normalizedVersion) || fi.Name.Contains(v.ToString()))
-                    |> Seq.firstOrDefault
-
-                match v3 with
-                | None -> failwithf "The package %s %s can't be found in %s.%sPlease check the feed definition in your paket.dependencies file." name (v.ToString()) di.FullName Environment.NewLine
-                | Some x -> x
+            let nupkg = NuGetV2.findLocalPackage di.FullName name v
 
             let! folder = NuGetV2.CopyFromCache(root, nupkg.FullName, "", name, v, force) // TODO: Restore license
             return package, NuGetV2.GetLibFiles folder, NuGetV2.GetTargetsFiles folder

@@ -316,29 +316,31 @@ let fixDatesInArchive fileName =
         with
         | xn -> e.LastWriteTime <- DateTimeOffset.Now
 
+let findLocalPackage directory (name:string) (version:SemVerInfo) = 
+    let v1 = FileInfo(Path.Combine(directory, sprintf "%s.%s.nupkg" name (version.ToString())))
+    if v1.Exists then v1 else
+    let normalizedVersion = version.Normalize()
+    let v2 = FileInfo(Path.Combine(directory, sprintf "%s.%s.nupkg" name normalizedVersion))
+    if v2.Exists then v2 else
+
+    let v3 =
+        Directory.EnumerateFiles(directory,"*.nupkg",SearchOption.AllDirectories)
+        |> Seq.map (fun x -> FileInfo(x))
+        |> Seq.filter (fun fi -> fi.Name.ToLower().Contains(name.ToLower()))
+        |> Seq.filter (fun fi -> fi.Name.Contains(normalizedVersion) || fi.Name.Contains(version.ToString()))
+        |> Seq.firstOrDefault
+
+    match v3 with
+    | None -> failwithf "The package %s %s can't be found in %s.%sPlease check the feed definition in your paket.dependencies file." name (version.ToString()) directory Environment.NewLine
+    | Some x -> x
+
 /// Reads direct dependencies from a nupkg file
 let getDetailsFromLocalFile root localNugetPath (packageName:PackageName) (version:SemVerInfo) =
     async {        
         let localNugetPath = Utils.normalizeLocalPath localNugetPath
         let di = getDirectoryInfo localNugetPath root
         let package = packageName.ToString()
-        let nupkg = 
-            let v1 = FileInfo(Path.Combine(di.FullName, sprintf "%s.%s.nupkg" package (version.ToString())))
-            if v1.Exists then v1 else
-            let normalizedVersion = version.Normalize()
-            let v2 = FileInfo(Path.Combine(di.FullName, sprintf "%s.%s.nupkg" package normalizedVersion))
-            if v2.Exists then v2 else
-
-            let v3 =
-                Directory.EnumerateFiles(di.FullName,"*.nupkg",SearchOption.AllDirectories)
-                |> Seq.map (fun x -> FileInfo(x))
-                |> Seq.filter (fun fi -> fi.Name.ToLower().Contains(package.ToLower()))
-                |> Seq.filter (fun fi -> fi.Name.Contains(normalizedVersion) || fi.Name.Contains(version.ToString()))
-                |> Seq.firstOrDefault
-
-            match v3 with
-            | None -> failwithf "The package %s %s can't be found in %s.%sPlease check the feed definition in your paket.dependencies file." package (version.ToString()) di.FullName Environment.NewLine
-            | Some x -> x
+        let nupkg = findLocalPackage di.FullName package version
         
         fixDatesInArchive nupkg.FullName
         use zipToCreate = new FileStream(nupkg.FullName, FileMode.Open)
