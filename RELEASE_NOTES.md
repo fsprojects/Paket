@@ -1,3 +1,6 @@
+#### 1.5.4 - 25.05.2015
+* Automatically query all package feeds in "Find packages"
+ 
 #### 1.5.3 - 23.05.2015
 * BUGFIX: `paket install` fails if package version doesn't match .nupkg file - https://github.com/fsprojects/Paket/issues/834
 

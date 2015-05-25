@@ -10,6 +10,7 @@ open Paket.Logging
 open Paket.Commands
 
 open Nessos.UnionArgParser
+open PackageSources
 
 let private stopWatch = new Stopwatch()
 stopWatch.Start()
@@ -179,12 +180,22 @@ let pack (results : ArgParseResults<_>) =
 let findPackages (results : ArgParseResults<_>) = 
     let maxResults = defaultArg (results.TryGetResult <@ FindPackagesArgs.MaxResults @>) 10000
     let silent = results.Contains <@ FindPackagesArgs.Silent @>
-    let source = defaultArg (results.TryGetResult <@ FindPackagesArgs.Source @>) Constants.DefaultNugetStream
+    let sources  =
+        match results.TryGetResult <@ FindPackagesArgs.Source @> with
+        | Some source -> [PackageSource.NugetSource source]
+        | _ -> PackageSources.DefaultNugetSource :: Dependencies.Locate().GetSources()
+
     let searchAndPrint searchText =
         let result =
-            NuGetV3.FindPackages(None,source,searchText, maxResults)
+            sources
+            |> List.choose (fun x -> match x with | PackageSource.Nuget s -> Some s.Url | _ -> None)
+            |> Seq.distinct
+            |> Seq.map (fun url -> NuGetV3.FindPackages(None, url, searchText, maxResults))
+            |> Async.Parallel
             |> Async.RunSynchronously
-        
+            |> Seq.concat
+            |> Seq.distinct
+
         for p in result do
             tracefn "%s" p
 
