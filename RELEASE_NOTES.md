@@ -1,16 +1,8 @@
-#### 1.5.6 - 25.05.2015
+#### 1.6.0 - 26.05.2015
 * Paket init - init dependencies file with default NuGet source
-
-#### 1.5.5 - 25.05.2015
 * Allow to init paket in given directory
-
-#### 1.5.4 - 25.05.2015
 * Automatically query all package feeds in "Find packages"
- 
-#### 1.5.3 - 23.05.2015
 * BUGFIX: `paket install` fails if package version doesn't match .nupkg file - https://github.com/fsprojects/Paket/issues/834
-
-#### 1.5.2 - 23.05.2015
 * Allow to override install settings in 'paket.dependencies' with values from 'paket.references' - https://github.com/fsprojects/Paket/issues/836
 
 #### 1.5.0 - 21.05.2015

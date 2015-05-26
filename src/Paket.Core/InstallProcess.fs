@@ -161,36 +161,72 @@ let InstallIntoProjects(sources,force, hard, withBindingRedirects, lockFile:Lock
             lockFile.GetPackageHull(referenceFile)
             |> Seq.map (fun u -> 
                 let package = packages.[NormalizedPackageName u.Key]
+                let referenceFileSettings = 
+                    referenceFile.NugetPackages
+                    |> List.tryFind (fun x -> NormalizedPackageName x.Name = NormalizedPackageName u.Key)
+                let copyLocal =                
+                    match referenceFileSettings with
+                    | Some s -> s.Settings.CopyLocal
+                    | None -> None
+                let omitContent =                
+                    match referenceFileSettings with
+                    | Some s -> s.Settings.OmitContent
+                    | None -> None
+                let importTargets =                
+                    match referenceFileSettings with
+                    | Some s -> s.Settings.ImportTargets
+                    | None -> None
+                let restriktions =                
+                    match referenceFileSettings with
+                    | Some s -> s.Settings.FrameworkRestrictions
+                    | None -> []
+
+
                 u.Key,
                     { u.Value with
                         Settings =
                             { u.Value.Settings with 
-                                FrameworkRestrictions = u.Value.Settings.FrameworkRestrictions @ lockFile.Options.Settings.FrameworkRestrictions @ package.Settings.FrameworkRestrictions // TODO: This should filter
+                                FrameworkRestrictions = 
+                                    // TODO: This should filter
+                                    restriktions @
+                                      u.Value.Settings.FrameworkRestrictions @ 
+                                      lockFile.Options.Settings.FrameworkRestrictions @ 
+                                      package.Settings.FrameworkRestrictions
+
                                 ImportTargets =
-                                    match package.Settings.ImportTargets with
+                                    match importTargets with
                                     | Some x -> Some x
-                                    | _ -> match lockFile.Options.Settings.ImportTargets with
-                                           | Some x -> Some x
-                                           | None -> match u.Value.Settings.ImportTargets with
-                                                     | Some x -> Some x
-                                                     | _ -> None
+                                    | None ->
+                                        match package.Settings.ImportTargets with
+                                        | Some x -> Some x
+                                        | _ -> match lockFile.Options.Settings.ImportTargets with
+                                               | Some x -> Some x
+                                               | None -> match u.Value.Settings.ImportTargets with
+                                                         | Some x -> Some x
+                                                         | _ -> None
                                 CopyLocal =
-                                    match package.Settings.CopyLocal with
+                                    match copyLocal with
                                     | Some x -> Some x
-                                    | _ -> match lockFile.Options.Settings.CopyLocal with
-                                           | Some x -> Some x
-                                           | None -> match u.Value.Settings.CopyLocal with
-                                                     | Some x -> Some x
-                                                     | _ -> None
+                                    | None ->
+                                        match package.Settings.CopyLocal with
+                                        | Some x -> Some x
+                                        | _ -> match lockFile.Options.Settings.CopyLocal with
+                                               | Some x -> Some x
+                                               | None -> match u.Value.Settings.CopyLocal with
+                                                         | Some x -> Some x
+                                                         | _ -> None
 
                                 OmitContent =
-                                    match package.Settings.OmitContent with
+                                    match omitContent with
                                     | Some x -> Some x
-                                    | _ -> match lockFile.Options.Settings.OmitContent with
-                                           | Some x -> Some x
-                                           | None -> match u.Value.Settings.OmitContent with
-                                                     | Some x -> Some x
-                                                     | _ -> None }})
+                                    | None ->
+                                        match package.Settings.OmitContent with
+                                        | Some x -> Some x
+                                        | _ -> match lockFile.Options.Settings.OmitContent with
+                                               | Some x -> Some x
+                                               | None -> match u.Value.Settings.OmitContent with
+                                                         | Some x -> Some x
+                                                         | _ -> None }})
             |> Map.ofSeq
 
         let usedPackageSettings =
