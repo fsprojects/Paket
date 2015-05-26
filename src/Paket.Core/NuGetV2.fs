@@ -307,14 +307,17 @@ let getDetailsFromNuget force auth nugetURL package (version:SemVerInfo) =
     } 
     
 let fixDatesInArchive fileName =
-    use zipToOpen = new FileStream(fileName, FileMode.Open)
-    use archive = new ZipArchive(zipToOpen, ZipArchiveMode.Update)
-    for e in archive.Entries do
-        try
-            let d = e.LastWriteTime
-            ()
-        with
-        | xn -> e.LastWriteTime <- DateTimeOffset.Now
+    try
+        use zipToOpen = new FileStream(fileName, FileMode.Open)
+        use archive = new ZipArchive(zipToOpen, ZipArchiveMode.Update)
+        for e in archive.Entries do
+            try
+                let d = e.LastWriteTime
+                ()
+            with
+            | _ -> e.LastWriteTime <- DateTimeOffset.Now
+    with
+    | exn -> traceWarnfn "Could not fix timestamps in %s. Error: %s" fileName exn.Message
 
 let findLocalPackage directory (name:string) (version:SemVerInfo) = 
     let v1 = FileInfo(Path.Combine(directory, sprintf "%s.%s.nupkg" name (version.ToString())))

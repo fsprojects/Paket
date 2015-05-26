@@ -2,8 +2,9 @@
 * Paket init - init dependencies file with default NuGet source
 * Allow to init paket in given directory
 * Automatically query all package feeds in "Find packages"
-* BUGFIX: `paket install` fails if package version doesn't match .nupkg file - https://github.com/fsprojects/Paket/issues/834
 * Allow to override install settings in 'paket.dependencies' with values from 'paket.references' - https://github.com/fsprojects/Paket/issues/836
+* BUGFIX: `paket install` fails if package version doesn't match .nupkg file - https://github.com/fsprojects/Paket/issues/834
+* BUGFIX: Try to work around issue with mono zip functions - https://github.com/fsharp/FAKE/issues/810
 
 #### 1.5.0 - 21.05.2015
 * Property tests for dependencies files parser - https://github.com/fsprojects/Paket/pull/807
