@@ -147,7 +147,7 @@ let findAllReferencesFiles root =
     |> collect
 
 /// Installs all packages from the lock file.
-let InstallIntoProjectsNew(sources, options : CommonOptions, lockFile : LockFile, projects) =
+let InstallIntoProjects(sources, options : CommonOptions, lockFile : LockFile, projects) =
     let root = Path.GetDirectoryName lockFile.FileName
     let extractedPackages = createModel(root, sources, options.Force, lockFile)
 
@@ -279,8 +279,4 @@ let InstallIntoProjectsNew(sources, options : CommonOptions, lockFile : LockFile
 let Install(sources, options : CommonOptions, lockFile : LockFile) =
     let root = FileInfo(lockFile.FileName).Directory.FullName
     let projects = findAllReferencesFiles root |> returnOrFail
-    InstallIntoProjectsNew(sources, options, lockFile, projects)
-
-/// Installs all packages from the lock file (compatibility version).
-let InstallIntoProjects(sources, force, hard, withBindingRedirects, lockFile : LockFile, projects) =
-    InstallIntoProjectsNew(sources, CommonOptions.createLegacyOptions(force, hard, withBindingRedirects), lockFile, projects)
+    InstallIntoProjects(sources, options, lockFile, projects)

@@ -74,7 +74,7 @@ let SmartInstall(dependenciesFileName, exclude, options : CommonOptions) =
 
     let lockFile = SelectiveUpdate(dependenciesFile,exclude,options.Force)
 
-    InstallProcess.InstallIntoProjectsNew(
+    InstallProcess.InstallIntoProjects(
         dependenciesFile.GetAllPackageSources(),
         options,
         lockFile,
