@@ -407,4 +407,4 @@ let replaceNugetWithPaket initAutoRestore installAfter result =
     if installAfter then
         UpdateProcess.Update(
             result.PaketEnv.DependenciesFile.FileName,
-            { CommonOptions.Default with Force = true; Hard = true; Redirects = true })
+            { InstallerOptions.Default with Force = true; Hard = true; Redirects = true })

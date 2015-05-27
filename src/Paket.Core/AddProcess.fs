@@ -36,7 +36,7 @@ let private add installToProjects addToProjectsF dependenciesFileName package ve
             InstallProcess.Install(sources, options, lockFile)
 
 // Add a package with the option to add it to a specified project.
-let AddToProject(dependenciesFileName, package, version, options : CommonOptions, projectName, installAfter) =
+let AddToProject(dependenciesFileName, package, version, options : InstallerOptions, projectName, installAfter) =
 
     let addToSpecifiedProject (projects : ProjectFile seq) package =
         match ProjectFile.TryFindProject(projects,projectName) with
@@ -50,7 +50,7 @@ let AddToProject(dependenciesFileName, package, version, options : CommonOptions
     add true addToSpecifiedProject dependenciesFileName package version options installAfter
 
 // Add a package with the option to interactively add it to multiple projects.
-let Add(dependenciesFileName, package, version, options : CommonOptions, interactive, installAfter) =
+let Add(dependenciesFileName, package, version, options : InstallerOptions, interactive, installAfter) =
 
     let addToProjects (projects : ProjectFile seq) package =
         if interactive then

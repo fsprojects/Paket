@@ -5,7 +5,7 @@ namespace Paket
 /// Hard      - Replace package references within project files even if they are not yet adhering
 ///             to the Paket's conventions (and hence considered manually managed)
 /// Redirects - Create binding redirects for the NuGet packages
-type CommonOptions =
+type InstallerOptions =
     { Force : bool
       Hard : bool
       Redirects : bool }
@@ -16,7 +16,7 @@ type CommonOptions =
           Redirects = false }
 
     static member createLegacyOptions(force, hard, redirects) =
-        { CommonOptions.Default with
+        { InstallerOptions.Default with
             Force = force
             Hard = hard
             Redirects = redirects }

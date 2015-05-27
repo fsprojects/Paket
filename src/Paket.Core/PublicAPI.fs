@@ -111,7 +111,7 @@ type Dependencies(dependenciesFileName: string) =
         Utils.RunInLockedAccessMode(
             this.RootPath,
             fun () -> AddProcess.Add(dependenciesFileName, PackageName(package.Trim()), version,
-                                     CommonOptions.createLegacyOptions(force, hard, false),
+                                     InstallerOptions.createLegacyOptions(force, hard, false),
                                      interactive, installAfter))
 
     /// Adds the given package with the given version to the dependencies file.
@@ -119,7 +119,7 @@ type Dependencies(dependenciesFileName: string) =
         Utils.RunInLockedAccessMode(
             this.RootPath,
             fun () -> AddProcess.AddToProject(dependenciesFileName, PackageName package, version,
-                                              CommonOptions.createLegacyOptions(force, hard, false),
+                                              InstallerOptions.createLegacyOptions(force, hard, false),
                                               projectName, installAfter))
       
     /// Adds credentials for a Nuget feed
@@ -132,7 +132,7 @@ type Dependencies(dependenciesFileName: string) =
     member this.Install(force: bool, hard: bool, withBindingRedirects:bool): unit =
         Utils.RunInLockedAccessMode(
             this.RootPath,
-            fun () -> UpdateProcess.SmartInstall(dependenciesFileName, None, CommonOptions.createLegacyOptions(force,hard,withBindingRedirects)))
+            fun () -> UpdateProcess.SmartInstall(dependenciesFileName, None, InstallerOptions.createLegacyOptions(force,hard,withBindingRedirects)))
 
     /// Creates a paket.dependencies file with the given text in the current directory and installs it.
     static member Install(dependencies, ?path: string, ?force, ?hard, ?withBindingRedirects) = 
@@ -152,7 +152,7 @@ type Dependencies(dependenciesFileName: string) =
     member this.Update(force: bool,hard: bool,withBindingRedirects:bool): unit = 
         Utils.RunInLockedAccessMode(
             this.RootPath,
-            fun () -> UpdateProcess.Update(dependenciesFileName, CommonOptions.createLegacyOptions(force, hard, withBindingRedirects)))
+            fun () -> UpdateProcess.Update(dependenciesFileName, InstallerOptions.createLegacyOptions(force, hard, withBindingRedirects)))
 
     /// Updates all dependencies.
     member this.Update(force: bool, hard: bool): unit = this.Update(force, hard, false)
@@ -162,7 +162,7 @@ type Dependencies(dependenciesFileName: string) =
         Utils.RunInLockedAccessMode(
             this.RootPath,
             fun () -> UpdateProcess.UpdatePackage(dependenciesFileName, PackageName package, version,
-                                                  CommonOptions.createLegacyOptions(force, hard, false)))
+                                                  InstallerOptions.createLegacyOptions(force, hard, false)))
 
     /// Restores all dependencies.
     member this.Restore(): unit = this.Restore(false,[])
