@@ -1,6 +1,9 @@
 ﻿namespace Paket.PowerShell
 
 open System.Management.Automation
+open Paket
+open Paket.Commands
+open Nessos.UnionArgParser
 
 [<Cmdlet("Paket", "Add")>]
 type Add() =   
@@ -65,6 +68,15 @@ type RemoveCmdlet() =
 [<Cmdlet("Paket", "Restore")>]
 type RestoreCmdlet() =   
     inherit Cmdlet()
+
+    override x.ProcessRecord() =
+        
+//        let parser = UnionArgParser.Create<RestoreArgs>()
+
+//        https://github.com/nessos/UnionArgParser/issues/35
+//        let args = [ RestoreArgs.Force ; RestoreArgs.References_Files "abc.txt" ]
+//        Program.restore (ArgParseResults<RestoreArgs>(args))
+        ()
 
 [<Cmdlet("Paket", "Simplify")>]
 type SimplifyCmdlet() =   
