@@ -92,12 +92,7 @@ let UpdatePackage(dependenciesFileName, packageName : PackageName, newVersion, o
     SmartInstall(dependenciesFileName, Some(NormalizedPackageName packageName), options)
 
 /// Update command
-let UpdateNew(dependenciesFileName, options : CommonOptions) =
+let Update(dependenciesFileName, options : CommonOptions) =
     let lockFileName = DependenciesFile.FindLockfile dependenciesFileName
     if lockFileName.Exists then lockFileName.Delete()
     SmartInstall(dependenciesFileName, None, options)
-
-/// Update command (compatibility version)
-let Update(dependenciesFileName, force, hard, withBindingRedirects) =
-    let options = CommonOptions.createLegacyOptions(force, hard, withBindingRedirects)
-    UpdateNew(dependenciesFileName, options)

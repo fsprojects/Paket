@@ -148,7 +148,7 @@ type Dependencies(dependenciesFileName: string) =
     member this.Update(force: bool,hard: bool,withBindingRedirects:bool): unit = 
         Utils.RunInLockedAccessMode(
             this.RootPath,
-            fun () -> UpdateProcess.Update(dependenciesFileName,force,hard,withBindingRedirects))
+            fun () -> UpdateProcess.Update(dependenciesFileName, CommonOptions.createLegacyOptions(force, hard, withBindingRedirects)))
 
     /// Updates all dependencies.
     member this.Update(force: bool, hard: bool): unit = this.Update(force, hard, false)
