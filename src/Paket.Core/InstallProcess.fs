@@ -147,7 +147,7 @@ let findAllReferencesFiles root =
     |> collect
 
 /// Installs all packages from the lock file.
-let InstallIntoProjects(sources,force, hard, withBindingRedirects, lockFile:LockFile, projects) =
+let InstallIntoProjectsNew(sources, options : CommonOptions, lockFile : LockFile, projects) =
     let root = Path.GetDirectoryName lockFile.FileName
     let extractedPackages = createModel(root,sources,force, lockFile)
 
@@ -241,8 +241,8 @@ let InstallIntoProjects(sources,force, hard, withBindingRedirects, lockFile:Lock
             |> Seq.map (fun u -> NormalizedPackageName u.Key,u.Value)
             |> Map.ofSeq
 
-        project.UpdateReferences(model,usedPackageSettings,hard)
-        
+        project.UpdateReferences(model, usedPackageSettings, options.Hard)
+
         removeCopiedFiles project
 
         let getSingleRemoteFilePath name = 
@@ -268,15 +268,23 @@ let InstallIntoProjects(sources,force, hard, withBindingRedirects, lockFile:Lock
                                   Include = createRelativePath project.FileName file.FullName
                                   Link = None })
 
-        project.UpdateFileItems(gitRemoteItems @ nuGetFileItems, hard)
+        project.UpdateFileItems(gitRemoteItems @ nuGetFileItems, options.Hard)
 
         project.Save()
 
-    if withBindingRedirects || lockFile.Options.Redirects then
+    if options.Redirects || lockFile.Options.Redirects then
         applyBindingRedirects root extractedPackages
 
 /// Installs all packages from the lock file.
-let Install(sources,force, hard, withBindingRedirects, lockFile:LockFile) = 
-    let root = FileInfo(lockFile.FileName).Directory.FullName 
+let InstallNew(sources, options : CommonOptions, lockFile:LockFile) =
+    let root = FileInfo(lockFile.FileName).Directory.FullName
     let projects = findAllReferencesFiles root |> returnOrFail
-    InstallIntoProjects(sources,force,hard,withBindingRedirects,lockFile,projects)
+    InstallIntoProjectsNew(sources, options, lockFile, projects)
+
+/// Installs all packages from the lock file (compatibility version).
+let InstallIntoProjects(sources, force, hard, withBindingRedirects, lockFile : LockFile, projects) =
+    InstallIntoProjectsNew(sources, CommonOptions.createLegacyOptions(force, hard, withBindingRedirects), lockFile, projects)
+
+/// Installs all packages from the lock file (compatibility version).
+let Install(sources, force, hard, withBindingRedirects, lockFile:LockFile) =
+    InstallNew(sources, CommonOptions.createLegacyOptions(force, hard, withBindingRedirects), lockFile)
