@@ -8,7 +8,7 @@ open System.Text.RegularExpressions
 type PreRelease = 
     { Origin : string
       Name : string
-      Number : int option }
+      Number : bigint option }
     
     static member TryParse str = 
         let m = Regex("^(?<name>[a-zA-Z]+)(?<number>\d*)$").Match(str)
@@ -20,7 +20,7 @@ type PreRelease =
         | true, name, number -> 
             Some { Origin = str
                    Name = name
-                   Number = Some(int number) }
+                   Number = Some(bigint.Parse number) }
         | _ -> None
     
     override x.Equals(yobj) = 
@@ -124,15 +124,20 @@ module SemVer =
     ///     parse "1.2.3-alpha002" > parse "1.2.3-alpha1"   // true
     ///     parse "1.5.0-beta.2"   > parse "1.5.0-rc.1"     // false
     let Parse(version : string) = 
+        if version.Contains("!") then 
+            failwithf "Invalid character found in %s" version
+        if version.Contains("..") then 
+            failwithf "Empty version part found in %s" version
+        
         let dashSplitted = version.Split '-'
         let splitted = dashSplitted.[0].Split '.'
         let l = splitted.Length
             
         let prereleaseBuild = if dashSplitted.Length > 1 && dashSplitted.[1].Split('.').Length > 1 then dashSplitted.[1].Split('.').[1] else "0"
 
-        { Major = if l > 0 then Int32.Parse(splitted.[0]) else 0
-          Minor = if l > 1 then Int32.Parse(splitted.[1]) else 0
-          Patch = if l > 2 then Int32.Parse(splitted.[2]) else 0
+        { Major = if l > 0 then Int32.Parse splitted.[0] else 0
+          Minor = if l > 1 then Int32.Parse splitted.[1] else 0
+          Patch = if l > 2 then Int32.Parse splitted.[2] else 0
           PreRelease = PreRelease.TryParse(if dashSplitted.Length > 1 then dashSplitted.[1].Split('.').[0] else String.Empty)
           Build = if l > 3 then splitted.[3] else "0"
           PreReleaseBuild = prereleaseBuild

@@ -40,5 +40,5 @@ let PinUnchangedDependencies (dependenciesFile:DependenciesFile) (oldLockFile:Lo
                     dependenciesFile.AddFixedPackage(
                         resolvedPackage.Name,
                         "= " + resolvedPackage.Version.ToString(),
-                        resolvedPackage.FrameworkRestrictions))
+                        resolvedPackage.Settings))
             dependenciesFile

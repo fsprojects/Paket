@@ -11,9 +11,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "project", "project", "{BF60
 		build.sh = build.sh
 		docs\tools\generate.fsx = docs\tools\generate.fsx
 		LICENSE.txt = LICENSE.txt
-		nuget\Paket.Core.nuspec = nuget\Paket.Core.nuspec
 		paket.dependencies = paket.dependencies
-		nuget\Paket.nuspec = nuget\Paket.nuspec
+		nuget\paket.template = nuget\paket.template
 		README.md = README.md
 		RELEASE_NOTES.md = RELEASE_NOTES.md
 	EndProjectSection
@@ -33,10 +32,10 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "content", "content", "{8E6D
 		docs\content\index.md = docs\content\index.md
 		docs\content\lock-file.md = docs\content\lock-file.md
 		docs\content\nuget-dependencies.md = docs\content\nuget-dependencies.md
-		docs\content\paket-config-file.md = docs\content\paket-config-file.md
 		docs\content\paket.dependencies = docs\content\paket.dependencies
 		docs\content\reference-from-repl.fsx = docs\content\reference-from-repl.fsx
 		docs\content\references-files.md = docs\content\references-files.md
+		docs\content\template-files.md = docs\content\template-files.md
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{ED8079DD-2B06-4030-9F0F-DC548F98E1C4}"
@@ -50,6 +49,18 @@ EndProject
 Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Paket.Core", "src\Paket.Core\Paket.Core.fsproj", "{7BAB0AE2-089F-4761-B138-A717AA2F86C5}"
 EndProject
 Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Paket.PowerShell", "src\Paket.PowerShell\Paket.PowerShell.fsproj", "{1F1581C1-6416-470E-BC48-92C6D4AAC785}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "commands", "commands", "{4425A246-BD18-4622-86B5-0154F19165E4}"
+	ProjectSection(SolutionItems) = preProject
+		docs\content\commands\add.md = docs\content\commands\add.md
+		docs\content\commands\auto-restore.md = docs\content\commands\auto-restore.md
+		docs\content\commands\config.md = docs\content\commands\config.md
+		docs\content\commands\convert-from-nuget.md = docs\content\commands\convert-from-nuget.md
+		docs\content\commands\find-refs.md = docs\content\commands\find-refs.md
+		docs\content\commands\outdated.md = docs\content\commands\outdated.md
+		docs\content\commands\remove.md = docs\content\commands\remove.md
+		docs\content\commands\simplify.md = docs\content\commands\simplify.md
+		docs\content\commands\update.md = docs\content\commands\update.md
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -85,6 +96,7 @@ Global
 		{83F16175-43B1-4C90-A1EE-8E351C33435D} = {A6A6AF7D-D6E3-442D-9B1E-58CC91879BE1}
 		{8E6D5255-776D-4B61-85F9-73C37AA1FB9A} = {A6A6AF7D-D6E3-442D-9B1E-58CC91879BE1}
 		{E789C72A-5CFD-436B-8EF1-61AA2852A89F} = {ED8079DD-2B06-4030-9F0F-DC548F98E1C4}
+		{4425A246-BD18-4622-86B5-0154F19165E4} = {8E6D5255-776D-4B61-85F9-73C37AA1FB9A}
 	EndGlobalSection
 	GlobalSection(Performance) = preSolution
 		HasPerformanceSessions = true

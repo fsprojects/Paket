@@ -2,7 +2,7 @@
 module Paket.InstallProcess
 
 open Paket
-open Paket.Rop
+open Chessie.ErrorHandling
 open Paket.Domain
 open Paket.Logging
 open Paket.BindingRedirects
@@ -14,9 +14,12 @@ open FSharp.Polyfill
 open System.Reflection
 open System.Diagnostics
 
-let private findPackagesWithContent (root,usedPackages) = 
+let private findPackagesWithContent (root,usedPackages:Map<PackageName,PackageInstallSettings>) = 
     usedPackages
-    |> Seq.map (fun (PackageName x) -> DirectoryInfo(Path.Combine(root, Constants.PackagesFolderName, x)))
+    |> Seq.filter (fun kv -> not kv.Value.Settings.OmitContent)
+    |> Seq.map (fun kv -> 
+        let (PackageName name) = kv.Key
+        DirectoryInfo(Path.Combine(root, Constants.PackagesFolderName, name)))
     |> Seq.choose (fun packageDir -> 
             packageDir.GetDirectories("Content") 
             |> Array.append (packageDir.GetDirectories("content"))
@@ -80,7 +83,7 @@ let CreateInstallModel(root, sources, force, package) =
         let nuspec = Nuspec.Load nuspec.FullName
         let files = files |> Array.map (fun fi -> fi.FullName)
         let targetsFiles = targetsFiles |> Array.map (fun fi -> fi.FullName)
-        return package, InstallModel.CreateFromLibs(package.Name, package.Version, package.FrameworkRestrictions, files, targetsFiles, nuspec)
+        return package, InstallModel.CreateFromLibs(package.Name, package.Version, package.Settings.FrameworkRestrictions, files, targetsFiles, nuspec)
     }
 
 /// Restores the given packages from the lock file.
@@ -132,12 +135,12 @@ let findAllReferencesFiles root =
                                 |> Option.map (fun r -> p, r))
     |> Array.map (fun (project,file) -> 
         try 
-            succeed <| (project, ReferencesFile.FromFile(file))
+            ok <| (project, ReferencesFile.FromFile(file))
         with _ -> 
             fail <| ReferencesFileParseError (FileInfo(file)))
     |> collect
 
-/// Installs the given all packages from the lock file.
+/// Installs all packages from the lock file.
 let InstallIntoProjects(sources,force, hard, withBindingRedirects, lockFile:LockFile, projects) =
     let root = Path.GetDirectoryName lockFile.FileName
     let extractedPackages = createModel(root,sources,force, lockFile)
@@ -147,14 +150,31 @@ let InstallIntoProjects(sources,force, hard, withBindingRedirects, lockFile:Lock
         |> Array.map (fun (p,m) -> NormalizedPackageName p.Name,m)
         |> Map.ofArray
 
-    for project, referenceFile in projects do    
-        verbosefn "Installing to %s" project.FileName
+    let packages =
+        extractedPackages
+        |> Array.map (fun (p,m) -> NormalizedPackageName p.Name,p)
+        |> Map.ofArray
 
-        let usedPackages = lockFile.GetPackageHull(referenceFile)
+    for project : ProjectFile, referenceFile in projects do    
+        verbosefn "Installing to %s" project.FileName
+        
+        let usedPackages =
+            lockFile.GetPackageHull(referenceFile)
+            |> Seq.map (fun u -> 
+                let package = packages.[NormalizedPackageName u.Key]
+                u.Key,
+                    { u.Value with
+                        Settings =
+                            { u.Value.Settings with 
+                                FrameworkRestrictions = u.Value.Settings.FrameworkRestrictions @ lockFile.Options.Settings.FrameworkRestrictions @ package.Settings.FrameworkRestrictions // TODO: This should filter
+                                ImportTargets = u.Value.Settings.ImportTargets && lockFile.Options.Settings.ImportTargets && package.Settings.ImportTargets
+                                CopyLocal = u.Value.Settings.CopyLocal && lockFile.Options.Settings.CopyLocal && package.Settings.CopyLocal 
+                                OmitContent = u.Value.Settings.OmitContent || lockFile.Options.Settings.OmitContent || package.Settings.OmitContent }})
+            |> Map.ofSeq
 
         let usedPackageSettings =
             usedPackages
-            |> Seq.map (fun u -> NormalizedPackageName u.Key,{ Name = u.Key; CopyLocal = u.Value })
+            |> Seq.map (fun u -> NormalizedPackageName u.Key,u.Value)
             |> Map.ofSeq
 
         project.UpdateReferences(model,usedPackageSettings,hard)
@@ -163,10 +183,10 @@ let InstallIntoProjects(sources,force, hard, withBindingRedirects, lockFile:Lock
 
         let getSingleRemoteFilePath name = 
             traceVerbose <| sprintf "Filename %s " name
-            lockFile.SourceFiles |> List.iter (fun i -> traceVerbose <| sprintf " %s %s " i.Name i.FilePath)
+            lockFile.SourceFiles |> List.iter (fun i -> traceVerbose <| sprintf " %s %s " i.Name (i.FilePath root))
             let sourceFile = lockFile.SourceFiles |> List.tryFind (fun f -> Path.GetFileName(f.Name) = name)
             match sourceFile with
-            | Some file -> file.FilePath
+            | Some file -> file.FilePath(root)
             | None -> failwithf "%s references file %s, but it was not found in the paket.lock file." referenceFile.FileName name
 
         let gitRemoteItems =
@@ -178,8 +198,7 @@ let InstallIntoProjects(sources,force, hard, withBindingRedirects, lockFile:Lock
                                            else Path.Combine(file.Link, Path.GetFileName(file.Name))) })
         
         let nuGetFileItems =
-            if lockFile.Options.OmitContent then [] else
-            copyContentFiles(project, findPackagesWithContent(root,usedPackages.Keys))
+            copyContentFiles(project, findPackagesWithContent(root,usedPackages))
             |> List.map (fun file -> 
                                 { BuildAction = project.DetermineBuildAction file.Name
                                   Include = createRelativePath project.FileName file.FullName
@@ -192,7 +211,7 @@ let InstallIntoProjects(sources,force, hard, withBindingRedirects, lockFile:Lock
     if withBindingRedirects || lockFile.Options.Redirects then
         applyBindingRedirects root extractedPackages
 
-/// Installs the given all packages from the lock file.
+/// Installs all packages from the lock file.
 let Install(sources,force, hard, withBindingRedirects, lockFile:LockFile) = 
     let root = FileInfo(lockFile.FileName).Directory.FullName 
     let projects = findAllReferencesFiles root |> returnOrFail

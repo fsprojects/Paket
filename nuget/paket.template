@@ -1,0 +1,21 @@
+type file
+id Paket
+description
+    A package dependency manager for .NET with support for NuGet packages and GitHub repositories.
+version
+    0.30.0-alpha014
+authors
+    Paket team
+releasenotes
+    New command: `paket pack` - http://fsprojects.github.io/Paket/paket-pack.html
+New command: `paket push` - http://fsprojects.github.io/Paket/paket-push.html
+BUGFIX: fix no_auto_restore option parsing  - https://github.com/fsprojects/Paket/issues/632
+summary
+    A package dependency manager for .NET with support for NuGet packages and GitHub repositories.
+licenseurl http://fsprojects.github.io/Paket/license.html
+projecturl http://fsprojects.github.com/Paket
+iconurl https://raw.githubusercontent.com/fsprojects/Paket/master/docs/files/img/logo.png
+tags
+    nuget, bundler, F#
+files
+    ../bin/merged/paket.exe ==> tools

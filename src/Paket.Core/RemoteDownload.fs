@@ -48,7 +48,7 @@ let downloadDependenciesFile(rootPath,parserF,remoteFile:ModuleResolver.Resolved
 
     match result with
     | Some text when parserF text ->        
-        let destination = Path.Combine(rootPath, remoteFile.ComputeFilePath(dependenciesFileName))
+        let destination = remoteFile.ComputeFilePath(rootPath,dependenciesFileName)
 
         Directory.CreateDirectory(destination |> Path.GetDirectoryName) |> ignore
         File.WriteAllText(destination, text)
@@ -130,7 +130,7 @@ let downloadRemoteFiles(remoteFile:ResolvedSourceFile,destination) = async {
 let DownloadSourceFiles(rootPath, sourceFiles:ModuleResolver.ResolvedSourceFile list) =
     sourceFiles
     |> Seq.map (fun source ->
-        let destination = Path.Combine(rootPath, source.FilePath)
+        let destination = source.FilePath(rootPath)
         let destinationDir = FileInfo(destination).Directory.FullName
 
         (destinationDir, source.Commit), (destination, source))
@@ -165,7 +165,10 @@ let DownloadSourceFiles(rootPath, sourceFiles:ModuleResolver.ResolvedSourceFile 
                     })
                 |> Async.Parallel
 
-            if not <| (versionFile.Exists && File.ReadAllText(versionFile.FullName).Contains(version))
-                then File.AppendAllLines(versionFile.FullName, [version])
+            if File.Exists(versionFile.FullName) then
+                if not <| File.ReadAllText(versionFile.FullName).Contains(version) then
+                    File.AppendAllLines(versionFile.FullName, [version])
+            else
+                File.AppendAllLines(versionFile.FullName, [version])
         })
     |> Async.Parallel

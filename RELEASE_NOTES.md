@@ -1,36 +1,78 @@
-#### 0.27.16 - 13.02.2015
-* COSMETICS: Paket should not reformat app/web.config files while changing assembly redirects - https://github.com/fsprojects/Paket/issues/597
+#### 0.35.0 - 12.03.2015
+* `paket push` status information - https://github.com/fsprojects/Paket/pull/695
 
-#### 0.27.15 - 13.02.2015
-* BUGFIX: Parsing of conditional dependencies should detect portable case - https://github.com/fsprojects/Paket/issues/594
+#### 0.34.0 - 12.03.2015
+* `paket pack` pretty-prints it's nuspec - https://github.com/fsprojects/Paket/issues/691
+* Paket packs .MDBs docs into the nupkg - https://github.com/fsprojects/Paket/issues/693
+* paket pack / paket.template support wildcard patterns - https://github.com/fsprojects/Paket/issues/690
+* Allow empty lines in `paket.template` and report file name if parser fails - https://github.com/fsprojects/Paket/issues/692
+* BUGFIX: paket.template - file type respects dir without slash at the end - https://github.com/fsprojects/Paket/issues/698
+* BUGFIX: paket-files folder is alwaays relative to `paket.dependencies` - https://github.com/fsprojects/Paket/issues/564
+* BUGFIX: `paket install` respects manual paket nodes - https://github.com/fsprojects/Paket/issues/679
 
-#### 0.27.14 - 13.02.2015
+#### 0.33.0 - 10.03.2015
+* Paket packs XML docs into the nupkg - https://github.com/fsprojects/Paket/issues/689
+* BUGFIX: Install settings from `paket.dependencies` should override package settings - https://github.com/fsprojects/Paket/issues/688
+
+#### 0.32.0 - 09.03.2015
+* PERFORMANCE: If resolver runs into conflict then use Warnsdorff's rule - https://github.com/fsprojects/Paket/pull/684
+* BUGFIX: Fixed Linux install scripts - https://github.com/fsprojects/Paket/pull/681
+* Support for WinExe output type - https://github.com/fsprojects/Paket/pull/675
+* BUGFIX: Fix Nuget compat issue with leading zeros - https://github.com/fsprojects/Paket/pull/672
+* BUGFIX: Detect inter project dependencies without matching package id - https://github.com/fsprojects/Paket/pull/671
+* BUGFIX: Parse prerelease numbers into bigint since ints might overflow - https://github.com/fsprojects/Paket/pull/667
+* BUGFIX: Optional fields in template files are read correctly - https://github.com/fsprojects/Paket/pull/666
+* BUGFIX: Better url and endpoint handling in `paket push` - https://github.com/fsprojects/Paket/pull/663
+* COSMETICS: Better tracing when resolver runs into conflict - https://github.com/fsprojects/Paket/pull/684
+* COSMETICS: Better error message when a package is listed twice in `paket.references` - https://github.com/fsprojects/Paket/pull/686
+* COSMETICS: Use Chessie for ROP - https://github.com/fsprojects/Chessie
+
+#### 0.31.2 - 26.02.2015
+* BUGFIX: Robust and much faster template file parser - https://github.com/fsprojects/Paket/pull/660
+
+#### 0.31.1 - 25.02.2015
+* Use latest FAKE tasks
+
+#### 0.31.0 - 25.02.2015
+* BUGFIX: Fix help for init command - https://github.com/fsprojects/Paket/pull/654
+* BUGFIX: Allow non-standard API endpoint for push - https://github.com/fsprojects/Paket/pull/652
+* BUGFIX: Special case nuget.org
+* BUGFIX: paket add/remove with just project name - https://github.com/fsprojects/Paket/pull/650
+* BUGFIX: Uploading packages as multiform content type - https://github.com/fsprojects/Paket/pull/651
+* BUGFIX: Handle transient dependencies better in pack command - https://github.com/fsprojects/Paket/pull/649
+* BUGFIX: Only load custom attributes if not given in TemplateFile or cmd parameter
+* BUGFIX: Detect .NET 4.5.1 - https://github.com/fsprojects/Paket/pull/647
+
+#### 0.30.0 - 23.02.2015
+* New command: `paket pack` - http://fsprojects.github.io/Paket/paket-pack.html
+* New command: `paket push` - http://fsprojects.github.io/Paket/paket-push.html
+* Improved command line help - https://github.com/fsprojects/Paket/pull/639
+* BUGFIX: fix no_auto_restore option parsing  - https://github.com/fsprojects/Paket/issues/632
+
+#### 0.29.0 - 18.02.2015
+* Allow local NuGet sources with spaces in `paket.dependencies` - https://github.com/fsprojects/Paket/issues/616
+* Streamlined install options in `paket.dependencies` and `paket.references` - https://github.com/fsprojects/Paket/issues/587
+* Allow to opt-out of targets import - https://github.com/fsprojects/Paket/issues/587
+* New option to add/remove packages for a single project - https://github.com/fsprojects/Paket/pull/610
+* BUGFIX: Blacklisted Microsoft.Bcl.Build.targets - https://github.com/fsprojects/Paket/issues/618
+* BUGFIX: Selective update doesn't add package twice from `paket.references` anymore
+* BUGFIX: `paket install` installs GitHub source files
+* COSMETICS: Respect home directories on mono - https://github.com/fsprojects/Paket/issues/612
+* COSMETICS: `paket add` inserts the new package in alphabetical position - https://github.com/fsprojects/Paket/issues/596
+
+#### 0.28.0 - 16.02.2015
+* Add a simple API which allows to retrieve NuGet v3 autocomplete
+* Allow unix-style comments in `paket.dependencies` file
 * BUGFIX: `paket restore` does not fail on missing `paket.version` files - https://github.com/fsprojects/Paket/issues/600
-
-#### 0.27.13 - 13.02.2015
+* BUGFIX: Parsing of conditional dependencies should detect portable case - https://github.com/fsprojects/Paket/issues/594
+* BUGFIX: Prerelease requirements in `paket.dependencies` should override package dependencies - https://github.com/fsprojects/Paket/issues/607
 * BUGFIX: Try to ease the pain with mono bug in Process class - https://github.com/fsprojects/Paket/issues/599
-
-#### 0.27.11 - 12.02.2015
 * BUGFIX: `paket restore` does not re-download http references - https://github.com/fsprojects/Paket/issues/592
-
-#### 0.27.10 - 12.02.2015
-* BUGFIX: Don't call HasExited on CurrentProcess - https://github.com/fsprojects/Paket/issues/599
-
-#### 0.27.9 - 10.02.2015
-* Add a simple API which allows to retrieves NuGet v3 autocomplete
-
-#### 0.27.7 - 09.02.2015
 * BUGFIX: Make DeletePaketNodes more robust - https://github.com/fsprojects/Paket/issues/591
-
-#### 0.27.5 - 08.02.2015
 * BUGFIX: Install content files on mono - https://github.com/fsprojects/Paket/issues/561
-
-#### 0.27.4 - 08.02.2015
 * BUGFIX: Install process doesn't duplicate Imports of targets files any more - https://github.com/fsprojects/Paket/issues/588
-
-#### 0.27.1 - 08.02.2015
-* Allow unix-style comments in `paket.depndencies` file
-* Don't remove comments from `paket.dependencies` file - https://github.com/fsprojects/Paket/issues/584
+* BUGFIX: Don't remove comments from `paket.dependencies` file - https://github.com/fsprojects/Paket/issues/584
+* COSMETICS: Paket should not reformat app/web.config files while changing assembly redirects - https://github.com/fsprojects/Paket/issues/597
 
 #### 0.27.0 - 07.02.2015
 * Install process will reference `.props` and `.targets` files from NuGet packages - https://github.com/fsprojects/Paket/issues/516

@@ -223,17 +223,21 @@ type InstallModel =
         |> Seq.fold (fun model reference -> model.AddFrameworkAssemblyReference reference) this
     
     member this.FilterBlackList() = 
-        let includeLibs = function
+        let includeReferences = function
             | Reference.Library lib -> not (lib.ToLower().EndsWith ".dll" || lib.ToLower().EndsWith ".exe")
-            | Reference.TargetsFile targetsFile -> not (targetsFile.ToLower().EndsWith ".props" || targetsFile.ToLower().EndsWith ".targets")
+            | Reference.TargetsFile targetsFile -> 
+                (not (targetsFile.ToLower().EndsWith ".props" || targetsFile.ToLower().EndsWith ".targets")) ||
+                targetsFile.ToLower().EndsWith("microsoft.bcl.build.targets") // would install a targets file causing the build to fail in VS
             | _ -> false
 
         let excludeSatelliteAssemblies = function
             | Reference.Library lib -> lib.EndsWith ".resources.dll"
             | _ -> false
 
+        let blacklisted (blacklist : string list) (file : string) = blacklist |> List.exists (fun blf -> file.ToLower().EndsWith (blf.ToLower()))
+
         let blackList = 
-            [ includeLibs
+            [ includeReferences
               excludeSatelliteAssemblies]
 
         blackList
@@ -244,7 +248,7 @@ type InstallModel =
     
     member this.FilterReferences(references) =
         let inline mapF (files:InstallFiles) = {files with References = files.References |> Set.filter (fun reference -> Set.contains reference.ReferenceName references |> not) }
-        this.MapFiles(fun files -> mapF files)
+        this.MapFiles mapF
 
     member this.ApplyFrameworkRestrictions(restrictions:FrameworkRestrictions) =
         match restrictions with

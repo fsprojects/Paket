@@ -1,5 +1,6 @@
 ﻿module Paket.Requirements
 
+open System
 open Paket
 open Paket.Domain
 open Paket.PackageSources
@@ -117,9 +118,66 @@ let optimizeRestrictions packages =
 
                 yield name,versionRequirement,restrictions]
 
+type InstallSettings = 
+    { ImportTargets : bool
+      FrameworkRestrictions: FrameworkRestrictions
+      OmitContent : bool 
+      CopyLocal : bool }
+
+    static member Default =
+        { CopyLocal = true
+          ImportTargets = true
+          FrameworkRestrictions = []
+          OmitContent = false }
+
+    member this.ToString(asLines) =
+        let options =
+            [ if not this.CopyLocal then yield "copy_local: false"
+              if not this.ImportTargets then yield "import_targets: false"
+              if this.OmitContent then yield "content: none"
+              match this.FrameworkRestrictions with
+              | [] -> ()
+              | _  -> yield "framework: " + (String.Join(", ",this.FrameworkRestrictions))]
+
+        let separator = if asLines then Environment.NewLine else ", "
+        String.Join(separator,options)
+
+    override this.ToString() = this.ToString(false)
+
+    static member Parse(text:string) =
+        let kvPairs = parseKeyValuePairs text
+
+        { ImportTargets =
+            match kvPairs.TryGetValue "import_targets" with
+            | true, "false" -> false
+            | _ -> true
+          FrameworkRestrictions =
+            match kvPairs.TryGetValue "framework" with
+            | true, s -> parseRestrictions s
+            | _ -> []
+          OmitContent =
+            match kvPairs.TryGetValue "content" with
+            | true, "none" -> true 
+            | _ -> false 
+          CopyLocal =         
+            match kvPairs.TryGetValue "copy_local" with
+            | true, "false" -> false 
+            | _ -> true }
+
 type PackageRequirementSource =
 | DependenciesFile of string
-| Package of PackageName * SemVerInfo   
+| Package of PackageName * SemVerInfo 
+    member this.IsRootRequirement() =
+        match this with
+        | DependenciesFile _ -> true
+        | _ -> false
+
+    override this.ToString() =
+        match this with
+        | DependenciesFile x -> x
+        | Package(name,version) ->
+          sprintf "%s %s" (name.ToString()) (version.ToString())
+
 
 /// Represents an unresolved package.
 [<CustomEquality;CustomComparison>]
@@ -128,7 +186,7 @@ type PackageRequirement =
       VersionRequirement : VersionRequirement
       ResolverStrategy : ResolverStrategy
       Parent: PackageRequirementSource
-      FrameworkRestrictions: FrameworkRestrictions
+      Settings: InstallSettings
       Sources : PackageSource list }
 
     override this.Equals(that) = 
@@ -138,27 +196,31 @@ type PackageRequirement =
 
     override this.ToString() =
         let (PackageName name) = this.Name
-        sprintf "%s %s" name (this.VersionRequirement.ToString())
+        sprintf "%s %s (from %s)" name (this.VersionRequirement.ToString()) (this.Parent.ToString())
 
     override this.GetHashCode() = hash (this.Name,this.VersionRequirement)
 
     member this.IncludingPrereleases() = 
         { this with VersionRequirement = VersionRequirement(this.VersionRequirement.Range,PreReleaseStatus.All) }
+    
+    static member Compare(x,y,boostX,boostY) =        
+        if x = y then 0 else
+        let c1 =
+            compare 
+                (not x.VersionRequirement.Range.IsGlobalOverride,x.Parent)
+                (not y.VersionRequirement.Range.IsGlobalOverride,x.Parent)
+        if c1 <> 0 then c1 else
+        let c2 = -1 * compare x.ResolverStrategy y.ResolverStrategy        
+        if c2 <> 0 then c2 else
+        let cBoost = compare boostX boostY
+        if cBoost <> 0 then cBoost else
+        let c3 = -1 * compare x.VersionRequirement y.VersionRequirement
+        if c3 <> 0 then c3 else
+        compare x.Name y.Name
 
     interface System.IComparable with
        member this.CompareTo that = 
           match that with 
-          | :? PackageRequirement as that -> 
-                if this = that then 0 else
-                let c1 =
-                    compare 
-                       (not this.VersionRequirement.Range.IsGlobalOverride,this.Parent)
-                       (not that.VersionRequirement.Range.IsGlobalOverride,this.Parent)
-                if c1 <> 0 then c1 else
-                let c2 = -1 * compare this.ResolverStrategy that.ResolverStrategy
-                if c2 <> 0 then c2 else
-                let c3 = -1 * compare this.VersionRequirement that.VersionRequirement
-                if c3 <> 0 then c3 else
-                compare this.Name that.Name
-                
-          | _ -> invalidArg "that" "cannot compare value of different types" 
+          | :? PackageRequirement as that ->
+                PackageRequirement.Compare(this,that,0,0)
+          | _ -> invalidArg "that" "cannot compare value of different types"

@@ -69,6 +69,7 @@
       <Paket>True</Paket>
       <Link>FsUnit.fs</Link>
     </Compile>
+    <Compile Include="AssemblyInfo.fs" />
     <Compile Include="TestHelpers.fs" />
     <Compile Include="SemVerSpecs.fs" />
     <Compile Include="ConfigFileSpecs.fs" />
@@ -77,6 +78,10 @@
     <Compile Include="DependencySetSpecs.fs" />
     <Compile Include="BindingRedirect.fs" />
     <Compile Include="UtilsSpecs.fs" />
+    <Compile Include="TemplateFileParsing.fs" />
+    <Compile Include="NuspecWriterSpecs.fs" />
+    <Compile Include="PackageProcessSpecs.fs" />
+    <Compile Include="RemotePushUrlSpecs.fs" />
     <Content Include="Nuspec\FSharp.Data.nuspec">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
@@ -125,7 +130,7 @@
     </Content>
     <Content Include="NuGetOData\Microsoft.AspNet.WebApi.Client.xml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>    
+    </Content>
     <Content Include="NuGetOData\Fleece.xml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
@@ -189,6 +194,9 @@
     <None Include="ProjectFile\TestData\Project2.fsprojtest">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+    <None Include="ProjectFile\TestData\Project3.fsprojtest">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Include="ProjectFile\TestData\ProjectWithConditions.fsprojtest">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
@@ -199,6 +207,9 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Include="ProjectFile\TestData\CustomFantomasNode.fsprojtest">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>                                     
+    <None Include="ProjectFile\TestData\CustomPaketFantomasNode.fsprojtest">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Include="ProjectFile\TestData\NoCustomFantomasNode.fsprojtest">
@@ -228,6 +239,7 @@
     <Compile Include="InstallModel\Xml\ManualNodes.fs" />
     <Compile Include="InstallModel\Xml\FSharp.Data.SqlClient.fs" />
     <Compile Include="InstallModel\Xml\RxXaml.fs" />
+    <Compile Include="InstallModel\Xml\Microsoft.Bcl.Build.fs" />
     <Compile Include="InstallModel\Penalty\PenaltySpecs.fs" />
     <Compile Include="InstallModel\Penalty\FrameworkConditionsSpecs.fs" />
     <Compile Include="DependencyModel\ProjectDependencySpecs.fs" />
@@ -236,6 +248,7 @@
   <ItemGroup>
     <Reference Include="mscorlib" />
     <Reference Include="System" />
+    <Reference Include="System.Numerics" />
     <Reference Include="System.Security" />
     <Reference Include="System.Xml" />
     <ProjectReference Include="..\..\src\Paket.Core\Paket.Core.fsproj">

@@ -35,7 +35,7 @@ let ``should generate Xml for xunit.runner.visualstudio 2.0.0``() =
               @"..\xunit.runner.visualstudio\build\portable-net45+aspnetcore50+win+wpa81+wp80+monotouch+monoandroid\xunit.runner.visualstudio.props"  ],
               Nuspec.All)
     
-    let propertyNodes,chooseNode,propertyChooseNode = ProjectFile.Load("./ProjectFile/TestData/Empty.fsprojtest").Value.GenerateXml(model,CopyLocal.True)
+    let propertyNodes,chooseNode,propertyChooseNode = ProjectFile.Load("./ProjectFile/TestData/Empty.fsprojtest").Value.GenerateXml(model,true,true)
     chooseNode.OuterXml
     |> normalizeXml
     |> shouldEqual (normalizeXml emptyReferenceNodes)
@@ -49,3 +49,25 @@ let ``should generate Xml for xunit.runner.visualstudio 2.0.0``() =
     (propertyNodes |> Seq.head).OuterXml
     |> normalizeXml
     |> shouldEqual (normalizeXml expectedPropertyNodes)
+
+let disabledChooseNode = """<?xml version="1.0" encoding="utf-16"?>
+<Choose xmlns="http://schemas.microsoft.com/developer/msbuild/2003" />"""
+
+[<Test>]
+let ``should not generate Xml for xunit.runner.visualstudio 2.0.0 if import is disabled``() = 
+    let model =
+        InstallModel.CreateFromLibs(PackageName "xunit.runner.visualstudio", SemVer.Parse "2.50.0", [],[],
+            [ @"..\xunit.runner.visualstudio\build\net20\xunit.runner.visualstudio.props" 
+              @"..\xunit.runner.visualstudio\build\portable-net45+aspnetcore50+win+wpa81+wp80+monotouch+monoandroid\xunit.runner.visualstudio.props"  ],
+              Nuspec.All)
+    
+    let propertyNodes,chooseNode,propertyChooseNode = ProjectFile.Load("./ProjectFile/TestData/Empty.fsprojtest").Value.GenerateXml(model,true,false)
+    chooseNode.OuterXml
+    |> normalizeXml
+    |> shouldEqual (normalizeXml emptyReferenceNodes)
+
+    propertyChooseNode.OuterXml
+    |> normalizeXml
+    |> shouldEqual (normalizeXml disabledChooseNode)
+    
+    propertyNodes |> Seq.length |> shouldEqual 0

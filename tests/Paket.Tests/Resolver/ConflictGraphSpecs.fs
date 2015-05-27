@@ -29,7 +29,7 @@ let defaultPackage =
       Parent = PackageRequirementSource.DependenciesFile ""
       VersionRequirement = VersionRequirement(VersionRange.Exactly "1.0", PreReleaseStatus.No)
       Sources = [ PackageSource.NugetSource "" ]
-      FrameworkRestrictions = []
+      Settings = InstallSettings.Default
       ResolverStrategy = ResolverStrategy.Max }
 
 [<Test>]

@@ -7,8 +7,9 @@ open System.IO
 open System.Net
 open System.Xml
 open System.Text
+open Paket
 open Paket.Logging
-open Paket.Rop
+open Chessie.ErrorHandling
 open Paket.Domain
 
 type Auth = 
@@ -29,12 +30,24 @@ let TimeSpanToReadableString(span:TimeSpan) =
 
     if String.IsNullOrEmpty(formatted) then "0 seconds" else formatted
 
+let GetHomeDirectory() =
+    if (Environment.OSVersion.Platform = PlatformID.Unix || Environment.OSVersion.Platform = PlatformID.MacOSX) then
+        Environment.GetEnvironmentVariable("HOME")
+    else
+        Environment.ExpandEnvironmentVariables("%HOMEDRIVE%%HOMEPATH%")
+
+let normalizeLocalPath(path:string) =
+    if path.StartsWith("~/") then
+        Path.Combine(GetHomeDirectory(),path.Substring(1))
+    else
+        path
+
 /// Creates a directory if it does not exist.
 let createDir path = 
     try
         let dir = DirectoryInfo path
         if not dir.Exists then dir.Create()
-        succeed ()
+        ok ()
     with _ ->
         DirectoryCreateError path |> fail
 
@@ -191,7 +204,7 @@ let askYesNo question =
 
     getAnswer()
 
-let inline normalizePath(path:string) = path.Replace("\\",Path.DirectorySeparatorChar.ToString()).Replace("/",Path.DirectorySeparatorChar.ToString())
+let inline normalizePath(path:string) = path.Replace("\\",Path.DirectorySeparatorChar.ToString()).Replace("/",Path.DirectorySeparatorChar.ToString()).TrimEnd(Path.DirectorySeparatorChar)
 
 /// Gets all files with the given pattern
 let inline FindAllFiles(folder, pattern) = DirectoryInfo(folder).GetFiles(pattern, SearchOption.AllDirectories)
@@ -251,8 +264,8 @@ let RunInLockedAccessMode(rootFolder,action) =
         result
     with
     | exn ->
-            releaseLock()
-            reraise()
+        releaseLock()
+        reraise()
 
 /// [omit]
 module Seq = 
@@ -264,10 +277,13 @@ module String =
             Some (input.Substring(prefix.Length))
         else None
 
-let inline orElse v =
-    function
-    | Some x -> Some x
-    | None -> v
+    let quoted(text:string) = (if text.Contains(" ") then "\"" + text + "\"" else text) 
+
+// MonadPlus - "or else"
+let inline (++) x y =
+    match x with
+    | None -> y
+    | _ -> x
 
 let parseKeyValuePairs(s:string) =
     let s = s.Trim().ToLower()
@@ -287,21 +303,21 @@ let parseKeyValuePairs(s:string) =
 
 let downloadStringSync (url : string) (client : System.Net.WebClient) = 
     try 
-        client.DownloadString url |> succeed
+        client.DownloadString url |> ok
     with _ ->
         DownloadError url |> fail 
 
 let downloadFileSync (url : string) (fileName : string) (client : System.Net.WebClient) = 
     tracefn "Downloading file from %s to %s" url fileName
     try 
-        client.DownloadFile(url, fileName) |> succeed
+        client.DownloadFile(url, fileName) |> ok
     with _ ->
         DownloadError url |> fail 
 
 let saveFile (fileName : string) (contents : string) =
     tracefn "Saving file %s" fileName
     try 
-        File.WriteAllText(fileName, contents) |> succeed
+        File.WriteAllText(fileName, contents) |> ok
     with _ ->
         FileSaveError fileName |> fail
 
@@ -309,7 +325,50 @@ let removeFile (fileName : string) =
     if File.Exists fileName then
         tracefn "Removing file %s" fileName
         try
-            File.Delete(fileName) |> succeed
+            File.Delete(fileName) |> ok
         with _ ->
             FileDeleteError fileName |> fail
-    else succeed ()
+    else ok ()
+
+[<AutoOpen>]
+module ObservableExtensions =
+
+    let private synchronize f = 
+        let ctx = System.Threading.SynchronizationContext.Current 
+        f (fun g arg ->
+            let nctx = System.Threading.SynchronizationContext.Current 
+            if ctx <> null && ctx <> nctx then 
+                ctx.Post((fun _ -> g(arg)), null)
+            else 
+                g(arg))
+
+    type Microsoft.FSharp.Control.Async with 
+      static member AwaitObservable(ev1:IObservable<'a>) =
+        synchronize (fun f ->
+          Async.FromContinuations((fun (cont,econt,ccont) -> 
+            let rec callback = (fun value ->
+              remover.Dispose()
+              f cont value )
+            and remover : IDisposable  = ev1.Subscribe(callback) 
+            () )))
+
+    [<RequireQualifiedAccess>]
+    module Observable =
+        let sample milliseconds source =
+            let relay (observer:IObserver<'T>) =
+                let rec loop () = async {
+                    let! value = Async.AwaitObservable source
+                    observer.OnNext value
+                    do! Async.Sleep milliseconds
+                    return! loop() 
+                }
+                loop ()
+
+            { new IObservable<'T> with
+                member this.Subscribe(observer:IObserver<'T>) =
+                    let cts = new System.Threading.CancellationTokenSource()
+                    Async.StartImmediate(relay observer, cts.Token)
+                    { new IDisposable with 
+                        member this.Dispose() = cts.Cancel() 
+                    }
+            }

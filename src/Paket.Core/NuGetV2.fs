@@ -120,6 +120,7 @@ let getAllVersions(auth, nugetURL, package) =
 /// Gets versions of the given package from local Nuget feed.
 let getAllVersionsFromLocalPath (localNugetPath, package) =
     async {
+        let localNugetPath = Utils.normalizeLocalPath localNugetPath
         let di = DirectoryInfo(localNugetPath)
         if not di.Exists then
             failwithf "The directory %s doesn't exist.%sPlease check the NuGet source feed definition in your paket.dependencies file." localNugetPath Environment.NewLine
@@ -138,12 +139,12 @@ let parseODataDetails(nugetURL,packageName,version,raw) =
     doc.LoadXml raw
                 
     let entry = 
-        match orElse (doc |> getNode "entry") (doc |> getNode "feed" |> optGetNode "entry" ) with
+        match (doc |> getNode "feed" |> optGetNode "entry" ) ++ (doc |> getNode "entry") with
         | Some node -> node
         | _ -> failwithf "unable to find entry node for package %s %O" packageName version
 
     let officialName =
-        match (entry |> getNode "properties" |> optGetNode "Id") |> orElse (entry |> getNode "title") with
+        match (entry |> getNode "properties" |> optGetNode "Id") ++ (entry |> getNode "title") with
         | Some node -> node.InnerText
         | _ -> failwithf "Could not get official package name for package %s %O" packageName version
         
@@ -181,7 +182,7 @@ let parseODataDetails(nugetURL,packageName,version,raw) =
                             | None -> []
                          else 
                             []))
-        |> Array.map (fun (name, version, restricted) -> PackageName name, NugetVersionRangeParser.parse version, restricted)
+        |> Array.map (fun (name, version, restricted) -> PackageName name, VersionRequirement.Parse version, restricted)
         |> Array.toList
 
     
@@ -273,6 +274,7 @@ let getDetailsFromNuget force auth nugetURL package (version:SemVerInfo) =
 /// Reads direct dependencies from a nupkg file
 let getDetailsFromLocalFile localNugetPath package (version:SemVerInfo) =
     async {        
+        let localNugetPath = Utils.normalizeLocalPath localNugetPath
         let nupkg = 
             let v1 = FileInfo(Path.Combine(localNugetPath, sprintf "%s.%s.nupkg" package (version.ToString())))
             if v1.Exists then v1 else
@@ -424,7 +426,7 @@ let GetLibFiles(targetFolder) =
             |> Array.filter (fun fi -> fi.FullName.ToLower() = libPath)
             |> Array.collect (fun dir -> dir.GetFiles("*.*",SearchOption.AllDirectories))
         else
-            Array.empty
+            [||]
 
     if Logging.verbose then
         if Array.isEmpty libs then 
@@ -445,7 +447,7 @@ let GetTargetsFiles(targetFolder) =
             |> Array.filter (fun fi -> fi.FullName.ToLower() = path)
             |> Array.collect (fun dir -> dir.GetFiles("*.*",SearchOption.AllDirectories))
         else
-            Array.empty
+            [||]
 
     if Logging.verbose then
         if Array.isEmpty targetsFiles then

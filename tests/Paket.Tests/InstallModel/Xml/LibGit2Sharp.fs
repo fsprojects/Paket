@@ -42,7 +42,7 @@ let ``should generate Xml for LibGit2Sharp 2.0.0``() =
     
     model.GetLibReferences(SinglePlatform (DotNetFramework FrameworkVersion.V4_Client)) |> shouldContain @"..\LibGit2Sharp\lib\net40\LibGit2Sharp.dll"
 
-    let propertyNodes,chooseNode,propertyChooseNode = ProjectFile.Load("./ProjectFile/TestData/Empty.fsprojtest").Value.GenerateXml(model,CopyLocal.True)
+    let propertyNodes,chooseNode,propertyChooseNode = ProjectFile.Load("./ProjectFile/TestData/Empty.fsprojtest").Value.GenerateXml(model,true,true)
     chooseNode.OuterXml
     |> normalizeXml
     |> shouldEqual (normalizeXml expectedReferenceNodes)

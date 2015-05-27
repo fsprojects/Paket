@@ -34,6 +34,25 @@ It's possible to influence the `Private` property for references in project file
 
     Newtonsoft.Json copy_local:false
 
+## import_targets settings
+
+If you don't want to import `.targets` and `.props` files you can disable it via the `import_targets` switch:
+
+    Microsoft.Bcl.Build import_targets:false
+
+## No content option
+
+This option disables the installation of any content files for the given package:
+    
+    jQuery content: none
+
+### Framework restrictions
+
+Sometimes you don't want to generate dependencies for older framework versions. You can control this in the [`paket.dependencies` file](nuget-dependencies.html#Framework-restrictions) or via the `framework` switch:
+
+    Newtonsoft.Json framework: net35, net40  // .NET 3.5 and .NET 4.0
+    DotNetZip framework: >= net45      // .NET 4.5 and above
+
 ## File name conventions
 
 If Paket finds `paket.references` in a folder, the dependencies it specifies will be added to all MSBuild projects in that folder.

@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 if [ "$(id -u)" != "0" ]; then
   echo "This local installation of Paket requires root privileges. Please run script as root (i.e. using 'sudo')." 1>&2
@@ -33,7 +33,7 @@ done
 rm -rf $BIN/paket
 
 cat >> $BIN/paket <<EOF
-#!/bin/bash
+#!/usr/bin/env bash
 exec mono $LIB/paket/paket.exe "\$@"
 EOF
 

@@ -3,7 +3,7 @@
 open System.IO
 open Logging
 open System
-open Rop
+open Chessie.ErrorHandling
 open Domain
 
 
@@ -11,7 +11,7 @@ let private getLatestVersionFromJson (data : string) =
     try 
         let start = data.IndexOf("tag_name") + 11
         let end' = data.IndexOf("\"", start)
-        (data.Substring(start, end' - start)) |> SemVer.Parse |> succeed
+        (data.Substring(start, end' - start)) |> SemVer.Parse |> ok
     with _ ->
         fail ReleasesJsonParseError
 
@@ -21,7 +21,7 @@ let TurnOnAutoRestore environment =
     use client = createWebClient("https://github.com",None)
 
     let download version file = 
-        rop {
+        trial {
             do! createDir(exeDir)
             let fileName = Path.Combine(exeDir, file)
             let url = sprintf "https://github.com/fsprojects/Paket/releases/download/%s/%s" (string version) file
@@ -29,7 +29,7 @@ let TurnOnAutoRestore environment =
             do! downloadFileSync url fileName client
         }
 
-    rop { 
+    trial { 
         let releasesUrl = "https://api.github.com/repos/fsprojects/Paket/releases";
      
         let! data = client |> downloadStringSync releasesUrl
@@ -52,7 +52,7 @@ let TurnOnAutoRestore environment =
 let TurnOffAutoRestore environment = 
     let exeDir = Path.Combine(environment.RootDirectory.FullName, ".paket")
     
-    rop {
+    trial {
         let paketTargetsPath = Path.Combine(exeDir, "paket.targets")
         do! removeFile paketTargetsPath
 

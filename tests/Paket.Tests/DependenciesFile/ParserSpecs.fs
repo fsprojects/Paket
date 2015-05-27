@@ -171,7 +171,42 @@ nuget "Microsoft.SqlServer.Types"
 [<Test>]
 let ``should read content none config``() = 
     let cfg = DependenciesFile.FromCode(noneContentConfig)
-    cfg.Options.OmitContent |> shouldEqual true
+    cfg.Options.Settings.OmitContent |> shouldEqual true
+    cfg.Options.Settings.CopyLocal |> shouldEqual true
+    cfg.Options.Settings.ImportTargets |> shouldEqual true
+
+    (cfg.Packages |> List.find (fun p -> p.Name = PackageName "Microsoft.SqlServer.Types")).Sources |> shouldEqual [PackageSource.NugetSource "http://nuget.org/api/v2"]
+
+let specificFrameworkConfig = """
+framework net40 net35
+source "http://nuget.org/api/v2" // first source
+
+nuget "Microsoft.SqlServer.Types"
+"""
+
+[<Test>]
+let ``should read config with specific framework``() = 
+    let cfg = DependenciesFile.FromCode(specificFrameworkConfig)
+    cfg.Options.Settings.OmitContent |> shouldEqual false
+    cfg.Options.Settings.CopyLocal |> shouldEqual true
+    cfg.Options.Settings.ImportTargets |> shouldEqual true
+
+    (cfg.Packages |> List.find (fun p -> p.Name = PackageName "Microsoft.SqlServer.Types")).Sources |> shouldEqual [PackageSource.NugetSource "http://nuget.org/api/v2"]
+
+let noTargetsImportConfig = """
+import_targets false
+copy_local false
+source "http://nuget.org/api/v2" // first source
+
+nuget "Microsoft.SqlServer.Types"
+"""
+
+[<Test>]
+let ``should read no targets import config``() = 
+    let cfg = DependenciesFile.FromCode(noTargetsImportConfig)
+    cfg.Options.Settings.ImportTargets |> shouldEqual false
+    cfg.Options.Settings.CopyLocal |> shouldEqual false
+    cfg.Options.Settings.OmitContent |> shouldEqual false
 
     (cfg.Packages |> List.find (fun p -> p.Name = PackageName "Microsoft.SqlServer.Types")).Sources |> shouldEqual [PackageSource.NugetSource "http://nuget.org/api/v2"]
 
@@ -187,6 +222,26 @@ nuget SignalR = 3.3.2
 [<Test>]
 let ``should read config without quotes``() = 
     let cfg = DependenciesFile.FromCode(configWithoutQuotes)
+    cfg.Options.Strict |> shouldEqual false
+    cfg.DirectDependencies.Count |> shouldEqual 4
+
+    cfg.DirectDependencies.[PackageName "Rx-Main"].Range |> shouldEqual (VersionRange.Between("2.0", "3.0"))
+    cfg.DirectDependencies.[PackageName "Castle.Windsor-log4net"].Range |> shouldEqual (VersionRange.Between("3.2", "4.0"))
+    cfg.DirectDependencies.[PackageName "FAKE"].Range |> shouldEqual (VersionRange.Exactly "1.1")
+    cfg.DirectDependencies.[PackageName "SignalR"].Range |> shouldEqual (VersionRange.Exactly "3.3.2")
+
+let configLocalQuotedSource = """source "D:\code\temp with space"
+
+nuget Castle.Windsor-log4net ~> 3.2
+nuget Rx-Main ~> 2.0
+nuget FAKE = 1.1
+nuget SignalR = 3.3.2
+"""
+
+[<Test>]
+let ``should read config local quoted source``() = 
+    let cfg = DependenciesFile.FromCode(configLocalQuotedSource)
+    cfg.Sources.Head |> shouldEqual (LocalNuget("D:\code\\temp with space"))
     cfg.Options.Strict |> shouldEqual false
     cfg.DirectDependencies.Count |> shouldEqual 4
 
@@ -470,7 +525,7 @@ let ``should read config with local source``() =
 
     let p = cfg.Packages |> List.find (fun x-> x.Name = PackageName "Nancy.Owin")
     p.VersionRequirement.Range |> shouldEqual (VersionRange.Specific (SemVer.Parse "0.22.2"))
-    p.FrameworkRestrictions |> shouldEqual []
+    p.Settings.FrameworkRestrictions |> shouldEqual []
 
 
 [<Test>]
@@ -491,7 +546,8 @@ let ``should read config with single framework restriction``() =
 
     let p = cfg.Packages |> List.find (fun x-> x.Name = PackageName "Foobar")
     p.VersionRequirement.Range |> shouldEqual (VersionRange.Specific (SemVer.Parse "1.2.3"))
-    p.FrameworkRestrictions |> shouldEqual [FrameworkRestriction.AtLeast(DotNetFramework(FrameworkVersion.V4_Client))]
+    p.Settings.FrameworkRestrictions |> shouldEqual [FrameworkRestriction.AtLeast(DotNetFramework(FrameworkVersion.V4_Client))]
+    p.Settings.ImportTargets |> shouldEqual true
 
 
 [<Test>]
@@ -503,11 +559,41 @@ let ``should read config with framework restriction``() =
 
     let p = cfg.Packages |> List.find (fun x-> x.Name = PackageName "Foobar")
     p.VersionRequirement.Range |> shouldEqual (VersionRange.Specific (SemVer.Parse "1.2.3"))
-    p.FrameworkRestrictions |> shouldEqual [FrameworkRestriction.Exactly(DotNetFramework(FrameworkVersion.V3_5)); FrameworkRestriction.AtLeast(DotNetFramework(FrameworkVersion.V4_Client))]
+    p.Settings.FrameworkRestrictions |> shouldEqual [FrameworkRestriction.Exactly(DotNetFramework(FrameworkVersion.V3_5)); FrameworkRestriction.AtLeast(DotNetFramework(FrameworkVersion.V4_Client))]
+    p.Settings.ImportTargets |> shouldEqual true
+    p.Settings.CopyLocal |> shouldEqual true
+
+[<Test>]
+let ``should read config with no targets import``() = 
+    let config = """
+    nuget Foobar 1.2.3 alpha beta import_targets: false, copy_local: false
+    """
+    let cfg = DependenciesFile.FromCode(config)
+
+    let p = cfg.Packages |> List.find (fun x-> x.Name = PackageName "Foobar")
+    p.VersionRequirement.Range |> shouldEqual (VersionRange.Specific (SemVer.Parse "1.2.3"))
+    p.Settings.FrameworkRestrictions |> shouldEqual []
+    p.Settings.ImportTargets |> shouldEqual false
+    p.Settings.CopyLocal |> shouldEqual false
+    p.Settings.OmitContent |> shouldEqual false
+
+[<Test>]
+let ``should read config with content none``() = 
+    let config = """
+    nuget Foobar 1.2.3 alpha beta content: none, copy_local: false
+    """
+    let cfg = DependenciesFile.FromCode(config)
+
+    let p = cfg.Packages |> List.find (fun x-> x.Name = PackageName "Foobar")
+    p.VersionRequirement.Range |> shouldEqual (VersionRange.Specific (SemVer.Parse "1.2.3"))
+    p.Settings.FrameworkRestrictions |> shouldEqual []
+    p.Settings.ImportTargets |> shouldEqual true
+    p.Settings.CopyLocal |> shouldEqual false
+    p.Settings.OmitContent |> shouldEqual true
 
 
 let configWithInvalidPrereleaseString = """
-    nuget Plossum.CommandLine !0.3.0.14    
+    nuget Plossum.CommandLine !0.3.0.14   
 """
 
 [<Test>]

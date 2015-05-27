@@ -61,11 +61,20 @@ let gitRaw = environVarOrDefault "gitRaw" "https://raw.github.com/fsprojects"
 // --------------------------------------------------------------------------------------
 
 let buildDir = "bin"
+let tempDir = "temp"
 let buildMergedDir = buildDir @@ "merged"
 
 
 // Read additional information from the release notes document
-let release = LoadReleaseNotes "RELEASE_NOTES.md"
+let releaseNotesData = 
+    File.ReadAllLines "RELEASE_NOTES.md"
+    |> parseAllReleaseNotes
+
+let release = List.head releaseNotesData
+let stable = 
+    match releaseNotesData |> List.tryFind (fun r -> r.NugetVersion.Contains("-") |> not) with
+    | Some stable -> stable
+    | _ -> release
 
 let genFSAssemblyInfo (projectPath) =
     let projectName = System.IO.Path.GetFileNameWithoutExtension(projectPath)
@@ -75,9 +84,11 @@ let genFSAssemblyInfo (projectPath) =
     CreateFSharpAssemblyInfo fileName
       [ Attribute.Title (projectName)
         Attribute.Product project
+        Attribute.Company (authors |> String.concat ", ")
         Attribute.Description summary
         Attribute.Version release.AssemblyVersion
-        Attribute.FileVersion release.AssemblyVersion ]
+        Attribute.FileVersion release.AssemblyVersion
+        Attribute.InformationalVersion release.NugetVersion ]
 
 let genCSAssemblyInfo (projectPath) =
     let projectName = System.IO.Path.GetFileNameWithoutExtension(projectPath)
@@ -89,7 +100,8 @@ let genCSAssemblyInfo (projectPath) =
         Attribute.Product project
         Attribute.Description summary
         Attribute.Version release.AssemblyVersion
-        Attribute.FileVersion release.AssemblyVersion ]
+        Attribute.FileVersion release.AssemblyVersion
+        Attribute.InformationalVersion release.NugetVersion ]
 
 // Generate assembly info files with the right version & up-to-date information
 Target "AssemblyInfo" (fun _ ->
@@ -103,7 +115,7 @@ Target "AssemblyInfo" (fun _ ->
 // Clean build results
 
 Target "Clean" (fun _ ->
-    CleanDirs [buildDir; "temp"]
+    CleanDirs [buildDir; tempDir]
 )
 
 Target "CleanDocs" (fun _ ->
@@ -172,38 +184,19 @@ Target "SignAssemblies" (fun _ ->
             if result <> 0 then failwithf "Error during signing %s with %s" executable pfx)
 )
 
-Target "NuGet" (fun _ ->
+Target "NuGet" (fun _ ->    
+    Paket.Pack (fun p -> 
+        { p with 
+            ToolPath = "bin/merged/paket.exe" 
+            Version = release.NugetVersion
+            ReleaseNotes = toLines release.Notes })
+)
 
-    NuGet (fun p -> 
-        { p with Authors = authors
-                 Project = "Paket.Core"
-                 Summary = summary
-                 Description = description
-                 Version = release.NugetVersion
-                 ReleaseNotes = toLines release.Notes
-                 Tags = tags
-                 OutputPath = "bin"
-                 Dependencies = 
-                    ["Newtonsoft.Json", GetPackageVersion "packages" "Newtonsoft.Json" 
-                     "DotNetZip", GetPackageVersion "packages" "DotNetZip" 
-                     "FSharp.Core", GetPackageVersion "packages" "FSharp.Core" ]
-                 AccessKey = getBuildParamOrDefault "nugetkey" ""
-                 Publish = hasBuildParam "nugetkey" }) 
-       "nuget/Paket.Core.nuspec"
-
-    NuGet (fun p -> 
-        { p with Authors = authors
-                 Project = "Paket"
-                 Summary = summary
-                 Description = description
-                 Version = release.NugetVersion
-                 ReleaseNotes = toLines release.Notes
-                 Tags = tags
-                 OutputPath = "bin"
-                 AccessKey = getBuildParamOrDefault "nugetkey" ""
-                 Publish = hasBuildParam "nugetkey"
-                 Dependencies = [] }) 
-       "nuget/Paket.nuspec"
+Target "PublishNuGet" (fun _ ->
+    Paket.Push (fun p -> 
+        { p with 
+            ToolPath = "bin/merged/paket.exe"
+            WorkingDir = tempDir }) 
 )
 
 // --------------------------------------------------------------------------------------
@@ -274,46 +267,6 @@ Target "KeepRunning" (fun _ ->
 
 Target "GenerateDocs" DoNothing
 
-let createIndexFsx lang =
-    let content = """(*** hide ***)
-// This block of code is omitted in the generated HTML documentation. Use 
-// it to define helpers that you do not want to show in the documentation.
-#I "../../../bin"
-
-(**
-F# Project Scaffold ({0})
-=========================
-*)
-"""
-    let targetDir = "docs/content" @@ lang
-    let targetFile = targetDir @@ "index.fsx"
-    ensureDirectory targetDir
-    System.IO.File.WriteAllText(targetFile, System.String.Format(content, lang))
-
-Target "AddLangDocs" (fun _ ->
-    let args = System.Environment.GetCommandLineArgs()
-    if args.Length < 4 then
-        failwith "Language not specified."
-
-    args.[3..]
-    |> Seq.iter (fun lang ->
-        if lang.Length <> 2 && lang.Length <> 3 then
-            failwithf "Language must be 2 or 3 characters (ex. 'de', 'fr', 'ja', 'gsw', etc.): %s" lang
-
-        let templateFileName = "template.cshtml"
-        let templateDir = "docs/tools/templates"
-        let langTemplateDir = templateDir @@ lang
-        let langTemplateFileName = langTemplateDir @@ templateFileName
-
-        if System.IO.File.Exists(langTemplateFileName) then
-            failwithf "Documents for specified language '%s' have already been added." lang
-
-        ensureDirectory langTemplateDir
-        Copy langTemplateDir [ templateDir @@ templateFileName ]
-
-        createIndexFsx lang)
-)
-
 // --------------------------------------------------------------------------------------
 // Release Scripts
 
@@ -322,7 +275,11 @@ Target "ReleaseDocs" (fun _ ->
     CleanDir tempDocsDir
     Repository.cloneSingleBranch "" (gitHome + "/" + gitName + ".git") "gh-pages" tempDocsDir
 
-    CopyRecursive "docs/output" tempDocsDir true |> tracefn "%A"
+    CopyRecursive "docs/output" tempDocsDir true |> tracefn "%A"    
+    
+    File.WriteAllText("temp/gh-pages/latest",sprintf "https://github.com/fsprojects/Paket/releases/download/%s/paket.exe" release.NugetVersion)
+    File.WriteAllText("temp/gh-pages/stable",sprintf "https://github.com/fsprojects/Paket/releases/download/%s/paket.exe" stable.NugetVersion)
+
     StageAll tempDocsDir
     Git.Commit.Commit tempDocsDir (sprintf "Update generated documentation for version %s" release.NugetVersion)
     Branches.push tempDocsDir
@@ -386,6 +343,7 @@ Target "All" DoNothing
   ==> "Release"
 
 "BuildPackage"
+  ==> "PublishNuGet"
   ==> "Release"
 
 RunTargetOrDefault "All"

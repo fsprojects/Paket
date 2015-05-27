@@ -5,7 +5,7 @@ open System.IO
 open System.Text.RegularExpressions
 
 open Paket.Logging
-open Paket.Rop
+open Chessie.ErrorHandling
 
 type EnvironmentVariable = 
     { Variable : string
@@ -81,8 +81,13 @@ type PackageSource =
         | LocalNuget path -> path
 
     static member Parse(line : string) =
+        let sourceRegex = Regex("source[ ]*[\"]([^\"]*)[\"]", RegexOptions.IgnoreCase)
         let parts = line.Split ' '
-        let source = parts.[1].Replace("\"","").TrimEnd([| '/' |])
+        let source = 
+            if sourceRegex.IsMatch line then
+                sourceRegex.Match(line).Groups.[1].Value.TrimEnd([| '/' |])
+            else
+                parts.[1].Replace("\"","").TrimEnd([| '/' |])
         PackageSource.Parse(source, parseAuth(line, source))
 
     static member Parse(source,auth) = 

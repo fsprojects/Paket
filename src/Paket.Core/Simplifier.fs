@@ -6,35 +6,28 @@ open System.IO
 open Paket.Domain
 open Paket.Logging
 open Paket.PackageResolver
-open Paket.Rop
+open Chessie.ErrorHandling
 
-let getFlatLookup (lockFile : LockFile) = 
-    lockFile.ResolvedPackages
-    |> Map.map (fun name package -> 
-                    lockFile.GetAllDependenciesOf package.Name
-                    |> Set.ofSeq
-                    |> Set.remove package.Name)
-
-let findTransitive (packages, flatLookup, failureF) = 
+let private findTransitive (packages, flatLookup, failureF) = 
     packages
     |> List.map (fun packageName -> 
         flatLookup 
         |> Map.tryFind (NormalizedPackageName packageName)
         |> failIfNone (failureF packageName))
-    |> Rop.collect
+    |> collect
     |> lift Seq.concat
 
-let removePackage(packageName, transitivePackages, fileName, interactive) =
+let private removePackage(packageName, transitivePackages, fileName, interactive) =
     if transitivePackages |> Seq.exists (fun p -> NormalizedPackageName p = NormalizedPackageName packageName) then
         if interactive then
-            let message = sprintf "Do you want to remove transitive dependency %s from file %s ?" packageName.Id fileName 
+            let message = sprintf "Do you want to remove transitive dependency %s from file %s?" packageName.Id fileName 
             Utils.askYesNo(message)
         else 
             true
     else
         false
 
-let simplifyDependenciesFile (dependenciesFile : DependenciesFile, flatLookup, interactive) = rop {
+let simplifyDependenciesFile (dependenciesFile : DependenciesFile, flatLookup, interactive) = trial {
     let packages = dependenciesFile.Packages |> List.map (fun p -> p.Name)
     let! transitive = findTransitive(packages, flatLookup, DependencyNotFoundInLockFile)
 
@@ -45,7 +38,7 @@ let simplifyDependenciesFile (dependenciesFile : DependenciesFile, flatLookup, i
     return DependenciesFile(d.FileName, d.Options, d.Sources, newPackages, d.RemoteFiles, d.Comments)
 }
 
-let simplifyReferencesFile (refFile, flatLookup, interactive) = rop {
+let simplifyReferencesFile (refFile, flatLookup, interactive) = trial {
     let! transitive = findTransitive(refFile.NugetPackages |> List.map (fun p -> p.Name), 
                             flatLookup, 
                             (fun p -> ReferenceNotFoundInLockFile(refFile.FileName,p)))
@@ -58,21 +51,22 @@ let simplifyReferencesFile (refFile, flatLookup, interactive) = rop {
 }
 
 let beforeAndAfter environment dependenciesFile projects =
-        environment,
-        { environment with DependenciesFile = dependenciesFile
-                           Projects = projects }
+    environment,
+    { environment with 
+        DependenciesFile = dependenciesFile
+        Projects = projects }
 
-let simplify interactive environment = rop {
+let simplify interactive environment = trial {
     let! lockFile = environment |> PaketEnv.ensureLockFileExists
 
-    let flatLookup = getFlatLookup lockFile
+    let flatLookup = lockFile.GetDependencyLookupTable()
     let! dependenciesFile = simplifyDependenciesFile(environment.DependenciesFile, flatLookup, interactive)
     let projectFiles, referencesFiles = List.unzip environment.Projects
 
     let! referencesFiles' =
         referencesFiles
         |> List.map (fun refFile -> simplifyReferencesFile(refFile, flatLookup, interactive))
-        |> Rop.collect
+        |> collect
 
     let projects = List.zip projectFiles referencesFiles'
 

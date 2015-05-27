@@ -7,8 +7,9 @@ nuget NUnit
 nuget FAKE
 nuget FSharp.Formatting
 nuget DotNetZip
-nuget NuGet.CommandLine
 nuget FSharp.Core
 
 github forki/FsUnit FsUnit.fs
 github fsharp/FAKE modules/Octokit/Octokit.fsx
+github fsharp/FAKE src/app/FakeLib/Globbing/Globbing.fs
+github fsprojects/Chessie src/Chessie/ErrorHandling.fs

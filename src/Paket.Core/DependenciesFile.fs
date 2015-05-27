@@ -13,10 +13,13 @@ open Paket.PackageSources
 /// [omit]
 type InstallOptions = 
     { Strict : bool 
-      Redirects : bool 
-      OmitContent : bool }
+      Redirects : bool
+      Settings : InstallSettings }
 
-    static member Default = { Strict = false; OmitContent = false; Redirects = false}
+    static member Default = { 
+        Strict = false
+        Redirects = false
+        Settings = InstallSettings.Default }
 
 /// [omit]
 module DependenciesFileParser = 
@@ -132,6 +135,9 @@ module DependenciesFileParser =
     type private ParserOption =
     | ReferencesMode of bool
     | OmitContent of bool
+    | FrameworkRestrictions of FrameworkRestrictions
+    | ImportTargets of bool
+    | CopyLocal of bool
     | Redirects of bool
 
     let private (|Remote|Package|Comment|ParserOptions|SourceFile|) (line:string) =
@@ -156,11 +162,14 @@ module DependenciesFileParser =
             | name :: version :: rest when isVersion version -> 
                 Package(name,version,String.Join(" ",rest))
             | name :: rest -> Package(name,">= 0", String.Join(" ",rest))
-            | name :: [] -> Package(name,">= 0","")
+            | [name] -> Package(name,">= 0","")
             | _ -> failwithf "could not retrieve nuget package from %s" trimmed
-        | String.StartsWith "references" trimmed -> ParserOptions(ParserOption.ReferencesMode(trimmed.Trim() = "strict"))
-        | String.StartsWith "redirects" trimmed -> ParserOptions(ParserOption.Redirects(trimmed.Trim() = "on"))
-        | String.StartsWith "content" trimmed -> ParserOptions(ParserOption.OmitContent(trimmed.Trim() = "none"))
+        | String.StartsWith "references" trimmed -> ParserOptions(ParserOption.ReferencesMode(trimmed.Replace(":","").Trim() = "strict"))
+        | String.StartsWith "redirects" trimmed -> ParserOptions(ParserOption.Redirects(trimmed.Replace(":","").Trim() = "on"))
+        | String.StartsWith "framework" trimmed -> ParserOptions(ParserOption.FrameworkRestrictions(trimmed.Replace(":","").Trim() |> Requirements.parseRestrictions))
+        | String.StartsWith "content" trimmed -> ParserOptions(ParserOption.OmitContent(trimmed.Replace(":","").Trim() = "none"))
+        | String.StartsWith "import_targets" trimmed -> ParserOptions(ParserOption.ImportTargets(trimmed.Replace(":","").Trim() = "true"))
+        | String.StartsWith "copy_local" trimmed -> ParserOptions(ParserOption.CopyLocal(trimmed.Replace(":","").Trim() = "true"))
         | String.StartsWith "gist" _ as trimmed ->
             SourceFile(``parse git source`` trimmed SingleSourceFileOrigin.GistLink "gist")
         | String.StartsWith "github" _ as trimmed  ->
@@ -181,9 +190,12 @@ module DependenciesFileParser =
                 | Comment(line) -> lineNo, options, sources, packages, sourceFiles, if line <> "" then (lineNo,line)::comments else comments
                 | ParserOptions(ParserOption.ReferencesMode mode) -> lineNo, { options with Strict = mode }, sources, packages, sourceFiles, comments
                 | ParserOptions(ParserOption.Redirects mode) -> lineNo, { options with Redirects = mode }, sources, packages, sourceFiles, comments
-                | ParserOptions(ParserOption.OmitContent omit) -> lineNo, { options with OmitContent = omit }, sources, packages, sourceFiles, comments
+                | ParserOptions(ParserOption.CopyLocal mode) -> lineNo, { options with Settings = { options.Settings with CopyLocal = mode }}, sources, packages, sourceFiles, comments
+                | ParserOptions(ParserOption.ImportTargets mode) -> lineNo, { options with Settings = { options.Settings with ImportTargets = mode }}, sources, packages, sourceFiles, comments
+                | ParserOptions(ParserOption.FrameworkRestrictions r) -> lineNo, { options with Settings = { options.Settings with FrameworkRestrictions = r }}, sources, packages, sourceFiles, comments
+                | ParserOptions(ParserOption.OmitContent omit) -> lineNo, { options with Settings = { options.Settings with  OmitContent = omit }}, sources, packages, sourceFiles, comments
                 | Package(name,version,rest) ->
-                    let prereleases,kvPairs =
+                    let prereleases,optionsText =
                         if rest.Contains ":" then
                             // boah that's reaaaally ugly, but keeps backwards compat
                             let pos = rest.IndexOf ':'
@@ -191,24 +203,19 @@ module DependenciesFileParser =
                             let pos' = s.LastIndexOf(' ')
                             let prereleases = if pos' > 0 then s.Substring(0,pos') else ""
                             let s' = if prereleases <> "" then rest.Replace(prereleases,"") else rest
-                            prereleases,Utils.parseKeyValuePairs s'
+                            prereleases,s'
                         else
-                            rest,new System.Collections.Generic.Dictionary<_,_>()
+                            rest,""
 
                     if operators |> Seq.exists (fun x -> prereleases.Contains x) || prereleases.Contains("!") then
                         failwithf "Invalid prerelease version %s" prereleases
 
-                    let restrictions =
-                        match kvPairs.TryGetValue "framework" with
-                        | true, s -> Requirements.parseRestrictions s
-                        | _ -> []
-                    
                     lineNo, options, sources, 
                         { Sources = sources
                           Name = PackageName name
                           ResolverStrategy = parseResolverStrategy version
                           Parent = DependenciesFile fileName
-                          FrameworkRestrictions = restrictions
+                          Settings = InstallSettings.Parse(optionsText)
                           VersionRequirement = parseVersionRequirement((version + " " + prereleases).Trim '!') } :: packages, sourceFiles, comments
                 | SourceFile(origin, (owner,project, commit), path) ->
                     lineNo, options, sources, packages, { Owner = owner; Project = project; Commit = commit; Name = path; Origin = origin} :: sourceFiles, comments
@@ -292,10 +299,10 @@ type DependenciesFile(fileName,options,sources,packages : PackageRequirement lis
                             VersionRequirement = v })
             |> Seq.toList
 
-        { ResolvedPackages = PackageResolver.Resolve(getVersionF, getPackageDetailsF, remoteDependencies @ packages)
+        { ResolvedPackages = PackageResolver.Resolve(getVersionF, getPackageDetailsF, options.Settings.FrameworkRestrictions, remoteDependencies @ packages)
           ResolvedSourceFiles = remoteFiles }        
 
-    member __.AddAdditionionalPackage(packageName:PackageName,version:string) =
+    member __.AddAdditionalPackage(packageName:PackageName,version:string,settings) =
         let versionRange = DependenciesFileParser.parseVersionRequirement (version.Trim '!')
         let sources = 
             match packages |> List.rev with
@@ -307,12 +314,18 @@ type DependenciesFile(fileName,options,sources,packages : PackageRequirement lis
               VersionRequirement = versionRange
               Sources = sources
               ResolverStrategy = DependenciesFileParser.parseResolverStrategy version
-              FrameworkRestrictions = []
+              Settings = settings
               Parent = PackageRequirementSource.DependenciesFile fileName }
 
-        DependenciesFile(fileName,options,sources,packages @ [newPackage], remoteFiles, comments)
+        // Try to find alphabetical matching position to insert the package
+        let smaller = Seq.takeWhile (fun (p:PackageRequirement) -> p.Name <= packageName) packages |> List.ofSeq
+        let bigger = Seq.skipWhile (fun (p:PackageRequirement) -> p.Name <= packageName) packages |> List.ofSeq
 
-    member __.AddFixedPackage(packageName:PackageName,version:string,frameworkRestrictions) =
+        let newPackages = smaller @ [newPackage] @ bigger
+
+        DependenciesFile(fileName,options,sources,newPackages, remoteFiles, comments)
+
+    member __.AddFixedPackage(packageName:PackageName,version:string,settings) =
         let versionRange = DependenciesFileParser.parseVersionRequirement (version.Trim '!')
         let sources = 
             match packages |> List.rev with
@@ -333,13 +346,13 @@ type DependenciesFile(fileName,options,sources,packages : PackageRequirement lis
               VersionRequirement = newVersionRange
               Sources = sources
               ResolverStrategy = strategy
-              FrameworkRestrictions = frameworkRestrictions
+              Settings = settings
               Parent = PackageRequirementSource.DependenciesFile fileName }
 
         DependenciesFile(fileName,options,sources,(packages |> List.filter (fun p -> NormalizedPackageName p.Name <> NormalizedPackageName packageName)) @ [newPackage], remoteFiles, comments)
 
     member this.AddFixedPackage(packageName:PackageName,version:string) =
-        this.AddFixedPackage(packageName,version,[])
+        this.AddFixedPackage(packageName,version,InstallSettings.Default)
 
     member __.RemovePackage(packageName:PackageName) =
         let newPackages = 
@@ -361,7 +374,7 @@ type DependenciesFile(fileName,options,sources,packages : PackageRequirement lis
                 tracefn "Adding %s to %s" name fileName
             else
                 tracefn "Adding %s %s to %s" name version fileName
-            this.AddAdditionionalPackage(packageName,version)
+            this.AddAdditionalPackage(packageName,version,InstallSettings.Default)
 
     member this.Remove(packageName) =
         let (PackageName name) = packageName
@@ -400,7 +413,7 @@ type DependenciesFile(fileName,options,sources,packages : PackageRequirement lis
             |> Seq.groupBy fst
 
         let formatNugetSource source = 
-            "source " + source.Url +
+            "source " + String.quoted source.Url +
                 match source.Authentication with
                 | Some (PlainTextAuthentication(username,password)) -> 
                     sprintf " username: \"%s\" password: \"%s\"" username password
@@ -412,14 +425,16 @@ type DependenciesFile(fileName,options,sources,packages : PackageRequirement lis
             let hasReportedSource = ref false
             let hasReportedFirst = ref false
             let hasReportedSecond = ref false
-            [ if options.Strict then yield "references strict"
-              if options.OmitContent then yield "content none"
+            [ if options.Strict then yield "references: strict"
+              if options.Redirects then yield "redirects: on"
+              let optionsString = options.Settings.ToString(true)
+              if optionsString <> "" then yield optionsString
               for sources, packages in sources do
                   for source in sources do
                       hasReportedSource := true
                       match source with
                       | Nuget source -> yield formatNugetSource source
-                      | LocalNuget source -> yield "source " + source
+                      | LocalNuget source -> yield "source " + String.quoted source
                   
                   for _,package in packages do
                       if (not !hasReportedFirst) && !hasReportedSource  then
@@ -428,11 +443,9 @@ type DependenciesFile(fileName,options,sources,packages : PackageRequirement lis
 
                       let (PackageName name) = package.Name
                       let version = DependenciesFileSerializer.formatVersionRange package.ResolverStrategy package.VersionRequirement
-                      let frameworks =
-                        if package.FrameworkRestrictions = [] then "" else
-                        " framework: " + String.Join(", ", package.FrameworkRestrictions)
+                      let s = package.Settings.ToString()
 
-                      yield sprintf "nuget %s%s%s" name (if version <> "" then " " + version else "") frameworks
+                      yield sprintf "nuget %s%s%s" name (if version <> "" then " " + version else "") (if s <> "" then " " + s else s)
                      
               for remoteFile in remoteFiles do
                   if (not !hasReportedSecond) && !hasReportedFirst then

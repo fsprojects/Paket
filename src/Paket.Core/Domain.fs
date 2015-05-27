@@ -1,6 +1,7 @@
 ﻿module Paket.Domain
 
 open System.IO
+open Paket
 
 /// Represents a NuGet package name
 [<System.Diagnostics.DebuggerDisplay("{Item}")>]
@@ -35,7 +36,6 @@ let (|NormalizedPackageName|) (PackageName name) =
 /// Function to convert a NuGet package name into a normalized one
 let NormalizedPackageName = (|NormalizedPackageName|)
 
-
 type DomainMessage = 
     | DirectoryDoesntExist of DirectoryInfo
     | DependenciesFileNotFoundInDir of DirectoryInfo
@@ -63,6 +63,8 @@ type DomainMessage =
     | FileSaveError of string
 
     | ConfigFileParseError
+    
+    | PackagingConfigParseError of string * string
 
     override this.ToString() = 
         match this with
@@ -112,3 +114,6 @@ type DomainMessage =
 
         | ConfigFileParseError ->
             sprintf "Unable to parse Paket configuration file %s." Constants.PaketConfigFile
+
+        | PackagingConfigParseError(file,error) ->
+            sprintf "Unable to parse template file %s: %s." file error

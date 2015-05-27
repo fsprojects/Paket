@@ -42,11 +42,11 @@ type ResolvedSourceFile =
       Dependencies : Set<PackageName * VersionRequirement>
       Origin : SingleSourceFileOrigin }
 
-    member this.FilePath = this.ComputeFilePath(this.Name)
+    member this.FilePath(root) = this.ComputeFilePath(root,this.Name)
     
-    member this.ComputeFilePath(name : string) = 
+    member this.ComputeFilePath(root,name : string) = 
         let path = normalizePath (name.TrimStart('/'))
-        let di = DirectoryInfo(Path.Combine(Constants.PaketFilesFolderName, this.Owner, this.Project, path))
+        let di = DirectoryInfo(Path.Combine(root,Constants.PaketFilesFolderName, this.Owner, this.Project, path))
         di.FullName
     
     override this.ToString() = sprintf "%s/%s:%s %s" this.Owner this.Project this.Commit this.Name

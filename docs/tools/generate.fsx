@@ -1,9 +1,16 @@
 /// Getting help docs from Paket.exe
+#r "../../bin/UnionArgParser.dll"
 #r "../../bin/Paket.exe"
 open System.IO
 
-Paket.HelpTexts.commands
-|> Seq.iter (fun kv -> File.WriteAllText(sprintf "../content/paket-%s.md" kv.Key,kv.Value.ToMarkDown()))
+Paket.Commands.getAllCommands()
+|> Array.iter (fun command ->
+    let additionalText = 
+        let optFile = sprintf "../content/commands/%s.md" command.Name
+        if File.Exists optFile
+        then File.ReadAllText optFile
+        else ""
+    File.WriteAllText(sprintf "../content/paket-%s.md" command.Name, Paket.Commands.markdown command additionalText))
 
 // --------------------------------------------------------------------------------------
 // Builds the documentation from `.fsx` and `.md` files in the 'docs/content' directory
@@ -12,8 +19,6 @@ Paket.HelpTexts.commands
 
 // Binaries that have XML documentation (in a corresponding generated XML file)
 let referenceBinaries = [ "Paket.Core.dll" ]
-// Web site location for the generated documentation
-let website = "."
 
 let githubLink = "http://github.com/fsprojects/Paket"
 
@@ -37,14 +42,6 @@ open System.IO
 open Fake.FileHelper
 open FSharp.Literate
 open FSharp.MetadataFormat
-
-// When called from 'build.fsx', use the public project URL as <root>
-// otherwise, use the current 'output' directory.
-#if RELEASE
-let root = website
-#else
-let root = "file://" + (__SOURCE_DIRECTORY__ @@ "../output")
-#endif
 
 // Paths with template/source/output locations
 let bin        = __SOURCE_DIRECTORY__ @@ "../../bin"
@@ -83,14 +80,14 @@ let buildReference () =
     |> List.map (fun lib-> bin @@ lib)
   MetadataFormat.Generate
     ( binaries, output @@ "reference", layoutRootsAll.["en"],
-      parameters = ("root", root)::info,
+      parameters = ("root", "../")::info,
       sourceRepo = githubLink @@ "tree/master",
       sourceFolder = __SOURCE_DIRECTORY__ @@ ".." @@ "..",
       publicOnly = true, libDirs = [bin] )
 
 // Build documentation from `fsx` and `md` files in `docs/content`
 let buildDocumentation () =
-  let subdirs = Directory.EnumerateDirectories(content, "*", SearchOption.AllDirectories)
+  let subdirs = Directory.EnumerateDirectories(content, "*", SearchOption.AllDirectories) 
   for dir in Seq.append [content] subdirs do
     let sub = if dir.Length > content.Length then dir.Substring(content.Length + 1) else "."
     let langSpecificPath(lang, path:string) =
@@ -102,7 +99,7 @@ let buildDocumentation () =
         | Some lang -> layoutRootsAll.[lang]
         | None -> layoutRootsAll.["en"] // "en" is the default language
     Literate.ProcessDirectory
-      ( dir, docTemplate, output @@ sub, replacements = ("root", root)::info,
+      ( dir, docTemplate, output @@ sub, replacements = ("root", ".")::info,
         layoutRoots = layoutRoots,
         generateAnchors = true )
 

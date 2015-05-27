@@ -31,6 +31,7 @@
     <StartAction>Project</StartAction>
     <StartProgram>paket.exe</StartProgram>
     <StartWorkingDirectory>C:\projects\SourceLink</StartWorkingDirectory>
+    <StartWorkingDirectory>c:\code\Paket09x</StartWorkingDirectory>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -41,8 +42,8 @@
     <WarningLevel>3</WarningLevel>
     <DocumentationFile>
     </DocumentationFile>
-    <StartArguments>update -f</StartArguments>
-    <StartWorkingDirectory>D:\code\paketkopie</StartWorkingDirectory>
+    <StartArguments>pack output ./temp version "0.7.0" releaseNotes "BREAKING API: Use optional parameters and allow speechifying FSI evaluator - https://github.com/fsprojects/FsReveal/pull/51"</StartArguments>
+    <StartWorkingDirectory>D:\code\FsRevealDevelop\</StartWorkingDirectory>
   </PropertyGroup>
   <PropertyGroup>
     <MinimumVisualStudioVersion Condition="'$(MinimumVisualStudioVersion)' == ''">11</MinimumVisualStudioVersion>
@@ -62,7 +63,6 @@
   <Import Project="$(FSharpTargetsPath)" Condition="Exists('$(FSharpTargetsPath)')" />
   <ItemGroup>
     <Compile Include="AssemblyInfo.fs" />
-    <Compile Include="HelpTexts.fs" />
     <Compile Include="Commands.fs" />
     <Compile Include="Program.fs" />
     <Content Include="App.config" />

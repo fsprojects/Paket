@@ -100,3 +100,67 @@ let ``can normalize build zeros in prerelease``() =
 [<Test>]
 let ``can normalize CI versions in prerelease``() =
     (SemVer.Parse "0.5.0-ci1411131947").Normalize() |> shouldEqual "0.5.0-ci1411131947"
+
+
+[<Test>]
+let ``should parse very large prerelease numbers (aka timestamps)``() =
+    (SemVer.Parse "0.22.0-pre20150223185624").Normalize() |> shouldEqual "0.22.0-pre20150223185624"
+
+
+[<Test>]
+let ``version core elements must be non-negative (SemVer 2.0.0/2)`` () =
+    shouldFail<exn>(fun () -> SemVer.Parse "1.1.-1" |> ignore)
+    shouldFail<exn>(fun () -> SemVer.Parse "1.-1.1" |> ignore)
+    shouldFail<exn>(fun () -> SemVer.Parse "-1.1.1" |> ignore)
+    
+
+[<Test>]
+let ``version core elements should accept leading zeroes (NuGet compat)`` () =
+    SemVer.Parse "01.1.1" |> ignore
+    SemVer.Parse "1.01.1" |> ignore
+    SemVer.Parse "1.1.01" |> ignore
+
+[<Test>]
+let ``pre-release identifiers must not contain invalid characters (SemVer 2.0.0/9)`` () =
+    shouldFail<exn>(fun () -> SemVer.Parse "1.0.0-a.!.c" |> ignore)
+
+[<Test>]
+let ``pre-release identifiers must not be empty (SemVer 2.0.0/9)`` () =
+    shouldFail<exn>(fun () -> SemVer.Parse "1.0.0-a..c" |> ignore)
+
+// Build Validity
+[<Test>]
+let ``build identifiers must not contain invalid characters (SemVer 2.0.0/10)`` () =
+    shouldFail<exn>(fun () -> SemVer.Parse "1.0.0+a.c" |> ignore)
+
+[<Test>]
+let ``build identifiers must not be empty (SemVer 2.0.0/10)`` () =
+    shouldFail<exn>(fun () -> SemVer.Parse "1.0.0+a.c" |> ignore)
+
+// Precedence
+
+[<Test>]
+let ``core version exhibits correct (numeric) precedence (SemVer 2.0.0/11)`` () =
+    (SemVer.Parse "2.1.1") |> shouldBeGreaterThan (SemVer.Parse "2.1.0")
+    (SemVer.Parse "2.1.0") |> shouldBeGreaterThan (SemVer.Parse "2.0.0")
+    (SemVer.Parse "2.0.0") |> shouldBeGreaterThan (SemVer.Parse "1.0.0")
+
+[<Test>]
+let ``pre-release versions have lower precedence (SemVer 2.0.0/9,11)`` () =
+    (SemVer.Parse "1.0.0") |> shouldBeGreaterThan (SemVer.Parse "1.0.0-alpha")
+
+[<Test>]
+let ``larger pre-release identifiers have higher precedence (SemVer 2.0.0/11)`` () =
+    (SemVer.Parse "1.0.0-alpha") |> shouldBeSmallerThan (SemVer.Parse "1.0.0-alpha.1")
+
+[<Test>]
+let ``alpha pre-release identifiers have higher precedence than numeric (SemVer 2.0.0/11)`` () =
+    (SemVer.Parse "1.0.0-alpha.1") |> shouldBeSmallerThan (SemVer.Parse "1.0.0-alpha.beta")
+
+[<Test>]
+let ``earlier pre-release identifiers have higher precedence (SemVer 2.0.0/11)`` () =
+    (SemVer.Parse "1.0.0-alpha.beta") |> shouldBeSmallerThan (SemVer.Parse "1.0.0-beta")
+
+[<Test>]
+let ``numeric pre-release identifiers exhibit correct (numeric) precedence (SemVer 2.0.0/11)`` () =
+    (SemVer.Parse "1.0.0-beta.2") |> shouldBeSmallerThan (SemVer.Parse "1.0.0-beta.11")

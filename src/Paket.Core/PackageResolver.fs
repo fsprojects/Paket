@@ -53,8 +53,8 @@ type ResolvedPackage =
     { Name : PackageName
       Version : SemVerInfo
       Dependencies : DependencySet
-      Unlisted : bool      
-      FrameworkRestrictions: FrameworkRestrictions
+      Unlisted : bool 
+      Settings : InstallSettings
       Source : PackageSource }
 
     override this.ToString() =
@@ -114,31 +114,64 @@ type ResolvedPackages =
             failwith !errorText
 
 
+let calcOpenRequirements (exploredPackage:ResolvedPackage,globalFrameworkRestrictions,versionToExplore,dependency,closed:Set<PackageRequirement>,stillOpen:Set<PackageRequirement>) =
+    let dependenciesByName =
+        // there are packages which define multiple dependencies to the same package
+        // we just take the latest one - see #567
+        let hashSet = new HashSet<_>()
+        exploredPackage.Dependencies
+        |> Set.filter (fun (name,_,_) -> hashSet.Add name)
+
+    let rest = Set.remove dependency stillOpen
+                        
+    dependenciesByName
+    |> Set.map (fun (n,v,r) -> {dependency with Name = n; VersionRequirement = v; Parent = Package(dependency.Name,versionToExplore); Settings = { dependency.Settings with FrameworkRestrictions = r @ globalFrameworkRestrictions }})
+    |> Set.filter (fun d -> Set.contains d closed |> not)
+    |> Set.filter (fun d -> Set.contains d stillOpen |> not)
+    |> Set.filter (fun d ->
+        closed 
+        |> Seq.filter (fun x -> x.Name = d.Name)
+        |> Seq.exists (fun otherDep -> otherDep.VersionRequirement.Range.IsIncludedIn(d.VersionRequirement.Range))
+        |> not)
+    |> Set.filter (fun d ->
+        rest 
+        |> Seq.filter (fun x -> x.Name = d.Name)
+        |> Seq.exists (fun otherDep -> otherDep.VersionRequirement.Range.IsIncludedIn(d.VersionRequirement.Range))
+        |> not)
+    |> Set.union rest
+
 type Resolved = {
     ResolvedPackages : ResolvedPackages
     ResolvedSourceFiles : ModuleResolver.ResolvedSourceFile list }
 
 /// Resolves all direct and transitive dependencies
-let Resolve(getVersionsF, getPackageDetailsF, rootDependencies:PackageRequirement list) =
+let Resolve(getVersionsF, getPackageDetailsF, globalFrameworkRestrictions, rootDependencies:PackageRequirement list) =
     tracefn "Resolving packages:"
     let exploredPackages = Dictionary<NormalizedPackageName*SemVerInfo,ResolvedPackage>()
     let allVersions = Dictionary<NormalizedPackageName,SemVerInfo list>()
+    let conflictHistory = Dictionary<NormalizedPackageName,int>()
 
-    let getExploredPackage(sources,packageName:PackageName,version,frameworkRestrictions) =
-        let normalizedPackageName = NormalizedPackageName packageName
+    let getExploredPackage(dependency:PackageRequirement,version) =
+        let normalizedPackageName = NormalizedPackageName dependency.Name
+        let (PackageName name) = dependency.Name
         match exploredPackages.TryGetValue <| (normalizedPackageName,version) with
-        | true,package -> package
-        | false,_ ->
-            let (PackageName name) = packageName
-            tracefn "    - exploring %s %A" name version
-            let packageDetails : PackageDetails = getPackageDetailsF sources packageName version
-            let restrictedDependencies = DependencySetFilter.filterByRestrictions frameworkRestrictions packageDetails.DirectDependencies
+        | true,package -> 
+            match dependency.Parent with
+            | PackageRequirementSource.DependenciesFile(_) -> 
+                let package = { package with Settings = { package.Settings with FrameworkRestrictions = dependency.Settings.FrameworkRestrictions } }
+                exploredPackages.[(normalizedPackageName,version)] <- package
+                package
+            | _ -> package
+        | false,_ ->         
+            tracefn  " - %s %A" name version
+            let packageDetails : PackageDetails = getPackageDetailsF dependency.Sources dependency.Name version
+            let restrictedDependencies = DependencySetFilter.filterByRestrictions (dependency.Settings.FrameworkRestrictions @ globalFrameworkRestrictions) packageDetails.DirectDependencies
             let explored =
                 { Name = packageDetails.Name
                   Version = version
                   Dependencies = restrictedDependencies
                   Unlisted = packageDetails.Unlisted
-                  FrameworkRestrictions = frameworkRestrictions
+                  Settings = dependency.Settings
                   Source = packageDetails.Source }
             exploredPackages.Add((normalizedPackageName,version),explored)
             explored
@@ -153,7 +186,7 @@ let Resolve(getVersionsF, getPackageDetailsF, rootDependencies:PackageRequiremen
                 | OverrideAll v -> [v]
                 | Specific v -> [v]
                 | _ -> 
-                    tracefn "  - fetching versions for %s" name
+                    verbosefn "  - fetching versions for %s" name
                     getVersionsF(sources,packageName)
 
             if Seq.isEmpty versions then
@@ -164,6 +197,7 @@ let Resolve(getVersionsF, getPackageDetailsF, rootDependencies:PackageRequiremen
 
     let rec improveModel (filteredVersions:Map<PackageName, (SemVerInfo list * bool)>,packages:ResolvedPackage list,closed:Set<PackageRequirement>,stillOpen:Set<PackageRequirement>) =
         if Set.isEmpty stillOpen then
+            // we're done. check if we have a valid resolution and return it
             let isOk =
                 filteredVersions
                 |> Map.forall (fun _ v ->
@@ -172,88 +206,103 @@ let Resolve(getVersionsF, getPackageDetailsF, rootDependencies:PackageRequiremen
                     | _ -> false)
 
             if isOk then
-                ResolvedPackages.Ok(packages |> Seq.fold (fun map p -> Map.add (NormalizedPackageName p.Name) p map) Map.empty)
+                let resolution =
+                    packages 
+                    |> Seq.fold (fun map p -> Map.add (NormalizedPackageName p.Name) p map) Map.empty
+
+                ResolvedPackages.Ok(resolution)
             else
                 ResolvedPackages.Conflict(closed,stillOpen)
         else
-            let dependency = Seq.head stillOpen
-            let rest = stillOpen |> Set.remove dependency
-     
-            let allVersions,compatibleVersions,globalOverride = 
-                match Map.tryFind dependency.Name filteredVersions with
-                | None ->
-                    let versions = getAllVersions(dependency.Sources,dependency.Name,dependency.VersionRequirement.Range)
-                    if dependency.VersionRequirement.Range.IsGlobalOverride then
-                        versions,List.filter dependency.VersionRequirement.IsInRange versions,true
-                    else
-                        let compatible = List.filter dependency.VersionRequirement.IsInRange versions
-                        if compatible = [] then
-                            let prereleases = List.filter (dependency.IncludingPrereleases().VersionRequirement.IsInRange) versions
-                            if allPrereleases prereleases then
-                                prereleases,prereleases,false
-                            else
-                                versions,[],false
-                        else
-                            versions,compatible,false
-                | Some(versions,globalOverride) -> 
-                    if globalOverride then 
-                        versions,versions,true 
-                    else versions,List.filter dependency.VersionRequirement.IsInRange versions,false
+            let packageCount = packages |> List.length
+            verbosefn "    %d packages in resolution. %d requirements left" packageCount stillOpen.Count
+            
+            let dependency =
+                let currentMin = ref (Seq.head stillOpen)
+                let currentBoost = ref 0
+                for d in stillOpen do
+                    let boost = 
+                        match conflictHistory.TryGetValue(NormalizedPackageName d.Name) with
+                        | true,c -> -c
+                        | _ -> 0
+                    if PackageRequirement.Compare(d,!currentMin,boost,!currentBoost) = -1 then
+                        currentMin := d
+                        currentBoost := boost
+                !currentMin
 
-            if compatibleVersions = [] then
-                match dependency.Parent with
-                | PackageRequirementSource.DependenciesFile _ ->                     
-                    let versionText = String.Join(Environment.NewLine + "     - ",List.sort allVersions)
+            let allVersions = ref []
+            let compatibleVersions = ref []
+            let globalOverride = ref false
+     
+            match Map.tryFind dependency.Name filteredVersions with
+            | None ->
+                allVersions := getAllVersions(dependency.Sources,dependency.Name,dependency.VersionRequirement.Range)
+                compatibleVersions := List.filter dependency.VersionRequirement.IsInRange (!allVersions)
+                if dependency.VersionRequirement.Range.IsGlobalOverride then
+                    globalOverride := true
+                else
+                    if !compatibleVersions = [] then
+                        let prereleases = List.filter (dependency.IncludingPrereleases().VersionRequirement.IsInRange) (!allVersions)
+                        if allPrereleases prereleases then
+                            allVersions := prereleases
+                            compatibleVersions := prereleases
+            | Some(versions,globalOverride') -> 
+                globalOverride := globalOverride'
+                allVersions := versions
+                if globalOverride' then
+                    compatibleVersions := versions
+                else
+                    compatibleVersions := 
+                        List.filter (fun v -> dependency.VersionRequirement.IsInRange(v,dependency.Parent.IsRootRequirement() |> not)) versions
+
+            if !compatibleVersions = [] then
+                if dependency.Parent.IsRootRequirement() then    
+                    let versionText = String.Join(Environment.NewLine + "     - ",List.sort !allVersions)
                     failwithf "Could not find compatible versions for top level dependency:%s     %A%s   Available versions:%s     - %s%s   Try to relax the dependency or allow prereleases." 
                         Environment.NewLine (dependency.ToString()) Environment.NewLine Environment.NewLine versionText Environment.NewLine
-                | _ -> ()
+                else
+                    match conflictHistory.TryGetValue(NormalizedPackageName dependency.Name) with
+                    | true,count -> conflictHistory.[NormalizedPackageName dependency.Name] <- count + 1
+                    | _ -> conflictHistory.Add(NormalizedPackageName dependency.Name, 1)
+                    tracefn "  Could not find compatible versions for:%s     %A%s  Conflicts with:" Environment.NewLine (dependency.ToString()) Environment.NewLine
+                    
+                    closed
+                    |> Seq.filter (fun d -> d.Name = dependency.Name)
+                    |> fun xs -> String.Join(Environment.NewLine + "    ",xs)
+                    |> tracefn "  %s"
 
-            let sorted =                
-                match dependency.Parent with
-                | DependenciesFile _ ->
-                    List.sort compatibleVersions |> List.rev
-                | _ ->
+
+            let sortedVersions =                
+                if dependency.Parent.IsRootRequirement() then
+                    List.sort !compatibleVersions |> List.rev
+                else
                     match dependency.ResolverStrategy with
-                    | ResolverStrategy.Max -> List.sort compatibleVersions |> List.rev
-                    | ResolverStrategy.Min -> List.sort compatibleVersions
+                    | ResolverStrategy.Max -> List.sort !compatibleVersions |> List.rev
+                    | ResolverStrategy.Min -> List.sort !compatibleVersions
 
             let tryToImprove useUnlisted =
-                sorted
+                sortedVersions
                 |> List.fold (fun (allUnlisted,state) versionToExplore ->
                     match state with
                     | ResolvedPackages.Conflict _ ->
-                        let exploredPackage = getExploredPackage(dependency.Sources,dependency.Name,versionToExplore,dependency.FrameworkRestrictions)    
-                        if exploredPackage.Unlisted && not useUnlisted then (allUnlisted,state) else                
-                        let newFilteredVersion = Map.add dependency.Name ([versionToExplore],globalOverride) filteredVersions
-                        let dependenciesByName =
-                            // there are packages which define multiple dependencies to the same package
-                            // we just take the latest one - see #567
-                            let hashSet = new HashSet<_>()
-                            exploredPackage.Dependencies
-                            |> Set.filter (fun (name,_,_) -> hashSet.Add name)
-                            
-                        let newDependencies =
-                            dependenciesByName
-                            |> Set.map (fun (n,v,r) -> {dependency with Name = n; VersionRequirement = v; Parent = Package(dependency.Name,versionToExplore); FrameworkRestrictions = r })
-                            |> Set.filter (fun d -> Set.contains d closed |> not)
-                            |> Set.filter (fun d -> Set.contains d stillOpen |> not)
-                            |> Set.filter (fun d ->
-                                closed 
-                                |> Seq.filter (fun x -> x.Name = d.Name)
-                                |> Seq.exists (fun otherDep -> otherDep.VersionRequirement.Range.IsIncludedIn(d.VersionRequirement.Range))
-                                |> not)
-                            |> Set.filter (fun d ->
-                                rest 
-                                |> Seq.filter (fun x -> x.Name = d.Name)
-                                |> Seq.exists (fun otherDep -> otherDep.VersionRequirement.Range.IsIncludedIn(d.VersionRequirement.Range))
-                                |> not)
+                        let exploredPackage = getExploredPackage(dependency,versionToExplore)
+                        if exploredPackage.Unlisted && not useUnlisted then 
+                            allUnlisted,state 
+                        else                
+                            let newFilteredVersions = Map.add dependency.Name ([versionToExplore],!globalOverride) filteredVersions
+                        
+                            let newOpen = calcOpenRequirements(exploredPackage,globalFrameworkRestrictions,versionToExplore,dependency,closed,stillOpen)
+                            let newPackages =
+                                exploredPackage::(packages |> List.filter (fun p -> NormalizedPackageName p.Name <> NormalizedPackageName exploredPackage.Name || p.Version <> exploredPackage.Version))
 
-                        (exploredPackage.Unlisted && allUnlisted),improveModel (newFilteredVersion,exploredPackage::packages,Set.add dependency closed,Set.union rest newDependencies)
+                            let improved = improveModel (newFilteredVersions,newPackages,Set.add dependency closed,newOpen)                            
+                            (exploredPackage.Unlisted && allUnlisted),improved
+                            
                     | ResolvedPackages.Ok _ -> allUnlisted,state)
                         (true,ResolvedPackages.Conflict(closed,stillOpen))
             
             match tryToImprove false with
-            | true,ResolvedPackages.Conflict(x,y) -> tryToImprove true |> snd         
+            | true,ResolvedPackages.Conflict(_) -> tryToImprove true |> snd       
             | _,x-> x
 
     match improveModel (Map.empty, [], Set.empty, Set.ofList rootDependencies) with

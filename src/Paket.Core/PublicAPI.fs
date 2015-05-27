@@ -4,7 +4,7 @@ open System.IO
 open Paket.Logging
 open System
 open Paket.Domain
-open Paket.Rop
+open Chessie.ErrorHandling
 
 /// Paket API which is optimized for F# Interactive use.
 type Dependencies(dependenciesFileName: string) =
@@ -114,6 +114,12 @@ type Dependencies(dependenciesFileName: string) =
         Utils.RunInLockedAccessMode(
             this.RootPath,
             fun () -> AddProcess.Add(dependenciesFileName, PackageName package, version, force, hard, interactive, installAfter))
+
+    /// Adds the given package with the given version to the dependencies file.
+    member this.AddToProject(package: string,version: string,force: bool,hard: bool,projectName: string,installAfter: bool): unit =
+        Utils.RunInLockedAccessMode(
+            this.RootPath,
+            fun () -> AddProcess.AddToProject(dependenciesFileName, PackageName package, version, force, hard, projectName, installAfter))
       
     /// Adds credentials for a Nuget feed
     member this.AddCredentials(source: string, username: string) : unit =
@@ -230,6 +236,12 @@ type Dependencies(dependenciesFileName: string) =
             this.RootPath,
             fun () -> RemoveProcess.Remove(dependenciesFileName, PackageName package, force, hard, interactive, installAfter))
 
+    /// Removes the given package from the specified project
+    member this.RemoveFromProject(package: string,force: bool,hard: bool,projectName: string,installAfter: bool): unit =
+        Utils.RunInLockedAccessMode(
+            this.RootPath,
+            fun () -> RemoveProcess.RemoveFromProject(dependenciesFileName, PackageName package, force, hard, projectName, installAfter))
+
     /// Shows all references for the given packages.
     member this.ShowReferencesFor(packages: string list): unit =
         FindReferences.ShowReferencesFor (packages |> List.map PackageName) |> this.Process
@@ -237,3 +249,17 @@ type Dependencies(dependenciesFileName: string) =
     /// Finds all references for a given package.
     member this.FindReferencesFor(package: string): string list =
         FindReferences.FindReferencesForPackage (PackageName package) |> this.Process
+
+    // Pack all paket.template files.
+    member this.Pack(outputPath, ?buildConfig, ?version, ?releaseNotes) = 
+        let dependenciesFile = DependenciesFile.ReadFromFile dependenciesFileName
+        PackageProcess.Pack(dependenciesFile, outputPath, buildConfig, version, releaseNotes)
+
+    // Push a nupkg file.
+    member this.Push(packageFileName, ?url, ?apiKey, (?endPoint: string), ?maxTrials) =
+        let urlWithEndpoint = RemoteUpload.GetUrlWithEndpoint url endPoint
+        let apiKey = defaultArg apiKey (Environment.GetEnvironmentVariable("nugetkey"))
+        if String.IsNullOrEmpty apiKey then
+            failwithf "Could not push package %s. Please specify an NuGet API key via environment variable \"nugetkey\"." packageFileName
+        let maxTrials = defaultArg maxTrials 5
+        RemoteUpload.Push maxTrials urlWithEndpoint apiKey packageFileName

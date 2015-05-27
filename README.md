@@ -1,3 +1,9 @@
+[![Issue Stats][badge-issue-stats]][link-issue-stats]
+[![Pull Requests Stats][badge-pr-stats]][link-issue-stats]
+[![Travis build status](https://travis-ci.org/fsprojects/Paket.png)](https://travis-ci.org/fsprojects/Paket)
+[![AppVeyor Build status](https://ci.appveyor.com/api/projects/status/aqs8eux16x4g5p47/branch/master)](https://ci.appveyor.com/project/SteffenForkmann/paket/branch/master)
+[![NuGet Status](http://img.shields.io/nuget/v/Paket.svg?style=flat)](https://www.nuget.org/packages/Paket/)
+
 # Paket
 
 A package dependency manager for .NET with support for NuGet packages and GitHub repositories.
@@ -24,21 +30,10 @@ For more reasons see the [FAQ][10].
  - Download [paket.exe][3]
  - Download [paket.bootstrapper.exe][3]
 
-[![NuGet Status](http://img.shields.io/nuget/v/Paket.svg?style=flat)](https://www.nuget.org/packages/Paket/)
-
 ## Troubleshooting and support
 
  - Found a bug or missing a feature? Feed the [issue tracker][4].
  - Announcements and related miscellanea through Twitter ([@PaketManager][5])
-
-## Build status
-
-|  |  BuildScript | Status of last build |
-| :------ | :------: | :------: |
-| **Mono** | [build.sh](https://github.com/fsprojects/Paket/blob/master/build.sh) | [![Travis build status](https://travis-ci.org/fsprojects/Paket.png)](https://travis-ci.org/fsprojects/Paket) |
-| **Windows** | [build.cmd](https://github.com/fsprojects/Paket/blob/master/build.cmd) | [![AppVeyor Build status](https://ci.appveyor.com/api/projects/status/aqs8eux16x4g5p47/branch/master)](https://ci.appveyor.com/project/SteffenForkmann/paket/branch/master) |
-
-[![Issue Stats][badge-issue-stats]][link-issue-stats] [![Pull Requests Stats][badge-pr-stats]][link-issue-stats]
 
 ## Quick contributing guide
 
@@ -48,7 +43,8 @@ For more reasons see the [FAQ][10].
  - Run `build.cmd` (`build.sh` on Mono) to make sure all tests are still passing.
  - Send a Pull Request.
 
-If you want to contribute to the [docs][2] then please the modify markdown files in `/docs/content` (some help texts are also generated from `/src/Paket/HelpTexts.fs`) and send a pull request.
+If you want to contribute to the [docs][2] then please the modify markdown files in `/docs/content` and send a pull request.
+Note, that short description and syntax for each command is generated automatically from the `Paket.Commands` module.
 
 ## License
 
@@ -58,6 +54,7 @@ The [MIT license][6]
 
 - [@forki](https://github.com/forki)
 - [@agross](https://github.com/agross)
+- [@mavnn](https://github.com/mavnn)
 - [@mexx](https://github.com/mexx)
 - [@isaacabraham](https://github.com/isaacabraham)
 - [@theimowski](https://github.com/theimowski)
