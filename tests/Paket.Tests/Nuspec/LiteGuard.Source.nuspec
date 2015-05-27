@@ -1,0 +1,37 @@
+<?xml version="1.0"?>
+<package>
+  <metadata minClientVersion="2.8">
+    <id>LiteGuard.Source</id>
+    <version>0.0.0</version>
+    <title>LiteGuard.Source</title>
+    <authors>Adam Ralph, LiteGuard contributors</authors>
+    <projectUrl>https://github.com/liteguard/liteguard</projectUrl>
+    <iconUrl>https://raw.github.com/liteguard/liteguard/master/assets/liteguard_128.png</iconUrl>
+    <licenseUrl>https://github.com/liteguard/liteguard/blob/master/license.txt</licenseUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <summary>The most simple, unambiguous and lightweight guard clause library. This is the source code package. Also available as a binary package (LiteGuard).</summary>
+    <description>Why, it's lighter than air!
+The aim of LiteGuard is to be the most simple, unambiguous and lightweight guard clause library available.
+
+Supported platforms: Desktop .NET 3.5+, Desktop Mono 3.2.8+, Windows 8+, Windows Phone 8.1+, Windows Phone Silverlight 8+, Silverlight 5+, Portable for Universal Apps (Profile32), Portable (Profile328).
+
+This is the LiteGuard source code package. Also available as a binary package (LiteGuard). If your project is an application or library which is not packaged and/or exported for use in other solutions then the binary package is usually the best choice. If you are writing a library which is packaged and/or exported for use in other solutions then the source code package is usually the best choice.
+
+After installing this package you may change the source code as required to match your coding conventions.
+
+We all have to do our bit in working toward the ultimate number of published guard clause libraries which, at current estimates, is somewhere in the region of 6.02214129(27) × 10^23.</description>
+    <copyright>Copyright (c) LiteGuard contributors. (liteguard.ch@gmail.com)</copyright>
+    <tags>guard clause arguments light avogadro</tags>
+    <developmentDependency>true</developmentDependency>
+  </metadata>
+  <files>
+    <file src="LiteGuard.net35/bin/Release/Guard.cs.pp"     target="content/net35" />
+    <file src="LiteGuard.pcl/bin/Release/Guard.cs.pp"       target="content/portable-net4+sl5+netcore45+wpa81+wp8+MonoAndroid1+MonoTouch1" />
+    <file src="LiteGuard.sl5/bin/Release/Guard.cs.pp"       target="content/sl5" />
+    <file src="LiteGuard.universal/bin/Release/Guard.cs.pp" target="content/portable-wpa81+win81" />
+    <file src="LiteGuard.win8/bin/Release/Guard.cs.pp"      target="content/win8" />
+    <file src="LiteGuard.win81/bin/Release/Guard.cs.pp"     target="content/win81" />
+    <file src="LiteGuard.wp8/bin/Release/Guard.cs.pp"       target="content/wp8" />
+    <file src="LiteGuard.wpa81/bin/Release/Guard.cs.pp"     target="content/wpa81" />
+  </files>
+</package>

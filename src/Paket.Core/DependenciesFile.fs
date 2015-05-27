@@ -21,6 +21,10 @@ type InstallOptions =
         Redirects = false
         Settings = InstallSettings.Default }
 
+type VersionStrategy = {
+    VersionRequirement : VersionRequirement
+    ResolverStrategy : ResolverStrategy }
+            
 /// [omit]
 module DependenciesFileParser = 
 
@@ -140,9 +144,9 @@ module DependenciesFileParser =
     | CopyLocal of bool
     | Redirects of bool
 
-    let private (|Remote|Package|Comment|ParserOptions|SourceFile|) (line:string) =
+    let private (|Remote|Package|Empty|ParserOptions|SourceFile|) (line:string) =
         match line.Trim() with
-        | _ when String.IsNullOrWhiteSpace line -> Comment(line)
+        | _ when String.IsNullOrWhiteSpace line -> Empty(line)
         | String.StartsWith "source" _ as trimmed -> Remote(PackageSource.Parse(trimmed))
         | String.StartsWith "nuget" trimmed -> 
             let parts = trimmed.Trim().Replace("\"", "").Split([|' '|],StringSplitOptions.RemoveEmptyEntries) |> Seq.toList
@@ -176,59 +180,74 @@ module DependenciesFileParser =
             SourceFile(``parse git source`` trimmed SingleSourceFileOrigin.GitHubLink "github")
         | String.StartsWith "http" _ as trimmed  ->
             SourceFile(``parse http source`` trimmed)
-        | String.StartsWith "//" _ -> Comment(line)
-        | String.StartsWith "#" _ -> Comment(line)
+        | String.StartsWith "//" _ -> Empty(line)
+        | String.StartsWith "#" _ -> Empty(line)
         | _ -> failwithf "Unrecognized token: %s" line
     
-    let parseDependenciesFile fileName (lines:string seq) = 
-        ((0, InstallOptions.Default, [], [], [],[]), lines)
-        ||> Seq.fold(fun (lineNo, options, sources: PackageSource list, packages, sourceFiles: UnresolvedSourceFile list,comments) line ->
+    let parsePackage(sources,parent,name,version,rest:string) =
+        let prereleases,optionsText =
+            if rest.Contains ":" then
+                // boah that's reaaaally ugly, but keeps backwards compat
+                let pos = rest.IndexOf ':'
+                let s = rest.Substring(0,pos).TrimEnd()
+                let pos' = s.LastIndexOf(' ')
+                let prereleases = if pos' > 0 then s.Substring(0,pos') else ""
+                let s' = if prereleases <> "" then rest.Replace(prereleases,"") else rest
+                prereleases,s'
+            else
+                rest,""
+
+        if operators |> Seq.exists (fun x -> prereleases.Contains x) || prereleases.Contains("!") then
+            failwithf "Invalid prerelease version %s" prereleases
+
+        { Sources = sources
+          Name = PackageName name
+          ResolverStrategy = parseResolverStrategy version
+          Parent = parent
+          Settings = InstallSettings.Parse(optionsText)
+          VersionRequirement = parseVersionRequirement((version + " " + prereleases).Trim '!') } 
+
+    let parsePackageLine(sources,parent,line:string) =
+        match line with 
+        | Package(name,version,rest) -> parsePackage(sources,parent,name,version,rest)
+        | _ -> failwithf "Not a package line: %s" line
+
+    let parseDependenciesFile fileName (lines:string seq) =
+        let lines = lines |> Seq.toArray
+         
+        ((0, InstallOptions.Default, [], [], []), lines)
+        ||> Seq.fold(fun (lineNo, options, sources: PackageSource list, packages, sourceFiles: UnresolvedSourceFile list) line ->
             let lineNo = lineNo + 1
             try
                 match line with
-                | Remote(newSource) -> lineNo, options, sources @ [newSource], packages, sourceFiles, comments
-                | Comment(line) -> lineNo, options, sources, packages, sourceFiles, if line <> "" then (lineNo,line)::comments else comments
-                | ParserOptions(ParserOption.ReferencesMode mode) -> lineNo, { options with Strict = mode }, sources, packages, sourceFiles, comments
-                | ParserOptions(ParserOption.Redirects mode) -> lineNo, { options with Redirects = mode }, sources, packages, sourceFiles, comments
-                | ParserOptions(ParserOption.CopyLocal mode) -> lineNo, { options with Settings = { options.Settings with CopyLocal = mode }}, sources, packages, sourceFiles, comments
-                | ParserOptions(ParserOption.ImportTargets mode) -> lineNo, { options with Settings = { options.Settings with ImportTargets = mode }}, sources, packages, sourceFiles, comments
-                | ParserOptions(ParserOption.FrameworkRestrictions r) -> lineNo, { options with Settings = { options.Settings with FrameworkRestrictions = r }}, sources, packages, sourceFiles, comments
-                | ParserOptions(ParserOption.OmitContent omit) -> lineNo, { options with Settings = { options.Settings with  OmitContent = omit }}, sources, packages, sourceFiles, comments
+                | Empty(_) -> lineNo, options, sources , packages, sourceFiles
+                | Remote(newSource) -> lineNo, options, sources @ [newSource], packages, sourceFiles
+                | ParserOptions(ParserOption.ReferencesMode mode) -> lineNo, { options with Strict = mode }, sources, packages, sourceFiles
+                | ParserOptions(ParserOption.Redirects mode) -> lineNo, { options with Redirects = mode }, sources, packages, sourceFiles
+                | ParserOptions(ParserOption.CopyLocal mode) -> lineNo, { options with Settings = { options.Settings with CopyLocal = Some mode }}, sources, packages, sourceFiles
+                | ParserOptions(ParserOption.ImportTargets mode) -> lineNo, { options with Settings = { options.Settings with ImportTargets = Some mode }}, sources, packages, sourceFiles
+                | ParserOptions(ParserOption.FrameworkRestrictions r) -> lineNo, { options with Settings = { options.Settings with FrameworkRestrictions = r }}, sources, packages, sourceFiles
+                | ParserOptions(ParserOption.OmitContent omit) -> lineNo, { options with Settings = { options.Settings with  OmitContent = Some omit }}, sources, packages, sourceFiles
                 | Package(name,version,rest) ->
-                    let prereleases,optionsText =
-                        if rest.Contains ":" then
-                            // boah that's reaaaally ugly, but keeps backwards compat
-                            let pos = rest.IndexOf ':'
-                            let s = rest.Substring(0,pos).TrimEnd()
-                            let pos' = s.LastIndexOf(' ')
-                            let prereleases = if pos' > 0 then s.Substring(0,pos') else ""
-                            let s' = if prereleases <> "" then rest.Replace(prereleases,"") else rest
-                            prereleases,s'
-                        else
-                            rest,""
+                    let package = parsePackage(sources,DependenciesFile fileName,name,version,rest)
 
-                    if operators |> Seq.exists (fun x -> prereleases.Contains x) || prereleases.Contains("!") then
-                        failwithf "Invalid prerelease version %s" prereleases
-
-                    lineNo, options, sources, 
-                        { Sources = sources
-                          Name = PackageName name
-                          ResolverStrategy = parseResolverStrategy version
-                          Parent = DependenciesFile fileName
-                          Settings = InstallSettings.Parse(optionsText)
-                          VersionRequirement = parseVersionRequirement((version + " " + prereleases).Trim '!') } :: packages, sourceFiles, comments
+                    lineNo, options, sources, package :: packages, sourceFiles
                 | SourceFile(origin, (owner,project, commit), path) ->
-                    lineNo, options, sources, packages, { Owner = owner; Project = project; Commit = commit; Name = path; Origin = origin} :: sourceFiles, comments
+                    lineNo, options, sources, packages, { Owner = owner; Project = project; Commit = commit; Name = path; Origin = origin} :: sourceFiles
                     
             with
             | exn -> failwithf "Error in paket.dependencies line %d%s  %s" lineNo Environment.NewLine exn.Message)
-        |> fun (_,options,sources,packages,remoteFiles,comments) ->
+        |> fun (_,options,sources,packages,remoteFiles) ->
             fileName,
             options,
             sources,
             packages |> List.rev,
             remoteFiles |> List.rev,
-            comments
+            lines
+    
+    let parseVersionString (version : string) = 
+        { VersionRequirement = parseVersionRequirement (version.Trim '!')
+          ResolverStrategy = parseResolverStrategy version }
 
 module DependenciesFileSerializer = 
     let formatVersionRange strategy (version : VersionRequirement) : string =          
@@ -256,22 +275,42 @@ module DependenciesFileSerializer =
         let text = prefix + version         
         if text <> "" && preReleases <> "" then text + " " + preReleases else text + preReleases
 
+    let sourceString source = "source " + source
+
+    let packageString packageName versionRequirement resolverStrategy (settings:InstallSettings) =
+        let (PackageName name) = packageName
+        let version = formatVersionRange resolverStrategy versionRequirement
+        let s = settings.ToString()
+
+        sprintf "nuget %s%s%s" name (if version <> "" then " " + version else "") (if s <> "" then " " + s else s)        
+
 /// Allows to parse and analyze paket.dependencies files.
-type DependenciesFile(fileName,options,sources,packages : PackageRequirement list, remoteFiles : UnresolvedSourceFile list, comments) = 
+type DependenciesFile(fileName,options,sources,packages : PackageRequirement list, remoteFiles : UnresolvedSourceFile list, textRepresentation:string []) = 
     let packages = packages |> Seq.toList
     let dependencyMap = Map.ofSeq (packages |> Seq.map (fun p -> p.Name, p.VersionRequirement))
+
+    let isPackageLine name (l : string) = 
+        let splitted = l.Split(' ') |> Array.map (fun s -> s.ToLower())
+        splitted |> Array.exists ((=) "nuget") && splitted |> Array.exists ((=) name)          
+
+    let tryFindPackageLine (packageName:PackageName) =
+        let name = packageName.ToString().ToLower()
+        textRepresentation
+        |> Array.tryFindIndex (isPackageLine name)
             
     member __.DirectDependencies = dependencyMap
     member __.Packages = packages
-    member __.Comments = comments
     member __.HasPackage (name : PackageName) = packages |> List.exists (fun p -> NormalizedPackageName p.Name = NormalizedPackageName name)
+    member __.GetPackage (name : PackageName) = packages |> List.find (fun p -> NormalizedPackageName p.Name = NormalizedPackageName name)
     member __.RemoteFiles = remoteFiles
     member __.Options = options
     member __.FileName = fileName
+    member __.Lines = textRepresentation
     member __.Sources = sources
     member this.Resolve(force) = 
         let getSha1 origin owner repo branch = RemoteDownload.getSHA1OfBranch origin owner repo branch |> Async.RunSynchronously
-        this.Resolve(getSha1,NuGetV2.GetVersions,NuGetV2.GetPackageDetails force)
+        let root = Path.GetDirectoryName this.FileName
+        this.Resolve(getSha1,NuGetV2.GetVersions root,NuGetV2.GetPackageDetails root force)   
 
     member __.Resolve(getSha1,getVersionF, getPackageDetailsF) =
         let resolveSourceFile(file:ResolvedSourceFile) : PackageRequirement list =
@@ -302,71 +341,118 @@ type DependenciesFile(fileName,options,sources,packages : PackageRequirement lis
         { ResolvedPackages = PackageResolver.Resolve(getVersionF, getPackageDetailsF, options.Settings.FrameworkRestrictions, remoteDependencies @ packages)
           ResolvedSourceFiles = remoteFiles }        
 
-    member __.AddAdditionalPackage(packageName:PackageName,version:string,settings) =
-        let versionRange = DependenciesFileParser.parseVersionRequirement (version.Trim '!')
-        let sources = 
-            match packages |> List.rev with
-            | lastPackage::_ -> lastPackage.Sources
-            | [] -> [PackageSources.DefaultNugetSource]
-
-        let newPackage = 
-            { Name = packageName
-              VersionRequirement = versionRange
-              Sources = sources
-              ResolverStrategy = DependenciesFileParser.parseResolverStrategy version
-              Settings = settings
-              Parent = PackageRequirementSource.DependenciesFile fileName }
+    member __.AddAdditionalPackage(packageName:PackageName,versionRequirement,resolverStrategy,settings,?pinDown) =
+        let pinDown = defaultArg pinDown false
+        let packageString = DependenciesFileSerializer.packageString packageName versionRequirement resolverStrategy settings
 
         // Try to find alphabetical matching position to insert the package
-        let smaller = Seq.takeWhile (fun (p:PackageRequirement) -> p.Name <= packageName) packages |> List.ofSeq
-        let bigger = Seq.skipWhile (fun (p:PackageRequirement) -> p.Name <= packageName) packages |> List.ofSeq
+        let isPackageInLastSource (p:PackageRequirement) =
+            match sources with
+            | [] -> true
+            | _ -> 
+                let lastSource =  Seq.last sources
+                p.Sources |> Seq.exists (fun s -> s = lastSource)
 
-        let newPackages = smaller @ [newPackage] @ bigger
+        let smaller = Seq.takeWhile (fun (p:PackageRequirement) -> p.Name <= packageName || not (isPackageInLastSource p)) packages |> List.ofSeq
 
-        DependenciesFile(fileName,options,sources,newPackages, remoteFiles, comments)
+        let newLines =
+            let list = new System.Collections.Generic.List<_>()
+            list.AddRange textRepresentation
 
-    member __.AddFixedPackage(packageName:PackageName,version:string,settings) =
-        let versionRange = DependenciesFileParser.parseVersionRequirement (version.Trim '!')
-        let sources = 
-            match packages |> List.rev with
-            | lastPackage::_ -> lastPackage.Sources
-            | [] -> [PackageSources.DefaultNugetSource]
+            match tryFindPackageLine packageName with                        
+            | Some pos -> 
+                let package = DependenciesFileParser.parsePackageLine(sources,PackageRequirementSource.DependenciesFile fileName,list.[pos])
 
-        let strategy,newVersionRange = 
+                if versionRequirement.Range.IsIncludedIn(package.VersionRequirement.Range) then
+                    list.[pos] <- packageString
+                else
+                    list.Insert(pos + 1, packageString)
+            | None -> 
+                if pinDown then 
+                    list.Add(packageString) 
+                else
+                    match smaller with
+                    | [] -> 
+                        match packages with
+                        | [] ->
+                            if remoteFiles <> [] then
+                                list.Insert(0,"")
+                    
+                            match sources with
+                            | [] -> 
+                                list.Insert(0,packageString)
+                                list.Insert(0,"")
+                                list.Insert(0,DependenciesFileSerializer.sourceString Constants.DefaultNugetStream)
+                            | _ -> 
+                                list.Add("")
+                                list.Add(packageString)
+                        | p::_ -> 
+                            match tryFindPackageLine p.Name with
+                            | None -> list.Add packageString
+                            | Some pos -> list.Insert(pos,packageString)
+                    | _ -> 
+                        let p = Seq.last smaller
+
+                        match tryFindPackageLine p.Name with
+                        | None -> list.Add packageString
+                        | Some found -> 
+                            let pos = ref (found + 1)
+                            let skipped = ref false
+                            while !pos < textRepresentation.Length - 1 && (String.IsNullOrWhiteSpace textRepresentation.[!pos] || textRepresentation.[!pos].ToLower().StartsWith("source")) do
+                                if textRepresentation.[!pos].ToLower().StartsWith("source") then
+                                    skipped := true
+                                pos := !pos + 1
+                            
+                            if !skipped then
+                                list.Insert(!pos,packageString)
+                            else
+                                list.Insert(found + 1,packageString)
+            
+            list |> Seq.toArray
+
+        DependenciesFile(DependenciesFileParser.parseDependenciesFile fileName newLines)
+
+
+    member this.AddAdditionalPackage(packageName:PackageName,version:string,settings) =
+        let vr = DependenciesFileParser.parseVersionString version
+
+        this.AddAdditionalPackage(packageName,vr.VersionRequirement,vr.ResolverStrategy,settings)
+
+    member this.AddFixedPackage(packageName:PackageName,version:string,settings) =
+        let vr = DependenciesFileParser.parseVersionString version
+
+        let resolverStrategy,versionRequirement = 
             match packages |> List.tryFind (fun p -> NormalizedPackageName p.Name = NormalizedPackageName packageName) with
             | Some package -> 
                 package.ResolverStrategy,
                 match package.VersionRequirement.Range with
                 | OverrideAll(_) -> package.VersionRequirement
-                | _ -> versionRange
-            | None -> DependenciesFileParser.parseResolverStrategy version,versionRange
+                | _ -> vr.VersionRequirement
+            | None -> vr.ResolverStrategy,vr.VersionRequirement
 
-        let newPackage = 
-            { Name = packageName
-              VersionRequirement = newVersionRange
-              Sources = sources
-              ResolverStrategy = strategy
-              Settings = settings
-              Parent = PackageRequirementSource.DependenciesFile fileName }
-
-        DependenciesFile(fileName,options,sources,(packages |> List.filter (fun p -> NormalizedPackageName p.Name <> NormalizedPackageName packageName)) @ [newPackage], remoteFiles, comments)
+        this.AddAdditionalPackage(packageName,versionRequirement,resolverStrategy,settings,true)
 
     member this.AddFixedPackage(packageName:PackageName,version:string) =
         this.AddFixedPackage(packageName,version,InstallSettings.Default)
 
-    member __.RemovePackage(packageName:PackageName) =
-        let newPackages = 
-            packages
-            |> List.filter (fun p -> NormalizedPackageName p.Name <> NormalizedPackageName packageName)
+    member this.RemovePackage(packageName:PackageName) =
+        match tryFindPackageLine packageName with
+        | None -> this
+        | Some pos ->
+            let removeElementAt index myArr = // TODO: Replace this in F# 4.0
+                [|  for i = 0 to Array.length myArr - 1 do 
+                       if i <> index then yield myArr.[ i ] |]
 
-        DependenciesFile(fileName,options,sources,newPackages,remoteFiles, comments)
+            let newLines = removeElementAt pos textRepresentation
+            DependenciesFile(DependenciesFileParser.parseDependenciesFile fileName newLines)
 
-    static member add (dependenciesFile : DependenciesFile) (packageName,version) =
-        dependenciesFile.Add(packageName,version)
+    static member add (dependenciesFile : DependenciesFile) (packageName,version,installSettings) =
+        dependenciesFile.Add(packageName,version,installSettings)
 
-    member this.Add(packageName,version:string) =
+    member this.Add(packageName,version:string,?installSettings : InstallSettings) =
+        let installSettings = defaultArg installSettings InstallSettings.Default
         let (PackageName name) = packageName
-        if this.HasPackage packageName then 
+        if this.HasPackage packageName && String.IsNullOrWhiteSpace version then 
             traceWarnfn "%s contains package %s already. ==> Ignored" fileName name
             this
         else
@@ -374,7 +460,7 @@ type DependenciesFile(fileName,options,sources,packages : PackageRequirement lis
                 tracefn "Adding %s to %s" name fileName
             else
                 tracefn "Adding %s %s to %s" name version fileName
-            this.AddAdditionalPackage(packageName,version,InstallSettings.Default)
+            this.AddAdditionalPackage(packageName,version,installSettings)
 
     member this.Remove(packageName) =
         let (PackageName name) = packageName
@@ -385,18 +471,22 @@ type DependenciesFile(fileName,options,sources,packages : PackageRequirement lis
             traceWarnfn "%s doesn't contain package %s. ==> Ignored" fileName name
             this
 
-    member this.UpdatePackageVersion(packageName, version) =
+    member this.UpdatePackageVersion(packageName, version:string) = 
         let (PackageName name) = packageName
         if this.HasPackage(packageName) then
-            let versionRequirement = DependenciesFileParser.parseVersionRequirement version
-            tracefn "Updating %s version to %s in %s" name version fileName
-            let packages = 
-                this.Packages |> List.map (fun p -> 
-                                     if NormalizedPackageName p.Name = NormalizedPackageName packageName then 
-                                         { p with VersionRequirement = versionRequirement }
-                                     else p)
-            DependenciesFile(this.FileName, this.Options, sources, packages, this.RemoteFiles, comments)
-        else
+            let vr = DependenciesFileParser.parseVersionString version
+
+            tracefn "Updating %s to version %s in %s" name version fileName
+            let newLines = 
+                this.Lines |> Array.map (fun l -> 
+                                  let name = packageName.ToString().ToLower()
+                                  if isPackageLine name l then 
+                                      let p = this.GetPackage packageName
+                                      DependenciesFileSerializer.packageString packageName vr.VersionRequirement vr.ResolverStrategy p.Settings
+                                  else l)
+
+            DependenciesFile(DependenciesFileParser.parseDependenciesFile this.FileName newLines)
+        else 
             traceWarnfn "%s doesn't contain package %s. ==> Ignored" fileName name
             this
 
@@ -406,71 +496,11 @@ type DependenciesFile(fileName,options,sources,packages : PackageRequirement lis
         |> Seq.distinct
         |> Seq.toList
 
-    override __.ToString() =        
-        let sources = 
-            packages
-            |> Seq.map (fun package -> package.Sources,package)
-            |> Seq.groupBy fst
+    member this.RootPath =
+        let fi = FileInfo(fileName)
+        fi.Directory.FullName
 
-        let formatNugetSource source = 
-            "source " + String.quoted source.Url +
-                match source.Authentication with
-                | Some (PlainTextAuthentication(username,password)) -> 
-                    sprintf " username: \"%s\" password: \"%s\"" username password
-                | Some (EnvVarAuthentication(usernameVar,passwordVar)) -> 
-                    sprintf " username: \"%s\" password: \"%s\"" usernameVar.Variable passwordVar.Variable
-                | _ -> ""
-                 
-        let all =
-            let hasReportedSource = ref false
-            let hasReportedFirst = ref false
-            let hasReportedSecond = ref false
-            [ if options.Strict then yield "references: strict"
-              if options.Redirects then yield "redirects: on"
-              let optionsString = options.Settings.ToString(true)
-              if optionsString <> "" then yield optionsString
-              for sources, packages in sources do
-                  for source in sources do
-                      hasReportedSource := true
-                      match source with
-                      | Nuget source -> yield formatNugetSource source
-                      | LocalNuget source -> yield "source " + String.quoted source
-                  
-                  for _,package in packages do
-                      if (not !hasReportedFirst) && !hasReportedSource  then
-                          yield ""
-                          hasReportedFirst := true
-
-                      let (PackageName name) = package.Name
-                      let version = DependenciesFileSerializer.formatVersionRange package.ResolverStrategy package.VersionRequirement
-                      let s = package.Settings.ToString()
-
-                      yield sprintf "nuget %s%s%s" name (if version <> "" then " " + version else "") (if s <> "" then " " + s else s)
-                     
-              for remoteFile in remoteFiles do
-                  if (not !hasReportedSecond) && !hasReportedFirst then
-                      yield ""
-                      hasReportedSecond := true
-                      
-                  yield remoteFile.ToString() ]
-                  
-        let comments = comments |> dict
-
-        let withComments =
-            let lineNo = ref 1
-            [for line in all do
-                let rec checkForComment() =
-                    [match comments.TryGetValue !lineNo with
-                     | true,line -> 
-                        yield line
-                        lineNo := !lineNo + 1
-                        yield! checkForComment()
-                     | _ -> ()]
-                yield! checkForComment()
-                yield line
-                lineNo := !lineNo + 1]
-
-        String.Join(Environment.NewLine, withComments)
+    override __.ToString() = String.Join(Environment.NewLine, textRepresentation)
 
     member this.Save() =
         File.WriteAllText(fileName, this.ToString())

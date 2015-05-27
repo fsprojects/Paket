@@ -1,6 +1,8 @@
 ﻿module Paket.BindingRedirects
 
 open System
+open System.Text
+open System.Xml
 open System.Xml.Linq
 open System.IO
 open System.Reflection
@@ -13,14 +15,18 @@ type BindingRedirect =
       PublicKeyToken : string
       Culture : string option }
 
+let private bindingNs = "urn:schemas-microsoft-com:asm.v1"
+
+let private ensureAssemblyBinding doc = 
+    doc |> ensurePathExists ("/configuration/runtime/assemblyBinding!" + bindingNs)
+
 /// Updates the supplied MSBuild document with the supplied binding redirect.
 let internal setRedirect (doc:XDocument) bindingRedirect =
-    let bindingNs = "urn:schemas-microsoft-com:asm.v1"
     let createElementWithNs = createElement (Some bindingNs)
     let tryGetElementWithNs = tryGetElement (Some bindingNs)
     let getElementsWithNs = getElements (Some bindingNs)
 
-    let assemblyBinding = doc |> ensurePathExists ("/configuration/runtime/assemblyBinding!" + bindingNs)
+    let assemblyBinding = ensureAssemblyBinding doc
     let dependentAssembly =
         assemblyBinding
         |> getElementsWithNs "dependentAssembly"
@@ -48,10 +54,31 @@ let internal setRedirect (doc:XDocument) bindingRedirect =
     | None -> dependentAssembly.Add(newRedirect)
     doc
 
+let internal indentAssemblyBindings config =
+    let assemblyBinding = ensureAssemblyBinding config
+    
+    let sb = StringBuilder()
+    let xmlWriterSettings = XmlWriterSettings()
+    xmlWriterSettings.Indent <- true 
+    using (XmlWriter.Create(sb, xmlWriterSettings)) (fun writer -> 
+                                                        let tempAssemblyBindingNode = XElement.Parse(assemblyBinding.ToString())
+                                                        tempAssemblyBindingNode.WriteTo writer)
+    let parent = assemblyBinding.Parent
+    assemblyBinding.Remove()
+    let newAssemblyBindingNode = XElement.Parse(sb.ToString(), LoadOptions.PreserveWhitespace)
+    parent.Add(newAssemblyBindingNode)
+
 /// Applies a set of binding redirects to a single configuration file.
 let private applyBindingRedirects bindingRedirects (configFilePath:string) =
-    let config = XDocument.Load(configFilePath, LoadOptions.PreserveWhitespace)
+    let config = 
+        try 
+            XDocument.Load(configFilePath, LoadOptions.PreserveWhitespace)
+        with
+        | :? System.Xml.XmlException as ex ->
+            Logging.verbosefn "Illegal xml in file: %s" configFilePath
+            raise ex
     let config = Seq.fold setRedirect config bindingRedirects
+    indentAssemblyBindings config
     config.Save configFilePath
 
 /// Applies a set of binding redirects to all .config files in a specific folder.

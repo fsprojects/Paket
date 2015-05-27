@@ -63,7 +63,7 @@ let expected = """
       </Reference>
     </ItemGroup>
   </When>
-  <When Condition="($(TargetFrameworkIdentifier) == '.NETFramework' And ($(TargetFrameworkVersion) == 'v4.5' Or $(TargetFrameworkVersion) == 'v4.5.1' Or $(TargetFrameworkVersion) == 'v4.5.2' Or $(TargetFrameworkVersion) == 'v4.5.3')) Or ($(TargetFrameworkIdentifier) == 'MonoAndroid') Or ($(TargetFrameworkIdentifier) == 'MonoTouch')">
+  <When Condition="($(TargetFrameworkIdentifier) == '.NETFramework' And ($(TargetFrameworkVersion) == 'v4.5' Or $(TargetFrameworkVersion) == 'v4.5.1' Or $(TargetFrameworkVersion) == 'v4.5.2' Or $(TargetFrameworkVersion) == 'v4.5.3' Or $(TargetFrameworkVersion) == 'v4.6')) Or ($(TargetFrameworkIdentifier) == 'MonoAndroid') Or ($(TargetFrameworkIdentifier) == 'MonoTouch')">
     <ItemGroup>
       <Reference Include="System.Reactive.Windows.Threading">
         <HintPath>..\..\..\Rx-XAML\lib\net45\System.Reactive.Windows.Threading.dll</HintPath>
@@ -101,6 +101,8 @@ let ``should generate Xml for Rx-XAML 2.2.4 with correct framework assembly refe
                { References = NuspecReferences.All
                  OfficialName = "Reactive Extensions - XAML Support Library"
                  Dependencies = []
+                 LicenseUrl = ""
+                 IsDevelopmentDependency = false
                  FrameworkAssemblyReferences =
                  [{ AssemblyName = "WindowsBase"; FrameworkRestrictions = [FrameworkRestriction.Exactly(DotNetFramework FrameworkVersion.V4_5)] }
                   { AssemblyName = "WindowsBase"; FrameworkRestrictions = [FrameworkRestriction.Exactly(DotNetFramework FrameworkVersion.V4)] }

@@ -171,9 +171,9 @@ nuget "Microsoft.SqlServer.Types"
 [<Test>]
 let ``should read content none config``() = 
     let cfg = DependenciesFile.FromCode(noneContentConfig)
-    cfg.Options.Settings.OmitContent |> shouldEqual true
-    cfg.Options.Settings.CopyLocal |> shouldEqual true
-    cfg.Options.Settings.ImportTargets |> shouldEqual true
+    cfg.Options.Settings.OmitContent |> shouldEqual (Some true)
+    cfg.Options.Settings.CopyLocal |> shouldEqual None
+    cfg.Options.Settings.ImportTargets |> shouldEqual None
 
     (cfg.Packages |> List.find (fun p -> p.Name = PackageName "Microsoft.SqlServer.Types")).Sources |> shouldEqual [PackageSource.NugetSource "http://nuget.org/api/v2"]
 
@@ -187,9 +187,9 @@ nuget "Microsoft.SqlServer.Types"
 [<Test>]
 let ``should read config with specific framework``() = 
     let cfg = DependenciesFile.FromCode(specificFrameworkConfig)
-    cfg.Options.Settings.OmitContent |> shouldEqual false
-    cfg.Options.Settings.CopyLocal |> shouldEqual true
-    cfg.Options.Settings.ImportTargets |> shouldEqual true
+    cfg.Options.Settings.OmitContent |> shouldEqual None
+    cfg.Options.Settings.CopyLocal |> shouldEqual None
+    cfg.Options.Settings.ImportTargets |> shouldEqual None
 
     (cfg.Packages |> List.find (fun p -> p.Name = PackageName "Microsoft.SqlServer.Types")).Sources |> shouldEqual [PackageSource.NugetSource "http://nuget.org/api/v2"]
 
@@ -204,9 +204,9 @@ nuget "Microsoft.SqlServer.Types"
 [<Test>]
 let ``should read no targets import config``() = 
     let cfg = DependenciesFile.FromCode(noTargetsImportConfig)
-    cfg.Options.Settings.ImportTargets |> shouldEqual false
-    cfg.Options.Settings.CopyLocal |> shouldEqual false
-    cfg.Options.Settings.OmitContent |> shouldEqual false
+    cfg.Options.Settings.ImportTargets |> shouldEqual (Some false)
+    cfg.Options.Settings.CopyLocal |> shouldEqual (Some false)
+    cfg.Options.Settings.OmitContent |> shouldEqual None
 
     (cfg.Packages |> List.find (fun p -> p.Name = PackageName "Microsoft.SqlServer.Types")).Sources |> shouldEqual [PackageSource.NugetSource "http://nuget.org/api/v2"]
 
@@ -547,7 +547,7 @@ let ``should read config with single framework restriction``() =
     let p = cfg.Packages |> List.find (fun x-> x.Name = PackageName "Foobar")
     p.VersionRequirement.Range |> shouldEqual (VersionRange.Specific (SemVer.Parse "1.2.3"))
     p.Settings.FrameworkRestrictions |> shouldEqual [FrameworkRestriction.AtLeast(DotNetFramework(FrameworkVersion.V4_Client))]
-    p.Settings.ImportTargets |> shouldEqual true
+    p.Settings.ImportTargets |> shouldEqual None
 
 
 [<Test>]
@@ -560,8 +560,8 @@ let ``should read config with framework restriction``() =
     let p = cfg.Packages |> List.find (fun x-> x.Name = PackageName "Foobar")
     p.VersionRequirement.Range |> shouldEqual (VersionRange.Specific (SemVer.Parse "1.2.3"))
     p.Settings.FrameworkRestrictions |> shouldEqual [FrameworkRestriction.Exactly(DotNetFramework(FrameworkVersion.V3_5)); FrameworkRestriction.AtLeast(DotNetFramework(FrameworkVersion.V4_Client))]
-    p.Settings.ImportTargets |> shouldEqual true
-    p.Settings.CopyLocal |> shouldEqual true
+    p.Settings.ImportTargets |> shouldEqual None
+    p.Settings.CopyLocal |> shouldEqual None
 
 [<Test>]
 let ``should read config with no targets import``() = 
@@ -573,9 +573,9 @@ let ``should read config with no targets import``() =
     let p = cfg.Packages |> List.find (fun x-> x.Name = PackageName "Foobar")
     p.VersionRequirement.Range |> shouldEqual (VersionRange.Specific (SemVer.Parse "1.2.3"))
     p.Settings.FrameworkRestrictions |> shouldEqual []
-    p.Settings.ImportTargets |> shouldEqual false
-    p.Settings.CopyLocal |> shouldEqual false
-    p.Settings.OmitContent |> shouldEqual false
+    p.Settings.ImportTargets |> shouldEqual (Some false)
+    p.Settings.CopyLocal |> shouldEqual (Some false)
+    p.Settings.OmitContent |> shouldEqual None
 
 [<Test>]
 let ``should read config with content none``() = 
@@ -587,9 +587,9 @@ let ``should read config with content none``() =
     let p = cfg.Packages |> List.find (fun x-> x.Name = PackageName "Foobar")
     p.VersionRequirement.Range |> shouldEqual (VersionRange.Specific (SemVer.Parse "1.2.3"))
     p.Settings.FrameworkRestrictions |> shouldEqual []
-    p.Settings.ImportTargets |> shouldEqual true
-    p.Settings.CopyLocal |> shouldEqual false
-    p.Settings.OmitContent |> shouldEqual true
+    p.Settings.ImportTargets |> shouldEqual None
+    p.Settings.CopyLocal |> shouldEqual (Some false)
+    p.Settings.OmitContent |> shouldEqual (Some true)
 
 
 let configWithInvalidPrereleaseString = """

@@ -5,7 +5,7 @@ open System
 open System.IO
 open System.Net
 open Newtonsoft.Json
-open Ionic.Zip
+open System.IO.Compression
 open System.Xml
 open System.Text.RegularExpressions
 open Paket.Logging
@@ -15,7 +15,6 @@ open Paket.Domain
 open Paket.Utils
 open Paket.Xml
 open Paket.PackageSources
-open Paket.NuGetV3
 open Paket.Requirements
 
 type NugetPackageCache =
@@ -23,10 +22,11 @@ type NugetPackageCache =
       PackageName : string
       SourceUrl: string
       Unlisted : bool
-      DownloadUrl : string;
+      DownloadUrl : string
+      LicenseUrl : string
       CacheVersion: string }
 
-    static member CurrentCacheVersion = "1.0"
+    static member CurrentCacheVersion = "1.1"
 
 let rec private followODataLink getUrlContents url = 
     async { 
@@ -63,14 +63,16 @@ let rec private followODataLink getUrlContents url =
 let getAllVersionsFromNugetODataWithFilter (getUrlContents, nugetURL, package) = 
     // we cannot cache this
     let url = sprintf "%s/Packages?$filter=Id eq '%s'" nugetURL package
+    verbosefn "getAllVersionsFromNugetODataWithFilter from url '%s'" url
     followODataLink getUrlContents url
 
 /// Gets versions of the given package via OData via /FindPackagesById()?id='packageId'.
 let getAllVersionsFromNugetOData (getUrlContents, nugetURL, package) = 
-    async { 
+    async {
         // we cannot cache this
         try 
             let url = sprintf "%s/FindPackagesById()?id='%s'" nugetURL package
+            verbosefn "getAllVersionsFromNugetOData from url '%s'" url
             return! followODataLink getUrlContents url
         with _ -> return! getAllVersionsFromNugetODataWithFilter (getUrlContents, nugetURL, package)
     }
@@ -79,7 +81,9 @@ let getAllVersionsFromNugetOData (getUrlContents, nugetURL, package) =
 let getAllVersionsFromNuGet2(auth,nugetURL,package) = 
     // we cannot cache this
     async { 
-        let! raw = safeGetFromUrl(auth,sprintf "%s/package-versions/%s?includePrerelease=true" nugetURL package)
+        let url = sprintf "%s/package-versions/%s?includePrerelease=true" nugetURL package
+        verbosefn "getAllVersionsFromNuGet2 from url '%s'" url
+        let! raw = safeGetFromUrl(auth, url)
         let getUrlContents url = getFromUrl(auth, url)
         match raw with
         | None -> let! result = getAllVersionsFromNugetOData(getUrlContents, nugetURL, package)
@@ -89,7 +93,8 @@ let getAllVersionsFromNuGet2(auth,nugetURL,package) =
                 try 
                     let result = JsonConvert.DeserializeObject<string []>(data) |> Array.toSeq
                     return result
-                with _ -> let! result = getAllVersionsFromNugetOData(getUrlContents, nugetURL, package)
+                with _ -> verbosefn "exn when deserialising data '%s'" data
+                          let! result = getAllVersionsFromNugetOData(getUrlContents, nugetURL, package)
                           return result
             with exn -> 
                 return! failwithf "Could not get data from %s for package %s.%s Message: %s" nugetURL package 
@@ -97,8 +102,14 @@ let getAllVersionsFromNuGet2(auth,nugetURL,package) =
     }
 
 
-let getAllVersions(auth, nugetURL, package) =
-    getAllVersionsFromNuGet2(auth,nugetURL,package)
+let getAllVersions(auth, nugetURL, package) = async {
+        try
+            let! versions = getAllVersionsFromNuGet2(auth,nugetURL,package) 
+            return Some versions
+        with
+        | exn -> return None
+    }
+
 //    async { 
 //        let! raw = getViaNuGet3(auth, nugetURL, package)
 //
@@ -118,19 +129,20 @@ let getAllVersions(auth, nugetURL, package) =
 //    }
 
 /// Gets versions of the given package from local Nuget feed.
-let getAllVersionsFromLocalPath (localNugetPath, package) =
-    async {
+let getAllVersionsFromLocalPath (localNugetPath, package, root) =
+    async {        
         let localNugetPath = Utils.normalizeLocalPath localNugetPath
-        let di = DirectoryInfo(localNugetPath)
+        let di = getDirectoryInfo localNugetPath root
         if not di.Exists then
-            failwithf "The directory %s doesn't exist.%sPlease check the NuGet source feed definition in your paket.dependencies file." localNugetPath Environment.NewLine
+            failwithf "The directory %s doesn't exist.%sPlease check the NuGet source feed definition in your paket.dependencies file." di.FullName Environment.NewLine
 
-        return 
+        let versions = 
             Directory.EnumerateFiles(di.FullName,"*.nupkg",SearchOption.AllDirectories)
             |> Seq.choose (fun fileName ->
                             let fi = FileInfo(fileName)
                             let _match = Regex(sprintf @"^%s\.(\d.*)\.nupkg" package, RegexOptions.IgnoreCase).Match(fi.Name)
                             if _match.Groups.Count > 1 then Some _match.Groups.[1].Value else None)
+        return Some versions
     }
 
 
@@ -163,6 +175,11 @@ let parseODataDetails(nugetURL,packageName,version,raw) =
         | Some "binary/octet-stream", Some link -> link
         | _ -> failwithf "unable to find downloadLink for package %s %O" packageName version
         
+    let licenseUrl =
+        match entry |> getNode "properties" |> optGetNode "LicenseUrl" with
+        | Some node -> node.InnerText 
+        | _ -> ""
+
     let dependencies =
         match entry |> getNode "properties" |> optGetNode "Dependencies" with
         | Some node -> node.InnerText
@@ -191,16 +208,27 @@ let parseODataDetails(nugetURL,packageName,version,raw) =
       Dependencies = Requirements.optimizeRestrictions packages
       SourceUrl = nugetURL
       CacheVersion = NugetPackageCache.CurrentCacheVersion
+      LicenseUrl = licenseUrl
       Unlisted = publishDate = Constants.MagicUnlistingDate }
 
 
 let getDetailsFromNuGetViaODataFast auth nugetURL package (version:SemVerInfo) = 
     async {         
         try 
-            let! raw = getFromUrl(auth,sprintf "%s/Packages?$filter=Id eq '%s' and NormalizedVersion eq '%s'" nugetURL package (version.Normalize()))
+            let url = sprintf "%s/Packages?$filter=Id eq '%s' and NormalizedVersion eq '%s'" nugetURL package (version.Normalize())
+            let! raw = getFromUrl(auth,url)
+            if verbose then
+                tracefn "Response from %s:" url
+                tracefn ""
+                tracefn "%s" raw
             return parseODataDetails(nugetURL,package,version,raw)
         with _ ->         
-            let! raw = getFromUrl(auth,sprintf "%s/Packages?$filter=Id eq '%s' and Version eq '%s'" nugetURL package (version.ToString()))
+            let url = sprintf "%s/Packages?$filter=Id eq '%s' and Version eq '%s'" nugetURL package (version.ToString())
+            let! raw = getFromUrl(auth,url)
+            if verbose then
+                tracefn "Response from %s:" url
+                tracefn ""
+                tracefn "%s" raw
             return parseODataDetails(nugetURL,package,version,raw)
     }
 
@@ -210,7 +238,12 @@ let getDetailsFromNuGetViaOData auth nugetURL package (version:SemVerInfo) =
         try 
             return! getDetailsFromNuGetViaODataFast auth nugetURL package version
         with _ ->         
-            let! raw = getFromUrl(auth,sprintf "%s/Packages(Id='%s',Version='%s')" nugetURL package (version.ToString()))
+            let url = sprintf "%s/Packages(Id='%s',Version='%s')" nugetURL package (version.ToString())
+            let! raw = getFromUrl(auth,url)
+            if verbose then
+                tracefn "Response from %s:" url
+                tracefn ""
+                tracefn "%s" raw
             return parseODataDetails(nugetURL,package,version,raw)
     }
 
@@ -256,39 +289,70 @@ let getDetailsFromNuget force auth nugetURL package (version:SemVerInfo) =
     async {
         try
             if not force && errorFile.Exists then
-                failwithf "errorfile for %s exists" package
+                failwithf "Error file for %s exists at %s" package errorFile.FullName
 
             let! (invalidCache,details) = loadFromCacheOrOData force cacheFile.FullName auth nugetURL package version
-            
+
+            verbosefn "loaded details for '%s@%O' from url '%s'" package version nugetURL
+
             errorFile.Delete()
             if invalidCache then
                 File.WriteAllText(cacheFile.FullName,JsonConvert.SerializeObject(details))
             return details
         with
         | exn -> 
-            File.WriteAllText(errorFile.FullName,"")
+            File.AppendAllText(errorFile.FullName,exn.ToString())
             raise exn
             return! getDetailsFromNuGetViaOData auth nugetURL package version
     } 
     
+let fixDatesInArchive fileName =
+    try
+        use zipToOpen = new FileStream(fileName, FileMode.Open)
+        use archive = new ZipArchive(zipToOpen, ZipArchiveMode.Update)
+        for e in archive.Entries do
+            try
+                let d = e.LastWriteTime
+                ()
+            with
+            | _ -> e.LastWriteTime <- DateTimeOffset.Now
+    with
+    | exn -> traceWarnfn "Could not fix timestamps in %s. Error: %s" fileName exn.Message
+
+let findLocalPackage directory (name:string) (version:SemVerInfo) = 
+    let v1 = FileInfo(Path.Combine(directory, sprintf "%s.%s.nupkg" name (version.ToString())))
+    if v1.Exists then v1 else
+    let normalizedVersion = version.Normalize()
+    let v2 = FileInfo(Path.Combine(directory, sprintf "%s.%s.nupkg" name normalizedVersion))
+    if v2.Exists then v2 else
+
+    let v3 =
+        Directory.EnumerateFiles(directory,"*.nupkg",SearchOption.AllDirectories)
+        |> Seq.map (fun x -> FileInfo(x))
+        |> Seq.filter (fun fi -> fi.Name.ToLower().Contains(name.ToLower()))
+        |> Seq.filter (fun fi -> fi.Name.Contains(normalizedVersion) || fi.Name.Contains(version.ToString()))
+        |> Seq.firstOrDefault
+
+    match v3 with
+    | None -> failwithf "The package %s %s can't be found in %s.%sPlease check the feed definition in your paket.dependencies file." name (version.ToString()) directory Environment.NewLine
+    | Some x -> x
+
 /// Reads direct dependencies from a nupkg file
-let getDetailsFromLocalFile localNugetPath package (version:SemVerInfo) =
+let getDetailsFromLocalFile root localNugetPath (packageName:PackageName) (version:SemVerInfo) =
     async {        
         let localNugetPath = Utils.normalizeLocalPath localNugetPath
-        let nupkg = 
-            let v1 = FileInfo(Path.Combine(localNugetPath, sprintf "%s.%s.nupkg" package (version.ToString())))
-            if v1.Exists then v1 else
-            let version = version.Normalize()
-            FileInfo(Path.Combine(localNugetPath, sprintf "%s.%s.nupkg" package version))
+        let di = getDirectoryInfo localNugetPath root
+        let package = packageName.ToString()
+        let nupkg = findLocalPackage di.FullName package version
+        
+        fixDatesInArchive nupkg.FullName
+        use zipToCreate = new FileStream(nupkg.FullName, FileMode.Open)
+        use zip = new ZipArchive(zipToCreate,ZipArchiveMode.Read)
+        
+        let zippedNuspec = zip.Entries |> Seq.find (fun f -> f.FullName.EndsWith ".nuspec")
+        let fileName = FileInfo(Path.Combine(Path.GetTempPath(), zippedNuspec.Name)).FullName
 
-        if not nupkg.Exists then
-            failwithf "The package %s %s can't be found in %s.%sPlease check the feed definition in your paket.dependencies file." package (version.ToString()) localNugetPath Environment.NewLine
-        let zip = ZipFile.Read(nupkg.FullName)
-        let zippedNuspec = (zip |> Seq.find (fun f -> f.FileName.EndsWith ".nuspec"))
-
-        zippedNuspec.Extract(Path.GetTempPath(), ExtractExistingFileAction.OverwriteSilently)
-
-        let fileName = FileInfo(Path.Combine(Path.GetTempPath(), zippedNuspec.FileName)).FullName
+        zippedNuspec.ExtractToFile(fileName, true)
 
         let nuspec = Nuspec.Load fileName        
 
@@ -298,8 +362,9 @@ let getDetailsFromLocalFile localNugetPath package (version:SemVerInfo) =
             { PackageName = nuspec.OfficialName
               DownloadUrl = package
               Dependencies = Requirements.optimizeRestrictions nuspec.Dependencies
-              SourceUrl = localNugetPath
+              SourceUrl = di.FullName
               CacheVersion = NugetPackageCache.CurrentCacheVersion
+              LicenseUrl = nuspec.LicenseUrl
               Unlisted = false }
     }
 
@@ -314,18 +379,13 @@ let inline isExtracted fileName =
 /// Extracts the given package to the ./packages folder
 let ExtractPackage(fileName:string, targetFolder, name, version:SemVerInfo) =    
     async {
-        if  isExtracted fileName then
+        if isExtracted fileName then
              verbosefn "%s %A already extracted" name version
         else
-            use zip = ZipFile.Read(fileName)
             Directory.CreateDirectory(targetFolder) |> ignore
-            for e in zip do
-                try
-                    e.Extract(targetFolder, ExtractExistingFileAction.OverwriteSilently)
-                with
-                | :? Ionic.Zip.BadCrcException as exn -> 
-                    traceWarnfn "Bad Crc during unzipping %s in %s %A: %s" e.FileName name version exn.Message 
-                | exn -> failwithf "Error during unzipping %s in %s %A: %s" e.FileName name version exn.Message 
+
+            fixDatesInArchive fileName            
+            ZipFile.ExtractToDirectory(fileName, targetFolder)
 
             // cleanup folder structure
             let rec cleanup (dir : DirectoryInfo) = 
@@ -340,13 +400,30 @@ let ExtractPackage(fileName:string, targetFolder, name, version:SemVerInfo) =
                     let newName = file.Name.Replace("%2B", "+").Replace("%20", " ")
                     if file.Name <> newName && not (File.Exists <| Path.Combine(file.DirectoryName, newName)) then
                         File.Move(file.FullName, Path.Combine(file.DirectoryName, newName))
+
             cleanup (DirectoryInfo targetFolder)
             tracefn "%s %A unzipped to %s" name version targetFolder
         return targetFolder
     }
 
+let CopyLicenseFromCache(root, cacheFileName, name, version:SemVerInfo, force) = 
+    async {
+        try
+            if String.IsNullOrWhiteSpace cacheFileName then return () else
+            let cacheFile = FileInfo cacheFileName
+            if cacheFile.Exists then
+                let targetFolder = DirectoryInfo(Path.Combine(root, Constants.PackagesFolderName, name)).FullName
+                let targetFile = FileInfo(Path.Combine(targetFolder, "license.html"))
+                if not force && targetFile.Exists then
+                    verbosefn "License %s %A already copied" name version        
+                else                    
+                    File.Copy(cacheFile.FullName, targetFile.FullName, true)
+        with
+        | exn -> traceWarnfn "Could not copy license for %s %A from %s.%s    %s" name version cacheFileName Environment.NewLine exn.Message
+    }
+
 /// Extracts the given package to the ./packages folder
-let CopyFromCache(root, cacheFileName, name, version:SemVerInfo, force) = 
+let CopyFromCache(root, cacheFileName, licenseCacheFile, name, version:SemVerInfo, force) = 
     async { 
         let targetFolder = DirectoryInfo(Path.Combine(root, Constants.PackagesFolderName, name)).FullName
         let fi = FileInfo(cacheFileName)
@@ -356,8 +433,10 @@ let CopyFromCache(root, cacheFileName, name, version:SemVerInfo, force) =
         else
             CleanDir targetFolder
             File.Copy(cacheFileName, targetFile.FullName)            
-        try
-            return! ExtractPackage(targetFile.FullName,targetFolder,name,version)            
+        try 
+            let! extracted = ExtractPackage(targetFile.FullName,targetFolder,name,version)
+            do! CopyLicenseFromCache(root, licenseCacheFile, name, version, force)
+            return extracted
         with
         | exn -> 
             File.Delete targetFile.FullName
@@ -365,17 +444,56 @@ let CopyFromCache(root, cacheFileName, name, version:SemVerInfo, force) =
             return! raise exn
     }
 
+let DownloadLicense(root,force,name,version:SemVerInfo,licenseUrl,targetFileName) =
+    async { 
+        if String.IsNullOrWhiteSpace licenseUrl then return () else
+        
+        let targetFile = FileInfo targetFileName
+        if not force && targetFile.Exists && targetFile.Length > 0L then 
+            verbosefn "License for %s %A already downloaded" name version
+        else             
+            try
+                verbosefn "Downloading license for %s %A to %s" name version targetFileName
+
+                let request = HttpWebRequest.Create(Uri licenseUrl) :?> HttpWebRequest
+                request.AutomaticDecompression <- DecompressionMethods.GZip ||| DecompressionMethods.Deflate
+                request.UserAgent <- "Paket"
+                request.UseDefaultCredentials <- true
+                request.Proxy <- Utils.getDefaultProxyFor licenseUrl
+                request.Timeout <- 3000
+                use! httpResponse = request.AsyncGetResponse()
+            
+                use httpResponseStream = httpResponse.GetResponseStream()
+            
+                let bufferSize = 4096
+                let buffer : byte [] = Array.zeroCreate bufferSize
+                let bytesRead = ref -1
+
+                use fileStream = File.Create(targetFileName)
+            
+                while !bytesRead <> 0 do
+                    let! bytes = httpResponseStream.AsyncRead(buffer, 0, bufferSize)
+                    bytesRead := bytes
+                    do! fileStream.AsyncWrite(buffer, 0, !bytesRead)
+
+            with
+            | exn -> traceWarnfn "Could not download license for %s %A from %s.%s    %s" name version licenseUrl Environment.NewLine exn.Message
+    }
+
 /// Downloads the given package to the NuGet Cache folder
 let DownloadPackage(root, auth, url, name, version:SemVerInfo, force) = 
     async { 
         let targetFileName = Path.Combine(CacheFolder, name + "." + version.Normalize() + ".nupkg")
         let targetFile = FileInfo targetFileName
+        let licenseFileName = Path.Combine(CacheFolder, name + "." + version.Normalize() + ".license.html")
         if not force && targetFile.Exists && targetFile.Length > 0L then 
             verbosefn "%s %A already downloaded" name version            
         else 
             // discover the link on the fly
             let! nugetPackage = getDetailsFromNuget force auth url name version
             try
+                let! license = Async.StartChild(DownloadLicense(root,force,name,version,nugetPackage.LicenseUrl,licenseFileName), 5000)
+
                 tracefn "Downloading %s %A to %s" name version targetFileName
 
                 let request = HttpWebRequest.Create(Uri nugetPackage.DownloadUrl) :?> HttpWebRequest
@@ -411,9 +529,14 @@ let DownloadPackage(root, auth, url, name, version:SemVerInfo, force) =
                     bytesRead := bytes
                     do! fileStream.AsyncWrite(buffer, 0, !bytesRead)
 
+                try
+                    do! license
+                with
+                | exn -> traceWarnfn "Could not download license for %s %A from %s.%s    %s" name version nugetPackage.LicenseUrl Environment.NewLine exn.Message 
             with
             | exn -> failwithf "Could not download %s %A.%s    %s" name version Environment.NewLine exn.Message
-        return! CopyFromCache(root, targetFile.FullName, name, version, force)
+                
+        return! CopyFromCache(root, targetFile.FullName, licenseFileName, name, version, force)
     }
 
 /// Finds all libraries in a nuget package.
@@ -458,10 +581,12 @@ let GetTargetsFiles(targetFolder) =
 
     targetsFiles
 
-let GetPackageDetails force sources (PackageName package) (version:SemVerInfo) : PackageResolver.PackageDetails= 
+let GetPackageDetails root force sources packageName (version:SemVerInfo) : PackageResolver.PackageDetails = 
+    let package = packageName.ToString()
     let rec tryNext xs = 
         match xs with
         | source :: rest -> 
+            verbosefn "Trying source '%O'" source
             try 
                 match source with
                 | Nuget source -> 
@@ -469,38 +594,48 @@ let GetPackageDetails force sources (PackageName package) (version:SemVerInfo) :
                         force 
                         (source.Authentication |> Option.map toBasicAuth)
                         source.Url 
-                        package 
-                        version 
+                        (package.ToString())
+                        version
                     |> Async.RunSynchronously
                 | LocalNuget path -> 
-                    getDetailsFromLocalFile path package version 
+                    getDetailsFromLocalFile root path packageName version 
                     |> Async.RunSynchronously
                 |> fun x -> source,x
-            with _ -> tryNext rest
-        | [] -> failwithf "Couldn't get package details for package %s on %A." package (sources |> List.map (fun (s:PackageSource) -> s.ToString()))
+            with e ->
+              verbosefn "Source '%O' exception: %O" source e
+              tryNext rest
+        | [] -> failwithf "Couldn't get package details for package %s on any of %A." package (sources |> List.map (fun (s:PackageSource) -> s.ToString()))
     
     let source,nugetObject = tryNext sources
     { Name = PackageName nugetObject.PackageName
       Source = source
       DownloadLink = nugetObject.DownloadUrl
       Unlisted = nugetObject.Unlisted
+      LicenseUrl = nugetObject.LicenseUrl
       DirectDependencies = 
         nugetObject.Dependencies
         |> Requirements.optimizeRestrictions
         |> Set.ofList }
 
 /// Allows to retrieve all version no. for a package from the given sources.
-let GetVersions(sources, PackageName packageName) = 
-    sources
-    |> Seq.map (fun source -> 
-           match source with
-           | Nuget source -> getAllVersions (
-                                source.Authentication |> Option.map toBasicAuth, 
-                                source.Url, 
-                                packageName)
-           | LocalNuget path -> getAllVersionsFromLocalPath (path, packageName))
-    |> Async.Parallel
-    |> Async.RunSynchronously
+let GetVersions root (sources, PackageName packageName) = 
+    let versions =
+        sources
+        |> Seq.map (fun source -> 
+               match source with
+               | Nuget source -> getAllVersions (
+                                    source.Authentication |> Option.map toBasicAuth, 
+                                    source.Url, 
+                                    packageName)
+               | LocalNuget path -> getAllVersionsFromLocalPath (path, packageName, root))
+        |> Async.Parallel
+        |> Async.RunSynchronously
+        |> Seq.choose id
+
+    if Seq.isEmpty versions then
+        failwithf "Could not find versions for package %s in any of the sources in %A." packageName sources
+
+    versions
     |> Seq.concat
     |> Seq.toList
     |> List.map SemVer.Parse

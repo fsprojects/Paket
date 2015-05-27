@@ -51,11 +51,8 @@ let private remove removeFromProjects dependenciesFileName (package: PackageName
 // remove a package with the option to remove it from a specified project
 let RemoveFromProject(dependenciesFileName, package:PackageName, force, hard, projectName, installAfter) =
     
-    let removeFromSpecifiedProject (projects : ProjectFile seq) =    
-        let project = 
-            projects |> Seq.tryFind (fun p -> p.NameWithoutExtension = projectName || p.Name = projectName)
-
-        match project with
+    let removeFromSpecifiedProject (projects : ProjectFile seq) =        
+        match ProjectFile.TryFindProject(projects,projectName) with
         | Some p ->
             if p.HasPackageInstalled(NormalizedPackageName package) then
                 package |> removePackageFromProject p

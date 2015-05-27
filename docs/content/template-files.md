@@ -105,6 +105,28 @@ In a project template, the files included will be:
 * the output assembly of the matching project (in the correct lib directory if a library, or tools if an exe)
 * the output assemblies of any project references which do not have a matching template file
 
+#### References
+
+A references block looks like this:
+
+    [lang=batchfile]
+    references
+	    filename1.dll
+	    filename2.dll
+
+If you omit the references block then all libraries in the packages will get referenced.
+
+#### Framework assembly references
+
+A block with framework assembly references looks like this:
+
+    [lang=batchfile]
+    frameworkAssemblies
+	    System.Xml
+		System.Xml.Linq	    
+
+If you omit the references block then all libraries in the packages will get referenced.
+
 #### Dependencies
 
 A dependency block looks like this:

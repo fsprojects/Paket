@@ -36,12 +36,23 @@ let GetHomeDirectory() =
     else
         Environment.ExpandEnvironmentVariables("%HOMEDRIVE%%HOMEPATH%")
 
+type PathReference =
+    | AbsolutePath of string
+    | RelativePath of string
+
 let normalizeLocalPath(path:string) =
     if path.StartsWith("~/") then
-        Path.Combine(GetHomeDirectory(),path.Substring(1))
+        AbsolutePath (Path.Combine(GetHomeDirectory(), path.Substring(2)))
+    else if Path.IsPathRooted(path) then
+        AbsolutePath path
     else
-        path
-
+        RelativePath path
+        
+let getDirectoryInfo pathInfo root =
+    match pathInfo with
+            | AbsolutePath s -> DirectoryInfo(s)
+            | RelativePath s -> DirectoryInfo(Path.Combine(root, s))
+        
 /// Creates a directory if it does not exist.
 let createDir path = 
     try
@@ -162,7 +173,7 @@ let downloadFromUrl (auth:Auth option, url : string) (filePath: string) =
             do! client.AsyncDownloadFile(Uri(url), filePath)
         with
         | exn ->
-            failwithf "Could not retrieve data from %s%s Message: %s" url Environment.NewLine exn.Message
+            failwithf "Could not download from %s%s Message: %s" url Environment.NewLine exn.Message
     }
 
 /// [omit]
@@ -330,6 +341,8 @@ let removeFile (fileName : string) =
             FileDeleteError fileName |> fail
     else ok ()
 
+// adapted from MiniRx
+// http://minirx.codeplex.com/
 [<AutoOpen>]
 module ObservableExtensions =
 
@@ -354,6 +367,16 @@ module ObservableExtensions =
 
     [<RequireQualifiedAccess>]
     module Observable =
+        open System.Collections.Generic
+
+        /// Creates an observable that calls the specified function after someone
+        /// subscribes to it (useful for waiting using 'let!' when we need to start
+        /// operation after 'let!' attaches handler)
+        let guard f (e:IObservable<'Args>) =  
+          { new IObservable<'Args> with  
+              member x.Subscribe(observer) =  
+                let rm = e.Subscribe(observer) in f(); rm } 
+
         let sample milliseconds source =
             let relay (observer:IObserver<'T>) =
                 let rec loop () = async {
@@ -367,8 +390,47 @@ module ObservableExtensions =
             { new IObservable<'T> with
                 member this.Subscribe(observer:IObserver<'T>) =
                     let cts = new System.Threading.CancellationTokenSource()
-                    Async.StartImmediate(relay observer, cts.Token)
+                    Async.Start(relay observer, cts.Token)
                     { new IDisposable with 
                         member this.Dispose() = cts.Cancel() 
                     }
             }
+
+        let ofSeq s = 
+            let evt = new Event<_>()
+            evt.Publish |> guard (fun o ->
+                for n in s do evt.Trigger(n))
+
+        let private oneAndDone (obs : IObserver<_>) value =
+            obs.OnNext value
+            obs.OnCompleted() 
+
+        let ofAsync a : IObservable<'a> = 
+            { new IObservable<'a> with
+                  member __.Subscribe obs = 
+                      let oneAndDone' = oneAndDone obs
+                      let token = new CancellationTokenSource()
+                      Async.StartWithContinuations(a,oneAndDone',obs.OnError,obs.OnError,token.Token)
+                      { new IDisposable with
+                            member __.Dispose() = 
+                                token.Cancel |> ignore
+                                token.Dispose() } }
+        
+        let ofAsyncWithToken (token : CancellationToken) a : IObservable<'a> = 
+            { new IObservable<'a> with
+                  member __.Subscribe obs = 
+                      let oneAndDone' = oneAndDone obs
+                      Async.StartWithContinuations(a,oneAndDone',obs.OnError,obs.OnError,token)
+                      { new IDisposable with
+                            member __.Dispose() = () } }
+
+        let flatten (a: IObservable<#seq<'a>>): IObservable<'a> =
+            { new IObservable<'a> with
+                member __.Subscribe obs =
+                    let sub = a |> Observable.subscribe (Seq.iter obs.OnNext)
+                    { new IDisposable with member __.Dispose() = sub.Dispose() }}
+
+        let distinct (a: IObservable<'a>): IObservable<'a> =
+            let seen = HashSet()
+            Observable.filter seen.Add a
+ 

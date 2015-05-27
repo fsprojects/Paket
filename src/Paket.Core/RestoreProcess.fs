@@ -8,6 +8,7 @@ open Paket.Logging
 open Paket.PackageResolver
 open Paket.PackageSources
 open FSharp.Polyfill
+open System
 
 /// Downloads and extracts a package.
 let ExtractPackage(root, sources, force, package : ResolvedPackage) = 
@@ -30,8 +31,10 @@ let ExtractPackage(root, sources, force, package : ResolvedPackage) =
                 return package, NuGetV2.GetLibFiles folder, NuGetV2.GetTargetsFiles folder
         | LocalNuget path ->         
             let path = Utils.normalizeLocalPath path
-            let packageFile = Path.Combine(root, path, sprintf "%s.%A.nupkg" name v)
-            let! folder = NuGetV2.CopyFromCache(root, packageFile, name, v, force)
+            let di = Utils.getDirectoryInfo path root
+            let nupkg = NuGetV2.findLocalPackage di.FullName name v
+
+            let! folder = NuGetV2.CopyFromCache(root, nupkg.FullName, "", name, v, force) // TODO: Restore license
             return package, NuGetV2.GetLibFiles folder, NuGetV2.GetTargetsFiles folder
     }
 

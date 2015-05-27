@@ -32,6 +32,16 @@ let ``can detect all references for ReadOnlyCollectionExtions``() =
     |> shouldEqual NuspecReferences.All
 
 [<Test>]
+let ``can detect developmentDependency is false for ReadOnlyCollectionExtions``() = 
+    Nuspec.Load("Nuspec/ReadOnlyCollectionExtensions.nuspec").IsDevelopmentDependency
+    |> shouldEqual false
+
+[<Test>]
+let ``can detect developmentDependency for LiteGuard.Source``() = 
+    Nuspec.Load("Nuspec/LiteGuard.Source.nuspec").IsDevelopmentDependency
+    |> shouldEqual true
+
+[<Test>]
 let ``can detect all references for log4net``() = 
     Nuspec.Load("Nuspec/log4net.nuspec").References
     |> shouldEqual NuspecReferences.All
@@ -82,6 +92,11 @@ let ``can detect framework assemblies for SqlCLient``() =
     |> shouldEqual 
         [{ AssemblyName = "System.Data"; FrameworkRestrictions = [] }
          { AssemblyName = "System.Xml"; FrameworkRestrictions = [] } ]
+
+[<Test>]
+let ``can detect license for SqlCLient``() = 
+    Nuspec.Load("Nuspec/FSharp.Data.SqlClient.nuspec").LicenseUrl
+    |> shouldEqual "http://github.com/fsprojects/FSharp.Data.SqlClient/blob/master/LICENSE.md"
 
 [<Test>]
 let ``can detect dependencies for SqlCLient``() = 

@@ -129,7 +129,7 @@ module SemVer =
         if version.Contains("..") then 
             failwithf "Empty version part found in %s" version
         
-        let dashSplitted = version.Split '-'
+        let dashSplitted = version.Split([|'-'; '+'|])
         let splitted = dashSplitted.[0].Split '.'
         let l = splitted.Length
             

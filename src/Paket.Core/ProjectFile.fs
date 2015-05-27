@@ -129,8 +129,6 @@ type ProjectFile =
             node.ParentNode.RemoveChild(node) |> ignore
 
     member this.UpdateFileItems(fileItems : FileItem list, hard) = 
-        this.DeletePaketNodes("Compile")
-        this.DeletePaketNodes("Content")
 
         let firstItemGroup = this.ProjectNode |> getNodes "ItemGroup" |> Seq.firstOrDefault
 
@@ -143,7 +141,6 @@ type ProjectFile =
                 ["Content", node :?> XmlElement
                  "Compile", node :?> XmlElement ] 
             |> dict
-
 
         for fileItem in fileItems |> List.rev do
             let libReferenceNode = 
@@ -161,6 +158,7 @@ type ProjectFile =
                     match node |> getAttribute "Include" with
                     | Some path when path.StartsWith(Path.GetDirectoryName(fileItem.Include)) -> true
                     | _ -> false)
+            
 
             if Seq.isEmpty fileItemsInSameDir then 
                 newItemGroups.[fileItem.BuildAction].PrependChild(libReferenceNode) |> ignore
@@ -177,9 +175,21 @@ type ProjectFile =
                         then existingNode :?> XmlElement |> addChild (this.CreateNode("Paket","True")) |> ignore
                     else verbosefn "  - custom nodes for %s in %s ==> skipping" fileItem.Include this.FileName
                 | None  ->
-                    let firstNode = fileItemsInSameDir |> Seq.head
+                    let firstNode = fileItemsInSameDir |> Seq.head 
                     firstNode.ParentNode.InsertBefore(libReferenceNode, firstNode) |> ignore
         
+        let paketNodes = 
+            this.FindPaketNodes("Compile")
+            @ this.FindPaketNodes("Content")
+           
+        // remove unneeded files
+        for paketNode in paketNodes do
+            match getAttribute "Include" paketNode with
+            | Some path ->
+                if not (fileItems |> List.exists (fun fi -> fi.Include = path)) then 
+                  paketNode.ParentNode.RemoveChild(paketNode) |> ignore
+            | _ -> ()
+
         this.DeleteIfEmpty("PropertyGroup")
         this.DeleteIfEmpty("ItemGroup")
         this.DeleteIfEmpty("Choose")
@@ -388,7 +398,10 @@ type ProjectFile =
                     .ApplyFrameworkRestrictions(installSettings.Settings.FrameworkRestrictions)
                     .RemoveIfCompletelyEmpty()
 
-            this.GenerateXml(projectModel,installSettings.Settings.CopyLocal,installSettings.Settings.ImportTargets))
+            let copyLocal = defaultArg installSettings.Settings.CopyLocal true
+            let importTargets = defaultArg installSettings.Settings.ImportTargets true
+
+            this.GenerateXml(projectModel,copyLocal,importTargets))
         |> Seq.iter (fun (propertyNameNodes,chooseNode,propertyChooseNode) -> 
             if chooseNode.ChildNodes.Count > 0 then
                 this.ProjectNode.AppendChild chooseNode |> ignore
@@ -408,6 +421,18 @@ type ProjectFile =
         this.FindPaketNodes("Content")
         |> List.append <| this.FindPaketNodes("Compile")
         |> List.map (fun n -> FileInfo(Path.Combine(Path.GetDirectoryName(this.FileName), n.Attributes.["Include"].Value)))
+
+    member this.GetProjectGuid() = 
+        try
+            let forceGetInnerText node name =
+                match node |> getNode name with 
+                | Some n -> n.InnerText
+                | None -> failwithf "unable to parse %s" node.Name
+
+            let node = this.Document |> getDescendants "PropertyGroup" |> Seq.head
+            forceGetInnerText node "ProjectGuid" |> Guid.Parse
+        with
+        | _ -> Guid.Empty
 
     member this.GetInterProjectDependencies() =  
         let forceGetInnerText node name =
@@ -456,6 +481,36 @@ type ProjectFile =
                 if not parent.HasChildNodes then 
                     parent.ParentNode.RemoveChild parent |> ignore)
 
+    member this.RemoveImportAndTargetEntries(packages : list<string * SemVerInfo> ) =
+        let toDelete = 
+            this.Document 
+            |> getDescendants "Import"
+            |> List.filter (fun node -> 
+                match node |> getAttribute "Project" with
+                | Some p -> packages |> List.exists (fun (id, version) ->
+                    p.IndexOf(sprintf "%s.%O" id version, StringComparison.OrdinalIgnoreCase) >= 0)
+                | None -> false)
+        
+        toDelete
+        |> List.iter
+            (fun node -> 
+                let sibling = node.NextSibling
+                tracefn "Removing 'Import' entry from %s for project %s" 
+                    this.FileName 
+                    (node |> getAttribute "Project" |> Option.get)
+                node.ParentNode.RemoveChild node |> ignore
+                match sibling with
+                | null -> ()
+                | sibling when sibling.Name.Equals("Target") ->
+                    let deleteTarget = 
+                        Utils.askYesNo
+                            (sprintf "Do you want to delete Target named '%s' from %s ?" 
+                                (sibling |> getAttribute "Name" |> Option.get)
+                                this.FileName)
+                    if deleteTarget then
+                        sibling.ParentNode.RemoveChild sibling |> ignore
+                | _ -> ())
+
     member this.OutputType =
         seq {for outputType in this.Document |> getDescendants "OutputType" ->
                 match outputType.InnerText with
@@ -464,14 +519,37 @@ type ProjectFile =
                 | _        -> ProjectOutputType.Library }
         |> Seq.head
 
-    member this.GetTargetFramework() =
-        seq {for outputType in this.Document |> getDescendants "TargetFrameworkVersion" ->
+    member this.GetTargetFrameworkIdentifier() =
+        seq {for outputType in this.Document |> getDescendants "TargetFrameworkIdentifier" ->
                 outputType.InnerText  }
-        |> Seq.map (fun s -> // TODO make this a separate function
-                        s.Replace("v","net")
-                        |> FrameworkDetection.Extract)                        
-        |> Seq.map (fun o -> o.Value)
-        |> Seq.head
+        |> Seq.firstOrDefault
+
+    member this.GetTargetFrameworkProfile() =
+        seq {for outputType in this.Document |> getDescendants "TargetFrameworkProfile" ->
+                outputType.InnerText  }
+        |> Seq.firstOrDefault
+
+    member this.GetTargetProfile() =
+        match this.GetTargetFrameworkProfile() with
+        | Some profile when String.IsNullOrWhiteSpace profile |> not ->
+            KnownTargetProfiles.FindPortableProfile profile
+        | _ ->
+            let framework =
+                seq {for outputType in this.Document |> getDescendants "TargetFrameworkVersion" ->
+                        outputType.InnerText  }
+                |> Seq.map (fun s -> 
+                                // TODO make this a separate function
+                                let prefix = 
+                                    match this.GetTargetFrameworkIdentifier() with
+                                    | None -> "net"
+                                    | Some x -> x
+
+                                prefix + s.Replace("v","")
+                                |> FrameworkDetection.Extract)
+                |> Seq.map (fun o -> o.Value)
+                |> Seq.firstOrDefault
+            SinglePlatform(defaultArg framework (DotNetFramework(FrameworkVersion.V4)))
+
     
     member this.AddImportForPaketTargets(relativeTargetsPath) =
         match this.Document 
@@ -544,3 +622,20 @@ type ProjectFile =
         | exn -> 
             traceWarnfn "Unable to parse %s:%s      %s" fileName Environment.NewLine exn.Message
             None
+
+    static member TryFindProject(projects: ProjectFile seq,projectName) =
+        match projects |> Seq.tryFind (fun p -> p.NameWithoutExtension = projectName || p.Name = projectName) with
+        | Some p -> Some p
+        | None ->
+            try
+                let fi = FileInfo (normalizePath (projectName.Trim().Trim([|'\"'|]))) // check if we can detect the path
+                let rec checkDir (dir:DirectoryInfo) = 
+                    match projects |> Seq.tryFind (fun p -> (FileInfo p.FileName).Directory.ToString().ToLower() = dir.ToString().ToLower()) with
+                    | Some p -> Some p
+                    | None ->
+                        if dir.Parent = null then None else
+                        checkDir dir.Parent
+
+                checkDir fi.Directory
+            with
+            | _ -> None

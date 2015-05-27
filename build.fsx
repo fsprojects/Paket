@@ -79,7 +79,7 @@ let stable =
 
 let genFSAssemblyInfo (projectPath) =
     let projectName = System.IO.Path.GetFileNameWithoutExtension(projectPath)
-    let folderName = System.IO.Path.GetDirectoryName(projectPath)
+    let folderName = System.IO.Path.GetFileName(System.IO.Path.GetDirectoryName(projectPath))
     let basePath = "src" @@ folderName
     let fileName = basePath @@ "AssemblyInfo.fs"
     CreateFSharpAssemblyInfo fileName
@@ -167,13 +167,13 @@ Target "MergePaketTool" (fun _ ->
     CreateDir buildMergedDir
 
     let toPack =
-        ["paket.exe"; "Paket.Core.dll"; "FSharp.Core.dll"; "Ionic.Zip.dll"; "Newtonsoft.Json.dll"; "UnionArgParser.dll"]
+        ["paket.exe"; "Paket.Core.dll"; "FSharp.Core.dll"; "Newtonsoft.Json.dll"; "UnionArgParser.dll"]
         |> List.map (fun l -> buildDir @@ l)
         |> separated " "
 
     let result =
         ExecProcess (fun info ->
-            info.FileName <- currentDirectory @@ "tools" @@ "ILRepack" @@ "ILRepack.exe"
+            info.FileName <- currentDirectory @@ "packages" @@ "ILRepack" @@ "tools" @@ "ILRepack.exe"
             info.Arguments <- sprintf "/verbose /lib:%s /ver:%s /out:%s %s" buildDir release.AssemblyVersion (buildMergedDir @@ "paket.exe") toPack
             ) (TimeSpan.FromMinutes 5.)
 
@@ -210,6 +210,10 @@ Target "NuGet" (fun _ ->
 )
 
 Target "PublishNuGet" (fun _ ->
+    if hasBuildParam "PublishBootstrapper" |> not then
+        !! (tempDir </> "*bootstrapper*")
+        |> Seq.iter File.Delete
+
     Paket.Push (fun p -> 
         { p with 
             ToolPath = "bin/merged/paket.exe"
@@ -224,10 +228,12 @@ Target "GenerateReferenceDocs" (fun _ ->
       failwith "generating reference documentation failed"
 )
 
-let generateHelp' fail debug =
+let generateHelp' commands fail debug =
     let args =
-        if debug then ["--define:HELP"]
-        else ["--define:RELEASE"; "--define:HELP"]
+        [ if not debug then yield "--define:RELEASE"
+          if commands then yield "--define:COMMANDS"
+          yield "--define:HELP"]
+
     if executeFSIWithArgs "docs/tools" "generate.fsx" args [] then
         traceImportant "Help generated"
     else
@@ -236,8 +242,8 @@ let generateHelp' fail debug =
         else
             traceImportant "generating help documentation failed"
 
-let generateHelp fail =
-    generateHelp' fail false
+let generateHelp commands fail =
+    generateHelp' commands fail false
 
 Target "GenerateHelp" (fun _ ->
     DeleteFile "docs/content/release-notes.md"
@@ -251,7 +257,7 @@ Target "GenerateHelp" (fun _ ->
     CopyFile buildDir "packages/FSharp.Core/lib/net40/FSharp.Core.sigdata"
     CopyFile buildDir "packages/FSharp.Core/lib/net40/FSharp.Core.optdata"
 
-    generateHelp true
+    generateHelp true true
 )
 
 Target "GenerateHelpDebug" (fun _ ->
@@ -263,22 +269,19 @@ Target "GenerateHelpDebug" (fun _ ->
     CopyFile "docs/content/" "LICENSE.txt"
     Rename "docs/content/license.md" "docs/content/LICENSE.txt"
 
-    generateHelp' true true
+    generateHelp' true true true
 )
 
 Target "KeepRunning" (fun _ ->    
-    use watcher = new FileSystemWatcher(DirectoryInfo("docs/content").FullName,"*.*")
-    watcher.EnableRaisingEvents <- true
-    watcher.Changed.Add(fun e -> generateHelp false)
-    watcher.Created.Add(fun e -> generateHelp false)
-    watcher.Renamed.Add(fun e -> generateHelp false)
-    watcher.Deleted.Add(fun e -> generateHelp false)
+    use watcher = !! "docs/content/**/*.*" |> WatchChanges (fun changes -> 
+         tracefn "%A" changes
+         generateHelp false false
+    )
 
     traceImportant "Waiting for help edits. Press any key to stop."
 
     System.Console.ReadKey() |> ignore
 
-    watcher.EnableRaisingEvents <- false
     watcher.Dispose()
 )
 
@@ -292,6 +295,7 @@ Target "ReleaseDocs" (fun _ ->
     CleanDir tempDocsDir
     Repository.cloneSingleBranch "" (gitHome + "/" + gitName + ".git") "gh-pages" tempDocsDir
 
+    Git.CommandHelper.runSimpleGitCommand tempDocsDir "rm . -f -r" |> ignore
     CopyRecursive "docs/output" tempDocsDir true |> tracefn "%A"    
     
     File.WriteAllText("temp/gh-pages/latest",sprintf "https://github.com/fsprojects/Paket/releases/download/%s/paket.exe" release.NugetVersion)

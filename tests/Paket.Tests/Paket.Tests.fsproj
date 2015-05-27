@@ -9,7 +9,7 @@
     <OutputType>Library</OutputType>
     <RootNamespace>Paket.Tests</RootNamespace>
     <AssemblyName>Paket.Tests</AssemblyName>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <TargetFSharpCoreVersion>4.3.0.0</TargetFSharpCoreVersion>
     <Name>Paket.Tests</Name>
     <TargetFrameworkProfile />
@@ -123,6 +123,9 @@
     </Content>
     <Content Include="Nuspec\WindowsAzure.Storage.nuspec">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>  
+    <Content Include="Nuspec\LiteGuard.Source.nuspec">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Compile Include="Nuspec\NuspecSpecs.fs" />
     <Content Include="NuGetOData\Fantomas.xml">
@@ -159,6 +162,9 @@
     <Content Include="NuGetConfig\PasswordConfig.xml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+    <Content Include="NuGetConfig\ConfigWithDisabledFeed.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <Compile Include="NuGetConfig\NuGetConfigSpecs.fs" />
     <Content Include="JSON-LD\Rx-PlatformServices.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
@@ -170,6 +176,7 @@
     <Compile Include="DependenciesFile\ParserSpecs.fs" />
     <Compile Include="DependenciesFile\SaveSpecs.fs" />
     <Compile Include="DependenciesFile\AddPackageSpecs.fs" />
+    <Compile Include="DependenciesFile\RemovePackageSpecs.fs" />
     <Compile Include="DependenciesFile\DependencyChangesSpecs.fs" />
     <Compile Include="Resolver\DependencyGraphSpecs.fs" />
     <Compile Include="Resolver\SimpleDependenciesSpecs.fs" />
@@ -208,14 +215,24 @@
     </None>
     <None Include="ProjectFile\TestData\CustomFantomasNode.fsprojtest">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>                                     
+    </None>
     <None Include="ProjectFile\TestData\CustomPaketFantomasNode.fsprojtest">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Include="ProjectFile\TestData\NoCustomFantomasNode.fsprojtest">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+    <None Include="ProjectFile\TestData\MaintainsOrdering.fsprojtest">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>                              
+    <None Include="ProjectFile\TestData\NewSilverlightClassLibrary.csprojtest">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>                              
+    <None Include="ProjectFile\TestData\FSharp.Core.Fluent-3.1.fsprojtest">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <Compile Include="ProjectFile\ConditionSpecs.fs" />
+    <Compile Include="ProjectFile\TargetFrameworkSpecs.fs" />
     <Compile Include="ProjectFile\FileBuildActionSpecs.fs" />
     <Compile Include="ProjectFile\InterProjectDependencySpecs.fs" />
     <Compile Include="ProjectFile\FrameworkReferencesSpecs.fs" />
@@ -260,7 +277,7 @@
   </ItemGroup>
   <Import Project="Paket.Tests.paket.targets" Condition="Exists('Paket.Tests.paket.targets')" />
   <Choose>
-    <When Condition="$(TargetFrameworkIdentifier) == '.NETFramework' And ($(TargetFrameworkVersion) == 'v4.0' Or $(TargetFrameworkVersion) == 'v4.5' Or $(TargetFrameworkVersion) == 'v4.5.1' Or $(TargetFrameworkVersion) == 'v4.5.2' Or $(TargetFrameworkVersion) == 'v4.5.3')">
+    <When Condition="$(TargetFrameworkIdentifier) == '.NETFramework' And ($(TargetFrameworkVersion) == 'v4.0' Or $(TargetFrameworkVersion) == 'v4.5' Or $(TargetFrameworkVersion) == 'v4.5.1' Or $(TargetFrameworkVersion) == 'v4.5.2' Or $(TargetFrameworkVersion) == 'v4.5.3' Or $(TargetFrameworkVersion) == 'v4.6')">
       <ItemGroup>
         <Reference Include="FSharp.Core">
           <HintPath>..\..\packages\FSharp.Core\lib\net40\FSharp.Core.dll</HintPath>

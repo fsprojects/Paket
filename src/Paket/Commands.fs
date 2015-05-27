@@ -1,24 +1,27 @@
-﻿module Paket.Commands
+module Paket.Commands
 
 open System
 
 open Nessos.UnionArgParser
 
 type Command =
-    | [<First>][<CustomCommandLine("add")>]                 Add
-    | [<First>][<CustomCommandLine("config")>]              Config
-    | [<First>][<CustomCommandLine("convert-from-nuget")>]  ConvertFromNuget
-    | [<First>][<CustomCommandLine("find-refs")>]           FindRefs 
-    | [<First>][<CustomCommandLine("init")>]                Init
-    | [<First>][<CustomCommandLine("auto-restore")>]        AutoRestore
-    | [<First>][<CustomCommandLine("install")>]             Install
-    | [<First>][<CustomCommandLine("outdated")>]            Outdated
-    | [<First>][<CustomCommandLine("remove")>]              Remove
-    | [<First>][<CustomCommandLine("restore")>]             Restore
-    | [<First>][<CustomCommandLine("simplify")>]            Simplify
-    | [<First>][<CustomCommandLine("update")>]              Update
-    | [<First>][<CustomCommandLine("pack")>]                Pack
-    | [<First>][<CustomCommandLine("push")>]                Push
+    | [<First>][<CustomCommandLine("add")>]                     Add
+    | [<First>][<CustomCommandLine("config")>]                  Config
+    | [<First>][<CustomCommandLine("convert-from-nuget")>]      ConvertFromNuget
+    | [<First>][<CustomCommandLine("find-refs")>]               FindRefs 
+    | [<First>][<CustomCommandLine("init")>]                    Init
+    | [<First>][<CustomCommandLine("auto-restore")>]            AutoRestore
+    | [<First>][<CustomCommandLine("install")>]                 Install
+    | [<First>][<CustomCommandLine("outdated")>]                Outdated
+    | [<First>][<CustomCommandLine("remove")>]                  Remove
+    | [<First>][<CustomCommandLine("restore")>]                 Restore
+    | [<First>][<CustomCommandLine("simplify")>]                Simplify
+    | [<First>][<CustomCommandLine("update")>]                  Update
+    | [<First>][<CustomCommandLine("find-packages")>]           FindPackages
+    | [<First>][<CustomCommandLine("find-package-versions")>]   FindPackageVersions
+    | [<First>][<CustomCommandLine("show-installed-packages")>] ShowInstalledPackages
+    | [<First>][<CustomCommandLine("pack")>]                    Pack
+    | [<First>][<CustomCommandLine("push")>]                    Push
 with 
     interface IArgParserTemplate with
         member this.Usage = 
@@ -35,6 +38,9 @@ with
             | Restore -> "Ensures that all dependencies in your paket.dependencies file are present in the `packages` directory."
             | Simplify -> "Simplifies your paket.dependencies file by removing transitive dependencies."
             | Update -> "Recomputes the dependency resolution, updates the paket.lock file and propagates any resulting package changes into all project files referencing updated packages."
+            | FindPackages -> "EXPERIMENTAL: Allows to search for packages."
+            | FindPackageVersions -> "EXPERIMENTAL: Allows to search for package versions."
+            | ShowInstalledPackages -> "EXPERIMENTAL: Shows all installed top-level packages."
             | Pack -> "Packs all paket.template files within this repository"
             | Push -> "Pushes all `.nupkg` files from the given directory."
     
@@ -191,10 +197,51 @@ with
             | Hard -> "Replaces package references within project files even if they are not yet adhering to the Paket's conventions (and hence considered manually managed)."
             | Redirects -> "Creates binding redirects for the NuGet packages."
 
+type FindPackagesArgs =
+    | [<CustomCommandLine("searchtext")>] SearchText of string
+    | [<CustomCommandLine("source")>] Source of string
+    | [<CustomCommandLine("max")>] MaxResults of int
+    | [<AltCommandLine("-s")>] Silent
+with
+    interface IArgParserTemplate with
+        member this.Usage =
+            match this with
+            | SearchText(_) -> "Search text of a Package."
+            | Source(_) -> "Allows to specify the package source feed."
+            | MaxResults(_) -> "Max. No. of results."
+            | Silent -> "Doesn't trace other output than the search result"
+
+type ShowInstalledPackagesArgs =
+    | All
+    | [<CustomCommandLine("project")>] Project of string
+    | [<AltCommandLine("-s")>] Silent
+with
+    interface IArgParserTemplate with
+        member this.Usage =
+            match this with
+            | All -> "Shows all installed packages (incl. transitive dependencies)."
+            | Project(_) -> "Show only packages that are installed in the given project."
+            | Silent -> "Doesn't trace other output than installed packages"
+
+type FindPackageVersionsArgs =
+    | [<CustomCommandLine("name")>][<Mandatory>] Name of string
+    | [<CustomCommandLine("source")>] Source of string
+    | [<CustomCommandLine("max")>] MaxResults of int
+    | [<AltCommandLine("-s")>] Silent
+with
+    interface IArgParserTemplate with
+        member this.Usage =
+            match this with
+            | Name(_) -> "Name of the Package"
+            | Source(_) -> "Allows to specify the package source feed."
+            | MaxResults(_) -> "Max. No. of results"
+            | Silent -> "Doesn't trace other output than the search result"
+
 type PackArgs =
     | [<CustomCommandLine("output")>][<Mandatory>] Output of string
     | [<CustomCommandLine("buildconfig")>] BuildConfig of string
     | [<CustomCommandLine("version")>] Version of string
+    | [<CustomCommandLine("templatefile")>] TemplateFile of string
     | [<CustomCommandLine("releaseNotes")>] ReleaseNotes of string
 with
     interface IArgParserTemplate with
@@ -203,6 +250,7 @@ with
             | Output(_) -> "Output directory to put nupkgs."
             | BuildConfig(_) -> "Optionally specify build configuration that should be packaged (defaults to Release)."
             | Version(_) -> "Specify version of the package."
+            | TemplateFile(_) -> "Allows to specify a single template file."
             | ReleaseNotes(_) -> "Specify relase notes for the package."
 
 type PushArgs =
@@ -258,9 +306,11 @@ let markdown (command : Command) (additionalText : string) =
         | Restore -> syntaxAndOptions (UnionArgParser.Create<RestoreArgs>())
         | Simplify -> syntaxAndOptions (UnionArgParser.Create<SimplifyArgs>())
         | Update -> syntaxAndOptions (UnionArgParser.Create<UpdateArgs>())
+        | FindPackages -> syntaxAndOptions (UnionArgParser.Create<FindPackagesArgs>())
+        | FindPackageVersions -> syntaxAndOptions (UnionArgParser.Create<FindPackageVersionsArgs>())
+        | ShowInstalledPackages -> syntaxAndOptions (UnionArgParser.Create<ShowInstalledPackagesArgs>())
         | Pack -> syntaxAndOptions (UnionArgParser.Create<PackArgs>())
         | Push -> syntaxAndOptions (UnionArgParser.Create<PushArgs>())
-
     
     let replaceLinks (text : string) =
         text

@@ -6,8 +6,8 @@ nuget NUnit.Runners
 nuget NUnit
 nuget FAKE
 nuget FSharp.Formatting
-nuget DotNetZip
 nuget FSharp.Core
+nuget ILRepack
 
 github forki/FsUnit FsUnit.fs
 github fsharp/FAKE modules/Octokit/Octokit.fsx

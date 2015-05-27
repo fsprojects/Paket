@@ -128,15 +128,6 @@ let ``pre-release identifiers must not contain invalid characters (SemVer 2.0.0/
 let ``pre-release identifiers must not be empty (SemVer 2.0.0/9)`` () =
     shouldFail<exn>(fun () -> SemVer.Parse "1.0.0-a..c" |> ignore)
 
-// Build Validity
-[<Test>]
-let ``build identifiers must not contain invalid characters (SemVer 2.0.0/10)`` () =
-    shouldFail<exn>(fun () -> SemVer.Parse "1.0.0+a.c" |> ignore)
-
-[<Test>]
-let ``build identifiers must not be empty (SemVer 2.0.0/10)`` () =
-    shouldFail<exn>(fun () -> SemVer.Parse "1.0.0+a.c" |> ignore)
-
 // Precedence
 
 [<Test>]
@@ -164,3 +155,17 @@ let ``earlier pre-release identifiers have higher precedence (SemVer 2.0.0/11)``
 [<Test>]
 let ``numeric pre-release identifiers exhibit correct (numeric) precedence (SemVer 2.0.0/11)`` () =
     (SemVer.Parse "1.0.0-beta.2") |> shouldBeSmallerThan (SemVer.Parse "1.0.0-beta.11")
+
+[<Test>]
+let ``should accept SemVer2 prereleases`` () =
+    let semVer = SemVer.Parse("1.0.0+foobar")
+    semVer.Major |> shouldEqual 1
+    semVer.Minor |> shouldEqual 0
+    semVer.Patch |> shouldEqual 0
+    semVer.PreRelease |> shouldEqual (Some { Origin = "foobar"
+                                             Name = "foobar"
+                                             Number = None })
+
+[<Test>]
+let ``should accept version with leading zero`` () =
+    SemVer.Parse("1.0.071.9556").ToString() |> shouldEqual "1.0.071.9556"

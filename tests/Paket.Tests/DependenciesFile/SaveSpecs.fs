@@ -35,22 +35,6 @@ let ``should serialize strict config``() =
     |> shouldEqual (normalizeLineEndings strictConfig)
 
 
-let configWithNoRestriction = """source http://nuget.org/api/v2
-
-nuget FAKE >= 0"""
-
-let configWithNoRestriction2 = """source http://nuget.org/api/v2
-
-nuget FAKE"""
-
-
-[<Test>]
-let ``should remove >= 0 from config``() = 
-    let cfg = DependenciesFile.FromCode(configWithNoRestriction)
-    
-    cfg.ToString()
-    |> shouldEqual (normalizeLineEndings configWithNoRestriction2)
-
 let contentNoneConfig = """redirects: on
 content: none
 source http://nuget.org/api/v2

@@ -14,12 +14,19 @@ open FSharp.Polyfill
 open System.Reflection
 open System.Diagnostics
 
+let findPackageFolder root (PackageName name) =
+    let lowerName = name.ToLower()
+    let di = DirectoryInfo(Path.Combine(root, Constants.PackagesFolderName))
+    let direct = DirectoryInfo(Path.Combine(di.FullName, name))
+    if direct.Exists then direct else
+    match di.GetDirectories() |> Seq.tryFind (fun subDir -> subDir.FullName.ToLower().EndsWith(lowerName)) with
+    | Some x -> x
+    | None -> failwithf "Package directory for package %s was not found." name
+
 let private findPackagesWithContent (root,usedPackages:Map<PackageName,PackageInstallSettings>) = 
     usedPackages
-    |> Seq.filter (fun kv -> not kv.Value.Settings.OmitContent)
-    |> Seq.map (fun kv -> 
-        let (PackageName name) = kv.Key
-        DirectoryInfo(Path.Combine(root, Constants.PackagesFolderName, name)))
+    |> Seq.filter (fun kv -> defaultArg kv.Value.Settings.OmitContent false |> not)
+    |> Seq.map (fun kv -> findPackageFolder root kv.Key)
     |> Seq.choose (fun packageDir -> 
             packageDir.GetDirectories("Content") 
             |> Array.append (packageDir.GetDirectories("content"))
@@ -78,9 +85,8 @@ let private removeCopiedFiles (project: ProjectFile) =
 let CreateInstallModel(root, sources, force, package) = 
     async { 
         let! (package, files, targetsFiles) = RestoreProcess.ExtractPackage(root, sources, force, package)
-        let (PackageName name) = package.Name
-        let nuspec = FileInfo(sprintf "%s/packages/%s/%s.nuspec" root name name)
-        let nuspec = Nuspec.Load nuspec.FullName
+        let (PackageName name) = package.Name        
+        let nuspec = Nuspec.Load(root,package.Name)
         let files = files |> Array.map (fun fi -> fi.FullName)
         let targetsFiles = targetsFiles |> Array.map (fun fi -> fi.FullName)
         return package, InstallModel.CreateFromLibs(package.Name, package.Version, package.Settings.FrameworkRestrictions, files, targetsFiles, nuspec)
@@ -162,14 +168,72 @@ let InstallIntoProjects(sources,force, hard, withBindingRedirects, lockFile:Lock
             lockFile.GetPackageHull(referenceFile)
             |> Seq.map (fun u -> 
                 let package = packages.[NormalizedPackageName u.Key]
+                let referenceFileSettings = 
+                    referenceFile.NugetPackages
+                    |> List.tryFind (fun x -> NormalizedPackageName x.Name = NormalizedPackageName u.Key)
+                let copyLocal =                
+                    match referenceFileSettings with
+                    | Some s -> s.Settings.CopyLocal
+                    | None -> None
+                let omitContent =                
+                    match referenceFileSettings with
+                    | Some s -> s.Settings.OmitContent
+                    | None -> None
+                let importTargets =                
+                    match referenceFileSettings with
+                    | Some s -> s.Settings.ImportTargets
+                    | None -> None
+                let restriktions =                
+                    match referenceFileSettings with
+                    | Some s -> s.Settings.FrameworkRestrictions
+                    | None -> []
+
+
                 u.Key,
                     { u.Value with
                         Settings =
                             { u.Value.Settings with 
-                                FrameworkRestrictions = u.Value.Settings.FrameworkRestrictions @ lockFile.Options.Settings.FrameworkRestrictions @ package.Settings.FrameworkRestrictions // TODO: This should filter
-                                ImportTargets = u.Value.Settings.ImportTargets && lockFile.Options.Settings.ImportTargets && package.Settings.ImportTargets
-                                CopyLocal = u.Value.Settings.CopyLocal && lockFile.Options.Settings.CopyLocal && package.Settings.CopyLocal 
-                                OmitContent = u.Value.Settings.OmitContent || lockFile.Options.Settings.OmitContent || package.Settings.OmitContent }})
+                                FrameworkRestrictions = 
+                                    // TODO: This should filter
+                                    restriktions @
+                                      u.Value.Settings.FrameworkRestrictions @ 
+                                      lockFile.Options.Settings.FrameworkRestrictions @ 
+                                      package.Settings.FrameworkRestrictions
+
+                                ImportTargets =
+                                    match importTargets with
+                                    | Some x -> Some x
+                                    | None ->
+                                        match package.Settings.ImportTargets with
+                                        | Some x -> Some x
+                                        | _ -> match lockFile.Options.Settings.ImportTargets with
+                                               | Some x -> Some x
+                                               | None -> match u.Value.Settings.ImportTargets with
+                                                         | Some x -> Some x
+                                                         | _ -> None
+                                CopyLocal =
+                                    match copyLocal with
+                                    | Some x -> Some x
+                                    | None ->
+                                        match package.Settings.CopyLocal with
+                                        | Some x -> Some x
+                                        | _ -> match lockFile.Options.Settings.CopyLocal with
+                                               | Some x -> Some x
+                                               | None -> match u.Value.Settings.CopyLocal with
+                                                         | Some x -> Some x
+                                                         | _ -> None
+
+                                OmitContent =
+                                    match omitContent with
+                                    | Some x -> Some x
+                                    | None ->
+                                        match package.Settings.OmitContent with
+                                        | Some x -> Some x
+                                        | _ -> match lockFile.Options.Settings.OmitContent with
+                                               | Some x -> Some x
+                                               | None -> match u.Value.Settings.OmitContent with
+                                                         | Some x -> Some x
+                                                         | _ -> None }})
             |> Map.ofSeq
 
         let usedPackageSettings =

@@ -118,6 +118,8 @@ type internal OptionalPackagingInfo =
       Tags : string list
       DevelopmentDependency : bool
       Dependencies : (string * VersionRequirement) list
+      References : string list
+      FrameworkAssemblyReferences : string list
       Files : (string * string) list }
     static member Epmty : OptionalPackagingInfo = 
         { Title = None
@@ -133,6 +135,8 @@ type internal OptionalPackagingInfo =
           Tags = []
           DevelopmentDependency = false
           Dependencies = []
+          References = []
+          FrameworkAssemblyReferences = []
           Files = [] }
 
 type internal CompleteInfo = CompleteCoreInfo * OptionalPackagingInfo
@@ -223,6 +227,19 @@ module internal TemplateFile =
                         splitted.[0],target))
         |> Option.map List.ofSeq
         |> fun x -> defaultArg x []
+
+    let private getReferences (map : Map<string, string>) = 
+        Map.tryFind "references" map
+        |> Option.map (fun d -> d.Split '\n')
+        |> Option.map List.ofSeq
+        |> fun x -> defaultArg x []
+
+
+    let private getFrameworkReferences (map : Map<string, string>) = 
+        Map.tryFind "frameworkassemblies" map
+        |> Option.map (fun d -> d.Split '\n')
+        |> Option.map List.ofSeq
+        |> fun x -> defaultArg x []
     
     let private getOptionalInfo (map : Map<string, string>) = 
         let get (n : string) = Map.tryFind (n.ToLowerInvariant()) map
@@ -275,6 +292,8 @@ module internal TemplateFile =
           Tags = tags
           DevelopmentDependency = developmentDependency
           Dependencies = getDependencies map
+          References = getReferences map
+          FrameworkAssemblyReferences = getFrameworkReferences map
           Files = getFiles map }
     
     let Parse(file,contentStream : Stream) = 

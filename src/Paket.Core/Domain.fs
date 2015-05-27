@@ -15,10 +15,10 @@ type PackageName =
     override this.ToString() = this.Id
 
 /// Active recognizer to convert a NuGet package name into a string
-let (|PackageName|) (PackageName.PackageName name) = name
+let (|PackageName|) (PackageName.PackageName name) = name.Trim()
 
 /// Function to convert a string into a NuGet package name
-let PackageName name = PackageName.PackageName name
+let PackageName(name:string) = PackageName.PackageName(name.Trim())
 
 /// Represents a normalized NuGet package name
 [<System.Diagnostics.DebuggerDisplay("{Item}")>]
@@ -31,7 +31,7 @@ type NormalizedPackageName =
 
 /// Active recognizer to convert a NuGet package name into a normalized one
 let (|NormalizedPackageName|) (PackageName name) =
-    NormalizedPackageName.NormalizedPackageName(name.ToLowerInvariant())
+    NormalizedPackageName.NormalizedPackageName(name.ToLowerInvariant().Trim())
 
 /// Function to convert a NuGet package name into a normalized one
 let NormalizedPackageName = (|NormalizedPackageName|)

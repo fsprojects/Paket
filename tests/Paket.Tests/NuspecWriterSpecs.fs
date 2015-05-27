@@ -8,7 +8,7 @@ open NUnit.Framework
 open TestHelpers
 
 [<Test>]
-let ``should serialize cor info``() = 
+let ``should serialize core info``() = 
     let result = """<package xmlns="http://schemas.microsoft.com/packaging/2011/10/nuspec.xsd">
   <metadata>
     <id>Paket.Tests</id>
@@ -57,6 +57,40 @@ let ``should serialize dependencies``() =
             Dependencies = 
                 [ "Paket.Core", VersionRequirement.Parse "[3.1]"
                   "xUnit", VersionRequirement.Parse "2.0" ] }
+    
+    let doc = NupkgWriter.nuspecDoc (core, optional)
+    doc.ToString() 
+    |> normalizeLineEndings
+    |> shouldEqual (normalizeLineEndings result)
+
+
+[<Test>]
+let ``should serialize frameworkAssemblues``() = 
+    let result = """<package xmlns="http://schemas.microsoft.com/packaging/2011/10/nuspec.xsd">
+  <metadata>
+    <id>Paket.Tests</id>
+    <version>1.0.0.0</version>
+    <authors>Two, Authors</authors>
+    <description>A description</description>
+    <tags>f# rules</tags>
+    <frameworkAssemblies>
+      <frameworkAssembly assemblyName="System.Xml" />
+      <frameworkAssembly assemblyName="System.Xml.Linq" />
+    </frameworkAssemblies>
+  </metadata>
+</package>"""
+    
+    let core = 
+        { Id = "Paket.Tests"
+          Version = SemVer.Parse "1.0.0.0" |> Some
+          Authors = [ "Two"; "Authors" ]
+          Description = "A description" }
+    
+    let optional = 
+        { OptionalPackagingInfo.Epmty with 
+            Tags = [ "f#"; "rules" ]
+            FrameworkAssemblyReferences = 
+                [ "System.Xml"; "System.Xml.Linq" ] }
     
     let doc = NupkgWriter.nuspecDoc (core, optional)
     doc.ToString() 
@@ -114,6 +148,10 @@ second line</releaseNotes>
     <language>en-US</language>
     <tags>aa bb</tags>
     <developmentDependency>true</developmentDependency>
+    <references>
+      <reference file="file1.dll" />
+      <reference file="file2.dll" />
+    </references>
   </metadata>
 </package>"""
     
@@ -135,6 +173,7 @@ second line</releaseNotes>
               IconUrl = Some "http://www.somewhere.com/Icon"
               Copyright = Some "Paket owners 2015"
               RequireLicenseAcceptance = true
+              References = ["file1.dll";"file2.dll"]
               Tags = ["aa"; "bb"]
               DevelopmentDependency = true }
                        

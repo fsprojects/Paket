@@ -10,13 +10,10 @@ open Paket.Logging
 open Paket.Commands
 
 open Nessos.UnionArgParser
+open PackageSources
 
 let private stopWatch = new Stopwatch()
 stopWatch.Start()
-
-let assembly = Assembly.GetExecutingAssembly()
-let fvi = FileVersionInfo.GetVersionInfo(assembly.Location);
-tracefn "Paket version %s" fvi.FileVersion
 
 let filterGlobalArgs args = 
     let globalResults = 
@@ -40,6 +37,14 @@ let filterGlobalArgs args =
     
     verbose, logFile, rest
 
+let v, logFile, args = filterGlobalArgs (Environment.GetCommandLineArgs().[1..])
+let silent = args |> Array.exists ((=) "-s") 
+
+if not silent then
+    let assembly = Assembly.GetExecutingAssembly()
+    let fvi = FileVersionInfo.GetVersionInfo(assembly.Location);
+    tracefn "Paket version %s" fvi.FileVersion
+
 let processWithValidation<'T when 'T :> IArgParserTemplate> validateF commandF command 
     args = 
     let parser = UnionArgParser.Create<'T>()
@@ -47,18 +52,24 @@ let processWithValidation<'T when 'T :> IArgParserTemplate> validateF commandF c
         parser.Parse
             (inputs = args, raiseOnUsage = false, ignoreMissing = true, 
              errorHandler = ProcessExiter())
+
     let resultsValid = validateF (results)
-    if results.IsUsageRequested || not resultsValid then 
-        parser.Usage(Commands.cmdLineUsageMessage command parser) |> trace
+    if results.IsUsageRequested || not resultsValid then
+        if not resultsValid then
+            traceError "Command was:"
+            traceError ("  " + String.Join(" ",Environment.GetCommandLineArgs()))
+            parser.Usage(Commands.cmdLineUsageMessage command parser) |> traceError
+            Environment.ExitCode <- 1
+        else
+            parser.Usage(Commands.cmdLineUsageMessage command parser) |> trace
     else 
         commandF results
         let elapsedTime = Utils.TimeSpanToReadableString stopWatch.Elapsed
-        tracefn "%s - ready." elapsedTime
+        if not silent then
+            tracefn "%s - ready." elapsedTime
 
 let processCommand<'T when 'T :> IArgParserTemplate> (commandF : ArgParseResults<'T> -> unit) = 
-    processWithValidation (fun _ -> true) commandF 
-
-let v, logFile, args = filterGlobalArgs (Environment.GetCommandLineArgs().[1..])
+    processWithValidation (fun _ -> true) commandF
 
 Logging.verbose <- v
 Option.iter setLogFile logFile
@@ -144,7 +155,7 @@ let restore (results : ArgParseResults<_>) =
 
 let simplify (results : ArgParseResults<_>) = 
     let interactive = results.Contains <@ SimplifyArgs.Interactive @>
-    Dependencies.Simplify(interactive)
+    Dependencies.Locate().Simplify(interactive)
 
 let update (results : ArgParseResults<_>) = 
     let hard = results.Contains <@ UpdateArgs.Hard @>
@@ -160,14 +171,81 @@ let update (results : ArgParseResults<_>) =
 let pack (results : ArgParseResults<_>) = 
     let outputPath = results.GetResult <@ PackArgs.Output @>
     Dependencies.Locate()
-                .Pack(outputPath, ?buildConfig = results.TryGetResult <@ PackArgs.BuildConfig @>, 
+                .Pack(outputPath, 
+                      ?buildConfig = results.TryGetResult <@ PackArgs.BuildConfig @>, 
                       ?version = results.TryGetResult <@ PackArgs.Version @>, 
-                      ?releaseNotes = results.TryGetResult <@ PackArgs.ReleaseNotes @>)
+                      ?releaseNotes = results.TryGetResult <@ PackArgs.ReleaseNotes @>,
+                      ?templateFile = results.TryGetResult <@ PackArgs.TemplateFile @>)
+
+let findPackages (results : ArgParseResults<_>) = 
+    let maxResults = defaultArg (results.TryGetResult <@ FindPackagesArgs.MaxResults @>) 10000
+    let silent = results.Contains <@ FindPackagesArgs.Silent @>
+    let sources  =
+        match results.TryGetResult <@ FindPackagesArgs.Source @> with
+        | Some source -> [PackageSource.NugetSource source]
+        | _ -> PackageSources.DefaultNugetSource :: Dependencies.Locate().GetSources()
+
+    let searchAndPrint searchText =
+        let result =
+            sources
+            |> List.choose (fun x -> match x with | PackageSource.Nuget s -> Some s.Url | _ -> None)
+            |> Seq.distinct
+            |> Seq.map (fun url -> NuGetV3.FindPackages(None, url, searchText, maxResults))
+            |> Async.Parallel
+            |> Async.RunSynchronously
+            |> Seq.concat
+            |> Seq.distinct
+
+        for p in result do
+            tracefn "%s" p
+
+    match results.TryGetResult <@ FindPackagesArgs.SearchText @> with
+    | None ->             
+        let searchText = ref ""
+        while !searchText <> ":q" do
+            if not silent then
+                tracefn " - Please enter search text (:q for exit):"
+            searchText := Console.ReadLine()
+            searchAndPrint !searchText
+
+    | Some searchText -> searchAndPrint searchText
+
+let showInstalledPackages (results : ArgParseResults<_>) =    
+    let dependenciesFile = Dependencies.Locate()
+    let packages = 
+        match results.TryGetResult <@ ShowInstalledPackagesArgs.Project @> with
+        | None ->
+            if results.Contains <@ ShowInstalledPackagesArgs.All @> then
+                dependenciesFile.GetInstalledPackages()
+            else
+                dependenciesFile.GetDirectDependencies()
+        | Some project ->
+            match ProjectFile.FindReferencesFile(FileInfo project) with
+            | None -> []
+            | Some referencesFile ->
+                let referencesFile = ReferencesFile.FromFile referencesFile
+                if results.Contains <@ ShowInstalledPackagesArgs.All @> then
+                    dependenciesFile.GetInstalledPackages(referencesFile)
+                else
+                    dependenciesFile.GetDirectDependencies(referencesFile)
+
+    for name,version in packages do
+        tracefn "%s - %s" name version
+
+let findPackageVersions (results : ArgParseResults<_>) =
+    let maxResults = defaultArg (results.TryGetResult <@ FindPackageVersionsArgs.MaxResults @>) 10000
+    let name = results.GetResult <@ FindPackageVersionsArgs.Name @>
+    let source = defaultArg (results.TryGetResult <@ FindPackageVersionsArgs.Source @>) Constants.DefaultNugetStream
+    let result =
+        NuGetV3.FindVersionsForPackage(None,source,name,maxResults)
+        |> Async.RunSynchronously
+        
+    for p in result do
+        tracefn "%s" p
 
 let push (results : ArgParseResults<_>) = 
     let fileName = results.GetResult <@ PushArgs.FileName @>
-    Dependencies.Locate()
-                .Push(fileName, ?url = results.TryGetResult <@ PushArgs.Url @>, 
+    Dependencies.Push(fileName, ?url = results.TryGetResult <@ PushArgs.Url @>, 
                       ?endPoint = results.TryGetResult <@ PushArgs.EndPoint @>,
                       ?apiKey = results.TryGetResult <@ PushArgs.ApiKey @>)
 
@@ -195,13 +273,20 @@ try
             | Restore -> processCommand restore
             | Simplify -> processCommand simplify
             | Update -> processCommand update
+            | FindPackages -> processCommand findPackages
+            | FindPackageVersions -> processCommand findPackageVersions
+            | ShowInstalledPackages -> processCommand showInstalledPackages
             | Pack -> processCommand pack
             | Push -> processCommand push
 
-        let args = args.[1..]
+        let args = args.[1..]      
+
         handler command args
     | [] -> 
-        parser.Usage("available commands:") |> trace
+        Environment.ExitCode <- 1
+        traceError "Command was:"
+        traceError ("  " + String.Join(" ",Environment.GetCommandLineArgs()))
+        parser.Usage("available commands:") |> traceError
     | _ -> failwith "expected only one command"
 with
 | exn when not (exn :? System.NullReferenceException) -> 

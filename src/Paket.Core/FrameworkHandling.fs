@@ -17,6 +17,7 @@ type FrameworkVersion =
     | V4_5_1
     | V4_5_2
     | V4_5_3
+    | V4_6
     override this.ToString() =
         match this with
         | V1 -> "v1.0"
@@ -30,6 +31,7 @@ type FrameworkVersion =
         | V4_5_1 -> "v4.5.1"
         | V4_5_2 -> "v4.5.2"
         | V4_5_3 -> "v4.5.3"
+        | V4_6 -> "v4.6"
 
 module KnownAliases =
     let Data =
@@ -75,13 +77,14 @@ type FrameworkIdentifier =
                 | FrameworkVersion.V4_5_1 -> "451"
                 | FrameworkVersion.V4_5_2 -> "452"
                 | FrameworkVersion.V4_5_3 -> "453"
+                | FrameworkVersion.V4_6 -> "46"
         | MonoAndroid -> "monoandroid"
         | MonoTouch -> "monotouch"
         | MonoMac -> "monomac"
         | Windows v -> "win" + v
         | WindowsPhoneApp v -> "wp" + v
         | WindowsPhoneSilverlight v -> "wp" + v
-        | Silverlight v -> "sl" + v
+        | Silverlight v -> "sl" + v.Replace("v","").Replace(".","")
 
 
     // returns a list of compatible platforms that this platform also supports
@@ -101,6 +104,7 @@ type FrameworkIdentifier =
         | DotNetFramework FrameworkVersion.V4_5_1 -> [ DotNetFramework FrameworkVersion.V4_5 ]
         | DotNetFramework FrameworkVersion.V4_5_2 -> [ DotNetFramework FrameworkVersion.V4_5_1 ]
         | DotNetFramework FrameworkVersion.V4_5_3 -> [ DotNetFramework FrameworkVersion.V4_5_2 ]
+        | DotNetFramework FrameworkVersion.V4_6 -> [ DotNetFramework FrameworkVersion.V4_5_3 ]
         | Silverlight "v3.0" -> [ ]
         | Silverlight "v4.0" -> [ Silverlight "v3.0" ]
         | Silverlight "v5.0" -> [ Silverlight "v4.0" ]
@@ -144,17 +148,18 @@ module FrameworkDetection =
                 | "net451" -> Some (DotNetFramework FrameworkVersion.V4_5_1)
                 | "net452" -> Some (DotNetFramework FrameworkVersion.V4_5_2)
                 | "net453" -> Some (DotNetFramework FrameworkVersion.V4_5_3)
+                | "net46" -> Some (DotNetFramework FrameworkVersion.V4_6)
                 | "monotouch" | "monotouch10" -> Some MonoTouch
                 | "monoandroid" | "monoandroid10" -> Some MonoAndroid
                 | "monomac" | "monomac10" -> Some MonoMac
-                | "sl3" | "sl30" -> Some (Silverlight "v3.0")
+                | "sl"  | "sl3" | "sl30" -> Some (Silverlight "v3.0")
                 | "sl4" | "sl40" -> Some (Silverlight "v4.0")
                 | "sl5" | "sl50" -> Some (Silverlight "v5.0")
-                | "win8" | "win80" | "netcore45" | "win" -> Some (Windows "v4.5")
+                | "win8" | "win80" | "netcore45" | "win" | "winv45" -> Some (Windows "v4.5")
                 | "win81" | "netcore46" -> Some (Windows "v4.5.1")
                 | "wp7" | "wp70" | "sl4-wp7"| "sl4-wp70" -> Some (WindowsPhoneSilverlight "v7.0")
                 | "wp71" | "sl4-wp71" | "sl4-wp"  -> Some (WindowsPhoneSilverlight "v7.1")
-                | "wp8" | "wp80" -> Some (WindowsPhoneSilverlight "v8.0")
+                | "wp8" | "wp80"  | "wpv80" -> Some (WindowsPhoneSilverlight "v8.0")
                 | "wpa00" | "wpa81" -> Some (WindowsPhoneApp "v8.1")
                 | _ -> None
 
@@ -179,6 +184,43 @@ type TargetProfile =
     | SinglePlatform of FrameworkIdentifier
     | PortableProfile of string * FrameworkIdentifier list
 
+    override this.ToString() =
+        match this with
+        | SinglePlatform x -> x.ToString()
+        | PortableProfile(name,elements) ->
+            match name with
+            | "Profile5" -> "portable-net4+netcore45+MonoAndroid1+MonoTouch1"
+            | "Profile6" -> "portable-net403+netcore45+MonoAndroid1+MonoTouch1"
+            | "Profile7" -> "portable-net45+netcore45+MonoAndroid1+MonoTouch1"
+            | "Profile14" -> "portable-net4+sl5+MonoAndroid1+MonoTouch1"
+            | "Profile19" -> "portable-net403+sl5+MonoAndroid1+MonoTouch1"
+            | "Profile24" -> "portable-net45+sl5+MonoAndroid1+MonoTouch1"
+            | "Profile31" -> "portable-netcore451+wp81"
+            | "Profile32" -> "portable-netcore451+wpa81"
+            | "Profile37" -> "portable-net4+sl5+netcore45+MonoAndroid1+MonoTouch1"
+            | "Profile42" -> "portable-net403+sl5+netcore45+MonoAndroid1+MonoTouch1"
+            | "Profile44" -> "portable-net451+netcore451"
+            | "Profile47" -> "portable-net45+sl5+netcore45+MonoAndroid1+MonoTouch1"
+            | "Profile49" -> "portable-net45+wp8+MonoAndroid1+MonoTouch1"
+            | "Profile78" -> "portable-net45+netcore45+wp8+MonoAndroid1+MonoTouch1"
+            | "Profile84" -> "portable-wpa81+wp81"
+            | "Profile92" -> "portable-net4+netcore45+wpa81+MonoAndroid1+MonoTouch1"
+            | "Profile102" -> "portable-net403+netcore45+wpa81+MonoAndroid1+MonoTouch1"
+            | "Profile111" -> "portable-net45+netcore45+wpa81+MonoAndroid1+MonoTouch1"
+            | "Profile136" -> "portable-net4+sl5+netcore45+wp8+MonoAndroid1+MonoTouch1"
+            | "Profile147" -> "portable-net403+sl5+netcore45+wp8+MonoAndroid1+MonoTouch1"
+            | "Profile151" -> "portable-net451+netcore451+wpa81"
+            | "Profile157" -> "portable-netcore451+wpa81+wp81"
+            | "Profile158" -> "portable-net45+sl5+netcore45+wp8+MonoAndroid1+MonoTouch1"
+            | "Profile225" -> "portable-net4+sl5+netcore45+wpa81+MonoAndroid1+MonoTouch1"
+            | "Profile240" -> "portable-net403+sl5+netcore45+wpa81"
+            | "Profile255" -> "portable-net45+sl5+netcore45+wpa81+MonoAndroid1+MonoTouch1"
+            | "Profile259" -> "portable-net45+netcore45+wpa81+wp8+MonoAndroid1+MonoTouch1"
+            | "Profile328" -> "portable-net4+sl5+netcore45+wpa81+wp8+MonoAndroid1+MonoTouch1"
+            | "Profile336" -> "portable-net403+sl5+netcore45+wpa81+wp8+MonoAndroid1+MonoTouch1"
+            | "Profile344" -> "portable-net45+sl5+netcore45+wpa81+wp8+MonoAndroid1+MonoTouch1"
+            | _ -> "portable-net45+netcore45+wpa81+wp8+MonoAndroid1+MonoTouch1" // Use Portable259 as default
+
 module KnownTargetProfiles =
     let DotNetFrameworkProfiles =
        [SinglePlatform(DotNetFramework FrameworkVersion.V1)
@@ -191,7 +233,8 @@ module KnownTargetProfiles =
         SinglePlatform(DotNetFramework FrameworkVersion.V4_5)
         SinglePlatform(DotNetFramework FrameworkVersion.V4_5_1)
         SinglePlatform(DotNetFramework FrameworkVersion.V4_5_2)
-        SinglePlatform(DotNetFramework FrameworkVersion.V4_5_3)]
+        SinglePlatform(DotNetFramework FrameworkVersion.V4_5_3)
+        SinglePlatform(DotNetFramework FrameworkVersion.V4_6)]
 
     let WindowsProfiles =
        [SinglePlatform(Windows "v4.5")

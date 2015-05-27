@@ -5,6 +5,7 @@ open Paket.Logging
 open System
 open Paket.Domain
 open Chessie.ErrorHandling
+open PackageSources
 
 /// Paket API which is optimized for F# Interactive use.
 type Dependencies(dependenciesFileName: string) =
@@ -34,31 +35,34 @@ type Dependencies(dependenciesFileName: string) =
                 let parent = dir.Parent
                 if parent = null then
                     if withError then
-                        failwithf "Could not find %s" Constants.DependenciesFileName
+                        failwithf "Could not find '%s'. To use Paket with this solution, please run 'paket init' first." Constants.DependenciesFileName
                     else 
                         Constants.DependenciesFileName
                 else
                    findInPath(parent, withError)
 
         let dependenciesFileName = findInPath(DirectoryInfo path,true)
-        tracefn "found: %s" dependenciesFileName
+        verbosefn "found: %s" dependenciesFileName
         Dependencies(dependenciesFileName)
 
     /// Initialize paket.dependencies file in current directory
-    static member Init() =
-        let currentDirectory = DirectoryInfo(Environment.CurrentDirectory)
+    static member Init() = Dependencies.Init(Environment.CurrentDirectory)
+
+    /// Initialize paket.dependencies file in the given directory
+    static member Init(directory) =
+        let directory = DirectoryInfo(directory)
 
         Utils.RunInLockedAccessMode(
-            currentDirectory.FullName,
+            directory.FullName,
             fun () -> 
-                PaketEnv.init currentDirectory
+                PaketEnv.init directory
                 |> returnOrFail
         )
 
     /// Converts the solution from NuGet to Paket.
-    static member ConvertFromNuget(force: bool,installAfter: bool,initAutoRestore: bool,credsMigrationMode: string option) : unit =
-        let currentDirectory = DirectoryInfo(Environment.CurrentDirectory)
-        let rootDirectory = defaultArg (PaketEnv.locatePaketRootDirectory(currentDirectory)) currentDirectory
+    static member ConvertFromNuget(force: bool,installAfter: bool, initAutoRestore: bool,credsMigrationMode: string option, ?directory) : unit =
+        let dir = defaultArg directory (DirectoryInfo(Environment.CurrentDirectory))
+        let rootDirectory = defaultArg (PaketEnv.locatePaketRootDirectory(dir)) dir
 
         Utils.RunInLockedAccessMode(
             rootDirectory.FullName,
@@ -68,24 +72,17 @@ type Dependencies(dependenciesFileName: string) =
                 |> NuGetConvert.replaceNugetWithPaket initAutoRestore installAfter
         )
 
-     /// Converts the current package dependency graph to the simplest dependency graph.
-    static member Simplify(): unit = Dependencies.Simplify(false)
-
     /// Converts the current package dependency graph to the simplest dependency graph.
-    static member Simplify(interactive : bool) =
-        match PaketEnv.locatePaketRootDirectory(DirectoryInfo(Environment.CurrentDirectory)) with
-        | Some rootDirectory ->
-            Utils.RunInLockedAccessMode(
-                rootDirectory.FullName,
-                fun () -> 
-                    PaketEnv.fromRootDirectory rootDirectory
-                    >>= PaketEnv.ensureNotInStrictMode
-                    >>= Simplifier.simplify interactive
-                    |> returnOrFail
-                    |> Simplifier.updateEnvironment
-            )
-        | None ->
-            Logging.traceErrorfn "Unable to find %s in current directory and parent directories" Constants.DependenciesFileName
+    member this.Simplify(interactive : bool) =
+        Utils.RunInLockedAccessMode(
+            this.RootPath,
+            fun () -> 
+                PaketEnv.fromRootDirectory this.RootDirectory
+                >>= PaketEnv.ensureNotInStrictMode
+                >>= Simplifier.simplify interactive
+                |> returnOrFail
+                |> Simplifier.updateEnvironment
+        )
 
     /// Get path to dependencies file
     member this.DependenciesFile with get() = dependenciesFileName
@@ -113,7 +110,7 @@ type Dependencies(dependenciesFileName: string) =
     member this.Add(package: string,version: string,force: bool,hard: bool,interactive: bool,installAfter: bool): unit =
         Utils.RunInLockedAccessMode(
             this.RootPath,
-            fun () -> AddProcess.Add(dependenciesFileName, PackageName package, version, force, hard, interactive, installAfter))
+            fun () -> AddProcess.Add(dependenciesFileName, PackageName(package.Trim()), version, force, hard, interactive, installAfter))
 
     /// Adds the given package with the given version to the dependencies file.
     member this.AddToProject(package: string,version: string,force: bool,hard: bool,projectName: string,installAfter: bool): unit =
@@ -162,6 +159,9 @@ type Dependencies(dependenciesFileName: string) =
             this.RootPath,
             fun () -> UpdateProcess.UpdatePackage(dependenciesFileName,PackageName package,version,force,hard,false))
 
+    /// Restores all dependencies.
+    member this.Restore(): unit = this.Restore(false,[])
+
     /// Restores the given paket.references files.
     member this.Restore(files: string list): unit = this.Restore(false,files)
 
@@ -203,11 +203,58 @@ type Dependencies(dependenciesFileName: string) =
         getLockFile().ResolvedPackages
         |> listPackages
 
-    /// Returns the installed versions of all direct dependencies which are referneced in the references file
+    /// Returns all sources from the dependencies file.
+    member this.GetSources() = 
+        let dependenciesFile = DependenciesFile.ReadFromFile dependenciesFileName
+        dependenciesFile.Sources
+
+    /// Returns all system-wide defined NuGet feeds. (Can be used for Autocompletion)
+    member this.GetDefinedNuGetFeeds() : string list = 
+        let configured =
+            match NuGetConvert.NugetEnv.readNugetConfig(this.RootDirectory) with
+            | Result.Ok(config,_) -> config.PackageSources |> List.map fst
+            | _ -> []
+        Constants.DefaultNugetStream :: configured
+        |> Set.ofSeq
+        |> Set.toList
+
+    /// Returns the installed versions of all installed packages which are referenced in the references file.
+    member this.GetInstalledPackages(referencesFile:ReferencesFile): (string * string) list =
+        let lockFile = getLockFile()
+        let resolved = lockFile.ResolvedPackages
+        referencesFile    
+        |> lockFile.GetPackageHull
+        |> Seq.map (fun kv -> 
+                        let name = kv.Key
+                        name.ToString(),resolved.[NormalizedPackageName name].Version.ToString())
+        |> Seq.toList
+
+    /// Returns an InstallModel for the given package.
+    member this.GetInstalledPackageModel(packageName) =        
+        match this.GetInstalledVersion(packageName) with
+        | None -> failwithf "Package %s is not installed" packageName
+        | Some version ->
+            let folder = DirectoryInfo(sprintf "%s/packages/%s" this.RootPath packageName)
+            let nuspec = FileInfo(sprintf "%s/packages/%s/%s.nuspec" this.RootPath packageName packageName)
+            let nuspec = Nuspec.Load nuspec.FullName
+            let files = NuGetV2.GetLibFiles(folder.FullName)
+            let files = files |> Array.map (fun fi -> fi.FullName)
+            InstallModel.CreateFromLibs(PackageName packageName, SemVer.Parse version, [], files, [], nuspec)
+
+    /// Returns all libraries for the given package and framework.
+    member this.GetLibraries(packageName,frameworkIdentifier:FrameworkIdentifier) =        
+        this
+          .GetInstalledPackageModel(packageName)
+          .GetLibReferences(frameworkIdentifier)
+
+    /// Returns the installed versions of all direct dependencies which are referenced in the references file.
     member this.GetDirectDependencies(referencesFile:ReferencesFile): (string * string) list =
-        let normalizedDependecies = referencesFile.NugetPackages |> List.map (fun p -> NormalizedPackageName p.Name)
+        let dependenciesFile = DependenciesFile.ReadFromFile dependenciesFileName
+        let normalizedDependencies = dependenciesFile.DirectDependencies |> Seq.map (fun kv -> kv.Key) |> Seq.map NormalizedPackageName |> Seq.toList
+        let normalizedDependendenciesFromRefFile = referencesFile.NugetPackages |> List.map (fun p -> NormalizedPackageName p.Name)
         getLockFile().ResolvedPackages
-        |> Seq.filter (fun kv -> normalizedDependecies |> Seq.exists ((=) kv.Key))
+        |> Seq.filter (fun kv -> normalizedDependendenciesFromRefFile |> Seq.exists ((=) kv.Key))
+        |> Seq.filter (fun kv -> normalizedDependencies |> Seq.exists ((=) kv.Key))
         |> listPackages
 
     /// Returns the installed versions of all direct dependencies.
@@ -242,24 +289,43 @@ type Dependencies(dependenciesFileName: string) =
             this.RootPath,
             fun () -> RemoveProcess.RemoveFromProject(dependenciesFileName, PackageName package, force, hard, projectName, installAfter))
 
-    /// Shows all references for the given packages.
+    /// Shows all references files where the given package is referenced.
     member this.ShowReferencesFor(packages: string list): unit =
         FindReferences.ShowReferencesFor (packages |> List.map PackageName) |> this.Process
 
-    /// Finds all references for a given package.
+    /// Finds all references files where the given package is referenced.
     member this.FindReferencesFor(package: string): string list =
+        FindReferences.FindReferencesForPackage (PackageName package) |> this.Process |> List.map (fun p -> p.FileName)
+
+    member this.SearchPackagesByName(searchTerm,?cancellationToken,?maxResults) : IObservable<string> =
+        let cancellationToken = defaultArg cancellationToken (System.Threading.CancellationToken())
+        let maxResults = defaultArg maxResults 1000
+        PackageSources.DefaultNugetSource :: this.GetSources()
+        |> List.choose (fun x -> match x with | Nuget s -> Some s.Url | _ -> None)
+        |> Seq.distinct
+        |> Seq.map (fun url ->
+                    NuGetV3.FindPackages(None, url, searchTerm, maxResults)
+                    |> Observable.ofAsyncWithToken cancellationToken)
+        |> Seq.reduce Observable.merge
+        |> Observable.flatten
+        |> Observable.distinct
+
+    /// Finds all projects where the given package is referenced.
+    member this.FindProjectsFor(package: string): ProjectFile list =
         FindReferences.FindReferencesForPackage (PackageName package) |> this.Process
 
-    // Pack all paket.template files.
-    member this.Pack(outputPath, ?buildConfig, ?version, ?releaseNotes) = 
+    // Packs all paket.template files.
+    member this.Pack(outputPath, ?buildConfig, ?version, ?releaseNotes, ?templateFile) = 
         let dependenciesFile = DependenciesFile.ReadFromFile dependenciesFileName
-        PackageProcess.Pack(dependenciesFile, outputPath, buildConfig, version, releaseNotes)
+        PackageProcess.Pack(dependenciesFile, outputPath, buildConfig, version, releaseNotes, templateFile)
 
-    // Push a nupkg file.
-    member this.Push(packageFileName, ?url, ?apiKey, (?endPoint: string), ?maxTrials) =
+    /// Pushes a nupkg file.
+    static member Push(packageFileName, ?url, ?apiKey, (?endPoint: string), ?maxTrials) =
+        let currentDirectory = DirectoryInfo(Environment.CurrentDirectory)
+
         let urlWithEndpoint = RemoteUpload.GetUrlWithEndpoint url endPoint
         let apiKey = defaultArg apiKey (Environment.GetEnvironmentVariable("nugetkey"))
         if String.IsNullOrEmpty apiKey then
-            failwithf "Could not push package %s. Please specify an NuGet API key via environment variable \"nugetkey\"." packageFileName
+            failwithf "Could not push package %s. Please specify a NuGet API key via environment variable \"nugetkey\"." packageFileName
         let maxTrials = defaultArg maxTrials 5
         RemoteUpload.Push maxTrials urlWithEndpoint apiKey packageFileName

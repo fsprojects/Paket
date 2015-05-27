@@ -24,6 +24,10 @@ let private containsSingleDescendentWithNs = containsDescendents 1 bindingNs
 let private createBindingRedirectXml culture assembly version publicKey = sprintf "<dependentAssembly xmlns=\"urn:schemas-microsoft-com:asm.v1\">\r\n  <assemblyIdentity name=\"%s\" publicKeyToken=\"%s\" culture=\"%s\" />\r\n  <bindingRedirect oldVersion=\"0.0.0.0-%s\" newVersion=\"%s\" />\r\n</dependentAssembly>" assembly publicKey culture version version
 let private xNameForNs name = XName.Get(name, bindingNs)
 
+let sampleDocWithNoIndentation() = sprintf """<?xml version="1.0" encoding="utf-8"?>
+<configuration>
+<runtime><assemblyBinding xmlns="%s">%s</assemblyBinding></runtime></configuration>""" bindingNs (createBindingRedirectXml "cul" "asm" "v" "pKey") |> XDocument.Parse
+
 [<Test>]
 let ``add missing elements to configuration file``() = 
     let doc = sampleDoc()
@@ -101,4 +105,16 @@ let ``correctly updates an existing binding redirect``() =
     // Assert
     let dependency = doc.Descendants(xNameForNs "dependentAssembly") |> Seq.head
     dependency.ToString() |> shouldEqual (createBindingRedirectXml "neutral" "Assembly" "2.0.0" "PUBLIC_KEY")
+    
+[<Test>]
+let ``redirects got properly indented for readability``() = 
+    let doc = sampleDoc()
+    setRedirect doc defaultRedirect |> ignore
+
+    // Act
+    indentAssemblyBindings doc
+
+    // Assert
+    let dependency = doc.Descendants(xNameForNs "dependentAssembly") |> Seq.head
+    dependency.ToString() |> shouldEqual "<dependentAssembly xmlns=\"urn:schemas-microsoft-com:asm.v1\">\r\n    <assemblyIdentity name=\"Assembly\" publicKeyToken=\"PUBLIC_KEY\" culture=\"neutral\" />\r\n    <bindingRedirect oldVersion=\"0.0.0.0-1.0.0\" newVersion=\"1.0.0\" />\r\n  </dependentAssembly>"
 

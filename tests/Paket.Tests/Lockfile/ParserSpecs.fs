@@ -36,8 +36,8 @@ let ``should parse lock file``() =
     let packages = List.rev lockFile.Packages
     packages.Length |> shouldEqual 6
     lockFile.Options.Strict |> shouldEqual false
-    lockFile.Options.Settings.CopyLocal |> shouldEqual false
-    lockFile.Options.Settings.ImportTargets |> shouldEqual true
+    lockFile.Options.Settings.CopyLocal |> shouldEqual (Some false)
+    lockFile.Options.Settings.ImportTargets |> shouldEqual None
 
     packages.[0].Source |> shouldEqual PackageSources.DefaultNugetSource
     packages.[0].Name |> shouldEqual (PackageName "Castle.Windsor")
@@ -97,8 +97,8 @@ let ``should parse strict lock file``() =
     packages.Length |> shouldEqual 6
     lockFile.Options.Strict |> shouldEqual true
     lockFile.Options.Redirects |> shouldEqual false
-    lockFile.Options.Settings.ImportTargets |> shouldEqual false
-    lockFile.Options.Settings.CopyLocal |> shouldEqual true
+    lockFile.Options.Settings.ImportTargets |> shouldEqual (Some false)
+    lockFile.Options.Settings.CopyLocal |> shouldEqual None
 
     packages.[5].Source |> shouldEqual PackageSources.DefaultNugetSource
     packages.[5].Name |> shouldEqual (PackageName "log4net")
@@ -122,8 +122,8 @@ let ``should parse redirects lock file``() =
     packages.Length |> shouldEqual 1
     lockFile.Options.Strict |> shouldEqual false
     lockFile.Options.Redirects |> shouldEqual true
-    lockFile.Options.Settings.ImportTargets |> shouldEqual true
-    lockFile.Options.Settings.CopyLocal |> shouldEqual true
+    lockFile.Options.Settings.ImportTargets |> shouldEqual (Some true)
+    lockFile.Options.Settings.CopyLocal |> shouldEqual (Some true)
 
     packages.Head.Source |> shouldEqual (PackageSource.LocalNuget("D:\code\\temp with space"))
 
@@ -142,8 +142,8 @@ let ``should parse lock file with framework restrictions``() =
     packages.Length |> shouldEqual 1
     lockFile.Options.Strict |> shouldEqual false
     lockFile.Options.Redirects |> shouldEqual false
-    lockFile.Options.Settings.ImportTargets |> shouldEqual true
-    lockFile.Options.Settings.CopyLocal |> shouldEqual true
+    lockFile.Options.Settings.ImportTargets |> shouldEqual (Some true)
+    lockFile.Options.Settings.CopyLocal |> shouldEqual None
 
 let dogfood = """NUGET
   remote: https://nuget.org/api/v2
@@ -275,7 +275,7 @@ let ``should parse framework restricted lock file``() =
     packages.[3].Name |> shouldEqual (PackageName "LinqBridge")
     packages.[3].Version |> shouldEqual (SemVer.Parse "1.3.0")
     packages.[3].Settings.FrameworkRestrictions |> shouldEqual ([FrameworkRestriction.Between(FrameworkIdentifier.DotNetFramework(FrameworkVersion.V2),FrameworkIdentifier.DotNetFramework(FrameworkVersion.V3_5))])
-    packages.[3].Settings.ImportTargets |> shouldEqual true
+    packages.[3].Settings.ImportTargets |> shouldEqual None
 
     packages.[5].Source |> shouldEqual PackageSources.DefaultNugetSource
     packages.[5].Name |> shouldEqual (PackageName "ReadOnlyCollectionInterfaces")
@@ -314,16 +314,16 @@ let ``should parse framework restricted lock file in new syntax``() =
     packages.[3].Name |> shouldEqual (PackageName "LinqBridge")
     packages.[3].Version |> shouldEqual (SemVer.Parse "1.3.0")
     packages.[3].Settings.FrameworkRestrictions |> shouldEqual ([FrameworkRestriction.Between(FrameworkIdentifier.DotNetFramework(FrameworkVersion.V2),FrameworkIdentifier.DotNetFramework(FrameworkVersion.V3_5))])
-    packages.[3].Settings.CopyLocal |> shouldEqual true
-    packages.[3].Settings.ImportTargets |> shouldEqual false
-    packages.[3].Settings.OmitContent |> shouldEqual true
+    packages.[3].Settings.CopyLocal |> shouldEqual None
+    packages.[3].Settings.ImportTargets |> shouldEqual (Some false)
+    packages.[3].Settings.OmitContent |> shouldEqual (Some true)
 
     packages.[5].Source |> shouldEqual PackageSources.DefaultNugetSource
     packages.[5].Name |> shouldEqual (PackageName "ReadOnlyCollectionInterfaces")
     packages.[5].Version |> shouldEqual (SemVer.Parse "1.0.0")
-    packages.[5].Settings.ImportTargets |> shouldEqual false
-    packages.[5].Settings.CopyLocal |> shouldEqual false
-    packages.[5].Settings.OmitContent |> shouldEqual false
+    packages.[5].Settings.ImportTargets |> shouldEqual (Some false)
+    packages.[5].Settings.CopyLocal |> shouldEqual (Some false)
+    packages.[5].Settings.OmitContent |> shouldEqual None
     packages.[5].Settings.FrameworkRestrictions 
     |> shouldEqual ([FrameworkRestriction.Exactly(FrameworkIdentifier.DotNetFramework(FrameworkVersion.V2))
                      FrameworkRestriction.Exactly(FrameworkIdentifier.DotNetFramework(FrameworkVersion.V3_5))
@@ -368,3 +368,110 @@ let ``should parse lock file for http Stanford.NLP.NET project``() =
     references.[0].Commit |> shouldEqual ("/software/stanford-segmenter-2014-10-26.zip")  // That's strange
     references.[0].Project |> shouldEqual ""
     references.[0].Name |> shouldEqual "stanford-segmenter-2014-10-26.zip"  
+
+let portableLockFile = """NUGET
+  remote: https://nuget.org/api/v2
+  specs:
+    FSharp.Data (2.0.14)
+      Zlib.Portable (>= 1.10.0) - framework: portable-net40+sl50+wp80+win80
+    Zlib.Portable (1.10.0) - framework: portable-net40+sl50+wp80+win80
+"""
+
+[<Test>]
+let ``should parse portable lockfile``() =
+    let lockFile = LockFileParser.Parse(toLines portableLockFile)
+    let references = lockFile.SourceFiles
+
+    references.Length |> shouldEqual 0
+
+    let packages = List.rev lockFile.Packages
+    packages.Length |> shouldEqual 2
+    
+    packages.[1].Name |> shouldEqual (PackageName "Zlib.Portable")
+    packages.[1].Version |> shouldEqual (SemVer.Parse "1.10.0")
+    packages.[1].Settings.FrameworkRestrictions.ToString() |> shouldEqual "[portable-net40+sl50+wp80+win80]"
+
+let reactiveuiLockFile = """NUGET
+  remote: https://nuget.org/api/v2
+  specs:
+    reactiveui (5.5.1)
+      reactiveui-core (5.5.1)
+      reactiveui-platforms (5.5.1)
+    reactiveui-core (5.5.1)
+      Rx-Main (>= 2.1.30214.0) - framework: portable-net45+win+wp80
+      Rx-WindowStoreApps (>= 2.1.30214.0) - framework: winv4.5
+    reactiveui-platforms (5.5.1)
+      Rx-Xaml (>= 2.1.30214.0) - framework: winv4.5, wpv8.0, >= net45
+      reactiveui-core (5.5.1) - framework: monoandroid, monotouch, monomac, winv4.5, wpv8.0, >= net45
+    Rx-Core (2.2.5)
+      Rx-Interfaces (>= 2.2.5)
+    Rx-Interfaces (2.2.5)
+    Rx-Linq (2.2.5)
+      Rx-Core (>= 2.2.5)
+      Rx-Interfaces (>= 2.2.5)
+    Rx-Main (2.2.5) - framework: portable-net45+win+wp80
+      Rx-Core (>= 2.2.5)
+      Rx-Interfaces (>= 2.2.5)
+      Rx-Linq (>= 2.2.5)
+      Rx-PlatformServices (>= 2.2.5)
+    Rx-PlatformServices (2.2.5)
+      Rx-Core (>= 2.2.5)
+      Rx-Interfaces (>= 2.2.5)
+    Rx-WindowStoreApps (2.2.5) - framework: winv4.5
+      Rx-Main (>= 2.2.5)
+      Rx-WinRT (>= 2.2.5)
+    Rx-WinRT (2.2.5)
+      Rx-Main (>= 2.2.5)
+    Rx-Xaml (2.2.5) - framework: winv4.5, wpv8.0, >= net45
+      Rx-Main (>= 2.2.5)"""
+
+[<Test>]
+let ``should parse reactiveui lockfile``() =
+    let lockFile = LockFileParser.Parse(toLines reactiveuiLockFile)
+    let references = lockFile.SourceFiles
+
+    references.Length |> shouldEqual 0
+
+    let packages = List.rev lockFile.Packages
+    
+    packages.[8].Name |> shouldEqual (PackageName "Rx-WindowStoreApps")
+    packages.[8].Version |> shouldEqual (SemVer.Parse "2.2.5")
+    packages.[8].Settings.FrameworkRestrictions.ToString() |> shouldEqual "[winv4.5]"
+
+    packages.[10].Name |> shouldEqual (PackageName "Rx-Xaml")
+    packages.[10].Version |> shouldEqual (SemVer.Parse "2.2.5")
+    packages.[10].Settings.FrameworkRestrictions.ToString() |> shouldEqual "[winv4.5; wpv8.0; >= net45]"
+
+let multipleFeedLockFile = """NUGET
+  remote: http://internalfeed/NugetWebFeed/nuget
+  specs:
+    Internal_1 (1.2.10)
+      Newtonsoft.Json (>= 6.0.0 < 6.1.0)
+    log4net (1.2.10)
+    Newtonsoft.Json (6.0.6)
+  remote: https://www.nuget.org/api/v2
+  specs:
+    Microsoft.AspNet.WebApi (5.2.3)
+      Microsoft.AspNet.WebApi.WebHost (>= 5.2.3 < 5.3.0)
+    Microsoft.AspNet.WebApi.Client (5.2.3)
+      Microsoft.Net.Http (>= 2.2.22) - framework: portable-wp80+win+net45+wp81+wpa81
+      Newtonsoft.Json (>= 6.0.4) - framework: portable-wp80+win+net45+wp81+wpa81, >= net45
+    Microsoft.AspNet.WebApi.Core (5.2.3)
+      Microsoft.AspNet.WebApi.Client (>= 5.2.3)
+    Microsoft.AspNet.WebApi.WebHost (5.2.3)
+      Microsoft.AspNet.WebApi.Core (>= 5.2.3 < 5.3.0)"""
+
+[<Test>]
+let ``should parse lockfile with multiple feeds``() =
+    let lockFile = LockFileParser.Parse(toLines multipleFeedLockFile)
+    let references = lockFile.SourceFiles
+
+    references.Length |> shouldEqual 0
+
+    let packages = List.rev lockFile.Packages
+    packages.Length |> shouldEqual 7
+    
+    packages.[3].Name |> shouldEqual (PackageName "Microsoft.AspNet.WebApi")
+    packages.[3].Version |> shouldEqual (SemVer.Parse "5.2.3")
+    packages.[3].Settings.FrameworkRestrictions.ToString() |> shouldEqual "[]"
+    packages.[3].Source.ToString() |> shouldEqual "https://www.nuget.org/api/v2"

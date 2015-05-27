@@ -97,6 +97,16 @@ type PackageSource =
                 | true, uri -> LocalNuget(source)
                 | _ -> failwithf "unable to parse package source: %s" source
 
+    member this.Url = 
+        match this with
+        | Nuget n -> n.Url
+        | LocalNuget n -> n
+
+    member this.Auth = 
+        match this with
+        | Nuget n -> n.Authentication
+        | LocalNuget n -> None
+
     static member NugetSource url = Nuget { Url = url; Authentication = None }
 
     static member warnIfNoConnection (source,_) = 

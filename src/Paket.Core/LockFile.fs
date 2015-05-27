@@ -28,9 +28,19 @@ module LockFileSerializer =
             let hasReported = ref false
             [ if options.Strict then yield "REFERENCES: STRICT"
               if options.Redirects then yield "REDIRECTS: ON"
-              if not options.Settings.CopyLocal then yield "COPY-LOCAL: FALSE"   
-              if not options.Settings.ImportTargets then yield "IMPORT-TARGETS: FALSE"
-              if options.Settings.OmitContent then yield "CONTENT: NONE"      
+              match options.Settings.CopyLocal with
+              | Some x -> yield "COPY-LOCAL: " + x.ToString().ToUpper()
+              | None -> ()
+
+              match options.Settings.ImportTargets with
+              | Some x -> yield "IMPORT-TARGETS: " + x.ToString().ToUpper()
+              | None -> ()
+
+              match options.Settings.OmitContent with
+              | Some true -> yield "CONTENT: NONE"
+              | Some false -> yield "CONTENT: TRUE"
+              | None -> ()
+
               match options.Settings.FrameworkRestrictions with
               | [] -> ()
               | _  -> yield "FRAMEWORK: " + (String.Join(", ",options.Settings.FrameworkRestrictions)).ToUpper()
@@ -169,10 +179,10 @@ module LockFileParser =
             | Blank -> state
             | InstallOption (ReferencesMode(mode)) -> { state with Options = {state.Options with Strict = mode} }
             | InstallOption (Redirects(mode)) -> { state with Options = {state.Options with Redirects = mode} }
-            | InstallOption (ImportTargets(mode)) -> { state with Options = {state.Options with Settings = { state.Options.Settings with ImportTargets = mode} } }
-            | InstallOption (CopyLocal(mode)) -> { state with Options = {state.Options with Settings = { state.Options.Settings with CopyLocal = mode}} }
+            | InstallOption (ImportTargets(mode)) -> { state with Options = {state.Options with Settings = { state.Options.Settings with ImportTargets = Some mode} } }
+            | InstallOption (CopyLocal(mode)) -> { state with Options = {state.Options with Settings = { state.Options.Settings with CopyLocal = Some mode}} }
             | InstallOption (FrameworkRestrictions(r)) -> { state with Options = {state.Options with Settings = { state.Options.Settings with FrameworkRestrictions = r}} }
-            | InstallOption (OmitContent(omit)) -> { state with Options = {state.Options with Settings = { state.Options.Settings with OmitContent = omit} }}
+            | InstallOption (OmitContent(omit)) -> { state with Options = {state.Options with Settings = { state.Options.Settings with OmitContent = Some omit} }}
             | RepositoryType repoType -> { state with RepositoryType = Some repoType }
             | NugetPackage details ->
                 match state.RemoteUrl with
@@ -375,7 +385,7 @@ type LockFile(fileName:string,options:InstallOptions,resolution:PackageResolutio
         tracefn "Locked version resolutions written to %s" fileName
 
     /// Creates a paket.lock file at given location
-    static member Create (lockFileName: string, installOptions: InstallOptions, resolvedPackages: PackageResolver.ResolvedPackages, resolvedSourceFiles: ModuleResolver.ResolvedSourceFile list) : LockFile =
+    static member Create (lockFileName: string, installOptions: InstallOptions, resolvedPackages: PackageResolver.Resolution, resolvedSourceFiles: ModuleResolver.ResolvedSourceFile list) : LockFile =
         let resolvedPackages = resolvedPackages.GetModelOrFail()
         let lockFile = LockFile(lockFileName, installOptions, resolvedPackages, resolvedSourceFiles)
         lockFile.Save()

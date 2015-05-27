@@ -10,7 +10,7 @@ open System.Collections.Generic
 open Paket.PackageMetaData
 open Chessie.ErrorHandling
 
-let Pack(dependencies : DependenciesFile, packageOutputPath, buildConfig, version, releaseNotes) =
+let Pack(dependencies : DependenciesFile, packageOutputPath, buildConfig, version, releaseNotes, templateFile) =
     let buildConfig = defaultArg buildConfig "Release"  
     Utils.createDir packageOutputPath |> returnOrFail
     let rootPath = dependencies.FileName |> Path.GetDirectoryName
@@ -19,8 +19,11 @@ let Pack(dependencies : DependenciesFile, packageOutputPath, buildConfig, versio
 
     let allTemplateFiles = 
         let hashSet = new HashSet<_>()
-        for template in TemplateFile.FindTemplateFiles rootPath do
-            hashSet.Add template |> ignore
+        match templateFile with
+        | Some template -> hashSet.Add template |> ignore
+        | None ->
+            for template in TemplateFile.FindTemplateFiles rootPath do
+                hashSet.Add template |> ignore
         hashSet
     
     // load up project files and grab meta data
@@ -49,13 +52,13 @@ let Pack(dependencies : DependenciesFile, packageOutputPath, buildConfig, versio
                     match md with
                     | Valid completeCore -> { templateFile with Contents = CompleteInfo(completeCore, opt) }
                     | _ ->
-                        let assembly,id = loadAssemblyId buildConfig projectFile
+                        let assembly,id,assemblyFileName = loadAssemblyId buildConfig projectFile
                         let md = { md with Id = md.Id ++ Some id }
 
                         match md with
                         | Valid completeCore -> { templateFile with Contents = CompleteInfo(completeCore, opt) }
                         | _ ->
-                            let attribs = loadAssemblyAttributes assembly
+                            let attribs = loadAssemblyAttributes assemblyFileName assembly
 
                             let merged = 
                                 { Id = md.Id
@@ -116,9 +119,10 @@ let Pack(dependencies : DependenciesFile, packageOutputPath, buildConfig, versio
                 match templateFile with
                 | CompleteTemplate(core, optional) -> 
                     NupkgWriter.Write core optional (Path.GetDirectoryName templateFile.FileName) packageOutputPath
+                    |> NuGetV2.fixDatesInArchive 
                     verbosefn "Packed: %s" templateFile.FileName
                 | IncompleteTemplate -> 
-                    failwithf "There was an trial to pack incomplete template file %s." templateFile.FileName
+                    failwithf "There was an attempt to pack incomplete template file %s." templateFile.FileName
             })
     |> Async.Parallel
     |> Async.RunSynchronously
