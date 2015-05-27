@@ -151,13 +151,14 @@ type Dependencies(dependenciesFileName: string) =
             fun () -> UpdateProcess.Update(dependenciesFileName,force,hard,withBindingRedirects))
 
     /// Updates all dependencies.
-    member this.Update(force: bool,hard: bool): unit = this.Update(force,hard,false)
+    member this.Update(force: bool, hard: bool): unit = this.Update(force, hard, false)
 
     /// Updates the given package.
-    member this.UpdatePackage(package: string,version: string option,force: bool,hard: bool): unit =
+    member this.UpdatePackage(package: string, version: string option, force: bool, hard: bool): unit =
         Utils.RunInLockedAccessMode(
             this.RootPath,
-            fun () -> UpdateProcess.UpdatePackage(dependenciesFileName,PackageName package,version,force,hard,false))
+            fun () -> UpdateProcess.UpdatePackage(dependenciesFileName, PackageName package, version,
+                                                  CommonOptions.createLegacyOptions(force, hard, false)))
 
     /// Restores all dependencies.
     member this.Restore(): unit = this.Restore(false,[])
