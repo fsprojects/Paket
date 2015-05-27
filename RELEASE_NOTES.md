@@ -1,3 +1,6 @@
+#### 1.6.1 - 27.05.2015
+* Analyze content files with case insensitive setting - https://github.com/fsprojects/Paket/issues/816
+
 #### 1.6.0 - 26.05.2015
 * Paket init - init dependencies file with default NuGet source
 * Allow to init paket in given directory

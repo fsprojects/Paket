@@ -19,7 +19,11 @@ let private findPackagesWithContent (root,usedPackages:Map<PackageName,PackageIn
     |> Seq.filter (fun kv -> defaultArg kv.Value.Settings.OmitContent false |> not)
     |> Seq.map (fun kv -> 
         let (PackageName name) = kv.Key
-        DirectoryInfo(Path.Combine(root, Constants.PackagesFolderName, name)))
+        let lowerName = name.ToLower()
+        let di = DirectoryInfo(Path.Combine(root, Constants.PackagesFolderName))
+        match di.GetDirectories() |> Seq.tryFind (fun subDir -> subDir.FullName.ToLower().EndsWith(lowerName)) with
+        | Some x -> x
+        | None -> failwithf "Package directory for package %s was not found." name)
     |> Seq.choose (fun packageDir -> 
             packageDir.GetDirectories("Content") 
             |> Array.append (packageDir.GetDirectories("content"))
