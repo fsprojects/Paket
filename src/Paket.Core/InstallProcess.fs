@@ -14,16 +14,19 @@ open FSharp.Polyfill
 open System.Reflection
 open System.Diagnostics
 
+let findPackageFolder root (PackageName name) =
+    let lowerName = name.ToLower()
+    let di = DirectoryInfo(Path.Combine(root, Constants.PackagesFolderName))
+    let direct = DirectoryInfo(Path.Combine(di.FullName, name))
+    if direct.Exists then direct else
+    match di.GetDirectories() |> Seq.tryFind (fun subDir -> subDir.FullName.ToLower().EndsWith(lowerName)) with
+    | Some x -> x
+    | None -> failwithf "Package directory for package %s was not found." name
+
 let private findPackagesWithContent (root,usedPackages:Map<PackageName,PackageInstallSettings>) = 
     usedPackages
     |> Seq.filter (fun kv -> defaultArg kv.Value.Settings.OmitContent false |> not)
-    |> Seq.map (fun kv -> 
-        let (PackageName name) = kv.Key
-        let lowerName = name.ToLower()
-        let di = DirectoryInfo(Path.Combine(root, Constants.PackagesFolderName))
-        match di.GetDirectories() |> Seq.tryFind (fun subDir -> subDir.FullName.ToLower().EndsWith(lowerName)) with
-        | Some x -> x
-        | None -> failwithf "Package directory for package %s was not found." name)
+    |> Seq.map (fun kv -> findPackageFolder root kv.Key)
     |> Seq.choose (fun packageDir -> 
             packageDir.GetDirectories("Content") 
             |> Array.append (packageDir.GetDirectories("content"))
