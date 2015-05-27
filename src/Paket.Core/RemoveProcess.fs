@@ -46,7 +46,7 @@ let private remove removeFromProjects dependenciesFileName (package: PackageName
     
     if installAfter then
         let sources = DependenciesFile.ReadFromFile(dependenciesFileName).GetAllPackageSources()
-        InstallProcess.Install(sources, force, hard, false, lockFile)
+        InstallProcess.Install(sources, { CommonOptions.Default with Force = force; Hard = hard; Redirects = false }, lockFile)
 
 // remove a package with the option to remove it from a specified project
 let RemoveFromProject(dependenciesFileName, package:PackageName, force, hard, projectName, installAfter) =

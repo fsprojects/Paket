@@ -276,7 +276,7 @@ let InstallIntoProjectsNew(sources, options : CommonOptions, lockFile : LockFile
         applyBindingRedirects root extractedPackages
 
 /// Installs all packages from the lock file.
-let InstallNew(sources, options : CommonOptions, lockFile:LockFile) =
+let Install(sources, options : CommonOptions, lockFile : LockFile) =
     let root = FileInfo(lockFile.FileName).Directory.FullName
     let projects = findAllReferencesFiles root |> returnOrFail
     InstallIntoProjectsNew(sources, options, lockFile, projects)
@@ -284,7 +284,3 @@ let InstallNew(sources, options : CommonOptions, lockFile:LockFile) =
 /// Installs all packages from the lock file (compatibility version).
 let InstallIntoProjects(sources, force, hard, withBindingRedirects, lockFile : LockFile, projects) =
     InstallIntoProjectsNew(sources, CommonOptions.createLegacyOptions(force, hard, withBindingRedirects), lockFile, projects)
-
-/// Installs all packages from the lock file (compatibility version).
-let Install(sources, force, hard, withBindingRedirects, lockFile:LockFile) =
-    InstallNew(sources, CommonOptions.createLegacyOptions(force, hard, withBindingRedirects), lockFile)
