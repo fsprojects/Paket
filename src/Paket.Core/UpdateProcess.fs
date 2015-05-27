@@ -67,7 +67,7 @@ let SelectiveUpdate(dependenciesFile : DependenciesFile, exclude, force) =
     LockFile.Create(lockFileName.FullName, dependenciesFile.Options, resolution.ResolvedPackages, resolution.ResolvedSourceFiles)
 
 /// Smart install command
-let SmartInstallNew(dependenciesFileName, exclude, options : CommonOptions) =
+let SmartInstall(dependenciesFileName, exclude, options : CommonOptions) =
     let root = Path.GetDirectoryName dependenciesFileName
     let projects = InstallProcess.findAllReferencesFiles root |> returnOrFail
     let dependenciesFile = DependenciesFile.ReadFromFile(dependenciesFileName)
@@ -89,18 +89,13 @@ let UpdatePackageNew(dependenciesFileName, packageName : PackageName, newVersion
             .Save()
     | None -> tracefn "Updating %s in %s" (packageName.ToString()) dependenciesFileName
 
-    SmartInstallNew(dependenciesFileName, Some(NormalizedPackageName packageName), options)
+    SmartInstall(dependenciesFileName, Some(NormalizedPackageName packageName), options)
 
 /// Update command
 let UpdateNew(dependenciesFileName, options : CommonOptions) =
     let lockFileName = DependenciesFile.FindLockfile dependenciesFileName
     if lockFileName.Exists then lockFileName.Delete()
-    SmartInstallNew(dependenciesFileName, None, options)
-
-/// Smart install command (compatibility version)
-let SmartInstall(dependenciesFileName, exclude, force, hard, withBindingRedirects) =
-    let options = CommonOptions.createLegacyOptions(force, hard, withBindingRedirects)
-    SmartInstallNew(dependenciesFileName, exclude, options)
+    SmartInstall(dependenciesFileName, None, options)
 
 /// Update a single package command (compatibility version)
 let UpdatePackage(dependenciesFileName, packageName : PackageName, newVersion, force : bool, hard : bool, withBindingRedirects : bool) =

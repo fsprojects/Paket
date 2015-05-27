@@ -123,12 +123,12 @@ type Dependencies(dependenciesFileName: string) =
         Utils.RunInLockedAccessMode(
             this.RootPath,
             fun () -> ConfigFile.askAndAddAuth source username |> returnOrFail )
-        
+
     /// Installs all dependencies.
-    member this.Install(force: bool,hard: bool,withBindingRedirects:bool): unit = 
+    member this.Install(force: bool, hard: bool, withBindingRedirects:bool): unit =
         Utils.RunInLockedAccessMode(
             this.RootPath,
-            fun () -> UpdateProcess.SmartInstall(dependenciesFileName,None,force,hard,withBindingRedirects))
+            fun () -> UpdateProcess.SmartInstall(dependenciesFileName, None, CommonOptions.createLegacyOptions(force,hard,withBindingRedirects)))
 
     /// Creates a paket.dependencies file with the given text in the current directory and installs it.
     static member Install(dependencies, ?path: string, ?force, ?hard, ?withBindingRedirects) = 
