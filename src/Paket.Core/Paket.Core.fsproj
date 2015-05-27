@@ -109,6 +109,7 @@
     <Compile Include="BindingRedirects.fs" />
     <Compile Include="TemplateFile.fs" />
     <Compile Include="NupkgWriter.fs" />
+    <Compile Include="ProcessOptions.fs" />
     <Compile Include="InstallProcess.fs" />
     <Compile Include="UpdateProcess.fs" />
     <Compile Include="RemoveProcess.fs" />

@@ -67,36 +67,48 @@ let SelectiveUpdate(dependenciesFile:DependenciesFile, exclude, force) =
     LockFile.Create(lockFileName.FullName, dependenciesFile.Options, resolution.ResolvedPackages, resolution.ResolvedSourceFiles)
 
 /// Smart install command
-let SmartInstall(dependenciesFileName, exclude, force, hard, withBindingRedirects) = 
+let SmartInstallNew(dependenciesFileName, exclude, options : CommonOptions) =
     let root = Path.GetDirectoryName dependenciesFileName
     let projects = InstallProcess.findAllReferencesFiles root |> returnOrFail
     let dependenciesFile = DependenciesFile.ReadFromFile(dependenciesFileName)
-        
-    let lockFile = SelectiveUpdate(dependenciesFile,exclude,force)
-     
+
+    let lockFile = SelectiveUpdate(dependenciesFile,exclude,options.Force)
+
     InstallProcess.InstallIntoProjects(
         dependenciesFile.GetAllPackageSources(),
-        force,
-        hard,
-        withBindingRedirects,
+        options.Force,
+        options.Hard,
+        options.Redirects,
         lockFile,
         projects)
-        
+
 /// Update a single package command
-let UpdatePackage(dependenciesFileName, packageName : PackageName, newVersion, force, hard, withBindingRedirects) =  
+let UpdatePackageNew(dependenciesFileName, packageName : PackageName, newVersion, options : CommonOptions) =
     match newVersion with
-    | Some v -> 
+    | Some v ->
         DependenciesFile.ReadFromFile(dependenciesFileName)
             .UpdatePackageVersion(packageName, v)
             .Save()
     | None -> tracefn "Updating %s in %s" (packageName.ToString()) dependenciesFileName
 
-    SmartInstall(dependenciesFileName,Some(NormalizedPackageName packageName),force,hard,withBindingRedirects)
+    SmartInstallNew(dependenciesFileName, Some(NormalizedPackageName packageName), options)
 
 /// Update command
-let Update(dependenciesFileName, force, hard, withBindingRedirects) = 
+let UpdateNew(dependenciesFileName, options : CommonOptions) =
     let lockFileName = DependenciesFile.FindLockfile dependenciesFileName
-    if lockFileName.Exists then
-        lockFileName.Delete()
-    
-    SmartInstall(dependenciesFileName,None,force,hard,withBindingRedirects)
+    if lockFileName.Exists then lockFileName.Delete()
+    SmartInstallNew(dependenciesFileName, None, options)
+
+/// Smart install command (compatibility version)
+let SmartInstall(dependenciesFileName, exclude, force, hard, withBindingRedirects) =
+    let options = CommonOptions.createLegacyOptions(force, hard, withBindingRedirects)
+    SmartInstallNew(dependenciesFileName, exclude, options)
+
+/// Update a single package command (compatibility version)
+let UpdatePackage(dependenciesFileName, packageName : PackageName, newVersion, force : bool, hard : bool, withBindingRedirects : bool) =
+    UpdatePackageNew(dependenciesFileName, packageName, newVersion, CommonOptions.createLegacyOptions(force, hard, withBindingRedirects))
+
+/// Update command (compatibility version)
+let Update(dependenciesFileName, force, hard, withBindingRedirects) =
+    let options = CommonOptions.createLegacyOptions(force, hard, withBindingRedirects)
+    UpdateNew(dependenciesFileName, options)
