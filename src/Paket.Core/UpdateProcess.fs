@@ -67,21 +67,20 @@ let SelectiveUpdate(dependenciesFile : DependenciesFile, exclude, force) =
     LockFile.Create(lockFileName.FullName, dependenciesFile.Options, resolution.ResolvedPackages, resolution.ResolvedSourceFiles)
 
 /// Smart install command
-let SmartInstall(dependenciesFileName, exclude, options : SmartInstallOptions) =
+let SmartInstall(dependenciesFileName, exclude, options : UpdaterOptions) =
     let root = Path.GetDirectoryName dependenciesFileName
     let projects = InstallProcess.findAllReferencesFiles root |> returnOrFail
     let dependenciesFile = DependenciesFile.ReadFromFile(dependenciesFileName)
 
     let lockFile = SelectiveUpdate(dependenciesFile,exclude,options.Common.Force)
 
-    InstallProcess.InstallIntoProjects(
-        dependenciesFile.GetAllPackageSources(),
-        options,
-        lockFile,
-        projects)
+    if not options.NoInstall then
+        InstallProcess.InstallIntoProjects(
+            dependenciesFile.GetAllPackageSources(),
+            options.Common, lockFile, projects)
 
 /// Update a single package command
-let UpdatePackage(dependenciesFileName, packageName : PackageName, newVersion, options : InstallerOptions) =
+let UpdatePackage(dependenciesFileName, packageName : PackageName, newVersion, options : UpdaterOptions) =
     match newVersion with
     | Some v ->
         DependenciesFile.ReadFromFile(dependenciesFileName)
@@ -89,11 +88,10 @@ let UpdatePackage(dependenciesFileName, packageName : PackageName, newVersion, o
             .Save()
     | None -> tracefn "Updating %s in %s" (packageName.ToString()) dependenciesFileName
 
-    SmartInstall(dependenciesFileName, Some(NormalizedPackageName packageName),
-                 { SmartInstallOptions.Default with Common = options })
+    SmartInstall(dependenciesFileName, Some(NormalizedPackageName packageName), options)
 
 /// Update command
-let Update(dependenciesFileName, options : InstallerOptions) =
+let Update(dependenciesFileName, options : UpdaterOptions) =
     let lockFileName = DependenciesFile.FindLockfile dependenciesFileName
     if lockFileName.Exists then lockFileName.Delete()
-    SmartInstall(dependenciesFileName, None, { SmartInstallOptions.Default with Common = options })
+    SmartInstall(dependenciesFileName, None, options)

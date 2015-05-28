@@ -148,7 +148,7 @@ let findAllReferencesFiles root =
     |> collect
 
 /// Installs all packages from the lock file.
-let InstallIntoProjects(sources, options : SmartInstallOptions, lockFile : LockFile, projects : (ProjectFile * ReferencesFile) list) =
+let InstallIntoProjects(sources, options : InstallerOptions, lockFile : LockFile, projects : (ProjectFile * ReferencesFile) list) =
     let packagesToInstall =
         if options.OnlyReferenced then
             projects
@@ -163,7 +163,7 @@ let InstallIntoProjects(sources, options : SmartInstallOptions, lockFile : LockF
             |> Seq.map (fun kv -> kv.Key)
 
     let root = Path.GetDirectoryName lockFile.FileName
-    let extractedPackages = createModel(root, sources, options.Common.Force, lockFile, Set.ofSeq packagesToInstall)
+    let extractedPackages = createModel(root, sources, options.Force, lockFile, Set.ofSeq packagesToInstall)
 
     let model =
         extractedPackages
@@ -255,7 +255,7 @@ let InstallIntoProjects(sources, options : SmartInstallOptions, lockFile : LockF
             |> Seq.map (fun u -> NormalizedPackageName u.Key,u.Value)
             |> Map.ofSeq
 
-        project.UpdateReferences(model, usedPackageSettings, options.Common.Hard)
+        project.UpdateReferences(model, usedPackageSettings, options.Hard)
 
         removeCopiedFiles project
 
@@ -282,15 +282,15 @@ let InstallIntoProjects(sources, options : SmartInstallOptions, lockFile : LockF
                                   Include = createRelativePath project.FileName file.FullName
                                   Link = None })
 
-        project.UpdateFileItems(gitRemoteItems @ nuGetFileItems, options.Common.Hard)
+        project.UpdateFileItems(gitRemoteItems @ nuGetFileItems, options.Hard)
 
         project.Save()
 
-    if options.Common.Redirects || lockFile.Options.Redirects then
+    if options.Redirects || lockFile.Options.Redirects then
         applyBindingRedirects root extractedPackages
 
 /// Installs all packages from the lock file.
-let Install(sources, options : SmartInstallOptions, lockFile : LockFile) =
+let Install(sources, options : InstallerOptions, lockFile : LockFile) =
     let root = FileInfo(lockFile.FileName).Directory.FullName
     let projects = findAllReferencesFiles root |> returnOrFail
     InstallIntoProjects(sources, options, lockFile, projects)

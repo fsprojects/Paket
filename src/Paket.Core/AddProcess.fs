@@ -33,7 +33,7 @@ let private add installToProjects addToProjectsF dependenciesFileName package ve
 
         if installAfter then
             let sources = dependenciesFile.GetAllPackageSources()
-            InstallProcess.Install(sources, { SmartInstallOptions.Default with Common = options }, lockFile)
+            InstallProcess.Install(sources, options, lockFile)
 
 // Add a package with the option to add it to a specified project.
 let AddToProject(dependenciesFileName, package, version, options : InstallerOptions, projectName, installAfter) =
