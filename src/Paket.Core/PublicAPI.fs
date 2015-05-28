@@ -147,15 +147,14 @@ type Dependencies(dependenciesFileName: string) =
 
     /// Installs all dependencies.
     member this.Install(force: bool, hard: bool, withBindingRedirects: bool, onlyReferenced: bool): unit =
-        this.Install({ SmartInstallOptions.Default with
-                          Common = { SmartInstallOptions.Default.Common with Force = force; Hard = hard; Redirects = withBindingRedirects }
-                          OnlyReferenced = onlyReferenced })
+        this.Install({ InstallerOptions.createLegacyOptions(force, hard, withBindingRedirects) with OnlyReferenced = onlyReferenced })
 
     /// Installs all dependencies.
-    member private this.Install(options: SmartInstallOptions): unit =
+    member private this.Install(options: InstallerOptions): unit =
         Utils.RunInLockedAccessMode(
             this.RootPath,
-            fun () -> UpdateProcess.SmartInstall(dependenciesFileName, None, options))
+            fun () -> UpdateProcess.SmartInstall(dependenciesFileName, None,
+                                                 { UpdaterOptions.Default with Common = options }))
 
     /// Creates a paket.dependencies file with the given text in the current directory and installs it.
     static member Install(dependencies, ?path: string, ?force, ?hard, ?withBindingRedirects) =
@@ -169,20 +168,33 @@ type Dependencies(dependenciesFileName: string) =
             withBindingRedirects = defaultArg withBindingRedirects false)
 
     /// Updates all dependencies.
-    member this.Update(force: bool,hard: bool,withBindingRedirects:bool): unit =
-        Utils.RunInLockedAccessMode(
-            this.RootPath,
-            fun () -> UpdateProcess.Update(dependenciesFileName, InstallerOptions.createLegacyOptions(force, hard, withBindingRedirects)))
+    member this.Update(force: bool, hard: bool): unit = this.Update(force, hard, false)
 
     /// Updates all dependencies.
-    member this.Update(force: bool, hard: bool): unit = this.Update(force, hard, false)
+    member this.Update(force: bool,hard: bool,withBindingRedirects:bool): unit =
+        this.Update(force, hard, withBindingRedirects, true)
+
+    /// Updates all dependencies.
+    member this.Update(force: bool, hard: bool, withBindingRedirects: bool, installAfter: bool): unit =
+        Utils.RunInLockedAccessMode(
+            this.RootPath,
+            fun () -> UpdateProcess.Update(dependenciesFileName,
+                                           { UpdaterOptions.Default with
+                                               Common = InstallerOptions.createLegacyOptions(force, hard, withBindingRedirects)
+                                               NoInstall = installAfter |> not }))
 
     /// Updates the given package.
     member this.UpdatePackage(package: string, version: string option, force: bool, hard: bool): unit =
+        this.UpdatePackage(package, version, force, hard, false, true)
+
+    /// Updates the given package.
+    member this.UpdatePackage(package: string, version: string option, force: bool, hard: bool, withBindingRedirects: bool, installAfter: bool): unit =
         Utils.RunInLockedAccessMode(
             this.RootPath,
             fun () -> UpdateProcess.UpdatePackage(dependenciesFileName, PackageName package, version,
-                                                  InstallerOptions.createLegacyOptions(force, hard, false)))
+                                                  { UpdaterOptions.Default with
+                                                      Common = InstallerOptions.createLegacyOptions(force, hard, withBindingRedirects)
+                                                      NoInstall = installAfter |> not }))
 
     /// Restores all dependencies.
     member this.Restore(): unit = this.Restore(false,[])

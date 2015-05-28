@@ -193,6 +193,7 @@ type UpdateArgs =
     | [<AltCommandLine("-f")>] Force
     | Hard
     | Redirects
+    | No_Install
 with
     interface IArgParserTemplate with
         member this.Usage =
@@ -202,6 +203,7 @@ with
             | Force -> "Forces the download and reinstallation of all packages."
             | Hard -> "Replaces package references within project files even if they are not yet adhering to the Paket's conventions (and hence considered manually managed)."
             | Redirects -> "Creates binding redirects for the NuGet packages."
+            | No_Install -> "Skips paket install --hard process afterward generation of paket.lock file."
 
 type FindPackagesArgs =
     | [<CustomCommandLine("searchtext")>] SearchText of string

@@ -164,13 +164,14 @@ let simplify (results : ArgParseResults<_>) =
 let update (results : ArgParseResults<_>) =
     let hard = results.Contains <@ UpdateArgs.Hard @>
     let force = results.Contains <@ UpdateArgs.Force @>
+    let noInstall = results.Contains <@ UpdateArgs.No_Install @>
+    let withBindingRedirects = results.Contains <@ UpdateArgs.Redirects @>
     match results.TryGetResult <@ UpdateArgs.Nuget @> with
     | Some packageName ->
         let version = results.TryGetResult <@ UpdateArgs.Version @>
-        Dependencies.Locate().UpdatePackage(packageName, version, force, hard)
+        Dependencies.Locate().UpdatePackage(packageName, version, force, hard, withBindingRedirects, noInstall |> not)
     | _ ->
-        let withBindingRedirects = results.Contains <@ UpdateArgs.Redirects @>
-        Dependencies.Locate().Update(force, hard, withBindingRedirects)
+        Dependencies.Locate().Update(force, hard, withBindingRedirects, noInstall |> not)
 
 let pack (results : ArgParseResults<_>) =
     let outputPath = results.GetResult <@ PackArgs.Output @>
