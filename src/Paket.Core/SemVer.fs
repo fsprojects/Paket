@@ -61,7 +61,8 @@ type SemVerInfo =
             else ""
             
         let preReleaseBuild = 
-            if String.IsNullOrEmpty x.PreReleaseBuild |> not && x.PreReleaseBuild <> "0" then "." + x.PreReleaseBuild
+            if String.IsNullOrEmpty x.PreReleaseBuild |> not && x.PreReleaseBuild <> "0" then 
+                if x.PreReleaseBuild.StartsWith("-") then x.PreReleaseBuild else "." + x.PreReleaseBuild
             else ""
             
         let pre = 
@@ -106,7 +107,7 @@ type SemVerInfo =
                 else if y.PreRelease.IsNone && not x.PreRelease.IsNone && y.PreReleaseBuild = "0" then -1
                 else if x.PreRelease <> y.PreRelease then compare x.PreRelease y.PreRelease
                 else if x.PreReleaseBuild <> y.PreReleaseBuild then 
-                    match Int32.TryParse x.PreReleaseBuild, Int32.TryParse y.PreReleaseBuild with
+                    match Int32.TryParse(x.PreReleaseBuild.TrimStart('-')), Int32.TryParse(y.PreReleaseBuild.TrimStart('-')) with
                     | (true, b1), (true, b2) -> compare b1 b2
                     | _ -> compare x.PreReleaseBuild y.PreReleaseBuild
                 else 0
@@ -132,13 +133,20 @@ module SemVer =
         let dashSplitted = version.Split([|'-'; '+'|])
         let splitted = dashSplitted.[0].Split '.'
         let l = splitted.Length
+        let prerelease = if dashSplitted.Length > 1 then dashSplitted.[1].Split('.').[0] else String.Empty
             
-        let prereleaseBuild = if dashSplitted.Length > 1 && dashSplitted.[1].Split('.').Length > 1 then dashSplitted.[1].Split('.').[1] else "0"
+        let prereleaseBuild = 
+            if dashSplitted.Length > 1 then
+                version.Replace(dashSplitted.[0] + "-" + prerelease,"").TrimStart('.')
+            else 
+                "0"
 
         { Major = if l > 0 then Int32.Parse splitted.[0] else 0
           Minor = if l > 1 then Int32.Parse splitted.[1] else 0
           Patch = if l > 2 then Int32.Parse splitted.[2] else 0
-          PreRelease = PreRelease.TryParse(if dashSplitted.Length > 1 then dashSplitted.[1].Split('.').[0] else String.Empty)
+          PreRelease = 
+            
+            PreRelease.TryParse(prerelease)
           Build = if l > 3 then splitted.[3] else "0"
           PreReleaseBuild = prereleaseBuild
           Original = Some version }

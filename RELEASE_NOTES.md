@@ -1,3 +1,6 @@
+#### 1.6.3 - 28.05.2015
+* BUGFIX: Parse NuGet package prerelease versions containing "-" - https://github.com/fsprojects/Paket/issues/841
+
 #### 1.6.2 - 27.05.2015
 * Analyze content files with case insensitive setting - https://github.com/fsprojects/Paket/issues/816
 

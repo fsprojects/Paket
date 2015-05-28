@@ -87,6 +87,7 @@ let ``can normalize versions``() =
     (SemVer.Parse "1.2.3-alpha.3").Normalize() |> shouldEqual ((SemVer.Parse "1.2.3-alpha.3").ToString())
     (SemVer.Parse "1.0.0-alpha").Normalize() |> shouldEqual ((SemVer.Parse "1.0.0-alpha").ToString())
     (SemVer.Parse "1.0.0-alpha.1").Normalize() |> shouldEqual ((SemVer.Parse "1.0.0-alpha.1").ToString())
+    (SemVer.Parse "3.0.0-alpha-0008").Normalize().ToString() |> shouldEqual "3.0.0-alpha-0008"
 
 [<Test>]
 let ``can normalize build zeros``() =
@@ -169,3 +170,8 @@ let ``should accept SemVer2 prereleases`` () =
 [<Test>]
 let ``should accept version with leading zero`` () =
     SemVer.Parse("1.0.071.9556").ToString() |> shouldEqual "1.0.071.9556"
+
+[<Test>]
+let ``should accept version with minus in prerelease`` () =
+    SemVer.Parse("3.0.0-alpha-0008").ToString() |> shouldEqual "3.0.0-alpha-0008"
+    (SemVer.Parse "3.0.0-alpha-0008") |> shouldBeSmallerThan (SemVer.Parse "3.0.0-alpha-0009")
