@@ -1,4 +1,5 @@
-#### 1.7.3 - 28.05.2015
+#### 1.8.0 - 28.05.2015
+* Implement --no-install and --redirects for "paket update" - https://github.com/fsprojects/Paket/pull/847
 * Fix inconsistent parameter names - https://github.com/fsprojects/Paket/pull/846
 
 #### 1.7.2 - 28.05.2015
