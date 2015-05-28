@@ -199,6 +199,7 @@ type Dependencies(dependenciesFileName: string) =
     /// Restores packages for all available paket.references files
     /// (or all packages if onlyReferenced is false)
     member this.Restore(force, onlyReferenced: bool): unit =
+        if not onlyReferenced then this.Restore() else
         let referencesFiles =
             this.RootPath
             |> ProjectFile.FindAllProjects
