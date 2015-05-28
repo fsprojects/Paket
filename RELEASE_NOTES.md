@@ -1,3 +1,6 @@
+#### 1.6.4 - 28.05.2015
+* Make the output path relative to the dependencies file - https://github.com/fsprojects/Paket/issues/829
+
 #### 1.6.3 - 28.05.2015
 * BUGFIX: Parse NuGet package prerelease versions containing "-" - https://github.com/fsprojects/Paket/issues/841
 

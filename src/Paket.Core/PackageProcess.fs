@@ -11,9 +11,10 @@ open Paket.PackageMetaData
 open Chessie.ErrorHandling
 
 let Pack(dependencies : DependenciesFile, packageOutputPath, buildConfig, version, releaseNotes, templateFile) =
-    let buildConfig = defaultArg buildConfig "Release"  
-    Utils.createDir packageOutputPath |> returnOrFail
+    let buildConfig = defaultArg buildConfig "Release"
     let rootPath = dependencies.FileName |> Path.GetDirectoryName
+    let packageOutputPath = if Path.IsPathRooted(packageOutputPath) then packageOutputPath else Path.Combine(rootPath,packageOutputPath)
+    Utils.createDir packageOutputPath |> returnOrFail
 
     let version = version |> Option.map SemVer.Parse
 
