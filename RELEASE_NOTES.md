@@ -1,11 +1,8 @@
-#### 1.6.4 - 28.05.2015
+#### 1.7.0 - 28.05.2015
+* New `--only-referenced` parameter for restore - https://github.com/fsprojects/Paket/pull/843
 * Make the output path relative to the dependencies file - https://github.com/fsprojects/Paket/issues/829
-
-#### 1.6.3 - 28.05.2015
-* BUGFIX: Parse NuGet package prerelease versions containing "-" - https://github.com/fsprojects/Paket/issues/841
-
-#### 1.6.2 - 27.05.2015
 * Analyze content files with case insensitive setting - https://github.com/fsprojects/Paket/issues/816
+* BUGFIX: Parse NuGet package prerelease versions containing "-" - https://github.com/fsprojects/Paket/issues/841
 
 #### 1.6.0 - 26.05.2015
 * Paket init - init dependencies file with default NuGet source
