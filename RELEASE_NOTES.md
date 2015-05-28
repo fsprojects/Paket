@@ -1,3 +1,6 @@
+#### 1.7.3 - 28.05.2015
+* Fix inconsistent parameter names - https://github.com/fsprojects/Paket/pull/846
+
 #### 1.7.2 - 28.05.2015
 * New `--only-referenced` parameter for restore - https://github.com/fsprojects/Paket/pull/843
 * Make the output path relative to the dependencies file - https://github.com/fsprojects/Paket/issues/829
