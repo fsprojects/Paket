@@ -129,10 +129,23 @@ type Dependencies(dependenciesFileName: string) =
             fun () -> ConfigFile.askAndAddAuth source username |> returnOrFail )
 
     /// Installs all dependencies.
-    member this.Install(force: bool, hard: bool, withBindingRedirects:bool): unit =
+    member this.Install(force: bool, hard: bool) = this.Install(force, hard, false)
+
+    /// Installs all dependencies.
+    member this.Install(force: bool, hard: bool, withBindingRedirects: bool): unit =
+        this.Install(force, hard, withBindingRedirects, false)
+
+    /// Installs all dependencies.
+    member this.Install(force: bool, hard: bool, withBindingRedirects: bool, onlyReferenced: bool): unit =
+        this.Install({ SmartInstallOptions.Default with
+                          Common = { SmartInstallOptions.Default.Common with Force = force; Hard = hard; Redirects = withBindingRedirects }
+                          OnlyReferenced = onlyReferenced })
+
+    /// Installs all dependencies.
+    member private this.Install(options: SmartInstallOptions): unit =
         Utils.RunInLockedAccessMode(
             this.RootPath,
-            fun () -> UpdateProcess.SmartInstall(dependenciesFileName, None, InstallerOptions.createLegacyOptions(force,hard,withBindingRedirects)))
+            fun () -> UpdateProcess.SmartInstall(dependenciesFileName, None, options))
 
     /// Creates a paket.dependencies file with the given text in the current directory and installs it.
     static member Install(dependencies, ?path: string, ?force, ?hard, ?withBindingRedirects) = 
@@ -144,9 +157,6 @@ type Dependencies(dependenciesFileName: string) =
             force = defaultArg force false,
             hard = defaultArg hard false,
             withBindingRedirects = defaultArg withBindingRedirects false)
-
-    /// Installs all dependencies.
-    member this.Install(force: bool,hard: bool): unit = this.Install(force,hard,false)
 
     /// Updates all dependencies.
     member this.Update(force: bool,hard: bool,withBindingRedirects:bool): unit = 
@@ -175,6 +185,17 @@ type Dependencies(dependenciesFileName: string) =
         Utils.RunInLockedAccessMode(
             this.RootPath,
             fun () -> RestoreProcess.Restore(dependenciesFileName,force,files))
+
+    /// Restores packages for all available paket.references files
+    /// (or all packages if onlyReferenced is false)
+    member this.Restore(force, onlyReferenced: bool): unit =
+        let referencesFiles =
+            this.RootPath
+            |> ProjectFile.FindAllProjects
+            |> Array.choose (fun p -> ProjectFile.FindReferencesFile(FileInfo(p.FileName)))
+        if Array.isEmpty referencesFiles then
+            traceWarnfn "No paket.references files found for which packages could be installed."
+        else this.Restore(force, Array.toList referencesFiles)
 
     /// Lists outdated packages.
     member this.ShowOutdated(strict: bool,includePrereleases: bool): unit =

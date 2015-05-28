@@ -127,6 +127,7 @@ type InstallArgs =
     | [<AltCommandLine("-f")>] Force
     | Hard
     | Redirects
+    | [<CustomCommandLine("--only-referenced")>] Install_Only_Referenced
 with 
     interface IArgParserTemplate with
         member this.Usage =
@@ -134,6 +135,7 @@ with
             | Force -> "Forces the download and reinstallation of all packages."
             | Hard -> "Replaces package references within project files even if they are not yet adhering to the Paket's conventions (and hence considered manually managed)."            
             | Redirects -> "Creates binding redirects for the NuGet packages."
+            | Install_Only_Referenced -> "Only install packages that are referenced in paket.references files, instead of all packages in paket.dependencies."
 
 type OutdatedArgs =
     | Ignore_Constraints
@@ -165,13 +167,15 @@ with
 
 type RestoreArgs =
     | [<AltCommandLine("-f")>] Force
+    | [<CustomCommandLine("--only-referenced")>] Install_Only_Referenced
     | [<Rest>] References_Files of string
 with 
     interface IArgParserTemplate with
         member this.Usage =
             match this with
             | Force -> "Forces the download of all packages."
-            | References_Files(_) -> "Allows to restore all packages from the given paket.references files. If no paket.references file is given then all packages will be restored."
+            | Install_Only_Referenced -> "Allows to restore packages that are referenced in paket.references files, instead of all packages in paket.dependencies."
+            | References_Files(_) -> "Allows to restore all packages from the given paket.references files. This implies --only-referenced."
 
 type SimplifyArgs =
     | [<AltCommandLine("-i")>] Interactive

@@ -50,6 +50,14 @@ let internal restore(root, sources, force, lockFile:LockFile, packages:Set<Norma
 
     Async.Parallel(sourceFileDownloads,packageDownloads) 
 
+let internal computePackageHull (lockFile : LockFile) (referencesFileNames : string seq) =
+    referencesFileNames
+    |> Seq.map (fun fileName ->
+        ReferencesFile.FromFile fileName
+        |> lockFile.GetPackageHull
+        |> Seq.map (fun p -> NormalizedPackageName p.Key))
+    |> Seq.concat
+
 let Restore(dependenciesFileName,force,referencesFileNames) = 
     let lockFileName = DependenciesFile.FindLockfile dependenciesFileName
     let root = lockFileName.Directory.FullName
@@ -67,11 +75,8 @@ let Restore(dependenciesFileName,force,referencesFileNames) =
             |> Seq.map (fun kv -> kv.Key) 
         else
             referencesFileNames
-            |> List.map (fun fileName ->
-                ReferencesFile.FromFile fileName
-                |> lockFile.GetPackageHull
-                |> Seq.map (fun p -> NormalizedPackageName p.Key))
-            |> Seq.concat
+            |> List.toSeq
+            |> computePackageHull lockFile
 
     restore(root, sources, force, lockFile,Set.ofSeq packages) 
     |> Async.RunSynchronously

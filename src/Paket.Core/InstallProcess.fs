@@ -93,11 +93,12 @@ let CreateInstallModel(root, sources, force, package) =
     }
 
 /// Restores the given packages from the lock file.
-let createModel(root, sources, force, lockFile : LockFile) =
+let createModel(root, sources, force, lockFile : LockFile, packages:Set<NormalizedPackageName>) =
     let sourceFileDownloads = RemoteDownload.DownloadSourceFiles(root, lockFile.SourceFiles)
 
     let packageDownloads =
         lockFile.ResolvedPackages
+        |> Map.filter (fun name _ -> packages.Contains name)
         |> Seq.map (fun kv -> CreateInstallModel(root,sources,force,kv.Value))
         |> Async.Parallel
 
@@ -147,9 +148,22 @@ let findAllReferencesFiles root =
     |> collect
 
 /// Installs all packages from the lock file.
-let InstallIntoProjects(sources, options : InstallerOptions, lockFile : LockFile, projects) =
+let InstallIntoProjects(sources, options : SmartInstallOptions, lockFile : LockFile, projects : (ProjectFile * ReferencesFile) list) =
+    let packagesToInstall =
+        if options.OnlyReferenced then
+            projects
+            |> Seq.ofList
+            |> Seq.map (fun (_, referencesFile)->
+                referencesFile
+                |> lockFile.GetPackageHull
+                |> Seq.map (fun p -> NormalizedPackageName p.Key))
+            |> Seq.concat
+        else
+            lockFile.ResolvedPackages
+            |> Seq.map (fun kv -> kv.Key)
+
     let root = Path.GetDirectoryName lockFile.FileName
-    let extractedPackages = createModel(root, sources, options.Force, lockFile)
+    let extractedPackages = createModel(root, sources, options.Common.Force, lockFile, Set.ofSeq packagesToInstall)
 
     let model =
         extractedPackages
@@ -241,7 +255,7 @@ let InstallIntoProjects(sources, options : InstallerOptions, lockFile : LockFile
             |> Seq.map (fun u -> NormalizedPackageName u.Key,u.Value)
             |> Map.ofSeq
 
-        project.UpdateReferences(model, usedPackageSettings, options.Hard)
+        project.UpdateReferences(model, usedPackageSettings, options.Common.Hard)
 
         removeCopiedFiles project
 
@@ -268,15 +282,15 @@ let InstallIntoProjects(sources, options : InstallerOptions, lockFile : LockFile
                                   Include = createRelativePath project.FileName file.FullName
                                   Link = None })
 
-        project.UpdateFileItems(gitRemoteItems @ nuGetFileItems, options.Hard)
+        project.UpdateFileItems(gitRemoteItems @ nuGetFileItems, options.Common.Hard)
 
         project.Save()
 
-    if options.Redirects || lockFile.Options.Redirects then
+    if options.Common.Redirects || lockFile.Options.Redirects then
         applyBindingRedirects root extractedPackages
 
 /// Installs all packages from the lock file.
-let Install(sources, options : InstallerOptions, lockFile : LockFile) =
+let Install(sources, options : SmartInstallOptions, lockFile : LockFile) =
     let root = FileInfo(lockFile.FileName).Directory.FullName
     let projects = findAllReferencesFiles root |> returnOrFail
     InstallIntoProjects(sources, options, lockFile, projects)

@@ -20,3 +20,11 @@ type InstallerOptions =
             Force = force
             Hard = hard
             Redirects = redirects }
+
+type SmartInstallOptions =
+    { Common : InstallerOptions
+      OnlyReferenced : bool }
+
+    static member Default =
+        { Common = InstallerOptions.Default
+          OnlyReferenced = false }

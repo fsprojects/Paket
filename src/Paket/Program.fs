@@ -128,7 +128,8 @@ let install (results : ArgParseResults<_>) =
     let force = results.Contains <@ InstallArgs.Force @>
     let hard = results.Contains <@ InstallArgs.Hard @>
     let withBindingRedirects = results.Contains <@ InstallArgs.Redirects @>
-    Dependencies.Locate().Install(force, hard, withBindingRedirects)
+    let installOnlyReferenced = results.Contains <@ InstallArgs.Install_Only_Referenced @>
+    Dependencies.Locate().Install(force, hard, withBindingRedirects, installOnlyReferenced)
 
 let outdated (results : ArgParseResults<_>) = 
     let strict = results.Contains <@ OutdatedArgs.Ignore_Constraints @> |> not
@@ -151,7 +152,9 @@ let remove (results : ArgParseResults<_>) =
 let restore (results : ArgParseResults<_>) = 
     let force = results.Contains <@ RestoreArgs.Force @>
     let files = results.GetResults <@ RestoreArgs.References_Files @>
-    Dependencies.Locate().Restore(force, files)
+    let installOnlyReferenced = results.Contains <@ RestoreArgs.Install_Only_Referenced @>
+    if List.isEmpty files then Dependencies.Locate().Restore(force, installOnlyReferenced)
+    else Dependencies.Locate().Restore(force, files)
 
 let simplify (results : ArgParseResults<_>) = 
     let interactive = results.Contains <@ SimplifyArgs.Interactive @>
