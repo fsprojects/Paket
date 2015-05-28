@@ -64,6 +64,7 @@ type AddArgs =
     | [<AltCommandLine("-f")>] Force
     | [<AltCommandLine("-i")>] Interactive
     | Hard
+    | Redirects
     | No_Install
 with 
     interface IArgParserTemplate with
@@ -75,6 +76,7 @@ with
             | Force -> "Forces the download and reinstallation of all packages."
             | Interactive -> "Asks the user for every project if he or she wants to add the package to the projects's paket.references file."
             | Hard -> "Replaces package references within project files even if they are not yet adhering to the Paket's conventions (and hence considered manually managed)."
+            | Redirects -> "Creates binding redirects for the NuGet packages."
             | No_Install -> "Skips paket install --hard process afterward generation of dependencies / references files."
 
 type ConfigArgs = 

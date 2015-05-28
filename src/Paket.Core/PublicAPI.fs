@@ -105,22 +105,31 @@ type Dependencies(dependenciesFileName: string) =
     member this.Add(package: string): unit = this.Add(package,"")
 
     /// Adds the given package with the given version to the dependencies file.
-    member this.Add(package: string,version: string): unit = this.Add(package, version, false, false, false, true)
+    member this.Add(package: string,version: string): unit =
+        this.Add(package, version, force = false, hard = false, redirects = false, interactive = false, installAfter = true)
 
     /// Adds the given package with the given version to the dependencies file.
     member this.Add(package: string,version: string,force: bool,hard: bool,interactive: bool,installAfter: bool): unit =
+        this.Add(package, version, force, hard, false, interactive, installAfter)
+
+    /// Adds the given package with the given version to the dependencies file.
+    member this.Add(package: string,version: string,force: bool,hard: bool,redirects: bool,interactive: bool,installAfter: bool): unit =
         Utils.RunInLockedAccessMode(
             this.RootPath,
             fun () -> AddProcess.Add(dependenciesFileName, PackageName(package.Trim()), version,
-                                     InstallerOptions.createLegacyOptions(force, hard, false),
+                                     InstallerOptions.createLegacyOptions(force, hard, redirects),
                                      interactive, installAfter))
 
     /// Adds the given package with the given version to the dependencies file.
     member this.AddToProject(package: string,version: string,force: bool,hard: bool,projectName: string,installAfter: bool): unit =
+        this.AddToProject(package, version, force, hard, false, projectName, installAfter)
+
+   /// Adds the given package with the given version to the dependencies file.
+    member this.AddToProject(package: string,version: string,force: bool,hard: bool,redirects: bool,projectName: string,installAfter: bool): unit =
         Utils.RunInLockedAccessMode(
             this.RootPath,
             fun () -> AddProcess.AddToProject(dependenciesFileName, PackageName package, version,
-                                              InstallerOptions.createLegacyOptions(force, hard, false),
+                                              InstallerOptions.createLegacyOptions(force, hard, redirects),
                                               projectName, installAfter))
 
     /// Adds credentials for a Nuget feed

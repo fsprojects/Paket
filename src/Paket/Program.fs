@@ -79,6 +79,7 @@ let add (results : ArgParseResults<_>) =
     let version = defaultArg (results.TryGetResult <@ AddArgs.Version @>) ""
     let force = results.Contains <@ AddArgs.Force @>
     let hard = results.Contains <@ AddArgs.Hard @>
+    let redirects = results.Contains <@ AddArgs.Redirects @>
     let noInstall = results.Contains <@ AddArgs.No_Install @>
     match results.TryGetResult <@ AddArgs.Project @> with
     | Some projectName ->
