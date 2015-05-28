@@ -405,4 +405,6 @@ let replaceNugetWithPaket initAutoRestore installAfter result =
         VSIntegration.TurnOnAutoRestore result.PaketEnv |> returnOrFail
 
     if installAfter then
-        UpdateProcess.Update(result.PaketEnv.DependenciesFile.FileName,true,true,true)
+        UpdateProcess.Update(
+            result.PaketEnv.DependenciesFile.FileName,
+            { InstallerOptions.Default with Force = true; Hard = true; Redirects = true })

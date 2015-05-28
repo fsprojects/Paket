@@ -22,9 +22,9 @@ type Command =
     | [<First>][<CustomCommandLine("show-installed-packages")>] ShowInstalledPackages
     | [<First>][<CustomCommandLine("pack")>]                    Pack
     | [<First>][<CustomCommandLine("push")>]                    Push
-with 
+with
     interface IArgParserTemplate with
-        member this.Usage = 
+        member this.Usage =
             match this with
             | Add -> "Adds a new package to your paket.dependencies file."
             | Config -> "Allows to store global configuration values like NuGet credentials."
@@ -43,11 +43,11 @@ with
             | ShowInstalledPackages -> "EXPERIMENTAL: Shows all installed top-level packages."
             | Pack -> "Packs all paket.template files within this repository"
             | Push -> "Pushes all `.nupkg` files from the given directory."
-    
-    member this.Name = 
+
+    member this.Name =
         let uci,_ = Microsoft.FSharp.Reflection.FSharpValue.GetUnionFields(this, typeof<Command>)
-        (uci.GetCustomAttributes(typeof<CustomCommandLineAttribute>) 
-        |> Seq.head 
+        (uci.GetCustomAttributes(typeof<CustomCommandLineAttribute>)
+        |> Seq.head
         :?> CustomCommandLineAttribute).Name
 
 type GlobalArgs =
@@ -64,10 +64,11 @@ type AddArgs =
     | [<AltCommandLine("-f")>] Force
     | [<AltCommandLine("-i")>] Interactive
     | Hard
+    | Redirects
     | No_Install
-with 
+with
     interface IArgParserTemplate with
-        member this.Usage = 
+        member this.Usage =
             match this with
             | Nuget(_) -> "Nuget package id."
             | Version(_) -> "Allows to specify version of the package."
@@ -75,13 +76,14 @@ with
             | Force -> "Forces the download and reinstallation of all packages."
             | Interactive -> "Asks the user for every project if he or she wants to add the package to the projects's paket.references file."
             | Hard -> "Replaces package references within project files even if they are not yet adhering to the Paket's conventions (and hence considered manually managed)."
+            | Redirects -> "Creates binding redirects for the NuGet packages."
             | No_Install -> "Skips paket install --hard process afterward generation of dependencies / references files."
 
-type ConfigArgs = 
+type ConfigArgs =
     | [<CustomCommandLine("add-credentials")>] AddCredentials of string
-with 
+with
     interface IArgParserTemplate with
-        member this.Usage = 
+        member this.Usage =
             match this with
             | AddCredentials(_) -> "Add credentials for the specified Nuget feed"
 
@@ -90,9 +92,9 @@ type ConvertFromNugetArgs =
     | No_Install
     | No_Auto_Restore
     | Creds_Migration of string
-with 
+with
     interface IArgParserTemplate with
-        member this.Usage = 
+        member this.Usage =
             match this with
             | Force -> "Forces the conversion, even if a paket.dependencies file or paket.references files are present."
             | No_Install -> "Skips paket install --hard process afterward generation of dependencies / references files."
@@ -101,24 +103,24 @@ with
 
 type FindRefsArgs =
     | [<Rest>][<CustomCommandLine("nuget")>][<Mandatory>] Packages of string
-with 
+with
     interface IArgParserTemplate with
-        member this.Usage = 
+        member this.Usage =
             match this with
             | Packages(_) -> "List of packages."
 
 type InitArgs =
     | [<Hidden>] NoArg
-with 
+with
     interface IArgParserTemplate with
         member __.Usage = ""
 
 type AutoRestoreArgs =
     | [<First>][<CustomCommandLine("on")>] On
     | [<First>][<CustomCommandLine("off")>] Off
-with 
+with
     interface IArgParserTemplate with
-        member this.Usage = 
+        member this.Usage =
             match this with
             | On -> "Turns auto restore on"
             | Off -> "Turns auto restore off"
@@ -127,18 +129,20 @@ type InstallArgs =
     | [<AltCommandLine("-f")>] Force
     | Hard
     | Redirects
-with 
+    | [<CustomCommandLine("--only-referenced")>] Install_Only_Referenced
+with
     interface IArgParserTemplate with
         member this.Usage =
             match this with
             | Force -> "Forces the download and reinstallation of all packages."
-            | Hard -> "Replaces package references within project files even if they are not yet adhering to the Paket's conventions (and hence considered manually managed)."            
+            | Hard -> "Replaces package references within project files even if they are not yet adhering to the Paket's conventions (and hence considered manually managed)."
             | Redirects -> "Creates binding redirects for the NuGet packages."
+            | Install_Only_Referenced -> "Only install packages that are referenced in paket.references files, instead of all packages in paket.dependencies."
 
 type OutdatedArgs =
     | Ignore_Constraints
     | [<AltCommandLine("--pre")>] Include_Prereleases
-with 
+with
     interface IArgParserTemplate with
         member this.Usage =
             match this with
@@ -152,7 +156,7 @@ type RemoveArgs =
     | [<AltCommandLine("-i")>] Interactive
     | Hard
     | No_Install
-with 
+with
     interface IArgParserTemplate with
         member this.Usage =
             match this with
@@ -165,17 +169,19 @@ with
 
 type RestoreArgs =
     | [<AltCommandLine("-f")>] Force
+    | [<CustomCommandLine("--only-referenced")>] Install_Only_Referenced
     | [<Rest>] References_Files of string
-with 
+with
     interface IArgParserTemplate with
         member this.Usage =
             match this with
             | Force -> "Forces the download of all packages."
-            | References_Files(_) -> "Allows to restore all packages from the given paket.references files. If no paket.references file is given then all packages will be restored."
+            | Install_Only_Referenced -> "Allows to restore packages that are referenced in paket.references files, instead of all packages in paket.dependencies."
+            | References_Files(_) -> "Allows to restore all packages from the given paket.references files. This implies --only-referenced."
 
 type SimplifyArgs =
     | [<AltCommandLine("-i")>] Interactive
-with 
+with
     interface IArgParserTemplate with
         member this.Usage =
             match this with
@@ -187,7 +193,7 @@ type UpdateArgs =
     | [<AltCommandLine("-f")>] Force
     | Hard
     | Redirects
-with 
+with
     interface IArgParserTemplate with
         member this.Usage =
             match this with
@@ -267,7 +273,7 @@ with
             | ApiKey(_) -> "Optionally specify your API key on the command line. Otherwise uses the value of the `nugetkey` environment variable."
             | EndPoint(_) -> "Optionally specify a custom api endpoint to push to. Defaults to `/api/v2/package`"
 
-let cmdLineSyntax (parser:UnionArgParser<_>) commandName = 
+let cmdLineSyntax (parser:UnionArgParser<_>) commandName =
     "$ paket " + commandName + " " + parser.PrintCommandLineSyntax()
 
 let cmdLineUsageMessage (command : Command) parser =
@@ -279,20 +285,20 @@ let cmdLineUsageMessage (command : Command) parser =
         .AppendLine()
         .Append(cmdLineSyntax parser command.Name)
         .ToString()
-    
+
 let markdown (command : Command) (additionalText : string) =
-    let replace (pattern : string) (replacement : string) input = 
+    let replace (pattern : string) (replacement : string) input =
         System.Text.RegularExpressions.Regex.Replace(input, pattern, replacement)
-    
-    let syntaxAndOptions (parser : UnionArgParser<_>) = 
+
+    let syntaxAndOptions (parser : UnionArgParser<_>) =
         let options =
-            parser.Usage() 
+            parser.Usage()
             |> replace @"\s\t--help.*" ""
             |> replace @"\t([-\w \[\]|\/\?<>\.]+):" (System.Environment.NewLine + @"  `$1`:")
 
         let syntax = cmdLineSyntax parser command.Name
         syntax, options
-    
+
     let getSyntax = function
         | Add -> syntaxAndOptions (UnionArgParser.Create<AddArgs>())
         | Config -> syntaxAndOptions (UnionArgParser.Create<ConfigArgs>())
@@ -311,7 +317,7 @@ let markdown (command : Command) (additionalText : string) =
         | ShowInstalledPackages -> syntaxAndOptions (UnionArgParser.Create<ShowInstalledPackagesArgs>())
         | Pack -> syntaxAndOptions (UnionArgParser.Create<PackArgs>())
         | Push -> syntaxAndOptions (UnionArgParser.Create<PushArgs>())
-    
+
     let replaceLinks (text : string) =
         text
             .Replace("paket.dependencies file","[`paket.dependencies` file](dependencies-file.html)")
@@ -319,12 +325,12 @@ let markdown (command : Command) (additionalText : string) =
             .Replace("paket.template files","[`paket.template` files](template-files.html)")
             .Replace("paket.references files","[`paket.references` files](references-files.html)")
             .Replace("paket.references file","[`paket.references` file](references-files.html)")
-    
+
     let syntax, options = getSyntax command
 
     System.Text.StringBuilder()
         .Append("# paket ")
-        .AppendLine(command.Name)       
+        .AppendLine(command.Name)
         .AppendLine()
         .AppendLine((command :> IArgParserTemplate).Usage)
         .AppendLine()
@@ -340,5 +346,5 @@ let markdown (command : Command) (additionalText : string) =
 
 let getAllCommands () =
     Microsoft.FSharp.Reflection.FSharpType.GetUnionCases(typeof<Command>)
-    |> Array.map (fun uci -> 
+    |> Array.map (fun uci ->
         Microsoft.FSharp.Reflection.FSharpValue.MakeUnion(uci, [||]) :?> Command)

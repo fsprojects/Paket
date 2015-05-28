@@ -23,17 +23,17 @@ let findPackageFolder root (PackageName name) =
     | Some x -> x
     | None -> failwithf "Package directory for package %s was not found." name
 
-let private findPackagesWithContent (root,usedPackages:Map<PackageName,PackageInstallSettings>) = 
+let private findPackagesWithContent (root,usedPackages:Map<PackageName,PackageInstallSettings>) =
     usedPackages
     |> Seq.filter (fun kv -> defaultArg kv.Value.Settings.OmitContent false |> not)
     |> Seq.map (fun kv -> findPackageFolder root kv.Key)
-    |> Seq.choose (fun packageDir -> 
-            packageDir.GetDirectories("Content") 
+    |> Seq.choose (fun packageDir ->
+            packageDir.GetDirectories("Content")
             |> Array.append (packageDir.GetDirectories("content"))
             |> Array.tryFind (fun _ -> true))
     |> Seq.toList
 
-let private copyContentFiles (project : ProjectFile, packagesWithContent) = 
+let private copyContentFiles (project : ProjectFile, packagesWithContent) =
 
     let rules : list<(FileInfo -> bool)> = [
             fun f -> f.Name = "_._"
@@ -49,7 +49,7 @@ let private copyContentFiles (project : ProjectFile, packagesWithContent) =
         fromDir.GetDirectories() |> Array.toList
         |> List.collect (fun subDir -> copyDirContents(subDir, lazy toDir.Force().CreateSubdirectory(subDir.Name)))
         |> List.append
-            (fromDir.GetFiles() 
+            (fromDir.GetFiles()
                 |> Array.toList
                 |> List.filter (onBlackList >> not)
                 |> List.map (fun file -> file.CopyTo(Path.Combine(toDir.Force().FullName, file.Name), true)))
@@ -64,28 +64,28 @@ let private removeCopiedFiles (project: ProjectFile) =
             removeEmptyDirHierarchy dir.Parent
 
     let removeFilesAndTrimDirs (files: FileInfo list) =
-        for f in files do 
-            if f.Exists then 
+        for f in files do
+            if f.Exists then
                 f.Delete()
 
-        let dirsPathsDeepestFirst = 
+        let dirsPathsDeepestFirst =
             files
             |> Seq.map (fun f -> f.Directory.FullName)
             |> Seq.distinct
             |> List.ofSeq
             |> List.rev
-        
+
         for dirPath in dirsPathsDeepestFirst do
             removeEmptyDirHierarchy (DirectoryInfo dirPath)
 
-    project.GetPaketFileItems() 
+    project.GetPaketFileItems()
     |> List.filter (fun fi -> not <| fi.FullName.Contains(Constants.PaketFilesFolderName))
     |> removeFilesAndTrimDirs
 
-let CreateInstallModel(root, sources, force, package) = 
-    async { 
+let CreateInstallModel(root, sources, force, package) =
+    async {
         let! (package, files, targetsFiles) = RestoreProcess.ExtractPackage(root, sources, force, package)
-        let (PackageName name) = package.Name        
+        let (PackageName name) = package.Name
         let nuspec = Nuspec.Load(root,package.Name)
         let files = files |> Array.map (fun fi -> fi.FullName)
         let targetsFiles = targetsFiles |> Array.map (fun fi -> fi.FullName)
@@ -93,11 +93,12 @@ let CreateInstallModel(root, sources, force, package) =
     }
 
 /// Restores the given packages from the lock file.
-let createModel(root, sources,force, lockFile:LockFile) = 
+let createModel(root, sources, force, lockFile : LockFile, packages:Set<NormalizedPackageName>) =
     let sourceFileDownloads = RemoteDownload.DownloadSourceFiles(root, lockFile.SourceFiles)
-        
-    let packageDownloads = 
+
+    let packageDownloads =
         lockFile.ResolvedPackages
+        |> Map.filter (fun name _ -> packages.Contains name)
         |> Seq.map (fun kv -> CreateInstallModel(root,sources,force,kv.Value))
         |> Async.Parallel
 
@@ -139,17 +140,30 @@ let findAllReferencesFiles root =
     |> ProjectFile.FindAllProjects
     |> Array.choose (fun p -> ProjectFile.FindReferencesFile(FileInfo(p.FileName))
                                 |> Option.map (fun r -> p, r))
-    |> Array.map (fun (project,file) -> 
-        try 
+    |> Array.map (fun (project,file) ->
+        try
             ok <| (project, ReferencesFile.FromFile(file))
-        with _ -> 
+        with _ ->
             fail <| ReferencesFileParseError (FileInfo(file)))
     |> collect
 
 /// Installs all packages from the lock file.
-let InstallIntoProjects(sources,force, hard, withBindingRedirects, lockFile:LockFile, projects) =
+let InstallIntoProjects(sources, options : SmartInstallOptions, lockFile : LockFile, projects : (ProjectFile * ReferencesFile) list) =
+    let packagesToInstall =
+        if options.OnlyReferenced then
+            projects
+            |> Seq.ofList
+            |> Seq.map (fun (_, referencesFile)->
+                referencesFile
+                |> lockFile.GetPackageHull
+                |> Seq.map (fun p -> NormalizedPackageName p.Key))
+            |> Seq.concat
+        else
+            lockFile.ResolvedPackages
+            |> Seq.map (fun kv -> kv.Key)
+
     let root = Path.GetDirectoryName lockFile.FileName
-    let extractedPackages = createModel(root,sources,force, lockFile)
+    let extractedPackages = createModel(root, sources, options.Common.Force, lockFile, Set.ofSeq packagesToInstall)
 
     let model =
         extractedPackages
@@ -161,29 +175,29 @@ let InstallIntoProjects(sources,force, hard, withBindingRedirects, lockFile:Lock
         |> Array.map (fun (p,m) -> NormalizedPackageName p.Name,p)
         |> Map.ofArray
 
-    for project : ProjectFile, referenceFile in projects do    
+    for project : ProjectFile, referenceFile in projects do
         verbosefn "Installing to %s" project.FileName
-        
+
         let usedPackages =
             lockFile.GetPackageHull(referenceFile)
-            |> Seq.map (fun u -> 
+            |> Seq.map (fun u ->
                 let package = packages.[NormalizedPackageName u.Key]
-                let referenceFileSettings = 
+                let referenceFileSettings =
                     referenceFile.NugetPackages
                     |> List.tryFind (fun x -> NormalizedPackageName x.Name = NormalizedPackageName u.Key)
-                let copyLocal =                
+                let copyLocal =
                     match referenceFileSettings with
                     | Some s -> s.Settings.CopyLocal
                     | None -> None
-                let omitContent =                
+                let omitContent =
                     match referenceFileSettings with
                     | Some s -> s.Settings.OmitContent
                     | None -> None
-                let importTargets =                
+                let importTargets =
                     match referenceFileSettings with
                     | Some s -> s.Settings.ImportTargets
                     | None -> None
-                let restriktions =                
+                let restriktions =
                     match referenceFileSettings with
                     | Some s -> s.Settings.FrameworkRestrictions
                     | None -> []
@@ -192,12 +206,12 @@ let InstallIntoProjects(sources,force, hard, withBindingRedirects, lockFile:Lock
                 u.Key,
                     { u.Value with
                         Settings =
-                            { u.Value.Settings with 
-                                FrameworkRestrictions = 
+                            { u.Value.Settings with
+                                FrameworkRestrictions =
                                     // TODO: This should filter
                                     restriktions @
-                                      u.Value.Settings.FrameworkRestrictions @ 
-                                      lockFile.Options.Settings.FrameworkRestrictions @ 
+                                      u.Value.Settings.FrameworkRestrictions @
+                                      lockFile.Options.Settings.FrameworkRestrictions @
                                       package.Settings.FrameworkRestrictions
 
                                 ImportTargets =
@@ -241,11 +255,11 @@ let InstallIntoProjects(sources,force, hard, withBindingRedirects, lockFile:Lock
             |> Seq.map (fun u -> NormalizedPackageName u.Key,u.Value)
             |> Map.ofSeq
 
-        project.UpdateReferences(model,usedPackageSettings,hard)
-        
+        project.UpdateReferences(model, usedPackageSettings, options.Common.Hard)
+
         removeCopiedFiles project
 
-        let getSingleRemoteFilePath name = 
+        let getSingleRemoteFilePath name =
             traceVerbose <| sprintf "Filename %s " name
             lockFile.SourceFiles |> List.iter (fun i -> traceVerbose <| sprintf " %s %s " i.Name (i.FilePath root))
             let sourceFile = lockFile.SourceFiles |> List.tryFind (fun f -> Path.GetFileName(f.Name) = name)
@@ -255,28 +269,28 @@ let InstallIntoProjects(sources,force, hard, withBindingRedirects, lockFile:Lock
 
         let gitRemoteItems =
             referenceFile.RemoteFiles
-            |> List.map (fun file -> 
-                             { BuildAction = project.DetermineBuildAction file.Name 
+            |> List.map (fun file ->
+                             { BuildAction = project.DetermineBuildAction file.Name
                                Include = createRelativePath project.FileName (getSingleRemoteFilePath file.Name)
                                Link = Some(if file.Link = "." then Path.GetFileName(file.Name)
                                            else Path.Combine(file.Link, Path.GetFileName(file.Name))) })
-        
+
         let nuGetFileItems =
             copyContentFiles(project, findPackagesWithContent(root,usedPackages))
-            |> List.map (fun file -> 
+            |> List.map (fun file ->
                                 { BuildAction = project.DetermineBuildAction file.Name
                                   Include = createRelativePath project.FileName file.FullName
                                   Link = None })
 
-        project.UpdateFileItems(gitRemoteItems @ nuGetFileItems, hard)
+        project.UpdateFileItems(gitRemoteItems @ nuGetFileItems, options.Common.Hard)
 
         project.Save()
 
-    if withBindingRedirects || lockFile.Options.Redirects then
+    if options.Common.Redirects || lockFile.Options.Redirects then
         applyBindingRedirects root extractedPackages
 
 /// Installs all packages from the lock file.
-let Install(sources,force, hard, withBindingRedirects, lockFile:LockFile) = 
-    let root = FileInfo(lockFile.FileName).Directory.FullName 
+let Install(sources, options : SmartInstallOptions, lockFile : LockFile) =
+    let root = FileInfo(lockFile.FileName).Directory.FullName
     let projects = findAllReferencesFiles root |> returnOrFail
-    InstallIntoProjects(sources,force,hard,withBindingRedirects,lockFile,projects)
+    InstallIntoProjects(sources, options, lockFile, projects)
