@@ -52,9 +52,9 @@
   <Import Project="$(FSharpTargetsPath)" />
   <ItemGroup>
     <Compile Include="CmdletExt.fs" />
+    <Compile Include="UnionArgParserExt.fs" />
     <Compile Include="PowerShell.fs" />
     <None Include="init.ps1" />
-    <None Include="paket.template" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="mscorlib" />

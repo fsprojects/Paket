@@ -21,3 +21,4 @@ files
     ../bin/merged/paket.exe ==> tools
 	../bin/Paket.PowerShell.dll ==> tools
 	../src/Paket.PowerShell/init.ps1 ==> tools
+	../src/Paket.PowerShell/Paket.PowerShell.psd1 ==> tools
