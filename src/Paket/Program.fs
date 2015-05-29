@@ -215,23 +215,21 @@ let findPackages (results : ArgParseResults<_>) =
     | Some searchText -> searchAndPrint searchText
 
 let showInstalledPackages (results : ArgParseResults<_>) =
+    let project = results.TryGetResult <@ ShowInstalledPackagesArgs.Project @>
+    let showAll = results.Contains <@ ShowInstalledPackagesArgs.All @>
     let dependenciesFile = Dependencies.Locate()
     let packages =
-        match results.TryGetResult <@ ShowInstalledPackagesArgs.Project @> with
+        match project with
         | None ->
-            if results.Contains <@ ShowInstalledPackagesArgs.All @> then
-                dependenciesFile.GetInstalledPackages()
-            else
-                dependenciesFile.GetDirectDependencies()
+            if showAll then dependenciesFile.GetInstalledPackages()
+            else dependenciesFile.GetDirectDependencies()
         | Some project ->
             match ProjectFile.FindReferencesFile(FileInfo project) with
             | None -> []
             | Some referencesFile ->
                 let referencesFile = ReferencesFile.FromFile referencesFile
-                if results.Contains <@ ShowInstalledPackagesArgs.All @> then
-                    dependenciesFile.GetInstalledPackages(referencesFile)
-                else
-                    dependenciesFile.GetDirectDependencies(referencesFile)
+                if showAll then dependenciesFile.GetInstalledPackages(referencesFile)
+                else dependenciesFile.GetDirectDependencies(referencesFile)
 
     for name,version in packages do
         tracefn "%s - %s" name version
