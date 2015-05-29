@@ -184,7 +184,6 @@ let pack (results : ArgParseResults<_>) =
 
 let findPackages (results : ArgParseResults<_>) =
     let maxResults = defaultArg (results.TryGetResult <@ FindPackagesArgs.MaxResults @>) 10000
-    let silent = results.Contains <@ FindPackagesArgs.Silent @>
     let sources  =
         match results.TryGetResult <@ FindPackagesArgs.Source @> with
         | Some source -> [PackageSource.NugetSource source]
