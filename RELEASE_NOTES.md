@@ -1,6 +1,9 @@
+#### 1.8.1 - 29.05.2015
+* BUGFIX: Fix long version of --silent flag - https://github.com/fsprojects/Paket/pull/849
+
 #### 1.8.0 - 28.05.2015
 * Implement --no-install and --redirects for "paket update" - https://github.com/fsprojects/Paket/pull/847
-* Fix inconsistent parameter names - https://github.com/fsprojects/Paket/pull/846
+* BUGFIX: Fix inconsistent parameter names - https://github.com/fsprojects/Paket/pull/846
 
 #### 1.7.2 - 28.05.2015
 * New `--only-referenced` parameter for restore - https://github.com/fsprojects/Paket/pull/843
