@@ -26,13 +26,11 @@ let filterGlobalArgs args =
 
     let rest =
         match logFile with
-        | Some file ->
-            args |> Array.filter (fun a -> a <> "--log-file" && a <> file)
+        | Some file -> args |> Array.filter (fun a -> a <> "--log-file" && a <> file)
         | None -> args
 
     let rest =
-        if verbose then
-            rest |> Array.filter (fun a -> a <> "-v" && a <> "--verbose")
+        if verbose then rest |> Array.filter (fun a -> a <> "-v" && a <> "--verbose")
         else rest
 
     verbose, logFile, rest
