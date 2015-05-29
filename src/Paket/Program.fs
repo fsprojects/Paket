@@ -38,7 +38,7 @@ let filterGlobalArgs args =
     verbose, logFile, rest
 
 let v, logFile, args = filterGlobalArgs (Environment.GetCommandLineArgs().[1..])
-let silent = args |> Array.exists ((=) "-s")
+let silent = args |> Array.exists (fun a -> a = "-s" || a = "--silent")
 
 if not silent then
     let assembly = Assembly.GetExecutingAssembly()
