@@ -26,19 +26,17 @@ let filterGlobalArgs args =
 
     let rest =
         match logFile with
-        | Some file ->
-            args |> Array.filter (fun a -> a <> "--log-file" && a <> file)
+        | Some file -> args |> Array.filter (fun a -> a <> "--log-file" && a <> file)
         | None -> args
 
     let rest =
-        if verbose then
-            rest |> Array.filter (fun a -> a <> "-v" && a <> "--verbose")
+        if verbose then rest |> Array.filter (fun a -> a <> "-v" && a <> "--verbose")
         else rest
 
     verbose, logFile, rest
 
 let v, logFile, args = filterGlobalArgs (Environment.GetCommandLineArgs().[1..])
-let silent = args |> Array.exists ((=) "-s")
+let silent = args |> Array.exists (fun a -> a = "-s" || a = "--silent")
 
 if not silent then
     let assembly = Assembly.GetExecutingAssembly()
@@ -184,7 +182,6 @@ let pack (results : ArgParseResults<_>) =
 
 let findPackages (results : ArgParseResults<_>) =
     let maxResults = defaultArg (results.TryGetResult <@ FindPackagesArgs.MaxResults @>) 10000
-    let silent = results.Contains <@ FindPackagesArgs.Silent @>
     let sources  =
         match results.TryGetResult <@ FindPackagesArgs.Source @> with
         | Some source -> [PackageSource.NugetSource source]
@@ -216,23 +213,21 @@ let findPackages (results : ArgParseResults<_>) =
     | Some searchText -> searchAndPrint searchText
 
 let showInstalledPackages (results : ArgParseResults<_>) =
+    let project = results.TryGetResult <@ ShowInstalledPackagesArgs.Project @>
+    let showAll = results.Contains <@ ShowInstalledPackagesArgs.All @>
     let dependenciesFile = Dependencies.Locate()
     let packages =
-        match results.TryGetResult <@ ShowInstalledPackagesArgs.Project @> with
+        match project with
         | None ->
-            if results.Contains <@ ShowInstalledPackagesArgs.All @> then
-                dependenciesFile.GetInstalledPackages()
-            else
-                dependenciesFile.GetDirectDependencies()
+            if showAll then dependenciesFile.GetInstalledPackages()
+            else dependenciesFile.GetDirectDependencies()
         | Some project ->
             match ProjectFile.FindReferencesFile(FileInfo project) with
             | None -> []
             | Some referencesFile ->
                 let referencesFile = ReferencesFile.FromFile referencesFile
-                if results.Contains <@ ShowInstalledPackagesArgs.All @> then
-                    dependenciesFile.GetInstalledPackages(referencesFile)
-                else
-                    dependenciesFile.GetDirectDependencies(referencesFile)
+                if showAll then dependenciesFile.GetInstalledPackages(referencesFile)
+                else dependenciesFile.GetDirectDependencies(referencesFile)
 
     for name,version in packages do
         tracefn "%s - %s" name version
