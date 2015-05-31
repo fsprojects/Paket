@@ -200,14 +200,19 @@ module internal TemplateFile =
         | Some m -> ok m
         | None -> failP file "No description line in paket.template file."
     
-    let private getDependencies (map : Map<string, string>) = 
+    let private getDependencies (map : Map<string, string>,currentVersion:SemVerInfo option) = 
         Map.tryFind "dependencies" map
         |> Option.map (fun d -> d.Split '\n')
         |> Option.map (Array.map (fun d -> 
                            let reg = Regex(@"(?<id>\S+)(?<version>.*)").Match d
                            let id' = reg.Groups.["id"].Value
                            let versionRequirement = 
-                               reg.Groups.["version"].Value.Trim() |> DependenciesFileParser.parseVersionRequirement
+                                let versionString = 
+                                  let s = reg.Groups.["version"].Value.Trim()
+                                  if s.Contains("CURRENTVERSION") then
+                                    s.Replace("CURRENTVERSION",currentVersion.Value.ToString())
+                                  else s
+                                DependenciesFileParser.parseVersionRequirement versionString
                            id', versionRequirement))
         |> Option.map Array.toList
         |> fun x -> defaultArg x []
@@ -241,7 +246,7 @@ module internal TemplateFile =
         |> Option.map List.ofSeq
         |> fun x -> defaultArg x []
     
-    let private getOptionalInfo (map : Map<string, string>) = 
+    let private getOptionalInfo (map : Map<string, string>, currentVersion) = 
         let get (n : string) = Map.tryFind (n.ToLowerInvariant()) map
 
         let title = get "title"
@@ -291,12 +296,12 @@ module internal TemplateFile =
           RequireLicenseAcceptance = requireLicenseAcceptance
           Tags = tags
           DevelopmentDependency = developmentDependency
-          Dependencies = getDependencies map
+          Dependencies = getDependencies(map,currentVersion)
           References = getReferences map
           FrameworkAssemblyReferences = getFrameworkReferences map
           Files = getFiles map }
     
-    let Parse(file,contentStream : Stream) = 
+    let Parse(file,currentVersion,contentStream : Stream) = 
         trial { 
             use sr = new StreamReader(contentStream)
             let! map =
@@ -318,7 +323,7 @@ module internal TemplateFile =
                                             |> Array.toList)
                       Description = Map.tryFind "description" map }
                 
-                let optionalInfo = getOptionalInfo map
+                let optionalInfo = getOptionalInfo(map,currentVersion)
                 return ProjectInfo(core, optionalInfo)
             | FileType ->                 
                 let! id' = getId file map                
@@ -330,14 +335,14 @@ module internal TemplateFile =
                       Authors = authors
                       Description = description }
                 
-                let optionalInfo = getOptionalInfo map
+                let optionalInfo = getOptionalInfo(map,currentVersion)
                 return CompleteInfo(core, optionalInfo)
         }
 
-    let Load(fileName) = 
+    let Load(fileName,currentVersion) = 
         let fi = FileInfo fileName
         let root = fi.Directory.FullName
-        let contents = Parse(fi.FullName, File.OpenRead fileName) |> returnOrFail
+        let contents = Parse(fi.FullName,currentVersion, File.OpenRead fileName) |> returnOrFail
         { FileName = fileName
           Contents = 
               match contents with

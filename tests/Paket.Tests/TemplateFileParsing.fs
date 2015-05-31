@@ -73,7 +73,7 @@ let strToStream (str : string) =
 [<TestCase(FileBasedLongDesc4, "description starting with description")>]
 let ``Parsing minimal file based packages works`` (fileContent, desc) =
     let result =
-        TemplateFile.Parse("file1.template", strToStream fileContent)
+        TemplateFile.Parse("file1.template", None, strToStream fileContent)
         |> returnOrFail
 
     match result with
@@ -103,7 +103,7 @@ description A short description
 [<TestCase(Invalid1)>]
 [<TestCase(Invalid3)>]
 let ``Invalid file input recognised as invalid`` (fileContent : string) =
-    TemplateFile.Parse("file1.template", strToStream fileContent)
+    TemplateFile.Parse("file1.template", None, strToStream fileContent)
     |> failed
     |> shouldEqual true
 
@@ -169,14 +169,14 @@ description
 [<TestCase(RealTest)>]
 [<TestCase(FullTest)>]
 let ``Valid file input recognised as valid`` (fileContent : string) =
-   TemplateFile.Parse("file1.template", strToStream fileContent)
+   TemplateFile.Parse("file1.template", None, strToStream fileContent)
     |> failed
     |> shouldEqual false
 
 [<TestCase(FullTest)>]
 let ``Optional fields are read`` (fileContent : string) =
     let sut =
-        TemplateFile.Parse("file1.template", strToStream fileContent)
+        TemplateFile.Parse("file1.template", None, strToStream fileContent)
         |> returnOrFail
         |> function
            | CompleteInfo (_, opt)
@@ -210,7 +210,7 @@ dependencies
 [<TestCase(Dependency1)>]
 let ``Detect dependencies correctly`` fileContent =
     let sut =
-        TemplateFile.Parse("file1.template", strToStream fileContent)
+        TemplateFile.Parse("file1.template", None, strToStream fileContent)
         |> returnOrFail
         |> function
            | CompleteInfo (_, opt)
@@ -221,6 +221,36 @@ let ``Detect dependencies correctly`` fileContent =
         range1.Range |> shouldEqual (Specific (SemVer.Parse "4.3.1"))
         name2 |> shouldEqual "My.OtherThing"
         range2.Range |> shouldEqual (Minimum (SemVer.Parse "0"))
+    | _ -> Assert.Fail()
+
+
+[<Test>]
+let ``Detect dependencies with CURRENTVERSION correctly`` () =
+    let fileContent = """type file
+id My.Thing
+authors Bob McBob
+description
+    A longer description
+    on two lines.
+version
+    1.0
+dependencies
+     FSharp.Core 4.3.1
+     My.OtherThing CURRENTVERSION
+"""
+
+    let sut =
+        TemplateFile.Parse("file1.template", Some(SemVer.Parse "2.1"), strToStream fileContent)
+        |> returnOrFail
+        |> function
+           | CompleteInfo (_, opt)
+           | ProjectInfo (_, opt) -> opt
+    match sut.Dependencies with
+    | [name1,range1;name2,range2] ->
+        name1 |> shouldEqual "FSharp.Core"
+        range1.Range |> shouldEqual (Specific (SemVer.Parse "4.3.1"))
+        name2 |> shouldEqual "My.OtherThing"
+        range2.Range |> shouldEqual (Specific (SemVer.Parse "2.1"))
     | _ -> Assert.Fail()
 
 [<Test>]
@@ -237,7 +267,7 @@ files
     someDir ==> lib
 """
     let sut =
-        TemplateFile.Parse("file1.template", strToStream text)
+        TemplateFile.Parse("file1.template", None, strToStream text)
         |> returnOrFail
         |> function
            | CompleteInfo (_, opt)
@@ -263,7 +293,7 @@ version
     1.0
 """
     let sut =
-        TemplateFile.Parse("file1.template", strToStream text)
+        TemplateFile.Parse("file1.template", None, strToStream text)
         |> returnOrFail
         |> function
            | CompleteInfo (_, opt)
@@ -291,7 +321,7 @@ version
     1.0
 """
     let sut =
-        TemplateFile.Parse("file1.template", strToStream text)
+        TemplateFile.Parse("file1.template", None, strToStream text)
         |> returnOrFail
         |> function
            | CompleteInfo (_, opt)
@@ -318,7 +348,7 @@ files
     anotherDir ==> someLib
 """
     let sut =
-        TemplateFile.Parse("file1.template", strToStream text)
+        TemplateFile.Parse("file1.template", None, strToStream text)
         |> returnOrFail
         |> function
            | CompleteInfo (_, opt)
@@ -338,7 +368,7 @@ let ProjectType1 = """type project
 [<TestCase(ProjectType1)>]
 let ``Parsing minimal project based packages works`` (fileContent) =
     let result =
-        TemplateFile.Parse("file1.template", strToStream fileContent)
+        TemplateFile.Parse("file1.template", None, strToStream fileContent)
         |> returnOrFail
 
     match result with
@@ -382,7 +412,7 @@ files
   ../../build/bin/Angebot.Contracts.pdb ==> lib
 """
     let sut =
-        TemplateFile.Parse("file1.template", strToStream text)
+        TemplateFile.Parse("file1.template", None, strToStream text)
         |> returnOrFail
         |> function
            | CompleteInfo (_, opt)

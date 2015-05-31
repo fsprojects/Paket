@@ -117,8 +117,12 @@ let (|Valid|Invalid|) md =
 let addDependency (templateFile : TemplateFile) (dependency : string * VersionRequirement) = 
     match templateFile with
     | CompleteTemplate(core, opt) -> 
+        let newDeps = 
+            match opt.Dependencies |> List.tryFind (fun (n,_) -> n = fst dependency) with
+            | None -> dependency :: opt.Dependencies
+            | _ -> opt.Dependencies
         { FileName = templateFile.FileName
-          Contents = CompleteInfo(core, { opt with Dependencies = dependency :: opt.Dependencies }) }
+          Contents = CompleteInfo(core, { opt with Dependencies = newDeps }) }
     | IncompleteTemplate -> 
         failwith "You should only try and add dependencies to template files with complete metadata."
 
@@ -133,8 +137,7 @@ let addFile (source : string) (target : string) (templateFile : TemplateFile) =
     | IncompleteTemplate -> 
         failwith "You should only try and add dependencies to template files with complete metadata."
 
-let findDependencies (dependencies : DependenciesFile) config (template : TemplateFile) (project : ProjectFile) 
-    (map : Map<string, TemplateFile * ProjectFile>) = 
+let findDependencies (dependencies : DependenciesFile) config (template : TemplateFile) (project : ProjectFile) (map : Map<string, TemplateFile * ProjectFile>) = 
     let targetDir = 
         match project.OutputType with
         | ProjectOutputType.Exe -> "tools/"
@@ -181,7 +184,7 @@ let findDependencies (dependencies : DependenciesFile) config (template : Templa
             | CompleteTemplate(core, opt) -> 
                 match core.Version with
                 | Some v -> core.Id, VersionRequirement(Minimum(v), PreReleaseStatus.All)
-                | none ->failwithf "There was no versin given for %s." templateFile.FileName
+                | none ->failwithf "There was no version given for %s." templateFile.FileName
             | IncompleteTemplate -> failwithf "You cannot create a dependency on a template file (%s) with incomplete metadata." templateFile.FileName)
         |> List.fold addDependency templateWithOutput
     

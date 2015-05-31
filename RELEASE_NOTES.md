@@ -1,4 +1,5 @@
-#### 1.8.1 - 29.05.2015
+#### 1.9.0 - 29.05.2015
+* Paket pack allows to specify current nuget version as dependency - https://github.com/fsprojects/Paket/issues/837
 * BUGFIX: Fix long version of --silent flag - https://github.com/fsprojects/Paket/pull/849
 
 #### 1.8.0 - 28.05.2015
