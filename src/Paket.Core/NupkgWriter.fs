@@ -195,14 +195,20 @@ let Write (core : CompleteCoreInfo) optional workingDir outputDir =
     use zipToCreate = new FileStream(outputPath, FileMode.Create)
     use zipFile = new ZipArchive(zipToCreate,ZipArchiveMode.Create)
 
-    let entries = System.Collections.Generic.List<_>()
+    let entries = System.Collections.Generic.List<_>()    
     
-    let addEntry (zipFile : ZipArchive) path writerF = 
+    let addEntry path writerF = 
+        if entries.Contains(path) then () else
         entries.Add path |> ignore
         let entry = zipFile.CreateEntry(path)        
         use stream = entry.Open()
         writerF stream
         stream.Close()
+
+    let addEntryFromFile path source =
+        if entries.Contains(path) then () else
+        entries.Add path |> ignore
+        zipFile.CreateEntryFromFile(source,path) |> ignore
 
     let ensureValidTargetName (target:string) =
         match target.Replace(" ", "%20").Replace("\\", "/") with
@@ -216,8 +222,7 @@ let Write (core : CompleteCoreInfo) optional workingDir outputDir =
         for file in Directory.EnumerateFiles(source,"*.*",SearchOption.TopDirectoryOnly) do
             let fi = FileInfo file
             let path = Path.Combine(target,fi.Name)
-            entries.Add path |> ignore
-            zipFile.CreateEntryFromFile(fi.FullName,path) |> ignore
+            addEntryFromFile path fi.FullName
 
         for dir in Directory.EnumerateDirectories(source,"*",SearchOption.TopDirectoryOnly) do
             let di = DirectoryInfo dir
@@ -233,20 +238,18 @@ let Write (core : CompleteCoreInfo) optional workingDir outputDir =
             if File.Exists source then
                 let fi = FileInfo(source)
                 let path = Path.Combine(targetFileName,fi.Name)
-                entries.Add path |> ignore
-                zipFile.CreateEntryFromFile(source, path) |> ignore
+                addEntryFromFile path source
             else 
                 failwithf "Could not find source file %s" source
 
     // add metadata
     for path, writer in writeNupkg core optional do 
-        addEntry zipFile path writer
+        addEntry path writer
     
     entries
-    |> Seq.distinct
     |> Seq.toList
     |> contentTypeDoc
     |> xDocWriter
-    |> addEntry zipFile contentTypePath
+    |> addEntry contentTypePath
 
     outputPath

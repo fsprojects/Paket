@@ -1,4 +1,4 @@
-#### 1.9.2 - 01.06.2015
+#### 1.9.3 - 01.06.2015
 * Do not duplicate files in the nupkg - https://github.com/fsprojects/Paket/issues/851
 
 #### 1.9.1 - 01.06.2015
