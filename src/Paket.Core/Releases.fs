@@ -26,8 +26,6 @@ let private download version (file:FileInfo) client =
     }
 
 let downloadLatestVersionOf files destDir =
-    tracen (sprintf "'DL %A to %s'" files destDir)
-
     let releasesUrl = "https://api.github.com/repos/fsprojects/Paket/releases";
     use client = createWebClient("https://github.com",None)
 
