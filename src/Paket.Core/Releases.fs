@@ -15,16 +15,19 @@ let private getLatestVersionFromJson (data : string) =
     with _ ->
         fail ReleasesJsonParseError
 
-let private download version file destDir client = 
+let private download version (file:FileInfo) client = 
     trial {
-        do! createDir(destDir)
-        let fileName = Path.Combine(destDir, file)
-        let url = sprintf "https://github.com/fsprojects/Paket/releases/download/%s/%s" (string version) file
+        tracen (sprintf "%A" file)
+
+        do! createDir(file.DirectoryName)
+        let url = sprintf "https://github.com/fsprojects/Paket/releases/download/%s/%s" (string version) file.Name
         
-        do! downloadFileSync url fileName client
+        do! downloadFileSync url file.FullName client
     }
 
 let downloadLatestVersionOf files destDir =
+    tracen (sprintf "'DL %A to %s'" files destDir)
+
     let releasesUrl = "https://api.github.com/repos/fsprojects/Paket/releases";
     use client = createWebClient("https://github.com",None)
 
@@ -32,11 +35,14 @@ let downloadLatestVersionOf files destDir =
         let! data = client |> downloadStringSync releasesUrl
         let! latestVersion = getLatestVersionFromJson data
 
-        files
-        |> List.filter (fun f -> not <| File.Exists(f))
-        |> List.map (fun file -> download latestVersion file destDir client)
-        |> collect
-        |> ignore
+        let! downloads = 
+            files
+            |> List.map (fun file -> FileInfo(Path.Combine(destDir, file)))
+            |> List.filter (fun file -> not file.Exists)
+            |> List.map (fun file -> download latestVersion file client)
+            |> collect
+        
+        ignore downloads
     }
 
 let downloadLatestBootstrapper environment =        
