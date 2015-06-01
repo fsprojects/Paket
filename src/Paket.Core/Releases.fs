@@ -25,6 +25,13 @@ let private download version (file:FileInfo) client =
         do! downloadFileSync url file.FullName client
     }
 
+let private existsNotOrIsNewer (file:FileInfo) latest =
+    if (not <| file.Exists) then true
+    else
+        let verInfo = FileVersionInfo.GetVersionInfo file.FullName
+        let currentVersion = SemVer.Parse verInfo.FileVersion
+        currentVersion < latest
+
 let downloadLatestVersionOf files destDir =
     let releasesUrl = "https://api.github.com/repos/fsprojects/Paket/releases";
     use client = createWebClient("https://github.com",None)
@@ -36,7 +43,7 @@ let downloadLatestVersionOf files destDir =
         let! downloads = 
             files
             |> List.map (fun file -> FileInfo(Path.Combine(destDir, file)))
-            |> List.filter (fun file -> not file.Exists)
+            |> List.filter (fun file -> existsNotOrIsNewer file latestVersion)
             |> List.map (fun file -> download latestVersion file client)
             |> collect
         
