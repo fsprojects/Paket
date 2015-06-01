@@ -200,7 +200,7 @@ module internal TemplateFile =
         | Some m -> ok m
         | None -> failP file "No description line in paket.template file."
     
-    let private getDependencies (map : Map<string, string>,currentVersion:SemVerInfo option) = 
+    let private getDependencies (fileName, map : Map<string, string>,currentVersion:SemVerInfo option) = 
         Map.tryFind "dependencies" map
         |> Option.map (fun d -> d.Split '\n')
         |> Option.map (Array.map (fun d -> 
@@ -210,7 +210,9 @@ module internal TemplateFile =
                                 let versionString = 
                                   let s = reg.Groups.["version"].Value.Trim()
                                   if s.Contains("CURRENTVERSION") then
-                                    s.Replace("CURRENTVERSION",currentVersion.Value.ToString())
+                                    match currentVersion with
+                                    | Some v -> s.Replace("CURRENTVERSION",v.ToString())
+                                    | None -> failwithf "The template file %s contains the placeholder CURRENTVERSION, but no version was given." fileName
                                   else s
                                 DependenciesFileParser.parseVersionRequirement versionString
                            id', versionRequirement))
@@ -246,7 +248,7 @@ module internal TemplateFile =
         |> Option.map List.ofSeq
         |> fun x -> defaultArg x []
     
-    let private getOptionalInfo (map : Map<string, string>, currentVersion) = 
+    let private getOptionalInfo (fileName, map : Map<string, string>, currentVersion) = 
         let get (n : string) = Map.tryFind (n.ToLowerInvariant()) map
 
         let title = get "title"
@@ -296,7 +298,7 @@ module internal TemplateFile =
           RequireLicenseAcceptance = requireLicenseAcceptance
           Tags = tags
           DevelopmentDependency = developmentDependency
-          Dependencies = getDependencies(map,currentVersion)
+          Dependencies = getDependencies(fileName,map,currentVersion)
           References = getReferences map
           FrameworkAssemblyReferences = getFrameworkReferences map
           Files = getFiles map }
@@ -310,6 +312,12 @@ module internal TemplateFile =
                 | Choice2Of2 f -> failP file f
             sr.Dispose()
             let! type' = parsePackageConfigType file map
+
+            let currentVersion = 
+                match currentVersion with
+                | None -> Map.tryFind "version" map |> Option.map SemVer.Parse
+                | _ -> currentVersion
+
             match type' with
             | ProjectType -> 
                 let core : ProjectCoreInfo = 
@@ -323,7 +331,7 @@ module internal TemplateFile =
                                             |> Array.toList)
                       Description = Map.tryFind "description" map }
                 
-                let optionalInfo = getOptionalInfo(map,currentVersion)
+                let optionalInfo = getOptionalInfo(file,map,currentVersion)
                 return ProjectInfo(core, optionalInfo)
             | FileType ->                 
                 let! id' = getId file map                
@@ -335,7 +343,7 @@ module internal TemplateFile =
                       Authors = authors
                       Description = description }
                 
-                let optionalInfo = getOptionalInfo(map,currentVersion)
+                let optionalInfo = getOptionalInfo(file,map,currentVersion)
                 return CompleteInfo(core, optionalInfo)
         }
 
