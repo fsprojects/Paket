@@ -351,22 +351,24 @@ module internal TemplateFile =
         let fi = FileInfo fileName
         let root = fi.Directory.FullName
         let contents = Parse(fi.FullName,currentVersion, File.OpenRead fileName) |> returnOrFail
+        let getFiles files = 
+            [ for source, target in files do
+                for file in Fake.Globbing.search root source do
+                    if source.Contains("**") then
+                        let sourceRoot = FileInfo(Path.Combine(root,source.Substring(0,source.IndexOf("**")))).FullName |> normalizePath
+                        let fullFile = FileInfo(file).Directory.FullName |> normalizePath
+                        let newTarget = Path.Combine(target,fullFile.Replace(sourceRoot,"").TrimStart(Path.DirectorySeparatorChar))
+                        yield file, newTarget
+                    else
+                        yield file, target ]
+
         { FileName = fileName
           Contents = 
               match contents with
               | CompleteInfo(core, optionalInfo) -> 
-                  let files = 
-                      [ for source, target in optionalInfo.Files do
-                            for file in Fake.Globbing.search root source do
-                                if source.Contains("**") then
-                                    let sourceRoot = FileInfo(Path.Combine(root,source.Substring(0,source.IndexOf("**")))).FullName |> normalizePath
-                                    let fullFile = FileInfo(file).Directory.FullName |> normalizePath
-                                    let newTarget = Path.Combine(target,fullFile.Replace(sourceRoot,"").TrimStart(Path.DirectorySeparatorChar))
-                                    yield file, newTarget
-                                else
-                                    yield file, target ]
-                  CompleteInfo(core, { optionalInfo with Files = files })
-              | _ -> contents }
+                  CompleteInfo(core, { optionalInfo with Files = getFiles optionalInfo.Files })
+              | ProjectInfo(core, optionalInfo) ->
+                 ProjectInfo(core, { optionalInfo with Files = getFiles optionalInfo.Files }) }
     
     let FindTemplateFiles root = 
         Directory.EnumerateFiles(root, "*" + Constants.TemplateFile, SearchOption.AllDirectories)

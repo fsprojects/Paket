@@ -1,4 +1,7 @@
-#### 1.9.0 - 29.05.2015
+#### 1.9.1 - 01.06.2015
+* Pack command reuses project version if directly given - https://github.com/fsprojects/Paket/issues/837
+
+#### 1.9.0 - 30.05.2015
 * Paket pack allows to specify current nuget version as dependency - https://github.com/fsprojects/Paket/issues/837
 * BUGFIX: Fix long version of --silent flag - https://github.com/fsprojects/Paket/pull/849
 
