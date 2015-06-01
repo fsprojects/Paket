@@ -117,6 +117,7 @@
     <Compile Include="PackageMetaData.fs" />
     <Compile Include="PackageProcess.fs" />
     <Compile Include="Environment.fs" />
+    <Compile Include="DownloadAssemblies.fs" />
     <Compile Include="Simplifier.fs" />
     <Compile Include="VSIntegration.fs" />
     <Compile Include="NugetConvert.fs" />

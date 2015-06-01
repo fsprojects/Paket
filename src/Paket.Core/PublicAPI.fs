@@ -230,6 +230,11 @@ type Dependencies(dependenciesFileName: string) =
         |> this.Process
         |> List.map (fun (PackageName p,_,newVersion) -> p,newVersion)
 
+    member this.DownloadPaketAndBootstrapper() : unit =
+        Utils.RunInLockedAccessMode(
+            this.RootPath,
+            fun () -> DownloadAssemblies.downloadPaketAndBootstrapper |> this.Process)
+
     /// Pulls new paket.targets and bootstrapper and puts them into .paket folder.
     member this.TurnOnAutoRestore(): unit =
         Utils.RunInLockedAccessMode(

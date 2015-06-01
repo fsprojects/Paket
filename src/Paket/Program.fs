@@ -8,6 +8,7 @@ open System.IO
 
 open Paket.Logging
 open Paket.Commands
+open Paket.DownloadAssemblies
 
 open Nessos.UnionArgParser
 open PackageSources
@@ -121,6 +122,7 @@ let findRefs (results : ArgParseResults<_>) =
     Dependencies.Locate().ShowReferencesFor(packages)
 
 let init (results : ArgParseResults<InitArgs>) =
+    Dependencies.Locate().DownloadPaketAndBootstrapper()
     Dependencies.Init()
 
 let install (results : ArgParseResults<_>) =
