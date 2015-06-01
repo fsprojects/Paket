@@ -5,14 +5,14 @@ open Logging
 open System
 open Chessie.ErrorHandling
 open Domain
-open DownloadAssemblies
+open Releases
 
 let TurnOnAutoRestore environment =
     let exeDir = Path.Combine(environment.RootDirectory.FullName, ".paket")
 
     trial {         
+        do! downloadLatestBootstrapperAndTargets environment
         let paketTargetsPath = Path.Combine(exeDir, "paket.targets")
-        do! downloadPaketAndBootstrapper environment
 
         environment.Projects
         |> List.map fst
