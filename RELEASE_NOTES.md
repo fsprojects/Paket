@@ -1,3 +1,6 @@
+#### 1.9.2 - 01.06.2015
+* Do not duplicate files in the nupkg - https://github.com/fsprojects/Paket/issues/851
+
 #### 1.9.1 - 01.06.2015
 * Pack command reuses project version if directly given - https://github.com/fsprojects/Paket/issues/837
 

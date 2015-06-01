@@ -242,7 +242,10 @@ let Write (core : CompleteCoreInfo) optional workingDir outputDir =
     for path, writer in writeNupkg core optional do 
         addEntry zipFile path writer
     
-    contentTypeDoc (Seq.toList entries)
+    entries
+    |> Seq.distinct
+    |> Seq.toList
+    |> contentTypeDoc
     |> xDocWriter
     |> addEntry zipFile contentTypePath
 
