@@ -1,11 +1,8 @@
-#### 1.9.4 - 02.06.2015
-* BUGFIX: `paket install` was not respecting `content:none` - https://github.com/fsprojects/Paket/issues/854
-
-#### 1.9.3 - 01.06.2015
+#### 1.10.0 - 02.06.2015
+* `paket init` puts Paket binaries into the project path - https://github.com/fsprojects/Paket/pull/853
 * Do not duplicate files in the nupkg - https://github.com/fsprojects/Paket/issues/851
-
-#### 1.9.1 - 01.06.2015
 * Pack command reuses project version if directly given - https://github.com/fsprojects/Paket/issues/837
+* BUGFIX: `paket install` was not respecting `content:none` - https://github.com/fsprojects/Paket/issues/854
 
 #### 1.9.0 - 30.05.2015
 * Paket pack allows to specify current nuget version as dependency - https://github.com/fsprojects/Paket/issues/837
