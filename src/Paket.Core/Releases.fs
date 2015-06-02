@@ -20,12 +20,12 @@ let private download version (file:FileInfo) client =
         tracen (sprintf "%A" file)
 
         do! createDir(file.DirectoryName)
-        let url = sprintf "https://github.com/fsprojects/Paket/releases/download/%s/%s" (string version) file.Name
+        let url = sprintf "%s/%s/%s" Constants.GithubReleaseDownloadUrl (string version) file.Name
         
         do! downloadFileSync url file.FullName client
     }
 
-let private existsNotOrIsNewer (file:FileInfo) latest =
+let private doesNotExistsOrIsNewer (file:FileInfo) latest =
     if (not <| file.Exists) then true
     else
         let verInfo = FileVersionInfo.GetVersionInfo file.FullName
@@ -34,17 +34,16 @@ let private existsNotOrIsNewer (file:FileInfo) latest =
 
 /// Downloads the latest version of the given files to the destination dir
 let downloadLatestVersionOf files destDir =
-    let releasesUrl = "https://api.github.com/repos/fsprojects/Paket/releases";
-    use client = createWebClient("https://github.com",None)
+    use client = createWebClient(Constants.GithubUrl, None)
 
     trial {
-        let! data = client |> downloadStringSync releasesUrl
+        let! data = client |> downloadStringSync Constants.GithubReleasesUrl
         let! latestVersion = getLatestVersionFromJson data
 
         let! downloads = 
             files
             |> List.map (fun file -> FileInfo(Path.Combine(destDir, file)))
-            |> List.filter (fun file -> existsNotOrIsNewer file latestVersion)
+            |> List.filter (fun file -> doesNotExistsOrIsNewer file latestVersion)
             |> List.map (fun file -> download latestVersion file client)
             |> collect
         
@@ -53,12 +52,12 @@ let downloadLatestVersionOf files destDir =
 
 /// Downloads the latest version of the paket.bootstrapper to the .paket dir
 let downloadLatestBootstrapper environment =        
-    let exeDir = Path.Combine(environment.RootDirectory.FullName, ".paket")
+    let exeDir = Path.Combine(environment.RootDirectory.FullName, Constants.PaketFolderName)
 
-    downloadLatestVersionOf ["paket.bootstrapper.exe"] exeDir
+    downloadLatestVersionOf [Constants.BootstrapperFileName] exeDir
 
 /// Downloads the latest version of the paket.bootstrapper and paket.targets to the .paket dir
 let downloadLatestBootstrapperAndTargets environment =        
-    let exeDir = Path.Combine(environment.RootDirectory.FullName, ".paket")
+    let exeDir = Path.Combine(environment.RootDirectory.FullName, Constants.PaketFolderName)
 
-    downloadLatestVersionOf ["paket.targets"; "paket.bootstrapper.exe"] exeDir
+    downloadLatestVersionOf [Constants.TargetsFileName; Constants.BootstrapperFileName] exeDir
