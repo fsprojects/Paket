@@ -230,6 +230,12 @@ type Dependencies(dependenciesFileName: string) =
         |> this.Process
         |> List.map (fun (PackageName p,_,newVersion) -> p,newVersion)
 
+    /// Downloads the latest paket.bootstrapper into the .paket folder.
+    member this.DownloadLatestBootstrapper() : unit =
+        Utils.RunInLockedAccessMode(
+            this.RootPath,
+            fun () -> Releases.downloadLatestBootstrapper |> this.Process)
+
     /// Pulls new paket.targets and bootstrapper and puts them into .paket folder.
     member this.TurnOnAutoRestore(): unit =
         Utils.RunInLockedAccessMode(

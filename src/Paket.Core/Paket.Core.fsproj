@@ -4,8 +4,7 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>{7bab0ae2-089f-4761-b138-a717aa2f86c5}</ProjectGuid>
+    <ProjectGuid>{7BAB0AE2-089F-4761-B138-A717AA2F86C5}</ProjectGuid>
     <OutputType>Library</OutputType>
     <RootNamespace>Paket</RootNamespace>
     <AssemblyName>Paket.Core</AssemblyName>
@@ -18,14 +17,11 @@
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
-    <DebugType>full</DebugType>
     <Optimize>false</Optimize>
     <Tailcalls>false</Tailcalls>
     <OutputPath>..\..\bin</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <WarningLevel>3</WarningLevel>
-    <DocumentationFile>
-    </DocumentationFile>
     <StartArguments>update</StartArguments>
     <StartAction>Project</StartAction>
     <StartProgram>paket.exe</StartProgram>
@@ -41,6 +37,7 @@
     <DefineConstants>TRACE</DefineConstants>
     <WarningLevel>3</WarningLevel>
     <DocumentationFile>..\..\bin\Paket.Core.XML</DocumentationFile>
+    <DebugSymbols>true</DebugSymbols>
   </PropertyGroup>
   <PropertyGroup>
     <MinimumVisualStudioVersion Condition="'$(MinimumVisualStudioVersion)' == ''">11</MinimumVisualStudioVersion>
@@ -117,6 +114,7 @@
     <Compile Include="PackageMetaData.fs" />
     <Compile Include="PackageProcess.fs" />
     <Compile Include="Environment.fs" />
+    <Compile Include="Releases.fs" />
     <Compile Include="Simplifier.fs" />
     <Compile Include="VSIntegration.fs" />
     <Compile Include="NugetConvert.fs" />
