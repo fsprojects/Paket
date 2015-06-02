@@ -34,6 +34,16 @@ With over 80 third party components in use, Paket gives us a clear vision of the
 
 Tuomas Hietanen (Lead Software Engineer) [Basware](http://www.basware.com/)
 
+## Betgenius
+
+> Paket has improved the productivity of our teams by reducing the dependency management overhead we had been experiencing with NuGet.
+
+[Betgenius](http://www.betgenius.com) is a data provider to the sports betting industry with peak load exceeding 100,000 messages/second. Our software architecture is highly distributed to facilitate business demands for scalability which means we are currently building around 150 .NET solutions. Using an internal NuGet repository we share our internal and 3rd party dependencies. Trying to achieve continuous integration with the out-of-the-box NuGet client is next to impossible at this scale due to NuGet's clumsy version management implementation.
+
+Paket has enabled us to explicitly define our constraints and forces us to think about how we want our dependencies to look. The Paket client is much more intuitive. It is vastly quicker at performing updates than the NuGet client and we don't have a constant stream of csproj updates to change the reference paths. Another huge benefit we got from using Paket is that the paket pack command creates a much better defined package than the NuGet pack. Paket inspects your dependencies file and uses that to put strict constraints into the nuspec file unlike the much less advanced NuGet client.
+
+Chris Haines (Development Team Lead) [@cjbhaines](https://twitter.com/cjbhaines), [Betgenius](http://www.betgenius.com)
+
 ## Please contribute your testimonials!
 
 Adding new testimonials to this page is easy. Just write your quote in plain text, using some Markdown formatting and send a pull request to [docs/content/testimonials.md](https://github.com/fsprojects/Paket/blob/master/docs/content/testimonials.md).
