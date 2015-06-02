@@ -1,19 +1,25 @@
 ﻿module Paket.DependencyChangeDetection
 
 open Paket.Domain
+open Paket.Requirements
 
 let findChangesInDependenciesFile(dependenciesFile:DependenciesFile,lockFile:LockFile) =   
     let directMap =
-        dependenciesFile.DirectDependencies
-        |> Seq.map (fun d -> NormalizedPackageName d.Key,d.Value)
+        dependenciesFile.Packages
+        |> Seq.map (fun d -> NormalizedPackageName d.Name,d)
         |> Map.ofSeq
 
+    let inline isChanged (newRequirement:PackageRequirement) originalVersion =
+      if newRequirement.VersionRequirement.IsInRange originalVersion |> not then
+        true
+      else false
+
     let added =
-        dependenciesFile.DirectDependencies
-        |> Seq.map (fun d -> NormalizedPackageName d.Key,d.Value)
-        |> Seq.filter (fun (name,vr) ->
+        dependenciesFile.Packages
+        |> Seq.map (fun d -> NormalizedPackageName d.Name,d)
+        |> Seq.filter (fun (name,pr) ->
             match lockFile.ResolvedPackages.TryFind name with
-            | Some p -> not (vr.IsInRange p.Version) 
+            | Some p -> isChanged pr p.Version
             | _ -> true)
         |> Seq.map fst
         |> Set.ofSeq
@@ -22,9 +28,8 @@ let findChangesInDependenciesFile(dependenciesFile:DependenciesFile,lockFile:Loc
         [for t in lockFile.GetTopLevelDependencies() do 
             let name = t.Key
             match directMap.TryFind name with
-            | Some r ->
-                let vr = VersionRequirement(r.Range,PreReleaseStatus.All)
-                if vr.IsInRange t.Value.Version |> not then
+            | Some pr ->
+                if isChanged pr t.Value.Version then
                     yield name // Modified
             | _ -> yield name // Removed
         ]
