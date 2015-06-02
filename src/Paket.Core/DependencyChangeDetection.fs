@@ -2,6 +2,7 @@
 
 open Paket.Domain
 open Paket.Requirements
+open Paket.PackageResolver
 
 let findChangesInDependenciesFile(dependenciesFile:DependenciesFile,lockFile:LockFile) =   
     let directMap =
@@ -9,9 +10,9 @@ let findChangesInDependenciesFile(dependenciesFile:DependenciesFile,lockFile:Loc
         |> Seq.map (fun d -> NormalizedPackageName d.Name,d)
         |> Map.ofSeq
 
-    let inline isChanged (newRequirement:PackageRequirement) originalVersion =
-      if newRequirement.VersionRequirement.IsInRange originalVersion |> not then
-        true
+    let inline hasChanged (newRequirement:PackageRequirement) (originalPackage:ResolvedPackage) =
+      if newRequirement.VersionRequirement.IsInRange originalPackage.Version |> not then true
+      elif newRequirement.Settings <> originalPackage.Settings then true
       else false
 
     let added =
@@ -19,7 +20,7 @@ let findChangesInDependenciesFile(dependenciesFile:DependenciesFile,lockFile:Loc
         |> Seq.map (fun d -> NormalizedPackageName d.Name,d)
         |> Seq.filter (fun (name,pr) ->
             match lockFile.ResolvedPackages.TryFind name with
-            | Some p -> isChanged pr p.Version
+            | Some p -> hasChanged pr p
             | _ -> true)
         |> Seq.map fst
         |> Set.ofSeq
@@ -29,7 +30,7 @@ let findChangesInDependenciesFile(dependenciesFile:DependenciesFile,lockFile:Loc
             let name = t.Key
             match directMap.TryFind name with
             | Some pr ->
-                if isChanged pr t.Value.Version then
+                if hasChanged pr t.Value then
                     yield name // Modified
             | _ -> yield name // Removed
         ]

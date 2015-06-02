@@ -174,3 +174,36 @@ nuget Castle.Windsor-log4net >= 3.4.0"""
     
     newDependencies.DirectDependencies
     |> shouldEqual expected
+
+[<Test>]
+let ``should detect addition content:none of single nuget package``() = 
+    let before = """source http://nuget.org/api/v2
+
+nuget Castle.Windsor-log4net"""
+
+    let lockFileData = """NUGET
+  remote: http://nuget.org/api/v2
+  specs:
+    Castle.Core (3.3.3)
+    Castle.Core-log4net (3.3.3)
+      Castle.Core (>= 3.3.3)
+      log4net (1.2.10)
+    Castle.LoggingFacility (3.3.0)
+      Castle.Core (>= 3.3.0)
+      Castle.Windsor (>= 3.3.0)
+    Castle.Windsor (3.3.0)
+      Castle.Core (>= 3.3.0)
+    Castle.Windsor-log4net (3.3.0)
+      Castle.Core-log4net (>= 3.3.0)
+      Castle.LoggingFacility (>= 3.3.0)
+    log4net (1.2.10)
+"""
+
+    let after = """source http://nuget.org/api/v2
+
+nuget Castle.Windsor-log4net content:none"""
+
+    let cfg = DependenciesFile.FromCode(after)
+    let lockFile = LockFile.Parse("",toLines lockFileData)
+    let changedDependencies = DependencyChangeDetection.findChangesInDependenciesFile(cfg,lockFile)
+    changedDependencies.IsEmpty |> shouldEqual false

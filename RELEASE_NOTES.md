@@ -1,3 +1,6 @@
+#### 1.9.4 - 02.06.2015
+* BUGFIX: `paket install` was not respecting `content:none` - https://github.com/fsprojects/Paket/issues/854
+
 #### 1.9.3 - 01.06.2015
 * Do not duplicate files in the nupkg - https://github.com/fsprojects/Paket/issues/851
 
