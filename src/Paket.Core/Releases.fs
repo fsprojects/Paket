@@ -32,6 +32,7 @@ let private existsNotOrIsNewer (file:FileInfo) latest =
         let currentVersion = SemVer.Parse verInfo.FileVersion
         currentVersion < latest
 
+/// Downloads the latest version of the given files to the destination dir
 let downloadLatestVersionOf files destDir =
     let releasesUrl = "https://api.github.com/repos/fsprojects/Paket/releases";
     use client = createWebClient("https://github.com",None)
@@ -50,11 +51,13 @@ let downloadLatestVersionOf files destDir =
         ignore downloads
     }
 
+/// Downloads the latest version of the paket.bootstrapper to the .paket dir
 let downloadLatestBootstrapper environment =        
     let exeDir = Path.Combine(environment.RootDirectory.FullName, ".paket")
 
     downloadLatestVersionOf ["paket.bootstrapper.exe"] exeDir
 
+/// Downloads the latest version of the paket.bootstrapper and paket.targets to the .paket dir
 let downloadLatestBootstrapperAndTargets environment =        
     let exeDir = Path.Combine(environment.RootDirectory.FullName, ".paket")
 
