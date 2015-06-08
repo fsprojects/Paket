@@ -30,9 +30,9 @@
     <MsBuild Targets="DownloadPaket" Projects="$(MSBuildThisFileFullPath)" Properties="Configuration=NOT_IMPORTANT;DownloadPaket=$(DownloadPaket)" />
   </Target>
   <Target Name="DownloadPaket">
-    <Exec Command="$(DownloadPaketCommand)" Condition=" '$(DownloadPaket)' == 'true' AND !Exists('$(PaketExePath)')" />
+    <Exec Command="$(DownloadPaketCommand)" IgnoreStandardErrorWarningFormat="true" Condition=" '$(DownloadPaket)' == 'true' AND !Exists('$(PaketExePath)')" />
   </Target>
   <Target Name="RestorePackages" DependsOnTargets="CheckPrerequisites">
-    <Exec Command="$(RestoreCommand)" WorkingDirectory="$(PaketRootPath)" Condition="Exists('$(PaketReferences)')" />
+    <Exec Command="$(RestoreCommand)" IgnoreStandardErrorWarningFormat="true" WorkingDirectory="$(PaketRootPath)" Condition="Exists('$(PaketReferences)')" />
   </Target>
 </Project>

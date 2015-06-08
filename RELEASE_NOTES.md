@@ -1,4 +1,4 @@
-#### 1.11.4 - 08.06.2015
+#### 1.11.5 - 08.06.2015
 * BUGFIX: Trace license warning only in verbose mode - https://github.com/fsprojects/Paket/issues/862
 
 #### 1.11.3 - 08.06.2015
