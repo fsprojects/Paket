@@ -1,6 +1,9 @@
+#### 1.11.4 - 08.06.2015
+* BUGFIX: Trace license warning only in verbose mode - https://github.com/fsprojects/Paket/issues/862
+
 #### 1.11.3 - 08.06.2015
 * BUGFIX: Fix ./ issues during pack
-* 
+ 
 #### 1.11.2 - 08.06.2015
 * BUGFIX: Serialize != operator correctly - https://github.com/fsprojects/Paket/issues/857
 

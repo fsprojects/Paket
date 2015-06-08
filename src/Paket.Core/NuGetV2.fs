@@ -477,7 +477,9 @@ let DownloadLicense(root,force,name,version:SemVerInfo,licenseUrl,targetFileName
                     do! fileStream.AsyncWrite(buffer, 0, !bytesRead)
 
             with
-            | exn -> traceWarnfn "Could not download license for %s %A from %s.%s    %s" name version licenseUrl Environment.NewLine exn.Message
+            | exn -> 
+                if verbose then
+                    traceWarnfn "Could not download license for %s %A from %s.%s    %s" name version licenseUrl Environment.NewLine exn.Message
     }
 
 /// Downloads the given package to the NuGet Cache folder
@@ -532,7 +534,9 @@ let DownloadPackage(root, auth, url, name, version:SemVerInfo, force) =
                 try
                     do! license
                 with
-                | exn -> traceWarnfn "Could not download license for %s %A from %s.%s    %s" name version nugetPackage.LicenseUrl Environment.NewLine exn.Message 
+                | exn ->
+                    if verbose then
+                        traceWarnfn "Could not download license for %s %A from %s.%s    %s" name version nugetPackage.LicenseUrl Environment.NewLine exn.Message 
             with
             | exn -> failwithf "Could not download %s %A.%s    %s" name version Environment.NewLine exn.Message
                 
