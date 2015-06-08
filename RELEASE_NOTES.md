@@ -1,3 +1,6 @@
+#### 1.11.0 - 08.06.2015
+* Support for cancelling bootstrapper - https://github.com/fsprojects/Paket/pull/860
+
 #### 1.10.1 - 08.06.2015
 * Increase timeout for restricted access mode - https://github.com/fsprojects/Paket/issues/858
 
