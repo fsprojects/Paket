@@ -211,14 +211,16 @@ let Write (core : CompleteCoreInfo) optional workingDir outputDir =
         zipFile.CreateEntryFromFile(source,path) |> ignore
 
     let ensureValidTargetName (target:string) =
-        match target.Replace(" ", "%20").Replace("\\", "/") with
+        let target = target.Replace(" ", "%20").Replace("\\", "/").Replace("./", "")
+        match target with
         | t when t.EndsWith("/")         -> t
         | t when String.IsNullOrEmpty(t) -> ""
         | "."                            -> ""
         | t                              -> t + "/"
 
     // adds all files in a directory to the zipFile
-    let rec addDir source target =
+    let rec addDir source target =    
+        let target = ensureValidTargetName target
         for file in Directory.EnumerateFiles(source,"*.*",SearchOption.TopDirectoryOnly) do
             let fi = FileInfo file
             let path = Path.Combine(target,fi.Name)

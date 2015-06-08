@@ -1,3 +1,6 @@
+#### 1.11.1 - 08.06.2015
+* Fix ./ issues during pack
+
 #### 1.11.0 - 08.06.2015
 * Support for cancelling bootstrapper - https://github.com/fsprojects/Paket/pull/860
 
