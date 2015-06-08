@@ -211,7 +211,10 @@ let Write (core : CompleteCoreInfo) optional workingDir outputDir =
         zipFile.CreateEntryFromFile(source,path) |> ignore
 
     let ensureValidTargetName (target:string) =
-        let target = target.Replace(" ", "%20").Replace("\\", "/").Replace("./", "")
+        let target = 
+          target.Replace(" ", "%20").Replace("\\", "/")
+          |> fun s -> if s.StartsWith("./") then s.Remove(0,2) else s
+
         match target with
         | t when t.EndsWith("/")         -> t
         | t when String.IsNullOrEmpty(t) -> ""
