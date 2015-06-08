@@ -1,3 +1,6 @@
+#### 1.11.6 - 08.06.2015
+* BUGFIX: Suggest only packages from the installed sources - https://github.com/fsprojects/Paket.VisualStudio/issues/57
+
 #### 1.11.5 - 08.06.2015
 * BUGFIX: Trace license warning only in verbose mode - https://github.com/fsprojects/Paket/issues/862
 

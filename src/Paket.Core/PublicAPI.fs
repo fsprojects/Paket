@@ -355,7 +355,8 @@ type Dependencies(dependenciesFileName: string) =
     member this.SearchPackagesByName(searchTerm,?cancellationToken,?maxResults) : IObservable<string> =
         let cancellationToken = defaultArg cancellationToken (System.Threading.CancellationToken())
         let maxResults = defaultArg maxResults 1000
-        PackageSources.DefaultNugetSource :: this.GetSources()
+        let sources = this.GetSources()
+        if sources = [] then [PackageSources.DefaultNugetSource] else sources
         |> List.choose (fun x -> match x with | Nuget s -> Some s.Url | _ -> None)
         |> Seq.distinct
         |> Seq.map (fun url ->
