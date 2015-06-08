@@ -266,6 +266,7 @@ module DependenciesFileSerializer =
             | Minimum x when strategy = ResolverStrategy.Max && x = SemVer.Parse "0" -> ""
             | Minimum x -> ">= " + x.ToString()
             | GreaterThan x -> "> " + x.ToString()
+            | Specific x when strategy = ResolverStrategy.Min -> "= " + x.ToString()
             | Specific x -> x.ToString()
             | VersionRange.Range(_, from, _, _) 
                     when DependenciesFileParser.parseVersionRequirement ("~> " + from.ToString() + preReleases) = version -> 

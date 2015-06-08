@@ -46,8 +46,8 @@
     <WarningLevel>3</WarningLevel>
     <DocumentationFile>
     </DocumentationFile>
-    <StartArguments>pack output ./nuget version "1.0.0" releaseNotes ""</StartArguments>
-    <StartWorkingDirectory>D:\code\msu-addins</StartWorkingDirectory>
+    <StartArguments>install -v</StartArguments>
+    <StartWorkingDirectory>D:\code\PaketKopie</StartWorkingDirectory>
   </PropertyGroup>
   <PropertyGroup>
     <MinimumVisualStudioVersion Condition="'$(MinimumVisualStudioVersion)' == ''">11</MinimumVisualStudioVersion>

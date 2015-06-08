@@ -207,3 +207,69 @@ nuget Castle.Windsor-log4net content:none"""
     let lockFile = LockFile.Parse("",toLines lockFileData)
     let changedDependencies = DependencyChangeDetection.findChangesInDependenciesFile(cfg,lockFile)
     changedDependencies.IsEmpty |> shouldEqual false
+
+[<Test>]
+let ``should repase detailed lock file``() = 
+    let before = """source https://nuget.org/api/v2
+
+nuget AutoMapper ~> 3.2
+nuget Castle.Windsor !~> 3.3
+nuget DataAnnotationsExtensions 1.1.0.0
+nuget EntityFramework 5.0.0
+nuget FakeItEasy ~> 1.23
+nuget FluentAssertions ~> 3.1
+nuget Machine.Specifications ~> 0.9
+nuget Machine.Specifications.Runner.Console ~> 0.9
+nuget NDbfReader 1.1.1.0
+nuget Newtonsoft.Json ~> 6.0
+nuget Plossum.CommandLine != 0.3.0.14
+nuget PostSharp 3.1.52
+nuget SharpZipLib 0.86.0
+nuget Topshelf ~> 3.1"""
+
+    let lockFileData = """NUGET
+  remote: https://nuget.org/api/v2
+  specs:
+    AutoMapper (3.3.1)
+    C5 (1.0.2.0)
+    Castle.Core (3.3.0)
+    Castle.Windsor (3.3.0)
+      Castle.Core (>= 3.3.0)
+    DataAnnotationsExtensions (1.1.0.0)
+    EntityFramework (5.0.0)
+    FakeItEasy (1.25.2)
+    FluentAssertions (3.3.0)
+    Machine.Specifications (0.9.1)
+    Machine.Specifications.Runner.Console (0.9.0)
+    NDbfReader (1.1.1.0)
+    Newtonsoft.Json (6.0.8)
+    Plossum.CommandLine (0.3.0.14)
+      C5 (>= 1.0.2.0)
+    PostSharp (3.1.52)
+    SharpZipLib (0.86.0)
+    Topshelf (3.1.4)
+"""
+
+    let after = """source https://nuget.org/api/v2
+
+nuget AutoMapper ~> 3.2
+nuget Castle.Windsor !~> 3.3
+nuget DataAnnotationsExtensions 1.1.0.0
+nuget EntityFramework 5.0.0
+nuget FakeItEasy ~> 1.23
+nuget FluentAssertions ~> 3.1
+nuget Machine.Specifications ~> 0.9
+nuget Machine.Specifications.Runner.Console ~> 0.9
+nuget NDbfReader 1.1.1.0
+nuget Newtonsoft.Json ~> 6.0
+nuget Plossum.CommandLine != 0.3.0.14
+nuget PostSharp 3.1.52
+nuget SharpZipLib 0.86.0
+nuget Topshelf ~> 3.1
+nuget Caliburn.Micro !~> 2.0.2"""
+
+    let cfg = DependenciesFile.FromCode(after)
+    let lockFile = LockFile.Parse("",toLines lockFileData)
+    let changedDependencies = DependencyChangeDetection.findChangesInDependenciesFile(cfg,lockFile)
+    changedDependencies.Count |> shouldEqual 1
+    (changedDependencies |> Seq.head) |> shouldEqual (NormalizedPackageName (PackageName "Caliburn.Micro"))
