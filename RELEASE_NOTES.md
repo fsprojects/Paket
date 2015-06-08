@@ -1,3 +1,6 @@
+#### 1.10.1 - 08.06.2015
+* Increase timeout for restricted access mode - https://github.com/fsprojects/Paket/issues/858
+
 #### 1.10.0 - 02.06.2015
 * `paket init` puts Paket binaries into the project path - https://github.com/fsprojects/Paket/pull/853
 * Do not duplicate files in the nupkg - https://github.com/fsprojects/Paket/issues/851

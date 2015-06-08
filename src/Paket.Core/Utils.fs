@@ -267,7 +267,7 @@ let RunInLockedAccessMode(rootFolder,action) =
                File.Delete fileName
 
     try
-        acquireLock DateTime.Now (TimeSpan.FromMinutes 2.) 5
+        acquireLock DateTime.Now (TimeSpan.FromMinutes 5.) 5
 
         let result = action()
         
