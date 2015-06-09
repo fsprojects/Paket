@@ -378,11 +378,18 @@ type LockFile(fileName:string,options:InstallOptions,resolution:PackageResolutio
     member __.Save() =
         let output = 
             String.Join
-                (Environment.NewLine,                  
+                (Environment.NewLine,
                     LockFileSerializer.serializePackages options resolution, 
                     LockFileSerializer.serializeSourceFiles remoteFiles)
-        File.WriteAllText(fileName, output)
-        tracefn "Locked version resolutions written to %s" fileName
+
+        let hasChanged =
+            if File.Exists fileName then
+                output <> File.ReadAllText(fileName)
+            else true
+
+        if hasChanged then
+            File.WriteAllText(fileName, output)
+            tracefn "Locked version resolutions written to %s" fileName
 
     /// Creates a paket.lock file at given location
     static member Create (lockFileName: string, installOptions: InstallOptions, resolvedPackages: PackageResolver.Resolution, resolvedSourceFiles: ModuleResolver.ResolvedSourceFile list) : LockFile =
