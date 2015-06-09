@@ -229,9 +229,12 @@ let InstallIntoProjects(sources, options : InstallerOptions, lockFile : LockFile
         removeCopiedFiles project
 
         let getSingleRemoteFilePath name =
-            traceVerbose <| sprintf "Filename %s " name
-            lockFile.SourceFiles |> List.iter (fun i -> traceVerbose <| sprintf " %s %s " i.Name (i.FilePath root))
+            if verbose then
+                tracefn "FileName: %s " name
+                lockFile.SourceFiles |> List.iter (fun i -> tracefn " %s %s " i.Name (i.FilePath root))
+
             let sourceFile = lockFile.SourceFiles |> List.tryFind (fun f -> Path.GetFileName(f.Name) = name)
+
             match sourceFile with
             | Some file -> file.FilePath(root)
             | None -> failwithf "%s references file %s, but it was not found in the paket.lock file." referenceFile.FileName name
