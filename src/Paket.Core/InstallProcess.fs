@@ -215,39 +215,22 @@ let InstallIntoProjects(sources, options : InstallerOptions, lockFile : LockFile
                                       package.Settings.FrameworkRestrictions
 
                                 ImportTargets =
-                                    match importTargets with
-                                    | Some x -> Some x
-                                    | None ->
-                                        match package.Settings.ImportTargets with
-                                        | Some x -> Some x
-                                        | _ -> match lockFile.Options.Settings.ImportTargets with
-                                               | Some x -> Some x
-                                               | None -> match u.Value.Settings.ImportTargets with
-                                                         | Some x -> Some x
-                                                         | _ -> None
+                                    importTargets ++
+                                      package.Settings.ImportTargets ++ 
+                                      lockFile.Options.Settings.ImportTargets ++ 
+                                      u.Value.Settings.ImportTargets
+
                                 CopyLocal =
-                                    match copyLocal with
-                                    | Some x -> Some x
-                                    | None ->
-                                        match package.Settings.CopyLocal with
-                                        | Some x -> Some x
-                                        | _ -> match lockFile.Options.Settings.CopyLocal with
-                                               | Some x -> Some x
-                                               | None -> match u.Value.Settings.CopyLocal with
-                                                         | Some x -> Some x
-                                                         | _ -> None
+                                    copyLocal ++ 
+                                      package.Settings.CopyLocal ++
+                                      lockFile.Options.Settings.CopyLocal ++ 
+                                      u.Value.Settings.CopyLocal 
 
                                 OmitContent =
-                                    match omitContent with
-                                    | Some x -> Some x
-                                    | None ->
-                                        match package.Settings.OmitContent with
-                                        | Some x -> Some x
-                                        | _ -> match lockFile.Options.Settings.OmitContent with
-                                               | Some x -> Some x
-                                               | None -> match u.Value.Settings.OmitContent with
-                                                         | Some x -> Some x
-                                                         | _ -> None }})
+                                    omitContent ++ 
+                                      package.Settings.OmitContent ++ 
+                                      lockFile.Options.Settings.OmitContent ++ 
+                                      u.Value.Settings.OmitContent }})
             |> Map.ofSeq
 
         let usedPackageSettings =
