@@ -190,27 +190,23 @@ let InstallIntoProjects(sources, options : InstallerOptions, lockFile : LockFile
                         FrameworkRestrictions =
                             // TODO: This should filter
                             ps.Settings.FrameworkRestrictions @
-                                ps.Settings.FrameworkRestrictions @
                                 lockFile.Options.Settings.FrameworkRestrictions @
                                 package.Settings.FrameworkRestrictions
 
                         ImportTargets =
                             ps.Settings.ImportTargets ++
                                 package.Settings.ImportTargets ++ 
-                                lockFile.Options.Settings.ImportTargets ++ 
-                                ps.Settings.ImportTargets
+                                lockFile.Options.Settings.ImportTargets
 
                         CopyLocal =
                             ps.Settings.CopyLocal ++ 
                                 package.Settings.CopyLocal ++
-                                lockFile.Options.Settings.CopyLocal ++ 
-                                ps.Settings.CopyLocal 
+                                lockFile.Options.Settings.CopyLocal
 
                         OmitContent =
                             ps.Settings.OmitContent ++ 
                                 package.Settings.OmitContent ++ 
-                                lockFile.Options.Settings.OmitContent ++ 
-                                ps.Settings.OmitContent })
+                                lockFile.Options.Settings.OmitContent  })
             |> Map.ofSeq
 
 
