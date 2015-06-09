@@ -1,3 +1,6 @@
+#### 1.11.8 - 09.06.2015
+* BUGFIX: Paket add should not update the package if it#s already there
+
 #### 1.11.7 - 09.06.2015
 * BUGFIX: "copy_local" was not respected for indirect dependencies - https://github.com/fsprojects/Paket/issues/856
 
