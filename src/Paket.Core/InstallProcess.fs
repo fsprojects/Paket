@@ -13,6 +13,7 @@ open System.Collections.Generic
 open FSharp.Polyfill
 open System.Reflection
 open System.Diagnostics
+open Paket.Requirements
 
 let findPackageFolder root (PackageName name) =
     let lowerName = name.ToLower()
@@ -23,9 +24,9 @@ let findPackageFolder root (PackageName name) =
     | Some x -> x
     | None -> failwithf "Package directory for package %s was not found." name
 
-let private findPackagesWithContent (root,usedPackages:Map<PackageName,PackageInstallSettings>) =
+let private findPackagesWithContent (root,usedPackages:Map<PackageName,InstallSettings>) =
     usedPackages
-    |> Seq.filter (fun kv -> defaultArg kv.Value.Settings.OmitContent false |> not)
+    |> Seq.filter (fun kv -> defaultArg kv.Value.OmitContent false |> not)
     |> Seq.map (fun kv -> findPackageFolder root kv.Key)
     |> Seq.choose (fun packageDir ->
             packageDir.GetDirectories("Content")
@@ -164,6 +165,7 @@ let InstallIntoProjects(sources, options : InstallerOptions, lockFile : LockFile
 
     let root = Path.GetDirectoryName lockFile.FileName
     let extractedPackages = createModel(root, sources, options.Force, lockFile, Set.ofSeq packagesToInstall)
+    let lookup = lockFile.GetDependencyLookupTable()
 
     let model =
         extractedPackages
@@ -177,61 +179,49 @@ let InstallIntoProjects(sources, options : InstallerOptions, lockFile : LockFile
 
     for project : ProjectFile, referenceFile in projects do
         verbosefn "Installing to %s" project.FileName
+        
+        let usedPackages =
+            referenceFile.NugetPackages
+            |> Seq.map (fun ps ->
+                let package = packages.[NormalizedPackageName ps.Name]
+
+                ps.Name,
+                    { ps.Settings with
+                        FrameworkRestrictions =
+                            // TODO: This should filter
+                            ps.Settings.FrameworkRestrictions @
+                                ps.Settings.FrameworkRestrictions @
+                                lockFile.Options.Settings.FrameworkRestrictions @
+                                package.Settings.FrameworkRestrictions
+
+                        ImportTargets =
+                            ps.Settings.ImportTargets ++
+                                package.Settings.ImportTargets ++ 
+                                lockFile.Options.Settings.ImportTargets ++ 
+                                ps.Settings.ImportTargets
+
+                        CopyLocal =
+                            ps.Settings.CopyLocal ++ 
+                                package.Settings.CopyLocal ++
+                                lockFile.Options.Settings.CopyLocal ++ 
+                                ps.Settings.CopyLocal 
+
+                        OmitContent =
+                            ps.Settings.OmitContent ++ 
+                                package.Settings.OmitContent ++ 
+                                lockFile.Options.Settings.OmitContent ++ 
+                                ps.Settings.OmitContent })
+            |> Map.ofSeq
+
 
         let usedPackages =
-            lockFile.GetPackageHull(referenceFile)
-            |> Seq.map (fun u ->
-                let package = packages.[NormalizedPackageName u.Key]
-                let referenceFileSettings =
-                    referenceFile.NugetPackages
-                    |> List.tryFind (fun x -> NormalizedPackageName x.Name = NormalizedPackageName u.Key)
-                let copyLocal =
-                    match referenceFileSettings with
-                    | Some s -> s.Settings.CopyLocal
-                    | None -> None
-                let omitContent =
-                    match referenceFileSettings with
-                    | Some s -> s.Settings.OmitContent
-                    | None -> None
-                let importTargets =
-                    match referenceFileSettings with
-                    | Some s -> s.Settings.ImportTargets
-                    | None -> None
-                let restriktions =
-                    match referenceFileSettings with
-                    | Some s -> s.Settings.FrameworkRestrictions
-                    | None -> []
+            let d = ref usedPackages
 
+            for name,settings in usedPackages |> Seq.collect (fun u -> lookup.[NormalizedPackageName u.Key] |> Seq.map (fun x -> x,u.Value)) do
+                if (!d).ContainsKey name |> not then
+                  d := Map.add name settings !d
 
-                u.Key,
-                    { u.Value with
-                        Settings =
-                            { u.Value.Settings with
-                                FrameworkRestrictions =
-                                    // TODO: This should filter
-                                    restriktions @
-                                      u.Value.Settings.FrameworkRestrictions @
-                                      lockFile.Options.Settings.FrameworkRestrictions @
-                                      package.Settings.FrameworkRestrictions
-
-                                ImportTargets =
-                                    importTargets ++
-                                      package.Settings.ImportTargets ++ 
-                                      lockFile.Options.Settings.ImportTargets ++ 
-                                      u.Value.Settings.ImportTargets
-
-                                CopyLocal =
-                                    copyLocal ++ 
-                                      package.Settings.CopyLocal ++
-                                      lockFile.Options.Settings.CopyLocal ++ 
-                                      u.Value.Settings.CopyLocal 
-
-                                OmitContent =
-                                    omitContent ++ 
-                                      package.Settings.OmitContent ++ 
-                                      lockFile.Options.Settings.OmitContent ++ 
-                                      u.Value.Settings.OmitContent }})
-            |> Map.ofSeq
+            !d
 
         let usedPackageSettings =
             usedPackages

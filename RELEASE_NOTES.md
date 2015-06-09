@@ -1,3 +1,6 @@
+#### 1.11.7 - 09.06.2015
+* BUGFIX: "copy_local" was not respected for indirect dependencies - https://github.com/fsprojects/Paket/issues/856
+
 #### 1.11.6 - 08.06.2015
 * BUGFIX: Suggest only packages from the installed sources - https://github.com/fsprojects/Paket.VisualStudio/issues/57
 
