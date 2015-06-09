@@ -58,15 +58,15 @@ let ``should maintain order when updating project file items`` () =
     
     let projFile =  ProjectFile.Load("./ProjectFile/TestData/MaintainsOrdering.fsprojtest").Value
     let fileItems = [
-        { BuildAction = "Compile"; Include = "..\\..\\paket-files\\fsharp\\FSharp.Data\\src\\CommonRuntime\\Pluralizer.fs"; Link = Some("fsharp_data\\Pluralizer.fs") }
-        { BuildAction = "Compile"; Include = "..\\..\\paket-files\\fsharp\\FSharp.Data\\src\\CommonRuntime\\NameUtils.fs"; Link = Some("fsharp_data\\NameUtils.fs") }
-        { BuildAction = "Compile"; Include = "..\\..\\paket-files\\fsharp\\FSharp.Data\\src\\CommonRuntime\\TextConversions.fs"; Link = Some("fsharp_data\\TextConversions.fs") }
-        { BuildAction = "Compile"; Include = "..\\..\\paket-files\\fsharp\\FSharp.Data\\src\\CommonRuntime\\StructuralTypes.fs"; Link = Some("fsharp_data\\StructuralTypes.fs") }
-        { BuildAction = "Compile"; Include = "..\\..\\paket-files\\fsharp\\FSharp.Data\\src\\CommonRuntime\\StructuralInference.fs"; Link = Some("fsharp_data\\StructuralInference.fs") }
-        { BuildAction = "Compile"; Include = "..\\..\\paket-files\\fsharp\\FSharp.Data\\src\\CommonRuntime\\TextRuntime.fs"; Link = Some("fsharp_data\\TextRuntime.fs") }
-        { BuildAction = "Compile"; Include = "DebugProvidedTypes.fs"; Link = None }
-        { BuildAction = "Compile"; Include = "ProvidedTypes.fs"; Link = None }
-        { BuildAction = "Content"; Include = "ProvidedTypes.fsi"; Link = None }
+        { BuildAction = "Compile"; Include = "..\\..\\paket-files\\fsharp\\FSharp.Data\\src\\CommonRuntime\\Pluralizer.fs"; Link = Some("fsharp_data\\Pluralizer.fs"); CopyLocal = false }
+        { BuildAction = "Compile"; Include = "..\\..\\paket-files\\fsharp\\FSharp.Data\\src\\CommonRuntime\\NameUtils.fs"; Link = Some("fsharp_data\\NameUtils.fs"); CopyLocal = false }
+        { BuildAction = "Compile"; Include = "..\\..\\paket-files\\fsharp\\FSharp.Data\\src\\CommonRuntime\\TextConversions.fs"; Link = Some("fsharp_data\\TextConversions.fs"); CopyLocal = false }
+        { BuildAction = "Compile"; Include = "..\\..\\paket-files\\fsharp\\FSharp.Data\\src\\CommonRuntime\\StructuralTypes.fs"; Link = Some("fsharp_data\\StructuralTypes.fs"); CopyLocal = false }
+        { BuildAction = "Compile"; Include = "..\\..\\paket-files\\fsharp\\FSharp.Data\\src\\CommonRuntime\\StructuralInference.fs"; Link = Some("fsharp_data\\StructuralInference.fs"); CopyLocal = false }
+        { BuildAction = "Compile"; Include = "..\\..\\paket-files\\fsharp\\FSharp.Data\\src\\CommonRuntime\\TextRuntime.fs"; Link = Some("fsharp_data\\TextRuntime.fs"); CopyLocal = false }
+        { BuildAction = "Compile"; Include = "DebugProvidedTypes.fs"; Link = None; CopyLocal = false }
+        { BuildAction = "Compile"; Include = "ProvidedTypes.fs"; Link = None; CopyLocal = false }
+        { BuildAction = "Content"; Include = "ProvidedTypes.fsi"; Link = None; CopyLocal = false }
     ]
     projFile.UpdateFileItems(fileItems, false)
 
@@ -106,9 +106,9 @@ let ``should remove missing files that exist in the project`` () =
     
     let projFile =  ProjectFile.Load("./ProjectFile/TestData/MaintainsOrdering.fsprojtest").Value
     let fileItems = [
-        { BuildAction = "Compile"; Include = "DebugProvidedTypes.fs"; Link = None }
-        { BuildAction = "Compile"; Include = "ProvidedTypes.fs"; Link = None }
-        { BuildAction = "Content"; Include = "ProvidedTypes.fsi"; Link = None }
+        { BuildAction = "Compile"; Include = "DebugProvidedTypes.fs"; Link = None; CopyLocal = false }
+        { BuildAction = "Compile"; Include = "ProvidedTypes.fs"; Link = None; CopyLocal = false }
+        { BuildAction = "Content"; Include = "ProvidedTypes.fsi"; Link = None; CopyLocal = false }
     ]
     projFile.UpdateFileItems(fileItems, false)
 

@@ -243,6 +243,7 @@ let InstallIntoProjects(sources, options : InstallerOptions, lockFile : LockFile
 
                              { BuildAction = project.DetermineBuildAction file.Name
                                Include = createRelativePath project.FileName remoteFilePath
+                               CopyLocal = defaultArg file.Settings.CopyLocal false
                                Link = Some link })
 
         let nuGetFileItems =
@@ -250,6 +251,7 @@ let InstallIntoProjects(sources, options : InstallerOptions, lockFile : LockFile
             |> List.map (fun file ->
                                 { BuildAction = project.DetermineBuildAction file.Name
                                   Include = createRelativePath project.FileName file.FullName
+                                  CopyLocal = false
                                   Link = None })
 
         project.UpdateFileItems(gitRemoteItems @ nuGetFileItems, options.Hard)

@@ -1,3 +1,6 @@
+#### 1.13.0-alpha001 - 09.06.2015
+* Allow copy_local settings for file references in `paket.references` files
+
 #### 1.12.0 - 09.06.2015
 * BUGFIX: Paket add should not update the package if it's already there
 * BUGFIX: "copy_local" was not respected for indirect dependencies - https://github.com/fsprojects/Paket/issues/856

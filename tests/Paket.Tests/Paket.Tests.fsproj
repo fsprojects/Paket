@@ -123,7 +123,7 @@
     </Content>
     <Content Include="Nuspec\WindowsAzure.Storage.nuspec">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>  
+    </Content>
     <Content Include="Nuspec\LiteGuard.Source.nuspec">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
@@ -224,10 +224,10 @@
     </None>
     <None Include="ProjectFile\TestData\MaintainsOrdering.fsprojtest">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>                              
+    </None>
     <None Include="ProjectFile\TestData\NewSilverlightClassLibrary.csprojtest">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>                              
+    </None>
     <None Include="ProjectFile\TestData\FSharp.Core.Fluent-3.1.fsprojtest">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
