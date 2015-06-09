@@ -184,8 +184,8 @@ let ``should parse and serialize lines with multiple settings settings correctly
 let ``should parse link:false correctly``() = 
 
     let refFile = """
-File:FsUnit.fs Tests\Common link:false
-File:FsUnit1.fs link:false
+File:FsUnit.fs Tests\Common copy_local:true
+File:FsUnit1.fs copy_local:false
 """
     let refFile = ReferencesFile.FromLines(toLines refFile)
     refFile.NugetPackages.Length |> shouldEqual 0
@@ -193,8 +193,8 @@ File:FsUnit1.fs link:false
     
     refFile.RemoteFiles.Head.Name |> shouldEqual "FsUnit.fs"
     refFile.RemoteFiles.Head.Link |> shouldEqual "Tests\Common"
-    refFile.RemoteFiles.Head.Settings.UseFileLinks |> shouldEqual (Some false)
+    refFile.RemoteFiles.Head.Settings.CopyLocal |> shouldEqual (Some true)
 
     refFile.RemoteFiles.Tail.Head.Name |> shouldEqual "FsUnit1.fs"
     refFile.RemoteFiles.Tail.Head.Link |> shouldEqual ReferencesFile.DefaultLink
-    refFile.RemoteFiles.Tail.Head.Settings.UseFileLinks |> shouldEqual (Some false)
+    refFile.RemoteFiles.Tail.Head.Settings.CopyLocal |> shouldEqual (Some false)
