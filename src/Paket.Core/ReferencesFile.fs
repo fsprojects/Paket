@@ -77,11 +77,17 @@ type ReferencesFile =
         if this.NugetPackages |> Seq.exists (fun p -> NormalizedPackageName p.Name = normalized) then
             this
         else
-            tracefn "Adding %s to %s" referenceName (this.FileName)
-            let copyLocal = if not copyLocal then Some copyLocal else None
-            let importTargets = if not importTargets then Some importTargets else None
-            let omitContent = if omitContent then Some omitContent else None
-            { this with NugetPackages = this.NugetPackages @ [{ Name = packageName; Settings = { CopyLocal = copyLocal; ImportTargets = importTargets; FrameworkRestrictions = frameworkRestrictions; OmitContent = omitContent }}] }
+            tracefn "Adding %s to %s" referenceName this.FileName      
+
+            let package =
+                { Name = packageName
+                  Settings = 
+                    { CopyLocal = if not copyLocal then Some copyLocal else None
+                      ImportTargets = if not importTargets then Some importTargets else None
+                      FrameworkRestrictions = frameworkRestrictions
+                      OmitContent = if omitContent then Some omitContent else None } }
+
+            { this with NugetPackages = this.NugetPackages @ [ package ] }
 
     member this.AddNuGetReference(packageName : PackageName) = this.AddNuGetReference(packageName, true, true, [], false)
 
