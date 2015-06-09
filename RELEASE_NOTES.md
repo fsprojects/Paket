@@ -1,23 +1,11 @@
-#### 1.11.9 - 09.06.2015
-* COSMETICS: Don't save the `paket.lock` file if it didn't changed
-
-#### 1.11.8 - 09.06.2015
+#### 1.12.0 - 09.06.2015
 * BUGFIX: Paket add should not update the package if it's already there
-
-#### 1.11.7 - 09.06.2015
 * BUGFIX: "copy_local" was not respected for indirect dependencies - https://github.com/fsprojects/Paket/issues/856
-
-#### 1.11.6 - 08.06.2015
 * BUGFIX: Suggest only packages from the installed sources - https://github.com/fsprojects/Paket.VisualStudio/issues/57
-
-#### 1.11.5 - 08.06.2015
 * BUGFIX: Trace license warning only in verbose mode - https://github.com/fsprojects/Paket/issues/862
-
-#### 1.11.3 - 08.06.2015
 * BUGFIX: Fix ./ issues during pack
- 
-#### 1.11.2 - 08.06.2015
 * BUGFIX: Serialize != operator correctly - https://github.com/fsprojects/Paket/issues/857
+* COSMETICS: Don't save the `paket.lock` file if it didn't changed
 
 #### 1.11.0 - 08.06.2015
 * Support for cancelling bootstrapper - https://github.com/fsprojects/Paket/pull/860

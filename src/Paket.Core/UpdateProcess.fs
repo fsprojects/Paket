@@ -46,11 +46,11 @@ let addPackagesFromReferenceFiles projects (dependenciesFile : DependenciesFile)
         newDependenciesFile.Save()
         newDependenciesFile
 
-let SelectiveUpdate(dependenciesFile : DependenciesFile, exclude, force) =
+let SelectiveUpdate(dependenciesFile : DependenciesFile, updateAll, exclude, force) =
     let lockFileName = DependenciesFile.FindLockfile dependenciesFile.FileName
 
     let resolution =
-        if not lockFileName.Exists then
+        if not lockFileName.Exists || updateAll then
             dependenciesFile.Resolve(force)
         else
             let oldLockFile = LockFile.LoadFrom(lockFileName.FullName)
@@ -67,12 +67,12 @@ let SelectiveUpdate(dependenciesFile : DependenciesFile, exclude, force) =
     LockFile.Create(lockFileName.FullName, dependenciesFile.Options, resolution.ResolvedPackages, resolution.ResolvedSourceFiles)
 
 /// Smart install command
-let SmartInstall(dependenciesFileName, exclude, options : UpdaterOptions) =
+let SmartInstall(dependenciesFileName, updateAll, exclude, options : UpdaterOptions) =
     let root = Path.GetDirectoryName dependenciesFileName
     let projects = InstallProcess.findAllReferencesFiles root |> returnOrFail
     let dependenciesFile = DependenciesFile.ReadFromFile(dependenciesFileName)
 
-    let lockFile = SelectiveUpdate(dependenciesFile,exclude,options.Common.Force)
+    let lockFile = SelectiveUpdate(dependenciesFile, updateAll, exclude, options.Common.Force)
 
     if not options.NoInstall then
         InstallProcess.InstallIntoProjects(
@@ -88,10 +88,10 @@ let UpdatePackage(dependenciesFileName, packageName : PackageName, newVersion, o
             .Save()
     | None -> tracefn "Updating %s in %s" (packageName.ToString()) dependenciesFileName
 
-    SmartInstall(dependenciesFileName, Some(NormalizedPackageName packageName), options)
+    SmartInstall(dependenciesFileName, false, Some(NormalizedPackageName packageName), options)
 
 /// Update command
 let Update(dependenciesFileName, options : UpdaterOptions) =
     let lockFileName = DependenciesFile.FindLockfile dependenciesFileName
-    if lockFileName.Exists then lockFileName.Delete()
-    SmartInstall(dependenciesFileName, None, options)
+    
+    SmartInstall(dependenciesFileName, true, None, options)

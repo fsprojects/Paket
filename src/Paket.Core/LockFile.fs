@@ -374,7 +374,7 @@ type LockFile(fileName:string,options:InstallOptions,resolution:PackageResolutio
     member this.IsDependencyOf(dependentPackage,package) =
         this.GetAllDependenciesOf(package).Contains dependentPackage
 
-    /// Updates the Lock file with the analyzed dependencies from the paket.dependencies file.
+    /// Updates the paket.lock file with the analyzed dependencies from the paket.dependencies file.
     member __.Save() =
         let output = 
             String.Join
@@ -384,12 +384,15 @@ type LockFile(fileName:string,options:InstallOptions,resolution:PackageResolutio
 
         let hasChanged =
             if File.Exists fileName then
-                output <> File.ReadAllText(fileName)
+                let text = File.ReadAllText(fileName)
+                normalizeLineEndings output <> normalizeLineEndings text
             else true
 
         if hasChanged then
             File.WriteAllText(fileName, output)
-            tracefn "Locked version resolutions written to %s" fileName
+            tracefn "Locked version resolution written to %s" fileName
+        else
+            tracefn "%s is already up-to-date" fileName        
 
     /// Creates a paket.lock file at given location
     static member Create (lockFileName: string, installOptions: InstallOptions, resolvedPackages: PackageResolver.Resolution, resolvedSourceFiles: ModuleResolver.ResolvedSourceFile list) : LockFile =

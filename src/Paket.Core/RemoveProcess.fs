@@ -39,7 +39,7 @@ let private remove removeFromProjects dependenciesFileName (package: PackageName
         let dependenciesFile = exisitingDependenciesFile.Remove(package)
         dependenciesFile.Save()
         
-        UpdateProcess.SelectiveUpdate(dependenciesFile,None,force)
+        UpdateProcess.SelectiveUpdate(dependenciesFile,false,None,force)
     
     if installAfter then
         let sources = DependenciesFile.ReadFromFile(dependenciesFileName).GetAllPackageSources()

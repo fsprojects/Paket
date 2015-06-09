@@ -341,6 +341,9 @@ let removeFile (fileName : string) =
             FileDeleteError fileName |> fail
     else ok ()
 
+let normalizeLineEndings (text : string) = 
+    text.Replace("\r\n", "\n").Replace("\r", "\n").Replace("\n", Environment.NewLine)
+
 // adapted from MiniRx
 // http://minirx.codeplex.com/
 [<AutoOpen>]
