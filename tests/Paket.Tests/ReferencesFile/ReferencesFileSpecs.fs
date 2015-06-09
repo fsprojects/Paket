@@ -5,6 +5,7 @@ open NUnit.Framework
 open FsUnit
 open TestHelpers
 open Paket.Domain
+open Paket.Requirements
 
 let refFileContent = """
 Castle.Windsor
@@ -25,7 +26,7 @@ let ``should parse lines correctly``() =
 
 [<Test>]
 let ``should serialize itself correctly``() = 
-    let refFile = {FileName = ""; NugetPackages = [ PackageInstallSettings.Default("A"); PackageInstallSettings.Default("B")]; RemoteFiles = [{Name = "FromGithub.fs"; Link = ReferencesFile.DefaultLink}]}
+    let refFile = {FileName = ""; NugetPackages = [ PackageInstallSettings.Default("A"); PackageInstallSettings.Default("B")]; RemoteFiles = [{Name = "FromGithub.fs"; Link = ReferencesFile.DefaultLink; Settings = RemoteFileInstallSettings.Default }]}
     let expected = [|"A"; "B"; "File:FromGithub.fs"|]
 
     refFile.ToString() |> toLines |> shouldEqual expected
@@ -44,7 +45,7 @@ let ``should parse custom path correctly``() =
 
 [<Test>]
 let ``should serialize customPath correctly``() = 
-    let refFile = {FileName = ""; NugetPackages = []; RemoteFiles = [{Name = "FromGithub.fs"; Link = "CustomPath\Dir"}]}
+    let refFile = {FileName = ""; NugetPackages = []; RemoteFiles = [{Name = "FromGithub.fs"; Link = "CustomPath\Dir"; Settings = RemoteFileInstallSettings.Default }]}
     let expected = [|"File:FromGithub.fs CustomPath\Dir"|]
 
     refFile.ToString() |> toLines |> shouldEqual expected
@@ -177,3 +178,23 @@ let ``should parse and serialize lines with multiple settings settings correctly
     refFile.ToString()
     |> normalizeLineEndings
     |> shouldEqual (normalizeLineEndings refFileContentWithMultipleSettings)
+
+
+[<Test>]
+let ``should parse link:false correctly``() = 
+
+    let refFile = """
+File:FsUnit.fs Tests\Common link:false
+File:FsUnit1.fs link:false
+"""
+    let refFile = ReferencesFile.FromLines(toLines refFile)
+    refFile.NugetPackages.Length |> shouldEqual 0
+    refFile.RemoteFiles.Length |> shouldEqual 2
+    
+    refFile.RemoteFiles.Head.Name |> shouldEqual "FsUnit.fs"
+    refFile.RemoteFiles.Head.Link |> shouldEqual "Tests\Common"
+    refFile.RemoteFiles.Head.Settings.UseFileLinks |> shouldEqual (Some false)
+
+    refFile.RemoteFiles.Tail.Head.Name |> shouldEqual "FsUnit1.fs"
+    refFile.RemoteFiles.Tail.Head.Link |> shouldEqual ReferencesFile.DefaultLink
+    refFile.RemoteFiles.Tail.Head.Settings.UseFileLinks |> shouldEqual (Some false)

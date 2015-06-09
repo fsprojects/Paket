@@ -136,8 +136,7 @@ type InstallSettings =
 
     member this.ToString(asLines) =
         let options =
-            [ 
-              match this.CopyLocal with
+            [ match this.CopyLocal with
               | Some x -> yield "copy_local: " + x.ToString().ToLower()
               | None -> ()
               match this.ImportTargets with
@@ -156,7 +155,7 @@ type InstallSettings =
 
     override this.ToString() = this.ToString(false)
 
-    static member Parse(text:string) =
+    static member Parse(text:string) : InstallSettings =
         let kvPairs = parseKeyValuePairs text
 
         { ImportTargets =
@@ -175,6 +174,32 @@ type InstallSettings =
             | _ ->  None
           CopyLocal =         
             match kvPairs.TryGetValue "copy_local" with
+            | true, "false" -> Some false 
+            | true, "true" -> Some true
+            | _ -> None }
+
+type RemoteFileInstallSettings = 
+    { UseFileLinks : bool option }
+
+    static member Default =
+        { UseFileLinks = None }
+
+    member this.ToString(asLines) =
+        let options =
+            [ match this.UseFileLinks with
+              | Some x -> yield "link: " + x.ToString().ToLower()
+              | None -> ()]
+
+        let separator = if asLines then Environment.NewLine else ", "
+        String.Join(separator,options)
+
+    override this.ToString() = this.ToString(false)
+
+    static member Parse(text:string) : RemoteFileInstallSettings =
+        let kvPairs = parseKeyValuePairs text
+
+        { UseFileLinks =
+            match kvPairs.TryGetValue "link" with
             | true, "false" -> Some false 
             | true, "true" -> Some true
             | _ -> None }

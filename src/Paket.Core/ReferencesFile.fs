@@ -8,7 +8,8 @@ open Paket.Requirements
 
 type RemoteFileReference = 
     { Name : string
-      Link : string }
+      Link : string
+      Settings : RemoteFileInstallSettings }
 
 type PackageInstallSettings = 
     { Name : PackageName
@@ -52,9 +53,19 @@ type ReferencesFile =
           RemoteFiles = 
             remoteLines
             |> List.map (fun s -> s.Replace("File:","").Split([|' '|], StringSplitOptions.RemoveEmptyEntries))
-            |> List.map (fun segments -> 
+            |> List.map (fun segments ->
+                            let hasPath =
+                                let get x = if segments.Length > x then segments.[x] else ""
+                                segments.Length >= 2 && not ((get 1).Contains(":")) && not ((get 2).StartsWith(":")) 
+
+                            let rest = 
+                                let skip = if hasPath then 2 else 1
+                                if segments.Length < skip then "" else String.Join(" ",segments |> Seq.skip skip)
+                            let settings = RemoteFileInstallSettings.Parse(rest)                            
+
                             { Name = segments.[0]
-                              Link = if segments.Length = 2 then segments.[1] else ReferencesFile.DefaultLink } ) }
+                              Link = if hasPath then segments.[1] else ReferencesFile.DefaultLink 
+                              Settings = settings } ) }
 
     static member FromFile(fileName : string) =
         let lines = File.ReadAllLines(fileName)
