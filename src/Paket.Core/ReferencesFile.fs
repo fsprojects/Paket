@@ -61,11 +61,10 @@ type ReferencesFile =
                             let rest = 
                                 let skip = if hasPath then 2 else 1
                                 if segments.Length < skip then "" else String.Join(" ",segments |> Seq.skip skip)
-                            let settings = RemoteFileInstallSettings.Parse(rest)                            
 
                             { Name = segments.[0]
                               Link = if hasPath then segments.[1] else ReferencesFile.DefaultLink 
-                              Settings = settings } ) }
+                              Settings = RemoteFileInstallSettings.Parse rest } ) }
 
     static member FromFile(fileName : string) =
         let lines = File.ReadAllLines(fileName)
