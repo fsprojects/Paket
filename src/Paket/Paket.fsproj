@@ -46,8 +46,8 @@
     <WarningLevel>3</WarningLevel>
     <DocumentationFile>
     </DocumentationFile>
-    <StartArguments>update</StartArguments>
-    <StartWorkingDirectory>D:\code\PaketKopie</StartWorkingDirectory>
+    <StartArguments>update -f</StartArguments>
+    <StartWorkingDirectory>D:\code\paket-866\tst</StartWorkingDirectory>
   </PropertyGroup>
   <PropertyGroup>
     <MinimumVisualStudioVersion Condition="'$(MinimumVisualStudioVersion)' == ''">11</MinimumVisualStudioVersion>
