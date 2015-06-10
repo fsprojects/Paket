@@ -14,6 +14,7 @@ open FSharp.Polyfill
 open System.Reflection
 open System.Diagnostics
 open Paket.Requirements
+open System.Security.AccessControl
 
 let findPackageFolder root (PackageName name) =
     let lowerName = name.ToLower()
@@ -234,24 +235,35 @@ let InstallIntoProjects(sources, options : InstallerOptions, lockFile : LockFile
                              let link = if file.Link = "." then Path.GetFileName file.Name else Path.Combine(file.Link, Path.GetFileName file.Name)
                              let remoteFilePath = 
                                 if verbose then
-                                    tracefn "FileName: %s " file.Name
-                                    lockFile.SourceFiles |> List.iter (fun i -> tracefn " %s %s " i.Name (i.FilePath root))
+                                    tracefn "FileName: %s " file.Name 
 
                                 match lockFile.SourceFiles |> List.tryFind (fun f -> Path.GetFileName(f.Name) = file.Name) with
                                 | Some file -> file.FilePath root
                                 | None -> failwithf "%s references file %s, but it was not found in the paket.lock file." referenceFile.FileName file.Name
 
-                             { BuildAction = project.DetermineBuildAction file.Name
-                               Include = createRelativePath project.FileName remoteFilePath
-                               CopyLocal = defaultArg file.Settings.CopyLocal false
-                               Link = Some link })
+                             let linked = defaultArg file.Settings.Link true
+
+                             if linked then
+                                 { BuildAction = project.DetermineBuildAction file.Name
+                                   Include = createRelativePath project.FileName remoteFilePath
+                                   Link = Some link }
+                             else
+                                 let toDir = Path.GetDirectoryName(project.FileName)
+                                 let targetFile = FileInfo(Path.Combine(toDir,link))
+                                 if targetFile.Directory.Exists |> not then
+                                    targetFile.Directory.Create()
+
+                                 File.Copy(remoteFilePath,targetFile.FullName)
+
+                                 { BuildAction = project.DetermineBuildAction file.Name
+                                   Include = createRelativePath project.FileName targetFile.FullName
+                                   Link = None })
 
         let nuGetFileItems =
             copyContentFiles(project, findPackagesWithContent(root,usedPackages))
             |> List.map (fun file ->
                                 { BuildAction = project.DetermineBuildAction file.Name
                                   Include = createRelativePath project.FileName file.FullName
-                                  CopyLocal = false
                                   Link = None })
 
         project.UpdateFileItems(gitRemoteItems @ nuGetFileItems, options.Hard)

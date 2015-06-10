@@ -12,8 +12,7 @@ open Paket.Requirements
 /// File item inside of project files.
 type FileItem = 
     { BuildAction : string
-      Include : string
-      CopyLocal: bool
+      Include : string      
       Link : string option }
 
 /// Project references inside of project files.
@@ -149,7 +148,6 @@ type ProjectFile =
                 this.CreateNode(fileItem.BuildAction)
                 |> addAttribute "Include" fileItem.Include
                 |> addChild (this.CreateNode("Paket","True"))
-                |> fun n -> if fileItem.CopyLocal then addChild (this.CreateNode("CopyToOutputDirectory","Always")) n else n
                 |> fun n -> match fileItem.Link with
                             | Some link -> addChild (this.CreateNode("Link" ,link.Replace("\\","/"))) n
                             | _ -> n

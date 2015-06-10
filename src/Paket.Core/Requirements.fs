@@ -179,15 +179,15 @@ type InstallSettings =
             | _ -> None }
 
 type RemoteFileInstallSettings = 
-    { CopyLocal : bool option }
+    { Link : bool option }
 
     static member Default =
-        { CopyLocal = None }
+        { Link = None }
 
     member this.ToString(asLines) =
         let options =
-            [ match this.CopyLocal with
-              | Some x -> yield "copy_local: " + x.ToString().ToLower()
+            [ match this.Link with
+              | Some x -> yield "link: " + x.ToString().ToLower()
               | None -> ()]
 
         let separator = if asLines then Environment.NewLine else ", "
@@ -198,8 +198,8 @@ type RemoteFileInstallSettings =
     static member Parse(text:string) : RemoteFileInstallSettings =
         let kvPairs = parseKeyValuePairs text
 
-        { CopyLocal =
-            match kvPairs.TryGetValue "copy_local" with
+        { Link =
+            match kvPairs.TryGetValue "link" with
             | true, "false" -> Some false 
             | true, "true" -> Some true
             | _ -> None }
