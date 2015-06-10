@@ -18,7 +18,8 @@ let ``can detect specific version``() =
 [<Test>]
 let ``can detect minimum version``() = 
     parseRange "2.2" |> shouldEqual (VersionRange.Minimum (SemVer.Parse "2.2"))
-    parseRange"1.2" |> shouldEqual (VersionRange.Minimum (SemVer.Parse "1.2"))
+    parseRange "1.2" |> shouldEqual (VersionRange.Minimum (SemVer.Parse "1.2"))
+    parseRange "1.0-beta" |> shouldEqual (VersionRange.Minimum(SemVer.Parse "1.0-beta"))
 
 [<Test>]
 let ``can detect greater than version``() = 
