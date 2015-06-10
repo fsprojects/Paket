@@ -22,6 +22,10 @@ let ``can detect minimum version``() =
     parseRange "1.0-beta" |> shouldEqual (VersionRange.Minimum(SemVer.Parse "1.0-beta"))
 
 [<Test>]
+let ``can detect minimum version for pre-releases``() = 
+    VersionRequirement.Parse("1.0-beta").PreReleases |> shouldEqual PreReleaseStatus.All
+
+[<Test>]
 let ``can detect greater than version``() = 
     parseRange "(2.2,)" |> shouldEqual (VersionRange.GreaterThan (SemVer.Parse "2.2"))
     parseRange "(1.2,)" |> shouldEqual (VersionRange.GreaterThan (SemVer.Parse "1.2"))

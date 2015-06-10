@@ -144,9 +144,7 @@ module SemVer =
         { Major = if l > 0 then Int32.Parse splitted.[0] else 0
           Minor = if l > 1 then Int32.Parse splitted.[1] else 0
           Patch = if l > 2 then Int32.Parse splitted.[2] else 0
-          PreRelease = 
-            
-            PreRelease.TryParse(prerelease)
+          PreRelease = PreRelease.TryParse prerelease
           Build = if l > 3 then splitted.[3] else "0"
           PreReleaseBuild = prereleaseBuild
           Original = Some version }
