@@ -146,6 +146,10 @@ let ``larger pre-release identifiers have higher precedence (SemVer 2.0.0/11)`` 
     (SemVer.Parse "1.0.0-alpha") |> shouldBeSmallerThan (SemVer.Parse "1.0.0-alpha.1")
 
 [<Test>]
+let ``newer beta versions have higher precedence`` () =
+    (SemVer.Parse "1.0-beta") |> shouldBeSmallerThan (SemVer.Parse "1.1-beta")
+
+[<Test>]
 let ``alpha pre-release identifiers have higher precedence than numeric (SemVer 2.0.0/11)`` () =
     (SemVer.Parse "1.0.0-alpha.1") |> shouldBeSmallerThan (SemVer.Parse "1.0.0-alpha.beta")
 
