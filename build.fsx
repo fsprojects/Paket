@@ -167,7 +167,7 @@ Target "MergePaketTool" (fun _ ->
     CreateDir buildMergedDir
 
     let toPack =
-        ["paket.exe"; "Paket.Core.dll"; "FSharp.Core.dll"; "Newtonsoft.Json.dll"; "UnionArgParser.dll"]
+        ["paket.exe"; "Paket.Core.dll"; "FSharp.Core.dll"; "Newtonsoft.Json.dll"; "UnionArgParser.dll"; "Paket.PowerShell.dll"]
         |> List.map (fun l -> buildDir @@ l)
         |> separated " "
 
@@ -337,6 +337,7 @@ Target "All" DoNothing
 "Clean"
   ==> "AssemblyInfo"
   ==> "Build"
+  =?> ("BuildPowerShell", not isMono)
   ==> "RunTests"
   =?> ("GenerateReferenceDocs",isLocalBuild && not isMono)
   =?> ("GenerateDocs",isLocalBuild && not isMono)
@@ -345,7 +346,6 @@ Target "All" DoNothing
 
 "All"
   ==> "MergePaketTool"
-  =?> ("BuildPowerShell", not isMono)
   ==> "SignAssemblies"
   ==> "NuGet"
   ==> "BuildPackage"
