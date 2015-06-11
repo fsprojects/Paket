@@ -1,5 +1,43 @@
-#### 1.6.2 - 27.05.2015
+#### 1.13.0-alpha003 - 10.06.2015
+* Allow link:false settings for file references in `paket.references` files
+
+#### 1.12.1 - 10.06.2015
+* BUGFIX: `paket update` did not pick latest prerelease version of indirect dependency - https://github.com/fsprojects/Paket/issues/866
+
+#### 1.12.0 - 09.06.2015
+* BUGFIX: Paket add should not update the package if it's already there
+* BUGFIX: "copy_local" was not respected for indirect dependencies - https://github.com/fsprojects/Paket/issues/856
+* BUGFIX: Suggest only packages from the installed sources - https://github.com/fsprojects/Paket.VisualStudio/issues/57
+* BUGFIX: Trace license warning only in verbose mode - https://github.com/fsprojects/Paket/issues/862
+* BUGFIX: Fix ./ issues during pack
+* BUGFIX: Serialize != operator correctly - https://github.com/fsprojects/Paket/issues/857
+* COSMETICS: Don't save the `paket.lock` file if it didn't changed
+
+#### 1.11.0 - 08.06.2015
+* Support for cancelling bootstrapper - https://github.com/fsprojects/Paket/pull/860
+
+#### 1.10.1 - 08.06.2015
+* Increase timeout for restricted access mode - https://github.com/fsprojects/Paket/issues/858
+
+#### 1.10.0 - 02.06.2015
+* `paket init` puts Paket binaries into the project path - https://github.com/fsprojects/Paket/pull/853
+* Do not duplicate files in the nupkg - https://github.com/fsprojects/Paket/issues/851
+* Pack command reuses project version if directly given - https://github.com/fsprojects/Paket/issues/837
+* BUGFIX: `paket install` was not respecting `content:none` - https://github.com/fsprojects/Paket/issues/854
+
+#### 1.9.0 - 30.05.2015
+* Paket pack allows to specify current nuget version as dependency - https://github.com/fsprojects/Paket/issues/837
+* BUGFIX: Fix long version of --silent flag - https://github.com/fsprojects/Paket/pull/849
+
+#### 1.8.0 - 28.05.2015
+* Implement --no-install and --redirects for "paket update" - https://github.com/fsprojects/Paket/pull/847
+* BUGFIX: Fix inconsistent parameter names - https://github.com/fsprojects/Paket/pull/846
+
+#### 1.7.2 - 28.05.2015
+* New `--only-referenced` parameter for restore - https://github.com/fsprojects/Paket/pull/843
+* Make the output path relative to the dependencies file - https://github.com/fsprojects/Paket/issues/829
 * Analyze content files with case insensitive setting - https://github.com/fsprojects/Paket/issues/816
+* BUGFIX: Parse NuGet package prerelease versions containing "-" - https://github.com/fsprojects/Paket/issues/841
 
 #### 1.6.0 - 26.05.2015
 * Paket init - init dependencies file with default NuGet source

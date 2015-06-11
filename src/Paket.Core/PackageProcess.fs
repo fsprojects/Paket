@@ -11,9 +11,10 @@ open Paket.PackageMetaData
 open Chessie.ErrorHandling
 
 let Pack(dependencies : DependenciesFile, packageOutputPath, buildConfig, version, releaseNotes, templateFile) =
-    let buildConfig = defaultArg buildConfig "Release"  
-    Utils.createDir packageOutputPath |> returnOrFail
+    let buildConfig = defaultArg buildConfig "Release"
     let rootPath = dependencies.FileName |> Path.GetDirectoryName
+    let packageOutputPath = if Path.IsPathRooted(packageOutputPath) then packageOutputPath else Path.Combine(rootPath,packageOutputPath)
+    Utils.createDir packageOutputPath |> returnOrFail
 
     let version = version |> Option.map SemVer.Parse
 
@@ -33,7 +34,7 @@ let Pack(dependencies : DependenciesFile, packageOutputPath, buildConfig, versio
             match ProjectFile.FindTemplatesFile(FileInfo(projectFile.FileName)) with
             | None -> None
             | Some fileName ->                
-                Some(projectFile,TemplateFile.Load fileName))
+                Some(projectFile,TemplateFile.Load(fileName,version)))
         |> Array.filter (fun (_,templateFile) -> 
             match templateFile with
             | CompleteTemplate _ -> false 
@@ -98,7 +99,7 @@ let Pack(dependencies : DependenciesFile, packageOutputPath, buildConfig, versio
         |> Map.map (fun _ (t, p) -> p,findDependencies dependencies buildConfig t p projectTemplates)
         |> Map.toList
         |> List.map (fun (_,(_,x)) -> x)
-        |> List.append [for fileName in allTemplateFiles -> TemplateFile.Load fileName]
+        |> List.append [for fileName in allTemplateFiles -> TemplateFile.Load(fileName,version)]
     
     // set version
     let templatesWithVersion =

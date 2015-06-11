@@ -591,6 +591,29 @@ let ``should read config with content none``() =
     p.Settings.CopyLocal |> shouldEqual (Some false)
     p.Settings.OmitContent |> shouldEqual (Some true)
 
+[<Test>]
+let ``should read config with  !~> 3.3``() = 
+    let config = """source https://nuget.org/api/v2
+
+nuget AutoMapper ~> 3.2
+nuget Castle.Windsor !~> 3.3
+nuget DataAnnotationsExtensions 1.1.0.0
+nuget EntityFramework 5.0.0
+nuget FakeItEasy ~> 1.23
+nuget FluentAssertions ~> 3.1
+nuget Machine.Specifications ~> 0.9
+nuget Machine.Specifications.Runner.Console ~> 0.9
+nuget NDbfReader 1.1.1.0
+nuget Newtonsoft.Json ~> 6.0
+nuget Plossum.CommandLine != 0.3.0.14
+nuget PostSharp 3.1.52
+nuget SharpZipLib 0.86.0
+nuget Topshelf ~> 3.1
+nuget Caliburn.Micro !~> 2.0.2
+    """
+    let cfg = DependenciesFile.FromCode(config)
+    ()
+
 
 let configWithInvalidPrereleaseString = """
     nuget Plossum.CommandLine !0.3.0.14   

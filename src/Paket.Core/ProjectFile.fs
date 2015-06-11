@@ -7,11 +7,12 @@ open System.IO
 open System.Xml
 open System.Collections.Generic
 open Paket.Xml
+open Paket.Requirements
 
 /// File item inside of project files.
 type FileItem = 
     { BuildAction : string
-      Include : string 
+      Include : string      
       Link : string option }
 
 /// Project references inside of project files.
@@ -147,9 +148,9 @@ type ProjectFile =
                 this.CreateNode(fileItem.BuildAction)
                 |> addAttribute "Include" fileItem.Include
                 |> addChild (this.CreateNode("Paket","True"))
-                |> (fun n -> match fileItem.Link with
-                             | Some link -> addChild (this.CreateNode("Link" ,link.Replace("\\","/"))) n
-                             | _ -> n)
+                |> fun n -> match fileItem.Link with
+                            | Some link -> addChild (this.CreateNode("Link" ,link.Replace("\\","/"))) n
+                            | _ -> n
 
             let fileItemsInSameDir =
                 this.Document 
@@ -384,7 +385,7 @@ type ProjectFile =
         ["ItemGroup";"When";"Otherwise";"Choose";"When";"Choose"]
         |> List.iter this.DeleteIfEmpty
 
-    member this.UpdateReferences(completeModel: Map<NormalizedPackageName,InstallModel>, usedPackages : Map<NormalizedPackageName,PackageInstallSettings>, hard) =
+    member this.UpdateReferences(completeModel: Map<NormalizedPackageName,InstallModel>, usedPackages : Map<NormalizedPackageName,InstallSettings>, hard) =
         this.RemovePaketNodes() 
         
         completeModel
@@ -395,11 +396,11 @@ type ProjectFile =
             let installSettings = usedPackages.[kv.Key]
             let projectModel =
                 kv.Value
-                    .ApplyFrameworkRestrictions(installSettings.Settings.FrameworkRestrictions)
+                    .ApplyFrameworkRestrictions(installSettings.FrameworkRestrictions)
                     .RemoveIfCompletelyEmpty()
 
-            let copyLocal = defaultArg installSettings.Settings.CopyLocal true
-            let importTargets = defaultArg installSettings.Settings.ImportTargets true
+            let copyLocal = defaultArg installSettings.CopyLocal true
+            let importTargets = defaultArg installSettings.ImportTargets true
 
             this.GenerateXml(projectModel,copyLocal,importTargets))
         |> Seq.iter (fun (propertyNameNodes,chooseNode,propertyChooseNode) -> 

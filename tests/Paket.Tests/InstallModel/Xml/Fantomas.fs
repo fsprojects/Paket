@@ -63,7 +63,7 @@ let ``should generate full Xml for Fantomas 1.5``() =
     
     let project = ProjectFile.Load("./ProjectFile/TestData/Empty.fsprojtest").Value
     let completeModel = [NormalizedPackageName (PackageName "Fantomas"),model] |> Map.ofSeq
-    let used = [NormalizedPackageName (PackageName "fantoMas"), PackageInstallSettings.Default("fantoMas")] |> Map.ofSeq
+    let used = [NormalizedPackageName (PackageName "fantoMas"), InstallSettings.Default] |> Map.ofSeq
     project.UpdateReferences(completeModel,used,false)
     
     project.Document.OuterXml
@@ -83,7 +83,7 @@ let ``should not generate full Xml for Fantomas 1.5 if not referenced``() =
     
     let project = ProjectFile.Load("./ProjectFile/TestData/Empty.fsprojtest").Value
     let completeModel = [NormalizedPackageName (PackageName "Fantomas"),model] |> Map.ofSeq
-    let used = [NormalizedPackageName (PackageName "blub"), PackageInstallSettings.Default("blub") ] |> Map.ofSeq
+    let used = [NormalizedPackageName (PackageName "blub"), InstallSettings.Default ] |> Map.ofSeq
     project.UpdateReferences(completeModel,used,false)
     
     project.Document.OuterXml

@@ -14,31 +14,31 @@ let private addToProject (project : ProjectFile) package =
         .AddNuGetReference(package)
         .Save()
 
-let private add installToProjects addToProjectsF dependenciesFileName package version force hard installAfter =
+let private add installToProjects addToProjectsF dependenciesFileName package version options installAfter =
     let existingDependenciesFile = DependenciesFile.ReadFromFile(dependenciesFileName)
     let (PackageName name) = package
-    if (not installToProjects) && existingDependenciesFile.HasPackage package && String.IsNullOrWhiteSpace version then 
+    if (not installToProjects) && existingDependenciesFile.HasPackage package && String.IsNullOrWhiteSpace version then
         traceWarnfn "%s contains package %s already." dependenciesFileName name
     else
         let dependenciesFile =
             existingDependenciesFile
                 .Add(package,version)
-    
-        let lockFile = UpdateProcess.SelectiveUpdate(dependenciesFile,Some(NormalizedPackageName package),force)
+
+        let lockFile = UpdateProcess.SelectiveUpdate(dependenciesFile, false, None, options.Force)
         let projects = seq { for p in ProjectFile.FindAllProjects(Path.GetDirectoryName lockFile.FileName) -> p } // lazy sequence in case no project install required
 
         dependenciesFile.Save()
-    
+
         package |> addToProjectsF projects
 
         if installAfter then
             let sources = dependenciesFile.GetAllPackageSources()
-            InstallProcess.Install(sources, force, hard, false, lockFile)
+            InstallProcess.Install(sources, options, lockFile)
 
-// add a package with the option to add it to a specified project
-let AddToProject(dependenciesFileName, package, version, force, hard, projectName, installAfter) =
-    
-    let addToSpecifiedProject (projects : ProjectFile seq) package =    
+// Add a package with the option to add it to a specified project.
+let AddToProject(dependenciesFileName, package, version, options : InstallerOptions, projectName, installAfter) =
+
+    let addToSpecifiedProject (projects : ProjectFile seq) package =
         match ProjectFile.TryFindProject(projects,projectName) with
         | Some p ->
             if package |> notInstalled p then
@@ -47,15 +47,15 @@ let AddToProject(dependenciesFileName, package, version, force, hard, projectNam
         | None ->
             traceErrorfn "Could not install package in specified project %s. Project not found" projectName
 
-    add true addToSpecifiedProject dependenciesFileName package version force hard installAfter
-    
-// add a package with the option to interactively add it to multiple projects
-let Add(dependenciesFileName, package, version, force, hard, interactive, installAfter) =
-   
-    let addToProjects (projects : ProjectFile seq) package = 
+    add true addToSpecifiedProject dependenciesFileName package version options installAfter
+
+// Add a package with the option to interactively add it to multiple projects.
+let Add(dependenciesFileName, package, version, options : InstallerOptions, interactive, installAfter) =
+
+    let addToProjects (projects : ProjectFile seq) package =
         if interactive then
             for project in projects do
                 if package |> notInstalled project && Utils.askYesNo(sprintf "  Install to %s?" project.Name) then
                     package |> addToProject project
-    
-    add interactive addToProjects dependenciesFileName package version force hard installAfter
+
+    add interactive addToProjects dependenciesFileName package version options installAfter

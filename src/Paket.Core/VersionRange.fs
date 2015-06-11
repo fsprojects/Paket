@@ -145,6 +145,14 @@ type VersionRequirement =
     static member Parse (text:string) = 
         if  text = null || text = "" || text = "null" then VersionRequirement.AllReleases else
 
+        let prereleases = ref PreReleaseStatus.No
+        let analyzeVersion text =
+            let v = SemVer.Parse text
+            match v.PreRelease with
+            | Some _ -> prereleases := PreReleaseStatus.All
+            | _      -> prereleases := PreReleaseStatus.No
+            v
+
         let parseRange (text:string) = 
             let failParse() = failwithf "unable to parse %s" text
 
@@ -154,8 +162,8 @@ type VersionRequirement =
                 | _         -> failParse()
         
             if not <| text.Contains "," then
-                if text.StartsWith "[" then Specific(text.Trim([|'['; ']'|]) |> SemVer.Parse)
-                else Minimum(SemVer.Parse text)
+                if text.StartsWith "[" then Specific(text.Trim([|'['; ']'|]) |> analyzeVersion)
+                else Minimum(analyzeVersion text)
             else
                 let fromB = parseBound text.[0]
                 let toB   = parseBound (Seq.last text)
@@ -164,7 +172,7 @@ type VersionRequirement =
                         .Trim([|'['; ']';'(';')'|])
                         .Split([|','|], StringSplitOptions.RemoveEmptyEntries)
                         |> Array.filter (fun s -> String.IsNullOrWhiteSpace s |> not)
-                        |> Array.map SemVer.Parse
+                        |> Array.map analyzeVersion
 
                 match versions.Length with
                 | 2 ->
@@ -182,7 +190,10 @@ type VersionRequirement =
                         | VersionRangeBound.Including, VersionRangeBound.Including -> Minimum(versions.[0])
                         | _ -> failParse()
                 | _ -> failParse()
-        VersionRequirement(parseRange text,PreReleaseStatus.No)
+
+        let range = parseRange text
+
+        VersionRequirement(range,!prereleases)
 
 /// Represents a resolver strategy.
 [<RequireQualifiedAccess>]

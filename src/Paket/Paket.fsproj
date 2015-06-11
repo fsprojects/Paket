@@ -37,7 +37,7 @@
     <StartArguments>install</StartArguments>
     <StartAction>Project</StartAction>
     <StartProgram>paket.exe</StartProgram>
-    <StartWorkingDirectory>d:\code\pakettest</StartWorkingDirectory>
+    <StartWorkingDirectory>d:\code\RegexProvider</StartWorkingDirectory>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -48,8 +48,8 @@
     <WarningLevel>3</WarningLevel>
     <DocumentationFile>
     </DocumentationFile>
-    <StartArguments>update -v</StartArguments>
-    <StartWorkingDirectory>D:\code\Paket09x</StartWorkingDirectory>
+    <StartArguments>update -f</StartArguments>
+    <StartWorkingDirectory>D:\code\paket-866\tst</StartWorkingDirectory>
   </PropertyGroup>
   <PropertyGroup>
     <MinimumVisualStudioVersion Condition="'$(MinimumVisualStudioVersion)' == ''">11</MinimumVisualStudioVersion>

@@ -1,11 +1,12 @@
 ﻿namespace Paket
 
-open System.IO
-open Paket.Logging
-open System
 open Paket.Domain
+open Paket.Logging
+open Paket.PackageSources
+
+open System
+open System.IO
 open Chessie.ErrorHandling
-open PackageSources
 
 /// Paket API which is optimized for F# Interactive use.
 type Dependencies(dependenciesFileName: string) =
@@ -20,7 +21,7 @@ type Dependencies(dependenciesFileName: string) =
                             let (PackageName name) = p.Name
                             name, p.Version.ToString())
         |> Seq.toList
-    
+
 
     /// Tries to locate the paket.dependencies file in the current folder or a parent folder.
     static member Locate(): Dependencies = Dependencies.Locate(Environment.CurrentDirectory)
@@ -36,7 +37,7 @@ type Dependencies(dependenciesFileName: string) =
                 if parent = null then
                     if withError then
                         failwithf "Could not find '%s'. To use Paket with this solution, please run 'paket init' first." Constants.DependenciesFileName
-                    else 
+                    else
                         Constants.DependenciesFileName
                 else
                    findInPath(parent, withError)
@@ -54,7 +55,7 @@ type Dependencies(dependenciesFileName: string) =
 
         Utils.RunInLockedAccessMode(
             directory.FullName,
-            fun () -> 
+            fun () ->
                 PaketEnv.init directory
                 |> returnOrFail
         )
@@ -76,7 +77,7 @@ type Dependencies(dependenciesFileName: string) =
     member this.Simplify(interactive : bool) =
         Utils.RunInLockedAccessMode(
             this.RootPath,
-            fun () -> 
+            fun () ->
                 PaketEnv.fromRootDirectory this.RootDirectory
                 >>= PaketEnv.ensureNotInStrictMode
                 >>= Simplifier.simplify interactive
@@ -104,34 +105,59 @@ type Dependencies(dependenciesFileName: string) =
     member this.Add(package: string): unit = this.Add(package,"")
 
     /// Adds the given package with the given version to the dependencies file.
-    member this.Add(package: string,version: string): unit = this.Add(package, version, false, false, false, true)
+    member this.Add(package: string,version: string): unit =
+        this.Add(package, version, force = false, hard = false, withBindingRedirects = false, interactive = false, installAfter = true)
 
     /// Adds the given package with the given version to the dependencies file.
     member this.Add(package: string,version: string,force: bool,hard: bool,interactive: bool,installAfter: bool): unit =
+        this.Add(package, version, force, hard, false, interactive, installAfter)
+
+    /// Adds the given package with the given version to the dependencies file.
+    member this.Add(package: string,version: string,force: bool,hard: bool,withBindingRedirects: bool,interactive: bool,installAfter: bool): unit =
         Utils.RunInLockedAccessMode(
             this.RootPath,
-            fun () -> AddProcess.Add(dependenciesFileName, PackageName(package.Trim()), version, force, hard, interactive, installAfter))
+            fun () -> AddProcess.Add(dependenciesFileName, PackageName(package.Trim()), version,
+                                     InstallerOptions.createLegacyOptions(force, hard, withBindingRedirects),
+                                     interactive, installAfter))
 
     /// Adds the given package with the given version to the dependencies file.
     member this.AddToProject(package: string,version: string,force: bool,hard: bool,projectName: string,installAfter: bool): unit =
+        this.AddToProject(package, version, force, hard, false, projectName, installAfter)
+
+   /// Adds the given package with the given version to the dependencies file.
+    member this.AddToProject(package: string,version: string,force: bool,hard: bool,withBindingRedirects: bool,projectName: string,installAfter: bool): unit =
         Utils.RunInLockedAccessMode(
             this.RootPath,
-            fun () -> AddProcess.AddToProject(dependenciesFileName, PackageName package, version, force, hard, projectName, installAfter))
-      
+            fun () -> AddProcess.AddToProject(dependenciesFileName, PackageName package, version,
+                                              InstallerOptions.createLegacyOptions(force, hard, withBindingRedirects),
+                                              projectName, installAfter))
+
     /// Adds credentials for a Nuget feed
     member this.AddCredentials(source: string, username: string) : unit =
         Utils.RunInLockedAccessMode(
             this.RootPath,
             fun () -> ConfigFile.askAndAddAuth source username |> returnOrFail )
-        
+
     /// Installs all dependencies.
-    member this.Install(force: bool,hard: bool,withBindingRedirects:bool): unit = 
+    member this.Install(force: bool, hard: bool) = this.Install(force, hard, false)
+
+    /// Installs all dependencies.
+    member this.Install(force: bool, hard: bool, withBindingRedirects: bool): unit =
+        this.Install(force, hard, withBindingRedirects, false)
+
+    /// Installs all dependencies.
+    member this.Install(force: bool, hard: bool, withBindingRedirects: bool, onlyReferenced: bool): unit =
+        this.Install({ InstallerOptions.createLegacyOptions(force, hard, withBindingRedirects) with OnlyReferenced = onlyReferenced })
+
+    /// Installs all dependencies.
+    member private this.Install(options: InstallerOptions): unit =
         Utils.RunInLockedAccessMode(
             this.RootPath,
-            fun () -> UpdateProcess.SmartInstall(dependenciesFileName,None,force,hard,withBindingRedirects))
+            fun () -> UpdateProcess.SmartInstall(dependenciesFileName, false, None,
+                                                 { UpdaterOptions.Default with Common = options }))
 
     /// Creates a paket.dependencies file with the given text in the current directory and installs it.
-    static member Install(dependencies, ?path: string, ?force, ?hard, ?withBindingRedirects) = 
+    static member Install(dependencies, ?path: string, ?force, ?hard, ?withBindingRedirects) =
         let path = defaultArg path Environment.CurrentDirectory
         let fileName = Path.Combine(path, Constants.DependenciesFileName)
         File.WriteAllText(fileName, dependencies)
@@ -141,23 +167,34 @@ type Dependencies(dependenciesFileName: string) =
             hard = defaultArg hard false,
             withBindingRedirects = defaultArg withBindingRedirects false)
 
-    /// Installs all dependencies.
-    member this.Install(force: bool,hard: bool): unit = this.Install(force,hard,false)
+    /// Updates all dependencies.
+    member this.Update(force: bool, hard: bool): unit = this.Update(force, hard, false)
 
     /// Updates all dependencies.
-    member this.Update(force: bool,hard: bool,withBindingRedirects:bool): unit = 
+    member this.Update(force: bool,hard: bool,withBindingRedirects:bool): unit =
+        this.Update(force, hard, withBindingRedirects, true)
+
+    /// Updates all dependencies.
+    member this.Update(force: bool, hard: bool, withBindingRedirects: bool, installAfter: bool): unit =
         Utils.RunInLockedAccessMode(
             this.RootPath,
-            fun () -> UpdateProcess.Update(dependenciesFileName,force,hard,withBindingRedirects))
-
-    /// Updates all dependencies.
-    member this.Update(force: bool,hard: bool): unit = this.Update(force,hard,false)
+            fun () -> UpdateProcess.Update(dependenciesFileName,
+                                           { UpdaterOptions.Default with
+                                               Common = InstallerOptions.createLegacyOptions(force, hard, withBindingRedirects)
+                                               NoInstall = installAfter |> not }))
 
     /// Updates the given package.
-    member this.UpdatePackage(package: string,version: string option,force: bool,hard: bool): unit =
+    member this.UpdatePackage(package: string, version: string option, force: bool, hard: bool): unit =
+        this.UpdatePackage(package, version, force, hard, false, true)
+
+    /// Updates the given package.
+    member this.UpdatePackage(package: string, version: string option, force: bool, hard: bool, withBindingRedirects: bool, installAfter: bool): unit =
         Utils.RunInLockedAccessMode(
             this.RootPath,
-            fun () -> UpdateProcess.UpdatePackage(dependenciesFileName,PackageName package,version,force,hard,false))
+            fun () -> UpdateProcess.UpdatePackage(dependenciesFileName, PackageName package, version,
+                                                  { UpdaterOptions.Default with
+                                                      Common = InstallerOptions.createLegacyOptions(force, hard, withBindingRedirects)
+                                                      NoInstall = installAfter |> not }))
 
     /// Restores all dependencies.
     member this.Restore(): unit = this.Restore(false,[])
@@ -166,10 +203,22 @@ type Dependencies(dependenciesFileName: string) =
     member this.Restore(files: string list): unit = this.Restore(false,files)
 
     /// Restores the given paket.references files.
-    member this.Restore(force,files: string list): unit =
+    member this.Restore(force, files: string list): unit =
         Utils.RunInLockedAccessMode(
             this.RootPath,
             fun () -> RestoreProcess.Restore(dependenciesFileName,force,files))
+
+    /// Restores packages for all available paket.references files
+    /// (or all packages if onlyReferenced is false)
+    member this.Restore(force, onlyReferenced: bool): unit =
+        if not onlyReferenced then this.Restore(force,[]) else
+        let referencesFiles =
+            this.RootPath
+            |> ProjectFile.FindAllProjects
+            |> Array.choose (fun p -> ProjectFile.FindReferencesFile(FileInfo(p.FileName)))
+        if Array.isEmpty referencesFiles then
+            traceWarnfn "No paket.references files found for which packages could be installed."
+        else this.Restore(force, Array.toList referencesFiles)
 
     /// Lists outdated packages.
     member this.ShowOutdated(strict: bool,includePrereleases: bool): unit =
@@ -181,14 +230,20 @@ type Dependencies(dependenciesFileName: string) =
         |> this.Process
         |> List.map (fun (PackageName p,_,newVersion) -> p,newVersion)
 
+    /// Downloads the latest paket.bootstrapper into the .paket folder.
+    member this.DownloadLatestBootstrapper() : unit =
+        Utils.RunInLockedAccessMode(
+            this.RootPath,
+            fun () -> Releases.downloadLatestBootstrapper |> this.Process)
+
     /// Pulls new paket.targets and bootstrapper and puts them into .paket folder.
-    member this.TurnOnAutoRestore(): unit = 
+    member this.TurnOnAutoRestore(): unit =
         Utils.RunInLockedAccessMode(
             this.RootPath,
             fun () -> VSIntegration.TurnOnAutoRestore |> this.Process)
 
     /// Removes paket.targets file and Import section from project files.
-    member this.TurnOffAutoRestore(): unit = 
+    member this.TurnOffAutoRestore(): unit =
         Utils.RunInLockedAccessMode(
             this.RootPath,
             fun () -> VSIntegration.TurnOffAutoRestore |> this.Process)
@@ -204,12 +259,12 @@ type Dependencies(dependenciesFileName: string) =
         |> listPackages
 
     /// Returns all sources from the dependencies file.
-    member this.GetSources() = 
+    member this.GetSources() =
         let dependenciesFile = DependenciesFile.ReadFromFile dependenciesFileName
         dependenciesFile.Sources
 
     /// Returns all system-wide defined NuGet feeds. (Can be used for Autocompletion)
-    member this.GetDefinedNuGetFeeds() : string list = 
+    member this.GetDefinedNuGetFeeds() : string list =
         let configured =
             match NuGetConvert.NugetEnv.readNugetConfig(this.RootDirectory) with
             | Result.Ok(config,_) -> config.PackageSources |> List.map fst
@@ -222,15 +277,15 @@ type Dependencies(dependenciesFileName: string) =
     member this.GetInstalledPackages(referencesFile:ReferencesFile): (string * string) list =
         let lockFile = getLockFile()
         let resolved = lockFile.ResolvedPackages
-        referencesFile    
+        referencesFile
         |> lockFile.GetPackageHull
-        |> Seq.map (fun kv -> 
+        |> Seq.map (fun kv ->
                         let name = kv.Key
                         name.ToString(),resolved.[NormalizedPackageName name].Version.ToString())
         |> Seq.toList
 
     /// Returns an InstallModel for the given package.
-    member this.GetInstalledPackageModel(packageName) =        
+    member this.GetInstalledPackageModel(packageName) =
         match this.GetInstalledVersion(packageName) with
         | None -> failwithf "Package %s is not installed" packageName
         | Some version ->
@@ -242,7 +297,7 @@ type Dependencies(dependenciesFileName: string) =
             InstallModel.CreateFromLibs(PackageName packageName, SemVer.Parse version, [], files, [], nuspec)
 
     /// Returns all libraries for the given package and framework.
-    member this.GetLibraries(packageName,frameworkIdentifier:FrameworkIdentifier) =        
+    member this.GetLibraries(packageName,frameworkIdentifier:FrameworkIdentifier) =
         this
           .GetInstalledPackageModel(packageName)
           .GetLibReferences(frameworkIdentifier)
@@ -276,7 +331,7 @@ type Dependencies(dependenciesFileName: string) =
 
     /// Removes the given package from dependencies file.
     member this.Remove(package: string): unit = this.Remove(package, false, false, false, true)
-    
+
     /// Removes the given package from dependencies file.
     member this.Remove(package: string,force: bool,hard: bool,interactive: bool,installAfter: bool): unit =
         Utils.RunInLockedAccessMode(
@@ -300,7 +355,8 @@ type Dependencies(dependenciesFileName: string) =
     member this.SearchPackagesByName(searchTerm,?cancellationToken,?maxResults) : IObservable<string> =
         let cancellationToken = defaultArg cancellationToken (System.Threading.CancellationToken())
         let maxResults = defaultArg maxResults 1000
-        PackageSources.DefaultNugetSource :: this.GetSources()
+        let sources = this.GetSources()
+        if sources = [] then [PackageSources.DefaultNugetSource] else sources
         |> List.choose (fun x -> match x with | Nuget s -> Some s.Url | _ -> None)
         |> Seq.distinct
         |> Seq.map (fun url ->
@@ -315,7 +371,7 @@ type Dependencies(dependenciesFileName: string) =
         FindReferences.FindReferencesForPackage (PackageName package) |> this.Process
 
     // Packs all paket.template files.
-    member this.Pack(outputPath, ?buildConfig, ?version, ?releaseNotes, ?templateFile) = 
+    member this.Pack(outputPath, ?buildConfig, ?version, ?releaseNotes, ?templateFile) =
         let dependenciesFile = DependenciesFile.ReadFromFile dependenciesFileName
         PackageProcess.Pack(dependenciesFile, outputPath, buildConfig, version, releaseNotes, templateFile)
 

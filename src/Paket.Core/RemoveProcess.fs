@@ -36,17 +36,14 @@ let private remove removeFromProjects dependenciesFileName (package: PackageName
     let lockFile =
         if stillInstalled then oldLockFile else
         let exisitingDependenciesFile = DependenciesFile.ReadFromFile dependenciesFileName
-        let dependenciesFile =
-            exisitingDependenciesFile
-                .Remove(package)
-
+        let dependenciesFile = exisitingDependenciesFile.Remove(package)
         dependenciesFile.Save()
         
-        UpdateProcess.SelectiveUpdate(dependenciesFile,None,force)
+        UpdateProcess.SelectiveUpdate(dependenciesFile,false,None,force)
     
     if installAfter then
         let sources = DependenciesFile.ReadFromFile(dependenciesFileName).GetAllPackageSources()
-        InstallProcess.Install(sources, force, hard, false, lockFile)
+        InstallProcess.Install(sources, InstallerOptions.createLegacyOptions(force, hard, false), lockFile )
 
 // remove a package with the option to remove it from a specified project
 let RemoveFromProject(dependenciesFileName, package:PackageName, force, hard, projectName, installAfter) =

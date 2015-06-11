@@ -195,29 +195,39 @@ let Write (core : CompleteCoreInfo) optional workingDir outputDir =
     use zipToCreate = new FileStream(outputPath, FileMode.Create)
     use zipFile = new ZipArchive(zipToCreate,ZipArchiveMode.Create)
 
-    let entries = System.Collections.Generic.List<_>()
+    let entries = System.Collections.Generic.List<_>()    
     
-    let addEntry (zipFile : ZipArchive) path writerF = 
+    let addEntry path writerF = 
+        if entries.Contains(path) then () else
         entries.Add path |> ignore
         let entry = zipFile.CreateEntry(path)        
         use stream = entry.Open()
         writerF stream
         stream.Close()
 
+    let addEntryFromFile path source =
+        if entries.Contains(path) then () else
+        entries.Add path |> ignore
+        zipFile.CreateEntryFromFile(source,path) |> ignore
+
     let ensureValidTargetName (target:string) =
-        match target.Replace(" ", "%20").Replace("\\", "/") with
+        let target = 
+          target.Replace(" ", "%20").Replace("\\", "/")
+          |> fun s -> if s.StartsWith("./") then s.Remove(0,2) else s
+
+        match target with
         | t when t.EndsWith("/")         -> t
         | t when String.IsNullOrEmpty(t) -> ""
         | "."                            -> ""
         | t                              -> t + "/"
 
     // adds all files in a directory to the zipFile
-    let rec addDir source target =
+    let rec addDir source target =    
+        let target = ensureValidTargetName target
         for file in Directory.EnumerateFiles(source,"*.*",SearchOption.TopDirectoryOnly) do
             let fi = FileInfo file
             let path = Path.Combine(target,fi.Name)
-            entries.Add path |> ignore
-            zipFile.CreateEntryFromFile(fi.FullName,path) |> ignore
+            addEntryFromFile path fi.FullName
 
         for dir in Directory.EnumerateDirectories(source,"*",SearchOption.TopDirectoryOnly) do
             let di = DirectoryInfo dir
@@ -233,17 +243,18 @@ let Write (core : CompleteCoreInfo) optional workingDir outputDir =
             if File.Exists source then
                 let fi = FileInfo(source)
                 let path = Path.Combine(targetFileName,fi.Name)
-                entries.Add path |> ignore
-                zipFile.CreateEntryFromFile(source, path) |> ignore
+                addEntryFromFile path source
             else 
                 failwithf "Could not find source file %s" source
 
     // add metadata
     for path, writer in writeNupkg core optional do 
-        addEntry zipFile path writer
+        addEntry path writer
     
-    contentTypeDoc (Seq.toList entries)
+    entries
+    |> Seq.toList
+    |> contentTypeDoc
     |> xDocWriter
-    |> addEntry zipFile contentTypePath
+    |> addEntry contentTypePath
 
     outputPath

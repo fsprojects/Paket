@@ -138,6 +138,12 @@ A dependency block looks like this:
 
 The syntax for specifying allowed dependency ranges are identical to in the ranges in [`paket.dependencies` files](dependencies-file.html).
 
+It's possible to use `CURRENTVERSION` as a placeholder for the current version of the package:
+
+	dependencies
+	  FSharp.Core >= 4.3.1
+	  Other.Dep ~> CURRENTVERSION
+
 In a project file, the following dependencies will be added:
 
 * any paket dependency with the range specified in the [`paket.dependencies` file](dependencies-file.html).

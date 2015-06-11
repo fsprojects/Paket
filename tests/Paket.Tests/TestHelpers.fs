@@ -46,9 +46,6 @@ let getVersion (resolved:ResolvedPackage) = resolved.Version.ToString()
 
 let getSource (resolved:ResolvedPackage) = resolved.Source
 
-let normalizeLineEndings (text : string) = 
-    text.Replace("\r\n", "\n").Replace("\r", "\n").Replace("\n", Environment.NewLine)
-
 let removeLineEndings (text : string) = 
     text.Replace("\r\n", "").Replace("\r", "").Replace("\n", "")
 

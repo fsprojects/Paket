@@ -8,7 +8,8 @@ open Paket.Requirements
 
 type RemoteFileReference = 
     { Name : string
-      Link : string }
+      Link : string
+      Settings : RemoteFileInstallSettings }
 
 type PackageInstallSettings = 
     { Name : PackageName
@@ -52,9 +53,18 @@ type ReferencesFile =
           RemoteFiles = 
             remoteLines
             |> List.map (fun s -> s.Replace("File:","").Split([|' '|], StringSplitOptions.RemoveEmptyEntries))
-            |> List.map (fun segments -> 
+            |> List.map (fun segments ->
+                            let hasPath =
+                                let get x = if segments.Length > x then segments.[x] else ""
+                                segments.Length >= 2 && not ((get 1).Contains(":")) && not ((get 2).StartsWith(":")) 
+
+                            let rest = 
+                                let skip = if hasPath then 2 else 1
+                                if segments.Length < skip then "" else String.Join(" ",segments |> Seq.skip skip)
+
                             { Name = segments.[0]
-                              Link = if segments.Length = 2 then segments.[1] else ReferencesFile.DefaultLink } ) }
+                              Link = if hasPath then segments.[1] else ReferencesFile.DefaultLink 
+                              Settings = RemoteFileInstallSettings.Parse rest } ) }
 
     static member FromFile(fileName : string) =
         let lines = File.ReadAllLines(fileName)
@@ -66,11 +76,17 @@ type ReferencesFile =
         if this.NugetPackages |> Seq.exists (fun p -> NormalizedPackageName p.Name = normalized) then
             this
         else
-            tracefn "Adding %s to %s" referenceName (this.FileName)
-            let copyLocal = if not copyLocal then Some copyLocal else None
-            let importTargets = if not importTargets then Some importTargets else None
-            let omitContent = if omitContent then Some omitContent else None
-            { this with NugetPackages = this.NugetPackages @ [{ Name = packageName; Settings = { CopyLocal = copyLocal; ImportTargets = importTargets; FrameworkRestrictions = frameworkRestrictions; OmitContent = omitContent }}] }
+            tracefn "Adding %s to %s" referenceName this.FileName      
+
+            let package =
+                { Name = packageName
+                  Settings = 
+                    { CopyLocal = if not copyLocal then Some copyLocal else None
+                      ImportTargets = if not importTargets then Some importTargets else None
+                      FrameworkRestrictions = frameworkRestrictions
+                      OmitContent = if omitContent then Some omitContent else None } }
+
+            { this with NugetPackages = this.NugetPackages @ [ package ] }
 
     member this.AddNuGetReference(packageName : PackageName) = this.AddNuGetReference(packageName, true, true, [], false)
 

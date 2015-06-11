@@ -4,13 +4,31 @@ open System
 open System.IO
 
 [<Literal>]
+let GithubUrl = "https://github.com"
+
+[<Literal>]
 let DefaultNugetStream = "https://nuget.org/api/v2"
+
+[<Literal>]
+let GithubReleasesUrl = "https://api.github.com/repos/fsprojects/Paket/releases"
+
+[<Literal>]
+let GithubReleaseDownloadUrl = "https://github.com/fsprojects/Paket/releases/download"
 
 [<Literal>]
 let LockFileName = "paket.lock"
 
 [<Literal>]
 let DependenciesFileName = "paket.dependencies"
+
+[<Literal>]
+let PaketFolderName = ".paket"
+
+[<Literal>]
+let BootstrapperFileName = "paket.bootstrapper.exe"
+
+[<Literal>]
+let TargetsFileName = "paket.targets"
 
 [<Literal>]
 let ReferencesFile = "paket.references"

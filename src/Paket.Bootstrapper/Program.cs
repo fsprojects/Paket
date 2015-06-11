@@ -13,27 +13,45 @@ namespace Paket.Bootstrapper
         const string PaketVersionEnv = "PAKET.VERSION";
         const string SelfUpdateCommandArg = "--self";
         const string SilentCommandArg = "-s";
-        
+
         static void Main(string[] args)
         {
+            Console.CancelKeyPress += CancelKeyPressed;
+
             var commandArgs = args;
-            bool preferNuget = false;
+            var preferNuget = false;
             if (commandArgs.Contains(PreferNugetCommandArg))
             {
                 preferNuget = true;
                 commandArgs = args.Where(x => x != PreferNugetCommandArg).ToArray();
             }
-            bool silent = false;
+            var silent = false;
             if (commandArgs.Contains(SilentCommandArg))
             {
                 silent = true;
                 commandArgs = args.Where(x => x != SilentCommandArg).ToArray();
             }
-            var dlArgs = EvaluateCommandArgs(commandArgs,silent);
+            var dlArgs = EvaluateCommandArgs(commandArgs, silent);
 
             var effectiveStrategy = GetEffectiveDownloadStrategy(dlArgs, preferNuget);
-        
+
             StartPaketBootstrapping(effectiveStrategy, dlArgs, silent);
+        }
+
+        private static void CancelKeyPressed(object sender, ConsoleCancelEventArgs e)
+        {
+            Console.WriteLine("Bootstrapper cancelled");
+            var folder = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+            var target = Path.Combine(folder, "paket.exe");
+
+            var exitCode = 1;
+            if (File.Exists(target))
+            {
+                var localVersion = BootstrapperHelper.GetLocalFileVersion(target);
+                Console.WriteLine("Detected existing paket.exe ({0}). Cancelling normally.", localVersion);
+                exitCode = 0;
+            }
+            Environment.Exit(exitCode);
         }
 
         private static void StartPaketBootstrapping(IDownloadStrategy downloadStrategy, DownloadArguments dlArgs, bool silent)
@@ -49,14 +67,14 @@ namespace Paket.Bootstrapper
                 var localVersion = BootstrapperHelper.GetLocalFileVersion(dlArgs.Target);
 
                 var latestVersion = dlArgs.LatestVersion;
-                if (latestVersion == "")
+                if (latestVersion == String.Empty)
                 {
                     latestVersion = downloadStrategy.GetLatestVersion(dlArgs.IgnorePrerelease);
                 }
 
                 if (dlArgs.DoSelfUpdate)
                 {
-                    if(!silent)
+                    if (!silent)
                         Console.WriteLine("Trying self update");
                     downloadStrategy.SelfUpdate(latestVersion, silent);
                 }
@@ -122,7 +140,7 @@ namespace Paket.Bootstrapper
             var folder = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
             var target = Path.Combine(folder, "paket.exe");
 
-            var latestVersion = Environment.GetEnvironmentVariable(PaketVersionEnv) ?? "";
+            var latestVersion = Environment.GetEnvironmentVariable(PaketVersionEnv) ?? String.Empty;
             var ignorePrerelease = true;
             bool doSelfUpdate = false;
             var commandArgs = args;
@@ -137,7 +155,7 @@ namespace Paket.Bootstrapper
                 if (commandArgs[0] == PrereleaseCommandArg)
                 {
                     ignorePrerelease = false;
-                    latestVersion = ""; 
+                    latestVersion = String.Empty;
                     if (!silent)
                         Console.WriteLine("Prerelease requested. Looking for latest prerelease.");
                 }

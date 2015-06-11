@@ -267,7 +267,7 @@ let RunInLockedAccessMode(rootFolder,action) =
                File.Delete fileName
 
     try
-        acquireLock DateTime.Now (TimeSpan.FromMinutes 2.) 5
+        acquireLock DateTime.Now (TimeSpan.FromMinutes 5.) 5
 
         let result = action()
         
@@ -340,6 +340,9 @@ let removeFile (fileName : string) =
         with _ ->
             FileDeleteError fileName |> fail
     else ok ()
+
+let normalizeLineEndings (text : string) = 
+    text.Replace("\r\n", "\n").Replace("\r", "\n").Replace("\n", Environment.NewLine)
 
 // adapted from MiniRx
 // http://minirx.codeplex.com/
