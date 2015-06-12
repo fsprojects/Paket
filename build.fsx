@@ -41,6 +41,7 @@ let tags = "nuget, bundler, F#"
 
 // File system information
 let solutionFile  = "Paket.sln"
+let solutionFilePowerShell = "Paket.PowerShell.sln"
 
 // Pattern specifying assemblies to be tested using NUnit
 let testAssemblies = "tests/**/bin/Release/*Tests*.dll"
@@ -127,6 +128,22 @@ Target "CleanDocs" (fun _ ->
 
 Target "Build" (fun _ ->
     !! solutionFile
+    |> MSBuildRelease "" "Rebuild"
+    |> ignore
+)
+
+// --------------------------------------------------------------------------------------
+// Build PowerShell project
+
+Target "BuildPowerShell" (fun _ ->
+    if File.Exists "src/Paket.PowerShell/System.Management.Automation.dll" = false then
+        let result =
+            ExecProcess (fun info ->
+                info.FileName <- Path.Combine(Environment.SystemDirectory, @"WindowsPowerShell\v1.0\powershell.exe")
+                info.Arguments <- "src/Paket.PowerShell/System.Management.Automation.ps1") System.TimeSpan.MaxValue
+        if result <> 0 then failwithf "Error copying System.Management.Automation.dll"
+
+    !! solutionFilePowerShell
     |> MSBuildRelease "" "Rebuild"
     |> ignore
 )
@@ -320,6 +337,7 @@ Target "All" DoNothing
 "Clean"
   ==> "AssemblyInfo"
   ==> "Build"
+  =?> ("BuildPowerShell", not isMono)
   ==> "RunTests"
   =?> ("GenerateReferenceDocs",isLocalBuild && not isMono)
   =?> ("GenerateDocs",isLocalBuild && not isMono)

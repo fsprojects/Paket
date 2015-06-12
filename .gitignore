@@ -184,3 +184,4 @@ docs/content/release-notes.md
 _NCrunch_Paket
 docs/content/paket-*.md
 *.bak
+System.Management.Automation.dll
