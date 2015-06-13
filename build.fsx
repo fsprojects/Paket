@@ -140,7 +140,7 @@ Target "BuildPowerShell" (fun _ ->
         let result =
             ExecProcess (fun info ->
                 info.FileName <- Path.Combine(Environment.SystemDirectory, @"WindowsPowerShell\v1.0\powershell.exe")
-                info.Arguments <- "src/Paket.PowerShell/System.Management.Automation.ps1") System.TimeSpan.MaxValue
+                info.Arguments <- "src/Paket.PowerShell/System.Management.Automation.ps1 -executionpolicy bypass") System.TimeSpan.MaxValue
         if result <> 0 then failwithf "Error copying System.Management.Automation.dll"
 
     !! solutionFilePowerShell
