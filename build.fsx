@@ -226,6 +226,27 @@ Target "NuGet" (fun _ ->
             ReleaseNotes = toLines release.Notes })
 )
 
+Target "PublishChocolatey" (fun _ ->
+    let chocoDir = tempDir </> "Choco"
+    let files = !! (tempDir </> "*PowerShell*")
+    if isMono then
+        files
+        |> Seq.iter File.Delete
+    else
+        CleanDir chocoDir
+        files
+        |> CopyTo chocoDir
+
+        Paket.Push (fun p -> 
+            { p with 
+                ToolPath = "bin/merged/paket.exe"
+                PublishUrl = "https://chocolatey.org/"
+                ApiKey = getBuildParam "ChocoKey"
+                WorkingDir = chocoDir })
+
+        CleanDir chocoDir
+)
+
 Target "PublishNuGet" (fun _ ->
     if hasBuildParam "PublishBootstrapper" |> not then
         !! (tempDir </> "*bootstrapper*")
@@ -236,6 +257,7 @@ Target "PublishNuGet" (fun _ ->
             ToolPath = "bin/merged/paket.exe"
             WorkingDir = tempDir }) 
 )
+
 
 // --------------------------------------------------------------------------------------
 // Generate the documentation
@@ -383,6 +405,7 @@ Target "All" DoNothing
   ==> "Release"
 
 "BuildPackage"
+  ==> "PublishChocolatey"
   ==> "PublishNuGet"
   ==> "Release"
 

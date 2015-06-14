@@ -48,7 +48,8 @@
     <WarningLevel>3</WarningLevel>
     <DocumentationFile>
     </DocumentationFile>
-    <StartArguments>update -f</StartArguments>
+    <StartArguments>
+    </StartArguments>
     <StartWorkingDirectory>D:\code\paket-866\tst</StartWorkingDirectory>
   </PropertyGroup>
   <PropertyGroup>

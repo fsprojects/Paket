@@ -1,3 +1,7 @@
+#### 1.14.0 - 14.06.2015
+* Chocolatey support for Paket.PowerShell - https://github.com/fsprojects/Paket/pull/872
+* BUGFIX: Single version in deps file created invalid dependend package- https://github.com/fsprojects/Paket/issues/871
+
 #### 1.13.0 - 12.06.2015
 * Paket.PowerShell support - https://github.com/fsprojects/Paket/pull/839
 * EXPERIMENTAL: Allow link:false settings for file references in `paket.references` files
