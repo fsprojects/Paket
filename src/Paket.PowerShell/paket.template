@@ -14,10 +14,7 @@ iconurl https://raw.githubusercontent.com/fsprojects/Paket/master/docs/files/img
 tags
     nuget, bundler, F#
 files
-    ../../bin/paket.exe ==> tools
-    ../../bin/Paket.Core.dll ==> tools
-    ../../bin/FSharp.Core.dll ==> tools
-    ../../bin/Newtonsoft.Json.dll ==> tools
-    ../../bin/UnionArgParser.dll ==> tools
-    ../../bin/Paket.PowerShell.dll ==> tools
+	../../bin/merged/Paket.PowerShell.dll ==> tools/Paket.PowerShell
     init.ps1 ==> tools
+    chocolateyInstall.ps1 ==> tools
+    Install-PSModulePath.ps1 ==> tools
