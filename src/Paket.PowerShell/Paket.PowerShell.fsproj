@@ -43,7 +43,6 @@
     <None Include="paket.references" />
     <None Include="paket.template" />
     <Compile Include="AssemblyInfo.fs" />
-    <None Include="Paket.PowerShell.psd1" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="mscorlib" />
