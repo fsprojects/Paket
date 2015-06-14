@@ -39,8 +39,8 @@ let ``should serialize dependencies``() =
     <description>A description</description>
     <tags>f# rules</tags>
     <dependencies>
-      <dependency id="Paket.Core" version="[3.1]" />
-      <dependency id="xUnit" version="2.0" />
+      <dependency id="Paket.Core" version="[3.1.0]" />
+      <dependency id="xUnit" version="2.0.0" />
     </dependencies>
   </metadata>
 </package>"""

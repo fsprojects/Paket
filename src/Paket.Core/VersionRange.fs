@@ -71,14 +71,14 @@ type VersionRange =
     member this.FormatInNuGetSyntax() =
         match this with
         | Minimum(version) -> 
-            match version.ToString() with
-            | "0" -> ""
+            match version.Normalize() with
+            | "0.0.0" -> ""
             | x  -> x
-        | GreaterThan(version) -> sprintf "(%s,)" (version.ToString())
-        | Maximum(version) -> sprintf "(,%s]" (version.ToString())
-        | LessThan(version) -> sprintf "(,%s)" (version.ToString())
-        | Specific(version) -> sprintf "[%s]" (version.ToString())
-        | OverrideAll(version) -> sprintf "[%s]" (version.ToString()) 
+        | GreaterThan(version) -> sprintf "(%s,)" (version.Normalize())
+        | Maximum(version) -> sprintf "(,%s]" (version.Normalize())
+        | LessThan(version) -> sprintf "(,%s)" (version.Normalize())
+        | Specific(version) -> sprintf "[%s]" (version.Normalize())
+        | OverrideAll(version) -> sprintf "[%s]" (version.Normalize()) 
         | Range(fromB, from,_to,_toB) -> 
             let getMinDelimiter (v:VersionRangeBound) =
                 match v with
@@ -90,7 +90,7 @@ type VersionRange =
                 | VersionRangeBound.Including -> "]"
                 | VersionRangeBound.Excluding -> ")"
         
-            sprintf "%s%s,%s%s" (getMinDelimiter fromB) (from.ToString()) (_to.ToString()) (getMaxDelimiter _toB) 
+            sprintf "%s%s,%s%s" (getMinDelimiter fromB) (from.Normalize()) (_to.Normalize()) (getMaxDelimiter _toB) 
 
 type VersionRequirement =
 | VersionRequirement of VersionRange * PreReleaseStatus
