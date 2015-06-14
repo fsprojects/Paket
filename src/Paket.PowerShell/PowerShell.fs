@@ -8,7 +8,7 @@ open System
 
 [<Cmdlet("Paket", "Add")>]
 type Add() =   
-    inherit Cmdlet()
+    inherit PSCmdlet()
 
     [<Parameter>] member val NuGet = "" with get, set
     [<Parameter>] member val Version = "" with get, set
@@ -18,7 +18,9 @@ type Add() =
     [<Parameter>] member val Hard = SwitchParameter() with get, set
     [<Parameter>] member val NoInstall = SwitchParameter() with get, set
 
-    override x.ProcessRecord() = 
+    override x.ProcessRecord() =
+        Logging.verbose <- x.Verbose
+        x.SetCurrentDirectoryToLocation()
         let parser = UnionArgParser.Create<AddArgs>()
         seq {
             if String.IsNullOrEmpty x.NuGet = false then
@@ -42,12 +44,14 @@ type Add() =
 
 [<Cmdlet("Paket", "AutoRestore")>]
 type AutoRestoreCmdlet() =   
-    inherit Cmdlet()
+    inherit PSCmdlet()
 
     [<Parameter>] member val On = SwitchParameter() with get, set
     [<Parameter>] member val Off = SwitchParameter() with get, set
 
-    override x.ProcessRecord() = 
+    override x.ProcessRecord() =
+        Logging.verbose <- x.Verbose
+        x.SetCurrentDirectoryToLocation()
         let parser = UnionArgParser.Create<AutoRestoreArgs>()
         seq {
             if x.On.IsPresent then
@@ -61,11 +65,13 @@ type AutoRestoreCmdlet() =
 
 [<Cmdlet("Paket", "Config")>]
 type ConfigCmdlet() =   
-    inherit Cmdlet()
+    inherit PSCmdlet()
 
     [<Parameter>] member val AddCredentials = "" with get, set
 
-    override x.ProcessRecord() = 
+    override x.ProcessRecord() =
+        Logging.verbose <- x.Verbose
+        x.SetCurrentDirectoryToLocation()
         let parser = UnionArgParser.Create<ConfigArgs>()
         seq {
             if String.IsNullOrEmpty x.AddCredentials = false then
@@ -77,7 +83,7 @@ type ConfigCmdlet() =
 
 [<Cmdlet("Paket", "ConvertFromNuGet")>]
 type ConvertFromNuGetCmdlet() =   
-    inherit Cmdlet()
+    inherit PSCmdlet()
 
     [<Parameter>] member val Force = SwitchParameter() with get, set
     [<Parameter>] member val NoInstall = SwitchParameter() with get, set
@@ -85,7 +91,9 @@ type ConvertFromNuGetCmdlet() =
     [<ValidateSet("encrypt", "plaintext", "selective")>]
     [<Parameter>] member val CredsMigration = "encrypt" with get, set
 
-    override x.ProcessRecord() = 
+    override x.ProcessRecord() =
+        Logging.verbose <- x.Verbose
+        x.SetCurrentDirectoryToLocation()
         let parser = UnionArgParser.Create<ConvertFromNugetArgs>()
         seq {
             if x.Force.IsPresent then
@@ -102,12 +110,14 @@ type ConvertFromNuGetCmdlet() =
         |> Program.convert
 
 [<Cmdlet("Paket", "FindRefs")>]
-type FindRefsCmdlet() =   
-    inherit Cmdlet()
+type FindRefsCmdlet() =
+    inherit PSCmdlet()
 
     [<Parameter>] member val NuGet : string[] = Array.empty with get, set
 
-    override x.ProcessRecord() = 
+    override x.ProcessRecord() =
+        Logging.verbose <- x.Verbose
+        x.SetCurrentDirectoryToLocation()
         let parser = UnionArgParser.Create<FindRefsArgs>()
         seq {
             for p in x.NuGet do
@@ -119,14 +129,16 @@ type FindRefsCmdlet() =
 
 [<Cmdlet("Paket", "FindPackages")>]
 type FindPackagesCmdlet() =   
-    inherit Cmdlet()
+    inherit PSCmdlet()
 
     [<Parameter>] member val SearchText = "" with get, set
     [<Parameter>] member val Source = "" with get, set
     [<Parameter>] member val Max = Int32.MinValue with get, set
     [<Parameter>] member val Silent = SwitchParameter() with get, set
 
-    override x.ProcessRecord() = 
+    override x.ProcessRecord() =
+        Logging.verbose <- x.Verbose
+        x.SetCurrentDirectoryToLocation()
         let parser = UnionArgParser.Create<FindPackagesArgs>()
         seq {
             if String.IsNullOrEmpty x.SearchText = false then
@@ -144,14 +156,16 @@ type FindPackagesCmdlet() =
 
 [<Cmdlet("Paket", "FindPackageVersions")>]
 type FindPackageVersionsCmdlet() =   
-    inherit Cmdlet()
+    inherit PSCmdlet()
 
     [<Parameter>] member val Name = "" with get, set
     [<Parameter>] member val Source = "" with get, set
     [<Parameter>] member val Max = Int32.MinValue with get, set
     [<Parameter>] member val Silent = SwitchParameter() with get, set
 
-    override x.ProcessRecord() = 
+    override x.ProcessRecord() =
+        Logging.verbose <- x.Verbose
+        x.SetCurrentDirectoryToLocation()
         let parser = UnionArgParser.Create<FindPackageVersionsArgs>()
         seq {
             if String.IsNullOrEmpty x.Name = false then
@@ -168,10 +182,12 @@ type FindPackageVersionsCmdlet() =
         |> Program.findPackageVersions
 
 [<Cmdlet("Paket", "Init")>]
-type InitCmdlet() =   
-    inherit Cmdlet()
+type InitCmdlet() =
+    inherit PSCmdlet()
 
-    override x.ProcessRecord() = 
+    override x.ProcessRecord() =
+        Logging.verbose <- x.Verbose
+        x.SetCurrentDirectoryToLocation()
         let parser = UnionArgParser.Create<InitArgs>()
         List.empty
         |> parser.CreateParseResultsOfList
@@ -179,13 +195,15 @@ type InitCmdlet() =
 
 [<Cmdlet("Paket", "Install")>]
 type InstallCmdlet() =
-    inherit Cmdlet()
+    inherit PSCmdlet()
 
     [<Parameter>] member val Force = SwitchParameter() with get, set
     [<Parameter>] member val Hard = SwitchParameter() with get, set
     [<Parameter>] member val Redirects = SwitchParameter() with get, set
 
     override x.ProcessRecord() =
+        Logging.verbose <- x.Verbose
+        x.SetCurrentDirectoryToLocation()
         let parser = UnionArgParser.Create<InstallArgs>()
         seq {
             if x.Force.IsPresent then
@@ -201,12 +219,14 @@ type InstallCmdlet() =
 
 [<Cmdlet("Paket", "Outdated")>]
 type OutdatedCmdlet() =   
-    inherit Cmdlet()
+    inherit PSCmdlet()
 
     [<Parameter>] member val IgnoreConstraints = SwitchParameter() with get, set
     [<Parameter>] member val IncludePrereleases = SwitchParameter() with get, set
 
     override x.ProcessRecord() =
+        Logging.verbose <- x.Verbose
+        x.SetCurrentDirectoryToLocation()
         let parser = UnionArgParser.Create<OutdatedArgs>()
         seq {
             if x.IgnoreConstraints.IsPresent then
@@ -220,14 +240,16 @@ type OutdatedCmdlet() =
 
 [<Cmdlet("Paket", "Push")>]
 type PushCmdlet() =   
-    inherit Cmdlet()
+    inherit PSCmdlet()
 
     [<Parameter>] member val Url = "" with get, set
     [<Parameter>] member val File = "" with get, set
     [<Parameter>] member val ApiKey = "" with get, set
     [<Parameter>] member val Endpoint = "" with get, set
 
-    override x.ProcessRecord() = 
+    override x.ProcessRecord() =
+        Logging.verbose <- x.Verbose
+        x.SetCurrentDirectoryToLocation()
         let parser = UnionArgParser.Create<PushArgs>()
         seq {
             if String.IsNullOrEmpty x.Url = false then
@@ -245,7 +267,7 @@ type PushCmdlet() =
 
 [<Cmdlet("Paket", "Remove")>]
 type RemoveCmdlet() =   
-    inherit Cmdlet()
+    inherit PSCmdlet()
 
     [<Parameter>] member val NuGet = "" with get, set
     [<Parameter>] member val Project = "" with get, set
@@ -254,7 +276,9 @@ type RemoveCmdlet() =
     [<Parameter>] member val Hard = SwitchParameter() with get, set
     [<Parameter>] member val NoInstall = SwitchParameter() with get, set
 
-    override x.ProcessRecord() = 
+    override x.ProcessRecord() =
+        Logging.verbose <- x.Verbose
+        x.SetCurrentDirectoryToLocation()
         let parser = UnionArgParser.Create<RemoveArgs>()
         seq {
             if String.IsNullOrEmpty x.NuGet = false then
@@ -276,12 +300,14 @@ type RemoveCmdlet() =
 
 [<Cmdlet("Paket", "Restore")>]
 type RestoreCmdlet() =   
-    inherit Cmdlet()
+    inherit PSCmdlet()
 
     [<Parameter>] member val Force = SwitchParameter() with get, set
     [<Parameter>] member val ReferencesFiles = Array.empty<string> with get, set
 
     override x.ProcessRecord() =
+        Logging.verbose <- x.Verbose
+        x.SetCurrentDirectoryToLocation()
         let parser = UnionArgParser.Create<RestoreArgs>()
         seq {
             if x.Force.IsPresent then
@@ -295,11 +321,13 @@ type RestoreCmdlet() =
 
 [<Cmdlet("Paket", "Simplify")>]
 type SimplifyCmdlet() =
-    inherit Cmdlet()
+    inherit PSCmdlet()
 
     [<Parameter>] member val Interactive = SwitchParameter() with get, set
 
     override x.ProcessRecord() =
+        Logging.verbose <- x.Verbose
+        x.SetCurrentDirectoryToLocation()
         let parser = UnionArgParser.Create<SimplifyArgs>()
         seq {
             if x.Interactive.IsPresent then
@@ -311,13 +339,15 @@ type SimplifyCmdlet() =
 
 [<Cmdlet("Paket", "ShowInstalledPackages")>]
 type ShowInstalledPackagesCmdlet() =   
-    inherit Cmdlet()
+    inherit PSCmdlet()
 
     [<Parameter>] member val All = SwitchParameter() with get, set
     [<Parameter>] member val Project = "" with get, set
     [<Parameter>] member val Silent = SwitchParameter() with get, set
 
-    override x.ProcessRecord() = 
+    override x.ProcessRecord() =
+        Logging.verbose <- x.Verbose
+        x.SetCurrentDirectoryToLocation()
         let parser = UnionArgParser.Create<ShowInstalledPackagesArgs>()
         seq {
             if x.All.IsPresent then
@@ -333,7 +363,7 @@ type ShowInstalledPackagesCmdlet() =
 
 [<Cmdlet("Paket", "Update")>]
 type UpdateCmdlet() =   
-    inherit Cmdlet()
+    inherit PSCmdlet()
 
     [<Parameter>] member val NuGet = "" with get, set
     [<Parameter>] member val Version = "" with get, set
@@ -341,7 +371,9 @@ type UpdateCmdlet() =
     [<Parameter>] member val Hard = SwitchParameter() with get, set
     [<Parameter>] member val Redirects = SwitchParameter() with get, set
 
-    override x.ProcessRecord() = 
+    override x.ProcessRecord() =
+        Logging.verbose <- x.Verbose
+        x.SetCurrentDirectoryToLocation()
         let parser = UnionArgParser.Create<UpdateArgs>()
         seq {
             if String.IsNullOrEmpty x.NuGet = false then
