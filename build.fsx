@@ -180,6 +180,23 @@ Target "MergePaketTool" (fun _ ->
     if result <> 0 then failwithf "Error during ILRepack execution."
 )
 
+Target "MergePowerShell" (fun _ ->
+    CreateDir buildMergedDir
+
+    let toPack =
+        ["paket.exe"; "Paket.Core.dll"; "FSharp.Core.dll"; "Newtonsoft.Json.dll"; "UnionArgParser.dll"; "Paket.PowerShell.dll"]
+        |> List.map (fun l -> buildDir @@ l)
+        |> separated " "
+
+    let result =
+        ExecProcess (fun info ->
+            info.FileName <- currentDirectory @@ "packages" @@ "ILRepack" @@ "tools" @@ "ILRepack.exe"
+            info.Arguments <- sprintf "/verbose /lib:%s /out:%s %s" buildDir (buildMergedDir @@ "Paket.PowerShell.dll") toPack
+            ) (TimeSpan.FromMinutes 5.)
+
+    if result <> 0 then failwithf "Error during ILRepack execution."
+)
+
 Target "SignAssemblies" (fun _ ->
     let pfx = "code-sign.pfx"
     if not <| fileExists pfx then
@@ -346,6 +363,7 @@ Target "All" DoNothing
 
 "All"
   ==> "MergePaketTool"
+  =?> ("MergePowerShell", not isMono)
   ==> "SignAssemblies"
   ==> "NuGet"
   ==> "BuildPackage"
