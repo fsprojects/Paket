@@ -1,5 +1,6 @@
-#### 1.13.0-alpha003 - 10.06.2015
-* Allow link:false settings for file references in `paket.references` files
+#### 1.13.0 - 12.06.2015
+* Paket.PowerShell support - https://github.com/fsprojects/Paket/pull/839
+* EXPERIMENTAL: Allow link:false settings for file references in `paket.references` files
 
 #### 1.12.1 - 10.06.2015
 * BUGFIX: `paket update` did not pick latest prerelease version of indirect dependency - https://github.com/fsprojects/Paket/issues/866

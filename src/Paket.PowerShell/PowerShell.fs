@@ -200,7 +200,6 @@ type InstallCmdlet() =
     [<Parameter>] member val Force = SwitchParameter() with get, set
     [<Parameter>] member val Hard = SwitchParameter() with get, set
     [<Parameter>] member val Redirects = SwitchParameter() with get, set
-//    [<Parameter>] member val OnlyReferenced = SwitchParameter() with get, set
 
     override x.ProcessRecord() =
         Logging.verbose <- x.Verbose
@@ -213,8 +212,6 @@ type InstallCmdlet() =
                 yield InstallArgs.Hard             
             if x.Redirects.IsPresent then
                 yield InstallArgs.Redirects
-//            if x.OnlyReferences.IsPresent then
-//                yield InstallArgs.OnlyReferenced
         }
         |> List.ofSeq
         |> parser.CreateParseResultsOfList
@@ -373,7 +370,6 @@ type UpdateCmdlet() =
     [<Parameter>] member val Force = SwitchParameter() with get, set
     [<Parameter>] member val Hard = SwitchParameter() with get, set
     [<Parameter>] member val Redirects = SwitchParameter() with get, set
-//    [<Parameter>] member val NoInstall = SwitchParameter() with get, set
 
     override x.ProcessRecord() =
         Logging.verbose <- x.Verbose
@@ -390,8 +386,6 @@ type UpdateCmdlet() =
                 yield UpdateArgs.Hard
             if x.Redirects.IsPresent then
                 yield UpdateArgs.Redirects
-//            if x.NoInstall.IsPresent then
-//                yield UpdateArgs.No_Install
         }
         |> List.ofSeq
         |> parser.CreateParseResultsOfList
