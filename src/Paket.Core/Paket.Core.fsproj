@@ -79,6 +79,7 @@
     <Compile Include="Domain.fs" />
     <Compile Include="SemVer.fs" />
     <Compile Include="VersionRange.fs" />
+    <Compile Include="Logging.fsi" />
     <Compile Include="Logging.fs" />
     <Compile Include="Xml.fs" />
     <Compile Include="Utils.fs" />
