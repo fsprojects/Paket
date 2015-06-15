@@ -402,7 +402,6 @@ let ExtractPackage(fileName:string, targetFolder, name, version:SemVerInfo) =
                         File.Move(file.FullName, Path.Combine(file.DirectoryName, newName))
 
             cleanup (DirectoryInfo targetFolder)
-            // TODO this is on another thread and PS no likey
             tracefn "%s %A unzipped to %s" name version targetFolder
         return targetFolder
     }

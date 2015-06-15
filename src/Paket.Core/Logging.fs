@@ -19,12 +19,8 @@ let event = Event<Trace>()
 /// [omit]
 let subscribe callback = Observable.subscribe callback event.Publish
 
-/// [omit]
-let monitor = new Object()
-
 
 /// [omit]
-//let tracen s = traceToRegisteredFunctions TraceLevel.Info s true
 let tracen s = event.Trigger { Level = TraceLevel.Info; Text = s; NewLine = true }
 
 /// [omit]
@@ -71,13 +67,18 @@ let traceColored color (s:string) =
     if curColor <> color then Console.ForegroundColor <- curColor
 
 /// [omit]
+let monitor = new Object()
+
+/// [omit]
 let traceToConsole (trace:Trace) =
-    match trace.Level with
-    | TraceLevel.Warning -> traceColored ConsoleColor.Yellow trace.Text
-    | TraceLevel.Error -> traceColored ConsoleColor.Red trace.Text
-    | _ ->
-        if trace.NewLine then Console.WriteLine trace.Text
-        else Console.Write trace.Text
+    lock monitor
+        (fun () ->
+            match trace.Level with
+            | TraceLevel.Warning -> traceColored ConsoleColor.Yellow trace.Text
+            | TraceLevel.Error -> traceColored ConsoleColor.Red trace.Text
+            | _ ->
+                if trace.NewLine then Console.WriteLine trace.Text
+                else Console.Write trace.Text )
 
 
 // Log File Trace

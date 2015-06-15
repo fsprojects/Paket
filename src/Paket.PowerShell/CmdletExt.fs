@@ -44,9 +44,13 @@ type PSCmdlet with
 
     member x.RegisterTrace() =
         Logging.verbose <- x.Verbose
+        let id = Threading.Thread.CurrentThread.ManagedThreadId
         Logging.subscribe (fun trace ->
-            match trace.Level with
-            | TraceLevel.Warning -> x.WriteWarning trace.Text
-            | TraceLevel.Error -> x.WriteWarning trace.Text
-            | _ -> x.WriteObject trace.Text
+            if id = Threading.Thread.CurrentThread.ManagedThreadId then
+                match trace.Level with
+                | TraceLevel.Warning -> x.WriteWarning trace.Text
+                | TraceLevel.Error -> x.WriteWarning trace.Text
+                | _ -> x.WriteObject trace.Text
+            else
+                Diagnostics.Debug.Write(sprintf "not on main PS thread: %A" trace)
         )
