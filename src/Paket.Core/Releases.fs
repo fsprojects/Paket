@@ -25,29 +25,35 @@ let private download version (file:FileInfo) client =
         do! downloadFileSync url file.FullName client
     }
 
-let private doesNotExistsOrIsNewer (file:FileInfo) latest =
-    if (not <| file.Exists) then true
-    else
-        let verInfo = FileVersionInfo.GetVersionInfo file.FullName
-        let currentVersion = SemVer.Parse verInfo.FileVersion
-        currentVersion < latest
+let private doesNotExistsOrIsNewer (file : FileInfo) latest = 
+    if not file.Exists then true else 
+    let verInfo = FileVersionInfo.GetVersionInfo file.FullName
+    if verInfo = null || verInfo.FileVersion = null then false else
+    let currentVersion = SemVer.Parse verInfo.FileVersion
+    currentVersion < latest
 
 /// Downloads the latest version of the given files to the destination dir
-let downloadLatestVersionOf files destDir =
+let private downloadLatestVersionOf files destDir =
     use client = createWebClient(Constants.GithubUrl, None)
 
     trial {
         let! data = client |> downloadStringSync Constants.GithubReleasesUrl
         let! latestVersion = getLatestVersionFromJson data
 
-        let! downloads = 
+        let files =
             files
             |> List.map (fun file -> FileInfo(Path.Combine(destDir, file)))
-            |> List.filter (fun file -> doesNotExistsOrIsNewer file latestVersion)
+
+        let isOudated =
+            files
+            |> List.exists (fun file -> doesNotExistsOrIsNewer file latestVersion)
+
+        let! downloads =
+            if isOudated then files else []
             |> List.map (fun file -> download latestVersion file client)
             |> collect
         
-        ignore downloads
+        ()
     }
 
 /// Downloads the latest version of the paket.bootstrapper to the .paket dir

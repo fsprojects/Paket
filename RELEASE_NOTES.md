@@ -1,3 +1,6 @@
+#### 1.14.1 - 16.06.2015
+* Fix download of outdated files - https://github.com/fsprojects/Paket/issues/876
+
 #### 1.14.0 - 14.06.2015
 * Chocolatey support for Paket.PowerShell - https://github.com/fsprojects/Paket/pull/872
 * BUGFIX: Single version in deps file created invalid dependend package- https://github.com/fsprojects/Paket/issues/871
