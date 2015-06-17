@@ -2,8 +2,6 @@
 module Paket.PowerShell.CmdletExt
 
 open System.Management.Automation
-open System
-open System.Diagnostics
 open Paket
 
 // add F# printf write extensions
@@ -38,19 +36,3 @@ type PSCmdlet with
             if bps.ContainsKey "Debug" then
                 (bps.["Debug"] :?> SwitchParameter).ToBool()
             else false
-
-    member x.SetCurrentDirectoryToLocation() =
-        Environment.CurrentDirectory <- x.SessionState.Path.CurrentFileSystemLocation.Path
-
-    member x.RegisterTrace() =
-        Logging.verbose <- x.Verbose
-        let id = Threading.Thread.CurrentThread.ManagedThreadId
-        Logging.subscribe (fun trace ->
-            if id = Threading.Thread.CurrentThread.ManagedThreadId then
-                match trace.Level with
-                | TraceLevel.Warning -> x.WriteWarning trace.Text
-                | TraceLevel.Error -> x.WriteWarning trace.Text
-                | _ -> x.WriteObject trace.Text
-            else
-                Diagnostics.Debug.Write(sprintf "not on main PS thread: %A" trace)
-        )

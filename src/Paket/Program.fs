@@ -252,7 +252,7 @@ let push (results : ArgParseResults<_>) =
                       ?apiKey = results.TryGetResult <@ PushArgs.ApiKey @>)
 
 try
-    use consoleTrace = Logging.subscribe Logging.traceToConsole
+    use consoleTrace = Logging.event.Publish |> Observable.subscribe Logging.traceToConsole
     use fileTrace =
         match logFile with
         | Some lf -> setLogFile lf

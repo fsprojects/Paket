@@ -32,7 +32,7 @@ type Trace = {
     Text: string
     NewLine: bool }
 
-val subscribe : (Trace -> unit) -> IDisposable
+val event : Event<Trace>
 
 val traceToConsole : Trace -> unit
 
