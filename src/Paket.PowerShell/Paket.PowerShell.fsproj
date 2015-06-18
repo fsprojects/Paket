@@ -23,6 +23,11 @@
     <WarningLevel>3</WarningLevel>
     <DocumentationFile>
     </DocumentationFile>
+    <StartAction>Project</StartAction>
+    <StartProgram>
+    </StartProgram>
+    <StartArguments>
+    </StartArguments>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -38,6 +43,7 @@
   <ItemGroup>
     <Compile Include="CmdletExt.fs" />
     <Compile Include="UnionArgParserExt.fs" />
+    <Compile Include="EventSink.fs" />
     <Compile Include="PowerShell.fs" />
     <None Include="init.ps1" />
     <None Include="paket.references" />

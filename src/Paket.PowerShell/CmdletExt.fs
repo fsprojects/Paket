@@ -2,6 +2,7 @@
 module Paket.PowerShell.CmdletExt
 
 open System.Management.Automation
+open Paket
 
 // add F# printf write extensions
 type Cmdlet with
@@ -35,6 +36,3 @@ type PSCmdlet with
             if bps.ContainsKey "Debug" then
                 (bps.["Debug"] :?> SwitchParameter).ToBool()
             else false
-
-    member x.SetCurrentDirectoryToLocation() =
-        System.Environment.CurrentDirectory <- x.SessionState.Path.CurrentFileSystemLocation.Path

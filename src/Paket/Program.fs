@@ -71,7 +71,6 @@ let processCommand<'T when 'T :> IArgParserTemplate> (commandF : ArgParseResults
     processWithValidation (fun _ -> true) commandF
 
 Logging.verbose <- v
-Option.iter setLogFile logFile
 
 let add (results : ArgParseResults<_>) =
     let packageName = results.GetResult <@ AddArgs.Nuget @>
@@ -252,6 +251,11 @@ let push (results : ArgParseResults<_>) =
                       ?apiKey = results.TryGetResult <@ PushArgs.ApiKey @>)
 
 try
+    use consoleTrace = Logging.event.Publish |> Observable.subscribe Logging.traceToConsole
+    use fileTrace =
+        match logFile with
+        | Some lf -> setLogFile lf
+        | None -> null
     let parser = UnionArgParser.Create<Command>()
     let results =
         parser.Parse(inputs = args,
