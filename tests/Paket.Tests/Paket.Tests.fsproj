@@ -127,6 +127,9 @@
     <Content Include="Nuspec\LiteGuard.Source.nuspec">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+    <Content Include="Nuspec\Microsoft.Framework.Logging.nuspec">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Compile Include="Nuspec\NuspecSpecs.fs" />
     <Content Include="NuGetOData\Fantomas.xml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
