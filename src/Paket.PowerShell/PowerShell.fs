@@ -22,12 +22,14 @@ module PaketPs =
             | TraceLevel.Verbose -> cmdlet.WriteVerbose trace.Text
             | _ -> cmdlet.WriteObject trace.Text )
 
-        let stopFill _ = sink.StopFill()
-        Async.StartWithContinuations (
-            async {
+        async {
+            try
                 do! Async.SwitchToNewThread()
                 do! computation
-            }, stopFill, stopFill, stopFill )
+            finally
+                sink.StopFill()
+        } |> Async.Start
+
         sink.Drain()
 
 [<Cmdlet("Paket", "Add")>]
