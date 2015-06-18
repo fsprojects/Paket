@@ -2,7 +2,7 @@
 * Detection of DNX and DNXCore frameworks
 
 #### 1.15.0 - 18.06.2015
-* Paket.PowerShell support for Paket Manager Console - https://github.com/fsprojects/Paket/pull/875
+* Paket.PowerShell support for Package Manager Console - https://github.com/fsprojects/Paket/pull/875
 * Fix download of outdated files - https://github.com/fsprojects/Paket/issues/876
 
 #### 1.14.0 - 14.06.2015
