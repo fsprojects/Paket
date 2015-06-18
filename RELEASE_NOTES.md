@@ -1,4 +1,5 @@
-#### 1.14.1 - 16.06.2015
+#### 1.15.0 - 18.06.2015
+* Paket.PowerShell support for Paket Manager Console - https://github.com/fsprojects/Paket/pull/875
 * Fix download of outdated files - https://github.com/fsprojects/Paket/issues/876
 
 #### 1.14.0 - 14.06.2015
