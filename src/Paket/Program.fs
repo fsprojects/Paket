@@ -71,7 +71,6 @@ let processCommand<'T when 'T :> IArgParserTemplate> (commandF : ArgParseResults
     processWithValidation (fun _ -> true) commandF
 
 Logging.verbose <- v
-//Option.iter setLogFile logFile
 
 let add (results : ArgParseResults<_>) =
     let packageName = results.GetResult <@ AddArgs.Nuget @>
