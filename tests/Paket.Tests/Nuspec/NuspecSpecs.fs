@@ -192,3 +192,20 @@ let ``can detect explicit dependencies for WindowsAzure.Storage``() =
           DependenciesFileParser.parseVersionRequirement(">= 5.0.8"),
           [FrameworkRestriction.Exactly(WindowsPhoneSilverlight("v8.0"))
            FrameworkRestriction.AtLeast(DotNetFramework(FrameworkVersion.V4_Client))])
+
+[<Test>]
+let ``can detect framework assemblies for Microsoft.Framework.Logging``() = 
+    let nuspec = Nuspec.Load("Nuspec/Microsoft.Framework.Logging.nuspec")
+    nuspec.FrameworkAssemblyReferences.[0].AssemblyName |> shouldEqual "System.Collections.Concurrent"
+    nuspec.FrameworkAssemblyReferences.[0].FrameworkRestrictions 
+        |> shouldEqual         
+            [FrameworkRestriction.Exactly(DotNetFramework(FrameworkVersion.V4_5))
+             FrameworkRestriction.Exactly(DNX(FrameworkVersion.V4_5_1))]
+
+    let name,_,restrictions = nuspec.Dependencies.[0]
+    name  |> shouldEqual (PackageName "Microsoft.Framework.DependencyInjection.Interfaces")
+    restrictions|> shouldEqual []
+
+    let name,_,restrictions = nuspec.Dependencies.[2]
+    name  |> shouldEqual (PackageName "System.Collections.Concurrent")
+    restrictions |> shouldEqual  [FrameworkRestriction.Exactly(DNXCore(FrameworkVersion.V5_0))]

@@ -48,9 +48,8 @@
     <WarningLevel>3</WarningLevel>
     <DocumentationFile>
     </DocumentationFile>
-    <StartArguments>
-    </StartArguments>
-    <StartWorkingDirectory>D:\code\paket-866\tst</StartWorkingDirectory>
+    <StartArguments>update --hard -f</StartArguments>
+    <StartWorkingDirectory>D:\code\paket-dependencies</StartWorkingDirectory>
   </PropertyGroup>
   <PropertyGroup>
     <MinimumVisualStudioVersion Condition="'$(MinimumVisualStudioVersion)' == ''">11</MinimumVisualStudioVersion>

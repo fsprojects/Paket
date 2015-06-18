@@ -18,6 +18,7 @@ type FrameworkVersion =
     | V4_5_2
     | V4_5_3
     | V4_6
+    | V5_0
     override this.ToString() =
         match this with
         | V1 -> "v1.0"
@@ -32,6 +33,23 @@ type FrameworkVersion =
         | V4_5_2 -> "v4.5.2"
         | V4_5_3 -> "v4.5.3"
         | V4_6 -> "v4.6"
+        | V5_0 -> "v5.0"
+
+    member this.ShortString() =
+        match this with
+        | FrameworkVersion.V1 -> "10"
+        | FrameworkVersion.V1_1 -> "11"
+        | FrameworkVersion.V2 -> "20"
+        | FrameworkVersion.V3 -> "30"
+        | FrameworkVersion.V3_5 -> "35"
+        | FrameworkVersion.V4_Client -> "40"
+        | FrameworkVersion.V4 -> "40"
+        | FrameworkVersion.V4_5 -> "45"
+        | FrameworkVersion.V4_5_1 -> "451"
+        | FrameworkVersion.V4_5_2 -> "452"
+        | FrameworkVersion.V4_5_3 -> "453"
+        | FrameworkVersion.V4_6 -> "46"
+        | FrameworkVersion.V5_0 -> "50"
 
 module KnownAliases =
     let Data =
@@ -52,6 +70,8 @@ module KnownAliases =
 /// Framework Identifier type.
 type FrameworkIdentifier = 
     | DotNetFramework of FrameworkVersion
+    | DNX of FrameworkVersion
+    | DNXCore of FrameworkVersion
     | MonoAndroid
     | MonoTouch
     | MonoMac
@@ -63,21 +83,9 @@ type FrameworkIdentifier =
     
     override x.ToString() = 
         match x with
-        | DotNetFramework v ->
-            "net" + 
-                match v with
-                | FrameworkVersion.V1 -> "10"
-                | FrameworkVersion.V1_1 -> "11"
-                | FrameworkVersion.V2 -> "20"
-                | FrameworkVersion.V3 -> "30"
-                | FrameworkVersion.V3_5 -> "35"
-                | FrameworkVersion.V4_Client -> "40"
-                | FrameworkVersion.V4 -> "40"
-                | FrameworkVersion.V4_5 -> "45"
-                | FrameworkVersion.V4_5_1 -> "451"
-                | FrameworkVersion.V4_5_2 -> "452"
-                | FrameworkVersion.V4_5_3 -> "453"
-                | FrameworkVersion.V4_6 -> "46"
+        | DotNetFramework v -> "net" + v.ShortString()
+        | DNX v -> "dnx" + v.ShortString()             
+        | DNXCore v -> "dnxcore" + v.ShortString()             
         | MonoAndroid -> "monoandroid"
         | MonoTouch -> "monotouch"
         | MonoMac -> "monomac"
@@ -105,6 +113,9 @@ type FrameworkIdentifier =
         | DotNetFramework FrameworkVersion.V4_5_2 -> [ DotNetFramework FrameworkVersion.V4_5_1 ]
         | DotNetFramework FrameworkVersion.V4_5_3 -> [ DotNetFramework FrameworkVersion.V4_5_2 ]
         | DotNetFramework FrameworkVersion.V4_6 -> [ DotNetFramework FrameworkVersion.V4_5_3 ]
+        | DotNetFramework FrameworkVersion.V5_0 -> [ DotNetFramework FrameworkVersion.V4_6 ]
+        | DNX _ -> [ ]
+        | DNXCore _ -> [ ]
         | Silverlight "v3.0" -> [ ]
         | Silverlight "v4.0" -> [ Silverlight "v3.0" ]
         | Silverlight "v5.0" -> [ Silverlight "v4.0" ]
@@ -161,6 +172,8 @@ module FrameworkDetection =
                 | "wp71" | "sl4-wp71" | "sl4-wp"  -> Some (WindowsPhoneSilverlight "v7.1")
                 | "wp8" | "wp80"  | "wpv80" -> Some (WindowsPhoneSilverlight "v8.0")
                 | "wpa00" | "wpa81" -> Some (WindowsPhoneApp "v8.1")
+                | "dnx451" -> Some(DNX FrameworkVersion.V4_5_1)
+                | "dnxcore50" -> Some(DNXCore FrameworkVersion.V5_0)
                 | _ -> None
 
             cache.[path] <- result

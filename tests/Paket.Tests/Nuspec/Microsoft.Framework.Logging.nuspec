@@ -1,0 +1,57 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2012/06/nuspec.xsd">
+  <metadata>
+    <id>Microsoft.Framework.Logging</id>
+    <version>1.0.0-beta4</version>
+    <authors>Microsoft</authors>
+    <owners>Microsoft</owners>
+    <requireLicenseAcceptance>true</requireLicenseAcceptance>
+    <description>Logging infrastructure.</description>
+    <dependencies>
+      <group targetFramework=".NETFramework4.5">
+        <dependency id="Microsoft.Framework.DependencyInjection.Interfaces" version="1.0.0-beta4" />
+        <dependency id="Microsoft.Framework.Logging.Interfaces" version="1.0.0-beta4" />
+      </group>
+      <group targetFramework="DNX4.5.1">
+        <dependency id="Microsoft.Framework.DependencyInjection.Interfaces" version="1.0.0-beta4" />
+        <dependency id="Microsoft.Framework.Logging.Interfaces" version="1.0.0-beta4" />
+      </group>
+      <group targetFramework="DNXCore5.0">
+        <dependency id="Microsoft.Framework.DependencyInjection.Interfaces" version="1.0.0-beta4" />
+        <dependency id="Microsoft.Framework.Logging.Interfaces" version="1.0.0-beta4" />
+        <dependency id="System.Collections.Concurrent" version="4.0.10-beta-22816" />
+        <dependency id="System.Collections" version="4.0.10-beta-22816" />
+        <dependency id="System.Diagnostics.TraceSource" version="4.0.0-beta-22816" />
+        <dependency id="System.Globalization" version="4.0.10-beta-22816" />
+        <dependency id="System.Linq" version="4.0.0-beta-22816" />
+        <dependency id="System.Threading" version="4.0.10-beta-22816" />
+      </group>
+      <group targetFramework=".NETPortable4.6-Profile151">
+        <dependency id="Microsoft.Framework.DependencyInjection.Interfaces" version="1.0.0-beta4" />
+        <dependency id="Microsoft.Framework.Logging.Interfaces" version="1.0.0-beta4" />
+      </group>
+    </dependencies>
+    <frameworkAssemblies>
+      <frameworkAssembly assemblyName="System.Collections.Concurrent" targetFramework=".NETFramework4.5" />
+      <frameworkAssembly assemblyName="mscorlib" targetFramework=".NETFramework4.5" />
+      <frameworkAssembly assemblyName="System" targetFramework=".NETFramework4.5" />
+      <frameworkAssembly assemblyName="System.Core" targetFramework=".NETFramework4.5" />
+      <frameworkAssembly assemblyName="Microsoft.CSharp" targetFramework=".NETFramework4.5" />
+      <frameworkAssembly assemblyName="System.Collections.Concurrent" targetFramework="DNX4.5.1" />
+      <frameworkAssembly assemblyName="mscorlib" targetFramework="DNX4.5.1" />
+      <frameworkAssembly assemblyName="System" targetFramework="DNX4.5.1" />
+      <frameworkAssembly assemblyName="System.Core" targetFramework="DNX4.5.1" />
+      <frameworkAssembly assemblyName="Microsoft.CSharp" targetFramework="DNX4.5.1" />
+      <frameworkAssembly assemblyName="System.Collections" targetFramework=".NETPortable4.6-Profile151" />
+      <frameworkAssembly assemblyName="System.Collections.Concurrent" targetFramework=".NETPortable4.6-Profile151" />
+      <frameworkAssembly assemblyName="System.Reflection" targetFramework=".NETPortable4.6-Profile151" />
+      <frameworkAssembly assemblyName="System.Runtime.Extensions" targetFramework=".NETPortable4.6-Profile151" />
+      <frameworkAssembly assemblyName="System.Linq" targetFramework=".NETPortable4.6-Profile151" />
+      <frameworkAssembly assemblyName="System.Threading" targetFramework=".NETPortable4.6-Profile151" />
+    </frameworkAssemblies>
+    <licenseUrl>http://www.microsoft.com/web/webpi/eula/net_library_eula_enu.htm</licenseUrl>
+    <iconUrl>http://go.microsoft.com/fwlink/?LinkID=288859</iconUrl>
+    <copyright>Copyright © Microsoft Corporation</copyright>
+    <projectUrl>http://www.asp.net/</projectUrl>
+  </metadata>
+</package>
