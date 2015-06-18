@@ -13,7 +13,7 @@ module PaketPs =
     let processWithLogging (cmdlet:PSCmdlet) computation =
         Environment.CurrentDirectory <- cmdlet.SessionState.Path.CurrentFileSystemLocation.Path
         Logging.verbose <- cmdlet.Verbose
-        let sink = new EventSink<Logging.Trace>()
+        use sink = new EventSink<Logging.Trace>()
 
         Logging.event.Publish |> sink.Fill (fun trace ->
             match trace.Level with
