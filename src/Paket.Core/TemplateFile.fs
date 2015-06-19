@@ -223,14 +223,12 @@ module internal TemplateFile =
     
     let private fromReg = Regex("from (?<from>.*)", RegexOptions.Compiled)
     let private toReg = Regex("to (?<to>.*)", RegexOptions.Compiled)
-    
-    let private fileExclusionChar = '!'
-    let private isFileExclusion (l:string) = l.Trim().StartsWith(fileExclusionChar.ToString())
+    let private isExclude = Regex("\s*!\S", RegexOptions.Compiled)
 
     let private getFiles (map : Map<string, string>) = 
         Map.tryFind "files" map
         |> Option.map (fun d -> d.Split '\n')
-        |> Option.map (Array.filter (fun l -> l |> isFileExclusion |> not))
+        |> Option.map (Array.filter (fun l -> l |> isExclude.IsMatch |> not))
         |> Option.map 
                (Seq.map 
                     (fun (line:string) -> 
@@ -245,10 +243,10 @@ module internal TemplateFile =
     let private getFileExcludes (map : Map<string, string>) = 
         Map.tryFind "files" map
         |> Option.map (fun d -> d.Split '\n')
-        |> Option.map (Array.filter isFileExclusion)
+        |> Option.map (Array.filter isExclude.IsMatch)
         |> Option.map 
                (Seq.map 
-                    (fun (line:string) -> line.Trim().TrimStart(fileExclusionChar)))
+                    (fun (line:string) -> line.Trim().TrimStart('!')))
         |> Option.map List.ofSeq
         |> fun x -> defaultArg x []
 
