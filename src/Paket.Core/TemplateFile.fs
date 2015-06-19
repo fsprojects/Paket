@@ -120,7 +120,8 @@ type internal OptionalPackagingInfo =
       Dependencies : (string * VersionRequirement) list
       References : string list
       FrameworkAssemblyReferences : string list
-      Files : (string * string) list }
+      Files : (string * string) list 
+      FilesExcluded : string list }
     static member Epmty : OptionalPackagingInfo = 
         { Title = None
           Owners = []
@@ -137,7 +138,8 @@ type internal OptionalPackagingInfo =
           Dependencies = []
           References = []
           FrameworkAssemblyReferences = []
-          Files = [] }
+          Files = []
+          FilesExcluded = [] }
 
 type internal CompleteInfo = CompleteCoreInfo * OptionalPackagingInfo
 
@@ -225,13 +227,28 @@ module internal TemplateFile =
     let private getFiles (map : Map<string, string>) = 
         Map.tryFind "files" map
         |> Option.map (fun d -> d.Split '\n')
+        |> Option.map (Array.filter (fun l -> l.TrimStart(' ', '\t').StartsWith("--") |> not))
         |> Option.map 
                (Seq.map 
                     (fun (line:string) -> 
+
                         let splitted = line.Split([|"==>"|],StringSplitOptions.None) |> Array.map (fun s -> s.Trim())
                         let target = if splitted.Length < 2 then "lib" else splitted.[1]
 
                         splitted.[0],target))
+        |> Option.map List.ofSeq
+        |> fun x -> defaultArg x []
+
+    let private getFileExcludes (map : Map<string, string>) = 
+        Map.tryFind "files" map
+        |> Option.map (fun d -> d.Split '\n')
+        |> Option.map (Array.filter (fun l -> l.TrimStart(' ', '\t').StartsWith("--")))
+        |> Option.map 
+               (Seq.map 
+                    (fun (line:string) -> 
+                        let exclude = line.Split([|"--"|],StringSplitOptions.RemoveEmptyEntries) 
+                                      |> Array.map (fun s -> s.Trim())
+                        exclude.[0]))
         |> Option.map List.ofSeq
         |> fun x -> defaultArg x []
 
@@ -301,7 +318,8 @@ module internal TemplateFile =
           Dependencies = getDependencies(fileName,map,currentVersion)
           References = getReferences map
           FrameworkAssemblyReferences = getFrameworkReferences map
-          Files = getFiles map }
+          Files = getFiles map
+          FilesExcluded = getFileExcludes map }
     
     let Parse(file,currentVersion,contentStream : Stream) = 
         trial { 
