@@ -374,7 +374,7 @@ version
 files
     someDir
     anotherDir ==> someLib
-    -- excludeDir
+    !excludeDir
 """
     let sut =
         TemplateFile.Parse("file1.template", None, strToStream text)
