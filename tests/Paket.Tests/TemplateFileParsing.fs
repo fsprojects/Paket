@@ -399,7 +399,7 @@ version
 files
     someDir
     anotherDir ==> someLib
-        
+    !dontWantThis.txt
     !dontWantThat.txt
 """
     let sut =
