@@ -250,54 +250,58 @@ let push (results : ArgParseResults<_>) =
                       ?endPoint = results.TryGetResult <@ PushArgs.EndPoint @>,
                       ?apiKey = results.TryGetResult <@ PushArgs.ApiKey @>)
 
-try
+let main() =
     use consoleTrace = Logging.event.Publish |> Observable.subscribe Logging.traceToConsole
     use fileTrace =
         match logFile with
         | Some lf -> setLogFile lf
         | None -> null
-    let parser = UnionArgParser.Create<Command>()
-    let results =
-        parser.Parse(inputs = args,
-                     ignoreMissing = true,
-                     ignoreUnrecognized = true,
-                     raiseOnUsage = false)
 
-    match results.GetAllResults() with
-    | [ command ] ->
-        let handler =
-            match command with
-            | Add -> processCommand add
-            | Config -> processWithValidation validateConfig config
-            | ConvertFromNuget -> processCommand convert
-            | FindRefs -> processCommand findRefs
-            | Init -> processCommand init
-            | AutoRestore -> processWithValidation validateAutoRestore autoRestore
-            | Install -> processCommand install
-            | Outdated -> processCommand outdated
-            | Remove -> processCommand remove
-            | Restore -> processCommand restore
-            | Simplify -> processCommand simplify
-            | Update -> processCommand update
-            | FindPackages -> processCommand findPackages
-            | FindPackageVersions -> processCommand findPackageVersions
-            | ShowInstalledPackages -> processCommand showInstalledPackages
-            | Pack -> processCommand pack
-            | Push -> processCommand push
+    try
+        let parser = UnionArgParser.Create<Command>()
+        let results =
+            parser.Parse(inputs = args,
+                         ignoreMissing = true,
+                         ignoreUnrecognized = true,
+                         raiseOnUsage = false)
 
-        let args = args.[1..]
+        match results.GetAllResults() with
+        | [ command ] ->
+            let handler =
+                match command with
+                | Add -> processCommand add
+                | Config -> processWithValidation validateConfig config
+                | ConvertFromNuget -> processCommand convert
+                | FindRefs -> processCommand findRefs
+                | Init -> processCommand init
+                | AutoRestore -> processWithValidation validateAutoRestore autoRestore
+                | Install -> processCommand install
+                | Outdated -> processCommand outdated
+                | Remove -> processCommand remove
+                | Restore -> processCommand restore
+                | Simplify -> processCommand simplify
+                | Update -> processCommand update
+                | FindPackages -> processCommand findPackages
+                | FindPackageVersions -> processCommand findPackageVersions
+                | ShowInstalledPackages -> processCommand showInstalledPackages
+                | Pack -> processCommand pack
+                | Push -> processCommand push
 
-        handler command args
-    | [] ->
+            let args = args.[1..]
+
+            handler command args
+        | [] ->
+            Environment.ExitCode <- 1
+            traceError "Command was:"
+            traceError ("  " + String.Join(" ",Environment.GetCommandLineArgs()))
+            parser.Usage("available commands:") |> traceError
+        | _ -> failwith "expected only one command"
+    with
+    | exn when not (exn :? System.NullReferenceException) ->
         Environment.ExitCode <- 1
-        traceError "Command was:"
-        traceError ("  " + String.Join(" ",Environment.GetCommandLineArgs()))
-        parser.Usage("available commands:") |> traceError
-    | _ -> failwith "expected only one command"
-with
-| exn when not (exn :? System.NullReferenceException) ->
-    Environment.ExitCode <- 1
-    traceErrorfn "Paket failed with:%s\t%s" Environment.NewLine exn.Message
+        traceErrorfn "Paket failed with:%s\t%s" Environment.NewLine exn.Message
 
-    if verbose then
-        traceErrorfn "StackTrace:%s  %s" Environment.NewLine exn.StackTrace
+        if verbose then
+            traceErrorfn "StackTrace:%s  %s" Environment.NewLine exn.StackTrace
+
+main()
