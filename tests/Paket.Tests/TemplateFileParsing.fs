@@ -374,7 +374,7 @@ version
 files
     someDir
     anotherDir ==> someLib
-    !excludeDir
+    !dontWantThis.txt
 """
     let sut =
         TemplateFile.Parse("file1.template", None, strToStream text)
@@ -383,7 +383,34 @@ files
            | CompleteInfo (_, opt)
            | ProjectInfo (_, opt) -> opt
     match sut.FilesExcluded with
-    | [x] -> x |> shouldEqual "excludeDir"
+    | [x] -> x |> shouldEqual "dontWantThis.txt"
+    | _ ->  Assert.Fail()
+
+[<Test>]
+let ``Detect mutliple exclude files correctly``() =
+    let text = """type file
+id My.Thing
+authors Bob McBob
+description
+    A longer description
+    on two lines.
+version
+    1.0
+files
+    someDir
+    anotherDir ==> someLib
+        
+    !dontWantThat.txt
+"""
+    let sut =
+        TemplateFile.Parse("file1.template", None, strToStream text)
+        |> returnOrFail
+        |> function
+           | CompleteInfo (_, opt)
+           | ProjectInfo (_, opt) -> opt
+    match sut.FilesExcluded with
+    | [x;y] -> x |> shouldEqual "dontWantThis.txt"
+               y |> shouldEqual "dontWantThat.txt"
     | _ ->  Assert.Fail()
 
 [<Test>]

@@ -197,6 +197,27 @@ let Write (core : CompleteCoreInfo) optional workingDir outputDir =
 
     let entries = System.Collections.Generic.List<_>()    
     
+    let fixRelativePath (p:string) =
+        //TODO: Check for win-drive
+        let prepend = if p.StartsWith(Path.DirectorySeparatorChar.ToString()) then 
+                        [|Path.DirectorySeparatorChar.ToString()|] 
+                        else [||]  
+        p.Split(Path.DirectorySeparatorChar)
+        |> Array.fold (fun (xs:string []) x -> if x = ".." then 
+                                                Array.sub xs 0 (xs.Length-1) 
+                                                else Array.append xs [|x|]) [||]
+        |> Array.append prepend
+        |> Array.fold (fun p' x -> Path.Combine(p',x)) "" 
+          
+    let exclusions = 
+        optional.FilesExcluded
+        |> List.map (fun e -> Path.Combine(workingDir,e) |> fixRelativePath) 
+        |> List.map Fake.Globbing.isMatch
+
+    let isExcluded p =
+        let path = DirectoryInfo(p).FullName
+        exclusions |> List.exists (fun f -> f path)
+
     let addEntry path writerF = 
         if entries.Contains(path) then () else
         entries.Add path |> ignore
@@ -222,16 +243,19 @@ let Write (core : CompleteCoreInfo) optional workingDir outputDir =
         | t                              -> t + "/"
 
     // adds all files in a directory to the zipFile
-    let rec addDir source target =    
-        let target = ensureValidTargetName target
-        for file in Directory.EnumerateFiles(source,"*.*",SearchOption.TopDirectoryOnly) do
-            let fi = FileInfo file
-            let path = Path.Combine(target,fi.Name)
-            addEntryFromFile path fi.FullName
+    let rec addDir source target =
+        if not <| isExcluded source then
+            let target = ensureValidTargetName target
+            for file in Directory.EnumerateFiles(source,"*.*",SearchOption.TopDirectoryOnly) do
+                if not <| isExcluded file then
+                    let fi = FileInfo file
+                    let path = Path.Combine(target,fi.Name)
+            
+                    addEntryFromFile path fi.FullName
 
-        for dir in Directory.EnumerateDirectories(source,"*",SearchOption.TopDirectoryOnly) do
-            let di = DirectoryInfo dir
-            addDir di.FullName (Path.Combine(target,di.Name))
+            for dir in Directory.EnumerateDirectories(source,"*",SearchOption.TopDirectoryOnly) do
+                let di = DirectoryInfo dir
+                addDir di.FullName (Path.Combine(target,di.Name))
 
     // add files
     for fileName,targetFileName in optional.Files do
@@ -241,9 +265,10 @@ let Write (core : CompleteCoreInfo) optional workingDir outputDir =
             addDir source targetFileName
         else 
             if File.Exists source then
-                let fi = FileInfo(source)
-                let path = Path.Combine(targetFileName,fi.Name)
-                addEntryFromFile path source
+                if not <| isExcluded source then
+                    let fi = FileInfo(source)
+                    let path = Path.Combine(targetFileName,fi.Name)
+                    addEntryFromFile path source
             else 
                 failwithf "Could not find source file %s" source
 
