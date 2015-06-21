@@ -1,8 +1,9 @@
 ## Sample
 
 Running the command:
-	
-	paket find-package-versions name FAKE -s max 10
+
+    [lang=batchfile]
+    paket find-package-versions name FAKE -s max 10
 
 will result in:
 
