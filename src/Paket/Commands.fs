@@ -290,14 +290,20 @@ let cmdLineUsageMessage (command : Command) parser =
 
 let markdown (command : Command) (additionalText : string) =
     let (afterCommandText, afterOptionsText) =
+        let ensureLineBreak (text : string) = if String.IsNullOrEmpty(text)
+                                              then text
+                                              else text + Environment.NewLine + Environment.NewLine
+        let cleanUp (text : string) = text.Replace("# [after-command]", "")
+                                          .Replace("# [after-options]", "")
+                                          .Trim('\r', '\n') |> ensureLineBreak
         let afterCommandIndex = additionalText.IndexOf("# [after-command]")
         let afterOptionsIndex = additionalText.IndexOf("# [after-options]")
         if afterCommandIndex = -1
-        then "", additionalText.Replace("# [after-options]", "")
+        then "", additionalText |> cleanUp
         else if afterOptionsIndex = -1
-             then additionalText.Replace("# [after-command]", ""), ""
-             else (additionalText.Substring(0, afterCommandIndex).Replace("# [after-command]", ""),
-                   additionalText.Substring(afterOptionsIndex).Replace("# [after-options]", ""))
+             then additionalText |> cleanUp, ""
+             else (additionalText.Substring(0, afterCommandIndex) |> cleanUp,
+                   additionalText.Substring(afterOptionsIndex) |> cleanUp)
 
     let replace (pattern : string) (replacement : string) input =
         System.Text.RegularExpressions.Regex.Replace(input, pattern, replacement)
@@ -349,9 +355,8 @@ let markdown (command : Command) (additionalText : string) =
         .Append("    ")
         .AppendLine(syntax)
         .AppendLine()
-        .AppendLine(afterCommandText)
-        .AppendLine()
-        .AppendLine("Options:")
+        .Append(afterCommandText)
+        .Append("Options:")
         .AppendLine(options)
         .Append(afterOptionsText)
         .ToString()
