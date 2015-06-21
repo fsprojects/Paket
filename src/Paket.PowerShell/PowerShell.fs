@@ -25,6 +25,7 @@ module PaketPs =
         async {
             try
                 do! Async.SwitchToNewThread()
+                // prevent an exception from killing the thread, PS thread, and PS exe
                 try
                     do! computation
                 with
