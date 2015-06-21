@@ -1,6 +1,8 @@
 #### 1.16.0 - 21.06.2015
-* Make sure retrieved versions are in order with latest version first
+* Make sure retrieved versions are ordered by version with latest version first - https://github.com/fsprojects/Paket/issues/886
+* PowerShell argument tab completion for Paket-Add - https://github.com/fsprojects/Paket/pull/887
 * Detection of DNX and DNXCore frameworks
+* BUGFIX: Exceptions were not logged to command line - https://github.com/fsprojects/Paket/pull/885
 
 #### 1.15.0 - 18.06.2015
 * Paket.PowerShell support for Package Manager Console - https://github.com/fsprojects/Paket/pull/875
@@ -13,8 +15,6 @@
 #### 1.13.0 - 12.06.2015
 * Paket.PowerShell support - https://github.com/fsprojects/Paket/pull/839
 * EXPERIMENTAL: Allow link:false settings for file references in `paket.references` files
-
-#### 1.12.1 - 10.06.2015
 * BUGFIX: `paket update` did not pick latest prerelease version of indirect dependency - https://github.com/fsprojects/Paket/issues/866
 
 #### 1.12.0 - 09.06.2015
@@ -28,8 +28,6 @@
 
 #### 1.11.0 - 08.06.2015
 * Support for cancelling bootstrapper - https://github.com/fsprojects/Paket/pull/860
-
-#### 1.10.1 - 08.06.2015
 * Increase timeout for restricted access mode - https://github.com/fsprojects/Paket/issues/858
 
 #### 1.10.0 - 02.06.2015
