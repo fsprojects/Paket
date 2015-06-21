@@ -1,4 +1,5 @@
-#### 1.15.1 - 18.06.2015
+#### 1.16.0 - 21.06.2015
+* Make sure retrieved versions are in order with latest version first
 * Detection of DNX and DNXCore frameworks
 
 #### 1.15.0 - 18.06.2015
