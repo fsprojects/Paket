@@ -12,7 +12,9 @@ Paket.Commands.getAllCommands()
         if File.Exists optFile
         then File.ReadAllText optFile
         else ""
-    File.WriteAllText(sprintf "../content/paket-%s.md" command.Name, Paket.Commands.markdown command additionalText))
+    // Work around bug tpetricek/FSharp.Formatting#321 (FSharp.Literate does not escape HTML entities in code blocks with unknown language)
+    let cleanText (text : string) = text.Replace("[lang=batchfile]", "[lang=msh]").Replace("```batchfile", "```msh")
+    File.WriteAllText(sprintf "../content/paket-%s.md" command.Name, Paket.Commands.markdown command additionalText |> cleanText))
 #endif
 
 
