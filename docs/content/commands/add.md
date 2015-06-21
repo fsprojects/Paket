@@ -15,7 +15,7 @@ Consider the following paket.dependencies file:
 
 	nuget FAKE
 
-Now we run `paket add nuget xunit --interactive` install the package:
+Now we run `paket add nuget xunit --interactive` to install the package:
 
 ![alt text](img/interactive-add.png "Interactive paket add")
 

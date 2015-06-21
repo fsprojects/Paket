@@ -14,4 +14,4 @@ The silent mode can be used for additional tooling support in various editors. I
 	
 	paket find-packages -s
 
-The command allows runs to suggest package names. It will keep in a loop until it receives the text ":q". 
+The command allows runs to suggest package names. It will keep running in a loop until it receives the text ":q".
