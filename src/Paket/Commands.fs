@@ -356,7 +356,7 @@ let markdown (command : Command) (additionalText : string) =
         .AppendLine(syntax)
         .AppendLine()
         .Append(afterCommandText)
-        .Append("Options:")
+        .Append("### Options:")
         .AppendLine(options)
         .Append(afterOptionsText)
         .ToString()
