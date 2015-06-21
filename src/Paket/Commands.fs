@@ -276,7 +276,7 @@ with
             | EndPoint(_) -> "Optionally specify a custom api endpoint to push to. Defaults to `/api/v2/package`."
 
 let cmdLineSyntax (parser:UnionArgParser<_>) commandName =
-    "$ paket " + commandName + " " + parser.PrintCommandLineSyntax()
+    "paket " + commandName + " " + parser.PrintCommandLineSyntax()
 
 let cmdLineUsageMessage (command : Command) parser =
     System.Text.StringBuilder()
