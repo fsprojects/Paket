@@ -49,6 +49,8 @@
     <None Include="paket.references" />
     <None Include="paket.template" />
     <Compile Include="AssemblyInfo.fs" />
+    <None Include="Paket.PowerShell.psd1" />
+    <None Include="ArgumentTabCompletion.ps1" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="mscorlib" />
