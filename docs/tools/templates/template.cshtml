@@ -18,6 +18,30 @@
     <!--[if lt IE 9]>
       <script src="https://html5shim.googlecode.com/svn/trunk/html5.js"></script>
     <![endif]-->
+    <style type="text/css">
+      table.pre td.lines {
+        vertical-align: top;
+      }
+      pre.fssnip code[lang=batchfile],
+      pre.fssnip code[lang=msh] {
+        display: inline-block;
+        white-space: pre-wrap;       /* CSS 3 */
+        white-space: -moz-pre-wrap;  /* Mozilla, since 1999 */
+        white-space: -pre-wrap;      /* Opera 4-6 */
+        white-space: -o-pre-wrap;    /* Opera 7 */
+        word-wrap: break-word;       /* Internet Explorer 5.5+ */
+        word-break: keep-all;
+        padding-left: 2em;
+        text-indent: -2em;
+      }
+    </style>
+    <script type="text/javascript">
+      $(function() {
+        $("code[lang='batchfile'], code[lang='msh']").each(function() {
+          $(this).html($(this).html().replace(/ &lt;/g, "&nbsp;&lt;"))
+        })
+      })
+    </script>
   </head>
   <body>
     <div class="container">
