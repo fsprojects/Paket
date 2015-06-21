@@ -64,6 +64,7 @@ let gitRaw = environVarOrDefault "gitRaw" "https://raw.github.com/fsprojects"
 let buildDir = "bin"
 let tempDir = "temp"
 let buildMergedDir = buildDir @@ "merged"
+let buildMergedDirPS = buildDir @@ "Paket.PowerShell"
 
 
 // Read additional information from the release notes document
@@ -140,7 +141,7 @@ Target "BuildPowerShell" (fun _ ->
         let result =
             ExecProcess (fun info ->
                 info.FileName <- Path.Combine(Environment.SystemDirectory, @"WindowsPowerShell\v1.0\powershell.exe")
-                info.Arguments <- "-executionpolicy bypass  -noprofile -file src/Paket.PowerShell/System.Management.Automation.ps1") System.TimeSpan.MaxValue
+                info.Arguments <- "-executionpolicy bypass -noprofile -file src/Paket.PowerShell/System.Management.Automation.ps1") System.TimeSpan.MaxValue
         if result <> 0 then failwithf "Error copying System.Management.Automation.dll"
 
     !! solutionFilePowerShell
@@ -181,7 +182,7 @@ Target "MergePaketTool" (fun _ ->
 )
 
 Target "MergePowerShell" (fun _ ->
-    CreateDir buildMergedDir
+    CreateDir buildMergedDirPS
 
     let toPack =
         ["paket.exe"; "Paket.Core.dll"; "FSharp.Core.dll"; "Newtonsoft.Json.dll"; "UnionArgParser.dll"; "Paket.PowerShell.dll"]
@@ -191,10 +192,19 @@ Target "MergePowerShell" (fun _ ->
     let result =
         ExecProcess (fun info ->
             info.FileName <- currentDirectory @@ "packages" @@ "ILRepack" @@ "tools" @@ "ILRepack.exe"
-            info.Arguments <- sprintf "/verbose /lib:%s /out:%s %s" buildDir (buildMergedDir @@ "Paket.PowerShell.dll") toPack
+            info.Arguments <- sprintf "/verbose /lib:%s /out:%s %s" buildDir (buildMergedDirPS @@ "Paket.PowerShell.dll") toPack
             ) (TimeSpan.FromMinutes 5.)
 
     if result <> 0 then failwithf "Error during ILRepack execution."
+
+    // copy psd1 & set version
+    CopyFile (buildMergedDirPS @@ "ArgumentTabCompletion.ps1") "src/Paket.PowerShell/ArgumentTabCompletion.ps1"
+    let psd1 = buildMergedDirPS @@ "Paket.PowerShell.psd1"
+    CopyFile psd1 "src/Paket.PowerShell/Paket.PowerShell.psd1"
+    use psd = File.AppendText psd1
+    psd.WriteLine ""
+    psd.WriteLine (sprintf "ModuleVersion = '%s'" release.AssemblyVersion)
+    psd.WriteLine "}"
 )
 
 Target "SignAssemblies" (fun _ ->
