@@ -95,5 +95,10 @@ let FindPackages(auth, nugetURL, packageNamePrefix, maxResults) =
     async {
         let! packages = getPackages(auth, nugetURL, packageNamePrefix, maxResults)                        
 
-        return packages |> Array.sortBy SemVer.Parse |> Array.rev
+        return 
+            packages 
+            |> Array.choose (fun v -> try Some(v,SemVer.Parse v) with | _ -> None)
+            |> Array.sortBy snd
+            |> Array.map fst
+            |> Array.rev
     }
