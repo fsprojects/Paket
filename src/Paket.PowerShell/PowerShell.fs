@@ -39,7 +39,7 @@ module PaketPs =
 type Add() =   
     inherit PSCmdlet()
 
-    [<Parameter(Position=1)>] member val NuGet = "" with get, set
+    [<Parameter(Position=1)>][<ValidateNotNullOrEmpty>] member val NuGet = "" with get, set
     [<Parameter(Position=2)>] member val Version = "" with get, set
     [<Parameter>] member val Project = "" with get, set
     [<Parameter>] member val Force = SwitchParameter() with get, set
@@ -155,7 +155,7 @@ type FindRefsCmdlet() =
 type FindPackagesCmdlet() =   
     inherit PSCmdlet()
 
-    [<Parameter(Position=1)>] member val SearchText = "" with get, set
+    [<Parameter(Position=1)>][<ValidateNotNullOrEmpty>] member val SearchText = "" with get, set
     [<Parameter>] member val Source = "" with get, set
     [<Parameter>] member val Max = Int32.MinValue with get, set
     [<Parameter>] member val Silent = SwitchParameter() with get, set
@@ -181,7 +181,7 @@ type FindPackagesCmdlet() =
 type FindPackageVersionsCmdlet() =   
     inherit PSCmdlet()
 
-    [<Parameter(Position=1)>] member val Name = "" with get, set
+    [<Parameter(Position=1)>][<ValidateNotNullOrEmpty>]  member val Name = "" with get, set
     [<Parameter>] member val Source = "" with get, set
     [<Parameter>] member val Max = Int32.MinValue with get, set
     [<Parameter>] member val Silent = SwitchParameter() with get, set
@@ -288,7 +288,7 @@ type PushCmdlet() =
 type RemoveCmdlet() =   
     inherit PSCmdlet()
 
-    [<Parameter(Position=1)>] member val NuGet = "" with get, set
+    [<Parameter(Position=1)>][<ValidateNotNullOrEmpty>] member val NuGet = "" with get, set
     [<Parameter>] member val Project = "" with get, set
     [<Parameter>] member val Force = SwitchParameter() with get, set
     [<Parameter>] member val Interactive = SwitchParameter() with get, set
@@ -380,7 +380,7 @@ type ShowInstalledPackagesCmdlet() =
 type UpdateCmdlet() =   
     inherit PSCmdlet()
 
-    [<Parameter(Position=1)>] member val NuGet = "" with get, set
+    [<Parameter(Position=1)>][<ValidateNotNullOrEmpty>] member val NuGet = "" with get, set
     [<Parameter(Position=2)>] member val Version = "" with get, set
     [<Parameter>] member val Force = SwitchParameter() with get, set
     [<Parameter>] member val Hard = SwitchParameter() with get, set

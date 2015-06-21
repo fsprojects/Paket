@@ -1,7 +1,6 @@
 ﻿@{
 GUID = 'e7bdf748-93e9-4e24-95a2-ace98df3d687'
 Author = 'Paket'
-#CompanyName = 'Paket'
 Copyright = '(c) 2015 Paket. All rights reserved.'
 PowerShellVersion = '3.0'
 CLRVersion = '4.0'
