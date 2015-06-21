@@ -322,11 +322,10 @@ let markdown (command : Command) (additionalText : string) =
 
     let replaceLinks (text : string) =
         text
-            .Replace("paket.dependencies file","[`paket.dependencies` file](dependencies-file.html)")
-            .Replace("paket.lock file","[`paket.lock` file](lock-file.html)")
-            .Replace("paket.template files","[`paket.template` files](template-files.html)")
-            .Replace("paket.references files","[`paket.references` files](references-files.html)")
-            .Replace("paket.references file","[`paket.references` file](references-files.html)")
+        |> replace "(?<=\s)paket.dependencies( file(s)?)?" "[`paket.dependencies`$1](dependencies-file.html)"
+        |> replace "(?<=\s)paket.lock( file(s)?)?" "[`paket.lock`$1](lock-file.html)"
+        |> replace "(?<=\s)paket.template( file(s)?)?" "[`paket.template`$1](template-files.html)"
+        |> replace "(?<=\s)paket.references( file(s)?)?" "[`paket.references`$1](references-files.html)"
 
     let syntax, options = getSyntax command
 
