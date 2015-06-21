@@ -79,7 +79,16 @@ let FindVersionsForPackage(auth, nugetURL, package, maxResults) =
 let extractPackages(response:string) =
     JsonConvert.DeserializeObject<JSONVersionData>(response).Data
 
-let private getPackages(auth, nugetURL, packageNamePrefix, maxResults) = 
+let private getPackages(auth, nugetURL, packageNamePrefix, maxResults) = async {
+    match getSearchAPI(auth,nugetURL) with
+    | Some url -> 
+        let query = sprintf "%s?q=%s&take=%d" url packageNamePrefix maxResults
+        let! response = safeGetFromUrl(auth,query)
+        match response with
+        | Some text -> return extractPackages text
+        | None -> return [||]
+    | None -> return [||]
+}
 
 /// Uses the NuGet v3 autocomplete service to retrieve all packages with the given prefix.
 let FindPackages(auth, nugetURL, packageNamePrefix, maxResults) =
