@@ -148,3 +148,11 @@ module SemVer =
           Build = if l > 3 then splitted.[3] else "0"
           PreReleaseBuild = prereleaseBuild
           Original = Some version }
+
+
+
+    let SortVersions =
+        Array.choose (fun v -> try Some(v,Parse v) with | _ -> None)
+        >> Array.sortBy snd
+        >> Array.map fst
+        >> Array.rev
