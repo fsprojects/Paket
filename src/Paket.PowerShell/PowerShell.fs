@@ -25,7 +25,10 @@ module PaketPs =
         async {
             try
                 do! Async.SwitchToNewThread()
-                do! computation
+                try
+                    do! computation
+                with
+                    | ex -> Logging.traceWarn ex.Message
             finally
                 sink.StopFill()
         } |> Async.Start
@@ -36,8 +39,8 @@ module PaketPs =
 type Add() =   
     inherit PSCmdlet()
 
-    [<Parameter>] member val NuGet = "" with get, set
-    [<Parameter>] member val Version = "" with get, set
+    [<Parameter(Position=1)>] member val NuGet = "" with get, set
+    [<Parameter(Position=2)>] member val Version = "" with get, set
     [<Parameter>] member val Project = "" with get, set
     [<Parameter>] member val Force = SwitchParameter() with get, set
     [<Parameter>] member val Interactive = SwitchParameter() with get, set
@@ -47,7 +50,7 @@ type Add() =
     override x.ProcessRecord() =
         async {
             let parser = UnionArgParser.Create<AddArgs>()
-            seq {
+            [
                 if String.IsNullOrEmpty x.NuGet = false then
                     yield AddArgs.Nuget x.NuGet
                 if String.IsNullOrEmpty x.Version = false then
@@ -62,8 +65,7 @@ type Add() =
                     yield AddArgs.Hard
                 if x.NoInstall.IsPresent then
                     yield AddArgs.No_Install
-            }
-            |> List.ofSeq
+            ]
             |> parser.CreateParseResultsOfList
             |> Program.add
         } |> processWithLogging x
@@ -78,13 +80,12 @@ type AutoRestoreCmdlet() =
     override x.ProcessRecord() =
         async {
             let parser = UnionArgParser.Create<AutoRestoreArgs>()
-            seq {
+            [
                 if x.On.IsPresent then
                     yield AutoRestoreArgs.On
                 if x.Off.IsPresent then
                     yield AutoRestoreArgs.Off
-            }
-            |> List.ofSeq
+            ]
             |> parser.CreateParseResultsOfList
             |> Program.autoRestore
         } |> processWithLogging x
@@ -98,11 +99,10 @@ type ConfigCmdlet() =
     override x.ProcessRecord() =
         async {
             let parser = UnionArgParser.Create<ConfigArgs>()
-            seq {
+            [
                 if String.IsNullOrEmpty x.AddCredentials = false then
                     yield ConfigArgs.AddCredentials x.AddCredentials
-            }
-            |> List.ofSeq
+            ]
             |> parser.CreateParseResultsOfList
             |> Program.config
         } |> processWithLogging x
@@ -120,7 +120,7 @@ type ConvertFromNuGetCmdlet() =
     override x.ProcessRecord() =
         async {
             let parser = UnionArgParser.Create<ConvertFromNugetArgs>()
-            seq {
+            [
                 if x.Force.IsPresent then
                     yield ConvertFromNugetArgs.Force
                 if x.NoInstall.IsPresent then
@@ -129,8 +129,7 @@ type ConvertFromNuGetCmdlet() =
                     yield ConvertFromNugetArgs.No_Auto_Restore
                 if String.IsNullOrEmpty x.CredsMigration = false then
                     yield ConvertFromNugetArgs.Creds_Migration x.CredsMigration
-            }
-            |> List.ofSeq
+            ]
             |> parser.CreateParseResultsOfList
             |> Program.convert
         } |> processWithLogging x
@@ -139,16 +138,15 @@ type ConvertFromNuGetCmdlet() =
 type FindRefsCmdlet() =
     inherit PSCmdlet()
 
-    [<Parameter>] member val NuGet : string[] = Array.empty with get, set
+    [<Parameter(Position=1)>] member val NuGet : string[] = Array.empty with get, set
 
     override x.ProcessRecord() =
         async {
             let parser = UnionArgParser.Create<FindRefsArgs>()
-            seq {
+            [
                 for p in x.NuGet do
                     yield FindRefsArgs.Packages p
-            }
-            |> List.ofSeq
+            ]
             |> parser.CreateParseResultsOfList
             |> Program.findRefs
         } |> processWithLogging x
@@ -157,7 +155,7 @@ type FindRefsCmdlet() =
 type FindPackagesCmdlet() =   
     inherit PSCmdlet()
 
-    [<Parameter>] member val SearchText = "" with get, set
+    [<Parameter(Position=1)>] member val SearchText = "" with get, set
     [<Parameter>] member val Source = "" with get, set
     [<Parameter>] member val Max = Int32.MinValue with get, set
     [<Parameter>] member val Silent = SwitchParameter() with get, set
@@ -165,7 +163,7 @@ type FindPackagesCmdlet() =
     override x.ProcessRecord() =
         async {
             let parser = UnionArgParser.Create<FindPackagesArgs>()
-            seq {
+            [
                 if String.IsNullOrEmpty x.SearchText = false then
                     yield FindPackagesArgs.SearchText x.SearchText
                 if String.IsNullOrEmpty x.Source = false then
@@ -174,8 +172,7 @@ type FindPackagesCmdlet() =
                     yield FindPackagesArgs.MaxResults x.Max
                 if x.Silent.IsPresent then
                     yield FindPackagesArgs.Silent
-            }
-            |> List.ofSeq
+            ]
             |> parser.CreateParseResultsOfList
             |> Program.findPackages
         } |> processWithLogging x
@@ -184,7 +181,7 @@ type FindPackagesCmdlet() =
 type FindPackageVersionsCmdlet() =   
     inherit PSCmdlet()
 
-    [<Parameter>] member val Name = "" with get, set
+    [<Parameter(Position=1)>] member val Name = "" with get, set
     [<Parameter>] member val Source = "" with get, set
     [<Parameter>] member val Max = Int32.MinValue with get, set
     [<Parameter>] member val Silent = SwitchParameter() with get, set
@@ -192,7 +189,7 @@ type FindPackageVersionsCmdlet() =
     override x.ProcessRecord() =
         async {
             let parser = UnionArgParser.Create<FindPackageVersionsArgs>()
-            seq {
+            [
                 if String.IsNullOrEmpty x.Name = false then
                     yield FindPackageVersionsArgs.Name x.Name
                 if String.IsNullOrEmpty x.Source = false then
@@ -201,8 +198,7 @@ type FindPackageVersionsCmdlet() =
                     yield FindPackageVersionsArgs.MaxResults x.Max
                 if x.Silent.IsPresent then
                     yield FindPackageVersionsArgs.Silent
-            }
-            |> List.ofSeq
+            ]
             |> parser.CreateParseResultsOfList
             |> Program.findPackageVersions
         } |> processWithLogging x
@@ -230,15 +226,14 @@ type InstallCmdlet() =
     override x.ProcessRecord() =
         async {
             let parser = UnionArgParser.Create<InstallArgs>()
-            seq {
+            [
                 if x.Force.IsPresent then
                     yield InstallArgs.Force
                 if x.Hard.IsPresent then
                     yield InstallArgs.Hard             
                 if x.Redirects.IsPresent then
                     yield InstallArgs.Redirects
-            }
-            |> List.ofSeq
+            ]
             |> parser.CreateParseResultsOfList
             |> Program.install
         } |> processWithLogging x
@@ -253,13 +248,12 @@ type OutdatedCmdlet() =
     override x.ProcessRecord() =
         async {
             let parser = UnionArgParser.Create<OutdatedArgs>()
-            seq {
+            [
                 if x.IgnoreConstraints.IsPresent then
                     yield OutdatedArgs.Ignore_Constraints
                 if x.IncludePrereleases.IsPresent then
                     yield OutdatedArgs.Include_Prereleases             
-            }
-            |> List.ofSeq
+            ]
             |> parser.CreateParseResultsOfList
             |> Program.outdated
         } |> processWithLogging x
@@ -276,7 +270,7 @@ type PushCmdlet() =
     override x.ProcessRecord() =
         async {
             let parser = UnionArgParser.Create<PushArgs>()
-            seq {
+            [
                 if String.IsNullOrEmpty x.Url = false then
                     yield PushArgs.Url x.Url
                 if String.IsNullOrEmpty x.File = false then
@@ -285,8 +279,7 @@ type PushCmdlet() =
                     yield PushArgs.ApiKey x.ApiKey
                 if String.IsNullOrEmpty x.Endpoint = false then
                     yield PushArgs.EndPoint x.Endpoint
-            }
-            |> List.ofSeq
+            ]
             |> parser.CreateParseResultsOfList
             |> Program.push
         } |> processWithLogging x
@@ -295,7 +288,7 @@ type PushCmdlet() =
 type RemoveCmdlet() =   
     inherit PSCmdlet()
 
-    [<Parameter>] member val NuGet = "" with get, set
+    [<Parameter(Position=1)>] member val NuGet = "" with get, set
     [<Parameter>] member val Project = "" with get, set
     [<Parameter>] member val Force = SwitchParameter() with get, set
     [<Parameter>] member val Interactive = SwitchParameter() with get, set
@@ -305,7 +298,7 @@ type RemoveCmdlet() =
     override x.ProcessRecord() =
         async {
             let parser = UnionArgParser.Create<RemoveArgs>()
-            seq {
+            [
                 if String.IsNullOrEmpty x.NuGet = false then
                     yield RemoveArgs.Nuget x.NuGet
                 if String.IsNullOrEmpty x.Project = false then
@@ -318,8 +311,7 @@ type RemoveCmdlet() =
                     yield RemoveArgs.Hard
                 if x.NoInstall.IsPresent then
                     yield RemoveArgs.No_Install
-            }
-            |> List.ofSeq
+            ]
             |> parser.CreateParseResultsOfList
             |> Program.remove
         } |> processWithLogging x
@@ -334,13 +326,12 @@ type RestoreCmdlet() =
     override x.ProcessRecord() =
         async {
             let parser = UnionArgParser.Create<RestoreArgs>()
-            seq {
+            [
                 if x.Force.IsPresent then
                     yield RestoreArgs.Force
                 for rf in x.ReferencesFiles do
                     yield RestoreArgs.References_Files rf
-            }
-            |> List.ofSeq
+            ]
             |> parser.CreateParseResultsOfList
             |> Program.restore
         } |> processWithLogging x
@@ -354,11 +345,10 @@ type SimplifyCmdlet() =
     override x.ProcessRecord() =
         async {
             let parser = UnionArgParser.Create<SimplifyArgs>()
-            seq {
+            [
                 if x.Interactive.IsPresent then
                     yield SimplifyArgs.Interactive
-            }
-            |> List.ofSeq
+            ]
             |> parser.CreateParseResultsOfList
             |> Program.simplify
         } |> processWithLogging x
@@ -374,15 +364,14 @@ type ShowInstalledPackagesCmdlet() =
     override x.ProcessRecord() =
         async {
             let parser = UnionArgParser.Create<ShowInstalledPackagesArgs>()
-            seq {
+            [
                 if x.All.IsPresent then
                     yield ShowInstalledPackagesArgs.All
                 if String.IsNullOrEmpty x.Project = false then
                     yield ShowInstalledPackagesArgs.Project x.Project
                 if x.Silent.IsPresent then
                     yield ShowInstalledPackagesArgs.Silent
-            }
-            |> List.ofSeq
+            ]
             |> parser.CreateParseResultsOfList
             |> Program.showInstalledPackages
         } |> processWithLogging x
@@ -391,8 +380,8 @@ type ShowInstalledPackagesCmdlet() =
 type UpdateCmdlet() =   
     inherit PSCmdlet()
 
-    [<Parameter>] member val NuGet = "" with get, set
-    [<Parameter>] member val Version = "" with get, set
+    [<Parameter(Position=1)>] member val NuGet = "" with get, set
+    [<Parameter(Position=2)>] member val Version = "" with get, set
     [<Parameter>] member val Force = SwitchParameter() with get, set
     [<Parameter>] member val Hard = SwitchParameter() with get, set
     [<Parameter>] member val Redirects = SwitchParameter() with get, set
@@ -400,7 +389,7 @@ type UpdateCmdlet() =
     override x.ProcessRecord() =
         async {
             let parser = UnionArgParser.Create<UpdateArgs>()
-            seq {
+            [
                 if String.IsNullOrEmpty x.NuGet = false then
                     yield UpdateArgs.Nuget x.NuGet
                 if String.IsNullOrEmpty x.Version = false then
@@ -411,8 +400,7 @@ type UpdateCmdlet() =
                     yield UpdateArgs.Hard
                 if x.Redirects.IsPresent then
                     yield UpdateArgs.Redirects
-            }
-            |> List.ofSeq
+            ]
             |> parser.CreateParseResultsOfList
             |> Program.update
         } |> processWithLogging x

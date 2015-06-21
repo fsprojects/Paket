@@ -2,8 +2,6 @@ type file
 id Paket.PowerShell
 description
     A package dependency manager for .NET with support for NuGet packages and GitHub repositories.
-version
-    0.30.0-alpha014
 authors
     Paket team
 summary
@@ -14,7 +12,9 @@ iconurl https://raw.githubusercontent.com/fsprojects/Paket/master/docs/files/img
 tags
     nuget, bundler, F#
 files
-    ../../bin/merged/Paket.PowerShell.dll ==> tools/Paket.PowerShell
+    ../../bin/Paket.PowerShell/Paket.PowerShell.dll ==> tools/Paket.PowerShell
+    ../../bin/Paket.PowerShell/Paket.PowerShell.psd1 ==> tools/Paket.PowerShell
+    ArgumentTabCompletion.ps1 ==> tools/Paket.PowerShell
     init.ps1 ==> tools
     chocolateyInstall.ps1 ==> tools
     Install-PSModulePath.ps1 ==> tools
