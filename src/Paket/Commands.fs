@@ -289,6 +289,16 @@ let cmdLineUsageMessage (command : Command) parser =
         .ToString()
 
 let markdown (command : Command) (additionalText : string) =
+    let (afterCommandText, afterOptionsText) =
+        let afterCommandIndex = additionalText.IndexOf("# [after-command]")
+        let afterOptionsIndex = additionalText.IndexOf("# [after-options]")
+        if afterCommandIndex = -1
+        then "", additionalText.Replace("# [after-options]", "")
+        else if afterOptionsIndex = -1
+             then additionalText.Replace("# [after-command]", ""), ""
+             else (additionalText.Substring(0, afterCommandIndex).Replace("# [after-command]", ""),
+                   additionalText.Substring(afterOptionsIndex).Replace("# [after-options]", ""))
+
     let replace (pattern : string) (replacement : string) input =
         System.Text.RegularExpressions.Regex.Replace(input, pattern, replacement)
 
@@ -339,9 +349,11 @@ let markdown (command : Command) (additionalText : string) =
         .Append("    ")
         .AppendLine(syntax)
         .AppendLine()
+        .AppendLine(afterCommandText)
+        .AppendLine()
         .AppendLine("Options:")
         .AppendLine(options)
-        .Append(additionalText)
+        .Append(afterOptionsText)
         .ToString()
     |> replaceLinks
 
