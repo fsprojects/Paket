@@ -93,7 +93,5 @@ let private getPackages(auth, nugetURL, packageNamePrefix, maxResults) = async {
 /// Uses the NuGet v3 autocomplete service to retrieve all packages with the given prefix.
 let FindPackages(auth, nugetURL, packageNamePrefix, maxResults) =
     async {
-        let! packages = getPackages(auth, nugetURL, packageNamePrefix, maxResults)                        
-
-        return SemVer.SortVersions packages
+        return! getPackages(auth, nugetURL, packageNamePrefix, maxResults)
     }

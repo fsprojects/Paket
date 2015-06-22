@@ -1,5 +1,6 @@
 #### 1.16.1 - 22.06.2015
 * Tab completion for installed packages in Paket.PowerShell - https://github.com/fsprojects/Paket/pull/892
+* BUGFIX: Find-packages did not work - https://github.com/fsprojects/Paket/issues/888 https://github.com/fsprojects/Paket/issues/889
 * COSMETICS: Improved the documentation for the commands - https://github.com/fsprojects/Paket/pull/891
 
 #### 1.16.0 - 21.06.2015
