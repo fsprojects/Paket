@@ -26,11 +26,24 @@ $findPackageVersions = {
     }
 }
 
+$showInstalledPackages = {
+    param($commandName, $parameterName, $wordToComplete, $commandAst, $fakeBoundParameter)
+    Paket-ShowInstalledPackages | % {
+		$name = $_.Name
+        createCompletionResult $name $name $name | write
+    }
+}
+
 # create and add $global:options to the list of completers
 # http://www.powertheshell.com/dynamicargumentcompletion/
 if (-not $global:options) { $global:options = @{CustomArgumentCompleters = @{};NativeArgumentCompleters = @{}}}
 
 $global:options['CustomArgumentCompleters']['Paket-Add:NuGet'] = $findPackages
 $global:options['CustomArgumentCompleters']['Paket-Add:Version'] = $findPackageVersions
+$global:options['CustomArgumentCompleters']['Paket-Update:NuGet'] = $showInstalledPackages
+$global:options['CustomArgumentCompleters']['Paket-Update:Version'] = $findPackageVersions
+$global:options['CustomArgumentCompleters']['Paket-Remove:NuGet'] = $showInstalledPackages
+$global:options['CustomArgumentCompleters']['Paket-FindPackageVersions:Name'] = $findPackages
+$global:options['CustomArgumentCompleters']['Paket-FindRefs:NuGet'] = $showInstalledPackages
 
 $function:tabexpansion2 = $function:tabexpansion2 -replace 'End\r\n{','End { if ($null -ne $options) { $options += $global:options} else {$options = $global:options}'
