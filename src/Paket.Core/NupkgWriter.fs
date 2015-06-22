@@ -201,6 +201,11 @@ let Write (core : CompleteCoreInfo) optional workingDir outputDir =
     let fixRelativePath (p:string) =
         let isWinDrive = Regex(@"^\w:\\.*", RegexOptions.Compiled).IsMatch
         let isNixRoot = Regex(@"^\/.*", RegexOptions.Compiled).IsMatch
+
+        printfn "fixRelativePath: %s" p
+        printfn "isWinDrive: %A" <| isWinDrive p
+        printfn "isNixRoot: %A" <| isNixRoot p
+
         let prepend,path =
             match p with
             | s when isWinDrive s -> [|s.Substring(0,3)|],s.Substring(3)
@@ -208,14 +213,20 @@ let Write (core : CompleteCoreInfo) optional workingDir outputDir =
             | s when String.IsNullOrWhiteSpace s -> failwith "Empty exclusion path!"
             | s -> [||],s
 
-        path.Split(Path.DirectorySeparatorChar)
-        |> Array.fold (fun (xs:string []) x ->
-            match x with
-            | s when "..".Equals s -> Array.sub xs 0 (xs.Length-1)
-            | s when ".".Equals s -> xs
-            | _ -> Array.append xs [|x|]) [||]
-        |> Array.append prepend
-        |> Array.fold (fun p' x -> Path.Combine(p',x)) ""
+        printfn "storePrefix: %A , %s" prepend path
+
+        let transformed =   path.Split('\\','/')
+                            |> Array.fold (fun (xs:string []) x ->
+                                match x with
+                                | s when "..".Equals s -> Array.sub xs 0 (xs.Length-1)
+                                | s when ".".Equals s -> xs
+                                | _ -> Array.append xs [|x|]) [||]
+                            |> Array.append prepend
+                            |> Array.fold (fun p' x -> Path.Combine(p',x)) ""
+
+        printfn "transormed: %A" transformed
+
+        transformed
 
     let exclusions =
         optional.FilesExcluded
