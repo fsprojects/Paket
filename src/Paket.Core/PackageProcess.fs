@@ -10,10 +10,9 @@ open System.Collections.Generic
 open Paket.PackageMetaData
 open Chessie.ErrorHandling
 
-let Pack(dependencies : DependenciesFile, packageOutputPath, buildConfig, version, releaseNotes, templateFile) =
-    let buildConfig = defaultArg buildConfig "Release"
-    let rootPath = dependencies.FileName |> Path.GetDirectoryName
-    let packageOutputPath = if Path.IsPathRooted(packageOutputPath) then packageOutputPath else Path.Combine(rootPath,packageOutputPath)
+let Pack(workingDir,dependencies : DependenciesFile, packageOutputPath, buildConfig, version, releaseNotes, templateFile) =
+    let buildConfig = defaultArg buildConfig "Release"    
+    let packageOutputPath = if Path.IsPathRooted(packageOutputPath) then packageOutputPath else Path.Combine(workingDir,packageOutputPath)    
     Utils.createDir packageOutputPath |> returnOrFail
 
     let version = version |> Option.map SemVer.Parse
@@ -21,15 +20,18 @@ let Pack(dependencies : DependenciesFile, packageOutputPath, buildConfig, versio
     let allTemplateFiles = 
         let hashSet = new HashSet<_>()
         match templateFile with
-        | Some template -> hashSet.Add template |> ignore
+        | Some template ->
+            let templatePath = if Path.IsPathRooted(template) then template else Path.Combine(workingDir,template)
+            let fi = FileInfo templatePath
+            hashSet.Add fi.FullName |> ignore
         | None ->
-            for template in TemplateFile.FindTemplateFiles rootPath do
+            for template in TemplateFile.FindTemplateFiles workingDir do
                 hashSet.Add template |> ignore
         hashSet
     
     // load up project files and grab meta data
     let projectTemplates =
-        ProjectFile.FindAllProjects rootPath
+        ProjectFile.FindAllProjects workingDir
         |> Array.choose (fun projectFile ->
             match ProjectFile.FindTemplatesFile(FileInfo(projectFile.FileName)) with
             | None -> None

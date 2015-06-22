@@ -1,3 +1,6 @@
+#### 1.17.1 - 22.06.2015
+* BUGFIX: Issue with `paket pack` and multiple paket.template files fixed - https://github.com/fsprojects/Paket/issues/893
+
 #### 1.17.0 - 22.06.2015
 * Tab completion for installed packages in Paket.PowerShell - https://github.com/fsprojects/Paket/pull/892
 * BUGFIX: Find-package-versions did not work - https://github.com/fsprojects/Paket/issues/886

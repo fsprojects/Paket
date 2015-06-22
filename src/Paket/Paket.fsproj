@@ -48,8 +48,8 @@
     <WarningLevel>3</WarningLevel>
     <DocumentationFile>
     </DocumentationFile>
-    <StartArguments>find-package-versions name fake</StartArguments>
-    <StartWorkingDirectory>D:\code\paket-dependencies</StartWorkingDirectory>
+    <StartArguments>pack output D:\code\Paket_Issue_893\temp templatefile paket.template</StartArguments>
+    <StartWorkingDirectory>D:\code\Paket_Issue_893\ProjectB</StartWorkingDirectory>
   </PropertyGroup>
   <PropertyGroup>
     <MinimumVisualStudioVersion Condition="'$(MinimumVisualStudioVersion)' == ''">11</MinimumVisualStudioVersion>
