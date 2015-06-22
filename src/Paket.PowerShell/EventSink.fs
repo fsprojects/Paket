@@ -8,8 +8,16 @@ type EventSink<'T>() =
     let queue = new BlockingCollection<_>()
     let subscriptions = List()
 
+    member __.Add state callback =
+        queue.Add((callback, state))
+
     member __.Fill callback (source:IObservable<'T>) =
         source |> Observable.subscribe (fun state -> queue.Add((callback, state)))
+        |> subscriptions.Add
+
+    /// converts the object to be compatible with the sink
+    member __.ConvertAndFill (converter:'S -> 'T) callback (source:IObservable<'S>) =
+        source |> Observable.subscribe (fun state -> queue.Add((callback, converter state)))
         |> subscriptions.Add
 
     member __.Drain() =

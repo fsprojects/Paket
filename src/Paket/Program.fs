@@ -213,24 +213,25 @@ let findPackages (results : ArgParseResults<_>) =
 
     | Some searchText -> searchAndPrint searchText
 
-let showInstalledPackages (results : ArgParseResults<_>) =
+// separated out from showInstalledPackages to allow Paket.PowerShell to get the types
+let getInstalledPackages (results : ArgParseResults<_>) =
     let project = results.TryGetResult <@ ShowInstalledPackagesArgs.Project @>
     let showAll = results.Contains <@ ShowInstalledPackagesArgs.All @>
     let dependenciesFile = Dependencies.Locate()
-    let packages =
-        match project with
-        | None ->
-            if showAll then dependenciesFile.GetInstalledPackages()
-            else dependenciesFile.GetDirectDependencies()
-        | Some project ->
-            match ProjectFile.FindReferencesFile(FileInfo project) with
-            | None -> []
-            | Some referencesFile ->
-                let referencesFile = ReferencesFile.FromFile referencesFile
-                if showAll then dependenciesFile.GetInstalledPackages(referencesFile)
-                else dependenciesFile.GetDirectDependencies(referencesFile)
+    match project with
+    | None ->
+        if showAll then dependenciesFile.GetInstalledPackages()
+        else dependenciesFile.GetDirectDependencies()
+    | Some project ->
+        match ProjectFile.FindReferencesFile(FileInfo project) with
+        | None -> []
+        | Some referencesFile ->
+            let referencesFile = ReferencesFile.FromFile referencesFile
+            if showAll then dependenciesFile.GetInstalledPackages(referencesFile)
+            else dependenciesFile.GetDirectDependencies(referencesFile)
 
-    for name,version in packages do
+let showInstalledPackages (results : ArgParseResults<_>) =
+    for name,version in getInstalledPackages results do
         tracefn "%s - %s" name version
 
 let findPackageVersions (results : ArgParseResults<_>) =
@@ -290,6 +291,7 @@ let main() =
             let args = args.[1..]
 
             handler command args
+            ()
         | [] ->
             Environment.ExitCode <- 1
             traceError "Command was:"
