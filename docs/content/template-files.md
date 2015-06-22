@@ -100,6 +100,18 @@ If the source part refers to a file then it is copied into the target directory.
 refers to a directory, the contents of the directory will be copied into the target folder.
 If you omit the target folder, then the source is copied into the `lib` folder of the package.
 
+Excluding certain files looks like this:
+
+    [lang=batchfile]
+    files
+        relative/to/template/file ==> folder/in/nupkg
+        second/thing/**/file.* ==> folder/in/nupkg
+        !second/thing/**/file.zip
+        ../outside/file.* ==> folder/in/nupkg/other
+        !../outside/file.zip
+
+The pattern needs to match file-names, excluding directories like `!second` won't have an effect, please use `!second/*.*` instead.
+
 In a project template, the files included will be:
 
 * the output assembly of the matching project (in the correct lib directory if a library, or tools if an exe)
@@ -123,7 +135,7 @@ A block with framework assembly references looks like this:
     [lang=batchfile]
     frameworkAssemblies
 	    System.Xml
-		System.Xml.Linq	    
+		System.Xml.Linq
 
 If you omit the references block then all libraries in the packages will get referenced.
 
