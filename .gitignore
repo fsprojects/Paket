@@ -183,5 +183,6 @@ docs/content/license.md
 docs/content/release-notes.md
 _NCrunch_Paket
 docs/content/paket-*.md
+!docs/content/paket-folder.md
 *.bak
 System.Management.Automation.dll

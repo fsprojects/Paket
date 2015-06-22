@@ -30,14 +30,14 @@ with
             | Config -> "Allows to store global configuration values like NuGet credentials."
             | ConvertFromNuget -> "Converts from using NuGet to Paket."
             | FindRefs -> "Finds all project files that have the given NuGet packages installed."
-            | Init -> "Creates empty paket.dependencies file in the working directory."
+            | Init -> "Creates an empty paket.dependencies file in the working directory."
             | AutoRestore -> "Enables or disables automatic Package Restore in Visual Studio during the build process."
-            | Install -> "Ensures that all dependencies in your paket.dependencies file are present in the `packages` directory and referenced correctly in all projects."
+            | Install -> "Download the dependencies specified by the paket.dependencies or paket.lock file into the `packages/` directory and update projects."
             | Outdated -> "Lists all dependencies that have newer versions available."
             | Remove -> "Removes a package from your paket.dependencies file and all paket.references files."
-            | Restore -> "Ensures that all dependencies in your paket.dependencies file are present in the `packages` directory."
+            | Restore -> "Download the dependencies specified by the paket.lock file into the `packages/` directory."
             | Simplify -> "Simplifies your paket.dependencies file by removing transitive dependencies."
-            | Update -> "Recomputes the dependency resolution, updates the paket.lock file and propagates any resulting package changes into all project files referencing updated packages."
+            | Update -> "Update one or all dependencies to their latest version and update projects."
             | FindPackages -> "EXPERIMENTAL: Allows to search for packages."
             | FindPackageVersions -> "EXPERIMENTAL: Allows to search for package versions."
             | ShowInstalledPackages -> "EXPERIMENTAL: Shows all installed top-level packages."
@@ -70,7 +70,7 @@ with
     interface IArgParserTemplate with
         member this.Usage =
             match this with
-            | Nuget(_) -> "Nuget package id."
+            | Nuget(_) -> "NuGet package id."
             | Version(_) -> "Allows to specify version of the package."
             | Project(_) -> "Allows to add the package to a single project only."
             | Force -> "Forces the download and reinstallation of all packages."
@@ -85,7 +85,7 @@ with
     interface IArgParserTemplate with
         member this.Usage =
             match this with
-            | AddCredentials(_) -> "Add credentials for the specified Nuget feed"
+            | AddCredentials(_) -> "Add credentials for the specified NuGet feed."
 
 type ConvertFromNugetArgs =
     | [<AltCommandLine("-f")>] Force
@@ -96,10 +96,10 @@ with
     interface IArgParserTemplate with
         member this.Usage =
             match this with
-            | Force -> "Forces the conversion, even if a paket.dependencies file or paket.references files are present."
+            | Force -> "Forces the conversion, even if paket.dependencies or paket.references files are present."
             | No_Install -> "Skips paket install --hard process afterward generation of dependencies / references files."
             | No_Auto_Restore -> "Skips paket auto-restore process afterward generation of dependencies / references files."
-            | Creds_Migration(_) -> "Specify mode for migrating NuGet source credentials. Possible values are [`encrypt`|`plaintext`|`selective`]. The default mode is `encrypt`."
+            | Creds_Migration(_) -> "Specify a mode for migrating NuGet source credentials. Possible values are [`encrypt`|`plaintext`|`selective`]. The default mode is `encrypt`."
 
 type FindRefsArgs =
     | [<Rest>][<CustomCommandLine("nuget")>][<Mandatory>] Packages of string
@@ -122,8 +122,8 @@ with
     interface IArgParserTemplate with
         member this.Usage =
             match this with
-            | On -> "Turns auto restore on"
-            | Off -> "Turns auto restore off"
+            | On -> "Turns auto restore on."
+            | Off -> "Turns auto restore off."
 
 type InstallArgs =
     | [<AltCommandLine("-f")>] Force
@@ -160,8 +160,8 @@ with
     interface IArgParserTemplate with
         member this.Usage =
             match this with
-            | Nuget(_) -> "Nuget package id."
-            | Project(_) -> "Allows to add the package to a single project only."
+            | Nuget(_) -> "NuGet package id."
+            | Project(_) -> "Allows to remove the package from a single project only."
             | Force -> "Forces the download and reinstallation of all packages."
             | Interactive -> "Asks the user for every project if he or she wants to remove the package from the projects's paket.references file. By default every installation of the package is removed."
             | Hard -> "Replaces package references within project files even if they are not yet adhering to the Paket's conventions (and hence considered manually managed)."
@@ -198,7 +198,7 @@ with
     interface IArgParserTemplate with
         member this.Usage =
             match this with
-            | Nuget(_) -> "Nuget package id"
+            | Nuget(_) -> "NuGet package id."
             | Version(_) -> "Allows to specify version of the package."
             | Force -> "Forces the download and reinstallation of all packages."
             | Hard -> "Replaces package references within project files even if they are not yet adhering to the Paket's conventions (and hence considered manually managed)."
@@ -216,8 +216,8 @@ with
             match this with
             | SearchText(_) -> "Search text of a Package."
             | Source(_) -> "Allows to specify the package source feed."
-            | MaxResults(_) -> "Max. No. of results."
-            | Silent -> "Doesn't trace other output than the search result"
+            | MaxResults(_) -> "Maximum number of results."
+            | Silent -> "Doesn't trace other output than the search result."
 
 type ShowInstalledPackagesArgs =
     | All
@@ -229,7 +229,7 @@ with
             match this with
             | All -> "Shows all installed packages (incl. transitive dependencies)."
             | Project(_) -> "Show only packages that are installed in the given project."
-            | Silent -> "Doesn't trace other output than installed packages"
+            | Silent -> "Doesn't trace other output than installed packages."
 
 type FindPackageVersionsArgs =
     | [<CustomCommandLine("name")>][<Mandatory>] Name of string
@@ -240,10 +240,10 @@ with
     interface IArgParserTemplate with
         member this.Usage =
             match this with
-            | Name(_) -> "Name of the Package"
+            | Name(_) -> "Name of the Package."
             | Source(_) -> "Allows to specify the package source feed."
-            | MaxResults(_) -> "Max. No. of results"
-            | Silent -> "Doesn't trace other output than the search result"
+            | MaxResults(_) -> "Maximum number of results."
+            | Silent -> "Doesn't trace other output than the search result."
 
 type PackArgs =
     | [<CustomCommandLine("output")>][<Mandatory>] Output of string
@@ -270,13 +270,13 @@ with
     interface IArgParserTemplate with
         member this.Usage =
             match this with
-            | Url(_) -> "Url of the Nuget feed."
+            | Url(_) -> "Url of the NuGet feed."
             | FileName(_) -> "Path to the package."
             | ApiKey(_) -> "Optionally specify your API key on the command line. Otherwise uses the value of the `nugetkey` environment variable."
-            | EndPoint(_) -> "Optionally specify a custom api endpoint to push to. Defaults to `/api/v2/package`"
+            | EndPoint(_) -> "Optionally specify a custom api endpoint to push to. Defaults to `/api/v2/package`."
 
 let cmdLineSyntax (parser:UnionArgParser<_>) commandName =
-    "$ paket " + commandName + " " + parser.PrintCommandLineSyntax()
+    "paket " + commandName + " " + parser.PrintCommandLineSyntax()
 
 let cmdLineUsageMessage (command : Command) parser =
     System.Text.StringBuilder()
@@ -289,6 +289,22 @@ let cmdLineUsageMessage (command : Command) parser =
         .ToString()
 
 let markdown (command : Command) (additionalText : string) =
+    let (afterCommandText, afterOptionsText) =
+        let ensureLineBreak (text : string) = if String.IsNullOrEmpty(text)
+                                              then text
+                                              else text + Environment.NewLine + Environment.NewLine
+        let cleanUp (text : string) = text.Replace("# [after-command]", "")
+                                          .Replace("# [after-options]", "")
+                                          .Trim('\r', '\n') |> ensureLineBreak
+        let afterCommandIndex = additionalText.IndexOf("# [after-command]")
+        let afterOptionsIndex = additionalText.IndexOf("# [after-options]")
+        if afterCommandIndex = -1
+        then "", additionalText |> cleanUp
+        else if afterOptionsIndex = -1
+             then additionalText |> cleanUp, ""
+             else (additionalText.Substring(0, afterCommandIndex) |> cleanUp,
+                   additionalText.Substring(afterOptionsIndex) |> cleanUp)
+
     let replace (pattern : string) (replacement : string) input =
         System.Text.RegularExpressions.Regex.Replace(input, pattern, replacement)
 
@@ -322,11 +338,10 @@ let markdown (command : Command) (additionalText : string) =
 
     let replaceLinks (text : string) =
         text
-            .Replace("paket.dependencies file","[`paket.dependencies` file](dependencies-file.html)")
-            .Replace("paket.lock file","[`paket.lock` file](lock-file.html)")
-            .Replace("paket.template files","[`paket.template` files](template-files.html)")
-            .Replace("paket.references files","[`paket.references` files](references-files.html)")
-            .Replace("paket.references file","[`paket.references` file](references-files.html)")
+        |> replace "(?<=\s)paket.dependencies( file(s)?)?" "[`paket.dependencies`$1](dependencies-file.html)"
+        |> replace "(?<=\s)paket.lock( file(s)?)?" "[`paket.lock`$1](lock-file.html)"
+        |> replace "(?<=\s)paket.template( file(s)?)?" "[`paket.template`$1](template-files.html)"
+        |> replace "(?<=\s)paket.references( file(s)?)?" "[`paket.references`$1](references-files.html)"
 
     let syntax, options = getSyntax command
 
@@ -340,9 +355,10 @@ let markdown (command : Command) (additionalText : string) =
         .Append("    ")
         .AppendLine(syntax)
         .AppendLine()
-        .AppendLine("Options:")
+        .Append(afterCommandText)
+        .Append("### Options:")
         .AppendLine(options)
-        .Append(additionalText)
+        .Append(afterOptionsText)
         .ToString()
     |> replaceLinks
 

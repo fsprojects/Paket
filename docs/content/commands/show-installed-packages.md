@@ -1,8 +1,9 @@
 ## Sample
 
 Running the command:
-	
-	paket show-installed-packages --all -s
+
+    [lang=batchfile]
+    paket show-installed-packages --all -s
 
 will result in:
 
