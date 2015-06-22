@@ -4,13 +4,12 @@ The `paket.template` files are used to specify rules to create nupkgs by using t
 
 An example `paket.template` file might look like the following:
 
-    [lang=batchfile]
     type file
     id Test.Paket.Package
     version 1.0
     authors Michael Newton
     description
-		    description of this test package
+	    description of this test package
     files
         src/Test.Paket.Package/bin/Debug ==> lib
 
@@ -90,7 +89,6 @@ to decide on the files and dependencies added.
 
 A files block looks like this:
 
-    [lang=batchfile]
     files
 	    relative/to/template/file ==> folder/in/nupkg
 	    second/thing/to/pack ==> folder/in/nupkg
@@ -102,7 +100,6 @@ If you omit the target folder, then the source is copied into the `lib` folder o
 
 Excluding certain files looks like this:
 
-    [lang=batchfile]
     files
         relative/to/template/file ==> folder/in/nupkg
         second/thing/**/file.* ==> folder/in/nupkg
@@ -121,7 +118,6 @@ In a project template, the files included will be:
 
 A references block looks like this:
 
-    [lang=batchfile]
     references
 	    filename1.dll
 	    filename2.dll
@@ -132,7 +128,6 @@ If you omit the references block then all libraries in the packages will get ref
 
 A block with framework assembly references looks like this:
 
-    [lang=batchfile]
     frameworkAssemblies
 	    System.Xml
 		System.Xml.Linq
