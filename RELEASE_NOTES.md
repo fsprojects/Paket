@@ -1,4 +1,5 @@
-#### 1.17.1 - 22.06.2015
+#### 1.18.0 - 22.06.2015
+* Exclusion syntax for paket.template files - https://github.com/fsprojects/Paket/pull/882
 * BUGFIX: Issue with `paket pack` and multiple paket.template files fixed - https://github.com/fsprojects/Paket/issues/893
 
 #### 1.17.0 - 22.06.2015
