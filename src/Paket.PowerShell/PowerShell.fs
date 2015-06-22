@@ -7,16 +7,18 @@ open Paket.Commands
 open Nessos.UnionArgParser
 open System
 
+// types exposed publicly by sending to output
+type Package = { Name: string; Version: string }
+
 [<AutoOpen>]
 module PaketPs =
     
-    type Package = { Name: string; Version: string }
-
     type PaketOutput =
-    | Trace of Logging.Trace
-    | Package of Package
+        | Trace of Logging.Trace
+        | Package of Package
 
-    let runWithLogging (cmdlet:PSCmdlet) (computation:Async<'T>) (cont:'T -> EventSink<PaketOutput> -> unit) =
+    /// runs the async computation and then a continuation on the result
+    let runWithLogging (cmdlet: PSCmdlet) (computation: Async<'T>) (cont: EventSink<PaketOutput> -> 'T -> unit) =
         Environment.CurrentDirectory <- cmdlet.SessionState.Path.CurrentFileSystemLocation.Path
         Logging.verbose <- cmdlet.Verbose
         use sink = new EventSink<PaketOutput>()
@@ -38,7 +40,7 @@ module PaketPs =
                     // prevent an exception from killing the thread, PS thread, and PS exe
                     try
                         let! v = computation
-                        cont v sink
+                        cont sink v
                     with
                         | ex -> Logging.traceWarn ex.Message
                 finally
@@ -47,31 +49,9 @@ module PaketPs =
 
         sink.Drain()
 
+    /// runs the async computation, but no continuation is needed
     let processWithLogging (cmdlet:PSCmdlet) (computation:Async<unit>) =
-        Environment.CurrentDirectory <- cmdlet.SessionState.Path.CurrentFileSystemLocation.Path
-        Logging.verbose <- cmdlet.Verbose
-        use sink = new EventSink<Logging.Trace>()
-
-        Logging.event.Publish |> sink.Fill (fun trace ->
-            match trace.Level with
-            | TraceLevel.Error -> cmdlet.WriteWarning trace.Text
-            | TraceLevel.Warning -> cmdlet.WriteWarning trace.Text
-            | TraceLevel.Verbose -> cmdlet.WriteVerbose trace.Text
-            | _ -> cmdlet.WriteObject trace.Text )
-        
-        async {
-            try
-                do! Async.SwitchToNewThread()
-                // prevent an exception from killing the thread, PS thread, and PS exe
-                try
-                    do! computation
-                with
-                    | ex -> Logging.traceWarn ex.Message
-            finally
-                sink.StopFill()
-        } |> Async.Start
-
-        sink.Drain()
+        runWithLogging cmdlet computation (fun _ _ -> ())
 
 [<Cmdlet("Paket", "Add")>]
 type Add() =   
@@ -418,9 +398,9 @@ type ShowInstalledPackagesCmdlet() =
             }
             
         runWithLogging x computation
-            (fun packages output ->
+            (fun sink packages ->
                  for name,version in packages do
-                    output.Add
+                    sink.Add
                         (PaketOutput.Package {Name=name; Version=version})
                         (fun po -> 
                             match po with
