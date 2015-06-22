@@ -48,7 +48,7 @@
     <WarningLevel>3</WarningLevel>
     <DocumentationFile>
     </DocumentationFile>
-    <StartArguments>find-packages searchtext fak</StartArguments>
+    <StartArguments>find-package-versions name fake</StartArguments>
     <StartWorkingDirectory>D:\code\paket-dependencies</StartWorkingDirectory>
   </PropertyGroup>
   <PropertyGroup>
