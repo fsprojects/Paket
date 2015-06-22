@@ -1,3 +1,7 @@
+#### 1.16.1 - 22.06.2015
+* Tab completion for installed packages in Paket.PowerShell - https://github.com/fsprojects/Paket/pull/892
+* COSMETICS: Improved the documentation for the commands - https://github.com/fsprojects/Paket/pull/891
+
 #### 1.16.0 - 21.06.2015
 * Make sure retrieved versions are ordered by version with latest version first - https://github.com/fsprojects/Paket/issues/886
 * PowerShell argument tab completion for Paket-Add - https://github.com/fsprojects/Paket/pull/887
