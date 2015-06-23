@@ -9,7 +9,7 @@
   * Syntax highlighting for `paket.dependencies`
   * Paket commands available in Atom's Command Palette
 
-<a href="img/paket-add-atom.gif"><img src="img/paket-add-atom.gif" alt="alt text" title="paket add command in Atom" width="500"></a>
+<a href="img/paket-add-atom.gif"><img src="img/paket-add-atom.gif" alt="paket add command in Atom" title="paket add command in Atom" width="500"></a>
 
 ## Emacs
 
@@ -28,4 +28,18 @@
   * Paket commands in Solution Explorer menu  
   * Syntax highlighting in `paket.dependencies`
 
-<a href="img/paket.visualstudio.png"><img src="img/paket.visualstudio.png" alt="alt text" title="Paket in VisualStudio" width="500"></a>
+<a href="img/paket.visualstudio.png"><img src="img/paket.visualstudio.png" alt="Paket in VisualStudio" title="Paket in VisualStudio" width="500"></a>
+
+## Xamarin Studio
+
+* Project site: https://github.com/mrward/monodevelop-paket-addin
+* Status: In Development
+* Installation: Available in the [MonoDevelop addin repository](http://addins.monodevelop.com/)
+* Features:
+	* View dependencies and referenced NuGet packages in the Solution window
+	* Execute Paket commands from the Solution window
+	* Syntax highlighting for all paket files
+	* Code completion whilst editing the paket.dependencies file
+	* Integrates with Xamarin Studio's unified search
+
+<a href="img/paket-xamarin-studio.png"><img src="img/paket-xamarin-studio.png" alt="Paket in Xamarin Studio" title="Paket in Xamarin Studio" width="500"></a>
