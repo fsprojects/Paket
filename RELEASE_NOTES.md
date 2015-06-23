@@ -1,3 +1,6 @@
+#### 1.18.2 - 23.06.2015
+* BUGFIX: Use updated globbing for paket.template
+
 #### 1.18.1 - 23.06.2015
 * COSMETICS: Show better error message when a package is used in `paket.references` but not in `paket.lock`
 
