@@ -184,30 +184,33 @@ let InstallIntoProjects(sources, options : InstallerOptions, lockFile : LockFile
         let usedPackages =
             referenceFile.NugetPackages
             |> Seq.map (fun ps ->
-                let package = packages.[NormalizedPackageName ps.Name]
+                let name = NormalizedPackageName ps.Name
+                match packages |> Map.tryFind name with
+                 | None -> 
+                    failwithf "could not resolve %A (normalized: %A)" ps.Name name
+                 | Some package -> 
+                    ps.Name,
+                        { ps.Settings with
+                            FrameworkRestrictions =
+                                // TODO: This should filter
+                                ps.Settings.FrameworkRestrictions @
+                                    lockFile.Options.Settings.FrameworkRestrictions @
+                                    package.Settings.FrameworkRestrictions
 
-                ps.Name,
-                    { ps.Settings with
-                        FrameworkRestrictions =
-                            // TODO: This should filter
-                            ps.Settings.FrameworkRestrictions @
-                                lockFile.Options.Settings.FrameworkRestrictions @
-                                package.Settings.FrameworkRestrictions
+                            ImportTargets =
+                                ps.Settings.ImportTargets ++
+                                    package.Settings.ImportTargets ++ 
+                                    lockFile.Options.Settings.ImportTargets
 
-                        ImportTargets =
-                            ps.Settings.ImportTargets ++
-                                package.Settings.ImportTargets ++ 
-                                lockFile.Options.Settings.ImportTargets
+                            CopyLocal =
+                                ps.Settings.CopyLocal ++ 
+                                    package.Settings.CopyLocal ++
+                                    lockFile.Options.Settings.CopyLocal
 
-                        CopyLocal =
-                            ps.Settings.CopyLocal ++ 
-                                package.Settings.CopyLocal ++
-                                lockFile.Options.Settings.CopyLocal
-
-                        OmitContent =
-                            ps.Settings.OmitContent ++ 
-                                package.Settings.OmitContent ++ 
-                                lockFile.Options.Settings.OmitContent  })
+                            OmitContent =
+                                ps.Settings.OmitContent ++ 
+                                    package.Settings.OmitContent ++ 
+                                    lockFile.Options.Settings.OmitContent  })
             |> Map.ofSeq
 
 
