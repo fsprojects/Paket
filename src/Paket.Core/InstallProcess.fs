@@ -184,7 +184,10 @@ let InstallIntoProjects(sources, options : InstallerOptions, lockFile : LockFile
         let usedPackages =
             referenceFile.NugetPackages
             |> Seq.map (fun ps ->
-                let package = packages.[NormalizedPackageName ps.Name]
+                let package = 
+                    match packages |> Map.tryFind (NormalizedPackageName ps.Name) with
+                    | Some p -> p
+                    | None -> failwithf "%s uses NuGet package %O, but it was not found in the paket.lock file." referenceFile.FileName ps.Name
 
                 ps.Name,
                     { ps.Settings with

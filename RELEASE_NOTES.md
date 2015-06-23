@@ -1,3 +1,6 @@
+#### 1.18.1 - 23.06.2015
+* COSMETICS: Show better error message when a package is used in `paket.references` but not in `paket.lock`
+
 #### 1.18.0 - 22.06.2015
 * Exclusion syntax for paket.template files - https://github.com/fsprojects/Paket/pull/882
 * BUGFIX: Issue with `paket pack` and multiple paket.template files fixed - https://github.com/fsprojects/Paket/issues/893
