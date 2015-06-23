@@ -13,6 +13,7 @@ Paket is available as:
 
   * [download from GitHub.com](https://github.com/fsprojects/Paket/releases/latest)
   * as a package [`Paket` on nuget.org](https://www.nuget.org/packages/Paket/)
+  * [plugins for popular editors](editor-support.html)
 
 [![NuGet Status](http://img.shields.io/nuget/v/Paket.svg?style=flat)](https://www.nuget.org/packages/Paket/)
 
@@ -30,7 +31,7 @@ Install all of the required packages from the specified sources:
     [lang=batchfile]
     $ paket install
 
-The usage is to have a [`.paket` folder](paket-folder.html) in the root of your solution to install packages. 
+The usage is to have a [`.paket` folder](paket-folder.html) in the root of your solution to install packages.
 
 The [`paket install` command](paket-install.html) will analyze your dependencies and automatically generate a [`paket.lock` file](lock-file.html) if it doesn't exist yet:
 
