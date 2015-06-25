@@ -37,6 +37,13 @@ let toBasicAuth = function
     | ConfigAuthentication(username, password) -> 
         {Username = username; Password = password}
 
+let tryParseWindowsStyleNetworkPath (path : string) =
+    let trimmed = path.TrimStart()
+    match Environment.OSVersion.Platform with
+        | PlatformID.Unix | PlatformID.MacOSX when trimmed.StartsWith @"\\" ->
+            trimmed.Replace('\\', '/') |> sprintf "smb:%s" |> Some
+        | _  -> None
+
 type NugetSource = 
     { Url : string
       Authentication : NugetSourceAuthentication option }
@@ -91,11 +98,14 @@ type PackageSource =
         PackageSource.Parse(source, parseAuth(line, source))
 
     static member Parse(source,auth) = 
-        match System.Uri.TryCreate(source, System.UriKind.Absolute) with
-        | true, uri -> if uri.Scheme = System.Uri.UriSchemeFile then LocalNuget(source) else Nuget({ Url = source; Authentication = auth })
-        | _ ->  match System.Uri.TryCreate(source, System.UriKind.Relative) with
-                | true, uri -> LocalNuget(source)
-                | _ -> failwithf "unable to parse package source: %s" source
+        match tryParseWindowsStyleNetworkPath source with
+        | Some path -> LocalNuget(path)
+        | _ ->
+            match System.Uri.TryCreate(source, System.UriKind.Absolute) with
+            | true, uri -> if uri.Scheme = System.Uri.UriSchemeFile then LocalNuget(source) else Nuget({ Url = source; Authentication = auth })
+            | _ ->  match System.Uri.TryCreate(source, System.UriKind.Relative) with
+                    | true, uri -> LocalNuget(source)
+                    | _ -> failwithf "unable to parse package source: %s" source
 
     member this.Url = 
         match this with
