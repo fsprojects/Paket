@@ -99,7 +99,7 @@ type PackageSource =
 
     static member Parse(source,auth) = 
         match tryParseWindowsStyleNetworkPath source with
-        | Some path -> LocalNuget(path)
+        | Some path -> PackageSource.Parse(path)
         | _ ->
             match System.Uri.TryCreate(source, System.UriKind.Absolute) with
             | true, uri -> if uri.Scheme = System.Uri.UriSchemeFile then LocalNuget(source) else Nuget({ Url = source; Authentication = auth })
