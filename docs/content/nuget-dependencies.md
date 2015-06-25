@@ -200,3 +200,11 @@ The `!` modifier is applicable to all [version constraints](#Version-constraints
 
     nuget Example-B != 1.2  // use "min" version resolution strategy
     nuget Example-C !>= 1.2 // use "min" version resolution strategy
+
+### Specifying multiple targeting options
+
+It is possible to apply more than one of the options above to a particular package.  To do so, simply separate them by commas, like so:
+    
+    source https://nuget.org/api/v2
+
+    nuget ClearScript.Installer import_targets: false, content: none // we don't import .targets and .props, and also don't add any content
