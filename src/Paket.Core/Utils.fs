@@ -188,6 +188,24 @@ let getFromUrl (auth:Auth option, url : string) =
             return ""
     }
 
+let getXmlFromUrl (auth:Auth option, url : string) =
+    async { 
+        try
+            use client = createWebClient(url,auth)
+
+            // mimic the headers sent from nuget client to odata/ endpoints
+            client.Headers.Add(HttpRequestHeader.Accept, "application/atom+xml, application/xml")
+            client.Headers.Add(HttpRequestHeader.AcceptCharset, "UTF-8")
+            client.Headers.Add("DataServiceVersion", "1.0;NetFx")
+            client.Headers.Add("MaxDataServiceVersion", "2.0;NetFx")
+
+            return! client.AsyncDownloadString(Uri(url))
+        with
+        | exn -> 
+            failwithf "Could not retrieve data from %s%s Message: %s" url Environment.NewLine exn.Message
+            return ""
+    }
+    
 /// [omit]
 let safeGetFromUrl (auth:Auth option, url : string) = 
     async { 
