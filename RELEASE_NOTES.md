@@ -1,3 +1,7 @@
+#### 1.18.3
+* Support Odata query fallback for package details with /odata prefix
+* Establish beta-level comatibility with Klondike nuget server
+
 #### 1.18.2 - 23.06.2015
 * BUGFIX: Use updated globbing for paket.template
 
