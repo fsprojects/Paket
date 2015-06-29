@@ -616,7 +616,12 @@ let GetPackageDetails root force sources packageName (version:SemVerInfo) : Pack
             with e ->
               verbosefn "Source '%O' exception: %O" source e
               tryNext rest
-        | [] -> failwithf "Couldn't get package details for package %s on any of %A." package (sources |> List.map (fun (s:PackageSource) -> s.ToString()))
+        | [] -> 
+            match sources with
+            | [source] ->
+                failwithf "Couldn't get package details for package %s %s on %s." package (version.ToString()) (source.ToString())
+            | _ ->
+                failwithf "Couldn't get package details for package %s %s on any of %A." package (version.ToString()) (sources |> List.map (fun (s:PackageSource) -> s.ToString()))
     
     let source,nugetObject = tryNext sources
     { Name = PackageName nugetObject.PackageName

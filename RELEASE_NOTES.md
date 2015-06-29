@@ -1,6 +1,9 @@
-#### 1.18.3
+#### 1.18.4 - 29.06.2015
+* COSMETICS: Better error message when package doesn't exist
+
+#### 1.18.3 - 28.06.2015
 * Support Odata query fallback for package details with /odata prefix
-* Establish beta-level comatibility with Klondike nuget server
+* Establish beta-level comatibility with Klondike nuget server - https://github.com/fsprojects/Paket/pull/907
 
 #### 1.18.2 - 23.06.2015
 * BUGFIX: Use updated globbing for paket.template
