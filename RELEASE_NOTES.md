@@ -1,3 +1,6 @@
+#### 1.18.5 - 29.06.2015
+* BUGFIX: Delete cached errors if all sources fail - https://github.com/fsprojects/Paket/issues/908
+
 #### 1.18.4 - 29.06.2015
 * COSMETICS: Better error message when package doesn't exist
 

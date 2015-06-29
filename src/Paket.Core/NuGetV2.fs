@@ -284,6 +284,14 @@ let private loadFromCacheOrOData force fileName auth nugetURL package version =
             return true,details
     }
 
+let deleteErrorFile (packageName:PackageName) =
+    let di = DirectoryInfo(CacheFolder)
+    for errorFile in di.GetFiles(sprintf "*%O*.failed" packageName) do
+        try
+            File.Delete(errorFile.FullName)
+        with
+        | _ -> ()
+
 /// Tries to get download link and direct dependencies from Nuget
 /// Caches calls into json file
 let getDetailsFromNuget force auth nugetURL package (version:SemVerInfo) = 
@@ -617,6 +625,7 @@ let GetPackageDetails root force sources packageName (version:SemVerInfo) : Pack
               verbosefn "Source '%O' exception: %O" source e
               tryNext rest
         | [] -> 
+            deleteErrorFile packageName
             match sources with
             | [source] ->
                 failwithf "Couldn't get package details for package %s %s on %s." package (version.ToString()) (source.ToString())
