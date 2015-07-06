@@ -3,26 +3,63 @@
 open System
 open System.Text.RegularExpressions
 
+module utils =  
+    let zipOpt l1 l2 = 
+        let llength, rlength = List.length l1, List.length l2
+        seq {
+            for i in 0..(max llength rlength) do
+                let l = if llength > i then Some (List.nth l1 i) else None
+                let r = if rlength > i then Some (List.nth l2 i) else None
+                yield l, r
+        }
+
+[<CustomEquality; CustomComparison>]
+type PreReleaseSegment = 
+    | AlphaNumeric of string
+    | Numeric of bigint
+
+    interface System.IComparable with
+        member x.CompareTo yobj =
+            match yobj with
+            | :? PreReleaseSegment as y ->
+                match x, y with
+                | AlphaNumeric a, AlphaNumeric b -> compare a b
+                | Numeric a, Numeric b -> compare a b
+                | AlphaNumeric a, Numeric b -> 1
+                | Numeric a , AlphaNumeric b -> -1
+            | _ -> invalidArg "yobj" "can't compare to other types of objects."
+
+    override x.GetHashCode() = hash x
+    override x.Equals yobj = 
+        match yobj with 
+        | :? PreReleaseSegment as y ->
+            match x, y with
+                | AlphaNumeric a, AlphaNumeric b -> a = b
+                | Numeric a, Numeric b -> a = b
+                | AlphaNumeric a, Numeric b -> false
+                | Numeric a , AlphaNumeric b -> false
+        | _ -> false
+
 /// Information about PreRelease packages.
 [<CustomEquality; CustomComparison>]
 type PreRelease = 
     { Origin : string
       Name : string
-      Number : bigint option }
+      Values : PreReleaseSegment list }
     
-    static member TryParse str = 
-        let m = Regex("^(?<name>[a-zA-Z]+)(?<number>\d*)$").Match(str)
-        match m.Success, m.Groups.["name"].Value, m.Groups.["number"].Value with
-        | true, name, "" -> 
-            Some { Origin = str
-                   Name = name
-                   Number = None }
-        | true, name, number -> 
-            Some { Origin = str
-                   Name = name
-                   Number = Some(bigint.Parse number) }
-        | _ -> None
-    
+    static member TryParse (str : string) = 
+        if String.IsNullOrEmpty str then None 
+        else
+            let name = Regex("^(?<name>[a-zA-Z]+)").Match(str).Value
+
+            let parse segment =
+                match bigint.TryParse segment with
+                | true, bint -> Numeric bint
+                | false, _ -> AlphaNumeric segment
+                    
+            let values = str.Split([|'.'|]) |> Array.map parse |> List.ofArray
+            Some { Origin = str; Name = name; Values = values}
+
     override x.Equals(yobj) = 
         match yobj with
         | :? PreRelease as y -> x.Origin = y.Origin
@@ -33,8 +70,16 @@ type PreRelease =
         member x.CompareTo yobj = 
             match yobj with
             | :? PreRelease as y -> 
-                if x.Name <> y.Name then compare x.Name y.Name
-                else compare x.Number y.Number
+                utils.zipOpt x.Values y.Values
+                |> Seq.fold (fun cmp (a, b) -> 
+                    if cmp <> 0 then cmp
+                    else 
+                        match a, b with
+                        | None, Some _ -> -1
+                        | Some _, None -> 1
+                        | _ , _ -> compare a b
+                ) 0
+
             | _ -> invalidArg "yobj" "cannot compare values of different types"
 
 /// Contains the version information.
@@ -50,8 +95,7 @@ type SemVerInfo =
       PreRelease : PreRelease option
       /// The optional build no.
       Build : string
-      /// The optional prerelease build no.
-      PreReleaseBuild : string
+      BuildMetaData : string
       // The original version text
       Original : string option }
     
@@ -59,21 +103,11 @@ type SemVerInfo =
         let build = 
             if String.IsNullOrEmpty x.Build |> not && x.Build <> "0" then "." + x.Build
             else ""
-            
-        let preReleaseBuild = 
-            if String.IsNullOrEmpty x.PreReleaseBuild |> not && x.PreReleaseBuild <> "0" then 
-                if x.PreReleaseBuild.StartsWith("-") then x.PreReleaseBuild else "." + x.PreReleaseBuild
-            else ""
-            
+                        
         let pre = 
             match x.PreRelease with
-            | Some preRelease ->
-                let preReleaseNumber =
-                    match preRelease.Number with
-                    | Some number -> string number
-                    | None -> ""
-                "-" + preRelease.Name + preReleaseNumber + preReleaseBuild
-            | None -> preReleaseBuild
+            | Some preRelease -> sprintf "-%s" preRelease.Origin
+            | None -> ""
 
         sprintf "%d.%d.%d%s%s" x.Major x.Minor x.Patch build pre
 
@@ -87,7 +121,7 @@ type SemVerInfo =
     override x.Equals(yobj) = 
         match yobj with
         | :? SemVerInfo as y -> 
-            x.Major = y.Major && x.Minor = y.Minor && x.Patch = y.Patch && x.PreRelease = y.PreRelease && x.Build = y.Build && x.PreReleaseBuild = y.PreReleaseBuild 
+            x.Major = y.Major && x.Minor = y.Minor && x.Patch = y.Patch && x.PreRelease = y.PreRelease && x.Build = y.Build && x.BuildMetaData = y.BuildMetaData 
         | _ -> false
     
     override x.GetHashCode() = hash (x.Minor, x.Minor, x.Patch, x.PreRelease, x.Build)
@@ -98,19 +132,17 @@ type SemVerInfo =
                 if x.Major <> y.Major then compare x.Major y.Major
                 else if x.Minor <> y.Minor then compare x.Minor y.Minor
                 else if x.Patch <> y.Patch then compare x.Patch y.Patch
-                else if x.Build <> y.Build then 
+                else if x.Build <> y.Build then
                     match Int32.TryParse x.Build, Int32.TryParse y.Build with
                     | (true, b1), (true, b2) -> compare b1 b2
                     | _ -> compare x.Build y.Build
-                else if x.PreRelease = y.PreRelease && x.PreReleaseBuild = y.PreReleaseBuild then 0
-                else if x.PreRelease.IsNone && not y.PreRelease.IsNone && x.PreReleaseBuild = "0" then 1
-                else if y.PreRelease.IsNone && not x.PreRelease.IsNone && y.PreReleaseBuild = "0" then -1
-                else if x.PreRelease <> y.PreRelease then compare x.PreRelease y.PreRelease
-                else if x.PreReleaseBuild <> y.PreReleaseBuild then 
-                    match Int32.TryParse(x.PreReleaseBuild.TrimStart('-')), Int32.TryParse(y.PreReleaseBuild.TrimStart('-')) with
-                    | (true, b1), (true, b2) -> compare b1 b2
-                    | _ -> compare x.PreReleaseBuild y.PreReleaseBuild
-                else 0
+                else 
+                    match x.PreRelease, y.PreRelease with
+                    | None, None -> 0
+                    | Some p, None -> -1
+                    | None, Some p -> 1
+                    | Some left, Some right -> compare left right
+
             | _ -> invalidArg "yobj" "cannot compare values of different types"
 
 ///  Parser which allows to deal with [Semantic Versioning](http://semver.org/) (SemVer).
@@ -125,31 +157,54 @@ module SemVer =
     ///     parse "1.2.3-alpha002" > parse "1.2.3-alpha1"   // true
     ///     parse "1.5.0-beta.2"   > parse "1.5.0-rc.1"     // false
     let Parse(version : string) = 
+        
+        /// sanity check to make sure that all of the integers in the string are positive.
+        /// because we use raw substrings with dashes this is very complex :(
+        version.Split([|'.'|]) |> Array.iter (fun s -> match Int32.TryParse s with | true, s when s < 0 -> failwith "no negatives!" | _ -> ignore ())
+
         if version.Contains("!") then 
             failwithf "Invalid character found in %s" version
         if version.Contains("..") then 
             failwithf "Empty version part found in %s" version
         
-        let dashSplitted = version.Split([|'-'; '+'|])
-        let splitted = dashSplitted.[0].Split '.'
-        let l = splitted.Length
-        let prerelease = if dashSplitted.Length > 1 then dashSplitted.[1].Split('.').[0] else String.Empty
+        let firstDash = version.IndexOf("-")
+        let plusIndex = version.IndexOf("+")
+
+        let majorMinorPatch =  
+            let firstSigil = if firstDash > 0 then firstDash else plusIndex
+            match firstSigil with
+            | -1 -> version
+            | n -> version.Substring(0, n)
+
+        let prerelease = 
+            match firstDash, plusIndex with
+            | -1, _ -> ""
+            | d, p when p = -1 -> version.Substring(d+1)
+            | d, p -> version.Substring(d+1, (version.Length - 1 - p) )  
             
-        let prereleaseBuild = 
-            if dashSplitted.Length > 1 then
-                version.Replace(dashSplitted.[0] + "-" + prerelease,"").TrimStart('.')
-            else 
-                "0"
+        /// there can only be one piece of build metadata, and it is signified by a + and then any number of dot-separated alphanumeric groups.
+        /// this just greedily takes the whole remaining string :(
+        let buildmeta =
+            match plusIndex with
+            | -1 -> ""
+            | n when plusIndex = version.Length - 1 -> ""
+            | n -> version.Substring(plusIndex + 1)
+        
+        let major, minor, patch, build = 
+            match majorMinorPatch.Split([|'.'|]) with
+            | [|M; m; p; b|] -> int M, int m, int p, b
+            | [|M; m; p; |] -> int M, int m, int p, "0"
+            | [|M; m;|] -> int M, int m, 0, "0"
+            | [|M;|] -> int M, 0, 0, "0"
+            | _ -> 0, 0, 0, "0"
 
-        { Major = if l > 0 then Int32.Parse splitted.[0] else 0
-          Minor = if l > 1 then Int32.Parse splitted.[1] else 0
-          Patch = if l > 2 then Int32.Parse splitted.[2] else 0
+        { Major = major
+          Minor = minor
+          Patch = patch
+          Build = build
           PreRelease = PreRelease.TryParse prerelease
-          Build = if l > 3 then splitted.[3] else "0"
-          PreReleaseBuild = prereleaseBuild
+          BuildMetaData = buildmeta
           Original = Some version }
-
-
 
     let SortVersions =
         Array.choose (fun v -> try Some(v,Parse v) with | _ -> None)
