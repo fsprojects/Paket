@@ -155,6 +155,15 @@ type InstallSettings =
 
     override this.ToString() = this.ToString(false)
 
+    static member (+)(self, other : InstallSettings) =
+        {
+            self with 
+                ImportTargets = self.ImportTargets ++ other.ImportTargets
+                FrameworkRestrictions = (self.FrameworkRestrictions @ other.FrameworkRestrictions) |> Seq.ofList |> Seq.distinct |> List.ofSeq
+                OmitContent = self.OmitContent ++ other.OmitContent
+                CopyLocal = self.CopyLocal ++ other.CopyLocal
+        }
+
     static member Parse(text:string) : InstallSettings =
         let kvPairs = parseKeyValuePairs text
 

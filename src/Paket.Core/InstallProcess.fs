@@ -189,35 +189,28 @@ let InstallIntoProjects(sources, options : InstallerOptions, lockFile : LockFile
                     | Some p -> p
                     | None -> failwithf "%s uses NuGet package %O, but it was not found in the paket.lock file." referenceFile.FileName ps.Name
 
-                ps.Name,
-                    { ps.Settings with
-                        FrameworkRestrictions =
-                            // TODO: This should filter
-                            ps.Settings.FrameworkRestrictions @
-                                lockFile.Options.Settings.FrameworkRestrictions @
-                                package.Settings.FrameworkRestrictions
-
-                        ImportTargets =
-                            ps.Settings.ImportTargets ++
-                                package.Settings.ImportTargets ++ 
-                                lockFile.Options.Settings.ImportTargets
-
-                        CopyLocal =
-                            ps.Settings.CopyLocal ++ 
-                                package.Settings.CopyLocal ++
-                                lockFile.Options.Settings.CopyLocal
-
-                        OmitContent =
-                            ps.Settings.OmitContent ++ 
-                                package.Settings.OmitContent ++ 
-                                lockFile.Options.Settings.OmitContent  })
+                let resolvedSettings = [lockFile.Options.Settings; package.Settings;] |> List.fold (+) ps.Settings
+                ps.Name, resolvedSettings
+                )
             |> Map.ofSeq
 
 
         let usedPackages =
             let d = ref usedPackages
 
-            for name,settings in usedPackages |> Seq.collect (fun u -> lookup.[NormalizedPackageName u.Key] |> Seq.map (fun x -> x,u.Value)) do
+            /// we want to thread the settings from the references file through the computation so that it can be used as the base that 
+            /// the other settings modify.  in this way we ensure that references files can override the dependencies file, which in turn overrides the lockfile.
+            let usedPackageDependencies = 
+                usedPackages 
+                |> Seq.collect (fun u -> lookup.[NormalizedPackageName u.Key] |> Seq.map (fun i -> u.Value, i))
+                |> Seq.choose (fun (parentSettings, dep) -> 
+                    match packages |> Map.tryFind (NormalizedPackageName dep) with
+                    | None -> None
+                    | Some p -> 
+                        let resolvedSettings = [lockFile.Options.Settings; p.Settings;] |> List.fold (+) parentSettings
+                        Some (p.Name, resolvedSettings) )
+
+            for name,settings in usedPackageDependencies do
                 if (!d).ContainsKey name |> not then
                   d := Map.add name settings !d
 
