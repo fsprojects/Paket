@@ -40,7 +40,7 @@ let ExtractPackage(root, sources, force, package : ResolvedPackage) =
 
 /// Restores the given dependencies from the lock file.
 let internal restore(root, sources, force, lockFile:LockFile, packages:Set<NormalizedPackageName>) = 
-    let sourceFileDownloads = RemoteDownload.DownloadSourceFiles(Path.GetDirectoryName lockFile.FileName, lockFile.SourceFiles)
+    let sourceFileDownloads = RemoteDownload.DownloadSourceFiles(Path.GetDirectoryName lockFile.FileName, force, lockFile.SourceFiles)
 
     let packageDownloads = 
         lockFile.ResolvedPackages

@@ -96,7 +96,7 @@ let CreateInstallModel(root, sources, force, package) =
 
 /// Restores the given packages from the lock file.
 let createModel(root, sources, force, lockFile : LockFile, packages:Set<NormalizedPackageName>) =
-    let sourceFileDownloads = RemoteDownload.DownloadSourceFiles(root, lockFile.SourceFiles)
+    let sourceFileDownloads = RemoteDownload.DownloadSourceFiles(root, force, lockFile.SourceFiles)
 
     let packageDownloads =
         lockFile.ResolvedPackages

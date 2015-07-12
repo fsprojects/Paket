@@ -125,7 +125,7 @@ let downloadRemoteFiles(remoteFile:ResolvedSourceFile,destination) = async {
         | _ -> ignore()
 }
 
-let DownloadSourceFiles(rootPath, sourceFiles:ModuleResolver.ResolvedSourceFile list) =
+let DownloadSourceFiles(rootPath, force, sourceFiles:ModuleResolver.ResolvedSourceFile list) =
     sourceFiles
     |> Seq.map (fun source ->
         let destination = source.FilePath(rootPath)
@@ -155,7 +155,7 @@ let DownloadSourceFiles(rootPath, sourceFiles:ModuleResolver.ResolvedSourceFile 
                             else
                                 File.Exists destination
 
-                        if exists then
+                        if not force && exists then
                             verbosefn "Sourcefile %s is already there." (source.ToString())
                         else 
                             tracefn "Downloading %s to %s" (source.ToString()) destination
