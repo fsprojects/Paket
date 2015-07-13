@@ -1,17 +1,13 @@
-#### 1.18.5 - 29.06.2015
-* BUGFIX: Delete cached errors if all sources fail - https://github.com/fsprojects/Paket/issues/908
-
-#### 1.18.4 - 29.06.2015
-* COSMETICS: Better error message when package doesn't exist
-
-#### 1.18.3 - 28.06.2015
-* Support Odata query fallback for package details with /odata prefix
+#### 1.19.0 - 13.07.2015
+* Support Odata query fallback for package details with /odata prefix - https://github.com/fsprojects/Paket/pull/922
 * Establish beta-level comatibility with Klondike nuget server - https://github.com/fsprojects/Paket/pull/907
-
-#### 1.18.2 - 23.06.2015
+* BUGFIX: Improved SemVer parser - https://github.com/fsprojects/Paket/pull/920
+* BUGFIX: Added fix for windows-style network source-paths in dependencies parser - https://github.com/fsprojects/Paket/pull/903
+* BUGFIX: Settings for dependent packages are now respected - https://github.com/fsprojects/Paket/pull/919
+* BUGFIX: `--force` option is working for install/update/restore remote files too
+* BUGFIX: Delete cached errors if all sources fail - https://github.com/fsprojects/Paket/issues/908
 * BUGFIX: Use updated globbing for paket.template
-
-#### 1.18.1 - 23.06.2015
+* COSMETICS: Better error message when package doesn't exist
 * COSMETICS: Show better error message when a package is used in `paket.references` but not in `paket.lock`
 
 #### 1.18.0 - 22.06.2015
