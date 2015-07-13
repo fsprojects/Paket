@@ -22,8 +22,8 @@ let ``can parse semver strings and print the result``() =
     (SemVer.Parse "1.2.3.0").Build |> shouldEqual "0"
     (SemVer.Parse "1.2.3").Build |> shouldEqual "0"
     (SemVer.Parse "3.1.1.1").Build |> shouldEqual "1"
-    (SemVer.Parse "1.0.0-rc.3").PreReleaseBuild |> shouldEqual "3"
-    (SemVer.Parse "1.0.0-rc.1").PreReleaseBuild |> shouldEqual "1"
+    (SemVer.Parse "1.0.0-rc.3").PreRelease.Value.Values.[1] |> shouldEqual (Numeric (bigint 3))
+    (SemVer.Parse "1.0.0-rc.1").PreRelease.Value.Values.[1] |> shouldEqual (Numeric (bigint 1))
 
 [<Test>]
 let ``can parse semver strings``() = 
@@ -31,10 +31,9 @@ let ``can parse semver strings``() =
     semVer.Major |> shouldEqual 1
     semVer.Minor |> shouldEqual 2
     semVer.Patch |> shouldEqual 3
-    semVer.PreRelease |> shouldEqual (Some { Origin = "alpha"
+    semVer.PreRelease |> shouldEqual (Some { Origin = "alpha.beta"
                                              Name = "alpha"
-                                             Number = None })
-    semVer.PreReleaseBuild |> shouldEqual "beta"
+                                             Values = [ PreReleaseSegment.AlphaNumeric "alpha"; PreReleaseSegment.AlphaNumeric "beta" ] })
 
 [<Test>]
 let ``can compare semvers``() =
@@ -52,7 +51,8 @@ let ``can compare semvers``() =
     (SemVer.Parse "2.3.4") |> shouldBeGreaterThan (SemVer.Parse "2.3.4-alpha")
     (SemVer.Parse "1.5.0-rc.1") |> shouldBeGreaterThan (SemVer.Parse "1.5.0-beta.2")
     (SemVer.Parse "2.3.4-alpha2") |> shouldBeGreaterThan (SemVer.Parse "2.3.4-alpha")
-    (SemVer.Parse "2.3.4-alpha003") |> shouldBeGreaterThan (SemVer.Parse "2.3.4-alpha2")
+    (SemVer.Parse "2.3.4-alpha003") |> shouldBeSmallerThan (SemVer.Parse "2.3.4-alpha2") // lexical sort on the full prerelease string
+    (SemVer.Parse "2.3.4-alpha.003") |> shouldBeGreaterThan (SemVer.Parse "2.3.4-alpha.2") // numeric sort on the second prerelease segment
     (SemVer.Parse "2.3.4-rc") |> shouldBeGreaterThan (SemVer.Parse "2.3.4-beta2")
 
 [<Test>]
@@ -88,6 +88,7 @@ let ``can normalize versions``() =
     (SemVer.Parse "1.0.0-alpha").Normalize() |> shouldEqual ((SemVer.Parse "1.0.0-alpha").ToString())
     (SemVer.Parse "1.0.0-alpha.1").Normalize() |> shouldEqual ((SemVer.Parse "1.0.0-alpha.1").ToString())
     (SemVer.Parse "3.0.0-alpha-0008").Normalize().ToString() |> shouldEqual "3.0.0-alpha-0008"
+    (SemVer.Parse "3.0.0-alpha123ci-0008").Normalize().ToString() |> shouldEqual "3.0.0-alpha123ci-0008"
 
 [<Test>]
 let ``can normalize build zeros``() =
@@ -167,9 +168,8 @@ let ``should accept SemVer2 prereleases`` () =
     semVer.Major |> shouldEqual 1
     semVer.Minor |> shouldEqual 0
     semVer.Patch |> shouldEqual 0
-    semVer.PreRelease |> shouldEqual (Some { Origin = "foobar"
-                                             Name = "foobar"
-                                             Number = None })
+    semVer.BuildMetaData |> shouldEqual "foobar"
+    semVer.PreRelease |> shouldEqual None
 
 [<Test>]
 let ``should accept version with leading zero`` () =
