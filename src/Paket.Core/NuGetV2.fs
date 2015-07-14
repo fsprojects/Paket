@@ -26,7 +26,7 @@ type NugetPackageCache =
       LicenseUrl : string
       CacheVersion: string }
 
-    static member CurrentCacheVersion = "1.1"
+    static member CurrentCacheVersion = "2.0"
 
 let rec private followODataLink getUrlContents url = 
     async { 
