@@ -34,10 +34,10 @@ type PreReleaseSegment =
         match yobj with 
         | :? PreReleaseSegment as y ->
             match x, y with
-                | AlphaNumeric a, AlphaNumeric b -> a = b
-                | Numeric a, Numeric b -> a = b
-                | AlphaNumeric a, Numeric b -> false
-                | Numeric a , AlphaNumeric b -> false
+            | AlphaNumeric a, AlphaNumeric b -> a = b
+            | Numeric a, Numeric b -> a = b
+            | AlphaNumeric a, Numeric b -> false
+            | Numeric a , AlphaNumeric b -> false
         | _ -> false
 
 /// Information about PreRelease packages.
@@ -77,8 +77,7 @@ type PreRelease =
                         match a, b with
                         | None, Some _ -> -1
                         | Some _, None -> 1
-                        | _ , _ -> compare a b
-                ) 0
+                        | _ , _ -> compare a b) 0
 
             | _ -> invalidArg "yobj" "cannot compare values of different types"
 

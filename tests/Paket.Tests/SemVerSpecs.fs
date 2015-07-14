@@ -36,6 +36,16 @@ let ``can parse semver strings``() =
                                              Values = [ PreReleaseSegment.AlphaNumeric "alpha"; PreReleaseSegment.AlphaNumeric "beta" ] })
 
 [<Test>]
+let ``can parse MBrace semver strings``() = 
+    let semVer = SemVer.Parse("0.9.8-alpha")
+    semVer.Major |> shouldEqual 0
+    semVer.Minor |> shouldEqual 9
+    semVer.Patch |> shouldEqual 8
+    semVer.PreRelease |> shouldEqual (Some { Origin = "alpha"
+                                             Name = "alpha"
+                                             Values = [ PreReleaseSegment.AlphaNumeric "alpha" ] })
+
+[<Test>]
 let ``can compare semvers``() =
     (SemVer.Parse "1.2.3") |> shouldEqual (SemVer.Parse "1.2.3")
     (SemVer.Parse "1.0.0-rc.3") |> shouldBeGreaterThan (SemVer.Parse "1.0.0-rc.1")
