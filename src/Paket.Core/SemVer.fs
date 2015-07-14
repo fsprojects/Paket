@@ -4,8 +4,9 @@ open System
 open System.Text.RegularExpressions
 
 module utils =  
-    let zipOpt l1 l2 = 
-        let llength, rlength = List.length l1, List.length l2
+    let zipOpt l1 l2 =
+        let llength = if l1 = Unchecked.defaultof<_> then 0 else List.length l1
+        let rlength = if l2 = Unchecked.defaultof<_> then 0 else List.length l2
         seq {
             for i in 0..(max llength rlength) do
                 let l = if llength > i then Some (List.nth l1 i) else None

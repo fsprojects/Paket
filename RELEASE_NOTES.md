@@ -1,3 +1,6 @@
+#### 1.19.1 - 14.07.2015
+* Paket crashed with Null Ref Exception for MBrace - https://github.com/fsprojects/Paket/issues/923
+
 #### 1.19.0 - 13.07.2015
 * Support Odata query fallback for package details with /odata prefix - https://github.com/fsprojects/Paket/pull/922
 * Establish beta-level comatibility with Klondike nuget server - https://github.com/fsprojects/Paket/pull/907
