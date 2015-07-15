@@ -176,7 +176,7 @@ let generate templatePath generatedFilePath =
     |> replaceWithVarOrMsg "##Author##" "Update Author in build.fsx" 
     |> replaceWithVarOrMsg "##Tags##" "" 
     |> replaceWithVarOrMsg "##GitHome##" "Update GitHome in build.fsx"
-    |> replace "##GitName##" projectName
+    |> replaceWithVarOrMsg "##GitName##" projectName
 
   File.WriteAllLines(generatedFilePath, newContent)
   File.Delete(templatePath)
