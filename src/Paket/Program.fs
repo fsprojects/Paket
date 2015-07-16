@@ -180,7 +180,8 @@ let pack (results : ArgParseResults<_>) =
                       ?version = results.TryGetResult <@ PackArgs.Version @>,
                       ?releaseNotes = results.TryGetResult <@ PackArgs.ReleaseNotes @>,
                       ?templateFile = results.TryGetResult <@ PackArgs.TemplateFile @>,
-                      workingDir = Environment.CurrentDirectory)
+                      workingDir = Environment.CurrentDirectory,
+                      lockDependencies = results.Contains <@ PackArgs.LockDependencies @>)
 
 let findPackages (results : ArgParseResults<_>) =
     let maxResults = defaultArg (results.TryGetResult <@ FindPackagesArgs.MaxResults @>) 10000

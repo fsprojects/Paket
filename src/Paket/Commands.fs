@@ -251,6 +251,7 @@ type PackArgs =
     | [<CustomCommandLine("version")>] Version of string
     | [<CustomCommandLine("templatefile")>] TemplateFile of string
     | [<CustomCommandLine("releaseNotes")>] ReleaseNotes of string
+    | [<CustomCommandLine("lock-dependencies")>] LockDependencies
 with
     interface IArgParserTemplate with
         member this.Usage =
@@ -260,6 +261,7 @@ with
             | Version(_) -> "Specify version of the package."
             | TemplateFile(_) -> "Allows to specify a single template file."
             | ReleaseNotes(_) -> "Specify relase notes for the package."
+            | LockDependencies -> "Get the version requirements from paket.lock instead of paket.dependencies."
 
 type PushArgs =
     | [<CustomCommandLine("url")>][<Mandatory>] Url of string
