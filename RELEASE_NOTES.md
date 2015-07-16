@@ -1,3 +1,6 @@
+#### 1.19.3 - 16.07.2015
+* Add new ASP.NET 5.0 monikers - https://github.com/fsprojects/Paket/issues/921
+
 #### 1.19.2 - 14.07.2015
 * Paket crashed with Null Ref Exception for MBrace - https://github.com/fsprojects/Paket/issues/923
 

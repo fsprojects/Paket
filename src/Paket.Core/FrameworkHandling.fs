@@ -54,6 +54,7 @@ type FrameworkVersion =
 module KnownAliases =
     let Data =
         [".net", "net"
+         "dotnet", "net"
          "netframework", "net"
          ".netframework", "net"
          ".netcore", "netcore"
@@ -62,6 +63,8 @@ module KnownAliases =
          "windowsphone", "wp"
          "windows", "win"
          "windowsPhoneApp", "wpa"
+         ".netportable", "portable"
+         "netportable", "portable"
          "0.0", ""
          ".", "" ]
         |> List.map (fun (p,r) -> p.ToLower(),r.ToLower())
@@ -160,9 +163,9 @@ module FrameworkDetection =
                 | "net452" -> Some (DotNetFramework FrameworkVersion.V4_5_2)
                 | "net453" -> Some (DotNetFramework FrameworkVersion.V4_5_3)
                 | "net46" -> Some (DotNetFramework FrameworkVersion.V4_6)
-                | "monotouch" | "monotouch10" -> Some MonoTouch
-                | "monoandroid" | "monoandroid10" -> Some MonoAndroid
-                | "monomac" | "monomac10" -> Some MonoMac
+                | "monotouch" | "monotouch10" | "monotouch1" -> Some MonoTouch
+                | "monoandroid" | "monoandroid10" | "monoandroid1" -> Some MonoAndroid
+                | "monomac" | "monomac10" | "monomac1" -> Some MonoMac
                 | "sl"  | "sl3" | "sl30" -> Some (Silverlight "v3.0")
                 | "sl4" | "sl40" -> Some (Silverlight "v4.0")
                 | "sl5" | "sl50" -> Some (Silverlight "v5.0")
@@ -171,9 +174,9 @@ module FrameworkDetection =
                 | "wp7" | "wp70" | "sl4-wp7"| "sl4-wp70" -> Some (WindowsPhoneSilverlight "v7.0")
                 | "wp71" | "sl4-wp71" | "sl4-wp"  -> Some (WindowsPhoneSilverlight "v7.1")
                 | "wp8" | "wp80"  | "wpv80" -> Some (WindowsPhoneSilverlight "v8.0")
-                | "wpa00" | "wpa81" -> Some (WindowsPhoneApp "v8.1")
+                | "wpa00" | "wpa" | "wpa81" | "wpapp81" | "wpapp" -> Some (WindowsPhoneApp "v8.1")
                 | "dnx451" -> Some(DNX FrameworkVersion.V4_5_1)
-                | "dnxcore50" -> Some(DNXCore FrameworkVersion.V5_0)
+                | "dnxcore50" | "netplatform50" | "netcore50" | "aspnetcore50" | "aspnet50" -> Some(DNXCore FrameworkVersion.V5_0)
                 | _ -> None
 
             cache.[path] <- result
