@@ -54,7 +54,6 @@ type FrameworkVersion =
 module KnownAliases =
     let Data =
         [".net", "net"
-         "dotnet", "net"
          "netframework", "net"
          ".netframework", "net"
          ".netcore", "netcore"
