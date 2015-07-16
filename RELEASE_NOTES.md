@@ -1,4 +1,4 @@
-#### 1.19.3 - 16.07.2015
+#### 1.19.4 - 16.07.2015
 * Add new ASP.NET 5.0 monikers - https://github.com/fsprojects/Paket/issues/921
 
 #### 1.19.2 - 14.07.2015
