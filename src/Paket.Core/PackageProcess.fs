@@ -10,9 +10,9 @@ open System.Collections.Generic
 open Paket.PackageMetaData
 open Chessie.ErrorHandling
 
-let Pack(workingDir,dependencies : DependenciesFile, packageOutputPath, buildConfig, version, releaseNotes, templateFile) =
-    let buildConfig = defaultArg buildConfig "Release"    
-    let packageOutputPath = if Path.IsPathRooted(packageOutputPath) then packageOutputPath else Path.Combine(workingDir,packageOutputPath)    
+let Pack(workingDir,dependencies : DependenciesFile, packageOutputPath, buildConfig, version, releaseNotes, templateFile, lockDependencies) =
+    let buildConfig = defaultArg buildConfig "Release"
+    let packageOutputPath = if Path.IsPathRooted(packageOutputPath) then packageOutputPath else Path.Combine(workingDir,packageOutputPath)
     Utils.createDir packageOutputPath |> returnOrFail
 
     let version = version |> Option.map SemVer.Parse
@@ -98,7 +98,7 @@ let Pack(workingDir,dependencies : DependenciesFile, packageOutputPath, buildCon
     // add dependencies
     let allTemplates =
         projectTemplates
-        |> Map.map (fun _ (t, p) -> p,findDependencies dependencies buildConfig t p projectTemplates)
+        |> Map.map (fun _ (t, p) -> p,findDependencies dependencies buildConfig t p lockDependencies projectTemplates)
         |> Map.toList
         |> List.map (fun (_,(_,x)) -> x)
         |> List.append [for fileName in allTemplateFiles -> TemplateFile.Load(fileName,version)]

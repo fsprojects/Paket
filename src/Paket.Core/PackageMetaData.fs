@@ -137,7 +137,7 @@ let addFile (source : string) (target : string) (templateFile : TemplateFile) =
     | IncompleteTemplate -> 
         failwith "You should only try and add dependencies to template files with complete metadata."
 
-let findDependencies (dependencies : DependenciesFile) config (template : TemplateFile) (project : ProjectFile) (map : Map<string, TemplateFile * ProjectFile>) = 
+let findDependencies (dependencies : DependenciesFile) config (template : TemplateFile) (project : ProjectFile) lockDependencies (map : Map<string, TemplateFile * ProjectFile>) =
     let targetDir = 
         match project.OutputType with
         | ProjectOutputType.Exe -> "tools/"
@@ -215,8 +215,15 @@ let findDependencies (dependencies : DependenciesFile) config (template : Templa
             with
             | _ -> true)
         |> List.map (fun np ->
+                let getDependencyVersionRequirement package =
+                    if not lockDependencies then
+                        Map.tryFind package dependencies.DirectDependencies
+                    else
+                        Map.tryFind (NormalizedPackageName package) lockFile.ResolvedPackages
+                        |> Option.map (fun resolvedPackage -> resolvedPackage.Version)
+                        |> Option.map (fun version -> VersionRequirement(Specific version, PreReleaseStatus.All))
                 let dep =
-                    match Map.tryFind np.Name dependencies.DirectDependencies with
+                    match getDependencyVersionRequirement np.Name with
                     | Some direct -> direct
                     // If it's a transient dependency set
                     // min version to current locked version
