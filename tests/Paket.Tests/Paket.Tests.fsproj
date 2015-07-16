@@ -153,6 +153,9 @@
     </Content>
     <Content Include="NuGetOData\Math.Numerics.FSharp.xml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>  
+    <Content Include="NuGetOData\WindowsAzure.Storage.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="NuGetOData\Rx-PlatformServices.xml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>

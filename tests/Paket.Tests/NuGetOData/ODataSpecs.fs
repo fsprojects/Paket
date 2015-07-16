@@ -144,3 +144,21 @@ let ``can detect explicit dependencies for Microsoft.AspNet.WebApi.Client``() =
     dependencies.[1] |> shouldEqual
         (PackageName "Microsoft.Net.Http", DependenciesFileParser.parseVersionRequirement(">= 2.2.22"), 
                 [FrameworkRestriction.Portable("portable-wp80+win+net45+wp81+wpa81")])
+
+[<Test>]
+let ``can detect explicit dependencies for WindowsAzure.Storage``() = 
+    let odata = parse "NuGetOData/WindowsAzure.Storage.xml"
+    odata.PackageName |> shouldEqual "WindowsAzure.Storage"
+    odata.DownloadUrl |> shouldEqual"https://www.nuget.org/api/v2/package/WindowsAzure.Storage/4.4.1-preview"
+    let dependencies = odata.Dependencies |> Array.ofList
+    dependencies.[0] |> shouldEqual 
+        (PackageName "Microsoft.Data.OData", DependenciesFileParser.parseVersionRequirement(">= 5.6.3"), 
+                [FrameworkRestriction.Exactly(DNXCore(FrameworkVersion.V5_0))])
+
+    let vr,pr = 
+        match DependenciesFileParser.parseVersionRequirement(">= 4.0.0-beta-22231") with
+        | VersionRequirement(vr,pr) -> vr,pr
+
+    dependencies.[18] |> shouldEqual 
+        (PackageName "System.Net.Http", VersionRequirement(vr,PreReleaseStatus.All), 
+                [FrameworkRestriction.Exactly(DNXCore(FrameworkVersion.V5_0))])

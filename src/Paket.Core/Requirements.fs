@@ -74,7 +74,8 @@ let optimizeRestrictions packages =
         [for restriction,packages in expanded do
             match restriction with
             | FrameworkRestriction.Exactly r -> 
-                if r.ToString().StartsWith("net") || r.ToString().StartsWith("dnx") then
+                let s = r.ToString()
+                if s.StartsWith("net") || s.StartsWith("dnx") then
                     yield r,packages |> Seq.map (fun (n,v,_) -> n,v) |> Seq.toList
             | _ -> () ]
         |> List.sortBy fst
@@ -117,6 +118,7 @@ let optimizeRestrictions packages =
                             else
                                 restriction
                         | _ -> restriction)
+                    |> Seq.distinct
                     |> Seq.toList
                     |> List.sort
 

@@ -126,7 +126,12 @@ let calcOpenRequirements (exploredPackage:ResolvedPackage,globalFrameworkRestric
     let rest = Set.remove dependency stillOpen
                         
     dependenciesByName
-    |> Set.map (fun (n,v,r) -> {dependency with Name = n; VersionRequirement = v; Parent = Package(dependency.Name,versionToExplore); Settings = { dependency.Settings with FrameworkRestrictions = r @ globalFrameworkRestrictions }})
+    |> Set.map (fun (n,v,r) -> 
+                    {dependency with 
+                        Name = n
+                        VersionRequirement = v
+                        Parent = Package(dependency.Name,versionToExplore)
+                        Settings = { dependency.Settings with FrameworkRestrictions = r @ globalFrameworkRestrictions }})
     |> Set.filter (fun d -> Set.contains d closed |> not)
     |> Set.filter (fun d -> Set.contains d stillOpen |> not)
     |> Set.filter (fun d ->
