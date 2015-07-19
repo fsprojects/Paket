@@ -51,6 +51,16 @@ type ProjectFile =
 
     /// Finds all project files
     static member FindAllProjects(folder) = 
+        let FindAllFiles(folder, pattern) = 
+            let rec search (di:DirectoryInfo) = 
+                let files = di.GetFiles(pattern, SearchOption.TopDirectoryOnly)
+                di.GetDirectories()
+                |> Array.filter (fun di -> Path.Combine(di.FullName, Constants.DependenciesFileName) |> File.Exists |> not)
+                |> Array.collect search
+                |> Array.append files
+
+            search <| DirectoryInfo folder
+
         FindAllFiles(folder, "*.*proj")
         |> Array.filter (fun f -> f.Extension = ".csproj" || f.Extension = ".fsproj" || f.Extension = ".vbproj")
         |> Array.choose (fun fi -> ProjectFile.Load fi.FullName)
@@ -618,7 +628,11 @@ type ProjectFile =
                 match doc |> getNode "Project" with
                 | Some node -> node
                 | _ -> failwithf "unable to find Project node in file %s" fileName
-            Some { FileName = fi.FullName; Document = doc; ProjectNode = projectNode; OriginalText = Utils.normalizeXml doc }
+            Some { 
+                FileName = fi.FullName
+                Document = doc
+                ProjectNode = projectNode
+                OriginalText = Utils.normalizeXml doc }
         with
         | exn -> 
             traceWarnfn "Unable to parse %s:%s      %s" fileName Environment.NewLine exn.Message

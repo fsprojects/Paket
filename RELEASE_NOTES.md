@@ -1,3 +1,6 @@
+#### 1.19.7 - 19.07.2015
+* BUGFIX: Exclude submodules from processing - https://github.com/fsprojects/Paket/issues/918
+
 #### 1.19.6 - 16.07.2015
 * Add new ASP.NET 5.0 monikers - https://github.com/fsprojects/Paket/issues/921
 
