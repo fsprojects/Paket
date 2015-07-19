@@ -189,7 +189,7 @@ let InstallIntoProjects(sources, options : InstallerOptions, lockFile : LockFile
                     | Some p -> p
                     | None -> failwithf "%s uses NuGet package %O, but it was not found in the paket.lock file." referenceFile.FileName ps.Name
 
-                let resolvedSettings = [lockFile.Options.Settings; package.Settings;] |> List.fold (+) ps.Settings
+                let resolvedSettings = [lockFile.Options.Settings; package.Settings] |> List.fold (+) ps.Settings
                 ps.Name, resolvedSettings
                 )
             |> Map.ofSeq
@@ -198,7 +198,7 @@ let InstallIntoProjects(sources, options : InstallerOptions, lockFile : LockFile
         let usedPackages =
             let d = ref usedPackages
 
-            /// we want to thread the settings from the references file through the computation so that it can be used as the base that 
+            /// we want to treat the settings from the references file through the computation so that it can be used as the base that 
             /// the other settings modify.  in this way we ensure that references files can override the dependencies file, which in turn overrides the lockfile.
             let usedPackageDependencies = 
                 usedPackages 
@@ -207,7 +207,7 @@ let InstallIntoProjects(sources, options : InstallerOptions, lockFile : LockFile
                     match packages |> Map.tryFind (NormalizedPackageName dep) with
                     | None -> None
                     | Some p -> 
-                        let resolvedSettings = [lockFile.Options.Settings; p.Settings;] |> List.fold (+) parentSettings
+                        let resolvedSettings = [lockFile.Options.Settings; p.Settings] |> List.fold (+) parentSettings
                         Some (p.Name, resolvedSettings) )
 
             for name,settings in usedPackageDependencies do
