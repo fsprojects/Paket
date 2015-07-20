@@ -183,7 +183,12 @@ let findDependencies (dependencies : DependenciesFile) config (template : Templa
             match templateFile with
             | CompleteTemplate(core, opt) -> 
                 match core.Version with
-                | Some v -> core.Id, VersionRequirement(Minimum(v), PreReleaseStatus.All)
+                | Some v ->
+                    let versionConstraint =
+                        if not lockDependencies
+                        then Minimum v
+                        else Specific v
+                    core.Id, VersionRequirement(versionConstraint, PreReleaseStatus.All)
                 | none ->failwithf "There was no version given for %s." templateFile.FileName
             | IncompleteTemplate -> failwithf "You cannot create a dependency on a template file (%s) with incomplete metadata." templateFile.FileName)
         |> List.fold addDependency templateWithOutput
