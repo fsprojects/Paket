@@ -218,21 +218,24 @@ let findDependencies (dependencies : DependenciesFile) config (template : Templa
                 let getDependencyVersionRequirement package =
                     if not lockDependencies then
                         Map.tryFind package dependencies.DirectDependencies
+                        |> function
+                            | Some direct -> Some direct
+                            | None ->
+                                // If it's a transient dependency, try to
+                                // find it in `paket.lock` and set min version
+                                // to current locked version
+                                lockFile.ResolvedPackages
+                                |> Map.tryFind (NormalizedPackageName package)
+                                |> Option.map (fun transient -> transient.Version)
+                                |> Option.map (fun v -> VersionRequirement(Minimum v, PreReleaseStatus.All))
                     else
                         Map.tryFind (NormalizedPackageName package) lockFile.ResolvedPackages
                         |> Option.map (fun resolvedPackage -> resolvedPackage.Version)
                         |> Option.map (fun version -> VersionRequirement(Specific version, PreReleaseStatus.All))
                 let dep =
                     match getDependencyVersionRequirement np.Name with
-                    | Some direct -> direct
-                    // If it's a transient dependency set
-                    // min version to current locked version
-                    | None -> 
-                        let resolved =
-                            lockFile.ResolvedPackages 
-                            |> Map.find (NormalizedPackageName np.Name)
-
-                        VersionRequirement(Minimum resolved.Version, PreReleaseStatus.All)
+                    | Some installed -> installed
+                    | None -> failwithf "No package with id '%A' installed." np.Name
                 np.Name.Id, dep)
         |> List.fold addDependency withDepsAndIncluded
     | None -> withDepsAndIncluded
