@@ -48,7 +48,7 @@ Depending on which command you issue, Paket creates different version requiremen
   </tbody> 
 </table>
 
-As you see here, the first command (without the `lock-dependencies` parameter) creates version requirements as specified in your [`paket.dependencies` file][depfile]. The second command takes the currently resolved version from your [`paket.lock` file][lockfile] and "locks" it to this specific version.
+As you see here, the first command (without the `lock-dependencies` parameter) creates version requirements as specified in your [`paket.dependencies` file][depfile]. The second command takes the currently resolved versions from your [`paket.lock` file][lockfile] and "locks" them to these specific versions.
 
   [lockfile]: lock-file.html
   [depfile]: dependencies-file.html
