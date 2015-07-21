@@ -128,12 +128,14 @@ type InstallSettings =
     { ImportTargets : bool option
       FrameworkRestrictions: FrameworkRestrictions
       OmitContent : bool option
+      IncludeVersionInPath: bool option
       CopyLocal : bool option }
 
     static member Default =
         { CopyLocal = None
           ImportTargets = None
           FrameworkRestrictions = []
+          IncludeVersionInPath = None
           OmitContent = None }
 
     member this.ToString(asLines) =
@@ -147,6 +149,9 @@ type InstallSettings =
               match this.OmitContent with
               | Some true -> yield "content: none"
               | Some false -> yield "content: true"
+              | None -> ()
+              match this.IncludeVersionInPath with
+              | Some x -> yield "version_in_path: " + x.ToString().ToLower()
               | None -> ()
               match this.FrameworkRestrictions with
               | [] -> ()
@@ -183,6 +188,11 @@ type InstallSettings =
             | true, "none" -> Some true 
             | true, "true" -> Some false 
             | _ ->  None
+          IncludeVersionInPath =         
+            match kvPairs.TryGetValue "version_in_path" with
+            | true, "false" -> Some false 
+            | true, "true" -> Some true
+            | _ -> None 
           CopyLocal =         
             match kvPairs.TryGetValue "copy_local" with
             | true, "false" -> Some false 

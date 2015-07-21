@@ -70,7 +70,7 @@ type ReferencesFile =
         let lines = File.ReadAllLines(fileName)
         { ReferencesFile.FromLines lines with FileName = fileName }
 
-    member this.AddNuGetReference(packageName : PackageName, copyLocal: bool, importTargets: bool, frameworkRestrictions, omitContent : bool) =
+    member this.AddNuGetReference(packageName : PackageName, copyLocal: bool, importTargets: bool, frameworkRestrictions, includeVersionInPath, omitContent : bool) =
         let (PackageName referenceName) = packageName
         let normalized = NormalizedPackageName packageName
         if this.NugetPackages |> Seq.exists (fun p -> NormalizedPackageName p.Name = normalized) then
@@ -84,11 +84,12 @@ type ReferencesFile =
                     { CopyLocal = if not copyLocal then Some copyLocal else None
                       ImportTargets = if not importTargets then Some importTargets else None
                       FrameworkRestrictions = frameworkRestrictions
+                      IncludeVersionInPath = if includeVersionInPath then Some includeVersionInPath else None
                       OmitContent = if omitContent then Some omitContent else None } }
 
             { this with NugetPackages = this.NugetPackages @ [ package ] }
 
-    member this.AddNuGetReference(packageName : PackageName) = this.AddNuGetReference(packageName, true, true, [], false)
+    member this.AddNuGetReference(packageName : PackageName) = this.AddNuGetReference(packageName, true, true, [], false, false)
 
     member this.RemoveNuGetReference(packageName : PackageName) =
         let (PackageName referenceName) = packageName

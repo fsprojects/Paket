@@ -16,19 +16,21 @@ open System.Diagnostics
 open Paket.Requirements
 open System.Security.AccessControl
 
-let findPackageFolder root (PackageName name) =
-    let lowerName = name.ToLower()
+let findPackageFolder root (PackageName name) (settings:InstallSettings,version:SemVerInfo) =
+    let includeVersionInPath = defaultArg settings.IncludeVersionInPath false
+    let lowerName = (name + if includeVersionInPath then "." + version.ToString() else "").ToLower()
     let di = DirectoryInfo(Path.Combine(root, Constants.PackagesFolderName))
-    let direct = DirectoryInfo(Path.Combine(di.FullName, name))
+    let targetFolder = getTargetFolder root name version includeVersionInPath
+    let direct = DirectoryInfo(targetFolder)
     if direct.Exists then direct else
     match di.GetDirectories() |> Seq.tryFind (fun subDir -> subDir.FullName.ToLower().EndsWith(lowerName)) with
     | Some x -> x
     | None -> failwithf "Package directory for package %s was not found." name
 
-let private findPackagesWithContent (root,usedPackages:Map<PackageName,InstallSettings>) =
+let private findPackagesWithContent (root,usedPackages:Map<PackageName,InstallSettings*SemVerInfo>) =
     usedPackages
-    |> Seq.filter (fun kv -> defaultArg kv.Value.OmitContent false |> not)
-    |> Seq.map (fun kv -> findPackageFolder root kv.Key)
+    |> Seq.filter (fun kv -> defaultArg (fst kv.Value).OmitContent false |> not)
+    |> Seq.map (fun kv ->  findPackageFolder root kv.Key kv.Value)
     |> Seq.choose (fun packageDir ->
             packageDir.GetDirectories("Content")
             |> Array.append (packageDir.GetDirectories("content"))
@@ -190,8 +192,7 @@ let InstallIntoProjects(sources, options : InstallerOptions, lockFile : LockFile
                     | None -> failwithf "%s uses NuGet package %O, but it was not found in the paket.lock file." referenceFile.FileName ps.Name
 
                 let resolvedSettings = [lockFile.Options.Settings; package.Settings] |> List.fold (+) ps.Settings
-                ps.Name, resolvedSettings
-                )
+                ps.Name, resolvedSettings)
             |> Map.ofSeq
 
 
@@ -219,6 +220,16 @@ let InstallIntoProjects(sources, options : InstallerOptions, lockFile : LockFile
         let usedPackageSettings =
             usedPackages
             |> Seq.map (fun u -> NormalizedPackageName u.Key,u.Value)
+            |> Map.ofSeq
+
+
+        let usedPackageVersions =
+            usedPackages
+            |> Seq.map (fun u ->
+                    let name = NormalizedPackageName u.Key
+                    match packages |> Map.tryFind name with
+                    | Some p -> u.Key,(u.Value,p.Version)
+                    | None -> failwithf "%s uses NuGet package %O, but it was not found in the paket.lock file." referenceFile.FileName u.Key)
             |> Map.ofSeq
 
         project.UpdateReferences(model, usedPackageSettings, options.Hard)
@@ -256,7 +267,7 @@ let InstallIntoProjects(sources, options : InstallerOptions, lockFile : LockFile
                                    Link = None })
 
         let nuGetFileItems =
-            copyContentFiles(project, findPackagesWithContent(root,usedPackages))
+            copyContentFiles(project, findPackagesWithContent(root,usedPackageVersions))
             |> List.map (fun file ->
                                 { BuildAction = project.DetermineBuildAction file.Name
                                   Include = createRelativePath project.FileName file.FullName

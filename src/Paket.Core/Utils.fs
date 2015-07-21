@@ -238,6 +238,8 @@ let inline normalizePath(path:string) = path.Replace("\\",Path.DirectorySeparato
 /// Gets all files with the given pattern
 let inline FindAllFiles(folder, pattern) = DirectoryInfo(folder).GetFiles(pattern, SearchOption.AllDirectories)
 
+let getTargetFolder root name (version:SemVerInfo) includeVersionInPath = Path.Combine(root, Constants.PackagesFolderName, name + if includeVersionInPath then "." + version.ToString() else "")
+
 
 let RunInLockedAccessMode(rootFolder,action) =
     let packagesFolder = Path.Combine(rootFolder,Constants.PackagesFolderName)

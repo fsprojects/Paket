@@ -296,7 +296,7 @@ let frameworkRestricted' = """NUGET
     FsControl (1.0.9)
     FSharpPlus (0.0.4)
       FsControl (>= 1.0.9)
-    LinqBridge (1.3.0) - import_targets: false, content: none, framework: >= net20 < net35
+    LinqBridge (1.3.0) - import_targets: false, content: none, version_in_path: true, framework: >= net20 < net35
     ReadOnlyCollectionExtensions (1.2.0)
       LinqBridge (>= 1.3.0) - framework: >= net20 < net35
       ReadOnlyCollectionInterfaces (1.0.0) - framework: net20, net35, >= net40
@@ -316,6 +316,7 @@ let ``should parse framework restricted lock file in new syntax``() =
     packages.[3].Settings.FrameworkRestrictions |> shouldEqual ([FrameworkRestriction.Between(FrameworkIdentifier.DotNetFramework(FrameworkVersion.V2),FrameworkIdentifier.DotNetFramework(FrameworkVersion.V3_5))])
     packages.[3].Settings.CopyLocal |> shouldEqual None
     packages.[3].Settings.ImportTargets |> shouldEqual (Some false)
+    packages.[3].Settings.IncludeVersionInPath |> shouldEqual (Some true)
     packages.[3].Settings.OmitContent |> shouldEqual (Some true)
 
     packages.[5].Source |> shouldEqual PackageSources.DefaultNugetSource
@@ -324,6 +325,7 @@ let ``should parse framework restricted lock file in new syntax``() =
     packages.[5].Settings.ImportTargets |> shouldEqual (Some false)
     packages.[5].Settings.CopyLocal |> shouldEqual (Some false)
     packages.[5].Settings.OmitContent |> shouldEqual None
+    packages.[5].Settings.IncludeVersionInPath |> shouldEqual None
     packages.[5].Settings.FrameworkRestrictions 
     |> shouldEqual ([FrameworkRestriction.Exactly(FrameworkIdentifier.DotNetFramework(FrameworkVersion.V2))
                      FrameworkRestriction.Exactly(FrameworkIdentifier.DotNetFramework(FrameworkVersion.V3_5))

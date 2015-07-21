@@ -15,6 +15,7 @@ let ExtractPackage(root, sources, force, package : ResolvedPackage) =
     async { 
         let (PackageName name) = package.Name
         let v = package.Version
+        let includeVersionInPath = defaultArg package.Settings.IncludeVersionInPath false
         match package.Source with
         | Nuget source -> 
             let auth = 
@@ -23,18 +24,18 @@ let ExtractPackage(root, sources, force, package : ResolvedPackage) =
                                | Nuget s -> s.Authentication |> Option.map toBasicAuth
                                | _ -> None)
             try 
-                let! folder = NuGetV2.DownloadPackage(root, auth, source.Url, name, v, force)
+                let! folder = NuGetV2.DownloadPackage(root, auth, source.Url, name, v, includeVersionInPath, force)
                 return package, NuGetV2.GetLibFiles folder, NuGetV2.GetTargetsFiles folder
             with _ when not force -> 
                 tracefn "Something went wrong with the download of %s %A - automatic retry with --force." name v
-                let! folder = NuGetV2.DownloadPackage(root, auth, source.Url, name, v, true)
+                let! folder = NuGetV2.DownloadPackage(root, auth, source.Url, name, v, includeVersionInPath, true)
                 return package, NuGetV2.GetLibFiles folder, NuGetV2.GetTargetsFiles folder
         | LocalNuget path ->         
             let path = Utils.normalizeLocalPath path
             let di = Utils.getDirectoryInfo path root
             let nupkg = NuGetV2.findLocalPackage di.FullName name v
 
-            let! folder = NuGetV2.CopyFromCache(root, nupkg.FullName, "", name, v, force) // TODO: Restore license
+            let! folder = NuGetV2.CopyFromCache(root, nupkg.FullName, "", name, v, includeVersionInPath, force) // TODO: Restore license
             return package, NuGetV2.GetLibFiles folder, NuGetV2.GetTargetsFiles folder
     }
 
