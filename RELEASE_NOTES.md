@@ -1,11 +1,8 @@
-#### 1.19.7 - 19.07.2015
-* BUGFIX: Exclude submodules from processing - https://github.com/fsprojects/Paket/issues/918
-
-#### 1.19.6 - 16.07.2015
+#### 1.20.0 - 21.07.2015
+* Allow to get version requirements from paket.lock instead of paket.dependencies - https://github.com/fsprojects/Paket/pull/924
 * Add new ASP.NET 5.0 monikers - https://github.com/fsprojects/Paket/issues/921
-
-#### 1.19.2 - 14.07.2015
-* Paket crashed with Null Ref Exception for MBrace - https://github.com/fsprojects/Paket/issues/923
+* BUGFIX: Paket crashed with Null Ref Exception for MBrace - https://github.com/fsprojects/Paket/issues/923
+* BUGFIX: Exclude submodules from processing - https://github.com/fsprojects/Paket/issues/918
 
 #### 1.19.0 - 13.07.2015
 * Support Odata query fallback for package details with /odata prefix - https://github.com/fsprojects/Paket/pull/922
