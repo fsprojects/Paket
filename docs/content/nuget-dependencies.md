@@ -156,6 +156,15 @@ Sometimes you don't want to generate dependencies for older framework versions. 
     nuget Example >= 2.0 framework: net35, net40  // .NET 3.5 and .NET 4.0
     nuget Example >= 2.0 framework: >= net45      // .NET 4.5 and above
 
+### Putting the version no. into the path
+
+If you need to be NuGet compatible and want to have the version no. in the package path you can do the following:
+    
+    source https://nuget.org/api/v2
+
+    nuget xunit.runners.visualstudio >= 2.0 version_in_path: true
+    nuget UnionArgParser ~> 0.7
+
 ### No content option
 
 This option disables the installation of any content files:
