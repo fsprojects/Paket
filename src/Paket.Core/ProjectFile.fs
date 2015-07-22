@@ -461,7 +461,7 @@ type ProjectFile =
             (this.Document |> getDescendants "None") @ 
             (this.Document |> getDescendants "Content")
 
-        match noneAndContentNodes |> List.tryFind (withAttributeValue "Include" "packages.config") with
+        match noneAndContentNodes |> List.tryFind (withAttributeValue "Include" Constants.PackagesConfigFile) with
         | None -> ()
         | Some nugetNode ->
             match noneAndContentNodes |> List.filter (withAttributeValue "Include" Constants.ReferencesFile) with 

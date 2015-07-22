@@ -13,6 +13,7 @@ open System.Collections.Generic
 open FSharp.Polyfill
 open System.Reflection
 open System.Diagnostics
+open Paket.PackagesConfigFile
 open Paket.Requirements
 open System.Security.AccessControl
 
@@ -233,6 +234,18 @@ let InstallIntoProjects(sources, options : InstallerOptions, lockFile : LockFile
             |> Map.ofSeq
 
         project.UpdateReferences(model, usedPackageSettings, options.Hard)
+
+        let packagesConfigFile = Path.Combine(FileInfo(project.FileName).Directory.FullName, Constants.PackagesConfigFile)        
+
+        usedPackageVersions
+        |> Seq.filter (fun kv -> defaultArg (fst kv.Value).IncludeVersionInPath false)
+        |> Seq.map (fun kv ->
+            let settings,version = kv.Value
+            { Id = kv.Key.ToString()
+              Version = version
+              TargetFramework = None })
+        |> PackagesConfigFile.Save packagesConfigFile
+        
 
         removeCopiedFiles project
 

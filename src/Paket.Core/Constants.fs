@@ -52,6 +52,9 @@ let PaketVersionFileName = "paket.version"
 let TemplateFile = "paket.template"
 
 [<Literal>]
+let PackagesConfigFile = "packages.config"
+
+[<Literal>]
 let FullProjectSourceFileName = "FULLPROJECT"
 
 [<Literal>]

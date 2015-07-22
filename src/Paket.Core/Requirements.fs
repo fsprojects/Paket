@@ -169,6 +169,7 @@ type InstallSettings =
                 FrameworkRestrictions = (self.FrameworkRestrictions @ other.FrameworkRestrictions) |> Seq.ofList |> Seq.distinct |> List.ofSeq
                 OmitContent = self.OmitContent ++ other.OmitContent
                 CopyLocal = self.CopyLocal ++ other.CopyLocal
+                IncludeVersionInPath = self.IncludeVersionInPath ++ other.IncludeVersionInPath
         }
 
     static member Parse(text:string) : InstallSettings =

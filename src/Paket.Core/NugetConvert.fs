@@ -12,6 +12,7 @@ open Paket.NuGetV2
 open Paket.PackageSources
 open Paket.Requirements
 open Chessie.ErrorHandling
+open Paket.PackagesConfigFile
 
 type CredsMigrationMode =
     | Encrypt
@@ -43,12 +44,6 @@ type CredsMigrationMode =
 
 /// Represents type of NuGet packages.config file
 type NugetPackagesConfigType = ProjectLevel | SolutionLevel
-
-type NugetPackage = {
-    Id : string
-    Version : SemVerInfo
-    TargetFramework : string option
-}
 
 /// Represents NuGet packages.config file
 type NugetPackagesConfig = {
@@ -179,23 +174,16 @@ module NugetEnv =
 
     let readNugetPackages(rootDirectory : DirectoryInfo) =
         let readSingle(file : FileInfo) = 
-            try
-                let doc = XmlDocument()
-                doc.Load file.FullName
-    
+            try    
                 { File = file
                   Type = if file.Directory.Name = ".nuget" then SolutionLevel else ProjectLevel
-                  Packages = [for node in doc.SelectNodes("//package") ->
-                                    { Id = node.Attributes.["id"].Value
-                                      Version = node.Attributes.["version"].Value |> SemVer.Parse
-                                      TargetFramework = 
-                                        node |> getAttribute "targetFramework" |> Option.map (fun t -> ">= " + t) } ]}
+                  Packages = PackagesConfigFile.Read file.FullName }
                 |> ok 
             with _ -> fail (NugetPackagesConfigParseError file)
 
         ProjectFile.FindAllProjects rootDirectory.FullName 
         |> List.ofArray
-        |> List.map (fun p -> p, Path.Combine(Path.GetDirectoryName(p.FileName), "packages.config"))
+        |> List.map (fun p -> p, Path.Combine(Path.GetDirectoryName(p.FileName), Constants.PackagesConfigFile))
         |> List.filter (fun (p,packages) -> File.Exists packages)
         |> List.map (fun (p,packages) -> readSingle(FileInfo(packages)) |> lift (fun packages -> (p,packages)))
         |> collect
