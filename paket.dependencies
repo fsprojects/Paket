@@ -4,7 +4,7 @@ nuget Newtonsoft.Json
 nuget UnionArgParser
 nuget NUnit.Runners
 nuget NUnit
-nuget FAKE
+nuget FAKE prerelease
 nuget FSharp.Formatting
 nuget FSharp.Core
 nuget ILRepack
