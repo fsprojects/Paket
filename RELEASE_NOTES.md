@@ -1,4 +1,4 @@
-#### 1.21.0-alpha001 - 22.07.2015
+#### 1.21.0 - 23.07.2015
 * Allow nuget packages to put version in the path - https://github.com/fsprojects/Paket/pull/928
 
 #### 1.20.0 - 21.07.2015
