@@ -156,8 +156,7 @@ let InstallIntoProjects(sources, options : InstallerOptions, lockFile : LockFile
     let packagesToInstall =
         if options.OnlyReferenced then
             projects
-            |> Seq.ofList
-            |> Seq.map (fun (_, referencesFile)->
+            |> List.map (fun (_, referencesFile)->
                 referencesFile
                 |> lockFile.GetPackageHull
                 |> Seq.map (fun p -> NormalizedPackageName p.Key))

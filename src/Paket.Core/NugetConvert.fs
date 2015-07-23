@@ -326,7 +326,7 @@ let updateSolutions (rootDirectory : DirectoryInfo) =
     let dependenciesFileName = Path.Combine(rootDirectory.FullName, Constants.DependenciesFileName)
     let solutions =
         FindAllFiles(rootDirectory.FullName, "*.sln")
-        |> Array.map(fun fi -> SolutionFile(fi.FullName))
+        |> Array.map (fun fi -> SolutionFile(fi.FullName))
         |> Array.toList
 
     for solution in solutions do
