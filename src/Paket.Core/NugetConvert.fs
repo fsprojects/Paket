@@ -245,15 +245,14 @@ let createDependenciesFileR (rootDirectory : DirectoryInfo) nugetEnv mode =
         "Package %s is referenced multiple times with different target frameworks : %A. Paket may disregard target framework."
     
     let latestVersions = 
-        findDistinctPackages (Seq.map (fun p -> p.Version, p.TargetFramework) >> Seq.distinct)
-        |> Seq.map (fun (name, versions) ->
-            let latestVersion, _ = versions |> Seq.maxBy fst
+        findDistinctPackages (List.map (fun p -> p.Version, p.TargetFramework) >> List.distinct)
+        |> List.map (fun (name, versions) ->
+            let latestVersion, _ = versions |> List.maxBy fst
             let restrictions =
-                match versions |> Seq.toList with
+                match versions with
                 | [ version, targetFramework ] -> targetFramework |> Option.toList |> List.collect Requirements.parseRestrictions 
                 | _ -> []
             name, string latestVersion, restrictions)
-        |> Seq.toList
 
     let packages = 
         match nugetEnv.NugetExe with 
