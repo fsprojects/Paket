@@ -199,7 +199,7 @@ module NugetEnv =
 type ConvertResultR = 
     { NugetEnv : NugetEnv
       PaketEnv : PaketEnv
-      SolutionFiles : list<SolutionFile> }
+      SolutionFiles : SolutionFile [] }
 
 [<CompilationRepresentation(CompilationRepresentationFlags.ModuleSuffix)>]
 module ConvertResultR =
@@ -267,7 +267,7 @@ let createDependenciesFileR (rootDirectory : DirectoryInfo) nugetEnv mode =
         try 
             DependenciesFile.ReadFromFile dependenciesFileName
             |> ok
-        with _ -> DependenciesFileParseError (FileInfo(dependenciesFileName)) |> fail
+        with _ -> DependenciesFileParseError (FileInfo dependenciesFileName) |> fail
         |> lift addPackages
 
     let create() =
@@ -322,7 +322,6 @@ let updateSolutions (rootDirectory : DirectoryInfo) =
     let solutions =
         FindAllFiles(rootDirectory.FullName, "*.sln")
         |> Array.map (fun fi -> SolutionFile(fi.FullName))
-        |> Array.toList
 
     for solution in solutions do
         let dependenciesFileRef = createRelativePath solution.FileName dependenciesFileName
@@ -378,7 +377,7 @@ let replaceNugetWithPaket initAutoRestore installAfter result =
     result.PaketEnv.Projects |> List.iter (fun (project, referencesFile) -> 
                                                 project.Save()
                                                 referencesFile.Save())
-    result.SolutionFiles |> List.iter (fun s -> s.Save())
+    result.SolutionFiles |> Array.iter (fun s -> s.Save())
 
     let autoVSPackageRestore = 
         result.NugetEnv.NugetConfig.PackageRestoreAutomatic &&
