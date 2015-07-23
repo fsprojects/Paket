@@ -186,3 +186,4 @@ docs/content/paket-*.md
 !docs/content/paket-folder.md
 *.bak
 System.Management.Automation.dll
+.fake
