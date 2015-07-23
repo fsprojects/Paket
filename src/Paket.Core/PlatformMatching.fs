@@ -98,11 +98,11 @@ let getSupportedTargetProfiles (paths : string list) =
     |> List.map (fun target -> findBestMatch paths target, target)
     |> List.collect (fun (path, target) -> 
            match path with
-           | Some(p) -> [ (p, target) ]
+           | Some p -> [ p, target ]
            | _ -> [])
-    |> Seq.groupBy fst
-    |> Seq.map (fun (path, group) -> (path, Seq.map snd group |> Seq.toList))
-    |> Map.ofSeq
+    |> List.groupBy fst
+    |> List.map (fun (path, group) -> path, List.map snd group)
+    |> Map.ofList
 
 let getTargetCondition (target:TargetProfile) =
     match target with
