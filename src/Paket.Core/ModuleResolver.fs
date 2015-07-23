@@ -78,14 +78,13 @@ let resolve getDependencies getSha1 (file : UnresolvedSourceFile) : ResolvedSour
 let private detectConflicts (remoteFiles : UnresolvedSourceFile list) : unit =
     let conflicts =
         remoteFiles
-        |> Seq.groupBy (fun file ->
+        |> List.groupBy (fun file ->
             let directoryName =
                 normalizePath (file.Name.TrimStart('/'))
             file.Owner, file.Project, directoryName)
-        |> Seq.map (fun (key, files) -> key, files |> Seq.map getCommit |> Seq.distinct)
-        |> Seq.filter (snd >> Seq.length >> (<) 1)
-        |> Seq.toList
-        |> Seq.map (fun ((owner, project, directoryName), commits) ->
+        |> List.map (fun (key, files) -> key, files |> List.map getCommit |> List.distinct)
+        |> List.filter (snd >> Seq.length >> (<) 1)
+        |> List.map (fun ((owner, project, directoryName), commits) ->
             sprintf "   - %s/%s%s%s     Versions:%s     - %s" owner project directoryName
                 Environment.NewLine Environment.NewLine
                 (String.concat (Environment.NewLine + "     - ") commits))
