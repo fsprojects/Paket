@@ -141,30 +141,6 @@ let inline createWebClient(url,auth:Auth option) =
 open System.Diagnostics
 open System.Threading
 
-type System.Net.WebClient with
-    member this.AsyncDownloadFile (address: Uri, filePath: string) : Async<unit> =
-        let downloadAsync =
-            Async.FromContinuations (fun (cont, econt, ccont) ->
-                        let userToken = new obj()
-                        let rec handler = 
-                                System.ComponentModel.AsyncCompletedEventHandler (fun _ args ->
-                                    if userToken = args.UserState then
-                                        this.DownloadFileCompleted.RemoveHandler(handler)
-                                        if args.Cancelled then
-                                            ccont (new OperationCanceledException())
-                                        elif args.Error <> null then
-                                            econt args.Error
-                                        else
-                                            cont ())
-                        this.DownloadFileCompleted.AddHandler(handler)
-                        this.DownloadFileAsync(address, filePath, userToken)
-                    )
-
-        async {
-            use! _holder = Async.OnCancel(fun _ -> this.CancelAsync())
-            return! downloadAsync
-        }
-
 /// [omit]
 let downloadFromUrl (auth:Auth option, url : string) (filePath: string) =
     async {
