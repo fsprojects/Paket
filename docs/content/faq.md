@@ -18,6 +18,8 @@ Paket also enables one to reference files directly from [GitHub repositories, Gi
 No, since Paket provides a global view of your dependencies it installs only one version of a package and therefore the version number is not needed in the path.
 This makes it much easier to reference files in the package and you don't have to edit these references when you update a package.
 
+If you really need to have the version in the path for certain packages (like xunit.runners.visualstudio) you [can still do that](nuget-dependencies.html#Putting-the-version-no-into-the-path).
+
 ## Why does Paket add references to the libraries associated with each supported framework version within a NuGet package to my projects?
 
 A NuGet package installation adds references only for the currently selected target .NET framework version of your project at the time of installation. Whenever you switch the framework version of your project, there's a potential need to reinstall all of the packages.
