@@ -31,7 +31,7 @@ let findPackageFolder root (PackageName name) (settings:InstallSettings,version:
 let private findPackagesWithContent (root,usedPackages:Map<PackageName,InstallSettings*SemVerInfo>) =
     usedPackages
     |> Seq.filter (fun kv -> defaultArg (fst kv.Value).OmitContent false |> not)
-    |> Seq.map (fun kv ->  findPackageFolder root kv.Key kv.Value)
+    |> Seq.map (fun kv -> findPackageFolder root kv.Key kv.Value)
     |> Seq.choose (fun packageDir ->
             packageDir.GetDirectories("Content")
             |> Array.append (packageDir.GetDirectories("content"))
@@ -75,9 +75,8 @@ let private removeCopiedFiles (project: ProjectFile) =
 
         let dirsPathsDeepestFirst =
             files
-            |> Seq.map (fun f -> f.Directory.FullName)
-            |> Seq.distinct
-            |> List.ofSeq
+            |> List.map (fun f -> f.Directory.FullName)
+            |> List.distinct
             |> List.rev
 
         for dirPath in dirsPathsDeepestFirst do
