@@ -125,8 +125,7 @@ type NugetConfig =
         { PackageSources = if clearSources then sources
                            else 
                                nugetConfig.PackageSources @ sources
-                               |> Seq.distinct
-                               |> List.ofSeq
+                               |> List.distinct
           PackageRestoreEnabled = 
             match configNode |> getNode "packageRestore" |> Option.bind (tryGetValue "enabled") with
             | Some value -> bool.Parse(value)

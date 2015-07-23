@@ -133,10 +133,10 @@ let private applyBindingRedirects root extractedPackages =
         |> List.rev
         |> function | head :: _ -> Some head | _ -> None)
     |> Seq.map(fun (assembly, token) ->
-        {   BindingRedirect.AssemblyName = assembly.GetName().Name
-            Version = assembly.GetName().Version.ToString()
-            PublicKeyToken = token
-            Culture = None })
+        { BindingRedirect.AssemblyName = assembly.GetName().Name
+          Version = assembly.GetName().Version.ToString()
+          PublicKeyToken = token
+          Culture = None })
     |> applyBindingRedirectsToFolder root
 
 let findAllReferencesFiles root =
