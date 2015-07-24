@@ -127,14 +127,14 @@ let downloadRemoteFiles(remoteFile:ResolvedSourceFile,destination) = async {
 
 let DownloadSourceFiles(rootPath, force, sourceFiles:ModuleResolver.ResolvedSourceFile list) =
     sourceFiles
-    |> Seq.map (fun source ->
+    |> List.map (fun source ->
         let destination = source.FilePath(rootPath)
         let destinationDir = FileInfo(destination).Directory.FullName
 
         (destinationDir, source.Commit), (destination, source))
-    |> Seq.groupBy fst
-    |> Seq.sortBy (fst >> fst)
-    |> Seq.map (fun ((destinationDir, version), sources) ->
+    |> List.groupBy fst
+    |> List.sortBy (fst >> fst)
+    |> List.map (fun ((destinationDir, version), sources) ->
         let versionFile = FileInfo(Path.Combine(destinationDir, Constants.PaketVersionFileName))
         let isInRightVersion = versionFile.Exists && File.ReadAllText(versionFile.FullName).Contains(version)
 
@@ -142,11 +142,11 @@ let DownloadSourceFiles(rootPath, force, sourceFiles:ModuleResolver.ResolvedSour
             CleanDir destinationDir
 
         (versionFile, version), sources)
-    |> Seq.map (fun ((versionFile, version), sources) ->
+    |> List.map (fun ((versionFile, version), sources) ->
         async {
             let! downloaded =
                 sources
-                |> Seq.map (fun (_, (destination, source)) ->
+                |> List.map (fun (_, (destination, source)) ->
                     async {
                         let exists =
                             if destination.EndsWith Constants.FullProjectSourceFileName then
