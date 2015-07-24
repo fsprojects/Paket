@@ -1,4 +1,5 @@
-#### 1.21.1 - 23.07.2015
+#### 1.22.0-alpha001 - 24.07.2015
+* Use FSharp.Core 4.0
 * Fix build exe path which includes whitespace - https://github.com/fsprojects/ProjectScaffold/pull/185
 
 #### 1.21.0 - 23.07.2015
