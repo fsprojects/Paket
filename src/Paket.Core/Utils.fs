@@ -274,10 +274,6 @@ let RunInLockedAccessMode(rootFolder,action) =
         releaseLock()
         reraise()
 
-/// [omit]
-module Seq = 
-    let inline firstOrDefault seq = Seq.tryFind (fun _ -> true) seq
-
 module String =
     let (|StartsWith|_|) prefix (input: string) =
         if input.StartsWith prefix then

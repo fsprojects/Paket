@@ -187,8 +187,8 @@ module NugetEnv =
 
     let read (rootDirectory : DirectoryInfo) = trial {
         let configs = FindAllFiles(rootDirectory.FullName, "nuget.config") |> Array.toList
-        let targets = FindAllFiles(rootDirectory.FullName, "nuget.targets") |> Seq.firstOrDefault
-        let exe = FindAllFiles(rootDirectory.FullName, "nuget.exe") |> Seq.firstOrDefault
+        let targets = FindAllFiles(rootDirectory.FullName, "nuget.targets") |> Array.tryHead
+        let exe = FindAllFiles(rootDirectory.FullName, "nuget.exe") |> Array.tryHead
         let! config = readNugetConfig rootDirectory
         let! packages = readNugetPackages rootDirectory
 

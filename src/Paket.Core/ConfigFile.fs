@@ -142,7 +142,7 @@ let AddCredentials (source, username, password) = trial {
         let! credentialsNode = getConfigNode "credentials"
         
         let newCredentials = 
-            match getSourceNodes credentialsNode source |> Seq.firstOrDefault with
+            match getSourceNodes credentialsNode source |> List.tryHead with
             | None -> createSourceNode credentialsNode source |> Some
             | Some existingNode ->
                 let _,existingPassword = getAuthFromNode existingNode

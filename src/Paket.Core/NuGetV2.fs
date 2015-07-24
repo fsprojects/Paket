@@ -347,7 +347,7 @@ let findLocalPackage directory (name:string) (version:SemVerInfo) =
         |> Seq.map (fun x -> FileInfo(x))
         |> Seq.filter (fun fi -> fi.Name.ToLower().Contains(name.ToLower()))
         |> Seq.filter (fun fi -> fi.Name.Contains(normalizedVersion) || fi.Name.Contains(version.ToString()))
-        |> Seq.firstOrDefault
+        |> Seq.tryHead
 
     match v3 with
     | None -> failwithf "The package %s %s can't be found in %s.%sPlease check the feed definition in your paket.dependencies file." name (version.ToString()) directory Environment.NewLine

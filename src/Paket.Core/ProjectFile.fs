@@ -141,7 +141,7 @@ type ProjectFile =
 
     member this.UpdateFileItems(fileItems : FileItem list, hard) = 
 
-        let firstItemGroup = this.ProjectNode |> getNodes "ItemGroup" |> Seq.firstOrDefault
+        let firstItemGroup = this.ProjectNode |> getNodes "ItemGroup" |> List.tryHead
 
         let newItemGroups = 
             match firstItemGroup with
@@ -471,7 +471,7 @@ type ProjectFile =
 
     member this.RemoveNuGetTargetsEntries() =
         let toDelete = 
-            [ this.Document |> getDescendants "RestorePackages" |> Seq.firstOrDefault
+            [ this.Document |> getDescendants "RestorePackages" |> List.tryHead
               this.Document 
               |> getDescendants "Import" 
               |> List.tryFind (fun n -> 
@@ -531,14 +531,14 @@ type ProjectFile =
         |> Seq.head
 
     member this.GetTargetFrameworkIdentifier() =
-        seq {for outputType in this.Document |> getDescendants "TargetFrameworkIdentifier" ->
-                outputType.InnerText  }
-        |> Seq.firstOrDefault
+        seq { for outputType in this.Document |> getDescendants "TargetFrameworkIdentifier" ->
+                outputType.InnerText }
+        |> Seq.tryHead
 
     member this.GetTargetFrameworkProfile() =
         seq {for outputType in this.Document |> getDescendants "TargetFrameworkProfile" ->
-                outputType.InnerText  }
-        |> Seq.firstOrDefault
+                outputType.InnerText }
+        |> Seq.tryHead
 
     member this.GetTargetProfile() =
         match this.GetTargetFrameworkProfile() with
@@ -547,7 +547,7 @@ type ProjectFile =
         | _ ->
             let framework =
                 seq {for outputType in this.Document |> getDescendants "TargetFrameworkVersion" ->
-                        outputType.InnerText  }
+                        outputType.InnerText }
                 |> Seq.map (fun s -> 
                                 // TODO make this a separate function
                                 let prefix = 
@@ -558,7 +558,8 @@ type ProjectFile =
                                 prefix + s.Replace("v","")
                                 |> FrameworkDetection.Extract)
                 |> Seq.map (fun o -> o.Value)
-                |> Seq.firstOrDefault
+                |> Seq.tryHead
+
             SinglePlatform(defaultArg framework (DotNetFramework(FrameworkVersion.V4)))
 
     
