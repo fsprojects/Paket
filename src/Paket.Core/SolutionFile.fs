@@ -8,6 +8,7 @@ open System
 type SolutionFile(fileName: string) =
    
     let originalContent = File.ReadAllLines fileName |> Array.toList
+    let originalEncoding = getFileEncoding fileName
     let content = ResizeArray( originalContent )
     
     let removeNugetSlnFolderIfEmpty() =
@@ -80,5 +81,5 @@ type SolutionFile(fileName: string) =
     member __.Save() =
         if content |> Seq.toList <> originalContent 
         then 
-            File.WriteAllLines(fileName, content)
+            File.WriteAllLines(fileName, content, originalEncoding)
             tracefn "Solution %s changed" fileName
