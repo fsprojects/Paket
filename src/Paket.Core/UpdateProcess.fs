@@ -46,25 +46,29 @@ let addPackagesFromReferenceFiles projects (dependenciesFile : DependenciesFile)
         newDependenciesFile.Save()
         newDependenciesFile
 
-let SelectiveUpdate(dependenciesFile : DependenciesFile, updateAll, exclude, force) =
-    let lockFileName = DependenciesFile.FindLockfile dependenciesFile.FileName
-
+let selectiveUpdate resolve lockFile dependenciesFile updateAll package =
     let resolution =
-        if not lockFileName.Exists || updateAll then
-            dependenciesFile.Resolve(force)
+        if updateAll then
+            resolve dependenciesFile
         else
-            let oldLockFile = LockFile.LoadFrom(lockFileName.FullName)
-            let changedDependencies = DependencyChangeDetection.findChangesInDependenciesFile(dependenciesFile,oldLockFile)
+            let changedDependencies = DependencyChangeDetection.findChangesInDependenciesFile(dependenciesFile,lockFile)
 
             let changed =
-                match exclude with
+                match package with
                 | None -> changedDependencies
                 | Some package -> Set.add package changedDependencies
 
-            let dependenciesFile = DependencyChangeDetection.PinUnchangedDependencies dependenciesFile oldLockFile changed
+            let dependenciesFile = DependencyChangeDetection.PinUnchangedDependencies dependenciesFile lockFile changed
 
-            dependenciesFile.Resolve(force)
-    LockFile.Create(lockFileName.FullName, dependenciesFile.Options, resolution.ResolvedPackages, resolution.ResolvedSourceFiles)
+            resolve dependenciesFile
+
+    LockFile(lockFile.FileName, dependenciesFile.Options, resolution.ResolvedPackages.GetModelOrFail(), resolution.ResolvedSourceFiles)
+
+let SelectiveUpdate(dependenciesFile : DependenciesFile, updateAll, exclude, force) =
+    let oldLockFile = LockFile.LoadFrom <| dependenciesFile.FindLockfile().FullName 
+    let lockFile = selectiveUpdate (fun d -> d.Resolve(force)) oldLockFile dependenciesFile updateAll exclude
+    lockFile.Save()
+    lockFile
 
 /// Smart install command
 let SmartInstall(dependenciesFileName, updateAll, exclude, options : UpdaterOptions) =

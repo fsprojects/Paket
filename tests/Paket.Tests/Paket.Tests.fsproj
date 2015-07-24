@@ -94,6 +94,7 @@
     </Content>
     <Compile Include="PackagesConfig\ReadConfig.fs" />
     <Compile Include="PackagesConfig\WriteConfig.fs" />
+    <Compile Include="UpdateProcessSpecs.fs" />
     <Compile Include="RemotePushUrlSpecs.fs" />
     <Content Include="Nuspec\FSharp.Data.nuspec">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
