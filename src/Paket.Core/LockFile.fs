@@ -81,7 +81,7 @@ module LockFileSerializer =
         let all =
             let updateHasReported = new List<SingleSourceFileOrigin>()
 
-            [ for (owner,project,origin), files in files |> Seq.groupBy(fun f -> f.Owner, f.Project, f.Origin) do
+            [ for (owner,project,origin), files in files |> List.groupBy (fun f -> f.Owner, f.Project, f.Origin) do
                 match origin with
                 | GitHubLink -> 
                     if not (updateHasReported.Contains(GitHubLink)) then

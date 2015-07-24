@@ -31,7 +31,7 @@ let findPackageFolder root (PackageName name) (settings:InstallSettings,version:
 let private findPackagesWithContent (root,usedPackages:Map<PackageName,InstallSettings*SemVerInfo>) =
     usedPackages
     |> Seq.filter (fun kv -> defaultArg (fst kv.Value).OmitContent false |> not)
-    |> Seq.map (fun kv ->  findPackageFolder root kv.Key kv.Value)
+    |> Seq.map (fun kv -> findPackageFolder root kv.Key kv.Value)
     |> Seq.choose (fun packageDir ->
             packageDir.GetDirectories("Content")
             |> Array.append (packageDir.GetDirectories("content"))
@@ -75,9 +75,8 @@ let private removeCopiedFiles (project: ProjectFile) =
 
         let dirsPathsDeepestFirst =
             files
-            |> Seq.map (fun f -> f.Directory.FullName)
-            |> Seq.distinct
-            |> List.ofSeq
+            |> List.map (fun f -> f.Directory.FullName)
+            |> List.distinct
             |> List.rev
 
         for dirPath in dirsPathsDeepestFirst do
@@ -116,7 +115,7 @@ let createModel(root, sources, force, lockFile : LockFile, packages:Set<Normaliz
 /// Applies binding redirects for all strong-named references to all app. and web. config files.
 let private applyBindingRedirects root extractedPackages =
     extractedPackages
-    |> Seq.map(fun (package, model:InstallModel) -> model.GetLibReferencesLazy.Force())
+    |> Seq.map (fun (package, model:InstallModel) -> model.GetLibReferencesLazy.Force())
     |> Set.unionMany
     |> Seq.choose(function | Reference.Library path -> Some path | _-> None)
     |> Seq.groupBy (fun p -> FileInfo(p).Name)
@@ -134,10 +133,10 @@ let private applyBindingRedirects root extractedPackages =
         |> List.rev
         |> function | head :: _ -> Some head | _ -> None)
     |> Seq.map(fun (assembly, token) ->
-        {   BindingRedirect.AssemblyName = assembly.GetName().Name
-            Version = assembly.GetName().Version.ToString()
-            PublicKeyToken = token
-            Culture = None })
+        { BindingRedirect.AssemblyName = assembly.GetName().Name
+          Version = assembly.GetName().Version.ToString()
+          PublicKeyToken = token
+          Culture = None })
     |> applyBindingRedirectsToFolder root
 
 let findAllReferencesFiles root =
@@ -157,8 +156,7 @@ let InstallIntoProjects(sources, options : InstallerOptions, lockFile : LockFile
     let packagesToInstall =
         if options.OnlyReferenced then
             projects
-            |> Seq.ofList
-            |> Seq.map (fun (_, referencesFile)->
+            |> List.map (fun (_, referencesFile)->
                 referencesFile
                 |> lockFile.GetPackageHull
                 |> Seq.map (fun p -> NormalizedPackageName p.Key))

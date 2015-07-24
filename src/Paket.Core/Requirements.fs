@@ -62,21 +62,21 @@ let findMaxDotNetRestriction restrictions =
         | _ -> failwith "error"
 
 let optimizeRestrictions packages =
-    let grouped = packages |> Seq.groupBy (fun (n,v,_) -> n,v) |> Seq.toList    
+    let grouped = packages |> List.groupBy (fun (n,v,_) -> n,v)
 
     let invertedRestrictions =
         let expanded =
             [for (n,vr,r:FrameworkRestrictions) in packages do
                 for r' in r do
                     yield n,vr,r']
-            |> Seq.groupBy (fun (_,_,r) -> r)
+            |> List.groupBy (fun (_,_,r) -> r)
 
         [for restriction,packages in expanded do
             match restriction with
             | FrameworkRestriction.Exactly r -> 
                 let s = r.ToString()
                 if s.StartsWith("net") then
-                    yield r,packages |> Seq.map (fun (n,v,_) -> n,v) |> Seq.toList
+                    yield r,packages |> List.map (fun (n,v,_) -> n,v)
             | _ -> () ]
         |> List.sortBy fst
 
@@ -93,9 +93,8 @@ let optimizeRestrictions packages =
             else
                 let plain = 
                     group 
-                    |> Seq.map (fun (_,_,res) -> res) 
-                    |> Seq.concat 
-                    |> Seq.toList
+                    |> List.map (fun (_,_,res) -> res) 
+                    |> List.concat
 
                 let localMaxDotNetRestriction = findMaxDotNetRestriction plain        
 
@@ -107,9 +106,8 @@ let optimizeRestrictions packages =
                             if r = localMaxDotNetRestriction then
                                 let globalMax = 
                                     invertedRestrictions
-                                    |> Seq.skipWhile (fun (r,l) -> r <= localMaxDotNetRestriction && l |> List.exists (fun (n,vr) -> n = name && vr = versionRequirement))
-                                    |> Seq.map fst
-                                    |> Seq.toList
+                                    |> List.skipWhile (fun (r,l) -> r <= localMaxDotNetRestriction && l |> List.exists (fun (n,vr) -> n = name && vr = versionRequirement))
+                                    |> List.map fst
 
                                 if globalMax = [] || r >= globalMax.Head then
                                     FrameworkRestriction.AtLeast r
@@ -118,8 +116,7 @@ let optimizeRestrictions packages =
                             else
                                 restriction
                         | _ -> restriction)
-                    |> Seq.distinct
-                    |> Seq.toList
+                    |> List.distinct
                     |> List.sort
 
                 yield name,versionRequirement,restrictions]

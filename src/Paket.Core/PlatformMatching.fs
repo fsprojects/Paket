@@ -88,8 +88,8 @@ let findBestMatch (paths : string list) (targetProfile : TargetProfile) =
     |> List.map (fun path -> path, (getPenalty requiredPlatforms path))
     |> List.filter (fun (_, penalty) -> penalty < MaxPenalty)
     |> List.sortWith comparePaths
-    |> Seq.map fst
-    |> Seq.tryFind (fun _ -> true)
+    |> List.map fst
+    |> List.tryFind (fun _ -> true)
 
 // For a given list of paths and target profiles return tuples of paths with their supported target profiles.
 // Every target profile will only be listed for own path - the one that best supports it. 
@@ -98,11 +98,11 @@ let getSupportedTargetProfiles (paths : string list) =
     |> List.map (fun target -> findBestMatch paths target, target)
     |> List.collect (fun (path, target) -> 
            match path with
-           | Some(p) -> [ (p, target) ]
+           | Some p -> [ p, target ]
            | _ -> [])
-    |> Seq.groupBy fst
-    |> Seq.map (fun (path, group) -> (path, Seq.map snd group |> Seq.toList))
-    |> Map.ofSeq
+    |> List.groupBy fst
+    |> List.map (fun (path, group) -> path, List.map snd group)
+    |> Map.ofList
 
 let getTargetCondition (target:TargetProfile) =
     match target with
@@ -146,10 +146,10 @@ let getCondition (targets : TargetProfile list) =
         |> List.map getTargetCondition
         |> List.filter (fun (_,v) -> v <> "false")
         |> List.append grouped
-        |> Seq.groupBy fst
+        |> List.groupBy fst
 
     conditions
-    |> Seq.map (fun (group,conditions) ->
+    |> List.map (fun (group,conditions) ->
         match List.ofSeq conditions with
         | [ _,"" ] -> group
         | [ _,detail ] -> sprintf "%s And %s" group detail
@@ -161,7 +161,6 @@ let getCondition (targets : TargetProfile list) =
                 |> Set.ofSeq
                 |> fun cs -> String.Join(" Or ",cs)
             sprintf "%s And (%s)" group detail)
-    |> Seq.toList
     |> fun l -> 
             match l with
             | [] -> ""

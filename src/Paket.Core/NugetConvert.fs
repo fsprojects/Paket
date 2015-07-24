@@ -125,8 +125,7 @@ type NugetConfig =
         { PackageSources = if clearSources then sources
                            else 
                                nugetConfig.PackageSources @ sources
-                               |> Seq.distinct
-                               |> List.ofSeq
+                               |> List.distinct
           PackageRestoreEnabled = 
             match configNode |> getNode "packageRestore" |> Option.bind (tryGetValue "enabled") with
             | Some value -> bool.Parse(value)
@@ -157,10 +156,9 @@ module NugetEnv =
         
     let readNugetConfig(rootDirectory : DirectoryInfo) =
         DirectoryInfo(Path.Combine(rootDirectory.FullName, ".nuget"))
-        |> Seq.unfold (fun di -> if di = null 
+        |> List.unfold (fun di -> if di = null 
                                     then None 
                                     else Some(FileInfo(Path.Combine(di.FullName, "nuget.config")), di.Parent)) 
-        |> Seq.toList
         |> List.rev
         |> List.append [FileInfo(Path.Combine(Constants.AppDataFolder, "nuget", "nuget.config"))]
         |> List.filter (fun fi -> fi.Exists)
@@ -182,10 +180,9 @@ module NugetEnv =
             with _ -> fail (NugetPackagesConfigParseError file)
 
         ProjectFile.FindAllProjects rootDirectory.FullName 
-        |> List.ofArray
-        |> List.map (fun p -> p, Path.Combine(Path.GetDirectoryName(p.FileName), Constants.PackagesConfigFile))
-        |> List.filter (fun (p,packages) -> File.Exists packages)
-        |> List.map (fun (p,packages) -> readSingle(FileInfo(packages)) |> lift (fun packages -> (p,packages)))
+        |> Array.map (fun p -> p, Path.Combine(Path.GetDirectoryName(p.FileName), Constants.PackagesConfigFile))
+        |> Array.filter (fun (p,packages) -> File.Exists packages)
+        |> Array.map (fun (p,packages) -> readSingle(FileInfo(packages)) |> lift (fun packages -> (p,packages)))
         |> collect
 
     let read (rootDirectory : DirectoryInfo) = trial {
@@ -201,7 +198,7 @@ module NugetEnv =
 type ConvertResultR = 
     { NugetEnv : NugetEnv
       PaketEnv : PaketEnv
-      SolutionFiles : list<SolutionFile> }
+      SolutionFiles : SolutionFile [] }
 
 [<CompilationRepresentation(CompilationRepresentationFlags.ModuleSuffix)>]
 module ConvertResultR =
@@ -228,36 +225,33 @@ let createDependenciesFileR (rootDirectory : DirectoryInfo) nugetEnv mode =
 
     let allVersionsGroupped =
         nugetEnv.NugetProjectFiles
-        |> Seq.collect (fun (_,c) -> c.Packages)
-        |> Seq.groupBy (fun p -> p.Id)
+        |> List.collect (fun (_,c) -> c.Packages)
+        |> List.groupBy (fun p -> p.Id)
 
-    let findDistinctsPackages selector =
+    let findDistinctPackages selector =
         allVersionsGroupped
-        |> Seq.map (fun (name, packages) -> name, packages |> selector)
-        |> Seq.sortBy (fun (name,_) -> name.ToLower())
+        |> List.map (fun (name, packages) -> name, packages |> selector)
+        |> List.sortBy (fun (name,_) -> name.ToLower())
 
     let findWarnings searchBy message =
-        for (name, versions) in 
-            findDistinctsPackages searchBy 
-            do
-                if Seq.length versions > 1 
-                then traceWarnfn message name (versions |> Seq.toList)    
+        for name, versions in findDistinctPackages searchBy do
+            if List.length versions > 1 then 
+              traceWarnfn message name versions    
 
-    findWarnings (Seq.map (fun p -> p.Version) >> Seq.distinct >> Seq.map string) 
+    findWarnings (List.map (fun p -> p.Version) >> List.distinct >> List.map string) 
         "Package %s is referenced multiple times in different versions: %A. Paket will choose the latest one." 
-    findWarnings (Seq.map (fun p -> p.TargetFramework) >> Seq.distinct >> Seq.choose(fun target -> target) >> Seq.map string) 
+    findWarnings (List.map (fun p -> p.TargetFramework) >> List.distinct >> List.choose (fun target -> target) >> List.map string) 
         "Package %s is referenced multiple times with different target frameworks : %A. Paket may disregard target framework."
     
     let latestVersions = 
-        findDistinctsPackages (Seq.map (fun p -> p.Version, p.TargetFramework) >> Seq.distinct)
-        |> Seq.map (fun (name, versions) ->
-            let latestVersion, _ = versions |> Seq.maxBy fst
+        findDistinctPackages (List.map (fun p -> p.Version, p.TargetFramework) >> List.distinct)
+        |> List.map (fun (name, versions) ->
+            let latestVersion, _ = versions |> List.maxBy fst
             let restrictions =
-                match versions |> Seq.toList with
+                match versions with
                 | [ version, targetFramework ] -> targetFramework |> Option.toList |> List.collect Requirements.parseRestrictions 
                 | _ -> []
             name, string latestVersion, restrictions)
-        |> Seq.toList
 
     let packages = 
         match nugetEnv.NugetExe with 
@@ -272,7 +266,7 @@ let createDependenciesFileR (rootDirectory : DirectoryInfo) nugetEnv mode =
         try 
             DependenciesFile.ReadFromFile dependenciesFileName
             |> ok
-        with _ -> DependenciesFileParseError (FileInfo(dependenciesFileName)) |> fail
+        with _ -> DependenciesFileParseError (FileInfo dependenciesFileName) |> fail
         |> lift addPackages
 
     let create() =
@@ -326,8 +320,7 @@ let updateSolutions (rootDirectory : DirectoryInfo) =
     let dependenciesFileName = Path.Combine(rootDirectory.FullName, Constants.DependenciesFileName)
     let solutions =
         FindAllFiles(rootDirectory.FullName, "*.sln")
-        |> Array.map(fun fi -> SolutionFile(fi.FullName))
-        |> Array.toList
+        |> Array.map (fun fi -> SolutionFile(fi.FullName))
 
     for solution in solutions do
         let dependenciesFileRef = createRelativePath solution.FileName dependenciesFileName
@@ -383,7 +376,7 @@ let replaceNugetWithPaket initAutoRestore installAfter result =
     result.PaketEnv.Projects |> List.iter (fun (project, referencesFile) -> 
                                                 project.Save()
                                                 referencesFile.Save())
-    result.SolutionFiles |> List.iter (fun s -> s.Save())
+    result.SolutionFiles |> Array.iter (fun s -> s.Save())
 
     let autoVSPackageRestore = 
         result.NugetEnv.NugetConfig.PackageRestoreAutomatic &&
