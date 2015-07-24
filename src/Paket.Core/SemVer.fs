@@ -9,8 +9,8 @@ module utils =
         let rlength = if l2 = Unchecked.defaultof<_> then 0 else List.length l2
         seq {
             for i in 0..(max llength rlength) do
-                let l = if llength > i then Some (List.nth l1 i) else None
-                let r = if rlength > i then Some (List.nth l2 i) else None
+                let l = if llength > i then Some (List.item i l1) else None
+                let r = if rlength > i then Some (List.item i l2) else None
                 yield l, r
         }
 
