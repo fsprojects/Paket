@@ -74,6 +74,19 @@ let CleanDir path =
     // set writeable
     File.SetAttributes(path, FileAttributes.Normal)
 
+// http://stackoverflow.com/a/19283954/1397724
+let getFileEncoding path =
+    let bom = Array.zeroCreate 4
+    use fs = new FileStream(path, FileMode.Open, FileAccess.Read)
+    fs.Read(bom, 0, 4) |> ignore
+    match bom with
+    | [| 0x2buy ; 0x2fuy ; 0x76uy ; _      |] -> Encoding.UTF7
+    | [| 0xefuy ; 0xbbuy ; 0xbfuy ; _      |] -> Encoding.UTF8
+    | [| 0xffuy ; 0xfeuy ; _      ; _      |] -> Encoding.Unicode //UTF-16LE
+    | [| 0xfeuy ; 0xffuy ; _      ; _      |] -> Encoding.BigEndianUnicode //UTF-16BE
+    | [| 0uy    ; 0uy    ; 0xfeuy ; 0xffuy |] -> Encoding.UTF32
+    | _ -> Encoding.ASCII
+
 /// [omit]
 let inline createRelativePath root path = 
     let basePath = 
