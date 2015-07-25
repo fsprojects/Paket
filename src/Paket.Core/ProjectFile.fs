@@ -584,26 +584,64 @@ type ProjectFile =
         else "Content"
 
     member this.GetOutputDirectory buildConfiguration =
+        let rec handleElement (data : Map<string, string>) (node : XmlNode) =
+            let inline processPlaceholders data text =
+                // TODO: Process placeholders
+                text
+
+            let inline conditionMatches data condition =
+                // TODO: Process conditions
+                true
+
+            let inline addData data (node:XmlNode) =
+                let text = processPlaceholders data node.InnerText
+                // Note that using Map.add overrides the value assigned
+                // to this key if it already exists in the map; so long
+                // as we process nodes top-to-bottom, this matches the
+                // behavior of MSBuild.
+                Map.add node.Name text data
+
+            let inline handleConditionalElement data node =
+                node
+                |> getAttribute "Condition"
+                |> function
+                    | None ->
+                        node
+                        |> getChildNodes
+                        |> Seq.fold handleElement data
+                    | Some s ->
+                        if not (conditionMatches data s)
+                        then data
+                        else
+                            if node.ChildNodes.Count > 0 then
+                                node
+                                |> getChildNodes
+                                |> Seq.fold handleElement data
+                            else
+                                data
+
+            match node.Name with
+            | "PropertyGroup" -> handleConditionalElement data node
+            // Don't handle these yet
+            | "Choose" | "Import" | "ItemGroup" | "ProjectExtensions" | "Target" | "UsingTask" -> data
+            // Any other node types are intended to be values being defined
+            | _ ->
+                node
+                |> getAttribute "Condition"
+                |> function
+                    | None -> addData data node
+                    | Some s ->
+                        if not (conditionMatches data s)
+                        then data
+                        else addData data node
+
         this.Document
         |> getDescendants "PropertyGroup"
-        |> List.filter (fun pg ->
-            pg
-            |> getAttribute "Condition"
-            |> function
-               | None -> false
-               | Some s -> s.Contains "$(Configuration)" && s.Contains buildConfiguration)
-        |> List.map (fun pg -> pg |> getNodes "OutputPath")
-        |> List.concat
-        |> fun outputPaths ->
-               let clean (p : string) =
-                   p.TrimEnd [|'\\'|] |> normalizePath
-               match outputPaths with
-               | [] -> failwithf "Unable to find %s output path node in file %s" buildConfiguration this.FileName
-               | [output] ->
-                    clean output.InnerText
-               | output::_ ->
-                    traceWarnfn "Found multiple %s output path nodes in file %s, using first" buildConfiguration this.FileName
-                    clean output.InnerText
+        |> Seq.fold handleElement Map.empty<string,string>
+        |> Map.tryFind "OutputPath"
+        |> function
+            | None -> failwithf "Unable to find %s output path node in file %s" buildConfiguration this.FileName
+            | Some s -> s.TrimEnd [|'\\'|] |> normalizePath
 
     member this.GetAssemblyName () =
         let assemblyName =
