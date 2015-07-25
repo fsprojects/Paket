@@ -67,6 +67,9 @@ let inline getDescendants name (node:XmlNode) =
         |> Seq.cast<XmlNode>
         |> Seq.toList
 
+/// [omit]
+let inline getChildNodes (node:XmlNode) = System.Linq.Enumerable.Cast<XmlNode>(node)
+
 
 module Linq =
 
