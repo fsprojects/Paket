@@ -585,9 +585,29 @@ type ProjectFile =
 
     member this.GetOutputDirectory buildConfiguration =
         let rec handleElement (data : Map<string, string>) (node : XmlNode) =
-            let inline processPlaceholders data text =
-                // TODO: Process placeholders
-                text
+            let inline processPlaceholders (data : Map<string, string>) text =
+                let getPlaceholderValue (name:string) =
+                    // Change "$(Configuration)" to "Configuration",
+                    // then find in the data map
+                    let name = name.Substring(2, name.Length - 3)
+                    match data.TryFind(name) with
+                    | None -> ""
+                    | Some s -> s
+
+                let replacePlaceholder (s:string) (m:System.Text.RegularExpressions.Match) =
+                    let front = s.Substring(0, m.Index)
+                    let value = getPlaceholderValue m.Value
+                    let back = s.Substring(m.Index + m.Length)
+                    front + value + back
+
+                // The placeholder name must be a valid XML node name,
+                // else where would its value be defined?
+                let regex = @"\$\([a-zA-Z_\-\:][a-zA-Z0-9_\.\-\:]*\)"
+
+                System.Text.RegularExpressions.Regex.Matches(text, regex)
+                |> fun x -> System.Linq.Enumerable.Cast<System.Text.RegularExpressions.Match>(x)
+                |> Seq.rev
+                |> Seq.fold replacePlaceholder text
 
             let inline conditionMatches data condition =
                 // TODO: Process conditions
