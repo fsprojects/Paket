@@ -200,3 +200,33 @@ let ``SelectiveUpdate updates a single constrained package``() =
     result
     |> Seq.sortBy (fun (key,_) -> key)
     |> shouldEqual expected
+     
+[<Test>]
+let ``SelectiveUpdate updates a single package with constrained dependency in dependencies file``() = 
+
+    let dependenciesFile = DependenciesFile.FromCode("""source http://nuget.org/api/v2
+
+    nuget Castle.Core-log4net ~> 3.2
+    nuget Castle.Core ~> 3.2
+    nuget FAKE""")
+
+    let updateAll = false
+    let lockFile = 
+        Some(NormalizedPackageName(PackageName "Castle.Core-log4net"))
+        |> selectiveUpdate resolve lockFile dependenciesFile updateAll
+    
+    let result = 
+        lockFile.ResolvedPackages
+        |> Seq.map (fun (KeyValue (_,resolved)) -> (string resolved.Name, string resolved.Version))
+
+    let expected = 
+        [("Castle.Core-log4net","3.3.3");
+        ("Castle.Core","3.3.3");
+        ("FAKE","4.0.0");
+        ("log4net","1.2.10")]
+        |> Seq.sortBy (fun (key,_) -> key)
+
+    result
+    |> Seq.sortBy (fun (key,_) -> key)
+    |> shouldEqual expected
+    
