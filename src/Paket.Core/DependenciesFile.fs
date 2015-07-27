@@ -308,12 +308,21 @@ type DependenciesFile(fileName,options,sources,packages : PackageRequirement lis
     member __.FileName = fileName
     member __.Lines = textRepresentation
     member __.Sources = sources
-    member this.Resolve(force) = 
+
+    member this.Resolve(force,packages) =
         let getSha1 origin owner repo branch = RemoteDownload.getSHA1OfBranch origin owner repo branch |> Async.RunSynchronously
         let root = Path.GetDirectoryName this.FileName
-        this.Resolve(getSha1,NuGetV2.GetVersions root,NuGetV2.GetPackageDetails root force)   
+        this.Resolve(getSha1,NuGetV2.GetVersions root,NuGetV2.GetPackageDetails root force,packages)   
 
-    member __.Resolve(getSha1,getVersionF, getPackageDetailsF) =
+    member this.Resolve(force) = 
+        this.Resolve(force,packages)
+
+    member __.Resolve(getSha1,getVersionF, getPackageDetailsF,rootDependencies) =
+        let rootDependencies =
+            match rootDependencies with
+            | [] -> packages
+            | _ -> rootDependencies
+
         let resolveSourceFile(file:ResolvedSourceFile) : PackageRequirement list =
             let parserF text =
                 try
@@ -339,8 +348,11 @@ type DependenciesFile(fileName,options,sources,packages : PackageRequirement lis
                             VersionRequirement = v })
             |> Seq.toList
 
-        { ResolvedPackages = PackageResolver.Resolve(getVersionF, getPackageDetailsF, options.Settings.FrameworkRestrictions, remoteDependencies @ packages)
+        { ResolvedPackages = PackageResolver.Resolve(getVersionF, getPackageDetailsF, options.Settings.FrameworkRestrictions, remoteDependencies @ rootDependencies)
           ResolvedSourceFiles = remoteFiles }        
+
+    member __.Resolve(getSha1,getVersionF, getPackageDetailsF) =
+        __.Resolve(getSha1,getVersionF,getPackageDetailsF,packages)
 
     member __.AddAdditionalPackage(packageName:PackageName,versionRequirement,resolverStrategy,settings,?pinDown) =
         let pinDown = defaultArg pinDown false

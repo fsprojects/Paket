@@ -39,7 +39,7 @@ let getVersions = VersionsFromGraph graph
 let getPackageDetails = PackageDetailsFromGraph graph
 
 let lockFile = LockFile.Parse("",toLines lockFileData)
-let resolve (dependenciesFile : DependenciesFile) = dependenciesFile.Resolve(noSha1, getVersions, getPackageDetails)
+let resolve (dependenciesFile : DependenciesFile) packages = dependenciesFile.Resolve(noSha1, getVersions, getPackageDetails, packages)
 
 [<Test>]
 let ``SelectiveUpdate does not update any package when it is neither updating all nor selective updating``() = 
@@ -173,3 +173,30 @@ let ``SelectiveUpdate updates a single package``() =
     |> Seq.sortBy (fun (key,_) -> key)
     |> shouldEqual expected
     
+[<Test>]
+let ``SelectiveUpdate updates a single constrained package``() = 
+
+    let dependenciesFile = DependenciesFile.FromCode("""source http://nuget.org/api/v2
+
+    nuget Castle.Core-log4net ~> 3.2
+    nuget FAKE""")
+
+    let updateAll = false
+    let lockFile = 
+        Some(NormalizedPackageName(PackageName "Castle.Core-log4net"))
+        |> selectiveUpdate resolve lockFile dependenciesFile updateAll
+    
+    let result = 
+        lockFile.ResolvedPackages
+        |> Seq.map (fun (KeyValue (_,resolved)) -> (string resolved.Name, string resolved.Version))
+
+    let expected = 
+        [("Castle.Core-log4net","3.3.3");
+        ("Castle.Core","4.0.0");
+        ("FAKE","4.0.0");
+        ("log4net","1.2.10")]
+        |> Seq.sortBy (fun (key,_) -> key)
+
+    result
+    |> Seq.sortBy (fun (key,_) -> key)
+    |> shouldEqual expected

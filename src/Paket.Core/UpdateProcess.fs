@@ -1,4 +1,4 @@
-﻿/// Contains methods for the update process.
+/// Contains methods for the update process.
 module Paket.UpdateProcess
 
 open Paket
@@ -47,26 +47,37 @@ let addPackagesFromReferenceFiles projects (dependenciesFile : DependenciesFile)
         newDependenciesFile
 
 let selectiveUpdate resolve lockFile dependenciesFile updateAll package =
+    let install () =
+        let changedDependencies = DependencyChangeDetection.findChangesInDependenciesFile(dependenciesFile,lockFile)
+        let dependenciesFile = DependencyChangeDetection.PinUnchangedDependencies dependenciesFile lockFile Set.empty
+        resolve dependenciesFile []
+
+    let selectiveUpdate package =
+        let packages = 
+            dependenciesFile.Packages
+            |> List.filter (fun p -> package = NormalizedPackageName p.Name)
+
+        let selectiveResolution = resolve dependenciesFile packages
+
+        let merge destination source = 
+            Map.fold (fun acc key value -> Map.add key value acc) destination source
+
+        let resolution = Resolution.Ok(merge lockFile.ResolvedPackages (selectiveResolution.ResolvedPackages.GetModelOrFail()))
+        { ResolvedPackages = resolution; ResolvedSourceFiles = lockFile.SourceFiles }
+
     let resolution =
         if updateAll then
-            resolve dependenciesFile
+            resolve dependenciesFile []
         else
-            let changedDependencies = DependencyChangeDetection.findChangesInDependenciesFile(dependenciesFile,lockFile)
-
-            let changed =
-                match package with
-                | None -> changedDependencies
-                | Some package -> Set.add package changedDependencies
-
-            let dependenciesFile = DependencyChangeDetection.PinUnchangedDependencies dependenciesFile lockFile changed
-
-            resolve dependenciesFile
+            match package with
+            | None -> install ()
+            | Some package -> selectiveUpdate package
 
     LockFile(lockFile.FileName, dependenciesFile.Options, resolution.ResolvedPackages.GetModelOrFail(), resolution.ResolvedSourceFiles)
 
 let SelectiveUpdate(dependenciesFile : DependenciesFile, updateAll, exclude, force) =
     let oldLockFile = LockFile.LoadFrom <| dependenciesFile.FindLockfile().FullName 
-    let lockFile = selectiveUpdate (fun d -> d.Resolve(force)) oldLockFile dependenciesFile updateAll exclude
+    let lockFile = selectiveUpdate (fun d p -> d.Resolve(force, p)) oldLockFile dependenciesFile updateAll exclude
     lockFile.Save()
     lockFile
 
