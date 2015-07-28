@@ -260,3 +260,30 @@ let ``SelectiveUpdate installs new packages``() =
     |> Seq.sortBy (fun (key,_) -> key)
     |> shouldEqual expected
     
+[<Test>]
+let ``SelectiveUpdate removes a dependency when it updates a single package and it is updated to a version that does not depend on a library``() = 
+
+    let dependenciesFile = DependenciesFile.FromCode("""source http://nuget.org/api/v2
+
+    nuget Castle.Core-log4net
+    nuget FAKE""")
+
+    let updateAll = false
+    let lockFile = 
+        Some(NormalizedPackageName(PackageName "Castle.Core-log4net"))
+        |> selectiveUpdate resolve lockFile dependenciesFile updateAll
+
+    let result = 
+        lockFile.ResolvedPackages
+        |> Seq.map (fun (KeyValue (_,resolved)) -> (string resolved.Name, string resolved.Version))
+
+    let expected = 
+        [("Castle.Core-log4net","4.0.0");
+        ("Castle.Core","4.0.0");
+        ("FAKE","4.0.0")]
+        |> Seq.sortBy (fun (key,_) -> key)
+
+    result
+    |> Seq.sortBy (fun (key,_) -> key)
+    |> shouldEqual expected
+    

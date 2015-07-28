@@ -53,17 +53,37 @@ let selectiveUpdate resolve lockFile dependenciesFile updateAll package =
         resolve dependenciesFile []
 
     let selectiveUpdate package =
-        let packages = 
+        let selectiveResolution = 
             dependenciesFile.Packages
             |> List.filter (fun p -> package = NormalizedPackageName p.Name)
-
-        let selectiveResolution = resolve dependenciesFile packages
+            |> resolve dependenciesFile
 
         let merge destination source = 
             Map.fold (fun acc key value -> Map.add key value acc) destination source
 
-        let resolution = Resolution.Ok(merge lockFile.ResolvedPackages (selectiveResolution.ResolvedPackages.GetModelOrFail()))
-        { ResolvedPackages = resolution; ResolvedSourceFiles = lockFile.SourceFiles }
+        let resolution =    
+            let resolvedPackages = 
+                selectiveResolution.ResolvedPackages.GetModelOrFail()
+                |> merge lockFile.ResolvedPackages
+
+            let dependencies = 
+                resolvedPackages
+                |> Seq.map (fun d -> d.Value.Dependencies |> Seq.map (fun (n,_,_) -> n))
+                |> Seq.concat
+                |> Set.ofSeq
+
+            let isDirectDependency package = 
+                dependenciesFile.DirectDependencies
+                |> Map.exists (fun p _ -> NormalizedPackageName p = package)
+
+            let isTransitiveDependency package =
+                dependencies
+                |> Set.exists (fun p -> NormalizedPackageName p = package)
+
+            resolvedPackages
+            |> Map.filter (fun p _ -> isDirectDependency p || isTransitiveDependency p)
+
+        { ResolvedPackages = Resolution.Ok(resolution); ResolvedSourceFiles = lockFile.SourceFiles }
 
     let resolution =
         if updateAll then
