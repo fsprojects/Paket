@@ -47,9 +47,9 @@ let addPackagesFromReferenceFiles projects (dependenciesFile : DependenciesFile)
         newDependenciesFile
 
 let selectiveUpdate resolve lockFile dependenciesFile updateAll package =
-    let install changedPackages =
+    let install () =
         let changedDependencies = DependencyChangeDetection.findChangesInDependenciesFile(dependenciesFile,lockFile)
-        let dependenciesFile = DependencyChangeDetection.PinUnchangedDependencies dependenciesFile lockFile changedPackages
+        let dependenciesFile = DependencyChangeDetection.PinUnchangedDependencies dependenciesFile lockFile Set.empty
         resolve dependenciesFile []
 
     let selectiveUpdate package =
@@ -59,18 +59,18 @@ let selectiveUpdate resolve lockFile dependenciesFile updateAll package =
 
         let selectiveResolution = resolve dependenciesFile packages
 
-        let changedPackages =
-            selectiveResolution.ResolvedPackages.GetModelOrFail()
-            |> Seq.map (fun x -> x.Key)
-            |> Set.ofSeq
-        install changedPackages
+        let merge destination source = 
+            Map.fold (fun acc key value -> Map.add key value acc) destination source
+
+        let resolution = Resolution.Ok(merge lockFile.ResolvedPackages (selectiveResolution.ResolvedPackages.GetModelOrFail()))
+        { ResolvedPackages = resolution; ResolvedSourceFiles = lockFile.SourceFiles }
 
     let resolution =
         if updateAll then
             resolve dependenciesFile []
         else
             match package with
-            | None -> install Set.empty
+            | None -> install ()
             | Some package -> selectiveUpdate package
 
     LockFile(lockFile.FileName, dependenciesFile.Options, resolution.ResolvedPackages.GetModelOrFail(), resolution.ResolvedSourceFiles)
