@@ -30,70 +30,72 @@ let Pack(workingDir,dependencies : DependenciesFile, packageOutputPath, buildCon
         hashSet
     
     // load up project files and grab meta data
-    let projectTemplates =
-        ProjectFile.FindAllProjects workingDir
-        |> Array.choose (fun projectFile ->
-            match ProjectFile.FindTemplatesFile(FileInfo(projectFile.FileName)) with
-            | None -> None
-            | Some fileName ->                
-                Some(projectFile,TemplateFile.Load(fileName,version)))
-        |> Array.filter (fun (_,templateFile) -> 
-            match templateFile with
-            | CompleteTemplate _ -> false 
-            | IncompleteTemplate -> true)
-        |> Array.map (fun (projectFile,templateFile) ->
-            allTemplateFiles.Remove(templateFile.FileName) |> ignore
+    let projectTemplates = 
+        match templateFile with
+        | Some template -> Map.empty
+        | None ->
+            ProjectFile.FindAllProjects workingDir
+            |> Array.choose (fun projectFile ->
+                match ProjectFile.FindTemplatesFile(FileInfo(projectFile.FileName)) with
+                | None -> None
+                | Some fileName -> Some(projectFile,TemplateFile.Load(fileName,version)))
+            |> Array.filter (fun (_,templateFile) -> 
+                match templateFile with
+                | CompleteTemplate _ -> false 
+                | IncompleteTemplate -> true)
+            |> Array.map (fun (projectFile,templateFile) ->
+                allTemplateFiles.Remove(templateFile.FileName) |> ignore
 
-            let merged = 
-                let withVersion =  
-                    match version with
-                    | None -> templateFile
-                    | Some v -> templateFile |> TemplateFile.setVersion v
+                let merged = 
+                    let withVersion =  
+                        match version with
+                        | None -> templateFile
+                        | Some v -> templateFile |> TemplateFile.setVersion v
 
-                match withVersion with
-                | { Contents = ProjectInfo(md, opt) } -> 
-                    match md with
-                    | Valid completeCore -> { templateFile with Contents = CompleteInfo(completeCore, opt) }
-                    | _ ->
-                        let assembly,id,assemblyFileName = loadAssemblyId buildConfig projectFile
-                        let md = { md with Id = md.Id ++ Some id }
-
+                    match withVersion with
+                    | { Contents = ProjectInfo(md, opt) } -> 
                         match md with
                         | Valid completeCore -> { templateFile with Contents = CompleteInfo(completeCore, opt) }
                         | _ ->
-                            let attribs = loadAssemblyAttributes assemblyFileName assembly
+                            let assembly,id,assemblyFileName = loadAssemblyId buildConfig projectFile
+                            let md = { md with Id = md.Id ++ Some id }
 
-                            let merged = 
-                                { Id = md.Id
-                                  Version = md.Version ++ getVersion assembly attribs
-                                  Authors = md.Authors ++ getAuthors attribs
-                                  Description = md.Description ++ getDescription attribs }
-
-                            match merged with
-                            | Invalid ->
-                                let missing =
-                                    [ if merged.Id = None then yield "Id"
-                                      if merged.Version = None then yield "Version"
-                                      if merged.Authors = None || merged.Authors = Some [] then yield "Authors"
-                                      if merged.Description = None then yield "Description" ]
-                                    |> fun xs -> String.Join(", ",xs)
-
-                                failwithf 
-                                    "Incomplete mandatory metadata in template file %s (even including assembly attributes)%sTemplate: %A%sMissing: %s" 
-                                    templateFile.FileName 
-                                    Environment.NewLine md 
-                                    Environment.NewLine missing
-
+                            match md with
                             | Valid completeCore -> { templateFile with Contents = CompleteInfo(completeCore, opt) }
-                | _ -> templateFile
+                            | _ ->
+                                let attribs = loadAssemblyAttributes assemblyFileName assembly
 
-            let id = 
-                match merged.Contents with
-                | CompleteInfo _ -> projectFile.NameWithoutExtension
-                | x -> failwithf "unexpected failure while merging meta data: %A" x
+                                let merged = 
+                                    { Id = md.Id
+                                      Version = md.Version ++ getVersion assembly attribs
+                                      Authors = md.Authors ++ getAuthors attribs
+                                      Description = md.Description ++ getDescription attribs }
 
-            id,(merged,projectFile))
-        |> Map.ofArray
+                                match merged with
+                                | Invalid ->
+                                    let missing =
+                                        [ if merged.Id = None then yield "Id"
+                                          if merged.Version = None then yield "Version"
+                                          if merged.Authors = None || merged.Authors = Some [] then yield "Authors"
+                                          if merged.Description = None then yield "Description" ]
+                                        |> fun xs -> String.Join(", ",xs)
+
+                                    failwithf 
+                                        "Incomplete mandatory metadata in template file %s (even including assembly attributes)%sTemplate: %A%sMissing: %s" 
+                                        templateFile.FileName 
+                                        Environment.NewLine md 
+                                        Environment.NewLine missing
+
+                                | Valid completeCore -> { templateFile with Contents = CompleteInfo(completeCore, opt) }
+                    | _ -> templateFile
+
+                let id = 
+                    match merged.Contents with
+                    | CompleteInfo _ -> projectFile.NameWithoutExtension
+                    | x -> failwithf "unexpected failure while merging meta data: %A" x
+
+                id,(merged,projectFile))
+            |> Map.ofArray
 
     // add dependencies
     let allTemplates =

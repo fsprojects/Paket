@@ -48,8 +48,8 @@
     <WarningLevel>3</WarningLevel>
     <DocumentationFile>
     </DocumentationFile>
-    <StartArguments>update</StartArguments>
-    <StartWorkingDirectory>D:\code\commandline</StartWorkingDirectory>
+    <StartArguments>pack output D:\code\Paket-sample-for-issue-943\output templatefile D:\code\Paket-sample-for-issue-943\paket-sample\src\Sample.Project.A\packet.template</StartArguments>
+    <StartWorkingDirectory>D:\code\Paket-sample-for-issue-943\paket-sample</StartWorkingDirectory>
   </PropertyGroup>
   <PropertyGroup>
     <MinimumVisualStudioVersion Condition="'$(MinimumVisualStudioVersion)' == ''">11</MinimumVisualStudioVersion>
