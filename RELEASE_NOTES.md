@@ -3,6 +3,7 @@
 * Fix build exe path which includes whitespace - https://github.com/fsprojects/ProjectScaffold/pull/185
 * Preserve encoding upon saving solution - https://github.com/fsprojects/Paket/pull/940
 * BUGFIX: If we specify a templatefile in paket pack it still packs all templates - https://github.com/fsprojects/Paket/pull/944
+* BUGFIX: If we specify a type project templatefile in paket pack it should find the project - https://github.com/fsprojects/Paket/issues/945
 
 #### 1.21.0 - 23.07.2015
 * Allow nuget packages to put version in the path - https://github.com/fsprojects/Paket/pull/928
