@@ -247,7 +247,7 @@ let Resolve(getVersionsF, getPackageDetailsF, globalFrameworkRestrictions, rootD
 
                 let requirement =
                     requirements
-                    |> Seq.tryFind (fun r -> currentRequirement.Name = r.Name)
+                    |> Seq.tryFind (fun r -> NormalizedPackageName currentRequirement.Name = NormalizedPackageName r.Name)
                     
                 let isInRange ver =
                     let inRange = currentRequirement.VersionRequirement.IsInRange(ver)
