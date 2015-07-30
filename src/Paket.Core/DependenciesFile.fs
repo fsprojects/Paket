@@ -315,13 +315,13 @@ type DependenciesFile(fileName,options,sources,packages : PackageRequirement lis
         this.Resolve(getSha1,NuGetV2.GetVersions root,NuGetV2.GetPackageDetails root force,packages)   
 
     member this.Resolve(force) = 
-        this.Resolve(force,packages)
+        this.Resolve(force,Some packages)
 
     member __.Resolve(getSha1,getVersionF, getPackageDetailsF,rootDependencies) =
         let rootDependencies =
             match rootDependencies with
-            | [] -> packages
-            | _ -> rootDependencies
+            | None -> packages
+            | Some d -> d
 
         let resolveSourceFile(file:ResolvedSourceFile) : PackageRequirement list =
             let parserF text =
@@ -352,7 +352,7 @@ type DependenciesFile(fileName,options,sources,packages : PackageRequirement lis
           ResolvedSourceFiles = remoteFiles }        
 
     member __.Resolve(getSha1,getVersionF, getPackageDetailsF) =
-        __.Resolve(getSha1,getVersionF,getPackageDetailsF,packages)
+        __.Resolve(getSha1,getVersionF,getPackageDetailsF,Some packages)
 
     member __.AddAdditionalPackage(packageName:PackageName,versionRequirement,resolverStrategy,settings,?pinDown) =
         let pinDown = defaultArg pinDown false

@@ -50,12 +50,13 @@ let selectiveUpdate resolve lockFile dependenciesFile updateAll package =
     let install () =
         let changedDependencies = DependencyChangeDetection.findChangesInDependenciesFile(dependenciesFile,lockFile)
         let dependenciesFile = DependencyChangeDetection.PinUnchangedDependencies dependenciesFile lockFile Set.empty
-        resolve dependenciesFile []
+        resolve dependenciesFile None
 
     let selectiveUpdate package =
         let selectiveResolution = 
             dependenciesFile.Packages
             |> List.filter (fun p -> package = NormalizedPackageName p.Name)
+            |> Some
             |> resolve dependenciesFile
 
         let merge destination source = 
@@ -87,7 +88,7 @@ let selectiveUpdate resolve lockFile dependenciesFile updateAll package =
 
     let resolution =
         if updateAll then
-            resolve dependenciesFile []
+            resolve dependenciesFile None
         else
             match package with
             | None -> install ()
