@@ -92,7 +92,9 @@ vars.["##Tags##"]        <- promptFor "Tags (separated by spaces)"
 vars.["##GitHome##"]     <- promptFor "Github User or Organization"
 vars.["##GitName##"]     <- promptFor "Github Project Name (leave blank to use Project Name)"
 
-let wantGit     = promptYesNo "Initialize git repo"
+let wantGit     = if inCI 
+                    then false
+                    else promptYesNo "Initialize git repo"
 let givenOrigin = if wantGit
                     then promptForNoSpaces "Origin (url of git remote; blank to skip)"
                     else None
