@@ -15,8 +15,8 @@ This project can be used to scaffold a prototypical .NET solution including file
 
 In order to start the scaffolding process run 
 
-    $ build.cmd // on windows    
-    $ build.sh  // on mono
+    > build.cmd // on windows    
+    $ ./build.sh  // on unix
     
 Read the [Getting started tutorial](http://fsprojects.github.io/ProjectScaffold/index.html#Getting-started) to learn more.
 
