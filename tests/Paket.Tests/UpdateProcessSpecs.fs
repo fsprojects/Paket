@@ -344,4 +344,21 @@ let ``SelectiveUpdate considers package name case difference``() =
     result
     |> Seq.sortBy (fun (key,_) -> key)
     |> shouldEqual expected
-   
+    
+[<Test>]
+let ``SelectiveUpdate conflicts when a dependency is contrained``() = 
+
+    let dependenciesFile = DependenciesFile.FromCode("""source http://nuget.org/api/v2
+
+    nuget Castle.Core-log4net
+    nuget Castle.Core = 3.2.0
+    nuget log4net > 1.2.10
+    nuget FAKE""")
+
+    let updateAll = false
+
+    (fun () ->
+    Some(NormalizedPackageName(PackageName "Castle.Core-log4net"))
+    |> selectiveUpdate resolve lockFile dependenciesFile updateAll
+    |> ignore)
+    |> shouldFail
