@@ -151,7 +151,7 @@ type Resolved = {
     ResolvedSourceFiles : ModuleResolver.ResolvedSourceFile list }
 
 /// Resolves all direct and transitive dependencies
-let Resolve(getVersionsF, getPackageDetailsF, globalFrameworkRestrictions, rootDependencies, requirements) =
+let Resolve(getVersionsF, getPackageDetailsF, globalFrameworkRestrictions, rootDependencies, (requirements : Set<PackageRequirement>)) =
     tracefn "Resolving packages:"
     let exploredPackages = Dictionary<NormalizedPackageName*SemVerInfo,ResolvedPackage>()
     let allVersions = Dictionary<NormalizedPackageName,SemVerInfo list>()
@@ -244,13 +244,14 @@ let Resolve(getVersionsF, getPackageDetailsF, globalFrameworkRestrictions, rootD
             match Map.tryFind currentRequirement.Name filteredVersions with
             | None ->
                 // we didn't select a version yet so all versions are possible
-                let closedRequirement =
-                    closedRequirements
-                    |> Seq.tryFind (fun r -> currentRequirement.Name = r.Name)
 
+                let requirement =
+                    requirements
+                    |> Seq.tryFind (fun r -> currentRequirement.Name = r.Name)
+                    
                 let isInRange ver =
                     let inRange = currentRequirement.VersionRequirement.IsInRange(ver)
-                    match closedRequirement with
+                    match requirement with
                     | None -> inRange
                     | Some requirement -> inRange && requirement.VersionRequirement.IsInRange(ver)
 
@@ -333,6 +334,6 @@ let Resolve(getVersionsF, getPackageDetailsF, globalFrameworkRestrictions, rootD
             | true,Resolution.Conflict(_) -> tryToImprove true |> snd       
             | _,x-> x
 
-    match step (Map.empty, [], requirements, Set.ofList rootDependencies) with
+    match step (Map.empty, [], Set.empty, Set.ofList rootDependencies) with
     | Resolution.Conflict(_) as c -> c
     | Resolution.Ok model -> Resolution.Ok(cleanupNames model)

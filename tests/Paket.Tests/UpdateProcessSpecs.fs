@@ -287,3 +287,32 @@ let ``SelectiveUpdate removes a dependency when it updates a single package and 
     |> Seq.sortBy (fun (key,_) -> key)
     |> shouldEqual expected
     
+[<Test>]
+let ``SelectiveUpdate does not update when a dependency constrain is not met``() = 
+
+    let dependenciesFile = DependenciesFile.FromCode("""source http://nuget.org/api/v2
+
+    nuget Castle.Core-log4net
+    nuget Castle.Core = 3.2.0
+    nuget FAKE""")
+
+    let updateAll = false
+    let lockFile = 
+        Some(NormalizedPackageName(PackageName "Castle.Core-log4net"))
+        |> selectiveUpdate resolve lockFile dependenciesFile updateAll
+
+    let result = 
+        lockFile.ResolvedPackages
+        |> Seq.map (fun (KeyValue (_,resolved)) -> (string resolved.Name, string resolved.Version))
+
+    let expected = 
+        [("Castle.Core-log4net","3.2.0");
+        ("Castle.Core","3.2.0");
+        ("FAKE","4.0.0");
+        ("log4net","1.2.10")]
+        |> Seq.sortBy (fun (key,_) -> key)
+        
+    result
+    |> Seq.sortBy (fun (key,_) -> key)
+    |> shouldEqual expected
+   
