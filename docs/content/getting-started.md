@@ -1,4 +1,14 @@
-# # Getting Started
+# Getting Started
+
+## How to get Paket
+
+Paket is available as:
+
+  * [download from GitHub.com](https://github.com/fsprojects/Paket/releases/latest)
+  * as a package [`Paket` on nuget.org](https://www.nuget.org/packages/Paket/)
+  * [plugins for popular editors](editor-support.html)
+
+[![NuGet Status](http://img.shields.io/nuget/v/Paket.svg?style=flat)](https://www.nuget.org/packages/Paket/)
 
 Specify the version rules of all dependencies used in your application in a [`paket.dependencies` file](dependencies-file.html) in your project's root:
 

@@ -7,16 +7,6 @@ If you are already using NuGet for package restore in your solution then you can
   [mono]: http://www.mono-project.com/
   [nuget]: https://www.nuget.org/
 
-## How to get Paket
-
-Paket is available as:
-
-  * [download from GitHub.com](https://github.com/fsprojects/Paket/releases/latest)
-  * as a package [`Paket` on nuget.org](https://www.nuget.org/packages/Paket/)
-  * [plugins for popular editors](editor-support.html)
-
-[![NuGet Status](http://img.shields.io/nuget/v/Paket.svg?style=flat)](https://www.nuget.org/packages/Paket/)
-
 ## Getting Started
 
 Read the ["Getting started" tutorial](getting-started.html) to learn how to install and use Paket. We also have a [FAQ](faq.html).
