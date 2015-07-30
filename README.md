@@ -25,9 +25,9 @@ Documentation: http://fsprojects.github.io/ProjectScaffold
 
 ## Build Status
 
-Travis-CI | AppVeyor
---------- | --------
-[![Travis-CI Build Status](https://img.shields.io/travis/fsprojects/ProjectScaffold.svg)](https://travis-ci.org/fsprojects/ProjectScaffold) | [![AppVeyor Build Status](https://img.shields.io/appveyor/ci/fsgit/ProjectScaffold.svg)](https://ci.appveyor.com/project/fsgit/projectscaffold)
+Mono | .NET
+---- | ----
+[![Mono CI Build Status](https://img.shields.io/travis/fsprojects/ProjectScaffold/master.svg)](https://travis-ci.org/fsprojects/ProjectScaffold) | [![.NET Build Status](https://img.shields.io/appveyor/ci/fsgit/ProjectScaffold/master.svg)](https://ci.appveyor.com/project/fsgit/projectscaffold)
 
 ## Maintainer(s)
 
