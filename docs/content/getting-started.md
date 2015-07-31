@@ -5,9 +5,9 @@ This guide will show you
   * [how to manually setup Paket](getting-started.html#Manual-setup) in your .NET / mono solutions 
   * and [how to use the automatic NuGet conversion](getting-started.html#Automatic-NuGet-conversion).
 
-The following guide is assuming you are using the paket.exe command line tool. 
+<blockquote>The following guide is assuming you are using the paket.exe command line tool. 
 There are editor plugins for Visual Studio, Atom and other which can make this process easier and provide additional tooling like syntax highlighting.
-Check our [editor support page](editor-support.html) to see if your editor has a Paket plugin.
+Check our <a href="editor-support.html">editor support page</a> to see if your editor has a Paket plugin.</blockquote>
 
 <blockquote>If you are starting a new solution from scratch then take a look at <a href="http://fsprojects.github.io/ProjectScaffold/">ProjectScaffold</a>. 
 This project helps you get started with a new .NET/Mono project solution with everything needed for successful organising of code, tools and publishing and includes Paket.</blockquote>
@@ -33,6 +33,8 @@ The file might look like this:
     nuget NUnit
 	
 	github forki/FsUnit FsUnit.fs
+
+<blockquote>If there is a plugin for your <a href="editor-support.html">editor</a>, you may have autocompletion for dependency types and packages here.</blockquote>
 
 You can read more about the importance and the structure of the `paket.dependencies` file in the [docs](dependencies-file.html).
 
