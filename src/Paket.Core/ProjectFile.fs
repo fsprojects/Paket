@@ -53,11 +53,14 @@ type ProjectFile =
     static member FindAllProjects(folder) = 
         let FindAllFiles(folder, pattern) = 
             let rec search (di:DirectoryInfo) = 
-                let files = di.GetFiles(pattern, SearchOption.TopDirectoryOnly)
-                di.GetDirectories()
-                |> Array.filter (fun di -> Path.Combine(di.FullName, Constants.DependenciesFileName) |> File.Exists |> not)
-                |> Array.collect search
-                |> Array.append files
+                try
+                    let files = di.GetFiles(pattern, SearchOption.TopDirectoryOnly)
+                    di.GetDirectories()
+                    |> Array.filter (fun di -> try Path.Combine(di.FullName, Constants.DependenciesFileName) |> File.Exists |> not with | _ -> false)
+                    |> Array.collect search
+                    |> Array.append files
+                with
+                | _ -> Array.empty
 
             search <| DirectoryInfo folder
 
