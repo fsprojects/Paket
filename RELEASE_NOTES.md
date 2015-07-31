@@ -7,7 +7,7 @@
 * BUGFIX: Paket pack succeeded even when there're missing files - https://github.com/fsprojects/Paket/issues/948
 
 #### 1.21.0 - 23.07.2015
-* Allow nuget packages to put version in the path - https://github.com/fsprojects/Paket/pull/928
+* Allow NuGet packages to put version in the path - https://github.com/fsprojects/Paket/pull/928
 
 #### 1.20.0 - 21.07.2015
 * Allow to get version requirements from paket.lock instead of paket.dependencies - https://github.com/fsprojects/Paket/pull/924

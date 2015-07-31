@@ -16,12 +16,20 @@ If you don't want to use ProjectScaffold you can set up Paket easily with the fo
 
 ### Specifying dependencies
 
-Create a [`paket.dependencies` file](dependencies-file.html) in your project's root and specify the version rules of all your dependencies in it:
+Create a [`paket.dependencies` file](dependencies-file.html) in your project's root and specify all your dependencies in it.
+You can use [NuGet packages](nuget-dependencies.html), [GitHub files](github-dependencies.html) and [HTTP dependencies](http-dependencies.html). 
+The file might look like this:
 
     source https://nuget.org/api/v2
 
     nuget Castle.Windsor-log4net ~> 3.2
     nuget NUnit
+	
+	github forki/FsUnit FsUnit.fs
+
+You can read more about the importance and the structure of the `paket.dependencies` file in the [docs](dependencies-file.html).
+
+### Installing dependencies
 
 Install all of the required packages from the specified sources:
 
