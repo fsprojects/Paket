@@ -206,13 +206,15 @@ module LockFileParser =
                                        Settings = InstallSettings.Parse(optionsString)
                                        Version = SemVer.Parse version } :: state.Packages }
                 | None -> failwith "no source has been specified."
-            | NugetDependency (name, _) ->
+            | NugetDependency (name, v) ->
+                let parts = v.Split([|" - "|],StringSplitOptions.None)
+                let version = parts.[0]
                 if state.LastWasPackage then                 
                     match state.Packages with
                     | currentPackage :: otherPackages -> 
                         { state with
                                 Packages = { currentPackage with
-                                                Dependencies = Set.add (PackageName name, VersionRequirement.AllReleases, []) currentPackage.Dependencies
+                                                Dependencies = Set.add (PackageName name, DependenciesFileParser.parseVersionRequirement version, []) currentPackage.Dependencies
                                             } :: otherPackages }                    
                     | [] -> failwith "cannot set a dependency - no package has been specified."
                 else

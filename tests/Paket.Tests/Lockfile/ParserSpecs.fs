@@ -47,12 +47,12 @@ let ``should parse lock file``() =
     packages.[1].Source |> shouldEqual PackageSources.DefaultNugetSource
     packages.[1].Name |> shouldEqual (PackageName "Castle.Windsor-log4net")
     packages.[1].Version |> shouldEqual (SemVer.Parse "3.3")
-    packages.[1].Dependencies |> shouldEqual (Set.ofList [PackageName "Castle.Windsor", VersionRequirement.AllReleases, []; PackageName "log4net", VersionRequirement.AllReleases, []])
+    packages.[1].Dependencies |> shouldEqual (Set.ofList [PackageName "Castle.Windsor", VersionRequirement(Minimum(SemVer.Parse "2.0"), PreReleaseStatus.No), []; PackageName "log4net", VersionRequirement(Minimum(SemVer.Parse "1.0"), PreReleaseStatus.No), []])
     
     packages.[5].Source |> shouldEqual PackageSources.DefaultNugetSource
     packages.[5].Name |> shouldEqual (PackageName "log4net")
     packages.[5].Version |> shouldEqual (SemVer.Parse "1.1")
-    packages.[5].Dependencies |> shouldEqual (Set.ofList [PackageName "log", VersionRequirement.AllReleases, []])
+    packages.[5].Dependencies |> shouldEqual (Set.ofList [PackageName "log", VersionRequirement(Minimum(SemVer.Parse "1.0"), PreReleaseStatus.No), []])
 
     let sourceFiles = List.rev lockFile.SourceFiles
     sourceFiles|> shouldEqual
@@ -103,7 +103,7 @@ let ``should parse strict lock file``() =
     packages.[5].Source |> shouldEqual PackageSources.DefaultNugetSource
     packages.[5].Name |> shouldEqual (PackageName "log4net")
     packages.[5].Version |> shouldEqual (SemVer.Parse "1.1")
-    packages.[5].Dependencies |> shouldEqual (Set.ofList [PackageName "log", VersionRequirement.AllReleases, []])
+    packages.[5].Dependencies |> shouldEqual (Set.ofList [PackageName "log", VersionRequirement(Minimum(SemVer.Parse "1.0"), PreReleaseStatus.No), []])
 
 let redirectsLockFile = """REDIRECTS: ON
 IMPORT-TARGETS: TRUE

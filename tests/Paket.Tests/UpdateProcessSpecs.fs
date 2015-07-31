@@ -7,6 +7,7 @@ open Paket.PackageResolver
 open Paket.TestHelpers
 open NUnit.Framework
 open FsUnit
+open System
 
 let lockFileData = """NUGET
   remote: http://nuget.org/api/v2
@@ -390,4 +391,39 @@ let ``SelectiveUpdate does not update any package when package does not exist``(
     result
     |> Seq.sortBy (fun (key,_) -> key)
     |> shouldEqual expected
+     
+[<Test>]
+let ``SelectiveUpdate generates paket.lock correctly``() = 
+
+    let dependenciesFile = DependenciesFile.FromCode("""source http://nuget.org/api/v2
+
+    nuget Castle.Core-log4net
+    nuget Castle.Core
+    nuget FAKE""")
+
+    let updateAll = false
+    let lockFile = 
+        Some(NormalizedPackageName(PackageName "Castle.Core"))
+        |> selectiveUpdate resolve lockFile dependenciesFile updateAll
+    
+    let result = 
+            String.Join
+                (Environment.NewLine,
+                    LockFileSerializer.serializePackages InstallOptions.Default lockFile.ResolvedPackages, 
+                    LockFileSerializer.serializeSourceFiles lockFile.SourceFiles)
+
+
+    let expected = """NUGET
+  remote: http://nuget.org/api/v2
+  specs:
+    Castle.Core (4.0.0)
+    Castle.Core-log4net (3.2.0)
+      Castle.Core (>= 3.2.0)
+      log4net (1.2.10)
+    FAKE (4.0.0)
+    log4net (1.2.10)
+"""
+
+    result
+    |> shouldEqual (normalizeLineEndings expected)
      
