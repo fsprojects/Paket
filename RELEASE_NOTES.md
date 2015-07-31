@@ -1,4 +1,4 @@
-#### 1.22.0-alpha005 - 31.07.2015
+#### 1.22.0 - 31.07.2015
 * Use FSharp.Core 4.0
 * Fix build exe path which includes whitespace - https://github.com/fsprojects/ProjectScaffold/pull/185
 * Preserve encoding upon saving solution - https://github.com/fsprojects/Paket/pull/940
