@@ -78,7 +78,7 @@ In case of the command's failure, you can fallback to manual approach:
 
 ## Does Paket allow groups like bundler does?
 
-No at the moment we don't see the need for something like [bundler's groups](http://bundler.io/v1.7/groups.html) in the .NET environment. Longer discussion can be found [here](https://github.com/fsprojects/Paket/issues/116).
+No, at the moment we don't see the need for something like [bundler's groups](http://bundler.io/v1.7/groups.html) in the .NET environment. Longer discussion can be found [here](https://github.com/fsprojects/Paket/issues/116).
 
 ## Can I use Paket to manage npm/bower/whatever dependencies?
 

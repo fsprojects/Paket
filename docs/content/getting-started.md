@@ -67,6 +67,15 @@ You can read more about the `paket.lock` file in the [docs](lock-file.html).
 ### Installing dependencies into projects
 
 In the last paragraph you learned how to install packages into your repository, but usally you want to use the dependencies in your C#, VB or F# projects. 
-In order to do so you need a [`paket.references` files](references-files.html) alongside your Visual Studio project files to have Paket automatically sync references for the packages noted in that file.
+In order to do so you need a [`paket.references` files](references-files.html) alongside your Visual Studio project files.
+By listing the direct dependencies in a `paket.references` file, Paket will automatically sync references to the corresponding projects whenever an `install` or `update` takes place..
+
+   Castle.Windsor-log4net
+   NUnit
+
+   File:FsUnit.fs .
+
+Like all of the files above, you should [commit](faq.html#Why-should-I-commit-the-lock-file) `paket.references` files to your version control system.
+
 
 TBC
