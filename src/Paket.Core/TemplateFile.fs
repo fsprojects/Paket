@@ -369,14 +369,21 @@ module internal TemplateFile =
         let contents = Parse(fi.FullName,currentVersion, File.OpenRead fileName) |> returnOrFail
         let getFiles files = 
             [ for source, target in files do
-                for file in Fake.Globbing.search root source do
-                    if source.Contains("**") then
-                        let sourceRoot = FileInfo(Path.Combine(root,source.Substring(0,source.IndexOf("**")))).FullName |> normalizePath
-                        let fullFile = FileInfo(file).Directory.FullName |> normalizePath
-                        let newTarget = Path.Combine(target,fullFile.Replace(sourceRoot,"").TrimStart(Path.DirectorySeparatorChar))
-                        yield file, newTarget
+                match Fake.Globbing.search root source with
+                | [] ->
+                    if source.Contains "*" then
+                        failwithf "The file pattern \"%s\" in %s did not find any files." source fileName
                     else
-                        yield file, target ]
+                        failwithf "The file \"%s\" requested in %s does not exist." source fileName
+                | searchResult ->
+                    for file in searchResult do
+                        if source.Contains("**") then
+                            let sourceRoot = FileInfo(Path.Combine(root,source.Substring(0,source.IndexOf("**")))).FullName |> normalizePath
+                            let fullFile = FileInfo(file).Directory.FullName |> normalizePath
+                            let newTarget = Path.Combine(target,fullFile.Replace(sourceRoot,"").TrimStart(Path.DirectorySeparatorChar))
+                            yield file, newTarget
+                        else                        
+                            yield file, target ]
 
         { FileName = fileName
           Contents = 
