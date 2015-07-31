@@ -55,6 +55,16 @@ There is no reasonable way to make this work – and even NuGet.exe can't do it 
 
 Instead we encourage the .NET community to use a declarative install process and we will help to fix this in the affected packages.
 
+## Why should I commit the lock file?
+
+Committing the [`paket.lock` file](lock-file.html) to your version control system guarantees that other developers and/or build servers will always end up with a reliable and consistent set of packages regardless of where or when [`paket install`](paket-install.html) is run.
+
+If your *project is an application* you should always commit the [`paket.lock` file](lock-file.html). 
+
+If your *project is a library* then you probably want to commit it as well. There are rare cases where you always want to test you lib against the latest version of your dependencies, 
+but we recommend to set up a second CI build instead. This new build should be run regularly (maybe once a day) and execute [`paket update`](paket-update.html) at the beginning.
+This will ensure that you get notified whenever a dependency update breaks your library.
+
 ## I'm already using NuGet. How can I convert to Paket?
 
 The process can be automated with [paket convert-from-nuget](paket-convert-from-nuget.html) command.
@@ -64,17 +74,7 @@ In case of the command's failure, you can fallback to manual approach:
 1. Analyse your `packages.config` files and extract the referenced packages into a paket.dependencies file.
 2. Convert each `packages.config` file to a paket.references file. This is very easy - you just have to remove all the XML and keep the package names.
 3. Run [paket install](paket-install.html) with the `--hard` flag. This will analyze the dependencies, generate a paket.lock file, remove all the old package references from your project files and replace them with equivalent `Reference`s in a syntax that can be managed automatically by Paket.
-4. (Optional) Raise corresponding issue [here](https://github.com/fsprojects/Paket/issues) so that we can make the comand even better.
-
-## Why should I commit the lock file?
-
-Committing the [`paket.lock` file](lock-file.html) to your version control system guarantees that other developers and/or build servers will always end up with a reliable and consistent set of packages regardless of where or when [`paket install`](paket-install.html) is run.
-
-If your project is an application you should always commit the [`paket.lock` file](lock-file.html). 
-
-If your project is a library then you probably want to commit it as well. There are rare cases where you always want to test you lib against the latest version of your dependencies, 
-but we recommend to set up a second CI build instead. This new build should be run regularly (maybe once a day) and execute [`paket update`](paket-update.html) at the beginning.
-This will ensure that you get notified whenever a dependency update breaks your library.
+4. (Optional) Raise corresponding issue [here](https://github.com/fsprojects/Paket/issues) so that we can make the command even better.
 
 ## Does Paket allow groups like bundler does?
 
