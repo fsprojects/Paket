@@ -5,10 +5,12 @@ This guide will show you
   * [how to manually setup Paket](getting-started.html#Manual-setup) in your .NET / mono solutions 
   * and [how to use the automatic NuGet conversion](getting-started.html#Automatic-NuGet-conversion).
 
-<br /><br />
+The following guide is assuming you are using the paket.exe command line tool. 
+There are editor plugins for Visual Studio, Atom and other which can make this process easier and provide additional tooling like syntax highlighting.
+Check our [editor support page](editor-support.html) to see if your editor has a Paket plugin.
+
 <blockquote>If you are starting a new solution from scratch then take a look at <a href="http://fsprojects.github.io/ProjectScaffold/">ProjectScaffold</a>. 
 This project helps you get started with a new .NET/Mono project solution with everything needed for successful organising of code, tools and publishing and includes Paket.</blockquote>
-
 
 ## Manual setup
 
