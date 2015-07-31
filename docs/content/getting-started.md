@@ -34,9 +34,9 @@ You can read more about the importance and the structure of the `paket.dependenc
 Install all of the required packages from the specified sources:
 
     [lang=batchfile]
-    $ paket install
+    $ .paket/paket.exe install
 
-The [`paket install` command](paket-install.html) will analyze your dependencies and automatically generate a [`paket.lock` file](lock-file.html) if it doesn't exist yet:
+The [`paket install` command](paket-install.html) will analyze your dependencies and automatically generate a [`paket.lock` file](lock-file.html) like:
 
 	NUGET
 	  remote: https://nuget.org/api/v2
@@ -59,5 +59,9 @@ The [`paket install` command](paket-install.html) will analyze your dependencies
 	  remote: forki/FsUnit
 	  specs:
 		FsUnit.fs (81d27fd09575a32c4ed52eadb2eeac5f365b8348)
+
+This file shows all direct and transitive dependencies and pins every dependency to a concrete version. In most cases you want to commit this file to your version control system.
+
+You can read more about the `paket.lock` file in the [docs](lock-file.html).
 
 TBC
