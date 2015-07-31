@@ -34,7 +34,7 @@ The file might look like this:
 	
 	github forki/FsUnit FsUnit.fs
 
-<blockquote>If there is a plugin for your <a href="editor-support.html">editor</a>, you may have autocompletion for dependency types and packages here.</blockquote>
+<blockquote>If you use a <a href="editor-support.html">Paket plugin for your editor</a>, you may get autocompletion for paket.dependencies files.</blockquote>
 
 You can read more about the importance and the structure of the `paket.dependencies` file in the [docs](dependencies-file.html).
 
