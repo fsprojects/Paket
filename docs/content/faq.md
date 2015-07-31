@@ -61,7 +61,7 @@ Committing the [`paket.lock` file](lock-file.html) to your version control syste
 
 If your *project is an application* you should always commit the [`paket.lock` file](lock-file.html). 
 
-If your *project is a library* then you probably want to commit it as well. There are rare cases where you always want to test you lib against the latest version of your dependencies, 
+If your *project is a library* then you probably want to commit it as well. There are rare cases where you always want to test your lib against the latest version of your dependencies, 
 but we recommend to set up a second CI build instead. This new build should be run regularly (maybe once a day) and execute [`paket update`](paket-update.html) at the beginning.
 This will ensure that you get notified whenever a dependency update breaks your library.
 
