@@ -1,16 +1,22 @@
 # Getting Started
 
-## How to get Paket
+## Creating new solutions
 
-Paket is available as:
+If you are starting a new solution from scratch then take a look at [ProjectScaffold](http://fsprojects.github.io/ProjectScaffold/). 
+This project helps you get started with a new .NET/Mono project solution with everything needed for successful organising of code, tools and publishing and includes Paket.
 
-  * [download from GitHub.com](https://github.com/fsprojects/Paket/releases/latest)
-  * as a package [`Paket` on nuget.org](https://www.nuget.org/packages/Paket/)
-  * [plugins for popular editors](editor-support.html)
+If you don't want to use ProjectScaffold you can set up Paket easily with the following steps:
 
-[![NuGet Status](http://img.shields.io/nuget/v/Paket.svg?style=flat)](https://www.nuget.org/packages/Paket/)
+### Downloading Paket and it's BootStrapper
 
-Specify the version rules of all dependencies used in your application in a [`paket.dependencies` file](dependencies-file.html) in your project's root:
+  * Create a `.paket` folder in the root of your solution
+  * Download the latest [paket.bootstrapper.exe](https://github.com/fsprojects/Paket/releases/latest) into that folder
+  * Run `.paket/paket.bootstrapper.exe`. This will download the latest `paket.exe`
+  * Commit `.paket/paket.bootstrapper.exe` into your repo and add `.paket/paket.exe` to your `.gitignore` file
+
+### Specifying dependencies
+
+Create a [`paket.dependencies` file](dependencies-file.html) in your project's root and specify the version rules of all your dependencies in it:
 
     source https://nuget.org/api/v2
 
@@ -22,40 +28,4 @@ Install all of the required packages from the specified sources:
     [lang=batchfile]
     $ paket install
 
-The usage is to have a [`.paket` folder](paket-folder.html) in the root of your solution to install packages.
-
-The [`paket install` command](paket-install.html) will analyze your dependencies and automatically generate a [`paket.lock` file](lock-file.html) if it doesn't exist yet:
-
-    NUGET
-      remote: https://nuget.org/api/v2
-      specs:
-        Castle.Core (3.3.1)
-		Castle.Core-log4net (3.3.1)
-		  Castle.Core (>= 3.3.1)
-		  log4net (1.2.10)
-		Castle.LoggingFacility (3.3.0)
-		  Castle.Core (>= 3.3.0)
-		  Castle.Windsor (>= 3.3.0)
-		Castle.Windsor (3.3.0)
-		  Castle.Core (>= 3.3.0)
-		Castle.Windsor-log4net (3.3.0)
-		  Castle.Core-log4net (>= 3.3.0)
-          Castle.LoggingFacility (>= 3.3.0)
-		log4net (1.2.10)
-		NUnit (2.6.3)
-
-You can place [`paket.references` files](references-files.html) alongside your Visual Studio project files to have Paket automatically sync references for the packages noted in that file whenever an `install` or `update` takes place.
-
-All of the [files involved should be committed](faq.html#Why-should-I-commit-the-lock-file) to your version control system.
-
-Determine if there are package updates available:
-
-    [lang=batchfile]
-    $ paket outdated
-
-Download updated packages; update [`paket.lock` file](lock-file.html) and re-install to reflect and changes:
-
-    [lang=batchfile]
-    $ paket update
-
-The [`paket update` command](paket-update.html) will analyze your [`paket.dependencies` file](dependencies-file.html), and update the [`paket.lock` file](lock-file.html).
+TBC
