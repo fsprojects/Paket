@@ -2,7 +2,7 @@
 
 Paket is a dependency manager for .NET and [Mono][mono] projects, which is designed to work well with [NuGet][nuget] packages and also enables [referencing files directly from GitHub repositories](http-dependencies.html).
 It enables precise and predictable control over what packages the projects within your application reference. More details are in the [FAQ](faq.html).
-If you are already using NuGet for package restore in your solution then you can learn about the upgrade process in the [convert from NuGet](paket-convert-from-nuget.html) section.
+If you are already using NuGet for package restore in your solution then you can learn about the upgrade process in the [convert from NuGet](getting-started.html#Automatic-NuGet-conversion) section.
 
   [mono]: http://www.mono-project.com/
   [nuget]: https://www.nuget.org/

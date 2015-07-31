@@ -1,11 +1,16 @@
 # Getting Started
 
-## Creating new solutions
+This guide will show you 
 
-If you are starting a new solution from scratch then take a look at [ProjectScaffold](http://fsprojects.github.io/ProjectScaffold/). 
-This project helps you get started with a new .NET/Mono project solution with everything needed for successful organising of code, tools and publishing and includes Paket.
+  * [how to manually setup Paket](getting-started.html#Manual-setup) in your .NET / mono solutions 
+  * and [how to use the automatic NuGet conversion](getting-started.html#Automatic-NuGet-conversion).
 
-If you don't want to use ProjectScaffold you can set up Paket easily with the following steps:
+<br /><br />
+<blockquote>If you are starting a new solution from scratch then take a look at <a href="http://fsprojects.github.io/ProjectScaffold/">ProjectScaffold</a>. 
+This project helps you get started with a new .NET/Mono project solution with everything needed for successful organising of code, tools and publishing and includes Paket.</blockquote>
+
+
+## Manual setup
 
 ### Downloading Paket and it's BootStrapper
 
@@ -68,14 +73,45 @@ You can read more about the `paket.lock` file in the [docs](lock-file.html).
 
 In the last paragraph you learned how to install packages into your repository, but usally you want to use the dependencies in your C#, VB or F# projects. 
 In order to do so you need a [`paket.references` files](references-files.html) alongside your Visual Studio project files.
-By listing the direct dependencies in a `paket.references` file, Paket will automatically sync references to the corresponding projects whenever an `install` or `update` takes place..
+By listing the direct dependencies in a `paket.references` file, Paket will automatically sync references to the corresponding projects whenever an `install` or `update` takes place.
 
-   Castle.Windsor-log4net
-   NUnit
+    Castle.Windsor-log4net
+    NUnit
+	 
+    File:FsUnit.fs .
 
-   File:FsUnit.fs .
+Don't forget to run `install` again in order to let Paket reference the dependencies in your projects:
+
+    [lang=batchfile]
+    $ .paket/paket.exe install
+
 
 Like all of the files above, you should [commit](faq.html#Why-should-I-commit-the-lock-file) `paket.references` files to your version control system.
 
+### Updating packages
 
-TBC
+If you want to check if your dependencies have updates you can run the [`outdated` command](paket-outdated.html):
+
+    [lang=batchfile]
+    $ .paket/paket.exe outdated
+
+If you want to update all packages you can use the [`update` command](paket-update.html):
+
+    [lang=batchfile]
+    $ .paket/paket.exe update
+
+This command will analyze your [`paket.dependencies` file](dependencies-file.html) and update the [`paket.lock` file](lock-file.html).
+
+## Automatic NuGet conversion
+
+Paket comes with a command that helps to convert existing solution from NuGet's `packages.config` format to Paket's format. 
+If you want to use the command then:
+
+  * Please start by making a **back-up of your repository**
+  * Download Paket and it's BootStrapper as [described above](getting-started.html#Downloading-Paket-and-it-s-BootStrapper)
+  * Run the `convert-from-nuget` command.
+
+    [lang=batchfile]
+    $ .paket/paket.exe convert-from-nuget
+
+You can read more about the details and specific parameters in the [docs](paket-convert-from-nuget.html).
