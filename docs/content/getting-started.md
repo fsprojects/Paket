@@ -113,9 +113,15 @@ If you want to use the command then:
 
   * Please start by making a **back-up of your repository**
   * Download Paket and it's BootStrapper as [described above](getting-started.html#Downloading-Paket-and-it-s-BootStrapper)
-  * Run the `convert-from-nuget` command.
+  * Run the `convert-from-nuget` command:
+
 
     [lang=batchfile]
     $ .paket/paket.exe convert-from-nuget
 
-You can read more about the details and specific parameters in the [docs](paket-convert-from-nuget.html).
+You can read more about the details and specific parameters for `convert-from-nuget` in the [docs](paket-convert-from-nuget.html).
+
+### Partial NuGet conversion
+
+The `convert-from-nuget` will not work if it discovers the codebase already utilizes Paket (when [`paket.dependencies` file](dependencies-file.html) found).
+However if for some reason it happens that you have a mixture of projects, some of which are already migrated to Paket and rest of them still using NuGet, you can pass the `--force` flag to `convert-from-nuge` for the remaining projects.
