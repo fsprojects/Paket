@@ -123,5 +123,5 @@ You can read more about the details and specific parameters for `convert-from-nu
 
 ### Partial NuGet conversion
 
-The `convert-from-nuget` will not work if it discovers the codebase already utilizes Paket (when [`paket.dependencies` file](dependencies-file.html) found).
-However if for some reason it happens that you have a mixture of projects, some of which are already migrated to Paket and rest of them still using NuGet, you can pass the `--force` flag to `convert-from-nuge` for the remaining projects.
+The `convert-from-nuget` will not work if it discovers that the codebase already utilizes Paket (when [`paket.dependencies` file](dependencies-file.html) is found).
+However, if for some reason you happen to have a mixture of projects already migrated to Paket and projects still using NuGet, you can pass the `--force` flag to `convert-from-nuget` for the remaining projects.
