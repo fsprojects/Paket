@@ -97,7 +97,13 @@ let selectiveUpdate resolve lockFile dependenciesFile updateAll package =
     LockFile(lockFile.FileName, dependenciesFile.Options, resolution.ResolvedPackages.GetModelOrFail(), resolution.ResolvedSourceFiles)
 
 let SelectiveUpdate(dependenciesFile : DependenciesFile, updateAll, exclude, force) =
-    let oldLockFile = LockFile.LoadFrom <| dependenciesFile.FindLockfile().FullName 
+    let lockFileName = DependenciesFile.FindLockfile dependenciesFile.FileName
+    let oldLockFile =
+        if not lockFileName.Exists then
+            LockFile.Parse(lockFileName.FullName, [||])
+        else
+            LockFile.LoadFrom lockFileName.FullName
+
     let lockFile = selectiveUpdate (fun d p -> d.Resolve(force, p)) oldLockFile dependenciesFile updateAll exclude
     lockFile.Save()
     lockFile
