@@ -1,3 +1,6 @@
+#### 1.23.0 - 04.08.2015
+* BUGFIX: Selective update resolves the graph for selected package - https://github.com/fsprojects/Paket/pull/957
+
 #### 1.22.0 - 31.07.2015
 * Use FSharp.Core 4.0
 * Fix build exe path which includes whitespace - https://github.com/fsprojects/ProjectScaffold/pull/185
