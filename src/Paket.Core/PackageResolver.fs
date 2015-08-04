@@ -71,10 +71,11 @@ let createPackageRequirement parent (packageName, version, restrictions) =
       Sources = []
     }
 
-let createPackageRequirements resolution =
+let createPackageRequirements exclude resolution =
     resolution
     |> Map.toSeq
     |> Seq.map snd
+    |> Seq.filter (fun p -> exclude |> List.contains (NormalizedPackageName p.Name) |> not)
     |> Seq.collect (fun p -> p.Dependencies |> Seq.map (createPackageRequirement p))
 
 type PackageResolution = Map<NormalizedPackageName, ResolvedPackage>

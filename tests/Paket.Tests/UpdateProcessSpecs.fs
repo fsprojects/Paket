@@ -40,12 +40,10 @@ let graph =
       "Newtonsoft.Json", "7.0.1", []
       "Newtonsoft.Json", "6.0.8", [] ]
 
-let getVersions = VersionsFromGraph graph
-let getPackageDetails = PackageDetailsFromGraph graph
-
-let lockFile = LockFile.Parse("",toLines lockFileData)
-let resolve' requirements (dependenciesFile : DependenciesFile) packages = dependenciesFile.Resolve(noSha1, getVersions, getPackageDetails, packages, requirements)
-let resolve = resolve' []
+let getLockFile lockFileData = LockFile.Parse("",toLines lockFileData)
+let lockFile = lockFileData |> getLockFile
+let resolve' graph requirements (dependenciesFile : DependenciesFile) packages = dependenciesFile.Resolve(noSha1, VersionsFromGraph graph, PackageDetailsFromGraph graph, packages, requirements)
+let resolve = resolve' graph []
 
 [<Test>]
 let ``SelectiveUpdate does not update any package when it is neither updating all nor selective updating``() = 
@@ -438,16 +436,17 @@ let ``SelectiveUpdate does not update when package conflicts with a transitive d
     nuget Castle.Core-log4net
     nuget FAKE
     nuget log4net""")
-    
+
     let updateAll = false
+    let packageName = NormalizedPackageName(PackageName "log4net")
     let requirements =
         lockFile.ResolvedPackages
-        |> createPackageRequirements
+        |> createPackageRequirements [packageName]
         |> List.ofSeq
-    let resolve = resolve' requirements
+    let resolve = resolve' graph requirements
 
     let lockFile = 
-        Some(NormalizedPackageName(PackageName "log4net"))
+        Some(packageName)
         |> selectiveUpdate resolve lockFile dependenciesFile updateAll
     
     let result = 
@@ -461,6 +460,84 @@ let ``SelectiveUpdate does not update when package conflicts with a transitive d
         ("Castle.Core","3.2.0");
         ("FAKE","4.0.0");
         ("log4net", "1.2.10")]
+        |> Seq.sortBy fst
+
+    result
+    |> Seq.sortBy fst
+    |> shouldEqual expected
+
+
+let graph2 = 
+    [ "Ninject", "2.2.1.4", []
+      "Ninject", "2.2.1.5", []
+      "Ninject", "2.3.1.4", []
+      "Ninject", "3.2.0", []
+      "Ninject.Extensions.Logging.Log4net", "2.2.0.4",
+      [ "Ninject.Extensions.Logging", VersionRequirement(VersionRange.Between("2.2.0.0","2.3.0.0"),PreReleaseStatus.No)
+        "log4net", VersionRequirement(VersionRange.AtLeast "1.0.4",PreReleaseStatus.No) ]
+      "Ninject.Extensions.Logging.Log4net", "2.2.0.5",
+      [ "Ninject.Extensions.Logging", VersionRequirement(VersionRange.Between("2.2.0.0","2.3.0.0"),PreReleaseStatus.No)
+        "log4net", VersionRequirement(VersionRange.AtLeast "1.0.4",PreReleaseStatus.No) ]
+      "Ninject.Extensions.Logging.Log4net", "3.2.3",
+      [ "Ninject.Extensions.Logging", VersionRequirement(VersionRange.Between("3.2.0.0","3.3.0.0"),PreReleaseStatus.No)
+        "log4net", VersionRequirement(VersionRange.AtLeast "1.2.11",PreReleaseStatus.No) ]
+      "Ninject.Extensions.Logging", "2.2.0.4", [ "Ninject", VersionRequirement(VersionRange.Between("2.2.0.0","2.3.0.0"),PreReleaseStatus.No) ]
+      "Ninject.Extensions.Logging", "2.2.0.5", [ "Ninject", VersionRequirement(VersionRange.Between("2.2.0.0","2.3.0.0"),PreReleaseStatus.No) ]
+      "Ninject.Extensions.Logging", "3.2.3", [ "Ninject", VersionRequirement(VersionRange.Between("3.2.0.0","3.3.0.0"),PreReleaseStatus.No) ]
+      "log4f", "0.4.0", [ "log4net", VersionRequirement(VersionRange.Between("1.2.10","2.0.0"),PreReleaseStatus.No) ]
+      "log4f", "0.5.0", [ "log4net", VersionRequirement(VersionRange.AtLeast "1.2.10",PreReleaseStatus.No) ]
+      "log4net", "1.0.4", []
+      "log4net", "1.2.10", []
+      "log4net", "1.2.11", []
+      "log4net", "2.0.3", [] ]
+
+[<Test>]
+let ``SelectiveUpdate updates package that conflicts with a transitive dependency with correct version``() = 
+
+    let lockFileData = """NUGET
+  remote: http://nuget.org/api/v2
+  specs:
+    log4f (0.4.0)
+      log4net (>= 1.2.10 < 2.0.0)
+    log4net (1.0.4)
+    Ninject (2.2.1.4)
+    Ninject.Extensions.Logging (2.2.0.4)
+      Ninject (>= 2.2.0.0 < 2.3.0.0)
+    Ninject.Extensions.Logging.Log4net (2.2.0.4)
+      Ninject.Extensions.Logging (>= 2.2.0.0 < 2.3.0.0)
+      log4net (>= 1.0.4)
+"""
+    let lockFile = lockFileData |> getLockFile
+
+    let dependenciesFile = DependenciesFile.FromCode("""source http://nuget.org/api/v2
+
+    nuget log4f
+    nuget Ninject.Extensions.Logging.Log4net""")
+    
+    let updateAll = false
+    let packageName = NormalizedPackageName(PackageName "log4f")
+    let requirements =
+        lockFile.ResolvedPackages
+        |> createPackageRequirements [packageName]
+        |> List.ofSeq
+    let resolve = resolve' graph2 requirements
+
+    let lockFile = 
+        Some(packageName)
+        |> selectiveUpdate resolve lockFile dependenciesFile updateAll
+    
+    let result = 
+        lockFile.ResolvedPackages
+        |> Map.toSeq
+        |> Seq.map snd
+        |> Seq.map (fun r -> (string r.Name, string r.Version))
+
+    let expected = 
+        [("Ninject.Extensions.Logging.Log4net","2.2.0.4");
+        ("Ninject.Extensions.Logging","2.2.0.4");
+        ("Ninject", "2.2.1.4");
+        ("log4f", "0.5.0");
+        ("log4net", "2.0.3")]
         |> Seq.sortBy fst
 
     result
