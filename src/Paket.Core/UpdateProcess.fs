@@ -104,7 +104,17 @@ let SelectiveUpdate(dependenciesFile : DependenciesFile, updateAll, exclude, for
         else
             LockFile.LoadFrom lockFileName.FullName
 
-    let lockFile = selectiveUpdate (fun d p -> d.Resolve(force, p)) oldLockFile dependenciesFile updateAll exclude
+    let excludePackages =
+        match exclude with
+        | Some e -> [e]
+        | None -> []
+
+    let requirements =
+        oldLockFile.ResolvedPackages
+        |> createPackageRequirements excludePackages
+        |> List.ofSeq
+
+    let lockFile = selectiveUpdate (fun d p -> d.Resolve(force, p, requirements)) oldLockFile dependenciesFile updateAll exclude
     lockFile.Save()
     lockFile
 

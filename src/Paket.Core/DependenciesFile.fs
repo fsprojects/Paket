@@ -309,13 +309,10 @@ type DependenciesFile(fileName,options,sources,packages : PackageRequirement lis
     member __.Lines = textRepresentation
     member __.Sources = sources
 
-    member this.Resolve(force,packages) =
+    member this.Resolve(force,packages,requirements) =
         let getSha1 origin owner repo branch = RemoteDownload.getSHA1OfBranch origin owner repo branch |> Async.RunSynchronously
         let root = Path.GetDirectoryName this.FileName
-        this.Resolve(getSha1,NuGetV2.GetVersions root,NuGetV2.GetPackageDetails root force,packages,[])   
-
-    member this.Resolve(force) = 
-        this.Resolve(force,Some packages)
+        this.Resolve(getSha1,NuGetV2.GetVersions root,NuGetV2.GetPackageDetails root force,packages,requirements)   
 
     member __.Resolve(getSha1,getVersionF, getPackageDetailsF,rootDependencies,requirements) =
         let rootDependencies =
@@ -353,6 +350,9 @@ type DependenciesFile(fileName,options,sources,packages : PackageRequirement lis
 
     member __.Resolve(getSha1,getVersionF, getPackageDetailsF) =
         __.Resolve(getSha1,getVersionF,getPackageDetailsF,Some packages,[])
+
+    member this.Resolve(force) = 
+        this.Resolve(force,Some packages,[])
 
     member __.AddAdditionalPackage(packageName:PackageName,versionRequirement,resolverStrategy,settings,?pinDown) =
         let pinDown = defaultArg pinDown false
