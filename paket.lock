@@ -1,15 +1,15 @@
 NUGET
   remote: https://nuget.org/api/v2
   specs:
-    FAKE (4.0.1)
-    FSharp.Compiler.Service (1.3.1.0)
+    FAKE (4.0.3)
+    FSharp.Compiler.Service (1.4.0.1)
     FSharp.Core (4.0.0.1)
-    FSharp.Formatting (2.9.10)
+    FSharp.Formatting (2.10.0)
       FSharp.Compiler.Service (>= 0.0.87)
       FSharpVSPowerTools.Core (1.8.0)
     FSharpVSPowerTools.Core (1.8.0)
       FSharp.Compiler.Service (>= 0.0.87)
-    ILRepack (2.0.3)
+    ILRepack (2.0.4)
     Microsoft.Bcl (1.1.10)
       Microsoft.Bcl.Build (>= 1.0.14)
     Microsoft.Bcl.Build (1.0.21)
@@ -28,9 +28,9 @@ GITHUB
     FsUnit.fs (81d27fd09575a32c4ed52eadb2eeac5f365b8348)
   remote: fsharp/FAKE
   specs:
-    modules/Octokit/Octokit.fsx (8e9dd3709bc851bc9474a2ab9024c3d5a698beec)
+    modules/Octokit/Octokit.fsx (f8684a9a3ccd1e0e78b77925a2aa2c259f6787dc)
       Octokit
-    src/app/FakeLib/Globbing/Globbing.fs (8e9dd3709bc851bc9474a2ab9024c3d5a698beec)
+    src/app/FakeLib/Globbing/Globbing.fs (f8684a9a3ccd1e0e78b77925a2aa2c259f6787dc)
   remote: fsprojects/Chessie
   specs:
-    src/Chessie/ErrorHandling.fs (2e4d76714d6d01ac64913317870f05d7f7ae8e37)
+    src/Chessie/ErrorHandling.fs (1f23b1caeb1f87e750abc96a25109376771dd090)
