@@ -62,6 +62,21 @@ type ResolvedPackage =
         let (PackageName name) = this.Name
         sprintf "%s %s" name (this.Version.ToString())
 
+let createPackageRequirement parent (packageName, version, restrictions) =
+    { Name = packageName
+      VersionRequirement = version
+      ResolverStrategy = ResolverStrategy.Max
+      Settings = parent.Settings
+      Parent = Package(parent.Name, parent.Version)
+      Sources = []
+    }
+
+let createPackageRequirements resolution =
+    resolution
+    |> Map.toSeq
+    |> Seq.map snd
+    |> Seq.collect (fun p -> p.Dependencies |> Seq.map (createPackageRequirement p))
+
 type PackageResolution = Map<NormalizedPackageName, ResolvedPackage>
 
 let allPrereleases versions = versions |> List.filter (fun v -> v.PreRelease <> None) = versions

@@ -312,12 +312,12 @@ type DependenciesFile(fileName,options,sources,packages : PackageRequirement lis
     member this.Resolve(force,packages) =
         let getSha1 origin owner repo branch = RemoteDownload.getSHA1OfBranch origin owner repo branch |> Async.RunSynchronously
         let root = Path.GetDirectoryName this.FileName
-        this.Resolve(getSha1,NuGetV2.GetVersions root,NuGetV2.GetPackageDetails root force,packages)   
+        this.Resolve(getSha1,NuGetV2.GetVersions root,NuGetV2.GetPackageDetails root force,packages,[])   
 
     member this.Resolve(force) = 
         this.Resolve(force,Some packages)
 
-    member __.Resolve(getSha1,getVersionF, getPackageDetailsF,rootDependencies) =
+    member __.Resolve(getSha1,getVersionF, getPackageDetailsF,rootDependencies,requirements) =
         let rootDependencies =
             match rootDependencies with
             | None -> packages
@@ -348,11 +348,11 @@ type DependenciesFile(fileName,options,sources,packages : PackageRequirement lis
                             VersionRequirement = v })
             |> Seq.toList
 
-        { ResolvedPackages = PackageResolver.Resolve(getVersionF, getPackageDetailsF, options.Settings.FrameworkRestrictions, remoteDependencies @ rootDependencies, Set.ofList packages)
+        { ResolvedPackages = PackageResolver.Resolve(getVersionF, getPackageDetailsF, options.Settings.FrameworkRestrictions, remoteDependencies @ rootDependencies, packages @ requirements |> Set.ofList)
           ResolvedSourceFiles = remoteFiles }        
 
     member __.Resolve(getSha1,getVersionF, getPackageDetailsF) =
-        __.Resolve(getSha1,getVersionF,getPackageDetailsF,Some packages)
+        __.Resolve(getSha1,getVersionF,getPackageDetailsF,Some packages,[])
 
     member __.AddAdditionalPackage(packageName:PackageName,versionRequirement,resolverStrategy,settings,?pinDown) =
         let pinDown = defaultArg pinDown false

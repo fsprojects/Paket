@@ -4,6 +4,7 @@ open Paket
 open Paket.Domain
 open Paket.PackageSources
 open Paket.PackageResolver
+open Paket.Requirements
 open Paket.TestHelpers
 open NUnit.Framework
 open FsUnit
@@ -23,10 +24,10 @@ let lockFileData = """NUGET
 let graph = 
     [ "Castle.Core-log4net", "3.2.0", 
       [ "Castle.Core", VersionRequirement(VersionRange.AtLeast "3.2.0",PreReleaseStatus.No)
-        "log4net", VersionRequirement(VersionRange.AtLeast "1.2.10",PreReleaseStatus.No) ]
+        "log4net", VersionRequirement(VersionRange.Exactly "1.2.10",PreReleaseStatus.No) ]
       "Castle.Core-log4net", "3.3.3", 
       [ "Castle.Core", VersionRequirement(VersionRange.AtLeast "3.3.3",PreReleaseStatus.No)
-        "log4net", VersionRequirement(VersionRange.AtLeast "1.2.10",PreReleaseStatus.No) ]
+        "log4net", VersionRequirement(VersionRange.Exactly "1.2.10",PreReleaseStatus.No) ]
       "Castle.Core-log4net", "4.0.0", 
       [ "Castle.Core", VersionRequirement(VersionRange.AtLeast "4.0.0",PreReleaseStatus.No) ]
       "Castle.Core", "3.2.0", []
@@ -35,6 +36,7 @@ let graph =
       "FAKE", "4.0.0", []
       "FAKE", "4.0.1", []
       "log4net", "1.2.10", []
+      "log4net", "2.0.0", []
       "Newtonsoft.Json", "7.0.1", []
       "Newtonsoft.Json", "6.0.8", [] ]
 
@@ -42,7 +44,8 @@ let getVersions = VersionsFromGraph graph
 let getPackageDetails = PackageDetailsFromGraph graph
 
 let lockFile = LockFile.Parse("",toLines lockFileData)
-let resolve (dependenciesFile : DependenciesFile) packages = dependenciesFile.Resolve(noSha1, getVersions, getPackageDetails, packages)
+let resolve' requirements (dependenciesFile : DependenciesFile) packages = dependenciesFile.Resolve(noSha1, getVersions, getPackageDetails, packages, requirements)
+let resolve = resolve' []
 
 [<Test>]
 let ``SelectiveUpdate does not update any package when it is neither updating all nor selective updating``() = 
@@ -427,3 +430,40 @@ let ``SelectiveUpdate generates paket.lock correctly``() =
     result
     |> shouldEqual (normalizeLineEndings expected)
      
+[<Test>]
+let ``SelectiveUpdate does not update when package conflicts with a transitive dependency``() = 
+
+    let dependenciesFile = DependenciesFile.FromCode("""source http://nuget.org/api/v2
+
+    nuget Castle.Core-log4net
+    nuget FAKE
+    nuget log4net""")
+    
+    let updateAll = false
+    let requirements =
+        lockFile.ResolvedPackages
+        |> createPackageRequirements
+        |> List.ofSeq
+    let resolve = resolve' requirements
+
+    let lockFile = 
+        Some(NormalizedPackageName(PackageName "log4net"))
+        |> selectiveUpdate resolve lockFile dependenciesFile updateAll
+    
+    let result = 
+        lockFile.ResolvedPackages
+        |> Map.toSeq
+        |> Seq.map snd
+        |> Seq.map (fun r -> (string r.Name, string r.Version))
+
+    let expected = 
+        [("Castle.Core-log4net","3.2.0");
+        ("Castle.Core","3.2.0");
+        ("FAKE","4.0.0");
+        ("log4net", "1.2.10")]
+        |> Seq.sortBy fst
+
+    result
+    |> Seq.sortBy fst
+    |> shouldEqual expected
+    
