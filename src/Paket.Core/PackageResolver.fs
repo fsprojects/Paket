@@ -77,14 +77,18 @@ let createPackageRequirements exclude resolution =
         |> Map.toSeq
         |> Seq.map snd
 
+    let contains list package = list |> List.contains (NormalizedPackageName package.Name)
+
     let transitive = 
         packages
+        |> Seq.filter (contains exclude)
         |> Seq.collect (fun d -> d.Dependencies |> Seq.map (fun (n,_,_) -> n))
+        |> Seq.map NormalizedPackageName
         |> List.ofSeq
 
     packages
-    |> Seq.filter (fun p -> transitive |> List.contains p.Name |> not)
-    |> Seq.filter (fun p -> exclude |> List.contains (NormalizedPackageName p.Name) |> not)
+    |> Seq.filter ((contains transitive) >> not)
+    |> Seq.filter ((contains exclude) >> not)
     |> Seq.collect (fun p -> p.Dependencies |> Seq.map (createPackageRequirement p))
 
 type PackageResolution = Map<NormalizedPackageName, ResolvedPackage>

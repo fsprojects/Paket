@@ -647,3 +647,42 @@ let ``SelectiveUpdate updates package that conflicts with a transitive dependenc
     |> Seq.sortBy fst
     |> shouldEqual expected
     
+[<Test>]
+let ``SelectiveUpdate updates package that conflicts with a deep transitive dependency of another package to correct version``() = 
+
+    let dependenciesFile = DependenciesFile.FromCode("""source http://nuget.org/api/v2
+
+    nuget log4f
+    nuget Ninject.Extensions.Logging.Log4net
+    nuget Ninject.Extensions.Interception""")
+    
+    let updateAll = false
+    let packageName = NormalizedPackageName(PackageName "Ninject.Extensions.Interception")
+    let requirements =
+        lockFile3.ResolvedPackages
+        |> createPackageRequirements [packageName]
+        |> List.ofSeq
+    let resolve = resolve' graph3 requirements
+
+    let lockFile = 
+        Some(packageName)
+        |> selectiveUpdate resolve lockFile3 dependenciesFile updateAll
+    
+    let result = 
+        lockFile.ResolvedPackages
+        |> Map.toSeq
+        |> Seq.map snd
+        |> Seq.map (fun r -> (string r.Name, string r.Version))
+
+    let expected = 
+        [("Ninject.Extensions.Logging.Log4net","2.2.0.4");
+        ("Ninject.Extensions.Logging","2.2.0.4");
+        ("Ninject.Extensions.Interception","2.2.1.3");
+        ("Ninject", "2.2.1.5");
+        ("log4f", "0.4.0");
+        ("log4net", "1.0.4")]
+        |> Seq.sortBy fst
+
+    result
+    |> Seq.sortBy fst
+    |> shouldEqual expected
