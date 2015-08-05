@@ -1,3 +1,6 @@
+#### 1.24.0-alpha001 - 05.08.2015
+* Reactive NuGet v3 
+
 #### 1.23.0 - 04.08.2015
 * BUGFIX: Selective update resolves the graph for selected package - https://github.com/fsprojects/Paket/pull/957
 
