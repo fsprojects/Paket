@@ -2,8 +2,6 @@
 
 `paket.references` is used to specify which dependencies are to be installed into the MSBuild projects in your repository. Paket determines the set of dependencies that are to be referenced by each MSBuild project within a directory from its `paket.references` file.
 
-A repository may contain zero or more `paket.references` files.
-
 It acts a lot like NuGet's `packages.config` files but there are some key differences:
 
 - One does not specify package versions; these are instead sourced from the [`paket.lock` file](lock-file.html) (which are in turn derived from the rules contained within the [`paket.dependencies` file](dependencies-file.html) in the course of the *initial* [`paket install`](paket-install.html) or subsequent [`paket update`](paket-update.html) commands)
@@ -50,7 +48,7 @@ This option disables the installation of any content files for the given package
 Sometimes you don't want to generate dependencies for older framework versions. You can control this in the [`paket.dependencies` file](nuget-dependencies.html#Framework-restrictions) or via the `framework` switch:
 
     Newtonsoft.Json framework: net35, net40  // .NET 3.5 and .NET 4.0
-    DotNetZip framework: >= net45      // .NET 4.5 and above
+    DotNetZip framework: >= net45            // .NET 4.5 and above
 
 ## File name conventions
 
