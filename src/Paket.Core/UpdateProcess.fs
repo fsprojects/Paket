@@ -49,7 +49,7 @@ let addPackagesFromReferenceFiles projects (dependenciesFile : DependenciesFile)
 let selectiveUpdate resolve lockFile dependenciesFile updateAll package =
     let install () =
         let changedDependencies = DependencyChangeDetection.findChangesInDependenciesFile(dependenciesFile,lockFile)
-        let dependenciesFile = DependencyChangeDetection.PinUnchangedDependencies dependenciesFile lockFile Set.empty
+        let dependenciesFile = DependencyChangeDetection.PinUnchangedDependencies dependenciesFile lockFile changedDependencies
         resolve dependenciesFile None
 
     let selectiveUpdate package =
