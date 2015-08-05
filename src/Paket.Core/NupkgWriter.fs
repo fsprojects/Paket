@@ -227,6 +227,10 @@ let Write (core : CompleteCoreInfo) optional workingDir outputDir =
         let path = DirectoryInfo(p).FullName
         exclusions |> List.exists (fun f -> f path)
 
+    let ensureValidName (target: string) =
+        Uri.EscapeDataString(target.Replace("\\", "/")).Replace("%5C", "/")
+          |> fun s -> if s.StartsWith("./") then s.Remove(0,2) else s
+
     let addEntry path writerF =
         if entries.Contains(path) then () else
         entries.Add path |> ignore
@@ -241,9 +245,7 @@ let Write (core : CompleteCoreInfo) optional workingDir outputDir =
         zipFile.CreateEntryFromFile(source,path) |> ignore
 
     let ensureValidTargetName (target:string) =
-        let target =
-          target.Replace(" ", "%20").Replace("\\", "/")
-          |> fun s -> if s.StartsWith("./") then s.Remove(0,2) else s
+        let target = ensureValidName target
 
         match target with
         | t when t.EndsWith("/")         -> t
@@ -258,7 +260,8 @@ let Write (core : CompleteCoreInfo) optional workingDir outputDir =
             for file in Directory.EnumerateFiles(source,"*.*",SearchOption.TopDirectoryOnly) do
                 if not <| isExcluded file then
                     let fi = FileInfo file
-                    let path = Path.Combine(target,fi.Name)
+                    let fileName = ensureValidName fi.Name
+                    let path = Path.Combine(target,fileName)
 
                     addEntryFromFile path fi.FullName
 
@@ -276,7 +279,8 @@ let Write (core : CompleteCoreInfo) optional workingDir outputDir =
             if File.Exists source then
                 if not <| isExcluded source then
                     let fi = FileInfo(source)
-                    let path = Path.Combine(targetFileName,fi.Name)
+                    let fileName = ensureValidName fi.Name
+                    let path = Path.Combine(targetFileName,fileName)
                     addEntryFromFile path source
             else
                 failwithf "Could not find source file %s" source
