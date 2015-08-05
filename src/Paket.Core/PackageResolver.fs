@@ -72,9 +72,18 @@ let createPackageRequirement parent (packageName, version, restrictions) =
     }
 
 let createPackageRequirements exclude resolution =
-    resolution
-    |> Map.toSeq
-    |> Seq.map snd
+    let packages =
+        resolution
+        |> Map.toSeq
+        |> Seq.map snd
+
+    let transitive = 
+        packages
+        |> Seq.collect (fun d -> d.Dependencies |> Seq.map (fun (n,_,_) -> n))
+        |> List.ofSeq
+
+    packages
+    |> Seq.filter (fun p -> transitive |> List.contains p.Name |> not)
     |> Seq.filter (fun p -> exclude |> List.contains (NormalizedPackageName p.Name) |> not)
     |> Seq.collect (fun p -> p.Dependencies |> Seq.map (createPackageRequirement p))
 
