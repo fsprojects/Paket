@@ -29,6 +29,7 @@ For more reasons see the [FAQ][10].
 
  - [Source code][1]
  - [Documentation][2]
+ - [Getting started guide](http://fsprojects.github.io/Paket/getting-started.html)
  - Download [paket.exe][3]
  - Download [paket.bootstrapper.exe][3]
 
