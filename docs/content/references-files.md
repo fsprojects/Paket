@@ -9,7 +9,6 @@ It acts a lot like NuGet's `packages.config` files but there are some key differ
 - One does not specify package versions; these are instead sourced from the [`paket.lock` file](lock-file.html) (which are in turn derived from the rules contained within the [`paket.dependencies` file](dependencies-file.html) in the course of the *initial* [`paket install`](paket-install.html) or subsequent [`paket update`](paket-update.html) commands)
 - Only direct dependencies should be listed (see below, [we're currently evaluating options for other reference modes](https://github.com/fsprojects/Paket/issues/38))
 - It's just a plain text file
-- It's optional
 
 ## Location
 
