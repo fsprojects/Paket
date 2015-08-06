@@ -761,3 +761,57 @@ let ``SelectiveUpdate updates package that conflicts with a deep transitive depe
     |> Seq.sortBy fst
     |> shouldEqual expected
     
+let graph5 =
+      [ "Ninject.Extensions.Interception", "0.0.2-alpha001", [ "Ninject", VersionRequirement(VersionRange.Between("0.0.1","0.0.3"),PreReleaseStatus.No) ]
+        "Ninject.Extensions.Logging", "0.0.2-alpha001", [ "Ninject", VersionRequirement(VersionRange.Between("0.0.1","0.0.3"),PreReleaseStatus.No) ]
+        "Ninject.Extensions.Logging", "0.0.3", [ "Ninject", VersionRequirement(VersionRange.Between("0.0.2","1.0.0"),PreReleaseStatus.No) ]
+        "Ninject", "0.0.2-alpha001", []
+        "Ninject", "0.0.3-alpha001", []
+        "Ninject", "0.0.4-alpha001", [] ]
+
+let lockFileData5 = """NUGET
+  remote: http://nuget.org/api/v2
+  specs:
+    Ninject (0.0.2-alpha001)
+    Ninject.Extensions.Interception (0.0.2-alpha001)
+      Ninject (>= 0.0.1 < 0.0.3)
+    Ninject.Extensions.Logging (0.0.2-alpha001)
+      Ninject (>= 0.0.1 < 0.0.3)
+"""
+let lockFile5 = lockFileData5 |> getLockFile
+
+[<Test>]
+let ``SelectiveUpdate updates package that conflicts with transitive dependency with correct prerelease version``() = 
+
+    let dependenciesFile = DependenciesFile.FromCode("""source http://nuget.org/api/v2
+
+    nuget Ninject.Extensions.Interception
+    nuget Ninject.Extensions.Logging""")
+    
+    let updateAll = false
+    let packageName = NormalizedPackageName(PackageName "Ninject.Extensions.Logging")
+    let requirements =
+        lockFile5.ResolvedPackages
+        |> createPackageRequirements [packageName]
+    let resolve = resolve' graph5 requirements
+
+    let lockFile = 
+        Some(packageName)
+        |> selectiveUpdate resolve lockFile5 dependenciesFile updateAll
+    
+    let result = 
+        lockFile.ResolvedPackages
+        |> Map.toSeq
+        |> Seq.map snd
+        |> Seq.map (fun r -> (string r.Name, string r.Version))
+
+    let expected = 
+        [("Ninject.Extensions.Interception","0.0.2-alpha001");
+        ("Ninject.Extensions.Logging","0.0.3");
+        ("Ninject", "0.0.3-alpha001")]
+        |> Seq.sortBy fst
+
+    result
+    |> Seq.sortBy fst
+    |> shouldEqual expected
+    

@@ -291,18 +291,19 @@ let Resolve(getVersionsF, getPackageDetailsF, globalFrameworkRestrictions, rootD
             | None ->
                 // we didn't select a version yet so all versions are possible
 
-                let isInRange ver =
+                let isInRange map ver =
                     currentRequirements
+                    |> Seq.map map
                     |> Seq.map (fun r -> r.VersionRequirement.IsInRange(ver))
-                    |> Seq.fold (&&) (currentRequirement.VersionRequirement.IsInRange(ver))
+                    |> Seq.fold (&&) ((map currentRequirement).VersionRequirement.IsInRange(ver))
 
                 availableVersions := getAllVersions(currentRequirement.Sources,currentRequirement.Name,currentRequirement.VersionRequirement.Range)
-                compatibleVersions := List.filter isInRange (!availableVersions)
+                compatibleVersions := List.filter (isInRange id) (!availableVersions)
                 if currentRequirement.VersionRequirement.Range.IsGlobalOverride then
                     globalOverride := true
                 else
                     if !compatibleVersions = [] then
-                        let prereleases = List.filter (currentRequirement.IncludingPrereleases().VersionRequirement.IsInRange) (!availableVersions)
+                        let prereleases = List.filter (isInRange (fun r -> r.IncludingPrereleases())) (!availableVersions)
                         if allPrereleases prereleases then
                             availableVersions := prereleases
                             compatibleVersions := prereleases
