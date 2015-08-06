@@ -71,17 +71,30 @@ let createPackageRequirement parent (packageName, version, restrictions) =
       Sources = []
     }
 
+let rec getDependencyGraph packages package =
+    let requirements =
+        package.Dependencies
+        |> Seq.map (createPackageRequirement package)
+        |> List.ofSeq
+
+    requirements @
+    (requirements
+    |> List.collect (fun r -> 
+        packages
+        |> List.filter (fun p -> NormalizedPackageName p.Name = NormalizedPackageName r.Name)
+        |> List.collect (getDependencyGraph packages)))
+
 let createPackageRequirements exclude resolution =
     let packages =
         resolution
         |> Map.toSeq
         |> Seq.map snd
+        |> List.ofSeq
 
     let contains list package = list |> List.contains (NormalizedPackageName package.Name)
 
     let transitive = 
         packages
-        |> Seq.filter (contains exclude)
         |> Seq.collect (fun d -> d.Dependencies |> Seq.map (fun (n,_,_) -> n))
         |> Seq.map NormalizedPackageName
         |> List.ofSeq
@@ -89,7 +102,7 @@ let createPackageRequirements exclude resolution =
     packages
     |> Seq.filter ((contains transitive) >> not)
     |> Seq.filter ((contains exclude) >> not)
-    |> Seq.collect (fun p -> p.Dependencies |> Seq.map (createPackageRequirement p))
+    |> Seq.collect (getDependencyGraph packages)
 
 type PackageResolution = Map<NormalizedPackageName, ResolvedPackage>
 

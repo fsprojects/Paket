@@ -686,3 +686,62 @@ let ``SelectiveUpdate updates package that conflicts with a deep transitive depe
     result
     |> Seq.sortBy fst
     |> shouldEqual expected
+    
+let graph4 =
+    graph2 @
+      [ "Ninject.Extensions.Logging.Log4net.Deep", "2.2.0.4", [ "Ninject.Extensions.Logging.Log4net", VersionRequirement(VersionRange.Between("2.2.0.0","2.3.0.0"),PreReleaseStatus.No) ]
+        "Ninject.Extensions.Logging.Log4net.Deep", "2.2.0.5", [ "Ninject.Extensions.Logging.Log4net", VersionRequirement(VersionRange.Between("2.2.0.0","2.3.0.0"),PreReleaseStatus.No) ]
+        "Ninject.Extensions.Logging.Log4net.Deep", "3.2.3", [ "Ninject.Extensions.Logging.Log4net", VersionRequirement(VersionRange.Between("3.2.0.0","3.3.0.0"),PreReleaseStatus.No) ] ]
+
+let lockFileData4 = """NUGET
+  remote: http://nuget.org/api/v2
+  specs:
+    log4net (1.0.4)
+    Ninject (2.2.1.4)
+    Ninject.Extensions.Logging (2.2.0.4)
+      Ninject (>= 2.2.0.0 < 2.3.0.0)
+    Ninject.Extensions.Logging.Log4net (2.2.0.4)
+      Ninject.Extensions.Logging (>= 2.2.0.0 < 2.3.0.0)
+      log4net (>= 1.0.4)
+    Ninject.Extensions.Logging.Log4net.Deep (2.2.0.4)
+      Ninject.Extensions.Logging.Log4net (2.2.0.4)
+"""
+let lockFile4 = lockFileData4 |> getLockFile
+
+[<Test>]
+let ``SelectiveUpdate updates package that conflicts with a deep transitive dependency in its own graph with correct version``() = 
+
+    let dependenciesFile = DependenciesFile.FromCode("""source http://nuget.org/api/v2
+
+    nuget Ninject.Extensions.Logging.Log4net.Deep""")
+    
+    let updateAll = false
+    let packageName = NormalizedPackageName(PackageName "Ninject.Extensions.Logging.Log4net.Deep")
+    let requirements =
+        lockFile4.ResolvedPackages
+        |> createPackageRequirements [packageName]
+        |> List.ofSeq
+    let resolve = resolve' graph4 requirements
+
+    let lockFile = 
+        Some(packageName)
+        |> selectiveUpdate resolve lockFile4 dependenciesFile updateAll
+    
+    let result = 
+        lockFile.ResolvedPackages
+        |> Map.toSeq
+        |> Seq.map snd
+        |> Seq.map (fun r -> (string r.Name, string r.Version))
+
+    let expected = 
+        [("Ninject.Extensions.Logging.Log4net.Deep","3.2.3");
+        ("Ninject.Extensions.Logging.Log4net","3.2.3");
+        ("Ninject.Extensions.Logging","3.2.3");
+        ("Ninject", "3.2.0");
+        ("log4net", "2.0.3")]
+        |> Seq.sortBy fst
+
+    result
+    |> Seq.sortBy fst
+    |> shouldEqual expected
+    
