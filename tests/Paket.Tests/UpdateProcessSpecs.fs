@@ -644,6 +644,28 @@ let ``SelectiveUpdate updates package that conflicts with a transitive dependenc
     |> shouldEqual expected
     
 [<Test>]
+let ``SelectiveUpdate conflicts with a transitive dependency of another package when paket.dependencies requirement has changed``() = 
+
+    let dependenciesFile = DependenciesFile.FromCode("""source http://nuget.org/api/v2
+
+    nuget Ninject ~> 3.0
+    nuget Ninject.Extensions.Logging.Log4net
+    nuget Ninject.Extensions.Interception""")
+    
+    let updateAll = false
+    let packageName = NormalizedPackageName(PackageName "Ninject")
+    let requirements =
+        lockFile3.ResolvedPackages
+        |> createPackageRequirements [packageName]
+    let resolve = resolve' graph3 requirements
+
+    (fun () ->
+    Some(packageName)
+    |> selectiveUpdate resolve lockFile3 dependenciesFile updateAll
+    |> ignore)
+    |> shouldFail
+    
+[<Test>]
 let ``SelectiveUpdate updates package that conflicts with a deep transitive dependency of another package to correct version``() = 
 
     let dependenciesFile = DependenciesFile.FromCode("""source http://nuget.org/api/v2

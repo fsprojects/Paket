@@ -282,20 +282,19 @@ let Resolve(getVersionsF, getPackageDetailsF, globalFrameworkRestrictions, rootD
             let availableVersions = ref []
             let compatibleVersions = ref []
             let globalOverride = ref false
+
+            let currentRequirements =
+                requirements
+                |> Seq.filter (fun r -> NormalizedPackageName currentRequirement.Name = NormalizedPackageName r.Name)
      
             match Map.tryFind currentRequirement.Name filteredVersions with
             | None ->
                 // we didn't select a version yet so all versions are possible
 
-                let requirement =
-                    requirements
-                    |> Seq.tryFind (fun r -> NormalizedPackageName currentRequirement.Name = NormalizedPackageName r.Name)
-                    
                 let isInRange ver =
-                    let inRange = currentRequirement.VersionRequirement.IsInRange(ver)
-                    match requirement with
-                    | None -> inRange
-                    | Some requirement -> inRange && requirement.VersionRequirement.IsInRange(ver)
+                    currentRequirements
+                    |> Seq.map (fun r -> r.VersionRequirement.IsInRange(ver))
+                    |> Seq.fold (&&) (currentRequirement.VersionRequirement.IsInRange(ver))
 
                 availableVersions := getAllVersions(currentRequirement.Sources,currentRequirement.Name,currentRequirement.VersionRequirement.Range)
                 compatibleVersions := List.filter isInRange (!availableVersions)
@@ -321,7 +320,7 @@ let Resolve(getVersionsF, getPackageDetailsF, globalFrameworkRestrictions, rootD
                 if currentRequirement.Parent.IsRootRequirement() then    
                     let versionText = String.Join(Environment.NewLine + "     - ",List.sort !availableVersions)
                     failwithf "Could not find compatible versions for top level dependency:%s     %A%s   Available versions:%s     - %s%s   Try to relax the dependency or allow prereleases." 
-                        Environment.NewLine (currentRequirement.ToString()) Environment.NewLine Environment.NewLine versionText Environment.NewLine
+                        Environment.NewLine (String.Join(Environment.NewLine + "     ", currentRequirements |> Seq.map string)) Environment.NewLine Environment.NewLine versionText Environment.NewLine
                 else
                     // boost the conflicting package, in order to solve conflicts faster
                     match conflictHistory.TryGetValue(NormalizedPackageName currentRequirement.Name) with
