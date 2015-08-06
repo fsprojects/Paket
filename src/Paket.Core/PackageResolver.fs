@@ -100,9 +100,9 @@ let createPackageRequirements exclude resolution =
         |> List.ofSeq
 
     packages
-    |> Seq.filter ((contains transitive) >> not)
-    |> Seq.filter ((contains exclude) >> not)
-    |> Seq.collect (getDependencyGraph packages)
+    |> List.filter ((contains transitive) >> not)
+    |> List.filter ((contains exclude) >> not)
+    |> List.collect (getDependencyGraph packages)
 
 type PackageResolution = Map<NormalizedPackageName, ResolvedPackage>
 

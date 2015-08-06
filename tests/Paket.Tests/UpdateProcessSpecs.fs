@@ -442,7 +442,6 @@ let ``SelectiveUpdate does not update when package conflicts with a transitive d
     let requirements =
         lockFile.ResolvedPackages
         |> createPackageRequirements [packageName]
-        |> List.ofSeq
     let resolve = resolve' graph requirements
 
     let lockFile = 
@@ -520,7 +519,6 @@ let ``SelectiveUpdate updates package that conflicts with a transitive dependenc
     let requirements =
         lockFile2.ResolvedPackages
         |> createPackageRequirements [packageName]
-        |> List.ofSeq
     let resolve = resolve' graph2 requirements
 
     let lockFile = 
@@ -558,7 +556,6 @@ let ``SelectiveUpdate updates package that conflicts with a transitive dependenc
     let requirements =
         lockFile2.ResolvedPackages
         |> createPackageRequirements [packageName]
-        |> List.ofSeq
     let resolve = resolve' graph2 requirements
 
     let lockFile = 
@@ -621,7 +618,6 @@ let ``SelectiveUpdate updates package that conflicts with a transitive dependenc
     let requirements =
         lockFile3.ResolvedPackages
         |> createPackageRequirements [packageName]
-        |> List.ofSeq
     let resolve = resolve' graph3 requirements
 
     let lockFile = 
@@ -661,7 +657,6 @@ let ``SelectiveUpdate updates package that conflicts with a deep transitive depe
     let requirements =
         lockFile3.ResolvedPackages
         |> createPackageRequirements [packageName]
-        |> List.ofSeq
     let resolve = resolve' graph3 requirements
 
     let lockFile = 
@@ -720,7 +715,6 @@ let ``SelectiveUpdate updates package that conflicts with a deep transitive depe
     let requirements =
         lockFile4.ResolvedPackages
         |> createPackageRequirements [packageName]
-        |> List.ofSeq
     let resolve = resolve' graph4 requirements
 
     let lockFile = 

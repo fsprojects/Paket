@@ -112,7 +112,6 @@ let SelectiveUpdate(dependenciesFile : DependenciesFile, updateAll, exclude, for
     let requirements =
         oldLockFile.ResolvedPackages
         |> createPackageRequirements excludePackages
-        |> List.ofSeq
 
     let lockFile = selectiveUpdate (fun d p -> d.Resolve(force, p, requirements)) oldLockFile dependenciesFile updateAll exclude
     lockFile.Save()
