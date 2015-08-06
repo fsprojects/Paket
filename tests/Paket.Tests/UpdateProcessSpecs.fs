@@ -65,10 +65,10 @@ let ``SelectiveUpdate does not update any package when it is neither updating al
         ("Castle.Core","3.2.0");
         ("FAKE","4.0.0");
         ("log4net","1.2.10")]
-        |> Seq.sortBy (fun (key,_) -> key)
+        |> Seq.sortBy fst
 
     result
-    |> Seq.sortBy (fun (key,_) -> key)
+    |> Seq.sortBy fst
     |> shouldEqual expected
     
 [<Test>]
@@ -91,10 +91,10 @@ let ``SelectiveUpdate updates all packages not constraining version``() =
         ("Castle.Core","4.0.0");
         ("FAKE","4.0.1");
         ("log4net","1.2.10")]
-        |> Seq.sortBy (fun (key,_) -> key)
+        |> Seq.sortBy fst
 
     result
-    |> Seq.sortBy (fun (key,_) -> key)
+    |> Seq.sortBy fst
     |> shouldEqual expected
     
 [<Test>]
@@ -118,10 +118,10 @@ let ``SelectiveUpdate updates all packages constraining version``() =
         ("Castle.Core","3.3.3");
         ("FAKE","4.0.0");
         ("log4net","1.2.10")]
-        |> Seq.sortBy (fun (key,_) -> key)
+        |> Seq.sortBy fst
 
     result
-    |> Seq.sortBy (fun (key,_) -> key)
+    |> Seq.sortBy fst
     |> shouldEqual expected
     
 [<Test>]
@@ -143,10 +143,10 @@ let ``SelectiveUpdate removes a dependency when it is updated to a version that 
         [("Castle.Core-log4net","4.0.0");
         ("Castle.Core","4.0.0");
         ("FAKE","4.0.1")]
-        |> Seq.sortBy (fun (key,_) -> key)
+        |> Seq.sortBy fst
 
     result
-    |> Seq.sortBy (fun (key,_) -> key)
+    |> Seq.sortBy fst
     |> shouldEqual expected
     
 [<Test>]
@@ -171,10 +171,10 @@ let ``SelectiveUpdate updates a single package``() =
         ("Castle.Core","3.2.0");
         ("FAKE","4.0.1");
         ("log4net","1.2.10")]
-        |> Seq.sortBy (fun (key,_) -> key)
+        |> Seq.sortBy fst
 
     result
-    |> Seq.sortBy (fun (key,_) -> key)
+    |> Seq.sortBy fst
     |> shouldEqual expected
     
 [<Test>]
@@ -199,10 +199,10 @@ let ``SelectiveUpdate updates a single constrained package``() =
         ("Castle.Core","4.0.0");
         ("FAKE","4.0.0");
         ("log4net","1.2.10")]
-        |> Seq.sortBy (fun (key,_) -> key)
+        |> Seq.sortBy fst
 
     result
-    |> Seq.sortBy (fun (key,_) -> key)
+    |> Seq.sortBy fst
     |> shouldEqual expected
      
 [<Test>]
@@ -228,10 +228,10 @@ let ``SelectiveUpdate updates a single package with constrained dependency in de
         ("Castle.Core","3.3.3");
         ("FAKE","4.0.0");
         ("log4net","1.2.10")]
-        |> Seq.sortBy (fun (key,_) -> key)
+        |> Seq.sortBy fst
 
     result
-    |> Seq.sortBy (fun (key,_) -> key)
+    |> Seq.sortBy fst
     |> shouldEqual expected
     
 [<Test>]
@@ -256,10 +256,10 @@ let ``SelectiveUpdate installs new packages``() =
         ("FAKE","4.0.0");
         ("log4net", "1.2.10");
         ("Newtonsoft.Json", "7.0.1")]
-        |> Seq.sortBy (fun (key,_) -> key)
+        |> Seq.sortBy fst
 
     result
-    |> Seq.sortBy (fun (key,_) -> key)
+    |> Seq.sortBy fst
     |> shouldEqual expected
     
 [<Test>]
@@ -283,10 +283,10 @@ let ``SelectiveUpdate removes a dependency when it updates a single package and 
         [("Castle.Core-log4net","4.0.0");
         ("Castle.Core","4.0.0");
         ("FAKE","4.0.0")]
-        |> Seq.sortBy (fun (key,_) -> key)
+        |> Seq.sortBy fst
 
     result
-    |> Seq.sortBy (fun (key,_) -> key)
+    |> Seq.sortBy fst
     |> shouldEqual expected
     
 [<Test>]
@@ -312,10 +312,10 @@ let ``SelectiveUpdate does not update when a dependency constrain is not met``()
         ("Castle.Core","3.2.0");
         ("FAKE","4.0.0");
         ("log4net","1.2.10")]
-        |> Seq.sortBy (fun (key,_) -> key)
+        |> Seq.sortBy fst
         
     result
-    |> Seq.sortBy (fun (key,_) -> key)
+    |> Seq.sortBy fst
     |> shouldEqual expected
    
 [<Test>]
@@ -341,10 +341,10 @@ let ``SelectiveUpdate considers package name case difference``() =
         ("Castle.Core","3.2.0");
         ("FAKE","4.0.0");
         ("log4net","1.2.10")]
-        |> Seq.sortBy (fun (key,_) -> key)
+        |> Seq.sortBy fst
         
     result
-    |> Seq.sortBy (fun (key,_) -> key)
+    |> Seq.sortBy fst
     |> shouldEqual expected
     
 [<Test>]
@@ -387,10 +387,10 @@ let ``SelectiveUpdate does not update any package when package does not exist``(
         ("Castle.Core","3.2.0");
         ("FAKE","4.0.0");
         ("log4net","1.2.10")]
-        |> Seq.sortBy (fun (key,_) -> key)
+        |> Seq.sortBy fst
 
     result
-    |> Seq.sortBy (fun (key,_) -> key)
+    |> Seq.sortBy fst
     |> shouldEqual expected
      
 [<Test>]
