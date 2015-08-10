@@ -170,7 +170,7 @@ let getFromUrl (auth:Auth option, url : string) =
     async { 
         try
             use client = createWebClient(url,auth)
-            return! client.AsyncDownloadString(Uri(url))
+            return client.DownloadString(Uri(url))
         with
         | exn -> 
             failwithf "Could not retrieve data from %s%s Message: %s" url Environment.NewLine exn.Message
@@ -200,7 +200,7 @@ let safeGetFromUrl (auth:Auth option, url : string) =
     async { 
         try 
             use client = createWebClient(url,auth)
-            let! raw = client.AsyncDownloadString(Uri(url))
+            let raw = client.DownloadString(Uri(url))
             return Some raw
         with _ -> return None
     }

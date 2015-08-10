@@ -215,7 +215,7 @@ let getDetailsFromNuGetViaODataFast auth nugetURL package (version:SemVerInfo) =
     async {         
         try 
             let url = sprintf "%s/Packages?$filter=Id eq '%s' and NormalizedVersion eq '%s'" nugetURL package (version.Normalize())
-            let! raw = getFromUrl(auth,url)
+            let raw = getFromUrl(auth,url) |> Async.RunSynchronously
             if verbose then
                 tracefn "Response from %s:" url
                 tracefn ""
@@ -223,7 +223,7 @@ let getDetailsFromNuGetViaODataFast auth nugetURL package (version:SemVerInfo) =
             return parseODataDetails(nugetURL,package,version,raw)
         with _ ->         
             let url = sprintf "%s/Packages?$filter=Id eq '%s' and Version eq '%s'" nugetURL package (version.ToString())
-            let! raw = getFromUrl(auth,url)
+            let raw = getFromUrl(auth,url) |> Async.RunSynchronously
             if verbose then
                 tracefn "Response from %s:" url
                 tracefn ""
@@ -238,14 +238,14 @@ let getDetailsFromNuGetViaOData auth nugetURL package (version:SemVerInfo) =
             return! getDetailsFromNuGetViaODataFast auth nugetURL package version
         with _ ->         
             let url = sprintf "%s/Packages(Id='%s',Version='%s')" nugetURL package (version.ToString())
-            let! response = safeGetFromUrl(auth,url)
+            let response = safeGetFromUrl(auth,url) |> Async.RunSynchronously
                     
-            let! raw =
+            let raw =
                 match response with
-                | Some(r) -> async { return r }
+                | Some(r) -> async { return r } |> Async.RunSynchronously
                 | None ->
                     let url = sprintf "%s/odata/Packages(Id='%s',Version='%s')" nugetURL package (version.ToString())
-                    getXmlFromUrl(auth,url)
+                    getXmlFromUrl(auth,url) |> Async.RunSynchronously
 
             if verbose then
                 tracefn "Response from %s:" url
