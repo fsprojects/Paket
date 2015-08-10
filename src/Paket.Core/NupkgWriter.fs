@@ -228,7 +228,7 @@ let Write (core : CompleteCoreInfo) optional workingDir outputDir =
         exclusions |> List.exists (fun f -> f path)
 
     let ensureValidName (target: string) =
-        Uri.EscapeDataString(target.Replace("\\", "/")).Replace("%5C", "/")
+        Uri.EscapeDataString(target.Replace("\\", "/")).Replace("%5C", "/").Replace("%2F", "/")
           |> fun s -> if s.StartsWith("./") then s.Remove(0,2) else s
 
     let addEntry path writerF =
