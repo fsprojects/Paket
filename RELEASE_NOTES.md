@@ -1,4 +1,4 @@
-#### 1.24.0 - 10.08.2015
+#### 1.25.0 - 10.08.2015
 * Fix case-sensitivity of boostrapper on mono
 * Reactive NuGet v3
 * Check for conflicts in selective update - https://github.com/fsprojects/Paket/pull/964
