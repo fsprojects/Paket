@@ -62,6 +62,48 @@ type ResolvedPackage =
         let (PackageName name) = this.Name
         sprintf "%s %s" name (this.Version.ToString())
 
+let createPackageRequirement parent (packageName, version, restrictions) =
+    { Name = packageName
+      VersionRequirement = version
+      ResolverStrategy = ResolverStrategy.Max
+      Settings = parent.Settings
+      Parent = Package(parent.Name, parent.Version)
+      Sources = []
+    }
+
+let rec getDependencyGraph packages package =
+    let requirements =
+        package.Dependencies
+        |> Seq.map (createPackageRequirement package)
+        |> List.ofSeq
+
+    requirements @
+    (requirements
+    |> List.collect (fun r -> 
+        packages
+        |> List.filter (fun p -> NormalizedPackageName p.Name = NormalizedPackageName r.Name)
+        |> List.collect (getDependencyGraph packages)))
+
+let createPackageRequirements exclude resolution =
+    let packages =
+        resolution
+        |> Map.toSeq
+        |> Seq.map snd
+        |> List.ofSeq
+
+    let contains list package = list |> List.contains (NormalizedPackageName package.Name)
+
+    let transitive = 
+        packages
+        |> Seq.collect (fun d -> d.Dependencies |> Seq.map (fun (n,_,_) -> n))
+        |> Seq.map NormalizedPackageName
+        |> List.ofSeq
+
+    packages
+    |> List.filter ((contains transitive) >> not)
+    |> List.filter ((contains exclude) >> not)
+    |> List.collect (getDependencyGraph packages)
+
 type PackageResolution = Map<NormalizedPackageName, ResolvedPackage>
 
 let allPrereleases versions = versions |> List.filter (fun v -> v.PreRelease <> None) = versions
@@ -240,28 +282,28 @@ let Resolve(getVersionsF, getPackageDetailsF, globalFrameworkRestrictions, rootD
             let availableVersions = ref []
             let compatibleVersions = ref []
             let globalOverride = ref false
+
+            let currentRequirements =
+                requirements
+                |> Seq.filter (fun r -> NormalizedPackageName currentRequirement.Name = NormalizedPackageName r.Name)
      
             match Map.tryFind currentRequirement.Name filteredVersions with
             | None ->
                 // we didn't select a version yet so all versions are possible
 
-                let requirement =
-                    requirements
-                    |> Seq.tryFind (fun r -> NormalizedPackageName currentRequirement.Name = NormalizedPackageName r.Name)
-                    
-                let isInRange ver =
-                    let inRange = currentRequirement.VersionRequirement.IsInRange(ver)
-                    match requirement with
-                    | None -> inRange
-                    | Some requirement -> inRange && requirement.VersionRequirement.IsInRange(ver)
+                let isInRange map ver =
+                    currentRequirements
+                    |> Seq.map map
+                    |> Seq.map (fun r -> r.VersionRequirement.IsInRange(ver))
+                    |> Seq.fold (&&) ((map currentRequirement).VersionRequirement.IsInRange(ver))
 
                 availableVersions := getAllVersions(currentRequirement.Sources,currentRequirement.Name,currentRequirement.VersionRequirement.Range)
-                compatibleVersions := List.filter isInRange (!availableVersions)
+                compatibleVersions := List.filter (isInRange id) (!availableVersions)
                 if currentRequirement.VersionRequirement.Range.IsGlobalOverride then
                     globalOverride := true
                 else
                     if !compatibleVersions = [] then
-                        let prereleases = List.filter (currentRequirement.IncludingPrereleases().VersionRequirement.IsInRange) (!availableVersions)
+                        let prereleases = List.filter (isInRange (fun r -> r.IncludingPrereleases())) (!availableVersions)
                         if allPrereleases prereleases then
                             availableVersions := prereleases
                             compatibleVersions := prereleases
@@ -279,7 +321,7 @@ let Resolve(getVersionsF, getPackageDetailsF, globalFrameworkRestrictions, rootD
                 if currentRequirement.Parent.IsRootRequirement() then    
                     let versionText = String.Join(Environment.NewLine + "     - ",List.sort !availableVersions)
                     failwithf "Could not find compatible versions for top level dependency:%s     %A%s   Available versions:%s     - %s%s   Try to relax the dependency or allow prereleases." 
-                        Environment.NewLine (currentRequirement.ToString()) Environment.NewLine Environment.NewLine versionText Environment.NewLine
+                        Environment.NewLine (String.Join(Environment.NewLine + "     ", currentRequirements |> Seq.map string)) Environment.NewLine Environment.NewLine versionText Environment.NewLine
                 else
                     // boost the conflicting package, in order to solve conflicts faster
                     match conflictHistory.TryGetValue(NormalizedPackageName currentRequirement.Name) with
