@@ -1,15 +1,15 @@
 # Getting Started
 
-This guide will show you 
+This guide will show you
 
-  * [how to manually setup Paket](getting-started.html#Manual-setup) in your .NET / mono solutions 
+  * [how to manually setup Paket](getting-started.html#Manual-setup) in your .NET / mono solutions
   * and [how to use the automatic NuGet conversion](getting-started.html#Automatic-NuGet-conversion).
 
-<blockquote>The following guide is assuming you are using the paket.exe command line tool. 
+<blockquote>The following guide is assuming you are using the paket.exe command line tool.
 There are editor plugins for Visual Studio, Atom and other which can make this process easier and provide additional tooling like syntax highlighting.
 Check our <a href="editor-support.html">editor support page</a> to see if your editor has a Paket plugin.</blockquote>
 
-<blockquote>If you are starting a new solution from scratch then take a look at <a href="http://fsprojects.github.io/ProjectScaffold/">ProjectScaffold</a>. 
+<blockquote>If you are starting a new solution from scratch then take a look at <a href="http://fsprojects.github.io/ProjectScaffold/">ProjectScaffold</a>.
 This project helps you get started with a new .NET/Mono project solution with everything needed for successful organising of code, tools and publishing and includes Paket.</blockquote>
 
 ## Manual setup
@@ -24,19 +24,19 @@ This project helps you get started with a new .NET/Mono project solution with ev
 ### Specifying dependencies
 
 Create a [`paket.dependencies` file](dependencies-file.html) in your project's root and specify all your dependencies in it.
-You can use [NuGet packages](nuget-dependencies.html), [GitHub files](github-dependencies.html) and [HTTP dependencies](http-dependencies.html). 
+You can use [NuGet packages](nuget-dependencies.html), [GitHub files](github-dependencies.html) and [HTTP dependencies](http-dependencies.html).
 The file might look like this:
 
     source https://nuget.org/api/v2
 
     nuget Castle.Windsor-log4net >= 3.2
     nuget NUnit
-	
+
 	github forki/FsUnit FsUnit.fs
 
 <blockquote>If you use a <a href="editor-support.html">Paket plugin for your editor</a>, you may get autocompletion for paket.dependencies files.</blockquote>
 
-You can read more about the importance and the structure of the `paket.dependencies` file in the [docs](dependencies-file.html).
+You can read more about the importance and the structure of the `paket.dependencies` file in the [docs](dependencies-file.html). This file should be committed to your version control system.
 
 ### Installing dependencies
 
@@ -75,13 +75,13 @@ You can read more about the `paket.lock` file in the [docs](lock-file.html).
 
 ### Installing dependencies into projects
 
-In the last paragraph you learned how to install packages into your repository, but usally you want to use the dependencies in your C#, VB or F# projects. 
+In the last paragraph you learned how to install packages into your repository, but usally you want to use the dependencies in your C#, VB or F# projects.
 In order to do so you need a [`paket.references` files](references-files.html) alongside your Visual Studio project files.
 By listing the direct dependencies in a `paket.references` file, Paket will automatically sync references to the corresponding projects whenever an `install` or `update` takes place.
 
     Castle.Windsor-log4net
     NUnit
-	 
+
     File:FsUnit.fs .
 
 Don't forget to run `install` again in order to let Paket reference the dependencies in your projects:
@@ -108,7 +108,7 @@ This command will analyze your [`paket.dependencies` file](dependencies-file.htm
 
 ## Automatic NuGet conversion
 
-Paket comes with a command that helps to convert existing solution from NuGet's `packages.config` format to Paket's format. 
+Paket comes with a command that helps to convert existing solution from NuGet's `packages.config` format to Paket's format.
 If you want to use the command then:
 
   * Please start by making a **back-up of your repository**
