@@ -127,7 +127,7 @@ namespace Paket.Bootstrapper
                 client.DownloadFile(paketDownloadUrl, paketPackageFile);
 
                 ZipFile.ExtractToDirectory(paketPackageFile, randomFullPath);
-                var paketSourceFile = Path.Combine(randomFullPath, "Tools", "Paket.exe");
+                var paketSourceFile = Path.Combine(randomFullPath, "tools", "paket.exe");
                 File.Copy(paketSourceFile, target, true);
                 Directory.Delete(randomFullPath, true);
             }
@@ -170,7 +170,7 @@ namespace Paket.Bootstrapper
             }
             ZipFile.ExtractToDirectory(paketPackageFile, randomFullPath);
 
-            var paketSourceFile = Path.Combine(randomFullPath, "Tools", "Paket.Bootstrapper.exe");
+            var paketSourceFile = Path.Combine(randomFullPath, "tools", "paket.bootstrapper.exe");
             var renamedPath = Path.GetTempFileName();
             try
             {
