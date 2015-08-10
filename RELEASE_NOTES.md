@@ -1,6 +1,7 @@
-#### 1.24.0-alpha003 - 10.08.2015
+#### 1.24.0-alpha004 - 10.08.2015
 * Fix case-sensitivity of boostrapper on mono
 * Reactive NuGet v3
+* Check for conflicts in selective update - https://github.com/fsprojects/Paket/pull/964
 * BUGFIX: Escape file names - https://github.com/fsprojects/Paket/pull/960
 
 #### 1.23.0 - 04.08.2015
