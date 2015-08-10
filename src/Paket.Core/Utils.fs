@@ -170,7 +170,8 @@ let getFromUrl (auth:Auth option, url : string) =
     async { 
         try
             use client = createWebClient(url,auth)
-            return! client.AsyncDownloadString(Uri(url))
+            let s = client.DownloadStringTaskAsync(Uri(url)) |> Async.AwaitTask
+            return! s
         with
         | exn -> 
             failwithf "Could not retrieve data from %s%s Message: %s" url Environment.NewLine exn.Message
@@ -187,8 +188,9 @@ let getXmlFromUrl (auth:Auth option, url : string) =
             client.Headers.Add(HttpRequestHeader.AcceptCharset, "UTF-8")
             client.Headers.Add("DataServiceVersion", "1.0;NetFx")
             client.Headers.Add("MaxDataServiceVersion", "2.0;NetFx")
-
-            return! client.AsyncDownloadString(Uri(url))
+            
+            let s = client.DownloadStringTaskAsync(Uri(url)) |> Async.AwaitTask
+            return! s
         with
         | exn -> 
             failwithf "Could not retrieve data from %s%s Message: %s" url Environment.NewLine exn.Message
@@ -200,7 +202,8 @@ let safeGetFromUrl (auth:Auth option, url : string) =
     async { 
         try 
             use client = createWebClient(url,auth)
-            let! raw = client.AsyncDownloadString(Uri(url))
+            let s = client.DownloadStringTaskAsync(Uri(url)) |> Async.AwaitTask
+            let! raw = s
             return Some raw
         with _ -> return None
     }
