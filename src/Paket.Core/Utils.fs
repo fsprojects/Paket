@@ -159,7 +159,9 @@ let downloadFromUrl (auth:Auth option, url : string) (filePath: string) =
     async {
         try
             use client = createWebClient(url,auth)
-            do! client.AsyncDownloadFile(Uri(url), filePath)
+            
+            let task = client.DownloadFileTaskAsync(Uri(url), filePath) |> Async.AwaitTask
+            do! task
         with
         | exn ->
             failwithf "Could not download from %s%s Message: %s" url Environment.NewLine exn.Message
