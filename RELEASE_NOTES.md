@@ -1,5 +1,8 @@
+#### 1.26.1 - 11.08.2015
+* BUGFIX: copy_local behaviour was broken - https://github.com/fsprojects/Paket/issues/972
+
 #### 1.26.0 - 10.08.2015
-* BUGFIXX: Paket mixed responses and downloads - https://github.com/fsprojects/Paket/issues/966
+* BUGFIX: Paket mixed responses and downloads - https://github.com/fsprojects/Paket/issues/966
 
 #### 1.25.0 - 10.08.2015
 * Fix case-sensitivity of boostrapper on mono
