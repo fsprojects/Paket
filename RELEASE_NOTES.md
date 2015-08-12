@@ -1,3 +1,6 @@
+#### 1.26.2 - 12.08.2015
+* BUGFIX: Version trace got lost - https://twitter.com/indy9000/status/631201649219010561
+
 #### 1.26.1 - 11.08.2015
 * BUGFIX: copy_local behaviour was broken - https://github.com/fsprojects/Paket/issues/972
 

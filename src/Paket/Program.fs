@@ -39,11 +39,6 @@ let filterGlobalArgs args =
 let v, logFile, args = filterGlobalArgs (Environment.GetCommandLineArgs().[1..])
 let silent = args |> Array.exists (fun a -> a = "-s" || a = "--silent")
 
-if not silent then
-    let assembly = Assembly.GetExecutingAssembly()
-    let fvi = FileVersionInfo.GetVersionInfo(assembly.Location);
-    tracefn "Paket version %s" fvi.FileVersion
-
 let processWithValidation<'T when 'T :> IArgParserTemplate> validateF commandF command
     args =
     let parser = UnionArgParser.Create<'T>()
@@ -255,6 +250,12 @@ let push (results : ArgParseResults<_>) =
 
 let main() =
     use consoleTrace = Logging.event.Publish |> Observable.subscribe Logging.traceToConsole
+
+    if not silent then
+        let assembly = Assembly.GetExecutingAssembly()
+        let fvi = FileVersionInfo.GetVersionInfo(assembly.Location);
+        tracefn "Paket version %s" fvi.FileVersion
+
     use fileTrace =
         match logFile with
         | Some lf -> setLogFile lf
