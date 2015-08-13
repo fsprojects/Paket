@@ -29,3 +29,11 @@ let ``should serialize silverlight framework identifier correctly``() =
 [<Test>]
 let ``should understand basic dnx``() = 
     FrameworkDetection.Extract("dnxcore50").Value |> shouldEqual (DNXCore(FrameworkVersion.V5_0))
+
+[<Test>]
+let ``should understand xamarinios``() =
+    FrameworkDetection.Extract("xamarinios10").Value |> shouldEqual (XamariniOS)
+
+[<Test>]
+let ``should serialize xamarinios``() =
+    XamariniOS.ToString() |> shouldEqual "xamarinios"

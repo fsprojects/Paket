@@ -118,6 +118,7 @@ let getTargetCondition (target:TargetProfile) =
         | MonoAndroid -> "$(TargetFrameworkIdentifier) == 'MonoAndroid'", ""
         | MonoTouch -> "$(TargetFrameworkIdentifier) == 'MonoTouch'", ""
         | MonoMac -> "$(TargetFrameworkIdentifier) == 'MonoMac'", ""
+        | XamariniOS -> "$(TargetFrameworkIdentifier) == 'Xamarin.iOS'", ""
     | PortableProfile(name, _) -> sprintf "$(TargetFrameworkProfile) == '%O'" name,""
 
 let getCondition (targets : TargetProfile list) =

@@ -77,6 +77,7 @@ type FrameworkIdentifier =
     | MonoAndroid
     | MonoTouch
     | MonoMac
+    | XamariniOS
     | Windows of string
     | WindowsPhoneApp of string
     | WindowsPhoneSilverlight of string
@@ -91,6 +92,7 @@ type FrameworkIdentifier =
         | MonoAndroid -> "monoandroid"
         | MonoTouch -> "monotouch"
         | MonoMac -> "monomac"
+        | XamariniOS -> "xamarinios"
         | Windows v -> "win" + v
         | WindowsPhoneApp v -> "wp" + v
         | WindowsPhoneSilverlight v -> "wp" + v
@@ -103,6 +105,7 @@ type FrameworkIdentifier =
         | MonoAndroid -> [ DotNetFramework FrameworkVersion.V4_5_3 ]
         | MonoTouch -> [ DotNetFramework FrameworkVersion.V4_5_3 ]
         | MonoMac -> [ DotNetFramework FrameworkVersion.V4_5_3 ]
+        | XamariniOS -> [ DotNetFramework FrameworkVersion.V4_5_3 ]
         | DotNetFramework FrameworkVersion.V1 -> [ ]
         | DotNetFramework FrameworkVersion.V1_1 -> [ DotNetFramework FrameworkVersion.V1 ]
         | DotNetFramework FrameworkVersion.V2 -> [ DotNetFramework FrameworkVersion.V1_1 ]
@@ -165,6 +168,7 @@ module FrameworkDetection =
                 | "monotouch" | "monotouch10" | "monotouch1" -> Some MonoTouch
                 | "monoandroid" | "monoandroid10" | "monoandroid1" -> Some MonoAndroid
                 | "monomac" | "monomac10" | "monomac1" -> Some MonoMac
+                | "xamarinios" | "xamarinios10" | "xamarinios1" | "Xamarin.iOS10" -> Some XamariniOS
                 | "sl"  | "sl3" | "sl30" -> Some (Silverlight "v3.0")
                 | "sl4" | "sl40" -> Some (Silverlight "v4.0")
                 | "sl5" | "sl50" -> Some (Silverlight "v5.0")
@@ -272,7 +276,8 @@ module KnownTargetProfiles =
        SilverlightProfiles @
        WindowsPhoneSilverlightProfiles @
        [SinglePlatform(MonoAndroid)
-        SinglePlatform(MonoTouch)        
+        SinglePlatform(MonoTouch)   
+        SinglePlatform(XamariniOS)
         SinglePlatform(WindowsPhoneApp "v8.1")
         PortableProfile("Profile2", [ DotNetFramework FrameworkVersion.V4; Silverlight "v4.0"; Windows "v4.5"; WindowsPhoneSilverlight "v7.0" ])
         PortableProfile("Profile3", [ DotNetFramework FrameworkVersion.V4; Silverlight "v4.0" ])
