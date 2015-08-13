@@ -101,4 +101,11 @@ let ``can support rc version``() =
 [<Test>]
 let ``can support "build" version``() = 
     "0.9.0-build06428" |> isInRange (DependenciesFileParser.parseVersionRequirement ">= 0.9.0-build06428") |> shouldEqual true
+
+
+[<Test>]
+let ``prerelase version of same version is in range``() = 
+    "1.2.3-alpha001" |> isInRange (DependenciesFileParser.parseVersionRequirement ">= 1.2.3 prerelease") |> shouldEqual true
+    "1.2.3-alpha001" |> isInRange (DependenciesFileParser.parseVersionRequirement "1.2.3 prerelease") |> shouldEqual true
+    "1.2.3-alpha001" |> isInRange (DependenciesFileParser.parseVersionRequirement "> 1.2.3 prerelease") |> shouldEqual false
     

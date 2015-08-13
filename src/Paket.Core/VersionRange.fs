@@ -108,10 +108,18 @@ type VersionRequirement =
                  | None -> true
                  | Some pre -> List.exists ((=) pre.Name) list
 
+        let sameVersionWithoutPreRelease v =
+            let sameVersion = 
+                match v.PreRelease with
+                | None -> v.Major = version.Major && v.Minor = version.Minor && v.Patch = version.Patch && v.Build = version.Build
+                | _ -> false
+
+            prerelease <> PreReleaseStatus.No && sameVersion && checkPrerelease prerelease version
+
         match range with
-        | Specific v -> v = version
+        | Specific v -> v = version || sameVersionWithoutPreRelease v
         | OverrideAll v -> v = version
-        | Minimum v -> v = version || (v <= version && checkPrerelease prerelease version)
+        | Minimum v -> v = version || (v <= version && checkPrerelease prerelease version) || sameVersionWithoutPreRelease v
         | GreaterThan v -> v < version && checkPrerelease prerelease version
         | Maximum v -> v = version || (v >= version && checkPrerelease prerelease version)
         | LessThan v -> v > version && checkPrerelease prerelease version
