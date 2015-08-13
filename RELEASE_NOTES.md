@@ -1,3 +1,6 @@
+#### 1.27.1 - 13.08.2015
+* Update specifying version does not pin version in paket.dependencies - https://github.com/fsprojects/Paket/pull/979
+
 #### 1.27.0 - 13.08.2015
 * Version range semantics changed for `>= x.y.z prerelease` - https://github.com/fsprojects/Paket/issues/976
 * BUGFIX: Version trace got lost - https://twitter.com/indy9000/status/631201649219010561
