@@ -153,7 +153,7 @@ type Dependencies(dependenciesFileName: string) =
     member private this.Install(options: InstallerOptions): unit =
         Utils.RunInLockedAccessMode(
             this.RootPath,
-            fun () -> UpdateProcess.SmartInstall(dependenciesFileName, false, None,
+            fun () -> UpdateProcess.SmartInstall(DependenciesFile.ReadFromFile(dependenciesFileName), false, None,
                                                  { UpdaterOptions.Default with Common = options }))
 
     /// Creates a paket.dependencies file with the given text in the current directory and installs it.
