@@ -232,7 +232,8 @@ with
             | Silent -> "Doesn't trace other output than installed packages."
 
 type FindPackageVersionsArgs =
-    | [<CustomCommandLine("name")>][<Mandatory>] Name of string
+    | [<CustomCommandLine("name")>] [<Hidden>] Name of string
+    | [<CustomCommandLine("nuget")>] NuGet of string
     | [<CustomCommandLine("source")>] Source of string
     | [<CustomCommandLine("max")>] MaxResults of int
     | [<AltCommandLine("-s")>] Silent
@@ -240,7 +241,8 @@ with
     interface IArgParserTemplate with
         member this.Usage =
             match this with
-            | Name(_) -> "Name of the Package."
+            | Name(_) -> "Name of the package. [DEPRECATED]"
+            | NuGet(_) -> "Name of the NuGet package."
             | Source(_) -> "Allows to specify the package source feed."
             | MaxResults(_) -> "Maximum number of results."
             | Silent -> "Doesn't trace other output than the search result."

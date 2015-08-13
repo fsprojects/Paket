@@ -1,3 +1,6 @@
+#### 1.27.2 - 13.08.2015
+* Make option names for paket find-package-versions consistent with the other commands - https://github.com/fsprojects/Paket/issues/890
+
 #### 1.27.1 - 13.08.2015
 * Update specifying version does not pin version in paket.dependencies - https://github.com/fsprojects/Paket/pull/979
 

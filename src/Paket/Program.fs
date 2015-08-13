@@ -233,7 +233,10 @@ let showInstalledPackages (results : ArgParseResults<_>) =
 
 let findPackageVersions (results : ArgParseResults<_>) =
     let maxResults = defaultArg (results.TryGetResult <@ FindPackageVersionsArgs.MaxResults @>) 10000
-    let name = results.GetResult <@ FindPackageVersionsArgs.Name @>
+    let name = 
+        match results.TryGetResult <@ FindPackageVersionsArgs.NuGet @> with
+        | Some name -> name
+        | None -> results.GetResult <@ FindPackageVersionsArgs.Name @>
     let source = defaultArg (results.TryGetResult <@ FindPackageVersionsArgs.Source @>) Constants.DefaultNugetStream
     let result =
         NuGetV3.FindVersionsForPackage(None,source,name,maxResults)
