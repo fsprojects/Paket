@@ -1,3 +1,6 @@
+#### 1.27.3 - 13.08.2015
+* Show better error message on conflict - https://github.com/fsprojects/Paket/issues/534
+
 #### 1.27.2 - 13.08.2015
 * Make option names for paket find-package-versions consistent with the other commands - https://github.com/fsprojects/Paket/issues/890
 

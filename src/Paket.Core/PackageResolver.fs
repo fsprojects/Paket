@@ -131,24 +131,35 @@ type Resolution =
 
             let addToError text = errorText := !errorText + Environment.NewLine + text
 
-            let traceUnresolvedPackage (x : PackageRequirement) =
-                let (PackageName name) = x.Name
-                match x.Parent with
+            let traceUnresolvedPackage (r : PackageRequirement) =
+                addToError <| sprintf "  Could not resolve package %O:" r.Name
+
+                closed 
+                |> Seq.filter (fun x -> x.Name = r.Name)
+                |> Seq.iter (fun x ->
+                        let (PackageName name) = x.Name
+                        match x.Parent with
+                        | DependenciesFile _ ->
+                            sprintf "   - Dependencies file requested %s" (x.VersionRequirement.ToString()) |> addToError
+                        | Package(PackageName parentName,version) ->
+                            sprintf "   - %s %s requested %s" parentName (version.ToString()) (x.VersionRequirement.ToString())                                
+                            |> addToError)
+
+                let (PackageName name) = r.Name
+                match r.Parent with
                 | DependenciesFile _ ->
-                    sprintf "    - %s %s" name (x.VersionRequirement.ToString())
+                    sprintf "   - Dependencies file requested %s" (r.VersionRequirement.ToString()) |> addToError
                 | Package(PackageName parentName,version) ->
-                    sprintf "    - %s %s%s       - from %s %s" name (x.VersionRequirement.ToString()) Environment.NewLine 
-                        parentName (version.ToString())
-                |> addToError
+                    sprintf "   - %s %s requested %s" parentName (version.ToString()) (r.VersionRequirement.ToString())
+                    |> addToError
 
             addToError "Error in resolution."
 
             if not closed.IsEmpty then
                 addToError "  Resolved:"
                 for x in closed do
-                   traceUnresolvedPackage x
+                    sprintf "   - %O %s" x.Name (x.VersionRequirement.ToString()) |> addToError
 
-            addToError "  Could not resolve:"
             stillOpen
             |> Seq.head
             |> traceUnresolvedPackage
