@@ -318,8 +318,15 @@ let Resolve(getVersionsF, getPackageDetailsF, globalFrameworkRestrictions, rootD
                         List.filter (fun v -> currentRequirement.VersionRequirement.IsInRange(v,currentRequirement.Parent.IsRootRequirement() |> not)) versions
 
             if !compatibleVersions = [] then
-                if currentRequirement.Parent.IsRootRequirement() then    
-                    let versionText = String.Join(Environment.NewLine + "     - ",List.sort !availableVersions)
+                if currentRequirement.Parent.IsRootRequirement() then
+                    let versionText = 
+                        let versions = 
+                            if !availableVersions = [] then
+                                getAllVersions(currentRequirement.Sources,currentRequirement.Name,currentRequirement.VersionRequirement.Range) 
+                            else 
+                                !availableVersions
+
+                        String.Join(Environment.NewLine + "     - ",List.sortDescending versions)
                     failwithf "Could not find compatible versions for top level dependency:%s     %A%s   Available versions:%s     - %s%s   Try to relax the dependency or allow prereleases." 
                         Environment.NewLine (String.Join(Environment.NewLine + "     ", currentRequirements |> Seq.map string)) Environment.NewLine Environment.NewLine versionText Environment.NewLine
                 else
