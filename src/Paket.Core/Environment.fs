@@ -87,8 +87,15 @@ module PaketEnv =
             Logging.tracefn "Paket is already initialized in %s" rootDirectory.FullName
             ok ()
         | None -> 
+            let sources = [PackageSources.DefaultNugetSource]
+            let serialized = 
+                (sources
+                |> List.map (string >> DependenciesFileSerializer.sourceString))
+                @ [""]
+                |> Array.ofList
+
             let dependenciesFile = 
                 DependenciesFile(
                     Path.Combine(directory.FullName, Constants.DependenciesFileName), 
-                    InstallOptions.Default, [PackageSources.DefaultNugetSource], [], [], [||])
+                    InstallOptions.Default, sources, [], [], serialized)
             dependenciesFile.ToString() |> saveFile dependenciesFile.FileName
