@@ -120,12 +120,12 @@ let cleanupNames (model : PackageResolution) : PackageResolution =
 [<RequireQualifiedAccess>]
 type Resolution =
 | Ok of PackageResolution
-| Conflict of Set<PackageRequirement> * Set<PackageRequirement>
+| Conflict of Set<PackageRequirement> * Set<PackageRequirement> * Set<PackageRequirement>
     with
     member this.GetModelOrFail() =
         match this with
         | Resolution.Ok model -> model
-        | Resolution.Conflict(closed,stillOpen) ->
+        | Resolution.Conflict(closed,stillOpen,requirements) ->
 
             let errorText = ref ""
 
@@ -134,7 +134,8 @@ type Resolution =
             let traceUnresolvedPackage (r : PackageRequirement) =
                 addToError <| sprintf "  Could not resolve package %O:" r.Name
 
-                closed 
+                closed
+                |> Set.union requirements
                 |> Seq.filter (fun x -> x.Name = r.Name)
                 |> Seq.iter (fun x ->
                         let (PackageName name) = x.Name
@@ -271,7 +272,7 @@ let Resolve(getVersionsF, getPackageDetailsF, globalFrameworkRestrictions, rootD
 
                 Resolution.Ok(resolution)
             else
-                Resolution.Conflict(closedRequirements,openRequirements)
+                Resolution.Conflict(closedRequirements,openRequirements,requirements)
         else
             let packageCount = selectedPackageVersions |> List.length
             verbosefn "  %d packages in resolution. %d requirements left" packageCount openRequirements.Count
@@ -389,7 +390,7 @@ let Resolve(getVersionsF, getPackageDetailsF, globalFrameworkRestrictions, rootD
                             (exploredPackage.Unlisted && allUnlisted),improved
                             
                     | Resolution.Ok _ -> allUnlisted,state)
-                        (true,Resolution.Conflict(closedRequirements,openRequirements))
+                        (true,Resolution.Conflict(closedRequirements,openRequirements,requirements))
             
             match tryToImprove false with
             | true,Resolution.Conflict(_) -> tryToImprove true |> snd       
