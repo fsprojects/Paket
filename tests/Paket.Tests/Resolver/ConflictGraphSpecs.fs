@@ -36,7 +36,7 @@ let defaultPackage =
 let ``should analyze graph and report conflict``() = 
     match safeResolve graph [ "A", VersionRange.AtLeast "1.0" ] with
     | Resolution.Ok _ -> failwith "we expected an error"
-    | Resolution.Conflict(_,stillOpen) ->
+    | Resolution.Conflict(_,stillOpen,_) ->
         let conflicting = stillOpen |> Seq.head 
         conflicting.Name |> shouldEqual (PackageName "D")
         conflicting.VersionRequirement.Range |> shouldEqual (VersionRange.Exactly "1.4")
@@ -54,7 +54,7 @@ let graph2 =
 let ``should analyze graph2 and report conflict``() = 
     match safeResolve graph2 [ "A", VersionRange.AtLeast "1.0" ] with
     | Resolution.Ok _ -> failwith "we expected an error"
-    | Resolution.Conflict(_,stillOpen) ->
+    | Resolution.Conflict(_,stillOpen,_) ->
         let conflicting = stillOpen |> Seq.head 
         conflicting.Name |> shouldEqual (PackageName "D")
         conflicting.VersionRequirement.Range |> shouldEqual (VersionRange.Between("1.4", "1.5"))
