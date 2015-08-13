@@ -327,8 +327,9 @@ let Resolve(getVersionsF, getPackageDetailsF, globalFrameworkRestrictions, rootD
                                 !availableVersions
 
                         String.Join(Environment.NewLine + "     - ",List.sortDescending versions)
-                    failwithf "Could not find compatible versions for top level dependency:%s     %A%s   Available versions:%s     - %s%s   Try to relax the dependency or allow prereleases." 
+                    failwithf "Could not find compatible versions for top level dependency:%s     %A%s   Available versions:%s     - %s%s   Try to relax the dependency%s." 
                         Environment.NewLine (String.Join(Environment.NewLine + "     ", currentRequirements |> Seq.map string)) Environment.NewLine Environment.NewLine versionText Environment.NewLine
+                          (if currentRequirement.VersionRequirement.PreReleases = PreReleaseStatus.No then " or allow prereleases" else "")
                 else
                     // boost the conflicting package, in order to solve conflicts faster
                     match conflictHistory.TryGetValue(NormalizedPackageName currentRequirement.Name) with
