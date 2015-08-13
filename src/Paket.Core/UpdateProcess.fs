@@ -118,12 +118,11 @@ let SelectiveUpdate(dependenciesFile : DependenciesFile, updateAll, exclude, for
     lockFile
 
 /// Smart install command
-let SmartInstall(dependenciesFileName, updateAll, exclude, options : UpdaterOptions) =
-    let root = Path.GetDirectoryName dependenciesFileName
-    let projects = InstallProcess.findAllReferencesFiles root |> returnOrFail
-    let dependenciesFile = DependenciesFile.ReadFromFile(dependenciesFileName)
-
+let SmartInstall(dependenciesFile, updateAll, exclude, options : UpdaterOptions) =
     let lockFile = SelectiveUpdate(dependenciesFile, updateAll, exclude, options.Common.Force)
+
+    let root = Path.GetDirectoryName dependenciesFile.FileName
+    let projects = InstallProcess.findAllReferencesFiles root |> returnOrFail
 
     if not options.NoInstall then
         InstallProcess.InstallIntoProjects(
@@ -132,17 +131,19 @@ let SmartInstall(dependenciesFileName, updateAll, exclude, options : UpdaterOpti
 
 /// Update a single package command
 let UpdatePackage(dependenciesFileName, packageName : PackageName, newVersion, options : UpdaterOptions) =
-    match newVersion with
-    | Some v ->
-        DependenciesFile.ReadFromFile(dependenciesFileName)
-            .UpdatePackageVersion(packageName, v)
-            .Save()
-    | None -> tracefn "Updating %s in %s" (packageName.ToString()) dependenciesFileName
+    let dependenciesFile = DependenciesFile.ReadFromFile(dependenciesFileName)
 
-    SmartInstall(dependenciesFileName, false, Some(NormalizedPackageName packageName), options)
+    let dependenciesFile =
+        match newVersion with
+        | Some v -> dependenciesFile.UpdatePackageVersion(packageName, v)
+        | None -> 
+            tracefn "Updating %s in %s" (packageName.ToString()) dependenciesFileName
+            dependenciesFile
+
+    SmartInstall(dependenciesFile, false, Some(NormalizedPackageName packageName), options)
 
 /// Update command
 let Update(dependenciesFileName, options : UpdaterOptions) =
-    let lockFileName = DependenciesFile.FindLockfile dependenciesFileName
+    let dependenciesFile = DependenciesFile.ReadFromFile(dependenciesFileName)
     
-    SmartInstall(dependenciesFileName, true, None, options)
+    SmartInstall(dependenciesFile, true, None, options)
