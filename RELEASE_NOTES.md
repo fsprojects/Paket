@@ -1,7 +1,6 @@
-#### 1.26.2 - 12.08.2015
+#### 1.27.0 - 13.08.2015
+* Version range semantics changed for `>= x.y.z prerelease` - https://github.com/fsprojects/Paket/issues/976
 * BUGFIX: Version trace got lost - https://twitter.com/indy9000/status/631201649219010561
-
-#### 1.26.1 - 11.08.2015
 * BUGFIX: copy_local behaviour was broken - https://github.com/fsprojects/Paket/issues/972
 
 #### 1.26.0 - 10.08.2015

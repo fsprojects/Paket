@@ -100,3 +100,21 @@ let ``should resolve fixed config4``() =
     getVersion resolved.[NormalizedPackageName (PackageName "Castle.Core")] |> shouldEqual "3.2.0"
     getVersion resolved.[NormalizedPackageName (PackageName "Castle.Windsor-log4net")] |> shouldEqual "3.2.0.1"
     getVersion resolved.[NormalizedPackageName (PackageName "Castle.Core-log4net")] |> shouldEqual "3.2.0"
+
+let config5 = """
+source "http://nuget.org/api/v2"
+
+nuget Microsoft.AspNet.Mvc >= 6.0.0 prerelease
+"""
+
+let graph5 = [
+    "Microsoft.AspNet.Mvc","6.0.0-beta6",[]
+    "Microsoft.AspNet.Mvc","6.0.0-beta1",[]
+    "Microsoft.AspNet.Mvc","5.2.3",[]
+]
+
+[<Test>]
+let ``should resolve prerelease config``() = 
+    let cfg = DependenciesFile.FromCode(config5)
+    let resolved = cfg.Resolve(noSha1,VersionsFromGraph graph5, PackageDetailsFromGraph graph5).ResolvedPackages.GetModelOrFail()
+    getVersion resolved.[NormalizedPackageName (PackageName "Microsoft.AspNet.Mvc")] |> shouldEqual "6.0.0-beta6"
