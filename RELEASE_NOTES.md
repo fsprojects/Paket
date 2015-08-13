@@ -1,10 +1,8 @@
-#### 1.27.3 - 13.08.2015
+#### 1.28.0 - 13.08.2015
+* Selective update shows better error message on conflict - https://github.com/fsprojects/Paket/pull/980
+* Paket init adds default feed - https://github.com/fsprojects/Paket/pull/981
 * Show better error message on conflict - https://github.com/fsprojects/Paket/issues/534
-
-#### 1.27.2 - 13.08.2015
 * Make option names for paket find-package-versions consistent with the other commands - https://github.com/fsprojects/Paket/issues/890
-
-#### 1.27.1 - 13.08.2015
 * Update specifying version does not pin version in paket.dependencies - https://github.com/fsprojects/Paket/pull/979
 
 #### 1.27.0 - 13.08.2015
