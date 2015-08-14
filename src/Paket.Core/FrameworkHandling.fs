@@ -82,7 +82,6 @@ type FrameworkIdentifier =
     | WindowsPhoneApp of string
     | WindowsPhoneSilverlight of string
     | Silverlight of string
-    | Portable of FrameworkIdentifier
 
     
     override x.ToString() = 
@@ -98,7 +97,6 @@ type FrameworkIdentifier =
         | WindowsPhoneApp v -> "wp" + v
         | WindowsPhoneSilverlight v -> "wp" + v
         | Silverlight v -> "sl" + v.Replace("v","").Replace(".","")
-        | Portable p -> "portable-" + p.ToString()
 
 
     // returns a list of compatible platforms that this platform also supports
@@ -107,8 +105,7 @@ type FrameworkIdentifier =
         | MonoAndroid -> [ ]
         | MonoTouch -> [ ]
         | MonoMac -> [ ]
-        | XamariniOS -> [ Portable (DotNetFramework FrameworkVersion.V4_5_3) ]
-        | Portable _ -> [ ]
+        | XamariniOS -> [ ]
         | DotNetFramework FrameworkVersion.V1 -> [ ]
         | DotNetFramework FrameworkVersion.V1_1 -> [ DotNetFramework FrameworkVersion.V1 ]
         | DotNetFramework FrameworkVersion.V2 -> [ DotNetFramework FrameworkVersion.V1_1 ]
@@ -171,7 +168,7 @@ module FrameworkDetection =
                 | "monotouch" | "monotouch10" | "monotouch1" -> Some MonoTouch
                 | "monoandroid" | "monoandroid10" | "monoandroid1" -> Some MonoAndroid
                 | "monomac" | "monomac10" | "monomac1" -> Some MonoMac
-                | "xamarinios" | "xamarinios10" | "xamarinios1" | "Xamarin.iOS10" -> Some XamariniOS
+                | "xamarinios" | "xamarinios10" | "xamarinios1" | "xamarin.ios10" -> Some XamariniOS
                 | "sl"  | "sl3" | "sl30" -> Some (Silverlight "v3.0")
                 | "sl4" | "sl40" -> Some (Silverlight "v4.0")
                 | "sl5" | "sl50" -> Some (Silverlight "v5.0")
