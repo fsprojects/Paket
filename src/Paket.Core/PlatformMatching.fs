@@ -81,7 +81,7 @@ let comparePaths (p1 : PathPenalty) (p2 : PathPenalty) =
 let rec findBestMatch (paths : string list) (targetProfile : TargetProfile) = 
     let requiredPlatforms = 
         match targetProfile with
-        | PortableProfile(_, platforms, _) -> platforms
+        | PortableProfile(_, platforms) -> platforms
         | SinglePlatform(platform) -> [ platform ]
 
     match
@@ -94,12 +94,12 @@ let rec findBestMatch (paths : string list) (targetProfile : TargetProfile) =
     | None ->
         // Fallback Portable Library
         KnownTargetProfiles.AllProfiles
-        |> List.choose (function
-            | PortableProfile(_, _, compatible) as p ->
-                if compatible |> List.map SinglePlatform |> List.exists ((=)targetProfile)
-                then findBestMatch paths p
-                else None
-            | _ -> None
+        |> List.choose (fun p ->
+            if p.ProfilesCompatibleWithPortableProfile 
+               |> List.map SinglePlatform 
+               |> List.exists ((=)targetProfile)
+            then findBestMatch paths p
+            else None
         )
         |> List.sortBy (fun x -> (extractPlatforms x).Length) // prefer portable platform whith less platforms
         |> List.tryFind (fun _ -> true)
@@ -133,7 +133,8 @@ let getTargetCondition (target:TargetProfile) =
         | MonoTouch -> "$(TargetFrameworkIdentifier) == 'MonoTouch'", ""
         | MonoMac -> "$(TargetFrameworkIdentifier) == 'MonoMac'", ""
         | XamariniOS -> "$(TargetFrameworkIdentifier) == 'Xamarin.iOS'", ""
-    | PortableProfile(name, _, _) -> sprintf "$(TargetFrameworkProfile) == '%O'" name,""
+        | XamarinMac -> "$(TargetFrameworkIdentifier) == 'Xamarin.Mac'", ""
+    | PortableProfile(name, _) -> sprintf "$(TargetFrameworkProfile) == '%O'" name,""
 
 let getCondition (targets : TargetProfile list) =
     let inline CheckIfFullyInGroup typeName matchF (processed,targets) =

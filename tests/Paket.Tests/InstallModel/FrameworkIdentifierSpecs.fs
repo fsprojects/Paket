@@ -37,3 +37,11 @@ let ``should understand xamarinios``() =
 [<Test>]
 let ``should serialize xamarinios``() =
     XamariniOS.ToString() |> shouldEqual "xamarinios"
+
+[<Test>]
+let ``should understand xamarinmac``() =
+    FrameworkDetection.Extract("xamarinmac20").Value |> shouldEqual (XamarinMac)
+
+[<Test>]
+let ``should serialize xamarinmac``() =
+    XamarinMac.ToString() |> shouldEqual "xamarinmac"
