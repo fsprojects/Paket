@@ -78,18 +78,32 @@ let comparePaths (p1 : PathPenalty) (p2 : PathPenalty) =
     else
         0
 
-let findBestMatch (paths : string list) (targetProfile : TargetProfile) = 
+let rec findBestMatch (paths : string list) (targetProfile : TargetProfile) = 
     let requiredPlatforms = 
         match targetProfile with
-        | PortableProfile(_, platforms) -> platforms
+        | PortableProfile(_, platforms, _) -> platforms
         | SinglePlatform(platform) -> [ platform ]
-    
-    paths 
-    |> List.map (fun path -> path, (getPenalty requiredPlatforms path))
-    |> List.filter (fun (_, penalty) -> penalty < MaxPenalty)
-    |> List.sortWith comparePaths
-    |> List.map fst
-    |> List.tryFind (fun _ -> true)
+
+    match
+        paths 
+        |> List.map (fun path -> path, (getPenalty requiredPlatforms path))
+        |> List.filter (fun (_, penalty) -> penalty < MaxPenalty)
+        |> List.sortWith comparePaths
+        |> List.map fst
+        |> List.tryFind (fun _ -> true) with
+    | None ->
+        // Fallback Portable Library
+        KnownTargetProfiles.AllProfiles
+        |> List.choose (function
+            | PortableProfile(_, _, compatible) as p ->
+                if compatible |> List.map SinglePlatform |> List.exists ((=)targetProfile)
+                then findBestMatch paths p
+                else None
+            | _ -> None
+        )
+        |> List.sortBy (fun x -> (extractPlatforms x).Length) // prefer portable platform whith less platforms
+        |> List.tryFind (fun _ -> true)
+    | path -> path
 
 // For a given list of paths and target profiles return tuples of paths with their supported target profiles.
 // Every target profile will only be listed for own path - the one that best supports it. 
@@ -104,7 +118,7 @@ let getSupportedTargetProfiles (paths : string list) =
     |> List.map (fun (path, group) -> path, List.map snd group)
     |> Map.ofList
 
-let rec getTargetCondition (target:TargetProfile) =
+let getTargetCondition (target:TargetProfile) =
     match target with
     | SinglePlatform(platform) -> 
         match platform with
@@ -119,7 +133,7 @@ let rec getTargetCondition (target:TargetProfile) =
         | MonoTouch -> "$(TargetFrameworkIdentifier) == 'MonoTouch'", ""
         | MonoMac -> "$(TargetFrameworkIdentifier) == 'MonoMac'", ""
         | XamariniOS -> "$(TargetFrameworkIdentifier) == 'Xamarin.iOS'", ""
-    | PortableProfile(name, _) -> sprintf "$(TargetFrameworkProfile) == '%O'" name,""
+    | PortableProfile(name, _, _) -> sprintf "$(TargetFrameworkProfile) == '%O'" name,""
 
 let getCondition (targets : TargetProfile list) =
     let inline CheckIfFullyInGroup typeName matchF (processed,targets) =

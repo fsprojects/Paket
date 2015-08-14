@@ -22,4 +22,4 @@ let ``should detect silverlight framework in new silverlight project2``() =
 [<Test>]
 let ``should detect portable profile``() =
     ProjectFile.Load("./ProjectFile/TestData/FSharp.Core.Fluent-3.1.fsprojtest").Value.GetTargetProfile()
-    |> shouldEqual (PortableProfile("Profile259", [ DotNetFramework FrameworkVersion.V4_5; Windows "v4.5"; WindowsPhoneSilverlight "v8.0"; WindowsPhoneApp "v8.1" ]))
+    |> shouldEqual (PortableProfile("Profile259", [ DotNetFramework FrameworkVersion.V4_5; Windows "v4.5"; WindowsPhoneSilverlight "v8.0"; WindowsPhoneApp "v8.1" ], [ ]))
