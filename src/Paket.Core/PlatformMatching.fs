@@ -104,7 +104,7 @@ let getSupportedTargetProfiles (paths : string list) =
     |> List.map (fun (path, group) -> path, List.map snd group)
     |> Map.ofList
 
-let getTargetCondition (target:TargetProfile) =
+let rec getTargetCondition (target:TargetProfile) =
     match target with
     | SinglePlatform(platform) -> 
         match platform with
@@ -119,6 +119,7 @@ let getTargetCondition (target:TargetProfile) =
         | MonoTouch -> "$(TargetFrameworkIdentifier) == 'MonoTouch'", ""
         | MonoMac -> "$(TargetFrameworkIdentifier) == 'MonoMac'", ""
         | XamariniOS -> "$(TargetFrameworkIdentifier) == 'Xamarin.iOS'", ""
+        | Portable p -> getTargetCondition (SinglePlatform p)
     | PortableProfile(name, _) -> sprintf "$(TargetFrameworkProfile) == '%O'" name,""
 
 let getCondition (targets : TargetProfile list) =

@@ -82,6 +82,7 @@ type FrameworkIdentifier =
     | WindowsPhoneApp of string
     | WindowsPhoneSilverlight of string
     | Silverlight of string
+    | Portable of FrameworkIdentifier
 
     
     override x.ToString() = 
@@ -97,15 +98,17 @@ type FrameworkIdentifier =
         | WindowsPhoneApp v -> "wp" + v
         | WindowsPhoneSilverlight v -> "wp" + v
         | Silverlight v -> "sl" + v.Replace("v","").Replace(".","")
+        | Portable p -> "portable-" + p.ToString()
 
 
     // returns a list of compatible platforms that this platform also supports
     member x.SupportedPlatforms =
         match x with
-        | MonoAndroid -> [ DotNetFramework FrameworkVersion.V4_5_3 ]
-        | MonoTouch -> [ DotNetFramework FrameworkVersion.V4_5_3 ]
-        | MonoMac -> [ DotNetFramework FrameworkVersion.V4_5_3 ]
-        | XamariniOS -> [ DotNetFramework FrameworkVersion.V4_5_3 ]
+        | MonoAndroid -> [ ]
+        | MonoTouch -> [ ]
+        | MonoMac -> [ ]
+        | XamariniOS -> [ Portable (DotNetFramework FrameworkVersion.V4_5_3) ]
+        | Portable _ -> [ ]
         | DotNetFramework FrameworkVersion.V1 -> [ ]
         | DotNetFramework FrameworkVersion.V1_1 -> [ DotNetFramework FrameworkVersion.V1 ]
         | DotNetFramework FrameworkVersion.V2 -> [ DotNetFramework FrameworkVersion.V1_1 ]
