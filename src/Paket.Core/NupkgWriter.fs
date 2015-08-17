@@ -228,8 +228,13 @@ let Write (core : CompleteCoreInfo) optional workingDir outputDir =
         exclusions |> List.exists (fun f -> f path)
 
     let ensureValidName (target: string) =
-        Uri.EscapeDataString(target.Replace("\\", "/")).Replace("%5C", "/").Replace("%2F", "/")
-          |> fun s -> if s.StartsWith("./") then s.Remove(0,2) else s
+        let escapedTargetParts = target.Replace("\\", "/").Split('/') |> Array.map Uri.EscapeDataString
+        let escapedTarget = String.Join("/",escapedTargetParts)
+
+        let uri1 = Uri(escapedTarget, UriKind.Relative)
+        let uri2 = Uri(uri1.GetComponents(UriComponents.SerializationInfoString, UriFormat.SafeUnescaped), UriKind.Relative)
+        
+        uri2.GetComponents(UriComponents.SerializationInfoString, UriFormat.UriEscaped)
 
     let addEntry path writerF =
         if entries.Contains(path) then () else
