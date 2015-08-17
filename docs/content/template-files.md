@@ -155,3 +155,6 @@ In a project file, the following dependencies will be added:
 
 * any paket dependency with the range specified in the [`paket.dependencies` file](dependencies-file.html).
 * any project reference with a matching paket.template file with a minimum version requirement of the version currently being packaged.
+
+### Comments
+A line starting with a # is considered a comment and will be ignored by the parser
