@@ -105,7 +105,7 @@ let getAllVersionsFromNuGet2(auth,nugetURL,package) =
 let getAllVersions(auth, nugetURL, package) = 
     let tryNuGetV3() = async { 
         try
-            let! data = NuGetV3.findVersionsForPackage(auth, nugetURL, package, 100000)
+            let! data = NuGetV3.findVersionsForPackage(auth, nugetURL, package, true, 100000)
 
             return data
         with

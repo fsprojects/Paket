@@ -239,7 +239,7 @@ let findPackageVersions (results : ParseResults<_>) =
         | None -> results.GetResult <@ FindPackageVersionsArgs.Name @>
     let source = defaultArg (results.TryGetResult <@ FindPackageVersionsArgs.Source @>) Constants.DefaultNugetStream
     let result =
-        NuGetV3.FindVersionsForPackage(None,source,name,maxResults)
+        NuGetV3.FindVersionsForPackage(None,source,name,true,maxResults)
         |> Async.RunSynchronously
 
     for p in result do

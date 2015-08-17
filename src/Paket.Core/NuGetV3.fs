@@ -58,11 +58,11 @@ let getSearchAPI(auth,nugetUrl) =
 let extractVersions(response:string) =
     JsonConvert.DeserializeObject<JSONVersionData>(response).Data
 
-let internal findVersionsForPackage(auth, nugetURL, package, maxResults) =
+let internal findVersionsForPackage(auth, nugetURL, package, includingPrereleases, maxResults) =
     async {
         match getSearchAPI(auth,nugetURL) with        
         | Some url ->
-            let! response = safeGetFromUrl(auth,sprintf "%s?id=%s&take=%d" url package (max maxResults 100000)) // Nuget is showing old versions first
+            let! response = safeGetFromUrl(auth,sprintf "%s?id=%s&take=%d%s" url package (max maxResults 100000) (if includingPrereleases then "&prerelease=true" else "")) // Nuget is showing old versions first
             match response with
             | Some text ->
                 let versions =
@@ -78,9 +78,9 @@ let internal findVersionsForPackage(auth, nugetURL, package, maxResults) =
     }
 
 /// Uses the NuGet v3 autocomplete service to retrieve all package versions for the given package.
-let FindVersionsForPackage(auth, nugetURL, package, maxResults) =
+let FindVersionsForPackage(auth, nugetURL, package, includingPrereleases, maxResults) =
     async {
-        let! raw = findVersionsForPackage(auth, nugetURL, package, maxResults)
+        let! raw = findVersionsForPackage(auth, nugetURL, package, includingPrereleases, maxResults)
         match raw with 
         | Some versions -> return versions
         | None -> return [||]
