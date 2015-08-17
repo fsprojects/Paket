@@ -122,6 +122,20 @@ let expected = """
       </Reference>
     </ItemGroup>
   </When>
+  <When Condition="($(TargetFrameworkIdentifier) == 'Xamarin.iOS') Or ($(TargetFrameworkIdentifier) == 'Xamarin.Mac')">
+    <ItemGroup>
+      <Reference Include="System.Net.Http.Extensions">
+        <HintPath>..\..\..\Microsoft.Net.Http\lib\portable-net45+monoandroid10+monotouch10+xamarinios10+Xamarin.Mac20\System.Net.Http.Extensions.dll</HintPath>
+        <Private>True</Private>
+        <Paket>True</Paket>
+      </Reference>
+      <Reference Include="System.Net.Http.Primitives">
+        <HintPath>..\..\..\Microsoft.Net.Http\lib\portable-net45+monoandroid10+monotouch10+xamarinios10+Xamarin.Mac20\System.Net.Http.Primitives.dll</HintPath>
+        <Private>True</Private>
+        <Paket>True</Paket>
+      </Reference>
+    </ItemGroup>
+  </When>
   <When Condition="($(TargetFrameworkProfile) == 'Profile7') Or ($(TargetFrameworkProfile) == 'Profile44')">
     <ItemGroup>
       <Reference Include="System.Net.Http.Extensions">
@@ -142,11 +156,15 @@ let expected = """
 let ``should generate Xml for System.Net.Http 2.2.8``() = 
     let model =     
         InstallModel.CreateFromLibs(PackageName "System.Net.Http", SemVer.Parse "2.2.8", [],
-            [ @"..\Microsoft.Net.Http\lib\monoandroid\System.Net.Http.Extensions.dll" 
+            [ 
+              @"..\Microsoft.Net.Http\lib\monoandroid\System.Net.Http.Extensions.dll" 
               @"..\Microsoft.Net.Http\lib\monoandroid\System.Net.Http.Primitives.dll" 
               
               @"..\Microsoft.Net.Http\lib\monotouch\System.Net.Http.Extensions.dll" 
-              @"..\Microsoft.Net.Http\lib\monotouch\System.Net.Http.Primitives.dll" 
+              @"..\Microsoft.Net.Http\lib\monotouch\System.Net.Http.Primitives.dll"
+
+              @"..\Microsoft.Net.Http\lib\portable-net45+monoandroid10+monotouch10+xamarinios10+Xamarin.Mac20\System.Net.Http.Extensions.dll" 
+              @"..\Microsoft.Net.Http\lib\portable-net45+monoandroid10+monotouch10+xamarinios10+Xamarin.Mac20\System.Net.Http.Primitives.dll"               
 
               @"..\Microsoft.Net.Http\lib\net40\System.Net.Http.dll" 
               @"..\Microsoft.Net.Http\lib\net40\System.Net.Http.Extensions.dll" 
@@ -167,7 +185,8 @@ let ``should generate Xml for System.Net.Http 2.2.8``() =
               @"..\Microsoft.Net.Http\lib\win8\System.Net.Http.Primitives.dll"
               
               @"..\Microsoft.Net.Http\lib\wpa81\System.Net.Http.Extensions.dll" 
-              @"..\Microsoft.Net.Http\lib\wpa81\System.Net.Http.Primitives.dll" ],
+              @"..\Microsoft.Net.Http\lib\wpa81\System.Net.Http.Primitives.dll" 
+              ],
               [],
               Nuspec.All)
 

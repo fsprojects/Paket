@@ -30,6 +30,18 @@ let expected = """
       </Reference>
     </ItemGroup>
   </When>
+  <When Condition="$(TargetFrameworkIdentifier) == '.NETFramework' And ($(TargetFrameworkVersion) == 'v4.5' Or $(TargetFrameworkVersion) == 'v4.5.1' Or $(TargetFrameworkVersion) == 'v4.5.2' Or $(TargetFrameworkVersion) == 'v4.5.3' Or $(TargetFrameworkVersion) == 'v4.6')">
+    <ItemGroup>
+      <Reference Include="System.Reactive.Windows.Threading">
+        <HintPath>..\..\..\Rx-XAML\lib\net45\System.Reactive.Windows.Threading.dll</HintPath>
+        <Private>True</Private>
+        <Paket>True</Paket>
+      </Reference>
+      <Reference Include="WindowsBase">
+        <Paket>True</Paket>
+      </Reference>
+    </ItemGroup>
+  </When>
   <When Condition="$(TargetFrameworkIdentifier) == 'Silverlight' And $(TargetFrameworkVersion) == 'v5.0'">
     <ItemGroup>
       <Reference Include="System.Reactive.Windows.Threading">
@@ -59,18 +71,6 @@ let expected = """
       <Reference Include="System.Reactive.Windows.Threading">
         <HintPath>..\..\..\Rx-XAML\lib\windowsphone8\System.Reactive.Windows.Threading.dll</HintPath>
         <Private>True</Private>
-        <Paket>True</Paket>
-      </Reference>
-    </ItemGroup>
-  </When>
-  <When Condition="($(TargetFrameworkIdentifier) == '.NETFramework' And ($(TargetFrameworkVersion) == 'v4.5' Or $(TargetFrameworkVersion) == 'v4.5.1' Or $(TargetFrameworkVersion) == 'v4.5.2' Or $(TargetFrameworkVersion) == 'v4.5.3' Or $(TargetFrameworkVersion) == 'v4.6')) Or ($(TargetFrameworkIdentifier) == 'MonoAndroid') Or ($(TargetFrameworkIdentifier) == 'MonoTouch')">
-    <ItemGroup>
-      <Reference Include="System.Reactive.Windows.Threading">
-        <HintPath>..\..\..\Rx-XAML\lib\net45\System.Reactive.Windows.Threading.dll</HintPath>
-        <Private>True</Private>
-        <Paket>True</Paket>
-      </Reference>
-      <Reference Include="WindowsBase">
         <Paket>True</Paket>
       </Reference>
     </ItemGroup>

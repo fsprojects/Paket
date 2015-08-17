@@ -538,3 +538,10 @@ let ``should filter .NET 4.5 dlls for System.Net.Http 2.2.8``() =
 
     model.GetLibReferences(SinglePlatform(DotNetFramework(FrameworkVersion.V4_5_2)))
     |> shouldEqual expected
+
+[<Test>]
+let ``should understand xamarinios``() = 
+    let model = emptymodel.ApplyFrameworkRestrictions ([FrameworkRestriction.Exactly (XamariniOS)])
+    let model = model.AddReferences [ @"..\FSharp.Core\lib\portable-net45+monoandroid10+monotouch10+xamarinios10\FSharp.Core.dll" ] 
+
+    model.GetLibReferences(SinglePlatform (XamariniOS)) |> shouldContain @"..\FSharp.Core\lib\portable-net45+monoandroid10+monotouch10+xamarinios10\FSharp.Core.dll"

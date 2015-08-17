@@ -9,19 +9,19 @@ open Paket.Requirements
 
 let expected = """
 <Choose xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <When Condition="$(TargetFrameworkIdentifier) == 'Silverlight' And ($(TargetFrameworkVersion) == 'v4.0' Or $(TargetFrameworkVersion) == 'v5.0')">
+  <When Condition="$(TargetFrameworkIdentifier) == '.NETFramework' And ($(TargetFrameworkVersion) == 'v4.0' Or $(TargetFrameworkVersion) == 'v4.5' Or $(TargetFrameworkVersion) == 'v4.5.1' Or $(TargetFrameworkVersion) == 'v4.5.2' Or $(TargetFrameworkVersion) == 'v4.5.3' Or $(TargetFrameworkVersion) == 'v4.6')">
     <ItemGroup>
       <Reference Include="System.Spatial">
-        <HintPath>..\..\..\System.Spatial\lib\sl4\System.Spatial.dll</HintPath>
+        <HintPath>..\..\..\System.Spatial\lib\net40\System.Spatial.dll</HintPath>
         <Private>True</Private>
         <Paket>True</Paket>
       </Reference>
     </ItemGroup>
   </When>
-  <When Condition="($(TargetFrameworkIdentifier) == '.NETFramework' And ($(TargetFrameworkVersion) == 'v4.0' Or $(TargetFrameworkVersion) == 'v4.5' Or $(TargetFrameworkVersion) == 'v4.5.1' Or $(TargetFrameworkVersion) == 'v4.5.2' Or $(TargetFrameworkVersion) == 'v4.5.3' Or $(TargetFrameworkVersion) == 'v4.6')) Or ($(TargetFrameworkIdentifier) == 'MonoAndroid') Or ($(TargetFrameworkIdentifier) == 'MonoTouch')">
+  <When Condition="$(TargetFrameworkIdentifier) == 'Silverlight' And ($(TargetFrameworkVersion) == 'v4.0' Or $(TargetFrameworkVersion) == 'v5.0')">
     <ItemGroup>
       <Reference Include="System.Spatial">
-        <HintPath>..\..\..\System.Spatial\lib\net40\System.Spatial.dll</HintPath>
+        <HintPath>..\..\..\System.Spatial\lib\sl4\System.Spatial.dll</HintPath>
         <Private>True</Private>
         <Paket>True</Paket>
       </Reference>

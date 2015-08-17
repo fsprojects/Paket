@@ -78,18 +78,32 @@ let comparePaths (p1 : PathPenalty) (p2 : PathPenalty) =
     else
         0
 
-let findBestMatch (paths : string list) (targetProfile : TargetProfile) = 
+let rec findBestMatch (paths : string list) (targetProfile : TargetProfile) = 
     let requiredPlatforms = 
         match targetProfile with
         | PortableProfile(_, platforms) -> platforms
         | SinglePlatform(platform) -> [ platform ]
-    
-    paths 
-    |> List.map (fun path -> path, (getPenalty requiredPlatforms path))
-    |> List.filter (fun (_, penalty) -> penalty < MaxPenalty)
-    |> List.sortWith comparePaths
-    |> List.map fst
-    |> List.tryFind (fun _ -> true)
+
+    match
+        paths 
+        |> List.map (fun path -> path, (getPenalty requiredPlatforms path))
+        |> List.filter (fun (_, penalty) -> penalty < MaxPenalty)
+        |> List.sortWith comparePaths
+        |> List.map fst
+        |> List.tryFind (fun _ -> true) with
+    | None ->
+        // Fallback Portable Library
+        KnownTargetProfiles.AllProfiles
+        |> List.choose (fun p ->
+            if p.ProfilesCompatibleWithPortableProfile 
+               |> List.map SinglePlatform 
+               |> List.exists ((=)targetProfile)
+            then findBestMatch paths p
+            else None
+        )
+        |> List.sortBy (fun x -> (extractPlatforms x).Length) // prefer portable platform whith less platforms
+        |> List.tryFind (fun _ -> true)
+    | path -> path
 
 // For a given list of paths and target profiles return tuples of paths with their supported target profiles.
 // Every target profile will only be listed for own path - the one that best supports it. 
@@ -118,6 +132,8 @@ let getTargetCondition (target:TargetProfile) =
         | MonoAndroid -> "$(TargetFrameworkIdentifier) == 'MonoAndroid'", ""
         | MonoTouch -> "$(TargetFrameworkIdentifier) == 'MonoTouch'", ""
         | MonoMac -> "$(TargetFrameworkIdentifier) == 'MonoMac'", ""
+        | XamariniOS -> "$(TargetFrameworkIdentifier) == 'Xamarin.iOS'", ""
+        | XamarinMac -> "$(TargetFrameworkIdentifier) == 'Xamarin.Mac'", ""
     | PortableProfile(name, _) -> sprintf "$(TargetFrameworkProfile) == '%O'" name,""
 
 let getCondition (targets : TargetProfile list) =
