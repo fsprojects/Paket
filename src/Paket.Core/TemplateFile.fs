@@ -34,6 +34,11 @@ module private TemplateParser =
             Some (!! 1 m, m.Groups.[2].Value.Trim())
         | false -> None
 
+    let comment = Regex(@"^\s*#", RegexOptions.Compiled)
+    let private Comment line =
+        let m = comment.Match line
+        m.Success
+
     let private indented = Regex(@"^\s+(.*)", RegexOptions.Compiled)
     let private (|Indented|_|) line =
         let i = indented.Match line
@@ -54,6 +59,8 @@ module private TemplateParser =
         | { Remaining = h::t } ->
             match h with
             | empty when String.IsNullOrWhiteSpace empty ->
+                inner { state with Line = state.Line + 1; Remaining = t }
+            | comment when Comment comment ->
                 inner { state with Line = state.Line + 1; Remaining = t }
             | Indented _ -> Choice2Of2 <| sprintf "Indented block with no name line %d" state.Line
             | MultiToken (key, value) ->
@@ -224,11 +231,12 @@ module internal TemplateFile =
     let private fromReg = Regex("from (?<from>.*)", RegexOptions.Compiled)
     let private toReg = Regex("to (?<to>.*)", RegexOptions.Compiled)
     let private isExclude = Regex("\s*!\S", RegexOptions.Compiled)
-
+    let private isComment = Regex("\s*#", RegexOptions.Compiled)
     let private getFiles (map : Map<string, string>) = 
         Map.tryFind "files" map
         |> Option.map (fun d -> d.Split '\n')
         |> Option.map (Array.filter (fun l -> l |> isExclude.IsMatch |> not))
+        |> Option.map (Array.filter (fun l -> l |> isComment.IsMatch |> not))
         |> Option.map 
                (Seq.map 
                     (fun (line:string) -> 
@@ -244,6 +252,7 @@ module internal TemplateFile =
         Map.tryFind "files" map
         |> Option.map (fun d -> d.Split '\n')
         |> Option.map (Array.filter isExclude.IsMatch)
+        |> Option.map (Array.filter (fun l -> l |> isComment.IsMatch |> not))
         |> Option.map 
                (Seq.map 
                     (fun (line:string) -> line.Trim().TrimStart('!')))
