@@ -1,3 +1,9 @@
+#### 1.29.0 - 17.08.2015
+* Xamarin iOS + Mac Support - https://github.com/fsprojects/Paket/pull/980
+* Handling fallbacks mainly for Xamarin against PCLs - https://github.com/fsprojects/Paket/pull/980
+* Removed supported platforms for MonoTouch and MonoAndroid - https://github.com/fsprojects/Paket/pull/980
+* Paket only creates requirements from lock file when updating a single package - https://github.com/fsprojects/Paket/pull/985
+
 #### 1.28.0 - 13.08.2015
 * Selective update shows better error message on conflict - https://github.com/fsprojects/Paket/pull/980
 * Paket init adds default feed - https://github.com/fsprojects/Paket/pull/981
