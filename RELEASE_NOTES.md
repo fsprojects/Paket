@@ -1,4 +1,4 @@
-#### 1.29.0 - 17.08.2015
+#### 1.29.1 - 17.08.2015
 * Xamarin iOS + Mac Support - https://github.com/fsprojects/Paket/pull/980
 * Handling fallbacks mainly for Xamarin against PCLs - https://github.com/fsprojects/Paket/pull/980
 * Removed supported platforms for MonoTouch and MonoAndroid - https://github.com/fsprojects/Paket/pull/980
