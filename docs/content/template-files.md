@@ -157,4 +157,5 @@ In a project file, the following dependencies will be added:
 * any project reference with a matching paket.template file with a minimum version requirement of the version currently being packaged.
 
 ### Comments
-A line starting with a # is considered a comment and will be ignored by the parser
+
+A line starting with a # or // is considered a comment and will be ignored by the parser.

@@ -521,6 +521,7 @@ let ``skip comment lines``() =
     let text = """type file
 # comment here
 # comment here
+// a comment with slashes
 id GROSSWEBER.Angebot.Contracts
 version 1.0
 # comment here
@@ -549,6 +550,7 @@ copyright
 
 files
     # another comment here
+    // a comment with slashes
   ../../build/bin/Angebot.Contracts.dll ==> lib
     # another comment here
   ../../build/bin/Angebot.Contracts.pdb ==> lib
