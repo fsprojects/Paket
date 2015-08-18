@@ -123,6 +123,8 @@ type ProjectFile =
         for node in nodesToDelete do
             node.ParentNode.RemoveChild(node) |> ignore
 
+        Seq.isEmpty nodesToDelete |> not
+
     member this.FindPaketNodes(name) = this.FindNodes true name
 
     member this.GetFrameworkAssemblies() = 
@@ -204,9 +206,10 @@ type ProjectFile =
                   paketNode.ParentNode.RemoveChild(paketNode) |> ignore
             | _ -> ()
 
-        this.DeleteIfEmpty("PropertyGroup")
-        this.DeleteIfEmpty("ItemGroup")
-        this.DeleteIfEmpty("Choose")
+        this.DeleteIfEmpty("PropertyGroup") |> ignore
+        this.DeleteIfEmpty("ItemGroup") |> ignore
+        this.DeleteIfEmpty("When") |> ignore
+        this.DeleteIfEmpty("Choose") |> ignore
 
     member this.GetCustomModelNodes(model:InstallModel) =
         let libs =
@@ -395,8 +398,9 @@ type ProjectFile =
             with
             | _ -> ()
 
-        ["ItemGroup";"When";"Otherwise";"Choose";"When";"Choose"]
-        |> List.iter this.DeleteIfEmpty
+        while List.exists this.DeleteIfEmpty ["ItemGroup";"When";"Otherwise";"Choose"] do
+            ()
+        
 
     member this.UpdateReferences(completeModel: Map<NormalizedPackageName,InstallModel>, usedPackages : Map<NormalizedPackageName,InstallSettings>, hard) =
         this.RemovePaketNodes() 

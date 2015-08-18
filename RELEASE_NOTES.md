@@ -1,3 +1,6 @@
+#### 1.31.0 - 18.08.2015
+* BUGFIX: Delete old nodes from proj files - https://github.com/fsprojects/Paket/issues/992
+
 #### 1.30.0 - 18.08.2015
 * BUGFIX: Include prereleases when using NuGet3 - https://github.com/fsprojects/Paket/issues/988
 * paket.template allows comments with # or // - https://github.com/fsprojects/Paket/pull/991

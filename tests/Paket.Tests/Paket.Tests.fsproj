@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
@@ -234,6 +234,9 @@
     </None>
     <None Include="ProjectFile\TestData\Empty.fsprojtest">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>                                   
+    <None Include="ProjectFile\TestData\EmptyWithOldStuff.fsprojtest">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Include="ProjectFile\TestData\FrameworkAssemblies.fsprojtest">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
@@ -273,7 +276,8 @@
     <Compile Include="InstallModel\Xml\Plossum.fs" />
     <Compile Include="InstallModel\Xml\System.Spatial.fs" />
     <Compile Include="InstallModel\Xml\FantomasLib.fs" />
-    <Compile Include="InstallModel\Xml\Fuchu.fs" />
+    <Compile Include="InstallModel\Xml\Fuchu.fs" />    
+    <Compile Include="InstallModel\Xml\RemovesOldNodes.fs" />
     <Compile Include="InstallModel\Xml\SystemNetHttp.fs" />
     <Compile Include="InstallModel\Xml\SystemNetHttpForNet4.fs" />
     <Compile Include="InstallModel\Xml\SystemNetHttpWithFrameworkReferences.fs" />
