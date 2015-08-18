@@ -1,7 +1,8 @@
-#### 1.29.2 - 17.08.2015
+#### 1.30.0 - 18.08.2015
 * BUGFIX: Include prereleases when using NuGet3 - https://github.com/fsprojects/Paket/issues/988
+* paket.template allows comments with # or // - https://github.com/fsprojects/Paket/pull/991
 
-#### 1.29.1 - 17.08.2015
+#### 1.29.0 - 17.08.2015
 * Xamarin iOS + Mac Support - https://github.com/fsprojects/Paket/pull/980
 * Handling fallbacks mainly for Xamarin against PCLs - https://github.com/fsprojects/Paket/pull/980
 * Removed supported platforms for MonoTouch and MonoAndroid - https://github.com/fsprojects/Paket/pull/980
