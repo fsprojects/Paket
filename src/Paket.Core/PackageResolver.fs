@@ -352,6 +352,7 @@ let Resolve(getVersionsF, getPackageDetailsF, globalFrameworkRestrictions, rootD
                         tracefn "  Conflicts with:"
                     
                         closedRequirements
+                        |> Set.union requirements
                         |> Seq.filter (fun d -> d.Name = currentRequirement.Name)
                         |> fun xs -> String.Join(Environment.NewLine + "    ",xs)
                         |> tracefn "    %s"
