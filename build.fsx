@@ -108,10 +108,10 @@ let genCSAssemblyInfo (projectPath) =
 
 // Generate assembly info files with the right version & up-to-date information
 Target "AssemblyInfo" (fun _ ->
-  let fsProjs =  !! "src/**/*.fsproj"
-  let csProjs = !! "src/**/*.csproj"
-  fsProjs |> Seq.iter genFSAssemblyInfo
-  csProjs |> Seq.iter genCSAssemblyInfo
+    let fsProjs =  !! "src/**/*.fsproj"
+    let csProjs = !! "src/**/*.csproj"
+    fsProjs |> Seq.iter genFSAssemblyInfo
+    csProjs |> Seq.iter genCSAssemblyInfo
 )
 
 // --------------------------------------------------------------------------------------
