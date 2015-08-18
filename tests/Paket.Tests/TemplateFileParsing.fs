@@ -514,3 +514,75 @@ files
         from2 |> shouldEqual "../../build/bin/Angebot.Contracts.pdb"
         to2 |> shouldEqual "lib"
     | _ ->  Assert.Fail()
+
+
+[<Test>]
+let ``skip comment lines``() =
+    let text = """type file
+# comment here
+# comment here
+id GROSSWEBER.Angebot.Contracts
+version 1.0
+# comment here
+title
+  grossweber.com Angebot contracts
+
+description
+  Contracts to talk to the Angebot service
+
+# another comment here
+
+authors
+  GROSSWEBER
+
+owners
+  GROSSWEBER
+
+projectUrl
+  http://grossweber.com/
+
+iconUrl
+  http://grossweber.com/favicon.ico
+
+copyright
+  Copyright GROSSWEBER. All rights reserved.
+
+files
+    # another comment here
+  ../../build/bin/Angebot.Contracts.dll ==> lib
+    # another comment here
+  ../../build/bin/Angebot.Contracts.pdb ==> lib
+    # another comment here
+  !../../build/bin/Angebot.Contracts.xml
+    # another comment here
+
+"""
+    let sut =
+        TemplateFile.Parse("file1.template", None, strToStream text)
+        |> returnOrFail
+        |> function
+           | CompleteInfo (_, opt)
+           | ProjectInfo (_, opt) -> opt
+
+    sut.Title |> shouldEqual (Some "grossweber.com Angebot contracts")
+    sut.Copyright |> shouldEqual (Some "Copyright GROSSWEBER. All rights reserved.")
+    sut.Summary |> shouldEqual None
+    sut.IconUrl |> shouldEqual (Some "http://grossweber.com/favicon.ico")
+    sut.LicenseUrl |> shouldEqual None
+    sut.ProjectUrl |> shouldEqual (Some "http://grossweber.com/")
+    sut.Tags |> shouldEqual []
+    sut.Owners |> shouldEqual ["GROSSWEBER"]
+    sut.RequireLicenseAcceptance |> shouldEqual false
+    sut.DevelopmentDependency |> shouldEqual false
+    sut.Language |> shouldEqual None
+
+    match sut.Files with
+    | [from1,to1;from2,to2] ->
+        from1 |> shouldEqual "../../build/bin/Angebot.Contracts.dll"
+        to1 |> shouldEqual "lib"
+        from2 |> shouldEqual "../../build/bin/Angebot.Contracts.pdb"
+        to2 |> shouldEqual "lib"
+    | _ ->  Assert.Fail()
+
+    Assert.AreEqual(1, sut.FilesExcluded.Length)
+    Assert.AreEqual("../../build/bin/Angebot.Contracts.xml", sut.FilesExcluded.[0])    
