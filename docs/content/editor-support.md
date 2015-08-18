@@ -26,7 +26,7 @@
 * Features:
   * Solution Explorer Extensions for Paket files
   * Paket commands in Solution Explorer menu  
-  * Syntax highlighting in `paket.dependencies`
+  * IntelliSense in `paket.dependencies` and `paket.references`
 
 <a href="img/paket.visualstudio.png"><img src="img/paket.visualstudio.png" alt="Paket in VisualStudio" title="Paket in VisualStudio" width="500"></a>
 
