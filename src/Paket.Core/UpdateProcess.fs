@@ -131,6 +131,11 @@ let SmartInstall(dependenciesFile, updateAll, exclude, options : UpdaterOptions)
 let UpdatePackage(dependenciesFileName, packageName : PackageName, newVersion, options : UpdaterOptions) =
     let dependenciesFile = DependenciesFile.ReadFromFile(dependenciesFileName)
 
+    if not <| dependenciesFile.HasPackage(packageName) then
+        packageName
+        |> string
+        |> failwithf "Package %s was not found in paket.dependencies."
+
     let dependenciesFile =
         match newVersion with
         | Some v -> dependenciesFile.UpdatePackageVersion(packageName, v)
