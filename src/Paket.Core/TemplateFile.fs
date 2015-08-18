@@ -34,7 +34,7 @@ module private TemplateParser =
             Some (!! 1 m, m.Groups.[2].Value.Trim())
         | false -> None
 
-    let comment = Regex(@"^\s*#", RegexOptions.Compiled)
+    let private comment = Regex(@"^\s*(#|(\/\/))", RegexOptions.Compiled)
     let private Comment line =
         let m = comment.Match line
         m.Success
@@ -231,7 +231,7 @@ module internal TemplateFile =
     let private fromReg = Regex("from (?<from>.*)", RegexOptions.Compiled)
     let private toReg = Regex("to (?<to>.*)", RegexOptions.Compiled)
     let private isExclude = Regex("\s*!\S", RegexOptions.Compiled)
-    let private isComment = Regex("\s*#", RegexOptions.Compiled)
+    let private isComment = Regex(@"^\s*(#|(\/\/))", RegexOptions.Compiled)
     let private getFiles (map : Map<string, string>) = 
         Map.tryFind "files" map
         |> Option.map (fun d -> d.Split '\n')
