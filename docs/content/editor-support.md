@@ -18,6 +18,8 @@
 * Features:
   * `paket.dependencies` buffer supports commands like add, remove, install, ...
 
+<a href="img/paket-add-emacs.gif"><img src="img/paket-add-emacs.gif" alt="paket add command in Emacs" title="paket add command in Emacs" width="500"></a>
+
 ## Visual Studio
 
 * Project site: https://github.com/fsprojects/Paket.VisualStudio
