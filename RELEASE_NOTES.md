@@ -1,4 +1,6 @@
-#### 1.31.1 - 19.08.2015
+#### 1.32.0 - 19.08.2015
+* BUGFIX: Fixed compatibility issues with Klondike NuGet server - https://github.com/fsprojects/Paket/pull/9967
+* BUGFIX: Escape file names in a NuGet compatible way - https://github.com/fsprojects/Paket/pull/996
 * BUGFIX: Paket now fails if an update of a nonexistent package is requested - https://github.com/fsprojects/Paket/pull/995
 
 #### 1.31.0 - 18.08.2015
