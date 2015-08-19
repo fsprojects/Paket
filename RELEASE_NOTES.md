@@ -1,3 +1,6 @@
+#### 1.31.1 - 19.08.2015
+* BUGFIX: Paket now fails if an update of a nonexistent package is requested - https://github.com/fsprojects/Paket/pull/995
+
 #### 1.31.0 - 18.08.2015
 * BUGFIX: Delete old nodes from proj files - https://github.com/fsprojects/Paket/issues/992
 * COSMETICS: Better conflict reporting - https://github.com/fsprojects/Paket/pull/994
