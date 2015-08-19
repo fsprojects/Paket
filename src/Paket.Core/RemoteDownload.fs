@@ -13,12 +13,12 @@ let getSHA1OfBranch origin owner project branch =
         match origin with
         | ModuleResolver.SingleSourceFileOrigin.GitHubLink -> 
             let url = sprintf "https://api.github.com/repos/%s/%s/commits/%s" owner project branch
-            let! document = getFromUrl(None, url)
+            let! document = getFromUrl(None, url, null)
             let json = JObject.Parse(document)
             return json.["sha"].ToString()
         | ModuleResolver.SingleSourceFileOrigin.GistLink ->  
             let url = sprintf "https://api.github.com/gists/%s/%s" project branch
-            let! document = getFromUrl(None, url)
+            let! document = getFromUrl(None, url, null)
             let json = JObject.Parse(document)
             let latest = json.["history"].First.["version"]
             return latest.ToString()
@@ -44,7 +44,7 @@ let downloadDependenciesFile(rootPath,parserF,remoteFile:ModuleResolver.Resolved
         | ModuleResolver.GistLink -> 
             rawGistFileUrl remoteFile.Owner remoteFile.Project dependenciesFileName
         | ModuleResolver.HttpLink url -> url.Replace(remoteFile.Name,Constants.DependenciesFileName)
-    let! result = safeGetFromUrl(None,url)
+    let! result = safeGetFromUrl(None,url,null)
 
     match result with
     | Some text when parserF text ->        
@@ -83,7 +83,7 @@ let downloadRemoteFiles(remoteFile:ResolvedSourceFile,destination) = async {
         let projectPath = fi.Directory.FullName
 
         let url = sprintf "https://api.github.com/gists/%s" remoteFile.Project
-        let! document = getFromUrl(None, url)
+        let! document = getFromUrl(None, url, null)
         let json = JObject.Parse(document)
         let files = json.["files"] |> Seq.map (fun i -> i.First.["filename"].ToString(), i.First.["raw_url"].ToString())
 
