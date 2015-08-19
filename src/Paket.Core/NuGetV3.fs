@@ -44,7 +44,7 @@ let getSearchAPI(auth,nugetUrl) =
             | None -> None
             | Some v3Path ->
                 let serviceData =
-                    safeGetFromUrl(auth,v3Path) 
+                    safeGetFromUrl(auth,v3Path,acceptJson)
                     |> Async.RunSynchronously
 
                 match serviceData with
@@ -62,7 +62,7 @@ let internal findVersionsForPackage(auth, nugetURL, package, includingPrerelease
     async {
         match getSearchAPI(auth,nugetURL) with        
         | Some url ->
-            let! response = safeGetFromUrl(auth,sprintf "%s?id=%s&take=%d%s" url package (max maxResults 100000) (if includingPrereleases then "&prerelease=true" else "")) // Nuget is showing old versions first
+            let! response = safeGetFromUrl(auth,sprintf "%s?id=%s&take=%d%s" url package (max maxResults 100000) (if includingPrereleases then "&prerelease=true" else ""), acceptXml) // Nuget is showing old versions first
             match response with
             | Some text ->
                 let versions =
@@ -94,7 +94,7 @@ let private getPackages(auth, nugetURL, packageNamePrefix, maxResults) = async {
     match getSearchAPI(auth,nugetURL) with
     | Some url -> 
         let query = sprintf "%s?q=%s&take=%d" url packageNamePrefix maxResults
-        let! response = safeGetFromUrl(auth,query)
+        let! response = safeGetFromUrl(auth,query,acceptJson)
         match response with
         | Some text -> return extractPackages text
         | None -> return [||]

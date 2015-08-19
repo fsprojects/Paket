@@ -12,6 +12,11 @@ open Paket.Logging
 open Chessie.ErrorHandling
 open Paket.Domain
 
+let acceptXml = "application/atom+xml,application/xml"
+let acceptJson = "application/atom+json,application/json"
+
+let notNullOrEmpty = not << System.String.IsNullOrEmpty
+
 type Auth = 
     { Username : string
       Password : string }
@@ -168,10 +173,12 @@ let downloadFromUrl (auth:Auth option, url : string) (filePath: string) =
     }
 
 /// [omit]
-let getFromUrl (auth:Auth option, url : string) = 
+let getFromUrl (auth:Auth option, url : string, contentType : string) =
     async { 
         try
             use client = createWebClient(url,auth)
+            if notNullOrEmpty contentType then
+                client.Headers.Add(HttpRequestHeader.Accept, contentType)
             let s = client.DownloadStringTaskAsync(Uri(url)) |> Async.AwaitTask
             return! s
         with
@@ -200,10 +207,14 @@ let getXmlFromUrl (auth:Auth option, url : string) =
     }
     
 /// [omit]
-let safeGetFromUrl (auth:Auth option, url : string) = 
+let safeGetFromUrl (auth:Auth option, url : string, contentType : string) =
     async { 
         try 
             use client = createWebClient(url,auth)
+            
+            if notNullOrEmpty contentType then
+                client.Headers.Add(HttpRequestHeader.Accept, contentType)
+
             let s = client.DownloadStringTaskAsync(Uri(url)) |> Async.AwaitTask
             let! raw = s
             return Some raw

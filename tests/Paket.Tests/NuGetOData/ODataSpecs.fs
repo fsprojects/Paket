@@ -116,7 +116,7 @@ let ``can calculate v3 path``() =
 
 [<Test>]
 let ``can read all versions from single page with multiple entries``() =
-    let getUrlContentsStub _ = async { return File.ReadAllText "NuGetOData/NUnit.xml" }
+    let getUrlContentsStub _ _ = async { return File.ReadAllText "NuGetOData/NUnit.xml" }
     
     let versions = getAllVersionsFromNugetOData(getUrlContentsStub, fakeUrl, "NUnit")
                    |> Async.RunSynchronously

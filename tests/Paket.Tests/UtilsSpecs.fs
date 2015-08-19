@@ -15,7 +15,7 @@ let ``createRelativePath should handle spaces``() =
 let ``normalize path with home directory``() =
     "~/data" 
     |> Utils.normalizeLocalPath
-    |> shouldEqual (AbsolutePath (GetHomeDirectory() + Path.DirectorySeparatorChar.ToString()  +  "data"))
+    |> shouldEqual (AbsolutePath (Path.Combine(GetHomeDirectory(), "data")))
         
 [<Test>]
 let ``relative local path is returned as is``() =

@@ -1,4 +1,4 @@
-/// Contains NuGet support.
+﻿/// Contains NuGet support.
 module Paket.NuGetV2
 
 open System
@@ -30,7 +30,7 @@ type NugetPackageCache =
 
 let rec private followODataLink getUrlContents url = 
     async { 
-        let! raw = getUrlContents url
+        let! raw = getUrlContents url acceptXml
         let doc = XmlDocument()
         doc.LoadXml raw
         let feed = 
@@ -83,8 +83,8 @@ let getAllVersionsFromNuGet2(auth,nugetURL,package) =
     async { 
         let url = sprintf "%s/package-versions/%s?includePrerelease=true" nugetURL package
         verbosefn "getAllVersionsFromNuGet2 from url '%s'" url
-        let! raw = safeGetFromUrl(auth, url)
-        let getUrlContents url = getFromUrl(auth, url)
+        let! raw = safeGetFromUrl(auth, url, acceptJson)
+        let getUrlContents url acceptJson = getFromUrl(auth, url, acceptJson)
         match raw with
         | None -> let! result = getAllVersionsFromNugetOData(getUrlContents, nugetURL, package)
                   return result
@@ -215,7 +215,7 @@ let getDetailsFromNuGetViaODataFast auth nugetURL package (version:SemVerInfo) =
     async {         
         try 
             let url = sprintf "%s/Packages?$filter=Id eq '%s' and NormalizedVersion eq '%s'" nugetURL package (version.Normalize())
-            let! raw = getFromUrl(auth,url)
+            let! raw = getFromUrl(auth,url,acceptXml)
             if verbose then
                 tracefn "Response from %s:" url
                 tracefn ""
@@ -223,7 +223,7 @@ let getDetailsFromNuGetViaODataFast auth nugetURL package (version:SemVerInfo) =
             return parseODataDetails(nugetURL,package,version,raw)
         with _ ->         
             let url = sprintf "%s/Packages?$filter=Id eq '%s' and Version eq '%s'" nugetURL package (version.ToString())
-            let! raw = getFromUrl(auth,url)
+            let! raw = getFromUrl(auth,url,acceptXml)
             if verbose then
                 tracefn "Response from %s:" url
                 tracefn ""
@@ -238,7 +238,7 @@ let getDetailsFromNuGetViaOData auth nugetURL package (version:SemVerInfo) =
             return! getDetailsFromNuGetViaODataFast auth nugetURL package version
         with _ ->         
             let url = sprintf "%s/Packages(Id='%s',Version='%s')" nugetURL package (version.ToString())
-            let! response = safeGetFromUrl(auth,url)
+            let! response = safeGetFromUrl(auth,url,acceptXml)
                     
             let! raw =
                 match response with
