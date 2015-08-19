@@ -405,14 +405,14 @@ let ExtractPackage(fileName:string, targetFolder, name, version:SemVerInfo) =
             // cleanup folder structure
             let rec cleanup (dir : DirectoryInfo) = 
                 for sub in dir.GetDirectories() do
-                    let newName = sub.FullName.Replace("%2B", "+").Replace("%20", " ")
+                    let newName = Uri.UnescapeDataString(sub.FullName)
                     if sub.FullName <> newName && not (Directory.Exists newName) then 
                         Directory.Move(sub.FullName, newName)
                         cleanup (DirectoryInfo newName)
                     else
                         cleanup sub
                 for file in dir.GetFiles() do
-                    let newName = file.Name.Replace("%2B", "+").Replace("%20", " ")
+                    let newName = Uri.UnescapeDataString(file.Name)
                     if file.Name <> newName && not (File.Exists <| Path.Combine(file.DirectoryName, newName)) then
                         File.Move(file.FullName, Path.Combine(file.DirectoryName, newName))
 
