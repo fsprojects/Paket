@@ -61,22 +61,27 @@
           <ul class="nav nav-list" id="menu" style="margin-top: 20px;">
             <li class="nav-header">@Properties["project-name"]</li>
             <li><a href="@Root/index.html">Home page</a></li>
-            <li class="divider"></li>
-            <li><a href="https://github.com/fsprojects/Paket/releases/latest">Download</a></li>
-            <li><a href="@Properties["project-github"]">Source Code on GitHub</a></li>
-            <li><a href="@Properties["project-nuget"]">Get Library via NuGet</a></li>
-            <li><a href="@Properties["project-github"]/issues">Report an issue</a></li>
-            <li><a href="@Root/license.html">License</a></li>
-            <li><a href="@Root/release-notes.html">Release Notes</a></li>
-            <li><a href="@Root/testimonials.html">Testimonials</a></li>
-
-            <li class="nav-header">Documentation</li>
             <li><a href="@Root/getting-started.html">Getting started</a></li>
             <li><a href="@Root/faq.html">FAQ</a></li>
+            <li><a href="@Root/release-notes.html">Release Notes</a></li>
+            <li><a href="@Root/testimonials.html">Testimonials</a></li>
+            <li><a href="@Root/license.html">License</a></li>
+
+            <li class="nav-header">Download Paket</li>
+            <li><a href="@Properties["project-nuget"]" target="_blank">From NuGet</a></li>
+            <li><a href="https://github.com/fsprojects/Paket/releases/latest" target="_blank">From GitHub</a></li>
+            
+            <li class="nav-header">GitHub</li>
+            <li><a href="@Properties["project-github"]" target="_blank">Source Code on GitHub</a></li>
+            <li><a href="@Properties["project-github"]/issues" target="_blank">Report an issue</a></li>          
+
+            <li class="nav-header">Documentation</li>
             <li><a href="@Root/dependencies-file.html">paket.dependencies</a></li>
             <li><a href="@Root/lock-file.html">paket.lock</a></li>
             <li><a href="@Root/references-files.html">paket.references</a></li>
             <li><a href="@Root/template-files.html">paket.template</a></li>            
+            <li><a href="@Root/paket-folder.html">.paket folder</a></li>       
+            <li><a href="@Root/bootstrapper.html">paket.bootstrapper.exe</a></li>
             <li class="divider"></li>
             <li><a href="@Root/resolver.html">Package resolution algorithm</a></li>
             <li><a href="@Root/nuget-dependencies.html">NuGet dependencies</a></li>
@@ -106,9 +111,6 @@
             <li><a href="@Root/paket-simplify.html">paket simplify</a></li>   
             <li><a href="@Root/paket-show-installed-packages.html">paket show-installed-packages</a></li>         
             <li><a href="@Root/paket-update.html">paket update</a></li>
-            <li class="divider"></li>
-            <li><a href="@Root/paket-folder.html">.paket folder</a></li>       
-            <li><a href="@Root/bootstrapper.html">paket.bootstrapper.exe</a></li>
           </ul>
         </div>
       </div>
