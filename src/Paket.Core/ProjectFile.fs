@@ -789,9 +789,11 @@ type ProjectFile =
                         then data
                         else addData data node
 
+        let startingData = Map.empty<string,string>.Add("Configuration", buildConfiguration)
+
         this.Document
         |> getDescendants "PropertyGroup"
-        |> Seq.fold handleElement Map.empty<string,string>
+        |> Seq.fold handleElement startingData
         |> Map.tryFind "OutputPath"
         |> function
             | None -> failwithf "Unable to find %s output path node in file %s" buildConfiguration this.FileName
