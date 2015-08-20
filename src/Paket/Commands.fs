@@ -249,6 +249,7 @@ with
 
 type PackArgs =
     | [<CustomCommandLine("output")>][<Mandatory>] Output of string
+    | [<CustomCommandLine("input")>] Input of string
     | [<CustomCommandLine("buildconfig")>] BuildConfig of string
     | [<CustomCommandLine("version")>] Version of string
     | [<CustomCommandLine("templatefile")>] TemplateFile of string
@@ -259,6 +260,7 @@ with
         member this.Usage =
             match this with
             | Output(_) -> "Output directory to put nupkgs."
+            | Input(_) -> "Directory that contains all build artifacts (defaults to output directory defined in project settings)"
             | BuildConfig(_) -> "Optionally specify build configuration that should be packaged (defaults to Release)."
             | Version(_) -> "Specify version of the package."
             | TemplateFile(_) -> "Allows to specify a single template file."

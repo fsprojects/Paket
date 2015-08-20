@@ -41,7 +41,31 @@ let ``Loading assembly metadata works``() =
         if workingDir.Contains "Debug" then "Debug"
         else "Release"
 
-    let assembly,id,fileName = PackageMetaData.loadAssemblyId config projFile.Value
+    let artifactPath = Option<string>.None
+    let assembly,id,fileName = PackageMetaData.loadAssemblyId config (projFile.Value,artifactPath)
+    id |> shouldEqual "Paket.Tests"
+
+    let attribs = PackageMetaData.loadAssemblyAttributes fileName assembly
+    PackageMetaData.getVersion assembly attribs |> shouldEqual <| Some(SemVer.Parse "1.0.0.0")
+    PackageMetaData.getAuthors attribs |> shouldEqual <| Some([ "Two"; "Authors" ])
+    PackageMetaData.getDescription attribs |> shouldEqual <| Some("A description")
+
+[<Test>]
+let ``Loading assembly metadata using optional input directory works``() =
+    let workingDir = Path.GetFullPath(".")
+
+    let projFile =
+        Path.Combine(workingDir, "..", "..", "Paket.Tests.fsproj")
+        |> normalizePath
+        |> ProjectFile.Load
+
+    let config =
+        if workingDir.Contains "Debug" then "Debug"
+        else "Release"
+
+    let artifactPath = Option<string>.Some(workingDir)
+
+    let assembly,id,fileName = PackageMetaData.loadAssemblyId config (projFile.Value,artifactPath)
     id |> shouldEqual "Paket.Tests"
     
     let attribs = PackageMetaData.loadAssemblyAttributes fileName assembly

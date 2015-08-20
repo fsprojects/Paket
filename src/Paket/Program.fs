@@ -171,6 +171,7 @@ let pack (results : ParseResults<_>) =
     let outputPath = results.GetResult <@ PackArgs.Output @>
     Dependencies.Locate()
                 .Pack(outputPath,
+                      ?inputPath = results.TryGetResult <@ PackArgs.Input @>,
                       ?buildConfig = results.TryGetResult <@ PackArgs.BuildConfig @>,
                       ?version = results.TryGetResult <@ PackArgs.Version @>,
                       ?releaseNotes = results.TryGetResult <@ PackArgs.ReleaseNotes @>,

@@ -10,7 +10,7 @@ open System.Collections.Generic
 open Paket.PackageMetaData
 open Chessie.ErrorHandling
 
-let private merge buildConfig version projectFile templateFile = 
+let private merge buildConfig version projectFile templateFile artifactsInputPath =
     let withVersion =  
         match version with
         | None -> templateFile
@@ -21,7 +21,7 @@ let private merge buildConfig version projectFile templateFile =
         match md with
         | Valid completeCore -> { templateFile with Contents = CompleteInfo(completeCore, opt) }
         | _ ->
-            let assembly,id,assemblyFileName = loadAssemblyId buildConfig projectFile
+            let assembly,id,assemblyFileName = loadAssemblyId buildConfig (projectFile, artifactsInputPath)
             let md = { md with Id = md.Id ++ Some id }
 
             match md with
@@ -53,7 +53,7 @@ let private merge buildConfig version projectFile templateFile =
                 | Valid completeCore -> { templateFile with Contents = CompleteInfo(completeCore, opt) }
     | _ -> templateFile
 
-let Pack(workingDir,dependencies : DependenciesFile, packageOutputPath, buildConfig, version, releaseNotes, templateFile, lockDependencies) =
+let Pack(workingDir,dependencies : DependenciesFile, packageOutputPath, artifactsInputPath, buildConfig, version, releaseNotes, templateFile, lockDependencies) =
     let buildConfig = defaultArg buildConfig "Release"
     let packageOutputPath = if Path.IsPathRooted(packageOutputPath) then packageOutputPath else Path.Combine(workingDir,packageOutputPath)
     Utils.createDir packageOutputPath |> returnOrFail
@@ -89,7 +89,7 @@ let Pack(workingDir,dependencies : DependenciesFile, packageOutputPath, buildCon
             |> Array.map (fun (projectFile,templateFile) ->
                 allTemplateFiles.Remove(templateFile.FileName) |> ignore
 
-                let merged = merge buildConfig version projectFile templateFile
+                let merged = merge buildConfig version projectFile templateFile artifactsInputPath
 
                 let id = 
                     match merged.Contents with
@@ -102,7 +102,7 @@ let Pack(workingDir,dependencies : DependenciesFile, packageOutputPath, buildCon
     // add dependencies
     let allTemplates =
         projectTemplates
-        |> Map.map (fun _ (t, p) -> p,findDependencies dependencies buildConfig t p lockDependencies projectTemplates)
+        |> Map.map (fun _ (t, p) -> p,findDependencies dependencies buildConfig t p lockDependencies projectTemplates artifactsInputPath)
         |> Map.toList
         |> List.map (fun (_,(_,x)) -> x)
         |> List.append [for fileName in allTemplateFiles -> 
@@ -113,7 +113,7 @@ let Pack(workingDir,dependencies : DependenciesFile, packageOutputPath, buildCon
                                 let allProjectFiles = ProjectFile.FindAllProjects(fi.Directory.FullName) |> Array.toList
 
                                 match allProjectFiles with
-                                | [ projectFile ] -> merge buildConfig version projectFile templateFile
+                                | [ projectFile ] -> merge buildConfig version projectFile templateFile artifactsInputPath
                                 | [] -> failwithf "There was no project file found for template file %s" fileName
                                 | _ -> failwithf "There was more than one project file found for template file %s" fileName
                             | _ -> templateFile ]
