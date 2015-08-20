@@ -42,7 +42,7 @@ with
             | FindPackageVersions -> "EXPERIMENTAL: Allows to search for package versions."
             | ShowInstalledPackages -> "EXPERIMENTAL: Shows all installed top-level packages."
             | Pack -> "Packs all paket.template files within this repository"
-            | Push -> "Pushes all `.nupkg` files from the given directory."
+            | Push -> "Pushes the given `.nupkg` file."
 
     member this.Name =
         let uci,_ = Microsoft.FSharp.Reflection.FSharpValue.GetUnionFields(this, typeof<Command>)
