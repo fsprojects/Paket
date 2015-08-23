@@ -379,8 +379,6 @@ type Dependencies(dependenciesFileName: string) =
 
     /// Pushes a nupkg file.
     static member Push(packageFileName, ?url, ?apiKey, (?endPoint: string), ?maxTrials) =
-        let currentDirectory = DirectoryInfo(Environment.CurrentDirectory)
-
         let urlWithEndpoint = RemoteUpload.GetUrlWithEndpoint url endPoint
         let apiKey = defaultArg apiKey (Environment.GetEnvironmentVariable("nugetkey"))
         if String.IsNullOrEmpty apiKey then
