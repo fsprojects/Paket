@@ -222,7 +222,22 @@ let Resolve(getVersionsF, getPackageDetailsF, globalFrameworkRestrictions, rootD
                 exploredPackages.[(normalizedPackageName,version)] <- package
                 package
             | _ -> package
-        | false,_ ->         
+        | false,_ ->
+            let getPinnedVersion d = 
+                match d.Parent with
+                | DependenciesFile _ ->
+                    match d.VersionRequirement.Range with
+                    | Specific v -> Some v
+                    | OverrideAll v -> Some v
+                    | _ -> None
+                | Package _ -> None
+            requirements
+            |> Set.filter (fun r -> NormalizedPackageName dependency.Name = NormalizedPackageName r.Name)
+            |> Set.map getPinnedVersion
+            |> Seq.choose id
+            |> Seq.tryHead
+            |> Option.iter (traceWarnfn " %O is pinned to version %O" dependency.Name)
+
             tracefn  " - %s %A" name version
             let packageDetails : PackageDetails = getPackageDetailsF dependency.Sources dependency.Name version
             let restrictedDependencies = DependencySetFilter.filterByRestrictions (dependency.Settings.FrameworkRestrictions @ globalFrameworkRestrictions) packageDetails.DirectDependencies
