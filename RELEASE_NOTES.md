@@ -1,5 +1,9 @@
+#### 1.33.0 - 23.08.2015
+* Paket handles dynamic OutputPath - https://github.com/fsprojects/Paket/pull/942
+* Paket warns when package is pinned - https://github.com/fsprojects/Paket/pull/999
+
 #### 1.32.0 - 19.08.2015
-* BUGFIX: Fixed compatibility issues with Klondike NuGet server - https://github.com/fsprojects/Paket/pull/9967
+* BUGFIX: Fixed compatibility issues with Klondike NuGet server - https://github.com/fsprojects/Paket/pull/997
 * BUGFIX: Escape file names in a NuGet compatible way - https://github.com/fsprojects/Paket/pull/996
 * BUGFIX: Paket now fails if an update of a nonexistent package is requested - https://github.com/fsprojects/Paket/pull/995
 
