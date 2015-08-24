@@ -94,7 +94,15 @@ let selectiveUpdate resolve lockFile dependenciesFile updateAll package =
             | None -> install ()
             | Some package -> selectiveUpdate package
 
-    LockFile(lockFile.FileName, dependenciesFile.Options, resolution.ResolvedPackages.GetModelOrFail(), resolution.ResolvedSourceFiles)
+    let mainGroup = 
+        { Name = Constants.MainDependencyGroup
+          Options = dependenciesFile.Options
+          Resolution = resolution.ResolvedPackages.GetModelOrFail()
+          RemoteFiles = resolution.ResolvedSourceFiles }
+    
+    let groups = [ Constants.MainDependencyGroup, mainGroup ] |> Map.ofSeq
+    
+    LockFile(lockFile.FileName, groups)
 
 let SelectiveUpdate(dependenciesFile : DependenciesFile, updateAll, exclude, force) =
     let lockFileName = DependenciesFile.FindLockfile dependenciesFile.FileName

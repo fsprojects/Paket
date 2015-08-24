@@ -11,6 +11,13 @@ open Paket.PackageSources
 open Paket.Requirements
 open Chessie.ErrorHandling
 
+type LockFileGroup = {
+    Name: string
+    Options:InstallOptions
+    Resolution:PackageResolution
+    RemoteFiles:ResolvedSourceFile list
+}
+
 module LockFileSerializer =
     /// [omit]
     let serializePackages options (resolved : PackageResolution) = 
@@ -284,7 +291,8 @@ module LockFileParser =
 
 
 /// Allows to parse and analyze paket.lock files.
-type LockFile(fileName:string,options:InstallOptions,resolution:PackageResolution,remoteFiles:ResolvedSourceFile list) =
+type LockFile(fileName:string,groups: Map<string,LockFileGroup>) =
+    let mainGroup = groups.[Constants.MainDependencyGroup]
 
     let dependenciesByPackageLazy = lazy (
         let allDependenciesOf package =
@@ -292,10 +300,10 @@ type LockFile(fileName:string,options:InstallOptions,resolution:PackageResolutio
 
             let rec addPackage packageName =
                 let identity = NormalizedPackageName packageName
-                match resolution.TryFind identity with
+                match mainGroup.Resolution.TryFind identity with
                 | Some package ->
                     if usedPackages.Add packageName then
-                        if not options.Strict then
+                        if not mainGroup.Options.Strict then
                             for d,_,_ in package.Dependencies do
                                 addPackage d
                 | None -> ()
@@ -304,20 +312,20 @@ type LockFile(fileName:string,options:InstallOptions,resolution:PackageResolutio
 
             usedPackages
 
-        resolution
+        mainGroup.Resolution
         |> Map.map (fun _ package -> allDependenciesOf package.Name))
 
-    member __.SourceFiles = remoteFiles
-    member __.ResolvedPackages = resolution
+    member __.SourceFiles = mainGroup.RemoteFiles
+    member __.ResolvedPackages = mainGroup.Resolution
     member __.FileName = fileName
-    member __.Options = options
+    member __.Options = mainGroup.Options
 
     /// Gets all dependencies of the given package
     member this.GetAllNormalizedDependenciesOf(package:NormalizedPackageName) = 
         let usedPackages = HashSet<_>()
 
         let rec addPackage (identity:NormalizedPackageName) =
-            match resolution.TryFind identity with
+            match mainGroup.Resolution.TryFind identity with
             | Some package ->
                 if usedPackages.Add identity then
                     if not this.Options.Strict then
@@ -381,8 +389,8 @@ type LockFile(fileName:string,options:InstallOptions,resolution:PackageResolutio
         let output = 
             String.Join
                 (Environment.NewLine,
-                    LockFileSerializer.serializePackages options resolution, 
-                    LockFileSerializer.serializeSourceFiles remoteFiles)
+                    LockFileSerializer.serializePackages mainGroup.Options mainGroup.Resolution,
+                    LockFileSerializer.serializeSourceFiles mainGroup.RemoteFiles)
 
         let hasChanged =
             if File.Exists fileName then
@@ -399,7 +407,9 @@ type LockFile(fileName:string,options:InstallOptions,resolution:PackageResolutio
     /// Creates a paket.lock file at given location
     static member Create (lockFileName: string, installOptions: InstallOptions, resolvedPackages: PackageResolver.Resolution, resolvedSourceFiles: ModuleResolver.ResolvedSourceFile list) : LockFile =
         let resolvedPackages = resolvedPackages.GetModelOrFail()
-        let lockFile = LockFile(lockFileName, installOptions, resolvedPackages, resolvedSourceFiles)
+        let mainGroup = { Name = Constants.MainDependencyGroup; Options = installOptions; Resolution = resolvedPackages; RemoteFiles = resolvedSourceFiles }
+        let groups = [Constants.MainDependencyGroup, mainGroup] |> Map.ofSeq
+        let lockFile = LockFile(lockFileName, groups)
         lockFile.Save()
         lockFile
 
@@ -408,14 +418,18 @@ type LockFile(fileName:string,options:InstallOptions,resolution:PackageResolutio
         LockFile.Parse(lockFileName, File.ReadAllLines lockFileName)
 
     /// Parses a paket.lock file from lines
-    static member Parse(lockFileName,lines) : LockFile =        
+    static member Parse(lockFileName,lines) : LockFile = 
         LockFileParser.Parse lines
-        |> fun state -> 
-            LockFile(
-                lockFileName, 
-                state.Options,
-                state.Packages |> Seq.fold (fun map p -> Map.add (NormalizedPackageName p.Name) p map) Map.empty, 
-                List.rev state.SourceFiles)
+        |> fun state ->
+            let mainGroup = 
+                { Name = Constants.MainDependencyGroup
+                  Options = state.Options
+                  Resolution = state.Packages |> Seq.fold (fun map p -> Map.add (NormalizedPackageName p.Name) p map) Map.empty
+                  RemoteFiles = List.rev state.SourceFiles }
+            
+            let groups = [ Constants.MainDependencyGroup, mainGroup ] |> Map.ofSeq
+
+            LockFile(lockFileName, groups)
 
     member this.GetPackageHull(referencesFile:ReferencesFile) =
         let usedPackages = Dictionary<_,_>()
