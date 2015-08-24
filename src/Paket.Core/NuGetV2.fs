@@ -231,7 +231,7 @@ let getDetailsFromNuGetViaODataFast auth nugetURL package (version:SemVerInfo) =
             return parseODataDetails(nugetURL,package,version,raw)
     }
 
-/// Gets package details from Nuget via OData
+/// Gets package details from NuGet via OData
 let getDetailsFromNuGetViaOData auth nugetURL package (version:SemVerInfo) = 
     async {         
         try 

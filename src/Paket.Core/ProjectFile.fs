@@ -735,6 +735,8 @@ type ProjectFile =
                             | "<"  -> l <  r
                             | "<=" -> l <= r
                             | ">=" -> l >= r
+                            | _ -> failwithf "%s is not a valid comparision operator" comp
+
                         let result =
                             match comp with
                             | "==" | "!=" -> doComp left right
