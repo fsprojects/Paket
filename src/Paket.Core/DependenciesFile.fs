@@ -245,10 +245,10 @@ module DependenciesFileParser =
             with
             | exn -> failwithf "Error in paket.dependencies line %d%s  %s" lineNo Environment.NewLine exn.Message)
         |> fun (_,options,sources,packages,remoteFiles) ->
-            fileName,
-            options,
-            { Name = Constants.MainDependencyGroup; Sources = sources; Packages = packages |> List.rev; RemoteFiles = remoteFiles |> List.rev },
-            lines
+            let mainGroup = { Name = Constants.MainDependencyGroup; Sources = sources; Packages = packages |> List.rev; RemoteFiles = remoteFiles |> List.rev }
+            let groups = [Constants.MainDependencyGroup, mainGroup] |> Map.ofSeq
+
+            fileName, options, groups, lines
     
     let parseVersionString (version : string) = 
         { VersionRequirement = parseVersionRequirement (version.Trim '!')
@@ -292,7 +292,8 @@ module DependenciesFileSerializer =
 
 
 /// Allows to parse and analyze paket.dependencies files.
-type DependenciesFile(fileName,options,mainGroup:DependenciesGroup, textRepresentation:string []) = 
+type DependenciesFile(fileName,options,groups:Map<string,DependenciesGroup>, textRepresentation:string []) =
+    let mainGroup = groups.[Constants.MainDependencyGroup]
     let packages = mainGroup.Packages |> Seq.toList
     let dependencyMap = Map.ofSeq (packages |> Seq.map (fun p -> p.Name, p.VersionRequirement))
 
