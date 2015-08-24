@@ -97,5 +97,7 @@ module PaketEnv =
             let dependenciesFile = 
                 DependenciesFile(
                     Path.Combine(directory.FullName, Constants.DependenciesFileName), 
-                    InstallOptions.Default, sources, [], [], serialized)
+                    InstallOptions.Default, 
+                    { Name = Constants.MainDependencyGroup; Sources = sources; Packages = []; RemoteFiles = [] },
+                    serialized)
             dependenciesFile.ToString() |> saveFile dependenciesFile.FileName

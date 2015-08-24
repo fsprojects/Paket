@@ -24,6 +24,13 @@ type InstallOptions =
 type VersionStrategy = {
     VersionRequirement : VersionRequirement
     ResolverStrategy : ResolverStrategy }
+
+type DependenciesGroup = {
+    Name: string
+    Sources: PackageSource list 
+    Packages : PackageRequirement list
+    RemoteFiles : UnresolvedSourceFile list
+}
             
 /// [omit]
 module DependenciesFileParser = 
@@ -240,9 +247,7 @@ module DependenciesFileParser =
         |> fun (_,options,sources,packages,remoteFiles) ->
             fileName,
             options,
-            sources,
-            packages |> List.rev,
-            remoteFiles |> List.rev,
+            { Name = Constants.MainDependencyGroup; Sources = sources; Packages = packages |> List.rev; RemoteFiles = remoteFiles |> List.rev },
             lines
     
     let parseVersionString (version : string) = 
@@ -285,9 +290,10 @@ module DependenciesFileSerializer =
 
         sprintf "nuget %s%s%s" name (if version <> "" then " " + version else "") (if s <> "" then " " + s else s)        
 
+
 /// Allows to parse and analyze paket.dependencies files.
-type DependenciesFile(fileName,options,sources,packages : PackageRequirement list, remoteFiles : UnresolvedSourceFile list, textRepresentation:string []) = 
-    let packages = packages |> Seq.toList
+type DependenciesFile(fileName,options,mainGroup:DependenciesGroup, textRepresentation:string []) = 
+    let packages = mainGroup.Packages |> Seq.toList
     let dependencyMap = Map.ofSeq (packages |> Seq.map (fun p -> p.Name, p.VersionRequirement))
 
     let isPackageLine name (l : string) = 
@@ -303,11 +309,11 @@ type DependenciesFile(fileName,options,sources,packages : PackageRequirement lis
     member __.Packages = packages
     member __.HasPackage (name : PackageName) = packages |> List.exists (fun p -> NormalizedPackageName p.Name = NormalizedPackageName name)
     member __.GetPackage (name : PackageName) = packages |> List.find (fun p -> NormalizedPackageName p.Name = NormalizedPackageName name)
-    member __.RemoteFiles = remoteFiles
+    member __.RemoteFiles = mainGroup.RemoteFiles
     member __.Options = options
     member __.FileName = fileName
     member __.Lines = textRepresentation
-    member __.Sources = sources
+    member __.Sources = mainGroup.Sources
 
     member this.Resolve(force,packages,requirements) =
         let getSha1 origin owner repo branch = RemoteDownload.getSHA1OfBranch origin owner repo branch |> Async.RunSynchronously
@@ -333,7 +339,7 @@ type DependenciesFile(fileName,options,sources,packages : PackageRequirement lis
             |> DependenciesFile.FromCode
             |> fun df -> df.Packages
 
-        let remoteFiles = ModuleResolver.Resolve(resolveSourceFile,getSha1,remoteFiles)
+        let remoteFiles = ModuleResolver.Resolve(resolveSourceFile,getSha1,mainGroup.RemoteFiles)
         
         let remoteDependencies = 
             remoteFiles
@@ -360,9 +366,9 @@ type DependenciesFile(fileName,options,sources,packages : PackageRequirement lis
 
         // Try to find alphabetical matching position to insert the package
         let isPackageInLastSource (p:PackageRequirement) =
-            match sources with
+            match mainGroup.Sources with
             | [] -> true
-            | _ -> 
+            | sources -> 
                 let lastSource =  Seq.last sources
                 p.Sources |> Seq.exists (fun s -> s = lastSource)
 
@@ -374,7 +380,7 @@ type DependenciesFile(fileName,options,sources,packages : PackageRequirement lis
 
             match tryFindPackageLine packageName with                        
             | Some pos -> 
-                let package = DependenciesFileParser.parsePackageLine(sources,PackageRequirementSource.DependenciesFile fileName,list.[pos])
+                let package = DependenciesFileParser.parsePackageLine(mainGroup.Sources,PackageRequirementSource.DependenciesFile fileName,list.[pos])
 
                 if versionRequirement.Range.IsIncludedIn(package.VersionRequirement.Range) then
                     list.[pos] <- packageString
@@ -388,10 +394,10 @@ type DependenciesFile(fileName,options,sources,packages : PackageRequirement lis
                     | [] -> 
                         match packages with
                         | [] ->
-                            if remoteFiles <> [] then
+                            if mainGroup.RemoteFiles <> [] then
                                 list.Insert(0,"")
                     
-                            match sources with
+                            match mainGroup.Sources with
                             | [] -> 
                                 list.Insert(0,packageString)
                                 list.Insert(0,"")

@@ -58,6 +58,9 @@ let PackagesConfigFile = "packages.config"
 let FullProjectSourceFileName = "FULLPROJECT"
 
 [<Literal>]
+let MainDependencyGroup = "Main"
+
+[<Literal>]
 let ProjectDefaultNameSpace = "http://schemas.microsoft.com/developer/msbuild/2003"
 
 let AppDataFolder = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData)
