@@ -280,7 +280,7 @@ module LockFileParser =
                                             Project = project + "/" + String.Join("/",moredetails)
                                             Dependencies = Set.empty
                                             Name = details } :: state.SourceFiles }
-                    | _ ->  failwith "invalid remote details.")
+                    | _ ->  failwithf "invalid remote details %A" state.RemoteUrl )
 
 
 /// Allows to parse and analyze paket.lock files.
