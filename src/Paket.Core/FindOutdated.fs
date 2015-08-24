@@ -43,7 +43,7 @@ let FindOutdated strict includingPrereleases environment = trial {
         environment.DependenciesFile
         |> adjustVersionRequirements strict includingPrereleases
 
-    let resolution = dependenciesFile.Resolve(true)
+    let resolution = dependenciesFile.Resolve(true).[Constants.MainDependencyGroup]
     let resolvedPackages = resolution.ResolvedPackages.GetModelOrFail()
 
     return detectOutdated lockFile.ResolvedPackages resolvedPackages

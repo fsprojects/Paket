@@ -119,7 +119,7 @@ let SelectiveUpdate(dependenciesFile : DependenciesFile, updateAll, exclude, for
             |> createPackageRequirements [e]
         | None -> []
 
-    let lockFile = selectiveUpdate (fun d p -> d.Resolve(force, p, requirements)) oldLockFile dependenciesFile updateAll exclude
+    let lockFile = selectiveUpdate (fun d p -> d.Resolve(force, p, requirements).[Constants.MainDependencyGroup]) oldLockFile dependenciesFile updateAll exclude
     lockFile.Save()
     lockFile
 

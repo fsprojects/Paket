@@ -42,7 +42,7 @@ let ``should generate lock file for packages``() =
     Rx-Main (2.0)
       Rx-Core (>= 2.1)"""
     let cfg = DependenciesFile.FromCode(config1)
-    cfg.Resolve(noSha1,VersionsFromGraph graph, PackageDetailsFromGraph graph).ResolvedPackages.GetModelOrFail()
+    cfg.Resolve(noSha1,VersionsFromGraph graph, PackageDetailsFromGraph graph).[Constants.MainDependencyGroup].ResolvedPackages.GetModelOrFail()
     |> LockFileSerializer.serializePackages cfg.Options
     |> shouldEqual (normalizeLineEndings expected)
 
@@ -68,7 +68,7 @@ let ``should generate lock file with framework restrictions for packages``() =
     Rx-Main (2.0) - framework: >= net40
       Rx-Core (>= 2.1)"""
     let cfg = DependenciesFile.FromCode(configWithRestrictions)
-    cfg.Resolve(noSha1,VersionsFromGraph graph, PackageDetailsFromGraph graph).ResolvedPackages.GetModelOrFail()
+    cfg.Resolve(noSha1,VersionsFromGraph graph, PackageDetailsFromGraph graph).[Constants.MainDependencyGroup].ResolvedPackages.GetModelOrFail()
     |> LockFileSerializer.serializePackages cfg.Options
     |> shouldEqual (normalizeLineEndings expected)
 
@@ -95,7 +95,7 @@ let ``should generate lock file with no targets import for packages``() =
     Rx-Main (2.0) - framework: >= net40
       Rx-Core (>= 2.1)"""
     let cfg = DependenciesFile.FromCode(configWithNoImport)
-    cfg.Resolve(noSha1,VersionsFromGraph graph, PackageDetailsFromGraph graph).ResolvedPackages.GetModelOrFail()
+    cfg.Resolve(noSha1,VersionsFromGraph graph, PackageDetailsFromGraph graph).[Constants.MainDependencyGroup].ResolvedPackages.GetModelOrFail()
     |> LockFileSerializer.serializePackages cfg.Options
     |> shouldEqual (normalizeLineEndings expected)
 
@@ -121,7 +121,7 @@ let ``should generate lock file with no copy local for packages``() =
     Rx-Main (2.0) - framework: >= net40
       Rx-Core (>= 2.1)"""
     let cfg = DependenciesFile.FromCode(configWithCopyLocal)
-    cfg.Resolve(noSha1,VersionsFromGraph graph, PackageDetailsFromGraph graph).ResolvedPackages.GetModelOrFail()
+    cfg.Resolve(noSha1,VersionsFromGraph graph, PackageDetailsFromGraph graph).[Constants.MainDependencyGroup].ResolvedPackages.GetModelOrFail()
     |> LockFileSerializer.serializePackages cfg.Options
     |> shouldEqual (normalizeLineEndings expected)
 
@@ -148,7 +148,7 @@ let ``should generate lock file with disabled content for packages``() =
     Rx-Main (2.0) - content: none, framework: >= net40
       Rx-Core (>= 2.1)"""
     let cfg = DependenciesFile.FromCode(configWithDisabledContent)
-    cfg.Resolve(noSha1,VersionsFromGraph graph, PackageDetailsFromGraph graph).ResolvedPackages.GetModelOrFail()
+    cfg.Resolve(noSha1,VersionsFromGraph graph, PackageDetailsFromGraph graph).[Constants.MainDependencyGroup].ResolvedPackages.GetModelOrFail()
     |> LockFileSerializer.serializePackages cfg.Options
     |> shouldEqual (normalizeLineEndings expected)
 
@@ -201,7 +201,7 @@ let expected2 = """NUGET
 [<Test>]
 let ``should generate lock file for RavenDB.Client``() = 
     let cfg = DependenciesFile.FromCode(config2)
-    cfg.Resolve(noSha1,VersionsFromGraph graph2, PackageDetailsFromGraph graph2).ResolvedPackages.GetModelOrFail()
+    cfg.Resolve(noSha1,VersionsFromGraph graph2, PackageDetailsFromGraph graph2).[Constants.MainDependencyGroup].ResolvedPackages.GetModelOrFail()
     |> LockFileSerializer.serializePackages cfg.Options
     |> shouldEqual (normalizeLineEndings expected2)
 
@@ -231,7 +231,7 @@ let expected3 = """NUGET
 [<Test>]
 let ``should generate other version ranges for packages``() = 
     let cfg = DependenciesFile.FromCode(config3)
-    cfg.Resolve(noSha1,VersionsFromGraph graph3, PackageDetailsFromGraph graph3).ResolvedPackages.GetModelOrFail()
+    cfg.Resolve(noSha1,VersionsFromGraph graph3, PackageDetailsFromGraph graph3).[Constants.MainDependencyGroup].ResolvedPackages.GetModelOrFail()
     |> LockFileSerializer.serializePackages cfg.Options
     |> shouldEqual (normalizeLineEndings expected3)
 

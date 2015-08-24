@@ -31,6 +31,13 @@ type DependenciesGroup = {
     Packages : PackageRequirement list
     RemoteFiles : UnresolvedSourceFile list
 }
+
+type RequirementsGroup = {
+    Name: string
+    RootDependencies: PackageRequirement list option
+    PackageRequirements : PackageRequirement list
+    RemoteFiles : UnresolvedSourceFile list
+}
             
 /// [omit]
 module DependenciesFileParser = 
@@ -319,44 +326,61 @@ type DependenciesFile(fileName,options,groups:Map<string,DependenciesGroup>, tex
     member this.Resolve(force,packages,requirements) =
         let getSha1 origin owner repo branch = RemoteDownload.getSHA1OfBranch origin owner repo branch |> Async.RunSynchronously
         let root = Path.GetDirectoryName this.FileName
-        this.Resolve(getSha1,NuGetV2.GetVersions root,NuGetV2.GetPackageDetails root force,packages,requirements)   
-
-    member __.Resolve(getSha1,getVersionF, getPackageDetailsF,rootDependencies,requirements) =
-        let rootDependencies =
-            match rootDependencies with
-            | None -> packages
-            | Some d -> d
-
-        let resolveSourceFile(file:ResolvedSourceFile) : PackageRequirement list =
-            let parserF text =
-                try
-                    DependenciesFile.FromCode(text) |> ignore
-                    true
-                with 
-                | _ -> false
-
-            RemoteDownload.downloadDependenciesFile(Path.GetDirectoryName fileName,parserF, file)
-            |> Async.RunSynchronously
-            |> DependenciesFile.FromCode
-            |> fun df -> df.Packages
-
-        let remoteFiles = ModuleResolver.Resolve(resolveSourceFile,getSha1,mainGroup.RemoteFiles)
+        let mainGroup = 
+            { Name = Constants.MainDependencyGroup
+              RemoteFiles = mainGroup.RemoteFiles
+              RootDependencies = packages
+              PackageRequirements = requirements }
         
-        let remoteDependencies = 
-            remoteFiles
-            |> List.map (fun f -> f.Dependencies)
-            |> List.fold (fun set current -> Set.union set current) Set.empty
-            |> Seq.map (fun (n, v) -> 
-                   let p = packages |> Seq.last
-                   { p with Name = n
-                            VersionRequirement = v })
-            |> Seq.toList
+        let groups = [ Constants.MainDependencyGroup, mainGroup ] |> Map.ofSeq
+        this.Resolve(getSha1,NuGetV2.GetVersions root,NuGetV2.GetPackageDetails root force,groups)   
 
-        { ResolvedPackages = PackageResolver.Resolve(getVersionF, getPackageDetailsF, options.Settings.FrameworkRestrictions, remoteDependencies @ rootDependencies, packages @ requirements |> Set.ofList)
-          ResolvedSourceFiles = remoteFiles }        
+    member __.Resolve(getSha1,getVersionF, getPackageDetailsF,groups:Map<string,RequirementsGroup>) =
+        groups
+        |> Map.map (fun k group ->  
+            let rootDependencies =
+                match group.RootDependencies with
+                | None -> packages
+                | Some d -> d
+
+            let resolveSourceFile(file:ResolvedSourceFile) : PackageRequirement list =
+                let parserF text =
+                    try
+                        DependenciesFile.FromCode(text) |> ignore
+                        true
+                    with 
+                    | _ -> false
+
+                RemoteDownload.downloadDependenciesFile(Path.GetDirectoryName fileName,parserF, file)
+                |> Async.RunSynchronously
+                |> DependenciesFile.FromCode
+                |> fun df -> df.Packages
+
+            let remoteFiles = ModuleResolver.Resolve(resolveSourceFile,getSha1,group.RemoteFiles)
+        
+            let remoteDependencies = 
+                remoteFiles
+                |> List.map (fun f -> f.Dependencies)
+                |> List.fold (fun set current -> Set.union set current) Set.empty
+                |> Seq.map (fun (n, v) -> 
+                       let p = packages |> Seq.last
+                       { p with Name = n
+                                VersionRequirement = v })
+                |> Seq.toList
+
+            { ResolvedPackages = PackageResolver.Resolve(getVersionF, getPackageDetailsF, options.Settings.FrameworkRestrictions, remoteDependencies @ rootDependencies, packages @ group.PackageRequirements |> Set.ofList)
+              ResolvedSourceFiles = remoteFiles })
 
     member __.Resolve(getSha1,getVersionF, getPackageDetailsF) =
-        __.Resolve(getSha1,getVersionF,getPackageDetailsF,Some packages,[])
+        let mainGroup = 
+            { Name = Constants.MainDependencyGroup
+              RemoteFiles = mainGroup.RemoteFiles
+              RootDependencies = Some packages
+              PackageRequirements = [] }
+        
+        let groups = [ Constants.MainDependencyGroup, mainGroup ] |> Map.ofSeq
+
+        __.Resolve(getSha1,getVersionF,getPackageDetailsF,groups)
 
     member this.Resolve(force) = 
         this.Resolve(force,Some packages,[])
