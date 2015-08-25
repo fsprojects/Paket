@@ -307,9 +307,16 @@ let Resolve(getVersionsF, getPackageDetailsF, globalFrameworkRestrictions, rootD
 
                 availableVersions := getAllVersions(currentRequirement.Sources,currentRequirement.Name,currentRequirement.VersionRequirement.Range)
 
+                let preRelease v =
+                    v.PreRelease = None
+                    || match currentRequirement.VersionRequirement.Range with
+                        | Specific v -> v.PreRelease <> None
+                        | OverrideAll v -> v.PreRelease <> None
+                        | _ -> false
+
                 let lastest =
                     !availableVersions
-                    |> List.filter (fun v -> v.PreRelease = None)
+                    |> List.filter preRelease
                     |> List.sortDescending
                     |> List.tryHead
 
