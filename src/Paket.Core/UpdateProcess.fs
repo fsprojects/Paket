@@ -18,7 +18,7 @@ let addPackagesFromReferenceFiles projects (dependenciesFile : DependenciesFile)
             LockFile.Create(lockFileName.FullName, dependenciesFile.Options, Resolution.Ok(Map.empty), [])
 
     let allExistingPackages =
-        oldLockFile.ResolvedPackages
+        oldLockFile.GetCompleteResolution()
         |> Seq.map (fun d -> NormalizedPackageName d.Value.Name)
         |> Set.ofSeq
 
@@ -65,7 +65,7 @@ let selectiveUpdate resolve lockFile dependenciesFile updateAll package =
         let resolution =    
             let resolvedPackages = 
                 selectiveResolution.ResolvedPackages.GetModelOrFail()
-                |> merge lockFile.ResolvedPackages
+                |> merge (lockFile.GetCompleteResolution())
 
             let dependencies = 
                 resolvedPackages
@@ -116,7 +116,7 @@ let SelectiveUpdate(dependenciesFile : DependenciesFile, updateAll, exclude, for
     let requirements =
         match exclude with
         | Some e -> 
-            oldLockFile.ResolvedPackages
+            oldLockFile.GetCompleteResolution()
             |> createPackageRequirements [e]
         | None -> []
 

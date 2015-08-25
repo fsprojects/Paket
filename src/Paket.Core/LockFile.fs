@@ -316,7 +316,6 @@ type LockFile(fileName:string,groups: Map<string,LockFileGroup>) =
         |> Map.map (fun _ package -> allDependenciesOf package.Name))
     
     member __.Groups = groups
-    member __.ResolvedPackages = mainGroup.Resolution
     member __.FileName = fileName
 
     /// Gets all dependencies of the given package
@@ -356,7 +355,7 @@ type LockFile(fileName:string,groups: Map<string,LockFileGroup>) =
 
     member this.GetTransitiveDependencies() =
         let fromNuGets =
-            this.ResolvedPackages 
+            mainGroup.Resolution 
             |> Seq.map (fun d -> d.Value.Dependencies |> Seq.map (fun (n,_,_) -> n))
             |> Seq.concat
             |> Set.ofSeq
@@ -375,8 +374,15 @@ type LockFile(fileName:string,groups: Map<string,LockFileGroup>) =
             |> Seq.map NormalizedPackageName 
             |> Set.ofSeq
 
-        this.ResolvedPackages
+        mainGroup.Resolution
         |> Map.filter (fun name _ -> transitive.Contains name |> not)
+
+    member this.GetCompleteResolution() : PackageResolution =
+        this.Groups
+        |> Seq.map (fun kv -> kv.Value.Resolution |> Seq.map (fun kv -> kv.Key,kv.Value))
+        |> Seq.concat
+        |> Seq.distinctBy fst // TODO: this is not good. Try to get rid of the whol function
+        |> Map.ofSeq
 
     /// Checks if the first package is a dependency of the second package
     member this.IsDependencyOf(dependentPackage,package) =
@@ -448,7 +454,7 @@ type LockFile(fileName:string,groups: Map<string,LockFileGroup>) =
         usedPackages
 
     member this.GetDependencyLookupTable() = 
-        this.ResolvedPackages
+        mainGroup.Resolution
         |> Map.map (fun name package -> 
                         (this.GetAllDependenciesOf package.Name)
                         |> Set.ofSeq

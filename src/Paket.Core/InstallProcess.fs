@@ -103,7 +103,7 @@ let createModel(root, sources, force, lockFile : LockFile, packages:Set<Normaliz
         |> Async.Parallel
 
     let packageDownloads =
-        lockFile.ResolvedPackages
+        lockFile.GetCompleteResolution()
         |> Map.filter (fun name _ -> packages.Contains name)
         |> Seq.map (fun kv -> CreateInstallModel(root,sources,force,kv.Value))
         |> Async.Parallel
@@ -166,7 +166,7 @@ let InstallIntoProjects(sources, options : InstallerOptions, lockFile : LockFile
                 |> Seq.map (fun p -> NormalizedPackageName p.Key))
             |> Seq.concat
         else
-            lockFile.ResolvedPackages
+            lockFile.GetCompleteResolution()
             |> Seq.map (fun kv -> kv.Key)
 
     let root = Path.GetDirectoryName lockFile.FileName

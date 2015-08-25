@@ -229,12 +229,12 @@ let findDependencies (dependencies : DependenciesFile) config (template : Templa
                                 // If it's a transient dependency, try to
                                 // find it in `paket.lock` and set min version
                                 // to current locked version
-                                lockFile.ResolvedPackages
+                                lockFile.GetCompleteResolution()
                                 |> Map.tryFind (NormalizedPackageName package)
                                 |> Option.map (fun transient -> transient.Version)
                                 |> Option.map (fun v -> VersionRequirement(Minimum v, PreReleaseStatus.All))
                     else
-                        Map.tryFind (NormalizedPackageName package) lockFile.ResolvedPackages
+                        Map.tryFind (NormalizedPackageName package) (lockFile.GetCompleteResolution())
                         |> Option.map (fun resolvedPackage -> resolvedPackage.Version)
                         |> Option.map (fun version -> VersionRequirement(Specific version, PreReleaseStatus.All))
                 let dep =

@@ -19,7 +19,7 @@ let findChangesInDependenciesFile(dependenciesFile:DependenciesFile,lockFile:Loc
         dependenciesFile.Packages
         |> Seq.map (fun d -> NormalizedPackageName d.Name,d)
         |> Seq.filter (fun (name,pr) ->
-            match lockFile.ResolvedPackages.TryFind name with
+            match lockFile.GetCompleteResolution().TryFind name with
             | Some p -> hasChanged pr p
             | _ -> true)
         |> Seq.map fst
@@ -42,7 +42,7 @@ let findChangesInDependenciesFile(dependenciesFile:DependenciesFile,lockFile:Loc
     |> Set.union modified
 
 let PinUnchangedDependencies (dependenciesFile:DependenciesFile) (oldLockFile:LockFile) (changedDependencies:Set<NormalizedPackageName>) =
-    oldLockFile.ResolvedPackages
+    oldLockFile.GetCompleteResolution()
     |> Seq.map (fun kv -> kv.Value)
     |> Seq.filter (fun p -> not <| changedDependencies.Contains(NormalizedPackageName p.Name))
     |> Seq.fold 
