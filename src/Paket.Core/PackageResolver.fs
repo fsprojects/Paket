@@ -242,12 +242,8 @@ let Resolve(getVersionsF, getPackageDetailsF, globalFrameworkRestrictions, rootD
         match allVersions.TryGetValue(normalizedPackageName) with
         | false,_ ->            
             let versions = 
-                match vr with
-                | OverrideAll v -> [v]
-                | Specific v -> [v]
-                | _ -> 
-                    verbosefn "  - fetching versions for %s" name
-                    getVersionsF(sources,packageName)
+                verbosefn "  - fetching versions for %s" name
+                getVersionsF(sources,packageName)
 
             if Seq.isEmpty versions then
                 failwithf "Couldn't retrieve versions for %s." name
