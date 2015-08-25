@@ -205,8 +205,8 @@ type Resolved = {
     ResolvedSourceFiles : ModuleResolver.ResolvedSourceFile list }
 
 /// Resolves all direct and transitive dependencies
-let Resolve(getVersionsF, getPackageDetailsF, globalFrameworkRestrictions, rootDependencies, (requirements : Set<PackageRequirement>)) =
-    tracefn "Resolving packages:"
+let Resolve(groupName, getVersionsF, getPackageDetailsF, globalFrameworkRestrictions, rootDependencies, (requirements : Set<PackageRequirement>)) =
+    tracefn "Resolving packages for group %s:" groupName
     let exploredPackages = Dictionary<NormalizedPackageName*SemVerInfo,ResolvedPackage>()
     let allVersions = Dictionary<NormalizedPackageName,SemVerInfo list>()
     let conflictHistory = Dictionary<NormalizedPackageName,int>()

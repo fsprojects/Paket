@@ -4,6 +4,7 @@ module Paket.FindOutdated
 open Paket.Domain
 open Paket.Logging
 open Chessie.ErrorHandling
+open System.IO
 
 let private adjustVersionRequirements strict includingPrereleases (dependenciesFile: DependenciesFile) =
     //TODO: Anything we need to do for source files here?
@@ -43,7 +44,19 @@ let FindOutdated strict includingPrereleases environment = trial {
         environment.DependenciesFile
         |> adjustVersionRequirements strict includingPrereleases
 
-    let resolution = dependenciesFile.Resolve(true).[Constants.MainDependencyGroup]
+    let getSha1 origin owner repo branch = RemoteDownload.getSHA1OfBranch origin owner repo branch |> Async.RunSynchronously
+    let root = Path.GetDirectoryName dependenciesFile.FileName
+    let mainGroup = dependenciesFile.Groups.[Constants.MainDependencyGroup]
+    // TODO: This is only looking at the maingroup
+    let mainGroup = 
+        { Name = Constants.MainDependencyGroup
+          RemoteFiles = mainGroup.RemoteFiles
+          RootDependencies = Some dependenciesFile.Packages
+          FrameworkRestrictions = mainGroup.Options.Settings.FrameworkRestrictions
+          PackageRequirements = [] }
+        
+    let groups = [ Constants.MainDependencyGroup, mainGroup ] |> Map.ofSeq
+    let resolution = dependenciesFile.Resolve(getSha1,NuGetV2.GetVersions root,NuGetV2.GetPackageDetails root true,groups).[Constants.MainDependencyGroup]
     let resolvedPackages = resolution.ResolvedPackages.GetModelOrFail()
 
     return detectOutdated (lockFile.GetCompleteResolution()) resolvedPackages

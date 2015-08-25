@@ -46,14 +46,9 @@ let addPackagesFromReferenceFiles projects (dependenciesFile : DependenciesFile)
         newDependenciesFile.Save()
         newDependenciesFile
 
-let selectiveUpdate resolve lockFile dependenciesFile updateAll package =
-    let install () =
-        let changedDependencies = DependencyChangeDetection.findChangesInDependenciesFile(dependenciesFile,lockFile)
-        let dependenciesFile = DependencyChangeDetection.PinUnchangedDependencies dependenciesFile lockFile changedDependencies
-        resolve dependenciesFile None
-
-
+let selectiveUpdate resolve (lockFile:LockFile) (dependenciesFile:DependenciesFile) updateAll package =
     let selectiveUpdate package =
+        // TODO: this makes no sense at the moment
         let selectiveResolution = 
             dependenciesFile.Packages
             |> List.filter (fun p -> package = NormalizedPackageName p.Name)
@@ -93,7 +88,11 @@ let selectiveUpdate resolve lockFile dependenciesFile updateAll package =
             resolve dependenciesFile None 
         else
             match package with
-            | None -> install ()
+            | None -> 
+                let dependenciesFile = 
+                    DependencyChangeDetection.findChangesInDependenciesFile(dependenciesFile,lockFile)
+                    |> DependencyChangeDetection.PinUnchangedDependencies dependenciesFile lockFile
+                resolve dependenciesFile None
             | Some package -> [Constants.MainDependencyGroup,selectiveUpdate package] |> Map.ofList
 
     let groups = 
@@ -121,7 +120,18 @@ let SelectiveUpdate(dependenciesFile : DependenciesFile, updateAll, exclude, for
             |> createPackageRequirements [e]
         | None -> []
 
-    let lockFile = selectiveUpdate (fun d p -> d.Resolve(force, p, requirements)) oldLockFile dependenciesFile updateAll exclude
+    let getSha1 origin owner repo branch = RemoteDownload.getSHA1OfBranch origin owner repo branch |> Async.RunSynchronously
+    let root = Path.GetDirectoryName dependenciesFile.FileName
+    let groups = 
+        dependenciesFile.Groups
+        |> Map.map (fun groupName group ->
+            { Name = groupName
+              RemoteFiles = group.RemoteFiles
+              RootDependencies = Some group.Packages
+              FrameworkRestrictions = group.Options.Settings.FrameworkRestrictions
+              PackageRequirements = requirements })  
+
+    let lockFile = selectiveUpdate (fun d p -> d.Resolve(getSha1,NuGetV2.GetVersions root,NuGetV2.GetPackageDetails root force,groups)) oldLockFile dependenciesFile updateAll exclude
     lockFile.Save()
     lockFile
 

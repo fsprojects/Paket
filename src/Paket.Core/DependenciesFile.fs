@@ -259,10 +259,15 @@ module DependenciesFileParser =
                 | exn -> failwithf "Error in paket.dependencies line %d%s  %s" lineNo Environment.NewLine exn.Message
             | [] -> failwithf "Error in paket.dependencies line %d" lineNo)
         |> fun (_,groups) ->
-            let groups =
+            let groups = 
                 groups
-                |> Seq.map (fun (groupName,options,sources,packages,remoteFiles) ->
-                                    groupName,{ Name = groupName; Options = options; Sources = sources; Packages = packages |> List.rev; RemoteFiles = remoteFiles |> List.rev })
+                |> Seq.map (fun (groupName, options, sources, packages, remoteFiles) -> 
+                       groupName, 
+                       { Name = groupName
+                         Options = options
+                         Sources = sources
+                         Packages = packages |> List.rev
+                         RemoteFiles = remoteFiles |> List.rev })
                 |> Map.ofSeq
 
             fileName, groups, lines
@@ -338,19 +343,6 @@ type DependenciesFile(fileName,groups:Map<string,DependenciesGroup>, textReprese
     member __.Lines = textRepresentation
     member __.Sources = mainGroup.Sources
 
-    member this.Resolve(force,packages,requirements) =
-        let getSha1 origin owner repo branch = RemoteDownload.getSHA1OfBranch origin owner repo branch |> Async.RunSynchronously
-        let root = Path.GetDirectoryName this.FileName
-        let mainGroup = 
-            { Name = Constants.MainDependencyGroup
-              RemoteFiles = mainGroup.RemoteFiles
-              RootDependencies = packages
-              FrameworkRestrictions = mainGroup.Options.Settings.FrameworkRestrictions
-              PackageRequirements = requirements }
-        
-        let groups = [ Constants.MainDependencyGroup, mainGroup ] |> Map.ofSeq
-        this.Resolve(getSha1,NuGetV2.GetVersions root,NuGetV2.GetPackageDetails root force,groups)   
-
     member __.Resolve(getSha1,getVersionF, getPackageDetailsF,groups:Map<string,RequirementsGroup>) =
         groups
         |> Map.map (fun k group ->  
@@ -386,15 +378,13 @@ type DependenciesFile(fileName,groups:Map<string,DependenciesGroup>, textReprese
 
             { ResolvedPackages = 
                 PackageResolver.Resolve(
+                    group.Name,
                     getVersionF, 
                     getPackageDetailsF, 
                     group.FrameworkRestrictions, 
                     remoteDependencies @ rootDependencies, 
                     packages @ group.PackageRequirements |> Set.ofList)
               ResolvedSourceFiles = remoteFiles })
-
-    member this.Resolve(force) = 
-        this.Resolve(force,Some packages,[])
 
     member __.AddAdditionalPackage(packageName:PackageName,versionRequirement,resolverStrategy,settings,?pinDown) =
         let pinDown = defaultArg pinDown false

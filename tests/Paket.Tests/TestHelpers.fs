@@ -38,7 +38,7 @@ let safeResolve graph (dependencies : (string * VersionRange) list)  =
                               Parent = PackageRequirementSource.DependenciesFile ""
                               Settings = InstallSettings.Default
                               ResolverStrategy = ResolverStrategy.Max })
-    PackageResolver.Resolve(VersionsFromGraph graph, PackageDetailsFromGraph graph, [], packages, Set.empty)
+    PackageResolver.Resolve(Constants.MainDependencyGroup,VersionsFromGraph graph, PackageDetailsFromGraph graph, [], packages, Set.empty)
 
 let resolve graph dependencies = (safeResolve graph dependencies).GetModelOrFail()
 
