@@ -155,6 +155,8 @@ let findAllReferencesFiles root =
 
 /// Installs all packages from the lock file.
 let InstallIntoProjects(sources, options : InstallerOptions, lockFile : LockFile, projects : (ProjectFile * ReferencesFile) list) =
+    let mainGroup = lockFile.Groups.[Constants.MainDependencyGroup]
+
     let packagesToInstall =
         if options.OnlyReferenced then
             projects
@@ -193,7 +195,7 @@ let InstallIntoProjects(sources, options : InstallerOptions, lockFile : LockFile
                     | None -> failwithf "%s uses NuGet package %O, but it was not found in the paket.lock file." referenceFile.FileName ps.Name
 
                 let resolvedSettings = 
-                    [package.Settings; lockFile.Options.Settings] 
+                    [package.Settings; mainGroup.Options.Settings] 
                     |> List.fold (+) ps.Settings
                 ps.Name, resolvedSettings)
             |> Map.ofSeq
@@ -211,7 +213,7 @@ let InstallIntoProjects(sources, options : InstallerOptions, lockFile : LockFile
                     | None -> None
                     | Some p -> 
                         let resolvedSettings = 
-                            [p.Settings; lockFile.Options.Settings] 
+                            [p.Settings; mainGroup.Options.Settings] 
                             |> List.fold (+) parentSettings
                         Some (p.Name, resolvedSettings) )
 
@@ -299,7 +301,7 @@ let InstallIntoProjects(sources, options : InstallerOptions, lockFile : LockFile
 
         project.Save()
 
-    if options.Redirects || lockFile.Options.Redirects then
+    if options.Redirects || mainGroup.Options.Redirects then
         applyBindingRedirects root extractedPackages
 
 /// Installs all packages from the lock file.

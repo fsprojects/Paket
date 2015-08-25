@@ -318,7 +318,6 @@ type LockFile(fileName:string,groups: Map<string,LockFileGroup>) =
     member __.Groups = groups
     member __.ResolvedPackages = mainGroup.Resolution
     member __.FileName = fileName
-    member __.Options = mainGroup.Options
 
     /// Gets all dependencies of the given package
     member this.GetAllNormalizedDependenciesOf(package:NormalizedPackageName) = 
@@ -328,11 +327,10 @@ type LockFile(fileName:string,groups: Map<string,LockFileGroup>) =
             match mainGroup.Resolution.TryFind identity with
             | Some package ->
                 if usedPackages.Add identity then
-                    if not this.Options.Strict then
+                    if not mainGroup.Options.Strict then
                         for d,_,_ in package.Dependencies do
                             addPackage(NormalizedPackageName d)
-            | None ->
-                failwithf "A package was referenced, but it was not found in the paket.lock file." 
+            | None -> failwithf "Package %O was referenced, but it was not found in the paket.lock file." identity
 
         addPackage package
 
