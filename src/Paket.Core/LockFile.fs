@@ -371,12 +371,13 @@ type LockFile(fileName:string,groups: Map<string,LockFileGroup>) =
         Set.union fromNuGets fromSourceFiles
 
     member this.GetTopLevelDependencies(groupName) = 
+        let group = groups.[groupName]
         let transitive = 
             this.GetTransitiveDependencies(groupName) 
             |> Seq.map NormalizedPackageName 
             |> Set.ofSeq
 
-        mainGroup.Resolution
+        group.Resolution
         |> Map.filter (fun name _ -> transitive.Contains name |> not)
 
     member this.GetCompleteResolution() : PackageResolution =
@@ -457,7 +458,8 @@ type LockFile(fileName:string,groups: Map<string,LockFileGroup>) =
         usedPackages
 
     member this.GetDependencyLookupTable(groupName) = 
-        mainGroup.Resolution
+        let group = groups.[groupName]
+        group.Resolution
         |> Map.map (fun name package ->            
                         this.GetAllDependenciesOf(groupName,package.Name)
                         |> Set.ofSeq
