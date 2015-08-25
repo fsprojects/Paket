@@ -74,7 +74,7 @@ module PaketEnv =
             else Result.Bad filtered
 
     let ensureNotInStrictMode environment =
-        if not environment.DependenciesFile.Options.Strict then ok environment
+        if not environment.DependenciesFile.Groups.[Constants.MainDependencyGroup].Options.Strict then ok environment
         else fail StrictModeDetected
 
     let ensureLockFileExists environment =
@@ -99,8 +99,7 @@ module PaketEnv =
                 
             let dependenciesFile = 
                 DependenciesFile(
-                    Path.Combine(directory.FullName, Constants.DependenciesFileName), 
-                    mainGroup.Options, 
+                    Path.Combine(directory.FullName, Constants.DependenciesFileName),
                     groups,
                     serialized)
 

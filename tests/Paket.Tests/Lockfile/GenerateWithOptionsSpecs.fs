@@ -30,7 +30,7 @@ NUGET
 let ``should generate strict lock file``() = 
     let cfg = DependenciesFile.FromCode(config1)
     cfg.Resolve(noSha1,VersionsFromGraph graph1, PackageDetailsFromGraph graph1).[Constants.MainDependencyGroup].ResolvedPackages.GetModelOrFail()
-    |> LockFileSerializer.serializePackages cfg.Options
+    |> LockFileSerializer.serializePackages cfg.Groups.[Constants.MainDependencyGroup].Options
     |> shouldEqual (normalizeLineEndings expected1)
 
 
@@ -57,7 +57,7 @@ NUGET
 let ``should generate content none lock file``() = 
     let cfg = DependenciesFile.FromCode(configWithContent)
     cfg.Resolve(noSha1,VersionsFromGraph graph2, PackageDetailsFromGraph graph2).[Constants.MainDependencyGroup].ResolvedPackages.GetModelOrFail()
-    |> LockFileSerializer.serializePackages cfg.Options
+    |> LockFileSerializer.serializePackages cfg.Groups.[Constants.MainDependencyGroup].Options
     |> shouldEqual (normalizeLineEndings expected2)
 
 let configWithRedirects = """
@@ -81,5 +81,5 @@ NUGET
 let ``should generate redirects lock file``() = 
     let cfg = DependenciesFile.FromCode(configWithRedirects)
     cfg.Resolve(noSha1,VersionsFromGraph graph3, PackageDetailsFromGraph graph3).[Constants.MainDependencyGroup].ResolvedPackages.GetModelOrFail()
-    |> LockFileSerializer.serializePackages cfg.Options
+    |> LockFileSerializer.serializePackages cfg.Groups.[Constants.MainDependencyGroup].Options
     |> shouldEqual (normalizeLineEndings expected3)

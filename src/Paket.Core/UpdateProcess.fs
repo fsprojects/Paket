@@ -15,7 +15,7 @@ let addPackagesFromReferenceFiles projects (dependenciesFile : DependenciesFile)
         if lockFileName.Exists then
             LockFile.LoadFrom(lockFileName.FullName)
         else
-            LockFile.Create(lockFileName.FullName, dependenciesFile.Options, Resolution.Ok(Map.empty), [])
+            LockFile.Create(lockFileName.FullName, dependenciesFile.Groups.[Constants.MainDependencyGroup].Options, Resolution.Ok(Map.empty), [])
 
     let allExistingPackages =
         oldLockFile.GetCompleteResolution()
@@ -97,7 +97,7 @@ let selectiveUpdate resolve lockFile dependenciesFile updateAll package =
 
     let mainGroup = 
         { Name = Constants.MainDependencyGroup
-          Options = dependenciesFile.Options
+          Options = dependenciesFile.Groups.[Constants.MainDependencyGroup].Options
           Resolution = resolution.ResolvedPackages.GetModelOrFail()
           RemoteFiles = resolution.ResolvedSourceFiles }
     

@@ -263,10 +263,8 @@ module DependenciesFileParser =
                 |> Seq.map (fun (groupName,options,sources,packages,remoteFiles) ->
                                     groupName,{ Name = groupName; Options = options; Sources = sources; Packages = packages |> List.rev; RemoteFiles = remoteFiles |> List.rev })
                 |> Map.ofSeq
-            
-            let mainGroup = groups.[Constants.MainDependencyGroup]
 
-            fileName, mainGroup.Options, groups, lines
+            fileName, groups, lines
     
     let parseVersionString (version : string) = 
         { VersionRequirement = parseVersionRequirement (version.Trim '!')
@@ -310,7 +308,7 @@ module DependenciesFileSerializer =
 
 
 /// Allows to parse and analyze paket.dependencies files.
-type DependenciesFile(fileName,options,groups:Map<string,DependenciesGroup>, textRepresentation:string []) =
+type DependenciesFile(fileName,groups:Map<string,DependenciesGroup>, textRepresentation:string []) =
     let mainGroup = groups.[Constants.MainDependencyGroup]
     let packages = mainGroup.Packages
     let dependencyMap = Map.ofSeq (packages |> Seq.map (fun p -> p.Name, p.VersionRequirement))
@@ -331,10 +329,10 @@ type DependenciesFile(fileName,options,groups:Map<string,DependenciesGroup>, tex
         |> Map.ofSeq
 
     member __.Packages = packages
+    member __.Groups = groups
     member __.HasPackage (name : PackageName) = packages |> List.exists (fun p -> NormalizedPackageName p.Name = NormalizedPackageName name)
     member __.GetPackage (name : PackageName) = packages |> List.find (fun p -> NormalizedPackageName p.Name = NormalizedPackageName name)
     member __.RemoteFiles = mainGroup.RemoteFiles
-    member __.Options = options
     member __.FileName = fileName
     member __.Lines = textRepresentation
     member __.Sources = mainGroup.Sources
@@ -342,6 +340,7 @@ type DependenciesFile(fileName,options,groups:Map<string,DependenciesGroup>, tex
     member this.Resolve(force,packages,requirements) =
         let getSha1 origin owner repo branch = RemoteDownload.getSHA1OfBranch origin owner repo branch |> Async.RunSynchronously
         let root = Path.GetDirectoryName this.FileName
+        let options = mainGroup.Options
         let mainGroup = 
             { Name = Constants.MainDependencyGroup
               RemoteFiles = mainGroup.RemoteFiles
@@ -349,9 +348,9 @@ type DependenciesFile(fileName,options,groups:Map<string,DependenciesGroup>, tex
               PackageRequirements = requirements }
         
         let groups = [ Constants.MainDependencyGroup, mainGroup ] |> Map.ofSeq
-        this.Resolve(getSha1,NuGetV2.GetVersions root,NuGetV2.GetPackageDetails root force,groups)   
+        this.Resolve(getSha1,NuGetV2.GetVersions root,NuGetV2.GetPackageDetails root force,options,groups)   
 
-    member __.Resolve(getSha1,getVersionF, getPackageDetailsF,groups:Map<string,RequirementsGroup>) =
+    member __.Resolve(getSha1,getVersionF, getPackageDetailsF,options,groups:Map<string,RequirementsGroup>) =
         groups
         |> Map.map (fun k group ->  
             let rootDependencies =
@@ -388,6 +387,7 @@ type DependenciesFile(fileName,options,groups:Map<string,DependenciesGroup>, tex
               ResolvedSourceFiles = remoteFiles })
 
     member __.Resolve(getSha1,getVersionF, getPackageDetailsF) =
+        let options = mainGroup.Options
         let mainGroup = 
             { Name = Constants.MainDependencyGroup
               RemoteFiles = mainGroup.RemoteFiles
@@ -396,7 +396,7 @@ type DependenciesFile(fileName,options,groups:Map<string,DependenciesGroup>, tex
         
         let groups = [ Constants.MainDependencyGroup, mainGroup ] |> Map.ofSeq
 
-        __.Resolve(getSha1,getVersionF,getPackageDetailsF,groups)
+        __.Resolve(getSha1,getVersionF,getPackageDetailsF,options,groups)
 
     member this.Resolve(force) = 
         this.Resolve(force,Some packages,[])

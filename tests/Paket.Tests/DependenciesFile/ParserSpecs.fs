@@ -12,7 +12,7 @@ open Paket.Requirements
 [<Test>]
 let ``should read empty config``() = 
     let cfg = DependenciesFile.FromCode("")
-    cfg.Options.Strict |> shouldEqual false
+    cfg.Groups.[Constants.MainDependencyGroup].Options.Strict |> shouldEqual false
 
     cfg.Packages.Length |> shouldEqual 0
     cfg.RemoteFiles.Length |> shouldEqual 0
@@ -24,7 +24,7 @@ source http://nuget.org/api/v2
 [<Test>]
 let ``should read config which only contains a source``() = 
     let cfg = DependenciesFile.FromCode(configWithSourceOnly)
-    cfg.Options.Strict |> shouldEqual false
+    cfg.Groups.[Constants.MainDependencyGroup].Options.Strict |> shouldEqual false
 
     cfg.Sources.Length |> shouldEqual 1
     cfg.Sources.Head  |> shouldEqual (Nuget({ Url = "http://nuget.org/api/v2"; Authentication = None }))
@@ -41,7 +41,7 @@ nuget "SignalR" "= 3.3.2"
 [<Test>]
 let ``should read simple config``() = 
     let cfg = DependenciesFile.FromCode(config1)
-    cfg.Options.Strict |> shouldEqual false
+    cfg.Groups.[Constants.MainDependencyGroup].Options.Strict |> shouldEqual false
 
     cfg.GetDependenciesInGroup(Constants.MainDependencyGroup).[PackageName "Rx-Main"].Range |> shouldEqual (VersionRange.Between("2.0", "3.0"))
     cfg.GetDependenciesInGroup(Constants.MainDependencyGroup).[PackageName "Castle.Windsor-log4net"].Range |> shouldEqual (VersionRange.Between("3.2", "4.0"))
@@ -92,7 +92,7 @@ nuget "MinPackage" "1.1.3"
 [<Test>]
 let ``should read config with multiple sources``() = 
     let cfg = DependenciesFile.FromCode(config4)
-    cfg.Options.Strict |> shouldEqual false
+    cfg.Groups.[Constants.MainDependencyGroup].Options.Strict |> shouldEqual false
 
     (cfg.Packages |> List.find (fun p -> p.Name = PackageName "Rx-Main")).Sources |> shouldEqual [PackageSources.DefaultNugetSource; PackageSource.NugetSource "http://nuget.org/api/v3"]
     (cfg.Packages |> List.find (fun p -> p.Name = PackageName "MinPackage")).Sources |> shouldEqual [PackageSources.DefaultNugetSource; PackageSource.NugetSource "http://nuget.org/api/v3"]
@@ -126,8 +126,8 @@ nuget "FAKE" "~> 3.0"
 [<Test>]
 let ``should read strict config``() = 
     let cfg = DependenciesFile.FromCode(strictConfig)
-    cfg.Options.Strict |> shouldEqual true
-    cfg.Options.Redirects |> shouldEqual false
+    cfg.Groups.[Constants.MainDependencyGroup].Options.Strict |> shouldEqual true
+    cfg.Groups.[Constants.MainDependencyGroup].Options.Redirects |> shouldEqual false
 
     (cfg.Packages |> List.find (fun p -> p.Name = PackageName "FAKE")).Sources |> shouldEqual [PackageSource.NugetSource "http://nuget.org/api/v2"]
 
@@ -141,8 +141,8 @@ nuget "FAKE" "~> 3.0"
 [<Test>]
 let ``should read config with redirects``() = 
     let cfg = DependenciesFile.FromCode(redirectsConfig)
-    cfg.Options.Strict |> shouldEqual false
-    cfg.Options.Redirects |> shouldEqual true
+    cfg.Groups.[Constants.MainDependencyGroup].Options.Strict |> shouldEqual false
+    cfg.Groups.[Constants.MainDependencyGroup].Options.Redirects |> shouldEqual true
 
     (cfg.Packages |> List.find (fun p -> p.Name = PackageName "FAKE")).Sources |> shouldEqual [PackageSource.NugetSource "http://nuget.org/api/v2"]
 
@@ -156,8 +156,8 @@ nuget "FAKE" "~> 3.0"
 [<Test>]
 let ``should read config with no redirects``() = 
     let cfg = DependenciesFile.FromCode(noRedirectsConfig)
-    cfg.Options.Strict |> shouldEqual false
-    cfg.Options.Redirects |> shouldEqual false
+    cfg.Groups.[Constants.MainDependencyGroup].Options.Strict |> shouldEqual false
+    cfg.Groups.[Constants.MainDependencyGroup].Options.Redirects |> shouldEqual false
 
     (cfg.Packages |> List.find (fun p -> p.Name = PackageName "FAKE")).Sources |> shouldEqual [PackageSource.NugetSource "http://nuget.org/api/v2"]
 
@@ -171,9 +171,9 @@ nuget "Microsoft.SqlServer.Types"
 [<Test>]
 let ``should read content none config``() = 
     let cfg = DependenciesFile.FromCode(noneContentConfig)
-    cfg.Options.Settings.OmitContent |> shouldEqual (Some true)
-    cfg.Options.Settings.CopyLocal |> shouldEqual None
-    cfg.Options.Settings.ImportTargets |> shouldEqual None
+    cfg.Groups.[Constants.MainDependencyGroup].Options.Settings.OmitContent |> shouldEqual (Some true)
+    cfg.Groups.[Constants.MainDependencyGroup].Options.Settings.CopyLocal |> shouldEqual None
+    cfg.Groups.[Constants.MainDependencyGroup].Options.Settings.ImportTargets |> shouldEqual None
 
     (cfg.Packages |> List.find (fun p -> p.Name = PackageName "Microsoft.SqlServer.Types")).Sources |> shouldEqual [PackageSource.NugetSource "http://nuget.org/api/v2"]
 
@@ -187,9 +187,9 @@ nuget "Microsoft.SqlServer.Types"
 [<Test>]
 let ``should read config with specific framework``() = 
     let cfg = DependenciesFile.FromCode(specificFrameworkConfig)
-    cfg.Options.Settings.OmitContent |> shouldEqual None
-    cfg.Options.Settings.CopyLocal |> shouldEqual None
-    cfg.Options.Settings.ImportTargets |> shouldEqual None
+    cfg.Groups.[Constants.MainDependencyGroup].Options.Settings.OmitContent |> shouldEqual None
+    cfg.Groups.[Constants.MainDependencyGroup].Options.Settings.CopyLocal |> shouldEqual None
+    cfg.Groups.[Constants.MainDependencyGroup].Options.Settings.ImportTargets |> shouldEqual None
 
     (cfg.Packages |> List.find (fun p -> p.Name = PackageName "Microsoft.SqlServer.Types")).Sources |> shouldEqual [PackageSource.NugetSource "http://nuget.org/api/v2"]
 
@@ -204,9 +204,9 @@ nuget "Microsoft.SqlServer.Types"
 [<Test>]
 let ``should read no targets import config``() = 
     let cfg = DependenciesFile.FromCode(noTargetsImportConfig)
-    cfg.Options.Settings.ImportTargets |> shouldEqual (Some false)
-    cfg.Options.Settings.CopyLocal |> shouldEqual (Some false)
-    cfg.Options.Settings.OmitContent |> shouldEqual None
+    cfg.Groups.[Constants.MainDependencyGroup].Options.Settings.ImportTargets |> shouldEqual (Some false)
+    cfg.Groups.[Constants.MainDependencyGroup].Options.Settings.CopyLocal |> shouldEqual (Some false)
+    cfg.Groups.[Constants.MainDependencyGroup].Options.Settings.OmitContent |> shouldEqual None
 
     (cfg.Packages |> List.find (fun p -> p.Name = PackageName "Microsoft.SqlServer.Types")).Sources |> shouldEqual [PackageSource.NugetSource "http://nuget.org/api/v2"]
 
@@ -222,7 +222,7 @@ nuget SignalR = 3.3.2
 [<Test>]
 let ``should read config without quotes``() = 
     let cfg = DependenciesFile.FromCode(configWithoutQuotes)
-    cfg.Options.Strict |> shouldEqual false
+    cfg.Groups.[Constants.MainDependencyGroup].Options.Strict |> shouldEqual false
     cfg.GetDependenciesInGroup(Constants.MainDependencyGroup).Count |> shouldEqual 4
 
     cfg.GetDependenciesInGroup(Constants.MainDependencyGroup).[PackageName "Rx-Main"].Range |> shouldEqual (VersionRange.Between("2.0", "3.0"))
@@ -242,7 +242,7 @@ nuget SignalR = 3.3.2
 let ``should read config local quoted source``() = 
     let cfg = DependenciesFile.FromCode(configLocalQuotedSource)
     cfg.Sources.Head |> shouldEqual (LocalNuget("D:\code\\temp with space"))
-    cfg.Options.Strict |> shouldEqual false
+    cfg.Groups.[Constants.MainDependencyGroup].Options.Strict |> shouldEqual false
     cfg.GetDependenciesInGroup(Constants.MainDependencyGroup).Count |> shouldEqual 4
 
     cfg.GetDependenciesInGroup(Constants.MainDependencyGroup).[PackageName "Rx-Main"].Range |> shouldEqual (VersionRange.Between("2.0", "3.0"))
@@ -262,7 +262,7 @@ nuget SignalR    = 3.3.2
 [<Test>]
 let ``should read config without quotes but lots of whitespace``() = 
     let cfg = DependenciesFile.FromCode(configWithoutQuotes)
-    cfg.Options.Strict |> shouldEqual false
+    cfg.Groups.[Constants.MainDependencyGroup].Options.Strict |> shouldEqual false
     cfg.GetDependenciesInGroup(Constants.MainDependencyGroup).Count |> shouldEqual 4
 
     cfg.GetDependenciesInGroup(Constants.MainDependencyGroup).[PackageName "Rx-Main"].Range |> shouldEqual (VersionRange.Between("2.0", "3.0"))

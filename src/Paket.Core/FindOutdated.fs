@@ -21,10 +21,10 @@ let private adjustVersionRequirements strict includingPrereleases (dependenciesF
                 | false,false -> VersionRequirement.AllReleases, ResolverStrategy.Max
             { p with VersionRequirement = requirement; ResolverStrategy = strategy})
 
-    let mainGroup = { Name = Constants.MainDependencyGroup; Options = dependenciesFile.Options; Sources = dependenciesFile.Sources; Packages = newPackages; RemoteFiles = dependenciesFile.RemoteFiles }
+    let mainGroup = { Name = Constants.MainDependencyGroup; Options = dependenciesFile.Groups.[Constants.MainDependencyGroup].Options; Sources = dependenciesFile.Sources; Packages = newPackages; RemoteFiles = dependenciesFile.RemoteFiles }
     let groups = [Constants.MainDependencyGroup, mainGroup] |> Map.ofSeq
 
-    DependenciesFile(dependenciesFile.FileName, dependenciesFile.Options, groups, dependenciesFile.Lines)
+    DependenciesFile(dependenciesFile.FileName, groups, dependenciesFile.Lines)
 
 let private detectOutdated (oldResolution: PackageResolver.PackageResolution) (newResolution: PackageResolver.PackageResolution) =
     [for kv in oldResolution do
