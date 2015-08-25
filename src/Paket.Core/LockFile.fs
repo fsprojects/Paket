@@ -319,17 +319,18 @@ type LockFile(fileName:string,groups: Map<string,LockFileGroup>) =
     member __.FileName = fileName
 
     /// Gets all dependencies of the given package
-    member this.GetAllNormalizedDependenciesOf(package:NormalizedPackageName) = 
+    member this.GetAllNormalizedDependenciesOf(groupName,package:NormalizedPackageName) = 
+        let group = groups.[groupName]
         let usedPackages = HashSet<_>()
 
         let rec addPackage (identity:NormalizedPackageName) =
-            match mainGroup.Resolution.TryFind identity with
+            match group.Resolution.TryFind identity with
             | Some package ->
                 if usedPackages.Add identity then
-                    if not mainGroup.Options.Strict then
+                    if not group.Options.Strict then
                         for d,_,_ in package.Dependencies do
                             addPackage(NormalizedPackageName d)
-            | None -> failwithf "Package %O was referenced, but it was not found in the paket.lock file." identity
+            | None -> failwithf "Package %O was referenced, but it was not found in the paket.lock file in the group %s." identity groupName
 
         addPackage package
 
