@@ -60,7 +60,7 @@ let beforeAndAfter environment dependenciesFile projects =
 let simplify interactive environment = trial {
     let! lockFile = environment |> PaketEnv.ensureLockFileExists
 
-    let flatLookup = lockFile.GetDependencyLookupTable()
+    let flatLookup = lockFile.GetDependencyLookupTable(Constants.MainDependencyGroup)
     let! dependenciesFile = simplifyDependenciesFile(environment.DependenciesFile, flatLookup, interactive)
     let projectFiles, referencesFiles = List.unzip environment.Projects
 

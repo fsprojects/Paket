@@ -171,7 +171,7 @@ let InstallIntoProjects(sources, options : InstallerOptions, lockFile : LockFile
 
     let root = Path.GetDirectoryName lockFile.FileName
     let extractedPackages = createModel(root, sources, options.Force, lockFile, Set.ofSeq packagesToInstall)
-    let lookup = lockFile.GetDependencyLookupTable()
+    let lookup = lockFile.GetDependencyLookupTable(mainGroup.Name)
 
     let model =
         extractedPackages

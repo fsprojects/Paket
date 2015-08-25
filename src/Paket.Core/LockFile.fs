@@ -294,26 +294,6 @@ module LockFileParser =
 type LockFile(fileName:string,groups: Map<string,LockFileGroup>) =
     let mainGroup = groups.[Constants.MainDependencyGroup]
 
-    let dependenciesByPackageLazy = lazy (
-        let allDependenciesOf package =
-            let usedPackages = HashSet<_>()
-
-            let rec addPackage packageName =
-                let identity = NormalizedPackageName packageName
-                match mainGroup.Resolution.TryFind identity with
-                | Some package ->
-                    if usedPackages.Add packageName then
-                        if not mainGroup.Options.Strict then
-                            for d,_,_ in package.Dependencies do
-                                addPackage d
-                | None -> ()
-
-            addPackage package
-
-            usedPackages
-
-        mainGroup.Resolution
-        |> Map.map (fun _ package -> allDependenciesOf package.Name))
     
     member __.Groups = groups
     member __.FileName = fileName
@@ -330,27 +310,47 @@ type LockFile(fileName:string,groups: Map<string,LockFileGroup>) =
                     if not group.Options.Strict then
                         for d,_,_ in package.Dependencies do
                             addPackage(NormalizedPackageName d)
-            | None -> failwithf "Package %O was referenced, but it was not found in the paket.lock file in the group %s." identity groupName
+            | None -> failwithf "Package %O was referenced, but it was not found in the paket.lock file in group %s." identity groupName
 
         addPackage package
 
         usedPackages
 
     /// Gets all dependencies of the given package
-    member this.GetAllDependenciesOf(package) =
-        match this.GetAllDependenciesOfSafe package with
+    member this.GetAllDependenciesOf(groupName,package) =
+        match this.GetAllDependenciesOfSafe(groupName,package) with
         | Some packages -> packages
         | None ->
             let (PackageName name) = package
-            failwithf "Package %s was referenced, but it was not found in the paket.lock file." name
+            failwithf "Package %s was referenced, but it was not found in the paket.lock file in group %s." name groupName
 
-    /// Gets all dependencies of the given package
-    member this.GetAllDependenciesOfSafe(package) =
-        dependenciesByPackageLazy.Value
-        |> Map.tryFind (NormalizedPackageName package)
+    /// Gets all dependencies of the given package in the given group.
+    member this.GetAllDependenciesOfSafe(groupName,package) =
+        let group = groups.[groupName]
+        let allDependenciesOf package =
+            let usedPackages = HashSet<_>()
 
-    member this.GetAllNormalizedDependenciesOf(package:PackageName) = 
-        this.GetAllDependenciesOf(package)
+            let rec addPackage packageName =
+                let identity = NormalizedPackageName packageName
+                match group.Resolution.TryFind identity with
+                | Some package ->
+                    if usedPackages.Add packageName then
+                        if not group.Options.Strict then
+                            for d,_,_ in package.Dependencies do
+                                addPackage d
+                | None -> ()
+
+            addPackage package
+
+            usedPackages
+
+        match group.Resolution |> Map.tryFind (NormalizedPackageName package) with
+        | Some v -> Some(allDependenciesOf v.Name)
+        | None -> None
+        
+
+    member this.GetAllNormalizedDependenciesOf(groupName,package:PackageName) = 
+        this.GetAllDependenciesOf(groupName,package)
         |> Seq.map NormalizedPackageName
         |> Set.ofSeq
 
@@ -448,24 +448,26 @@ type LockFile(fileName:string,groups: Map<string,LockFileGroup>) =
         referencesFile.NugetPackages
         |> List.iter (fun package -> 
             try
-                for d in this.GetAllDependenciesOf(package.Name) do
-                    if usedPackages.ContainsKey d |> not then
-                        usedPackages.Add(d,package)
+                for g in this.Groups do // TODO: Match group from references file
+                    for d in this.GetAllDependenciesOf(g.Key,package.Name) do
+                        if usedPackages.ContainsKey d |> not then
+                            usedPackages.Add(d,package)
             with exn -> failwithf "%s - in %s" exn.Message referencesFile.FileName)
 
         usedPackages
 
-    member this.GetDependencyLookupTable() = 
+    member this.GetDependencyLookupTable(groupName) = 
         mainGroup.Resolution
-        |> Map.map (fun name package -> 
-                        (this.GetAllDependenciesOf package.Name)
+        |> Map.map (fun name package ->            
+                        this.GetAllDependenciesOf(groupName,package.Name)
                         |> Set.ofSeq
                         |> Set.remove package.Name)
 
     member this.GetPackageHullSafe referencesFile =
         referencesFile.NugetPackages
-        |> Seq.map (fun package ->
-            this.GetAllDependenciesOfSafe(package.Name)
+        |> Seq.map (fun package -> 
+            // TODO: use group from references file
+            this.GetAllDependenciesOfSafe(Constants.MainDependencyGroup,package.Name)
             |> failIfNone (ReferenceNotFoundInLockFile(referencesFile.FileName, package.Name)))
         |> collect
         |> lift (Seq.concat >> Set.ofSeq)
