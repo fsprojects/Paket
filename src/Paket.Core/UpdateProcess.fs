@@ -47,6 +47,19 @@ let addPackagesFromReferenceFiles projects (dependenciesFile : DependenciesFile)
         newDependenciesFile.Save()
         newDependenciesFile
 
+type UpdateMode =
+    | SelectiveUpdate of NormalizedPackageName
+    | Install
+    | UpdateAll
+
+    static member Mode updateAll package =
+        if updateAll then
+            UpdateAll
+        else
+            match package with
+            | None -> Install
+            | Some package -> SelectiveUpdate package
+
 let selectiveUpdate resolve lockFile dependenciesFile updateAll package =
     let install () =
         let changedDependencies = DependencyChangeDetection.findChangesInDependenciesFile(dependenciesFile,lockFile)
@@ -88,12 +101,10 @@ let selectiveUpdate resolve lockFile dependenciesFile updateAll package =
         { ResolvedPackages = Resolution.Ok(resolution); ResolvedSourceFiles = lockFile.SourceFiles }
 
     let resolution =
-        if updateAll then
-            resolve dependenciesFile None
-        else
-            match package with
-            | None -> install ()
-            | Some package -> selectiveUpdate package
+        match UpdateMode.Mode updateAll package with
+        | UpdateAll -> resolve dependenciesFile None
+        | Install -> install ()
+        | SelectiveUpdate p -> selectiveUpdate p
 
     LockFile(lockFile.FileName, dependenciesFile.Options, resolution.ResolvedPackages.GetModelOrFail(), resolution.ResolvedSourceFiles)
 
@@ -131,12 +142,10 @@ let SelectiveUpdate(dependenciesFile : DependenciesFile, updateAll, exclude, for
         | l -> l
 
     let getVersion pr =
-        if updateAll then
-            id
-        else
-            match exclude with
-            | None -> skipVersions pr
-            | Some package -> id
+        match UpdateMode.Mode updateAll exclude with
+        | UpdateAll -> id
+        | SelectiveUpdate _ -> id
+        | Install -> skipVersions pr
 
     let lockFile = selectiveUpdate (fun d p -> d.Resolve(getVersion, force, p, requirements)) oldLockFile dependenciesFile updateAll exclude
     lockFile.Save()
