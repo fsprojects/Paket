@@ -309,6 +309,7 @@ let Resolve(getVersionsF, getPackageDetailsF, globalFrameworkRestrictions, rootD
 
                 let preRelease v =
                     v.PreRelease = None
+                    || currentRequirement.VersionRequirement.PreReleases <> PreReleaseStatus.No
                     || match currentRequirement.VersionRequirement.Range with
                         | Specific v -> v.PreRelease <> None
                         | OverrideAll v -> v.PreRelease <> None
