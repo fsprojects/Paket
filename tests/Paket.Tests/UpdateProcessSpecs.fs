@@ -47,10 +47,11 @@ let resolve' graph requirements (dependenciesFile : DependenciesFile) packages =
         { Name = Constants.MainDependencyGroup
           RemoteFiles = []
           RootDependencies = packages
+          FrameworkRestrictions = dependenciesFile.Groups.[Constants.MainDependencyGroup].Options.Settings.FrameworkRestrictions
           PackageRequirements = requirements }
         
     let groups = [ Constants.MainDependencyGroup, mainGroup ] |> Map.ofSeq
-    dependenciesFile.Resolve(noSha1, VersionsFromGraph graph, PackageDetailsFromGraph graph, dependenciesFile.Groups.[Constants.MainDependencyGroup].Options, groups).[Constants.MainDependencyGroup]
+    dependenciesFile.Resolve(noSha1, VersionsFromGraph graph, PackageDetailsFromGraph graph, groups)
 
 let resolve = resolve' graph []
 

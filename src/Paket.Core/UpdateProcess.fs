@@ -52,19 +52,20 @@ let selectiveUpdate resolve lockFile dependenciesFile updateAll package =
         let dependenciesFile = DependencyChangeDetection.PinUnchangedDependencies dependenciesFile lockFile changedDependencies
         resolve dependenciesFile None
 
+
     let selectiveUpdate package =
         let selectiveResolution = 
             dependenciesFile.Packages
             |> List.filter (fun p -> package = NormalizedPackageName p.Name)
             |> Some
-            |> resolve dependenciesFile
+            |> resolve dependenciesFile            
 
         let merge destination source = 
             Map.fold (fun acc key value -> Map.add key value acc) destination source
 
         let resolution =    
             let resolvedPackages = 
-                selectiveResolution.ResolvedPackages.GetModelOrFail()
+                (selectiveResolution |> Map.find Constants.MainDependencyGroup).ResolvedPackages.GetModelOrFail()
                 |> merge (lockFile.GetCompleteResolution())
 
             let dependencies = 
@@ -89,19 +90,19 @@ let selectiveUpdate resolve lockFile dependenciesFile updateAll package =
 
     let resolution =
         if updateAll then
-            resolve dependenciesFile None
+            resolve dependenciesFile None 
         else
             match package with
             | None -> install ()
-            | Some package -> selectiveUpdate package
+            | Some package -> [Constants.MainDependencyGroup,selectiveUpdate package] |> Map.ofList
 
-    let mainGroup = 
-        { Name = Constants.MainDependencyGroup
-          Options = dependenciesFile.Groups.[Constants.MainDependencyGroup].Options
-          Resolution = resolution.ResolvedPackages.GetModelOrFail()
-          RemoteFiles = resolution.ResolvedSourceFiles }
-    
-    let groups = [ Constants.MainDependencyGroup, mainGroup ] |> Map.ofSeq
+    let groups = 
+        resolution
+        |> Map.map (fun groupName group -> 
+                { Name = groupName
+                  Options = dependenciesFile.Groups.[groupName].Options
+                  Resolution = group.ResolvedPackages.GetModelOrFail()
+                  RemoteFiles = group.ResolvedSourceFiles })
     
     LockFile(lockFile.FileName, groups)
 
@@ -120,7 +121,7 @@ let SelectiveUpdate(dependenciesFile : DependenciesFile, updateAll, exclude, for
             |> createPackageRequirements [e]
         | None -> []
 
-    let lockFile = selectiveUpdate (fun d p -> d.Resolve(force, p, requirements).[Constants.MainDependencyGroup]) oldLockFile dependenciesFile updateAll exclude
+    let lockFile = selectiveUpdate (fun d p -> d.Resolve(force, p, requirements)) oldLockFile dependenciesFile updateAll exclude
     lockFile.Save()
     lockFile
 
