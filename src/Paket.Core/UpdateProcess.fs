@@ -8,6 +8,7 @@ open Paket.PackageResolver
 open System.Collections.Generic
 open Chessie.ErrorHandling
 open Paket.Logging
+open Paket.Requirements
 
 let addPackagesFromReferenceFiles projects (dependenciesFile : DependenciesFile) =
     let lockFileName = DependenciesFile.FindLockfile dependenciesFile.FileName
@@ -111,7 +112,33 @@ let SelectiveUpdate(dependenciesFile : DependenciesFile, updateAll, exclude, for
             |> createPackageRequirements [e]
         | None -> []
 
-    let lockFile = selectiveUpdate (fun d p -> d.Resolve(force, p, requirements)) oldLockFile dependenciesFile updateAll exclude
+    let skipVersions packages f (sources,packageName) =
+        let v p =
+            match p.VersionRequirement.Range with
+            | Specific v
+            | OverrideAll v -> [v]
+            | _ -> []
+
+        let versions =
+            packages
+            |> List.filter (fun p -> NormalizedPackageName p.Name = NormalizedPackageName packageName)
+            |> List.map v
+            |> List.concat
+            |> List.distinct
+
+        match versions with
+        | [] -> f (sources,packageName)
+        | l -> l
+
+    let getVersion pr =
+        if updateAll then
+            id
+        else
+            match exclude with
+            | None -> skipVersions pr
+            | Some package -> id
+
+    let lockFile = selectiveUpdate (fun d p -> d.Resolve(getVersion, force, p, requirements)) oldLockFile dependenciesFile updateAll exclude
     lockFile.Save()
     lockFile
 
