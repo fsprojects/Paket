@@ -26,13 +26,14 @@ let findChangesInDependenciesFile(dependenciesFile:DependenciesFile,lockFile:Loc
         |> Set.ofSeq
     
     let modified =
-        [for t in lockFile.GetTopLevelDependencies() do 
-            let name = t.Key
-            match directMap.TryFind name with
-            | Some pr ->
-                if hasChanged pr t.Value then
-                    yield name // Modified
-            | _ -> yield name // Removed
+        [for g in lockFile.Groups do
+             for t in lockFile.GetTopLevelDependencies(g.Key) do 
+                let name = t.Key
+                match directMap.TryFind name with
+                | Some pr ->
+                    if hasChanged pr t.Value then
+                        yield name // Modified
+                | _ -> yield name // Removed
         ]
         |> List.map lockFile.GetAllNormalizedDependenciesOf
         |> Seq.concat

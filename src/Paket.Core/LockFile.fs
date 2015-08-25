@@ -353,24 +353,25 @@ type LockFile(fileName:string,groups: Map<string,LockFileGroup>) =
         |> Seq.map NormalizedPackageName
         |> Set.ofSeq
 
-    member this.GetTransitiveDependencies() =
+    member this.GetTransitiveDependencies(groupName) =
+        let group = groups.[groupName]
         let fromNuGets =
-            mainGroup.Resolution 
+            group.Resolution 
             |> Seq.map (fun d -> d.Value.Dependencies |> Seq.map (fun (n,_,_) -> n))
             |> Seq.concat
             |> Set.ofSeq
 
         let fromSourceFiles =
-            mainGroup.RemoteFiles
+            group.RemoteFiles
             |> Seq.map (fun d -> d.Dependencies |> Seq.map fst)
             |> Seq.concat
             |> Set.ofSeq
 
         Set.union fromNuGets fromSourceFiles
 
-    member this.GetTopLevelDependencies() = 
+    member this.GetTopLevelDependencies(groupName) = 
         let transitive = 
-            this.GetTransitiveDependencies() 
+            this.GetTransitiveDependencies(groupName) 
             |> Seq.map NormalizedPackageName 
             |> Set.ofSeq
 
