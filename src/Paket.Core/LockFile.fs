@@ -148,15 +148,13 @@ module LockFileParser =
     | CopyLocal of bool
     | Redirects of bool
 
-    let private (|Remote|NugetPackage|NugetDependency|SourceFile|RepositoryType|Blank|InstallOption|) (state, line:string) =
+    let private (|Remote|NugetPackage|NugetDependency|SourceFile|RepositoryType|InstallOption|) (state, line:string) =
         match (state.RepositoryType, line.Trim()) with
         | _, "HTTP" -> RepositoryType "HTTP"
         | _, "GIST" -> RepositoryType "GIST"
         | _, "NUGET" -> RepositoryType "NUGET"
         | _, "GITHUB" -> RepositoryType "GITHUB"
-        | _, _ when String.IsNullOrWhiteSpace line -> Blank
         | _, String.StartsWith "remote:" trimmed -> Remote(PackageSource.Parse("source " + trimmed.Trim()).ToString())
-        | _, String.StartsWith "specs:" _ -> Blank
         | _, String.StartsWith "REFERENCES:" trimmed -> InstallOption(ReferencesMode(trimmed.Trim() = "STRICT"))
         | _, String.StartsWith "REDIRECTS:" trimmed -> InstallOption(Redirects(trimmed.Trim() = "ON"))
         | _, String.StartsWith "IMPORT-TARGETS:" trimmed -> InstallOption(ImportTargets(trimmed.Trim() = "TRUE"))
@@ -173,17 +171,17 @@ module LockFileParser =
         | Some "GITHUB", trimmed -> SourceFile(GitHubLink, trimmed)
         | Some "GIST", trimmed -> SourceFile(GistLink, trimmed)
         | Some "HTTP", trimmed  -> SourceFile(HttpLink(String.Empty), trimmed)
-        | Some _, _ -> failwith "unknown Repository Type."
-        | _ -> failwith "unknown lock file format."
+        | Some _, _ -> failwithf "unknown repository type %s." line
+        | _ -> failwithf "unknown lock file format %s" line
 
     let Parse(lockFileLines) =
         let remove textToRemove (source:string) = source.Replace(textToRemove, "")
         let removeBrackets = remove "(" >> remove ")"
         ({ RepositoryType = None; RemoteUrl = None; Packages = []; SourceFiles = []; Options = InstallOptions.Default; LastWasPackage = false }, lockFileLines)
         ||> Seq.fold(fun state line ->
+            if String.IsNullOrWhiteSpace line || line.Trim().StartsWith("specs:") then state else
             match (state, line) with
             | Remote(url) -> { state with RemoteUrl = Some url }
-            | Blank -> state
             | InstallOption (ReferencesMode(mode)) -> { state with Options = {state.Options with Strict = mode} }
             | InstallOption (Redirects(mode)) -> { state with Options = {state.Options with Redirects = mode} }
             | InstallOption (ImportTargets(mode)) -> { state with Options = {state.Options with Settings = { state.Options.Settings with ImportTargets = Some mode} } }
