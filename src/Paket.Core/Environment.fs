@@ -94,13 +94,13 @@ module PaketEnv =
                 @ [""]
                 |> Array.ofList
 
-            let mainGroup = { Name = Constants.MainDependencyGroup; Sources = sources; Packages = []; RemoteFiles = [] }
+            let mainGroup = { Name = Constants.MainDependencyGroup; Options = InstallOptions.Default; Sources = sources; Packages = []; RemoteFiles = [] }
             let groups = [Constants.MainDependencyGroup, mainGroup] |> Map.ofSeq
                 
             let dependenciesFile = 
                 DependenciesFile(
                     Path.Combine(directory.FullName, Constants.DependenciesFileName), 
-                    InstallOptions.Default, 
+                    mainGroup.Options, 
                     groups,
                     serialized)
 

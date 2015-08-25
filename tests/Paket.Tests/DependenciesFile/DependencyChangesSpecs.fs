@@ -37,7 +37,7 @@ nuget Castle.Windsor-log4net"""
    
     let changedDependencies = DependencyChangeDetection.findChangesInDependenciesFile(cfg,lockFile)
     let newDependencies = DependencyChangeDetection.PinUnchangedDependencies cfg lockFile changedDependencies
-    newDependencies.DirectDependencies
+    newDependencies.GetDependenciesInGroup(Constants.MainDependencyGroup)
     |> shouldEqual Map.empty
 
 [<Test>]
@@ -85,7 +85,7 @@ nuget NUnit"""
               (PackageName "log4net", VersionRequirement (Specific(SemVer.Parse "1.2.10"),No))])
 
     
-    newDependencies.DirectDependencies
+    newDependencies.GetDependenciesInGroup(Constants.MainDependencyGroup)
     |> shouldEqual expected
 
 [<Test>]
@@ -131,7 +131,7 @@ nuget Castle.Windsor-log4net >= 3.3.0"""
               (PackageName "log4net", VersionRequirement (Specific(SemVer.Parse "1.2.10"),No))])
 
     
-    newDependencies.DirectDependencies
+    newDependencies.GetDependenciesInGroup(Constants.MainDependencyGroup)
     |> shouldEqual expected
 
 [<Test>]
@@ -172,7 +172,7 @@ nuget Castle.Windsor-log4net >= 3.4.0"""
             ([(PackageName "Castle.Windsor-log4net", VersionRequirement (Minimum(SemVer.Parse "3.4.0"),No));])
 
     
-    newDependencies.DirectDependencies
+    newDependencies.GetDependenciesInGroup(Constants.MainDependencyGroup)
     |> shouldEqual expected
 
 [<Test>]

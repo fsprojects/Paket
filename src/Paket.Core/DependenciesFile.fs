@@ -28,6 +28,7 @@ type VersionStrategy = {
 type DependenciesGroup = {
     Name: string
     Sources: PackageSource list 
+    Options: InstallOptions
     Packages : PackageRequirement list
     RemoteFiles : UnresolvedSourceFile list
 }
@@ -158,10 +159,11 @@ module DependenciesFileParser =
     | CopyLocal of bool
     | Redirects of bool
 
-    let private (|Remote|Package|Empty|ParserOptions|SourceFile|) (line:string) =
+    let private (|Remote|Package|Empty|ParserOptions|SourceFile|Group|) (line:string) =
         match line.Trim() with
         | _ when String.IsNullOrWhiteSpace line -> Empty(line)
         | String.StartsWith "source" _ as trimmed -> Remote(PackageSource.Parse(trimmed))
+        | String.StartsWith "group" _ as trimmed -> Group(trimmed.Replace("group ",""))
         | String.StartsWith "nuget" trimmed -> 
             let parts = trimmed.Trim().Replace("\"", "").Split([|' '|],StringSplitOptions.RemoveEmptyEntries) |> Seq.toList
 
@@ -229,33 +231,42 @@ module DependenciesFileParser =
     let parseDependenciesFile fileName (lines:string seq) =
         let lines = lines |> Seq.toArray
          
-        ((0, InstallOptions.Default, [], [], []), lines)
-        ||> Seq.fold(fun (lineNo, options, sources: PackageSource list, packages, sourceFiles: UnresolvedSourceFile list) line ->
-            let lineNo = lineNo + 1
-            try
-                match line with
-                | Empty(_) -> lineNo, options, sources , packages, sourceFiles
-                | Remote(newSource) -> lineNo, options, sources @ [newSource], packages, sourceFiles
-                | ParserOptions(ParserOption.ReferencesMode mode) -> lineNo, { options with Strict = mode }, sources, packages, sourceFiles
-                | ParserOptions(ParserOption.Redirects mode) -> lineNo, { options with Redirects = mode }, sources, packages, sourceFiles
-                | ParserOptions(ParserOption.CopyLocal mode) -> lineNo, { options with Settings = { options.Settings with CopyLocal = Some mode }}, sources, packages, sourceFiles
-                | ParserOptions(ParserOption.ImportTargets mode) -> lineNo, { options with Settings = { options.Settings with ImportTargets = Some mode }}, sources, packages, sourceFiles
-                | ParserOptions(ParserOption.FrameworkRestrictions r) -> lineNo, { options with Settings = { options.Settings with FrameworkRestrictions = r }}, sources, packages, sourceFiles
-                | ParserOptions(ParserOption.OmitContent omit) -> lineNo, { options with Settings = { options.Settings with  OmitContent = Some omit }}, sources, packages, sourceFiles
-                | Package(name,version,rest) ->
-                    let package = parsePackage(sources,DependenciesFile fileName,name,version,rest)
+        ((0, [Constants.MainDependencyGroup,InstallOptions.Default, [], [], []]), lines)
+        ||> Seq.fold(fun (lineNo, parsed) line ->
+            match parsed with
+            | ((groupName,options, sources: PackageSource list, packages, sourceFiles: UnresolvedSourceFile list) as currentGroup)::otherGroups ->
+                let lineNo = lineNo + 1
+                try
+                    match line with
+                    | Group(newGroupName) -> lineNo, (newGroupName,InstallOptions.Default, [], [], [])::currentGroup::otherGroups
+                    | Empty(_) -> lineNo, currentGroup::otherGroups
+                    | Remote(newSource) -> lineNo, (groupName,options, sources @ [newSource], packages, sourceFiles)::otherGroups
+                    | ParserOptions(ParserOption.ReferencesMode mode) -> lineNo, (groupName,{ options with Strict = mode }, sources, packages, sourceFiles)::otherGroups
+                    | ParserOptions(ParserOption.Redirects mode) -> lineNo, (groupName,{ options with Redirects = mode }, sources, packages, sourceFiles)::otherGroups
+                    | ParserOptions(ParserOption.CopyLocal mode) -> lineNo, (groupName,{ options with Settings = { options.Settings with CopyLocal = Some mode }}, sources, packages, sourceFiles)::otherGroups
+                    | ParserOptions(ParserOption.ImportTargets mode) -> lineNo, (groupName,{ options with Settings = { options.Settings with ImportTargets = Some mode }}, sources, packages, sourceFiles)::otherGroups
+                    | ParserOptions(ParserOption.FrameworkRestrictions r) -> lineNo, (groupName,{ options with Settings = { options.Settings with FrameworkRestrictions = r }}, sources, packages, sourceFiles)::otherGroups
+                    | ParserOptions(ParserOption.OmitContent omit) -> lineNo, (groupName,{ options with Settings = { options.Settings with  OmitContent = Some omit }}, sources, packages, sourceFiles)::otherGroups
+                    | Package(name,version,rest) ->
+                        let package = parsePackage(sources,DependenciesFile fileName,name,version,rest)
 
-                    lineNo, options, sources, package :: packages, sourceFiles
-                | SourceFile(origin, (owner,project, commit), path) ->
-                    lineNo, options, sources, packages, { Owner = owner; Project = project; Commit = commit; Name = path; Origin = origin} :: sourceFiles
+                        lineNo, (groupName,options, sources, package :: packages, sourceFiles)::otherGroups
+                    | SourceFile(origin, (owner,project, commit), path) ->
+                        lineNo, (groupName,options, sources, packages, { Owner = owner; Project = project; Commit = commit; Name = path; Origin = origin} :: sourceFiles)::otherGroups
                     
-            with
-            | exn -> failwithf "Error in paket.dependencies line %d%s  %s" lineNo Environment.NewLine exn.Message)
-        |> fun (_,options,sources,packages,remoteFiles) ->
-            let mainGroup = { Name = Constants.MainDependencyGroup; Sources = sources; Packages = packages |> List.rev; RemoteFiles = remoteFiles |> List.rev }
-            let groups = [Constants.MainDependencyGroup, mainGroup] |> Map.ofSeq
+                with
+                | exn -> failwithf "Error in paket.dependencies line %d%s  %s" lineNo Environment.NewLine exn.Message
+            | [] -> failwithf "Error in paket.dependencies line %d" lineNo)
+        |> fun (_,groups) ->
+            let groups =
+                groups
+                |> Seq.map (fun (groupName,options,sources,packages,remoteFiles) ->
+                                    groupName,{ Name = groupName; Options = options; Sources = sources; Packages = packages |> List.rev; RemoteFiles = remoteFiles |> List.rev })
+                |> Map.ofSeq
+            
+            let mainGroup = groups.[Constants.MainDependencyGroup]
 
-            fileName, options, groups, lines
+            fileName, mainGroup.Options, groups, lines
     
     let parseVersionString (version : string) = 
         { VersionRequirement = parseVersionRequirement (version.Trim '!')
@@ -301,7 +312,7 @@ module DependenciesFileSerializer =
 /// Allows to parse and analyze paket.dependencies files.
 type DependenciesFile(fileName,options,groups:Map<string,DependenciesGroup>, textRepresentation:string []) =
     let mainGroup = groups.[Constants.MainDependencyGroup]
-    let packages = mainGroup.Packages |> Seq.toList
+    let packages = mainGroup.Packages
     let dependencyMap = Map.ofSeq (packages |> Seq.map (fun p -> p.Name, p.VersionRequirement))
 
     let isPackageLine name (l : string) = 
@@ -313,7 +324,12 @@ type DependenciesFile(fileName,options,groups:Map<string,DependenciesGroup>, tex
         textRepresentation
         |> Array.tryFindIndex (isPackageLine name)
             
-    member __.DirectDependencies = dependencyMap
+    /// Returns all direct NuGet dependencies in the given group.
+    member __.GetDependenciesInGroup(groupName) =
+        groups.[groupName].Packages 
+        |> Seq.map (fun p -> p.Name, p.VersionRequirement)
+        |> Map.ofSeq
+
     member __.Packages = packages
     member __.HasPackage (name : PackageName) = packages |> List.exists (fun p -> NormalizedPackageName p.Name = NormalizedPackageName name)
     member __.GetPackage (name : PackageName) = packages |> List.find (fun p -> NormalizedPackageName p.Name = NormalizedPackageName name)

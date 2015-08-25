@@ -43,10 +43,10 @@ let ``should read simple config``() =
     let cfg = DependenciesFile.FromCode(config1)
     cfg.Options.Strict |> shouldEqual false
 
-    cfg.DirectDependencies.[PackageName "Rx-Main"].Range |> shouldEqual (VersionRange.Between("2.0", "3.0"))
-    cfg.DirectDependencies.[PackageName "Castle.Windsor-log4net"].Range |> shouldEqual (VersionRange.Between("3.2", "4.0"))
-    cfg.DirectDependencies.[PackageName "FAKE"].Range |> shouldEqual (VersionRange.Exactly "1.1")
-    cfg.DirectDependencies.[PackageName "SignalR"].Range |> shouldEqual (VersionRange.Exactly "3.3.2")
+    cfg.GetDependenciesInGroup(Constants.MainDependencyGroup).[PackageName "Rx-Main"].Range |> shouldEqual (VersionRange.Between("2.0", "3.0"))
+    cfg.GetDependenciesInGroup(Constants.MainDependencyGroup).[PackageName "Castle.Windsor-log4net"].Range |> shouldEqual (VersionRange.Between("3.2", "4.0"))
+    cfg.GetDependenciesInGroup(Constants.MainDependencyGroup).[PackageName "FAKE"].Range |> shouldEqual (VersionRange.Exactly "1.1")
+    cfg.GetDependenciesInGroup(Constants.MainDependencyGroup).[PackageName "SignalR"].Range |> shouldEqual (VersionRange.Exactly "3.3.2")
 
 let config2 = """
 source "http://nuget.org/api/v2"
@@ -60,9 +60,9 @@ nuget "MinPackage" "1.1.3"
 [<Test>]
 let ``should read simple config with additional comment``() = 
     let cfg = DependenciesFile.FromCode(config2)
-    cfg.DirectDependencies.[PackageName "Rx-Main"].Range |> shouldEqual (VersionRange.Between("2.2", "3.0"))
-    cfg.DirectDependencies.[PackageName "FAKE"].Range |> shouldEqual (VersionRange.Between("3.0", "4.0"))
-    cfg.DirectDependencies.[PackageName "MinPackage"].Range |> shouldEqual (VersionRange.Exactly "1.1.3")
+    cfg.GetDependenciesInGroup(Constants.MainDependencyGroup).[PackageName "Rx-Main"].Range |> shouldEqual (VersionRange.Between("2.2", "3.0"))
+    cfg.GetDependenciesInGroup(Constants.MainDependencyGroup).[PackageName "FAKE"].Range |> shouldEqual (VersionRange.Between("3.0", "4.0"))
+    cfg.GetDependenciesInGroup(Constants.MainDependencyGroup).[PackageName "MinPackage"].Range |> shouldEqual (VersionRange.Exactly "1.1.3")
 
 let config3 = """
 source "https://nuget.org/api/v2" // here we are
@@ -75,9 +75,9 @@ nuget "MinPackage" "1.1.3"
 [<Test>]
 let ``should read simple config with comments``() = 
     let cfg = DependenciesFile.FromCode(config3)
-    cfg.DirectDependencies.[PackageName "Rx-Main"].Range |> shouldEqual (VersionRange.Between("2.2", "3.0"))
+    cfg.GetDependenciesInGroup(Constants.MainDependencyGroup).[PackageName "Rx-Main"].Range |> shouldEqual (VersionRange.Between("2.2", "3.0"))
     (cfg.Packages |> List.find (fun p -> p.Name = PackageName "Rx-Main")).Sources |> List.head |> shouldEqual PackageSources.DefaultNugetSource
-    cfg.DirectDependencies.[PackageName "FAKE"].Range |> shouldEqual (VersionRange.Between("3.0", "4.0"))
+    cfg.GetDependenciesInGroup(Constants.MainDependencyGroup).[PackageName "FAKE"].Range |> shouldEqual (VersionRange.Between("3.0", "4.0"))
     (cfg.Packages |> List.find (fun p -> p.Name = PackageName "FAKE")).Sources |> List.head  |> shouldEqual PackageSources.DefaultNugetSource
 
 let config4 = """
@@ -223,12 +223,12 @@ nuget SignalR = 3.3.2
 let ``should read config without quotes``() = 
     let cfg = DependenciesFile.FromCode(configWithoutQuotes)
     cfg.Options.Strict |> shouldEqual false
-    cfg.DirectDependencies.Count |> shouldEqual 4
+    cfg.GetDependenciesInGroup(Constants.MainDependencyGroup).Count |> shouldEqual 4
 
-    cfg.DirectDependencies.[PackageName "Rx-Main"].Range |> shouldEqual (VersionRange.Between("2.0", "3.0"))
-    cfg.DirectDependencies.[PackageName "Castle.Windsor-log4net"].Range |> shouldEqual (VersionRange.Between("3.2", "4.0"))
-    cfg.DirectDependencies.[PackageName "FAKE"].Range |> shouldEqual (VersionRange.Exactly "1.1")
-    cfg.DirectDependencies.[PackageName "SignalR"].Range |> shouldEqual (VersionRange.Exactly "3.3.2")
+    cfg.GetDependenciesInGroup(Constants.MainDependencyGroup).[PackageName "Rx-Main"].Range |> shouldEqual (VersionRange.Between("2.0", "3.0"))
+    cfg.GetDependenciesInGroup(Constants.MainDependencyGroup).[PackageName "Castle.Windsor-log4net"].Range |> shouldEqual (VersionRange.Between("3.2", "4.0"))
+    cfg.GetDependenciesInGroup(Constants.MainDependencyGroup).[PackageName "FAKE"].Range |> shouldEqual (VersionRange.Exactly "1.1")
+    cfg.GetDependenciesInGroup(Constants.MainDependencyGroup).[PackageName "SignalR"].Range |> shouldEqual (VersionRange.Exactly "3.3.2")
 
 let configLocalQuotedSource = """source "D:\code\temp with space"
 
@@ -243,12 +243,12 @@ let ``should read config local quoted source``() =
     let cfg = DependenciesFile.FromCode(configLocalQuotedSource)
     cfg.Sources.Head |> shouldEqual (LocalNuget("D:\code\\temp with space"))
     cfg.Options.Strict |> shouldEqual false
-    cfg.DirectDependencies.Count |> shouldEqual 4
+    cfg.GetDependenciesInGroup(Constants.MainDependencyGroup).Count |> shouldEqual 4
 
-    cfg.DirectDependencies.[PackageName "Rx-Main"].Range |> shouldEqual (VersionRange.Between("2.0", "3.0"))
-    cfg.DirectDependencies.[PackageName "Castle.Windsor-log4net"].Range |> shouldEqual (VersionRange.Between("3.2", "4.0"))
-    cfg.DirectDependencies.[PackageName "FAKE"].Range |> shouldEqual (VersionRange.Exactly "1.1")
-    cfg.DirectDependencies.[PackageName "SignalR"].Range |> shouldEqual (VersionRange.Exactly "3.3.2")
+    cfg.GetDependenciesInGroup(Constants.MainDependencyGroup).[PackageName "Rx-Main"].Range |> shouldEqual (VersionRange.Between("2.0", "3.0"))
+    cfg.GetDependenciesInGroup(Constants.MainDependencyGroup).[PackageName "Castle.Windsor-log4net"].Range |> shouldEqual (VersionRange.Between("3.2", "4.0"))
+    cfg.GetDependenciesInGroup(Constants.MainDependencyGroup).[PackageName "FAKE"].Range |> shouldEqual (VersionRange.Exactly "1.1")
+    cfg.GetDependenciesInGroup(Constants.MainDependencyGroup).[PackageName "SignalR"].Range |> shouldEqual (VersionRange.Exactly "3.3.2")
 
 let configWithoutQuotesButLotsOfWhiteSpace = """
 source      http://nuget.org/api/v2
@@ -263,12 +263,12 @@ nuget SignalR    = 3.3.2
 let ``should read config without quotes but lots of whitespace``() = 
     let cfg = DependenciesFile.FromCode(configWithoutQuotes)
     cfg.Options.Strict |> shouldEqual false
-    cfg.DirectDependencies.Count |> shouldEqual 4
+    cfg.GetDependenciesInGroup(Constants.MainDependencyGroup).Count |> shouldEqual 4
 
-    cfg.DirectDependencies.[PackageName "Rx-Main"].Range |> shouldEqual (VersionRange.Between("2.0", "3.0"))
-    cfg.DirectDependencies.[PackageName "Castle.Windsor-log4net"].Range |> shouldEqual (VersionRange.Between("3.2", "4.0"))
-    cfg.DirectDependencies.[PackageName "FAKE"].Range |> shouldEqual (VersionRange.Exactly "1.1")
-    cfg.DirectDependencies.[PackageName "SignalR"].Range |> shouldEqual (VersionRange.Exactly "3.3.2")
+    cfg.GetDependenciesInGroup(Constants.MainDependencyGroup).[PackageName "Rx-Main"].Range |> shouldEqual (VersionRange.Between("2.0", "3.0"))
+    cfg.GetDependenciesInGroup(Constants.MainDependencyGroup).[PackageName "Castle.Windsor-log4net"].Range |> shouldEqual (VersionRange.Between("3.2", "4.0"))
+    cfg.GetDependenciesInGroup(Constants.MainDependencyGroup).[PackageName "FAKE"].Range |> shouldEqual (VersionRange.Exactly "1.1")
+    cfg.GetDependenciesInGroup(Constants.MainDependencyGroup).[PackageName "SignalR"].Range |> shouldEqual (VersionRange.Exactly "3.3.2")
 
 
 [<Test>]
@@ -447,9 +447,9 @@ nuget "FAKE"
 let ``should read config without versions``() = 
     let cfg = DependenciesFile.FromCode(configWithoutVersions)
 
-    cfg.DirectDependencies.[PackageName "Rx-Main"] .Range|> shouldEqual (VersionRange.AtLeast "0")
-    cfg.DirectDependencies.[PackageName "Castle.Windsor-log4net"].Range |> shouldEqual (VersionRange.AtLeast "0")
-    cfg.DirectDependencies.[PackageName "FAKE"].Range |> shouldEqual (VersionRange.AtLeast "0")
+    cfg.GetDependenciesInGroup(Constants.MainDependencyGroup).[PackageName "Rx-Main"] .Range|> shouldEqual (VersionRange.AtLeast "0")
+    cfg.GetDependenciesInGroup(Constants.MainDependencyGroup).[PackageName "Castle.Windsor-log4net"].Range |> shouldEqual (VersionRange.AtLeast "0")
+    cfg.GetDependenciesInGroup(Constants.MainDependencyGroup).[PackageName "FAKE"].Range |> shouldEqual (VersionRange.AtLeast "0")
 
 
 let configWithPassword = """
@@ -510,8 +510,8 @@ nuget FsReveal == 0.0.5-beta
 let ``should read config explicit versions``() = 
     let cfg = DependenciesFile.FromCode(configWithExplicitVersions)
 
-    cfg.DirectDependencies.[PackageName "FSharp.Compiler.Service"].Range |> shouldEqual (VersionRange.OverrideAll (SemVer.Parse "0.0.62"))
-    cfg.DirectDependencies.[PackageName "FsReveal"].Range |> shouldEqual (VersionRange.OverrideAll (SemVer.Parse "0.0.5-beta"))
+    cfg.GetDependenciesInGroup(Constants.MainDependencyGroup).[PackageName "FSharp.Compiler.Service"].Range |> shouldEqual (VersionRange.OverrideAll (SemVer.Parse "0.0.62"))
+    cfg.GetDependenciesInGroup(Constants.MainDependencyGroup).[PackageName "FsReveal"].Range |> shouldEqual (VersionRange.OverrideAll (SemVer.Parse "0.0.5-beta"))
 
 let configWithLocalSource = """
 source ./nugets
@@ -535,7 +535,7 @@ let ``should read config with package name containing nuget``() =
     """
     let cfg = DependenciesFile.FromCode(config)
 
-    cfg.DirectDependencies.[PackageName "nuget.Core"].Range |> shouldEqual (VersionRange.Specific (SemVer.Parse "0.1"))
+    cfg.GetDependenciesInGroup(Constants.MainDependencyGroup).[PackageName "nuget.Core"].Range |> shouldEqual (VersionRange.Specific (SemVer.Parse "0.1"))
 
 [<Test>]
 let ``should read config with single framework restriction``() = 
@@ -638,3 +638,25 @@ let ``should not read hhtml``() =
         failwith "error"
     with
     | exn -> Assert.IsTrue(exn.Message.Contains"Unrecognized token")
+
+let configWitAdditionalGroup = """
+source "http://nuget.org/api/v2"
+
+nuget FSharp.Compiler.Service
+nuget FsReveal
+
+group Build
+
+nuget FAKE
+nuget NUnit
+"""
+
+[<Test>]
+let ``should read config with additional group``() = 
+    let cfg = DependenciesFile.FromCode(configWitAdditionalGroup)
+
+    cfg.GetDependenciesInGroup(Constants.MainDependencyGroup).[PackageName "FSharp.Compiler.Service"].Range |> shouldEqual (VersionRange.Minimum (SemVer.Parse "0"))
+    cfg.GetDependenciesInGroup(Constants.MainDependencyGroup).[PackageName "FsReveal"].Range |> shouldEqual (VersionRange.Minimum (SemVer.Parse "0"))
+
+    cfg.GetDependenciesInGroup("Build").[PackageName "FAKE"].Range |> shouldEqual (VersionRange.Minimum (SemVer.Parse "0"))
+    cfg.GetDependenciesInGroup("Build").[PackageName "NUnit"].Range |> shouldEqual (VersionRange.Minimum (SemVer.Parse "0"))

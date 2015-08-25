@@ -222,7 +222,7 @@ let findDependencies (dependencies : DependenciesFile) config (template : Templa
         |> List.map (fun np ->
                 let getDependencyVersionRequirement package =
                     if not lockDependencies then
-                        Map.tryFind package dependencies.DirectDependencies
+                        Map.tryFind package (dependencies.GetDependenciesInGroup(Constants.MainDependencyGroup))
                         |> function
                             | Some direct -> Some direct
                             | None ->

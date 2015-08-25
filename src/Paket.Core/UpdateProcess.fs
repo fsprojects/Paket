@@ -74,7 +74,7 @@ let selectiveUpdate resolve lockFile dependenciesFile updateAll package =
                 |> Set.ofSeq
 
             let isDirectDependency package = 
-                dependenciesFile.DirectDependencies
+                dependenciesFile.GetDependenciesInGroup(Constants.MainDependencyGroup)
                 |> Map.exists (fun p _ -> NormalizedPackageName p = package)
 
             let isTransitiveDependency package =
