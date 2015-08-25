@@ -389,20 +389,29 @@ type LockFile(fileName:string,groups: Map<string,LockFileGroup>) =
         this.Groups
         |> Seq.map (fun kv -> kv.Value.Resolution |> Seq.map (fun kv -> kv.Key,kv.Value))
         |> Seq.concat
-        |> Seq.distinctBy fst // TODO: this is not good. Try to get rid of the whol function
+        |> Seq.distinctBy fst // TODO: this is not good. Try to get rid of the whole function
         |> Map.ofSeq
 
     /// Checks if the first package is a dependency of the second package
     member this.IsDependencyOf(dependentPackage,package) =
         this.GetAllDependenciesOf(package).Contains dependentPackage
+    
+    override __.ToString() =
+        String.Join
+            (Environment.NewLine,
+             [|let mainGroup = groups.[Constants.MainDependencyGroup]
+               yield LockFileSerializer.serializePackages mainGroup.Options mainGroup.Resolution
+               yield LockFileSerializer.serializeSourceFiles mainGroup.RemoteFiles
+               for g in groups do 
+                if g.Key <> Constants.MainDependencyGroup then
+                    yield "GROUP: " + g.Key
+                    yield LockFileSerializer.serializePackages g.Value.Options g.Value.Resolution
+                    yield LockFileSerializer.serializeSourceFiles g.Value.RemoteFiles|])
+
 
     /// Updates the paket.lock file with the analyzed dependencies from the paket.dependencies file.
-    member __.Save() =
-        let output = 
-            String.Join
-                (Environment.NewLine,
-                    LockFileSerializer.serializePackages mainGroup.Options mainGroup.Resolution,
-                    LockFileSerializer.serializeSourceFiles mainGroup.RemoteFiles)
+    member this.Save() =
+        let output = this.ToString()
 
         let hasChanged =
             if File.Exists fileName then

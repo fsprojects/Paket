@@ -24,6 +24,7 @@ let graph = [
     "log4net","1.1",["log",VersionRequirement(VersionRange.AtLeast "1.0",PreReleaseStatus.No)]
     "log","1.0",[]
     "log","1.2",[]
+    "FAKE","4.0",[]
 ]
 
 [<Test>]
@@ -341,3 +342,28 @@ let ``should parse and regenerate http Stanford.NLP.NET project``() =
     |> List.rev
     |> LockFileSerializer.serializeSourceFiles
     |> shouldEqual (normalizeLineEndings expectedForStanfordNLPdotNET)
+
+[<Test>]
+let ``should generate lock file with second group``() = 
+    let expected = """NUGET
+  remote: http://nuget.org/api/v2
+  specs:
+    Castle.Windsor (2.1)
+    Castle.Windsor-log4net (3.3) - framework: net35
+      Castle.Windsor (>= 2.0)
+      log4net (>= 1.0)
+    log (1.2)
+    log4net (1.1)
+      log (>= 1.0)
+    Rx-Core (2.1) - content: none
+    Rx-Main (2.0) - content: none, framework: >= net40
+      Rx-Core (>= 2.1)
+
+GROUP: Build
+NUGET
+  remote: http://nuget.org/api/v2
+  specs:
+    FAKE (4.0)
+"""
+    let lockFile = LockFile.Parse("Test",toLines expected)
+    lockFile.ToString() |> normalizeLineEndings |> shouldEqual (normalizeLineEndings expected)
