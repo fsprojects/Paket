@@ -32,7 +32,7 @@ GITHUB
 
 [<Test>]
 let ``should parse lock file``() = 
-    let lockFile = LockFileParser.Parse(toLines lockFile)
+    let lockFile = LockFileParser.Parse(toLines lockFile) |> List.head
     let packages = List.rev lockFile.Packages
     packages.Length |> shouldEqual 6
     lockFile.Options.Strict |> shouldEqual false
@@ -92,7 +92,7 @@ NUGET
 
 [<Test>]
 let ``should parse strict lock file``() = 
-    let lockFile = LockFileParser.Parse(toLines strictLockFile)
+    let lockFile = LockFileParser.Parse(toLines strictLockFile) |> List.head
     let packages = List.rev lockFile.Packages
     packages.Length |> shouldEqual 6
     lockFile.Options.Strict |> shouldEqual true
@@ -116,7 +116,7 @@ NUGET
 
 [<Test>]
 let ``should parse redirects lock file``() = 
-    let lockFile = LockFileParser.Parse(toLines redirectsLockFile)
+    let lockFile = LockFileParser.Parse(toLines redirectsLockFile) |> List.head
     let packages = List.rev lockFile.Packages
     
     packages.Length |> shouldEqual 1
@@ -137,7 +137,7 @@ NUGET
 
 [<Test>]
 let ``should parse lock file with framework restrictions``() = 
-    let lockFile = LockFileParser.Parse(toLines lockFileWithFrameworkRestrictions)
+    let lockFile = LockFileParser.Parse(toLines lockFileWithFrameworkRestrictions) |> List.head
     let packages = List.rev lockFile.Packages
     packages.Length |> shouldEqual 1
     lockFile.Options.Strict |> shouldEqual false
@@ -183,7 +183,7 @@ GITHUB
 
 [<Test>]
 let ``should parse own lock file``() = 
-    let lockFile = LockFileParser.Parse(toLines dogfood)
+    let lockFile = LockFileParser.Parse(toLines dogfood) |> List.head
     let packages = List.rev lockFile.Packages
     packages.Length |> shouldEqual 16
     lockFile.Options.Strict |> shouldEqual false
@@ -233,7 +233,7 @@ GITHUB
 
 [<Test>]
 let ``should parse own lock file2``() = 
-    let lockFile = LockFileParser.Parse(toLines dogfood2)
+    let lockFile = LockFileParser.Parse(toLines dogfood2) |> List.head
     let packages = List.rev lockFile.Packages
     packages.Length |> shouldEqual 16
     lockFile.Options.Strict |> shouldEqual false
@@ -267,7 +267,7 @@ let frameworkRestricted = """NUGET
 
 [<Test>]
 let ``should parse framework restricted lock file``() = 
-    let lockFile = LockFileParser.Parse(toLines frameworkRestricted)
+    let lockFile = LockFileParser.Parse(toLines frameworkRestricted) |> List.head
     let packages = List.rev lockFile.Packages
     packages.Length |> shouldEqual 7
 
@@ -306,7 +306,7 @@ let frameworkRestricted' = """NUGET
 
 [<Test>]
 let ``should parse framework restricted lock file in new syntax``() = 
-    let lockFile = LockFileParser.Parse(toLines frameworkRestricted')
+    let lockFile = LockFileParser.Parse(toLines frameworkRestricted') |> List.head
     let packages = List.rev lockFile.Packages
     packages.Length |> shouldEqual 7
 
@@ -340,7 +340,7 @@ HTTP
 
 [<Test>]
 let ``should parse simple http reference``() = 
-    let lockFile = LockFileParser.Parse(toLines simpleHTTP)
+    let lockFile = LockFileParser.Parse(toLines simpleHTTP) |> List.head
     let references = lockFile.SourceFiles
 
     references.[0].Name |> shouldEqual "ikvmbin-8.0.5449.0.zip"  
@@ -361,7 +361,7 @@ let lockFileForStanfordNLPdotNET = """HTTP
 
 [<Test>]
 let ``should parse lock file for http Stanford.NLP.NET project``() =
-    let lockFile = LockFileParser.Parse(toLines lockFileForStanfordNLPdotNET)
+    let lockFile = LockFileParser.Parse(toLines lockFileForStanfordNLPdotNET) |> List.head
     let references = lockFile.SourceFiles
 
     references.Length |> shouldEqual 6
@@ -381,7 +381,7 @@ let portableLockFile = """NUGET
 
 [<Test>]
 let ``should parse portable lockfile``() =
-    let lockFile = LockFileParser.Parse(toLines portableLockFile)
+    let lockFile = LockFileParser.Parse(toLines portableLockFile) |> List.head
     let references = lockFile.SourceFiles
 
     references.Length |> shouldEqual 0
@@ -429,7 +429,7 @@ let reactiveuiLockFile = """NUGET
 
 [<Test>]
 let ``should parse reactiveui lockfile``() =
-    let lockFile = LockFileParser.Parse(toLines reactiveuiLockFile)
+    let lockFile = LockFileParser.Parse(toLines reactiveuiLockFile) |> List.head
     let references = lockFile.SourceFiles
 
     references.Length |> shouldEqual 0
@@ -465,7 +465,7 @@ let multipleFeedLockFile = """NUGET
 
 [<Test>]
 let ``should parse lockfile with multiple feeds``() =
-    let lockFile = LockFileParser.Parse(toLines multipleFeedLockFile)
+    let lockFile = LockFileParser.Parse(toLines multipleFeedLockFile) |> List.head
     let references = lockFile.SourceFiles
 
     references.Length |> shouldEqual 0
@@ -477,3 +477,47 @@ let ``should parse lockfile with multiple feeds``() =
     packages.[3].Version |> shouldEqual (SemVer.Parse "5.2.3")
     packages.[3].Settings.FrameworkRestrictions.ToString() |> shouldEqual "[]"
     packages.[3].Source.ToString() |> shouldEqual "https://www.nuget.org/api/v2"
+
+let groupsLockFile = """REDIRECTS: ON
+IMPORT-TARGETS: TRUE
+COPY-LOCAL: TRUE
+NUGET
+  remote: "D:\code\temp with space"
+  specs:
+    Castle.Windsor (2.1)
+GROUP: Build
+REDIRECTS: ON
+COPY-LOCAL: TRUE
+NUGET
+  remote: "D:\code\temp with space"
+  specs:
+    FAKE (4.0)
+"""   
+
+[<Test>]
+let ``should parse lock file with groups``() = 
+    let lockFile1 = LockFileParser.Parse(toLines groupsLockFile) |> List.skip 1 |> List.head
+    lockFile1.GroupName |> shouldEqual Constants.MainDependencyGroup
+    let packages1 = List.rev lockFile1.Packages
+    
+    packages1.Length |> shouldEqual 1
+    lockFile1.Options.Strict |> shouldEqual false
+    lockFile1.Options.Redirects |> shouldEqual true
+    lockFile1.Options.Settings.ImportTargets |> shouldEqual (Some true)
+    lockFile1.Options.Settings.CopyLocal |> shouldEqual (Some true)
+
+    packages1.Head.Source |> shouldEqual (PackageSource.LocalNuget("D:\code\\temp with space"))
+    packages1.[0].Name |> shouldEqual (PackageName "Castle.Windsor")
+
+    let lockFile2 = LockFileParser.Parse(toLines groupsLockFile) |> List.head
+    lockFile2.GroupName |> shouldEqual "Build"
+    let packages2 = List.rev lockFile2.Packages
+    
+    packages2.Length |> shouldEqual 1
+    lockFile2.Options.Strict |> shouldEqual false
+    lockFile2.Options.Redirects |> shouldEqual true
+    lockFile2.Options.Settings.ImportTargets |> shouldEqual None
+    lockFile2.Options.Settings.CopyLocal |> shouldEqual (Some true)
+
+    packages2.Head.Source |> shouldEqual (PackageSource.LocalNuget("D:\code\\temp with space"))  
+    packages2.[0].Name |> shouldEqual (PackageName "FAKE")

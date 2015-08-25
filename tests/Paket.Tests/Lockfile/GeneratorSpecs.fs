@@ -335,7 +335,7 @@ http http://nlp.stanford.edu/software/stanford-segmenter-2014-10-26.zip"""
 
 [<Test>]
 let ``should parse and regenerate http Stanford.NLP.NET project``() =
-    let lockFile = LockFileParser.Parse(toLines expectedForStanfordNLPdotNET)
+    let lockFile = LockFileParser.Parse(toLines expectedForStanfordNLPdotNET) |> List.head
     
     lockFile.SourceFiles
     |> List.rev

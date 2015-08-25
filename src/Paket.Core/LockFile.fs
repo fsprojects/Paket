@@ -133,7 +133,8 @@ module LockFileSerializer =
 module LockFileParser =
 
     type ParseState =
-        { RepositoryType : string option
+        { GroupName : string
+          RepositoryType : string option
           RemoteUrl :string option
           Packages : ResolvedPackage list
           SourceFiles : ResolvedSourceFile list
@@ -148,13 +149,14 @@ module LockFileParser =
     | CopyLocal of bool
     | Redirects of bool
 
-    let private (|Remote|NugetPackage|NugetDependency|SourceFile|RepositoryType|InstallOption|) (state, line:string) =
+    let private (|Remote|NugetPackage|NugetDependency|SourceFile|RepositoryType|Group|InstallOption|) (state, line:string) =
         match (state.RepositoryType, line.Trim()) with
         | _, "HTTP" -> RepositoryType "HTTP"
         | _, "GIST" -> RepositoryType "GIST"
         | _, "NUGET" -> RepositoryType "NUGET"
         | _, "GITHUB" -> RepositoryType "GITHUB"
         | _, String.StartsWith "remote:" trimmed -> Remote(PackageSource.Parse("source " + trimmed.Trim()).ToString())
+        | _, String.StartsWith "GROUP:" trimmed -> Group(trimmed.Replace("GROUP:","").Trim())
         | _, String.StartsWith "REFERENCES:" trimmed -> InstallOption(ReferencesMode(trimmed.Trim() = "STRICT"))
         | _, String.StartsWith "REDIRECTS:" trimmed -> InstallOption(Redirects(trimmed.Trim() = "ON"))
         | _, String.StartsWith "IMPORT-TARGETS:" trimmed -> InstallOption(ImportTargets(trimmed.Trim() = "TRUE"))
@@ -177,115 +179,120 @@ module LockFileParser =
     let Parse(lockFileLines) =
         let remove textToRemove (source:string) = source.Replace(textToRemove, "")
         let removeBrackets = remove "(" >> remove ")"
-        ({ RepositoryType = None; RemoteUrl = None; Packages = []; SourceFiles = []; Options = InstallOptions.Default; LastWasPackage = false }, lockFileLines)
+        ([{ GroupName = Constants.MainDependencyGroup; RepositoryType = None; RemoteUrl = None; Packages = []; SourceFiles = []; Options = InstallOptions.Default; LastWasPackage = false }], lockFileLines)
         ||> Seq.fold(fun state line ->
-            if String.IsNullOrWhiteSpace line || line.Trim().StartsWith("specs:") then state else
-            match (state, line) with
-            | Remote(url) -> { state with RemoteUrl = Some url }
-            | InstallOption (ReferencesMode(mode)) -> { state with Options = {state.Options with Strict = mode} }
-            | InstallOption (Redirects(mode)) -> { state with Options = {state.Options with Redirects = mode} }
-            | InstallOption (ImportTargets(mode)) -> { state with Options = {state.Options with Settings = { state.Options.Settings with ImportTargets = Some mode} } }
-            | InstallOption (CopyLocal(mode)) -> { state with Options = {state.Options with Settings = { state.Options.Settings with CopyLocal = Some mode}} }
-            | InstallOption (FrameworkRestrictions(r)) -> { state with Options = {state.Options with Settings = { state.Options.Settings with FrameworkRestrictions = r}} }
-            | InstallOption (OmitContent(omit)) -> { state with Options = {state.Options with Settings = { state.Options.Settings with OmitContent = Some omit} }}
-            | RepositoryType repoType -> { state with RepositoryType = Some repoType }
-            | NugetPackage details ->
-                match state.RemoteUrl with
-                | Some remote -> 
-                    let parts = details.Split([|" - "|],StringSplitOptions.None)
-                    let parts' = parts.[0].Split ' '
-                    let version = parts'.[1] |> removeBrackets
-                    let optionsString = 
-                        if parts.Length < 2 then "" else 
-                        if parts.[1] <> "" && parts.[1].Contains(":") |> not then
-                            ("framework: " + parts.[1]) // TODO: This is for backwards-compat and should be removed later
-                        else
-                            parts.[1]
+            match state with
+            | [] -> failwithf "error"
+            | currentGroup::otherGroups ->
+                if String.IsNullOrWhiteSpace line || line.Trim().StartsWith("specs:") then currentGroup::otherGroups else
+                match (currentGroup, line) with
+                | Remote(url) -> { currentGroup with RemoteUrl = Some url }::otherGroups
+                | Group(groupName) -> { GroupName = groupName; RepositoryType = None; RemoteUrl = None; Packages = []; SourceFiles = []; Options = InstallOptions.Default; LastWasPackage = false } :: currentGroup :: otherGroups
+                | InstallOption (ReferencesMode(mode)) -> { currentGroup with Options = {currentGroup.Options with Strict = mode} }::otherGroups
+                | InstallOption (Redirects(mode)) -> { currentGroup with Options = {currentGroup.Options with Redirects = mode} }::otherGroups
+                | InstallOption (ImportTargets(mode)) -> { currentGroup with Options = {currentGroup.Options with Settings = { currentGroup.Options.Settings with ImportTargets = Some mode} } }::otherGroups
+                | InstallOption (CopyLocal(mode)) -> { currentGroup with Options = {currentGroup.Options with Settings = { currentGroup.Options.Settings with CopyLocal = Some mode}} }::otherGroups
+                | InstallOption (FrameworkRestrictions(r)) -> { currentGroup with Options = {currentGroup.Options with Settings = { currentGroup.Options.Settings with FrameworkRestrictions = r}} }::otherGroups
+                | InstallOption (OmitContent(omit)) -> { currentGroup with Options = {currentGroup.Options with Settings = { currentGroup.Options.Settings with OmitContent = Some omit} }}::otherGroups
+                | RepositoryType repoType -> { currentGroup with RepositoryType = Some repoType }::otherGroups
+                | NugetPackage details ->
+                    match currentGroup.RemoteUrl with
+                    | Some remote -> 
+                        let parts = details.Split([|" - "|],StringSplitOptions.None)
+                        let parts' = parts.[0].Split ' '
+                        let version = parts'.[1] |> removeBrackets
+                        let optionsString = 
+                            if parts.Length < 2 then "" else 
+                            if parts.[1] <> "" && parts.[1].Contains(":") |> not then
+                                ("framework: " + parts.[1]) // TODO: This is for backwards-compat and should be removed later
+                            else
+                                parts.[1]
 
-                    { state with LastWasPackage = true
-                                 Packages = 
-                                     { Source = PackageSource.Parse(remote, None)
-                                       Name = PackageName parts'.[0]
-                                       Dependencies = Set.empty
-                                       Unlisted = false
-                                       Settings = InstallSettings.Parse(optionsString)
-                                       Version = SemVer.Parse version } :: state.Packages }
-                | None -> failwith "no source has been specified."
-            | NugetDependency (name, v) ->
-                let parts = v.Split([|" - "|],StringSplitOptions.None)
-                let version = parts.[0]
-                if state.LastWasPackage then                 
-                    match state.Packages with
-                    | currentPackage :: otherPackages -> 
-                        { state with
-                                Packages = { currentPackage with
-                                                Dependencies = Set.add (PackageName name, DependenciesFileParser.parseVersionRequirement version, []) currentPackage.Dependencies
-                                            } :: otherPackages }                    
-                    | [] -> failwith "cannot set a dependency - no package has been specified."
-                else
-                    match state.SourceFiles with
-                    | currentFile :: rest -> 
-                        { state with
-                                SourceFiles = 
-                                    { currentFile with
-                                                Dependencies = Set.add (PackageName name, VersionRequirement.AllReleases) currentFile.Dependencies
-                                            } :: rest }                    
-                    | [] -> failwith "cannot set a dependency - no remote file has been specified."
-            | SourceFile(origin, details) ->
-                match origin with
-                | GitHubLink | GistLink ->
-                    match state.RemoteUrl |> Option.map(fun s -> s.Split '/') with
-                    | Some [| owner; project |] ->
-                        let path, commit = match details.Split ' ' with
-                                            | [| filePath; commit |] -> filePath, commit |> removeBrackets                                       
-                                            | _ -> failwith "invalid file source details."
-                        { state with  
-                            LastWasPackage = false
-                            SourceFiles = { Commit = commit
-                                            Owner = owner
-                                            Origin = origin
-                                            Project = project
-                                            Dependencies = Set.empty
-                                            Name = path } :: state.SourceFiles }
-                    | _ -> failwith "invalid remote details."
-                | HttpLink x ->
-                    match state.RemoteUrl |> Option.map(fun s -> s.Split '/' |> Array.toList) with
-                    | Some [ protocol; _; domain; ] ->
-                        let name, path = 
-                            match details.Split ' ' with
-                            | [| filePath; path |] -> filePath, path |> removeBrackets
-                            | _ -> failwith "invalid file source details."
+                        { currentGroup with 
+                            LastWasPackage = true
+                            Packages = 
+                                    { Source = PackageSource.Parse(remote, None)
+                                      Name = PackageName parts'.[0]
+                                      Dependencies = Set.empty
+                                      Unlisted = false
+                                      Settings = InstallSettings.Parse(optionsString)
+                                      Version = SemVer.Parse version } :: currentGroup.Packages }::otherGroups
+                    | None -> failwith "no source has been specified."
+                | NugetDependency (name, v) ->
+                    let parts = v.Split([|" - "|],StringSplitOptions.None)
+                    let version = parts.[0]
+                    if currentGroup.LastWasPackage then                 
+                        match currentGroup.Packages with
+                        | currentPackage :: otherPackages -> 
+                            { currentGroup with
+                                    Packages = { currentPackage with
+                                                    Dependencies = Set.add (PackageName name, DependenciesFileParser.parseVersionRequirement version, []) currentPackage.Dependencies
+                                                } :: otherPackages } ::otherGroups                   
+                        | [] -> failwith "cannot set a dependency - no package has been specified."
+                    else
+                        match currentGroup.SourceFiles with
+                        | currentFile :: rest -> 
+                            { currentGroup with
+                                    SourceFiles = 
+                                        { currentFile with
+                                                    Dependencies = Set.add (PackageName name, VersionRequirement.AllReleases) currentFile.Dependencies
+                                                } :: rest }  ::otherGroups                  
+                        | [] -> failwith "cannot set a dependency - no remote file has been specified."
+                | SourceFile(origin, details) ->
+                    match origin with
+                    | GitHubLink | GistLink ->
+                        match currentGroup.RemoteUrl |> Option.map(fun s -> s.Split '/') with
+                        | Some [| owner; project |] ->
+                            let path, commit = match details.Split ' ' with
+                                                | [| filePath; commit |] -> filePath, commit |> removeBrackets                                       
+                                                | _ -> failwith "invalid file source details."
+                            { currentGroup with  
+                                LastWasPackage = false
+                                SourceFiles = { Commit = commit
+                                                Owner = owner
+                                                Origin = origin
+                                                Project = project
+                                                Dependencies = Set.empty
+                                                Name = path } :: currentGroup.SourceFiles }::otherGroups
+                        | _ -> failwith "invalid remote details."
+                    | HttpLink x ->
+                        match currentGroup.RemoteUrl |> Option.map(fun s -> s.Split '/' |> Array.toList) with
+                        | Some [ protocol; _; domain; ] ->
+                            let name, path = 
+                                match details.Split ' ' with
+                                | [| filePath; path |] -> filePath, path |> removeBrackets
+                                | _ -> failwith "invalid file source details."
 
-                        let sourceFile =
-                            { Commit = path
-                              Owner = domain
-                              Origin = HttpLink(state.RemoteUrl.Value)
-                              Project = ""
-                              Dependencies = Set.empty
-                              Name = name } 
+                            let sourceFile =
+                                { Commit = path
+                                  Owner = domain
+                                  Origin = HttpLink(currentGroup.RemoteUrl.Value)
+                                  Project = ""
+                                  Dependencies = Set.empty
+                                  Name = name } 
 
-                        { state with  
-                            LastWasPackage = false
-                            SourceFiles = sourceFile :: state.SourceFiles }
-                    | Some [ protocol; _; domain; project ] ->
-                        { state with  
-                            LastWasPackage = false
-                            SourceFiles = { Commit = String.Empty
-                                            Owner = domain
-                                            Origin = HttpLink(state.RemoteUrl.Value)
-                                            Project = project
-                                            Dependencies = Set.empty
-                                            Name = details } :: state.SourceFiles }
-                    | Some (protocol :: _ :: domain :: project :: moredetails) ->
-                        { state with  
-                            LastWasPackage = false
-                            SourceFiles = { Commit = String.Empty
-                                            Owner = domain
-                                            Origin = HttpLink(state.RemoteUrl.Value)
-                                            Project = project + "/" + String.Join("/",moredetails)
-                                            Dependencies = Set.empty
-                                            Name = details } :: state.SourceFiles }
-                    | _ ->  failwithf "invalid remote details %A" state.RemoteUrl )
+                            { currentGroup with  
+                                LastWasPackage = false
+                                SourceFiles = sourceFile :: currentGroup.SourceFiles }::otherGroups
+                        | Some [ protocol; _; domain; project ] ->
+                            { currentGroup with  
+                                LastWasPackage = false
+                                SourceFiles = { Commit = String.Empty
+                                                Owner = domain
+                                                Origin = HttpLink(currentGroup.RemoteUrl.Value)
+                                                Project = project
+                                                Dependencies = Set.empty
+                                                Name = details } :: currentGroup.SourceFiles }::otherGroups
+                        | Some (protocol :: _ :: domain :: project :: moredetails) ->
+                            { currentGroup with  
+                                LastWasPackage = false
+                                SourceFiles = { Commit = String.Empty
+                                                Owner = domain
+                                                Origin = HttpLink(currentGroup.RemoteUrl.Value)
+                                                Project = project + "/" + String.Join("/",moredetails)
+                                                Dependencies = Set.empty
+                                                Name = details } :: currentGroup.SourceFiles }::otherGroups
+                        | _ ->  failwithf "invalid remote details %A" currentGroup.RemoteUrl )
 
 
 /// Allows to parse and analyze paket.lock files.
@@ -424,17 +431,17 @@ type LockFile(fileName:string,groups: Map<string,LockFileGroup>) =
 
     /// Parses a paket.lock file from lines
     static member Parse(lockFileName,lines) : LockFile = 
-        LockFileParser.Parse lines
-        |> fun state ->
-            let mainGroup = 
-                { Name = Constants.MainDependencyGroup
+        let groups =
+            LockFileParser.Parse lines
+            |> List.map (fun state ->
+                state.GroupName,
+                { Name = state.GroupName
                   Options = state.Options
                   Resolution = state.Packages |> Seq.fold (fun map p -> Map.add (NormalizedPackageName p.Name) p map) Map.empty
-                  RemoteFiles = List.rev state.SourceFiles }
-            
-            let groups = [ Constants.MainDependencyGroup, mainGroup ] |> Map.ofSeq
+                  RemoteFiles = List.rev state.SourceFiles })
+            |> Map.ofList
 
-            LockFile(lockFileName, groups)
+        LockFile(lockFileName, groups)
 
     member this.GetPackageHull(referencesFile:ReferencesFile) =
         let usedPackages = Dictionary<_,_>()
