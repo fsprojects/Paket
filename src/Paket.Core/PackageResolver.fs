@@ -307,6 +307,12 @@ let Resolve(getVersionsF, getPackageDetailsF, globalFrameworkRestrictions, rootD
 
                 availableVersions := getAllVersions(currentRequirement.Sources,currentRequirement.Name,currentRequirement.VersionRequirement.Range)
 
+                let lastest =
+                    !availableVersions
+                    |> List.filter (fun v -> v.PreRelease = None)
+                    |> List.sortDescending
+                    |> List.tryHead
+
                 let getPinnedVersion d = 
                     match d.Parent with
                     | DependenciesFile _ ->
@@ -315,12 +321,14 @@ let Resolve(getVersionsF, getPackageDetailsF, globalFrameworkRestrictions, rootD
                         | OverrideAll v -> Some v
                         | _ -> None
                     | Package _ -> None
+
                 requirements
                 |> Set.filter (fun r -> NormalizedPackageName currentRequirement.Name = NormalizedPackageName r.Name)
                 |> Set.map getPinnedVersion
+                |> Seq.filter ((>) lastest)
                 |> Seq.choose id
                 |> Seq.tryHead
-                |> Option.iter (traceWarnfn " %O is pinned to version %O" currentRequirement.Name)
+                |> Option.iter (traceWarnfn " %O has a new version available, but it is pinned to version %O" currentRequirement.Name)
 
                 compatibleVersions := List.filter (isInRange id) (!availableVersions)
                 if currentRequirement.VersionRequirement.Range.IsGlobalOverride then
