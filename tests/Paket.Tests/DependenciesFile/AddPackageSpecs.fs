@@ -405,3 +405,46 @@ nuget log4net 1.2.10"""
 
     cfg.ToString()
     |> shouldEqual (normalizeLineEndings expected)
+
+[<Test>]
+let ``should add Microsoft.AspNet.WebApi package in first group``() = 
+    let config = """source https://nuget.org/api/v2
+
+group Build
+nuget Moq"""
+
+    let cfg = DependenciesFile.FromCode(config).Add(PackageName "Microsoft.AspNet.WebApi","")
+    
+    let expected = """source https://nuget.org/api/v2
+
+nuget Microsoft.AspNet.WebApi
+
+group Build
+nuget Moq"""
+
+    cfg.ToString()
+    |> shouldEqual (normalizeLineEndings expected)
+
+[<Test>]
+let ``should add Microsoft.AspNet.WebApi package in first group in alphabetical pos``() = 
+    let config = """source https://nuget.org/api/v2
+
+nuget A
+nuget Z
+
+group Build
+nuget Moq"""
+
+    let cfg = DependenciesFile.FromCode(config).Add(PackageName "Microsoft.AspNet.WebApi","")
+    
+    let expected = """source https://nuget.org/api/v2
+
+nuget A
+nuget Microsoft.AspNet.WebApi
+nuget Z
+
+group Build
+nuget Moq"""
+
+    cfg.ToString()
+    |> shouldEqual (normalizeLineEndings expected)

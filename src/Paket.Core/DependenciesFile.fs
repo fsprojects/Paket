@@ -444,8 +444,13 @@ type DependenciesFile(fileName,groups:Map<string,DependenciesGroup>, textReprese
                                 list.Insert(0,"")
                                 list.Insert(0,DependenciesFileSerializer.sourceString Constants.DefaultNugetStream)
                             | _ -> 
-                                list.Add("")
-                                list.Add(packageString)
+                                match list |> Seq.tryFindIndex (fun line -> line.StartsWith("group ")) with
+                                | None ->
+                                    list.Add("")
+                                    list.Add(packageString)
+                                | Some i ->
+                                    list.Insert(i,"")
+                                    list.Insert(i,packageString)
                         | p::_ -> 
                             match tryFindPackageLine p.Name with
                             | None -> list.Add packageString
