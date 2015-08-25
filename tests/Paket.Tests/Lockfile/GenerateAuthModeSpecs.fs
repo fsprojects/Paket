@@ -23,6 +23,6 @@ let expected = """NUGET
 [<Test>]
 let ``should generate no auth in lock file``() = 
     let cfg = DependenciesFile.FromCode(config1)
-    cfg.Resolve(noSha1,VersionsFromGraph graph, PackageDetailsFromGraph graph).[Constants.MainDependencyGroup].ResolvedPackages.GetModelOrFail()
+    ResolveWithGraph(cfg,noSha1,VersionsFromGraph graph, PackageDetailsFromGraph graph).[Constants.MainDependencyGroup].ResolvedPackages.GetModelOrFail()
     |> LockFileSerializer.serializePackages cfg.Groups.[Constants.MainDependencyGroup].Options
     |> shouldEqual (normalizeLineEndings expected)

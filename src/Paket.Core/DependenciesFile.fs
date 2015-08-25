@@ -393,18 +393,6 @@ type DependenciesFile(fileName,groups:Map<string,DependenciesGroup>, textReprese
                     packages @ group.PackageRequirements |> Set.ofList)
               ResolvedSourceFiles = remoteFiles })
 
-    member __.Resolve(getSha1,getVersionF, getPackageDetailsF) =
-        let mainGroup = 
-            { Name = Constants.MainDependencyGroup
-              RemoteFiles = mainGroup.RemoteFiles
-              RootDependencies = Some packages
-              FrameworkRestrictions = mainGroup.Options.Settings.FrameworkRestrictions
-              PackageRequirements = [] }
-        
-        let groups = [ Constants.MainDependencyGroup, mainGroup ] |> Map.ofSeq
-
-        __.Resolve(getSha1,getVersionF,getPackageDetailsF,groups)
-
     member this.Resolve(force) = 
         this.Resolve(force,Some packages,[])
 

@@ -42,6 +42,18 @@ let safeResolve graph (dependencies : (string * VersionRange) list)  =
 
 let resolve graph dependencies = (safeResolve graph dependencies).GetModelOrFail()
 
+let ResolveWithGraph(dependenciesFile:DependenciesFile,getSha1,getVersionF, getPackageDetailsF) =
+    let mainGroup = 
+        { Name = Constants.MainDependencyGroup
+          RemoteFiles = dependenciesFile.Groups.[Constants.MainDependencyGroup].RemoteFiles
+          RootDependencies = Some dependenciesFile.Packages
+          FrameworkRestrictions = dependenciesFile.Groups.[Constants.MainDependencyGroup].Options.Settings.FrameworkRestrictions
+          PackageRequirements = [] }
+        
+    let groups = [ Constants.MainDependencyGroup, mainGroup ] |> Map.ofSeq
+
+    dependenciesFile.Resolve(getSha1,getVersionF,getPackageDetailsF,groups)
+
 let getVersion (resolved:ResolvedPackage) = resolved.Version.ToString()
 
 let getSource (resolved:ResolvedPackage) = resolved.Source
