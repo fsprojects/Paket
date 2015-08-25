@@ -314,8 +314,8 @@ type LockFile(fileName:string,groups: Map<string,LockFileGroup>) =
 
         mainGroup.Resolution
         |> Map.map (fun _ package -> allDependenciesOf package.Name))
-
-    member __.SourceFiles = mainGroup.RemoteFiles
+    
+    member __.Groups = groups
     member __.ResolvedPackages = mainGroup.Resolution
     member __.FileName = fileName
     member __.Options = mainGroup.Options
@@ -364,7 +364,7 @@ type LockFile(fileName:string,groups: Map<string,LockFileGroup>) =
             |> Set.ofSeq
 
         let fromSourceFiles =
-            this.SourceFiles 
+            mainGroup.RemoteFiles
             |> Seq.map (fun d -> d.Dependencies |> Seq.map fst)
             |> Seq.concat
             |> Set.ofSeq

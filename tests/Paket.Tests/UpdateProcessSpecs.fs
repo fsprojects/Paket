@@ -420,7 +420,7 @@ let ``SelectiveUpdate generates paket.lock correctly``() =
             String.Join
                 (Environment.NewLine,
                     LockFileSerializer.serializePackages InstallOptions.Default lockFile.ResolvedPackages, 
-                    LockFileSerializer.serializeSourceFiles lockFile.SourceFiles)
+                    LockFileSerializer.serializeSourceFiles lockFile.Groups.[Constants.MainDependencyGroup].RemoteFiles)
 
 
     let expected = """NUGET

@@ -84,7 +84,8 @@ let selectiveUpdate resolve lockFile dependenciesFile updateAll package =
             resolvedPackages
             |> Map.filter (fun p _ -> isDirectDependency p || isTransitiveDependency p)
 
-        { ResolvedPackages = Resolution.Ok(resolution); ResolvedSourceFiles = lockFile.SourceFiles }
+        { ResolvedPackages = Resolution.Ok(resolution)
+          ResolvedSourceFiles = lockFile.Groups.[Constants.MainDependencyGroup].RemoteFiles }
 
     let resolution =
         if updateAll then

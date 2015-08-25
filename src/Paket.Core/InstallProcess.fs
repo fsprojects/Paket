@@ -98,7 +98,9 @@ let CreateInstallModel(root, sources, force, package) =
 
 /// Restores the given packages from the lock file.
 let createModel(root, sources, force, lockFile : LockFile, packages:Set<NormalizedPackageName>) =
-    let sourceFileDownloads = RemoteDownload.DownloadSourceFiles(root, force, lockFile.SourceFiles)
+    let sourceFileDownloads = 
+        [|for kv in lockFile.Groups -> RemoteDownload.DownloadSourceFiles(root, force, kv.Value.RemoteFiles) |]
+        |> Async.Parallel
 
     let packageDownloads =
         lockFile.ResolvedPackages
@@ -258,7 +260,13 @@ let InstallIntoProjects(sources, options : InstallerOptions, lockFile : LockFile
                                 if verbose then
                                     tracefn "FileName: %s " file.Name 
 
-                                match lockFile.SourceFiles |> List.tryFind (fun f -> Path.GetFileName(f.Name) = file.Name) with
+                                let lockFileReference =
+                                    lockFile.Groups
+                                    |> Seq.map (fun kv -> kv.Value.RemoteFiles)
+                                    |> Seq.concat 
+                                    |> Seq.tryFind (fun f -> Path.GetFileName(f.Name) = file.Name)
+
+                                match lockFileReference with
                                 | Some file -> file.FilePath root
                                 | None -> failwithf "%s references file %s, but it was not found in the paket.lock file." referenceFile.FileName file.Name
 
