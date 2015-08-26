@@ -115,8 +115,12 @@ let getAllVersions(auth, nugetURL, package) =
         let! data = tryNuGetV3()
 
         match data with
-        | None -> let! result = getAllVersionsFromNuGet2(auth,nugetURL,package)
-                  return result
+        | None -> 
+            let! result = getAllVersionsFromNuGet2(auth,nugetURL,package)
+            return result
+        | Some data when Array.isEmpty data -> 
+            let! result = getAllVersionsFromNuGet2(auth,nugetURL,package)
+            return result
         | Some data -> return (Array.toSeq data) }
 
     async {
