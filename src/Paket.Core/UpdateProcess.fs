@@ -48,7 +48,7 @@ let addPackagesFromReferenceFiles projects (dependenciesFile : DependenciesFile)
 
 let selectiveUpdate resolve (lockFile:LockFile) (dependenciesFile:DependenciesFile) updateAll package =
     let selectiveUpdate package =
-        // TODO: this makes no sense at the moment
+        // TODO: this makes no sense at the moment - ask @mrinaldi
         let selectiveResolution = 
             dependenciesFile.Packages
             |> List.filter (fun p -> package = NormalizedPackageName p.Name)
@@ -131,7 +131,7 @@ let SelectiveUpdate(dependenciesFile : DependenciesFile, updateAll, exclude, for
               FrameworkRestrictions = group.Options.Settings.FrameworkRestrictions
               PackageRequirements = requirements })  
 
-    let lockFile = selectiveUpdate (fun d p -> d.Resolve(getSha1,NuGetV2.GetVersions root,NuGetV2.GetPackageDetails root force,groups)) oldLockFile dependenciesFile updateAll exclude
+    let lockFile = selectiveUpdate (fun d _ -> d.Resolve(getSha1,NuGetV2.GetVersions root,NuGetV2.GetPackageDetails root force,groups)) oldLockFile dependenciesFile updateAll exclude
     lockFile.Save()
     lockFile
 

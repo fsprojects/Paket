@@ -17,21 +17,21 @@ open Paket.PackagesConfigFile
 open Paket.Requirements
 open System.Security.AccessControl
 
-let findPackageFolder root (PackageName name) (settings:InstallSettings,version:SemVerInfo) =
+let findPackageFolder root groupName (PackageName name) (settings:InstallSettings,version:SemVerInfo) =
     let includeVersionInPath = defaultArg settings.IncludeVersionInPath false
     let lowerName = (name + if includeVersionInPath then "." + version.ToString() else "").ToLower()
     let di = DirectoryInfo(Path.Combine(root, Constants.PackagesFolderName))
-    let targetFolder = getTargetFolder root name version includeVersionInPath
+    let targetFolder = getTargetFolder root groupName name version includeVersionInPath
     let direct = DirectoryInfo(targetFolder)
     if direct.Exists then direct else
     match di.GetDirectories() |> Seq.tryFind (fun subDir -> subDir.FullName.ToLower().EndsWith(lowerName)) with
     | Some x -> x
     | None -> failwithf "Package directory for package %s was not found." name
 
-let private findPackagesWithContent (root,usedPackages:Map<PackageName,InstallSettings*SemVerInfo>) =
+let private findPackagesWithContent (root,groupName,usedPackages:Map<PackageName,InstallSettings*SemVerInfo>) =
     usedPackages
     |> Seq.filter (fun kv -> defaultArg (fst kv.Value).OmitContent false |> not)
-    |> Seq.map (fun kv -> findPackageFolder root kv.Key kv.Value)
+    |> Seq.map (fun kv -> findPackageFolder root groupName kv.Key kv.Value)
     |> Seq.choose (fun packageDir ->
             packageDir.GetDirectories("Content")
             |> Array.append (packageDir.GetDirectories("content"))
@@ -86,9 +86,9 @@ let private removeCopiedFiles (project: ProjectFile) =
     |> List.filter (fun fi -> not <| fi.FullName.Contains(Constants.PaketFilesFolderName))
     |> removeFilesAndTrimDirs
 
-let CreateInstallModel(root, sources, force, package) =
+let CreateInstallModel(root, groupName, sources, force, package) =
     async {
-        let! (package, files, targetsFiles) = RestoreProcess.ExtractPackage(root, sources, force, package)
+        let! (package, files, targetsFiles) = RestoreProcess.ExtractPackage(root, groupName, sources, force, package)
         let (PackageName name) = package.Name
         let nuspec = Nuspec.Load(root,package.Name)
         let files = files |> Array.map (fun fi -> fi.FullName)
@@ -103,9 +103,13 @@ let createModel(root, sources, force, lockFile : LockFile, packages:Set<Normaliz
         |> Async.Parallel
 
     let packageDownloads =
-        lockFile.GetCompleteResolution()
-        |> Map.filter (fun name _ -> packages.Contains name)
-        |> Seq.map (fun kv -> CreateInstallModel(root,sources,force,kv.Value))
+        lockFile.Groups
+        |> Seq.map (fun kv' -> 
+            kv'.Value.Resolution
+            |> Map.filter (fun name _ -> packages.Contains name)
+            |> Seq.map (fun kv -> CreateInstallModel(root,kv'.Key,sources,force,kv.Value)))
+        |> Seq.concat
+        |> Seq.toArray
         |> Async.Parallel
 
     let _,extractedPackages =
@@ -291,7 +295,7 @@ let InstallIntoProjects(sources, options : InstallerOptions, lockFile : LockFile
                                    Link = None })
 
         let nuGetFileItems =
-            copyContentFiles(project, findPackagesWithContent(root,usedPackageVersions))
+            copyContentFiles(project, findPackagesWithContent(root,Constants.MainDependencyGroup,usedPackageVersions))
             |> List.map (fun file ->
                                 { BuildAction = project.DetermineBuildAction file.Name
                                   Include = createRelativePath project.FileName file.FullName

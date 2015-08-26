@@ -421,13 +421,13 @@ let ExtractPackage(fileName:string, targetFolder, name, version:SemVerInfo) =
         return targetFolder
     }
 
-let CopyLicenseFromCache(root, cacheFileName, name, version:SemVerInfo, includeVersionInPath, force) = 
+let CopyLicenseFromCache(root, groupName, cacheFileName, name, version:SemVerInfo, includeVersionInPath, force) = 
     async {
         try
             if String.IsNullOrWhiteSpace cacheFileName then return () else
             let cacheFile = FileInfo cacheFileName
             if cacheFile.Exists then
-                let targetFile = FileInfo(Path.Combine(getTargetFolder root name version includeVersionInPath, "license.html"))
+                let targetFile = FileInfo(Path.Combine(getTargetFolder root groupName name version includeVersionInPath, "license.html"))
                 if not force && targetFile.Exists then
                     verbosefn "License %s %A already copied" name version        
                 else                    
@@ -437,19 +437,19 @@ let CopyLicenseFromCache(root, cacheFileName, name, version:SemVerInfo, includeV
     }
 
 /// Extracts the given package to the ./packages folder
-let CopyFromCache(root, cacheFileName, licenseCacheFile, name, version:SemVerInfo, includeVersionInPath, force) = 
+let CopyFromCache(root, groupName, cacheFileName, licenseCacheFile, name, version:SemVerInfo, includeVersionInPath, force) = 
     async { 
-        let targetFolder = DirectoryInfo(getTargetFolder root name version includeVersionInPath).FullName
+        let targetFolder = DirectoryInfo(getTargetFolder root groupName name version includeVersionInPath).FullName
         let fi = FileInfo(cacheFileName)
         let targetFile = FileInfo(Path.Combine(targetFolder, fi.Name))
         if not force && targetFile.Exists then           
             verbosefn "%s %A already copied" name version        
         else
             CleanDir targetFolder
-            File.Copy(cacheFileName, targetFile.FullName)            
+            File.Copy(cacheFileName, targetFile.FullName)
         try 
             let! extracted = ExtractPackage(targetFile.FullName,targetFolder,name,version)
-            do! CopyLicenseFromCache(root, licenseCacheFile, name, version, includeVersionInPath, force)
+            do! CopyLicenseFromCache(root, groupName, licenseCacheFile, name, version, includeVersionInPath, force)
             return extracted
         with
         | exn -> 
@@ -497,7 +497,7 @@ let DownloadLicense(root,force,name,version:SemVerInfo,licenseUrl,targetFileName
     }
 
 /// Downloads the given package to the NuGet Cache folder
-let DownloadPackage(root, auth, url, name, version:SemVerInfo, includeVersionInPath, force) = 
+let DownloadPackage(root, auth, url, groupName, name, version:SemVerInfo, includeVersionInPath, force) = 
     async { 
         let targetFileName = Path.Combine(CacheFolder, name + "." + version.Normalize() + ".nupkg")
         let targetFile = FileInfo targetFileName
@@ -554,7 +554,7 @@ let DownloadPackage(root, auth, url, name, version:SemVerInfo, includeVersionInP
             with
             | exn -> failwithf "Could not download %s %A.%s    %s" name version Environment.NewLine exn.Message
                 
-        return! CopyFromCache(root, targetFile.FullName, licenseFileName, name, version, includeVersionInPath, force)
+        return! CopyFromCache(root, groupName, targetFile.FullName, licenseFileName, name, version, includeVersionInPath, force)
     }
 
 /// Finds all libraries in a nuget package.
