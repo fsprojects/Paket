@@ -1,15 +1,26 @@
 source https://nuget.org/api/v2
 
 nuget Newtonsoft.Json
-nuget UnionArgParser
-nuget NUnit.Runners
-nuget NUnit
-nuget FAKE
-nuget FSharp.Formatting
+nuget UnionArgParser 0.9.0
 nuget FSharp.Core
-nuget ILRepack
 
 github forki/FsUnit FsUnit.fs
-github fsharp/FAKE modules/Octokit/Octokit.fsx
 github fsharp/FAKE src/app/FakeLib/Globbing/Globbing.fs
 github fsprojects/Chessie src/Chessie/ErrorHandling.fs
+
+group Build
+
+  source https://nuget.org/api/v2
+  
+  nuget FAKE
+  nuget FSharp.Formatting
+  nuget ILRepack
+
+  github fsharp/FAKE modules/Octokit/Octokit.fsx
+
+group Test
+
+  source https://nuget.org/api/v2
+
+  nuget NUnit.Runners
+  nuget NUnit

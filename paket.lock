@@ -1,9 +1,25 @@
 NUGET
   remote: https://nuget.org/api/v2
   specs:
-    FAKE (4.2.0)
-    FSharp.Compiler.Service (1.4.0.1)
     FSharp.Core (4.0.0.1)
+    Newtonsoft.Json (7.0.1)
+    UnionArgParser (0.9.0)
+GITHUB
+  remote: forki/FsUnit
+  specs:
+    FsUnit.fs (81d27fd09575a32c4ed52eadb2eeac5f365b8348)
+  remote: fsharp/FAKE
+  specs:
+    src/app/FakeLib/Globbing/Globbing.fs (5f014c2eeccc9c0d3f705e9c94435070132d8ac1)
+  remote: fsprojects/Chessie
+  specs:
+    src/Chessie/ErrorHandling.fs (1f23b1caeb1f87e750abc96a25109376771dd090)
+GROUP Build
+NUGET
+  remote: https://nuget.org/api/v2
+  specs:
+    FAKE (4.3.1)
+    FSharp.Compiler.Service (1.4.0.1)
     FSharp.Formatting (2.10.0)
       FSharp.Compiler.Service (>= 0.0.87)
       FSharpVSPowerTools.Core (1.8.0)
@@ -16,21 +32,16 @@ NUGET
     Microsoft.Net.Http (2.2.29)
       Microsoft.Bcl (>= 1.1.10)
       Microsoft.Bcl.Build (>= 1.0.14)
-    Newtonsoft.Json (7.0.1)
-    NUnit (2.6.4)
-    NUnit.Runners (2.6.4)
     Octokit (0.14.0)
       Microsoft.Net.Http
-    UnionArgParser (0.9.0)
 GITHUB
-  remote: forki/FsUnit
-  specs:
-    FsUnit.fs (81d27fd09575a32c4ed52eadb2eeac5f365b8348)
   remote: fsharp/FAKE
   specs:
-    modules/Octokit/Octokit.fsx (c2037a43ffa69e9bf0d14cd464a23a6eb581104a)
+    modules/Octokit/Octokit.fsx (5f014c2eeccc9c0d3f705e9c94435070132d8ac1)
       Octokit
-    src/app/FakeLib/Globbing/Globbing.fs (c2037a43ffa69e9bf0d14cd464a23a6eb581104a)
-  remote: fsprojects/Chessie
+GROUP Test
+NUGET
+  remote: https://nuget.org/api/v2
   specs:
-    src/Chessie/ErrorHandling.fs (1f23b1caeb1f87e750abc96a25109376771dd090)
+    NUnit (2.6.4)
+    NUnit.Runners (2.6.4)

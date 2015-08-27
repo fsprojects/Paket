@@ -2,7 +2,7 @@
 // FAKE build script
 // --------------------------------------------------------------------------------------
 
-#r @"packages/FAKE/tools/FakeLib.dll"
+#r @"packages/build/FAKE/tools/FakeLib.dll"
 
 open Fake
 open Fake.Git
@@ -175,7 +175,7 @@ Target "MergePaketTool" (fun _ ->
 
     let result =
         ExecProcess (fun info ->
-            info.FileName <- currentDirectory @@ "packages" @@ "ILRepack" @@ "tools" @@ "ILRepack.exe"
+            info.FileName <- currentDirectory </> "packages" </> "build" </> "ILRepack" </> "tools" </> "ILRepack.exe"
             info.Arguments <- sprintf "/verbose /lib:%s /ver:%s /out:%s %s" buildDir release.AssemblyVersion (buildMergedDir @@ "paket.exe") toPack
             ) (TimeSpan.FromMinutes 5.)
 
@@ -192,7 +192,7 @@ Target "MergePowerShell" (fun _ ->
 
     let result =
         ExecProcess (fun info ->
-            info.FileName <- currentDirectory @@ "packages" @@ "ILRepack" @@ "tools" @@ "ILRepack.exe"
+            info.FileName <- currentDirectory </> "packages" </> "build" </> "ILRepack" </> "tools" </> "ILRepack.exe"
             info.Arguments <- sprintf "/verbose /lib:%s /out:%s %s" buildDir (buildMergedDirPS @@ "Paket.PowerShell.dll") toPack
             ) (TimeSpan.FromMinutes 5.)
 

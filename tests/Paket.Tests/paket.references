@@ -1,4 +1,6 @@
-NUnit
-NUnit.Runners
 File:FsUnit.fs .
 FSharp.Core
+
+group Test
+  NUnit
+  NUnit.Runners
