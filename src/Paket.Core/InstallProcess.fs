@@ -269,51 +269,53 @@ let InstallIntoProjects(sources, options : InstallerOptions, lockFile : LockFile
 
         removeCopiedFiles project
 
-        for g in referenceFile.Groups do
-            let gitRemoteItems =
-                g.Value.RemoteFiles
+        let gitRemoteItems =
+            referenceFile.Groups
+            |> Seq.map (fun kv ->
+                kv.Value.RemoteFiles
                 |> List.map (fun file ->
                     let link = if file.Link = "." then Path.GetFileName file.Name else Path.Combine(file.Link, Path.GetFileName file.Name)
                     let remoteFilePath = 
-                      if verbose then
-                          tracefn "FileName: %s " file.Name 
+                        if verbose then
+                            tracefn "FileName: %s " file.Name 
     
-                      let lockFileReference =
-                          lockFile.Groups
-                          |> Seq.map (fun kv -> kv.Value.RemoteFiles)
-                          |> Seq.concat 
-                          |> Seq.tryFind (fun f -> Path.GetFileName(f.Name) = file.Name)
+                        let lockFileReference =
+                            lockFile.Groups
+                            |> Seq.map (fun kv -> kv.Value.RemoteFiles)
+                            |> Seq.concat 
+                            |> Seq.tryFind (fun f -> Path.GetFileName(f.Name) = file.Name)
     
-                      match lockFileReference with
-                      | Some file -> file.FilePath root
-                      | None -> failwithf "%s references file %s, but it was not found in the paket.lock file." referenceFile.FileName file.Name
+                        match lockFileReference with
+                        | Some file -> file.FilePath root
+                        | None -> failwithf "%s references file %s, but it was not found in the paket.lock file." referenceFile.FileName file.Name
     
                     let linked = defaultArg file.Settings.Link true
     
                     if linked then
-                       { BuildAction = project.DetermineBuildAction file.Name
-                         Include = createRelativePath project.FileName remoteFilePath
-                         Link = Some link }
+                        { BuildAction = project.DetermineBuildAction file.Name
+                          Include = createRelativePath project.FileName remoteFilePath
+                          Link = Some link }
                     else
-                       let toDir = Path.GetDirectoryName(project.FileName)
-                       let targetFile = FileInfo(Path.Combine(toDir,link))
-                       if targetFile.Directory.Exists |> not then
-                          targetFile.Directory.Create()
+                        let toDir = Path.GetDirectoryName(project.FileName)
+                        let targetFile = FileInfo(Path.Combine(toDir,link))
+                        if targetFile.Directory.Exists |> not then
+                            targetFile.Directory.Create()
     
-                       File.Copy(remoteFilePath,targetFile.FullName)
+                        File.Copy(remoteFilePath,targetFile.FullName)
     
-                       { BuildAction = project.DetermineBuildAction file.Name
-                         Include = createRelativePath project.FileName targetFile.FullName
-                         Link = None })
+                        { BuildAction = project.DetermineBuildAction file.Name
+                          Include = createRelativePath project.FileName targetFile.FullName
+                          Link = None }))
+            |> List.concat
 
-            let nuGetFileItems =
-                copyContentFiles(project, findPackagesWithContent(root,usedPackageVersions))
-                |> List.map (fun file ->
-                                    { BuildAction = project.DetermineBuildAction file.Name
-                                      Include = createRelativePath project.FileName file.FullName
-                                      Link = None })
+        let nuGetFileItems =
+            copyContentFiles(project, findPackagesWithContent(root,usedPackageVersions))
+            |> List.map (fun file ->
+                                { BuildAction = project.DetermineBuildAction file.Name
+                                  Include = createRelativePath project.FileName file.FullName
+                                  Link = None })
 
-            project.UpdateFileItems(gitRemoteItems @ nuGetFileItems, options.Hard)
+        project.UpdateFileItems(gitRemoteItems @ nuGetFileItems, options.Hard)
 
         project.Save()
 
