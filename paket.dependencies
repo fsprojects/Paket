@@ -1,7 +1,7 @@
 source https://nuget.org/api/v2
 
 nuget Newtonsoft.Json
-nuget UnionArgParser
+nuget Argu
 nuget NUnit.Runners
 nuget NUnit
 nuget FAKE

@@ -10,7 +10,7 @@ open Paket.Logging
 open Paket.Commands
 open Paket.Releases
 
-open Nessos.UnionArgParser
+open Nessos.Argu
 open PackageSources
 
 let private stopWatch = new Stopwatch()
@@ -18,7 +18,7 @@ stopWatch.Start()
 
 let filterGlobalArgs args =
     let globalResults =
-        UnionArgParser.Create<GlobalArgs>()
+        ArgumentParser.Create<GlobalArgs>()
             .Parse(ignoreMissing = true,
                    ignoreUnrecognized = true,
                    raiseOnUsage = false)
@@ -41,7 +41,7 @@ let silent = args |> Array.exists (fun a -> a = "-s" || a = "--silent")
 
 let processWithValidation<'T when 'T :> IArgParserTemplate> validateF commandF command
     args =
-    let parser = UnionArgParser.Create<'T>()
+    let parser = ArgumentParser.Create<'T>()
     let results =
         parser.Parse
             (inputs = args, raiseOnUsage = false, ignoreMissing = true,
@@ -265,7 +265,7 @@ let main() =
         | None -> null
 
     try
-        let parser = UnionArgParser.Create<Command>()
+        let parser = ArgumentParser.Create<Command>()
         let results =
             parser.Parse(inputs = args,
                          ignoreMissing = true,

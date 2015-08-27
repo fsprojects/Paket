@@ -2,7 +2,7 @@ module Paket.Commands
 
 open System
 
-open Nessos.UnionArgParser
+open Nessos.Argu
 
 type Command =
     | [<First>][<CustomCommandLine("add")>]                     Add
@@ -279,7 +279,7 @@ with
             | ApiKey(_) -> "Optionally specify your API key on the command line. Otherwise uses the value of the `nugetkey` environment variable."
             | EndPoint(_) -> "Optionally specify a custom api endpoint to push to. Defaults to `/api/v2/package`."
 
-let cmdLineSyntax (parser:UnionArgParser<_>) commandName =
+let cmdLineSyntax (parser:ArgumentParser<_>) commandName =
     "paket " + commandName + " " + parser.PrintCommandLineSyntax()
 
 let cmdLineUsageMessage (command : Command) parser =
@@ -312,7 +312,7 @@ let markdown (command : Command) (additionalText : string) =
     let replace (pattern : string) (replacement : string) input =
         System.Text.RegularExpressions.Regex.Replace(input, pattern, replacement)
 
-    let syntaxAndOptions (parser : UnionArgParser<_>) =
+    let syntaxAndOptions (parser : ArgumentParser<_>) =
         let options =
             parser.Usage()
             |> replace @"\s\t--help.*" ""
@@ -322,23 +322,23 @@ let markdown (command : Command) (additionalText : string) =
         syntax, options
 
     let getSyntax = function
-        | Add -> syntaxAndOptions (UnionArgParser.Create<AddArgs>())
-        | Config -> syntaxAndOptions (UnionArgParser.Create<ConfigArgs>())
-        | ConvertFromNuget -> syntaxAndOptions (UnionArgParser.Create<ConvertFromNugetArgs>())
-        | FindRefs -> syntaxAndOptions (UnionArgParser.Create<FindRefsArgs>())
-        | Init -> syntaxAndOptions (UnionArgParser.Create<InitArgs>())
-        | AutoRestore -> syntaxAndOptions (UnionArgParser.Create<AutoRestoreArgs>())
-        | Install -> syntaxAndOptions (UnionArgParser.Create<InstallArgs>())
-        | Outdated -> syntaxAndOptions (UnionArgParser.Create<OutdatedArgs>())
-        | Remove -> syntaxAndOptions (UnionArgParser.Create<RemoveArgs>())
-        | Restore -> syntaxAndOptions (UnionArgParser.Create<RestoreArgs>())
-        | Simplify -> syntaxAndOptions (UnionArgParser.Create<SimplifyArgs>())
-        | Update -> syntaxAndOptions (UnionArgParser.Create<UpdateArgs>())
-        | FindPackages -> syntaxAndOptions (UnionArgParser.Create<FindPackagesArgs>())
-        | FindPackageVersions -> syntaxAndOptions (UnionArgParser.Create<FindPackageVersionsArgs>())
-        | ShowInstalledPackages -> syntaxAndOptions (UnionArgParser.Create<ShowInstalledPackagesArgs>())
-        | Pack -> syntaxAndOptions (UnionArgParser.Create<PackArgs>())
-        | Push -> syntaxAndOptions (UnionArgParser.Create<PushArgs>())
+        | Add -> syntaxAndOptions (ArgumentParser.Create<AddArgs>())
+        | Config -> syntaxAndOptions (ArgumentParser.Create<ConfigArgs>())
+        | ConvertFromNuget -> syntaxAndOptions (ArgumentParser.Create<ConvertFromNugetArgs>())
+        | FindRefs -> syntaxAndOptions (ArgumentParser.Create<FindRefsArgs>())
+        | Init -> syntaxAndOptions (ArgumentParser.Create<InitArgs>())
+        | AutoRestore -> syntaxAndOptions (ArgumentParser.Create<AutoRestoreArgs>())
+        | Install -> syntaxAndOptions (ArgumentParser.Create<InstallArgs>())
+        | Outdated -> syntaxAndOptions (ArgumentParser.Create<OutdatedArgs>())
+        | Remove -> syntaxAndOptions (ArgumentParser.Create<RemoveArgs>())
+        | Restore -> syntaxAndOptions (ArgumentParser.Create<RestoreArgs>())
+        | Simplify -> syntaxAndOptions (ArgumentParser.Create<SimplifyArgs>())
+        | Update -> syntaxAndOptions (ArgumentParser.Create<UpdateArgs>())
+        | FindPackages -> syntaxAndOptions (ArgumentParser.Create<FindPackagesArgs>())
+        | FindPackageVersions -> syntaxAndOptions (ArgumentParser.Create<FindPackageVersionsArgs>())
+        | ShowInstalledPackages -> syntaxAndOptions (ArgumentParser.Create<ShowInstalledPackagesArgs>())
+        | Pack -> syntaxAndOptions (ArgumentParser.Create<PackArgs>())
+        | Push -> syntaxAndOptions (ArgumentParser.Create<PushArgs>())
 
     let replaceLinks (text : string) =
         text
