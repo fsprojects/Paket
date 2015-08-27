@@ -639,7 +639,7 @@ let ``should not read hhtml``() =
     with
     | exn -> Assert.IsTrue(exn.Message.Contains"Unrecognized token")
 
-let configWitAdditionalGroup = """
+let configWithAdditionalGroup = """
 source "http://nuget.org/api/v2"
 
 nuget FSharp.Compiler.Service
@@ -653,7 +653,29 @@ nuget NUnit
 
 [<Test>]
 let ``should read config with additional group``() = 
-    let cfg = DependenciesFile.FromCode(configWitAdditionalGroup)
+    let cfg = DependenciesFile.FromCode(configWithAdditionalGroup)
+
+    cfg.GetDependenciesInGroup(Constants.MainDependencyGroup).[PackageName "FSharp.Compiler.Service"].Range |> shouldEqual (VersionRange.Minimum (SemVer.Parse "0"))
+    cfg.GetDependenciesInGroup(Constants.MainDependencyGroup).[PackageName "FsReveal"].Range |> shouldEqual (VersionRange.Minimum (SemVer.Parse "0"))
+
+    cfg.GetDependenciesInGroup(GroupName "Build").[PackageName "FAKE"].Range |> shouldEqual (VersionRange.Minimum (SemVer.Parse "0"))
+    cfg.GetDependenciesInGroup(GroupName "Build").[PackageName "NUnit"].Range |> shouldEqual (VersionRange.Minimum (SemVer.Parse "0"))
+
+let configWithNestedGroup = """
+source "http://nuget.org/api/v2"
+
+nuget FSharp.Compiler.Service
+nuget FsReveal
+
+group Build
+
+    nuget FAKE
+    nuget NUnit
+"""
+
+[<Test>]
+let ``should read config with nested group``() = 
+    let cfg = DependenciesFile.FromCode(configWithNestedGroup)
 
     cfg.GetDependenciesInGroup(Constants.MainDependencyGroup).[PackageName "FSharp.Compiler.Service"].Range |> shouldEqual (VersionRange.Minimum (SemVer.Parse "0"))
     cfg.GetDependenciesInGroup(Constants.MainDependencyGroup).[PackageName "FsReveal"].Range |> shouldEqual (VersionRange.Minimum (SemVer.Parse "0"))

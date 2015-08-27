@@ -232,3 +232,23 @@ let ``should parse reffiles with groups``() =
     let testGroup = refFile.Groups.[NormalizedGroupName (GroupName "Test")]
     testGroup.NugetPackages.Length |> shouldEqual 1
     testGroup.NugetPackages.Head.Name |> shouldEqual (PackageName "NUnit")
+
+let refFileWithSecondNestedGroup = """
+Castle.Windsor  
+Newtonsoft.Json
+
+group Test
+  NUnit
+"""
+
+[<Test>]
+let ``should parse reffiles with nested groups``() = 
+    let refFile = ReferencesFile.FromLines(toLines refFileWithSecondNestedGroup)
+    let mainGroup = refFile.Groups.[NormalizedGroupName Constants.MainDependencyGroup]
+    mainGroup.NugetPackages.Length |> shouldEqual 2
+    mainGroup.NugetPackages.Head.Name |> shouldEqual (PackageName "Castle.Windsor")
+    mainGroup.NugetPackages.Tail.Head.Name |> shouldEqual (PackageName "Newtonsoft.Json")
+    
+    let testGroup = refFile.Groups.[NormalizedGroupName (GroupName "Test")]
+    testGroup.NugetPackages.Length |> shouldEqual 1
+    testGroup.NugetPackages.Head.Name |> shouldEqual (PackageName "NUnit")
