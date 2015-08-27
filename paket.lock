@@ -10,7 +10,7 @@ GITHUB
     FsUnit.fs (81d27fd09575a32c4ed52eadb2eeac5f365b8348)
   remote: fsharp/FAKE
   specs:
-    src/app/FakeLib/Globbing/Globbing.fs (5f014c2eeccc9c0d3f705e9c94435070132d8ac1)
+    src/app/FakeLib/Globbing/Globbing.fs (4a82e96215e75ddaae508468d360e2dc4cbe9776)
   remote: fsprojects/Chessie
   specs:
     src/Chessie/ErrorHandling.fs (1f23b1caeb1f87e750abc96a25109376771dd090)
@@ -37,7 +37,7 @@ NUGET
 GITHUB
   remote: fsharp/FAKE
   specs:
-    modules/Octokit/Octokit.fsx (5f014c2eeccc9c0d3f705e9c94435070132d8ac1)
+    modules/Octokit/Octokit.fsx (4a82e96215e75ddaae508468d360e2dc4cbe9776)
       Octokit
 GROUP Test
 NUGET
