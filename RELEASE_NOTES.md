@@ -1,3 +1,6 @@
+#### 1.33.4 - 27.08.2015
+* Trace NuGet package URL if download fails
+
 #### 1.33.1 - 26.08.2015
 * Fallback to NuGet v2 feed if no version is found in v3
 

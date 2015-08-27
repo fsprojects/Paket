@@ -511,10 +511,9 @@ let DownloadPackage(root, auth, url, groupName, name, version:SemVerInfo, includ
         else 
             // discover the link on the fly
             let! nugetPackage = getDetailsFromNuget force auth url name version
-            try
-                let! license = Async.StartChild(DownloadLicense(root,force,name,version,nugetPackage.LicenseUrl,licenseFileName), 5000)
-
+            try                
                 tracefn "Downloading %s %A to %s" name version targetFileName
+                let! license = Async.StartChild(DownloadLicense(root,force,name,version,nugetPackage.LicenseUrl,licenseFileName), 5000)
 
                 let request = HttpWebRequest.Create(Uri nugetPackage.DownloadUrl) :?> HttpWebRequest
                 request.AutomaticDecompression <- DecompressionMethods.GZip ||| DecompressionMethods.Deflate
@@ -549,14 +548,14 @@ let DownloadPackage(root, auth, url, groupName, name, version:SemVerInfo, includ
                     bytesRead := bytes
                     do! fileStream.AsyncWrite(buffer, 0, !bytesRead)
 
-                try
+                try                    
                     do! license
                 with
                 | exn ->
                     if verbose then
                         traceWarnfn "Could not download license for %s %A from %s.%s    %s" name version nugetPackage.LicenseUrl Environment.NewLine exn.Message 
             with
-            | exn -> failwithf "Could not download %s %A.%s    %s" name version Environment.NewLine exn.Message
+            | exn -> failwithf "Could not download %s %A from %s.%s    %s" name version nugetPackage.DownloadUrl Environment.NewLine exn.Message
                 
         return! CopyFromCache(root, groupName, targetFile.FullName, licenseFileName, name, version, includeVersionInPath, force)
     }
