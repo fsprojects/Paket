@@ -42,7 +42,7 @@ let ExtractPackage(root, groupName, sources, force, package : ResolvedPackage) =
 /// Restores the given dependencies from the lock file.
 let internal restore(root, groupName, sources, force, lockFile:LockFile, packages:Set<NormalizedPackageName>) = 
     let sourceFileDownloads = 
-        [|for kv in lockFile.Groups -> RemoteDownload.DownloadSourceFiles(Path.GetDirectoryName lockFile.FileName, groupName, force, kv.Value.RemoteFiles) |]
+        [| yield RemoteDownload.DownloadSourceFiles(Path.GetDirectoryName lockFile.FileName, groupName, force, lockFile.Groups.[groupName].RemoteFiles) |]
         |> Async.Parallel
 
     let packageDownloads = 
@@ -67,7 +67,7 @@ let Restore(dependenciesFileName,force,referencesFileNames) =
     if not lockFileName.Exists then 
         failwithf "%s doesn't exist." lockFileName.FullName        
 
-    let sources = DependenciesFile.ReadFromFile(dependenciesFileName).GetAllPackageSources()
+    let dependenciesFile = DependenciesFile.ReadFromFile(dependenciesFileName)
     let lockFile = LockFile.LoadFrom(lockFileName.FullName)
     
     lockFile.Groups
@@ -81,7 +81,7 @@ let Restore(dependenciesFileName,force,referencesFileNames) =
                 |> List.toSeq
                 |> computePackageHull kv.Key lockFile
 
-        restore(root, kv.Key, sources, force, lockFile,Set.ofSeq packages))
+        restore(root, kv.Key, dependenciesFile.Groups.[NormalizedGroupName kv.Value.Name].Sources, force, lockFile,Set.ofSeq packages))
     |> Seq.toArray
     |> Async.Parallel
     |> Async.RunSynchronously
