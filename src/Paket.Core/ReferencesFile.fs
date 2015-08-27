@@ -36,6 +36,18 @@ type ReferencesFile =
           Groups = groups }
 
     static member FromLines(lines : string[]) = 
+        let groupedLines =
+            lines
+            |> Array.fold (fun state line -> 
+                match state with
+                | [] -> failwithf "error while parsing %A" lines
+                | ((name,lines) as currentGroup)::otherGroups ->
+                    if line.StartsWith "group: " then
+                        (line.Replace("group:","").Trim(),[])::currentGroup::otherGroups
+                    else 
+                        (name,line::lines)::otherGroups) [Constants.MainDependencyGroup,[]]
+            |> List.map (fun (name,lines) -> name,lines |> List.rev |> Array.ofList)
+
         let isSingleFile (line: string) = line.StartsWith "File:"
         let notEmpty (line: string) = not <| String.IsNullOrWhiteSpace line
         let parsePackageInstallSettings (line: string) : PackageInstallSettings = 
@@ -43,36 +55,37 @@ type ReferencesFile =
             { Name = PackageName parts.[0]
               Settings = InstallSettings.Parse(line.Replace(parts.[0],"")) } 
 
-        let remoteLines,nugetLines =
-            lines 
-            |> Array.filter notEmpty 
-            |> Array.map (fun s -> s.Trim())
-            |> Array.toList
-            |> List.partition isSingleFile 
+        let groups = 
+            groupedLines 
+            |> List.map (fun (groupName,lines) ->
+                    let remoteLines,nugetLines =
+                        lines 
+                        |> Array.filter notEmpty 
+                        |> Array.map (fun s -> s.Trim())
+                        |> Array.toList
+                        |> List.partition isSingleFile 
 
         
-        let nugetPackages =
-            nugetLines
-            |> List.map parsePackageInstallSettings
+                    let nugetPackages =
+                        nugetLines
+                        |> List.map parsePackageInstallSettings
 
-        let remoteFiles = 
-            remoteLines
-            |> List.map (fun s -> s.Replace("File:","").Split([|' '|], StringSplitOptions.RemoveEmptyEntries))
-            |> List.map (fun segments ->
-                            let hasPath =
-                                let get x = if segments.Length > x then segments.[x] else ""
-                                segments.Length >= 2 && not ((get 1).Contains(":")) && not ((get 2).StartsWith(":")) 
+                    let remoteFiles = 
+                        remoteLines
+                        |> List.map (fun s -> s.Replace("File:","").Split([|' '|], StringSplitOptions.RemoveEmptyEntries))
+                        |> List.map (fun segments ->
+                                        let hasPath =
+                                            let get x = if segments.Length > x then segments.[x] else ""
+                                            segments.Length >= 2 && not ((get 1).Contains(":")) && not ((get 2).StartsWith(":")) 
 
-                            let rest = 
-                                let skip = if hasPath then 2 else 1
-                                if segments.Length < skip then "" else String.Join(" ",segments |> Seq.skip skip)
+                                        let rest = 
+                                            let skip = if hasPath then 2 else 1
+                                            if segments.Length < skip then "" else String.Join(" ",segments |> Seq.skip skip)
 
-                            { Name = segments.[0]
-                              Link = if hasPath then segments.[1] else ReferencesFile.DefaultLink 
-                              Settings = RemoteFileInstallSettings.Parse rest })
-
-        let groups = 
-            [Constants.MainDependencyGroup, { Name = Constants.MainDependencyGroup; NugetPackages = nugetPackages; RemoteFiles = remoteFiles }]
+                                        { Name = segments.[0]
+                                          Link = if hasPath then segments.[1] else ReferencesFile.DefaultLink 
+                                          Settings = RemoteFileInstallSettings.Parse rest })
+                    groupName, { Name = groupName; NugetPackages = nugetPackages; RemoteFiles = remoteFiles })
             |> Map.ofList
 
         { FileName = ""

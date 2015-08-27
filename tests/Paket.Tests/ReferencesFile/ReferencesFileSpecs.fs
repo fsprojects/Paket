@@ -212,3 +212,23 @@ File:FsUnit1.fs link:false
     refFile.RemoteFiles.Tail.Head.Name |> shouldEqual "FsUnit1.fs"
     refFile.RemoteFiles.Tail.Head.Link |> shouldEqual ReferencesFile.DefaultLink
     refFile.RemoteFiles.Tail.Head.Settings.Link |> shouldEqual (Some false)
+    
+
+let refFileWithSecondGroup = """
+Castle.Windsor  
+Newtonsoft.Json 
+group: Test
+NUnit
+"""
+
+[<Test>]
+let ``should parse reffiles with groups``() = 
+    let refFile = ReferencesFile.FromLines(toLines refFileWithSecondGroup)
+    let mainGroup = refFile.Groups.[Constants.MainDependencyGroup]
+    mainGroup.NugetPackages.Length |> shouldEqual 2
+    mainGroup.NugetPackages.Head.Name |> shouldEqual (PackageName "Castle.Windsor")
+    mainGroup.NugetPackages.Tail.Head.Name |> shouldEqual (PackageName "Newtonsoft.Json")
+    
+    let testGroup = refFile.Groups.["Test"]
+    testGroup.NugetPackages.Length |> shouldEqual 1
+    testGroup.NugetPackages.Head.Name |> shouldEqual (PackageName "NUnit")
