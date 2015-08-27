@@ -3,4 +3,4 @@ FSharp.Core
 
 group Test
   NUnit
-  NUnit.Runners
+  NUnit.Runners.Net4
