@@ -1,7 +1,4 @@
-#### 1.33.3 - 27.08.2015
-* Temporarily disable license download
-
-#### 1.33.2 - 27.08.2015
+#### 1.33.4 - 27.08.2015
 * Trace NuGet package URL if download fails
 
 #### 1.33.1 - 26.08.2015
