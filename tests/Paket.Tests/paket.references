@@ -1,4 +1,4 @@
 NUnit
-NUnit.Runners
+NUnit.Runners.Net4
 File:FsUnit.fs .
 FSharp.Core
