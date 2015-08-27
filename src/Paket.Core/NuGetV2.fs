@@ -547,13 +547,13 @@ let DownloadPackage(root, auth, url, name, version:SemVerInfo, includeVersionInP
                     bytesRead := bytes
                     do! fileStream.AsyncWrite(buffer, 0, !bytesRead)
 
-                try                
-                    let! license = Async.StartChild(DownloadLicense(root,force,name,version,nugetPackage.LicenseUrl,licenseFileName), 5000)
-                    do! license
-                with
-                | exn ->
-                    if verbose then
-                        traceWarnfn "Could not download license for %s %A from %s.%s    %s" name version nugetPackage.LicenseUrl Environment.NewLine exn.Message 
+//                try                
+//                    let! license = Async.StartChild(DownloadLicense(root,force,name,version,nugetPackage.LicenseUrl,licenseFileName), 5000)
+//                    do! license
+//                with
+//                | exn ->
+//                    if verbose then
+//                        traceWarnfn "Could not download license for %s %A from %s.%s    %s" name version nugetPackage.LicenseUrl Environment.NewLine exn.Message 
             with
             | exn -> failwithf "Could not download %s %A from %s.%s    %s" name version nugetPackage.DownloadUrl Environment.NewLine exn.Message
                 
