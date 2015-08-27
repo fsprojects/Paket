@@ -4,7 +4,7 @@ open System.Management.Automation
 open System.Diagnostics
 open Paket
 open Paket.Commands
-open Nessos.UnionArgParser
+open Nessos.Argu
 open System
 
 // types exposed publicly by sending to output
@@ -67,7 +67,7 @@ type Add() =
 
     override x.ProcessRecord() =
         async {
-            let parser = UnionArgParser.Create<AddArgs>()
+            let parser = ArgumentParser.Create<AddArgs>()
             [
                 if String.IsNullOrEmpty x.NuGet = false then
                     yield AddArgs.Nuget x.NuGet
@@ -97,7 +97,7 @@ type AutoRestoreCmdlet() =
 
     override x.ProcessRecord() =
         async {
-            let parser = UnionArgParser.Create<AutoRestoreArgs>()
+            let parser = ArgumentParser.Create<AutoRestoreArgs>()
             [
                 if x.On.IsPresent then
                     yield AutoRestoreArgs.On
@@ -116,7 +116,7 @@ type ConfigCmdlet() =
 
     override x.ProcessRecord() =
         async {
-            let parser = UnionArgParser.Create<ConfigArgs>()
+            let parser = ArgumentParser.Create<ConfigArgs>()
             [
                 if String.IsNullOrEmpty x.AddCredentials = false then
                     yield ConfigArgs.AddCredentials x.AddCredentials
@@ -137,7 +137,7 @@ type ConvertFromNuGetCmdlet() =
 
     override x.ProcessRecord() =
         async {
-            let parser = UnionArgParser.Create<ConvertFromNugetArgs>()
+            let parser = ArgumentParser.Create<ConvertFromNugetArgs>()
             [
                 if x.Force.IsPresent then
                     yield ConvertFromNugetArgs.Force
@@ -160,7 +160,7 @@ type FindRefsCmdlet() =
 
     override x.ProcessRecord() =
         async {
-            let parser = UnionArgParser.Create<FindRefsArgs>()
+            let parser = ArgumentParser.Create<FindRefsArgs>()
             [
                 for p in x.NuGet do
                     yield FindRefsArgs.Packages p
@@ -180,7 +180,7 @@ type FindPackagesCmdlet() =
 
     override x.ProcessRecord() =
         async {
-            let parser = UnionArgParser.Create<FindPackagesArgs>()
+            let parser = ArgumentParser.Create<FindPackagesArgs>()
             [
                 if String.IsNullOrEmpty x.SearchText = false then
                     yield FindPackagesArgs.SearchText x.SearchText
@@ -206,7 +206,7 @@ type FindPackageVersionsCmdlet() =
 
     override x.ProcessRecord() =
         async {
-            let parser = UnionArgParser.Create<FindPackageVersionsArgs>()
+            let parser = ArgumentParser.Create<FindPackageVersionsArgs>()
             [
                 if String.IsNullOrEmpty x.Name = false then
                     yield FindPackageVersionsArgs.Name x.Name
@@ -227,7 +227,7 @@ type InitCmdlet() =
 
     override x.ProcessRecord() =
         async {
-            let parser = UnionArgParser.Create<InitArgs>()
+            let parser = ArgumentParser.Create<InitArgs>()
             List.empty
             |> parser.CreateParseResultsOfList
             |> Program.init
@@ -243,7 +243,7 @@ type InstallCmdlet() =
 
     override x.ProcessRecord() =
         async {
-            let parser = UnionArgParser.Create<InstallArgs>()
+            let parser = ArgumentParser.Create<InstallArgs>()
             [
                 if x.Force.IsPresent then
                     yield InstallArgs.Force
@@ -265,7 +265,7 @@ type OutdatedCmdlet() =
 
     override x.ProcessRecord() =
         async {
-            let parser = UnionArgParser.Create<OutdatedArgs>()
+            let parser = ArgumentParser.Create<OutdatedArgs>()
             [
                 if x.IgnoreConstraints.IsPresent then
                     yield OutdatedArgs.Ignore_Constraints
@@ -287,7 +287,7 @@ type PushCmdlet() =
 
     override x.ProcessRecord() =
         async {
-            let parser = UnionArgParser.Create<PushArgs>()
+            let parser = ArgumentParser.Create<PushArgs>()
             [
                 if String.IsNullOrEmpty x.Url = false then
                     yield PushArgs.Url x.Url
@@ -315,7 +315,7 @@ type RemoveCmdlet() =
 
     override x.ProcessRecord() =
         async {
-            let parser = UnionArgParser.Create<RemoveArgs>()
+            let parser = ArgumentParser.Create<RemoveArgs>()
             [
                 if String.IsNullOrEmpty x.NuGet = false then
                     yield RemoveArgs.Nuget x.NuGet
@@ -343,7 +343,7 @@ type RestoreCmdlet() =
 
     override x.ProcessRecord() =
         async {
-            let parser = UnionArgParser.Create<RestoreArgs>()
+            let parser = ArgumentParser.Create<RestoreArgs>()
             [
                 if x.Force.IsPresent then
                     yield RestoreArgs.Force
@@ -362,7 +362,7 @@ type SimplifyCmdlet() =
 
     override x.ProcessRecord() =
         async {
-            let parser = UnionArgParser.Create<SimplifyArgs>()
+            let parser = ArgumentParser.Create<SimplifyArgs>()
             [
                 if x.Interactive.IsPresent then
                     yield SimplifyArgs.Interactive
@@ -383,7 +383,7 @@ type ShowInstalledPackagesCmdlet() =
         let computation =
             async {
                 let packages =
-                    let parser = UnionArgParser.Create<ShowInstalledPackagesArgs>()
+                    let parser = ArgumentParser.Create<ShowInstalledPackagesArgs>()
                     [
                         if x.All.IsPresent then
                             yield ShowInstalledPackagesArgs.All
@@ -419,7 +419,7 @@ type UpdateCmdlet() =
 
     override x.ProcessRecord() =
         async {
-            let parser = UnionArgParser.Create<UpdateArgs>()
+            let parser = ArgumentParser.Create<UpdateArgs>()
             [
                 if String.IsNullOrEmpty x.NuGet = false then
                     yield UpdateArgs.Nuget x.NuGet
