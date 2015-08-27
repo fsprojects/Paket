@@ -127,7 +127,7 @@ let downloadRemoteFiles(remoteFile:ResolvedSourceFile,destination) = async {
 }
 
 let DownloadSourceFiles(rootPath, groupName, force, sourceFiles:ModuleResolver.ResolvedSourceFile list) =
-     sourceFiles
+    sourceFiles
     |> List.map (fun source ->
         let destination = source.FilePath(rootPath,groupName)
         let destinationDir = FileInfo(destination).Directory.FullName
