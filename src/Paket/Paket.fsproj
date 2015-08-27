@@ -34,10 +34,10 @@
     <StartWorkingDirectory>c:\code\Paket09x</StartWorkingDirectory>
     <StartWorkingDirectory>D:\code\Pakettest</StartWorkingDirectory>
     <StartWorkingDirectory>D:\code\Paketkopie</StartWorkingDirectory>
-    <StartArguments>restore</StartArguments>
+    <StartArguments>restore --references-files "D:\code\Paket\src\Paket\paket.references"</StartArguments>
     <StartAction>Project</StartAction>
     <StartProgram>paket.exe</StartProgram>
-    <StartWorkingDirectory>d:\code\PaketKopie</StartWorkingDirectory>
+    <StartWorkingDirectory>d:\code\Paket</StartWorkingDirectory>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>

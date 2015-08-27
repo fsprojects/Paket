@@ -479,22 +479,24 @@ type LockFile(fileName:string,groups: Map<NormalizedGroupName,LockFileGroup>) =
 
     member this.GetPackageHull(groupName,referencesFile:ReferencesFile) =
         let usedPackages = Dictionary<_,_>()
-        let g = referencesFile.Groups.[groupName]
+        match referencesFile.Groups |> Map.tryFind groupName with
+        | Some g ->
 
-        for p in g.NugetPackages do
-            let k = groupName,p.Name
-            if usedPackages.ContainsKey k then
-                failwithf "Package %s is referenced more than once in %s (Group %O)" (p.Name.ToString()) referencesFile.FileName groupName
-            usedPackages.Add(k,p)
+            for p in g.NugetPackages do
+                let k = groupName,p.Name
+                if usedPackages.ContainsKey k then
+                    failwithf "Package %s is referenced more than once in %s (Group %O)" (p.Name.ToString()) referencesFile.FileName groupName
+                usedPackages.Add(k,p)
 
-        g.NugetPackages
-        |> List.iter (fun package -> 
-            try
-                for d in this.GetAllDependenciesOf(groupName,package.Name) do
-                    let k = groupName,d
-                    if usedPackages.ContainsKey k |> not then
-                        usedPackages.Add(k,package)
-            with exn -> failwithf "%s - in %s" exn.Message referencesFile.FileName)
+            g.NugetPackages
+            |> List.iter (fun package -> 
+                try
+                    for d in this.GetAllDependenciesOf(groupName,package.Name) do
+                        let k = groupName,d
+                        if usedPackages.ContainsKey k |> not then
+                            usedPackages.Add(k,package)
+                with exn -> failwithf "%s - in %s" exn.Message referencesFile.FileName)
+        | None -> ()
 
         usedPackages
 
