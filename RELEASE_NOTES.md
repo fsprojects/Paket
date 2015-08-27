@@ -1,3 +1,6 @@
+#### 2.0.0-alpha001 - 27.08.2015
+* Create very first alpha with groups for dogfooding
+
 #### 1.33.4 - 27.08.2015
 * Trace NuGet package URL if download fails
 
