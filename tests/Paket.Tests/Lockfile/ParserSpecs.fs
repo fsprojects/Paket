@@ -485,7 +485,7 @@ NUGET
   remote: "D:\code\temp with space"
   specs:
     Castle.Windsor (2.1)
-GROUP: Build
+GROUP Build
 REDIRECTS: ON
 COPY-LOCAL: TRUE
 NUGET

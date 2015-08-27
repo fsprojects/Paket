@@ -360,7 +360,7 @@ let ``should generate lock file with second group``() =
     Rx-Main (2.0) - content: none, framework: >= net40
       Rx-Core (>= 2.1)
 
-GROUP: Build
+GROUP Build
 NUGET
   remote: http://nuget.org/api/v2
   specs:

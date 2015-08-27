@@ -42,8 +42,8 @@ type ReferencesFile =
                 match state with
                 | [] -> failwithf "error while parsing %A" lines
                 | ((name,lines) as currentGroup)::otherGroups ->
-                    if line.StartsWith "group: " then
-                        let name = line.Replace("group:","").Trim()
+                    if line.StartsWith "group " then
+                        let name = line.Replace("group","").Trim()
                         (GroupName name,[])::currentGroup::otherGroups
                     else 
                         (name,line::lines)::otherGroups) [Constants.MainDependencyGroup,[]]

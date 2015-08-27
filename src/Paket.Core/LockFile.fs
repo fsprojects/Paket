@@ -156,7 +156,7 @@ module LockFileParser =
         | _, "NUGET" -> RepositoryType "NUGET"
         | _, "GITHUB" -> RepositoryType "GITHUB"
         | _, String.StartsWith "remote:" trimmed -> Remote(PackageSource.Parse("source " + trimmed.Trim()).ToString())
-        | _, String.StartsWith "GROUP:" trimmed -> Group(trimmed.Replace("GROUP:","").Trim())
+        | _, String.StartsWith "GROUP" trimmed -> Group(trimmed.Replace("GROUP","").Trim())
         | _, String.StartsWith "REFERENCES:" trimmed -> InstallOption(ReferencesMode(trimmed.Trim() = "STRICT"))
         | _, String.StartsWith "REDIRECTS:" trimmed -> InstallOption(Redirects(trimmed.Trim() = "ON"))
         | _, String.StartsWith "IMPORT-TARGETS:" trimmed -> InstallOption(ImportTargets(trimmed.Trim() = "TRUE"))
@@ -407,7 +407,7 @@ type LockFile(fileName:string,groups: Map<NormalizedGroupName,LockFileGroup>) =
                yield LockFileSerializer.serializeSourceFiles mainGroup.RemoteFiles
                for g in groups do 
                 if g.Key <> NormalizedGroupName Constants.MainDependencyGroup then
-                    yield "GROUP: " + g.Value.Name.ToString()
+                    yield "GROUP " + g.Value.Name.ToString()
                     yield LockFileSerializer.serializePackages g.Value.Options g.Value.Resolution
                     yield LockFileSerializer.serializeSourceFiles g.Value.RemoteFiles|])
 

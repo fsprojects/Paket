@@ -217,7 +217,7 @@ File:FsUnit1.fs link:false
 let refFileWithSecondGroup = """
 Castle.Windsor  
 Newtonsoft.Json 
-group: Test
+group Test
 NUnit
 """
 
