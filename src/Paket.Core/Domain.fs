@@ -53,7 +53,7 @@ type DomainMessage =
 
     | StrictModeDetected
     | DependencyNotFoundInLockFile of PackageName
-    | ReferenceNotFoundInLockFile of string * PackageName
+    | ReferenceNotFoundInLockFile of string * string * PackageName
 
     | DownloadError of string
     | ReleasesJsonParseError
@@ -97,8 +97,8 @@ type DomainMessage =
             "Strict mode detected. Command not executed."
         | DependencyNotFoundInLockFile(PackageName name) -> 
             sprintf "Dependency %s from %s not found in lock file." name Constants.DependenciesFileName
-        | ReferenceNotFoundInLockFile(path, PackageName name) -> 
-            sprintf "Reference %s from %s not found in lock file." name path
+        | ReferenceNotFoundInLockFile(path, groupName, PackageName name) -> 
+            sprintf "Reference %s from %s not found in lock file in group %s." name path groupName
 
         | DownloadError url ->
             sprintf "Error occured while downloading from %s." url

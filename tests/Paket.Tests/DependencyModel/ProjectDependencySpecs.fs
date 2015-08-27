@@ -14,13 +14,13 @@ nuget Castle.Windsor-log4net ~> 3.2
 [<Test>]
 let ``project references for empty project should be empty``() = 
     let cfg = DependenciesFile.FromCode(config1)
-    DependencyModel.CalcDependenciesForDirectPackages(cfg,[])
+    DependencyModel.CalcDependenciesForDirectPackages(cfg, Constants.MainDependencyGroup, [])
     |> shouldEqual Map.empty
 
 [<Test>]
 let ``project reference for single dependency should be found``() = 
     let cfg = DependenciesFile.FromCode(config1)
-    let model = DependencyModel.CalcDependenciesForDirectPackages(cfg,[PackageName "Castle.Windsor-log4net"])
+    let model = DependencyModel.CalcDependenciesForDirectPackages(cfg, Constants.MainDependencyGroup, [PackageName "Castle.Windsor-log4net"])
     model.[PackageName "Castle.Windsor-log4net"].Range |> shouldEqual (VersionRange.Between("3.2", "4.0"))
 
 let config2 = """
@@ -35,7 +35,7 @@ nuget SignalR = 3.3.2
 [<Test>]
 let ``project reference for dependencies simple config should be found``() = 
     let cfg = DependenciesFile.FromCode(config2)
-    let model = DependencyModel.CalcDependenciesForDirectPackages(cfg,[PackageName "Castle.Windsor-log4net"; PackageName "FAKE"])
+    let model = DependencyModel.CalcDependenciesForDirectPackages(cfg, Constants.MainDependencyGroup, [PackageName "Castle.Windsor-log4net"; PackageName "FAKE"])
 
     
     model.[PackageName "Castle.Windsor-log4net"].Range |> shouldEqual (VersionRange.OverrideAll(SemVer.Parse "3.2.1"))

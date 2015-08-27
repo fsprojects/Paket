@@ -125,10 +125,14 @@ let downloadRemoteFiles(remoteFile:ResolvedSourceFile,destination) = async {
         | _ -> ignore()
 }
 
-let DownloadSourceFiles(rootPath, force, sourceFiles:ModuleResolver.ResolvedSourceFile list) =
+let DownloadSourceFiles(rootPath, groupName, force, sourceFiles:ModuleResolver.ResolvedSourceFile list) =
     sourceFiles
     |> List.map (fun source ->
-        let destination = source.FilePath(rootPath)
+        let destination = 
+            if groupName = Constants.MainDependencyGroup then
+                source.FilePath(rootPath)
+            else
+                source.FilePath(Path.Combine(rootPath,groupName))
         let destinationDir = FileInfo(destination).Directory.FullName
 
         (destinationDir, source.Commit), (destination, source))

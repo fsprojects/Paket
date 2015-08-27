@@ -210,16 +210,24 @@ let findDependencies (dependencies : DependenciesFile) config (template : Templa
 
     match referenceFile with
     | Some r -> 
-        r.NugetPackages
-        |> List.filter (fun np ->
-            try
+        r.Groups
+        |> Seq.map (fun kv -> kv.Value.NugetPackages |> List.map (fun p -> kv.Key,p))
+        |> List.concat
+        |> List.filter (fun (groupName,np) ->
+            try            
                 // TODO: it would be nice if this data would be in the NuGet OData feed,
                 // then we would not need to parse every nuspec here
-                let nuspec = Nuspec.Load(dependencies.RootPath,np.Name)
-                not nuspec.IsDevelopmentDependency
+                let info =
+                    lockFile.Groups.[groupName].Resolution
+                    |> Map.tryFind (NormalizedPackageName np.Name)
+                match info with
+                | None -> true
+                | Some rp ->
+                    let nuspec = Nuspec.Load(dependencies.RootPath,groupName,rp.Version,defaultArg rp.Settings.IncludeVersionInPath false,np.Name)
+                    not nuspec.IsDevelopmentDependency
             with
             | _ -> true)
-        |> List.map (fun np ->
+        |> List.map (fun (groupName,np) ->
                 let getDependencyVersionRequirement package =
                     if not lockDependencies then
                         Map.tryFind package (dependencies.GetDependenciesInGroup(Constants.MainDependencyGroup))
@@ -229,18 +237,18 @@ let findDependencies (dependencies : DependenciesFile) config (template : Templa
                                 // If it's a transient dependency, try to
                                 // find it in `paket.lock` and set min version
                                 // to current locked version
-                                lockFile.GetCompleteResolution()
+                                lockFile.Groups.[groupName].Resolution
                                 |> Map.tryFind (NormalizedPackageName package)
                                 |> Option.map (fun transient -> transient.Version)
                                 |> Option.map (fun v -> VersionRequirement(Minimum v, PreReleaseStatus.All))
                     else
-                        Map.tryFind (NormalizedPackageName package) (lockFile.GetCompleteResolution())
+                        Map.tryFind (NormalizedPackageName package) lockFile.Groups.[groupName].Resolution
                         |> Option.map (fun resolvedPackage -> resolvedPackage.Version)
                         |> Option.map (fun version -> VersionRequirement(Specific version, PreReleaseStatus.All))
                 let dep =
                     match getDependencyVersionRequirement np.Name with
                     | Some installed -> installed
-                    | None -> failwithf "No package with id '%A' installed." np.Name
+                    | None -> failwithf "No package with id '%A' installed in group %s." np.Name groupName
                 np.Name.Id, dep)
         |> List.fold addDependency withDepsAndIncluded
     | None -> withDepsAndIncluded

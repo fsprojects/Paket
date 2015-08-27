@@ -42,23 +42,22 @@ let ExtractPackage(root, groupName, sources, force, package : ResolvedPackage) =
 /// Restores the given dependencies from the lock file.
 let internal restore(root, groupName, sources, force, lockFile:LockFile, packages:Set<NormalizedPackageName>) = 
     let sourceFileDownloads = 
-        [|for kv in lockFile.Groups -> RemoteDownload.DownloadSourceFiles(Path.GetDirectoryName lockFile.FileName, force, kv.Value.RemoteFiles) |]
+        [|for kv in lockFile.Groups -> RemoteDownload.DownloadSourceFiles(Path.GetDirectoryName lockFile.FileName, groupName, force, kv.Value.RemoteFiles) |]
         |> Async.Parallel
 
     let packageDownloads = 
-        lockFile.GetCompleteResolution()
+        lockFile.Groups.[groupName].Resolution
         |> Map.filter (fun name _ -> packages.Contains name)
         |> Seq.map (fun kv -> ExtractPackage(root,groupName,sources,force,kv.Value))
         |> Async.Parallel
 
     Async.Parallel(sourceFileDownloads,packageDownloads) 
 
-let internal computePackageHull (lockFile : LockFile) (referencesFileNames : string seq) =
+let internal computePackageHull groupName (lockFile : LockFile) (referencesFileNames : string seq) =
     referencesFileNames
     |> Seq.map (fun fileName ->
-        ReferencesFile.FromFile fileName
-        |> lockFile.GetPackageHull
-        |> Seq.map (fun p -> NormalizedPackageName p.Key))
+        lockFile.GetPackageHull(groupName,ReferencesFile.FromFile fileName)
+        |> Seq.map (fun p -> NormalizedPackageName (snd p.Key)))
     |> Seq.concat
 
 let Restore(dependenciesFileName,force,referencesFileNames) = 
@@ -78,10 +77,9 @@ let Restore(dependenciesFileName,force,referencesFileNames) =
                 kv.Value.Resolution
                 |> Seq.map (fun kv -> kv.Key) 
             else
-                // TODO: Make tis group dependent
                 referencesFileNames
                 |> List.toSeq
-                |> computePackageHull lockFile
+                |> computePackageHull kv.Key lockFile
 
         restore(root, kv.Key, sources, force, lockFile,Set.ofSeq packages))
     |> Seq.toArray

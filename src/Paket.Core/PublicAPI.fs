@@ -14,12 +14,11 @@ type Dependencies(dependenciesFileName: string) =
         let lockFileName = DependenciesFile.FindLockfile dependenciesFileName
         LockFile.LoadFrom(lockFileName.FullName)
 
-    let listPackages (packages: System.Collections.Generic.KeyValuePair<_, PackageResolver.ResolvedPackage> seq) =
+    let listPackages (packages: System.Collections.Generic.KeyValuePair<string*NormalizedPackageName, PackageResolver.ResolvedPackage> seq) =
         packages
-        |> Seq.map (fun kv -> kv.Value)
-        |> Seq.map (fun p ->
-                            let (PackageName name) = p.Name
-                            name, p.Version.ToString())
+        |> Seq.map (fun kv ->
+                            let (PackageName name) = kv.Value.Name
+                            fst kv.Key,name,kv.Value.Version.ToString())
         |> Seq.toList
 
 
@@ -80,7 +79,7 @@ type Dependencies(dependenciesFileName: string) =
             fun () ->
                 PaketEnv.fromRootDirectory this.RootDirectory
                 >>= PaketEnv.ensureNotInStrictMode
-                >>= Simplifier.simplify interactive
+                >>= Simplifier.simplify Constants.MainDependencyGroup interactive  // TODO: Make this group dependent
                 |> returnOrFail
                 |> Simplifier.updateEnvironment
         )
@@ -254,8 +253,8 @@ type Dependencies(dependenciesFileName: string) =
         |> Option.map (fun package -> package.Version.ToString())
 
     /// Returns the installed versions of all installed packages.
-    member this.GetInstalledPackages(): (string * string) list =
-        getLockFile().GetCompleteResolution()
+    member this.GetInstalledPackages(): (string * string * string) list =
+        getLockFile().GetGroupedResolution()
         |> listPackages
 
     /// Returns all sources from the dependencies file.
@@ -274,14 +273,14 @@ type Dependencies(dependenciesFileName: string) =
         |> Set.toList
 
     /// Returns the installed versions of all installed packages which are referenced in the references file.
-    member this.GetInstalledPackages(referencesFile:ReferencesFile): (string * string) list =
+    member this.GetInstalledPackages(referencesFile:ReferencesFile): (string * string * string) list =
         let lockFile = getLockFile()
         let resolved = lockFile.GetCompleteResolution()
         referencesFile
         |> lockFile.GetPackageHull
         |> Seq.map (fun kv ->
-                        let name = kv.Key
-                        name.ToString(),resolved.[NormalizedPackageName name].Version.ToString())
+                        let groupName,name = kv.Key
+                        groupName,name.ToString(),resolved.[NormalizedPackageName name].Version.ToString())
         |> Seq.toList
 
     /// Returns an InstallModel for the given package.
@@ -303,28 +302,41 @@ type Dependencies(dependenciesFileName: string) =
           .GetLibReferences(frameworkIdentifier)
 
     /// Returns the installed versions of all direct dependencies which are referenced in the references file.
-    member this.GetDirectDependencies(referencesFile:ReferencesFile): (string * string) list =
+    member this.GetDirectDependencies(referencesFile:ReferencesFile): (string * string * string) list =
         let dependenciesFile = DependenciesFile.ReadFromFile dependenciesFileName
-        let normalizedDependencies = dependenciesFile.GetDependenciesInGroup(Constants.MainDependencyGroup) |> Seq.map (fun kv -> kv.Key) |> Seq.map NormalizedPackageName |> Seq.toList
-        let normalizedDependendenciesFromRefFile = referencesFile.NugetPackages |> List.map (fun p -> NormalizedPackageName p.Name)
-        getLockFile().GetCompleteResolution()
+        let normalizedDependencies =
+            dependenciesFile.Groups
+            |> Seq.map (fun kv -> dependenciesFile.GetDependenciesInGroup(kv.Key) |> Seq.map (fun kv' -> kv.Key,NormalizedPackageName kv'.Key)  |> Seq.toList)
+            |> List.concat
+
+        let normalizedDependendenciesFromRefFile = 
+            referencesFile.Groups 
+            |> Seq.map (fun kv -> kv.Value.NugetPackages |> List.map (fun p -> kv.Key,NormalizedPackageName p.Name))
+            |> List.concat
+
+        getLockFile().GetGroupedResolution()
         |> Seq.filter (fun kv -> normalizedDependendenciesFromRefFile |> Seq.exists ((=) kv.Key))
         |> Seq.filter (fun kv -> normalizedDependencies |> Seq.exists ((=) kv.Key))
         |> listPackages
 
     /// Returns the installed versions of all direct dependencies.
-    member this.GetDirectDependencies(): (string * string) list =
+    member this.GetDirectDependencies(): (string * string * string) list =
         let dependenciesFile = DependenciesFile.ReadFromFile dependenciesFileName
-        let normalizedDependencies = dependenciesFile.GetDependenciesInGroup(Constants.MainDependencyGroup) |> Seq.map (fun kv -> kv.Key) |> Seq.map NormalizedPackageName |> Seq.toList
-        getLockFile().GetCompleteResolution()
+        let normalizedDependencies =
+            dependenciesFile.Groups
+            |> Seq.map (fun kv -> dependenciesFile.GetDependenciesInGroup(kv.Key) |> Seq.map (fun kv' -> kv.Key,NormalizedPackageName kv'.Key)  |> Seq.toList)
+            |> List.concat
+
+        getLockFile().GetGroupedResolution()
         |> Seq.filter (fun kv -> normalizedDependencies |> Seq.exists ((=) kv.Key))
         |> listPackages
 
     /// Returns the direct dependencies for the given package.
-    member this.GetDirectDependenciesForPackage(packageName:string): (string * string) list =
-        let resolvedPackages = getLockFile().GetCompleteResolution()
-        let package = resolvedPackages.[NormalizedPackageName (PackageName packageName)]
-        let normalizedDependencies = package.Dependencies |> Seq.map (fun (name,_,_) -> name) |> Seq.map NormalizedPackageName |> Seq.toList
+    member this.GetDirectDependenciesForPackage(groupName,packageName:string): (string * string * string) list =
+        let resolvedPackages = getLockFile().GetGroupedResolution()
+        let package = resolvedPackages.[groupName,NormalizedPackageName (PackageName packageName)]
+        let normalizedDependencies = package.Dependencies |> Seq.map (fun (name,_,_) -> groupName, NormalizedPackageName name) |> Seq.toList
+
         resolvedPackages
         |> Seq.filter (fun kv -> normalizedDependencies |> Seq.exists ((=) kv.Key))
         |> listPackages
@@ -346,11 +358,11 @@ type Dependencies(dependenciesFileName: string) =
 
     /// Shows all references files where the given package is referenced.
     member this.ShowReferencesFor(packages: string list): unit =
-        FindReferences.ShowReferencesFor (packages |> List.map PackageName) |> this.Process
+        FindReferences.ShowReferencesFor Constants.MainDependencyGroup (packages |> List.map PackageName) |> this.Process  // TODO: Make this group dependent
 
     /// Finds all references files where the given package is referenced.
     member this.FindReferencesFor(package: string): string list =
-        FindReferences.FindReferencesForPackage (PackageName package) |> this.Process |> List.map (fun p -> p.FileName)
+        FindReferences.FindReferencesForPackage Constants.MainDependencyGroup (PackageName package) |> this.Process |> List.map (fun p -> p.FileName) // TODO: Make this group dependent
 
     member this.SearchPackagesByName(searchTerm,?cancellationToken,?maxResults) : IObservable<string> =
         let cancellationToken = defaultArg cancellationToken (System.Threading.CancellationToken())
@@ -368,7 +380,7 @@ type Dependencies(dependenciesFileName: string) =
 
     /// Finds all projects where the given package is referenced.
     member this.FindProjectsFor(package: string): ProjectFile list =
-        FindReferences.FindReferencesForPackage (PackageName package) |> this.Process
+        FindReferences.FindReferencesForPackage Constants.MainDependencyGroup (PackageName package) |> this.Process // TODO: Make this group dependent
 
     // Packs all paket.template files.
     member this.Pack(outputPath, ?buildConfig, ?version, ?releaseNotes, ?templateFile, ?workingDir, ?lockDependencies) =

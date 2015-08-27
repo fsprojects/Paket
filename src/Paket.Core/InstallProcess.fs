@@ -17,7 +17,7 @@ open Paket.PackagesConfigFile
 open Paket.Requirements
 open System.Security.AccessControl
 
-let findPackageFolder root groupName (PackageName name) (settings:InstallSettings,version:SemVerInfo) =
+let findPackageFolder root (groupName,PackageName name) (settings:InstallSettings,version:SemVerInfo) =
     let includeVersionInPath = defaultArg settings.IncludeVersionInPath false
     let lowerName = (name + if includeVersionInPath then "." + version.ToString() else "").ToLower()
     let di = DirectoryInfo(Path.Combine(root, Constants.PackagesFolderName))
@@ -28,10 +28,10 @@ let findPackageFolder root groupName (PackageName name) (settings:InstallSetting
     | Some x -> x
     | None -> failwithf "Package directory for package %s was not found." name
 
-let private findPackagesWithContent (root,groupName,usedPackages:Map<PackageName,InstallSettings*SemVerInfo>) =
+let private findPackagesWithContent (root,usedPackages:Map<string*PackageName,InstallSettings*SemVerInfo>) =
     usedPackages
     |> Seq.filter (fun kv -> defaultArg (fst kv.Value).OmitContent false |> not)
-    |> Seq.map (fun kv -> findPackageFolder root groupName kv.Key kv.Value)
+    |> Seq.map (fun kv -> findPackageFolder root kv.Key kv.Value)
     |> Seq.choose (fun packageDir ->
             packageDir.GetDirectories("Content")
             |> Array.append (packageDir.GetDirectories("content"))
@@ -90,23 +90,23 @@ let CreateInstallModel(root, groupName, sources, force, package) =
     async {
         let! (package, files, targetsFiles) = RestoreProcess.ExtractPackage(root, groupName, sources, force, package)
         let (PackageName name) = package.Name
-        let nuspec = Nuspec.Load(root,package.Name)
+        let nuspec = Nuspec.Load(root,groupName,package.Version,defaultArg package.Settings.IncludeVersionInPath false,package.Name)
         let files = files |> Array.map (fun fi -> fi.FullName)
         let targetsFiles = targetsFiles |> Array.map (fun fi -> fi.FullName)
-        return package, InstallModel.CreateFromLibs(package.Name, package.Version, package.Settings.FrameworkRestrictions, files, targetsFiles, nuspec)
+        return (groupName,package), InstallModel.CreateFromLibs(package.Name, package.Version, package.Settings.FrameworkRestrictions, files, targetsFiles, nuspec)
     }
 
 /// Restores the given packages from the lock file.
-let createModel(root, sources, force, lockFile : LockFile, packages:Set<NormalizedPackageName>) =
+let createModel(root, sources, force, lockFile : LockFile, packages:Set<string*NormalizedPackageName>) =
     let sourceFileDownloads = 
-        [|for kv in lockFile.Groups -> RemoteDownload.DownloadSourceFiles(root, force, kv.Value.RemoteFiles) |]
+        [|for kv in lockFile.Groups -> RemoteDownload.DownloadSourceFiles(root, kv.Key, force, kv.Value.RemoteFiles) |]
         |> Async.Parallel
 
     let packageDownloads =
         lockFile.Groups
         |> Seq.map (fun kv' -> 
             kv'.Value.Resolution
-            |> Map.filter (fun name _ -> packages.Contains name)
+            |> Map.filter (fun name _ -> packages.Contains(kv'.Key,name))
             |> Seq.map (fun kv -> CreateInstallModel(root,kv'.Key,sources,force,kv.Value)))
         |> Seq.concat
         |> Seq.toArray
@@ -158,50 +158,56 @@ let findAllReferencesFiles root =
     |> collect
 
 /// Installs all packages from the lock file.
-let InstallIntoProjects(sources, options : InstallerOptions, lockFile : LockFile, projects : (ProjectFile * ReferencesFile) list) =
-    let mainGroup = lockFile.Groups.[Constants.MainDependencyGroup]
-
+let InstallIntoProjects(sources, options : InstallerOptions, lockFile : LockFile, projects : (ProjectFile * ReferencesFile) list) =    
     let packagesToInstall =
         if options.OnlyReferenced then
             projects
             |> List.map (fun (_, referencesFile)->
                 referencesFile
                 |> lockFile.GetPackageHull
-                |> Seq.map (fun p -> NormalizedPackageName p.Key))
+                |> Seq.map (fun p -> fst p.Key,NormalizedPackageName (snd p.Key)))
             |> Seq.concat
         else
-            lockFile.GetCompleteResolution()
+            lockFile.GetGroupedResolution()
             |> Seq.map (fun kv -> kv.Key)
 
     let root = Path.GetDirectoryName lockFile.FileName
     let extractedPackages = createModel(root, sources, options.Force, lockFile, Set.ofSeq packagesToInstall)
-    let lookup = lockFile.GetDependencyLookupTable(mainGroup.Name)
+    let lookup = lockFile.GetDependencyLookupTable()
 
     let model =
         extractedPackages
-        |> Array.map (fun (p,m) -> NormalizedPackageName p.Name,m)
+        |> Array.map (fun (p,m) -> (fst p,NormalizedPackageName (snd p).Name),m)
         |> Map.ofArray
 
     let packages =
         extractedPackages
-        |> Array.map (fun (p,m) -> NormalizedPackageName p.Name,p)
+        |> Array.map (fun (p,m) -> (fst p,NormalizedPackageName (snd p).Name),p)
         |> Map.ofArray
 
     for project : ProjectFile, referenceFile in projects do
         verbosefn "Installing to %s" project.FileName
         
         let usedPackages =
-            referenceFile.NugetPackages
-            |> Seq.map (fun ps ->
-                let package = 
-                    match packages |> Map.tryFind (NormalizedPackageName ps.Name) with
-                    | Some p -> p
-                    | None -> failwithf "%s uses NuGet package %O, but it was not found in the paket.lock file." referenceFile.FileName ps.Name
+            referenceFile.Groups
+            |> Seq.map (fun kv ->
+                kv.Value.NugetPackages
+                |> Seq.map (fun ps ->
+                    let group = 
+                        match lockFile.Groups |> Map.tryFind kv.Key with
+                        | Some g -> g
+                        | None -> failwithf "%s uses the group %s, but this group was not found in paket.lock." referenceFile.FileName kv.Key
 
-                let resolvedSettings = 
-                    [package.Settings; mainGroup.Options.Settings] 
-                    |> List.fold (+) ps.Settings
-                ps.Name, resolvedSettings)
+                    let package = 
+                        match packages |> Map.tryFind (kv.Key,NormalizedPackageName ps.Name) with
+                        | Some p -> snd p
+                        | None -> failwithf "%s uses NuGet package %O, but it was not found in the paket.lock file in group %s." referenceFile.FileName ps.Name kv.Key
+
+                    let resolvedSettings = 
+                        [package.Settings; group.Options.Settings] 
+                        |> List.fold (+) ps.Settings
+                    (kv.Key,ps.Name), resolvedSettings))
+            |> Seq.concat
             |> Map.ofSeq
 
         let usedPackages =
@@ -211,35 +217,40 @@ let InstallIntoProjects(sources, options : InstallerOptions, lockFile : LockFile
             /// the other settings modify. In this way we ensure that references files can override the dependencies file, which in turn overrides the lockfile.
             let usedPackageDependencies = 
                 usedPackages 
-                |> Seq.collect (fun u -> lookup.[NormalizedPackageName u.Key] |> Seq.map (fun i -> u.Value, i))
-                |> Seq.choose (fun (parentSettings, dep) -> 
-                    match packages |> Map.tryFind (NormalizedPackageName dep) with
+                |> Seq.collect (fun u -> lookup.[fst u.Key, NormalizedPackageName (snd u.Key)] |> Seq.map (fun i -> fst u.Key, u.Value, i))
+                |> Seq.choose (fun (groupName,parentSettings, dep) -> 
+                    let group = 
+                        match lockFile.Groups |> Map.tryFind groupName with
+                        | Some g -> g
+                        | None -> failwithf "%s uses the group %s, but this group was not found in paket.lock." referenceFile.FileName groupName
+
+                    match group.Resolution |> Map.tryFind (NormalizedPackageName dep) with
                     | None -> None
                     | Some p -> 
                         let resolvedSettings = 
-                            [p.Settings; mainGroup.Options.Settings] 
+                            [p.Settings; group.Options.Settings] 
                             |> List.fold (+) parentSettings
-                        Some (p.Name, resolvedSettings) )
+                        Some ((groupName,p.Name), resolvedSettings) )
 
-            for name,settings in usedPackageDependencies do
-                if (!d).ContainsKey name |> not then
-                  d := Map.add name settings !d
+            for key,settings in usedPackageDependencies do
+                if (!d).ContainsKey key |> not then
+                  d := Map.add key settings !d
 
             !d
 
         let usedPackageSettings =
             usedPackages
-            |> Seq.map (fun u -> NormalizedPackageName u.Key,u.Value)
+            |> Seq.map (fun u -> (fst u.Key,NormalizedPackageName (snd u.Key)),u.Value)
             |> Map.ofSeq
 
 
         let usedPackageVersions =
             usedPackages
             |> Seq.map (fun u ->
-                    let name = NormalizedPackageName u.Key
-                    match packages |> Map.tryFind name with
-                    | Some p -> u.Key,(u.Value,p.Version)
-                    | None -> failwithf "%s uses NuGet package %O, but it was not found in the paket.lock file." referenceFile.FileName u.Key)
+                    let key = fst u.Key,NormalizedPackageName (snd u.Key)
+                    match packages |> Map.tryFind key with
+                    | Some p -> u.Key,(u.Value,(snd p).Version)
+                    | None -> failwithf "%s uses NuGet package %O, but it was not found in the paket.lock file in group %s." referenceFile.FileName (snd u.Key) (fst u.Key))
             |> Map.ofSeq
 
         project.UpdateReferences(model, usedPackageSettings, options.Hard)
@@ -258,55 +269,59 @@ let InstallIntoProjects(sources, options : InstallerOptions, lockFile : LockFile
 
         removeCopiedFiles project
 
-        let gitRemoteItems =
-            referenceFile.RemoteFiles
-            |> List.map (fun file ->
-                             let link = if file.Link = "." then Path.GetFileName file.Name else Path.Combine(file.Link, Path.GetFileName file.Name)
-                             let remoteFilePath = 
-                                if verbose then
-                                    tracefn "FileName: %s " file.Name 
+        for g in referenceFile.Groups do
+            let gitRemoteItems =
+                g.Value.RemoteFiles
+                |> List.map (fun file ->
+                    let link = if file.Link = "." then Path.GetFileName file.Name else Path.Combine(file.Link, Path.GetFileName file.Name)
+                    let remoteFilePath = 
+                      if verbose then
+                          tracefn "FileName: %s " file.Name 
+    
+                      let lockFileReference =
+                          lockFile.Groups
+                          |> Seq.map (fun kv -> kv.Value.RemoteFiles)
+                          |> Seq.concat 
+                          |> Seq.tryFind (fun f -> Path.GetFileName(f.Name) = file.Name)
+    
+                      match lockFileReference with
+                      | Some file -> file.FilePath root
+                      | None -> failwithf "%s references file %s, but it was not found in the paket.lock file." referenceFile.FileName file.Name
+    
+                    let linked = defaultArg file.Settings.Link true
+    
+                    if linked then
+                       { BuildAction = project.DetermineBuildAction file.Name
+                         Include = createRelativePath project.FileName remoteFilePath
+                         Link = Some link }
+                    else
+                       let toDir = Path.GetDirectoryName(project.FileName)
+                       let targetFile = FileInfo(Path.Combine(toDir,link))
+                       if targetFile.Directory.Exists |> not then
+                          targetFile.Directory.Create()
+    
+                       File.Copy(remoteFilePath,targetFile.FullName)
+    
+                       { BuildAction = project.DetermineBuildAction file.Name
+                         Include = createRelativePath project.FileName targetFile.FullName
+                         Link = None })
 
-                                let lockFileReference =
-                                    lockFile.Groups
-                                    |> Seq.map (fun kv -> kv.Value.RemoteFiles)
-                                    |> Seq.concat 
-                                    |> Seq.tryFind (fun f -> Path.GetFileName(f.Name) = file.Name)
+            let nuGetFileItems =
+                copyContentFiles(project, findPackagesWithContent(root,usedPackageVersions))
+                |> List.map (fun file ->
+                                    { BuildAction = project.DetermineBuildAction file.Name
+                                      Include = createRelativePath project.FileName file.FullName
+                                      Link = None })
 
-                                match lockFileReference with
-                                | Some file -> file.FilePath root
-                                | None -> failwithf "%s references file %s, but it was not found in the paket.lock file." referenceFile.FileName file.Name
-
-                             let linked = defaultArg file.Settings.Link true
-
-                             if linked then
-                                 { BuildAction = project.DetermineBuildAction file.Name
-                                   Include = createRelativePath project.FileName remoteFilePath
-                                   Link = Some link }
-                             else
-                                 let toDir = Path.GetDirectoryName(project.FileName)
-                                 let targetFile = FileInfo(Path.Combine(toDir,link))
-                                 if targetFile.Directory.Exists |> not then
-                                    targetFile.Directory.Create()
-
-                                 File.Copy(remoteFilePath,targetFile.FullName)
-
-                                 { BuildAction = project.DetermineBuildAction file.Name
-                                   Include = createRelativePath project.FileName targetFile.FullName
-                                   Link = None })
-
-        let nuGetFileItems =
-            copyContentFiles(project, findPackagesWithContent(root,Constants.MainDependencyGroup,usedPackageVersions))
-            |> List.map (fun file ->
-                                { BuildAction = project.DetermineBuildAction file.Name
-                                  Include = createRelativePath project.FileName file.FullName
-                                  Link = None })
-
-        project.UpdateFileItems(gitRemoteItems @ nuGetFileItems, options.Hard)
+            project.UpdateFileItems(gitRemoteItems @ nuGetFileItems, options.Hard)
 
         project.Save()
 
-    if options.Redirects || mainGroup.Options.Redirects then
-        applyBindingRedirects root extractedPackages
+    for g in lockFile.Groups do
+        if options.Redirects || g.Value.Options.Redirects then
+            extractedPackages
+            |> Array.filter (fun ((groupName,_),_) -> groupName = g.Key)
+            |> applyBindingRedirects root 
 
 /// Installs all packages from the lock file.
 let Install(sources, options : InstallerOptions, lockFile : LockFile) =

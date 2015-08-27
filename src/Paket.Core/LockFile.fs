@@ -385,6 +385,12 @@ type LockFile(fileName:string,groups: Map<string,LockFileGroup>) =
         group.Resolution
         |> Map.filter (fun name _ -> transitive.Contains name |> not)
 
+    member this.GetGroupedResolution() =
+        this.Groups
+        |> Seq.map (fun kv -> kv.Value.Resolution |> Seq.map (fun kv' -> (kv.Key,kv'.Key),kv'.Value))
+        |> Seq.concat
+        |> Map.ofSeq
+
     member this.GetCompleteResolution() : PackageResolution =
         this.Groups
         |> Seq.map (fun kv -> kv.Value.Resolution |> Seq.map (fun kv -> kv.Key,kv.Value))
@@ -455,35 +461,62 @@ type LockFile(fileName:string,groups: Map<string,LockFileGroup>) =
     member this.GetPackageHull(referencesFile:ReferencesFile) =
         let usedPackages = Dictionary<_,_>()
 
-        for p in referencesFile.NugetPackages do
-            if usedPackages.ContainsKey p.Name then
-                failwithf "Package %s is referenced more than once in %s" (p.Name.ToString()) referencesFile.FileName
-            usedPackages.Add(p.Name,p)
+        for g in referencesFile.Groups do
+            for p in g.Value.NugetPackages do
+                let k = g.Key,p.Name
+                if usedPackages.ContainsKey k then
+                    failwithf "Package %s is referenced more than once in %s (Group %s)" (p.Name.ToString()) referencesFile.FileName g.Key
+                usedPackages.Add(k,p)
 
-        referencesFile.NugetPackages
+        for g in referencesFile.Groups do
+            g.Value.NugetPackages
+            |> List.iter (fun package -> 
+                try
+                    for d in this.GetAllDependenciesOf(g.Key,package.Name) do
+                        let k = g.Key,d
+                        if usedPackages.ContainsKey k |> not then
+                            usedPackages.Add(k,package)
+                with exn -> failwithf "%s - in %s" exn.Message referencesFile.FileName)
+
+        usedPackages
+
+    member this.GetPackageHull(groupName,referencesFile:ReferencesFile) =
+        let usedPackages = Dictionary<_,_>()
+        let g = referencesFile.Groups.[groupName]
+
+        for p in g.NugetPackages do
+            let k = groupName,p.Name
+            if usedPackages.ContainsKey k then
+                failwithf "Package %s is referenced more than once in %s (Group %s)" (p.Name.ToString()) referencesFile.FileName groupName
+            usedPackages.Add(k,p)
+
+        g.NugetPackages
         |> List.iter (fun package -> 
             try
-                for g in this.Groups do // TODO: Match group from references file
-                    for d in this.GetAllDependenciesOf(g.Key,package.Name) do
-                        if usedPackages.ContainsKey d |> not then
-                            usedPackages.Add(d,package)
+                for d in this.GetAllDependenciesOf(groupName,package.Name) do
+                    let k = groupName,d
+                    if usedPackages.ContainsKey k |> not then
+                        usedPackages.Add(k,package)
             with exn -> failwithf "%s - in %s" exn.Message referencesFile.FileName)
 
         usedPackages
 
-    member this.GetDependencyLookupTable(groupName) = 
-        let group = groups.[groupName]
-        group.Resolution
-        |> Map.map (fun name package ->            
-                        this.GetAllDependenciesOf(groupName,package.Name)
-                        |> Set.ofSeq
-                        |> Set.remove package.Name)
+    member this.GetDependencyLookupTable() = 
+        groups
+        |> Seq.map (fun kv ->
+                kv.Value.Resolution
+                |> Seq.map (fun kv' ->            
+                                (kv.Key,kv'.Key),
+                                this.GetAllDependenciesOf(kv.Key,kv'.Value.Name)
+                                |> Set.ofSeq
+                                |> Set.remove kv'.Value.Name))
+        |> Seq.concat
+        |> Map.ofSeq
 
-    member this.GetPackageHullSafe referencesFile =
-        referencesFile.NugetPackages
-        |> Seq.map (fun package -> 
-            // TODO: use group from references file
-            this.GetAllDependenciesOfSafe(Constants.MainDependencyGroup,package.Name)
-            |> failIfNone (ReferenceNotFoundInLockFile(referencesFile.FileName, package.Name)))
+    member this.GetPackageHullSafe(referencesFile,groupName) =
+        referencesFile.Groups.[groupName].NugetPackages
+        |> Seq.map (fun package ->
+            this.GetAllDependenciesOfSafe(groupName,package.Name)
+            |> failIfNone (ReferenceNotFoundInLockFile(referencesFile.FileName, groupName, package.Name)))
         |> collect
         |> lift (Seq.concat >> Set.ofSeq)

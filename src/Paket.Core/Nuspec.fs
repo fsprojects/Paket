@@ -29,10 +29,11 @@ type Nuspec =
     static member All = { References = NuspecReferences.All; Dependencies = []; FrameworkAssemblyReferences = []; OfficialName = ""; LicenseUrl = ""; IsDevelopmentDependency = false }
     static member Explicit references = { References = NuspecReferences.Explicit references; Dependencies = []; FrameworkAssemblyReferences = []; OfficialName = ""; LicenseUrl = ""; IsDevelopmentDependency = false }
 
-    static member Load(root,name:PackageName) =
+    static member Load(root,groupName,version,includeVersionInPath,name:PackageName) =
         let (PackageName name) = name
-        let nuspec = FileInfo(sprintf "%s/packages/%s/%s.nuspec" root name name)
-        Nuspec.Load nuspec.FullName
+        let folder = DirectoryInfo(getTargetFolder root groupName name version includeVersionInPath).FullName
+        let nuspec = Path.Combine(folder,sprintf "%s.nuspec" name)
+        Nuspec.Load nuspec
 
     static member Load(fileName : string) = 
         let fi = FileInfo(fileName)

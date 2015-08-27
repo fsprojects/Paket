@@ -228,8 +228,8 @@ let getInstalledPackages (results : ParseResults<_>) =
             else dependenciesFile.GetDirectDependencies(referencesFile)
 
 let showInstalledPackages (results : ParseResults<_>) =
-    for name,version in getInstalledPackages results do
-        tracefn "%s - %s" name version
+    for groupName,name,version in getInstalledPackages results do  // TODO: Better grouping in reporting
+        tracefn "%s %s - %s" groupName name version
 
 let findPackageVersions (results : ParseResults<_>) =
     let maxResults = defaultArg (results.TryGetResult <@ FindPackageVersionsArgs.MaxResults @>) 10000
