@@ -8,6 +8,7 @@ open Paket.PackageResolver
 open System.Collections.Generic
 open Chessie.ErrorHandling
 open Paket.Logging
+open Paket.Requirements
 
 let addPackagesFromReferenceFiles projects (dependenciesFile : DependenciesFile) =
     let lockFileName = DependenciesFile.FindLockfile dependenciesFile.FileName
@@ -45,6 +46,19 @@ let addPackagesFromReferenceFiles projects (dependenciesFile : DependenciesFile)
                     dependenciesFile.AddAdditionalPackage(dep.Name,"",dep.Settings)) dependenciesFile
         newDependenciesFile.Save()
         newDependenciesFile
+
+type UpdateMode =
+    | SelectiveUpdate of NormalizedPackageName
+    | Install
+    | UpdateAll
+
+    static member Mode updateAll package =
+        if updateAll then
+            UpdateAll
+        else
+            match package with
+            | None -> Install
+            | Some package -> SelectiveUpdate package
 
 let selectiveUpdate resolve lockFile dependenciesFile updateAll package =
     let install () =
@@ -87,12 +101,10 @@ let selectiveUpdate resolve lockFile dependenciesFile updateAll package =
         { ResolvedPackages = Resolution.Ok(resolution); ResolvedSourceFiles = lockFile.SourceFiles }
 
     let resolution =
-        if updateAll then
-            resolve dependenciesFile None
-        else
-            match package with
-            | None -> install ()
-            | Some package -> selectiveUpdate package
+        match UpdateMode.Mode updateAll package with
+        | UpdateAll -> resolve dependenciesFile None
+        | Install -> install ()
+        | SelectiveUpdate p -> selectiveUpdate p
 
     LockFile(lockFile.FileName, dependenciesFile.Options, resolution.ResolvedPackages.GetModelOrFail(), resolution.ResolvedSourceFiles)
 
@@ -111,7 +123,31 @@ let SelectiveUpdate(dependenciesFile : DependenciesFile, updateAll, exclude, for
             |> createPackageRequirements [e]
         | None -> []
 
-    let lockFile = selectiveUpdate (fun d p -> d.Resolve(force, p, requirements)) oldLockFile dependenciesFile updateAll exclude
+    let skipVersions packages f (sources,packageName) =
+        let v p =
+            match p.VersionRequirement.Range with
+            | Specific v
+            | OverrideAll v -> [v]
+            | _ -> []
+
+        let versions =
+            packages
+            |> List.filter (fun p -> NormalizedPackageName p.Name = NormalizedPackageName packageName)
+            |> List.map v
+            |> List.concat
+            |> List.distinct
+
+        match versions with
+        | [] -> f (sources,packageName)
+        | l -> l
+
+    let getVersion pr =
+        match UpdateMode.Mode updateAll exclude with
+        | UpdateAll -> id
+        | SelectiveUpdate _ -> id
+        | Install -> skipVersions pr
+
+    let lockFile = selectiveUpdate (fun d p -> d.Resolve(getVersion, force, p, requirements)) oldLockFile dependenciesFile updateAll exclude
     lockFile.Save()
     lockFile
 
