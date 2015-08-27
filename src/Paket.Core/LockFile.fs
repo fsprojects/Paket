@@ -12,7 +12,7 @@ open Paket.Requirements
 open Chessie.ErrorHandling
 
 type LockFileGroup = {
-    Name: string
+    Name: GroupName
     Options:InstallOptions
     Resolution:PackageResolution
     RemoteFiles:ResolvedSourceFile list
@@ -133,7 +133,7 @@ module LockFileSerializer =
 module LockFileParser =
 
     type ParseState =
-        { GroupName : string
+        { GroupName : GroupName
           RepositoryType : string option
           RemoteUrl :string option
           Packages : ResolvedPackage list
@@ -187,7 +187,7 @@ module LockFileParser =
                 if String.IsNullOrWhiteSpace line || line.Trim().StartsWith("specs:") then currentGroup::otherGroups else
                 match (currentGroup, line) with
                 | Remote(url) -> { currentGroup with RemoteUrl = Some url }::otherGroups
-                | Group(groupName) -> { GroupName = groupName; RepositoryType = None; RemoteUrl = None; Packages = []; SourceFiles = []; Options = InstallOptions.Default; LastWasPackage = false } :: currentGroup :: otherGroups
+                | Group(groupName) -> { GroupName = GroupName groupName; RepositoryType = None; RemoteUrl = None; Packages = []; SourceFiles = []; Options = InstallOptions.Default; LastWasPackage = false } :: currentGroup :: otherGroups
                 | InstallOption (ReferencesMode(mode)) -> { currentGroup with Options = {currentGroup.Options with Strict = mode} }::otherGroups
                 | InstallOption (Redirects(mode)) -> { currentGroup with Options = {currentGroup.Options with Redirects = mode} }::otherGroups
                 | InstallOption (ImportTargets(mode)) -> { currentGroup with Options = {currentGroup.Options with Settings = { currentGroup.Options.Settings with ImportTargets = Some mode} } }::otherGroups
@@ -296,10 +296,7 @@ module LockFileParser =
 
 
 /// Allows to parse and analyze paket.lock files.
-type LockFile(fileName:string,groups: Map<string,LockFileGroup>) =
-    let mainGroup = groups.[Constants.MainDependencyGroup]
-
-    
+type LockFile(fileName:string,groups: Map<NormalizedGroupName,LockFileGroup>) =       
     member __.Groups = groups
     member __.FileName = fileName
 
@@ -315,7 +312,7 @@ type LockFile(fileName:string,groups: Map<string,LockFileGroup>) =
                     if not group.Options.Strict then
                         for d,_,_ in package.Dependencies do
                             addPackage(NormalizedPackageName d)
-            | None -> failwithf "Package %O was referenced, but it was not found in the paket.lock file in group %s." identity groupName
+            | None -> failwithf "Package %O was referenced, but it was not found in the paket.lock file in group %O." identity groupName
 
         addPackage package
 
@@ -327,10 +324,10 @@ type LockFile(fileName:string,groups: Map<string,LockFileGroup>) =
         | Some packages -> packages
         | None ->
             let (PackageName name) = package
-            failwithf "Package %s was referenced, but it was not found in the paket.lock file in group %s." name groupName
+            failwithf "Package %s was referenced, but it was not found in the paket.lock file in group %O." name groupName
 
     /// Gets all dependencies of the given package in the given group.
-    member this.GetAllDependenciesOfSafe(groupName,package) =
+    member this.GetAllDependenciesOfSafe(groupName:NormalizedGroupName,package) =
         let group = groups.[groupName]
         let allDependenciesOf package =
             let usedPackages = HashSet<_>()
@@ -405,12 +402,12 @@ type LockFile(fileName:string,groups: Map<string,LockFileGroup>) =
     override __.ToString() =
         String.Join
             (Environment.NewLine,
-             [|let mainGroup = groups.[Constants.MainDependencyGroup]
+             [|let mainGroup = groups.[NormalizedGroupName Constants.MainDependencyGroup]
                yield LockFileSerializer.serializePackages mainGroup.Options mainGroup.Resolution
                yield LockFileSerializer.serializeSourceFiles mainGroup.RemoteFiles
                for g in groups do 
-                if g.Key <> Constants.MainDependencyGroup then
-                    yield "GROUP: " + g.Key
+                if g.Key <> NormalizedGroupName Constants.MainDependencyGroup then
+                    yield "GROUP: " + g.Value.Name.ToString()
                     yield LockFileSerializer.serializePackages g.Value.Options g.Value.Resolution
                     yield LockFileSerializer.serializeSourceFiles g.Value.RemoteFiles|])
 
@@ -435,7 +432,7 @@ type LockFile(fileName:string,groups: Map<string,LockFileGroup>) =
     static member Create (lockFileName: string, installOptions: InstallOptions, resolvedPackages: PackageResolver.Resolution, resolvedSourceFiles: ModuleResolver.ResolvedSourceFile list) : LockFile =
         let resolvedPackages = resolvedPackages.GetModelOrFail()
         let mainGroup = { Name = Constants.MainDependencyGroup; Options = installOptions; Resolution = resolvedPackages; RemoteFiles = resolvedSourceFiles }
-        let groups = [Constants.MainDependencyGroup, mainGroup] |> Map.ofSeq
+        let groups = [NormalizedGroupName Constants.MainDependencyGroup, mainGroup] |> Map.ofSeq
         let lockFile = LockFile(lockFileName, groups)
         lockFile.Save()
         lockFile
@@ -449,7 +446,7 @@ type LockFile(fileName:string,groups: Map<string,LockFileGroup>) =
         let groups =
             LockFileParser.Parse lines
             |> List.map (fun state ->
-                state.GroupName,
+                NormalizedGroupName state.GroupName,
                 { Name = state.GroupName
                   Options = state.Options
                   Resolution = state.Packages |> Seq.fold (fun map p -> Map.add (NormalizedPackageName p.Name) p map) Map.empty
@@ -465,7 +462,7 @@ type LockFile(fileName:string,groups: Map<string,LockFileGroup>) =
             for p in g.Value.NugetPackages do
                 let k = g.Key,p.Name
                 if usedPackages.ContainsKey k then
-                    failwithf "Package %s is referenced more than once in %s (Group %s)" (p.Name.ToString()) referencesFile.FileName g.Key
+                    failwithf "Package %s is referenced more than once in %s (Group %O)" (p.Name.ToString()) referencesFile.FileName g.Key
                 usedPackages.Add(k,p)
 
         for g in referencesFile.Groups do
@@ -487,7 +484,7 @@ type LockFile(fileName:string,groups: Map<string,LockFileGroup>) =
         for p in g.NugetPackages do
             let k = groupName,p.Name
             if usedPackages.ContainsKey k then
-                failwithf "Package %s is referenced more than once in %s (Group %s)" (p.Name.ToString()) referencesFile.FileName groupName
+                failwithf "Package %s is referenced more than once in %s (Group %O)" (p.Name.ToString()) referencesFile.FileName groupName
             usedPackages.Add(k,p)
 
         g.NugetPackages
@@ -517,6 +514,6 @@ type LockFile(fileName:string,groups: Map<string,LockFileGroup>) =
         referencesFile.Groups.[groupName].NugetPackages
         |> Seq.map (fun package ->
             this.GetAllDependenciesOfSafe(groupName,package.Name)
-            |> failIfNone (ReferenceNotFoundInLockFile(referencesFile.FileName, groupName, package.Name)))
+            |> failIfNone (ReferenceNotFoundInLockFile(referencesFile.FileName, groupName.ToString(), package.Name)))
         |> collect
         |> lift (Seq.concat >> Set.ofSeq)

@@ -22,8 +22,8 @@ let private adjustVersionRequirements strict includingPrereleases (dependenciesF
                 | false,false -> VersionRequirement.AllReleases, ResolverStrategy.Max
             { p with VersionRequirement = requirement; ResolverStrategy = strategy})
 
-    let mainGroup = { Name = Constants.MainDependencyGroup; Options = dependenciesFile.Groups.[Constants.MainDependencyGroup].Options; Sources = dependenciesFile.Sources; Packages = newPackages; RemoteFiles = dependenciesFile.RemoteFiles }
-    let groups = [Constants.MainDependencyGroup, mainGroup] |> Map.ofSeq
+    let mainGroup = { Name = Constants.MainDependencyGroup; Options = dependenciesFile.Groups.[NormalizedGroupName Constants.MainDependencyGroup].Options; Sources = dependenciesFile.Sources; Packages = newPackages; RemoteFiles = dependenciesFile.RemoteFiles }
+    let groups = [NormalizedGroupName Constants.MainDependencyGroup, mainGroup] |> Map.ofSeq
 
     DependenciesFile(dependenciesFile.FileName, groups, dependenciesFile.Lines)
 
@@ -46,7 +46,7 @@ let FindOutdated strict includingPrereleases environment = trial {
 
     let getSha1 origin owner repo branch = RemoteDownload.getSHA1OfBranch origin owner repo branch |> Async.RunSynchronously
     let root = Path.GetDirectoryName dependenciesFile.FileName
-    let mainGroup = dependenciesFile.Groups.[Constants.MainDependencyGroup]
+    let mainGroup = dependenciesFile.Groups.[NormalizedGroupName Constants.MainDependencyGroup]
     // TODO: This is only looking at the maingroup
     let mainGroup = 
         { Name = Constants.MainDependencyGroup
@@ -55,8 +55,8 @@ let FindOutdated strict includingPrereleases environment = trial {
           FrameworkRestrictions = mainGroup.Options.Settings.FrameworkRestrictions
           PackageRequirements = [] }
         
-    let groups = [ Constants.MainDependencyGroup, mainGroup ] |> Map.ofSeq
-    let resolution = dependenciesFile.Resolve(getSha1,NuGetV2.GetVersions root,NuGetV2.GetPackageDetails root true,groups).[Constants.MainDependencyGroup]
+    let groups = [NormalizedGroupName Constants.MainDependencyGroup, mainGroup ] |> Map.ofSeq
+    let resolution = dependenciesFile.Resolve(getSha1,NuGetV2.GetVersions root,NuGetV2.GetPackageDetails root true,groups).[NormalizedGroupName Constants.MainDependencyGroup]
     let resolvedPackages = resolution.ResolvedPackages.GetModelOrFail()
 
     return detectOutdated (lockFile.GetCompleteResolution()) resolvedPackages

@@ -7,7 +7,7 @@ open System.IO
 open Paket.Domain
 open Paket.Logging
 
-let private notInstalled (project : ProjectFile) groupName package = project.HasPackageInstalled(groupName,NormalizedPackageName package) |> not
+let private notInstalled (project : ProjectFile) groupName package = project.HasPackageInstalled(NormalizedGroupName groupName,NormalizedPackageName package) |> not
 
 let private addToProject (project : ProjectFile) package =
     ProjectFile.FindOrCreateReferencesFile(FileInfo(project.FileName))

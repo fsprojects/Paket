@@ -14,11 +14,12 @@ type Dependencies(dependenciesFileName: string) =
         let lockFileName = DependenciesFile.FindLockfile dependenciesFileName
         LockFile.LoadFrom(lockFileName.FullName)
 
-    let listPackages (packages: System.Collections.Generic.KeyValuePair<string*NormalizedPackageName, PackageResolver.ResolvedPackage> seq) =
+    let listPackages (packages: System.Collections.Generic.KeyValuePair<NormalizedGroupName*NormalizedPackageName, PackageResolver.ResolvedPackage> seq) =
         packages
         |> Seq.map (fun kv ->
                             let (PackageName name) = kv.Value.Name
-                            fst kv.Key,name,kv.Value.Version.ToString())
+                            let groupName = (fst kv.Key).ToString()
+                            groupName,name,kv.Value.Version.ToString())
         |> Seq.toList
 
 
@@ -79,7 +80,7 @@ type Dependencies(dependenciesFileName: string) =
             fun () ->
                 PaketEnv.fromRootDirectory this.RootDirectory
                 >>= PaketEnv.ensureNotInStrictMode
-                >>= Simplifier.simplify Constants.MainDependencyGroup interactive  // TODO: Make this group dependent
+                >>= Simplifier.simplify (NormalizedGroupName Constants.MainDependencyGroup) interactive  // TODO: Make this group dependent
                 |> returnOrFail
                 |> Simplifier.updateEnvironment
         )
@@ -280,7 +281,7 @@ type Dependencies(dependenciesFileName: string) =
         |> lockFile.GetPackageHull
         |> Seq.map (fun kv ->
                         let groupName,name = kv.Key
-                        groupName,name.ToString(),resolved.[NormalizedPackageName name].Version.ToString())
+                        groupName.ToString(),name.ToString(),resolved.[NormalizedPackageName name].Version.ToString())
         |> Seq.toList
 
     /// Returns an InstallModel for the given package.
@@ -306,7 +307,7 @@ type Dependencies(dependenciesFileName: string) =
         let dependenciesFile = DependenciesFile.ReadFromFile dependenciesFileName
         let normalizedDependencies =
             dependenciesFile.Groups
-            |> Seq.map (fun kv -> dependenciesFile.GetDependenciesInGroup(kv.Key) |> Seq.map (fun kv' -> kv.Key,NormalizedPackageName kv'.Key)  |> Seq.toList)
+            |> Seq.map (fun kv -> dependenciesFile.GetDependenciesInGroup(kv.Value.Name) |> Seq.map (fun kv' -> kv.Key,NormalizedPackageName kv'.Key)  |> Seq.toList)
             |> List.concat
 
         let normalizedDependendenciesFromRefFile = 
@@ -324,7 +325,7 @@ type Dependencies(dependenciesFileName: string) =
         let dependenciesFile = DependenciesFile.ReadFromFile dependenciesFileName
         let normalizedDependencies =
             dependenciesFile.Groups
-            |> Seq.map (fun kv -> dependenciesFile.GetDependenciesInGroup(kv.Key) |> Seq.map (fun kv' -> kv.Key,NormalizedPackageName kv'.Key)  |> Seq.toList)
+            |> Seq.map (fun kv -> dependenciesFile.GetDependenciesInGroup(kv.Value.Name) |> Seq.map (fun kv' -> kv.Key,NormalizedPackageName kv'.Key)  |> Seq.toList)
             |> List.concat
 
         getLockFile().GetGroupedResolution()

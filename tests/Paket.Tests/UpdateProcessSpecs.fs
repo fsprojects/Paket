@@ -47,10 +47,10 @@ let resolve' graph requirements (dependenciesFile : DependenciesFile) packages =
         { Name = Constants.MainDependencyGroup
           RemoteFiles = []
           RootDependencies = packages
-          FrameworkRestrictions = dependenciesFile.Groups.[Constants.MainDependencyGroup].Options.Settings.FrameworkRestrictions
+          FrameworkRestrictions = dependenciesFile.Groups.[NormalizedGroupName Constants.MainDependencyGroup].Options.Settings.FrameworkRestrictions
           PackageRequirements = requirements }
         
-    let groups = [ Constants.MainDependencyGroup, mainGroup ] |> Map.ofSeq
+    let groups = [NormalizedGroupName Constants.MainDependencyGroup, mainGroup ] |> Map.ofSeq
     dependenciesFile.Resolve(noSha1, VersionsFromGraph graph, PackageDetailsFromGraph graph, groups)
 
 let resolve = resolve' graph []
@@ -421,7 +421,7 @@ let ``SelectiveUpdate generates paket.lock correctly``() =
             String.Join
                 (Environment.NewLine,
                     LockFileSerializer.serializePackages InstallOptions.Default (lockFile.GetCompleteResolution()), 
-                    LockFileSerializer.serializeSourceFiles lockFile.Groups.[Constants.MainDependencyGroup].RemoteFiles)
+                    LockFileSerializer.serializeSourceFiles lockFile.Groups.[NormalizedGroupName Constants.MainDependencyGroup].RemoteFiles)
 
 
     let expected = """NUGET

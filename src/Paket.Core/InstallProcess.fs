@@ -28,7 +28,7 @@ let findPackageFolder root (groupName,PackageName name) (settings:InstallSetting
     | Some x -> x
     | None -> failwithf "Package directory for package %s was not found." name
 
-let private findPackagesWithContent (root,usedPackages:Map<string*PackageName,InstallSettings*SemVerInfo>) =
+let private findPackagesWithContent (root,usedPackages:Map<NormalizedGroupName*PackageName,InstallSettings*SemVerInfo>) =
     usedPackages
     |> Seq.filter (fun kv -> defaultArg (fst kv.Value).OmitContent false |> not)
     |> Seq.map (fun kv -> findPackageFolder root kv.Key kv.Value)
@@ -97,7 +97,7 @@ let CreateInstallModel(root, groupName, sources, force, package) =
     }
 
 /// Restores the given packages from the lock file.
-let createModel(root, sources, force, lockFile : LockFile, packages:Set<string*NormalizedPackageName>) =
+let createModel(root, sources, force, lockFile : LockFile, packages:Set<NormalizedGroupName*NormalizedPackageName>) =
     let sourceFileDownloads = 
         [|for kv in lockFile.Groups -> RemoteDownload.DownloadSourceFiles(root, kv.Key, force, kv.Value.RemoteFiles) |]
         |> Async.Parallel
@@ -196,12 +196,12 @@ let InstallIntoProjects(sources, options : InstallerOptions, lockFile : LockFile
                     let group = 
                         match lockFile.Groups |> Map.tryFind kv.Key with
                         | Some g -> g
-                        | None -> failwithf "%s uses the group %s, but this group was not found in paket.lock." referenceFile.FileName kv.Key
+                        | None -> failwithf "%s uses the group %O, but this group was not found in paket.lock." referenceFile.FileName kv.Key
 
                     let package = 
                         match packages |> Map.tryFind (kv.Key,NormalizedPackageName ps.Name) with
                         | Some p -> snd p
-                        | None -> failwithf "%s uses NuGet package %O, but it was not found in the paket.lock file in group %s." referenceFile.FileName ps.Name kv.Key
+                        | None -> failwithf "%s uses NuGet package %O, but it was not found in the paket.lock file in group %O." referenceFile.FileName ps.Name kv.Key
 
                     let resolvedSettings = 
                         [package.Settings; group.Options.Settings] 
@@ -222,7 +222,7 @@ let InstallIntoProjects(sources, options : InstallerOptions, lockFile : LockFile
                     let group = 
                         match lockFile.Groups |> Map.tryFind groupName with
                         | Some g -> g
-                        | None -> failwithf "%s uses the group %s, but this group was not found in paket.lock." referenceFile.FileName groupName
+                        | None -> failwithf "%s uses the group %O, but this group was not found in paket.lock." referenceFile.FileName groupName
 
                     match group.Resolution |> Map.tryFind (NormalizedPackageName dep) with
                     | None -> None
@@ -250,7 +250,7 @@ let InstallIntoProjects(sources, options : InstallerOptions, lockFile : LockFile
                     let key = fst u.Key,NormalizedPackageName (snd u.Key)
                     match packages |> Map.tryFind key with
                     | Some p -> u.Key,(u.Value,(snd p).Version)
-                    | None -> failwithf "%s uses NuGet package %O, but it was not found in the paket.lock file in group %s." referenceFile.FileName (snd u.Key) (fst u.Key))
+                    | None -> failwithf "%s uses NuGet package %O, but it was not found in the paket.lock file in group %O." referenceFile.FileName (snd u.Key) (fst u.Key))
             |> Map.ofSeq
 
         project.UpdateReferences(model, usedPackageSettings, options.Hard)

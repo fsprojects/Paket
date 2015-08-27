@@ -16,7 +16,7 @@ File:FsUnit.fs
 
 [<Test>]
 let ``should parse lines correctly``() = 
-    let refFile = ReferencesFile.FromLines(toLines refFileContent).Groups.[Constants.MainDependencyGroup]
+    let refFile = ReferencesFile.FromLines(toLines refFileContent).Groups.[NormalizedGroupName Constants.MainDependencyGroup]
     refFile.NugetPackages.Length |> shouldEqual 3
     refFile.NugetPackages.Head.Name |> shouldEqual (PackageName "Castle.Windsor")
     refFile.NugetPackages.Tail.Tail.Head.Name |> shouldEqual (PackageName "jQuery")
@@ -29,7 +29,7 @@ let ``should serialize itself correctly``() =
     let refFile = 
         {FileName = ""; 
          Groups = 
-            [Constants.MainDependencyGroup, 
+            [NormalizedGroupName Constants.MainDependencyGroup, 
              { Name = Constants.MainDependencyGroup; 
                NugetPackages = [ PackageInstallSettings.Default("A"); PackageInstallSettings.Default("B")]; 
                RemoteFiles = [{Name = "FromGithub.fs"; Link = ReferencesFile.DefaultLink; Settings = RemoteFileInstallSettings.Default }]} ] |> Map.ofSeq 
@@ -44,7 +44,7 @@ File:FsUnit.fs Tests\Common
 
 [<Test>]
 let ``should parse custom path correctly``() = 
-    let refFile = ReferencesFile.FromLines(toLines refFileWithCustomPath).Groups.[Constants.MainDependencyGroup]
+    let refFile = ReferencesFile.FromLines(toLines refFileWithCustomPath).Groups.[NormalizedGroupName Constants.MainDependencyGroup]
     refFile.NugetPackages.Length |> shouldEqual 0
     refFile.RemoteFiles.Length |> shouldEqual 1
     refFile.RemoteFiles.Head.Name |> shouldEqual "FsUnit.fs"
@@ -55,7 +55,7 @@ let ``should serialize customPath correctly``() =
     let refFile = 
         {FileName = ""; 
          Groups = 
-            [Constants.MainDependencyGroup, 
+            [NormalizedGroupName Constants.MainDependencyGroup, 
              { Name = Constants.MainDependencyGroup; 
                NugetPackages = [ ]; 
                RemoteFiles = [{Name = "FromGithub.fs"; Link = "CustomPath\Dir"; Settings = RemoteFileInstallSettings.Default }]} ] |> Map.ofSeq 
@@ -71,7 +71,7 @@ Newtonsoft.Json
 
 [<Test>]
 let ``should parse lines with trailing whitspace correctly``() = 
-    let refFile = ReferencesFile.FromLines(toLines refFileWithTrailingWhitespace).Groups.[Constants.MainDependencyGroup]
+    let refFile = ReferencesFile.FromLines(toLines refFileWithTrailingWhitespace).Groups.[NormalizedGroupName Constants.MainDependencyGroup]
     refFile.NugetPackages.Length |> shouldEqual 2
     refFile.NugetPackages.Head.Name |> shouldEqual (PackageName "Castle.Windsor")
     refFile.NugetPackages.Tail.Head.Name |> shouldEqual (PackageName "Newtonsoft.Json")
@@ -79,18 +79,18 @@ let ``should parse lines with trailing whitspace correctly``() =
 [<Test>]
 let ``should add nuget package``() = 
     let empty = ReferencesFile.New("file.txt")
-    empty.Groups.[Constants.MainDependencyGroup].NugetPackages.Length |> shouldEqual 0
-    empty.Groups.[Constants.MainDependencyGroup].RemoteFiles.Length |> shouldEqual 0
+    empty.Groups.[NormalizedGroupName Constants.MainDependencyGroup].NugetPackages.Length |> shouldEqual 0
+    empty.Groups.[NormalizedGroupName Constants.MainDependencyGroup].RemoteFiles.Length |> shouldEqual 0
     empty.FileName |> shouldEqual "file.txt"
 
     let refFile = empty.AddNuGetReference(PackageName "NUnit")
-    refFile.Groups.[Constants.MainDependencyGroup].NugetPackages.Length |> shouldEqual 1
-    refFile.Groups.[Constants.MainDependencyGroup].NugetPackages.Head.Name |> shouldEqual (PackageName "NUnit")
+    refFile.Groups.[NormalizedGroupName Constants.MainDependencyGroup].NugetPackages.Length |> shouldEqual 1
+    refFile.Groups.[NormalizedGroupName Constants.MainDependencyGroup].NugetPackages.Head.Name |> shouldEqual (PackageName "NUnit")
 
     let refFile' = refFile.AddNuGetReference(PackageName "xUnit")
-    refFile'.Groups.[Constants.MainDependencyGroup].NugetPackages.Length |> shouldEqual 2
-    refFile'.Groups.[Constants.MainDependencyGroup].NugetPackages.Head.Name |> shouldEqual (PackageName "NUnit")
-    refFile'.Groups.[Constants.MainDependencyGroup].NugetPackages.Tail.Head.Name |> shouldEqual (PackageName "xUnit")
+    refFile'.Groups.[NormalizedGroupName Constants.MainDependencyGroup].NugetPackages.Length |> shouldEqual 2
+    refFile'.Groups.[NormalizedGroupName Constants.MainDependencyGroup].NugetPackages.Head.Name |> shouldEqual (PackageName "NUnit")
+    refFile'.Groups.[NormalizedGroupName Constants.MainDependencyGroup].NugetPackages.Tail.Head.Name |> shouldEqual (PackageName "xUnit")
 
 
 [<Test>]
@@ -101,8 +101,8 @@ let ``should not add nuget package twice``() =
           .AddNuGetReference(PackageName "NUnit")
           .AddNuGetReference(PackageName "NUnit")
 
-    refFile.Groups.[Constants.MainDependencyGroup].NugetPackages.Length |> shouldEqual 1
-    refFile.Groups.[Constants.MainDependencyGroup].NugetPackages.Head.Name |> shouldEqual (PackageName "NUnit")
+    refFile.Groups.[NormalizedGroupName Constants.MainDependencyGroup].NugetPackages.Length |> shouldEqual 1
+    refFile.Groups.[NormalizedGroupName Constants.MainDependencyGroup].NugetPackages.Head.Name |> shouldEqual (PackageName "NUnit")
 
 let refFileContentWithCopyLocalFalse = """Castle.Windsor copy_local : false
 Newtonsoft.Json"""
@@ -110,11 +110,11 @@ Newtonsoft.Json"""
 [<Test>]
 let ``should parse lines with CopyLocal settings correctly``() = 
     let refFile = ReferencesFile.FromLines(toLines refFileContentWithCopyLocalFalse)
-    refFile.Groups.[Constants.MainDependencyGroup].NugetPackages.Length |> shouldEqual 2
-    refFile.Groups.[Constants.MainDependencyGroup].NugetPackages.Head.Name |> shouldEqual (PackageName "Castle.Windsor")
-    refFile.Groups.[Constants.MainDependencyGroup].NugetPackages.Head.Settings.CopyLocal |> shouldEqual (Some false)
-    refFile.Groups.[Constants.MainDependencyGroup].NugetPackages.Tail.Head.Name |> shouldEqual (PackageName "Newtonsoft.Json")
-    refFile.Groups.[Constants.MainDependencyGroup].NugetPackages.Tail.Head.Settings.CopyLocal |> shouldEqual None
+    refFile.Groups.[NormalizedGroupName Constants.MainDependencyGroup].NugetPackages.Length |> shouldEqual 2
+    refFile.Groups.[NormalizedGroupName Constants.MainDependencyGroup].NugetPackages.Head.Name |> shouldEqual (PackageName "Castle.Windsor")
+    refFile.Groups.[NormalizedGroupName Constants.MainDependencyGroup].NugetPackages.Head.Settings.CopyLocal |> shouldEqual (Some false)
+    refFile.Groups.[NormalizedGroupName Constants.MainDependencyGroup].NugetPackages.Tail.Head.Name |> shouldEqual (PackageName "Newtonsoft.Json")
+    refFile.Groups.[NormalizedGroupName Constants.MainDependencyGroup].NugetPackages.Tail.Head.Settings.CopyLocal |> shouldEqual None
 
 [<Test>]
 let ``should serialize CopyLocal correctly``() = 
@@ -131,7 +131,7 @@ Newtonsoft.Json"""
 
 [<Test>]
 let ``should parse lines with import_targets settings correctly``() = 
-    let refFile = ReferencesFile.FromLines(toLines refFileContentWithNoTargetsImport).Groups.[Constants.MainDependencyGroup]
+    let refFile = ReferencesFile.FromLines(toLines refFileContentWithNoTargetsImport).Groups.[NormalizedGroupName Constants.MainDependencyGroup]
     refFile.NugetPackages.Length |> shouldEqual 2
     refFile.NugetPackages.Head.Name |> shouldEqual (PackageName "Castle.Windsor")
     refFile.NugetPackages.Head.Settings.CopyLocal |> shouldEqual None
@@ -146,7 +146,7 @@ xUnit import_targets:false"""
 
 [<Test>]
 let ``should parse lines with CopyLocal and import_targets settings correctly``() = 
-    let refFile = ReferencesFile.FromLines(toLines refFileContentWithCopyLocalFalseAndNoTargetsImport).Groups.[Constants.MainDependencyGroup]
+    let refFile = ReferencesFile.FromLines(toLines refFileContentWithCopyLocalFalseAndNoTargetsImport).Groups.[NormalizedGroupName Constants.MainDependencyGroup]
     refFile.NugetPackages.Length |> shouldEqual 3
     refFile.NugetPackages.Head.Name |> shouldEqual (PackageName "Castle.Windsor")
     refFile.NugetPackages.Head.Settings.CopyLocal |> shouldEqual (Some false)
@@ -174,20 +174,20 @@ xUnit import_targets: false"""
 [<Test>]
 let ``should parse and serialize lines with multiple settings settings correctly``() = 
     let refFile = ReferencesFile.FromLines(toLines refFileContentWithMultipleSettings)
-    refFile.Groups.[Constants.MainDependencyGroup].NugetPackages.Length |> shouldEqual 3
-    refFile.Groups.[Constants.MainDependencyGroup].NugetPackages.Head.Name |> shouldEqual (PackageName "Castle.Windsor")
-    refFile.Groups.[Constants.MainDependencyGroup].NugetPackages.Head.Settings.CopyLocal |> shouldEqual (Some false)
-    refFile.Groups.[Constants.MainDependencyGroup].NugetPackages.Head.Settings.ImportTargets |> shouldEqual (Some false)
+    refFile.Groups.[NormalizedGroupName Constants.MainDependencyGroup].NugetPackages.Length |> shouldEqual 3
+    refFile.Groups.[NormalizedGroupName Constants.MainDependencyGroup].NugetPackages.Head.Name |> shouldEqual (PackageName "Castle.Windsor")
+    refFile.Groups.[NormalizedGroupName Constants.MainDependencyGroup].NugetPackages.Head.Settings.CopyLocal |> shouldEqual (Some false)
+    refFile.Groups.[NormalizedGroupName Constants.MainDependencyGroup].NugetPackages.Head.Settings.ImportTargets |> shouldEqual (Some false)
 
-    refFile.Groups.[Constants.MainDependencyGroup].NugetPackages.Tail.Head.Name |> shouldEqual (PackageName "Newtonsoft.Json")
-    refFile.Groups.[Constants.MainDependencyGroup].NugetPackages.Tail.Head.Settings.CopyLocal |> shouldEqual None
-    refFile.Groups.[Constants.MainDependencyGroup].NugetPackages.Tail.Head.Settings.ImportTargets |> shouldEqual None
-    refFile.Groups.[Constants.MainDependencyGroup].NugetPackages.Tail.Head.Settings.OmitContent |> shouldEqual (Some true)
+    refFile.Groups.[NormalizedGroupName Constants.MainDependencyGroup].NugetPackages.Tail.Head.Name |> shouldEqual (PackageName "Newtonsoft.Json")
+    refFile.Groups.[NormalizedGroupName Constants.MainDependencyGroup].NugetPackages.Tail.Head.Settings.CopyLocal |> shouldEqual None
+    refFile.Groups.[NormalizedGroupName Constants.MainDependencyGroup].NugetPackages.Tail.Head.Settings.ImportTargets |> shouldEqual None
+    refFile.Groups.[NormalizedGroupName Constants.MainDependencyGroup].NugetPackages.Tail.Head.Settings.OmitContent |> shouldEqual (Some true)
 
-    refFile.Groups.[Constants.MainDependencyGroup].NugetPackages.Tail.Tail.Head.Name |> shouldEqual (PackageName "xUnit")
-    refFile.Groups.[Constants.MainDependencyGroup].NugetPackages.Tail.Tail.Head.Settings.CopyLocal |> shouldEqual None
-    refFile.Groups.[Constants.MainDependencyGroup].NugetPackages.Tail.Tail.Head.Settings.ImportTargets |> shouldEqual (Some false)
-    refFile.Groups.[Constants.MainDependencyGroup].NugetPackages.Tail.Tail.Head.Settings.OmitContent |> shouldEqual None
+    refFile.Groups.[NormalizedGroupName Constants.MainDependencyGroup].NugetPackages.Tail.Tail.Head.Name |> shouldEqual (PackageName "xUnit")
+    refFile.Groups.[NormalizedGroupName Constants.MainDependencyGroup].NugetPackages.Tail.Tail.Head.Settings.CopyLocal |> shouldEqual None
+    refFile.Groups.[NormalizedGroupName Constants.MainDependencyGroup].NugetPackages.Tail.Tail.Head.Settings.ImportTargets |> shouldEqual (Some false)
+    refFile.Groups.[NormalizedGroupName Constants.MainDependencyGroup].NugetPackages.Tail.Tail.Head.Settings.OmitContent |> shouldEqual None
 
     refFile.ToString()
     |> normalizeLineEndings
@@ -201,7 +201,7 @@ let ``should parse link:false correctly``() =
 File:FsUnit.fs Tests\Common link:true
 File:FsUnit1.fs link:false
 """
-    let refFile = ReferencesFile.FromLines(toLines refFile).Groups.[Constants.MainDependencyGroup]
+    let refFile = ReferencesFile.FromLines(toLines refFile).Groups.[NormalizedGroupName Constants.MainDependencyGroup]
     refFile.NugetPackages.Length |> shouldEqual 0
     refFile.RemoteFiles.Length |> shouldEqual 2
     
@@ -224,11 +224,11 @@ NUnit
 [<Test>]
 let ``should parse reffiles with groups``() = 
     let refFile = ReferencesFile.FromLines(toLines refFileWithSecondGroup)
-    let mainGroup = refFile.Groups.[Constants.MainDependencyGroup]
+    let mainGroup = refFile.Groups.[NormalizedGroupName Constants.MainDependencyGroup]
     mainGroup.NugetPackages.Length |> shouldEqual 2
     mainGroup.NugetPackages.Head.Name |> shouldEqual (PackageName "Castle.Windsor")
     mainGroup.NugetPackages.Tail.Head.Name |> shouldEqual (PackageName "Newtonsoft.Json")
     
-    let testGroup = refFile.Groups.["Test"]
+    let testGroup = refFile.Groups.[NormalizedGroupName (GroupName "Test")]
     testGroup.NugetPackages.Length |> shouldEqual 1
     testGroup.NugetPackages.Head.Name |> shouldEqual (PackageName "NUnit")

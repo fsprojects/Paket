@@ -12,7 +12,7 @@ let private findTransitive (packages, flatLookup, failureF) =
     packages
     |> List.map (fun packageName -> 
         flatLookup 
-        |> Map.tryFind (Constants.MainDependencyGroup, NormalizedPackageName packageName)  // TODO: Simplify per group
+        |> Map.tryFind (NormalizedGroupName Constants.MainDependencyGroup, NormalizedPackageName packageName)  // TODO: Simplify per group
         |> failIfNone (failureF packageName))
     |> collect
     |> lift Seq.concat
@@ -42,7 +42,7 @@ let simplifyDependenciesFile (dependenciesFile : DependenciesFile, flatLookup, i
 let simplifyReferencesFile (refFile:ReferencesFile, groupName, flatLookup, interactive) = trial {
     let! transitive = findTransitive(refFile.Groups.[groupName].NugetPackages |> List.map (fun p -> p.Name), 
                             flatLookup, 
-                            (fun p -> ReferenceNotFoundInLockFile(refFile.FileName, groupName,p)))
+                            (fun p -> ReferenceNotFoundInLockFile(refFile.FileName, groupName.ToString(),p)))
 
     let newPackages = 
         refFile.Groups.[groupName].NugetPackages 

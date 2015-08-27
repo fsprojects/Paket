@@ -6,6 +6,7 @@ open System.IO
 open Paket.Logging
 open Paket.ModuleResolver
 open System.IO.Compression
+open Paket.Domain
 
 // Gets the sha1 of a branch
 let getSHA1OfBranch origin owner project branch = 
@@ -129,10 +130,10 @@ let DownloadSourceFiles(rootPath, groupName, force, sourceFiles:ModuleResolver.R
     sourceFiles
     |> List.map (fun source ->
         let destination = 
-            if groupName = Constants.MainDependencyGroup then
+            if groupName = NormalizedGroupName Constants.MainDependencyGroup then
                 source.FilePath(rootPath)
             else
-                source.FilePath(Path.Combine(rootPath,groupName))
+                source.FilePath(Path.Combine(rootPath,groupName.ToString()))
         let destinationDir = FileInfo(destination).Directory.FullName
 
         (destinationDir, source.Commit), (destination, source))

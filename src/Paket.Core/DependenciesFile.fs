@@ -329,7 +329,7 @@ type DependenciesFile(fileName,groups:Map<NormalizedGroupName,DependenciesGroup>
         |> Array.tryFindIndex (isPackageLine name)
             
     /// Returns all direct NuGet dependencies in the given group.
-    member __.GetDependenciesInGroup(groupName) =
+    member __.GetDependenciesInGroup(groupName:GroupName) =
         groups.[NormalizedGroupName groupName].Packages 
         |> Seq.map (fun p -> p.Name, p.VersionRequirement)
         |> Map.ofSeq
@@ -343,7 +343,7 @@ type DependenciesFile(fileName,groups:Map<NormalizedGroupName,DependenciesGroup>
     member __.Lines = textRepresentation
     member __.Sources = mainGroup.Sources
 
-    member __.Resolve(getSha1,getVersionF, getPackageDetailsF,groups:Map<string,RequirementsGroup>) =
+    member __.Resolve(getSha1,getVersionF, getPackageDetailsF,groups:Map<NormalizedGroupName,RequirementsGroup>) =
         groups
         |> Map.map (fun k group ->  
             let rootDependencies =

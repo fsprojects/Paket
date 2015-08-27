@@ -245,10 +245,10 @@ let inline FindAllFiles(folder, pattern) = DirectoryInfo(folder).GetFiles(patter
 
 let getTargetFolder root groupName name (version:SemVerInfo) includeVersionInPath = 
     let packageFolder = name + if includeVersionInPath then "." + version.ToString() else ""
-    if groupName = Constants.MainDependencyGroup then
+    if groupName = NormalizedGroupName Constants.MainDependencyGroup then
         Path.Combine(root, Constants.PackagesFolderName, packageFolder)
     else
-        Path.Combine(root, Constants.PackagesFolderName, groupName, packageFolder)
+        Path.Combine(root, Constants.PackagesFolderName, groupName.ToString(), packageFolder)
 
 let RunInLockedAccessMode(rootFolder,action) =
     let packagesFolder = Path.Combine(rootFolder,Constants.PackagesFolderName)

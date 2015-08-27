@@ -248,7 +248,7 @@ let findDependencies (dependencies : DependenciesFile) config (template : Templa
                 let dep =
                     match getDependencyVersionRequirement np.Name with
                     | Some installed -> installed
-                    | None -> failwithf "No package with id '%A' installed in group %s." np.Name groupName
+                    | None -> failwithf "No package with id '%A' installed in group %O." np.Name groupName
                 np.Name.Id, dep)
         |> List.fold addDependency withDepsAndIncluded
     | None -> withDepsAndIncluded

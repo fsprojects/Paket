@@ -510,7 +510,7 @@ let ``should parse lock file with groups``() =
     packages1.[0].Name |> shouldEqual (PackageName "Castle.Windsor")
 
     let lockFile2 = LockFileParser.Parse(toLines groupsLockFile) |> List.head
-    lockFile2.GroupName |> shouldEqual "Build"
+    lockFile2.GroupName.ToString() |> shouldEqual "Build"
     let packages2 = List.rev lockFile2.Packages
     
     packages2.Length |> shouldEqual 1
