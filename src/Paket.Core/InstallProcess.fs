@@ -286,8 +286,8 @@ let InstallIntoProjects(sources, options : InstallerOptions, lockFile : LockFile
                             |> Seq.tryFind (fun f -> Path.GetFileName(f.Name) = file.Name)
     
                         match lockFileReference with
-                        | Some file -> file.FilePath root
-                        | None -> failwithf "%s references file %s, but it was not found in the paket.lock file." referenceFile.FileName file.Name
+                        | Some file -> file.FilePath(root,kv.Key)
+                        | None -> failwithf "%s references file %s in group %O, but it was not found in the paket.lock file." referenceFile.FileName file.Name kv.Key
     
                     let linked = defaultArg file.Settings.Link true
     

@@ -33,7 +33,7 @@ let private rawGistFileUrl owner project fileName =
     sprintf "https://gist.githubusercontent.com/%s/%s/raw/%s" owner project fileName
 
 /// Gets a dependencies file from the remote source and tries to parse it.
-let downloadDependenciesFile(rootPath,parserF,remoteFile:ModuleResolver.ResolvedSourceFile) = async {
+let downloadDependenciesFile(rootPath,groupName,parserF,remoteFile:ModuleResolver.ResolvedSourceFile) = async {
     let fi = FileInfo(remoteFile.Name)
 
     let dependenciesFileName = remoteFile.Name.Replace(fi.Name,Constants.DependenciesFileName)
@@ -49,7 +49,7 @@ let downloadDependenciesFile(rootPath,parserF,remoteFile:ModuleResolver.Resolved
 
     match result with
     | Some text when parserF text ->        
-        let destination = remoteFile.ComputeFilePath(rootPath,dependenciesFileName)
+        let destination = remoteFile.ComputeFilePath(rootPath,groupName,dependenciesFileName)
 
         Directory.CreateDirectory(destination |> Path.GetDirectoryName) |> ignore
         File.WriteAllText(destination, text)
@@ -127,13 +127,9 @@ let downloadRemoteFiles(remoteFile:ResolvedSourceFile,destination) = async {
 }
 
 let DownloadSourceFiles(rootPath, groupName, force, sourceFiles:ModuleResolver.ResolvedSourceFile list) =
-    sourceFiles
+     sourceFiles
     |> List.map (fun source ->
-        let destination = 
-            if groupName = NormalizedGroupName Constants.MainDependencyGroup then
-                source.FilePath(rootPath)
-            else
-                source.FilePath(Path.Combine(rootPath,groupName.ToString()))
+        let destination = source.FilePath(rootPath,groupName)
         let destinationDir = FileInfo(destination).Directory.FullName
 
         (destinationDir, source.Commit), (destination, source))

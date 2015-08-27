@@ -351,7 +351,7 @@ type DependenciesFile(fileName,groups:Map<NormalizedGroupName,DependenciesGroup>
                 | None -> packages
                 | Some d -> d
 
-            let resolveSourceFile(file:ResolvedSourceFile) : PackageRequirement list =
+            let resolveSourceFile (file:ResolvedSourceFile) : PackageRequirement list =
                 let parserF text =
                     try
                         DependenciesFile.FromCode(text) |> ignore
@@ -359,7 +359,7 @@ type DependenciesFile(fileName,groups:Map<NormalizedGroupName,DependenciesGroup>
                     with 
                     | _ -> false
 
-                RemoteDownload.downloadDependenciesFile(Path.GetDirectoryName fileName,parserF, file)
+                RemoteDownload.downloadDependenciesFile(Path.GetDirectoryName fileName, NormalizedGroupName group.Name, parserF, file)
                 |> Async.RunSynchronously
                 |> DependenciesFile.FromCode
                 |> fun df -> df.Packages

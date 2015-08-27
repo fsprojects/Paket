@@ -34,10 +34,10 @@
     <StartWorkingDirectory>c:\code\Paket09x</StartWorkingDirectory>
     <StartWorkingDirectory>D:\code\Pakettest</StartWorkingDirectory>
     <StartWorkingDirectory>D:\code\Paketkopie</StartWorkingDirectory>
-    <StartArguments>install</StartArguments>
+    <StartArguments>update</StartArguments>
     <StartAction>Project</StartAction>
     <StartProgram>paket.exe</StartProgram>
-    <StartWorkingDirectory>d:\code\RegexProvider</StartWorkingDirectory>
+    <StartWorkingDirectory>d:\code\PaketKopie</StartWorkingDirectory>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
