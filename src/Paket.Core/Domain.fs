@@ -1,7 +1,6 @@
 ﻿module Paket.Domain
 
 open System.IO
-open Paket
 
 /// Represents a NuGet package name
 [<System.Diagnostics.DebuggerDisplay("{Item}")>]
@@ -35,6 +34,39 @@ let (|NormalizedPackageName|) (PackageName name) =
 
 /// Function to convert a NuGet package name into a normalized one
 let NormalizedPackageName = (|NormalizedPackageName|)
+
+/// Represents a group name
+[<System.Diagnostics.DebuggerDisplay("{Item}")>]
+type GroupName =
+| GroupName of string
+
+    member this.Id = 
+        match this with
+        | GroupName id -> id
+
+    override this.ToString() = this.Id
+
+/// Active recognizer to convert a group name into a string
+let (|GroupName|) (GroupName.GroupName name) = name.Trim()
+
+/// Function to convert a string into a group name
+let GroupName(name:string) = GroupName.GroupName(name.Trim())
+
+/// Represents a normalized group name
+[<System.Diagnostics.DebuggerDisplay("{Item}")>]
+type NormalizedGroupName =
+| NormalizedGroupName of string
+
+    override this.ToString() = 
+        match this with
+        | NormalizedGroupName id -> id
+
+/// Active recognizer to convert a group name into a normalized one
+let (|NormalizedGroupName|) (GroupName name) =
+    NormalizedGroupName.NormalizedGroupName(name.ToLowerInvariant().Trim())
+
+/// Function to convert a group name into a normalized one
+let NormalizedGroupName = (|NormalizedGroupName|)
 
 type DomainMessage = 
     | DirectoryDoesntExist of DirectoryInfo
@@ -96,7 +128,7 @@ type DomainMessage =
         | StrictModeDetected -> 
             "Strict mode detected. Command not executed."
         | DependencyNotFoundInLockFile(PackageName name) -> 
-            sprintf "Dependency %s from %s not found in lock file." name Constants.DependenciesFileName
+            sprintf "Dependency %s from paket.dependencies not found in lock file." name
         | ReferenceNotFoundInLockFile(path, groupName, PackageName name) -> 
             sprintf "Reference %s from %s not found in lock file in group %s." name path groupName
 
@@ -112,8 +144,7 @@ type DomainMessage =
         | FileSaveError path ->
             sprintf "Unable to save file %s." path
 
-        | ConfigFileParseError ->
-            sprintf "Unable to parse Paket configuration file %s." Constants.PaketConfigFile
+        | ConfigFileParseError -> "Unable to parse Paket configuration from packages.config."
 
         | PackagingConfigParseError(file,error) ->
             sprintf "Unable to parse template file %s: %s." file error

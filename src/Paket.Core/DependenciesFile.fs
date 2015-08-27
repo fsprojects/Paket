@@ -26,7 +26,7 @@ type VersionStrategy = {
     ResolverStrategy : ResolverStrategy }
 
 type DependenciesGroup = {
-    Name: string
+    Name: GroupName
     Sources: PackageSource list 
     Options: InstallOptions
     Packages : PackageRequirement list
@@ -34,7 +34,7 @@ type DependenciesGroup = {
 }
 
 type RequirementsGroup = {
-    Name: string
+    Name: GroupName
     RootDependencies: PackageRequirement list option
     PackageRequirements : PackageRequirement list
     RemoteFiles : UnresolvedSourceFile list
@@ -239,7 +239,7 @@ module DependenciesFileParser =
                 let lineNo = lineNo + 1
                 try
                     match line with
-                    | Group(newGroupName) -> lineNo, (newGroupName,InstallOptions.Default, [], [], [])::currentGroup::otherGroups
+                    | Group(newGroupName) -> lineNo, (GroupName newGroupName,InstallOptions.Default, [], [], [])::currentGroup::otherGroups
                     | Empty(_) -> lineNo, currentGroup::otherGroups
                     | Remote(newSource) -> lineNo, (groupName,options, sources @ [newSource], packages, sourceFiles)::otherGroups
                     | ParserOptions(ParserOption.ReferencesMode mode) -> lineNo, (groupName,{ options with Strict = mode }, sources, packages, sourceFiles)::otherGroups
@@ -262,7 +262,7 @@ module DependenciesFileParser =
             let groups = 
                 groups
                 |> Seq.map (fun (groupName, options, sources, packages, remoteFiles) -> 
-                       groupName, 
+                       NormalizedGroupName groupName, 
                        { Name = groupName
                          Options = options
                          Sources = sources
@@ -314,8 +314,8 @@ module DependenciesFileSerializer =
 
 
 /// Allows to parse and analyze paket.dependencies files.
-type DependenciesFile(fileName,groups:Map<string,DependenciesGroup>, textRepresentation:string []) =
-    let mainGroup = groups.[Constants.MainDependencyGroup]
+type DependenciesFile(fileName,groups:Map<NormalizedGroupName,DependenciesGroup>, textRepresentation:string []) =
+    let mainGroup = groups.[NormalizedGroupName Constants.MainDependencyGroup]
     let packages = mainGroup.Packages
     let dependencyMap = Map.ofSeq (packages |> Seq.map (fun p -> p.Name, p.VersionRequirement))
 
@@ -330,7 +330,7 @@ type DependenciesFile(fileName,groups:Map<string,DependenciesGroup>, textReprese
             
     /// Returns all direct NuGet dependencies in the given group.
     member __.GetDependenciesInGroup(groupName) =
-        groups.[groupName].Packages 
+        groups.[NormalizedGroupName groupName].Packages 
         |> Seq.map (fun p -> p.Name, p.VersionRequirement)
         |> Map.ofSeq
 
