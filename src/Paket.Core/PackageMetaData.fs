@@ -114,7 +114,7 @@ let (|Valid|Invalid|) md =
                 Description = d }
     | _ -> Invalid
 
-let addDependency (templateFile : TemplateFile) (dependency : string * VersionRequirement) = 
+let addDependency (templateFile : TemplateFile) (dependency : PackageName * VersionRequirement) = 
     match templateFile with
     | CompleteTemplate(core, opt) -> 
         let newDeps = 
@@ -188,7 +188,7 @@ let findDependencies (dependencies : DependenciesFile) config (template : Templa
                         if not lockDependencies
                         then Minimum v
                         else Specific v
-                    core.Id, VersionRequirement(versionConstraint, PreReleaseStatus.All)
+                    PackageName core.Id, VersionRequirement(versionConstraint, PreReleaseStatus.All)
                 | none ->failwithf "There was no version given for %s." templateFile.FileName
             | IncompleteTemplate -> failwithf "You cannot create a dependency on a template file (%s) with incomplete metadata." templateFile.FileName)
         |> List.fold addDependency templateWithOutput
@@ -219,7 +219,7 @@ let findDependencies (dependencies : DependenciesFile) config (template : Templa
                 // then we would not need to parse every nuspec here
                 let info =
                     lockFile.Groups.[groupName].Resolution
-                    |> Map.tryFind (NormalizedPackageName np.Name)
+                    |> Map.tryFind np.Name
                 match info with
                 | None -> true
                 | Some rp ->
@@ -228,9 +228,9 @@ let findDependencies (dependencies : DependenciesFile) config (template : Templa
             with
             | _ -> true)
         |> List.map (fun (groupName,np) ->
-                let getDependencyVersionRequirement package =
+                let getDependencyVersionRequirement packageName =
                     if not lockDependencies then
-                        Map.tryFind package (dependencies.GetDependenciesInGroup(Constants.MainDependencyGroup))
+                        Map.tryFind packageName (dependencies.GetDependenciesInGroup(Constants.MainDependencyGroup))
                         |> function
                             | Some direct -> Some direct
                             | None ->
@@ -238,17 +238,17 @@ let findDependencies (dependencies : DependenciesFile) config (template : Templa
                                 // find it in `paket.lock` and set min version
                                 // to current locked version
                                 lockFile.Groups.[groupName].Resolution
-                                |> Map.tryFind (NormalizedPackageName package)
+                                |> Map.tryFind packageName
                                 |> Option.map (fun transient -> transient.Version)
                                 |> Option.map (fun v -> VersionRequirement(Minimum v, PreReleaseStatus.All))
                     else
-                        Map.tryFind (NormalizedPackageName package) lockFile.Groups.[groupName].Resolution
+                        Map.tryFind packageName lockFile.Groups.[groupName].Resolution
                         |> Option.map (fun resolvedPackage -> resolvedPackage.Version)
                         |> Option.map (fun version -> VersionRequirement(Specific version, PreReleaseStatus.All))
                 let dep =
                     match getDependencyVersionRequirement np.Name with
                     | Some installed -> installed
                     | None -> failwithf "No package with id '%A' installed in group %O." np.Name groupName
-                np.Name.Id, dep)
+                np.Name, dep)
         |> List.fold addDependency withDepsAndIncluded
     | None -> withDepsAndIncluded

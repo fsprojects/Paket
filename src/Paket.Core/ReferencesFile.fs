@@ -98,9 +98,8 @@ type ReferencesFile =
 
     member this.AddNuGetReference(packageName : PackageName, copyLocal: bool, importTargets: bool, frameworkRestrictions, includeVersionInPath, omitContent : bool) =
         let (PackageName referenceName) = packageName
-        let normalized = NormalizedPackageName packageName
         let mainGroup = this.Groups.[Constants.MainDependencyGroup] // TODO: Add to correct group
-        if mainGroup.NugetPackages |> Seq.exists (fun p -> NormalizedPackageName p.Name = normalized) then
+        if mainGroup.NugetPackages |> Seq.exists (fun p -> p.Name = packageName) then
             this
         else
             tracefn "Adding %s to %s" referenceName this.FileName      
@@ -123,14 +122,13 @@ type ReferencesFile =
 
     member this.RemoveNuGetReference(packageName : PackageName) =
         let (PackageName referenceName) = packageName
-        let normalized = NormalizedPackageName packageName
         let mainGroup = this.Groups.[Constants.MainDependencyGroup] // TODO: Remove from correct group
-        if mainGroup.NugetPackages |> Seq.exists (fun p -> NormalizedPackageName p.Name = normalized) |> not then
+        if mainGroup.NugetPackages |> Seq.exists (fun p ->  p.Name = packageName) |> not then
             this
         else
             tracefn "Removing %s from %s" referenceName this.FileName
 
-            let newMainGroup = { mainGroup with  NugetPackages = mainGroup.NugetPackages |> List.filter (fun p -> NormalizedPackageName p.Name <> normalized) }
+            let newMainGroup = { mainGroup with  NugetPackages = mainGroup.NugetPackages |> List.filter (fun p -> p.Name <> packageName) }
             let newGroups = this.Groups |> Map.add newMainGroup.Name newMainGroup
 
             { this with Groups = newGroups }

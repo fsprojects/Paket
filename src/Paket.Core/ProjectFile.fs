@@ -101,14 +101,14 @@ type ProjectFile =
     member this.CreateNode(name) = 
         this.Document.CreateElement(name, Constants.ProjectDefaultNameSpace)
 
-    member this.HasPackageInstalled(groupName,package:NormalizedPackageName) =        
+    member this.HasPackageInstalled(groupName,package:PackageName) =        
         let proj = FileInfo(this.FileName)
         match ProjectFile.FindReferencesFile proj with
         | None -> false
         | Some fileName -> 
             let referencesFile = ReferencesFile.FromFile fileName
             referencesFile.Groups.[groupName].NugetPackages 
-            |> Seq.exists (fun p -> NormalizedPackageName p.Name = package)
+            |> Seq.exists (fun p -> p.Name = package)
 
     member this.CreateNode(name, text) = 
         let node = this.CreateNode(name)
@@ -403,7 +403,7 @@ type ProjectFile =
             ()
         
 
-    member this.UpdateReferences(completeModel: Map<GroupName*NormalizedPackageName,InstallModel>, usedPackages : Map<GroupName*NormalizedPackageName,InstallSettings>, hard) =
+    member this.UpdateReferences(completeModel: Map<GroupName*PackageName,InstallModel>, usedPackages : Map<GroupName*PackageName,InstallSettings>, hard) =
         this.RemovePaketNodes() 
         
         completeModel

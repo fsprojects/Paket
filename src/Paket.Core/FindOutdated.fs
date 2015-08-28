@@ -30,7 +30,7 @@ let private adjustVersionRequirements strict includingPrereleases (dependenciesF
 let private detectOutdated (oldResolution: PackageResolver.PackageResolution) (newResolution: PackageResolver.PackageResolution) =
     [for kv in oldResolution do
         let package = kv.Value
-        match newResolution |> Map.tryFind (NormalizedPackageName package.Name) with
+        match newResolution |> Map.tryFind package.Name with
         | Some newVersion -> 
             if package.Version <> newVersion.Version then 
                 yield package.Name,package.Version,newVersion.Version

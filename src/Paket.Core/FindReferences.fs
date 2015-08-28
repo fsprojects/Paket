@@ -14,8 +14,7 @@ let private findReferencesFor groupName package (lockFile: LockFile) projects = 
 
             let referenced =
                 installedPackages
-                |> Set.map NormalizedPackageName
-                |> Set.contains (NormalizedPackageName package)
+                |> Set.contains package
 
             return if referenced then Some project else None })
         |> collect

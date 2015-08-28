@@ -19,7 +19,7 @@ let addPackagesFromReferenceFiles projects (dependenciesFile : DependenciesFile)
 
     let allExistingPackages =
         oldLockFile.GetCompleteResolution()
-        |> Seq.map (fun d -> NormalizedPackageName d.Value.Name)
+        |> Seq.map (fun d -> d.Value.Name)
         |> Set.ofSeq
 
     let allReferencedPackages =
@@ -29,7 +29,7 @@ let addPackagesFromReferenceFiles projects (dependenciesFile : DependenciesFile)
     let diff =
         allReferencedPackages
         |> Seq.filter (fun p ->
-            NormalizedPackageName p.Name
+            p.Name
             |> allExistingPackages.Contains
             |> not)
 
@@ -51,7 +51,7 @@ let selectiveUpdate resolve (lockFile:LockFile) (dependenciesFile:DependenciesFi
         // TODO: this makes no sense at the moment - ask @mrinaldi
         let selectiveResolution : Map<GroupName,Resolved> = 
             dependenciesFile.Packages
-            |> List.filter (fun p -> package = NormalizedPackageName p.Name)
+            |> List.filter (fun p -> package = p.Name)
             |> Some
             |> resolve dependenciesFile            
 
@@ -71,11 +71,11 @@ let selectiveUpdate resolve (lockFile:LockFile) (dependenciesFile:DependenciesFi
 
             let isDirectDependency package = 
                 dependenciesFile.GetDependenciesInGroup(Constants.MainDependencyGroup)
-                |> Map.exists (fun p _ -> NormalizedPackageName p = package)
+                |> Map.exists (fun p _ -> p = package)
 
             let isTransitiveDependency package =
                 dependencies
-                |> Set.exists (fun p -> NormalizedPackageName p = package)
+                |> Set.exists (fun p -> p = package)
 
             resolvedPackages
             |> Map.filter (fun p _ -> isDirectDependency p || isTransitiveDependency p)
@@ -163,7 +163,7 @@ let UpdatePackage(dependenciesFileName, packageName : PackageName, newVersion, o
             tracefn "Updating %s in %s" (packageName.ToString()) dependenciesFileName
             dependenciesFile
 
-    SmartInstall(dependenciesFile, false, Some(NormalizedPackageName packageName), options)
+    SmartInstall(dependenciesFile, false, Some packageName, options)
 
 /// Update command
 let Update(dependenciesFileName, options : UpdaterOptions) =

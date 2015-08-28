@@ -4,36 +4,36 @@ open System.IO
 
 /// Represents a NuGet package name
 [<System.Diagnostics.DebuggerDisplay("{Item}")>]
+[<CustomEquality;CustomComparison>]
 type PackageName =
 | PackageName of string
 
-    member this.Id = 
+    member this.GetCompareString() =
+        match this with
+        | PackageName id -> id.ToLowerInvariant().Trim()
+
+    override this.ToString() = 
         match this with
         | PackageName id -> id
 
-    override this.ToString() = this.Id
+    override this.Equals(that) = 
+        match that with
+        | :? PackageName as that -> this.GetCompareString() = that.GetCompareString()
+        | _ -> false
+
+    override this.GetHashCode() = hash (this.GetCompareString())    
+
+    interface System.IComparable with
+       member this.CompareTo that = 
+          match that with 
+          | :? PackageName as that -> this.GetCompareString().CompareTo(that.GetCompareString())
+          | _ -> invalidArg "that" "cannot compare value of different types"
 
 /// Active recognizer to convert a NuGet package name into a string
 let (|PackageName|) (PackageName.PackageName name) = name.Trim()
 
 /// Function to convert a string into a NuGet package name
 let PackageName(name:string) = PackageName.PackageName(name.Trim())
-
-/// Represents a normalized NuGet package name
-[<System.Diagnostics.DebuggerDisplay("{Item}")>]
-type NormalizedPackageName =
-| NormalizedPackageName of string
-
-    override this.ToString() = 
-        match this with
-        | NormalizedPackageName id -> id
-
-/// Active recognizer to convert a NuGet package name into a normalized one
-let (|NormalizedPackageName|) (PackageName name) =
-    NormalizedPackageName.NormalizedPackageName(name.ToLowerInvariant().Trim())
-
-/// Function to convert a NuGet package name into a normalized one
-let NormalizedPackageName = (|NormalizedPackageName|)
 
 /// Represents a normalized group name
 [<System.Diagnostics.DebuggerDisplay("{Item}")>]

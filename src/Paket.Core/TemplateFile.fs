@@ -124,7 +124,7 @@ type internal OptionalPackagingInfo =
       RequireLicenseAcceptance : bool
       Tags : string list
       DevelopmentDependency : bool
-      Dependencies : (string * VersionRequirement) list
+      Dependencies : (PackageName * VersionRequirement) list
       References : string list
       FrameworkAssemblyReferences : string list
       Files : (string * string) list 
@@ -224,7 +224,7 @@ module internal TemplateFile =
                                     | None -> failwithf "The template file %s contains the placeholder CURRENTVERSION, but no version was given." fileName
                                   else s
                                 DependenciesFileParser.parseVersionRequirement versionString
-                           id', versionRequirement))
+                           PackageName id', versionRequirement))
         |> Option.map Array.toList
         |> fun x -> defaultArg x []
     

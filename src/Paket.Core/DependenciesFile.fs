@@ -320,11 +320,11 @@ type DependenciesFile(fileName,groups:Map<GroupName,DependenciesGroup>, textRepr
     let dependencyMap = Map.ofSeq (packages |> Seq.map (fun p -> p.Name, p.VersionRequirement))
 
     let isPackageLine name (l : string) = 
-        let splitted = l.Split(' ') |> Array.map (fun s -> s.ToLower())
+        let splitted = l.Split(' ') |> Array.map (fun s -> s.ToLowerInvariant().Trim())
         splitted |> Array.exists ((=) "nuget") && splitted |> Array.exists ((=) name)          
 
     let tryFindPackageLine (packageName:PackageName) =
-        let name = packageName.ToString().ToLower()
+        let name = packageName.GetCompareString()
         textRepresentation
         |> Array.tryFindIndex (isPackageLine name)
             
@@ -336,8 +336,8 @@ type DependenciesFile(fileName,groups:Map<GroupName,DependenciesGroup>, textRepr
 
     member __.Packages = packages
     member __.Groups = groups
-    member __.HasPackage (name : PackageName) = packages |> List.exists (fun p -> NormalizedPackageName p.Name = NormalizedPackageName name)
-    member __.GetPackage (name : PackageName) = packages |> List.find (fun p -> NormalizedPackageName p.Name = NormalizedPackageName name)
+    member __.HasPackage (name : PackageName) = packages |> List.exists (fun p -> p.Name = name)
+    member __.GetPackage (name : PackageName) = packages |> List.find (fun p -> p.Name = name)
     member __.RemoteFiles = mainGroup.RemoteFiles
     member __.FileName = fileName
     member __.Lines = textRepresentation
@@ -472,7 +472,7 @@ type DependenciesFile(fileName,groups:Map<GroupName,DependenciesGroup>, textRepr
         let vr = DependenciesFileParser.parseVersionString version
 
         let resolverStrategy,versionRequirement = 
-            match packages |> List.tryFind (fun p -> NormalizedPackageName p.Name = NormalizedPackageName packageName) with
+            match packages |> List.tryFind (fun p -> p.Name = packageName) with
             | Some package -> 
                 package.ResolverStrategy,
                 match package.VersionRequirement.Range with

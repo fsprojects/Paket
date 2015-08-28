@@ -6,6 +6,7 @@ open Chessie.ErrorHandling
 open FsUnit
 open NUnit.Framework
 open Paket.TestHelpers
+open Paket.Domain
 
 [<Literal>]
 let FileBasedShortDesc = """type file
@@ -217,9 +218,9 @@ let ``Detect dependencies correctly`` fileContent =
            | ProjectInfo (_, opt) -> opt
     match sut.Dependencies with
     | [name1,range1;name2,range2] ->
-        name1 |> shouldEqual "FSharp.Core"
+        name1 |> shouldEqual (PackageName "FSharp.Core")
         range1.Range |> shouldEqual (Specific (SemVer.Parse "4.3.1"))
-        name2 |> shouldEqual "My.OtherThing"
+        name2 |> shouldEqual (PackageName "My.OtherThing")
         range2.Range |> shouldEqual (Minimum (SemVer.Parse "0"))
     | _ -> Assert.Fail()
 
@@ -247,9 +248,9 @@ dependencies
            | ProjectInfo (_, opt) -> opt
     match sut.Dependencies with
     | [name1,range1;name2,range2] ->
-        name1 |> shouldEqual "FSharp.Core"
+        name1 |> shouldEqual (PackageName "FSharp.Core")
         range1.Range |> shouldEqual (Specific (SemVer.Parse "4.3.1"))
-        name2 |> shouldEqual "My.OtherThing"
+        name2 |> shouldEqual (PackageName "My.OtherThing")
         range2.Range |> shouldEqual (Specific (SemVer.Parse "2.1"))
     | _ -> Assert.Fail()
 

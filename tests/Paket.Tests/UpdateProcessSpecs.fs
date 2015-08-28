@@ -169,7 +169,7 @@ let ``SelectiveUpdate updates a single package``() =
 
     let updateAll = false
     let lockFile = 
-        Some(NormalizedPackageName(PackageName "FAKE"))
+        Some(PackageName "FAKE")
         |> selectiveUpdate resolve lockFile dependenciesFile updateAll
     
     let result = 
@@ -197,7 +197,7 @@ let ``SelectiveUpdate updates a single constrained package``() =
 
     let updateAll = false
     let lockFile = 
-        Some(NormalizedPackageName(PackageName "Castle.Core-log4net"))
+        Some(PackageName "Castle.Core-log4net")
         |> selectiveUpdate resolve lockFile dependenciesFile updateAll
     
     let result = 
@@ -226,7 +226,7 @@ let ``SelectiveUpdate updates a single package with constrained dependency in de
 
     let updateAll = false
     let lockFile = 
-        Some(NormalizedPackageName(PackageName "Castle.Core-log4net"))
+        Some(PackageName "Castle.Core-log4net")
         |> selectiveUpdate resolve lockFile dependenciesFile updateAll
     
     let result = 
@@ -282,7 +282,7 @@ let ``SelectiveUpdate removes a dependency when it updates a single package and 
 
     let updateAll = false
     let lockFile = 
-        Some(NormalizedPackageName(PackageName "Castle.Core-log4net"))
+        Some(PackageName "Castle.Core-log4net")
         |> selectiveUpdate resolve lockFile dependenciesFile updateAll
 
     let result = 
@@ -310,7 +310,7 @@ let ``SelectiveUpdate does not update when a dependency constrain is not met``()
 
     let updateAll = false
     let lockFile = 
-        Some(NormalizedPackageName(PackageName "Castle.Core-log4net"))
+        Some(PackageName "Castle.Core-log4net")
         |> selectiveUpdate resolve lockFile dependenciesFile updateAll
 
     let result = 
@@ -339,7 +339,7 @@ let ``SelectiveUpdate considers package name case difference``() =
 
     let updateAll = false
     let lockFile = 
-        Some(NormalizedPackageName(PackageName "Castle.Core-log4net"))
+        Some(PackageName "Castle.Core-log4net")
         |> selectiveUpdate resolve lockFile dependenciesFile updateAll
 
     let result = 
@@ -370,7 +370,7 @@ let ``SelectiveUpdate conflicts when a dependency is contrained``() =
     let updateAll = false
 
     (fun () ->
-    Some(NormalizedPackageName(PackageName "Castle.Core-log4net"))
+    Some(PackageName "Castle.Core-log4net")
     |> selectiveUpdate resolve lockFile dependenciesFile updateAll
     |> ignore)
     |> shouldFail
@@ -385,7 +385,7 @@ let ``SelectiveUpdate does not update any package when package does not exist``(
 
     let updateAll = false
     let lockFile = 
-        Some(NormalizedPackageName(PackageName "package"))
+        Some(PackageName "package")
         |> selectiveUpdate resolve lockFile dependenciesFile updateAll
     
     let result = 
@@ -414,7 +414,7 @@ let ``SelectiveUpdate generates paket.lock correctly``() =
 
     let updateAll = false
     let lockFile = 
-        Some(NormalizedPackageName(PackageName "Castle.Core"))
+        Some(PackageName "Castle.Core")
         |> selectiveUpdate resolve lockFile dependenciesFile updateAll
     
     let result = 
@@ -448,7 +448,7 @@ let ``SelectiveUpdate does not update when package conflicts with a transitive d
     nuget log4net""")
 
     let updateAll = false
-    let packageName = NormalizedPackageName(PackageName "log4net")
+    let packageName = PackageName "log4net"
     let requirements =
         lockFile.GetCompleteResolution()
         |> createPackageRequirements [packageName]
@@ -525,7 +525,7 @@ let ``SelectiveUpdate updates package that conflicts with a transitive dependenc
     nuget Ninject.Extensions.Logging.Log4net""")
     
     let updateAll = false
-    let packageName = NormalizedPackageName(PackageName "log4f")
+    let packageName = PackageName "log4f"
     let requirements =
         lockFile2.GetCompleteResolution()
         |> createPackageRequirements [packageName]
@@ -562,7 +562,7 @@ let ``SelectiveUpdate updates package that conflicts with a transitive dependenc
     nuget Ninject.Extensions.Logging.Log4net""")
     
     let updateAll = false
-    let packageName = NormalizedPackageName(PackageName "Ninject.Extensions.Logging.Log4net")
+    let packageName = PackageName "Ninject.Extensions.Logging.Log4net"
     let requirements =
         lockFile2.GetCompleteResolution()
         |> createPackageRequirements [packageName]
@@ -624,7 +624,7 @@ let ``SelectiveUpdate updates package that conflicts with a transitive dependenc
     nuget Ninject.Extensions.Interception""")
     
     let updateAll = false
-    let packageName = NormalizedPackageName(PackageName "Ninject.Extensions.Logging.Log4net")
+    let packageName = PackageName "Ninject.Extensions.Logging.Log4net"
     let requirements =
         lockFile3.GetCompleteResolution()
         |> createPackageRequirements [packageName]
@@ -663,7 +663,7 @@ let ``SelectiveUpdate conflicts with a transitive dependency of another package 
     nuget Ninject.Extensions.Interception""")
     
     let updateAll = false
-    let packageName = NormalizedPackageName(PackageName "Ninject")
+    let packageName = PackageName "Ninject"
     let requirements =
         lockFile3.GetCompleteResolution()
         |> createPackageRequirements [packageName]
@@ -685,7 +685,7 @@ let ``SelectiveUpdate updates package that conflicts with a deep transitive depe
     nuget Ninject.Extensions.Interception""")
     
     let updateAll = false
-    let packageName = NormalizedPackageName(PackageName "Ninject.Extensions.Interception")
+    let packageName = PackageName "Ninject.Extensions.Interception"
     let requirements =
         lockFile3.GetCompleteResolution()
         |> createPackageRequirements [packageName]
@@ -743,7 +743,7 @@ let ``SelectiveUpdate updates package that conflicts with a deep transitive depe
     nuget Ninject.Extensions.Logging.Log4net.Deep""")
     
     let updateAll = false
-    let packageName = NormalizedPackageName(PackageName "Ninject.Extensions.Logging.Log4net.Deep")
+    let packageName = PackageName "Ninject.Extensions.Logging.Log4net.Deep"
     let requirements =
         lockFile4.GetCompleteResolution()
         |> createPackageRequirements [packageName]
@@ -799,7 +799,7 @@ let ``SelectiveUpdate updates package that conflicts with transitive dependency 
     nuget Ninject.Extensions.Logging""")
     
     let updateAll = false
-    let packageName = NormalizedPackageName(PackageName "Ninject.Extensions.Logging")
+    let packageName = PackageName "Ninject.Extensions.Logging"
     let requirements =
         lockFile5.GetCompleteResolution()
         |> createPackageRequirements [packageName]

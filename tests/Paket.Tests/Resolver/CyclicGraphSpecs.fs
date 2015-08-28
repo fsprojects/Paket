@@ -20,5 +20,5 @@ let graph = [
 [<Test>]
 let ``should analyze graph completely``() =
     let resolved = resolve graph ["A",VersionRange.AtLeast "1.0"]
-    getVersion resolved.[NormalizedPackageName (PackageName "A")] |> shouldEqual "3.3"
-    getVersion resolved.[NormalizedPackageName (PackageName "B")] |> shouldEqual "1.2"
+    getVersion resolved.[PackageName "A"] |> shouldEqual "3.3"
+    getVersion resolved.[PackageName "B"] |> shouldEqual "1.2"

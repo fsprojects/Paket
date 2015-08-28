@@ -40,7 +40,7 @@ let ExtractPackage(root, groupName, sources, force, package : ResolvedPackage) =
     }
 
 /// Restores the given dependencies from the lock file.
-let internal restore(root, groupName, sources, force, lockFile:LockFile, packages:Set<NormalizedPackageName>) = 
+let internal restore(root, groupName, sources, force, lockFile:LockFile, packages:Set<PackageName>) = 
     let sourceFileDownloads = 
         [| yield RemoteDownload.DownloadSourceFiles(Path.GetDirectoryName lockFile.FileName, groupName, force, lockFile.Groups.[groupName].RemoteFiles) |]
         |> Async.Parallel
@@ -57,7 +57,7 @@ let internal computePackageHull groupName (lockFile : LockFile) (referencesFileN
     referencesFileNames
     |> Seq.map (fun fileName ->
         lockFile.GetPackageHull(groupName,ReferencesFile.FromFile fileName)
-        |> Seq.map (fun p -> NormalizedPackageName (snd p.Key)))
+        |> Seq.map (fun p -> (snd p.Key)))
     |> Seq.concat
 
 let Restore(dependenciesFileName,force,referencesFileNames) = 

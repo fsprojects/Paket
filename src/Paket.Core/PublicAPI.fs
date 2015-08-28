@@ -14,7 +14,7 @@ type Dependencies(dependenciesFileName: string) =
         let lockFileName = DependenciesFile.FindLockfile dependenciesFileName
         LockFile.LoadFrom(lockFileName.FullName)
 
-    let listPackages (packages: System.Collections.Generic.KeyValuePair<GroupName*NormalizedPackageName, PackageResolver.ResolvedPackage> seq) =
+    let listPackages (packages: System.Collections.Generic.KeyValuePair<GroupName*PackageName, PackageResolver.ResolvedPackage> seq) =
         packages
         |> Seq.map (fun kv ->
                             let (PackageName name) = kv.Value.Name
@@ -250,7 +250,7 @@ type Dependencies(dependenciesFileName: string) =
 
     /// Returns the installed version of the given package.
     member this.GetInstalledVersion(packageName: string): string option =
-        getLockFile().GetCompleteResolution().TryFind (NormalizedPackageName (PackageName packageName))
+        getLockFile().GetCompleteResolution().TryFind(PackageName packageName)
         |> Option.map (fun package -> package.Version.ToString())
 
     /// Returns the installed versions of all installed packages.
@@ -281,7 +281,7 @@ type Dependencies(dependenciesFileName: string) =
         |> lockFile.GetPackageHull
         |> Seq.map (fun kv ->
                         let groupName,name = kv.Key
-                        groupName.ToString(),name.ToString(),resolved.[NormalizedPackageName name].Version.ToString())
+                        groupName.ToString(),name.ToString(),resolved.[name].Version.ToString())
         |> Seq.toList
 
     /// Returns an InstallModel for the given package.
@@ -307,12 +307,12 @@ type Dependencies(dependenciesFileName: string) =
         let dependenciesFile = DependenciesFile.ReadFromFile dependenciesFileName
         let normalizedDependencies =
             dependenciesFile.Groups
-            |> Seq.map (fun kv -> dependenciesFile.GetDependenciesInGroup(kv.Value.Name) |> Seq.map (fun kv' -> kv.Key,NormalizedPackageName kv'.Key)  |> Seq.toList)
+            |> Seq.map (fun kv -> dependenciesFile.GetDependenciesInGroup(kv.Value.Name) |> Seq.map (fun kv' -> kv.Key, kv'.Key)  |> Seq.toList)
             |> List.concat
 
         let normalizedDependendenciesFromRefFile = 
             referencesFile.Groups 
-            |> Seq.map (fun kv -> kv.Value.NugetPackages |> List.map (fun p -> kv.Key,NormalizedPackageName p.Name))
+            |> Seq.map (fun kv -> kv.Value.NugetPackages |> List.map (fun p -> kv.Key, p.Name))
             |> List.concat
 
         getLockFile().GetGroupedResolution()
@@ -325,7 +325,7 @@ type Dependencies(dependenciesFileName: string) =
         let dependenciesFile = DependenciesFile.ReadFromFile dependenciesFileName
         let normalizedDependencies =
             dependenciesFile.Groups
-            |> Seq.map (fun kv -> dependenciesFile.GetDependenciesInGroup(kv.Value.Name) |> Seq.map (fun kv' -> kv.Key,NormalizedPackageName kv'.Key)  |> Seq.toList)
+            |> Seq.map (fun kv -> dependenciesFile.GetDependenciesInGroup(kv.Value.Name) |> Seq.map (fun kv' -> kv.Key, kv'.Key)  |> Seq.toList)
             |> List.concat
 
         getLockFile().GetGroupedResolution()
@@ -335,8 +335,8 @@ type Dependencies(dependenciesFileName: string) =
     /// Returns the direct dependencies for the given package.
     member this.GetDirectDependenciesForPackage(groupName,packageName:string): (string * string * string) list =
         let resolvedPackages = getLockFile().GetGroupedResolution()
-        let package = resolvedPackages.[groupName,NormalizedPackageName (PackageName packageName)]
-        let normalizedDependencies = package.Dependencies |> Seq.map (fun (name,_,_) -> groupName, NormalizedPackageName name) |> Seq.toList
+        let package = resolvedPackages.[groupName, (PackageName packageName)]
+        let normalizedDependencies = package.Dependencies |> Seq.map (fun (name,_,_) -> groupName, name) |> Seq.toList
 
         resolvedPackages
         |> Seq.filter (fun kv -> normalizedDependencies |> Seq.exists ((=) kv.Key))

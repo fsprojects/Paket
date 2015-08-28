@@ -6,6 +6,7 @@ open Chessie.ErrorHandling
 open FsUnit
 open NUnit.Framework
 open TestHelpers
+open Paket.Domain
 
 [<Test>]
 let ``should serialize core info``() = 
@@ -55,8 +56,8 @@ let ``should serialize dependencies``() =
         { OptionalPackagingInfo.Epmty with 
             Tags = [ "f#"; "rules" ]
             Dependencies = 
-                [ "Paket.Core", VersionRequirement.Parse "[3.1]"
-                  "xUnit", VersionRequirement.Parse "2.0" ] }
+                [ PackageName "Paket.Core", VersionRequirement.Parse "[3.1]"
+                  PackageName "xUnit", VersionRequirement.Parse "2.0" ] }
     
     let doc = NupkgWriter.nuspecDoc (core, optional)
     doc.ToString() 

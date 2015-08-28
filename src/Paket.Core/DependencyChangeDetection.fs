@@ -7,7 +7,7 @@ open Paket.PackageResolver
 let findChangesInDependenciesFile(dependenciesFile:DependenciesFile,lockFile:LockFile) =   
     let directMap =
         dependenciesFile.Packages
-        |> Seq.map (fun d -> NormalizedPackageName d.Name,d)
+        |> Seq.map (fun d -> d.Name,d)
         |> Map.ofSeq
 
     let inline hasChanged (newRequirement:PackageRequirement) (originalPackage:ResolvedPackage) =
@@ -17,7 +17,7 @@ let findChangesInDependenciesFile(dependenciesFile:DependenciesFile,lockFile:Loc
 
     let added =
         dependenciesFile.Packages
-        |> Seq.map (fun d -> NormalizedPackageName d.Name,d)
+        |> Seq.map (fun d -> d.Name,d)
         |> Seq.filter (fun (name,pr) ->
             match lockFile.GetCompleteResolution().TryFind name with
             | Some p -> hasChanged pr p
@@ -41,10 +41,10 @@ let findChangesInDependenciesFile(dependenciesFile:DependenciesFile,lockFile:Loc
     added 
     |> Set.union modified
 
-let PinUnchangedDependencies (dependenciesFile:DependenciesFile) (oldLockFile:LockFile) (changedDependencies:Set<NormalizedPackageName>) =
+let PinUnchangedDependencies (dependenciesFile:DependenciesFile) (oldLockFile:LockFile) (changedDependencies:Set<PackageName>) =
     oldLockFile.GetCompleteResolution()
     |> Seq.map (fun kv -> kv.Value)
-    |> Seq.filter (fun p -> not <| changedDependencies.Contains(NormalizedPackageName p.Name))
+    |> Seq.filter (fun p -> not <| changedDependencies.Contains p.Name)
     |> Seq.fold 
             (fun (dependenciesFile : DependenciesFile) resolvedPackage ->                 
                     dependenciesFile.AddFixedPackage(

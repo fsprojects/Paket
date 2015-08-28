@@ -59,7 +59,7 @@ module LockFileSerializer =
                   yield "  remote: " + String.quoted source
 
                   yield "  specs:"
-                  for _,_,package in packages |> Seq.sortBy (fun (_,_,p) -> NormalizedPackageName p.Name) do
+                  for _,_,package in packages |> Seq.sortBy (fun (_,_,p) -> p.Name) do
                       let (PackageName packageName) = package.Name
                       
                       let versionStr = 
@@ -301,17 +301,17 @@ type LockFile(fileName:string,groups: Map<GroupName,LockFileGroup>) =
     member __.FileName = fileName
 
     /// Gets all dependencies of the given package
-    member this.GetAllNormalizedDependenciesOf(groupName,package:NormalizedPackageName) = 
+    member this.GetAllNormalizedDependenciesOf(groupName,package:PackageName) = 
         let group = groups.[groupName]
         let usedPackages = HashSet<_>()
 
-        let rec addPackage (identity:NormalizedPackageName) =
+        let rec addPackage (identity:PackageName) =
             match group.Resolution.TryFind identity with
             | Some package ->
                 if usedPackages.Add identity then
                     if not group.Options.Strict then
                         for d,_,_ in package.Dependencies do
-                            addPackage(NormalizedPackageName d)
+                            addPackage d
             | None -> failwithf "Package %O was referenced, but it was not found in the paket.lock file in group %O." identity groupName
 
         addPackage package
@@ -333,7 +333,7 @@ type LockFile(fileName:string,groups: Map<GroupName,LockFileGroup>) =
             let usedPackages = HashSet<_>()
 
             let rec addPackage packageName =
-                let identity = NormalizedPackageName packageName
+                let identity = packageName
                 match group.Resolution.TryFind identity with
                 | Some package ->
                     if usedPackages.Add packageName then
@@ -346,16 +346,10 @@ type LockFile(fileName:string,groups: Map<GroupName,LockFileGroup>) =
 
             usedPackages
 
-        match group.Resolution |> Map.tryFind (NormalizedPackageName package) with
+        match group.Resolution |> Map.tryFind package with
         | Some v -> Some(allDependenciesOf v.Name)
         | None -> None
         
-
-    member this.GetAllNormalizedDependenciesOf(groupName,package:PackageName) = 
-        this.GetAllDependenciesOf(groupName,package)
-        |> Seq.map NormalizedPackageName
-        |> Set.ofSeq
-
     member this.GetTransitiveDependencies(groupName) =
         let group = groups.[groupName]
         let fromNuGets =
@@ -374,10 +368,7 @@ type LockFile(fileName:string,groups: Map<GroupName,LockFileGroup>) =
 
     member this.GetTopLevelDependencies(groupName) = 
         let group = groups.[groupName]
-        let transitive = 
-            this.GetTransitiveDependencies(groupName) 
-            |> Seq.map NormalizedPackageName 
-            |> Set.ofSeq
+        let transitive = this.GetTransitiveDependencies groupName
 
         group.Resolution
         |> Map.filter (fun name _ -> transitive.Contains name |> not)
@@ -449,7 +440,7 @@ type LockFile(fileName:string,groups: Map<GroupName,LockFileGroup>) =
                 state.GroupName,
                 { Name = state.GroupName
                   Options = state.Options
-                  Resolution = state.Packages |> Seq.fold (fun map p -> Map.add (NormalizedPackageName p.Name) p map) Map.empty
+                  Resolution = state.Packages |> Seq.fold (fun map p -> Map.add p.Name p map) Map.empty
                   RemoteFiles = List.rev state.SourceFiles })
             |> Map.ofList
 

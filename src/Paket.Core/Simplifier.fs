@@ -12,15 +12,15 @@ let private findTransitive (packages, flatLookup, failureF) =
     packages
     |> List.map (fun packageName -> 
         flatLookup 
-        |> Map.tryFind (Constants.MainDependencyGroup, NormalizedPackageName packageName)  // TODO: Simplify per group
+        |> Map.tryFind (Constants.MainDependencyGroup, packageName)  // TODO: Simplify per group
         |> failIfNone (failureF packageName))
     |> collect
     |> lift Seq.concat
 
 let private removePackage(packageName, transitivePackages, fileName, interactive) =
-    if transitivePackages |> Seq.exists (fun p -> NormalizedPackageName p = NormalizedPackageName packageName) then
+    if transitivePackages |> Seq.exists (fun p -> p = packageName) then
         if interactive then
-            let message = sprintf "Do you want to remove transitive dependency %s from file %s?" packageName.Id fileName 
+            let message = sprintf "Do you want to remove transitive dependency %O from file %s?" packageName fileName 
             Utils.askYesNo(message)
         else 
             true

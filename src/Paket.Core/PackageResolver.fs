@@ -81,7 +81,7 @@ let rec getDependencyGraph packages package =
     (requirements
     |> List.collect (fun r -> 
         packages
-        |> List.filter (fun p -> NormalizedPackageName p.Name = NormalizedPackageName r.Name)
+        |> List.filter (fun p -> p.Name = r.Name)
         |> List.collect (getDependencyGraph packages)))
 
 let createPackageRequirements exclude resolution =
@@ -91,12 +91,11 @@ let createPackageRequirements exclude resolution =
         |> Seq.map snd
         |> List.ofSeq
 
-    let contains list package = list |> List.contains (NormalizedPackageName package.Name)
+    let contains list package = list |> List.contains package.Name
 
     let transitive = 
         packages
         |> Seq.collect (fun d -> d.Dependencies |> Seq.map (fun (n,_,_) -> n))
-        |> Seq.map NormalizedPackageName
         |> List.ofSeq
 
     packages
@@ -104,7 +103,7 @@ let createPackageRequirements exclude resolution =
     |> List.filter ((contains exclude) >> not)
     |> List.collect (getDependencyGraph packages)
 
-type PackageResolution = Map<NormalizedPackageName, ResolvedPackage>
+type PackageResolution = Map<PackageName, ResolvedPackage>
 
 let allPrereleases versions = versions |> List.filter (fun v -> v.PreRelease <> None) = versions
 
@@ -114,8 +113,8 @@ let cleanupNames (model : PackageResolution) : PackageResolution =
                  let cleanup = 
                      { package with Dependencies = 
                                         package.Dependencies 
-                                        |> Set.map (fun ((NormalizedPackageName name), v, d) -> model.[name].Name, v, d) }
-                 Map.add (NormalizedPackageName package.Name) cleanup map) Map.empty
+                                        |> Set.map (fun (name, v, d) -> model.[name].Name, v, d) }
+                 Map.add package.Name cleanup map) Map.empty
 
 [<RequireQualifiedAccess>]
 type Resolution =
@@ -207,19 +206,18 @@ type Resolved = {
 /// Resolves all direct and transitive dependencies
 let Resolve(groupName:GroupName, getVersionsF, getPackageDetailsF, globalFrameworkRestrictions, rootDependencies, (requirements : Set<PackageRequirement>)) =
     tracefn "Resolving packages for group %O:" groupName
-    let exploredPackages = Dictionary<NormalizedPackageName*SemVerInfo,ResolvedPackage>()
-    let allVersions = Dictionary<NormalizedPackageName,SemVerInfo list>()
-    let conflictHistory = Dictionary<NormalizedPackageName,int>()
+    let exploredPackages = Dictionary<PackageName*SemVerInfo,ResolvedPackage>()
+    let allVersions = Dictionary<PackageName,SemVerInfo list>()
+    let conflictHistory = Dictionary<PackageName,int>()
 
     let getExploredPackage(dependency:PackageRequirement,version) =
-        let normalizedPackageName = NormalizedPackageName dependency.Name
         let (PackageName name) = dependency.Name
-        match exploredPackages.TryGetValue <| (normalizedPackageName,version) with
+        match exploredPackages.TryGetValue <| (dependency.Name,version) with
         | true,package -> 
             match dependency.Parent with
             | PackageRequirementSource.DependenciesFile(_) -> 
                 let package = { package with Settings = { package.Settings with FrameworkRestrictions = dependency.Settings.FrameworkRestrictions } }
-                exploredPackages.[(normalizedPackageName,version)] <- package
+                exploredPackages.[(dependency.Name,version)] <- package
                 package
             | _ -> package
         | false,_ ->
@@ -232,7 +230,7 @@ let Resolve(groupName:GroupName, getVersionsF, getPackageDetailsF, globalFramewo
                     | _ -> None
                 | Package _ -> None
             requirements
-            |> Set.filter (fun r -> NormalizedPackageName dependency.Name = NormalizedPackageName r.Name)
+            |> Set.filter (fun r -> dependency.Name = r.Name)
             |> Set.map getPinnedVersion
             |> Seq.choose id
             |> Seq.tryHead
@@ -248,13 +246,12 @@ let Resolve(groupName:GroupName, getVersionsF, getPackageDetailsF, globalFramewo
                   Unlisted = packageDetails.Unlisted
                   Settings = dependency.Settings
                   Source = packageDetails.Source }
-            exploredPackages.Add((normalizedPackageName,version),explored)
+            exploredPackages.Add((dependency.Name,version),explored)
             explored
 
-    let getAllVersions(sources,packageName:PackageName,vr : VersionRange)  =
-        let normalizedPackageName = NormalizedPackageName packageName
+    let getAllVersions(sources,packageName:PackageName,vr : VersionRange) =
         let (PackageName name) = packageName
-        match allVersions.TryGetValue(normalizedPackageName) with
+        match allVersions.TryGetValue(packageName) with
         | false,_ ->            
             let versions = 
                 match vr with
@@ -266,7 +263,7 @@ let Resolve(groupName:GroupName, getVersionsF, getPackageDetailsF, globalFramewo
 
             if Seq.isEmpty versions then
                 failwithf "Couldn't retrieve versions for %s." name
-            allVersions.Add(normalizedPackageName,versions)
+            allVersions.Add(packageName,versions)
             versions
         | true,versions -> versions        
 
@@ -283,7 +280,7 @@ let Resolve(groupName:GroupName, getVersionsF, getPackageDetailsF, globalFramewo
             if isOk then
                 let resolution =
                     selectedPackageVersions 
-                    |> Seq.fold (fun map p -> Map.add (NormalizedPackageName p.Name) p map) Map.empty
+                    |> Seq.fold (fun map p -> Map.add p.Name p map) Map.empty
 
                 Resolution.Ok(resolution)
             else
@@ -297,7 +294,7 @@ let Resolve(groupName:GroupName, getVersionsF, getPackageDetailsF, globalFramewo
                 let currentBoost = ref 0
                 for d in openRequirements do
                     let boost = 
-                        match conflictHistory.TryGetValue(NormalizedPackageName d.Name) with
+                        match conflictHistory.TryGetValue d.Name with
                         | true,c -> -c
                         | _ -> 0
                     if PackageRequirement.Compare(d,!currentMin,boost,!currentBoost) = -1 then
@@ -312,7 +309,7 @@ let Resolve(groupName:GroupName, getVersionsF, getPackageDetailsF, globalFramewo
 
             let currentRequirements =
                 requirements
-                |> Seq.filter (fun r -> NormalizedPackageName currentRequirement.Name = NormalizedPackageName r.Name)
+                |> Seq.filter (fun r -> currentRequirement.Name = r.Name)
      
             match Map.tryFind currentRequirement.Name filteredVersions with
             | None ->
@@ -359,9 +356,9 @@ let Resolve(groupName:GroupName, getVersionsF, getPackageDetailsF, globalFramewo
                           (if currentRequirement.VersionRequirement.PreReleases = PreReleaseStatus.No then " or allow prereleases" else "")
                 else
                     // boost the conflicting package, in order to solve conflicts faster
-                    match conflictHistory.TryGetValue(NormalizedPackageName currentRequirement.Name) with
-                    | true,count -> conflictHistory.[NormalizedPackageName currentRequirement.Name] <- count + 1
-                    | _ -> conflictHistory.Add(NormalizedPackageName currentRequirement.Name, 1)
+                    match conflictHistory.TryGetValue currentRequirement.Name with
+                    | true,count -> conflictHistory.[currentRequirement.Name] <- count + 1
+                    | _ -> conflictHistory.Add(currentRequirement.Name, 1)
                     
                     if verbose then
                         tracefn "  Conflicts with:"
@@ -400,7 +397,7 @@ let Resolve(groupName:GroupName, getVersionsF, getPackageDetailsF, globalFramewo
                         
                             let newOpen = calcOpenRequirements(exploredPackage,globalFrameworkRestrictions,versionToExplore,currentRequirement,closedRequirements,openRequirements)
                             let newPackages =
-                                exploredPackage::(selectedPackageVersions |> List.filter (fun p -> NormalizedPackageName p.Name <> NormalizedPackageName exploredPackage.Name || p.Version <> exploredPackage.Version))
+                                exploredPackage::(selectedPackageVersions |> List.filter (fun p -> p.Name <> exploredPackage.Name || p.Version <> exploredPackage.Version))
 
                             let improved = step (newFilteredVersions,newPackages,Set.add currentRequirement closedRequirements,newOpen)                            
                             (exploredPackage.Unlisted && allUnlisted),improved

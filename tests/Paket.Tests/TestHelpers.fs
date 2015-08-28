@@ -12,7 +12,7 @@ open Paket.Domain
 let PackageDetailsFromGraph (graph : seq<string * string * (string * VersionRequirement) list>) sources (package:PackageName) (version:SemVerInfo) = 
     let name,dependencies = 
         graph
-        |> Seq.filter (fun (p, v, _) -> NormalizedPackageName (PackageName p) = NormalizedPackageName package && SemVer.Parse v = version)
+        |> Seq.filter (fun (p, v, _) -> (PackageName p) = package && SemVer.Parse v = version)
         |> Seq.map (fun (n, _, d) -> PackageName n,d |> List.map (fun (x,y) -> PackageName x,y,[]))
         |> Seq.head
 
@@ -25,7 +25,7 @@ let PackageDetailsFromGraph (graph : seq<string * string * (string * VersionRequ
 
 let VersionsFromGraph (graph : seq<string * string * (string * VersionRequirement) list>) (sources, package : PackageName) = 
     graph
-    |> Seq.filter (fun (p, _, _) -> NormalizedPackageName (PackageName p) = NormalizedPackageName package)
+    |> Seq.filter (fun (p, _, _) -> (PackageName p) = package)
     |> Seq.map (fun (_, v, _) -> SemVer.Parse v)
     |> Seq.toList
 

@@ -7,7 +7,7 @@ open System.IO
 open Paket.Domain
 open Paket.Logging
 
-let private notInstalled (project : ProjectFile) groupName package = project.HasPackageInstalled(groupName,NormalizedPackageName package) |> not
+let private notInstalled (project : ProjectFile) groupName package = project.HasPackageInstalled(groupName,package) |> not
 
 let private addToProject (project : ProjectFile) package =
     ProjectFile.FindOrCreateReferencesFile(FileInfo(project.FileName))
@@ -37,12 +37,12 @@ let private add installToProjects addToProjectsF dependenciesFileName package ve
 
 // Add a package with the option to add it to a specified project.
 let AddToProject(dependenciesFileName, package, version, options : InstallerOptions, projectName, installAfter) =
-    let addToSpecifiedProject (projects : ProjectFile seq) package =
+    let addToSpecifiedProject (projects : ProjectFile seq) packageName =
         match ProjectFile.TryFindProject(projects,projectName) with
         | Some p ->
-            if package |> notInstalled p Constants.MainDependencyGroup then
-                package |> addToProject p
-            else traceWarnfn "Package %s already installed in project %s" package.Id p.Name
+            if packageName |> notInstalled p Constants.MainDependencyGroup then
+                packageName |> addToProject p
+            else traceWarnfn "Package %O already installed in project %s" packageName p.Name
         | None ->
             traceErrorfn "Could not install package in specified project %s. Project not found" projectName
 
