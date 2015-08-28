@@ -47,7 +47,7 @@ let internal setRedirect (doc:XDocument) bindingRedirect =
                 assemblyBinding.Add(dependentAssembly)
                 dependentAssembly
                 
-    let newRedirect = createElementWithNs "bindingRedirect" [ "oldVersion", sprintf "0.0.0.0-%s" bindingRedirect.Version
+    let newRedirect = createElementWithNs "bindingRedirect" [ "oldVersion", "0.0.0.0-999.999.999.999"
                                                               "newVersion", bindingRedirect.Version ]
     match dependentAssembly |> tryGetElementWithNs "bindingRedirect" with
     | Some redirect -> redirect.ReplaceWith(newRedirect)
