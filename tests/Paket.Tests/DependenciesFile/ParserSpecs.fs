@@ -682,3 +682,29 @@ let ``should read config with nested group``() =
 
     cfg.GetDependenciesInGroup(GroupName "Build").[PackageName "FAKE"].Range |> shouldEqual (VersionRange.Minimum (SemVer.Parse "0"))
     cfg.GetDependenciesInGroup(GroupName "Build").[PackageName "NUnit"].Range |> shouldEqual (VersionRange.Minimum (SemVer.Parse "0"))
+
+let configWitExplicitMainGroup = """
+nuget Paket.Core
+
+group Main
+source "http://nuget.org/api/v2"
+
+nuget FSharp.Compiler.Service
+nuget FsReveal
+
+group Build
+
+    nuget FAKE
+    nuget NUnit
+"""
+
+[<Test>]
+let ``should read config with explizit main group``() = 
+    let cfg = DependenciesFile.FromCode(configWitExplicitMainGroup)
+
+    cfg.GetDependenciesInGroup(Constants.MainDependencyGroup).[PackageName "FSharp.Compiler.Service"].Range |> shouldEqual (VersionRange.Minimum (SemVer.Parse "0"))
+    cfg.GetDependenciesInGroup(Constants.MainDependencyGroup).[PackageName "FsReveal"].Range |> shouldEqual (VersionRange.Minimum (SemVer.Parse "0"))
+    cfg.GetDependenciesInGroup(Constants.MainDependencyGroup).[PackageName "Paket.Core"].Range |> shouldEqual (VersionRange.Minimum (SemVer.Parse "0"))
+
+    cfg.GetDependenciesInGroup(GroupName "Build").[PackageName "FAKE"].Range |> shouldEqual (VersionRange.Minimum (SemVer.Parse "0"))
+    cfg.GetDependenciesInGroup(GroupName "Build").[PackageName "NUnit"].Range |> shouldEqual (VersionRange.Minimum (SemVer.Parse "0"))

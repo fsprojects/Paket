@@ -261,14 +261,27 @@ module DependenciesFileParser =
         |> fun (_,groups) ->
             let groups = 
                 groups
-                |> Seq.map (fun (groupName, options, sources, packages, remoteFiles) -> 
-                       groupName, 
+                |> List.map (fun (groupName, options, sources, packages, remoteFiles) -> 
                        { Name = groupName
                          Options = options
                          Sources = sources
                          Packages = packages |> List.rev
                          RemoteFiles = remoteFiles |> List.rev })
-                |> Map.ofSeq
+                |> List.rev
+                |> List.fold (fun m g ->
+                    match Map.tryFind g.Name m with
+                    | Some group -> 
+                        let newGroup =
+                            { Name = g.Name
+                              Options = 
+                                { Redirects = g.Options.Redirects || group.Options.Redirects
+                                  Settings = g.Options.Settings + group.Options.Settings
+                                  Strict = g.Options.Strict || group.Options.Strict }
+                              Sources = g.Sources @ group.Sources
+                              Packages = g.Packages @ group.Packages
+                              RemoteFiles = g.RemoteFiles @ group.RemoteFiles }
+                        Map.add g.Name newGroup m
+                    | None -> Map.add g.Name g m) Map.empty
 
             fileName, groups, lines
     

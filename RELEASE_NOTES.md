@@ -1,4 +1,4 @@
-#### 2.0.0-alpha016 - 28.08.2015
+#### 2.0.0-alpha017 - 28.08.2015
 * Create very first alphas with groups for dogfooding
  
 #### 1.34.0 - 27.08.2015

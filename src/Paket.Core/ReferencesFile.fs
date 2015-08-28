@@ -86,8 +86,16 @@ type ReferencesFile =
                                         { Name = segments.[0]
                                           Link = if hasPath then segments.[1] else ReferencesFile.DefaultLink 
                                           Settings = RemoteFileInstallSettings.Parse rest })
-                    groupName, { Name = groupName; NugetPackages = nugetPackages; RemoteFiles = remoteFiles })
-            |> Map.ofList
+                    { Name = groupName; NugetPackages = nugetPackages; RemoteFiles = remoteFiles })
+            |> List.fold (fun m g -> 
+                match Map.tryFind g.Name m with
+                | None -> Map.add g.Name g m
+                | Some group -> 
+                    let newGroup = 
+                        { Name = g.Name
+                          NugetPackages = g.NugetPackages @ group.NugetPackages
+                          RemoteFiles = g.RemoteFiles @ group.RemoteFiles }
+                    Map.add g.Name newGroup m) Map.empty
 
         { FileName = ""
           Groups = groups }
