@@ -145,7 +145,7 @@ let SelectiveUpdate(dependenciesFile : DependenciesFile, updateAll, exclude, for
 
     let getSha1 origin owner repo branch = RemoteDownload.getSHA1OfBranch origin owner repo branch |> Async.RunSynchronously
     let root = Path.GetDirectoryName dependenciesFile.FileName
-    let groups = 
+    let groups (dependenciesFile : DependenciesFile) = 
         dependenciesFile.Groups
         |> Map.map (fun groupName group ->
             { Name = group.Name
@@ -154,7 +154,7 @@ let SelectiveUpdate(dependenciesFile : DependenciesFile, updateAll, exclude, for
               FrameworkRestrictions = group.Options.Settings.FrameworkRestrictions
               PackageRequirements = requirements })  
 
-    let lockFile = selectiveUpdate (fun d _ -> d.Resolve(getSha1,(fun (x,y,_) -> NuGetV2.GetVersions root (x,y)) |> getVersion,NuGetV2.GetPackageDetails root force,groups)) oldLockFile dependenciesFile updateAll exclude
+    let lockFile = selectiveUpdate (fun d _ -> d.Resolve(getSha1,(fun (x,y,_) -> NuGetV2.GetVersions root (x,y)) |> getVersion,NuGetV2.GetPackageDetails root force,groups d)) oldLockFile dependenciesFile updateAll exclude
     lockFile.Save()
     lockFile
 
