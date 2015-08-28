@@ -22,36 +22,37 @@ namespace Paket.Bootstrapper
 
         public string GetLatestVersion(bool ignorePrerelease)
         {
-            const string latest = "https://github.com/fsprojects/Paket/releases/latest";
-            const string releases = "https://github.com/fsprojects/Paket/releases";
             using (var client = new WebClient())
             {
                 if (ignorePrerelease)
-                {
-                    PrepareWebClient(client, latest);
-                    var data = client.DownloadString(latest);
-                    var title = data.Substring(data.IndexOf("<title>"), (data.IndexOf("</title>") + 8 - data.IndexOf("<title>"))); // grabs everything in the <title> tag
-                    var version = title.Split(' ')[1]; // <title>Release, 1.34.0, etc, etc, etc <-- the release number is the second part fo this split string
-                    return version;
-                }
+                    return GetLatestStable(client);
                 else
-                {
-                    // have to iterate over the releases in the old manner.
-                    var latestVersion = "";
-                    var start = 0;
-                    PrepareWebClient(client, releases);
-                    var data = client.DownloadString(releases);
-                    while (latestVersion == "")
-                    {
-                        start = data.IndexOf("Paket/tree/", start) + 11;
-                        var end = data.IndexOf("\"", start);
-                        latestVersion = data.Substring(start, end - start);
-                        if (latestVersion.Contains("-") && ignorePrerelease)
-                            latestVersion = "";
-                    }
-                    return latestVersion;
-                }
+                    return GetLatestPrerelease(client);
             }
+        }
+
+        private string GetLatestPrerelease(WebClient client)
+        {
+            const string releases = "https://github.com/fsprojects/Paket/releases";
+            // get the first release on this page
+            var latestVersion = "";
+            var start = 0;
+            PrepareWebClient(client, releases);
+            var data = client.DownloadString(releases);
+            start = data.IndexOf("Paket/tree/", start) + 11;
+            var end = data.IndexOf("\"", start);
+            latestVersion = data.Substring(start, end - start);
+            return latestVersion;
+        }
+
+        private string GetLatestStable(WebClient client)
+        {
+            const string latest = "https://github.com/fsprojects/Paket/releases/latest";
+            PrepareWebClient(client, latest);
+            var data = client.DownloadString(latest);
+            var title = data.Substring(data.IndexOf("<title>") + 7, (data.IndexOf("</title>") + 8 - data.IndexOf("<title>") + 7)); // grabs everything in the <title> tag
+            var version = title.Split(' ')[1]; // Release, 1.34.0, etc, etc, etc <-- the release number is the second part fo this split string
+            return version;
         }
 
         public void DownloadVersion(string latestVersion, string target, bool silent)
