@@ -76,10 +76,6 @@ In case of the command's failure, you can fallback to manual approach:
 3. Run [paket install](paket-install.html) with the `--hard` flag. This will analyze the dependencies, generate a paket.lock file, remove all the old package references from your project files and replace them with equivalent `Reference`s in a syntax that can be managed automatically by Paket.
 4. (Optional) Raise corresponding issue [here](https://github.com/fsprojects/Paket/issues) so that we can make the command even better.
 
-## Does Paket allow groups like bundler does?
-
-No, at the moment we don't see the need for something like [bundler's groups](http://bundler.io/v1.7/groups.html) in the .NET environment. Longer discussion can be found [here](https://github.com/fsprojects/Paket/issues/116).
-
 ## Can I use Paket to manage npm/bower/whatever dependencies?
 
 [No.](https://github.com/fsprojects/Paket/issues/61) We don't believe in reinventing the wheel.
