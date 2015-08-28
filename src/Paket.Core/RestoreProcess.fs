@@ -73,7 +73,10 @@ let Restore(dependenciesFileName,force,group,referencesFileNames) =
     let groups =
         match group with
         | None -> lockFile.Groups 
-        | Some g -> [g,lockFile.Groups.[g]] |> Map.ofList            
+        | Some groupName -> 
+            match lockFile.Groups |> Map.tryFind groupName with
+            | None -> failwithf "The group %O was not found in the paket.lock file." groupName
+            | Some group -> [groupName,group] |> Map.ofList
 
     groups
     |> Seq.map (fun kv -> 
