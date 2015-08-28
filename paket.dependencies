@@ -2,7 +2,7 @@ source https://nuget.org/api/v2
 
 nuget Newtonsoft.Json
 nuget Argu
-nuget NUnit.Runners
+nuget NUnit.Runners.Net4
 nuget NUnit
 nuget FAKE
 nuget FSharp.Formatting
