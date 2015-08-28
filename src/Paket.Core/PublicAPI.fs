@@ -197,28 +197,31 @@ type Dependencies(dependenciesFileName: string) =
                                                       NoInstall = installAfter |> not }))
 
     /// Restores all dependencies.
-    member this.Restore(): unit = this.Restore(false,[])
+    member this.Restore(): unit = this.Restore(false,None,[])
 
     /// Restores the given paket.references files.
-    member this.Restore(files: string list): unit = this.Restore(false,files)
+    member this.Restore(group: string option, files: string list): unit = this.Restore(false, group, files)
 
     /// Restores the given paket.references files.
-    member this.Restore(force, files: string list): unit =
+    member this.Restore(force: bool, group: string option, files: string list): unit =
         Utils.RunInLockedAccessMode(
             this.RootPath,
-            fun () -> RestoreProcess.Restore(dependenciesFileName,force,files))
+            fun () -> RestoreProcess.Restore(dependenciesFileName,force,Option.map GroupName group,files))
 
     /// Restores packages for all available paket.references files
     /// (or all packages if onlyReferenced is false)
-    member this.Restore(force, onlyReferenced: bool): unit =
-        if not onlyReferenced then this.Restore(force,[]) else
-        let referencesFiles =
-            this.RootPath
-            |> ProjectFile.FindAllProjects
-            |> Array.choose (fun p -> ProjectFile.FindReferencesFile(FileInfo(p.FileName)))
-        if Array.isEmpty referencesFiles then
-            traceWarnfn "No paket.references files found for which packages could be installed."
-        else this.Restore(force, Array.toList referencesFiles)
+    member this.Restore(force: bool, group: string option, onlyReferenced: bool): unit =
+        if not onlyReferenced then 
+            this.Restore(force,group,[]) 
+        else
+            let referencesFiles =
+                this.RootPath
+                |> ProjectFile.FindAllProjects
+                |> Array.choose (fun p -> ProjectFile.FindReferencesFile(FileInfo(p.FileName)))
+            if Array.isEmpty referencesFiles then
+                traceWarnfn "No paket.references files found for which packages could be installed."
+            else 
+                this.Restore(force, group, Array.toList referencesFiles)
 
     /// Lists outdated packages.
     member this.ShowOutdated(strict: bool,includePrereleases: bool): unit =

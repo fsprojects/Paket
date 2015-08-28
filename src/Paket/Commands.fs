@@ -170,12 +170,14 @@ with
 type RestoreArgs =
     | [<AltCommandLine("-f")>] Force
     | [<CustomCommandLine("--only-referenced")>] Install_Only_Referenced
+    | [<CustomCommandLine("group")>] Group of string
     | [<Rest>] References_Files of string
 with
     interface IArgParserTemplate with
         member this.Usage =
             match this with
             | Force -> "Forces the download of all packages."
+            | Group(_) -> "Allows to restore a single group."
             | Install_Only_Referenced -> "Allows to restore packages that are referenced in paket.references files, instead of all packages in paket.dependencies."
             | References_Files(_) -> "Allows to restore all packages from the given paket.references files. This implies --only-referenced."
 

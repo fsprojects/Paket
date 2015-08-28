@@ -60,7 +60,7 @@ let internal computePackageHull groupName (lockFile : LockFile) (referencesFileN
         |> Seq.map (fun p -> (snd p.Key)))
     |> Seq.concat
 
-let Restore(dependenciesFileName,force,referencesFileNames) = 
+let Restore(dependenciesFileName,force,group,referencesFileNames) = 
     let lockFileName = DependenciesFile.FindLockfile dependenciesFileName
     let root = lockFileName.Directory.FullName
 
@@ -69,8 +69,13 @@ let Restore(dependenciesFileName,force,referencesFileNames) =
 
     let dependenciesFile = DependenciesFile.ReadFromFile(dependenciesFileName)
     let lockFile = LockFile.LoadFrom(lockFileName.FullName)
-    
-    lockFile.Groups
+   
+    let groups =
+        match group with
+        | None -> lockFile.Groups 
+        | Some g -> [g,lockFile.Groups.[g]] |> Map.ofList            
+
+    groups
     |> Seq.map (fun kv -> 
         let packages = 
             if referencesFileNames = [] then 

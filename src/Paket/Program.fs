@@ -147,9 +147,10 @@ let remove (results : ParseResults<_>) =
 let restore (results : ParseResults<_>) =
     let force = results.Contains <@ RestoreArgs.Force @>
     let files = results.GetResults <@ RestoreArgs.References_Files @>
+    let group = results.TryGetResult <@ RestoreArgs.Group @>
     let installOnlyReferenced = results.Contains <@ RestoreArgs.Install_Only_Referenced @>
-    if List.isEmpty files then Dependencies.Locate().Restore(force, installOnlyReferenced)
-    else Dependencies.Locate().Restore(force, files)
+    if List.isEmpty files then Dependencies.Locate().Restore(force, group, installOnlyReferenced)
+    else Dependencies.Locate().Restore(force, group, files)
 
 let simplify (results : ParseResults<_>) =
     let interactive = results.Contains <@ SimplifyArgs.Interactive @>
