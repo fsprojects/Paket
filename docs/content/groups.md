@@ -5,8 +5,6 @@
 *Groups* allow for better organization of dependencies and also enable [easier conflict resolution](groups.html#Conflict-resolution-with-groups).
 Let's consider a small example:
 
-### paket.dependencies
-
     source https://nuget.org/api/v2
     
     nuget Newtonsoft.Json
@@ -40,8 +38,6 @@ The first one is the default group (internally called "Main") and the other two 
 <blockquote>Notice the indentation in groups is optional.</blockquote>
 
 After `paket update` the corresponding [`paket.lock` file](lock-file.html) looks like the following: 
-
-### paket.lock
 
     NUGET
       remote: https://nuget.org/api/v2
@@ -95,8 +91,6 @@ After `paket update` the corresponding [`paket.lock` file](lock-file.html) looks
         
 As you can see every group is listed separately and it's possible to let Paket [restore only specific groups](paket-restore.html).
 If you want to reference dependencies from projects you can do this via the following syntax in the [`paket.references` file.](references-files.html):
-
-### paket.references
 
     FSharp.Core
     
