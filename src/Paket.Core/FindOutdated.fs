@@ -56,7 +56,7 @@ let FindOutdated strict includingPrereleases environment = trial {
           PackageRequirements = [] }
         
     let groups = [Constants.MainDependencyGroup, mainGroup ] |> Map.ofSeq
-    let resolution = dependenciesFile.Resolve(getSha1,NuGetV2.GetVersions root,NuGetV2.GetPackageDetails root true,groups).[Constants.MainDependencyGroup]
+    let resolution = dependenciesFile.Resolve(getSha1,(fun (x,y,_) -> NuGetV2.GetVersions root (x,y)),NuGetV2.GetPackageDetails root true,groups).[Constants.MainDependencyGroup]
     let resolvedPackages = resolution.ResolvedPackages.GetModelOrFail()
 
     return detectOutdated (lockFile.GetCompleteResolution()) resolvedPackages
