@@ -1,10 +1,9 @@
-#### 2.0.0-alpha015 - 28.08.2015
+#### 2.0.0-alpha016 - 28.08.2015
 * Create very first alphas with groups for dogfooding
-
-#### 1.33.4 - 27.08.2015
+ 
+#### 1.34.0 - 27.08.2015
+* Paket warns about pinned packages only when a new version is available - https://github.com/fsprojects/Paket/pull/1014
 * Trace NuGet package URL if download fails
-
-#### 1.33.1 - 26.08.2015
 * Fallback to NuGet v2 feed if no version is found in v3
 
 #### 1.33.0 - 23.08.2015
