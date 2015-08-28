@@ -403,7 +403,7 @@ type ProjectFile =
             ()
         
 
-    member this.UpdateReferences(completeModel: Map<GroupName*PackageName,_*InstallModel>, usedPackages : Map<GroupName*PackageName,InstallSettings>, hard) =
+    member this.UpdateReferences(completeModel: Map<GroupName*PackageName,_*InstallModel>, usedPackages : Map<GroupName*PackageName,_*InstallSettings>, hard) =
         this.RemovePaketNodes() 
         
         completeModel
@@ -411,7 +411,7 @@ type ProjectFile =
         |> Seq.map (fun kv -> 
             if hard then
                 this.DeleteCustomModelNodes(snd kv.Value)
-            let installSettings = usedPackages.[kv.Key]
+            let installSettings = snd usedPackages.[kv.Key]
             let projectModel =
                 (snd kv.Value)
                     .ApplyFrameworkRestrictions(installSettings.FrameworkRestrictions)

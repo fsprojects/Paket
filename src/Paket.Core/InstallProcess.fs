@@ -17,21 +17,21 @@ open Paket.PackagesConfigFile
 open Paket.Requirements
 open System.Security.AccessControl
 
-let findPackageFolder root (groupName,PackageName name) (resolvedPackage:ResolvedPackage) =
-    let includeVersionInPath = defaultArg resolvedPackage.Settings.IncludeVersionInPath false
-    let lowerName = (name + if includeVersionInPath then "." + resolvedPackage.Version.ToString() else "").ToLower()
+let findPackageFolder root (groupName,PackageName name) (version,settings) =
+    let includeVersionInPath = defaultArg settings.IncludeVersionInPath false
+    let lowerName = (name + if includeVersionInPath then "." + version.ToString() else "").ToLower()
     let di = DirectoryInfo(Path.Combine(root, Constants.PackagesFolderName))
-    let targetFolder = getTargetFolder root groupName name resolvedPackage.Version includeVersionInPath
+    let targetFolder = getTargetFolder root groupName name version includeVersionInPath
     let direct = DirectoryInfo(targetFolder)
     if direct.Exists then direct else
     match di.GetDirectories() |> Seq.tryFind (fun subDir -> subDir.FullName.ToLower().EndsWith(lowerName)) with
     | Some x -> x
     | None -> failwithf "Package directory for package %s was not found." name
 
-let private findPackagesWithContent (root,usedPackages:Map<GroupName*PackageName,ResolvedPackage*_>) =
+let private findPackagesWithContent (root,usedPackages:Map<GroupName*PackageName,SemVerInfo*InstallSettings>) =
     usedPackages
-    |> Seq.filter (fun kv -> defaultArg (fst kv.Value).Settings.OmitContent false |> not)
-    |> Seq.map (fun kv -> findPackageFolder root kv.Key (fst kv.Value))
+    |> Seq.filter (fun kv -> defaultArg (snd kv.Value).OmitContent false |> not)
+    |> Seq.map (fun kv -> findPackageFolder root kv.Key kv.Value)
     |> Seq.choose (fun packageDir ->
             packageDir.GetDirectories("Content")
             |> Array.append (packageDir.GetDirectories("content"))
@@ -196,7 +196,7 @@ let InstallIntoProjects(sources, options : InstallerOptions, lockFile : LockFile
                     let resolvedSettings = 
                         [package.Settings; group.Options.Settings] 
                         |> List.fold (+) ps.Settings
-                    (kv.Key,ps.Name), resolvedSettings))
+                    (kv.Key,ps.Name), (package.Version,resolvedSettings)))
             |> Seq.concat
             |> Map.ofSeq
 
@@ -208,7 +208,7 @@ let InstallIntoProjects(sources, options : InstallerOptions, lockFile : LockFile
             let usedPackageDependencies = 
                 usedPackages 
                 |> Seq.collect (fun u -> lookup.[u.Key] |> Seq.map (fun i -> fst u.Key, u.Value, i))
-                |> Seq.choose (fun (groupName,parentSettings, dep) -> 
+                |> Seq.choose (fun (groupName,(_,parentSettings), dep) -> 
                     let group = 
                         match lockFile.Groups |> Map.tryFind groupName with
                         | Some g -> g
@@ -220,7 +220,7 @@ let InstallIntoProjects(sources, options : InstallerOptions, lockFile : LockFile
                         let resolvedSettings = 
                             [p.Settings; group.Options.Settings] 
                             |> List.fold (+) parentSettings
-                        Some ((groupName,p.Name), resolvedSettings) )
+                        Some ((groupName,p.Name), (p.Version,resolvedSettings)) )
 
             for key,settings in usedPackageDependencies do
                 if (!d).ContainsKey key |> not then
@@ -284,7 +284,7 @@ let InstallIntoProjects(sources, options : InstallerOptions, lockFile : LockFile
             |> List.concat
 
         let nuGetFileItems =
-            copyContentFiles(project, findPackagesWithContent(root,model))
+            copyContentFiles(project, findPackagesWithContent(root,usedPackages))
             |> List.map (fun file ->
                                 { BuildAction = project.DetermineBuildAction file.Name
                                   Include = createRelativePath project.FileName file.FullName
