@@ -169,7 +169,7 @@ Target "MergePaketTool" (fun _ ->
     CreateDir buildMergedDir
 
     let toPack =
-        ["paket.exe"; "Paket.Core.dll"; "FSharp.Core.dll"; "Newtonsoft.Json.dll"; "UnionArgParser.dll"]
+        ["paket.exe"; "Paket.Core.dll"; "FSharp.Core.dll"; "Newtonsoft.Json.dll"; "Argu.dll"]
         |> List.map (fun l -> buildDir @@ l)
         |> separated " "
 
@@ -186,7 +186,7 @@ Target "MergePowerShell" (fun _ ->
     CreateDir buildMergedDirPS
 
     let toPack =
-        ["paket.exe"; "Paket.Core.dll"; "FSharp.Core.dll"; "Newtonsoft.Json.dll"; "UnionArgParser.dll"; "Paket.PowerShell.dll"]
+        ["paket.exe"; "Paket.Core.dll"; "FSharp.Core.dll"; "Newtonsoft.Json.dll"; "Argu.dll"; "Paket.PowerShell.dll"]
         |> List.map (fun l -> buildDir @@ l)
         |> separated " "
 
