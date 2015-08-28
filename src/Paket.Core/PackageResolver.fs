@@ -310,6 +310,7 @@ let Resolve(groupName:GroupName, getVersionsF, getPackageDetailsF, globalFramewo
             let currentRequirements =
                 requirements
                 |> Seq.filter (fun r -> currentRequirement.Name = r.Name)
+                |> Seq.toList
      
             match Map.tryFind currentRequirement.Name filteredVersions with
             | None ->

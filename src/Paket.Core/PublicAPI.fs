@@ -264,7 +264,7 @@ type Dependencies(dependenciesFileName: string) =
     /// Returns all sources from the dependencies file.
     member this.GetSources() =
         let dependenciesFile = DependenciesFile.ReadFromFile dependenciesFileName
-        dependenciesFile.Sources
+        dependenciesFile.Groups.[Constants.MainDependencyGroup].Sources
 
     /// Returns all system-wide defined NuGet feeds. (Can be used for Autocompletion)
     member this.GetDefinedNuGetFeeds() : string list =

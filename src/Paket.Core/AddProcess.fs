@@ -17,7 +17,7 @@ let private addToProject (project : ProjectFile) package =
 let private add installToProjects addToProjectsF dependenciesFileName package version options installAfter =
     let existingDependenciesFile = DependenciesFile.ReadFromFile(dependenciesFileName)
     let (PackageName name) = package
-    if (not installToProjects) && existingDependenciesFile.HasPackage package && String.IsNullOrWhiteSpace version then
+    if (not installToProjects) && existingDependenciesFile.HasPackage(Constants.MainDependencyGroup,package) && String.IsNullOrWhiteSpace version then
         traceWarnfn "%s contains package %s already." dependenciesFileName name
     else
         let dependenciesFile =

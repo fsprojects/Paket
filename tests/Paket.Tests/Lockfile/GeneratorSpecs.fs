@@ -171,7 +171,7 @@ github "owner:project2:commit2" "folder/file.fs" """
 
     let cfg = DependenciesFile.FromCode(config)
     
-    cfg.RemoteFiles
+    cfg.Groups.[Constants.MainDependencyGroup].RemoteFiles
     |> List.map (fun f -> 
         match f.Commit with
         | Some commit ->  { Commit = commit
@@ -259,7 +259,7 @@ let ``should generate lock file for http source files``() =
 
     let cfg = DependenciesFile.FromCode(config)
     
-    cfg.RemoteFiles
+    cfg.Groups.[Constants.MainDependencyGroup].RemoteFiles
     |> List.map trivialResolve
     |> LockFileSerializer.serializeSourceFiles
     |> shouldEqual (normalizeLineEndings expectedWithHttp)
@@ -292,7 +292,7 @@ http http://www.fssnip.net/raw/15 myFile3.fs """
 
     let cfg = DependenciesFile.FromCode(config)
     
-    cfg.RemoteFiles
+    cfg.Groups.[Constants.MainDependencyGroup].RemoteFiles
     |> List.map trivialResolve
     |> LockFileSerializer.serializeSourceFiles
     |> shouldEqual (normalizeLineEndings expectedMultiple)
@@ -322,7 +322,7 @@ http http://nlp.stanford.edu/software/stanford-segmenter-2014-10-26.zip"""
     let cfg = DependenciesFile.FromCode(config)
 
     let references =
-        cfg.RemoteFiles
+        cfg.Groups.[Constants.MainDependencyGroup].RemoteFiles
         |> List.map trivialResolve
     
     references.Length |> shouldEqual 6

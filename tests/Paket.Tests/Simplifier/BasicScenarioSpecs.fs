@@ -49,7 +49,7 @@ let ``should remove one level deep transitive dependencies from dep and ref file
         failwith (String.concat Environment.NewLine (msgs |> List.map string))
     | Chessie.ErrorHandling.Ok((_,after),_) ->
         let depFile,refFiles = after.DependenciesFile, after.Projects |> List.map snd
-        depFile.Packages |> List.map (fun p -> p.Name) |> shouldEqual [PackageName"A";PackageName"D"]
+        depFile.Groups.[Constants.MainDependencyGroup].Packages |> List.map (fun p -> p.Name) |> shouldEqual [PackageName"A";PackageName"D"]
         refFiles.Head.Groups.[Constants.MainDependencyGroup].NugetPackages |> shouldEqual [PackageInstallSettings.Default("A"); PackageInstallSettings.Default("D")]
         refFiles.Tail.Head.Groups.[Constants.MainDependencyGroup].NugetPackages |> shouldEqual [PackageInstallSettings.Default("B"); PackageInstallSettings.Default("C")]
 
@@ -92,7 +92,7 @@ let ``should remove all transitive dependencies from dep file recursively``() =
         failwith (String.concat Environment.NewLine (msgs |> List.map string))
     | Chessie.ErrorHandling.Ok((_,after),_) ->
         let depFile,refFiles = after.DependenciesFile, after.Projects |> List.map snd
-        depFile.Packages |> List.map (fun p -> p.Name) |> shouldEqual [PackageName"A";PackageName"C"]
+        depFile.Groups.[Constants.MainDependencyGroup].Packages |> List.map (fun p -> p.Name) |> shouldEqual [PackageName"A";PackageName"C"]
         refFiles.Head.Groups.[Constants.MainDependencyGroup].NugetPackages |>  shouldEqual [PackageInstallSettings.Default("A"); PackageInstallSettings.Default("C")]
         refFiles.Tail.Head.Groups.[Constants.MainDependencyGroup].NugetPackages |>  shouldEqual [PackageInstallSettings.Default("C"); PackageInstallSettings.Default("D")]
 

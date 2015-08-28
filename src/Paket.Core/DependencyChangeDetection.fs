@@ -6,7 +6,7 @@ open Paket.PackageResolver
 
 let findChangesInDependenciesFile(dependenciesFile:DependenciesFile,lockFile:LockFile) =   
     let directMap =
-        dependenciesFile.Packages
+        dependenciesFile.Groups.[Constants.MainDependencyGroup].Packages
         |> Seq.map (fun d -> d.Name,d)
         |> Map.ofSeq
 
@@ -16,7 +16,7 @@ let findChangesInDependenciesFile(dependenciesFile:DependenciesFile,lockFile:Loc
       else false
 
     let added =
-        dependenciesFile.Packages
+        dependenciesFile.Groups.[Constants.MainDependencyGroup].Packages
         |> Seq.map (fun d -> d.Name,d)
         |> Seq.filter (fun (name,pr) ->
             match lockFile.GetCompleteResolution().TryFind name with

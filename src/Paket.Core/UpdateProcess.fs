@@ -39,7 +39,7 @@ let addPackagesFromReferenceFiles projects (dependenciesFile : DependenciesFile)
         let newDependenciesFile =
             diff
             |> Seq.fold (fun (dependenciesFile:DependenciesFile) dep ->
-                if dependenciesFile.HasPackage dep.Name then
+                if dependenciesFile.HasPackage(Constants.MainDependencyGroup,dep.Name) then
                     dependenciesFile
                 else
                     dependenciesFile.AddAdditionalPackage(dep.Name,"",dep.Settings)) dependenciesFile
@@ -50,7 +50,7 @@ let selectiveUpdate resolve (lockFile:LockFile) (dependenciesFile:DependenciesFi
     let selectiveUpdate package =
         // TODO: this makes no sense at the moment - ask @mrinaldi
         let selectiveResolution : Map<GroupName,Resolved> = 
-            dependenciesFile.Packages
+            dependenciesFile.Groups.[Constants.MainDependencyGroup].Packages
             |> List.filter (fun p -> package = p.Name)
             |> Some
             |> resolve dependenciesFile            
@@ -151,7 +151,7 @@ let SmartInstall(dependenciesFile, updateAll, exclude, options : UpdaterOptions)
 let UpdatePackage(dependenciesFileName, packageName : PackageName, newVersion, options : UpdaterOptions) =
     let dependenciesFile = DependenciesFile.ReadFromFile(dependenciesFileName)
 
-    if not <| dependenciesFile.HasPackage(packageName) then
+    if not <| dependenciesFile.HasPackage(Constants.MainDependencyGroup, packageName) then
         packageName
         |> string
         |> failwithf "Package %s was not found in paket.dependencies."

@@ -46,7 +46,7 @@ let ResolveWithGraph(dependenciesFile:DependenciesFile,getSha1,getVersionF, getP
     let mainGroup = 
         { Name = Constants.MainDependencyGroup
           RemoteFiles = dependenciesFile.Groups.[Constants.MainDependencyGroup].RemoteFiles
-          RootDependencies = Some dependenciesFile.Packages
+          RootDependencies = Some dependenciesFile.Groups.[Constants.MainDependencyGroup].Packages
           FrameworkRestrictions = dependenciesFile.Groups.[Constants.MainDependencyGroup].Options.Settings.FrameworkRestrictions
           PackageRequirements = [] }
         

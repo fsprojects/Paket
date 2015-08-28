@@ -28,7 +28,7 @@ let ``should resolve source files with correct sha``() =
         VersionRequirement = VersionRequirement.NoRestriction }
     let sha = "sha1"
     let cfg = DependenciesFile.FromCode(config1)
-    let resolved = ModuleResolver.Resolve((fun _ -> [dep]), (fun _ _ _ _ -> sha), cfg.RemoteFiles)
+    let resolved = ModuleResolver.Resolve((fun _ -> [dep]), (fun _ _ _ _ -> sha), cfg.Groups.[Constants.MainDependencyGroup].RemoteFiles)
     resolved
     |> shouldContain
       { Owner = "fsharp"
@@ -59,6 +59,6 @@ let expectedError = """Found conflicting source file requirements:
 let ``should fail resolving same source files from same repository but different versions``() =
     try
         let cfg = DependenciesFile.FromCode(config2)
-        ModuleResolver.Resolve(noGitHubConfigured, noGitHubConfigured, cfg.RemoteFiles) |> ignore
+        ModuleResolver.Resolve(noGitHubConfigured, noGitHubConfigured, cfg.Groups.[Constants.MainDependencyGroup].RemoteFiles) |> ignore
     with
     | ex -> ex.Message |> shouldEqual expectedError

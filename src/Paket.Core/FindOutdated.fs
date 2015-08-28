@@ -9,7 +9,7 @@ open System.IO
 let private adjustVersionRequirements strict includingPrereleases (dependenciesFile: DependenciesFile) =
     //TODO: Anything we need to do for source files here?
     let newPackages =
-        dependenciesFile.Packages
+        dependenciesFile.Groups.[Constants.MainDependencyGroup].Packages
         |> List.map (fun p ->
             let v = p.VersionRequirement 
             let requirement,strategy =
@@ -22,7 +22,7 @@ let private adjustVersionRequirements strict includingPrereleases (dependenciesF
                 | false,false -> VersionRequirement.AllReleases, ResolverStrategy.Max
             { p with VersionRequirement = requirement; ResolverStrategy = strategy})
 
-    let mainGroup = { Name = Constants.MainDependencyGroup; Options = dependenciesFile.Groups.[Constants.MainDependencyGroup].Options; Sources = dependenciesFile.Sources; Packages = newPackages; RemoteFiles = dependenciesFile.RemoteFiles }
+    let mainGroup = { Name = Constants.MainDependencyGroup; Options = dependenciesFile.Groups.[Constants.MainDependencyGroup].Options; Sources = dependenciesFile.Groups.[Constants.MainDependencyGroup].Sources; Packages = newPackages; RemoteFiles = dependenciesFile.Groups.[Constants.MainDependencyGroup].RemoteFiles }
     let groups = [Constants.MainDependencyGroup, mainGroup] |> Map.ofSeq
 
     DependenciesFile(dependenciesFile.FileName, groups, dependenciesFile.Lines)
@@ -51,7 +51,7 @@ let FindOutdated strict includingPrereleases environment = trial {
     let mainGroup = 
         { Name = Constants.MainDependencyGroup
           RemoteFiles = mainGroup.RemoteFiles
-          RootDependencies = Some dependenciesFile.Packages
+          RootDependencies = Some dependenciesFile.Groups.[Constants.MainDependencyGroup].Packages
           FrameworkRestrictions = mainGroup.Options.Settings.FrameworkRestrictions
           PackageRequirements = [] }
         
