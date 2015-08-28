@@ -403,17 +403,17 @@ type ProjectFile =
             ()
         
 
-    member this.UpdateReferences(completeModel: Map<GroupName*PackageName,InstallModel>, usedPackages : Map<GroupName*PackageName,InstallSettings>, hard) =
+    member this.UpdateReferences(completeModel: Map<GroupName*PackageName,_*InstallModel>, usedPackages : Map<GroupName*PackageName,InstallSettings>, hard) =
         this.RemovePaketNodes() 
         
         completeModel
         |> Seq.filter (fun kv -> usedPackages.ContainsKey kv.Key)
         |> Seq.map (fun kv -> 
             if hard then
-                this.DeleteCustomModelNodes(kv.Value)
+                this.DeleteCustomModelNodes(snd kv.Value)
             let installSettings = usedPackages.[kv.Key]
             let projectModel =
-                kv.Value
+                (snd kv.Value)
                     .ApplyFrameworkRestrictions(installSettings.FrameworkRestrictions)
                     .RemoveIfCompletelyEmpty()
 

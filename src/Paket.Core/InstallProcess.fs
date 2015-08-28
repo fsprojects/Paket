@@ -17,21 +17,21 @@ open Paket.PackagesConfigFile
 open Paket.Requirements
 open System.Security.AccessControl
 
-let findPackageFolder root (groupName,PackageName name) (settings:InstallSettings,version:SemVerInfo) =
-    let includeVersionInPath = defaultArg settings.IncludeVersionInPath false
-    let lowerName = (name + if includeVersionInPath then "." + version.ToString() else "").ToLower()
+let findPackageFolder root (groupName,PackageName name) (resolvedPackage:ResolvedPackage) =
+    let includeVersionInPath = defaultArg resolvedPackage.Settings.IncludeVersionInPath false
+    let lowerName = (name + if includeVersionInPath then "." + resolvedPackage.Version.ToString() else "").ToLower()
     let di = DirectoryInfo(Path.Combine(root, Constants.PackagesFolderName))
-    let targetFolder = getTargetFolder root groupName name version includeVersionInPath
+    let targetFolder = getTargetFolder root groupName name resolvedPackage.Version includeVersionInPath
     let direct = DirectoryInfo(targetFolder)
     if direct.Exists then direct else
     match di.GetDirectories() |> Seq.tryFind (fun subDir -> subDir.FullName.ToLower().EndsWith(lowerName)) with
     | Some x -> x
     | None -> failwithf "Package directory for package %s was not found." name
 
-let private findPackagesWithContent (root,usedPackages:Map<GroupName*PackageName,InstallSettings*SemVerInfo>) =
+let private findPackagesWithContent (root,usedPackages:Map<GroupName*PackageName,ResolvedPackage*_>) =
     usedPackages
-    |> Seq.filter (fun kv -> defaultArg (fst kv.Value).OmitContent false |> not)
-    |> Seq.map (fun kv -> findPackageFolder root kv.Key kv.Value)
+    |> Seq.filter (fun kv -> defaultArg (fst kv.Value).Settings.OmitContent false |> not)
+    |> Seq.map (fun kv -> findPackageFolder root kv.Key (fst kv.Value))
     |> Seq.choose (fun packageDir ->
             packageDir.GetDirectories("Content")
             |> Array.append (packageDir.GetDirectories("content"))
@@ -93,7 +93,7 @@ let CreateInstallModel(root, groupName, sources, force, package) =
         let nuspec = Nuspec.Load(root,groupName,package.Version,defaultArg package.Settings.IncludeVersionInPath false,package.Name)
         let files = files |> Array.map (fun fi -> fi.FullName)
         let targetsFiles = targetsFiles |> Array.map (fun fi -> fi.FullName)
-        return (groupName,package), InstallModel.CreateFromLibs(package.Name, package.Version, package.Settings.FrameworkRestrictions, files, targetsFiles, nuspec)
+        return (groupName,package.Name), (package,InstallModel.CreateFromLibs(package.Name, package.Version, package.Settings.FrameworkRestrictions, files, targetsFiles, nuspec))
     }
 
 /// Restores the given packages from the lock file.
@@ -119,7 +119,7 @@ let createModel(root, sources, force, lockFile : LockFile, packages:Set<GroupNam
     extractedPackages
 
 /// Applies binding redirects for all strong-named references to all app. and web. config files.
-let private applyBindingRedirects root extractedPackages =
+let private applyBindingRedirects root (extractedPackages:seq<_*InstallModel>) =
     extractedPackages
     |> Seq.map (fun (package, model:InstallModel) -> model.GetLibReferencesLazy.Force())
     |> Set.unionMany
@@ -172,18 +172,8 @@ let InstallIntoProjects(sources, options : InstallerOptions, lockFile : LockFile
             |> Seq.map (fun kv -> kv.Key)
 
     let root = Path.GetDirectoryName lockFile.FileName
-    let extractedPackages = createModel(root, sources, options.Force, lockFile, Set.ofSeq packagesToInstall)
+    let model = createModel(root, sources, options.Force, lockFile, Set.ofSeq packagesToInstall) |> Map.ofArray
     let lookup = lockFile.GetDependencyLookupTable()
-
-    let model =
-        extractedPackages
-        |> Array.map (fun (p,m) -> (fst p, (snd p).Name),m)
-        |> Map.ofArray
-
-    let packages =
-        extractedPackages
-        |> Array.map (fun (p,m) -> (fst p, (snd p).Name),p)
-        |> Map.ofArray
 
     for project : ProjectFile, referenceFile in projects do
         verbosefn "Installing to %s" project.FileName
@@ -199,8 +189,8 @@ let InstallIntoProjects(sources, options : InstallerOptions, lockFile : LockFile
                         | None -> failwithf "%s uses the group %O, but this group was not found in paket.lock." referenceFile.FileName kv.Key
 
                     let package = 
-                        match packages |> Map.tryFind (kv.Key, ps.Name) with
-                        | Some p -> snd p
+                        match model |> Map.tryFind (kv.Key, ps.Name) with
+                        | Some (p,_) -> p
                         | None -> failwithf "%s uses NuGet package %O, but it was not found in the paket.lock file in group %O." referenceFile.FileName ps.Name kv.Key
 
                     let resolvedSettings = 
@@ -238,24 +228,16 @@ let InstallIntoProjects(sources, options : InstallerOptions, lockFile : LockFile
 
             !d
 
-        let usedPackageVersions =
-            usedPackages
-            |> Seq.map (fun u ->
-                    match packages |> Map.tryFind u.Key with
-                    | Some p -> u.Key,(u.Value,(snd p).Version)
-                    | None -> failwithf "%s uses NuGet package %O, but it was not found in the paket.lock file in group %O." referenceFile.FileName (snd u.Key) (fst u.Key))
-            |> Map.ofSeq
-
         project.UpdateReferences(model, usedPackages, options.Hard)
 
         let packagesConfigFile = Path.Combine(FileInfo(project.FileName).Directory.FullName, Constants.PackagesConfigFile)        
 
-        usedPackageVersions
-        |> Seq.filter (fun kv -> defaultArg (fst kv.Value).IncludeVersionInPath false)
+        model
+        |> Seq.filter (fun kv -> defaultArg (fst kv.Value).Settings.IncludeVersionInPath false)
         |> Seq.map (fun kv ->
             let settings,version = kv.Value
             { Id = kv.Key.ToString()
-              Version = version
+              Version = (fst kv.Value).Version
               TargetFramework = None })
         |> PackagesConfigFile.Save packagesConfigFile
         
@@ -302,7 +284,7 @@ let InstallIntoProjects(sources, options : InstallerOptions, lockFile : LockFile
             |> List.concat
 
         let nuGetFileItems =
-            copyContentFiles(project, findPackagesWithContent(root,usedPackageVersions))
+            copyContentFiles(project, findPackagesWithContent(root,model))
             |> List.map (fun file ->
                                 { BuildAction = project.DetermineBuildAction file.Name
                                   Include = createRelativePath project.FileName file.FullName
@@ -314,8 +296,9 @@ let InstallIntoProjects(sources, options : InstallerOptions, lockFile : LockFile
 
     for g in lockFile.Groups do
         if options.Redirects || g.Value.Options.Redirects then
-            extractedPackages
-            |> Array.filter (fun ((groupName,_),_) -> groupName = g.Key)
+            model
+            |> Seq.filter (fun kv -> (fst kv.Key) = g.Key)
+            |> Seq.map (fun kv -> kv.Value)
             |> applyBindingRedirects root 
 
 /// Installs all packages from the lock file.
