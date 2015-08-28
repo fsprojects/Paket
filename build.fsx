@@ -359,7 +359,7 @@ Target "ReleaseDocs" (fun _ ->
 #load "paket-files/build/fsharp/FAKE/modules/Octokit/Octokit.fsx"
 open Octokit
 
-Target "Release" (fun _ ->
+Target "ReleaseGitHub" (fun _ ->
     let user =
         match getBuildParam "github-user" with
         | s when not (String.IsNullOrWhiteSpace s) -> s
@@ -395,6 +395,7 @@ Target "Release" (fun _ ->
     |> Async.RunSynchronously
 )
 
+Target "Release" DoNothing
 Target "BuildPackage" DoNothing
 
 // --------------------------------------------------------------------------------------
@@ -429,13 +430,19 @@ Target "All" DoNothing
 
 "GenerateHelp"
   ==> "KeepRunning"
-    
-"ReleaseDocs"
-  ==> "Release"
 
 "BuildPackage"
   ==> "PublishChocolatey"
   ==> "PublishNuGet"
+
+"PublishNuGet"    
+  ==> "ReleaseGitHub"
+  ==> "Release"
+
+"ReleaseGitHub"
+  ?=> "ReleaseDocs"
+
+"ReleaseDocs"
   ==> "Release"
 
 RunTargetOrDefault "All"

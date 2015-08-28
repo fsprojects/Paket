@@ -1,6 +1,10 @@
 #### 2.0.0-alpha017 - 28.08.2015
 * Create very first alphas with groups for dogfooding
- 
+#### 1.35.0 - 28.08.2015
+
+* Always redirect to the Redirect.Version - https://github.com/fsprojects/Paket/pull/1023
+* Improvements in the BootStrapper - https://github.com/fsprojects/Paket/pull/1022
+
 #### 1.34.0 - 27.08.2015
 * Paket warns about pinned packages only when a new version is available - https://github.com/fsprojects/Paket/pull/1014
 * Trace NuGet package URL if download fails
