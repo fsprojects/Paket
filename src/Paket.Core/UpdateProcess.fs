@@ -46,6 +46,19 @@ let addPackagesFromReferenceFiles projects (dependenciesFile : DependenciesFile)
         newDependenciesFile.Save()
         newDependenciesFile
 
+type UpdateMode =
+    | SelectiveUpdate of PackageName
+    | Install
+    | UpdateAll
+
+    static member Mode updateAll package =
+        if updateAll then
+            UpdateAll
+        else
+            match package with
+            | None -> Install
+            | Some package -> SelectiveUpdate package
+
 let selectiveUpdate resolve (lockFile:LockFile) (dependenciesFile:DependenciesFile) updateAll package =
     let selectiveUpdate package =
         // TODO: this makes no sense at the moment - ask @mrinaldi
@@ -84,16 +97,14 @@ let selectiveUpdate resolve (lockFile:LockFile) (dependenciesFile:DependenciesFi
           ResolvedSourceFiles = lockFile.Groups.[Constants.MainDependencyGroup].RemoteFiles }
 
     let resolution =
-        if updateAll then
-            resolve dependenciesFile None 
-        else
-            match package with
-            | None -> 
-                let dependenciesFile = 
-                    DependencyChangeDetection.findChangesInDependenciesFile(dependenciesFile,lockFile)
-                    |> DependencyChangeDetection.PinUnchangedDependencies dependenciesFile lockFile
-                resolve dependenciesFile None
-            | Some package -> [Constants.MainDependencyGroup,selectiveUpdate package] |> Map.ofList
+        match UpdateMode.Mode updateAll package with
+        | UpdateAll -> resolve dependenciesFile None
+        | Install ->
+            let dependenciesFile = 
+                DependencyChangeDetection.findChangesInDependenciesFile(dependenciesFile,lockFile)
+                |> DependencyChangeDetection.PinUnchangedDependencies dependenciesFile lockFile
+            resolve dependenciesFile None
+        | SelectiveUpdate package -> [Constants.MainDependencyGroup,selectiveUpdate package] |> Map.ofList
 
     let groups = 
         resolution
@@ -120,6 +131,18 @@ let SelectiveUpdate(dependenciesFile : DependenciesFile, updateAll, exclude, for
             |> createPackageRequirements [e]
         | None -> []
 
+    let skipVersions f (sources,packageName,vr) =
+        match vr with
+        | Specific v
+        | OverrideAll v -> [v]
+        | _ -> f (sources,packageName,vr)
+
+    let getVersion f =
+        match UpdateMode.Mode updateAll exclude with
+        | UpdateAll -> f
+        | SelectiveUpdate _ -> f
+        | Install -> skipVersions f
+
     let getSha1 origin owner repo branch = RemoteDownload.getSHA1OfBranch origin owner repo branch |> Async.RunSynchronously
     let root = Path.GetDirectoryName dependenciesFile.FileName
     let groups = 
@@ -131,7 +154,7 @@ let SelectiveUpdate(dependenciesFile : DependenciesFile, updateAll, exclude, for
               FrameworkRestrictions = group.Options.Settings.FrameworkRestrictions
               PackageRequirements = requirements })  
 
-    let lockFile = selectiveUpdate (fun d _ -> d.Resolve(getSha1,NuGetV2.GetVersions root,NuGetV2.GetPackageDetails root force,groups)) oldLockFile dependenciesFile updateAll exclude
+    let lockFile = selectiveUpdate (fun d _ -> d.Resolve(getSha1,(fun (x,y,_) -> NuGetV2.GetVersions root (x,y)) |> getVersion,NuGetV2.GetPackageDetails root force,groups)) oldLockFile dependenciesFile updateAll exclude
     lockFile.Save()
     lockFile
 

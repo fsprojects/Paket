@@ -221,21 +221,6 @@ let Resolve(groupName:GroupName, getVersionsF, getPackageDetailsF, globalFramewo
                 package
             | _ -> package
         | false,_ ->
-            let getPinnedVersion d = 
-                match d.Parent with
-                | DependenciesFile _ ->
-                    match d.VersionRequirement.Range with
-                    | Specific v -> Some v
-                    | OverrideAll v -> Some v
-                    | _ -> None
-                | Package _ -> None
-            requirements
-            |> Set.filter (fun r -> dependency.Name = r.Name)
-            |> Set.map getPinnedVersion
-            |> Seq.choose id
-            |> Seq.tryHead
-            |> Option.iter (traceWarnfn " %O is pinned to version %O" dependency.Name)
-
             tracefn  " - %s %A" name version
             let packageDetails : PackageDetails = getPackageDetailsF dependency.Sources dependency.Name version
             let restrictedDependencies = DependencySetFilter.filterByRestrictions (dependency.Settings.FrameworkRestrictions @ globalFrameworkRestrictions) packageDetails.DirectDependencies
@@ -254,12 +239,8 @@ let Resolve(groupName:GroupName, getVersionsF, getPackageDetailsF, globalFramewo
         match allVersions.TryGetValue(packageName) with
         | false,_ ->            
             let versions = 
-                match vr with
-                | OverrideAll v -> [v]
-                | Specific v -> [v]
-                | _ -> 
-                    verbosefn "  - fetching versions for %s" name
-                    getVersionsF(sources,packageName)
+                verbosefn "  - fetching versions for %s" name
+                getVersionsF(sources,packageName,vr)
 
             if Seq.isEmpty versions then
                 failwithf "Couldn't retrieve versions for %s." name
@@ -322,6 +303,38 @@ let Resolve(groupName:GroupName, getVersionsF, getPackageDetailsF, globalFramewo
                     |> Seq.fold (&&) ((map currentRequirement).VersionRequirement.IsInRange(ver))
 
                 availableVersions := getAllVersions(currentRequirement.Sources,currentRequirement.Name,currentRequirement.VersionRequirement.Range)
+
+                let preRelease v =
+                    v.PreRelease = None
+                    || currentRequirement.VersionRequirement.PreReleases <> PreReleaseStatus.No
+                    || match currentRequirement.VersionRequirement.Range with
+                        | Specific v -> v.PreRelease <> None
+                        | OverrideAll v -> v.PreRelease <> None
+                        | _ -> false
+
+                let lastest =
+                    !availableVersions
+                    |> List.filter preRelease
+                    |> List.sortDescending
+                    |> List.tryHead
+
+                let getPinnedVersion d = 
+                    match d.Parent with
+                    | DependenciesFile _ ->
+                        match d.VersionRequirement.Range with
+                        | Specific v -> Some v
+                        | OverrideAll v -> Some v
+                        | _ -> None
+                    | Package _ -> None
+
+                requirements
+                |> Set.filter (fun r -> currentRequirement.Name = r.Name)
+                |> Set.map getPinnedVersion
+                |> Seq.filter ((>) lastest)
+                |> Seq.choose id
+                |> Seq.tryHead
+                |> Option.iter (traceWarnfn " %O has a new version available, but it is pinned to version %O" currentRequirement.Name)
+
                 compatibleVersions := List.filter (isInRange id) (!availableVersions)
                 if currentRequirement.VersionRequirement.Range.IsGlobalOverride then
                     globalOverride := true
