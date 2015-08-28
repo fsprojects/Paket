@@ -403,7 +403,7 @@ type ProjectFile =
             ()
         
 
-    member this.UpdateReferences(completeModel: Map<NormalizedGroupName*NormalizedPackageName,InstallModel>, usedPackages : Map<NormalizedGroupName*NormalizedPackageName,InstallSettings>, hard) =
+    member this.UpdateReferences(completeModel: Map<GroupName*NormalizedPackageName,InstallModel>, usedPackages : Map<GroupName*NormalizedPackageName,InstallSettings>, hard) =
         this.RemovePaketNodes() 
         
         completeModel

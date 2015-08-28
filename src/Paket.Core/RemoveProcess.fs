@@ -51,7 +51,7 @@ let RemoveFromProject(dependenciesFileName, package:PackageName, force, hard, pr
     let removeFromSpecifiedProject (projects : ProjectFile seq) =        
         match ProjectFile.TryFindProject(projects,projectName) with
         | Some p ->
-            if p.HasPackageInstalled(NormalizedGroupName Constants.MainDependencyGroup,NormalizedPackageName package) then
+            if p.HasPackageInstalled(Constants.MainDependencyGroup,NormalizedPackageName package) then
                 package |> removePackageFromProject p
             else traceWarnfn "Package %s was not installed in project %s" package.Id p.Name
         | None ->
@@ -64,7 +64,7 @@ let Remove(dependenciesFileName, package:PackageName, force, hard, interactive, 
     
     let removeFromProjects (projects: ProjectFile seq) =
         for project in projects do        
-            if project.HasPackageInstalled(NormalizedGroupName Constants.MainDependencyGroup,NormalizedPackageName package) then
+            if project.HasPackageInstalled(Constants.MainDependencyGroup,NormalizedPackageName package) then
                 if (not interactive) || Utils.askYesNo(sprintf "  Remove from %s?" project.Name) then
                     package |> removePackageFromProject project
 

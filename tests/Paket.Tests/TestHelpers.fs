@@ -45,12 +45,12 @@ let resolve graph dependencies = (safeResolve graph dependencies).GetModelOrFail
 let ResolveWithGraph(dependenciesFile:DependenciesFile,getSha1,getVersionF, getPackageDetailsF) =
     let mainGroup = 
         { Name = Constants.MainDependencyGroup
-          RemoteFiles = dependenciesFile.Groups.[NormalizedGroupName Constants.MainDependencyGroup].RemoteFiles
+          RemoteFiles = dependenciesFile.Groups.[Constants.MainDependencyGroup].RemoteFiles
           RootDependencies = Some dependenciesFile.Packages
-          FrameworkRestrictions = dependenciesFile.Groups.[NormalizedGroupName Constants.MainDependencyGroup].Options.Settings.FrameworkRestrictions
+          FrameworkRestrictions = dependenciesFile.Groups.[Constants.MainDependencyGroup].Options.Settings.FrameworkRestrictions
           PackageRequirements = [] }
         
-    let groups = [NormalizedGroupName Constants.MainDependencyGroup, mainGroup ] |> Map.ofSeq
+    let groups = [Constants.MainDependencyGroup, mainGroup ] |> Map.ofSeq
 
     dependenciesFile.Resolve(getSha1,getVersionF,getPackageDetailsF,groups)
 

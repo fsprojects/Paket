@@ -14,7 +14,7 @@ type Dependencies(dependenciesFileName: string) =
         let lockFileName = DependenciesFile.FindLockfile dependenciesFileName
         LockFile.LoadFrom(lockFileName.FullName)
 
-    let listPackages (packages: System.Collections.Generic.KeyValuePair<NormalizedGroupName*NormalizedPackageName, PackageResolver.ResolvedPackage> seq) =
+    let listPackages (packages: System.Collections.Generic.KeyValuePair<GroupName*NormalizedPackageName, PackageResolver.ResolvedPackage> seq) =
         packages
         |> Seq.map (fun kv ->
                             let (PackageName name) = kv.Value.Name
@@ -80,7 +80,7 @@ type Dependencies(dependenciesFileName: string) =
             fun () ->
                 PaketEnv.fromRootDirectory this.RootDirectory
                 >>= PaketEnv.ensureNotInStrictMode
-                >>= Simplifier.simplify (NormalizedGroupName Constants.MainDependencyGroup) interactive  // TODO: Make this group dependent
+                >>= Simplifier.simplify Constants.MainDependencyGroup interactive  // TODO: Make this group dependent
                 |> returnOrFail
                 |> Simplifier.updateEnvironment
         )

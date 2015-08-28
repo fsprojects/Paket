@@ -28,7 +28,7 @@ let findPackageFolder root (groupName,PackageName name) (settings:InstallSetting
     | Some x -> x
     | None -> failwithf "Package directory for package %s was not found." name
 
-let private findPackagesWithContent (root,usedPackages:Map<NormalizedGroupName*PackageName,InstallSettings*SemVerInfo>) =
+let private findPackagesWithContent (root,usedPackages:Map<GroupName*PackageName,InstallSettings*SemVerInfo>) =
     usedPackages
     |> Seq.filter (fun kv -> defaultArg (fst kv.Value).OmitContent false |> not)
     |> Seq.map (fun kv -> findPackageFolder root kv.Key kv.Value)
@@ -97,7 +97,7 @@ let CreateInstallModel(root, groupName, sources, force, package) =
     }
 
 /// Restores the given packages from the lock file.
-let createModel(root, sources, force, lockFile : LockFile, packages:Set<NormalizedGroupName*NormalizedPackageName>) =
+let createModel(root, sources, force, lockFile : LockFile, packages:Set<GroupName*NormalizedPackageName>) =
     let sourceFileDownloads = 
         [|for kv in lockFile.Groups -> RemoteDownload.DownloadSourceFiles(root, kv.Key, force, kv.Value.RemoteFiles) |]
         |> Async.Parallel

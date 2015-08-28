@@ -81,7 +81,7 @@ let Restore(dependenciesFileName,force,referencesFileNames) =
                 |> List.toSeq
                 |> computePackageHull kv.Key lockFile
 
-        restore(root, kv.Key, dependenciesFile.Groups.[NormalizedGroupName kv.Value.Name].Sources, force, lockFile,Set.ofSeq packages))
+        restore(root, kv.Key, dependenciesFile.Groups.[kv.Value.Name].Sources, force, lockFile,Set.ofSeq packages))
     |> Seq.toArray
     |> Async.Parallel
     |> Async.RunSynchronously

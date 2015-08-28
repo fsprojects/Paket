@@ -35,38 +35,38 @@ let (|NormalizedPackageName|) (PackageName name) =
 /// Function to convert a NuGet package name into a normalized one
 let NormalizedPackageName = (|NormalizedPackageName|)
 
-/// Represents a group name
+/// Represents a normalized group name
 [<System.Diagnostics.DebuggerDisplay("{Item}")>]
+[<CustomEquality;CustomComparison>]
 type GroupName =
 | GroupName of string
 
-    member this.Id = 
+    member this.GetCompareString() =
+        match this with
+        | GroupName id -> id.ToLowerInvariant().Trim()
+
+    override this.ToString() = 
         match this with
         | GroupName id -> id
 
-    override this.ToString() = this.Id
+    override this.Equals(that) = 
+        match that with
+        | :? GroupName as that -> this.GetCompareString() = that.GetCompareString()
+        | _ -> false
 
-/// Active recognizer to convert a group name into a string
+    override this.GetHashCode() = hash (this.GetCompareString())    
+
+    interface System.IComparable with
+       member this.CompareTo that = 
+          match that with 
+          | :? GroupName as that -> this.GetCompareString().CompareTo(that.GetCompareString())
+          | _ -> invalidArg "that" "cannot compare value of different types"
+
+/// Active recognizer to convert a string into a groups name
 let (|GroupName|) (GroupName.GroupName name) = name.Trim()
 
 /// Function to convert a string into a group name
 let GroupName(name:string) = GroupName.GroupName(name.Trim())
-
-/// Represents a normalized group name
-[<System.Diagnostics.DebuggerDisplay("{Item}")>]
-type NormalizedGroupName =
-| NormalizedGroupName of string
-
-    override this.ToString() = 
-        match this with
-        | NormalizedGroupName id -> id
-
-/// Active recognizer to convert a group name into a normalized one
-let (|NormalizedGroupName|) (GroupName name) =
-    NormalizedGroupName.NormalizedGroupName(name.ToLowerInvariant().Trim())
-
-/// Function to convert a group name into a normalized one
-let NormalizedGroupName = (|NormalizedGroupName|)
 
 type DomainMessage = 
     | DirectoryDoesntExist of DirectoryInfo

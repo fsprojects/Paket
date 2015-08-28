@@ -262,7 +262,7 @@ module DependenciesFileParser =
             let groups = 
                 groups
                 |> Seq.map (fun (groupName, options, sources, packages, remoteFiles) -> 
-                       NormalizedGroupName groupName, 
+                       groupName, 
                        { Name = groupName
                          Options = options
                          Sources = sources
@@ -314,8 +314,8 @@ module DependenciesFileSerializer =
 
 
 /// Allows to parse and analyze paket.dependencies files.
-type DependenciesFile(fileName,groups:Map<NormalizedGroupName,DependenciesGroup>, textRepresentation:string []) =
-    let mainGroup = groups.[NormalizedGroupName Constants.MainDependencyGroup]
+type DependenciesFile(fileName,groups:Map<GroupName,DependenciesGroup>, textRepresentation:string []) =
+    let mainGroup = groups.[Constants.MainDependencyGroup]
     let packages = mainGroup.Packages
     let dependencyMap = Map.ofSeq (packages |> Seq.map (fun p -> p.Name, p.VersionRequirement))
 
@@ -330,7 +330,7 @@ type DependenciesFile(fileName,groups:Map<NormalizedGroupName,DependenciesGroup>
             
     /// Returns all direct NuGet dependencies in the given group.
     member __.GetDependenciesInGroup(groupName:GroupName) =
-        groups.[NormalizedGroupName groupName].Packages 
+        groups.[groupName].Packages 
         |> Seq.map (fun p -> p.Name, p.VersionRequirement)
         |> Map.ofSeq
 
@@ -343,7 +343,7 @@ type DependenciesFile(fileName,groups:Map<NormalizedGroupName,DependenciesGroup>
     member __.Lines = textRepresentation
     member __.Sources = mainGroup.Sources
 
-    member __.Resolve(getSha1,getVersionF, getPackageDetailsF,groups:Map<NormalizedGroupName,RequirementsGroup>) =
+    member __.Resolve(getSha1,getVersionF, getPackageDetailsF,groups:Map<GroupName,RequirementsGroup>) =
         groups
         |> Map.map (fun k group ->  
             let rootDependencies =
@@ -359,7 +359,7 @@ type DependenciesFile(fileName,groups:Map<NormalizedGroupName,DependenciesGroup>
                     with 
                     | _ -> false
 
-                RemoteDownload.downloadDependenciesFile(Path.GetDirectoryName fileName, NormalizedGroupName group.Name, parserF, file)
+                RemoteDownload.downloadDependenciesFile(Path.GetDirectoryName fileName, group.Name, parserF, file)
                 |> Async.RunSynchronously
                 |> DependenciesFile.FromCode
                 |> fun df -> df.Packages

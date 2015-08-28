@@ -10,7 +10,7 @@ let private findReferencesFor groupName package (lockFile: LockFile) projects = 
     let! referencedIn =
         projects
         |> Seq.map (fun (project : ProjectFile, referencesFile) -> trial {
-            let! installedPackages = lockFile.GetPackageHullSafe(referencesFile,NormalizedGroupName groupName)
+            let! installedPackages = lockFile.GetPackageHullSafe(referencesFile,groupName)
 
             let referenced =
                 installedPackages

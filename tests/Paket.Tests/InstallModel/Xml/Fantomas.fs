@@ -62,8 +62,8 @@ let ``should generate full Xml for Fantomas 1.5``() =
               Nuspec.Explicit ["FantomasLib.dll"])
     
     let project = ProjectFile.Load("./ProjectFile/TestData/Empty.fsprojtest").Value
-    let completeModel = [(NormalizedGroupName Constants.MainDependencyGroup, NormalizedPackageName (PackageName "Fantomas")),model] |> Map.ofSeq
-    let used = [(NormalizedGroupName Constants.MainDependencyGroup, NormalizedPackageName (PackageName "fantoMas")), InstallSettings.Default] |> Map.ofSeq
+    let completeModel = [(Constants.MainDependencyGroup, NormalizedPackageName (PackageName "Fantomas")),model] |> Map.ofSeq
+    let used = [(Constants.MainDependencyGroup, NormalizedPackageName (PackageName "fantoMas")), InstallSettings.Default] |> Map.ofSeq
     project.UpdateReferences(completeModel,used,false)
     
     project.Document.OuterXml
@@ -82,8 +82,8 @@ let ``should not generate full Xml for Fantomas 1.5 if not referenced``() =
               Nuspec.Explicit ["FantomasLib.dll"])
     
     let project = ProjectFile.Load("./ProjectFile/TestData/Empty.fsprojtest").Value
-    let completeModel = [(NormalizedGroupName Constants.MainDependencyGroup, NormalizedPackageName (PackageName "Fantomas")),model] |> Map.ofSeq
-    let used = [(NormalizedGroupName Constants.MainDependencyGroup, NormalizedPackageName (PackageName "blub")), InstallSettings.Default ] |> Map.ofSeq
+    let completeModel = [(Constants.MainDependencyGroup, NormalizedPackageName (PackageName "Fantomas")),model] |> Map.ofSeq
+    let used = [(Constants.MainDependencyGroup, NormalizedPackageName (PackageName "blub")), InstallSettings.Default ] |> Map.ofSeq
     project.UpdateReferences(completeModel,used,false)
     
     project.Document.OuterXml

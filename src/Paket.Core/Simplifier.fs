@@ -12,7 +12,7 @@ let private findTransitive (packages, flatLookup, failureF) =
     packages
     |> List.map (fun packageName -> 
         flatLookup 
-        |> Map.tryFind (NormalizedGroupName Constants.MainDependencyGroup, NormalizedPackageName packageName)  // TODO: Simplify per group
+        |> Map.tryFind (Constants.MainDependencyGroup, NormalizedPackageName packageName)  // TODO: Simplify per group
         |> failIfNone (failureF packageName))
     |> collect
     |> lift Seq.concat

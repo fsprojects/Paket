@@ -296,7 +296,7 @@ module LockFileParser =
 
 
 /// Allows to parse and analyze paket.lock files.
-type LockFile(fileName:string,groups: Map<NormalizedGroupName,LockFileGroup>) =       
+type LockFile(fileName:string,groups: Map<GroupName,LockFileGroup>) =       
     member __.Groups = groups
     member __.FileName = fileName
 
@@ -327,7 +327,7 @@ type LockFile(fileName:string,groups: Map<NormalizedGroupName,LockFileGroup>) =
             failwithf "Package %s was referenced, but it was not found in the paket.lock file in group %O." name groupName
 
     /// Gets all dependencies of the given package in the given group.
-    member this.GetAllDependenciesOfSafe(groupName:NormalizedGroupName,package) =
+    member this.GetAllDependenciesOfSafe(groupName:GroupName,package) =
         let group = groups.[groupName]
         let allDependenciesOf package =
             let usedPackages = HashSet<_>()
@@ -402,11 +402,11 @@ type LockFile(fileName:string,groups: Map<NormalizedGroupName,LockFileGroup>) =
     override __.ToString() =
         String.Join
             (Environment.NewLine,
-             [|let mainGroup = groups.[NormalizedGroupName Constants.MainDependencyGroup]
+             [|let mainGroup = groups.[Constants.MainDependencyGroup]
                yield LockFileSerializer.serializePackages mainGroup.Options mainGroup.Resolution
                yield LockFileSerializer.serializeSourceFiles mainGroup.RemoteFiles
                for g in groups do 
-                if g.Key <> NormalizedGroupName Constants.MainDependencyGroup then
+                if g.Key <> Constants.MainDependencyGroup then
                     yield "GROUP " + g.Value.Name.ToString()
                     yield LockFileSerializer.serializePackages g.Value.Options g.Value.Resolution
                     yield LockFileSerializer.serializeSourceFiles g.Value.RemoteFiles|])
@@ -432,7 +432,7 @@ type LockFile(fileName:string,groups: Map<NormalizedGroupName,LockFileGroup>) =
     static member Create (lockFileName: string, installOptions: InstallOptions, resolvedPackages: PackageResolver.Resolution, resolvedSourceFiles: ModuleResolver.ResolvedSourceFile list) : LockFile =
         let resolvedPackages = resolvedPackages.GetModelOrFail()
         let mainGroup = { Name = Constants.MainDependencyGroup; Options = installOptions; Resolution = resolvedPackages; RemoteFiles = resolvedSourceFiles }
-        let groups = [NormalizedGroupName Constants.MainDependencyGroup, mainGroup] |> Map.ofSeq
+        let groups = [Constants.MainDependencyGroup, mainGroup] |> Map.ofSeq
         let lockFile = LockFile(lockFileName, groups)
         lockFile.Save()
         lockFile
@@ -446,7 +446,7 @@ type LockFile(fileName:string,groups: Map<NormalizedGroupName,LockFileGroup>) =
         let groups =
             LockFileParser.Parse lines
             |> List.map (fun state ->
-                NormalizedGroupName state.GroupName,
+                state.GroupName,
                 { Name = state.GroupName
                   Options = state.Options
                   Resolution = state.Packages |> Seq.fold (fun map p -> Map.add (NormalizedPackageName p.Name) p map) Map.empty
