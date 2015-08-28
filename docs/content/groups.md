@@ -37,7 +37,7 @@ The first one is the default group (internally called "Main") and the other two 
 
 <blockquote>Notice the indentation in groups is optional.</blockquote>
 
-After `paket update` the corresponding [`paket.lock` file](lock-file.html) looks like the following: 
+After [`paket install`](paket-install.html) the generated [`paket.lock` file](lock-file.html) looks like the following: 
 
     NUGET
       remote: https://nuget.org/api/v2
