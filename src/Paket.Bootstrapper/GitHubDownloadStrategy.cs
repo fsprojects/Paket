@@ -22,24 +22,36 @@ namespace Paket.Bootstrapper
 
         public string GetLatestVersion(bool ignorePrerelease)
         {
-            string latestVersion = "";
+            const string latest = "https://github.com/fsprojects/Paket/releases/latest";
+            const string releases = "https://github.com/fsprojects/Paket/releases";
             using (var client = new WebClient())
             {
-                const string releasesUrl = "https://github.com/fsprojects/Paket/releases";
-                PrepareWebClient(client, releasesUrl);
-                
-                var data = client.DownloadString(releasesUrl);
-                var start = 0;
-                while (latestVersion == "")
+                if (ignorePrerelease)
                 {
-                    start = data.IndexOf("Paket/tree/", start) + 11;
-                    var end = data.IndexOf("\"", start);
-                    latestVersion = data.Substring(start, end - start);
-                    if (latestVersion.Contains("-") && ignorePrerelease)
-                        latestVersion = "";
+                    PrepareWebClient(client, latest);
+                    var data = client.DownloadString(latest);
+                    var title = data.Substring(data.IndexOf("<title>"), (data.IndexOf("</title>") + 8 - data.IndexOf("<title>"))); // grabs everything in the <title> tag
+                    var version = title.Split(' ')[1]; // <title>Release, 1.34.0, etc, etc, etc <-- the release number is the second part fo this split string
+                    return version;
+                }
+                else
+                {
+                    // have to iterate over the releases in the old manner.
+                    var latestVersion = "";
+                    var start = 0;
+                    PrepareWebClient(client, releases);
+                    var data = client.DownloadString(releases);
+                    while (latestVersion == "")
+                    {
+                        start = data.IndexOf("Paket/tree/", start) + 11;
+                        var end = data.IndexOf("\"", start);
+                        latestVersion = data.Substring(start, end - start);
+                        if (latestVersion.Contains("-") && ignorePrerelease)
+                            latestVersion = "";
+                    }
+                    return latestVersion;
                 }
             }
-            return latestVersion;
         }
 
         public void DownloadVersion(string latestVersion, string target, bool silent)
