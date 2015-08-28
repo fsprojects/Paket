@@ -47,7 +47,7 @@ namespace Paket.Bootstrapper
 
         private string GetLatestStable(WebClient client)
         {
-            const string latest = "https://github.com/fsprojects/Paket/releases/latest";
+            const string latest = "https://github.com/fsprojects/Paket/releases/stable";
             PrepareWebClient(client, latest);
             var data = client.DownloadString(latest);
             var title = data.Substring(data.IndexOf("<title>") + 7, (data.IndexOf("</title>") + 8 - data.IndexOf("<title>") + 7)); // grabs everything in the <title> tag

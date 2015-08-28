@@ -1,4 +1,4 @@
-#### 1.35.1 - 28.08.2015
+#### 1.36.0 - 28.08.2015
 * Always redirect to the Redirect.Version - https://github.com/fsprojects/Paket/pull/1023
 * Improvements in the BootStrapper - https://github.com/fsprojects/Paket/pull/1022
 
