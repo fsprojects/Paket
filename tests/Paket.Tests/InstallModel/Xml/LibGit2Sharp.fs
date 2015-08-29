@@ -38,6 +38,7 @@ let ``should generate Xml for LibGit2Sharp 2.0.0``() =
         InstallModel.CreateFromLibs(PackageName "LibGit2Sharp", SemVer.Parse "0.21", [],
             [ @"..\LibGit2Sharp\lib\net40\LibGit2Sharp.dll" ],
             [ @"..\LibGit2Sharp\build\net40\LibGit2Sharp.props" ],
+            [],
               Nuspec.All)
     
     model.GetLibReferences(SinglePlatform (DotNetFramework FrameworkVersion.V4_Client)) |> shouldContain @"..\LibGit2Sharp\lib\net40\LibGit2Sharp.dll"

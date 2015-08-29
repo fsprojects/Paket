@@ -67,6 +67,7 @@ let ``should generate Xml for System.Net.Http 2.2.8``() =
               @"..\Microsoft.Net.Http\lib\net45\System.Net.Http.Extensions.dll" 
               @"..\Microsoft.Net.Http\lib\net45\System.Net.Http.Primitives.dll"],
                [],
+               [],
                { References = NuspecReferences.All
                  OfficialName = "Microsoft.Net.Http"
                  Dependencies = []

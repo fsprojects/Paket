@@ -11,6 +11,7 @@ let ``should not install targets node for Microsoft.Bcl.Build``() =
         InstallModel.CreateFromLibs(PackageName "Microsoft.Bcl.Build", SemVer.Parse "1.0.21", [],
             [ ],
             [ @"..\Microsoft.Bcl.Build\build\Microsoft.Bcl.Build.Tasks.dll"; @"..\Microsoft.Bcl.Build\build\Microsoft.Bcl.Build.targets" ],
+            [],
               Nuspec.All)
     
     model.GetTargetsFiles(SinglePlatform (DotNetFramework FrameworkVersion.V4)) |> shouldNotContain @"..\Microsoft.Bcl.Build\build\Microsoft.Bcl.Build.targets"

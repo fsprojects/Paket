@@ -24,6 +24,7 @@ let ``should generate Xml for Fantomas 1.5``() =
               @"..\Fantomas\lib\FSharp.Core.dll" 
               @"..\Fantomas\lib\Fantomas.exe" ],
               [],
+              [],
               Nuspec.Explicit ["FantomasLib.dll"])
     
     let propertyNodes,chooseNode,additionalNode = ProjectFile.Load("./ProjectFile/TestData/Empty.fsprojtest").Value.GenerateXml(model,true,true,None)
@@ -59,6 +60,7 @@ let ``should generate full Xml for Fantomas 1.5``() =
               @"..\Fantomas\lib\FSharp.Core.dll" 
               @"..\Fantomas\lib\Fantomas.exe" ],
               [],
+              [],
               Nuspec.Explicit ["FantomasLib.dll"])
     
     let project = ProjectFile.Load("./ProjectFile/TestData/Empty.fsprojtest").Value
@@ -78,6 +80,7 @@ let ``should not generate full Xml for Fantomas 1.5 if not referenced``() =
             [ @"..\Fantomas\lib\FantomasLib.dll" 
               @"..\Fantomas\lib\FSharp.Core.dll" 
               @"..\Fantomas\lib\Fantomas.exe" ],
+              [],
               [],
               Nuspec.Explicit ["FantomasLib.dll"])
     
@@ -113,6 +116,7 @@ let ``should generate full Xml with reference condition for Fantomas 1.5``() =
             [ @"..\Fantomas\lib\FantomasLib.dll" 
               @"..\Fantomas\lib\FSharp.Core.dll" 
               @"..\Fantomas\lib\Fantomas.exe" ],
+              [],
               [],
               Nuspec.Explicit ["FantomasLib.dll"])
     

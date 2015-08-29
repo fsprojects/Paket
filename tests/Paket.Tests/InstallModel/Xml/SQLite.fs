@@ -87,6 +87,7 @@ let ``should generate Xml for SQLite``() =
               @"..\System.Data.SQLite.Core\build\net40\System.Data.SQLite.Core.targets"
               @"..\System.Data.SQLite.Core\build\net45\System.Data.SQLite.Core.targets"
               @"..\System.Data.SQLite.Core\build\net451\System.Data.SQLite.Core.targets" ],
+            [],
               Nuspec.All)
     
     let propertyNodes,chooseNode,propertyDefinitionNodes = ProjectFile.Load("./ProjectFile/TestData/Empty.fsprojtest").Value.GenerateXml(model,true,true,None)

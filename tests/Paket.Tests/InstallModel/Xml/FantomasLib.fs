@@ -24,6 +24,7 @@ let ``should generate Xml for Fantomas 1.5``() =
               @"..\Fantomas\Lib\FSharp.Core.dll" 
               @"..\Fantomas\Lib\Fantomas.exe" ],
               [],
+              [],
               Nuspec.Explicit ["FantomasLib.dll"])
     
     let _,chooseNode,_ = ProjectFile.Load("./ProjectFile/TestData/Empty.fsprojtest").Value.GenerateXml(model,false,true,None)

@@ -18,6 +18,7 @@ let ``should generate Xml for StyleCop.MSBuild``() =
     let model =
         InstallModel.CreateFromLibs(PackageName "StyleCop.MSBuild", SemVer.Parse "4.7.49.1", [],[],
             [ @"..\StyleCop.MSBuild\build\StyleCop.MSBuild.Targets" ],
+            [],
               Nuspec.All)
 
     model.GetTargetsFiles(SinglePlatform (DotNetFramework FrameworkVersion.V2)) |> shouldContain @"..\StyleCop.MSBuild\build\StyleCop.MSBuild.Targets" 

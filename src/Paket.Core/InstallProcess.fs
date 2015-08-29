@@ -9,13 +9,10 @@ open Paket.BindingRedirects
 open Paket.ModuleResolver
 open Paket.PackageResolver
 open System.IO
-open System.Collections.Generic
 open FSharp.Polyfill
 open System.Reflection
-open System.Diagnostics
 open Paket.PackagesConfigFile
 open Paket.Requirements
-open System.Security.AccessControl
 
 let findPackageFolder root (groupName,PackageName name) (version,settings) =
     let includeVersionInPath = defaultArg settings.IncludeVersionInPath false
@@ -88,12 +85,13 @@ let private removeCopiedFiles (project: ProjectFile) =
 
 let CreateInstallModel(root, groupName, sources, force, package) =
     async {
-        let! (package, files, targetsFiles) = RestoreProcess.ExtractPackage(root, groupName, sources, force, package)
+        let! (package, files, targetsFiles, analyzerFiles) = RestoreProcess.ExtractPackage(root, groupName, sources, force, package)
         let (PackageName name) = package.Name
         let nuspec = Nuspec.Load(root,groupName,package.Version,defaultArg package.Settings.IncludeVersionInPath false,package.Name)
         let files = files |> Array.map (fun fi -> fi.FullName)
         let targetsFiles = targetsFiles |> Array.map (fun fi -> fi.FullName)
-        return (groupName,package.Name), (package,InstallModel.CreateFromLibs(package.Name, package.Version, package.Settings.FrameworkRestrictions, files, targetsFiles, nuspec))
+        let analyzerFiles = analyzerFiles |> Array.map (fun fi -> fi.FullName)
+        return (groupName,package.Name), (package,InstallModel.CreateFromLibs(package.Name, package.Version, package.Settings.FrameworkRestrictions, files, targetsFiles, analyzerFiles, nuspec))
     }
 
 /// Restores the given packages from the lock file.

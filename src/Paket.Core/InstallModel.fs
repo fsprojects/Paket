@@ -12,6 +12,7 @@ type Reference =
     | Library of string
     | TargetsFile of string
     | FrameworkAssemblyReference of string
+    | Analyzer of string
 
     member this.LibName =
         match this with
@@ -40,6 +41,7 @@ type Reference =
         | Reference.Library path -> path
         | Reference.TargetsFile path -> path
         | Reference.FrameworkAssemblyReference path -> path
+        | Reference.Analyzer path -> path
 
 type InstallFiles = 
     { References : Reference Set
@@ -53,6 +55,9 @@ type InstallFiles =
 
     member this.AddReference lib = 
         { this with References = Set.add (Reference.Library lib) this.References }
+
+    member this.AddAnalyzer lib = 
+        { this with References = Set.add (Reference.Analyzer lib) this.References }
 
     member this.AddTargetsFile targetsFile = 
         { this with References = Set.add (Reference.TargetsFile targetsFile) this.References }
@@ -86,13 +91,15 @@ type InstallModel =
     { PackageName : PackageName
       PackageVersion : SemVerInfo
       ReferenceFileFolders : LibFolder list
-      TargetsFileFolders : LibFolder list }
+      TargetsFileFolders : LibFolder list
+      AnalyzerFileFolders : LibFolder list}
 
     static member EmptyModel(packageName, packageVersion) : InstallModel = 
         { PackageName = packageName
           PackageVersion = packageVersion
           ReferenceFileFolders = []
-          TargetsFileFolders = [] }
+          TargetsFileFolders = [] 
+          AnalyzerFileFolders = [] }
     
     member this.GetLibReferences(target : TargetProfile) = 
         match Seq.tryFind (fun lib -> Seq.exists (fun t -> t = target) lib.Targets) this.ReferenceFileFolders with
@@ -135,6 +142,25 @@ type InstallModel =
                         | _ -> model
                     | None -> model) { this with ReferenceFileFolders = libFolders } libs
 
+    member this.AddAnalyzerFiles(analyzerFiles : seq<string>) : InstallModel =
+        let analyzerFolders = 
+            analyzerFiles 
+            |> Seq.map this.ExtractAnalyzersFolder
+            |> Seq.choose id
+            |> Seq.distinct 
+            |> List.ofSeq
+            |> PlatformMatching.getSupportedTargetProfiles 
+            |> Seq.map (fun entry -> { Name = entry.Key; Targets = entry.Value; Files = InstallFiles.empty })
+            |> Seq.toList  
+
+        Seq.fold (fun (model:InstallModel) file ->
+                    match model.ExtractAnalyzersFolder file with
+                    | Some folderName -> 
+                        match Seq.tryFind (fun folder -> folder.Name = folderName) model.AnalyzerFileFolders with
+                        | Some path -> model.AddAnalyzerFile(path, file)
+                        | _ -> model
+                    | None -> model) { this with AnalyzerFileFolders = analyzerFolders } analyzerFiles
+
     member this.AddTargetsFiles(targetsFiles : seq<string>) : InstallModel =
         let targetsFileFolders = 
             targetsFiles 
@@ -159,10 +185,18 @@ type InstallModel =
 
     member this.ExtractBuildFolder path = Utils.extractPath "build" path
 
+    member this.ExtractAnalyzersFolder path = Utils.extractPath "analyzers" path
+
     member this.MapFolders(mapF) = { this with ReferenceFileFolders = List.map mapF this.ReferenceFileFolders; TargetsFileFolders = List.map mapF this.TargetsFileFolders  }
     
     member this.MapFiles(mapF) = 
         this.MapFolders(fun folder -> { folder with Files = mapF folder.Files })
+
+    member this.AddFileToFolder(path : LibFolder, file : string, folders : LibFolder list, add: InstallFiles -> string -> InstallFiles) =
+            folders
+            |> List.map (fun p -> 
+                                if p.Name = path.Name then { p with Files = add p.Files file }
+                                else p) 
 
     member this.AddPackageFile(path : LibFolder, file : string, references) : InstallModel =
         let install = 
@@ -172,21 +206,13 @@ type InstallModel =
 
         if not install then this else
         
-        let folders = 
-            this.ReferenceFileFolders
-            |> List.map (fun p -> 
-                               if p.Name = path.Name then { p with Files = p.Files.AddReference file }
-                               else p)
+        { this with ReferenceFileFolders = this.AddFileToFolder(path, file, this.ReferenceFileFolders, (fun f -> f.AddReference)) }
 
-        { this with ReferenceFileFolders = folders }
+    member this.AddAnalyzerFile(path : LibFolder, file : string) : InstallModel =
+        { this with AnalyzerFileFolders = this.AddFileToFolder(path, file, this.AnalyzerFileFolders, (fun f -> f.AddAnalyzer)) }   
 
-    member this.AddTargetsFile(path : LibFolder, file : string) : InstallModel =        
-        let folders = 
-            this.TargetsFileFolders
-            |> List.map (fun p -> 
-                               if p.Name = path.Name then { p with Files = p.Files.AddTargetsFile file }
-                               else p) 
-        { this with TargetsFileFolders = folders }
+    member this.AddTargetsFile(path : LibFolder, file : string) : InstallModel =   
+        { this with TargetsFileFolders = this.AddFileToFolder(path, file, this.TargetsFileFolders, (fun f -> f.AddTargetsFile)) }     
     
     member this.AddReferences(libs) = this.AddLibReferences(libs, NuspecReferences.All)
     
@@ -309,11 +335,12 @@ type InstallModel =
         else
             this
     
-    static member CreateFromLibs(packageName, packageVersion, frameworkRestrictions:FrameworkRestrictions, libs, targetsFiles, nuspec : Nuspec) = 
+    static member CreateFromLibs(packageName, packageVersion, frameworkRestrictions:FrameworkRestrictions, libs, targetsFiles, analyzerFiles, nuspec : Nuspec) = 
         InstallModel
             .EmptyModel(packageName, packageVersion)
             .AddLibReferences(libs, nuspec.References)
             .AddTargetsFiles(targetsFiles)
+            .AddAnalyzerFiles(analyzerFiles)
             .AddFrameworkAssemblyReferences(nuspec.FrameworkAssemblyReferences)
             .FilterBlackList()
             .ApplyFrameworkRestrictions(frameworkRestrictions)

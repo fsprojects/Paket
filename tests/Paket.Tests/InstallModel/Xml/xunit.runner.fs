@@ -33,6 +33,7 @@ let ``should generate Xml for xunit.runner.visualstudio 2.0.0``() =
         InstallModel.CreateFromLibs(PackageName "xunit.runner.visualstudio", SemVer.Parse "2.50.0", [],[],
             [ @"..\xunit.runner.visualstudio\build\net20\xunit.runner.visualstudio.props" 
               @"..\xunit.runner.visualstudio\build\portable-net45+aspnetcore50+win+wpa81+wp80+monotouch+monoandroid\xunit.runner.visualstudio.props"  ],
+            [],
               Nuspec.All)
     
     let propertyNodes,chooseNode,propertyChooseNode = ProjectFile.Load("./ProjectFile/TestData/Empty.fsprojtest").Value.GenerateXml(model,true,true,None)
@@ -59,6 +60,7 @@ let ``should not generate Xml for xunit.runner.visualstudio 2.0.0 if import is d
         InstallModel.CreateFromLibs(PackageName "xunit.runner.visualstudio", SemVer.Parse "2.50.0", [],[],
             [ @"..\xunit.runner.visualstudio\build\net20\xunit.runner.visualstudio.props" 
               @"..\xunit.runner.visualstudio\build\portable-net45+aspnetcore50+win+wpa81+wp80+monotouch+monoandroid\xunit.runner.visualstudio.props"  ],
+              [],
               Nuspec.All)
     
     let propertyNodes,chooseNode,propertyChooseNode = ProjectFile.Load("./ProjectFile/TestData/Empty.fsprojtest").Value.GenerateXml(model,true,false,None)

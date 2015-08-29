@@ -497,7 +497,7 @@ let ``should filter .NET 4.0 dlls for System.Net.Http 2.2.8``() =
                @"..\Microsoft.Net.Http\lib\win8\System.Net.Http.Extensions.dll"; 
                @"..\Microsoft.Net.Http\lib\win8\System.Net.Http.Primitives.dll"; 
                @"..\Microsoft.Net.Http\lib\wpa81\System.Net.Http.Extensions.dll"; 
-               @"..\Microsoft.Net.Http\lib\wpa81\System.Net.Http.Primitives.dll" ], [], Nuspec.All)
+               @"..\Microsoft.Net.Http\lib\wpa81\System.Net.Http.Primitives.dll" ], [], [], Nuspec.All)
 
     model.GetLibReferences(SinglePlatform(DotNetFramework(FrameworkVersion.V4)))
     |> shouldEqual expected
@@ -531,7 +531,7 @@ let ``should filter .NET 4.5 dlls for System.Net.Http 2.2.8``() =
                @"..\Microsoft.Net.Http\lib\win8\System.Net.Http.Extensions.dll"; 
                @"..\Microsoft.Net.Http\lib\win8\System.Net.Http.Primitives.dll"; 
                @"..\Microsoft.Net.Http\lib\wpa81\System.Net.Http.Extensions.dll"; 
-               @"..\Microsoft.Net.Http\lib\wpa81\System.Net.Http.Primitives.dll" ], [], Nuspec.All)
+               @"..\Microsoft.Net.Http\lib\wpa81\System.Net.Http.Primitives.dll" ], [], [], Nuspec.All)
 
     model.GetLibReferences(SinglePlatform(DotNetFramework(FrameworkVersion.V4_5)))
     |> shouldEqual expected

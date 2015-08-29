@@ -560,47 +560,34 @@ let DownloadPackage(root, auth, url, groupName, name, version:SemVerInfo, includ
         return! CopyFromCache(root, groupName, targetFile.FullName, licenseFileName, name, version, includeVersionInPath, force)
     }
 
-/// Finds all libraries in a nuget package.
-let GetLibFiles(targetFolder) = 
-    let libs = 
+let private GetSomeFiles targetFolder subFolderName filesDescriptionForVerbose =
+    let files = 
         let dir = DirectoryInfo(targetFolder)
-        let libPath = dir.FullName.ToLower() + Path.DirectorySeparatorChar.ToString() + "lib" 
-        if dir.Exists then
-            dir.GetDirectories()
-            |> Array.filter (fun fi -> fi.FullName.ToLower() = libPath)
-            |> Array.collect (fun dir -> dir.GetFiles("*.*",SearchOption.AllDirectories))
-        else
-            [||]
-
-    if Logging.verbose then
-        if Array.isEmpty libs then 
-            verbosefn "No libraries found in %s" targetFolder 
-        else
-            let s = String.Join(Environment.NewLine + "  - ",libs |> Array.map (fun l -> l.FullName))
-            verbosefn "Libraries found in %s:%s  - %s" targetFolder Environment.NewLine s
-
-    libs
-
-/// Finds all targets files in a nuget package.
-let GetTargetsFiles(targetFolder) = 
-    let targetsFiles = 
-        let dir = DirectoryInfo(targetFolder)
-        let path = dir.FullName.ToLower() + Path.DirectorySeparatorChar.ToString() + "build" 
+        let path = Path.Combine(dir.FullName.ToLower(), subFolderName)
         if dir.Exists then
             dir.GetDirectories()
             |> Array.filter (fun fi -> fi.FullName.ToLower() = path)
-            |> Array.collect (fun dir -> dir.GetFiles("*.*",SearchOption.AllDirectories))
+            |> Array.collect (fun dir -> dir.GetFiles("*.*", SearchOption.AllDirectories))
         else
             [||]
 
     if Logging.verbose then
-        if Array.isEmpty targetsFiles then
-            verbosefn "No .targets files found in %s" targetFolder 
+        if Array.isEmpty files then 
+            verbosefn "No %s found in %s" filesDescriptionForVerbose targetFolder 
         else
-            let s = String.Join(Environment.NewLine + "  - ",targetsFiles |> Array.map (fun l -> l.FullName))
-            verbosefn ".targets files found in %s:%s  - %s" targetFolder Environment.NewLine s
+            let s = String.Join(Environment.NewLine + "  - ",files |> Array.map (fun l -> l.FullName))
+            verbosefn "%s found in %s:%s  - %s" filesDescriptionForVerbose targetFolder Environment.NewLine s
 
-    targetsFiles
+    files
+
+/// Finds all libraries in a nuget package.
+let GetLibFiles(targetFolder) = GetSomeFiles targetFolder "lib" "libraries"
+
+/// Finds all targets files in a nuget package.
+let GetTargetsFiles(targetFolder) = GetSomeFiles targetFolder "build" ".targets files"
+
+/// Finds all analyzer files in a nuget package.
+let GetAnalyzerFiles(targetFolder) = GetSomeFiles targetFolder "analyzer" "analyzer dlls"
 
 let GetPackageDetails root force sources packageName (version:SemVerInfo) : PackageResolver.PackageDetails = 
     let package = packageName.ToString()

@@ -26,6 +26,7 @@ let ``should generate Xml for Plossum``() =
         InstallModel.CreateFromLibs(PackageName "Plossum.CommandLine", SemVer.Parse "1.5.0", [],
             [ @"..\Plossum.CommandLine\lib\net40\Plossum CommandLine.dll" ],
               [],
+              [],
               Nuspec.All)
     
     let _,chooseNode,_ = ProjectFile.Load("./ProjectFile/TestData/Empty.fsprojtest").Value.GenerateXml(model,true,true,None)

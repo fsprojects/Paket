@@ -98,6 +98,7 @@ let ``should generate Xml for Rx-XAML 2.2.4 with correct framework assembly refe
               @"..\Rx-XAML\lib\windowsphone8\System.Reactive.Windows.Threading.dll" 
               @"..\Rx-XAML\lib\windowsphone71\System.Reactive.Windows.Threading.dll" ],
                [],
+               [],
                { References = NuspecReferences.All
                  OfficialName = "Reactive Extensions - XAML Support Library"
                  Dependencies = []
