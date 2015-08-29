@@ -220,44 +220,54 @@
     <Compile Include="Lockfile\ParserWithMultipleSourcesSpecs.fs" />
     <Compile Include="ReferencesFile\ReferencesFileSpecs.fs" />
     <Compile Include="Simplifier\BasicScenarioSpecs.fs" />
+    <None Include="ProjectFile\TestData\EmptyCsharpGuid.csprojtest">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="ProjectFile\TestData\EmptyFsharpGuid.fsprojtest">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="ProjectFile\TestData\EmptyVbGuid.vbprojtest">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Include="ProjectFile\TestData\Project1.fsprojtest">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Include="ProjectFile\TestData\Project2.fsprojtest">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Include="ProjectFile\TestData\Project3.fsprojtest">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Include="ProjectFile\TestData\ProjectWithConditions.fsprojtest">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Include="ProjectFile\TestData\Empty.fsprojtest">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Include="ProjectFile\TestData\EmptyWithOldStuff.fsprojtest">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Include="ProjectFile\TestData\FrameworkAssemblies.fsprojtest">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Include="ProjectFile\TestData\CustomFantomasNode.fsprojtest">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Include="ProjectFile\TestData\CustomPaketFantomasNode.fsprojtest">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Include="ProjectFile\TestData\NoCustomFantomasNode.fsprojtest">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Include="ProjectFile\TestData\MaintainsOrdering.fsprojtest">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Include="ProjectFile\TestData\NewSilverlightClassLibrary.csprojtest">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Include="ProjectFile\TestData\FSharp.Core.Fluent-3.1.fsprojtest">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <Compile Include="ProjectFile\ConditionSpecs.fs" />
     <Compile Include="ProjectFile\TargetFrameworkSpecs.fs" />
@@ -286,6 +296,7 @@
     <Compile Include="InstallModel\Xml\FSharp.Data.SqlClient.fs" />
     <Compile Include="InstallModel\Xml\RxXaml.fs" />
     <Compile Include="InstallModel\Xml\Microsoft.Bcl.Build.fs" />
+    <Compile Include="InstallModel\Xml\CodeCracker.fs" />
     <Compile Include="InstallModel\Penalty\PenaltySpecs.fs" />
     <Compile Include="InstallModel\Penalty\FrameworkConditionsSpecs.fs" />
     <Compile Include="DependencyModel\ProjectDependencySpecs.fs" />
