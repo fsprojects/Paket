@@ -38,7 +38,7 @@ let ``should generate Xml for FSharp.Data.SqlClient 1.4.4``() =
               [],
               Nuspec.Load("Nuspec/FSharp.Data.SqlClient.nuspec"))
     
-    let _,chooseNode,_ = ProjectFile.Load("./ProjectFile/TestData/Empty.fsprojtest").Value.GenerateXml(model,true,true)
+    let _,chooseNode,_ = ProjectFile.Load("./ProjectFile/TestData/Empty.fsprojtest").Value.GenerateXml(model,true,true,None)
     chooseNode.OuterXml
     |> normalizeXml
     |> shouldEqual (normalizeXml expected)

@@ -1,5 +1,6 @@
-#### 2.0.0-alpha019 - 29.08.2015
+#### 2.0.0-alpha020 - 29.08.2015
 * Support for `Groups` in paket.dependencies files - http://fsprojects.github.io/Paket/groups.html
+* Support for reference conditions - https://github.com/fsprojects/Paket/issues/1026
 
 #### 1.36.1 - 28.08.2015
 * Always redirect to the Redirect.Version - https://github.com/fsprojects/Paket/pull/1023

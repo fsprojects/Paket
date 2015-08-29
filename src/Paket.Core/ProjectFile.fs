@@ -240,7 +240,7 @@ type ProjectFile =
         for node in nodesToDelete do            
             node.ParentNode.RemoveChild(node) |> ignore
 
-    member this.GenerateXml(model:InstallModel,copyLocal:bool,importTargets:bool) =
+    member this.GenerateXml(model:InstallModel,copyLocal:bool,importTargets:bool,referenceCondition:string option) =
         let references = 
             this.GetCustomReferenceAndFrameworkNodes()
             |> List.map (fun node -> node.Attributes.["Include"].InnerText.Split(',').[0])
@@ -299,12 +299,12 @@ type ProjectFile =
 
         let conditions =
             model.ReferenceFileFolders
-            |> List.map (fun lib -> PlatformMatching.getCondition lib.Targets,createItemGroup lib.Files.References)
+            |> List.map (fun lib -> PlatformMatching.getCondition referenceCondition lib.Targets,createItemGroup lib.Files.References)
             |> List.sortBy fst
 
         let targetsFileConditions =
             model.TargetsFileFolders
-            |> List.map (fun lib -> PlatformMatching.getCondition lib.Targets,createPropertyGroup lib.Files.References)
+            |> List.map (fun lib -> PlatformMatching.getCondition referenceCondition lib.Targets,createPropertyGroup lib.Files.References)
             |> List.sortBy fst
 
         let chooseNode =
@@ -418,9 +418,9 @@ type ProjectFile =
                     .RemoveIfCompletelyEmpty()
 
             let copyLocal = defaultArg installSettings.CopyLocal true
-            let importTargets = defaultArg installSettings.ImportTargets true
+            let importTargets = defaultArg installSettings.ImportTargets true            
 
-            this.GenerateXml(projectModel,copyLocal,importTargets))
+            this.GenerateXml(projectModel,copyLocal,importTargets,installSettings.ReferenceCondition))
         |> Seq.iter (fun (propertyNameNodes,chooseNode,propertyChooseNode) -> 
             if chooseNode.ChildNodes.Count > 0 then
                 this.ProjectNode.AppendChild chooseNode |> ignore

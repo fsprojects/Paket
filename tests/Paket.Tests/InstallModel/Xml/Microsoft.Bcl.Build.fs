@@ -15,6 +15,6 @@ let ``should not install targets node for Microsoft.Bcl.Build``() =
     
     model.GetTargetsFiles(SinglePlatform (DotNetFramework FrameworkVersion.V4)) |> shouldNotContain @"..\Microsoft.Bcl.Build\build\Microsoft.Bcl.Build.targets"
 
-    let propertyNodes,_,_ = ProjectFile.Load("./ProjectFile/TestData/Empty.fsprojtest").Value.GenerateXml(model,true,true)
+    let propertyNodes,_,_ = ProjectFile.Load("./ProjectFile/TestData/Empty.fsprojtest").Value.GenerateXml(model,true,true,None)
 
     propertyNodes |> Seq.length |> shouldEqual 0
