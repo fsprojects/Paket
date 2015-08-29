@@ -79,12 +79,26 @@ module private LanguageEvaluation =
         | (false, false, true) -> Some FSharp
         | _ -> None
 
+    let private getLanguageFromExtension = function
+        | ".csproj" -> Some CSharp
+        | ".vbproj" -> Some VisualBasic
+        | ".fsproj" -> Some FSharp
+        | _ -> None
+
+    let private getLanguageFromFileName (fileName : string) =
+        let ext = fileName |> Path.GetExtension
+        getLanguageFromExtension (ext.ToLowerInvariant())
+
     /// Get the programming language for a project file using the "ProjectTypeGuids"
-    let getProjectLanguage (projectDocument:XmlDocument) = 
+    let getProjectLanguage (projectDocument:XmlDocument) (fileName: string) = 
+        let cons x y = x :: y
+
         let languageGroups =
             projectDocument
             |> extractProjectTypeGuids
-            |> List.choose getGuidLanguage
+            |> List.map getGuidLanguage
+            |> cons (getLanguageFromFileName fileName)
+            |> List.choose id
             |> List.groupBy id
             |> List.map fst
 
@@ -938,7 +952,7 @@ type ProjectFile =
                 Document = doc
                 ProjectNode = projectNode
                 OriginalText = Utils.normalizeXml doc
-                Language = LanguageEvaluation.getProjectLanguage doc }
+                Language = LanguageEvaluation.getProjectLanguage doc fi.Name }
         with
         | exn -> 
             traceWarnfn "Unable to parse %s:%s      %s" fileName Environment.NewLine exn.Message
