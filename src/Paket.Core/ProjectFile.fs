@@ -97,7 +97,8 @@ type ProjectFile =
     { FileName: string
       OriginalText : string
       Document : XmlDocument
-      ProjectNode : XmlNode }
+      ProjectNode : XmlNode
+      Language : ProjectLanguage }
 
     member private this.FindNodes paketOnes name =
         [for node in this.Document |> getDescendants name do
@@ -113,8 +114,6 @@ type ProjectFile =
     member this.NameWithoutExtension = Path.GetFileNameWithoutExtension this.Name
 
     member this.GetCustomReferenceAndFrameworkNodes() = this.FindNodes false "Reference"
-
-    member this.Language = LanguageEvaluation.getProjectLanguage this.Document
 
     /// Finds all project files
     static member FindAllProjects(folder) = 
@@ -322,7 +321,7 @@ type ProjectFile =
 
             itemGroup
 
-        let shouldBeInstalled analyzer = 
+        let shouldBeInstalled (analyzer : AnalyzerLib) = 
             match analyzer.Language, this.Language with
             | AnalyzerLanguage.Any, projectLanguage -> projectLanguage <> ProjectLanguage.Unknown
             | AnalyzerLanguage.CSharp, ProjectLanguage.CSharp -> true
@@ -938,7 +937,8 @@ type ProjectFile =
                 FileName = fi.FullName
                 Document = doc
                 ProjectNode = projectNode
-                OriginalText = Utils.normalizeXml doc }
+                OriginalText = Utils.normalizeXml doc
+                Language = LanguageEvaluation.getProjectLanguage doc }
         with
         | exn -> 
             traceWarnfn "Unable to parse %s:%s      %s" fileName Environment.NewLine exn.Message
