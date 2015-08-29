@@ -1,5 +1,5 @@
-#### 2.0.0-alpha018 - 28.08.2015
-* Create very first alphas with groups for dogfooding
+#### 2.0.0-alpha019 - 29.08.2015
+* Support for `Groups` in paket.dependencies files - http://fsprojects.github.io/Paket/groups.html
 
 #### 1.36.1 - 28.08.2015
 * Always redirect to the Redirect.Version - https://github.com/fsprojects/Paket/pull/1023

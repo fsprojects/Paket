@@ -27,15 +27,6 @@ let private adjustVersionRequirements strict includingPrereleases (dependenciesF
 
     DependenciesFile(dependenciesFile.FileName, groups, dependenciesFile.Lines)
 
-let private detectOutdated (oldResolution: PackageResolver.PackageResolution) (newResolution: PackageResolver.PackageResolution) =
-    [for kv in oldResolution do
-        let package = kv.Value
-        match newResolution |> Map.tryFind package.Name with
-        | Some newVersion -> 
-            if package.Version <> newVersion.Version then 
-                yield package.Name,package.Version,newVersion.Version
-        | _ -> ()]
-
 /// Finds all outdated packages.
 let FindOutdated strict includingPrereleases environment = trial {
     let! lockFile = environment |> PaketEnv.ensureLockFileExists
@@ -46,29 +37,45 @@ let FindOutdated strict includingPrereleases environment = trial {
 
     let getSha1 origin owner repo branch = RemoteDownload.getSHA1OfBranch origin owner repo branch |> Async.RunSynchronously
     let root = Path.GetDirectoryName dependenciesFile.FileName
-    let mainGroup = dependenciesFile.Groups.[Constants.MainDependencyGroup]
-    // TODO: This is only looking at the maingroup
-    let mainGroup = 
-        { Name = Constants.MainDependencyGroup
-          RemoteFiles = mainGroup.RemoteFiles
-          RootDependencies = Some dependenciesFile.Groups.[Constants.MainDependencyGroup].Packages
-          FrameworkRestrictions = mainGroup.Options.Settings.FrameworkRestrictions
-          PackageRequirements = [] }
-        
-    let groups = [Constants.MainDependencyGroup, mainGroup ] |> Map.ofSeq
-    let resolution = dependenciesFile.Resolve(getSha1,(fun (x,y,_) -> NuGetV2.GetVersions root (x,y)),NuGetV2.GetPackageDetails root true,groups).[Constants.MainDependencyGroup]
-    let resolvedPackages = resolution.ResolvedPackages.GetModelOrFail()
 
-    return detectOutdated (lockFile.GetCompleteResolution()) resolvedPackages
+    let groups = 
+        dependenciesFile.Groups
+        |> Map.map (fun groupName group -> 
+            { Name = groupName
+              RemoteFiles = group.RemoteFiles
+              RootDependencies = Some dependenciesFile.Groups.[groupName].Packages
+              FrameworkRestrictions = group.Options.Settings.FrameworkRestrictions
+              PackageRequirements = [] })
+
+    let newResolution = dependenciesFile.Resolve(getSha1,(fun (x,y,_) -> NuGetV2.GetVersions root (x,y)),NuGetV2.GetPackageDetails root true,groups)
+
+    let changed = 
+        [for kv in lockFile.Groups do
+            match newResolution |> Map.tryFind kv.Key with
+            | Some group ->
+                let newPackages = group.ResolvedPackages.GetModelOrFail()
+                for kv' in kv.Value.Resolution do
+                    let package = kv'.Value
+                    match newPackages |> Map.tryFind package.Name with
+                    | Some newVersion -> 
+                        if package.Version <> newVersion.Version then 
+                            yield kv.Key,package.Name,package.Version,newVersion.Version
+                    | _ -> ()
+            | _ -> ()]
+
+    return changed
 }
 
-let private printOutdated packages =
-    if packages = [] then
+let private printOutdated changed =
+    if changed = [] then
         tracefn "No outdated packages found."
     else
         tracefn "Outdated packages found:"
-        for (PackageName name),oldVersion,newVersion in packages do
-            tracefn "  * %s %s -> %s" name (oldVersion.ToString()) (newVersion.ToString())
+
+        for (GroupName groupName),packages in changed |> List.groupBy (fun (g,_,_,_) -> g) do
+            tracefn "  Group: %s"  groupName
+            for (_,(PackageName name),oldVersion,newVersion) in packages do
+                tracefn "    * %s %s -> %s"  name (oldVersion.ToString()) (newVersion.ToString())
 
 /// Prints all outdated packages.
 let ShowOutdated strict includingPrereleases environment = trial {
