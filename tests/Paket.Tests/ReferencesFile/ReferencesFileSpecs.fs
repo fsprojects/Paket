@@ -253,7 +253,7 @@ let ``should parse reffiles with nested groups``() =
     testGroup.NugetPackages.Length |> shouldEqual 1
     testGroup.NugetPackages.Head.Name |> shouldEqual (PackageName "NUnit")
 
-let refFileWithExplizitMainGroup = """
+let refFileWithExplicitMainGroup = """
 Castle.Windsor  
 Newtonsoft.Json
 
@@ -265,7 +265,7 @@ group Main
 
 [<Test>]
 let ``should parse reffiles with explicit main group``() = 
-    let refFile = ReferencesFile.FromLines(toLines refFileWithExplizitMainGroup)
+    let refFile = ReferencesFile.FromLines(toLines refFileWithExplicitMainGroup)
     let mainGroup = refFile.Groups.[Constants.MainDependencyGroup]
     mainGroup.NugetPackages.Length |> shouldEqual 3
     mainGroup.NugetPackages.Head.Name |> shouldEqual (PackageName "Castle.Windsor")
@@ -275,3 +275,18 @@ let ``should parse reffiles with explicit main group``() =
     let testGroup = refFile.Groups.[(GroupName "Test")]
     testGroup.NugetPackages.Length |> shouldEqual 1
     testGroup.NugetPackages.Head.Name |> shouldEqual (PackageName "NUnit")
+
+let refFileWithReferenceCondition = """
+Castle.Windsor  
+Newtonsoft.Json condition:legacy
+"""
+
+[<Test>]
+let ``should parse reffiles with reference condition``() = 
+    let refFile = ReferencesFile.FromLines(toLines refFileWithReferenceCondition)
+    let mainGroup = refFile.Groups.[Constants.MainDependencyGroup]
+    mainGroup.NugetPackages.Length |> shouldEqual 2
+    mainGroup.NugetPackages.Head.Name |> shouldEqual (PackageName "Castle.Windsor")
+    mainGroup.NugetPackages.Head.Settings.ReferenceCondition |> shouldEqual None
+    mainGroup.NugetPackages.Tail.Head.Name |> shouldEqual (PackageName "Newtonsoft.Json")
+    mainGroup.NugetPackages.Tail.Head.Settings.ReferenceCondition |> shouldEqual (Some "LEGACY")

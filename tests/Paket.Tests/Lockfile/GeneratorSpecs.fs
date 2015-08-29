@@ -361,6 +361,8 @@ let ``should generate lock file with second group``() =
       Rx-Core (>= 2.1)
 
 GROUP Build
+COPY-LOCAL: TRUE
+CONDITION: LEGACY
 NUGET
   remote: http://nuget.org/api/v2
   specs:

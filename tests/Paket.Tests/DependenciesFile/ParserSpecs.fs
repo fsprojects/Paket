@@ -683,7 +683,7 @@ let ``should read config with nested group``() =
     cfg.GetDependenciesInGroup(GroupName "Build").[PackageName "FAKE"].Range |> shouldEqual (VersionRange.Minimum (SemVer.Parse "0"))
     cfg.GetDependenciesInGroup(GroupName "Build").[PackageName "NUnit"].Range |> shouldEqual (VersionRange.Minimum (SemVer.Parse "0"))
 
-let configWitExplicitMainGroup = """
+let configWithExplicitMainGroup = """
 nuget Paket.Core
 
 group Main
@@ -700,7 +700,7 @@ group Build
 
 [<Test>]
 let ``should read config with explizit main group``() = 
-    let cfg = DependenciesFile.FromCode(configWitExplicitMainGroup)
+    let cfg = DependenciesFile.FromCode(configWithExplicitMainGroup)
 
     cfg.GetDependenciesInGroup(Constants.MainDependencyGroup).[PackageName "FSharp.Compiler.Service"].Range |> shouldEqual (VersionRange.Minimum (SemVer.Parse "0"))
     cfg.GetDependenciesInGroup(Constants.MainDependencyGroup).[PackageName "FsReveal"].Range |> shouldEqual (VersionRange.Minimum (SemVer.Parse "0"))
@@ -708,3 +708,26 @@ let ``should read config with explizit main group``() =
 
     cfg.GetDependenciesInGroup(GroupName "Build").[PackageName "FAKE"].Range |> shouldEqual (VersionRange.Minimum (SemVer.Parse "0"))
     cfg.GetDependenciesInGroup(GroupName "Build").[PackageName "NUnit"].Range |> shouldEqual (VersionRange.Minimum (SemVer.Parse "0"))
+
+let configWithReferenceCondition = """
+source http://nuget.org/api/v2
+condition: main-group
+
+nuget Paket.Core
+nuget FSharp.Compiler.Service
+nuget FsReveal
+
+group Build
+
+    nuget FAKE
+    nuget NUnit condition: legacy
+"""
+
+[<Test>]
+let ``should read config with reference condition``() = 
+    let cfg = DependenciesFile.FromCode(configWithReferenceCondition)
+
+    cfg.Groups.[Constants.MainDependencyGroup].Options.Settings.ReferenceCondition |> shouldEqual (Some "MAIN-GROUP")
+
+    cfg.Groups.[GroupName "Build"].Packages.Head.Settings.ReferenceCondition |> shouldEqual None
+    cfg.Groups.[GroupName "Build"].Packages.Tail.Head.Settings.ReferenceCondition |> shouldEqual (Some "LEGACY")

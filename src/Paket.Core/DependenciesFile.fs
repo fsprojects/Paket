@@ -158,6 +158,7 @@ module DependenciesFileParser =
     | FrameworkRestrictions of FrameworkRestrictions
     | ImportTargets of bool
     | CopyLocal of bool
+    | ReferenceCondition of string
     | Redirects of bool
 
     let private (|Remote|Package|Empty|ParserOptions|SourceFile|Group|) (line:string) =
@@ -191,6 +192,7 @@ module DependenciesFileParser =
         | String.StartsWith "content" trimmed -> ParserOptions(ParserOption.OmitContent(trimmed.Replace(":","").Trim() = "none"))
         | String.StartsWith "import_targets" trimmed -> ParserOptions(ParserOption.ImportTargets(trimmed.Replace(":","").Trim() = "true"))
         | String.StartsWith "copy_local" trimmed -> ParserOptions(ParserOption.CopyLocal(trimmed.Replace(":","").Trim() = "true"))
+        | String.StartsWith "condition" trimmed -> ParserOptions(ParserOption.ReferenceCondition(trimmed.Replace(":","").Trim().ToUpper()))
         | String.StartsWith "gist" _ as trimmed ->
             SourceFile(``parse git source`` trimmed SingleSourceFileOrigin.GistLink "gist")
         | String.StartsWith "github" _ as trimmed  ->
@@ -247,7 +249,8 @@ module DependenciesFileParser =
                     | ParserOptions(ParserOption.CopyLocal mode) -> lineNo, (groupName,{ options with Settings = { options.Settings with CopyLocal = Some mode }}, sources, packages, sourceFiles)::otherGroups
                     | ParserOptions(ParserOption.ImportTargets mode) -> lineNo, (groupName,{ options with Settings = { options.Settings with ImportTargets = Some mode }}, sources, packages, sourceFiles)::otherGroups
                     | ParserOptions(ParserOption.FrameworkRestrictions r) -> lineNo, (groupName,{ options with Settings = { options.Settings with FrameworkRestrictions = r }}, sources, packages, sourceFiles)::otherGroups
-                    | ParserOptions(ParserOption.OmitContent omit) -> lineNo, (groupName,{ options with Settings = { options.Settings with  OmitContent = Some omit }}, sources, packages, sourceFiles)::otherGroups
+                    | ParserOptions(ParserOption.OmitContent omit) -> lineNo, (groupName,{ options with Settings = { options.Settings with OmitContent = Some omit }}, sources, packages, sourceFiles)::otherGroups
+                    | ParserOptions(ParserOption.ReferenceCondition condition) -> lineNo, (groupName,{ options with Settings = { options.Settings with ReferenceCondition = Some condition }}, sources, packages, sourceFiles)::otherGroups
                     | Package(name,version,rest) ->
                         let package = parsePackage(sources,DependenciesFile fileName,name,version,rest)
 

@@ -48,6 +48,10 @@ module LockFileSerializer =
               | Some false -> yield "CONTENT: TRUE"
               | None -> ()
 
+              match options.Settings.ReferenceCondition with
+              | Some condition -> yield "CONDITION: " + condition.ToUpper()
+              | None -> ()
+
               match options.Settings.FrameworkRestrictions with
               | [] -> ()
               | _  -> yield "FRAMEWORK: " + (String.Join(", ",options.Settings.FrameworkRestrictions)).ToUpper()
@@ -148,6 +152,7 @@ module LockFileParser =
     | FrameworkRestrictions of FrameworkRestrictions
     | CopyLocal of bool
     | Redirects of bool
+    | ReferenceCondition of string
 
     let private (|Remote|NugetPackage|NugetDependency|SourceFile|RepositoryType|Group|InstallOption|) (state, line:string) =
         match (state.RepositoryType, line.Trim()) with
@@ -162,6 +167,7 @@ module LockFileParser =
         | _, String.StartsWith "IMPORT-TARGETS:" trimmed -> InstallOption(ImportTargets(trimmed.Trim() = "TRUE"))
         | _, String.StartsWith "COPY-LOCAL:" trimmed -> InstallOption(CopyLocal(trimmed.Trim() = "TRUE"))
         | _, String.StartsWith "FRAMEWORK:" trimmed -> InstallOption(FrameworkRestrictions(trimmed.Trim() |> Requirements.parseRestrictions))
+        | _, String.StartsWith "CONDITION:" trimmed -> InstallOption(ReferenceCondition(trimmed.Trim().ToUpper()))
         | _, String.StartsWith "CONTENT:" trimmed -> InstallOption(OmitContent(trimmed.Trim() = "NONE"))
         | _, trimmed when line.StartsWith "      " ->
             if trimmed.Contains("(") then
@@ -194,6 +200,7 @@ module LockFileParser =
                 | InstallOption (CopyLocal(mode)) -> { currentGroup with Options = {currentGroup.Options with Settings = { currentGroup.Options.Settings with CopyLocal = Some mode}} }::otherGroups
                 | InstallOption (FrameworkRestrictions(r)) -> { currentGroup with Options = {currentGroup.Options with Settings = { currentGroup.Options.Settings with FrameworkRestrictions = r}} }::otherGroups
                 | InstallOption (OmitContent(omit)) -> { currentGroup with Options = {currentGroup.Options with Settings = { currentGroup.Options.Settings with OmitContent = Some omit} }}::otherGroups
+                | InstallOption (ReferenceCondition(condition)) -> { currentGroup with Options = {currentGroup.Options with Settings = { currentGroup.Options.Settings with ReferenceCondition = Some condition} }}::otherGroups
                 | RepositoryType repoType -> { currentGroup with RepositoryType = Some repoType }::otherGroups
                 | NugetPackage details ->
                     match currentGroup.RemoteUrl with

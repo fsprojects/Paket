@@ -292,7 +292,8 @@ let ``should serialize config with framework restriction``() =
     |> shouldEqual (normalizeLineEndings withFrameworkRestriction)
 
 
-let configWitAdditionalGroup = """
+let configWithAdditionalGroup = """
+condition: LEGACY
 source "http://nuget.org/api/v2"
 
 nuget FSharp.Compiler.Service
@@ -301,11 +302,11 @@ nuget FsReveal
 group Build
 
 nuget FAKE
-nuget NUnit
+nuget NUnit condition: LEGACY
 """
 [<Test>]
 let ``should serialize config with additional group``() = 
-    let cfg = DependenciesFile.FromCode(configWitAdditionalGroup)
+    let cfg = DependenciesFile.FromCode(configWithAdditionalGroup)
     
     cfg.ToString()
-    |> shouldEqual (normalizeLineEndings configWitAdditionalGroup)
+    |> shouldEqual (normalizeLineEndings configWithAdditionalGroup)

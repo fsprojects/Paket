@@ -104,7 +104,7 @@ type ReferencesFile =
         let lines = File.ReadAllLines(fileName)
         { ReferencesFile.FromLines lines with FileName = fileName }
 
-    member this.AddNuGetReference(packageName : PackageName, copyLocal: bool, importTargets: bool, frameworkRestrictions, includeVersionInPath, omitContent : bool) =
+    member this.AddNuGetReference(packageName : PackageName, copyLocal: bool, importTargets: bool, frameworkRestrictions, includeVersionInPath, omitContent : bool, referenceCondition) =
         let (PackageName referenceName) = packageName
         let mainGroup = this.Groups.[Constants.MainDependencyGroup] // TODO: Add to correct group
         if mainGroup.NugetPackages |> Seq.exists (fun p -> p.Name = packageName) then
@@ -119,6 +119,7 @@ type ReferencesFile =
                       ImportTargets = if not importTargets then Some importTargets else None
                       FrameworkRestrictions = frameworkRestrictions
                       IncludeVersionInPath = if includeVersionInPath then Some includeVersionInPath else None
+                      ReferenceCondition = if String.IsNullOrWhiteSpace referenceCondition |> not then Some referenceCondition else None
                       OmitContent = if omitContent then Some omitContent else None } }
 
             let newMainGroup = { mainGroup with NugetPackages = mainGroup.NugetPackages @ [ package ] }
@@ -126,7 +127,7 @@ type ReferencesFile =
 
             { this with Groups = newGroups }
 
-    member this.AddNuGetReference(packageName : PackageName) = this.AddNuGetReference(packageName, true, true, [], false, false)
+    member this.AddNuGetReference(packageName : PackageName) = this.AddNuGetReference(packageName, true, true, [], false, false, null)
 
     member this.RemoveNuGetReference(packageName : PackageName) =
         let (PackageName referenceName) = packageName
