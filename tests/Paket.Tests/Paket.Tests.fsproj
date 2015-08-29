@@ -297,6 +297,7 @@
     <Compile Include="InstallModel\Xml\RxXaml.fs" />
     <Compile Include="InstallModel\Xml\Microsoft.Bcl.Build.fs" />
     <Compile Include="InstallModel\Xml\CodeCracker.fs" />
+    <Compile Include="InstallModel\Xml\RefactoringEssentials.fs" />
     <Compile Include="InstallModel\Penalty\PenaltySpecs.fs" />
     <Compile Include="InstallModel\Penalty\FrameworkConditionsSpecs.fs" />
     <Compile Include="DependencyModel\ProjectDependencySpecs.fs" />

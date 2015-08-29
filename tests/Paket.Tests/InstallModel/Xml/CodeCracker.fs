@@ -1,5 +1,4 @@
-﻿
-module Paket.InstallModel.Xml.CodeCrackerSpecs
+﻿module Paket.InstallModel.Xml.CodeCrackerSpecs
 
 open FsUnit
 open NUnit.Framework
