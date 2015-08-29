@@ -185,8 +185,10 @@ let getCondition (referenceCondition:string option) (targets : TargetProfile lis
     |> fun s -> 
         match referenceCondition with 
         | None -> s
-        | Some condition -> 
+        | Some condition ->
+            // msbuild triggers a warning MSB4130 when we leave out the quotes around the condition
+            // and add the condition at the end
             if s = "$(TargetFrameworkIdentifier) == 'true'" then
-                sprintf "$(%s) == 'True'" condition
+                sprintf "'$(%s)' == 'True'" condition
             else
-                sprintf "%s And $(%s) == 'True'" s condition
+                sprintf "'$(%s)' == 'True' And %s" condition s
