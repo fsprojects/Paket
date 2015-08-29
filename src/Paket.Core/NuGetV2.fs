@@ -587,7 +587,7 @@ let GetLibFiles(targetFolder) = GetSomeFiles targetFolder "lib" "libraries"
 let GetTargetsFiles(targetFolder) = GetSomeFiles targetFolder "build" ".targets files"
 
 /// Finds all analyzer files in a nuget package.
-let GetAnalyzerFiles(targetFolder) = GetSomeFiles targetFolder "analyzer" "analyzer dlls"
+let GetAnalyzerFiles(targetFolder) = GetSomeFiles targetFolder "analyzers" "analyzer dlls"
 
 let GetPackageDetails root force sources packageName (version:SemVerInfo) : PackageResolver.PackageDetails = 
     let package = packageName.ToString()
