@@ -12,7 +12,6 @@ type Reference =
     | Library of string
     | TargetsFile of string
     | FrameworkAssemblyReference of string
-    | Analyzer of string
 
     member this.LibName =
         match this with
@@ -41,7 +40,6 @@ type Reference =
         | Reference.Library path -> path
         | Reference.TargetsFile path -> path
         | Reference.FrameworkAssemblyReference path -> path
-        | Reference.Analyzer path -> path
 
 type InstallFiles = 
     { References : Reference Set
@@ -55,9 +53,6 @@ type InstallFiles =
 
     member this.AddReference lib = 
         { this with References = Set.add (Reference.Library lib) this.References }
-
-    member this.AddAnalyzer lib = 
-        { this with References = Set.add (Reference.Analyzer lib) this.References }
 
     member this.AddTargetsFile targetsFile = 
         { this with References = Set.add (Reference.TargetsFile targetsFile) this.References }
@@ -87,19 +82,45 @@ type LibFolder =
             | SinglePlatform t -> Some t
             | _ -> None)
 
+
+type AnalyzerLanguage = Any | CSharp | FSharp | VisualBasic
+    with
+        static member FromDirectoryName(str : string) =
+            match str with
+            | "cs" -> CSharp
+            | "vb" -> VisualBasic
+            | "fs" -> FSharp
+            | _ -> Any
+
+        static member FromDirectory(dir : DirectoryInfo) =
+            AnalyzerLanguage.FromDirectoryName(dir.Name)
+
+type AnalyzerLib =
+    {
+        /// Path of the analyzer dll
+        Path : string
+        /// Target language for the analyzer
+        Language : AnalyzerLanguage }
+
+    static member FromFile(file : FileInfo) =
+        {
+            Path = file.FullName
+            Language = AnalyzerLanguage.FromDirectory(file.Directory)
+        }
+
 type InstallModel = 
     { PackageName : PackageName
       PackageVersion : SemVerInfo
       ReferenceFileFolders : LibFolder list
       TargetsFileFolders : LibFolder list
-      AnalyzerFileFolders : LibFolder list}
+      Analyzers: AnalyzerLib list}
 
     static member EmptyModel(packageName, packageVersion) : InstallModel = 
         { PackageName = packageName
           PackageVersion = packageVersion
           ReferenceFileFolders = []
           TargetsFileFolders = [] 
-          AnalyzerFileFolders = [] }
+          Analyzers = [] }
     
     member this.GetLibReferences(target : TargetProfile) = 
         match Seq.tryFind (fun lib -> Seq.exists (fun t -> t = target) lib.Targets) this.ReferenceFileFolders with
@@ -143,23 +164,13 @@ type InstallModel =
                     | None -> model) { this with ReferenceFileFolders = libFolders } libs
 
     member this.AddAnalyzerFiles(analyzerFiles : seq<string>) : InstallModel =
-        let analyzerFolders = 
-            analyzerFiles 
-            |> Seq.map this.ExtractAnalyzersFolder
-            |> Seq.choose id
-            |> Seq.distinct 
+        let analyzerLibs =
+            analyzerFiles
+            |> Seq.map FileInfo
+            |> Seq.map AnalyzerLib.FromFile
             |> List.ofSeq
-            |> PlatformMatching.getSupportedTargetProfiles 
-            |> Seq.map (fun entry -> { Name = entry.Key; Targets = entry.Value; Files = InstallFiles.empty })
-            |> Seq.toList  
 
-        Seq.fold (fun (model:InstallModel) file ->
-                    match model.ExtractAnalyzersFolder file with
-                    | Some folderName -> 
-                        match Seq.tryFind (fun folder -> folder.Name = folderName) model.AnalyzerFileFolders with
-                        | Some path -> model.AddAnalyzerFile(path, file)
-                        | _ -> model
-                    | None -> model) { this with AnalyzerFileFolders = analyzerFolders } analyzerFiles
+        { this with Analyzers = this.Analyzers @ analyzerLibs}           
 
     member this.AddTargetsFiles(targetsFiles : seq<string>) : InstallModel =
         let targetsFileFolders = 
@@ -185,8 +196,6 @@ type InstallModel =
 
     member this.ExtractBuildFolder path = Utils.extractPath "build" path
 
-    member this.ExtractAnalyzersFolder path = Utils.extractPath "analyzers" path
-
     member this.MapFolders(mapF) = { this with ReferenceFileFolders = List.map mapF this.ReferenceFileFolders; TargetsFileFolders = List.map mapF this.TargetsFileFolders  }
     
     member this.MapFiles(mapF) = 
@@ -207,9 +216,6 @@ type InstallModel =
         if not install then this else
         
         { this with ReferenceFileFolders = this.AddFileToFolder(path, file, this.ReferenceFileFolders, (fun f -> f.AddReference)) }
-
-    member this.AddAnalyzerFile(path : LibFolder, file : string) : InstallModel =
-        { this with AnalyzerFileFolders = this.AddFileToFolder(path, file, this.AnalyzerFileFolders, (fun f -> f.AddAnalyzer)) }   
 
     member this.AddTargetsFile(path : LibFolder, file : string) : InstallModel =   
         { this with TargetsFileFolders = this.AddFileToFolder(path, file, this.TargetsFileFolders, (fun f -> f.AddTargetsFile)) }     
@@ -330,7 +336,7 @@ type InstallModel =
               |> Set.ofList)
 
     member this.RemoveIfCompletelyEmpty() = 
-        if Set.isEmpty (this.GetFrameworkAssembliesLazy.Force()) && Set.isEmpty (this.GetLibReferencesLazy.Force()) && Set.isEmpty (this.GetTargetsFilesLazy.Force()) then
+        if Set.isEmpty (this.GetFrameworkAssembliesLazy.Force()) && Set.isEmpty (this.GetLibReferencesLazy.Force()) && Set.isEmpty (this.GetTargetsFilesLazy.Force()) && List.isEmpty this.Analyzers then
             InstallModel.EmptyModel(this.PackageName,this.PackageVersion)
         else
             this
