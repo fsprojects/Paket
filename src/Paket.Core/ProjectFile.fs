@@ -74,20 +74,22 @@ module private LanguageEvaluation =
         let isFsharp = fsharpGuids.Contains(guid)
 
         match (isCsharp, isVb, isFsharp) with
-        | (true, false, false) -> CSharp
-        | (false, true, false) -> VisualBasic
-        | (false, false, true) -> FSharp
-        | _ -> Unknown
+        | (true, false, false) -> Some CSharp
+        | (false, true, false) -> Some VisualBasic
+        | (false, false, true) -> Some FSharp
+        | _ -> None
 
     /// Get the programming language for a project file using the "ProjectTypeGuids"
     let getProjectLanguage (projectDocument:XmlDocument) = 
         let languageGroups =
             projectDocument
             |> extractProjectTypeGuids
-            |> List.groupBy getGuidLanguage
+            |> List.choose getGuidLanguage
+            |> List.groupBy id
+            |> List.map fst
 
         match languageGroups with
-        | [language, _] -> language
+        | [language] -> language
         | _ -> Unknown
 
 /// Contains methods to read and manipulate project files.
@@ -305,6 +307,34 @@ type ProjectFile =
         for node in nodesToDelete do            
             node.ParentNode.RemoveChild(node) |> ignore
 
+    member private this.GenerateAnalyzersXml(model:InstallModel) =
+        let createAnalyzersNode (analyzers: AnalyzerLib list) =
+            let itemGroup = this.CreateNode("ItemGroup")
+                                
+            for lib in analyzers do
+                let fi = new FileInfo(normalizePath lib.Path)
+
+                this.CreateNode("Analyzer")
+                |> addAttribute "Include" (createRelativePath this.FileName fi.FullName)
+                |> addChild (this.CreateNode("Paket","True"))
+                |> itemGroup.AppendChild
+                |> ignore
+
+            itemGroup
+
+        let shouldBeInstalled analyzer = 
+            match analyzer.Language, this.Language with
+            | AnalyzerLanguage.Any, projectLanguage -> projectLanguage <> ProjectLanguage.Unknown
+            | AnalyzerLanguage.CSharp, ProjectLanguage.CSharp -> true
+            | AnalyzerLanguage.VisualBasic, ProjectLanguage.VisualBasic -> true
+            | AnalyzerLanguage.FSharp, ProjectLanguage.FSharp -> true
+            | _ -> false
+
+        model.Analyzers
+            |> List.filter shouldBeInstalled
+            |> List.sortBy(fun lib -> lib.Path)
+            |> createAnalyzersNode
+
     member this.GenerateXml(model:InstallModel,copyLocal:bool,importTargets:bool,referenceCondition:string option) =
         let references = 
             this.GetCustomReferenceAndFrameworkNodes()
@@ -436,8 +466,10 @@ type ProjectFile =
                 |> addAttribute "Condition" (sprintf "Exists('%s')" fileName)
                 |> addAttribute "Label" "Paket")
             |> Seq.toList
+        
+        let analyzersNode = this.GenerateAnalyzersXml model
 
-        propertyNameNodes,chooseNode,propertyChooseNode
+        propertyNameNodes,chooseNode,propertyChooseNode,analyzersNode
         
     member this.RemovePaketNodes() =
         this.DeletePaketNodes("Reference")
@@ -486,7 +518,7 @@ type ProjectFile =
             let importTargets = defaultArg installSettings.ImportTargets true            
 
             this.GenerateXml(projectModel,copyLocal,importTargets,installSettings.ReferenceCondition))
-        |> Seq.iter (fun (propertyNameNodes,chooseNode,propertyChooseNode) -> 
+        |> Seq.iter (fun (propertyNameNodes,chooseNode,propertyChooseNode, analyzersNode) -> 
             if chooseNode.ChildNodes.Count > 0 then
                 this.ProjectNode.AppendChild chooseNode |> ignore
 
@@ -494,7 +526,11 @@ type ProjectFile =
                 this.ProjectNode.AppendChild propertyChooseNode |> ignore
 
             propertyNameNodes
-            |> Seq.iter (this.ProjectNode.AppendChild >> ignore))
+            |> Seq.iter (this.ProjectNode.AppendChild >> ignore)
+
+            if analyzersNode.ChildNodes.Count > 0 then
+                this.ProjectNode.AppendChild analyzersNode |> ignore
+            )
                 
     member this.Save() =
         if Utils.normalizeXml this.Document <> this.OriginalText then 
