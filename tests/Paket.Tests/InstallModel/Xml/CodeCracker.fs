@@ -26,8 +26,8 @@ let ``should generate Xml for codecracker.CSharp``() =
               [],
               [],
               [
-                @"..\codecracker.CSharp\analyzers\dotnet\cs\CodeCracker.CSharp.dll" 
-                @"..\codecracker.CSharp\analyzers\dotnet\cs\CodeCracker.Common.dll" 
+                [".."; "codecracker.CSharp"; "analyzers"; "dotnet"; "cs"; "CodeCracker.CSharp.dll"] |> toPath
+                [".."; "codecracker.CSharp"; "analyzers"; "dotnet"; "cs"; "CodeCracker.Common.dll"] |> toPath
               ],
               Nuspec.All)
     
@@ -46,8 +46,8 @@ let ``should generate Xml for codecracker.CSharp in VisualBasic project``() =
               [],
               [],
               [
-                @"..\codecracker.CSharp\analyzers\dotnet\cs\CodeCracker.CSharp.dll" 
-                @"..\codecracker.CSharp\analyzers\dotnet\cs\CodeCracker.Common.dll" 
+                [".."; "codecracker.CSharp"; "analyzers"; "dotnet"; "cs"; "CodeCracker.CSharp.dll"] |> toPath
+                [".."; "codecracker.CSharp"; "analyzers"; "dotnet"; "cs"; "CodeCracker.Common.dll"] |> toPath
               ],
               Nuspec.All)
     
@@ -76,8 +76,8 @@ let ``should generate Xml for codecracker.VisualBasic``() =
               [],
               [],
               [
-                @"..\codecracker.CSharp\analyzers\dotnet\vb\CodeCracker.VisualBasic.dll" 
-                @"..\codecracker.CSharp\analyzers\dotnet\vb\CodeCracker.Common.dll" 
+                [".."; "codecracker.CSharp"; "analyzers"; "dotnet"; "vb"; "CodeCracker.VisualBasic.dll"] |> toPath
+                [".."; "codecracker.CSharp"; "analyzers"; "dotnet"; "vb"; "CodeCracker.Common.dll"] |> toPath
               ],
               Nuspec.All)
     

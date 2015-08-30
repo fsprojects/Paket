@@ -20,7 +20,7 @@ let ``should generate Xml for RefactoringEssentials in CSharp project``() =
               [],
               [],
               [
-                @"..\RefactoringEssentials\analyzers\dotnet\RefactoringEssentials.dll" 
+                [".."; "RefactoringEssentials"; "analyzers"; "dotnet"; "RefactoringEssentials.dll"] |> toPath
               ],
               Nuspec.All)
     
@@ -39,7 +39,7 @@ let ``should generate Xml for RefactoringEssentials in VisualBasic project``() =
               [],
               [],
               [
-                @"..\RefactoringEssentials\analyzers\dotnet\RefactoringEssentials.dll" 
+                [".."; "RefactoringEssentials"; "analyzers"; "dotnet"; "RefactoringEssentials.dll"] |> toPath
               ],
               Nuspec.All)
     
