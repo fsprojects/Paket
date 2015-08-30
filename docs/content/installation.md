@@ -7,7 +7,7 @@ This guide will show you
 
 <blockquote>The following guide provides the various installation methods for each of the three top developer operating systems.</blockquote>
 
-The first step for any operatinng system is to clone the [Paket repository]() locally.
+The first step for any operating system is to clone the [Paket repository](https://github.com/fsprojects/Paket) locally.
 
     git clone git@github.com:fsprojects/Paket.git
     
