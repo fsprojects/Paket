@@ -3,7 +3,7 @@
 This guide will show you
 
   * How to install Paket for Windows, Linux, or OS-X.
-  * How to insure `paket` is available via commmand line and other methods of use.
+  * How to ensure `paket` is available via commmand line and other methods of use.
 
 <blockquote>The following guide provides the various installation methods for each of the three top developer operating systems.</blockquote>
 
