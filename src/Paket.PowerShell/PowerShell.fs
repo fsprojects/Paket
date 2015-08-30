@@ -8,7 +8,7 @@ open Nessos.Argu
 open System
 
 // types exposed publicly by sending to output
-type Package = { Name: string; Version: string }
+type Package = { GroupName: string; Name: string; Version: string }
 
 [<AutoOpen>]
 module PaketPs =
@@ -399,9 +399,9 @@ type ShowInstalledPackagesCmdlet() =
             
         runWithLogging x computation
             (fun sink packages ->
-                 for name,version in packages do
+                 for groupName,name,version in packages do
                     sink.Add
-                        (PaketOutput.Package {Name=name; Version=version})
+                        (PaketOutput.Package {GroupName=groupName ;Name=name; Version=version})
                         (fun po -> 
                             match po with
                             | Package p -> x.WriteObject p

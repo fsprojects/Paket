@@ -4,11 +4,12 @@ module Paket.FindOutdated
 open Paket.Domain
 open Paket.Logging
 open Chessie.ErrorHandling
+open System.IO
 
 let private adjustVersionRequirements strict includingPrereleases (dependenciesFile: DependenciesFile) =
     //TODO: Anything we need to do for source files here?
     let newPackages =
-        dependenciesFile.Packages
+        dependenciesFile.Groups.[Constants.MainDependencyGroup].Packages
         |> List.map (fun p ->
             let v = p.VersionRequirement 
             let requirement,strategy =
@@ -21,16 +22,10 @@ let private adjustVersionRequirements strict includingPrereleases (dependenciesF
                 | false,false -> VersionRequirement.AllReleases, ResolverStrategy.Max
             { p with VersionRequirement = requirement; ResolverStrategy = strategy})
 
-    DependenciesFile(dependenciesFile.FileName, dependenciesFile.Options, dependenciesFile.Sources, newPackages, dependenciesFile.RemoteFiles, dependenciesFile.Lines) // TODO: fix me
+    let mainGroup = { Name = Constants.MainDependencyGroup; Options = dependenciesFile.Groups.[Constants.MainDependencyGroup].Options; Sources = dependenciesFile.Groups.[Constants.MainDependencyGroup].Sources; Packages = newPackages; RemoteFiles = dependenciesFile.Groups.[Constants.MainDependencyGroup].RemoteFiles }
+    let groups = [Constants.MainDependencyGroup, mainGroup] |> Map.ofSeq
 
-let private detectOutdated (oldResolution: PackageResolver.PackageResolution) (newResolution: PackageResolver.PackageResolution) =
-    [for kv in oldResolution do
-        let package = kv.Value
-        match newResolution |> Map.tryFind (NormalizedPackageName package.Name) with
-        | Some newVersion -> 
-            if package.Version <> newVersion.Version then 
-                yield package.Name,package.Version,newVersion.Version
-        | _ -> ()]
+    DependenciesFile(dependenciesFile.FileName, groups, dependenciesFile.Lines)
 
 /// Finds all outdated packages.
 let FindOutdated strict includingPrereleases environment = trial {
@@ -40,19 +35,47 @@ let FindOutdated strict includingPrereleases environment = trial {
         environment.DependenciesFile
         |> adjustVersionRequirements strict includingPrereleases
 
-    let resolution = dependenciesFile.Resolve(true)
-    let resolvedPackages = resolution.ResolvedPackages.GetModelOrFail()
+    let getSha1 origin owner repo branch = RemoteDownload.getSHA1OfBranch origin owner repo branch |> Async.RunSynchronously
+    let root = Path.GetDirectoryName dependenciesFile.FileName
 
-    return detectOutdated lockFile.ResolvedPackages resolvedPackages
+    let groups = 
+        dependenciesFile.Groups
+        |> Map.map (fun groupName group -> 
+            { Name = groupName
+              RemoteFiles = group.RemoteFiles
+              RootDependencies = Some dependenciesFile.Groups.[groupName].Packages
+              FrameworkRestrictions = group.Options.Settings.FrameworkRestrictions
+              PackageRequirements = [] })
+
+    let newResolution = dependenciesFile.Resolve(getSha1,(fun (x,y,_) -> NuGetV2.GetVersions root (x,y)),NuGetV2.GetPackageDetails root true,groups)
+
+    let changed = 
+        [for kv in lockFile.Groups do
+            match newResolution |> Map.tryFind kv.Key with
+            | Some group ->
+                let newPackages = group.ResolvedPackages.GetModelOrFail()
+                for kv' in kv.Value.Resolution do
+                    let package = kv'.Value
+                    match newPackages |> Map.tryFind package.Name with
+                    | Some newVersion -> 
+                        if package.Version <> newVersion.Version then 
+                            yield kv.Key,package.Name,package.Version,newVersion.Version
+                    | _ -> ()
+            | _ -> ()]
+
+    return changed
 }
 
-let private printOutdated packages =
-    if packages = [] then
+let private printOutdated changed =
+    if changed = [] then
         tracefn "No outdated packages found."
     else
         tracefn "Outdated packages found:"
-        for (PackageName name),oldVersion,newVersion in packages do
-            tracefn "  * %s %s -> %s" name (oldVersion.ToString()) (newVersion.ToString())
+
+        for (GroupName groupName),packages in changed |> List.groupBy (fun (g,_,_,_) -> g) do
+            tracefn "  Group: %s"  groupName
+            for (_,(PackageName name),oldVersion,newVersion) in packages do
+                tracefn "    * %s %s -> %s"  name (oldVersion.ToString()) (newVersion.ToString())
 
 /// Prints all outdated packages.
 let ShowOutdated strict includingPrereleases environment = trial {

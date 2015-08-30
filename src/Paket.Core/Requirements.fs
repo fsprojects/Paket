@@ -126,6 +126,7 @@ type InstallSettings =
       FrameworkRestrictions: FrameworkRestrictions
       OmitContent : bool option
       IncludeVersionInPath: bool option
+      ReferenceCondition : string option
       CopyLocal : bool option }
 
     static member Default =
@@ -133,6 +134,7 @@ type InstallSettings =
           ImportTargets = None
           FrameworkRestrictions = []
           IncludeVersionInPath = None
+          ReferenceCondition = None
           OmitContent = None }
 
     member this.ToString(asLines) =
@@ -150,6 +152,9 @@ type InstallSettings =
               match this.IncludeVersionInPath with
               | Some x -> yield "version_in_path: " + x.ToString().ToLower()
               | None -> ()
+              match this.ReferenceCondition with
+              | Some x -> yield "condition: " + x.ToUpper()
+              | None -> ()
               match this.FrameworkRestrictions with
               | [] -> ()
               | _  -> yield "framework: " + (String.Join(", ",this.FrameworkRestrictions))]
@@ -166,6 +171,7 @@ type InstallSettings =
                 FrameworkRestrictions = (self.FrameworkRestrictions @ other.FrameworkRestrictions) |> Seq.ofList |> Seq.distinct |> List.ofSeq
                 OmitContent = self.OmitContent ++ other.OmitContent
                 CopyLocal = self.CopyLocal ++ other.CopyLocal
+                ReferenceCondition = self.ReferenceCondition ++ other.ReferenceCondition
                 IncludeVersionInPath = self.IncludeVersionInPath ++ other.IncludeVersionInPath
         }
 
@@ -190,6 +196,10 @@ type InstallSettings =
             match kvPairs.TryGetValue "version_in_path" with
             | true, "false" -> Some false 
             | true, "true" -> Some true
+            | _ -> None 
+          ReferenceCondition =         
+            match kvPairs.TryGetValue "condition" with
+            | true, c -> Some(c.ToUpper())
             | _ -> None 
           CopyLocal =         
             match kvPairs.TryGetValue "copy_local" with

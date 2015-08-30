@@ -62,10 +62,10 @@ let ``should analyze graph2 and report conflict``() =
 [<Test>]
 let ``should override graph2 conflict to first version``() = 
     let resolved = resolve graph2 ["A",VersionRange.AtLeast "1.0"; "D",VersionRange.OverrideAll(SemVer.Parse "1.4")]
-    getVersion resolved.[NormalizedPackageName (PackageName "D")] |> shouldEqual "1.4"
+    getVersion resolved.[PackageName "D"] |> shouldEqual "1.4"
 
 
 [<Test>]
 let ``should override graph2 conflict to second version``() = 
     let resolved = resolve graph2 ["A",VersionRange.AtLeast "1.0"; "D",VersionRange.OverrideAll(SemVer.Parse "1.6")]
-    getVersion resolved.[NormalizedPackageName (PackageName "D")] |> shouldEqual "1.6"
+    getVersion resolved.[PackageName "D"] |> shouldEqual "1.6"

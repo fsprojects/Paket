@@ -6,6 +6,7 @@ open System.IO
 open Paket.Logging
 open Paket.ModuleResolver
 open System.IO.Compression
+open Paket.Domain
 
 // Gets the sha1 of a branch
 let getSHA1OfBranch origin owner project branch = 
@@ -32,7 +33,7 @@ let private rawGistFileUrl owner project fileName =
     sprintf "https://gist.githubusercontent.com/%s/%s/raw/%s" owner project fileName
 
 /// Gets a dependencies file from the remote source and tries to parse it.
-let downloadDependenciesFile(rootPath,parserF,remoteFile:ModuleResolver.ResolvedSourceFile) = async {
+let downloadDependenciesFile(rootPath,groupName,parserF,remoteFile:ModuleResolver.ResolvedSourceFile) = async {
     let fi = FileInfo(remoteFile.Name)
 
     let dependenciesFileName = remoteFile.Name.Replace(fi.Name,Constants.DependenciesFileName)
@@ -48,7 +49,7 @@ let downloadDependenciesFile(rootPath,parserF,remoteFile:ModuleResolver.Resolved
 
     match result with
     | Some text when parserF text ->        
-        let destination = remoteFile.ComputeFilePath(rootPath,dependenciesFileName)
+        let destination = remoteFile.ComputeFilePath(rootPath,groupName,dependenciesFileName)
 
         Directory.CreateDirectory(destination |> Path.GetDirectoryName) |> ignore
         File.WriteAllText(destination, text)
@@ -125,10 +126,10 @@ let downloadRemoteFiles(remoteFile:ResolvedSourceFile,destination) = async {
         | _ -> ignore()
 }
 
-let DownloadSourceFiles(rootPath, force, sourceFiles:ModuleResolver.ResolvedSourceFile list) =
+let DownloadSourceFiles(rootPath, groupName, force, sourceFiles:ModuleResolver.ResolvedSourceFile list) =
     sourceFiles
     |> List.map (fun source ->
-        let destination = source.FilePath(rootPath)
+        let destination = source.FilePath(rootPath,groupName)
         let destinationDir = FileInfo(destination).Directory.FullName
 
         (destinationDir, source.Commit), (destination, source))

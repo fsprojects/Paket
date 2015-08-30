@@ -235,7 +235,7 @@ let getDetailsFromNuGetViaODataFast auth nugetURL package (version:SemVerInfo) =
             return parseODataDetails(nugetURL,package,version,raw)
     }
 
-/// Gets package details from Nuget via OData
+/// Gets package details from NuGet via OData
 let getDetailsFromNuGetViaOData auth nugetURL package (version:SemVerInfo) = 
     async {         
         try 
@@ -425,13 +425,13 @@ let ExtractPackage(fileName:string, targetFolder, name, version:SemVerInfo) =
         return targetFolder
     }
 
-let CopyLicenseFromCache(root, cacheFileName, name, version:SemVerInfo, includeVersionInPath, force) = 
+let CopyLicenseFromCache(root, groupName, cacheFileName, name, version:SemVerInfo, includeVersionInPath, force) = 
     async {
         try
             if String.IsNullOrWhiteSpace cacheFileName then return () else
             let cacheFile = FileInfo cacheFileName
             if cacheFile.Exists then
-                let targetFile = FileInfo(Path.Combine(getTargetFolder root name version includeVersionInPath, "license.html"))
+                let targetFile = FileInfo(Path.Combine(getTargetFolder root groupName name version includeVersionInPath, "license.html"))
                 if not force && targetFile.Exists then
                     verbosefn "License %s %A already copied" name version        
                 else                    
@@ -441,19 +441,19 @@ let CopyLicenseFromCache(root, cacheFileName, name, version:SemVerInfo, includeV
     }
 
 /// Extracts the given package to the ./packages folder
-let CopyFromCache(root, cacheFileName, licenseCacheFile, name, version:SemVerInfo, includeVersionInPath, force) = 
+let CopyFromCache(root, groupName, cacheFileName, licenseCacheFile, name, version:SemVerInfo, includeVersionInPath, force) = 
     async { 
-        let targetFolder = DirectoryInfo(getTargetFolder root name version includeVersionInPath).FullName
+        let targetFolder = DirectoryInfo(getTargetFolder root groupName name version includeVersionInPath).FullName
         let fi = FileInfo(cacheFileName)
         let targetFile = FileInfo(Path.Combine(targetFolder, fi.Name))
         if not force && targetFile.Exists then           
             verbosefn "%s %A already copied" name version        
         else
             CleanDir targetFolder
-            File.Copy(cacheFileName, targetFile.FullName)            
+            File.Copy(cacheFileName, targetFile.FullName)
         try 
             let! extracted = ExtractPackage(targetFile.FullName,targetFolder,name,version)
-            do! CopyLicenseFromCache(root, licenseCacheFile, name, version, includeVersionInPath, force)
+            do! CopyLicenseFromCache(root, groupName, licenseCacheFile, name, version, includeVersionInPath, force)
             return extracted
         with
         | exn -> 
@@ -501,7 +501,7 @@ let DownloadLicense(root,force,name,version:SemVerInfo,licenseUrl,targetFileName
     }
 
 /// Downloads the given package to the NuGet Cache folder
-let DownloadPackage(root, auth, url, name, version:SemVerInfo, includeVersionInPath, force) = 
+let DownloadPackage(root, auth, url, groupName, name, version:SemVerInfo, includeVersionInPath, force) = 
     async { 
         let targetFileName = Path.Combine(CacheFolder, name + "." + version.Normalize() + ".nupkg")
         let targetFile = FileInfo targetFileName
@@ -557,50 +557,37 @@ let DownloadPackage(root, auth, url, name, version:SemVerInfo, includeVersionInP
             with
             | exn -> failwithf "Could not download %s %A from %s.%s    %s" name version nugetPackage.DownloadUrl Environment.NewLine exn.Message
                 
-        return! CopyFromCache(root, targetFile.FullName, licenseFileName, name, version, includeVersionInPath, force)
+        return! CopyFromCache(root, groupName, targetFile.FullName, licenseFileName, name, version, includeVersionInPath, force)
     }
 
-/// Finds all libraries in a nuget package.
-let GetLibFiles(targetFolder) = 
-    let libs = 
+let private GetSomeFiles targetFolder subFolderName filesDescriptionForVerbose =
+    let files = 
         let dir = DirectoryInfo(targetFolder)
-        let libPath = dir.FullName.ToLower() + Path.DirectorySeparatorChar.ToString() + "lib" 
-        if dir.Exists then
-            dir.GetDirectories()
-            |> Array.filter (fun fi -> fi.FullName.ToLower() = libPath)
-            |> Array.collect (fun dir -> dir.GetFiles("*.*",SearchOption.AllDirectories))
-        else
-            [||]
-
-    if Logging.verbose then
-        if Array.isEmpty libs then 
-            verbosefn "No libraries found in %s" targetFolder 
-        else
-            let s = String.Join(Environment.NewLine + "  - ",libs |> Array.map (fun l -> l.FullName))
-            verbosefn "Libraries found in %s:%s  - %s" targetFolder Environment.NewLine s
-
-    libs
-
-/// Finds all targets files in a nuget package.
-let GetTargetsFiles(targetFolder) = 
-    let targetsFiles = 
-        let dir = DirectoryInfo(targetFolder)
-        let path = dir.FullName.ToLower() + Path.DirectorySeparatorChar.ToString() + "build" 
+        let path = Path.Combine(dir.FullName.ToLower(), subFolderName)
         if dir.Exists then
             dir.GetDirectories()
             |> Array.filter (fun fi -> fi.FullName.ToLower() = path)
-            |> Array.collect (fun dir -> dir.GetFiles("*.*",SearchOption.AllDirectories))
+            |> Array.collect (fun dir -> dir.GetFiles("*.*", SearchOption.AllDirectories))
         else
             [||]
 
     if Logging.verbose then
-        if Array.isEmpty targetsFiles then
-            verbosefn "No .targets files found in %s" targetFolder 
+        if Array.isEmpty files then 
+            verbosefn "No %s found in %s" filesDescriptionForVerbose targetFolder 
         else
-            let s = String.Join(Environment.NewLine + "  - ",targetsFiles |> Array.map (fun l -> l.FullName))
-            verbosefn ".targets files found in %s:%s  - %s" targetFolder Environment.NewLine s
+            let s = String.Join(Environment.NewLine + "  - ",files |> Array.map (fun l -> l.FullName))
+            verbosefn "%s found in %s:%s  - %s" filesDescriptionForVerbose targetFolder Environment.NewLine s
 
-    targetsFiles
+    files
+
+/// Finds all libraries in a nuget package.
+let GetLibFiles(targetFolder) = GetSomeFiles targetFolder "lib" "libraries"
+
+/// Finds all targets files in a nuget package.
+let GetTargetsFiles(targetFolder) = GetSomeFiles targetFolder "build" ".targets files"
+
+/// Finds all analyzer files in a nuget package.
+let GetAnalyzerFiles(targetFolder) = GetSomeFiles targetFolder "analyzers" "analyzer dlls"
 
 let GetPackageDetails root force sources packageName (version:SemVerInfo) : PackageResolver.PackageDetails = 
     let package = packageName.ToString()

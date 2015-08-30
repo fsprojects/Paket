@@ -40,8 +40,8 @@ let info =
 // For typical project, no changes are needed below
 // --------------------------------------------------------------------------------------
 
-#I "../../packages/FAKE/tools/"
-#load "../../packages/FSharp.Formatting/FSharp.Formatting.fsx"
+#I "../../packages/build/FAKE/tools/"
+#load "../../packages/build/FSharp.Formatting/FSharp.Formatting.fsx"
 #r "NuGet.Core.dll"
 #r "FakeLib.dll"
 open Fake
@@ -56,7 +56,7 @@ let content    = __SOURCE_DIRECTORY__ @@ "../content"
 let output     = __SOURCE_DIRECTORY__ @@ "../output"
 let files      = __SOURCE_DIRECTORY__ @@ "../files"
 let templates  = __SOURCE_DIRECTORY__ @@ "templates"
-let formatting = __SOURCE_DIRECTORY__ @@ "../../packages/FSharp.Formatting/"
+let formatting = __SOURCE_DIRECTORY__ @@ "../../packages/build/FSharp.Formatting/"
 let docTemplate = formatting @@ "templates/docpage.cshtml"
 
 // Where to look for *.csproj templates (in this order)

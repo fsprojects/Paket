@@ -7,7 +7,7 @@ open System.IO
 open Paket.Domain
 open Paket.Logging
 
-let private notInstalled (project : ProjectFile) package = project.HasPackageInstalled(NormalizedPackageName package) |> not
+let private notInstalled (project : ProjectFile) groupName package = project.HasPackageInstalled(groupName,package) |> not
 
 let private addToProject (project : ProjectFile) package =
     ProjectFile.FindOrCreateReferencesFile(FileInfo(project.FileName))
@@ -17,7 +17,7 @@ let private addToProject (project : ProjectFile) package =
 let private add installToProjects addToProjectsF dependenciesFileName package version options installAfter =
     let existingDependenciesFile = DependenciesFile.ReadFromFile(dependenciesFileName)
     let (PackageName name) = package
-    if (not installToProjects) && existingDependenciesFile.HasPackage package && String.IsNullOrWhiteSpace version then
+    if (not installToProjects) && existingDependenciesFile.HasPackage(Constants.MainDependencyGroup,package) && String.IsNullOrWhiteSpace version then
         traceWarnfn "%s contains package %s already." dependenciesFileName name
     else
         let dependenciesFile =
@@ -37,13 +37,12 @@ let private add installToProjects addToProjectsF dependenciesFileName package ve
 
 // Add a package with the option to add it to a specified project.
 let AddToProject(dependenciesFileName, package, version, options : InstallerOptions, projectName, installAfter) =
-
-    let addToSpecifiedProject (projects : ProjectFile seq) package =
+    let addToSpecifiedProject (projects : ProjectFile seq) packageName =
         match ProjectFile.TryFindProject(projects,projectName) with
         | Some p ->
-            if package |> notInstalled p then
-                package |> addToProject p
-            else traceWarnfn "Package %s already installed in project %s" package.Id p.Name
+            if packageName |> notInstalled p Constants.MainDependencyGroup then
+                packageName |> addToProject p
+            else traceWarnfn "Package %O already installed in project %s" packageName p.Name
         | None ->
             traceErrorfn "Could not install package in specified project %s. Project not found" projectName
 
@@ -51,11 +50,10 @@ let AddToProject(dependenciesFileName, package, version, options : InstallerOpti
 
 // Add a package with the option to interactively add it to multiple projects.
 let Add(dependenciesFileName, package, version, options : InstallerOptions, interactive, installAfter) =
-
     let addToProjects (projects : ProjectFile seq) package =
         if interactive then
             for project in projects do
-                if package |> notInstalled project && Utils.askYesNo(sprintf "  Install to %s?" project.Name) then
+                if package |> notInstalled project Constants.MainDependencyGroup && Utils.askYesNo(sprintf "  Install to %s?" project.Name) then
                     package |> addToProject project
 
     add interactive addToProjects dependenciesFileName package version options installAfter

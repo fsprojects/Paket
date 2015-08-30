@@ -12,7 +12,7 @@ open Paket.Domain
 let PackageDetailsFromGraph (graph : seq<string * string * (string * VersionRequirement) list>) sources (package:PackageName) (version:SemVerInfo) = 
     let name,dependencies = 
         graph
-        |> Seq.filter (fun (p, v, _) -> NormalizedPackageName (PackageName p) = NormalizedPackageName package && SemVer.Parse v = version)
+        |> Seq.filter (fun (p, v, _) -> (PackageName p) = package && SemVer.Parse v = version)
         |> Seq.map (fun (n, _, d) -> PackageName n,d |> List.map (fun (x,y) -> PackageName x,y,[]))
         |> Seq.head
 
@@ -23,9 +23,9 @@ let PackageDetailsFromGraph (graph : seq<string * string * (string * VersionRequ
       Unlisted = false
       DirectDependencies = Set.ofList dependencies }
 
-let VersionsFromGraph (graph : seq<string * string * (string * VersionRequirement) list>) (sources, package : PackageName) = 
+let VersionsFromGraph (graph : seq<string * string * (string * VersionRequirement) list>) (sources, package : PackageName,_) = 
     graph
-    |> Seq.filter (fun (p, _, _) -> NormalizedPackageName (PackageName p) = NormalizedPackageName package)
+    |> Seq.filter (fun (p, _, _) -> (PackageName p) = package)
     |> Seq.map (fun (_, v, _) -> SemVer.Parse v)
     |> Seq.toList
 
@@ -38,9 +38,21 @@ let safeResolve graph (dependencies : (string * VersionRange) list)  =
                               Parent = PackageRequirementSource.DependenciesFile ""
                               Settings = InstallSettings.Default
                               ResolverStrategy = ResolverStrategy.Max })
-    PackageResolver.Resolve(VersionsFromGraph graph, PackageDetailsFromGraph graph, [], packages, Set.empty)
+    PackageResolver.Resolve(Constants.MainDependencyGroup,VersionsFromGraph graph, PackageDetailsFromGraph graph, [], packages, Set.empty)
 
 let resolve graph dependencies = (safeResolve graph dependencies).GetModelOrFail()
+
+let ResolveWithGraph(dependenciesFile:DependenciesFile,getSha1,getVersionF, getPackageDetailsF) =
+    let mainGroup = 
+        { Name = Constants.MainDependencyGroup
+          RemoteFiles = dependenciesFile.Groups.[Constants.MainDependencyGroup].RemoteFiles
+          RootDependencies = Some dependenciesFile.Groups.[Constants.MainDependencyGroup].Packages
+          FrameworkRestrictions = dependenciesFile.Groups.[Constants.MainDependencyGroup].Options.Settings.FrameworkRestrictions
+          PackageRequirements = [] }
+        
+    let groups = [Constants.MainDependencyGroup, mainGroup ] |> Map.ofSeq
+
+    dependenciesFile.Resolve(getSha1,getVersionF,getPackageDetailsF,groups)
 
 let getVersion (resolved:ResolvedPackage) = resolved.Version.ToString()
 
@@ -66,3 +78,5 @@ let normalizeXml(text:string) =
     doc.WriteTo(xmlTextWriter)
     xmlTextWriter.Flush()
     stringWriter.GetStringBuilder().ToString()
+
+let toPath elems = System.IO.Path.Combine(elems |> Seq.toArray)

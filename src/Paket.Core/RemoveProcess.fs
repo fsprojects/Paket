@@ -46,26 +46,25 @@ let private remove removeFromProjects dependenciesFileName (package: PackageName
         InstallProcess.Install(sources, InstallerOptions.createLegacyOptions(force, hard, false), lockFile )
 
 // remove a package with the option to remove it from a specified project
-let RemoveFromProject(dependenciesFileName, package:PackageName, force, hard, projectName, installAfter) =
-    
+let RemoveFromProject(dependenciesFileName, packageName:PackageName, force, hard, projectName, installAfter) =    
     let removeFromSpecifiedProject (projects : ProjectFile seq) =        
         match ProjectFile.TryFindProject(projects,projectName) with
         | Some p ->
-            if p.HasPackageInstalled(NormalizedPackageName package) then
-                package |> removePackageFromProject p
-            else traceWarnfn "Package %s was not installed in project %s" package.Id p.Name
+            if p.HasPackageInstalled(Constants.MainDependencyGroup,packageName) then
+                packageName |> removePackageFromProject p
+            else traceWarnfn "Package %O was not installed in project %s" packageName p.Name
         | None ->
             traceErrorfn "Could not install package in specified project %s. Project not found" projectName
 
-    remove removeFromSpecifiedProject dependenciesFileName package force hard installAfter
+    remove removeFromSpecifiedProject dependenciesFileName packageName force hard installAfter
 
 // remove a package with the option to interactively remove it from multiple projects
-let Remove(dependenciesFileName, package:PackageName, force, hard, interactive, installAfter) =
+let Remove(dependenciesFileName, packageName:PackageName, force, hard, interactive, installAfter) =
     
     let removeFromProjects (projects: ProjectFile seq) =
         for project in projects do        
-            if project.HasPackageInstalled(NormalizedPackageName package) then
+            if project.HasPackageInstalled(Constants.MainDependencyGroup,packageName) then
                 if (not interactive) || Utils.askYesNo(sprintf "  Remove from %s?" project.Name) then
-                    package |> removePackageFromProject project
+                    packageName |> removePackageFromProject project
 
-    remove removeFromProjects dependenciesFileName package force hard installAfter
+    remove removeFromProjects dependenciesFileName packageName force hard installAfter

@@ -27,12 +27,92 @@ type ProjectOutputType =
 | Exe 
 | Library
 
+type ProjectLanguage = Unknown | CSharp | FSharp | VisualBasic
+
+module private LanguageEvaluation =
+    let private extractProjectTypeGuids (projectDocument:XmlDocument) =
+        projectDocument
+        |> getDescendants "PropertyGroup"
+        |> List.filter(fun g -> g.Attributes.Count = 0)
+        |> List.collect(fun g -> g |> getDescendants "ProjectTypeGuids") 
+        |> List.filter(fun pt -> pt.Attributes.Count = 0)
+        |> List.collect(fun pt -> pt.InnerText.Split(';') |> List.ofArray)
+        |> List.distinct
+        |> List.choose(fun guid -> match Guid.TryParse guid with | (true, g) -> Some g | _ -> None)
+
+    let private csharpGuids =
+        [
+            "{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}" // C#
+            "{BF6F8E12-879D-49E7-ADF0-5503146B24B8}" // Dynamics 2012 AX C# in AOT
+            "{20D4826A-C6FA-45DB-90F4-C717570B9F32}" // Legacy (2003) Smart Device (C#)
+            "{593B0543-81F6-4436-BA1E-4747859CAAE2}" // SharePoint (C#)
+            "{4D628B5B-2FBC-4AA6-8C16-197242AEB884}" // Smart Device (C#)
+            "{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}" // Windows (C#)
+            "{C089C8C0-30E0-4E22-80C0-CE093F111A43}" // Windows Phone 8/8.1 App (C#)
+            "{14822709-B5A1-4724-98CA-57A101D1B079}" // Workflow (C#)
+        ] |> List.map Guid.Parse |> Set.ofList
+
+    let private vbGuids =
+        [
+            "{CB4CE8C6-1BDB-4DC7-A4D3-65A1999772F8}" // Legacy (2003) Smart Device (VB.NET)
+            "{EC05E597-79D4-47f3-ADA0-324C4F7C7484}" // SharePoint (VB.NET)
+            "{68B1623D-7FB9-47D8-8664-7ECEA3297D4F}" // Smart Device (VB.NET)
+            "{F184B08F-C81C-45F6-A57F-5ABD9991F28F}" // VB.NET
+            "{F184B08F-C81C-45F6-A57F-5ABD9991F28F}" // Windows (VB.NET)
+            "{DB03555F-0C8B-43BE-9FF9-57896B3C5E56}" // Windows Phone 8/8.1 App (VB.NET)
+            "{D59BE175-2ED0-4C54-BE3D-CDAA9F3214C8}" // Workflow (VB.NET)
+        ] |> List.map Guid.Parse |> Set.ofList
+
+    let private fsharpGuids =
+        [
+            "{F2A71F9B-5D33-465A-A702-920D77279786}" // F#
+        ] |> List.map Guid.Parse |> Set.ofList
+
+    let private getGuidLanguage (guid:Guid) = 
+        let isCsharp = csharpGuids.Contains(guid)
+        let isVb = vbGuids.Contains(guid)
+        let isFsharp = fsharpGuids.Contains(guid)
+
+        match (isCsharp, isVb, isFsharp) with
+        | (true, false, false) -> Some CSharp
+        | (false, true, false) -> Some VisualBasic
+        | (false, false, true) -> Some FSharp
+        | _ -> None
+
+    let private getLanguageFromExtension = function
+        | ".csproj" -> Some CSharp
+        | ".vbproj" -> Some VisualBasic
+        | ".fsproj" -> Some FSharp
+        | _ -> None
+
+    let private getLanguageFromFileName (fileName : string) =
+        let ext = fileName |> Path.GetExtension
+        getLanguageFromExtension (ext.ToLowerInvariant())
+
+    /// Get the programming language for a project file using the "ProjectTypeGuids"
+    let getProjectLanguage (projectDocument:XmlDocument) (fileName: string) = 
+        let cons x y = x :: y
+
+        let languageGroups =
+            projectDocument
+            |> extractProjectTypeGuids
+            |> List.map getGuidLanguage
+            |> cons (getLanguageFromFileName fileName)
+            |> List.choose id
+            |> List.groupBy id
+            |> List.map fst
+
+        match languageGroups with
+        | [language] -> language
+        | _ -> Unknown
+
 /// Contains methods to read and manipulate project files.
 type ProjectFile = 
     { FileName: string
       OriginalText : string
       Document : XmlDocument
-      ProjectNode : XmlNode }
+      ProjectNode : XmlNode
+      Language : ProjectLanguage }
 
     member private this.FindNodes paketOnes name =
         [for node in this.Document |> getDescendants name do
@@ -101,13 +181,14 @@ type ProjectFile =
     member this.CreateNode(name) = 
         this.Document.CreateElement(name, Constants.ProjectDefaultNameSpace)
 
-    member this.HasPackageInstalled(package:NormalizedPackageName) =        
+    member this.HasPackageInstalled(groupName,package:PackageName) =        
         let proj = FileInfo(this.FileName)
         match ProjectFile.FindReferencesFile proj with
         | None -> false
         | Some fileName -> 
             let referencesFile = ReferencesFile.FromFile fileName
-            referencesFile.NugetPackages |> Seq.exists (fun p -> NormalizedPackageName p.Name = package)
+            referencesFile.Groups.[groupName].NugetPackages 
+            |> Seq.exists (fun p -> p.Name = package)
 
     member this.CreateNode(name, text) = 
         let node = this.CreateNode(name)
@@ -239,7 +320,35 @@ type ProjectFile =
         for node in nodesToDelete do            
             node.ParentNode.RemoveChild(node) |> ignore
 
-    member this.GenerateXml(model:InstallModel,copyLocal:bool,importTargets:bool) =
+    member private this.GenerateAnalyzersXml(model:InstallModel) =
+        let createAnalyzersNode (analyzers: AnalyzerLib list) =
+            let itemGroup = this.CreateNode("ItemGroup")
+                                
+            for lib in analyzers do
+                let fi = new FileInfo(normalizePath lib.Path)
+
+                this.CreateNode("Analyzer")
+                |> addAttribute "Include" (createRelativePath this.FileName fi.FullName)
+                |> addChild (this.CreateNode("Paket","True"))
+                |> itemGroup.AppendChild
+                |> ignore
+
+            itemGroup
+
+        let shouldBeInstalled (analyzer : AnalyzerLib) = 
+            match analyzer.Language, this.Language with
+            | AnalyzerLanguage.Any, projectLanguage -> projectLanguage <> ProjectLanguage.Unknown
+            | AnalyzerLanguage.CSharp, ProjectLanguage.CSharp -> true
+            | AnalyzerLanguage.VisualBasic, ProjectLanguage.VisualBasic -> true
+            | AnalyzerLanguage.FSharp, ProjectLanguage.FSharp -> true
+            | _ -> false
+
+        model.Analyzers
+            |> List.filter shouldBeInstalled
+            |> List.sortBy(fun lib -> lib.Path)
+            |> createAnalyzersNode
+
+    member this.GenerateXml(model:InstallModel,copyLocal:bool,importTargets:bool,referenceCondition:string option) =
         let references = 
             this.GetCustomReferenceAndFrameworkNodes()
             |> List.map (fun node -> node.Attributes.["Include"].InnerText.Split(',').[0])
@@ -298,12 +407,12 @@ type ProjectFile =
 
         let conditions =
             model.ReferenceFileFolders
-            |> List.map (fun lib -> PlatformMatching.getCondition lib.Targets,createItemGroup lib.Files.References)
+            |> List.map (fun lib -> PlatformMatching.getCondition referenceCondition lib.Targets,createItemGroup lib.Files.References)
             |> List.sortBy fst
 
         let targetsFileConditions =
             model.TargetsFileFolders
-            |> List.map (fun lib -> PlatformMatching.getCondition lib.Targets,createPropertyGroup lib.Files.References)
+            |> List.map (fun lib -> PlatformMatching.getCondition referenceCondition lib.Targets,createPropertyGroup lib.Files.References)
             |> List.sortBy fst
 
         let chooseNode =
@@ -370,8 +479,10 @@ type ProjectFile =
                 |> addAttribute "Condition" (sprintf "Exists('%s')" fileName)
                 |> addAttribute "Label" "Paket")
             |> Seq.toList
+        
+        let analyzersNode = this.GenerateAnalyzersXml model
 
-        propertyNameNodes,chooseNode,propertyChooseNode
+        propertyNameNodes,chooseNode,propertyChooseNode,analyzersNode
         
     member this.RemovePaketNodes() =
         this.DeletePaketNodes("Reference")
@@ -402,25 +513,25 @@ type ProjectFile =
             ()
         
 
-    member this.UpdateReferences(completeModel: Map<NormalizedPackageName,InstallModel>, usedPackages : Map<NormalizedPackageName,InstallSettings>, hard) =
+    member this.UpdateReferences(completeModel: Map<GroupName*PackageName,_*InstallModel>, usedPackages : Map<GroupName*PackageName,_*InstallSettings>, hard) =
         this.RemovePaketNodes() 
         
         completeModel
         |> Seq.filter (fun kv -> usedPackages.ContainsKey kv.Key)
         |> Seq.map (fun kv -> 
             if hard then
-                this.DeleteCustomModelNodes(kv.Value)
-            let installSettings = usedPackages.[kv.Key]
+                this.DeleteCustomModelNodes(snd kv.Value)
+            let installSettings = snd usedPackages.[kv.Key]
             let projectModel =
-                kv.Value
+                (snd kv.Value)
                     .ApplyFrameworkRestrictions(installSettings.FrameworkRestrictions)
                     .RemoveIfCompletelyEmpty()
 
             let copyLocal = defaultArg installSettings.CopyLocal true
-            let importTargets = defaultArg installSettings.ImportTargets true
+            let importTargets = defaultArg installSettings.ImportTargets true            
 
-            this.GenerateXml(projectModel,copyLocal,importTargets))
-        |> Seq.iter (fun (propertyNameNodes,chooseNode,propertyChooseNode) -> 
+            this.GenerateXml(projectModel,copyLocal,importTargets,installSettings.ReferenceCondition))
+        |> Seq.iter (fun (propertyNameNodes,chooseNode,propertyChooseNode, analyzersNode) -> 
             if chooseNode.ChildNodes.Count > 0 then
                 this.ProjectNode.AppendChild chooseNode |> ignore
 
@@ -428,7 +539,11 @@ type ProjectFile =
                 this.ProjectNode.AppendChild propertyChooseNode |> ignore
 
             propertyNameNodes
-            |> Seq.iter (this.ProjectNode.AppendChild >> ignore))
+            |> Seq.iter (this.ProjectNode.AppendChild >> ignore)
+
+            if analyzersNode.ChildNodes.Count > 0 then
+                this.ProjectNode.AppendChild analyzersNode |> ignore
+            )
                 
     member this.Save() =
         if Utils.normalizeXml this.Document <> this.OriginalText then 
@@ -735,6 +850,8 @@ type ProjectFile =
                             | "<"  -> l <  r
                             | "<=" -> l <= r
                             | ">=" -> l >= r
+                            | _ -> failwithf "%s is not a valid comparision operator" comp
+
                         let result =
                             match comp with
                             | "==" | "!=" -> doComp left right
@@ -834,7 +951,8 @@ type ProjectFile =
                 FileName = fi.FullName
                 Document = doc
                 ProjectNode = projectNode
-                OriginalText = Utils.normalizeXml doc }
+                OriginalText = Utils.normalizeXml doc
+                Language = LanguageEvaluation.getProjectLanguage doc fi.Name }
         with
         | exn -> 
             traceWarnfn "Unable to parse %s:%s      %s" fileName Environment.NewLine exn.Message

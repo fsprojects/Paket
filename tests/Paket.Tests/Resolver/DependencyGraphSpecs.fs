@@ -40,20 +40,20 @@ let graph = [
 [<Test>]
 let ``should analyze graph one level deep``() = 
     let resolved = resolve graph ["FAKE",VersionRange.AtLeast "3.3"]
-    getVersion resolved.[NormalizedPackageName (PackageName "FAKE")] |> shouldEqual "4.0"
-    getVersion resolved.[NormalizedPackageName (PackageName "A")] |> shouldEqual "3.3"
-    getVersion resolved.[NormalizedPackageName (PackageName "B")] |> shouldEqual "1.3"
-    getVersion resolved.[NormalizedPackageName (PackageName "C")] |> shouldEqual "1.1"
+    getVersion resolved.[PackageName "FAKE"] |> shouldEqual "4.0"
+    getVersion resolved.[PackageName "A"] |> shouldEqual "3.3"
+    getVersion resolved.[PackageName "B"] |> shouldEqual "1.3"
+    getVersion resolved.[PackageName "C"] |> shouldEqual "1.1"
 
-    resolved.ContainsKey (NormalizedPackageName (PackageName "D")) |> shouldEqual false
+    resolved.ContainsKey (PackageName "D") |> shouldEqual false
 
 [<Test>]
 let ``should analyze graph completly``() = 
     let resolved = resolve graph ["FAKE",VersionRange.AtLeast "3.3"]
-    getVersion resolved.[NormalizedPackageName (PackageName "FAKE")] |> shouldEqual "4.0"
-    getVersion resolved.[NormalizedPackageName (PackageName "E")] |> shouldEqual "2.1"
-    getVersion resolved.[NormalizedPackageName (PackageName "F")] |> shouldEqual "1.1"
-    getVersion resolved.[NormalizedPackageName (PackageName "G")] |> shouldEqual "1.0"
+    getVersion resolved.[PackageName "FAKE"] |> shouldEqual "4.0"
+    getVersion resolved.[PackageName "E"] |> shouldEqual "2.1"
+    getVersion resolved.[PackageName "F"] |> shouldEqual "1.1"
+    getVersion resolved.[PackageName "G"] |> shouldEqual "1.0"
 
 let graph2 = [
     "A","1.0",["B",VersionRequirement(VersionRange.Exactly "1.1",PreReleaseStatus.No);"C",VersionRequirement(VersionRange.Exactly "2.4",PreReleaseStatus.No)]
@@ -71,21 +71,21 @@ let graph2 = [
 [<Test>]
 let ``should analyze graph2 completely``() =
     let resolved = resolve graph2 ["A",VersionRange.AtLeast "1.0"]
-    getVersion resolved.[NormalizedPackageName (PackageName "A")] |> shouldEqual "1.1"
-    getVersion resolved.[NormalizedPackageName (PackageName "B")] |> shouldEqual "1.1"
-    getVersion resolved.[NormalizedPackageName (PackageName "C")] |> shouldEqual "2.4"
-    getVersion resolved.[NormalizedPackageName (PackageName "D")] |> shouldEqual "1.5"
+    getVersion resolved.[PackageName "A"] |> shouldEqual "1.1"
+    getVersion resolved.[PackageName "B"] |> shouldEqual "1.1"
+    getVersion resolved.[PackageName "C"] |> shouldEqual "2.4"
+    getVersion resolved.[PackageName "D"] |> shouldEqual "1.5"
     
-    resolved.ContainsKey (NormalizedPackageName (PackageName "E")) |> shouldEqual false
+    resolved.ContainsKey (PackageName "E") |> shouldEqual false
 
 [<Test>]
 let ``should analyze graph2 completely with multiple starting nodes``() =
     let resolved = resolve graph2 ["A",VersionRange.AtLeast "1.0"; "E",VersionRange.AtLeast "1.0"]
-    getVersion resolved.[NormalizedPackageName (PackageName "A")] |> shouldEqual "1.1"
-    getVersion resolved.[NormalizedPackageName (PackageName "B")] |> shouldEqual "1.1"
-    getVersion resolved.[NormalizedPackageName (PackageName "C")] |> shouldEqual "2.4"
-    getVersion resolved.[NormalizedPackageName (PackageName "D")] |> shouldEqual "1.5"
-    getVersion resolved.[NormalizedPackageName (PackageName "E")] |> shouldEqual "1.0"
+    getVersion resolved.[PackageName "A"] |> shouldEqual "1.1"
+    getVersion resolved.[PackageName "B"] |> shouldEqual "1.1"
+    getVersion resolved.[PackageName "C"] |> shouldEqual "2.4"
+    getVersion resolved.[PackageName "D"] |> shouldEqual "1.5"
+    getVersion resolved.[PackageName "E"] |> shouldEqual "1.0"
 
 let graphWithoutAnyDependencyVersion = [
     "A","3.0",[("B",VersionRequirement(VersionRange.AtLeast "2.0",PreReleaseStatus.No))]

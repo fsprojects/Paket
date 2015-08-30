@@ -82,17 +82,45 @@ type LibFolder =
             | SinglePlatform t -> Some t
             | _ -> None)
 
+
+type AnalyzerLanguage = Any | CSharp | FSharp | VisualBasic
+    with
+        static member FromDirectoryName(str : string) =
+            match str with
+            | "cs" -> CSharp
+            | "vb" -> VisualBasic
+            | "fs" -> FSharp
+            | _ -> Any
+
+        static member FromDirectory(dir : DirectoryInfo) =
+            AnalyzerLanguage.FromDirectoryName(dir.Name)
+
+type AnalyzerLib =
+    {
+        /// Path of the analyzer dll
+        Path : string
+        /// Target language for the analyzer
+        Language : AnalyzerLanguage }
+
+    static member FromFile(file : FileInfo) =
+        {
+            Path = file.FullName
+            Language = AnalyzerLanguage.FromDirectory(file.Directory)
+        }
+
 type InstallModel = 
     { PackageName : PackageName
       PackageVersion : SemVerInfo
       ReferenceFileFolders : LibFolder list
-      TargetsFileFolders : LibFolder list }
+      TargetsFileFolders : LibFolder list
+      Analyzers: AnalyzerLib list}
 
     static member EmptyModel(packageName, packageVersion) : InstallModel = 
         { PackageName = packageName
           PackageVersion = packageVersion
           ReferenceFileFolders = []
-          TargetsFileFolders = [] }
+          TargetsFileFolders = [] 
+          Analyzers = [] }
     
     member this.GetLibReferences(target : TargetProfile) = 
         match Seq.tryFind (fun lib -> Seq.exists (fun t -> t = target) lib.Targets) this.ReferenceFileFolders with
@@ -135,6 +163,15 @@ type InstallModel =
                         | _ -> model
                     | None -> model) { this with ReferenceFileFolders = libFolders } libs
 
+    member this.AddAnalyzerFiles(analyzerFiles : seq<string>) : InstallModel =
+        let analyzerLibs =
+            analyzerFiles
+            |> Seq.map FileInfo
+            |> Seq.map AnalyzerLib.FromFile
+            |> List.ofSeq
+
+        { this with Analyzers = this.Analyzers @ analyzerLibs}           
+
     member this.AddTargetsFiles(targetsFiles : seq<string>) : InstallModel =
         let targetsFileFolders = 
             targetsFiles 
@@ -164,6 +201,12 @@ type InstallModel =
     member this.MapFiles(mapF) = 
         this.MapFolders(fun folder -> { folder with Files = mapF folder.Files })
 
+    member this.AddFileToFolder(path : LibFolder, file : string, folders : LibFolder list, add: InstallFiles -> string -> InstallFiles) =
+            folders
+            |> List.map (fun p -> 
+                                if p.Name = path.Name then { p with Files = add p.Files file }
+                                else p) 
+
     member this.AddPackageFile(path : LibFolder, file : string, references) : InstallModel =
         let install = 
             match references with
@@ -172,21 +215,10 @@ type InstallModel =
 
         if not install then this else
         
-        let folders = 
-            this.ReferenceFileFolders
-            |> List.map (fun p -> 
-                               if p.Name = path.Name then { p with Files = p.Files.AddReference file }
-                               else p)
+        { this with ReferenceFileFolders = this.AddFileToFolder(path, file, this.ReferenceFileFolders, (fun f -> f.AddReference)) }
 
-        { this with ReferenceFileFolders = folders }
-
-    member this.AddTargetsFile(path : LibFolder, file : string) : InstallModel =        
-        let folders = 
-            this.TargetsFileFolders
-            |> List.map (fun p -> 
-                               if p.Name = path.Name then { p with Files = p.Files.AddTargetsFile file }
-                               else p) 
-        { this with TargetsFileFolders = folders }
+    member this.AddTargetsFile(path : LibFolder, file : string) : InstallModel =   
+        { this with TargetsFileFolders = this.AddFileToFolder(path, file, this.TargetsFileFolders, (fun f -> f.AddTargetsFile)) }     
     
     member this.AddReferences(libs) = this.AddLibReferences(libs, NuspecReferences.All)
     
@@ -304,16 +336,17 @@ type InstallModel =
               |> Set.ofList)
 
     member this.RemoveIfCompletelyEmpty() = 
-        if Set.isEmpty (this.GetFrameworkAssembliesLazy.Force()) && Set.isEmpty (this.GetLibReferencesLazy.Force()) && Set.isEmpty (this.GetTargetsFilesLazy.Force()) then
+        if Set.isEmpty (this.GetFrameworkAssembliesLazy.Force()) && Set.isEmpty (this.GetLibReferencesLazy.Force()) && Set.isEmpty (this.GetTargetsFilesLazy.Force()) && List.isEmpty this.Analyzers then
             InstallModel.EmptyModel(this.PackageName,this.PackageVersion)
         else
             this
     
-    static member CreateFromLibs(packageName, packageVersion, frameworkRestrictions:FrameworkRestrictions, libs, targetsFiles, nuspec : Nuspec) = 
+    static member CreateFromLibs(packageName, packageVersion, frameworkRestrictions:FrameworkRestrictions, libs, targetsFiles, analyzerFiles, nuspec : Nuspec) = 
         InstallModel
             .EmptyModel(packageName, packageVersion)
             .AddLibReferences(libs, nuspec.References)
             .AddTargetsFiles(targetsFiles)
+            .AddAnalyzerFiles(analyzerFiles)
             .AddFrameworkAssemblyReferences(nuspec.FrameworkAssemblyReferences)
             .FilterBlackList()
             .ApplyFrameworkRestrictions(frameworkRestrictions)

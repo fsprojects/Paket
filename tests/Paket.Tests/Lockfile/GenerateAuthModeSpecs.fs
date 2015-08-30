@@ -4,6 +4,7 @@ open Paket
 open NUnit.Framework
 open FsUnit
 open TestHelpers
+open Paket.Domain
 
 let config1 = """
 source "http://nuget.org/api/v2"  username: "user" password: "pass"
@@ -23,6 +24,6 @@ let expected = """NUGET
 [<Test>]
 let ``should generate no auth in lock file``() = 
     let cfg = DependenciesFile.FromCode(config1)
-    cfg.Resolve(noSha1,VersionsFromGraph graph, PackageDetailsFromGraph graph).ResolvedPackages.GetModelOrFail()
-    |> LockFileSerializer.serializePackages cfg.Options
+    ResolveWithGraph(cfg,noSha1,VersionsFromGraph graph, PackageDetailsFromGraph graph).[Constants.MainDependencyGroup].ResolvedPackages.GetModelOrFail()
+    |> LockFileSerializer.serializePackages cfg.Groups.[Constants.MainDependencyGroup].Options
     |> shouldEqual (normalizeLineEndings expected)

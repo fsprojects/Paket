@@ -14,12 +14,12 @@ type Dependencies(dependenciesFileName: string) =
         let lockFileName = DependenciesFile.FindLockfile dependenciesFileName
         LockFile.LoadFrom(lockFileName.FullName)
 
-    let listPackages (packages: System.Collections.Generic.KeyValuePair<_, PackageResolver.ResolvedPackage> seq) =
+    let listPackages (packages: System.Collections.Generic.KeyValuePair<GroupName*PackageName, PackageResolver.ResolvedPackage> seq) =
         packages
-        |> Seq.map (fun kv -> kv.Value)
-        |> Seq.map (fun p ->
-                            let (PackageName name) = p.Name
-                            name, p.Version.ToString())
+        |> Seq.map (fun kv ->
+                            let (PackageName name) = kv.Value.Name
+                            let groupName = (fst kv.Key).ToString()
+                            groupName,name,kv.Value.Version.ToString())
         |> Seq.toList
 
 
@@ -80,7 +80,7 @@ type Dependencies(dependenciesFileName: string) =
             fun () ->
                 PaketEnv.fromRootDirectory this.RootDirectory
                 >>= PaketEnv.ensureNotInStrictMode
-                >>= Simplifier.simplify interactive
+                >>= Simplifier.simplify Constants.MainDependencyGroup interactive  // TODO: Make this group dependent
                 |> returnOrFail
                 |> Simplifier.updateEnvironment
         )
@@ -197,38 +197,41 @@ type Dependencies(dependenciesFileName: string) =
                                                       NoInstall = installAfter |> not }))
 
     /// Restores all dependencies.
-    member this.Restore(): unit = this.Restore(false,[])
+    member this.Restore(): unit = this.Restore(false,None,[])
 
     /// Restores the given paket.references files.
-    member this.Restore(files: string list): unit = this.Restore(false,files)
+    member this.Restore(group: string option, files: string list): unit = this.Restore(false, group, files)
 
     /// Restores the given paket.references files.
-    member this.Restore(force, files: string list): unit =
+    member this.Restore(force: bool, group: string option, files: string list): unit =
         Utils.RunInLockedAccessMode(
             this.RootPath,
-            fun () -> RestoreProcess.Restore(dependenciesFileName,force,files))
+            fun () -> RestoreProcess.Restore(dependenciesFileName,force,Option.map GroupName group,files))
 
     /// Restores packages for all available paket.references files
     /// (or all packages if onlyReferenced is false)
-    member this.Restore(force, onlyReferenced: bool): unit =
-        if not onlyReferenced then this.Restore(force,[]) else
-        let referencesFiles =
-            this.RootPath
-            |> ProjectFile.FindAllProjects
-            |> Array.choose (fun p -> ProjectFile.FindReferencesFile(FileInfo(p.FileName)))
-        if Array.isEmpty referencesFiles then
-            traceWarnfn "No paket.references files found for which packages could be installed."
-        else this.Restore(force, Array.toList referencesFiles)
+    member this.Restore(force: bool, group: string option, onlyReferenced: bool): unit =
+        if not onlyReferenced then 
+            this.Restore(force,group,[]) 
+        else
+            let referencesFiles =
+                this.RootPath
+                |> ProjectFile.FindAllProjects
+                |> Array.choose (fun p -> ProjectFile.FindReferencesFile(FileInfo(p.FileName)))
+            if Array.isEmpty referencesFiles then
+                traceWarnfn "No paket.references files found for which packages could be installed."
+            else 
+                this.Restore(force, group, Array.toList referencesFiles)
 
     /// Lists outdated packages.
     member this.ShowOutdated(strict: bool,includePrereleases: bool): unit =
         FindOutdated.ShowOutdated strict includePrereleases |> this.Process
 
     /// Finds all outdated packages.
-    member this.FindOutdated(strict: bool,includePrereleases: bool): (string * SemVerInfo) list =
+    member this.FindOutdated(strict: bool,includePrereleases: bool): (string * string * SemVerInfo) list =
         FindOutdated.FindOutdated strict includePrereleases
         |> this.Process
-        |> List.map (fun (PackageName p,_,newVersion) -> p,newVersion)
+        |> List.map (fun (GroupName g, PackageName p,_,newVersion) -> g,p,newVersion)
 
     /// Downloads the latest paket.bootstrapper into the .paket folder.
     member this.DownloadLatestBootstrapper() : unit =
@@ -250,18 +253,18 @@ type Dependencies(dependenciesFileName: string) =
 
     /// Returns the installed version of the given package.
     member this.GetInstalledVersion(packageName: string): string option =
-        getLockFile().ResolvedPackages.TryFind (NormalizedPackageName (PackageName packageName))
+        getLockFile().GetCompleteResolution().TryFind(PackageName packageName)
         |> Option.map (fun package -> package.Version.ToString())
 
     /// Returns the installed versions of all installed packages.
-    member this.GetInstalledPackages(): (string * string) list =
-        getLockFile().ResolvedPackages
+    member this.GetInstalledPackages(): (string * string * string) list =
+        getLockFile().GetGroupedResolution()
         |> listPackages
 
     /// Returns all sources from the dependencies file.
     member this.GetSources() =
         let dependenciesFile = DependenciesFile.ReadFromFile dependenciesFileName
-        dependenciesFile.Sources
+        dependenciesFile.Groups.[Constants.MainDependencyGroup].Sources
 
     /// Returns all system-wide defined NuGet feeds. (Can be used for Autocompletion)
     member this.GetDefinedNuGetFeeds() : string list =
@@ -274,14 +277,14 @@ type Dependencies(dependenciesFileName: string) =
         |> Set.toList
 
     /// Returns the installed versions of all installed packages which are referenced in the references file.
-    member this.GetInstalledPackages(referencesFile:ReferencesFile): (string * string) list =
+    member this.GetInstalledPackages(referencesFile:ReferencesFile): (string * string * string) list =
         let lockFile = getLockFile()
-        let resolved = lockFile.ResolvedPackages
+        let resolved = lockFile.GetCompleteResolution()
         referencesFile
         |> lockFile.GetPackageHull
         |> Seq.map (fun kv ->
-                        let name = kv.Key
-                        name.ToString(),resolved.[NormalizedPackageName name].Version.ToString())
+                        let groupName,name = kv.Key
+                        groupName.ToString(),name.ToString(),resolved.[name].Version.ToString())
         |> Seq.toList
 
     /// Returns an InstallModel for the given package.
@@ -294,7 +297,7 @@ type Dependencies(dependenciesFileName: string) =
             let nuspec = Nuspec.Load nuspec.FullName
             let files = NuGetV2.GetLibFiles(folder.FullName)
             let files = files |> Array.map (fun fi -> fi.FullName)
-            InstallModel.CreateFromLibs(PackageName packageName, SemVer.Parse version, [], files, [], nuspec)
+            InstallModel.CreateFromLibs(PackageName packageName, SemVer.Parse version, [], files, [], [], nuspec)
 
     /// Returns all libraries for the given package and framework.
     member this.GetLibraries(packageName,frameworkIdentifier:FrameworkIdentifier) =
@@ -303,28 +306,41 @@ type Dependencies(dependenciesFileName: string) =
           .GetLibReferences(frameworkIdentifier)
 
     /// Returns the installed versions of all direct dependencies which are referenced in the references file.
-    member this.GetDirectDependencies(referencesFile:ReferencesFile): (string * string) list =
+    member this.GetDirectDependencies(referencesFile:ReferencesFile): (string * string * string) list =
         let dependenciesFile = DependenciesFile.ReadFromFile dependenciesFileName
-        let normalizedDependencies = dependenciesFile.DirectDependencies |> Seq.map (fun kv -> kv.Key) |> Seq.map NormalizedPackageName |> Seq.toList
-        let normalizedDependendenciesFromRefFile = referencesFile.NugetPackages |> List.map (fun p -> NormalizedPackageName p.Name)
-        getLockFile().ResolvedPackages
+        let normalizedDependencies =
+            dependenciesFile.Groups
+            |> Seq.map (fun kv -> dependenciesFile.GetDependenciesInGroup(kv.Value.Name) |> Seq.map (fun kv' -> kv.Key, kv'.Key)  |> Seq.toList)
+            |> List.concat
+
+        let normalizedDependendenciesFromRefFile = 
+            referencesFile.Groups 
+            |> Seq.map (fun kv -> kv.Value.NugetPackages |> List.map (fun p -> kv.Key, p.Name))
+            |> List.concat
+
+        getLockFile().GetGroupedResolution()
         |> Seq.filter (fun kv -> normalizedDependendenciesFromRefFile |> Seq.exists ((=) kv.Key))
         |> Seq.filter (fun kv -> normalizedDependencies |> Seq.exists ((=) kv.Key))
         |> listPackages
 
     /// Returns the installed versions of all direct dependencies.
-    member this.GetDirectDependencies(): (string * string) list =
+    member this.GetDirectDependencies(): (string * string * string) list =
         let dependenciesFile = DependenciesFile.ReadFromFile dependenciesFileName
-        let normalizedDependencies = dependenciesFile.DirectDependencies |> Seq.map (fun kv -> kv.Key) |> Seq.map NormalizedPackageName |> Seq.toList
-        getLockFile().ResolvedPackages
+        let normalizedDependencies =
+            dependenciesFile.Groups
+            |> Seq.map (fun kv -> dependenciesFile.GetDependenciesInGroup(kv.Value.Name) |> Seq.map (fun kv' -> kv.Key, kv'.Key)  |> Seq.toList)
+            |> List.concat
+
+        getLockFile().GetGroupedResolution()
         |> Seq.filter (fun kv -> normalizedDependencies |> Seq.exists ((=) kv.Key))
         |> listPackages
 
     /// Returns the direct dependencies for the given package.
-    member this.GetDirectDependenciesForPackage(packageName:string): (string * string) list =
-        let resolvedPackages = getLockFile().ResolvedPackages
-        let package = resolvedPackages.[NormalizedPackageName (PackageName packageName)]
-        let normalizedDependencies = package.Dependencies |> Seq.map (fun (name,_,_) -> name) |> Seq.map NormalizedPackageName |> Seq.toList
+    member this.GetDirectDependenciesForPackage(groupName,packageName:string): (string * string * string) list =
+        let resolvedPackages = getLockFile().GetGroupedResolution()
+        let package = resolvedPackages.[groupName, (PackageName packageName)]
+        let normalizedDependencies = package.Dependencies |> Seq.map (fun (name,_,_) -> groupName, name) |> Seq.toList
+
         resolvedPackages
         |> Seq.filter (fun kv -> normalizedDependencies |> Seq.exists ((=) kv.Key))
         |> listPackages
@@ -346,11 +362,11 @@ type Dependencies(dependenciesFileName: string) =
 
     /// Shows all references files where the given package is referenced.
     member this.ShowReferencesFor(packages: string list): unit =
-        FindReferences.ShowReferencesFor (packages |> List.map PackageName) |> this.Process
+        FindReferences.ShowReferencesFor Constants.MainDependencyGroup (packages |> List.map PackageName) |> this.Process  // TODO: Make this group dependent
 
     /// Finds all references files where the given package is referenced.
     member this.FindReferencesFor(package: string): string list =
-        FindReferences.FindReferencesForPackage (PackageName package) |> this.Process |> List.map (fun p -> p.FileName)
+        FindReferences.FindReferencesForPackage Constants.MainDependencyGroup (PackageName package) |> this.Process |> List.map (fun p -> p.FileName) // TODO: Make this group dependent
 
     member this.SearchPackagesByName(searchTerm,?cancellationToken,?maxResults) : IObservable<string> =
         let cancellationToken = defaultArg cancellationToken (System.Threading.CancellationToken())
@@ -368,7 +384,7 @@ type Dependencies(dependenciesFileName: string) =
 
     /// Finds all projects where the given package is referenced.
     member this.FindProjectsFor(package: string): ProjectFile list =
-        FindReferences.FindReferencesForPackage (PackageName package) |> this.Process
+        FindReferences.FindReferencesForPackage Constants.MainDependencyGroup (PackageName package) |> this.Process // TODO: Make this group dependent
 
     // Packs all paket.template files.
     member this.Pack(outputPath, ?buildConfig, ?version, ?releaseNotes, ?templateFile, ?workingDir, ?lockDependencies) =

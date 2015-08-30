@@ -13,7 +13,8 @@ let dummyProjectFile =
     { FileName = ""
       OriginalText = ""
       Document = null
-      ProjectNode = null }
+      ProjectNode = null
+      Language = ProjectLanguage.Unknown }
 
 let lockFile1 = """
 NUGET
@@ -44,14 +45,14 @@ let projects1 = [
 let ``should remove one level deep transitive dependencies from dep and ref files``() = 
     let before = PaketEnv.create dummyDir depFile1 lockFile1 projects1
     
-    match Simplifier.simplify false before with
+    match Simplifier.simplify Constants.MainDependencyGroup false before with
     | Chessie.ErrorHandling.Bad(msgs) -> 
         failwith (String.concat Environment.NewLine (msgs |> List.map string))
     | Chessie.ErrorHandling.Ok((_,after),_) ->
         let depFile,refFiles = after.DependenciesFile, after.Projects |> List.map snd
-        depFile.Packages |> List.map (fun p -> p.Name) |> shouldEqual [PackageName"A";PackageName"D"]
-        refFiles.Head.NugetPackages |> shouldEqual [PackageInstallSettings.Default("A"); PackageInstallSettings.Default("D")]
-        refFiles.Tail.Head.NugetPackages |> shouldEqual [PackageInstallSettings.Default("B"); PackageInstallSettings.Default("C")]
+        depFile.Groups.[Constants.MainDependencyGroup].Packages |> List.map (fun p -> p.Name) |> shouldEqual [PackageName"A";PackageName"D"]
+        refFiles.Head.Groups.[Constants.MainDependencyGroup].NugetPackages |> shouldEqual [PackageInstallSettings.Default("A"); PackageInstallSettings.Default("D")]
+        refFiles.Tail.Head.Groups.[Constants.MainDependencyGroup].NugetPackages |> shouldEqual [PackageInstallSettings.Default("B"); PackageInstallSettings.Default("C")]
 
 let lockFile2 = """
 NUGET
@@ -87,14 +88,14 @@ let projects2 = [
 let ``should remove all transitive dependencies from dep file recursively``() =
     let before = PaketEnv.create dummyDir depFile2 lockFile2 projects2
     
-    match Simplifier.simplify false before with
+    match Simplifier.simplify Constants.MainDependencyGroup false before with
     | Chessie.ErrorHandling.Bad(msgs) -> 
         failwith (String.concat Environment.NewLine (msgs |> List.map string))
     | Chessie.ErrorHandling.Ok((_,after),_) ->
         let depFile,refFiles = after.DependenciesFile, after.Projects |> List.map snd
-        depFile.Packages |> List.map (fun p -> p.Name) |> shouldEqual [PackageName"A";PackageName"C"]
-        refFiles.Head.NugetPackages |>  shouldEqual [PackageInstallSettings.Default("A"); PackageInstallSettings.Default("C")]
-        refFiles.Tail.Head.NugetPackages |>  shouldEqual [PackageInstallSettings.Default("C"); PackageInstallSettings.Default("D")]
+        depFile.Groups.[Constants.MainDependencyGroup].Packages |> List.map (fun p -> p.Name) |> shouldEqual [PackageName"A";PackageName"C"]
+        refFiles.Head.Groups.[Constants.MainDependencyGroup].NugetPackages |>  shouldEqual [PackageInstallSettings.Default("A"); PackageInstallSettings.Default("C")]
+        refFiles.Tail.Head.Groups.[Constants.MainDependencyGroup].NugetPackages |>  shouldEqual [PackageInstallSettings.Default("C"); PackageInstallSettings.Default("D")]
 
         let expected = """
 source http://nuget.org/api/v2

@@ -380,28 +380,73 @@ nuget Microsoft.AspNet.WebApi 1.0.071.9432"""
 let ``should add Moq to second feed``() = 
     let config = """source http://internalfeed/NugetWebFeed/nuget
 
+nuget log4net
 nuget Microsoft.AspNet.WebApi.Client 5.2.3
 nuget Microsoft.AspNet.WebApi.Core 5.2.3
 nuget Microsoft.AspNet.WebApi.WebHost 5.2.3
-nuget log4net
 
 source https://nuget.org/api/v2
+nuget log4net 1.2.10
 nuget Microsoft.AspNet.WebApi 5.2.1
-nuget log4net 1.2.10"""
+"""
 
     let cfg = DependenciesFile.FromCode(config).Add(PackageName "Moq","")
     
     let expected = """source http://internalfeed/NugetWebFeed/nuget
 
+nuget log4net
 nuget Microsoft.AspNet.WebApi.Client 5.2.3
 nuget Microsoft.AspNet.WebApi.Core 5.2.3
 nuget Microsoft.AspNet.WebApi.WebHost 5.2.3
-nuget log4net
 
 source https://nuget.org/api/v2
+nuget log4net 1.2.10
 nuget Microsoft.AspNet.WebApi 5.2.1
 nuget Moq
-nuget log4net 1.2.10"""
+"""
+
+    cfg.ToString()
+    |> shouldEqual (normalizeLineEndings expected)
+
+[<Test>]
+let ``should add Microsoft.AspNet.WebApi package in first group``() = 
+    let config = """source https://nuget.org/api/v2
+
+group Build
+nuget Moq"""
+
+    let cfg = DependenciesFile.FromCode(config).Add(PackageName "Microsoft.AspNet.WebApi","")
+    
+    let expected = """source https://nuget.org/api/v2
+
+nuget Microsoft.AspNet.WebApi
+
+group Build
+nuget Moq"""
+
+    cfg.ToString()
+    |> shouldEqual (normalizeLineEndings expected)
+
+[<Test>]
+let ``should add Microsoft.AspNet.WebApi package in first group in alphabetical pos``() = 
+    let config = """source https://nuget.org/api/v2
+
+nuget A
+nuget Z
+
+group Build
+nuget Moq"""
+
+    let cfg = DependenciesFile.FromCode(config).Add(PackageName "Microsoft.AspNet.WebApi","")
+    
+    let expected = """source https://nuget.org/api/v2
+
+nuget A
+nuget Microsoft.AspNet.WebApi
+nuget Z
+
+group Build
+nuget Moq"""
 
     cfg.ToString()
     |> shouldEqual (normalizeLineEndings expected)

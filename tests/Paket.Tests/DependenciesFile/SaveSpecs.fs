@@ -290,3 +290,23 @@ let ``should serialize config with framework restriction``() =
     
     cfg.ToString()
     |> shouldEqual (normalizeLineEndings withFrameworkRestriction)
+
+
+let configWithAdditionalGroup = """
+condition: LEGACY
+source "http://nuget.org/api/v2"
+
+nuget FSharp.Compiler.Service
+nuget FsReveal
+
+group Build
+
+nuget FAKE
+nuget NUnit condition: LEGACY
+"""
+[<Test>]
+let ``should serialize config with additional group``() = 
+    let cfg = DependenciesFile.FromCode(configWithAdditionalGroup)
+    
+    cfg.ToString()
+    |> shouldEqual (normalizeLineEndings configWithAdditionalGroup)

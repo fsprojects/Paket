@@ -2,7 +2,7 @@
 // FAKE build script
 // --------------------------------------------------------------------------------------
 
-#r @"packages/FAKE/tools/FakeLib.dll"
+#r @"packages/build/FAKE/tools/FakeLib.dll"
 
 open Fake
 open Fake.Git
@@ -74,6 +74,7 @@ let releaseNotesData =
     |> parseAllReleaseNotes
 
 let release = List.head releaseNotesData
+
 let stable = 
     match releaseNotesData |> List.tryFind (fun r -> r.NugetVersion.Contains("-") |> not) with
     | Some stable -> stable
@@ -175,7 +176,7 @@ Target "MergePaketTool" (fun _ ->
 
     let result =
         ExecProcess (fun info ->
-            info.FileName <- currentDirectory @@ "packages" @@ "ILRepack" @@ "tools" @@ "ILRepack.exe"
+            info.FileName <- currentDirectory </> "packages" </> "build" </> "ILRepack" </> "tools" </> "ILRepack.exe"
             info.Arguments <- sprintf "/verbose /lib:%s /ver:%s /out:%s %s" buildDir release.AssemblyVersion (buildMergedDir @@ "paket.exe") toPack
             ) (TimeSpan.FromMinutes 5.)
 
@@ -192,7 +193,7 @@ Target "MergePowerShell" (fun _ ->
 
     let result =
         ExecProcess (fun info ->
-            info.FileName <- currentDirectory @@ "packages" @@ "ILRepack" @@ "tools" @@ "ILRepack.exe"
+            info.FileName <- currentDirectory </> "packages" </> "build" </> "ILRepack" </> "tools" </> "ILRepack.exe"
             info.Arguments <- sprintf "/verbose /lib:%s /out:%s %s" buildDir (buildMergedDirPS @@ "Paket.PowerShell.dll") toPack
             ) (TimeSpan.FromMinutes 5.)
 
@@ -355,7 +356,7 @@ Target "ReleaseDocs" (fun _ ->
     Branches.push tempDocsDir
 )
 
-#load "paket-files/fsharp/FAKE/modules/Octokit/Octokit.fsx"
+#load "paket-files/build/fsharp/FAKE/modules/Octokit/Octokit.fsx"
 open Octokit
 
 Target "ReleaseGitHub" (fun _ ->
@@ -379,6 +380,10 @@ Target "ReleaseGitHub" (fun _ ->
 
     Branches.tag "" release.NugetVersion
     Branches.pushTag "" remote release.NugetVersion
+
+    if release.SemVer.PreRelease <> None then  // TODO: Remove after release
+        let predecessor = sprintf "2.0.0-alpha0%d" (release.SemVer.PreRelease.Value.Number.Value - 1)
+        Git.CommandHelper.gitCommand "" (sprintf "push origin :%O" predecessor)
     
     // release on github
     createClient user pw

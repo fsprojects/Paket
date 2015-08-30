@@ -2,6 +2,7 @@
 
 open System
 open System.IO
+open Paket.Domain
 
 [<Literal>]
 let GithubUrl = "https://github.com"
@@ -56,6 +57,8 @@ let PackagesConfigFile = "packages.config"
 
 [<Literal>]
 let FullProjectSourceFileName = "FULLPROJECT"
+
+let MainDependencyGroup = GroupName "Main"
 
 [<Literal>]
 let ProjectDefaultNameSpace = "http://schemas.microsoft.com/developer/msbuild/2003"

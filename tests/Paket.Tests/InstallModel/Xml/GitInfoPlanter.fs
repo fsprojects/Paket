@@ -22,9 +22,10 @@ let ``should generate Xml for GitInfoPlanter2.0.0``() =
         InstallModel.CreateFromLibs(PackageName "GitInfoPlanter", SemVer.Parse "0.21", [],
             [ ],
             [ @"..\GitInfoPlanter\build\GitInfoPlanter.targets" ],
+            [],
               Nuspec.All)
 
-    let propertyNodes,chooseNode,propertyChooseNode = ProjectFile.Load("./ProjectFile/TestData/Empty.fsprojtest").Value.GenerateXml(model,true,true)
+    let propertyNodes,chooseNode,propertyChooseNode,_ = ProjectFile.Load("./ProjectFile/TestData/Empty.fsprojtest").Value.GenerateXml(model,true,true,None)
     chooseNode.OuterXml
     |> normalizeXml
     |> shouldEqual (normalizeXml emptyReferences)

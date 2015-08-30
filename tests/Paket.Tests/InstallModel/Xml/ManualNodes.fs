@@ -14,6 +14,7 @@ let ``should find custom nodes in doc``() =
               @"..\Fantomas\lib\FSharp.Core.dll" 
               @"..\Fantomas\lib\Fantomas.exe" ],
               [],
+              [],
               Nuspec.Explicit ["FantomasLib.dll"])
     
     ProjectFile.Load("./ProjectFile/TestData/CustomFantomasNode.fsprojtest").Value.GetCustomModelNodes(model).IsEmpty
@@ -26,6 +27,7 @@ let ``should find custom Paket nodes in doc``() =
             [ @"..\Fantomas\lib\FantomasLib.dll" 
               @"..\Fantomas\lib\FSharp.Core.dll" 
               @"..\Fantomas\lib\Fantomas.exe" ],
+              [],
               [],
               Nuspec.Explicit ["FantomasLib.dll"])
     
@@ -41,6 +43,7 @@ let ``should not find custom nodes if there are none``() =
               @"..\Fantomas\lib\FSharp.Core.dll" 
               @"..\Fantomas\lib\Fantomas.exe" ],
               [],
+              [],
               Nuspec.Explicit ["FantomasLib.dll"])
 
     ProjectFile.Load("./ProjectFile/TestData/NoCustomFantomasNode.fsprojtest").Value.GetCustomModelNodes(model).IsEmpty
@@ -54,6 +57,7 @@ let ``should delete custom nodes if there are some``() =
             [ @"..\Fantomas\lib\FantomasLib.dll" 
               @"..\Fantomas\lib\FSharp.Core.dll" 
               @"..\Fantomas\lib\Fantomas.exe" ],
+              [],
               [],
               Nuspec.Explicit ["FantomasLib.dll"])
 

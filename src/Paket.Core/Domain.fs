@@ -1,18 +1,33 @@
 ﻿module Paket.Domain
 
 open System.IO
-open Paket
 
 /// Represents a NuGet package name
 [<System.Diagnostics.DebuggerDisplay("{Item}")>]
+[<CustomEquality;CustomComparison>]
 type PackageName =
 | PackageName of string
 
-    member this.Id = 
+    member this.GetCompareString() =
+        match this with
+        | PackageName id -> id.ToLowerInvariant().Trim()
+
+    override this.ToString() = 
         match this with
         | PackageName id -> id
 
-    override this.ToString() = this.Id
+    override this.Equals(that) = 
+        match that with
+        | :? PackageName as that -> this.GetCompareString() = that.GetCompareString()
+        | _ -> false
+
+    override this.GetHashCode() = hash (this.GetCompareString())    
+
+    interface System.IComparable with
+       member this.CompareTo that = 
+          match that with 
+          | :? PackageName as that -> this.GetCompareString().CompareTo(that.GetCompareString())
+          | _ -> invalidArg "that" "cannot compare value of different types"
 
 /// Active recognizer to convert a NuGet package name into a string
 let (|PackageName|) (PackageName.PackageName name) = name.Trim()
@@ -20,21 +35,38 @@ let (|PackageName|) (PackageName.PackageName name) = name.Trim()
 /// Function to convert a string into a NuGet package name
 let PackageName(name:string) = PackageName.PackageName(name.Trim())
 
-/// Represents a normalized NuGet package name
+/// Represents a normalized group name
 [<System.Diagnostics.DebuggerDisplay("{Item}")>]
-type NormalizedPackageName =
-| NormalizedPackageName of string
+[<CustomEquality;CustomComparison>]
+type GroupName =
+| GroupName of string
+
+    member this.GetCompareString() =
+        match this with
+        | GroupName id -> id.ToLowerInvariant().Trim()
 
     override this.ToString() = 
         match this with
-        | NormalizedPackageName id -> id
+        | GroupName id -> id
 
-/// Active recognizer to convert a NuGet package name into a normalized one
-let (|NormalizedPackageName|) (PackageName name) =
-    NormalizedPackageName.NormalizedPackageName(name.ToLowerInvariant().Trim())
+    override this.Equals(that) = 
+        match that with
+        | :? GroupName as that -> this.GetCompareString() = that.GetCompareString()
+        | _ -> false
 
-/// Function to convert a NuGet package name into a normalized one
-let NormalizedPackageName = (|NormalizedPackageName|)
+    override this.GetHashCode() = hash (this.GetCompareString())    
+
+    interface System.IComparable with
+       member this.CompareTo that = 
+          match that with 
+          | :? GroupName as that -> this.GetCompareString().CompareTo(that.GetCompareString())
+          | _ -> invalidArg "that" "cannot compare value of different types"
+
+/// Active recognizer to convert a string into a groups name
+let (|GroupName|) (GroupName.GroupName name) = name.Trim()
+
+/// Function to convert a string into a group name
+let GroupName(name:string) = GroupName.GroupName(name.Trim())
 
 type DomainMessage = 
     | DirectoryDoesntExist of DirectoryInfo
@@ -53,7 +85,7 @@ type DomainMessage =
 
     | StrictModeDetected
     | DependencyNotFoundInLockFile of PackageName
-    | ReferenceNotFoundInLockFile of string * PackageName
+    | ReferenceNotFoundInLockFile of string * string * PackageName
 
     | DownloadError of string
     | ReleasesJsonParseError
@@ -96,9 +128,9 @@ type DomainMessage =
         | StrictModeDetected -> 
             "Strict mode detected. Command not executed."
         | DependencyNotFoundInLockFile(PackageName name) -> 
-            sprintf "Dependency %s from %s not found in lock file." name Constants.DependenciesFileName
-        | ReferenceNotFoundInLockFile(path, PackageName name) -> 
-            sprintf "Reference %s from %s not found in lock file." name path
+            sprintf "Dependency %s from paket.dependencies not found in lock file." name
+        | ReferenceNotFoundInLockFile(path, groupName, PackageName name) -> 
+            sprintf "Reference %s from %s not found in lock file in group %s." name path groupName
 
         | DownloadError url ->
             sprintf "Error occured while downloading from %s." url
@@ -112,8 +144,7 @@ type DomainMessage =
         | FileSaveError path ->
             sprintf "Unable to save file %s." path
 
-        | ConfigFileParseError ->
-            sprintf "Unable to parse Paket configuration file %s." Constants.PaketConfigFile
+        | ConfigFileParseError -> "Unable to parse Paket configuration from packages.config."
 
         | PackagingConfigParseError(file,error) ->
             sprintf "Unable to parse template file %s: %s." file error

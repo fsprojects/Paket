@@ -42,9 +42,9 @@ let ``should generate Xml for System.Spatial``() =
               @"..\System.Spatial\lib\sl4\de\System.Spatial.resources.dll"
               @"..\System.Spatial\lib\sl4\es\System.Spatial.resources.dll"
               @"..\System.Spatial\lib\sl4\zh-Hans\System.Spatial.resources.dll" 
-            ],[],Nuspec.All)
+            ],[],[],Nuspec.All)
     
-    let _,chooseNode,_ = ProjectFile.Load("./ProjectFile/TestData/Empty.fsprojtest").Value.GenerateXml(model,true,true)
+    let _,chooseNode,_,_ = ProjectFile.Load("./ProjectFile/TestData/Empty.fsprojtest").Value.GenerateXml(model,true,true,None)
     chooseNode.OuterXml
     |> normalizeXml
     |> shouldEqual (normalizeXml expected)
