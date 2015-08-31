@@ -29,9 +29,6 @@ type PackageName =
           | :? PackageName as that -> this.GetCompareString().CompareTo(that.GetCompareString())
           | _ -> invalidArg "that" "cannot compare value of different types"
 
-/// Active recognizer to convert a NuGet package name into a string
-let (|PackageName|) (PackageName.PackageName name) = name.Trim()
-
 /// Function to convert a string into a NuGet package name
 let PackageName(name:string) = PackageName.PackageName(name.Trim())
 
@@ -61,9 +58,6 @@ type GroupName =
           match that with 
           | :? GroupName as that -> this.GetCompareString().CompareTo(that.GetCompareString())
           | _ -> invalidArg "that" "cannot compare value of different types"
-
-/// Active recognizer to convert a string into a groups name
-let (|GroupName|) (GroupName.GroupName name) = name.Trim()
 
 /// Function to convert a string into a group name
 let GroupName(name:string) = GroupName.GroupName(name.Trim())
