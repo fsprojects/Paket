@@ -8,11 +8,11 @@ open Paket.Logging
 open Paket.PackageResolver
 open Chessie.ErrorHandling
 
-let private findTransitive (packages, flatLookup, failureF) = 
+let private findTransitive (groupName,packages, flatLookup, failureF) = 
     packages
     |> List.map (fun packageName -> 
         flatLookup 
-        |> Map.tryFind (Constants.MainDependencyGroup, packageName)  // TODO: Simplify per group
+        |> Map.tryFind (groupName, packageName)
         |> failIfNone (failureF packageName))
     |> collect
     |> lift Seq.concat
@@ -27,30 +27,33 @@ let private removePackage(packageName, transitivePackages, fileName, interactive
     else
         false
 
-let simplifyDependenciesFile (dependenciesFile : DependenciesFile, flatLookup, interactive) = trial {
-    let packages = dependenciesFile.Groups.[Constants.MainDependencyGroup].Packages |> List.map (fun p -> p.Name)  // TODO: Make this group dependent
-    let! transitive = findTransitive(packages, flatLookup, DependencyNotFoundInLockFile)
+let simplifyDependenciesFile (dependenciesFile : DependenciesFile, groupName, flatLookup, interactive) = trial {
+    let packages = dependenciesFile.Groups.[groupName].Packages |> List.map (fun p -> p.Name)
+    let! transitive = findTransitive(groupName, packages, flatLookup, DependencyNotFoundInLockFile)
 
     return
-        dependenciesFile.Groups.[Constants.MainDependencyGroup].Packages
+        dependenciesFile.Groups.[groupName].Packages
         |> List.fold  (fun (d:DependenciesFile) package ->
                 if removePackage(package.Name, transitive, dependenciesFile.FileName, interactive) then
-                    d.Remove(Constants.MainDependencyGroup,package.Name)
+                    d.Remove(groupName,package.Name)
                 else d) dependenciesFile
 }
 
-let simplifyReferencesFile (refFile:ReferencesFile, groupName, flatLookup, interactive) = trial {
-    let! transitive = findTransitive(refFile.Groups.[groupName].NugetPackages |> List.map (fun p -> p.Name), 
-                            flatLookup, 
-                            (fun p -> ReferenceNotFoundInLockFile(refFile.FileName, groupName.ToString(),p)))
+let simplifyReferencesFile (refFile:ReferencesFile, groupName, flatLookup, interactive) = trial {    
+    match refFile.Groups |> Map.tryFind groupName with
+    | None -> return refFile
+    | Some g -> 
+        let! transitive = findTransitive(groupName, g.NugetPackages |> List.map (fun p -> p.Name), 
+                                flatLookup, 
+                                (fun p -> ReferenceNotFoundInLockFile(refFile.FileName, groupName.ToString(),p)))
 
-    let newPackages = 
-        refFile.Groups.[groupName].NugetPackages 
-        |> List.filter (fun p -> not <| removePackage(p.Name, transitive, refFile.FileName, interactive))
+        let newPackages = 
+            g.NugetPackages 
+            |> List.filter (fun p -> not <| removePackage(p.Name, transitive, refFile.FileName, interactive))
 
-    let newGroups = refFile.Groups |> Map.add groupName { refFile.Groups.[groupName] with NugetPackages = newPackages }
+        let newGroups = refFile.Groups |> Map.add groupName {g with NugetPackages = newPackages }
 
-    return { refFile with Groups = newGroups }
+        return { refFile with Groups = newGroups }
 }
 
 let beforeAndAfter environment dependenciesFile projects =
@@ -59,21 +62,28 @@ let beforeAndAfter environment dependenciesFile projects =
         DependenciesFile = dependenciesFile
         Projects = projects }
 
-let simplify groupName interactive environment = trial {
+let simplify interactive environment = trial {
     let! lockFile = environment |> PaketEnv.ensureLockFileExists
 
     let flatLookup = lockFile.GetDependencyLookupTable()
-    let! dependenciesFile = simplifyDependenciesFile(environment.DependenciesFile, flatLookup, interactive)
-    let projectFiles, referencesFiles = List.unzip environment.Projects
+    let dependenciesFileRef = ref environment.DependenciesFile
+    let projectsRef = ref None
 
-    let! referencesFiles' =
-        referencesFiles
-        |> List.map (fun refFile -> simplifyReferencesFile(refFile, groupName, flatLookup, interactive))
-        |> collect
+    for kv in lockFile.Groups do
+        let groupName = kv.Key
+        let! dependenciesFile = simplifyDependenciesFile(!dependenciesFileRef, groupName, flatLookup, interactive)
+        dependenciesFileRef := dependenciesFile
+        let projectFiles, referencesFiles = List.unzip environment.Projects
 
-    let projects = List.zip projectFiles referencesFiles'
+        let! referencesFiles' =
+            referencesFiles
+            |> List.map (fun refFile -> simplifyReferencesFile(refFile, groupName, flatLookup, interactive))
+            |> collect
 
-    return beforeAndAfter environment dependenciesFile projects
+        let projects = List.zip projectFiles referencesFiles'
+        projectsRef := Some projects
+
+    return beforeAndAfter environment (!dependenciesFileRef) (!projectsRef).Value
 }
 
 let updateEnvironment (before,after) =

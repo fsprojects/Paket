@@ -79,8 +79,9 @@ type Dependencies(dependenciesFileName: string) =
             fun () ->
                 PaketEnv.fromRootDirectory this.RootDirectory
                 >>= PaketEnv.ensureNotInStrictMode
-                >>= Simplifier.simplify Constants.MainDependencyGroup interactive  // TODO: Make this group dependent
+                >>= Simplifier.simplify interactive
                 |> returnOrFail
+
                 |> Simplifier.updateEnvironment
         )
 
