@@ -60,12 +60,12 @@ type UpdateMode =
             | Some(groupName,package) -> SelectiveUpdate(groupName,package)
 
 let selectiveUpdate resolve (lockFile:LockFile) (dependenciesFile:DependenciesFile) updateAll package =
-    let resolve (dependenciesFile : DependenciesFile) _ = 
+    let resolve (dependenciesFile : DependenciesFile) packages = 
         dependenciesFile.Groups
         |> Map.map (fun groupName group ->
             { Name = group.Name
               RemoteFiles = group.RemoteFiles
-              RootDependencies = Some group.Packages
+              RootDependencies = packages
               FrameworkRestrictions = group.Options.Settings.FrameworkRestrictions
               PackageRequirements = 
                 match package with
@@ -80,7 +80,7 @@ let selectiveUpdate resolve (lockFile:LockFile) (dependenciesFile:DependenciesFi
             dependenciesFile.Groups.[groupName].Packages
             |> List.filter (fun p -> package = p.Name)
             |> Some
-            |> resolve dependenciesFile            
+            |> resolve dependenciesFile
 
         let merge destination source = 
             Map.fold (fun acc key value -> Map.add key value acc) destination source
