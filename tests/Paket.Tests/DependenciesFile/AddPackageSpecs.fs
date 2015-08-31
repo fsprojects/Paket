@@ -196,7 +196,7 @@ let ``should update packages with new version``() =
 nuget FAKE 1.1
 """
 
-    let cfg = DependenciesFile.FromCode(config).UpdatePackageVersion(PackageName "FAKE","1.2")
+    let cfg = DependenciesFile.FromCode(config).UpdatePackageVersion(Constants.MainDependencyGroup, PackageName "FAKE","1.2")
     
     let expected = """source https://nuget.org/api/v2
 
@@ -213,7 +213,7 @@ let ``should update packages with nuget package resolution strategy``() =
 nuget FAKE ~> 1.1
 """
 
-    let cfg = DependenciesFile.FromCode(config).UpdatePackageVersion(PackageName "FAKE","!~> 1.2")
+    let cfg = DependenciesFile.FromCode(config).UpdatePackageVersion(Constants.MainDependencyGroup, PackageName "FAKE","!~> 1.2")
     
     let expected = """source https://nuget.org/api/v2
 

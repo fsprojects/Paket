@@ -169,7 +169,7 @@ let ``SelectiveUpdate updates a single package``() =
 
     let updateAll = false
     let lockFile = 
-        Some(PackageName "FAKE")
+        Some(Constants.MainDependencyGroup, PackageName "FAKE")
         |> selectiveUpdate resolve lockFile dependenciesFile updateAll
     
     let result = 
@@ -197,7 +197,7 @@ let ``SelectiveUpdate updates a single constrained package``() =
 
     let updateAll = false
     let lockFile = 
-        Some(PackageName "Castle.Core-log4net")
+        Some(Constants.MainDependencyGroup, PackageName "Castle.Core-log4net")
         |> selectiveUpdate resolve lockFile dependenciesFile updateAll
     
     let result = 
@@ -226,7 +226,7 @@ let ``SelectiveUpdate updates a single package with constrained dependency in de
 
     let updateAll = false
     let lockFile = 
-        Some(PackageName "Castle.Core-log4net")
+        Some(Constants.MainDependencyGroup, PackageName "Castle.Core-log4net")
         |> selectiveUpdate resolve lockFile dependenciesFile updateAll
     
     let result = 
@@ -282,7 +282,7 @@ let ``SelectiveUpdate removes a dependency when it updates a single package and 
 
     let updateAll = false
     let lockFile = 
-        Some(PackageName "Castle.Core-log4net")
+        Some(Constants.MainDependencyGroup, PackageName "Castle.Core-log4net")
         |> selectiveUpdate resolve lockFile dependenciesFile updateAll
 
     let result = 
@@ -310,7 +310,7 @@ let ``SelectiveUpdate does not update when a dependency constrain is not met``()
 
     let updateAll = false
     let lockFile = 
-        Some(PackageName "Castle.Core-log4net")
+        Some(Constants.MainDependencyGroup, PackageName "Castle.Core-log4net")
         |> selectiveUpdate resolve lockFile dependenciesFile updateAll
 
     let result = 
@@ -339,7 +339,7 @@ let ``SelectiveUpdate considers package name case difference``() =
 
     let updateAll = false
     let lockFile = 
-        Some(PackageName "Castle.Core-log4net")
+        Some(Constants.MainDependencyGroup, PackageName "Castle.Core-log4net")
         |> selectiveUpdate resolve lockFile dependenciesFile updateAll
 
     let result = 
@@ -370,7 +370,7 @@ let ``SelectiveUpdate conflicts when a dependency is contrained``() =
     let updateAll = false
 
     (fun () ->
-    Some(PackageName "Castle.Core-log4net")
+    Some(Constants.MainDependencyGroup, PackageName "Castle.Core-log4net")
     |> selectiveUpdate resolve lockFile dependenciesFile updateAll
     |> ignore)
     |> shouldFail
@@ -385,7 +385,7 @@ let ``SelectiveUpdate does not update any package when package does not exist``(
 
     let updateAll = false
     let lockFile = 
-        Some(PackageName "package")
+        Some(Constants.MainDependencyGroup, PackageName "package")
         |> selectiveUpdate resolve lockFile dependenciesFile updateAll
     
     let result = 
@@ -414,7 +414,7 @@ let ``SelectiveUpdate generates paket.lock correctly``() =
 
     let updateAll = false
     let lockFile = 
-        Some(PackageName "Castle.Core")
+        Some(Constants.MainDependencyGroup, PackageName "Castle.Core")
         |> selectiveUpdate resolve lockFile dependenciesFile updateAll
     
     let result = 
@@ -455,7 +455,7 @@ let ``SelectiveUpdate does not update when package conflicts with a transitive d
     let resolve = resolve' graph requirements
 
     let lockFile = 
-        Some(packageName)
+        Some(Constants.MainDependencyGroup, packageName)
         |> selectiveUpdate resolve lockFile dependenciesFile updateAll
     
     let result = 
@@ -532,7 +532,7 @@ let ``SelectiveUpdate updates package that conflicts with a transitive dependenc
     let resolve = resolve' graph2 requirements
 
     let lockFile = 
-        Some(packageName)
+        Some(Constants.MainDependencyGroup, packageName)
         |> selectiveUpdate resolve lockFile2 dependenciesFile updateAll
     
     let result = 
@@ -569,7 +569,7 @@ let ``SelectiveUpdate updates package that conflicts with a transitive dependenc
     let resolve = resolve' graph2 requirements
 
     let lockFile = 
-        Some(packageName)
+        Some(Constants.MainDependencyGroup, packageName)
         |> selectiveUpdate resolve lockFile2 dependenciesFile updateAll
     
     let result = 
@@ -631,7 +631,7 @@ let ``SelectiveUpdate updates package that conflicts with a transitive dependenc
     let resolve = resolve' graph3 requirements
 
     let lockFile = 
-        Some(packageName)
+        Some(Constants.MainDependencyGroup, packageName)
         |> selectiveUpdate resolve lockFile3 dependenciesFile updateAll
     
     let result = 
@@ -670,7 +670,7 @@ let ``SelectiveUpdate conflicts with a transitive dependency of another package 
     let resolve = resolve' graph3 requirements
 
     (fun () ->
-    Some(packageName)
+    Some(Constants.MainDependencyGroup, packageName)
     |> selectiveUpdate resolve lockFile3 dependenciesFile updateAll
     |> ignore)
     |> shouldFail
@@ -692,7 +692,7 @@ let ``SelectiveUpdate updates package that conflicts with a deep transitive depe
     let resolve = resolve' graph3 requirements
 
     let lockFile = 
-        Some(packageName)
+        Some(Constants.MainDependencyGroup, packageName)
         |> selectiveUpdate resolve lockFile3 dependenciesFile updateAll
     
     let result = 
@@ -750,7 +750,7 @@ let ``SelectiveUpdate updates package that conflicts with a deep transitive depe
     let resolve = resolve' graph4 requirements
 
     let lockFile = 
-        Some(packageName)
+        Some(Constants.MainDependencyGroup, packageName)
         |> selectiveUpdate resolve lockFile4 dependenciesFile updateAll
     
     let result = 
@@ -806,7 +806,7 @@ let ``SelectiveUpdate updates package that conflicts with transitive dependency 
     let resolve = resolve' graph5 requirements
 
     let lockFile = 
-        Some(packageName)
+        Some(Constants.MainDependencyGroup, packageName)
         |> selectiveUpdate resolve lockFile5 dependenciesFile updateAll
     
     let result = 

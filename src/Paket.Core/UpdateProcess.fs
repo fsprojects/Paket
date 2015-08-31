@@ -47,7 +47,7 @@ let addPackagesFromReferenceFiles projects (dependenciesFile : DependenciesFile)
         newDependenciesFile
 
 type UpdateMode =
-    | SelectiveUpdate of PackageName
+    | SelectiveUpdate of GroupName * PackageName
     | Install
     | UpdateAll
 
@@ -57,7 +57,7 @@ type UpdateMode =
         else
             match package with
             | None -> Install
-            | Some package -> SelectiveUpdate package
+            | Some(groupName,package) -> SelectiveUpdate(groupName,package)
 
 let selectiveUpdate resolve (lockFile:LockFile) (dependenciesFile:DependenciesFile) updateAll package =
     let selectiveUpdate package =
@@ -104,7 +104,7 @@ let selectiveUpdate resolve (lockFile:LockFile) (dependenciesFile:DependenciesFi
                 DependencyChangeDetection.findChangesInDependenciesFile(dependenciesFile,lockFile)
                 |> DependencyChangeDetection.PinUnchangedDependencies dependenciesFile lockFile
             resolve dependenciesFile None
-        | SelectiveUpdate package -> [Constants.MainDependencyGroup,selectiveUpdate package] |> Map.ofList
+        | SelectiveUpdate(groupName,package) -> [groupName,selectiveUpdate package] |> Map.ofList
 
     let groups = 
         resolution
@@ -123,13 +123,6 @@ let SelectiveUpdate(dependenciesFile : DependenciesFile, updateAll, exclude, for
             LockFile.Parse(lockFileName.FullName, [||])
         else
             LockFile.LoadFrom lockFileName.FullName
-
-    let requirements =
-        match exclude with
-        | Some e -> 
-            oldLockFile.GetCompleteResolution()
-            |> createPackageRequirements [e]
-        | None -> []
 
     let skipVersions f (sources,packageName,vr) =
         match vr with
@@ -152,7 +145,12 @@ let SelectiveUpdate(dependenciesFile : DependenciesFile, updateAll, exclude, for
               RemoteFiles = group.RemoteFiles
               RootDependencies = Some group.Packages
               FrameworkRestrictions = group.Options.Settings.FrameworkRestrictions
-              PackageRequirements = requirements })  
+              PackageRequirements = 
+                match exclude with
+                | Some(currentGroup,packageName) when groupName = currentGroup -> 
+                    oldLockFile.Groups.[groupName].Resolution
+                    |> createPackageRequirements [packageName]
+                | _ -> [] })  
 
     let lockFile = selectiveUpdate (fun d _ -> d.Resolve(getSha1,(fun (x,y,_) -> NuGetV2.GetVersions root (x,y)) |> getVersion,NuGetV2.GetPackageDetails root force,groups d)) oldLockFile dependenciesFile updateAll exclude
     lockFile.Save()
@@ -171,7 +169,7 @@ let SmartInstall(dependenciesFile, updateAll, exclude, options : UpdaterOptions)
             options.Common, lockFile, projects)
 
 /// Update a single package command
-let UpdatePackage(dependenciesFileName, packageName : PackageName, newVersion, options : UpdaterOptions) =
+let UpdatePackage(dependenciesFileName, groupName, packageName : PackageName, newVersion, options : UpdaterOptions) =
     let dependenciesFile = DependenciesFile.ReadFromFile(dependenciesFileName)
 
     if not <| dependenciesFile.HasPackage(Constants.MainDependencyGroup, packageName) then
@@ -181,12 +179,12 @@ let UpdatePackage(dependenciesFileName, packageName : PackageName, newVersion, o
 
     let dependenciesFile =
         match newVersion with
-        | Some v -> dependenciesFile.UpdatePackageVersion(packageName, v)
+        | Some v -> dependenciesFile.UpdatePackageVersion(groupName,packageName, v)
         | None -> 
-            tracefn "Updating %s in %s" (packageName.ToString()) dependenciesFileName
+            tracefn "Updating %s in %s group %O" (packageName.ToString()) dependenciesFileName groupName
             dependenciesFile
 
-    SmartInstall(dependenciesFile, false, Some packageName, options)
+    SmartInstall(dependenciesFile, false, Some(groupName,packageName), options)
 
 /// Update command
 let Update(dependenciesFileName, options : UpdaterOptions) =

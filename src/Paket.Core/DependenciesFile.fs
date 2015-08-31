@@ -361,6 +361,7 @@ type DependenciesFile(fileName,groups:Map<GroupName,DependenciesGroup>, textRepr
         |> Map.ofSeq
 
     member __.Groups = groups
+
     member __.HasPackage (groupName, name : PackageName) = 
         match groups |> Map.tryFind groupName with
         | None -> false
@@ -546,22 +547,23 @@ type DependenciesFile(fileName,groups:Map<GroupName,DependenciesGroup>, textRepr
             traceWarnfn "%s doesn't contain package %O in group %O. ==> Ignored" fileName packageName groupName
             this
 
-    member this.UpdatePackageVersion(packageName, version:string) = 
-        if this.HasPackage(Constants.MainDependencyGroup,packageName) then
+    member this.UpdatePackageVersion(groupName, packageName, version:string) = 
+        if this.HasPackage(groupName,packageName) then
             let vr = DependenciesFileParser.parseVersionString version
 
-            tracefn "Updating %O to version %s in %s" packageName version fileName
+            tracefn "Updating %O to version %s in %s group %O" packageName version fileName groupName
             let newLines = 
-                this.Lines |> Array.map (fun l -> 
-                                  let name = packageName.ToString().ToLower()
-                                  if isPackageLine name l then 
-                                      let p = this.GetPackage(Constants.MainDependencyGroup,packageName)
-                                      DependenciesFileSerializer.packageString packageName vr.VersionRequirement vr.ResolverStrategy p.Settings
-                                  else l)
+                this.Lines 
+                |> Array.map (fun l -> 
+                    let name = packageName.ToString().ToLower()
+                    if isPackageLine name l then 
+                        let p = this.GetPackage(groupName,packageName)
+                        DependenciesFileSerializer.packageString packageName vr.VersionRequirement vr.ResolverStrategy p.Settings
+                    else l)
 
             DependenciesFile(DependenciesFileParser.parseDependenciesFile this.FileName newLines)
         else 
-            traceWarnfn "%s doesn't contain package %O. ==> Ignored" fileName packageName
+            traceWarnfn "%s doesn't contain package %O in group %O. ==> Ignored" fileName packageName groupName
             this
 
     member this.GetAllPackageSources() = 

@@ -184,14 +184,19 @@ type Dependencies(dependenciesFileName: string) =
                                                NoInstall = installAfter |> not }))
 
     /// Updates the given package.
-    member this.UpdatePackage(package: string, version: string option, force: bool, hard: bool): unit =
-        this.UpdatePackage(package, version, force, hard, false, true)
+    member this.UpdatePackage(groupName, package: string, version: string option, force: bool, hard: bool): unit =
+        this.UpdatePackage(groupName, package, version, force, hard, false, true)
 
     /// Updates the given package.
-    member this.UpdatePackage(package: string, version: string option, force: bool, hard: bool, withBindingRedirects: bool, installAfter: bool): unit =
+    member this.UpdatePackage(groupName: string option, package: string, version: string option, force: bool, hard: bool, withBindingRedirects: bool, installAfter: bool): unit =
+        let groupName = 
+            match groupName with
+            | None -> Constants.MainDependencyGroup
+            | Some name -> GroupName name
+
         Utils.RunInLockedAccessMode(
             this.RootPath,
-            fun () -> UpdateProcess.UpdatePackage(dependenciesFileName, PackageName package, version,
+            fun () -> UpdateProcess.UpdatePackage(dependenciesFileName, groupName, PackageName package, version,
                                                   { UpdaterOptions.Default with
                                                       Common = InstallerOptions.createLegacyOptions(force, hard, withBindingRedirects)
                                                       NoInstall = installAfter |> not }))

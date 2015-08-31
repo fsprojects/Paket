@@ -170,6 +170,6 @@ type ReferencesFile =
                yield! printGroup mainGroup
                for g in this.Groups do 
                 if g.Key <> Constants.MainDependencyGroup then
-                    if g.Value.NugetPackages <> [] or g.Value.RemoteFiles <> [] then
+                    if g.Value.NugetPackages <> [] || g.Value.RemoteFiles <> [] then
                         yield "group " + g.Key.ToString()
                         yield! printGroup g.Value|])

@@ -162,11 +162,12 @@ let update (results : ParseResults<_>) =
     let hard = results.Contains <@ UpdateArgs.Hard @>
     let force = results.Contains <@ UpdateArgs.Force @>
     let noInstall = results.Contains <@ UpdateArgs.No_Install @>
+    let group = results.TryGetResult <@ UpdateArgs.Group @>
     let withBindingRedirects = results.Contains <@ UpdateArgs.Redirects @>
     match results.TryGetResult <@ UpdateArgs.Nuget @> with
     | Some packageName ->
         let version = results.TryGetResult <@ UpdateArgs.Version @>
-        Dependencies.Locate().UpdatePackage(packageName, version, force, hard, withBindingRedirects, noInstall |> not)
+        Dependencies.Locate().UpdatePackage(group, packageName, version, force, hard, withBindingRedirects, noInstall |> not)
     | _ ->
         Dependencies.Locate().Update(force, hard, withBindingRedirects, noInstall |> not)
 
