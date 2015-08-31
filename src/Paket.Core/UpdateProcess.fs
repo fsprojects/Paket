@@ -60,6 +60,21 @@ type UpdateMode =
             | Some(groupName,package) -> SelectiveUpdate(groupName,package)
 
 let selectiveUpdate resolve (lockFile:LockFile) (dependenciesFile:DependenciesFile) updateAll package =
+    let resolve (dependenciesFile : DependenciesFile) _ = 
+        dependenciesFile.Groups
+        |> Map.map (fun groupName group ->
+            { Name = group.Name
+              RemoteFiles = group.RemoteFiles
+              RootDependencies = Some group.Packages
+              FrameworkRestrictions = group.Options.Settings.FrameworkRestrictions
+              PackageRequirements = 
+                match package with
+                | Some(currentGroup,packageName) when groupName = currentGroup -> 
+                    lockFile.Groups.[groupName].Resolution
+                    |> createPackageRequirements [packageName]
+                | _ -> [] })
+        |> resolve dependenciesFile
+
     let selectiveUpdate groupName package =        
         let selectiveResolution : Map<GroupName,Resolved> = 
             dependenciesFile.Groups.[groupName].Packages
@@ -142,21 +157,8 @@ let SelectiveUpdate(dependenciesFile : DependenciesFile, updateAll, exclude, for
 
     let getSha1 origin owner repo branch = RemoteDownload.getSHA1OfBranch origin owner repo branch |> Async.RunSynchronously
     let root = Path.GetDirectoryName dependenciesFile.FileName
-    let groups (dependenciesFile : DependenciesFile) = 
-        dependenciesFile.Groups
-        |> Map.map (fun groupName group ->
-            { Name = group.Name
-              RemoteFiles = group.RemoteFiles
-              RootDependencies = Some group.Packages
-              FrameworkRestrictions = group.Options.Settings.FrameworkRestrictions
-              PackageRequirements = 
-                match exclude with
-                | Some(currentGroup,packageName) when groupName = currentGroup -> 
-                    oldLockFile.Groups.[groupName].Resolution
-                    |> createPackageRequirements [packageName]
-                | _ -> [] })  
 
-    let lockFile = selectiveUpdate (fun d _ -> d.Resolve(getSha1,(fun (x,y,_) -> NuGetV2.GetVersions root (x,y)) |> getVersion,NuGetV2.GetPackageDetails root force,groups d)) oldLockFile dependenciesFile updateAll exclude
+    let lockFile = selectiveUpdate (fun d g -> d.Resolve(getSha1,(fun (x,y,_) -> NuGetV2.GetVersions root (x,y)) |> getVersion,NuGetV2.GetPackageDetails root force,g)) oldLockFile dependenciesFile updateAll exclude
     lockFile.Save()
     lockFile
 

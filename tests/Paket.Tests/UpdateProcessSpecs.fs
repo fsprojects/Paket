@@ -42,15 +42,7 @@ let graph =
 
 let getLockFile lockFileData = LockFile.Parse("",toLines lockFileData)
 let lockFile = lockFileData |> getLockFile
-let resolve' graph requirements (dependenciesFile : DependenciesFile) packages = 
-    let mainGroup = 
-        { Name = Constants.MainDependencyGroup
-          RemoteFiles = []
-          RootDependencies = packages
-          FrameworkRestrictions = dependenciesFile.Groups.[Constants.MainDependencyGroup].Options.Settings.FrameworkRestrictions
-          PackageRequirements = requirements }
-        
-    let groups = [Constants.MainDependencyGroup, mainGroup ] |> Map.ofSeq
+let resolve' graph requirements (dependenciesFile : DependenciesFile) groups = 
     dependenciesFile.Resolve(noSha1, VersionsFromGraph graph, PackageDetailsFromGraph graph, groups)
 
 let resolve = resolve' graph []
