@@ -94,7 +94,7 @@ let fullDocWithRefernceCondition = """<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <Choose>
-    <When Condition="$(LEGACY) == 'True'">
+    <When Condition="'$(LEGACY)' == 'True'">
       <ItemGroup>
         <Reference Include="FantomasLib">
           <HintPath>..\..\..\Fantomas\lib\FantomasLib.dll</HintPath>
@@ -127,3 +127,42 @@ let ``should generate full Xml with reference condition for Fantomas 1.5``() =
     project.Document.OuterXml
     |> normalizeXml
     |> shouldEqual (normalizeXml fullDocWithRefernceCondition)
+
+let fullDocWithRefernceConditionAndFrameworkRestriction = """<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <Choose>
+    <When Condition="'$(LEGACY)' == 'True' And $(TargetFrameworkIdentifier) == '.NETFramework' And $(TargetFrameworkVersion) == 'v4.5'">
+      <ItemGroup>
+        <Reference Include="FantomasLib">
+          <HintPath>..\..\..\Fantomas\lib\FantomasLib.dll</HintPath>
+          <Private>True</Private>
+          <Paket>True</Paket>
+        </Reference>
+      </ItemGroup>
+    </When>
+  </Choose>
+</Project>"""
+
+[<Test>]
+let ``should generate full Xml with reference condition and framework restrictions without msbuild warning``() =
+    // msbuild triggers a warning MSB4130 when we leave out the quotes around $(LEGACY) and add the condition at the end
+    let model =
+        InstallModel.CreateFromLibs(PackageName "Fantomas", SemVer.Parse "1.5.0", [FrameworkRestriction.Exactly (FrameworkIdentifier.DotNetFramework FrameworkVersion.V4_5)],
+            [ @"..\Fantomas\lib\FantomasLib.dll"
+              @"..\Fantomas\lib\FSharp.Core.dll"
+              @"..\Fantomas\lib\Fantomas.exe" ],
+              [],
+              Nuspec.Explicit ["FantomasLib.dll"])
+
+    let project = ProjectFile.Load("./ProjectFile/TestData/Empty.fsprojtest").Value
+    let completeModel = [(Constants.MainDependencyGroup, (PackageName "Fantomas")),(model,model)] |> Map.ofSeq
+    let settings =
+        { InstallSettings.Default
+            with ReferenceCondition = Some "LEGACY" }
+    let used = [(Constants.MainDependencyGroup, (PackageName "fantoMas")), (InstallSettings.Default,settings)] |> Map.ofSeq
+    project.UpdateReferences(completeModel,used,false)
+
+    project.Document.OuterXml
+    |> normalizeXml
+    |> shouldEqual (normalizeXml fullDocWithRefernceConditionAndFrameworkRestriction)
