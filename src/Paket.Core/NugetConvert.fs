@@ -261,7 +261,7 @@ let createDependenciesFileR (rootDirectory : DirectoryInfo) nugetEnv mode =
     let read() =
         let addPackages dependenciesFile = 
             packages
-            |> List.map (fun (name, v, restrictions) -> PackageName name, v, { InstallSettings.Default with FrameworkRestrictions = restrictions})
+            |> List.map (fun (name, v, restrictions) -> Constants.MainDependencyGroup, PackageName name, v, { InstallSettings.Default with FrameworkRestrictions = restrictions})
             |> List.fold DependenciesFile.add dependenciesFile
         try 
             DependenciesFile.ReadFromFile dependenciesFileName
@@ -300,7 +300,7 @@ let convertPackagesConfigToReferences projectFileName packagesConfig =
 
     packagesConfig.Packages
     |> List.map ((fun p -> p.Id) >> PackageName)
-    |> List.fold (fun (r : ReferencesFile) packageName -> r.AddNuGetReference(packageName)) 
+    |> List.fold (fun (r : ReferencesFile) packageName -> r.AddNuGetReference(Constants.MainDependencyGroup,packageName)) 
                  referencesFile
 
 let convertProjects nugetEnv =

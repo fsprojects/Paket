@@ -16,7 +16,7 @@ let findChangesInDependenciesFile(dependenciesFile:DependenciesFile,lockFile:Loc
       else false
 
     let added =
-        dependenciesFile.Groups.[Constants.MainDependencyGroup].Packages
+        dependenciesFile.Groups.[Constants.MainDependencyGroup].Packages  // TOD: Make this group dependent.
         |> Seq.map (fun d -> d.Name,d)
         |> Seq.filter (fun (name,pr) ->
             match lockFile.GetCompleteResolution().TryFind name with
@@ -42,12 +42,13 @@ let findChangesInDependenciesFile(dependenciesFile:DependenciesFile,lockFile:Loc
     |> Set.union modified
 
 let PinUnchangedDependencies (dependenciesFile:DependenciesFile) (oldLockFile:LockFile) (changedDependencies:Set<PackageName>) =
-    oldLockFile.GetCompleteResolution()
-    |> Seq.map (fun kv -> kv.Value)
-    |> Seq.filter (fun p -> not <| changedDependencies.Contains p.Name)
+    oldLockFile.GetGroupedResolution()
+    |> Seq.filter (fun kv -> not <| changedDependencies.Contains kv.Value.Name)
     |> Seq.fold 
-            (fun (dependenciesFile : DependenciesFile) resolvedPackage ->                 
+            (fun (dependenciesFile : DependenciesFile) kv ->
+                    let resolvedPackage = kv.Value
                     dependenciesFile.AddFixedPackage(
+                        fst kv.Key,
                         resolvedPackage.Name,
                         "= " + resolvedPackage.Version.ToString(),
                         resolvedPackage.Settings))

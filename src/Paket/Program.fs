@@ -73,13 +73,14 @@ let add (results : ParseResults<_>) =
     let force = results.Contains <@ AddArgs.Force @>
     let hard = results.Contains <@ AddArgs.Hard @>
     let redirects = results.Contains <@ AddArgs.Redirects @>
+    let group = results.TryGetResult <@ AddArgs.Group @>
     let noInstall = results.Contains <@ AddArgs.No_Install @>
     match results.TryGetResult <@ AddArgs.Project @> with
     | Some projectName ->
-        Dependencies.Locate().AddToProject(packageName, version, force, hard, projectName, noInstall |> not)
+        Dependencies.Locate().AddToProject(group, packageName, version, force, hard, projectName, noInstall |> not)
     | None ->
         let interactive = results.Contains <@ AddArgs.Interactive @>
-        Dependencies.Locate().Add(packageName, version, force, hard, interactive, noInstall |> not)
+        Dependencies.Locate().Add(group, packageName, version, force, hard, interactive, noInstall |> not)
 
 let validateConfig (results : ParseResults<_>) =
     let args = results.GetResults <@ ConfigArgs.AddCredentials @>
@@ -136,13 +137,14 @@ let remove (results : ParseResults<_>) =
     let force = results.Contains <@ RemoveArgs.Force @>
     let hard = results.Contains <@ RemoveArgs.Hard @>
     let noInstall = results.Contains <@ RemoveArgs.No_Install @>
+    let group = results.TryGetResult <@ RemoveArgs.Group @>
     match results.TryGetResult <@ RemoveArgs.Project @> with
     | Some projectName ->
         Dependencies.Locate()
-                    .RemoveFromProject(packageName, force, hard, projectName, noInstall |> not)
+                    .RemoveFromProject(group, packageName, force, hard, projectName, noInstall |> not)
     | None ->
         let interactive = results.Contains <@ RemoveArgs.Interactive @>
-        Dependencies.Locate().Remove(packageName, force, hard, interactive, noInstall |> not)
+        Dependencies.Locate().Remove(group, packageName, force, hard, interactive, noInstall |> not)
 
 let restore (results : ParseResults<_>) =
     let force = results.Contains <@ RestoreArgs.Force @>

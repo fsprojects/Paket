@@ -102,33 +102,33 @@ type Dependencies(dependenciesFileName: string) =
         |> returnOrFail
 
     /// Adds the given package without version requirements to the dependencies file.
-    member this.Add(package: string): unit = this.Add(package,"")
+    member this.Add(groupName, package: string): unit = this.Add(groupName, package,"")
 
     /// Adds the given package with the given version to the dependencies file.
-    member this.Add(package: string,version: string): unit =
-        this.Add(package, version, force = false, hard = false, withBindingRedirects = false, interactive = false, installAfter = true)
+    member this.Add(groupName, package: string,version: string): unit =
+        this.Add(groupName, package, version, force = false, hard = false, withBindingRedirects = false, interactive = false, installAfter = true)
 
     /// Adds the given package with the given version to the dependencies file.
-    member this.Add(package: string,version: string,force: bool,hard: bool,interactive: bool,installAfter: bool): unit =
-        this.Add(package, version, force, hard, false, interactive, installAfter)
+    member this.Add(groupName, package: string,version: string,force: bool,hard: bool,interactive: bool,installAfter: bool): unit =
+        this.Add(groupName, package, version, force, hard, false, interactive, installAfter)
 
     /// Adds the given package with the given version to the dependencies file.
-    member this.Add(package: string,version: string,force: bool,hard: bool,withBindingRedirects: bool,interactive: bool,installAfter: bool): unit =
+    member this.Add(groupName, package: string,version: string,force: bool,hard: bool,withBindingRedirects: bool,interactive: bool,installAfter: bool): unit =
         Utils.RunInLockedAccessMode(
             this.RootPath,
-            fun () -> AddProcess.Add(dependenciesFileName, PackageName(package.Trim()), version,
+            fun () -> AddProcess.Add(dependenciesFileName, groupName, PackageName(package.Trim()), version,
                                      InstallerOptions.createLegacyOptions(force, hard, withBindingRedirects),
                                      interactive, installAfter))
 
     /// Adds the given package with the given version to the dependencies file.
-    member this.AddToProject(package: string,version: string,force: bool,hard: bool,projectName: string,installAfter: bool): unit =
-        this.AddToProject(package, version, force, hard, false, projectName, installAfter)
+    member this.AddToProject(groupName, package: string,version: string,force: bool,hard: bool,projectName: string,installAfter: bool): unit =
+        this.AddToProject(groupName, package, version, force, hard, false, projectName, installAfter)
 
    /// Adds the given package with the given version to the dependencies file.
-    member this.AddToProject(package: string,version: string,force: bool,hard: bool,withBindingRedirects: bool,projectName: string,installAfter: bool): unit =
+    member this.AddToProject(groupName, package: string,version: string,force: bool,hard: bool,withBindingRedirects: bool,projectName: string,installAfter: bool): unit =
         Utils.RunInLockedAccessMode(
             this.RootPath,
-            fun () -> AddProcess.AddToProject(dependenciesFileName, PackageName package, version,
+            fun () -> AddProcess.AddToProject(dependenciesFileName, groupName, PackageName package, version,
                                               InstallerOptions.createLegacyOptions(force, hard, withBindingRedirects),
                                               projectName, installAfter))
 
@@ -346,19 +346,19 @@ type Dependencies(dependenciesFileName: string) =
         |> listPackages
 
     /// Removes the given package from dependencies file.
-    member this.Remove(package: string): unit = this.Remove(package, false, false, false, true)
+    member this.Remove(groupName, package: string): unit = this.Remove(groupName, package, false, false, false, true)
 
     /// Removes the given package from dependencies file.
-    member this.Remove(package: string,force: bool,hard: bool,interactive: bool,installAfter: bool): unit =
+    member this.Remove(groupName, package: string,force: bool,hard: bool,interactive: bool,installAfter: bool): unit =
         Utils.RunInLockedAccessMode(
             this.RootPath,
-            fun () -> RemoveProcess.Remove(dependenciesFileName, PackageName package, force, hard, interactive, installAfter))
+            fun () -> RemoveProcess.Remove(dependenciesFileName, groupName, PackageName package, force, hard, interactive, installAfter))
 
     /// Removes the given package from the specified project
-    member this.RemoveFromProject(package: string,force: bool,hard: bool,projectName: string,installAfter: bool): unit =
+    member this.RemoveFromProject(groupName,package: string,force: bool,hard: bool,projectName: string,installAfter: bool): unit =
         Utils.RunInLockedAccessMode(
             this.RootPath,
-            fun () -> RemoveProcess.RemoveFromProject(dependenciesFileName, PackageName package, force, hard, projectName, installAfter))
+            fun () -> RemoveProcess.RemoveFromProject(dependenciesFileName, groupName, PackageName package, force, hard, projectName, installAfter))
 
     /// Shows all references files where the given package is referenced.
     member this.ShowReferencesFor(packages: string list): unit =

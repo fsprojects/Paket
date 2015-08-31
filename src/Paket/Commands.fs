@@ -61,6 +61,7 @@ type AddArgs =
     | [<CustomCommandLine("nuget")>][<Mandatory>] Nuget of string
     | [<CustomCommandLine("version")>] Version of string
     | [<CustomCommandLine("project")>] Project of string
+    | [<CustomCommandLine("group")>] Group of string
     | [<AltCommandLine("-f")>] Force
     | [<AltCommandLine("-i")>] Interactive
     | Hard
@@ -71,6 +72,7 @@ with
         member this.Usage =
             match this with
             | Nuget(_) -> "NuGet package id."
+            | Group(_) -> "Add the package to the given group. If omited the Main group is used."
             | Version(_) -> "Allows to specify version of the package."
             | Project(_) -> "Allows to add the package to a single project only."
             | Force -> "Forces the download and reinstallation of all packages."
@@ -152,6 +154,7 @@ with
 type RemoveArgs =
     | [<CustomCommandLine("nuget")>][<Mandatory>] Nuget of string
     | [<CustomCommandLine("project")>] Project of string
+    | [<CustomCommandLine("group")>] Group of string
     | [<AltCommandLine("-f")>] Force
     | [<AltCommandLine("-i")>] Interactive
     | Hard
@@ -161,6 +164,7 @@ with
         member this.Usage =
             match this with
             | Nuget(_) -> "NuGet package id."
+            | Group(_) -> "Removes the package from the given group. If omited the Main group is used."
             | Project(_) -> "Allows to remove the package from a single project only."
             | Force -> "Forces the download and reinstallation of all packages."
             | Interactive -> "Asks the user for every project if he or she wants to remove the package from the projects's paket.references file. By default every installation of the package is removed."

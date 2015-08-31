@@ -9,22 +9,22 @@ open System.Collections.Generic
 open Chessie.ErrorHandling
 open Paket.Logging
 
-let addPackagesFromReferenceFiles projects (dependenciesFile : DependenciesFile) =
+let addPackagesFromReferenceFiles projects (dependenciesFile : DependenciesFile) groupName =
     let lockFileName = DependenciesFile.FindLockfile dependenciesFile.FileName
     let oldLockFile =
         if lockFileName.Exists then
             LockFile.LoadFrom(lockFileName.FullName)
         else
-            LockFile.Create(lockFileName.FullName, dependenciesFile.Groups.[Constants.MainDependencyGroup].Options, Resolution.Ok(Map.empty), [])
+            LockFile.Create(lockFileName.FullName, dependenciesFile.Groups.[groupName].Options, Resolution.Ok(Map.empty), [])
 
     let allExistingPackages =
-        oldLockFile.GetCompleteResolution()
+        oldLockFile.Groups.[groupName].Resolution
         |> Seq.map (fun d -> d.Value.Name)
         |> Set.ofSeq
 
     let allReferencedPackages =
         projects
-        |> Seq.collect (fun (_,referencesFile) -> referencesFile.NugetPackages)
+        |> Seq.collect (fun (_,referencesFile) -> referencesFile.Groups.[groupName].NugetPackages)
 
     let diff =
         allReferencedPackages
@@ -39,10 +39,10 @@ let addPackagesFromReferenceFiles projects (dependenciesFile : DependenciesFile)
         let newDependenciesFile =
             diff
             |> Seq.fold (fun (dependenciesFile:DependenciesFile) dep ->
-                if dependenciesFile.HasPackage(Constants.MainDependencyGroup,dep.Name) then
+                if dependenciesFile.HasPackage(groupName,dep.Name) then
                     dependenciesFile
                 else
-                    dependenciesFile.AddAdditionalPackage(dep.Name,"",dep.Settings)) dependenciesFile
+                    dependenciesFile.AddAdditionalPackage(groupName,dep.Name,"",dep.Settings)) dependenciesFile
         newDependenciesFile.Save()
         newDependenciesFile
 

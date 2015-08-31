@@ -6,12 +6,12 @@ open System.IO
 open Paket.Domain
 open Paket.Logging
 
-let private removePackageFromProject (project : ProjectFile) package = 
+let private removePackageFromProject (project : ProjectFile) groupName package = 
     ProjectFile.FindOrCreateReferencesFile(FileInfo(project.FileName))
-        .RemoveNuGetReference(package)
+        .RemoveNuGetReference(groupName,package)
         .Save()
 
-let private remove removeFromProjects dependenciesFileName (package: PackageName) force hard installAfter = 
+let private remove removeFromProjects dependenciesFileName groupName (package: PackageName) force hard installAfter = 
     let (PackageName name) = package
     let root = Path.GetDirectoryName dependenciesFileName
     let allProjects = ProjectFile.FindAllProjects root
@@ -20,13 +20,13 @@ let private remove removeFromProjects dependenciesFileName (package: PackageName
             
     // check we have it removed from all paket.references files
     let stillInstalled =
-        allProjects
+        allProjects 
         |> Seq.exists (fun project -> 
             let proj = FileInfo(project.FileName)
             match ProjectFile.FindReferencesFile proj with
             | None -> false 
             | Some fileName -> 
-                let lines = File.ReadAllLines(fileName)
+                let lines = File.ReadAllLines(fileName)   // TODO:  make this group dependent
                 lines |> Seq.exists (fun l -> l.ToLower() = name.ToLower()))
 
     let oldLockFile =    
@@ -36,7 +36,7 @@ let private remove removeFromProjects dependenciesFileName (package: PackageName
     let lockFile =
         if stillInstalled then oldLockFile else
         let exisitingDependenciesFile = DependenciesFile.ReadFromFile dependenciesFileName
-        let dependenciesFile = exisitingDependenciesFile.Remove(package)
+        let dependenciesFile = exisitingDependenciesFile.Remove(groupName,package)
         dependenciesFile.Save()
         
         UpdateProcess.SelectiveUpdate(dependenciesFile,false,None,force)
@@ -45,26 +45,35 @@ let private remove removeFromProjects dependenciesFileName (package: PackageName
         let sources = DependenciesFile.ReadFromFile(dependenciesFileName).GetAllPackageSources()
         InstallProcess.Install(sources, InstallerOptions.createLegacyOptions(force, hard, false), lockFile )
 
-// remove a package with the option to remove it from a specified project
-let RemoveFromProject(dependenciesFileName, packageName:PackageName, force, hard, projectName, installAfter) =    
+/// Removes a package with the option to remove it from a specified project.
+let RemoveFromProject(dependenciesFileName, groupName, packageName:PackageName, force, hard, projectName, installAfter) =    
+    let groupName = 
+        match groupName with
+        | None -> Constants.MainDependencyGroup
+        | Some name -> GroupName name
+
     let removeFromSpecifiedProject (projects : ProjectFile seq) =        
         match ProjectFile.TryFindProject(projects,projectName) with
         | Some p ->
-            if p.HasPackageInstalled(Constants.MainDependencyGroup,packageName) then
-                packageName |> removePackageFromProject p
-            else traceWarnfn "Package %O was not installed in project %s" packageName p.Name
+            if p.HasPackageInstalled(groupName,packageName) then
+                removePackageFromProject p groupName packageName
+            else traceWarnfn "Package %O was not installed in project %s in group %O" packageName p.Name groupName
         | None ->
-            traceErrorfn "Could not install package in specified project %s. Project not found" projectName
+            traceErrorfn "Could not remove package %O from specified project %s. Project not found" packageName projectName
 
-    remove removeFromSpecifiedProject dependenciesFileName packageName force hard installAfter
+    remove removeFromSpecifiedProject dependenciesFileName groupName packageName force hard installAfter
 
-// remove a package with the option to interactively remove it from multiple projects
-let Remove(dependenciesFileName, packageName:PackageName, force, hard, interactive, installAfter) =
-    
+/// Remove a package with the option to interactively remove it from multiple projects.
+let Remove(dependenciesFileName, groupName, packageName:PackageName, force, hard, interactive, installAfter) =
+    let groupName = 
+        match groupName with
+        | None -> Constants.MainDependencyGroup
+        | Some name -> GroupName name
+
     let removeFromProjects (projects: ProjectFile seq) =
         for project in projects do        
-            if project.HasPackageInstalled(Constants.MainDependencyGroup,packageName) then
-                if (not interactive) || Utils.askYesNo(sprintf "  Remove from %s?" project.Name) then
-                    packageName |> removePackageFromProject project
+            if project.HasPackageInstalled(groupName,packageName) then
+                if (not interactive) || Utils.askYesNo(sprintf "  Remove from %s (group %O)?" project.Name groupName) then
+                    removePackageFromProject project groupName packageName
 
-    remove removeFromProjects dependenciesFileName packageName force hard installAfter
+    remove removeFromProjects dependenciesFileName groupName packageName force hard installAfter

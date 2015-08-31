@@ -15,7 +15,7 @@ nuget Rx-Main ~> 2.0
 nuget FAKE = 1.1
 nuget SignalR = 3.3.2"""
 
-    let cfg = DependenciesFile.FromCode(config).Add(PackageName "xunit","")
+    let cfg = DependenciesFile.FromCode(config).Add(Constants.MainDependencyGroup, PackageName "xunit","")
     
     let expected = """source http://nuget.org/api/v2
 
@@ -37,7 +37,7 @@ nuget FAKE = 1.1
 nuget Rx-Main ~> 2.0
 nuget SignalR = 3.3.2"""
 
-    let cfg = DependenciesFile.FromCode(config).Add(PackageName "Rz","")
+    let cfg = DependenciesFile.FromCode(config).Add(Constants.MainDependencyGroup, PackageName "Rz","")
     
     let expected = """source http://nuget.org/api/v2
 
@@ -61,7 +61,7 @@ nuget NuGet.CommandLine
 
 github forki/FsUnit FsUnit.fs"""
 
-    let cfg = DependenciesFile.FromCode(config).Add(PackageName "xunit","")
+    let cfg = DependenciesFile.FromCode(config).Add(Constants.MainDependencyGroup, PackageName "xunit","")
     
     let expected = """source http://nuget.org/api/v2
 
@@ -85,7 +85,7 @@ nuget Castle.Windsor-log4net ~> 3.2
 
 github forki/FsUnit FsUnit.fs"""
 
-    let cfg = DependenciesFile.FromCode(config).Add(PackageName "FAKE","~> 1.2")
+    let cfg = DependenciesFile.FromCode(config).Add(Constants.MainDependencyGroup, PackageName "FAKE","~> 1.2")
     
     let expected = """source http://nuget.org/api/v2
 
@@ -102,7 +102,7 @@ let ``should add new packages with specific version if we give it``() =
     let config = """source http://nuget.org/api/v2
 nuget Castle.Windsor-log4net ~> 3.2"""
 
-    let cfg = DependenciesFile.FromCode(config).Add(PackageName "FAKE","1.2")
+    let cfg = DependenciesFile.FromCode(config).Add(Constants.MainDependencyGroup, PackageName "FAKE","1.2")
     
     let expected = """source http://nuget.org/api/v2
 nuget Castle.Windsor-log4net ~> 3.2
@@ -115,7 +115,7 @@ nuget FAKE 1.2"""
 let ``should add new packages even to empty package section``() = 
     let config = """github forki/FsUnit FsUnit.fs"""
 
-    let cfg = DependenciesFile.FromCode(config).Add(PackageName "FAKE","~> 1.2")
+    let cfg = DependenciesFile.FromCode(config).Add(Constants.MainDependencyGroup, PackageName "FAKE","~> 1.2")
     
     let expected = """source https://nuget.org/api/v2
 
@@ -130,7 +130,7 @@ github forki/FsUnit FsUnit.fs"""
 let ``should add new packages with nuget package resolution strategy``() = 
     let config = ""
 
-    let cfg = DependenciesFile.FromCode(config).Add(PackageName "FAKE","!~> 1.2")
+    let cfg = DependenciesFile.FromCode(config).Add(Constants.MainDependencyGroup, PackageName "FAKE","!~> 1.2")
     
     let expected = """source https://nuget.org/api/v2
 
@@ -150,7 +150,7 @@ nuget Rx-Main ~> 2.0
 nuget FAKE = 1.1
 nuget SignalR = 3.3.2"""
 
-    DependenciesFile.FromCode(config).Add(PackageName "FAKE","") |> ignore
+    DependenciesFile.FromCode(config).Add(Constants.MainDependencyGroup, PackageName "FAKE","") |> ignore
     
 [<Test>]
 let ``should not fail if package already exists - case insensitive``() = 
@@ -161,7 +161,7 @@ nuget Rx-Main ~> 2.0
 nuget FAKE = 1.1
 nuget SignalR = 3.3.2"""
 
-    DependenciesFile.FromCode(config).Add(PackageName "fAKe","") |> ignore
+    DependenciesFile.FromCode(config).Add(Constants.MainDependencyGroup, PackageName "fAKe","") |> ignore
 
 [<Test>]
 let ``should keep sources stable``() = 
@@ -185,7 +185,7 @@ nuget FAKE
 nuget NUnit"""
 
     DependenciesFile.FromCode(before)
-      .Add(PackageName "FAKE","")
+      .Add(Constants.MainDependencyGroup, PackageName "FAKE","")
       .ToString()
     |> shouldEqual (normalizeLineEndings expected)
 
@@ -241,7 +241,7 @@ github fsharp/FAKE modules/Octokit/Octokit.fsx
 github fsharp/FAKE src/app/FakeLib/Globbing/Globbing.fs
 github fsprojects/Chessie src/Chessie/ErrorHandling.fs"""
 
-    let cfg = DependenciesFile.FromCode(config).Add(PackageName "FsCheck","")
+    let cfg = DependenciesFile.FromCode(config).Add(Constants.MainDependencyGroup, PackageName "FsCheck","")
     
     let expected = """source https://nuget.org/api/v2
 
@@ -266,7 +266,7 @@ github fsprojects/Chessie src/Chessie/ErrorHandling.fs"""
 let ``should add Microsoft.AspNet.WebApi package in first position if only source is given``() = 
     let config = """source https://nuget.org/api/v2"""
 
-    let cfg = DependenciesFile.FromCode(config).Add(PackageName "Microsoft.AspNet.WebApi","")
+    let cfg = DependenciesFile.FromCode(config).Add(Constants.MainDependencyGroup, PackageName "Microsoft.AspNet.WebApi","")
     
     let expected = """source https://nuget.org/api/v2
 
@@ -288,7 +288,7 @@ source https://nuget.org/api/v2
 nuget Microsoft.AspNet.WebApi
 nuget log4net 1.2.10"""
 
-    let cfg = DependenciesFile.FromCode(config).Add(PackageName "Microsoft.AspNet.WebApi","5.2.3")
+    let cfg = DependenciesFile.FromCode(config).Add(Constants.MainDependencyGroup, PackageName "Microsoft.AspNet.WebApi","5.2.3")
     
     let expected = """source http://internalfeed/NugetWebFeed/nuget
 
@@ -316,7 +316,7 @@ source https://nuget.org/api/v2
 nuget Microsoft.AspNet.WebApi
 nuget log4net 1.2.10"""
 
-    let cfg = DependenciesFile.FromCode(config).AddFixedPackage(PackageName "Microsoft.AspNet.WebApi.Client","5.2.3")
+    let cfg = DependenciesFile.FromCode(config).AddFixedPackage(Constants.MainDependencyGroup, PackageName "Microsoft.AspNet.WebApi.Client","5.2.3")
     
     let expected = """source http://internalfeed/NugetWebFeed/nuget
 
@@ -346,7 +346,7 @@ source https://nuget.org/api/v2
 nuget Microsoft.AspNet.WebApi 5.2.1
 nuget log4net 1.2.10"""
 
-    let cfg = DependenciesFile.FromCode(config).Add(PackageName "Microsoft.AspNet.WebApi","5.2.3")
+    let cfg = DependenciesFile.FromCode(config).Add(Constants.MainDependencyGroup, PackageName "Microsoft.AspNet.WebApi","5.2.3")
     
     let expected = """source http://internalfeed/NugetWebFeed/nuget
 
@@ -368,7 +368,7 @@ let ``should pin down version requirement during add``() =
     let config = """source https://nuget.org/api/v2
 nuget Microsoft.AspNet.WebApi ~> 1.0"""
 
-    let cfg = DependenciesFile.FromCode(config).AddFixedPackage(PackageName "Microsoft.AspNet.WebApi","1.0.071.9432")
+    let cfg = DependenciesFile.FromCode(config).AddFixedPackage(Constants.MainDependencyGroup, PackageName "Microsoft.AspNet.WebApi","1.0.071.9432")
     
     let expected = """source https://nuget.org/api/v2
 nuget Microsoft.AspNet.WebApi 1.0.071.9432"""
@@ -390,7 +390,7 @@ nuget log4net 1.2.10
 nuget Microsoft.AspNet.WebApi 5.2.1
 """
 
-    let cfg = DependenciesFile.FromCode(config).Add(PackageName "Moq","")
+    let cfg = DependenciesFile.FromCode(config).Add(Constants.MainDependencyGroup, PackageName "Moq","")
     
     let expected = """source http://internalfeed/NugetWebFeed/nuget
 
@@ -415,13 +415,31 @@ let ``should add Microsoft.AspNet.WebApi package in first group``() =
 group Build
 nuget Moq"""
 
-    let cfg = DependenciesFile.FromCode(config).Add(PackageName "Microsoft.AspNet.WebApi","")
+    let cfg = DependenciesFile.FromCode(config).Add(Constants.MainDependencyGroup, PackageName "Microsoft.AspNet.WebApi","")
     
     let expected = """source https://nuget.org/api/v2
 
 nuget Microsoft.AspNet.WebApi
 
 group Build
+nuget Moq"""
+
+    cfg.ToString()
+    |> shouldEqual (normalizeLineEndings expected)
+
+[<Test>]
+let ``should add Microsoft.AspNet.WebApi package in second group``() = 
+    let config = """source https://nuget.org/api/v2
+
+group Build
+nuget Moq"""
+
+    let cfg = DependenciesFile.FromCode(config).Add(GroupName "Build", PackageName "Microsoft.AspNet.WebApi","")
+    
+    let expected = """source https://nuget.org/api/v2
+
+group Build
+nuget Microsoft.AspNet.WebApi
 nuget Moq"""
 
     cfg.ToString()
@@ -437,7 +455,7 @@ nuget Z
 group Build
 nuget Moq"""
 
-    let cfg = DependenciesFile.FromCode(config).Add(PackageName "Microsoft.AspNet.WebApi","")
+    let cfg = DependenciesFile.FromCode(config).Add(Constants.MainDependencyGroup, PackageName "Microsoft.AspNet.WebApi","")
     
     let expected = """source https://nuget.org/api/v2
 
@@ -447,6 +465,31 @@ nuget Z
 
 group Build
 nuget Moq"""
+
+    cfg.ToString()
+    |> shouldEqual (normalizeLineEndings expected)
+
+
+[<Test>]
+let ``should add Microsoft.AspNet.WebApi package in second group in alphabetical pos``() = 
+    let config = """source https://nuget.org/api/v2
+
+nuget NUnit
+
+group Build
+nuget A
+nuget Z"""
+
+    let cfg = DependenciesFile.FromCode(config).Add(GroupName "Build", PackageName "Microsoft.AspNet.WebApi","")
+    
+    let expected = """source https://nuget.org/api/v2
+
+nuget NUnit
+
+group Build
+nuget A
+nuget Microsoft.AspNet.WebApi
+nuget Z"""
 
     cfg.ToString()
     |> shouldEqual (normalizeLineEndings expected)

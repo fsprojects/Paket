@@ -15,7 +15,7 @@ nuget Rx-Main ~> 2.0
 nuget FAKE = 1.1
 nuget SignalR = 3.3.2"""
 
-    let cfg = DependenciesFile.FromCode(config).Remove(PackageName "FAKE")
+    let cfg = DependenciesFile.FromCode(config).Remove(Constants.MainDependencyGroup, PackageName "FAKE")
     
     let expected = """source http://nuget.org/api/v2
 
@@ -33,10 +33,34 @@ let ``should remove only the correct package``() =
 nuget Castle.Windsor-log4net ~> 3.2
 nuget Castle.Windsor ~> 3.2"""
 
-    let cfg = DependenciesFile.FromCode(config).Remove(PackageName "Castle.Windsor")
+    let cfg = DependenciesFile.FromCode(config).Remove(Constants.MainDependencyGroup, PackageName "Castle.Windsor")
     
     let expected = """source http://nuget.org/api/v2
 
+nuget Castle.Windsor-log4net ~> 3.2"""
+
+    cfg.ToString()
+    |> shouldEqual (normalizeLineEndings expected)
+
+[<Test>]
+let ``should remove only the correct package from the correct group``() = 
+    let config = """source http://nuget.org/api/v2
+
+nuget Castle.Windsor-log4net ~> 3.2
+nuget Castle.Windsor ~> 3.2
+
+group Test
+nuget Castle.Windsor-log4net ~> 3.2
+nuget Castle.Windsor ~> 3.2"""
+
+    let cfg = DependenciesFile.FromCode(config).Remove(GroupName "Test", PackageName "Castle.Windsor")
+    
+    let expected = """source http://nuget.org/api/v2
+
+nuget Castle.Windsor-log4net ~> 3.2
+nuget Castle.Windsor ~> 3.2
+
+group Test
 nuget Castle.Windsor-log4net ~> 3.2"""
 
     cfg.ToString()
@@ -48,11 +72,20 @@ let ``should keep stable if package doesn't exist``() =
 
 nuget Castle.Windsor-log4net ~> 3.2"""
 
-    let cfg = DependenciesFile.FromCode(config).Remove(PackageName "Castle.Windsor")
-    
-    let expected = """source http://nuget.org/api/v2
-
-nuget Castle.Windsor-log4net ~> 3.2"""
+    let cfg = DependenciesFile.FromCode(config).Remove(Constants.MainDependencyGroup, PackageName "Castle.Windsor")
 
     cfg.ToString()
-    |> shouldEqual (normalizeLineEndings expected)
+    |> shouldEqual (normalizeLineEndings config)
+
+[<Test>]
+let ``should keep stable if group doesn't exist``() = 
+    let config = """source http://nuget.org/api/v2
+
+nuget Castle.Windsor-log4net ~> 3.2
+group Build
+nuget xUnit"""
+
+    let cfg = DependenciesFile.FromCode(config).Remove(GroupName "Test", PackageName "Castle.Windsor")
+
+    cfg.ToString()
+    |> shouldEqual (normalizeLineEndings config)

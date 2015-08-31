@@ -333,13 +333,27 @@ module DependenciesFileSerializer =
 type DependenciesFile(fileName,groups:Map<GroupName,DependenciesGroup>, textRepresentation:string []) =
     let isPackageLine name (l : string) = 
         let splitted = l.Split(' ') |> Array.map (fun s -> s.ToLowerInvariant().Trim())
-        splitted |> Array.exists ((=) "nuget") && splitted |> Array.exists ((=) name)          
+        splitted |> Array.exists ((=) "nuget") && splitted |> Array.exists ((=) name)
 
-    let tryFindPackageLine (packageName:PackageName) =
+    let tryFindPackageLine groupName (packageName:PackageName) =        
         let name = packageName.GetCompareString()
-        textRepresentation
-        |> Array.tryFindIndex (isPackageLine name)
-            
+        let _,_,found =
+            textRepresentation
+            |> Array.fold (fun (i,currentGroup,found) line -> 
+                    match found with
+                    | Some _ -> i+1,currentGroup,found
+                    | None ->
+                        if currentGroup = groupName && isPackageLine (packageName.ToString().ToLowerInvariant()) line then
+                            i+1,currentGroup,Some i
+                        else
+                            if line.StartsWith "group " then
+                                let group = line.Replace("group","").Trim()
+                                i+1,GroupName group,found
+                            else
+                                i+1,currentGroup,found)
+                (0,Constants.MainDependencyGroup,None)
+        found
+
     /// Returns all direct NuGet dependencies in the given group.
     member __.GetDependenciesInGroup(groupName:GroupName) =
         groups.[groupName].Packages 
@@ -347,7 +361,11 @@ type DependenciesFile(fileName,groups:Map<GroupName,DependenciesGroup>, textRepr
         |> Map.ofSeq
 
     member __.Groups = groups
-    member __.HasPackage (groupName, name : PackageName) = groups.[groupName].Packages |> List.exists (fun p -> p.Name = name)
+    member __.HasPackage (groupName, name : PackageName) = 
+        match groups |> Map.tryFind groupName with
+        | None -> false
+        | Some g -> g.Packages |> List.exists (fun p -> p.Name = name)
+
     member __.GetPackage (groupName, name : PackageName) = groups.[groupName].Packages |> List.find (fun p -> p.Name = name)
     member __.FileName = fileName
     member __.Lines = textRepresentation
@@ -395,27 +413,27 @@ type DependenciesFile(fileName,groups:Map<GroupName,DependenciesGroup>, textRepr
                     groups.[k].Packages @ group.PackageRequirements |> Set.ofList)
               ResolvedSourceFiles = remoteFiles })
 
-    member __.AddAdditionalPackage(packageName:PackageName,versionRequirement,resolverStrategy,settings,?pinDown) =
+    member __.AddAdditionalPackage(groupName, packageName:PackageName,versionRequirement,resolverStrategy,settings,?pinDown) =
         let pinDown = defaultArg pinDown false
         let packageString = DependenciesFileSerializer.packageString packageName versionRequirement resolverStrategy settings
 
         // Try to find alphabetical matching position to insert the package
         let isPackageInLastSource (p:PackageRequirement) =
-            match groups.[Constants.MainDependencyGroup].Sources with
+            match groups.[groupName].Sources with
             | [] -> true
             | sources -> 
                 let lastSource =  Seq.last sources
                 p.Sources |> Seq.exists (fun s -> s = lastSource)
 
-        let smaller = Seq.takeWhile (fun (p:PackageRequirement) -> p.Name <= packageName || not (isPackageInLastSource p)) groups.[Constants.MainDependencyGroup].Packages |> List.ofSeq
+        let smaller = Seq.takeWhile (fun (p:PackageRequirement) -> p.Name <= packageName || not (isPackageInLastSource p)) groups.[groupName].Packages |> List.ofSeq
 
         let newLines =
             let list = new System.Collections.Generic.List<_>()
             list.AddRange textRepresentation
 
-            match tryFindPackageLine packageName with                        
+            match tryFindPackageLine groupName packageName with                        
             | Some pos -> 
-                let package = DependenciesFileParser.parsePackageLine(groups.[Constants.MainDependencyGroup].Sources,PackageRequirementSource.DependenciesFile fileName,list.[pos])
+                let package = DependenciesFileParser.parsePackageLine(groups.[groupName].Sources,PackageRequirementSource.DependenciesFile fileName,list.[pos])
 
                 if versionRequirement.Range.IsIncludedIn(package.VersionRequirement.Range) then
                     list.[pos] <- packageString
@@ -427,12 +445,12 @@ type DependenciesFile(fileName,groups:Map<GroupName,DependenciesGroup>, textRepr
                 else
                     match smaller with
                     | [] -> 
-                        match groups.[Constants.MainDependencyGroup].Packages with
+                        match groups.[groupName].Packages with
                         | [] ->
-                            if groups.[Constants.MainDependencyGroup].RemoteFiles <> [] then
+                            if groups.[groupName].RemoteFiles <> [] then
                                 list.Insert(0,"")
                     
-                            match groups.[Constants.MainDependencyGroup].Sources with
+                            match groups.[groupName].Sources with
                             | [] -> 
                                 list.Insert(0,packageString)
                                 list.Insert(0,"")
@@ -446,13 +464,13 @@ type DependenciesFile(fileName,groups:Map<GroupName,DependenciesGroup>, textRepr
                                     list.Insert(i,"")
                                     list.Insert(i,packageString)
                         | p::_ -> 
-                            match tryFindPackageLine p.Name with
+                            match tryFindPackageLine groupName p.Name with
                             | None -> list.Add packageString
                             | Some pos -> list.Insert(pos,packageString)
                     | _ -> 
                         let p = Seq.last smaller
 
-                        match tryFindPackageLine p.Name with
+                        match tryFindPackageLine groupName p.Name with
                         | None -> list.Add packageString
                         | Some found -> 
                             let pos = ref (found + 1)
@@ -472,16 +490,16 @@ type DependenciesFile(fileName,groups:Map<GroupName,DependenciesGroup>, textRepr
         DependenciesFile(DependenciesFileParser.parseDependenciesFile fileName newLines)
 
 
-    member this.AddAdditionalPackage(packageName:PackageName,version:string,settings) =
+    member this.AddAdditionalPackage(groupName, packageName:PackageName,version:string,settings) =
         let vr = DependenciesFileParser.parseVersionString version
 
-        this.AddAdditionalPackage(packageName,vr.VersionRequirement,vr.ResolverStrategy,settings)
+        this.AddAdditionalPackage(groupName, packageName,vr.VersionRequirement,vr.ResolverStrategy,settings)
 
-    member this.AddFixedPackage(packageName:PackageName,version:string,settings) =
+    member this.AddFixedPackage(groupName, packageName:PackageName,version:string,settings) =
         let vr = DependenciesFileParser.parseVersionString version
 
         let resolverStrategy,versionRequirement = 
-            match groups.[Constants.MainDependencyGroup].Packages |> List.tryFind (fun p -> p.Name = packageName) with
+            match groups.[groupName].Packages |> List.tryFind (fun p -> p.Name = packageName) with
             | Some package -> 
                 package.ResolverStrategy,
                 match package.VersionRequirement.Range with
@@ -489,13 +507,13 @@ type DependenciesFile(fileName,groups:Map<GroupName,DependenciesGroup>, textRepr
                 | _ -> vr.VersionRequirement
             | None -> vr.ResolverStrategy,vr.VersionRequirement
 
-        this.AddAdditionalPackage(packageName,versionRequirement,resolverStrategy,settings,true)
+        this.AddAdditionalPackage(groupName, packageName,versionRequirement,resolverStrategy,settings,true)
 
-    member this.AddFixedPackage(packageName:PackageName,version:string) =
-        this.AddFixedPackage(packageName,version,InstallSettings.Default)
+    member this.AddFixedPackage(groupName, packageName:PackageName,version:string) =
+        this.AddFixedPackage(groupName, packageName,version,InstallSettings.Default)
 
-    member this.RemovePackage(packageName:PackageName) =
-        match tryFindPackageLine packageName with
+    member this.RemovePackage(groupName, packageName:PackageName) =
+        match tryFindPackageLine groupName packageName with 
         | None -> this
         | Some pos ->
             let removeElementAt index myArr = // TODO: Replace this in F# 4.0
@@ -505,37 +523,34 @@ type DependenciesFile(fileName,groups:Map<GroupName,DependenciesGroup>, textRepr
             let newLines = removeElementAt pos textRepresentation
             DependenciesFile(DependenciesFileParser.parseDependenciesFile fileName newLines)
 
-    static member add (dependenciesFile : DependenciesFile) (packageName,version,installSettings) =
-        dependenciesFile.Add(packageName,version,installSettings)
+    static member add (dependenciesFile : DependenciesFile) (groupName, packageName,version,installSettings) =
+        dependenciesFile.Add(groupName, packageName,version,installSettings)
 
-    member this.Add(packageName,version:string,?installSettings : InstallSettings) =
+    member this.Add(groupName, packageName,version:string,?installSettings : InstallSettings) =
         let installSettings = defaultArg installSettings InstallSettings.Default
-        let (PackageName name) = packageName
-        if this.HasPackage(Constants.MainDependencyGroup,packageName) && String.IsNullOrWhiteSpace version then 
-            traceWarnfn "%s contains package %s already. ==> Ignored" fileName name
+        if this.HasPackage(groupName, packageName) && String.IsNullOrWhiteSpace version then 
+            traceWarnfn "%s contains package %O in group %O already. ==> Ignored" fileName packageName groupName
             this
         else
             if version = "" then
-                tracefn "Adding %s to %s" name fileName
+                tracefn "Adding %O to %s into group %O" packageName fileName groupName
             else
-                tracefn "Adding %s %s to %s" name version fileName
-            this.AddAdditionalPackage(packageName,version,installSettings)
+                tracefn "Adding %O %s to %s into group %O" packageName version fileName groupName
+            this.AddAdditionalPackage(groupName, packageName,version,installSettings)
 
-    member this.Remove(packageName) =
-        let (PackageName name) = packageName
-        if this.HasPackage(Constants.MainDependencyGroup,packageName) then         
-            tracefn "Removing %s from %s" name fileName
-            this.RemovePackage(packageName)
+    member this.Remove(groupName, packageName) =
+        if this.HasPackage(groupName, packageName) then         
+            tracefn "Removing %O from %s (group %O)" packageName fileName groupName
+            this.RemovePackage(groupName, packageName)
         else
-            traceWarnfn "%s doesn't contain package %s. ==> Ignored" fileName name
+            traceWarnfn "%s doesn't contain package %O in group %O. ==> Ignored" fileName packageName groupName
             this
 
     member this.UpdatePackageVersion(packageName, version:string) = 
-        let (PackageName name) = packageName
         if this.HasPackage(Constants.MainDependencyGroup,packageName) then
             let vr = DependenciesFileParser.parseVersionString version
 
-            tracefn "Updating %s to version %s in %s" name version fileName
+            tracefn "Updating %O to version %s in %s" packageName version fileName
             let newLines = 
                 this.Lines |> Array.map (fun l -> 
                                   let name = packageName.ToString().ToLower()
@@ -546,7 +561,7 @@ type DependenciesFile(fileName,groups:Map<GroupName,DependenciesGroup>, textRepr
 
             DependenciesFile(DependenciesFileParser.parseDependenciesFile this.FileName newLines)
         else 
-            traceWarnfn "%s doesn't contain package %s. ==> Ignored" fileName name
+            traceWarnfn "%s doesn't contain package %O. ==> Ignored" fileName packageName
             this
 
     member this.GetAllPackageSources() = 

@@ -83,11 +83,11 @@ let ``should add nuget package``() =
     empty.Groups.[Constants.MainDependencyGroup].RemoteFiles.Length |> shouldEqual 0
     empty.FileName |> shouldEqual "file.txt"
 
-    let refFile = empty.AddNuGetReference(PackageName "NUnit")
+    let refFile = empty.AddNuGetReference(Constants.MainDependencyGroup, PackageName "NUnit")
     refFile.Groups.[Constants.MainDependencyGroup].NugetPackages.Length |> shouldEqual 1
     refFile.Groups.[Constants.MainDependencyGroup].NugetPackages.Head.Name |> shouldEqual (PackageName "NUnit")
 
-    let refFile' = refFile.AddNuGetReference(PackageName "xUnit")
+    let refFile' = refFile.AddNuGetReference(Constants.MainDependencyGroup, PackageName "xUnit")
     refFile'.Groups.[Constants.MainDependencyGroup].NugetPackages.Length |> shouldEqual 2
     refFile'.Groups.[Constants.MainDependencyGroup].NugetPackages.Head.Name |> shouldEqual (PackageName "NUnit")
     refFile'.Groups.[Constants.MainDependencyGroup].NugetPackages.Tail.Head.Name |> shouldEqual (PackageName "xUnit")
@@ -97,12 +97,75 @@ let ``should add nuget package``() =
 let ``should not add nuget package twice``() = 
     let refFile = 
         ReferencesFile.New("file.txt")
-          .AddNuGetReference(PackageName "NUnit")
-          .AddNuGetReference(PackageName "NUnit")
-          .AddNuGetReference(PackageName "NUnit")
+          .AddNuGetReference(Constants.MainDependencyGroup, PackageName "NUnit")
+          .AddNuGetReference(Constants.MainDependencyGroup, PackageName "NUnit")
+          .AddNuGetReference(Constants.MainDependencyGroup, PackageName "NUnit")
 
     refFile.Groups.[Constants.MainDependencyGroup].NugetPackages.Length |> shouldEqual 1
     refFile.Groups.[Constants.MainDependencyGroup].NugetPackages.Head.Name |> shouldEqual (PackageName "NUnit")
+
+let refFileContentWith2Groups = """NUnit
+group Test
+NUnit"""
+
+[<Test>]
+let ``should add nuget package to different groups``() = 
+    let refFile = 
+        ReferencesFile.New("file.txt")
+          .AddNuGetReference(Constants.MainDependencyGroup, PackageName "NUnit")
+          .AddNuGetReference(GroupName "Test", PackageName "NUnit")
+
+    refFile.Groups.[Constants.MainDependencyGroup].NugetPackages.Length |> shouldEqual 1
+    refFile.Groups.[Constants.MainDependencyGroup].NugetPackages.Head.Name |> shouldEqual (PackageName "NUnit")
+
+    refFile.Groups.[GroupName "Test"].NugetPackages.Length |> shouldEqual 1
+    refFile.Groups.[GroupName "Test"].NugetPackages.Head.Name |> shouldEqual (PackageName "NUnit")
+
+    refFile.ToString()
+    |> normalizeLineEndings
+    |> shouldEqual (normalizeLineEndings refFileContentWith2Groups)
+
+let refFileContentWithNuGetDeletedFromGroup = """NUnit
+group Test
+xUnit"""
+
+[<Test>]
+let ``should remove nuget from group``() = 
+    let refFile = 
+        ReferencesFile.New("file.txt")
+          .AddNuGetReference(Constants.MainDependencyGroup, PackageName "NUnit")
+          .AddNuGetReference(GroupName "Test", PackageName "NUnit")
+          .AddNuGetReference(GroupName "Test", PackageName "xUnit")
+          .RemoveNuGetReference(GroupName "Test", PackageName "NUnit")
+
+    refFile.Groups.[Constants.MainDependencyGroup].NugetPackages.Length |> shouldEqual 1
+    refFile.Groups.[Constants.MainDependencyGroup].NugetPackages.Head.Name |> shouldEqual (PackageName "NUnit")
+
+    refFile.Groups.[GroupName "Test"].NugetPackages.Length |> shouldEqual 1
+    refFile.Groups.[GroupName "Test"].NugetPackages.Head.Name |> shouldEqual (PackageName "xUnit")
+
+    refFile.ToString()
+    |> normalizeLineEndings
+    |> shouldEqual (normalizeLineEndings refFileContentWithNuGetDeletedFromGroup)
+
+let refFileContentWithDeletedGroup = """NUnit"""
+
+[<Test>]
+let ``should remove nuget from group and delete empty group``() = 
+    let refFile = 
+        ReferencesFile.New("file.txt")
+          .AddNuGetReference(Constants.MainDependencyGroup, PackageName "NUnit")
+          .AddNuGetReference(GroupName "Test", PackageName "NUnit")
+          .RemoveNuGetReference(GroupName "Test", PackageName "NUnit")
+
+    refFile.Groups.[Constants.MainDependencyGroup].NugetPackages.Length |> shouldEqual 1
+    refFile.Groups.[Constants.MainDependencyGroup].NugetPackages.Head.Name |> shouldEqual (PackageName "NUnit")
+
+    refFile.Groups.[GroupName "Test"].NugetPackages.Length |> shouldEqual 0
+
+    refFile.ToString()
+    |> normalizeLineEndings
+    |> shouldEqual (normalizeLineEndings refFileContentWithDeletedGroup)
 
 let refFileContentWithCopyLocalFalse = """Castle.Windsor copy_local : false
 Newtonsoft.Json"""

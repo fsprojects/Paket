@@ -28,14 +28,14 @@ let private removePackage(packageName, transitivePackages, fileName, interactive
         false
 
 let simplifyDependenciesFile (dependenciesFile : DependenciesFile, flatLookup, interactive) = trial {
-    let packages = dependenciesFile.Groups.[Constants.MainDependencyGroup].Packages |> List.map (fun p -> p.Name)
+    let packages = dependenciesFile.Groups.[Constants.MainDependencyGroup].Packages |> List.map (fun p -> p.Name)  // TODO: Make this group dependent
     let! transitive = findTransitive(packages, flatLookup, DependencyNotFoundInLockFile)
 
     return
         dependenciesFile.Groups.[Constants.MainDependencyGroup].Packages
         |> List.fold  (fun (d:DependenciesFile) package ->
                 if removePackage(package.Name, transitive, dependenciesFile.FileName, interactive) then
-                    d.Remove(package.Name)
+                    d.Remove(Constants.MainDependencyGroup,package.Name)
                 else d) dependenciesFile
 }
 
