@@ -13,7 +13,8 @@ let dummyProjectFile =
     { FileName = ""
       OriginalText = ""
       Document = null
-      ProjectNode = null }
+      ProjectNode = null
+      Language = ProjectLanguage.Unknown }
 
 let lockFile1 = """
 NUGET

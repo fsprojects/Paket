@@ -297,7 +297,7 @@ type Dependencies(dependenciesFileName: string) =
             let nuspec = Nuspec.Load nuspec.FullName
             let files = NuGetV2.GetLibFiles(folder.FullName)
             let files = files |> Array.map (fun fi -> fi.FullName)
-            InstallModel.CreateFromLibs(PackageName packageName, SemVer.Parse version, [], files, [], nuspec)
+            InstallModel.CreateFromLibs(PackageName packageName, SemVer.Parse version, [], files, [], [], nuspec)
 
     /// Returns all libraries for the given package and framework.
     member this.GetLibraries(packageName,frameworkIdentifier:FrameworkIdentifier) =

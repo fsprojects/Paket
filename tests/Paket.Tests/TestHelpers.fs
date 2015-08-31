@@ -78,3 +78,5 @@ let normalizeXml(text:string) =
     doc.WriteTo(xmlTextWriter)
     xmlTextWriter.Flush()
     stringWriter.GetStringBuilder().ToString()
+
+let toPath elems = System.IO.Path.Combine(elems |> Seq.toArray)

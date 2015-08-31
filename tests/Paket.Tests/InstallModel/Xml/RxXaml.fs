@@ -98,6 +98,7 @@ let ``should generate Xml for Rx-XAML 2.2.4 with correct framework assembly refe
               @"..\Rx-XAML\lib\windowsphone8\System.Reactive.Windows.Threading.dll" 
               @"..\Rx-XAML\lib\windowsphone71\System.Reactive.Windows.Threading.dll" ],
                [],
+               [],
                { References = NuspecReferences.All
                  OfficialName = "Reactive Extensions - XAML Support Library"
                  Dependencies = []
@@ -109,7 +110,7 @@ let ``should generate Xml for Rx-XAML 2.2.4 with correct framework assembly refe
                   { AssemblyName = "System.Windows"; FrameworkRestrictions = [FrameworkRestriction.Exactly(Silverlight "v5.0")] }
                   { AssemblyName = "System.Windows"; FrameworkRestrictions = [FrameworkRestriction.Exactly(WindowsPhoneSilverlight "v7.1")] }]})
 
-    let _,chooseNode,_ = ProjectFile.Load("./ProjectFile/TestData/Empty.fsprojtest").Value.GenerateXml(model,true,true,None)
+    let _,chooseNode,_,_ = ProjectFile.Load("./ProjectFile/TestData/Empty.fsprojtest").Value.GenerateXml(model,true,true,None)
     chooseNode.OuterXml
     |> normalizeXml
     |> shouldEqual (normalizeXml expected)

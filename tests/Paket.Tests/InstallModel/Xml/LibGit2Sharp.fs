@@ -38,11 +38,12 @@ let ``should generate Xml for LibGit2Sharp 2.0.0``() =
         InstallModel.CreateFromLibs(PackageName "LibGit2Sharp", SemVer.Parse "0.21", [],
             [ @"..\LibGit2Sharp\lib\net40\LibGit2Sharp.dll" ],
             [ @"..\LibGit2Sharp\build\net40\LibGit2Sharp.props" ],
+            [],
               Nuspec.All)
     
     model.GetLibReferences(SinglePlatform (DotNetFramework FrameworkVersion.V4_Client)) |> shouldContain @"..\LibGit2Sharp\lib\net40\LibGit2Sharp.dll"
 
-    let propertyNodes,chooseNode,propertyChooseNode = ProjectFile.Load("./ProjectFile/TestData/Empty.fsprojtest").Value.GenerateXml(model,true,true,None)
+    let propertyNodes,chooseNode,propertyChooseNode,_ = ProjectFile.Load("./ProjectFile/TestData/Empty.fsprojtest").Value.GenerateXml(model,true,true,None)
     chooseNode.OuterXml
     |> normalizeXml
     |> shouldEqual (normalizeXml expectedReferenceNodes)

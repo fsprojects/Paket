@@ -8,7 +8,6 @@ open Paket.Logging
 open Paket.PackageResolver
 open Paket.PackageSources
 open FSharp.Polyfill
-open System
 
 /// Downloads and extracts a package.
 let ExtractPackage(root, groupName, sources, force, package : ResolvedPackage) = 
@@ -25,18 +24,18 @@ let ExtractPackage(root, groupName, sources, force, package : ResolvedPackage) =
                                | _ -> None)
             try 
                 let! folder = NuGetV2.DownloadPackage(root, auth, source.Url, groupName, name, v, includeVersionInPath, force)
-                return package, NuGetV2.GetLibFiles folder, NuGetV2.GetTargetsFiles folder
+                return package, NuGetV2.GetLibFiles folder, NuGetV2.GetTargetsFiles folder, NuGetV2.GetAnalyzerFiles folder
             with _ when not force -> 
                 tracefn "Something went wrong with the download of %s %A - automatic retry with --force." name v
                 let! folder = NuGetV2.DownloadPackage(root, auth, source.Url, groupName, name, v, includeVersionInPath, true)
-                return package, NuGetV2.GetLibFiles folder, NuGetV2.GetTargetsFiles folder
+                return package, NuGetV2.GetLibFiles folder, NuGetV2.GetTargetsFiles folder, NuGetV2.GetAnalyzerFiles folder
         | LocalNuget path ->         
             let path = Utils.normalizeLocalPath path
             let di = Utils.getDirectoryInfo path root
             let nupkg = NuGetV2.findLocalPackage di.FullName name v
 
             let! folder = NuGetV2.CopyFromCache(root, groupName, nupkg.FullName, "", name, v, includeVersionInPath, force) // TODO: Restore license
-            return package, NuGetV2.GetLibFiles folder, NuGetV2.GetTargetsFiles folder
+            return package, NuGetV2.GetLibFiles folder, NuGetV2.GetTargetsFiles folder, NuGetV2.GetAnalyzerFiles folder
     }
 
 /// Restores the given dependencies from the lock file.
