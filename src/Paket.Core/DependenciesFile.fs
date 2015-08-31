@@ -566,12 +566,6 @@ type DependenciesFile(fileName,groups:Map<GroupName,DependenciesGroup>, textRepr
             traceWarnfn "%s doesn't contain package %O in group %O. ==> Ignored" fileName packageName groupName
             this
 
-    member this.GetAllPackageSources() = 
-        groups.[Constants.MainDependencyGroup].Packages
-        |> List.collect (fun package -> package.Sources)
-        |> Seq.distinct
-        |> Seq.toList
-
     member this.RootPath =
         let fi = FileInfo(fileName)
         fi.Directory.FullName

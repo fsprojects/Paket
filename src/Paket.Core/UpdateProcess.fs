@@ -164,9 +164,7 @@ let SmartInstall(dependenciesFile, updateAll, exclude, options : UpdaterOptions)
     let projects = InstallProcess.findAllReferencesFiles root |> returnOrFail
 
     if not options.NoInstall then
-        InstallProcess.InstallIntoProjects(
-            dependenciesFile.GetAllPackageSources(),
-            options.Common, lockFile, projects)
+        InstallProcess.InstallIntoProjects(options.Common, dependenciesFile, lockFile, projects)
 
 /// Update a single package command
 let UpdatePackage(dependenciesFileName, groupName, packageName : PackageName, newVersion, options : UpdaterOptions) =

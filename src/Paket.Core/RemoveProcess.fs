@@ -12,7 +12,6 @@ let private removePackageFromProject (project : ProjectFile) groupName package =
         .Save()
 
 let private remove removeFromProjects dependenciesFileName groupName (package: PackageName) force hard installAfter = 
-    let (PackageName name) = package
     let root = Path.GetDirectoryName dependenciesFileName
     let allProjects = ProjectFile.FindAllProjects root
     
@@ -27,23 +26,22 @@ let private remove removeFromProjects dependenciesFileName groupName (package: P
             | None -> false 
             | Some fileName -> 
                 let lines = File.ReadAllLines(fileName)   // TODO:  make this group dependent
-                lines |> Seq.exists (fun l -> l.ToLower() = name.ToLower()))
+                lines |> Seq.exists (fun l -> l.ToLowerInvariant() = package.ToString().ToLowerInvariant()))
 
     let oldLockFile =    
         let lockFileName = DependenciesFile.FindLockfile dependenciesFileName
         LockFile.LoadFrom(lockFileName.FullName)
 
-    let lockFile =
-        if stillInstalled then oldLockFile else
+    let dependenciesFile,lockFile =
         let exisitingDependenciesFile = DependenciesFile.ReadFromFile dependenciesFileName
+        if stillInstalled then exisitingDependenciesFile,oldLockFile else        
         let dependenciesFile = exisitingDependenciesFile.Remove(groupName,package)
         dependenciesFile.Save()
         
-        UpdateProcess.SelectiveUpdate(dependenciesFile,false,None,force)
+        dependenciesFile,UpdateProcess.SelectiveUpdate(dependenciesFile,false,None,force)
     
     if installAfter then
-        let sources = DependenciesFile.ReadFromFile(dependenciesFileName).GetAllPackageSources()
-        InstallProcess.Install(sources, InstallerOptions.createLegacyOptions(force, hard, false), lockFile )
+        InstallProcess.Install(InstallerOptions.createLegacyOptions(force, hard, false), dependenciesFile, lockFile)
 
 /// Removes a package with the option to remove it from a specified project.
 let RemoveFromProject(dependenciesFileName, groupName, packageName:PackageName, force, hard, projectName, installAfter) =    

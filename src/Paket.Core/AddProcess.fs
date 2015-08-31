@@ -16,9 +16,8 @@ let private addToProject (project : ProjectFile) groupName package =
 
 let private add installToProjects addToProjectsF dependenciesFileName groupName package version options installAfter =
     let existingDependenciesFile = DependenciesFile.ReadFromFile(dependenciesFileName)
-    let (PackageName name) = package
     if (not installToProjects) && existingDependenciesFile.HasPackage(groupName,package) && String.IsNullOrWhiteSpace version then
-        traceWarnfn "%s contains package %s in group %O already." dependenciesFileName name groupName
+        traceWarnfn "%s contains package %O in group %O already." dependenciesFileName package groupName
     else
         let dependenciesFile =
             existingDependenciesFile
@@ -32,8 +31,7 @@ let private add installToProjects addToProjectsF dependenciesFileName groupName 
         addToProjectsF projects groupName package
 
         if installAfter then
-            let sources = dependenciesFile.GetAllPackageSources()
-            InstallProcess.Install(sources, options, lockFile)
+            InstallProcess.Install(options, dependenciesFile, lockFile)
 
 // Add a package with the option to add it to a specified project.
 let AddToProject(dependenciesFileName, groupName, package, version, options : InstallerOptions, projectName, installAfter) =

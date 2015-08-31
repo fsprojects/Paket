@@ -95,7 +95,7 @@ let CreateInstallModel(root, groupName, sources, force, package) =
     }
 
 /// Restores the given packages from the lock file.
-let createModel(root, sources, force, lockFile : LockFile, packages:Set<GroupName*PackageName>) =
+let createModel(root, force, dependenciesFile:DependenciesFile, lockFile : LockFile, packages:Set<GroupName*PackageName>) =
     let sourceFileDownloads = 
         [|for kv in lockFile.Groups -> RemoteDownload.DownloadSourceFiles(root, kv.Key, force, kv.Value.RemoteFiles) |]
         |> Async.Parallel
@@ -103,6 +103,7 @@ let createModel(root, sources, force, lockFile : LockFile, packages:Set<GroupNam
     let packageDownloads =
         lockFile.Groups
         |> Seq.map (fun kv' -> 
+            let sources = dependenciesFile.Groups.[kv'.Key].Sources
             kv'.Value.Resolution
             |> Map.filter (fun name _ -> packages.Contains(kv'.Key,name))
             |> Seq.map (fun kv -> CreateInstallModel(root,kv'.Key,sources,force,kv.Value)))
@@ -156,7 +157,7 @@ let findAllReferencesFiles root =
     |> collect
 
 /// Installs all packages from the lock file.
-let InstallIntoProjects(sources, options : InstallerOptions, lockFile : LockFile, projects : (ProjectFile * ReferencesFile) list) =    
+let InstallIntoProjects(options : InstallerOptions, dependenciesFile, lockFile : LockFile, projects : (ProjectFile * ReferencesFile) list) =    
     let packagesToInstall =
         if options.OnlyReferenced then
             projects
@@ -170,7 +171,7 @@ let InstallIntoProjects(sources, options : InstallerOptions, lockFile : LockFile
             |> Seq.map (fun kv -> kv.Key)
 
     let root = Path.GetDirectoryName lockFile.FileName
-    let model = createModel(root, sources, options.Force, lockFile, Set.ofSeq packagesToInstall) |> Map.ofArray
+    let model = createModel(root, options.Force, dependenciesFile, lockFile, Set.ofSeq packagesToInstall) |> Map.ofArray
     let lookup = lockFile.GetDependencyLookupTable()
 
     for project : ProjectFile, referenceFile in projects do
@@ -300,7 +301,7 @@ let InstallIntoProjects(sources, options : InstallerOptions, lockFile : LockFile
             |> applyBindingRedirects root 
 
 /// Installs all packages from the lock file.
-let Install(sources, options : InstallerOptions, lockFile : LockFile) =
+let Install(options : InstallerOptions, dependenciesFile, lockFile : LockFile) =
     let root = FileInfo(lockFile.FileName).Directory.FullName
     let projects = findAllReferencesFiles root |> returnOrFail
-    InstallIntoProjects(sources, options, lockFile, projects)
+    InstallIntoProjects(options, dependenciesFile, lockFile, projects)
