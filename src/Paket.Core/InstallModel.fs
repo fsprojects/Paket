@@ -166,7 +166,7 @@ type InstallModel =
     member this.AddAnalyzerFiles(analyzerFiles : seq<string>) : InstallModel =
         let analyzerLibs =
             analyzerFiles
-            |> Seq.map FileInfo
+            |> Seq.map (fun file -> FileInfo file)
             |> Seq.map AnalyzerLib.FromFile
             |> List.ofSeq
 

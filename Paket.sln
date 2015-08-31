@@ -26,6 +26,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tools", "tools", "{83F16175
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "content", "content", "{8E6D5255-776D-4B61-85F9-73C37AA1FB9A}"
 	ProjectSection(SolutionItems) = preProject
+		docs\content\analyzers.md = docs\content\analyzers.md
 		docs\content\bootstrapper.md = docs\content\bootstrapper.md
 		docs\content\dependencies-file.md = docs\content\dependencies-file.md
 		docs\content\editor-support.md = docs\content\editor-support.md

@@ -157,6 +157,7 @@ let ``should generate full Xml with reference condition and framework restrictio
               @"..\Fantomas\lib\FSharp.Core.dll"
               @"..\Fantomas\lib\Fantomas.exe" ],
               [],
+              [],
               Nuspec.Explicit ["FantomasLib.dll"])
 
     let project = ProjectFile.Load("./ProjectFile/TestData/Empty.fsprojtest").Value
