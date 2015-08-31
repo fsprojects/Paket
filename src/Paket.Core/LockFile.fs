@@ -386,13 +386,6 @@ type LockFile(fileName:string,groups: Map<GroupName,LockFileGroup>) =
         |> Seq.concat
         |> Map.ofSeq
 
-    member this.GetCompleteResolution() : PackageResolution =
-        this.Groups
-        |> Seq.map (fun kv -> kv.Value.Resolution |> Seq.map (fun kv -> kv.Key,kv.Value))
-        |> Seq.concat
-        |> Seq.distinctBy fst // TODO: this is not good. Try to get rid of the whole function
-        |> Map.ofSeq
-
     /// Checks if the first package is a dependency of the second package
     member this.IsDependencyOf(dependentPackage,package) =
         this.GetAllDependenciesOf(package).Contains dependentPackage

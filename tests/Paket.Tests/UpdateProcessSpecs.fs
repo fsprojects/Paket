@@ -67,7 +67,7 @@ let ``SelectiveUpdate does not update any package when it is neither updating al
     let lockFile = selectiveUpdate resolve lockFile dependenciesFile updateAll None
     
     let result = 
-        lockFile.GetCompleteResolution()
+        lockFile.GetGroupedResolution()
         |> Seq.map (fun (KeyValue (_,resolved)) -> (string resolved.Name, string resolved.Version))
 
     let expected = 
@@ -93,7 +93,7 @@ let ``SelectiveUpdate updates all packages not constraining version``() =
     let lockFile = selectiveUpdate resolve lockFile dependenciesFile updateAll None
     
     let result = 
-        lockFile.GetCompleteResolution()
+        lockFile.GetGroupedResolution()
         |> Seq.map (fun (KeyValue (_,resolved)) -> (string resolved.Name, string resolved.Version))
 
     let expected = 
@@ -120,7 +120,7 @@ let ``SelectiveUpdate updates all packages constraining version``() =
     let lockFile = selectiveUpdate resolve lockFile dependenciesFile updateAll None
     
     let result = 
-        lockFile.GetCompleteResolution()
+        lockFile.GetGroupedResolution()
         |> Seq.map (fun (KeyValue (_,resolved)) -> (string resolved.Name, string resolved.Version))
 
     let expected = 
@@ -146,7 +146,7 @@ let ``SelectiveUpdate removes a dependency when it is updated to a version that 
     let lockFile = selectiveUpdate resolve lockFile dependenciesFile updateAll None
     
     let result = 
-        lockFile.GetCompleteResolution()
+        lockFile.GetGroupedResolution()
         |> Seq.map (fun (KeyValue (_,resolved)) -> (string resolved.Name, string resolved.Version))
 
     let expected = 
@@ -173,7 +173,7 @@ let ``SelectiveUpdate updates a single package``() =
         |> selectiveUpdate resolve lockFile dependenciesFile updateAll
     
     let result = 
-        lockFile.GetCompleteResolution()
+        lockFile.GetGroupedResolution()
         |> Seq.map (fun (KeyValue (_,resolved)) -> (string resolved.Name, string resolved.Version))
 
     let expected = 
@@ -201,7 +201,7 @@ let ``SelectiveUpdate updates a single constrained package``() =
         |> selectiveUpdate resolve lockFile dependenciesFile updateAll
     
     let result = 
-        lockFile.GetCompleteResolution()
+        lockFile.GetGroupedResolution()
         |> Seq.map (fun (KeyValue (_,resolved)) -> (string resolved.Name, string resolved.Version))
 
     let expected = 
@@ -230,7 +230,7 @@ let ``SelectiveUpdate updates a single package with constrained dependency in de
         |> selectiveUpdate resolve lockFile dependenciesFile updateAll
     
     let result = 
-        lockFile.GetCompleteResolution()
+        lockFile.GetGroupedResolution()
         |> Seq.map (fun (KeyValue (_,resolved)) -> (string resolved.Name, string resolved.Version))
 
     let expected = 
@@ -257,7 +257,7 @@ let ``SelectiveUpdate installs new packages``() =
     let lockFile = selectiveUpdate resolve lockFile dependenciesFile updateAll None
     
     let result = 
-        lockFile.GetCompleteResolution()
+        lockFile.GetGroupedResolution()
         |> Seq.map (fun (KeyValue (_,resolved)) -> (string resolved.Name, string resolved.Version))
 
     let expected = 
@@ -286,7 +286,7 @@ let ``SelectiveUpdate removes a dependency when it updates a single package and 
         |> selectiveUpdate resolve lockFile dependenciesFile updateAll
 
     let result = 
-        lockFile.GetCompleteResolution()
+        lockFile.GetGroupedResolution()
         |> Seq.map (fun (KeyValue (_,resolved)) -> (string resolved.Name, string resolved.Version))
 
     let expected = 
@@ -314,7 +314,7 @@ let ``SelectiveUpdate does not update when a dependency constrain is not met``()
         |> selectiveUpdate resolve lockFile dependenciesFile updateAll
 
     let result = 
-        lockFile.GetCompleteResolution()
+        lockFile.GetGroupedResolution()
         |> Seq.map (fun (KeyValue (_,resolved)) -> (string resolved.Name, string resolved.Version))
 
     let expected = 
@@ -343,7 +343,7 @@ let ``SelectiveUpdate considers package name case difference``() =
         |> selectiveUpdate resolve lockFile dependenciesFile updateAll
 
     let result = 
-        lockFile.GetCompleteResolution()
+        lockFile.GetGroupedResolution()
         |> Seq.map (fun (KeyValue (_,resolved)) -> (string resolved.Name, string resolved.Version))
 
     let expected = 
@@ -389,7 +389,7 @@ let ``SelectiveUpdate does not update any package when package does not exist``(
         |> selectiveUpdate resolve lockFile dependenciesFile updateAll
     
     let result = 
-        lockFile.GetCompleteResolution()
+        lockFile.GetGroupedResolution()
         |> Seq.map (fun (KeyValue (_,resolved)) -> (string resolved.Name, string resolved.Version))
 
     let expected = 
@@ -420,7 +420,7 @@ let ``SelectiveUpdate generates paket.lock correctly``() =
     let result = 
             String.Join
                 (Environment.NewLine,
-                    LockFileSerializer.serializePackages InstallOptions.Default (lockFile.GetCompleteResolution()), 
+                    LockFileSerializer.serializePackages InstallOptions.Default lockFile.Groups.[Constants.MainDependencyGroup].Resolution, 
                     LockFileSerializer.serializeSourceFiles lockFile.Groups.[Constants.MainDependencyGroup].RemoteFiles)
 
 
@@ -450,7 +450,7 @@ let ``SelectiveUpdate does not update when package conflicts with a transitive d
     let updateAll = false
     let packageName = PackageName "log4net"
     let requirements =
-        lockFile.GetCompleteResolution()
+        lockFile.GetGroupedResolution()
         |> createPackageRequirements [packageName]
     let resolve = resolve' graph requirements
 
@@ -459,7 +459,7 @@ let ``SelectiveUpdate does not update when package conflicts with a transitive d
         |> selectiveUpdate resolve lockFile dependenciesFile updateAll
     
     let result = 
-        lockFile.GetCompleteResolution()
+        lockFile.GetGroupedResolution()
         |> Map.toSeq
         |> Seq.map snd
         |> Seq.map (fun r -> (string r.Name, string r.Version))
@@ -527,7 +527,7 @@ let ``SelectiveUpdate updates package that conflicts with a transitive dependenc
     let updateAll = false
     let packageName = PackageName "log4f"
     let requirements =
-        lockFile2.GetCompleteResolution()
+        lockFile2.GetGroupedResolution()
         |> createPackageRequirements [packageName]
     let resolve = resolve' graph2 requirements
 
@@ -536,7 +536,7 @@ let ``SelectiveUpdate updates package that conflicts with a transitive dependenc
         |> selectiveUpdate resolve lockFile2 dependenciesFile updateAll
     
     let result = 
-        lockFile.GetCompleteResolution()
+        lockFile.GetGroupedResolution()
         |> Map.toSeq
         |> Seq.map snd
         |> Seq.map (fun r -> (string r.Name, string r.Version))
@@ -564,7 +564,7 @@ let ``SelectiveUpdate updates package that conflicts with a transitive dependenc
     let updateAll = false
     let packageName = PackageName "Ninject.Extensions.Logging.Log4net"
     let requirements =
-        lockFile2.GetCompleteResolution()
+        lockFile2.GetGroupedResolution()
         |> createPackageRequirements [packageName]
     let resolve = resolve' graph2 requirements
 
@@ -573,7 +573,7 @@ let ``SelectiveUpdate updates package that conflicts with a transitive dependenc
         |> selectiveUpdate resolve lockFile2 dependenciesFile updateAll
     
     let result = 
-        lockFile.GetCompleteResolution()
+        lockFile.GetGroupedResolution()
         |> Map.toSeq
         |> Seq.map snd
         |> Seq.map (fun r -> (string r.Name, string r.Version))
@@ -626,7 +626,7 @@ let ``SelectiveUpdate updates package that conflicts with a transitive dependenc
     let updateAll = false
     let packageName = PackageName "Ninject.Extensions.Logging.Log4net"
     let requirements =
-        lockFile3.GetCompleteResolution()
+        lockFile3.GetGroupedResolution()
         |> createPackageRequirements [packageName]
     let resolve = resolve' graph3 requirements
 
@@ -635,7 +635,7 @@ let ``SelectiveUpdate updates package that conflicts with a transitive dependenc
         |> selectiveUpdate resolve lockFile3 dependenciesFile updateAll
     
     let result = 
-        lockFile.GetCompleteResolution()
+        lockFile.GetGroupedResolution()
         |> Map.toSeq
         |> Seq.map snd
         |> Seq.map (fun r -> (string r.Name, string r.Version))
@@ -665,7 +665,7 @@ let ``SelectiveUpdate conflicts with a transitive dependency of another package 
     let updateAll = false
     let packageName = PackageName "Ninject"
     let requirements =
-        lockFile3.GetCompleteResolution()
+        lockFile3.GetGroupedResolution()
         |> createPackageRequirements [packageName]
     let resolve = resolve' graph3 requirements
 
@@ -687,7 +687,7 @@ let ``SelectiveUpdate updates package that conflicts with a deep transitive depe
     let updateAll = false
     let packageName = PackageName "Ninject.Extensions.Interception"
     let requirements =
-        lockFile3.GetCompleteResolution()
+        lockFile3.GetGroupedResolution()
         |> createPackageRequirements [packageName]
     let resolve = resolve' graph3 requirements
 
@@ -696,7 +696,7 @@ let ``SelectiveUpdate updates package that conflicts with a deep transitive depe
         |> selectiveUpdate resolve lockFile3 dependenciesFile updateAll
     
     let result = 
-        lockFile.GetCompleteResolution()
+        lockFile.GetGroupedResolution()
         |> Map.toSeq
         |> Seq.map snd
         |> Seq.map (fun r -> (string r.Name, string r.Version))
@@ -745,7 +745,7 @@ let ``SelectiveUpdate updates package that conflicts with a deep transitive depe
     let updateAll = false
     let packageName = PackageName "Ninject.Extensions.Logging.Log4net.Deep"
     let requirements =
-        lockFile4.GetCompleteResolution()
+        lockFile4.GetGroupedResolution()
         |> createPackageRequirements [packageName]
     let resolve = resolve' graph4 requirements
 
@@ -754,7 +754,7 @@ let ``SelectiveUpdate updates package that conflicts with a deep transitive depe
         |> selectiveUpdate resolve lockFile4 dependenciesFile updateAll
     
     let result = 
-        lockFile.GetCompleteResolution()
+        lockFile.GetGroupedResolution()
         |> Map.toSeq
         |> Seq.map snd
         |> Seq.map (fun r -> (string r.Name, string r.Version))
@@ -801,7 +801,7 @@ let ``SelectiveUpdate updates package that conflicts with transitive dependency 
     let updateAll = false
     let packageName = PackageName "Ninject.Extensions.Logging"
     let requirements =
-        lockFile5.GetCompleteResolution()
+        lockFile5.GetGroupedResolution()
         |> createPackageRequirements [packageName]
     let resolve = resolve' graph5 requirements
 
@@ -810,7 +810,7 @@ let ``SelectiveUpdate updates package that conflicts with transitive dependency 
         |> selectiveUpdate resolve lockFile5 dependenciesFile updateAll
     
     let result = 
-        lockFile.GetCompleteResolution()
+        lockFile.GetGroupedResolution()
         |> Map.toSeq
         |> Seq.map snd
         |> Seq.map (fun r -> (string r.Name, string r.Version))

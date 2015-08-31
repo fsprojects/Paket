@@ -17,9 +17,8 @@ type Dependencies(dependenciesFileName: string) =
     let listPackages (packages: System.Collections.Generic.KeyValuePair<GroupName*PackageName, PackageResolver.ResolvedPackage> seq) =
         packages
         |> Seq.map (fun kv ->
-                            let (PackageName name) = kv.Value.Name
-                            let groupName = (fst kv.Key).ToString()
-                            groupName,name,kv.Value.Version.ToString())
+                let groupName,packageName = kv.Key                
+                groupName.ToString(),packageName.ToString(),kv.Value.Version.ToString())
         |> Seq.toList
 
 
@@ -257,9 +256,17 @@ type Dependencies(dependenciesFileName: string) =
             fun () -> VSIntegration.TurnOffAutoRestore |> this.Process)
 
     /// Returns the installed version of the given package.
-    member this.GetInstalledVersion(packageName: string): string option =
-        getLockFile().GetCompleteResolution().TryFind(PackageName packageName)
-        |> Option.map (fun package -> package.Version.ToString())
+    member this.GetInstalledVersion(groupName:string option,packageName: string): string option =
+        let groupName = 
+            match groupName with
+            | None -> Constants.MainDependencyGroup
+            | Some name -> GroupName name
+
+        match getLockFile().Groups |> Map.tryFind groupName with
+        | None -> None
+        | Some group ->
+            group.Resolution.TryFind(PackageName packageName)
+            |> Option.map (fun package -> package.Version.ToString())
 
     /// Returns the installed versions of all installed packages.
     member this.GetInstalledPackages(): (string * string * string) list =
@@ -284,21 +291,27 @@ type Dependencies(dependenciesFileName: string) =
     /// Returns the installed versions of all installed packages which are referenced in the references file.
     member this.GetInstalledPackages(referencesFile:ReferencesFile): (string * string * string) list =
         let lockFile = getLockFile()
-        let resolved = lockFile.GetCompleteResolution()
+        let resolved = lockFile.GetGroupedResolution()
         referencesFile
         |> lockFile.GetPackageHull
         |> Seq.map (fun kv ->
-                        let groupName,name = kv.Key
-                        groupName.ToString(),name.ToString(),resolved.[name].Version.ToString())
+                        let groupName,packageName = kv.Key
+                        groupName.ToString(),packageName.ToString(),resolved.[kv.Key].Version.ToString())
         |> Seq.toList
 
     /// Returns an InstallModel for the given package.
-    member this.GetInstalledPackageModel(packageName) =
-        match this.GetInstalledVersion(packageName) with
+    member this.GetInstalledPackageModel(groupName,packageName) =
+        match this.GetInstalledVersion(groupName,packageName) with
         | None -> failwithf "Package %s is not installed" packageName
         | Some version ->
-            let folder = DirectoryInfo(sprintf "%s/packages/%s" this.RootPath packageName)
-            let nuspec = FileInfo(sprintf "%s/packages/%s/%s.nuspec" this.RootPath packageName packageName)
+            let groupName = 
+                match groupName with
+                | None -> Constants.MainDependencyGroup
+                | Some name -> GroupName name
+
+            let groupFolder = if groupName = Constants.MainDependencyGroup then "" else "/" + groupName.ToString()
+            let folder = DirectoryInfo(sprintf "%s/packages%s/%s" this.RootPath groupFolder packageName)
+            let nuspec = FileInfo(sprintf "%s/packages%s/%s/%s.nuspec" this.RootPath groupFolder packageName packageName)
             let nuspec = Nuspec.Load nuspec.FullName
             let files = NuGetV2.GetLibFiles(folder.FullName)
             let files = files |> Array.map (fun fi -> fi.FullName)

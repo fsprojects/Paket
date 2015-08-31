@@ -5,27 +5,28 @@ open Paket.Requirements
 open Paket.PackageResolver
 
 let findChangesInDependenciesFile(dependenciesFile:DependenciesFile,lockFile:LockFile) =   
-    let directMap =
-        dependenciesFile.Groups.[Constants.MainDependencyGroup].Packages
-        |> Seq.map (fun d -> d.Name,d)
-        |> Map.ofSeq
 
     let inline hasChanged (newRequirement:PackageRequirement) (originalPackage:ResolvedPackage) =
       if newRequirement.VersionRequirement.IsInRange originalPackage.Version |> not then true
       elif newRequirement.Settings <> originalPackage.Settings then true
       else false
 
-    let added =
-        dependenciesFile.Groups.[Constants.MainDependencyGroup].Packages  // TOD: Make this group dependent.
+    let added groupName =
+        dependenciesFile.Groups.[groupName].Packages
         |> Seq.map (fun d -> d.Name,d)
         |> Seq.filter (fun (name,pr) ->
-            match lockFile.GetCompleteResolution().TryFind name with
+            match lockFile.Groups.[groupName].Resolution.TryFind name with
             | Some p -> hasChanged pr p
             | _ -> true)
-        |> Seq.map fst
+        |> Seq.map (fun (p,_) -> groupName,p)
         |> Set.ofSeq
     
-    let modified = 
+    let modified groupName = 
+        let directMap =
+            dependenciesFile.Groups.[groupName].Packages
+            |> Seq.map (fun d -> d.Name,d)
+            |> Map.ofSeq
+
         [ for g in lockFile.Groups do
               let groupName = g.Key
               for t in lockFile.GetTopLevelDependencies(groupName) do
@@ -36,14 +37,22 @@ let findChangesInDependenciesFile(dependenciesFile:DependenciesFile,lockFile:Loc
         ]
         |> List.map lockFile.GetAllNormalizedDependenciesOf
         |> Seq.concat
+        |> Seq.map (fun p -> groupName,p)
         |> Set.ofSeq
 
-    added 
-    |> Set.union modified
+    let groupNames =
+        dependenciesFile.Groups
+        |> Seq.map (fun kv -> kv.Key)
+        |> Seq.append (lockFile.Groups |> Seq.map (fun kv -> kv.Key))
 
-let PinUnchangedDependencies (dependenciesFile:DependenciesFile) (oldLockFile:LockFile) (changedDependencies:Set<PackageName>) =
+    groupNames
+    |> Seq.map (fun groupName -> added groupName |> Set.union (modified groupName))
+    |> Seq.concat
+    |> Set.ofSeq
+
+let PinUnchangedDependencies (dependenciesFile:DependenciesFile) (oldLockFile:LockFile) (changedDependencies:Set<GroupName*PackageName>) =
     oldLockFile.GetGroupedResolution()
-    |> Seq.filter (fun kv -> not <| changedDependencies.Contains kv.Value.Name)
+    |> Seq.filter (fun kv -> not <| changedDependencies.Contains(kv.Key))
     |> Seq.fold 
             (fun (dependenciesFile : DependenciesFile) kv ->
                     let resolvedPackage = kv.Value

@@ -272,4 +272,4 @@ nuget Caliburn.Micro !~> 2.0.2"""
     let lockFile = LockFile.Parse("",toLines lockFileData)
     let changedDependencies = DependencyChangeDetection.findChangesInDependenciesFile(cfg,lockFile)
     changedDependencies.Count |> shouldEqual 1
-    (changedDependencies |> Seq.head) |> shouldEqual (PackageName "Caliburn.Micro")
+    (changedDependencies |> Seq.head) |> shouldEqual (Constants.MainDependencyGroup, PackageName "Caliburn.Micro")

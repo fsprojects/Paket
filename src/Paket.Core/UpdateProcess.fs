@@ -60,10 +60,9 @@ type UpdateMode =
             | Some(groupName,package) -> SelectiveUpdate(groupName,package)
 
 let selectiveUpdate resolve (lockFile:LockFile) (dependenciesFile:DependenciesFile) updateAll package =
-    let selectiveUpdate package =
-        // TODO: this makes no sense at the moment - ask @mrinaldi
+    let selectiveUpdate groupName package =        
         let selectiveResolution : Map<GroupName,Resolved> = 
-            dependenciesFile.Groups.[Constants.MainDependencyGroup].Packages
+            dependenciesFile.Groups.[groupName].Packages
             |> List.filter (fun p -> package = p.Name)
             |> Some
             |> resolve dependenciesFile            
@@ -73,8 +72,8 @@ let selectiveUpdate resolve (lockFile:LockFile) (dependenciesFile:DependenciesFi
 
         let resolution =    
             let resolvedPackages = 
-                (selectiveResolution |> Map.find Constants.MainDependencyGroup).ResolvedPackages.GetModelOrFail()
-                |> merge (lockFile.GetCompleteResolution())
+                (selectiveResolution |> Map.find groupName).ResolvedPackages.GetModelOrFail()
+                |> merge lockFile.Groups.[groupName].Resolution
 
             let dependencies = 
                 resolvedPackages
@@ -83,7 +82,7 @@ let selectiveUpdate resolve (lockFile:LockFile) (dependenciesFile:DependenciesFi
                 |> Set.ofSeq
 
             let isDirectDependency package = 
-                dependenciesFile.GetDependenciesInGroup(Constants.MainDependencyGroup)
+                dependenciesFile.GetDependenciesInGroup(groupName)
                 |> Map.exists (fun p _ -> p = package)
 
             let isTransitiveDependency package =
@@ -93,8 +92,8 @@ let selectiveUpdate resolve (lockFile:LockFile) (dependenciesFile:DependenciesFi
             resolvedPackages
             |> Map.filter (fun p _ -> isDirectDependency p || isTransitiveDependency p)
 
-        { ResolvedPackages = Resolution.Ok(resolution)
-          ResolvedSourceFiles = lockFile.Groups.[Constants.MainDependencyGroup].RemoteFiles }
+        { ResolvedPackages = Resolution.Ok resolution
+          ResolvedSourceFiles = lockFile.Groups.[groupName].RemoteFiles }
 
     let resolution =
         match UpdateMode.Mode updateAll package with
@@ -104,7 +103,12 @@ let selectiveUpdate resolve (lockFile:LockFile) (dependenciesFile:DependenciesFi
                 DependencyChangeDetection.findChangesInDependenciesFile(dependenciesFile,lockFile)
                 |> DependencyChangeDetection.PinUnchangedDependencies dependenciesFile lockFile
             resolve dependenciesFile None
-        | SelectiveUpdate(groupName,package) -> [groupName,selectiveUpdate package] |> Map.ofList
+        | SelectiveUpdate(groupName,package) -> 
+            lockFile.Groups
+            |> Map.map (fun _ group ->
+                { ResolvedPackages = Resolution.Ok group.Resolution
+                  ResolvedSourceFiles = group.RemoteFiles })
+            |> Map.add groupName (selectiveUpdate groupName package)
 
     let groups = 
         resolution
