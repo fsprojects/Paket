@@ -379,12 +379,12 @@ type Dependencies(dependenciesFileName: string) =
             fun () -> RemoveProcess.RemoveFromProject(dependenciesFileName, groupName, PackageName package, force, hard, projectName, installAfter))
 
     /// Shows all references files where the given package is referenced.
-    member this.ShowReferencesFor(packages: string list): unit =
-        FindReferences.ShowReferencesFor Constants.MainDependencyGroup (packages |> List.map PackageName) |> this.Process  // TODO: Make this group dependent
+    member this.ShowReferencesFor(packages: (string * string) list): unit =
+        FindReferences.ShowReferencesFor (packages |> List.map (fun (g,p) -> GroupName g,PackageName p)) |> this.Process 
 
     /// Finds all references files where the given package is referenced.
-    member this.FindReferencesFor(package: string): string list =
-        FindReferences.FindReferencesForPackage Constants.MainDependencyGroup (PackageName package) |> this.Process |> List.map (fun p -> p.FileName) // TODO: Make this group dependent
+    member this.FindReferencesFor(group:string,package:string): string list =
+        FindReferences.FindReferencesForPackage (GroupName group) (PackageName package) |> this.Process |> List.map (fun p -> p.FileName)
 
     member this.SearchPackagesByName(searchTerm,?cancellationToken,?maxResults) : IObservable<string> =
         let cancellationToken = defaultArg cancellationToken (System.Threading.CancellationToken())
@@ -401,8 +401,8 @@ type Dependencies(dependenciesFileName: string) =
         |> Observable.distinct
 
     /// Finds all projects where the given package is referenced.
-    member this.FindProjectsFor(package: string): ProjectFile list =
-        FindReferences.FindReferencesForPackage Constants.MainDependencyGroup (PackageName package) |> this.Process // TODO: Make this group dependent
+    member this.FindProjectsFor(group:string,package: string): ProjectFile list =
+        FindReferences.FindReferencesForPackage (GroupName group) (PackageName package) |> this.Process
 
     // Packs all paket.template files.
     member this.Pack(outputPath, ?buildConfig, ?version, ?releaseNotes, ?templateFile, ?workingDir, ?lockDependencies) =

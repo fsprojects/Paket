@@ -28,18 +28,18 @@ let FindReferencesForPackage groupName package environment = trial {
     return! findReferencesFor groupName package lockFile environment.Projects
 }
 
-let ShowReferencesFor groupName packages environment = trial {
+let ShowReferencesFor packages environment = trial {
     let! lockFile = environment |> PaketEnv.ensureLockFileExists
     let! projectsPerPackage =
         packages
-        |> Seq.map (fun package -> trial {
+        |> Seq.map (fun (groupName,package) -> trial {
             let! projects = findReferencesFor groupName package lockFile environment.Projects
-            return package, projects })
+            return groupName, package, projects })
         |> collect
 
     projectsPerPackage
-    |> Seq.iter (fun (PackageName k, vs) ->
-        tracefn "%s" k
+    |> Seq.iter (fun (GroupName g, PackageName k, vs) ->
+        tracefn "%s %s" g k
         vs |> Seq.map (fun p -> p.FileName) |> Seq.iter (tracefn "%s")
         tracefn "")
 }

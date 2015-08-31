@@ -114,7 +114,9 @@ let convert (results : ParseResults<_>) =
 
 let findRefs (results : ParseResults<_>) =
     let packages = results.GetResults <@ FindRefsArgs.Packages @>
-    Dependencies.Locate().ShowReferencesFor(packages)
+    let group = defaultArg (results.TryGetResult <@ FindRefsArgs.Group @>) (Constants.MainDependencyGroup.ToString())
+    packages |> List.map (fun p -> group,p)
+    |> Dependencies.Locate().ShowReferencesFor
 
 let init (results : ParseResults<InitArgs>) =
     Dependencies.Init()

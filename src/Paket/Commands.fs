@@ -104,11 +104,13 @@ with
             | Creds_Migration(_) -> "Specify a mode for migrating NuGet source credentials. Possible values are [`encrypt`|`plaintext`|`selective`]. The default mode is `encrypt`."
 
 type FindRefsArgs =
-    | [<Rest>][<CustomCommandLine("nuget")>][<Mandatory>] Packages of string
+    | [<CustomCommandLine("group")>] Group of string
+    | [<Rest>][<CustomCommandLine("nuget")>][<Mandatory>] Packages of string   
 with
     interface IArgParserTemplate with
         member this.Usage =
             match this with
+            | Group(_) -> "Allows to specify a group. If omited the Main group is used."
             | Packages(_) -> "List of packages."
 
 type InitArgs =

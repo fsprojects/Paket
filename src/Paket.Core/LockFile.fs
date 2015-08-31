@@ -453,7 +453,7 @@ type LockFile(fileName:string,groups: Map<GroupName,LockFileGroup>) =
             for p in g.Value.NugetPackages do
                 let k = g.Key,p.Name
                 if usedPackages.ContainsKey k then
-                    failwithf "Package %s is referenced more than once in %s (Group %O)" (p.Name.ToString()) referencesFile.FileName g.Key
+                    failwithf "Package %s is referenced more than once in %s (group %O)" (p.Name.ToString()) referencesFile.FileName g.Key
                 usedPackages.Add(k,p)
 
         for g in referencesFile.Groups do
@@ -476,7 +476,7 @@ type LockFile(fileName:string,groups: Map<GroupName,LockFileGroup>) =
             for p in g.NugetPackages do
                 let k = groupName,p.Name
                 if usedPackages.ContainsKey k then
-                    failwithf "Package %s is referenced more than once in %s (Group %O)" (p.Name.ToString()) referencesFile.FileName groupName
+                    failwithf "Package %s is referenced more than once in %s (group %O)" (p.Name.ToString()) referencesFile.FileName groupName
                 usedPackages.Add(k,p)
 
             g.NugetPackages

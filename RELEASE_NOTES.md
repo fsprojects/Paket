@@ -1,4 +1,4 @@
-#### 2.0.0-alpha026 - 31.08.2015
+#### 2.0.0-alpha027 - 31.08.2015
 * Support for `Dependency groups` in paket.dependencies files - http://fsprojects.github.io/Paket/groups.html
 * Support for Roslyn-based analyzers - http://fsprojects.github.io/Paket/analyzers.html
 * Support for reference conditions - https://github.com/fsprojects/Paket/issues/1026
