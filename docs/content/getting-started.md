@@ -16,10 +16,10 @@ This project helps you get started with a new .NET/Mono project solution with ev
 
 ### Downloading Paket and it's BootStrapper
 
-  * Create a `.paket` folder in the root of your solution
-  * Download the latest [paket.bootstrapper.exe](https://github.com/fsprojects/Paket/releases/latest) into that folder
-  * Run `.paket/paket.bootstrapper.exe`. This will download the latest `paket.exe`
-  * Commit `.paket/paket.bootstrapper.exe` into your repo and add `.paket/paket.exe` to your `.gitignore` file
+  * Create a `.paket` folder in the root of your solution.
+  * Download the latest [paket.bootstrapper.exe](https://github.com/fsprojects/Paket/releases/latest) into that folder.
+  * Run `.paket/paket.bootstrapper.exe`. This will download the latest `paket.exe`.
+  * Commit `.paket/paket.bootstrapper.exe` into your repo and add `.paket/paket.exe` to your `.gitignore` file.
 
 ### Specifying dependencies
 
