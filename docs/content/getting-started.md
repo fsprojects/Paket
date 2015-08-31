@@ -5,7 +5,7 @@ This guide will show you
   * [how to manually setup Paket](getting-started.html#Manual-setup) in your .NET / mono solutions
   * and [how to use the automatic NuGet conversion](getting-started.html#Automatic-NuGet-conversion).
 
-<blockquote>The following guide is assuming you are using the paket.exe command line tool.
+<blockquote>The following guide is assuming you are using the paket.exe command line tool. For information on installing the commmand line tool follow the instructions for your operating system for <a href="installation.html">installation</a>.
 There are editor plugins for Visual Studio, Atom and other which can make this process easier and provide additional tooling like syntax highlighting.
 Check our <a href="editor-support.html">editor support page</a> to see if your editor has a Paket plugin.</blockquote>
 
