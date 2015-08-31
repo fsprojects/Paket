@@ -816,4 +816,42 @@ let ``SelectiveUpdate updates package that conflicts with transitive dependency 
     result
     |> Seq.sortBy fst
     |> shouldEqual expected
+
+let gfst (g, p, _) = sprintf "%s.%s" g p
+let mainGroup = string Constants.MainDependencyGroup
+let groupMap (lockFile : LockFile) =
+    lockFile.GetGroupedResolution()
+    |> Seq.map (fun (KeyValue ((g,_),resolved)) ->
+        (string g,string resolved.Name, string resolved.Version))
+
+[<Test>]
+let ``SelectiveUpdate updates all packages from all groups if no group is specified``() = 
+
+    let dependenciesFile = DependenciesFile.FromCode("""source http://nuget.org/api/v2
+
+    nuget Castle.Core-log4net ~> 3.2
+    nuget FAKE
+    
+    group Group
+        source http://nuget.org/api/v2
+
+        nuget Castle.Core-log4net ~> 4.0""")
+
+    let updateAll = true
+    let lockFile = selectiveUpdate resolve lockFile dependenciesFile updateAll None
+    
+    let result = groupMap lockFile
+
+    let expected = 
+        [("Group","Castle.Core-log4net","4.0.0");
+        ("Group","Castle.Core","4.0.0");
+        (mainGroup,"Castle.Core-log4net","3.3.3");
+        (mainGroup,"Castle.Core","4.0.0");
+        (mainGroup,"FAKE","4.0.1");
+        (mainGroup,"log4net","1.2.10")]
+        |> Seq.sortBy gfst
+
+    result
+    |> Seq.sortBy gfst
+    |> shouldEqual expected
     
