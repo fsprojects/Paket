@@ -77,14 +77,18 @@ let selectiveUpdate resolve (lockFile:LockFile) (dependenciesFile:DependenciesFi
               PackageRequirements = 
                 match package with
                 | Some(currentGroup,packageName) when groupName = currentGroup -> 
-                    lockFile.Groups.[groupName].Resolution
-                    |> createPackageRequirements [packageName]
+                    lockFile.Groups
+                    |> Map.filter (fun g _ -> g = groupName)
+                    |> Seq.map (fun kv -> kv.Value.Resolution)
+                    |> Seq.map (createPackageRequirements [packageName])
+                    |> Seq.concat
+                    |> List.ofSeq
                 | _ -> [] })
         |> resolve dependenciesFile
 
-    let selectiveUpdate groupName package =        
+    let selectiveUpdate (group : LockFileGroup) package =        
         let selectiveResolution : Map<GroupName,Resolved> = 
-            dependenciesFile.Groups.[groupName].Packages
+            dependenciesFile.Groups.[group.Name].Packages
             |> List.filter (fun p -> package = p.Name)
             |> Some
             |> resolve dependenciesFile
@@ -94,8 +98,8 @@ let selectiveUpdate resolve (lockFile:LockFile) (dependenciesFile:DependenciesFi
 
         let resolution =    
             let resolvedPackages = 
-                (selectiveResolution |> Map.find groupName).ResolvedPackages.GetModelOrFail()
-                |> merge lockFile.Groups.[groupName].Resolution
+                (selectiveResolution |> Map.find group.Name).ResolvedPackages.GetModelOrFail()
+                |> merge group.Resolution
 
             let dependencies = 
                 resolvedPackages
@@ -104,7 +108,7 @@ let selectiveUpdate resolve (lockFile:LockFile) (dependenciesFile:DependenciesFi
                 |> Set.ofSeq
 
             let isDirectDependency package = 
-                dependenciesFile.GetDependenciesInGroup(groupName)
+                dependenciesFile.GetDependenciesInGroup(group.Name)
                 |> Map.exists (fun p _ -> p = package)
 
             let isTransitiveDependency package =
@@ -115,7 +119,7 @@ let selectiveUpdate resolve (lockFile:LockFile) (dependenciesFile:DependenciesFi
             |> Map.filter (fun p _ -> isDirectDependency p || isTransitiveDependency p)
 
         { ResolvedPackages = Resolution.Ok resolution
-          ResolvedSourceFiles = lockFile.Groups.[groupName].RemoteFiles }
+          ResolvedSourceFiles = group.RemoteFiles }
 
     let resolution =
         match UpdateMode.Mode updateAll package with
@@ -126,11 +130,26 @@ let selectiveUpdate resolve (lockFile:LockFile) (dependenciesFile:DependenciesFi
                 |> DependencyChangeDetection.PinUnchangedDependencies dependenciesFile lockFile
             resolve dependenciesFile None
         | SelectiveUpdate(groupName,package) -> 
+            let lockFileGroup = 
+                lockFile.Groups
+                |> Map.filter (fun g _ -> g = groupName)
+                |> Seq.map (fun kv -> kv.Value)
+                |> Seq.tryHead
+            
+            let lockFileGroup =
+                match lockFileGroup with
+                | Some g -> g
+                | None ->
+                    { Name = groupName
+                      Options = InstallOptions.Default
+                      Resolution = Map.empty
+                      RemoteFiles = List.empty }
+
             lockFile.Groups
             |> Map.map (fun _ group ->
                 { ResolvedPackages = Resolution.Ok group.Resolution
                   ResolvedSourceFiles = group.RemoteFiles })
-            |> Map.add groupName (selectiveUpdate groupName package)
+            |> Map.add groupName (selectiveUpdate lockFileGroup package)
 
     let groups = 
         resolution
