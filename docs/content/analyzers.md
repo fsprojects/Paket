@@ -26,7 +26,7 @@ file, the analyzers will be installed in the corresponding projects automaticall
 
 ## Conventions for NuGet packages
 
-Analyzers create by the "Analyzer with Code Fix" template are currently installed via `Install.ps1` in Visual Studio
+Analyzers created by the "Analyzer with Code Fix" template are currently installed via `Install.ps1` in Visual Studio
 that Paket doesn't plan support (See the [FAQ](faq.html#paket-vs-powershell-install-scripts) for more details)
 
 For them to work in Paket they need to be placed in specific folders inside the NuGet package.
