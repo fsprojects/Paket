@@ -88,10 +88,13 @@ let selectiveUpdate resolve (lockFile:LockFile) (dependenciesFile:DependenciesFi
 
     let selectiveUpdate (group : LockFileGroup) package =        
         let selectiveResolution : Map<GroupName,Resolved> = 
-            dependenciesFile.Groups.[group.Name].Packages
-            |> List.filter (fun p -> package = p.Name)
-            |> Some
-            |> resolve dependenciesFile
+            match dependenciesFile.Groups.TryFind group.Name with
+            | Some group -> 
+                group.Packages
+                |> List.filter (fun p -> package = p.Name)
+                |> Some
+                |> resolve dependenciesFile
+            | None -> failwithf "Group %O does not exist" group.Name
 
         let merge destination source = 
             Map.fold (fun acc key value -> Map.add key value acc) destination source
