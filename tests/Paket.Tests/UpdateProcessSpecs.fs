@@ -831,3 +831,134 @@ let ``SelectiveUpdate updates all packages from all groups if no group is specif
     |> Seq.sortBy gfst
     |> shouldEqual expected
     
+let lockFileData6 = """NUGET
+  remote: http://nuget.org/api/v2
+  specs:
+    Castle.Core (3.2.0)
+    Castle.Core-log4net (3.2.0)
+      Castle.Core (>= 3.2.0)
+      log4net (1.2.10)
+    FAKE (4.0.1)
+    log4net (1.2.10)
+
+GROUP Group
+NUGET
+  remote: http://nuget.org/api/v2
+  specs:
+    Castle.Core (3.2.0)
+    Castle.Core-log4net (3.2.0)
+      Castle.Core (>= 3.2.0)
+      log4net (1.2.10)
+    FAKE (4.0.0)
+    log4net (1.2.10)
+"""
+let lockFile6 = lockFileData6 |> getLockFile
+
+[<Test>]
+let ``SelectiveUpdate updates package from a specific group``() = 
+
+    let dependenciesFile = DependenciesFile.FromCode("""source http://nuget.org/api/v2
+
+    nuget Castle.Core-log4net ~> 3.2
+    nuget FAKE
+    
+    group Group
+        source http://nuget.org/api/v2
+
+        nuget Castle.Core-log4net
+        nuget FAKE""")
+
+    let updateAll = false
+    let lockFile =
+        Some(GroupName "Group", PackageName "Castle.Core-log4net")
+        |> selectiveUpdate resolve lockFile6 dependenciesFile updateAll
+    
+    let result = groupMap lockFile
+
+    let expected = 
+        [("Group","Castle.Core-log4net","4.0.0");
+        ("Group","Castle.Core","4.0.0");
+        ("Group","FAKE","4.0.0");
+        (mainGroup,"Castle.Core-log4net","3.2.0");
+        (mainGroup,"Castle.Core","3.2.0");
+        (mainGroup,"FAKE","4.0.1");
+        (mainGroup,"log4net","1.2.10")]
+        |> Seq.sortBy gfst
+
+    result
+    |> Seq.sortBy gfst
+    |> shouldEqual expected
+    
+[<Test>]
+let ``SelectiveUpdate does not remove a dependency from group when it is a top-level dependency in that group``() = 
+
+    let dependenciesFile = DependenciesFile.FromCode("""source http://nuget.org/api/v2
+
+    nuget Castle.Core-log4net ~> 3.0
+    nuget FAKE
+    
+    group Group
+        source http://nuget.org/api/v2
+
+        nuget Castle.Core-log4net
+        nuget FAKE
+        nuget log4net""")
+
+    let updateAll = false
+    let lockFile =
+        Some(GroupName "Group", PackageName "Castle.Core-log4net")
+        |> selectiveUpdate resolve lockFile6 dependenciesFile updateAll
+    
+    let result = groupMap lockFile
+
+    let expected = 
+        [("Group","Castle.Core-log4net","4.0.0");
+        ("Group","Castle.Core","4.0.0");
+        ("Group","FAKE","4.0.0");
+        ("Group","log4net","1.2.10");
+        (mainGroup,"Castle.Core-log4net","3.2.0");
+        (mainGroup,"Castle.Core","3.2.0");
+        (mainGroup,"FAKE","4.0.1");
+        (mainGroup,"log4net","1.2.10")]
+        |> Seq.sortBy gfst
+
+    result
+    |> Seq.sortBy gfst
+    |> shouldEqual expected
+    
+[<Test>]
+let ``SelectiveUpdate updates package from main group``() = 
+
+    let dependenciesFile = DependenciesFile.FromCode("""source http://nuget.org/api/v2
+
+    nuget Castle.Core-log4net ~> 3.2
+    nuget FAKE
+    
+    group Group
+        source http://nuget.org/api/v2
+
+        nuget Castle.Core-log4net
+        nuget FAKE""")
+
+    let updateAll = false
+    let lockFile =
+        Some(Constants.MainDependencyGroup, PackageName "Castle.Core-log4net")
+        |> selectiveUpdate resolve lockFile6 dependenciesFile updateAll
+    
+    let result = groupMap lockFile
+
+    let expected = 
+        [("Group","Castle.Core-log4net","3.2.0");
+        ("Group","Castle.Core","3.2.0");
+        ("Group","FAKE","4.0.0");
+        ("Group","log4net","1.2.10");
+        (mainGroup,"Castle.Core-log4net","3.3.3");
+        (mainGroup,"Castle.Core","4.0.0");
+        (mainGroup,"FAKE","4.0.1");
+        (mainGroup,"log4net","1.2.10")]
+        |> Seq.sortBy gfst
+
+    result
+    |> Seq.sortBy gfst
+    |> shouldEqual expected
+    
