@@ -228,25 +228,38 @@ let findDependencies (dependencies : DependenciesFile) config (template : Templa
             with
             | _ -> true)
         |> List.map (fun (groupName,np) ->
-                let getDependencyVersionRequirement packageName =
+                let dependencyVersionRequirement =                    
                     if not lockDependencies then
-                        Map.tryFind packageName (dependencies.GetDependenciesInGroup(Constants.MainDependencyGroup))
-                        |> function
-                            | Some direct -> Some direct
-                            | None ->
-                                // If it's a transient dependency, try to
-                                // find it in `paket.lock` and set min version
-                                // to current locked version
-                                lockFile.Groups.[groupName].Resolution
-                                |> Map.tryFind packageName
-                                |> Option.map (fun transient -> transient.Version)
-                                |> Option.map (fun v -> VersionRequirement(Minimum v, PreReleaseStatus.All))
-                    else
-                        Map.tryFind packageName lockFile.Groups.[groupName].Resolution
-                        |> Option.map (fun resolvedPackage -> resolvedPackage.Version)
-                        |> Option.map (fun version -> VersionRequirement(Specific version, PreReleaseStatus.All))
+                        match dependencies.Groups |> Map.tryFind groupName with
+                        | None -> None
+                        | Some group ->
+                            let deps = 
+                                group.Packages 
+                                |> Seq.map (fun p -> p.Name, p.VersionRequirement)
+                                |> Map.ofSeq
+                            Map.tryFind np.Name deps
+                            |> function
+                                | Some direct -> Some direct
+                                | None ->
+                                    match lockFile.Groups |> Map.tryFind groupName with
+                                    | None -> None
+                                    | Some group ->
+                                        // If it's a transient dependency, try to
+                                        // find it in `paket.lock` and set min version
+                                        // to current locked version
+                                        group.Resolution
+                                        |> Map.tryFind np.Name
+                                        |> Option.map (fun transient -> transient.Version)
+                                        |> Option.map (fun v -> VersionRequirement(Minimum v, PreReleaseStatus.All))
+                        else
+                            match lockFile.Groups |> Map.tryFind groupName with
+                            | None -> None
+                            | Some group ->
+                                Map.tryFind np.Name group.Resolution
+                                |> Option.map (fun resolvedPackage -> resolvedPackage.Version)
+                                |> Option.map (fun version -> VersionRequirement(Specific version, PreReleaseStatus.All))
                 let dep =
-                    match getDependencyVersionRequirement np.Name with
+                    match dependencyVersionRequirement with
                     | Some installed -> installed
                     | None -> failwithf "No package with id '%A' installed in group %O." np.Name groupName
                 np.Name, dep)

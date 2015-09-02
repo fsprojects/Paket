@@ -356,9 +356,12 @@ type DependenciesFile(fileName,groups:Map<GroupName,DependenciesGroup>, textRepr
 
     /// Returns all direct NuGet dependencies in the given group.
     member __.GetDependenciesInGroup(groupName:GroupName) =
-        groups.[groupName].Packages 
-        |> Seq.map (fun p -> p.Name, p.VersionRequirement)
-        |> Map.ofSeq
+        match groups |> Map.tryFind groupName with
+        | None -> failwithf "Group %O doesn't exist in the paket.dependencies file." groupName
+        | Some group ->
+            group.Packages 
+            |> Seq.map (fun p -> p.Name, p.VersionRequirement)
+            |> Map.ofSeq
 
     member __.Groups = groups
 
@@ -390,7 +393,7 @@ type DependenciesFile(fileName,groups:Map<GroupName,DependenciesGroup>, textRepr
                 RemoteDownload.downloadDependenciesFile(Path.GetDirectoryName fileName, group.Name, parserF, file)
                 |> Async.RunSynchronously
                 |> DependenciesFile.FromCode
-                |> fun df -> df.Groups.[Constants.MainDependencyGroup].Packages  // TODO: Allow more groups here
+                |> fun df -> df.Groups.[Constants.MainDependencyGroup].Packages  // We do not support groups in reference files yet
 
             let remoteFiles = ModuleResolver.Resolve(resolveSourceFile,getSha1,group.RemoteFiles)
         

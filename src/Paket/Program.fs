@@ -189,7 +189,8 @@ let findPackages (results : ParseResults<_>) =
     let sources  =
         match results.TryGetResult <@ FindPackagesArgs.Source @> with
         | Some source -> [PackageSource.NugetSource source]
-        | _ -> PackageSources.DefaultNugetSource :: Dependencies.Locate().GetSources()
+        | _ -> PackageSources.DefaultNugetSource :: 
+                (Dependencies.Locate().GetSources() |> Seq.map (fun kv -> kv.Value) |> List.concat)
 
     let searchAndPrint searchText =
         let result =

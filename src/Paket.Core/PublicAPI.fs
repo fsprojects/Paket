@@ -277,7 +277,8 @@ type Dependencies(dependenciesFileName: string) =
     /// Returns all sources from the dependencies file.
     member this.GetSources() =
         let dependenciesFile = DependenciesFile.ReadFromFile dependenciesFileName
-        dependenciesFile.Groups.[Constants.MainDependencyGroup].Sources
+        dependenciesFile.Groups
+        |> Map.map (fun _ g -> g.Sources)
 
     /// Returns all system-wide defined NuGet feeds. (Can be used for Autocompletion)
     member this.GetDefinedNuGetFeeds() : string list =
@@ -390,7 +391,7 @@ type Dependencies(dependenciesFileName: string) =
     member this.SearchPackagesByName(searchTerm,?cancellationToken,?maxResults) : IObservable<string> =
         let cancellationToken = defaultArg cancellationToken (System.Threading.CancellationToken())
         let maxResults = defaultArg maxResults 1000
-        let sources = this.GetSources()
+        let sources = this.GetSources() |> Seq.map (fun kv -> kv.Value) |> List.concat |> List.distinct
         if sources = [] then [PackageSources.DefaultNugetSource] else sources
         |> List.choose (fun x -> match x with | Nuget s -> Some s.Url | _ -> None)
         |> Seq.distinct

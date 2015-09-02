@@ -6,24 +6,24 @@ open Paket.Logging
 open Chessie.ErrorHandling
 open System.IO
 
-let private adjustVersionRequirements strict includingPrereleases (dependenciesFile: DependenciesFile) =
-    //TODO: Anything we need to do for source files here?
-    let newPackages =
-        dependenciesFile.Groups.[Constants.MainDependencyGroup].Packages
-        |> List.map (fun p ->
-            let v = p.VersionRequirement 
-            let requirement,strategy =
-                match strict,includingPrereleases with
-                | true,true -> VersionRequirement.NoRestriction, p.ResolverStrategy
-                | true,false -> v, p.ResolverStrategy
-                | false,true -> 
-                    match v with
-                    | VersionRequirement(v,_) -> VersionRequirement(v,PreReleaseStatus.All), ResolverStrategy.Max
-                | false,false -> VersionRequirement.AllReleases, ResolverStrategy.Max
-            { p with VersionRequirement = requirement; ResolverStrategy = strategy})
-
-    let mainGroup = { Name = Constants.MainDependencyGroup; Options = dependenciesFile.Groups.[Constants.MainDependencyGroup].Options; Sources = dependenciesFile.Groups.[Constants.MainDependencyGroup].Sources; Packages = newPackages; RemoteFiles = dependenciesFile.Groups.[Constants.MainDependencyGroup].RemoteFiles }
-    let groups = [Constants.MainDependencyGroup, mainGroup] |> Map.ofSeq
+let private adjustVersionRequirements strict includingPrereleases (dependenciesFile: DependenciesFile) =    
+    let groups =
+        dependenciesFile.Groups
+        |> Map.map (fun groupName group ->
+            let newPackages =
+                group.Packages
+                |> List.map (fun p ->
+                    let v = p.VersionRequirement 
+                    let requirement,strategy =
+                        match strict,includingPrereleases with
+                        | true,true -> VersionRequirement.NoRestriction, p.ResolverStrategy
+                        | true,false -> v, p.ResolverStrategy
+                        | false,true -> 
+                            match v with
+                            | VersionRequirement(v,_) -> VersionRequirement(v,PreReleaseStatus.All), ResolverStrategy.Max
+                        | false,false -> VersionRequirement.AllReleases, ResolverStrategy.Max
+                    { p with VersionRequirement = requirement; ResolverStrategy = strategy})
+            { group with Packages = newPackages })
 
     DependenciesFile(dependenciesFile.FileName, groups, dependenciesFile.Lines)
 
