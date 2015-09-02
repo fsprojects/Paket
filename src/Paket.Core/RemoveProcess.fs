@@ -25,8 +25,10 @@ let private remove removeFromProjects dependenciesFileName groupName (package: P
             match ProjectFile.FindReferencesFile proj with
             | None -> false 
             | Some fileName -> 
-                let lines = File.ReadAllLines(fileName)   // TODO:  make this group dependent
-                lines |> Seq.exists (fun l -> l.ToLowerInvariant() = package.ToString().ToLowerInvariant()))
+                let refFile = ReferencesFile.FromFile fileName
+                match refFile.Groups |> Map.tryFind groupName with
+                | None -> false
+                | Some group -> group.NugetPackages |> Seq.exists (fun p -> p.Name = package))
 
     let oldLockFile =    
         let lockFileName = DependenciesFile.FindLockfile dependenciesFileName
