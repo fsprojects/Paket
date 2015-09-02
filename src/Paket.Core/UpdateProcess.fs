@@ -61,7 +61,14 @@ type UpdateMode =
 
 let selectiveUpdate resolve (lockFile:LockFile) (dependenciesFile:DependenciesFile) updateAll package =
     let resolve (dependenciesFile : DependenciesFile) packages = 
-        dependenciesFile.Groups
+        let groups =
+            package
+            |> Option.fold
+                (fun groups (groupName,_) ->
+                    groups |> Map.filter (fun g _ -> g = groupName))
+                dependenciesFile.Groups
+
+        groups
         |> Map.map (fun groupName group ->
             { Name = group.Name
               RemoteFiles = group.RemoteFiles
