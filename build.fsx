@@ -381,9 +381,9 @@ Target "ReleaseGitHub" (fun _ ->
     Branches.tag "" release.NugetVersion
     Branches.pushTag "" remote release.NugetVersion
 
-    if release.SemVer.PreRelease <> None then  // TODO: Remove after release
-        let predecessor = sprintf "2.0.0-alpha0%d" (release.SemVer.PreRelease.Value.Number.Value - 1)
-        Git.CommandHelper.gitCommand "" (sprintf "push origin :%O" predecessor)
+    // if release.SemVer.PreRelease <> None then  // TODO: Remove after release
+    //    let predecessor = sprintf "2.0.0-alpha0%d" (release.SemVer.PreRelease.Value.Number.Value - 1)
+    //    Git.CommandHelper.gitCommand "" (sprintf "push origin :%O" predecessor)
     
     // release on github
     createClient user pw
