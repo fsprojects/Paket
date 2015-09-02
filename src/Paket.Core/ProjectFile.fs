@@ -671,7 +671,6 @@ type ProjectFile =
                 seq {for outputType in this.Document |> getDescendants "TargetFrameworkVersion" ->
                         outputType.InnerText }
                 |> Seq.map (fun s -> 
-                                // TODO make this a separate function
                                 let prefix = 
                                     match this.GetTargetFrameworkIdentifier() with
                                     | None -> "net"
