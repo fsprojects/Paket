@@ -42,10 +42,10 @@ let graph =
 
 let getLockFile lockFileData = LockFile.Parse("",toLines lockFileData)
 let lockFile = lockFileData |> getLockFile
-let resolve' graph requirements (dependenciesFile : DependenciesFile) groups = 
+let resolve' graph (dependenciesFile : DependenciesFile) groups = 
     dependenciesFile.Resolve(noSha1, VersionsFromGraph graph, PackageDetailsFromGraph graph, groups)
 
-let resolve = resolve' graph []
+let resolve = resolve' graph
 
 [<Test>]
 let ``SelectiveUpdate does not update any package when it is neither updating all nor selective updating``() = 
@@ -441,10 +441,7 @@ let ``SelectiveUpdate does not update when package conflicts with a transitive d
 
     let updateAll = false
     let packageName = PackageName "log4net"
-    let requirements =
-        lockFile.GetGroupedResolution()
-        |> createPackageRequirements [packageName]
-    let resolve = resolve' graph requirements
+    let resolve = resolve' graph
 
     let lockFile = 
         Some(Constants.MainDependencyGroup, packageName)
@@ -518,10 +515,7 @@ let ``SelectiveUpdate updates package that conflicts with a transitive dependenc
     
     let updateAll = false
     let packageName = PackageName "log4f"
-    let requirements =
-        lockFile2.GetGroupedResolution()
-        |> createPackageRequirements [packageName]
-    let resolve = resolve' graph2 requirements
+    let resolve = resolve' graph2
 
     let lockFile = 
         Some(Constants.MainDependencyGroup, packageName)
@@ -555,10 +549,7 @@ let ``SelectiveUpdate updates package that conflicts with a transitive dependenc
     
     let updateAll = false
     let packageName = PackageName "Ninject.Extensions.Logging.Log4net"
-    let requirements =
-        lockFile2.GetGroupedResolution()
-        |> createPackageRequirements [packageName]
-    let resolve = resolve' graph2 requirements
+    let resolve = resolve' graph2
 
     let lockFile = 
         Some(Constants.MainDependencyGroup, packageName)
@@ -617,10 +608,7 @@ let ``SelectiveUpdate updates package that conflicts with a transitive dependenc
     
     let updateAll = false
     let packageName = PackageName "Ninject.Extensions.Logging.Log4net"
-    let requirements =
-        lockFile3.GetGroupedResolution()
-        |> createPackageRequirements [packageName]
-    let resolve = resolve' graph3 requirements
+    let resolve = resolve' graph3
 
     let lockFile = 
         Some(Constants.MainDependencyGroup, packageName)
@@ -656,10 +644,7 @@ let ``SelectiveUpdate conflicts with a transitive dependency of another package 
     
     let updateAll = false
     let packageName = PackageName "Ninject"
-    let requirements =
-        lockFile3.GetGroupedResolution()
-        |> createPackageRequirements [packageName]
-    let resolve = resolve' graph3 requirements
+    let resolve = resolve' graph3
 
     (fun () ->
     Some(Constants.MainDependencyGroup, packageName)
@@ -678,10 +663,7 @@ let ``SelectiveUpdate updates package that conflicts with a deep transitive depe
     
     let updateAll = false
     let packageName = PackageName "Ninject.Extensions.Interception"
-    let requirements =
-        lockFile3.GetGroupedResolution()
-        |> createPackageRequirements [packageName]
-    let resolve = resolve' graph3 requirements
+    let resolve = resolve' graph3
 
     let lockFile = 
         Some(Constants.MainDependencyGroup, packageName)
@@ -736,10 +718,7 @@ let ``SelectiveUpdate updates package that conflicts with a deep transitive depe
     
     let updateAll = false
     let packageName = PackageName "Ninject.Extensions.Logging.Log4net.Deep"
-    let requirements =
-        lockFile4.GetGroupedResolution()
-        |> createPackageRequirements [packageName]
-    let resolve = resolve' graph4 requirements
+    let resolve = resolve' graph4
 
     let lockFile = 
         Some(Constants.MainDependencyGroup, packageName)
@@ -792,10 +771,7 @@ let ``SelectiveUpdate updates package that conflicts with transitive dependency 
     
     let updateAll = false
     let packageName = PackageName "Ninject.Extensions.Logging"
-    let requirements =
-        lockFile5.GetGroupedResolution()
-        |> createPackageRequirements [packageName]
-    let resolve = resolve' graph5 requirements
+    let resolve = resolve' graph5
 
     let lockFile = 
         Some(Constants.MainDependencyGroup, packageName)
