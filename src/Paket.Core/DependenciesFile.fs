@@ -335,6 +335,21 @@ type DependenciesFile(fileName,groups:Map<GroupName,DependenciesGroup>, textRepr
         let splitted = l.Split(' ') |> Array.map (fun s -> s.ToLowerInvariant().Trim())
         splitted |> Array.exists ((=) "nuget") && splitted |> Array.exists ((=) name)
 
+    let findLastGroupLine groupName = 
+        let _,_,found =
+            textRepresentation
+            |> Array.fold (fun (i,currentGroup,found) line -> 
+                    if line.StartsWith "group " then
+                        let group = line.Replace("group","").Trim()
+                        if currentGroup = groupName then
+                            i+1,GroupName group,(i - 1)
+                        else
+                            i+1,GroupName group,found
+                    else
+                        i+1,currentGroup,found)
+                (0,Constants.MainDependencyGroup,textRepresentation.Length)
+        found
+
     let tryFindPackageLine groupName (packageName:PackageName) =        
         let name = packageName.GetCompareString()
         let _,_,found =
@@ -444,8 +459,9 @@ type DependenciesFile(fileName,groups:Map<GroupName,DependenciesGroup>, textRepr
                 else
                     list.Insert(pos + 1, packageString)
             | None -> 
-                if pinDown then 
-                    list.Add(packageString) 
+                if pinDown then
+                    let lastGroupLine = findLastGroupLine groupName 
+                    list.Insert(lastGroupLine, packageString)
                 else
                     match smaller with
                     | [] -> 
@@ -503,13 +519,16 @@ type DependenciesFile(fileName,groups:Map<GroupName,DependenciesGroup>, textRepr
         let vr = DependenciesFileParser.parseVersionString version
 
         let resolverStrategy,versionRequirement = 
-            match groups.[groupName].Packages |> List.tryFind (fun p -> p.Name = packageName) with
-            | Some package -> 
-                package.ResolverStrategy,
-                match package.VersionRequirement.Range with
-                | OverrideAll(_) -> package.VersionRequirement
-                | _ -> vr.VersionRequirement
+            match groups |> Map.tryFind groupName with
             | None -> vr.ResolverStrategy,vr.VersionRequirement
+            | Some group ->
+                match group.Packages |> List.tryFind (fun p -> p.Name = packageName) with
+                | Some package -> 
+                    package.ResolverStrategy,
+                    match package.VersionRequirement.Range with
+                    | OverrideAll(_) -> package.VersionRequirement
+                    | _ -> vr.VersionRequirement
+                | None -> vr.ResolverStrategy,vr.VersionRequirement
 
         this.AddAdditionalPackage(groupName, packageName,versionRequirement,resolverStrategy,settings,true)
 

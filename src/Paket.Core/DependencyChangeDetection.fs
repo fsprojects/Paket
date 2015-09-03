@@ -27,13 +27,11 @@ let findChangesInDependenciesFile(dependenciesFile:DependenciesFile,lockFile:Loc
             |> Seq.map (fun d -> d.Name,d)
             |> Map.ofSeq
 
-        [ for g in lockFile.Groups do
-              let groupName = g.Key
-              for t in lockFile.GetTopLevelDependencies(groupName) do
-                  let name = t.Key
-                  match directMap.TryFind name with
-                  | Some pr -> if hasChanged pr t.Value then yield groupName, name // Modified
-                  | _ -> yield groupName, name // Removed
+        [for t in lockFile.GetTopLevelDependencies(groupName) do
+            let name = t.Key
+            match directMap.TryFind name with
+            | Some pr -> if hasChanged pr t.Value then yield groupName, name // Modified
+            | _ -> yield groupName, name // Removed
         ]
         |> List.map lockFile.GetAllNormalizedDependenciesOf
         |> Seq.concat
@@ -46,7 +44,10 @@ let findChangesInDependenciesFile(dependenciesFile:DependenciesFile,lockFile:Loc
         |> Seq.append (lockFile.Groups |> Seq.map (fun kv -> kv.Key))
 
     groupNames
-    |> Seq.map (fun groupName -> added groupName |> Set.union (modified groupName))
+    |> Seq.map (fun groupName -> 
+            let added = added groupName 
+            let modified = modified groupName
+            Set.union added modified)
     |> Seq.concat
     |> Set.ofSeq
 

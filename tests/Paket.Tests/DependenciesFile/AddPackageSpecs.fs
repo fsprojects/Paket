@@ -493,3 +493,102 @@ nuget Z"""
 
     cfg.ToString()
     |> shouldEqual (normalizeLineEndings expected)
+
+[<Test>]
+let ``should add Microsoft.AspNet.WebApi package to third group in alphabetical pos``() = 
+    let config = """source https://nuget.org/api/v2
+
+nuget NUnit
+
+group Build
+nuget A
+nuget Z
+
+group Test
+nuget A
+nuget Z"""
+
+    let cfg = DependenciesFile.FromCode(config).Add(GroupName "Test", PackageName "Microsoft.AspNet.WebApi","")
+    
+    let expected = """source https://nuget.org/api/v2
+
+nuget NUnit
+
+group Build
+nuget A
+nuget Z
+
+group Test
+nuget A
+nuget Microsoft.AspNet.WebApi
+nuget Z"""
+
+    cfg.ToString()
+    |> shouldEqual (normalizeLineEndings expected)
+
+[<Test>]
+let ``should add pinned package version to third group``() = 
+    let config = """source https://nuget.org/api/v2
+
+nuget Newtonsoft.Json
+nuget Argu
+nuget FSharp.Core
+
+github fsharp/FAKE src/app/FakeLib/Globbing/Globbing.fs
+github fsprojects/Chessie src/Chessie/ErrorHandling.fs
+
+group Build
+
+  source https://nuget.org/api/v2
+  
+  nuget FAKE
+  nuget FSharp.Formatting
+  nuget ILRepack
+
+  github fsharp/FAKE modules/Octokit/Octokit.fsx
+
+group Test
+
+  source https://nuget.org/api/v2
+
+  nuget NUnit.Runners.Net4
+  nuget NUnit
+  github forki/FsUnit FsUnit.fs"""
+
+    let cfg = DependenciesFile.FromCode(config)
+                .AddFixedPackage(
+                    GroupName "Build",
+                    PackageName "FSharp.Compiler.Service",
+                    "= 1.4.0.1",
+                    Paket.Requirements.InstallSettings.Default)
+    
+    let expected = """source https://nuget.org/api/v2
+
+nuget Newtonsoft.Json
+nuget Argu
+nuget FSharp.Core
+
+github fsharp/FAKE src/app/FakeLib/Globbing/Globbing.fs
+github fsprojects/Chessie src/Chessie/ErrorHandling.fs
+
+group Build
+
+  source https://nuget.org/api/v2
+  
+  nuget FAKE
+  nuget FSharp.Formatting
+  nuget ILRepack
+
+  github fsharp/FAKE modules/Octokit/Octokit.fsx
+nuget FSharp.Compiler.Service 1.4.0.1
+
+group Test
+
+  source https://nuget.org/api/v2
+
+  nuget NUnit.Runners.Net4
+  nuget NUnit
+  github forki/FsUnit FsUnit.fs"""
+
+    cfg.ToString()
+    |> shouldEqual (normalizeLineEndings expected)
