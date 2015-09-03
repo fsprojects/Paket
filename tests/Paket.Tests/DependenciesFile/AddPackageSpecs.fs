@@ -708,6 +708,8 @@ group Build
   github fsharp/FAKE modules/Octokit/Octokit.fsx
 
 group Test
+source https://nuget.org/api/v2
+
 nuget FSharp.Compiler.Service 1.4.0.1"""
 
     cfg.ToString()
@@ -757,6 +759,8 @@ group Build
   github fsharp/FAKE modules/Octokit/Octokit.fsx
 
 group Test
+source https://nuget.org/api/v2
+
 nuget Microsoft.AspNet.WebApi"""
 
     cfg.ToString()

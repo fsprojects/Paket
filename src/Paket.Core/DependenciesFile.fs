@@ -350,6 +350,21 @@ type DependenciesFile(fileName,groups:Map<GroupName,DependenciesGroup>, textRepr
                 (0,Constants.MainDependencyGroup,textRepresentation.Length)
         found
 
+    let findFirstGroupLine groupName = 
+        let _,found =
+            textRepresentation
+            |> Array.fold (fun (i,found) line -> 
+                    if line.StartsWith "group " then
+                        let group = line.Replace("group","").Trim()
+                        if GroupName group = groupName then
+                            i+1,(i + 1)
+                        else
+                            i+1,found
+                    else
+                        i+1,found)
+                (0,0)
+        found
+
     let tryFindPackageLine groupName (packageName:PackageName) =        
         let name = packageName.GetCompareString()
         let _,_,found =
@@ -464,6 +479,8 @@ type DependenciesFile(fileName,groups:Map<GroupName,DependenciesGroup>, textRepr
                     if list.Count > 0 then
                         list.Add("")
                     list.Add(sprintf "group %O" groupName)
+                    list.Add(DependenciesFileSerializer.sourceString Constants.DefaultNugetStream)
+                    list.Add("")
                     true
                 | _ -> false
 
@@ -490,14 +507,15 @@ type DependenciesFile(fileName,groups:Map<GroupName,DependenciesGroup>, textRepr
                         | Some group ->
                             match  group.Packages with
                             | [] ->
+                                let firstGroupLine = findFirstGroupLine groupName
                                 if group.RemoteFiles <> [] then
-                                    list.Insert(0,"")
+                                    list.Insert(firstGroupLine,"")
                     
                                 match group.Sources with
                                 | [] -> 
-                                    list.Insert(0,packageString)
-                                    list.Insert(0,"")
-                                    list.Insert(0,DependenciesFileSerializer.sourceString Constants.DefaultNugetStream)
+                                    list.Insert(firstGroupLine,packageString)
+                                    list.Insert(firstGroupLine,"")
+                                    list.Insert(firstGroupLine,DependenciesFileSerializer.sourceString Constants.DefaultNugetStream)
                                 | _ -> 
                                     match list |> Seq.tryFindIndex (fun line -> line.StartsWith("group ")) with
                                     | None ->
