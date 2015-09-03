@@ -485,28 +485,31 @@ type DependenciesFile(fileName,groups:Map<GroupName,DependenciesGroup>, textRepr
                 else
                     match smaller with
                     | [] -> 
-                        match groups.[groupName].Packages with
-                        | [] ->
-                            if groups.[groupName].RemoteFiles <> [] then
-                                list.Insert(0,"")
+                        match groups |> Map.tryFind groupName with 
+                        | None -> list.Add(packageString)
+                        | Some group ->
+                            match  group.Packages with
+                            | [] ->
+                                if group.RemoteFiles <> [] then
+                                    list.Insert(0,"")
                     
-                            match groups.[groupName].Sources with
-                            | [] -> 
-                                list.Insert(0,packageString)
-                                list.Insert(0,"")
-                                list.Insert(0,DependenciesFileSerializer.sourceString Constants.DefaultNugetStream)
-                            | _ -> 
-                                match list |> Seq.tryFindIndex (fun line -> line.StartsWith("group ")) with
-                                | None ->
-                                    list.Add("")
-                                    list.Add(packageString)
-                                | Some i ->
-                                    list.Insert(i,"")
-                                    list.Insert(i,packageString)
-                        | p::_ -> 
-                            match tryFindPackageLine groupName p.Name with
-                            | None -> list.Add packageString
-                            | Some pos -> list.Insert(pos,packageString)
+                                match group.Sources with
+                                | [] -> 
+                                    list.Insert(0,packageString)
+                                    list.Insert(0,"")
+                                    list.Insert(0,DependenciesFileSerializer.sourceString Constants.DefaultNugetStream)
+                                | _ -> 
+                                    match list |> Seq.tryFindIndex (fun line -> line.StartsWith("group ")) with
+                                    | None ->
+                                        list.Add("")
+                                        list.Add(packageString)
+                                    | Some i ->
+                                        list.Insert(i,"")
+                                        list.Insert(i,packageString)
+                            | p::_ -> 
+                                match tryFindPackageLine groupName p.Name with
+                                | None -> list.Add packageString
+                                | Some pos -> list.Insert(pos,packageString)
                     | _ -> 
                         let p = Seq.last smaller
 
