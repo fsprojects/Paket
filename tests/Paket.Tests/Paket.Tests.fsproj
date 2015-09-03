@@ -275,6 +275,7 @@
     <Compile Include="ProjectFile\InterProjectDependencySpecs.fs" />
     <Compile Include="ProjectFile\FrameworkReferencesSpecs.fs" />
     <Compile Include="ProjectFile\OutputSpecs.fs" />
+    <Compile Include="ProjectFile\ProjectLanguageSpecs.fs" />
     <Compile Include="InstallModel\FrameworkIdentifierSpecs.fs" />
     <Compile Include="InstallModel\ProcessingSpecs.fs" />
     <Compile Include="InstallModel\Xml\Fantomas.fs" />
@@ -300,6 +301,7 @@
     <Compile Include="InstallModel\Xml\RefactoringEssentials.fs" />
     <Compile Include="InstallModel\Penalty\PenaltySpecs.fs" />
     <Compile Include="InstallModel\Penalty\FrameworkConditionsSpecs.fs" />
+    <Compile Include="InstallModel\AnalyzerSpecs.fs" />
     <Compile Include="DependencyModel\ProjectDependencySpecs.fs" />
     <None Include="paket.references" />
   </ItemGroup>
