@@ -335,35 +335,23 @@ type DependenciesFile(fileName,groups:Map<GroupName,DependenciesGroup>, textRepr
         let splitted = l.Split(' ') |> Array.map (fun s -> s.ToLowerInvariant().Trim())
         splitted |> Array.exists ((=) "nuget") && splitted |> Array.exists ((=) name)
 
-    let findLastGroupLine groupName = 
-        let _,_,found =
+    let findGroupBorders groupName = 
+        let _,_,firstLine,lastLine =
             textRepresentation
-            |> Array.fold (fun (i,currentGroup,found) line -> 
+            |> Array.fold (fun (i,currentGroup,firstLine,lastLine) line -> 
                     if line.StartsWith "group " then
                         let group = line.Replace("group","").Trim()
                         if currentGroup = groupName then
-                            i+1,GroupName group,(i - 1)
+                            i+1,GroupName group,firstLine,(i - 1)
                         else
-                            i+1,GroupName group,found
+                            if GroupName group = groupName then
+                                i+1,GroupName group,(i + 1),lastLine
+                            else
+                                i+1,GroupName group,firstLine,lastLine
                     else
-                        i+1,currentGroup,found)
-                (0,Constants.MainDependencyGroup,textRepresentation.Length)
-        found
-
-    let findFirstGroupLine groupName = 
-        let _,found =
-            textRepresentation
-            |> Array.fold (fun (i,found) line -> 
-                    if line.StartsWith "group " then
-                        let group = line.Replace("group","").Trim()
-                        if GroupName group = groupName then
-                            i+1,(i + 1)
-                        else
-                            i+1,found
-                    else
-                        i+1,found)
-                (0,0)
-        found
+                        i+1,currentGroup,firstLine,lastLine)
+                (0,Constants.MainDependencyGroup,0,textRepresentation.Length)
+        firstLine,lastLine
 
     let tryFindPackageLine groupName (packageName:PackageName) =        
         let name = packageName.GetCompareString()
@@ -493,11 +481,11 @@ type DependenciesFile(fileName,groups:Map<GroupName,DependenciesGroup>, textRepr
                 else
                     list.Insert(pos + 1, packageString)
             | None -> 
+                let firstGroupLine,lastGroupLine = findGroupBorders groupName
                 if pinDown then
                     if newGroupInserted then
                         list.Add(packageString)
                     else
-                        let lastGroupLine = findLastGroupLine groupName 
                         list.Insert(lastGroupLine, packageString)
                 else
                     match smaller with
@@ -507,7 +495,6 @@ type DependenciesFile(fileName,groups:Map<GroupName,DependenciesGroup>, textRepr
                         | Some group ->
                             match group.Packages with
                             | [] ->
-                                let firstGroupLine = findFirstGroupLine groupName
                                 if group.RemoteFiles <> [] then
                                     list.Insert(firstGroupLine,"")
                     
@@ -516,14 +503,7 @@ type DependenciesFile(fileName,groups:Map<GroupName,DependenciesGroup>, textRepr
                                     list.Insert(firstGroupLine,packageString)
                                     list.Insert(firstGroupLine,"")
                                     list.Insert(firstGroupLine,DependenciesFileSerializer.sourceString Constants.DefaultNugetStream)
-                                | _ -> 
-                                    match list |> Seq.tryFindIndex (fun line -> line.StartsWith("group ")) with
-                                    | None ->
-                                        list.Add("")
-                                        list.Add(packageString)
-                                    | Some i ->
-                                        list.Insert(i,"")
-                                        list.Insert(i,packageString)
+                                | _ -> list.Insert(lastGroupLine, packageString)
                             | p::_ -> 
                                 match tryFindPackageLine groupName p.Name with
                                 | None -> list.Add packageString

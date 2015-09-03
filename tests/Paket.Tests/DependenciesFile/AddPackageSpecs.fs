@@ -269,7 +269,6 @@ let ``should add Microsoft.AspNet.WebApi package in first position if only sourc
     let cfg = DependenciesFile.FromCode(config).Add(Constants.MainDependencyGroup, PackageName "Microsoft.AspNet.WebApi","")
     
     let expected = """source https://nuget.org/api/v2
-
 nuget Microsoft.AspNet.WebApi"""
 
     cfg.ToString()
@@ -418,7 +417,6 @@ nuget Moq"""
     let cfg = DependenciesFile.FromCode(config).Add(Constants.MainDependencyGroup, PackageName "Microsoft.AspNet.WebApi","")
     
     let expected = """source https://nuget.org/api/v2
-
 nuget Microsoft.AspNet.WebApi
 
 group Build
