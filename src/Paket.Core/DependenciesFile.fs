@@ -505,7 +505,7 @@ type DependenciesFile(fileName,groups:Map<GroupName,DependenciesGroup>, textRepr
                         match groups |> Map.tryFind groupName with 
                         | None -> list.Add(packageString)
                         | Some group ->
-                            match  group.Packages with
+                            match group.Packages with
                             | [] ->
                                 let firstGroupLine = findFirstGroupLine groupName
                                 if group.RemoteFiles <> [] then

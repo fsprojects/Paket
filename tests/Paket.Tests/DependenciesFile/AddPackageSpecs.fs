@@ -765,3 +765,41 @@ nuget Microsoft.AspNet.WebApi"""
 
     cfg.ToString()
     |> shouldEqual (normalizeLineEndings expected)
+
+[<Test>]
+let ``should add package to existing group with only remote files``() = 
+    let config = """source https://nuget.org/api/v2
+
+nuget Newtonsoft.Json
+nuget Argu
+nuget FSharp.Core
+
+github fsharp/FAKE src/app/FakeLib/Globbing/Globbing.fs
+github fsprojects/Chessie src/Chessie/ErrorHandling.fs
+
+group Build
+
+  github fsharp/FAKE modules/Octokit/Octokit.fsx"""
+
+    let cfg = DependenciesFile.FromCode(config)
+                .Add(GroupName "Build", PackageName "Microsoft.AspNet.WebApi","")
+    
+    let expected = """source https://nuget.org/api/v2
+
+nuget Newtonsoft.Json
+nuget Argu
+nuget FSharp.Core
+
+github fsharp/FAKE src/app/FakeLib/Globbing/Globbing.fs
+github fsprojects/Chessie src/Chessie/ErrorHandling.fs
+
+group Build
+source https://nuget.org/api/v2
+
+nuget Microsoft.AspNet.WebApi
+
+
+  github fsharp/FAKE modules/Octokit/Octokit.fsx"""
+
+    cfg.ToString()
+    |> shouldEqual (normalizeLineEndings expected)
