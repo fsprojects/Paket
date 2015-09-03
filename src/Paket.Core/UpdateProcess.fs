@@ -60,20 +60,49 @@ type UpdateMode =
             | Some(groupName,package) -> SelectiveUpdate(groupName,package)
 
 let selectiveUpdate resolve (lockFile:LockFile) (dependenciesFile:DependenciesFile) updateAll package =
-    let selectiveUpdate groupName package =        
+    let resolve (dependenciesFile : DependenciesFile) packages = 
+        let groups =
+            package
+            |> Option.fold
+                (fun groups (groupName,_) ->
+                    groups |> Map.filter (fun g _ -> g = groupName))
+                dependenciesFile.Groups
+
+        groups
+        |> Map.map (fun groupName group ->
+            { Name = group.Name
+              RemoteFiles = group.RemoteFiles
+              RootDependencies = packages
+              FrameworkRestrictions = group.Options.Settings.FrameworkRestrictions
+              PackageRequirements = 
+                match package with
+                | Some(currentGroup,packageName) when groupName = currentGroup -> 
+                    lockFile.Groups
+                    |> Map.filter (fun g _ -> g = groupName)
+                    |> Seq.map (fun kv -> kv.Value.Resolution)
+                    |> Seq.map (createPackageRequirements [packageName])
+                    |> Seq.concat
+                    |> List.ofSeq
+                | _ -> [] })
+        |> resolve dependenciesFile
+
+    let selectiveUpdate (group : LockFileGroup) package =        
         let selectiveResolution : Map<GroupName,Resolved> = 
-            dependenciesFile.Groups.[groupName].Packages
-            |> List.filter (fun p -> package = p.Name)
-            |> Some
-            |> resolve dependenciesFile            
+            match dependenciesFile.Groups.TryFind group.Name with
+            | Some group -> 
+                group.Packages
+                |> List.filter (fun p -> package = p.Name)
+                |> Some
+                |> resolve dependenciesFile
+            | None -> failwithf "Group %O does not exist" group.Name
 
         let merge destination source = 
             Map.fold (fun acc key value -> Map.add key value acc) destination source
 
         let resolution =    
             let resolvedPackages = 
-                (selectiveResolution |> Map.find groupName).ResolvedPackages.GetModelOrFail()
-                |> merge lockFile.Groups.[groupName].Resolution
+                (selectiveResolution |> Map.find group.Name).ResolvedPackages.GetModelOrFail()
+                |> merge group.Resolution
 
             let dependencies = 
                 resolvedPackages
@@ -82,7 +111,7 @@ let selectiveUpdate resolve (lockFile:LockFile) (dependenciesFile:DependenciesFi
                 |> Set.ofSeq
 
             let isDirectDependency package = 
-                dependenciesFile.GetDependenciesInGroup(groupName)
+                dependenciesFile.GetDependenciesInGroup(group.Name)
                 |> Map.exists (fun p _ -> p = package)
 
             let isTransitiveDependency package =
@@ -93,7 +122,7 @@ let selectiveUpdate resolve (lockFile:LockFile) (dependenciesFile:DependenciesFi
             |> Map.filter (fun p _ -> isDirectDependency p || isTransitiveDependency p)
 
         { ResolvedPackages = Resolution.Ok resolution
-          ResolvedSourceFiles = lockFile.Groups.[groupName].RemoteFiles }
+          ResolvedSourceFiles = group.RemoteFiles }
 
     let resolution =
         match UpdateMode.Mode updateAll package with
@@ -104,11 +133,26 @@ let selectiveUpdate resolve (lockFile:LockFile) (dependenciesFile:DependenciesFi
                 |> DependencyChangeDetection.PinUnchangedDependencies dependenciesFile lockFile
             resolve dependenciesFile None
         | SelectiveUpdate(groupName,package) -> 
+            let lockFileGroup = 
+                lockFile.Groups
+                |> Map.filter (fun g _ -> g = groupName)
+                |> Seq.map (fun kv -> kv.Value)
+                |> Seq.tryHead
+            
+            let lockFileGroup =
+                match lockFileGroup with
+                | Some g -> g
+                | None ->
+                    { Name = groupName
+                      Options = InstallOptions.Default
+                      Resolution = Map.empty
+                      RemoteFiles = List.empty }
+
             lockFile.Groups
             |> Map.map (fun _ group ->
                 { ResolvedPackages = Resolution.Ok group.Resolution
                   ResolvedSourceFiles = group.RemoteFiles })
-            |> Map.add groupName (selectiveUpdate groupName package)
+            |> Map.add groupName (selectiveUpdate lockFileGroup package)
 
     let groups = 
         resolution
@@ -142,21 +186,8 @@ let SelectiveUpdate(dependenciesFile : DependenciesFile, updateAll, exclude, for
 
     let getSha1 origin owner repo branch = RemoteDownload.getSHA1OfBranch origin owner repo branch |> Async.RunSynchronously
     let root = Path.GetDirectoryName dependenciesFile.FileName
-    let groups (dependenciesFile : DependenciesFile) = 
-        dependenciesFile.Groups
-        |> Map.map (fun groupName group ->
-            { Name = group.Name
-              RemoteFiles = group.RemoteFiles
-              RootDependencies = Some group.Packages
-              FrameworkRestrictions = group.Options.Settings.FrameworkRestrictions
-              PackageRequirements = 
-                match exclude with
-                | Some(currentGroup,packageName) when groupName = currentGroup -> 
-                    oldLockFile.Groups.[groupName].Resolution
-                    |> createPackageRequirements [packageName]
-                | _ -> [] })  
 
-    let lockFile = selectiveUpdate (fun d _ -> d.Resolve(getSha1,(fun (x,y,_) -> NuGetV2.GetVersions root (x,y)) |> getVersion,NuGetV2.GetPackageDetails root force,groups d)) oldLockFile dependenciesFile updateAll exclude
+    let lockFile = selectiveUpdate (fun d g -> d.Resolve(getSha1,(fun (x,y,_) -> NuGetV2.GetVersions root (x,y)) |> getVersion,NuGetV2.GetPackageDetails root force,g)) oldLockFile dependenciesFile updateAll exclude
     lockFile.Save()
     lockFile
 
