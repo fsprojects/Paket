@@ -118,3 +118,38 @@ let ``redirects got properly indented for readability``() =
     let dependency = doc.Descendants(xNameForNs "dependentAssembly") |> Seq.head
     dependency.ToString() |> shouldEqual "<dependentAssembly xmlns=\"urn:schemas-microsoft-com:asm.v1\">\r\n    <assemblyIdentity name=\"Assembly\" publicKeyToken=\"PUBLIC_KEY\" culture=\"neutral\" />\r\n    <bindingRedirect oldVersion=\"0.0.0.0-999.999.999.999\" newVersion=\"1.0.0\" />\r\n  </dependentAssembly>"
 
+let buildMockGetFiles outcomes =
+    fun (path, wildcard, _) ->
+        outcomes
+        |> List.tryFind (fst >> (=) (path, wildcard)) 
+        |> Option.map snd
+        |> defaultArg <| []
+        |> List.toArray
+
+[<Test>]
+let ``app.config file is marked for creation in folders containing paket.references``() =
+    let mockGetFiles =
+        buildMockGetFiles
+            [ (@"C:\rootpath", "paket.references"), [ @"C:\rootpath\source\paket.references" ]
+              (@"C:\rootpath\source", "*.config"), [ @"C:\rootpath\source\paket.references" ]
+            ]
+    let foldersToCreateConfigFor = getFoldersWithPaketReferencesAndNoConfig mockGetFiles @"C:\rootpath"
+    foldersToCreateConfigFor |> shouldEqual [ @"C:\rootpath\source"]
+
+[<Test>]
+let ``app.config file is not marked for creation in folders not containing paket.references``() =
+    let mockGetFiles = buildMockGetFiles [ (@"C:\rootpath", "paket.references"), [] ]
+    let foldersToCreateConfigFor = getFoldersWithPaketReferencesAndNoConfig mockGetFiles @"C:\rootpath"
+    foldersToCreateConfigFor |> shouldEqual []
+
+[<Test>]
+let ``app.config file is not marked for creation in folders if one already exists``() =
+    let mockGetFiles =
+        buildMockGetFiles
+            [ (@"C:\rootpath", "paket.references"), [ @"C:\rootpath\source\paket.references" ]
+              (@"C:\rootpath\source", "*.config"), [ @"C:\rootpath\source\paket.references"; @"C:\rootpath\source\app.config" ]
+            ]
+    let foldersToCreateConfigFor = getFoldersWithPaketReferencesAndNoConfig mockGetFiles @"C:\rootpath"
+    foldersToCreateConfigFor |> shouldEqual []
+
+
