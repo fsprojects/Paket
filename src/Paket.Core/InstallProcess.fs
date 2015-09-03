@@ -254,10 +254,11 @@ let InstallIntoProjects(options : InstallerOptions, dependenciesFile, lockFile :
                             tracefn "FileName: %s " file.Name 
     
                         let lockFileReference =
-                            lockFile.Groups
-                            |> Seq.map (fun kv -> kv.Value.RemoteFiles)
-                            |> Seq.concat 
-                            |> Seq.tryFind (fun f -> Path.GetFileName(f.Name) = file.Name)
+                            match lockFile.Groups |> Map.tryFind kv.Key with
+                            | None -> None
+                            | Some group ->
+                                group.RemoteFiles
+                                |> Seq.tryFind (fun f -> Path.GetFileName(f.Name) = file.Name)
     
                         match lockFileReference with
                         | Some file -> file.FilePath(root,kv.Key)
