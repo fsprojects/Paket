@@ -29,7 +29,7 @@ type ProjectOutputType =
 
 type ProjectLanguage = Unknown | CSharp | FSharp | VisualBasic
 
-module private LanguageEvaluation =
+module LanguageEvaluation =
     let private extractProjectTypeGuids (projectDocument:XmlDocument) =
         projectDocument
         |> getDescendants "PropertyGroup"
