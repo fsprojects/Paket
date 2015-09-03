@@ -592,3 +592,123 @@ group Test
 
     cfg.ToString()
     |> shouldEqual (normalizeLineEndings expected)
+
+[<Test>]
+let ``should add pinned package version to last group``() = 
+    let config = """source https://nuget.org/api/v2
+
+nuget Newtonsoft.Json
+nuget Argu
+nuget FSharp.Core
+
+github fsharp/FAKE src/app/FakeLib/Globbing/Globbing.fs
+github fsprojects/Chessie src/Chessie/ErrorHandling.fs
+
+group Build
+
+  source https://nuget.org/api/v2
+  
+  nuget FAKE
+  nuget FSharp.Formatting
+  nuget ILRepack
+
+  github fsharp/FAKE modules/Octokit/Octokit.fsx
+
+group Test
+
+  source https://nuget.org/api/v2
+
+  nuget NUnit.Runners.Net4
+  nuget NUnit
+  github forki/FsUnit FsUnit.fs"""
+
+    let cfg = DependenciesFile.FromCode(config)
+                .AddFixedPackage(
+                    GroupName "Test",
+                    PackageName "FSharp.Compiler.Service",
+                    "= 1.4.0.1",
+                    Paket.Requirements.InstallSettings.Default)
+    
+    let expected = """source https://nuget.org/api/v2
+
+nuget Newtonsoft.Json
+nuget Argu
+nuget FSharp.Core
+
+github fsharp/FAKE src/app/FakeLib/Globbing/Globbing.fs
+github fsprojects/Chessie src/Chessie/ErrorHandling.fs
+
+group Build
+
+  source https://nuget.org/api/v2
+  
+  nuget FAKE
+  nuget FSharp.Formatting
+  nuget ILRepack
+
+  github fsharp/FAKE modules/Octokit/Octokit.fsx
+
+group Test
+
+  source https://nuget.org/api/v2
+
+  nuget NUnit.Runners.Net4
+  nuget NUnit
+  github forki/FsUnit FsUnit.fs
+nuget FSharp.Compiler.Service 1.4.0.1"""
+
+    cfg.ToString()
+    |> shouldEqual (normalizeLineEndings expected)
+
+[<Test>]
+let ``should add pinned package version to new group``() = 
+    let config = """source https://nuget.org/api/v2
+
+nuget Newtonsoft.Json
+nuget Argu
+nuget FSharp.Core
+
+github fsharp/FAKE src/app/FakeLib/Globbing/Globbing.fs
+github fsprojects/Chessie src/Chessie/ErrorHandling.fs
+
+group Build
+
+  source https://nuget.org/api/v2
+  
+  nuget FAKE
+  nuget FSharp.Formatting
+  nuget ILRepack
+
+  github fsharp/FAKE modules/Octokit/Octokit.fsx"""
+
+    let cfg = DependenciesFile.FromCode(config)
+                .AddFixedPackage(
+                    GroupName "Test",
+                    PackageName "FSharp.Compiler.Service",
+                    "= 1.4.0.1",
+                    Paket.Requirements.InstallSettings.Default)
+    
+    let expected = """source https://nuget.org/api/v2
+
+nuget Newtonsoft.Json
+nuget Argu
+nuget FSharp.Core
+
+github fsharp/FAKE src/app/FakeLib/Globbing/Globbing.fs
+github fsprojects/Chessie src/Chessie/ErrorHandling.fs
+
+group Build
+
+  source https://nuget.org/api/v2
+  
+  nuget FAKE
+  nuget FSharp.Formatting
+  nuget ILRepack
+
+  github fsharp/FAKE modules/Octokit/Octokit.fsx
+
+group Test
+nuget FSharp.Compiler.Service 1.4.0.1"""
+
+    cfg.ToString()
+    |> shouldEqual (normalizeLineEndings expected)

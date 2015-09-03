@@ -438,17 +438,34 @@ type DependenciesFile(fileName,groups:Map<GroupName,DependenciesGroup>, textRepr
 
         // Try to find alphabetical matching position to insert the package
         let isPackageInLastSource (p:PackageRequirement) =
-            match groups.[groupName].Sources with
-            | [] -> true
-            | sources -> 
-                let lastSource =  Seq.last sources
-                p.Sources |> Seq.exists (fun s -> s = lastSource)
+            match groups |> Map.tryFind groupName with
+            | None -> true
+            | Some group ->
+                match group.Sources with
+                | [] -> true
+                | sources -> 
+                    let lastSource = Seq.last sources
+                    p.Sources |> Seq.exists (fun s -> s = lastSource)
 
-        let smaller = Seq.takeWhile (fun (p:PackageRequirement) -> p.Name <= packageName || not (isPackageInLastSource p)) groups.[groupName].Packages |> List.ofSeq
+        let smaller = 
+            match groups |> Map.tryFind groupName with
+            | None -> []
+            | Some group ->
+                group.Packages 
+                |> Seq.takeWhile (fun (p:PackageRequirement) -> p.Name <= packageName || not (isPackageInLastSource p)) 
+                |> List.ofSeq
 
         let newLines =
             let list = new System.Collections.Generic.List<_>()
             list.AddRange textRepresentation
+            let newGroupInserted =
+                match groups |> Map.tryFind groupName with
+                | None -> 
+                    if list.Count > 0 then
+                        list.Add("")
+                    list.Add(sprintf "group %O" groupName)
+                    true
+                | _ -> false
 
             match tryFindPackageLine groupName packageName with                        
             | Some pos -> 
@@ -460,8 +477,11 @@ type DependenciesFile(fileName,groups:Map<GroupName,DependenciesGroup>, textRepr
                     list.Insert(pos + 1, packageString)
             | None -> 
                 if pinDown then
-                    let lastGroupLine = findLastGroupLine groupName 
-                    list.Insert(lastGroupLine, packageString)
+                    if newGroupInserted then
+                        list.Add(packageString)
+                    else
+                        let lastGroupLine = findLastGroupLine groupName 
+                        list.Insert(lastGroupLine, packageString)
                 else
                     match smaller with
                     | [] -> 
