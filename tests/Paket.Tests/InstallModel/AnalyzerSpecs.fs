@@ -21,7 +21,7 @@ let ``Directory name is cases sensitive``() =
 
 [<Test>]
 let ``Can convert directory to language``() = 
-    let mkLanguage lang = Path.Combine("foo", "bar", lang) |> DirectoryInfo |> AnalyzerLanguage.FromDirectory
+    let mkLanguage lang = DirectoryInfo(Path.Combine("foo", "bar", lang)) |> AnalyzerLanguage.FromDirectory
 
     mkLanguage "cs" |> shouldEqual AnalyzerLanguage.CSharp
     mkLanguage "fs" |> shouldEqual AnalyzerLanguage.FSharp
@@ -29,7 +29,7 @@ let ``Can convert directory to language``() =
 
 [<Test>]
 let ``Can create analyzer lib``() = 
-    let fileInfo = Path.Combine("foo", "bar", "cs", "Analyzer.dll") |> FileInfo
+    let fileInfo = FileInfo(Path.Combine("foo", "bar", "cs", "Analyzer.dll"))
     let lib = fileInfo |> AnalyzerLib.FromFile
     
     lib.Language |> shouldEqual AnalyzerLanguage.CSharp

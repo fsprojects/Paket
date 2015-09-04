@@ -141,7 +141,7 @@ let findDependencies (dependencies : DependenciesFile) config (template : Templa
     let targetDir = 
         match project.OutputType with
         | ProjectOutputType.Exe -> "tools/"
-        | ProjectOutputType.Library -> sprintf "lib/%s/" (project.GetTargetProfile().ToString())
+        | ProjectOutputType.Library -> sprintf "lib/%O/" (project.GetTargetProfile())
     
     let projectDir = Path.GetDirectoryName project.FileName
     

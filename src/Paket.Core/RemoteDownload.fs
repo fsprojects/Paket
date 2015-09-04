@@ -157,9 +157,9 @@ let DownloadSourceFiles(rootPath, groupName, force, sourceFiles:ModuleResolver.R
                                 File.Exists destination
 
                         if not force && exists then
-                            verbosefn "Sourcefile %s is already there." (source.ToString())
+                            verbosefn "Sourcefile %O is already there." source
                         else 
-                            tracefn "Downloading %s to %s" (source.ToString()) destination
+                            tracefn "Downloading %O to %s" source destination
                             do! downloadRemoteFiles(source,destination)
                     })
                 |> Async.Parallel

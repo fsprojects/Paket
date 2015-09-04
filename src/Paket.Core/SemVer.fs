@@ -111,8 +111,6 @@ type SemVerInfo =
 
         sprintf "%d.%d.%d%s%s" x.Major x.Minor x.Patch build pre
 
-    member x.AsString = x.ToString()
-
     override x.ToString() = 
         match x.Original with
         | Some version -> version.Trim()

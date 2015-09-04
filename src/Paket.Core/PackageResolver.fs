@@ -58,9 +58,7 @@ type ResolvedPackage =
       Settings : InstallSettings
       Source : PackageSource }
 
-    override this.ToString() =
-        let (PackageName name) = this.Name
-        sprintf "%s %s" name (this.Version.ToString())
+    override this.ToString() = sprintf "%O %O" this.Name this.Version
 
 let createPackageRequirement parent (packageName, version, restrictions) =
     { Name = packageName
@@ -140,17 +138,17 @@ type Resolution =
                         let (PackageName name) = x.Name
                         match x.Parent with
                         | DependenciesFile _ ->
-                            sprintf "   - Dependencies file requested %s" (x.VersionRequirement.ToString()) |> addToError
+                            sprintf "   - Dependencies file requested %O" x.VersionRequirement |> addToError
                         | Package(PackageName parentName,version) ->
-                            sprintf "   - %s %s requested %s" parentName (version.ToString()) (x.VersionRequirement.ToString())                                
+                            sprintf "   - %s %O requested %O" parentName version x.VersionRequirement                                
                             |> addToError)
 
                 let (PackageName name) = r.Name
                 match r.Parent with
                 | DependenciesFile _ ->
-                    sprintf "   - Dependencies file requested %s" (r.VersionRequirement.ToString()) |> addToError
+                    sprintf "   - Dependencies file requested %O" r.VersionRequirement |> addToError
                 | Package(PackageName parentName,version) ->
-                    sprintf "   - %s %s requested %s" parentName (version.ToString()) (r.VersionRequirement.ToString())
+                    sprintf "   - %s %O requested %O" parentName version r.VersionRequirement
                     |> addToError
 
             addToError "Error in resolution."
@@ -158,7 +156,7 @@ type Resolution =
             if not closed.IsEmpty then
                 addToError "  Resolved:"
                 for x in closed do
-                    sprintf "   - %O %s" x.Name (x.VersionRequirement.ToString()) |> addToError
+                    sprintf "   - %O %O" x.Name x.VersionRequirement |> addToError
 
             stillOpen
             |> Seq.head

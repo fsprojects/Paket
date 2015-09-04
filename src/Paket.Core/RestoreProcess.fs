@@ -12,7 +12,6 @@ open FSharp.Polyfill
 /// Downloads and extracts a package.
 let ExtractPackage(root, groupName, sources, force, package : ResolvedPackage) = 
     async { 
-        let (PackageName name) = package.Name
         let v = package.Version
         let includeVersionInPath = defaultArg package.Settings.IncludeVersionInPath false
         match package.Source with
@@ -23,18 +22,18 @@ let ExtractPackage(root, groupName, sources, force, package : ResolvedPackage) =
                                | Nuget s -> s.Authentication |> Option.map toBasicAuth
                                | _ -> None)
             try 
-                let! folder = NuGetV2.DownloadPackage(root, auth, source.Url, groupName, name, v, includeVersionInPath, force)
+                let! folder = NuGetV2.DownloadPackage(root, auth, source.Url, groupName, package.Name, v, includeVersionInPath, force)
                 return package, NuGetV2.GetLibFiles folder, NuGetV2.GetTargetsFiles folder, NuGetV2.GetAnalyzerFiles folder
             with _ when not force -> 
-                tracefn "Something went wrong with the download of %s %A - automatic retry with --force." name v
-                let! folder = NuGetV2.DownloadPackage(root, auth, source.Url, groupName, name, v, includeVersionInPath, true)
+                tracefn "Something went wrong with the download of %O %A - automatic retry with --force." package.Name v
+                let! folder = NuGetV2.DownloadPackage(root, auth, source.Url, groupName, package.Name, v, includeVersionInPath, true)
                 return package, NuGetV2.GetLibFiles folder, NuGetV2.GetTargetsFiles folder, NuGetV2.GetAnalyzerFiles folder
         | LocalNuget path ->         
             let path = Utils.normalizeLocalPath path
             let di = Utils.getDirectoryInfo path root
-            let nupkg = NuGetV2.findLocalPackage di.FullName name v
+            let nupkg = NuGetV2.findLocalPackage di.FullName package.Name v
 
-            let! folder = NuGetV2.CopyFromCache(root, groupName, nupkg.FullName, "", name, v, includeVersionInPath, force)
+            let! folder = NuGetV2.CopyFromCache(root, groupName, nupkg.FullName, "", package.Name, v, includeVersionInPath, force)
             return package, NuGetV2.GetLibFiles folder, NuGetV2.GetTargetsFiles folder, NuGetV2.GetAnalyzerFiles folder
     }
 

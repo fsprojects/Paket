@@ -75,7 +75,7 @@ let private printOutdated changed =
         for (GroupName groupName),packages in changed |> List.groupBy (fun (g,_,_,_) -> g) do
             tracefn "  Group: %s"  groupName
             for (_,(PackageName name),oldVersion,newVersion) in packages do
-                tracefn "    * %s %s -> %s"  name (oldVersion.ToString()) (newVersion.ToString())
+                tracefn "    * %s %O -> %O"  name oldVersion newVersion
 
 /// Prints all outdated packages.
 let ShowOutdated strict includingPrereleases environment = trial {

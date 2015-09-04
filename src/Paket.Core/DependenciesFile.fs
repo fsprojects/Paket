@@ -361,7 +361,7 @@ type DependenciesFile(fileName,groups:Map<GroupName,DependenciesGroup>, textRepr
                     match found with
                     | Some _ -> i+1,currentGroup,found
                     | None ->
-                        if currentGroup = groupName && isPackageLine (packageName.ToString().ToLowerInvariant()) line then
+                        if currentGroup = groupName && isPackageLine (packageName.GetCompareString()) line then
                             i+1,currentGroup,Some i
                         else
                             if line.StartsWith "group " then
@@ -598,7 +598,7 @@ type DependenciesFile(fileName,groups:Map<GroupName,DependenciesGroup>, textRepr
             let newLines = 
                 this.Lines 
                 |> Array.map (fun l -> 
-                    let name = packageName.ToString().ToLower()
+                    let name = packageName.GetCompareString()
                     if isPackageLine name l then 
                         let p = this.GetPackage(groupName,packageName)
                         DependenciesFileSerializer.packageString packageName vr.VersionRequirement vr.ResolverStrategy p.Settings
@@ -609,9 +609,7 @@ type DependenciesFile(fileName,groups:Map<GroupName,DependenciesGroup>, textRepr
             traceWarnfn "%s doesn't contain package %O in group %O. ==> Ignored" fileName packageName groupName
             this
 
-    member this.RootPath =
-        let fi = FileInfo(fileName)
-        fi.Directory.FullName
+    member this.RootPath = FileInfo(fileName).Directory.FullName
 
     override __.ToString() = String.Join(Environment.NewLine, textRepresentation |> Array.skipWhile String.IsNullOrWhiteSpace)
 

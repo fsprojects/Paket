@@ -17,7 +17,7 @@ type FrameworkRestriction =
         | FrameworkRestriction.Exactly r -> r.ToString()
         | FrameworkRestriction.Portable r -> r
         | FrameworkRestriction.AtLeast r -> ">= " + r.ToString()
-        | FrameworkRestriction.Between(min,max) -> sprintf ">= %s < %s" (min.ToString()) (max.ToString())
+        | FrameworkRestriction.Between(min,max) -> sprintf ">= %O < %O" min max
 
 type FrameworkRestrictions = FrameworkRestriction list
 
@@ -245,8 +245,7 @@ type PackageRequirementSource =
         match this with
         | DependenciesFile x -> x
         | Package(name,version) ->
-          sprintf "%s %s" (name.ToString()) (version.ToString())
-
+          sprintf "%O %O" name version
 
 /// Represents an unresolved package.
 [<CustomEquality;CustomComparison>]
@@ -264,8 +263,7 @@ type PackageRequirement =
         | _ -> false
 
     override this.ToString() =
-        let (PackageName name) = this.Name
-        sprintf "%s %s (from %s)" name (this.VersionRequirement.ToString()) (this.Parent.ToString())
+        sprintf "%O %O (from %O)" this.Name this.VersionRequirement this.Parent
 
     override this.GetHashCode() = hash (this.Name,this.VersionRequirement)
 
