@@ -801,3 +801,18 @@ nuget Microsoft.AspNet.WebApi
 
     cfg.ToString()
     |> shouldEqual (normalizeLineEndings expected)
+
+[<Test>]
+let ``should add Microsoft.AspNet.WebApi package to very first group``() = 
+    let config = ""
+
+    let cfg = DependenciesFile.FromCode(config)
+                .Add(GroupName "Build", PackageName "Microsoft.AspNet.WebApi","")
+    
+    let expected = """group Build
+source https://nuget.org/api/v2
+
+nuget Microsoft.AspNet.WebApi"""
+
+    cfg.ToString()
+    |> shouldEqual (normalizeLineEndings expected)

@@ -613,7 +613,7 @@ type DependenciesFile(fileName,groups:Map<GroupName,DependenciesGroup>, textRepr
         let fi = FileInfo(fileName)
         fi.Directory.FullName
 
-    override __.ToString() = String.Join(Environment.NewLine, textRepresentation)
+    override __.ToString() = String.Join(Environment.NewLine, textRepresentation |> Array.skipWhile String.IsNullOrWhiteSpace)
 
     member this.Save() =
         File.WriteAllText(fileName, this.ToString())

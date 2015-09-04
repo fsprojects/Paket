@@ -97,8 +97,7 @@ let ``should remove all transitive dependencies from dep file recursively``() =
         refFiles.Head.Groups.[Constants.MainDependencyGroup].NugetPackages |>  shouldEqual [PackageInstallSettings.Default("A"); PackageInstallSettings.Default("C")]
         refFiles.Tail.Head.Groups.[Constants.MainDependencyGroup].NugetPackages |>  shouldEqual [PackageInstallSettings.Default("C"); PackageInstallSettings.Default("D")]
 
-        let expected = """
-source http://nuget.org/api/v2
+        let expected = """source http://nuget.org/api/v2
 
 nuget A 1.0
 nuget C 1.0"""
@@ -176,8 +175,7 @@ let ``should remove all transitive dependencies from dep file with multiple grou
         refFiles.Head.Groups.[Constants.MainDependencyGroup].NugetPackages |>  shouldEqual [PackageInstallSettings.Default("A"); PackageInstallSettings.Default("C")]
         refFiles.Tail.Head.Groups.[Constants.MainDependencyGroup].NugetPackages |>  shouldEqual [PackageInstallSettings.Default("C"); PackageInstallSettings.Default("D")]
 
-        let expected = """
-source http://nuget.org/api/v2
+        let expected = """source http://nuget.org/api/v2
 
 nuget A 1.0
 nuget C 1.0

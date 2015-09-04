@@ -292,8 +292,7 @@ let ``should serialize config with framework restriction``() =
     |> shouldEqual (normalizeLineEndings withFrameworkRestriction)
 
 
-let configWithAdditionalGroup = """
-condition: LEGACY
+let configWithAdditionalGroup = """condition: LEGACY
 source "http://nuget.org/api/v2"
 
 nuget FSharp.Compiler.Service
