@@ -628,8 +628,7 @@ type DependenciesFile(fileName,groups:Map<GroupName,DependenciesGroup>, textRepr
 
     /// Find the matching lock file to a dependencies file
     static member FindLockfile(dependenciesFileName) =
-        let fi = FileInfo(dependenciesFileName)
-        FileInfo(Path.Combine(fi.Directory.FullName, fi.Name.Replace(fi.Extension,"") + ".lock"))
+        FileInfo(Path.Combine(FileInfo(dependenciesFileName).Directory.FullName, Constants.LockFileName))
 
     /// Find the matching lock file to a dependencies file
     member this.FindLockfile() = DependenciesFile.FindLockfile this.FileName
