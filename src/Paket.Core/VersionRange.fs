@@ -150,8 +150,8 @@ type VersionRequirement =
     override this.ToString() = this.Range.ToString()
 
     /// Parses NuGet version range
-    static member Parse (text:string) = 
-        if  text = null || text = "" || text = "null" then VersionRequirement.AllReleases else
+    static member Parse text = 
+        if String.IsNullOrWhiteSpace text || text = "null" then VersionRequirement.AllReleases else
 
         let prereleases = ref PreReleaseStatus.No
         let analyzeVersion text =

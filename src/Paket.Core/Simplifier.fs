@@ -88,14 +88,14 @@ let simplify interactive environment = trial {
 
 let updateEnvironment (before,after) =
     if before.DependenciesFile.ToString() = after.DependenciesFile.ToString() then
-        tracefn "%s is already simplified" before.DependenciesFile.FileName
+        verbosefn "%s is already simplified" before.DependenciesFile.FileName
     else
         tracefn "Simplifying %s" after.DependenciesFile.FileName
         after.DependenciesFile.Save()
 
     for (_,refFileBefore),(_,refFileAfter) in List.zip before.Projects after.Projects do
         if refFileBefore = refFileAfter then
-            tracefn "%s is already simplified" refFileBefore.FileName
+            verbosefn "%s is already simplified" refFileBefore.FileName
         else
             tracefn "Simplifying %s" refFileAfter.FileName
             refFileAfter.Save()
