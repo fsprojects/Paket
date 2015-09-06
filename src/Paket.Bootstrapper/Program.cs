@@ -80,7 +80,7 @@ namespace Paket.Bootstrapper
                 }
                 else
                 {
-                    if (!localVersion.StartsWith(latestVersion))
+                    if (!localVersion.StartsWith(latestVersion, StringComparison.OrdinalIgnoreCase))
                     {
                         downloadStrategy.DownloadVersion(latestVersion, dlArgs.Target, silent);
                         if (!silent)
