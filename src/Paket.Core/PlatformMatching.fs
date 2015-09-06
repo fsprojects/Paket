@@ -191,4 +191,4 @@ let getCondition (referenceCondition:string option) (targets : TargetProfile lis
             if s = "$(TargetFrameworkIdentifier) == 'true'" then
                 sprintf "'$(%s)' == 'True'" condition
             else
-                sprintf "'$(%s)' == 'True' And %s" condition s
+                sprintf "'$(%s)' == 'True' And (%s)" condition s
