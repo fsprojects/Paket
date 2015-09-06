@@ -136,10 +136,10 @@ let fullDocWithRefernceConditionAndFrameworkRestriction = """<?xml version="1.0"
 <Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <Choose>
-    <When Condition="'$(LEGACY)' == 'True' And $(TargetFrameworkIdentifier) == '.NETFramework' And $(TargetFrameworkVersion) == 'v4.5'">
+    <When Condition="'$(LEGACY)' == 'True' And (($(TargetFrameworkIdentifier) == 'MonoAndroid') Or ($(TargetFrameworkIdentifier) == 'Xamarin.iOS'))">
       <ItemGroup>
         <Reference Include="FantomasLib">
-          <HintPath>..\..\..\Fantomas\lib\FantomasLib.dll</HintPath>
+          <HintPath>..\..\..\Fantomas\lib\portable-net45+win8\FantomasLib.dll</HintPath>
           <Private>True</Private>
           <Paket>True</Paket>
         </Reference>
@@ -151,14 +151,15 @@ let fullDocWithRefernceConditionAndFrameworkRestriction = """<?xml version="1.0"
 [<Test>]
 let ``should generate full Xml with reference condition and framework restrictions without msbuild warning``() =
     // msbuild triggers a warning MSB4130 when we leave out the quotes around $(LEGACY) and add the condition at the end
+    // It seems like the warning is triggered when there is an "Or" without parentheses somewhere
     let model =
-        InstallModel.CreateFromLibs(PackageName "Fantomas", SemVer.Parse "1.5.0", [FrameworkRestriction.Exactly (FrameworkIdentifier.DotNetFramework FrameworkVersion.V4_5)],
-            [ @"..\Fantomas\lib\FantomasLib.dll"
-              @"..\Fantomas\lib\FSharp.Core.dll"
-              @"..\Fantomas\lib\Fantomas.exe" ],
+        InstallModel.CreateFromLibs(PackageName "Fantomas", SemVer.Parse "1.5.0",
+            [ FrameworkRestriction.Exactly (FrameworkIdentifier.XamariniOS)
+              FrameworkRestriction.Exactly (FrameworkIdentifier.MonoAndroid)],
+            [ @"..\Fantomas\lib\portable-net45+win8\FantomasLib.dll" ],
               [],
               [],
-              Nuspec.Explicit ["FantomasLib.dll"])
+              Nuspec.All)
 
     let project = ProjectFile.Load("./ProjectFile/TestData/Empty.fsprojtest").Value
     let completeModel = [(Constants.MainDependencyGroup, (PackageName "Fantomas")),(model,model)] |> Map.ofSeq
