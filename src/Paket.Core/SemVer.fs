@@ -116,6 +116,9 @@ type SemVerInfo =
         | Some version -> version.Trim()
         | None -> x.Normalize()
     
+    member x.AsString
+        with get() = x.ToString()
+
     override x.Equals(yobj) = 
         match yobj with
         | :? SemVerInfo as y -> 
