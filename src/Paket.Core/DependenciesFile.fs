@@ -113,7 +113,11 @@ module DependenciesFileParser =
 
     let private ``parse http source`` trimmed =
         let parts = parseDependencyLine trimmed
-        let getParts (projectSpec:string) fileSpec =
+        
+        let removeInvalidChars (str:string) = 
+            System.Text.RegularExpressions.Regex.Replace(str, "[:@\,]", "_")
+
+        let getParts (projectSpec:string) fileSpec projectName =
             let projectSpec = projectSpec.TrimEnd('/')
             let ``project spec``, commit =
                 match projectSpec.IndexOf('/', 8) with // 8 = "https://".Length
@@ -129,12 +133,14 @@ module DependenciesFileParser =
             let owner =
                 match ``project spec``.IndexOf("://") with
                 | -1 -> ``project spec``
-                | pos ->  ``project spec``.Substring(pos+3)
-            HttpLink(``project spec``), (owner, "", Some commit), fileName
-        match parts with
-        | [| _; projectSpec; |] -> getParts projectSpec String.Empty
-        | [| _; projectSpec; fileSpec |] -> getParts projectSpec fileSpec
-        | _ -> failwithf "invalid http-reference specification:%s     %s" Environment.NewLine trimmed
+                | pos ->  ``project spec``.Substring(pos+3) |> removeInvalidChars
+            HttpLink(``project spec``), (owner, projectName, Some commit), fileName
+
+        match parseDependencyLine trimmed with
+        | [|spec; url |] -> getParts url "" ""
+        | [|spec; url; fileSpec |] -> getParts url fileSpec ""
+        | [|spec; url; fileSpec; projectName |] -> getParts url fileSpec projectName
+        | _ ->  failwithf "invalid http-reference specification:%s     %s" Environment.NewLine trimmed
 
     type private ParserOption =
     | ReferencesMode of bool

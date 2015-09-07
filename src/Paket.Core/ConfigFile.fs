@@ -122,21 +122,26 @@ let getSourceNodes (credentialsNode : XmlNode) (source) =
     |> Seq.filter (fun n -> n.Attributes.["source"].Value = source)
     |> Seq.toList
 
-
-/// Get the credential from the credential store for a specific source
-let GetCredentials (source : string) =
+/// Get the credential from the credential store for a specific source and valdiates against the url
+let GetCredentialsForUrl (source : string) url =
     let credentialsNode = getConfigNode "credentials" |> returnOrFail
     
     match getSourceNodes credentialsNode source with
     | sourceNode::_ ->
         let username,password = getAuthFromNode sourceNode
         let auth = {Username = username; Password = password}
-        if checkCredentials(source, Some(auth)) then
+        if checkCredentials(url, Some(auth)) then
             Some(username,password)
         else
             traceWarnfn "credentials for %s source are invalid" source  
             None
     | [] -> None
+
+/// Get the credential from the credential store for a specific source
+let GetCredentials (source : string) =
+    GetCredentialsForUrl source source
+
+
 
 let AddCredentials (source, username, password) = trial {
         let! credentialsNode = getConfigNode "credentials"

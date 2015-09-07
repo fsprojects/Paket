@@ -37,14 +37,20 @@ let downloadDependenciesFile(rootPath,parserF,remoteFile:ModuleResolver.Resolved
 
     let dependenciesFileName = remoteFile.Name.Replace(fi.Name,Constants.DependenciesFileName)
 
-    let url = 
+    let auth, url = 
         match remoteFile.Origin with
         | ModuleResolver.GitHubLink -> 
-            rawFileUrl remoteFile.Owner remoteFile.Project remoteFile.Commit dependenciesFileName
+            None, rawFileUrl remoteFile.Owner remoteFile.Project remoteFile.Commit dependenciesFileName
         | ModuleResolver.GistLink -> 
-            rawGistFileUrl remoteFile.Owner remoteFile.Project dependenciesFileName
-        | ModuleResolver.HttpLink url -> url.Replace(remoteFile.Name,Constants.DependenciesFileName)
-    let! result = safeGetFromUrl(None,url,null)
+            None, rawGistFileUrl remoteFile.Owner remoteFile.Project dependenciesFileName
+        | ModuleResolver.HttpLink url -> 
+            let url = url.Replace(remoteFile.Name,Constants.DependenciesFileName)
+            let auth = 
+                ConfigFile.GetCredentialsForUrl remoteFile.Project url
+                |> Option.map (fun (un, pwd) -> { Username = un; Password = pwd })
+            auth, url
+
+    let! result = safeGetFromUrl(auth,url,null)
 
     match result with
     | Some text when parserF text ->        
@@ -117,7 +123,10 @@ let downloadRemoteFiles(remoteFile:ResolvedSourceFile,destination) = async {
         return! downloadFromUrl(None,rawFileUrl remoteFile.Owner remoteFile.Project remoteFile.Commit remoteFile.Name) destination
     | SingleSourceFileOrigin.HttpLink(origin), _ ->
         let url = origin + remoteFile.Commit
-        do! downloadFromUrl(None, url) destination
+        let auth =
+            ConfigFile.GetCredentialsForUrl remoteFile.Project url
+            |> Option.map (fun (un, pwd) -> { Username = un; Password = pwd })
+        do! downloadFromUrl(auth, url) destination
         match Path.GetExtension(destination).ToLowerInvariant() with
         | ".zip" ->
             let targetFolder = FileInfo(destination).Directory.FullName
