@@ -343,6 +343,39 @@ let ``should read http source file from config without quotes with file specs``(
             Origin = ModuleResolver.SingleSourceFileOrigin.HttpLink "http://www.fssnip.net"
             Commit = Some "/raw/1M/1" } ]
 
+
+[<Test>]
+let ``should read http source file from config without quotes with file specs and project and query string after filename``() =
+    let config = """http http://server-stash:7658/projects/proj1/repos/repo1/browse/Source/SolutionFolder/Rabbit.fs?at=a5457f3d811830059cd39d583f264eab340c273d&raw Rabbit.fs project"""
+    let dependencies = DependenciesFile.FromCode(config)
+    dependencies.RemoteFiles
+    |> shouldEqual
+        [ { Owner = "server-stash_7658"
+            Project = "project"
+            Name = "Rabbit.fs"
+            Origin = ModuleResolver.SingleSourceFileOrigin.HttpLink "http://server-stash:7658"
+            Commit = Some "/projects/proj1/repos/repo1/browse/Source/SolutionFolder/Rabbit.fs?at=a5457f3d811830059cd39d583f264eab340c273d&raw" }
+        ]
+
+[<Test>]
+let ``should read http source file from config without quotes with file specs and project``() =
+    let config = """http http://www.fssnip.net/raw/1M test1.fs project
+                    http http://www.fssnip.net/raw/1M/1 src/test2.fs project"""
+    let dependencies = DependenciesFile.FromCode(config)
+    dependencies.RemoteFiles
+    |> shouldEqual
+        [ { Owner = "www.fssnip.net"
+            Project = "project"
+            Name = "test1.fs"
+            Origin = ModuleResolver.SingleSourceFileOrigin.HttpLink "http://www.fssnip.net"
+            Commit = Some "/raw/1M" }
+          { Owner = "www.fssnip.net"
+            Project = "project"
+            Name = "src/test2.fs"
+            Origin = ModuleResolver.SingleSourceFileOrigin.HttpLink "http://www.fssnip.net"
+            Commit = Some "/raw/1M/1" } ]
+
+
 [<Test>]
 let ``should read gist source file from config without quotes with file specs``() =
     let config = """gist Thorium/1972308 gistfile1.fs

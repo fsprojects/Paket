@@ -66,7 +66,7 @@ let private parseAuth(text, source) =
 
         let basicAuth = toBasicAuth auth
         if(basicAuth.Username = "" && basicAuth.Password = "") then
-            ConfigFile.GetCredentials source
+            ConfigFile.GetCredentials source 
             |> Option.map (fun (username,password) -> 
                             ConfigAuthentication(username, password))
         else
