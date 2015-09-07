@@ -62,4 +62,15 @@ let ``relative path with local identifier on unxoid systems``() =
     "./Store" 
     |> normalizeLocalPath
     |> shouldEqual (RelativePath "./Store")
-    
+
+[<Test>]
+[<Platform "Mono">]
+let ``mono runtime reported on mono platform``() =
+    isMonoRuntime |>
+    shouldEqual true
+
+[<Test>]
+[<Platform "Net">]
+let ``mono runtime not reported on net platform``() =
+    isMonoRuntime |>
+    shouldEqual false
