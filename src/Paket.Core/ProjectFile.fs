@@ -934,24 +934,29 @@ type ProjectFile =
                     assemblyName.InnerText
         sprintf "%s.%s" assemblyName (this.OutputType |> function ProjectOutputType.Library -> "dll" | ProjectOutputType.Exe -> "exe")
 
+    static member LoadFromStream(fullName:string, stream:Stream) =
+        let doc = new XmlDocument()
+        doc.Load stream
+
+        let manager = new XmlNamespaceManager(doc.NameTable)
+        manager.AddNamespace("ns", Constants.ProjectDefaultNameSpace)
+        let projectNode = 
+            match doc |> getNode "Project" with
+            | Some node -> node
+            | _ -> failwithf "unable to find Project node in file %s" fullName
+        { 
+            FileName = fullName
+            Document = doc
+            ProjectNode = projectNode
+            OriginalText = Utils.normalizeXml doc
+            Language = LanguageEvaluation.getProjectLanguage doc (Path.GetFileName(fullName)) }
+
     static member Load(fileName:string) =
         try
-            let fi = FileInfo(fileName)
-            let doc = new XmlDocument()
-            doc.Load fi.FullName
-
-            let manager = new XmlNamespaceManager(doc.NameTable)
-            manager.AddNamespace("ns", Constants.ProjectDefaultNameSpace)
-            let projectNode = 
-                match doc |> getNode "Project" with
-                | Some node -> node
-                | _ -> failwithf "unable to find Project node in file %s" fileName
-            Some { 
-                FileName = fi.FullName
-                Document = doc
-                ProjectNode = projectNode
-                OriginalText = Utils.normalizeXml doc
-                Language = LanguageEvaluation.getProjectLanguage doc fi.Name }
+            let fileInfo = FileInfo fileName
+            use stream = fileInfo.OpenRead()
+            let project = ProjectFile.LoadFromStream(fileInfo.FullName, stream)
+            Some project
         with
         | exn -> 
             traceWarnfn "Unable to parse %s:%s      %s" fileName Environment.NewLine exn.Message
