@@ -3,7 +3,8 @@
 * Support for Roslyn-based analyzers - http://fsprojects.github.io/Paket/analyzers.html
 * Support for reference conditions - https://github.com/fsprojects/Paket/issues/1026
 
-#### 1.36.1 - 28.08.2015
+#### 1.37.0 - 07.09.2015
+* Support for authentication and complex hosts for HTTP dependencies - https://github.com/fsprojects/Paket/pull/1052
 * Always redirect to the Redirect.Version - https://github.com/fsprojects/Paket/pull/1023
 * Improvements in the BootStrapper - https://github.com/fsprojects/Paket/pull/1022
 
