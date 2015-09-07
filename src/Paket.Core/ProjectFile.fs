@@ -485,6 +485,7 @@ type ProjectFile =
         propertyNameNodes,chooseNode,propertyChooseNode,analyzersNode
         
     member this.RemovePaketNodes() =
+        this.DeletePaketNodes("Analyzer")
         this.DeletePaketNodes("Reference")
 
         let rec PaketNodes (node:XmlNode) =
