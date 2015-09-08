@@ -1,3 +1,6 @@
+#### 1.39.1 - 08.09.2015
+* Eagerly create app.config files and add to all projects - https://github.com/fsprojects/Paket/pull/1044
+
 #### 1.39.0 - 08.09.2015
 * New Bootstrapper with better handling of Paket prereleases
 
