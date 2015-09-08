@@ -81,10 +81,54 @@ let private applyBindingRedirects bindingRedirects (configFilePath:string) =
     indentAssemblyBindings config
     config.Save configFilePath
 
+let private configFiles = [ "app"; "web" ] |> Set.ofList
+let private projectFiles = [ ".csproj"; ".vbproj"; ".fsproj" ] |> Set.ofList
+let private toLower (s:string) = s.ToLower()
+let private isAppOrWebConfig = configFiles.Contains << (Path.GetFileNameWithoutExtension >> toLower)
+let private isDotNetProject = projectFiles.Contains << (Path.GetExtension >> toLower)
+let internal getFoldersWithPaketReferencesAndNoConfig getFiles rootPath  =
+    getFiles(rootPath, Constants.ReferencesFile, SearchOption.AllDirectories)
+    |> Seq.map Path.GetDirectoryName
+    |> Seq.filter(fun directory -> getFiles(directory, "*.config", SearchOption.TopDirectoryOnly) |> Seq.forall (not << isAppOrWebConfig))
+    |> Seq.toList
+let private getExistingConfigFiles getFiles rootPath = 
+    getFiles(rootPath, "*.config", SearchOption.AllDirectories)
+    |> Seq.filter isAppOrWebConfig
+let private baseConfig = """<?xml version="1.0" encoding="utf-8"?>
+<configuration>
+</configuration>
+"""
+let private createAppConfigInDirectory folder =
+    File.WriteAllText(Path.Combine(folder, "app.config"), baseConfig)
+    folder
+let private getProjectFilesInDirectory folder =
+    Directory.GetFiles(folder, "*proj")
+    |> Seq.filter (Path.GetExtension >> isDotNetProject)
+let private addConfigFileToProject projectFile =
+    ProjectFile.Load projectFile
+    |> Option.bind(fun project ->
+        project.ProjectNode
+        |> Xml.getNodes "ItemGroup"
+        |> List.tryHead
+        |> Option.map(fun g -> project, g))
+    |> Option.iter(fun (project, itemGroup) ->
+        project.CreateNode "Content"
+        |> Xml.addAttribute "Include" "app.config"
+        |> itemGroup.AppendChild
+        |> ignore
+        project.Save())
+
 /// Applies a set of binding redirects to all .config files in a specific folder.
 let applyBindingRedirectsToFolder rootPath bindingRedirects =
-    Directory.GetFiles(rootPath, "*.config", SearchOption.AllDirectories) 
-    |> Seq.filter (fun x -> x.EndsWith(Path.DirectorySeparatorChar.ToString() + "web.config", StringComparison.CurrentCultureIgnoreCase) || x.EndsWith(Path.DirectorySeparatorChar.ToString() + "app.config", StringComparison.CurrentCultureIgnoreCase))
+    // First create missing configuration files.
+    rootPath
+    |> getFoldersWithPaketReferencesAndNoConfig Directory.GetFiles
+    |> Seq.collect (createAppConfigInDirectory >> getProjectFilesInDirectory)
+    |> Seq.iter addConfigFileToProject
+
+    // Now ensure all configuration files have binding redirects.
+    rootPath
+    |> getExistingConfigFiles Directory.GetFiles
     |> Seq.iter (applyBindingRedirects bindingRedirects)
 
 /// Calculates the short form of the public key token for use with binding redirects, if it exists.

@@ -1,7 +1,13 @@
-#### 2.0.0-beta008 - 07.09.2015
+#### 2.0.0-beta009 - 08.09.2015
 * Support for `Dependency groups` in paket.dependencies files - http://fsprojects.github.io/Paket/groups.html
 * Support for Roslyn-based analyzers - http://fsprojects.github.io/Paket/analyzers.html
 * Support for reference conditions - https://github.com/fsprojects/Paket/issues/1026
+
+#### 1.39.1 - 08.09.2015
+* Eagerly create app.config files and add to all projects - https://github.com/fsprojects/Paket/pull/1044
+
+#### 1.39.0 - 08.09.2015
+* New Bootstrapper with better handling of Paket prereleases
 
 #### 1.37.0 - 07.09.2015
 * Support for authentication and complex hosts for HTTP dependencies - https://github.com/fsprojects/Paket/pull/1052

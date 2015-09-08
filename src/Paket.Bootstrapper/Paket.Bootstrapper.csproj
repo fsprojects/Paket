@@ -46,6 +46,7 @@
     <Compile Include="NugetDownloadStrategy.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="SemVer.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="paket.template" />
