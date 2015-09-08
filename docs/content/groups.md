@@ -1,6 +1,6 @@
 # Dependency Groups
 
-<blockquote>Only in Paket 2.0 - currently in alpha</blockquote>
+<blockquote>Only in Paket 2.0 - currently in Release Candidate phase</blockquote>
 
 *Groups* allow for better organization of dependencies and also enable [easier conflict resolution](groups.html#Conflict-resolution-with-groups).
 Let's consider a small example:
