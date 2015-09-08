@@ -248,29 +248,34 @@ module DependenciesFileParser =
         let lines = lines |> Seq.toArray
          
         ((0, [DependenciesGroup.New Constants.MainDependencyGroup]), lines)
-        ||> Seq.fold(fun (lineNo, parsed) line ->
-            match parsed with
-            | currentGroup::otherGroups ->
+        ||> Seq.fold(fun (lineNo, state) line ->
+            match state with
+            | current::other ->
                 let lineNo = lineNo + 1
                 try
                     match line with
-                    | Group(newGroupName) -> lineNo, DependenciesGroup.New(GroupName newGroupName)::currentGroup::otherGroups
-                    | Empty(_) -> lineNo, currentGroup::otherGroups
-                    | Remote(newSource) -> lineNo, { currentGroup with Sources = currentGroup.Sources @ [newSource] }::otherGroups
-                    | ParserOptions(ParserOption.ReferencesMode mode) -> lineNo, { currentGroup with Options = { currentGroup.Options with Strict = mode } } ::otherGroups
-                    | ParserOptions(ParserOption.Redirects mode) -> lineNo, { currentGroup with Options = { currentGroup.Options with Redirects = mode } } ::otherGroups
-                    | ParserOptions(ParserOption.CopyLocal mode) -> lineNo, { currentGroup with Options = { currentGroup.Options with Settings = { currentGroup.Options.Settings with CopyLocal = Some mode } } } ::otherGroups
-                    | ParserOptions(ParserOption.ImportTargets mode) -> lineNo, { currentGroup with Options = { currentGroup.Options with Settings = { currentGroup.Options.Settings with ImportTargets = Some mode } } } ::otherGroups
-                    | ParserOptions(ParserOption.FrameworkRestrictions r) -> lineNo, { currentGroup with Options = { currentGroup.Options with Settings = { currentGroup.Options.Settings with FrameworkRestrictions = r } } } ::otherGroups
-                    | ParserOptions(ParserOption.OmitContent omit) -> lineNo, { currentGroup with Options = { currentGroup.Options with Settings = { currentGroup.Options.Settings with OmitContent = Some omit } } } ::otherGroups
-                    | ParserOptions(ParserOption.ReferenceCondition condition) -> lineNo, { currentGroup with Options = { currentGroup.Options with Settings = { currentGroup.Options.Settings with ReferenceCondition = Some condition } } } ::otherGroups
-                    | Package(name,version,rest) ->
-                        let package = parsePackage(currentGroup.Sources,DependenciesFile fileName,name,version,rest)
+                    | Group(newGroupName) -> lineNo, DependenciesGroup.New(GroupName newGroupName)::current::other
+                    | Empty(_) -> lineNo, current::other
+                    | Remote(newSource) -> lineNo, { current with Sources = current.Sources @ [newSource] }::other
+                    | ParserOptions(options) -> 
+                        let newOptions =
+                            match options with 
+                            | ReferencesMode mode -> { current.Options with Strict = mode } 
+                            | Redirects mode -> { current.Options with Redirects = mode }
+                            | CopyLocal mode -> { current.Options with Settings = { current.Options.Settings with CopyLocal = Some mode } }
+                            | ImportTargets mode -> { current.Options with Settings = { current.Options.Settings with ImportTargets = Some mode } }
+                            | FrameworkRestrictions r -> { current.Options with Settings = { current.Options.Settings with FrameworkRestrictions = r } }
+                            | OmitContent omit -> { current.Options with Settings = { current.Options.Settings with OmitContent = Some omit } }
+                            | ReferenceCondition condition -> { current.Options with Settings = { current.Options.Settings with ReferenceCondition = Some condition } }
 
-                        lineNo, { currentGroup with Packages = currentGroup.Packages @ [package] }::otherGroups
+                        lineNo,{ current with Options = newOptions} ::other
+                    | Package(name,version,rest) ->
+                        let package = parsePackage(current.Sources,DependenciesFile fileName,name,version,rest)
+
+                        lineNo, { current with Packages = current.Packages @ [package] }::other
                     | SourceFile(origin, (owner,project, commit), path) ->
                         let remoteFile : UnresolvedSourceFile = { Owner = owner; Project = project; Commit = commit; Name = path; Origin = origin}
-                        lineNo, { currentGroup with RemoteFiles = currentGroup.RemoteFiles @ [remoteFile] }::otherGroups
+                        lineNo, { current with RemoteFiles = current.RemoteFiles @ [remoteFile] }::other
                     
                 with
                 | exn -> failwithf "Error in paket.dependencies line %d%s  %s" lineNo Environment.NewLine exn.Message
