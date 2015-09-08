@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Net;
 using System.Reflection;
 
@@ -24,25 +26,27 @@ namespace Paket.Bootstrapper
         {
             using (var client = new WebClient())
             {
+                var latestStable = GetLatestStable(client);
                 if (ignorePrerelease)
-                    return GetLatestStable(client);
+                    return latestStable;
                 else
-                    return GetLatestPrerelease(client);
+                    return Max(GetLatestPrerelease(client), latestStable);
             }
+        }
+
+        private string Max(string prerelease, string latestStable)
+        {
+            var greater = new[] { prerelease, latestStable }.Where(x => !string.IsNullOrEmpty(x)).Select(SemVer.Create).OrderByDescending(x => x).FirstOrDefault();
+            if (greater == null) return "";
+            return greater.Original;
         }
 
         private string GetLatestPrerelease(WebClient client)
         {
             const string releases = "https://github.com/fsprojects/Paket/releases";
-            // get the first release on this page
-            var latestVersion = "";
-            var start = 0;
             PrepareWebClient(client, releases);
             var data = client.DownloadString(releases);
-            start = data.IndexOf("Paket/tree/", start) + 11;
-            var end = data.IndexOf("\"", start);
-            latestVersion = data.Substring(start, end - start);
-            return latestVersion;
+            return GetVersions(data).FirstOrDefault(s => s.Contains("-"));
         }
 
         private string GetLatestStable(WebClient client)
@@ -53,6 +57,20 @@ namespace Paket.Bootstrapper
             var title = data.Substring(data.IndexOf("<title>") + 7, (data.IndexOf("</title>") + 8 - data.IndexOf("<title>") + 7)); // grabs everything in the <title> tag
             var version = title.Split(' ')[1]; // Release, 1.34.0, etc, etc, etc <-- the release number is the second part fo this split string
             return version;
+        }
+
+        private List<string> GetVersions(string data)
+        {
+            var start = 0;
+            var versions = new List<string>();
+            while ((start = data.IndexOf("Paket/tree/", start)) != -1)
+            {
+                start = start + 11;
+                var end = data.IndexOf("\"", start);
+                var latestVersion = data.Substring(start, end - start);
+                if (!versions.Contains(latestVersion)) versions.Add(latestVersion);
+            }
+            return versions;
         }
 
         public void DownloadVersion(string latestVersion, string target, bool silent)
