@@ -239,43 +239,44 @@ module DependenciesFileParser =
 
     let parseDependenciesFile fileName (lines:string seq) =
         let lines = lines |> Seq.toArray
+        let startGroup groupName =
+            { Name = groupName
+              Options = InstallOptions.Default
+              Sources = []
+              Packages = []
+              RemoteFiles = [] }
          
-        ((0, [Constants.MainDependencyGroup,InstallOptions.Default, [], [], []]), lines)
+        ((0, [startGroup Constants.MainDependencyGroup]), lines)
         ||> Seq.fold(fun (lineNo, parsed) line ->
             match parsed with
-            | ((groupName,options, sources: PackageSource list, packages, sourceFiles: UnresolvedSourceFile list) as currentGroup)::otherGroups ->
+            | currentGroup::otherGroups ->
                 let lineNo = lineNo + 1
                 try
                     match line with
-                    | Group(newGroupName) -> lineNo, (GroupName newGroupName,InstallOptions.Default, [], [], [])::currentGroup::otherGroups
+                    | Group(newGroupName) -> lineNo, startGroup (GroupName newGroupName)::currentGroup::otherGroups
                     | Empty(_) -> lineNo, currentGroup::otherGroups
-                    | Remote(newSource) -> lineNo, (groupName,options, sources @ [newSource], packages, sourceFiles)::otherGroups
-                    | ParserOptions(ParserOption.ReferencesMode mode) -> lineNo, (groupName,{ options with Strict = mode }, sources, packages, sourceFiles)::otherGroups
-                    | ParserOptions(ParserOption.Redirects mode) -> lineNo, (groupName,{ options with Redirects = mode }, sources, packages, sourceFiles)::otherGroups
-                    | ParserOptions(ParserOption.CopyLocal mode) -> lineNo, (groupName,{ options with Settings = { options.Settings with CopyLocal = Some mode }}, sources, packages, sourceFiles)::otherGroups
-                    | ParserOptions(ParserOption.ImportTargets mode) -> lineNo, (groupName,{ options with Settings = { options.Settings with ImportTargets = Some mode }}, sources, packages, sourceFiles)::otherGroups
-                    | ParserOptions(ParserOption.FrameworkRestrictions r) -> lineNo, (groupName,{ options with Settings = { options.Settings with FrameworkRestrictions = r }}, sources, packages, sourceFiles)::otherGroups
-                    | ParserOptions(ParserOption.OmitContent omit) -> lineNo, (groupName,{ options with Settings = { options.Settings with OmitContent = Some omit }}, sources, packages, sourceFiles)::otherGroups
-                    | ParserOptions(ParserOption.ReferenceCondition condition) -> lineNo, (groupName,{ options with Settings = { options.Settings with ReferenceCondition = Some condition }}, sources, packages, sourceFiles)::otherGroups
+                    | Remote(newSource) -> lineNo, { currentGroup with Sources = currentGroup.Sources @ [newSource] }::otherGroups
+                    | ParserOptions(ParserOption.ReferencesMode mode) -> lineNo, { currentGroup with Options = { currentGroup.Options with Strict = mode } } ::otherGroups
+                    | ParserOptions(ParserOption.Redirects mode) -> lineNo, { currentGroup with Options = { currentGroup.Options with Redirects = mode } } ::otherGroups
+                    | ParserOptions(ParserOption.CopyLocal mode) -> lineNo, { currentGroup with Options = { currentGroup.Options with Settings = { currentGroup.Options.Settings with CopyLocal = Some mode } } } ::otherGroups
+                    | ParserOptions(ParserOption.ImportTargets mode) -> lineNo, { currentGroup with Options = { currentGroup.Options with Settings = { currentGroup.Options.Settings with ImportTargets = Some mode } } } ::otherGroups
+                    | ParserOptions(ParserOption.FrameworkRestrictions r) -> lineNo, { currentGroup with Options = { currentGroup.Options with Settings = { currentGroup.Options.Settings with FrameworkRestrictions = r } } } ::otherGroups
+                    | ParserOptions(ParserOption.OmitContent omit) -> lineNo, { currentGroup with Options = { currentGroup.Options with Settings = { currentGroup.Options.Settings with OmitContent = Some omit } } } ::otherGroups
+                    | ParserOptions(ParserOption.ReferenceCondition condition) -> lineNo, { currentGroup with Options = { currentGroup.Options with Settings = { currentGroup.Options.Settings with ReferenceCondition = Some condition } } } ::otherGroups
                     | Package(name,version,rest) ->
-                        let package = parsePackage(sources,DependenciesFile fileName,name,version,rest)
+                        let package = parsePackage(currentGroup.Sources,DependenciesFile fileName,name,version,rest)
 
-                        lineNo, (groupName,options, sources, package :: packages, sourceFiles)::otherGroups
+                        lineNo, { currentGroup with Packages = currentGroup.Packages @ [package] }::otherGroups
                     | SourceFile(origin, (owner,project, commit), path) ->
-                        lineNo, (groupName,options, sources, packages, { Owner = owner; Project = project; Commit = commit; Name = path; Origin = origin} :: sourceFiles)::otherGroups
+                        let remoteFile : UnresolvedSourceFile = { Owner = owner; Project = project; Commit = commit; Name = path; Origin = origin}
+                        lineNo, { currentGroup with RemoteFiles = currentGroup.RemoteFiles @ [remoteFile] }::otherGroups
                     
                 with
                 | exn -> failwithf "Error in paket.dependencies line %d%s  %s" lineNo Environment.NewLine exn.Message
             | [] -> failwithf "Error in paket.dependencies line %d" lineNo)
         |> fun (_,groups) ->
             let groups = 
-                groups
-                |> List.map (fun (groupName, options, sources, packages, remoteFiles) -> 
-                       { Name = groupName
-                         Options = options
-                         Sources = sources
-                         Packages = packages |> List.rev
-                         RemoteFiles = remoteFiles |> List.rev })
+                groups                
                 |> List.rev
                 |> List.fold (fun m g ->
                     match Map.tryFind g.Name m with
