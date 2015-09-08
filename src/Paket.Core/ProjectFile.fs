@@ -12,7 +12,7 @@ open Paket.Requirements
 /// File item inside of project files.
 type FileItem = 
     { BuildAction : string
-      Include : string      
+      Include : string
       Link : string option }
 
 /// Project references inside of project files.
@@ -101,7 +101,7 @@ type ProjectFile =
     member this.CreateNode(name) = 
         this.Document.CreateElement(name, Constants.ProjectDefaultNameSpace)
 
-    member this.HasPackageInstalled(package:NormalizedPackageName) =        
+    member this.HasPackageInstalled(package:NormalizedPackageName) =
         let proj = FileInfo(this.FileName)
         match ProjectFile.FindReferencesFile proj with
         | None -> false
@@ -145,10 +145,8 @@ type ProjectFile =
             node.ParentNode.RemoveChild(node) |> ignore
 
     member this.UpdateFileItems(fileItems : FileItem list, hard) = 
-
-        let firstItemGroup = this.ProjectNode |> getNodes "ItemGroup" |> List.tryHead
-
         let newItemGroups = 
+            let firstItemGroup = this.ProjectNode |> getNodes "ItemGroup" |> List.tryHead
             match firstItemGroup with
             | None ->
                 ["Content", this.CreateNode("ItemGroup")

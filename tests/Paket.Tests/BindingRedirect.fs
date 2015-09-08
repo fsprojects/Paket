@@ -118,3 +118,44 @@ let ``redirects got properly indented for readability``() =
     let dependency = doc.Descendants(xNameForNs "dependentAssembly") |> Seq.head
     dependency.ToString() |> shouldEqual "<dependentAssembly xmlns=\"urn:schemas-microsoft-com:asm.v1\">\r\n    <assemblyIdentity name=\"Assembly\" publicKeyToken=\"PUBLIC_KEY\" culture=\"neutral\" />\r\n    <bindingRedirect oldVersion=\"0.0.0.0-999.999.999.999\" newVersion=\"1.0.0\" />\r\n  </dependentAssembly>"
 
+let toSafePath = System.IO.Path.GetFullPath
+let buildMockGetFiles outcomes =
+    let outcomes =
+        outcomes
+        |> List.map(fun ((path, extension), results) ->
+            (path |> toSafePath, extension), results |> List.map toSafePath)
+    fun (path, wildcard, _) ->
+        outcomes
+        |> List.tryFind (fst >> (=) (path |> toSafePath, wildcard))
+        |> Option.map snd
+        |> defaultArg <| []
+        |> List.toArray
+let rootPath = @"C:/rootpath/" |> toSafePath
+
+[<Test>]
+let ``app.config file is marked for creation in folders containing paket.references``() =
+    let mockGetFiles =
+        buildMockGetFiles
+            [ (@"C:/rootpath/", "paket.references"), [ @"C:/rootpath/source/paket.references" ]
+              (@"C:/rootpath/source", "*.config"), []
+            ]
+    let foldersToCreateConfigFor = getFoldersWithPaketReferencesAndNoConfig mockGetFiles rootPath
+    foldersToCreateConfigFor |> shouldEqual [ @"C:/rootpath/source" |> toSafePath ]
+
+[<Test>]
+let ``app.config file is not marked for creation in folders not containing paket.references``() =
+    let mockGetFiles = buildMockGetFiles [ (@"C:/rootpath/", "paket.references"), [] ]
+    let foldersToCreateConfigFor = getFoldersWithPaketReferencesAndNoConfig mockGetFiles rootPath
+    foldersToCreateConfigFor |> shouldEqual []
+
+[<Test>]
+let ``app.config file is not marked for creation in folders if one already exists``() =
+    let mockGetFiles =
+        buildMockGetFiles
+            [ (@"C:/rootpath/", "paket.references"), [ @"C:/rootpath/source/paket.references" ]
+              (@"C:/rootpath/source", "*.config"), [ @"C:/rootpath/source/app.config" ]
+            ]
+    let foldersToCreateConfigFor = getFoldersWithPaketReferencesAndNoConfig mockGetFiles rootPath
+    foldersToCreateConfigFor |> shouldEqual []
+
+
