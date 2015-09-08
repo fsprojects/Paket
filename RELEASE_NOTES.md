@@ -1,3 +1,6 @@
+#### 1.38.0 - 08.09.2015
+* New Bootstrapper with better handling of Paket prereleases
+
 #### 1.37.0 - 07.09.2015
 * Support for authentication and complex hosts for HTTP dependencies - https://github.com/fsprojects/Paket/pull/1052
 * Always redirect to the Redirect.Version - https://github.com/fsprojects/Paket/pull/1023
