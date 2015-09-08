@@ -423,15 +423,15 @@ type LockFile(fileName:string,groups: Map<GroupName,LockFileGroup>) =
             tracefn "%s is already up-to-date" fileName        
 
     /// Creates a paket.lock file at given location
-    static member Create (lockFileName: string, installOptions: InstallOptions, resolvedPackages: PackageResolver.Resolution, resolvedSourceFiles: ModuleResolver.ResolvedSourceFile list) : LockFile =
-        let resolvedPackages = resolvedPackages.GetModelOrFail()
-        let mainGroup = 
-            { Name = Constants.MainDependencyGroup
-              Options = installOptions
-              Resolution = resolvedPackages
-              RemoteFiles = resolvedSourceFiles }
-
-        let groups = [Constants.MainDependencyGroup, mainGroup] |> Map.ofSeq
+    static member CreateEmpty (lockFileName: string, groups:Map<GroupName,DependenciesGroup>) : LockFile =
+        let groups =
+            groups
+            |> Map.map (fun groupName group ->
+                { Name = groupName
+                  Options = group.Options
+                  Resolution = Map.empty
+                  RemoteFiles = [] })
+        
         let lockFile = LockFile(lockFileName, groups)
         lockFile.Save()
         lockFile
