@@ -420,21 +420,7 @@ type LockFile(fileName:string,groups: Map<GroupName,LockFileGroup>) =
             File.WriteAllText(fileName, output)
             tracefn "Locked version resolution written to %s" fileName
         else
-            tracefn "%s is already up-to-date" fileName        
-
-    /// Creates a paket.lock file at given location
-    static member CreateEmpty (lockFileName: string, groups:Map<GroupName,DependenciesGroup>) : LockFile =
-        let groups =
-            groups
-            |> Map.map (fun groupName group ->
-                { Name = groupName
-                  Options = group.Options
-                  Resolution = Map.empty
-                  RemoteFiles = [] })
-        
-        let lockFile = LockFile(lockFileName, groups)
-        lockFile.Save()
-        lockFile
+            tracefn "%s is already up-to-date" fileName
 
     /// Parses a paket.lock file from file
     static member LoadFrom(lockFileName) : LockFile =        
