@@ -512,9 +512,12 @@ type LockFile(fileName:string,groups: Map<GroupName,LockFileGroup>) =
         |> Map.ofSeq
 
     member this.GetPackageHullSafe(referencesFile,groupName) =
-        referencesFile.Groups.[groupName].NugetPackages
-        |> Seq.map (fun package ->
-            this.GetAllDependenciesOfSafe(groupName,package.Name)
-            |> failIfNone (ReferenceNotFoundInLockFile(referencesFile.FileName, groupName.ToString(), package.Name)))
-        |> collect
-        |> lift (Seq.concat >> Set.ofSeq)
+        match referencesFile.Groups |> Map.tryFind groupName with
+        | None -> failwithf "Group %O was not found in %s." groupName referencesFile.FileName
+        | Some group ->
+            group.NugetPackages
+            |> Seq.map (fun package ->
+                this.GetAllDependenciesOfSafe(groupName,package.Name)
+                |> failIfNone (ReferenceNotFoundInLockFile(referencesFile.FileName, groupName.ToString(), package.Name)))
+            |> collect
+            |> lift (Seq.concat >> Set.ofSeq)
