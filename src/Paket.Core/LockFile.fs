@@ -194,13 +194,19 @@ module LockFileParser =
                 match (currentGroup, line) with
                 | Remote(url) -> { currentGroup with RemoteUrl = Some url }::otherGroups
                 | Group(groupName) -> { GroupName = GroupName groupName; RepositoryType = None; RemoteUrl = None; Packages = []; SourceFiles = []; Options = InstallOptions.Default; LastWasPackage = false } :: currentGroup :: otherGroups
-                | InstallOption (ReferencesMode(mode)) -> { currentGroup with Options = {currentGroup.Options with Strict = mode} }::otherGroups
-                | InstallOption (Redirects(mode)) -> { currentGroup with Options = {currentGroup.Options with Redirects = mode} }::otherGroups
-                | InstallOption (ImportTargets(mode)) -> { currentGroup with Options = {currentGroup.Options with Settings = { currentGroup.Options.Settings with ImportTargets = Some mode} } }::otherGroups
-                | InstallOption (CopyLocal(mode)) -> { currentGroup with Options = {currentGroup.Options with Settings = { currentGroup.Options.Settings with CopyLocal = Some mode}} }::otherGroups
-                | InstallOption (FrameworkRestrictions(r)) -> { currentGroup with Options = {currentGroup.Options with Settings = { currentGroup.Options.Settings with FrameworkRestrictions = r}} }::otherGroups
-                | InstallOption (OmitContent(omit)) -> { currentGroup with Options = {currentGroup.Options with Settings = { currentGroup.Options.Settings with OmitContent = Some omit} }}::otherGroups
-                | InstallOption (ReferenceCondition(condition)) -> { currentGroup with Options = {currentGroup.Options with Settings = { currentGroup.Options.Settings with ReferenceCondition = Some condition} }}::otherGroups
+                | InstallOption option -> 
+                    let options =
+                        match option with
+                        | ReferencesMode mode -> {currentGroup.Options with Strict = mode }
+                        | Redirects mode -> {currentGroup.Options with Redirects = mode }
+                        | ImportTargets mode -> {currentGroup.Options with Settings = { currentGroup.Options.Settings with ImportTargets = Some mode } } 
+                        | CopyLocal mode -> {currentGroup.Options with Settings = { currentGroup.Options.Settings with CopyLocal = Some mode }}
+                        | FrameworkRestrictions r -> {currentGroup.Options with Settings = { currentGroup.Options.Settings with FrameworkRestrictions = r }}
+                        | OmitContent omit -> {currentGroup.Options with Settings = { currentGroup.Options.Settings with OmitContent = Some omit }}
+                        | ReferenceCondition condition -> {currentGroup.Options with Settings = { currentGroup.Options.Settings with ReferenceCondition = Some condition }}
+                
+                    { currentGroup with Options = options }::otherGroups
+
                 | RepositoryType repoType -> { currentGroup with RepositoryType = Some repoType }::otherGroups
                 | NugetPackage details ->
                     match currentGroup.RemoteUrl with
