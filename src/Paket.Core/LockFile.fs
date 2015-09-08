@@ -375,11 +375,13 @@ type LockFile(fileName:string,groups: Map<GroupName,LockFileGroup>) =
         Set.union fromNuGets fromSourceFiles
 
     member this.GetTopLevelDependencies(groupName) = 
-        let group = groups.[groupName]
-        let transitive = this.GetTransitiveDependencies groupName
+        match groups |> Map.tryFind groupName with
+        | None -> failwithf "Group %O was not found in the paket.lock file." groupName
+        | Some group ->
+            let transitive = this.GetTransitiveDependencies groupName
 
-        group.Resolution
-        |> Map.filter (fun name _ -> transitive.Contains name |> not)
+            group.Resolution
+            |> Map.filter (fun name _ -> transitive.Contains name |> not)
 
     member this.GetGroupedResolution() =
         this.Groups
@@ -423,7 +425,12 @@ type LockFile(fileName:string,groups: Map<GroupName,LockFileGroup>) =
     /// Creates a paket.lock file at given location
     static member Create (lockFileName: string, installOptions: InstallOptions, resolvedPackages: PackageResolver.Resolution, resolvedSourceFiles: ModuleResolver.ResolvedSourceFile list) : LockFile =
         let resolvedPackages = resolvedPackages.GetModelOrFail()
-        let mainGroup = { Name = Constants.MainDependencyGroup; Options = installOptions; Resolution = resolvedPackages; RemoteFiles = resolvedSourceFiles }
+        let mainGroup = 
+            { Name = Constants.MainDependencyGroup
+              Options = installOptions
+              Resolution = resolvedPackages
+              RemoteFiles = resolvedSourceFiles }
+
         let groups = [Constants.MainDependencyGroup, mainGroup] |> Map.ofSeq
         let lockFile = LockFile(lockFileName, groups)
         lockFile.Save()
@@ -454,7 +461,7 @@ type LockFile(fileName:string,groups: Map<GroupName,LockFileGroup>) =
             for p in g.Value.NugetPackages do
                 let k = g.Key,p.Name
                 if usedPackages.ContainsKey k then
-                    failwithf "Package %O is referenced more than once in %s (group %O)" p.Name referencesFile.FileName g.Key
+                    failwithf "Package %O is referenced more than once in %s within group %O." p.Name referencesFile.FileName g.Key
                 usedPackages.Add(k,p)
 
         for g in referencesFile.Groups do
@@ -477,7 +484,7 @@ type LockFile(fileName:string,groups: Map<GroupName,LockFileGroup>) =
             for p in g.NugetPackages do
                 let k = groupName,p.Name
                 if usedPackages.ContainsKey k then
-                    failwithf "Package %O is referenced more than once in %s (group %O)" p.Name referencesFile.FileName groupName
+                    failwithf "Package %O is referenced more than once in %s within group %O." p.Name referencesFile.FileName groupName
                 usedPackages.Add(k,p)
 
             g.NugetPackages
