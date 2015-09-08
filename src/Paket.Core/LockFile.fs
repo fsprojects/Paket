@@ -235,7 +235,7 @@ module LockFileParser =
                                     Packages = { currentPackage with
                                                     Dependencies = Set.add (PackageName name, DependenciesFileParser.parseVersionRequirement version, []) currentPackage.Dependencies
                                                 } :: otherPackages } ::otherGroups                   
-                        | [] -> failwith "cannot set a dependency - no package has been specified."
+                        | [] -> failwithf "cannot set a dependency to %s %s - no package has been specified." name v
                     else
                         match currentGroup.SourceFiles with
                         | currentFile :: rest -> 
@@ -244,15 +244,16 @@ module LockFileParser =
                                         { currentFile with
                                                     Dependencies = Set.add (PackageName name, VersionRequirement.AllReleases) currentFile.Dependencies
                                                 } :: rest }  ::otherGroups                  
-                        | [] -> failwith "cannot set a dependency - no remote file has been specified."
+                        | [] -> failwith "cannot set a dependency to %s %s- no remote file has been specified." name v
                 | SourceFile(origin, details) ->
                     match origin with
                     | GitHubLink | GistLink ->
                         match currentGroup.RemoteUrl |> Option.map(fun s -> s.Split '/') with
                         | Some [| owner; project |] ->
-                            let path, commit = match details.Split ' ' with
-                                                | [| filePath; commit |] -> filePath, commit |> removeBrackets                                       
-                                                | _ -> failwith "invalid file source details."
+                            let path, commit =
+                                match details.Split ' ' with
+                                | [| filePath; commit |] -> filePath, commit |> removeBrackets                                       
+                                | _ -> failwith "invalid file source details."
                             { currentGroup with  
                                 LastWasPackage = false
                                 SourceFiles = { Commit = commit
