@@ -32,6 +32,13 @@ type DependenciesGroup = {
     Packages : PackageRequirement list
     RemoteFiles : UnresolvedSourceFile list
 }
+    with
+        static member New(groupName) =
+            { Name = groupName
+              Options = InstallOptions.Default
+              Sources = []
+              Packages = []
+              RemoteFiles = [] }
 
 type RequirementsGroup = {
     Name: GroupName
@@ -239,21 +246,15 @@ module DependenciesFileParser =
 
     let parseDependenciesFile fileName (lines:string seq) =
         let lines = lines |> Seq.toArray
-        let startGroup groupName =
-            { Name = groupName
-              Options = InstallOptions.Default
-              Sources = []
-              Packages = []
-              RemoteFiles = [] }
          
-        ((0, [startGroup Constants.MainDependencyGroup]), lines)
+        ((0, [DependenciesGroup.New Constants.MainDependencyGroup]), lines)
         ||> Seq.fold(fun (lineNo, parsed) line ->
             match parsed with
             | currentGroup::otherGroups ->
                 let lineNo = lineNo + 1
                 try
                     match line with
-                    | Group(newGroupName) -> lineNo, startGroup (GroupName newGroupName)::currentGroup::otherGroups
+                    | Group(newGroupName) -> lineNo, DependenciesGroup.New(GroupName newGroupName)::currentGroup::otherGroups
                     | Empty(_) -> lineNo, currentGroup::otherGroups
                     | Remote(newSource) -> lineNo, { currentGroup with Sources = currentGroup.Sources @ [newSource] }::otherGroups
                     | ParserOptions(ParserOption.ReferencesMode mode) -> lineNo, { currentGroup with Options = { currentGroup.Options with Strict = mode } } ::otherGroups
