@@ -1,4 +1,4 @@
-#### 1.38.0 - 08.09.2015
+#### 1.39.0 - 08.09.2015
 * New Bootstrapper with better handling of Paket prereleases
 
 #### 1.37.0 - 07.09.2015

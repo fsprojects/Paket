@@ -16,7 +16,8 @@ namespace Paket.Bootstrapper
 
             try
             {
-                var attr = Assembly.LoadFile(target).GetCustomAttributes(typeof(AssemblyInformationalVersionAttribute), false).Cast<AssemblyInformationalVersionAttribute>().FirstOrDefault();
+                var bytes = File.ReadAllBytes(target);
+                var attr = Assembly.Load(bytes).GetCustomAttributes(typeof(AssemblyInformationalVersionAttribute), false).Cast<AssemblyInformationalVersionAttribute>().FirstOrDefault();
                 if (attr == null) return "";
                 return attr.InformationalVersion;
             }
