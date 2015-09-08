@@ -1,7 +1,8 @@
 ﻿using System;
-using System.Diagnostics;
 using System.IO;
 using System.Net;
+using System.Linq;
+using System.Reflection;
 
 namespace Paket.Bootstrapper
 {
@@ -11,21 +12,15 @@ namespace Paket.Bootstrapper
 
         internal static string GetLocalFileVersion(string target)
         {
-            var localVersion = "";
+            if (!File.Exists(target)) return "";
 
-            if (File.Exists(target))
+            try
             {
-                try
-                {
-                    FileVersionInfo fvi = FileVersionInfo.GetVersionInfo(target);
-                    if (fvi.FileVersion != null)
-                        localVersion = fvi.FileVersion;
-                }
-                catch (Exception)
-                {
-                }
+                var attr = Assembly.LoadFile(target).GetCustomAttributes(typeof(AssemblyInformationalVersionAttribute), false).Cast<AssemblyInformationalVersionAttribute>().FirstOrDefault();
+                if (attr == null) return "";
+                return attr.InformationalVersion;
             }
-            return localVersion;
+            catch (Exception) { return ""; }
         }
 
         internal static void PrepareWebClient(WebClient client, string url)
