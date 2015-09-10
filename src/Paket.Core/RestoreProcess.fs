@@ -25,7 +25,7 @@ let ExtractPackage(root, groupName, sources, force, package : ResolvedPackage) =
                 let! folder = NuGetV2.DownloadPackage(root, auth, source.Url, groupName, package.Name, v, includeVersionInPath, force)
                 return package, NuGetV2.GetLibFiles folder, NuGetV2.GetTargetsFiles folder, NuGetV2.GetAnalyzerFiles folder
             with _ when not force -> 
-                tracefn "Something went wrong with the download of %O %A - automatic retry with --force." package.Name v
+                tracefn "Something went wrong while downloading %O %A - Trying again." package.Name v
                 let! folder = NuGetV2.DownloadPackage(root, auth, source.Url, groupName, package.Name, v, includeVersionInPath, true)
                 return package, NuGetV2.GetLibFiles folder, NuGetV2.GetTargetsFiles folder, NuGetV2.GetAnalyzerFiles folder
         | LocalNuget path ->         

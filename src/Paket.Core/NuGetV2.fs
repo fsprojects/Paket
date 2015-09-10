@@ -420,7 +420,7 @@ let ExtractPackage(fileName:string, targetFolder, packageName:PackageName, versi
                         File.Move(file.FullName, Path.Combine(file.DirectoryName, newName))
 
             cleanup (DirectoryInfo targetFolder)
-            tracefn "%O %O unzipped to %s" packageName version targetFolder
+            verbosefn "%O %O unzipped to %s" packageName version targetFolder
         return targetFolder
     }
 
@@ -506,12 +506,13 @@ let DownloadPackage(root, auth, url, groupName, packageName:PackageName, version
         let targetFile = FileInfo targetFileName
         let licenseFileName = Path.Combine(CacheFolder, packageName.ToString() + "." + version.Normalize() + ".license.html")
         if not force && targetFile.Exists && targetFile.Length > 0L then 
-            verbosefn "%O %O already downloaded" packageName version            
+            verbosefn "%O %O already downloaded." packageName version            
         else 
             // discover the link on the fly
             let! nugetPackage = getDetailsFromNuGet force auth url packageName version
             try                
-                tracefn "Downloading %O %O to %s" packageName version targetFileName
+                tracefn "Downloading %O %O" packageName version
+                verbosefn "  to %s" targetFileName
                 let! license = Async.StartChild(DownloadLicense(root,force,packageName,version,nugetPackage.LicenseUrl,licenseFileName), 5000)
 
                 let request = HttpWebRequest.Create(Uri nugetPackage.DownloadUrl) :?> HttpWebRequest
