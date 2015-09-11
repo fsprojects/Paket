@@ -1,4 +1,4 @@
-#### 1.39.3 - 11.09.2015
+#### 1.39.4 - 11.09.2015
 * Fixed a bug where install and restore use different paths when specifying a project spec on a HTTP link - https://github.com/fsprojects/Paket/pull/1054
 
 #### 1.39.1 - 08.09.2015
