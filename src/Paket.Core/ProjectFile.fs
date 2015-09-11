@@ -639,7 +639,7 @@ type ProjectFile =
                         let c = input.[index]
                         if data.Length = 0 && c = ' '
                         then parseComparison data input (index + 1)
-                        elif data.Length = 2 && c <> ' '
+                        elif data.Length = 2 && c <> ' ' && c <> '\''
                         then None
                         elif c = '<' || c = '>' || c = '!' || c = '='
                         then parseComparison (data.Append(c)) input (index + 1)
