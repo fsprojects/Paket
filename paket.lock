@@ -5,12 +5,9 @@ NUGET
     FSharp.Core (4.0.0.1)
     Newtonsoft.Json (7.0.1)
 GITHUB
-  remote: forki/FsUnit
-  specs:
-    FsUnit.fs (81d27fd09575a32c4ed52eadb2eeac5f365b8348)
   remote: fsharp/FAKE
   specs:
-    src/app/FakeLib/Globbing/Globbing.fs (4a82e96215e75ddaae508468d360e2dc4cbe9776)
+    src/app/FakeLib/Globbing/Globbing.fs (f3a5b495a9113b39aee655e23ee9fd5a1d53eb81)
   remote: fsprojects/Chessie
   specs:
     src/Chessie/ErrorHandling.fs (1f23b1caeb1f87e750abc96a25109376771dd090)
@@ -18,8 +15,8 @@ GROUP Build
 NUGET
   remote: https://nuget.org/api/v2
   specs:
-    FAKE (4.3.1)
-    FSharp.Compiler.Service (1.4.0.1)
+    FAKE (4.4.0)
+    FSharp.Compiler.Service (1.4.0.5)
     FSharp.Formatting (2.10.0)
       FSharp.Compiler.Service (>= 0.0.87)
       FSharpVSPowerTools.Core (1.8.0)
@@ -32,12 +29,12 @@ NUGET
     Microsoft.Net.Http (2.2.29)
       Microsoft.Bcl (>= 1.1.10)
       Microsoft.Bcl.Build (>= 1.0.14)
-    Octokit (0.14.0)
+    Octokit (0.15.0)
       Microsoft.Net.Http
 GITHUB
   remote: fsharp/FAKE
   specs:
-    modules/Octokit/Octokit.fsx (4a82e96215e75ddaae508468d360e2dc4cbe9776)
+    modules/Octokit/Octokit.fsx (f3a5b495a9113b39aee655e23ee9fd5a1d53eb81)
       Octokit
 GROUP Test
 NUGET
@@ -45,3 +42,7 @@ NUGET
   specs:
     NUnit (2.6.4)
     NUnit.Runners.Net4 (2.6.4)
+GITHUB
+  remote: forki/FsUnit
+  specs:
+    FsUnit.fs (81d27fd09575a32c4ed52eadb2eeac5f365b8348)
