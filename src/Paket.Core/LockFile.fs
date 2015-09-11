@@ -112,7 +112,11 @@ module LockFileSerializer =
                     
                     let path = file.Name.TrimStart '/'
                     match String.IsNullOrEmpty(file.Commit) with
-                    | false -> yield sprintf "    %s (%s)" path file.Commit 
+                    | false -> 
+                        match origin with
+                        | HttpLink _ when not(String.IsNullOrEmpty(file.Project)) -> 
+                            yield sprintf "    %s %s (%s)" file.Project path file.Commit 
+                        | _ -> yield sprintf "    %s (%s)" path file.Commit 
                     | true -> yield sprintf "    %s" path
 
                     for (PackageName name,v) in file.Dependencies do
@@ -246,16 +250,20 @@ module LockFileParser =
                 | HttpLink x ->
                     match state.RemoteUrl |> Option.map(fun s -> s.Split '/' |> Array.toList) with
                     | Some [ protocol; _; domain; ] ->
-                        let name, path = 
+                        let project, name, path = 
                             match details.Split ' ' with
-                            | [| filePath; path |] -> filePath, path |> removeBrackets
+                            | [| filePath; path |] -> "", filePath, path |> removeBrackets
+                            | [| project; filePath; path |] -> project, filePath, path |> removeBrackets
                             | _ -> failwith "invalid file source details."
+                        
+                        let removeInvalidChars (str:string) = 
+                            System.Text.RegularExpressions.Regex.Replace(str, "[:@\,]", "_")
 
                         let sourceFile =
                             { Commit = path
-                              Owner = domain
+                              Owner = domain |> removeInvalidChars
                               Origin = HttpLink(state.RemoteUrl.Value)
-                              Project = ""
+                              Project = project
                               Dependencies = Set.empty
                               Name = name } 
 
