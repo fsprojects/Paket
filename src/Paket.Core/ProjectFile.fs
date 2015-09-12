@@ -633,15 +633,16 @@ type ProjectFile =
                         |     _, false, c    -> parseWord (data.Append(c)) input (index + 1) false
 
                 let rec parseComparison (data:System.Text.StringBuilder) (input:string) index =
+                    let isCompChar c = c = '<' || c = '>' || c = '!' || c = '='
                     if input.Length <= index
                     then None
                     else
                         let c = input.[index]
                         if data.Length = 0 && c = ' '
                         then parseComparison data input (index + 1)
-                        elif data.Length = 2 && c <> ' '
+                        elif data.Length = 2 && isCompChar c
                         then None
-                        elif c = '<' || c = '>' || c = '!' || c = '='
+                        elif isCompChar c
                         then parseComparison (data.Append(c)) input (index + 1)
                         else
                             let s = data.ToString()
