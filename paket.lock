@@ -7,7 +7,7 @@ NUGET
 GITHUB
   remote: fsharp/FAKE
   specs:
-    src/app/FakeLib/Globbing/Globbing.fs (f3a5b495a9113b39aee655e23ee9fd5a1d53eb81)
+    src/app/FakeLib/Globbing/Globbing.fs (b5b55ccbe81c9fda6e025e6c16f041601b8c76df)
   remote: fsprojects/Chessie
   specs:
     src/Chessie/ErrorHandling.fs (1f23b1caeb1f87e750abc96a25109376771dd090)
@@ -15,13 +15,13 @@ GROUP Build
 NUGET
   remote: https://nuget.org/api/v2
   specs:
-    FAKE (4.3.1)
-    FSharp.Compiler.Service (1.4.0.5)
-    FSharp.Formatting (2.10.0)
-      FSharp.Compiler.Service (>= 0.0.87)
-      FSharpVSPowerTools.Core (1.8.0)
-    FSharpVSPowerTools.Core (1.8.0)
-      FSharp.Compiler.Service (>= 0.0.87)
+    FAKE (4.4.1)
+    FSharp.Compiler.Service (0.0.90)
+    FSharp.Formatting (2.10.3)
+      FSharp.Compiler.Service (>= 0.0.90 <= 1.3)
+      FSharpVSPowerTools.Core (1.9.0)
+    FSharpVSPowerTools.Core (1.9.0)
+      FSharp.Compiler.Service (>= 0.0.90)
     ILRepack (2.0.5)
     Microsoft.Bcl (1.1.10)
       Microsoft.Bcl.Build (>= 1.0.14)
@@ -34,7 +34,7 @@ NUGET
 GITHUB
   remote: fsharp/FAKE
   specs:
-    modules/Octokit/Octokit.fsx (f3a5b495a9113b39aee655e23ee9fd5a1d53eb81)
+    modules/Octokit/Octokit.fsx (b5b55ccbe81c9fda6e025e6c16f041601b8c76df)
       Octokit
 GROUP Test
 NUGET

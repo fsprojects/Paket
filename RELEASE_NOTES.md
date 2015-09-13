@@ -1,10 +1,11 @@
-#### 2.0.0-rc002 - 11.09.2015
+#### 2.0.0-rc004 - 13.09.2015
 * Support for `Dependency groups` in paket.dependencies files - http://fsprojects.github.io/Paket/groups.html
 * Support for Roslyn-based analyzers - http://fsprojects.github.io/Paket/analyzers.html
 * Support for reference conditions - https://github.com/fsprojects/Paket/issues/1026
 
-#### 1.39.5 - 11.09.2015
+#### 1.39.10 - 13.09.2015
 * Fixed a bug where install and restore use different paths when specifying a project spec on a HTTP link - https://github.com/fsprojects/Paket/pull/1054
+* Fix parsing of output path when condition has no spaces - https://github.com/fsprojects/Paket/pull/1058
 
 #### 1.39.1 - 08.09.2015
 * Eagerly create app.config files and add to all projects - https://github.com/fsprojects/Paket/pull/1044
