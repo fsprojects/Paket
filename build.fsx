@@ -382,10 +382,10 @@ Target "ReleaseGitHub" (fun _ ->
     
     // release on github
     createClient user pw
-    |> createDraft gitOwner gitName release.NugetVersion (release.SemVer.PreRelease <> None) release.Notes 
-    |> uploadFile "./bin/merged/paket.exe"
+    |> createDraft gitOwner gitName release.NugetVersion (release.SemVer.PreRelease <> None) release.Notes     
     |> uploadFile "./bin/paket.bootstrapper.exe"
     |> uploadFile ".paket/paket.targets"
+    |> uploadFile "./bin/merged/paket.exe"
     |> releaseDraft
     |> Async.RunSynchronously
 )
@@ -430,8 +430,9 @@ Target "All" DoNothing
   ==> "PublishChocolatey"
   ==> "PublishNuGet"
 
-"PublishNuGet"    
+"BuildPackage"
   ==> "ReleaseGitHub"
+  ==> "PublishNuGet"
   ==> "Release"
 
 "ReleaseGitHub"

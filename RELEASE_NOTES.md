@@ -1,4 +1,4 @@
-#### 1.39.8 - 13.09.2015
+#### 1.39.9 - 13.09.2015
 * Fixed a bug where install and restore use different paths when specifying a project spec on a HTTP link - https://github.com/fsprojects/Paket/pull/1054
 * Fix parsing of output path when condition has no spaces - https://github.com/fsprojects/Paket/pull/1058
 
