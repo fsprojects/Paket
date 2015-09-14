@@ -229,16 +229,23 @@ let InstallIntoProjects(options : InstallerOptions, dependenciesFile, lockFile :
 
         project.UpdateReferences(model, usedPackages, options.Hard)
 
-        let packagesConfigFile = Path.Combine(FileInfo(project.FileName).Directory.FullName, Constants.PackagesConfigFile)        
+        let packagesConfigFileName = Path.Combine(FileInfo(project.FileName).Directory.FullName, Constants.PackagesConfigFile)
+        let packagesInConfigFile = PackagesConfigFile.Read packagesConfigFileName
 
-        model
-        |> Seq.filter (fun kv -> defaultArg (fst kv.Value).Settings.IncludeVersionInPath false)
-        |> Seq.map (fun kv ->
-            let settings,version = kv.Value
-            { Id = kv.Key.ToString()
-              Version = (fst kv.Value).Version
-              TargetFramework = None })
-        |> PackagesConfigFile.Save packagesConfigFile
+        let packagesInModel =
+            model
+            |> Seq.filter (fun kv -> defaultArg (fst kv.Value).Settings.IncludeVersionInPath false)
+            |> Seq.map (fun kv ->
+                let settings,version = kv.Value
+                { Id = kv.Key.ToString()
+                  Version = (fst kv.Value).Version
+                  TargetFramework = None })
+            |> Seq.toList
+
+        packagesInConfigFile
+        |> Seq.filter (fun p -> packagesInModel |> Seq.exists (fun p' -> p'.Id = p.Id) |> not)
+        |> Seq.append packagesInModel
+        |> PackagesConfigFile.Save packagesConfigFileName
         
 
         removeCopiedFiles project
