@@ -513,7 +513,7 @@ type LockFile(fileName:string,groups: Map<GroupName,LockFileGroup>) =
 
     member this.GetPackageHullSafe(referencesFile,groupName) =
         match referencesFile.Groups |> Map.tryFind groupName with
-        | None -> failwithf "Group %O was not found in %s." groupName referencesFile.FileName
+        | None -> Result.Succeed(Set.empty)
         | Some group ->
             group.NugetPackages
             |> Seq.map (fun package ->
