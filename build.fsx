@@ -67,7 +67,7 @@ let tempDir = "temp"
 let buildMergedDir = buildDir @@ "merged"
 let buildMergedDirPS = buildDir @@ "Paket.PowerShell"
 
-
+Environment.CurrentDirectory <- __SOURCE_DIRECTORY__
 // Read additional information from the release notes document
 let releaseNotesData = 
     File.ReadAllLines "RELEASE_NOTES.md"
@@ -363,11 +363,11 @@ Target "ReleaseGitHub" (fun _ ->
     let user =
         match getBuildParam "github-user" with
         | s when not (String.IsNullOrWhiteSpace s) -> s
-        | _ -> getUserInput "Username: "
+        | _ -> "forki"//getUserInput "Username: "
     let pw =
         match getBuildParam "github-pw" with
         | s when not (String.IsNullOrWhiteSpace s) -> s
-        | _ -> getUserPassword "Password: "
+        | _ -> "mbc4spergau&gh2" //getUserPassword "Password: "
     let remote =
         Git.CommandHelper.getGitResult "" "remote -v"
         |> Seq.filter (fun (s: string) -> s.EndsWith("(push)"))
