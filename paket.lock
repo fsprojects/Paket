@@ -4,6 +4,7 @@ NUGET
     Argu (1.0.0)
     FSharp.Core (4.0.0.1)
     Newtonsoft.Json (7.0.1)
+    NUnit (2.6.4)
 GITHUB
   remote: fsharp/FAKE
   specs:

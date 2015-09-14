@@ -123,16 +123,53 @@ let inline normalizeXml(doc:XmlDocument) =
     xmlTextWriter.Flush()
     stringWriter.GetStringBuilder().ToString()
 
-let getDefaultProxyFor url =
-    let result = WebRequest.GetSystemWebProxy()
-    let uri = new Uri(url)
-    let address = result.GetProxy(uri)
+let envProxies () =
+    let getEnvValue (name:string) =
+        let v = Environment.GetEnvironmentVariable(name.ToUpperInvariant())
+        // under mono, env vars are case sensitive
+        if v = null then Environment.GetEnvironmentVariable(name.ToLowerInvariant()) else v
+    let bypassList =
+        let noproxy = getEnvValue "NO_PROXY"
+        if String.IsNullOrEmpty(noproxy) then [||] else
+        noproxy.Split([| ',' |], StringSplitOptions.RemoveEmptyEntries)
+    let getCredentials (uri:Uri) =
+        let userPass = uri.UserInfo.Split([| ':' |], 2)
+        if userPass.Length <> 2 || userPass.[0].Length = 0 then None else
+        let credentials = new NetworkCredential(Uri.UnescapeDataString userPass.[0], Uri.UnescapeDataString userPass.[1])
+        Some credentials
+    let getProxy (scheme:string) =
+        let envVarName = sprintf "%s_PROXY" (scheme.ToUpperInvariant())
+        let envVarValue = getEnvValue envVarName
+        if envVarValue = null then None else
+        match Uri.TryCreate(envVarValue, UriKind.Absolute) with
+        | true, envUri ->
+            let proxy = new WebProxy(new Uri(sprintf "%s://%s:%d" scheme envUri.Host envUri.Port))
+            proxy.Credentials <- Option.toObj <| getCredentials envUri
+            proxy.BypassProxyOnLocal <- true
+            proxy.BypassList <- bypassList
+            Some proxy
+        | _ -> None
+    let addProxy (map:Map<string, WebProxy>) scheme =
+        match getProxy scheme with
+        | Some p -> Map.add scheme p map
+        | _ -> map
+    List.fold addProxy Map.empty [ "http"; "https" ]
 
-    if address = uri then null else
-    let proxy = new WebProxy(address)
-    proxy.Credentials <- CredentialCache.DefaultCredentials
-    proxy.BypassProxyOnLocal <- true
-    proxy
+let getDefaultProxyFor url =
+    let uri = new Uri(url)
+    let getDefault () =
+        let result = WebRequest.GetSystemWebProxy()
+        let address = result.GetProxy(uri)
+
+        if address = uri then null else
+        let proxy = new WebProxy(address)
+        proxy.Credentials <- CredentialCache.DefaultCredentials
+        proxy.BypassProxyOnLocal <- true
+        proxy
+    match envProxies().TryFind uri.Scheme with
+    | Some p ->
+        if p.GetProxy(uri) <> uri then p else getDefault()
+    | None -> getDefault()
 
 let inline createWebClient(url,auth:Auth option) =
     let client = new WebClient()

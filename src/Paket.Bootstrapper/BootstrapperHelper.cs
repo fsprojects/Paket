@@ -61,13 +61,17 @@ namespace Paket.Bootstrapper
 
         internal static IWebProxy GetDefaultWebProxyFor(String url)
         {
-            IWebProxy result = WebRequest.GetSystemWebProxy();
             Uri uri = new Uri(url);
-            Uri address = result.GetProxy(uri);
 
+            IWebProxy result;
+            if (EnvProxy.TryGetProxyFor(uri, out result) && result.GetProxy(uri) != uri)
+                return result;
+
+            result = WebRequest.GetSystemWebProxy();
+            Uri address = result.GetProxy(uri);
             if (address == uri)
                 return null;
-
+        
             return new WebProxy(address)
             {
                 Credentials = CredentialCache.DefaultCredentials,

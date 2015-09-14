@@ -73,6 +73,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "commands", "commands", "{44
 		docs\content\commands\update.md = docs\content\commands\update.md
 	EndProjectSection
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Paket.Bootstrapper.Tests", "tests\Paket.Bootstrapper.Tests\Paket.Bootstrapper.Tests.csproj", "{7C622582-E281-4EAB-AADA-B5893BB89B45}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -95,6 +97,10 @@ Global
 		{7BAB0AE2-089F-4761-B138-A717AA2F86C5}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{7BAB0AE2-089F-4761-B138-A717AA2F86C5}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{7BAB0AE2-089F-4761-B138-A717AA2F86C5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7C622582-E281-4EAB-AADA-B5893BB89B45}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7C622582-E281-4EAB-AADA-B5893BB89B45}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7C622582-E281-4EAB-AADA-B5893BB89B45}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7C622582-E281-4EAB-AADA-B5893BB89B45}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -104,5 +110,6 @@ Global
 		{8E6D5255-776D-4B61-85F9-73C37AA1FB9A} = {A6A6AF7D-D6E3-442D-9B1E-58CC91879BE1}
 		{E789C72A-5CFD-436B-8EF1-61AA2852A89F} = {ED8079DD-2B06-4030-9F0F-DC548F98E1C4}
 		{4425A246-BD18-4622-86B5-0154F19165E4} = {8E6D5255-776D-4B61-85F9-73C37AA1FB9A}
+		{7C622582-E281-4EAB-AADA-B5893BB89B45} = {ED8079DD-2B06-4030-9F0F-DC548F98E1C4}
 	EndGlobalSection
 EndGlobal
