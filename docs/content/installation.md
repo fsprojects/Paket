@@ -55,15 +55,7 @@ After that completes execute the install, to install Paket as a command line uti
 
 ### Installation on Windows
 
-When using Windows, the previous installation methods work, just exchange the `*.sh` files for the `*.cmd` files.
-
-    build.cmd
-
-Then run the install script to install Paket for command line use.   
- 
-    install.cmd
-    
-NOTE: If you use git-bash on Windows you can actually follow the Linux installation instructions and just use the `*.sh` files.
+Please use the [Installation per repository](installation.html#Installation-per-repository) option.
 
 ### Post Installation
 
