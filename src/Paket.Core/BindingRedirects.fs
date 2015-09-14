@@ -119,12 +119,13 @@ let private addConfigFileToProject projectFile =
         project.Save())
 
 /// Applies a set of binding redirects to all .config files in a specific folder.
-let applyBindingRedirectsToFolder rootPath bindingRedirects =
-    // First create missing configuration files.
-    rootPath
-    |> getFoldersWithPaketReferencesAndNoConfig Directory.GetFiles
-    |> Seq.collect (createAppConfigInDirectory >> getProjectFilesInDirectory)
-    |> Seq.iter addConfigFileToProject
+let applyBindingRedirectsToFolder createNewBindingFiles rootPath bindingRedirects =
+    if createNewBindingFiles then
+        // First create missing configuration files.
+        rootPath
+        |> getFoldersWithPaketReferencesAndNoConfig Directory.GetFiles
+        |> Seq.collect (createAppConfigInDirectory >> getProjectFilesInDirectory)
+        |> Seq.iter addConfigFileToProject
 
     // Now ensure all configuration files have binding redirects.
     rootPath

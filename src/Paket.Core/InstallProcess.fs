@@ -118,7 +118,7 @@ let createModel(root, force, dependenciesFile:DependenciesFile, lockFile : LockF
     extractedPackages
 
 /// Applies binding redirects for all strong-named references to all app. and web. config files.
-let private applyBindingRedirects root (extractedPackages:seq<_*InstallModel>) =
+let private applyBindingRedirects createNewBindingFiles root (extractedPackages:seq<_*InstallModel>) =
     extractedPackages
     |> Seq.map (fun (package, model:InstallModel) -> model.GetLibReferencesLazy.Force())
     |> Set.unionMany
@@ -142,7 +142,7 @@ let private applyBindingRedirects root (extractedPackages:seq<_*InstallModel>) =
           Version = assembly.GetName().Version.ToString()
           PublicKeyToken = token
           Culture = None })
-    |> applyBindingRedirectsToFolder root
+    |> applyBindingRedirectsToFolder createNewBindingFiles root
 
 let findAllReferencesFiles root =
     root
@@ -299,7 +299,7 @@ let InstallIntoProjects(options : InstallerOptions, dependenciesFile, lockFile :
             model
             |> Seq.filter (fun kv -> (fst kv.Key) = g.Key)
             |> Seq.map (fun kv -> kv.Value)
-            |> applyBindingRedirects root 
+            |> applyBindingRedirects options.CreateNewBindingFiles root 
 
 /// Installs all packages from the lock file.
 let Install(options : InstallerOptions, dependenciesFile, lockFile : LockFile) =

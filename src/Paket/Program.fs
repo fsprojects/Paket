@@ -73,14 +73,15 @@ let add (results : ParseResults<_>) =
     let force = results.Contains <@ AddArgs.Force @>
     let hard = results.Contains <@ AddArgs.Hard @>
     let redirects = results.Contains <@ AddArgs.Redirects @>
+    let createNewBindingFiles = results.Contains <@ AddArgs.CreateNewBindingFiles @>
     let group = results.TryGetResult <@ AddArgs.Group @>
     let noInstall = results.Contains <@ AddArgs.No_Install @>
     match results.TryGetResult <@ AddArgs.Project @> with
     | Some projectName ->
-        Dependencies.Locate().AddToProject(group, packageName, version, force, hard, projectName, noInstall |> not)
+        Dependencies.Locate().AddToProject(group, packageName, version, force, hard, redirects, createNewBindingFiles, projectName, noInstall |> not)
     | None ->
         let interactive = results.Contains <@ AddArgs.Interactive @>
-        Dependencies.Locate().Add(group, packageName, version, force, hard, interactive, noInstall |> not)
+        Dependencies.Locate().Add(group, packageName, version, force, hard, redirects, createNewBindingFiles, interactive, noInstall |> not)
 
 let validateConfig (results : ParseResults<_>) =
     let args = results.GetResults <@ ConfigArgs.AddCredentials @>
@@ -126,8 +127,9 @@ let install (results : ParseResults<_>) =
     let force = results.Contains <@ InstallArgs.Force @>
     let hard = results.Contains <@ InstallArgs.Hard @>
     let withBindingRedirects = results.Contains <@ InstallArgs.Redirects @>
+    let createNewBindingFiles = results.Contains <@ InstallArgs.CreateNewBindingFiles @>
     let installOnlyReferenced = results.Contains <@ InstallArgs.Install_Only_Referenced @>
-    Dependencies.Locate().Install(force, hard, withBindingRedirects, installOnlyReferenced)
+    Dependencies.Locate().Install(force, hard, withBindingRedirects, createNewBindingFiles, installOnlyReferenced)
 
 let outdated (results : ParseResults<_>) =
     let strict = results.Contains <@ OutdatedArgs.Ignore_Constraints @> |> not
@@ -166,10 +168,11 @@ let update (results : ParseResults<_>) =
     let noInstall = results.Contains <@ UpdateArgs.No_Install @>
     let group = results.TryGetResult <@ UpdateArgs.Group @>
     let withBindingRedirects = results.Contains <@ UpdateArgs.Redirects @>
+    let createNewBindingFiles = results.Contains <@ UpdateArgs.CreateNewBindingFiles @>
     match results.TryGetResult <@ UpdateArgs.Nuget @> with
     | Some packageName ->
         let version = results.TryGetResult <@ UpdateArgs.Version @>
-        Dependencies.Locate().UpdatePackage(group, packageName, version, force, hard, withBindingRedirects, noInstall |> not)
+        Dependencies.Locate().UpdatePackage(group, packageName, version, force, hard, withBindingRedirects, createNewBindingFiles, noInstall |> not)
     | _ ->
         Dependencies.Locate().Update(force, hard, withBindingRedirects, noInstall |> not)
 
