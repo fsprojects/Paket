@@ -14,6 +14,25 @@ open System.Reflection
 open Paket.PackagesConfigFile
 open Paket.Requirements
 
+let updatePackagesConfigFile (model: Map<GroupName*PackageName,ResolvedPackage*InstallModel>) packagesConfigFileName =
+    let packagesInConfigFile = PackagesConfigFile.Read packagesConfigFileName
+
+    let packagesInModel =
+        model
+        |> Seq.filter (fun kv -> defaultArg (fst kv.Value).Settings.IncludeVersionInPath false)
+        |> Seq.map (fun kv ->
+            let settings,version = kv.Value
+            { Id = kv.Key.ToString()
+              Version = (fst kv.Value).Version
+              TargetFramework = None })
+        |> Seq.toList
+
+    if packagesInModel <> [] then
+        packagesInConfigFile
+        |> Seq.filter (fun p -> packagesInModel |> Seq.exists (fun p' -> p'.Id = p.Id) |> not)
+        |> Seq.append packagesInModel
+        |> PackagesConfigFile.Save packagesConfigFileName
+
 let findPackageFolder root (groupName,PackageName name) (version,settings) =
     let includeVersionInPath = defaultArg settings.IncludeVersionInPath false
     let lowerName = (name + if includeVersionInPath then "." + version.ToString() else "").ToLower()
@@ -228,25 +247,9 @@ let InstallIntoProjects(options : InstallerOptions, dependenciesFile, lockFile :
             !d
 
         project.UpdateReferences(model, usedPackages, options.Hard)
-
-        let packagesConfigFileName = Path.Combine(FileInfo(project.FileName).Directory.FullName, Constants.PackagesConfigFile)
-        let packagesInConfigFile = PackagesConfigFile.Read packagesConfigFileName
-
-        let packagesInModel =
-            model
-            |> Seq.filter (fun kv -> defaultArg (fst kv.Value).Settings.IncludeVersionInPath false)
-            |> Seq.map (fun kv ->
-                let settings,version = kv.Value
-                { Id = kv.Key.ToString()
-                  Version = (fst kv.Value).Version
-                  TargetFramework = None })
-            |> Seq.toList
-
-        packagesInConfigFile
-        |> Seq.filter (fun p -> packagesInModel |> Seq.exists (fun p' -> p'.Id = p.Id) |> not)
-        |> Seq.append packagesInModel
-        |> PackagesConfigFile.Save packagesConfigFileName
         
+        Path.Combine(FileInfo(project.FileName).Directory.FullName, Constants.PackagesConfigFile)
+        |> updatePackagesConfigFile model 
 
         removeCopiedFiles project
 
