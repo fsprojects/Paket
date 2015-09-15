@@ -527,7 +527,11 @@ type ProjectFile =
                     .RemoveIfCompletelyEmpty()
 
             let copyLocal = defaultArg installSettings.CopyLocal true
-            let importTargets = defaultArg installSettings.ImportTargets true            
+            let importTargets = 
+                defaultArg installSettings.ImportTargets 
+                    // Microsoft.Bcl.Build targets file causes the build to fail in VS
+                    // so users have to be very explicit with the targets file
+                    (snd kv.Key <> PackageName "Microsoft.Bcl.Build") 
 
             this.GenerateXml(projectModel,copyLocal,importTargets,installSettings.ReferenceCondition))
         |> Seq.iter (fun (propertyNameNodes,chooseNode,propertyChooseNode, analyzersNode) -> 

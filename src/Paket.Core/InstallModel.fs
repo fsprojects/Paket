@@ -260,8 +260,7 @@ type InstallModel =
         let includeReferences = function
             | Reference.Library lib -> not (lib.ToLower().EndsWith ".dll" || lib.ToLower().EndsWith ".exe")
             | Reference.TargetsFile targetsFile -> 
-                (not (targetsFile.ToLower().EndsWith ".props" || targetsFile.ToLower().EndsWith ".targets")) ||
-                targetsFile.ToLower().EndsWith("microsoft.bcl.build.targets") // would install a targets file causing the build to fail in VS
+                (not (targetsFile.ToLower().EndsWith ".props" || targetsFile.ToLower().EndsWith ".targets"))
             | _ -> false
 
         let excludeSatelliteAssemblies = function
