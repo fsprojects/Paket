@@ -22,7 +22,7 @@ let updatePackagesConfigFile (model: Map<GroupName*PackageName,ResolvedPackage*I
         |> Seq.filter (fun kv -> defaultArg (fst kv.Value).Settings.IncludeVersionInPath false)
         |> Seq.map (fun kv ->
             let settings,version = kv.Value
-            { Id = kv.Key.ToString()
+            { Id = (snd kv.Key).ToString()
               Version = (fst kv.Value).Version
               TargetFramework = None })
         |> Seq.toList
