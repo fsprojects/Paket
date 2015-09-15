@@ -10,18 +10,21 @@ type InstallerOptions =
     { Force : bool
       Hard : bool
       Redirects : bool
+      CreateNewBindingFiles : bool
       OnlyReferenced : bool }
 
     static member Default =
         { Force = false
           Hard = false
           Redirects = false
+          CreateNewBindingFiles = false
           OnlyReferenced = false }
 
-    static member createLegacyOptions(force, hard, redirects) =
+    static member createLegacyOptions(force, hard, redirects, createNewBindingFiles) =
         { InstallerOptions.Default with
             Force = force
             Hard = hard
+            CreateNewBindingFiles = createNewBindingFiles
             Redirects = redirects }
 
 type UpdaterOptions =

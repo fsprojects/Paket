@@ -66,6 +66,7 @@ type AddArgs =
     | [<AltCommandLine("-i")>] Interactive
     | Hard
     | Redirects
+    | CreateNewBindingFiles
     | No_Install
 with
     interface IArgParserTemplate with
@@ -79,6 +80,7 @@ with
             | Interactive -> "Asks the user for every project if he or she wants to add the package to the projects's paket.references file."
             | Hard -> "Replaces package references within project files even if they are not yet adhering to the Paket's conventions (and hence considered manually managed)."
             | Redirects -> "Creates binding redirects for the NuGet packages."
+            | CreateNewBindingFiles -> "Creates binding redirect files if needed."
             | No_Install -> "Skips paket install --hard process afterward generation of dependencies / references files."
 
 type ConfigArgs =
@@ -133,6 +135,7 @@ type InstallArgs =
     | [<AltCommandLine("-f")>] Force
     | Hard
     | Redirects
+    | CreateNewBindingFiles
     | [<CustomCommandLine("--only-referenced")>] Install_Only_Referenced
 with
     interface IArgParserTemplate with
@@ -141,6 +144,7 @@ with
             | Force -> "Forces the download and reinstallation of all packages."
             | Hard -> "Replaces package references within project files even if they are not yet adhering to the Paket's conventions (and hence considered manually managed)."
             | Redirects -> "Creates binding redirects for the NuGet packages."
+            | CreateNewBindingFiles -> "Creates binding redirect files if needed."
             | Install_Only_Referenced -> "Only install packages that are referenced in paket.references files, instead of all packages in paket.dependencies."
 
 type OutdatedArgs =
@@ -202,6 +206,7 @@ type UpdateArgs =
     | [<AltCommandLine("-f")>] Force
     | Hard
     | Redirects
+    | CreateNewBindingFiles
     | No_Install
 with
     interface IArgParserTemplate with
@@ -213,6 +218,7 @@ with
             | Force -> "Forces the download and reinstallation of all packages."
             | Hard -> "Replaces package references within project files even if they are not yet adhering to the Paket's conventions (and hence considered manually managed)."
             | Redirects -> "Creates binding redirects for the NuGet packages."
+            | CreateNewBindingFiles -> "Creates binding redirect files if needed."
             | No_Install -> "Skips paket install --hard process afterward generation of paket.lock file."
 
 type FindPackagesArgs =

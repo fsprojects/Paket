@@ -14,6 +14,25 @@ open System.Reflection
 open Paket.PackagesConfigFile
 open Paket.Requirements
 
+let updatePackagesConfigFile (model: Map<GroupName*PackageName,ResolvedPackage*InstallModel>) packagesConfigFileName =
+    let packagesInConfigFile = PackagesConfigFile.Read packagesConfigFileName
+
+    let packagesInModel =
+        model
+        |> Seq.filter (fun kv -> defaultArg (fst kv.Value).Settings.IncludeVersionInPath false)
+        |> Seq.map (fun kv ->
+            let settings,version = kv.Value
+            { Id = kv.Key.ToString()
+              Version = (fst kv.Value).Version
+              TargetFramework = None })
+        |> Seq.toList
+
+    if packagesInModel <> [] then
+        packagesInConfigFile
+        |> Seq.filter (fun p -> packagesInModel |> Seq.exists (fun p' -> p'.Id = p.Id) |> not)
+        |> Seq.append packagesInModel
+        |> PackagesConfigFile.Save packagesConfigFileName
+
 let findPackageFolder root (groupName,PackageName name) (version,settings) =
     let includeVersionInPath = defaultArg settings.IncludeVersionInPath false
     let lowerName = (name + if includeVersionInPath then "." + version.ToString() else "").ToLower()
@@ -118,7 +137,7 @@ let createModel(root, force, dependenciesFile:DependenciesFile, lockFile : LockF
     extractedPackages
 
 /// Applies binding redirects for all strong-named references to all app. and web. config files.
-let private applyBindingRedirects root (extractedPackages:seq<_*InstallModel>) =
+let private applyBindingRedirects createNewBindingFiles root (extractedPackages:seq<_*InstallModel>) =
     extractedPackages
     |> Seq.map (fun (package, model:InstallModel) -> model.GetLibReferencesLazy.Force())
     |> Set.unionMany
@@ -142,7 +161,7 @@ let private applyBindingRedirects root (extractedPackages:seq<_*InstallModel>) =
           Version = assembly.GetName().Version.ToString()
           PublicKeyToken = token
           Culture = None })
-    |> applyBindingRedirectsToFolder root
+    |> applyBindingRedirectsToFolder createNewBindingFiles root
 
 let findAllReferencesFiles root =
     root
@@ -228,18 +247,9 @@ let InstallIntoProjects(options : InstallerOptions, dependenciesFile, lockFile :
             !d
 
         project.UpdateReferences(model, usedPackages, options.Hard)
-
-        let packagesConfigFile = Path.Combine(FileInfo(project.FileName).Directory.FullName, Constants.PackagesConfigFile)        
-
-        model
-        |> Seq.filter (fun kv -> defaultArg (fst kv.Value).Settings.IncludeVersionInPath false)
-        |> Seq.map (fun kv ->
-            let settings,version = kv.Value
-            { Id = kv.Key.ToString()
-              Version = (fst kv.Value).Version
-              TargetFramework = None })
-        |> PackagesConfigFile.Save packagesConfigFile
         
+        Path.Combine(FileInfo(project.FileName).Directory.FullName, Constants.PackagesConfigFile)
+        |> updatePackagesConfigFile model 
 
         removeCopiedFiles project
 
@@ -299,7 +309,7 @@ let InstallIntoProjects(options : InstallerOptions, dependenciesFile, lockFile :
             model
             |> Seq.filter (fun kv -> (fst kv.Key) = g.Key)
             |> Seq.map (fun kv -> kv.Value)
-            |> applyBindingRedirects root 
+            |> applyBindingRedirects options.CreateNewBindingFiles root 
 
 /// Installs all packages from the lock file.
 let Install(options : InstallerOptions, dependenciesFile, lockFile : LockFile) =

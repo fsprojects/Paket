@@ -67,7 +67,7 @@ let tempDir = "temp"
 let buildMergedDir = buildDir @@ "merged"
 let buildMergedDirPS = buildDir @@ "Paket.PowerShell"
 
-
+Environment.CurrentDirectory <- __SOURCE_DIRECTORY__
 // Read additional information from the release notes document
 let releaseNotesData = 
     File.ReadAllLines "RELEASE_NOTES.md"
