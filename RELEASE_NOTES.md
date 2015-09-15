@@ -1,3 +1,6 @@
+#### 2.0.3 - 15.09.2015
+* Removed microsoft.bcl.build.targets from backlist and instead changed "import_targets" default for that package
+
 #### 2.0.2 - 15.09.2015
 * Fix handling of packages.config
 
