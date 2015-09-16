@@ -14,16 +14,16 @@ open System.Reflection
 open Paket.PackagesConfigFile
 open Paket.Requirements
 
-let updatePackagesConfigFile (model: Map<GroupName*PackageName,ResolvedPackage*InstallModel>) packagesConfigFileName =
+let updatePackagesConfigFile (model: Map<GroupName*PackageName,SemVerInfo*InstallSettings>) packagesConfigFileName =
     let packagesInConfigFile = PackagesConfigFile.Read packagesConfigFileName
 
     let packagesInModel =
         model
-        |> Seq.filter (fun kv -> defaultArg (fst kv.Value).Settings.IncludeVersionInPath false)
+        |> Seq.filter (fun kv -> defaultArg (snd kv.Value).IncludeVersionInPath false)
         |> Seq.map (fun kv ->
             let settings,version = kv.Value
             { Id = (snd kv.Key).ToString()
-              Version = (fst kv.Value).Version
+              Version = fst kv.Value
               TargetFramework = None })
         |> Seq.toList
 
@@ -249,7 +249,7 @@ let InstallIntoProjects(options : InstallerOptions, dependenciesFile, lockFile :
         project.UpdateReferences(model, usedPackages, options.Hard)
         
         Path.Combine(FileInfo(project.FileName).Directory.FullName, Constants.PackagesConfigFile)
-        |> updatePackagesConfigFile model 
+        |> updatePackagesConfigFile usedPackages 
 
         removeCopiedFiles project
 

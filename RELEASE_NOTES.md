@@ -1,3 +1,6 @@
+#### 2.1.1 - 16.09.2015
+* BUGFIX: Only create packages.config entries for referenced packages - https://github.com/fsprojects/Paket/issues/1065
+
 #### 2.1.0 - 16.09.2015
 * Added support for custom internet proxy credentials with env vars - https://github.com/fsprojects/Paket/pull/1061
 
