@@ -1,3 +1,6 @@
+#### 2.1.0 - 16.09.2015
+* Added support for custom internet proxy credentials with env vars - https://github.com/fsprojects/Paket/pull/1061
+
 #### 2.0.3 - 15.09.2015
 * Removed microsoft.bcl.build.targets from backlist and instead changed "import_targets" default for that package
 
