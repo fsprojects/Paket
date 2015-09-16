@@ -390,7 +390,7 @@ type LockFile(fileName:string,groups: Map<GroupName,LockFileGroup>) =
 
     member this.GetTopLevelDependencies(groupName) = 
         match groups |> Map.tryFind groupName with
-        | None -> failwithf "Group %O was not found in the paket.lock file." groupName
+        | None -> Map.empty
         | Some group ->
             let transitive = this.GetTransitiveDependencies groupName
 
