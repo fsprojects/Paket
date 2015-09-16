@@ -3,6 +3,7 @@ source https://nuget.org/api/v2
 nuget Newtonsoft.Json
 nuget Argu
 nuget FSharp.Core
+nuget NUnit
 
 github fsharp/FAKE src/app/FakeLib/Globbing/Globbing.fs
 github fsprojects/Chessie src/Chessie/ErrorHandling.fs
