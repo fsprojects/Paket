@@ -353,3 +353,22 @@ let ``should parse reffiles with reference condition``() =
     mainGroup.NugetPackages.Head.Settings.ReferenceCondition |> shouldEqual None
     mainGroup.NugetPackages.Tail.Head.Name |> shouldEqual (PackageName "Newtonsoft.Json")
     mainGroup.NugetPackages.Tail.Head.Settings.ReferenceCondition |> shouldEqual (Some "LEGACY")
+
+
+let refFileWithRedirects = """
+Castle.Windsor  
+Newtonsoft.Json redirects:on
+FSharp.Core redirects:off
+"""
+
+[<Test>]
+let ``should parse reffiles with redirects``() = 
+    let refFile = ReferencesFile.FromLines(toLines refFileWithRedirects)
+    let mainGroup = refFile.Groups.[Constants.MainDependencyGroup]
+    mainGroup.NugetPackages.Length |> shouldEqual 3
+    mainGroup.NugetPackages.Head.Name |> shouldEqual (PackageName "Castle.Windsor")
+    mainGroup.NugetPackages.Head.Settings.CreateBindingRedirects |> shouldEqual None
+    mainGroup.NugetPackages.Tail.Head.Name |> shouldEqual (PackageName "Newtonsoft.Json")
+    mainGroup.NugetPackages.Tail.Head.Settings.CreateBindingRedirects |> shouldEqual (Some true)
+    mainGroup.NugetPackages.Tail.Tail.Head.Name |> shouldEqual (PackageName "FSharp.Core")
+    mainGroup.NugetPackages.Tail.Tail.Head.Settings.CreateBindingRedirects |> shouldEqual (Some false)

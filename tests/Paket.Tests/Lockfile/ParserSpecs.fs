@@ -492,7 +492,7 @@ CONDITION: LEGACY
 NUGET
   remote: "D:\code\temp with space"
   specs:
-    FAKE (4.0)
+    FAKE (4.0) - redirects: on
 """   
 
 [<Test>]
@@ -524,3 +524,4 @@ let ``should parse lock file with groups``() =
 
     packages2.Head.Source |> shouldEqual (PackageSource.LocalNuget("D:\code\\temp with space"))  
     packages2.[0].Name |> shouldEqual (PackageName "FAKE")
+    packages2.[0].Settings.CreateBindingRedirects |> shouldEqual (Some true)

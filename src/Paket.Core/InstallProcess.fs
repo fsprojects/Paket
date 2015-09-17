@@ -320,7 +320,7 @@ let InstallIntoProjects(options : InstallerOptions, dependenciesFile, lockFile :
                 | _ -> options.Redirects || g.Value.Options.Redirects
 
             isEnabled && (fst kv.Key) = g.Key)
-        |> Seq.map (fun kv -> kv.Value)        
+        |> Seq.map (fun kv -> kv.Value)
         |> applyBindingRedirects options.CreateNewBindingFiles root 
 
 /// Installs all packages from the lock file.
