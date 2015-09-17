@@ -104,7 +104,7 @@ type ReferencesFile =
         let lines = File.ReadAllLines(fileName)
         { ReferencesFile.FromLines lines with FileName = fileName }
 
-    member this.AddNuGetReference(groupName, packageName : PackageName, copyLocal: bool, importTargets: bool, frameworkRestrictions, includeVersionInPath, omitContent : bool, referenceCondition) =
+    member this.AddNuGetReference(groupName, packageName : PackageName, copyLocal: bool, importTargets: bool, frameworkRestrictions, includeVersionInPath, omitContent : bool, createBindingRedirects: bool, referenceCondition) =
         let (PackageName referenceName) = packageName
         let package: PackageInstallSettings =
             { Name = packageName
@@ -114,6 +114,7 @@ type ReferencesFile =
                     FrameworkRestrictions = frameworkRestrictions
                     IncludeVersionInPath = if includeVersionInPath then Some includeVersionInPath else None
                     ReferenceCondition = if String.IsNullOrWhiteSpace referenceCondition |> not then Some referenceCondition else None
+                    CreateBindingRedirects = if createBindingRedirects then Some createBindingRedirects else None
                     OmitContent = if omitContent then Some omitContent else None } }
 
 
@@ -140,7 +141,7 @@ type ReferencesFile =
 
                 { this with Groups = newGroups }
 
-    member this.AddNuGetReference(groupName, packageName : PackageName) = this.AddNuGetReference(groupName, packageName, true, true, [], false, false, null)
+    member this.AddNuGetReference(groupName, packageName : PackageName) = this.AddNuGetReference(groupName, packageName, true, true, [], false, false, false, null)
 
     member this.RemoveNuGetReference(groupName, packageName : PackageName) =
         let (PackageName referenceName) = packageName

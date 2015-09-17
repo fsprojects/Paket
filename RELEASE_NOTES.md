@@ -1,3 +1,6 @@
+#### 2.2.0 - 17.09.2015
+* Allow to enable redircts per package
+
 #### 2.1.2 - 16.09.2015
 * BUGFIX: Install command without a lockfile failed when using groups - https://github.com/fsprojects/Paket/issues/1067
 

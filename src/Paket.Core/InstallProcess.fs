@@ -305,11 +305,19 @@ let InstallIntoProjects(options : InstallerOptions, dependenciesFile, lockFile :
         project.Save()
 
     for g in lockFile.Groups do
-        if options.Redirects || g.Value.Options.Redirects then
-            model
-            |> Seq.filter (fun kv -> (fst kv.Key) = g.Key)
-            |> Seq.map (fun kv -> kv.Value)
-            |> applyBindingRedirects options.CreateNewBindingFiles root 
+        let group = g.Value   
+        model
+        |> Seq.filter (fun kv -> 
+            let packageName = snd kv.Key
+            let packageRedirects =
+                match group.Resolution |> Map.tryFind packageName with
+                | None -> None
+                | Some p -> p.Settings.CreateBindingRedirects
+
+            let isEnabled = options.Redirects || g.Value.Options.Redirects || defaultArg packageRedirects false
+            isEnabled && (fst kv.Key) = g.Key)
+        |> Seq.map (fun kv -> kv.Value)        
+        |> applyBindingRedirects options.CreateNewBindingFiles root 
 
 /// Installs all packages from the lock file.
 let Install(options : InstallerOptions, dependenciesFile, lockFile : LockFile) =

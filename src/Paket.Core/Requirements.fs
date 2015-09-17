@@ -127,6 +127,7 @@ type InstallSettings =
       OmitContent : bool option
       IncludeVersionInPath: bool option
       ReferenceCondition : string option
+      CreateBindingRedirects : bool option
       CopyLocal : bool option }
 
     static member Default =
@@ -135,6 +136,7 @@ type InstallSettings =
           FrameworkRestrictions = []
           IncludeVersionInPath = None
           ReferenceCondition = None
+          CreateBindingRedirects = None
           OmitContent = None }
 
     member this.ToString(asLines) =
@@ -154,6 +156,10 @@ type InstallSettings =
               | None -> ()
               match this.ReferenceCondition with
               | Some x -> yield "condition: " + x.ToUpper()
+              | None -> ()
+              match this.CreateBindingRedirects with
+              | Some true -> yield "redirects: on"
+              | Some false -> yield "redirects: off"
               | None -> ()
               match this.FrameworkRestrictions with
               | [] -> ()
@@ -191,6 +197,11 @@ type InstallSettings =
             match kvPairs.TryGetValue "content" with
             | true, "none" -> Some true 
             | true, "true" -> Some false 
+            | _ ->  None
+          CreateBindingRedirects =
+            match kvPairs.TryGetValue "redirects" with
+            | true, "on" -> Some true 
+            | true, "off" -> Some false 
             | _ ->  None
           IncludeVersionInPath =         
             match kvPairs.TryGetValue "version_in_path" with
