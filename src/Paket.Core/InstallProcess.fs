@@ -314,7 +314,11 @@ let InstallIntoProjects(options : InstallerOptions, dependenciesFile, lockFile :
                 | None -> None
                 | Some p -> p.Settings.CreateBindingRedirects
 
-            let isEnabled = options.Redirects || g.Value.Options.Redirects || defaultArg packageRedirects false
+            let isEnabled = 
+                match packageRedirects with
+                | Some v -> v
+                | _ -> options.Redirects || g.Value.Options.Redirects
+
             isEnabled && (fst kv.Key) = g.Key)
         |> Seq.map (fun kv -> kv.Value)        
         |> applyBindingRedirects options.CreateNewBindingFiles root 

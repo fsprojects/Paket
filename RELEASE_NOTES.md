@@ -1,10 +1,6 @@
-#### 2.2.0 - 17.09.2015
-* Allow to enable redircts per package
-
-#### 2.1.2 - 16.09.2015
+#### 2.2.1 - 17.09.2015
+* Allow to enable redircts per package - http://fsprojects.github.io/Paket/nuget-dependencies.html#redirects-settings
 * BUGFIX: Install command without a lockfile failed when using groups - https://github.com/fsprojects/Paket/issues/1067
-
-#### 2.1.1 - 16.09.2015
 * BUGFIX: Only create packages.config entries for referenced packages - https://github.com/fsprojects/Paket/issues/1065
 
 #### 2.1.0 - 16.09.2015

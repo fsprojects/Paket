@@ -182,6 +182,14 @@ It's possible to influence the `Private` property for references in project file
 
     nuget Newtonsoft.Json copy_local: false
 
+### redirects settings
+
+You can instruct Paket to create assembly binding redirects for NuGet packages:
+
+    source https://nuget.org/api/v2
+
+    nuget FSharp.Core redirects: on
+
 ### import_targets settings
 
 If you don't want to import `.targets` and `.props` files you can disable it via the `import_targets` switch:
