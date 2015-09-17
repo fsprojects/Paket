@@ -1,8 +1,8 @@
 source https://nuget.org/api/v2
 
-nuget Newtonsoft.Json
+nuget Newtonsoft.Json redirects: on
 nuget Argu
-nuget FSharp.Core
+nuget FSharp.Core redirects: on
 nuget NUnit
 
 github fsharp/FAKE src/app/FakeLib/Globbing/Globbing.fs
