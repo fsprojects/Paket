@@ -278,9 +278,9 @@ module LockFileParser =
                         | Some [ protocol; _; domain; ] ->
                             let project, name, path = 
                                  match details.Split ' ' with
-                                | [| filePath; path |] -> "", filePath, path |> removeBrackets
-                                | [| project; filePath; path |] -> project, filePath, path |> removeBrackets
-                                | _ -> failwith "invalid file source details."
+                                 | [| filePath; path |] -> "", filePath, path |> removeBrackets
+                                 | [| project; filePath; path |] -> project, filePath, path |> removeBrackets
+                                 | _ -> failwith "invalid file source details."
                         
                             let removeInvalidChars (str:string) = 
                                 System.Text.RegularExpressions.Regex.Replace(str, "[:@\,]", "_")
