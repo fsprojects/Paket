@@ -13,6 +13,7 @@ open FSharp.Polyfill
 open System.Reflection
 open Paket.PackagesConfigFile
 open Paket.Requirements
+open System.Collections.Generic
 
 let updatePackagesConfigFile (model: Map<GroupName*PackageName,SemVerInfo*InstallSettings>) packagesConfigFileName =
     let packagesInConfigFile = PackagesConfigFile.Read packagesConfigFileName
@@ -136,10 +137,8 @@ let createModel(root, force, dependenciesFile:DependenciesFile, lockFile : LockF
 
     extractedPackages
 
-let loadedLibs = new System.Collections.Generic.Dictionary<_,_>()
-
 /// Applies binding redirects for all strong-named references to all app. and web. config files.
-let private applyBindingRedirects createNewBindingFiles root (extractedPackages:seq<_*InstallModel>) =
+let private applyBindingRedirects (loadedLibs:Dictionary<_,_>) createNewBindingFiles root (extractedPackages:seq<_*InstallModel>) =
     extractedPackages
     |> Seq.map (fun (package, model:InstallModel) -> model.GetLibReferencesLazy.Force())
     |> Set.unionMany
@@ -313,6 +312,7 @@ let InstallIntoProjects(options : InstallerOptions, dependenciesFile, lockFile :
         project.UpdateFileItems(gitRemoteItems @ nuGetFileItems, options.Hard)
 
         project.Save()
+        let loadedLibs = new Dictionary<_,_>()
 
         for g in lockFile.Groups do
             let group = g.Value
@@ -331,7 +331,7 @@ let InstallIntoProjects(options : InstallerOptions, dependenciesFile, lockFile :
 
                 isEnabled && (fst kv.Key) = g.Key)
             |> Seq.map (fun kv -> kv.Value)
-            |> applyBindingRedirects options.CreateNewBindingFiles (FileInfo project.FileName).Directory.FullName
+            |> applyBindingRedirects loadedLibs options.CreateNewBindingFiles (FileInfo project.FileName).Directory.FullName
 
 /// Installs all packages from the lock file.
 let Install(options : InstallerOptions, dependenciesFile, lockFile : LockFile) =
