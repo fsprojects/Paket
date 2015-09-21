@@ -1,13 +1,10 @@
-#### 2.2.3 - 21.09.2015
-* BUGFIX: Paket update added an app.config to every project - https://github.com/fsprojects/Paket/issues/1068
-
-#### 2.2.2 - 21.09.2015
-* Use commit w/gist download in RemoteDownload.downloadRemoteFiles - https://github.com/fsprojects/Paket/pull/1069
-
-#### 2.2.1 - 17.09.2015
+#### 2.3.0 - 21.09.2015
+* Binding redirects from target platform only - https://github.com/fsprojects/Paket/pull/1070
 * Allow to enable redirects per package - http://fsprojects.github.io/Paket/nuget-dependencies.html#redirects-settings
 * BUGFIX: Install command without a lockfile failed when using groups - https://github.com/fsprojects/Paket/issues/1067
 * BUGFIX: Only create packages.config entries for referenced packages - https://github.com/fsprojects/Paket/issues/1065
+* BUGFIX: Paket update added an app.config to every project - https://github.com/fsprojects/Paket/issues/1068
+* BUGFIX: Use commit w/gist download in RemoteDownload.downloadRemoteFiles - https://github.com/fsprojects/Paket/pull/1069
 
 #### 2.1.0 - 16.09.2015
 * Added support for custom internet proxy credentials with env vars - https://github.com/fsprojects/Paket/pull/1061
