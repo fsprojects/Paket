@@ -1,4 +1,4 @@
-#### 2.3.1 - 21.09.2015
+#### 2.3.2 - 21.09.2015
 * BUGFIX: NullReferenceException in applyBindingRedirects during "update nuget package" - https://github.com/fsprojects/Paket/issues/1074
 
 #### 2.3.0 - 21.09.2015
