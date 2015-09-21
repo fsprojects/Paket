@@ -68,19 +68,6 @@ let internal indentAssemblyBindings config =
     let newAssemblyBindingNode = XElement.Parse(sb.ToString(), LoadOptions.PreserveWhitespace)
     parent.Add(newAssemblyBindingNode)
 
-/// Applies a set of binding redirects to a single configuration file.
-let private applyBindingRedirects bindingRedirects (configFilePath:string) =
-    let config = 
-        try 
-            XDocument.Load(configFilePath, LoadOptions.PreserveWhitespace)
-        with
-        | :? System.Xml.XmlException as ex ->
-            Logging.verbosefn "Illegal XML in file: %s" configFilePath
-            raise ex
-    let config = Seq.fold setRedirect config bindingRedirects
-    indentAssemblyBindings config
-    config.Save configFilePath
-
 let private configFiles = [ "app"; "web" ] |> Set.ofList
 let private projectFiles = [ ".csproj"; ".vbproj"; ".fsproj" ] |> Set.ofList
 let private toLower (s:string) = s.ToLower()
@@ -117,6 +104,32 @@ let private addConfigFileToProject projectFile =
         |> itemGroup.AppendChild
         |> ignore
         project.Save())
+
+/// Applies a set of binding redirects to a single configuration file.
+let private applyBindingRedirects bindingRedirects (configFilePath:string) =
+    let projectFile =
+        getProjectFilesInDirectory (Path.GetDirectoryName(configFilePath))
+        |> Seq.map ProjectFile.Load
+        |> Seq.tryHead
+        |> Option.bind id
+    
+    let bindingRedirects =
+        match projectFile with
+        | None -> Seq.empty
+        | Some p -> 
+            p.GetTargetProfile()
+            |> bindingRedirects
+
+    let config = 
+        try 
+            XDocument.Load(configFilePath, LoadOptions.PreserveWhitespace)
+        with
+        | :? System.Xml.XmlException as ex ->
+            Logging.verbosefn "Illegal XML in file: %s" configFilePath
+            raise ex
+    let config = Seq.fold setRedirect config bindingRedirects
+    indentAssemblyBindings config
+    config.Save configFilePath
 
 /// Applies a set of binding redirects to all .config files in a specific folder.
 let applyBindingRedirectsToFolder createNewBindingFiles rootPath bindingRedirects =
