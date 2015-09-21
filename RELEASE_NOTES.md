@@ -1,3 +1,6 @@
+#### 2.2.3 - 21.09.2015
+* BUGFIX: Paket update added an app.config to every project - https://github.com/fsprojects/Paket/issues/1068
+
 #### 2.2.2 - 21.09.2015
 * Use commit w/gist download in RemoteDownload.downloadRemoteFiles - https://github.com/fsprojects/Paket/pull/1069
 

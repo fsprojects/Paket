@@ -164,7 +164,7 @@ type Dependencies(dependenciesFileName: string) =
     member this.Update(force: bool, hard: bool): unit = this.Update(force, hard, false, false)
 
     /// Updates all dependencies.
-    member this.Update(force: bool,hard: bool,withBindingRedirects:bool, createNewBindingFiles:bool): unit =
+    member this.Update(force: bool, hard: bool, withBindingRedirects:bool, createNewBindingFiles:bool): unit =
         this.Update(force, hard, withBindingRedirects, createNewBindingFiles, true)
 
     /// Updates all dependencies.
