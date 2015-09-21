@@ -433,9 +433,12 @@ type DependenciesFile(fileName,groups:Map<GroupName,DependenciesGroup>, textRepr
                 |> List.map (fun f -> f.Dependencies)
                 |> List.fold (fun set current -> Set.union set current) Set.empty
                 |> Seq.map (fun (n, v) -> 
-                       let p = groups.[k].Packages |> Seq.last
-                       { p with Name = n
-                                VersionRequirement = v })
+                        { Name = n
+                          VersionRequirement = v
+                          ResolverStrategy = ResolverStrategy.Max
+                          Parent = PackageRequirementSource.DependenciesFile fileName
+                          Settings = groups.[k].Options.Settings
+                          Sources = groups.[k].Sources })
                 |> Seq.toList
 
             { ResolvedPackages = 

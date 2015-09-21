@@ -1,3 +1,6 @@
+#### 2.3.3 - 21.09.2015
+* BUGFIX: Paket failed with: The input sequence was empty - https://github.com/fsprojects/Paket/issues/1071
+
 #### 2.3.2 - 21.09.2015
 * BUGFIX: NullReferenceException in applyBindingRedirects during "update nuget package" - https://github.com/fsprojects/Paket/issues/1074
 
