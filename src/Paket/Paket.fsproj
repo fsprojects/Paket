@@ -34,11 +34,11 @@
     <StartWorkingDirectory>c:\code\Paket09x</StartWorkingDirectory>
     <StartWorkingDirectory>D:\code\Pakettest</StartWorkingDirectory>
     <StartWorkingDirectory>D:\code\Paketkopie</StartWorkingDirectory>
-    <StartArguments>update</StartArguments>
+    <StartArguments>update nuget stidgen</StartArguments>
     <StartAction>Project</StartAction>
     <StartProgram>paket.exe</StartProgram>
     <StartWorkingDirectory>c:\code\Paketkopie</StartWorkingDirectory>
-    <StartWorkingDirectory>d:\code\paketkopie</StartWorkingDirectory>
+    <StartWorkingDirectory>d:\code\PaketRepro</StartWorkingDirectory>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>

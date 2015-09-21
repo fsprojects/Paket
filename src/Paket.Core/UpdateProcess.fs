@@ -120,8 +120,12 @@ let selectiveUpdate resolve (lockFile:LockFile) (dependenciesFile:DependenciesFi
     let groups = 
         resolution
         |> Map.map (fun groupName group -> 
-                { Name = dependenciesFile.Groups.[groupName].Name
-                  Options = dependenciesFile.Groups.[groupName].Options
+                let dependenciesGroup =
+                    match dependenciesFile.Groups |> Map.tryFind groupName with
+                    | Some g -> g
+                    | None -> failwithf "Group %O was not found in paket.dependencies." groupName
+                { Name = dependenciesGroup.Name
+                  Options = dependenciesGroup.Options
                   Resolution = group.ResolvedPackages.GetModelOrFail()
                   RemoteFiles = group.ResolvedSourceFiles })
     
