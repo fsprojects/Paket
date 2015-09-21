@@ -138,30 +138,31 @@ let createModel(root, force, dependenciesFile:DependenciesFile, lockFile : LockF
 
 /// Applies binding redirects for all strong-named references to all app. and web. config files.
 let private applyBindingRedirects createNewBindingFiles root (extractedPackages:seq<_*InstallModel>) =
-    extractedPackages
-    |> Seq.map (fun (package, model:InstallModel) -> model.GetLibReferencesLazy.Force())
-    |> Set.unionMany
-    |> Seq.choose(function | Reference.Library path -> Some path | _-> None)
-    |> Seq.groupBy (fun p -> FileInfo(p).Name)
-    |> Seq.choose(fun (_,librariesForPackage) ->
-        librariesForPackage
-        |> Seq.choose(fun library ->
-            try
-                let assembly = Assembly.ReflectionOnlyLoadFrom library
-                assembly
-                |> BindingRedirects.getPublicKeyToken
-                |> Option.map(fun token -> assembly, token)
-            with exn -> None)
-        |> Seq.sortBy(fun (assembly,_) -> assembly.GetName().Version)
-        |> Seq.toList
-        |> List.rev
-        |> function | head :: _ -> Some head | _ -> None)
-    |> Seq.map(fun (assembly, token) ->
-        { BindingRedirect.AssemblyName = assembly.GetName().Name
-          Version = assembly.GetName().Version.ToString()
-          PublicKeyToken = token
-          Culture = None })
-    |> applyBindingRedirectsToFolder createNewBindingFiles root
+    let bindingRedirects (targetProfile : TargetProfile) =
+        extractedPackages
+        |> Seq.map (fun (package, model:InstallModel) -> model.GetLibReferences(targetProfile))
+        |> Seq.concat
+        |> Seq.groupBy (fun p -> FileInfo(p).Name)
+        |> Seq.choose(fun (_,librariesForPackage) ->
+            librariesForPackage
+            |> Seq.choose(fun library ->
+                try
+                    let assembly = Assembly.ReflectionOnlyLoadFrom library
+                    assembly
+                    |> BindingRedirects.getPublicKeyToken
+                    |> Option.map(fun token -> assembly, token)
+                with exn -> None)
+            |> Seq.sortBy(fun (assembly,_) -> assembly.GetName().Version)
+            |> Seq.toList
+            |> List.rev
+            |> function | head :: _ -> Some head | _ -> None)
+        |> Seq.map(fun (assembly, token) ->
+            { BindingRedirect.AssemblyName = assembly.GetName().Name
+              Version = assembly.GetName().Version.ToString()
+              PublicKeyToken = token
+              Culture = None })
+
+    applyBindingRedirectsToFolder createNewBindingFiles root bindingRedirects
 
 let findAllReferencesFiles root =
     root
