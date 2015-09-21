@@ -89,7 +89,7 @@ let downloadRemoteFiles(remoteFile:ResolvedSourceFile,destination) = async {
         let fi = FileInfo(destination)
         let projectPath = fi.Directory.FullName
 
-        let url = sprintf "https://api.github.com/gists/%s" remoteFile.Project
+        let url = sprintf "https://api.github.com/gists/%s/%s" remoteFile.Project remoteFile.Commit
         let! document = getFromUrl(None, url, null)
         let json = JObject.Parse(document)
         let files = json.["files"] |> Seq.map (fun i -> i.First.["filename"].ToString(), i.First.["raw_url"].ToString())
