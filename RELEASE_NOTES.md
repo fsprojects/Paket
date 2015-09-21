@@ -1,3 +1,6 @@
+#### 2.2.2 - 21.09.2015
+* Use commit w/gist download in RemoteDownload.downloadRemoteFiles - https://github.com/fsprojects/Paket/pull/1069
+
 #### 2.2.1 - 17.09.2015
 * Allow to enable redirects per package - http://fsprojects.github.io/Paket/nuget-dependencies.html#redirects-settings
 * BUGFIX: Install command without a lockfile failed when using groups - https://github.com/fsprojects/Paket/issues/1067
