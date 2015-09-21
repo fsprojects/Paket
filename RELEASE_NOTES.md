@@ -1,3 +1,6 @@
+#### 2.3.1 - 21.09.2015
+* BUGFIX: NullReferenceException in applyBindingRedirects during "update nuget package" - https://github.com/fsprojects/Paket/issues/1074
+
 #### 2.3.0 - 21.09.2015
 * Binding redirects from target platform only - https://github.com/fsprojects/Paket/pull/1070
 * Allow to enable redirects per package - http://fsprojects.github.io/Paket/nuget-dependencies.html#redirects-settings

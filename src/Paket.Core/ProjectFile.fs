@@ -671,18 +671,21 @@ type ProjectFile =
             KnownTargetProfiles.FindPortableProfile profile
         | _ ->
             let framework =
-                seq {for outputType in this.Document |> getDescendants "TargetFrameworkVersion" ->
-                        outputType.InnerText }
-                |> Seq.map (fun s -> 
-                                let prefix = 
-                                    match this.GetTargetFrameworkIdentifier() with
-                                    | None -> "net"
-                                    | Some x -> x
+                try
+                    seq {for outputType in this.Document |> getDescendants "TargetFrameworkVersion" ->
+                            outputType.InnerText }
+                    |> Seq.map (fun s -> 
+                                    let prefix = 
+                                        match this.GetTargetFrameworkIdentifier() with
+                                        | None -> "net"
+                                        | Some x -> x
 
-                                prefix + s.Replace("v","")
-                                |> FrameworkDetection.Extract)
-                |> Seq.map (fun o -> o.Value)
-                |> Seq.tryHead
+                                    prefix + s.Replace("v","")
+                                    |> FrameworkDetection.Extract)
+                    |> Seq.map (fun o -> o.Value)
+                    |> Seq.tryHead
+                with
+                | _ -> None
 
             SinglePlatform(defaultArg framework (DotNetFramework(FrameworkVersion.V4)))
 
