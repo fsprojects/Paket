@@ -1,8 +1,9 @@
 # Auto detect text files
-* text=auto 
+* text=auto
 
 # Custom for Visual Studio
 *.cs diff=csharp text=auto eol=lf
+*.vb diff=csharp text=auto eol=lf
 *.fs diff=csharp text=auto eol=lf
 *.fsi diff=csharp text=auto eol=lf
 *.fsx diff=csharp text=auto eol=lf
