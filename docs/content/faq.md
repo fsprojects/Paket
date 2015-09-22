@@ -76,6 +76,10 @@ In case of the command's failure, you can fallback to manual approach:
 3. Run [paket install](paket-install.html) with the `--hard` flag. This will analyze the dependencies, generate a paket.lock file, remove all the old package references from your project files and replace them with equivalent `Reference`s in a syntax that can be managed automatically by Paket.
 4. (Optional) Raise corresponding issue [here](https://github.com/fsprojects/Paket/issues) so that we can make the command even better.
 
+## How do I convert a new NuGet Project to Paket in a Solution already using Paket
+
+In this case it's okay to use the `--force` flag for `convert-from-nuget` as described in [Partial Nuget conversion](getting-started.html#Partial-NuGet-conversion). Paket will then go through your Solution and convert the new NuGet Project to Paket.
+
 ## Can I use Paket to manage npm/bower/whatever dependencies?
 
 [No.](https://github.com/fsprojects/Paket/issues/61) We don't believe in reinventing the wheel.
