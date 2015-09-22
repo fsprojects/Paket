@@ -45,7 +45,7 @@ namespace Paket.Bootstrapper
             Uri envUri;
             if (Uri.TryCreate(envVarValue, UriKind.Absolute, out envUri))
             {
-                var proxy = new WebProxy(new Uri(string.Format("{0}://{1}:{2}", scheme, envUri.Host, envUri.Port)));
+                var proxy = new WebProxy(new Uri(string.Format("http://{0}:{1}", envUri.Host, envUri.Port)));
                 NetworkCredential credentials;
                 if (TryGetCredentials(envUri, out credentials))
                     proxy.Credentials = credentials;

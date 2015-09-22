@@ -146,7 +146,7 @@ let envProxies () =
         else
             match Uri.TryCreate(envVarValue, UriKind.Absolute) with
             | true, envUri ->
-                let proxy = new WebProxy(new Uri(sprintf "%s://%s:%d" scheme envUri.Host envUri.Port))
+                let proxy = new WebProxy(new Uri(sprintf "http://%s:%d" envUri.Host envUri.Port))
                 proxy.Credentials <- Option.toObj <| getCredentials envUri
                 proxy.BypassProxyOnLocal <- true
                 proxy.BypassList <- bypassList
