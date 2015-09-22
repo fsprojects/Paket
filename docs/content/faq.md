@@ -85,3 +85,19 @@ In this case it's okay to use the `--force` flag for the `convert-from-nuget` co
 [No.](https://github.com/fsprojects/Paket/issues/61) We don't believe in reinventing the wheel.
 
 On top of that, such a "meta package manager" abstraction is likely to be less flexible and behind on what native tools have to offer. Paket serves a specific need, that is [SemVer-compatible](http://semver.org) NuGet.
+
+## I am behind a proxy. Can I use Paket?
+
+If your proxy uses default (Active Directory) credentials, you have nothing to do, Paket will handle it automatically.
+
+If your proxy uses custom credentials, you need to set the following environment variables:
+
+* `HTTP_PROXY`: http proxy to use for all connections
+* `HTTPS_PROXY`: https proxy to use for all connections
+* `NO_PROXY`: hosts that should bypass the proxy
+
+For example:
+
+    set HTTP_PROXY=http://user:password@proxy.company.com:port/
+    set HTTPS_PROXY=https://user:password@proxy.company.com:port/
+    set NO_PROXY=.company.com,localhost
