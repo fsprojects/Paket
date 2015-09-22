@@ -209,3 +209,15 @@ let ``can detect framework assemblies for Microsoft.Framework.Logging``() =
     let name,_,restrictions = nuspec.Dependencies.[2]
     name  |> shouldEqual (PackageName "System.Collections.Concurrent")
     restrictions |> shouldEqual  [FrameworkRestriction.Exactly(DNXCore(FrameworkVersion.V5_0))]
+
+
+
+[<Test>]
+let ``can detect explicit dependencies for FluentAssertions 4``() = 
+    let deps = Nuspec.Load("Nuspec/FluentAssertions4.nuspec").Dependencies |> List.toArray
+
+    deps.[0]
+    |> shouldEqual 
+        (PackageName "System.Collections",
+          DependenciesFileParser.parseVersionRequirement(">= 4.0.10"),
+          [FrameworkRestriction.Exactly(DNXCore(FrameworkVersion.V5_0))])

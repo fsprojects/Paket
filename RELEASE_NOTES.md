@@ -1,3 +1,6 @@
+#### 2.3.5 - 22.09.2015
+* BUGFIX: Ignore DotNET 5.0 framework when TargetFramework 4 is specified - https://github.com/fsprojects/Paket/issues/1066
+
 #### 2.3.4 - 21.09.2015
 * BUGFIX: Paket failed with: The input sequence was empty - https://github.com/fsprojects/Paket/issues/1071
 
