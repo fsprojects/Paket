@@ -11,6 +11,19 @@ namespace Paket.Bootstrapper
 {
     class Program
     {
+        static Program()
+        {
+            // The default Mono implementation does not certify
+            // the github.com or nuget.com certificates as valid.
+            // Changing this callback to always return true accepts
+            // all certificates as valid.
+            ServicePointManager.ServerCertificateValidationCallback +=
+            (sender, certificate, chain, sslPolicyErrors) =>
+            {
+                return true;
+            };
+        }
+
         const string PreferNugetCommandArg = "--prefer-nuget";
         const string PrereleaseCommandArg = "prerelease";
         const string PaketVersionEnv = "PAKET.VERSION";
