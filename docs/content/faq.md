@@ -28,7 +28,7 @@ However the Visual Studio tooling does not address this – it's up to you to re
 
 Paket adds references to all of them, but with `Condition` attributes filtering them based on the currently selected `TargetFramework` and other relevant MSBuild properties.
 
-See [`paket.references`](references-files.html) for more information.
+If you only want to use a subset of the target frameworks you can use [framework restrictions](http://fsprojects.github.io/Paket/nuget-dependencies.html#Framework-restrictions).
 
 ## Why does Paket use a different package resolution strategy than NuGet?
 
@@ -76,9 +76,9 @@ In case of the command's failure, you can fallback to manual approach:
 3. Run [paket install](paket-install.html) with the `--hard` flag. This will analyze the dependencies, generate a paket.lock file, remove all the old package references from your project files and replace them with equivalent `Reference`s in a syntax that can be managed automatically by Paket.
 4. (Optional) Raise corresponding issue [here](https://github.com/fsprojects/Paket/issues) so that we can make the command even better.
 
-## How do I convert a new NuGet Project to Paket in a Solution already using Paket
+## How do I convert a new project to Paket when my solution is already using Paket
 
-In this case it's okay to use the `--force` flag for `convert-from-nuget` as described in [Partial Nuget conversion](getting-started.html#Partial-NuGet-conversion). Paket will then go through your Solution and convert the new NuGet Project to Paket.
+In this case it's okay to use the `--force` flag for the `convert-from-nuget` command as described in [partial NuGet conversion](getting-started.html#Partial-NuGet-conversion). Paket will then go through your solution and convert all new NuGet projects to Paket.
 
 ## Can I use Paket to manage npm/bower/whatever dependencies?
 
