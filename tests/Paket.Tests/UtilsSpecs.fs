@@ -153,7 +153,7 @@ let ``get https env proxy no port nor credentials``() =
     let pOpt = envProxies().TryFind "https"
     Option.isSome pOpt |> shouldEqual true
     let p = Option.get pOpt
-    p.Address |> shouldEqual (new Uri("https://proxy.local"))
+    p.Address |> shouldEqual (new Uri("http://proxy.local:443"))
     p.BypassProxyOnLocal |> shouldEqual true
     p.BypassList.Length |> shouldEqual 0
     p.Credentials |> shouldEqual null
@@ -177,7 +177,7 @@ let ``get https env proxy with port no credentials``() =
     let pOpt = envProxies().TryFind "https"
     Option.isSome pOpt |> shouldEqual true
     let p = Option.get pOpt
-    p.Address |> shouldEqual (new Uri("https://proxy.local:8080"))
+    p.Address |> shouldEqual (new Uri("http://proxy.local:8080"))
     p.BypassProxyOnLocal |> shouldEqual true
     p.BypassList.Length |> shouldEqual 0
     p.Credentials |> shouldEqual null
@@ -205,7 +205,7 @@ let ``get https env proxy with port and credentials``() =
     let pOpt = envProxies().TryFind "https"
     Option.isSome pOpt |> shouldEqual true
     let p = Option.get pOpt
-    p.Address |> shouldEqual (new Uri("https://proxy.local:8080"))
+    p.Address |> shouldEqual (new Uri("http://proxy.local:8080"))
     p.BypassProxyOnLocal |> shouldEqual true
     p.BypassList.Length |> shouldEqual 0
     let credentials = p.Credentials :?> NetworkCredential

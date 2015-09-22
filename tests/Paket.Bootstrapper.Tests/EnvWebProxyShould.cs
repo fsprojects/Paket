@@ -114,7 +114,7 @@ namespace Paket.Bootstrapper.Tests
                 Assert.IsTrue(envProxy.TryGetProxyFor(new Uri("https://github.com"), out proxy));
                 var webProxy = proxy as WebProxy;
                 Assert.IsNotNull(webProxy);
-                Assert.That(webProxy.Address, Is.EqualTo(new Uri("https://proxy.local:8080")));
+                Assert.That(webProxy.Address, Is.EqualTo(new Uri("http://proxy.local:8080")));
                 Assert.IsTrue(webProxy.BypassProxyOnLocal);
                 Assert.That(webProxy.BypassList.Length, Is.EqualTo(0));
                 var credentials = webProxy.Credentials as NetworkCredential;

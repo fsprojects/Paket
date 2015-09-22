@@ -1,3 +1,6 @@
+#### 2.3.6 - 22.09.2015
+* BUGFIX: Fix unsupported https scheme in web proxy - https://github.com/fsprojects/Paket/pull/1080
+
 #### 2.3.5 - 22.09.2015
 * BUGFIX: Ignore DotNET 5.0 framework when TargetFramework 4 is specified - https://github.com/fsprojects/Paket/issues/1066
 
