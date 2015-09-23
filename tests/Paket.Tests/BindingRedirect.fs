@@ -5,6 +5,7 @@ open Paket.BindingRedirects
 open NUnit.Framework
 open System.Xml.Linq
 open FsUnit
+open System
 
 let defaultRedirect =
     {   AssemblyName = "Assembly"
@@ -21,7 +22,9 @@ let private containsDescendents count ns elementName (doc:XDocument) =
     Assert.AreEqual(count, doc.Descendants(XName.Get(elementName, ns)) |> Seq.length)
 let private containsSingleDescendent = containsDescendents 1 ""
 let private containsSingleDescendentWithNs = containsDescendents 1 bindingNs
-let private createBindingRedirectXml culture assembly version publicKey = sprintf "<dependentAssembly xmlns=\"urn:schemas-microsoft-com:asm.v1\">\r\n  <assemblyIdentity name=\"%s\" publicKeyToken=\"%s\" culture=\"%s\" />\r\n  <bindingRedirect oldVersion=\"0.0.0.0-999.999.999.999\" newVersion=\"%s\" />\r\n</dependentAssembly>" assembly publicKey culture version
+let private createBindingRedirectXml culture assembly version publicKey =
+        sprintf "<dependentAssembly xmlns=\"urn:schemas-microsoft-com:asm.v1\">\r\n  <assemblyIdentity name=\"%s\" publicKeyToken=\"%s\" culture=\"%s\" />\r\n  <bindingRedirect oldVersion=\"0.0.0.0-999.999.999.999\" newVersion=\"%s\" />\r\n</dependentAssembly>" assembly publicKey culture version
+        |> (fun x -> x.Replace("\r\n", Environment.NewLine))
 let private xNameForNs name = XName.Get(name, bindingNs)
 
 let sampleDocWithNoIndentation() = sprintf """<?xml version="1.0" encoding="utf-8"?>
@@ -116,7 +119,10 @@ let ``redirects got properly indented for readability``() =
 
     // Assert
     let dependency = doc.Descendants(xNameForNs "dependentAssembly") |> Seq.head
-    dependency.ToString() |> shouldEqual "<dependentAssembly xmlns=\"urn:schemas-microsoft-com:asm.v1\">\r\n    <assemblyIdentity name=\"Assembly\" publicKeyToken=\"PUBLIC_KEY\" culture=\"neutral\" />\r\n    <bindingRedirect oldVersion=\"0.0.0.0-999.999.999.999\" newVersion=\"1.0.0\" />\r\n  </dependentAssembly>"
+    let expected =
+         "<dependentAssembly xmlns=\"urn:schemas-microsoft-com:asm.v1\">\r\n    <assemblyIdentity name=\"Assembly\" publicKeyToken=\"PUBLIC_KEY\" culture=\"neutral\" />\r\n    <bindingRedirect oldVersion=\"0.0.0.0-999.999.999.999\" newVersion=\"1.0.0\" />\r\n  </dependentAssembly>"
+        |> (fun x -> x.Replace("\r\n", Environment.NewLine))
+    dependency.ToString() |> shouldEqual expected
 
 let toSafePath = System.IO.Path.GetFullPath
 let buildMockGetFiles outcomes =
