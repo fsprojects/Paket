@@ -26,7 +26,7 @@ NUGET
 GITHUB
   remote: fsharp/FAKE
   specs:
-    src/app/FAKE/Cli.fs (7699e40e335f3cc54ab382a8969253fecc1e08a9)
+    src/app/FAKE/Cli.fs (7699e40e335f3cc54ab382a8969253fecc1e08a9) gitHubAuth
     src/app/Fake.Deploy.Lib/FakeDeployAgentHelper.fs (Globbing)
 """   
 
@@ -61,13 +61,15 @@ let ``should parse lock file``() =
             Name = "src/app/FAKE/Cli.fs"
             Origin = ModuleResolver.SingleSourceFileOrigin.GitHubLink
             Dependencies = Set.empty
-            Commit = "7699e40e335f3cc54ab382a8969253fecc1e08a9" }
+            Commit = "7699e40e335f3cc54ab382a8969253fecc1e08a9"
+            AuthKey = Some "githubAuth" }
           { Owner = "fsharp"
             Project = "FAKE"
             Dependencies = Set.empty
             Name = "src/app/Fake.Deploy.Lib/FakeDeployAgentHelper.fs"
             Origin = ModuleResolver.SingleSourceFileOrigin.GitHubLink
-            Commit = "Globbing" } ]
+            Commit = "Globbing"
+            AuthKey = None } ]
     
     sourceFiles.[0].Commit |> shouldEqual "7699e40e335f3cc54ab382a8969253fecc1e08a9"
     sourceFiles.[0].Name |> shouldEqual "src/app/FAKE/Cli.fs"

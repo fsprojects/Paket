@@ -164,13 +164,15 @@ let expectedWithGitHub = """GITHUB
     folder/file1.fs (commit1)
   remote: owner/project2
   specs:
-    folder/file.fs (commit2)"""
+    folder/file.fs (commit2)
+    folder/file3.fs (commit3) githubAuth"""
     
 [<Test>]
 let ``should generate lock file for source files``() = 
     let config = """github "owner:project1:master" "folder/file.fs"
 github "owner/project1:commit1" "folder/file1.fs"
-github "owner:project2:commit2" "folder/file.fs" """ 
+github "owner:project2:commit2" "folder/file.fs"
+github "owner:project2:commit3" "folder/file3.fs" githubAuth """ 
 
     let cfg = DependenciesFile.FromCode(config)
     
@@ -182,7 +184,8 @@ github "owner:project2:commit2" "folder/file.fs" """
                             Origin = ModuleResolver.SingleSourceFileOrigin.GitHubLink
                             Project = f.Project
                             Dependencies = Set.empty
-                            Name = f.Name } : ModuleResolver.ResolvedSourceFile
+                            Name = f.Name
+                            AuthKey = f.AuthKey } : ModuleResolver.ResolvedSourceFile
         | _ -> failwith "error")
     |> LockFileSerializer.serializeSourceFiles
     |> shouldEqual (normalizeLineEndings expectedWithGitHub)
@@ -249,7 +252,8 @@ let trivialResolve (f:ModuleResolver.UnresolvedSourceFile) =
       Origin = f.Origin
       Project = f.Project
       Dependencies = Set.empty
-      Name = f.Name } : ModuleResolver.ResolvedSourceFile
+      Name = f.Name
+      AuthKey = None } : ModuleResolver.ResolvedSourceFile
 
 let expectedWithHttp = """HTTP
   remote: http://www.fssnip.net
@@ -273,6 +277,7 @@ let expectedMultiple = """HTTP
     myFile.fs (/raw/1M)
     myFile2.fs (/raw/32)
     myFile3.fs (/raw/15)
+    myFile5.fs (/raw/34) httpAuth
 GIST
   remote: Thorium/1972308
   specs:
@@ -286,6 +291,7 @@ let ``should generate lock file for http and gist source files``() =
     let config = """source "http://nuget.org/api/v2
 
 http http://www.fssnip.net/raw/32 myFile2.fs
+http http://www.fssnip.net/raw/34 myFile5.fs httpAuth
 
 gist Thorium/1972308 gistfile1.fs
 gist Thorium/6088882 

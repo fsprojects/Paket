@@ -38,19 +38,20 @@ let downloadDependenciesFile(rootPath,groupName,parserF,remoteFile:ModuleResolve
 
     let dependenciesFileName = remoteFile.Name.Replace(fi.Name,Constants.DependenciesFileName)
 
-    let auth, url = 
+    let url = 
         match remoteFile.Origin with
         | ModuleResolver.GitHubLink -> 
-            None, rawFileUrl remoteFile.Owner remoteFile.Project remoteFile.Commit dependenciesFileName
+            rawFileUrl remoteFile.Owner remoteFile.Project remoteFile.Commit dependenciesFileName
         | ModuleResolver.GistLink -> 
-            None, rawGistFileUrl remoteFile.Owner remoteFile.Project dependenciesFileName
+            rawGistFileUrl remoteFile.Owner remoteFile.Project dependenciesFileName
         | ModuleResolver.HttpLink url -> 
-            let url = url.Replace(remoteFile.Name,Constants.DependenciesFileName)
-            let auth = 
-                ConfigFile.GetCredentialsForUrl remoteFile.Project url
-                |> Option.map (fun (un, pwd) -> { Username = un; Password = pwd })
-            auth, url
+            url.Replace(remoteFile.Name,Constants.DependenciesFileName)
 
+    let auth = 
+        remoteFile.AuthKey
+        |> Option.bind (fun key -> ConfigFile.GetCredentialsForUrl key url)
+        |> Option.map (fun (un, pwd) -> { Username = un; Password = pwd })
+  
     let! result = safeGetFromUrl(auth,url,null)
 
     match result with

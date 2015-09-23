@@ -17,7 +17,8 @@ type UnresolvedSourceFile =
       Project : string
       Name : string      
       Origin : SingleSourceFileOrigin
-      Commit : string option }
+      Commit : string option
+      AuthKey : string option }
 
     override this.ToString() =
         let name = if this.Name = Constants.FullProjectSourceFileName then "" else " " + this.Name
@@ -40,7 +41,8 @@ type ResolvedSourceFile =
       Name : string
       Commit : string
       Dependencies : Set<PackageName * VersionRequirement>
-      Origin : SingleSourceFileOrigin }
+      Origin : SingleSourceFileOrigin
+      AuthKey : string option }
 
     member this.FilePath(root,groupName) = this.ComputeFilePath(root,groupName,this.Name)
     
@@ -71,7 +73,8 @@ let resolve getDependencies getSha1 (file : UnresolvedSourceFile) : ResolvedSour
           Origin = file.Origin
           Project = file.Project
           Dependencies = Set.empty
-          Name = file.Name }
+          Name = file.Name
+          AuthKey = file.AuthKey  }
     
     let dependencies = 
         getDependencies resolved 

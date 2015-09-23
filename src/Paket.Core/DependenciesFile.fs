@@ -130,8 +130,9 @@ module DependenciesFileParser =
             | [| owner; project; commit |] -> owner, project, Some commit
             | _ -> failwithf "invalid %s specification:%s     %s" originTxt Environment.NewLine trimmed
         match parts with
-        | [| _; projectSpec; fileSpec |] -> origin, getParts projectSpec, fileSpec
-        | [| _; projectSpec;  |] -> origin, getParts projectSpec, Constants.FullProjectSourceFileName
+        | [| _; projectSpec; fileSpec; authKey |] -> origin, getParts projectSpec, fileSpec, (Some authKey) 
+        | [| _; projectSpec; fileSpec; |] -> origin, getParts projectSpec, fileSpec, None
+        | [| _; projectSpec;  |] -> origin, getParts projectSpec, Constants.FullProjectSourceFileName, None
         | _ -> failwithf "invalid %s specification:%s     %s" originTxt Environment.NewLine trimmed
 
     let private ``parse http source`` trimmed =
@@ -140,7 +141,7 @@ module DependenciesFileParser =
         let removeInvalidChars (str:string) = 
             System.Text.RegularExpressions.Regex.Replace(str, "[:@\,]", "_")
 
-        let getParts (projectSpec:string) fileSpec projectName =
+        let getParts (projectSpec:string) fileSpec projectName authKey =
             let projectSpec = projectSpec.TrimEnd('/')
             let ``project spec``, commit =
                 match projectSpec.IndexOf('/', 8) with // 8 = "https://".Length
@@ -157,12 +158,12 @@ module DependenciesFileParser =
                 match ``project spec``.IndexOf("://") with
                 | -1 -> ``project spec``
                 | pos ->  ``project spec``.Substring(pos+3) |> removeInvalidChars
-            HttpLink(``project spec``), (owner, projectName, Some commit), fileName
+            HttpLink(``project spec``), (owner, projectName, Some commit), fileName, authKey
 
         match parseDependencyLine trimmed with
-        | [|spec; url |] -> getParts url "" ""
-        | [|spec; url; fileSpec |] -> getParts url fileSpec ""
-        | [|spec; url; fileSpec; projectName |] -> getParts url fileSpec projectName
+        | [|spec; url |] -> getParts url "" "" None
+        | [|spec; url; fileSpec |] -> getParts url fileSpec "" None
+        | [|spec; url; fileSpec; authKey |] -> getParts url fileSpec "" (Some authKey)
         | _ ->  failwithf "invalid http-reference specification:%s     %s" Environment.NewLine trimmed
 
     type private ParserOption =
@@ -273,8 +274,8 @@ module DependenciesFileParser =
                         let package = parsePackage(current.Sources,DependenciesFile fileName,name,version,rest)
 
                         lineNo, { current with Packages = current.Packages @ [package] }::other
-                    | SourceFile(origin, (owner,project, commit), path) ->
-                        let remoteFile : UnresolvedSourceFile = { Owner = owner; Project = project; Commit = commit; Name = path; Origin = origin}
+                    | SourceFile(origin, (owner,project, commit), path, authKey) ->
+                        let remoteFile : UnresolvedSourceFile = { Owner = owner; Project = project; Commit = commit; Name = path; Origin = origin; AuthKey = authKey }
                         lineNo, { current with RemoteFiles = current.RemoteFiles @ [remoteFile] }::other
                     
                 with
