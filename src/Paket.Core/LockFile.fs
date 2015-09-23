@@ -124,11 +124,15 @@ module LockFileSerializer =
                     let path = file.Name.TrimStart '/'
                     match String.IsNullOrEmpty(file.Commit) with 
                     | false -> 
-                        match origin with
-                        | HttpLink _ when not(String.IsNullOrEmpty(file.Project)) -> 
-                            yield sprintf "    %s %s (%s)" file.Project path file.Commit 
-                        | _ -> yield sprintf "    %s (%s)" path file.Commit 
-                    | true -> yield sprintf "    %s" path
+                        match file.AuthKey with
+                        | Some authKey -> 
+                            yield sprintf "    %s (%s) %s" path file.Commit authKey
+                        | None -> 
+                            yield sprintf "    %s (%s)" path file.Commit
+                    | true -> 
+                        match file.AuthKey with
+                        | Some authKey -> yield sprintf "    %s %s" path authKey
+                        | None -> yield sprintf "    %s" path
 
                     for (PackageName name,v) in file.Dependencies do
                         let versionStr = 

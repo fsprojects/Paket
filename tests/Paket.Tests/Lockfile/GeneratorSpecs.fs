@@ -253,7 +253,7 @@ let trivialResolve (f:ModuleResolver.UnresolvedSourceFile) =
       Project = f.Project
       Dependencies = Set.empty
       Name = f.Name
-      AuthKey = None } : ModuleResolver.ResolvedSourceFile
+      AuthKey = f.AuthKey } : ModuleResolver.ResolvedSourceFile
 
 let expectedWithHttp = """HTTP
   remote: http://www.fssnip.net

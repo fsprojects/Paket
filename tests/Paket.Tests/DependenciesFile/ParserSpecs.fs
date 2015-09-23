@@ -102,7 +102,7 @@ let ``should read config with multiple sources``() =
 let ``should read source file from config``() =
     let config = """github "fsharp/FAKE:master" "src/app/FAKE/Cli.fs"
                     github "fsharp/FAKE:bla123zxc" "src/app/FAKE/FileWithCommit.fs"
-                    github "fsharp/FAKE" "src/app/FAKE/FileAuth.fs github"
+                    github "fsharp/FAKE" "src/app/FAKE/FileAuth.fs" github
                  """
     let dependencies = DependenciesFile.FromCode(config)
     dependencies.Groups.[Constants.MainDependencyGroup].RemoteFiles
