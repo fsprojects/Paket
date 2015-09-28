@@ -1,14 +1,10 @@
-#### 2.3.6 - 22.09.2015
+#### 2.4.0 - 28.09.2015
+* BUGFIX: Paket does not touch config files when the list of binding redirects to add is empty - https://github.com/fsprojects/Paket/pull/1092
 * BUGFIX: Fix unsupported https scheme in web proxy - https://github.com/fsprojects/Paket/pull/1080
-
-#### 2.3.5 - 22.09.2015
 * BUGFIX: Ignore DotNET 5.0 framework when TargetFramework 4 is specified - https://github.com/fsprojects/Paket/issues/1066
-
-#### 2.3.4 - 21.09.2015
 * BUGFIX: Paket failed with: The input sequence was empty - https://github.com/fsprojects/Paket/issues/1071
-
-#### 2.3.2 - 21.09.2015
 * BUGFIX: NullReferenceException in applyBindingRedirects during "update nuget package" - https://github.com/fsprojects/Paket/issues/1074
+* COSMETICS: Improve error message for bootstrapper if download of Paket.exe fails - https://github.com/fsprojects/Paket/pull/1091
 
 #### 2.3.0 - 21.09.2015
 * Binding redirects from target platform only - https://github.com/fsprojects/Paket/pull/1070
