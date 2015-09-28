@@ -1,3 +1,6 @@
+#### 2.4.7 - 28.09.2015
+* Skip asking for versions if only a specific version is requested
+
 #### 2.4.6 - 28.09.2015
 * Only fixup dates in zip archive under Mono - https://github.com/fsprojects/Paket/pull/1094
 * BUGFIX: Inconsistent framework exclusion in paket.dependencies - https://github.com/fsprojects/Paket/issues/1093

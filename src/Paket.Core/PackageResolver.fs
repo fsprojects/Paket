@@ -307,7 +307,11 @@ let Resolve(groupName:GroupName, getVersionsF, getPackageDetailsF, globalFramewo
                     |> Seq.map (fun r -> r.VersionRequirement.IsInRange(ver))
                     |> Seq.fold (&&) ((map currentRequirement).VersionRequirement.IsInRange(ver))
 
-                availableVersions := getAllVersions(currentRequirement.Sources,currentRequirement.Name,currentRequirement.VersionRequirement.Range)
+                availableVersions := 
+                    match currentRequirement.VersionRequirement.Range with
+                    | Specific v -> [v]
+                    | OverrideAll v -> [v]
+                    | _ -> getAllVersions(currentRequirement.Sources,currentRequirement.Name,currentRequirement.VersionRequirement.Range)
 
                 let preRelease v =
                     v.PreRelease = None
