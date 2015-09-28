@@ -21,6 +21,41 @@ type FrameworkRestriction =
 
 type FrameworkRestrictions = FrameworkRestriction list
 
+let filterRestrictions (list1:FrameworkRestrictions) (list2:FrameworkRestrictions) =
+    match list1,list2 with
+    | [],_ -> list2
+    | _,[] -> list1
+    | [x],[y] -> 
+        match x with
+        | FrameworkRestriction.Exactly r -> 
+            match y with
+            | FrameworkRestriction.Exactly r' -> if r = r' then [FrameworkRestriction.Exactly r] else []
+            | FrameworkRestriction.Portable _ -> []
+            | FrameworkRestriction.AtLeast r' -> if r' <= r then [FrameworkRestriction.Exactly r] else []
+            | FrameworkRestriction.Between(min,max) -> if min <= r && r <= max then [FrameworkRestriction.Exactly r] else []
+        | FrameworkRestriction.Portable r ->
+            match y with
+            | FrameworkRestriction.Portable r' -> if r = r' then [FrameworkRestriction.Portable r] else []
+            | _ -> []
+        | FrameworkRestriction.AtLeast r ->
+            match y with
+            | FrameworkRestriction.Exactly r' -> if r <= r' then [FrameworkRestriction.Exactly r'] else []
+            | FrameworkRestriction.Portable _ -> []
+            | FrameworkRestriction.AtLeast r' -> [FrameworkRestriction.AtLeast (max r r')]
+            | FrameworkRestriction.Between(min,max) -> if min <= r && r <= max then [FrameworkRestriction.Between(r,max)] else []
+        | FrameworkRestriction.Between(min1,max1) ->
+            match y with
+            | FrameworkRestriction.Exactly r -> if min1 <= r && r <= max1 then [FrameworkRestriction.Exactly r] else []
+            | FrameworkRestriction.Portable _ -> []
+            | FrameworkRestriction.AtLeast r -> if min1 <= r && r <= max1 then [FrameworkRestriction.Between(r,max1)] else []
+            | FrameworkRestriction.Between(min2,max2) -> 
+                let min' = max min1 min2
+                let max' = min max1 max2
+                if min' < max' then [FrameworkRestriction.Between(min',max')] else
+                if min' = max' then [FrameworkRestriction.Exactly(min')] else
+                []
+    | _,_ -> list1 @ list2
+
 let parseRestrictions(text:string) =
     let commaSplit = text.Trim().Split(',')
     [for p in commaSplit do
@@ -174,7 +209,7 @@ type InstallSettings =
         {
             self with 
                 ImportTargets = self.ImportTargets ++ other.ImportTargets
-                FrameworkRestrictions = (self.FrameworkRestrictions @ other.FrameworkRestrictions) |> Seq.ofList |> Seq.distinct |> List.ofSeq
+                FrameworkRestrictions = filterRestrictions self.FrameworkRestrictions other.FrameworkRestrictions
                 OmitContent = self.OmitContent ++ other.OmitContent
                 CopyLocal = self.CopyLocal ++ other.CopyLocal
                 ReferenceCondition = self.ReferenceCondition ++ other.ReferenceCondition

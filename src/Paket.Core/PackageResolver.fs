@@ -178,9 +178,9 @@ let calcOpenRequirements (exploredPackage:ResolvedPackage,globalFrameworkRestric
                         
     dependenciesByName
     |> Set.map (fun (n,v,restriction) -> 
-        let newRestrictions = 
-            restriction @ exploredPackage.Settings.FrameworkRestrictions @ globalFrameworkRestrictions
-            |> List.distinct
+        let newRestrictions =
+            filterRestrictions restriction exploredPackage.Settings.FrameworkRestrictions 
+            |> filterRestrictions globalFrameworkRestrictions
 
         { dependency with 
             Name = n
@@ -215,18 +215,19 @@ let Resolve(groupName:GroupName, getVersionsF, getPackageDetailsF, globalFramewo
 
     let getExploredPackage(dependency:PackageRequirement,version) =
         let (PackageName name) = dependency.Name
+        let newRestrictions = filterRestrictions dependency.Settings.FrameworkRestrictions globalFrameworkRestrictions
         match exploredPackages.TryGetValue <| (dependency.Name,version) with
         | true,package -> 
             match dependency.Parent with
             | PackageRequirementSource.DependenciesFile(_) -> 
-                let package = { package with Settings = { package.Settings with FrameworkRestrictions = dependency.Settings.FrameworkRestrictions } }
+                let package = { package with Settings = { package.Settings with FrameworkRestrictions = newRestrictions } }
                 exploredPackages.[(dependency.Name,version)] <- package
                 package
             | _ -> package
         | false,_ ->
             tracefn  " - %s %A" name version
-            let packageDetails : PackageDetails = getPackageDetailsF dependency.Sources dependency.Name version
-            let restrictedDependencies = DependencySetFilter.filterByRestrictions (dependency.Settings.FrameworkRestrictions @ globalFrameworkRestrictions) packageDetails.DirectDependencies
+            let packageDetails : PackageDetails = getPackageDetailsF dependency.Sources dependency.Name version            
+            let restrictedDependencies = DependencySetFilter.filterByRestrictions newRestrictions packageDetails.DirectDependencies
             let explored =
                 { Name = packageDetails.Name
                   Version = version

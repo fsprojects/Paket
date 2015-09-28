@@ -1,3 +1,6 @@
+#### 2.4.2 - 28.09.2015
+* BUGFIX: Inconsistent framework exclusion in paket.dependencies - https://github.com/fsprojects/Paket/issues/1093
+
 #### 2.4.1 - 28.09.2015
 * BUGFIX: Commands add/remove stripped link:false from file references - https://github.com/fsprojects/Paket/issues/1089
 
