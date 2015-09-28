@@ -372,3 +372,13 @@ let ``should parse reffiles with redirects``() =
     mainGroup.NugetPackages.Tail.Head.Settings.CreateBindingRedirects |> shouldEqual (Some true)
     mainGroup.NugetPackages.Tail.Tail.Head.Name |> shouldEqual (PackageName "FSharp.Core")
     mainGroup.NugetPackages.Tail.Tail.Head.Settings.CreateBindingRedirects |> shouldEqual (Some false)
+
+let refFileWithLinkFalse = """Castle.Windsor
+Newtonsoft.Json redirects: on
+FSharp.Core redirects: off
+File:countdown.js Scripts link: false"""
+
+[<Test>]
+let ``should parse and serialize reffiles with link false``() = 
+    let refFile = ReferencesFile.FromLines(toLines refFileWithLinkFalse).ToString()
+    normalizeLineEndings refFile |> shouldEqual (normalizeLineEndings refFileWithLinkFalse)

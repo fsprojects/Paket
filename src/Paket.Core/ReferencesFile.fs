@@ -161,9 +161,14 @@ type ReferencesFile =
         tracefn "References file saved to %s" this.FileName
 
     override this.ToString() =
+        let printSourceFile (s:RemoteFileReference) = 
+            "File:" + s.Name + 
+              (if s.Link <> ReferencesFile.DefaultLink then " " + s.Link else "") +
+              (match s.Settings.Link with | Some x -> " link: " + x.ToString().ToLower() | _ -> "")
+
         let printGroup g = 
             (g.NugetPackages |> List.map (fun p -> String.Join(" ",[p.Name.ToString(); p.Settings.ToString()] |> List.filter (fun s -> s <> "")))) @
-              (g.RemoteFiles |> List.map (fun s -> "File:" + s.Name + if s.Link <> ReferencesFile.DefaultLink then " " + s.Link else ""))
+              (g.RemoteFiles |> List.map printSourceFile)
 
         String.Join
             (Environment.NewLine,

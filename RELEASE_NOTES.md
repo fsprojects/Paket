@@ -1,3 +1,6 @@
+#### 2.4.1 - 28.09.2015
+* BUGFIX: Commands add/remove stripped link:false from file references - https://github.com/fsprojects/Paket/issues/1089
+
 #### 2.4.0 - 28.09.2015
 * BUGFIX: Paket does not touch config files when the list of binding redirects to add is empty - https://github.com/fsprojects/Paket/pull/1092
 * BUGFIX: Fix unsupported https scheme in web proxy - https://github.com/fsprojects/Paket/pull/1080
