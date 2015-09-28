@@ -22,7 +22,7 @@ let ``should optimize 2 restriction set with only exactly``() =
          PackageName("P2"), VersionRequirement.AllReleases, [FrameworkRestriction.Exactly (DotNetFramework(FrameworkVersion.V3_5))]]
 
     original
-    |> optimizeRestrictions
+    |> optimizeDependencies
     |> shouldEqual expected
 
 [<Test>]
@@ -34,14 +34,11 @@ let ``should optimize 2 restriction set with only exactly and client framework``
          PackageName("P2"), VersionRequirement.AllReleases, [FrameworkRestriction.Exactly (DotNetFramework(FrameworkVersion.V3_5))]]
 
     let expected =
-        [PackageName("P1"), VersionRequirement.AllReleases, 
-            [FrameworkRestriction.Exactly (DotNetFramework(FrameworkVersion.V3_5))
-             FrameworkRestriction.Exactly (DotNetFramework(FrameworkVersion.V4_Client))
-             FrameworkRestriction.AtLeast (DotNetFramework(FrameworkVersion.V4_5))]
+        [PackageName("P1"), VersionRequirement.AllReleases, [FrameworkRestriction.AtLeast (DotNetFramework(FrameworkVersion.V3_5))]
          PackageName("P2"), VersionRequirement.AllReleases, [FrameworkRestriction.Exactly (DotNetFramework(FrameworkVersion.V3_5))]]
 
     original
-    |> optimizeRestrictions
+    |> optimizeDependencies
     |> shouldEqual expected
 
 [<Test>]
@@ -57,7 +54,7 @@ let ``should optimize 2 restriction sets with between``() =
          PackageName("P2"), VersionRequirement.AllReleases, [FrameworkRestriction.Between (DotNetFramework(FrameworkVersion.V3_5),DotNetFramework(FrameworkVersion.V4_Client))]]
 
     original
-    |> optimizeRestrictions
+    |> optimizeDependencies
     |> shouldEqual expected
 
 [<Test>]
@@ -146,5 +143,5 @@ let ``should optimize ZendeskApi_v2 ``() =
          PackageName("Microsoft.Bcl.Async"), VersionRequirement.AllReleases, [FrameworkRestriction.Portable "portable-net45+sl40+wp71+win80"]]
 
     original
-    |> optimizeRestrictions
+    |> optimizeDependencies
     |> shouldEqual expected

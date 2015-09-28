@@ -208,7 +208,7 @@ let parseODataDetails(nugetURL,packageName:PackageName,version,raw) =
     
     { PackageName = officialName
       DownloadUrl = downloadLink
-      Dependencies = Requirements.optimizeRestrictions packages
+      Dependencies = Requirements.optimizeDependencies packages
       SourceUrl = nugetURL
       CacheVersion = NugetPackageCache.CurrentCacheVersion
       LicenseUrl = licenseUrl
@@ -382,7 +382,7 @@ let getDetailsFromLocalFile root localNugetPath (packageName:PackageName) (versi
         return 
             { PackageName = nuspec.OfficialName
               DownloadUrl = packageName.ToString()
-              Dependencies = Requirements.optimizeRestrictions nuspec.Dependencies
+              Dependencies = Requirements.optimizeDependencies nuspec.Dependencies
               SourceUrl = di.FullName
               CacheVersion = NugetPackageCache.CurrentCacheVersion
               LicenseUrl = nuspec.LicenseUrl
@@ -630,10 +630,7 @@ let GetPackageDetails root force sources packageName (version:SemVerInfo) : Pack
       DownloadLink = nugetObject.DownloadUrl
       Unlisted = nugetObject.Unlisted
       LicenseUrl = nugetObject.LicenseUrl
-      DirectDependencies = 
-        nugetObject.Dependencies
-        |> Requirements.optimizeRestrictions
-        |> Set.ofList }
+      DirectDependencies = nugetObject.Dependencies |> Set.ofList }
 
 /// Allows to retrieve all version no. for a package from the given sources.
 let GetVersions root (sources, PackageName packageName) = 

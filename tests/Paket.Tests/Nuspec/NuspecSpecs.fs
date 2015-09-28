@@ -188,7 +188,7 @@ let ``can detect explicit dependencies for WindowsAzure.Storage``() =
         (PackageName "Newtonsoft.Json",
           DependenciesFileParser.parseVersionRequirement(">= 5.0.8"),
           [FrameworkRestriction.Exactly(WindowsPhoneSilverlight("v8.0"))
-           FrameworkRestriction.Exactly(DotNetFramework(FrameworkVersion.V4_Client))])
+           FrameworkRestriction.AtLeast(DotNetFramework(FrameworkVersion.V4_Client))])
 
 [<Test>]
 let ``can detect framework assemblies for Microsoft.Framework.Logging``() = 

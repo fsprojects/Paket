@@ -84,7 +84,7 @@ type Nuspec =
                 |> getDescendants "dependency"
                 |> List.map dependency
                 |> List.append frameworks
-                |> Requirements.optimizeRestrictions 
+                |> Requirements.optimizeDependencies 
 
             let licenseUrl =                 
                 match doc |> getNode "package" |> optGetNode "metadata" |> optGetNode "licenseUrl" with
