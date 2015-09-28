@@ -1,4 +1,4 @@
-#### 2.4.2 - 28.09.2015
+#### 2.4.3 - 28.09.2015
 * BUGFIX: Inconsistent framework exclusion in paket.dependencies - https://github.com/fsprojects/Paket/issues/1093
 
 #### 2.4.1 - 28.09.2015

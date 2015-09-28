@@ -134,25 +134,29 @@ let optimizeRestrictions packages =
                 let localMaxDotNetRestriction = findMaxDotNetRestriction plain        
 
                 let restrictions =
-                    plain
-                    |> List.map (fun restriction ->
-                        match restriction with
-                        | FrameworkRestriction.Exactly r ->                     
-                            if r = localMaxDotNetRestriction then
-                                let globalMax = 
-                                    invertedRestrictions
-                                    |> List.skipWhile (fun (r,l) -> r <= localMaxDotNetRestriction && l |> List.exists (fun (n,vr) -> n = name && vr = versionRequirement))
-                                    |> List.map fst
+                    match plain with
+                    | [] -> plain
+                    | [x] -> plain
+                    | _ ->
+                        plain
+                        |> List.map (fun restriction ->
+                            match restriction with
+                            | FrameworkRestriction.Exactly r ->                     
+                                if r = localMaxDotNetRestriction then
+                                    let globalMax = 
+                                        invertedRestrictions
+                                        |> List.skipWhile (fun (r,l) -> r <= localMaxDotNetRestriction && l |> List.exists (fun (n,vr) -> n = name && vr = versionRequirement))
+                                        |> List.map fst
 
-                                if globalMax = [] || r >= globalMax.Head then
-                                    FrameworkRestriction.AtLeast r
+                                    if globalMax = [] || r >= globalMax.Head then
+                                        FrameworkRestriction.AtLeast r
+                                    else
+                                        FrameworkRestriction.Between(r,globalMax.Head)
                                 else
-                                    FrameworkRestriction.Between(r,globalMax.Head)
-                            else
-                                restriction
-                        | _ -> restriction)
-                    |> List.distinct
-                    |> List.sort
+                                    restriction
+                            | _ -> restriction)
+                        |> List.distinct
+                        |> List.sort
 
                 yield name,versionRequirement,restrictions]
 

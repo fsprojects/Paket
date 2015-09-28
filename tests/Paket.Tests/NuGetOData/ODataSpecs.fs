@@ -80,8 +80,7 @@ let ``can detect explicit dependencies for ReadOnlyCollectionExtensions``() =
           CacheVersion = NugetPackageCache.CurrentCacheVersion
           LicenseUrl = "https://github.com/mausch/ReadOnlyCollections/blob/master/license.txt"
           Dependencies = 
-            [PackageName "LinqBridge",DependenciesFileParser.parseVersionRequirement(">= 1.3.0"), 
-               [FrameworkRestriction.Between(DotNetFramework(FrameworkVersion.V2),DotNetFramework(FrameworkVersion.V3_5))]
+            [PackageName "LinqBridge",DependenciesFileParser.parseVersionRequirement(">= 1.3.0"), [FrameworkRestriction.Exactly (DotNetFramework(FrameworkVersion.V2))]
              PackageName "ReadOnlyCollectionInterfaces",DependenciesFileParser.parseVersionRequirement("1.0.0"), 
                [FrameworkRestriction.Exactly(DotNetFramework(FrameworkVersion.V2))
                 FrameworkRestriction.Exactly(DotNetFramework(FrameworkVersion.V3_5))
@@ -98,8 +97,7 @@ let ``can detect explicit dependencies for Math.Numerics``() =
           LicenseUrl = "http://numerics.mathdotnet.com/docs/License.html"
           CacheVersion = NugetPackageCache.CurrentCacheVersion
           Dependencies = 
-            [PackageName "TaskParallelLibrary",DependenciesFileParser.parseVersionRequirement(">= 1.0.2856"), 
-               [FrameworkRestriction.Between(DotNetFramework(FrameworkVersion.V3_5),DotNetFramework(FrameworkVersion.V4_Client))]]
+            [PackageName "TaskParallelLibrary",DependenciesFileParser.parseVersionRequirement(">= 1.0.2856"), [FrameworkRestriction.Exactly (DotNetFramework(FrameworkVersion.V3_5))]]
           SourceUrl = fakeUrl }
 
 [<Test>]
