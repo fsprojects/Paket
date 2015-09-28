@@ -324,7 +324,7 @@ let getDetailsFromNuGet force auth nugetURL (packageName:PackageName) (version:S
             raise exn
             return! getDetailsFromNuGetViaOData auth nugetURL packageName version
     } 
-    
+
 let fixDatesInArchive fileName =
     try
         use zipToOpen = new FileStream(fileName, FileMode.Open)
@@ -337,6 +337,9 @@ let fixDatesInArchive fileName =
             | _ -> e.LastWriteTime <- DateTimeOffset.Now
     with
     | exn -> traceWarnfn "Could not fix timestamps in %s. Error: %s" fileName exn.Message
+
+let fixArchive fileName =
+    if isMonoRuntime then fixDatesInArchive fileName
 
 let findLocalPackage directory (packageName:PackageName) (version:SemVerInfo) = 
     let v1 = FileInfo(Path.Combine(directory, sprintf "%O.%O.nupkg" packageName version))
@@ -363,7 +366,7 @@ let getDetailsFromLocalFile root localNugetPath (packageName:PackageName) (versi
         let di = getDirectoryInfo localNugetPath root
         let nupkg = findLocalPackage di.FullName packageName version
         
-        fixDatesInArchive nupkg.FullName
+        fixArchive nupkg.FullName
         use zipToCreate = new FileStream(nupkg.FullName, FileMode.Open)
         use zip = new ZipArchive(zipToCreate,ZipArchiveMode.Read)
         
@@ -402,7 +405,7 @@ let ExtractPackage(fileName:string, targetFolder, packageName:PackageName, versi
         else
             Directory.CreateDirectory(targetFolder) |> ignore
 
-            fixDatesInArchive fileName            
+            fixArchive fileName
             ZipFile.ExtractToDirectory(fileName, targetFolder)
 
             // cleanup folder structure
