@@ -1,3 +1,6 @@
+#### 2.4.8 - 28.09.2015
+* Put prerelease requirement into nuspec during paket pack - https://github.com/fsprojects/Paket/issues/1088
+
 #### 2.4.7 - 28.09.2015
 * Skip asking for versions if only a specific version is requested
 
