@@ -1,3 +1,6 @@
+#### 2.4.5 - 28.09.2015
+* Only fixup dates in zip archive under Mono - https://github.com/fsprojects/Paket/pull/1094
+
 #### 2.4.4 - 28.09.2015
 * BUGFIX: Inconsistent framework exclusion in paket.dependencies - https://github.com/fsprojects/Paket/issues/1093
 
