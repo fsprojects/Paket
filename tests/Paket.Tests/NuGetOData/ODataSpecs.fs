@@ -83,8 +83,7 @@ let ``can detect explicit dependencies for ReadOnlyCollectionExtensions``() =
             [PackageName "LinqBridge",DependenciesFileParser.parseVersionRequirement(">= 1.3.0"), [FrameworkRestriction.Exactly (DotNetFramework(FrameworkVersion.V2))]
              PackageName "ReadOnlyCollectionInterfaces",DependenciesFileParser.parseVersionRequirement("1.0.0"), 
                [FrameworkRestriction.Exactly(DotNetFramework(FrameworkVersion.V2))
-                FrameworkRestriction.Exactly(DotNetFramework(FrameworkVersion.V3_5))
-                FrameworkRestriction.AtLeast(DotNetFramework(FrameworkVersion.V4_Client))]]
+                FrameworkRestriction.AtLeast(DotNetFramework(FrameworkVersion.V3_5))]]
           SourceUrl = fakeUrl }
 
 [<Test>]
@@ -138,7 +137,7 @@ let ``can detect explicit dependencies for Microsoft.AspNet.WebApi.Client``() =
     let dependencies = odata.Dependencies |> Array.ofList
     dependencies.[0] |> shouldEqual 
         (PackageName "Newtonsoft.Json", DependenciesFileParser.parseVersionRequirement(">= 6.0.4"), 
-                [FrameworkRestriction.Portable("portable-wp80+win+net45+wp81+wpa81"); FrameworkRestriction.AtLeast(DotNetFramework(FrameworkVersion.V4_5))])
+                [FrameworkRestriction.Portable("portable-wp80+win+net45+wp81+wpa81"); FrameworkRestriction.Exactly(DotNetFramework(FrameworkVersion.V4_5))])
     dependencies.[1] |> shouldEqual
         (PackageName "Microsoft.Net.Http", DependenciesFileParser.parseVersionRequirement(">= 2.2.22"), 
                 [FrameworkRestriction.Portable("portable-wp80+win+net45+wp81+wpa81")])
@@ -163,4 +162,4 @@ let ``can detect explicit dependencies for WindowsAzure.Storage``() =
 
     dependencies.[44] |> shouldEqual 
         (PackageName "Newtonsoft.Json", DependenciesFileParser.parseVersionRequirement(">= 6.0.8"), 
-                [FrameworkRestriction.Exactly(WindowsPhoneSilverlight("v8.0")); FrameworkRestriction.AtLeast(DotNetFramework(FrameworkVersion.V4_Client))])
+                [FrameworkRestriction.Exactly(WindowsPhoneSilverlight("v8.0")); FrameworkRestriction.Exactly(DotNetFramework(FrameworkVersion.V4_Client))])

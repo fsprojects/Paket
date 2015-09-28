@@ -115,6 +115,11 @@ let optimizeRestrictions packages =
             | _ -> () ]
         |> List.sortBy fst
 
+    let globalMax = 
+        invertedRestrictions
+        |> List.tryLast
+        |> Option.map fst
+
     let emptyRestrictions =
         [for (n,vr,r:FrameworkRestrictions) in packages do
             if r = [] then
@@ -130,35 +135,66 @@ let optimizeRestrictions packages =
                     group 
                     |> List.map (fun (_,_,res) -> res) 
                     |> List.concat
+                    |> List.distinct
+                    |> List.sort
 
-                let localMaxDotNetRestriction = findMaxDotNetRestriction plain        
+                let localMaxDotNetRestriction = findMaxDotNetRestriction plain
+                let globalMax = defaultArg globalMax localMaxDotNetRestriction          
 
+                let dotnetRestrictions,others = List.partition (function | FrameworkRestriction.Exactly(DotNetFramework(_)) -> true | _ -> false) plain
                 let restrictions =
-                    match plain with
-                    | [] -> plain
-                    | [x] -> plain
-                    | _ ->
-                        plain
-                        |> List.map (fun restriction ->
-                            match restriction with
-                            | FrameworkRestriction.Exactly r ->                     
-                                if r = localMaxDotNetRestriction then
-                                    let globalMax = 
-                                        invertedRestrictions
-                                        |> List.skipWhile (fun (r,l) -> r <= localMaxDotNetRestriction && l |> List.exists (fun (n,vr) -> n = name && vr = versionRequirement))
-                                        |> List.map fst
+                    let rec calcRestrictions restrictions = 
+                        match restrictions with
+                        | [] -> restrictions
+                        | [x] -> restrictions
+                        | _ ->
+                            
+                            let newRestrictions' = 
+                                restrictions
+                                |> List.map (fun restriction ->
+                                    match restriction with
+                                    | FrameworkRestriction.Exactly r ->                     
+                                        if r = localMaxDotNetRestriction && r = globalMax then
+                                            FrameworkRestriction.AtLeast r
+                                        else
+                                            restriction
+                                    | _ -> restriction)
+                                |> List.distinct
+                                |> List.sort                            
 
-                                    if globalMax = [] || r >= globalMax.Head then
-                                        FrameworkRestriction.AtLeast r
-                                    else
-                                        FrameworkRestriction.Between(r,globalMax.Head)
-                                else
-                                    restriction
-                            | _ -> restriction)
-                        |> List.distinct
-                        |> List.sort
+                            let newRestrictions =
+                                match newRestrictions' |> Seq.tryFind (function | FrameworkRestriction.AtLeast r -> true | _ -> false) with
+                                | None -> newRestrictions'
+                                | Some r ->
+                                    let currentVersion =
+                                        match r with
+                                        | FrameworkRestriction.AtLeast(DotNetFramework(x)) -> x
+                                        | x -> failwithf "Unknown .NET moniker %O" x     
+                                                                                                           
+                                    let isLowerVersion x =
+                                        match x with
+                                        | FrameworkRestriction.Exactly(DotNetFramework(x)) ->
+                                            if x = FrameworkVersion.V3_5 && currentVersion = FrameworkVersion.V4 then true else
+                                            let hasFrameworksBetween = KnownTargetProfiles.DotNetFrameworkVersions |> Seq.exists (fun p -> p > x && p < currentVersion)
+                                            not hasFrameworksBetween
+                                        | _ -> false
 
-                yield name,versionRequirement,restrictions]
+                                    match newRestrictions' |> Seq.tryFind isLowerVersion with
+                                    | None -> newRestrictions'
+                                    | Some n -> 
+                                        let newLowest =
+                                            match n with
+                                            | FrameworkRestriction.Exactly(DotNetFramework(x)) -> x
+                                            | x -> failwithf "Unknown .NET moniker %O" x     
+
+                                        (newRestrictions'
+                                         |> List.filter (fun x -> x <> r && x <> n)) @ [FrameworkRestriction.AtLeast(DotNetFramework(newLowest))]
+                                        
+                            if restrictions = newRestrictions then newRestrictions else calcRestrictions newRestrictions
+
+                    calcRestrictions dotnetRestrictions
+
+                yield name,versionRequirement,others @ restrictions]
 
 type InstallSettings = 
     { ImportTargets : bool option
