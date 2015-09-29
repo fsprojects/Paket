@@ -5,10 +5,10 @@ open System.Reflection
 [<assembly: AssemblyProductAttribute("Paket")>]
 [<assembly: AssemblyCompanyAttribute("Paket team")>]
 [<assembly: AssemblyDescriptionAttribute("A package dependency manager for .NET with support for NuGet packages and GitHub repositories.")>]
-[<assembly: AssemblyVersionAttribute("2.4.9")>]
-[<assembly: AssemblyFileVersionAttribute("2.4.9")>]
-[<assembly: AssemblyInformationalVersionAttribute("2.4.9")>]
+[<assembly: AssemblyVersionAttribute("2.4.10")>]
+[<assembly: AssemblyFileVersionAttribute("2.4.10")>]
+[<assembly: AssemblyInformationalVersionAttribute("2.4.10")>]
 do ()
 
 module internal AssemblyVersionInformation =
-    let [<Literal>] Version = "2.4.9"
+    let [<Literal>] Version = "2.4.10"
