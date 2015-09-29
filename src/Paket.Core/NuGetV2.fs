@@ -660,7 +660,7 @@ let GetPackageDetails root force sources packageName (version:SemVerInfo) : Pack
 
 /// Allows to retrieve all version no. for a package from the given sources.
 let GetVersions root (sources, PackageName packageName) = 
-    let versions =
+    let retriveVersions() =
         sources
         |> Seq.map (fun source -> 
                match source with
@@ -671,9 +671,19 @@ let GetVersions root (sources, PackageName packageName) =
                | LocalNuget path -> getAllVersionsFromLocalPath (path, packageName, root))
         |> Async.Parallel
         |> Async.RunSynchronously
-        |> Seq.choose id
+        |> Array.choose id
 
-    if Seq.isEmpty versions then
+    let versions = 
+        let versions = retriveVersions()
+
+        if Array.isEmpty versions then
+            // try to look around with empty protocol cache - maybe we skipped it
+            protocolCache.Clear()
+            retriveVersions()
+        else
+            versions
+
+    if Array.isEmpty versions then
         failwithf "Could not find versions for package %s in any of the sources in %A." packageName sources
 
     versions
