@@ -176,14 +176,20 @@ let private applyBindingRedirects (loadedLibs:Dictionary<_,_>) createNewBindingF
 let findAllReferencesFiles root =
     root
     |> ProjectFile.FindAllProjects
-    |> Array.choose (fun p -> ProjectFile.FindReferencesFile(FileInfo(p.FileName))
-                                |> Option.map (fun r -> p, r))
-    |> Array.map (fun (project,file) ->
-        try
-            ok <| (project, ReferencesFile.FromFile(file))
-        with _ ->
-            fail <| ReferencesFileParseError (FileInfo(file)))
-    |> collect
+    |> Array.map (fun p ->         
+        match ProjectFile.FindReferencesFile(FileInfo p.FileName) with
+        | Some fileName -> 
+                try
+                    ok <| (p, ReferencesFile.FromFile fileName)
+                with _ ->
+                    fail <| ReferencesFileParseError (FileInfo fileName)
+        | None ->
+            let fileName = 
+                let fi = FileInfo(p.FileName)
+                Path.Combine(fi.Directory.FullName,Constants.ReferencesFile)
+
+            ok <| (p, ReferencesFile.New fileName))
+     |> collect
 
 /// Installs all packages from the lock file.
 let InstallIntoProjects(options : InstallerOptions, dependenciesFile, lockFile : LockFile, projects : (ProjectFile * ReferencesFile) list) =    

@@ -1,5 +1,8 @@
+#### 2.4.11 - 29.09.2015
+* Remove all Paket entries from projects which have no paket.references - https://github.com/fsprojects/Paket/issues/1097
+
 #### 2.4.10 - 29.09.2015
-* Állow to format VersionRequirements in NuGet syntax
+* Allow to format VersionRequirements in NuGet syntax
 
 #### 2.4.9 - 29.09.2015
 * BUGFIX: Fix KeyNotFoundException when project is net4.0-client - https://github.com/fsprojects/Paket/issues/1095
