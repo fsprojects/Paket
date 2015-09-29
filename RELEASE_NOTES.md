@@ -1,5 +1,8 @@
+#### 2.4.9 - 29.09.2015
+* BUGFIX: Fix KeyNotFoundException when project is net4.0-client - https://github.com/fsprojects/Paket/issues/1095
+
 #### 2.4.8 - 28.09.2015
-* Put prerelease requirement into nuspec during paket pack - https://github.com/fsprojects/Paket/issues/1088
+* Put prerelease requirement into NuSpec during paket pack - https://github.com/fsprojects/Paket/issues/1088
 
 #### 2.4.7 - 28.09.2015
 * Skip asking for versions if only a specific version is requested

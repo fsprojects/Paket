@@ -667,6 +667,8 @@ type ProjectFile =
 
     member this.GetTargetProfile() =
         match this.GetTargetFrameworkProfile() with
+        | Some profile when profile = "Client" ->
+            SinglePlatform(DotNetFramework(FrameworkVersion.V4_Client))
         | Some profile when String.IsNullOrWhiteSpace profile |> not ->
             KnownTargetProfiles.FindPortableProfile profile
         | _ ->
