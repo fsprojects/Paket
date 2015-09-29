@@ -1,3 +1,6 @@
+#### 2.4.10 - 29.09.2015
+* Állow to format VersionRequirements in NuGet syntax
+
 #### 2.4.9 - 29.09.2015
 * BUGFIX: Fix KeyNotFoundException when project is net4.0-client - https://github.com/fsprojects/Paket/issues/1095
 

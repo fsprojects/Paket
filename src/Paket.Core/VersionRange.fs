@@ -67,31 +67,6 @@ type VersionRange =
 
             from + " " + _to
 
-    /// formats a VersionRange in NuGet syntax
-    member this.FormatInNuGetSyntax() =
-        match this with
-        | Minimum(version) -> 
-            match version.Normalize() with
-            | "0.0.0" -> ""
-            | x  -> x
-        | GreaterThan(version) -> sprintf "(%s,)" (version.Normalize())
-        | Maximum(version) -> sprintf "(,%s]" (version.Normalize())
-        | LessThan(version) -> sprintf "(,%s)" (version.Normalize())
-        | Specific(version) -> sprintf "[%s]" (version.Normalize())
-        | OverrideAll(version) -> sprintf "[%s]" (version.Normalize()) 
-        | Range(fromB, from,_to,_toB) -> 
-            let getMinDelimiter (v:VersionRangeBound) =
-                match v with
-                | VersionRangeBound.Including -> "["
-                | VersionRangeBound.Excluding -> "("
-
-            let getMaxDelimiter (v:VersionRangeBound) =
-                match v with
-                | VersionRangeBound.Including -> "]"
-                | VersionRangeBound.Excluding -> ")"
-        
-            sprintf "%s%s,%s%s" (getMinDelimiter fromB) (from.Normalize()) (_to.Normalize()) (getMaxDelimiter _toB) 
-
 type VersionRequirement =
 | VersionRequirement of VersionRange * PreReleaseStatus
     /// Checks wether the given version is in the version range
@@ -202,6 +177,47 @@ type VersionRequirement =
         let range = parseRange text
 
         VersionRequirement(range,!prereleases)
+
+    /// Formats a VersionRequirement in NuGet syntax
+    member this.FormatInNuGetSyntax() =
+        match this with
+        | VersionRequirement(range,prerelease) ->        
+            let pre = 
+                match prerelease with
+                | No -> ""
+                | Concrete [x] -> "-" + x
+                | _ -> "-prerelease"
+
+            let normalize (v:SemVerInfo) = v.Normalize() + pre
+
+            let str =
+                match range with
+                | Minimum(version) -> 
+                    match normalize version with
+                    | "0.0.0" -> ""
+                    | x  -> x
+                | GreaterThan(version) -> sprintf "(%s,)" (normalize version)
+                | Maximum(version) -> sprintf "(,%s]" (normalize version)
+                | LessThan(version) -> sprintf "(,%s)" (normalize version)
+                | Specific(version) -> sprintf "[%s]" (normalize version)
+                | OverrideAll(version) -> sprintf "[%s]" (normalize version) 
+                | Range(fromB, from,_to,_toB) -> 
+                    let getMinDelimiter (v:VersionRangeBound) =
+                        match v with
+                        | VersionRangeBound.Including -> "["
+                        | VersionRangeBound.Excluding -> "("
+
+                    let getMaxDelimiter (v:VersionRangeBound) =
+                        match v with
+                        | VersionRangeBound.Including -> "]"
+                        | VersionRangeBound.Excluding -> ")"
+        
+                    sprintf "%s%s,%s%s" (getMinDelimiter fromB) (normalize from) (normalize _to) (getMaxDelimiter _toB) 
+
+
+            match str with
+            | "0" -> ""
+            | versionStr -> versionStr
 
 /// Represents a resolver strategy.
 [<RequireQualifiedAccess>]
