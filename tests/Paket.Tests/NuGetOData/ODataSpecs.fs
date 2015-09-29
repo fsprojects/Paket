@@ -115,7 +115,7 @@ let ``can calculate v3 path``() =
 let ``can read all versions from single page with multiple entries``() =
     let getUrlContentsStub _ _ = async { return File.ReadAllText "NuGetOData/NUnit.xml" }
     
-    let versions = getAllVersionsFromNugetOData(getUrlContentsStub, fakeUrl, "NUnit")
+    let versions = getAllVersionsFromNugetOData(getUrlContentsStub, fakeUrl, None, "NUnit")
                    |> Async.RunSynchronously
 
     versions |> shouldContain "3.0.0-alpha-2"

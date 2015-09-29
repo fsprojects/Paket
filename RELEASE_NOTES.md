@@ -1,24 +1,13 @@
-#### 2.4.11 - 29.09.2015
+#### 2.5.0-alpha001 - 29.09.2015
 * Remove all Paket entries from projects which have no paket.references - https://github.com/fsprojects/Paket/issues/1097
-
-#### 2.4.10 - 29.09.2015
 * Allow to format VersionRequirements in NuGet syntax
-
-#### 2.4.9 - 29.09.2015
 * BUGFIX: Fix KeyNotFoundException when project is net4.0-client - https://github.com/fsprojects/Paket/issues/1095
-
-#### 2.4.8 - 28.09.2015
-* Put prerelease requirement into NuSpec during paket pack - https://github.com/fsprojects/Paket/issues/1088
-
-#### 2.4.7 - 28.09.2015
-* Skip asking for versions if only a specific version is requested
-
-#### 2.4.6 - 28.09.2015
-* Only fixup dates in zip archive under Mono - https://github.com/fsprojects/Paket/pull/1094
+* BUGFIX: Put prerelease requirement into NuSpec during paket pack - https://github.com/fsprojects/Paket/issues/1088
 * BUGFIX: Inconsistent framework exclusion in paket.dependencies - https://github.com/fsprojects/Paket/issues/1093
-
-#### 2.4.1 - 28.09.2015
 * BUGFIX: Commands add/remove stripped link:false from file references - https://github.com/fsprojects/Paket/issues/1089
+* COSMETICS: Only fixup dates in zip archive under Mono - https://github.com/fsprojects/Paket/pull/1094
+* PERFORMANCE: Skip asking for versions if only a specific version is requested
+* PERFORMANCE: Check if a feed supports a protocol and never retry if not - https://github.com/fsprojects/Paket/issues/1085
 
 #### 2.4.0 - 28.09.2015
 * BUGFIX: Paket does not touch config files when the list of binding redirects to add is empty - https://github.com/fsprojects/Paket/pull/1092

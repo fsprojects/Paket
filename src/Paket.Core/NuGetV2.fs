@@ -66,62 +66,88 @@ let getAllVersionsFromNugetODataWithFilter (getUrlContents, nugetURL, package) =
     verbosefn "getAllVersionsFromNugetODataWithFilter from url '%s'" url
     followODataLink getUrlContents url
 
+let protocolCache = System.Collections.Generic.HashSet<_>()
+
 /// Gets versions of the given package via OData via /FindPackagesById()?id='packageId'.
-let getAllVersionsFromNugetOData (getUrlContents, nugetURL, package) = 
+let getAllVersionsFromNugetOData (getUrlContents, nugetURL, auth, package) = 
     async {
         // we cannot cache this
-        try 
-            let url = sprintf "%s/FindPackagesById()?id='%s'" nugetURL package
-            verbosefn "getAllVersionsFromNugetOData from url '%s'" url
-            return! followODataLink getUrlContents url
-        with _ -> return! getAllVersionsFromNugetODataWithFilter (getUrlContents, nugetURL, package)
+        let probingCode = "NuGetV2-FindPackagesById"
+        if protocolCache.Contains((nugetURL,auth,probingCode)) then             
+            return! getAllVersionsFromNugetODataWithFilter (getUrlContents, nugetURL, package)
+        else
+            try 
+                let url = sprintf "%s/FindPackagesById()?id='%s'" nugetURL package
+                verbosefn "getAllVersionsFromNugetOData from url '%s'" url
+                return! followODataLink getUrlContents url
+            with _ -> 
+                protocolCache.Add((nugetURL,auth,probingCode)) |> ignore
+                return! getAllVersionsFromNugetODataWithFilter (getUrlContents, nugetURL, package)
     }
 
 /// Gets all versions no. of the given package.
 let getAllVersionsFromNuGet2(auth,nugetURL,package) = 
     // we cannot cache this
     async { 
-        let url = sprintf "%s/package-versions/%s?includePrerelease=true" nugetURL package
-        verbosefn "getAllVersionsFromNuGet2 from url '%s'" url
-        let! raw = safeGetFromUrl(auth, url, acceptJson)
+        let probingCode = "NuGetV2-package-versions"
         let getUrlContents url acceptJson = getFromUrl(auth, url, acceptJson)
-        match raw with
-        | None -> let! result = getAllVersionsFromNugetOData(getUrlContents, nugetURL, package)
-                  return result
-        | Some data -> 
-            try 
+        if protocolCache.Contains((nugetURL,auth,probingCode)) then             
+            let! result = getAllVersionsFromNugetOData(getUrlContents, nugetURL, auth, package)
+            return result
+        else
+            let url = sprintf "%s/package-versions/%s?includePrerelease=true" nugetURL package
+            verbosefn "getAllVersionsFromNuGet2 from url '%s'" url
+            let! raw = safeGetFromUrl(auth, url, acceptJson)
+            match raw with
+            | None -> 
+                protocolCache.Add((nugetURL,auth,probingCode)) |> ignore
+                let! result = getAllVersionsFromNugetOData(getUrlContents, nugetURL, auth, package)
+                return result
+            | Some data -> 
                 try 
-                    let result = JsonConvert.DeserializeObject<string []>(data) |> Array.toSeq
-                    return result
-                with _ -> verbosefn "exn when deserialising data '%s'" data
-                          let! result = getAllVersionsFromNugetOData(getUrlContents, nugetURL, package)
-                          return result
-            with exn -> 
-                return! failwithf "Could not get data from %s for package %s.%s Message: %s" nugetURL package 
-                    Environment.NewLine exn.Message
+                    try 
+                        let result = JsonConvert.DeserializeObject<string []>(data) |> Array.toSeq
+                        return result
+                    with _ -> 
+                        verbosefn "exn when deserialising data '%s'" data
+                        protocolCache.Add((nugetURL,auth,probingCode)) |> ignore
+                        let! result = getAllVersionsFromNugetOData(getUrlContents, nugetURL, auth, package)
+                        return result
+                with exn -> 
+                    return! failwithf "Could not get data from %s for package %s.%s Message: %s" nugetURL package 
+                        Environment.NewLine exn.Message
     }
 
 
 let getAllVersions(auth, nugetURL, package) = 
-    let tryNuGetV3() = async { 
+    let tryNuGetV3() = async {
         try
             let! data = NuGetV3.findVersionsForPackage(auth, nugetURL, package, true, 100000)
 
             return data
         with
-        | exn -> return None }
+        | exn ->
+            return None }
 
     let tryNuGet() = async { 
-        let! data = tryNuGetV3()
+        let probingCode = "NuGetV3"
+        if protocolCache.Contains((nugetURL,auth,probingCode)) then 
+            let! result = getAllVersionsFromNuGet2(auth,nugetURL,package)
+            return result
+        else
+            let! data = tryNuGetV3()
 
-        match data with
-        | None -> 
-            let! result = getAllVersionsFromNuGet2(auth,nugetURL,package)
-            return result
-        | Some data when Array.isEmpty data -> 
-            let! result = getAllVersionsFromNuGet2(auth,nugetURL,package)
-            return result
-        | Some data -> return (Array.toSeq data) }
+            match data with
+            | None -> 
+                protocolCache.Add((nugetURL,auth,probingCode)) |> ignore
+                let! result = getAllVersionsFromNuGet2(auth,nugetURL,package)
+                return result
+            | Some data when Array.isEmpty data -> 
+                protocolCache.Add((nugetURL,auth,probingCode)) |> ignore
+                let! result = getAllVersionsFromNuGet2(auth,nugetURL,package)
+                return result
+            | Some data -> 
+                return (Array.toSeq data) }
 
     async {
         try
