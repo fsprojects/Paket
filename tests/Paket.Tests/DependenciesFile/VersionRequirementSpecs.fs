@@ -40,6 +40,19 @@ let ``can parse twiddle-wakka with prerelease``() =
     |> shouldEqual "[6.0.0-prerelease,6.1.0-prerelease)"
 
 [<Test>]
+let ``can parse doubled prerelease``() = 
+    let req = DependenciesFileParser.parseVersionRequirement "0.33.0-beta prerelease" 
+
+    req
+    |> shouldEqual 
+        (VersionRequirement.VersionRequirement(
+            VersionRange.Specific(SemVer.Parse("0.33.0-beta")),
+            PreReleaseStatus.All))
+
+    req.FormatInNuGetSyntax()
+    |> shouldEqual "[0.33.0-beta]"
+
+[<Test>]
 let ``can order simple at least requirements in package requirement``() = 
     require "A" ResolverStrategy.Max ">= 2.2" |> shouldBeGreaterThan (require "A" ResolverStrategy.Max ">= 2.3")
     require "A" ResolverStrategy.Max ">= 1.2" |> shouldBeGreaterThan (require "A" ResolverStrategy.Max ">= 2.3")

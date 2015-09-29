@@ -188,7 +188,9 @@ type VersionRequirement =
                 | Concrete [x] -> "-" + x
                 | _ -> "-prerelease"
 
-            let normalize (v:SemVerInfo) = v.Normalize() + pre
+            let normalize (v:SemVerInfo) = 
+                let s = v.Normalize()
+                if s.Contains("-") then s else s + pre
 
             let str =
                 match range with
