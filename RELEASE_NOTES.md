@@ -1,3 +1,6 @@
+#### 2.5.1 - 29.09.2015
+* BUGFIX: Do not create prerelease identifiers for transitive dependencies - https://github.com/fsprojects/Paket/issues/1099
+ 
 #### 2.5.0 - 29.09.2015
 * Remove all Paket entries from projects which have no paket.references - https://github.com/fsprojects/Paket/issues/1097
 * Allow to format VersionRequirements in NuGet syntax
