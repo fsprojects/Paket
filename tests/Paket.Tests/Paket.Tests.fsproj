@@ -181,9 +181,6 @@
     <Content Include="NuGetOData\EasyNetQ.xml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="NuGetOData\NUnit.xml">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
     <Compile Include="NuGetOData\ODataSpecs.fs" />
     <Content Include="NuGetConfig\ClearTextPasswordConfig.xml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>

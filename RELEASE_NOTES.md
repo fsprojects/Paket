@@ -1,3 +1,6 @@
+#### 2.5.3 - 30.09.2015
+* PERFORMANCE: Run all calls against different NuGet protocols in parallel and take the fastest - https://github.com/fsprojects/Paket/issues/1085
+
 #### 2.5.2 - 30.09.2015
 * PERFORMANCE: Exclude duplicate NuGet feeds - https://github.com/fsprojects/Paket/issues/1085
 
