@@ -766,3 +766,42 @@ let ``should read config with reference condition``() =
     cfg.Groups.[GroupName "Build"].Packages.Head.Settings.CreateBindingRedirects |> shouldEqual (Some true)
     cfg.Groups.[GroupName "Build"].Packages.Tail.Head.Settings.ReferenceCondition |> shouldEqual (Some "LEGACY")
     cfg.Groups.[GroupName "Build"].Packages.Tail.Head.Settings.CreateBindingRedirects |> shouldEqual None
+
+
+let configWithNugetV3Source = """
+source https://api.nuget.org/v3/index.json
+
+nuget Paket.Core
+"""
+
+[<Test>]
+let ``should read config with NuGet v3 feed``() = 
+    let cfg = DependenciesFile.FromCode(configWithNugetV3Source)
+
+    cfg.Groups.[Constants.MainDependencyGroup].Sources.Head |> shouldEqual PackageSources.DefaultNugetSource
+
+let configWithNugetV3HTTPSource = """
+source http://api.nuget.org/v3/index.json
+
+nuget Paket.Core
+"""
+
+[<Test>]
+let ``should read config with NuGet http v3 feed``() = 
+    let cfg = DependenciesFile.FromCode(configWithNugetV3HTTPSource)
+
+    cfg.Groups.[Constants.MainDependencyGroup].Sources.Head.Url |> shouldEqual (PackageSources.DefaultNugetSource.Url.Replace("https://","http://"))
+
+let configWithDuplicateSource = """
+source https://nuget.org/api/v2
+source https://nuget.org/api/v2
+
+nuget Paket.Core
+"""
+
+[<Test>]
+let ``should read config with duplicate NuGet source``() = 
+    let cfg = DependenciesFile.FromCode(configWithDuplicateSource)
+
+    cfg.Groups.[Constants.MainDependencyGroup].Sources.Length |> shouldEqual 1
+    cfg.Groups.[Constants.MainDependencyGroup].Sources.Head |> shouldEqual PackageSources.DefaultNugetSource

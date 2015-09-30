@@ -1,3 +1,6 @@
+#### 2.5.2 - 30.09.2015
+* PERFORMANCE: Exclude duplicate NuGet feeds - https://github.com/fsprojects/Paket/issues/1085
+
 #### 2.5.1 - 29.09.2015
 * BUGFIX: Do not create prerelease identifiers for transitive dependencies - https://github.com/fsprojects/Paket/issues/1099
  

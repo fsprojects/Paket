@@ -95,7 +95,13 @@ type PackageSource =
                 sourceRegex.Match(line).Groups.[1].Value.TrimEnd([| '/' |])
             else
                 parts.[1].Replace("\"","").TrimEnd([| '/' |])
-        PackageSource.Parse(source, parseAuth(line, source))
+
+        let feed = 
+            if source = "https://api.nuget.org/v3/index.json" then Constants.DefaultNugetStream else 
+            if source = "http://api.nuget.org/v3/index.json" then Constants.DefaultNugetStream.Replace("https://","http://") else 
+            source
+
+        PackageSource.Parse(feed, parseAuth(line, feed))
 
     static member Parse(source,auth) = 
         match tryParseWindowsStyleNetworkPath source with
