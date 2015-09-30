@@ -9,17 +9,21 @@ open System.IO.Compression
 open Paket.Domain
 
 // Gets the sha1 of a branch
-let getSHA1OfBranch origin owner project branch = 
+let getSHA1OfBranch origin owner project branch auth = 
     async { 
+        let auth url = 
+            auth
+            |> Option.bind (fun key -> ConfigFile.GetCredentialsForUrl key url)
+            |> Option.map (fun (un, pwd) -> { Username = un; Password = pwd })
         match origin with
         | ModuleResolver.SingleSourceFileOrigin.GitHubLink -> 
             let url = sprintf "https://api.github.com/repos/%s/%s/commits/%s" owner project branch
-            let! document = getFromUrl(None, url, null)
+            let! document = getFromUrl(auth url, url, null)
             let json = JObject.Parse(document)
             return json.["sha"].ToString()
         | ModuleResolver.SingleSourceFileOrigin.GistLink ->  
             let url = sprintf "https://api.github.com/gists/%s/%s" project branch
-            let! document = getFromUrl(None, url, null)
+            let! document = getFromUrl(auth url, url, null)
             let json = JObject.Parse(document)
             let latest = json.["history"].First.["version"]
             return latest.ToString()

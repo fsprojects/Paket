@@ -65,7 +65,7 @@ let resolve getDependencies getSha1 (file : UnresolvedSourceFile) : ResolvedSour
         let commit = getCommit file
         match file.Origin with
         | SingleSourceFileOrigin.HttpLink _  ->  commit
-        | _ -> getSha1 file.Origin file.Owner file.Project commit
+        | _ -> getSha1 file.Origin file.Owner file.Project commit file.AuthKey
     
     let resolved = 
         { Commit = sha
