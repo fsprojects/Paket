@@ -112,24 +112,6 @@ let ``can calculate v3 path``() =
     calculateNuGet3Path "http://nuget.org/api/v2" |> shouldEqual (Some "http://api.nuget.org/v3/index.json")
 
 [<Test>]
-let ``can read all versions from single page with multiple entries``() =
-    let getUrlContentsStub _ _ = async { return File.ReadAllText "NuGetOData/NUnit.xml" }
-    
-    let versions = getAllVersionsFromNugetOData(getUrlContentsStub, fakeUrl, None, "NUnit")
-                   |> Async.RunSynchronously
-
-    versions |> shouldContain "3.0.0-alpha-2"
-    versions |> shouldContain "3.0.0-alpha"
-    versions |> shouldContain "2.6.3"
-    versions |> shouldContain "2.6.2"
-    versions |> shouldContain "2.6.1"
-    versions |> shouldContain "2.6.0.12054"
-    versions |> shouldContain "2.5.10.11092"
-    versions |> shouldContain "2.5.9.10348"
-    versions |> shouldContain "2.5.7.10213"
-
-
-[<Test>]
 let ``can detect explicit dependencies for Microsoft.AspNet.WebApi.Client``() = 
     let odata = parse "NuGetOData/Microsoft.AspNet.WebApi.Client.xml"
     odata.PackageName |> shouldEqual "Microsoft.AspNet.WebApi.Client"

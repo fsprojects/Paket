@@ -476,7 +476,7 @@ let ``should parse lockfile with multiple feeds``() =
     packages.[3].Name |> shouldEqual (PackageName "Microsoft.AspNet.WebApi")
     packages.[3].Version |> shouldEqual (SemVer.Parse "5.2.3")
     packages.[3].Settings.FrameworkRestrictions.ToString() |> shouldEqual "[]"
-    packages.[3].Source.ToString() |> shouldEqual "https://www.nuget.org/api/v2"
+    packages.[3].Source.ToString() |> shouldEqual "https://nuget.org/api/v2"
 
 let groupsLockFile = """REDIRECTS: ON
 IMPORT-TARGETS: TRUE

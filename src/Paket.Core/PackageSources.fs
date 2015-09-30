@@ -98,7 +98,8 @@ type PackageSource =
 
         let feed = 
             if source = "https://api.nuget.org/v3/index.json" then Constants.DefaultNugetStream else 
-            if source = "http://api.nuget.org/v3/index.json" then Constants.DefaultNugetStream.Replace("https://","http://") else 
+            if source = "http://api.nuget.org/v3/index.json" then Constants.DefaultNugetStream.Replace("https://","http://") else
+            if source.TrimEnd([|'/'|]) = "https://www.nuget.org/api/v2" then Constants.DefaultNugetStream else
             source
 
         PackageSource.Parse(feed, parseAuth(line, feed))
