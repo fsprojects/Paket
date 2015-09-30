@@ -105,7 +105,8 @@ namespace Paket.Bootstrapper
                     {
                         var fallbackStrategy = downloadStrategy.FallbackStrategy;
                         if (!silent)
-                            Console.WriteLine("'{0}' download failed. Try fallback download from '{1}'.", downloadStrategy.Name, fallbackStrategy.Name);
+                            Console.WriteLine("'{0}' download failed. If using Mono, you may need to import trusted certificates using the 'mozroots' tool as none are contained by default. Trying fallback download from '{1}'.", 
+                                downloadStrategy.Name, fallbackStrategy.Name);
                         StartPaketBootstrapping(fallbackStrategy, dlArgs, silent);
                         shouldHandleException = !File.Exists(dlArgs.Target);
                     }

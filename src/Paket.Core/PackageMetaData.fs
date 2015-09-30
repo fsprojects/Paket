@@ -250,14 +250,14 @@ let findDependencies (dependencies : DependenciesFile) config (template : Templa
                                         group.Resolution
                                         |> Map.tryFind np.Name
                                         |> Option.map (fun transient -> transient.Version)
-                                        |> Option.map (fun v -> VersionRequirement(Minimum v, PreReleaseStatus.All))
+                                        |> Option.map (fun v -> VersionRequirement(Minimum v, PreReleaseStatus.No))
                         else
                             match lockFile.Groups |> Map.tryFind groupName with
                             | None -> None
                             | Some group ->
                                 Map.tryFind np.Name group.Resolution
                                 |> Option.map (fun resolvedPackage -> resolvedPackage.Version)
-                                |> Option.map (fun version -> VersionRequirement(Specific version, PreReleaseStatus.All))
+                                |> Option.map (fun version -> VersionRequirement(Specific version, PreReleaseStatus.No))
                 let dep =
                     match dependencyVersionRequirement with
                     | Some installed -> installed

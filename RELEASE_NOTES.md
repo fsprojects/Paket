@@ -1,14 +1,28 @@
-#### 2.3.6 - 22.09.2015
+#### 2.5.2 - 30.09.2015
+* PERFORMANCE: Exclude duplicate NuGet feeds - https://github.com/fsprojects/Paket/issues/1085
+
+#### 2.5.1 - 29.09.2015
+* BUGFIX: Do not create prerelease identifiers for transitive dependencies - https://github.com/fsprojects/Paket/issues/1099
+ 
+#### 2.5.0 - 29.09.2015
+* Remove all Paket entries from projects which have no paket.references - https://github.com/fsprojects/Paket/issues/1097
+* Allow to format VersionRequirements in NuGet syntax
+* BUGFIX: Fix KeyNotFoundException when project is net4.0-client - https://github.com/fsprojects/Paket/issues/1095
+* BUGFIX: Put prerelease requirement into NuSpec during paket pack - https://github.com/fsprojects/Paket/issues/1088
+* BUGFIX: Inconsistent framework exclusion in paket.dependencies - https://github.com/fsprojects/Paket/issues/1093
+* BUGFIX: Commands add/remove stripped link:false from file references - https://github.com/fsprojects/Paket/issues/1089
+* BUGFIX: Do not create double prerelease identifiers - https://github.com/fsprojects/Paket/issues/1099
+* COSMETICS: Only fixup dates in zip archive under Mono - https://github.com/fsprojects/Paket/pull/1094
+* PERFORMANCE: Skip asking for versions if only a specific version is requested
+* PERFORMANCE: Check if a feed supports a protocol and never retry if not - https://github.com/fsprojects/Paket/issues/1085
+
+#### 2.4.0 - 28.09.2015
+* BUGFIX: Paket does not touch config files when the list of binding redirects to add is empty - https://github.com/fsprojects/Paket/pull/1092
 * BUGFIX: Fix unsupported https scheme in web proxy - https://github.com/fsprojects/Paket/pull/1080
-
-#### 2.3.5 - 22.09.2015
 * BUGFIX: Ignore DotNET 5.0 framework when TargetFramework 4 is specified - https://github.com/fsprojects/Paket/issues/1066
-
-#### 2.3.4 - 21.09.2015
 * BUGFIX: Paket failed with: The input sequence was empty - https://github.com/fsprojects/Paket/issues/1071
-
-#### 2.3.2 - 21.09.2015
 * BUGFIX: NullReferenceException in applyBindingRedirects during "update nuget package" - https://github.com/fsprojects/Paket/issues/1074
+* COSMETICS: Improve error message for bootstrapper if download of Paket.exe fails - https://github.com/fsprojects/Paket/pull/1091
 
 #### 2.3.0 - 21.09.2015
 * Binding redirects from target platform only - https://github.com/fsprojects/Paket/pull/1070

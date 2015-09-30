@@ -66,62 +66,88 @@ let getAllVersionsFromNugetODataWithFilter (getUrlContents, nugetURL, package) =
     verbosefn "getAllVersionsFromNugetODataWithFilter from url '%s'" url
     followODataLink getUrlContents url
 
+let protocolCache = System.Collections.Generic.HashSet<_>()
+
 /// Gets versions of the given package via OData via /FindPackagesById()?id='packageId'.
-let getAllVersionsFromNugetOData (getUrlContents, nugetURL, package) = 
+let getAllVersionsFromNugetOData (getUrlContents, nugetURL, auth, package) = 
     async {
         // we cannot cache this
-        try 
-            let url = sprintf "%s/FindPackagesById()?id='%s'" nugetURL package
-            verbosefn "getAllVersionsFromNugetOData from url '%s'" url
-            return! followODataLink getUrlContents url
-        with _ -> return! getAllVersionsFromNugetODataWithFilter (getUrlContents, nugetURL, package)
+        let probingCode = "NuGetV2-FindPackagesById"
+        if protocolCache.Contains((nugetURL,auth,probingCode)) then             
+            return! getAllVersionsFromNugetODataWithFilter (getUrlContents, nugetURL, package)
+        else
+            try 
+                let url = sprintf "%s/FindPackagesById()?id='%s'" nugetURL package
+                verbosefn "getAllVersionsFromNugetOData from url '%s'" url
+                return! followODataLink getUrlContents url
+            with _ -> 
+                protocolCache.Add((nugetURL,auth,probingCode)) |> ignore
+                return! getAllVersionsFromNugetODataWithFilter (getUrlContents, nugetURL, package)
     }
 
 /// Gets all versions no. of the given package.
 let getAllVersionsFromNuGet2(auth,nugetURL,package) = 
     // we cannot cache this
     async { 
-        let url = sprintf "%s/package-versions/%s?includePrerelease=true" nugetURL package
-        verbosefn "getAllVersionsFromNuGet2 from url '%s'" url
-        let! raw = safeGetFromUrl(auth, url, acceptJson)
+        let probingCode = "NuGetV2-package-versions"
         let getUrlContents url acceptJson = getFromUrl(auth, url, acceptJson)
-        match raw with
-        | None -> let! result = getAllVersionsFromNugetOData(getUrlContents, nugetURL, package)
-                  return result
-        | Some data -> 
-            try 
+        if protocolCache.Contains((nugetURL,auth,probingCode)) then             
+            let! result = getAllVersionsFromNugetOData(getUrlContents, nugetURL, auth, package)
+            return result
+        else
+            let url = sprintf "%s/package-versions/%s?includePrerelease=true" nugetURL package
+            verbosefn "getAllVersionsFromNuGet2 from url '%s'" url
+            let! raw = safeGetFromUrl(auth, url, acceptJson)
+            match raw with
+            | None -> 
+                protocolCache.Add((nugetURL,auth,probingCode)) |> ignore
+                let! result = getAllVersionsFromNugetOData(getUrlContents, nugetURL, auth, package)
+                return result
+            | Some data -> 
                 try 
-                    let result = JsonConvert.DeserializeObject<string []>(data) |> Array.toSeq
-                    return result
-                with _ -> verbosefn "exn when deserialising data '%s'" data
-                          let! result = getAllVersionsFromNugetOData(getUrlContents, nugetURL, package)
-                          return result
-            with exn -> 
-                return! failwithf "Could not get data from %s for package %s.%s Message: %s" nugetURL package 
-                    Environment.NewLine exn.Message
+                    try 
+                        let result = JsonConvert.DeserializeObject<string []>(data) |> Array.toSeq
+                        return result
+                    with _ -> 
+                        verbosefn "exn when deserialising data '%s'" data
+                        protocolCache.Add((nugetURL,auth,probingCode)) |> ignore
+                        let! result = getAllVersionsFromNugetOData(getUrlContents, nugetURL, auth, package)
+                        return result
+                with exn -> 
+                    return! failwithf "Could not get data from %s for package %s.%s Message: %s" nugetURL package 
+                        Environment.NewLine exn.Message
     }
 
 
 let getAllVersions(auth, nugetURL, package) = 
-    let tryNuGetV3() = async { 
+    let tryNuGetV3() = async {
         try
             let! data = NuGetV3.findVersionsForPackage(auth, nugetURL, package, true, 100000)
 
             return data
         with
-        | exn -> return None }
+        | exn ->
+            return None }
 
     let tryNuGet() = async { 
-        let! data = tryNuGetV3()
+        let probingCode = "NuGetV3"
+        if protocolCache.Contains((nugetURL,auth,probingCode)) then 
+            let! result = getAllVersionsFromNuGet2(auth,nugetURL,package)
+            return result
+        else
+            let! data = tryNuGetV3()
 
-        match data with
-        | None -> 
-            let! result = getAllVersionsFromNuGet2(auth,nugetURL,package)
-            return result
-        | Some data when Array.isEmpty data -> 
-            let! result = getAllVersionsFromNuGet2(auth,nugetURL,package)
-            return result
-        | Some data -> return (Array.toSeq data) }
+            match data with
+            | None -> 
+                protocolCache.Add((nugetURL,auth,probingCode)) |> ignore
+                let! result = getAllVersionsFromNuGet2(auth,nugetURL,package)
+                return result
+            | Some data when Array.isEmpty data -> 
+                protocolCache.Add((nugetURL,auth,probingCode)) |> ignore
+                let! result = getAllVersionsFromNuGet2(auth,nugetURL,package)
+                return result
+            | Some data -> 
+                return (Array.toSeq data) }
 
     async {
         try
@@ -208,7 +234,7 @@ let parseODataDetails(nugetURL,packageName:PackageName,version,raw) =
     
     { PackageName = officialName
       DownloadUrl = downloadLink
-      Dependencies = Requirements.optimizeRestrictions packages
+      Dependencies = Requirements.optimizeDependencies packages
       SourceUrl = nugetURL
       CacheVersion = NugetPackageCache.CurrentCacheVersion
       LicenseUrl = licenseUrl
@@ -324,7 +350,7 @@ let getDetailsFromNuGet force auth nugetURL (packageName:PackageName) (version:S
             raise exn
             return! getDetailsFromNuGetViaOData auth nugetURL packageName version
     } 
-    
+
 let fixDatesInArchive fileName =
     try
         use zipToOpen = new FileStream(fileName, FileMode.Open)
@@ -337,6 +363,9 @@ let fixDatesInArchive fileName =
             | _ -> e.LastWriteTime <- DateTimeOffset.Now
     with
     | exn -> traceWarnfn "Could not fix timestamps in %s. Error: %s" fileName exn.Message
+
+let fixArchive fileName =
+    if isMonoRuntime then fixDatesInArchive fileName
 
 let findLocalPackage directory (packageName:PackageName) (version:SemVerInfo) = 
     let v1 = FileInfo(Path.Combine(directory, sprintf "%O.%O.nupkg" packageName version))
@@ -363,7 +392,7 @@ let getDetailsFromLocalFile root localNugetPath (packageName:PackageName) (versi
         let di = getDirectoryInfo localNugetPath root
         let nupkg = findLocalPackage di.FullName packageName version
         
-        fixDatesInArchive nupkg.FullName
+        fixArchive nupkg.FullName
         use zipToCreate = new FileStream(nupkg.FullName, FileMode.Open)
         use zip = new ZipArchive(zipToCreate,ZipArchiveMode.Read)
         
@@ -379,7 +408,7 @@ let getDetailsFromLocalFile root localNugetPath (packageName:PackageName) (versi
         return 
             { PackageName = nuspec.OfficialName
               DownloadUrl = packageName.ToString()
-              Dependencies = Requirements.optimizeRestrictions nuspec.Dependencies
+              Dependencies = Requirements.optimizeDependencies nuspec.Dependencies
               SourceUrl = di.FullName
               CacheVersion = NugetPackageCache.CurrentCacheVersion
               LicenseUrl = nuspec.LicenseUrl
@@ -402,7 +431,7 @@ let ExtractPackage(fileName:string, targetFolder, packageName:PackageName, versi
         else
             Directory.CreateDirectory(targetFolder) |> ignore
 
-            fixDatesInArchive fileName            
+            fixArchive fileName
             ZipFile.ExtractToDirectory(fileName, targetFolder)
 
             // cleanup folder structure
@@ -627,14 +656,11 @@ let GetPackageDetails root force sources packageName (version:SemVerInfo) : Pack
       DownloadLink = nugetObject.DownloadUrl
       Unlisted = nugetObject.Unlisted
       LicenseUrl = nugetObject.LicenseUrl
-      DirectDependencies = 
-        nugetObject.Dependencies
-        |> Requirements.optimizeRestrictions
-        |> Set.ofList }
+      DirectDependencies = nugetObject.Dependencies |> Set.ofList }
 
 /// Allows to retrieve all version no. for a package from the given sources.
 let GetVersions root (sources, PackageName packageName) = 
-    let versions =
+    let retriveVersions() =
         sources
         |> Seq.map (fun source -> 
                match source with
@@ -645,9 +671,19 @@ let GetVersions root (sources, PackageName packageName) =
                | LocalNuget path -> getAllVersionsFromLocalPath (path, packageName, root))
         |> Async.Parallel
         |> Async.RunSynchronously
-        |> Seq.choose id
+        |> Array.choose id
 
-    if Seq.isEmpty versions then
+    let versions = 
+        let versions = retriveVersions()
+
+        if Array.isEmpty versions then
+            // try to look around with empty protocol cache - maybe we skipped it
+            protocolCache.Clear()
+            retriveVersions()
+        else
+            versions
+
+    if Array.isEmpty versions then
         failwithf "Could not find versions for package %s in any of the sources in %A." packageName sources
 
     versions

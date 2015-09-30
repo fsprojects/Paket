@@ -120,16 +120,18 @@ let private applyBindingRedirects bindingRedirects (configFilePath:string) =
             p.GetTargetProfile()
             |> bindingRedirects
 
-    let config = 
-        try 
-            XDocument.Load(configFilePath, LoadOptions.PreserveWhitespace)
-        with
-        | :? System.Xml.XmlException as ex ->
-            Logging.verbosefn "Illegal XML in file: %s" configFilePath
-            raise ex
-    let config = Seq.fold setRedirect config bindingRedirects
-    indentAssemblyBindings config
-    config.Save configFilePath
+    if Seq.isEmpty bindingRedirects then ()
+    else
+        let config = 
+            try 
+                XDocument.Load(configFilePath, LoadOptions.PreserveWhitespace)
+            with
+            | :? System.Xml.XmlException as ex ->
+                Logging.verbosefn "Illegal XML in file: %s" configFilePath
+                raise ex
+        let config = Seq.fold setRedirect config bindingRedirects
+        indentAssemblyBindings config
+        config.Save configFilePath
 
 /// Applies a set of binding redirects to all .config files in a specific folder.
 let applyBindingRedirectsToFolder createNewBindingFiles rootPath bindingRedirects =

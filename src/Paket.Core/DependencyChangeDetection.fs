@@ -12,17 +12,20 @@ let findChangesInDependenciesFile(dependenciesFile:DependenciesFile,lockFile:Loc
       else false
 
     let added groupName =
-        dependenciesFile.Groups.[groupName].Packages
-        |> Seq.map (fun d -> d.Name,d)
-        |> Seq.filter (fun (name,pr) ->
-            match lockFile.Groups |> Map.tryFind groupName with
-            | None -> true
-            | Some group ->
-                match group.Resolution.TryFind name with
-                | Some p -> hasChanged pr p
-                | _ -> true)
-        |> Seq.map (fun (p,_) -> groupName,p)
-        |> Set.ofSeq
+        match dependenciesFile.Groups |> Map.tryFind groupName with
+        | None -> Set.empty
+        | Some group -> 
+            group.Packages
+            |> Seq.map (fun d -> d.Name,d)
+            |> Seq.filter (fun (name,pr) ->
+                match lockFile.Groups |> Map.tryFind groupName with
+                | None -> true
+                | Some group ->
+                    match group.Resolution.TryFind name with
+                    | Some p -> hasChanged pr p
+                    | _ -> true)
+            |> Seq.map (fun (p,_) -> groupName,p)
+            |> Set.ofSeq
     
     let modified groupName = 
         let directMap =

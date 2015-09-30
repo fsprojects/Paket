@@ -145,11 +145,10 @@ let ``can detect explicit dependencies for ReadOnlyCollectionExtensions``() =
     Nuspec.Load("Nuspec/ReadOnlyCollectionExtensions.nuspec").Dependencies
     |> shouldEqual 
         [PackageName "LinqBridge",DependenciesFileParser.parseVersionRequirement(">= 1.3.0"), 
-            [FrameworkRestriction.Between(DotNetFramework(FrameworkVersion.V2),DotNetFramework(FrameworkVersion.V3_5))]
+            [FrameworkRestriction.Exactly (DotNetFramework(FrameworkVersion.V2))]
          PackageName "ReadOnlyCollectionInterfaces",DependenciesFileParser.parseVersionRequirement("1.0.0"),
             [FrameworkRestriction.Exactly(DotNetFramework(FrameworkVersion.V2))
-             FrameworkRestriction.Exactly(DotNetFramework(FrameworkVersion.V3_5))
-             FrameworkRestriction.AtLeast(DotNetFramework(FrameworkVersion.V4_Client))]]
+             FrameworkRestriction.AtLeast(DotNetFramework(FrameworkVersion.V3_5))]]
 
 [<Test>]
 let ``can detect framework assemblies for MathNet.Numerics``() = 
@@ -170,9 +169,7 @@ let ``can detect dependencies for MathNet.Numerics``() =
     |> shouldEqual 
         [ PackageName "TaskParallelLibrary",
           DependenciesFileParser.parseVersionRequirement(">= 1.0.2856.0"),
-            [FrameworkRestriction.Between(
-                DotNetFramework(FrameworkVersion.V3_5),
-                DotNetFramework(FrameworkVersion.V4_Client))] ]
+            [FrameworkRestriction.Exactly (DotNetFramework(FrameworkVersion.V3_5))] ]
 
 [<Test>]
 let ``can detect dependencies for MathNet.Numerics.FSharp``() = 

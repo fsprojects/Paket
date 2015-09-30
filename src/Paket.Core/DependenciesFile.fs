@@ -257,7 +257,7 @@ module DependenciesFileParser =
                     match line with
                     | Group(newGroupName) -> lineNo, DependenciesGroup.New(GroupName newGroupName)::current::other
                     | Empty(_) -> lineNo, current::other
-                    | Remote(newSource) -> lineNo, { current with Sources = current.Sources @ [newSource] }::other
+                    | Remote(newSource) -> lineNo, { current with Sources = current.Sources @ [newSource] |> List.distinct }::other
                     | ParserOptions(options) -> 
                         let newOptions =
                             match options with 
@@ -288,13 +288,14 @@ module DependenciesFileParser =
                 |> List.fold (fun m g ->
                     match Map.tryFind g.Name m with
                     | Some group -> 
+                        let newSources = g.Sources @ group.Sources |> List.distinct
                         let newGroup =
                             { Name = g.Name
                               Options = 
                                 { Redirects = g.Options.Redirects || group.Options.Redirects
                                   Settings = g.Options.Settings + group.Options.Settings
                                   Strict = g.Options.Strict || group.Options.Strict }
-                              Sources = g.Sources @ group.Sources
+                              Sources = newSources
                               Packages = g.Packages @ group.Packages
                               RemoteFiles = g.RemoteFiles @ group.RemoteFiles }
                         Map.add g.Name newGroup m

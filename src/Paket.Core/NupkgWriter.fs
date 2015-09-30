@@ -80,13 +80,10 @@ let nuspecDoc (info:CompleteInfo) =
         frameworkAssembliesList |> List.iter (buildFrameworkReferencesNode >> d.Add)
         metadataNode.Add d
 
-    let buildDependencyNode (Id, (VersionRequirement(range, _))) =
+    let buildDependencyNode (Id, requirement:VersionRequirement) =
         let dep = XElement(ns + "dependency")
         dep.SetAttributeValue(XName.Get "id", Id)
-
-        match range.FormatInNuGetSyntax() with
-        | "0" -> ()
-        | versionStr -> dep.SetAttributeValue(XName.Get "version", versionStr)
+        dep.SetAttributeValue(XName.Get "version", requirement.FormatInNuGetSyntax())
         dep
 
     let buildDependenciesNode dependencyList =

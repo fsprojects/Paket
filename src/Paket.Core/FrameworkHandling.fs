@@ -266,19 +266,23 @@ type TargetProfile =
             | _ -> "portable-net45+netcore45+wpa81+wp8+MonoAndroid1+MonoTouch1" // Use Portable259 as default
 
 module KnownTargetProfiles =
+    let DotNetFrameworkVersions =
+       [FrameworkVersion.V1
+        FrameworkVersion.V1_1
+        FrameworkVersion.V2
+        FrameworkVersion.V3
+        FrameworkVersion.V3_5
+        FrameworkVersion.V4_Client
+        FrameworkVersion.V4
+        FrameworkVersion.V4_5
+        FrameworkVersion.V4_5_1
+        FrameworkVersion.V4_5_2
+        FrameworkVersion.V4_5_3
+        FrameworkVersion.V4_6]
+
     let DotNetFrameworkProfiles =
-       [SinglePlatform(DotNetFramework FrameworkVersion.V1)
-        SinglePlatform(DotNetFramework FrameworkVersion.V1_1)
-        SinglePlatform(DotNetFramework FrameworkVersion.V2)
-        SinglePlatform(DotNetFramework FrameworkVersion.V3)
-        SinglePlatform(DotNetFramework FrameworkVersion.V3_5)
-        SinglePlatform(DotNetFramework FrameworkVersion.V4_Client)
-        SinglePlatform(DotNetFramework FrameworkVersion.V4)
-        SinglePlatform(DotNetFramework FrameworkVersion.V4_5)
-        SinglePlatform(DotNetFramework FrameworkVersion.V4_5_1)
-        SinglePlatform(DotNetFramework FrameworkVersion.V4_5_2)
-        SinglePlatform(DotNetFramework FrameworkVersion.V4_5_3)
-        SinglePlatform(DotNetFramework FrameworkVersion.V4_6)]
+       DotNetFrameworkVersions
+       |> List.map (fun x -> SinglePlatform(DotNetFramework(x)))
 
     let WindowsProfiles =
        [SinglePlatform(Windows "v4.5")
