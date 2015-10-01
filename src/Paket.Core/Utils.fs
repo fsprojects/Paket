@@ -99,7 +99,7 @@ let inline createRelativePath root path =
         else root
     
     let uri = Uri(basePath)
-    uri.MakeRelativeUri(Uri(path)).ToString().Replace("/", "\\").Replace("%20", " ")    
+    uri.MakeRelativeUri(Uri(path)).ToString().Replace("/", "\\").Replace("%20", " ")  
 
 let extractPath infix (fileName : string) : string option=
     let path = fileName.Replace("\\", "/").ToLower()
@@ -198,10 +198,10 @@ let inline createWebClient(url,auth:Auth option) =
 
 //More generic variant of http://www.fssnip.net/c4
 open System.Collections.Concurrent
-let cache = ConcurrentDictionary<(string * obj) option,Lazy<obj>>()
-let memoizeConcurrent (caller:string) (f: ('a -> 'b)) =
-    fun (x :'a) -> 
-        (cache.GetOrAdd(Some (caller, x|>box), lazy ((f x)|>box)).Force() |> unbox) : 'b
+
+let cache = ConcurrentDictionary<(string * obj) option, Lazy<obj>>()
+let memoizeConcurrent (caller : string) (f : 'a -> 'b) = 
+    fun (x : 'a) -> (cache.GetOrAdd(Some(caller, x |> box), lazy ((f x) |> box)).Force() |> unbox) : 'b
 
 #nowarn "40"
 
@@ -464,9 +464,9 @@ module ObservableExtensions =
         /// Creates an observable that calls the specified function after someone
         /// subscribes to it (useful for waiting using 'let!' when we need to start
         /// operation after 'let!' attaches handler)
-        let guard f (e:IObservable<'Args>) =  
-          { new IObservable<'Args> with  
-              member x.Subscribe(observer) =  
+        let guard f (e:IObservable<'Args>) =
+          { new IObservable<'Args> with
+              member x.Subscribe(observer) =
                 let rm = e.Subscribe(observer) in f(); rm } 
 
         let sample milliseconds source =
