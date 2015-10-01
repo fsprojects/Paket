@@ -8,6 +8,17 @@ open Paket.ModuleResolver
 open System.IO.Compression
 open Paket.Domain
 
+let private githubCache = System.Collections.Concurrent.ConcurrentDictionary<_, _>()
+let private lookupDocument (auth,url : string)  = async {
+    let key = auth,url
+    match githubCache.TryGetValue key with
+    | true, document -> return document
+    | _ ->
+        let! document = safeGetFromUrl(auth, url, null)
+        githubCache.TryAdd(key, document) |> ignore
+        return document
+    }
+
 // Gets the sha1 of a branch
 let getSHA1OfBranch origin owner project branch auth = 
     async { 
@@ -18,15 +29,25 @@ let getSHA1OfBranch origin owner project branch auth =
         match origin with
         | ModuleResolver.SingleSourceFileOrigin.GitHubLink -> 
             let url = sprintf "https://api.github.com/repos/%s/%s/commits/%s" owner project branch
-            let! document = getFromUrl(auth url, url, null)
-            let json = JObject.Parse(document)
-            return json.["sha"].ToString()
-        | ModuleResolver.SingleSourceFileOrigin.GistLink ->  
+            let! document = lookupDocument(auth url,url)
+            match document with
+            | Some document ->
+                let json = JObject.Parse(document)
+                return json.["sha"].ToString()
+            | None -> 
+                failwithf "Could not find hash for %s" url
+                return ""
+        | ModuleResolver.SingleSourceFileOrigin.GistLink ->
             let url = sprintf "https://api.github.com/gists/%s/%s" project branch
-            let! document = getFromUrl(auth url, url, null)
-            let json = JObject.Parse(document)
-            let latest = json.["history"].First.["version"]
-            return latest.ToString()
+            let! document = lookupDocument(auth url,url)
+            match document with
+            | Some document ->
+                let json = JObject.Parse(document)
+                let latest = json.["history"].First.["version"]
+                return latest.ToString()
+            | None -> 
+                failwithf "Could not find hash for %s" url
+                return ""
         | ModuleResolver.SingleSourceFileOrigin.HttpLink _ -> return ""
     }
 
@@ -56,10 +77,10 @@ let downloadDependenciesFile(rootPath,groupName,parserF,remoteFile:ModuleResolve
         |> Option.bind (fun key -> ConfigFile.GetCredentialsForUrl key url)
         |> Option.map (fun (un, pwd) -> { Username = un; Password = pwd })
   
-    let! result = safeGetFromUrl(auth,url,null)
+    let! result = lookupDocument(auth,url)
 
     match result with
-    | Some text when parserF text ->        
+    | Some text when parserF text ->
         let destination = remoteFile.ComputeFilePath(rootPath,groupName,dependenciesFileName)
 
         Directory.CreateDirectory(destination |> Path.GetDirectoryName) |> ignore

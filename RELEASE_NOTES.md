@@ -1,3 +1,9 @@
+#### 2.5.4 - 01.10.2015
+* COSMETICS: Cache calls to GitHub in order to reduce stress on API limit - https://github.com/fsprojects/Paket/issues/1101
+
+#### 2.5.3 - 30.09.2015
+* PERFORMANCE: Run all calls against different NuGet protocols in parallel and take the fastest - https://github.com/fsprojects/Paket/issues/1085
+
 #### 2.5.2 - 30.09.2015
 * PERFORMANCE: Exclude duplicate NuGet feeds - https://github.com/fsprojects/Paket/issues/1085
 

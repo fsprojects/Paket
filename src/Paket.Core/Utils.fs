@@ -99,7 +99,7 @@ let inline createRelativePath root path =
         else root
     
     let uri = Uri(basePath)
-    uri.MakeRelativeUri(Uri(path)).ToString().Replace("/", "\\").Replace("%20", " ")    
+    uri.MakeRelativeUri(Uri(path)).ToString().Replace("/", "\\").Replace("%20", " ")
 
 let extractPath infix (fileName : string) : string option=
     let path = fileName.Replace("\\", "/").ToLower()
@@ -446,9 +446,9 @@ module ObservableExtensions =
         /// Creates an observable that calls the specified function after someone
         /// subscribes to it (useful for waiting using 'let!' when we need to start
         /// operation after 'let!' attaches handler)
-        let guard f (e:IObservable<'Args>) =  
-          { new IObservable<'Args> with  
-              member x.Subscribe(observer) =  
+        let guard f (e:IObservable<'Args>) =
+          { new IObservable<'Args> with
+              member x.Subscribe(observer) =
                 let rm = e.Subscribe(observer) in f(); rm } 
 
         let sample milliseconds source =
