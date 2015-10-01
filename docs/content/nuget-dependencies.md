@@ -176,6 +176,8 @@ This option disables the installation of any content files:
 	nuget ServiceStack.Swagger content: true // install content and always override
     nuget UnionArgParser ~> 0.7
 
+The default is `content: true`.
+
 ### copy_local settings
 
 It's possible to influence the `Private` property for references in project files:
