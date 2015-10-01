@@ -246,7 +246,7 @@ let CacheFolder =
 
 let inline normalizeUrl(url:string) = url.Replace("https","http").Replace("www.","")
 
-let private loadFromCacheOrOData force fileName auth nugetURL package version = 
+let private loadFromCacheOrOData force fileName (auth,nugetURL) package version = 
     async {
         if not force && File.Exists fileName then
             try 
@@ -288,7 +288,7 @@ let getDetailsFromNuGet force auth nugetURL (packageName:PackageName) (version:S
             if not force && errorFile.Exists then
                 failwithf "Error file for %O exists at %s" packageName errorFile.FullName
 
-            let! (invalidCache,details) = loadFromCacheOrOData force cacheFile.FullName auth nugetURL packageName version
+            let! (invalidCache,details) = loadFromCacheOrOData force cacheFile.FullName (auth,nugetURL) packageName version
 
             verbosefn "loaded details for '%O@%O' from url '%s'" packageName version nugetURL
 
