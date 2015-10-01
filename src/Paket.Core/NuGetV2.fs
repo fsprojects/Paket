@@ -597,7 +597,7 @@ let GetPackageDetails root force sources packageName (version:SemVerInfo) : Pack
             | [source] ->
                 failwithf "Couldn't get package details for package %O %O on %O." packageName version source
             | [] ->
-                failwithf "Couldn't get package details for package %O %O because no sources where specified." packageName version (sources |> List.map (fun (s:PackageSource) -> s.ToString()))    
+                failwithf "Couldn't get package details for package %O %O because no sources where specified." packageName version
             | _ ->
                 failwithf "Couldn't get package details for package %O %O on any of %A." packageName version (sources |> List.map (fun (s:PackageSource) -> s.ToString()))
     
