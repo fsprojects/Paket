@@ -140,7 +140,7 @@ type Resolution =
                         | DependenciesFile _ ->
                             sprintf "   - Dependencies file requested %O" x.VersionRequirement |> addToError
                         | Package(PackageName parentName,version) ->
-                            sprintf "   - %s %O requested %O" parentName version x.VersionRequirement                                
+                            sprintf "   - %s %O requested %O" parentName version x.VersionRequirement
                             |> addToError)
 
                 let (PackageName name) = r.Name
@@ -175,31 +175,21 @@ let calcOpenRequirements (exploredPackage:ResolvedPackage,globalFrameworkRestric
         |> Set.filter (fun (name,_,_) -> hashSet.Add name)
 
     let rest = Set.remove dependency stillOpen
-                        
+
     dependenciesByName
-    |> Set.map (fun (n,v,restriction) -> 
-        let newRestrictions =
-            filterRestrictions restriction exploredPackage.Settings.FrameworkRestrictions 
-            |> filterRestrictions globalFrameworkRestrictions
-
-        { dependency with 
-            Name = n
-            VersionRequirement = v
-            Parent = Package(dependency.Name,versionToExplore)
-            Settings = { dependency.Settings with FrameworkRestrictions = newRestrictions }})
-
-    |> Set.filter (fun d -> Set.contains d closed |> not)
-    |> Set.filter (fun d -> Set.contains d stillOpen |> not)
+    |> Set.map (fun (n, v, restriction) -> 
+         let newRestrictions = 
+             filterRestrictions restriction exploredPackage.Settings.FrameworkRestrictions 
+             |> filterRestrictions globalFrameworkRestrictions
+         { dependency with Name = n
+                           VersionRequirement = v
+                           Parent = Package(dependency.Name, versionToExplore)
+                           Settings = { dependency.Settings with FrameworkRestrictions = newRestrictions } })
     |> Set.filter (fun d ->
-        closed 
-        |> Seq.filter (fun x -> x.Name = d.Name)
-        |> Seq.exists (fun otherDep -> otherDep.VersionRequirement.Range.IsIncludedIn(d.VersionRequirement.Range))
-        |> not)
-    |> Set.filter (fun d ->
-        rest 
-        |> Seq.filter (fun x -> x.Name = d.Name)
-        |> Seq.exists (fun otherDep -> otherDep.VersionRequirement.Range.IsIncludedIn(d.VersionRequirement.Range))
-        |> not)
+        if Set.contains d stillOpen then false else
+        if Set.contains d closed then false else
+        if closed |> Seq.exists (fun x -> x.Name = d.Name && x.VersionRequirement.Range.IsIncludedIn d.VersionRequirement.Range) then false else
+        rest |> Seq.exists (fun x -> x.Name = d.Name && x.VersionRequirement.Range.IsIncludedIn d.VersionRequirement.Range) |> not)
     |> Set.union rest
 
 type Resolved = {
