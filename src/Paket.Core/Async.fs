@@ -18,11 +18,12 @@ module AsyncExtensions =
             return (a'',b'')
         }
 
-    static member Choice'(tasks : Async<'T option> seq) =
+    static member Choice'(tasks : Async<'T[] option> seq) =
+
         async {
             let! t = Async.CancellationToken
-            return! Async.FromContinuations <| 
-                fun (cont,econt,ccont) ->
+
+            let run (cont,econt,ccont) = 
                 let tasks = Seq.toArray tasks
                 if tasks.Length = 0 then cont None else
 
@@ -67,4 +68,6 @@ module AsyncExtensions =
 
                 for task in tasks do
                     Async.Start(wrap task, innerCts.Token)
+
+            return! Async.FromContinuations run
         }
