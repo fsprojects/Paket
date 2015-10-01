@@ -1,3 +1,6 @@
+#### 2.5.7 - 01.10.2015
+* BUGFIX: Don't add -prerelease to nuspec dependency nodes for project references - https://github.com/fsprojects/Paket/issues/1102
+
 #### 2.5.6 - 01.10.2015
 * PERFORMANCE: Do not parse remote dependencies file twice - https://github.com/fsprojects/Paket/issues/1101
 
