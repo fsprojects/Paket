@@ -1,26 +1,12 @@
-#### 2.5.8 - 01.10.2015
-* EXPERIMENTAL: Allow "content:once" as a package setting - https://github.com/fsprojects/Paket/issues/471
-
-#### 2.5.7 - 01.10.2015
+#### 2.6.0 - 01.10.2015
+* Allow "content:once" as a package setting - http://fsprojects.github.io/Paket/nuget-dependencies.html#No-content-option
 * BUGFIX: Don't add -prerelease to nuspec dependency nodes for project references - https://github.com/fsprojects/Paket/issues/1102
-
-#### 2.5.6 - 01.10.2015
-* PERFORMANCE: Do not parse remote dependencies file twice - https://github.com/fsprojects/Paket/issues/1101
-
-#### 2.5.5 - 01.10.2015
-* PERFORMANCE: Check if we already downloaded paket.dependencies file for remote files in order to reduce stress on API limit - https://github.com/fsprojects/Paket/issues/1101
-
-#### 2.5.4 - 01.10.2015
-* COSMETICS: Cache calls to GitHub in order to reduce stress on API limit - https://github.com/fsprojects/Paket/issues/1101
-
-#### 2.5.3 - 30.09.2015
-* PERFORMANCE: Run all calls against different NuGet protocols in parallel and take the fastest - https://github.com/fsprojects/Paket/issues/1085
-
-#### 2.5.2 - 30.09.2015
-* PERFORMANCE: Exclude duplicate NuGet feeds - https://github.com/fsprojects/Paket/issues/1085
-
-#### 2.5.1 - 29.09.2015
 * BUGFIX: Do not create prerelease identifiers for transitive dependencies - https://github.com/fsprojects/Paket/issues/1099
+* PERFORMANCE: Do not parse remote dependencies file twice - https://github.com/fsprojects/Paket/issues/1101
+* PERFORMANCE: Check if we already downloaded paket.dependencies file for remote files in order to reduce stress on API limit - https://github.com/fsprojects/Paket/issues/1101
+* PERFORMANCE: Run all calls against different NuGet protocols in parallel and take the fastest - https://github.com/fsprojects/Paket/issues/1085
+* PERFORMANCE: Exclude duplicate NuGet feeds - https://github.com/fsprojects/Paket/issues/1085
+* COSMETICS: Cache calls to GitHub in order to reduce stress on API limit - https://github.com/fsprojects/Paket/issues/1101
  
 #### 2.5.0 - 29.09.2015
 * Remove all Paket entries from projects which have no paket.references - https://github.com/fsprojects/Paket/issues/1097
