@@ -2,6 +2,7 @@
 
 open Paket
 open Newtonsoft.Json.Linq
+open System
 open System.IO
 open Paket.Logging
 open Paket.ModuleResolver
@@ -28,6 +29,7 @@ let private auth key url =
 // Gets the sha1 of a branch
 let getSHA1OfBranch origin owner project branch authKey = 
     async { 
+        let key = origin,owner,project,branch
         match origin with
         | ModuleResolver.SingleSourceFileOrigin.GitHubLink -> 
             let url = sprintf "https://api.github.com/repos/%s/%s/commits/%s" owner project branch
@@ -64,6 +66,7 @@ let downloadDependenciesFile(rootPath,groupName,parserF,remoteFile:ModuleResolve
     let fi = FileInfo(remoteFile.Name)
 
     let dependenciesFileName = remoteFile.Name.Replace(fi.Name,Constants.DependenciesFileName)
+    let destination = FileInfo(remoteFile.ComputeFilePath(rootPath,groupName,dependenciesFileName))
 
     let url = 
         match remoteFile.Origin with
@@ -79,16 +82,29 @@ let downloadDependenciesFile(rootPath,groupName,parserF,remoteFile:ModuleResolve
         |> Option.bind (fun key -> ConfigFile.GetCredentialsForUrl key url)
         |> Option.map (fun (un, pwd) -> { Username = un; Password = pwd })
   
-    let! result = lookupDocument(auth,url)
+    let exists =
+        let di = destination.Directory
+        let versionFile = FileInfo(Path.Combine(di.FullName, Constants.PaketVersionFileName))
+        not (String.IsNullOrWhiteSpace remoteFile.Commit) && 
+          destination.Exists &&
+          versionFile.Exists && 
+          File.ReadAllText(versionFile.FullName).Contains(remoteFile.Commit)
 
-    match result with
-    | Some text when parserF text ->
-        let destination = remoteFile.ComputeFilePath(rootPath,groupName,dependenciesFileName)
+    
+    if exists then
+        return File.ReadAllText(destination.FullName)
+    else
+        let! result = lookupDocument(auth,url)
 
-        Directory.CreateDirectory(destination |> Path.GetDirectoryName) |> ignore
-        File.WriteAllText(destination, text)
-        return text
-    | _ -> return "" }
+        let text =
+            match result with
+            | Some text when parserF text -> text
+            | _ -> ""
+
+        Directory.CreateDirectory(destination.FullName |> Path.GetDirectoryName) |> ignore
+        File.WriteAllText(destination.FullName, text)
+
+        return text }
 
 
 let ExtractZip(fileName : string, targetFolder) = 
@@ -146,7 +162,7 @@ let downloadRemoteFiles(remoteFile:ResolvedSourceFile,destination) = async {
         ExtractZip(zipFile,projectPath)
 
         let source = Path.Combine(projectPath, sprintf "%s-%s" remoteFile.Project remoteFile.Commit)
-        DirectoryCopy(source,projectPath,true)        
+        DirectoryCopy(source,projectPath,true)
     | SingleSourceFileOrigin.GistLink, _ -> 
         let downloadUrl = rawGistFileUrl remoteFile.Owner remoteFile.Project remoteFile.Name
         let authentication = auth remoteFile.AuthKey downloadUrl
