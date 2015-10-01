@@ -30,7 +30,7 @@ type NugetPackageCache =
     static member CurrentCacheVersion = "2.0"
 
 let rec private followODataLink auth url = 
-    async {         
+    async {
         let! raw = getFromUrl(auth, url, acceptXml)
         let doc = XmlDocument()
         doc.LoadXml raw
@@ -98,7 +98,7 @@ let tryGetPackageVersionsViaJson (auth, nugetURL, package) =
 let tryNuGetV3 (auth, nugetURL, package) = 
     async { 
         try 
-            let! data = NuGetV3.findVersionsForPackage (auth, nugetURL, package, true, 100000)
+            let! data = NuGetV3.findVersionsForPackage(auth, nugetURL, package, true, 100000)
             match data with
             | Some data when Array.isEmpty data -> return None
             | None -> return None
@@ -109,7 +109,7 @@ let tryNuGetV3 (auth, nugetURL, package) =
 
 /// Gets versions of the given package from local Nuget feed.
 let getAllVersionsFromLocalPath (localNugetPath, package, root) =
-    async {        
+    async {
         let localNugetPath = Utils.normalizeLocalPath localNugetPath
         let di = getDirectoryInfo localNugetPath root
         if not di.Exists then
@@ -166,20 +166,21 @@ let parseODataDetails(nugetURL,packageName:PackageName,version,raw) =
         | None -> failwithf "unable to find dependencies for package %O %O" packageName version
 
     let packages = 
+        let split (d : string) =
+            let a = d.Split ':'
+            PackageName a.[0], 
+            VersionRequirement.Parse (if a.Length > 1 then a.[1] else "0"), 
+            (if a.Length > 2 && a.[2] <> "" then 
+                 if a.[2].ToLower().StartsWith("portable") then [ FrameworkRestriction.Portable(a.[2]) ]
+                 else 
+                     match FrameworkDetection.Extract a.[2] with
+                     | Some x -> [ FrameworkRestriction.Exactly x ]
+                     | None -> []
+             else [])
+
         dependencies
         |> fun s -> s.Split([| '|' |], System.StringSplitOptions.RemoveEmptyEntries)
-        |> Array.map (fun d -> d.Split ':')
-        |> Array.map (fun a -> 
-                        a.[0],
-                        (if a.Length > 1 then a.[1] else "0"),
-                        (if a.Length > 2 && a.[2] <> "" then 
-                            if a.[2].ToLower().StartsWith("portable") then [FrameworkRestriction.Portable(a.[2])] else
-                            match FrameworkDetection.Extract a.[2] with
-                            | Some x -> [FrameworkRestriction.Exactly x]
-                            | None -> []
-                         else 
-                            []))
-        |> Array.map (fun (name, version, restricted) -> PackageName name, VersionRequirement.Parse version, restricted)
+        |> Array.map split
         |> Array.toList
 
     
@@ -193,7 +194,7 @@ let parseODataDetails(nugetURL,packageName:PackageName,version,raw) =
 
 
 let getDetailsFromNuGetViaODataFast auth nugetURL (packageName:PackageName) (version:SemVerInfo) = 
-    async {         
+    async {
         try 
             let url = sprintf "%s/Packages?$filter=Id eq '%O' and NormalizedVersion eq '%s'" nugetURL packageName (version.Normalize())
             let! raw = getFromUrl(auth,url,acceptXml)
@@ -202,7 +203,7 @@ let getDetailsFromNuGetViaODataFast auth nugetURL (packageName:PackageName) (ver
                 tracefn ""
                 tracefn "%s" raw
             return parseODataDetails(nugetURL,packageName,version,raw)
-        with _ ->         
+        with _ ->
             let url = sprintf "%s/Packages?$filter=Id eq '%O' and Version eq '%O'" nugetURL packageName version
             let! raw = getFromUrl(auth,url,acceptXml)
             if verbose then
@@ -214,10 +215,10 @@ let getDetailsFromNuGetViaODataFast auth nugetURL (packageName:PackageName) (ver
 
 /// Gets package details from NuGet via OData
 let getDetailsFromNuGetViaOData auth nugetURL (packageName:PackageName) (version:SemVerInfo) = 
-    async {         
+    async {
         try 
             return! getDetailsFromNuGetViaODataFast auth nugetURL packageName version
-        with _ ->         
+        with _ ->
             let url = sprintf "%s/Packages(Id='%O',Version='%O')" nugetURL packageName version
             let! response = safeGetFromUrl(auth,url,acceptXml)
                     
@@ -250,7 +251,7 @@ let private loadFromCacheOrOData force fileName auth nugetURL package version =
         if not force && File.Exists fileName then
             try 
                 let json = File.ReadAllText(fileName)
-                let cachedObject = JsonConvert.DeserializeObject<NugetPackageCache>(json)                
+                let cachedObject = JsonConvert.DeserializeObject<NugetPackageCache> json
                 if cachedObject.CacheVersion <> NugetPackageCache.CurrentCacheVersion then
                     let! details = getDetailsFromNuGetViaOData auth nugetURL package version
                     return true,details
@@ -338,7 +339,7 @@ let findLocalPackage directory (packageName:PackageName) (version:SemVerInfo) =
 
 /// Reads direct dependencies from a nupkg file
 let getDetailsFromLocalFile root localNugetPath (packageName:PackageName) (version:SemVerInfo) =
-    async {        
+    async {
         let localNugetPath = Utils.normalizeLocalPath localNugetPath
         let di = getDirectoryInfo localNugetPath root
         let nupkg = findLocalPackage di.FullName packageName version
@@ -352,7 +353,7 @@ let getDetailsFromLocalFile root localNugetPath (packageName:PackageName) (versi
 
         zippedNuspec.ExtractToFile(fileName, true)
 
-        let nuspec = Nuspec.Load fileName        
+        let nuspec = Nuspec.Load fileName
 
         File.Delete(fileName)
 
@@ -372,10 +373,10 @@ let inline isExtracted fileName =
     if not fi.Exists then false else
     let di = fi.Directory
     di.EnumerateFileSystemInfos()
-    |> Seq.exists (fun f -> f.FullName <> fi.FullName)    
+    |> Seq.exists (fun f -> f.FullName <> fi.FullName)
 
 /// Extracts the given package to the ./packages folder
-let ExtractPackage(fileName:string, targetFolder, packageName:PackageName, version:SemVerInfo) =    
+let ExtractPackage(fileName:string, targetFolder, packageName:PackageName, version:SemVerInfo) =
     async {
         if isExtracted fileName then
              verbosefn "%O %O already extracted" packageName version
@@ -412,8 +413,8 @@ let CopyLicenseFromCache(root, groupName, cacheFileName, packageName:PackageName
             if cacheFile.Exists then
                 let targetFile = FileInfo(Path.Combine(getTargetFolder root groupName packageName version includeVersionInPath, "license.html"))
                 if not force && targetFile.Exists then
-                    verbosefn "License %O %O already copied" packageName version        
-                else                    
+                    verbosefn "License %O %O already copied" packageName version
+                else
                     File.Copy(cacheFile.FullName, targetFile.FullName, true)
         with
         | exn -> traceWarnfn "Could not copy license for %O %O from %s.%s    %s" packageName version cacheFileName Environment.NewLine exn.Message
@@ -425,8 +426,8 @@ let CopyFromCache(root, groupName, cacheFileName, licenseCacheFile, packageName:
         let targetFolder = DirectoryInfo(getTargetFolder root groupName packageName version includeVersionInPath).FullName
         let fi = FileInfo(cacheFileName)
         let targetFile = FileInfo(Path.Combine(targetFolder, fi.Name))
-        if not force && targetFile.Exists then           
-            verbosefn "%O %O already copied" packageName version        
+        if not force && targetFile.Exists then
+            verbosefn "%O %O already copied" packageName version
         else
             CleanDir targetFolder
             File.Copy(cacheFileName, targetFile.FullName)
@@ -448,7 +449,7 @@ let DownloadLicense(root,force,packageName:PackageName,version:SemVerInfo,licens
         let targetFile = FileInfo targetFileName
         if not force && targetFile.Exists && targetFile.Length > 0L then 
             verbosefn "License for %O %O already downloaded" packageName version
-        else             
+        else
             try
                 verbosefn "Downloading license for %O %O to %s" packageName version targetFileName
 
@@ -486,11 +487,11 @@ let DownloadPackage(root, auth, url, groupName, packageName:PackageName, version
         let targetFile = FileInfo targetFileName
         let licenseFileName = Path.Combine(CacheFolder, packageName.ToString() + "." + version.Normalize() + ".license.html")
         if not force && targetFile.Exists && targetFile.Length > 0L then 
-            verbosefn "%O %O already downloaded." packageName version            
+            verbosefn "%O %O already downloaded." packageName version
         else 
             // discover the link on the fly
             let! nugetPackage = getDetailsFromNuGet force auth url packageName version
-            try                
+            try 
                 tracefn "Downloading %O %O" packageName version
                 verbosefn "  to %s" targetFileName
                 let! license = Async.StartChild(DownloadLicense(root,force,packageName,version,nugetPackage.LicenseUrl,licenseFileName), 5000)
@@ -528,7 +529,7 @@ let DownloadPackage(root, auth, url, groupName, packageName:PackageName, version
                     bytesRead := bytes
                     do! fileStream.AsyncWrite(buffer, 0, !bytesRead)
 
-                try                    
+                try
                     do! license
                 with
                 | exn ->
@@ -540,7 +541,7 @@ let DownloadPackage(root, auth, url, groupName, packageName:PackageName, version
         return! CopyFromCache(root, groupName, targetFile.FullName, licenseFileName, packageName, version, includeVersionInPath, force)
     }
 
-let private GetSomeFiles targetFolder subFolderName filesDescriptionForVerbose =
+let private getFiles targetFolder subFolderName filesDescriptionForVerbose =
     let files = 
         let dir = DirectoryInfo(targetFolder)
         let path = Path.Combine(dir.FullName.ToLower(), subFolderName)
@@ -561,13 +562,13 @@ let private GetSomeFiles targetFolder subFolderName filesDescriptionForVerbose =
     files
 
 /// Finds all libraries in a nuget package.
-let GetLibFiles(targetFolder) = GetSomeFiles targetFolder "lib" "libraries"
+let GetLibFiles(targetFolder) = getFiles targetFolder "lib" "libraries"
 
 /// Finds all targets files in a nuget package.
-let GetTargetsFiles(targetFolder) = GetSomeFiles targetFolder "build" ".targets files"
+let GetTargetsFiles(targetFolder) = getFiles targetFolder "build" ".targets files"
 
 /// Finds all analyzer files in a nuget package.
-let GetAnalyzerFiles(targetFolder) = GetSomeFiles targetFolder "analyzers" "analyzer dlls"
+let GetAnalyzerFiles(targetFolder) = getFiles targetFolder "analyzers" "analyzer dlls"
 
 let GetPackageDetails root force sources packageName (version:SemVerInfo) : PackageResolver.PackageDetails = 
     let rec tryNext xs = 
