@@ -613,18 +613,15 @@ let GetPackageDetails root force sources packageName (version:SemVerInfo) : Pack
 let GetVersions root (sources, PackageName packageName) = 
     let v =
         sources
-        |> Seq.map (fun source -> 
-               match source with
-               | Nuget source -> 
-                   let auth = source.Authentication |> Option.map toBasicAuth
-                   [ (source.Url,"V3"),tryNuGetV3 (auth, source.Url, packageName)
-                     (source.Url,"ViaJSON"),tryGetPackageVersionsViaJson (auth, source.Url, packageName)
-                     (source.Url,"ViaOData"),tryGetPackageVersionsViaOData (auth, source.Url, packageName)
-                     (source.Url,"ViaODataWithFilter"),tryGetAllVersionsFromNugetODataWithFilter (auth, source.Url, packageName) ]
-                     
-               | LocalNuget path -> [ (path,"Local"),getAllVersionsFromLocalPath (path, packageName, root) ])
+        |> Seq.map (function
+                   | Nuget source -> 
+                       let auth = source.Authentication |> Option.map toBasicAuth
+                       [ tryNuGetV3 (auth, source.Url, packageName)
+                         tryGetPackageVersionsViaJson (auth, source.Url, packageName)
+                         tryGetPackageVersionsViaOData (auth, source.Url, packageName)
+                         tryGetAllVersionsFromNugetODataWithFilter (auth, source.Url, packageName) ]
+                   | LocalNuget path -> [ getAllVersionsFromLocalPath (path, packageName, root) ])
         |> List.concat
-        |> List.map snd
         |> Async.Choice'
         |> Async.RunSynchronously
 
