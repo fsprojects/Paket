@@ -2,6 +2,7 @@
 
 open Paket
 open Newtonsoft.Json.Linq
+open System
 open System.IO
 open Paket.Logging
 open Paket.ModuleResolver
@@ -59,6 +60,7 @@ let downloadDependenciesFile(rootPath,groupName,parserF,remoteFile:ModuleResolve
     let fi = FileInfo(remoteFile.Name)
 
     let dependenciesFileName = remoteFile.Name.Replace(fi.Name,Constants.DependenciesFileName)
+    let destination = FileInfo(remoteFile.ComputeFilePath(rootPath,groupName,dependenciesFileName))
 
     let auth, url = 
         match remoteFile.Origin with
@@ -73,16 +75,29 @@ let downloadDependenciesFile(rootPath,groupName,parserF,remoteFile:ModuleResolve
                 |> Option.map (fun (un, pwd) -> { Username = un; Password = pwd })
             auth, url
 
-    let! result = lookupDocument(auth,url)
+    let exists =
+        let di = destination.Directory
+        let versionFile = FileInfo(Path.Combine(di.FullName, Constants.PaketVersionFileName))
+        not (String.IsNullOrWhiteSpace remoteFile.Commit) && 
+          destination.Exists &&
+          versionFile.Exists && 
+          File.ReadAllText(versionFile.FullName).Contains(remoteFile.Commit)
 
-    match result with
-    | Some text when parserF text ->
-        let destination = remoteFile.ComputeFilePath(rootPath,groupName,dependenciesFileName)
+    
+    if exists then
+        return File.ReadAllText(destination.FullName)
+    else
+        let! result = lookupDocument(auth,url)
 
-        Directory.CreateDirectory(destination |> Path.GetDirectoryName) |> ignore
-        File.WriteAllText(destination, text)
-        return text
-    | _ -> return "" }
+        let text =
+            match result with
+            | Some text when parserF text -> text
+            | _ -> ""
+
+        Directory.CreateDirectory(destination.FullName |> Path.GetDirectoryName) |> ignore
+        File.WriteAllText(destination.FullName, text)
+
+        return text }
 
 
 let ExtractZip(fileName : string, targetFolder) = 

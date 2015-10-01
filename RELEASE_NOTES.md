@@ -1,3 +1,6 @@
+#### 2.5.5 - 01.10.2015
+* PERFORMANCE: Check if we already downloaded paket.dependencies file for remote files in order to reduce stress on API limit - https://github.com/fsprojects/Paket/issues/1101
+
 #### 2.5.4 - 01.10.2015
 * COSMETICS: Cache calls to GitHub in order to reduce stress on API limit - https://github.com/fsprojects/Paket/issues/1101
 
