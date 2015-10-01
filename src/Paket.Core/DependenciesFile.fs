@@ -167,7 +167,7 @@ module DependenciesFileParser =
 
     type private ParserOption =
     | ReferencesMode of bool
-    | OmitContent of bool
+    | OmitContent of ContentCopySettings
     | FrameworkRestrictions of FrameworkRestrictions
     | ImportTargets of bool
     | CopyLocal of bool
@@ -202,7 +202,14 @@ module DependenciesFileParser =
         | String.StartsWith "references" trimmed -> ParserOptions(ParserOption.ReferencesMode(trimmed.Replace(":","").Trim() = "strict"))
         | String.StartsWith "redirects" trimmed -> ParserOptions(ParserOption.Redirects(trimmed.Replace(":","").Trim() = "on"))
         | String.StartsWith "framework" trimmed -> ParserOptions(ParserOption.FrameworkRestrictions(trimmed.Replace(":","").Trim() |> Requirements.parseRestrictions))
-        | String.StartsWith "content" trimmed -> ParserOptions(ParserOption.OmitContent(trimmed.Replace(":","").Trim() = "none"))
+        | String.StartsWith "content" trimmed -> 
+            let setting =
+                match trimmed.Replace(":","").Trim().ToLowerInvariant() with
+                | "none" -> ContentCopySettings.Omit
+                | "once" -> ContentCopySettings.OmitIfExisting
+                | _ -> ContentCopySettings.Overwrite
+
+            ParserOptions(ParserOption.OmitContent(setting))
         | String.StartsWith "import_targets" trimmed -> ParserOptions(ParserOption.ImportTargets(trimmed.Replace(":","").Trim() = "true"))
         | String.StartsWith "copy_local" trimmed -> ParserOptions(ParserOption.CopyLocal(trimmed.Replace(":","").Trim() = "true"))
         | String.StartsWith "condition" trimmed -> ParserOptions(ParserOption.ReferenceCondition(trimmed.Replace(":","").Trim().ToUpper()))

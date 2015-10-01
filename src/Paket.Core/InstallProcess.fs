@@ -45,63 +45,86 @@ let findPackageFolder root (groupName,PackageName name) (version,settings) =
     | Some x -> x
     | None -> failwithf "Package directory for package %s was not found." name
 
-let private findPackagesWithContent (root,usedPackages:Map<GroupName*PackageName,SemVerInfo*InstallSettings>) =
-    usedPackages
-    |> Seq.filter (fun kv -> defaultArg (snd kv.Value).OmitContent false |> not)
-    |> Seq.map (fun kv -> findPackageFolder root kv.Key kv.Value)
-    |> Seq.choose (fun packageDir ->
-            packageDir.GetDirectories("Content")
-            |> Array.append (packageDir.GetDirectories("content"))
-            |> Array.tryFind (fun _ -> true))
-    |> Seq.toList
 
-let private copyContentFiles (project : ProjectFile, packagesWithContent) =
+let contentFileBlackList : list<(FileInfo -> bool)> = [
+    fun f -> f.Name = "_._"
+    fun f -> f.Name.EndsWith(".transform")
+    fun f -> f.Name.EndsWith(".pp")
+    fun f -> f.Name.EndsWith(".tt")
+    fun f -> f.Name.EndsWith(".ttinclude")
+]
 
-    let rules : list<(FileInfo -> bool)> = [
-            fun f -> f.Name = "_._"
-            fun f -> f.Name.EndsWith(".transform")
-            fun f -> f.Name.EndsWith(".pp")
-            fun f -> f.Name.EndsWith(".tt")
-            fun f -> f.Name.EndsWith(".ttinclude")
-        ]
+let processContentFiles root project (usedPackages:Map<_,_>) gitRemoteItems options =
+    let contentFiles = System.Collections.Generic.HashSet<_>()
+    let nuGetFileItems =
+        let packageDirectoriesWithContent =
+            usedPackages
+            |> Seq.map (fun kv -> kv.Key,kv.Value,defaultArg (snd kv.Value).OmitContent ContentCopySettings.Overwrite)
+            |> Seq.filter (fun (_,_,setting) -> setting <> ContentCopySettings.Omit)
+            |> Seq.map (fun (key,v,s) -> s,findPackageFolder root key v)
+            |> Seq.choose (fun (settings,packageDir) ->
+                    packageDir.GetDirectories("Content")
+                    |> Array.append (packageDir.GetDirectories("content"))
+                    |> Array.tryFind (fun _ -> true)
+                    |> Option.map (fun x -> x,settings))
+            |> Seq.toList
 
-    let onBlackList (fi : FileInfo) = rules |> List.exists (fun rule -> rule(fi))
+        let copyContentFiles (project : ProjectFile, packagesWithContent) =
+            let onBlackList (fi : FileInfo) = contentFileBlackList |> List.exists (fun rule -> rule(fi))
 
-    let rec copyDirContents (fromDir : DirectoryInfo, toDir : Lazy<DirectoryInfo>) =
-        fromDir.GetDirectories() |> Array.toList
-        |> List.collect (fun subDir -> copyDirContents(subDir, lazy toDir.Force().CreateSubdirectory(subDir.Name)))
-        |> List.append
-            (fromDir.GetFiles()
-                |> Array.toList
-                |> List.filter (onBlackList >> not)
-                |> List.map (fun file -> file.CopyTo(Path.Combine(toDir.Force().FullName, file.Name), true)))
+            let rec copyDirContents (fromDir : DirectoryInfo, settings, toDir : Lazy<DirectoryInfo>) =
+                fromDir.GetDirectories() |> Array.toList
+                |> List.collect (fun subDir -> copyDirContents(subDir, settings, lazy toDir.Force().CreateSubdirectory(subDir.Name)))
+                |> List.append
+                    (fromDir.GetFiles()
+                        |> Array.toList
+                        |> List.filter (onBlackList >> not)
+                        |> List.map (fun file ->
+                            let overwrite = settings = ContentCopySettings.Overwrite
+                            let target = FileInfo(Path.Combine(toDir.Force().FullName, file.Name))
+                            contentFiles.Add(target.FullName) |> ignore
+                            if overwrite || not target.Exists then
+                                file.CopyTo(target.FullName, true)
+                            else target))
 
-    packagesWithContent
-    |> List.collect (fun packageDir -> copyDirContents (packageDir, lazy (DirectoryInfo(Path.GetDirectoryName(project.FileName)))))
+            packagesWithContent
+            |> List.collect (fun (packageDir,settings) -> 
+                copyDirContents (packageDir, settings, lazy (DirectoryInfo(Path.GetDirectoryName(project.FileName)))))
 
-let private removeCopiedFiles (project: ProjectFile) =
-    let rec removeEmptyDirHierarchy (dir : DirectoryInfo) =
-        if dir.Exists && dir.EnumerateFileSystemInfos() |> Seq.isEmpty then
-            dir.Delete()
-            removeEmptyDirHierarchy dir.Parent
+        copyContentFiles(project, packageDirectoriesWithContent)
+        |> List.map (fun file ->
+                            { BuildAction = project.DetermineBuildAction file.Name
+                              Include = createRelativePath project.FileName file.FullName
+                              Link = None })
 
-    let removeFilesAndTrimDirs (files: FileInfo list) =
-        for f in files do
-            if f.Exists then
-                f.Delete()
+    let removeCopiedFiles (project: ProjectFile) =
+        let rec removeEmptyDirHierarchy (dir : DirectoryInfo) =
+            if dir.Exists && dir.EnumerateFileSystemInfos() |> Seq.isEmpty then
+                dir.Delete()
+                removeEmptyDirHierarchy dir.Parent
 
-        let dirsPathsDeepestFirst =
-            files
-            |> List.map (fun f -> f.Directory.FullName)
-            |> List.distinct
-            |> List.rev
+        let removeFilesAndTrimDirs (files: FileInfo list) =
+            for f in files do
+                if f.Exists then
+                    f.Delete()
 
-        for dirPath in dirsPathsDeepestFirst do
-            removeEmptyDirHierarchy (DirectoryInfo dirPath)
+            let dirsPathsDeepestFirst =
+                files
+                |> List.map (fun f -> f.Directory.FullName)
+                |> List.distinct
+                |> List.rev
 
-    project.GetPaketFileItems()
-    |> List.filter (fun fi -> not <| fi.FullName.Contains(Constants.PaketFilesFolderName))
-    |> removeFilesAndTrimDirs
+            for dirPath in dirsPathsDeepestFirst do
+                removeEmptyDirHierarchy (DirectoryInfo dirPath)
+
+        project.GetPaketFileItems()
+        |> List.filter (fun fi -> not <| fi.FullName.Contains(Constants.PaketFilesFolderName) && not (contentFiles.Contains(fi.FullName)))
+        |> removeFilesAndTrimDirs
+
+    removeCopiedFiles project
+
+    project.UpdateFileItems(gitRemoteItems @ nuGetFileItems, options.Hard)
+
 
 let CreateInstallModel(root, groupName, sources, force, package) =
     async {
@@ -137,7 +160,7 @@ let createModel(root, force, dependenciesFile:DependenciesFile, lockFile : LockF
 
     extractedPackages
 
-/// Applies binding redirects for all strong-named references to all app. and web. config files.
+/// Applies binding redirects for all strong-named references to all app. and web.config files.
 let private applyBindingRedirects (loadedLibs:Dictionary<_,_>) createNewBindingFiles root (extractedPackages:seq<_*InstallModel>) =
     let bindingRedirects (targetProfile : TargetProfile) =
         extractedPackages
@@ -199,7 +222,7 @@ let InstallIntoProjects(options : InstallerOptions, dependenciesFile, lockFile :
             |> List.map (fun (_, referencesFile)->
                 referencesFile
                 |> lockFile.GetPackageHull
-                |> Seq.map (fun p -> fst p.Key, snd p.Key))
+                |> Seq.map (fun p -> p.Key))
             |> Seq.concat
         else
             lockFile.GetGroupedResolution()
@@ -267,8 +290,6 @@ let InstallIntoProjects(options : InstallerOptions, dependenciesFile, lockFile :
         Path.Combine(FileInfo(project.FileName).Directory.FullName, Constants.PackagesConfigFile)
         |> updatePackagesConfigFile usedPackages 
 
-        removeCopiedFiles project
-
         let gitRemoteItems =
             referenceFile.Groups
             |> Seq.map (fun kv ->
@@ -309,15 +330,7 @@ let InstallIntoProjects(options : InstallerOptions, dependenciesFile, lockFile :
                           Link = None }))
             |> List.concat
 
-        let nuGetFileItems =
-            copyContentFiles(project, findPackagesWithContent(root,usedPackages))
-            |> List.map (fun file ->
-                                { BuildAction = project.DetermineBuildAction file.Name
-                                  Include = createRelativePath project.FileName file.FullName
-                                  Link = None })
-
-        project.UpdateFileItems(gitRemoteItems @ nuGetFileItems, options.Hard)
-
+        processContentFiles root project usedPackages gitRemoteItems options
         project.Save()
         let loadedLibs = new Dictionary<_,_>()
 
@@ -325,17 +338,12 @@ let InstallIntoProjects(options : InstallerOptions, dependenciesFile, lockFile :
             let group = g.Value
             model
             |> Seq.filter (fun kv -> 
-                let packageName = snd kv.Key
                 let packageRedirects =
-                    match group.Resolution |> Map.tryFind packageName with
+                    match group.Resolution |> Map.tryFind (snd kv.Key) with
                     | None -> None
                     | Some p -> p.Settings.CreateBindingRedirects
 
-                let isEnabled = 
-                    match packageRedirects with
-                    | Some v -> v
-                    | _ -> options.Redirects || g.Value.Options.Redirects
-
+                let isEnabled = defaultArg packageRedirects (options.Redirects || g.Value.Options.Redirects)
                 isEnabled && (fst kv.Key) = g.Key)
             |> Seq.map (fun kv -> kv.Value)
             |> applyBindingRedirects loadedLibs options.CreateNewBindingFiles (FileInfo project.FileName).Directory.FullName

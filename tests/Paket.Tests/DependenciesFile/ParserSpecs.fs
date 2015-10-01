@@ -171,7 +171,7 @@ nuget "Microsoft.SqlServer.Types"
 [<Test>]
 let ``should read content none config``() = 
     let cfg = DependenciesFile.FromCode(noneContentConfig)
-    cfg.Groups.[Constants.MainDependencyGroup].Options.Settings.OmitContent |> shouldEqual (Some true)
+    cfg.Groups.[Constants.MainDependencyGroup].Options.Settings.OmitContent |> shouldEqual (Some ContentCopySettings.Omit)
     cfg.Groups.[Constants.MainDependencyGroup].Options.Settings.CopyLocal |> shouldEqual None
     cfg.Groups.[Constants.MainDependencyGroup].Options.Settings.ImportTargets |> shouldEqual None
 
@@ -622,7 +622,7 @@ let ``should read config with content none``() =
     p.Settings.FrameworkRestrictions |> shouldEqual []
     p.Settings.ImportTargets |> shouldEqual None
     p.Settings.CopyLocal |> shouldEqual (Some false)
-    p.Settings.OmitContent |> shouldEqual (Some true)
+    p.Settings.OmitContent |> shouldEqual (Some ContentCopySettings.Omit)
 
 [<Test>]
 let ``should read config with  !~> 3.3``() = 

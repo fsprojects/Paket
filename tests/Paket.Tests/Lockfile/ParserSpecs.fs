@@ -317,7 +317,7 @@ let ``should parse framework restricted lock file in new syntax``() =
     packages.[3].Settings.CopyLocal |> shouldEqual None
     packages.[3].Settings.ImportTargets |> shouldEqual (Some false)
     packages.[3].Settings.IncludeVersionInPath |> shouldEqual (Some true)
-    packages.[3].Settings.OmitContent |> shouldEqual (Some true)
+    packages.[3].Settings.OmitContent |> shouldEqual (Some ContentCopySettings.Omit)
 
     packages.[5].Source |> shouldEqual PackageSources.DefaultNugetSource
     packages.[5].Name |> shouldEqual (PackageName "ReadOnlyCollectionInterfaces")

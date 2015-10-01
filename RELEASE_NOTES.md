@@ -1,3 +1,6 @@
+#### 2.5.8 - 01.10.2015
+* EXPERIMENTAL: Allow "content:once" as a package setting - https://github.com/fsprojects/Paket/issues/471
+
 #### 2.5.7 - 01.10.2015
 * BUGFIX: Don't add -prerelease to nuspec dependency nodes for project references - https://github.com/fsprojects/Paket/issues/1102
 
