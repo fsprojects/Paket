@@ -52,7 +52,7 @@ let ResolveWithGraph(dependenciesFile:DependenciesFile,getSha1,getVersionF, getP
         
     let groups = [Constants.MainDependencyGroup, mainGroup ] |> Map.ofSeq
 
-    dependenciesFile.Resolve(getSha1,getVersionF,getPackageDetailsF,groups)
+    dependenciesFile.Resolve(true,getSha1,getVersionF,getPackageDetailsF,groups)
 
 let getVersion (resolved:ResolvedPackage) = resolved.Version.ToString()
 

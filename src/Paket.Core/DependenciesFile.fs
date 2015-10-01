@@ -406,7 +406,7 @@ type DependenciesFile(fileName,groups:Map<GroupName,DependenciesGroup>, textRepr
     member __.FileName = fileName
     member __.Lines = textRepresentation
 
-    member __.Resolve(getSha1,getVersionF, getPackageDetailsF,groupsToResolve:Map<GroupName,RequirementsGroup>) =
+    member __.Resolve(force, getSha1, getVersionF, getPackageDetailsF, groupsToResolve:Map<GroupName,RequirementsGroup>) =
         groupsToResolve
         |> Map.map (fun k group ->  
             let rootDependencies =
@@ -415,16 +415,8 @@ type DependenciesFile(fileName,groups:Map<GroupName,DependenciesGroup>, textRepr
                 | Some d -> d
 
             let resolveSourceFile (file:ResolvedSourceFile) : PackageRequirement list =
-                let parserF text =
-                    try
-                        DependenciesFile.FromCode(text) |> ignore
-                        true
-                    with 
-                    | _ -> false
-
-                RemoteDownload.downloadDependenciesFile(Path.GetDirectoryName fileName, group.Name, parserF, file)
+                RemoteDownload.downloadDependenciesFile(force,Path.GetDirectoryName fileName, group.Name, DependenciesFile.FromCode, file)
                 |> Async.RunSynchronously
-                |> DependenciesFile.FromCode
                 |> fun df -> df.Groups.[Constants.MainDependencyGroup].Packages  // We do not support groups in reference files yet
 
             let remoteFiles = ModuleResolver.Resolve(resolveSourceFile,getSha1,group.RemoteFiles)

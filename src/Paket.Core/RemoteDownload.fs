@@ -56,7 +56,7 @@ let private rawGistFileUrl owner project fileName =
     sprintf "https://gist.githubusercontent.com/%s/%s/raw/%s" owner project fileName
 
 /// Gets a dependencies file from the remote source and tries to parse it.
-let downloadDependenciesFile(rootPath,groupName,parserF,remoteFile:ModuleResolver.ResolvedSourceFile) = async {
+let downloadDependenciesFile(force,rootPath,groupName,parserF,remoteFile:ModuleResolver.ResolvedSourceFile) = async {
     let fi = FileInfo(remoteFile.Name)
 
     let dependenciesFileName = remoteFile.Name.Replace(fi.Name,Constants.DependenciesFileName)
@@ -78,26 +78,31 @@ let downloadDependenciesFile(rootPath,groupName,parserF,remoteFile:ModuleResolve
     let exists =
         let di = destination.Directory
         let versionFile = FileInfo(Path.Combine(di.FullName, Constants.PaketVersionFileName))
-        not (String.IsNullOrWhiteSpace remoteFile.Commit) && 
+        not force &&
+          not (String.IsNullOrWhiteSpace remoteFile.Commit) && 
           destination.Exists &&
           versionFile.Exists && 
           File.ReadAllText(versionFile.FullName).Contains(remoteFile.Commit)
 
     
     if exists then
-        return File.ReadAllText(destination.FullName)
+        return parserF (File.ReadAllText(destination.FullName))
     else
         let! result = lookupDocument(auth,url)
 
-        let text =
+        let text,depsFile =
             match result with
-            | Some text when parserF text -> text
-            | _ -> ""
+            | Some text -> 
+                    try
+                        text,parserF text
+                    with 
+                    | _ -> "",parserF ""
+            | _ -> "",parserF ""
 
         Directory.CreateDirectory(destination.FullName |> Path.GetDirectoryName) |> ignore
         File.WriteAllText(destination.FullName, text)
 
-        return text }
+        return depsFile }
 
 
 let ExtractZip(fileName : string, targetFolder) = 
