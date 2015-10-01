@@ -199,9 +199,9 @@ let inline createWebClient(url,auth:Auth option) =
 //More generic variant of http://www.fssnip.net/c4
 open System.Collections.Concurrent
 
-let cache = ConcurrentDictionary<(string * obj) option, Lazy<obj>>()
+let cache = ConcurrentDictionary<(string * obj), Lazy<obj>>()
 let memoizeConcurrent (caller : string) (f : 'a -> 'b) = 
-    fun (x : 'a) -> (cache.GetOrAdd(Some(caller, x |> box), lazy ((f x) |> box)).Force() |> unbox) : 'b
+    fun (x : 'a) -> (cache.GetOrAdd((caller, x |> box), lazy ((f x) |> box)).Force() |> unbox) : 'b
 
 #nowarn "40"
 
