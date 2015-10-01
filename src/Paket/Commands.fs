@@ -50,13 +50,6 @@ with
         |> Seq.head
         :?> CustomCommandLineAttribute).Name
 
-type GlobalArgs =
-    | [<AltCommandLine("-v")>] Verbose
-    | Log_File of string
-with
-    interface IArgParserTemplate with
-        member __.Usage = ""
-
 type AddArgs =
     | [<CustomCommandLine("nuget")>][<Mandatory>] Nuget of string
     | [<CustomCommandLine("version")>] Version of string

@@ -17,13 +17,8 @@ let private stopWatch = new Stopwatch()
 stopWatch.Start()
 
 let filterGlobalArgs args =
-    let globalResults =
-        ArgumentParser.Create<GlobalArgs>()
-            .Parse(ignoreMissing = true,
-                   ignoreUnrecognized = true,
-                   raiseOnUsage = false)
-    let verbose = globalResults.Contains <@ GlobalArgs.Verbose @>
-    let logFile = globalResults.TryGetResult <@ GlobalArgs.Log_File @>
+    let verbose = args |> Array.exists (fun x -> x = "--verbose" || x = "-v")
+    let logFile = args |> Array.tryFindIndex (fun x -> x = "--log-file") |> Option.map (fun i -> args.[i+1])
 
     let rest =
         match logFile with
