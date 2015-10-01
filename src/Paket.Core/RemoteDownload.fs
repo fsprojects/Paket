@@ -9,6 +9,7 @@ open System.IO.Compression
 open Paket.Domain
 
 let private githubCache = System.Collections.Concurrent.ConcurrentDictionary<_, _>()
+
 let private lookupDocument (auth,url : string)  = async {
     let key = auth,url
     match githubCache.TryGetValue key with
@@ -19,17 +20,18 @@ let private lookupDocument (auth,url : string)  = async {
         return document
     }
 
+let private auth key url = 
+    key
+    |> Option.bind (fun key -> ConfigFile.GetCredentialsForUrl key url)
+    |> Option.map (fun (un, pwd) -> { Username = un; Password = pwd })
+
 // Gets the sha1 of a branch
-let getSHA1OfBranch origin owner project branch auth = 
+let getSHA1OfBranch origin owner project branch authKey = 
     async { 
-        let auth url = 
-            auth
-            |> Option.bind (fun key -> ConfigFile.GetCredentialsForUrl key url)
-            |> Option.map (fun (un, pwd) -> { Username = un; Password = pwd })
         match origin with
         | ModuleResolver.SingleSourceFileOrigin.GitHubLink -> 
             let url = sprintf "https://api.github.com/repos/%s/%s/commits/%s" owner project branch
-            let! document = lookupDocument(auth url,url)
+            let! document = lookupDocument(auth authKey url,url)
             match document with
             | Some document ->
                 let json = JObject.Parse(document)
@@ -39,7 +41,7 @@ let getSHA1OfBranch origin owner project branch auth =
                 return ""
         | ModuleResolver.SingleSourceFileOrigin.GistLink ->
             let url = sprintf "https://api.github.com/gists/%s/%s" project branch
-            let! document = lookupDocument(auth url,url)
+            let! document = lookupDocument(auth authKey url,url)
             match document with
             | Some document ->
                 let json = JObject.Parse(document)
@@ -116,7 +118,8 @@ let downloadRemoteFiles(remoteFile:ResolvedSourceFile,destination) = async {
         let projectPath = fi.Directory.FullName
 
         let url = sprintf "https://api.github.com/gists/%s/%s" remoteFile.Project remoteFile.Commit
-        let! document = getFromUrl(None, url, null)
+        let authentication = auth remoteFile.AuthKey url
+        let! document = getFromUrl(authentication, url, null)
         let json = JObject.Parse(document)
         let files = json.["files"] |> Seq.map (fun i -> i.First.["filename"].ToString(), i.First.["raw_url"].ToString())
 
@@ -137,23 +140,25 @@ let downloadRemoteFiles(remoteFile:ResolvedSourceFile,destination) = async {
         let projectPath = fi.Directory.FullName
         let zipFile = Path.Combine(projectPath,sprintf "%s.zip" remoteFile.Commit)
         let downloadUrl = sprintf "https://github.com/%s/%s/archive/%s.zip" remoteFile.Owner remoteFile.Project remoteFile.Commit
-
-        do! downloadFromUrl(None, downloadUrl) zipFile
+        let authentication = auth remoteFile.AuthKey downloadUrl
+        do! downloadFromUrl(authentication, downloadUrl) zipFile
 
         ExtractZip(zipFile,projectPath)
 
         let source = Path.Combine(projectPath, sprintf "%s-%s" remoteFile.Project remoteFile.Commit)
         DirectoryCopy(source,projectPath,true)        
     | SingleSourceFileOrigin.GistLink, _ -> 
-        return! downloadFromUrl(None,rawGistFileUrl remoteFile.Owner remoteFile.Project remoteFile.Name) destination
+        let downloadUrl = rawGistFileUrl remoteFile.Owner remoteFile.Project remoteFile.Name
+        let authentication = auth remoteFile.AuthKey downloadUrl
+        return! downloadFromUrl(authentication, downloadUrl) destination
     | SingleSourceFileOrigin.GitHubLink, _ ->
-        return! downloadFromUrl(None,rawFileUrl remoteFile.Owner remoteFile.Project remoteFile.Commit remoteFile.Name) destination
+        let url = rawFileUrl remoteFile.Owner remoteFile.Project remoteFile.Commit remoteFile.Name
+        let authentication = auth remoteFile.AuthKey url
+        return! downloadFromUrl(authentication, url) destination
     | SingleSourceFileOrigin.HttpLink(origin), _ ->
         let url = origin + remoteFile.Commit
-        let auth =
-            ConfigFile.GetCredentialsForUrl remoteFile.Project url
-            |> Option.map (fun (un, pwd) -> { Username = un; Password = pwd })
-        do! downloadFromUrl(auth, url) destination
+        let authentication = auth remoteFile.AuthKey url
+        do! downloadFromUrl(authentication, url) destination
         match Path.GetExtension(destination).ToLowerInvariant() with
         | ".zip" ->
             let targetFolder = FileInfo(destination).Directory.FullName

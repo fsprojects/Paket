@@ -114,13 +114,26 @@ let checkCredentials(url, cred) =
     try 
         client.DownloadData(Uri(url)) |> ignore
         true
-    with _ -> false
+    with e -> false
 
 let getSourceNodes (credentialsNode : XmlNode) (source) = 
     credentialsNode.SelectNodes "//credential"
     |> Seq.cast<XmlElement>
     |> Seq.filter (fun n -> n.Attributes.["source"].Value = source)
     |> Seq.toList
+
+let private credentialCache = System.Collections.Concurrent.ConcurrentDictionary<_, _>()
+
+let private validateCredentials url auth =
+    match credentialCache.TryGetValue url with
+    | true, result -> result
+    | _ -> 
+       if checkCredentials(url, Some(auth)) then
+          credentialCache.TryAdd(url, true) |> ignore
+          true
+       else 
+          credentialCache.TryAdd(url, false) |> ignore
+          false
 
 /// Get the credential from the credential store for a specific source and valdiates against the url
 let GetCredentialsForUrl (source : string) url =
@@ -130,7 +143,7 @@ let GetCredentialsForUrl (source : string) url =
     | sourceNode::_ ->
         let username,password = getAuthFromNode sourceNode
         let auth = {Username = username; Password = password}
-        if checkCredentials(url, Some(auth)) then
+        if validateCredentials url auth then
             Some(username,password)
         else
             traceWarnfn "credentials for %s source are invalid" source  
