@@ -99,7 +99,7 @@ let inline createRelativePath root path =
         else root
     
     let uri = Uri(basePath)
-    uri.MakeRelativeUri(Uri(path)).ToString().Replace("/", "\\").Replace("%20", " ")  
+    uri.MakeRelativeUri(Uri(path)).ToString().Replace("/", "\\").Replace("%20", " ")
 
 let extractPath infix (fileName : string) : string option=
     let path = fileName.Replace("\\", "/").ToLower()
@@ -196,12 +196,6 @@ let inline createWebClient(url,auth:Auth option) =
     client.Proxy <- getDefaultProxyFor url
     client
 
-//More generic variant of http://www.fssnip.net/c4
-open System.Collections.Concurrent
-
-let cache = ConcurrentDictionary<(string * obj), Lazy<obj>>()
-let memoizeConcurrent (caller : string) (f : 'a -> 'b) = 
-    fun (x : 'a) -> (cache.GetOrAdd((caller, x |> box), lazy ((f x) |> box)).Force() |> unbox) : 'b
 
 #nowarn "40"
 
@@ -212,14 +206,10 @@ open System.Threading
 let downloadFromUrl (auth:Auth option, url : string) (filePath: string) =
     async {
         try
-            let memoized = 
-                memoizeConcurrent "downloadFromUrl" (fun (a, u) p ->
-                    use client = createWebClient(u,a)
-                    client.DownloadFileTaskAsync(Uri(u), p) |> Async.AwaitTask
-                )
-            let task = memoized (auth,url) filePath
-            do! task
+            use client = createWebClient(url,auth)
             
+            let task = client.DownloadFileTaskAsync(Uri(url), filePath) |> Async.AwaitTask
+            do! task
         with
         | exn ->
             failwithf "Could not download from %s%s Message: %s" url Environment.NewLine exn.Message
@@ -229,13 +219,10 @@ let downloadFromUrl (auth:Auth option, url : string) (filePath: string) =
 let getFromUrl (auth:Auth option, url : string, contentType : string) =
     async { 
         try
-            let memoized = memoizeConcurrent "getFromUrl" (fun (a, u, c) ->
-                    use client = createWebClient(u,a)
-                    if notNullOrEmpty c then
-                        client.Headers.Add(HttpRequestHeader.Accept, c)
-                    client.DownloadStringTaskAsync(Uri(u)) |> Async.AwaitTask
-                )
-            let s = memoized(auth, url, contentType)
+            use client = createWebClient(url,auth)
+            if notNullOrEmpty contentType then
+                client.Headers.Add(HttpRequestHeader.Accept, contentType)
+            let s = client.DownloadStringTaskAsync(Uri(url)) |> Async.AwaitTask
             return! s
         with
         | exn -> 
@@ -246,8 +233,7 @@ let getFromUrl (auth:Auth option, url : string, contentType : string) =
 let getXmlFromUrl (auth:Auth option, url : string) =
     async { 
         try
-          let memoized = memoizeConcurrent "getXmlFromUrl" (fun (a,u) ->
-            use client = createWebClient(u,a)
+            use client = createWebClient(url,auth)
 
             // mimic the headers sent from nuget client to odata/ endpoints
             client.Headers.Add(HttpRequestHeader.Accept, "application/atom+xml, application/xml")
@@ -255,10 +241,8 @@ let getXmlFromUrl (auth:Auth option, url : string) =
             client.Headers.Add("DataServiceVersion", "1.0;NetFx")
             client.Headers.Add("MaxDataServiceVersion", "2.0;NetFx")
             
-            client.DownloadStringTaskAsync(Uri(u)) |> Async.AwaitTask
-          )
-          let s = memoized(auth, url) 
-          return! s
+            let s = client.DownloadStringTaskAsync(Uri(url)) |> Async.AwaitTask
+            return! s
         with
         | exn -> 
             failwithf "Could not retrieve data from %s%s Message: %s" url Environment.NewLine exn.Message
@@ -269,16 +253,14 @@ let getXmlFromUrl (auth:Auth option, url : string) =
 let safeGetFromUrl (auth:Auth option, url : string, contentType : string) =
     async { 
         try 
-          let memoized = memoizeConcurrent "safeGetFromUrl" (fun (a,u,c) ->
-            use client = createWebClient(u,a)
+            use client = createWebClient(url,auth)
             
-            if notNullOrEmpty c then
-                client.Headers.Add(HttpRequestHeader.Accept, c)
+            if notNullOrEmpty contentType then
+                client.Headers.Add(HttpRequestHeader.Accept, contentType)
 
-            client.DownloadStringTaskAsync(Uri(u)) |> Async.AwaitTask
-          )
-          let! raw =  memoized(auth, url, contentType)
-          return Some raw
+            let s = client.DownloadStringTaskAsync(Uri(url)) |> Async.AwaitTask
+            let! raw = s
+            return Some raw
         with _ -> return None
     }
 
