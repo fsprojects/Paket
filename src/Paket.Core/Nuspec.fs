@@ -18,6 +18,41 @@ type FrameworkAssemblyReference = {
     AssemblyName: string
     FrameworkRestrictions : FrameworkRestrictions }
 
+module internal NuSpecParserHelper =
+    let getDependency fileName node = 
+        let name = 
+            match node |> getAttribute "id" with
+            | Some name -> PackageName name
+            | None -> failwithf "unable to find dependency id in %s" fileName
+        let version = 
+            match node |> getAttribute "version" with
+            | Some version -> VersionRequirement.Parse version
+            | None ->         VersionRequirement.Parse "0"
+        let restriction =
+            let parent = node.ParentNode 
+            match parent.Name.ToLower(), parent |> getAttribute "targetFramework" with
+            | "group", Some framework -> 
+                match FrameworkDetection.Extract framework with
+                | Some x -> [FrameworkRestriction.Exactly x]
+                | None -> []
+            | _ -> []
+        name,version,restriction
+
+    let getAssemblyRefs node =
+        let name = node |> getAttribute "assemblyName"
+        let targetFrameworks = node |> getAttribute "targetFramework"
+        match name,targetFrameworks with
+        | Some name, Some targetFrameworks when targetFrameworks = "" ->
+            [{ AssemblyName = name; FrameworkRestrictions = [] }]
+        | Some name, None ->
+            [{ AssemblyName = name; FrameworkRestrictions = [] }]
+        | Some name, Some targetFrameworks ->
+            targetFrameworks.Split([|','; ' '|],System.StringSplitOptions.RemoveEmptyEntries)
+            |> Array.choose FrameworkDetection.Extract
+            |> Array.map (fun fw -> { AssemblyName = name; FrameworkRestrictions = [FrameworkRestriction.Exactly fw] })
+            |> Array.toList
+        | _ -> []
+
 type Nuspec = 
     { References : NuspecReferences 
       Dependencies : (PackageName * VersionRequirement * FrameworkRestrictions) list
@@ -42,96 +77,51 @@ type Nuspec =
             let doc = new XmlDocument()
             doc.Load fi.FullName
 
-            let officialName = 
-                match doc |> getNode "package" |> optGetNode "metadata" |> optGetNode "id" with
-                | Some node -> node.InnerText
-                | None -> failwithf "unable to find package id in %s" fileName
-
-            let dependency node = 
-                let name = 
-                    match node |> getAttribute "id" with
-                    | Some name -> PackageName name
-                    | None -> failwithf "unable to find dependency id in %s" fileName                            
-                let version = 
-                    match node |> getAttribute "version" with
-                    | Some version -> VersionRequirement.Parse version
-                    | None ->         VersionRequirement.Parse "0"
-                let restriction =
-                    let parent = node.ParentNode 
-                    match parent.Name.ToLower(), parent |> getAttribute "targetFramework" with
-                    | "group", Some framework -> 
-                        match FrameworkDetection.Extract framework with
-                        | Some x -> [FrameworkRestriction.Exactly x]
-                        | None -> []
-                    | _ -> []
-                name,version,restriction
-
             let frameworks =
                 doc 
                 |> getDescendants "group" 
-                |> Seq.map (fun node ->
+                |> List.map (fun node ->
                     match node |> getAttribute "targetFramework" with
                     | Some framework ->
                         match FrameworkDetection.Extract framework with
                         | Some x -> [PackageName "",VersionRequirement.NoRestriction,[FrameworkRestriction.Exactly x]]
                         | None -> []
                     | _ -> [])
-                |> Seq.concat
-                |> Seq.toList
+                |> List.concat
 
             let dependencies = 
                 doc 
                 |> getDescendants "dependency"
-                |> List.map dependency
+                |> List.map (NuSpecParserHelper.getDependency fileName)
                 |> List.append frameworks
                 |> Requirements.optimizeDependencies 
-
-            let licenseUrl =                 
-                match doc |> getNode "package" |> optGetNode "metadata" |> optGetNode "licenseUrl" with
-                | Some link -> link.InnerText
-                | None -> ""
-
-            let isDevelopmentDependency =                 
-                match doc |> getNode "package" |> optGetNode "metadata" |> optGetNode "developmentDependency" with
-                | Some link -> link.InnerText.ToLower() = "true"
-                | None -> false
             
             let references = 
                 doc
                 |> getDescendants "reference"
                 |> List.choose (getAttribute "file")
-
-            let assemblyRefs node =
-                let name = node |> getAttribute "assemblyName"
-                let targetFrameworks = node |> getAttribute "targetFramework"
-                match name,targetFrameworks with
-                | Some name, Some targetFrameworks when targetFrameworks = "" ->
-                    [{ AssemblyName = name; FrameworkRestrictions = [] }]
-                | Some name, None ->                     
-                    [{ AssemblyName = name; FrameworkRestrictions = [] }]
-                | Some name, Some targetFrameworks ->                     
-                    targetFrameworks.Split([|','; ' '|],System.StringSplitOptions.RemoveEmptyEntries)
-                    |> Array.choose FrameworkDetection.Extract
-                    |> Array.map (fun fw -> { AssemblyName = name; FrameworkRestrictions = [FrameworkRestriction.Exactly fw] })
-                    |> Array.toList
-                | _ -> []
-
-            let frameworkAssemblyReferences =
+           
+            { References = if references = [] then NuspecReferences.All else NuspecReferences.Explicit references
+              Dependencies = dependencies
+              OfficialName = 
+                match doc |> getNode "package" |> optGetNode "metadata" |> optGetNode "id" with
+                | Some node -> node.InnerText
+                | None -> failwithf "unable to find package id in %s" fileName
+              LicenseUrl = 
+                match doc |> getNode "package" |> optGetNode "metadata" |> optGetNode "licenseUrl" with
+                | Some link -> link.InnerText
+                | None -> ""
+              IsDevelopmentDependency =
+                match doc |> getNode "package" |> optGetNode "metadata" |> optGetNode "developmentDependency" with
+                | Some link -> link.InnerText.ToLower() = "true"
+                | None -> false
+              FrameworkAssemblyReferences = 
                 let grouped =
                     doc
                     |> getDescendants "frameworkAssembly"
-                    |> List.collect assemblyRefs
+                    |> List.collect NuSpecParserHelper.getAssemblyRefs
                     |> List.groupBy (fun r -> r.AssemblyName)
 
                 [for name,restrictions in grouped do
                     yield { AssemblyName = name
-                            FrameworkRestrictions = 
-                                restrictions 
-                                |> List.collect (fun x -> x.FrameworkRestrictions) } ]
-           
-            { References = if references = [] then NuspecReferences.All else NuspecReferences.Explicit references
-              Dependencies = dependencies
-              OfficialName = officialName
-              LicenseUrl = licenseUrl
-              IsDevelopmentDependency = isDevelopmentDependency
-              FrameworkAssemblyReferences = frameworkAssemblyReferences }
+                            FrameworkRestrictions = List.collect (fun x -> x.FrameworkRestrictions) restrictions } ] }

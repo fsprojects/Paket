@@ -139,7 +139,7 @@ let downloadRemoteFiles(remoteFile:ResolvedSourceFile,destination) = async {
         ExtractZip(zipFile,projectPath)
 
         let source = Path.Combine(projectPath, sprintf "%s-%s" remoteFile.Project remoteFile.Commit)
-        DirectoryCopy(source,projectPath,true)        
+        DirectoryCopy(source,projectPath,true)
     | SingleSourceFileOrigin.GistLink, _ -> 
         return! downloadFromUrl(None,rawGistFileUrl remoteFile.Owner remoteFile.Project remoteFile.Name) destination
     | SingleSourceFileOrigin.GitHubLink, _ ->
