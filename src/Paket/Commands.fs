@@ -303,20 +303,16 @@ let cmdLineUsageMessage (command : Command) parser =
 
 let markdown (command : Command) (additionalText : string) =
     let (afterCommandText, afterOptionsText) =
-        let ensureLineBreak (text : string) = if String.IsNullOrEmpty(text)
-                                              then text
-                                              else text + Environment.NewLine + Environment.NewLine
+        let ensureLineBreak (text : string) = if String.IsNullOrEmpty(text) then text else text + Environment.NewLine + Environment.NewLine
         let cleanUp (text : string) = text.Replace("# [after-command]", "")
                                           .Replace("# [after-options]", "")
                                           .Trim('\r', '\n') |> ensureLineBreak
         let afterCommandIndex = additionalText.IndexOf("# [after-command]")
         let afterOptionsIndex = additionalText.IndexOf("# [after-options]")
-        if afterCommandIndex = -1
-        then "", additionalText |> cleanUp
-        else if afterOptionsIndex = -1
-             then additionalText |> cleanUp, ""
-             else (additionalText.Substring(0, afterCommandIndex) |> cleanUp,
-                   additionalText.Substring(afterOptionsIndex) |> cleanUp)
+        
+        if afterCommandIndex = -1 then "", additionalText |> cleanUp
+        else if afterOptionsIndex = -1 then additionalText |> cleanUp, ""
+        else (additionalText.Substring(0, afterCommandIndex) |> cleanUp, additionalText.Substring(afterOptionsIndex) |> cleanUp)
 
     let replace (pattern : string) (replacement : string) input =
         System.Text.RegularExpressions.Regex.Replace(input, pattern, replacement)
@@ -330,7 +326,8 @@ let markdown (command : Command) (additionalText : string) =
         let syntax = cmdLineSyntax parser command.Name
         syntax, options
 
-    let getSyntax = function
+    let syntax, options = 
+        match command with
         | Add -> syntaxAndOptions (ArgumentParser.Create<AddArgs>())
         | Config -> syntaxAndOptions (ArgumentParser.Create<ConfigArgs>())
         | ConvertFromNuget -> syntaxAndOptions (ArgumentParser.Create<ConvertFromNugetArgs>())
@@ -355,8 +352,6 @@ let markdown (command : Command) (additionalText : string) =
         |> replace "(?<=\s)paket.lock( file(s)?)?" "[`paket.lock`$1](lock-file.html)"
         |> replace "(?<=\s)paket.template( file(s)?)?" "[`paket.template`$1](template-files.html)"
         |> replace "(?<=\s)paket.references( file(s)?)?" "[`paket.references`$1](references-files.html)"
-
-    let syntax, options = getSyntax command
 
     System.Text.StringBuilder()
         .Append("# paket ")
