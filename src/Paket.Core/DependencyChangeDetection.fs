@@ -4,21 +4,22 @@ open Paket.Domain
 open Paket.Requirements
 open Paket.PackageResolver
 
-let findChangesInDependenciesFile(dependenciesFile:DependenciesFile,lockFile:LockFile) =   
-
-    let inline hasChanged (newRequirement:PackageRequirement) (originalPackage:ResolvedPackage) =
-      if newRequirement.VersionRequirement.IsInRange originalPackage.Version |> not then true
-      elif newRequirement.Settings <> originalPackage.Settings then true
-      else false
+let findChangesInDependenciesFile(dependenciesFile:DependenciesFile,lockFile:LockFile) =
+    let hasChanged (newRequirement:PackageRequirement) (originalPackage:ResolvedPackage) =
+        if newRequirement.VersionRequirement.IsInRange originalPackage.Version |> not then 
+            true
+        else 
+            newRequirement.Settings <> originalPackage.Settings
 
     let added groupName =
         match dependenciesFile.Groups |> Map.tryFind groupName with
         | None -> Set.empty
-        | Some group -> 
+        | Some group ->
+            let lockFileGroup = lockFile.Groups |> Map.tryFind groupName 
             group.Packages
             |> Seq.map (fun d -> d.Name,d)
             |> Seq.filter (fun (name,pr) ->
-                match lockFile.Groups |> Map.tryFind groupName with
+                match lockFileGroup with
                 | None -> true
                 | Some group ->
                     match group.Resolution.TryFind name with

@@ -1,3 +1,6 @@
+#### 2.7.1 - 02.10.2015
+* Do not write unnecessary framework restrictions into paket.lock 
+
 #### 2.7.0 - 02.10.2015
 * Support for private GitHub repos - http://fsprojects.github.io/Paket/github-dependencies.html#Referencing-a-private-github-repository
 * BUGFIX: Find the mono binary on OSX 10.11 - https://github.com/fsprojects/Paket/pull/1103

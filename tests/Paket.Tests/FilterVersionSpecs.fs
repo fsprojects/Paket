@@ -24,7 +24,8 @@ let ``can check if in range for Minimum``() =
     "2.1" |> isInRangeNoPreRelease (VersionRange.Minimum (SemVer.Parse "2.2")) |> shouldEqual false
     "2.2" |> isInRangeNoPreRelease (VersionRange.Minimum (SemVer.Parse "2.2")) |> shouldEqual true
     "3.0" |> isInRangeNoPreRelease (VersionRange.Minimum (SemVer.Parse "2.2")) |> shouldEqual true
-    "1.1-beta" |> isInRangePreRelease (VersionRange.Minimum(SemVer.Parse "1.0-beta")) |> shouldEqual true    
+    "1.1-beta" |> isInRangePreRelease (VersionRange.Minimum(SemVer.Parse "1.0-beta")) |> shouldEqual true
+    "2.0.3" |> isInRangeNoPreRelease (VersionRange.AtLeast "0") |> shouldEqual true
     
 [<Test>]
 let ``can check if in range for GreaterThan``() =

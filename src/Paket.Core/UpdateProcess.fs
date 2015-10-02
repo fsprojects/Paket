@@ -80,8 +80,9 @@ let selectiveUpdate resolve (lockFile:LockFile) (dependenciesFile:DependenciesFi
         match UpdateMode.Mode updateAll package with
         | UpdateAll -> resolve dependenciesFile None
         | Install ->
+            let changes = DependencyChangeDetection.findChangesInDependenciesFile(dependenciesFile,lockFile)
             let dependenciesFile = 
-                DependencyChangeDetection.findChangesInDependenciesFile(dependenciesFile,lockFile)
+                changes
                 |> DependencyChangeDetection.PinUnchangedDependencies dependenciesFile lockFile
             resolve dependenciesFile None
         | SelectiveUpdate(groupName,package) -> 

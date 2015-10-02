@@ -71,7 +71,12 @@ module LockFileSerializer =
                           let s = package.Version.ToString()
                           if s = "" then s else "(" + s + ")"
 
-                      let s = package.Settings.ToString()
+                      let settings =
+                        if package.Settings.FrameworkRestrictions = options.Settings.FrameworkRestrictions then
+                            { package.Settings with FrameworkRestrictions = [] }
+                        else
+                            package.Settings
+                      let s = settings.ToString()
 
                       if s = "" then 
                         yield sprintf "    %s %s" packageName versionStr 
@@ -83,13 +88,14 @@ module LockFileSerializer =
                               let s = v.ToString()
                               if s = "" then s else "(" + s + ")"
 
-                          match restrictions with
-                          | [] -> yield sprintf "      %s %s" name versionStr
-                          | _  -> yield sprintf "      %s %s - framework: %s" name versionStr (String.Join(", ",restrictions))]
+                          if List.isEmpty restrictions || restrictions = options.Settings.FrameworkRestrictions then
+                            yield sprintf "      %s %s" name versionStr
+                          else
+                            yield sprintf "      %s %s - framework: %s" name versionStr (String.Join(", ",restrictions))]
     
         String.Join(Environment.NewLine, all |> List.map (fun s -> s.TrimEnd()))
 
-    let serializeSourceFiles (files:ResolvedSourceFile list) =    
+    let serializeSourceFiles (files:ResolvedSourceFile list) =
         let all =
             let updateHasReported = new List<SingleSourceFileOrigin>()
 
@@ -191,7 +197,7 @@ module LockFileParser =
                 let parts = trimmed.Split '(' 
                 NugetDependency (parts.[0].Trim(),parts.[1].Replace("(", "").Replace(")", "").Trim())
             else
-                NugetDependency (trimmed,">= 0")                
+                NugetDependency (trimmed,">= 0")
         | Some "NUGET", trimmed -> NugetPackage trimmed
         | Some "GITHUB", trimmed -> SourceFile(GitHubLink, trimmed)
         | Some "GIST", trimmed -> SourceFile(GistLink, trimmed)
@@ -323,7 +329,7 @@ module LockFileParser =
                                                 Name = details
                                                 AuthKey = None } :: currentGroup.SourceFiles }::otherGroups
                         | Some (protocol :: _ :: domain :: project :: moredetails) ->
-                            { currentGroup with  
+                            { currentGroup with
                                 LastWasPackage = false
                                 SourceFiles = { Commit = String.Empty
                                                 Owner = domain
@@ -336,7 +342,7 @@ module LockFileParser =
 
 
 /// Allows to parse and analyze paket.lock files.
-type LockFile(fileName:string,groups: Map<GroupName,LockFileGroup>) =       
+type LockFile(fileName:string,groups: Map<GroupName,LockFileGroup>) =
     member __.Groups = groups
     member __.FileName = fileName
 
@@ -455,7 +461,7 @@ type LockFile(fileName:string,groups: Map<GroupName,LockFileGroup>) =
             tracefn "%s is already up-to-date" fileName
 
     /// Parses a paket.lock file from file
-    static member LoadFrom(lockFileName) : LockFile =        
+    static member LoadFrom(lockFileName) : LockFile =
         LockFile.Parse(lockFileName, File.ReadAllLines lockFileName)
 
     /// Parses a paket.lock file from lines

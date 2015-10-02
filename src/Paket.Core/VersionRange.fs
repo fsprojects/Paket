@@ -70,7 +70,7 @@ type VersionRange =
 type VersionRequirement =
 | VersionRequirement of VersionRange * PreReleaseStatus
     /// Checks wether the given version is in the version range
-    member this.IsInRange(version : SemVerInfo,?ignorePrerelease) =         
+    member this.IsInRange(version : SemVerInfo,?ignorePrerelease) =
         let ignorePrerelease = defaultArg ignorePrerelease false
         let (VersionRequirement (range,prerelease)) = this
         let checkPrerelease prerelease version =
