@@ -40,6 +40,16 @@ type DependenciesGroup = {
               Packages = []
               RemoteFiles = [] }
 
+        member this.CombineWith (other:DependenciesGroup) =
+            { Name = this.Name
+              Options = 
+                { Redirects = this.Options.Redirects || other.Options.Redirects
+                  Settings = this.Options.Settings + other.Options.Settings
+                  Strict = this.Options.Strict || other.Options.Strict }
+              Sources = this.Sources @ other.Sources |> List.distinct
+              Packages = this.Packages @ other.Packages
+              RemoteFiles = this.RemoteFiles @ other.RemoteFiles }
+
 type RequirementsGroup = {
     Name: GroupName
     RootDependencies: PackageRequirement list option
@@ -241,7 +251,7 @@ module DependenciesFileParser =
             else
                 rest,""
 
-        if operators |> Seq.exists (fun x -> prereleases.Contains x) || prereleases.Contains("!") then
+        if operators |> Seq.exists prereleases.Contains || prereleases.Contains("!") then
             failwithf "Invalid prerelease version %s" prereleases
 
         { Sources = sources
@@ -256,70 +266,57 @@ module DependenciesFileParser =
         | Package(name,version,rest) -> parsePackage(sources,parent,name,version,rest)
         | _ -> failwithf "Not a package line: %s" line
 
-    let parseDependenciesFile fileName (lines:string seq) =
-        let lines = lines |> Seq.toArray
-         
-        ((0, [DependenciesGroup.New Constants.MainDependencyGroup]), lines)
-        ||> Seq.fold(fun (lineNo, state) line ->
-            match state with
-            | current::other ->
-                let lineNo = lineNo + 1
-                try
-                    match line with
-                    | Group(newGroupName) -> lineNo, DependenciesGroup.New(GroupName newGroupName)::current::other
-                    | Empty(_) -> lineNo, current::other
-                    | Remote(newSource) -> lineNo, { current with Sources = current.Sources @ [newSource] |> List.distinct }::other
-                    | ParserOptions(options) -> 
-                        let newOptions =
-                            match options with 
-                            | ReferencesMode mode -> { current.Options with Strict = mode } 
-                            | Redirects mode -> { current.Options with Redirects = mode }
-                            | CopyLocal mode -> { current.Options with Settings = { current.Options.Settings with CopyLocal = Some mode } }
-                            | ImportTargets mode -> { current.Options with Settings = { current.Options.Settings with ImportTargets = Some mode } }
-                            | FrameworkRestrictions r -> { current.Options with Settings = { current.Options.Settings with FrameworkRestrictions = r } }
-                            | OmitContent omit -> { current.Options with Settings = { current.Options.Settings with OmitContent = Some omit } }
-                            | ReferenceCondition condition -> { current.Options with Settings = { current.Options.Settings with ReferenceCondition = Some condition } }
+    let private parseOptions current options =
+        match options with 
+        | ReferencesMode mode -> { current.Options with Strict = mode } 
+        | Redirects mode -> { current.Options with Redirects = mode }
+        | CopyLocal mode -> { current.Options with Settings = { current.Options.Settings with CopyLocal = Some mode } }
+        | ImportTargets mode -> { current.Options with Settings = { current.Options.Settings with ImportTargets = Some mode } }
+        | FrameworkRestrictions r -> { current.Options with Settings = { current.Options.Settings with FrameworkRestrictions = r } }
+        | OmitContent omit -> { current.Options with Settings = { current.Options.Settings with OmitContent = Some omit } }
+        | ReferenceCondition condition -> { current.Options with Settings = { current.Options.Settings with ReferenceCondition = Some condition } }
 
-                        lineNo,{ current with Options = newOptions} ::other
-                    | Package(name,version,rest) ->
-                        let package = parsePackage(current.Sources,DependenciesFile fileName,name,version,rest)
+    let private parseLine fileName (lineNo, state) line =
+        match state with
+        | current::other ->
+            let lineNo = lineNo + 1
+            try
+                match line with
+                | Group(newGroupName) -> lineNo, DependenciesGroup.New(GroupName newGroupName)::current::other
+                | Empty(_) -> lineNo, current::other
+                | Remote(newSource) -> lineNo, { current with Sources = current.Sources @ [newSource] |> List.distinct }::other
+                | ParserOptions(options) ->
+                    lineNo,{ current with Options = parseOptions current options} ::other
+                | Package(name,version,rest) ->
+                    let package = parsePackage(current.Sources,DependenciesFile fileName,name,version,rest)
 
-                        lineNo, { current with Packages = current.Packages @ [package] }::other
-                    | SourceFile(origin, (owner,project, commit), path) ->
-                        let remoteFile : UnresolvedSourceFile = { Owner = owner; Project = project; Commit = commit; Name = path; Origin = origin}
-                        lineNo, { current with RemoteFiles = current.RemoteFiles @ [remoteFile] }::other
-                    
-                with
-                | exn -> failwithf "Error in paket.dependencies line %d%s  %s" lineNo Environment.NewLine exn.Message
-            | [] -> failwithf "Error in paket.dependencies line %d" lineNo)
-        |> fun (_,groups) ->
-            let groups = 
-                groups                
-                |> List.rev
-                |> List.fold (fun m g ->
-                    match Map.tryFind g.Name m with
-                    | Some group -> 
-                        let newSources = g.Sources @ group.Sources |> List.distinct
-                        let newGroup =
-                            { Name = g.Name
-                              Options = 
-                                { Redirects = g.Options.Redirects || group.Options.Redirects
-                                  Settings = g.Options.Settings + group.Options.Settings
-                                  Strict = g.Options.Strict || group.Options.Strict }
-                              Sources = newSources
-                              Packages = g.Packages @ group.Packages
-                              RemoteFiles = g.RemoteFiles @ group.RemoteFiles }
-                        Map.add g.Name newGroup m
-                    | None -> Map.add g.Name g m) Map.empty
+                    lineNo, { current with Packages = current.Packages @ [package] }::other
+                | SourceFile(origin, (owner,project, commit), path) ->
+                    let remoteFile : UnresolvedSourceFile = { Owner = owner; Project = project; Commit = commit; Name = path; Origin = origin}
+                    lineNo, { current with RemoteFiles = current.RemoteFiles @ [remoteFile] }::other
+            with
+            | exn -> failwithf "Error in paket.dependencies line %d%s  %s" lineNo Environment.NewLine exn.Message
+        | [] -> failwithf "Error in paket.dependencies line %d" lineNo
 
-            fileName, groups, lines
+    let parseDependenciesFile fileName lines =
+        let groups = 
+            lines
+            |> Array.fold (parseLine fileName) (0, [DependenciesGroup.New Constants.MainDependencyGroup])
+            |> snd
+            |> List.rev
+            |> List.fold (fun m g ->
+                match Map.tryFind g.Name m with
+                | Some group -> Map.add g.Name (g.CombineWith group) m
+                | None -> Map.add g.Name g m) Map.empty
+
+        fileName, groups, lines
     
     let parseVersionString (version : string) = 
         { VersionRequirement = parseVersionRequirement (version.Trim '!')
           ResolverStrategy = parseResolverStrategy version }
 
 module DependenciesFileSerializer = 
-    let formatVersionRange strategy (version : VersionRequirement) : string =          
+    let formatVersionRange strategy (version : VersionRequirement) : string =
         let prefix = 
             if strategy = ResolverStrategy.Min then "!"
             else ""
@@ -342,7 +339,7 @@ module DependenciesFileSerializer =
                         "~> " + from.ToString()
             | _ -> version.ToString()
             
-        let text = prefix + version         
+        let text = prefix + version
         if text <> "" && preReleases <> "" then text + " " + preReleases else text + preReleases
 
     let sourceString source = "source " + source
@@ -352,7 +349,7 @@ module DependenciesFileSerializer =
         let version = formatVersionRange resolverStrategy versionRequirement
         let s = settings.ToString()
 
-        sprintf "nuget %s%s%s" name (if version <> "" then " " + version else "") (if s <> "" then " " + s else s)        
+        sprintf "nuget %s%s%s" name (if version <> "" then " " + version else "") (if s <> "" then " " + s else s)
 
 
 /// Allows to parse and analyze paket.dependencies files.
@@ -379,7 +376,7 @@ type DependenciesFile(fileName,groups:Map<GroupName,DependenciesGroup>, textRepr
                 (0,Constants.MainDependencyGroup,0,textRepresentation.Length)
         firstLine,lastLine
 
-    let tryFindPackageLine groupName (packageName:PackageName) =        
+    let tryFindPackageLine groupName (packageName:PackageName) =
         let name = packageName.GetCompareString()
         let _,_,found =
             textRepresentation
@@ -420,7 +417,7 @@ type DependenciesFile(fileName,groups:Map<GroupName,DependenciesGroup>, textRepr
 
     member __.Resolve(force, getSha1, getVersionF, getPackageDetailsF, groupsToResolve:Map<GroupName,RequirementsGroup>) =
         groupsToResolve
-        |> Map.map (fun k group ->  
+        |> Map.map (fun k group ->
             let rootDependencies =
                 match group.RootDependencies with
                 | None -> groups.[k].Packages
@@ -436,7 +433,7 @@ type DependenciesFile(fileName,groups:Map<GroupName,DependenciesGroup>, textRepr
             let remoteDependencies = 
                 remoteFiles
                 |> List.map (fun f -> f.Dependencies)
-                |> List.fold (fun set current -> Set.union set current) Set.empty
+                |> List.fold Set.union Set.empty
                 |> Seq.map (fun (n, v) -> 
                         { Name = n
                           VersionRequirement = v
@@ -493,7 +490,7 @@ type DependenciesFile(fileName,groups:Map<GroupName,DependenciesGroup>, textRepr
                     true
                 | _ -> false
 
-            match tryFindPackageLine groupName packageName with                        
+            match tryFindPackageLine groupName packageName with
             | Some pos -> 
                 let package = DependenciesFileParser.parsePackageLine(groups.[groupName].Sources,PackageRequirementSource.DependenciesFile fileName,list.[pos])
 
@@ -604,7 +601,7 @@ type DependenciesFile(fileName,groups:Map<GroupName,DependenciesGroup>, textRepr
             this.AddAdditionalPackage(groupName, packageName,version,installSettings)
 
     member this.Remove(groupName, packageName) =
-        if this.HasPackage(groupName, packageName) then         
+        if this.HasPackage(groupName, packageName) then
             tracefn "Removing %O from %s (group %O)" packageName fileName groupName
             this.RemovePackage(groupName, packageName)
         else
