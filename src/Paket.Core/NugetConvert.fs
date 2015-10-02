@@ -276,7 +276,7 @@ let createDependenciesFileR (rootDirectory : DirectoryInfo) nugetEnv mode =
             |> List.map (fun source -> 
                             try source |> PackageSource.Parse |> ok
                             with _ -> source |> fst |> PackageSourceParseError |> fail
-                            |> successTee PackageSource.warnIfNoConnection)
+                            |> successTee PackageSource.WarnIfNoConnection)
                             
             |> collect
 

@@ -508,7 +508,7 @@ nuget Rx-Main
 [<Test>]
 let ``should read config with single-quoted password source``() = 
     try
-        DependenciesFile.FromCode( configWithPasswordInSingleQuotes) |> ignore
+        DependenciesFile.FromCode configWithPasswordInSingleQuotes |> ignore
         failwith "Expected error"
     with
     | exn when exn.Message <> "Expected error" -> ()

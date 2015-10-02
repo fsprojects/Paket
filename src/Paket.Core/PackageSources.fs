@@ -48,11 +48,14 @@ type NugetSource =
     { Url : string
       Authentication : NugetSourceAuthentication option }
 
-let private parseAuth(text, source) =
-    let userNameRegex = Regex("username[:][ ]*[\"]([^\"]*)[\"]", RegexOptions.IgnoreCase)
-    let passwordRegex = Regex("password[:][ ]*[\"]([^\"]*)[\"]", RegexOptions.IgnoreCase)
+let userNameRegex = Regex("username[:][ ]*[\"]([^\"]*)[\"]", RegexOptions.IgnoreCase ||| RegexOptions.Compiled)
+let passwordRegex = Regex("password[:][ ]*[\"]([^\"]*)[\"]", RegexOptions.IgnoreCase ||| RegexOptions.Compiled)
 
-    if userNameRegex.IsMatch(text) && passwordRegex.IsMatch(text) then 
+let private parseAuth(text:string, source) =
+    if text.Contains("username:") || text.Contains("password:") then
+        if not (userNameRegex.IsMatch(text) && passwordRegex.IsMatch(text)) then 
+            failwithf "Could not parse auth in \"%s\"" text
+
         let username = userNameRegex.Match(text).Groups.[1].Value
         let password = passwordRegex.Match(text).Groups.[1].Value
 
@@ -65,18 +68,14 @@ let private parseAuth(text, source) =
                 PlainTextAuthentication(username, password)
 
         let basicAuth = toBasicAuth auth
-        if(basicAuth.Username = "" && basicAuth.Password = "") then
+        if basicAuth.Username = "" && basicAuth.Password = "" then
             ConfigFile.GetCredentials source 
-            |> Option.map (fun (username,password) -> 
-                            ConfigAuthentication(username, password))
+            |> Option.map (fun (username,password) -> ConfigAuthentication(username, password))
         else
-            Some(auth)
-    else 
-        if text.Contains("username:") || text.Contains("password:") then 
-            failwithf "Could not parse auth in \"%s\"" text
+            Some auth
+    else
         ConfigFile.GetCredentials source
-        |> Option.map (fun (username,password) -> 
-                            ConfigAuthentication(username, password))
+        |> Option.map (fun (username,password) -> ConfigAuthentication(username, password))
 
 /// Represents the package source type.
 type PackageSource =
@@ -97,10 +96,11 @@ type PackageSource =
                 parts.[1].Replace("\"","").TrimEnd([| '/' |])
 
         let feed = 
-            if source = "https://api.nuget.org/v3/index.json" then Constants.DefaultNugetStream else 
-            if source = "http://api.nuget.org/v3/index.json" then Constants.DefaultNugetStream.Replace("https://","http://") else
-            if source.TrimEnd([|'/'|]) = "https://www.nuget.org/api/v2" then Constants.DefaultNugetStream else
-            source
+            match source.TrimEnd([|'/'|]) with
+            | "https://api.nuget.org/v3/index.json" -> Constants.DefaultNugetStream 
+            | "http://api.nuget.org/v3/index.json" -> Constants.DefaultNugetStream.Replace("https://","http://")
+            | "https://www.nuget.org/api/v2" -> Constants.DefaultNugetStream
+            | _ -> source
 
         PackageSource.Parse(feed, parseAuth(line, feed))
 
@@ -126,7 +126,7 @@ type PackageSource =
 
     static member NugetSource url = Nuget { Url = url; Authentication = None }
 
-    static member warnIfNoConnection (source,_) = 
+    static member WarnIfNoConnection (source,_) = 
         match source with
         | Nuget {Url = url; Authentication = auth} -> 
             use client = Utils.createWebClient(url, auth |> Option.map toBasicAuth)
@@ -135,6 +135,6 @@ type PackageSource =
                 traceWarnfn "Unable to ping remote Nuget feed: %s." url
         | LocalNuget path -> 
             if not <| File.Exists path then 
-                traceWarnfn "Local Nuget feed doesn't exist: %s." path            
+                traceWarnfn "Local Nuget feed doesn't exist: %s." path
 
 let DefaultNugetSource = PackageSource.NugetSource Constants.DefaultNugetStream

@@ -56,7 +56,7 @@ module DependenciesFileParser =
 
     let parseResolverStrategy (text : string) = if text.StartsWith "!" then ResolverStrategy.Min else ResolverStrategy.Max
 
-    let twiddle(minimum:string) =                    
+    let twiddle(minimum:string) =
         let promote index (values:string array) =
             let parsed, number = Int32.TryParse values.[index]
             if parsed then values.[index] <- (number + 1).ToString()
@@ -69,11 +69,11 @@ module DependenciesFileParser =
         String.Join(".", promoted)
 
     let parseVersionRequirement (text : string) : VersionRequirement =
-        let parsePrerelease(texts:string seq) =
-            let texts = texts |> Seq.filter ((<>) "")
-            if Seq.isEmpty texts then PreReleaseStatus.No else
-            if Seq.head(texts).ToLower() = "prerelease" then PreReleaseStatus.All else
-            PreReleaseStatus.Concrete(texts |> Seq.toList)
+        let inline parsePrerelease (texts : string list) = 
+            match texts |> List.filter ((<>) "") with
+            | [] -> PreReleaseStatus.No
+            | [x] when x.ToLower() = "prerelease" -> PreReleaseStatus.All
+            | _ -> PreReleaseStatus.Concrete texts
 
         if text = "" || text = null then VersionRequirement(VersionRange.AtLeast("0"),PreReleaseStatus.No) else
 
@@ -85,7 +85,7 @@ module DependenciesFileParser =
         |  ">" :: v1 :: "<" :: v2 :: rest -> VersionRequirement(VersionRange.Range(VersionRangeBound.Excluding,SemVer.Parse v1,SemVer.Parse v2,VersionRangeBound.Excluding),parsePrerelease rest)
         |  ">" :: v1 :: "<=" :: v2 :: rest -> VersionRequirement(VersionRange.Range(VersionRangeBound.Excluding,SemVer.Parse v1,SemVer.Parse v2,VersionRangeBound.Including),parsePrerelease rest)
         | _ -> 
-            let splitVersion (text:string) =            
+            let splitVersion (text:string) =
                 match basicOperators |> List.tryFind(text.StartsWith) with
                 | Some token -> token, text.Replace(token + " ", "").Split(' ') |> Array.toList
                 | None -> "=", text.Split(' ') |> Array.toList
@@ -117,6 +117,7 @@ module DependenciesFileParser =
                     match line.IndexOf(' ', start+1) with
                     | -1  -> line.Substring(start)::acc
                     | ind -> parseDepLine (ind+1) (line.Substring(start, ind-start)::acc)
+
         parseDepLine 0 []
         |> List.rev
         |> List.toArray

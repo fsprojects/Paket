@@ -60,7 +60,7 @@ let Encrypt (password : string) =
     encryptedPassword |> Convert.ToBase64String
 
 /// Decrypt a encrypted string with a user specific keys
-let Decrypt (salt : string) (encrypted : string) =     
+let Decrypt (salt : string) (encrypted : string) =
     ProtectedData.Unprotect(Convert.FromBase64String encrypted, Convert.FromBase64String salt, DataProtectionScope.CurrentUser)
     |> Encoding.UTF8.GetString
 
@@ -122,18 +122,32 @@ let getSourceNodes (credentialsNode : XmlNode) (source) =
     |> Seq.filter (fun n -> n.Attributes.["source"].Value = source)
     |> Seq.toList
 
-/// Get the credential from the credential store for a specific source and valdiates against the url
+let private sourceNodeCache = System.Collections.Generic.Dictionary<_,_>()
+let private getCredentialsNode = lazy(getConfigNode "credentials" |> returnOrFail)
+
+/// Get the credential from the credential store for a specific source and validates against the url
 let GetCredentialsForUrl (source : string) url =
-    let credentialsNode = getConfigNode "credentials" |> returnOrFail
-    
-    match getSourceNodes credentialsNode source with
-    | sourceNode::_ ->
-        let username,password = getAuthFromNode sourceNode
-        let auth = {Username = username; Password = password}
-        if checkCredentials(url, Some(auth)) then
-            Some(username,password)
-        else
-            traceWarnfn "credentials for %s source are invalid" source  
+    let sourceNodes =
+        match sourceNodeCache.TryGetValue source with
+        | true,credentials -> credentials
+        | _ ->
+            let sourceNodes =
+                if File.Exists Constants.PaketConfigFile |> not then [] else
+                let credentialsNode = getCredentialsNode.Force()
+                getSourceNodes credentialsNode source
+
+            sourceNodeCache.Add(source,sourceNodes)
+            sourceNodes
+
+    match sourceNodes with
+    | sourceNode :: _ -> 
+        let username, password = getAuthFromNode sourceNode
+            
+        let auth = { Username = username; Password = password }
+        if checkCredentials (url, Some auth) then 
+            Some(username, password)
+        else 
+            traceWarnfn "credentials for %s source are invalid" source
             None
     | [] -> None
 
@@ -141,25 +155,19 @@ let GetCredentialsForUrl (source : string) url =
 let GetCredentials (source : string) =
     GetCredentialsForUrl source source
 
-
-
-let AddCredentials (source, username, password) = trial {
+let AddCredentials(source, username, password) = 
+    trial { 
         let! credentialsNode = getConfigNode "credentials"
-        
         let newCredentials = 
             match getSourceNodes credentialsNode source |> List.tryHead with
             | None -> createSourceNode credentialsNode source |> Some
-            | Some existingNode ->
-                let _,existingPassword = getAuthFromNode existingNode
-
-                if existingPassword <> password then
-                    existingNode |> Some
+            | Some existingNode -> 
+                let _, existingPassword = getAuthFromNode existingNode
+                if existingPassword <> password then existingNode |> Some
                 else None
             |> Option.map (setCredentials username password)
-
         match newCredentials with
-        | Some credentials -> 
-            do! saveConfigNode credentials
+        | Some credentials -> do! saveConfigNode credentials
         | None -> ()
     }
 
