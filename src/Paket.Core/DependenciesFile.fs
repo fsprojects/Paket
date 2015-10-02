@@ -123,48 +123,52 @@ module DependenciesFileParser =
         |> List.toArray
 
 
-    let private ``parse git source`` trimmed origin originTxt = 
+    let private parseGitSource trimmed origin originTxt = 
         let parts = parseDependencyLine trimmed
-        let getParts (projectSpec:string) =
-            match projectSpec.Split [|':'; '/'|] with
+        
+        let getParts (projectSpec : string) = 
+            match projectSpec.Split [| ':'; '/' |] with
             | [| owner; project |] -> owner, project, None
             | [| owner; project; commit |] -> owner, project, Some commit
             | _ -> failwithf "invalid %s specification:%s     %s" originTxt Environment.NewLine trimmed
         match parts with
         | [| _; projectSpec; fileSpec |] -> origin, getParts projectSpec, fileSpec
-        | [| _; projectSpec;  |] -> origin, getParts projectSpec, Constants.FullProjectSourceFileName
+        | [| _; projectSpec |] -> origin, getParts projectSpec, Constants.FullProjectSourceFileName
         | _ -> failwithf "invalid %s specification:%s     %s" originTxt Environment.NewLine trimmed
 
-    let private ``parse http source`` trimmed =
+    let private parseHttpSource trimmed = 
         let parts = parseDependencyLine trimmed
+        let removeInvalidChars (str : string) = System.Text.RegularExpressions.Regex.Replace(str, "[:@\,]", "_")
         
-        let removeInvalidChars (str:string) = 
-            System.Text.RegularExpressions.Regex.Replace(str, "[:@\,]", "_")
-
-        let getParts (projectSpec:string) fileSpec projectName =
+        let getParts (projectSpec : string) fileSpec projectName = 
             let projectSpec = projectSpec.TrimEnd('/')
-            let ``project spec``, commit =
+            
+            let projectSpec', commit = 
                 match projectSpec.IndexOf('/', 8) with // 8 = "https://".Length
                 | -1 -> projectSpec, "/"
-                | pos ->  projectSpec.Substring(0, pos), projectSpec.Substring(pos)
-            let splitted = projectSpec.TrimEnd('/').Split([|':'; '/'|], StringSplitOptions.RemoveEmptyEntries)
-            let fileName = match String.IsNullOrEmpty fileSpec with
-                            | true ->
-                                let name = Seq.last splitted
-                                if String.IsNullOrEmpty <| Path.GetExtension(name)
-                                then name + ".fs" else name
-                            | false -> fileSpec
-            let owner =
-                match ``project spec``.IndexOf("://") with
-                | -1 -> ``project spec``
-                | pos ->  ``project spec``.Substring(pos+3) |> removeInvalidChars
-            HttpLink(``project spec``), (owner, projectName, Some commit), fileName
+                | pos -> projectSpec.Substring(0, pos), projectSpec.Substring(pos)
+            
+            let splitted = projectSpec.TrimEnd('/').Split([| ':'; '/' |], StringSplitOptions.RemoveEmptyEntries)
+            
+            let fileName = 
+                if String.IsNullOrEmpty fileSpec then
+                    let name = Seq.last splitted
+                    if String.IsNullOrEmpty <| Path.GetExtension(name) then name + ".fs"
+                    else name
+                else fileSpec
+            
+            let owner = 
+                match projectSpec'.IndexOf("://") with
+                | -1 -> projectSpec'
+                | pos -> projectSpec'.Substring(pos + 3) |> removeInvalidChars
+            
+            HttpLink(projectSpec'), (owner, projectName, Some commit), fileName
 
         match parseDependencyLine trimmed with
-        | [|spec; url |] -> getParts url "" ""
-        | [|spec; url; fileSpec |] -> getParts url fileSpec ""
-        | [|spec; url; fileSpec; projectName |] -> getParts url fileSpec projectName
-        | _ ->  failwithf "invalid http-reference specification:%s     %s" Environment.NewLine trimmed
+        | [| spec; url |] -> getParts url "" ""
+        | [| spec; url; fileSpec |] -> getParts url fileSpec ""
+        | [| spec; url; fileSpec; projectName |] -> getParts url fileSpec projectName
+        | _ -> failwithf "invalid http-reference specification:%s     %s" Environment.NewLine trimmed
 
     type private ParserOption =
     | ReferencesMode of bool
@@ -215,11 +219,11 @@ module DependenciesFileParser =
         | String.StartsWith "copy_local" trimmed -> ParserOptions(ParserOption.CopyLocal(trimmed.Replace(":","").Trim() = "true"))
         | String.StartsWith "condition" trimmed -> ParserOptions(ParserOption.ReferenceCondition(trimmed.Replace(":","").Trim().ToUpper()))
         | String.StartsWith "gist" _ as trimmed ->
-            SourceFile(``parse git source`` trimmed SingleSourceFileOrigin.GistLink "gist")
+            SourceFile(parseGitSource trimmed SingleSourceFileOrigin.GistLink "gist")
         | String.StartsWith "github" _ as trimmed  ->
-            SourceFile(``parse git source`` trimmed SingleSourceFileOrigin.GitHubLink "github")
+            SourceFile(parseGitSource trimmed SingleSourceFileOrigin.GitHubLink "github")
         | String.StartsWith "http" _ as trimmed  ->
-            SourceFile(``parse http source`` trimmed)
+            SourceFile(parseHttpSource trimmed)
         | String.StartsWith "//" _ -> Empty(line)
         | String.StartsWith "#" _ -> Empty(line)
         | _ -> failwithf "Unrecognized token: %s" line
