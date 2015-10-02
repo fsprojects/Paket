@@ -301,10 +301,11 @@ http http://www.fssnip.net/raw/15 myFile3.fs """
 
     let cfg = DependenciesFile.FromCode(config)
     
-    cfg.Groups.[Constants.MainDependencyGroup].RemoteFiles
-    |> List.map trivialResolve
-    |> LockFileSerializer.serializeSourceFiles
-    |> shouldEqual (normalizeLineEndings expectedMultiple)
+    let actual = 
+        cfg.Groups.[Constants.MainDependencyGroup].RemoteFiles
+        |> List.map trivialResolve
+        |> LockFileSerializer.serializeSourceFiles
+    actual |> shouldEqual (normalizeLineEndings expectedMultiple)
 
 
 let expectedForStanfordNLPdotNET = """HTTP

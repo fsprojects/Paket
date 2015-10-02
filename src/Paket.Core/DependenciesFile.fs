@@ -178,8 +178,7 @@ module DependenciesFileParser =
         match parseDependencyLine trimmed with
         | [| spec; url |] -> getParts url "" "" None
         | [| spec; url; fileSpec |] -> getParts url fileSpec "" None
-        | [| spec; url; fileSpec; projectName |] -> getParts url fileSpec projectName None
-        | [| spec; url; fileSpec; projectName; authKey |] -> getParts url fileSpec projectName (Some authKey)
+        | [| spec; url; fileSpec; authKey |] -> getParts url fileSpec "" (Some authKey)
         | _ -> failwithf "invalid http-reference specification:%s     %s" Environment.NewLine trimmed
 
     type private ParserOption =
