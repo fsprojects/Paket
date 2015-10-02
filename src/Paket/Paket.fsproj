@@ -38,7 +38,7 @@
     <StartAction>Project</StartAction>
     <StartProgram>paket.exe</StartProgram>
     <StartWorkingDirectory>c:\code\Paketkopie</StartWorkingDirectory>
-    <StartWorkingDirectory>d:\code\PaketRepro</StartWorkingDirectory>
+    <StartWorkingDirectory>C:\Temp\paket_test\</StartWorkingDirectory>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>

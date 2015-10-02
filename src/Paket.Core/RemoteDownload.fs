@@ -56,7 +56,7 @@ let getSHA1OfBranch origin owner project branch authKey =
     }
 
 let private rawFileUrl owner project branch fileName =
-    sprintf "https://github.com/%s/%s/raw/%s/%s" owner project branch fileName
+    sprintf "https://raw.githubusercontent.com/%s/%s/%s/%s" owner project branch fileName
 
 let private rawGistFileUrl owner project fileName =
     sprintf "https://gist.githubusercontent.com/%s/%s/raw/%s" owner project fileName
