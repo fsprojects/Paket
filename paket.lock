@@ -8,7 +8,7 @@ NUGET
 GITHUB
   remote: fsharp/FAKE
   specs:
-    src/app/FakeLib/Globbing/Globbing.fs (64e3ffe38f09f2c4cf39610327ad6825cc1b42cc)
+    src/app/FakeLib/Globbing/Globbing.fs (80516864689fcf46ed484d6ba2fcd8a32cfd8ac5)
   remote: fsprojects/Chessie
   specs:
     src/Chessie/ErrorHandling.fs (1f23b1caeb1f87e750abc96a25109376771dd090)
@@ -26,7 +26,7 @@ NUGET
     ILRepack (2.0.5)
     Microsoft.Bcl (1.1.10)
       Microsoft.Bcl.Build (>= 1.0.14)
-    Microsoft.Bcl.Build (1.0.21)
+    Microsoft.Bcl.Build (1.0.21) - import_targets: false
     Microsoft.Net.Http (2.2.29)
       Microsoft.Bcl (>= 1.1.10)
       Microsoft.Bcl.Build (>= 1.0.14)
@@ -35,7 +35,7 @@ NUGET
 GITHUB
   remote: fsharp/FAKE
   specs:
-    modules/Octokit/Octokit.fsx (64e3ffe38f09f2c4cf39610327ad6825cc1b42cc)
+    modules/Octokit/Octokit.fsx (80516864689fcf46ed484d6ba2fcd8a32cfd8ac5)
       Octokit
 GROUP Test
 NUGET
