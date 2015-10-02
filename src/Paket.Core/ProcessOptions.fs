@@ -20,7 +20,7 @@ type InstallerOptions =
           CreateNewBindingFiles = false
           OnlyReferenced = false }
 
-    static member createLegacyOptions(force, hard, redirects, createNewBindingFiles) =
+    static member CreateLegacyOptions(force, hard, redirects, createNewBindingFiles) =
         { InstallerOptions.Default with
             Force = force
             Hard = hard
