@@ -407,6 +407,11 @@ type DependenciesFile(fileName,groups:Map<GroupName,DependenciesGroup>, textRepr
 
     member __.Groups = groups
 
+    member this.GetGroup groupName =
+        match this.Groups |> Map.tryFind groupName with
+        | Some g -> g
+        | None -> failwithf "Group %O was not found in %s." groupName fileName
+
     member __.HasPackage (groupName, name : PackageName) = 
         match groups |> Map.tryFind groupName with
         | None -> false

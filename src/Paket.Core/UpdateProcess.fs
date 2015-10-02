@@ -23,15 +23,10 @@ type UpdateMode =
             | Some(groupName,package) -> SelectiveUpdate(groupName,package)
 
 let selectiveUpdate resolve (lockFile:LockFile) (dependenciesFile:DependenciesFile) updateAll package =
-    let resolve (dependenciesFile : DependenciesFile) packages = 
-        let groups =
-            package
-            |> Option.fold
-                (fun groups (groupName,_) ->
-                    groups |> Map.filter (fun g _ -> g = groupName))
-                dependenciesFile.Groups
-
-        groups
+    let resolve (dependenciesFile : DependenciesFile) packages =
+        match package with
+        | None -> dependenciesFile.Groups
+        | Some (groupName,_) -> dependenciesFile.Groups |> Map.filter (fun g _ -> g = groupName)
         |> Map.map (fun groupName group ->
             { Name = group.Name
               RemoteFiles = group.RemoteFiles
@@ -40,29 +35,23 @@ let selectiveUpdate resolve (lockFile:LockFile) (dependenciesFile:DependenciesFi
               PackageRequirements = 
                 match package with
                 | Some(currentGroup,packageName) when groupName = currentGroup -> 
-                    lockFile.Groups
-                    |> Map.filter (fun g _ -> g = groupName)
-                    |> Seq.map (fun kv -> kv.Value.Resolution)
-                    |> Seq.map (createPackageRequirements [packageName])
-                    |> Seq.concat
-                    |> List.ofSeq
+                    match lockFile.Groups |> Map.tryFind groupName with
+                    | None -> []
+                    | Some group -> group.Resolution |> createPackageRequirements [packageName]
                 | _ -> [] })
         |> resolve dependenciesFile
 
-    let selectiveUpdate (group : LockFileGroup) package =        
-        let selectiveResolution : Map<GroupName,Resolved> = 
-            match dependenciesFile.Groups.TryFind group.Name with
-            | Some group -> 
-                group.Packages
-                |> List.filter (fun p -> package = p.Name)
-                |> Some
-                |> resolve dependenciesFile
-            | None -> failwithf "Group %O does not exist" group.Name
+    let selectiveUpdate (group : LockFileGroup) package =
+        let selectiveResolution : Map<GroupName,Resolved> =
+            dependenciesFile.GetGroup(group.Name).Packages
+            |> List.filter (fun p -> package = p.Name)
+            |> Some
+            |> resolve dependenciesFile
 
         let merge destination source = 
             Map.fold (fun acc key value -> Map.add key value acc) destination source
 
-        let resolution =    
+        let resolution =
             let resolvedPackages = 
                 (selectiveResolution |> Map.find group.Name).ResolvedPackages.GetModelOrFail()
                 |> merge group.Resolution
@@ -120,10 +109,7 @@ let selectiveUpdate resolve (lockFile:LockFile) (dependenciesFile:DependenciesFi
     let groups = 
         resolution
         |> Map.map (fun groupName group -> 
-                let dependenciesGroup =
-                    match dependenciesFile.Groups |> Map.tryFind groupName with
-                    | Some g -> g
-                    | None -> failwithf "Group %O was not found in paket.dependencies." groupName
+                let dependenciesGroup = dependenciesFile.GetGroup groupName
                 { Name = dependenciesGroup.Name
                   Options = dependenciesGroup.Options
                   Resolution = group.ResolvedPackages.GetModelOrFail()
