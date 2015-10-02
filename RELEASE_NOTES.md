@@ -1,3 +1,6 @@
+#### 2.6.1 - 02.10.2015
+* Find the mono binary on OSX 10.11 - https://github.com/fsprojects/Paket/pull/1103
+
 #### 2.6.0 - 01.10.2015
 * Allow "content:once" as a package setting - http://fsprojects.github.io/Paket/nuget-dependencies.html#No-content-option
 * BUGFIX: Don't add -prerelease to nuspec dependency nodes for project references - https://github.com/fsprojects/Paket/issues/1102
