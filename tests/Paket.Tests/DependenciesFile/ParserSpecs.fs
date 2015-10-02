@@ -101,7 +101,9 @@ let ``should read config with multiple sources``() =
 [<Test>]
 let ``should read source file from config``() =
     let config = """github "fsharp/FAKE:master" "src/app/FAKE/Cli.fs"
-                    github "fsharp/FAKE:bla123zxc" "src/app/FAKE/FileWithCommit.fs" """
+                    github "fsharp/FAKE:bla123zxc" "src/app/FAKE/FileWithCommit.fs"
+                    github "fsharp/FAKE" "src/app/FAKE/FileAuth.fs" github
+                 """
     let dependencies = DependenciesFile.FromCode(config)
     dependencies.Groups.[Constants.MainDependencyGroup].RemoteFiles
     |> shouldEqual
@@ -109,12 +111,20 @@ let ``should read source file from config``() =
             Project = "FAKE"
             Name = "src/app/FAKE/Cli.fs"
             Origin = ModuleResolver.SingleSourceFileOrigin.GitHubLink
-            Commit = Some "master" }
+            Commit = Some "master"
+            AuthKey = None }
           { Owner = "fsharp"
             Project = "FAKE"
             Origin = ModuleResolver.SingleSourceFileOrigin.GitHubLink
             Name = "src/app/FAKE/FileWithCommit.fs"
-            Commit = Some "bla123zxc" } ]
+            Commit = Some "bla123zxc" 
+            AuthKey = None }
+          { Owner = "fsharp"
+            Project = "FAKE"
+            Origin = ModuleResolver.SingleSourceFileOrigin.GitHubLink
+            Name = "src/app/FAKE/FileAuth.fs"
+            Commit = None
+            AuthKey = Some "github" } ]
 
 let strictConfig = """
 references strict
@@ -274,7 +284,9 @@ let ``should read config without quotes but lots of whitespace``() =
 [<Test>]
 let ``should read github source file from config without quotes``() =
     let config = """github fsharp/FAKE:master   src/app/FAKE/Cli.fs
-                    github    fsharp/FAKE:bla123zxc src/app/FAKE/FileWithCommit.fs """
+                    github    fsharp/FAKE:bla123zxc src/app/FAKE/FileWithCommit.fs 
+                    github    fsharp/FAKE src/app/FAKE/FileWithCommit.fs github
+                 """
     let dependencies = DependenciesFile.FromCode(config)
     dependencies.Groups.[Constants.MainDependencyGroup].RemoteFiles
     |> shouldEqual
@@ -282,17 +294,27 @@ let ``should read github source file from config without quotes``() =
             Project = "FAKE"
             Name = "src/app/FAKE/Cli.fs"
             Origin = ModuleResolver.SingleSourceFileOrigin.GitHubLink
-            Commit = Some "master" }
+            Commit = Some "master"
+            AuthKey = None }
           { Owner = "fsharp"
             Project = "FAKE"
             Origin = ModuleResolver.SingleSourceFileOrigin.GitHubLink
             Name = "src/app/FAKE/FileWithCommit.fs"
-            Commit = Some "bla123zxc" } ]
+            Commit = Some "bla123zxc"
+            AuthKey = None } 
+          { Owner = "fsharp"
+            Project = "FAKE"
+            Origin = ModuleResolver.SingleSourceFileOrigin.GitHubLink
+            Name = "src/app/FAKE/FileWithCommit.fs"
+            Commit = None
+            AuthKey = Some "github" }]
 
 [<Test>]
 let ``should read github source file from config with quotes``() =
     let config = """github fsharp/FAKE:master  "src/app/FAKE/Cli.fs"
-                    github fsharp/FAKE:bla123zxc "src/app/FAKE/FileWith Space.fs" """
+                    github fsharp/FAKE:bla123zxc "src/app/FAKE/FileWith Space.fs" 
+                    github fsharp/FAKE "src/app/FAKE/FileWith Space.fs" github
+                 """
     let dependencies = DependenciesFile.FromCode(config)
     dependencies.Groups.[Constants.MainDependencyGroup].RemoteFiles
     |> shouldEqual
@@ -300,12 +322,20 @@ let ``should read github source file from config with quotes``() =
             Project = "FAKE"
             Name = "src/app/FAKE/Cli.fs"
             Origin = ModuleResolver.SingleSourceFileOrigin.GitHubLink
-            Commit = Some "master" }
+            Commit = Some "master"
+            AuthKey = None }
           { Owner = "fsharp"
             Project = "FAKE"
             Name = "src/app/FAKE/FileWith Space.fs"
             Origin = ModuleResolver.SingleSourceFileOrigin.GitHubLink
-            Commit = Some "bla123zxc" } ]
+            Commit = Some "bla123zxc"
+            AuthKey = None }
+          { Owner = "fsharp"
+            Project = "FAKE"
+            Name = "src/app/FAKE/FileWith Space.fs"
+            Origin = ModuleResolver.SingleSourceFileOrigin.GitHubLink
+            Commit = None
+            AuthKey = Some "github" }  ]
 
 [<Test>]
 let ``should read github source files withou sha1``() =
@@ -318,12 +348,14 @@ let ``should read github source files withou sha1``() =
             Project = "FAKE"
             Name = "src/app/FAKE/Cli.fs"
             Origin = ModuleResolver.SingleSourceFileOrigin.GitHubLink
-            Commit = None }
+            Commit = None
+            AuthKey = None }
           { Owner = "fsharp"
             Project = "FAKE"
             Name = "src/app/FAKE/FileWithCommit.fs"
             Origin = ModuleResolver.SingleSourceFileOrigin.GitHubLink
-            Commit = Some "bla123zxc" } ]
+            Commit = Some "bla123zxc"
+            AuthKey = None } ]
 
 [<Test>]
 let ``should read http source file from config without quotes with file specs``() =
@@ -336,12 +368,14 @@ let ``should read http source file from config without quotes with file specs``(
             Project = ""
             Name = "test1.fs"
             Origin = ModuleResolver.SingleSourceFileOrigin.HttpLink "http://www.fssnip.net"
-            Commit = Some "/raw/1M" }
+            Commit = Some "/raw/1M"
+            AuthKey = None }
           { Owner = "www.fssnip.net"
             Project = ""
             Name = "src/test2.fs"
             Origin = ModuleResolver.SingleSourceFileOrigin.HttpLink "http://www.fssnip.net"
-            Commit = Some "/raw/1M/1" } ]
+            Commit = Some "/raw/1M/1"
+            AuthKey = None } ]
 
 
 [<Test>]
@@ -351,10 +385,11 @@ let ``should read http source file from config without quotes with file specs an
     dependencies.Groups.[Constants.MainDependencyGroup].RemoteFiles
     |> shouldEqual
         [ { Owner = "server-stash_7658"
-            Project = "project"
+            Project = ""
             Name = "Rabbit.fs"
             Origin = ModuleResolver.SingleSourceFileOrigin.HttpLink "http://server-stash:7658"
-            Commit = Some "/projects/proj1/repos/repo1/browse/Source/SolutionFolder/Rabbit.fs?at=a5457f3d811830059cd39d583f264eab340c273d&raw" }
+            Commit = Some "/projects/proj1/repos/repo1/browse/Source/SolutionFolder/Rabbit.fs?at=a5457f3d811830059cd39d583f264eab340c273d&raw"
+            AuthKey = Some "project" }
         ]
 
 [<Test>]
@@ -365,15 +400,17 @@ let ``should read http source file from config without quotes with file specs an
     dependencies.Groups.[Constants.MainDependencyGroup].RemoteFiles
     |> shouldEqual
         [ { Owner = "www.fssnip.net"
-            Project = "project"
+            Project = ""
             Name = "test1.fs"
             Origin = ModuleResolver.SingleSourceFileOrigin.HttpLink "http://www.fssnip.net"
-            Commit = Some "/raw/1M" }
+            Commit = Some "/raw/1M"
+            AuthKey = Some "project" }
           { Owner = "www.fssnip.net"
-            Project = "project"
+            Project = ""
             Name = "src/test2.fs"
             Origin = ModuleResolver.SingleSourceFileOrigin.HttpLink "http://www.fssnip.net"
-            Commit = Some "/raw/1M/1" } ]
+            Commit = Some "/raw/1M/1"
+            AuthKey = Some "project" } ]
 
 
 [<Test>]
@@ -387,12 +424,14 @@ let ``should read gist source file from config without quotes with file specs``(
             Project = "1972308"
             Name = "gistfile1.fs"
             Origin = ModuleResolver.SingleSourceFileOrigin.GistLink
-            Commit = None }
+            Commit = None
+            AuthKey = None }
           { Owner = "Thorium"
             Project = "6088882"
             Name = "FULLPROJECT"
             Origin = ModuleResolver.SingleSourceFileOrigin.GistLink
-            Commit = None } ]
+            Commit = None
+            AuthKey = None } ]
 
 [<Test>]
 let ``should read gist source file``() =
@@ -408,7 +447,8 @@ gist misterx/5d9c6983004c1c9ec91f"""
             Project = "5d9c6983004c1c9ec91f"
             Name = "FULLPROJECT"
             Origin = ModuleResolver.SingleSourceFileOrigin.GistLink
-            Commit = None } ]
+            Commit = None
+            AuthKey = None } ]
 
 [<Test>]
 let ``should read http source file from config without quotes, parsing rules``() =
@@ -426,27 +466,32 @@ let ``should read http source file from config without quotes, parsing rules``()
             Project = ""
             Name = "example.fs"
             Origin = ModuleResolver.SingleSourceFileOrigin.HttpLink "http://example"
-            Commit = Some "/" }
+            Commit = Some "/"
+            AuthKey = None }
           { Owner = "example"
             Project = ""
             Name = "item.fs"
             Origin = ModuleResolver.SingleSourceFileOrigin.HttpLink "http://example"
-            Commit = Some "/item" }
+            Commit = Some "/item"
+            AuthKey = None }
           { Owner = "example"
             Project = ""
             Name = "item.fs"
             Origin = ModuleResolver.SingleSourceFileOrigin.HttpLink "http://example"
-            Commit = Some "/item" }
+            Commit = Some "/item"
+            AuthKey = None }
           { Owner = "example"
             Project = ""
             Name = "3.fs"
             Origin = ModuleResolver.SingleSourceFileOrigin.HttpLink "http://example"
-            Commit = Some "/item/3" }
+            Commit = Some "/item/3"
+            AuthKey = None }
           { Owner = "example"
             Project = ""
             Name = "1.fs"
             Origin = ModuleResolver.SingleSourceFileOrigin.HttpLink "http://example"
-            Commit = Some "/item/3/1" } ]
+            Commit = Some "/item/3/1"
+            AuthKey = None } ]
 
 [<Test>]
 let ``should read http binary references from config``() =
@@ -460,12 +505,14 @@ let ``should read http binary references from config``() =
             Project = ""
             Name = "ikvmbin-8.0.5449.0.zip"
             Origin = ModuleResolver.SingleSourceFileOrigin.HttpLink "http://www.frijters.net"
-            Commit = Some "/ikvmbin-8.0.5449.0.zip" }
+            Commit = Some "/ikvmbin-8.0.5449.0.zip"
+            AuthKey = None }
           { Owner = "www.frijters.net"
             Project = ""
             Name = "ikvmbin.zip"
             Origin = ModuleResolver.SingleSourceFileOrigin.HttpLink "http://www.frijters.net"
-            Commit = Some "/ikvmbin-8.0.5449.0.zip" } ]
+            Commit = Some "/ikvmbin-8.0.5449.0.zip"
+            AuthKey = None } ]
 
 
 let configWithoutVersions = """

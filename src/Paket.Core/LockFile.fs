@@ -125,11 +125,15 @@ module LockFileSerializer =
                     let path = file.Name.TrimStart '/'
                     match String.IsNullOrEmpty(file.Commit) with 
                     | false -> 
-                        match origin with
-                        | HttpLink _ when not(String.IsNullOrEmpty(file.Project)) -> 
-                            yield sprintf "    %s %s (%s)" file.Project path file.Commit 
-                        | _ -> yield sprintf "    %s (%s)" path file.Commit 
-                    | true -> yield sprintf "    %s" path
+                        match file.AuthKey with
+                        | Some authKey -> 
+                            yield sprintf "    %s (%s) %s" path file.Commit authKey
+                        | None -> 
+                            yield sprintf "    %s (%s)" path file.Commit
+                    | true -> 
+                        match file.AuthKey with
+                        | Some authKey -> yield sprintf "    %s %s" path authKey
+                        | None -> yield sprintf "    %s" path
 
                     for (PackageName name,v) in file.Dependencies do
                         let versionStr = 
@@ -269,9 +273,10 @@ module LockFileParser =
                     | GitHubLink | GistLink ->
                         match currentGroup.RemoteUrl |> Option.map(fun s -> s.Split '/') with
                         | Some [| owner; project |] ->
-                            let path, commit =
+                            let path, commit, authKey =
                                 match details.Split ' ' with
-                                | [| filePath; commit |] -> filePath, commit |> removeBrackets                                       
+                                | [| filePath; commit; authKey |] -> filePath, commit |> removeBrackets, (Some authKey)  
+                                | [| filePath; commit |] -> filePath, commit |> removeBrackets, None                                       
                                 | _ -> failwith "invalid file source details."
                             { currentGroup with  
                                 LastWasPackage = false
@@ -280,15 +285,16 @@ module LockFileParser =
                                                 Origin = origin
                                                 Project = project
                                                 Dependencies = Set.empty
-                                                Name = path } :: currentGroup.SourceFiles }::otherGroups
+                                                Name = path 
+                                                AuthKey = authKey } :: currentGroup.SourceFiles }::otherGroups
                         | _ -> failwith "invalid remote details."
                     | HttpLink x ->
                         match currentGroup.RemoteUrl |> Option.map(fun s -> s.Split '/' |> Array.toList) with
                         | Some [ protocol; _; domain; ] ->
-                            let project, name, path = 
+                            let project, name, path, authKey = 
                                  match details.Split ' ' with
-                                 | [| filePath; path |] -> "", filePath, path |> removeBrackets
-                                 | [| project; filePath; path |] -> project, filePath, path |> removeBrackets
+                                 | [| filePath; path |] -> "", filePath, path |> removeBrackets, None
+                                 | [| filePath; path; authKey |] -> "", filePath, path |> removeBrackets, (Some authKey)
                                  | _ -> failwith "invalid file source details."
                         
                             let removeInvalidChars (str:string) = 
@@ -300,7 +306,8 @@ module LockFileParser =
                                   Origin = HttpLink(currentGroup.RemoteUrl.Value)
                                   Project = project
                                   Dependencies = Set.empty
-                                  Name = name } 
+                                  Name = name
+                                  AuthKey = authKey } 
 
                             { currentGroup with  
                                 LastWasPackage = false
@@ -313,7 +320,8 @@ module LockFileParser =
                                                 Origin = HttpLink(currentGroup.RemoteUrl.Value)
                                                 Project = project
                                                 Dependencies = Set.empty
-                                                Name = details } :: currentGroup.SourceFiles }::otherGroups
+                                                Name = details
+                                                AuthKey = None } :: currentGroup.SourceFiles }::otherGroups
                         | Some (protocol :: _ :: domain :: project :: moredetails) ->
                             { currentGroup with  
                                 LastWasPackage = false
@@ -322,7 +330,8 @@ module LockFileParser =
                                                 Origin = HttpLink(currentGroup.RemoteUrl.Value)
                                                 Project = project + "/" + String.Join("/",moredetails)
                                                 Dependencies = Set.empty
-                                                Name = details } :: currentGroup.SourceFiles }::otherGroups
+                                                Name = details
+                                                AuthKey = None } :: currentGroup.SourceFiles }::otherGroups
                         | _ ->  failwithf "invalid remote details %A" currentGroup.RemoteUrl )
 
 

@@ -35,7 +35,7 @@ let FindOutdated strict includingPrereleases environment = trial {
         environment.DependenciesFile
         |> adjustVersionRequirements strict includingPrereleases
 
-    let getSha1 origin owner repo branch = RemoteDownload.getSHA1OfBranch origin owner repo branch |> Async.RunSynchronously
+    let getSha1 origin owner repo branch auth = RemoteDownload.getSHA1OfBranch origin owner repo branch auth |> Async.RunSynchronously
     let root = Path.GetDirectoryName dependenciesFile.FileName
 
     let groups = 
