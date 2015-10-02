@@ -1,3 +1,6 @@
+#### 2.7.2 - 02.10.2015
+* BUGFIX: Don't forget to add settings from root dependencies
+
 #### 2.7.1 - 02.10.2015
 * Do not write unnecessary framework restrictions into paket.lock 
 

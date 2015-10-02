@@ -380,14 +380,14 @@ type PackageRequirement =
     member this.IncludingPrereleases() = 
         { this with VersionRequirement = VersionRequirement(this.VersionRequirement.Range,PreReleaseStatus.All) }
     
-    static member Compare(x,y,boostX,boostY) =        
+    static member Compare(x,y,boostX,boostY) =
         if x = y then 0 else
         let c1 =
             compare 
                 (not x.VersionRequirement.Range.IsGlobalOverride,x.Parent)
                 (not y.VersionRequirement.Range.IsGlobalOverride,x.Parent)
         if c1 <> 0 then c1 else
-        let c2 = -1 * compare x.ResolverStrategy y.ResolverStrategy        
+        let c2 = -1 * compare x.ResolverStrategy y.ResolverStrategy
         if c2 <> 0 then c2 else
         let cBoost = compare boostX boostY
         if cBoost <> 0 then cBoost else

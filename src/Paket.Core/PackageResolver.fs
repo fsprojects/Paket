@@ -197,8 +197,13 @@ type Resolved = {
     ResolvedSourceFiles : ModuleResolver.ResolvedSourceFile list }
 
 /// Resolves all direct and transitive dependencies
-let Resolve(groupName:GroupName, getVersionsF, getPackageDetailsF, globalFrameworkRestrictions, rootDependencies, (requirements : Set<PackageRequirement>)) =
+let Resolve(groupName:GroupName, getVersionsF, getPackageDetailsF, globalFrameworkRestrictions, (rootDependencies:PackageRequirement list), (requirements : Set<PackageRequirement>)) =
     tracefn "Resolving packages for group %O:" groupName
+    let rootSettings =
+        rootDependencies
+        |> Seq.map (fun x -> x.Name,x.Settings)
+        |> dict
+
     let exploredPackages = Dictionary<PackageName*SemVerInfo,ResolvedPackage>()
     let allVersions = Dictionary<PackageName,SemVerInfo list>()
     let conflictHistory = Dictionary<PackageName,int>()
@@ -216,14 +221,22 @@ let Resolve(groupName:GroupName, getVersionsF, getPackageDetailsF, globalFramewo
             | _ -> package
         | false,_ ->
             tracefn  " - %s %A" name version
-            let packageDetails : PackageDetails = getPackageDetailsF dependency.Sources dependency.Name version            
+            let packageDetails : PackageDetails = getPackageDetailsF dependency.Sources dependency.Name version
             let restrictedDependencies = DependencySetFilter.filterByRestrictions newRestrictions packageDetails.DirectDependencies
+            let settings =
+                match dependency.Parent with
+                | DependenciesFile(_) -> dependency.Settings
+                | Package(_) -> 
+                    match rootSettings.TryGetValue packageDetails.Name with
+                    | true, s -> s + dependency.Settings 
+                    | _ -> dependency.Settings 
+
             let explored =
                 { Name = packageDetails.Name
                   Version = version
                   Dependencies = restrictedDependencies
                   Unlisted = packageDetails.Unlisted
-                  Settings = dependency.Settings
+                  Settings = settings
                   Source = packageDetails.Source }
             exploredPackages.Add((dependency.Name,version),explored)
             explored
@@ -231,7 +244,7 @@ let Resolve(groupName:GroupName, getVersionsF, getPackageDetailsF, globalFramewo
     let getAllVersions(sources,packageName:PackageName,vr : VersionRange) =
         let (PackageName name) = packageName
         match allVersions.TryGetValue(packageName) with
-        | false,_ ->            
+        | false,_ ->
             let versions = 
                 verbosefn "  - fetching versions for %s" name
                 getVersionsF(sources,packageName,vr)
@@ -240,7 +253,7 @@ let Resolve(groupName:GroupName, getVersionsF, getPackageDetailsF, globalFramewo
                 failwithf "Couldn't retrieve versions for %s." name
             allVersions.Add(packageName,versions)
             versions
-        | true,versions -> versions        
+        | true,versions -> versions
 
     let rec step (filteredVersions:Map<PackageName, (SemVerInfo list * bool)>,selectedPackageVersions:ResolvedPackage list,closedRequirements:Set<PackageRequirement>,openRequirements:Set<PackageRequirement>) =
         if Set.isEmpty openRequirements then
