@@ -262,7 +262,7 @@ let createDependenciesFileR (rootDirectory : DirectoryInfo) nugetEnv mode =
         let addPackages dependenciesFile = 
             packages
             |> List.map (fun (name, v, restrictions) -> Constants.MainDependencyGroup, PackageName name, v, { InstallSettings.Default with FrameworkRestrictions = restrictions})
-            |> List.fold DependenciesFile.add dependenciesFile
+            |> List.fold (fun (dependenciesFile:DependenciesFile) (groupName, packageName,version,installSettings) -> dependenciesFile.Add(groupName, packageName,version,installSettings)) dependenciesFile
         try 
             DependenciesFile.ReadFromFile dependenciesFileName
             |> ok
@@ -276,7 +276,7 @@ let createDependenciesFileR (rootDirectory : DirectoryInfo) nugetEnv mode =
             |> List.map (fun source -> 
                             try source |> PackageSource.Parse |> ok
                             with _ -> source |> fst |> PackageSourceParseError |> fail
-                            |> successTee PackageSource.warnIfNoConnection)
+                            |> successTee PackageSource.WarnIfNoConnection)
                             
             |> collect
 

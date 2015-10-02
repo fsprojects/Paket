@@ -47,7 +47,7 @@ let FindOutdated strict includingPrereleases environment = trial {
               FrameworkRestrictions = group.Options.Settings.FrameworkRestrictions
               PackageRequirements = [] })
 
-    let newResolution = dependenciesFile.Resolve(getSha1,(fun (x,y,_) -> NuGetV2.GetVersions root (x,y)),NuGetV2.GetPackageDetails root true,groups)
+    let newResolution = dependenciesFile.Resolve(true,getSha1,(fun (x,y,_) -> NuGetV2.GetVersions root (x,y)),NuGetV2.GetPackageDetails root true,groups)
 
     let changed = 
         [for kv in lockFile.Groups do

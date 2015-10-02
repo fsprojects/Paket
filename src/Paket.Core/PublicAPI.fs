@@ -113,7 +113,7 @@ type Dependencies(dependenciesFileName: string) =
         Utils.RunInLockedAccessMode(
             this.RootPath,
             fun () -> AddProcess.Add(dependenciesFileName, groupName, PackageName(package.Trim()), version,
-                                     InstallerOptions.createLegacyOptions(force, hard, withBindingRedirects, createNewBindingFiles),
+                                     InstallerOptions.CreateLegacyOptions(force, hard, withBindingRedirects, createNewBindingFiles),
                                      interactive, installAfter))
 
    /// Adds the given package with the given version to the dependencies file.
@@ -121,7 +121,7 @@ type Dependencies(dependenciesFileName: string) =
         Utils.RunInLockedAccessMode(
             this.RootPath,
             fun () -> AddProcess.AddToProject(dependenciesFileName, groupName, PackageName package, version,
-                                              InstallerOptions.createLegacyOptions(force, hard, withBindingRedirects, createNewBindingFiles),
+                                              InstallerOptions.CreateLegacyOptions(force, hard, withBindingRedirects, createNewBindingFiles),
                                               projectName, installAfter))
 
     /// Adds credentials for a Nuget feed
@@ -139,7 +139,7 @@ type Dependencies(dependenciesFileName: string) =
 
     /// Installs all dependencies.
     member this.Install(force: bool, hard: bool, withBindingRedirects: bool, createNewBindingFiles:bool, onlyReferenced: bool): unit =
-        this.Install({ InstallerOptions.createLegacyOptions(force, hard, withBindingRedirects, createNewBindingFiles) with OnlyReferenced = onlyReferenced })
+        this.Install({ InstallerOptions.CreateLegacyOptions(force, hard, withBindingRedirects, createNewBindingFiles) with OnlyReferenced = onlyReferenced })
 
     /// Installs all dependencies.
     member private this.Install(options: InstallerOptions): unit =
@@ -173,7 +173,7 @@ type Dependencies(dependenciesFileName: string) =
             this.RootPath,
             fun () -> UpdateProcess.Update(dependenciesFileName,
                                            { UpdaterOptions.Default with
-                                               Common = InstallerOptions.createLegacyOptions(force, hard, withBindingRedirects, createNewBindingFiles)
+                                               Common = InstallerOptions.CreateLegacyOptions(force, hard, withBindingRedirects, createNewBindingFiles)
                                                NoInstall = installAfter |> not }))
 
     /// Updates the given package.
@@ -191,7 +191,7 @@ type Dependencies(dependenciesFileName: string) =
             this.RootPath,
             fun () -> UpdateProcess.UpdatePackage(dependenciesFileName, groupName, PackageName package, version,
                                                   { UpdaterOptions.Default with
-                                                      Common = InstallerOptions.createLegacyOptions(force, hard, withBindingRedirects, createNewBindingFiles)
+                                                      Common = InstallerOptions.CreateLegacyOptions(force, hard, withBindingRedirects, createNewBindingFiles)
                                                       NoInstall = installAfter |> not }))
 
     /// Restores all dependencies.

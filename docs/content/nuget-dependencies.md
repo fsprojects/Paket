@@ -171,8 +171,12 @@ This option disables the installation of any content files:
     
     source https://nuget.org/api/v2
 
-    nuget jQuery >= 0 content: none // we don't install jQuery content files
+    nuget jQuery content: none // we don't install jQuery content files
+	nuget Fody   content: once // install content files but don't overwrite
+	nuget ServiceStack.Swagger content: true // install content and always override
     nuget UnionArgParser ~> 0.7
+
+The default is `content: true`.
 
 ### copy_local settings
 

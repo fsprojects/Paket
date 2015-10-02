@@ -115,7 +115,7 @@ type ReferencesFile =
                     IncludeVersionInPath = if includeVersionInPath then Some includeVersionInPath else None
                     ReferenceCondition = if String.IsNullOrWhiteSpace referenceCondition |> not then Some referenceCondition else None
                     CreateBindingRedirects = if createBindingRedirects then Some createBindingRedirects else None
-                    OmitContent = if omitContent then Some omitContent else None } }
+                    OmitContent = if omitContent then Some ContentCopySettings.Omit else None } }
 
 
         match this.Groups |> Map.tryFind groupName with

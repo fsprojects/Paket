@@ -44,8 +44,9 @@ module LockFileSerializer =
               | None -> ()
 
               match options.Settings.OmitContent with
-              | Some true -> yield "CONTENT: NONE"
-              | Some false -> yield "CONTENT: TRUE"
+              | Some ContentCopySettings.Omit -> yield "CONTENT: NONE"
+              | Some ContentCopySettings.Overwrite -> yield "CONTENT: TRUE"
+              | Some ContentCopySettings.OmitIfExisting -> yield "CONTENT: ONCE"
               | None -> ()
 
               match options.Settings.ReferenceCondition with
@@ -155,7 +156,7 @@ module LockFileParser =
 
     type private ParserOption =
     | ReferencesMode of bool
-    | OmitContent of bool
+    | OmitContent of ContentCopySettings
     | ImportTargets of bool
     | FrameworkRestrictions of FrameworkRestrictions
     | CopyLocal of bool
@@ -168,7 +169,8 @@ module LockFileParser =
         | _, "GIST" -> RepositoryType "GIST"
         | _, "NUGET" -> RepositoryType "NUGET"
         | _, "GITHUB" -> RepositoryType "GITHUB"
-        | _, String.StartsWith "remote:" trimmed -> Remote(PackageSource.Parse("source " + trimmed.Trim()).ToString())
+        | Some "NUGET", String.StartsWith "remote:" trimmed -> Remote(PackageSource.Parse("source " + trimmed.Trim()).ToString())
+        | _, String.StartsWith "remote:" trimmed -> Remote(trimmed.Trim())
         | _, String.StartsWith "GROUP" trimmed -> Group(trimmed.Replace("GROUP","").Trim())
         | _, String.StartsWith "REFERENCES:" trimmed -> InstallOption(ReferencesMode(trimmed.Trim() = "STRICT"))
         | _, String.StartsWith "REDIRECTS:" trimmed -> InstallOption(Redirects(trimmed.Trim() = "ON"))
@@ -176,7 +178,14 @@ module LockFileParser =
         | _, String.StartsWith "COPY-LOCAL:" trimmed -> InstallOption(CopyLocal(trimmed.Trim() = "TRUE"))
         | _, String.StartsWith "FRAMEWORK:" trimmed -> InstallOption(FrameworkRestrictions(trimmed.Trim() |> Requirements.parseRestrictions))
         | _, String.StartsWith "CONDITION:" trimmed -> InstallOption(ReferenceCondition(trimmed.Trim().ToUpper()))
-        | _, String.StartsWith "CONTENT:" trimmed -> InstallOption(OmitContent(trimmed.Trim() = "NONE"))
+        | _, String.StartsWith "CONTENT:" trimmed -> 
+            let setting =
+                match trimmed.Trim().ToLowerInvariant() with
+                | "none" -> ContentCopySettings.Omit
+                | "once" -> ContentCopySettings.OmitIfExisting
+                | _ -> ContentCopySettings.Overwrite
+
+            InstallOption(OmitContent(setting))
         | _, trimmed when line.StartsWith "      " ->
             if trimmed.Contains("(") then
                 let parts = trimmed.Split '(' 
@@ -512,7 +521,7 @@ type LockFile(fileName:string,groups: Map<GroupName,LockFileGroup>) =
         groups
         |> Seq.map (fun kv ->
                 kv.Value.Resolution
-                |> Seq.map (fun kv' ->            
+                |> Seq.map (fun kv' -> 
                                 (kv.Key,kv'.Key),
                                 this.GetAllDependenciesOf(kv.Key,kv'.Value.Name)
                                 |> Set.ofSeq

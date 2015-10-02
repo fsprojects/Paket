@@ -213,10 +213,15 @@ let filterRestrictions (list1:FrameworkRestrictions) (list2:FrameworkRestriction
                 if c <> [] then yield! c]
     |> optimizeRestrictions
 
+type ContentCopySettings =
+| Omit
+| Overwrite
+| OmitIfExisting
+
 type InstallSettings = 
     { ImportTargets : bool option
       FrameworkRestrictions: FrameworkRestrictions
-      OmitContent : bool option
+      OmitContent : ContentCopySettings option
       IncludeVersionInPath: bool option
       ReferenceCondition : string option
       CreateBindingRedirects : bool option
@@ -240,8 +245,9 @@ type InstallSettings =
               | Some x -> yield "import_targets: " + x.ToString().ToLower()
               | None -> ()
               match this.OmitContent with
-              | Some true -> yield "content: none"
-              | Some false -> yield "content: true"
+              | Some ContentCopySettings.Omit -> yield "content: none"
+              | Some ContentCopySettings.Overwrite -> yield "content: true"
+              | Some ContentCopySettings.OmitIfExisting -> yield "content: once"
               | None -> ()
               match this.IncludeVersionInPath with
               | Some x -> yield "version_in_path: " + x.ToString().ToLower()
@@ -287,8 +293,9 @@ type InstallSettings =
             | _ -> []
           OmitContent =
             match kvPairs.TryGetValue "content" with
-            | true, "none" -> Some true 
-            | true, "true" -> Some false 
+            | true, "none" -> Some ContentCopySettings.Omit 
+            | true, "once" -> Some ContentCopySettings.OmitIfExisting
+            | true, "true" -> Some ContentCopySettings.Overwrite
             | _ ->  None
           CreateBindingRedirects =
             match kvPairs.TryGetValue "redirects" with

@@ -43,7 +43,7 @@ let graph =
 let getLockFile lockFileData = LockFile.Parse("",toLines lockFileData)
 let lockFile = lockFileData |> getLockFile
 let resolve' graph (dependenciesFile : DependenciesFile) groups = 
-    dependenciesFile.Resolve(noSha1, VersionsFromGraph graph, PackageDetailsFromGraph graph, groups)
+    dependenciesFile.Resolve(true,noSha1, VersionsFromGraph graph, PackageDetailsFromGraph graph, groups)
 
 let resolve = resolve' graph
 
