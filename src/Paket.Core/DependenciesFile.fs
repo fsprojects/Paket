@@ -416,11 +416,10 @@ type DependenciesFile(fileName,groups:Map<GroupName,DependenciesGroup>, textRepr
     member __.Lines = textRepresentation
 
     member __.Resolve(force, getSha1, getVersionF, getPackageDetailsF, groupsToResolve:Map<GroupName,RequirementsGroup>) =
-        groupsToResolve
-        |> Map.map (fun k group ->
+        let resolveGroup groupName group =
             let rootDependencies =
                 match group.RootDependencies with
-                | None -> groups.[k].Packages
+                | None -> groups.[groupName].Packages
                 | Some d -> d
 
             let resolveSourceFile (file:ResolvedSourceFile) : PackageRequirement list =
@@ -439,8 +438,8 @@ type DependenciesFile(fileName,groups:Map<GroupName,DependenciesGroup>, textRepr
                           VersionRequirement = v
                           ResolverStrategy = ResolverStrategy.Max
                           Parent = PackageRequirementSource.DependenciesFile fileName
-                          Settings = groups.[k].Options.Settings
-                          Sources = groups.[k].Sources })
+                          Settings = groups.[groupName].Options.Settings
+                          Sources = groups.[groupName].Sources })
                 |> Seq.toList
 
             { ResolvedPackages = 
@@ -450,8 +449,11 @@ type DependenciesFile(fileName,groups:Map<GroupName,DependenciesGroup>, textRepr
                     getPackageDetailsF, 
                     group.FrameworkRestrictions, 
                     remoteDependencies @ rootDependencies, 
-                    groups.[k].Packages @ group.PackageRequirements |> Set.ofList)
-              ResolvedSourceFiles = remoteFiles })
+                    groups.[groupName].Packages @ group.PackageRequirements |> Set.ofList)
+              ResolvedSourceFiles = remoteFiles }
+
+        groupsToResolve
+        |> Map.map resolveGroup
 
     member __.AddAdditionalPackage(groupName, packageName:PackageName,versionRequirement,resolverStrategy,settings,?pinDown) =
         let pinDown = defaultArg pinDown false
@@ -475,78 +477,78 @@ type DependenciesFile(fileName,groups:Map<GroupName,DependenciesGroup>, textRepr
                 group.Packages 
                 |> Seq.takeWhile (fun (p:PackageRequirement) -> p.Name <= packageName || not (isPackageInLastSource p)) 
                 |> List.ofSeq
-
-        let newLines =
-            let list = new System.Collections.Generic.List<_>()
-            list.AddRange textRepresentation
-            let newGroupInserted =
-                match groups |> Map.tryFind groupName with
-                | None -> 
-                    if list.Count > 0 then
-                        list.Add("")
-                    list.Add(sprintf "group %O" groupName)
-                    list.Add(DependenciesFileSerializer.sourceString Constants.DefaultNugetStream)
-                    list.Add("")
-                    true
-                | _ -> false
-
-            match tryFindPackageLine groupName packageName with
-            | Some pos -> 
-                let package = DependenciesFileParser.parsePackageLine(groups.[groupName].Sources,PackageRequirementSource.DependenciesFile fileName,list.[pos])
-
-                if versionRequirement.Range.IsIncludedIn(package.VersionRequirement.Range) then
-                    list.[pos] <- packageString
-                else
-                    list.Insert(pos + 1, packageString)
+        
+        let list = new System.Collections.Generic.List<_>()
+        list.AddRange textRepresentation
+        let newGroupInserted =
+            match groups |> Map.tryFind groupName with
             | None -> 
-                let firstGroupLine,lastGroupLine = findGroupBorders groupName
-                if pinDown then
-                    if newGroupInserted then
-                        list.Add(packageString)
-                    else
-                        list.Insert(lastGroupLine, packageString)
+                if list.Count > 0 then
+                    list.Add("")
+                list.Add(sprintf "group %O" groupName)
+                list.Add(DependenciesFileSerializer.sourceString Constants.DefaultNugetStream)
+                list.Add("")
+                true
+            | _ -> false
+
+        match tryFindPackageLine groupName packageName with
+        | Some pos -> 
+            let package = DependenciesFileParser.parsePackageLine(groups.[groupName].Sources,PackageRequirementSource.DependenciesFile fileName,list.[pos])
+
+            if versionRequirement.Range.IsIncludedIn(package.VersionRequirement.Range) then
+                list.[pos] <- packageString
+            else
+                list.Insert(pos + 1, packageString)
+        | None -> 
+            let firstGroupLine,lastGroupLine = findGroupBorders groupName
+            if pinDown then
+                if newGroupInserted then
+                    list.Add(packageString)
                 else
-                    match smaller with
-                    | [] -> 
-                        match groups |> Map.tryFind groupName with 
-                        | None -> list.Add(packageString)
-                        | Some group ->
-                            match group.Packages with
-                            | [] ->
-                                if group.RemoteFiles <> [] then
-                                    list.Insert(firstGroupLine,"")
+                    list.Insert(lastGroupLine, packageString)
+            else
+                match smaller with
+                | [] -> 
+                    match groups |> Map.tryFind groupName with 
+                    | None -> list.Add(packageString)
+                    | Some group ->
+                        match group.Packages with
+                        | [] ->
+                            if group.RemoteFiles <> [] then
+                                list.Insert(firstGroupLine,"")
                     
-                                match group.Sources with
-                                | [] -> 
-                                    list.Insert(firstGroupLine,packageString)
-                                    list.Insert(firstGroupLine,"")
-                                    list.Insert(firstGroupLine,DependenciesFileSerializer.sourceString Constants.DefaultNugetStream)
-                                | _ -> list.Insert(lastGroupLine, packageString)
-                            | p::_ -> 
-                                match tryFindPackageLine groupName p.Name with
-                                | None -> list.Add packageString
-                                | Some pos -> list.Insert(pos,packageString)
-                    | _ -> 
-                        let p = Seq.last smaller
+                            match group.Sources with
+                            | [] -> 
+                                list.Insert(firstGroupLine,packageString)
+                                list.Insert(firstGroupLine,"")
+                                list.Insert(firstGroupLine,DependenciesFileSerializer.sourceString Constants.DefaultNugetStream)
+                            | _ -> list.Insert(lastGroupLine, packageString)
+                        | p::_ -> 
+                            match tryFindPackageLine groupName p.Name with
+                            | None -> list.Add packageString
+                            | Some pos -> list.Insert(pos,packageString)
+                | _ -> 
+                    let p = Seq.last smaller
 
-                        match tryFindPackageLine groupName p.Name with
-                        | None -> list.Add packageString
-                        | Some found -> 
-                            let pos = ref (found + 1)
-                            let skipped = ref false
-                            while !pos < textRepresentation.Length - 1 && (String.IsNullOrWhiteSpace textRepresentation.[!pos] || textRepresentation.[!pos].ToLower().StartsWith("source")) do
-                                if textRepresentation.[!pos].ToLower().StartsWith("source") then
-                                    skipped := true
-                                pos := !pos + 1
+                    match tryFindPackageLine groupName p.Name with
+                    | None -> list.Add packageString
+                    | Some found -> 
+                        let pos = ref (found + 1)
+                        let skipped = ref false
+                        while !pos < textRepresentation.Length - 1 && (String.IsNullOrWhiteSpace textRepresentation.[!pos] || textRepresentation.[!pos].ToLower().StartsWith("source")) do
+                            if textRepresentation.[!pos].ToLower().StartsWith("source") then
+                                skipped := true
+                            pos := !pos + 1
                             
-                            if !skipped then
-                                list.Insert(!pos,packageString)
-                            else
-                                list.Insert(found + 1,packageString)
-            
-            list |> Seq.toArray
-
-        DependenciesFile(DependenciesFileParser.parseDependenciesFile fileName newLines)
+                        if !skipped then
+                            list.Insert(!pos,packageString)
+                        else
+                            list.Insert(found + 1,packageString)
+        
+        DependenciesFile(
+            list 
+            |> Seq.toArray
+            |> DependenciesFileParser.parseDependenciesFile fileName)
 
 
     member this.AddAdditionalPackage(groupName, packageName:PackageName,version:string,settings) =
@@ -584,9 +586,6 @@ type DependenciesFile(fileName,groups:Map<GroupName,DependenciesGroup>, textRepr
 
             let newLines = removeElementAt pos textRepresentation
             DependenciesFile(DependenciesFileParser.parseDependenciesFile fileName newLines)
-
-    static member add (dependenciesFile : DependenciesFile) (groupName, packageName,version,installSettings) =
-        dependenciesFile.Add(groupName, packageName,version,installSettings)
 
     member this.Add(groupName, packageName,version:string,?installSettings : InstallSettings) =
         let installSettings = defaultArg installSettings InstallSettings.Default
