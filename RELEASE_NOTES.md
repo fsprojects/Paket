@@ -1,5 +1,6 @@
-#### 2.6.1 - 02.10.2015
-* Find the mono binary on OSX 10.11 - https://github.com/fsprojects/Paket/pull/1103
+#### 2.7.0 - 02.10.2015
+* Support for private GitHub repos - http://fsprojects.github.io/Paket/github-dependencies.html#Referencing-a-private-github-repository
+* BUGFIX: Find the mono binary on OSX 10.11 - https://github.com/fsprojects/Paket/pull/1103
 
 #### 2.6.0 - 01.10.2015
 * Allow "content:once" as a package setting - http://fsprojects.github.io/Paket/nuget-dependencies.html#No-content-option
