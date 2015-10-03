@@ -190,10 +190,10 @@
     </Content>
     <Compile Include="NuGetConfig\NuGetConfigSpecs.fs" />
     <Content Include="NuGetConfig\ConfigWithDisabledFeed.xml">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="NuGetConfig\ConfigWithDisabledFeedFromUpstream.xml">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="JSON-LD\Rx-PlatformServices.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>

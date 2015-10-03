@@ -65,7 +65,7 @@ let ``ignores disabled nuget feed`` () =
 [<Test>]
 let ``can parse config in XML node`` () =
     let doc = XmlDocument()
-    let file = FileInfo "NugetConfig/ConfigWithDisabledFeedFromUpstream.xml"
+    let file = FileInfo "NuGetConfig/ConfigWithDisabledFeedFromUpstream.xml"
     doc.Load(file.FullName)
 
 [<Test>]
@@ -76,7 +76,7 @@ let ``ignores disabled nuget feed from upstream`` () =
                 [ "MyGetDuality", ("https://www.myget.org/F/6416d9912a7c4d46bc983870fb440d25/", None) ]
                 |> Map.ofList }
     
-    let next = NugetConfig.GetConfigNode (FileInfo "NugetConfig/ConfigWithDisabledFeedFromUpstream.xml") |> Trial.returnOrFail
+    let next = NugetConfig.GetConfigNode (FileInfo "NuGetConfig/ConfigWithDisabledFeedFromUpstream.xml") |> Trial.returnOrFail
     let overridden = NugetConfig.OverrideConfig upstream next
     overridden
     |> shouldEqual
