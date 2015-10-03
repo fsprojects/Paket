@@ -371,7 +371,7 @@ type DependenciesFile(fileName,groups:Map<GroupName,DependenciesGroup>, textRepr
         let _,_,firstLine,lastLine =
             textRepresentation
             |> Array.fold (fun (i,currentGroup,firstLine,lastLine) line -> 
-                    if line.StartsWith "group " then
+                    if line.TrimStart().StartsWith "group " then
                         let group = line.Replace("group","").Trim()
                         if currentGroup = groupName then
                             i+1,GroupName group,firstLine,(i - 1)

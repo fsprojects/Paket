@@ -5,6 +5,7 @@ open NUnit.Framework
 open FsUnit
 open TestHelpers
 open Paket.Domain
+open Paket.Requirements
 
 [<Test>]
 let ``should add new packages to the end``() = 
@@ -813,6 +814,44 @@ let ``should add Microsoft.AspNet.WebApi package to very first group``() =
 source https://nuget.org/api/v2
 
 nuget Microsoft.AspNet.WebApi"""
+
+    cfg.ToString()
+    |> shouldEqual (normalizeLineEndings expected)
+
+[<Test>]
+let ``should pin in correct group``() = 
+    let config = """source http://nuget.org/api/v2
+
+    nuget Castle.Core-log4net ~> 3.0
+    nuget FAKE
+    
+    group Group
+        source http://nuget.org/api/v2
+
+        nuget Castle.Core-log4net
+        nuget FAKE
+        nuget log4net"""
+
+    let cfg = DependenciesFile.FromCode(config)
+                 .AddFixedPackage(
+                        GroupName "main",
+                        PackageName "Castle.Core",
+                        "= 3.2.0",
+                        InstallSettings.Default)
+
+    
+    let expected = """source http://nuget.org/api/v2
+
+    nuget Castle.Core-log4net ~> 3.0
+    nuget FAKE
+nuget Castle.Core 3.2.0
+    
+    group Group
+        source http://nuget.org/api/v2
+
+        nuget Castle.Core-log4net
+        nuget FAKE
+        nuget log4net"""
 
     cfg.ToString()
     |> shouldEqual (normalizeLineEndings expected)

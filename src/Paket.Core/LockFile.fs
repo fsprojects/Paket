@@ -354,7 +354,7 @@ type LockFile(fileName:string,groups: Map<GroupName,LockFileGroup>) =
         let rec addPackage (identity:PackageName) =
             match group.Resolution.TryFind identity with
             | Some package ->
-                if usedPackages.Add identity then
+                if usedPackages.Add(groupName,identity) then
                     if not group.Options.Strict then
                         for d,_,_ in package.Dependencies do
                             addPackage d

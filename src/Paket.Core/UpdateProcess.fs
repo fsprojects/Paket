@@ -23,14 +23,12 @@ type UpdateMode =
             | Some(groupName,package) -> SelectiveUpdate(groupName,package)
 
 let selectiveUpdate resolve (lockFile:LockFile) (dependenciesFile:DependenciesFile) updateAll package =
-    let resolve (dependenciesFile : DependenciesFile) packages =
-        match package with
-        | None -> dependenciesFile.Groups
-        | Some (groupName,_) -> dependenciesFile.Groups |> Map.filter (fun g _ -> g = groupName)
+    let resolve (dependenciesFile : DependenciesFile) =
+        dependenciesFile.Groups
         |> Map.map (fun groupName group ->
             { Name = group.Name
               RemoteFiles = group.RemoteFiles
-              RootDependencies = packages
+              RootDependencies = None
               FrameworkRestrictions = group.Options.Settings.FrameworkRestrictions
               PackageRequirements = 
                 match package with
@@ -41,71 +39,18 @@ let selectiveUpdate resolve (lockFile:LockFile) (dependenciesFile:DependenciesFi
                 | _ -> [] })
         |> resolve dependenciesFile
 
-    let selectiveUpdate (group : LockFileGroup) package =
-        let selectiveResolution : Map<GroupName,Resolved> =
-            dependenciesFile.GetGroup(group.Name).Packages
-            |> List.filter (fun p -> package = p.Name)
-            |> Some
-            |> resolve dependenciesFile
-
-        let merge destination source = 
-            Map.fold (fun acc key value -> Map.add key value acc) destination source
-
-        let resolution =
-            let resolvedPackages = 
-                (selectiveResolution |> Map.find group.Name).ResolvedPackages.GetModelOrFail()
-                |> merge group.Resolution
-
-            let dependencies = 
-                resolvedPackages
-                |> Seq.map (fun d -> d.Value.Dependencies |> Seq.map (fun (n,_,_) -> n))
-                |> Seq.concat
-                |> Set.ofSeq
-
-            let isDirectDependency package = 
-                dependenciesFile.GetDependenciesInGroup(group.Name)
-                |> Map.exists (fun p _ -> p = package)
-
-            let isTransitiveDependency package =
-                dependencies
-                |> Set.exists (fun p -> p = package)
-
-            resolvedPackages
-            |> Map.filter (fun p _ -> isDirectDependency p || isTransitiveDependency p)
-
-        { ResolvedPackages = Resolution.Ok resolution
-          ResolvedSourceFiles = group.RemoteFiles }
-
     let resolution =
-        match UpdateMode.Mode updateAll package with
-        | UpdateAll -> resolve dependenciesFile None
-        | Install ->
-            let changes = DependencyChangeDetection.findChangesInDependenciesFile(dependenciesFile,lockFile)
-            let dependenciesFile = 
-                changes
+        let dependenciesFile =
+            match UpdateMode.Mode updateAll package with
+            | UpdateAll -> dependenciesFile
+            | Install ->
+                DependencyChangeDetection.findChangesInDependenciesFile(dependenciesFile,lockFile)
                 |> DependencyChangeDetection.PinUnchangedDependencies dependenciesFile lockFile
-            resolve dependenciesFile None
-        | SelectiveUpdate(groupName,package) -> 
-            let lockFileGroup = 
-                lockFile.Groups
-                |> Map.filter (fun g _ -> g = groupName)
-                |> Seq.map (fun kv -> kv.Value)
-                |> Seq.tryHead
-            
-            let lockFileGroup =
-                match lockFileGroup with
-                | Some g -> g
-                | None ->
-                    { Name = groupName
-                      Options = InstallOptions.Default
-                      Resolution = Map.empty
-                      RemoteFiles = List.empty }
-
-            lockFile.Groups
-            |> Map.map (fun _ group ->
-                { ResolvedPackages = Resolution.Ok group.Resolution
-                  ResolvedSourceFiles = group.RemoteFiles })
-            |> Map.add groupName (selectiveUpdate lockFileGroup package)
+            | SelectiveUpdate(groupName,package) ->
+                lockFile.GetAllNormalizedDependenciesOf(groupName,package)
+                |> Set.ofSeq
+                |> DependencyChangeDetection.PinUnchangedDependencies dependenciesFile lockFile
+        resolve dependenciesFile
 
     let groups = 
         resolution

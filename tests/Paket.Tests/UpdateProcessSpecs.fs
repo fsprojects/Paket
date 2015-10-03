@@ -376,24 +376,13 @@ let ``SelectiveUpdate does not update any package when package does not exist``(
     nuget FAKE""")
 
     let updateAll = false
-    let lockFile = 
+    try
         Some(Constants.MainDependencyGroup, PackageName "package")
         |> selectiveUpdate resolve lockFile dependenciesFile updateAll
-    
-    let result = 
-        lockFile.GetGroupedResolution()
-        |> Seq.map (fun (KeyValue (_,resolved)) -> (string resolved.Name, string resolved.Version))
-
-    let expected = 
-        [("Castle.Core-log4net","3.2.0");
-        ("Castle.Core","3.2.0");
-        ("FAKE","4.0.0");
-        ("log4net","1.2.10")]
-        |> Seq.sortBy fst
-
-    result
-    |> Seq.sortBy fst
-    |> shouldEqual expected
+        |> ignore
+        failwith "This pont should not be reached"
+    with
+    | exn when exn.Message <> "This pont should not be reached" -> ()
      
 [<Test>]
 let ``SelectiveUpdate generates paket.lock correctly``() = 
@@ -585,7 +574,7 @@ let lockFileData3 = """NUGET
   specs:
     log4f (0.4.0)
       log4net (>= 1.2.10 < 2.0.0)
-    log4net (1.0.4)
+    log4net (1.2.10)
     Ninject (2.2.1.4)
     Ninject.Extensions.Logging (2.2.0.4)
       Ninject (>= 2.2.0.0 < 2.3.0.0)
@@ -681,7 +670,7 @@ let ``SelectiveUpdate updates package that conflicts with a deep transitive depe
         ("Ninject.Extensions.Interception","2.2.1.3");
         ("Ninject", "2.2.1.5");
         ("log4f", "0.4.0");
-        ("log4net", "1.0.4")]
+        ("log4net", "1.2.10")]
         |> Seq.sortBy fst
 
     result

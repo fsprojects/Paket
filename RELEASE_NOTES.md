@@ -1,11 +1,8 @@
-#### 2.7.3 - 03.10.2015
+#### 2.8.0 - 03.10.2015
+* BUGFIX: Selective update needs to consider remote files
 * BUGFIX: Ignore disabled upstream feeds - https://github.com/fsprojects/Paket/pull/1105
-
-#### 2.7.2 - 02.10.2015
 * BUGFIX: Don't forget to add settings from root dependencies
-
-#### 2.7.1 - 02.10.2015
-* Do not write unnecessary framework restrictions into paket.lock 
+* COSMETICS: Do not write unnecessary framework restrictions into paket.lock 
 
 #### 2.7.0 - 02.10.2015
 * Support for private GitHub repos - http://fsprojects.github.io/Paket/github-dependencies.html#Referencing-a-private-github-repository
