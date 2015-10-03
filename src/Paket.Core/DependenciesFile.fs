@@ -54,8 +54,6 @@ type RequirementsGroup = {
     Name: GroupName
     RootDependencies: PackageRequirement list option
     PackageRequirements : PackageRequirement list
-    RemoteFiles : UnresolvedSourceFile list
-    FrameworkRestrictions : FrameworkRestrictions
 }
             
 /// [omit]
@@ -429,19 +427,20 @@ type DependenciesFile(fileName,groups:Map<GroupName,DependenciesGroup>, textRepr
     member __.FileName = fileName
     member __.Lines = textRepresentation
 
-    member __.Resolve(force, getSha1, getVersionF, getPackageDetailsF, groupsToResolve:Map<GroupName,RequirementsGroup>) =
+    member this.Resolve(force, getSha1, getVersionF, getPackageDetailsF, groupsToResolve:Map<GroupName,RequirementsGroup>) =
         let resolveGroup groupName group =
+            let group' = this.GetGroup groupName
             let rootDependencies =
                 match group.RootDependencies with
-                | None -> groups.[groupName].Packages
+                | None -> group'.Packages
                 | Some d -> d
 
             let resolveSourceFile (file:ResolvedSourceFile) : PackageRequirement list =
-                RemoteDownload.downloadDependenciesFile(force,Path.GetDirectoryName fileName, group.Name, DependenciesFile.FromCode, file)
+                RemoteDownload.downloadDependenciesFile(force,Path.GetDirectoryName fileName, groupName, DependenciesFile.FromCode, file)
                 |> Async.RunSynchronously
                 |> fun df -> df.Groups.[Constants.MainDependencyGroup].Packages  // We do not support groups in reference files yet
 
-            let remoteFiles = ModuleResolver.Resolve(resolveSourceFile,getSha1,group.RemoteFiles)
+            let remoteFiles = ModuleResolver.Resolve(resolveSourceFile,getSha1,group'.RemoteFiles)
         
             let remoteDependencies = 
                 remoteFiles
@@ -461,7 +460,7 @@ type DependenciesFile(fileName,groups:Map<GroupName,DependenciesGroup>, textRepr
                     group.Name,
                     getVersionF, 
                     getPackageDetailsF, 
-                    group.FrameworkRestrictions, 
+                    group'.Options.Settings.FrameworkRestrictions, 
                     remoteDependencies @ rootDependencies, 
                     groups.[groupName].Packages @ group.PackageRequirements |> Set.ofList)
               ResolvedSourceFiles = remoteFiles }

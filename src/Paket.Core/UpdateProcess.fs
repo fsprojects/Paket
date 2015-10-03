@@ -27,9 +27,7 @@ let selectiveUpdate resolve (lockFile:LockFile) (dependenciesFile:DependenciesFi
         dependenciesFile.Groups
         |> Map.map (fun groupName group ->
             { Name = group.Name
-              RemoteFiles = group.RemoteFiles
               RootDependencies = None
-              FrameworkRestrictions = group.Options.Settings.FrameworkRestrictions
               PackageRequirements = 
                 match package with
                 | Some(currentGroup,packageName) when groupName = currentGroup -> 
