@@ -45,7 +45,6 @@ let findChangesInDependenciesFile(dependenciesFile:DependenciesFile,lockFile:Loc
         ]
         |> List.map lockFile.GetAllNormalizedDependenciesOf
         |> Seq.concat
-        |> Seq.map (fun p -> groupName,p)
         |> Set.ofSeq
 
     let groupNames =
