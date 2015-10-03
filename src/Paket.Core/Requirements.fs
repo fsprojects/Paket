@@ -317,6 +317,15 @@ type InstallSettings =
             | true, "true" -> Some true
             | _ -> None }
 
+    member this.AdjustWithSpecialCases(packageName) =
+        if packageName = PackageName "Microsoft.Bcl.Build" && this.ImportTargets = None then
+            // Microsoft.Bcl.Build targets file causes the build to fail in VS
+            // so users have to be very explicit with the targets file
+            { this with ImportTargets = Some false }
+        else
+            this
+
+
 type RemoteFileInstallSettings = 
     { Link : bool option }
 
