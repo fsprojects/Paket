@@ -501,8 +501,8 @@ let DownloadPackage(root, auth, url, groupName, packageName:PackageName, version
                 request.UserAgent <- "Paket"
 
                 match auth with
-                | None -> request.UseDefaultCredentials <- true
-                | Some auth -> 
+                | None | Some(Token _) -> request.UseDefaultCredentials <- true
+                | Some(Credentials(username, password)) -> 
                     // htttp://stackoverflow.com/questions/16044313/webclient-httpwebrequest-with-basic-authentication-returns-404-not-found-for-v/26016919#26016919
                     //this works ONLY if the server returns 401 first
                     //client DOES NOT send credentials on first request
@@ -510,7 +510,7 @@ let DownloadPackage(root, auth, url, groupName, packageName:PackageName, version
                     //client.Credentials <- new NetworkCredential(auth.Username,auth.Password)
 
                     //so use THIS instead to send credentials RIGHT AWAY
-                    let credentials = Convert.ToBase64String(Encoding.ASCII.GetBytes(auth.Username + ":" + auth.Password))
+                    let credentials = Convert.ToBase64String(Encoding.ASCII.GetBytes(username + ":" + password))
                     request.Headers.[HttpRequestHeader.Authorization] <- String.Format("Basic {0}", credentials)
 
                 request.Proxy <- Utils.getDefaultProxyFor url

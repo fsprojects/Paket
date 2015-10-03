@@ -18,8 +18,8 @@ let acceptJson = "application/atom+json,application/json"
 let notNullOrEmpty = not << System.String.IsNullOrEmpty
 
 type Auth = 
-    { Username : string
-      Password : string }
+    | Credentials of Username : string * Password : string
+    | Token of string
 
 let TimeSpanToReadableString(span:TimeSpan) =
     let pluralize x = if x = 1 then String.Empty else "s"
@@ -181,7 +181,7 @@ let inline createWebClient(url,auth:Auth option) =
     let client = new WebClient()
     match auth with
     | None -> client.UseDefaultCredentials <- true
-    | Some auth -> 
+    | Some(Credentials(username, password)) -> 
         // htttp://stackoverflow.com/questions/16044313/webclient-httpwebrequest-with-basic-authentication-returns-404-not-found-for-v/26016919#26016919
         //this works ONLY if the server returns 401 first
         //client DOES NOT send credentials on first request
@@ -189,9 +189,9 @@ let inline createWebClient(url,auth:Auth option) =
         //client.Credentials <- new NetworkCredential(auth.Username,auth.Password)
 
         //so use THIS instead to send credenatials RIGHT AWAY
-        let credentials = Convert.ToBase64String(Encoding.ASCII.GetBytes(auth.Username + ":" + auth.Password))
-        client.Headers.[HttpRequestHeader.Authorization] <- String.Format("Basic {0}", credentials)
-
+        let credentials = Convert.ToBase64String(Encoding.ASCII.GetBytes(username + ":" + password))
+        client.Headers.[HttpRequestHeader.Authorization] <- sprintf "Basic %s" credentials
+    | Some(Token token) -> client.Headers.[HttpRequestHeader.Authorization] <- sprintf "token %s" token
     client.Headers.Add("user-agent", "Paket")
     client.Proxy <- getDefaultProxyFor url
     client
