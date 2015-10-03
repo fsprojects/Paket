@@ -60,14 +60,12 @@ type ResolvedPackage =
 
     override this.ToString() = sprintf "%O %O" this.Name this.Version
 
-let createPackageRequirement parent (packageName, version, restrictions) =
+let createPackageRequirement parent (packageName, version, restrictions) = 
     { Name = packageName
       VersionRequirement = version
       ResolverStrategy = ResolverStrategy.Max
       Settings = parent.Settings
-      Parent = Package(parent.Name, parent.Version)
-      Sources = []
-    }
+      Parent = Package(parent.Name, parent.Version) }
 
 let rec getDependencyGraph packages package =
     let requirements =
@@ -197,7 +195,7 @@ type Resolved = {
     ResolvedSourceFiles : ModuleResolver.ResolvedSourceFile list }
 
 /// Resolves all direct and transitive dependencies
-let Resolve(groupName:GroupName, getVersionsF, getPackageDetailsF, globalFrameworkRestrictions, (rootDependencies:PackageRequirement list), (requirements : Set<PackageRequirement>)) =
+let Resolve(groupName:GroupName, sources, getVersionsF, getPackageDetailsF, globalFrameworkRestrictions, (rootDependencies:PackageRequirement list)) =
     tracefn "Resolving packages for group %O:" groupName
     let rootSettings =
         rootDependencies
@@ -221,7 +219,7 @@ let Resolve(groupName:GroupName, getVersionsF, getPackageDetailsF, globalFramewo
             | _ -> package
         | false,_ ->
             tracefn  " - %s %A" name version
-            let packageDetails : PackageDetails = getPackageDetailsF dependency.Sources dependency.Name version
+            let packageDetails : PackageDetails = getPackageDetailsF sources dependency.Name version
             let restrictedDependencies = DependencySetFilter.filterByRestrictions newRestrictions packageDetails.DirectDependencies
             let settings =
                 match dependency.Parent with
@@ -241,7 +239,7 @@ let Resolve(groupName:GroupName, getVersionsF, getPackageDetailsF, globalFramewo
             exploredPackages.Add((dependency.Name,version),explored)
             explored
 
-    let getAllVersions(sources,packageName:PackageName,vr : VersionRange) =
+    let getAllVersions(packageName:PackageName,vr : VersionRange) =
         let (PackageName name) = packageName
         match allVersions.TryGetValue(packageName) with
         | false,_ ->
@@ -272,7 +270,7 @@ let Resolve(groupName:GroupName, getVersionsF, getPackageDetailsF, globalFramewo
 
                 Resolution.Ok(resolution)
             else
-                Resolution.Conflict(closedRequirements,openRequirements,requirements)
+                Resolution.Conflict(closedRequirements,openRequirements,rootDependencies |> Set.ofList)
         else
             let packageCount = selectedPackageVersions |> List.length
             verbosefn "  %d packages in resolution. %d requirements left" packageCount openRequirements.Count
@@ -296,7 +294,7 @@ let Resolve(groupName:GroupName, getVersionsF, getPackageDetailsF, globalFramewo
             let globalOverride = ref false
 
             let currentRequirements =
-                requirements
+                openRequirements
                 |> Seq.filter (fun r -> currentRequirement.Name = r.Name)
                 |> Seq.toList
      
@@ -314,7 +312,7 @@ let Resolve(groupName:GroupName, getVersionsF, getPackageDetailsF, globalFramewo
                     match currentRequirement.VersionRequirement.Range with
                     | Specific v -> [v]
                     | OverrideAll v -> [v]
-                    | _ -> getAllVersions(currentRequirement.Sources,currentRequirement.Name,currentRequirement.VersionRequirement.Range)
+                    | _ -> getAllVersions(currentRequirement.Name,currentRequirement.VersionRequirement.Range)
 
                 let preRelease v =
                     v.PreRelease = None
@@ -339,7 +337,7 @@ let Resolve(groupName:GroupName, getVersionsF, getPackageDetailsF, globalFramewo
                         | _ -> None
                     | Package _ -> None
 
-                requirements
+                openRequirements
                 |> Set.filter (fun r -> currentRequirement.Name = r.Name)
                 |> Set.map getPinnedVersion
                 |> Seq.filter ((>) lastest)
@@ -371,7 +369,7 @@ let Resolve(groupName:GroupName, getVersionsF, getPackageDetailsF, globalFramewo
                     let versionText = 
                         let versions = 
                             if !availableVersions = [] then
-                                getAllVersions(currentRequirement.Sources,currentRequirement.Name,currentRequirement.VersionRequirement.Range) 
+                                getAllVersions(currentRequirement.Name,currentRequirement.VersionRequirement.Range) 
                             else 
                                 !availableVersions
 
@@ -389,7 +387,7 @@ let Resolve(groupName:GroupName, getVersionsF, getPackageDetailsF, globalFramewo
                         tracefn "  Conflicts with:"
                     
                         closedRequirements
-                        |> Set.union requirements
+                        |> Set.union openRequirements
                         |> Seq.filter (fun d -> d.Name = currentRequirement.Name)
                         |> fun xs -> String.Join(Environment.NewLine + "    ",xs)
                         |> tracefn "    %s"
@@ -424,14 +422,14 @@ let Resolve(groupName:GroupName, getVersionsF, getPackageDetailsF, globalFramewo
                             let newPackages =
                                 exploredPackage::(selectedPackageVersions |> List.filter (fun p -> p.Name <> exploredPackage.Name || p.Version <> exploredPackage.Version))
 
-                            let improved = step (newFilteredVersions,newPackages,Set.add currentRequirement closedRequirements,newOpen)                            
+                            let improved = step (newFilteredVersions,newPackages,Set.add currentRequirement closedRequirements,newOpen)
                             (exploredPackage.Unlisted && allUnlisted),improved
                             
                     | Resolution.Ok _ -> allUnlisted,state)
-                        (true,Resolution.Conflict(closedRequirements,openRequirements,requirements))
+                        (true,Resolution.Conflict(closedRequirements,openRequirements,openRequirements))
             
             match tryToImprove false with
-            | true,Resolution.Conflict(_) -> tryToImprove true |> snd       
+            | true,Resolution.Conflict(_) -> tryToImprove true |> snd
             | _,x-> x
 
     match step (Map.empty, [], Set.empty, Set.ofList rootDependencies) with

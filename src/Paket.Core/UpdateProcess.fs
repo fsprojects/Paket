@@ -26,15 +26,12 @@ let selectiveUpdate resolve (lockFile:LockFile) (dependenciesFile:DependenciesFi
     let resolve (dependenciesFile : DependenciesFile) =
         dependenciesFile.Groups
         |> Map.map (fun groupName group ->
-            { Name = group.Name
-              RootDependencies = None
-              PackageRequirements = 
                 match package with
                 | Some(currentGroup,packageName) when groupName = currentGroup -> 
                     match lockFile.Groups |> Map.tryFind groupName with
                     | None -> []
                     | Some group -> group.Resolution |> createPackageRequirements [packageName]
-                | _ -> [] })
+                | _ -> [] )
         |> resolve dependenciesFile
 
     let resolution =

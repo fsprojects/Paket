@@ -165,32 +165,6 @@ nuget SignalR = 3.3.2"""
     DependenciesFile.FromCode(config).Add(Constants.MainDependencyGroup, PackageName "fAKe","") |> ignore
 
 [<Test>]
-let ``should keep sources stable``() = 
-    let before = """source https://www.nuget.org/api/v2
-
-nuget quicksilver
-nuget FsCheck
-
-source https://www.nuget.org/api/v3
-
-nuget NUnit"""
-
-    let expected = """source https://www.nuget.org/api/v2
-
-nuget quicksilver
-nuget FsCheck
-
-source https://www.nuget.org/api/v3
-
-nuget FAKE
-nuget NUnit"""
-
-    DependenciesFile.FromCode(before)
-      .Add(Constants.MainDependencyGroup, PackageName "FAKE","")
-      .ToString()
-    |> shouldEqual (normalizeLineEndings expected)
-
-[<Test>]
 let ``should update packages with new version``() = 
     let config = """source https://nuget.org/api/v2
 

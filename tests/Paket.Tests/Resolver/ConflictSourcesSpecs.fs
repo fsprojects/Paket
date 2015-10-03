@@ -20,8 +20,7 @@ github fsprojects/FAKE:master test.fs
 let ``should resolve source files with correct sha``() =
     let name = PackageName "name"
     let dep =
-      { Sources = []
-        Name = name
+      { Name = name
         ResolverStrategy = ResolverStrategy.Max
         Parent = Requirements.PackageRequirementSource.DependenciesFile ""
         Settings = InstallSettings.Default
