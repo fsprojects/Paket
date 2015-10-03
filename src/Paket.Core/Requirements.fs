@@ -364,8 +364,7 @@ type PackageRequirement =
       VersionRequirement : VersionRequirement
       ResolverStrategy : ResolverStrategy
       Parent: PackageRequirementSource
-      Settings: InstallSettings
-      Sources : PackageSource list }
+      Settings: InstallSettings }
 
     override this.Equals(that) = 
         match that with

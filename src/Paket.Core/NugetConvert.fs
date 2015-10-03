@@ -207,14 +207,13 @@ module ConvertResultR =
           PaketEnv = paketEnv
           SolutionFiles = solutionFiles }
 
-let createPackageRequirement (packageName, version, restrictions) sources dependenciesFileName = 
+let createPackageRequirement (packageName, version, restrictions) dependenciesFileName = 
      { Name = PackageName packageName
        VersionRequirement =
             if version = "" then
                 VersionRequirement(VersionRange.Minimum <| SemVer.Parse "0", PreReleaseStatus.No)
             else
                 VersionRequirement(VersionRange.Exactly version, PreReleaseStatus.No)
-       Sources = sources
        ResolverStrategy = ResolverStrategy.Max
        Settings = { InstallSettings.Default with FrameworkRestrictions = restrictions }
        Parent = PackageRequirementSource.DependenciesFile dependenciesFileName }
@@ -290,7 +289,7 @@ let createDependenciesFileR (rootDirectory : DirectoryInfo) nugetEnv mode =
             let packageLines = 
                 packages 
                 |> List.map (fun (name,v,restr) -> 
-                    let vr = createPackageRequirement (name, v, restr) sources dependenciesFileName
+                    let vr = createPackageRequirement (name, v, restr) dependenciesFileName
                     DependenciesFileSerializer.packageString vr.Name vr.VersionRequirement vr.ResolverStrategy vr.Settings)
 
             let newLines = sourceLines @ [""] @ packageLines |> Seq.toArray

@@ -76,9 +76,8 @@ nuget "MinPackage" "1.1.3"
 let ``should read simple config with comments``() = 
     let cfg = DependenciesFile.FromCode(config3)
     cfg.GetDependenciesInGroup(Constants.MainDependencyGroup).[PackageName "Rx-Main"].Range |> shouldEqual (VersionRange.Between("2.2", "3.0"))
-    (cfg.Groups.[Constants.MainDependencyGroup].Packages |> List.find (fun p -> p.Name = PackageName "Rx-Main")).Sources |> List.head |> shouldEqual PackageSources.DefaultNugetSource
+    cfg.Groups.[Constants.MainDependencyGroup].Sources |> List.head |> shouldEqual PackageSources.DefaultNugetSource
     cfg.GetDependenciesInGroup(Constants.MainDependencyGroup).[PackageName "FAKE"].Range |> shouldEqual (VersionRange.Between("3.0", "4.0"))
-    (cfg.Groups.[Constants.MainDependencyGroup].Packages |> List.find (fun p -> p.Name = PackageName "FAKE")).Sources |> List.head  |> shouldEqual PackageSources.DefaultNugetSource
 
 let config4 = """
 source "https://nuget.org/api/v2" // first source
@@ -94,9 +93,7 @@ let ``should read config with multiple sources``() =
     let cfg = DependenciesFile.FromCode(config4)
     cfg.Groups.[Constants.MainDependencyGroup].Options.Strict |> shouldEqual false
 
-    (cfg.Groups.[Constants.MainDependencyGroup].Packages |> List.find (fun p -> p.Name = PackageName "Rx-Main")).Sources |> shouldEqual [PackageSources.DefaultNugetSource; PackageSource.NugetSource "http://nuget.org/api/v3"]
-    (cfg.Groups.[Constants.MainDependencyGroup].Packages |> List.find (fun p -> p.Name = PackageName "MinPackage")).Sources |> shouldEqual [PackageSources.DefaultNugetSource; PackageSource.NugetSource "http://nuget.org/api/v3"]
-    (cfg.Groups.[Constants.MainDependencyGroup].Packages |> List.find (fun p -> p.Name = PackageName "FAKE")).Sources |> shouldEqual [PackageSources.DefaultNugetSource; PackageSource.NugetSource "http://nuget.org/api/v3"]
+    cfg.Groups.[Constants.MainDependencyGroup].Sources |> shouldEqual [PackageSources.DefaultNugetSource; PackageSource.NugetSource "http://nuget.org/api/v3"]
 
 [<Test>]
 let ``should read source file from config``() =
@@ -139,7 +136,7 @@ let ``should read strict config``() =
     cfg.Groups.[Constants.MainDependencyGroup].Options.Strict |> shouldEqual true
     cfg.Groups.[Constants.MainDependencyGroup].Options.Redirects |> shouldEqual false
 
-    (cfg.Groups.[Constants.MainDependencyGroup].Packages |> List.find (fun p -> p.Name = PackageName "FAKE")).Sources |> shouldEqual [PackageSource.NugetSource "http://nuget.org/api/v2"]
+    cfg.Groups.[Constants.MainDependencyGroup].Sources |> shouldEqual [PackageSource.NugetSource "http://nuget.org/api/v2"]
 
 let redirectsConfig = """
 redirects on
@@ -154,7 +151,7 @@ let ``should read config with redirects``() =
     cfg.Groups.[Constants.MainDependencyGroup].Options.Strict |> shouldEqual false
     cfg.Groups.[Constants.MainDependencyGroup].Options.Redirects |> shouldEqual true
 
-    (cfg.Groups.[Constants.MainDependencyGroup].Packages |> List.find (fun p -> p.Name = PackageName "FAKE")).Sources |> shouldEqual [PackageSource.NugetSource "http://nuget.org/api/v2"]
+    cfg.Groups.[Constants.MainDependencyGroup].Sources |> shouldEqual [PackageSource.NugetSource "http://nuget.org/api/v2"]
 
 let noRedirectsConfig = """
 redirects off
@@ -169,7 +166,7 @@ let ``should read config with no redirects``() =
     cfg.Groups.[Constants.MainDependencyGroup].Options.Strict |> shouldEqual false
     cfg.Groups.[Constants.MainDependencyGroup].Options.Redirects |> shouldEqual false
 
-    (cfg.Groups.[Constants.MainDependencyGroup].Packages |> List.find (fun p -> p.Name = PackageName "FAKE")).Sources |> shouldEqual [PackageSource.NugetSource "http://nuget.org/api/v2"]
+    cfg.Groups.[Constants.MainDependencyGroup].Sources |> shouldEqual [PackageSource.NugetSource "http://nuget.org/api/v2"]
 
 let noneContentConfig = """
 content none
@@ -185,7 +182,7 @@ let ``should read content none config``() =
     cfg.Groups.[Constants.MainDependencyGroup].Options.Settings.CopyLocal |> shouldEqual None
     cfg.Groups.[Constants.MainDependencyGroup].Options.Settings.ImportTargets |> shouldEqual None
 
-    (cfg.Groups.[Constants.MainDependencyGroup].Packages |> List.find (fun p -> p.Name = PackageName "Microsoft.SqlServer.Types")).Sources |> shouldEqual [PackageSource.NugetSource "http://nuget.org/api/v2"]
+    cfg.Groups.[Constants.MainDependencyGroup].Sources |> shouldEqual [PackageSource.NugetSource "http://nuget.org/api/v2"]
 
 let specificFrameworkConfig = """
 framework net40 net35
@@ -201,7 +198,7 @@ let ``should read config with specific framework``() =
     cfg.Groups.[Constants.MainDependencyGroup].Options.Settings.CopyLocal |> shouldEqual None
     cfg.Groups.[Constants.MainDependencyGroup].Options.Settings.ImportTargets |> shouldEqual None
 
-    (cfg.Groups.[Constants.MainDependencyGroup].Packages |> List.find (fun p -> p.Name = PackageName "Microsoft.SqlServer.Types")).Sources |> shouldEqual [PackageSource.NugetSource "http://nuget.org/api/v2"]
+    cfg.Groups.[Constants.MainDependencyGroup].Sources |> shouldEqual [PackageSource.NugetSource "http://nuget.org/api/v2"]
 
 let noTargetsImportConfig = """
 import_targets false
@@ -218,7 +215,7 @@ let ``should read no targets import config``() =
     cfg.Groups.[Constants.MainDependencyGroup].Options.Settings.CopyLocal |> shouldEqual (Some false)
     cfg.Groups.[Constants.MainDependencyGroup].Options.Settings.OmitContent |> shouldEqual None
 
-    (cfg.Groups.[Constants.MainDependencyGroup].Packages |> List.find (fun p -> p.Name = PackageName "Microsoft.SqlServer.Types")).Sources |> shouldEqual [PackageSource.NugetSource "http://nuget.org/api/v2"]
+    cfg.Groups.[Constants.MainDependencyGroup].Sources |> shouldEqual [PackageSource.NugetSource "http://nuget.org/api/v2"]
 
 let configWithoutQuotes = """
 source http://nuget.org/api/v2
@@ -541,7 +538,7 @@ nuget Rx-Main
 let ``should read config with encapsulated password source``() = 
     let cfg = DependenciesFile.FromCode( configWithPassword)
     
-    (cfg.Groups.[Constants.MainDependencyGroup].Packages |> List.find (fun p -> p.Name = PackageName "Rx-Main")).Sources 
+    cfg.Groups.[Constants.MainDependencyGroup].Sources 
     |> shouldEqual [ 
         PackageSource.Nuget { 
             Url = "http://nuget.org/api/v2"
@@ -571,7 +568,7 @@ let ``should read config with password in env variable``() =
     Environment.SetEnvironmentVariable("FEED_PASSWORD", "pw Love", EnvironmentVariableTarget.Process)
     let cfg = DependenciesFile.FromCode( configWithPasswordInEnvVariable)
     
-    (cfg.Groups.[Constants.MainDependencyGroup].Packages |> List.find (fun p -> p.Name = PackageName "Rx-Main")).Sources 
+    cfg.Groups.[Constants.MainDependencyGroup].Sources 
     |> shouldEqual [ 
         PackageSource.Nuget { 
             Url = "http://nuget.org/api/v2"

@@ -49,12 +49,6 @@ type DependenciesGroup = {
               Sources = this.Sources @ other.Sources |> List.distinct
               Packages = this.Packages @ other.Packages
               RemoteFiles = this.RemoteFiles @ other.RemoteFiles }
-
-type RequirementsGroup = {
-    Name: GroupName
-    RootDependencies: PackageRequirement list option
-    PackageRequirements : PackageRequirement list
-}
             
 /// [omit]
 module DependenciesFileParser = 
@@ -254,8 +248,7 @@ module DependenciesFileParser =
             failwithf "Invalid prerelease version %s" prereleases
 
         let packageName = PackageName name
-        { Sources = sources
-          Name = packageName
+        { Name = packageName
           ResolverStrategy = parseResolverStrategy version
           Parent = parent
           Settings = 
@@ -427,20 +420,16 @@ type DependenciesFile(fileName,groups:Map<GroupName,DependenciesGroup>, textRepr
     member __.FileName = fileName
     member __.Lines = textRepresentation
 
-    member this.Resolve(force, getSha1, getVersionF, getPackageDetailsF, groupsToResolve:Map<GroupName,RequirementsGroup>) =
-        let resolveGroup groupName group =
-            let group' = this.GetGroup groupName
-            let rootDependencies =
-                match group.RootDependencies with
-                | None -> group'.Packages
-                | Some d -> d
+    member this.Resolve(force, getSha1, getVersionF, getPackageDetailsF, groupsToResolve:Map<GroupName,PackageRequirement list>) =
+        let resolveGroup groupName (additionalRequirements:PackageRequirement list) =
+            let group = this.GetGroup groupName
 
             let resolveSourceFile (file:ResolvedSourceFile) : PackageRequirement list =
                 RemoteDownload.downloadDependenciesFile(force,Path.GetDirectoryName fileName, groupName, DependenciesFile.FromCode, file)
                 |> Async.RunSynchronously
                 |> fun df -> df.Groups.[Constants.MainDependencyGroup].Packages  // We do not support groups in reference files yet
 
-            let remoteFiles = ModuleResolver.Resolve(resolveSourceFile,getSha1,group'.RemoteFiles)
+            let remoteFiles = ModuleResolver.Resolve(resolveSourceFile,getSha1,group.RemoteFiles)
         
             let remoteDependencies = 
                 remoteFiles
@@ -451,18 +440,17 @@ type DependenciesFile(fileName,groups:Map<GroupName,DependenciesGroup>, textRepr
                           VersionRequirement = v
                           ResolverStrategy = ResolverStrategy.Max
                           Parent = PackageRequirementSource.DependenciesFile fileName
-                          Settings = groups.[groupName].Options.Settings
-                          Sources = groups.[groupName].Sources })
+                          Settings = group.Options.Settings })
                 |> Seq.toList
 
             { ResolvedPackages = 
                 PackageResolver.Resolve(
-                    group.Name,
+                    groupName,
+                    group.Sources,
                     getVersionF, 
                     getPackageDetailsF, 
-                    group'.Options.Settings.FrameworkRestrictions, 
-                    remoteDependencies @ rootDependencies, 
-                    groups.[groupName].Packages @ group.PackageRequirements |> Set.ofList)
+                    group.Options.Settings.FrameworkRestrictions,
+                    remoteDependencies @ group.Packages @ additionalRequirements)
               ResolvedSourceFiles = remoteFiles }
 
         groupsToResolve
@@ -481,7 +469,7 @@ type DependenciesFile(fileName,groups:Map<GroupName,DependenciesGroup>, textRepr
                 | [] -> true
                 | sources -> 
                     let lastSource = Seq.last sources
-                    p.Sources |> Seq.exists (fun s -> s = lastSource)
+                    group.Sources |> Seq.exists (fun s -> s = lastSource)
 
         let smaller = 
             match groups |> Map.tryFind groupName with

@@ -13,8 +13,7 @@ let require packageName strategy text : PackageRequirement =
       VersionRequirement = parse text
       ResolverStrategy = strategy
       Parent = PackageRequirementSource.DependenciesFile ""
-      Settings = InstallSettings.Default
-      Sources = [] }
+      Settings = InstallSettings.Default }
 
 [<Test>]
 let ``can order simple at least requirements``() = 

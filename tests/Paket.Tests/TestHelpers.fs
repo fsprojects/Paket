@@ -34,21 +34,15 @@ let safeResolve graph (dependencies : (string * VersionRange) list)  =
         dependencies |> List.map (fun (n, v) -> 
                             { Name = PackageName n
                               VersionRequirement = VersionRequirement(v,PreReleaseStatus.No)
-                              Sources = [ PackageSource.NugetSource "" ]
                               Parent = PackageRequirementSource.DependenciesFile ""
                               Settings = InstallSettings.Default
                               ResolverStrategy = ResolverStrategy.Max })
-    PackageResolver.Resolve(Constants.MainDependencyGroup,VersionsFromGraph graph, PackageDetailsFromGraph graph, [], packages, Set.empty)
+    PackageResolver.Resolve(Constants.MainDependencyGroup,[ PackageSource.NugetSource "" ],VersionsFromGraph graph, PackageDetailsFromGraph graph, [], packages)
 
 let resolve graph dependencies = (safeResolve graph dependencies).GetModelOrFail()
 
 let ResolveWithGraph(dependenciesFile:DependenciesFile,getSha1,getVersionF, getPackageDetailsF) =
-    let mainGroup = 
-        { Name = Constants.MainDependencyGroup
-          RootDependencies = Some dependenciesFile.Groups.[Constants.MainDependencyGroup].Packages
-          PackageRequirements = [] }
-        
-    let groups = [Constants.MainDependencyGroup, mainGroup ] |> Map.ofSeq
+    let groups = [Constants.MainDependencyGroup, dependenciesFile.Groups.[Constants.MainDependencyGroup].Packages ] |> Map.ofSeq
 
     dependenciesFile.Resolve(true,getSha1,getVersionF,getPackageDetailsF,groups)
 

@@ -6,7 +6,7 @@ open Paket.Logging
 open Chessie.ErrorHandling
 open System.IO
 
-let private adjustVersionRequirements strict includingPrereleases (dependenciesFile: DependenciesFile) =    
+let private adjustVersionRequirements strict includingPrereleases (dependenciesFile: DependenciesFile) =
     let groups =
         dependenciesFile.Groups
         |> Map.map (fun groupName group ->
@@ -20,7 +20,8 @@ let private adjustVersionRequirements strict includingPrereleases (dependenciesF
                         | true,false -> v, p.ResolverStrategy
                         | false,true -> 
                             match v with
-                            | VersionRequirement(v,_) -> VersionRequirement(v,PreReleaseStatus.All), ResolverStrategy.Max
+                            | VersionRequirement(v,_) -> 
+                                VersionRequirement.VersionRequirement(v,PreReleaseStatus.All), ResolverStrategy.Max
                         | false,false -> VersionRequirement.AllReleases, ResolverStrategy.Max
                     { p with VersionRequirement = requirement; ResolverStrategy = strategy})
             { group with Packages = newPackages })
@@ -40,10 +41,7 @@ let FindOutdated strict includingPrereleases environment = trial {
 
     let groups = 
         dependenciesFile.Groups
-        |> Map.map (fun groupName group -> 
-            { Name = groupName
-              RootDependencies = Some dependenciesFile.Groups.[groupName].Packages
-              PackageRequirements = [] })
+        |> Map.map (fun groupName group -> dependenciesFile.Groups.[groupName].Packages)
 
     let newResolution = dependenciesFile.Resolve(true,getSha1,(fun (x,y,_) -> NuGetV2.GetVersions root (x,y)),NuGetV2.GetPackageDetails root true,groups)
 
