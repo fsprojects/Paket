@@ -41,7 +41,7 @@ let FindOutdated strict includingPrereleases environment = trial {
 
     let groups = 
         dependenciesFile.Groups
-        |> Map.map (fun groupName group -> dependenciesFile.Groups.[groupName].Packages)
+        |> Map.map (fun groupName group -> [])
 
     let newResolution = dependenciesFile.Resolve(true,getSha1,(fun (x,y,_) -> NuGetV2.GetVersions root (x,y)),NuGetV2.GetPackageDetails root true,groups)
 
