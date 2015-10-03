@@ -18,14 +18,14 @@ type CredsMigrationMode =
     | Plaintext
     | Selective
 
-    static member parse(s : string) = 
+    static member Parse(s : string) = 
         match s with 
         | "encrypt" -> ok Encrypt
         | "plaintext" -> ok  Plaintext
         | "selective" -> ok Selective
         | _ ->  InvalidCredentialsMigrationMode s |> fail
 
-    static member toAuthentication mode sourceName auth =
+    static member ToAuthentication mode sourceName auth =
         match mode with
         | Encrypt -> 
             ConfigAuthentication(auth.Username, auth.Password)
@@ -70,12 +70,12 @@ type NugetConfig =
       PackageRestoreEnabled : bool
       PackageRestoreAutomatic : bool }
 
-    static member empty =
+    static member Empty =
         { PackageSources = Map.empty
           PackageRestoreEnabled = false 
           PackageRestoreAutomatic = false }
 
-    static member getConfigNode (file : FileInfo) =  
+    static member GetConfigNode (file : FileInfo) =
         try 
             let doc = XmlDocument()
             doc.Load(file.FullName)
@@ -85,7 +85,7 @@ type NugetConfig =
             |> NugetConfigFileParseError
             |> fail
 
-    static member overrideConfig nugetConfig (configNode : XmlNode) =
+    static member OverrideConfig nugetConfig (configNode : XmlNode) =
         let clearSources = configNode.SelectSingleNode("//packageSources/clear") <> null
 
         let getAuth key = 
@@ -168,13 +168,13 @@ module NugetEnv =
                         config
                         |> bind (fun config ->
                             file 
-                            |> NugetConfig.getConfigNode 
-                            |> lift (fun node -> NugetConfig.overrideConfig config node)))
-                        (ok NugetConfig.empty)
+                            |> NugetConfig.GetConfigNode 
+                            |> lift (fun node -> NugetConfig.OverrideConfig config node)))
+                        (ok NugetConfig.Empty)
 
     let readNugetPackages(rootDirectory : DirectoryInfo) =
         let readSingle(file : FileInfo) = 
-            try    
+            try
                 { File = file
                   Type = if file.Directory.Name = ".nuget" then SolutionLevel else ProjectLevel
                   Packages = PackagesConfigFile.Read file.FullName }
@@ -238,7 +238,7 @@ let createDependenciesFileR (rootDirectory : DirectoryInfo) nugetEnv mode =
     let findWarnings searchBy message =
         for name, versions in findDistinctPackages searchBy do
             if List.length versions > 1 then 
-              traceWarnfn message name versions    
+              traceWarnfn message name versions
 
     findWarnings (List.map (fun p -> p.Version) >> List.distinct >> List.map string) 
         "Package %s is referenced multiple times in different versions: %A. Paket will choose the latest one." 
@@ -278,7 +278,7 @@ let createDependenciesFileR (rootDirectory : DirectoryInfo) nugetEnv mode =
                 (nugetEnv.NugetConfig.PackageSources
                  |> Map.toList
                  |> List.map snd)
-            |> List.map (fun (n, auth) -> n, auth |> Option.map (CredsMigrationMode.toAuthentication mode n))
+            |> List.map (fun (n, auth) -> n, auth |> Option.map (CredsMigrationMode.ToAuthentication mode n))
             |> List.map (fun source -> 
                             try source |> PackageSource.Parse |> ok
                             with _ -> source |> fst |> PackageSourceParseError |> fail
@@ -301,7 +301,7 @@ let createDependenciesFileR (rootDirectory : DirectoryInfo) nugetEnv mode =
 
     if File.Exists dependenciesFileName then read() else create()
 
-let convertPackagesConfigToReferences projectFileName packagesConfig =     
+let convertPackagesConfigToReferences projectFileName packagesConfig =
     let referencesFile = ProjectFile.FindOrCreateReferencesFile(FileInfo projectFileName)
 
     packagesConfig.Packages
@@ -345,7 +345,7 @@ let convertR rootDirectory force credsMigrationMode = trial {
 
     let! credsMigrationMode =
         defaultArg 
-            (credsMigrationMode |> Option.map CredsMigrationMode.parse)
+            (credsMigrationMode |> Option.map CredsMigrationMode.Parse)
             (ok Encrypt)
 
     let! nugetEnv = NugetEnv.read rootDirectory
