@@ -251,14 +251,7 @@ module DependenciesFileParser =
         { Name = packageName
           ResolverStrategy = parseResolverStrategy version
           Parent = parent
-          Settings = 
-            let settings = InstallSettings.Parse(optionsText)
-            if packageName = PackageName "Microsoft.Bcl.Build" && settings.ImportTargets = None then
-                // Microsoft.Bcl.Build targets file causes the build to fail in VS
-                // so users have to be very explicit with the targets file
-                { settings with ImportTargets = Some false }
-            else 
-                settings
+          Settings = InstallSettings.Parse(optionsText).AdjustWithSpecialCases packageName
           VersionRequirement = parseVersionRequirement((version + " " + prereleases).Trim '!') } 
 
     let parsePackageLine(sources,parent,line:string) =

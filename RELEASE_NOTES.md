@@ -1,3 +1,6 @@
+#### 2.8.1 - 04.10.2015
+* BUGFIX: Resolver needs to consider Microsoft.Bcl.Build
+
 #### 2.8.0 - 03.10.2015
 * BUGFIX: Selective update needs to consider remote files
 * BUGFIX: Ignore disabled upstream feeds - https://github.com/fsprojects/Paket/pull/1105

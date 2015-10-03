@@ -234,7 +234,7 @@ let Resolve(groupName:GroupName, sources, getVersionsF, getPackageDetailsF, glob
                   Version = version
                   Dependencies = restrictedDependencies
                   Unlisted = packageDetails.Unlisted
-                  Settings = settings
+                  Settings = settings.AdjustWithSpecialCases packageDetails.Name
                   Source = packageDetails.Source }
             exploredPackages.Add((dependency.Name,version),explored)
             explored
