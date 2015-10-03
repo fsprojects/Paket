@@ -31,12 +31,15 @@ let VersionsFromGraph (graph : seq<string * string * (string * VersionRequiremen
 
 let safeResolve graph (dependencies : (string * VersionRange) list)  = 
     let packages = 
-        dependencies |> List.map (fun (n, v) -> 
-                            { Name = PackageName n
-                              VersionRequirement = VersionRequirement(v,PreReleaseStatus.No)
-                              Parent = PackageRequirementSource.DependenciesFile ""
-                              Settings = InstallSettings.Default
-                              ResolverStrategy = ResolverStrategy.Max })
+        dependencies
+        |> List.map (fun (n, v) -> 
+               { Name = PackageName n
+                 VersionRequirement = VersionRequirement(v, PreReleaseStatus.No)
+                 Parent = PackageRequirementSource.DependenciesFile ""
+                 Settings = InstallSettings.Default
+                 ResolverStrategy = ResolverStrategy.Max })
+        |> Set.ofList
+
     PackageResolver.Resolve(Constants.MainDependencyGroup,[ PackageSource.NugetSource "" ],VersionsFromGraph graph, PackageDetailsFromGraph graph, [], packages)
 
 let resolve graph dependencies = (safeResolve graph dependencies).GetModelOrFail()

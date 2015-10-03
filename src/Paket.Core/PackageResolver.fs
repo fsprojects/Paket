@@ -195,7 +195,7 @@ type Resolved = {
     ResolvedSourceFiles : ModuleResolver.ResolvedSourceFile list }
 
 /// Resolves all direct and transitive dependencies
-let Resolve(groupName:GroupName, sources, getVersionsF, getPackageDetailsF, globalFrameworkRestrictions, (rootDependencies:PackageRequirement list)) =
+let Resolve(groupName:GroupName, sources, getVersionsF, getPackageDetailsF, globalFrameworkRestrictions, (rootDependencies:PackageRequirement Set)) =
     tracefn "Resolving packages for group %O:" groupName
     let rootSettings =
         rootDependencies
@@ -270,7 +270,7 @@ let Resolve(groupName:GroupName, sources, getVersionsF, getPackageDetailsF, glob
 
                 Resolution.Ok(resolution)
             else
-                Resolution.Conflict(closedRequirements,openRequirements,rootDependencies |> Set.ofList)
+                Resolution.Conflict(closedRequirements,openRequirements,rootDependencies)
         else
             let packageCount = selectedPackageVersions |> List.length
             verbosefn "  %d packages in resolution. %d requirements left" packageCount openRequirements.Count
@@ -432,6 +432,6 @@ let Resolve(groupName:GroupName, sources, getVersionsF, getPackageDetailsF, glob
             | true,Resolution.Conflict(_) -> tryToImprove true |> snd
             | _,x-> x
 
-    match step (Map.empty, [], Set.empty, Set.ofList rootDependencies) with
+    match step (Map.empty, [], Set.empty, rootDependencies) with
     | Resolution.Conflict(_) as c -> c
     | Resolution.Ok model -> Resolution.Ok(cleanupNames model)

@@ -450,7 +450,7 @@ type DependenciesFile(fileName,groups:Map<GroupName,DependenciesGroup>, textRepr
                     getVersionF, 
                     getPackageDetailsF, 
                     group.Options.Settings.FrameworkRestrictions,
-                    remoteDependencies @ group.Packages @ additionalRequirements)
+                    remoteDependencies @ group.Packages @ additionalRequirements |> Set.ofList)
               ResolvedSourceFiles = remoteFiles }
 
         groupsToResolve
