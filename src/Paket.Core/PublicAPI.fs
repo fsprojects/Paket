@@ -277,7 +277,7 @@ type Dependencies(dependenciesFileName: string) =
     member this.GetDefinedNuGetFeeds() : string list =
         let configured =
             match NuGetConvert.NugetEnv.readNugetConfig(this.RootDirectory) with
-            | Result.Ok(config,_) -> config.PackageSources |> List.map fst
+            | Result.Ok(config,_) -> config.PackageSources |> Map.toList |> List.map (snd >> fst)
             | _ -> []
         Constants.DefaultNugetStream :: configured
         |> Set.ofSeq

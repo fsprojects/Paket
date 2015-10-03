@@ -32,9 +32,10 @@ let ``can detect encrypted passwords in nuget.config``() =
     parse "NuGetConfig/PasswordConfig.xml" 
     |> shouldEqual
         { PackageSources = 
-            [ "https://www.nuget.org/api/v2/",None
-              "https://tc/httpAuth/app/nuget/v1/FeedService.svc/",
-                      Some { Username = "notty"; Password = "secret" } ]
+            [ "https://www.nuget.org/api/v2/", ("https://www.nuget.org/api/v2/",None)
+              "tc", ("https://tc/httpAuth/app/nuget/v1/FeedService.svc/",
+                            Some { Username = "notty"; Password = "secret" } ) ]
+            |> Map.ofList
           PackageRestoreEnabled = false
           PackageRestoreAutomatic = false }
 
@@ -42,10 +43,11 @@ let ``can detect encrypted passwords in nuget.config``() =
 let ``can detect cleartextpasswords in nuget.config``() = 
     parse "NuGetConfig/ClearTextPasswordConfig.xml" 
     |> shouldEqual
-        { PackageSources = 
-            [ "https://www.nuget.org/api/v2/",None
-              "https://nuget/somewhere/",
-                      Some { Username = "myUser"; Password = "myPassword" } ]
+        { PackageSources =
+            [ "https://www.nuget.org/api/v2/", ("https://www.nuget.org/api/v2/",None)
+              "somewhere", ("https://nuget/somewhere/",
+                            Some { Username = "myUser"; Password = "myPassword" } ) ]
+            |> Map.ofList 
           PackageRestoreEnabled = false
           PackageRestoreAutomatic = false }
 
@@ -54,6 +56,24 @@ let ``ignores disabled nuget feed`` () =
     parse "NuGetConfig/ConfigWithDisabledFeed.xml"
     |> shouldEqual
         { PackageSources = 
-            [ "https://www.nuget.org/api/v2/",None]
+            [ "nuget.org", ("https://www.nuget.org/api/v2/",None) ]
+            |> Map.ofList
+          PackageRestoreEnabled = true
+          PackageRestoreAutomatic = true }
+
+[<Test>]
+let ``ignores disabled nuget feed from upstream`` () =
+    let upstream = 
+        { NugetConfig.empty with
+            PackageSources = 
+                [ "MyGetDuality", ("https://www.myget.org/F/6416d9912a7c4d46bc983870fb440d25/", None) ]
+                |> Map.ofList }
+    let next = NugetConfig.getConfigNode (FileInfo "NugetConfig/ConfigWithDisabledFeedFromUpstream.xml") |> Trial.returnOrFail
+    let overridden = NugetConfig.overrideConfig upstream next
+    overridden
+    |> shouldEqual
+        { PackageSources = 
+            [ "nuget.org", ("https://www.nuget.org/api/v2/",None) ]
+            |> Map.ofList
           PackageRestoreEnabled = true
           PackageRestoreAutomatic = true }
