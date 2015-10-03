@@ -7,24 +7,20 @@ open Chessie.ErrorHandling
 open System.IO
 
 let private adjustVersionRequirements strict includingPrereleases (dependenciesFile: DependenciesFile) =
-    let groups =
-        dependenciesFile.Groups
-        |> Map.map (fun groupName group ->
-            let newPackages =
-                group.Packages
-                |> List.map (fun p ->
-                    let v = p.VersionRequirement 
-                    let requirement,strategy =
-                        match strict,includingPrereleases with
-                        | true,true -> VersionRequirement.NoRestriction, p.ResolverStrategy
-                        | true,false -> v, p.ResolverStrategy
-                        | false,true -> 
-                            match v with
-                            | VersionRequirement(v,_) -> 
-                                VersionRequirement.VersionRequirement(v,PreReleaseStatus.All), ResolverStrategy.Max
-                        | false,false -> VersionRequirement.AllReleases, ResolverStrategy.Max
-                    { p with VersionRequirement = requirement; ResolverStrategy = strategy})
-            { group with Packages = newPackages })
+    let adjust (packageRequirement:Requirements.PackageRequirement) =
+        let versionRequirement,strategy = 
+            match strict,includingPrereleases with
+            | true,true -> VersionRequirement.NoRestriction, packageRequirement.ResolverStrategy
+            | true,false -> packageRequirement.VersionRequirement, packageRequirement.ResolverStrategy
+            | false,true -> 
+                match packageRequirement.VersionRequirement with
+                | VersionRequirement(v,_) -> VersionRequirement.VersionRequirement(v,PreReleaseStatus.All), ResolverStrategy.Max
+            | false,false -> VersionRequirement.AllReleases, ResolverStrategy.Max
+        { packageRequirement with VersionRequirement = versionRequirement; ResolverStrategy = strategy}
+
+    let groups = 
+        dependenciesFile.Groups 
+        |> Map.map (fun groupName group -> { group with Packages = group.Packages |> List.map adjust })
 
     DependenciesFile(dependenciesFile.FileName, groups, dependenciesFile.Lines)
 
@@ -63,7 +59,7 @@ let FindOutdated strict includingPrereleases environment = trial {
 }
 
 let private printOutdated changed =
-    if changed = [] then
+    if List.isEmpty changed then
         tracefn "No outdated packages found."
     else
         tracefn "Outdated packages found:"
