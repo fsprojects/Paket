@@ -188,10 +188,13 @@
     <Content Include="NuGetConfig\PasswordConfig.xml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+    <Compile Include="NuGetConfig\NuGetConfigSpecs.fs" />
     <Content Include="NuGetConfig\ConfigWithDisabledFeed.xml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Compile Include="NuGetConfig\NuGetConfigSpecs.fs" />
+    <Content Include="NuGetConfig\ConfigWithDisabledFeedFromUpstream.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <Content Include="JSON-LD\Rx-PlatformServices.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>

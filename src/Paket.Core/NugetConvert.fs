@@ -8,7 +8,6 @@ open System.Xml
 open Paket.Domain
 open Paket.Logging
 open Paket.Xml
-open Paket.NuGetV2
 open Paket.PackageSources
 open Paket.Requirements
 open Chessie.ErrorHandling
@@ -67,12 +66,12 @@ let private getKeyValueList (node : XmlNode) =
         | _ -> None)
 
 type NugetConfig = 
-    { PackageSources : list<string * Auth option>
+    { PackageSources : Map<string, string * Auth option>
       PackageRestoreEnabled : bool
       PackageRestoreAutomatic : bool }
 
     static member empty =
-        { PackageSources = [] 
+        { PackageSources = Map.empty
           PackageRestoreEnabled = false 
           PackageRestoreAutomatic = false }
 
@@ -120,12 +119,15 @@ type NugetConfig =
             |> Option.toList
             |> List.collect getKeyValueList
             |> List.filter (fun (key,_) -> Set.contains key disabledSources |> not)
-            |> List.map (fun (key,value) -> String.quoted value, getAuth key)
-
+            |> List.map (fun (key,value) -> key, (String.quoted value, getAuth key))
+            |> Map.ofList
+            
         { PackageSources = if clearSources then sources
                            else 
-                               nugetConfig.PackageSources @ sources
-                               |> List.distinct
+                              Map.fold 
+                                (fun acc k v -> Map.add k v acc)
+                                nugetConfig.PackageSources
+                                sources
           PackageRestoreEnabled = 
             match configNode |> getNode "packageRestore" |> Option.bind (tryGetValue "enabled") with
             | Some value -> bool.Parse(value)
@@ -271,7 +273,11 @@ let createDependenciesFileR (rootDirectory : DirectoryInfo) nugetEnv mode =
 
     let create() =
         let sources = 
-            if nugetEnv.NugetConfig.PackageSources = [] then [Constants.DefaultNugetStream,None] else nugetEnv.NugetConfig.PackageSources
+            if nugetEnv.NugetConfig.PackageSources = Map.empty then [ Constants.DefaultNugetStream, None ]
+            else 
+                (nugetEnv.NugetConfig.PackageSources
+                 |> Map.toList
+                 |> List.map snd)
             |> List.map (fun (n, auth) -> n, auth |> Option.map (CredsMigrationMode.toAuthentication mode n))
             |> List.map (fun source -> 
                             try source |> PackageSource.Parse |> ok
