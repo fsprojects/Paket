@@ -1,3 +1,6 @@
+#### 2.7.3 - 03.10.2015
+* BUGFIX: Ignore disabled upstream feeds - https://github.com/fsprojects/Paket/pull/1105
+
 #### 2.7.2 - 02.10.2015
 * BUGFIX: Don't forget to add settings from root dependencies
 
