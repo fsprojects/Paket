@@ -118,16 +118,16 @@ type NugetConfig =
             configNode |> getNode "packageSources"
             |> Option.toList
             |> List.collect getKeyValueList
-            |> List.filter (fun (key,_) -> Set.contains key disabledSources |> not)
             |> List.map (fun (key,value) -> key, (String.quoted value, getAuth key))
             |> Map.ofList
-            
+        
         { PackageSources = if clearSources then sources
                            else 
                               Map.fold 
                                 (fun acc k v -> Map.add k v acc)
                                 nugetConfig.PackageSources
                                 sources
+                           |> Map.filter (fun k _ -> Set.contains k disabledSources |> not)
           PackageRestoreEnabled = 
             match configNode |> getNode "packageRestore" |> Option.bind (tryGetValue "enabled") with
             | Some value -> bool.Parse(value)
