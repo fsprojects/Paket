@@ -16,18 +16,19 @@ type UpdateMode =
     | UpdateAll
 
 let selectiveUpdate resolve (lockFile:LockFile) (dependenciesFile:DependenciesFile) updateMode =
+    let noAdditionalRequirements _ _ = []
     let resolution =
         match updateMode with
         | UpdateAll -> 
             let groups =
                 dependenciesFile.Groups
-                |> Map.map (fun _ _ -> [])
+                |> Map.map noAdditionalRequirements
             resolve dependenciesFile groups
         | UpdateGroup groupName ->
             let groups =
                 dependenciesFile.Groups
                 |> Map.filter (fun k _ -> k = groupName)
-                |> Map.map (fun _ _ -> [])
+                |> Map.map noAdditionalRequirements
             resolve dependenciesFile groups
         | Install ->
             let dependenciesFile =
@@ -36,7 +37,7 @@ let selectiveUpdate resolve (lockFile:LockFile) (dependenciesFile:DependenciesFi
 
             let groups =
                 dependenciesFile.Groups
-                |> Map.map (fun _ _ -> [])
+                |> Map.map noAdditionalRequirements
 
             resolve dependenciesFile groups
         | UpdatePackage(groupName,packageName) ->
@@ -48,10 +49,7 @@ let selectiveUpdate resolve (lockFile:LockFile) (dependenciesFile:DependenciesFi
             let groups =
                 dependenciesFile.Groups
                 |> Map.filter (fun key _ -> key = groupName)
-                |> Map.map (fun groupName group ->
-                        match lockFile.Groups |> Map.tryFind groupName with
-                        | None -> []
-                        | Some group -> group.Resolution |> createPackageRequirements [packageName])
+                |> Map.map (fun groupName _ -> lockFile.GetGroup(groupName).Resolution |> createPackageRequirements [packageName])
 
             resolve dependenciesFile groups
 
@@ -64,15 +62,7 @@ let selectiveUpdate resolve (lockFile:LockFile) (dependenciesFile:DependenciesFi
                       Options = dependenciesGroup.Options
                       Resolution = group.ResolvedPackages.GetModelOrFail()
                       RemoteFiles = group.ResolvedSourceFiles }
-                | None -> 
-                    // we take stuff directly from the old lockfile
-                    match lockFile.Groups |> Map.tryFind groupName with
-                    | Some group ->
-                        { Name = dependenciesGroup.Name
-                          Options = dependenciesGroup.Options
-                          Resolution = group.Resolution
-                          RemoteFiles = group.RemoteFiles }
-                    | None -> failwithf "Group %O was not found in the paket.lock file" groupName )
+                | None -> lockFile.GetGroup groupName) // just copy from lockfile
     
     LockFile(lockFile.FileName, groups)
 
