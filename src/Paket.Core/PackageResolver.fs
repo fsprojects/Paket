@@ -239,13 +239,13 @@ let Resolve(groupName:GroupName, sources, getVersionsF, getPackageDetailsF, glob
             exploredPackages.Add((dependency.Name,version),explored)
             explored
 
-    let getAllVersions(packageName:PackageName,vr : VersionRange) =
+    let getAllVersions(packageName:PackageName) =
         let (PackageName name) = packageName
         match allVersions.TryGetValue(packageName) with
         | false,_ ->
             let versions = 
                 verbosefn "  - fetching versions for %s" name
-                getVersionsF(sources,packageName,vr)
+                getVersionsF(sources,packageName)
 
             if Seq.isEmpty versions then
                 failwithf "Couldn't retrieve versions for %s." name
@@ -312,7 +312,7 @@ let Resolve(groupName:GroupName, sources, getVersionsF, getPackageDetailsF, glob
                     match currentRequirement.VersionRequirement.Range with
                     | Specific v -> [v]
                     | OverrideAll v -> [v]
-                    | _ -> getAllVersions(currentRequirement.Name,currentRequirement.VersionRequirement.Range)
+                    | _ -> getAllVersions currentRequirement.Name
 
                 let preRelease v =
                     v.PreRelease = None
@@ -369,7 +369,7 @@ let Resolve(groupName:GroupName, sources, getVersionsF, getPackageDetailsF, glob
                     let versionText = 
                         let versions = 
                             if !availableVersions = [] then
-                                getAllVersions(currentRequirement.Name,currentRequirement.VersionRequirement.Range) 
+                                getAllVersions currentRequirement.Name
                             else 
                                 !availableVersions
 
