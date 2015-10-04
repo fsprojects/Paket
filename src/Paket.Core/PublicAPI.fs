@@ -149,8 +149,10 @@ type Dependencies(dependenciesFileName: string) =
     member private this.Install(options: InstallerOptions): unit =
         Utils.RunInLockedAccessMode(
             this.RootPath,
-            fun () -> UpdateProcess.SmartInstall(DependenciesFile.ReadFromFile(dependenciesFileName), false, None,
-                                                 { UpdaterOptions.Default with Common = options }))
+            fun () -> UpdateProcess.SmartInstall(
+                            DependenciesFile.ReadFromFile(dependenciesFileName), 
+                            UpdateProcess.UpdateMode.Install,
+                            { UpdaterOptions.Default with Common = options }))
 
     /// Creates a paket.dependencies file with the given text in the current directory and installs it.
     static member Install(dependencies, ?path: string, ?force, ?hard, ?withBindingRedirects, ?createNewBindingFiles) =
@@ -175,10 +177,22 @@ type Dependencies(dependenciesFileName: string) =
     member this.Update(force: bool, hard: bool, withBindingRedirects: bool, createNewBindingFiles:bool, installAfter: bool): unit =
         Utils.RunInLockedAccessMode(
             this.RootPath,
-            fun () -> UpdateProcess.Update(dependenciesFileName,
-                                           { UpdaterOptions.Default with
-                                               Common = InstallerOptions.CreateLegacyOptions(force, hard, withBindingRedirects, createNewBindingFiles)
-                                               NoInstall = installAfter |> not }))
+            fun () -> UpdateProcess.Update(
+                        dependenciesFileName,
+                        { UpdaterOptions.Default with
+                            Common = InstallerOptions.CreateLegacyOptions(force, hard, withBindingRedirects, createNewBindingFiles)
+                            NoInstall = installAfter |> not }))
+
+    /// Updates dependencies in single group.
+    member this.UpdateGroup(groupName, force: bool, hard: bool, withBindingRedirects: bool, createNewBindingFiles:bool, installAfter: bool): unit =
+        Utils.RunInLockedAccessMode(
+            this.RootPath,
+            fun () -> UpdateProcess.UpdateGroup(
+                            dependenciesFileName,
+                            GroupName groupName,
+                            { UpdaterOptions.Default with
+                                Common = InstallerOptions.CreateLegacyOptions(force, hard, withBindingRedirects, createNewBindingFiles)
+                                NoInstall = installAfter |> not }))
 
     /// Updates the given package.
     member this.UpdatePackage(groupName, package: string, version: string option, force: bool, hard: bool): unit =

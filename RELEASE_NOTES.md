@@ -1,3 +1,6 @@
+#### 2.8.2 - 04.10.2015
+* Allow to update a single group
+
 #### 2.8.1 - 04.10.2015
 * BUGFIX: Resolver needs to consider Microsoft.Bcl.Build
 

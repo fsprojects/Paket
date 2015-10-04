@@ -39,7 +39,7 @@ let FindOutdated strict includingPrereleases environment = trial {
         dependenciesFile.Groups
         |> Map.map (fun groupName group -> [])
 
-    let newResolution = dependenciesFile.Resolve(true,getSha1,(fun (x,y,_) -> NuGetV2.GetVersions root (x,y)),NuGetV2.GetPackageDetails root true,groups)
+    let newResolution = dependenciesFile.Resolve(true, getSha1, NuGetV2.GetVersions root, NuGetV2.GetPackageDetails root true,groups)
 
     let changed = 
         [for kv in lockFile.Groups do

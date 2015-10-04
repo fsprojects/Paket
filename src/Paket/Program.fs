@@ -182,7 +182,11 @@ let update (results : ParseResults<_>) =
         let version = results.TryGetResult <@ UpdateArgs.Version @>
         Dependencies.Locate().UpdatePackage(group, packageName, version, force, hard, withBindingRedirects, createNewBindingFiles, noInstall |> not)
     | _ ->
-        Dependencies.Locate().Update(force, hard, withBindingRedirects, createNewBindingFiles, noInstall |> not)
+        match group with
+        | Some groupName -> 
+            Dependencies.Locate().UpdateGroup(groupName, force, hard, withBindingRedirects, createNewBindingFiles, noInstall |> not)
+        | None ->
+            Dependencies.Locate().Update(force, hard, withBindingRedirects, createNewBindingFiles, noInstall |> not)
 
 let pack (results : ParseResults<_>) =
     let outputPath = results.GetResult <@ PackArgs.Output @>

@@ -29,7 +29,8 @@ let graph =
       [ "Castle.Core", VersionRequirement(VersionRange.AtLeast "3.3.3",PreReleaseStatus.No)
         "log4net", VersionRequirement(VersionRange.Exactly "1.2.10",PreReleaseStatus.No) ]
       "Castle.Core-log4net", "4.0.0", 
-      [ "Castle.Core", VersionRequirement(VersionRange.AtLeast "4.0.0",PreReleaseStatus.No) ]
+      [ "Castle.Core", VersionRequirement(VersionRange.AtLeast "4.0.0",PreReleaseStatus.No) 
+        "log4net", VersionRequirement(VersionRange.Exactly "1.2.10",PreReleaseStatus.No) ]
       "Castle.Core", "3.2.0", []
       "Castle.Core", "3.3.3", []
       "Castle.Core", "4.0.0", []
@@ -55,8 +56,7 @@ let ``SelectiveUpdate does not update any package when it is neither updating al
     nuget Castle.Core-log4net ~> 3.2
     nuget FAKE""")
     
-    let updateAll = false    
-    let lockFile = selectiveUpdate resolve lockFile dependenciesFile updateAll None
+    let lockFile = selectiveUpdate resolve lockFile dependenciesFile UpdateProcess.UpdateMode.Install
     
     let result = 
         lockFile.GetGroupedResolution()
@@ -81,8 +81,7 @@ let ``SelectiveUpdate updates all packages not constraining version``() =
     nuget Castle.Core-log4net ~> 3.2
     nuget FAKE""")
 
-    let updateAll = true
-    let lockFile = selectiveUpdate resolve lockFile dependenciesFile updateAll None
+    let lockFile = selectiveUpdate resolve lockFile dependenciesFile UpdateProcess.UpdateMode.UpdateAll
     
     let result = 
         lockFile.GetGroupedResolution()
@@ -108,8 +107,7 @@ let ``SelectiveUpdate updates all packages constraining version``() =
     nuget Castle.Core ~> 3.2
     nuget FAKE = 4.0.0""")
 
-    let updateAll = true
-    let lockFile = selectiveUpdate resolve lockFile dependenciesFile updateAll None
+    let lockFile = selectiveUpdate resolve lockFile dependenciesFile UpdateProcess.UpdateMode.UpdateAll
     
     let result = 
         lockFile.GetGroupedResolution()
@@ -134,8 +132,7 @@ let ``SelectiveUpdate removes a dependency when it is updated to a version that 
     nuget Castle.Core-log4net
     nuget FAKE""")
 
-    let updateAll = true
-    let lockFile = selectiveUpdate resolve lockFile dependenciesFile updateAll None
+    let lockFile = selectiveUpdate resolve lockFile dependenciesFile UpdateProcess.UpdateMode.UpdateAll
     
     let result = 
         lockFile.GetGroupedResolution()
@@ -144,7 +141,8 @@ let ``SelectiveUpdate removes a dependency when it is updated to a version that 
     let expected = 
         [("Castle.Core-log4net","4.0.0");
         ("Castle.Core","4.0.0");
-        ("FAKE","4.0.1")]
+        ("FAKE","4.0.1");
+        ("log4net","1.2.10")]
         |> Seq.sortBy fst
 
     result
@@ -159,10 +157,9 @@ let ``SelectiveUpdate updates a single package``() =
     nuget Castle.Core-log4net
     nuget FAKE""")
 
-    let updateAll = false
     let lockFile = 
-        Some(Constants.MainDependencyGroup, PackageName "FAKE")
-        |> selectiveUpdate resolve lockFile dependenciesFile updateAll
+        UpdateProcess.UpdateMode.UpdatePackage(Constants.MainDependencyGroup, PackageName "FAKE")
+        |> selectiveUpdate resolve lockFile dependenciesFile
     
     let result = 
         lockFile.GetGroupedResolution()
@@ -187,10 +184,9 @@ let ``SelectiveUpdate updates a single constrained package``() =
     nuget Castle.Core-log4net ~> 3.2
     nuget FAKE""")
 
-    let updateAll = false
     let lockFile = 
-        Some(Constants.MainDependencyGroup, PackageName "Castle.Core-log4net")
-        |> selectiveUpdate resolve lockFile dependenciesFile updateAll
+        UpdateProcess.UpdateMode.UpdatePackage(Constants.MainDependencyGroup, PackageName "Castle.Core-log4net")
+        |> selectiveUpdate resolve lockFile dependenciesFile
     
     let result = 
         lockFile.GetGroupedResolution()
@@ -216,10 +212,9 @@ let ``SelectiveUpdate updates a single package with constrained dependency in de
     nuget Castle.Core ~> 3.2
     nuget FAKE""")
 
-    let updateAll = false
     let lockFile = 
-        Some(Constants.MainDependencyGroup, PackageName "Castle.Core-log4net")
-        |> selectiveUpdate resolve lockFile dependenciesFile updateAll
+        UpdateProcess.UpdateMode.UpdatePackage(Constants.MainDependencyGroup, PackageName "Castle.Core-log4net")
+        |> selectiveUpdate resolve lockFile dependenciesFile
     
     let result = 
         lockFile.GetGroupedResolution()
@@ -245,8 +240,7 @@ let ``SelectiveUpdate installs new packages``() =
     nuget FAKE
     nuget Newtonsoft.Json""")
 
-    let updateAll = false
-    let lockFile = selectiveUpdate resolve lockFile dependenciesFile updateAll None
+    let lockFile = selectiveUpdate resolve lockFile dependenciesFile UpdateProcess.UpdateMode.Install
     
     let result = 
         lockFile.GetGroupedResolution()
@@ -272,10 +266,9 @@ let ``SelectiveUpdate removes a dependency when it updates a single package and 
     nuget Castle.Core-log4net
     nuget FAKE""")
 
-    let updateAll = false
     let lockFile = 
-        Some(Constants.MainDependencyGroup, PackageName "Castle.Core-log4net")
-        |> selectiveUpdate resolve lockFile dependenciesFile updateAll
+        UpdateProcess.UpdateMode.UpdatePackage(Constants.MainDependencyGroup, PackageName "Castle.Core-log4net")
+        |> selectiveUpdate resolve lockFile dependenciesFile
 
     let result = 
         lockFile.GetGroupedResolution()
@@ -284,7 +277,8 @@ let ``SelectiveUpdate removes a dependency when it updates a single package and 
     let expected = 
         [("Castle.Core-log4net","4.0.0");
         ("Castle.Core","4.0.0");
-        ("FAKE","4.0.0")]
+        ("FAKE","4.0.0");
+        ("log4net","1.2.10")]
         |> Seq.sortBy fst
 
     result
@@ -300,10 +294,9 @@ let ``SelectiveUpdate does not update when a dependency constrain is not met``()
     nuget Castle.Core = 3.2.0
     nuget FAKE""")
 
-    let updateAll = false
     let lockFile = 
-        Some(Constants.MainDependencyGroup, PackageName "Castle.Core-log4net")
-        |> selectiveUpdate resolve lockFile dependenciesFile updateAll
+        UpdateProcess.UpdateMode.UpdatePackage(Constants.MainDependencyGroup, PackageName "Castle.Core-log4net")
+        |> selectiveUpdate resolve lockFile dependenciesFile
 
     let result = 
         lockFile.GetGroupedResolution()
@@ -329,10 +322,9 @@ let ``SelectiveUpdate considers package name case difference``() =
     nuget castle.core = 3.2.0
     nuget FAKE""")
 
-    let updateAll = false
     let lockFile = 
-        Some(Constants.MainDependencyGroup, PackageName "Castle.Core-log4net")
-        |> selectiveUpdate resolve lockFile dependenciesFile updateAll
+        UpdateProcess.UpdateMode.UpdatePackage(Constants.MainDependencyGroup, PackageName "Castle.Core-log4net")
+        |> selectiveUpdate resolve lockFile dependenciesFile
 
     let result = 
         lockFile.GetGroupedResolution()
@@ -359,11 +351,9 @@ let ``SelectiveUpdate conflicts when a dependency is contrained``() =
     nuget log4net > 1.2.10
     nuget FAKE""")
 
-    let updateAll = false
-
     (fun () ->
-    Some(Constants.MainDependencyGroup, PackageName "Castle.Core-log4net")
-    |> selectiveUpdate resolve lockFile dependenciesFile updateAll
+    UpdateProcess.UpdateMode.UpdatePackage(Constants.MainDependencyGroup, PackageName "Castle.Core-log4net")
+    |> selectiveUpdate resolve lockFile dependenciesFile
     |> ignore)
     |> shouldFail
 
@@ -375,10 +365,9 @@ let ``SelectiveUpdate does not update any package when package does not exist``(
     nuget Castle.Core-log4net
     nuget FAKE""")
 
-    let updateAll = false
     try
-        Some(Constants.MainDependencyGroup, PackageName "package")
-        |> selectiveUpdate resolve lockFile dependenciesFile updateAll
+        UpdateProcess.UpdateMode.UpdatePackage(Constants.MainDependencyGroup, PackageName "package")
+        |> selectiveUpdate resolve lockFile dependenciesFile
         |> ignore
         failwith "This pont should not be reached"
     with
@@ -393,10 +382,9 @@ let ``SelectiveUpdate generates paket.lock correctly``() =
     nuget Castle.Core
     nuget FAKE""")
 
-    let updateAll = false
     let lockFile = 
-        Some(Constants.MainDependencyGroup, PackageName "Castle.Core")
-        |> selectiveUpdate resolve lockFile dependenciesFile updateAll
+        UpdateProcess.UpdateMode.UpdatePackage(Constants.MainDependencyGroup, PackageName "Castle.Core")
+        |> selectiveUpdate resolve lockFile dependenciesFile
     
     let result = 
             String.Join
@@ -428,19 +416,17 @@ let ``SelectiveUpdate does not update when package conflicts with a transitive d
     nuget FAKE
     nuget log4net""")
 
-    let updateAll = false
     let packageName = PackageName "log4net"
     let resolve = resolve' graph
 
     let lockFile = 
-        Some(Constants.MainDependencyGroup, packageName)
-        |> selectiveUpdate resolve lockFile dependenciesFile updateAll
+        UpdateProcess.UpdateMode.UpdatePackage(Constants.MainDependencyGroup, packageName)
+        |> selectiveUpdate resolve lockFile dependenciesFile
     
     let result = 
         lockFile.GetGroupedResolution()
         |> Map.toSeq
-        |> Seq.map snd
-        |> Seq.map (fun r -> (string r.Name, string r.Version))
+        |> Seq.map (fun (_,r) -> (string r.Name, string r.Version))
 
     let expected = 
         [("Castle.Core-log4net","3.2.0");
@@ -502,19 +488,17 @@ let ``SelectiveUpdate updates package that conflicts with a transitive dependenc
     nuget log4f
     nuget Ninject.Extensions.Logging.Log4net""")
     
-    let updateAll = false
     let packageName = PackageName "log4f"
     let resolve = resolve' graph2
 
     let lockFile = 
-        Some(Constants.MainDependencyGroup, packageName)
-        |> selectiveUpdate resolve lockFile2 dependenciesFile updateAll
+        UpdateProcess.UpdateMode.UpdatePackage(Constants.MainDependencyGroup, packageName)
+        |> selectiveUpdate resolve lockFile2 dependenciesFile
     
     let result = 
         lockFile.GetGroupedResolution()
         |> Map.toSeq
-        |> Seq.map snd
-        |> Seq.map (fun r -> (string r.Name, string r.Version))
+        |> Seq.map (fun (_,r) -> (string r.Name, string r.Version))
 
     let expected = 
         [("Ninject.Extensions.Logging.Log4net","2.2.0.4");
@@ -536,19 +520,17 @@ let ``SelectiveUpdate updates package that conflicts with a transitive dependenc
     nuget log4f
     nuget Ninject.Extensions.Logging.Log4net""")
     
-    let updateAll = false
     let packageName = PackageName "Ninject.Extensions.Logging.Log4net"
     let resolve = resolve' graph2
 
     let lockFile = 
-        Some(Constants.MainDependencyGroup, packageName)
-        |> selectiveUpdate resolve lockFile2 dependenciesFile updateAll
+        UpdateProcess.UpdateMode.UpdatePackage(Constants.MainDependencyGroup, packageName)
+        |> selectiveUpdate resolve lockFile2 dependenciesFile
     
     let result = 
         lockFile.GetGroupedResolution()
         |> Map.toSeq
-        |> Seq.map snd
-        |> Seq.map (fun r -> (string r.Name, string r.Version))
+        |> Seq.map (fun (_,r) -> (string r.Name, string r.Version))
 
     let expected = 
         [("Ninject.Extensions.Logging.Log4net","3.2.3");
@@ -595,19 +577,17 @@ let ``SelectiveUpdate updates package that conflicts with a transitive dependenc
     nuget Ninject.Extensions.Logging.Log4net
     nuget Ninject.Extensions.Interception""")
     
-    let updateAll = false
     let packageName = PackageName "Ninject.Extensions.Logging.Log4net"
     let resolve = resolve' graph3
 
     let lockFile = 
-        Some(Constants.MainDependencyGroup, packageName)
-        |> selectiveUpdate resolve lockFile3 dependenciesFile updateAll
+        UpdateProcess.UpdateMode.UpdatePackage(Constants.MainDependencyGroup, packageName)
+        |> selectiveUpdate resolve lockFile3 dependenciesFile
     
     let result = 
         lockFile.GetGroupedResolution()
         |> Map.toSeq
-        |> Seq.map snd
-        |> Seq.map (fun r -> (string r.Name, string r.Version))
+        |> Seq.map (fun (_,r) -> (string r.Name, string r.Version))
 
     let expected = 
         [("Ninject.Extensions.Logging.Log4net","2.2.0.5");
@@ -631,13 +611,12 @@ let ``SelectiveUpdate conflicts with a transitive dependency of another package 
     nuget Ninject.Extensions.Logging.Log4net
     nuget Ninject.Extensions.Interception""")
     
-    let updateAll = false
     let packageName = PackageName "Ninject"
     let resolve = resolve' graph3
 
     (fun () ->
-    Some(Constants.MainDependencyGroup, packageName)
-    |> selectiveUpdate resolve lockFile3 dependenciesFile updateAll
+    UpdateProcess.UpdateMode.UpdatePackage(Constants.MainDependencyGroup, packageName)
+    |> selectiveUpdate resolve lockFile3 dependenciesFile
     |> ignore)
     |> shouldFail
     
@@ -650,19 +629,17 @@ let ``SelectiveUpdate updates package that conflicts with a deep transitive depe
     nuget Ninject.Extensions.Logging.Log4net
     nuget Ninject.Extensions.Interception""")
     
-    let updateAll = false
     let packageName = PackageName "Ninject.Extensions.Interception"
     let resolve = resolve' graph3
 
     let lockFile = 
-        Some(Constants.MainDependencyGroup, packageName)
-        |> selectiveUpdate resolve lockFile3 dependenciesFile updateAll
+        UpdateProcess.UpdateMode.UpdatePackage(Constants.MainDependencyGroup, packageName)
+        |> selectiveUpdate resolve lockFile3 dependenciesFile
     
     let result = 
         lockFile.GetGroupedResolution()
         |> Map.toSeq
-        |> Seq.map snd
-        |> Seq.map (fun r -> (string r.Name, string r.Version))
+        |> Seq.map (fun (_,r) -> (string r.Name, string r.Version))
 
     let expected = 
         [("Ninject.Extensions.Logging.Log4net","2.2.0.4");
@@ -705,19 +682,17 @@ let ``SelectiveUpdate updates package that conflicts with a deep transitive depe
 
     nuget Ninject.Extensions.Logging.Log4net.Deep""")
     
-    let updateAll = false
     let packageName = PackageName "Ninject.Extensions.Logging.Log4net.Deep"
     let resolve = resolve' graph4
 
     let lockFile = 
-        Some(Constants.MainDependencyGroup, packageName)
-        |> selectiveUpdate resolve lockFile4 dependenciesFile updateAll
+        UpdateProcess.UpdateMode.UpdatePackage(Constants.MainDependencyGroup, packageName)
+        |> selectiveUpdate resolve lockFile4 dependenciesFile
     
     let result = 
         lockFile.GetGroupedResolution()
         |> Map.toSeq
-        |> Seq.map snd
-        |> Seq.map (fun r -> (string r.Name, string r.Version))
+        |> Seq.map (fun (_,r) -> (string r.Name, string r.Version))
 
     let expected = 
         [("Ninject.Extensions.Logging.Log4net.Deep","3.2.3");
@@ -758,19 +733,17 @@ let ``SelectiveUpdate updates package that conflicts with transitive dependency 
     nuget Ninject.Extensions.Interception
     nuget Ninject.Extensions.Logging""")
     
-    let updateAll = false
     let packageName = PackageName "Ninject.Extensions.Logging"
     let resolve = resolve' graph5
 
     let lockFile = 
-        Some(Constants.MainDependencyGroup, packageName)
-        |> selectiveUpdate resolve lockFile5 dependenciesFile updateAll
+        UpdateProcess.UpdateMode.UpdatePackage(Constants.MainDependencyGroup, packageName)
+        |> selectiveUpdate resolve lockFile5 dependenciesFile
     
     let result = 
         lockFile.GetGroupedResolution()
         |> Map.toSeq
-        |> Seq.map snd
-        |> Seq.map (fun r -> (string r.Name, string r.Version))
+        |> Seq.map (fun (_,r) -> (string r.Name, string r.Version))
 
     let expected = 
         [("Ninject.Extensions.Interception","0.0.2-alpha001");
@@ -802,16 +775,99 @@ let ``SelectiveUpdate updates all packages from all groups if no group is specif
 
         nuget Castle.Core-log4net ~> 4.0""")
 
-    let updateAll = true
-    let lockFile = selectiveUpdate resolve lockFile dependenciesFile updateAll None
+    let lockFile = selectiveUpdate resolve lockFile dependenciesFile UpdateProcess.UpdateMode.UpdateAll
     
     let result = groupMap lockFile
 
     let expected = 
         [("Group","Castle.Core-log4net","4.0.0");
         ("Group","Castle.Core","4.0.0");
+        ("Group","log4net","1.2.10");
         (mainGroup,"Castle.Core-log4net","3.3.3");
         (mainGroup,"Castle.Core","4.0.0");
+        (mainGroup,"FAKE","4.0.1");
+        (mainGroup,"log4net","1.2.10")]
+        |> Seq.sortBy gfst
+
+    result
+    |> Seq.sortBy gfst
+    |> shouldEqual expected
+
+let groupedLockFileData = """NUGET
+  remote: http://nuget.org/api/v2
+  specs:
+    Castle.Core (3.2.0)
+    Castle.Core-log4net (3.2.0)
+      Castle.Core (>= 3.2.0)
+      log4net (1.2.10)
+    FAKE (4.0.1)
+    log4net (1.2.10)
+
+GROUP Group
+NUGET
+  remote: http://nuget.org/api/v2
+  specs:
+    Castle.Core (3.2.0)
+    Castle.Core-log4net (3.2.0)
+      Castle.Core (>= 3.2.0)"""
+
+let groupedLockFile = groupedLockFileData |> getLockFile
+
+[<Test>]
+let ``SelectiveUpdate updates only packages from specific group if group is specified``() = 
+
+    let dependenciesFile = DependenciesFile.FromCode("""source http://nuget.org/api/v2
+
+    nuget Castle.Core-log4net
+    nuget FAKE
+    
+    group Group
+        source http://nuget.org/api/v2
+
+        nuget Castle.Core-log4net""")
+
+    let lockFile = selectiveUpdate resolve groupedLockFile dependenciesFile (UpdateProcess.UpdateMode.UpdateGroup Constants.MainDependencyGroup)
+    
+    let result = groupMap lockFile |> Seq.toList
+
+    let expected = 
+        [("Group","Castle.Core-log4net","3.2.0");
+        ("Group","Castle.Core","3.2.0");
+        (mainGroup,"Castle.Core-log4net","4.0.0");
+        (mainGroup,"Castle.Core","4.0.0");
+        (mainGroup,"FAKE","4.0.1");
+        (mainGroup,"log4net","1.2.10")]
+        |> Seq.sortBy gfst
+        |> Seq.toList
+
+    result
+    |> Seq.sortBy gfst
+    |> Seq.toList
+    |> shouldEqual expected
+
+[<Test>]
+let ``SelectiveUpdate updates only packages from specified group``() = 
+
+    let dependenciesFile = DependenciesFile.FromCode("""source http://nuget.org/api/v2
+
+    nuget Castle.Core-log4net
+    nuget FAKE
+    
+    group Group
+        source http://nuget.org/api/v2
+
+        nuget Castle.Core-log4net""")
+
+    let lockFile = selectiveUpdate resolve groupedLockFile dependenciesFile (UpdateProcess.UpdateMode.UpdateGroup(GroupName "Group"))
+    
+    let result = groupMap lockFile
+
+    let expected = 
+        [("Group","Castle.Core-log4net","4.0.0");
+        ("Group","Castle.Core","4.0.0");
+        ("Group","log4net","1.2.10");
+        (mainGroup,"Castle.Core-log4net","3.2.0");
+        (mainGroup,"Castle.Core","3.2.0");
         (mainGroup,"FAKE","4.0.1");
         (mainGroup,"log4net","1.2.10")]
         |> Seq.sortBy gfst
@@ -857,10 +913,9 @@ let ``SelectiveUpdate updates package from a specific group``() =
         nuget Castle.Core-log4net
         nuget FAKE""")
 
-    let updateAll = false
     let lockFile =
-        Some(GroupName "Group", PackageName "Castle.Core-log4net")
-        |> selectiveUpdate resolve lockFile6 dependenciesFile updateAll
+        UpdateProcess.UpdateMode.UpdatePackage(GroupName "Group", PackageName "Castle.Core-log4net")
+        |> selectiveUpdate resolve lockFile6 dependenciesFile
     
     let result = groupMap lockFile
 
@@ -868,6 +923,7 @@ let ``SelectiveUpdate updates package from a specific group``() =
         [("Group","Castle.Core-log4net","4.0.0");
         ("Group","Castle.Core","4.0.0");
         ("Group","FAKE","4.0.0");
+        ("Group","log4net","1.2.10");
         (mainGroup,"Castle.Core-log4net","3.2.0");
         (mainGroup,"Castle.Core","3.2.0");
         (mainGroup,"FAKE","4.0.1");
@@ -893,10 +949,9 @@ let ``SelectiveUpdate does not remove a dependency from group when it is a top-l
         nuget FAKE
         nuget log4net""")
 
-    let updateAll = false
     let lockFile =
-        Some(GroupName "Group", PackageName "Castle.Core-log4net")
-        |> selectiveUpdate resolve lockFile6 dependenciesFile updateAll
+        UpdateProcess.UpdateMode.UpdatePackage(GroupName "Group", PackageName "Castle.Core-log4net")
+        |> selectiveUpdate resolve lockFile6 dependenciesFile
     
     let result = groupMap lockFile
 
@@ -929,10 +984,9 @@ let ``SelectiveUpdate updates package from main group``() =
         nuget Castle.Core-log4net
         nuget FAKE""")
 
-    let updateAll = false
     let lockFile =
-        Some(Constants.MainDependencyGroup, PackageName "Castle.Core-log4net")
-        |> selectiveUpdate resolve lockFile6 dependenciesFile updateAll
+        UpdateProcess.UpdateMode.UpdatePackage(Constants.MainDependencyGroup, PackageName "Castle.Core-log4net")
+        |> selectiveUpdate resolve lockFile6 dependenciesFile
     
     let result = groupMap lockFile
 
