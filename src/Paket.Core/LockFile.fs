@@ -346,6 +346,11 @@ type LockFile(fileName:string,groups: Map<GroupName,LockFileGroup>) =
     member __.Groups = groups
     member __.FileName = fileName
 
+    member this.GetGroup groupName =
+        match this.Groups |> Map.tryFind groupName with
+        | Some g -> g
+        | None -> failwithf "Group %O was not found in %s." groupName fileName
+
     /// Gets all dependencies of the given package
     member this.GetAllNormalizedDependenciesOf(groupName,package:PackageName) = 
         let group = groups.[groupName]
