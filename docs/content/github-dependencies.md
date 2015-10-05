@@ -95,7 +95,7 @@ As you can see Paket also resolved the Octokit dependency.
 To reference a private github repository the syntax is identical to
 above and supports the same branch and file definitions the only extra
 item to add is an identifier which defines which credential key to
-use (see [`paket config`](commands/config.html)). 
+use (see [`paket config`](paket-config.html)). 
 
      github fsharp/private src/myprivate/file.fs githubAuthKey
 

@@ -1,7 +1,6 @@
-#### 2.8.2 - 04.10.2015
+#### 2.9.0 - 05.10.2015
+* Allow to use GitHub tokens to access GitHub files - http://fsprojects.github.io/Paket/paket-config.html
 * Allow to update a single group
-
-#### 2.8.1 - 04.10.2015
 * BUGFIX: Resolver needs to consider Microsoft.Bcl.Build
 
 #### 2.8.0 - 03.10.2015
