@@ -23,13 +23,12 @@ let private lookupDocument (auth,url : string)  = async {
 
 let private auth key url = 
     key
-    |> Option.bind (fun key -> ConfigFile.GetCredentialsForUrl key url)
-    |> Option.map (fun (un, pwd) -> { Username = un; Password = pwd })
+    |> Option.bind (fun key -> ConfigFile.GetAuthenticationForUrl key url)
+
 
 // Gets the sha1 of a branch
 let getSHA1OfBranch origin owner project branch authKey = 
     async { 
-        let key = origin,owner,project,branch
         match origin with
         | ModuleResolver.SingleSourceFileOrigin.GitHubLink -> 
             let url = sprintf "https://api.github.com/repos/%s/%s/commits/%s" owner project branch
@@ -79,8 +78,10 @@ let downloadDependenciesFile(force,rootPath,groupName,parserF,remoteFile:ModuleR
 
     let auth = 
         remoteFile.AuthKey
-        |> Option.bind (fun key -> ConfigFile.GetCredentialsForUrl key url)
-        |> Option.map (fun (un, pwd) -> { Username = un; Password = pwd })
+        |> Option.bind (fun key -> ConfigFile.GetAuthenticationForUrl key url)
+        |> function
+        | Some(Credentials(_,_)) as credentials -> credentials
+        | auth -> auth
   
     let exists =
         let di = destination.Directory

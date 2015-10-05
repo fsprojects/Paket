@@ -79,18 +79,31 @@ let add (results : ParseResults<_>) =
         Dependencies.Locate().Add(group, packageName, version, force, hard, redirects, createNewBindingFiles, interactive, noInstall |> not)
 
 let validateConfig (results : ParseResults<_>) =
-    let args = results.GetResults <@ ConfigArgs.AddCredentials @>
-    args.Length > 0
+    let credential = results.Contains <@ ConfigArgs.AddCredentials @>
+    let token = results.Contains <@ ConfigArgs.AddToken @>
+    match credential, token with
+    | true, _ -> results.GetResults <@ ConfigArgs.AddCredentials @> |> List.isEmpty |> not
+    | _, true -> results.GetResults <@ ConfigArgs.AddToken @> |> List.isEmpty |> not
+    | _ -> false
 
 let config (results : ParseResults<_>) =
-    let args = results.GetResults <@ ConfigArgs.AddCredentials @>
-    let source = args.Item 0
-    let username =
-        if(args.Length > 1) then
-            args.Item 1
-        else
-            ""
-    Dependencies.Locate().AddCredentials(source, username)
+    let credentials = results.Contains <@ ConfigArgs.AddCredentials @>
+    let token = results.Contains <@ ConfigArgs.AddToken @>
+    match credentials, token with
+    | true, _ -> 
+      let args = results.GetResults <@ ConfigArgs.AddCredentials @>
+      let source = args.Item 0
+      let username =
+          if(args.Length > 1) then
+              args.Item 1
+          else
+              ""
+      Dependencies.Locate().AddCredentials(source, username)
+    | _, true ->
+      let args = results.GetResults <@ ConfigArgs.AddToken @>
+      let source, token = args.Item 0
+      Dependencies.Locate().AddToken(source, token)
+    | _ -> ()
 
 let validateAutoRestore (results : ParseResults<_>) =
     results.GetAllResults().Length = 1

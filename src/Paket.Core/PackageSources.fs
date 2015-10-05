@@ -30,12 +30,10 @@ type NugetSourceAuthentication =
     | ConfigAuthentication of username : string * password : string
 
 let toBasicAuth = function
-    | PlainTextAuthentication(username,password) ->
-        {Username = username; Password = password}
+    | PlainTextAuthentication(username,password) | ConfigAuthentication(username, password) ->
+        Credentials(username, password)
     | EnvVarAuthentication(usernameVar, passwordVar) -> 
-        {Username = usernameVar.Value; Password = passwordVar.Value}
-    | ConfigAuthentication(username, password) -> 
-        {Username = username; Password = password}
+        Credentials(usernameVar.Value, passwordVar.Value)
 
 let tryParseWindowsStyleNetworkPath (path : string) =
     let trimmed = path.TrimStart()
@@ -52,6 +50,7 @@ let userNameRegex = Regex("username[:][ ]*[\"]([^\"]*)[\"]", RegexOptions.Ignore
 let passwordRegex = Regex("password[:][ ]*[\"]([^\"]*)[\"]", RegexOptions.IgnoreCase ||| RegexOptions.Compiled)
 
 let private parseAuth(text:string, source) =
+    let getAuth() = ConfigFile.GetAuthentication source |> Option.map (function Credentials(username, password) -> ConfigAuthentication(username, password) | _ -> ConfigAuthentication("",""))
     if text.Contains("username:") || text.Contains("password:") then
         if not (userNameRegex.IsMatch(text) && passwordRegex.IsMatch(text)) then 
             failwithf "Could not parse auth in \"%s\"" text
@@ -67,15 +66,11 @@ let private parseAuth(text:string, source) =
             | _, _ -> 
                 PlainTextAuthentication(username, password)
 
-        let basicAuth = toBasicAuth auth
-        if basicAuth.Username = "" && basicAuth.Password = "" then
-            ConfigFile.GetCredentials source 
-            |> Option.map (fun (username,password) -> ConfigAuthentication(username, password))
-        else
-            Some auth
+        match toBasicAuth auth with
+        | Credentials(username, password) when username = "" && password = "" -> getAuth()
+        | _ -> Some auth
     else
-        ConfigFile.GetCredentials source
-        |> Option.map (fun (username,password) -> ConfigAuthentication(username, password))
+        getAuth()
 
 /// Represents the package source type.
 type PackageSource =

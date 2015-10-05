@@ -88,14 +88,17 @@ let private readPassword (message : string) : string =
     password
 
 let getAuthFromNode (node : XmlNode) = 
-    let username = node.Attributes.["username"].Value
-    let password = node.Attributes.["password"].Value
-    let salt = node.Attributes.["salt"].Value
+    match node.Name.ToLowerInvariant() with
+    | "credential" ->
+        let username = node.Attributes.["username"].Value
+        let password = node.Attributes.["password"].Value
+        let salt = node.Attributes.["salt"].Value
+        Credentials(username, Decrypt salt password)
+    | "token" -> Token node.Attributes.["value"].Value
+    | _ -> failwith "unknown node"
 
-    username, Decrypt salt password
-
-let private createSourceNode (credentialsNode : XmlNode) source =
-    let node = credentialsNode.OwnerDocument.CreateElement("credential")
+let private createSourceNode (credentialsNode : XmlNode) source nodeName =
+    let node = credentialsNode.OwnerDocument.CreateElement nodeName
     node.SetAttribute("source", source)
     credentialsNode.AppendChild node |> ignore
     node
@@ -107,6 +110,9 @@ let private setCredentials (username : string) (password : string) (node : XmlEl
     node.SetAttribute("salt", salt)
     node
 
+let private setToken (token : string) (node : XmlElement) =
+    node.SetAttribute("value", token)
+    node
 
 /// Check if the provided credentials for a specific source are correct
 let checkCredentials(url, cred) = 
@@ -116,8 +122,8 @@ let checkCredentials(url, cred) =
         true
     with _ -> false
 
-let getSourceNodes (credentialsNode : XmlNode) (source) = 
-    credentialsNode.SelectNodes "//credential"
+let getSourceNodes (credentialsNode : XmlNode) source nodeType = 
+    sprintf "//%s" nodeType |> credentialsNode.SelectNodes
     |> Seq.cast<XmlElement>
     |> Seq.filter (fun n -> n.Attributes.["source"].Value = source)
     |> Seq.toList
@@ -125,8 +131,8 @@ let getSourceNodes (credentialsNode : XmlNode) (source) =
 let private sourceNodeCache = System.Collections.Generic.Dictionary<_,_>()
 let private getCredentialsNode = lazy(getConfigNode "credentials" |> returnOrFail)
 
-/// Get the credential from the credential store for a specific source and validates against the url
-let GetCredentialsForUrl (source : string) url =
+/// Get the authentication from the authentication store for a specific source and validates against the url
+let GetAuthenticationForUrl (source : string) url =
     let sourceNodes =
         match sourceNodeCache.TryGetValue source with
         | true,credentials -> credentials
@@ -134,41 +140,59 @@ let GetCredentialsForUrl (source : string) url =
             let sourceNodes =
                 if File.Exists Constants.PaketConfigFile |> not then [] else
                 let credentialsNode = getCredentialsNode.Force()
-                getSourceNodes credentialsNode source
+                getSourceNodes credentialsNode source "credential" @  getSourceNodes credentialsNode source "token"
 
             sourceNodeCache.Add(source,sourceNodes)
             sourceNodes
 
     match sourceNodes with
-    | sourceNode :: _ -> 
-        let username, password = getAuthFromNode sourceNode
-            
-        let auth = { Username = username; Password = password }
+    | sourceNode :: _ ->
+        let auth = getAuthFromNode sourceNode
         if checkCredentials (url, Some auth) then 
-            Some(username, password)
+            Some auth
         else 
             traceWarnfn "credentials for %s source are invalid" source
             None
-    | [] -> None
+    | _ -> None
 
-/// Get the credential from the credential store for a specific source
-let GetCredentials (source : string) =
-    GetCredentialsForUrl source source
+/// Get the authentication from the authentication store for a specific source
+let GetAuthentication (source : string) =
+    GetAuthenticationForUrl source source
 
 let AddCredentials(source, username, password) = 
     trial { 
         let! credentialsNode = getConfigNode "credentials"
         let newCredentials = 
-            match getSourceNodes credentialsNode source |> List.tryHead with
-            | None -> createSourceNode credentialsNode source |> Some
+            match getSourceNodes credentialsNode source "credential" |> List.tryHead with
+            | None -> createSourceNode credentialsNode source "credential" |> Some
             | Some existingNode -> 
-                let _, existingPassword = getAuthFromNode existingNode
-                if existingPassword <> password then existingNode |> Some
-                else None
+                match getAuthFromNode existingNode with
+                | Credentials(_, existingPassword) ->
+                    if existingPassword <> password then existingNode |> Some
+                    else None
+                | _ -> None
             |> Option.map (setCredentials username password)
         match newCredentials with
         | Some credentials -> do! saveConfigNode credentials
         | None -> ()
+    }
+
+let AddToken(source, token) =
+    trial {
+        let! credentialsNode = getConfigNode "credentials"
+        let newToken = 
+            match getSourceNodes credentialsNode source "token" |> List.tryHead with
+            | None -> createSourceNode credentialsNode source "token" |> Some
+            | Some existingNode ->
+                match getAuthFromNode existingNode with
+                | Token existingToken ->
+                    if existingToken <> token then existingNode |> Some
+                    else None
+                | _ -> None
+            |> Option.map (setToken token)
+        match newToken with
+        | Some token -> do! saveConfigNode token
+        | None -> () 
     }
 
 let askAndAddAuth (source : string) (username : string) = 

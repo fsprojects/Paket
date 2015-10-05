@@ -129,6 +129,10 @@ type Dependencies(dependenciesFileName: string) =
         Utils.RunInLockedAccessMode(
             this.RootPath,
             fun () -> ConfigFile.askAndAddAuth source username |> returnOrFail )
+  
+    /// Adds a token for a source
+    member this.AddToken(source : string, token : string) : unit =
+        Utils.RunInLockedAccessMode(this.RootPath, fun () -> ConfigFile.AddToken(source, token) |> returnOrFail)
 
     /// Installs all dependencies.
     member this.Install(force: bool, hard: bool) = this.Install(force, hard, false, false)

@@ -26,21 +26,21 @@ type CredsMigrationMode =
         | _ ->  InvalidCredentialsMigrationMode s |> fail
 
     static member ToAuthentication mode sourceName auth =
-        match mode with
-        | Encrypt -> 
-            ConfigAuthentication(auth.Username, auth.Password)
-        | Plaintext -> 
-            PlainTextAuthentication(auth.Username, auth.Password)
-        | Selective -> 
+        match mode, auth with
+        | Encrypt, Credentials(username,password) -> 
+            ConfigAuthentication(username, password)
+        | Plaintext, Credentials(username,password) -> 
+            PlainTextAuthentication(username, password)
+        | Selective, Credentials(username,password) -> 
             let question =
                 sprintf "Credentials for source '%s': " sourceName  + 
                     "[encrypt and save in config (Yes) " + 
                     sprintf "| save as plaintext in %s (No)]" Constants.DependenciesFileName
                     
             match Utils.askYesNo question with
-            | true -> ConfigAuthentication(auth.Username, auth.Password)
-            | false -> PlainTextAuthentication(auth.Username, auth.Password)
-
+            | true -> ConfigAuthentication(username, password)
+            | false -> PlainTextAuthentication(username, password)
+        | _ -> failwith "invalid auth"
 /// Represents type of NuGet packages.config file
 type NugetPackagesConfigType = ProjectLevel | SolutionLevel
 
@@ -95,10 +95,8 @@ type NugetConfig =
                 let encryptedPass = authNode |> tryGetValue "Password"
 
                 match userName, encryptedPass, clearTextPass with 
-                | Some userName, Some encryptedPass, _ -> 
-                    Some { Username = userName; Password = ConfigFile.DecryptNuget encryptedPass }
-                | Some userName, _, Some clearTextPass ->
-                    Some  { Username = userName; Password = clearTextPass }
+                | Some userName, Some encryptedPass, _ -> Some(Credentials(userName, ConfigFile.DecryptNuget encryptedPass))
+                | Some userName, _, Some clearTextPass -> Some(Credentials(userName,clearTextPass))
                 | _ -> None
 
             configNode 
