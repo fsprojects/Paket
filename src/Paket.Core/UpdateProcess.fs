@@ -15,12 +15,12 @@ type UpdateMode =
     | Install
     | UpdateAll
 
-let selectiveUpdate force getSha1 getVersionsF getPackageDetailsF (lockFile:LockFile) (dependenciesFile:DependenciesFile) updateMode =
+let selectiveUpdate force getSha1 getSortedVersionsF getPackageDetailsF (lockFile:LockFile) (dependenciesFile:DependenciesFile) updateMode =
     let noAdditionalRequirements _ _ = None
     let resolve getVersionsF (dependenciesFile:DependenciesFile) g = dependenciesFile.Resolve(force, getSha1, getVersionsF, getPackageDetailsF, g)
 
-    let getSortedVersionsF preferredVersions sources resolverStrategy  groupName packageName =
-        let versions = getVersionsF (sources, resolverStrategy, packageName)
+    let getPreferredVersionsF preferredVersions sources resolverStrategy groupName packageName =
+        let versions = getSortedVersionsF sources resolverStrategy groupName packageName
                 
         match preferredVersions |> Map.tryFind (groupName,packageName) with
         | Some v -> v :: versions
@@ -28,19 +28,19 @@ let selectiveUpdate force getSha1 getVersionsF getPackageDetailsF (lockFile:Lock
 
     let noPreferredVersions = Map.empty
 
-    let resolution =
+    let getVersionsF,groupsToUpdate =
         match updateMode with
         | UpdateAll -> 
             let groups =
                 dependenciesFile.Groups
                 |> Map.map noAdditionalRequirements
-            resolve (getSortedVersionsF noPreferredVersions) dependenciesFile groups
+            getSortedVersionsF,groups
         | UpdateGroup groupName ->
             let groups =
                 dependenciesFile.Groups
                 |> Map.filter (fun k _ -> k = groupName)
                 |> Map.map noAdditionalRequirements
-            resolve (getSortedVersionsF noPreferredVersions) dependenciesFile groups
+            getSortedVersionsF,groups
         | Install ->
             let changes = DependencyChangeDetection.findChangesInDependenciesFile(dependenciesFile,lockFile)
 
@@ -50,7 +50,7 @@ let selectiveUpdate force getSha1 getVersionsF getPackageDetailsF (lockFile:Lock
                 dependenciesFile.Groups
                 |> Map.map noAdditionalRequirements
 
-            resolve (getSortedVersionsF preferredVersions) dependenciesFile groups
+            (getPreferredVersionsF preferredVersions),groups
         | UpdatePackage(groupName,packageName) ->
             let changes =
                 lockFile.GetAllNormalizedDependenciesOf(groupName,packageName)
@@ -63,7 +63,9 @@ let selectiveUpdate force getSha1 getVersionsF getPackageDetailsF (lockFile:Lock
                 |> Map.filter (fun key _ -> key = groupName)
                 |> Map.map (fun _ _ -> Some packageName)
 
-            resolve (getSortedVersionsF preferredVersions) dependenciesFile groups
+            (getPreferredVersionsF preferredVersions),groups
+
+    let resolution = dependenciesFile.Resolve(force, getSha1, getVersionsF, getPackageDetailsF, groupsToUpdate)
 
     let groups = 
         dependenciesFile.Groups
@@ -88,7 +90,7 @@ let SelectiveUpdate(dependenciesFile : DependenciesFile, updateMode, force) =
 
     let getSha1 origin owner repo branch auth = RemoteDownload.getSHA1OfBranch origin owner repo branch auth |> Async.RunSynchronously
     let root = Path.GetDirectoryName dependenciesFile.FileName
-    let inline getVersionsF (sources, resolverStrategy, packageName) = 
+    let inline getVersionsF sources resolverStrategy groupName packageName = 
         let versions = NuGetV2.GetVersions root (sources, packageName)
         match resolverStrategy with
         | ResolverStrategy.Max -> List.sortDescending versions
