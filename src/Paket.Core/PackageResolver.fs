@@ -245,7 +245,7 @@ let Resolve(groupName:GroupName, sources, getVersionsF, getPackageDetailsF, glob
         | false,_ ->
             let versions = 
                 verbosefn "  - fetching versions for %s" name
-                getVersionsF sources resolverStrategy packageName
+                getVersionsF sources resolverStrategy groupName packageName
 
             if Seq.isEmpty versions then
                 failwithf "Couldn't retrieve versions for %s." name

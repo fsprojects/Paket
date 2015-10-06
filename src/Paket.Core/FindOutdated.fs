@@ -39,11 +39,11 @@ let FindOutdated strict includingPrereleases environment = trial {
         dependenciesFile.Groups
         |> Map.map (fun groupName group -> None)
 
-    let getVersionsF sources resolverStrategy packageName =
+    let getVersionsF sources resolverStrategy groupName packageName =
         let versions = NuGetV2.GetVersions root (sources, packageName)
                 
         match resolverStrategy with
-        | ResolverStrategy.Max -> List.sort versions |> List.rev
+        | ResolverStrategy.Max -> List.sortDescending versions
         | ResolverStrategy.Min -> List.sort versions
 
     let newResolution = dependenciesFile.Resolve(true, getSha1, getVersionsF, NuGetV2.GetPackageDetails root true, groups)
