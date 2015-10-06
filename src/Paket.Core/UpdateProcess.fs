@@ -20,17 +20,11 @@ let selectiveUpdate force getSha1 getVersionsF getPackageDetailsF (lockFile:Lock
     let resolve getVersionsF (dependenciesFile:DependenciesFile) g = dependenciesFile.Resolve(force, getSha1, getVersionsF, getPackageDetailsF, g)
 
     let getSortedVersionsF preferredVersions sources resolverStrategy  groupName packageName =
-        let versions = getVersionsF (sources, packageName)
+        let versions = getVersionsF (sources, resolverStrategy, packageName)
                 
         match preferredVersions |> Map.tryFind (groupName,packageName) with
-        | Some v ->
-            match resolverStrategy with
-            | ResolverStrategy.Max -> v :: List.sortDescending versions
-            | ResolverStrategy.Min -> v :: List.sort versions
-        | None -> 
-            match resolverStrategy with
-            | ResolverStrategy.Max -> List.sortDescending versions
-            | ResolverStrategy.Min -> List.sort versions
+        | Some v -> v :: versions
+        | None -> versions
 
     let noPreferredVersions = Map.empty
 
@@ -94,12 +88,17 @@ let SelectiveUpdate(dependenciesFile : DependenciesFile, updateMode, force) =
 
     let getSha1 origin owner repo branch auth = RemoteDownload.getSHA1OfBranch origin owner repo branch auth |> Async.RunSynchronously
     let root = Path.GetDirectoryName dependenciesFile.FileName
+    let inline getVersionsF (sources, resolverStrategy, packageName) = 
+        let versions = NuGetV2.GetVersions root (sources, packageName)
+        match resolverStrategy with
+        | ResolverStrategy.Max -> List.sortDescending versions
+        | ResolverStrategy.Min -> List.sort versions
 
     let lockFile = 
         selectiveUpdate
             force 
             getSha1
-            (NuGetV2.GetVersions root)
+            getVersionsF
             (NuGetV2.GetPackageDetails root force)
             oldLockFile 
             dependenciesFile 
