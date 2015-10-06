@@ -239,13 +239,13 @@ let Resolve(groupName:GroupName, sources, getVersionsF, getPackageDetailsF, glob
             exploredPackages.Add((dependency.Name,version),explored)
             explored
 
-    let getAllVersions(packageName:PackageName) =
+    let getAllVersions (resolverStrategy:ResolverStrategy) (packageName:PackageName) =
         let (PackageName name) = packageName
         match allVersions.TryGetValue(packageName) with
         | false,_ ->
             let versions = 
                 verbosefn "  - fetching versions for %s" name
-                getVersionsF(sources,packageName)
+                getVersionsF sources resolverStrategy packageName
 
             if Seq.isEmpty versions then
                 failwithf "Couldn't retrieve versions for %s." name
@@ -292,6 +292,11 @@ let Resolve(groupName:GroupName, sources, getVersionsF, getPackageDetailsF, glob
             let availableVersions = ref []
             let compatibleVersions = ref []
             let globalOverride = ref false
+            let resolverStrategy =
+                if currentRequirement.Parent.IsRootRequirement() then
+                    ResolverStrategy.Max 
+                else
+                    currentRequirement.ResolverStrategy
 
             let currentRequirements =
                 openRequirements
@@ -310,9 +315,8 @@ let Resolve(groupName:GroupName, sources, getVersionsF, getPackageDetailsF, glob
 
                 availableVersions := 
                     match currentRequirement.VersionRequirement.Range with
-                    | Specific v -> [v]
                     | OverrideAll v -> [v]
-                    | _ -> getAllVersions currentRequirement.Name
+                    | _ -> getAllVersions resolverStrategy currentRequirement.Name
 
                 let preRelease v =
                     v.PreRelease = None
@@ -369,7 +373,7 @@ let Resolve(groupName:GroupName, sources, getVersionsF, getPackageDetailsF, glob
                     let versionText = 
                         let versions = 
                             if !availableVersions = [] then
-                                getAllVersions currentRequirement.Name
+                                getAllVersions resolverStrategy currentRequirement.Name
                             else 
                                 !availableVersions
 
@@ -398,17 +402,8 @@ let Resolve(groupName:GroupName, sources, getVersionsF, getPackageDetailsF, glob
 
                         tracefn "    ==> Trying different resolution."
 
-
-            let sortedVersions =
-                if currentRequirement.Parent.IsRootRequirement() then
-                    List.sort !compatibleVersions |> List.rev
-                else
-                    match currentRequirement.ResolverStrategy with
-                    | ResolverStrategy.Max -> List.sort !compatibleVersions |> List.rev
-                    | ResolverStrategy.Min -> List.sort !compatibleVersions
-
             let tryToImprove useUnlisted =
-                sortedVersions
+                !compatibleVersions
                 |> List.fold (fun (allUnlisted,state) versionToExplore ->
                     match state with
                     | Resolution.Conflict _ ->

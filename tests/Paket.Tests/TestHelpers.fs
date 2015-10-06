@@ -40,14 +40,27 @@ let safeResolve graph (dependencies : (string * VersionRange) list)  =
                  ResolverStrategy = ResolverStrategy.Max })
         |> Set.ofList
 
-    PackageResolver.Resolve(Constants.MainDependencyGroup,[ PackageSource.NugetSource "" ],VersionsFromGraph graph, PackageDetailsFromGraph graph, [], packages)
+    let getVersionsF sources resolverStrategy packageName =
+        let versions = VersionsFromGraph graph (sources, packageName)
+                
+        match resolverStrategy with
+        | ResolverStrategy.Max -> List.sort versions |> List.rev
+        | ResolverStrategy.Min -> List.sort versions
+
+    PackageResolver.Resolve(Constants.MainDependencyGroup,[ PackageSource.NugetSource "" ], getVersionsF, PackageDetailsFromGraph graph, [], packages)
 
 let resolve graph dependencies = (safeResolve graph dependencies).GetModelOrFail()
 
-let ResolveWithGraph(dependenciesFile:DependenciesFile,getSha1,getVersionF, getPackageDetailsF) =
+let ResolveWithGraph(dependenciesFile:DependenciesFile,getSha1,getVersionsF, getPackageDetailsF) =
     let groups = [Constants.MainDependencyGroup, dependenciesFile.Groups.[Constants.MainDependencyGroup].Packages ] |> Map.ofSeq
+    let getVersionsF sources resolverStrategy packageName =
+        let versions = getVersionsF (sources, packageName)
+                
+        match resolverStrategy with
+        | ResolverStrategy.Max -> List.sort versions |> List.rev
+        | ResolverStrategy.Min -> List.sort versions
 
-    dependenciesFile.Resolve(true,getSha1,getVersionF,getPackageDetailsF,groups)
+    dependenciesFile.Resolve(true,getSha1,getVersionsF,getPackageDetailsF,groups)
 
 let getVersion (resolved:ResolvedPackage) = resolved.Version.ToString()
 
