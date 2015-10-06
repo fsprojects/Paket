@@ -60,6 +60,12 @@ let findChangesInDependenciesFile(dependenciesFile:DependenciesFile,lockFile:Loc
     |> Seq.concat
     |> Set.ofSeq
 
+let GetUnchangedDependenciesPins (oldLockFile:LockFile) (changedDependencies:Set<GroupName*PackageName>) =
+    oldLockFile.GetGroupedResolution()
+    |> Seq.filter (fun kv -> not <| changedDependencies.Contains(kv.Key))
+    |> Seq.map (fun kv -> kv.Key, kv.Value.Version)
+    |> Map.ofSeq
+
 let PinUnchangedDependencies (dependenciesFile:DependenciesFile) (oldLockFile:LockFile) (changedDependencies:Set<GroupName*PackageName>) =
     oldLockFile.GetGroupedResolution()
     |> Seq.filter (fun kv -> not <| changedDependencies.Contains(kv.Key))

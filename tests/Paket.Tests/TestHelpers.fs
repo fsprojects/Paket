@@ -47,12 +47,12 @@ let safeResolve graph (dependencies : (string * VersionRange) list)  =
         | ResolverStrategy.Max -> List.sort versions |> List.rev
         | ResolverStrategy.Min -> List.sort versions
 
-    PackageResolver.Resolve(Constants.MainDependencyGroup,[ PackageSource.NugetSource "" ], getVersionsF, PackageDetailsFromGraph graph, [], packages)
+    PackageResolver.Resolve(Constants.MainDependencyGroup,[ PackageSource.NugetSource "" ], getVersionsF, PackageDetailsFromGraph graph, [], packages, None)
 
 let resolve graph dependencies = (safeResolve graph dependencies).GetModelOrFail()
 
 let ResolveWithGraph(dependenciesFile:DependenciesFile,getSha1,getVersionsF, getPackageDetailsF) =
-    let groups = [Constants.MainDependencyGroup, dependenciesFile.Groups.[Constants.MainDependencyGroup].Packages ] |> Map.ofSeq
+    let groups = [Constants.MainDependencyGroup, None ] |> Map.ofSeq
     let getVersionsF sources resolverStrategy packageName =
         let versions = getVersionsF (sources, packageName)
                 

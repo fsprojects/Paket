@@ -195,7 +195,7 @@ type Resolved = {
     ResolvedSourceFiles : ModuleResolver.ResolvedSourceFile list }
 
 /// Resolves all direct and transitive dependencies
-let Resolve(groupName:GroupName, sources, getVersionsF, getPackageDetailsF, globalFrameworkRestrictions, (rootDependencies:PackageRequirement Set)) =
+let Resolve(groupName:GroupName, sources, getVersionsF, getPackageDetailsF, globalFrameworkRestrictions, (rootDependencies:PackageRequirement Set), startWithPackage: PackageName option) =
     tracefn "Resolving packages for group %O:" groupName
     let rootSettings =
         rootDependencies
@@ -283,10 +283,11 @@ let Resolve(groupName:GroupName, sources, getVersionsF, getPackageDetailsF, glob
                         match conflictHistory.TryGetValue d.Name with
                         | true,c -> -c
                         | _ -> 0
-                    if PackageRequirement.Compare(d,!currentMin,boost,!currentBoost) = -1 then
+                    if PackageRequirement.Compare(d,!currentMin,startWithPackage,boost,!currentBoost) = -1 then
                         currentMin := d
                         currentBoost := boost
                 !currentMin
+
             verbosefn "  Trying to resolve %O" currentRequirement
 
             let availableVersions = ref []

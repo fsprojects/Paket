@@ -388,7 +388,7 @@ type PackageRequirement =
     member this.IncludingPrereleases() = 
         { this with VersionRequirement = VersionRequirement(this.VersionRequirement.Range,PreReleaseStatus.All) }
     
-    static member Compare(x,y,boostX,boostY) =
+    static member Compare(x,y,startWithPackage:PackageName option,boostX,boostY) =
         if x = y then 0 else
         let c1 =
             compare 
@@ -401,11 +401,16 @@ type PackageRequirement =
         if cBoost <> 0 then cBoost else
         let c3 = -1 * compare x.VersionRequirement y.VersionRequirement
         if c3 <> 0 then c3 else
-        compare x.Name y.Name
+        match startWithPackage with
+        | Some name ->
+            if x.Name = name then -1 else
+            if y.Name = name then 1 else
+            compare x.Name y.Name
+        | None -> compare x.Name y.Name
 
     interface System.IComparable with
        member this.CompareTo that = 
           match that with 
           | :? PackageRequirement as that ->
-                PackageRequirement.Compare(this,that,0,0)
+                PackageRequirement.Compare(this,that,None,0,0)
           | _ -> invalidArg "that" "cannot compare value of different types"

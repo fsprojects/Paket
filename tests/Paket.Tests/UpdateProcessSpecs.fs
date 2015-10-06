@@ -529,8 +529,8 @@ let ``SelectiveUpdate updates package that conflicts with a transitive dependenc
         [("Ninject.Extensions.Logging.Log4net","3.2.3");
         ("Ninject.Extensions.Logging","3.2.3");
         ("Ninject", "3.2.0");
-        ("log4f", "0.4.0");
-        ("log4net", "1.2.11")]
+        ("log4f", "0.5.0");
+        ("log4net", "2.0.3")]
         |> Seq.sortBy fst
 
     result
@@ -582,12 +582,12 @@ let ``SelectiveUpdate updates package that conflicts with a transitive dependenc
         |> Seq.map (fun (_,r) -> (string r.Name, string r.Version))
 
     let expected = 
-        [("Ninject.Extensions.Logging.Log4net","2.2.0.5");
-        ("Ninject.Extensions.Logging","2.2.0.5");
-        ("Ninject.Extensions.Interception","2.2.1.2");
-        ("Ninject", "2.2.1.5");
-        ("log4f", "0.4.0");
-        ("log4net", "1.2.11")]
+        [("Ninject.Extensions.Logging.Log4net","3.2.3");
+        ("Ninject.Extensions.Logging","3.2.3");
+        ("Ninject.Extensions.Interception","3.2.0");
+        ("Ninject", "3.2.0");
+        ("log4f", "0.5.0");
+        ("log4net", "2.0.3")]
         |> Seq.sortBy fst
 
     result
@@ -595,7 +595,7 @@ let ``SelectiveUpdate updates package that conflicts with a transitive dependenc
     |> shouldEqual expected
     
 [<Test>]
-let ``SelectiveUpdate conflicts with a transitive dependency of another package when paket.dependencies requirement has changed``() = 
+let ``SelectiveUpdate does not conflict with a transitive dependency of another package when paket.dependencies requirement has changed``() = 
 
     let dependenciesFile = DependenciesFile.FromCode("""source http://nuget.org/api/v2
 
@@ -605,11 +605,26 @@ let ``SelectiveUpdate conflicts with a transitive dependency of another package 
     
     let packageName = PackageName "Ninject"
 
-    (fun () ->
-    UpdateProcess.UpdateMode.UpdatePackage(Constants.MainDependencyGroup, packageName)
-    |> selectiveUpdate true noSha1 (VersionsFromGraph graph3) (PackageDetailsFromGraph graph3) lockFile3 dependenciesFile
-    |> ignore)
-    |> shouldFail
+    let lockFile = 
+        UpdateProcess.UpdateMode.UpdatePackage(Constants.MainDependencyGroup, packageName)
+        |> selectiveUpdate true noSha1 (VersionsFromGraph graph3) (PackageDetailsFromGraph graph3) lockFile3 dependenciesFile
+
+    let result = 
+        lockFile.GetGroupedResolution()
+        |> Map.toSeq
+        |> Seq.map (fun (_,r) -> (string r.Name, string r.Version))
+
+    let expected = 
+        [("Ninject.Extensions.Logging.Log4net","3.2.3");
+        ("Ninject.Extensions.Logging","3.2.3");
+        ("Ninject.Extensions.Interception","3.2.0");
+        ("Ninject", "3.2.0");
+        ("log4net", "2.0.3")]
+        |> Seq.sortBy fst
+
+    result
+    |> Seq.sortBy fst
+    |> shouldEqual expected
     
 [<Test>]
 let ``SelectiveUpdate updates package that conflicts with a deep transitive dependency of another package to correct version``() = 
@@ -632,12 +647,12 @@ let ``SelectiveUpdate updates package that conflicts with a deep transitive depe
         |> Seq.map (fun (_,r) -> (string r.Name, string r.Version))
 
     let expected = 
-        [("Ninject.Extensions.Logging.Log4net","2.2.0.4");
-        ("Ninject.Extensions.Logging","2.2.0.4");
-        ("Ninject.Extensions.Interception","2.2.1.3");
-        ("Ninject", "2.2.1.5");
+        [("Ninject.Extensions.Logging.Log4net","3.2.3");
+        ("Ninject.Extensions.Logging","3.2.3");
+        ("Ninject.Extensions.Interception","3.2.0");
+        ("Ninject", "3.2.0");
         ("log4f", "0.4.0");
-        ("log4net", "1.2.10")]
+        ("log4net", "1.2.11")]
         |> Seq.sortBy fst
 
     result
@@ -996,14 +1011,16 @@ let ``SelectiveUpdate updates package from main group``() =
 let lockFileData7 = """NUGET
   remote: http://nuget.org/api/v2
   specs:
-    Package (3.2.0)
     Newtonsoft.Json (6.0.8)
+    Package (3.2.0)
 """
 let lockFile7 = lockFileData7 |> getLockFile
 
 let graph7 = 
     [ "Package", "3.2.0", []
       "Package", "4.0.0", ["Newtonsoft.Json", VersionRequirement(VersionRange.AtLeast "7.0.0",PreReleaseStatus.No)]
+      "APackage", "3.2.0", []
+      "APackage", "4.0.0", ["Newtonsoft.Json", VersionRequirement(VersionRange.AtLeast "7.0.0",PreReleaseStatus.No)]
       "Newtonsoft.Json", "7.0.1", []
       "Newtonsoft.Json", "6.0.8", [] ]
 
@@ -1026,6 +1043,40 @@ let ``SelectiveUpdate updates package that has a new dependent package that also
 
     let expected = 
         [("Package","4.0.0");
+        ("Newtonsoft.Json","7.0.1")]
+        |> Seq.sortBy fst
+
+    result
+    |> Seq.sortBy fst
+    |> shouldEqual expected
+
+let lockFileData8 = """NUGET
+  remote: http://nuget.org/api/v2
+  specs:
+    APackage (3.2.0)
+    Newtonsoft.Json (6.0.8)
+"""
+let lockFile8 = lockFileData8 |> getLockFile
+
+[<Test>]
+let ``SelectiveUpdate updates early package that has a new dependent package that also is a direct dependency``() = 
+
+    let dependenciesFile = DependenciesFile.FromCode("""source http://nuget.org/api/v2
+
+    nuget Newtonsoft.Json
+    nuget APackage""")
+
+    let lockFile = 
+        UpdateProcess.UpdateMode.UpdatePackage(Constants.MainDependencyGroup, PackageName "APackage")
+        |> selectiveUpdate true noSha1 (VersionsFromGraph graph7) (PackageDetailsFromGraph graph7) lockFile8 dependenciesFile
+
+    let result = 
+        lockFile.GetGroupedResolution()
+        |> Map.toSeq
+        |> Seq.map (fun (_,r) -> (string r.Name, string r.Version))
+
+    let expected = 
+        [("APackage","4.0.0");
         ("Newtonsoft.Json","7.0.1")]
         |> Seq.sortBy fst
 

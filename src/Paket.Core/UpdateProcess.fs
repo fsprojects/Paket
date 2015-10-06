@@ -16,10 +16,10 @@ type UpdateMode =
     | UpdateAll
 
 let selectiveUpdate force getSha1 getVersionsF getPackageDetailsF (lockFile:LockFile) (dependenciesFile:DependenciesFile) updateMode =
-    let noAdditionalRequirements _ _ = []
+    let noAdditionalRequirements _ _ = None
     let resolve getVersionsF (dependenciesFile:DependenciesFile) g = dependenciesFile.Resolve(force, getSha1, getVersionsF, getPackageDetailsF, g)
 
-    let getVersionsF sources resolverStrategy packageName =
+    let getSortedVersionsF sources resolverStrategy packageName =
         let versions = getVersionsF (sources, packageName)
                 
         match resolverStrategy with
@@ -32,13 +32,13 @@ let selectiveUpdate force getSha1 getVersionsF getPackageDetailsF (lockFile:Lock
             let groups =
                 dependenciesFile.Groups
                 |> Map.map noAdditionalRequirements
-            resolve getVersionsF dependenciesFile groups
+            resolve getSortedVersionsF dependenciesFile groups
         | UpdateGroup groupName ->
             let groups =
                 dependenciesFile.Groups
                 |> Map.filter (fun k _ -> k = groupName)
                 |> Map.map noAdditionalRequirements
-            resolve getVersionsF dependenciesFile groups
+            resolve getSortedVersionsF dependenciesFile groups
         | Install ->
             let dependenciesFile =
                 DependencyChangeDetection.findChangesInDependenciesFile(dependenciesFile,lockFile)
@@ -48,17 +48,31 @@ let selectiveUpdate force getSha1 getVersionsF getPackageDetailsF (lockFile:Lock
                 dependenciesFile.Groups
                 |> Map.map noAdditionalRequirements
 
-            resolve getVersionsF dependenciesFile groups
+            resolve getSortedVersionsF dependenciesFile groups
         | UpdatePackage(groupName,packageName) ->
-            let dependenciesFile =
+            let changes =
                 lockFile.GetAllNormalizedDependenciesOf(groupName,packageName)
                 |> Set.ofSeq
-                |> DependencyChangeDetection.PinUnchangedDependencies dependenciesFile lockFile
+
+            let preferredVersions = DependencyChangeDetection.GetUnchangedDependenciesPins lockFile changes
+
+            let getVersionsF sources resolverStrategy packageName =
+                let versions = getVersionsF (sources, packageName)
+                
+                match preferredVersions |> Map.tryFind (groupName,packageName) with
+                | Some v ->
+                    match resolverStrategy with
+                    | ResolverStrategy.Max -> v :: (List.sort versions |> List.rev)
+                    | ResolverStrategy.Min -> v :: (List.sort versions)
+                | None -> 
+                    match resolverStrategy with
+                    | ResolverStrategy.Max -> List.sort versions |> List.rev
+                    | ResolverStrategy.Min -> List.sort versions
 
             let groups =
                 dependenciesFile.Groups
                 |> Map.filter (fun key _ -> key = groupName)
-                |> Map.map (fun groupName _ -> lockFile.GetGroup(groupName).Resolution |> createPackageRequirements [packageName])
+                |> Map.map (fun _ _ -> Some packageName)
 
             resolve getVersionsF dependenciesFile groups
 
