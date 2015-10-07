@@ -151,7 +151,7 @@ type Dependencies(dependenciesFileName: string) =
             this.RootPath,
             fun () -> UpdateProcess.SmartInstall(
                             DependenciesFile.ReadFromFile(dependenciesFileName), 
-                            UpdateProcess.UpdateMode.Install,
+                            PackageResolver.UpdateMode.Install,
                             { UpdaterOptions.Default with Common = options }))
 
     /// Creates a paket.dependencies file with the given text in the current directory and installs it.

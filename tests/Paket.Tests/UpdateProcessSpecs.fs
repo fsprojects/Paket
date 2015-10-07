@@ -52,7 +52,7 @@ let ``SelectiveUpdate does not update any package when it is neither updating al
     nuget Castle.Core-log4net ~> 3.2
     nuget FAKE""")
     
-    let lockFile = selectiveUpdate true noSha1 (VersionsFromGraph graph) (PackageDetailsFromGraph graph) lockFile dependenciesFile UpdateProcess.UpdateMode.Install
+    let lockFile = selectiveUpdate true noSha1 (VersionsFromGraph graph) (PackageDetailsFromGraph graph) lockFile dependenciesFile PackageResolver.UpdateMode.Install
     
     let result = 
         lockFile.GetGroupedResolution()
@@ -77,7 +77,7 @@ let ``SelectiveUpdate updates all packages not constraining version``() =
     nuget Castle.Core-log4net ~> 3.2
     nuget FAKE""")
 
-    let lockFile = selectiveUpdate true noSha1 (VersionsFromGraph graph) (PackageDetailsFromGraph graph) lockFile dependenciesFile UpdateProcess.UpdateMode.UpdateAll
+    let lockFile = selectiveUpdate true noSha1 (VersionsFromGraph graph) (PackageDetailsFromGraph graph) lockFile dependenciesFile PackageResolver.UpdateMode.UpdateAll
     
     let result = 
         lockFile.GetGroupedResolution()
@@ -103,7 +103,7 @@ let ``SelectiveUpdate updates all packages constraining version``() =
     nuget Castle.Core ~> 3.2
     nuget FAKE = 4.0.0""")
 
-    let lockFile = selectiveUpdate true noSha1 (VersionsFromGraph graph) (PackageDetailsFromGraph graph) lockFile dependenciesFile UpdateProcess.UpdateMode.UpdateAll
+    let lockFile = selectiveUpdate true noSha1 (VersionsFromGraph graph) (PackageDetailsFromGraph graph) lockFile dependenciesFile PackageResolver.UpdateMode.UpdateAll
     
     let result = 
         lockFile.GetGroupedResolution()
@@ -128,7 +128,7 @@ let ``SelectiveUpdate removes a dependency when it is updated to a version that 
     nuget Castle.Core-log4net
     nuget FAKE""")
 
-    let lockFile = selectiveUpdate true noSha1 (VersionsFromGraph graph) (PackageDetailsFromGraph graph) lockFile dependenciesFile UpdateProcess.UpdateMode.UpdateAll
+    let lockFile = selectiveUpdate true noSha1 (VersionsFromGraph graph) (PackageDetailsFromGraph graph) lockFile dependenciesFile PackageResolver.UpdateMode.UpdateAll
     
     let result = 
         lockFile.GetGroupedResolution()
@@ -154,7 +154,7 @@ let ``SelectiveUpdate updates a single package``() =
     nuget FAKE""")
 
     let lockFile = 
-        UpdateProcess.UpdateMode.UpdatePackage(Constants.MainDependencyGroup, PackageName "FAKE")
+        PackageResolver.UpdateMode.UpdatePackage(Constants.MainDependencyGroup, PackageName "FAKE")
         |> selectiveUpdate true noSha1 (VersionsFromGraph graph) (PackageDetailsFromGraph graph) lockFile dependenciesFile
     
     let result = 
@@ -181,7 +181,7 @@ let ``SelectiveUpdate updates a single constrained package``() =
     nuget FAKE""")
 
     let lockFile = 
-        UpdateProcess.UpdateMode.UpdatePackage(Constants.MainDependencyGroup, PackageName "Castle.Core-log4net")
+        PackageResolver.UpdateMode.UpdatePackage(Constants.MainDependencyGroup, PackageName "Castle.Core-log4net")
         |> selectiveUpdate true noSha1 (VersionsFromGraph graph) (PackageDetailsFromGraph graph) lockFile dependenciesFile
     
     let result = 
@@ -209,7 +209,7 @@ let ``SelectiveUpdate updates a single package with constrained dependency in de
     nuget FAKE""")
 
     let lockFile = 
-        UpdateProcess.UpdateMode.UpdatePackage(Constants.MainDependencyGroup, PackageName "Castle.Core-log4net")
+        PackageResolver.UpdateMode.UpdatePackage(Constants.MainDependencyGroup, PackageName "Castle.Core-log4net")
         |> selectiveUpdate true noSha1 (VersionsFromGraph graph) (PackageDetailsFromGraph graph) lockFile dependenciesFile
     
     let result = 
@@ -236,7 +236,7 @@ let ``SelectiveUpdate installs new packages``() =
     nuget FAKE
     nuget Newtonsoft.Json""")
 
-    let lockFile = selectiveUpdate true noSha1 (VersionsFromGraph graph) (PackageDetailsFromGraph graph) lockFile dependenciesFile UpdateProcess.UpdateMode.Install
+    let lockFile = selectiveUpdate true noSha1 (VersionsFromGraph graph) (PackageDetailsFromGraph graph) lockFile dependenciesFile PackageResolver.UpdateMode.Install
     
     let result = 
         lockFile.GetGroupedResolution()
@@ -263,7 +263,7 @@ let ``SelectiveUpdate removes a dependency when it updates a single package and 
     nuget FAKE""")
 
     let lockFile = 
-        UpdateProcess.UpdateMode.UpdatePackage(Constants.MainDependencyGroup, PackageName "Castle.Core-log4net")
+        PackageResolver.UpdateMode.UpdatePackage(Constants.MainDependencyGroup, PackageName "Castle.Core-log4net")
         |> selectiveUpdate true noSha1 (VersionsFromGraph graph) (PackageDetailsFromGraph graph) lockFile dependenciesFile
 
     let result = 
@@ -291,7 +291,7 @@ let ``SelectiveUpdate does not update when a dependency constrain is not met``()
     nuget FAKE""")
 
     let lockFile = 
-        UpdateProcess.UpdateMode.UpdatePackage(Constants.MainDependencyGroup, PackageName "Castle.Core-log4net")
+        PackageResolver.UpdateMode.UpdatePackage(Constants.MainDependencyGroup, PackageName "Castle.Core-log4net")
         |> selectiveUpdate true noSha1 (VersionsFromGraph graph) (PackageDetailsFromGraph graph) lockFile dependenciesFile
 
     let result = 
@@ -319,7 +319,7 @@ let ``SelectiveUpdate considers package name case difference``() =
     nuget FAKE""")
 
     let lockFile = 
-        UpdateProcess.UpdateMode.UpdatePackage(Constants.MainDependencyGroup, PackageName "Castle.Core-log4net")
+        PackageResolver.UpdateMode.UpdatePackage(Constants.MainDependencyGroup, PackageName "Castle.Core-log4net")
         |> selectiveUpdate true noSha1 (VersionsFromGraph graph) (PackageDetailsFromGraph graph) lockFile dependenciesFile
 
     let result = 
@@ -348,7 +348,7 @@ let ``SelectiveUpdate conflicts when a dependency is contrained``() =
     nuget FAKE""")
 
     (fun () ->
-    UpdateProcess.UpdateMode.UpdatePackage(Constants.MainDependencyGroup, PackageName "Castle.Core-log4net")
+    PackageResolver.UpdateMode.UpdatePackage(Constants.MainDependencyGroup, PackageName "Castle.Core-log4net")
     |> selectiveUpdate true noSha1 (VersionsFromGraph graph) (PackageDetailsFromGraph graph) lockFile dependenciesFile
     |> ignore)
     |> shouldFail
@@ -362,7 +362,7 @@ let ``SelectiveUpdate does not update any package when package does not exist``(
     nuget FAKE""")
 
     try
-        UpdateProcess.UpdateMode.UpdatePackage(Constants.MainDependencyGroup, PackageName "package")
+        PackageResolver.UpdateMode.UpdatePackage(Constants.MainDependencyGroup, PackageName "package")
         |> selectiveUpdate true noSha1 (VersionsFromGraph graph) (PackageDetailsFromGraph graph) lockFile dependenciesFile
         |> ignore
         failwith "This pont should not be reached"
@@ -379,7 +379,7 @@ let ``SelectiveUpdate generates paket.lock correctly``() =
     nuget FAKE""")
 
     let lockFile = 
-        UpdateProcess.UpdateMode.UpdatePackage(Constants.MainDependencyGroup, PackageName "Castle.Core")
+        PackageResolver.UpdateMode.UpdatePackage(Constants.MainDependencyGroup, PackageName "Castle.Core")
         |> selectiveUpdate true noSha1 (VersionsFromGraph graph) (PackageDetailsFromGraph graph) lockFile dependenciesFile
     
     let result = 
@@ -415,7 +415,7 @@ let ``SelectiveUpdate does not update when package conflicts with a transitive d
     let packageName = PackageName "log4net"
 
     let lockFile = 
-        UpdateProcess.UpdateMode.UpdatePackage(Constants.MainDependencyGroup, packageName)
+        PackageResolver.UpdateMode.UpdatePackage(Constants.MainDependencyGroup, packageName)
         |> selectiveUpdate true noSha1 (VersionsFromGraph graph) (PackageDetailsFromGraph graph) lockFile dependenciesFile
     
     let result = 
@@ -486,7 +486,7 @@ let ``SelectiveUpdate updates package that conflicts with a transitive dependenc
     let packageName = PackageName "log4f"
 
     let lockFile = 
-        UpdateProcess.UpdateMode.UpdatePackage(Constants.MainDependencyGroup, packageName)
+        PackageResolver.UpdateMode.UpdatePackage(Constants.MainDependencyGroup, packageName)
         |> selectiveUpdate true noSha1 (VersionsFromGraph graph2) (PackageDetailsFromGraph graph2) lockFile2 dependenciesFile
     
     let result = 
@@ -517,7 +517,7 @@ let ``SelectiveUpdate updates package that conflicts with a transitive dependenc
     let packageName = PackageName "Ninject.Extensions.Logging.Log4net"
 
     let lockFile = 
-        UpdateProcess.UpdateMode.UpdatePackage(Constants.MainDependencyGroup, packageName)
+        PackageResolver.UpdateMode.UpdatePackage(Constants.MainDependencyGroup, packageName)
         |> selectiveUpdate true noSha1 (VersionsFromGraph graph2) (PackageDetailsFromGraph graph2) lockFile2 dependenciesFile
     
     let result = 
@@ -573,7 +573,7 @@ let ``SelectiveUpdate updates package that conflicts with a transitive dependenc
     let packageName = PackageName "Ninject.Extensions.Logging.Log4net"
 
     let lockFile = 
-        UpdateProcess.UpdateMode.UpdatePackage(Constants.MainDependencyGroup, packageName)
+        PackageResolver.UpdateMode.UpdatePackage(Constants.MainDependencyGroup, packageName)
         |> selectiveUpdate true noSha1 (VersionsFromGraph graph3) (PackageDetailsFromGraph graph3) lockFile3 dependenciesFile
     
     let result = 
@@ -606,7 +606,7 @@ let ``SelectiveUpdate does not conflict with a transitive dependency of another 
     let packageName = PackageName "Ninject"
 
     let lockFile = 
-        UpdateProcess.UpdateMode.UpdatePackage(Constants.MainDependencyGroup, packageName)
+        PackageResolver.UpdateMode.UpdatePackage(Constants.MainDependencyGroup, packageName)
         |> selectiveUpdate true noSha1 (VersionsFromGraph graph3) (PackageDetailsFromGraph graph3) lockFile3 dependenciesFile
 
     let result = 
@@ -638,7 +638,7 @@ let ``SelectiveUpdate updates package that conflicts with a deep transitive depe
     let packageName = PackageName "Ninject.Extensions.Interception"
 
     let lockFile = 
-        UpdateProcess.UpdateMode.UpdatePackage(Constants.MainDependencyGroup, packageName)
+        PackageResolver.UpdateMode.UpdatePackage(Constants.MainDependencyGroup, packageName)
         |> selectiveUpdate true noSha1 (VersionsFromGraph graph3) (PackageDetailsFromGraph graph3) lockFile3 dependenciesFile
     
     let result = 
@@ -690,7 +690,7 @@ let ``SelectiveUpdate updates package that conflicts with a deep transitive depe
     let packageName = PackageName "Ninject.Extensions.Logging.Log4net.Deep"
 
     let lockFile = 
-        UpdateProcess.UpdateMode.UpdatePackage(Constants.MainDependencyGroup, packageName)
+        PackageResolver.UpdateMode.UpdatePackage(Constants.MainDependencyGroup, packageName)
         |> selectiveUpdate true noSha1 (VersionsFromGraph graph4) (PackageDetailsFromGraph graph4) lockFile4 dependenciesFile
     
     let result = 
@@ -740,7 +740,7 @@ let ``SelectiveUpdate updates package that conflicts with transitive dependency 
     let packageName = PackageName "Ninject.Extensions.Logging"
 
     let lockFile = 
-        UpdateProcess.UpdateMode.UpdatePackage(Constants.MainDependencyGroup, packageName)
+        PackageResolver.UpdateMode.UpdatePackage(Constants.MainDependencyGroup, packageName)
         |> selectiveUpdate true noSha1 (VersionsFromGraph graph5) (PackageDetailsFromGraph graph5) lockFile5 dependenciesFile
     
     let result = 
@@ -778,7 +778,7 @@ let ``SelectiveUpdate updates all packages from all groups if no group is specif
 
         nuget Castle.Core-log4net ~> 4.0""")
 
-    let lockFile = selectiveUpdate true noSha1 (VersionsFromGraph graph) (PackageDetailsFromGraph graph) lockFile dependenciesFile UpdateProcess.UpdateMode.UpdateAll
+    let lockFile = selectiveUpdate true noSha1 (VersionsFromGraph graph) (PackageDetailsFromGraph graph) lockFile dependenciesFile PackageResolver.UpdateMode.UpdateAll
     
     let result = groupMap lockFile
 
@@ -829,7 +829,7 @@ let ``SelectiveUpdate updates only packages from specific group if group is spec
 
         nuget Castle.Core-log4net""")
 
-    let lockFile = selectiveUpdate true noSha1 (VersionsFromGraph graph) (PackageDetailsFromGraph graph) groupedLockFile dependenciesFile (UpdateProcess.UpdateMode.UpdateGroup Constants.MainDependencyGroup)
+    let lockFile = selectiveUpdate true noSha1 (VersionsFromGraph graph) (PackageDetailsFromGraph graph) groupedLockFile dependenciesFile (PackageResolver.UpdateMode.UpdateGroup Constants.MainDependencyGroup)
     
     let result = groupMap lockFile |> Seq.toList
 
@@ -861,7 +861,7 @@ let ``SelectiveUpdate updates only packages from specified group``() =
 
         nuget Castle.Core-log4net""")
 
-    let lockFile = selectiveUpdate true noSha1 (VersionsFromGraph graph) (PackageDetailsFromGraph graph) groupedLockFile dependenciesFile (UpdateProcess.UpdateMode.UpdateGroup(GroupName "Group"))
+    let lockFile = selectiveUpdate true noSha1 (VersionsFromGraph graph) (PackageDetailsFromGraph graph) groupedLockFile dependenciesFile (PackageResolver.UpdateMode.UpdateGroup(GroupName "Group"))
     
     let result = groupMap lockFile
 
@@ -917,7 +917,7 @@ let ``SelectiveUpdate updates package from a specific group``() =
         nuget FAKE""")
 
     let lockFile =
-        UpdateProcess.UpdateMode.UpdatePackage(GroupName "Group", PackageName "Castle.Core-log4net")
+        PackageResolver.UpdateMode.UpdatePackage(GroupName "Group", PackageName "Castle.Core-log4net")
         |> selectiveUpdate true noSha1 (VersionsFromGraph graph) (PackageDetailsFromGraph graph) lockFile6 dependenciesFile
     
     let result = groupMap lockFile
@@ -953,7 +953,7 @@ let ``SelectiveUpdate does not remove a dependency from group when it is a top-l
         nuget log4net""")
 
     let lockFile =
-        UpdateProcess.UpdateMode.UpdatePackage(GroupName "Group", PackageName "Castle.Core-log4net")
+        PackageResolver.UpdateMode.UpdatePackage(GroupName "Group", PackageName "Castle.Core-log4net")
         |> selectiveUpdate true noSha1 (VersionsFromGraph graph) (PackageDetailsFromGraph graph) lockFile6 dependenciesFile
     
     let result = groupMap lockFile
@@ -988,7 +988,7 @@ let ``SelectiveUpdate updates package from main group``() =
         nuget FAKE""")
 
     let lockFile =
-        UpdateProcess.UpdateMode.UpdatePackage(Constants.MainDependencyGroup, PackageName "Castle.Core-log4net")
+        PackageResolver.UpdateMode.UpdatePackage(Constants.MainDependencyGroup, PackageName "Castle.Core-log4net")
         |> selectiveUpdate true noSha1 (VersionsFromGraph graph) (PackageDetailsFromGraph graph) lockFile6 dependenciesFile
     
     let result = groupMap lockFile
@@ -1033,7 +1033,7 @@ let ``SelectiveUpdate updates package that has a new dependent package that also
     nuget Package""")
 
     let lockFile = 
-        UpdateProcess.UpdateMode.UpdatePackage(Constants.MainDependencyGroup, PackageName "Package")
+        PackageResolver.UpdateMode.UpdatePackage(Constants.MainDependencyGroup, PackageName "Package")
         |> selectiveUpdate true noSha1 (VersionsFromGraph graph7) (PackageDetailsFromGraph graph7) lockFile7 dependenciesFile
 
     let result = 
@@ -1067,7 +1067,7 @@ let ``SelectiveUpdate updates early package that has a new dependent package tha
     nuget APackage""")
 
     let lockFile = 
-        UpdateProcess.UpdateMode.UpdatePackage(Constants.MainDependencyGroup, PackageName "APackage")
+        PackageResolver.UpdateMode.UpdatePackage(Constants.MainDependencyGroup, PackageName "APackage")
         |> selectiveUpdate true noSha1 (VersionsFromGraph graph7) (PackageDetailsFromGraph graph7) lockFile8 dependenciesFile
 
     let result = 

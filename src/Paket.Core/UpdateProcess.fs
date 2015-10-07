@@ -9,16 +9,7 @@ open System.Collections.Generic
 open Chessie.ErrorHandling
 open Paket.Logging
 
-type UpdateMode =
-    | UpdatePackage of  GroupName * PackageName
-    | UpdateGroup of GroupName
-    | Install
-    | UpdateAll
-
 let selectiveUpdate force getSha1 getSortedVersionsF getPackageDetailsF (lockFile:LockFile) (dependenciesFile:DependenciesFile) updateMode =
-    let noAdditionalRequirements _ _ = None
-    let resolve getVersionsF (dependenciesFile:DependenciesFile) g = dependenciesFile.Resolve(force, getSha1, getVersionsF, getPackageDetailsF, g)
-
     let allVersions = Dictionary<PackageName,SemVerInfo list>()
     let getSortedAndCachedVersionsF sources resolverStrategy groupName packageName =
         match allVersions.TryGetValue(packageName) with
@@ -44,27 +35,19 @@ let selectiveUpdate force getSha1 getSortedVersionsF getPackageDetailsF (lockFil
 
     let getVersionsF,groupsToUpdate =
         match updateMode with
-        | UpdateAll -> 
-            let groups =
-                dependenciesFile.Groups
-                |> Map.map noAdditionalRequirements
-            getSortedAndCachedVersionsF,groups
+        | UpdateAll -> getSortedAndCachedVersionsF,dependenciesFile.Groups
         | UpdateGroup groupName ->
             let groups =
                 dependenciesFile.Groups
                 |> Map.filter (fun k _ -> k = groupName)
-                |> Map.map noAdditionalRequirements
+
             getSortedAndCachedVersionsF,groups
         | Install ->
             let changes = DependencyChangeDetection.findChangesInDependenciesFile(dependenciesFile,lockFile)
 
             let preferredVersions = DependencyChangeDetection.GetUnchangedDependenciesPins lockFile changes
 
-            let groups =
-                dependenciesFile.Groups
-                |> Map.map noAdditionalRequirements
-
-            (getPreferredVersionsF preferredVersions),groups
+            (getPreferredVersionsF preferredVersions),dependenciesFile.Groups
         | UpdatePackage(groupName,packageName) ->
             let changes =
                 lockFile.GetAllNormalizedDependenciesOf(groupName,packageName)
@@ -75,11 +58,10 @@ let selectiveUpdate force getSha1 getSortedVersionsF getPackageDetailsF (lockFil
             let groups =
                 dependenciesFile.Groups
                 |> Map.filter (fun key _ -> key = groupName)
-                |> Map.map (fun _ _ -> Some packageName)
 
             (getPreferredVersionsF preferredVersions),groups
 
-    let resolution = dependenciesFile.Resolve(force, getSha1, getVersionsF, getPackageDetailsF, groupsToUpdate)
+    let resolution = dependenciesFile.Resolve(force, getSha1, getVersionsF, getPackageDetailsF, groupsToUpdate, updateMode)
 
     let groups = 
         dependenciesFile.Groups

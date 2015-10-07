@@ -35,10 +35,6 @@ let FindOutdated strict includingPrereleases environment = trial {
     let getSha1 origin owner repo branch auth = RemoteDownload.getSHA1OfBranch origin owner repo branch auth |> Async.RunSynchronously
     let root = Path.GetDirectoryName dependenciesFile.FileName
 
-    let groups = 
-        dependenciesFile.Groups
-        |> Map.map (fun groupName group -> None)
-
     let getVersionsF sources resolverStrategy groupName packageName =
         let versions = NuGetV2.GetVersions root (sources, packageName)
                 
@@ -46,7 +42,7 @@ let FindOutdated strict includingPrereleases environment = trial {
         | ResolverStrategy.Max -> List.sortDescending versions
         | ResolverStrategy.Min -> List.sort versions
 
-    let newResolution = dependenciesFile.Resolve(true, getSha1, getVersionsF, NuGetV2.GetPackageDetails root true, groups)
+    let newResolution = dependenciesFile.Resolve(true, getSha1, getVersionsF, NuGetV2.GetPackageDetails root true, dependenciesFile.Groups, PackageResolver.UpdateMode.UpdateAll)
 
     let changed = 
         [for kv in lockFile.Groups do

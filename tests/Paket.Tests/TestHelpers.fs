@@ -45,13 +45,13 @@ let safeResolve graph (dependencies : (string * VersionRange) list)  =
                  ResolverStrategy = ResolverStrategy.Max })
         |> Set.ofList
 
-    PackageResolver.Resolve(Constants.MainDependencyGroup,[ PackageSource.NugetSource "" ], VersionsFromGraph graph, PackageDetailsFromGraph graph, [], packages, None)
+    PackageResolver.Resolve(Constants.MainDependencyGroup,[ PackageSource.NugetSource "" ], VersionsFromGraph graph, PackageDetailsFromGraph graph, [], packages, UpdateMode.UpdateAll)
 
 let resolve graph dependencies = (safeResolve graph dependencies).GetModelOrFail()
 
 let ResolveWithGraph(dependenciesFile:DependenciesFile,getSha1,getVersionsF, getPackageDetailsF) =
     let groups = [Constants.MainDependencyGroup, None ] |> Map.ofSeq
-    dependenciesFile.Resolve(true,getSha1,getVersionsF,getPackageDetailsF,groups)
+    dependenciesFile.Resolve(true,getSha1,getVersionsF,getPackageDetailsF,groups,UpdateMode.UpdateAll)
 
 let getVersion (resolved:ResolvedPackage) = resolved.Version.ToString()
 

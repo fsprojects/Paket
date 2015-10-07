@@ -194,9 +194,20 @@ type Resolved = {
     ResolvedPackages : Resolution
     ResolvedSourceFiles : ModuleResolver.ResolvedSourceFile list }
 
+type UpdateMode =
+    | UpdatePackage of  GroupName * PackageName
+    | UpdateGroup of GroupName
+    | Install
+    | UpdateAll
+
 /// Resolves all direct and transitive dependencies
-let Resolve(groupName:GroupName, sources, getVersionsF, getPackageDetailsF, globalFrameworkRestrictions, (rootDependencies:PackageRequirement Set), startWithPackage: PackageName option) =
+let Resolve(groupName:GroupName, sources, getVersionsF, getPackageDetailsF, globalFrameworkRestrictions, (rootDependencies:PackageRequirement Set), updateMode : UpdateMode) =
     tracefn "Resolving packages for group %O:" groupName
+    let startWithPackage = 
+        match updateMode with
+        | UpdatePackage(_,p) -> Some p
+        | _ -> None
+
     let rootSettings =
         rootDependencies
         |> Seq.map (fun x -> x.Name,x.Settings)
@@ -302,6 +313,11 @@ let Resolve(groupName:GroupName, sources, getVersionsF, getPackageDetailsF, glob
                 availableVersions := 
                     match currentRequirement.VersionRequirement.Range with
                     | OverrideAll v -> [v]
+                    | Specific v ->
+                        match updateMode with
+                        | Install -> ()
+                        | _ -> traceWarnfn " %O is pinned to version %O." currentRequirement.Name v
+                        [v]
                     | _ -> getVersionsF sources resolverStrategy groupName currentRequirement.Name
 
                 let preRelease v =
@@ -311,29 +327,6 @@ let Resolve(groupName:GroupName, sources, getVersionsF, getPackageDetailsF, glob
                         | Specific v -> v.PreRelease <> None
                         | OverrideAll v -> v.PreRelease <> None
                         | _ -> false
-
-                let lastest =
-                    !availableVersions
-                    |> List.filter preRelease
-                    |> List.sortDescending
-                    |> List.tryHead
-
-                let getPinnedVersion d = 
-                    match d.Parent with
-                    | DependenciesFile _ ->
-                        match d.VersionRequirement.Range with
-                        | Specific v -> Some v
-                        | OverrideAll v -> Some v
-                        | _ -> None
-                    | Package _ -> None
-
-                openRequirements
-                |> Set.filter (fun r -> currentRequirement.Name = r.Name)
-                |> Set.map getPinnedVersion
-                |> Seq.filter ((>) lastest)
-                |> Seq.choose id
-                |> Seq.tryHead
-                |> Option.iter (traceWarnfn " %O has a new version available, but it is pinned to version %O" currentRequirement.Name)
 
                 compatibleVersions := List.filter (isInRange id) (!availableVersions)
                 if currentRequirement.VersionRequirement.Range.IsGlobalOverride then
@@ -357,11 +350,7 @@ let Resolve(groupName:GroupName, sources, getVersionsF, getPackageDetailsF, glob
             if !compatibleVersions = [] then
                 if currentRequirement.Parent.IsRootRequirement() then
                     let versionText = 
-                        let versions = 
-                            if !availableVersions = [] then
-                                getVersionsF sources resolverStrategy groupName currentRequirement.Name
-                            else 
-                                !availableVersions
+                        let versions = getVersionsF sources resolverStrategy groupName currentRequirement.Name
 
                         String.Join(Environment.NewLine + "     - ",List.sortDescending versions)
                     failwithf "Could not find compatible versions for top level dependency:%s     %A%s   Available versions:%s     - %s%s   Try to relax the dependency%s." 
