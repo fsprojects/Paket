@@ -44,8 +44,6 @@ Paket has enabled us to explicitly define our constraints and forces us to think
 
 Chris Haines (Development Team Lead) [@cjbhaines](https://twitter.com/cjbhaines), [Betgenius](http://www.betgenius.com)
 
-[Betgenius](http://www.betgenius.com)
-
 ## Nessos
 
 > Paket is an excellent dependency management and package authoring tool that has greatly improved our productivity.
