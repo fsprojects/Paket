@@ -44,6 +44,17 @@ Paket has enabled us to explicitly define our constraints and forces us to think
 
 Chris Haines (Development Team Lead) [@cjbhaines](https://twitter.com/cjbhaines), [Betgenius](http://www.betgenius.com)
 
+## Nessos
+
+> Paket is an excellent dependency management and package authoring tool that has greatly improved our productivity.
+
+[Nessos](http://www.nessos.gr/) is an Athens, Greece based ISV and consultancy focused on .NET/F# technologies with expertise in tailored business applications and scalable computation. Nessos is a [major contributor](https://github.com/nessos) in .NET open source software and is author and primary contributor of the [MBrace](http://www.m-brace.net/) distributed computation library.
+
+Paket has enabled us to quickly and effectively control dependencies in large and complicated projects we have been developing both in-house and in our open source development. Its simple design philosophy is an excellent match to FAKE and git and is ideal for cross platform development. Special mention needs to made of paket pack: we heavily modularize our code in small nuget packages that need to be updated often. The default nuget tooling for authoring packages was cumbersome to use since dependency constraints needed to be edited by hand. This often resulted in accidental releases of dud packages. Packet pack does away with that concern; authoring a package update now takes less than 10 seconds of manual work.
+
+Eirik Tsarpalis (Nessos R&D) [@eiriktsarpalis](https://twitter.com/eiriktsarpalis), [Nessos](http://www.nessos.gr)
+
+
 ## Please contribute your testimonials!
 
 Adding new testimonials to this page is easy. Just write your quote in plain text, using some Markdown formatting and send a pull request to [docs/content/testimonials.md](https://github.com/fsprojects/Paket/blob/master/docs/content/testimonials.md).
