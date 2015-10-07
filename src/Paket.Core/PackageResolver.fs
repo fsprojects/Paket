@@ -203,7 +203,6 @@ let Resolve(groupName:GroupName, sources, getVersionsF, getPackageDetailsF, glob
         |> dict
 
     let exploredPackages = Dictionary<PackageName*SemVerInfo,ResolvedPackage>()
-    let allVersions = Dictionary<PackageName,SemVerInfo list>()
     let conflictHistory = Dictionary<PackageName,int>()
 
     let getExploredPackage(dependency:PackageRequirement,version) =
@@ -238,20 +237,6 @@ let Resolve(groupName:GroupName, sources, getVersionsF, getPackageDetailsF, glob
                   Source = packageDetails.Source }
             exploredPackages.Add((dependency.Name,version),explored)
             explored
-
-    let getAllVersions (resolverStrategy:ResolverStrategy) (packageName:PackageName) =
-        let (PackageName name) = packageName
-        match allVersions.TryGetValue(packageName) with
-        | false,_ ->
-            let versions = 
-                verbosefn "  - fetching versions for %s" name
-                getVersionsF sources resolverStrategy groupName packageName
-
-            if Seq.isEmpty versions then
-                failwithf "Couldn't retrieve versions for %s." name
-            allVersions.Add(packageName,versions)
-            versions
-        | true,versions -> versions
 
     let rec step (filteredVersions:Map<PackageName, (SemVerInfo list * bool)>,selectedPackageVersions:ResolvedPackage list,closedRequirements:Set<PackageRequirement>,openRequirements:Set<PackageRequirement>) =
         if Set.isEmpty openRequirements then
@@ -317,7 +302,7 @@ let Resolve(groupName:GroupName, sources, getVersionsF, getPackageDetailsF, glob
                 availableVersions := 
                     match currentRequirement.VersionRequirement.Range with
                     | OverrideAll v -> [v]
-                    | _ -> getAllVersions resolverStrategy currentRequirement.Name
+                    | _ -> getVersionsF sources resolverStrategy groupName currentRequirement.Name
 
                 let preRelease v =
                     v.PreRelease = None
@@ -374,7 +359,7 @@ let Resolve(groupName:GroupName, sources, getVersionsF, getPackageDetailsF, glob
                     let versionText = 
                         let versions = 
                             if !availableVersions = [] then
-                                getAllVersions resolverStrategy currentRequirement.Name
+                                getVersionsF sources resolverStrategy groupName currentRequirement.Name
                             else 
                                 !availableVersions
 

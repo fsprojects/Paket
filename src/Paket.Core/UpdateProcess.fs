@@ -19,8 +19,22 @@ let selectiveUpdate force getSha1 getSortedVersionsF getPackageDetailsF (lockFil
     let noAdditionalRequirements _ _ = None
     let resolve getVersionsF (dependenciesFile:DependenciesFile) g = dependenciesFile.Resolve(force, getSha1, getVersionsF, getPackageDetailsF, g)
 
+    let allVersions = Dictionary<PackageName,SemVerInfo list>()
+    let getSortedAndCachedVersionsF sources resolverStrategy groupName packageName =
+        match allVersions.TryGetValue(packageName) with
+        | false,_ ->
+            let versions = 
+                verbosefn "  - fetching versions for %O" packageName
+                getSortedVersionsF sources resolverStrategy groupName packageName
+
+            if Seq.isEmpty versions then
+                failwithf "Couldn't retrieve versions for %O." packageName
+            allVersions.Add(packageName,versions)
+            versions
+        | true,versions -> versions
+
     let getPreferredVersionsF preferredVersions sources resolverStrategy groupName packageName =
-        let versions = getSortedVersionsF sources resolverStrategy groupName packageName
+        let versions = getSortedAndCachedVersionsF sources resolverStrategy groupName packageName
                 
         match preferredVersions |> Map.tryFind (groupName,packageName) with
         | Some v -> v :: versions
@@ -34,13 +48,13 @@ let selectiveUpdate force getSha1 getSortedVersionsF getPackageDetailsF (lockFil
             let groups =
                 dependenciesFile.Groups
                 |> Map.map noAdditionalRequirements
-            getSortedVersionsF,groups
+            getSortedAndCachedVersionsF,groups
         | UpdateGroup groupName ->
             let groups =
                 dependenciesFile.Groups
                 |> Map.filter (fun k _ -> k = groupName)
                 |> Map.map noAdditionalRequirements
-            getSortedVersionsF,groups
+            getSortedAndCachedVersionsF,groups
         | Install ->
             let changes = DependencyChangeDetection.findChangesInDependenciesFile(dependenciesFile,lockFile)
 
