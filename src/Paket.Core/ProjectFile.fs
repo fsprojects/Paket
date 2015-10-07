@@ -566,14 +566,18 @@ type ProjectFile =
         with
         | _ -> Guid.Empty
 
-    member this.GetInterProjectDependencies() =  
+    member this.GetInterProjectDependencies() =
         let forceGetInnerText node name =
             match node |> getNode name with 
             | Some n -> n.InnerText
             | None -> failwithf "unable to parse %s" node.Name
 
         [for node in this.Document |> getDescendants "ProjectReference" -> 
-            { Path = node.Attributes.["Include"].Value
+            { Path = 
+                let p = node.Attributes.["Include"].Value
+                if Path.IsPathRooted p then Path.GetFullPath p else 
+                let di = FileInfo(this.FileName).Directory
+                Path.Combine(di.FullName,p) |> Path.GetFullPath
               Name = forceGetInnerText node "Name"
               GUID =  forceGetInnerText node "Project" |> Guid.Parse }]
 

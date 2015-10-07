@@ -148,7 +148,7 @@ let findDependencies (dependencies : DependenciesFile) config (template : Templa
     let deps, files = 
         project.GetInterProjectDependencies() 
         |> Seq.fold (fun (deps, files) p -> 
-            match Map.tryFind p.Name map with
+            match Map.tryFind p.Path map with
             | Some packagedRef -> packagedRef :: deps, files
             | None -> 
                 let p = 
@@ -172,7 +172,7 @@ let findDependencies (dependencies : DependenciesFile) config (template : Templa
                     [".xml"; ".dll"; ".exe"; ".pdb"; ".mdb"] 
                     |> List.exists ((=) (f.Extension.ToLower()))
 
-                isSameFileName && isValidExtension)        
+                isSameFileName && isValidExtension)
         additionalFiles
         |> Array.fold (fun template file -> addFile file.FullName targetDir template) template
     
@@ -214,7 +214,7 @@ let findDependencies (dependencies : DependenciesFile) config (template : Templa
         |> Seq.map (fun kv -> kv.Value.NugetPackages |> List.map (fun p -> kv.Key,p))
         |> List.concat
         |> List.filter (fun (groupName,np) ->
-            try            
+            try
                 // TODO: it would be nice if this data would be in the NuGet OData feed,
                 // then we would not need to parse every nuspec here
                 let info =
@@ -228,7 +228,7 @@ let findDependencies (dependencies : DependenciesFile) config (template : Templa
             with
             | _ -> true)
         |> List.map (fun (groupName,np) ->
-                let dependencyVersionRequirement =                    
+                let dependencyVersionRequirement =
                     if not lockDependencies then
                         match dependencies.Groups |> Map.tryFind groupName with
                         | None -> None
@@ -249,8 +249,7 @@ let findDependencies (dependencies : DependenciesFile) config (template : Templa
                                         // to current locked version
                                         group.Resolution
                                         |> Map.tryFind np.Name
-                                        |> Option.map (fun transient -> transient.Version)
-                                        |> Option.map (fun v -> VersionRequirement(Minimum v, PreReleaseStatus.No))
+                                        |> Option.map (fun transient -> VersionRequirement(Minimum transient.Version, PreReleaseStatus.No))
                         else
                             match lockFile.Groups |> Map.tryFind groupName with
                             | None -> None

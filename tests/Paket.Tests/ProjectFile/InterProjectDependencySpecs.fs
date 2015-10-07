@@ -24,9 +24,12 @@ let ``should detect Paket and Paket.Core dependency in Project2 proj file``() =
 
 [<Test>]
 let ``should detect path for dependencies in Project2 proj file``() =
-    ProjectFile.Load("./ProjectFile/TestData/Project2.fsprojtest").Value.GetInterProjectDependencies()
-    |> List.map (fun p -> p.Path)
-    |> shouldEqual ["..\..\src\Paket\Paket.fsproj"; "..\Paket.Core\Paket.Core.fsproj"]
+    let paths =
+        ProjectFile.Load("./ProjectFile/TestData/Project2.fsprojtest").Value.GetInterProjectDependencies()
+        |> List.map (fun p -> normalizePath p.Path)
+
+    paths.[0].EndsWith(normalizePath "src/Paket/Paket.fsproj") |> shouldEqual true
+    paths.[1].EndsWith(normalizePath "Paket.Core/Paket.Core.fsproj") |> shouldEqual true
 
 [<Test>]
 let ``should detect Guids for dependencies in Project2 proj file``() =

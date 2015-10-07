@@ -90,13 +90,7 @@ let Pack(workingDir,dependencies : DependenciesFile, packageOutputPath, buildCon
                 allTemplateFiles.Remove(templateFile.FileName) |> ignore
 
                 let merged = merge buildConfig version projectFile templateFile
-
-                let id = 
-                    match merged.Contents with
-                    | CompleteInfo _ -> projectFile.NameWithoutExtension
-                    | x -> failwithf "unexpected failure while merging meta data: %A" x
-
-                id,(merged,projectFile))
+                Path.GetFullPath projectFile.FileName,(merged,projectFile))
             |> Map.ofArray
 
     // add dependencies

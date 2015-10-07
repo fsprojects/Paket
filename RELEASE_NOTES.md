@@ -1,3 +1,6 @@
+#### 2.9.1 - 07.10.2015
+* BUGFIX: Wrong paket ProjectRefences name causes incorrect packaging - https://github.com/fsprojects/Paket/issues/1113
+
 #### 2.9.0 - 05.10.2015
 * Allow to use GitHub tokens to access GitHub files - http://fsprojects.github.io/Paket/paket-config.html
 * Allow to update a single group
