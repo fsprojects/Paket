@@ -34,6 +34,10 @@ let VersionsFromGraph (graph : seq<string * string * (string * VersionRequiremen
     | ResolverStrategy.Max -> List.sortDescending versions
     | ResolverStrategy.Min -> List.sort versions
 
+let VersionsFromGraphAsSeq (graph : seq<string * string * (string * VersionRequirement) list>) sources resolverStrategy groupName packageName = 
+   VersionsFromGraph graph sources resolverStrategy groupName packageName
+   |> Seq.ofList
+
 let safeResolve graph (dependencies : (string * VersionRange) list)  = 
     let packages = 
         dependencies
@@ -45,7 +49,7 @@ let safeResolve graph (dependencies : (string * VersionRange) list)  =
                  ResolverStrategy = ResolverStrategy.Max })
         |> Set.ofList
 
-    PackageResolver.Resolve(Constants.MainDependencyGroup,[ PackageSource.NugetSource "" ], VersionsFromGraph graph, PackageDetailsFromGraph graph, [], packages, UpdateMode.UpdateAll)
+    PackageResolver.Resolve(Constants.MainDependencyGroup,[ PackageSource.NugetSource "" ], VersionsFromGraphAsSeq graph, PackageDetailsFromGraph graph, [], packages, UpdateMode.UpdateAll)
 
 let resolve graph dependencies = (safeResolve graph dependencies).GetModelOrFail()
 

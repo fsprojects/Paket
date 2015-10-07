@@ -286,8 +286,8 @@ let Resolve(groupName:GroupName, sources, getVersionsF, getPackageDetailsF, glob
 
             verbosefn "  Trying to resolve %O" currentRequirement
 
-            let availableVersions = ref []
-            let compatibleVersions = ref []
+            let availableVersions = ref Seq.empty
+            let compatibleVersions = ref Seq.empty
             let globalOverride = ref false
             let resolverStrategy =
                 if currentRequirement.Parent.IsRootRequirement() then
@@ -312,13 +312,14 @@ let Resolve(groupName:GroupName, sources, getVersionsF, getPackageDetailsF, glob
 
                 availableVersions := 
                     match currentRequirement.VersionRequirement.Range with
-                    | OverrideAll v -> [v]
+                    | OverrideAll v -> Seq.singleton v
                     | Specific v ->
                         match updateMode with
                         | Install -> ()
                         | _ -> traceWarnfn " %O is pinned to version %O." currentRequirement.Name v
-                        [v]
+                        Seq.singleton v
                     | _ -> getVersionsF sources resolverStrategy groupName currentRequirement.Name
+                    |> Seq.cache
 
                 let preRelease v =
                     v.PreRelease = None
@@ -328,29 +329,29 @@ let Resolve(groupName:GroupName, sources, getVersionsF, getPackageDetailsF, glob
                         | OverrideAll v -> v.PreRelease <> None
                         | _ -> false
 
-                compatibleVersions := List.filter (isInRange id) (!availableVersions)
+                compatibleVersions := Seq.filter (isInRange id) (!availableVersions) |> Seq.cache
                 if currentRequirement.VersionRequirement.Range.IsGlobalOverride then
                     globalOverride := true
                 else
-                    if !compatibleVersions = [] then
-                        let prereleases = List.filter (isInRange (fun r -> r.IncludingPrereleases())) (!availableVersions)
+                    if Seq.isEmpty !compatibleVersions then
+                        let prereleases = Seq.filter (isInRange (fun r -> r.IncludingPrereleases())) (!availableVersions) |> Seq.toList
                         if allPrereleases prereleases then
-                            availableVersions := prereleases
-                            compatibleVersions := prereleases
+                            availableVersions := Seq.ofList prereleases
+                            compatibleVersions := Seq.ofList prereleases
             | Some(versions,globalOverride') -> 
                 // we already selected a version so we can't pick a different
                 globalOverride := globalOverride'
-                availableVersions := versions
+                availableVersions := List.toSeq versions
                 if globalOverride' then
-                    compatibleVersions := versions
+                    compatibleVersions := List.toSeq versions
                 else
                     compatibleVersions := 
-                        List.filter (fun v -> currentRequirement.VersionRequirement.IsInRange(v,currentRequirement.Parent.IsRootRequirement() |> not)) versions
+                        Seq.filter (fun v -> currentRequirement.VersionRequirement.IsInRange(v,currentRequirement.Parent.IsRootRequirement() |> not)) versions
 
-            if !compatibleVersions = [] then
+            if Seq.isEmpty !compatibleVersions then
                 if currentRequirement.Parent.IsRootRequirement() then
                     let versionText = 
-                        let versions = getVersionsF sources resolverStrategy groupName currentRequirement.Name
+                        let versions = getVersionsF sources resolverStrategy groupName currentRequirement.Name |> Seq.toList
 
                         String.Join(Environment.NewLine + "     - ",List.sortDescending versions)
                     failwithf "Could not find compatible versions for top level dependency:%s     %A%s   Available versions:%s     - %s%s   Try to relax the dependency%s." 
@@ -378,26 +379,30 @@ let Resolve(groupName:GroupName, sources, getVersionsF, getPackageDetailsF, glob
                         tracefn "    ==> Trying different resolution."
 
             let tryToImprove useUnlisted =
-                !compatibleVersions
-                |> List.fold (fun (allUnlisted,state) versionToExplore ->
-                    match state with
-                    | Resolution.Conflict _ ->
-                        let exploredPackage = getExploredPackage(currentRequirement,versionToExplore)
-                        if exploredPackage.Unlisted && not useUnlisted then 
-                            allUnlisted,state 
-                        else                
-                            let newFilteredVersions = Map.add currentRequirement.Name ([versionToExplore],!globalOverride) filteredVersions
-                        
-                            let newOpen = calcOpenRequirements(exploredPackage,globalFrameworkRestrictions,versionToExplore,currentRequirement,closedRequirements,openRequirements)
-                            let newPackages =
-                                exploredPackage::(selectedPackageVersions |> List.filter (fun p -> p.Name <> exploredPackage.Name || p.Version <> exploredPackage.Version))
+                let allUnlisted = ref true
+                let state = ref (Resolution.Conflict(closedRequirements,openRequirements,openRequirements))
+                let isOk() = 
+                    match !state with
+                    | Resolution.Ok _ -> true
+                    | _ -> false
+                let versionsToExplore = ref !compatibleVersions
 
-                            let improved = step (newFilteredVersions,newPackages,Set.add currentRequirement closedRequirements,newOpen)
-                            (exploredPackage.Unlisted && allUnlisted),improved
-                            
-                    | Resolution.Ok _ -> allUnlisted,state)
-                        (true,Resolution.Conflict(closedRequirements,openRequirements,openRequirements))
-            
+                while not (isOk()) && not (Seq.isEmpty !versionsToExplore) do
+                    let versionToExplore = Seq.head !versionsToExplore
+                    versionsToExplore := Seq.tail !versionsToExplore
+                    let exploredPackage = getExploredPackage(currentRequirement,versionToExplore)
+                    if exploredPackage.Unlisted && not useUnlisted then () else
+                    let newFilteredVersions = Map.add currentRequirement.Name ([versionToExplore],!globalOverride) filteredVersions
+                        
+                    let newOpen = calcOpenRequirements(exploredPackage,globalFrameworkRestrictions,versionToExplore,currentRequirement,closedRequirements,openRequirements)
+                    let newPackages =
+                        exploredPackage::(selectedPackageVersions |> List.filter (fun p -> p.Name <> exploredPackage.Name || p.Version <> exploredPackage.Version))
+
+                    state := step (newFilteredVersions,newPackages,Set.add currentRequirement closedRequirements,newOpen)
+                    allUnlisted := exploredPackage.Unlisted && !allUnlisted
+
+                !allUnlisted,!state
+
             match tryToImprove false with
             | true,Resolution.Conflict(_) -> tryToImprove true |> snd
             | _,x-> x

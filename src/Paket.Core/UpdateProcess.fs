@@ -22,14 +22,17 @@ let selectiveUpdate force getSha1 getSortedVersionsF getPackageDetailsF (lockFil
                 failwithf "Couldn't retrieve versions for %O." packageName
             allVersions.Add(packageName,versions)
             versions
-        | true,versions -> versions
+        | true,versions -> versions 
+        |> List.toSeq
+        
 
-    let getPreferredVersionsF preferredVersions sources resolverStrategy groupName packageName =
-        let versions = getSortedAndCachedVersionsF sources resolverStrategy groupName packageName
-                
-        match preferredVersions |> Map.tryFind (groupName,packageName) with
-        | Some v -> v :: versions
-        | None -> versions
+    let getPreferredVersionsF preferredVersions sources resolverStrategy groupName packageName = 
+        seq { 
+            match preferredVersions |> Map.tryFind (groupName, packageName) with
+            | Some v -> yield v
+            | None -> ()
+            yield! getSortedAndCachedVersionsF sources resolverStrategy groupName packageName
+        }
 
     let noPreferredVersions = Map.empty
 
