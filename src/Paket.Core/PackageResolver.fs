@@ -217,7 +217,6 @@ let Resolve(groupName:GroupName, sources, getVersionsF, getPackageDetailsF, glob
     let conflictHistory = Dictionary<PackageName,int>()
 
     let getExploredPackage(dependency:PackageRequirement,version) =
-        let (PackageName name) = dependency.Name
         let newRestrictions = filterRestrictions dependency.Settings.FrameworkRestrictions globalFrameworkRestrictions
         match exploredPackages.TryGetValue <| (dependency.Name,version) with
         | true,package -> 
@@ -228,7 +227,13 @@ let Resolve(groupName:GroupName, sources, getVersionsF, getPackageDetailsF, glob
                 package
             | _ -> package
         | false,_ ->
-            tracefn  " - %s %A" name version
+            match updateMode with
+            | Install -> tracefn  " - %O %A" dependency.Name version
+            | _ ->
+                match dependency.VersionRequirement.Range with
+                | Specific _ -> traceWarnfn " - %O is pinned to %O" dependency.Name version
+                | _ -> tracefn  " - %O %A" dependency.Name version
+
             let packageDetails : PackageDetails = getPackageDetailsF sources dependency.Name version
             let restrictedDependencies = DependencySetFilter.filterByRestrictions newRestrictions packageDetails.DirectDependencies
             let settings =
@@ -304,20 +309,14 @@ let Resolve(groupName:GroupName, sources, getVersionsF, getPackageDetailsF, glob
             | None ->
                 // we didn't select a version yet so all versions are possible
 
-                let isInRange map ver =
-                    currentRequirements
-                    |> Seq.map map
-                    |> Seq.map (fun r -> r.VersionRequirement.IsInRange(ver))
-                    |> Seq.fold (&&) ((map currentRequirement).VersionRequirement.IsInRange(ver))
+                let isInRange mapF ver =
+                    (mapF currentRequirement).VersionRequirement.IsInRange ver &&
+                    (currentRequirements |> Seq.forall (fun r -> (mapF r).VersionRequirement.IsInRange ver))
 
                 availableVersions := 
                     match currentRequirement.VersionRequirement.Range with
                     | OverrideAll v -> Seq.singleton v
-                    | Specific v ->
-                        match updateMode with
-                        | Install -> ()
-                        | _ -> traceWarnfn " %O is pinned to version %O." currentRequirement.Name v
-                        Seq.singleton v
+                    | Specific v -> Seq.singleton v
                     | _ -> getVersionsF sources resolverStrategy groupName currentRequirement.Name
                     |> Seq.cache
 
