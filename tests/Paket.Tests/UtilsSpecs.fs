@@ -225,3 +225,11 @@ let ``get http env proxy with bypass list``() =
     p.BypassList.[0] |> shouldEqual ".local"
     p.BypassList.[1] |> shouldEqual "localhost"
     p.Credentials |> shouldEqual null
+
+[<Test>]
+let ``should simplify path``() =
+    let p1 = "/Users/dna/Downloads/test/aa/src/bb/../cc/D3D.csproj"
+    let p2 = "/Users/dna/Downloads/test/aa/src/cc/D3D.csproj"
+    System.IO.Path.IsPathRooted p1 |> shouldEqual true
+    System.IO.Path.IsPathRooted p2 |> shouldEqual true
+    System.IO.Path.GetFullPath p1 |> shouldEqual (System.IO.Path.GetFullPath p2)
