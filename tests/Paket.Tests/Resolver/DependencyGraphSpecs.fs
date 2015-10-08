@@ -97,7 +97,7 @@ let ``should analyze report missing versions``() =
         resolve graphWithoutAnyDependencyVersion ["A",VersionRange.AtLeast "0"] |> ignore
         failwith "expected error"
     with exn ->
-        exn.Message |> shouldEqual "Couldn't retrieve versions for B."
+        exn.Message.Contains("package B") |> shouldEqual true
 
 let graphWithoutAnyTopLevelVersion = [
     "A","3.0",[]

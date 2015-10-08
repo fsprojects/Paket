@@ -95,10 +95,10 @@ let tryGetPackageVersionsViaJson (auth, nugetURL, package) =
             with _ -> return None
     }
 
-let tryNuGetV3 (auth, nugetURL, package) = 
+let tryNuGetV3 (auth, nugetV3Url, package) = 
     async { 
         try 
-            let! data = NuGetV3.findVersionsForPackage(auth, nugetURL, package, true, 100000)
+            let! data = NuGetV3.findVersionsForPackage(nugetV3Url, auth, package, true, 100000)
             match data with
             | Some data when Array.isEmpty data -> return None
             | None -> return None
@@ -610,17 +610,39 @@ let GetPackageDetails root force sources packageName (version:SemVerInfo) : Pack
       LicenseUrl = nugetObject.LicenseUrl
       DirectDependencies = nugetObject.Dependencies |> Set.ofList }
 
+let protocolCache = System.Collections.Concurrent.ConcurrentDictionary<_,_>()
+
+let getVersionsCached key f (auth, nugetURL, package) =
+    async {
+        match protocolCache.TryGetValue((auth, nugetURL)) with
+        | true, v when v <> key -> return None
+        | _ ->
+            let! result = f (auth, nugetURL, package)
+            match result with
+            | Some x ->
+                protocolCache.TryAdd((auth, nugetURL), key) |> ignore
+                return Some x
+            | None -> return None
+    }
+
 /// Allows to retrieve all version no. for a package from the given sources.
 let GetVersions root (sources, PackageName packageName) = 
     let v =
         sources
         |> Seq.map (function
                    | Nuget source -> 
-                       let auth = source.Authentication |> Option.map toBasicAuth
-                       [ tryNuGetV3 (auth, source.Url, packageName)
-                         tryGetPackageVersionsViaJson (auth, source.Url, packageName)
-                         tryGetPackageVersionsViaOData (auth, source.Url, packageName)
-                         tryGetAllVersionsFromNugetODataWithFilter (auth, source.Url, packageName) ]
+                        let auth = source.Authentication |> Option.map toBasicAuth
+                        let v3Feeds =
+                            match NuGetV3.getSearchAPI(auth,source.Url) with
+                            | None -> []
+                            | Some v3Url -> [ tryNuGetV3 (auth, v3Url, packageName) ]
+
+                        let v2Feeds =
+                            [ getVersionsCached "Json" tryGetPackageVersionsViaJson (auth, source.Url, packageName)
+                              getVersionsCached "OData" tryGetPackageVersionsViaOData (auth, source.Url, packageName)
+                              getVersionsCached "ODataWithFilter" tryGetAllVersionsFromNugetODataWithFilter (auth, source.Url, packageName) ]
+
+                        v2Feeds @ v3Feeds
                    | LocalNuget path -> [ getAllVersionsFromLocalPath (path, packageName, root) ])
         |> List.concat
         |> Async.Choice'

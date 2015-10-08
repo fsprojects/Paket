@@ -30,7 +30,7 @@ let graph = [
 [<Test>]
 let ``should resolve simple config1``() = 
     let cfg = DependenciesFile.FromCode(config1)
-    let resolved = ResolveWithGraph(cfg,noSha1,VersionsFromGraph graph, PackageDetailsFromGraph graph).[Constants.MainDependencyGroup].ResolvedPackages.GetModelOrFail()
+    let resolved = ResolveWithGraph(cfg,noSha1,VersionsFromGraphAsSeq graph, PackageDetailsFromGraph graph).[Constants.MainDependencyGroup].ResolvedPackages.GetModelOrFail()
     getVersion resolved.[PackageName "Rx-Main"] |> shouldEqual "2.0"
     getVersion resolved.[PackageName "Rx-Core"] |> shouldEqual "2.1"
     getVersion resolved.[PackageName "Castle.Windsor-log4net"] |> shouldEqual "3.3"
@@ -56,7 +56,7 @@ let graph2 = [
 [<Test>]
 let ``should resolve simple config2``() = 
     let cfg = DependenciesFile.FromCode(config2)
-    let resolved = ResolveWithGraph(cfg,noSha1,VersionsFromGraph graph2, PackageDetailsFromGraph graph2).[Constants.MainDependencyGroup].ResolvedPackages.GetModelOrFail()
+    let resolved = ResolveWithGraph(cfg,noSha1,VersionsFromGraphAsSeq graph2, PackageDetailsFromGraph graph2).[Constants.MainDependencyGroup].ResolvedPackages.GetModelOrFail()
     getVersion resolved.[PackageName "FsUnit"] |> shouldEqual "1.3.1"
     getVersion resolved.[PackageName "NUnit"] |> shouldEqual "2.6.3"
 
@@ -80,7 +80,7 @@ let graph3 = [
 [<Test>]
 let ``should resolve fixed config``() = 
     let cfg = DependenciesFile.FromCode(config3)
-    let resolved = ResolveWithGraph(cfg,noSha1,VersionsFromGraph graph3, PackageDetailsFromGraph graph3).[Constants.MainDependencyGroup].ResolvedPackages.GetModelOrFail()
+    let resolved = ResolveWithGraph(cfg,noSha1,VersionsFromGraphAsSeq graph3, PackageDetailsFromGraph graph3).[Constants.MainDependencyGroup].ResolvedPackages.GetModelOrFail()
     getVersion resolved.[PackageName "Castle.Core"] |> shouldEqual "3.2.0"
     getVersion resolved.[PackageName "Castle.Windsor-log4net"] |> shouldEqual "3.2.0.1"
     getVersion resolved.[PackageName "Castle.Core-log4net"] |> shouldEqual "3.2.0"
@@ -96,7 +96,7 @@ nuget "Castle.Windsor-log4net" "~> 3.2"
 [<Test>]
 let ``should resolve fixed config4``() = 
     let cfg = DependenciesFile.FromCode(config4)
-    let resolved = ResolveWithGraph(cfg,noSha1,VersionsFromGraph graph3, PackageDetailsFromGraph graph3).[Constants.MainDependencyGroup].ResolvedPackages.GetModelOrFail()
+    let resolved = ResolveWithGraph(cfg,noSha1,VersionsFromGraphAsSeq graph3, PackageDetailsFromGraph graph3).[Constants.MainDependencyGroup].ResolvedPackages.GetModelOrFail()
     getVersion resolved.[PackageName "Castle.Core"] |> shouldEqual "3.2.0"
     getVersion resolved.[PackageName "Castle.Windsor-log4net"] |> shouldEqual "3.2.0.1"
     getVersion resolved.[PackageName "Castle.Core-log4net"] |> shouldEqual "3.2.0"
@@ -116,5 +116,5 @@ let graph5 = [
 [<Test>]
 let ``should resolve prerelease config``() = 
     let cfg = DependenciesFile.FromCode(config5)
-    let resolved = ResolveWithGraph(cfg,noSha1,VersionsFromGraph graph5, PackageDetailsFromGraph graph5).[Constants.MainDependencyGroup].ResolvedPackages.GetModelOrFail()
+    let resolved = ResolveWithGraph(cfg,noSha1,VersionsFromGraphAsSeq graph5, PackageDetailsFromGraph graph5).[Constants.MainDependencyGroup].ResolvedPackages.GetModelOrFail()
     getVersion resolved.[PackageName "Microsoft.AspNet.Mvc"] |> shouldEqual "6.0.0-beta6"

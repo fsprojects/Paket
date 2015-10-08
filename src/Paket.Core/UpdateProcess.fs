@@ -9,49 +9,62 @@ open System.Collections.Generic
 open Chessie.ErrorHandling
 open Paket.Logging
 
-type UpdateMode =
-    | UpdatePackage of  GroupName * PackageName
-    | UpdateGroup of GroupName
-    | Install
-    | UpdateAll
+let selectiveUpdate force getSha1 getSortedVersionsF getPackageDetailsF (lockFile:LockFile) (dependenciesFile:DependenciesFile) updateMode =
+    let allVersions = Dictionary<PackageName,SemVerInfo list>()
+    let getSortedAndCachedVersionsF sources resolverStrategy groupName packageName =
+        match allVersions.TryGetValue(packageName) with
+        | false,_ ->
+            let versions = 
+                verbosefn "  - fetching versions for %O" packageName
+                getSortedVersionsF sources resolverStrategy groupName packageName
 
-let selectiveUpdate resolve (lockFile:LockFile) (dependenciesFile:DependenciesFile) updateMode =
-    let noAdditionalRequirements _ _ = []
-    let resolution =
+            if Seq.isEmpty versions then
+                failwithf "Couldn't retrieve versions for %O." packageName
+            allVersions.Add(packageName,versions)
+            versions
+        | true,versions -> versions 
+        |> List.toSeq
+        
+
+    let getPreferredVersionsF preferredVersions sources resolverStrategy groupName packageName = 
+        seq { 
+            match preferredVersions |> Map.tryFind (groupName, packageName) with
+            | Some v -> yield v
+            | None -> ()
+            yield! getSortedAndCachedVersionsF sources resolverStrategy groupName packageName
+        }
+
+    let noPreferredVersions = Map.empty
+
+    let getVersionsF,groupsToUpdate =
         match updateMode with
-        | UpdateAll -> 
-            let groups =
-                dependenciesFile.Groups
-                |> Map.map noAdditionalRequirements
-            resolve dependenciesFile groups
+        | UpdateAll -> getSortedAndCachedVersionsF,dependenciesFile.Groups
         | UpdateGroup groupName ->
             let groups =
                 dependenciesFile.Groups
                 |> Map.filter (fun k _ -> k = groupName)
-                |> Map.map noAdditionalRequirements
-            resolve dependenciesFile groups
+
+            getSortedAndCachedVersionsF,groups
         | Install ->
-            let dependenciesFile =
-                DependencyChangeDetection.findChangesInDependenciesFile(dependenciesFile,lockFile)
-                |> DependencyChangeDetection.PinUnchangedDependencies dependenciesFile lockFile
+            let changes = DependencyChangeDetection.findChangesInDependenciesFile(dependenciesFile,lockFile)
 
-            let groups =
-                dependenciesFile.Groups
-                |> Map.map noAdditionalRequirements
+            let preferredVersions = DependencyChangeDetection.GetUnchangedDependenciesPins lockFile changes
 
-            resolve dependenciesFile groups
+            (getPreferredVersionsF preferredVersions),dependenciesFile.Groups
         | UpdatePackage(groupName,packageName) ->
-            let dependenciesFile =
+            let changes =
                 lockFile.GetAllNormalizedDependenciesOf(groupName,packageName)
                 |> Set.ofSeq
-                |> DependencyChangeDetection.PinUnchangedDependencies dependenciesFile lockFile
+
+            let preferredVersions = DependencyChangeDetection.GetUnchangedDependenciesPins lockFile changes
 
             let groups =
                 dependenciesFile.Groups
                 |> Map.filter (fun key _ -> key = groupName)
-                |> Map.map (fun groupName _ -> lockFile.GetGroup(groupName).Resolution |> createPackageRequirements [packageName])
 
-            resolve dependenciesFile groups
+            (getPreferredVersionsF preferredVersions),groups
+
+    let resolution = dependenciesFile.Resolve(force, getSha1, getVersionsF, getPackageDetailsF, groupsToUpdate, updateMode)
 
     let groups = 
         dependenciesFile.Groups
@@ -76,8 +89,21 @@ let SelectiveUpdate(dependenciesFile : DependenciesFile, updateMode, force) =
 
     let getSha1 origin owner repo branch auth = RemoteDownload.getSHA1OfBranch origin owner repo branch auth |> Async.RunSynchronously
     let root = Path.GetDirectoryName dependenciesFile.FileName
+    let inline getVersionsF sources resolverStrategy groupName packageName = 
+        let versions = NuGetV2.GetVersions root (sources, packageName)
+        match resolverStrategy with
+        | ResolverStrategy.Max -> List.sortDescending versions
+        | ResolverStrategy.Min -> List.sort versions
 
-    let lockFile = selectiveUpdate (fun d g -> d.Resolve(force, getSha1, NuGetV2.GetVersions root, NuGetV2.GetPackageDetails root force, g)) oldLockFile dependenciesFile updateMode
+    let lockFile = 
+        selectiveUpdate
+            force 
+            getSha1
+            getVersionsF
+            (NuGetV2.GetPackageDetails root force)
+            oldLockFile 
+            dependenciesFile 
+            updateMode
     lockFile.Save()
     lockFile
 

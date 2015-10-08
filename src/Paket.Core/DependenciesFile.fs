@@ -413,8 +413,8 @@ type DependenciesFile(fileName,groups:Map<GroupName,DependenciesGroup>, textRepr
     member __.FileName = fileName
     member __.Lines = textRepresentation
 
-    member this.Resolve(force, getSha1, getVersionF, getPackageDetailsF, groupsToResolve:Map<GroupName,PackageRequirement list>) =
-        let resolveGroup groupName (additionalRequirements:PackageRequirement list) =
+    member this.Resolve(force, getSha1, getVersionF, getPackageDetailsF, groupsToResolve:Map<GroupName,_>, updateMode) =
+        let resolveGroup groupName _ =
             let group = this.GetGroup groupName
 
             let resolveSourceFile (file:ResolvedSourceFile) : PackageRequirement list =
@@ -443,11 +443,12 @@ type DependenciesFile(fileName,groups:Map<GroupName,DependenciesGroup>, textRepr
                     getVersionF, 
                     getPackageDetailsF, 
                     group.Options.Settings.FrameworkRestrictions,
-                    remoteDependencies @ group.Packages @ additionalRequirements |> Set.ofList)
+                    remoteDependencies @ group.Packages |> Set.ofList,
+                    updateMode)
               ResolvedSourceFiles = remoteFiles }
 
         groupsToResolve
-        |> Map.map resolveGroup
+        |> Map.map resolveGroup 
 
     member __.AddAdditionalPackage(groupName, packageName:PackageName,versionRequirement,resolverStrategy,settings,?pinDown) =
         let pinDown = defaultArg pinDown false

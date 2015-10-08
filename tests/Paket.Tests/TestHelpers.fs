@@ -23,11 +23,20 @@ let PackageDetailsFromGraph (graph : seq<string * string * (string * VersionRequ
       Unlisted = false
       DirectDependencies = Set.ofList dependencies }
 
-let VersionsFromGraph (graph : seq<string * string * (string * VersionRequirement) list>) (sources, package : PackageName) = 
-    graph
-    |> Seq.filter (fun (p, _, _) -> (PackageName p) = package)
-    |> Seq.map (fun (_, v, _) -> SemVer.Parse v)
-    |> Seq.toList
+let VersionsFromGraph (graph : seq<string * string * (string * VersionRequirement) list>) sources resolverStrategy groupName packageName = 
+    let versions =
+        graph
+        |> Seq.filter (fun (p, _, _) -> (PackageName p) = packageName)
+        |> Seq.map (fun (_, v, _) -> SemVer.Parse v)
+        |> Seq.toList
+
+    match resolverStrategy with
+    | ResolverStrategy.Max -> List.sortDescending versions
+    | ResolverStrategy.Min -> List.sort versions
+
+let VersionsFromGraphAsSeq (graph : seq<string * string * (string * VersionRequirement) list>) sources resolverStrategy groupName packageName = 
+   VersionsFromGraph graph sources resolverStrategy groupName packageName
+   |> Seq.ofList
 
 let safeResolve graph (dependencies : (string * VersionRange) list)  = 
     let packages = 
@@ -40,14 +49,13 @@ let safeResolve graph (dependencies : (string * VersionRange) list)  =
                  ResolverStrategy = ResolverStrategy.Max })
         |> Set.ofList
 
-    PackageResolver.Resolve(Constants.MainDependencyGroup,[ PackageSource.NugetSource "" ],VersionsFromGraph graph, PackageDetailsFromGraph graph, [], packages)
+    PackageResolver.Resolve(Constants.MainDependencyGroup,[ PackageSource.NugetSource "" ], VersionsFromGraphAsSeq graph, PackageDetailsFromGraph graph, [], packages, UpdateMode.UpdateAll)
 
 let resolve graph dependencies = (safeResolve graph dependencies).GetModelOrFail()
 
-let ResolveWithGraph(dependenciesFile:DependenciesFile,getSha1,getVersionF, getPackageDetailsF) =
-    let groups = [Constants.MainDependencyGroup, dependenciesFile.Groups.[Constants.MainDependencyGroup].Packages ] |> Map.ofSeq
-
-    dependenciesFile.Resolve(true,getSha1,getVersionF,getPackageDetailsF,groups)
+let ResolveWithGraph(dependenciesFile:DependenciesFile,getSha1,getVersionsF, getPackageDetailsF) =
+    let groups = [Constants.MainDependencyGroup, None ] |> Map.ofSeq
+    dependenciesFile.Resolve(true,getSha1,getVersionsF,getPackageDetailsF,groups,UpdateMode.UpdateAll)
 
 let getVersion (resolved:ResolvedPackage) = resolved.Version.ToString()
 
