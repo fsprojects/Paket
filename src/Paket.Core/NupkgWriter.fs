@@ -75,7 +75,7 @@ let nuspecDoc (info:CompleteInfo) =
         element
 
     let buildFrameworkReferencesNode frameworkAssembliesList =
-        if frameworkAssembliesList = [] then () else
+        if List.isEmpty frameworkAssembliesList then () else
         let d = XElement(ns + "frameworkAssemblies")
         frameworkAssembliesList |> List.iter (buildFrameworkReferencesNode >> d.Add)
         metadataNode.Add d
@@ -87,7 +87,7 @@ let nuspecDoc (info:CompleteInfo) =
         dep
 
     let buildDependenciesNode dependencyList =
-        if dependencyList = [] then () else
+        if  List.isEmpty dependencyList then () else
         let d = XElement(ns + "dependencies")
         dependencyList |> List.iter (buildDependencyNode >> d.Add)
         metadataNode.Add d
@@ -98,7 +98,7 @@ let nuspecDoc (info:CompleteInfo) =
         dep
 
     let buildReferencesNode referenceList =
-        if referenceList = [] then () else
+        if List.isEmpty referenceList then () else
         let d = XElement(ns + "references")
         referenceList |> List.iter (buildReferenceNode >> d.Add)
         metadataNode.Add d
@@ -217,8 +217,7 @@ let Write (core : CompleteCoreInfo) optional workingDir outputDir =
 
     let exclusions =
         optional.FilesExcluded
-        |> List.map (fun e -> Path.Combine(workingDir,e) |> fixRelativePath)
-        |> List.map Fake.Globbing.isMatch
+        |> List.map (fun e -> Path.Combine(workingDir,e) |> fixRelativePath |> Fake.Globbing.isMatch)
 
     let isExcluded p =
         let path = DirectoryInfo(p).FullName
