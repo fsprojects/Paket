@@ -60,22 +60,19 @@ let getSearchAPI(auth,nugetUrl) =
 let extractVersions(response:string) =
     JsonConvert.DeserializeObject<JSONVersionData>(response).Data
 
-let internal findVersionsForPackage(auth, nugetURL, package, includingPrereleases, maxResults) =
+let internal findVersionsForPackage(v3Url, auth, package, includingPrereleases, maxResults) =
     async {
-        match getSearchAPI(auth,nugetURL) with        
-        | Some url ->
-            let! response = safeGetFromUrl(auth,sprintf "%s?id=%s&take=%d%s" url package (max maxResults 100000) (if includingPrereleases then "&prerelease=true" else ""), acceptXml) // Nuget is showing old versions first
-            match response with
-            | Some text ->
-                let versions =
-                    let extracted = extractVersions text
-                    if extracted.Length > maxResults then
-                        extracted |> Seq.take maxResults |> Seq.toArray
-                    else
-                        extracted
+        let! response = safeGetFromUrl(auth,sprintf "%s?id=%s&take=%d%s" v3Url package (max maxResults 100000) (if includingPrereleases then "&prerelease=true" else ""), acceptXml) // Nuget is showing old versions first
+        match response with
+        | Some text ->
+            let versions =
+                let extracted = extractVersions text
+                if extracted.Length > maxResults then
+                    extracted |> Seq.take maxResults |> Seq.toArray
+                else
+                    extracted
 
-                return Some(SemVer.SortVersions versions)
-            | None -> return None
+            return Some(SemVer.SortVersions versions)
         | None -> return None
     }
 
