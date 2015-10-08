@@ -610,6 +610,21 @@ let GetPackageDetails root force sources packageName (version:SemVerInfo) : Pack
       LicenseUrl = nugetObject.LicenseUrl
       DirectDependencies = nugetObject.Dependencies |> Set.ofList }
 
+let protocolCache = System.Collections.Concurrent.ConcurrentDictionary<_,_>()
+
+let getVersionsCached key f (auth, nugetURL, package) =
+    async {
+        match protocolCache.TryGetValue((auth, nugetURL)) with
+        | true, v when v <> key -> return None
+        | _ ->
+            let! result = f (auth, nugetURL, package)
+            match result with
+            | Some x ->
+                protocolCache.TryAdd((auth, nugetURL), key) |> ignore
+                return Some x
+            | None -> return None
+    }
+
 /// Allows to retrieve all version no. for a package from the given sources.
 let GetVersions root (sources, PackageName packageName) = 
     let v =
@@ -617,10 +632,10 @@ let GetVersions root (sources, PackageName packageName) =
         |> Seq.map (function
                    | Nuget source -> 
                        let auth = source.Authentication |> Option.map toBasicAuth
-                       [ tryNuGetV3 (auth, source.Url, packageName)
-                         tryGetPackageVersionsViaJson (auth, source.Url, packageName)
-                         tryGetPackageVersionsViaOData (auth, source.Url, packageName)
-                         tryGetAllVersionsFromNugetODataWithFilter (auth, source.Url, packageName) ]
+                       [ getVersionsCached "V3" tryNuGetV3 (auth, source.Url, packageName)
+                         getVersionsCached "Json" tryGetPackageVersionsViaJson (auth, source.Url, packageName)
+                         getVersionsCached "OData" tryGetPackageVersionsViaOData (auth, source.Url, packageName)
+                         getVersionsCached "ODataWithFilter" tryGetAllVersionsFromNugetODataWithFilter (auth, source.Url, packageName) ]
                    | LocalNuget path -> [ getAllVersionsFromLocalPath (path, packageName, root) ])
         |> List.concat
         |> Async.Choice'
