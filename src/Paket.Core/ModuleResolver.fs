@@ -15,7 +15,7 @@ type SingleSourceFileOrigin =
 type UnresolvedSourceFile =
     { Owner : string
       Project : string
-      Name : string      
+      Name : string
       Origin : SingleSourceFileOrigin
       Commit : string option
       AuthKey : string option }

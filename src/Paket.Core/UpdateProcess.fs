@@ -46,9 +46,9 @@ let selectiveUpdate force getSha1 getSortedVersionsF getPackageDetailsF (lockFil
 
             getSortedAndCachedVersionsF,groups
         | Install ->
-            let changes = DependencyChangeDetection.findChangesInDependenciesFile(dependenciesFile,lockFile)
+            let changes = DependencyChangeDetection.findNuGetChangesInDependenciesFile(dependenciesFile,lockFile)
 
-            let preferredVersions = DependencyChangeDetection.GetUnchangedDependenciesPins lockFile changes
+            let preferredVersions = DependencyChangeDetection.GetPreferredNuGetVersions lockFile changes
 
             (getPreferredVersionsF preferredVersions),dependenciesFile.Groups
         | UpdatePackage(groupName,packageName) ->
@@ -56,7 +56,7 @@ let selectiveUpdate force getSha1 getSortedVersionsF getPackageDetailsF (lockFil
                 lockFile.GetAllNormalizedDependenciesOf(groupName,packageName)
                 |> Set.ofSeq
 
-            let preferredVersions = DependencyChangeDetection.GetUnchangedDependenciesPins lockFile changes
+            let preferredVersions = DependencyChangeDetection.GetPreferredNuGetVersions lockFile changes
 
             let groups =
                 dependenciesFile.Groups

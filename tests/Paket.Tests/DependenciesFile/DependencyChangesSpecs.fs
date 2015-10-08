@@ -35,9 +35,9 @@ nuget Castle.Windsor-log4net"""
     let cfg = DependenciesFile.FromCode(after)
     let lockFile = LockFile.Parse("",toLines lockFileData)
    
-    let changedDependencies = DependencyChangeDetection.findChangesInDependenciesFile(cfg,lockFile)
-    let newDependencies = DependencyChangeDetection.PinUnchangedDependencies cfg lockFile changedDependencies
-    newDependencies.GetDependenciesInGroup(Constants.MainDependencyGroup)
+    let changedDependencies = DependencyChangeDetection.findNuGetChangesInDependenciesFile(cfg,lockFile)
+    let newDependencies = DependencyChangeDetection.GetPreferredNuGetVersions lockFile changedDependencies
+    newDependencies
     |> shouldEqual Map.empty
 
 [<Test>]
@@ -71,21 +71,20 @@ nuget NUnit"""
 
     let cfg = DependenciesFile.FromCode(after)
     let lockFile = LockFile.Parse("",toLines lockFileData)
-    let changedDependencies = DependencyChangeDetection.findChangesInDependenciesFile(cfg,lockFile)
+    let changedDependencies = DependencyChangeDetection.findNuGetChangesInDependenciesFile(cfg,lockFile)
    
-    let newDependencies = DependencyChangeDetection.PinUnchangedDependencies cfg lockFile changedDependencies
+    let newDependencies = DependencyChangeDetection.GetPreferredNuGetVersions lockFile changedDependencies
     let expected =
         Map.ofList
-            ([(PackageName "Castle.Core", VersionRequirement (Specific(SemVer.Parse "3.3.3"),No));
-              (PackageName "Castle.Core-log4net", VersionRequirement (Specific(SemVer.Parse "3.3.3"),No));
-              (PackageName "Castle.LoggingFacility", VersionRequirement (Specific(SemVer.Parse "3.3.0"),No));
-              (PackageName "Castle.Windsor", VersionRequirement (Specific(SemVer.Parse "3.3.0"),No));
-              (PackageName "Castle.Windsor-log4net", VersionRequirement (Specific(SemVer.Parse "3.3.0"),No));
-              (PackageName "NUnit", VersionRequirement (Minimum(SemVer.Parse "0"),No));
-              (PackageName "log4net", VersionRequirement (Specific(SemVer.Parse "1.2.10"),No))])
+             [(Constants.MainDependencyGroup,PackageName "Castle.Core"), (SemVer.Parse "3.3.3");
+              (Constants.MainDependencyGroup,PackageName "Castle.Core-log4net"), (SemVer.Parse "3.3.3");
+              (Constants.MainDependencyGroup,PackageName "Castle.LoggingFacility"), (SemVer.Parse "3.3.0");
+              (Constants.MainDependencyGroup,PackageName "Castle.Windsor"), (SemVer.Parse "3.3.0");
+              (Constants.MainDependencyGroup,PackageName "Castle.Windsor-log4net"), (SemVer.Parse "3.3.0");
+              (Constants.MainDependencyGroup,PackageName "log4net"), (SemVer.Parse "1.2.10")]
 
     
-    newDependencies.GetDependenciesInGroup(Constants.MainDependencyGroup)
+    newDependencies
     |> shouldEqual expected
 
 [<Test>]
@@ -118,20 +117,19 @@ nuget Castle.Windsor-log4net >= 3.3.0"""
 
     let cfg = DependenciesFile.FromCode(after)
     let lockFile = LockFile.Parse("",toLines lockFileData)
-    let changedDependencies = DependencyChangeDetection.findChangesInDependenciesFile(cfg,lockFile)
+    let changedDependencies = DependencyChangeDetection.findNuGetChangesInDependenciesFile(cfg,lockFile)
    
-    let newDependencies = DependencyChangeDetection.PinUnchangedDependencies cfg lockFile changedDependencies
+    let newDependencies = DependencyChangeDetection.GetPreferredNuGetVersions lockFile changedDependencies
     let expected =
         Map.ofList
-            ([(PackageName "Castle.Core", VersionRequirement (Specific(SemVer.Parse "3.3.3"),No));
-              (PackageName "Castle.Core-log4net", VersionRequirement (Specific(SemVer.Parse "3.3.3"),No));
-              (PackageName "Castle.LoggingFacility", VersionRequirement (Specific(SemVer.Parse "3.3.0"),No));
-              (PackageName "Castle.Windsor", VersionRequirement (Specific(SemVer.Parse "3.3.0"),No));
-              (PackageName "Castle.Windsor-log4net", VersionRequirement (Specific(SemVer.Parse "3.3.0"),No));
-              (PackageName "log4net", VersionRequirement (Specific(SemVer.Parse "1.2.10"),No))])
-
+            ([(Constants.MainDependencyGroup,PackageName "Castle.Core"), (SemVer.Parse "3.3.3");
+              (Constants.MainDependencyGroup,PackageName "Castle.Core-log4net"), (SemVer.Parse "3.3.3");
+              (Constants.MainDependencyGroup,PackageName "Castle.LoggingFacility"), (SemVer.Parse "3.3.0");
+              (Constants.MainDependencyGroup,PackageName "Castle.Windsor"), (SemVer.Parse "3.3.0");
+              (Constants.MainDependencyGroup,PackageName "Castle.Windsor-log4net"), (SemVer.Parse "3.3.0");
+              (Constants.MainDependencyGroup,PackageName "log4net"),  (SemVer.Parse "1.2.10")])
     
-    newDependencies.GetDependenciesInGroup(Constants.MainDependencyGroup)
+    newDependencies
     |> shouldEqual expected
 
 [<Test>]
@@ -164,16 +162,11 @@ nuget Castle.Windsor-log4net >= 3.4.0"""
 
     let cfg = DependenciesFile.FromCode(after)
     let lockFile = LockFile.Parse("",toLines lockFileData)
-    let changedDependencies = DependencyChangeDetection.findChangesInDependenciesFile(cfg,lockFile)
+    let changedDependencies = DependencyChangeDetection.findNuGetChangesInDependenciesFile(cfg,lockFile)
    
-    let newDependencies = DependencyChangeDetection.PinUnchangedDependencies cfg lockFile changedDependencies
-    let expected =
-        Map.ofList
-            ([(PackageName "Castle.Windsor-log4net", VersionRequirement (Minimum(SemVer.Parse "3.4.0"),No));])
-
-    
-    newDependencies.GetDependenciesInGroup(Constants.MainDependencyGroup)
-    |> shouldEqual expected
+    let newDependencies = DependencyChangeDetection.GetPreferredNuGetVersions lockFile changedDependencies
+    newDependencies
+    |> shouldEqual Map.empty
 
 [<Test>]
 let ``should detect addition content:none of single nuget package``() = 
@@ -205,7 +198,7 @@ nuget Castle.Windsor-log4net content:none"""
 
     let cfg = DependenciesFile.FromCode(after)
     let lockFile = LockFile.Parse("",toLines lockFileData)
-    let changedDependencies = DependencyChangeDetection.findChangesInDependenciesFile(cfg,lockFile)
+    let changedDependencies = DependencyChangeDetection.findNuGetChangesInDependenciesFile(cfg,lockFile)
     changedDependencies.IsEmpty |> shouldEqual false
 
 [<Test>]
@@ -270,6 +263,102 @@ nuget Caliburn.Micro !~> 2.0.2"""
 
     let cfg = DependenciesFile.FromCode(after)
     let lockFile = LockFile.Parse("",toLines lockFileData)
-    let changedDependencies = DependencyChangeDetection.findChangesInDependenciesFile(cfg,lockFile)
+    let changedDependencies = DependencyChangeDetection.findNuGetChangesInDependenciesFile(cfg,lockFile)
     changedDependencies.Count |> shouldEqual 1
     (changedDependencies |> Seq.head) |> shouldEqual (Constants.MainDependencyGroup, PackageName "Caliburn.Micro")
+
+[<Test>]
+let ``should detect if nothing changes in github dependency``() = 
+    let before = """source https://www.nuget.org/api/v2
+
+nuget FAKE
+
+github zurb/bower-foundation css/normalize.css
+github zurb/bower-foundation js/foundation.min.js"""
+
+    let lockFileData = """NUGET
+  remote: https://nuget.org/api/v2
+  specs:
+    FAKE (4.4.4)
+GITHUB
+  remote: zurb/bower-foundation
+  specs:
+    css/normalize.css (eb5e3ed178ef3b678cb520f1366a737a32aafeca)
+    js/foundation.min.js (eb5e3ed178ef3b678cb520f1366a737a32aafeca)
+"""
+
+    let after = """source https://www.nuget.org/api/v2
+
+nuget FAKE
+
+github zurb/bower-foundation css/normalize.css
+github zurb/bower-foundation js/foundation.min.js"""
+
+    let cfg = DependenciesFile.FromCode(after)
+    let lockFile = LockFile.Parse("",toLines lockFileData)
+    let changedDependencies = DependencyChangeDetection.findRemoteFileChangesInDependenciesFile(cfg,lockFile)
+    changedDependencies.Count |> shouldEqual 0
+
+[<Test>]
+let ``should detect new github dependency``() = 
+    let before = """source https://www.nuget.org/api/v2
+
+nuget FAKE
+
+github zurb/bower-foundation css/normalize.css
+github zurb/bower-foundation js/foundation.min.js"""
+
+    let lockFileData = """NUGET
+  remote: https://nuget.org/api/v2
+  specs:
+    FAKE (4.4.4)
+GITHUB
+  remote: zurb/bower-foundation
+  specs:
+    css/normalize.css (eb5e3ed178ef3b678cb520f1366a737a32aafeca)
+    js/foundation.min.js (eb5e3ed178ef3b678cb520f1366a737a32aafeca)
+"""
+
+    let after = """source https://www.nuget.org/api/v2
+
+nuget FAKE
+
+github zurb/bower-foundation css/normalize.css
+github zurb/bower-foundation js/foundation.min.js
+github SignalR/bower-signalr jquery.signalR.js"""
+
+    let cfg = DependenciesFile.FromCode(after)
+    let lockFile = LockFile.Parse("",toLines lockFileData)
+    let changedDependencies = DependencyChangeDetection.findRemoteFileChangesInDependenciesFile(cfg,lockFile)
+    changedDependencies.Count |> shouldEqual 1
+
+[<Test>]
+let ``should detect removed github dependency``() = 
+    let before = """source https://www.nuget.org/api/v2
+
+nuget FAKE
+
+github zurb/bower-foundation css/normalize.css
+github zurb/bower-foundation js/foundation.min.js"""
+
+    let lockFileData = """NUGET
+  remote: https://nuget.org/api/v2
+  specs:
+    FAKE (4.4.4)
+GITHUB
+  remote: zurb/bower-foundation
+  specs:
+    css/normalize.css (eb5e3ed178ef3b678cb520f1366a737a32aafeca)
+    js/foundation.min.js (eb5e3ed178ef3b678cb520f1366a737a32aafeca)
+"""
+
+    let after = """source https://www.nuget.org/api/v2
+
+nuget FAKE
+
+github zurb/bower-foundation js/foundation.min.js"""
+
+    let cfg = DependenciesFile.FromCode(after)
+    let lockFile = LockFile.Parse("",toLines lockFileData)
+    let changedDependencies = DependencyChangeDetection.findRemoteFileChangesInDependenciesFile(cfg,lockFile)
+    changedDependencies.Count |> shouldEqual 1
