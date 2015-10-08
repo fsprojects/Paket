@@ -237,4 +237,4 @@ let ``should simplify path``() =
     System.IO.Path.IsPathRooted p2 |> shouldEqual true
     System.IO.Path.IsPathRooted p3 |> shouldEqual false
     System.IO.Path.GetFullPath p1 |> shouldEqual (System.IO.Path.GetFullPath p2)
-    System.IO.Path.Combine(p0,p3) |> Path.GetFullPath |> shouldEqual (System.IO.Path.GetFullPath p2)
+    System.IO.Path.Combine(normalizePath p0,normalizePath p3) |> Path.GetFullPath |> shouldEqual (System.IO.Path.GetFullPath p2)
