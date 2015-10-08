@@ -151,11 +151,6 @@ let findDependencies (dependencies : DependenciesFile) config (template : Templa
             match Map.tryFind p.Path map with
             | Some packagedRef -> packagedRef :: deps, files
             | None -> 
-                tracefn "%s" p.Path
-                for m in map  do
-                    tracefn "%s" m.Key
-                    tracefn "  - %A" m.Value
-
                 let p = 
                     match ProjectFile.Load(Path.Combine(projectDir, p.RelativePath)) with
                     | Some p -> p
