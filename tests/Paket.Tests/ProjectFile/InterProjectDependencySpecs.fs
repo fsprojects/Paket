@@ -32,6 +32,15 @@ let ``should detect path for dependencies in Project2 proj file``() =
     paths.[1].EndsWith(normalizePath "Paket.Core/Paket.Core.fsproj") |> shouldEqual true
 
 [<Test>]
+let ``should detect relative path for dependencies in Project2 proj file``() =
+    let paths =
+        ProjectFile.Load("./ProjectFile/TestData/Project2.fsprojtest").Value.GetInterProjectDependencies()
+        |> List.map (fun p -> p.RelativePath)
+
+    paths.[0] |> shouldEqual "..\\..\\src\\Paket\\Paket.fsproj"
+    paths.[1] |> shouldEqual "..\\Paket.Core\\Paket.Core.fsproj"
+
+[<Test>]
 let ``should detect Guids for dependencies in Project2 proj file``() =
     let p = ProjectFile.Load("./ProjectFile/TestData/Project2.fsprojtest").Value
     p.GetProjectGuid() |> shouldEqual (Guid.Parse "e789c72a-5cfd-436b-8ef1-61aa2852a89f")

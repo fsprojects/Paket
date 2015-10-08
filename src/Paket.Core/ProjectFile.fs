@@ -18,6 +18,7 @@ type FileItem =
 /// Project references inside of project files.
 type ProjectReference = 
     { Path : string
+      RelativePath : string
       Name : string
       GUID : Guid }
 
@@ -578,6 +579,7 @@ type ProjectFile =
                 if Path.IsPathRooted p then Path.GetFullPath p else 
                 let di = FileInfo(this.FileName).Directory
                 Path.Combine(di.FullName,p) |> Path.GetFullPath
+              RelativePath = node.Attributes.["Include"].Value
               Name = forceGetInnerText node "Name"
               GUID =  forceGetInnerText node "Project" |> Guid.Parse }]
 
