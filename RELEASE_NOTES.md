@@ -1,7 +1,7 @@
-#### 2.10.0-alpha005 - 08.10.2015
+#### 2.10.0-alpha006 - 08.10.2015
 * Make resolver to evaluate versions lazily
 
-#### 2.9.3 - 08.10.2015
+#### 2.9.4 - 08.10.2015
 * BUGFIX: Paket.Pack was broken on filesystems with forward slash seperator - https://github.com/fsprojects/Paket/issues/1119
 
 #### 2.9.1 - 07.10.2015
