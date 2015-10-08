@@ -109,21 +109,21 @@ let findRemoteFileChangesInDependenciesFile(dependenciesFile:DependenciesFile,lo
         |> Seq.map (fun kv -> kv.Key)
         |> Seq.append (lockFile.Groups |> Seq.map (fun kv -> kv.Key))
 
-    let createUnresolvedVersion (resolvedFile:ModuleResolver.UnresolvedSourceFile) : RemoteFileChange =
-          { Owner = resolvedFile.Owner
-            Project = resolvedFile.Project
-            Name = resolvedFile.Name
-            Origin = resolvedFile.Origin
-            Commit = resolvedFile.Commit
-            AuthKey = resolvedFile.AuthKey }
+    let createUnresolvedVersion (unresolved:ModuleResolver.UnresolvedSourceFile) : RemoteFileChange =
+          { Owner = unresolved.Owner
+            Project = unresolved.Project
+            Name = unresolved.Name
+            Origin = unresolved.Origin
+            Commit = unresolved.Commit
+            AuthKey = unresolved.AuthKey }
 
-    let createResolvedVersion (resolvedFile:ModuleResolver.ResolvedSourceFile) : RemoteFileChange =
-          { Owner = resolvedFile.Owner
-            Project = resolvedFile.Project
-            Name = resolvedFile.Name
-            Origin = resolvedFile.Origin
-            Commit = Some resolvedFile.Commit
-            AuthKey = resolvedFile.AuthKey }
+    let createResolvedVersion (resolved:ModuleResolver.ResolvedSourceFile) : RemoteFileChange =
+          { Owner = resolved.Owner
+            Project = resolved.Project
+            Name = resolved.Name
+            Origin = resolved.Origin
+            Commit = Some resolved.Commit
+            AuthKey = resolved.AuthKey }
 
     groupNames
     |> Seq.map (fun groupName ->
