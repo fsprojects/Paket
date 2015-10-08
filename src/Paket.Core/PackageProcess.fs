@@ -90,7 +90,7 @@ let Pack(workingDir,dependencies : DependenciesFile, packageOutputPath, buildCon
                 allTemplateFiles.Remove(templateFile.FileName) |> ignore
 
                 let merged = merge buildConfig version projectFile templateFile
-                Path.GetFullPath projectFile.FileName,(merged,projectFile))
+                Path.GetFullPath projectFile.FileName |> normalizePath,(merged,projectFile))
             |> Map.ofArray
 
     // add dependencies
