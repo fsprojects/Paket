@@ -1,4 +1,4 @@
-#### 2.10.0-alpha001 - 07.10.2015
+#### 2.10.0-alpha002 - 08.10.2015
 * Make resolver to evaluate versions lazily 
 * BUGFIX: Wrong paket ProjectRefences name causes incorrect packaging - https://github.com/fsprojects/Paket/issues/1113
 
