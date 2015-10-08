@@ -228,8 +228,13 @@ let ``get http env proxy with bypass list``() =
 
 [<Test>]
 let ``should simplify path``() =
+    let p0 = "/Users/dna/Downloads/test/aa/src/bb"
     let p1 = "/Users/dna/Downloads/test/aa/src/bb/../cc/D3D.csproj"
     let p2 = "/Users/dna/Downloads/test/aa/src/cc/D3D.csproj"
+    let p3 = @"..\cc\D3D.csproj"
+    System.IO.Path.IsPathRooted p0 |> shouldEqual true
     System.IO.Path.IsPathRooted p1 |> shouldEqual true
     System.IO.Path.IsPathRooted p2 |> shouldEqual true
+    System.IO.Path.IsPathRooted p3 |> shouldEqual false
     System.IO.Path.GetFullPath p1 |> shouldEqual (System.IO.Path.GetFullPath p2)
+    System.IO.Path.Combine(p0,p3) |> Path.GetFullPath |> shouldEqual (System.IO.Path.GetFullPath p2)

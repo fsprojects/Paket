@@ -36,12 +36,16 @@
     <StartWorkingDirectory>D:\code\Paketkopie</StartWorkingDirectory>
     <StartArguments>update group Build</StartArguments>
     <StartArguments>pack output D:\code\paketbug\output</StartArguments>
+    <StartArguments>install</StartArguments>
+    <StartArguments>pack output bin  version  1.2.7-prerelease releaseNotes  "Prerelease with same content as 1.2.6. Needed for dependency management"</StartArguments>
     <StartAction>Project</StartAction>
     <StartProgram>paket.exe</StartProgram>
     <StartWorkingDirectory>c:\code\Paketkopie</StartWorkingDirectory>
     <StartWorkingDirectory>C:\Temp\paket_test\</StartWorkingDirectory>
     <StartWorkingDirectory>d:\code\paketkopie</StartWorkingDirectory>
     <StartWorkingDirectory>d:\code\paketbug</StartWorkingDirectory>
+    <StartWorkingDirectory>d:\code\paketrepro</StartWorkingDirectory>
+    <StartWorkingDirectory>d:\code\wdk-unity-ThreadSafe</StartWorkingDirectory>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
