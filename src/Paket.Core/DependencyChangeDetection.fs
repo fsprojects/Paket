@@ -158,7 +158,8 @@ let findRemoteFileChangesInDependenciesFile(dependenciesFile:DependenciesFile,lo
                 // all removed
                 lockFile.GetGroup(groupName).RemoteFiles
                 |> List.map createResolvedVersion
-                |> Set.ofList)
+                |> Set.ofList
+            |> Set.map (fun x -> groupName,x))
     |> Seq.concat
     |> Set.ofSeq
 
