@@ -1,4 +1,4 @@
-#### 2.10.0-alpha004 - 08.10.2015
+#### 2.10.0-alpha005 - 08.10.2015
 * Make resolver to evaluate versions lazily
 
 #### 2.9.3 - 08.10.2015
