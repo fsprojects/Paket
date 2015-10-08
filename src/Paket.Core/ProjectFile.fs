@@ -575,10 +575,10 @@ type ProjectFile =
 
         [for node in this.Document |> getDescendants "ProjectReference" -> 
             { Path = 
-                let p = node.Attributes.["Include"].Value
-                if Path.IsPathRooted p then Path.GetFullPath p |> normalizePath else 
-                let di = FileInfo(this.FileName).Directory
-                Path.Combine(di.FullName,p) |> Path.GetFullPath |> normalizePath
+                let p = node.Attributes.["Include"].Value |> normalizePath
+                if Path.IsPathRooted p then Path.GetFullPath p else 
+                let di = FileInfo(normalizePath this.FileName).Directory
+                Path.Combine(di.FullName,p) |> Path.GetFullPath
               RelativePath = node.Attributes.["Include"].Value
               Name = forceGetInnerText node "Name"
               GUID =  forceGetInnerText node "Project" |> Guid.Parse }]
