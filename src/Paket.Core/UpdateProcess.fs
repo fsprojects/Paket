@@ -34,7 +34,16 @@ let selectiveUpdate force getSha1 getSortedVersionsF getPackageDetailsF (lockFil
             yield! getSortedAndCachedVersionsF sources resolverStrategy groupName packageName
         }
 
-    let noPreferredVersions = Map.empty
+    let dependenciesFile =
+      let createRequirement (v:SemVerInfo) =
+        sprintf "~> %d.%d" v.Major v.Minor
+
+      lockFile.GetGroupedResolution()
+      |> Map.fold (fun (dependenciesFile:DependenciesFile) (groupName,packageName) resolvedPackage -> 
+            dependenciesFile.AddFixedPackage(groupName,packageName,createRequirement resolvedPackage.Version)) dependenciesFile
+    let y = dependenciesFile.ToString()
+    printfn "%s" y
+      
 
     let getVersionsF,groupsToUpdate =
         match updateMode with
