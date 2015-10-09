@@ -70,31 +70,19 @@ type RemoteFileChange =
     override this.Equals(that) = 
         match that with
         | :? RemoteFileChange as that -> 
-            this.Owner = that.Owner &&
-             this.Project = that.Project &&
-             this.Name = that.Name &&
-             this.Origin = that.Origin &&
-             ((this.Commit = that.Commit) || this.Commit = None || that.Commit = None) &&
-             this.AuthKey = that.AuthKey
+            this.FieldsWithoutCommit = that.FieldsWithoutCommit &&
+             ((this.Commit = that.Commit) || this.Commit = None || that.Commit = None)
         | _ -> false
 
     override this.ToString() = sprintf "%O/%s/%s" this.Origin this.Project this.Name
 
-    override this.GetHashCode() = hash (this.Owner,this.Name,this.AuthKey,this.Project,this.Origin)
+    member private this.FieldsWithoutCommit = this.Owner,this.Name,this.AuthKey,this.Project,this.Origin
+    member private this.FieldsWithCommit = this.FieldsWithoutCommit,this.Commit
+    override this.GetHashCode() = hash this.FieldsWithCommit
 
-    static member Compare(x,y) =
+    static member Compare(x:RemoteFileChange,y:RemoteFileChange) =
         if x = y then 0 else
-        let c1 = compare x.Owner y.Owner
-        if c1 <> 0 then c1 else
-        let c2 = compare x.Project y.Project
-        if c2 <> 0 then c2 else
-        let c3 = compare x.Name y.Name
-        if c3 <> 0 then c3 else
-        let c4 = compare x.Origin y.Origin
-        if c4 <> 0 then c4 else
-        let c5 = compare x.AuthKey y.AuthKey
-        if c5 <> 0 then c5 else
-        compare x.Commit y.Commit
+        compare x.FieldsWithCommit y.FieldsWithCommit
 
     interface System.IComparable with
        member this.CompareTo that = 
