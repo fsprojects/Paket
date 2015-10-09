@@ -1,3 +1,6 @@
+#### 2.11.1 - 09.10.2015
+* EXPERIMENTAL: Support for WiX installer projects
+
 #### 2.11.0 - 09.10.2015
 * Skip unchanged groups during install
 

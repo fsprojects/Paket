@@ -28,7 +28,7 @@ type ProjectOutputType =
 | Exe 
 | Library
 
-type ProjectLanguage = Unknown | CSharp | FSharp | VisualBasic
+type ProjectLanguage = Unknown | CSharp | FSharp | VisualBasic | WiX
 
 module LanguageEvaluation =
     let private extractProjectTypeGuids (projectDocument:XmlDocument) =
@@ -84,6 +84,7 @@ module LanguageEvaluation =
         | ".csproj" -> Some CSharp
         | ".vbproj" -> Some VisualBasic
         | ".fsproj" -> Some FSharp
+        | ".wixproj" -> Some WiX
         | _ -> None
 
     let private getLanguageFromFileName (fileName : string) =
@@ -146,7 +147,7 @@ type ProjectFile =
             search <| DirectoryInfo folder
 
         FindAllFiles(folder, "*.*proj")
-        |> Array.filter (fun f -> f.Extension = ".csproj" || f.Extension = ".fsproj" || f.Extension = ".vbproj")
+        |> Array.filter (fun f -> f.Extension = ".csproj" || f.Extension = ".fsproj" || f.Extension = ".vbproj" || f.Extension = ".wixproj")
         |> Array.choose (fun fi -> ProjectFile.Load fi.FullName)
 
     static member FindCorrespondingFile (projectFile : FileInfo, correspondingFile:string) =
