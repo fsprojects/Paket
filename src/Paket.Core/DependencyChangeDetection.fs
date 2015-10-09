@@ -90,28 +90,28 @@ type RemoteFileChange =
           | :? RemoteFileChange as that -> RemoteFileChange.Compare(this,that)
           | _ -> invalidArg "that" "cannot compare value of different types"
 
+    static member CreateUnresolvedVersion (unresolved:ModuleResolver.UnresolvedSourceFile) : RemoteFileChange =
+        { Owner = unresolved.Owner
+          Project = unresolved.Project
+          Name = unresolved.Name
+          Origin = unresolved.Origin
+          Commit = unresolved.Commit
+          AuthKey = unresolved.AuthKey }
+
+    static member CreateResolvedVersion (resolved:ModuleResolver.ResolvedSourceFile) : RemoteFileChange =
+        { Owner = resolved.Owner
+          Project = resolved.Project
+          Name = resolved.Name
+          Origin = resolved.Origin
+          Commit = Some resolved.Commit
+          AuthKey = resolved.AuthKey }
+
 
 let findRemoteFileChangesInDependenciesFile(dependenciesFile:DependenciesFile,lockFile:LockFile) =
     let groupNames =
         dependenciesFile.Groups
         |> Seq.map (fun kv -> kv.Key)
         |> Seq.append (lockFile.Groups |> Seq.map (fun kv -> kv.Key))
-
-    let createUnresolvedVersion (unresolved:ModuleResolver.UnresolvedSourceFile) : RemoteFileChange =
-          { Owner = unresolved.Owner
-            Project = unresolved.Project
-            Name = unresolved.Name
-            Origin = unresolved.Origin
-            Commit = unresolved.Commit
-            AuthKey = unresolved.AuthKey }
-
-    let createResolvedVersion (resolved:ModuleResolver.ResolvedSourceFile) : RemoteFileChange =
-          { Owner = resolved.Owner
-            Project = resolved.Project
-            Name = resolved.Name
-            Origin = resolved.Origin
-            Commit = Some resolved.Commit
-            AuthKey = resolved.AuthKey }
 
     groupNames
     |> Seq.map (fun groupName ->
@@ -121,12 +121,12 @@ let findRemoteFileChangesInDependenciesFile(dependenciesFile:DependenciesFile,lo
                 | Some lockFilegroup ->
                     let lockFileRemoteFiles =
                         lockFilegroup.RemoteFiles
-                        |> List.map createResolvedVersion
+                        |> List.map RemoteFileChange.CreateResolvedVersion
                         |> Set.ofList
 
                     let dependenciesFileRemoteFiles =
                         dependenciesFileGroup.RemoteFiles
-                        |> List.map createUnresolvedVersion
+                        |> List.map RemoteFileChange.CreateUnresolvedVersion
                         |> Set.ofList
 
                     let u =
@@ -140,12 +140,12 @@ let findRemoteFileChangesInDependenciesFile(dependenciesFile:DependenciesFile,lo
                 | None -> 
                     // all added
                     dependenciesFileGroup.RemoteFiles 
-                    |> List.map createUnresolvedVersion 
+                    |> List.map RemoteFileChange.CreateUnresolvedVersion 
                     |> Set.ofList 
             | None -> 
                 // all removed
                 lockFile.GetGroup(groupName).RemoteFiles
-                |> List.map createResolvedVersion
+                |> List.map RemoteFileChange.CreateResolvedVersion
                 |> Set.ofList
             |> Set.map (fun x -> groupName,x))
     |> Seq.concat
