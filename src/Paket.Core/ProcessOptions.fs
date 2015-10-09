@@ -1,5 +1,12 @@
 namespace Paket
 
+[<RequireQualifiedAccess>]
+type SemVerUpdateMode =
+    | All
+    | Major
+    | Minor
+    | Patch
+
 // Options for UpdateProcess and InstallProcess.
 /// Force          - Force the download and reinstallation of all packages
 /// Hard           - Replace package references within project files even if they are not yet adhering
@@ -9,6 +16,7 @@ namespace Paket
 type InstallerOptions =
     { Force : bool
       Hard : bool
+      SemVerUpdateMode : SemVerUpdateMode
       Redirects : bool
       CreateNewBindingFiles : bool
       OnlyReferenced : bool }
@@ -17,6 +25,7 @@ type InstallerOptions =
         { Force = false
           Hard = false
           Redirects = false
+          SemVerUpdateMode = SemVerUpdateMode.All
           CreateNewBindingFiles = false
           OnlyReferenced = false }
 

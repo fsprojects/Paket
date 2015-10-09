@@ -380,7 +380,7 @@ type Dependencies(dependenciesFileName: string) =
     member this.Remove(groupName, package: string): unit = this.Remove(groupName, package, false, false, false, true)
 
     /// Removes the given package from dependencies file.
-    member this.Remove(groupName, package: string,force: bool,hard: bool,interactive: bool,installAfter: bool): unit =
+    member this.Remove(groupName, package: string, force: bool,hard: bool,interactive: bool,installAfter: bool): unit =
         Utils.RunInLockedAccessMode(
             this.RootPath,
             fun () -> RemoveProcess.Remove(dependenciesFileName, groupName, PackageName package, force, hard, interactive, installAfter))

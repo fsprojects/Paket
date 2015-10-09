@@ -9,7 +9,7 @@ open System.Collections.Generic
 open Chessie.ErrorHandling
 open Paket.Logging
 
-let selectiveUpdate force getSha1 getSortedVersionsF getPackageDetailsF (lockFile:LockFile) (dependenciesFile:DependenciesFile) updateMode =
+let selectiveUpdate force getSha1 getSortedVersionsF getPackageDetailsF (lockFile:LockFile) (dependenciesFile:DependenciesFile) updateMode semVerUpdateMode =
     let allVersions = Dictionary<PackageName,SemVerInfo list>()
     let getSortedAndCachedVersionsF sources resolverStrategy groupName packageName =
         match allVersions.TryGetValue(packageName) with
@@ -35,15 +35,21 @@ let selectiveUpdate force getSha1 getSortedVersionsF getPackageDetailsF (lockFil
         }
 
     let dependenciesFile =
-      let createRequirement (v:SemVerInfo) =
-        sprintf "~> %d.%d" v.Major v.Minor
+        let processFile createRequirementF =
+          lockFile.GetGroupedResolution()
+          |> Map.fold (fun (dependenciesFile:DependenciesFile) (groupName,packageName) resolvedPackage -> 
+                             dependenciesFile.AddFixedPackage(groupName,packageName,createRequirementF resolvedPackage.Version)) dependenciesFile
+    
+        let formatPrerelease (v:SemVerInfo) =
+            match v.PreRelease with
+            | Some p -> sprintf " %O" p
+            | None -> ""
 
-      lockFile.GetGroupedResolution()
-      |> Map.fold (fun (dependenciesFile:DependenciesFile) (groupName,packageName) resolvedPackage -> 
-            dependenciesFile.AddFixedPackage(groupName,packageName,createRequirement resolvedPackage.Version)) dependenciesFile
-    let y = dependenciesFile.ToString()
-    printfn "%s" y
-      
+        match semVerUpdateMode with
+        | SemVerUpdateMode.All -> dependenciesFile
+        | SemVerUpdateMode.Major -> processFile (fun v -> sprintf "~> %d" v.Major + formatPrerelease v)
+        | SemVerUpdateMode.Minor -> processFile (fun v -> sprintf "~> %d.%d" v.Major v.Minor + formatPrerelease v)
+        | SemVerUpdateMode.Patch -> processFile (fun v -> sprintf "~> %d.%d.%d" v.Major v.Minor v.Patch + formatPrerelease v)
 
     let getVersionsF,groupsToUpdate =
         match updateMode with
@@ -126,7 +132,7 @@ let selectiveUpdate force getSha1 getSortedVersionsF getPackageDetailsF (lockFil
     
     LockFile(lockFile.FileName, groups)
 
-let SelectiveUpdate(dependenciesFile : DependenciesFile, updateMode, force) =
+let SelectiveUpdate(dependenciesFile : DependenciesFile, updateMode, semVerUpdateMode, force) =
     let lockFileName = DependenciesFile.FindLockfile dependenciesFile.FileName
     let oldLockFile,updateMode =
         if not lockFileName.Exists then
@@ -151,12 +157,13 @@ let SelectiveUpdate(dependenciesFile : DependenciesFile, updateMode, force) =
             oldLockFile 
             dependenciesFile 
             updateMode
+            semVerUpdateMode
     lockFile.Save()
     lockFile
 
 /// Smart install command
 let SmartInstall(dependenciesFile, updateMode, options : UpdaterOptions) =
-    let lockFile = SelectiveUpdate(dependenciesFile, updateMode, options.Common.Force)
+    let lockFile = SelectiveUpdate(dependenciesFile, updateMode, options.Common.SemVerUpdateMode, options.Common.Force)
 
     let root = Path.GetDirectoryName dependenciesFile.FileName
     let projects = InstallProcess.findAllReferencesFiles root |> returnOrFail
