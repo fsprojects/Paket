@@ -362,3 +362,81 @@ github zurb/bower-foundation js/foundation.min.js"""
     let lockFile = LockFile.Parse("",toLines lockFileData)
     let changedDependencies = DependencyChangeDetection.findRemoteFileChangesInDependenciesFile(cfg,lockFile)
     changedDependencies.Count |> shouldEqual 1
+
+[<Test>]
+let ``should detect new github dependency in new group``() = 
+    let before = """source https://www.nuget.org/api/v2
+
+nuget FAKE
+
+github zurb/bower-foundation css/normalize.css
+github zurb/bower-foundation js/foundation.min.js"""
+
+    let lockFileData = """NUGET
+  remote: https://nuget.org/api/v2
+  specs:
+    FAKE (4.4.4)
+GITHUB
+  remote: zurb/bower-foundation
+  specs:
+    css/normalize.css (eb5e3ed178ef3b678cb520f1366a737a32aafeca)
+    js/foundation.min.js (eb5e3ed178ef3b678cb520f1366a737a32aafeca)
+"""
+
+    let after = """source https://www.nuget.org/api/v2
+
+nuget FAKE
+
+github zurb/bower-foundation css/normalize.css
+github zurb/bower-foundation js/foundation.min.js
+
+group Build
+github SignalR/bower-signalr jquery.signalR.js"""
+
+    let cfg = DependenciesFile.FromCode(after)
+    let lockFile = LockFile.Parse("",toLines lockFileData)
+    let changedDependencies = DependencyChangeDetection.findRemoteFileChangesInDependenciesFile(cfg,lockFile)
+    changedDependencies.Count |> shouldEqual 1
+    changedDependencies |> Set.filter (fun (g,_) -> g = GroupName "Build") |> Set.count |> shouldEqual 1
+
+[<Test>]
+let ``should detect removal of group``() = 
+    let before = """source https://www.nuget.org/api/v2
+
+nuget FAKE
+
+github zurb/bower-foundation css/normalize.css
+github zurb/bower-foundation js/foundation.min.js
+
+group Build
+github SignalR/bower-signalr jquery.signalR.js"""
+
+    let lockFileData = """NUGET
+  remote: https://nuget.org/api/v2
+  specs:
+    FAKE (4.4.4)
+GITHUB
+  remote: zurb/bower-foundation
+  specs:
+    css/normalize.css (eb5e3ed178ef3b678cb520f1366a737a32aafeca)
+    js/foundation.min.js (eb5e3ed178ef3b678cb520f1366a737a32aafeca)
+GROUP Build
+
+GITHUB
+  remote: SignalR/bower-signalr
+  specs:
+    jquery.signalR.js (26092205231972de4b3db966e5689ddbee971ef9)
+"""
+
+    let after = """source https://www.nuget.org/api/v2
+
+nuget FAKE
+
+github zurb/bower-foundation css/normalize.css
+github zurb/bower-foundation js/foundation.min.js"""
+
+    let cfg = DependenciesFile.FromCode(after)
+    let lockFile = LockFile.Parse("",toLines lockFileData)
+    let changedDependencies = DependencyChangeDetection.findRemoteFileChangesInDependenciesFile(cfg,lockFile)
+    changedDependencies.Count |> shouldEqual 1
+    changedDependencies |> Set.filter (fun (g,_) -> g = GroupName "Build") |> Set.count |> shouldEqual 1

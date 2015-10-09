@@ -78,9 +78,15 @@ let selectiveUpdate force getSha1 getSortedVersionsF getPackageDetailsF (lockFil
                     | None -> true
                     | Some lockFileGroup -> dependenciesFileGroup.Options <> lockFileGroup.Options
 
+            let hasChanges groupName _ = 
+                let hasChanges = hasChangedSettings groupName || hasNuGetChanges groupName || hasRemoteFileChanges groupName
+                if not hasChanges then
+                    tracefn "Skipping resolver for group %O since it is already up-to-date" groupName
+                hasChanges
+
             let groups =
                 dependenciesFile.Groups
-                |> Map.filter (fun groupName _ -> hasChangedSettings groupName || hasNuGetChanges groupName || hasRemoteFileChanges groupName)
+                |> Map.filter hasChanges
 
             (getPreferredVersionsF preferredVersions),groups
         | UpdatePackage(groupName,packageName) ->
