@@ -1,4 +1,4 @@
-#### 2.11.0-alpha001 - 08.10.2015
+#### 2.11.0 - 09.10.2015
 * Skip unchanged groups during install
 
 #### 2.10.0 - 08.10.2015
