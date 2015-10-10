@@ -46,10 +46,10 @@ let selectiveUpdate force getSha1 getSortedVersionsF getPackageDetailsF (lockFil
             | None -> ""
 
         match semVerUpdateMode with
-        | SemVerUpdateMode.All -> dependenciesFile
-        | SemVerUpdateMode.Major -> processFile (fun v -> sprintf "~> %d" v.Major + formatPrerelease v)
-        | SemVerUpdateMode.Minor -> processFile (fun v -> sprintf "~> %d.%d" v.Major v.Minor + formatPrerelease v)
-        | SemVerUpdateMode.Patch -> processFile (fun v -> sprintf "~> %d.%d.%d" v.Major v.Minor v.Patch + formatPrerelease v)
+        | SemVerUpdateMode.NoRestriction -> dependenciesFile
+        | SemVerUpdateMode.KeepMajor -> processFile (fun v -> sprintf "~> %d" v.Major + formatPrerelease v)
+        | SemVerUpdateMode.KeepMinor -> processFile (fun v -> sprintf "~> %d.%d" v.Major v.Minor + formatPrerelease v)
+        | SemVerUpdateMode.KeepPatch -> processFile (fun v -> sprintf "~> %d.%d.%d" v.Major v.Minor v.Patch + formatPrerelease v)
 
     let getVersionsF,groupsToUpdate =
         match updateMode with

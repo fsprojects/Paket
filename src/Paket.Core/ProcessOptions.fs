@@ -2,10 +2,10 @@ namespace Paket
 
 [<RequireQualifiedAccess>]
 type SemVerUpdateMode =
-    | All
-    | Major
-    | Minor
-    | Patch
+    | NoRestriction
+    | KeepMajor
+    | KeepMinor
+    | KeepPatch
 
 // Options for UpdateProcess and InstallProcess.
 /// Force          - Force the download and reinstallation of all packages
@@ -25,16 +25,17 @@ type InstallerOptions =
         { Force = false
           Hard = false
           Redirects = false
-          SemVerUpdateMode = SemVerUpdateMode.All
+          SemVerUpdateMode = SemVerUpdateMode.NoRestriction
           CreateNewBindingFiles = false
           OnlyReferenced = false }
 
-    static member CreateLegacyOptions(force, hard, redirects, createNewBindingFiles) =
+    static member CreateLegacyOptions(force, hard, redirects, createNewBindingFiles, semVerUpdateMode) =
         { InstallerOptions.Default with
             Force = force
             Hard = hard
             CreateNewBindingFiles = createNewBindingFiles
-            Redirects = redirects }
+            Redirects = redirects 
+            SemVerUpdateMode = semVerUpdateMode }
 
 type UpdaterOptions =
     { Common : InstallerOptions

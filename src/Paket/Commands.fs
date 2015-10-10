@@ -61,6 +61,9 @@ type AddArgs =
     | Redirects
     | CreateNewBindingFiles
     | No_Install
+    | Keep_Major
+    | Keep_Minor
+    | Keep_Patch
 with
     interface IArgParserTemplate with
         member this.Usage =
@@ -75,6 +78,10 @@ with
             | Redirects -> "Creates binding redirects for the NuGet packages."
             | CreateNewBindingFiles -> "Creates binding redirect files if needed."
             | No_Install -> "Skips paket install --hard process afterward generation of dependencies / references files."
+            | Keep_Major -> "Allows only updates that are not changing the major version of the NuGet packages."
+            | Keep_Minor -> "Allows only updates that are not changing the minor version of the NuGet packages."
+            | Keep_Patch -> "Allows only updates that are not changing the patch version of the NuGet packages."
+     
 
 type ConfigArgs =
     | [<CustomCommandLine("add-credentials")>] AddCredentials of string
@@ -130,7 +137,10 @@ type InstallArgs =
     | [<AltCommandLine("-f")>] Force
     | Hard
     | Redirects
-    | CreateNewBindingFiles
+    | CreateNewBindingFiles    
+    | Keep_Major
+    | Keep_Minor
+    | Keep_Patch
     | [<CustomCommandLine("--only-referenced")>] Install_Only_Referenced
 with
     interface IArgParserTemplate with
@@ -141,6 +151,9 @@ with
             | Redirects -> "Creates binding redirects for the NuGet packages."
             | CreateNewBindingFiles -> "Creates binding redirect files if needed."
             | Install_Only_Referenced -> "Only install packages that are referenced in paket.references files, instead of all packages in paket.dependencies."
+            | Keep_Major -> "Allows only updates that are not changing the major version of the NuGet packages."
+            | Keep_Minor -> "Allows only updates that are not changing the minor version of the NuGet packages."
+            | Keep_Patch -> "Allows only updates that are not changing the patch version of the NuGet packages."
 
 type OutdatedArgs =
     | Ignore_Constraints
@@ -203,6 +216,9 @@ type UpdateArgs =
     | Redirects
     | CreateNewBindingFiles
     | No_Install
+    | Keep_Major
+    | Keep_Minor
+    | Keep_Patch
 with
     interface IArgParserTemplate with
         member this.Usage =
@@ -215,7 +231,10 @@ with
             | Redirects -> "Creates binding redirects for the NuGet packages."
             | CreateNewBindingFiles -> "Creates binding redirect files if needed."
             | No_Install -> "Skips paket install --hard process afterward generation of paket.lock file."
-
+            | Keep_Major -> "Allows only updates that are not changing the major version of the NuGet packages."
+            | Keep_Minor -> "Allows only updates that are not changing the minor version of the NuGet packages."
+            | Keep_Patch -> "Allows only updates that are not changing the patch version of the NuGet packages."
+            
 type FindPackagesArgs =
     | [<CustomCommandLine("searchtext")>] SearchText of string
     | [<CustomCommandLine("source")>] Source of string
