@@ -213,6 +213,29 @@ let filterRestrictions (list1:FrameworkRestrictions) (list2:FrameworkRestriction
                 if c <> [] then yield! c]
     |> optimizeRestrictions
 
+/// Get if a target should be considered with the specified restrictions
+let isTargetMatchingRestrictions (restrictions:FrameworkRestrictions) = function
+    | SinglePlatform pf ->
+        restrictions
+        |> List.exists (fun restriction ->
+                match restriction with
+                | FrameworkRestriction.Exactly fw -> pf = fw
+                | FrameworkRestriction.Portable _ -> false
+                | FrameworkRestriction.AtLeast fw -> pf >= fw
+                | FrameworkRestriction.Between(min,max) -> pf >= min && pf < max)
+    | _ ->
+        restrictions
+        |> List.exists (fun restriction ->
+                match restriction with
+                | FrameworkRestriction.Portable r -> true
+                | _ -> false)
+
+/// Get all targets that should be considered with the specified restrictions
+let applyRestrictionsToTargets (restrictions:FrameworkRestrictions) (targets: TargetProfile list) =
+    let result = targets |> List.filter (isTargetMatchingRestrictions restrictions)
+    result
+
+
 type ContentCopySettings =
 | Omit
 | Overwrite
