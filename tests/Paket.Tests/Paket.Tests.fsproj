@@ -90,8 +90,6 @@
     <Compile Include="UtilsSpecs.fs" />
     <Compile Include="TemplateFileParsing.fs" />
     <Compile Include="NuspecWriterSpecs.fs" />
-    <Compile Include="RestrictionFilterSpecs.fs" />
-    <Compile Include="RestrictionApplicationSpecs.fs" />
     <Compile Include="PackageProcessSpecs.fs" />
     <Content Include="PackagesConfig\xunit.visualstudio.packages.config">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
@@ -310,6 +308,9 @@
     <Compile Include="InstallModel\AnalyzerSpecs.fs" />
     <Compile Include="DependencyModel\ProjectDependencySpecs.fs" />
     <None Include="paket.references" />
+    <Compile Include="Requirements\RestrictionApplicationSpecs.fs" />
+    <Compile Include="Requirements\RestrictionFilterSpecs.fs" />
+    <Compile Include="FrameworkHandling\FrameworkIdentifierSpecs.fs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="mscorlib" />
