@@ -17,7 +17,7 @@ type Dependencies(dependenciesFileName: string) =
     let listPackages (packages: System.Collections.Generic.KeyValuePair<GroupName*PackageName, PackageResolver.ResolvedPackage> seq) =
         packages
         |> Seq.map (fun kv ->
-                let groupName,packageName = kv.Key                
+                let groupName,packageName = kv.Key
                 groupName.ToString(),packageName.ToString(),kv.Value.Version.ToString())
         |> Seq.toList
 
@@ -33,13 +33,13 @@ type Dependencies(dependenciesFileName: string) =
                 path
             else
                 let parent = dir.Parent
-                if parent = null then
+                match parent with
+                | null ->
                     if withError then
                         failwithf "Could not find '%s'. To use Paket with this solution, please run 'paket init' first." Constants.DependenciesFileName
                     else
                         Constants.DependenciesFileName
-                else
-                   findInPath(parent, withError)
+                | _ -> findInPath(parent, withError)
 
         let dependenciesFileName = findInPath(DirectoryInfo path,true)
         verbosefn "found: %s" dependenciesFileName
@@ -404,7 +404,9 @@ type Dependencies(dependenciesFileName: string) =
         let cancellationToken = defaultArg cancellationToken (System.Threading.CancellationToken())
         let maxResults = defaultArg maxResults 1000
         let sources = this.GetSources() |> Seq.map (fun kv -> kv.Value) |> List.concat |> List.distinct
-        if sources = [] then [PackageSources.DefaultNugetSource] else sources
+        match sources with
+        | [] -> [PackageSources.DefaultNugetSource]
+        | _ -> sources
         |> List.choose (fun x -> match x with | Nuget s -> Some s.Url | _ -> None)
         |> Seq.distinct
         |> Seq.map (fun url ->
