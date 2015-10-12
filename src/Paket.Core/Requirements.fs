@@ -302,16 +302,16 @@ type InstallSettings =
             | true, "on" -> Some true 
             | true, "off" -> Some false 
             | _ ->  None
-          IncludeVersionInPath =         
+          IncludeVersionInPath =
             match kvPairs.TryGetValue "version_in_path" with
             | true, "false" -> Some false 
             | true, "true" -> Some true
             | _ -> None 
-          ReferenceCondition =         
+          ReferenceCondition =
             match kvPairs.TryGetValue "condition" with
             | true, c -> Some(c.ToUpper())
             | _ -> None 
-          CopyLocal =         
+          CopyLocal =
             match kvPairs.TryGetValue "copy_local" with
             | true, "false" -> Some false 
             | true, "true" -> Some true

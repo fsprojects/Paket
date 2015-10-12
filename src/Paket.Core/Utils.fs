@@ -373,9 +373,11 @@ let parseKeyValuePairs(s:string) =
 
     for p in parts do
         if p.Contains ":" then
-            let parts = p.Split(':') |> Array.map (fun x -> x.Trim())
-            dict.Add(parts.[0],parts.[1])
-            lastKey := parts.[0]
+            let innerParts = p.Split(':') |> Array.map (fun x -> x.Trim())
+            if innerParts.Length % 2 <> 0 then
+                failwithf "\"%s\" can not be parsed as key/value pairs." p
+            dict.Add(innerParts.[0],innerParts.[1])
+            lastKey := innerParts.[0]
         else
             dict.[!lastKey] <- dict.[!lastKey] + ", " + p
     dict

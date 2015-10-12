@@ -1,3 +1,6 @@
+#### 2.12.1 - 12.10.2015
+* USABILITY: Dependencies file parser should detects comma between install settings - https://github.com/fsprojects/Paket/issues/1129
+
 #### 2.12.0 - 12.10.2015
 * Better SemVer update by adding --keep-major, --keep-minor, --keep-patch to the CLI
 * EXPERIMENTAL: Support for WiX installer projects

@@ -849,3 +849,15 @@ let ``should read config with duplicate NuGet source``() =
 
     cfg.Groups.[Constants.MainDependencyGroup].Sources.Length |> shouldEqual 1
     cfg.Groups.[Constants.MainDependencyGroup].Sources.Head |> shouldEqual PackageSources.DefaultNugetSource
+
+let configWithInvalidInstallSettings = """
+source https://www.nuget.org/api/v2
+
+nuget ABCpdf 10.1.0.3 framework: >= net40 content: none
+nuget log4net 2.0.0
+nuget Oracle.ManagedDataAccess framework: >= net40 content: none
+"""
+
+[<Test>]
+let ``should not read config with invalid settings``() = 
+    shouldFail (fun () -> DependenciesFile.FromCode(configWithInvalidInstallSettings) |> ignore)
