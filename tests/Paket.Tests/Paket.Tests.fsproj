@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
@@ -90,6 +90,7 @@
     <Compile Include="UtilsSpecs.fs" />
     <Compile Include="TemplateFileParsing.fs" />
     <Compile Include="NuspecWriterSpecs.fs" />
+    <Compile Include="RestrictionFilterSpecs.fs" />
     <Compile Include="PackageProcessSpecs.fs" />
     <Content Include="PackagesConfig\xunit.visualstudio.packages.config">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
@@ -307,10 +308,8 @@
     <Compile Include="InstallModel\Penalty\FrameworkConditionsSpecs.fs" />
     <Compile Include="InstallModel\AnalyzerSpecs.fs" />
     <Compile Include="DependencyModel\ProjectDependencySpecs.fs" />
-    <None Include="paket.references" />
     <Compile Include="Requirements\RestrictionApplicationSpecs.fs" />
-    <Compile Include="Requirements\RestrictionFilterSpecs.fs" />
-    <Compile Include="FrameworkHandling\FrameworkIdentifierSpecs.fs" />
+    <None Include="paket.references" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="mscorlib" />

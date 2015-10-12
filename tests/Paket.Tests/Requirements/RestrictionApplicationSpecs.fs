@@ -1,4 +1,4 @@
-﻿module Paket.Requirements.RestrictionApplicationSpecs
+module Paket.Requirements.RestrictionApplicationSpecs
 
 open Paket
 open FsUnit
@@ -45,7 +45,7 @@ module TestTargetProfiles =
        SilverlightProfiles @
        WindowsPhoneSilverlightProfiles @
        [SinglePlatform(MonoAndroid)
-        SinglePlatform(MonoTouch)   
+        SinglePlatform(MonoTouch)
         SinglePlatform(XamariniOS)
         SinglePlatform(XamarinMac)
         SinglePlatform(WindowsPhoneApp "v8.1")

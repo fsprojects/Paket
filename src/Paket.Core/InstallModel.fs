@@ -241,10 +241,10 @@ type InstallModel =
                             |> List.exists (fun t -> t = target)
                         | FrameworkRestriction.AtLeast target ->
                             folder.GetSinglePlatforms() 
-                            |> List.exists (fun t -> t .>= target)
+                            |> List.exists (fun t -> t >= target)
                         | FrameworkRestriction.Between(min,max) ->
                             folder.GetSinglePlatforms() 
-                            |> List.exists (fun t -> t .>= min && t .< max)                            )
+                            |> List.exists (fun t -> t >= min && t < max)                            )
             
         this.MapFolders(fun folder ->
             if referenceApplies folder then
@@ -299,7 +299,7 @@ type InstallModel =
                 TargetsFileFolders = 
                     this.TargetsFileFolders
                     |> List.map applRestriction
-                    |> List.filter (fun folder -> folder.Targets <> [])                     }    
+                    |> List.filter (fun folder -> folder.Targets <> [])                     }
 
     member this.GetFrameworkAssembliesLazy = 
         lazy ([ for lib in this.ReferenceFileFolders do
