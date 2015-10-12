@@ -1,4 +1,4 @@
-﻿module Paket.RestrictionFilterSpecs
+﻿module Paket.Requirements.RestrictionFilterSpecs
 
 open System.IO
 open Paket
