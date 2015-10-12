@@ -30,7 +30,7 @@ let private remove removeFromProjects dependenciesFileName groupName (package: P
                 | None -> false
                 | Some group -> group.NugetPackages |> Seq.exists (fun p -> p.Name = package))
 
-    let oldLockFile =    
+    let oldLockFile =
         let lockFileName = DependenciesFile.FindLockfile dependenciesFileName
         LockFile.LoadFrom(lockFileName.FullName)
 
@@ -40,10 +40,10 @@ let private remove removeFromProjects dependenciesFileName groupName (package: P
         let dependenciesFile = exisitingDependenciesFile.Remove(groupName,package)
         dependenciesFile.Save()
         
-        dependenciesFile,UpdateProcess.SelectiveUpdate(dependenciesFile,PackageResolver.UpdateMode.Install,force)
+        dependenciesFile,UpdateProcess.SelectiveUpdate(dependenciesFile,PackageResolver.UpdateMode.Install,SemVerUpdateMode.NoRestriction,force)
     
     if installAfter then
-        InstallProcess.Install(InstallerOptions.CreateLegacyOptions(force, hard, false, false), dependenciesFile, lockFile)
+        InstallProcess.Install(InstallerOptions.CreateLegacyOptions(force, hard, false, false, SemVerUpdateMode.NoRestriction), dependenciesFile, lockFile)
 
 /// Removes a package with the option to remove it from a specified project.
 let RemoveFromProject(dependenciesFileName, groupName, packageName:PackageName, force, hard, projectName, installAfter) =    

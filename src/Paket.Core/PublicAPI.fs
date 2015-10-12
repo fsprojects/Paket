@@ -106,22 +106,22 @@ type Dependencies(dependenciesFileName: string) =
 
     /// Adds the given package with the given version to the dependencies file.
     member this.Add(groupName, package: string,version: string): unit =
-        this.Add(groupName, package, version, force = false, hard = false, withBindingRedirects = false,  createNewBindingFiles = false, interactive = false, installAfter = true)
+        this.Add(groupName, package, version, force = false, hard = false, withBindingRedirects = false,  createNewBindingFiles = false, interactive = false, installAfter = true, semVerUpdateMode = SemVerUpdateMode.NoRestriction)
 
     /// Adds the given package with the given version to the dependencies file.
-    member this.Add(groupName, package: string,version: string,force: bool,hard: bool,withBindingRedirects: bool, createNewBindingFiles:bool, interactive: bool,installAfter: bool): unit =
+    member this.Add(groupName, package: string,version: string,force: bool,hard: bool,withBindingRedirects: bool, createNewBindingFiles:bool, interactive: bool,installAfter: bool, semVerUpdateMode): unit =
         Utils.RunInLockedAccessMode(
             this.RootPath,
             fun () -> AddProcess.Add(dependenciesFileName, groupName, PackageName(package.Trim()), version,
-                                     InstallerOptions.CreateLegacyOptions(force, hard, withBindingRedirects, createNewBindingFiles),
+                                     InstallerOptions.CreateLegacyOptions(force, hard, withBindingRedirects, createNewBindingFiles, semVerUpdateMode),
                                      interactive, installAfter))
 
    /// Adds the given package with the given version to the dependencies file.
-    member this.AddToProject(groupName, package: string,version: string,force: bool,hard: bool,withBindingRedirects: bool, createNewBindingFiles:bool, projectName: string,installAfter: bool): unit =
+    member this.AddToProject(groupName, package: string,version: string,force: bool,hard: bool,withBindingRedirects: bool, createNewBindingFiles:bool, projectName: string,installAfter: bool, semVerUpdateMode): unit =
         Utils.RunInLockedAccessMode(
             this.RootPath,
             fun () -> AddProcess.AddToProject(dependenciesFileName, groupName, PackageName package, version,
-                                              InstallerOptions.CreateLegacyOptions(force, hard, withBindingRedirects, createNewBindingFiles),
+                                              InstallerOptions.CreateLegacyOptions(force, hard, withBindingRedirects, createNewBindingFiles, semVerUpdateMode),
                                               projectName, installAfter))
 
     /// Adds credentials for a Nuget feed
@@ -135,15 +135,15 @@ type Dependencies(dependenciesFileName: string) =
         Utils.RunInLockedAccessMode(this.RootPath, fun () -> ConfigFile.AddToken(source, token) |> returnOrFail)
 
     /// Installs all dependencies.
-    member this.Install(force: bool, hard: bool) = this.Install(force, hard, false, false)
+    member this.Install(force: bool, hard: bool) = this.Install(force, hard, false, false, SemVerUpdateMode.NoRestriction)
 
     /// Installs all dependencies.
-    member this.Install(force: bool, hard: bool, withBindingRedirects: bool, createNewBindingFiles:bool): unit =
-        this.Install(force, hard, withBindingRedirects, createNewBindingFiles, false)
+    member this.Install(force: bool, hard: bool, withBindingRedirects: bool, createNewBindingFiles:bool, semVerUpdateMode): unit =
+        this.Install(force, hard, withBindingRedirects, createNewBindingFiles, false, semVerUpdateMode)
 
     /// Installs all dependencies.
-    member this.Install(force: bool, hard: bool, withBindingRedirects: bool, createNewBindingFiles:bool, onlyReferenced: bool): unit =
-        this.Install({ InstallerOptions.CreateLegacyOptions(force, hard, withBindingRedirects, createNewBindingFiles) with OnlyReferenced = onlyReferenced })
+    member this.Install(force: bool, hard: bool, withBindingRedirects: bool, createNewBindingFiles:bool, onlyReferenced: bool, semVerUpdateMode): unit =
+        this.Install({ InstallerOptions.CreateLegacyOptions(force, hard, withBindingRedirects, createNewBindingFiles, semVerUpdateMode) with OnlyReferenced = onlyReferenced })
 
     /// Installs all dependencies.
     member private this.Install(options: InstallerOptions): unit =
@@ -155,7 +155,7 @@ type Dependencies(dependenciesFileName: string) =
                             { UpdaterOptions.Default with Common = options }))
 
     /// Creates a paket.dependencies file with the given text in the current directory and installs it.
-    static member Install(dependencies, ?path: string, ?force, ?hard, ?withBindingRedirects, ?createNewBindingFiles) =
+    static member Install(dependencies, ?path: string, ?force, ?hard, ?withBindingRedirects, ?createNewBindingFiles, ?semVerUpdateMode) =
         let path = defaultArg path Environment.CurrentDirectory
         let fileName = Path.Combine(path, Constants.DependenciesFileName)
         File.WriteAllText(fileName, dependencies)
@@ -164,42 +164,43 @@ type Dependencies(dependenciesFileName: string) =
             force = defaultArg force false,
             hard = defaultArg hard false,
             withBindingRedirects = defaultArg withBindingRedirects false,
-            createNewBindingFiles = defaultArg createNewBindingFiles false)
+            createNewBindingFiles = defaultArg createNewBindingFiles false, 
+            semVerUpdateMode = defaultArg semVerUpdateMode SemVerUpdateMode.NoRestriction)
 
     /// Updates all dependencies.
     member this.Update(force: bool, hard: bool): unit = this.Update(force, hard, false, false)
 
     /// Updates all dependencies.
     member this.Update(force: bool, hard: bool, withBindingRedirects:bool, createNewBindingFiles:bool): unit =
-        this.Update(force, hard, withBindingRedirects, createNewBindingFiles, true)
+        this.Update(force, hard, withBindingRedirects, createNewBindingFiles, true, SemVerUpdateMode.NoRestriction)
 
     /// Updates all dependencies.
-    member this.Update(force: bool, hard: bool, withBindingRedirects: bool, createNewBindingFiles:bool, installAfter: bool): unit =
+    member this.Update(force: bool, hard: bool, withBindingRedirects: bool, createNewBindingFiles:bool, installAfter: bool, semVerUpdateMode): unit =
         Utils.RunInLockedAccessMode(
             this.RootPath,
             fun () -> UpdateProcess.Update(
                         dependenciesFileName,
                         { UpdaterOptions.Default with
-                            Common = InstallerOptions.CreateLegacyOptions(force, hard, withBindingRedirects, createNewBindingFiles)
+                            Common = InstallerOptions.CreateLegacyOptions(force, hard, withBindingRedirects, createNewBindingFiles, semVerUpdateMode)
                             NoInstall = installAfter |> not }))
 
     /// Updates dependencies in single group.
-    member this.UpdateGroup(groupName, force: bool, hard: bool, withBindingRedirects: bool, createNewBindingFiles:bool, installAfter: bool): unit =
+    member this.UpdateGroup(groupName, force: bool, hard: bool, withBindingRedirects: bool, createNewBindingFiles:bool, installAfter: bool, semVerUpdateMode:SemVerUpdateMode): unit =
         Utils.RunInLockedAccessMode(
             this.RootPath,
             fun () -> UpdateProcess.UpdateGroup(
                             dependenciesFileName,
                             GroupName groupName,
                             { UpdaterOptions.Default with
-                                Common = InstallerOptions.CreateLegacyOptions(force, hard, withBindingRedirects, createNewBindingFiles)
+                                Common = InstallerOptions.CreateLegacyOptions(force, hard, withBindingRedirects, createNewBindingFiles, semVerUpdateMode)
                                 NoInstall = installAfter |> not }))
 
     /// Updates the given package.
-    member this.UpdatePackage(groupName, package: string, version: string option, force: bool, hard: bool): unit =
-        this.UpdatePackage(groupName, package, version, force, hard, false, false, true)
+    member this.UpdatePackage(groupName, package: string, version: string option, force: bool, hard: bool, semVerUpdateMode): unit =
+        this.UpdatePackage(groupName, package, version, force, hard, false, false, true, semVerUpdateMode)
 
     /// Updates the given package.
-    member this.UpdatePackage(groupName: string option, package: string, version: string option, force: bool, hard: bool, withBindingRedirects: bool, createNewBindingFiles:bool, installAfter: bool): unit =
+    member this.UpdatePackage(groupName: string option, package: string, version: string option, force: bool, hard: bool, withBindingRedirects: bool, createNewBindingFiles:bool, installAfter: bool, semVerUpdateMode): unit =
         let groupName = 
             match groupName with
             | None -> Constants.MainDependencyGroup
@@ -209,7 +210,7 @@ type Dependencies(dependenciesFileName: string) =
             this.RootPath,
             fun () -> UpdateProcess.UpdatePackage(dependenciesFileName, groupName, PackageName package, version,
                                                   { UpdaterOptions.Default with
-                                                      Common = InstallerOptions.CreateLegacyOptions(force, hard, withBindingRedirects, createNewBindingFiles)
+                                                      Common = InstallerOptions.CreateLegacyOptions(force, hard, withBindingRedirects, createNewBindingFiles, semVerUpdateMode)
                                                       NoInstall = installAfter |> not }))
 
     /// Restores all dependencies.
@@ -380,7 +381,7 @@ type Dependencies(dependenciesFileName: string) =
     member this.Remove(groupName, package: string): unit = this.Remove(groupName, package, false, false, false, true)
 
     /// Removes the given package from dependencies file.
-    member this.Remove(groupName, package: string,force: bool,hard: bool,interactive: bool,installAfter: bool): unit =
+    member this.Remove(groupName, package: string, force: bool,hard: bool,interactive: bool,installAfter: bool): unit =
         Utils.RunInLockedAccessMode(
             this.RootPath,
             fun () -> RemoveProcess.Remove(dependenciesFileName, groupName, PackageName package, force, hard, interactive, installAfter))
