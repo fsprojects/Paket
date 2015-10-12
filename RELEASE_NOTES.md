@@ -1,7 +1,5 @@
-#### 2.12.0-alpha001 - 10.10.2015
+#### 2.12.0 - 12.10.2015
 * Better SemVer update by adding --keep-major, --keep-minor, --keep-patch to the CLI
-
-#### 2.11.1 - 09.10.2015
 * EXPERIMENTAL: Support for WiX installer projects
 
 #### 2.11.0 - 09.10.2015
