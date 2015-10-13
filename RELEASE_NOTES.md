@@ -1,4 +1,4 @@
-#### 2.12.1 - 12.10.2015
+#### 2.12.2 - 12.10.2015
 * USABILITY: Dependencies file parser should detects comma between install settings - https://github.com/fsprojects/Paket/issues/1129
 
 #### 2.12.0 - 12.10.2015
