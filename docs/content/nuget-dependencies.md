@@ -83,6 +83,8 @@ If your transitive dependencies result in a version conflict you might want to i
 
     nuget Example == 1.2.3 // take exactly this version
 
+<blockquote>Important: If you want to restrict the version to a specific version then use the [= operator](nuget-dependencies.html#Pinned-version-constraint). The == operator should only be used if you need to overwrite a dependency resultion due to a conflict.</blockquote>
+
 #### Further version constraints
 
     nuget Example >= 1.2.3        // at least 1.2.3
