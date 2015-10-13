@@ -231,7 +231,7 @@ let Resolve(groupName:GroupName, sources, getVersionsF, getPackageDetailsF, glob
             | Install -> tracefn  " - %O %A" dependency.Name version
             | _ ->
                 match dependency.VersionRequirement.Range with
-                | Specific _ -> traceWarnfn " - %O is pinned to %O" dependency.Name version
+                | Specific _ when dependency.Parent.IsRootRequirement() -> traceWarnfn " - %O is pinned to %O" dependency.Name version
                 | _ -> tracefn  " - %O %A" dependency.Name version
 
             let packageDetails : PackageDetails = getPackageDetailsF sources dependency.Name version
