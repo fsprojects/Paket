@@ -1,6 +1,6 @@
 Simplify will also affect paket.references files, unless [strict](dependencies-file.html#Strict-references) mode is used.
 
-<blockquote>Important: `paket simplify` is a heuristic approach to dependency simplificazion. It often works very well, but there are rare cases where simplify can result in changes of the package resolution.</blockquote>
+<blockquote>Important: `paket simplify` is a heuristic approach to dependency simplification. It often works very well, but there are rare cases where simplify can result in changes of the package resolution.</blockquote>
 
 ## Sample
 
