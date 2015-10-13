@@ -1,5 +1,7 @@
 Simplify will also affect paket.references files, unless [strict](dependencies-file.html#Strict-references) mode is used.
 
+<blockquote>Important: `paket simplify` is a heuristic approach to dependency simplificazion. It often works very well, but there are rare cases where simplify can result in changes of the package resolution.</blockquote>
+
 ## Sample
 
 When you install `Castle.Windsor` package in NuGet to a project, it will generate a following `packages.config` file in the project location:
