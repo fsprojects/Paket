@@ -37,7 +37,10 @@ let (|Title|Description|Version|InformationalVersion|Company|Ignore|) (attribute
         | x when String.IsNullOrWhiteSpace x ->
             Ignore
         | x ->
-            InformationalVersion(SemVer.Parse x)
+            try
+                InformationalVersion(SemVer.Parse x)
+            with 
+            | _ -> Ignore
     | :? AssemblyCompanyAttribute as company ->
         match company.Company with
         | x when String.IsNullOrWhiteSpace x ->
