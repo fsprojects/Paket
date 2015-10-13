@@ -45,7 +45,7 @@ This option disables the installation of any content files for the given package
     
     jQuery content: none
 
-### Framework restrictions
+## Framework restrictions
 
 Sometimes you don't want to generate dependencies for older framework versions. You can control this in the [`paket.dependencies` file](nuget-dependencies.html#Framework-restrictions) or via the `framework` switch:
 
