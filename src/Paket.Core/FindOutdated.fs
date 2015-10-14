@@ -68,8 +68,8 @@ let private printOutdated changed =
     else
         tracefn "Outdated packages found:"
 
-        for (GroupName groupName),packages in changed |> List.groupBy (fun (g,_,_,_) -> g) do
-            tracefn "  Group: %s"  groupName
+        for (groupName:GroupName),packages in changed |> List.groupBy (fun (g,_,_,_) -> g) do
+            tracefn "  Group: %O"  groupName
             for (_,(packageName:PackageName),oldVersion,newVersion) in packages do
                 tracefn "    * %O %O -> %O"  packageName oldVersion newVersion
 

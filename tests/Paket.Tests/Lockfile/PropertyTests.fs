@@ -14,7 +14,7 @@ type Generators =
     { new Arbitrary<Paket.Domain.NonEmptyString>() with
         override x.Generator = 
             Arb.Default.String()
-           |> Arb.filter (fun s -> String.IsNullOrWhiteSpace x |> not) 
+           |> Arb.filter (fun s -> String.IsNullOrWhiteSpace s |> not) 
            |> Arb.toGen
            |> Gen.map (fun x -> Paket.Domain.NonEmptyString x) }
 

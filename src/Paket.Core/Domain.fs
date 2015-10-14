@@ -58,21 +58,15 @@ let PackageName(name:string) = PackageName.PackageName(NonEmptyString(name.Trim(
 [<System.Diagnostics.DebuggerDisplay("{Item}")>]
 [<CustomEquality;CustomComparison>]
 type GroupName =
-| GroupName of string
+| GroupName of NonEmptyString
 
     member this.GetCompareString() =
         match this with
-        | GroupName id ->
-            match id with
-            | null -> ""
-            | _ -> id.ToLowerInvariant().Trim()
+        | GroupName id -> id.ToString().ToLowerInvariant().Trim()
 
     override this.ToString() = 
         match this with
-        | GroupName id ->
-            match id with
-            | null -> ""
-            | _ -> id
+        | GroupName id -> id.ToString()
 
     override this.Equals(that) = 
         match that with
@@ -88,7 +82,7 @@ type GroupName =
           | _ -> invalidArg "that" "cannot compare value of different types"
 
 /// Function to convert a string into a group name
-let GroupName(name:string) = GroupName.GroupName(name.Trim())
+let GroupName(name:string) = GroupName.GroupName(NonEmptyString(name.Trim()))
 
 type DomainMessage = 
     | DirectoryDoesntExist of DirectoryInfo
