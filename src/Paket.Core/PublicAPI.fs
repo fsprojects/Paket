@@ -367,6 +367,13 @@ type Dependencies(dependenciesFileName: string) =
         |> Seq.filter (fun kv -> normalizedDependencies |> Seq.exists ((=) kv.Key))
         |> listPackages
 
+    /// Returns all groups.
+    member this.GetGroups(): string list =
+        let dependenciesFile = DependenciesFile.ReadFromFile dependenciesFileName
+        dependenciesFile.Groups
+        |> Seq.map (fun kv -> kv.Key.ToString())
+        |> Seq.toList
+
     /// Returns the direct dependencies for the given package.
     member this.GetDirectDependenciesForPackage(groupName,packageName:string): (string * string * string) list =
         let resolvedPackages = getLockFile().GetGroupedResolution()

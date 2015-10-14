@@ -1,20 +1,11 @@
-#### 2.12.8 - 14.10.2015
-* COSMETICS: Don't allow negative numbers in SemVer
-
-#### 2.12.7 - 14.10.2015
+#### 2.13.0 - 14.10.2015
+* Show-Groups command - http://fsprojects.github.io/Paket/paket-show-groups.html
 * BUGFIX: Fixed combine operation for framework restrictions - https://github.com/fsprojects/Paket/issues/1137
-
-#### 2.12.5 - 14.10.2015
 * BUGFIX: Lockfile-Parser did not to parse framework restrictions and therefore paket install could lead to wrong lock file - https://github.com/fsprojects/Paket/issues/1135
-
-#### 2.12.4 - 14.10.2015
 * USABILITY: Non-SemVer InformationalVersion are now allowed for paket pack - https://github.com/fsprojects/Paket/issues/1134
-
-#### 2.12.3 - 13.10.2015
-* COSMETICS: Don't show the pin notice if dependency is transitive
-
-#### 2.12.1 - 12.10.2015
 * USABILITY: Dependencies file parser should detects comma between install settings - https://github.com/fsprojects/Paket/issues/1129
+* COSMETICS: Don't show the pin notice if dependency is transitive
+* COSMETICS: Don't allow negative numbers in SemVer
 
 #### 2.12.0 - 12.10.2015
 * Better SemVer update by adding --keep-major, --keep-minor, --keep-patch to the CLI

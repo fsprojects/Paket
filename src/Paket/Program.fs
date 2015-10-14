@@ -268,8 +268,13 @@ let getInstalledPackages (results : ParseResults<_>) =
             else dependenciesFile.GetDirectDependencies(referencesFile)
 
 let showInstalledPackages (results : ParseResults<_>) =
-    for groupName,name,version in getInstalledPackages results do  // TODO: Better grouping in reporting
+    for groupName,name,version in getInstalledPackages results do
         tracefn "%s %s - %s" groupName name version
+
+let showGroups (results : ParseResults<_>) =
+    let dependenciesFile = Dependencies.Locate()
+    for groupName in dependenciesFile.GetGroups() do
+        tracefn "%s" groupName
 
 let findPackageVersions (results : ParseResults<_>) =
     let maxResults = defaultArg (results.TryGetResult <@ FindPackageVersionsArgs.MaxResults @>) 10000
@@ -334,6 +339,7 @@ let main() =
                 | FindPackages -> processCommand findPackages
                 | FindPackageVersions -> processCommand findPackageVersions
                 | ShowInstalledPackages -> processCommand showInstalledPackages
+                | ShowGroups -> processCommand showGroups
                 | Pack -> processCommand pack
                 | Push -> processCommand push
 
