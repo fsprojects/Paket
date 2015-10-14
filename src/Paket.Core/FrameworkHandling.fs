@@ -68,7 +68,6 @@ module KnownAliases =
          ".", "" ]
         |> List.map (fun (p,r) -> p.ToLower(),r.ToLower())
 
-
 /// Framework Identifier type.
 type FrameworkIdentifier = 
     | DotNetFramework of FrameworkVersion
@@ -84,7 +83,68 @@ type FrameworkIdentifier =
     | WindowsPhoneSilverlight of string
     | Silverlight of string
 
-    
+    static member private ParseVersion(s:string) =
+        if s.Length > 0 && s.[0] = 'v' then
+            match Version.TryParse(s.Substring(1)) with
+            | true, v -> v
+            | false, _ -> failwith ("Invalid version syntax: " + s)
+        else
+            failwith ("Invalid version syntax: " + s)
+
+    member private x.ApplyOperator y compareFramework compareVersion =
+        let compareVersion' a b =
+            let va = FrameworkIdentifier.ParseVersion(a)
+            let vb = FrameworkIdentifier.ParseVersion(b)
+            compareVersion va vb
+
+        match x,y with
+        | DotNetFramework a, DotNetFramework b -> compareFramework a b
+        | DNX a, DNX b -> compareFramework a b
+        | DNXCore a, DNXCore b -> compareFramework a b
+        | MonoAndroid, MonoAndroid -> false
+        | MonoTouch, MonoTouch -> false
+        | MonoMac, MonoMac -> false
+        | XamariniOS, XamariniOS -> false
+        | XamarinMac, XamarinMac -> false
+        | Windows a, Windows b -> compareVersion' a b
+        | WindowsPhoneApp a, WindowsPhoneApp b -> compareVersion' a b
+        | WindowsPhoneSilverlight a, WindowsPhoneSilverlight b -> compareVersion' a b
+        | Silverlight a, Silverlight b -> compareVersion' a b
+        | _ -> false
+
+    /// Is x considered supperior to y
+    static member (.>) (x:FrameworkIdentifier, y:FrameworkIdentifier) =
+        x.ApplyOperator y (>) (>)
+
+    /// Is x considered supperior or equal to y
+    static member (.>=) (x:FrameworkIdentifier, y:FrameworkIdentifier) =
+        x = y || x .> y
+
+    /// Is x considered inferior to y
+    static member (.<) (x:FrameworkIdentifier, y:FrameworkIdentifier) =
+        x.ApplyOperator y (<) (<)
+
+    /// Is x considered inferior or equal to y
+    static member (.<=) (x:FrameworkIdentifier, y:FrameworkIdentifier) =
+        x = y || x .< y
+
+    static member IsSameFramework (x:FrameworkIdentifier) y =
+        x = y || x .< y || x .> y
+
+    static member Min (x:FrameworkIdentifier) y =
+        match x .<= y, y .<= x with
+        | true, true -> x
+        | true, false -> x
+        | false, true -> y
+        | false, false -> failwith (sprintf "Not the same framework '%O' and '%O'" x y)
+
+    static member Max (x:FrameworkIdentifier) y =
+        match x .>= y, y .>= x with
+        | true, true -> x
+        | true, false -> x
+        | false, true -> y
+        | false, false -> failwith (sprintf "Not the same framework '%O' and '%O'" x y)
+
     override x.ToString() = 
         match x with
         | DotNetFramework v -> "net" + v.ShortString()
@@ -99,7 +159,6 @@ type FrameworkIdentifier =
         | WindowsPhoneApp v -> "wp" + v
         | WindowsPhoneSilverlight v -> "wp" + v
         | Silverlight v -> "sl" + v.Replace("v","").Replace(".","")
-
 
     // returns a list of compatible platforms that this platform also supports
     member x.SupportedPlatforms =
