@@ -1,4 +1,7 @@
 #### 2.12.3 - 13.10.2015
+* USABILITY: Non-SemVer InformationalVersion are now allowed for paket pack - https://github.com/fsprojects/Paket/issues/1134
+
+#### 2.12.3 - 13.10.2015
 * COSMETICS: Don't show the pin notice if dependency is transitive
 
 #### 2.12.1 - 12.10.2015
