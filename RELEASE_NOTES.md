@@ -1,4 +1,4 @@
-#### 2.12.3 - 13.10.2015
+#### 2.12.4 - 14.10.2015
 * USABILITY: Non-SemVer InformationalVersion are now allowed for paket pack - https://github.com/fsprojects/Paket/issues/1134
 
 #### 2.12.3 - 13.10.2015
