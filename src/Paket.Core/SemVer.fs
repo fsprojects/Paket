@@ -86,11 +86,11 @@ type PreRelease =
 [<CustomEquality; CustomComparison; StructuredFormatDisplay("{AsString}")>]
 type SemVerInfo = 
     { /// MAJOR version when you make incompatible API changes.
-      Major : int
+      Major : uint32
       /// MINOR version when you add functionality in a backwards-compatible manner.
-      Minor : int
+      Minor : uint32
       /// PATCH version when you make backwards-compatible bug fixes.
-      Patch : int
+      Patch : uint32
       /// The optional PreRelease version
       PreRelease : PreRelease option
       /// The optional build no.
@@ -191,13 +191,13 @@ module SemVer =
             | n when plusIndex = version.Length - 1 -> ""
             | n -> version.Substring(plusIndex + 1)
         
-        let major, minor, patch, build = 
+        let major, minor, patch, build =
             match majorMinorPatch.Split([|'.'|]) with
-            | [|M; m; p; b|] -> int M, int m, int p, b
-            | [|M; m; p; |] -> int M, int m, int p, "0"
-            | [|M; m;|] -> int M, int m, 0, "0"
-            | [|M;|] -> int M, 0, 0, "0"
-            | _ -> 0, 0, 0, "0"
+            | [|M; m; p; b|] -> uint32 M, uint32 m, uint32 p, b
+            | [|M; m; p; |] -> uint32 M, uint32 m, uint32 p, "0"
+            | [|M; m;|] -> uint32 M, uint32 m, 0u, "0"
+            | [|M;|] -> uint32 M, 0u, 0u, "0"
+            | _ -> 0u, 0u, 0u, "0"
 
         { Major = major
           Minor = minor

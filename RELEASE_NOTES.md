@@ -1,3 +1,6 @@
+#### 2.12.8 - 14.10.2015
+* COSMETICS: Don't allow negative numbers in SemVer
+
 #### 2.12.7 - 14.10.2015
 * BUGFIX: Fixed combine operation for framework restrictions - https://github.com/fsprojects/Paket/issues/1137
 
