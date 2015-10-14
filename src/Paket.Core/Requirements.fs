@@ -194,7 +194,7 @@ let combineRestrictions x y =
         match y with
         | FrameworkRestriction.Exactly r -> if min1 <= r && r < max1 then [FrameworkRestriction.Exactly r] else []
         | FrameworkRestriction.Portable _ -> []
-        | FrameworkRestriction.AtLeast r -> if r <= max1 then [FrameworkRestriction.Between(max r min1,max1)] else []
+        | FrameworkRestriction.AtLeast r -> if r < max1 then [FrameworkRestriction.Between(max r min1,max1)] else []
         | FrameworkRestriction.Between(min2,max2) -> 
             let min' = max min1 min2
             let max' = min max1 max2
