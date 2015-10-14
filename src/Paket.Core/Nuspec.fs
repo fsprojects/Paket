@@ -36,7 +36,7 @@ module internal NuSpecParserHelper =
                 | Some x -> [FrameworkRestriction.Exactly x]
                 | None -> []
             | _ -> []
-        name,version,restriction
+        Some name,version,restriction
 
     let getAssemblyRefs node =
         let name = node |> getAttribute "assemblyName"
@@ -64,10 +64,9 @@ type Nuspec =
     static member All = { References = NuspecReferences.All; Dependencies = []; FrameworkAssemblyReferences = []; OfficialName = ""; LicenseUrl = ""; IsDevelopmentDependency = false }
     static member Explicit references = { References = NuspecReferences.Explicit references; Dependencies = []; FrameworkAssemblyReferences = []; OfficialName = ""; LicenseUrl = ""; IsDevelopmentDependency = false }
 
-    static member Load(root,groupName,version,includeVersionInPath,name:PackageName) =
-        let (PackageName name) = name
-        let folder = DirectoryInfo(getTargetFolder root groupName name version includeVersionInPath).FullName
-        let nuspec = Path.Combine(folder,sprintf "%s.nuspec" name)
+    static member Load(root,groupName,version,includeVersionInPath,packageName:PackageName) =
+        let folder = DirectoryInfo(getTargetFolder root groupName packageName version includeVersionInPath).FullName
+        let nuspec = Path.Combine(folder,sprintf "%O.nuspec" packageName)
         Nuspec.Load nuspec
 
     static member Load(fileName : string) = 
@@ -84,7 +83,7 @@ type Nuspec =
                     match node |> getAttribute "targetFramework" with
                     | Some framework ->
                         match FrameworkDetection.Extract framework with
-                        | Some x -> [PackageName "",VersionRequirement.NoRestriction,[FrameworkRestriction.Exactly x]]
+                        | Some x -> [None,VersionRequirement.NoRestriction,[FrameworkRestriction.Exactly x]]
                         | None -> []
                     | _ -> [])
                 |> List.concat
@@ -94,7 +93,7 @@ type Nuspec =
                 |> getDescendants "dependency"
                 |> List.map (NuSpecParserHelper.getDependency fileName)
                 |> List.append frameworks
-                |> Requirements.optimizeDependencies 
+                |> Requirements.optimizeDependencies
             
             let references = 
                 doc

@@ -10,6 +10,13 @@ type Generators =
   static member BigInt() =
     { new Arbitrary<bigint>() with
         override x.Generator = Arb.generate<int> |> Gen.map (fun x -> bigint x) }
+  static member NonEmptyString() =
+    { new Arbitrary<Paket.Domain.NonEmptyString>() with
+        override x.Generator = 
+            Arb.Default.String()
+           |> Arb.filter (fun s -> String.IsNullOrWhiteSpace x |> not) 
+           |> Arb.toGen
+           |> Gen.map (fun x -> Paket.Domain.NonEmptyString x) }
 
 let removeLineBreaks (text:string) = text.Replace("\r","").Replace("\n","")
 
@@ -28,7 +35,7 @@ let serializeAndParseLockFile (lockfile : LockFile) =
             false
         else true
     
-[<Test>][<Timeout(2000)>]
+[<Test>][<Timeout(200000)>]
 let ``serializing and parsing lockfile should give same lockfile`` () =
     Arb.register<Generators>() |> ignore
     Check.QuickThrowOnFailure serializeAndParseLockFile

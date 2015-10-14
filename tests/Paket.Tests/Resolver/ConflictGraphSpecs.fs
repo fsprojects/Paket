@@ -25,7 +25,7 @@ let graph =
       "F", "1.2", [] ]
 
 let defaultPackage = 
-    { Name = PackageName ""
+    { Name = PackageName "EMPTY"
       Parent = PackageRequirementSource.DependenciesFile ""
       VersionRequirement = VersionRequirement(VersionRange.Exactly "1.0", PreReleaseStatus.No)
       Settings = InstallSettings.Default

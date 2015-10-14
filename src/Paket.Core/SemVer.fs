@@ -192,14 +192,12 @@ module SemVer =
             | n -> version.Substring(plusIndex + 1)
         
         let major, minor, patch, build = 
-            try
-                match majorMinorPatch.Split([|'.'|]) with
-                | [|M; m; p; b|] -> uint32 M, uint32 m, uint32 p, b
-                | [|M; m; p; |] -> uint32 M, uint32 m, uint32 p, "0"
-                | [|M; m;|] -> uint32 M, uint32 m, 0u, "0"
-                | [|M;|] -> uint32 M, 0u, 0u, "0"
-                | _ -> 0u, 0u, 0u, "0"
-            with
+            if String.IsNullOrWhiteSpace majorMinorPatch then 0u, 0u, 0u, "0" else
+            match majorMinorPatch.Split([|'.'|]) with
+            | [|M; m; p; b|] -> uint32 M, uint32 m, uint32 p, b
+            | [|M; m; p; |] -> uint32 M, uint32 m, uint32 p, "0"
+            | [|M; m;|] -> uint32 M, uint32 m, 0u, "0"
+            | [|M;|] -> uint32 M, 0u, 0u, "0"
             | _ -> 0u, 0u, 0u, "0"
 
         { Major = major

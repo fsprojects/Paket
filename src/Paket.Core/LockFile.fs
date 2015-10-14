@@ -50,14 +50,13 @@ module LockFileSerializer =
               | None -> ()
 
               match options.Settings.ReferenceCondition with
-              | Some condition -> yield "CONDITION: " + condition.ToUpper()
-              | None -> ()
+              | Some condition when isNull condition |> not -> yield "CONDITION: " + condition.ToUpper()
+              | _ -> ()
 
               match options.Settings.FrameworkRestrictions with
               | [] -> ()
               | _  -> yield "FRAMEWORK: " + (String.Join(", ",options.Settings.FrameworkRestrictions)).ToUpper()
               for (source, _), packages in sources do
-              
                   if String.IsNullOrEmpty source then
                     failwith "Can't serialize empty source"
 
@@ -69,10 +68,6 @@ module LockFileSerializer =
 
                   yield "  specs:"
                   for _,_,package in packages |> Seq.sortBy (fun (_,_,p) -> p.Name) do
-                      let (PackageName packageName) = package.Name
-                      if String.IsNullOrEmpty packageName then
-                          failwith "Can't serialize empty package name"
-                      
                       let versionStr = 
                           let s = package.Version.ToString()
                           if s = "" then s else "(" + s + ")"
@@ -85,22 +80,19 @@ module LockFileSerializer =
                       let s = settings.ToString()
 
                       if s = "" then 
-                        yield sprintf "    %s %s" packageName versionStr 
+                        yield sprintf "    %O %s" package.Name versionStr 
                       else
-                        yield sprintf "    %s %s - %s" packageName versionStr s
+                        yield sprintf "    %O %s - %s" package.Name versionStr s
 
-                      for (PackageName name),v,restrictions in package.Dependencies do
-                          if String.IsNullOrEmpty name then
-                              failwith "Can't serialize empty package name"
-
+                      for name,v,restrictions in package.Dependencies do
                           let versionStr = 
                               let s = v.ToString()
                               if s = "" then s else "(" + s + ")"
 
                           if List.isEmpty restrictions || restrictions = options.Settings.FrameworkRestrictions then
-                            yield sprintf "      %s %s" name versionStr
+                            yield sprintf "      %O %s" name versionStr
                           else
-                            yield sprintf "      %s %s - framework: %s" name versionStr (String.Join(", ",restrictions))]
+                            yield sprintf "      %O %s - framework: %s" name versionStr (String.Join(", ",restrictions))]
     
         String.Join(Environment.NewLine, all |> List.map (fun s -> s.TrimEnd()))
 
@@ -172,11 +164,11 @@ module LockFileSerializer =
                         | Some authKey -> yield sprintf "    %s %s" path authKey
                         | None -> yield sprintf "    %s" path
 
-                    for (PackageName name,v) in file.Dependencies do
-                        let versionStr = 
+                    for (name,v) in file.Dependencies do
+                        let versionStr =
                             let s = v.ToString()
                             if s = "" then s else "(" + s + ")"
-                        yield sprintf "      %s %s" name versionStr]
+                        yield sprintf "      %O %s" name versionStr]
 
         String.Join(Environment.NewLine, all |> List.map (fun s -> s.TrimEnd()))
 
@@ -403,12 +395,11 @@ type LockFile(fileName:string,groups: Map<GroupName,LockFileGroup>) =
         usedPackages
 
     /// Gets all dependencies of the given package
-    member this.GetAllDependenciesOf(groupName,package) =
-        match this.GetAllDependenciesOfSafe(groupName,package) with
+    member this.GetAllDependenciesOf(groupName,packageName) =
+        match this.GetAllDependenciesOfSafe(groupName,packageName) with
         | Some packages -> packages
         | None ->
-            let (PackageName name) = package
-            failwithf "Package %s was referenced, but it was not found in the paket.lock file in group %O." name groupName
+            failwithf "Package %O was referenced, but it was not found in the paket.lock file in group %O." packageName groupName
 
     /// Gets all dependencies of the given package in the given group.
     member this.GetAllDependenciesOfSafe(groupName:GroupName,package) =

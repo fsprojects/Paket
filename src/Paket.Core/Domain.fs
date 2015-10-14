@@ -1,26 +1,42 @@
 ﻿module Paket.Domain
 
+open System
 open System.IO
+
+type NonEmptyString(x) =
+    let validated =
+        if String.IsNullOrWhiteSpace x then
+            failwith "Given string is empty."
+
+    override this.ToString() = x
+
+    override this.Equals(that) = 
+        match that with
+        | :? NonEmptyString as that -> this.ToString() = that.ToString()
+        | _ -> false
+
+    override this.GetHashCode() = hash x
+
+    interface System.IComparable with
+       member this.CompareTo that = 
+          match that with 
+          | :? NonEmptyString as that -> this.ToString().CompareTo(that.ToString())
+          | _ -> invalidArg "that" "cannot compare value of different types"
+    
 
 /// Represents a NuGet package name
 [<System.Diagnostics.DebuggerDisplay("{Item}")>]
 [<CustomEquality;CustomComparison>]
 type PackageName =
-| PackageName of string
+| PackageName of NonEmptyString
 
     member this.GetCompareString() =
         match this with
-        | PackageName id -> 
-            match id with
-            | null -> ""
-            | _ -> id.ToLowerInvariant().Trim()
+        | PackageName id -> id.ToString().ToLowerInvariant().Trim()
 
     override this.ToString() = 
         match this with
-        | PackageName id -> 
-            match id with
-            | null -> ""
-            | _ -> id
+        | PackageName id -> id.ToString()
 
     override this.Equals(that) = 
         match that with
@@ -36,7 +52,7 @@ type PackageName =
           | _ -> invalidArg "that" "cannot compare value of different types"
 
 /// Function to convert a string into a NuGet package name
-let PackageName(name:string) = PackageName.PackageName(name.Trim())
+let PackageName(name:string) = PackageName.PackageName(NonEmptyString(name.Trim()))
 
 /// Represents a normalized group name
 [<System.Diagnostics.DebuggerDisplay("{Item}")>]
@@ -133,10 +149,10 @@ type DomainMessage =
 
         | StrictModeDetected -> 
             "Strict mode detected. Command not executed."
-        | DependencyNotFoundInLockFile(PackageName name) -> 
-            sprintf "Dependency %s from paket.dependencies not found in lock file." name
-        | ReferenceNotFoundInLockFile(path, groupName, PackageName name) -> 
-            sprintf "Reference %s from %s not found in lock file in group %s." name path groupName
+        | DependencyNotFoundInLockFile(packageName) -> 
+            sprintf "Dependency %O from paket.dependencies not found in lock file." packageName
+        | ReferenceNotFoundInLockFile(path, groupName, packageName) -> 
+            sprintf "Reference %O from %s not found in lock file in group %s." packageName path groupName
 
         | DownloadError url ->
             sprintf "Error occured while downloading from %s." url
