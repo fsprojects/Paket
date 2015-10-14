@@ -179,7 +179,7 @@ let combineRestrictions x y =
         | FrameworkRestriction.Exactly r' -> if r = r' then [FrameworkRestriction.Exactly r] else []
         | FrameworkRestriction.Portable _ -> []
         | FrameworkRestriction.AtLeast r' -> if r' <= r then [FrameworkRestriction.Exactly r] else []
-        | FrameworkRestriction.Between(min,max) -> if min <= r && r <= max then [FrameworkRestriction.Exactly r] else []
+        | FrameworkRestriction.Between(min,max) -> if min <= r && r < max then [FrameworkRestriction.Exactly r] else []
     | FrameworkRestriction.Portable r ->
         match y with
         | FrameworkRestriction.Portable r' -> if r = r' then [FrameworkRestriction.Portable r] else []
@@ -189,12 +189,12 @@ let combineRestrictions x y =
         | FrameworkRestriction.Exactly r' -> if r <= r' then [FrameworkRestriction.Exactly r'] else []
         | FrameworkRestriction.Portable _ -> []
         | FrameworkRestriction.AtLeast r' -> [FrameworkRestriction.AtLeast (max r r')]
-        | FrameworkRestriction.Between(min,max) -> if min <= r && r <= max then [FrameworkRestriction.Between(r,max)] else []
+        | FrameworkRestriction.Between(min,max') -> if r < max' then [FrameworkRestriction.Between(max r min,max')] else []
     | FrameworkRestriction.Between(min1,max1) ->
         match y with
-        | FrameworkRestriction.Exactly r -> if min1 <= r && r <= max1 then [FrameworkRestriction.Exactly r] else []
+        | FrameworkRestriction.Exactly r -> if min1 <= r && r < max1 then [FrameworkRestriction.Exactly r] else []
         | FrameworkRestriction.Portable _ -> []
-        | FrameworkRestriction.AtLeast r -> if min1 <= r && r <= max1 then [FrameworkRestriction.Between(r,max1)] else []
+        | FrameworkRestriction.AtLeast r -> if r < max1 then [FrameworkRestriction.Between(max r min1,max1)] else []
         | FrameworkRestriction.Between(min2,max2) -> 
             let min' = max min1 min2
             let max' = min max1 max2
