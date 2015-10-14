@@ -356,7 +356,9 @@ module String =
             Some (input.Substring(prefix.Length))
         else None
 
-    let quoted(text:string) = (if text.Contains(" ") then "\"" + text + "\"" else text) 
+    let inline quoted(text:string) = 
+        if String.IsNullOrEmpty text then "" else
+        if text.Contains(" ") then "\"" + text + "\"" else text
 
 // MonadPlus - "or else"
 let inline (++) x y =

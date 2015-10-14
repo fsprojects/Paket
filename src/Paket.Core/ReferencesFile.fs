@@ -105,7 +105,6 @@ type ReferencesFile =
         { ReferencesFile.FromLines lines with FileName = fileName }
 
     member this.AddNuGetReference(groupName, packageName : PackageName, copyLocal: bool, importTargets: bool, frameworkRestrictions, includeVersionInPath, omitContent : bool, createBindingRedirects: bool, referenceCondition) =
-        let (PackageName referenceName) = packageName
         let package: PackageInstallSettings =
             { Name = packageName
               Settings = 
@@ -120,7 +119,7 @@ type ReferencesFile =
 
         match this.Groups |> Map.tryFind groupName with
         | None -> 
-                tracefn "Adding %s to %s into new group %O" referenceName this.FileName groupName  
+                tracefn "Adding %O to %s into new group %O" packageName this.FileName groupName
 
                 let newGroup = 
                     { Name = groupName
@@ -134,7 +133,7 @@ type ReferencesFile =
             if group.NugetPackages |> Seq.exists (fun p -> p.Name = packageName) then
                 this
             else
-                tracefn "Adding %s to %s into group %O" referenceName this.FileName groupName
+                tracefn "Adding %O to %s into group %O" packageName this.FileName groupName
 
                 let newGroup = { group with NugetPackages = group.NugetPackages @ [ package ] }
                 let newGroups = this.Groups |> Map.add newGroup.Name newGroup
@@ -144,12 +143,11 @@ type ReferencesFile =
     member this.AddNuGetReference(groupName, packageName : PackageName) = this.AddNuGetReference(groupName, packageName, true, true, [], false, false, false, null)
 
     member this.RemoveNuGetReference(groupName, packageName : PackageName) =
-        let (PackageName referenceName) = packageName
         let group = this.Groups.[groupName]
         if group.NugetPackages |> Seq.exists (fun p ->  p.Name = packageName) |> not then
             this
         else
-            tracefn "Removing %s from %s" referenceName this.FileName
+            tracefn "Removing %O from %s" packageName this.FileName
 
             let newGroup = { group with  NugetPackages = group.NugetPackages |> List.filter (fun p -> p.Name <> packageName) }
             let newGroups = this.Groups |> Map.add newGroup.Name newGroup

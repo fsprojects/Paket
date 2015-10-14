@@ -248,7 +248,7 @@ type Dependencies(dependenciesFileName: string) =
     member this.FindOutdated(strict: bool,includePrereleases: bool): (string * string * SemVerInfo) list =
         FindOutdated.FindOutdated strict includePrereleases
         |> this.Process
-        |> List.map (fun (GroupName g, PackageName p,_,newVersion) -> g,p,newVersion)
+        |> List.map (fun (g:GroupName, p:PackageName,_,newVersion) -> g.ToString(),p.ToString(),newVersion)
 
     /// Downloads the latest paket.bootstrapper into the .paket folder.
     member this.DownloadLatestBootstrapper() : unit =

@@ -282,7 +282,7 @@ let findPackageVersions (results : ParseResults<_>) =
         match NuGetV3.getSearchAPI(None,source) with
         | None -> Array.empty
         | Some v3Url ->
-            NuGetV3.FindVersionsForPackage(v3Url,None,name,true,maxResults)
+            NuGetV3.FindVersionsForPackage(v3Url,None,Domain.PackageName name,true,maxResults)
             |> Async.RunSynchronously
 
     for p in result do

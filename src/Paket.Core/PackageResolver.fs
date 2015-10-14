@@ -133,20 +133,18 @@ type Resolution =
                 |> Set.union requirements
                 |> Seq.filter (fun x -> x.Name = r.Name)
                 |> Seq.iter (fun x ->
-                        let (PackageName name) = x.Name
                         match x.Parent with
                         | DependenciesFile _ ->
                             sprintf "   - Dependencies file requested %O" x.VersionRequirement |> addToError
-                        | Package(PackageName parentName,version) ->
-                            sprintf "   - %s %O requested %O" parentName version x.VersionRequirement
+                        | Package(parentName,version) ->
+                            sprintf "   - %O %O requested %O" parentName version x.VersionRequirement
                             |> addToError)
 
-                let (PackageName name) = r.Name
                 match r.Parent with
                 | DependenciesFile _ ->
                     sprintf "   - Dependencies file requested %O" r.VersionRequirement |> addToError
-                | Package(PackageName parentName,version) ->
-                    sprintf "   - %s %O requested %O" parentName version r.VersionRequirement
+                | Package(parentName,version) ->
+                    sprintf "   - %O %O requested %O" parentName version r.VersionRequirement
                     |> addToError
 
             addToError "Error in resolution."

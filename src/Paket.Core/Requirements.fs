@@ -141,36 +141,40 @@ let optimizeDependencies packages =
         |> Set.ofList
 
     [for (name,versionRequirement:VersionRequirement),group in grouped do
-        if name <> PackageName "" then
-            if not (Set.isEmpty emptyRestrictions) && Set.contains (name,versionRequirement) emptyRestrictions then
-                yield name,versionRequirement,[]
-            else
-                let plain = 
-                    group 
-                    |> List.map (fun (_,_,res) -> res) 
-                    |> List.concat
-                    |> List.distinct
-                    |> List.sort
+        if not (Set.isEmpty emptyRestrictions) && Set.contains (name,versionRequirement) emptyRestrictions then
+            yield name,versionRequirement,[]
+        else
+            let plain = 
+                group 
+                |> List.map (fun (_,_,res) -> res) 
+                |> List.concat
+                |> List.distinct
+                |> List.sort
 
-                let localMaxDotNetRestriction = findMaxDotNetRestriction plain
-                let globalMax = defaultArg globalMax localMaxDotNetRestriction          
+            let localMaxDotNetRestriction = findMaxDotNetRestriction plain
+            let globalMax = defaultArg globalMax localMaxDotNetRestriction
 
-                let dotnetRestrictions,others = List.partition (function | FrameworkRestriction.Exactly(DotNetFramework(_)) -> true | FrameworkRestriction.AtLeast(DotNetFramework(_)) -> true | _ -> false) plain
+            let dotnetRestrictions,others = List.partition (function | FrameworkRestriction.Exactly(DotNetFramework(_)) -> true | FrameworkRestriction.AtLeast(DotNetFramework(_)) -> true | _ -> false) plain
 
-                let restrictions' = 
-                    dotnetRestrictions
-                    |> List.map (fun restriction ->
-                        match restriction with
-                        | FrameworkRestriction.Exactly r ->                     
-                            if r = localMaxDotNetRestriction && r = globalMax then
-                                FrameworkRestriction.AtLeast r
-                            else
-                                restriction
-                        | _ -> restriction)
+            let restrictions' = 
+                dotnetRestrictions
+                |> List.map (fun restriction ->
+                    match restriction with
+                    | FrameworkRestriction.Exactly r ->
+                        if r = localMaxDotNetRestriction && r = globalMax then
+                            FrameworkRestriction.AtLeast r
+                        else
+                            restriction
+                    | _ -> restriction)
 
-                let restrictions = optimizeRestrictions restrictions'
+            let restrictions = optimizeRestrictions restrictions'
 
-                yield name,versionRequirement,others @ restrictions]
+            yield name,versionRequirement,others @ restrictions]
+
+    |> List.choose (fun (a,b,c) ->
+        match a with
+        | None -> None
+        | Some a -> Some(a,b,c))
 
 let combineRestrictions x y =
     match x with
@@ -253,8 +257,8 @@ type InstallSettings =
               | Some x -> yield "version_in_path: " + x.ToString().ToLower()
               | None -> ()
               match this.ReferenceCondition with
-              | Some x -> yield "condition: " + x.ToUpper()
-              | None -> ()
+              | Some x when x <> null -> yield "condition: " + x.ToUpper()
+              | _ -> ()
               match this.CreateBindingRedirects with
               | Some true -> yield "redirects: on"
               | Some false -> yield "redirects: off"
