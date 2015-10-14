@@ -1,4 +1,4 @@
-module Paket.RestrictionFilterSpecs
+﻿module Paket.RestrictionFilterSpecs
 
 open System.IO
 open Paket
@@ -53,3 +53,11 @@ let ``should filter >= net40 and >= net45 < net46``() =
 
     filterRestrictions l1 l2
     |> shouldEqual l2
+
+[<Test>]
+let ``should filter >= net40 and >= net20 < net40``() = 
+    let l1 = [FrameworkRestriction.AtLeast(DotNetFramework(FrameworkVersion.V4))]
+    let l2 = [FrameworkRestriction.Between(DotNetFramework(FrameworkVersion.V2),DotNetFramework(FrameworkVersion.V4))]
+
+    filterRestrictions l1 l2
+    |> shouldEqual []
