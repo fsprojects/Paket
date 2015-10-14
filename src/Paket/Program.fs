@@ -271,7 +271,7 @@ let showInstalledPackages (results : ParseResults<_>) =
     for groupName,name,version in getInstalledPackages results do
         tracefn "%s %s - %s" groupName name version
 
-let showGroups (results : ParseResults<_>) =
+let showGroups (results : ParseResults<ShowGroupsArgs>) =
     let dependenciesFile = Dependencies.Locate()
     for groupName in dependenciesFile.GetGroups() do
         tracefn "%s" groupName

@@ -1,4 +1,4 @@
-#### 2.13.0 - 14.10.2015
+#### 2.13.1 - 14.10.2015
 * Show-Groups command - http://fsprojects.github.io/Paket/paket-show-groups.html
 * BUGFIX: Fixed combine operation for framework restrictions - https://github.com/fsprojects/Paket/issues/1137
 * BUGFIX: Lockfile-Parser did not to parse framework restrictions and therefore paket install could lead to wrong lock file - https://github.com/fsprojects/Paket/issues/1135
