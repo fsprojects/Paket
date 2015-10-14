@@ -1,3 +1,6 @@
+#### 2.12.6 - 14.10.2015
+* BUGFIX: Fixed combine operation for framework restrictions - https://github.com/fsprojects/Paket/issues/1137
+
 #### 2.12.5 - 14.10.2015
 * BUGFIX: Lockfile-Parser did not to parse framework restrictions and therefore paket install could lead to wrong lock file - https://github.com/fsprojects/Paket/issues/1135
 
