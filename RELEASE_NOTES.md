@@ -1,4 +1,4 @@
-#### 2.12.6 - 14.10.2015
+#### 2.12.7 - 14.10.2015
 * BUGFIX: Fixed combine operation for framework restrictions - https://github.com/fsprojects/Paket/issues/1137
 
 #### 2.12.5 - 14.10.2015
