@@ -88,8 +88,8 @@ type FrameworkIdentifier =
     override x.ToString() = 
         match x with
         | DotNetFramework v -> "net" + v.ShortString()
-        | DNX v -> "dnx" + v.ShortString()             
-        | DNXCore v -> "dnxcore" + v.ShortString()             
+        | DNX v -> "dnx" + v.ShortString()
+        | DNXCore v -> "dnxcore" + v.ShortString()
         | MonoAndroid -> "monoandroid"
         | MonoTouch -> "monotouch"
         | MonoMac -> "monomac"
@@ -98,7 +98,7 @@ type FrameworkIdentifier =
         | Windows v -> "win" + v
         | WindowsPhoneApp v -> "wp" + v
         | WindowsPhoneSilverlight v -> "wp" + v
-        | Silverlight v -> "sl" + v.Replace("v","").Replace(".","")
+        | Silverlight v -> "sl" + if String.IsNullOrWhiteSpace v then "" else v.Replace("v","").Replace(".","")
 
 
     // returns a list of compatible platforms that this platform also supports

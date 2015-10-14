@@ -253,8 +253,8 @@ type InstallSettings =
               | Some x -> yield "version_in_path: " + x.ToString().ToLower()
               | None -> ()
               match this.ReferenceCondition with
-              | Some x -> yield "condition: " + x.ToUpper()
-              | None -> ()
+              | Some x when x <> null -> yield "condition: " + x.ToUpper()
+              | _ -> ()
               match this.CreateBindingRedirects with
               | Some true -> yield "redirects: on"
               | Some false -> yield "redirects: off"

@@ -57,6 +57,10 @@ module LockFileSerializer =
               | [] -> ()
               | _  -> yield "FRAMEWORK: " + (String.Join(", ",options.Settings.FrameworkRestrictions)).ToUpper()
               for (source, _), packages in sources do
+              
+                  if String.IsNullOrEmpty source then
+                    failwith "Can't serialize empty source"
+
                   if not !hasReported then
                     yield "NUGET"
                     hasReported := true
@@ -66,6 +70,8 @@ module LockFileSerializer =
                   yield "  specs:"
                   for _,_,package in packages |> Seq.sortBy (fun (_,_,p) -> p.Name) do
                       let (PackageName packageName) = package.Name
+                      if String.IsNullOrEmpty packageName then
+                          failwith "Can't serialize empty package name"
                       
                       let versionStr = 
                           let s = package.Version.ToString()
@@ -84,6 +90,9 @@ module LockFileSerializer =
                         yield sprintf "    %s %s - %s" packageName versionStr s
 
                       for (PackageName name),v,restrictions in package.Dependencies do
+                          if String.IsNullOrEmpty name then
+                              failwith "Can't serialize empty package name"
+
                           let versionStr = 
                               let s = v.ToString()
                               if s = "" then s else "(" + s + ")"
@@ -100,6 +109,7 @@ module LockFileSerializer =
             let updateHasReported = new List<SingleSourceFileOrigin>()
 
             [ for (owner,project,origin), files in files |> List.groupBy (fun f -> f.Owner, f.Project, f.Origin) do
+
                 match origin with
                 | GitHubLink -> 
                     if not (updateHasReported.Contains(GitHubLink)) then
@@ -107,6 +117,13 @@ module LockFileSerializer =
                         updateHasReported.Remove (HttpLink "") |> ignore
                         updateHasReported.Remove GistLink |> ignore
                         updateHasReported.Add GitHubLink
+
+                    if String.IsNullOrEmpty owner || owner.Contains "/" || owner.Contains "\r" || owner.Contains "\n" then
+                        failwithf "Can't serialize owner %s" owner
+
+                    if String.IsNullOrEmpty project || project.Contains "/" || project.Contains "\r" || project.Contains "\n" then
+                        failwithf "Can't serialize project %s" project
+
                     yield sprintf "  remote: %s/%s" owner project
                     yield "  specs:"
                 | GistLink -> 
@@ -115,6 +132,13 @@ module LockFileSerializer =
                         updateHasReported.Remove GitHubLink |> ignore
                         updateHasReported.Remove (HttpLink "") |> ignore
                         updateHasReported.Add GistLink
+
+                    if String.IsNullOrEmpty owner || owner.Contains "/" || owner.Contains "\r" || owner.Contains "\n" then
+                        failwithf "Can't serialize owner %s" owner
+
+                    if String.IsNullOrEmpty project || project.Contains "/" || project.Contains "\r" || project.Contains "\n" then
+                        failwithf "Can't serialize project %s" project
+
                     yield sprintf "  remote: %s/%s" owner project
                     yield "  specs:"
                 | HttpLink url ->
@@ -123,12 +147,19 @@ module LockFileSerializer =
                         updateHasReported.Remove GitHubLink |> ignore
                         updateHasReported.Remove GistLink |> ignore
                         updateHasReported.Add (HttpLink "")
+                    if String.IsNullOrEmpty url || System.Uri.IsWellFormedUriString(url,UriKind.RelativeOrAbsolute) |> not then
+                        failwithf "Can't serialize url: %s" url
+
                     yield sprintf "  remote: " + url
                     yield "  specs:"
 
                 for file in files |> Seq.sortBy (fun f -> f.Owner.ToLower(),f.Project.ToLower(),f.Name.ToLower())  do
                     
-                    let path = file.Name.TrimStart '/'
+                    let path =
+                        match file.Name with
+                        | null -> ""
+                        | name -> name.TrimStart '/'
+
                     match String.IsNullOrEmpty(file.Commit) with 
                     | false -> 
                         match file.AuthKey with
@@ -208,7 +239,9 @@ module LockFileParser =
     let Parse(lockFileLines) =
         let remove textToRemove (source:string) = source.Replace(textToRemove, "")
         let removeBrackets = remove "(" >> remove ")"
-        ([{ GroupName = Constants.MainDependencyGroup; RepositoryType = None; RemoteUrl = None; Packages = []; SourceFiles = []; Options = InstallOptions.Default; LastWasPackage = false }], lockFileLines)
+        let startGroup = { GroupName = Constants.MainDependencyGroup; RepositoryType = None; RemoteUrl = None; Packages = []; SourceFiles = []; Options = InstallOptions.Default; LastWasPackage = false }
+
+        ([startGroup], lockFileLines)
         ||> Seq.fold(fun state line ->
             match state with
             | [] -> failwithf "error"
@@ -236,7 +269,7 @@ module LockFileParser =
                     | Some remote -> 
                         let parts = details.Split([|" - "|],StringSplitOptions.None)
                         let parts' = parts.[0].Split ' '
-                        let version = parts'.[1] |> removeBrackets
+                        let version = if parts'.Length < 2 then "" else parts'.[1] |> removeBrackets
                         let optionsString = 
                             if parts.Length < 2 then "" else 
                             if parts.[1] <> "" && parts.[1].Contains(":") |> not then
@@ -257,13 +290,12 @@ module LockFileParser =
                 | NugetDependency (name, v) ->
                     let parts = v.Split([|" - "|],StringSplitOptions.None)
                     let version = parts.[0]
-                    let restrictions = if parts.Length <= 1 then [] else parseRestrictions parts.[1]
                     if currentGroup.LastWasPackage then
                         match currentGroup.Packages with
                         | currentPackage :: otherPackages -> 
                             { currentGroup with
                                     Packages = { currentPackage with
-                                                    Dependencies = Set.add (PackageName name, DependenciesFileParser.parseVersionRequirement version, restrictions) currentPackage.Dependencies
+                                                    Dependencies = Set.add (PackageName name, DependenciesFileParser.parseVersionRequirement version, []) currentPackage.Dependencies
                                                 } :: otherPackages } ::otherGroups
                         | [] -> failwithf "cannot set a dependency to %s %s - no package has been specified." name v
                     else
@@ -273,8 +305,8 @@ module LockFileParser =
                                     SourceFiles = 
                                         { currentFile with
                                                     Dependencies = Set.add (PackageName name, VersionRequirement.AllReleases) currentFile.Dependencies
-                                                } :: rest }  ::otherGroups                  
-                        | [] -> failwith "cannot set a dependency to %s %s- no remote file has been specified." name v
+                                                } :: rest }  ::otherGroups
+                        | [] -> failwithf "cannot set a dependency to %s %s - no remote file has been specified." name v
                 | SourceFile(origin, details) ->
                     match origin with
                     | GitHubLink | GistLink ->
@@ -282,10 +314,10 @@ module LockFileParser =
                         | Some [| owner; project |] ->
                             let path, commit, authKey =
                                 match details.Split ' ' with
-                                | [| filePath; commit; authKey |] -> filePath, commit |> removeBrackets, (Some authKey)  
-                                | [| filePath; commit |] -> filePath, commit |> removeBrackets, None                                       
-                                | _ -> failwith "invalid file source details."
-                            { currentGroup with  
+                                | [| filePath; commit; authKey |] -> filePath, commit |> removeBrackets, (Some authKey)
+                                | [| filePath; commit |] -> filePath, commit |> removeBrackets, None
+                                | _ -> failwithf "invalid file source details: %s" details
+                            { currentGroup with
                                 LastWasPackage = false
                                 SourceFiles = { Commit = commit
                                                 Owner = owner
@@ -440,9 +472,12 @@ type LockFile(fileName:string,groups: Map<GroupName,LockFileGroup>) =
     override __.ToString() =
         String.Join
             (Environment.NewLine,
-             [|let mainGroup = groups.[Constants.MainDependencyGroup]
-               yield LockFileSerializer.serializePackages mainGroup.Options mainGroup.Resolution
-               yield LockFileSerializer.serializeSourceFiles mainGroup.RemoteFiles
+             [|match groups |> Map.tryFind Constants.MainDependencyGroup with
+               | Some mainGroup ->
+                   yield LockFileSerializer.serializePackages mainGroup.Options mainGroup.Resolution
+                   yield LockFileSerializer.serializeSourceFiles mainGroup.RemoteFiles
+               | None -> ()
+
                for g in groups do 
                 if g.Key <> Constants.MainDependencyGroup then
                     yield "GROUP " + g.Value.Name.ToString()

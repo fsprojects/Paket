@@ -17,8 +17,8 @@ let ``can parse semver strings and print the result``() =
     (SemVer.Parse "6.0.1302.0-Preview").PreRelease |> shouldEqual (PreRelease.TryParse "Preview")
     (SemVer.Parse "1.2.3").ToString() |> shouldEqual "1.2.3"
     (SemVer.Parse "1.2.3.0").ToString() |> shouldEqual "1.2.3.0"
-    (SemVer.Parse "1.2.3.0").Patch |> shouldEqual 3
-    (SemVer.Parse "1.2.3").Patch |> shouldEqual 3
+    (SemVer.Parse "1.2.3.0").Patch |> shouldEqual 3u
+    (SemVer.Parse "1.2.3").Patch |> shouldEqual 3u
     (SemVer.Parse "1.2.3.0").Build |> shouldEqual "0"
     (SemVer.Parse "1.2.3").Build |> shouldEqual "0"
     (SemVer.Parse "3.1.1.1").Build |> shouldEqual "1"
@@ -28,9 +28,9 @@ let ``can parse semver strings and print the result``() =
 [<Test>]
 let ``can parse semver strings``() = 
     let semVer = SemVer.Parse("1.2.3-alpha.beta")
-    semVer.Major |> shouldEqual 1
-    semVer.Minor |> shouldEqual 2
-    semVer.Patch |> shouldEqual 3
+    semVer.Major |> shouldEqual 1u
+    semVer.Minor |> shouldEqual 2u
+    semVer.Patch |> shouldEqual 3u
     semVer.PreRelease |> shouldEqual (Some { Origin = "alpha.beta"
                                              Name = "alpha"
                                              Values = [ PreReleaseSegment.AlphaNumeric "alpha"; PreReleaseSegment.AlphaNumeric "beta" ] })
@@ -38,9 +38,9 @@ let ``can parse semver strings``() =
 [<Test>]
 let ``can parse MBrace semver strings``() = 
     let semVer = SemVer.Parse("0.9.8-alpha")
-    semVer.Major |> shouldEqual 0
-    semVer.Minor |> shouldEqual 9
-    semVer.Patch |> shouldEqual 8
+    semVer.Major |> shouldEqual 0u
+    semVer.Minor |> shouldEqual 9u
+    semVer.Patch |> shouldEqual 8u
     semVer.PreRelease |> shouldEqual (Some { Origin = "alpha"
                                              Name = "alpha"
                                              Values = [ PreReleaseSegment.AlphaNumeric "alpha" ] })
@@ -175,9 +175,9 @@ let ``numeric pre-release identifiers exhibit correct (numeric) precedence (SemV
 [<Test>]
 let ``should accept SemVer2 prereleases`` () =
     let semVer = SemVer.Parse("1.0.0+foobar")
-    semVer.Major |> shouldEqual 1
-    semVer.Minor |> shouldEqual 0
-    semVer.Patch |> shouldEqual 0
+    semVer.Major |> shouldEqual 1u
+    semVer.Minor |> shouldEqual 0u
+    semVer.Patch |> shouldEqual 0u
     semVer.BuildMetaData |> shouldEqual "foobar"
     semVer.PreRelease |> shouldEqual None
 

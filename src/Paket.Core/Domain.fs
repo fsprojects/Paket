@@ -10,18 +10,24 @@ type PackageName =
 
     member this.GetCompareString() =
         match this with
-        | PackageName id -> id.ToLowerInvariant().Trim()
+        | PackageName id -> 
+            match id with
+            | null -> ""
+            | _ -> id.ToLowerInvariant().Trim()
 
     override this.ToString() = 
         match this with
-        | PackageName id -> id
+        | PackageName id -> 
+            match id with
+            | null -> ""
+            | _ -> id
 
     override this.Equals(that) = 
         match that with
         | :? PackageName as that -> this.GetCompareString() = that.GetCompareString()
         | _ -> false
 
-    override this.GetHashCode() = hash (this.GetCompareString())    
+    override this.GetHashCode() = hash (this.GetCompareString())
 
     interface System.IComparable with
        member this.CompareTo that = 
@@ -40,18 +46,24 @@ type GroupName =
 
     member this.GetCompareString() =
         match this with
-        | GroupName id -> id.ToLowerInvariant().Trim()
+        | GroupName id ->
+            match id with
+            | null -> ""
+            | _ -> id.ToLowerInvariant().Trim()
 
     override this.ToString() = 
         match this with
-        | GroupName id -> id
+        | GroupName id ->
+            match id with
+            | null -> ""
+            | _ -> id
 
     override this.Equals(that) = 
         match that with
         | :? GroupName as that -> this.GetCompareString() = that.GetCompareString()
         | _ -> false
 
-    override this.GetHashCode() = hash (this.GetCompareString())    
+    override this.GetHashCode() = hash (this.GetCompareString())
 
     interface System.IComparable with
        member this.CompareTo that = 
