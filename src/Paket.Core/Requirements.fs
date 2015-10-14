@@ -179,7 +179,7 @@ let combineRestrictions x y =
         | FrameworkRestriction.Exactly r' -> if r = r' then [FrameworkRestriction.Exactly r] else []
         | FrameworkRestriction.Portable _ -> []
         | FrameworkRestriction.AtLeast r' -> if r' <= r then [FrameworkRestriction.Exactly r] else []
-        | FrameworkRestriction.Between(min,max) -> if min <= r && r <= max then [FrameworkRestriction.Exactly r] else []
+        | FrameworkRestriction.Between(min,max) -> if min <= r && r < max then [FrameworkRestriction.Exactly r] else []
     | FrameworkRestriction.Portable r ->
         match y with
         | FrameworkRestriction.Portable r' -> if r = r' then [FrameworkRestriction.Portable r] else []
