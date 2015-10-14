@@ -1,3 +1,6 @@
+#### 2.12.5 - 14.10.2015
+* BUGFIX: Lockfile-Parser did not to parse framework restrictions and therefore paket install could lead to wrong lock file - https://github.com/fsprojects/Paket/issues/1135
+
 #### 2.12.4 - 14.10.2015
 * USABILITY: Non-SemVer InformationalVersion are now allowed for paket pack - https://github.com/fsprojects/Paket/issues/1134
 

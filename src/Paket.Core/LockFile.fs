@@ -257,13 +257,14 @@ module LockFileParser =
                 | NugetDependency (name, v) ->
                     let parts = v.Split([|" - "|],StringSplitOptions.None)
                     let version = parts.[0]
-                    if currentGroup.LastWasPackage then                 
+                    let restrictions = if parts.Length <= 1 then [] else parseRestrictions parts.[1]
+                    if currentGroup.LastWasPackage then
                         match currentGroup.Packages with
                         | currentPackage :: otherPackages -> 
                             { currentGroup with
                                     Packages = { currentPackage with
-                                                    Dependencies = Set.add (PackageName name, DependenciesFileParser.parseVersionRequirement version, []) currentPackage.Dependencies
-                                                } :: otherPackages } ::otherGroups                   
+                                                    Dependencies = Set.add (PackageName name, DependenciesFileParser.parseVersionRequirement version, restrictions) currentPackage.Dependencies
+                                                } :: otherPackages } ::otherGroups
                         | [] -> failwithf "cannot set a dependency to %s %s - no package has been specified." name v
                     else
                         match currentGroup.SourceFiles with

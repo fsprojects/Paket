@@ -13,7 +13,7 @@ type FrameworkRestriction =
 | Between of FrameworkIdentifier * FrameworkIdentifier
     
     override this.ToString() =
-        match this with    
+        match this with
         | FrameworkRestriction.Exactly r -> r.ToString()
         | FrameworkRestriction.Portable r -> r
         | FrameworkRestriction.AtLeast r -> ">= " + r.ToString()
