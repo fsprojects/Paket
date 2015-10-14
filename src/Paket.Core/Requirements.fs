@@ -72,7 +72,7 @@ let rec optimizeRestrictions restrictions =
         let newRestrictions' = 
             restrictions
             |> List.distinct
-            |> List.sort                            
+            |> List.sort
 
         let newRestrictions =
             match newRestrictions' |> Seq.tryFind (function | FrameworkRestriction.AtLeast r -> true | _ -> false) with
@@ -81,14 +81,15 @@ let rec optimizeRestrictions restrictions =
                 let currentVersion =
                     match r with
                     | FrameworkRestriction.AtLeast(DotNetFramework(x)) -> x
-                    | x -> failwithf "Unknown .NET moniker %O" x     
+                    | x -> failwithf "Unknown .NET moniker %O" x
                                                                                                            
                 let isLowerVersion x =
                     let isMatching x =
                         if x = FrameworkVersion.V3_5 && currentVersion = FrameworkVersion.V4 then true else
                         if x = FrameworkVersion.V4_Client && currentVersion = FrameworkVersion.V4_5 then true else
-                        let hasFrameworksBetween = KnownTargetProfiles.DotNetFrameworkVersions |> Seq.exists (fun p -> p > x && p < currentVersion)
-                        not hasFrameworksBetween
+                        KnownTargetProfiles.DotNetFrameworkVersions 
+                        |> Seq.exists (fun p -> p > x && p < currentVersion)
+                        |> not
 
                     match x with
                     | FrameworkRestriction.Exactly(DotNetFramework(x)) -> isMatching x
@@ -102,7 +103,7 @@ let rec optimizeRestrictions restrictions =
                         match n with
                         | FrameworkRestriction.Exactly(DotNetFramework(x)) -> x
                         | FrameworkRestriction.AtLeast(DotNetFramework(x)) -> x
-                        | x -> failwithf "Unknown .NET moniker %O" x     
+                        | x -> failwithf "Unknown .NET moniker %O" x
 
                     (newRestrictions'
                         |> List.filter (fun x -> x <> r && x <> n)) @ [FrameworkRestriction.AtLeast(DotNetFramework(newLowest))]
@@ -111,8 +112,6 @@ let rec optimizeRestrictions restrictions =
 
 
 let optimizeDependencies packages =
-    let grouped = packages |> List.groupBy (fun (n,v,_) -> n,v)
-
     let invertedRestrictions =
         let expanded =
             [for (n,vr,r:FrameworkRestrictions) in packages do
@@ -136,71 +135,66 @@ let optimizeDependencies packages =
 
     let emptyRestrictions =
         [for (n,vr,r:FrameworkRestrictions) in packages do
-            if r = [] then
+            if List.isEmpty r then
                 yield n,vr]
         |> Set.ofList
 
+    let grouped = packages |> List.filter (fun (name,_,_) -> name <> PackageName "") |> List.groupBy (fun (n,v,_) -> n,v)
     [for (name,versionRequirement:VersionRequirement),group in grouped do
-        if name <> PackageName "" then
-            if not (Set.isEmpty emptyRestrictions) && Set.contains (name,versionRequirement) emptyRestrictions then
-                yield name,versionRequirement,[]
-            else
-                let plain = 
-                    group 
-                    |> List.map (fun (_,_,res) -> res) 
-                    |> List.concat
-                    |> List.distinct
-                    |> List.sort
+        if not (Set.isEmpty emptyRestrictions) && Set.contains (name,versionRequirement) emptyRestrictions then
+            yield name,versionRequirement,[]
+        else
+            let plain = 
+                group 
+                |> List.map (fun (_,_,res) -> res) 
+                |> List.concat
+                |> List.distinct
+                |> List.sort
 
-                let localMaxDotNetRestriction = findMaxDotNetRestriction plain
-                let globalMax = defaultArg globalMax localMaxDotNetRestriction          
+            let localMaxDotNetRestriction = findMaxDotNetRestriction plain
+            let globalMax = defaultArg globalMax localMaxDotNetRestriction
 
-                let dotnetRestrictions,others = List.partition (function | FrameworkRestriction.Exactly(DotNetFramework(_)) -> true | FrameworkRestriction.AtLeast(DotNetFramework(_)) -> true | _ -> false) plain
+            let dotnetRestrictions,others = List.partition (function | FrameworkRestriction.Exactly(DotNetFramework(_)) -> true | FrameworkRestriction.AtLeast(DotNetFramework(_)) -> true | _ -> false) plain
 
-                let restrictions' = 
-                    dotnetRestrictions
-                    |> List.map (fun restriction ->
-                        match restriction with
-                        | FrameworkRestriction.Exactly r ->                     
-                            if r = localMaxDotNetRestriction && r = globalMax then
-                                FrameworkRestriction.AtLeast r
-                            else
-                                restriction
-                        | _ -> restriction)
+            let restrictions' = 
+                dotnetRestrictions
+                |> List.map (fun restriction ->
+                    match restriction with
+                    | FrameworkRestriction.Exactly r when r = localMaxDotNetRestriction && r = globalMax ->
+                        FrameworkRestriction.AtLeast r
+                    | _ -> restriction)
 
-                let restrictions = optimizeRestrictions restrictions'
-
-                yield name,versionRequirement,others @ restrictions]
+            yield name,versionRequirement,others @ optimizeRestrictions restrictions']
 
 let combineRestrictions x y =
     match x with
     | FrameworkRestriction.Exactly r -> 
         match y with
-        | FrameworkRestriction.Exactly r' -> if r = r' then [FrameworkRestriction.Exactly r] else []
-        | FrameworkRestriction.Portable _ -> []
-        | FrameworkRestriction.AtLeast r' -> if r' <= r then [FrameworkRestriction.Exactly r] else []
-        | FrameworkRestriction.Between(min,max) -> if min <= r && r <= max then [FrameworkRestriction.Exactly r] else []
+        | FrameworkRestriction.Exactly r' when r = r' -> [FrameworkRestriction.Exactly r]
+        | FrameworkRestriction.AtLeast r' when r' <= r -> [FrameworkRestriction.Exactly r]
+        | FrameworkRestriction.Between(min,max) when min <= r && r <= max -> [FrameworkRestriction.Exactly r]
+        | _ -> []
     | FrameworkRestriction.Portable r ->
         match y with
-        | FrameworkRestriction.Portable r' -> if r = r' then [FrameworkRestriction.Portable r] else []
+        | FrameworkRestriction.Portable r' when r = r' ->[FrameworkRestriction.Portable r]
         | _ -> []
     | FrameworkRestriction.AtLeast r ->
         match y with
-        | FrameworkRestriction.Exactly r' -> if r <= r' then [FrameworkRestriction.Exactly r'] else []
-        | FrameworkRestriction.Portable _ -> []
+        | FrameworkRestriction.Exactly r' when r <= r' -> [FrameworkRestriction.Exactly r']
         | FrameworkRestriction.AtLeast r' -> [FrameworkRestriction.AtLeast (max r r')]
-        | FrameworkRestriction.Between(min,max) -> if min <= r && r <= max then [FrameworkRestriction.Between(r,max)] else []
+        | FrameworkRestriction.Between(min,max) when min <= r && r <= max -> [FrameworkRestriction.Between(r,max)]
+        | _ -> []
     | FrameworkRestriction.Between(min1,max1) ->
         match y with
-        | FrameworkRestriction.Exactly r -> if min1 <= r && r <= max1 then [FrameworkRestriction.Exactly r] else []
-        | FrameworkRestriction.Portable _ -> []
-        | FrameworkRestriction.AtLeast r -> if min1 <= r && r <= max1 then [FrameworkRestriction.Between(r,max1)] else []
-        | FrameworkRestriction.Between(min2,max2) -> 
+        | FrameworkRestriction.Exactly r when min1 <= r && r <= max1 ->  [FrameworkRestriction.Exactly r]
+        | FrameworkRestriction.AtLeast r when min1 <= r && r <= max1 -> [FrameworkRestriction.Between(r,max1)]
+        | FrameworkRestriction.Between(min2,max2) ->
             let min' = max min1 min2
             let max' = min max1 max2
             if min' < max' then [FrameworkRestriction.Between(min',max')] else
             if min' = max' then [FrameworkRestriction.Exactly(min')] else
             []
+        | _ -> []
 
 let filterRestrictions (list1:FrameworkRestrictions) (list2:FrameworkRestrictions) =
     match list1,list2 with
@@ -212,6 +206,44 @@ let filterRestrictions (list1:FrameworkRestrictions) (list2:FrameworkRestriction
                 let c = combineRestrictions x y
                 if c <> [] then yield! c]
     |> optimizeRestrictions
+
+let inline frameworkCategory (fw:FrameworkIdentifier) =
+    match fw with
+    | DotNetFramework _ -> ".NET"
+    | Silverlight _ -> "Silverlight"
+    | DNX _ -> "DNX"
+    | DNXCore _ -> "DNXCore"
+    | MonoAndroid _ -> "MonoAndroid"
+    | MonoMac _ -> "MonoMac"
+    | MonoTouch _ -> "MonoTouch"
+    | Windows _ -> "Windows"
+    | WindowsPhoneApp _ -> "WindowsPhoneApp"
+    | WindowsPhoneSilverlight _ -> "WindowsPhoneSilverlight"
+    | XamarinMac _ -> "XamarinMac"
+    | XamariniOS _ -> "XamariniOS"
+
+
+/// Get if a target should be considered with the specified restrictions
+let isTargetMatchingRestrictions (restrictions:FrameworkRestrictions) = function
+    | SinglePlatform pf ->
+        restrictions
+        |> List.exists (fun restriction ->
+                match restriction with
+                | FrameworkRestriction.Exactly fw -> pf = fw
+                | FrameworkRestriction.Portable _ -> false
+                | FrameworkRestriction.AtLeast fw -> pf >= fw && frameworkCategory pf = frameworkCategory fw
+                | FrameworkRestriction.Between(min,max) -> pf >= min && pf < max && frameworkCategory pf = frameworkCategory min)
+    | PortableProfile(_) ->
+        restrictions
+        |> List.exists (fun restriction ->
+                match restriction with
+                | FrameworkRestriction.Portable _ -> true
+                | _ -> false)
+
+/// Get all targets that should be considered with the specified restrictions
+let applyRestrictionsToTargets (restrictions:FrameworkRestrictions) (targets: TargetProfile list) =
+    let result = targets |> List.filter (isTargetMatchingRestrictions restrictions)
+    result
 
 type ContentCopySettings =
 | Omit

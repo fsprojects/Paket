@@ -288,25 +288,7 @@ type InstallModel =
         | [] -> this
         | restrictions ->
             let applRestriction folder =
-                { folder with 
-                    Targets = 
-                        folder.Targets
-                        |> List.filter 
-                            (function 
-                             | SinglePlatform pf -> 
-                                restrictions
-                                |> List.exists (fun restriction ->
-                                        match restriction with
-                                        | FrameworkRestriction.Exactly fw -> pf = fw
-                                        | FrameworkRestriction.Portable r -> false
-                                        | FrameworkRestriction.AtLeast fw -> pf >= fw                
-                                        | FrameworkRestriction.Between(min,max) -> pf >= min && pf < max)
-                             | _ -> 
-                                restrictions
-                                |> List.exists (fun restriction ->
-                                        match restriction with
-                                        | FrameworkRestriction.Portable r -> true
-                                        | _ -> false))}
+                { folder with Targets = applyRestrictionsToTargets restrictions folder.Targets}
 
             {this with 
                 ReferenceFileFolders = 
@@ -317,7 +299,7 @@ type InstallModel =
                 TargetsFileFolders = 
                     this.TargetsFileFolders
                     |> List.map applRestriction
-                    |> List.filter (fun folder -> folder.Targets <> [])                     }    
+                    |> List.filter (fun folder -> folder.Targets <> [])                     }
 
     member this.GetFrameworkAssembliesLazy = 
         lazy ([ for lib in this.ReferenceFileFolders do
