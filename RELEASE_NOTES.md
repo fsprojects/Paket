@@ -1,3 +1,6 @@
+#### 2.14.1 - 15.10.2015
+* BUGFIX: Add monoandroid403 to be matched as Some MonoAndroid - https://github.com/fsprojects/Paket/pull/1140
+
 #### 2.14.0 - 15.10.2015
 * BUGFIX: Handle silverlight framework identifiers comparison - https://github.com/fsprojects/Paket/pull/1138
 
