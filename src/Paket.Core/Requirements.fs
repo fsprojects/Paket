@@ -19,6 +19,19 @@ type FrameworkRestriction =
         | FrameworkRestriction.AtLeast r -> ">= " + r.ToString()
         | FrameworkRestriction.Between(min,max) -> sprintf ">= %O < %O" min max
 
+    member private x.GetOneIdentifier =
+        match x with
+        | Exactly r -> Some r
+        | Portable _ -> None
+        | AtLeast r -> Some r
+        | Between(r, _) -> Some r
+
+    /// Return if the parameter is a restriction of the same framework category (dotnet, windows phone, silverlight, ...)
+    member x.IsSameCategoryAs (y : FrameworkRestriction) =
+        match (x.GetOneIdentifier, y.GetOneIdentifier) with
+        | Some r, Some r' -> Some(r.IsSameCategoryAs r')
+        | _ -> None
+
 type FrameworkRestrictions = FrameworkRestriction list
 
 
@@ -172,7 +185,7 @@ let optimizeDependencies packages =
 
                 yield name,versionRequirement,others @ restrictions]
 
-let combineRestrictions x y =
+let private combineSameCategoryOrPortableRestrictions x y =
     match x with
     | FrameworkRestriction.Exactly r -> 
         match y with
@@ -202,6 +215,12 @@ let combineRestrictions x y =
             if min' = max' then [FrameworkRestriction.Exactly(min')] else
             []
 
+let combineRestrictions (x : FrameworkRestriction) y =
+    if (x.IsSameCategoryAs(y) = Some(false)) then
+        []
+    else
+        combineSameCategoryOrPortableRestrictions x y
+
 let filterRestrictions (list1:FrameworkRestrictions) (list2:FrameworkRestrictions) =
     match list1,list2 with
     | [],_ -> list2
@@ -212,6 +231,29 @@ let filterRestrictions (list1:FrameworkRestrictions) (list2:FrameworkRestriction
                 let c = combineRestrictions x y
                 if c <> [] then yield! c]
     |> optimizeRestrictions
+
+/// Get if a target should be considered with the specified restrictions
+let isTargetMatchingRestrictions (restrictions:FrameworkRestrictions) = function
+    | SinglePlatform pf ->
+        restrictions
+        |> List.exists (fun restriction ->
+                match restriction with
+                | FrameworkRestriction.Exactly fw -> pf = fw
+                | FrameworkRestriction.Portable _ -> false
+                | FrameworkRestriction.AtLeast fw -> pf >= fw && pf.IsSameCategoryAs(fw)
+                | FrameworkRestriction.Between(min,max) -> pf >= min && pf < max && pf.IsSameCategoryAs(min))
+    | _ ->
+        restrictions
+        |> List.exists (fun restriction ->
+                match restriction with
+                | FrameworkRestriction.Portable r -> true
+                | _ -> false)
+
+/// Get all targets that should be considered with the specified restrictions
+let applyRestrictionsToTargets (restrictions:FrameworkRestrictions) (targets: TargetProfile list) =
+    let result = targets |> List.filter (isTargetMatchingRestrictions restrictions)
+    result
+
 
 type ContentCopySettings =
 | Omit

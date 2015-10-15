@@ -141,6 +141,23 @@ type FrameworkIdentifier =
         | WindowsPhoneApp _ -> [ WindowsPhoneApp "v8.1" ]
         | WindowsPhoneSilverlight _ -> [ WindowsPhoneSilverlight "v8.1" ]
 
+    /// Return if the parameter is of the same framework category (dotnet, windows phone, silverlight, ...)
+    member x.IsSameCategoryAs y =
+        match (x, y) with
+        | DotNetFramework _, DotNetFramework _ -> true
+        | Silverlight _, Silverlight _ -> true
+        | DNX _, DNX _ -> true
+        | DNXCore _, DNXCore _ -> true
+        | MonoAndroid _, MonoAndroid _ -> true
+        | MonoMac _, MonoMac _ -> true
+        | MonoTouch _, MonoTouch _ -> true
+        | Windows _, Windows _ -> true
+        | WindowsPhoneApp _, WindowsPhoneApp _ -> true
+        | WindowsPhoneSilverlight _, WindowsPhoneSilverlight _ -> true
+        | XamarinMac _, XamarinMac _ -> true
+        | XamariniOS _, XamariniOS _ -> true
+        | _ -> false
+
 
 module FrameworkDetection =
     let private cache = System.Collections.Concurrent.ConcurrentDictionary<_,_>()

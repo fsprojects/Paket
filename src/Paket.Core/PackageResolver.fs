@@ -18,6 +18,7 @@ module DependencySetFilter =
         match restriction with
         | FrameworkRestriction.Exactly v1 -> 
             restrictions 
+            |> Seq.filter (fun r2 -> restriction.IsSameCategoryAs(r2) = Some(true))
             |> Seq.exists (fun r2 ->
                 match r2 with
                 | FrameworkRestriction.Exactly v2 when v1 = v2 -> true
@@ -26,6 +27,7 @@ module DependencySetFilter =
                 | _ -> false)
         | FrameworkRestriction.AtLeast v1 -> 
             restrictions 
+            |> Seq.filter (fun r2 -> restriction.IsSameCategoryAs(r2) = Some(true))
             |> Seq.exists (fun r2 ->
                 match r2 with
                 | FrameworkRestriction.Exactly v2 when v1 <= v2 -> true
