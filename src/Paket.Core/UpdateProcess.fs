@@ -54,7 +54,15 @@ let selectiveUpdate force getSha1 getSortedVersionsF getPackageDetailsF (lockFil
 
     let getVersionsF,groupsToUpdate =
         match updateMode with
-        | UpdateAll -> getSortedAndCachedVersionsF,dependenciesFile.Groups
+        | UpdateAll ->
+            let preferredVersions = DependencyChangeDetection.GetPreferredNuGetVersions lockFile
+
+            let changes =
+                lockFile.GetGroupedResolution()
+                |> Seq.map (fun k -> k.Key)
+                |> Set.ofSeq
+
+            (getPreferredVersionsF preferredVersions changes),dependenciesFile.Groups
         | UpdateGroup groupName ->
             let groups =
                 dependenciesFile.Groups
