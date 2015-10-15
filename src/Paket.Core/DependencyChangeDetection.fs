@@ -151,8 +151,7 @@ let findRemoteFileChangesInDependenciesFile(dependenciesFile:DependenciesFile,lo
     |> Seq.concat
     |> Set.ofSeq
 
-let GetPreferredNuGetVersions (oldLockFile:LockFile) (changedDependencies:Set<GroupName*PackageName>) =
+let GetPreferredNuGetVersions (oldLockFile:LockFile) =
     oldLockFile.GetGroupedResolution()
-    |> Seq.filter (fun kv -> not <| changedDependencies.Contains(kv.Key))
     |> Seq.map (fun kv -> kv.Key, kv.Value.Version)
     |> Map.ofSeq

@@ -26,11 +26,12 @@ let selectiveUpdate force getSha1 getSortedVersionsF getPackageDetailsF (lockFil
         |> List.toSeq
         
 
-    let getPreferredVersionsF preferredVersions sources resolverStrategy groupName packageName = 
+    let getPreferredVersionsF preferredVersions changedDependencies sources resolverStrategy groupName packageName = 
         seq { 
-            match preferredVersions |> Map.tryFind (groupName, packageName) with
-            | Some v -> yield v
-            | None -> ()
+            match preferredVersions |> Map.tryFind (groupName, packageName), resolverStrategy, changedDependencies |> Set.exists ((=) (groupName, packageName)) with
+            | Some v, ResolverStrategy.Min, _
+            | Some v, _, false -> yield v
+            | _ -> ()
             yield! getSortedAndCachedVersionsF sources resolverStrategy groupName packageName
         }
 
@@ -73,7 +74,7 @@ let selectiveUpdate force getSha1 getSortedVersionsF getPackageDetailsF (lockFil
                 |> Seq.groupBy fst
                 |> Map.ofSeq
 
-            let preferredVersions = DependencyChangeDetection.GetPreferredNuGetVersions lockFile nuGetChanges
+            let preferredVersions = DependencyChangeDetection.GetPreferredNuGetVersions lockFile
 
             let hasNuGetChanges groupName =
                 match nuGetChangesPerGroup |> Map.tryFind groupName with
@@ -103,19 +104,19 @@ let selectiveUpdate force getSha1 getSortedVersionsF getPackageDetailsF (lockFil
                 dependenciesFile.Groups
                 |> Map.filter hasChanges
 
-            (getPreferredVersionsF preferredVersions),groups
+            (getPreferredVersionsF preferredVersions nuGetChanges),groups
         | UpdatePackage(groupName,packageName) ->
             let changes =
                 lockFile.GetAllNormalizedDependenciesOf(groupName,packageName)
                 |> Set.ofSeq
 
-            let preferredVersions = DependencyChangeDetection.GetPreferredNuGetVersions lockFile changes
+            let preferredVersions = DependencyChangeDetection.GetPreferredNuGetVersions lockFile
 
             let groups =
                 dependenciesFile.Groups
                 |> Map.filter (fun key _ -> key = groupName)
 
-            (getPreferredVersionsF preferredVersions),groups
+            (getPreferredVersionsF preferredVersions changes),groups
 
     let resolution = dependenciesFile.Resolve(force, getSha1, getVersionsF, getPackageDetailsF, groupsToUpdate, updateMode)
 
