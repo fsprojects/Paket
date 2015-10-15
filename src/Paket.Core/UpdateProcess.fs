@@ -53,86 +53,84 @@ let selectiveUpdate force getSha1 getSortedVersionsF getPackageDetailsF (lockFil
         | SemVerUpdateMode.KeepPatch -> processFile (fun v -> sprintf "~> %d.%d.%d" v.Major v.Minor v.Patch + formatPrerelease v)
 
     let getVersionsF,groupsToUpdate =
-        match updateMode with
-        | UpdateAll ->
-            let preferredVersions = DependencyChangeDetection.GetPreferredNuGetVersions lockFile
+        let changes,groups =
+            match updateMode with
+            | UpdateAll ->
+                let changes =
+                    lockFile.GetGroupedResolution()
+                    |> Seq.map (fun k -> k.Key)
+                    |> Set.ofSeq
 
-            let changes =
-                lockFile.GetGroupedResolution()
-                |> Seq.map (fun k -> k.Key)
-                |> Set.ofSeq
+                changes,dependenciesFile.Groups
+            | UpdateGroup groupName ->
+                let changes =
+                    lockFile.GetGroupedResolution()
+                    |> Seq.map (fun k -> k.Key)
+                    |> Seq.filter (fun (g,_) -> g = groupName)
+                    |> Set.ofSeq
 
-            (getPreferredVersionsF preferredVersions changes),dependenciesFile.Groups
-        | UpdateGroup groupName ->
-            let preferredVersions = DependencyChangeDetection.GetPreferredNuGetVersions lockFile
+                let groups =
+                    dependenciesFile.Groups
+                    |> Map.filter (fun k _ -> k = groupName)
 
-            let changes =
-                lockFile.GetGroupedResolution()
-                |> Seq.map (fun k -> k.Key)
-                |> Seq.filter (fun (g,_) -> g = groupName)
-                |> Set.ofSeq
+                changes,groups
+            | Install ->
+                let nuGetChanges = DependencyChangeDetection.findNuGetChangesInDependenciesFile(dependenciesFile,lockFile)
+                let nuGetChangesPerGroup =
+                    nuGetChanges
+                    |> Seq.groupBy fst
+                    |> Map.ofSeq
 
-            let groups =
-                dependenciesFile.Groups
-                |> Map.filter (fun k _ -> k = groupName)
+                let remoteFileChanges = DependencyChangeDetection.findRemoteFileChangesInDependenciesFile(dependenciesFile,lockFile)
+                let remoteFileChangesPerGroup =
+                    remoteFileChanges
+                    |> Seq.groupBy fst
+                    |> Map.ofSeq
 
-            (getPreferredVersionsF preferredVersions changes),groups
-        | Install ->
-            let nuGetChanges = DependencyChangeDetection.findNuGetChangesInDependenciesFile(dependenciesFile,lockFile)
-            let nuGetChangesPerGroup =
-                nuGetChanges
-                |> Seq.groupBy fst
-                |> Map.ofSeq
+                let hasNuGetChanges groupName =
+                    match nuGetChangesPerGroup |> Map.tryFind groupName with
+                    | None -> false
+                    | Some x -> Seq.isEmpty x |> not
 
-            let remoteFileChanges = DependencyChangeDetection.findRemoteFileChangesInDependenciesFile(dependenciesFile,lockFile)
-            let remoteFileChangesPerGroup =
-                remoteFileChanges
-                |> Seq.groupBy fst
-                |> Map.ofSeq
+                let hasRemoteFileChanges groupName =
+                    match remoteFileChangesPerGroup |> Map.tryFind groupName with
+                    | None -> false
+                    | Some x -> Seq.isEmpty x |> not
 
-            let preferredVersions = DependencyChangeDetection.GetPreferredNuGetVersions lockFile
-
-            let hasNuGetChanges groupName =
-                match nuGetChangesPerGroup |> Map.tryFind groupName with
-                | None -> false
-                | Some x -> Seq.isEmpty x |> not
-
-            let hasRemoteFileChanges groupName =
-                match remoteFileChangesPerGroup |> Map.tryFind groupName with
-                | None -> false
-                | Some x -> Seq.isEmpty x |> not
-
-            let hasChangedSettings groupName =
-                match dependenciesFile.Groups |> Map.tryFind groupName with
-                | None -> true
-                | Some dependenciesFileGroup -> 
-                    match lockFile.Groups |> Map.tryFind groupName with
+                let hasChangedSettings groupName =
+                    match dependenciesFile.Groups |> Map.tryFind groupName with
                     | None -> true
-                    | Some lockFileGroup -> dependenciesFileGroup.Options <> lockFileGroup.Options
+                    | Some dependenciesFileGroup -> 
+                        match lockFile.Groups |> Map.tryFind groupName with
+                        | None -> true
+                        | Some lockFileGroup -> dependenciesFileGroup.Options <> lockFileGroup.Options
 
-            let hasChanges groupName _ = 
-                let hasChanges = hasChangedSettings groupName || hasNuGetChanges groupName || hasRemoteFileChanges groupName
-                if not hasChanges then
-                    tracefn "Skipping resolver for group %O since it is already up-to-date" groupName
-                hasChanges
+                let hasChanges groupName _ = 
+                    let hasChanges = hasChangedSettings groupName || hasNuGetChanges groupName || hasRemoteFileChanges groupName
+                    if not hasChanges then
+                        tracefn "Skipping resolver for group %O since it is already up-to-date" groupName
+                    hasChanges
 
-            let groups =
-                dependenciesFile.Groups
-                |> Map.filter hasChanges
+                let groups =
+                    dependenciesFile.Groups
+                    |> Map.filter hasChanges
 
-            (getPreferredVersionsF preferredVersions nuGetChanges),groups
-        | UpdatePackage(groupName,packageName) ->
-            let changes =
-                lockFile.GetAllNormalizedDependenciesOf(groupName,packageName)
-                |> Set.ofSeq
+                nuGetChanges,groups
+            | UpdatePackage(groupName,packageName) ->
+                let changes =
+                    lockFile.GetAllNormalizedDependenciesOf(groupName,packageName)
+                    |> Set.ofSeq
 
-            let preferredVersions = DependencyChangeDetection.GetPreferredNuGetVersions lockFile
+                let groups =
+                    dependenciesFile.Groups
+                    |> Map.filter (fun key _ -> key = groupName)
 
-            let groups =
-                dependenciesFile.Groups
-                |> Map.filter (fun key _ -> key = groupName)
+                changes,groups
 
-            (getPreferredVersionsF preferredVersions changes),groups
+        let preferredVersions = 
+            DependencyChangeDetection.GetPreferredNuGetVersions lockFile
+            |> getPreferredVersionsF
+        preferredVersions changes,groups
 
     let resolution = dependenciesFile.Resolve(force, getSha1, getVersionsF, getPackageDetailsF, groupsToUpdate, updateMode)
 
