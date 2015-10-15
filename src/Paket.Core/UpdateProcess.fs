@@ -64,11 +64,19 @@ let selectiveUpdate force getSha1 getSortedVersionsF getPackageDetailsF (lockFil
 
             (getPreferredVersionsF preferredVersions changes),dependenciesFile.Groups
         | UpdateGroup groupName ->
+            let preferredVersions = DependencyChangeDetection.GetPreferredNuGetVersions lockFile
+
+            let changes =
+                lockFile.GetGroupedResolution()
+                |> Seq.map (fun k -> k.Key)
+                |> Seq.filter (fun (g,_) -> g = groupName)
+                |> Set.ofSeq
+
             let groups =
                 dependenciesFile.Groups
                 |> Map.filter (fun k _ -> k = groupName)
 
-            getSortedAndCachedVersionsF,groups
+            (getPreferredVersionsF preferredVersions changes),groups
         | Install ->
             let nuGetChanges = DependencyChangeDetection.findNuGetChangesInDependenciesFile(dependenciesFile,lockFile)
             let nuGetChangesPerGroup =
