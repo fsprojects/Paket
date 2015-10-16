@@ -279,8 +279,7 @@ let Resolve(groupName:GroupName, sources, getVersionsF, getPackageDetailsF, glob
             else
                 Resolution.Conflict(closedRequirements,openRequirements,rootDependencies)
         else
-            let packageCount = selectedPackageVersions |> List.length
-            verbosefn "  %d packages in resolution. %d requirements left" packageCount openRequirements.Count
+            verbosefn "  %d packages in resolution. %d requirements left" (selectedPackageVersions |> List.length) openRequirements.Count
             
             let currentRequirement =
                 let currentMin = ref (Seq.head openRequirements)
