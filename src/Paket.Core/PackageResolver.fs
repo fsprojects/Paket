@@ -395,17 +395,20 @@ let Resolve(groupName:GroupName, sources, getVersionsF, getPackageDetailsF, glob
                     let versionToExplore = Seq.head !versionsToExplore
                     versionsToExplore := Seq.tail !versionsToExplore
                     let exploredPackage = getExploredPackage(currentRequirement,versionToExplore)
-                    if exploredPackage.Unlisted && not useUnlisted then () else
-                    let newFilteredVersions = Map.add currentRequirement.Name ([versionToExplore],!globalOverride) filteredVersions
-                        
-                    let newOpen = calcOpenRequirements(exploredPackage,globalFrameworkRestrictions,versionToExplore,currentRequirement,closedRequirements,openRequirements)
-                    let selectedVersions =
-                        selectedPackageVersions 
-                        |> List.filter (fun p -> p.Name <> exploredPackage.Name || p.Version <> exploredPackage.Version) // do we really need this line?
-                    let newSelectedVersions = exploredPackage::selectedVersions
 
-                    state := step (newFilteredVersions,newSelectedVersions,Set.add currentRequirement closedRequirements,newOpen)
-                    allUnlisted := exploredPackage.Unlisted && !allUnlisted
+                    if exploredPackage.Unlisted && not useUnlisted then 
+                        () 
+                    else
+                        let newFilteredVersions = Map.add currentRequirement.Name ([versionToExplore],!globalOverride) filteredVersions
+                        
+                        let newOpen = calcOpenRequirements(exploredPackage,globalFrameworkRestrictions,versionToExplore,currentRequirement,closedRequirements,openRequirements)
+                        let selectedVersions =
+                            selectedPackageVersions 
+                            |> List.filter (fun p -> p.Name <> exploredPackage.Name || p.Version <> exploredPackage.Version) // do we really need this line?
+                        let newSelectedVersions = exploredPackage::selectedVersions
+
+                        state := step (newFilteredVersions,newSelectedVersions,Set.add currentRequirement closedRequirements,newOpen)
+                        allUnlisted := exploredPackage.Unlisted && !allUnlisted
 
                 !allUnlisted,!state
 
