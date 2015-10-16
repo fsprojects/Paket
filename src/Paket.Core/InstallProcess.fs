@@ -34,16 +34,16 @@ let updatePackagesConfigFile (model: Map<GroupName*PackageName,SemVerInfo*Instal
         |> Seq.append packagesInModel
         |> PackagesConfigFile.Save packagesConfigFileName
 
-let findPackageFolder root (groupName,PackageName name) (version,settings) =
+let findPackageFolder root (groupName,packageName) (version,settings) =
     let includeVersionInPath = defaultArg settings.IncludeVersionInPath false
-    let lowerName = (name + if includeVersionInPath then "." + version.ToString() else "").ToLower()
+    let lowerName = (packageName.ToString() + if includeVersionInPath then "." + version.ToString() else "").ToLower()
     let di = DirectoryInfo(Path.Combine(root, Constants.PackagesFolderName))
-    let targetFolder = getTargetFolder root groupName name version includeVersionInPath
+    let targetFolder = getTargetFolder root groupName packageName version includeVersionInPath
     let direct = DirectoryInfo(targetFolder)
     if direct.Exists then direct else
     match di.GetDirectories() |> Seq.tryFind (fun subDir -> subDir.FullName.ToLower().EndsWith(lowerName)) with
     | Some x -> x
-    | None -> failwithf "Package directory for package %s was not found." name
+    | None -> failwithf "Package directory for package %O was not found." packageName
 
 
 let contentFileBlackList : list<(FileInfo -> bool)> = [
@@ -129,7 +129,6 @@ let processContentFiles root project (usedPackages:Map<_,_>) gitRemoteItems opti
 let CreateInstallModel(root, groupName, sources, force, package) =
     async {
         let! (package, files, targetsFiles, analyzerFiles) = RestoreProcess.ExtractPackage(root, groupName, sources, force, package)
-        let (PackageName name) = package.Name
         let nuspec = Nuspec.Load(root,groupName,package.Version,defaultArg package.Settings.IncludeVersionInPath false,package.Name)
         let files = files |> Array.map (fun fi -> fi.FullName)
         let targetsFiles = targetsFiles |> Array.map (fun fi -> fi.FullName)

@@ -62,29 +62,29 @@ let rec private followODataLink auth url =
     }
 
 
-let tryGetAllVersionsFromNugetODataWithFilter (auth, nugetURL, package) = 
+let tryGetAllVersionsFromNugetODataWithFilter (auth, nugetURL, package:PackageName) = 
     async { 
         try 
-            let url = sprintf "%s/Packages?$filter=Id eq '%s'" nugetURL package
+            let url = sprintf "%s/Packages?$filter=Id eq '%O'" nugetURL package
             verbosefn "getAllVersionsFromNugetODataWithFilter from url '%s'" url
             let! result = followODataLink auth url
             return Some result
         with _ -> return None
     }
 
-let tryGetPackageVersionsViaOData (auth, nugetURL, package) = 
+let tryGetPackageVersionsViaOData (auth, nugetURL, package:PackageName) = 
     async { 
         try 
-            let url = sprintf "%s/FindPackagesById()?id='%s'" nugetURL package
+            let url = sprintf "%s/FindPackagesById()?id='%O'" nugetURL package
             verbosefn "getAllVersionsFromNugetOData from url '%s'" url
             let! result = followODataLink auth url
             return Some result
         with _ -> return None
     }
 
-let tryGetPackageVersionsViaJson (auth, nugetURL, package) = 
+let tryGetPackageVersionsViaJson (auth, nugetURL, package:PackageName) = 
     async { 
-        let url = sprintf "%s/package-versions/%s?includePrerelease=true" nugetURL package
+        let url = sprintf "%s/package-versions/%O?includePrerelease=true" nugetURL package
         let! raw = safeGetFromUrl (auth, url, acceptJson)
         
         match raw with
@@ -95,7 +95,7 @@ let tryGetPackageVersionsViaJson (auth, nugetURL, package) =
             with _ -> return None
     }
 
-let tryNuGetV3 (auth, nugetV3Url, package) = 
+let tryNuGetV3 (auth, nugetV3Url, package:PackageName) = 
     async { 
         try 
             let! data = NuGetV3.findVersionsForPackage(nugetV3Url, auth, package, true, 100000)
@@ -108,7 +108,7 @@ let tryNuGetV3 (auth, nugetV3Url, package) =
 
 
 /// Gets versions of the given package from local Nuget feed.
-let getAllVersionsFromLocalPath (localNugetPath, package, root) =
+let getAllVersionsFromLocalPath (localNugetPath, package:PackageName, root) =
     async {
         let localNugetPath = Utils.normalizeLocalPath localNugetPath
         let di = getDirectoryInfo localNugetPath root
@@ -119,7 +119,7 @@ let getAllVersionsFromLocalPath (localNugetPath, package, root) =
             Directory.EnumerateFiles(di.FullName,"*.nupkg",SearchOption.AllDirectories)
             |> Seq.choose (fun fileName ->
                             let fi = FileInfo(fileName)
-                            let _match = Regex(sprintf @"^%s\.(\d.*)\.nupkg" package, RegexOptions.IgnoreCase).Match(fi.Name)
+                            let _match = Regex(sprintf @"^%O\.(\d.*)\.nupkg" package, RegexOptions.IgnoreCase).Match(fi.Name)
                             if _match.Groups.Count > 1 then Some _match.Groups.[1].Value else None)
             |> Seq.toArray
         return Some versions
@@ -626,7 +626,7 @@ let getVersionsCached key f (auth, nugetURL, package) =
     }
 
 /// Allows to retrieve all version no. for a package from the given sources.
-let GetVersions root (sources, PackageName packageName) = 
+let GetVersions root (sources, packageName:PackageName) = 
     let v =
         sources
         |> Seq.map (function
@@ -651,7 +651,7 @@ let GetVersions root (sources, PackageName packageName) =
     let versions = 
         match v with
         | Some versions when Array.isEmpty versions |> not -> versions
-        | _ -> failwithf "Could not find versions for package %s in any of the sources in %A." packageName sources
+        | _ -> failwithf "Could not find versions for package %O in any of the sources in %A." packageName sources
 
     versions
     |> Seq.toList

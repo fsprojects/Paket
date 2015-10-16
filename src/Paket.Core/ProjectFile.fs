@@ -314,8 +314,7 @@ type ProjectFile =
                 not !isFrameworkNode)
         
         if nodesToDelete <> [] then
-            let (PackageName name) = model.PackageName
-            verbosefn "    - Deleting custom projects nodes for %s" name
+            verbosefn "    - Deleting custom projects nodes for %O" model.PackageName
 
         for node in nodesToDelete do            
             node.ParentNode.RemoveChild(node) |> ignore

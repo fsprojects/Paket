@@ -286,7 +286,7 @@ let inline normalizePath(path:string) = path.Replace("\\",Path.DirectorySeparato
 /// Gets all files with the given pattern
 let inline FindAllFiles(folder, pattern) = DirectoryInfo(folder).GetFiles(pattern, SearchOption.AllDirectories)
 
-let getTargetFolder root groupName packageName (version:SemVerInfo) includeVersionInPath = 
+let getTargetFolder root groupName (packageName:PackageName) (version:SemVerInfo) includeVersionInPath = 
     let packageFolder = packageName.ToString() + if includeVersionInPath then "." + version.ToString() else ""
     if groupName = Constants.MainDependencyGroup then
         Path.Combine(root, Constants.PackagesFolderName, packageFolder)

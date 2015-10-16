@@ -141,8 +141,8 @@ type Resolution =
                         match x.Parent with
                         | DependenciesFile _ ->
                             sprintf "   - Dependencies file requested: %O" x.VersionRequirement |> addToError
-                        | Package(PackageName parentName,version) ->
-                            sprintf "   - %s %O requested: %O" parentName version x.VersionRequirement
+                        | Package(parentName,version) ->
+                            sprintf "   - %O %O requested: %O" parentName version x.VersionRequirement
                             |> addToError)
 
                 match conflicts with

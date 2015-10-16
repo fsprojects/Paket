@@ -338,11 +338,10 @@ module DependenciesFileSerializer =
     let sourceString source = "source " + source
 
     let packageString packageName versionRequirement resolverStrategy (settings:InstallSettings) =
-        let (PackageName name) = packageName
         let version = formatVersionRange resolverStrategy versionRequirement
         let s = settings.ToString()
 
-        sprintf "nuget %s%s%s" name (if version <> "" then " " + version else "") (if s <> "" then " " + s else s)
+        sprintf "nuget %O%s%s" packageName (if version <> "" then " " + version else "") (if s <> "" then " " + s else s)
 
 
 /// Allows to parse and analyze paket.dependencies files.

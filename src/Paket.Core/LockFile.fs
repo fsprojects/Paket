@@ -65,8 +65,6 @@ module LockFileSerializer =
 
                   yield "  specs:"
                   for _,_,package in packages |> Seq.sortBy (fun (_,_,p) -> p.Name) do
-                      let (PackageName packageName) = package.Name
-                      
                       let versionStr = 
                           let s = package.Version.ToString()
                           if s = "" then s else "(" + s + ")"
@@ -79,19 +77,19 @@ module LockFileSerializer =
                       let s = settings.ToString()
 
                       if s = "" then 
-                        yield sprintf "    %s %s" packageName versionStr 
+                        yield sprintf "    %O %s" package.Name versionStr 
                       else
-                        yield sprintf "    %s %s - %s" packageName versionStr s
+                        yield sprintf "    %O %s - %s" package.Name versionStr s
 
-                      for (PackageName name),v,restrictions in package.Dependencies do
+                      for name,v,restrictions in package.Dependencies do
                           let versionStr = 
                               let s = v.ToString()
                               if s = "" then s else "(" + s + ")"
 
                           if List.isEmpty restrictions || restrictions = options.Settings.FrameworkRestrictions then
-                            yield sprintf "      %s %s" name versionStr
+                            yield sprintf "      %O %s" name versionStr
                           else
-                            yield sprintf "      %s %s - framework: %s" name versionStr (String.Join(", ",restrictions))]
+                            yield sprintf "      %O %s - framework: %s" name versionStr (String.Join(", ",restrictions))]
     
         String.Join(Environment.NewLine, all |> List.map (fun s -> s.TrimEnd()))
 
@@ -141,11 +139,11 @@ module LockFileSerializer =
                         | Some authKey -> yield sprintf "    %s %s" path authKey
                         | None -> yield sprintf "    %s" path
 
-                    for (PackageName name,v) in file.Dependencies do
+                    for (name,v) in file.Dependencies do
                         let versionStr = 
                             let s = v.ToString()
                             if s = "" then s else "(" + s + ")"
-                        yield sprintf "      %s %s" name versionStr]
+                        yield sprintf "      %O %s" name versionStr]
 
         String.Join(Environment.NewLine, all |> List.map (fun s -> s.TrimEnd()))
 
@@ -375,8 +373,7 @@ type LockFile(fileName:string,groups: Map<GroupName,LockFileGroup>) =
         match this.GetAllDependenciesOfSafe(groupName,package) with
         | Some packages -> packages
         | None ->
-            let (PackageName name) = package
-            failwithf "Package %s was referenced, but it was not found in the paket.lock file in group %O." name groupName
+            failwithf "Package %O was referenced, but it was not found in the paket.lock file in group %O." package groupName
 
     /// Gets all dependencies of the given package in the given group.
     member this.GetAllDependenciesOfSafe(groupName:GroupName,package) =
