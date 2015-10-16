@@ -92,22 +92,23 @@ let graphWithoutAnyDependencyVersion = [
 ]
 
 [<Test>]
-let ``should analyze report missing versions``() = 
+let ``should report missing versions``() = 
     try
         resolve graphWithoutAnyDependencyVersion ["A",VersionRange.AtLeast "0"] |> ignore
         failwith "expected error"
     with exn ->
-        exn.Message.Contains("package B") |> shouldEqual true
+        if not <| exn.Message.Contains("package B") then
+            reraise()
 
 let graphWithoutAnyTopLevelVersion = [
     "A","3.0",[]
 ]
 
 [<Test>]
-let ``should analyze report missing top-level versions``() = 
+let ``should report missing top-level versions``() = 
     try
         resolve graphWithoutAnyTopLevelVersion ["A",VersionRange.LessThan(SemVer.Parse "1.0")] |> ignore
         failwith "expected error"
     with exn ->
-        exn.Message.StartsWith("Could not find compatible versions for top level dependency") 
-        |> shouldEqual true
+        if not <| exn.Message.Contains("package A") then
+            reraise()

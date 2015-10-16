@@ -1,3 +1,6 @@
+#### 2.14.6 - 16.10.2015
+* COSMETICS: Better error messages when resolver finds no matching version.
+
 #### 2.14.5 - 16.10.2015
 * COSMETICS: Fix error message when resolver already resolved to GlobalOverride - https://github.com/fsprojects/Paket/issues/1142
 
