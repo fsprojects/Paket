@@ -62,45 +62,6 @@ type ResolvedPackage =
 
     override this.ToString() = sprintf "%O %O" this.Name this.Version
 
-let createPackageRequirement parent (packageName, version, restrictions) = 
-    { Name = packageName
-      VersionRequirement = version
-      ResolverStrategy = ResolverStrategy.Max
-      Settings = parent.Settings
-      Parent = Package(parent.Name, parent.Version) }
-
-let rec getDependencyGraph packages package =
-    let requirements =
-        package.Dependencies
-        |> Seq.map (createPackageRequirement package)
-        |> List.ofSeq
-
-    requirements @
-    (requirements
-    |> List.collect (fun r -> 
-        packages
-        |> List.filter (fun p -> p.Name = r.Name)
-        |> List.collect (getDependencyGraph packages)))
-
-let createPackageRequirements exclude resolution =
-    let packages =
-        resolution
-        |> Map.toSeq
-        |> Seq.map snd
-        |> List.ofSeq
-
-    let contains list package = list |> List.contains package.Name
-
-    let transitive = 
-        packages
-        |> Seq.collect (fun d -> d.Dependencies |> Seq.map (fun (n,_,_) -> n))
-        |> List.ofSeq
-
-    packages
-    |> List.filter ((contains transitive) >> not)
-    |> List.filter ((contains exclude) >> not)
-    |> List.collect (getDependencyGraph packages)
-
 type PackageResolution = Map<PackageName, ResolvedPackage>
 
 let cleanupNames (model : PackageResolution) : PackageResolution = 
