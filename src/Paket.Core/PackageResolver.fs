@@ -188,8 +188,16 @@ let calcOpenRequirements (exploredPackage:ResolvedPackage,globalFrameworkRestric
     |> Set.filter (fun d ->
         if Set.contains d stillOpen then false else
         if Set.contains d closed then false else
-        if closed |> Seq.exists (fun x -> x.Name = d.Name && x.VersionRequirement.Range.IsIncludedIn d.VersionRequirement.Range) then false else
-        rest |> Seq.exists (fun x -> x.Name = d.Name && x.VersionRequirement.Range.IsIncludedIn d.VersionRequirement.Range) |> not)
+        if closed |> Seq.exists (fun x -> 
+            x.Name = d.Name && 
+              (x.VersionRequirement.Range.IsIncludedIn d.VersionRequirement.Range || 
+               x.VersionRequirement.Range.IsGlobalOverride)) then 
+            false 
+        else
+            stillOpen |> Seq.exists (fun x -> 
+                x.Name = d.Name && 
+                  (x.VersionRequirement.Range.IsIncludedIn d.VersionRequirement.Range ||
+                   x.VersionRequirement.Range.IsGlobalOverride)) |> not)
     |> Set.union rest
 
 type Resolved = {

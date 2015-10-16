@@ -1,3 +1,6 @@
+#### 2.14.3 - 16.10.2015
+* COSMETICS: Fix error message when resolver already resolved to GlobalOverride - https://github.com/fsprojects/Paket/issues/1142
+
 #### 2.14.2 - 16.10.2015
 * PERFORMANCE: Use locked version as prefered version when resolver strategy is min - https://github.com/fsprojects/Paket/pull/1141
 

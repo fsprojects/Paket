@@ -15,12 +15,12 @@ type PreReleaseStatus =
     | Concrete of string list
 
 /// Represents version information.
-type VersionRange =     
+type VersionRange =
     | Minimum of SemVerInfo
     | GreaterThan of SemVerInfo
     | Maximum of SemVerInfo
     | LessThan of SemVerInfo
-    | Specific of SemVerInfo    
+    | Specific of SemVerInfo
     | OverrideAll of SemVerInfo
     | Range of fromB : VersionRangeBound * from : SemVerInfo * _to : SemVerInfo * _toB : VersionRangeBound 
 
