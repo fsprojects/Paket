@@ -106,13 +106,12 @@ type PackageResolution = Map<PackageName, ResolvedPackage>
 let allPrereleases versions = versions |> List.filter (fun v -> v.PreRelease <> None) = versions
 
 let cleanupNames (model : PackageResolution) : PackageResolution = 
-    model |> Seq.fold (fun map x -> 
-                 let package = x.Value
-                 let cleanup = 
-                     { package with Dependencies = 
-                                        package.Dependencies 
-                                        |> Set.map (fun (name, v, d) -> model.[name].Name, v, d) }
-                 Map.add package.Name cleanup map) Map.empty
+    model
+    |> Map.map (fun _ package ->
+        { package with 
+            Dependencies = 
+                package.Dependencies 
+                |> Set.map (fun (name, v, d) -> model.[name].Name, v, d) })
 
 [<RequireQualifiedAccess>]
 type Resolution =
@@ -201,7 +200,7 @@ type Resolved = {
     ResolvedSourceFiles : ModuleResolver.ResolvedSourceFile list }
 
 type UpdateMode =
-    | UpdatePackage of  GroupName * PackageName
+    | UpdatePackage of GroupName * PackageName
     | UpdateGroup of GroupName
     | Install
     | UpdateAll
@@ -274,6 +273,7 @@ let Resolve(groupName:GroupName, sources, getVersionsF, getPackageDetailsF, glob
                 let resolution =
                     selectedPackageVersions 
                     |> Seq.fold (fun map p -> Map.add p.Name p map) Map.empty
+                    |> cleanupNames
 
                 Resolution.Ok(resolution)
             else
@@ -416,6 +416,4 @@ let Resolve(groupName:GroupName, sources, getVersionsF, getPackageDetailsF, glob
             | true,Resolution.Conflict(_) -> tryToImprove true |> snd
             | _,x-> x
 
-    match step (Map.empty, [], Set.empty, rootDependencies) with
-    | Resolution.Conflict(_) as c -> c
-    | Resolution.Ok model -> Resolution.Ok(cleanupNames model)
+    step (Map.empty, [], Set.empty, rootDependencies)
