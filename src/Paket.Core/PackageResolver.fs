@@ -114,7 +114,7 @@ let cleanupNames (model : PackageResolution) : PackageResolution =
 [<RequireQualifiedAccess>]
 type Resolution =
 | Ok of PackageResolution
-| Conflict of ResolvedPackage list * Set<PackageRequirement> * Set<PackageRequirement> * (PackageName -> SemVerInfo seq)
+| Conflict of Set<ResolvedPackage> * Set<PackageRequirement> * Set<PackageRequirement> * (PackageName -> SemVerInfo seq)
     with
     member this.GetModelOrFail() =
         match this with
@@ -264,7 +264,7 @@ let Resolve(groupName:GroupName, sources, getVersionsF, getPackageDetailsF, glob
             exploredPackages.Add((dependency.Name,version),explored)
             explored
 
-    let rec step (filteredVersions:Map<PackageName, (SemVerInfo list * bool)>,selectedPackageVersions:ResolvedPackage list,closedRequirements:Set<PackageRequirement>,openRequirements:Set<PackageRequirement>) =
+    let rec step (filteredVersions:Map<PackageName, (SemVerInfo list * bool)>,selectedPackageVersions:Set<ResolvedPackage>,closedRequirements:Set<PackageRequirement>,openRequirements:Set<PackageRequirement>) =
         if Set.isEmpty openRequirements then
             // we're done. re-check if we have a valid resolution and return it
             let isOk =
@@ -284,7 +284,7 @@ let Resolve(groupName:GroupName, sources, getVersionsF, getPackageDetailsF, glob
             else
                 Resolution.Conflict(selectedPackageVersions,closedRequirements,openRequirements,getVersionsF sources ResolverStrategy.Max groupName)
         else
-            verbosefn "  %d packages in resolution. %d requirements left" (selectedPackageVersions |> List.length) openRequirements.Count
+            verbosefn "  %d packages in resolution. %d requirements left" selectedPackageVersions.Count openRequirements.Count
             
             let currentRequirement =
                 let currentMin = ref (Seq.head openRequirements)
@@ -401,8 +401,8 @@ let Resolve(groupName:GroupName, sources, getVersionsF, getPackageDetailsF, glob
                         let newOpen = calcOpenRequirements(exploredPackage,globalFrameworkRestrictions,versionToExplore,currentRequirement,closedRequirements,openRequirements)
                         let selectedVersions =
                             selectedPackageVersions 
-                            |> List.filter (fun p -> p.Name <> exploredPackage.Name || p.Version <> exploredPackage.Version) // do we really need this line?
-                        let newSelectedVersions = exploredPackage::selectedVersions
+                            |> Set.filter (fun p -> p.Name <> exploredPackage.Name || p.Version <> exploredPackage.Version) // do we really need this line?
+                        let newSelectedVersions = Set.add exploredPackage selectedVersions
 
                         state := step (newFilteredVersions,newSelectedVersions,Set.add currentRequirement closedRequirements,newOpen)
                         allUnlisted := exploredPackage.Unlisted && !allUnlisted
@@ -413,4 +413,4 @@ let Resolve(groupName:GroupName, sources, getVersionsF, getPackageDetailsF, glob
             | true,Resolution.Conflict(_) -> tryToImprove true |> snd
             | _,x-> x
 
-    step (Map.empty, [], Set.empty, rootDependencies)
+    step (Map.empty, Set.empty, Set.empty, rootDependencies)
