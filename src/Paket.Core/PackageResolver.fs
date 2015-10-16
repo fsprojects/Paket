@@ -77,14 +77,13 @@ type Resolution =
 | Ok of PackageResolution
 | Conflict of Map<PackageName,ResolvedPackage> * Set<PackageRequirement> * Set<PackageRequirement> * (PackageName -> SemVerInfo seq)
     with
-    member this.GetModelOrFail() =
+    member this.GetErrorText() =
         match this with
-        | Resolution.Ok model -> model
+        | Resolution.Ok(_) -> ""
         | Resolution.Conflict(resolved,closed,stillOpen,getVersionF) ->
+            let errorText = System.Text.StringBuilder()
 
-            let errorText = ref ""
-
-            let addToError text = errorText := !errorText + Environment.NewLine + text
+            let addToError text = errorText.AppendLine text |> ignore
 
             let traceUnresolvedPackage (r : PackageRequirement) =
                 addToError <| sprintf "  Could not resolve package %O:" r.Name
@@ -115,9 +114,7 @@ type Resolution =
                         for v in avalaibleVersions do 
                             sprintf "     - %O" v |> addToError
                 | _ -> ()
-
-            addToError "There was a version conflict during package resolution."
-
+            
             if not resolved.IsEmpty then
                 addToError "  Resolved packages:"
                 for kv in resolved do
@@ -127,10 +124,17 @@ type Resolution =
             stillOpen
             |> Seq.head
             |> traceUnresolvedPackage
+            
+            errorText.ToString()
 
-            addToError "  Please try to relax some conditions."
-            failwith !errorText
-
+    member this.GetModelOrFail() = 
+        match this with
+        | Resolution.Ok model -> model
+        | Resolution.Conflict(_) -> 
+            "There was a version conflict during package resolution." + Environment.NewLine +
+                this.GetErrorText()  + Environment.NewLine +
+                "  Please try to relax some conditions."
+            |> failwithf "%s"
 
 let calcOpenRequirements (exploredPackage:ResolvedPackage,globalFrameworkRestrictions,versionToExplore,dependency,closed:Set<PackageRequirement>,stillOpen:Set<PackageRequirement>) =
     let dependenciesByName =
@@ -229,7 +233,9 @@ let Resolve(groupName:GroupName, sources, getVersionsF, getPackageDetailsF, glob
     let rec step (filteredVersions:Map<PackageName, (SemVerInfo list * bool)>,currentResolution:Map<PackageName,ResolvedPackage>,closedRequirements:Set<PackageRequirement>,openRequirements:Set<PackageRequirement>) =
         if Set.isEmpty openRequirements then Resolution.Ok(cleanupNames currentResolution) else
         verbosefn "  %d packages in resolution. %d requirements left" currentResolution.Count openRequirements.Count
-            
+        
+        let conflictStatus = Resolution.Conflict(currentResolution,closedRequirements,openRequirements,getVersionsF sources ResolverStrategy.Max groupName)
+
         let currentRequirement =
             let currentMin = ref (Seq.head openRequirements)
             let currentBoost = ref 0
@@ -307,23 +313,13 @@ let Resolve(groupName:GroupName, sources, getVersionsF, getPackageDetailsF, glob
             | _ -> conflictHistory.Add(currentRequirement.Name, 1)
                     
             if verbose then
-                tracefn "  Conflicts with:"
-                    
-                closedRequirements
-                |> Set.union openRequirements
-                |> Seq.filter (fun d -> d.Name = currentRequirement.Name)
-                |> fun xs -> String.Join(Environment.NewLine + "    ",xs)
-                |> tracefn "    %s"
-
-                match filteredVersions |> Map.tryFind currentRequirement.Name with
-                | Some (v,_) -> tracefn "    Package %O was already pinned to %O" currentRequirement.Name v
-                | None -> ()
-
+                tracefn "%s" <| conflictStatus.GetErrorText()
                 tracefn "    ==> Trying different resolution."
 
         let tryToImprove useUnlisted =
             let allUnlisted = ref true
-            let state = ref (Resolution.Conflict(currentResolution,closedRequirements,openRequirements,getVersionsF sources ResolverStrategy.Max groupName))
+            let state = ref conflictStatus
+            
             let isOk() = 
                 match !state with
                 | Resolution.Ok _ -> true
