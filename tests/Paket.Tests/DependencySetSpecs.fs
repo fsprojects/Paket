@@ -140,7 +140,8 @@ let ``filtered with Between restriction should filter non-matching`` () =
        PackageName("P06"), VersionRequirement.AllReleases, [FrameworkRestriction.Between (DotNetFramework(FrameworkVersion.V4),DotNetFramework(FrameworkVersion.V4_5_2))]
        PackageName("P07"), VersionRequirement.AllReleases, [FrameworkRestriction.Between (DotNetFramework(FrameworkVersion.V3),DotNetFramework(FrameworkVersion.V3_5))]
        PackageName("P08"), VersionRequirement.AllReleases, [FrameworkRestriction.AtLeast (DotNetFramework(FrameworkVersion.V3_5))]
-       PackageName("P09"), VersionRequirement.AllReleases, [FrameworkRestriction.Between (DotNetFramework(FrameworkVersion.V3_5),DotNetFramework(FrameworkVersion.V4_5_2))]]
+       PackageName("P09"), VersionRequirement.AllReleases, [FrameworkRestriction.Between (DotNetFramework(FrameworkVersion.V3_5),DotNetFramework(FrameworkVersion.V4_5_2))]
+       PackageName("P10"), VersionRequirement.AllReleases, [FrameworkRestriction.Between (DotNetFramework(FrameworkVersion.V4_5_1),DotNetFramework(FrameworkVersion.V4_6))]]
       |> Set.ofList
 
     let expected =
