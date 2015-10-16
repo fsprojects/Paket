@@ -1,3 +1,6 @@
+#### 2.14.2 - 16.10.2015
+* PERFORMANCE: Use locked version as prefered version when resolver strategy is min - https://github.com/fsprojects/Paket/pull/1141
+
 #### 2.14.1 - 15.10.2015
 * BUGFIX: Add monoandroid403 to be matched as Some MonoAndroid - https://github.com/fsprojects/Paket/pull/1140
 
