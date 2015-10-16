@@ -208,6 +208,16 @@ module LockFileParser =
     let Parse(lockFileLines) =
         let remove textToRemove (source:string) = source.Replace(textToRemove, "")
         let removeBrackets = remove "(" >> remove ")"
+        let parsePackage (s : string) =
+            let parts = s.Split([|" - "|],StringSplitOptions.None)
+            let optionsString = 
+                if parts.Length < 2 then "" else 
+                if parts.[1] <> "" && parts.[1].Contains(":") |> not then
+                    ("framework: " + parts.[1]) // TODO: This is for backwards-compat and should be removed later
+                else
+                    parts.[1]
+            parts.[0],InstallSettings.Parse(optionsString)
+
         ([{ GroupName = Constants.MainDependencyGroup; RepositoryType = None; RemoteUrl = None; Packages = []; SourceFiles = []; Options = InstallOptions.Default; LastWasPackage = false }], lockFileLines)
         ||> Seq.fold(fun state line ->
             match state with
@@ -234,15 +244,9 @@ module LockFileParser =
                 | NugetPackage details ->
                     match currentGroup.RemoteUrl with
                     | Some remote -> 
-                        let parts = details.Split([|" - "|],StringSplitOptions.None)
-                        let parts' = parts.[0].Split ' '
+                        let package,settings = parsePackage details
+                        let parts' = package.Split ' '
                         let version = parts'.[1] |> removeBrackets
-                        let optionsString = 
-                            if parts.Length < 2 then "" else 
-                            if parts.[1] <> "" && parts.[1].Contains(":") |> not then
-                                ("framework: " + parts.[1]) // TODO: This is for backwards-compat and should be removed later
-                            else
-                                parts.[1]
 
                         { currentGroup with 
                             LastWasPackage = true
@@ -251,19 +255,17 @@ module LockFileParser =
                                       Name = PackageName parts'.[0]
                                       Dependencies = Set.empty
                                       Unlisted = false
-                                      Settings = InstallSettings.Parse(optionsString)
+                                      Settings = settings
                                       Version = SemVer.Parse version } :: currentGroup.Packages }::otherGroups
                     | None -> failwith "no source has been specified."
                 | NugetDependency (name, v) ->
-                    let parts = v.Split([|" - "|],StringSplitOptions.None)
-                    let version = parts.[0]
-                    let restrictions = if parts.Length <= 1 then [] else parseRestrictions parts.[1]
+                    let version,settings = parsePackage v
                     if currentGroup.LastWasPackage then
                         match currentGroup.Packages with
                         | currentPackage :: otherPackages -> 
                             { currentGroup with
                                     Packages = { currentPackage with
-                                                    Dependencies = Set.add (PackageName name, DependenciesFileParser.parseVersionRequirement version, restrictions) currentPackage.Dependencies
+                                                    Dependencies = Set.add (PackageName name, DependenciesFileParser.parseVersionRequirement version, settings.FrameworkRestrictions) currentPackage.Dependencies
                                                 } :: otherPackages } ::otherGroups
                         | [] -> failwithf "cannot set a dependency to %s %s - no package has been specified." name v
                     else
