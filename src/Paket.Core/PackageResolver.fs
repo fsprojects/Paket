@@ -103,8 +103,6 @@ let createPackageRequirements exclude resolution =
 
 type PackageResolution = Map<PackageName, ResolvedPackage>
 
-let allPrereleases versions = versions |> List.filter (fun v -> v.PreRelease <> None) = versions
-
 let cleanupNames (model : PackageResolution) : PackageResolution = 
     model
     |> Map.map (fun _ package ->
@@ -339,7 +337,8 @@ let Resolve(groupName:GroupName, sources, getVersionsF, getPackageDetailsF, glob
                 else
                     if Seq.isEmpty !compatibleVersions then
                         let prereleases = Seq.filter (isInRange (fun r -> r.IncludingPrereleases())) (!availableVersions) |> Seq.toList
-                        if allPrereleases prereleases then
+                        let allPrereleases = prereleases |> List.filter (fun v -> v.PreRelease <> None) = prereleases
+                        if allPrereleases then
                             availableVersions := Seq.ofList prereleases
                             compatibleVersions := Seq.ofList prereleases
             | Some(versions,globalOverride') -> 
