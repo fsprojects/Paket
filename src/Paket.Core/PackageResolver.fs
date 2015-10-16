@@ -34,6 +34,14 @@ module DependencySetFilter =
                 | FrameworkRestriction.AtLeast v2 -> true
                 | FrameworkRestriction.Between(v2,v3) when v1 < v3 -> true
                 | _ -> false)
+        | FrameworkRestriction.Between (min, max) ->
+            restrictions 
+            |> Seq.filter (fun r2 -> restriction.IsSameCategoryAs(r2) = Some(true))
+            |> Seq.exists (fun r2 ->
+                match r2 with
+                | FrameworkRestriction.Between(min',max') when max' >= min -> true
+                | FrameworkRestriction.Between(_) -> false
+                | _ -> true)
         | _ -> true
 
     let filterByRestrictions (restrictions:FrameworkRestriction seq) (dependencies:DependencySet) : DependencySet = 

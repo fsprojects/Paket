@@ -130,6 +130,36 @@ let ``filtered with AtLeast restriction should filter non-matching``() =
     |> shouldEqual expected
 
 [<Test>]
+let ``filtered with Between restriction should filter non-matching`` () =
+    let original =
+      [PackageName("P01"), VersionRequirement.AllReleases, []
+       PackageName("P02"), VersionRequirement.AllReleases, [FrameworkRestriction.AtLeast (DotNetFramework(FrameworkVersion.V4))]
+       PackageName("P03"), VersionRequirement.AllReleases, [FrameworkRestriction.Exactly (DotNetFramework(FrameworkVersion.V4_5))]
+       PackageName("P04"), VersionRequirement.AllReleases, [FrameworkRestriction.AtLeast (DotNetFramework(FrameworkVersion.V4_5))]
+       PackageName("P05"), VersionRequirement.AllReleases, [FrameworkRestriction.Between (DotNetFramework(FrameworkVersion.V4_5),DotNetFramework(FrameworkVersion.V4_5_2))]
+       PackageName("P06"), VersionRequirement.AllReleases, [FrameworkRestriction.Between (DotNetFramework(FrameworkVersion.V4),DotNetFramework(FrameworkVersion.V4_5_2))]
+       PackageName("P07"), VersionRequirement.AllReleases, [FrameworkRestriction.Between (DotNetFramework(FrameworkVersion.V3),DotNetFramework(FrameworkVersion.V3_5))]
+       PackageName("P08"), VersionRequirement.AllReleases, [FrameworkRestriction.AtLeast (DotNetFramework(FrameworkVersion.V3_5))]
+       PackageName("P09"), VersionRequirement.AllReleases, [FrameworkRestriction.Between (DotNetFramework(FrameworkVersion.V3_5),DotNetFramework(FrameworkVersion.V4_5_2))]]
+      |> Set.ofList
+
+    let expected =
+      [PackageName("P01"), VersionRequirement.AllReleases, []
+       PackageName("P02"), VersionRequirement.AllReleases, [FrameworkRestriction.AtLeast (DotNetFramework(FrameworkVersion.V4))]
+       PackageName("P03"), VersionRequirement.AllReleases, [FrameworkRestriction.Exactly (DotNetFramework(FrameworkVersion.V4_5))]
+       PackageName("P04"), VersionRequirement.AllReleases, [FrameworkRestriction.AtLeast (DotNetFramework(FrameworkVersion.V4_5))]
+       PackageName("P05"), VersionRequirement.AllReleases, [FrameworkRestriction.Between (DotNetFramework(FrameworkVersion.V4_5),DotNetFramework(FrameworkVersion.V4_5_2))]
+       PackageName("P06"), VersionRequirement.AllReleases, [FrameworkRestriction.Between (DotNetFramework(FrameworkVersion.V4),DotNetFramework(FrameworkVersion.V4_5_2))]
+       PackageName("P08"), VersionRequirement.AllReleases, [FrameworkRestriction.AtLeast (DotNetFramework(FrameworkVersion.V3_5))]
+       PackageName("P09"), VersionRequirement.AllReleases, [FrameworkRestriction.Between (DotNetFramework(FrameworkVersion.V3_5),DotNetFramework(FrameworkVersion.V4_5_2))]]
+      |> Set.ofList
+
+
+    original
+    |> DependencySetFilter.filterByRestrictions [FrameworkRestriction.Between (DotNetFramework(FrameworkVersion.V4),DotNetFramework(FrameworkVersion.V4_5_1))]
+    |> shouldEqual expected
+
+[<Test>]
 let ``should optimize ZendeskApi_v2 ``() = 
     let original =
         [PackageName("Newtonsoft.Json"), VersionRequirement.AllReleases, [FrameworkRestriction.Exactly (DotNetFramework(FrameworkVersion.V3_5))]
