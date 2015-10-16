@@ -41,7 +41,7 @@ module DependencySetFilter =
                 match r2 with
                 | FrameworkRestriction.Between(min',max') when max' >= min && min' < max -> true
                 | FrameworkRestriction.Between(_) -> false
-                | FrameworkRestriction.Exactly v when v < max -> true
+                | FrameworkRestriction.Exactly v when v >= min && v < max -> true
                 | FrameworkRestriction.Exactly _ -> false
                 | _ -> true)
         | _ -> true
