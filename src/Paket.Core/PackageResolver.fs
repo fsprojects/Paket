@@ -32,7 +32,7 @@ module DependencySetFilter =
                 match r2 with
                 | FrameworkRestriction.Exactly v2 when v1 <= v2 -> true
                 | FrameworkRestriction.AtLeast v2 -> true
-                | FrameworkRestriction.Between(v2,v3) when v1 <= v2 && v1 < v3 -> true
+                | FrameworkRestriction.Between(v2,v3) when v1 < v3 -> true
                 | _ -> false)
         | _ -> true
 
