@@ -1,14 +1,8 @@
-#### 2.14.6 - 16.10.2015
-* COSMETICS: Better error messages when resolver finds no matching version.
-
-#### 2.14.5 - 16.10.2015
-* COSMETICS: Fix error message when resolver already resolved to GlobalOverride - https://github.com/fsprojects/Paket/issues/1142
-
-#### 2.14.2 - 16.10.2015
-* PERFORMANCE: Use locked version as prefered version when resolver strategy is min - https://github.com/fsprojects/Paket/pull/1141
-
-#### 2.14.1 - 15.10.2015
+#### 2.15.0-alpha001 - 17.10.2015
 * BUGFIX: Add monoandroid403 to be matched as Some MonoAndroid - https://github.com/fsprojects/Paket/pull/1140
+* PERFORMANCE: Use locked version as prefered version when resolver strategy is min - https://github.com/fsprojects/Paket/pull/1141
+* COSMETICS: Better error messages when resolver finds no matching version.
+* COSMETICS: Fix error message when resolver already resolved to GlobalOverride - https://github.com/fsprojects/Paket/issues/1142
 
 #### 2.14.0 - 15.10.2015
 * BUGFIX: Handle silverlight framework identifiers comparison - https://github.com/fsprojects/Paket/pull/1138
