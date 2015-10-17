@@ -31,8 +31,17 @@ module DependencySetFilter =
             |> Seq.exists (fun r2 ->
                 match r2 with
                 | FrameworkRestriction.Exactly v2 when v1 <= v2 -> true
-                | FrameworkRestriction.AtLeast v2 when v1 <= v2 -> true
-                | FrameworkRestriction.Between(v2,v3) when v1 <= v2 && v1 < v3 -> true
+                | FrameworkRestriction.AtLeast v2 -> true
+                | FrameworkRestriction.Between(v2,v3) when v1 < v3 -> true
+                | _ -> false)
+        | FrameworkRestriction.Between (min, max) ->
+            restrictions 
+            |> Seq.filter (fun r2 -> restriction.IsSameCategoryAs(r2) = Some(true))
+            |> Seq.exists (fun r2 ->
+                match r2 with
+                | FrameworkRestriction.Exactly v when v >= min && v < max -> true
+                | FrameworkRestriction.AtLeast v when v < max -> true
+                | FrameworkRestriction.Between(min',max') when max' >= min && min' < max -> true
                 | _ -> false)
         | _ -> true
 

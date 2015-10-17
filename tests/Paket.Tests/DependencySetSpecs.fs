@@ -108,7 +108,9 @@ let ``filtered with AtLeast restriction should filter non-matching``() =
        PackageName("P4"), VersionRequirement.AllReleases, [FrameworkRestriction.AtLeast (DotNetFramework(FrameworkVersion.V4_5))]
        PackageName("P5"), VersionRequirement.AllReleases, [FrameworkRestriction.Between (DotNetFramework(FrameworkVersion.V4_5),DotNetFramework(FrameworkVersion.V4_5_2))]
        PackageName("P6"), VersionRequirement.AllReleases, [FrameworkRestriction.Between (DotNetFramework(FrameworkVersion.V4),DotNetFramework(FrameworkVersion.V4_5_2))]
-       PackageName("P7"), VersionRequirement.AllReleases, [FrameworkRestriction.Between (DotNetFramework(FrameworkVersion.V3),DotNetFramework(FrameworkVersion.V3_5))]]
+       PackageName("P7"), VersionRequirement.AllReleases, [FrameworkRestriction.Between (DotNetFramework(FrameworkVersion.V3),DotNetFramework(FrameworkVersion.V3_5))]
+       PackageName("P8"), VersionRequirement.AllReleases, [FrameworkRestriction.AtLeast (DotNetFramework(FrameworkVersion.V3_5))]
+       PackageName("P9"), VersionRequirement.AllReleases, [FrameworkRestriction.Between (DotNetFramework(FrameworkVersion.V3_5),DotNetFramework(FrameworkVersion.V4_5_2))]]
       |> Set.ofList
 
     let expected = 
@@ -117,12 +119,50 @@ let ``filtered with AtLeast restriction should filter non-matching``() =
        PackageName("P3"), VersionRequirement.AllReleases, [FrameworkRestriction.Exactly (DotNetFramework(FrameworkVersion.V4_5))]
        PackageName("P4"), VersionRequirement.AllReleases, [FrameworkRestriction.AtLeast (DotNetFramework(FrameworkVersion.V4_5))]
        PackageName("P5"), VersionRequirement.AllReleases, [FrameworkRestriction.Between (DotNetFramework(FrameworkVersion.V4_5),DotNetFramework(FrameworkVersion.V4_5_2))]
-       PackageName("P6"), VersionRequirement.AllReleases, [FrameworkRestriction.Between (DotNetFramework(FrameworkVersion.V4),DotNetFramework(FrameworkVersion.V4_5_2))]]
+       PackageName("P6"), VersionRequirement.AllReleases, [FrameworkRestriction.Between (DotNetFramework(FrameworkVersion.V4),DotNetFramework(FrameworkVersion.V4_5_2))]
+       PackageName("P8"), VersionRequirement.AllReleases, [FrameworkRestriction.AtLeast (DotNetFramework(FrameworkVersion.V3_5))]
+       PackageName("P9"), VersionRequirement.AllReleases, [FrameworkRestriction.Between (DotNetFramework(FrameworkVersion.V3_5),DotNetFramework(FrameworkVersion.V4_5_2))]]
       |> Set.ofList
 
 
     original
     |> DependencySetFilter.filterByRestrictions [FrameworkRestriction.AtLeast (DotNetFramework(FrameworkVersion.V4))]
+    |> shouldEqual expected
+
+[<Test>]
+let ``filtered with Between restriction should filter non-matching`` () =
+    let original =
+      [PackageName("P01"), VersionRequirement.AllReleases, []
+       PackageName("P02"), VersionRequirement.AllReleases, [FrameworkRestriction.AtLeast (DotNetFramework(FrameworkVersion.V4))]
+       PackageName("P03"), VersionRequirement.AllReleases, [FrameworkRestriction.Exactly (DotNetFramework(FrameworkVersion.V4_5))]
+       PackageName("P04"), VersionRequirement.AllReleases, [FrameworkRestriction.AtLeast (DotNetFramework(FrameworkVersion.V4_5))]
+       PackageName("P05"), VersionRequirement.AllReleases, [FrameworkRestriction.Between (DotNetFramework(FrameworkVersion.V4_5),DotNetFramework(FrameworkVersion.V4_5_2))]
+       PackageName("P06"), VersionRequirement.AllReleases, [FrameworkRestriction.Between (DotNetFramework(FrameworkVersion.V4),DotNetFramework(FrameworkVersion.V4_5_2))]
+       PackageName("P07"), VersionRequirement.AllReleases, [FrameworkRestriction.Between (DotNetFramework(FrameworkVersion.V3),DotNetFramework(FrameworkVersion.V3_5))]
+       PackageName("P08"), VersionRequirement.AllReleases, [FrameworkRestriction.AtLeast (DotNetFramework(FrameworkVersion.V3_5))]
+       PackageName("P09"), VersionRequirement.AllReleases, [FrameworkRestriction.Between (DotNetFramework(FrameworkVersion.V3_5),DotNetFramework(FrameworkVersion.V4_5_2))]
+       PackageName("P10"), VersionRequirement.AllReleases, [FrameworkRestriction.Between (DotNetFramework(FrameworkVersion.V4_5_1),DotNetFramework(FrameworkVersion.V4_6))]
+       PackageName("P11"), VersionRequirement.AllReleases, [FrameworkRestriction.Exactly (DotNetFramework(FrameworkVersion.V4_5_1))]
+       PackageName("P12"), VersionRequirement.AllReleases, [FrameworkRestriction.Exactly (DotNetFramework(FrameworkVersion.V3_5))]
+       PackageName("P13"), VersionRequirement.AllReleases, [FrameworkRestriction.Exactly (DotNetFramework(FrameworkVersion.V4))]
+       PackageName("P14"), VersionRequirement.AllReleases, [FrameworkRestriction.AtLeast (DotNetFramework(FrameworkVersion.V4_5_1))]]
+      |> Set.ofList
+
+    let expected =
+      [PackageName("P01"), VersionRequirement.AllReleases, []
+       PackageName("P02"), VersionRequirement.AllReleases, [FrameworkRestriction.AtLeast (DotNetFramework(FrameworkVersion.V4))]
+       PackageName("P03"), VersionRequirement.AllReleases, [FrameworkRestriction.Exactly (DotNetFramework(FrameworkVersion.V4_5))]
+       PackageName("P04"), VersionRequirement.AllReleases, [FrameworkRestriction.AtLeast (DotNetFramework(FrameworkVersion.V4_5))]
+       PackageName("P05"), VersionRequirement.AllReleases, [FrameworkRestriction.Between (DotNetFramework(FrameworkVersion.V4_5),DotNetFramework(FrameworkVersion.V4_5_2))]
+       PackageName("P06"), VersionRequirement.AllReleases, [FrameworkRestriction.Between (DotNetFramework(FrameworkVersion.V4),DotNetFramework(FrameworkVersion.V4_5_2))]
+       PackageName("P08"), VersionRequirement.AllReleases, [FrameworkRestriction.AtLeast (DotNetFramework(FrameworkVersion.V3_5))]
+       PackageName("P09"), VersionRequirement.AllReleases, [FrameworkRestriction.Between (DotNetFramework(FrameworkVersion.V3_5),DotNetFramework(FrameworkVersion.V4_5_2))]
+       PackageName("P13"), VersionRequirement.AllReleases, [FrameworkRestriction.Exactly (DotNetFramework(FrameworkVersion.V4))]]
+      |> Set.ofList
+
+
+    original
+    |> DependencySetFilter.filterByRestrictions [FrameworkRestriction.Between (DotNetFramework(FrameworkVersion.V4),DotNetFramework(FrameworkVersion.V4_5_1))]
     |> shouldEqual expected
 
 [<Test>]
