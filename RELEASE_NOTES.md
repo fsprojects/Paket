@@ -1,4 +1,4 @@
-#### 2.15.0 - 17.10.2015
+#### 2.15.1 - 17.10.2015
 * BUGFIX: Fixed framework restriction filter - https://github.com/fsprojects/Paket/pull/1146
 * BUGFIX: Fixed parsing of framework restrictions in lock file - https://github.com/fsprojects/Paket/pull/1144
 * BUGFIX: Add monoandroid403 to be matched as Some MonoAndroid - https://github.com/fsprojects/Paket/pull/1140
