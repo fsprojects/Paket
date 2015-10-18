@@ -960,7 +960,7 @@ type ProjectFile =
 
     static member Load(fileName:string) =
         try
-            let fileInfo = FileInfo fileName
+            let fileInfo = FileInfo (normalizePath fileName)
             use stream = fileInfo.OpenRead()
             let project = ProjectFile.LoadFromStream(fileInfo.FullName, stream)
             Some project
