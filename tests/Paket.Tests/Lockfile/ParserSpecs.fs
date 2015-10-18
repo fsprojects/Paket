@@ -519,12 +519,13 @@ let ``should parse and serialise multiple feed lockfile``() =
 
 
 let groupsLockFile = """REDIRECTS: ON
-IMPORT-TARGETS: TRUE
 COPY-LOCAL: TRUE
+IMPORT-TARGETS: TRUE
 NUGET
   remote: "D:\code\temp with space"
   specs:
     Castle.Windsor (2.1)
+
 GROUP Build
 REDIRECTS: ON
 COPY-LOCAL: TRUE
@@ -533,7 +534,7 @@ NUGET
   remote: "D:\code\temp with space"
   specs:
     FAKE (4.0) - redirects: on
-"""   
+"""
 
 [<Test>]
 let ``should parse lock file with groups``() = 
@@ -562,6 +563,15 @@ let ``should parse lock file with groups``() =
     lockFile2.Options.Settings.CopyLocal |> shouldEqual (Some true)
     lockFile2.Options.Settings.ReferenceCondition |> shouldEqual (Some "LEGACY")
 
-    packages2.Head.Source |> shouldEqual (PackageSource.LocalNuget("D:\code\\temp with space"))  
+    packages2.Head.Source |> shouldEqual (PackageSource.LocalNuget("D:\code\\temp with space"))
     packages2.[0].Name |> shouldEqual (PackageName "FAKE")
     packages2.[0].Settings.CreateBindingRedirects |> shouldEqual (Some true)
+
+
+[<Test>]
+let ``should parse and serialise groups lockfile``() =
+    let lockFile = LockFile.Parse("",toLines groupsLockFile)
+    let lockFile' = lockFile.ToString()
+
+    normalizeLineEndings lockFile' 
+    |> shouldEqual (normalizeLineEndings groupsLockFile)
