@@ -4,7 +4,6 @@ NUGET
     Argu (1.1.0)
     FSharp.Core (4.0.0.1) - redirects: on
     Newtonsoft.Json (7.0.1) - redirects: on
-    NUnit (2.6.4)
 GITHUB
   remote: fsharp/FAKE
   specs:
