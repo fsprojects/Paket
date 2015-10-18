@@ -481,7 +481,7 @@ let multipleFeedLockFile = """NUGET
       Newtonsoft.Json (>= 6.0.0 < 6.1.0)
     log4net (1.2.10)
     Newtonsoft.Json (6.0.6)
-  remote: https://www.nuget.org/api/v2
+  remote: https://nuget.org/api/v2
   specs:
     Microsoft.AspNet.WebApi (5.2.3)
       Microsoft.AspNet.WebApi.WebHost (>= 5.2.3 < 5.3.0)
@@ -491,7 +491,8 @@ let multipleFeedLockFile = """NUGET
     Microsoft.AspNet.WebApi.Core (5.2.3)
       Microsoft.AspNet.WebApi.Client (>= 5.2.3)
     Microsoft.AspNet.WebApi.WebHost (5.2.3)
-      Microsoft.AspNet.WebApi.Core (>= 5.2.3 < 5.3.0)"""
+      Microsoft.AspNet.WebApi.Core (>= 5.2.3 < 5.3.0)
+"""
 
 [<Test>]
 let ``should parse lockfile with multiple feeds``() =
@@ -507,6 +508,15 @@ let ``should parse lockfile with multiple feeds``() =
     packages.[3].Version |> shouldEqual (SemVer.Parse "5.2.3")
     packages.[3].Settings.FrameworkRestrictions.ToString() |> shouldEqual "[]"
     packages.[3].Source.ToString() |> shouldEqual "https://nuget.org/api/v2"
+
+[<Test>]
+let ``should parse and serialise multiple feed lockfile``() =
+    let lockFile = LockFile.Parse("",toLines multipleFeedLockFile)
+    let lockFile' = lockFile.ToString()
+
+    normalizeLineEndings lockFile' 
+    |> shouldEqual (normalizeLineEndings multipleFeedLockFile)
+
 
 let groupsLockFile = """REDIRECTS: ON
 IMPORT-TARGETS: TRUE
