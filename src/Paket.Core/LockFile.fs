@@ -211,7 +211,7 @@ module LockFileParser =
             let optionsString = 
                 if parts.Length < 2 then "" else 
                 if parts.[1] <> "" && parts.[1].Contains(":") |> not then
-                    ("framework: " + parts.[1]) // TODO: This is for backwards-compat and should be removed later
+                    ("framework: " + parts.[1])
                 else
                     parts.[1]
             parts.[0],InstallSettings.Parse(optionsString)
