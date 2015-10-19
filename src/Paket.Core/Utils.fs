@@ -127,7 +127,7 @@ let envProxies () =
     let getEnvValue (name:string) =
         let v = Environment.GetEnvironmentVariable(name.ToUpperInvariant())
         // under mono, env vars are case sensitive
-        if v = null then Environment.GetEnvironmentVariable(name.ToLowerInvariant()) else v
+        if isNull v then Environment.GetEnvironmentVariable(name.ToLowerInvariant()) else v
     let bypassList =
         let noproxy = getEnvValue "NO_PROXY"
         if String.IsNullOrEmpty(noproxy) then [||] else
@@ -141,7 +141,7 @@ let envProxies () =
     let getProxy (scheme:string) =
         let envVarName = sprintf "%s_PROXY" (scheme.ToUpperInvariant())
         let envVarValue = getEnvValue envVarName
-        if envVarValue = null then 
+        if isNull envVarValue then 
             None 
         else
             match Uri.TryCreate(envVarValue, UriKind.Absolute) with
@@ -159,23 +159,34 @@ let envProxies () =
         | _ -> map
 
     [ "http"; "https" ]
-    |> List.fold addProxy Map.empty 
+    |> List.fold addProxy Map.empty
+
+let calcEnvProxies = lazy (envProxies())
+
+let private proxies = System.Collections.Concurrent.ConcurrentDictionary<_,_>()
 
 let getDefaultProxyFor url =
     let uri = new Uri(url)
-    let getDefault () =
-        let result = WebRequest.GetSystemWebProxy()
-        let address = result.GetProxy(uri)
+    let key = uri.Host,uri.Port,uri.Scheme
+    match proxies.TryGetValue key with
+    | true,proxy -> proxy
+    | _ ->
+        let getDefault () =
+            let result = WebRequest.GetSystemWebProxy()
+            let address = result.GetProxy(uri)
 
-        if address = uri then null else
-        let proxy = new WebProxy(address)
-        proxy.Credentials <- CredentialCache.DefaultCredentials
-        proxy.BypassProxyOnLocal <- true
+            if address = uri then null else
+            let proxy = new WebProxy(address)
+            proxy.Credentials <- CredentialCache.DefaultCredentials
+            proxy.BypassProxyOnLocal <- true
+            proxy
+
+        let proxy =
+            match calcEnvProxies.Force().TryFind uri.Scheme with
+            | Some p -> if p.GetProxy(uri) <> uri then p else getDefault()
+            | None -> getDefault()
+        proxies.TryAdd(key,proxy) |> ignore
         proxy
-
-    match envProxies().TryFind uri.Scheme with
-    | Some p -> if p.GetProxy(uri) <> uri then p else getDefault()
-    | None -> getDefault()
 
 let inline createWebClient(url,auth:Auth option) =
     let client = new WebClient()
@@ -188,7 +199,7 @@ let inline createWebClient(url,auth:Auth option) =
         //ONLY after a 401
         //client.Credentials <- new NetworkCredential(auth.Username,auth.Password)
 
-        //so use THIS instead to send credenatials RIGHT AWAY
+        //so use THIS instead to send credentials RIGHT AWAY
         let credentials = Convert.ToBase64String(Encoding.ASCII.GetBytes(username + ":" + password))
         client.Headers.[HttpRequestHeader.Authorization] <- sprintf "Basic %s" credentials
     | Some(Token token) -> client.Headers.[HttpRequestHeader.Authorization] <- sprintf "token %s" token
@@ -253,13 +264,16 @@ let getXmlFromUrl (auth:Auth option, url : string) =
 let safeGetFromUrl (auth:Auth option, url : string, contentType : string) =
     async { 
         try 
+            let uri = Uri(url)
             use client = createWebClient(url,auth)
             
             if notNullOrEmpty contentType then
                 client.Headers.Add(HttpRequestHeader.Accept, contentType)
 
-            let s = client.DownloadStringTaskAsync(Uri(url)) |> Async.AwaitTask
+            let sw2 = System.Diagnostics.Stopwatch.StartNew()
+            let s = client.DownloadStringTaskAsync(uri) |> Async.AwaitTask
             let! raw = s
+            traceVerbose <| sprintf "  - download was %dms" sw2.ElapsedMilliseconds
             return Some raw
         with _ -> return None
     }
