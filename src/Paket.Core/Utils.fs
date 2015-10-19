@@ -270,10 +270,8 @@ let safeGetFromUrl (auth:Auth option, url : string, contentType : string) =
             if notNullOrEmpty contentType then
                 client.Headers.Add(HttpRequestHeader.Accept, contentType)
 
-            let sw2 = System.Diagnostics.Stopwatch.StartNew()
             let s = client.DownloadStringTaskAsync(uri) |> Async.AwaitTask
             let! raw = s
-            traceVerbose <| sprintf "  - download was %dms" sw2.ElapsedMilliseconds
             return Some raw
         with _ -> return None
     }

@@ -1,8 +1,7 @@
-#### 2.15.6 - 19.10.2015
+#### 2.16.0-alpha001 - 19.10.2015
 * Log Request performance
-
-#### 2.15.5 - 19.10.2015
 * BUGFIX: Fixed loading of Project files on mono - https://github.com/fsprojects/Paket/pull/1149
+* PERFORMANCE: Caching proxy scheme - https://github.com/fsprojects/Paket/pull/1153
 
 #### 2.15.1 - 17.10.2015
 * BUGFIX: Fixed framework restriction filter - https://github.com/fsprojects/Paket/pull/1146
