@@ -14,11 +14,13 @@ open Paket.PackageSources
 type InstallOptions = 
     { Strict : bool 
       Redirects : bool
+      ResolverStrategy : ResolverStrategy option
       Settings : InstallSettings }
 
     static member Default = { 
         Strict = false
         Redirects = false
+        ResolverStrategy = None
         Settings = InstallSettings.Default }
 
 type VersionStrategy = {
@@ -45,7 +47,8 @@ type DependenciesGroup = {
               Options = 
                 { Redirects = this.Options.Redirects || other.Options.Redirects
                   Settings = this.Options.Settings + other.Options.Settings
-                  Strict = this.Options.Strict || other.Options.Strict }
+                  Strict = this.Options.Strict || other.Options.Strict
+                  ResolverStrategy = match this.Options.ResolverStrategy with | Some s -> Some s | None -> other.Options.ResolverStrategy }
               Sources = this.Sources @ other.Sources |> List.distinct
               Packages = this.Packages @ other.Packages
               RemoteFiles = this.RemoteFiles @ other.RemoteFiles }
