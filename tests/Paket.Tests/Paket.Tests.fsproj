@@ -217,6 +217,7 @@
     <Compile Include="Resolver\CasingSpecs.fs" />
     <Compile Include="Resolver\PessimisticStrategySpecs.fs" />
     <Compile Include="Resolver\AddingDependenciesSpecs.fs" />
+    <Compile Include="Resolver\GlobalPessimisticStrategySpecs.fs" />
     <Compile Include="Lockfile\GeneratorSpecs.fs" />
     <Compile Include="Lockfile\GenerateWithOptionsSpecs.fs" />
     <Compile Include="Lockfile\GenerateAuthModeSpecs.fs" />

@@ -186,7 +186,7 @@ type UpdateMode =
     | UpdateAll
 
 /// Resolves all direct and transitive dependencies
-let Resolve(groupName:GroupName, sources, getVersionsF, getPackageDetailsF, globalFrameworkRestrictions, (rootDependencies:PackageRequirement Set), updateMode : UpdateMode) =
+let Resolve(groupName:GroupName, sources, getVersionsF, getPackageDetailsF, strategy, globalFrameworkRestrictions, (rootDependencies:PackageRequirement Set), updateMode : UpdateMode) =
     tracefn "Resolving packages for group %O:" groupName
     let startWithPackage = 
         match updateMode with
@@ -267,7 +267,7 @@ let Resolve(groupName:GroupName, sources, getVersionsF, getPackageDetailsF, glob
             if currentRequirement.Parent.IsRootRequirement() then
                 ResolverStrategy.Max 
             else
-                match currentRequirement.ResolverStrategy with
+                match currentRequirement.ResolverStrategy ++ strategy with
                 | Some s -> s
                 | None -> ResolverStrategy.Max
        

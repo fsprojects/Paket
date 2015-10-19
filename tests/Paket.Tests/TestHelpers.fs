@@ -49,7 +49,7 @@ let safeResolve graph (dependencies : (string * VersionRange) list)  =
                  ResolverStrategy = Some ResolverStrategy.Max })
         |> Set.ofList
 
-    PackageResolver.Resolve(Constants.MainDependencyGroup,[ PackageSource.NugetSource "" ], VersionsFromGraphAsSeq graph, PackageDetailsFromGraph graph, [], packages, UpdateMode.UpdateAll)
+    PackageResolver.Resolve(Constants.MainDependencyGroup,[ PackageSource.NugetSource "" ], VersionsFromGraphAsSeq graph, PackageDetailsFromGraph graph, None, [], packages, UpdateMode.UpdateAll)
 
 let resolve graph dependencies = (safeResolve graph dependencies).GetModelOrFail()
 

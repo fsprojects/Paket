@@ -469,6 +469,7 @@ type DependenciesFile(fileName,groups:Map<GroupName,DependenciesGroup>, textRepr
                     group.Sources,
                     getVersionF, 
                     getPackageDetailsF, 
+                    group.Options.ResolverStrategy,
                     group.Options.Settings.FrameworkRestrictions,
                     remoteDependencies @ group.Packages |> Set.ofList,
                     updateMode)
