@@ -1,3 +1,6 @@
+#### 2.15.6 - 19.10.2015
+* Log Request performance
+
 #### 2.15.5 - 19.10.2015
 * BUGFIX: Fixed loading of Project files on mono - https://github.com/fsprojects/Paket/pull/1149
 

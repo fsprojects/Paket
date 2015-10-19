@@ -62,12 +62,15 @@ let rec private followODataLink auth url =
     }
 
 
+
 let tryGetAllVersionsFromNugetODataWithFilter (auth, nugetURL, package:PackageName) = 
     async { 
         try 
+            let sw = System.Diagnostics.Stopwatch.StartNew()
             let url = sprintf "%s/Packages?$filter=Id eq '%O'" nugetURL package
             verbosefn "getAllVersionsFromNugetODataWithFilter from url '%s'" url
             let! result = followODataLink auth url
+            traceVerbose <| sprintf "PERF: ODataWithFilter %O: %dms" package sw.ElapsedMilliseconds
             return Some result
         with _ -> return None
     }
@@ -75,15 +78,18 @@ let tryGetAllVersionsFromNugetODataWithFilter (auth, nugetURL, package:PackageNa
 let tryGetPackageVersionsViaOData (auth, nugetURL, package:PackageName) = 
     async { 
         try 
+            let sw = System.Diagnostics.Stopwatch.StartNew()
             let url = sprintf "%s/FindPackagesById()?id='%O'" nugetURL package
             verbosefn "getAllVersionsFromNugetOData from url '%s'" url
             let! result = followODataLink auth url
+            traceVerbose <| sprintf "PERF: OData %O: %dms" package sw.ElapsedMilliseconds
             return Some result
         with _ -> return None
     }
 
 let tryGetPackageVersionsViaJson (auth, nugetURL, package:PackageName) = 
     async { 
+        let sw = System.Diagnostics.Stopwatch.StartNew() 
         let url = sprintf "%s/package-versions/%O?includePrerelease=true" nugetURL package
         let! raw = safeGetFromUrl (auth, url, acceptJson)
         
@@ -91,18 +97,22 @@ let tryGetPackageVersionsViaJson (auth, nugetURL, package:PackageName) =
         | None -> return None
         | Some data -> 
             try 
+                traceVerbose <| sprintf "PERF: json %O: %dms" package sw.ElapsedMilliseconds
                 return Some(JsonConvert.DeserializeObject<string []> data)
             with _ -> return None
     }
 
 let tryNuGetV3 (auth, nugetV3Url, package:PackageName) = 
-    async { 
-        try 
+    async {
+        try
+            let sw = System.Diagnostics.Stopwatch.StartNew()
             let! data = NuGetV3.findVersionsForPackage(nugetV3Url, auth, package, true, 100000)
             match data with
             | Some data when Array.isEmpty data -> return None
             | None -> return None
-            | _ -> return data
+            | _ -> 
+                traceVerbose <| sprintf "PERF: V3 %O: %dms" package sw.ElapsedMilliseconds
+                return data
         with exn -> return None
     }
 
