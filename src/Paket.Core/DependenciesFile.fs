@@ -48,7 +48,7 @@ type DependenciesGroup = {
                 { Redirects = this.Options.Redirects || other.Options.Redirects
                   Settings = this.Options.Settings + other.Options.Settings
                   Strict = this.Options.Strict || other.Options.Strict
-                  ResolverStrategy = match this.Options.ResolverStrategy with | Some s -> Some s | None -> other.Options.ResolverStrategy }
+                  ResolverStrategy = this.Options.ResolverStrategy ++ other.Options.ResolverStrategy }
               Sources = this.Sources @ other.Sources |> List.distinct
               Packages = this.Packages @ other.Packages
               RemoteFiles = this.RemoteFiles @ other.RemoteFiles }
@@ -197,6 +197,7 @@ module DependenciesFileParser =
     | CopyLocal of bool
     | ReferenceCondition of string
     | Redirects of bool
+    | ResolverStrategy of ResolverStrategy option
 
     let private (|Remote|Package|Empty|ParserOptions|SourceFile|Group|) (line:string) =
         match line.Trim() with
@@ -225,6 +226,14 @@ module DependenciesFileParser =
             | _ -> failwithf "could not retrieve nuget package from %s" trimmed
         | String.StartsWith "references" trimmed -> ParserOptions(ParserOption.ReferencesMode(trimmed.Replace(":","").Trim() = "strict"))
         | String.StartsWith "redirects" trimmed -> ParserOptions(ParserOption.Redirects(trimmed.Replace(":","").Trim() = "on"))
+        | String.StartsWith "strategy" trimmed -> 
+            let setting =
+                match trimmed.Replace(":","").Trim().ToLowerInvariant() with
+                | "max" -> Some ResolverStrategy.Max
+                | "min" -> Some ResolverStrategy.Min
+                | _ -> None
+
+            ParserOptions(ParserOption.ResolverStrategy(setting))
         | String.StartsWith "framework" trimmed -> ParserOptions(ParserOption.FrameworkRestrictions(trimmed.Replace(":","").Trim() |> Requirements.parseRestrictions))
         | String.StartsWith "content" trimmed -> 
             let setting =
@@ -279,6 +288,7 @@ module DependenciesFileParser =
         match options with 
         | ReferencesMode mode -> { current.Options with Strict = mode } 
         | Redirects mode -> { current.Options with Redirects = mode }
+        | ResolverStrategy strategy -> { current.Options with ResolverStrategy = strategy }
         | CopyLocal mode -> { current.Options with Settings = { current.Options.Settings with CopyLocal = Some mode } }
         | ImportTargets mode -> { current.Options with Settings = { current.Options.Settings with ImportTargets = Some mode } }
         | FrameworkRestrictions r -> { current.Options with Settings = { current.Options.Settings with FrameworkRestrictions = r } }
