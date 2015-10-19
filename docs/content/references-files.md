@@ -20,6 +20,9 @@ The file whitelists any dependencies from the [`paket.lock` file](lock-file.html
     UnionArgParser
     DotNetZip
     RestSharp
+    
+    group Test
+        NUnit
 
 For each MSBuild project alongside a `paket.references`, [`paket install`](paket-install.html) and [`paket update`](paket-update.html) will add references to the dependencies listed in `paket.references` *and all their transitive dependencies* (unless [noted otherwise](dependencies-file.html#Strict-references)).
 
