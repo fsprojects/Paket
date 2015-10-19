@@ -1,4 +1,4 @@
-#### 2.15.2 - 19.10.2015
+#### 2.15.3 - 19.10.2015
 * BUGFIX: Fixed loading of ProjectFiles on mono - https://github.com/fsprojects/Paket/pull/1149
 
 #### 2.15.1 - 17.10.2015
