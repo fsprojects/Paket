@@ -413,7 +413,7 @@ type PackageRequirementSource =
 type PackageRequirement =
     { Name : PackageName
       VersionRequirement : VersionRequirement
-      ResolverStrategy : ResolverStrategy
+      ResolverStrategy : ResolverStrategy option
       Parent: PackageRequirementSource
       Settings: InstallSettings }
 

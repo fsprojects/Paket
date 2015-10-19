@@ -11,7 +11,7 @@ let parse text = DependenciesFileParser.parseVersionRequirement(text)
 let require packageName strategy text : PackageRequirement = 
     { Name = PackageName packageName
       VersionRequirement = parse text
-      ResolverStrategy = strategy
+      ResolverStrategy = Some strategy
       Parent = PackageRequirementSource.DependenciesFile ""
       Settings = InstallSettings.Default }
 

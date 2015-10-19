@@ -267,7 +267,9 @@ let Resolve(groupName:GroupName, sources, getVersionsF, getPackageDetailsF, glob
             if currentRequirement.Parent.IsRootRequirement() then
                 ResolverStrategy.Max 
             else
-                currentRequirement.ResolverStrategy
+                match currentRequirement.ResolverStrategy with
+                | Some s -> s
+                | None -> ResolverStrategy.Max
        
         match Map.tryFind currentRequirement.Name filteredVersions with
         | None ->

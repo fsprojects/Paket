@@ -46,7 +46,7 @@ let safeResolve graph (dependencies : (string * VersionRange) list)  =
                  VersionRequirement = VersionRequirement(v, PreReleaseStatus.No)
                  Parent = PackageRequirementSource.DependenciesFile ""
                  Settings = InstallSettings.Default
-                 ResolverStrategy = ResolverStrategy.Max })
+                 ResolverStrategy = Some ResolverStrategy.Max })
         |> Set.ofList
 
     PackageResolver.Resolve(Constants.MainDependencyGroup,[ PackageSource.NugetSource "" ], VersionsFromGraphAsSeq graph, PackageDetailsFromGraph graph, [], packages, UpdateMode.UpdateAll)

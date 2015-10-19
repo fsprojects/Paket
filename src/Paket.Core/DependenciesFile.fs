@@ -23,7 +23,7 @@ type InstallOptions =
 
 type VersionStrategy = {
     VersionRequirement : VersionRequirement
-    ResolverStrategy : ResolverStrategy }
+    ResolverStrategy : ResolverStrategy option }
 
 type DependenciesGroup = {
     Name: GroupName
@@ -56,7 +56,17 @@ module DependenciesFileParser =
     let private basicOperators = ["~>";"==";"<=";">=";"=";">";"<"]
     let private operators = basicOperators @ (basicOperators |> List.map (fun o -> "!" + o))
 
-    let parseResolverStrategy (text : string) = if text.StartsWith "!" then ResolverStrategy.Min else ResolverStrategy.Max
+    let (|NuGetStrategy|PaketStrategy|NoStrategy|) (text : string) =
+        match text |> Seq.tryHead with
+        | Some('!') -> NuGetStrategy
+        | Some('@') -> PaketStrategy
+        | _ -> NoStrategy
+
+    let parseResolverStrategy (text : string) = 
+        match text with
+        | NuGetStrategy -> Some ResolverStrategy.Min
+        | PaketStrategy -> Some ResolverStrategy.Max
+        | NoStrategy -> None
 
     let twiddle(minimum:string) =
         let promote index (values:string array) =
@@ -311,8 +321,10 @@ module DependenciesFileParser =
 module DependenciesFileSerializer = 
     let formatVersionRange strategy (version : VersionRequirement) : string =
         let prefix = 
-            if strategy = ResolverStrategy.Min then "!"
-            else ""
+            match strategy with
+            | Some ResolverStrategy.Min -> "!"
+            | Some ResolverStrategy.Max -> "@"
+            | None -> ""
 
         let preReleases = 
             match version.PreReleases with
@@ -322,11 +334,11 @@ module DependenciesFileSerializer =
             
         let version = 
             match version.Range with
-            | Minimum x when strategy = ResolverStrategy.Max && x = SemVer.Parse "0" -> ""
+            | Minimum x when strategy = None && x = SemVer.Parse "0" -> ""
             | Minimum x -> ">= " + x.ToString()
             | GreaterThan x -> "> " + x.ToString()
-            | Specific x when strategy = ResolverStrategy.Min -> "= " + x.ToString()
-            | Specific x -> x.ToString()
+            | Specific x when strategy = None -> x.ToString()
+            | Specific x -> "= " + x.ToString()
             | VersionRange.Range(_, from, _, _) 
                     when DependenciesFileParser.parseVersionRequirement ("~> " + from.ToString() + preReleases) = version -> 
                         "~> " + from.ToString()
@@ -430,7 +442,7 @@ type DependenciesFile(fileName,groups:Map<GroupName,DependenciesGroup>, textRepr
                 |> Seq.map (fun (n, v) -> 
                         { Name = n
                           VersionRequirement = v
-                          ResolverStrategy = ResolverStrategy.Max
+                          ResolverStrategy = Some ResolverStrategy.Max
                           Parent = PackageRequirementSource.DependenciesFile fileName
                           Settings = group.Options.Settings })
                 |> Seq.toList

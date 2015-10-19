@@ -29,7 +29,7 @@ let defaultPackage =
       Parent = PackageRequirementSource.DependenciesFile ""
       VersionRequirement = VersionRequirement(VersionRange.Exactly "1.0", PreReleaseStatus.No)
       Settings = InstallSettings.Default
-      ResolverStrategy = ResolverStrategy.Max }
+      ResolverStrategy = Some ResolverStrategy.Max }
 
 [<Test>]
 let ``should analyze graph and report conflict``() = 
