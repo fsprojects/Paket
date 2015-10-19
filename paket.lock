@@ -1,7 +1,7 @@
 NUGET
   remote: https://nuget.org/api/v2
   specs:
-    Argu (1.1.0)
+    Argu (1.1.1)
     FSharp.Core (4.0.0.1) - redirects: on
     Newtonsoft.Json (7.0.1) - redirects: on
 GITHUB
@@ -15,13 +15,13 @@ GROUP Build
 NUGET
   remote: https://nuget.org/api/v2
   specs:
-    FAKE (4.7.1)
-    FSharp.Compiler.Service (0.0.90)
-    FSharp.Formatting (2.11.0)
-      FSharp.Compiler.Service (>= 0.0.90 <= 1.3)
-      FSharpVSPowerTools.Core (1.9.0)
-    FSharpVSPowerTools.Core (1.9.0)
-      FSharp.Compiler.Service (>= 0.0.90)
+    FAKE (4.7.2)
+    FSharp.Compiler.Service (1.4.0.6)
+    FSharp.Formatting (2.12.0)
+      FSharp.Compiler.Service (1.4.0.6)
+      FSharpVSPowerTools.Core (2.1.0)
+    FSharpVSPowerTools.Core (2.1.0)
+      FSharp.Compiler.Service (>= 1.4.0.6)
     ILRepack (2.0.8)
     Microsoft.Bcl (1.1.10)
       Microsoft.Bcl.Build (>= 1.0.14)
