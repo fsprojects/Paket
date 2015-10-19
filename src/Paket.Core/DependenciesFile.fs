@@ -54,7 +54,10 @@ type DependenciesGroup = {
 module DependenciesFileParser = 
 
     let private basicOperators = ["~>";"==";"<=";">=";"=";">";"<"]
-    let private operators = basicOperators @ (basicOperators |> List.map (fun o -> "!" + o))
+    let private strategyOperators = ["!";"@"]
+    let private operators =
+        basicOperators
+        @ (basicOperators |> List.map (fun o -> strategyOperators |> List.map (fun s -> s + o)) |> List.concat)
 
     let (|NuGetStrategy|PaketStrategy|NoStrategy|) (text : string) =
         match text |> Seq.tryHead with
@@ -262,7 +265,7 @@ module DependenciesFileParser =
           ResolverStrategy = parseResolverStrategy version
           Parent = parent
           Settings = InstallSettings.Parse(optionsText).AdjustWithSpecialCases packageName
-          VersionRequirement = parseVersionRequirement((version + " " + prereleases).Trim '!') } 
+          VersionRequirement = parseVersionRequirement((version + " " + prereleases).Trim('!', '@')) } 
 
     let parsePackageLine(sources,parent,line:string) =
         match line with 
@@ -315,7 +318,7 @@ module DependenciesFileParser =
         fileName, groups, lines
     
     let parseVersionString (version : string) = 
-        { VersionRequirement = parseVersionRequirement (version.Trim '!')
+        { VersionRequirement = parseVersionRequirement (version.Trim('!', '@'))
           ResolverStrategy = parseResolverStrategy version }
 
 module DependenciesFileSerializer = 

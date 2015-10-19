@@ -829,3 +829,34 @@ nuget Castle.Core 3.2.0
 
     cfg.ToString()
     |> shouldEqual (normalizeLineEndings expected)
+
+[<Test>]
+let ``should add new packages with paket package resolution strategy``() = 
+    let config = ""
+
+    let cfg = DependenciesFile.FromCode(config).Add(Constants.MainDependencyGroup, PackageName "FAKE","@~> 1.2")
+    
+    let expected = """source https://nuget.org/api/v2
+
+nuget FAKE @~> 1.2
+"""
+
+    cfg.ToString()
+    |> shouldEqual (normalizeLineEndings expected)
+
+[<Test>]
+let ``should update packages with paket package resolution strategy``() = 
+    let config = """source https://nuget.org/api/v2
+
+nuget FAKE ~> 1.1
+"""
+
+    let cfg = DependenciesFile.FromCode(config).UpdatePackageVersion(Constants.MainDependencyGroup, PackageName "FAKE","@~> 1.2")
+    
+    let expected = """source https://nuget.org/api/v2
+
+nuget FAKE @~> 1.2
+"""
+
+    cfg.ToString()
+    |> shouldEqual (normalizeLineEndings expected)
