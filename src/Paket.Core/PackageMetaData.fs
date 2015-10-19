@@ -155,7 +155,7 @@ let findDependencies (dependencies : DependenciesFile) config (template : Templa
             | Some packagedRef -> packagedRef :: deps, files
             | None -> 
                 let p = 
-                    match ProjectFile.Load(Path.Combine(projectDir, p.RelativePath)) with
+                    match ProjectFile.Load(Path.Combine(projectDir, p.RelativePath) |> normalizePath) with
                     | Some p -> p
                     | _ -> failwithf "Missing project reference in proj file %s" p.RelativePath
                     
