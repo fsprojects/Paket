@@ -393,8 +393,19 @@ let ExtractPackage(fileName:string, targetFolder, packageName:PackageName, versi
         else
             Directory.CreateDirectory(targetFolder) |> ignore
 
-            fixArchive fileName
-            ZipFile.ExtractToDirectory(fileName, targetFolder)
+            try
+                fixArchive fileName
+                ZipFile.ExtractToDirectory(fileName, targetFolder)
+            with
+            | exn ->
+                let text = ref ""
+                try
+                    text := File.ReadAllText(fileName)
+                with
+                | _ -> ()
+
+                let text = if !text = "" then "" else sprintf " Package contains text: %s%s" !text Environment.NewLine
+                failwithf "Error during extraction of %s.%s%s Message: %s" (Path.GetFullPath fileName) Environment.NewLine text exn.Message
 
             // cleanup folder structure
             let rec cleanup (dir : DirectoryInfo) = 
