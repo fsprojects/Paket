@@ -87,6 +87,7 @@
     <Compile Include="NugetVersionRangeSerializerSpecs.fs" />
     <Compile Include="DependencySetSpecs.fs" />
     <Compile Include="BindingRedirect.fs" />
+    <Compile Include="ExtractPackageSpecs.fs" />
     <Compile Include="UtilsSpecs.fs" />
     <Compile Include="TemplateFileParsing.fs" />
     <Compile Include="NuspecWriterSpecs.fs" />
