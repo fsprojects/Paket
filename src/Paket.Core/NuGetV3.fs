@@ -18,9 +18,9 @@ type JSONRootData =
     { Resources : JSONResource [] }
 
 /// [omit]
-let getSearchAutocompleteService (data : string) =  
+let getSearchAutocompleteService (data : string) =
     JsonConvert.DeserializeObject<JSONRootData>(data.Replace("@id","ID").Replace("@type","Type")).Resources
-    |> Array.tryFind (fun x -> x.Type <> null && x.Type.ToLower() = "searchautocompleteservice")
+    |> Array.tryFind (fun x -> (isNull x.Type |> not) && x.Type.ToLower() = "searchautocompleteservice")
     |> Option.map (fun x -> x.ID)
 
 /// [omit]
