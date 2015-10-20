@@ -23,4 +23,5 @@ group Test
 
   nuget NUnit.Runners.Net4
   nuget NUnit
+  nuget HashLib
   github forki/FsUnit FsUnit.fs

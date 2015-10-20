@@ -24,7 +24,7 @@ else
   	exit $exit_code
   fi
 
-  mono .paket/paket.exe restore
+  mono .paket/paket.exe update
   exit_code=$?
   if [ $exit_code -ne 0 ]; then
   	exit $exit_code
