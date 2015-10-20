@@ -1,3 +1,6 @@
+#### 2.15.8 - 20.10.2015
+* Try to report better error when file is blocked by Firewall - https://github.com/fsprojects/Paket/pull/1155
+
 #### 2.15.7 - 20.10.2015
 * Check that download http status code was 200
 
