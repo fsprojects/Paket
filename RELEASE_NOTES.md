@@ -1,5 +1,6 @@
-#### 2.16.0-alpha001 - 19.10.2015
+#### 2.16.0-alpha002 - 19.10.2015
 * Log Request performance
+* Check that download http status code was 200
 * BUGFIX: Fixed loading of Project files on mono - https://github.com/fsprojects/Paket/pull/1149
 * PERFORMANCE: Caching proxy scheme - https://github.com/fsprojects/Paket/pull/1153
 
