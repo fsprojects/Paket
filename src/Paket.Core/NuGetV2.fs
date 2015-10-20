@@ -539,6 +539,10 @@ let DownloadPackage(root, auth, url, groupName, packageName:PackageName, version
                     bytesRead := bytes
                     do! fileStream.AsyncWrite(buffer, 0, !bytesRead)
 
+                match (httpResponse :?> HttpWebResponse).StatusCode with
+                | HttpStatusCode.OK -> ()
+                | statusCode -> failwithf "HTTP status code was %d - %O" (int statusCode) statusCode
+
                 try
                     do! license
                 with

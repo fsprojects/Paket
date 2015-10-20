@@ -1,3 +1,6 @@
+#### 2.15.7 - 20.10.2015
+* Check that download http status code was 200
+
 #### 2.15.6 - 19.10.2015
 * Log Request performance
 
