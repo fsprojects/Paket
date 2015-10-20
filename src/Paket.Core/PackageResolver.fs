@@ -263,19 +263,20 @@ let Resolve(groupName:GroupName, sources, getVersionsF, getPackageDetailsF, stra
         let availableVersions = ref Seq.empty
         let compatibleVersions = ref Seq.empty
         let globalOverride = ref false
-        let resolverStrategy =
-            if currentRequirement.Parent.IsRootRequirement() then
-                ResolverStrategy.Max 
-            else
-                match currentRequirement.ResolverStrategy ++ strategy with
-                | Some s -> s
-                | None -> ResolverStrategy.Max
        
         match Map.tryFind currentRequirement.Name filteredVersions with
         | None ->
             let currentRequirements =
                 openRequirements
                 |> Set.filter (fun r -> currentRequirement.Name = r.Name)
+
+            let resolverStrategy =
+                if currentRequirements |> Set.exists (fun r -> r.Parent.IsRootRequirement()) then
+                    ResolverStrategy.Max 
+                else
+                    match currentRequirement.ResolverStrategy ++ strategy with
+                    | Some s -> s
+                    | None -> ResolverStrategy.Max
 
             // we didn't select a version yet so all versions are possible
             let isInRange mapF ver =
