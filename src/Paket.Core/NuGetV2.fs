@@ -304,7 +304,10 @@ let getDetailsFromNuGet force auth nugetURL (packageName:PackageName) (version:S
 
             errorFile.Delete()
             if invalidCache then
-                File.WriteAllText(cacheFile.FullName,JsonConvert.SerializeObject(details))
+                try
+                    File.WriteAllText(cacheFile.FullName,JsonConvert.SerializeObject(details))
+                with
+                | _ -> () // if caching fails we should not fail
             return details
         with
         | exn -> 

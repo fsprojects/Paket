@@ -1,3 +1,6 @@
+#### 2.15.9 - 21.10.2015
+* USABILITY: If caching fails we should recover - https://github.com/fsprojects/Paket/issues/1152
+
 #### 2.15.8 - 20.10.2015
 * Try to report better error when file is blocked by Firewall - https://github.com/fsprojects/Paket/pull/1155
 
