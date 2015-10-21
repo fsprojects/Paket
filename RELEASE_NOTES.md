@@ -1,10 +1,9 @@
-#### 2.16.0-alpha004 - 21.10.2015
-* Log Request performance
+#### 2.16.0 - 21.10.2015
 * Check that download http status code was 200
 * Try to report better error when file is blocked by Firewall - https://github.com/fsprojects/Paket/pull/1155
 * BUGFIX: Fixed loading of Project files on mono - https://github.com/fsprojects/Paket/pull/1149
 * PERFORMANCE: Caching proxy scheme - https://github.com/fsprojects/Paket/pull/1153
-* USABILITY: If caching fails we should recover - https://github.com/fsprojects/Paket/issues/1152
+* USABILITY: If caching fails Paket should recover - https://github.com/fsprojects/Paket/issues/1152
 
 #### 2.15.1 - 17.10.2015
 * BUGFIX: Fixed framework restriction filter - https://github.com/fsprojects/Paket/pull/1146
