@@ -118,6 +118,31 @@ let ``can normalize CI versions in prerelease``() =
 let ``should parse very large prerelease numbers (aka timestamps)``() =
     (SemVer.Parse "0.22.0-pre20150223185624").Normalize() |> shouldEqual "0.22.0-pre20150223185624"
 
+[<Test>]
+let ``should parse paket prerelease versions``() =
+    let v = SemVer.Parse "1.2.3-alpha002"
+    
+    v.Major |> shouldEqual 1u
+    v.Minor |> shouldEqual 2u
+    v.Patch |> shouldEqual 3u
+    v.PreRelease.Value.ToString() |> shouldEqual "alpha002"
+    v.PreRelease.Value.Name |> shouldEqual "alpha"
+
+
+[<Test>]
+let ``should parse CoreClr prerelease versions``() =
+    let v = SemVer.Parse "1.2.3-beta-22819"
+
+    v.Major |> shouldEqual 1u
+    v.Minor |> shouldEqual 2u
+    v.Patch |> shouldEqual 3u
+    v.PreRelease.Value.ToString() |> shouldEqual "beta-22819"
+    v.PreRelease.Value.Name |> shouldEqual "beta"
+
+[<Test>]
+let ``should compare CoreClr prerelease versions``() =
+    (SemVer.Parse "1.2.3-beta-22819") |> shouldBeGreaterThan (SemVer.Parse "1.2.3-beta-22818")
+    (SemVer.Parse "1.2.3-beta-22817") |> shouldBeSmallerThan (SemVer.Parse "1.2.3-beta-22818")
 
 [<Test>]
 let ``version core elements must be non-negative (SemVer 2.0.0/2)`` () =

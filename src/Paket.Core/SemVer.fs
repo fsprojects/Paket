@@ -65,6 +65,8 @@ type PreRelease =
         match yobj with
         | :? PreRelease as y -> x.Origin = y.Origin
         | _ -> false
+
+    override x.ToString() = x.Origin
     
     override x.GetHashCode() = hash x.Origin
     interface System.IComparable with
@@ -171,7 +173,7 @@ module SemVer =
         let firstDash = version.IndexOf("-")
         let plusIndex = version.IndexOf("+")
 
-        let majorMinorPatch =  
+        let majorMinorPatch =
             let firstSigil = if firstDash > 0 then firstDash else plusIndex
             match firstSigil with
             | -1 -> version
@@ -181,7 +183,7 @@ module SemVer =
             match firstDash, plusIndex with
             | -1, _ -> ""
             | d, p when p = -1 -> version.Substring(d+1)
-            | d, p -> version.Substring(d+1, (version.Length - 1 - p) )  
+            | d, p -> version.Substring(d+1, (version.Length - 1 - p) )
             
         /// there can only be one piece of build metadata, and it is signified by a + and then any number of dot-separated alphanumeric groups.
         /// this just greedily takes the whole remaining string :(
