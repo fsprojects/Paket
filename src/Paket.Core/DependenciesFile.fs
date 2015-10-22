@@ -407,7 +407,7 @@ type DependenciesFile(fileName,groups:Map<GroupName,DependenciesGroup>, textRepr
                 let sameRequirements =
                     rest |> Seq.forall (fun p' -> p'.Settings.FrameworkRestrictions = package.Settings.FrameworkRestrictions)
 
-                if not sameRequirements then dependenciesFile else
+                if not sameRequirements || package.Settings.FrameworkRestrictions = [] then dependenciesFile else
                 
                 let newDependenciesFile = dependenciesFile.AddFrameworkRestriction(group.Name,package.Settings.FrameworkRestrictions)
                 group.Packages
@@ -471,7 +471,7 @@ type DependenciesFile(fileName,groups:Map<GroupName,DependenciesGroup>, textRepr
         |> Map.map resolveGroup 
 
 
-    member __.AddFrameworkRestriction(groupName, frameworkRestrictions:FrameworkRestrictions) =
+    member private __.AddFrameworkRestriction(groupName, frameworkRestrictions:FrameworkRestrictions) =
         let restrictionString = sprintf "framework %s" (String.Join(", ",frameworkRestrictions))
 
         let list = new System.Collections.Generic.List<_>()

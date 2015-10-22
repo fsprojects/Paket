@@ -66,7 +66,7 @@ let simplify interactive environment = trial {
     let! lockFile = environment |> PaketEnv.ensureLockFileExists
 
     let flatLookup = lockFile.GetDependencyLookupTable()
-    let dependenciesFileRef = ref environment.DependenciesFile
+    let dependenciesFileRef = ref (environment.DependenciesFile.SimplifyFrameworkRestrictions())
     let projectsRef = ref None
 
     for kv in lockFile.Groups do
