@@ -110,7 +110,7 @@ type Resolution =
                         match x.Parent with
                         | DependenciesFile _ ->
                             sprintf "   - Dependencies file requested: %O" x.VersionRequirement |> addToError
-                        | Package(parentName,version) ->
+                        | Package(parentName,version,_) ->
                             sprintf "   - %O %O requested: %O" parentName version x.VersionRequirement
                             |> addToError)
 
@@ -157,21 +157,24 @@ let calcOpenRequirements (exploredPackage:ResolvedPackage,globalFrameworkRestric
 
     dependenciesByName
     |> Set.map (fun (n, v, restriction) -> 
-         let newRestrictions = 
-             filterRestrictions restriction exploredPackage.Settings.FrameworkRestrictions 
-             |> filterRestrictions globalFrameworkRestrictions
-         { dependency with Name = n
-                           VersionRequirement = v
-                           Parent = Package(dependency.Name, versionToExplore)
-                           Settings = { dependency.Settings with FrameworkRestrictions = newRestrictions } })
+        let newRestrictions = 
+            filterRestrictions restriction exploredPackage.Settings.FrameworkRestrictions 
+            |> filterRestrictions globalFrameworkRestrictions
+        { dependency with Name = n
+                          VersionRequirement = v
+                          Parent = Package(dependency.Name, versionToExplore, dependency.Parent.Depth() + 1)
+                          Settings = { dependency.Settings with FrameworkRestrictions = newRestrictions } })
     |> Set.filter (fun d ->
-        stillOpen
-        |> Seq.append closed
+        closed
         |> Seq.exists (fun x ->
             x.Name = d.Name && 
                 (x = d ||
                  x.VersionRequirement.Range.IsIncludedIn d.VersionRequirement.Range ||
                  x.VersionRequirement.Range.IsGlobalOverride))
+        |> not)
+    |> Set.filter (fun d ->
+        stillOpen
+        |> Seq.exists (fun x -> x.Name = d.Name && (x = d || x.VersionRequirement.Range.IsGlobalOverride))
         |> not)
     |> Set.union rest
 
@@ -271,11 +274,10 @@ let Resolve(groupName:GroupName, sources, getVersionsF, getPackageDetailsF, stra
                 |> Set.filter (fun r -> currentRequirement.Name = r.Name)
 
             let resolverStrategy =
-                // should use the parent's strategy, if any
                 let combined =
                     (currentRequirements
                     |> List.ofSeq
-                    |> List.sortByDescending (fun x -> x.Parent)
+                    |> List.sortByDescending (fun x -> x.Parent.Depth(), x.ResolverStrategy = strategy)
                     |> List.map (fun x -> x.ResolverStrategy)
                     |> List.reduce (++))
                     ++ strategy

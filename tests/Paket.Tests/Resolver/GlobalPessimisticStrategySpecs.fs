@@ -139,3 +139,59 @@ let ``should respect overrides when updating single package``() =
     getVersion resolved.[PackageName "Castle.Windsor-NLog"] |> shouldEqual "3.3.0"
     getVersion resolved.[PackageName "Castle.Core-NLog"] |> shouldEqual "3.3.0"
     getVersion resolved.[PackageName "Castle.Core"] |> shouldEqual "3.3.1"
+
+let config7 = """
+strategy min
+source http://nuget.org/api/v2
+
+nuget Nancy.Bootstrappers.Windsor @~> 0.23
+nuget Castle.Windsor
+nuget Castle.Windsor-NLog @> 0
+"""
+
+[<Test>]
+let ``should favor strategy from parent``() = 
+    let resolved =
+        DependenciesFile.FromCode(config7)
+        |> resolve graph2 UpdateMode.UpdateAll
+    getVersion resolved.[PackageName "Castle.Windsor"] |> shouldEqual "3.3.0"
+    getVersion resolved.[PackageName "Castle.Windsor-NLog"] |> shouldEqual "3.3.0"
+    getVersion resolved.[PackageName "Castle.Core-NLog"] |> shouldEqual "3.3.0"
+    getVersion resolved.[PackageName "Castle.Core"] |> shouldEqual "3.3.0"
+    getVersion resolved.[PackageName "Nancy.Bootstrappers.Windsor"] |> shouldEqual "0.23"
+
+let config8 = """
+strategy min
+source http://nuget.org/api/v2
+
+nuget Nancy.Bootstrappers.Windsor @~> 0.23
+nuget Castle.Windsor-NLog @> 0
+"""
+
+[<Test>]
+let ``should favor strategy from top-level dependencies``() = 
+    let resolved =
+        DependenciesFile.FromCode(config8)
+        |> resolve graph2 UpdateMode.UpdateAll
+    getVersion resolved.[PackageName "Castle.Windsor"] |> shouldEqual "3.3.0"
+    getVersion resolved.[PackageName "Castle.Windsor-NLog"] |> shouldEqual "3.3.0"
+    getVersion resolved.[PackageName "Castle.Core-NLog"] |> shouldEqual "3.3.1"
+    getVersion resolved.[PackageName "Castle.Core"] |> shouldEqual "3.3.1"
+    getVersion resolved.[PackageName "Nancy.Bootstrappers.Windsor"] |> shouldEqual "0.23"
+
+let config9 = """
+strategy min
+source http://nuget.org/api/v2
+
+nuget Castle.Windsor @= 3.2.0
+nuget Castle.Core-NLog != 3.2.0
+"""
+
+[<Test>]
+let ``should favor global strategy to resolve strategy override conflicts``() = 
+    let resolved =
+        DependenciesFile.FromCode(config9)
+        |> resolve graph2 UpdateMode.UpdateAll
+    getVersion resolved.[PackageName "Castle.Windsor"] |> shouldEqual "3.2.0"
+    getVersion resolved.[PackageName "Castle.Core-NLog"] |> shouldEqual "3.2.0"
+    getVersion resolved.[PackageName "Castle.Core"] |> shouldEqual "3.2.0"
