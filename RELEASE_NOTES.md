@@ -1,3 +1,7 @@
+#### 2.17.0-alpha001 - 22.10.2015
+* Convert-from-nuget and simplify commands simplify framework restrictions if possible - https://github.com/fsprojects/Paket/pull/1159
+* Global "oldest matching version" resolver strategy option - https://github.com/fsprojects/Paket/pull/1160
+
 #### 2.16.0 - 21.10.2015
 * Check that download http status code was 200
 * Try to report better error when file is blocked by Firewall - https://github.com/fsprojects/Paket/pull/1155
