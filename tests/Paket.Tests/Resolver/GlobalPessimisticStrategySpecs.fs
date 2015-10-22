@@ -5,6 +5,7 @@ open NUnit.Framework
 open FsUnit
 open TestHelpers
 open Paket.Domain
+open Paket.PackageResolver
 
 let graph = [
     "Nancy.Bootstrappers.Windsor","0.23",["Castle.Windsor",VersionRequirement(VersionRange.AtLeast "3.2.1",PreReleaseStatus.No)]
@@ -103,3 +104,33 @@ let ``should override global strategy``() =
     let resolved = ResolveWithGraph(cfg,noSha1,VersionsFromGraphAsSeq graph, PackageDetailsFromGraph graph).[Constants.MainDependencyGroup].ResolvedPackages.GetModelOrFail()
     getVersion resolved.[PackageName "Castle.Windsor"] |> shouldEqual "3.3.0"
     getVersion resolved.[PackageName "Nancy.Bootstrappers.Windsor"] |> shouldEqual "0.23"
+
+let config6 = """
+strategy min
+source http://nuget.org/api/v2
+
+nuget Castle.Core-NLog @~> 3.2
+nuget Castle.Windsor-NLog !~> 3.2
+"""
+
+let resolveWithUpdateMode graph updateMode (cfg : DependenciesFile) =
+    let groups = [Constants.MainDependencyGroup, None ] |> Map.ofSeq
+    cfg.Resolve(true,noSha1,VersionsFromGraphAsSeq graph,PackageDetailsFromGraph graph,groups,updateMode).[Constants.MainDependencyGroup].ResolvedPackages.GetModelOrFail()
+
+[<Test>]
+let ``should update to lastest when updating all``() = 
+    let resolved =
+        DependenciesFile.FromCode(config6)
+        |> resolveWithUpdateMode graph2 UpdateMode.UpdateAll
+    getVersion resolved.[PackageName "Castle.Windsor-NLog"] |> shouldEqual "3.3.0"
+    getVersion resolved.[PackageName "Castle.Core-NLog"] |> shouldEqual "3.3.1"
+    getVersion resolved.[PackageName "Castle.Core"] |> shouldEqual "3.3.1"
+
+[<Test>]
+let ``should respect overrides when updating single package``() = 
+    let resolved =
+        DependenciesFile.FromCode(config6)
+        |> resolveWithUpdateMode graph2 (UpdateMode.UpdatePackage(Constants.MainDependencyGroup, PackageName "Castle.Windsor-NLog"))
+    getVersion resolved.[PackageName "Castle.Windsor-NLog"] |> shouldEqual "3.3.0"
+    getVersion resolved.[PackageName "Castle.Core-NLog"] |> shouldEqual "3.3.0"
+    getVersion resolved.[PackageName "Castle.Core"] |> shouldEqual "3.3.1"

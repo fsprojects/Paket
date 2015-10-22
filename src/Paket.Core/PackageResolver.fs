@@ -271,12 +271,27 @@ let Resolve(groupName:GroupName, sources, getVersionsF, getPackageDetailsF, stra
                 |> Set.filter (fun r -> currentRequirement.Name = r.Name)
 
             let resolverStrategy =
-                if currentRequirements |> Set.exists (fun r -> r.Parent.IsRootRequirement()) then
-                    ResolverStrategy.Max 
-                else
-                    match currentRequirement.ResolverStrategy ++ strategy with
-                    | Some s -> s
-                    | None -> ResolverStrategy.Max
+                // should use the parent's strategy, if any
+                let combined =
+                    (currentRequirements
+                    |> List.ofSeq
+                    |> List.sortByDescending (fun x -> x.Parent)
+                    |> List.map (fun x -> x.ResolverStrategy)
+                    |> List.reduce (++))
+                    ++ strategy
+                    |> function | Some s -> s | None -> ResolverStrategy.Max
+
+                match updateMode with
+                | Install
+                | UpdateAll
+                | UpdateGroup _ ->
+                    match currentRequirements |> Set.exists (fun r -> r.Parent.IsRootRequirement()) with
+                    | true -> ResolverStrategy.Max
+                    | false -> combined
+                | UpdatePackage (g, p) ->
+                    match groupName = g && currentRequirement.Name = p with
+                    | true -> ResolverStrategy.Max
+                    | false -> combined
 
             // we didn't select a version yet so all versions are possible
             let isInRange mapF ver =
