@@ -861,3 +861,91 @@ nuget Oracle.ManagedDataAccess framework: >= net40 content: none
 [<Test>]
 let ``should not read config with invalid settings``() = 
     shouldFail (fun () -> DependenciesFile.FromCode(configWithInvalidInstallSettings) |> ignore)
+
+let strategyConfig = sprintf """
+strategy %s
+source "http://nuget.org/api/v2" // first source
+
+nuget FAKE ~> 3.0
+
+group Test
+    strategy %s
+    nuget NUnit
+"""
+
+[<Test>]
+let ``should read config with min and max strategy``() = 
+    let cfg = DependenciesFile.FromCode(strategyConfig "min" "max")
+    cfg.Groups.[Constants.MainDependencyGroup].Options.ResolverStrategy |> shouldEqual (Some ResolverStrategy.Min)
+    cfg.Groups.[GroupName "Test"].Options.ResolverStrategy |> shouldEqual (Some ResolverStrategy.Max)
+
+    cfg.Groups.[Constants.MainDependencyGroup].Sources |> shouldEqual [PackageSource.NugetSource "http://nuget.org/api/v2"]
+    
+let noStrategyConfig = sprintf """
+strategy %s
+source "http://nuget.org/api/v2" // first source
+
+nuget FAKE ~> 3.0
+
+group Test
+    nuget NUnit
+"""
+
+[<Test>]
+let ``should read config with min and no strategy``() = 
+    let cfg = DependenciesFile.FromCode(noStrategyConfig "min")
+    cfg.Groups.[Constants.MainDependencyGroup].Options.ResolverStrategy |> shouldEqual (Some ResolverStrategy.Min)
+    cfg.Groups.[GroupName "Test"].Options.ResolverStrategy |> shouldEqual None
+
+    cfg.Groups.[Constants.MainDependencyGroup].Sources |> shouldEqual [PackageSource.NugetSource "http://nuget.org/api/v2"]
+
+let noStrategyConfig' = sprintf """
+source "http://nuget.org/api/v2" // first source
+
+nuget FAKE ~> 3.0
+
+group Test
+    nuget NUnit
+"""
+
+[<Test>]
+let ``should read config with no strategy``() = 
+    let cfg = DependenciesFile.FromCode(noStrategyConfig')
+    cfg.Groups.[Constants.MainDependencyGroup].Options.ResolverStrategy |> shouldEqual None
+    cfg.Groups.[GroupName "Test"].Options.ResolverStrategy |> shouldEqual None
+
+    cfg.Groups.[Constants.MainDependencyGroup].Sources |> shouldEqual [PackageSource.NugetSource "http://nuget.org/api/v2"]
+
+let combinedStrategyConfig = sprintf """
+strategy min
+source "http://nuget.org/api/v2" // first source
+
+nuget FAKE ~> 3.0
+
+group Test
+    nuget NUnit
+
+group Main
+    nuget Paket.Core
+
+group Build
+    strategy min
+    nuget FAKE
+
+group Test
+    strategy min
+    nuget Package
+
+group Build
+    strategy max
+    nuget NUnit
+"""
+
+[<Test>]
+let ``should read config with combined strategy``() = 
+    let cfg = DependenciesFile.FromCode(combinedStrategyConfig)
+    cfg.Groups.[Constants.MainDependencyGroup].Options.ResolverStrategy |> shouldEqual (Some ResolverStrategy.Min)
+    cfg.Groups.[GroupName "Test"].Options.ResolverStrategy |> shouldEqual (Some ResolverStrategy.Min)
+    cfg.Groups.[GroupName "Build"].Options.ResolverStrategy |> shouldEqual (Some ResolverStrategy.Max)
+
+    cfg.Groups.[Constants.MainDependencyGroup].Sources |> shouldEqual [PackageSource.NugetSource "http://nuget.org/api/v2"]

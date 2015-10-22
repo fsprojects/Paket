@@ -14,8 +14,8 @@ let private adjustVersionRequirements strict includingPrereleases (dependenciesF
             | true,false -> packageRequirement.VersionRequirement, packageRequirement.ResolverStrategy
             | false,true -> 
                 match packageRequirement.VersionRequirement with
-                | VersionRequirement(v,_) -> VersionRequirement.VersionRequirement(v,PreReleaseStatus.All), ResolverStrategy.Max
-            | false,false -> VersionRequirement.AllReleases, ResolverStrategy.Max
+                | VersionRequirement(v,_) -> VersionRequirement.VersionRequirement(v,PreReleaseStatus.All), Some ResolverStrategy.Max
+            | false,false -> VersionRequirement.AllReleases, Some ResolverStrategy.Max
         { packageRequirement with VersionRequirement = versionRequirement; ResolverStrategy = strategy}
 
     let groups = 

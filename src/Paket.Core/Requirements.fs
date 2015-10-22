@@ -396,16 +396,21 @@ type RemoteFileInstallSettings =
 
 type PackageRequirementSource =
 | DependenciesFile of string
-| Package of PackageName * SemVerInfo 
+| Package of PackageName * SemVerInfo * int
     member this.IsRootRequirement() =
         match this with
         | DependenciesFile _ -> true
         | _ -> false
 
+    member this.Depth() =
+        match this with
+        | DependenciesFile _ -> 0
+        | Package(_,_,x) -> x
+
     override this.ToString() =
         match this with
         | DependenciesFile x -> x
-        | Package(name,version) ->
+        | Package(name,version,_) ->
           sprintf "%O %O" name version
 
 /// Represents an unresolved package.
@@ -413,13 +418,13 @@ type PackageRequirementSource =
 type PackageRequirement =
     { Name : PackageName
       VersionRequirement : VersionRequirement
-      ResolverStrategy : ResolverStrategy
+      ResolverStrategy : ResolverStrategy option
       Parent: PackageRequirementSource
       Settings: InstallSettings }
 
     override this.Equals(that) = 
         match that with
-        | :? PackageRequirement as that -> this.Name = that.Name && this.VersionRequirement = that.VersionRequirement
+        | :? PackageRequirement as that -> this.Name = that.Name && this.VersionRequirement = that.VersionRequirement && this.ResolverStrategy = that.ResolverStrategy
         | _ -> false
 
     override this.ToString() =
@@ -432,23 +437,21 @@ type PackageRequirement =
     
     static member Compare(x,y,startWithPackage:PackageName option,boostX,boostY) =
         if x = y then 0 else
-        let c1 =
-            compare 
+        seq {
+            yield compare
                 (not x.VersionRequirement.Range.IsGlobalOverride,x.Parent)
-                (not y.VersionRequirement.Range.IsGlobalOverride,x.Parent)
-        if c1 <> 0 then c1 else
-        let c2 = -1 * compare x.ResolverStrategy y.ResolverStrategy
-        if c2 <> 0 then c2 else
-        let cBoost = compare boostX boostY
-        if cBoost <> 0 then cBoost else
-        let c3 = -1 * compare x.VersionRequirement y.VersionRequirement
-        if c3 <> 0 then c3 else
-        match startWithPackage with
-        | Some name ->
-            if x.Name = name then -1 else
-            if y.Name = name then 1 else
-            compare x.Name y.Name
-        | None -> compare x.Name y.Name
+                (not y.VersionRequirement.Range.IsGlobalOverride,y.Parent)
+            yield match startWithPackage with
+                    | Some name when name = x.Name -> -1
+                    | Some name when name = y.Name -> 1
+                    | _ -> 0
+            yield -compare x.ResolverStrategy y.ResolverStrategy
+            yield compare boostX boostY
+            yield -compare x.VersionRequirement y.VersionRequirement
+            yield compare x.Name y.Name
+        }
+        |> Seq.tryFind (fun x -> x <> 0)
+        |> Option.fold (fun _ x -> x) 0
 
     interface System.IComparable with
        member this.CompareTo that = 
