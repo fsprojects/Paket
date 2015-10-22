@@ -437,18 +437,21 @@ type PackageRequirement =
                 (not x.VersionRequirement.Range.IsGlobalOverride,x.Parent)
                 (not y.VersionRequirement.Range.IsGlobalOverride,y.Parent)
         if c1 <> 0 then c1 else
+        let cPackage =
+            match startWithPackage with
+            | Some name ->
+                if x.Name = name then -1 else
+                if y.Name = name then 1 else
+                0
+            | None -> 0
+        if cPackage <> 0 then cPackage else
         let c2 = -1 * compare x.ResolverStrategy y.ResolverStrategy
         if c2 <> 0 then c2 else
         let cBoost = compare boostX boostY
         if cBoost <> 0 then cBoost else
         let c3 = -1 * compare x.VersionRequirement y.VersionRequirement
         if c3 <> 0 then c3 else
-        match startWithPackage with
-        | Some name ->
-            if x.Name = name then -1 else
-            if y.Name = name then 1 else
-            compare x.Name y.Name
-        | None -> compare x.Name y.Name
+        compare x.Name y.Name
 
     interface System.IComparable with
        member this.CompareTo that = 
