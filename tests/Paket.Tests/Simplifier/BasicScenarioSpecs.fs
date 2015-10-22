@@ -189,3 +189,96 @@ nuget C 1.0"""
         depFile.ToString()
         |> shouldEqual (normalizeLineEndings expected)
 
+[<Test>]
+let ``should simplify framework restrictions in main group``() =
+    let before = """source https://www.nuget.org/api/v2/
+
+nuget angularjs 1.4.3 framework: >= net45
+nuget AngularTemplates.Compile 1.0.0 framework: >= net45
+nuget Antlr 3.4.1.9004 framework: >= net45
+nuget Autofac 3.5.0 framework: >= net45
+nuget Autofac.Owin 3.1.0 framework: >= net45
+nuget Autofac.WebApi 3.1.0 framework: >= net45
+nuget Autofac.WebApi2 3.4.0 framework: >= net45
+nuget Autofac.WebApi2.Owin 3.2.0 framework: >= net45"""
+
+    let expected = """source https://www.nuget.org/api/v2/
+framework >= net45
+
+nuget angularjs 1.4.3
+nuget AngularTemplates.Compile 1.0.0
+nuget Antlr 3.4.1.9004
+nuget Autofac 3.5.0
+nuget Autofac.Owin 3.1.0
+nuget Autofac.WebApi 3.1.0
+nuget Autofac.WebApi2 3.4.0
+nuget Autofac.WebApi2.Owin 3.2.0"""
+
+
+    let originalLockFile = DependenciesFile.FromCode(before)
+    originalLockFile.SimplifyFrameworkRestrictions().ToString() |> shouldEqual expected
+
+[<Test>]
+let ``should not simplify framework restrictions when not equal``() =
+    let before = """source https://www.nuget.org/api/v2/
+
+nuget angularjs 1.4.3 framework: >= net45
+nuget AngularTemplates.Compile 1.0.0 framework: >= net45
+nuget Antlr 3.4.1.9004 framework: >= net45
+nuget Autofac 3.5.0 framework: >= net45
+nuget Autofac.Owin 3.1.0 framework: >= net40
+nuget Autofac.WebApi 3.1.0 framework: >= net45
+nuget Autofac.WebApi2 3.4.0 framework: >= net45
+nuget Autofac.WebApi2.Owin 3.2.0 framework: >= net45"""
+
+    let originalLockFile = DependenciesFile.FromCode(before)
+    originalLockFile.SimplifyFrameworkRestrictions().ToString()
+    |> normalizeLineEndings
+    |> shouldEqual (normalizeLineEndings before)
+
+[<Test>]
+let ``should simplify framework restrictions in every group``() =
+    let before = """source https://www.nuget.org/api/v2/
+
+nuget angularjs 1.4.3 framework: >= net45
+nuget AngularTemplates.Compile 1.0.0 framework: >= net45
+nuget Antlr 3.4.1.9004 framework: >= net45
+nuget Autofac 3.5.0 framework: >= net45
+
+group Build
+source https://www.nuget.org/api/v2/
+nuget Autofac.Owin 3.1.0 framework: >= net40
+nuget Autofac.WebApi 3.1.0 framework: >= net40
+nuget Autofac.WebApi2 3.4.0 framework: >= net40
+nuget Autofac.WebApi2.Owin 3.2.0 framework: >= net40"""
+
+    let expected = """source https://www.nuget.org/api/v2/
+framework >= net45
+
+nuget angularjs 1.4.3
+nuget AngularTemplates.Compile 1.0.0
+nuget Antlr 3.4.1.9004
+nuget Autofac 3.5.0
+
+group Build
+source https://www.nuget.org/api/v2/
+framework >= net40
+nuget Autofac.Owin 3.1.0
+nuget Autofac.WebApi 3.1.0
+nuget Autofac.WebApi2 3.4.0
+nuget Autofac.WebApi2.Owin 3.2.0"""
+
+
+    let originalLockFile = DependenciesFile.FromCode(before)
+    originalLockFile.SimplifyFrameworkRestrictions().ToString() 
+    |> normalizeLineEndings
+    |> shouldEqual (normalizeLineEndings expected)
+
+[<Test>]
+let ``should not simplify framework restrictions in empty file``() =
+    let before = ""
+    
+    let originalLockFile = DependenciesFile.FromCode(before)
+    originalLockFile.SimplifyFrameworkRestrictions().ToString() 
+    |> normalizeLineEndings
+    |> shouldEqual (normalizeLineEndings before)

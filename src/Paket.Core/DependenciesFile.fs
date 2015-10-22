@@ -426,6 +426,27 @@ type DependenciesFile(fileName,groups:Map<GroupName,DependenciesGroup>, textRepr
 
     member __.Groups = groups
 
+    member this.SimplifyFrameworkRestrictions() = 
+        let transform (dependenciesFile:DependenciesFile) (group:DependenciesGroup) =
+            if group.Options.Settings.FrameworkRestrictions <> [] then dependenciesFile else
+            match group.Packages with
+            | [] -> dependenciesFile
+            | package::rest ->
+                let sameRequirements =
+                    rest |> Seq.forall (fun p' -> p'.Settings.FrameworkRestrictions = package.Settings.FrameworkRestrictions)
+
+                if not sameRequirements then dependenciesFile else
+                
+                let newDependenciesFile = dependenciesFile.AddFrameworkRestriction(group.Name,package.Settings.FrameworkRestrictions)
+                group.Packages
+                 |> List.fold (fun (d:DependenciesFile) package ->
+                                        let (d:DependenciesFile) = d.Remove(group.Name,package.Name)
+                                        d.Add(group.Name,package.Name,package.VersionRequirement.ToString(),{ package.Settings with FrameworkRestrictions = [] })) newDependenciesFile
+
+        this.Groups
+        |> Seq.map (fun kv -> kv.Value)
+        |> Seq.fold transform this
+
     member this.GetGroup groupName =
         match this.Groups |> Map.tryFind groupName with
         | Some g -> g
@@ -477,6 +498,29 @@ type DependenciesFile(fileName,groups:Map<GroupName,DependenciesGroup>, textRepr
 
         groupsToResolve
         |> Map.map resolveGroup 
+
+
+    member private this.AddFrameworkRestriction(groupName, frameworkRestrictions:FrameworkRestrictions) =
+        if frameworkRestrictions = [] then this else
+        let restrictionString = sprintf "framework %s" (String.Join(", ",frameworkRestrictions))
+
+        let list = new System.Collections.Generic.List<_>()
+        list.AddRange textRepresentation
+
+        match groups |> Map.tryFind groupName with 
+        | None -> list.Add(restrictionString)
+        | Some group ->
+            let firstGroupLine,_ = findGroupBorders groupName
+            let pos = ref firstGroupLine
+            while list.Count > !pos && list.[!pos].TrimStart().StartsWith "source" do
+                pos := !pos + 1
+
+            list.Insert(!pos,restrictionString)
+       
+        DependenciesFile(
+            list 
+            |> Seq.toArray
+            |> DependenciesFileParser.parseDependenciesFile fileName)
 
     member __.AddAdditionalPackage(groupName, packageName:PackageName,versionRequirement,resolverStrategy,settings,?pinDown) =
         let pinDown = defaultArg pinDown false

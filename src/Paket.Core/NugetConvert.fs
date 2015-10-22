@@ -297,6 +297,7 @@ let createDependenciesFileR (rootDirectory : DirectoryInfo) nugetEnv mode =
             Paket.DependenciesFile(DependenciesFileParser.parseDependenciesFile dependenciesFileName newLines))
 
     if File.Exists dependenciesFileName then read() else create()
+    |> lift (fun d -> d.SimplifyFrameworkRestrictions())
 
 let convertPackagesConfigToReferences projectFileName packagesConfig =
     let referencesFile = ProjectFile.FindOrCreateReferencesFile(FileInfo projectFileName)
