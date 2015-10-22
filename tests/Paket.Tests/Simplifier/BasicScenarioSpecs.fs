@@ -216,7 +216,9 @@ nuget Autofac.WebApi2.Owin 3.2.0"""
 
 
     let originalLockFile = DependenciesFile.FromCode(before)
-    originalLockFile.SimplifyFrameworkRestrictions().ToString() |> shouldEqual expected
+    originalLockFile.SimplifyFrameworkRestrictions().ToString() 
+    |> normalizeLineEndings
+    |> shouldEqual (normalizeLineEndings expected)
 
 [<Test>]
 let ``should not simplify framework restrictions when not equal``() =
