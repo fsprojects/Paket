@@ -528,8 +528,8 @@ let ``SelectiveUpdate updates package that conflicts with a transitive dependenc
         [("Ninject.Extensions.Logging.Log4net","3.2.3");
         ("Ninject.Extensions.Logging","3.2.3");
         ("Ninject", "3.2.0");
-        ("log4f", "0.5.0");
-        ("log4net", "2.0.3")]
+        ("log4f", "0.4.0");
+        ("log4net", "1.2.11")]
         |> Seq.sortBy fst
 
     result
@@ -585,8 +585,8 @@ let ``SelectiveUpdate updates package that conflicts with a transitive dependenc
         ("Ninject.Extensions.Logging","3.2.3");
         ("Ninject.Extensions.Interception","3.2.0");
         ("Ninject", "3.2.0");
-        ("log4f", "0.5.0");
-        ("log4net", "2.0.3")]
+        ("log4f", "0.4.0");
+        ("log4net", "1.2.11")]
         |> Seq.sortBy fst
 
     result

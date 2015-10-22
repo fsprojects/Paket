@@ -396,7 +396,7 @@ type RemoteFileInstallSettings =
 
 type PackageRequirementSource =
 | DependenciesFile of string
-| Package of PackageName * SemVerInfo 
+| Package of PackageName * SemVerInfo
     member this.IsRootRequirement() =
         match this with
         | DependenciesFile _ -> true
@@ -435,7 +435,7 @@ type PackageRequirement =
         let c1 =
             compare 
                 (not x.VersionRequirement.Range.IsGlobalOverride,x.Parent)
-                (not y.VersionRequirement.Range.IsGlobalOverride,x.Parent)
+                (not y.VersionRequirement.Range.IsGlobalOverride,y.Parent)
         if c1 <> 0 then c1 else
         let c2 = -1 * compare x.ResolverStrategy y.ResolverStrategy
         if c2 <> 0 then c2 else
