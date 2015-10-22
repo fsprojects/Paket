@@ -280,8 +280,8 @@ let Resolve(groupName:GroupName, sources, getVersionsF, getPackageDetailsF, stra
 
             // we didn't select a version yet so all versions are possible
             let isInRange mapF ver =
-                (mapF currentRequirement).VersionRequirement.IsInRange ver &&
-                (currentRequirements |> Seq.forall (fun r -> (mapF r).VersionRequirement.IsInRange ver))
+                currentRequirements
+                |> Seq.forall (fun r -> (mapF r).VersionRequirement.IsInRange ver)
 
             availableVersions := 
                 match currentRequirement.VersionRequirement.Range with
