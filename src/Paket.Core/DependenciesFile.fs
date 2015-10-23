@@ -432,16 +432,21 @@ type DependenciesFile(fileName,groups:Map<GroupName,DependenciesGroup>, textRepr
             match group.Packages with
             | [] -> dependenciesFile
             | package::rest ->
-                let sameRequirements =
-                    rest |> Seq.forall (fun p' -> p'.Settings.FrameworkRestrictions = package.Settings.FrameworkRestrictions)
+                let commonRestrictions =
+                    package.Settings.FrameworkRestrictions
+                    |> List.filter (fun r -> rest |> Seq.forall (fun p' -> p'.Settings.FrameworkRestrictions |> List.contains r))
 
-                if not sameRequirements then dependenciesFile else
-                
-                let newDependenciesFile = dependenciesFile.AddFrameworkRestriction(group.Name,package.Settings.FrameworkRestrictions)
-                group.Packages
-                 |> List.fold (fun (d:DependenciesFile) package ->
-                                        let (d:DependenciesFile) = d.Remove(group.Name,package.Name)
-                                        d.Add(group.Name,package.Name,package.VersionRequirement.ToString(),{ package.Settings with FrameworkRestrictions = [] })) newDependenciesFile
+                match commonRestrictions with
+                | [] -> dependenciesFile
+                | _ ->
+                    let newDependenciesFile = dependenciesFile.AddFrameworkRestriction(group.Name,commonRestrictions)
+                    group.Packages
+                     |> List.fold (fun (d:DependenciesFile) package ->
+                            let oldRestrictions = package.Settings.FrameworkRestrictions
+                            let newRestrictions = oldRestrictions |> List.filter (fun r -> commonRestrictions |> List.contains r |> not)
+                            if oldRestrictions = newRestrictions then d else
+                            let (d:DependenciesFile) = d.Remove(group.Name,package.Name)
+                            d.Add(group.Name,package.Name,package.VersionRequirement.ToString(),{ package.Settings with FrameworkRestrictions = newRestrictions })) newDependenciesFile
 
         this.Groups
         |> Seq.map (fun kv -> kv.Value)

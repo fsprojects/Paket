@@ -1,4 +1,4 @@
-#### 2.17.0-alpha001 - 22.10.2015
+#### 2.17.0-alpha002 - 23.10.2015
 * Convert-from-nuget and simplify commands simplify framework restrictions if possible - https://github.com/fsprojects/Paket/pull/1159
 * Global "oldest matching version" resolver strategy option - https://github.com/fsprojects/Paket/pull/1160
 
