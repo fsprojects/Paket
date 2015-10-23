@@ -213,17 +213,21 @@ let inline createWebClient(url,auth:Auth option) =
 open System.Diagnostics
 open System.Threading
 
+let innerText (exn:Exception) =
+    match exn.InnerException with
+    | null -> ""
+    | exn -> Environment.NewLine + " Details: " + exn.Message
+
 /// [omit]
 let downloadFromUrl (auth:Auth option, url : string) (filePath: string) =
     async {
         try
             use client = createWebClient(url,auth)
-            
             let task = client.DownloadFileTaskAsync(Uri(url), filePath) |> Async.AwaitTask
             do! task
         with
         | exn ->
-            failwithf "Could not download from %s%s Message: %s" url Environment.NewLine exn.Message
+            failwithf "Could not download from %s%s Message: %s%s" url Environment.NewLine exn.Message (innerText exn)
     }
 
 /// [omit]
@@ -237,7 +241,7 @@ let getFromUrl (auth:Auth option, url : string, contentType : string) =
             return! s
         with
         | exn -> 
-            failwithf "Could not retrieve data from %s%s Message: %s" url Environment.NewLine exn.Message
+            failwithf "Could not retrieve data from %s%s Message: %s%s" url Environment.NewLine exn.Message (innerText exn)
             return ""
     }
 
@@ -256,7 +260,7 @@ let getXmlFromUrl (auth:Auth option, url : string) =
             return! s
         with
         | exn -> 
-            failwithf "Could not retrieve data from %s%s Message: %s" url Environment.NewLine exn.Message
+            failwithf "Could not retrieve data from %s%s Message: %s%s" url Environment.NewLine exn.Message (innerText exn)
             return ""
     }
     
