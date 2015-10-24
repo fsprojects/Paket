@@ -662,13 +662,16 @@ let GetVersions root (sources, packageName:PackageName) =
 
                         v2Feeds @ v3Feeds
                    | LocalNuget path -> [ getAllVersionsFromLocalPath (path, packageName, root) ])
-        |> List.concat
-        |> Async.Choice'
+        |> Seq.toArray
+        |> Array.map Async.Choice'
+        |> Async.Parallel
         |> Async.RunSynchronously
+        |> Array.choose id
+        |> Array.concat
 
     let versions = 
         match v with
-        | Some versions when Array.isEmpty versions |> not -> versions
+        | versions when Array.isEmpty versions |> not -> versions
         | _ -> failwithf "Could not find versions for package %O in any of the sources in %A." packageName sources
 
     versions
