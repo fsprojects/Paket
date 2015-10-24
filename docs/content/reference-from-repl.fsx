@@ -3,10 +3,25 @@
 
 ## Configure which paket.dependencies file to use
 
-This page demonstrates how to use `Paket` from the F# Interactive. First we have to reference Paket.Core.dll, open the Paket namespace and to tell Paket which [`paket.dependencies`](dependencies-file.html) file to use.
+This page demonstrates how to use `Paket` from the F# Interactive. 
+First we have to download and reference the paket tool, open the Paket namespace and to tell Paket which [`paket.dependencies`](dependencies-file.html) file to use.
 *)
 
-#r @"..\..\bin\Paket.Core.dll"
+//------------------------------------------
+// Step 0. Boilerplate to get the paket.exe tool
+
+open System
+open System.IO
+ 
+Environment.CurrentDirectory <- __SOURCE_DIRECTORY__
+ 
+if not (File.Exists "paket.exe") then
+    let url = "http://fsprojects.github.io/Paket/stable"
+    use wc = new Net.WebClient() in let tmp = Path.GetTempFileName() in let stable = wc.DownloadString(url) in wc.DownloadFile(stable, tmp); File.Move(tmp,Path.GetFileName stable)
+ 
+// Step 1. Resolve and install the packages 
+
+#r "paket.exe"
 
 open Paket
 
