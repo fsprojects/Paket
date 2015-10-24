@@ -1,3 +1,6 @@
+#### 2.17.1 - 24.10.2015
+* Reintroduce missing public API functions for docs
+
 #### 2.17.0 - 24.10.2015
 * Global "oldest matching version" resolver strategy option - http://fsprojects.github.io/Paket/dependencies-file.html#Strategy-option
 * Convert-from-nuget and simplify commands simplify framework restrictions if possible - https://github.com/fsprojects/Paket/pull/1159

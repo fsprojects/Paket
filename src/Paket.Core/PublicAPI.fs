@@ -104,12 +104,15 @@ type Dependencies(dependenciesFileName: string) =
     /// Adds the given package without version requirements to the dependencies file.
     member this.Add(groupName, package: string): unit = this.Add(groupName, package,"")
 
+    /// Adds the given package without version requirements to main dependency group of the dependencies file.
+    member this.Add(package: string): unit = this.Add(None, package,"")
+
     /// Adds the given package with the given version to the dependencies file.
-    member this.Add(groupName, package: string,version: string): unit =
+    member this.Add(groupName: string option, package: string,version: string): unit =
         this.Add(groupName, package, version, force = false, hard = false, withBindingRedirects = false,  createNewBindingFiles = false, interactive = false, installAfter = true, semVerUpdateMode = SemVerUpdateMode.NoRestriction)
 
     /// Adds the given package with the given version to the dependencies file.
-    member this.Add(groupName, package: string,version: string,force: bool,hard: bool,withBindingRedirects: bool, createNewBindingFiles:bool, interactive: bool,installAfter: bool, semVerUpdateMode): unit =
+    member this.Add(groupName: string option, package: string,version: string,force: bool,hard: bool,withBindingRedirects: bool, createNewBindingFiles:bool, interactive: bool,installAfter: bool, semVerUpdateMode): unit =
         Utils.RunInLockedAccessMode(
             this.RootPath,
             fun () -> AddProcess.Add(dependenciesFileName, groupName, PackageName(package.Trim()), version,
@@ -269,6 +272,10 @@ type Dependencies(dependenciesFileName: string) =
             fun () -> VSIntegration.TurnOffAutoRestore |> this.Process)
 
     /// Returns the installed version of the given package.
+    member this.GetInstalledVersion(packageName: string): string option =
+        this.GetInstalledVersion(None,packageName)
+
+    /// Returns the installed version of the given package.
     member this.GetInstalledVersion(groupName:string option,packageName: string): string option =
         let groupName = 
             match groupName with
@@ -384,6 +391,9 @@ type Dependencies(dependenciesFileName: string) =
         |> Seq.filter (fun kv -> normalizedDependencies |> Seq.exists ((=) kv.Key))
         |> listPackages
 
+    /// Removes the given package from the main dependency group of the dependencies file.
+    member this.Remove(package: string): unit = this.Remove(None, package)
+
     /// Removes the given package from dependencies file.
     member this.Remove(groupName, package: string): unit = this.Remove(groupName, package, false, false, false, true)
 
@@ -402,6 +412,10 @@ type Dependencies(dependenciesFileName: string) =
     /// Shows all references files where the given package is referenced.
     member this.ShowReferencesFor(packages: (string * string) list): unit =
         FindReferences.ShowReferencesFor (packages |> List.map (fun (g,p) -> GroupName g,PackageName p)) |> this.Process 
+
+    /// Finds all references files where the given main group package is referenced.
+    member this.FindReferencesFor(package:string): string list =
+        this.FindReferencesFor(Constants.MainDependencyGroup.ToString(),package)
 
     /// Finds all references files where the given package is referenced.
     member this.FindReferencesFor(group:string,package:string): string list =

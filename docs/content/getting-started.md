@@ -12,8 +12,6 @@ Check our <a href="editor-support.html">editor support page</a> to see if your e
 <blockquote>If you are starting a new solution from scratch then take a look at <a href="http://fsprojects.github.io/ProjectScaffold/">ProjectScaffold</a>.
 This project helps you get started with a new .NET/Mono project solution with everything needed for successful organising of code, tools and publishing and includes Paket.</blockquote>
 
-![alt text](img/paket-overview.png "Paket Overview")
-
 ## Manual setup
 
 ### Downloading Paket and it's BootStrapper
