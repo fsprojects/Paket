@@ -146,7 +146,7 @@ Therefore, it orders the requirements based on:
 
 * Is the [version pinned](nuget-dependencies.html#Use-exactly-this-version-constraint)?
 * Is it a direct requirement coming from the dependencies file?
-* Is the [resolver strategy](nuget-dependencies.html#Paket-s-NuGet-style-dependency-resolution-for-transitive-dependencies) `Min` or `Max`?
+* Is the [resolver strategy](dependencies-file.html#Strategy-option) `Min` or `Max`?
 * How big is the current [package specific boost factor](resolver.html#Package-conflict-boost)?
 * How big is the specified version range?
 * The package name (alphabetically) as a tie breaker.
