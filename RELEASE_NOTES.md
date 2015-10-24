@@ -1,7 +1,7 @@
-#### 2.17.0-alpha004 - 23.10.2015
-* Queries every NuGet feed in parallel and combines the results - https://github.com/fsprojects/Paket/pull/1163
+#### 2.17.0 - 24.10.2015
+* Global "oldest matching version" resolver strategy option - http://fsprojects.github.io/Paket/dependencies-file.html#Strategy-option
 * Convert-from-nuget and simplify commands simplify framework restrictions if possible - https://github.com/fsprojects/Paket/pull/1159
-* Global "oldest matching version" resolver strategy option - https://github.com/fsprojects/Paket/pull/1160
+* BUGFIX: Queries every NuGet feed in parallel and combines the results - https://github.com/fsprojects/Paket/pull/1163
 * USABILITY: Give better error message when a file can't be found on a github repo - https://github.com/fsprojects/Paket/issues/1162
 
 #### 2.16.0 - 21.10.2015

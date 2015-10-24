@@ -107,7 +107,7 @@ This option tells paket to create [Assembly Binding Redirects](https://msdn.micr
 
 This option tells Paket what resolver strategy it will use by default. 
 
-NuGet's dependency syntax led to a lot of incompatible packages on Nuget.org (read more). To make your transition to Paket easier and to allow package authors to correct their version constraints you can have Paket behave like NuGet when resolving transitive dependencies (i.e. defaulting to lowest matching versions).
+NuGet's dependency syntax led to a lot of incompatible packages on Nuget.org. To make your transition to Paket easier and to allow package authors to correct their version constraints you can have Paket behave like NuGet when resolving transitive dependencies (i.e. defaulting to lowest matching versions).
 
 The strategy can be either `min` or `max`.
 
@@ -120,7 +120,7 @@ A `min` strategy means you get the *lowest matching version* of your transitive 
 
 Note, however, that all direct dependencies still get their *lastest matching versions*, no matter the value of the `strategy` option. 
 
-The only exception is when you are updating a single package and one of your direct dependencies is a transitive dependency for that specific package. In this case, only the updating package will get its *lastest matching version* and the dependency is treated as transitive.
+The only exception is when you are updating a single package and one of your direct dependencies is a transitive dependency for that specific package. In this case, only the updating package will get its *latest matching version* and the dependency is treated as transitive.
 
 To override a strategy, you can use the one of the [strategy modifiers](nuget-dependencies.html#Strategy-modifiers).
 

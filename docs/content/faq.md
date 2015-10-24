@@ -32,7 +32,7 @@ If you only want to use a subset of the target frameworks you can use [framework
 
 ## Why does Paket use a different package resolution strategy than NuGet?
 
-Paket tries to embrace [SemVer](http://semver.org/) while NuGet uses a pessimistic version resolution strategy. You can prefix your version constraints with `!` if you need to use [NuGet compatibility](dependencies-file.html#Paket-s-NuGet-style-dependency-resolution-for-transitive-dependencies).
+Paket tries to embrace [SemVer](http://semver.org/) while NuGet uses a pessimistic version resolution strategy. You can prefix your version constraints with `!` if you need to use [NuGet compatibility](dependencies-file.html#Strategy-option).
 If you want to know more about Paket's resolver algorithm, then you can read [this article](resolver.html).
 
 ## Does Paket run install.ps1 scripts?
