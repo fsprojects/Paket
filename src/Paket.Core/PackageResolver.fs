@@ -86,11 +86,12 @@ type Resolution =
 | Ok of PackageResolution
 | Conflict of Map<PackageName,ResolvedPackage> * Set<PackageRequirement> * Set<PackageRequirement> * (PackageName -> SemVerInfo seq)
     with
-    member this.GetErrorText() =
+    member this.GetErrorText(?showResolvedPackages) =
         match this with
         | Resolution.Ok(_) -> ""
         | Resolution.Conflict(resolved,closed,stillOpen,getVersionF) ->
             let errorText = System.Text.StringBuilder()
+            let showResolvedPackages = defaultArg showResolvedPackages true
 
             let addToError text = errorText.AppendLine text |> ignore
 
@@ -124,7 +125,7 @@ type Resolution =
                             sprintf "     - %O" v |> addToError
                 | _ -> ()
             
-            if not resolved.IsEmpty then
+            if showResolvedPackages && not resolved.IsEmpty then
                 addToError "  Resolved packages:"
                 for kv in resolved do
                     let resolvedPackage = kv.Value
@@ -191,7 +192,7 @@ type UpdateMode =
 /// Resolves all direct and transitive dependencies
 let Resolve(groupName:GroupName, sources, getVersionsF, getPackageDetailsF, strategy, globalFrameworkRestrictions, (rootDependencies:PackageRequirement Set), updateMode : UpdateMode) =
     tracefn "Resolving packages for group %O:" groupName
-    let conflictCount = ref 1
+    let lastConflictReported = ref DateTime.Now
     let startWithPackage = 
         match updateMode with
         | UpdatePackage(_,p) -> Some p
@@ -341,11 +342,11 @@ let Resolve(groupName:GroupName, sources, getVersionsF, getPackageDetailsF, stra
             match conflictHistory.TryGetValue currentRequirement.Name with
             | true,count -> conflictHistory.[currentRequirement.Name] <- count + 1
             | _ -> conflictHistory.Add(currentRequirement.Name, 1)
-                    
-            if verbose || !conflictCount % 10 = 0 then
-                traceWarnfn "%s" <| conflictStatus.GetErrorText()
+                
+            if verbose || DateTime.Now - !lastConflictReported > TimeSpan.FromSeconds 10. then
+                traceWarnfn "%s" <| conflictStatus.GetErrorText(false)
                 traceWarn "    ==> Trying different resolution."
-                conflictCount := !conflictCount + 1
+                lastConflictReported := DateTime.Now
 
         let tryToImprove useUnlisted =
             let allUnlisted = ref true
