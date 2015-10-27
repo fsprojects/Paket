@@ -1,3 +1,6 @@
+#### 2.17.2 - 27.10.2015
+* USABILITY: Improved paket's conflict reporting during resolution time - https://github.com/fsprojects/Paket/pull/1168
+
 #### 2.17.1 - 24.10.2015
 * Reintroduce missing public API functions for docs
 
