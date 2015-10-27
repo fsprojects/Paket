@@ -1,4 +1,4 @@
-#### 2.18.0-alpha001 - 27.10.2015
+#### 2.18.0-alpha002 - 27.10.2015
 * Use branch and bound strategy to escape quickly from conflict situations - https://github.com/fsprojects/Paket/issues/1169
 * USABILITY: Improved paket's conflict reporting during resolution time - https://github.com/fsprojects/Paket/pull/1168
 * Reintroduce missing public API functions for docs

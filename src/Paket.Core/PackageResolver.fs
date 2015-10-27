@@ -194,7 +194,7 @@ type UpdateMode =
 /// Resolves all direct and transitive dependencies
 let Resolve(groupName:GroupName, sources, getVersionsF, getPackageDetailsF, strategy, globalFrameworkRestrictions, (rootDependencies:PackageRequirement Set), updateMode : UpdateMode) =
     tracefn "Resolving packages for group %O:" groupName
-    let lastConflictReported = ref DateTime.Now
+
     let startWithPackage = 
         match updateMode with
         | UpdatePackage(_,p) -> Some p
@@ -364,13 +364,12 @@ let Resolve(groupName:GroupName, sources, getVersionsF, getPackageDetailsF, stra
             match conflicts with
             | c::_  ->
                 let selectedVersion = Map.tryFind c.Name filteredVersions
-                knownConflicts.Add(conflicts |> Set.ofList,selectedVersion) |> ignore
+                let key = conflicts |> Set.ofList,selectedVersion
+                let isNewConflict = knownConflicts.Add key
+                if verbose || isNewConflict then
+                    traceWarnfn "%s" <| conflictStatus.GetErrorText(false)
+                    traceWarn "    ==> Trying different resolution."
             | _ -> ()
-
-            if verbose || DateTime.Now - !lastConflictReported > TimeSpan.FromSeconds 10. then
-                traceWarnfn "%s" <| conflictStatus.GetErrorText(false)
-                traceWarn "    ==> Trying different resolution."
-                lastConflictReported := DateTime.Now
 
         let tryToImprove useUnlisted =
             let allUnlisted = ref true
