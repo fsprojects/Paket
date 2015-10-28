@@ -611,8 +611,9 @@ let GetPackageDetails root force sources packageName (version:SemVerInfo) : Pack
                 verbosefn "Source '%O' exception: %O" source e
                 return None })
         |> Seq.toArray
-        |> Async.Choice
+        |> Async.Parallel
         |> Async.RunSynchronously
+        |> Array.tryPick id
 
     let source,nugetObject = 
         match packageDetails with
