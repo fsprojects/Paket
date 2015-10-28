@@ -7,7 +7,7 @@ If you want to learn how to use Paket then read the ["Getting started" tutorial]
 
 If you are already using NuGet for package management in your solution then you can learn about the upgrade process in the [convert from NuGet](getting-started.html#Automatic-NuGet-conversion) section.
 
-![alt text](img/paket-overview-small.png "Paket Overview")
+<a href="img/paket-overview.png"><img src="img/paket-overview-small.png" alt="Paket Overview"></a>
 
 ## How to get Paket
 
