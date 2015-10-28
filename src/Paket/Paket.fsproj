@@ -37,7 +37,7 @@
     <StartArguments>update group Build</StartArguments>
     <StartArguments>pack output D:\code\paketbug\output</StartArguments>
     <StartArguments>install</StartArguments>
-    <StartArguments>add nuget Nancy.Serialization.JsonNet</StartArguments>
+    <StartArguments>update -f</StartArguments>
     <StartAction>Project</StartAction>
     <StartProgram>paket.exe</StartProgram>
     <StartWorkingDirectory>c:\code\Paketkopie</StartWorkingDirectory>

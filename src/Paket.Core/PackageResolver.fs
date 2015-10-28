@@ -86,6 +86,19 @@ type Resolution =
 | Ok of PackageResolution
 | Conflict of Map<PackageName,ResolvedPackage> * Set<PackageRequirement> * Set<PackageRequirement> * (PackageName -> SemVerInfo seq)
     with
+
+    member this.GetConflicts() =
+        match this with
+        | Resolution.Ok(_) -> []
+        | Resolution.Conflict(resolved,closed,stillOpen,getVersionF) ->
+            let r = Seq.head stillOpen
+            closed
+            |> Set.union stillOpen
+            |> Set.add r
+            |> Seq.filter (fun x -> x.Name = r.Name)
+            |> Seq.sortBy (fun x -> x.Parent)
+            |> Seq.toList
+
     member this.GetErrorText(?showResolvedPackages) =
         match this with
         | Resolution.Ok(_) -> ""
@@ -95,17 +108,26 @@ type Resolution =
 
             let addToError text = errorText.AppendLine text |> ignore
 
-            let traceUnresolvedPackage (r : PackageRequirement) =
+           
+            if showResolvedPackages && not resolved.IsEmpty then
+                addToError "  Resolved packages:"
+                for kv in resolved do
+                    let resolvedPackage = kv.Value
+                    sprintf "   - %O %O" resolvedPackage.Name resolvedPackage.Version |> addToError
+
+            match this.GetConflicts() with
+            | [] -> addToError <| sprintf "  Could not resolve package %O. Unknown resolution error." (Seq.head stillOpen)
+            | [c] ->
+                addToError <| sprintf "  Could not resolve package %O:" c.Name
+                match getVersionF c.Name |> Seq.toList with
+                | [] -> sprintf "   - No versions available." |> addToError
+                | avalaibleVersions ->
+                    sprintf "   - Available versions:" |> addToError
+                    for v in avalaibleVersions do 
+                        sprintf "     - %O" v |> addToError
+            | conflicts ->
+                let r = Seq.head conflicts
                 addToError <| sprintf "  Could not resolve package %O:" r.Name
-
-                let conflicts =
-                    closed
-                    |> Set.union stillOpen
-                    |> Set.add r
-                    |> Seq.filter (fun x -> x.Name = r.Name)
-                    |> Seq.sortBy (fun x -> x.Parent)
-                    |> Seq.toList
-
                 conflicts
                 |> Seq.iter (fun x ->
                         match x.Parent with
@@ -114,26 +136,6 @@ type Resolution =
                         | Package(parentName,version,_) ->
                             sprintf "   - %O %O requested: %O" parentName version x.VersionRequirement
                             |> addToError)
-
-                match conflicts with
-                | [c] ->
-                    match getVersionF c.Name |> Seq.toList with
-                    | [] -> sprintf "   - No versions available." |> addToError
-                    | avalaibleVersions ->
-                        sprintf "   - Available versions:" |> addToError
-                        for v in avalaibleVersions do 
-                            sprintf "     - %O" v |> addToError
-                | _ -> ()
-            
-            if showResolvedPackages && not resolved.IsEmpty then
-                addToError "  Resolved packages:"
-                for kv in resolved do
-                    let resolvedPackage = kv.Value
-                    sprintf "   - %O %O" resolvedPackage.Name resolvedPackage.Version |> addToError
-
-            stillOpen
-            |> Seq.head
-            |> traceUnresolvedPackage
             
             errorText.ToString()
 
@@ -192,7 +194,7 @@ type UpdateMode =
 /// Resolves all direct and transitive dependencies
 let Resolve(groupName:GroupName, sources, getVersionsF, getPackageDetailsF, strategy, globalFrameworkRestrictions, (rootDependencies:PackageRequirement Set), updateMode : UpdateMode) =
     tracefn "Resolving packages for group %O:" groupName
-    let lastConflictReported = ref DateTime.Now
+
     let startWithPackage = 
         match updateMode with
         | UpdatePackage(_,p) -> Some p
@@ -205,6 +207,7 @@ let Resolve(groupName:GroupName, sources, getVersionsF, getPackageDetailsF, stra
 
     let exploredPackages = Dictionary<PackageName*SemVerInfo,ResolvedPackage>()
     let conflictHistory = Dictionary<PackageName,int>()
+    let knownConflicts = HashSet<_>()
 
     let getExploredPackage(dependency:PackageRequirement,version) =
         let newRestrictions = filterRestrictions dependency.Settings.FrameworkRestrictions globalFrameworkRestrictions
@@ -249,6 +252,20 @@ let Resolve(groupName:GroupName, sources, getVersionsF, getPackageDetailsF, stra
         verbosefn "  %d packages in resolution. %d requirements left" currentResolution.Count openRequirements.Count
         
         let conflictStatus = Resolution.Conflict(currentResolution,closedRequirements,openRequirements,getVersionsF sources ResolverStrategy.Max groupName)
+
+        let alreadyContainsConflict() = 
+            let allRequirements = Set.union closedRequirements openRequirements
+            knownConflicts
+            |> Seq.exists (fun (conflicts,selectedVersion) ->
+                match selectedVersion with 
+                | None -> Set.isSubset conflicts allRequirements
+                | Some(selectedVersion,_) ->
+                    let n = (Seq.head conflicts).Name
+                    match filteredVersions |> Map.tryFind n with
+                    | Some(v,_) -> v = selectedVersion && Set.isSubset conflicts allRequirements
+                    | _ -> false)
+
+        if alreadyContainsConflict() then conflictStatus else
 
         let currentRequirement =
             let currentMin = ref (Seq.head openRequirements)
@@ -343,14 +360,21 @@ let Resolve(groupName:GroupName, sources, getVersionsF, getPackageDetailsF, stra
             | true,count -> conflictHistory.[currentRequirement.Name] <- count + 1
             | _ -> conflictHistory.Add(currentRequirement.Name, 1)
                 
-            if verbose || DateTime.Now - !lastConflictReported > TimeSpan.FromSeconds 10. then
-                traceWarnfn "%s" <| conflictStatus.GetErrorText(false)
-                traceWarn "    ==> Trying different resolution."
-                lastConflictReported := DateTime.Now
+            let conflicts = conflictStatus.GetConflicts() 
+            match conflicts with
+            | c::_  ->
+                let selectedVersion = Map.tryFind c.Name filteredVersions
+                let key = conflicts |> Set.ofList,selectedVersion
+                let isNewConflict = knownConflicts.Add key
+                if verbose || isNewConflict then
+                    traceWarnfn "%s" <| conflictStatus.GetErrorText(false)
+                    traceWarn "    ==> Trying different resolution."
+            | _ -> ()
 
         let tryToImprove useUnlisted =
             let allUnlisted = ref true
             let state = ref conflictStatus
+            let trial = ref 0
             
             let isOk() = 
                 match !state with
@@ -358,7 +382,13 @@ let Resolve(groupName:GroupName, sources, getVersionsF, getPackageDetailsF, stra
                 | _ -> false
             let versionsToExplore = ref !compatibleVersions
 
-            while not (isOk()) && not (Seq.isEmpty !versionsToExplore) do
+            let shouldTryHarder trial =
+                if isOk() || Seq.isEmpty !versionsToExplore then false else
+                if trial < 1 then true else
+                alreadyContainsConflict() |> not
+
+            while shouldTryHarder !trial do
+                trial := !trial + 1
                 let versionToExplore = Seq.head !versionsToExplore
                 versionsToExplore := Seq.tail !versionsToExplore
                 let exploredPackage = getExploredPackage(currentRequirement,versionToExplore)
