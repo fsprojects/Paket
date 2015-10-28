@@ -254,21 +254,7 @@ let Resolve(groupName:GroupName, sources, getVersionsF, getPackageDetailsF, stra
         verbosefn "  %d packages in resolution. %d requirements left" currentResolution.Count openRequirements.Count
         
         let conflictStatus = Resolution.Conflict(currentResolution,closedRequirements,openRequirements,getVersionsF sources ResolverStrategy.Max groupName)
-
-        let alreadyContainsConflict() = 
-            let allRequirements = Set.union closedRequirements openRequirements
-            knownConflicts
-            |> Seq.exists (fun (conflicts,selectedVersion) ->
-                match selectedVersion with 
-                | None -> Set.isSubset conflicts allRequirements
-                | Some(selectedVersion,_) ->
-                    let n = (Seq.head conflicts).Name
-                    match filteredVersions |> Map.tryFind n with
-                    | Some(v,_) -> v = selectedVersion && Set.isSubset conflicts allRequirements
-                    | _ -> false)
-
-        if alreadyContainsConflict() then conflictStatus else
-
+        
         let currentRequirement =
             let currentMin = ref (Seq.head openRequirements)
             let currentBoost = ref 0
@@ -281,6 +267,27 @@ let Resolve(groupName:GroupName, sources, getVersionsF, getPackageDetailsF, stra
                     currentMin := d
                     currentBoost := boost
             !currentMin
+
+        let getConflicts() = 
+            let allRequirements = 
+                openRequirements
+                |> Set.filter (fun r -> r.Graph |> List.contains currentRequirement |> not)
+                |> Set.union closedRequirements
+
+            knownConflicts
+            |> Seq.map (fun (conflicts,selectedVersion) ->
+                match selectedVersion with 
+                | None when Set.isSubset conflicts allRequirements -> conflicts
+                | Some(selectedVersion,_) ->
+                    let n = (Seq.head conflicts).Name
+                    match filteredVersions |> Map.tryFind n with
+                    | Some(v,_) when v = selectedVersion && Set.isSubset conflicts allRequirements -> conflicts
+                    | _ -> Set.empty
+                | _ -> Set.empty)
+            |> Set.unionMany
+
+        let conflicts = getConflicts()
+        if conflicts |> Set.isEmpty |> not then Resolution.Conflict(currentResolution,closedRequirements,conflicts,getVersionsF sources ResolverStrategy.Max groupName) else
 
         verbosefn "  Trying to resolve %O" currentRequirement
 
@@ -389,6 +396,7 @@ let Resolve(groupName:GroupName, sources, getVersionsF, getPackageDetailsF, stra
             let allUnlisted = ref true
             let state = ref conflictStatus
             let trial = ref 0
+            let forceBreak = ref false
             
             let isOk() = 
                 match !state with
@@ -397,9 +405,10 @@ let Resolve(groupName:GroupName, sources, getVersionsF, getPackageDetailsF, stra
             let versionsToExplore = ref !compatibleVersions
 
             let shouldTryHarder trial =
+                if !forceBreak then false else
                 if isOk() || Seq.isEmpty !versionsToExplore then false else
                 if trial < 1 then true else
-                alreadyContainsConflict() |> not
+                getConflicts() |> Set.isEmpty
 
             while shouldTryHarder !trial do
                 trial := !trial + 1
@@ -416,6 +425,12 @@ let Resolve(groupName:GroupName, sources, getVersionsF, getPackageDetailsF, stra
                     let newResolution = Map.add exploredPackage.Name exploredPackage currentResolution
 
                     state := step (newFilteredVersions,newResolution,Set.add currentRequirement closedRequirements,newOpen)
+                    match !state with
+                    | Resolution.Conflict (_,_,stillOpen,_)
+                        when stillOpen |> Set.exists (fun r -> r = currentRequirement || r.Graph |> List.contains currentRequirement) |> not ->
+                        forceBreak := true
+                    | _ -> ()
+
                     allUnlisted := exploredPackage.Unlisted && !allUnlisted
 
             !allUnlisted,!state
