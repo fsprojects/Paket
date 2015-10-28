@@ -194,6 +194,7 @@ type UpdateMode =
 /// Resolves all direct and transitive dependencies
 let Resolve(groupName:GroupName, sources, getVersionsF, getPackageDetailsF, strategy, globalFrameworkRestrictions, (rootDependencies:PackageRequirement Set), updateMode : UpdateMode) =
     tracefn "Resolving packages for group %O:" groupName
+    let lastConflictReported = ref DateTime.Now
 
     let startWithPackage = 
         match updateMode with
@@ -356,19 +357,30 @@ let Resolve(groupName:GroupName, sources, getVersionsF, getPackageDetailsF, stra
 
         if Seq.isEmpty !compatibleVersions then
             // boost the conflicting package, in order to solve conflicts faster
-            match conflictHistory.TryGetValue currentRequirement.Name with
-            | true,count -> conflictHistory.[currentRequirement.Name] <- count + 1
-            | _ -> conflictHistory.Add(currentRequirement.Name, 1)
+            let isNewConflict =
+                match conflictHistory.TryGetValue currentRequirement.Name with
+                | true,count -> 
+                    conflictHistory.[currentRequirement.Name] <- count + 1
+                    false
+                | _ -> 
+                    conflictHistory.Add(currentRequirement.Name, 1)
+                    true
                 
             let conflicts = conflictStatus.GetConflicts() 
             match conflicts with
             | c::_  ->
                 let selectedVersion = Map.tryFind c.Name filteredVersions
                 let key = conflicts |> Set.ofList,selectedVersion
-                let isNewConflict = knownConflicts.Add key
-                if verbose || isNewConflict then
+                knownConflicts.Add key |> ignore
+                let reportThatResolverIsTakingLongerThanExpected = not isNewConflict && DateTime.Now - !lastConflictReported > TimeSpan.FromSeconds 10.
+                if verbose then
+                    tracefn "%s" <| conflictStatus.GetErrorText(false)
+                    tracefn "    ==> Trying different resolution."
+                if reportThatResolverIsTakingLongerThanExpected then
                     traceWarnfn "%s" <| conflictStatus.GetErrorText(false)
-                    traceWarn "    ==> Trying different resolution."
+                    traceWarn "The process is taking longer than expected."
+                    traceWarn "Paket may still find a valid resolution, but this might take a while."
+                    lastConflictReported := DateTime.Now
             | _ -> ()
 
         let tryToImprove useUnlisted =
