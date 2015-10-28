@@ -420,6 +420,7 @@ type PackageRequirement =
       VersionRequirement : VersionRequirement
       ResolverStrategy : ResolverStrategy option
       Parent: PackageRequirementSource
+      Graph: PackageRequirement list
       Settings: InstallSettings }
 
     override this.Equals(that) = 

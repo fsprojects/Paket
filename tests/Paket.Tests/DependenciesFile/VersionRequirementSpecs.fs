@@ -13,6 +13,7 @@ let require packageName strategy text : PackageRequirement =
       VersionRequirement = parse text
       ResolverStrategy = Some strategy
       Parent = PackageRequirementSource.DependenciesFile ""
+      Graph = []
       Settings = InstallSettings.Default }
 
 [<Test>]
