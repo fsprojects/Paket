@@ -133,7 +133,7 @@ type Resolution =
                         match x.Parent with
                         | DependenciesFile _ ->
                             sprintf "   - Dependencies file requested: %O" x.VersionRequirement |> addToError
-                        | Package(parentName,version,_) ->
+                        | Package(parentName,version) ->
                             sprintf "   - %O %O requested: %O" parentName version x.VersionRequirement
                             |> addToError)
             
@@ -165,7 +165,7 @@ let calcOpenRequirements (exploredPackage:ResolvedPackage,globalFrameworkRestric
             |> filterRestrictions globalFrameworkRestrictions
         { dependency with Name = n
                           VersionRequirement = v
-                          Parent = Package(dependency.Name, versionToExplore, dependency.Parent.Depth() + 1)
+                          Parent = Package(dependency.Name, versionToExplore)
                           Graph = [dependency] @ dependency.Graph
                           Settings = { dependency.Settings with FrameworkRestrictions = newRestrictions } })
     |> Set.filter (fun d ->
@@ -305,8 +305,8 @@ let Resolve(groupName:GroupName, sources, getVersionsF, getPackageDetailsF, stra
                 let combined =
                     (currentRequirements
                     |> List.ofSeq
-                    |> List.filter (fun x -> x.Parent.Depth() > 0)
-                    |> List.sortBy (fun x -> x.Parent.Depth(), x.ResolverStrategy <> strategy, x.ResolverStrategy <> Some ResolverStrategy.Max)
+                    |> List.filter (fun x -> x.Depth > 0)
+                    |> List.sortBy (fun x -> x.Depth, x.ResolverStrategy <> strategy, x.ResolverStrategy <> Some ResolverStrategy.Max)
                     |> List.map (fun x -> x.ResolverStrategy)
                     |> List.fold (++) None)
                     ++ strategy
