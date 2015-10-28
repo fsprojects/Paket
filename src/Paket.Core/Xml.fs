@@ -17,17 +17,17 @@ let inline addChild child (node:XmlElement) =
 
 /// [omit]
 let inline hasAttribute name (node:XmlNode) =
-    if node = null || node.Attributes = null then false else
+    if isNull node || isNull node.Attributes then false else
     node.Attributes 
     |> Seq.cast<XmlAttribute>
     |> Seq.exists (fun a -> a.Name = name)
 
 /// [omit]
 let inline getAttribute name (node:XmlNode) =
-    if node = null || node.Attributes = null then None else
+    if isNull node || isNull node.Attributes then None else
     node.Attributes 
     |> Seq.cast<XmlAttribute> 
-    |> Seq.tryFind (fun a -> a.Name = name && a.Value <> null) 
+    |> Seq.tryFind (fun a -> a.Name = name && (isNull a.Value |> not)) 
     |> Option.map (fun a -> a.Value)
 
 /// [omit]
@@ -75,19 +75,19 @@ module Linq =
 
     let asOption = function | null -> None | x -> Some x
     let private xname ns name = XName.Get(name, defaultArg ns "")
-    let tryGetElement ns name (xe:XContainer) =
-        let XName = xname ns name
-        xe.Element XName |> asOption
+    let tryGetElement ns name (xe:XContainer) = xname ns name |> xe.Element |> asOption
     let getElements ns name (xe:XContainer) = xname ns name |> xe.Elements
     let tryGetAttribute name (xe:XElement) = xe.Attribute(xname None name) |> asOption
     let createElement ns name attributes = XElement(xname ns name, attributes |> Seq.map(fun (name,value) -> XAttribute(xname None name, value)))
+    let splitNode (node:string) =
+        match node.Split '!' with
+        | [| node; ns |] -> node, Some ns
+        | _ -> node, None
+
     let ensurePathExists (xpath:string) (item:XContainer) =
         (item, xpath.Split([|'/'|], StringSplitOptions.RemoveEmptyEntries))
         ||> Seq.fold(fun parent node ->
-            let node, ns =
-                match node.Split '!' with
-                | [| node; ns |] -> node, Some ns
-                | _ -> node, None
+            let node,ns = splitNode node
             match parent |> tryGetElement ns node with
             | None ->
                 let node = XElement(XName.Get(node, defaultArg ns ""))
