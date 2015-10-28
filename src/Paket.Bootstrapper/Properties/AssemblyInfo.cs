@@ -6,7 +6,7 @@ using System.Reflection;
 [assembly: AssemblyDescriptionAttribute("A package dependency manager for .NET with support for NuGet packages and GitHub repositories.")]
 [assembly: AssemblyVersionAttribute("2.18.0")]
 [assembly: AssemblyFileVersionAttribute("2.18.0")]
-[assembly: AssemblyInformationalVersionAttribute("2.18.0-alpha004")]
+[assembly: AssemblyInformationalVersionAttribute("2.18.0-alpha005")]
 namespace System {
     internal static class AssemblyVersionInformation {
         internal const string Version = "2.18.0";
