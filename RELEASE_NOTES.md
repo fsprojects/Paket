@@ -1,5 +1,6 @@
-#### 2.18.0-alpha006 - 28.10.2015
+#### 2.18.0-alpha007 - 28.10.2015
 * Use branch and bound strategy to escape quickly from conflict situations - https://github.com/fsprojects/Paket/issues/1169
+* Queries all feeds in parallel for package details
 * New moniker monoandroid50 - https://github.com/fsprojects/Paket/pull/1171
 * Reintroduced missing public API functions for docs
 * USABILITY: Improved paket's conflict reporting during resolution time - https://github.com/fsprojects/Paket/pull/1168
