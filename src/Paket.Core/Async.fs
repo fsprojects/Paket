@@ -18,6 +18,60 @@ module AsyncExtensions =
             return (a'',b'')
         }
 
+    static member Choice(tasks : Async<'T option> seq) =
+
+        async {
+            let! t = Async.CancellationToken
+
+            let run (cont,econt,ccont) = 
+                let tasks = Seq.toArray tasks
+                if tasks.Length = 0 then cont None else
+
+                let innerCts = CancellationTokenSource.CreateLinkedTokenSource t
+
+                let count = ref tasks.Length
+                let completed = ref false
+                let synchronize f =
+                    lock count (fun () ->
+                        if !completed then ()
+                        else f ())
+                
+                // register for external cancellation
+                do t.Register(
+                    Action(fun () ->
+                        synchronize (fun () ->
+                            ccont <| OperationCanceledException()
+                            completed := true))) |> ignore
+
+                let wrap task =
+                    async {
+                        try
+                            let! res = task
+                            match res with
+                            | Some r ->
+                                synchronize (fun () ->
+                                    cont (Some r)
+                                    innerCts.Cancel()
+                                    completed := true)
+                            | _ -> 
+                                synchronize (fun () ->
+                                    decr count
+                                    if !count = 0 then 
+                                        cont None
+                                        innerCts.Dispose ())
+                        with e -> 
+                            synchronize (fun () ->
+                                econt e
+                                innerCts.Cancel()
+                                completed := true)
+                    }
+
+                for task in tasks do
+                    Async.Start(wrap task, innerCts.Token)
+
+            return! Async.FromContinuations run
+        }
+
     static member Choice'(tasks : Async<'T[] option> seq) =
 
         async {
