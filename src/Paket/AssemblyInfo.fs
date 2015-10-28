@@ -7,7 +7,7 @@ open System.Reflection
 [<assembly: AssemblyDescriptionAttribute("A package dependency manager for .NET with support for NuGet packages and GitHub repositories.")>]
 [<assembly: AssemblyVersionAttribute("2.18.0")>]
 [<assembly: AssemblyFileVersionAttribute("2.18.0")>]
-[<assembly: AssemblyInformationalVersionAttribute("2.18.0-alpha008")>]
+[<assembly: AssemblyInformationalVersionAttribute("2.18.0")>]
 do ()
 
 module internal AssemblyVersionInformation =
