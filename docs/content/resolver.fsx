@@ -23,7 +23,7 @@ In order to figure out the concrete versions Paket needs to solve the following 
 * Select the latest version for each of the packages in the [`paket.dependencies` file](dependencies-file.html), plus all their transitive dependencies, such that all version constraints are satisfied.
 
 <blockquote>Note: In general, more than one solution to this problem can exist and the solver will take the first solution that it finds.<br /><br />
-If you change the <a href="dependencies-file.html#Strategy-option">resolution strategy</a> then Paket needs to find the <i>oldest matching version<i>.</blockquote>
+If you change the <a href="dependencies-file.html#Strategy-option">resolution strategy</a> then Paket needs to find the <i>oldest matching version</i>.</blockquote>
 
 ## Getting data
 
