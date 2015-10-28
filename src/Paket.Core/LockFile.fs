@@ -20,8 +20,34 @@ type LockFileGroup = {
 
 module LockFileSerializer =
     /// [omit]
+    let serializeOptionsAsLines options = [
+        if options.Strict then yield "REFERENCES: STRICT"
+        if options.Redirects then yield "REDIRECTS: ON"
+        match options.Settings.CopyLocal with
+        | Some x -> yield "COPY-LOCAL: " + x.ToString().ToUpper()
+        | None -> ()
+
+        match options.Settings.ImportTargets with
+        | Some x -> yield "IMPORT-TARGETS: " + x.ToString().ToUpper()
+        | None -> ()
+
+        match options.Settings.OmitContent with
+        | Some ContentCopySettings.Omit -> yield "CONTENT: NONE"
+        | Some ContentCopySettings.Overwrite -> yield "CONTENT: TRUE"
+        | Some ContentCopySettings.OmitIfExisting -> yield "CONTENT: ONCE"
+        | None -> ()
+
+        match options.Settings.ReferenceCondition with
+        | Some condition -> yield "CONDITION: " + condition.ToUpper()
+        | None -> ()
+
+        match options.Settings.FrameworkRestrictions with
+        | [] -> ()
+        | _  -> yield "FRAMEWORK: " + (String.Join(", ",options.Settings.FrameworkRestrictions)).ToUpper()]
+
+    /// [omit]
     let serializePackages options (resolved : PackageResolution) = 
-        let sources = 
+        let sources =
             resolved
             |> Seq.map (fun kv ->
                     let package = kv.Value
@@ -33,29 +59,8 @@ module LockFileSerializer =
 
         let all = 
             let hasReported = ref false
-            [ if options.Strict then yield "REFERENCES: STRICT"
-              if options.Redirects then yield "REDIRECTS: ON"
-              match options.Settings.CopyLocal with
-              | Some x -> yield "COPY-LOCAL: " + x.ToString().ToUpper()
-              | None -> ()
+            [ yield! serializeOptionsAsLines options
 
-              match options.Settings.ImportTargets with
-              | Some x -> yield "IMPORT-TARGETS: " + x.ToString().ToUpper()
-              | None -> ()
-
-              match options.Settings.OmitContent with
-              | Some ContentCopySettings.Omit -> yield "CONTENT: NONE"
-              | Some ContentCopySettings.Overwrite -> yield "CONTENT: TRUE"
-              | Some ContentCopySettings.OmitIfExisting -> yield "CONTENT: ONCE"
-              | None -> ()
-
-              match options.Settings.ReferenceCondition with
-              | Some condition -> yield "CONDITION: " + condition.ToUpper()
-              | None -> ()
-
-              match options.Settings.FrameworkRestrictions with
-              | [] -> ()
-              | _  -> yield "FRAMEWORK: " + (String.Join(", ",options.Settings.FrameworkRestrictions)).ToUpper()
               for (source, _), packages in sources do
                   if not !hasReported then
                     yield "NUGET"
@@ -203,6 +208,16 @@ module LockFileParser =
         | Some _, _ -> failwithf "unknown repository type %s." line
         | _ -> failwithf "unknown lock file format %s" line
 
+    let private extractOption currentGroup option =
+        match option with
+        | ReferencesMode mode -> { currentGroup.Options with Strict = mode }
+        | Redirects mode -> { currentGroup.Options with Redirects = mode }
+        | ImportTargets mode -> { currentGroup.Options with Settings = { currentGroup.Options.Settings with ImportTargets = Some mode } } 
+        | CopyLocal mode -> { currentGroup.Options with Settings = { currentGroup.Options.Settings with CopyLocal = Some mode }}
+        | FrameworkRestrictions r -> { currentGroup.Options with Settings = { currentGroup.Options.Settings with FrameworkRestrictions = r }}
+        | OmitContent omit -> { currentGroup.Options with Settings = { currentGroup.Options.Settings with OmitContent = Some omit }}
+        | ReferenceCondition condition -> { currentGroup.Options with Settings = { currentGroup.Options.Settings with ReferenceCondition = Some condition }}
+
     let Parse(lockFileLines) =
         let remove textToRemove (source:string) = source.Replace(textToRemove, "")
         let removeBrackets = remove "(" >> remove ")"
@@ -226,18 +241,7 @@ module LockFileParser =
                 | Remote(url) -> { currentGroup with RemoteUrl = Some url }::otherGroups
                 | Group(groupName) -> { GroupName = GroupName groupName; RepositoryType = None; RemoteUrl = None; Packages = []; SourceFiles = []; Options = InstallOptions.Default; LastWasPackage = false } :: currentGroup :: otherGroups
                 | InstallOption option -> 
-                    let options =
-                        match option with
-                        | ReferencesMode mode -> {currentGroup.Options with Strict = mode }
-                        | Redirects mode -> {currentGroup.Options with Redirects = mode }
-                        | ImportTargets mode -> {currentGroup.Options with Settings = { currentGroup.Options.Settings with ImportTargets = Some mode } } 
-                        | CopyLocal mode -> {currentGroup.Options with Settings = { currentGroup.Options.Settings with CopyLocal = Some mode }}
-                        | FrameworkRestrictions r -> {currentGroup.Options with Settings = { currentGroup.Options.Settings with FrameworkRestrictions = r }}
-                        | OmitContent omit -> {currentGroup.Options with Settings = { currentGroup.Options.Settings with OmitContent = Some omit }}
-                        | ReferenceCondition condition -> {currentGroup.Options with Settings = { currentGroup.Options.Settings with ReferenceCondition = Some condition }}
-                
-                    { currentGroup with Options = options }::otherGroups
-
+                    { currentGroup with Options = extractOption currentGroup option }::otherGroups
                 | RepositoryType repoType -> { currentGroup with RepositoryType = Some repoType }::otherGroups
                 | NugetPackage details ->
                     match currentGroup.RemoteUrl with
@@ -273,7 +277,7 @@ module LockFileParser =
                                     SourceFiles = 
                                         { currentFile with
                                                     Dependencies = Set.add (PackageName name, VersionRequirement.AllReleases) currentFile.Dependencies
-                                                } :: rest }  ::otherGroups                  
+                                                } :: rest }  ::otherGroups
                         | [] -> failwith "cannot set a dependency to %s %s- no remote file has been specified." name v
                 | SourceFile(origin, details) ->
                     match origin with
@@ -282,10 +286,10 @@ module LockFileParser =
                         | Some [| owner; project |] ->
                             let path, commit, authKey =
                                 match details.Split ' ' with
-                                | [| filePath; commit; authKey |] -> filePath, commit |> removeBrackets, (Some authKey)  
-                                | [| filePath; commit |] -> filePath, commit |> removeBrackets, None                                       
+                                | [| filePath; commit; authKey |] -> filePath, commit |> removeBrackets, (Some authKey)
+                                | [| filePath; commit |] -> filePath, commit |> removeBrackets, None
                                 | _ -> failwith "invalid file source details."
-                            { currentGroup with  
+                            { currentGroup with
                                 LastWasPackage = false
                                 SourceFiles = { Commit = commit
                                                 Owner = owner
@@ -316,11 +320,11 @@ module LockFileParser =
                                   Name = name
                                   AuthKey = authKey } 
 
-                            { currentGroup with  
+                            { currentGroup with
                                 LastWasPackage = false
                                 SourceFiles = sourceFile :: currentGroup.SourceFiles }::otherGroups
                         | Some [ protocol; _; domain; project ] ->
-                            { currentGroup with  
+                            { currentGroup with
                                 LastWasPackage = false
                                 SourceFiles = { Commit = String.Empty
                                                 Owner = domain
