@@ -297,9 +297,10 @@ let Resolve(groupName:GroupName, sources, getVersionsF, getPackageDetailsF, stra
                 let combined =
                     (currentRequirements
                     |> List.ofSeq
-                    |> List.sortByDescending (fun x -> x.Parent.Depth(), x.ResolverStrategy = strategy, x.ResolverStrategy = Some ResolverStrategy.Max)
+                    |> List.filter (fun x -> x.Parent.Depth() > 0)
+                    |> List.sortBy (fun x -> x.Parent.Depth(), x.ResolverStrategy <> strategy, x.ResolverStrategy <> Some ResolverStrategy.Max)
                     |> List.map (fun x -> x.ResolverStrategy)
-                    |> List.reduce (++))
+                    |> List.fold (++) None)
                     ++ strategy
                     |> function | Some s -> s | None -> ResolverStrategy.Max
 

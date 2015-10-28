@@ -439,8 +439,8 @@ type PackageRequirement =
         if x = y then 0 else
         seq {
             yield compare
-                (not x.VersionRequirement.Range.IsGlobalOverride,x.Parent)
-                (not y.VersionRequirement.Range.IsGlobalOverride,y.Parent)
+                (not x.VersionRequirement.Range.IsGlobalOverride,x.Parent.Depth())
+                (not y.VersionRequirement.Range.IsGlobalOverride,y.Parent.Depth())
             yield match startWithPackage with
                     | Some name when name = x.Name -> -1
                     | Some name when name = y.Name -> 1
