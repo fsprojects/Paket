@@ -273,7 +273,7 @@ let deleteErrorFile (packageName:PackageName) =
         with
         | _ -> ()
 
-/// Tries to get download link and direct dependencies from Nuget
+/// Tries to get download link and direct dependencies from NuGet
 /// Caches calls into json file
 let getDetailsFromNuGet force auth nugetURL (packageName:PackageName) (version:SemVerInfo) = 
     let cacheFile = 
@@ -589,28 +589,34 @@ let GetTargetsFiles(targetFolder) = getFiles targetFolder "build" ".targets file
 let GetAnalyzerFiles(targetFolder) = getFiles targetFolder "analyzers" "analyzer dlls"
 
 let GetPackageDetails root force sources packageName (version:SemVerInfo) : PackageResolver.PackageDetails = 
-    let rec tryNext xs = 
-        match xs with
-        | source :: rest -> 
-            verbosefn "Trying source '%O'" source
+   
+    let packageDetails =
+        sources
+        |> List.map (fun source -> async {
             try 
                 match source with
-                | Nuget source -> 
-                    getDetailsFromNuGet 
-                        force 
-                        (source.Authentication |> Option.map toBasicAuth)
-                        source.Url 
-                        packageName
-                        version
-                    |> Async.RunSynchronously
+                | Nuget nugetSource -> 
+                    let! result = 
+                        getDetailsFromNuGet 
+                            force 
+                            (nugetSource.Authentication |> Option.map toBasicAuth)
+                            nugetSource.Url 
+                            packageName
+                            version
+                    return Some(source,result)
                 | LocalNuget path -> 
-                    getDetailsFromLocalFile root path packageName version 
-                    |> Async.RunSynchronously
-                |> fun x -> source,x
+                    let! result = getDetailsFromLocalFile root path packageName version
+                    return Some(source,result)
             with e ->
-              verbosefn "Source '%O' exception: %O" source e
-              tryNext rest
-        | [] -> 
+                verbosefn "Source '%O' exception: %O" source e
+                return None })
+        |> Seq.toArray
+        |> Async.Choice
+        |> Async.RunSynchronously
+
+    let source,nugetObject = 
+        match packageDetails with
+        | None ->
             deleteErrorFile packageName
             match sources with
             | [source] ->
@@ -619,8 +625,8 @@ let GetPackageDetails root force sources packageName (version:SemVerInfo) : Pack
                 failwithf "Couldn't get package details for package %O %O because no sources where specified." packageName version
             | _ ->
                 failwithf "Couldn't get package details for package %O %O on any of %A." packageName version (sources |> List.map (fun (s:PackageSource) -> s.ToString()))
-    
-    let source,nugetObject = tryNext sources
+        | Some packageDetails -> packageDetails
+
     { Name = PackageName nugetObject.PackageName
       Source = source
       DownloadLink = nugetObject.DownloadUrl
