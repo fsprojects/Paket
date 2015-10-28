@@ -1,4 +1,4 @@
-#### 2.18.0-alpha004 - 27.10.2015
+#### 2.18.0-alpha005 - 28.10.2015
 * Use branch and bound strategy to escape quickly from conflict situations - https://github.com/fsprojects/Paket/issues/1169
 * New moniker monoandroid50 - https://github.com/fsprojects/Paket/pull/1171
 * Reintroduced missing public API functions for docs
