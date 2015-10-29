@@ -87,19 +87,18 @@ type Resolution =
 | Conflict of Map<PackageName,ResolvedPackage> * Set<PackageRequirement> * Set<PackageRequirement> * (PackageName -> SemVerInfo seq)
     with
 
-    member this.GetConflicts() =
+    member this.GetConflicts(packageRequirement) =
         match this with
         | Resolution.Ok(_) -> []
         | Resolution.Conflict(resolved,closed,stillOpen,getVersionF) ->
-            let r = Seq.head stillOpen
             closed
             |> Set.union stillOpen
-            |> Set.add r
-            |> Seq.filter (fun x -> x.Name = r.Name)
+            |> Set.add packageRequirement
+            |> Seq.filter (fun x -> x.Name = packageRequirement.Name)
             |> Seq.sortBy (fun x -> x.Parent)
             |> Seq.toList
 
-    member this.GetErrorText(?showResolvedPackages) =
+    member this.GetErrorText(?packageRequirement,?showResolvedPackages) =
         match this with
         | Resolution.Ok(_) -> ""
         | Resolution.Conflict(resolved,closed,stillOpen,getVersionF) ->
@@ -115,7 +114,8 @@ type Resolution =
                     let resolvedPackage = kv.Value
                     sprintf "   - %O %O" resolvedPackage.Name resolvedPackage.Version |> addToError
 
-            match this.GetConflicts() with
+            let r = defaultArg packageRequirement (Seq.head stillOpen)
+            match this.GetConflicts(r) with
             | [] -> addToError <| sprintf "  Could not resolve package %O. Unknown resolution error." (Seq.head stillOpen)
             | [c] ->
                 addToError <| sprintf "  Could not resolve package %O:" c.Name
@@ -375,7 +375,7 @@ let Resolve(groupName:GroupName, sources, getVersionsF, getPackageDetailsF, stra
                     conflictHistory.Add(currentRequirement.Name, 1)
                     true
                 
-            let conflicts = conflictStatus.GetConflicts() 
+            let conflicts = conflictStatus.GetConflicts(currentRequirement) 
             match conflicts with
             | c::_  ->
                 let selectedVersion = Map.tryFind c.Name filteredVersions
@@ -383,10 +383,10 @@ let Resolve(groupName:GroupName, sources, getVersionsF, getPackageDetailsF, stra
                 knownConflicts.Add key |> ignore
                 let reportThatResolverIsTakingLongerThanExpected = not isNewConflict && DateTime.Now - !lastConflictReported > TimeSpan.FromSeconds 10.
                 if verbose then
-                    tracefn "%s" <| conflictStatus.GetErrorText(false)
+                    tracefn "%s" <| conflictStatus.GetErrorText(currentRequirement,false)
                     tracefn "    ==> Trying different resolution."
                 if reportThatResolverIsTakingLongerThanExpected then
-                    traceWarnfn "%s" <| conflictStatus.GetErrorText(false)
+                    traceWarnfn "%s" <| conflictStatus.GetErrorText(currentRequirement,false)
                     traceWarn "The process is taking longer than expected."
                     traceWarn "Paket may still find a valid resolution, but this might take a while."
                     lastConflictReported := DateTime.Now

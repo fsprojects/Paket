@@ -1,0 +1,6 @@
+FSharp.Core
+
+group Test
+  NUnit
+  NUnit.Runners.Net4
+  File:FsUnit.fs .
