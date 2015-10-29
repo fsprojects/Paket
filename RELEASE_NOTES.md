@@ -1,4 +1,5 @@
-#### 2.19.0-alpha004 - 29.10.2015
+#### 2.19.0 - 29.10.2015
+* Fix SemVer updates
 * Resolver changed to breadth first search to escape more quickly from conflict situations - https://github.com/fsprojects/Paket/issues/1174
 * Paket init downloads stable version of bootstraper - https://github.com/fsprojects/Paket/issues/1040
 

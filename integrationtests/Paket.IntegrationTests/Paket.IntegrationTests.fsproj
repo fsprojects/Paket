@@ -86,6 +86,7 @@
     <Compile Include="InitSpecs.fs" />
     <Compile Include="GroupSpecs.fs" />
     <Compile Include="BasicResolverSpecs.fs" />
+    <Compile Include="SemVerUpdateSpecs.fs" />
     <Compile Include="ResolverSkipsConflictsFastSpecs.fs" />
     <None Include="paket.references" />
   </ItemGroup>

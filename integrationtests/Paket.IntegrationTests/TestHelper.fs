@@ -29,9 +29,8 @@ let paket command scenario =
         failwith errors
 
 let update scenario =
-    let tempPath = scenarioTempPath scenario
     paket "update" scenario
-    LockFile.LoadFrom(Path.Combine(tempPath,"paket.lock"))
+    LockFile.LoadFrom(Path.Combine(scenarioTempPath scenario,"paket.lock"))
 
 let updateShouldFindPackageConflict packageName scenario =
     try

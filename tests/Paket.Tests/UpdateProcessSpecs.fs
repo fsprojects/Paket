@@ -1104,8 +1104,8 @@ let ``SelectiveUpdate with SemVerUpdateMode.Minor updates package from a specifi
     let result = groupMap lockFile
 
     let expected = 
-        [("Group","Castle.Core-log4net","3.3.3");
-        ("Group","Castle.Core","3.3.3");
+        [("Group","Castle.Core-log4net","3.2.0");
+        ("Group","Castle.Core","3.2.0");
         ("Group","FAKE","4.0.0");
         ("Group","log4net","1.2.10");
         (mainGroup,"Castle.Core-log4net","3.2.0");
