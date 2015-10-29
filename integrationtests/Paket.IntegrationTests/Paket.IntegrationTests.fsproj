@@ -172,4 +172,11 @@
       <Paket>True</Paket>
     </Reference>
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Paket.Core\Paket.Core.fsproj">
+      <Name>Paket.Core</Name>
+      <Project>{7bab0ae2-089f-4761-b138-a717aa2f86c5}</Project>
+      <Private>True</Private>
+    </ProjectReference>
+  </ItemGroup>
 </Project>

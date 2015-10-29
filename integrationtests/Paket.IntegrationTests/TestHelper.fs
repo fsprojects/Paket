@@ -2,6 +2,7 @@
 module Paket.IntegrationTests.TestHelpers
 
 open Fake
+open Paket
 open System
 open NUnit.Framework
 open FsUnit
@@ -27,7 +28,10 @@ let paket command scenario =
         let errors = String.Join(Environment.NewLine,result.Errors)
         failwith errors
 
-let update scenario = paket "update" scenario
+let update scenario =
+    let tempPath = scenarioTempPath scenario
+    paket "update" scenario
+    LockFile.LoadFrom(Path.Combine(tempPath,"paket.lock"))
 
 let updateShouldFindPackageConflict packageName scenario =
     try
