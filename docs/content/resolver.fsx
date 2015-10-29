@@ -30,7 +30,7 @@ In order to figure out the concrete versions Paket needs to solve the following 
 
 ## Getting data
 
-The [constraint satisfaction problem](http://en.wikipedia.org/wiki/Constraint_satisfaction_problem) is covererd by many [scientific papers](resolver.html#Further-reading), but
+The [constraint satisfaction problem](http://en.wikipedia.org/wiki/Constraint_satisfaction_problem) is covered by many [scientific papers](resolver.html#Further-reading), but
 a big challenge for Paket's resolver is that it doesn't have the full constraints available.
 The algorithm needs to evaluate the package dependency graph along the way by retrieving data from the [NuGet](nuget-dependencies.html) source feeds.
 
