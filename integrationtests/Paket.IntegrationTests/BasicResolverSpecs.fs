@@ -38,3 +38,9 @@ let ``#83 should resolve jquery``() =
     let lockFile = update "i000083-resolve-jquery"
     lockFile.Groups.[Constants.MainDependencyGroup].Resolution.[PackageName "jQuery"].Version
     |> shouldBeGreaterThan (SemVer.Parse "1.9")
+
+[<Test>]
+let ``#108 should resolve jquery case-insensitive``() =
+    let lockFile = update "i000108-case-insensitive-nuget-packages"
+    lockFile.Groups.[Constants.MainDependencyGroup].Resolution.[PackageName "jQuery"].Version
+    |> shouldEqual (SemVer.Parse "1.9.0")

@@ -1,0 +1,4 @@
+source "http://nuget.org/api/v2"
+
+nuget "bootstrap" "3.2.0"
+nuget "jQuery" "1.9.0"
