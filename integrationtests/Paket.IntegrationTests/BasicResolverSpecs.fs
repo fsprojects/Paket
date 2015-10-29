@@ -53,6 +53,12 @@ let ``#144 should resolve nunit from fsunit``() =
     v |> shouldBeSmallerThan (SemVer.Parse "3")
 
 [<Test>]
+let ``#156 should resolve prerelease of logary``() =
+    let lockFile = update "i000156-resolve-prerelease-logary"
+    lockFile.Groups.[Constants.MainDependencyGroup].Resolution.[PackageName "FSharp.Actor-logary"].Version
+    |> shouldEqual (SemVer.Parse "2.0.0-alpha5")
+
+[<Test>]
 let ``#1177 should resolve with pessimistic strategy correctly``() =
     let lockFile = update "i001177-resolve-with-pessimistic-strategy"
     lockFile.Groups.[Constants.MainDependencyGroup].Resolution.[PackageName "Castle.Core"].Version
