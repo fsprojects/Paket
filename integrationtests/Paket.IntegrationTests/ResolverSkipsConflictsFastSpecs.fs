@@ -22,6 +22,12 @@ let ``#51 should resolve with pessimistic strategy correctly``() =
     |> shouldEqual (SemVer.Parse "3.2.0.1")
 
 [<Test>]
+let ``#55 should resolve with pessimistic strategy correctly``() =
+    let lockFile = update "i000055-resolve-with-pessimistic-strategy"
+    lockFile.Groups.[Constants.MainDependencyGroup].Resolution.[PackageName "Castle.Windsor"].Version
+    |> shouldEqual (SemVer.Parse "3.2.1")
+
+[<Test>]
 let ``#1166 Should resolve Nancy without timeout``() =
     let lockFile = update "i001166-resolve-nancy-fast"
     lockFile.Groups.[Constants.MainDependencyGroup].Resolution.[PackageName "Nancy"].Version

@@ -1,0 +1,5 @@
+strategy min
+source "http://nuget.org/api/v2"
+
+nuget "Castle.Windsor" ">= 0"
+nuget "Nancy.Bootstrappers.Windsor" "~> 0.23"
