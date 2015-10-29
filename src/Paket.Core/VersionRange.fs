@@ -154,7 +154,7 @@ type VersionRequirement =
                     text
                         .Trim([|'['; ']';'(';')'|])
                         .Split([|','|], StringSplitOptions.RemoveEmptyEntries)
-                        |> Array.filter (fun s -> String.IsNullOrWhiteSpace s |> not)
+                        |> Array.filter (String.IsNullOrWhiteSpace >> not)
                         |> Array.map analyzeVersion
 
                 match versions.Length with
@@ -181,7 +181,7 @@ type VersionRequirement =
     /// Formats a VersionRequirement in NuGet syntax
     member this.FormatInNuGetSyntax() =
         match this with
-        | VersionRequirement(range,prerelease) ->        
+        | VersionRequirement(range,prerelease) ->
             let pre = 
                 match prerelease with
                 | No -> ""
