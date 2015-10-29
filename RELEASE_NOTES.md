@@ -1,4 +1,4 @@
-#### 2.19.0-alpha003 - 29.10.2015
+#### 2.19.0-alpha004 - 29.10.2015
 * Resolver changed to breadth first search to escape more quickly from conflict situations - https://github.com/fsprojects/Paket/issues/1174
 * Paket init downloads stable version of bootstraper - https://github.com/fsprojects/Paket/issues/1040
 
