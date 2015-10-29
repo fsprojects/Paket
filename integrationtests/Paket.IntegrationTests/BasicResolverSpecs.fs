@@ -32,3 +32,9 @@ let ``#71 should ignore trailing zero during resolve``() =
     let lockFile = update "i000071-ignore-trailing-zero-during-resolve"
     lockFile.Groups.[Constants.MainDependencyGroup].Resolution.[PackageName "Newtonsoft.Json"].Version
     |> shouldEqual (SemVer.Parse "6.0.5.0")
+
+[<Test>]
+let ``#83 should resolve jquery``() =
+    let lockFile = update "i000083-resolve-jquery"
+    lockFile.Groups.[Constants.MainDependencyGroup].Resolution.[PackageName "jQuery"].Version
+    |> shouldBeGreaterThan (SemVer.Parse "1.9")
