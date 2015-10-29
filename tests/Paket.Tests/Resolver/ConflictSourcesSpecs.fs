@@ -22,6 +22,7 @@ let ``should resolve source files with correct sha``() =
     let dep =
       { Name = name
         ResolverStrategy = Some ResolverStrategy.Max
+        Graph = []
         Parent = Requirements.PackageRequirementSource.DependenciesFile ""
         Settings = InstallSettings.Default
         VersionRequirement = VersionRequirement.NoRestriction }

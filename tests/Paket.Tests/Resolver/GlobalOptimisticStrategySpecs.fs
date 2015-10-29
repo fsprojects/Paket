@@ -124,24 +124,43 @@ let ``should respect overrides when updating single package``() =
     getVersion resolved.[PackageName "Castle.Core-NLog"] |> shouldEqual "3.3.1"
     getVersion resolved.[PackageName "Castle.Core"] |> shouldEqual "3.3.1"
 
-let config7 = """
-strategy max
-source http://nuget.org/api/v2
-
-nuget Nancy.Bootstrappers.Windsor !~> 0.23
-nuget Castle.Windsor
-nuget Castle.Windsor-NLog !> 0
-"""
-
 [<Test>]
-let ``should favor strategy from parent``() = 
+let ``should favor strategy from parent when it overrides``() = 
+    let config = """
+    strategy max
+    source http://nuget.org/api/v2
+
+    nuget Nancy.Bootstrappers.Windsor !~> 0.23
+    nuget Castle.Windsor @> 0
+    nuget Castle.Windsor-NLog !> 0
+    """
+
     let resolved =
-        DependenciesFile.FromCode(config7)
+        DependenciesFile.FromCode(config)
         |> resolve graph2 UpdateMode.UpdateAll
     getVersion resolved.[PackageName "Castle.Windsor"] |> shouldEqual "3.3.0"
     getVersion resolved.[PackageName "Castle.Windsor-NLog"] |> shouldEqual "3.3.0"
     getVersion resolved.[PackageName "Castle.Core-NLog"] |> shouldEqual "3.3.0"
     getVersion resolved.[PackageName "Castle.Core"] |> shouldEqual "3.3.1"
+    getVersion resolved.[PackageName "Nancy.Bootstrappers.Windsor"] |> shouldEqual "0.23"
+
+[<Test>]
+let ``should favor strategy from parent that overrides strategy``() = 
+    let config = """
+    strategy max
+    source http://nuget.org/api/v2
+
+    nuget Nancy.Bootstrappers.Windsor !~> 0.23
+    nuget Castle.Windsor
+    nuget Castle.Windsor-NLog !> 0
+    """
+    let resolved =
+        DependenciesFile.FromCode(config)
+        |> resolve graph2 UpdateMode.UpdateAll
+    getVersion resolved.[PackageName "Castle.Windsor"] |> shouldEqual "3.3.0"
+    getVersion resolved.[PackageName "Castle.Windsor-NLog"] |> shouldEqual "3.3.0"
+    getVersion resolved.[PackageName "Castle.Core-NLog"] |> shouldEqual "3.3.0"
+    getVersion resolved.[PackageName "Castle.Core"] |> shouldEqual "3.3.0"
     getVersion resolved.[PackageName "Nancy.Bootstrappers.Windsor"] |> shouldEqual "0.23"
 
 let config8 = """

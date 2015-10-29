@@ -216,7 +216,8 @@ let createPackageRequirement (packageName, version, restrictions) dependenciesFi
                 VersionRequirement(VersionRange.Exactly version, PreReleaseStatus.No)
        ResolverStrategy = Some ResolverStrategy.Max
        Settings = { InstallSettings.Default with FrameworkRestrictions = restrictions }
-       Parent = PackageRequirementSource.DependenciesFile dependenciesFileName }
+       Parent = PackageRequirementSource.DependenciesFile dependenciesFileName
+       Graph = [] }
 
 let createDependenciesFileR (rootDirectory : DirectoryInfo) nugetEnv mode =
     

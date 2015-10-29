@@ -276,6 +276,7 @@ module DependenciesFileParser =
         { Name = packageName
           ResolverStrategy = parseResolverStrategy version
           Parent = parent
+          Graph = []
           Settings = InstallSettings.Parse(optionsText).AdjustWithSpecialCases packageName
           VersionRequirement = parseVersionRequirement((version + " " + prereleases).Trim(strategyOperators |> Array.ofList)) } 
 
@@ -486,6 +487,7 @@ type DependenciesFile(fileName,groups:Map<GroupName,DependenciesGroup>, textRepr
                           VersionRequirement = v
                           ResolverStrategy = Some ResolverStrategy.Max
                           Parent = PackageRequirementSource.DependenciesFile fileName
+                          Graph = []
                           Settings = group.Options.Settings })
                 |> Seq.toList
 

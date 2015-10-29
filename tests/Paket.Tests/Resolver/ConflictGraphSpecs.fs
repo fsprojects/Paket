@@ -27,6 +27,7 @@ let graph =
 let defaultPackage = 
     { Name = PackageName ""
       Parent = PackageRequirementSource.DependenciesFile ""
+      Graph = []
       VersionRequirement = VersionRequirement(VersionRange.Exactly "1.0", PreReleaseStatus.No)
       Settings = InstallSettings.Default
       ResolverStrategy = Some ResolverStrategy.Max }
@@ -38,7 +39,7 @@ let ``should analyze graph and report conflict``() =
     | Resolution.Conflict(_,_,stillOpen,_) ->
         let conflicting = stillOpen |> Seq.head 
         conflicting.Name |> shouldEqual (PackageName "D")
-        conflicting.VersionRequirement.Range |> shouldEqual (VersionRange.Exactly "1.4")
+        conflicting.VersionRequirement.Range |> shouldEqual (VersionRange.Exactly "1.6")
 
 let graph2 = 
     [ "A", "1.0", 
@@ -56,7 +57,7 @@ let ``should analyze graph2 and report conflict``() =
     | Resolution.Conflict(_,_,stillOpen,_) ->
         let conflicting = stillOpen |> Seq.head 
         conflicting.Name |> shouldEqual (PackageName "D")
-        conflicting.VersionRequirement.Range |> shouldEqual (VersionRange.Between("1.4", "1.5"))
+        conflicting.VersionRequirement.Range |> shouldEqual (VersionRange.Between("1.6", "1.7"))
 
 [<Test>]
 let ``should override graph2 conflict to first version``() = 

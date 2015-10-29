@@ -396,21 +396,16 @@ type RemoteFileInstallSettings =
 
 type PackageRequirementSource =
 | DependenciesFile of string
-| Package of PackageName * SemVerInfo * int
+| Package of PackageName * SemVerInfo
     member this.IsRootRequirement() =
         match this with
         | DependenciesFile _ -> true
         | _ -> false
 
-    member this.Depth() =
-        match this with
-        | DependenciesFile _ -> 0
-        | Package(_,_,x) -> x
-
     override this.ToString() =
         match this with
         | DependenciesFile x -> x
-        | Package(name,version,_) ->
+        | Package(name,version) ->
           sprintf "%O %O" name version
 
 /// Represents an unresolved package.
@@ -420,6 +415,7 @@ type PackageRequirement =
       VersionRequirement : VersionRequirement
       ResolverStrategy : ResolverStrategy option
       Parent: PackageRequirementSource
+      Graph: PackageRequirement list
       Settings: InstallSettings }
 
     override this.Equals(that) = 
@@ -435,12 +431,14 @@ type PackageRequirement =
     member this.IncludingPrereleases() = 
         { this with VersionRequirement = VersionRequirement(this.VersionRequirement.Range,PreReleaseStatus.All) }
     
+    member this.Depth = this.Graph.Length
+
     static member Compare(x,y,startWithPackage:PackageName option,boostX,boostY) =
         if x = y then 0 else
         seq {
             yield compare
-                (not x.VersionRequirement.Range.IsGlobalOverride,x.Parent)
-                (not y.VersionRequirement.Range.IsGlobalOverride,y.Parent)
+                (not x.VersionRequirement.Range.IsGlobalOverride,x.Depth)
+                (not y.VersionRequirement.Range.IsGlobalOverride,y.Depth)
             yield match startWithPackage with
                     | Some name when name = x.Name -> -1
                     | Some name when name = y.Name -> 1
