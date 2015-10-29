@@ -8,7 +8,7 @@ open System
 open System.IO
 
 [<Test>]
-let ``#166 Should resolve Nancy without timeount``() = 
+let ``#1166 Should resolve Nancy without timeount``() = 
     update "i001166-resolve-nancy-fast"
 
 [<Test>]

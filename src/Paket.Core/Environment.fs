@@ -83,10 +83,10 @@ module PaketEnv =
 
     let init (directory : DirectoryInfo) =
         match locatePaketRootDirectory directory with
-        | Some rootDirectory -> 
+        | Some rootDirectory when rootDirectory.FullName = directory.FullName -> 
             Logging.tracefn "Paket is already initialized in %s" rootDirectory.FullName
             ok ()
-        | None -> 
+        | _ -> 
             let sources = [PackageSources.DefaultNugetSource]
             let serialized = 
                 (sources

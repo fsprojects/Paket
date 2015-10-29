@@ -160,6 +160,7 @@ Target "RunTests" (fun _ ->
     |> NUnit (fun p ->
         { p with
             DisableShadowCopy = true
+            ToolPath = "packages/test/NUnit.Runners.Net4/tools"
             TimeOut = TimeSpan.FromMinutes 20.
             OutputFile = "TestResults.xml" })
 )
@@ -170,6 +171,7 @@ Target "RunIntegrationTests" (fun _ ->
     |> NUnit (fun p ->
         { p with
             DisableShadowCopy = true
+            ToolPath = "packages/test/NUnit.Runners.Net4/tools"
             TimeOut = TimeSpan.FromMinutes 20.
             OutputFile = "TestResults.xml" })
 )
