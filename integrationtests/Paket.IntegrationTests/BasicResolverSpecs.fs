@@ -59,6 +59,12 @@ let ``#156 should resolve prerelease of logary``() =
     |> shouldEqual (SemVer.Parse "2.0.0-alpha5")
 
 [<Test>]
+let ``#173 should resolve primary dependency optimistic``() =
+    let lockFile = update "i000173-resolve-primary-dependency-optimistic"
+    lockFile.Groups.[Constants.MainDependencyGroup].Resolution.[PackageName "FSharp.Formatting"].Version
+    |> shouldEqual (SemVer.Parse "2.12.0")
+
+[<Test>]
 let ``#1177 should resolve with pessimistic strategy correctly``() =
     let lockFile = update "i001177-resolve-with-pessimistic-strategy"
     lockFile.Groups.[Constants.MainDependencyGroup].Resolution.[PackageName "Castle.Core"].Version
