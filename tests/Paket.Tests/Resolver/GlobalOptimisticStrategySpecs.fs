@@ -138,7 +138,7 @@ let ``should favor strategy from parent when it overrides``() =
     let resolved =
         DependenciesFile.FromCode(config)
         |> resolve graph2 UpdateMode.UpdateAll
-    getVersion resolved.[PackageName "Castle.Windsor"] |> shouldEqual "3.3.0"
+    getVersion resolved.[PackageName "Castle.Windsor"] |> shouldEqual "3.2.1"
     getVersion resolved.[PackageName "Castle.Windsor-NLog"] |> shouldEqual "3.3.0"
     getVersion resolved.[PackageName "Castle.Core-NLog"] |> shouldEqual "3.3.0"
     getVersion resolved.[PackageName "Castle.Core"] |> shouldEqual "3.3.1"
@@ -157,7 +157,7 @@ let ``should favor strategy from parent that overrides strategy``() =
     let resolved =
         DependenciesFile.FromCode(config)
         |> resolve graph2 UpdateMode.UpdateAll
-    getVersion resolved.[PackageName "Castle.Windsor"] |> shouldEqual "3.3.0"
+    getVersion resolved.[PackageName "Castle.Windsor"] |> shouldEqual "3.2.1"
     getVersion resolved.[PackageName "Castle.Windsor-NLog"] |> shouldEqual "3.3.0"
     getVersion resolved.[PackageName "Castle.Core-NLog"] |> shouldEqual "3.3.0"
     getVersion resolved.[PackageName "Castle.Core"] |> shouldEqual "3.3.0"
