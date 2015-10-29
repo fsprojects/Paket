@@ -46,6 +46,7 @@ let solutionFilePowerShell = "Paket.PowerShell.sln"
 
 // Pattern specifying assemblies to be tested using NUnit
 let testAssemblies = "tests/**/bin/Release/*Tests*.dll"
+let integrationTestAssemblies = "integrationtests/**/bin/Release/*Tests*.dll"
 
 // Git configuration (used for publishing documentation in gh-pages branch)
 // The profile where the project is posted
@@ -159,9 +160,22 @@ Target "RunTests" (fun _ ->
     |> NUnit (fun p ->
         { p with
             DisableShadowCopy = true
+            ToolPath = "packages/test/NUnit.Runners.Net4/tools"
             TimeOut = TimeSpan.FromMinutes 20.
             OutputFile = "TestResults.xml" })
 )
+
+
+Target "RunIntegrationTests" (fun _ ->
+    !! integrationTestAssemblies
+    |> NUnit (fun p ->
+        { p with
+            DisableShadowCopy = true
+            ToolPath = "packages/test/NUnit.Runners.Net4/tools"
+            TimeOut = TimeSpan.FromMinutes 20.
+            OutputFile = "TestResults.xml" })
+)
+
 
 // --------------------------------------------------------------------------------------
 // Build a NuGet package
@@ -410,6 +424,7 @@ Target "All" DoNothing
   =?> ("ReleaseDocs",isLocalBuild && not isMono)
 
 "All"
+  ==> "RunIntegrationTests" 
   ==> "MergePaketTool"
   =?> ("MergePowerShell", not isMono)
   ==> "SignAssemblies"
@@ -431,7 +446,7 @@ Target "All" DoNothing
   ==> "PublishChocolatey"
   ==> "PublishNuGet"
 
-"PublishNuGet"    
+"PublishNuGet"
   ==> "ReleaseGitHub"
   ==> "Release"
 

@@ -257,7 +257,7 @@ type Dependencies(dependenciesFileName: string) =
     member this.DownloadLatestBootstrapper() : unit =
         Utils.RunInLockedAccessMode(
             this.RootPath,
-            fun () -> Releases.downloadLatestBootstrapper |> this.Process)
+            fun () -> Releases.downloadLatestBootstrapperAndTargets |> this.Process)
 
     /// Pulls new paket.targets and bootstrapper and puts them into .paket folder.
     member this.TurnOnAutoRestore(): unit =

@@ -92,7 +92,7 @@ let private getProjectFilesInDirectory folder =
     Directory.GetFiles(folder, "*proj")
     |> Seq.filter (Path.GetExtension >> isDotNetProject)
 let private addConfigFileToProject projectFile =
-    ProjectFile.Load projectFile
+    ProjectFile.TryLoad projectFile
     |> Option.bind(fun project ->
         project.ProjectNode
         |> Xml.getNodes "ItemGroup"
@@ -109,7 +109,7 @@ let private addConfigFileToProject projectFile =
 let private applyBindingRedirects bindingRedirects (configFilePath:string) =
     let projectFile =
         getProjectFilesInDirectory (Path.GetDirectoryName(configFilePath))
-        |> Seq.map ProjectFile.Load
+        |> Seq.map ProjectFile.TryLoad
         |> Seq.tryHead
         |> Option.bind id
     

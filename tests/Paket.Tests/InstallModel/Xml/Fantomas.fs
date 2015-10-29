@@ -27,7 +27,7 @@ let ``should generate Xml for Fantomas 1.5``() =
               [],
               Nuspec.Explicit ["FantomasLib.dll"])
     
-    let propertyNodes,chooseNode,additionalNode, _ = ProjectFile.Load("./ProjectFile/TestData/Empty.fsprojtest").Value.GenerateXml(model,true,true,None)
+    let propertyNodes,chooseNode,additionalNode, _ = ProjectFile.TryLoad("./ProjectFile/TestData/Empty.fsprojtest").Value.GenerateXml(model,true,true,None)
     chooseNode.OuterXml
     |> normalizeXml
     |> shouldEqual (normalizeXml expected)
@@ -63,7 +63,7 @@ let ``should generate full Xml for Fantomas 1.5``() =
               [],
               Nuspec.Explicit ["FantomasLib.dll"])
     
-    let project = ProjectFile.Load("./ProjectFile/TestData/Empty.fsprojtest").Value
+    let project = ProjectFile.TryLoad("./ProjectFile/TestData/Empty.fsprojtest").Value
     let completeModel = [(Constants.MainDependencyGroup, (PackageName "Fantomas")),(model,model)] |> Map.ofSeq
     let used = [(Constants.MainDependencyGroup, (PackageName "fantoMas")), (InstallSettings.Default,InstallSettings.Default)] |> Map.ofSeq
     project.UpdateReferences(completeModel,used,false)
@@ -84,7 +84,7 @@ let ``should not generate full Xml for Fantomas 1.5 if not referenced``() =
               [],
               Nuspec.Explicit ["FantomasLib.dll"])
     
-    let project = ProjectFile.Load("./ProjectFile/TestData/Empty.fsprojtest").Value
+    let project = ProjectFile.TryLoad("./ProjectFile/TestData/Empty.fsprojtest").Value
     let completeModel = [(Constants.MainDependencyGroup, (PackageName "Fantomas")),(model,model)] |> Map.ofSeq
     let used = [(Constants.MainDependencyGroup, (PackageName "blub")), (InstallSettings.Default,InstallSettings.Default) ] |> Map.ofSeq
     project.UpdateReferences(completeModel,used,false)
@@ -120,7 +120,7 @@ let ``should generate full Xml with reference condition for Fantomas 1.5``() =
               [],
               Nuspec.Explicit ["FantomasLib.dll"])
     
-    let project = ProjectFile.Load("./ProjectFile/TestData/Empty.fsprojtest").Value
+    let project = ProjectFile.TryLoad("./ProjectFile/TestData/Empty.fsprojtest").Value
     let completeModel = [(Constants.MainDependencyGroup, (PackageName "Fantomas")),(model,model)] |> Map.ofSeq
     let settings =
         { InstallSettings.Default 
@@ -161,7 +161,7 @@ let ``should generate full Xml with reference condition and framework restrictio
               [],
               Nuspec.All)
 
-    let project = ProjectFile.Load("./ProjectFile/TestData/Empty.fsprojtest").Value
+    let project = ProjectFile.TryLoad("./ProjectFile/TestData/Empty.fsprojtest").Value
     let completeModel = [(Constants.MainDependencyGroup, (PackageName "Fantomas")),(model,model)] |> Map.ofSeq
     let settings =
         { InstallSettings.Default

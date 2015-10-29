@@ -610,7 +610,6 @@ let GetPackageDetails root force sources packageName (version:SemVerInfo) : Pack
             with e ->
                 verbosefn "Source '%O' exception: %O" source e
                 return None })
-        |> Seq.toArray
         |> Async.Parallel
         |> Async.RunSynchronously
         |> Array.tryPick id
