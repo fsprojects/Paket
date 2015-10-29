@@ -23,7 +23,7 @@ let paket command scenario =
         ExecProcessAndReturnMessages (fun info ->
           info.FileName <- paketToolPath
           info.WorkingDirectory <- scenarioPath
-          info.Arguments <- command) (System.TimeSpan.FromMinutes 1.)
+          info.Arguments <- command) (System.TimeSpan.FromMinutes 5.)
     if result.ExitCode <> 0 then 
         let errors = String.Join(Environment.NewLine,result.Errors)
         failwith errors
@@ -35,7 +35,7 @@ let update scenario =
 
 let updateShouldFindPackageConflict packageName scenario =
     try
-        update scenario
+        update scenario |> ignore
         failwith "No conflict was found."
     with
     | exn when exn.Message.Contains(sprintf "Could not resolve package %s:" packageName) -> ()
