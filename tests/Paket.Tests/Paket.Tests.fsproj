@@ -24,7 +24,7 @@
     <OutputPath>bin\Debug\</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <WarningLevel>3</WarningLevel>
-    <DocumentationFile>bin\Debug\fsharp_project_scaffold_tests.XML</DocumentationFile>
+    <DocumentationFile>bin\Debug\Paket.Tests.XML</DocumentationFile>
     <StartAction>Project</StartAction>
     <StartProgram>
     </StartProgram>

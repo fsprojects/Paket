@@ -27,7 +27,7 @@ let ``should generate Xml for Fuchu 0.4``() =
               [],
               Nuspec.All)
     
-    let _,chooseNode,_,_ = ProjectFile.Load("./ProjectFile/TestData/Empty.fsprojtest").Value.GenerateXml(model,true,true,None)
+    let _,chooseNode,_,_ = ProjectFile.TryLoad("./ProjectFile/TestData/Empty.fsprojtest").Value.GenerateXml(model,true,true,None)
     chooseNode.OuterXml
     |> normalizeXml
     |> shouldEqual (normalizeXml expected)

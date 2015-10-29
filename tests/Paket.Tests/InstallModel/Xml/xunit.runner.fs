@@ -36,7 +36,7 @@ let ``should generate Xml for xunit.runner.visualstudio 2.0.0``() =
             [],
               Nuspec.All)
     
-    let propertyNodes,chooseNode,propertyChooseNode,_ = ProjectFile.Load("./ProjectFile/TestData/Empty.fsprojtest").Value.GenerateXml(model,true,true,None)
+    let propertyNodes,chooseNode,propertyChooseNode,_ = ProjectFile.TryLoad("./ProjectFile/TestData/Empty.fsprojtest").Value.GenerateXml(model,true,true,None)
     chooseNode.OuterXml
     |> normalizeXml
     |> shouldEqual (normalizeXml emptyReferenceNodes)
@@ -63,7 +63,7 @@ let ``should not generate Xml for xunit.runner.visualstudio 2.0.0 if import is d
               [],
               Nuspec.All)
     
-    let propertyNodes,chooseNode,propertyChooseNode,_ = ProjectFile.Load("./ProjectFile/TestData/Empty.fsprojtest").Value.GenerateXml(model,true,false,None)
+    let propertyNodes,chooseNode,propertyChooseNode,_ = ProjectFile.TryLoad("./ProjectFile/TestData/Empty.fsprojtest").Value.GenerateXml(model,true,false,None)
     chooseNode.OuterXml
     |> normalizeXml
     |> shouldEqual (normalizeXml emptyReferenceNodes)
