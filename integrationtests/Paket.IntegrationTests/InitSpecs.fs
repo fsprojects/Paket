@@ -11,8 +11,8 @@ open System.Diagnostics
 [<Test>]
 let ``#1040 init should download release version of bootstrapper``() = 
     paket "init" "i001040-init-downloads-bootstrapper"
-    let bootstrapperpath = Path.Combine(scenarioTempPath "i001040-init-downloads-bootstrapper",".paket","paket.bootstrapper.exe")
+    let bootstrapperPath = Path.Combine(scenarioTempPath "i001040-init-downloads-bootstrapper",".paket","paket.bootstrapper.exe")
    
-    let productVersion = FileVersionInfo.GetVersionInfo(bootstrapperpath).ToString()
+    let productVersion = FileVersionInfo.GetVersionInfo(bootstrapperPath).ProductVersion
     String.IsNullOrWhiteSpace productVersion |> shouldEqual false
     productVersion.Contains("-") |> shouldEqual false
