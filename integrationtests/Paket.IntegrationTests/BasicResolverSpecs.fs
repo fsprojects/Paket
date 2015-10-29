@@ -46,6 +46,13 @@ let ``#108 should resolve jquery case-insensitive``() =
     |> shouldEqual (SemVer.Parse "1.9.0")
 
 [<Test>]
+let ``#144 should resolve nunit from fsunit``() =
+    let lockFile = update "i000144-resolve-nunit-from-fsunit"
+    let v = lockFile.Groups.[Constants.MainDependencyGroup].Resolution.[PackageName "NUnit"].Version
+    v |> shouldBeGreaterThan (SemVer.Parse "2.6")
+    v |> shouldBeSmallerThan (SemVer.Parse "3")
+
+[<Test>]
 let ``#1177 should resolve with pessimistic strategy correctly``() =
     let lockFile = update "i001177-resolve-with-pessimistic-strategy"
     lockFile.Groups.[Constants.MainDependencyGroup].Resolution.[PackageName "Castle.Core"].Version
