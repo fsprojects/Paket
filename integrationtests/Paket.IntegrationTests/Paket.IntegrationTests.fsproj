@@ -84,6 +84,7 @@
     <Compile Include="AssemblyInfo.fs" />
     <Compile Include="TestHelper.fs" />
     <Compile Include="InitSpecs.fs" />
+    <Compile Include="GroupSpecs.fs" />
     <Compile Include="ResolverSkipsConflictsFastSpecs.fs" />
     <None Include="paket.references" />
   </ItemGroup>
