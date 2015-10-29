@@ -316,9 +316,9 @@ let Resolve(groupName:GroupName, sources, getVersionsF, getPackageDetailsF, stra
                 | Install
                 | UpdateAll
                 | UpdateGroup _ ->
-                    match currentRequirements |> Set.exists (fun r -> r.Parent.IsRootRequirement()) with
-                    | true -> ResolverStrategy.Max
-                    | false -> combined
+                    match currentRequirement.Parent.IsRootRequirement(), Set.count currentRequirements with
+                    | true, 1 -> ResolverStrategy.Max
+                    | _ -> combined
                 | UpdatePackage (g, p) ->
                     match groupName = g && currentRequirement.Name = p with
                     | true -> ResolverStrategy.Max

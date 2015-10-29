@@ -45,7 +45,7 @@ let ``should resolve simple config2``() =
     let resolved =
         DependenciesFile.FromCode(config2)
         |> resolve graph UpdateMode.UpdateAll
-    getVersion resolved.[PackageName "Castle.Windsor"] |> shouldEqual "3.3.0"
+    getVersion resolved.[PackageName "Castle.Windsor"] |> shouldEqual "3.2.1"
     getVersion resolved.[PackageName "Nancy.Bootstrappers.Windsor"] |> shouldEqual "0.23"
 
 
@@ -62,7 +62,7 @@ let ``should resolve simple config3``() =
     let resolved =
         DependenciesFile.FromCode(config3)
         |> resolve graph UpdateMode.UpdateAll
-    getVersion resolved.[PackageName "Castle.Windsor"] |> shouldEqual "3.3.0"
+    getVersion resolved.[PackageName "Castle.Windsor"] |> shouldEqual "3.2.1"
     getVersion resolved.[PackageName "Nancy.Bootstrappers.Windsor"] |> shouldEqual "0.23"
 
 
@@ -123,12 +123,12 @@ nuget Castle.Windsor-NLog !~> 3.2
 """
 
 [<Test>]
-let ``should update to lastest when updating all``() = 
+let ``should favor strategy override when updating all``() = 
     let resolved =
         DependenciesFile.FromCode(config6)
         |> resolve graph2 UpdateMode.UpdateAll
     getVersion resolved.[PackageName "Castle.Windsor-NLog"] |> shouldEqual "3.3.0"
-    getVersion resolved.[PackageName "Castle.Core-NLog"] |> shouldEqual "3.3.1"
+    getVersion resolved.[PackageName "Castle.Core-NLog"] |> shouldEqual "3.3.0"
     getVersion resolved.[PackageName "Castle.Core"] |> shouldEqual "3.3.1"
 
 [<Test>]
