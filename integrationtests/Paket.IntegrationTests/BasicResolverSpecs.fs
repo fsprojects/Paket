@@ -49,4 +49,4 @@ let ``#108 should resolve jquery case-insensitive``() =
 let ``#1177 should resolve with pessimistic strategy correctly``() =
     let lockFile = update "i001177-resolve-with-pessimistic-strategy"
     lockFile.Groups.[Constants.MainDependencyGroup].Resolution.[PackageName "Castle.Core"].Version
-    |> shouldEqual (SemVer.Parse "3.2.1")
+    |> shouldEqual (SemVer.Parse "3.2.0")
