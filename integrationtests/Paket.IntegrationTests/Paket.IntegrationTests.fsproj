@@ -88,6 +88,10 @@
     <Compile Include="GroupSpecs.fs" />
     <Compile Include="FrameworkRestrictionsSpecs.fs" />
     <Compile Include="UpdatePackageSpecs.fs" />
+    <Compile Include="AddSpecs.fs" />
+    <Compile Include="OutdatedSpecs.fs" />
+    <Compile Include="GroupSpecs.fs" />
+    <Compile Include="FrameworkRestrictionsSpecs.fs" />
     <Compile Include="BasicResolverSpecs.fs" />
     <Compile Include="SemVerUpdateSpecs.fs" />
     <Compile Include="ResolverSkipsConflictsFastSpecs.fs" />

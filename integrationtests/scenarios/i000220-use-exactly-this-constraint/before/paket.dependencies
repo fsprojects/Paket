@@ -1,0 +1,10 @@
+source http://nuget.org/api/v2
+
+nuget FAKE
+nuget FSharp.Compiler.Service
+nuget CommandLineParser 1.9.71
+nuget Microsoft.AspNet.Razor == 2.0.30506.0
+nuget RazorEngine.N 3.5.0
+nuget NUnit
+nuget NUnit.Runners
+nuget NuGet.CommandLine

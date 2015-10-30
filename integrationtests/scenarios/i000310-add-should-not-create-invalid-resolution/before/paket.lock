@@ -1,0 +1,4 @@
+NUGET
+  remote: http://nuget.org/api/v2
+  specs:
+    Castle.Core (3.2.2)

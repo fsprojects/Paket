@@ -65,6 +65,36 @@ let ``#173 should resolve primary dependency optimistic``() =
     |> shouldEqual (SemVer.Parse "2.12.0")
 
 [<Test>]
+let ``#220 should respect the == operator``() =
+    let lockFile = update "i000220-use-exactly-this-constraint"
+    lockFile.Groups.[Constants.MainDependencyGroup].Resolution.[PackageName "Microsoft.AspNet.Razor"].Version
+    |> shouldEqual (SemVer.Parse "2.0.30506.0")
+
+[<Test>]
+let ``#263 should respect SemVer prereleases``() =
+    let lockFile = update "i000263-semver-prereleases"
+    lockFile.Groups.[Constants.MainDependencyGroup].Resolution.[PackageName "Ninject"].Version
+    |> shouldEqual (SemVer.Parse "3.2.3-unstable-001")
+
+[<Test>]
+let ``#299 should restore package ending in lib``() =
+    let lockFile = update "i000299-restore-package-that-ends-in-lib"
+    lockFile.Groups.[Constants.MainDependencyGroup].Resolution.[PackageName "FunScript.TypeScript.Binding.lib"].Version
+    |> shouldBeGreaterThan (SemVer.Parse "0")
+
+    Directory.Exists(Path.Combine(scenarioTempPath "i000299-restore-package-that-ends-in-lib","packages","FunScript.TypeScript.Binding.lib"))
+    |> shouldEqual true
+    
+[<Test>]
+let ``#359 should restore package with nuget in name``() =
+    let lockFile = update "i000359-packagename-contains-nuget"
+    lockFile.Groups.[Constants.MainDependencyGroup].Resolution.[PackageName "Nuget.CommandLine"].Version
+    |> shouldBeGreaterThan (SemVer.Parse "0")
+
+    Directory.Exists(Path.Combine(scenarioTempPath "i000359-packagename-contains-nuget","packages","NuGet.CommandLine"))
+    |> shouldEqual true
+
+[<Test>]
 let ``#1177 should resolve with pessimistic strategy correctly``() =
     let lockFile = update "i001177-resolve-with-pessimistic-strategy"
     lockFile.Groups.[Constants.MainDependencyGroup].Resolution.[PackageName "Castle.Core"].Version
