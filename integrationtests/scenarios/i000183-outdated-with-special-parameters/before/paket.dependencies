@@ -1,0 +1,4 @@
+source http://nuget.org/api/v2
+
+nuget FSharp.Formatting ~> 2.4
+nuget Newtonsoft.Json ~> 6.0.7
