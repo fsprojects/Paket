@@ -71,6 +71,12 @@ let ``#220 should respect the == operator``() =
     |> shouldEqual (SemVer.Parse "2.0.30506.0")
 
 [<Test>]
+let ``#263 should respect SemVer prereleases``() =
+    let lockFile = update "i000263-semver-prereleases"
+    lockFile.Groups.[Constants.MainDependencyGroup].Resolution.[PackageName "Ninject"].Version
+    |> shouldEqual (SemVer.Parse "3.2.3-unstable-001")
+
+[<Test>]
 let ``#1177 should resolve with pessimistic strategy correctly``() =
     let lockFile = update "i001177-resolve-with-pessimistic-strategy"
     lockFile.Groups.[Constants.MainDependencyGroup].Resolution.[PackageName "Castle.Core"].Version

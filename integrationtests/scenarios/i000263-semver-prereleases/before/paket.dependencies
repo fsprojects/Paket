@@ -1,0 +1,3 @@
+source http://nuget.org/api/v2
+
+nuget Ninject == 3.2.3-unstable-001
