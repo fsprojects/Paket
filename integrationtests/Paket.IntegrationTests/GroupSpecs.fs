@@ -10,7 +10,7 @@ open System.Diagnostics
 
 [<Test>]
 let ``#1018 should resolve Newtonsoft.Json from two groups``() = 
-    update "i001018-legacy-groups"
+    update "i001018-legacy-groups" |> ignore
     let path = scenarioTempPath "i001018-legacy-groups"
    
     File.Exists(Path.Combine(path,"packages","Newtonsoft.Json","Newtonsoft.Json.7.0.1.nupkg"))

@@ -84,6 +84,7 @@
     <Compile Include="AssemblyInfo.fs" />
     <Compile Include="TestHelper.fs" />
     <Compile Include="InitSpecs.fs" />
+    <Compile Include="OutdatedSpecs.fs" />
     <Compile Include="GroupSpecs.fs" />
     <Compile Include="FrameworkRestrictionsSpecs.fs" />
     <Compile Include="BasicResolverSpecs.fs" />
@@ -103,6 +104,13 @@
     <Reference Include="System.Xml.Linq" />
   </ItemGroup>
   <Import Project="Paket.Tests.paket.targets" Condition="Exists('Paket.Tests.paket.targets')" />
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Paket.Core\Paket.Core.fsproj">
+      <Name>Paket.Core</Name>
+      <Project>{7bab0ae2-089f-4761-b138-a717aa2f86c5}</Project>
+      <Private>True</Private>
+    </ProjectReference>
+  </ItemGroup>
   <Choose>
     <When Condition="$(TargetFrameworkIdentifier) == '.NETFramework' And ($(TargetFrameworkVersion) == 'v2.0' Or $(TargetFrameworkVersion) == 'v3.0' Or $(TargetFrameworkVersion) == 'v3.5')">
       <ItemGroup>
@@ -174,12 +182,5 @@
       <Private>True</Private>
       <Paket>True</Paket>
     </Reference>
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\..\src\Paket.Core\Paket.Core.fsproj">
-      <Name>Paket.Core</Name>
-      <Project>{7bab0ae2-089f-4761-b138-a717aa2f86c5}</Project>
-      <Private>True</Private>
-    </ProjectReference>
   </ItemGroup>
 </Project>
