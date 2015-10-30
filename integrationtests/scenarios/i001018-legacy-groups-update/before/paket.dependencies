@@ -1,0 +1,9 @@
+source https://nuget.org/api/v2
+
+nuget Newtonsoft.Json
+
+group Legacy
+
+source https://nuget.org/api/v2
+
+nuget Newtonsoft.Json
