@@ -1,0 +1,5 @@
+source https://nuget.org/api/v2
+
+nuget Castle.Windsor                      
+nuget NUnit                          
+nuget Microsoft.AspNet.WebApi.SelfHost

@@ -187,8 +187,8 @@ type Resolved = {
     ResolvedSourceFiles : ModuleResolver.ResolvedSourceFile list }
 
 type UpdateMode =
-    | UpdatePackage of GroupName * PackageName
     | UpdateGroup of GroupName
+    | UpdateFiltered of GroupName * PackageFilter
     | Install
     | UpdateAll
 
@@ -197,9 +197,9 @@ let Resolve(groupName:GroupName, sources, getVersionsF, getPackageDetailsF, stra
     tracefn "Resolving packages for group %O:" groupName
     let lastConflictReported = ref DateTime.Now
 
-    let startWithPackage = 
+    let packageFilter =
         match updateMode with
-        | UpdatePackage(_,p) -> Some p
+        | UpdateFiltered (_, f) -> Some f
         | _ -> None
 
     let rootSettings =
@@ -263,7 +263,7 @@ let Resolve(groupName:GroupName, sources, getVersionsF, getPackageDetailsF, stra
                     match conflictHistory.TryGetValue d.Name with
                     | true,c -> -c
                     | _ -> 0
-                if PackageRequirement.Compare(d,!currentMin,startWithPackage,boost,!currentBoost) = -1 then
+                if PackageRequirement.Compare(d,!currentMin,packageFilter,boost,!currentBoost) = -1 then
                     currentMin := d
                     currentBoost := boost
             !currentMin
@@ -319,8 +319,8 @@ let Resolve(groupName:GroupName, sources, getVersionsF, getPackageDetailsF, stra
                     match currentRequirement.Parent.IsRootRequirement(), Set.count currentRequirements with
                     | true, 1 -> ResolverStrategy.Max
                     | _ -> combined
-                | UpdatePackage (g, p) ->
-                    match groupName = g && currentRequirement.Name = p with
+                | UpdateFiltered (g, f) ->
+                    match groupName = g && f.Match currentRequirement.Name with
                     | true -> ResolverStrategy.Max
                     | false -> combined
 

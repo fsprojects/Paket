@@ -74,6 +74,19 @@ let selectiveUpdate force getSha1 getSortedVersionsF getPackageDetailsF (lockFil
                     |> Map.filter (fun k _ -> k = groupName)
 
                 changes,groups
+            | UpdateFiltered (groupName, filter) ->
+                let changes =
+                    lockFile.GetGroupedResolution()
+                    |> Seq.map (fun k -> k.Key)
+                    |> Seq.filter (fun (g,_) -> g = groupName)
+                    |> Seq.filter (fun (_, p) -> filter.Match p)
+                    |> Set.ofSeq
+
+                let groups =
+                    dependenciesFile.Groups
+                    |> Map.filter (fun k _ -> k = groupName)
+
+                changes,groups
             | Install ->
                 let nuGetChanges = DependencyChangeDetection.findNuGetChangesInDependenciesFile(dependenciesFile,lockFile)
                 let nuGetChangesPerGroup =
@@ -116,16 +129,6 @@ let selectiveUpdate force getSha1 getSortedVersionsF getPackageDetailsF (lockFil
                     |> Map.filter hasChanges
 
                 nuGetChanges,groups
-            | UpdatePackage(groupName,packageName) ->
-                let changes =
-                    lockFile.GetAllNormalizedDependenciesOf(groupName,packageName)
-                    |> Set.ofSeq
-
-                let groups =
-                    dependenciesFile.Groups
-                    |> Map.filter (fun key _ -> key = groupName)
-
-                changes,groups
 
         let preferredVersions = 
             DependencyChangeDetection.GetPreferredNuGetVersions lockFile
@@ -200,7 +203,24 @@ let UpdatePackage(dependenciesFileName, groupName, packageName : PackageName, ne
             tracefn "Updating %O in %s group %O" packageName dependenciesFileName groupName
             dependenciesFile
 
-    SmartInstall(dependenciesFile, UpdatePackage(groupName,packageName), options)
+    let filter = PackageFilter (packageName.ToString().Replace(".", "\\."))
+
+    SmartInstall(dependenciesFile, UpdateFiltered(groupName,filter), options)
+
+/// Update a filtered list of packages
+let UpdateFilteredPackages(dependenciesFileName, groupName, packageName : PackageName, newVersion, options : UpdaterOptions) =
+    let dependenciesFile = DependenciesFile.ReadFromFile(dependenciesFileName)
+
+    let filter = PackageFilter <| packageName.ToString()
+
+    let dependenciesFile =
+        match newVersion with
+        | Some v -> dependenciesFile.UpdatePackageVersion(groupName,packageName, v)
+        | None -> 
+            tracefn "Updating %O in %s group %O" packageName dependenciesFileName groupName
+            dependenciesFile
+
+    SmartInstall(dependenciesFile, UpdateFiltered(groupName, filter), options)
 
 /// Update a single group command
 let UpdateGroup(dependenciesFileName, groupName,  options : UpdaterOptions) =

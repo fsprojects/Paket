@@ -135,7 +135,7 @@ let ``should favor strategy override when updating all``() =
 let ``should respect overrides when updating single package``() = 
     let resolved =
         DependenciesFile.FromCode(config6)
-        |> resolve graph2 (UpdateMode.UpdatePackage(Constants.MainDependencyGroup, PackageName "Castle.Windsor-NLog"))
+        |> resolve graph2 (UpdateMode.UpdateFiltered(Constants.MainDependencyGroup, PackageFilter "Castle\\.Windsor-NLog"))
     getVersion resolved.[PackageName "Castle.Windsor-NLog"] |> shouldEqual "3.3.0"
     getVersion resolved.[PackageName "Castle.Core-NLog"] |> shouldEqual "3.3.0"
     getVersion resolved.[PackageName "Castle.Core"] |> shouldEqual "3.3.1"

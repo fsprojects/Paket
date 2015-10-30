@@ -433,15 +433,15 @@ type PackageRequirement =
     
     member this.Depth = this.Graph.Length
 
-    static member Compare(x,y,startWithPackage:PackageName option,boostX,boostY) =
+    static member Compare(x,y,startWithPackage:PackageFilter option,boostX,boostY) =
         if x = y then 0 else
         seq {
             yield compare
                 (not x.VersionRequirement.Range.IsGlobalOverride,x.Depth)
                 (not y.VersionRequirement.Range.IsGlobalOverride,y.Depth)
             yield match startWithPackage with
-                    | Some name when name = x.Name -> -1
-                    | Some name when name = y.Name -> 1
+                    | Some filter when filter.Match x.Name -> -1
+                    | Some filter when filter.Match y.Name -> 1
                     | _ -> 0
             yield -compare x.ResolverStrategy y.ResolverStrategy
             yield compare boostX boostY
