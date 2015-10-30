@@ -46,6 +46,11 @@ type PackageFilter =
                 ||| RegexOptions.IgnoreCase)
     member this.Match (packageName : PackageName) =
         this.regex.IsMatch (packageName.GetCompareString())
+    static member ofName name =
+        match name with
+        | PackageName (_,id) ->
+            id.Replace(".","\\.")
+            |> PackageFilter
     override this.ToString() =
         match this with
         | PackageFilter filter -> filter
