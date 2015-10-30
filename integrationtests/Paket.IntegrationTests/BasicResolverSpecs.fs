@@ -91,7 +91,7 @@ let ``#359 should restore package with nuget in name``() =
     lockFile.Groups.[Constants.MainDependencyGroup].Resolution.[PackageName "Nuget.CommandLine"].Version
     |> shouldBeGreaterThan (SemVer.Parse "0")
 
-    Directory.Exists(Path.Combine(scenarioTempPath "i000359-packagename-contains-nuget","packages","Nuget.CommandLine"))
+    Directory.Exists(Path.Combine(scenarioTempPath "i000359-packagename-contains-nuget","packages","NuGet.CommandLine"))
     |> shouldEqual true
 
 [<Test>]
