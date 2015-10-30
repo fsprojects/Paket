@@ -12,9 +12,10 @@ open System.IO
 let paketToolPath = FullName(__SOURCE_DIRECTORY__ + "../../../bin/paket.exe")
 let integrationTestPath = FullName(__SOURCE_DIRECTORY__ + "../../../integrationtests/scenarios")
 let scenarioTempPath scenario = Path.Combine(integrationTestPath,scenario,"temp")
+let originalScenarioPath scenario = Path.Combine(integrationTestPath,scenario,"before")
 
 let paket command scenario =
-    let originalScenarioPath = Path.Combine(integrationTestPath,scenario,"before")
+    let originalScenarioPath = originalScenarioPath scenario
     let scenarioPath = scenarioTempPath scenario
     CleanDir scenarioPath
     CopyDir scenarioPath originalScenarioPath (fun _ -> true)
@@ -32,6 +33,10 @@ let paket command scenario =
 
 let update scenario =
     paket "update" scenario |> ignore
+    LockFile.LoadFrom(Path.Combine(scenarioTempPath scenario,"paket.lock"))
+
+let install scenario =
+    paket "install" scenario |> ignore
     LockFile.LoadFrom(Path.Combine(scenarioTempPath scenario,"paket.lock"))
 
 let updateShouldFindPackageConflict packageName scenario =

@@ -86,6 +86,7 @@
     <Compile Include="InitSpecs.fs" />
     <Compile Include="AddSpecs.fs" />
     <Compile Include="OutdatedSpecs.fs" />
+    <Compile Include="InstallSpecs.fs" />
     <Compile Include="GroupSpecs.fs" />
     <Compile Include="FrameworkRestrictionsSpecs.fs" />
     <Compile Include="BasicResolverSpecs.fs" />
