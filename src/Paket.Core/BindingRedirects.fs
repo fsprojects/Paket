@@ -116,9 +116,7 @@ let private applyBindingRedirects bindingRedirects (configFilePath:string) =
     let bindingRedirects =
         match projectFile with
         | None -> Seq.empty
-        | Some p -> 
-            p.GetTargetProfile()
-            |> bindingRedirects
+        | Some p -> bindingRedirects p
 
     if Seq.isEmpty bindingRedirects then ()
     else

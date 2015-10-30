@@ -97,6 +97,7 @@
     <Compile Include="BasicResolverSpecs.fs" />
     <Compile Include="SemVerUpdateSpecs.fs" />
     <Compile Include="ResolverSkipsConflictsFastSpecs.fs" />
+    <Compile Include="BindingRedirect.fs" />
     <None Include="paket.references" />
   </ItemGroup>
   <ItemGroup>
