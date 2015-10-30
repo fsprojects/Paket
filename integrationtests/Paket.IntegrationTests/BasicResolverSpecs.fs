@@ -65,6 +65,12 @@ let ``#173 should resolve primary dependency optimistic``() =
     |> shouldEqual (SemVer.Parse "2.12.0")
 
 [<Test>]
+let ``#220 should respect the == operator``() =
+    let lockFile = update "i000220-use-exactly-this-constraint"
+    lockFile.Groups.[Constants.MainDependencyGroup].Resolution.[PackageName "Microsoft.AspNet.Razor"].Version
+    |> shouldEqual (SemVer.Parse "2.0.30506.0")
+
+[<Test>]
 let ``#1177 should resolve with pessimistic strategy correctly``() =
     let lockFile = update "i001177-resolve-with-pessimistic-strategy"
     lockFile.Groups.[Constants.MainDependencyGroup].Resolution.[PackageName "Castle.Core"].Version
