@@ -155,7 +155,7 @@ let ``SelectiveUpdate updates a single package``() =
 
     let lockFile = 
         selectiveUpdate true noSha1 (VersionsFromGraph graph) (PackageDetailsFromGraph graph) lockFile dependenciesFile
-            (PackageResolver.UpdateMode.UpdatePackage(Constants.MainDependencyGroup, PackageName "FAKE")) SemVerUpdateMode.NoRestriction
+            (PackageResolver.UpdateMode.UpdateFiltered(Constants.MainDependencyGroup, PackageFilter "FAKE")) SemVerUpdateMode.NoRestriction
 
     let result = 
         lockFile.GetGroupedResolution()
@@ -182,7 +182,7 @@ let ``SelectiveUpdate updates a single constrained package``() =
 
     let lockFile = 
         selectiveUpdate true noSha1 (VersionsFromGraph graph) (PackageDetailsFromGraph graph) lockFile dependenciesFile
-            (PackageResolver.UpdateMode.UpdatePackage(Constants.MainDependencyGroup, PackageName "Castle.Core-log4net")) SemVerUpdateMode.NoRestriction
+            (PackageResolver.UpdateMode.UpdateFiltered(Constants.MainDependencyGroup, PackageFilter "Castle\\.Core-log4net")) SemVerUpdateMode.NoRestriction
 
     let result = 
         lockFile.GetGroupedResolution()
@@ -210,7 +210,7 @@ let ``SelectiveUpdate updates a single package with constrained dependency in de
 
     let lockFile = 
         selectiveUpdate true noSha1 (VersionsFromGraph graph) (PackageDetailsFromGraph graph) lockFile dependenciesFile
-            (PackageResolver.UpdateMode.UpdatePackage(Constants.MainDependencyGroup, PackageName "Castle.Core-log4net")) SemVerUpdateMode.NoRestriction
+            (PackageResolver.UpdateMode.UpdateFiltered(Constants.MainDependencyGroup, PackageFilter "Castle\\.Core-log4net")) SemVerUpdateMode.NoRestriction
 
     let result = 
         lockFile.GetGroupedResolution()
@@ -264,7 +264,7 @@ let ``SelectiveUpdate removes a dependency when it updates a single package and 
 
     let lockFile = 
         selectiveUpdate true noSha1 (VersionsFromGraph graph) (PackageDetailsFromGraph graph) lockFile dependenciesFile
-            (PackageResolver.UpdateMode.UpdatePackage(Constants.MainDependencyGroup, PackageName "Castle.Core-log4net")) SemVerUpdateMode.NoRestriction
+            (PackageResolver.UpdateMode.UpdateFiltered(Constants.MainDependencyGroup, PackageFilter "Castle\\.Core-log4net")) SemVerUpdateMode.NoRestriction
 
     let result = 
         lockFile.GetGroupedResolution()
@@ -292,7 +292,7 @@ let ``SelectiveUpdate does not update when a dependency constrain is not met``()
 
     let lockFile = 
         selectiveUpdate true noSha1 (VersionsFromGraph graph) (PackageDetailsFromGraph graph) lockFile dependenciesFile
-            (PackageResolver.UpdateMode.UpdatePackage(Constants.MainDependencyGroup, PackageName "Castle.Core-log4net")) SemVerUpdateMode.NoRestriction
+            (PackageResolver.UpdateMode.UpdateFiltered(Constants.MainDependencyGroup, PackageFilter "Castle\\.Core-log4net")) SemVerUpdateMode.NoRestriction
     let result = 
         lockFile.GetGroupedResolution()
         |> Seq.map (fun (KeyValue (_,resolved)) -> (string resolved.Name, string resolved.Version))
@@ -319,7 +319,7 @@ let ``SelectiveUpdate considers package name case difference``() =
 
     let lockFile = 
         selectiveUpdate true noSha1 (VersionsFromGraph graph) (PackageDetailsFromGraph graph) lockFile dependenciesFile
-            (PackageResolver.UpdateMode.UpdatePackage(Constants.MainDependencyGroup, PackageName "Castle.Core-log4net")) SemVerUpdateMode.NoRestriction
+            (PackageResolver.UpdateMode.UpdateFiltered(Constants.MainDependencyGroup, PackageFilter "Castle\\.Core-log4net")) SemVerUpdateMode.NoRestriction
 
     let result = 
         lockFile.GetGroupedResolution()
@@ -348,26 +348,10 @@ let ``SelectiveUpdate conflicts when a dependency is contrained``() =
 
     (fun () ->
     selectiveUpdate true noSha1 (VersionsFromGraph graph) (PackageDetailsFromGraph graph) lockFile dependenciesFile
-        (PackageResolver.UpdateMode.UpdatePackage(Constants.MainDependencyGroup, PackageName "Castle.Core-log4net")) SemVerUpdateMode.NoRestriction
+        (PackageResolver.UpdateMode.UpdateFiltered(Constants.MainDependencyGroup, PackageFilter "Castle\\.Core-log4net")) SemVerUpdateMode.NoRestriction
     |> ignore)
     |> shouldFail
 
-[<Test>]
-let ``SelectiveUpdate does not update any package when package does not exist``() = 
-
-    let dependenciesFile = DependenciesFile.FromCode("""source http://nuget.org/api/v2
-
-    nuget Castle.Core-log4net
-    nuget FAKE""")
-
-    try
-        selectiveUpdate true noSha1 (VersionsFromGraph graph) (PackageDetailsFromGraph graph) lockFile dependenciesFile
-            (PackageResolver.UpdateMode.UpdatePackage(Constants.MainDependencyGroup, PackageName "package")) SemVerUpdateMode.NoRestriction
-        |> ignore
-        failwith "This pont should not be reached"
-    with
-    | exn when exn.Message <> "This pont should not be reached" -> ()
-     
 [<Test>]
 let ``SelectiveUpdate generates paket.lock correctly``() = 
 
@@ -379,7 +363,7 @@ let ``SelectiveUpdate generates paket.lock correctly``() =
 
     let lockFile = 
         selectiveUpdate true noSha1 (VersionsFromGraph graph) (PackageDetailsFromGraph graph) lockFile dependenciesFile
-            (PackageResolver.UpdateMode.UpdatePackage(Constants.MainDependencyGroup, PackageName "Castle.Core")) SemVerUpdateMode.NoRestriction
+            (PackageResolver.UpdateMode.UpdateFiltered(Constants.MainDependencyGroup, PackageFilter "Castle\\.Core")) SemVerUpdateMode.NoRestriction
     
     let result = 
             String.Join
@@ -411,11 +395,11 @@ let ``SelectiveUpdate does not update when package conflicts with a transitive d
     nuget FAKE
     nuget log4net""")
 
-    let packageName = PackageName "log4net"
+    let packageFilter = PackageFilter "log4net"
 
     let lockFile = 
         selectiveUpdate true noSha1 (VersionsFromGraph graph) (PackageDetailsFromGraph graph) lockFile dependenciesFile
-            (PackageResolver.UpdateMode.UpdatePackage(Constants.MainDependencyGroup, packageName)) SemVerUpdateMode.NoRestriction
+            (PackageResolver.UpdateMode.UpdateFiltered(Constants.MainDependencyGroup, packageFilter)) SemVerUpdateMode.NoRestriction
     
     let result = 
         lockFile.GetGroupedResolution()
@@ -482,11 +466,11 @@ let ``SelectiveUpdate updates package that conflicts with a transitive dependenc
     nuget log4f
     nuget Ninject.Extensions.Logging.Log4net""")
     
-    let packageName = PackageName "log4f"
+    let packageFilter = PackageFilter "log4f"
 
     let lockFile = 
         selectiveUpdate true noSha1 (VersionsFromGraph graph2) (PackageDetailsFromGraph graph2) lockFile2 dependenciesFile
-            (PackageResolver.UpdateMode.UpdatePackage(Constants.MainDependencyGroup, packageName)) SemVerUpdateMode.NoRestriction
+            (PackageResolver.UpdateMode.UpdateFiltered(Constants.MainDependencyGroup, packageFilter)) SemVerUpdateMode.NoRestriction
     
     let result = 
         lockFile.GetGroupedResolution()
@@ -513,11 +497,11 @@ let ``SelectiveUpdate updates package that conflicts with a transitive dependenc
     nuget log4f
     nuget Ninject.Extensions.Logging.Log4net""")
     
-    let packageName = PackageName "Ninject.Extensions.Logging.Log4net"
+    let packageFilter = PackageFilter "Ninject\\.Extensions\\.Logging\\.Log4net"
 
     let lockFile = 
         selectiveUpdate true noSha1 (VersionsFromGraph graph2) (PackageDetailsFromGraph graph2) lockFile2 dependenciesFile
-            (PackageResolver.UpdateMode.UpdatePackage(Constants.MainDependencyGroup, packageName)) SemVerUpdateMode.NoRestriction
+            (PackageResolver.UpdateMode.UpdateFiltered(Constants.MainDependencyGroup, packageFilter)) SemVerUpdateMode.NoRestriction
     
     let result = 
         lockFile.GetGroupedResolution()
@@ -569,11 +553,11 @@ let ``SelectiveUpdate updates package that conflicts with a transitive dependenc
     nuget Ninject.Extensions.Logging.Log4net
     nuget Ninject.Extensions.Interception""")
     
-    let packageName = PackageName "Ninject.Extensions.Logging.Log4net"
+    let packageFilter = PackageFilter "Ninject\\.Extensions\\.Logging\\.Log4net"
 
     let lockFile = 
         selectiveUpdate true noSha1 (VersionsFromGraph graph3) (PackageDetailsFromGraph graph3) lockFile3 dependenciesFile
-            (PackageResolver.UpdateMode.UpdatePackage(Constants.MainDependencyGroup, packageName)) SemVerUpdateMode.NoRestriction
+            (PackageResolver.UpdateMode.UpdateFiltered(Constants.MainDependencyGroup, packageFilter)) SemVerUpdateMode.NoRestriction
     
     let result = 
         lockFile.GetGroupedResolution()
@@ -602,11 +586,11 @@ let ``SelectiveUpdate does not conflict with a transitive dependency of another 
     nuget Ninject.Extensions.Logging.Log4net
     nuget Ninject.Extensions.Interception""")
     
-    let packageName = PackageName "Ninject"
+    let packageFilter = PackageFilter "Ninject"
 
     let lockFile = 
         selectiveUpdate true noSha1 (VersionsFromGraph graph3) (PackageDetailsFromGraph graph3) lockFile3 dependenciesFile
-            (PackageResolver.UpdateMode.UpdatePackage(Constants.MainDependencyGroup, packageName)) SemVerUpdateMode.NoRestriction
+            (PackageResolver.UpdateMode.UpdateFiltered(Constants.MainDependencyGroup, packageFilter)) SemVerUpdateMode.NoRestriction
 
     let result = 
         lockFile.GetGroupedResolution()
@@ -634,11 +618,11 @@ let ``SelectiveUpdate updates package that conflicts with a deep transitive depe
     nuget Ninject.Extensions.Logging.Log4net
     nuget Ninject.Extensions.Interception""")
     
-    let packageName = PackageName "Ninject.Extensions.Interception"
+    let packageFilter = PackageFilter "Ninject\\.Extensions\\.Interception"
 
     let lockFile = 
         selectiveUpdate true noSha1 (VersionsFromGraph graph3) (PackageDetailsFromGraph graph3) lockFile3 dependenciesFile
-            (PackageResolver.UpdateMode.UpdatePackage(Constants.MainDependencyGroup, packageName)) SemVerUpdateMode.NoRestriction
+            (PackageResolver.UpdateMode.UpdateFiltered(Constants.MainDependencyGroup, packageFilter)) SemVerUpdateMode.NoRestriction
     
     let result = 
         lockFile.GetGroupedResolution()
@@ -686,11 +670,11 @@ let ``SelectiveUpdate updates package that conflicts with a deep transitive depe
 
     nuget Ninject.Extensions.Logging.Log4net.Deep""")
     
-    let packageName = PackageName "Ninject.Extensions.Logging.Log4net.Deep"
+    let packageFilter = PackageFilter "Ninject\\.Extensions\\.Logging\\.Log4net\\.Deep"
 
     let lockFile = 
         selectiveUpdate true noSha1 (VersionsFromGraph graph4) (PackageDetailsFromGraph graph4) lockFile4 dependenciesFile
-            (PackageResolver.UpdateMode.UpdatePackage(Constants.MainDependencyGroup, packageName)) SemVerUpdateMode.NoRestriction
+            (PackageResolver.UpdateMode.UpdateFiltered(Constants.MainDependencyGroup, packageFilter)) SemVerUpdateMode.NoRestriction
     
     let result = 
         lockFile.GetGroupedResolution()
@@ -736,11 +720,11 @@ let ``SelectiveUpdate updates package that conflicts with transitive dependency 
     nuget Ninject.Extensions.Interception
     nuget Ninject.Extensions.Logging""")
     
-    let packageName = PackageName "Ninject.Extensions.Logging"
+    let packageFilter = PackageFilter "Ninject\\.Extensions\\.Logging"
 
     let lockFile = 
         selectiveUpdate true noSha1 (VersionsFromGraph graph5) (PackageDetailsFromGraph graph5) lockFile5 dependenciesFile
-            (PackageResolver.UpdateMode.UpdatePackage(Constants.MainDependencyGroup, packageName)) SemVerUpdateMode.NoRestriction
+            (PackageResolver.UpdateMode.UpdateFiltered(Constants.MainDependencyGroup, packageFilter)) SemVerUpdateMode.NoRestriction
     
     let result = 
         lockFile.GetGroupedResolution()
@@ -917,7 +901,7 @@ let ``SelectiveUpdate updates package from a specific group``() =
 
     let lockFile =
         selectiveUpdate true noSha1 (VersionsFromGraph graph) (PackageDetailsFromGraph graph) lockFile6 dependenciesFile
-            (PackageResolver.UpdateMode.UpdatePackage(GroupName "Group", PackageName "Castle.Core-log4net")) SemVerUpdateMode.NoRestriction
+            (PackageResolver.UpdateMode.UpdateFiltered(GroupName "Group", PackageFilter "Castle\\.Core-log4net")) SemVerUpdateMode.NoRestriction
     
     let result = groupMap lockFile
 
@@ -953,7 +937,7 @@ let ``SelectiveUpdate does not remove a dependency from group when it is a top-l
 
     let lockFile =
         selectiveUpdate true noSha1 (VersionsFromGraph graph) (PackageDetailsFromGraph graph) lockFile6 dependenciesFile
-            (PackageResolver.UpdateMode.UpdatePackage(GroupName "Group", PackageName "Castle.Core-log4net")) SemVerUpdateMode.NoRestriction
+            (PackageResolver.UpdateMode.UpdateFiltered(GroupName "Group", PackageFilter "Castle\\.Core-log4net")) SemVerUpdateMode.NoRestriction
     
     let result = groupMap lockFile
 
@@ -988,7 +972,7 @@ let ``SelectiveUpdate updates package from main group``() =
 
     let lockFile =
         selectiveUpdate true noSha1 (VersionsFromGraph graph) (PackageDetailsFromGraph graph) lockFile6 dependenciesFile
-            (PackageResolver.UpdateMode.UpdatePackage(Constants.MainDependencyGroup, PackageName "Castle.Core-log4net")) SemVerUpdateMode.NoRestriction
+            (PackageResolver.UpdateMode.UpdateFiltered(Constants.MainDependencyGroup, PackageFilter "Castle\\.Core-log4net")) SemVerUpdateMode.NoRestriction
     
     let result = groupMap lockFile
 
@@ -1033,7 +1017,7 @@ let ``SelectiveUpdate updates package that has a new dependent package that also
 
     let lockFile = 
         selectiveUpdate true noSha1 (VersionsFromGraph graph7) (PackageDetailsFromGraph graph7) lockFile7 dependenciesFile
-            (PackageResolver.UpdateMode.UpdatePackage(Constants.MainDependencyGroup, PackageName "Package")) SemVerUpdateMode.NoRestriction
+            (PackageResolver.UpdateMode.UpdateFiltered(Constants.MainDependencyGroup, PackageFilter "Package")) SemVerUpdateMode.NoRestriction
 
     let result = 
         lockFile.GetGroupedResolution()
@@ -1067,7 +1051,7 @@ let ``SelectiveUpdate updates early package that has a new dependent package tha
 
     let lockFile = 
         selectiveUpdate true noSha1 (VersionsFromGraph graph7) (PackageDetailsFromGraph graph7) lockFile8 dependenciesFile
-            (PackageResolver.UpdateMode.UpdatePackage(Constants.MainDependencyGroup, PackageName "APackage")) SemVerUpdateMode.NoRestriction
+            (PackageResolver.UpdateMode.UpdateFiltered(Constants.MainDependencyGroup, PackageFilter "APackage")) SemVerUpdateMode.NoRestriction
 
     let result = 
         lockFile.GetGroupedResolution()
@@ -1099,7 +1083,7 @@ let ``SelectiveUpdate with SemVerUpdateMode.Minor updates package from a specifi
 
     let lockFile =
         selectiveUpdate true noSha1 (VersionsFromGraph graph) (PackageDetailsFromGraph graph) lockFile6 dependenciesFile
-            (PackageResolver.UpdateMode.UpdatePackage(GroupName "Group", PackageName "Castle.Core-log4net")) SemVerUpdateMode.KeepMinor
+            (PackageResolver.UpdateMode.UpdateFiltered(GroupName "Group", PackageFilter "Castle.Core-log4net")) SemVerUpdateMode.KeepMinor
     
     let result = groupMap lockFile
 

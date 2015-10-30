@@ -40,7 +40,7 @@ type PackageFilter =
     member this.regex =
         match this with
         | PackageFilter f ->
-            Regex(f,
+            Regex("^" + f + "$",
                 RegexOptions.Compiled 
                 ||| RegexOptions.CultureInvariant 
                 ||| RegexOptions.IgnoreCase)

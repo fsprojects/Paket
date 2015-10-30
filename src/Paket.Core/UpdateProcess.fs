@@ -129,16 +129,6 @@ let selectiveUpdate force getSha1 getSortedVersionsF getPackageDetailsF (lockFil
                     |> Map.filter hasChanges
 
                 nuGetChanges,groups
-            | UpdatePackage(groupName,packageName) ->
-                let changes =
-                    lockFile.GetAllNormalizedDependenciesOf(groupName,packageName)
-                    |> Set.ofSeq
-
-                let groups =
-                    dependenciesFile.Groups
-                    |> Map.filter (fun key _ -> key = groupName)
-
-                changes,groups
 
         let preferredVersions = 
             DependencyChangeDetection.GetPreferredNuGetVersions lockFile
@@ -213,7 +203,9 @@ let UpdatePackage(dependenciesFileName, groupName, packageName : PackageName, ne
             tracefn "Updating %O in %s group %O" packageName dependenciesFileName groupName
             dependenciesFile
 
-    SmartInstall(dependenciesFile, UpdatePackage(groupName,packageName), options)
+    let filter = PackageFilter (packageName.ToString().Replace(".", "\\."))
+
+    SmartInstall(dependenciesFile, UpdateFiltered(groupName,filter), options)
 
 /// Update a filtered list of packages
 let UpdateFilteredPackages(dependenciesFileName, groupName, packageName : PackageName, newVersion, options : UpdaterOptions) =
