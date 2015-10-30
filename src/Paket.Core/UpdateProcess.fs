@@ -203,7 +203,7 @@ let UpdatePackage(dependenciesFileName, groupName, packageName : PackageName, ne
             tracefn "Updating %O in %s group %O" packageName dependenciesFileName groupName
             dependenciesFile
 
-    let filter = PackageFilter (packageName.ToString().Replace(".", "\\."))
+    let filter = PackageFilter.ofName packageName
 
     SmartInstall(dependenciesFile, UpdateFiltered(groupName,filter), options)
 
