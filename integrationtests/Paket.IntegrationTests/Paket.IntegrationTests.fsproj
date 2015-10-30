@@ -88,6 +88,7 @@
     <Compile Include="GroupSpecs.fs" />
     <Compile Include="FrameworkRestrictionsSpecs.fs" />
     <Compile Include="UpdatePackageSpecs.fs" />
+    <Compile Include="UpdateGroupsSpecs.fs" />
     <Compile Include="AddSpecs.fs" />
     <Compile Include="OutdatedSpecs.fs" />
     <Compile Include="InstallSpecs.fs" />
