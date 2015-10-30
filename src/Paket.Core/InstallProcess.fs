@@ -160,7 +160,7 @@ let createModel(root, force, dependenciesFile:DependenciesFile, lockFile : LockF
     extractedPackages
 
 /// Applies binding redirects for all strong-named references to all app. and web.config files.
-let private applyBindingRedirects (loadedLibs:Dictionary<_,_>) createNewBindingFiles root group (extractedPackages:seq<_*InstallModel>) =
+let private applyBindingRedirects (loadedLibs:Dictionary<_,_>) createNewBindingFiles root groupName findDependencies (extractedPackages:seq<_*InstallModel>) =
     let bindingRedirects (projectFile : ProjectFile) =
         match ProjectFile.FindReferencesFile (FileInfo projectFile.FileName) with
         | Some fileName -> 
@@ -169,7 +169,10 @@ let private applyBindingRedirects (loadedLibs:Dictionary<_,_>) createNewBindingF
             |> Seq.map snd
             |> Seq.filter (fun model -> 
                 referenceFile.Groups
-                |> Map.exists (fun _ i -> i.Name = group && i.NugetPackages |> List.exists (fun p -> p.Name = model.PackageName)))
+                |> Seq.filter (fun g -> g.Key = groupName)
+                |> Seq.collect (fun g -> g.Value.NugetPackages |> List.map (fun p -> (groupName,p.Name)))
+                |> Seq.collect findDependencies
+                |> Seq.contains model.PackageName)
             |> Seq.map (fun model -> model.GetLibReferences(projectFile.GetTargetProfile()))
             |> Seq.concat
             |> Seq.groupBy (fun p -> FileInfo(p).Name)
@@ -353,7 +356,7 @@ let InstallIntoProjects(options : InstallerOptions, dependenciesFile, lockFile :
                 let isEnabled = defaultArg packageRedirects (options.Redirects || g.Value.Options.Redirects)
                 isEnabled && (fst kv.Key) = g.Key)
             |> Seq.map (fun kv -> kv.Value)
-            |> applyBindingRedirects loadedLibs options.CreateNewBindingFiles (FileInfo project.FileName).Directory.FullName g.Key
+            |> applyBindingRedirects loadedLibs options.CreateNewBindingFiles (FileInfo project.FileName).Directory.FullName g.Key lockFile.GetAllDependenciesOf
 
 /// Installs all packages from the lock file.
 let Install(options : InstallerOptions, dependenciesFile, lockFile : LockFile) =

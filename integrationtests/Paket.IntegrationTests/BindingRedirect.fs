@@ -32,15 +32,15 @@ let ``install should redirect referenced assemblies only``() =
     let ``Castle.Core`` = """<assemblyIdentity name="Castle.Core" publicKeyToken="407dd0808d44fbdc" culture="neutral" />"""
     let ``Castle.Windsor`` = """<assemblyIdentity name="Castle.Windsor" publicKeyToken="407dd0808d44fbdc" culture="neutral" />"""
 
-    config1.Contains Albedo |> shouldEqual false
-    config1.Contains AutoFixture |> shouldEqual false
+    config1 |> shouldContainText Albedo
+    config1 |> shouldContainText AutoFixture
     config1 |> shouldContainText ``AutoFixture.Idioms``
     config1 |> shouldContainText ``AutoFixture.Xunit``
     config1.Contains log4net |> shouldEqual false
     config1 |> shouldContainText ``Newtonsoft.Json``
     config1.Contains ``Newtonsoft.Json.Schema`` |> shouldEqual false
-    config1.Contains xunit |> shouldEqual false
-    config1.Contains ``xunit.extensions`` |> shouldEqual false
+    config1 |> shouldContainText xunit
+    config1 |> shouldContainText ``xunit.extensions``
     config1.Contains ``Castle.Core`` |> shouldEqual false
     config1.Contains ``Castle.Windsor`` |> shouldEqual false
 
@@ -61,7 +61,7 @@ let ``install should redirect referenced assemblies only``() =
     config3.Contains ``AutoFixture.Idioms`` |> shouldEqual false
     config3.Contains ``AutoFixture.Xunit`` |> shouldEqual false
     config3 |> shouldContainText log4net
-    config3.Contains ``Newtonsoft.Json`` |> shouldEqual false
+    config3 |> shouldContainText ``Newtonsoft.Json``
     config3 |> shouldContainText ``Newtonsoft.Json.Schema``
     config3.Contains xunit |> shouldEqual false
     config3.Contains ``xunit.extensions`` |> shouldEqual false
@@ -77,5 +77,5 @@ let ``install should redirect referenced assemblies only``() =
     config4.Contains ``Newtonsoft.Json.Schema`` |> shouldEqual false
     config4.Contains xunit |> shouldEqual false
     config4.Contains ``xunit.extensions`` |> shouldEqual false
-    config4.Contains ``Castle.Core`` |> shouldEqual false
-    config4.Contains ``Castle.Windsor`` |> shouldEqual false
+    config4 |> shouldContainText ``Castle.Core``
+    config4 |> shouldContainText ``Castle.Windsor``
