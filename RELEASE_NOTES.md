@@ -1,3 +1,7 @@
+#### 2.20.0 - 30.10.2015
+* Allow filtered updates of packages matching a regex - https://github.com/fsprojects/Paket/pull/1178
+* Search for paket.references in startup directory (auto-restore feature) - https://github.com/fsprojects/Paket/pull/1179
+
 #### 2.19.0 - 29.10.2015
 * Resolver changed to breadth first search to escape more quickly from conflict situations - https://github.com/fsprojects/Paket/issues/1174
 * Paket init downloads stable version of bootstraper - https://github.com/fsprojects/Paket/issues/1040
