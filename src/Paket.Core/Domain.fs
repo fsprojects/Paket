@@ -1,6 +1,7 @@
 ﻿module Paket.Domain
 
 open System.IO
+open System.Text.RegularExpressions
 
 /// Represents a NuGet package name
 [<System.Diagnostics.DebuggerDisplay("{Item}")>]
@@ -31,6 +32,23 @@ type PackageName =
 
 /// Function to convert a string into a NuGet package name
 let PackageName(name:string) = PackageName.PackageName(name.Trim(),name.ToLowerInvariant().Trim())
+
+// Represents a filter of normalized package names
+[<System.Diagnostics.DebuggerDisplay("{Item}")>]
+type PackageFilter =
+| PackageFilter of string
+    member this.regex =
+        match this with
+        | PackageFilter f ->
+            Regex(f,
+                RegexOptions.Compiled 
+                ||| RegexOptions.CultureInvariant 
+                ||| RegexOptions.IgnoreCase)
+    member this.Match (packageName : PackageName) =
+        this.regex.IsMatch (packageName.GetCompareString())
+    override this.ToString() =
+        match this with
+        | PackageFilter filter -> filter
 
 /// Represents a normalized group name
 [<System.Diagnostics.DebuggerDisplay("{Item}")>]

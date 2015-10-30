@@ -198,6 +198,20 @@ type Dependencies(dependenciesFileName: string) =
                                 Common = InstallerOptions.CreateLegacyOptions(force, hard, withBindingRedirects, createNewBindingFiles, semVerUpdateMode)
                                 NoInstall = installAfter |> not }))
 
+    /// Update a filtered set of packages
+    member this.UpdateFilteredPackages(groupName: string option, package: string, version: string option, force: bool, hard: bool, withBindingRedirects: bool, createNewBindingFiles:bool, installAfter: bool, semVerUpdateMode): unit =
+        let groupName = 
+            match groupName with
+            | None -> Constants.MainDependencyGroup
+            | Some name -> GroupName name
+
+        Utils.RunInLockedAccessMode(
+            this.RootPath,
+            fun () -> UpdateProcess.UpdateFilteredPackages(dependenciesFileName, groupName, PackageName package, version,
+                                                  { UpdaterOptions.Default with
+                                                      Common = InstallerOptions.CreateLegacyOptions(force, hard, withBindingRedirects, createNewBindingFiles, semVerUpdateMode)
+                                                      NoInstall = installAfter |> not }))
+
     /// Updates the given package.
     member this.UpdatePackage(groupName, package: string, version: string option, force: bool, hard: bool, semVerUpdateMode): unit =
         this.UpdatePackage(groupName, package, version, force, hard, false, false, true, semVerUpdateMode)

@@ -189,6 +189,7 @@ type Resolved = {
 type UpdateMode =
     | UpdatePackage of GroupName * PackageName
     | UpdateGroup of GroupName
+    | UpdateFiltered of GroupName * PackageFilter
     | Install
     | UpdateAll
 
@@ -321,6 +322,10 @@ let Resolve(groupName:GroupName, sources, getVersionsF, getPackageDetailsF, stra
                     | _ -> combined
                 | UpdatePackage (g, p) ->
                     match groupName = g && currentRequirement.Name = p with
+                    | true -> ResolverStrategy.Max
+                    | false -> combined
+                | UpdateFiltered (g, f) ->
+                    match groupName = g && f.Match currentRequirement.Name with
                     | true -> ResolverStrategy.Max
                     | false -> combined
 

@@ -221,6 +221,7 @@ type UpdateArgs =
     | Keep_Major
     | Keep_Minor
     | Keep_Patch
+    | Filter
 with
     interface IArgParserTemplate with
         member this.Usage =
@@ -236,6 +237,7 @@ with
             | Keep_Major -> "Allows only updates that are not changing the major version of the NuGet packages."
             | Keep_Minor -> "Allows only updates that are not changing the minor version of the NuGet packages."
             | Keep_Patch -> "Allows only updates that are not changing the patch version of the NuGet packages."
+            | Filter -> "Treat the nuget parameter as a regex to filter packages rather than an exact match."
             
 type FindPackagesArgs =
     | [<CustomCommandLine("searchtext")>] SearchText of string

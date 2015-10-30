@@ -194,11 +194,15 @@ let update (results : ParseResults<_>) =
         if results.Contains <@ UpdateArgs.Keep_Minor @> then SemVerUpdateMode.KeepMinor else
         if results.Contains <@ UpdateArgs.Keep_Major @> then SemVerUpdateMode.KeepMajor else
         SemVerUpdateMode.NoRestriction
+    let filter = results.Contains <@ UpdateArgs.Filter @>
 
     match results.TryGetResult <@ UpdateArgs.Nuget @> with
     | Some packageName ->
         let version = results.TryGetResult <@ UpdateArgs.Version @>
-        Dependencies.Locate().UpdatePackage(group, packageName, version, force, hard, withBindingRedirects, createNewBindingFiles, noInstall |> not, semVerUpdateMode)
+        if filter then
+            Dependencies.Locate().UpdateFilteredPackages(group, packageName, version, force, hard, withBindingRedirects, createNewBindingFiles, noInstall |> not, semVerUpdateMode)
+        else
+            Dependencies.Locate().UpdatePackage(group, packageName, version, force, hard, withBindingRedirects, createNewBindingFiles, noInstall |> not, semVerUpdateMode)
     | _ ->
         match group with
         | Some groupName -> 
