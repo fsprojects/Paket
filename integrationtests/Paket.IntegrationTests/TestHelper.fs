@@ -26,6 +26,7 @@ let paket command scenario =
           info.Arguments <- command) (System.TimeSpan.FromMinutes 5.)
     if result.ExitCode <> 0 then 
         let errors = String.Join(Environment.NewLine,result.Errors)
+        printfn "%s" <| String.Join(Environment.NewLine,result.Messages)
         failwith errors
     String.Join(Environment.NewLine,result.Messages)
 
