@@ -84,6 +84,15 @@ let ``#299 should restore package ending in lib``() =
 
     Directory.Exists(Path.Combine(scenarioTempPath "i000299-restore-package-that-ends-in-lib","packages","FunScript.TypeScript.Binding.lib"))
     |> shouldEqual true
+    
+[<Test>]
+let ``#359 should restore package with nuget in name``() =
+    let lockFile = update "i000359-packagename-contains-nuget"
+    lockFile.Groups.[Constants.MainDependencyGroup].Resolution.[PackageName "Nuget.CommandLine"].Version
+    |> shouldBeGreaterThan (SemVer.Parse "0")
+
+    Directory.Exists(Path.Combine(scenarioTempPath "i000359-packagename-contains-nuget","packages","Nuget.CommandLine"))
+    |> shouldEqual true
 
 [<Test>]
 let ``#1177 should resolve with pessimistic strategy correctly``() =
