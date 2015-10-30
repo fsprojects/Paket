@@ -85,6 +85,7 @@
     <Compile Include="TestHelper.fs" />
     <Compile Include="InitSpecs.fs" />
     <Compile Include="GroupSpecs.fs" />
+    <Compile Include="FrameworkRestrictionsSpecs.fs" />
     <Compile Include="BasicResolverSpecs.fs" />
     <Compile Include="SemVerUpdateSpecs.fs" />
     <Compile Include="ResolverSkipsConflictsFastSpecs.fs" />
