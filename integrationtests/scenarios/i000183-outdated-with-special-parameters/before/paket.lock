@@ -1,0 +1,13 @@
+NUGET
+  remote: http://nuget.org/api/v2
+  specs:
+    FSharp.Compiler.Service (1.4.2.1)
+    FSharp.Formatting (2.4)
+      FSharp.Compiler.Service (>= 0.0.20)
+      Microsoft.AspNet.Razor (>= 2.0.30506.0)
+      RazorEngine (>= 3.3.0)
+    Microsoft.AspNet.Razor (3.2.3)
+    Newtonsoft.Json (6.0.7)
+    RazorEngine (3.7.3)
+      Microsoft.AspNet.Razor (>= 3.0.0) - framework: >= net45
+      Microsoft.AspNet.Razor (2.0.30506.0) - framework: net40

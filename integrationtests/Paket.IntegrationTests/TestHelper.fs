@@ -27,9 +27,10 @@ let paket command scenario =
     if result.ExitCode <> 0 then 
         let errors = String.Join(Environment.NewLine,result.Errors)
         failwith errors
+    String.Join(Environment.NewLine,result.Messages)
 
 let update scenario =
-    paket "update" scenario
+    paket "update" scenario |> ignore
     LockFile.LoadFrom(Path.Combine(scenarioTempPath scenario,"paket.lock"))
 
 let updateShouldFindPackageConflict packageName scenario =
