@@ -91,6 +91,7 @@ module LockFileSerializer =
                               let s = v.ToString()
                               if s = "" then s else "(" + s + ")"
 
+                          let restrictions = filterRestrictions options.Settings.FrameworkRestrictions restrictions
                           if List.isEmpty restrictions || restrictions = options.Settings.FrameworkRestrictions then
                             yield sprintf "      %O %s" name versionStr
                           else

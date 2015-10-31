@@ -20,5 +20,5 @@ let ``#140 windsor should resolve framework dependent dependencies``() =
 let ``#1182 framework restrictions overwrite each other``() =
     let lockFile = update "i001182-framework-restrictions"
     let lockFile = lockFile.ToString()
-    lockFile.Contains("Microsoft.Data.OData (>= 5.6.2) ") |> shouldEqual true
+    lockFile.Contains("Microsoft.Data.OData (>= 5.6.2)") |> shouldEqual true
     lockFile.Contains("framework: winv4.5") |> shouldEqual false

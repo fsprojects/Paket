@@ -159,11 +159,10 @@ let calcOpenRequirements (exploredPackage:ResolvedPackage,globalFrameworkRestric
     let rest = Set.remove dependency stillOpen
 
     dependenciesByName
-    |> Set.map (fun (n, v, restriction) ->
+    |> Set.map (fun (n, v, restriction) -> 
         let newRestrictions = 
             filterRestrictions restriction exploredPackage.Settings.FrameworkRestrictions 
             |> filterRestrictions globalFrameworkRestrictions
-
         { dependency with Name = n
                           VersionRequirement = v
                           Parent = Package(dependency.Name, versionToExplore)
@@ -231,6 +230,8 @@ let Resolve(groupName:GroupName, sources, getVersionsF, getPackageDetailsF, stra
                 | _ -> tracefn  " - %O %A" dependency.Name version
 
             let packageDetails : PackageDetails = getPackageDetailsF sources dependency.Name version
+            let filteredDependencies = DependencySetFilter.filterByRestrictions newRestrictions packageDetails.DirectDependencies
+
             let settings =
                 match dependency.Parent with
                 | DependenciesFile(_) -> dependency.Settings
@@ -238,22 +239,13 @@ let Resolve(groupName:GroupName, sources, getVersionsF, getPackageDetailsF, stra
                     match rootSettings.TryGetValue packageDetails.Name with
                     | true, s -> s + dependency.Settings 
                     | _ -> dependency.Settings 
-                |> fun s -> s.AdjustWithSpecialCases packageDetails.Name
-
-            let restrictedDependencies = 
-                DependencySetFilter.filterByRestrictions newRestrictions packageDetails.DirectDependencies
-                |> Set.map (fun (n,v,r) ->
-                    let r' = 
-                        filterRestrictions r settings.FrameworkRestrictions 
-                        |> filterRestrictions globalFrameworkRestrictions
-                    (n,v,r'))
 
             let explored =
                 { Name = packageDetails.Name
                   Version = version
-                  Dependencies = restrictedDependencies
+                  Dependencies = filteredDependencies
                   Unlisted = packageDetails.Unlisted
-                  Settings = settings
+                  Settings = settings.AdjustWithSpecialCases packageDetails.Name
                   Source = packageDetails.Source }
             exploredPackages.Add((dependency.Name,version),explored)
             explored
