@@ -85,7 +85,7 @@ let rec optimizeRestrictions restrictions =
         let newRestrictions' = 
             restrictions
             |> List.distinct
-            |> List.sort                            
+            |> List.sort
 
         let newRestrictions =
             match newRestrictions' |> Seq.tryFind (function | FrameworkRestriction.AtLeast r -> true | _ -> false) with
@@ -94,7 +94,7 @@ let rec optimizeRestrictions restrictions =
                 let currentVersion =
                     match r with
                     | FrameworkRestriction.AtLeast(DotNetFramework(x)) -> x
-                    | x -> failwithf "Unknown .NET moniker %O" x     
+                    | x -> failwithf "Unknown .NET moniker %O" x
                                                                                                            
                 let isLowerVersion x =
                     let isMatching x =
@@ -115,7 +115,7 @@ let rec optimizeRestrictions restrictions =
                         match n with
                         | FrameworkRestriction.Exactly(DotNetFramework(x)) -> x
                         | FrameworkRestriction.AtLeast(DotNetFramework(x)) -> x
-                        | x -> failwithf "Unknown .NET moniker %O" x     
+                        | x -> failwithf "Unknown .NET moniker %O" x
 
                     (newRestrictions'
                         |> List.filter (fun x -> x <> r && x <> n)) @ [FrameworkRestriction.AtLeast(DotNetFramework(newLowest))]
@@ -166,7 +166,7 @@ let optimizeDependencies packages =
                     |> List.sort
 
                 let localMaxDotNetRestriction = findMaxDotNetRestriction plain
-                let globalMax = defaultArg globalMax localMaxDotNetRestriction          
+                let globalMax = defaultArg globalMax localMaxDotNetRestriction
 
                 let dotnetRestrictions,others = List.partition (function | FrameworkRestriction.Exactly(DotNetFramework(_)) -> true | FrameworkRestriction.AtLeast(DotNetFramework(_)) -> true | _ -> false) plain
 
@@ -174,7 +174,7 @@ let optimizeDependencies packages =
                     dotnetRestrictions
                     |> List.map (fun restriction ->
                         match restriction with
-                        | FrameworkRestriction.Exactly r ->                     
+                        | FrameworkRestriction.Exactly r ->
                             if r = localMaxDotNetRestriction && r = globalMax then
                                 FrameworkRestriction.AtLeast r
                             else

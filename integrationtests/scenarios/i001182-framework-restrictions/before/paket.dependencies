@@ -1,0 +1,9 @@
+framework: net452
+content: none
+redirects: off
+
+source https://www.nuget.org/api/v2/
+source https://nuget.bittitan.com/nuget/Components
+
+
+nuget WindowsAzure.Storage 4.3.0
