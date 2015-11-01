@@ -151,9 +151,16 @@ It's possible to use `CURRENTVERSION` as a placeholder for the current version o
 	  FSharp.Core >= 4.3.1
 	  Other.Dep ~> CURRENTVERSION
 
+The `LOCKEDVERSION` placeholder allows to reference the currently used dependency version from the paket.lock file:
+
+	dependencies
+	  FSharp.Core >= 4.3.1
+	  Other.Dep ~> LOCKEDVERSION
+
 In a project file, the following dependencies will be added:
 
 * any paket dependency with the range specified in the [`paket.dependencies` file](dependencies-file.html).
+* any paket dependency with the range specified in the [`paket.lock` file](lock-file.html) (if `lock-dependencies` parameter is used in [`paket pack`](paket-pack.html)).
 * any project reference with a matching paket.template file with a minimum version requirement of the version currently being packaged.
 
 ### Comments
