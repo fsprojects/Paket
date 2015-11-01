@@ -1,3 +1,6 @@
+#### 2.21.0 - 01.11.2015
+* Adding LOCKEDVERSION placeholder to templatefile - https://github.com/fsprojects/Paket/issues/1183
+
 #### 2.20.0 - 30.10.2015
 * Allow filtered updates of packages matching a regex - https://github.com/fsprojects/Paket/pull/1178
 * Search for paket.references in startup directory (auto-restore feature) - https://github.com/fsprojects/Paket/pull/1179

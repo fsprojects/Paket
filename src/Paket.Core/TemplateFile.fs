@@ -209,12 +209,12 @@ module internal TemplateFile =
         | Some m -> ok m
         | None -> failP file "No description line in paket.template file."
     
-    let private getDependencies (fileName, map : Map<string, string>,currentVersion:SemVerInfo option) = 
-        Map.tryFind "dependencies" map
+    let private getDependencies (fileName, lockFile:LockFile, info : Map<string, string>,currentVersion:SemVerInfo option) = 
+        Map.tryFind "dependencies" info
         |> Option.map (fun d -> d.Split '\n')
         |> Option.map (Array.map (fun d -> 
                            let reg = Regex(@"(?<id>\S+)(?<version>.*)").Match d
-                           let id' = reg.Groups.["id"].Value
+                           let id' = PackageName reg.Groups.["id"].Value
                            let versionRequirement = 
                                 let versionString = 
                                   let s = reg.Groups.["version"].Value.Trim()
@@ -222,9 +222,13 @@ module internal TemplateFile =
                                     match currentVersion with
                                     | Some v -> s.Replace("CURRENTVERSION",v.ToString())
                                     | None -> failwithf "The template file %s contains the placeholder CURRENTVERSION, but no version was given." fileName
+                                  elif s.Contains("LOCKEDVERSION") then
+                                    match lockFile.Groups.[Constants.MainDependencyGroup].Resolution |> Map.tryFind id' with
+                                    | Some p -> s.Replace("LOCKEDVERSION",p.Version.ToString())
+                                    | None -> failwithf "The template file %s contains the placeholder LOCKEDVERSION, but no version was given for package %O in the lockfile." fileName id'
                                   else s
                                 DependenciesFileParser.parseVersionRequirement versionString
-                           PackageName id', versionRequirement))
+                           id', versionRequirement))
         |> Option.map Array.toList
         |> fun x -> defaultArg x []
     
@@ -235,8 +239,8 @@ module internal TemplateFile =
     let private getFiles (map : Map<string, string>) = 
         Map.tryFind "files" map
         |> Option.map (fun d -> d.Split '\n')
-        |> Option.map (Array.filter (fun l -> l |> isExclude.IsMatch |> not))
-        |> Option.map (Array.filter (fun l -> l |> isComment.IsMatch |> not))
+        |> Option.map (Array.filter (isExclude.IsMatch >> not))
+        |> Option.map (Array.filter (isComment.IsMatch >> not))
         |> Option.map 
                (Seq.map 
                     (fun (line:string) -> 
@@ -252,7 +256,7 @@ module internal TemplateFile =
         Map.tryFind "files" map
         |> Option.map (fun d -> d.Split '\n')
         |> Option.map (Array.filter isExclude.IsMatch)
-        |> Option.map (Array.filter (fun l -> l |> isComment.IsMatch |> not))
+        |> Option.map (Array.filter (isComment.IsMatch >> not))
         |> Option.map 
                (Seq.map 
                     (fun (line:string) -> line.Trim().TrimStart('!')))
@@ -272,7 +276,7 @@ module internal TemplateFile =
         |> Option.map List.ofSeq
         |> fun x -> defaultArg x []
     
-    let private getOptionalInfo (fileName, map : Map<string, string>, currentVersion) = 
+    let private getOptionalInfo (fileName,lockFile:LockFile, map : Map<string, string>, currentVersion) = 
         let get (n : string) = Map.tryFind (n.ToLowerInvariant()) map
 
         let title = get "title"
@@ -322,13 +326,13 @@ module internal TemplateFile =
           RequireLicenseAcceptance = requireLicenseAcceptance
           Tags = tags
           DevelopmentDependency = developmentDependency
-          Dependencies = getDependencies(fileName,map,currentVersion)
+          Dependencies = getDependencies(fileName,lockFile,map,currentVersion)
           References = getReferences map
           FrameworkAssemblyReferences = getFrameworkReferences map
           Files = getFiles map
           FilesExcluded = getFileExcludes map }
     
-    let Parse(file,currentVersion,contentStream : Stream) = 
+    let Parse(file,lockFile,currentVersion,contentStream : Stream) = 
         trial { 
             use sr = new StreamReader(contentStream)
             let! map =
@@ -356,10 +360,10 @@ module internal TemplateFile =
                                             |> Array.toList)
                       Description = Map.tryFind "description" map }
                 
-                let optionalInfo = getOptionalInfo(file,map,currentVersion)
+                let optionalInfo = getOptionalInfo(file,lockFile,map,currentVersion)
                 return ProjectInfo(core, optionalInfo)
-            | FileType ->                 
-                let! id' = getId file map                
+            | FileType ->
+                let! id' = getId file map
                 let! authors = getAuthors file map
                 let! description = getDescription file map
                 let core : CompleteCoreInfo = 
@@ -368,14 +372,14 @@ module internal TemplateFile =
                       Authors = authors
                       Description = description }
                 
-                let optionalInfo = getOptionalInfo(file,map,currentVersion)
+                let optionalInfo = getOptionalInfo(file,lockFile,map,currentVersion)
                 return CompleteInfo(core, optionalInfo)
         }
 
-    let Load(fileName,currentVersion) = 
+    let Load(fileName,lockFile,currentVersion) = 
         let fi = FileInfo fileName
         let root = fi.Directory.FullName
-        let contents = Parse(fi.FullName,currentVersion, File.OpenRead fileName) |> returnOrFail
+        let contents = Parse(fi.FullName,lockFile,currentVersion, File.OpenRead fileName) |> returnOrFail
         let getFiles files = 
             [ for source, target in files do
                 match Fake.Globbing.search root source with
@@ -391,7 +395,7 @@ module internal TemplateFile =
                             let fullFile = FileInfo(file).Directory.FullName |> normalizePath
                             let newTarget = Path.Combine(target,fullFile.Replace(sourceRoot,"").TrimStart(Path.DirectorySeparatorChar))
                             yield file, newTarget
-                        else                        
+                        else
                             yield file, target ]
 
         { FileName = fileName
