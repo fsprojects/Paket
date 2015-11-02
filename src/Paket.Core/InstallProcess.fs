@@ -181,33 +181,42 @@ let private applyBindingRedirects (loadedLibs:Dictionary<_,_>) createNewBindingF
         match ProjectFile.FindReferencesFile (FileInfo projectFile.FileName) with
         | Some fileName -> 
             let dependencies = dependencies projectFile
-            extractedPackages
-            |> Seq.map snd
-            |> Seq.filter (fun model -> dependencies |> Seq.contains model.PackageName)
-            |> Seq.map (fun model -> model.GetLibReferences(projectFile.GetTargetProfile()))
-            |> Seq.concat
-            |> Seq.groupBy (fun p -> FileInfo(p).Name)
-            |> Seq.choose(fun (_,librariesForPackage) ->
-                librariesForPackage
-                |> Seq.choose(fun library ->
-                    try
-                        let key = FileInfo(library).FullName.ToLowerInvariant()
-                        let assembly = 
-                            match loadedLibs.TryGetValue key with
-                            | true,v -> v
-                            | _ -> 
-                                let v = Assembly.ReflectionOnlyLoadFrom library
-                                loadedLibs.Add(key,v)
-                                v
 
-                        assembly
-                        |> BindingRedirects.getPublicKeyToken
-                        |> Option.map(fun token -> assembly, token)
-                    with exn -> None)
-                |> Seq.sortBy(fun (assembly,_) -> assembly.GetName().Version)
-                |> Seq.toList
-                |> List.rev
-                |> function | head :: _ -> Some head | _ -> None)
+            let assemblies =
+                extractedPackages
+                |> Seq.map snd
+                |> Seq.filter (fun model -> dependencies |> Seq.contains model.PackageName)
+                |> Seq.map (fun model -> model.GetLibReferences(projectFile.GetTargetProfile()))
+                |> Seq.concat
+                |> Seq.groupBy (fun p -> FileInfo(p).Name)
+                |> Seq.choose(fun (_,librariesForPackage) ->
+                    librariesForPackage
+                    |> Seq.choose(fun library ->
+                        try
+                            let key = FileInfo(library).FullName.ToLowerInvariant()
+                            let assembly = 
+                                match loadedLibs.TryGetValue key with
+                                | true,v -> v
+                                | _ -> 
+                                    let v = Assembly.ReflectionOnlyLoadFrom library
+                                    loadedLibs.Add(key,v)
+                                    v
+
+                            Some (assembly, BindingRedirects.getPublicKeyToken assembly)
+                        with exn -> None)
+                    |> Seq.sortBy(fun (assembly,_) -> assembly.GetName().Version)
+                    |> Seq.toList
+                    |> List.rev
+                    |> function | head :: _ -> Some head | _ -> None)
+                |> Seq.cache
+
+            assemblies
+            |> Seq.choose (fun (assembly,token) -> token |> Option.map (fun token -> (assembly,token)))
+            |> Seq.filter (fun (assembly,_) -> 
+                assemblies
+                |> Seq.collect (fun (a,_) -> a.GetReferencedAssemblies())
+                |> Seq.filter (fun a -> assembly.GetName().Name = a.Name)
+                |> Seq.exists (fun a -> assembly.GetName().Version > a.Version))
             |> Seq.map(fun (assembly, token) ->
                 { BindingRedirect.AssemblyName = assembly.GetName().Name
                   Version = assembly.GetName().Version.ToString()

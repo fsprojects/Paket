@@ -6,7 +6,7 @@ open NUnit.Framework
 open FsUnit
 
 [<Test>]
-let ``install should redirect referenced assemblies only``() = 
+let ``install should redirect required assemblies only``() = 
     paket "install --redirects --createnewbindingfiles" "binding-redirect-adds-referenced-assemblies-only" |> ignore
 
     let path = Path.Combine(scenarioTempPath "binding-redirect-adds-referenced-assemblies-only")
@@ -34,22 +34,22 @@ let ``install should redirect referenced assemblies only``() =
 
     config1 |> shouldContainText Albedo
     config1 |> shouldContainText AutoFixture
-    config1 |> shouldContainText ``AutoFixture.Idioms``
-    config1 |> shouldContainText ``AutoFixture.Xunit``
-    config1 |> shouldContainText log4net
+    config1.Contains ``AutoFixture.Idioms`` |> shouldEqual false
+    config1.Contains ``AutoFixture.Xunit`` |> shouldEqual false
+    config1.Contains log4net |> shouldEqual false
     config1 |> shouldContainText ``Newtonsoft.Json``
-    config1 |> shouldContainText ``Newtonsoft.Json.Schema``
-    config1 |> shouldContainText xunit
+    config1.Contains ``Newtonsoft.Json.Schema`` |> shouldEqual false
+    config1.Contains xunit |> shouldEqual false
     config1 |> shouldContainText ``xunit.extensions``
     config1 |> shouldContainText ``Castle.Core``
-    config1 |> shouldContainText ``Castle.Windsor``
+    config1.Contains ``Castle.Windsor`` |> shouldEqual false
 
     config2.Contains Albedo |> shouldEqual false
     config2.Contains AutoFixture |> shouldEqual false
     config2.Contains ``AutoFixture.Idioms`` |> shouldEqual false
     config2.Contains ``AutoFixture.Xunit`` |> shouldEqual false
     config2.Contains log4net |> shouldEqual false
-    config2 |> shouldContainText ``Newtonsoft.Json``
+    config2.Contains ``Newtonsoft.Json`` |> shouldEqual false
     config2.Contains ``Newtonsoft.Json.Schema`` |> shouldEqual false
     config2.Contains xunit |> shouldEqual false
     config2.Contains ``xunit.extensions`` |> shouldEqual false
@@ -60,13 +60,13 @@ let ``install should redirect referenced assemblies only``() =
     config3.Contains AutoFixture |> shouldEqual false
     config3.Contains ``AutoFixture.Idioms`` |> shouldEqual false
     config3.Contains ``AutoFixture.Xunit`` |> shouldEqual false
-    config3 |> shouldContainText log4net
+    config3.Contains log4net |> shouldEqual false
     config3 |> shouldContainText ``Newtonsoft.Json``
-    config3 |> shouldContainText ``Newtonsoft.Json.Schema``
+    config3.Contains ``Newtonsoft.Json.Schema`` |> shouldEqual false
     config3.Contains xunit |> shouldEqual false
     config3.Contains ``xunit.extensions`` |> shouldEqual false
     config3 |> shouldContainText ``Castle.Core``
-    config3 |> shouldContainText ``Castle.Windsor``
+    config3.Contains ``Castle.Windsor`` |> shouldEqual false
 
     config4.Contains Albedo |> shouldEqual false
     config4.Contains AutoFixture |> shouldEqual false
@@ -78,4 +78,4 @@ let ``install should redirect referenced assemblies only``() =
     config4.Contains xunit |> shouldEqual false
     config4.Contains ``xunit.extensions`` |> shouldEqual false
     config4 |> shouldContainText ``Castle.Core``
-    config4 |> shouldContainText ``Castle.Windsor``
+    config4.Contains ``Castle.Windsor`` |> shouldEqual false
