@@ -161,18 +161,29 @@ let createModel(root, force, dependenciesFile:DependenciesFile, lockFile : LockF
 
 /// Applies binding redirects for all strong-named references to all app. and web.config files.
 let private applyBindingRedirects (loadedLibs:Dictionary<_,_>) createNewBindingFiles root groupName findDependencies (extractedPackages:seq<_*InstallModel>) =
-    let bindingRedirects (projectFile : ProjectFile) =
+    let rec dependencies (projectFile : ProjectFile) =
         match ProjectFile.FindReferencesFile (FileInfo projectFile.FileName) with
         | Some fileName -> 
             let referenceFile = ReferencesFile.FromFile fileName
-            extractedPackages
-            |> Seq.map snd
-            |> Seq.filter (fun model -> 
+
+            projectFile.GetInterProjectDependencies()
+            |> Seq.map (fun r -> ProjectFile.LoadFromFile r.Path)
+            |> Seq.collect dependencies
+            |> Seq.append (
                 referenceFile.Groups
                 |> Seq.filter (fun g -> g.Key = groupName)
                 |> Seq.collect (fun g -> g.Value.NugetPackages |> List.map (fun p -> (groupName,p.Name)))
-                |> Seq.collect findDependencies
-                |> Seq.contains model.PackageName)
+                |> Seq.collect findDependencies)
+            |> Seq.cache
+        | None -> Seq.empty
+
+    let bindingRedirects (projectFile : ProjectFile) =
+        match ProjectFile.FindReferencesFile (FileInfo projectFile.FileName) with
+        | Some fileName -> 
+            let dependencies = dependencies projectFile
+            extractedPackages
+            |> Seq.map snd
+            |> Seq.filter (fun model -> dependencies |> Seq.contains model.PackageName)
             |> Seq.map (fun model -> model.GetLibReferences(projectFile.GetTargetProfile()))
             |> Seq.concat
             |> Seq.groupBy (fun p -> FileInfo(p).Name)

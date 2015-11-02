@@ -36,13 +36,13 @@ let ``install should redirect referenced assemblies only``() =
     config1 |> shouldContainText AutoFixture
     config1 |> shouldContainText ``AutoFixture.Idioms``
     config1 |> shouldContainText ``AutoFixture.Xunit``
-    config1.Contains log4net |> shouldEqual false
+    config1 |> shouldContainText log4net
     config1 |> shouldContainText ``Newtonsoft.Json``
-    config1.Contains ``Newtonsoft.Json.Schema`` |> shouldEqual false
+    config1 |> shouldContainText ``Newtonsoft.Json.Schema``
     config1 |> shouldContainText xunit
     config1 |> shouldContainText ``xunit.extensions``
-    config1.Contains ``Castle.Core`` |> shouldEqual false
-    config1.Contains ``Castle.Windsor`` |> shouldEqual false
+    config1 |> shouldContainText ``Castle.Core``
+    config1 |> shouldContainText ``Castle.Windsor``
 
     config2.Contains Albedo |> shouldEqual false
     config2.Contains AutoFixture |> shouldEqual false
@@ -65,8 +65,8 @@ let ``install should redirect referenced assemblies only``() =
     config3 |> shouldContainText ``Newtonsoft.Json.Schema``
     config3.Contains xunit |> shouldEqual false
     config3.Contains ``xunit.extensions`` |> shouldEqual false
-    config3.Contains ``Castle.Core`` |> shouldEqual false
-    config3.Contains ``Castle.Windsor`` |> shouldEqual false
+    config3 |> shouldContainText ``Castle.Core``
+    config3 |> shouldContainText ``Castle.Windsor``
 
     config4.Contains Albedo |> shouldEqual false
     config4.Contains AutoFixture |> shouldEqual false
