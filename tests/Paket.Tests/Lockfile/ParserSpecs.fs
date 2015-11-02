@@ -702,3 +702,32 @@ let ``should parse and serialize redirects lockfile``() =
 
     normalizeLineEndings lockFile' 
     |> shouldEqual (normalizeLineEndings packageRedirectsLockFile)
+
+    
+let fullGitLockFile = """
+GIT
+  remote: git@github.com:fsprojects/Paket.git
+  specs:
+     (528024723f314aa1011499a122258167b53699f7)
+"""
+
+[<Test>]
+let ``should parse full git lock file``() = 
+    let lockFile = LockFileParser.Parse(toLines fullGitLockFile)
+    lockFile.Head.RemoteUrl |> shouldEqual (Some "git@github.com:fsprojects/Paket.git")
+    lockFile.Head.SourceFiles.Head.Commit |> shouldEqual "528024723f314aa1011499a122258167b53699f7"
+    lockFile.Head.SourceFiles.Head.Project |> shouldEqual "Paket"
+
+let localGitLockFile = """
+GIT
+  remote: file:///c:/code/Paket.VisualStudio
+  specs:
+     (528024723f314aa1011499a122258167b53699f7)
+"""
+
+[<Test>]
+let ``should parse local git lock file``() = 
+    let lockFile = LockFileParser.Parse(toLines localGitLockFile)
+    lockFile.Head.RemoteUrl |> shouldEqual (Some "file:///c:/code/Paket.VisualStudio")
+    lockFile.Head.SourceFiles.Head.Commit |> shouldEqual "528024723f314aa1011499a122258167b53699f7"
+    lockFile.Head.SourceFiles.Head.Project |> shouldEqual "Paket.VisualStudio"

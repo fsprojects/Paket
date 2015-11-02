@@ -1,3 +1,6 @@
+#### 3.0.0-alpha001 - 04.01.2016
+* Allow to reference git repositories
+
 #### 2.40.4 - 03.01.2016
 * USABILITY: Report group name in download trace - https://github.com/fsprojects/Paket/issues/1337
 

@@ -1030,3 +1030,27 @@ redirects off
     cfg.Groups.[GroupName "Build"].Packages.Tail.Head.Settings.CreateBindingRedirects |> shouldEqual (Some Force)
     cfg.Groups.[GroupName "Build"].Packages.Tail.Tail.Head.Settings.CreateBindingRedirects |> shouldEqual (Some Off)
     cfg.Groups.[GroupName "Build"].Packages.Tail.Tail.Tail.Head.Settings.CreateBindingRedirects |> shouldEqual None
+
+let paketGitConfig = """
+git git@github.com:fsprojects/Paket.git
+git file:///c:/code/Paket.VisualStudio
+git https://github.com/fsprojects/Paket.git
+"""
+
+[<Test>]
+let ``should read paket git config``() = 
+    let cfg = DependenciesFile.FromCode(paketGitConfig)
+    let gitSource = cfg.Groups.[Constants.MainDependencyGroup].RemoteFiles.Head
+    gitSource.GetCloneUrl() |> shouldEqual "git@github.com:fsprojects/Paket.git"
+    gitSource.Owner |> shouldEqual "github.com"
+    gitSource.Project |> shouldEqual "Paket"
+
+    let localGitSource = cfg.Groups.[Constants.MainDependencyGroup].RemoteFiles.Tail.Head
+    localGitSource.GetCloneUrl() |> shouldEqual "file:///c:/code/Paket.VisualStudio"
+    localGitSource.Project |> shouldEqual "Paket.VisualStudio"
+    localGitSource.Owner |> shouldEqual ""
+
+    let httpsGitSource = cfg.Groups.[Constants.MainDependencyGroup].RemoteFiles.Tail.Tail.Head
+    httpsGitSource.GetCloneUrl() |> shouldEqual "https://github.com/fsprojects/Paket.git"
+    httpsGitSource.Project |> shouldEqual "Paket"
+    httpsGitSource.Owner |> shouldEqual "github.com"

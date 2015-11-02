@@ -93,6 +93,8 @@
     <Compile Include="Logging.fs" />
     <Compile Include="Xml.fs" />
     <Compile Include="Utils.fs" />
+    <Compile Include="GitCommandHelper.fs" />
+    <Compile Include="GitHandling.fs" />
     <Compile Include="ConfigFile.fs" />
     <Compile Include="PackageSources.fs" />
     <Compile Include="FrameworkHandling.fs" />
@@ -140,6 +142,7 @@
   <ItemGroup>
     <Reference Include="mscorlib" />
     <Reference Include="System" />
+    <Reference Include="System.Configuration" />
     <Reference Include="System.Core" />
     <Reference Include="System.Data" />
     <Reference Include="System.Data.Linq" />
