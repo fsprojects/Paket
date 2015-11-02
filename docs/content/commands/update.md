@@ -22,9 +22,9 @@ Please see [`paket install`](paket-install.html) if you want to keep the current
   `--no-install`: Skips paket install --hard process afterward generation of [`paket.lock` file](lock-file.html).
 
 
-## Updating a single package
+## Updating a single package, or packages matching a pattern
 
-It's also possible to update only a single package and to keep all other dependencies fixed:
+It's also possible to update only specified packages and to keep all other dependencies fixed:
 
     [lang=batchfile]
     paket update nuget PACKAGENAME [version VERSION] [group GROUPNAME] [--force|-f] [--hard] [--redirects] [--no-install]
@@ -44,6 +44,8 @@ It's also possible to update only a single package and to keep all other depende
   `--redirects`: Creates binding redirects for the NuGet packages.
 
   `--no-install`: Skips paket install --hard process afterward generation of [`paket.lock` file](lock-file.html).
+
+  `--filter`: Treat PACKAGENAME as a regex pattern to match against, rather than a single package. Enforces a "total" match (i.e. an implicit ^ and $ at beginning and end of PACKAGENAME)
 
 ## Updating a single group
 
