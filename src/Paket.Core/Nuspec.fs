@@ -77,7 +77,9 @@ type Nuspec =
             try
                 doc.Load fi.FullName
             with
-            | exn -> failwithf "Could not load %s. Message: %s" fi.FullName exn.Message
+            | exn -> 
+                let text = File.ReadAllText(fi.FullName)  // work around mono bug https://github.com/fsprojects/Paket/issues/1189
+                doc.LoadXml(text)
 
             let frameworks =
                 doc 
