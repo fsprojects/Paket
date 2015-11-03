@@ -1,4 +1,4 @@
-﻿module Paket.IntegrationTests.ResolverSkipsConflictsFastSpecs
+module Paket.IntegrationTests.ResolverSkipsConflictsFastSpecs
 
 open Fake
 open Paket
