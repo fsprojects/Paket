@@ -99,3 +99,9 @@ let ``#1177 should resolve with pessimistic strategy correctly``() =
     let lockFile = update "i001177-resolve-with-pessimistic-strategy"
     lockFile.Groups.[Constants.MainDependencyGroup].Resolution.[PackageName "Castle.Core"].Version
     |> shouldEqual (SemVer.Parse "3.2.0")
+
+[<Test>]
+let ``#1189 should allow # in path``() =
+    let lockFile = update "i001189-allow-#-in-path"
+    lockFile.Groups.[Constants.MainDependencyGroup].Resolution.[PackageName "FAKE"].Version
+    |> shouldBeGreaterThan (SemVer.Parse "4.7.2")
