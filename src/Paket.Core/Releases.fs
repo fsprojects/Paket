@@ -7,16 +7,6 @@ open System
 open Chessie.ErrorHandling
 open Paket.Domain
 
-let rec private getLatestVersionFromJson (data : string, startPos: int) =
-    try 
-        let start = data.IndexOf("tag_name", startPos) + 11
-        let end' = data.IndexOf("\"", start)
-        let v = (data.Substring(start, end' - start)) |> SemVer.Parse
-        match v.PreRelease with
-        | None -> ok v
-        | _ -> getLatestVersionFromJson (data, start)
-    with _ ->
-        fail ReleasesJsonParseError
 
 let private download version (file:FileInfo) client = 
     trial {
@@ -40,8 +30,11 @@ let private downloadLatestVersionOf files destDir =
     use client = createWebClient(Constants.GitHubUrl, None)
 
     trial {
-        let! data = client |> downloadStringSync Constants.GitHubReleasesUrl
-        let! latestVersion = getLatestVersionFromJson(data,0)
+        let latest = "https://github.com/fsprojects/Paket/releases/latest";
+        let! data = client |> downloadStringSync latest
+        let title = data.Substring(data.IndexOf("<title>") + 7, (data.IndexOf("</title>") + 8 - data.IndexOf("<title>") + 7)) // grabs everything in the <title> tag
+        let version = title.Split(' ').[1] // Release, 1.34.0, etc, etc, etc <-- the release number is the second part fo this split string
+        let latestVersion = SemVer.Parse version
 
         let files =
             files
