@@ -74,7 +74,10 @@ type Nuspec =
         if not fi.Exists then Nuspec.All
         else 
             let doc = new XmlDocument()
-            doc.Load fi.FullName
+            try
+                doc.Load fi.FullName
+            with
+            | exn -> failwithf "Could not load %s. Message: %s" fi.FullName exn.Message
 
             let frameworks =
                 doc 
