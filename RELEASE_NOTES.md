@@ -1,3 +1,6 @@
+#### 2.21.2 - 03.11.2015
+* BUGFIX: Work around issue with # in file names on mono - https://github.com/fsprojects/Paket/issues/1189
+
 #### 2.21.1 - 03.11.2015
 * Better error reporting when prereleases are involved - https://github.com/fsprojects/Paket/issues/1186
 
