@@ -32,7 +32,7 @@ let paket command scenario =
     String.Join(Environment.NewLine,result.Messages)
 
 let update scenario =
-    paket "update" scenario |> ignore
+    paket "update -v" scenario |> ignore
     LockFile.LoadFrom(Path.Combine(scenarioTempPath scenario,"paket.lock"))
 
 let install scenario =
