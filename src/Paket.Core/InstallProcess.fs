@@ -167,7 +167,8 @@ let private applyBindingRedirects (loadedLibs:Dictionary<_,_>) createNewBindingF
             let referenceFile = ReferencesFile.FromFile fileName
 
             projectFile.GetInterProjectDependencies()
-            |> Seq.map (fun r -> ProjectFile.LoadFromFile r.Path)
+            |> Seq.map (fun r -> ProjectFile.TryLoad r.Path)
+            |> Seq.choose id
             |> Seq.collect dependencies
             |> Seq.append (
                 referenceFile.Groups
