@@ -16,7 +16,6 @@ let ``install should redirect required assemblies only``() =
     let config4Path = Path.Combine(path, "Project4", "app.config")
 
     let config1 = File.ReadAllText(config1Path)
-    let config2 = File.ReadAllText(config2Path)
     let config3 = File.ReadAllText(config3Path)
     let config4 = File.ReadAllText(config4Path)
 
@@ -44,17 +43,7 @@ let ``install should redirect required assemblies only``() =
     config1 |> shouldContainText ``Castle.Core``
     config1.Contains ``Castle.Windsor`` |> shouldEqual false
 
-    config2.Contains Albedo |> shouldEqual false
-    config2.Contains AutoFixture |> shouldEqual false
-    config2.Contains ``AutoFixture.Idioms`` |> shouldEqual false
-    config2.Contains ``AutoFixture.Xunit`` |> shouldEqual false
-    config2.Contains log4net |> shouldEqual false
-    config2.Contains ``Newtonsoft.Json`` |> shouldEqual false
-    config2.Contains ``Newtonsoft.Json.Schema`` |> shouldEqual false
-    config2.Contains xunit |> shouldEqual false
-    config2.Contains ``xunit.extensions`` |> shouldEqual false
-    config2.Contains ``Castle.Core`` |> shouldEqual false
-    config2.Contains ``Castle.Windsor`` |> shouldEqual false
+    File.Exists config2Path |> shouldEqual false
 
     config3.Contains Albedo |> shouldEqual false
     config3.Contains AutoFixture |> shouldEqual false

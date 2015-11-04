@@ -73,10 +73,13 @@ let private projectFiles = [ ".csproj"; ".vbproj"; ".fsproj"; ".wixproj" ] |> Se
 let private toLower (s:string) = s.ToLower()
 let private isAppOrWebConfig = configFiles.Contains << (Path.GetFileNameWithoutExtension >> toLower)
 let private isDotNetProject = projectFiles.Contains << (Path.GetExtension >> toLower)
-let internal getFoldersWithPaketReferencesAndNoConfig getFiles rootPath  =
+let internal getConfig getFiles directory  =
+    getFiles(directory, "*.config", SearchOption.AllDirectories)
+    |> Seq.tryFind isAppOrWebConfig
+let internal getProjectFilesWithPaketReferences getFiles rootPath  =
     getFiles(rootPath, Constants.ReferencesFile, SearchOption.AllDirectories)
     |> Seq.map Path.GetDirectoryName
-    |> Seq.filter(fun directory -> getFiles(directory, "*.config", SearchOption.TopDirectoryOnly) |> Seq.forall (not << isAppOrWebConfig))
+    |> Seq.choose(fun directory -> getFiles(directory, "*proj", SearchOption.TopDirectoryOnly) |> Seq.tryFind (Path.GetExtension >> isDotNetProject))
     |> Seq.toList
 let private getExistingConfigFiles getFiles rootPath = 
     getFiles(rootPath, "*.config", SearchOption.AllDirectories)
@@ -86,18 +89,17 @@ let private baseConfig = """<?xml version="1.0" encoding="utf-8"?>
 </configuration>
 """
 let private createAppConfigInDirectory folder =
-    File.WriteAllText(Path.Combine(folder, "app.config"), baseConfig)
-    folder
+    let config = Path.Combine(folder, "app.config")
+    File.WriteAllText(config, baseConfig)
+    config
 let private getProjectFilesInDirectory folder =
     Directory.GetFiles(folder, "*proj")
     |> Seq.filter (Path.GetExtension >> isDotNetProject)
-let private addConfigFileToProject projectFile =
-    ProjectFile.TryLoad projectFile
-    |> Option.bind(fun project ->
-        project.ProjectNode
-        |> Xml.getNodes "ItemGroup"
-        |> List.tryHead
-        |> Option.map(fun g -> project, g))
+let private addConfigFileToProject project =
+    project.ProjectNode
+    |> Xml.getNodes "ItemGroup"
+    |> List.tryHead
+    |> Option.map(fun g -> project, g)
     |> Option.iter(fun (project, itemGroup) ->
         project.CreateNode "Content"
         |> Xml.addAttribute "Include" "app.config"
@@ -107,43 +109,39 @@ let private addConfigFileToProject projectFile =
 
 /// Applies a set of binding redirects to a single configuration file.
 let private applyBindingRedirects bindingRedirects (configFilePath:string) =
-    let projectFile =
-        getProjectFilesInDirectory (Path.GetDirectoryName(configFilePath))
-        |> Seq.map ProjectFile.TryLoad
-        |> Seq.tryHead
-        |> Option.bind id
-    
-    let bindingRedirects =
-        match projectFile with
-        | None -> Seq.empty
-        | Some p -> bindingRedirects p
-
-    if Seq.isEmpty bindingRedirects then ()
-    else
-        let config = 
-            try 
-                XDocument.Load(configFilePath, LoadOptions.PreserveWhitespace)
-            with
-            | :? System.Xml.XmlException as ex ->
-                Logging.verbosefn "Illegal XML in file: %s" configFilePath
-                raise ex
-        let config = Seq.fold setRedirect config bindingRedirects
-        indentAssemblyBindings config
-        config.Save configFilePath
+    let config = 
+        try
+            XDocument.Load(configFilePath, LoadOptions.PreserveWhitespace)
+        with
+        | :? System.Xml.XmlException as ex ->
+            Logging.verbosefn "Illegal XML in file: %s" configFilePath
+            raise ex
+    let config = Seq.fold setRedirect config bindingRedirects
+    indentAssemblyBindings config
+    config.Save configFilePath
 
 /// Applies a set of binding redirects to all .config files in a specific folder.
 let applyBindingRedirectsToFolder createNewBindingFiles rootPath bindingRedirects =
-    if createNewBindingFiles then
-        // First create missing configuration files.
-        rootPath
-        |> getFoldersWithPaketReferencesAndNoConfig Directory.GetFiles
-        |> Seq.collect (createAppConfigInDirectory >> getProjectFilesInDirectory)
-        |> Seq.iter addConfigFileToProject
+    let applyBindingRedirects projectFile =
+        let bindingRedirects = bindingRedirects projectFile
+        if Seq.isEmpty bindingRedirects |> not then
+            let path = Path.GetDirectoryName projectFile.FileName
+            match getConfig Directory.GetFiles path with
+            | Some c -> Some c
+            | None -> 
+                match createNewBindingFiles with
+                | false -> None
+                | true ->
+                    let config = createAppConfigInDirectory path
+                    addConfigFileToProject projectFile
+                    Some config
+            |> Option.iter (applyBindingRedirects bindingRedirects)
 
-    // Now ensure all configuration files have binding redirects.
     rootPath
-    |> getExistingConfigFiles Directory.GetFiles
-    |> Seq.iter (applyBindingRedirects bindingRedirects)
+    |> getProjectFilesWithPaketReferences Directory.GetFiles
+    |> Seq.map ProjectFile.TryLoad
+    |> Seq.choose id
+    |> Seq.iter (applyBindingRedirects)
 
 /// Calculates the short form of the public key token for use with binding redirects, if it exists.
 let getPublicKeyToken (assembly:Assembly) =
