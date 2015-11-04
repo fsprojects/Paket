@@ -182,51 +182,47 @@ let private applyBindingRedirects (loadedLibs:Dictionary<_,_>) createNewBindingF
         | None -> Set.empty
 
     let bindingRedirects (projectFile : ProjectFile) =
-        match ProjectFile.FindReferencesFile (FileInfo projectFile.FileName) with
-        | Some fileName -> 
-            let dependencies = dependencyGraph.GetOrAdd(projectFile, dependencies)
+        let dependencies = dependencyGraph.GetOrAdd(projectFile, dependencies)
 
-            let assemblies =
-                extractedPackages
-                |> Seq.map snd
-                |> Seq.filter (fun model -> dependencies |> Set.contains model.PackageName)
-                |> Seq.map (fun model -> model.GetLibReferences(projectFile.GetTargetProfile()))
-                |> Seq.concat
-                |> Seq.groupBy (fun p -> FileInfo(p).Name)
-                |> Seq.choose(fun (_,librariesForPackage) ->
-                    librariesForPackage
-                    |> Seq.choose(fun library ->
-                        try
-                            let key = FileInfo(library).FullName.ToLowerInvariant()
-                            let assembly = 
-                                match loadedLibs.TryGetValue key with
-                                | true,v -> v
-                                | _ -> 
-                                    let v = Assembly.ReflectionOnlyLoadFrom library
-                                    loadedLibs.Add(key,v)
-                                    v
+        let assemblies =
+            extractedPackages
+            |> Seq.map snd
+            |> Seq.filter (fun model -> dependencies |> Set.contains model.PackageName)
+            |> Seq.collect (fun model -> model.GetLibReferences(projectFile.GetTargetProfile()))
+            |> Seq.groupBy (fun p -> FileInfo(p).Name)
+            |> Seq.choose(fun (_,librariesForPackage) ->
+                librariesForPackage
+                |> Seq.choose(fun library ->
+                    try
+                        let key = FileInfo(library).FullName.ToLowerInvariant()
+                        let assembly = 
+                            match loadedLibs.TryGetValue key with
+                            | true,v -> v
+                            | _ -> 
+                                let v = Assembly.ReflectionOnlyLoadFrom library
+                                loadedLibs.Add(key,v)
+                                v
 
-                            Some (assembly, BindingRedirects.getPublicKeyToken assembly, assembly.GetReferencedAssemblies())
-                        with exn -> None)
-                    |> Seq.sortBy(fun (assembly,_,_) -> assembly.GetName().Version)
-                    |> Seq.toList
-                    |> List.rev
-                    |> function | head :: _ -> Some head | _ -> None)
-                |> Seq.cache
+                        Some (assembly, BindingRedirects.getPublicKeyToken assembly, assembly.GetReferencedAssemblies())
+                    with exn -> None)
+                |> Seq.sortBy(fun (assembly,_,_) -> assembly.GetName().Version)
+                |> Seq.toList
+                |> List.rev
+                |> function | head :: _ -> Some head | _ -> None)
+            |> Seq.cache
 
-            assemblies
-            |> Seq.choose (fun (assembly,token,refs) -> token |> Option.map (fun token -> (assembly,token,refs)))
-            |> Seq.filter (fun (assembly,_,refs) -> 
+        assemblies
+        |> Seq.choose (fun (assembly,token,refs) -> token |> Option.map (fun token -> (assembly,token,refs)))
+        |> Seq.filter (fun (assembly,_,refs) -> 
             assemblies
             |> Seq.collect (fun (_,_,refs) -> refs)
-                |> Seq.filter (fun a -> assembly.GetName().Name = a.Name)
-                |> Seq.exists (fun a -> assembly.GetName().Version > a.Version))
-            |> Seq.map(fun (assembly, token,_) ->
-                { BindingRedirect.AssemblyName = assembly.GetName().Name
-                  Version = assembly.GetName().Version.ToString()
-                  PublicKeyToken = token
-                  Culture = None })
-        | None -> Seq.empty
+            |> Seq.filter (fun a -> assembly.GetName().Name = a.Name)
+            |> Seq.exists (fun a -> assembly.GetName().Version > a.Version))
+        |> Seq.map(fun (assembly, token,_) ->
+            { BindingRedirect.AssemblyName = assembly.GetName().Name
+              Version = assembly.GetName().Version.ToString()
+              PublicKeyToken = token
+              Culture = None })
 
     applyBindingRedirectsToFolder createNewBindingFiles root bindingRedirects
 
