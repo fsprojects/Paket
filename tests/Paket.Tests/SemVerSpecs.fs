@@ -64,6 +64,7 @@ let ``can compare semvers``() =
     (SemVer.Parse "2.3.4-alpha003") |> shouldBeSmallerThan (SemVer.Parse "2.3.4-alpha2") // lexical sort on the full prerelease string
     (SemVer.Parse "2.3.4-alpha.003") |> shouldBeGreaterThan (SemVer.Parse "2.3.4-alpha.2") // numeric sort on the second prerelease segment
     (SemVer.Parse "2.3.4-rc") |> shouldBeGreaterThan (SemVer.Parse "2.3.4-beta2")
+    (SemVer.Parse "1.0.12-build0025") |> shouldBeGreaterThan (SemVer.Parse "1.0.11")
 
 [<Test>]
 let ``can compare 4-parts semvers``() =
