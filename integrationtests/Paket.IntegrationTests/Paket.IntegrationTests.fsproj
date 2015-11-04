@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
@@ -77,6 +77,17 @@
   -->
   <Import Project="$(SolutionDir)\.paket\paket.targets" />
   <ItemGroup>
+    <Reference Include="FakeLib">
+      <HintPath>..\..\packages\build\FAKE\tools\FakeLib.dll</HintPath>
+    </Reference>
+    <Reference Include="mscorlib" />
+    <Reference Include="System" />
+    <Reference Include="System.Numerics" />
+    <Reference Include="System.Security" />
+    <Reference Include="System.Xml" />
+    <Reference Include="System.Xml.Linq" />
+  </ItemGroup>
+  <ItemGroup>
     <Compile Include="..\..\paket-files\test\forki\FsUnit\FsUnit.fs">
       <Paket>True</Paket>
       <Link>FsUnit.fs</Link>
@@ -92,25 +103,13 @@
     <Compile Include="AddSpecs.fs" />
     <Compile Include="OutdatedSpecs.fs" />
     <Compile Include="InstallSpecs.fs" />
-    <Compile Include="GroupSpecs.fs" />
     <Compile Include="FrameworkRestrictionsSpecs.fs" />
+    <Compile Include="GroupSpecs.fs" />
     <Compile Include="BasicResolverSpecs.fs" />
     <Compile Include="SemVerUpdateSpecs.fs" />
     <Compile Include="ResolverSkipsConflictsFastSpecs.fs" />
     <None Include="paket.references" />
-  </ItemGroup>
-  <ItemGroup>
-    <Reference Include="FakeLib">
-      <HintPath>..\..\packages\build\FAKE\tools\FakeLib.dll</HintPath>
-    </Reference>
-    <Reference Include="mscorlib" />
-    <Reference Include="System" />
-    <Reference Include="System.Numerics" />
-    <Reference Include="System.Security" />
-    <Reference Include="System.Xml" />
-    <Reference Include="System.Xml.Linq" />
-  </ItemGroup>
-  <Import Project="Paket.Tests.paket.targets" Condition="Exists('Paket.Tests.paket.targets')" />
+  </ItemGroup> 
   <ItemGroup>
     <ProjectReference Include="..\..\src\Paket.Core\Paket.Core.fsproj">
       <Name>Paket.Core</Name>

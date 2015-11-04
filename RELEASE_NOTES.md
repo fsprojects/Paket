@@ -1,3 +1,6 @@
+#### 2.21.3 - 04.11.2015
+* BUGFIX: Add missing transitive dependencies after paket update - https://github.com/fsprojects/Paket/issues/1190
+
 #### 2.21.2 - 03.11.2015
 * BUGFIX: Work around issue with # in file names on mono - https://github.com/fsprojects/Paket/issues/1189
 

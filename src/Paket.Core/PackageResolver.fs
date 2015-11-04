@@ -175,13 +175,14 @@ let calcOpenRequirements (exploredPackage:ResolvedPackage,globalFrameworkRestric
         closed
         |> Seq.exists (fun x ->
             x.Name = d.Name && 
+               x.Settings.FrameworkRestrictions = d.Settings.FrameworkRestrictions &&
                 (x = d ||
                  x.VersionRequirement.Range.IsIncludedIn d.VersionRequirement.Range ||
                  x.VersionRequirement.Range.IsGlobalOverride))
         |> not)
     |> Set.filter (fun d ->
         stillOpen
-        |> Seq.exists (fun x -> x.Name = d.Name && (x = d || x.VersionRequirement.Range.IsGlobalOverride))
+        |> Seq.exists (fun x -> x.Name = d.Name && (x = d || x.VersionRequirement.Range.IsGlobalOverride) && x.Settings.FrameworkRestrictions = d.Settings.FrameworkRestrictions)
         |> not)
     |> Set.union rest
 
@@ -223,7 +224,11 @@ let Resolve(groupName:GroupName, sources, getVersionsF, getPackageDetailsF, stra
                 let package = { package with Settings = { package.Settings with FrameworkRestrictions = newRestrictions } }
                 exploredPackages.[(dependency.Name,version)] <- package
                 package
-            | _ -> package
+            | _ ->
+                let newRestrictions = optimizeRestrictions (package.Settings.FrameworkRestrictions @ newRestrictions)
+                let package = { package with Settings = { package.Settings with FrameworkRestrictions = newRestrictions } }
+                exploredPackages.[(dependency.Name,version)] <- package
+                package
         | false,_ ->
             match updateMode with
             | Install -> tracefn  " - %O %A" dependency.Name version

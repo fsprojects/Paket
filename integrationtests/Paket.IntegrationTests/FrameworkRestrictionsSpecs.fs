@@ -22,3 +22,20 @@ let ``#1182 framework restrictions overwrite each other``() =
     let lockFile = lockFile.ToString()
     lockFile.Contains("Microsoft.Data.OData (>= 5.6.2)") |> shouldEqual true
     lockFile.Contains("framework: winv4.5") |> shouldEqual false
+
+[<Test>]
+let ``#1190 paket add nuget should handle transitive dependencies``() = 
+    paket "add nuget xunit version 2.1.0" "i001190-transitive-dependencies-with-restrictions" |> ignore
+    
+    let lockFile = LockFile.LoadFrom(Path.Combine(scenarioTempPath "i001190-transitive-dependencies-with-restrictions","paket.lock"))
+    lockFile.Groups.[Constants.MainDependencyGroup].Resolution.[PackageName "xunit.abstractions"].Settings.FrameworkRestrictions
+    |> shouldContain (FrameworkRestriction.AtLeast(DotNetFramework(FrameworkVersion.V4_5)))
+    
+[<Test>]
+let ``#1190 paket add nuget should handle transitive dependencies with restrictions``() = 
+    paket "add nuget xunit version 2.1.0" "i001190-transitive-dependencies-with-concrete-restrictions" |> ignore
+    
+    let lockFile = LockFile.LoadFrom(Path.Combine(scenarioTempPath "i001190-transitive-dependencies-with-concrete-restrictions","paket.lock"))
+    lockFile.Groups.[Constants.MainDependencyGroup].Resolution.[PackageName "xunit.abstractions"].Settings.FrameworkRestrictions
+    |> shouldEqual []
+    
