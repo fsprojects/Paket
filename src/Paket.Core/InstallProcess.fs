@@ -160,38 +160,69 @@ let createModel(root, force, dependenciesFile:DependenciesFile, lockFile : LockF
     extractedPackages
 
 /// Applies binding redirects for all strong-named references to all app. and web.config files.
-let private applyBindingRedirects (loadedLibs:Dictionary<_,_>) createNewBindingFiles root (extractedPackages:seq<_*InstallModel>) =
-    let bindingRedirects (targetProfile : TargetProfile) =
-        extractedPackages
-        |> Seq.map (fun (package, model:InstallModel) -> model.GetLibReferences(targetProfile))
-        |> Seq.concat
-        |> Seq.groupBy (fun p -> FileInfo(p).Name)
-        |> Seq.choose(fun (_,librariesForPackage) ->
-            librariesForPackage
-            |> Seq.choose(fun library ->
-                try
-                    let key = FileInfo(library).FullName.ToLowerInvariant()
-                    let assembly = 
-                        match loadedLibs.TryGetValue key with
-                        | true,v -> v
-                        | _ -> 
-                            let v = Assembly.ReflectionOnlyLoadFrom library
-                            loadedLibs.Add(key,v)
-                            v
+let private applyBindingRedirects (loadedLibs:Dictionary<_,_>) createNewBindingFiles root groupName findDependencies (extractedPackages:seq<_*InstallModel>) =
+    let rec dependencies (projectFile : ProjectFile) =
+        match ProjectFile.FindReferencesFile (FileInfo projectFile.FileName) with
+        | Some fileName -> 
+            let referenceFile = ReferencesFile.FromFile fileName
 
-                    assembly
-                    |> BindingRedirects.getPublicKeyToken
-                    |> Option.map(fun token -> assembly, token)
-                with exn -> None)
-            |> Seq.sortBy(fun (assembly,_) -> assembly.GetName().Version)
-            |> Seq.toList
-            |> List.rev
-            |> function | head :: _ -> Some head | _ -> None)
-        |> Seq.map(fun (assembly, token) ->
-            { BindingRedirect.AssemblyName = assembly.GetName().Name
-              Version = assembly.GetName().Version.ToString()
-              PublicKeyToken = token
-              Culture = None })
+            projectFile.GetInterProjectDependencies()
+            |> Seq.map (fun r -> ProjectFile.LoadFromFile r.Path)
+            |> Seq.collect dependencies
+            |> Seq.append (
+                referenceFile.Groups
+                |> Seq.filter (fun g -> g.Key = groupName)
+                |> Seq.collect (fun g -> g.Value.NugetPackages |> List.map (fun p -> (groupName,p.Name)))
+                |> Seq.collect findDependencies)
+            |> Seq.cache
+        | None -> Seq.empty
+
+    let bindingRedirects (projectFile : ProjectFile) =
+        match ProjectFile.FindReferencesFile (FileInfo projectFile.FileName) with
+        | Some fileName -> 
+            let dependencies = dependencies projectFile
+
+            let assemblies =
+                extractedPackages
+                |> Seq.map snd
+                |> Seq.filter (fun model -> dependencies |> Seq.contains model.PackageName)
+                |> Seq.map (fun model -> model.GetLibReferences(projectFile.GetTargetProfile()))
+                |> Seq.concat
+                |> Seq.groupBy (fun p -> FileInfo(p).Name)
+                |> Seq.choose(fun (_,librariesForPackage) ->
+                    librariesForPackage
+                    |> Seq.choose(fun library ->
+                        try
+                            let key = FileInfo(library).FullName.ToLowerInvariant()
+                            let assembly = 
+                                match loadedLibs.TryGetValue key with
+                                | true,v -> v
+                                | _ -> 
+                                    let v = Assembly.ReflectionOnlyLoadFrom library
+                                    loadedLibs.Add(key,v)
+                                    v
+
+                            Some (assembly, BindingRedirects.getPublicKeyToken assembly)
+                        with exn -> None)
+                    |> Seq.sortBy(fun (assembly,_) -> assembly.GetName().Version)
+                    |> Seq.toList
+                    |> List.rev
+                    |> function | head :: _ -> Some head | _ -> None)
+                |> Seq.cache
+
+            assemblies
+            |> Seq.choose (fun (assembly,token) -> token |> Option.map (fun token -> (assembly,token)))
+            |> Seq.filter (fun (assembly,_) -> 
+                assemblies
+                |> Seq.collect (fun (a,_) -> a.GetReferencedAssemblies())
+                |> Seq.filter (fun a -> assembly.GetName().Name = a.Name)
+                |> Seq.exists (fun a -> assembly.GetName().Version > a.Version))
+            |> Seq.map(fun (assembly, token) ->
+                { BindingRedirect.AssemblyName = assembly.GetName().Name
+                  Version = assembly.GetName().Version.ToString()
+                  PublicKeyToken = token
+                  Culture = None })
+        | None -> Seq.empty
 
     applyBindingRedirectsToFolder createNewBindingFiles root bindingRedirects
 
@@ -345,7 +376,7 @@ let InstallIntoProjects(options : InstallerOptions, dependenciesFile, lockFile :
                 let isEnabled = defaultArg packageRedirects (options.Redirects || g.Value.Options.Redirects)
                 isEnabled && (fst kv.Key) = g.Key)
             |> Seq.map (fun kv -> kv.Value)
-            |> applyBindingRedirects loadedLibs options.CreateNewBindingFiles (FileInfo project.FileName).Directory.FullName
+            |> applyBindingRedirects loadedLibs options.CreateNewBindingFiles (FileInfo project.FileName).Directory.FullName g.Key lockFile.GetAllDependenciesOf
 
 /// Installs all packages from the lock file.
 let Install(options : InstallerOptions, dependenciesFile, lockFile : LockFile) =

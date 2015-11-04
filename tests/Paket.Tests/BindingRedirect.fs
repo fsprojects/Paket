@@ -133,29 +133,21 @@ let buildMockGetFiles outcomes =
 let rootPath = @"C:/rootpath/" |> toSafePath
 
 [<Test>]
-let ``app.config file is marked for creation in folders containing paket.references``() =
+let ``project file containing paket.references is marked for binding redirect``() =
     let mockGetFiles =
         buildMockGetFiles
             [ (@"C:/rootpath/", "paket.references"), [ @"C:/rootpath/source/paket.references" ]
-              (@"C:/rootpath/source", "*.config"), []
+              (@"C:/rootpath/source", "*proj"), [ @"C:/rootpath/source/Project.fsproj" ]
             ]
-    let foldersToCreateConfigFor = getFoldersWithPaketReferencesAndNoConfig mockGetFiles rootPath
-    foldersToCreateConfigFor |> shouldEqual [ @"C:/rootpath/source" |> toSafePath ]
+    getProjectFilesWithPaketReferences mockGetFiles rootPath
+    |> shouldEqual [ @"C:/rootpath/source/Project.fsproj" |> toSafePath ]
 
 [<Test>]
-let ``app.config file is not marked for creation in folders not containing paket.references``() =
-    let mockGetFiles = buildMockGetFiles [ (@"C:/rootpath/", "paket.references"), [] ]
-    let foldersToCreateConfigFor = getFoldersWithPaketReferencesAndNoConfig mockGetFiles rootPath
-    foldersToCreateConfigFor |> shouldEqual []
-
-[<Test>]
-let ``app.config file is not marked for creation in folders if one already exists``() =
+let ``project file not containing paket.references is not marked for binding redirect``() =
     let mockGetFiles =
         buildMockGetFiles
-            [ (@"C:/rootpath/", "paket.references"), [ @"C:/rootpath/source/paket.references" ]
-              (@"C:/rootpath/source", "*.config"), [ @"C:/rootpath/source/app.config" ]
+            [ (@"C:/rootpath/", "paket.references"), [] 
+              (@"C:/rootpath/source", "*proj"), [ @"C:/rootpath/source/Project.fsproj" ]
             ]
-    let foldersToCreateConfigFor = getFoldersWithPaketReferencesAndNoConfig mockGetFiles rootPath
-    foldersToCreateConfigFor |> shouldEqual []
-
-
+    getProjectFilesWithPaketReferences mockGetFiles rootPath
+    |> shouldEqual []
