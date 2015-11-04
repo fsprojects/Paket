@@ -1,11 +1,8 @@
-#### 2.21.3 - 04.11.2015
+#### 2.22.0-alpha001 - 04.11.2015
+* Paket adds binding redirect only for applicable assemblies - https://github.com/fsprojects/Paket/issues/1187
 * BUGFIX: Add missing transitive dependencies after paket update - https://github.com/fsprojects/Paket/issues/1190
-
-#### 2.21.2 - 03.11.2015
 * BUGFIX: Work around issue with # in file names on mono - https://github.com/fsprojects/Paket/issues/1189
-
-#### 2.21.1 - 03.11.2015
-* Better error reporting when prereleases are involved - https://github.com/fsprojects/Paket/issues/1186
+* USABILITY: Better error reporting when prereleases are involved - https://github.com/fsprojects/Paket/issues/1186
 
 #### 2.21.0 - 01.11.2015
 * Adding LOCKEDVERSION placeholder to templatefile - https://github.com/fsprojects/Paket/issues/1183
