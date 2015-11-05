@@ -23,6 +23,10 @@ module LockFileSerializer =
     let serializeOptionsAsLines options = [
         if options.Strict then yield "REFERENCES: STRICT"
         if options.Redirects then yield "REDIRECTS: ON"
+        match options.ResolverStrategy with
+        | Some ResolverStrategy.Min -> yield "STRATEGY: MIN"
+        | Some ResolverStrategy.Max -> yield "STRATEGY: MAX"
+        | None -> ()
         match options.Settings.CopyLocal with
         | Some x -> yield "COPY-LOCAL: " + x.ToString().ToUpper()
         | None -> ()
@@ -172,6 +176,7 @@ module LockFileParser =
     | CopyLocal of bool
     | Redirects of bool
     | ReferenceCondition of string
+    | ResolverStrategy of ResolverStrategy option
 
     let private (|Remote|NugetPackage|NugetDependency|SourceFile|RepositoryType|Group|InstallOption|) (state, line:string) =
         match (state.RepositoryType, line.Trim()) with
@@ -196,6 +201,14 @@ module LockFileParser =
                 | _ -> ContentCopySettings.Overwrite
 
             InstallOption(OmitContent(setting))
+        | _, String.StartsWith "STRATEGY:" trimmed -> 
+            let setting =
+                match trimmed.Trim().ToLowerInvariant() with
+                | "min" -> Some ResolverStrategy.Min
+                | "max" -> Some ResolverStrategy.Max
+                | _ -> None
+
+            InstallOption(ResolverStrategy(setting))
         | _, trimmed when line.StartsWith "      " ->
             if trimmed.Contains("(") then
                 let parts = trimmed.Split '(' 
@@ -218,6 +231,7 @@ module LockFileParser =
         | FrameworkRestrictions r -> { currentGroup.Options with Settings = { currentGroup.Options.Settings with FrameworkRestrictions = r }}
         | OmitContent omit -> { currentGroup.Options with Settings = { currentGroup.Options.Settings with OmitContent = Some omit }}
         | ReferenceCondition condition -> { currentGroup.Options with Settings = { currentGroup.Options.Settings with ReferenceCondition = Some condition }}
+        | ResolverStrategy strategy -> { currentGroup.Options with ResolverStrategy = strategy }
 
     let Parse(lockFileLines) =
         let remove textToRemove (source:string) = source.Replace(textToRemove, "")

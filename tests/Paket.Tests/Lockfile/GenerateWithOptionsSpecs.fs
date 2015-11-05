@@ -84,3 +84,43 @@ let ``should generate redirects lock file``() =
     ResolveWithGraph(cfg,noSha1,VersionsFromGraphAsSeq graph3, PackageDetailsFromGraph graph3).[Constants.MainDependencyGroup].ResolvedPackages.GetModelOrFail()
     |> LockFileSerializer.serializePackages cfg.Groups.[Constants.MainDependencyGroup].Options
     |> shouldEqual (normalizeLineEndings expected3)
+
+[<Test>]
+let ``should generate strategy min lock file``() = 
+    let config = """
+    strategy min
+    source "http://nuget.org/api/v2"
+
+    nuget "Microsoft.SqlServer.Types"
+    """
+
+    let expected = """STRATEGY: MIN
+NUGET
+  remote: http://nuget.org/api/v2
+  specs:
+    Microsoft.SqlServer.Types (1.0)"""
+
+    let cfg = DependenciesFile.FromCode(config)
+    ResolveWithGraph(cfg,noSha1,VersionsFromGraphAsSeq graph3, PackageDetailsFromGraph graph3).[Constants.MainDependencyGroup].ResolvedPackages.GetModelOrFail()
+    |> LockFileSerializer.serializePackages cfg.Groups.[Constants.MainDependencyGroup].Options
+    |> shouldEqual (normalizeLineEndings expected)
+
+[<Test>]
+let ``should generate strategy max lock file``() = 
+    let config = """
+    strategy max
+    source "http://nuget.org/api/v2"
+
+    nuget "Microsoft.SqlServer.Types"
+    """
+
+    let expected = """STRATEGY: MAX
+NUGET
+  remote: http://nuget.org/api/v2
+  specs:
+    Microsoft.SqlServer.Types (1.0)"""
+
+    let cfg = DependenciesFile.FromCode(config)
+    ResolveWithGraph(cfg,noSha1,VersionsFromGraphAsSeq graph3, PackageDetailsFromGraph graph3).[Constants.MainDependencyGroup].ResolvedPackages.GetModelOrFail()
+    |> LockFileSerializer.serializePackages cfg.Groups.[Constants.MainDependencyGroup].Options
+    |> shouldEqual (normalizeLineEndings expected)
