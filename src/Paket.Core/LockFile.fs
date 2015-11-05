@@ -23,6 +23,10 @@ module LockFileSerializer =
     let serializeOptionsAsLines options = [
         if options.Strict then yield "REFERENCES: STRICT"
         if options.Redirects then yield "REDIRECTS: ON"
+        match options.ResolverStrategy with
+        | Some ResolverStrategy.Min -> yield "STRATEGY: MIN"
+        | Some ResolverStrategy.Max -> yield "STRATEGY: MAX"
+        | None -> ()
         match options.Settings.CopyLocal with
         | Some x -> yield "COPY-LOCAL: " + x.ToString().ToUpper()
         | None -> ()
