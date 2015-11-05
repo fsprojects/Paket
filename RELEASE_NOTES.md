@@ -1,3 +1,6 @@
+#### 2.22.1 - 05.11.2015
+* Paket generates and parses strategy option in lock file - https://github.com/fsprojects/Paket/pull/1196
+
 #### 2.22.0 - 05.11.2015
 * Paket adds binding redirect only for applicable assemblies - https://github.com/fsprojects/Paket/issues/1187
 * BUGFIX: Add missing transitive dependencies after paket update - https://github.com/fsprojects/Paket/issues/1190
