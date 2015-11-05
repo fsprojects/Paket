@@ -1,4 +1,4 @@
-#### 2.22.0-alpha002 - 04.11.2015
+#### 2.22.0-alpha003 - 05.11.2015
 * Paket adds binding redirect only for applicable assemblies - https://github.com/fsprojects/Paket/issues/1187
 * BUGFIX: Add missing transitive dependencies after paket update - https://github.com/fsprojects/Paket/issues/1190
 * BUGFIX: Work around issue with # in file names on mono - https://github.com/fsprojects/Paket/issues/1189
