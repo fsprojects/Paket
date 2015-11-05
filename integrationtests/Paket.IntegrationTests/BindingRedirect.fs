@@ -7,9 +7,9 @@ open FsUnit
 
 [<Test>]
 let ``install should redirect required assemblies only``() = 
-    paket "install --redirects --createnewbindingfiles" "binding-redirect-adds-referenced-assemblies-only" |> ignore
+    paket "install --redirects --createnewbindingfiles" "i001187-binding-redirect-adds-referenced-assemblies-only" |> ignore
 
-    let path = Path.Combine(scenarioTempPath "binding-redirect-adds-referenced-assemblies-only")
+    let path = Path.Combine(scenarioTempPath "i001187-binding-redirect-adds-referenced-assemblies-only")
     let config1Path = Path.Combine(path, "Project1", "app.config")
     let config2Path = Path.Combine(path, "Project2", "app.config")
     let config3Path = Path.Combine(path, "Project3", "app.config")
