@@ -575,3 +575,44 @@ let ``should parse and serialise groups lockfile``() =
 
     normalizeLineEndings lockFile' 
     |> shouldEqual (normalizeLineEndings groupsLockFile)
+
+[<Test>]
+let ``should parse strategy min lock file``() = 
+    let lockFile = """STRATEGY: MIN
+NUGET
+  remote: "D:\code\temp with space"
+  specs:
+    Castle.Windsor (2.1)
+"""
+    let lockFile = LockFileParser.Parse(toLines lockFile) |> List.head
+    let packages = List.rev lockFile.Packages
+    
+    packages.Length |> shouldEqual 1
+    lockFile.Options.ResolverStrategy |> shouldEqual (Some ResolverStrategy.Min)
+    
+[<Test>]
+let ``should parse strategy max lock file``() = 
+    let lockFile = """STRATEGY: MAX
+NUGET
+  remote: "D:\code\temp with space"
+  specs:
+    Castle.Windsor (2.1)
+"""
+    let lockFile = LockFileParser.Parse(toLines lockFile) |> List.head
+    let packages = List.rev lockFile.Packages
+    
+    packages.Length |> shouldEqual 1
+    lockFile.Options.ResolverStrategy |> shouldEqual (Some ResolverStrategy.Max)
+
+[<Test>]
+let ``should parse no strategy lock file``() = 
+    let lockFile = """NUGET
+  remote: "D:\code\temp with space"
+  specs:
+    Castle.Windsor (2.1)
+"""
+    let lockFile = LockFileParser.Parse(toLines lockFile) |> List.head
+    let packages = List.rev lockFile.Packages
+    
+    packages.Length |> shouldEqual 1
+    lockFile.Options.ResolverStrategy |> shouldEqual None
