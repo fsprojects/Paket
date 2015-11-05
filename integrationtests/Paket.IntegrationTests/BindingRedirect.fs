@@ -68,3 +68,11 @@ let ``install should redirect required assemblies only``() =
     config4.Contains ``xunit.extensions`` |> shouldEqual false
     config4 |> shouldContainText ``Castle.Core``
     config4.Contains ``Castle.Windsor`` |> shouldEqual false
+
+[<Test>]
+let ``#1195 should report broken app.config``() =
+    try
+        paket "install --redirects" "i001195-broken-appconfig" |> ignore
+        failwith "paket should fail"
+    with
+    | exn when exn.Message.Contains("Project1") && exn.Message.Contains("app.config") -> ()

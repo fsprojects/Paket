@@ -113,9 +113,8 @@ let private applyBindingRedirects bindingRedirects (configFilePath:string) =
         try
             XDocument.Load(configFilePath, LoadOptions.PreserveWhitespace)
         with
-        | :? System.Xml.XmlException as ex ->
-            Logging.verbosefn "Illegal XML in file: %s" configFilePath
-            raise ex
+        | exn -> failwithf "Parsing of %s failed.%s%s" configFilePath Environment.NewLine exn.Message
+
     let config = Seq.fold setRedirect config bindingRedirects
     indentAssemblyBindings config
     config.Save configFilePath

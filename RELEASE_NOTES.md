@@ -1,3 +1,6 @@
+#### 2.22.2 - 05.11.2015
+* USABILITY: Paket shows parsing errors in app.config files - https://github.com/fsprojects/Paket/issues/1195
+
 #### 2.22.1 - 05.11.2015
 * Paket generates and parses strategy option in lock file - https://github.com/fsprojects/Paket/pull/1196
 
