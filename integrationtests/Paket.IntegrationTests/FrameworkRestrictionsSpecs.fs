@@ -33,9 +33,9 @@ let ``#1190 paket add nuget should handle transitive dependencies``() =
     
 [<Test>]
 let ``#1190 paket add nuget should handle transitive dependencies with restrictions``() = 
-    paket "add nuget xunit version 2.1.0" "i001190-transitive-dependencies-with-concrete-restrictions" |> ignore
+    paket "add nuget xunit version 2.1.0" "i001190-transitive-deps" |> ignore
     
-    let lockFile = LockFile.LoadFrom(Path.Combine(scenarioTempPath "i001190-transitive-dependencies-with-concrete-restrictions","paket.lock"))
+    let lockFile = LockFile.LoadFrom(Path.Combine(scenarioTempPath "i001190-transitive-deps","paket.lock"))
     lockFile.Groups.[Constants.MainDependencyGroup].Resolution.[PackageName "xunit.abstractions"].Settings.FrameworkRestrictions
     |> shouldEqual []
     

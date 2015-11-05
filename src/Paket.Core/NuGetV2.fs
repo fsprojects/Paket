@@ -397,8 +397,8 @@ let ExtractPackage(fileName:string, targetFolder, packageName:PackageName, versi
                 with
                 | _ -> ()
 
-                let text = if !text = "" then "" else sprintf " Package contains text: %s%s" !text Environment.NewLine
-                failwithf "Error during extraction of %s.%s%s Message: %s" (Path.GetFullPath fileName) Environment.NewLine text exn.Message
+                let text = if !text = "" then "" else sprintf "%s Package contains text: %s%s" Environment.NewLine !text Environment.NewLine
+                failwithf "Error during extraction of %s.%sMessage: %s%s" (Path.GetFullPath fileName) Environment.NewLine exn.Message text
 
             // cleanup folder structure
             let rec cleanup (dir : DirectoryInfo) = 
