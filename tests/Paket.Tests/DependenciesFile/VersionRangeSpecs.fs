@@ -51,6 +51,7 @@ let ``can detect less-than-or-equal``() =
 [<Test>]
 let ``can detect range``() = 
     parseRange ">= 1.2.3 < 1.5" |> shouldEqual (VersionRange.Range(VersionRangeBound.Including,SemVer.Parse "1.2.3",SemVer.Parse("1.5"), VersionRangeBound.Excluding))
+    parseRange ">= 1.2.3 <   1.5" |> shouldEqual (VersionRange.Range(VersionRangeBound.Including,SemVer.Parse "1.2.3",SemVer.Parse("1.5"), VersionRangeBound.Excluding))
     parseRange "> 1.2.3 < 1.5" |> shouldEqual (VersionRange.Range(VersionRangeBound.Excluding,SemVer.Parse "1.2.3",SemVer.Parse("1.5"), VersionRangeBound.Excluding))
     parseRange "> 1.2.3 <= 2.5" |> shouldEqual (VersionRange.Range(VersionRangeBound.Excluding,SemVer.Parse "1.2.3",SemVer.Parse("2.5"), VersionRangeBound.Including))
     parseRange ">= 1.2 <= 2.5" |> shouldEqual (VersionRange.Range(VersionRangeBound.Including,SemVer.Parse "1.2",SemVer.Parse("2.5"), VersionRangeBound.Including))

@@ -93,7 +93,7 @@ module DependenciesFileParser =
             | [x] when x.ToLower() = "prerelease" -> PreReleaseStatus.All
             | _ -> PreReleaseStatus.Concrete texts
 
-        if text = "" || text = null then VersionRequirement(VersionRange.AtLeast("0"),PreReleaseStatus.No) else
+        if String.IsNullOrWhiteSpace text then VersionRequirement(VersionRange.AtLeast("0"),PreReleaseStatus.No) else
 
         match text.Split([|' '|],StringSplitOptions.RemoveEmptyEntries) |> Array.toList with
         |  ">=" :: v1 :: "<" :: v2 :: rest -> VersionRequirement(VersionRange.Range(VersionRangeBound.Including,SemVer.Parse v1,SemVer.Parse v2,VersionRangeBound.Excluding),parsePrerelease rest)
