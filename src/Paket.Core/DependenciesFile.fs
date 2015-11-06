@@ -87,28 +87,29 @@ module DependenciesFileParser =
         String.Join(".", promoted)
 
     let parseVersionRequirement (text : string) : VersionRequirement =
-        let inline parsePrerelease (texts : string list) = 
-            match texts |> List.filter ((<>) "") with
-            | [] -> PreReleaseStatus.No
-            | [x] when x.ToLower() = "prerelease" -> PreReleaseStatus.All
-            | _ -> PreReleaseStatus.Concrete texts
+        try
+            let inline parsePrerelease (texts : string list) = 
+                match texts |> List.filter ((<>) "") with
+                | [] -> PreReleaseStatus.No
+                | [x] when x.ToLower() = "prerelease" -> PreReleaseStatus.All
+                | _ -> PreReleaseStatus.Concrete texts
 
-        if String.IsNullOrWhiteSpace text then VersionRequirement(VersionRange.AtLeast("0"),PreReleaseStatus.No) else
+            if String.IsNullOrWhiteSpace text then VersionRequirement(VersionRange.AtLeast("0"),PreReleaseStatus.No) else
 
-        match text.Split([|' '|],StringSplitOptions.RemoveEmptyEntries) |> Array.toList with
-        |  ">=" :: v1 :: "<" :: v2 :: rest -> VersionRequirement(VersionRange.Range(VersionRangeBound.Including,SemVer.Parse v1,SemVer.Parse v2,VersionRangeBound.Excluding),parsePrerelease rest)
-        |  ">=" :: v1 :: "<=" :: v2 :: rest -> VersionRequirement(VersionRange.Range(VersionRangeBound.Including,SemVer.Parse v1,SemVer.Parse v2,VersionRangeBound.Including),parsePrerelease rest)
-        |  "~>" :: v1 :: ">=" :: v2 :: rest -> VersionRequirement(VersionRange.Range(VersionRangeBound.Including,SemVer.Parse v2,SemVer.Parse(twiddle v1),VersionRangeBound.Excluding),parsePrerelease rest)
-        |  "~>" :: v1 :: ">" :: v2 :: rest -> VersionRequirement(VersionRange.Range(VersionRangeBound.Excluding,SemVer.Parse v2,SemVer.Parse(twiddle v1),VersionRangeBound.Excluding),parsePrerelease rest)
-        |  ">" :: v1 :: "<" :: v2 :: rest -> VersionRequirement(VersionRange.Range(VersionRangeBound.Excluding,SemVer.Parse v1,SemVer.Parse v2,VersionRangeBound.Excluding),parsePrerelease rest)
-        |  ">" :: v1 :: "<=" :: v2 :: rest -> VersionRequirement(VersionRange.Range(VersionRangeBound.Excluding,SemVer.Parse v1,SemVer.Parse v2,VersionRangeBound.Including),parsePrerelease rest)
-        | _ -> 
-            let splitVersion (text:string) =
-                match basicOperators |> List.tryFind(text.StartsWith) with
-                | Some token -> token, text.Replace(token + " ", "").Split(' ') |> Array.toList
-                | None -> "=", text.Split(' ') |> Array.toList
+            match text.Split([|' '|],StringSplitOptions.RemoveEmptyEntries) |> Array.toList with
+            |  ">=" :: v1 :: "<" :: v2 :: rest -> VersionRequirement(VersionRange.Range(VersionRangeBound.Including,SemVer.Parse v1,SemVer.Parse v2,VersionRangeBound.Excluding),parsePrerelease rest)
+            |  ">=" :: v1 :: "<=" :: v2 :: rest -> VersionRequirement(VersionRange.Range(VersionRangeBound.Including,SemVer.Parse v1,SemVer.Parse v2,VersionRangeBound.Including),parsePrerelease rest)
+            |  "~>" :: v1 :: ">=" :: v2 :: rest -> VersionRequirement(VersionRange.Range(VersionRangeBound.Including,SemVer.Parse v2,SemVer.Parse(twiddle v1),VersionRangeBound.Excluding),parsePrerelease rest)
+            |  "~>" :: v1 :: ">" :: v2 :: rest -> VersionRequirement(VersionRange.Range(VersionRangeBound.Excluding,SemVer.Parse v2,SemVer.Parse(twiddle v1),VersionRangeBound.Excluding),parsePrerelease rest)
+            |  ">" :: v1 :: "<" :: v2 :: rest -> VersionRequirement(VersionRange.Range(VersionRangeBound.Excluding,SemVer.Parse v1,SemVer.Parse v2,VersionRangeBound.Excluding),parsePrerelease rest)
+            |  ">" :: v1 :: "<=" :: v2 :: rest -> VersionRequirement(VersionRange.Range(VersionRangeBound.Excluding,SemVer.Parse v1,SemVer.Parse v2,VersionRangeBound.Including),parsePrerelease rest)
+            | _ -> 
+                let splitVersion (text:string) =
+                    match basicOperators |> List.tryFind(text.StartsWith) with
+                    | Some token -> token, text.Replace(token + " ", "").Split(' ') |> Array.toList
+                    | None -> "=", text.Split(' ') |> Array.toList
 
-            try
+            
                 match splitVersion text with
                 | "==", version :: rest -> VersionRequirement(VersionRange.OverrideAll(SemVer.Parse version),parsePrerelease rest)
                 | ">=", version :: rest -> VersionRequirement(VersionRange.AtLeast(version),parsePrerelease rest)
@@ -118,8 +119,8 @@ module DependenciesFileParser =
                 | "~>", minimum :: rest -> VersionRequirement(VersionRange.Between(minimum,twiddle minimum),parsePrerelease rest)
                 | _, version :: rest -> VersionRequirement(VersionRange.Exactly(version),parsePrerelease rest)
                 | _ -> failwithf "could not parse version range \"%s\"" text
-            with
-            | _ -> failwithf "could not parse version range \"%s\"" text
+        with
+        | _ -> failwithf "could not parse version range \"%s\"" text
 
     let parseDependencyLine (line:string) =
         let rec parseDepLine start acc =
