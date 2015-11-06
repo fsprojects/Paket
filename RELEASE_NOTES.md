@@ -1,3 +1,6 @@
+#### 2.22.3 - 06.11.2015
+* Use lock free version if Async.Choice
+
 #### 2.22.2 - 05.11.2015
 * USABILITY: Paket shows parsing errors in app.config files - https://github.com/fsprojects/Paket/issues/1195
 

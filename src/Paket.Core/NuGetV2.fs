@@ -100,9 +100,8 @@ let tryNuGetV3 (auth, nugetV3Url, package:PackageName) =
         try 
             let! data = NuGetV3.findVersionsForPackage(nugetV3Url, auth, package, true, 100000)
             match data with
-            | Some data when Array.isEmpty data -> return None
-            | None -> return None
-            | _ -> return data
+            | Some data when Array.isEmpty data |> not -> return Some data
+            | _ -> return None
         with exn -> return None
     }
 
@@ -643,10 +642,10 @@ let getVersionsCached key f (auth, nugetURL, package) =
         | _ ->
             let! result = f (auth, nugetURL, package)
             match result with
-            | Some x ->
+            | Some x when Array.isEmpty x |> not ->
                 protocolCache.TryAdd((auth, nugetURL), key) |> ignore
                 return Some x
-            | None -> return None
+            | _ -> return None
     }
 
 /// Allows to retrieve all version no. for a package from the given sources.
@@ -669,7 +668,7 @@ let GetVersions root (sources, packageName:PackageName) =
                         v2Feeds @ v3Feeds
                    | LocalNuget path -> [ getAllVersionsFromLocalPath (path, packageName, root) ])
         |> Seq.toArray
-        |> Array.map Async.Choice'
+        |> Array.map Async.Choice
         |> Async.Parallel
         |> Async.RunSynchronously
         |> Array.choose id

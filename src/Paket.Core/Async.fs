@@ -18,110 +18,33 @@ module AsyncExtensions =
             return (a'',b'')
         }
 
-    static member Choice(tasks : Async<'T option> seq) =
-
-        async {
-            let! t = Async.CancellationToken
-
-            let run (cont,econt,ccont) = 
-                let tasks = Seq.toArray tasks
-                if tasks.Length = 0 then cont None else
-
-                let innerCts = CancellationTokenSource.CreateLinkedTokenSource t
-
-                let count = ref tasks.Length
-                let completed = ref false
-                let synchronize f =
-                    lock count (fun () ->
-                        if !completed then ()
-                        else f ())
-                
-                // register for external cancellation
-                do t.Register(
-                    Action(fun () ->
-                        synchronize (fun () ->
-                            ccont <| OperationCanceledException()
-                            completed := true))) |> ignore
-
-                let wrap task =
-                    async {
-                        try
-                            let! res = task
-                            match res with
-                            | Some r ->
-                                synchronize (fun () ->
-                                    cont (Some r)
-                                    innerCts.Cancel()
-                                    completed := true)
-                            | _ -> 
-                                synchronize (fun () ->
-                                    decr count
-                                    if !count = 0 then 
-                                        cont None
-                                        innerCts.Dispose ())
-                        with e -> 
-                            synchronize (fun () ->
-                                econt e
-                                innerCts.Cancel()
-                                completed := true)
-                    }
-
-                for task in tasks do
-                    Async.Start(wrap task, innerCts.Token)
-
-            return! Async.FromContinuations run
-        }
-
-    static member Choice'(tasks : Async<'T[] option> seq) =
-
-        async {
-            let! t = Async.CancellationToken
-
-            let run (cont,econt,ccont) = 
-                let tasks = Seq.toArray tasks
-                if tasks.Length = 0 then cont None else
-
-                let innerCts = CancellationTokenSource.CreateLinkedTokenSource t
-
-                let count = ref tasks.Length
-                let completed = ref false
-                let synchronize f =
-                    lock count (fun () ->
-                        if !completed then ()
-                        else f ())
-                
-                // register for external cancellation
-                do t.Register(
-                    Action(fun () ->
-                        synchronize (fun () ->
-                            ccont <| OperationCanceledException()
-                            completed := true))) |> ignore
-
-                let wrap task =
-                    async {
-                        try
-                            let! res = task
-                            match res with
-                            | Some r when Array.isEmpty r |> not -> // special Array.isEmpty case for Paket
-                                synchronize (fun () ->
-                                    cont (Some r)
-                                    innerCts.Cancel()
-                                    completed := true)
-                            | _ -> 
-                                synchronize (fun () ->
-                                    decr count
-                                    if !count = 0 then 
-                                        cont None
-                                        innerCts.Dispose ())
-                        with e -> 
-                            synchronize (fun () ->
-                                econt e
-                                innerCts.Cancel()
-                                completed := true)
-                    }
-
-                for task in tasks do
-                    Async.Start(wrap task, innerCts.Token)
-
-            return! Async.FromContinuations run
-        }
+    static member Choice(tasks : Async<'T option> seq) = async {
+         match Seq.toArray tasks with
+         | [||] -> return None
+         | [|t|] -> return! t
+         | tasks ->
+ 
+         let! t = Async.CancellationToken
+         return! Async.FromContinuations <|
+             fun (sc,ec,cc) ->
+                 let noneCount = ref 0
+                 let exnCount = ref 0
+                 let innerCts = CancellationTokenSource.CreateLinkedTokenSource t
+ 
+                 let scont (result : 'T option) =
+                     match result with
+                     | Some _ when Interlocked.Increment exnCount = 1 -> innerCts.Cancel() ; sc result
+                     | None when Interlocked.Increment noneCount = tasks.Length -> sc None
+                     | _ -> ()
+ 
+                 let econt (exn : exn) =
+                     if Interlocked.Increment exnCount = 1 then 
+                         innerCts.Cancel() ; ec exn
+ 
+                 let ccont (exn : OperationCanceledException) =
+                     if Interlocked.Increment exnCount = 1 then
+                         innerCts.Cancel(); cc exn
+ 
+                 for task in tasks do
+                     ignore <| System.Threading.Tasks.Task.Factory.StartNew(fun () -> Async.StartWithContinuations(task, scont, econt, ccont, innerCts.Token))
+     }
