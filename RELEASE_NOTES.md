@@ -1,3 +1,6 @@
+#### 2.22.4 - 06.11.2015
+* Fix parse issue noticed in FsBlog
+
 #### 2.22.3 - 06.11.2015
 * Use lock free version if Async.Choice
 
