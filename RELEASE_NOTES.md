@@ -1,14 +1,9 @@
-#### 2.22.5 - 06.11.2015
+#### 2.23.0 - 07.11.2015
+* Allow to exclude dependencies in template files - https://github.com/fsprojects/Paket/issues/1199
 * Fix parse issue noticed in FsBlog
-
-#### 2.22.3 - 06.11.2015
-* Use lock free version if Async.Choice
-
-#### 2.22.2 - 05.11.2015
-* USABILITY: Paket shows parsing errors in app.config files - https://github.com/fsprojects/Paket/issues/1195
-
-#### 2.22.1 - 05.11.2015
+* Use lock free version of Async.Choice
 * Paket generates and parses strategy option in lock file - https://github.com/fsprojects/Paket/pull/1196
+* USABILITY: Paket shows parsing errors in app.config files - https://github.com/fsprojects/Paket/issues/1195
 
 #### 2.22.0 - 05.11.2015
 * Paket adds binding redirect only for applicable assemblies - https://github.com/fsprojects/Paket/issues/1187
@@ -90,7 +85,7 @@
 * BUGFIX: Selective update needs to consider remote files
 * BUGFIX: Ignore disabled upstream feeds - https://github.com/fsprojects/Paket/pull/1105
 * BUGFIX: Don't forget to add settings from root dependencies
-* COSMETICS: Do not write unnecessary framework restrictions into paket.lock 
+* COSMETICS: Do not write unnecessary framework restrictions into paket.lock
 
 #### 2.7.0 - 02.10.2015
 * Support for private GitHub repos - http://fsprojects.github.io/Paket/github-dependencies.html#Referencing-a-private-github-repository
@@ -105,7 +100,7 @@
 * PERFORMANCE: Run all calls against different NuGet protocols in parallel and take the fastest - https://github.com/fsprojects/Paket/issues/1085
 * PERFORMANCE: Exclude duplicate NuGet feeds - https://github.com/fsprojects/Paket/issues/1085
 * COSMETICS: Cache calls to GitHub in order to reduce stress on API limit - https://github.com/fsprojects/Paket/issues/1101
- 
+
 #### 2.5.0 - 29.09.2015
 * Remove all Paket entries from projects which have no paket.references - https://github.com/fsprojects/Paket/issues/1097
 * Allow to format VersionRequirements in NuGet syntax
@@ -348,7 +343,7 @@
 * BZGFIX: Use https://api.nuget.org/v3/index.json for Autocomplete
 * BUGFIX: Set exit code to 1 if the command line parser finds error
 * BUGFIX: Windows restrictions were not parsed from lockfile - https://github.com/fsprojects/Paket/issues/810
-* BUGFIX: Paket tries to keep the alphabetical order when using `paket add` 
+* BUGFIX: Paket tries to keep the alphabetical order when using `paket add`
 * BUGFIX: Do not generate entries for empty extensions in nupkg
 * BUGFIX: Portable framework restrictions were not parsed from lockfile - https://github.com/fsprojects/Paket/issues/810
 * COSMETICS: "Done" message in bootstrapper
@@ -381,7 +376,7 @@
 * `Convert-from-nuget` removes custom import and targets - https://github.com/fsprojects/Paket/pull/792
 
 #### 1.0.1 - 20.04.2015
-* New bootstrapper protects paket.exe from incomplete github downloads - https://github.com/fsprojects/Paket/pull/788 
+* New bootstrapper protects paket.exe from incomplete github downloads - https://github.com/fsprojects/Paket/pull/788
 
 #### 1.0.0 - 17.04.2015
 * Big release from fsharpex
@@ -410,7 +405,7 @@
 * Upgrading to .NET 4.5
 * Removing DotNetZip and using the .NET 4.5 Zip APIs instead - https://github.com/fsprojects/Paket/pull/732
 * Boostrapper download without `nuget.exe` - https://github.com/fsprojects/Paket/pull/734
-* Added frameworkAssemblies to nuspec templating - https://github.com/fsprojects/Paket/issues/740 
+* Added frameworkAssemblies to nuspec templating - https://github.com/fsprojects/Paket/issues/740
 * BUGFIX: Only pick up project output files for pack that exactly match assembly filename - https://github.com/fsprojects/Paket/issues/752
 * BUGFIX: Detect Silverlight version in csproj files - https://github.com/fsprojects/Paket/issues/751
 * BUGFIX: Fix mono timeout during license download - https://github.com/fsprojects/Paket/issues/746
@@ -662,10 +657,10 @@
 #### 0.13.0 - 11.11.2014
 * New support for general HTTP dependencies - http://fsprojects.github.io/Paket/http-dependencies.html
 * New F# Interactive support - http://fsprojects.github.io/Paket/reference-from-repl.html
-* New `paket find-refs` command - http://fsprojects.github.io/Paket/paket-find-refs.html 
+* New `paket find-refs` command - http://fsprojects.github.io/Paket/paket-find-refs.html
 * Migration of NuGet source credentials during `paket convert-from-nuget` - http://fsprojects.github.io/Paket/paket-convert-from-nuget.html#Migrating-NuGet-source-credentials
 * Bootstrapper uses .NET 4.0 - https://github.com/fsprojects/Paket/pull/355
-* Adding --ignore-constraints to `paket outdated` - https://github.com/fsprojects/Paket/issues/308 
+* Adding --ignore-constraints to `paket outdated` - https://github.com/fsprojects/Paket/issues/308
 * PERFORMANCE: If `paket add` doesn't change the `paket.dependencies` file then the resolver process will be skipped
 * BUGFIX: `paket update nuget [PACKAGENAME]` should use the same update strategy as `paket add` - https://github.com/fsprojects/Paket/issues/330
 * BUGFIX: Trailing whitespace is ignored in `paket.references`
@@ -691,7 +686,7 @@
 * Build a merged install model with all packages - https://github.com/fsprojects/Paket/issues/297
 * `paket update` command allows to set a version - http://fsprojects.github.io/Paket/paket-update.html#Updating-a-single-package
 * `paket.targets` is compatible with specific references files - https://github.com/fsprojects/Paket/issues/301
-* BUGFIX: Paket no longer leaves transitive dependencies in lockfile after remove command - https://github.com/fsprojects/Paket/pull/306 
+* BUGFIX: Paket no longer leaves transitive dependencies in lockfile after remove command - https://github.com/fsprojects/Paket/pull/306
 * BUGFIX: Don't use "global override" for selective update process - https://github.com/fsprojects/Paket/issues/310
 * BUGFIX: Allow spaces in quoted parameter parsing - https://github.com/fsprojects/Paket/pull/311
 
@@ -736,8 +731,8 @@
 * Download github source files with correct encoding - https://github.com/fsprojects/Paket/pull/248
 * Add FSharp.Core.Microsoft.Signed as dependency
 * Install model uses portable versions for net40 and net45 when package doesn't contain special versions
-* Install command displays existing versions if constraint does not match any version 
-* Restore command doesn't calc install model. 
+* Install command displays existing versions if constraint does not match any version
+* Restore command doesn't calc install model.
 * Use https in DefaultNugetStream - https://github.com/fsprojects/Paket/pull/251
 * BUGFIX: Paket only deletes files which will are downloaded by init-auto-restore process - https://github.com/fsprojects/Paket/pull/254
 * BUGFIX: Paket convert-from-nuget failed when package source keys contain invalid XML element chars  - https://github.com/fsprojects/Paket/issues/253
@@ -766,7 +761,7 @@
 * The `convert-from-nuget` commands sorts the dependencies file
 * Use credentials from nuget.config on paket convert-from-nuget - https://github.com/fsprojects/Paket/issues/198
 * Deploy fixed targets file - https://github.com/fsprojects/Paket/issues/172
-* New [--pre] and [--strict] modes for paket outdated - http://fsprojects.github.io/Paket/paket-outdated.html 
+* New [--pre] and [--strict] modes for paket outdated - http://fsprojects.github.io/Paket/paket-outdated.html
 * New --no-auto-restore option for `convert-from-nuget` command - http://fsprojects.github.io/Paket/paket-convert-from-nuget.html#Automated-process
 * Adding support for new portable profiles
 * paket.exe is now signed
@@ -801,7 +796,7 @@
 * New package resolver algorithm
 * Better verbose mode - use -v flag
 * Version info is shown at paket.exe start
-* paket.lock file is sorted alphabetical (case-insensitive) 
+* paket.lock file is sorted alphabetical (case-insensitive)
 * Linked source files now all go underneath a "paket-files" folder.
 * BUGFIX: Ensure the NuGet cache folder exists
 * BUGFIX: Async download fixed on mono

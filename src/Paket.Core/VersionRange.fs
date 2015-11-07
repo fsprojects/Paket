@@ -4,12 +4,12 @@ open System
 
 /// Defines if the range bound is including or excluding.
 [<RequireQualifiedAccess>]
-type VersionRangeBound = 
+type VersionRangeBound =
     | Excluding
     | Including
 
 /// Defines if the range accepts prereleases
-type PreReleaseStatus = 
+type PreReleaseStatus =
     | No
     | All
     | Concrete of string list
@@ -22,7 +22,7 @@ type VersionRange =
     | LessThan of SemVerInfo
     | Specific of SemVerInfo
     | OverrideAll of SemVerInfo
-    | Range of fromB : VersionRangeBound * from : SemVerInfo * _to : SemVerInfo * _toB : VersionRangeBound 
+    | Range of fromB : VersionRangeBound * from : SemVerInfo * _to : SemVerInfo * _toB : VersionRangeBound
 
     static member AtLeast version = Minimum(SemVer.Parse version)
 
@@ -55,12 +55,12 @@ type VersionRange =
         | Maximum v -> "<= " + v.ToString()
         | LessThan v -> "< " + v.ToString()
         | Range(fromB, from, _to, _toB) ->
-            let from = 
+            let from =
                 match fromB with
                 | VersionRangeBound.Excluding -> "> " + from.ToString()
                 | VersionRangeBound.Including -> ">= " + from.ToString()
 
-            let _to = 
+            let _to =
                 match _toB with
                 | VersionRangeBound.Excluding -> "< " + _to.ToString()
                 | VersionRangeBound.Including -> "<= " + _to.ToString()
@@ -84,7 +84,7 @@ type VersionRequirement =
                  | Some pre -> List.exists ((=) pre.Name) list
 
         let sameVersionWithoutPreRelease v =
-            let sameVersion = 
+            let sameVersion =
                 match v.PreRelease with
                 | None -> v.Major = version.Major && v.Minor = version.Minor && v.Patch = version.Patch && v.Build = version.Build
                 | _ -> false
@@ -99,7 +99,7 @@ type VersionRequirement =
         | Maximum v -> v = version || (v >= version && checkPrerelease prerelease version)
         | LessThan v -> v > version && checkPrerelease prerelease version
         | Range(fromB, from, _to, _toB) ->
-            let isInUpperBound = 
+            let isInUpperBound =
                 match _toB with
                 | VersionRangeBound.Including -> version <= _to
                 | VersionRangeBound.Excluding -> version < _to
@@ -125,32 +125,35 @@ type VersionRequirement =
     override this.ToString() = this.Range.ToString()
 
     /// Parses NuGet version range
-    static member Parse text = 
+    static member Parse text =
         if String.IsNullOrWhiteSpace text || text = "null" then VersionRequirement.AllReleases else
 
         let prereleases = ref PreReleaseStatus.No
         let analyzeVersion text =
-            let v = SemVer.Parse text
-            match v.PreRelease with
-            | Some _ -> prereleases := PreReleaseStatus.All
-            | _      -> prereleases := PreReleaseStatus.No
-            v
+            try
+              let v = SemVer.Parse text
+              match v.PreRelease with
+              | Some _ -> prereleases := PreReleaseStatus.All
+              | _      -> prereleases := PreReleaseStatus.No
+              v
+            with
+            | exn -> failwithf "Error while parsing %s%sMessage: %s" text Environment.NewLine exn.Message
 
-        let parseRange (text:string) = 
+        let parseRange (text:string) =
             let failParse() = failwithf "unable to parse %s" text
 
             let parseBound  = function
                 | '[' | ']' -> VersionRangeBound.Including
                 | '(' | ')' -> VersionRangeBound.Excluding
                 | _         -> failParse()
-        
+
             if not <| text.Contains "," then
                 if text.StartsWith "[" then Specific(text.Trim([|'['; ']'|]) |> analyzeVersion)
                 else Minimum(analyzeVersion text)
             else
                 let fromB = parseBound text.[0]
                 let toB   = parseBound (Seq.last text)
-                let versions = 
+                let versions =
                     text
                         .Trim([|'['; ']';'(';')'|])
                         .Split([|','|], StringSplitOptions.RemoveEmptyEntries)
@@ -167,7 +170,7 @@ type VersionRequirement =
                         | VersionRangeBound.Excluding, VersionRangeBound.Excluding -> LessThan(versions.[0])
                         | VersionRangeBound.Including, VersionRangeBound.Including -> Maximum(versions.[0])
                         | _ -> failParse()
-                    else 
+                    else
                         match fromB, toB with
                         | VersionRangeBound.Excluding, VersionRangeBound.Excluding -> GreaterThan(versions.[0])
                         | VersionRangeBound.Including, VersionRangeBound.Including -> Minimum(versions.[0])
@@ -182,19 +185,19 @@ type VersionRequirement =
     member this.FormatInNuGetSyntax() =
         match this with
         | VersionRequirement(range,prerelease) ->
-            let pre = 
+            let pre =
                 match prerelease with
                 | No -> ""
                 | Concrete [x] -> "-" + x
                 | _ -> "-prerelease"
 
-            let normalize (v:SemVerInfo) = 
+            let normalize (v:SemVerInfo) =
                 let s = v.Normalize()
                 if s.Contains("-") then s else s + pre
 
             let str =
                 match range with
-                | Minimum(version) -> 
+                | Minimum(version) ->
                     match normalize version with
                     | "0.0.0" -> ""
                     | x  -> x
@@ -202,8 +205,8 @@ type VersionRequirement =
                 | Maximum(version) -> sprintf "(,%s]" (normalize version)
                 | LessThan(version) -> sprintf "(,%s)" (normalize version)
                 | Specific(version) -> sprintf "[%s]" (normalize version)
-                | OverrideAll(version) -> sprintf "[%s]" (normalize version) 
-                | Range(fromB, from,_to,_toB) -> 
+                | OverrideAll(version) -> sprintf "[%s]" (normalize version)
+                | Range(fromB, from,_to,_toB) ->
                     let getMinDelimiter (v:VersionRangeBound) =
                         match v with
                         | VersionRangeBound.Including -> "["
@@ -213,8 +216,8 @@ type VersionRequirement =
                         match v with
                         | VersionRangeBound.Including -> "]"
                         | VersionRangeBound.Excluding -> ")"
-        
-                    sprintf "%s%s,%s%s" (getMinDelimiter fromB) (normalize from) (normalize _to) (getMaxDelimiter _toB) 
+
+                    sprintf "%s%s,%s%s" (getMinDelimiter fromB) (normalize from) (normalize _to) (getMaxDelimiter _toB)
 
 
             match str with

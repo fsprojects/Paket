@@ -163,6 +163,12 @@ In a project file, the following dependencies will be added:
 * any paket dependency with the range specified in the [`paket.lock` file](lock-file.html) (if `lock-dependencies` parameter is used in [`paket pack`](paket-pack.html)).
 * any project reference with a matching paket.template file with a minimum version requirement of the version currently being packaged.
 
+If you need to exclude dependencies from the automatic discovery then you can use the `excludeddependencies` block:
+
+	excludeddependencies
+	  FSharp.Core
+	  Other.Dep
+
 ### Comments
 
 A line starting with a # or // is considered a comment and will be ignored by the parser.

@@ -7,6 +7,7 @@ open FsUnit
 open NUnit.Framework
 open Paket.TestHelpers
 open Paket.Domain
+open Paket.Requirements
 
 [<Literal>]
 let FileBasedShortDesc = """type file
@@ -21,7 +22,7 @@ let FileBasedLongDesc = """type file
 id My.Thing
 version 1.0
 authors Bob McBob
-description  
+description
     A longer description
     on two lines.
 """
@@ -119,7 +120,7 @@ description A short description
 let RealTest = """type project
 owners
     Thomas Petricek, David Thomas, Ryan Riley, Steffen Forkmann
-authors 
+authors
     Thomas Petricek, David Thomas, Ryan Riley, Steffen Forkmann
 projectUrl
     http://fsprojects.github.io/FSharpx.Async/
@@ -145,7 +146,7 @@ let FullTest = """type project
 title Chessie.Rop
 owners
     Steffen Forkmann, Max Malook, Tomasz Heimowski
-authors 
+authors
     Steffen Forkmann, Max Malook, Tomasz Heimowski
 projectUrl
     http://github.com/fsprojects/Chessie
@@ -163,6 +164,12 @@ tags
     rop, fsharp F#
 summary
     Railway-oriented programming for .NET
+dependencies
+     FSharp.Core 4.3.1
+     My.OtherThing
+excludeddependencies
+      Newtonsoft.Json
+      Chessie
 description
     Railway-oriented programming for .NET"""
 
@@ -193,6 +200,9 @@ let ``Optional fields are read`` (fileContent : string) =
     sut.RequireLicenseAcceptance |> shouldEqual false
     sut.DevelopmentDependency |> shouldEqual false
     sut.Language |> shouldEqual (Some "en-gb")
+    sut.Dependencies |> shouldContain (PackageName "FSharp.Core",VersionRequirement.Parse("[4.3.1]"))
+    sut.ExcludedDependencies |> shouldContain (PackageName "Newtonsoft.Json")
+    sut.ExcludedDependencies |> shouldContain (PackageName "Chessie")
 
 [<Literal>]
 let Dependency1 = """type file
@@ -657,4 +667,4 @@ files
     | _ ->  Assert.Fail()
 
     Assert.AreEqual(1, sut.FilesExcluded.Length)
-    Assert.AreEqual("../../build/bin/Angebot.Contracts.xml", sut.FilesExcluded.[0])    
+    Assert.AreEqual("../../build/bin/Angebot.Contracts.xml", sut.FilesExcluded.[0])
