@@ -4,6 +4,12 @@ module Paket.NuGetV3
 open Newtonsoft.Json
 open System.Collections.Generic
 
+open Paket.Domain
+open Paket.Utils
+open Paket.Xml
+open Paket.PackageSources
+open Paket.Requirements
+
 /// [omit]
 type JSONResource = 
     { Type : string;
@@ -34,6 +40,7 @@ let calculateNuGet3Path(nugetUrl:string) =
     | "http://www.nuget.org/api/v2" -> Some "http://api.nuget.org/v3/index.json"
     | "https://www.nuget.org/api/v2" -> Some "https://api.nuget.org/v3/index.json"
     | url when url.EndsWith("api/v2") && url.Contains("myget.org") -> Some (url.Replace("api/v2","api/v3/index.json"))
+    | url when url.EndsWith("api/v3/index.json") -> Some url
     | _ -> None
 
 /// [omit]
@@ -105,3 +112,97 @@ let FindPackages(auth, nugetURL, packageNamePrefix, maxResults) =
     async {
         return! getPackages(auth, nugetURL, packageNamePrefix, maxResults)
     }
+
+type Registration = 
+    { [<JsonProperty("catalogEntry")>]
+      CatalogEntry : string
+      
+      [<JsonProperty("packageContent")>]
+      PackageContent : string }
+
+type CatalogDependency = 
+    { [<JsonProperty("id")>]
+      Id : string 
+      
+      [<JsonProperty("range")>]
+      Range : string }
+type CatalogDependencyGroup = 
+    { [<JsonProperty("targetFramework")>]
+      TargetFramework : string option
+    
+      [<JsonProperty("dependencies")>]
+      Dependencies : CatalogDependency [] }
+type Catalog = 
+    { [<JsonProperty("licenseUrl")>]
+      LicenseUrl : string
+      
+      [<JsonProperty("listed")>]
+      Listed : bool
+      
+      [<JsonProperty("dependencyGroups")>]
+      DependencyGroups : CatalogDependencyGroup [] }
+
+let getRegistration (source : NugetV3Source) (packageName:PackageName) (version:SemVerInfo) =
+    async {
+        let url = sprintf "%s%s/%s.json" source.RegistrationUrl (packageName.ToString().ToLower()) version.AsString
+        let! rawData = safeGetFromUrl (source.BasicAuthentication, url, acceptJson)
+        return
+            match rawData with
+            | None -> failwithf "could not get registration data from %s" url
+            | Some x -> JsonConvert.DeserializeObject<Registration>(x)
+    }
+
+let getCatalog url auth =
+    async {
+        let! rawData = safeGetFromUrl (auth, url, acceptJson)
+        return
+            match rawData with
+            | None -> failwithf "could not get catalog data from %s" url
+            | Some x -> JsonConvert.DeserializeObject<Catalog>(x)
+    }
+
+/// Uses the NuGet v3 registration endpoint to retrieve package details .
+let GetPackageDetails (source : NugetV3Source) (packageName:PackageName) (version:SemVerInfo) : Async<NuGet.NugetPackageCache> =
+    async {
+        let! registrationData = getRegistration source packageName version
+        let! catalogData = getCatalog registrationData.CatalogEntry source.BasicAuthentication
+
+        let dependencies = 
+            catalogData.DependencyGroups
+            |> Seq.map(fun group -> 
+                group.Dependencies
+                |> Seq.map(fun dep -> dep, group.TargetFramework))
+            |> Seq.concat
+            |> Seq.map(fun (dep, targetFramework) ->
+                let targetFramework =
+                    match targetFramework with
+                    | None -> []
+                    | Some x -> 
+                        match FrameworkDetection.Extract x with
+                        | Some x -> [ FrameworkRestriction.Exactly x ]
+                        | None -> []
+                (PackageName dep.Id), (VersionRequirement.ParseV3 dep.Range), targetFramework)
+            |> Seq.toList
+
+        return 
+            { Dependencies = [] //this needs to be implemented Requirements.optimizeDependencies dependencies 
+              PackageName = packageName.ToString()
+              SourceUrl = source.Url
+              Unlisted = not catalogData.Listed
+              DownloadUrl = registrationData.PackageContent
+              LicenseUrl = catalogData.LicenseUrl
+              CacheVersion = NuGet.NugetPackageCache.CurrentCacheVersion }
+
+    }
+    (* 
+        get from https://api.nuget.org/v3/registration1/fsharp.orm/1.0.0.json
+
+        will provide:
+        * catalogEntry, a link to the catalog page
+        * packageContent, a link to the nupkg file
+
+        use catalogEntry to download the catalog, like https://api.nuget.org/v3/catalog0/data/2015.11.03.22.34.24/fsharp.orm.1.0.0.json
+        use dependencyGroups to get the dependencies for the package
+        use licenseUrl
+        use listed
+    *)

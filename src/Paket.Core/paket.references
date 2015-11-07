@@ -2,3 +2,4 @@ Newtonsoft.Json
 FSharp.Core
 File:ErrorHandling.fs .
 File:Globbing.fs .
+NuGet.Versioning

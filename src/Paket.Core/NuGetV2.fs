@@ -12,22 +12,12 @@ open Paket.Logging
 open System.Text
 
 open Paket.Domain
+open Paket.NuGet
 open Paket.Utils
 open Paket.Xml
 open Paket.PackageSources
 open Paket.Requirements
 open FSharp.Polyfill
-
-type NugetPackageCache =
-    { Dependencies : (PackageName * VersionRequirement * FrameworkRestrictions) list
-      PackageName : string
-      SourceUrl: string
-      Unlisted : bool
-      DownloadUrl : string
-      LicenseUrl : string
-      CacheVersion: string }
-
-    static member CurrentCacheVersion = "2.0"
 
 let rec private followODataLink auth url = 
     async {
@@ -246,7 +236,7 @@ let CacheFolder =
 
 let inline normalizeUrl(url:string) = url.Replace("https","http").Replace("www.","")
 
-let private loadFromCacheOrOData force fileName (auth,nugetURL) package version = 
+let private loadFromCacheOrODataOrV3 force fileName (auth,nugetURL) package version = 
     async {
         if not force && File.Exists fileName then
             try 
@@ -288,7 +278,7 @@ let getDetailsFromNuGet force auth nugetURL (packageName:PackageName) (version:S
             if not force && errorFile.Exists then
                 failwithf "Error file for %O exists at %s" packageName errorFile.FullName
 
-            let! (invalidCache,details) = loadFromCacheOrOData force cacheFile.FullName (auth,nugetURL) packageName version
+            let! (invalidCache,details) = loadFromCacheOrODataOrV3 force cacheFile.FullName (auth,nugetURL) packageName version
 
             verbosefn "loaded details for '%O@%O' from url '%s'" packageName version nugetURL
 
@@ -585,6 +575,8 @@ let GetPackageDetails root force sources packageName (version:SemVerInfo) : Pack
                         packageName
                         version
                     |> Async.RunSynchronously
+                | NugetV3 source ->
+                    NuGetV3.GetPackageDetails source packageName version |> Async.RunSynchronously
                 | LocalNuget path -> 
                     getDetailsFromLocalFile root path packageName version 
                     |> Async.RunSynchronously
@@ -643,6 +635,8 @@ let GetVersions root (sources, PackageName packageName) =
                               getVersionsCached "ODataWithFilter" tryGetAllVersionsFromNugetODataWithFilter (auth, source.Url, packageName) ]
 
                         v2Feeds @ v3Feeds
+                   | NugetV3 source ->
+                        [ tryNuGetV3 (source.BasicAuthentication, source.AutoCompleteUrl, packageName) ]
                    | LocalNuget path -> [ getAllVersionsFromLocalPath (path, packageName, root) ])
         |> List.concat
         |> Async.Choice'

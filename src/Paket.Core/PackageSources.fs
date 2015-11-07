@@ -7,6 +7,8 @@ open System.Text.RegularExpressions
 open Paket.Logging
 open Chessie.ErrorHandling
 
+open Newtonsoft.Json
+
 type EnvironmentVariable = 
     { Variable : string
       Value    : string }
@@ -46,6 +48,50 @@ type NugetSource =
     { Url : string
       Authentication : NugetSourceAuthentication option }
 
+type NugetV3SourceResourceJSON =
+    { [<JsonProperty("@type")>]
+      Type : string;
+      [<JsonProperty("@id")>]
+      ID: string }
+type NugetV3SourceRootJSON =
+    { [<JsonProperty("resources")>]
+      Resources : NugetV3SourceResourceJSON [] }
+type NugetV3Source(url : string, 
+                   authentication : NugetSourceAuthentication option,
+                   basicAuthentication : Auth option,
+                   resources : Map<string, string>) = 
+
+    let getResource (resourceType : string) =
+        match resources |> Map.tryFind (resourceType.ToLower()) with
+        | None -> failwithf "could not find an %s endpoint" resourceType
+        | Some x -> x
+    let searchautoCompleteService = lazy((getResource "SearchAutoCompleteService"))
+    let registrationsBaseUrl = lazy((getResource "RegistrationsBaseUrl"))
+    member this.Url = url
+    member this.Authentication = authentication
+    member this.BasicAuthentication = basicAuthentication
+    member this.AutoCompleteUrl = searchautoCompleteService.Value
+    member this.RegistrationUrl = registrationsBaseUrl.Value
+
+    static member loadFromUrl (url : string) (authentication : NugetSourceAuthentication option) =
+        async {
+            let basicAuth = authentication |> Option.map toBasicAuth
+            let! rawData = safeGetFromUrl(basicAuth, url, acceptJson) 
+            let rawData =
+                match rawData with
+                | None -> failwithf "couldnt load resources from %s" url
+                | Some x -> x
+
+            let json = JsonConvert.DeserializeObject<NugetV3SourceRootJSON>(rawData)
+            let resources = 
+                json.Resources 
+                |> Seq.distinctBy(fun x -> x.Type.ToLower())
+                |> Seq.map(fun x -> x.Type.ToLower(), x.ID) 
+                |> Map.ofSeq
+             
+            return NugetV3Source(url, authentication,(basicAuth), resources)
+        }
+
 let userNameRegex = Regex("username[:][ ]*[\"]([^\"]*)[\"]", RegexOptions.IgnoreCase ||| RegexOptions.Compiled)
 let passwordRegex = Regex("password[:][ ]*[\"]([^\"]*)[\"]", RegexOptions.IgnoreCase ||| RegexOptions.Compiled)
 
@@ -75,10 +121,12 @@ let private parseAuth(text:string, source) =
 /// Represents the package source type.
 type PackageSource =
 | Nuget of NugetSource
+| NugetV3 of NugetV3Source
 | LocalNuget of string
     override this.ToString() =
         match this with
         | Nuget source -> source.Url
+        | NugetV3 source -> source.Url
         | LocalNuget path -> path
 
     static member Parse(line : string) =
@@ -92,8 +140,7 @@ type PackageSource =
 
         let feed = 
             match source.TrimEnd([|'/'|]) with
-            | "https://api.nuget.org/v3/index.json" -> Constants.DefaultNugetStream 
-            | "http://api.nuget.org/v3/index.json" -> Constants.DefaultNugetStream.Replace("https://","http://")
+            | "https://api.nuget.org/v3/index.json" -> Constants.DefaultNugetV3Stream 
             | "https://www.nuget.org/api/v2" -> Constants.DefaultNugetStream
             | _ -> source
 
@@ -104,7 +151,14 @@ type PackageSource =
         | Some path -> PackageSource.Parse(path)
         | _ ->
             match System.Uri.TryCreate(source, System.UriKind.Absolute) with
-            | true, uri -> if uri.Scheme = System.Uri.UriSchemeFile then LocalNuget(source) else Nuget({ Url = source; Authentication = auth })
+            | true, uri -> 
+                if uri.Scheme = System.Uri.UriSchemeFile then 
+                    LocalNuget(source) 
+                else 
+                    if source.ToLower().EndsWith("v3/index.json") then
+                        NugetV3 (NugetV3Source.loadFromUrl source auth |> Async.RunSynchronously)
+                    else
+                        Nuget({ Url = source; Authentication = auth })
             | _ ->  match System.Uri.TryCreate(source, System.UriKind.Relative) with
                     | true, uri -> LocalNuget(source)
                     | _ -> failwithf "unable to parse package source: %s" source
@@ -112,22 +166,26 @@ type PackageSource =
     member this.Url = 
         match this with
         | Nuget n -> n.Url
+        | NugetV3 n -> n.Url
         | LocalNuget n -> n
 
     member this.Auth = 
         match this with
         | Nuget n -> n.Authentication
+        | NugetV3 n -> n.Authentication
         | LocalNuget n -> None
 
     static member NugetSource url = Nuget { Url = url; Authentication = None }
 
     static member WarnIfNoConnection (source,_) = 
-        match source with
-        | Nuget {Url = url; Authentication = auth} -> 
+        let n url auth =
             use client = Utils.createWebClient(url, auth |> Option.map toBasicAuth)
             try client.DownloadData url |> ignore 
             with _ ->
                 traceWarnfn "Unable to ping remote Nuget feed: %s." url
+        match source with
+        | Nuget x -> n x.Url x.Authentication
+        | NugetV3 x -> n x.Url x.Authentication
         | LocalNuget path -> 
             if not <| File.Exists path then 
                 traceWarnfn "Local Nuget feed doesn't exist: %s." path

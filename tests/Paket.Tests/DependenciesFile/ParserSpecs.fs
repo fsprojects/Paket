@@ -822,7 +822,7 @@ nuget Paket.Core
 let ``should read config with NuGet v3 feed``() = 
     let cfg = DependenciesFile.FromCode(configWithNugetV3Source)
 
-    cfg.Groups.[Constants.MainDependencyGroup].Sources.Head |> shouldEqual PackageSources.DefaultNugetSource
+    cfg.Groups.[Constants.MainDependencyGroup].Sources.Head.Url |> shouldEqual Constants.DefaultNugetV3Stream
 
 let configWithNugetV3HTTPSource = """
 source http://api.nuget.org/v3/index.json
@@ -834,7 +834,7 @@ nuget Paket.Core
 let ``should read config with NuGet http v3 feed``() = 
     let cfg = DependenciesFile.FromCode(configWithNugetV3HTTPSource)
 
-    cfg.Groups.[Constants.MainDependencyGroup].Sources.Head.Url |> shouldEqual (PackageSources.DefaultNugetSource.Url.Replace("https://","http://"))
+    cfg.Groups.[Constants.MainDependencyGroup].Sources.Head.Url |> shouldEqual (Constants.DefaultNugetV3Stream.Replace("https://","http://"))
 
 let configWithDuplicateSource = """
 source https://nuget.org/api/v2

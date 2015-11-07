@@ -124,7 +124,7 @@ type VersionRequirement =
 
     override this.ToString() = this.Range.ToString()
 
-    /// Parses NuGet version range
+    /// Parses NuGet V2 version range
     static member Parse text = 
         if String.IsNullOrWhiteSpace text || text = "null" then VersionRequirement.AllReleases else
 
@@ -177,6 +177,17 @@ type VersionRequirement =
         let range = parseRange text
 
         VersionRequirement(range,!prereleases)
+
+    /// Parses NuGet V3 version range
+    static member ParseV3 text = 
+        let failParse() = failwithf "unable to parse %s" text
+        let nversionRange = ref (Unchecked.defaultof<NuGet.Versioning.VersionRange>)
+
+        if not (NuGet.Versioning.VersionRange.TryParse(text, nversionRange)) then
+            failParse()
+        else
+            (!nversionRange).ToLegacyString()
+            |> VersionRequirement.Parse
 
     /// Formats a VersionRequirement in NuGet syntax
     member this.FormatInNuGetSyntax() =
