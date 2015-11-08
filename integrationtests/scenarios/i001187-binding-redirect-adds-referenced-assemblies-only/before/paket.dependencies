@@ -1,6 +1,7 @@
 source "http://nuget.org/api/v2"
 
 nuget Albedo 1.0.2
+nuget AutoFixture 3.36.9
 nuget AutoFixture.Idioms 3.35.1
 nuget AutoFixture.Xunit 3.36.9
 nuget Castle.Core 3.3.3
