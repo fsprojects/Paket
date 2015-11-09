@@ -470,3 +470,11 @@ type Dependencies(dependenciesFileName: string) =
             failwithf "Could not push package %s. Please specify a NuGet API key via environment variable \"nugetkey\"." packageFileName
         let maxTrials = defaultArg maxTrials 5
         RemoteUpload.Push maxTrials urlWithEndpoint apiKey packageFileName
+
+    // lists all `TemplateFile`s in the current solution
+    member this.ListTemplateFiles() : TemplateFile list =
+        let lockFile = getLockFile()
+        ProjectFile.FindAllProjects(this.RootPath)
+        |> Array.choose (fun p -> ProjectFile.FindTemplatesFile(FileInfo(p.FileName)))
+        |> Array.map (fun path -> TemplateFile.Load(path, lockFile, None))
+        |> Array.toList

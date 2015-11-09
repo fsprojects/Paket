@@ -89,7 +89,7 @@ module private TemplateParser =
             Map = Map.empty
         }
 
-type internal CompleteCoreInfo =
+type CompleteCoreInfo =
     { Id : string
       Version : SemVerInfo option
       Authors : string list
@@ -100,7 +100,7 @@ type internal CompleteCoreInfo =
         | None -> failwithf "No version given for %s" this.Id
     member this.NuspecFileName = this.Id + ".nuspec"
 
-type internal ProjectCoreInfo =
+type ProjectCoreInfo =
     { Id : string option
       Version : SemVerInfo option
       Authors : string list option
@@ -111,7 +111,7 @@ type internal ProjectCoreInfo =
           Version = None
           Description = None }
 
-type internal OptionalPackagingInfo =
+type OptionalPackagingInfo =
     { Title : string option
       Owners : string list
       ReleaseNotes : string option
@@ -150,13 +150,13 @@ type internal OptionalPackagingInfo =
           Files = []
           FilesExcluded = [] }
 
-type internal CompleteInfo = CompleteCoreInfo * OptionalPackagingInfo
+type CompleteInfo = CompleteCoreInfo * OptionalPackagingInfo
 
-type internal TemplateFileContents =
+type TemplateFileContents =
     | CompleteInfo of CompleteInfo
     | ProjectInfo of ProjectCoreInfo * OptionalPackagingInfo
 
-type internal TemplateFile =
+type TemplateFile =
     { FileName : string
       Contents : TemplateFileContents }
 
