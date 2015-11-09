@@ -471,7 +471,7 @@ type Dependencies(dependenciesFileName: string) =
         let maxTrials = defaultArg maxTrials 5
         RemoteUpload.Push maxTrials urlWithEndpoint apiKey packageFileName
 
-    // lists all `TemplateFile`s in the current solution
+    /// Lists all paket.template files in the current solution.
     member this.ListTemplateFiles() : TemplateFile list =
         let lockFile = getLockFile()
         ProjectFile.FindAllProjects(this.RootPath)
