@@ -60,11 +60,16 @@ type NugetV3Source(url : string,
                    authentication : NugetSourceAuthentication option,
                    basicAuthentication : Auth option,
                    resources : Map<string, string>) = 
-
+    let normalizeUrl (value : string) =
+        if value.EndsWith "/" then
+            value
+        else
+            value + "/"
+        
     let getResource (resourceType : string) =
         match resources |> Map.tryFind (resourceType.ToLower()) with
         | None -> failwithf "could not find an %s endpoint" resourceType
-        | Some x -> x
+        | Some x -> normalizeUrl x
     let searchautoCompleteService = lazy((getResource "SearchAutoCompleteService"))
     let registrationsBaseUrl = lazy((getResource "RegistrationsBaseUrl"))
     member this.Url = url

@@ -484,7 +484,7 @@ let DownloadLicense(root,force,packageName:PackageName,version:SemVerInfo,licens
     }
 
 /// Downloads the given package to the NuGet Cache folder
-let DownloadPackage(root, auth, url, groupName, packageName:PackageName, version:SemVerInfo, includeVersionInPath, force) = 
+let DownloadPackage(root, auth, (source : PackageSource), groupName, packageName:PackageName, version:SemVerInfo, includeVersionInPath, force) = 
     async { 
         let targetFileName = Path.Combine(CacheFolder, packageName.ToString() + "." + version.Normalize() + ".nupkg")
         let targetFile = FileInfo targetFileName
@@ -493,7 +493,14 @@ let DownloadPackage(root, auth, url, groupName, packageName:PackageName, version
             verbosefn "%O %O already downloaded." packageName version
         else 
             // discover the link on the fly
-            let! nugetPackage = getDetailsFromNuGet force auth url packageName version
+            let url, nugetPackage = 
+                match source with 
+                | Nuget source -> 
+                     source.Url, (getDetailsFromNuGet force auth source.Url packageName version)
+                | NugetV3 source ->
+                    source.Url, (NuGetV3.GetPackageDetails source packageName version)
+                | _ -> failwith "shouldnt be here"
+            let! nugetPackage = nugetPackage
             try 
                 tracefn "Downloading %O %O" packageName version
                 verbosefn "  to %s" targetFileName
