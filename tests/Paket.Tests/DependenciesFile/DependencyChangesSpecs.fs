@@ -36,8 +36,9 @@ nuget Castle.Windsor-log4net"""
     let lockFile = LockFile.Parse("",toLines lockFileData)
    
     let changedDependencies = DependencyChangeDetection.findNuGetChangesInDependenciesFile(cfg,lockFile)
-    let newDependencies = DependencyChangeDetection.GetPreferredNuGetVersions lockFile changedDependencies
+    let newDependencies = DependencyChangeDetection.GetPreferredNuGetVersions lockFile
     newDependencies
+    |> Map.filter (fun k v -> not <| changedDependencies.Contains(k))
     |> shouldEqual Map.empty
 
 [<Test>]
@@ -73,7 +74,7 @@ nuget NUnit"""
     let lockFile = LockFile.Parse("",toLines lockFileData)
     let changedDependencies = DependencyChangeDetection.findNuGetChangesInDependenciesFile(cfg,lockFile)
    
-    let newDependencies = DependencyChangeDetection.GetPreferredNuGetVersions lockFile changedDependencies
+    let newDependencies = DependencyChangeDetection.GetPreferredNuGetVersions lockFile
     let expected =
         Map.ofList
              [(Constants.MainDependencyGroup,PackageName "Castle.Core"), (SemVer.Parse "3.3.3");
@@ -85,6 +86,7 @@ nuget NUnit"""
 
     
     newDependencies
+    |> Map.filter (fun k v -> not <| changedDependencies.Contains(k))
     |> shouldEqual expected
 
 [<Test>]
@@ -119,7 +121,7 @@ nuget Castle.Windsor-log4net >= 3.3.0"""
     let lockFile = LockFile.Parse("",toLines lockFileData)
     let changedDependencies = DependencyChangeDetection.findNuGetChangesInDependenciesFile(cfg,lockFile)
    
-    let newDependencies = DependencyChangeDetection.GetPreferredNuGetVersions lockFile changedDependencies
+    let newDependencies = DependencyChangeDetection.GetPreferredNuGetVersions lockFile
     let expected =
         Map.ofList
             ([(Constants.MainDependencyGroup,PackageName "Castle.Core"), (SemVer.Parse "3.3.3");
@@ -130,6 +132,7 @@ nuget Castle.Windsor-log4net >= 3.3.0"""
               (Constants.MainDependencyGroup,PackageName "log4net"),  (SemVer.Parse "1.2.10")])
     
     newDependencies
+    |> Map.filter (fun k v -> not <| changedDependencies.Contains(k))
     |> shouldEqual expected
 
 [<Test>]
@@ -164,8 +167,9 @@ nuget Castle.Windsor-log4net >= 3.4.0"""
     let lockFile = LockFile.Parse("",toLines lockFileData)
     let changedDependencies = DependencyChangeDetection.findNuGetChangesInDependenciesFile(cfg,lockFile)
    
-    let newDependencies = DependencyChangeDetection.GetPreferredNuGetVersions lockFile changedDependencies
+    let newDependencies = DependencyChangeDetection.GetPreferredNuGetVersions lockFile
     newDependencies
+    |> Map.filter (fun k v -> not <| changedDependencies.Contains(k))
     |> shouldEqual Map.empty
 
 [<Test>]

@@ -72,13 +72,13 @@ let ``can check if in range for Range``() =
     "3.2" |> isInRangeNoPreRelease (VersionRange.Range (VersionRangeBound.Including, (SemVer.Parse "2.2"), (SemVer.Parse "3.0"), VersionRangeBound.Including)) |> shouldEqual false
 
 [<Test>]
-let ``can check if in range for 4-parts range``() =    
+let ``can check if in range for 4-parts range``() =
     "1.0.0.3108" |> isInRange (DependenciesFileParser.parseVersionRequirement "1.0.0.3108") |> shouldEqual true
     "1.0.0.2420" |> isInRange (DependenciesFileParser.parseVersionRequirement "~> 1.0") |> shouldEqual true
 
 [<Test>]
-let ``can support trailing 0``() =    
-    "1.2.3" |> isInRange (DependenciesFileParser.parseVersionRequirement "1.2.3.0") |> shouldEqual true    
+let ``can support trailing 0``() =
+    "1.2.3" |> isInRange (DependenciesFileParser.parseVersionRequirement "1.2.3.0") |> shouldEqual true
 
 [<Test>]
 let ``can support alpha version``() = 
@@ -109,4 +109,6 @@ let ``prerelase version of same version is in range``() =
     "1.2.3-alpha001" |> isInRange (DependenciesFileParser.parseVersionRequirement ">= 1.2.3 prerelease") |> shouldEqual true
     "1.2.3-alpha001" |> isInRange (DependenciesFileParser.parseVersionRequirement "1.2.3 prerelease") |> shouldEqual true
     "1.2.3-alpha001" |> isInRange (DependenciesFileParser.parseVersionRequirement "> 1.2.3 prerelease") |> shouldEqual false
+    "1.0.11" |> isInRange (DependenciesFileParser.parseVersionRequirement ">= 1.0 prerelease") |> shouldEqual true
+    "1.0.12-build0025" |> isInRange (DependenciesFileParser.parseVersionRequirement ">= 1.0 prerelease") |> shouldEqual true
     

@@ -148,7 +148,7 @@ type ProjectFile =
 
         FindAllFiles(folder, "*.*proj")
         |> Array.filter (fun f -> f.Extension = ".csproj" || f.Extension = ".fsproj" || f.Extension = ".vbproj" || f.Extension = ".wixproj")
-        |> Array.choose (fun fi -> ProjectFile.Load fi.FullName)
+        |> Array.choose (fun fi -> ProjectFile.TryLoad fi.FullName)
 
     static member FindCorrespondingFile (projectFile : FileInfo, correspondingFile:string) =
         let specificFile = FileInfo(Path.Combine(projectFile.Directory.FullName, projectFile.Name + "." + correspondingFile))
@@ -314,8 +314,7 @@ type ProjectFile =
                 not !isFrameworkNode)
         
         if nodesToDelete <> [] then
-            let (PackageName name) = model.PackageName
-            verbosefn "    - Deleting custom projects nodes for %s" name
+            verbosefn "    - Deleting custom projects nodes for %O" model.PackageName
 
         for node in nodesToDelete do            
             node.ParentNode.RemoveChild(node) |> ignore
@@ -959,16 +958,19 @@ type ProjectFile =
             OriginalText = Utils.normalizeXml doc
             Language = LanguageEvaluation.getProjectLanguage doc (Path.GetFileName(fullName)) }
 
-    static member Load(fileName:string) =
+    static member LoadFromFile(fileName:string) =
+        let fileInfo = FileInfo (normalizePath fileName)
+        use stream = fileInfo.OpenRead()
+        ProjectFile.LoadFromStream(fileInfo.FullName, stream)
+
+    static member TryLoad(fileName:string) =
         try
-            let fileInfo = FileInfo fileName
-            use stream = fileInfo.OpenRead()
-            let project = ProjectFile.LoadFromStream(fileInfo.FullName, stream)
-            Some project
+            Some(ProjectFile.LoadFromFile(fileName))
         with
         | exn -> 
             traceWarnfn "Unable to parse %s:%s      %s" fileName Environment.NewLine exn.Message
             None
+
 
     static member TryFindProject(projects: ProjectFile seq,projectName) =
         match projects |> Seq.tryFind (fun p -> p.NameWithoutExtension = projectName || p.Name = projectName) with
@@ -980,7 +982,7 @@ type ProjectFile =
                     match projects |> Seq.tryFind (fun p -> (FileInfo p.FileName).Directory.ToString().ToLower() = dir.ToString().ToLower()) with
                     | Some p -> Some p
                     | None ->
-                        if dir.Parent = null then None else
+                        if isNull dir.Parent then None else
                         checkDir dir.Parent
 
                 checkDir fi.Directory

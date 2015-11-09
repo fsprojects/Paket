@@ -38,8 +38,8 @@ let ShowReferencesFor packages environment = trial {
         |> collect
 
     projectsPerPackage
-    |> Seq.iter (fun (GroupName g, PackageName k, vs) ->
-        tracefn "%s %s" g k
+    |> Seq.iter (fun (g, k, vs) ->
+        tracefn "%O %O" g k
         vs |> Seq.map (fun p -> p.FileName) |> Seq.iter (tracefn "%s")
         tracefn "")
 }

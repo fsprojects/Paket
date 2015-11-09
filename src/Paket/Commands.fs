@@ -20,6 +20,7 @@ type Command =
     | [<First>][<CustomCommandLine("find-packages")>]           FindPackages
     | [<First>][<CustomCommandLine("find-package-versions")>]   FindPackageVersions
     | [<First>][<CustomCommandLine("show-installed-packages")>] ShowInstalledPackages
+    | [<First>][<CustomCommandLine("show-groups")>]             ShowGroups
     | [<First>][<CustomCommandLine("pack")>]                    Pack
     | [<First>][<CustomCommandLine("push")>]                    Push
 with
@@ -38,9 +39,10 @@ with
             | Restore -> "Download the dependencies specified by the paket.lock file into the `packages/` directory."
             | Simplify -> "Simplifies your paket.dependencies file by removing transitive dependencies."
             | Update -> "Update one or all dependencies to their latest version and update projects."
-            | FindPackages -> "EXPERIMENTAL: Allows to search for packages."
-            | FindPackageVersions -> "EXPERIMENTAL: Allows to search for package versions."
-            | ShowInstalledPackages -> "EXPERIMENTAL: Shows all installed top-level packages."
+            | FindPackages -> "Allows to search for packages."
+            | FindPackageVersions -> "Allows to search for package versions."
+            | ShowInstalledPackages -> "Shows all installed top-level packages."
+            | ShowGroups -> "Shows all groups."
             | Pack -> "Packs all paket.template files within this repository"
             | Push -> "Pushes the given `.nupkg` file."
 
@@ -219,6 +221,7 @@ type UpdateArgs =
     | Keep_Major
     | Keep_Minor
     | Keep_Patch
+    | Filter
 with
     interface IArgParserTemplate with
         member this.Usage =
@@ -234,6 +237,7 @@ with
             | Keep_Major -> "Allows only updates that are not changing the major version of the NuGet packages."
             | Keep_Minor -> "Allows only updates that are not changing the minor version of the NuGet packages."
             | Keep_Patch -> "Allows only updates that are not changing the patch version of the NuGet packages."
+            | Filter -> "Treat the nuget parameter as a regex to filter packages rather than an exact match."
             
 type FindPackagesArgs =
     | [<CustomCommandLine("searchtext")>] SearchText of string
@@ -259,6 +263,14 @@ with
             match this with
             | All -> "Shows all installed packages (incl. transitive dependencies)."
             | Project(_) -> "Show only packages that are installed in the given project."
+            | Silent -> "Doesn't trace other output than installed packages."
+
+type ShowGroupsArgs =
+    | [<AltCommandLine("-s")>] Silent
+with
+    interface IArgParserTemplate with
+        member this.Usage =
+            match this with
             | Silent -> "Doesn't trace other output than installed packages."
 
 type FindPackageVersionsArgs =
@@ -364,6 +376,7 @@ let markdown (command : Command) (additionalText : string) =
         | FindPackages -> syntaxAndOptions (ArgumentParser.Create<FindPackagesArgs>())
         | FindPackageVersions -> syntaxAndOptions (ArgumentParser.Create<FindPackageVersionsArgs>())
         | ShowInstalledPackages -> syntaxAndOptions (ArgumentParser.Create<ShowInstalledPackagesArgs>())
+        | ShowGroups -> syntaxAndOptions (ArgumentParser.Create<ShowGroupsArgs>())
         | Pack -> syntaxAndOptions (ArgumentParser.Create<PackArgs>())
         | Push -> syntaxAndOptions (ArgumentParser.Create<PushArgs>())
 

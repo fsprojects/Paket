@@ -15,10 +15,20 @@ Paket also enables one to reference files directly from [GitHub repositories, Gi
 <div id="no-version"></div>
 ## NuGet puts the package version into the path. Is Paket doing the same?
 
-No, since Paket provides a global view of your dependencies it installs only one version of a package and therefore the version number is not needed in the path.
+No, since Paket provides a global view of your dependencies it usually installs only one version of a package and therefore the version number is not needed in the path.
 This makes it much easier to reference files in the package and you don't have to edit these references when you update a package.
 
 If you really need to have the version in the path for certain packages (like xunit.runners.visualstudio) you [can still do that](nuget-dependencies.html#Putting-the-version-no-into-the-path).
+
+## NuGet allows to use multiple versions of the same package. Can I do that with Paket?
+
+Usually you don't want that to happen. Most solutions that have multiple versions of the same package installed did this by accident. 
+Since NuGet has no global lock file and stores version information in packages.config (per project), it's hard to keep all projects consolidated.
+Paket on the other gives you a global/consolidated view of all your dependencies in the [`paket.lock` file](lock-file.html). 
+
+In the very rare cases when you really need to maintain different versions of the same package you can use the [dependency groups feature](http://fsprojects.github.io/Paket/groups.html).
+Every dependency group gets resolved independently so it also deals with the conflict resolution of indirect dependencies, but the most important difference is that using groups is a deliberate action.
+You need to explicitly name the group in [`paket.references` files](references-files.html), so it won't happen by accident.
 
 ## Why does Paket add references to the libraries associated with each supported framework version within a NuGet package to my projects?
 
@@ -32,7 +42,7 @@ If you only want to use a subset of the target frameworks you can use [framework
 
 ## Why does Paket use a different package resolution strategy than NuGet?
 
-Paket tries to embrace [SemVer](http://semver.org/) while NuGet uses a pessimistic version resolution strategy. You can prefix your version constraints with `!` if you need to use [NuGet compatibility](dependencies-file.html#Paket-s-NuGet-style-dependency-resolution-for-transitive-dependencies).
+Paket tries to embrace [SemVer](http://semver.org/) while NuGet uses a pessimistic version resolution strategy. You can prefix your version constraints with `!` if you need to use [NuGet compatibility](dependencies-file.html#Strategy-option).
 If you want to know more about Paket's resolver algorithm, then you can read [this article](resolver.html).
 
 ## Does Paket run install.ps1 scripts?

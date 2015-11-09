@@ -1,0 +1,7 @@
+source "http://nuget.org/api/v2"
+
+// provides Castle.Windsor (3.2.0) through nuget's 'min' strategy
+nuget "Castle.Windsor-log4net" "!= 3.2"
+
+// requires Castle.Windsor (>= 3.2.1)
+nuget "Nancy.Bootstrappers.Windsor" "~> 0.23"

@@ -52,29 +52,29 @@ let rec private followODataLink auth url =
     }
 
 
-let tryGetAllVersionsFromNugetODataWithFilter (auth, nugetURL, package) = 
+let tryGetAllVersionsFromNugetODataWithFilter (auth, nugetURL, package:PackageName) = 
     async { 
         try 
-            let url = sprintf "%s/Packages?$filter=Id eq '%s'" nugetURL package
+            let url = sprintf "%s/Packages?$filter=Id eq '%O'" nugetURL package
             verbosefn "getAllVersionsFromNugetODataWithFilter from url '%s'" url
             let! result = followODataLink auth url
             return Some result
         with _ -> return None
     }
 
-let tryGetPackageVersionsViaOData (auth, nugetURL, package) = 
+let tryGetPackageVersionsViaOData (auth, nugetURL, package:PackageName) = 
     async { 
         try 
-            let url = sprintf "%s/FindPackagesById()?id='%s'" nugetURL package
+            let url = sprintf "%s/FindPackagesById()?id='%O'" nugetURL package
             verbosefn "getAllVersionsFromNugetOData from url '%s'" url
             let! result = followODataLink auth url
             return Some result
         with _ -> return None
     }
 
-let tryGetPackageVersionsViaJson (auth, nugetURL, package) = 
+let tryGetPackageVersionsViaJson (auth, nugetURL, package:PackageName) = 
     async { 
-        let url = sprintf "%s/package-versions/%s?includePrerelease=true" nugetURL package
+        let url = sprintf "%s/package-versions/%O?includePrerelease=true" nugetURL package
         let! raw = safeGetFromUrl (auth, url, acceptJson)
         
         match raw with
@@ -85,20 +85,19 @@ let tryGetPackageVersionsViaJson (auth, nugetURL, package) =
             with _ -> return None
     }
 
-let tryNuGetV3 (auth, nugetV3Url, package) = 
+let tryNuGetV3 (auth, nugetV3Url, package:PackageName) = 
     async { 
         try 
             let! data = NuGetV3.findVersionsForPackage(nugetV3Url, auth, package, true, 100000)
             match data with
-            | Some data when Array.isEmpty data -> return None
-            | None -> return None
-            | _ -> return data
+            | Some data when Array.isEmpty data |> not -> return Some data
+            | _ -> return None
         with exn -> return None
     }
 
 
 /// Gets versions of the given package from local Nuget feed.
-let getAllVersionsFromLocalPath (localNugetPath, package, root) =
+let getAllVersionsFromLocalPath (localNugetPath, package:PackageName, root) =
     async {
         let localNugetPath = Utils.normalizeLocalPath localNugetPath
         let di = getDirectoryInfo localNugetPath root
@@ -109,7 +108,7 @@ let getAllVersionsFromLocalPath (localNugetPath, package, root) =
             Directory.EnumerateFiles(di.FullName,"*.nupkg",SearchOption.AllDirectories)
             |> Seq.choose (fun fileName ->
                             let fi = FileInfo(fileName)
-                            let _match = Regex(sprintf @"^%s\.(\d.*)\.nupkg" package, RegexOptions.IgnoreCase).Match(fi.Name)
+                            let _match = Regex(sprintf @"^%O\.(\d.*)\.nupkg" package, RegexOptions.IgnoreCase).Match(fi.Name)
                             if _match.Groups.Count > 1 then Some _match.Groups.[1].Value else None)
             |> Seq.toArray
         return Some versions
@@ -263,7 +262,7 @@ let deleteErrorFile (packageName:PackageName) =
         with
         | _ -> ()
 
-/// Tries to get download link and direct dependencies from Nuget
+/// Tries to get download link and direct dependencies from NuGet
 /// Caches calls into json file
 let getDetailsFromNuGet force auth nugetURL (packageName:PackageName) (version:SemVerInfo) = 
     let cacheFile = 
@@ -284,7 +283,10 @@ let getDetailsFromNuGet force auth nugetURL (packageName:PackageName) (version:S
 
             errorFile.Delete()
             if invalidCache then
-                File.WriteAllText(cacheFile.FullName,JsonConvert.SerializeObject(details))
+                try
+                    File.WriteAllText(cacheFile.FullName,JsonConvert.SerializeObject(details))
+                with
+                | _ -> () // if caching fails we should not fail
             return details
         with
         | exn -> 
@@ -373,8 +375,19 @@ let ExtractPackage(fileName:string, targetFolder, packageName:PackageName, versi
         else
             Directory.CreateDirectory(targetFolder) |> ignore
 
-            fixArchive fileName
-            ZipFile.ExtractToDirectory(fileName, targetFolder)
+            try
+                fixArchive fileName
+                ZipFile.ExtractToDirectory(fileName, targetFolder)
+            with
+            | exn ->
+                let text = ref ""
+                try
+                    text := File.ReadAllText(fileName)
+                with
+                | _ -> ()
+
+                let text = if !text = "" then "" else sprintf "%s Package contains text: %s%s" Environment.NewLine !text Environment.NewLine
+                failwithf "Error during extraction of %s.%sMessage: %s%s" (Path.GetFullPath fileName) Environment.NewLine exn.Message text
 
             // cleanup folder structure
             let rec cleanup (dir : DirectoryInfo) = 
@@ -519,6 +532,10 @@ let DownloadPackage(root, auth, url, groupName, packageName:PackageName, version
                     bytesRead := bytes
                     do! fileStream.AsyncWrite(buffer, 0, !bytesRead)
 
+                match (httpResponse :?> HttpWebResponse).StatusCode with
+                | HttpStatusCode.OK -> ()
+                | statusCode -> failwithf "HTTP status code was %d - %O" (int statusCode) statusCode
+
                 try
                     do! license
                 with
@@ -561,30 +578,38 @@ let GetTargetsFiles(targetFolder) = getFiles targetFolder "build" ".targets file
 let GetAnalyzerFiles(targetFolder) = getFiles targetFolder "analyzers" "analyzer dlls"
 
 let GetPackageDetails root force sources packageName (version:SemVerInfo) : PackageResolver.PackageDetails = 
-    let rec tryNext xs = 
-        match xs with
-        | source :: rest -> 
-            verbosefn "Trying source '%O'" source
+   
+    let packageDetails =
+        sources
+        |> List.map (fun source -> async {
             try 
                 match source with
-                | Nuget source -> 
-                    getDetailsFromNuGet 
-                        force 
-                        (source.Authentication |> Option.map toBasicAuth)
-                        source.Url 
-                        packageName
-                        version
-                    |> Async.RunSynchronously
-                | NugetV3 source ->
-                    NuGetV3.GetPackageDetails source packageName version |> Async.RunSynchronously
+                | Nuget nugetSource -> 
+                    let! result = 
+                        getDetailsFromNuGet 
+                            force 
+                            (nugetSource.Authentication |> Option.map toBasicAuth)
+                            nugetSource.Url 
+                            packageName
+                            version
+                    return Some(source,result)
+                | NugetV3 nugetSource ->
+                    let! result = 
+                        NuGetV3.GetPackageDetails nugetSource packageName version
+                    return Some(source,result)
                 | LocalNuget path -> 
-                    getDetailsFromLocalFile root path packageName version 
-                    |> Async.RunSynchronously
-                |> fun x -> source,x
+                    let! result = getDetailsFromLocalFile root path packageName version
+                    return Some(source,result)
             with e ->
-              verbosefn "Source '%O' exception: %O" source e
-              tryNext rest
-        | [] -> 
+                verbosefn "Source '%O' exception: %O" source e
+                return None })
+        |> Async.Parallel
+        |> Async.RunSynchronously
+        |> Array.tryPick id
+
+    let source,nugetObject = 
+        match packageDetails with
+        | None ->
             deleteErrorFile packageName
             match sources with
             | [source] ->
@@ -593,8 +618,8 @@ let GetPackageDetails root force sources packageName (version:SemVerInfo) : Pack
                 failwithf "Couldn't get package details for package %O %O because no sources where specified." packageName version
             | _ ->
                 failwithf "Couldn't get package details for package %O %O on any of %A." packageName version (sources |> List.map (fun (s:PackageSource) -> s.ToString()))
-    
-    let source,nugetObject = tryNext sources
+        | Some packageDetails -> packageDetails
+
     { Name = PackageName nugetObject.PackageName
       Source = source
       DownloadLink = nugetObject.DownloadUrl
@@ -611,14 +636,14 @@ let getVersionsCached key f (auth, nugetURL, package) =
         | _ ->
             let! result = f (auth, nugetURL, package)
             match result with
-            | Some x ->
+            | Some x when Array.isEmpty x |> not ->
                 protocolCache.TryAdd((auth, nugetURL), key) |> ignore
                 return Some x
-            | None -> return None
+            | _ -> return None
     }
 
 /// Allows to retrieve all version no. for a package from the given sources.
-let GetVersions root (sources, PackageName packageName) = 
+let GetVersions root (sources, packageName:PackageName) = 
     let v =
         sources
         |> Seq.map (function
@@ -638,14 +663,17 @@ let GetVersions root (sources, PackageName packageName) =
                    | NugetV3 source ->
                         [ tryNuGetV3 (source.BasicAuthentication, source.AutoCompleteUrl, packageName) ]
                    | LocalNuget path -> [ getAllVersionsFromLocalPath (path, packageName, root) ])
-        |> List.concat
-        |> Async.Choice'
+        |> Seq.toArray
+        |> Array.map Async.Choice
+        |> Async.Parallel
         |> Async.RunSynchronously
+        |> Array.choose id
+        |> Array.concat
 
     let versions = 
         match v with
-        | Some versions when Array.isEmpty versions |> not -> versions
-        | _ -> failwithf "Could not find versions for package %s in any of the sources in %A." packageName sources
+        | versions when Array.isEmpty versions |> not -> versions
+        | _ -> failwithf "Could not find versions for package %O in any of the sources in %A." packageName sources
 
     versions
     |> Seq.toList

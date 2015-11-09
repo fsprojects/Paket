@@ -194,11 +194,15 @@ let update (results : ParseResults<_>) =
         if results.Contains <@ UpdateArgs.Keep_Minor @> then SemVerUpdateMode.KeepMinor else
         if results.Contains <@ UpdateArgs.Keep_Major @> then SemVerUpdateMode.KeepMajor else
         SemVerUpdateMode.NoRestriction
+    let filter = results.Contains <@ UpdateArgs.Filter @>
 
     match results.TryGetResult <@ UpdateArgs.Nuget @> with
     | Some packageName ->
         let version = results.TryGetResult <@ UpdateArgs.Version @>
-        Dependencies.Locate().UpdatePackage(group, packageName, version, force, hard, withBindingRedirects, createNewBindingFiles, noInstall |> not, semVerUpdateMode)
+        if filter then
+            Dependencies.Locate().UpdateFilteredPackages(group, packageName, version, force, hard, withBindingRedirects, createNewBindingFiles, noInstall |> not, semVerUpdateMode)
+        else
+            Dependencies.Locate().UpdatePackage(group, packageName, version, force, hard, withBindingRedirects, createNewBindingFiles, noInstall |> not, semVerUpdateMode)
     | _ ->
         match group with
         | Some groupName -> 
@@ -268,8 +272,13 @@ let getInstalledPackages (results : ParseResults<_>) =
             else dependenciesFile.GetDirectDependencies(referencesFile)
 
 let showInstalledPackages (results : ParseResults<_>) =
-    for groupName,name,version in getInstalledPackages results do  // TODO: Better grouping in reporting
+    for groupName,name,version in getInstalledPackages results do
         tracefn "%s %s - %s" groupName name version
+
+let showGroups (results : ParseResults<ShowGroupsArgs>) =
+    let dependenciesFile = Dependencies.Locate()
+    for groupName in dependenciesFile.GetGroups() do
+        tracefn "%s" groupName
 
 let findPackageVersions (results : ParseResults<_>) =
     let maxResults = defaultArg (results.TryGetResult <@ FindPackageVersionsArgs.MaxResults @>) 10000
@@ -282,7 +291,7 @@ let findPackageVersions (results : ParseResults<_>) =
         match NuGetV3.getSearchAPI(None,source) with
         | None -> Array.empty
         | Some v3Url ->
-            NuGetV3.FindVersionsForPackage(v3Url,None,name,true,maxResults)
+            NuGetV3.FindVersionsForPackage(v3Url,None,Domain.PackageName name,true,maxResults)
             |> Async.RunSynchronously
 
     for p in result do
@@ -334,6 +343,7 @@ let main() =
                 | FindPackages -> processCommand findPackages
                 | FindPackageVersions -> processCommand findPackageVersions
                 | ShowInstalledPackages -> processCommand showInstalledPackages
+                | ShowGroups -> processCommand showGroups
                 | Pack -> processCommand pack
                 | Push -> processCommand push
 

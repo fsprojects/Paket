@@ -205,11 +205,24 @@ If you don't want to import `.targets` and `.props` files you can disable it via
     nuget Microsoft.Bcl.Build import_targets: false // we don't import .targets and .props
     nuget UnionArgParser ~> 0.7
 
-### Paket's NuGet-style dependency resolution for transitive dependencies
+### Strategy modifiers
 
-NuGet's dependency syntax led to a lot of incompatible packages on Nuget.org ([read more](controlling-nuget-resolution.html)). To make your transition to Paket easier and to allow package authors to correct their version constraints you can have Paket behave like NuGet when resolving transitive dependencies (i.e. defaulting to lowest matching versions).
+To override a [strategy option](dependencies-file.html#Strategy-option) or the default strategy you can use one of the strategy modifiers.
 
-To request that Paket applies NuGet-style dependency resolution for transitive dependencies, use the `!` operator in your version constraint.
+#### Max modifier
+
+To request Paket to override the resolver strategy for the transitive dependencies of a package, use the `@` operator in your version constraint.
+
+    strategy: min
+    source https://nuget.org/api/v2
+
+    nuget Example @~> 1.2 // use "max" version resolution strategy
+
+This effectively will get you the *lastest matching versions* of `Example`'s dependencies.
+
+#### Min modifier
+
+To request Paket to override the resolver strategy for the transitive dependencies of a package, use the `!` operator in your version constraint.
 
     source https://nuget.org/api/v2
 
@@ -217,10 +230,11 @@ To request that Paket applies NuGet-style dependency resolution for transitive d
 
 This effectively will get you the *lowest matching versions* of `Example`'s dependencies. Still, you will get the *latest matching version* of `Example` itself according to its [version constraint of `1.2 <= x < 2`](#Pessimistic-version-constraint).
 
-The `!` modifier is applicable to all [version constraints](#Version-constraints):
+The `!` and `@` modifiers are applicable to all [version constraints](#Version-constraints):
 
     source https://nuget.org/api/v2
 
+    nuget Example-A @> 0 // use "max" version resolution strategy
     nuget Example-B != 1.2  // use "min" version resolution strategy
     nuget Example-C !>= 1.2 // use "min" version resolution strategy
 

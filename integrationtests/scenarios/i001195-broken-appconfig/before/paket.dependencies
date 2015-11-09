@@ -1,0 +1,12 @@
+source "http://nuget.org/api/v2"
+
+nuget Albedo 1.0.2
+nuget AutoFixture.Idioms 3.35.1
+nuget AutoFixture.Xunit 3.36.9
+nuget Castle.Core 3.3.3
+nuget Castle.Windsor 3.0.0.3001
+nuget Castle.Windsor.Extensions 2.1.1
+nuget log4net 2.0.3
+nuget Newtonsoft.Json 7.0.1
+nuget Newtonsoft.Json.Schema 1.0.11
+nuget xunit 1.9.2

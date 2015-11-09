@@ -7,6 +7,7 @@ open FsUnit
 open NUnit.Framework
 open Paket.TestHelpers
 open Paket.Domain
+open Paket.Requirements
 
 [<Literal>]
 let FileBasedShortDesc = """type file
@@ -21,7 +22,7 @@ let FileBasedLongDesc = """type file
 id My.Thing
 version 1.0
 authors Bob McBob
-description  
+description
     A longer description
     on two lines.
 """
@@ -74,7 +75,7 @@ let strToStream (str : string) =
 [<TestCase(FileBasedLongDesc4, "description starting with description")>]
 let ``Parsing minimal file based packages works`` (fileContent, desc) =
     let result =
-        TemplateFile.Parse("file1.template", None, strToStream fileContent)
+        TemplateFile.Parse("file1.template",LockFile.Parse("",[||]), None, strToStream fileContent)
         |> returnOrFail
 
     match result with
@@ -104,7 +105,7 @@ description A short description
 [<TestCase(Invalid1)>]
 [<TestCase(Invalid3)>]
 let ``Invalid file input recognised as invalid`` (fileContent : string) =
-    TemplateFile.Parse("file1.template", None, strToStream fileContent)
+    TemplateFile.Parse("file1.template", LockFile.Parse("",[||]), None, strToStream fileContent)
     |> failed
     |> shouldEqual true
 
@@ -119,7 +120,7 @@ description A short description
 let RealTest = """type project
 owners
     Thomas Petricek, David Thomas, Ryan Riley, Steffen Forkmann
-authors 
+authors
     Thomas Petricek, David Thomas, Ryan Riley, Steffen Forkmann
 projectUrl
     http://fsprojects.github.io/FSharpx.Async/
@@ -145,7 +146,7 @@ let FullTest = """type project
 title Chessie.Rop
 owners
     Steffen Forkmann, Max Malook, Tomasz Heimowski
-authors 
+authors
     Steffen Forkmann, Max Malook, Tomasz Heimowski
 projectUrl
     http://github.com/fsprojects/Chessie
@@ -163,6 +164,12 @@ tags
     rop, fsharp F#
 summary
     Railway-oriented programming for .NET
+dependencies
+     FSharp.Core 4.3.1
+     My.OtherThing
+excludeddependencies
+      Newtonsoft.Json
+      Chessie
 description
     Railway-oriented programming for .NET"""
 
@@ -170,14 +177,14 @@ description
 [<TestCase(RealTest)>]
 [<TestCase(FullTest)>]
 let ``Valid file input recognised as valid`` (fileContent : string) =
-   TemplateFile.Parse("file1.template", None, strToStream fileContent)
+   TemplateFile.Parse("file1.template", LockFile.Parse("",[||]), None, strToStream fileContent)
     |> failed
     |> shouldEqual false
 
 [<TestCase(FullTest)>]
 let ``Optional fields are read`` (fileContent : string) =
     let sut =
-        TemplateFile.Parse("file1.template", None, strToStream fileContent)
+        TemplateFile.Parse("file1.template", LockFile.Parse("",[||]), None, strToStream fileContent)
         |> returnOrFail
         |> function
            | CompleteInfo (_, opt)
@@ -193,6 +200,9 @@ let ``Optional fields are read`` (fileContent : string) =
     sut.RequireLicenseAcceptance |> shouldEqual false
     sut.DevelopmentDependency |> shouldEqual false
     sut.Language |> shouldEqual (Some "en-gb")
+    sut.Dependencies |> shouldContain (PackageName "FSharp.Core",VersionRequirement.Parse("[4.3.1]"))
+    sut.ExcludedDependencies |> shouldContain (PackageName "Newtonsoft.Json")
+    sut.ExcludedDependencies |> shouldContain (PackageName "Chessie")
 
 [<Literal>]
 let Dependency1 = """type file
@@ -211,7 +221,7 @@ dependencies
 [<TestCase(Dependency1)>]
 let ``Detect dependencies correctly`` fileContent =
     let sut =
-        TemplateFile.Parse("file1.template", None, strToStream fileContent)
+        TemplateFile.Parse("file1.template", LockFile.Parse("",[||]), None, strToStream fileContent)
         |> returnOrFail
         |> function
            | CompleteInfo (_, opt)
@@ -241,7 +251,7 @@ dependencies
 """
 
     let sut =
-        TemplateFile.Parse("file1.template", Some(SemVer.Parse "2.1"), strToStream fileContent)
+        TemplateFile.Parse("file1.template", LockFile.Parse("",[||]), Some(SemVer.Parse "2.1"), strToStream fileContent)
         |> returnOrFail
         |> function
            | CompleteInfo (_, opt)
@@ -252,6 +262,75 @@ dependencies
         range1.Range |> shouldEqual (Specific (SemVer.Parse "4.3.1"))
         name2 |> shouldEqual (PackageName "My.OtherThing")
         range2.Range |> shouldEqual (Specific (SemVer.Parse "2.1"))
+    | _ -> Assert.Fail()
+
+[<Test>]
+let ``Detect dependencies with LOCKEDVERSION correctly`` () =
+    let fileContent = """type file
+id My.Thing
+authors Bob McBob
+description
+    A longer description
+    on two lines.
+version
+    1.0
+dependencies
+     FSharp.Core 4.3.1
+     My.OtherThing LOCKEDVERSION
+"""
+
+    let lockFile = """NUGET
+  remote: https://nuget.org/api/v2
+  specs:
+    Argu (1.1.2)
+    FSharp.Core (4.0.0.1) - redirects: on
+    Newtonsoft.Json (7.0.1) - redirects: on
+    My.OtherThing (1.2.3) - redirects: on
+GITHUB
+  remote: fsharp/FAKE
+  specs:
+    src/app/FakeLib/Globbing/Globbing.fs (494c549c61dc15ab798b7b92cb4ac6e981267f49)
+  remote: fsprojects/Chessie
+  specs:
+    src/Chessie/ErrorHandling.fs (1f23b1caeb1f87e750abc96a25109376771dd090)
+GROUP Build
+NUGET
+  remote: https://nuget.org/api/v2
+  specs:
+    FAKE (4.7.2)
+    FSharp.Compiler.Service (1.4.0.6)
+    FSharp.Formatting (2.12.0)
+      FSharp.Compiler.Service (1.4.0.6)
+      FSharpVSPowerTools.Core (2.1.0)
+    FSharpVSPowerTools.Core (2.1.0)
+      FSharp.Compiler.Service (>= 1.4.0.6)
+    ILRepack (2.0.8)
+    Microsoft.Bcl (1.1.10)
+      Microsoft.Bcl.Build (>= 1.0.14)
+    Microsoft.Bcl.Build (1.0.21) - import_targets: false
+    Microsoft.Net.Http (2.2.29)
+      Microsoft.Bcl (>= 1.1.10)
+      Microsoft.Bcl.Build (>= 1.0.14)
+    Octokit (0.16.0)
+      Microsoft.Net.Http
+GITHUB
+  remote: fsharp/FAKE
+  specs:
+    modules/Octokit/Octokit.fsx (494c549c61dc15ab798b7b92cb4ac6e981267f49)
+      Octokit"""
+
+    let sut =
+        TemplateFile.Parse("file1.template", LockFile.Parse("",toLines lockFile), Some(SemVer.Parse "2.1"), strToStream fileContent)
+        |> returnOrFail
+        |> function
+           | CompleteInfo (_, opt)
+           | ProjectInfo (_, opt) -> opt
+    match sut.Dependencies with
+    | [name1,range1;name2,range2] ->
+        name1 |> shouldEqual (PackageName "FSharp.Core")
+        range1.Range |> shouldEqual (Specific (SemVer.Parse "4.3.1"))
+        name2 |> shouldEqual (PackageName "My.OtherThing")
+        range2.Range |> shouldEqual (Specific (SemVer.Parse "1.2.3"))
     | _ -> Assert.Fail()
 
 [<Test>]
@@ -268,7 +347,7 @@ files
     someDir ==> lib
 """
     let sut =
-        TemplateFile.Parse("file1.template", None, strToStream text)
+        TemplateFile.Parse("file1.template", LockFile.Parse("",[||]), None, strToStream text)
         |> returnOrFail
         |> function
            | CompleteInfo (_, opt)
@@ -294,7 +373,7 @@ version
     1.0
 """
     let sut =
-        TemplateFile.Parse("file1.template", None, strToStream text)
+        TemplateFile.Parse("file1.template", LockFile.Parse("",[||]), None, strToStream text)
         |> returnOrFail
         |> function
            | CompleteInfo (_, opt)
@@ -322,7 +401,7 @@ version
     1.0
 """
     let sut =
-        TemplateFile.Parse("file1.template", None, strToStream text)
+        TemplateFile.Parse("file1.template", LockFile.Parse("",[||]), None, strToStream text)
         |> returnOrFail
         |> function
            | CompleteInfo (_, opt)
@@ -349,7 +428,7 @@ files
     anotherDir ==> someLib
 """
     let sut =
-        TemplateFile.Parse("file1.template", None, strToStream text)
+        TemplateFile.Parse("file1.template", LockFile.Parse("",[||]), None, strToStream text)
         |> returnOrFail
         |> function
            | CompleteInfo (_, opt)
@@ -378,7 +457,7 @@ files
     !dontWantThis.txt
 """
     let sut =
-        TemplateFile.Parse("file1.template", None, strToStream text)
+        TemplateFile.Parse("file1.template", LockFile.Parse("",[||]), None, strToStream text)
         |> returnOrFail
         |> function
            | CompleteInfo (_, opt)
@@ -404,7 +483,7 @@ files
     !dontWantThat.txt
 """
     let sut =
-        TemplateFile.Parse("file1.template", None, strToStream text)
+        TemplateFile.Parse("file1.template", LockFile.Parse("",[||]), None, strToStream text)
         |> returnOrFail
         |> function
            | CompleteInfo (_, opt)
@@ -430,7 +509,7 @@ files
     ! excludeDir
 """
     let sut =
-        TemplateFile.Parse("file1.template", None, strToStream text)
+        TemplateFile.Parse("file1.template", LockFile.Parse("",[||]), None, strToStream text)
         |> returnOrFail
         |> function
            | CompleteInfo (_, opt)
@@ -446,7 +525,7 @@ let ProjectType1 = """type project
 [<TestCase(ProjectType1)>]
 let ``Parsing minimal project based packages works`` (fileContent) =
     let result =
-        TemplateFile.Parse("file1.template", None, strToStream fileContent)
+        TemplateFile.Parse("file1.template", LockFile.Parse("",[||]), None, strToStream fileContent)
         |> returnOrFail
 
     match result with
@@ -490,7 +569,7 @@ files
   ../../build/bin/Angebot.Contracts.pdb ==> lib
 """
     let sut =
-        TemplateFile.Parse("file1.template", None, strToStream text)
+        TemplateFile.Parse("file1.template", LockFile.Parse("",[||]), None, strToStream text)
         |> returnOrFail
         |> function
            | CompleteInfo (_, opt)
@@ -561,7 +640,7 @@ files
 
 """
     let sut =
-        TemplateFile.Parse("file1.template", None, strToStream text)
+        TemplateFile.Parse("file1.template", LockFile.Parse("",[||]), None, strToStream text)
         |> returnOrFail
         |> function
            | CompleteInfo (_, opt)
@@ -588,4 +667,4 @@ files
     | _ ->  Assert.Fail()
 
     Assert.AreEqual(1, sut.FilesExcluded.Length)
-    Assert.AreEqual("../../build/bin/Angebot.Contracts.xml", sut.FilesExcluded.[0])    
+    Assert.AreEqual("../../build/bin/Angebot.Contracts.xml", sut.FilesExcluded.[0])

@@ -1,0 +1,5 @@
+strategy min
+source http://nuget.org/api/v2
+
+nuget Castle.Core
+nuget Castle.Windsor = 3.2.1

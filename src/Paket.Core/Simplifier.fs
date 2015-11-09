@@ -39,7 +39,7 @@ let simplifyDependenciesFile (dependenciesFile : DependenciesFile, groupName, fl
                 else d) dependenciesFile
 }
 
-let simplifyReferencesFile (refFile:ReferencesFile, groupName, flatLookup, interactive) = trial {    
+let simplifyReferencesFile (refFile:ReferencesFile, groupName, flatLookup, interactive) = trial {
     match refFile.Groups |> Map.tryFind groupName with
     | None -> return refFile
     | Some g -> 
@@ -66,7 +66,7 @@ let simplify interactive environment = trial {
     let! lockFile = environment |> PaketEnv.ensureLockFileExists
 
     let flatLookup = lockFile.GetDependencyLookupTable()
-    let dependenciesFileRef = ref environment.DependenciesFile
+    let dependenciesFileRef = ref (environment.DependenciesFile.SimplifyFrameworkRestrictions())
     let projectsRef = ref None
 
     for kv in lockFile.Groups do

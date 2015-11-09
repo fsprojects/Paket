@@ -1,0 +1,14 @@
+source https://nuget.org/api/v2
+
+nuget FSharp.Formatting
+nuget Microsoft.AspNet.SignalR.Core
+nuget Microsoft.AspNet.SignalR.JS
+nuget Microsoft.Owin.Hosting
+nuget Microsoft.Owin.Security.Cookies
+nuget Nancy 1.2.0
+nuget Nancy.MSOwinSecurity
+nuget NUnit 
+nuget NUnit.Runners
+nuget FAKE
+nuget SourceLink.Fake
+nuget Nancy.Serialization.JsonNet

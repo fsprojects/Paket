@@ -188,3 +188,4 @@ docs/content/paket-*.md
 System.Management.Automation.dll
 .fake
 docs/tools/FSharp.Formatting.svclog
+docs/content/paket.exe

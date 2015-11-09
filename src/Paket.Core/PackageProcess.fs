@@ -58,6 +58,10 @@ let Pack(workingDir,dependencies : DependenciesFile, packageOutputPath, buildCon
     let packageOutputPath = if Path.IsPathRooted(packageOutputPath) then packageOutputPath else Path.Combine(workingDir,packageOutputPath)
     Utils.createDir packageOutputPath |> returnOrFail
 
+    let lockFile = 
+        let lockFileName = DependenciesFile.FindLockfile dependencies.FileName
+        LockFile.LoadFrom(lockFileName.FullName)
+
     let version = version |> Option.map SemVer.Parse
 
     let allTemplateFiles = 
@@ -81,7 +85,7 @@ let Pack(workingDir,dependencies : DependenciesFile, packageOutputPath, buildCon
             |> Array.choose (fun projectFile ->
                 match ProjectFile.FindTemplatesFile(FileInfo(projectFile.FileName)) with
                 | None -> None
-                | Some fileName -> Some(projectFile,TemplateFile.Load(fileName,version)))
+                | Some fileName -> Some(projectFile,TemplateFile.Load(fileName,lockFile,version)))
             |> Array.filter (fun (_,templateFile) -> 
                 match templateFile with
                 | CompleteTemplate _ -> false 
@@ -100,7 +104,7 @@ let Pack(workingDir,dependencies : DependenciesFile, packageOutputPath, buildCon
         |> Map.toList
         |> List.map (fun (_,(_,x)) -> x)
         |> List.append [for fileName in allTemplateFiles -> 
-                            let templateFile = TemplateFile.Load(fileName,version)
+                            let templateFile = TemplateFile.Load(fileName,lockFile,version)
                             match templateFile with
                             | { Contents = ProjectInfo(_) } -> 
                                 let fi = FileInfo(fileName)

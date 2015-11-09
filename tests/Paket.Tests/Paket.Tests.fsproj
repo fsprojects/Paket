@@ -24,7 +24,7 @@
     <OutputPath>bin\Debug\</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <WarningLevel>3</WarningLevel>
-    <DocumentationFile>bin\Debug\fsharp_project_scaffold_tests.XML</DocumentationFile>
+    <DocumentationFile>bin\Debug\Paket.Tests.XML</DocumentationFile>
     <StartAction>Project</StartAction>
     <StartProgram>
     </StartProgram>
@@ -87,10 +87,12 @@
     <Compile Include="NugetVersionRangeSerializerSpecs.fs" />
     <Compile Include="DependencySetSpecs.fs" />
     <Compile Include="BindingRedirect.fs" />
+    <Compile Include="ExtractPackageSpecs.fs" />
     <Compile Include="UtilsSpecs.fs" />
     <Compile Include="TemplateFileParsing.fs" />
     <Compile Include="NuspecWriterSpecs.fs" />
     <Compile Include="RestrictionFilterSpecs.fs" />
+    <Compile Include="RestrictionApplicationSpecs.fs" />
     <Compile Include="PackageProcessSpecs.fs" />
     <Content Include="PackagesConfig\xunit.visualstudio.packages.config">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
@@ -215,6 +217,9 @@
     <Compile Include="Resolver\CasingSpecs.fs" />
     <Compile Include="Resolver\PessimisticStrategySpecs.fs" />
     <Compile Include="Resolver\AddingDependenciesSpecs.fs" />
+    <Compile Include="Resolver\GlobalPessimisticStrategySpecs.fs" />
+    <Compile Include="Resolver\GlobalOptimisticStrategySpecs.fs" />
+    <Compile Include="Resolver\StrategySpecs.fs" />
     <Compile Include="Lockfile\GeneratorSpecs.fs" />
     <Compile Include="Lockfile\GenerateWithOptionsSpecs.fs" />
     <Compile Include="Lockfile\GenerateAuthModeSpecs.fs" />

@@ -90,7 +90,7 @@ let ``should generate Xml for SQLite``() =
             [],
               Nuspec.All)
     
-    let propertyNodes,chooseNode,propertyDefinitionNodes,_ = ProjectFile.Load("./ProjectFile/TestData/Empty.fsprojtest").Value.GenerateXml(model,true,true,None)
+    let propertyNodes,chooseNode,propertyDefinitionNodes,_ = ProjectFile.TryLoad("./ProjectFile/TestData/Empty.fsprojtest").Value.GenerateXml(model,true,true,None)
     chooseNode.OuterXml
     |> normalizeXml
     |> shouldEqual (normalizeXml expectedReferenceNodes)

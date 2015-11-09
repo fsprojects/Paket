@@ -1,0 +1,4 @@
+source http://nuget.org/api/v2
+
+nuget NUnit ~> 2.6
+nuget FsUnit ~> 1.3

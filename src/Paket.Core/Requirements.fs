@@ -13,11 +13,24 @@ type FrameworkRestriction =
 | Between of FrameworkIdentifier * FrameworkIdentifier
     
     override this.ToString() =
-        match this with    
+        match this with
         | FrameworkRestriction.Exactly r -> r.ToString()
         | FrameworkRestriction.Portable r -> r
         | FrameworkRestriction.AtLeast r -> ">= " + r.ToString()
         | FrameworkRestriction.Between(min,max) -> sprintf ">= %O < %O" min max
+
+    member private x.GetOneIdentifier =
+        match x with
+        | Exactly r -> Some r
+        | Portable _ -> None
+        | AtLeast r -> Some r
+        | Between(r, _) -> Some r
+
+    /// Return if the parameter is a restriction of the same framework category (dotnet, windows phone, silverlight, ...)
+    member x.IsSameCategoryAs (y : FrameworkRestriction) =
+        match (x.GetOneIdentifier, y.GetOneIdentifier) with
+        | Some r, Some r' -> Some(r.IsSameCategoryAs r')
+        | _ -> None
 
 type FrameworkRestrictions = FrameworkRestriction list
 
@@ -72,7 +85,7 @@ let rec optimizeRestrictions restrictions =
         let newRestrictions' = 
             restrictions
             |> List.distinct
-            |> List.sort                            
+            |> List.sort
 
         let newRestrictions =
             match newRestrictions' |> Seq.tryFind (function | FrameworkRestriction.AtLeast r -> true | _ -> false) with
@@ -81,7 +94,7 @@ let rec optimizeRestrictions restrictions =
                 let currentVersion =
                     match r with
                     | FrameworkRestriction.AtLeast(DotNetFramework(x)) -> x
-                    | x -> failwithf "Unknown .NET moniker %O" x     
+                    | x -> failwithf "Unknown .NET moniker %O" x
                                                                                                            
                 let isLowerVersion x =
                     let isMatching x =
@@ -102,7 +115,7 @@ let rec optimizeRestrictions restrictions =
                         match n with
                         | FrameworkRestriction.Exactly(DotNetFramework(x)) -> x
                         | FrameworkRestriction.AtLeast(DotNetFramework(x)) -> x
-                        | x -> failwithf "Unknown .NET moniker %O" x     
+                        | x -> failwithf "Unknown .NET moniker %O" x
 
                     (newRestrictions'
                         |> List.filter (fun x -> x <> r && x <> n)) @ [FrameworkRestriction.AtLeast(DotNetFramework(newLowest))]
@@ -153,7 +166,7 @@ let optimizeDependencies packages =
                     |> List.sort
 
                 let localMaxDotNetRestriction = findMaxDotNetRestriction plain
-                let globalMax = defaultArg globalMax localMaxDotNetRestriction          
+                let globalMax = defaultArg globalMax localMaxDotNetRestriction
 
                 let dotnetRestrictions,others = List.partition (function | FrameworkRestriction.Exactly(DotNetFramework(_)) -> true | FrameworkRestriction.AtLeast(DotNetFramework(_)) -> true | _ -> false) plain
 
@@ -161,7 +174,7 @@ let optimizeDependencies packages =
                     dotnetRestrictions
                     |> List.map (fun restriction ->
                         match restriction with
-                        | FrameworkRestriction.Exactly r ->                     
+                        | FrameworkRestriction.Exactly r ->
                             if r = localMaxDotNetRestriction && r = globalMax then
                                 FrameworkRestriction.AtLeast r
                             else
@@ -172,14 +185,14 @@ let optimizeDependencies packages =
 
                 yield name,versionRequirement,others @ restrictions]
 
-let combineRestrictions x y =
+let private combineSameCategoryOrPortableRestrictions x y =
     match x with
     | FrameworkRestriction.Exactly r -> 
         match y with
         | FrameworkRestriction.Exactly r' -> if r = r' then [FrameworkRestriction.Exactly r] else []
         | FrameworkRestriction.Portable _ -> []
         | FrameworkRestriction.AtLeast r' -> if r' <= r then [FrameworkRestriction.Exactly r] else []
-        | FrameworkRestriction.Between(min,max) -> if min <= r && r <= max then [FrameworkRestriction.Exactly r] else []
+        | FrameworkRestriction.Between(min,max) -> if min <= r && r < max then [FrameworkRestriction.Exactly r] else []
     | FrameworkRestriction.Portable r ->
         match y with
         | FrameworkRestriction.Portable r' -> if r = r' then [FrameworkRestriction.Portable r] else []
@@ -189,18 +202,24 @@ let combineRestrictions x y =
         | FrameworkRestriction.Exactly r' -> if r <= r' then [FrameworkRestriction.Exactly r'] else []
         | FrameworkRestriction.Portable _ -> []
         | FrameworkRestriction.AtLeast r' -> [FrameworkRestriction.AtLeast (max r r')]
-        | FrameworkRestriction.Between(min,max) -> if min <= r && r <= max then [FrameworkRestriction.Between(r,max)] else []
+        | FrameworkRestriction.Between(min,max') -> if r < max' then [FrameworkRestriction.Between(max r min,max')] else []
     | FrameworkRestriction.Between(min1,max1) ->
         match y with
-        | FrameworkRestriction.Exactly r -> if min1 <= r && r <= max1 then [FrameworkRestriction.Exactly r] else []
+        | FrameworkRestriction.Exactly r -> if min1 <= r && r < max1 then [FrameworkRestriction.Exactly r] else []
         | FrameworkRestriction.Portable _ -> []
-        | FrameworkRestriction.AtLeast r -> if min1 <= r && r <= max1 then [FrameworkRestriction.Between(r,max1)] else []
+        | FrameworkRestriction.AtLeast r -> if r < max1 then [FrameworkRestriction.Between(max r min1,max1)] else []
         | FrameworkRestriction.Between(min2,max2) -> 
             let min' = max min1 min2
             let max' = min max1 max2
             if min' < max' then [FrameworkRestriction.Between(min',max')] else
             if min' = max' then [FrameworkRestriction.Exactly(min')] else
             []
+
+let combineRestrictions (x : FrameworkRestriction) y =
+    if (x.IsSameCategoryAs(y) = Some(false)) then
+        []
+    else
+        combineSameCategoryOrPortableRestrictions x y
 
 let filterRestrictions (list1:FrameworkRestrictions) (list2:FrameworkRestrictions) =
     match list1,list2 with
@@ -212,6 +231,29 @@ let filterRestrictions (list1:FrameworkRestrictions) (list2:FrameworkRestriction
                 let c = combineRestrictions x y
                 if c <> [] then yield! c]
     |> optimizeRestrictions
+
+/// Get if a target should be considered with the specified restrictions
+let isTargetMatchingRestrictions (restrictions:FrameworkRestrictions) = function
+    | SinglePlatform pf ->
+        restrictions
+        |> List.exists (fun restriction ->
+                match restriction with
+                | FrameworkRestriction.Exactly fw -> pf = fw
+                | FrameworkRestriction.Portable _ -> false
+                | FrameworkRestriction.AtLeast fw -> pf >= fw && pf.IsSameCategoryAs(fw)
+                | FrameworkRestriction.Between(min,max) -> pf >= min && pf < max && pf.IsSameCategoryAs(min))
+    | _ ->
+        restrictions
+        |> List.exists (fun restriction ->
+                match restriction with
+                | FrameworkRestriction.Portable r -> true
+                | _ -> false)
+
+/// Get all targets that should be considered with the specified restrictions
+let applyRestrictionsToTargets (restrictions:FrameworkRestrictions) (targets: TargetProfile list) =
+    let result = targets |> List.filter (isTargetMatchingRestrictions restrictions)
+    result
+
 
 type ContentCopySettings =
 | Omit
@@ -354,7 +396,7 @@ type RemoteFileInstallSettings =
 
 type PackageRequirementSource =
 | DependenciesFile of string
-| Package of PackageName * SemVerInfo 
+| Package of PackageName * SemVerInfo
     member this.IsRootRequirement() =
         match this with
         | DependenciesFile _ -> true
@@ -371,13 +413,14 @@ type PackageRequirementSource =
 type PackageRequirement =
     { Name : PackageName
       VersionRequirement : VersionRequirement
-      ResolverStrategy : ResolverStrategy
+      ResolverStrategy : ResolverStrategy option
       Parent: PackageRequirementSource
+      Graph: PackageRequirement list
       Settings: InstallSettings }
 
     override this.Equals(that) = 
         match that with
-        | :? PackageRequirement as that -> this.Name = that.Name && this.VersionRequirement = that.VersionRequirement
+        | :? PackageRequirement as that -> this.Name = that.Name && this.VersionRequirement = that.VersionRequirement && this.ResolverStrategy = that.ResolverStrategy
         | _ -> false
 
     override this.ToString() =
@@ -388,25 +431,25 @@ type PackageRequirement =
     member this.IncludingPrereleases() = 
         { this with VersionRequirement = VersionRequirement(this.VersionRequirement.Range,PreReleaseStatus.All) }
     
-    static member Compare(x,y,startWithPackage:PackageName option,boostX,boostY) =
+    member this.Depth = this.Graph.Length
+
+    static member Compare(x,y,startWithPackage:PackageFilter option,boostX,boostY) =
         if x = y then 0 else
-        let c1 =
-            compare 
-                (not x.VersionRequirement.Range.IsGlobalOverride,x.Parent)
-                (not y.VersionRequirement.Range.IsGlobalOverride,x.Parent)
-        if c1 <> 0 then c1 else
-        let c2 = -1 * compare x.ResolverStrategy y.ResolverStrategy
-        if c2 <> 0 then c2 else
-        let cBoost = compare boostX boostY
-        if cBoost <> 0 then cBoost else
-        let c3 = -1 * compare x.VersionRequirement y.VersionRequirement
-        if c3 <> 0 then c3 else
-        match startWithPackage with
-        | Some name ->
-            if x.Name = name then -1 else
-            if y.Name = name then 1 else
-            compare x.Name y.Name
-        | None -> compare x.Name y.Name
+        seq {
+            yield compare
+                (not x.VersionRequirement.Range.IsGlobalOverride,x.Depth)
+                (not y.VersionRequirement.Range.IsGlobalOverride,y.Depth)
+            yield match startWithPackage with
+                    | Some filter when filter.Match x.Name -> -1
+                    | Some filter when filter.Match y.Name -> 1
+                    | _ -> 0
+            yield -compare x.ResolverStrategy y.ResolverStrategy
+            yield compare boostX boostY
+            yield -compare x.VersionRequirement y.VersionRequirement
+            yield compare x.Name y.Name
+        }
+        |> Seq.tryFind (fun x -> x <> 0)
+        |> Option.fold (fun _ x -> x) 0
 
     interface System.IComparable with
        member this.CompareTo that = 

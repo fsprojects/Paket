@@ -102,7 +102,7 @@ let loadAssemblyAttributes fileName (assembly:Assembly) =
     with
     | :? FileNotFoundException -> 
         // retrieving via path
-        let assembly = Assembly.LoadFrom fileName            
+        let assembly = Assembly.LoadFrom fileName
         assembly.GetCustomAttributes(true)
     | exn ->
         traceWarnfn "Loading custom attributes failed for %s.%sMessage: %s" fileName Environment.NewLine exn.Message
@@ -155,7 +155,7 @@ let findDependencies (dependencies : DependenciesFile) config (template : Templa
             | Some packagedRef -> packagedRef :: deps, files
             | None -> 
                 let p = 
-                    match ProjectFile.Load(Path.Combine(projectDir, p.RelativePath)) with
+                    match ProjectFile.TryLoad(Path.Combine(projectDir, p.RelativePath) |> normalizePath) with
                     | Some p -> p
                     | _ -> failwithf "Missing project reference in proj file %s" p.RelativePath
                     

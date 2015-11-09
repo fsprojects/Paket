@@ -20,17 +20,21 @@ These versions are then persisted to the [`paket.lock` file](lock-file.html).
 
 In order to figure out the concrete versions Paket needs to solve the following constraint satisfaction problem:
 
-* Select the highest version for each of the packages in the [`paket.dependencies` file](dependencies-file.html), plus all their transitive dependencies, such that all version constraints are satisfied.
+* Select the latest version for each of the packages in the [`paket.dependencies` file](dependencies-file.html), plus all their transitive dependencies, such that all version constraints are satisfied.
 
-Note: In general, more than one solution to this problem can exist and the solver will take the first solution that it finds.
+<blockquote>Note:
+<ul>
+  <li>In general, more than one solution to this problem can exist and the solver will take the first solution that it finds.</li>
+  <li>If you change the <a href="dependencies-file.html#Strategy-option">resolution strategy</a> then Paket needs to find the <i>oldest matching version</i>.</li>
+</ul></blockquote>
 
 ## Getting data
 
-The [constraint satisfaction problem](http://en.wikipedia.org/wiki/Constraint_satisfaction_problem) is covererd by many [scientific papers](resolver.html#Further-reading), but
+The [constraint satisfaction problem](http://en.wikipedia.org/wiki/Constraint_satisfaction_problem) is covered by many [scientific papers](resolver.html#Further-reading), but
 a big challenge for Paket's resolver is that it doesn't have the full constraints available.
 The algorithm needs to evaluate the package dependency graph along the way by retrieving data from the [NuGet](nuget-dependencies.html) source feeds.
 
-The two important questions are:
+The two important API questions are:
 
 * What versions of a package are available?
 * Given a concrete version of a package, what further dependencies are required?
@@ -83,7 +87,7 @@ type Resolution =
 
 (**
 
-The algorithm works as a [Depth-first search](http://en.wikipedia.org/wiki/Depth-first_search).
+The algorithm works as a [Breadth-first search](https://en.wikipedia.org/wiki/Breadth-first_search).
 In every step it selects a requirement from the set of *open* requirements and checks if the requirement can be satisfied.
 If no conflict arises then a package version gets selected and all it's dependencies are added to the *open* requirements.
 A set of *closed* requirements is maintained in order to prevent cycles in the search graph.
@@ -146,7 +150,7 @@ Therefore, it orders the requirements based on:
 
 * Is the [version pinned](nuget-dependencies.html#Use-exactly-this-version-constraint)?
 * Is it a direct requirement coming from the dependencies file?
-* Is the [resolver strategy](nuget-dependencies.html#Paket-s-NuGet-style-dependency-resolution-for-transitive-dependencies) `Min` or `Max`?
+* Is the [resolver strategy](dependencies-file.html#Strategy-option) `Min` or `Max`?
 * How big is the current [package specific boost factor](resolver.html#Package-conflict-boost)?
 * How big is the specified version range?
 * The package name (alphabetically) as a tie breaker.
@@ -156,18 +160,23 @@ Therefore, it orders the requirements based on:
 Whenever Paket encounters a package version conflict in the search tree it increases a boost factor for the involved packages. 
 This heuristic influences the [package evaluation order](resolver.html#Sorting-package-requirements) and forces the resolver to deal with conflicts much earlier in the search tree.
 
-## Caching
+## Branch and bound
 
-Paket tries to cache as much as possible since HTTP requests to NuGet are very expensive:
+Every known resolution conflict is stored in a HashSet. At every step Paket will always check if the current requirement set (union of *open* requirements and *closed* requirements) is
+a superset of a known conflict. In this case Paket can stop evaluating that part of the search tree.
 
-* The function `getAllVersionsFromNuget` will only call the NuGet API once per package and Paket run.
+## Caching and lazy evaluation
+
+Since HTTP requests to NuGet are very expensive Paket tries to reduce these calls as much as possible:
+
+* The function `getAllVersionsFromNuget` will call the NuGet API at most once per package and Paket run.
 * The function `getPackageDetails` will only call the NuGet API if package details are not found in the RAM or on disk.
 
 The second caching improvement means that subsequent runs of `paket update` can get faster since package details are already stored on disk.
 
 ## Error reporting
 
-If the resolver can't find a valid solution, then it needs to report an error to the user.
+If the resolver can't find a valid resolution, then it needs to report an error to the user.
 Since the search tree can be very large and might contain lots of different kinds of failures, reporting a good error message is difficult.
 Paket will only report the last conflict that it can't resolve and also some information about the origin of this conflict.
 

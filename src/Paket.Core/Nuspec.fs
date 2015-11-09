@@ -65,9 +65,8 @@ type Nuspec =
     static member Explicit references = { References = NuspecReferences.Explicit references; Dependencies = []; FrameworkAssemblyReferences = []; OfficialName = ""; LicenseUrl = ""; IsDevelopmentDependency = false }
 
     static member Load(root,groupName,version,includeVersionInPath,name:PackageName) =
-        let (PackageName name) = name
         let folder = DirectoryInfo(getTargetFolder root groupName name version includeVersionInPath).FullName
-        let nuspec = Path.Combine(folder,sprintf "%s.nuspec" name)
+        let nuspec = Path.Combine(folder,sprintf "%O.nuspec" name)
         Nuspec.Load nuspec
 
     static member Load(fileName : string) = 
@@ -75,7 +74,12 @@ type Nuspec =
         if not fi.Exists then Nuspec.All
         else 
             let doc = new XmlDocument()
-            doc.Load fi.FullName
+            try
+                doc.Load fi.FullName
+            with
+            | exn -> 
+                let text = File.ReadAllText(fi.FullName)  // work around mono bug https://github.com/fsprojects/Paket/issues/1189
+                doc.LoadXml(text)
 
             let frameworks =
                 doc 

@@ -2,21 +2,6 @@
 
 The `paket.template` files are used to specify rules to create nupkgs by using the [`paket pack` command](paket-pack.html).
 
-An example `paket.template` file might look like the following:
-
-    type file
-    id Test.Paket.Package
-    version 1.0
-    authors Michael Newton
-    description
-	    description of this test package
-    files
-        src/Test.Paket.Package/bin/Debug ==> lib
-
-This template file will create a nupkg called `Test.Paket.Package.[Version].nupkg` with the
-contents of the `src/Test.Paket.Package/bin/Debug` directory in the `lib` directory
-of the package file.
-
 The `type` specifier must be the first line of the template file. It has two possible
 values:
 
@@ -32,6 +17,37 @@ For example:
 	Paket.Project.fsproj.paket.template
 
 are matching files.
+### Sample 1
+
+A `paket.template` file using `type project` may look like this:
+
+    type project
+    licenseUrl http://opensource.org/licenses/MIT
+
+This template file will create a nupkg:
+ - Named `Test.Paket.Package.[Version].nupkg`
+ - Version, Author and Description from assembly attributes
+ - Containing `$(OutDir)\$(ProjectName).*` (all files matching project name in the output directory) directory in the `lib` directory of the package.
+ - Referencing all packages referenced by the project.
+   - Package references
+   - Project references, for projects in the sln that has `paket.template` files.
+
+### Sample 2
+
+A `paket.template` file using `type file` may look like this:
+
+    type file
+    id Test.Paket.Package
+    version 1.0
+    authors Michael Newton
+    description
+	    description of this test package
+    files
+        src/Test.Paket.Package/bin/Debug ==> lib
+
+This template file will create a nupkg called `Test.Paket.Package.[Version].nupkg` with the
+contents of the `src/Test.Paket.Package/bin/Debug` directory in the `lib` directory
+of the package file.
 
 ### General Metadata
 
@@ -151,10 +167,23 @@ It's possible to use `CURRENTVERSION` as a placeholder for the current version o
 	  FSharp.Core >= 4.3.1
 	  Other.Dep ~> CURRENTVERSION
 
+The `LOCKEDVERSION` placeholder allows to reference the currently used dependency version from the paket.lock file:
+
+	dependencies
+	  FSharp.Core >= 4.3.1
+	  Other.Dep ~> LOCKEDVERSION
+
 In a project file, the following dependencies will be added:
 
 * any paket dependency with the range specified in the [`paket.dependencies` file](dependencies-file.html).
+* any paket dependency with the range specified in the [`paket.lock` file](lock-file.html) (if `lock-dependencies` parameter is used in [`paket pack`](paket-pack.html)).
 * any project reference with a matching paket.template file with a minimum version requirement of the version currently being packaged.
+
+If you need to exclude dependencies from the automatic discovery then you can use the `excludeddependencies` block:
+
+	excludeddependencies
+	  FSharp.Core
+	  Other.Dep
 
 ### Comments
 

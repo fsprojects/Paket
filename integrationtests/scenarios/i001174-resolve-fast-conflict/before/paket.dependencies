@@ -1,0 +1,7 @@
+source https://nuget.org/api/v2
+
+nuget Microsoft.AspNet.SignalR.JS
+nuget Nancy.Serialization.JsonNet
+nuget SourceLink.Fake
+nuget Ninject.Extensions.Logging.Log4net == 3.2.0
+nuget Ninject.Extensions.Interception.Linfu == 2.2.1.2

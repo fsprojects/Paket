@@ -273,11 +273,25 @@ let ``should parse framework restricted lock file``() =
     let packages = List.rev lockFile.Packages
     packages.Length |> shouldEqual 7
 
+    packages.[0].Dependencies |> Set.toList |> List.map (fun (_, _, r) -> r)
+    |> List.item 2
+    |> shouldEqual ([FrameworkRestriction.AtLeast(FrameworkIdentifier.DotNetFramework(FrameworkVersion.V4_Client))])
+
     packages.[3].Source |> shouldEqual PackageSources.DefaultNugetSource
     packages.[3].Name |> shouldEqual (PackageName "LinqBridge")
     packages.[3].Version |> shouldEqual (SemVer.Parse "1.3.0")
     packages.[3].Settings.FrameworkRestrictions |> shouldEqual ([FrameworkRestriction.Between(FrameworkIdentifier.DotNetFramework(FrameworkVersion.V2),FrameworkIdentifier.DotNetFramework(FrameworkVersion.V3_5))])
     packages.[3].Settings.ImportTargets |> shouldEqual None
+
+    let dependencies4 =
+        packages.[4].Dependencies |> Set.toList |> List.map (fun (_, _, r) -> r)
+
+    dependencies4.Head
+    |> shouldEqual ([FrameworkRestriction.Between(FrameworkIdentifier.DotNetFramework(FrameworkVersion.V2), FrameworkIdentifier.DotNetFramework(FrameworkVersion.V3_5))])
+    dependencies4.Tail.Head
+    |> shouldEqual ([FrameworkRestriction.Exactly(FrameworkIdentifier.DotNetFramework(FrameworkVersion.V2))
+                     FrameworkRestriction.Exactly(FrameworkIdentifier.DotNetFramework(FrameworkVersion.V3_5))
+                     FrameworkRestriction.AtLeast(FrameworkIdentifier.DotNetFramework(FrameworkVersion.V4_Client))])
 
     packages.[5].Source |> shouldEqual PackageSources.DefaultNugetSource
     packages.[5].Name |> shouldEqual (PackageName "ReadOnlyCollectionInterfaces")
@@ -312,6 +326,10 @@ let ``should parse framework restricted lock file in new syntax``() =
     let packages = List.rev lockFile.Packages
     packages.Length |> shouldEqual 7
 
+    packages.[0].Dependencies |> Set.toList |> List.map (fun (_, _, r) -> r)
+    |> List.item 2
+    |> shouldEqual ([FrameworkRestriction.AtLeast(FrameworkIdentifier.DotNetFramework(FrameworkVersion.V4_Client))])
+
     packages.[3].Source |> shouldEqual PackageSources.DefaultNugetSource
     packages.[3].Name |> shouldEqual (PackageName "LinqBridge")
     packages.[3].Version |> shouldEqual (SemVer.Parse "1.3.0")
@@ -320,6 +338,16 @@ let ``should parse framework restricted lock file in new syntax``() =
     packages.[3].Settings.ImportTargets |> shouldEqual (Some false)
     packages.[3].Settings.IncludeVersionInPath |> shouldEqual (Some true)
     packages.[3].Settings.OmitContent |> shouldEqual (Some ContentCopySettings.Omit)
+
+    let dependencies4 =
+        packages.[4].Dependencies |> Set.toList |> List.map (fun (_, _, r) -> r)
+
+    dependencies4.Head
+    |> shouldEqual ([FrameworkRestriction.Between(FrameworkIdentifier.DotNetFramework(FrameworkVersion.V2), FrameworkIdentifier.DotNetFramework(FrameworkVersion.V3_5))])
+    dependencies4.Tail.Head
+    |> shouldEqual ([FrameworkRestriction.Exactly(FrameworkIdentifier.DotNetFramework(FrameworkVersion.V2))
+                     FrameworkRestriction.Exactly(FrameworkIdentifier.DotNetFramework(FrameworkVersion.V3_5))
+                     FrameworkRestriction.AtLeast(FrameworkIdentifier.DotNetFramework(FrameworkVersion.V4_Client))])
 
     packages.[5].Source |> shouldEqual PackageSources.DefaultNugetSource
     packages.[5].Name |> shouldEqual (PackageName "ReadOnlyCollectionInterfaces")
@@ -453,7 +481,7 @@ let multipleFeedLockFile = """NUGET
       Newtonsoft.Json (>= 6.0.0 < 6.1.0)
     log4net (1.2.10)
     Newtonsoft.Json (6.0.6)
-  remote: https://www.nuget.org/api/v2
+  remote: https://nuget.org/api/v2
   specs:
     Microsoft.AspNet.WebApi (5.2.3)
       Microsoft.AspNet.WebApi.WebHost (>= 5.2.3 < 5.3.0)
@@ -463,7 +491,8 @@ let multipleFeedLockFile = """NUGET
     Microsoft.AspNet.WebApi.Core (5.2.3)
       Microsoft.AspNet.WebApi.Client (>= 5.2.3)
     Microsoft.AspNet.WebApi.WebHost (5.2.3)
-      Microsoft.AspNet.WebApi.Core (>= 5.2.3 < 5.3.0)"""
+      Microsoft.AspNet.WebApi.Core (>= 5.2.3 < 5.3.0)
+"""
 
 [<Test>]
 let ``should parse lockfile with multiple feeds``() =
@@ -480,13 +509,23 @@ let ``should parse lockfile with multiple feeds``() =
     packages.[3].Settings.FrameworkRestrictions.ToString() |> shouldEqual "[]"
     packages.[3].Source.ToString() |> shouldEqual "https://nuget.org/api/v2"
 
+[<Test>]
+let ``should parse and serialise multiple feed lockfile``() =
+    let lockFile = LockFile.Parse("",toLines multipleFeedLockFile)
+    let lockFile' = lockFile.ToString()
+
+    normalizeLineEndings lockFile' 
+    |> shouldEqual (normalizeLineEndings multipleFeedLockFile)
+
+
 let groupsLockFile = """REDIRECTS: ON
-IMPORT-TARGETS: TRUE
 COPY-LOCAL: TRUE
+IMPORT-TARGETS: TRUE
 NUGET
   remote: "D:\code\temp with space"
   specs:
     Castle.Windsor (2.1)
+
 GROUP Build
 REDIRECTS: ON
 COPY-LOCAL: TRUE
@@ -495,7 +534,7 @@ NUGET
   remote: "D:\code\temp with space"
   specs:
     FAKE (4.0) - redirects: on
-"""   
+"""
 
 [<Test>]
 let ``should parse lock file with groups``() = 
@@ -524,6 +563,56 @@ let ``should parse lock file with groups``() =
     lockFile2.Options.Settings.CopyLocal |> shouldEqual (Some true)
     lockFile2.Options.Settings.ReferenceCondition |> shouldEqual (Some "LEGACY")
 
-    packages2.Head.Source |> shouldEqual (PackageSource.LocalNuget("D:\code\\temp with space"))  
+    packages2.Head.Source |> shouldEqual (PackageSource.LocalNuget("D:\code\\temp with space"))
     packages2.[0].Name |> shouldEqual (PackageName "FAKE")
     packages2.[0].Settings.CreateBindingRedirects |> shouldEqual (Some true)
+
+
+[<Test>]
+let ``should parse and serialise groups lockfile``() =
+    let lockFile = LockFile.Parse("",toLines groupsLockFile)
+    let lockFile' = lockFile.ToString()
+
+    normalizeLineEndings lockFile' 
+    |> shouldEqual (normalizeLineEndings groupsLockFile)
+
+[<Test>]
+let ``should parse strategy min lock file``() = 
+    let lockFile = """STRATEGY: MIN
+NUGET
+  remote: "D:\code\temp with space"
+  specs:
+    Castle.Windsor (2.1)
+"""
+    let lockFile = LockFileParser.Parse(toLines lockFile) |> List.head
+    let packages = List.rev lockFile.Packages
+    
+    packages.Length |> shouldEqual 1
+    lockFile.Options.ResolverStrategy |> shouldEqual (Some ResolverStrategy.Min)
+    
+[<Test>]
+let ``should parse strategy max lock file``() = 
+    let lockFile = """STRATEGY: MAX
+NUGET
+  remote: "D:\code\temp with space"
+  specs:
+    Castle.Windsor (2.1)
+"""
+    let lockFile = LockFileParser.Parse(toLines lockFile) |> List.head
+    let packages = List.rev lockFile.Packages
+    
+    packages.Length |> shouldEqual 1
+    lockFile.Options.ResolverStrategy |> shouldEqual (Some ResolverStrategy.Max)
+
+[<Test>]
+let ``should parse no strategy lock file``() = 
+    let lockFile = """NUGET
+  remote: "D:\code\temp with space"
+  specs:
+    Castle.Windsor (2.1)
+"""
+    let lockFile = LockFileParser.Parse(toLines lockFile) |> List.head
+    let packages = List.rev lockFile.Packages
+    
+    packages.Length |> shouldEqual 1
+    lockFile.Options.ResolverStrategy |> shouldEqual None

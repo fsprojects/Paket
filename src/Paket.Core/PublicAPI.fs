@@ -104,12 +104,15 @@ type Dependencies(dependenciesFileName: string) =
     /// Adds the given package without version requirements to the dependencies file.
     member this.Add(groupName, package: string): unit = this.Add(groupName, package,"")
 
+    /// Adds the given package without version requirements to main dependency group of the dependencies file.
+    member this.Add(package: string): unit = this.Add(None, package,"")
+
     /// Adds the given package with the given version to the dependencies file.
-    member this.Add(groupName, package: string,version: string): unit =
+    member this.Add(groupName: string option, package: string,version: string): unit =
         this.Add(groupName, package, version, force = false, hard = false, withBindingRedirects = false,  createNewBindingFiles = false, interactive = false, installAfter = true, semVerUpdateMode = SemVerUpdateMode.NoRestriction)
 
     /// Adds the given package with the given version to the dependencies file.
-    member this.Add(groupName, package: string,version: string,force: bool,hard: bool,withBindingRedirects: bool, createNewBindingFiles:bool, interactive: bool,installAfter: bool, semVerUpdateMode): unit =
+    member this.Add(groupName: string option, package: string,version: string,force: bool,hard: bool,withBindingRedirects: bool, createNewBindingFiles:bool, interactive: bool,installAfter: bool, semVerUpdateMode): unit =
         Utils.RunInLockedAccessMode(
             this.RootPath,
             fun () -> AddProcess.Add(dependenciesFileName, groupName, PackageName(package.Trim()), version,
@@ -195,6 +198,20 @@ type Dependencies(dependenciesFileName: string) =
                                 Common = InstallerOptions.CreateLegacyOptions(force, hard, withBindingRedirects, createNewBindingFiles, semVerUpdateMode)
                                 NoInstall = installAfter |> not }))
 
+    /// Update a filtered set of packages
+    member this.UpdateFilteredPackages(groupName: string option, package: string, version: string option, force: bool, hard: bool, withBindingRedirects: bool, createNewBindingFiles:bool, installAfter: bool, semVerUpdateMode): unit =
+        let groupName = 
+            match groupName with
+            | None -> Constants.MainDependencyGroup
+            | Some name -> GroupName name
+
+        Utils.RunInLockedAccessMode(
+            this.RootPath,
+            fun () -> UpdateProcess.UpdateFilteredPackages(dependenciesFileName, groupName, PackageName package, version,
+                                                  { UpdaterOptions.Default with
+                                                      Common = InstallerOptions.CreateLegacyOptions(force, hard, withBindingRedirects, createNewBindingFiles, semVerUpdateMode)
+                                                      NoInstall = installAfter |> not }))
+
     /// Updates the given package.
     member this.UpdatePackage(groupName, package: string, version: string option, force: bool, hard: bool, semVerUpdateMode): unit =
         this.UpdatePackage(groupName, package, version, force, hard, false, false, true, semVerUpdateMode)
@@ -248,13 +265,13 @@ type Dependencies(dependenciesFileName: string) =
     member this.FindOutdated(strict: bool,includePrereleases: bool): (string * string * SemVerInfo) list =
         FindOutdated.FindOutdated strict includePrereleases
         |> this.Process
-        |> List.map (fun (GroupName g, PackageName p,_,newVersion) -> g,p,newVersion)
+        |> List.map (fun (g, p,_,newVersion) -> g.ToString(),p.ToString(),newVersion)
 
     /// Downloads the latest paket.bootstrapper into the .paket folder.
     member this.DownloadLatestBootstrapper() : unit =
         Utils.RunInLockedAccessMode(
             this.RootPath,
-            fun () -> Releases.downloadLatestBootstrapper |> this.Process)
+            fun () -> Releases.downloadLatestBootstrapperAndTargets |> this.Process)
 
     /// Pulls new paket.targets and bootstrapper and puts them into .paket folder.
     member this.TurnOnAutoRestore(): unit =
@@ -267,6 +284,10 @@ type Dependencies(dependenciesFileName: string) =
         Utils.RunInLockedAccessMode(
             this.RootPath,
             fun () -> VSIntegration.TurnOffAutoRestore |> this.Process)
+
+    /// Returns the installed version of the given package.
+    member this.GetInstalledVersion(packageName: string): string option =
+        this.GetInstalledVersion(None,packageName)
 
     /// Returns the installed version of the given package.
     member this.GetInstalledVersion(groupName:string option,packageName: string): string option =
@@ -367,6 +388,13 @@ type Dependencies(dependenciesFileName: string) =
         |> Seq.filter (fun kv -> normalizedDependencies |> Seq.exists ((=) kv.Key))
         |> listPackages
 
+    /// Returns all groups.
+    member this.GetGroups(): string list =
+        let dependenciesFile = DependenciesFile.ReadFromFile dependenciesFileName
+        dependenciesFile.Groups
+        |> Seq.map (fun kv -> kv.Key.ToString())
+        |> Seq.toList
+
     /// Returns the direct dependencies for the given package.
     member this.GetDirectDependenciesForPackage(groupName,packageName:string): (string * string * string) list =
         let resolvedPackages = getLockFile().GetGroupedResolution()
@@ -376,6 +404,9 @@ type Dependencies(dependenciesFileName: string) =
         resolvedPackages
         |> Seq.filter (fun kv -> normalizedDependencies |> Seq.exists ((=) kv.Key))
         |> listPackages
+
+    /// Removes the given package from the main dependency group of the dependencies file.
+    member this.Remove(package: string): unit = this.Remove(None, package)
 
     /// Removes the given package from dependencies file.
     member this.Remove(groupName, package: string): unit = this.Remove(groupName, package, false, false, false, true)
@@ -395,6 +426,10 @@ type Dependencies(dependenciesFileName: string) =
     /// Shows all references files where the given package is referenced.
     member this.ShowReferencesFor(packages: (string * string) list): unit =
         FindReferences.ShowReferencesFor (packages |> List.map (fun (g,p) -> GroupName g,PackageName p)) |> this.Process 
+
+    /// Finds all references files where the given main group package is referenced.
+    member this.FindReferencesFor(package:string): string list =
+        this.FindReferencesFor(Constants.MainDependencyGroup.ToString(),package)
 
     /// Finds all references files where the given package is referenced.
     member this.FindReferencesFor(group:string,package:string): string list =
@@ -435,3 +470,11 @@ type Dependencies(dependenciesFileName: string) =
             failwithf "Could not push package %s. Please specify a NuGet API key via environment variable \"nugetkey\"." packageFileName
         let maxTrials = defaultArg maxTrials 5
         RemoteUpload.Push maxTrials urlWithEndpoint apiKey packageFileName
+
+    /// Lists all paket.template files in the current solution.
+    member this.ListTemplateFiles() : TemplateFile list =
+        let lockFile = getLockFile()
+        ProjectFile.FindAllProjects(this.RootPath)
+        |> Array.choose (fun p -> ProjectFile.FindTemplatesFile(FileInfo(p.FileName)))
+        |> Array.map (fun path -> TemplateFile.Load(path, lockFile, None))
+        |> Array.toList

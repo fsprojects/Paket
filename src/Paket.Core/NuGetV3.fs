@@ -24,9 +24,9 @@ type JSONRootData =
     { Resources : JSONResource [] }
 
 /// [omit]
-let getSearchAutocompleteService (data : string) =  
+let getSearchAutocompleteService (data : string) =
     JsonConvert.DeserializeObject<JSONRootData>(data.Replace("@id","ID").Replace("@type","Type")).Resources
-    |> Array.tryFind (fun x -> x.Type <> null && x.Type.ToLower() = "searchautocompleteservice")
+    |> Array.tryFind (fun x -> (isNull x.Type |> not) && x.Type.ToLower() = "searchautocompleteservice")
     |> Option.map (fun x -> x.ID)
 
 /// [omit]
@@ -67,9 +67,9 @@ let getSearchAPI(auth,nugetUrl) =
 let extractVersions(response:string) =
     JsonConvert.DeserializeObject<JSONVersionData>(response).Data
 
-let internal findVersionsForPackage(v3Url, auth, package, includingPrereleases, maxResults) =
+let internal findVersionsForPackage(v3Url, auth, packageName:Domain.PackageName, includingPrereleases, maxResults) =
     async {
-        let! response = safeGetFromUrl(auth,sprintf "%s?id=%s&take=%d%s" v3Url package (max maxResults 100000) (if includingPrereleases then "&prerelease=true" else ""), acceptXml) // Nuget is showing old versions first
+        let! response = safeGetFromUrl(auth,sprintf "%s?id=%O&take=%d%s" v3Url packageName (max maxResults 100000) (if includingPrereleases then "&prerelease=true" else ""), acceptXml) // Nuget is showing old versions first
         match response with
         | Some text ->
             let versions =

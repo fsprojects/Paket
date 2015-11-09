@@ -5,7 +5,7 @@ open System.IO
 open Paket.Domain
 
 [<Literal>]
-let GithubUrl = "https://github.com"
+let GitHubUrl = "https://github.com"
 
 [<Literal>]
 let DefaultNugetStream = "https://nuget.org/api/v2"
@@ -14,7 +14,7 @@ let DefaultNugetStream = "https://nuget.org/api/v2"
 let DefaultNugetV3Stream = "http://api.nuget.org/v3/index.json"
 
 [<Literal>]
-let GithubReleasesUrl = "https://api.github.com/repos/fsprojects/Paket/releases"
+let GitHubReleasesUrl = "https://api.github.com/repos/fsprojects/Paket/releases"
 
 [<Literal>]
 let GithubReleaseDownloadUrl = "https://github.com/fsprojects/Paket/releases/download"

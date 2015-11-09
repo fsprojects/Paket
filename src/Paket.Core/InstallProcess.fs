@@ -14,6 +14,7 @@ open System.Reflection
 open Paket.PackagesConfigFile
 open Paket.Requirements
 open System.Collections.Generic
+open System.Collections.Concurrent
 
 let updatePackagesConfigFile (model: Map<GroupName*PackageName,SemVerInfo*InstallSettings>) packagesConfigFileName =
     let packagesInConfigFile = PackagesConfigFile.Read packagesConfigFileName
@@ -34,16 +35,16 @@ let updatePackagesConfigFile (model: Map<GroupName*PackageName,SemVerInfo*Instal
         |> Seq.append packagesInModel
         |> PackagesConfigFile.Save packagesConfigFileName
 
-let findPackageFolder root (groupName,PackageName name) (version,settings) =
+let findPackageFolder root (groupName,packageName) (version,settings) =
     let includeVersionInPath = defaultArg settings.IncludeVersionInPath false
-    let lowerName = (name + if includeVersionInPath then "." + version.ToString() else "").ToLower()
+    let lowerName = (packageName.ToString() + if includeVersionInPath then "." + version.ToString() else "").ToLower()
     let di = DirectoryInfo(Path.Combine(root, Constants.PackagesFolderName))
-    let targetFolder = getTargetFolder root groupName name version includeVersionInPath
+    let targetFolder = getTargetFolder root groupName packageName version includeVersionInPath
     let direct = DirectoryInfo(targetFolder)
     if direct.Exists then direct else
     match di.GetDirectories() |> Seq.tryFind (fun subDir -> subDir.FullName.ToLower().EndsWith(lowerName)) with
     | Some x -> x
-    | None -> failwithf "Package directory for package %s was not found." name
+    | None -> failwithf "Package directory for package %O was not found." packageName
 
 
 let contentFileBlackList : list<(FileInfo -> bool)> = [
@@ -129,7 +130,6 @@ let processContentFiles root project (usedPackages:Map<_,_>) gitRemoteItems opti
 let CreateInstallModel(root, groupName, sources, force, package) =
     async {
         let! (package, files, targetsFiles, analyzerFiles) = RestoreProcess.ExtractPackage(root, groupName, sources, force, package)
-        let (PackageName name) = package.Name
         let nuspec = Nuspec.Load(root,groupName,package.Version,defaultArg package.Settings.IncludeVersionInPath false,package.Name)
         let files = files |> Array.map (fun fi -> fi.FullName)
         let targetsFiles = targetsFiles |> Array.map (fun fi -> fi.FullName)
@@ -161,34 +161,64 @@ let createModel(root, force, dependenciesFile:DependenciesFile, lockFile : LockF
     extractedPackages
 
 /// Applies binding redirects for all strong-named references to all app. and web.config files.
-let private applyBindingRedirects (loadedLibs:Dictionary<_,_>) createNewBindingFiles root (extractedPackages:seq<_*InstallModel>) =
-    let bindingRedirects (targetProfile : TargetProfile) =
-        extractedPackages
-        |> Seq.map (fun (package, model:InstallModel) -> model.GetLibReferences(targetProfile))
-        |> Seq.concat
-        |> Seq.groupBy (fun p -> FileInfo(p).Name)
-        |> Seq.choose(fun (_,librariesForPackage) ->
-            librariesForPackage
-            |> Seq.choose(fun library ->
-                try
-                    let key = FileInfo(library).FullName.ToLowerInvariant()
-                    let assembly = 
-                        match loadedLibs.TryGetValue key with
-                        | true,v -> v
-                        | _ -> 
-                            let v = Assembly.ReflectionOnlyLoadFrom library
-                            loadedLibs.Add(key,v)
-                            v
+let private applyBindingRedirects (loadedLibs:Dictionary<_,_>) createNewBindingFiles root groupName findDependencies (extractedPackages:seq<_*InstallModel>) =
+    let dependencyGraph = ConcurrentDictionary<_,Set<_>>()
+    let projects = ConcurrentDictionary<_,ProjectFile option>();
 
-                    assembly
-                    |> BindingRedirects.getPublicKeyToken
-                    |> Option.map(fun token -> assembly, token)
-                with exn -> None)
-            |> Seq.sortBy(fun (assembly,_) -> assembly.GetName().Version)
-            |> Seq.toList
-            |> List.rev
-            |> function | head :: _ -> Some head | _ -> None)
-        |> Seq.map(fun (assembly, token) ->
+    let rec dependencies (projectFile : ProjectFile) =
+        match ProjectFile.FindReferencesFile (FileInfo projectFile.FileName) with
+        | Some fileName -> 
+            let referenceFile = ReferencesFile.FromFile fileName
+            projectFile.GetInterProjectDependencies()
+            |> Seq.map (fun r -> projects.GetOrAdd(r.Path, ProjectFile.TryLoad))
+            |> Seq.choose id
+            |> Seq.collect (fun p -> dependencyGraph.GetOrAdd(p, dependencies))
+            |> Seq.append (
+                referenceFile.Groups
+                |> Seq.filter (fun g -> g.Key = groupName)
+                |> Seq.collect (fun g -> g.Value.NugetPackages |> List.map (fun p -> (groupName,p.Name)))
+                |> Seq.collect findDependencies)
+            |> Set.ofSeq
+        | None -> Set.empty
+
+    let bindingRedirects (projectFile : ProjectFile) =
+        let dependencies = dependencyGraph.GetOrAdd(projectFile, dependencies)
+
+        let assemblies =
+            extractedPackages
+            |> Seq.map snd
+            |> Seq.filter (fun model -> dependencies |> Set.contains model.PackageName)
+            |> Seq.collect (fun model -> model.GetLibReferences(projectFile.GetTargetProfile()))
+            |> Seq.groupBy (fun p -> FileInfo(p).Name)
+            |> Seq.choose(fun (_,librariesForPackage) ->
+                librariesForPackage
+                |> Seq.choose(fun library ->
+                    try
+                        let key = FileInfo(library).FullName.ToLowerInvariant()
+                        let assembly = 
+                            match loadedLibs.TryGetValue key with
+                            | true,v -> v
+                            | _ -> 
+                                let v = Assembly.ReflectionOnlyLoadFrom library
+                                loadedLibs.Add(key,v)
+                                v
+
+                        Some (assembly, BindingRedirects.getPublicKeyToken assembly, assembly.GetReferencedAssemblies())
+                    with exn -> None)
+                |> Seq.sortBy(fun (assembly,_,_) -> assembly.GetName().Version)
+                |> Seq.toList
+                |> List.rev
+                |> function | head :: _ -> Some head | _ -> None)
+            |> Seq.cache
+
+        assemblies
+        |> Seq.choose (fun (assembly,token,refs) -> token |> Option.map (fun token -> (assembly,token,refs)))
+        |> Seq.filter (fun (assembly,_,refs) -> 
+            assemblies
+            |> Seq.collect (fun (_,_,refs) -> refs)
+            |> Seq.filter (fun a -> assembly.GetName().Name = a.Name)
+            |> Seq.exists (fun a -> assembly.GetName().Version > a.Version))
+        |> Seq.map(fun (assembly, token,_) ->
             { BindingRedirect.AssemblyName = assembly.GetName().Name
               Version = assembly.GetName().Version.ToString()
               PublicKeyToken = token
@@ -346,7 +376,7 @@ let InstallIntoProjects(options : InstallerOptions, dependenciesFile, lockFile :
                 let isEnabled = defaultArg packageRedirects (options.Redirects || g.Value.Options.Redirects)
                 isEnabled && (fst kv.Key) = g.Key)
             |> Seq.map (fun kv -> kv.Value)
-            |> applyBindingRedirects loadedLibs options.CreateNewBindingFiles (FileInfo project.FileName).Directory.FullName
+            |> applyBindingRedirects loadedLibs options.CreateNewBindingFiles (FileInfo project.FileName).Directory.FullName g.Key lockFile.GetAllDependenciesOf
 
 /// Installs all packages from the lock file.
 let Install(options : InstallerOptions, dependenciesFile, lockFile : LockFile) =
