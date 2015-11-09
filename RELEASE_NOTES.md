@@ -1,8 +1,9 @@
 #### 2.23.0 - 07.11.2015
 * Allow to exclude dependencies in template files - https://github.com/fsprojects/Paket/issues/1199
-* Fix parse issue noticed in FsBlog
-* Use lock free version of Async.Choice
+* Exposed TemplateFile types and Dependencies member - https://github.com/fsprojects/Paket/pull/1203
+* Paket uses lock free version of Async.Choice
 * Paket generates and parses strategy option in lock file - https://github.com/fsprojects/Paket/pull/1196
+* BUGFIX: Fixed version requirement parse issue noticed in FsBlog
 * USABILITY: Paket shows parsing errors in app.config files - https://github.com/fsprojects/Paket/issues/1195
 
 #### 2.22.0 - 05.11.2015
