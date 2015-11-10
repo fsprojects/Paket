@@ -1,3 +1,6 @@
+#### 2.23.2 - 10.11.2015
+* BUGFIX: Filter excluded dependencies in template files - https://github.com/fsprojects/Paket/issues/1208
+
 #### 2.23.1 - 10.11.2015
 * Framework dependencies were handled too strict - https://github.com/fsprojects/Paket/issues/1206
 

@@ -86,10 +86,12 @@ let nuspecDoc (info:CompleteInfo) =
         dep.SetAttributeValue(XName.Get "version", requirement.FormatInNuGetSyntax())
         dep
 
-    let buildDependenciesNode dependencyList =
+    let buildDependenciesNode excludedDependencies dependencyList =
         if  List.isEmpty dependencyList then () else
         let d = XElement(ns + "dependencies")
-        dependencyList |> List.iter (buildDependencyNode >> d.Add)
+        dependencyList 
+        |> List.filter (fun d -> Set.contains (fst d) excludedDependencies |> not)
+        |> List.iter (buildDependencyNode >> d.Add)
         metadataNode.Add d
 
     let buildReferenceNode (fileName) =
@@ -126,7 +128,7 @@ let nuspecDoc (info:CompleteInfo) =
 
     optional.References |> buildReferencesNode
     optional.FrameworkAssemblyReferences |> buildFrameworkReferencesNode
-    optional.Dependencies |> buildDependenciesNode
+    optional.Dependencies |> buildDependenciesNode optional.ExcludedDependencies
     XDocument(declaration, box root)
 
 let corePropsPath = sprintf "package/services/metadata/core-properties/%s.psmdcp" corePropsId

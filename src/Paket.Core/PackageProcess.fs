@@ -11,7 +11,7 @@ open Paket.PackageMetaData
 open Chessie.ErrorHandling
 
 let private merge buildConfig version projectFile templateFile = 
-    let withVersion =  
+    let withVersion =
         match version with
         | None -> templateFile
         | Some v -> templateFile |> TemplateFile.setVersion v
