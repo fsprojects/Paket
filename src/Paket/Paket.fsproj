@@ -37,7 +37,7 @@
     <StartArguments>update group Build</StartArguments>
     <StartArguments>pack output D:\code\paketbug\output</StartArguments>
     <StartArguments>install</StartArguments>
-    <StartArguments>pack output "D:\code\PaketBox\publish"</StartArguments>
+    <StartArguments>pack output "D:\code\FSharp.Compiler.Service\bin"</StartArguments>
     <StartAction>Project</StartAction>
     <StartProgram>paket.exe</StartProgram>
     <StartWorkingDirectory>c:\code\Paketkopie</StartWorkingDirectory>
@@ -45,7 +45,7 @@
     <StartWorkingDirectory>d:\code\paketkopie</StartWorkingDirectory>
     <StartWorkingDirectory>d:\code\paketbug</StartWorkingDirectory>
     <StartWorkingDirectory>d:\code\paketrepro</StartWorkingDirectory>
-    <StartWorkingDirectory>D:\code\PaketBox\</StartWorkingDirectory>
+    <StartWorkingDirectory>D:\code\FSharp.Compiler.Service\</StartWorkingDirectory>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>

@@ -162,6 +162,8 @@ type TemplateFile =
 
 [<CompilationRepresentationAttribute(CompilationRepresentationFlags.ModuleSuffix)>]
 module internal TemplateFile =
+    open Logging
+
     let setVersion version templateFile =
         let contents =
             match templateFile.Contents with
@@ -400,8 +402,8 @@ module internal TemplateFile =
             [ for source, target in files do
                 match Fake.Globbing.search root source with
                 | [] ->
-                    if source.Contains "*" then
-                        failwithf "The file pattern \"%s\" in %s did not find any files." source fileName
+                    if source.Contains "*" || source.Contains "?" then
+                        traceWarnfn "The file pattern \"%s\" in %s did not find any files." source fileName
                     else
                         failwithf "The file \"%s\" requested in %s does not exist." source fileName
                 | searchResult ->

@@ -1,3 +1,6 @@
+#### 2.23.3 - 10.11.2015
+* Allow to specify empty patterns in paket.template
+
 #### 2.23.2 - 10.11.2015
 * BUGFIX: Filter excluded dependencies in template files - https://github.com/fsprojects/Paket/issues/1208
 
