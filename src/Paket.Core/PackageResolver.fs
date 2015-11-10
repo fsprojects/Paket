@@ -45,11 +45,13 @@ module DependencySetFilter =
                 | _ -> false)
         | _ -> true
 
-    let filterByRestrictions (restrictions:FrameworkRestriction seq) (dependencies:DependencySet) : DependencySet = 
-        restrictions
-        |> Seq.fold (fun currentSet restriction -> 
-            currentSet
-            |> Set.filter (isIncluded restriction)) dependencies
+    let filterByRestrictions (restrictions:FrameworkRestriction list) (dependencies:DependencySet) : DependencySet = 
+        match restrictions with
+        | [] -> dependencies
+        | _ ->
+            dependencies 
+            |> Set.filter (fun dependency ->
+                restrictions |> List.exists (fun r -> isIncluded r dependency))
 
 /// Represents package details
 type PackageDetails =

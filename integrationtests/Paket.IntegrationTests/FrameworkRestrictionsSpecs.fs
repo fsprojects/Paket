@@ -39,3 +39,10 @@ let ``#1190 paket add nuget should handle transitive dependencies with restricti
     lockFile.Groups.[Constants.MainDependencyGroup].Resolution.[PackageName "xunit.abstractions"].Settings.FrameworkRestrictions
     |> shouldEqual []
     
+    
+[<Test>]
+let ``#1197 framework dependencies are not restricting each other``() = 
+    let lockFile = update "i001197-too-strict-frameworks"
+    
+    lockFile.Groups.[Constants.MainDependencyGroup].Resolution.[PackageName "log4net"].Version
+    |> shouldBeGreaterThan (SemVer.Parse "0")

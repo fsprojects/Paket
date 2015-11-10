@@ -1,3 +1,6 @@
+#### 2.23.1 - 10.11.2015
+* Framework dependencies were handled too strict - https://github.com/fsprojects/Paket/issues/1206
+
 #### 2.23.0 - 09.11.2015
 * Allow to exclude dependencies in template files - https://github.com/fsprojects/Paket/issues/1199
 * Exposed TemplateFile types and Dependencies member - https://github.com/fsprojects/Paket/pull/1203

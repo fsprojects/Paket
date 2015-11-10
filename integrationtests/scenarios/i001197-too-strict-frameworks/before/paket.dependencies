@@ -1,0 +1,4 @@
+framework: net40, net45, sl5
+source https://nuget.org/api/v2
+
+nuget log4net.ElasticSearch
