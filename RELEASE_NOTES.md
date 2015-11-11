@@ -1,3 +1,6 @@
+#### 2.24.1 - 11.11.2015
+* Better error message when something goes wrong during package download
+
 #### 2.24.0 - 11.11.2015
 * Support for feeds that only provide NuGet v3 API - https://github.com/fsprojects/Paket/pull/1205
 * BUGFIX: Made PublicAPI.ListTemplateFiles more robust - https://github.com/fsprojects/Paket/pull/1209

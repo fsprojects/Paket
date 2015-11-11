@@ -8,14 +8,16 @@ open Paket.Logging
 open Paket.PackageResolver
 open Paket.PackageSources
 open FSharp.Polyfill
+open System
 
 let private extractPackage package root auth source groupName version includeVersionInPath force =
     async {
         try 
             let! folder = NuGetV2.DownloadPackage(root, auth, source, groupName, package.Name, version, includeVersionInPath, force)
             return package, NuGetV2.GetLibFiles folder, NuGetV2.GetTargetsFiles folder, NuGetV2.GetAnalyzerFiles folder
-        with _ when not force -> 
-            tracefn "Something went wrong while downloading %O %A - Trying again." package.Name version
+        with exn when not force -> 
+            tracefn "Something went wrong while downloading %O %A%sMessage: %s%s  ==> Trying again." 
+                package.Name version Environment.NewLine exn.Message Environment.NewLine
             let! folder = NuGetV2.DownloadPackage(root, auth, source, groupName, package.Name, version, includeVersionInPath, true)
             return package, NuGetV2.GetLibFiles folder, NuGetV2.GetTargetsFiles folder, NuGetV2.GetAnalyzerFiles folder
     }
