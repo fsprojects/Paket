@@ -174,6 +174,7 @@ type VersionRequirement =
                         match fromB, toB with
                         | VersionRangeBound.Excluding, VersionRangeBound.Excluding -> GreaterThan(versions.[0])
                         | VersionRangeBound.Including, VersionRangeBound.Including -> Minimum(versions.[0])
+                        | VersionRangeBound.Including, VersionRangeBound.Excluding -> Minimum(versions.[0])
                         | _ -> failParse()
                 | _ -> failParse()
 
