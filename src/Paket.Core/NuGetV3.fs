@@ -181,7 +181,7 @@ let GetPackageDetails (source : NugetV3Source) (packageName:PackageName) (versio
                         match FrameworkDetection.Extract x with
                         | Some x -> [ FrameworkRestriction.Exactly x ]
                         | None -> []
-                (PackageName dep.Id), (VersionRequirement.ParseV3 dep.Range), targetFramework)
+                (PackageName dep.Id), (VersionRequirement.Parse dep.Range), targetFramework)
             |> Seq.toList
 
         return 

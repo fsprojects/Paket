@@ -181,17 +181,6 @@ type VersionRequirement =
 
         VersionRequirement(range,!prereleases)
 
-    /// Parses NuGet V3 version range
-    static member ParseV3 text = 
-        let failParse() = failwithf "unable to parse %s" text
-        let nversionRange = ref (Unchecked.defaultof<NuGet.Versioning.VersionRange>)
-
-        if not (NuGet.Versioning.VersionRange.TryParse(text, nversionRange)) then
-            failParse()
-        else
-            (!nversionRange).ToLegacyString()
-            |> VersionRequirement.Parse
-
     /// Formats a VersionRequirement in NuGet syntax
     member this.FormatInNuGetSyntax() =
         match this with
