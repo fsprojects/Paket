@@ -422,7 +422,7 @@ module internal TemplateFile =
               | CompleteInfo(core, optionalInfo) ->
                   CompleteInfo(core, { optionalInfo with Files = getFiles optionalInfo.Files })
               | ProjectInfo(core, optionalInfo) ->
-                 ProjectInfo(core, { optionalInfo with Files = getFiles optionalInfo.Files }) }
+                  ProjectInfo(core, { optionalInfo with Files = getFiles optionalInfo.Files }) }
 
     let FindTemplateFiles root =
         Directory.EnumerateFiles(root, "*" + Constants.TemplateFile, SearchOption.AllDirectories)

@@ -136,7 +136,7 @@ let Pack(workingDir,dependencies : DependenciesFile, packageOutputPath, buildCon
                 | CompleteTemplate(core, optional) -> 
                     NupkgWriter.Write core optional (Path.GetDirectoryName templateFile.FileName) packageOutputPath
                     |> NuGetV2.fixDatesInArchive 
-                    verbosefn "Packed: %s" templateFile.FileName
+                    tracefn "Packed: %s" templateFile.FileName
                 | IncompleteTemplate -> 
                     failwithf "There was an attempt to pack incomplete template file %s." templateFile.FileName
             })
