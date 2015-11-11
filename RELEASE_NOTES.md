@@ -1,3 +1,6 @@
+#### 2.23.4 - 11.11.2015
+* Made PublicAPI.ListTemplateFiles more robust - https://github.com/fsprojects/Paket/pull/1209
+
 #### 2.23.3 - 10.11.2015
 * Allow to specify empty patterns in paket.template
 
