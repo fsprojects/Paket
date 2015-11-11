@@ -1,14 +1,9 @@
-#### 2.23.4 - 11.11.2015
-* Made PublicAPI.ListTemplateFiles more robust - https://github.com/fsprojects/Paket/pull/1209
-
-#### 2.23.3 - 10.11.2015
-* Allow to specify empty patterns in paket.template
-
-#### 2.23.2 - 10.11.2015
+#### 2.24.0 - 11.11.2015
+* Support for feeds that only provide NuGet v3 API - https://github.com/fsprojects/Paket/pull/1205
+* BUGFIX: Made PublicAPI.ListTemplateFiles more robust - https://github.com/fsprojects/Paket/pull/1209
+* BUGFIX: Allow to specify empty file patterns in paket.template
 * BUGFIX: Filter excluded dependencies in template files - https://github.com/fsprojects/Paket/issues/1208
-
-#### 2.23.1 - 10.11.2015
-* Framework dependencies were handled too strict - https://github.com/fsprojects/Paket/issues/1206
+* BUGFIX: Framework dependencies were handled too strict - https://github.com/fsprojects/Paket/issues/1206
 
 #### 2.23.0 - 09.11.2015
 * Allow to exclude dependencies in template files - https://github.com/fsprojects/Paket/issues/1199
