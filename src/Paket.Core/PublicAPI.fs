@@ -475,6 +475,10 @@ type Dependencies(dependenciesFileName: string) =
     member this.ListTemplateFiles() : TemplateFile list =
         let lockFile = getLockFile()
         ProjectFile.FindAllProjects(this.RootPath)
-        |> Array.choose (fun p -> ProjectFile.FindTemplatesFile(FileInfo(p.FileName)))
-        |> Array.map (fun path -> TemplateFile.Load(path, lockFile, None))
+        |> Array.choose (fun proj -> ProjectFile.FindTemplatesFile(FileInfo(proj.FileName)))
+        |> Array.choose (fun path ->
+                         try
+                           Some(TemplateFile.Load(path, lockFile, None))
+                         with
+                           | _ -> None)
         |> Array.toList
