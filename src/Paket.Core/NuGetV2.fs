@@ -12,22 +12,12 @@ open Paket.Logging
 open System.Text
 
 open Paket.Domain
+open Paket.NuGet
 open Paket.Utils
 open Paket.Xml
 open Paket.PackageSources
 open Paket.Requirements
 open FSharp.Polyfill
-
-type NugetPackageCache =
-    { Dependencies : (PackageName * VersionRequirement * FrameworkRestrictions) list
-      PackageName : string
-      SourceUrl: string
-      Unlisted : bool
-      DownloadUrl : string
-      LicenseUrl : string
-      CacheVersion: string }
-
-    static member CurrentCacheVersion = "2.0"
 
 let rec private followODataLink auth url = 
     async {
@@ -245,7 +235,7 @@ let CacheFolder =
 
 let inline normalizeUrl(url:string) = url.Replace("https","http").Replace("www.","")
 
-let private loadFromCacheOrOData force fileName (auth,nugetURL) package version = 
+let private loadFromCacheOrODataOrV3 force fileName (auth,nugetURL) package version = 
     async {
         if not force && File.Exists fileName then
             try 
@@ -287,7 +277,7 @@ let getDetailsFromNuGet force auth nugetURL (packageName:PackageName) (version:S
             if not force && errorFile.Exists then
                 failwithf "Error file for %O exists at %s" packageName errorFile.FullName
 
-            let! (invalidCache,details) = loadFromCacheOrOData force cacheFile.FullName (auth,nugetURL) packageName version
+            let! (invalidCache,details) = loadFromCacheOrODataOrV3 force cacheFile.FullName (auth,nugetURL) packageName version
 
             verbosefn "loaded details for '%O@%O' from url '%s'" packageName version nugetURL
 
@@ -494,7 +484,7 @@ let DownloadLicense(root,force,packageName:PackageName,version:SemVerInfo,licens
     }
 
 /// Downloads the given package to the NuGet Cache folder
-let DownloadPackage(root, auth, url, groupName, packageName:PackageName, version:SemVerInfo, includeVersionInPath, force) = 
+let DownloadPackage(root, auth, (source : PackageSource), groupName, packageName:PackageName, version:SemVerInfo, includeVersionInPath, force) = 
     async { 
         let targetFileName = Path.Combine(CacheFolder, packageName.ToString() + "." + version.Normalize() + ".nupkg")
         let targetFile = FileInfo targetFileName
@@ -503,7 +493,14 @@ let DownloadPackage(root, auth, url, groupName, packageName:PackageName, version
             verbosefn "%O %O already downloaded." packageName version
         else 
             // discover the link on the fly
-            let! nugetPackage = getDetailsFromNuGet force auth url packageName version
+            let url, nugetPackage = 
+                match source with 
+                | Nuget source -> 
+                     source.Url, (getDetailsFromNuGet force auth source.Url packageName version)
+                | NugetV3 source ->
+                    source.Url, (NuGetV3.GetPackageDetails source packageName version)
+                | _ -> failwith "shouldnt be here"
+            let! nugetPackage = nugetPackage
             try 
                 tracefn "Downloading %O %O" packageName version
                 verbosefn "  to %s" targetFileName
@@ -603,6 +600,10 @@ let GetPackageDetails root force sources packageName (version:SemVerInfo) : Pack
                             packageName
                             version
                     return Some(source,result)
+                | NugetV3 nugetSource ->
+                    let! result = 
+                        NuGetV3.GetPackageDetails nugetSource packageName version
+                    return Some(source,result)
                 | LocalNuget path -> 
                     let! result = getDetailsFromLocalFile root path packageName version
                     return Some(source,result)
@@ -666,6 +667,8 @@ let GetVersions root (sources, packageName:PackageName) =
                               getVersionsCached "ODataWithFilter" tryGetAllVersionsFromNugetODataWithFilter (auth, source.Url, packageName) ]
 
                         v2Feeds @ v3Feeds
+                   | NugetV3 source ->
+                        [ tryNuGetV3 (source.BasicAuthentication, source.AutoCompleteUrl, packageName) ]
                    | LocalNuget path -> [ getAllVersionsFromLocalPath (path, packageName, root) ])
         |> Seq.toArray
         |> Array.map Async.Choice

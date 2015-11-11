@@ -107,6 +107,7 @@
     <Compile Include="ReferencesFile.fs" />
     <Compile Include="ProjectFile.fs" />
     <Compile Include="SolutionFile.fs" />
+    <Compile Include="Nuget.fs" />
     <Compile Include="NuGetV3.fs" />
     <Compile Include="NuGetV2.fs" />
     <Compile Include="DependenciesFile.fs" />

@@ -27,6 +27,7 @@ type System.Net.WebClient with
         fileStream.CopyTo(stream, (4 * 1024))
         stream.Write(newlineBytes, 0, newlineBytes.Length)
         stream.Write(trailerbytes, 0, trailerbytes.Length)
+        stream.Write(newlineBytes, 0, newlineBytes.Length) 
         ()
 
 

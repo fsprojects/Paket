@@ -9,26 +9,32 @@ open Paket.PackageResolver
 open Paket.PackageSources
 open FSharp.Polyfill
 
+let private extractPackage package root auth source groupName version includeVersionInPath force =
+    async {
+        try 
+            let! folder = NuGetV2.DownloadPackage(root, auth, source, groupName, package.Name, version, includeVersionInPath, force)
+            return package, NuGetV2.GetLibFiles folder, NuGetV2.GetTargetsFiles folder, NuGetV2.GetAnalyzerFiles folder
+        with _ when not force -> 
+            tracefn "Something went wrong while downloading %O %A - Trying again." package.Name version
+            let! folder = NuGetV2.DownloadPackage(root, auth, source, groupName, package.Name, version, includeVersionInPath, true)
+            return package, NuGetV2.GetLibFiles folder, NuGetV2.GetTargetsFiles folder, NuGetV2.GetAnalyzerFiles folder
+    }
 /// Downloads and extracts a package.
 let ExtractPackage(root, groupName, sources, force, package : ResolvedPackage) = 
     async { 
         let v = package.Version
         let includeVersionInPath = defaultArg package.Settings.IncludeVersionInPath false
         match package.Source with
-        | Nuget source -> 
+        | Nuget _ | NugetV3 _ -> 
             let auth = 
                 sources |> List.tryPick (fun s -> 
                                match s with
                                | Nuget s -> s.Authentication |> Option.map toBasicAuth
                                | _ -> None)
-            try 
-                let! folder = NuGetV2.DownloadPackage(root, auth, source.Url, groupName, package.Name, v, includeVersionInPath, force)
-                return package, NuGetV2.GetLibFiles folder, NuGetV2.GetTargetsFiles folder, NuGetV2.GetAnalyzerFiles folder
-            with _ when not force -> 
-                tracefn "Something went wrong while downloading %O %A - Trying again." package.Name v
-                let! folder = NuGetV2.DownloadPackage(root, auth, source.Url, groupName, package.Name, v, includeVersionInPath, true)
-                return package, NuGetV2.GetLibFiles folder, NuGetV2.GetTargetsFiles folder, NuGetV2.GetAnalyzerFiles folder
-        | LocalNuget path ->         
+            let! result =
+                extractPackage package root auth package.Source groupName v includeVersionInPath force 
+            return result
+        | LocalNuget path ->
             let path = Utils.normalizeLocalPath path
             let di = Utils.getDirectoryInfo path root
             let nupkg = NuGetV2.findLocalPackage di.FullName package.Name v

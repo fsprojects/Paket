@@ -53,13 +53,15 @@ let ``can detect range version``() =
 
 [<Test>]
 let ``can detect open range version``() = 
+    parseRange "[2.2,)"
+        |> shouldEqual (VersionRange.Minimum (SemVer.Parse "2.2"))
     parseRange "[2.2,]" 
         |> shouldEqual (VersionRange.Minimum (SemVer.Parse "2.2"))
     parseRange "[2.2, ]" 
         |> shouldEqual (VersionRange.Minimum (SemVer.Parse "2.2"))
     parseRange "[,2.2]" 
         |> shouldEqual (VersionRange.Maximum (SemVer.Parse "2.2"))
-        
+    
 [<Test>]
 let ``can detect "null" version``() = 
     VersionRequirement.Parse "null" 
