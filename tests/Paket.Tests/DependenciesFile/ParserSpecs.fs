@@ -949,3 +949,21 @@ let ``should read config with combined strategy``() =
     cfg.Groups.[GroupName "Build"].Options.ResolverStrategy |> shouldEqual (Some ResolverStrategy.Max)
 
     cfg.Groups.[Constants.MainDependencyGroup].Sources |> shouldEqual [PackageSource.NugetSource "http://nuget.org/api/v2"]
+
+let configWithVerySimilarFeeds = """
+source http://nexus1:8081/nexus/service/local/nuget/nuget-repo
+source http://nexus2:8081/nexus/service/local/nuget/nuget-repo  username: "xxx" password: "yyy"
+
+nuget FSharp.Compiler.Service
+nuget FsReveal
+"""
+
+[<Test>]
+let ``should read config with very similar feeds``() = 
+    let cfg = DependenciesFile.FromCode(configWithVerySimilarFeeds)
+
+    cfg.Groups.[Constants.MainDependencyGroup].Sources.Head.Auth |> shouldEqual None
+    cfg.Groups.[Constants.MainDependencyGroup].Sources.Head.Url |> shouldEqual "http://nexus1:8081/nexus/service/local/nuget/nuget-repo"
+
+    cfg.Groups.[Constants.MainDependencyGroup].Sources.Tail.Head.Auth |> shouldNotEqual None
+    cfg.Groups.[Constants.MainDependencyGroup].Sources.Tail.Head.Url |> shouldEqual "http://nexus2:8081/nexus/service/local/nuget/nuget-repo"
