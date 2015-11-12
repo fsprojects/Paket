@@ -192,7 +192,7 @@ module internal TemplateFile =
             | "file" -> ok FileType
             | "project" -> ok ProjectType
             | s -> failP file (sprintf "Unknown package config type.")
-        | None -> failP file (sprintf "First line of paket.package file had no 'type' declaration.")
+        | None -> failP file (sprintf "First line of paket.template file had no 'type' declaration.")
 
     let private getId file map =
         Map.tryFind "id" map |> function

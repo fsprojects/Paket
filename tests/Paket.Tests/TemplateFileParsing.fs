@@ -668,3 +668,27 @@ files
 
     Assert.AreEqual(1, sut.FilesExcluded.Length)
     Assert.AreEqual("../../build/bin/Angebot.Contracts.xml", sut.FilesExcluded.[0])
+
+
+[<Test>]
+let ``parse real world template``() =
+    let text = """﻿
+type project
+title Gu.SiemensCommunication
+
+files
+    .\lib\*.* ==> lib\net45
+
+excludeddependencies
+  JetBrains.Annotations
+  StyleCop.Analyzers
+  Microsoft.Net.Compilers"""
+
+    let sut =
+        TemplateFile.Parse("file1.template", LockFile.Parse("",[||]), None, strToStream text)
+        |> returnOrFail
+        |> function
+           | CompleteInfo (_, opt)
+           | ProjectInfo (_, opt) -> opt
+
+    sut.ExcludedDependencies.Count |> shouldEqual 3
