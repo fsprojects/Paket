@@ -1,4 +1,4 @@
-#### 2.24.2 - 12.11.2015
+#### 2.24.3 - 12.11.2015
 * Match auth - https://github.com/fsprojects/Paket/issues/1210
 
 #### 2.24.1 - 11.11.2015
