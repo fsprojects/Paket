@@ -2,9 +2,11 @@
 module Paket.NuGetV3
 
 open Newtonsoft.Json
+open System.IO
 open System.Collections.Generic
 
 open Paket.Domain
+open Paket.NuGet
 open Paket.Utils
 open Paket.Xml
 open Paket.PackageSources
@@ -161,8 +163,7 @@ let getCatalog url auth =
             | Some x -> JsonConvert.DeserializeObject<Catalog>(x)
     }
 
-/// Uses the NuGet v3 registration endpoint to retrieve package details .
-let GetPackageDetails (source : NugetV3Source) (packageName:PackageName) (version:SemVerInfo) : Async<NuGet.NugetPackageCache> =
+let getPackageDetails (source:NugetV3Source) (packageName:PackageName) (version:SemVerInfo) : Async<NuGet.NugetPackageCache> =
     async {
         let! registrationData = getRegistration source packageName version
         let! catalogData = getCatalog registrationData.CatalogEntry source.BasicAuthentication
@@ -183,10 +184,7 @@ let GetPackageDetails (source : NugetV3Source) (packageName:PackageName) (versio
                     let targetFramework =
                         match targetFramework with
                         | null -> []
-                        | x -> 
-                            match FrameworkDetection.Extract x with
-                            | Some x -> [ FrameworkRestriction.Exactly x ]
-                            | None -> []
+                        | x -> Requirements.parseRestrictions x
                     (PackageName dep.Id), (VersionRequirement.Parse dep.Range), targetFramework)
                 |> Seq.toList
                 |> Requirements.optimizeDependencies
@@ -199,17 +197,51 @@ let GetPackageDetails (source : NugetV3Source) (packageName:PackageName) (versio
               DownloadUrl = registrationData.PackageContent
               LicenseUrl = catalogData.LicenseUrl
               CacheVersion = NuGet.NugetPackageCache.CurrentCacheVersion }
-
     }
-    (* 
-        get from https://api.nuget.org/v3/registration1/fsharp.orm/1.0.0.json
 
-        will provide:
-        * catalogEntry, a link to the catalog page
-        * packageContent, a link to the nupkg file
+let loadFromCacheOrGetDetails (force:bool)
+                              (cacheFileName:string)
+                              (source:NugetV3Source) 
+                              (packageName:PackageName) 
+                              (version:SemVerInfo) =
+    async {
+        if not force && File.Exists cacheFileName then
+            try 
+                let json = File.ReadAllText(cacheFileName)
+                let cachedObject = JsonConvert.DeserializeObject<NuGet.NugetPackageCache> json
+                if cachedObject.CacheVersion <> NugetPackageCache.CurrentCacheVersion then
+                    let! details = getPackageDetails source packageName version
+                    return true,details
+                else
+                    return false,cachedObject
+            with _ -> 
+                let! details = getPackageDetails source packageName version
+                return true,details
+        else
+            let! details = getPackageDetails source packageName version
+            return true,details
+    }
+    
+/// Uses the NuGet v3 registration endpoint to retrieve package details .
+let GetPackageDetails (force:bool) (source:NugetV3Source) (packageName:PackageName) (version:SemVerInfo) : Async<NuGet.NugetPackageCache> =
+    let cacheFile,errorFile = NuGet.cacheFile source.Url packageName version
+    async {
+        try
+            if not force && errorFile.Exists then
+                failwithf "Error file for %O exists at %s" packageName errorFile.FullName
 
-        use catalogEntry to download the catalog, like https://api.nuget.org/v3/catalog0/data/2015.11.03.22.34.24/fsharp.orm.1.0.0.json
-        use dependencyGroups to get the dependencies for the package
-        use licenseUrl
-        use listed
-    *)
+            let! (invalidCache,details) = loadFromCacheOrGetDetails force cacheFile.FullName source packageName version
+
+            errorFile.Delete()
+            if invalidCache then
+                try
+                    File.WriteAllText(cacheFile.FullName,JsonConvert.SerializeObject(details))
+                with
+                | _ -> () // if caching fails we should not fail
+            return details
+        with
+        | exn -> 
+            File.AppendAllText(errorFile.FullName,exn.ToString())
+            raise exn
+            return! getPackageDetails source packageName version
+    }

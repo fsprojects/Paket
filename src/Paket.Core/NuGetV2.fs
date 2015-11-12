@@ -225,16 +225,6 @@ let getDetailsFromNuGetViaOData auth nugetURL (packageName:PackageName) (version
             return parseODataDetails(nugetURL,packageName,version,raw)
     }
 
-/// The NuGet cache folder.
-let CacheFolder = 
-    let appData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)
-    let di = DirectoryInfo(Path.Combine(Path.Combine(appData, "NuGet"), "Cache"))
-    if not di.Exists then
-        di.Create()
-    di.FullName
-
-let inline normalizeUrl(url:string) = url.Replace("https","http").Replace("www.","")
-
 let private loadFromCacheOrODataOrV3 force fileName (auth,nugetURL) package version = 
     async {
         if not force && File.Exists fileName then
@@ -262,16 +252,11 @@ let deleteErrorFile (packageName:PackageName) =
         with
         | _ -> ()
 
+
 /// Tries to get download link and direct dependencies from NuGet
 /// Caches calls into json file
 let getDetailsFromNuGet force auth nugetURL (packageName:PackageName) (version:SemVerInfo) = 
-    let cacheFile = 
-        let h = nugetURL |> normalizeUrl |> hash |> abs
-        let packageUrl = sprintf "%O.%s.s%d.json" packageName (version.Normalize()) h
-        FileInfo(Path.Combine(CacheFolder,packageUrl))
-
-    let errorFile = FileInfo(cacheFile.FullName + ".failed")
-
+    let cacheFile,errorFile = cacheFile nugetURL packageName version
     async {
         try
             if not force && errorFile.Exists then
@@ -498,7 +483,7 @@ let DownloadPackage(root, auth, (source : PackageSource), groupName, packageName
                 | Nuget source -> 
                      source.Url, (getDetailsFromNuGet force auth source.Url packageName version)
                 | NugetV3 source ->
-                    source.Url, (NuGetV3.GetPackageDetails source packageName version)
+                    source.Url, (NuGetV3.GetPackageDetails force source packageName version)
                 | _ -> failwith "shouldnt be here"
             let! nugetPackage = nugetPackage
             try 
@@ -601,7 +586,7 @@ let GetPackageDetails root force sources packageName (version:SemVerInfo) : Pack
                             version
                     return Some(source,result)
                 | NugetV3 nugetSource ->
-                    let! result = NuGetV3.GetPackageDetails nugetSource packageName version
+                    let! result = NuGetV3.GetPackageDetails force nugetSource packageName version
                     return Some(source,result)
                 | LocalNuget path -> 
                     let! result = getDetailsFromLocalFile root path packageName version
