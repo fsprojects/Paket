@@ -1,7 +1,6 @@
 redirects: on
 
 source https://api.nuget.org/v3/index.json
-source https://www.nuget.org/api/v2/
 
 nuget FSharp.Control.Reactive
 nuget FSharp.Data framework: >= net40
