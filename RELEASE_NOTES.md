@@ -1,3 +1,6 @@
+#### 2.24.4 - 12.11.2015
+* Revert v3 stuff in order to work around https://github.com/fsprojects/Paket/issues/1211 
+
 #### 2.24.3 - 12.11.2015
 * Match auth - https://github.com/fsprojects/Paket/issues/1210
 
