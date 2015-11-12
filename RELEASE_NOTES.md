@@ -1,3 +1,6 @@
+#### 2.24.6 - 12.11.2015
+* Propagate framework restriction with top-level dependencies correctly - https://github.com/fsprojects/Paket/issues/1215
+
 #### 2.24.5 - 12.11.2015
 * Propagate framework restriction correctly - https://github.com/fsprojects/Paket/issues/1213
 

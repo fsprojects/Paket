@@ -54,3 +54,10 @@ let ``#1213 framework dependencies propagate``() =
     
     lockFile.Groups.[Constants.MainDependencyGroup].Resolution.[PackageName "Newtonsoft.Json"].Settings.FrameworkRestrictions
     |> shouldEqual []
+
+[<Test>]
+let ``#1215 framework dependencies propagate``() = 
+    let lockFile = update "i001215-framework-propagation-no-restriction"
+    
+    lockFile.Groups.[Constants.MainDependencyGroup].Resolution.[PackageName "Microsoft.Bcl.Async"].Settings.FrameworkRestrictions
+    |> shouldEqual []

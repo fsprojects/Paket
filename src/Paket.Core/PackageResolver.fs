@@ -221,7 +221,10 @@ let Resolve(groupName:GroupName, sources, getVersionsF, getPackageDetailsF, stra
         
         match exploredPackages.TryGetValue <| (dependency.Name,version) with
         | true,package -> 
-            let newRestrictions = optimizeRestrictions (package.Settings.FrameworkRestrictions @ dependency.Settings.FrameworkRestrictions @ globalFrameworkRestrictions)
+            let newRestrictions = 
+                if List.isEmpty globalFrameworkRestrictions && (List.isEmpty package.Settings.FrameworkRestrictions || List.isEmpty dependency.Settings.FrameworkRestrictions) then [] else
+                optimizeRestrictions (package.Settings.FrameworkRestrictions @ dependency.Settings.FrameworkRestrictions @ globalFrameworkRestrictions)
+            
             let package = { package with Settings = { package.Settings with FrameworkRestrictions = newRestrictions } }
             exploredPackages.[(dependency.Name,version)] <- package
             package
