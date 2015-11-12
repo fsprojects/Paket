@@ -31,7 +31,7 @@ let ExtractPackage(root, groupName, sources, force, package : ResolvedPackage) =
             let auth = 
                 sources |> List.tryPick (fun s -> 
                                match s with
-                               | Nuget s -> s.Authentication |> Option.map toBasicAuth
+                               | Nuget s when s.Url = package.Source.Url -> s.Authentication |> Option.map toBasicAuth
                                | _ -> None)
             let! result =
                 extractPackage package root auth package.Source groupName v includeVersionInPath force 
