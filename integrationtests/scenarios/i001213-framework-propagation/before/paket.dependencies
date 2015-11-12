@@ -1,0 +1,6 @@
+framework: >= net40
+
+source https://nuget.org/api/v2
+
+nuget Newtonsoft.Json redirects: on
+nuget Nancy.Serialization.JsonNet ~> 1.2 framework: >= net451

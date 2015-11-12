@@ -88,7 +88,7 @@ let rec optimizeRestrictions restrictions =
             |> List.sort
 
         let newRestrictions =
-            match newRestrictions' |> Seq.tryFind (function | FrameworkRestriction.AtLeast r -> true | _ -> false) with
+            match newRestrictions' |> Seq.rev |> Seq.tryFind (function | FrameworkRestriction.AtLeast r -> true | _ -> false) with
             | None -> newRestrictions'
             | Some r ->
                 let currentVersion =
@@ -99,7 +99,7 @@ let rec optimizeRestrictions restrictions =
                 let isLowerVersion x =
                     let isMatching x =
                         if x = FrameworkVersion.V3_5 && currentVersion = FrameworkVersion.V4 then true else
-                        if x = FrameworkVersion.V4_Client && currentVersion = FrameworkVersion.V4_5 then true else
+                        if x = FrameworkVersion.V4_Client && currentVersion >= FrameworkVersion.V4_5 then true else
                         let hasFrameworksBetween = KnownTargetProfiles.DotNetFrameworkVersions |> Seq.exists (fun p -> p > x && p < currentVersion)
                         not hasFrameworksBetween
 
@@ -420,7 +420,11 @@ type PackageRequirement =
 
     override this.Equals(that) = 
         match that with
-        | :? PackageRequirement as that -> this.Name = that.Name && this.VersionRequirement = that.VersionRequirement && this.ResolverStrategy = that.ResolverStrategy
+        | :? PackageRequirement as that -> 
+            this.Name = that.Name && 
+            this.VersionRequirement = that.VersionRequirement && 
+            this.ResolverStrategy = that.ResolverStrategy && 
+            this.Settings.FrameworkRestrictions = that.Settings.FrameworkRestrictions
         | _ -> false
 
     override this.ToString() =
@@ -446,6 +450,7 @@ type PackageRequirement =
             yield -compare x.ResolverStrategy y.ResolverStrategy
             yield compare boostX boostY
             yield -compare x.VersionRequirement y.VersionRequirement
+            yield compare x.Settings.FrameworkRestrictions y.Settings.FrameworkRestrictions
             yield compare x.Name y.Name
         }
         |> Seq.tryFind (fun x -> x <> 0)

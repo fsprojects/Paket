@@ -1,3 +1,6 @@
+#### 2.24.5 - 12.11.2015
+* Propagate framework restriction correctly - https://github.com/fsprojects/Paket/issues/1213
+
 #### 2.24.4 - 12.11.2015
 * Revert v3 stuff in order to work around https://github.com/fsprojects/Paket/issues/1211 
 
