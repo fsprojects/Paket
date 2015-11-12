@@ -601,15 +601,7 @@ let GetPackageDetails root force sources packageName (version:SemVerInfo) : Pack
                             version
                     return Some(source,result)
                 | NugetV3 nugetSource ->
-                    let! result = 
-                        // NuGetV3.GetPackageDetails nugetSource packageName version
-                        
-                        getDetailsFromNuGet 
-                            force 
-                            (nugetSource.Authentication |> Option.map toBasicAuth)
-                            nugetSource.Url 
-                            packageName
-                            version
+                    let! result = NuGetV3.GetPackageDetails nugetSource packageName version
                     return Some(source,result)
                 | LocalNuget path -> 
                     let! result = getDetailsFromLocalFile root path packageName version
