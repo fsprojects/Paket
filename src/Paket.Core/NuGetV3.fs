@@ -128,7 +128,7 @@ type CatalogDependency =
       Range : string }
 type CatalogDependencyGroup = 
     { [<JsonProperty("targetFramework")>]
-      TargetFramework : string option
+      TargetFramework : string
     
       [<JsonProperty("dependencies")>]
       Dependencies : CatalogDependency [] }
@@ -168,24 +168,31 @@ let GetPackageDetails (source : NugetV3Source) (packageName:PackageName) (versio
         let! catalogData = getCatalog registrationData.CatalogEntry source.BasicAuthentication
 
         let dependencies = 
-            catalogData.DependencyGroups
-            |> Seq.map(fun group -> 
-                group.Dependencies
-                |> Seq.map(fun dep -> dep, group.TargetFramework))
-            |> Seq.concat
-            |> Seq.map(fun (dep, targetFramework) ->
-                let targetFramework =
-                    match targetFramework with
-                    | None -> []
-                    | Some x -> 
-                        match FrameworkDetection.Extract x with
-                        | Some x -> [ FrameworkRestriction.Exactly x ]
-                        | None -> []
-                (PackageName dep.Id), (VersionRequirement.Parse dep.Range), targetFramework)
-            |> Seq.toList
+            if catalogData.DependencyGroups = null then
+                []
+            else
+                catalogData.DependencyGroups
+                |> Seq.map(fun group -> 
+                    if group.Dependencies = null then
+                        Seq.empty
+                    else
+                        group.Dependencies
+                        |> Seq.map(fun dep -> dep, group.TargetFramework))
+                |> Seq.concat
+                |> Seq.map(fun (dep, targetFramework) ->
+                    let targetFramework =
+                        match targetFramework with
+                        | null -> []
+                        | x -> 
+                            match FrameworkDetection.Extract x with
+                            | Some x -> [ FrameworkRestriction.Exactly x ]
+                            | None -> []
+                    (PackageName dep.Id), (VersionRequirement.Parse dep.Range), targetFramework)
+                |> Seq.toList
+                |> Requirements.optimizeDependencies
 
         return 
-            { Dependencies = [] //this needs to be implemented Requirements.optimizeDependencies dependencies 
+            { Dependencies =  dependencies 
               PackageName = packageName.ToString()
               SourceUrl = source.Url
               Unlisted = not catalogData.Listed
