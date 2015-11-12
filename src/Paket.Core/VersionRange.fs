@@ -147,37 +147,44 @@ type VersionRequirement =
                 | '(' | ')' -> VersionRangeBound.Excluding
                 | _         -> failParse()
 
-            if not <| text.Contains "," then
-                if text.StartsWith "[" then Specific(text.Trim([|'['; ']'|]) |> analyzeVersion)
-                else Minimum(analyzeVersion text)
-            else
-                let fromB = parseBound text.[0]
-                let toB   = parseBound (Seq.last text)
-                let versions =
-                    text
-                        .Trim([|'['; ']';'(';')'|])
-                        .Split([|','|], StringSplitOptions.RemoveEmptyEntries)
-                        |> Array.filter (String.IsNullOrWhiteSpace >> not)
-                        |> Array.map analyzeVersion
+            let parsed =
+                if not <| text.Contains "," then
+                    if text.StartsWith "[" then Specific(text.Trim([|'['; ']'|]) |> analyzeVersion)
+                    else Minimum(analyzeVersion text)
+                else
+                    let fromB = parseBound text.[0]
+                    let toB   = parseBound (Seq.last text)
+                    let versions =
+                        text
+                            .Trim([|'['; ']';'(';')'|])
+                            .Split([|','|], StringSplitOptions.RemoveEmptyEntries)
+                            |> Array.filter (String.IsNullOrWhiteSpace >> not)
+                            |> Array.map analyzeVersion
 
-                match versions.Length with
-                | 2 ->
-                    Range(fromB, versions.[0], versions.[1], toB)
-                | 1 ->
-                    if text.[1] = ',' then
-                        match fromB, toB with
-                        | VersionRangeBound.Excluding, VersionRangeBound.Including -> Maximum(versions.[0])
-                        | VersionRangeBound.Excluding, VersionRangeBound.Excluding -> LessThan(versions.[0])
-                        | VersionRangeBound.Including, VersionRangeBound.Including -> Maximum(versions.[0])
-                        | _ -> failParse()
-                    else
-                        match fromB, toB with
-                        | VersionRangeBound.Excluding, VersionRangeBound.Excluding -> GreaterThan(versions.[0])
-                        | VersionRangeBound.Including, VersionRangeBound.Including -> Minimum(versions.[0])
-                        | VersionRangeBound.Including, VersionRangeBound.Excluding -> Minimum(versions.[0])
-                        | _ -> failParse()
-                | _ -> failParse()
-
+                    match versions.Length with
+                    | 2 ->
+                        Range(fromB, versions.[0], versions.[1], toB)
+                    | 1 ->
+                        if text.[1] = ',' then
+                            match fromB, toB with
+                            | VersionRangeBound.Excluding, VersionRangeBound.Including -> Maximum(versions.[0])
+                            | VersionRangeBound.Excluding, VersionRangeBound.Excluding -> LessThan(versions.[0])
+                            | VersionRangeBound.Including, VersionRangeBound.Including -> Maximum(versions.[0])
+                            | _ -> failParse()
+                        else
+                            match fromB, toB with
+                            | VersionRangeBound.Excluding, VersionRangeBound.Excluding -> GreaterThan(versions.[0])
+                            | VersionRangeBound.Including, VersionRangeBound.Including -> Minimum(versions.[0])
+                            | VersionRangeBound.Including, VersionRangeBound.Excluding -> Minimum(versions.[0])
+                            | _ -> failParse()
+                    | _ -> failParse()
+            match parsed with
+            | Range(fromB, from, _to, _toB) -> 
+                if (fromB = VersionRangeBound.Including) && (_toB = VersionRangeBound.Including) && (from = _to) then
+                    Specific from
+                else
+                    parsed
+            | x -> x
         let range = parseRange text
 
         VersionRequirement(range,!prereleases)
