@@ -218,19 +218,16 @@ let Resolve(groupName:GroupName, sources, getVersionsF, getPackageDetailsF, stra
     let knownConflicts = HashSet<_>()
 
     let getExploredPackage(dependency:PackageRequirement,version) =
-        let newRestrictions = filterRestrictions dependency.Settings.FrameworkRestrictions globalFrameworkRestrictions
+        
         match exploredPackages.TryGetValue <| (dependency.Name,version) with
         | true,package -> 
-            match dependency.Parent with
-            | PackageRequirementSource.DependenciesFile(_) -> 
-                let package = { package with Settings = { package.Settings with FrameworkRestrictions = newRestrictions } }
-                exploredPackages.[(dependency.Name,version)] <- package
-                package
-            | _ ->
-                let newRestrictions = optimizeRestrictions (package.Settings.FrameworkRestrictions @ newRestrictions)
-                let package = { package with Settings = { package.Settings with FrameworkRestrictions = newRestrictions } }
-                exploredPackages.[(dependency.Name,version)] <- package
-                package
+            let newRestrictions = 
+                if List.isEmpty globalFrameworkRestrictions && (List.isEmpty package.Settings.FrameworkRestrictions || List.isEmpty dependency.Settings.FrameworkRestrictions) then [] else
+                optimizeRestrictions (package.Settings.FrameworkRestrictions @ dependency.Settings.FrameworkRestrictions @ globalFrameworkRestrictions)
+            
+            let package = { package with Settings = { package.Settings with FrameworkRestrictions = newRestrictions } }
+            exploredPackages.[(dependency.Name,version)] <- package
+            package
         | false,_ ->
             match updateMode with
             | Install -> tracefn  " - %O %A" dependency.Name version
@@ -238,6 +235,8 @@ let Resolve(groupName:GroupName, sources, getVersionsF, getPackageDetailsF, stra
                 match dependency.VersionRequirement.Range with
                 | Specific _ when dependency.Parent.IsRootRequirement() -> traceWarnfn " - %O is pinned to %O" dependency.Name version
                 | _ -> tracefn  " - %O %A" dependency.Name version
+
+            let newRestrictions = filterRestrictions dependency.Settings.FrameworkRestrictions globalFrameworkRestrictions
 
             let packageDetails : PackageDetails = getPackageDetailsF sources dependency.Name version
             let filteredDependencies = DependencySetFilter.filterByRestrictions newRestrictions packageDetails.DirectDependencies

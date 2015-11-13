@@ -1,3 +1,12 @@
+#### 2.24.7 - 13.11.2015
+* Reactivate v3 API 
+
+#### 2.24.6 - 12.11.2015
+* Propagate framework restriction with top-level dependencies correctly - https://github.com/fsprojects/Paket/issues/1215
+
+#### 2.24.5 - 12.11.2015
+* Propagate framework restriction correctly - https://github.com/fsprojects/Paket/issues/1213
+
 #### 2.24.4 - 12.11.2015
 * Revert v3 stuff in order to work around https://github.com/fsprojects/Paket/issues/1211 
 

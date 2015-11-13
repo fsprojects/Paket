@@ -1,4 +1,4 @@
-﻿module Paket.IntegrationTests.FrameworkRestrictionsSpecs
+module Paket.IntegrationTests.FrameworkRestrictionsSpecs
 
 open Fake
 open Paket
@@ -46,3 +46,18 @@ let ``#1197 framework dependencies are not restricting each other``() =
     
     lockFile.Groups.[Constants.MainDependencyGroup].Resolution.[PackageName "log4net"].Version
     |> shouldBeGreaterThan (SemVer.Parse "0")
+
+    
+[<Test>]
+let ``#1213 framework dependencies propagate``() = 
+    let lockFile = update "i001213-framework-propagation"
+    
+    lockFile.Groups.[Constants.MainDependencyGroup].Resolution.[PackageName "Newtonsoft.Json"].Settings.FrameworkRestrictions
+    |> shouldEqual []
+
+[<Test>]
+let ``#1215 framework dependencies propagate``() = 
+    let lockFile = update "i001215-framework-propagation-no-restriction"
+    
+    lockFile.Groups.[Constants.MainDependencyGroup].Resolution.[PackageName "Microsoft.Bcl.Async"].Settings.FrameworkRestrictions
+    |> shouldEqual []
