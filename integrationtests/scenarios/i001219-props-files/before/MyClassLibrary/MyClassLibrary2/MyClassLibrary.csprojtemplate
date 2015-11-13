@@ -1,0 +1,316 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="14.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="..\..\packages\MultiTarget\build\MultiTarget.props" Condition="Exists('..\..\packages\MultiTarget\build\MultiTarget.props')" Label="Paket" />
+  <PropertyGroup>
+    <Configuration Condition="'$(Configuration)' == ''">Debug</Configuration>
+    <ProductVersion>8.0.30703</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{6C53CFD0-7A06-4B02-B70B-F6E8B0CA6889}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>DIPS.Infrastructure</RootNamespace>
+    <AssemblyName>DIPS.Infrastructure</AssemblyName>
+    <TargetFrameworkVersion Condition="'$(TargetFrameworkVersion)' == ''">v4.6</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <SccProjectName>SAK</SccProjectName>
+    <SccLocalPath>SAK</SccLocalPath>
+    <SccAuxPath>SAK</SccAuxPath>
+    <SccProvider>SAK</SccProvider>
+    <TargetFrameworkProfile>
+    </TargetFrameworkProfile>
+    <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\..\</SolutionDir>
+    <Platform Condition="'$(Platform)' == ''">AnyCPU</Platform>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|AnyCPU'">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <Optimize>true</Optimize>
+    <DebugType>pdbonly</DebugType>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <WarningsAsErrors>612, 618</WarningsAsErrors>
+    <OutputPath>..\..\..\..\bin\$(TargetFrameworkVersion)\$(Platform)\$(Configuration)</OutputPath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|AnyCPU'">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <DefineConstants>TRACE;DEBUG;$(DefineConstants)</DefineConstants>
+    <Optimize>false</Optimize>
+    <DebugType>full</DebugType>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <WarningsAsErrors>612, 618</WarningsAsErrors>
+    <OutputPath>..\..\..\..\bin\$(TargetFrameworkVersion)\$(Platform)\$(Configuration)</OutputPath>
+  </PropertyGroup>
+  <PropertyGroup>
+    <SignAssembly>False</SignAssembly>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="PresentationCore" />
+    <Reference Include="PresentationFramework" />
+    <Reference Include="System" />
+    <Reference Include="System.ComponentModel.Composition" />
+    <Reference Include="System.configuration" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.DirectoryServices" />
+    <Reference Include="System.DirectoryServices.AccountManagement" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Runtime.Serialization" />
+    <Reference Include="System.Security" />
+    <Reference Include="System.ServiceModel" />
+    <Reference Include="System.Windows.Forms" />
+    <Reference Include="System.Xaml" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Xml" />
+    <Reference Include="WindowsBase" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Advice\NewObjectOnCallPrototypeTargetSource.cs" />
+    <Compile Include="AsyncMethodCaller.cs" />
+    <Compile Include="AutoConfig\AutoConfigAttribute.cs" />
+    <Compile Include="AutoConfig\ObjectAutoWireEnum.cs" />
+    <Compile Include="AutoConfig\InternalComponentAttribute.cs" />
+    <Compile Include="AutoConfig\IAssemblyFilter.cs" />
+    <Compile Include="AutoConfig\InternalServiceAttribute.cs" />
+    <Compile Include="AutoConfig\NoObjectNameAdviceAttribute.cs" />
+    <Compile Include="AutoConfig\ObjectScopeEnum.cs" />
+    <Compile Include="AutoConfig\RepositoryObjectAttribute.cs" />
+    <Compile Include="AutoConfig\RepositoryObjectAttributeParser.cs" />
+    <Compile Include="AutoConfig\RepositoryObjectAttributeParserGeneric.cs" />
+    <Compile Include="AutoConfig\RepositoryObjectAttributeParserHelper.cs" />
+    <Compile Include="BindableObject.cs" />
+    <Compile Include="BindableObject.Dependencies.cs">
+      <DependentUpon>BindableObject.cs</DependentUpon>
+    </Compile>
+    <Compile Include="BindableObject.SetProperty.cs">
+      <DependentUpon>BindableObject.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Configuration\AppConfigLocationChanger.cs" />
+    <Compile Include="Configuration\ConfigurationManagerWrapper.cs" />
+    <Compile Include="Configuration\DistributedConfigurationSetup.cs" />
+    <Compile Include="Configuration\IConfigurationManager.cs" />
+    <Compile Include="DomainController\ActiveDirectoryConfigurationParameters.cs" />
+    <Compile Include="DomainController\ActiveDirectoryContextOptions.cs" />
+    <Compile Include="DomainController\ActiveDirectorySettings.cs" />
+    <Compile Include="DomainController\ActiveDirectoryConfigurationProvider.cs" />
+    <Compile Include="DomainController\ActiveDirectoryConfiguration.cs" />
+    <Compile Include="IAsyncMethodCaller.cs" />
+    <Compile Include="IO\FileInfoWrapper.cs" />
+    <Compile Include="IO\FileTools.cs" />
+    <Compile Include="IO\IFileInfo.cs" />
+    <Compile Include="IO\IFileTools.cs" />
+    <Compile Include="SpringUtils\DistributedConfigPropertyFilePlaceholderConfigurer.cs" />
+    <Compile Include="SpringUtils\ISpringContextWriter.cs" />
+    <Compile Include="SpringUtils\SpringContextWriter.cs" />
+    <Compile Include="TimelineRange.cs" />
+    <Compile Include="DomainController\AuthenticateResult.cs" />
+    <Compile Include="DomainController\AuthenticateUserResult.cs" />
+    <Compile Include="DomainController\ContextOptionsUtil.cs" />
+    <Compile Include="DomainController\IActiveDirectoryConfiguration.cs" />
+    <Compile Include="DomainController\UserAccountResult.cs" />
+    <Compile Include="Factories\ViewModelFactoryBase.cs" />
+    <Compile Include="ReplaceWithExtensions.cs" />
+    <Compile Include="Collections\ExtendedBindingList.cs" />
+    <Compile Include="Collections\IExtendedBindingList.cs" />
+    <Compile Include="Collections\ReadOnlyBindingList.cs" />
+    <Compile Include="Collections\RemovingItemEventArgs.cs" />
+    <Compile Include="DomainController\ActiveDirectory.cs" />
+    <Compile Include="DomainController\UserAccount.cs" />
+    <Compile Include="DomainController\IDomainController.cs" />
+    <Compile Include="Entities\DomainObject.cs" />
+    <Compile Include="Exceptions\AuthorizedAccessDeniedException.cs" />
+    <Compile Include="Exceptions\ConcurrentPersistException.cs" />
+    <Compile Include="Exceptions\DesktopException.cs" />
+    <Compile Include="Exceptions\SecurityContextException.cs" />
+    <Compile Include="CoreErrorCodes.cs" />
+    <Compile Include="DataErrorInfoHelper.cs" />
+    <Compile Include="ExpressionExtensions.cs" />
+    <Compile Include="GdiInteropHelper.cs" />
+    <Compile Include="Invocation\InvokeExtensions.cs" />
+    <Compile Include="IOwnedProperty.cs" />
+    <Compile Include="LogUtils.cs" />
+    <Compile Include="ProcessInfo.cs" />
+    <Compile Include="PropertyDependencies\IInternalUsedProperty.cs" />
+    <Compile Include="PropertyDependencies\IPropertyDependenciesForType.cs" />
+    <Compile Include="PropertyDependencies\IUsedProperty.cs" />
+    <Compile Include="IPropertyOwner.cs" />
+    <Compile Include="Clock.cs" />
+    <Compile Include="IClock.cs" />
+    <Compile Include="Monitor\TimedRecord.cs" />
+    <Compile Include="Monitor\MonitorTimer.cs" />
+    <Compile Include="NotifyPropertyChangedExtensions.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="PropertyChangedEventHandlerExtensions.cs" />
+    <Compile Include="PropertyDependencies\PropertyDependencyBuilder.cs" />
+    <Compile Include="PropertyDependencies\PropertyDependenciesForType.cs" />
+    <Compile Include="PropertyDependencies\UsedProperty.cs" />
+    <Compile Include="PropertyDependencies\PropertyDependencyCache.cs" />
+    <Compile Include="PropertyDependencies\PropertyDependency.cs" />
+    <Compile Include="RangeObservableCollection.cs" />
+    <Compile Include="Reflection\ConstructorDelegateFactory.cs" />
+    <Compile Include="Retryables\ConfigurableRetryEvaluator.cs" />
+    <Compile Include="Retryables\ConfigurableWaitEvaluator.cs" />
+    <Compile Include="Retryables\Configuration\RetryableElementCollection.cs" />
+    <Compile Include="Retryables\Configuration\RetryableSection.cs" />
+    <Compile Include="Retryables\FileAccess\FileAccessRetryable.cs" />
+    <Compile Include="Retryables\FileAccess\FileAccessRetryEvaluator.cs" />
+    <Compile Include="Retryables\FileAccess\FileAccessWaitEvaluator.cs" />
+    <Compile Include="Retryables\IEvaluator.cs" />
+    <Compile Include="Retryables\IRetryable.cs" />
+    <Compile Include="Retryables\Retryable.cs" />
+    <Compile Include="Retryables\Configuration\RetryableConfigurationReader.cs" />
+    <Compile Include="Retryables\Configuration\RetryableElement.cs" />
+    <Compile Include="Retryables\RetryEvaluator.cs" />
+    <Compile Include="Retryables\WaitEvaluator.cs" />
+    <Compile Include="Singleton.cs" />
+    <Compile Include="Properties\Resources.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
+    <Compile Include="SortableObservableCollection.cs" />
+    <Compile Include="Specification\ISpecification.cs" />
+    <Compile Include="Specification\Specification.cs" />
+    <Compile Include="SpringUtils\CacheAspect.cs" />
+    <Compile Include="SpringUtils\ConfigSectionVariableSource.cs" />
+    <Compile Include="SpringUtils\ContextRegistryInitializer.cs" />
+    <Compile Include="SpringUtils\ExpirableItem.cs" />
+    <Compile Include="SpringUtils\ExpirableItemCache.cs" />
+    <Compile Include="SpringUtils\MandatoryDependency.cs" />
+    <Compile Include="SpringUtils\NotCachingCache.cs" />
+    <Compile Include="SpringUtils\PropertyFilePlaceholderConfigurer.cs" />
+    <Compile Include="SpringUtils\PriorityOrderedSpringContextLogWriter.cs" />
+    <Compile Include="SpringUtils\RegisteredObjectsDebugLogWriter.cs" />
+    <Compile Include="SpringUtils\SpringExportProvider.cs" />
+    <Compile Include="SpringUtils\SpringContext.cs" />
+    <Compile Include="SpringUtils\SpringContextExtensionHelper.cs" />
+    <Compile Include="SpringUtils\SpringContextLogWriter.cs" />
+    <Compile Include="SpringUtils\SpringObjectNameHelper.cs" />
+    <Compile Include="SpringUtils\TypeNameUtils.cs" />
+    <Compile Include="SpringUtils\CacheParameterAdvisor.cs" />
+    <Compile Include="SpringUtils\CacheResultAdvisor.cs" />
+    <Compile Include="SpringUtils\InvalidateCacheAdvisor.cs" />
+    <Compile Include="SpringUtils\Wcf\WcfProtocol.cs" />
+    <Compile Include="StringUtils\FormattedNameBuilder.cs" />
+    <Compile Include="SpringUtils\UseSpringContext.cs" />
+    <Compile Include="Threading\NoopThreadContextMove.cs" />
+    <Compile Include="Threading\IThreadContextMove.cs" />
+    <Compile Include="Threading\DispatcherBase.cs" />
+    <Compile Include="Threading\IDispatcher.cs" />
+    <Compile Include="Threading\IThreadContextMover.cs" />
+    <Compile Include="Threading\ThreadContextExtension.cs" />
+    <Compile Include="Threading\ThreadLock.cs" />
+    <Compile Include="Threading\ThreadLockOrder.cs" />
+    <Compile Include="Threading\ThreadLockOrderException.cs" />
+    <Compile Include="Threading\ThreadLockTimeoutException.cs" />
+    <Compile Include="Timers\DispatcherTimer.cs" />
+    <Compile Include="Timers\IDispatcherTimer.cs" />
+    <Compile Include="Timers\ITimer.cs" />
+    <Compile Include="Timers\Timer.cs" />
+    <Compile Include="Tree\ITreeNode.cs" />
+    <Compile Include="Tree\TreeNodeExtensions.cs" />
+    <Compile Include="ValidatableObject.cs" />
+    <Compile Include="Validation\BrokenRule.cs" />
+    <Compile Include="Validation\BrokenRuleFormat.cs" />
+    <Compile Include="Validation\BrokenRulesCollection.cs" />
+    <Compile Include="Validation\CustomRuleArgs\IntegerMaxValueRuleArgs.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Validation\CustomRuleArgs\IntegerMinValueRuleArgs.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Validation\CustomRuleArgs\MaxLengthRuleArgs.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Validation\CustomRuleArgs\MaxValueRuleArgs.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Validation\CustomRuleArgs\MinValueRuleArgs.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Validation\CustomRuleArgs\PropertyWithDependantPropertyRuleArgs.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Validation\CustomRuleArgs\RegExRuleArgs.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Validation\DataErrorInfoExtensions.cs" />
+    <Compile Include="Validation\IDataValidationInfo.cs" />
+    <Compile Include="Validation\IRuleMethod.cs" />
+    <Compile Include="Validation\RuleArgs.cs" />
+    <Compile Include="Validation\RuleChangedEventArgs.cs" />
+    <Compile Include="Validation\RuleHandler.cs" />
+    <Compile Include="Validation\RuleMethod.cs" />
+    <Compile Include="Validation\RuleSeverity.cs" />
+    <Compile Include="Validation\RulesList.cs" />
+    <Compile Include="Validation\SharedValidationRules.cs" />
+    <Compile Include="Validation\ValidationException.cs" />
+    <Compile Include="Validation\ValidationRules.cs" />
+    <Compile Include="Validation\ValidationRulesManager.cs" />
+    <Compile Include="View\IViewModelFactory.cs" />
+    <Compile Include="View\ViewModelAttribute.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Properties\Resources.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Config\Common.Spring.Context.xml">
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="paket.references" />
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <PropertyGroup>
+    <PreBuildEvent>
+    </PreBuildEvent>
+  </PropertyGroup>
+  <Choose>
+    <When Condition="$(TargetFrameworkIdentifier) == '.NETFramework' And $(TargetFrameworkVersion) == 'v3.5'">
+      <ItemGroup>
+        <Reference Include="Dapper">
+          <HintPath>..\..\packages\Dapper\lib\net35\Dapper.dll</HintPath>
+          <Private>True</Private>
+          <Paket>True</Paket>
+        </Reference>
+      </ItemGroup>
+    </When>
+    <When Condition="$(TargetFrameworkIdentifier) == '.NETFramework' And ($(TargetFrameworkVersion) == 'v4.0')">
+      <ItemGroup>
+        <Reference Include="Dapper">
+          <HintPath>..\..\packages\Dapper\lib\net40\Dapper.dll</HintPath>
+          <Private>True</Private>
+          <Paket>True</Paket>
+        </Reference>
+      </ItemGroup>
+    </When>
+    <When Condition="$(TargetFrameworkIdentifier) == '.NETFramework' And ($(TargetFrameworkVersion) == 'v4.5' Or $(TargetFrameworkVersion) == 'v4.5.1' Or $(TargetFrameworkVersion) == 'v4.5.2' Or $(TargetFrameworkVersion) == 'v4.5.3' Or $(TargetFrameworkVersion) == 'v4.6')">
+      <ItemGroup>
+        <Reference Include="Dapper">
+          <HintPath>..\..\packages\Dapper\lib\net45\Dapper.dll</HintPath>
+          <Private>True</Private>
+          <Paket>True</Paket>
+        </Reference>
+      </ItemGroup>
+    </When>
+  </Choose>
+  <ItemGroup>
+    <Reference Include="nunit.framework">
+      <HintPath>..\..\packages\NUnit\lib\nunit.framework.dll</HintPath>
+      <Private>True</Private>
+      <Paket>True</Paket>
+    </Reference>
+  </ItemGroup>
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+  <Import Project="..\..\..\..\.paket\paket.targets" />
+  <Import Project="..\..\packages\MultiTarget\build\MultiTarget.targets" Condition="Exists('..\..\packages\MultiTarget\build\MultiTarget.targets')" Label="Paket" />
+</Project>

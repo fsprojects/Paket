@@ -573,7 +573,7 @@ type ProjectFile =
             
             if !i = 0 then
                 propsNodes
-                |> Seq.iter (this.ProjectNode.AppendChild >> ignore)
+                |> Seq.iter (this.ProjectNode.PrependChild >> ignore)
             else
                 propsNodes
                 |> Seq.iter (fun n -> this.ProjectNode.InsertAfter(n,this.ProjectNode.ChildNodes.[!i-1]) |> ignore)
