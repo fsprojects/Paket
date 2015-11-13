@@ -1,20 +1,9 @@
-#### 2.24.9 - 13.11.2015
-* Putting .props and .targets import project on correct location in project files - https://github.com/fsprojects/Paket/issues/1219
-
-#### 2.24.6 - 12.11.2015
-* Propagate framework restriction with top-level dependencies correctly - https://github.com/fsprojects/Paket/issues/1215
-
-#### 2.24.5 - 12.11.2015
-* Propagate framework restriction correctly - https://github.com/fsprojects/Paket/issues/1213
-
-#### 2.24.4 - 12.11.2015
-* Revert v3 stuff in order to work around https://github.com/fsprojects/Paket/issues/1211 
-
-#### 2.24.3 - 12.11.2015
-* Match auth - https://github.com/fsprojects/Paket/issues/1210
-
-#### 2.24.1 - 11.11.2015
-* Better error message when something goes wrong during package download
+#### 2.25.0 - 13.11.2015
+* Unified cache implementation for V2 and V3 - https://github.com/fsprojects/Paket/pull/1222
+* BUGFIX: Putting .props and .targets import project on correct location in project files - https://github.com/fsprojects/Paket/issues/1219
+* BUGFIX: Propagate framework restriction correctly - https://github.com/fsprojects/Paket/issues/1213
+* BUGFIX: Match auth - https://github.com/fsprojects/Paket/issues/1210
+* BUGFIX: Better error message when something goes wrong during package download
 
 #### 2.24.0 - 11.11.2015
 * Support for feeds that only provide NuGet v3 API - https://github.com/fsprojects/Paket/pull/1205

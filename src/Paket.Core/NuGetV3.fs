@@ -2,9 +2,11 @@
 module Paket.NuGetV3
 
 open Newtonsoft.Json
+open System.IO
 open System.Collections.Generic
 
 open Paket.Domain
+open Paket.NuGet
 open Paket.Utils
 open Paket.Xml
 open Paket.PackageSources
@@ -128,7 +130,7 @@ type CatalogDependency =
       Range : string }
 type CatalogDependencyGroup = 
     { [<JsonProperty("targetFramework")>]
-      TargetFramework : string option
+      TargetFramework : string
     
       [<JsonProperty("dependencies")>]
       Dependencies : CatalogDependency [] }
@@ -161,48 +163,71 @@ let getCatalog url auth =
             | Some x -> JsonConvert.DeserializeObject<Catalog>(x)
     }
 
-/// Uses the NuGet v3 registration endpoint to retrieve package details .
-let GetPackageDetails (source : NugetV3Source) (packageName:PackageName) (version:SemVerInfo) : Async<NuGet.NugetPackageCache> =
+let getPackageDetails (source:NugetV3Source) (packageName:PackageName) (version:SemVerInfo) : Async<NuGet.NugetPackageCache> =
     async {
         let! registrationData = getRegistration source packageName version
         let! catalogData = getCatalog registrationData.CatalogEntry source.BasicAuthentication
 
         let dependencies = 
-            catalogData.DependencyGroups
-            |> Seq.map(fun group -> 
-                group.Dependencies
-                |> Seq.map(fun dep -> dep, group.TargetFramework))
-            |> Seq.concat
-            |> Seq.map(fun (dep, targetFramework) ->
-                let targetFramework =
-                    match targetFramework with
-                    | None -> []
-                    | Some x -> 
-                        match FrameworkDetection.Extract x with
-                        | Some x -> [ FrameworkRestriction.Exactly x ]
-                        | None -> []
-                (PackageName dep.Id), (VersionRequirement.Parse dep.Range), targetFramework)
-            |> Seq.toList
+            if catalogData.DependencyGroups = null then
+                []
+            else
+                catalogData.DependencyGroups
+                |> Seq.map(fun group -> 
+                    if group.Dependencies = null then
+                        Seq.empty
+                    else
+                        group.Dependencies
+                        |> Seq.map(fun dep -> dep, group.TargetFramework))
+                |> Seq.concat
+                |> Seq.map(fun (dep, targetFramework) ->
+                    let targetFramework =
+                        match targetFramework with
+                        | null -> []
+                        | x -> Requirements.parseRestrictions x
+                    (PackageName dep.Id), (VersionRequirement.Parse dep.Range), targetFramework)
+                |> Seq.toList
+                |> Requirements.optimizeDependencies
 
         return 
-            { Dependencies = [] //this needs to be implemented Requirements.optimizeDependencies dependencies 
+            { Dependencies =  dependencies 
               PackageName = packageName.ToString()
               SourceUrl = source.Url
               Unlisted = not catalogData.Listed
               DownloadUrl = registrationData.PackageContent
               LicenseUrl = catalogData.LicenseUrl
               CacheVersion = NuGet.NugetPackageCache.CurrentCacheVersion }
-
     }
-    (* 
-        get from https://api.nuget.org/v3/registration1/fsharp.orm/1.0.0.json
 
-        will provide:
-        * catalogEntry, a link to the catalog page
-        * packageContent, a link to the nupkg file
-
-        use catalogEntry to download the catalog, like https://api.nuget.org/v3/catalog0/data/2015.11.03.22.34.24/fsharp.orm.1.0.0.json
-        use dependencyGroups to get the dependencies for the package
-        use licenseUrl
-        use listed
-    *)
+let loadFromCacheOrGetDetails (force:bool)
+                              (cacheFileName:string)
+                              (source:NugetV3Source) 
+                              (packageName:PackageName) 
+                              (version:SemVerInfo) =
+    async {
+        if not force && File.Exists cacheFileName then
+            try 
+                let json = File.ReadAllText(cacheFileName)
+                let cachedObject = JsonConvert.DeserializeObject<NuGet.NugetPackageCache> json
+                if cachedObject.CacheVersion <> NugetPackageCache.CurrentCacheVersion then
+                    let! details = getPackageDetails source packageName version
+                    return true,details
+                else
+                    return false,cachedObject
+            with _ -> 
+                let! details = getPackageDetails source packageName version
+                return true,details
+        else
+            let! details = getPackageDetails source packageName version
+            return true,details
+    }
+    
+/// Uses the NuGet v3 registration endpoint to retrieve package details .
+let GetPackageDetails (force:bool) (source:NugetV3Source) (packageName:PackageName) (version:SemVerInfo) : Async<NuGet.NugetPackageCache> =
+    getDetailsFromCacheOr
+        force
+        source.Url
+        packageName
+        version
+        (fun () ->
+            getPackageDetails source packageName version)
