@@ -62,7 +62,7 @@ type Dependencies(dependenciesFileName: string) =
     /// Converts the solution from NuGet to Paket.
     static member ConvertFromNuget(force: bool,installAfter: bool, initAutoRestore: bool,credsMigrationMode: string option, ?directory) : unit =
         let dir = defaultArg directory (DirectoryInfo(Environment.CurrentDirectory))
-        let rootDirectory = defaultArg (PaketEnv.locatePaketRootDirectory(dir)) dir
+        let rootDirectory = dir
 
         Utils.RunInLockedAccessMode(
             rootDirectory.FullName,
