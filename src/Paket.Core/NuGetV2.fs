@@ -252,33 +252,15 @@ let deleteErrorFile (packageName:PackageName) =
         with
         | _ -> ()
 
+let getDetailsFromNuGet force auth nugetURL packageName version = 
+    getDetailsFromCacheOr
+        force
+        nugetURL
+        packageName
+        version
+        (fun () ->
+            getDetailsFromNuGetViaOData auth nugetURL packageName version)
 
-/// Tries to get download link and direct dependencies from NuGet
-/// Caches calls into json file
-let getDetailsFromNuGet force auth nugetURL (packageName:PackageName) (version:SemVerInfo) = 
-    let cacheFile,errorFile = cacheFile nugetURL packageName version
-    async {
-        try
-            if not force && errorFile.Exists then
-                failwithf "Error file for %O exists at %s" packageName errorFile.FullName
-
-            let! (invalidCache,details) = loadFromCacheOrODataOrV3 force cacheFile.FullName (auth,nugetURL) packageName version
-
-            verbosefn "loaded details for '%O@%O' from url '%s'" packageName version nugetURL
-
-            errorFile.Delete()
-            if invalidCache then
-                try
-                    File.WriteAllText(cacheFile.FullName,JsonConvert.SerializeObject(details))
-                with
-                | _ -> () // if caching fails we should not fail
-            return details
-        with
-        | exn -> 
-            File.AppendAllText(errorFile.FullName,exn.ToString())
-            raise exn
-            return! getDetailsFromNuGetViaOData auth nugetURL packageName version
-    } 
 
 let fixDatesInArchive fileName =
     try
@@ -481,7 +463,7 @@ let DownloadPackage(root, auth, (source : PackageSource), groupName, packageName
             let url, nugetPackage = 
                 match source with 
                 | Nuget source -> 
-                     source.Url, (getDetailsFromNuGet force auth source.Url packageName version)
+                    source.Url, (getDetailsFromNuGet force auth source.Url packageName version)
                 | NugetV3 source ->
                     source.Url, (NuGetV3.GetPackageDetails force source packageName version)
                 | _ -> failwith "shouldnt be here"
