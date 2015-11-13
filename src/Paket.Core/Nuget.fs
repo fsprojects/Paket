@@ -50,22 +50,23 @@ let getDetailsFromCacheOr force nugetURL (packageName:PackageName) (version:SemV
             let result =
                 try
                     let cachedObject = JsonConvert.DeserializeObject<NugetPackageCache> json
-                    Choice1Of2 cachedObject
+                    ok cachedObject
                 with
                 | exn -> 
-                    Choice2Of2 exn
+                    fail exn
             return!
                 match result with
-                | Choice1Of2 cachedObject -> 
+                | Ok (cachedObject, _) -> 
                     if cachedObject.CacheVersion <> NugetPackageCache.CurrentCacheVersion then
                         cacheFile.Delete()
                         get()
                     else
                         async { return cachedObject }
-                | Choice2Of2 exn -> 
-                    traceWarnfn "Error loading from cache for package '%s.%s':\n%s" (packageName.ToString()) 
-                                                                                    (version.ToString()) 
-                                                                                    (exn.ToString())
+                | Bad exns -> 
+                    for exn in exns do
+                        traceWarnfn "Error loading from cache for package '%s.%s':\n%s" (packageName.ToString()) 
+                                                                                        (version.ToString()) 
+                                                                                        (exn.ToString())
                     get()
         else
             return! get()
