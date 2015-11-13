@@ -548,13 +548,25 @@ type ProjectFile =
             let importTargets = defaultArg installSettings.ImportTargets true
 
             this.GenerateXml(projectModel,copyLocal,importTargets,installSettings.ReferenceCondition))
-        |> Seq.iter (fun (propsNodes,targetsNodes,chooseNode,propertyChooseNode, analyzersNode) -> 
-            if chooseNode.ChildNodes.Count > 0 then
-                this.ProjectNode.AppendChild chooseNode |> ignore
+        |> Seq.iter (fun (propsNodes,targetsNodes,chooseNode,propertyChooseNode, analyzersNode) ->
 
-            if propertyChooseNode.ChildNodes.Count > 0 then
-                this.ProjectNode.AppendChild propertyChooseNode |> ignore
+            let i = ref (this.ProjectNode.ChildNodes.Count-1)
+            while !i >= 0 && this.ProjectNode.ChildNodes.[!i].OuterXml.ToString().ToLower().StartsWith("<import") do
+                decr i
             
+            if !i <= 0 then
+                if chooseNode.ChildNodes.Count > 0 then
+                    this.ProjectNode.AppendChild chooseNode |> ignore
+
+                if propertyChooseNode.ChildNodes.Count > 0 then
+                    this.ProjectNode.AppendChild propertyChooseNode |> ignore
+            else
+                if chooseNode.ChildNodes.Count > 0 then
+                    this.ProjectNode.InsertBefore(chooseNode,this.ProjectNode.ChildNodes.[!i]) |> ignore
+
+                if propertyChooseNode.ChildNodes.Count > 0 then
+                    this.ProjectNode.InsertBefore(propertyChooseNode,this.ProjectNode.ChildNodes.[!i]) |> ignore
+
             let i = ref 0
             while !i < this.ProjectNode.ChildNodes.Count && this.ProjectNode.ChildNodes.[!i].OuterXml.ToString().ToLower().StartsWith("<import") do
                 incr i
