@@ -37,7 +37,7 @@
     <StartArguments>update group Build</StartArguments>
     <StartArguments>pack output D:\code\paketbug\output</StartArguments>
     <StartArguments>install</StartArguments>
-    <StartArguments>update</StartArguments>
+    <StartArguments>install</StartArguments>
     <StartAction>Project</StartAction>
     <StartProgram>paket.exe</StartProgram>
     <StartWorkingDirectory>c:\code\Paketkopie</StartWorkingDirectory>
@@ -45,7 +45,7 @@
     <StartWorkingDirectory>d:\code\paketkopie</StartWorkingDirectory>
     <StartWorkingDirectory>d:\code\paketbug</StartWorkingDirectory>
     <StartWorkingDirectory>d:\code\paketrepro</StartWorkingDirectory>
-    <StartWorkingDirectory>D:\code\Paket\integrationtests\scenarios\i001215-framework-propagation-no-restriction\temp\</StartWorkingDirectory>
+    <StartWorkingDirectory>D:\code\Paket\integrationtests\scenarios\i001219-props-files\temp\</StartWorkingDirectory>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>

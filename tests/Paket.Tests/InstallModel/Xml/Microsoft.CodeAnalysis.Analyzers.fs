@@ -35,7 +35,7 @@ let expectedCs = """
 let ``should generate Xml for Microsoft.CodeAnalysis.Analyzers in CSharp project``() = 
     let project = ProjectFile.TryLoad("./ProjectFile/TestData/EmptyCsharpGuid.csprojtest")
     Assert.IsTrue(project.IsSome)
-    let _,_,_,analyzerNodes = project.Value.GenerateXml(model,true,true,None)
+    let _,_,_,_,analyzerNodes = project.Value.GenerateXml(model,true,true,None)
     analyzerNodes
     |> (fun n -> n.OuterXml)
     |> normalizeXml
@@ -55,7 +55,7 @@ let expectedVb = """
 let ``should generate Xml for RefactoringEssentials in VisualBasic project``() = 
     let project = ProjectFile.TryLoad("./ProjectFile/TestData/EmptyVbGuid.vbprojtest")
     Assert.IsTrue(project.IsSome)
-    let _,_,_,analyzerNodes = project.Value.GenerateXml(model,true,true,None)
+    let _,_,_,_,analyzerNodes = project.Value.GenerateXml(model,true,true,None)
     analyzerNodes
     |> (fun n -> n.OuterXml)
     |> normalizeXml
@@ -74,7 +74,7 @@ let expectedEmpty = """<ItemGroup xmlns="http://schemas.microsoft.com/developer/
 let ``should generate Xml for Microsoft.CodeAnalysis.Analyzers 1.0.0-rc2``() = 
     let project = ProjectFile.TryLoad("./ProjectFile/TestData/EmptyCsharpGuid.csprojtest")
     Assert.IsTrue(project.IsSome)
-    let _,_,_,analyzerNodes = project.Value.GenerateXml(oldModel,true,true,None)
+    let _,_,_,_,analyzerNodes = project.Value.GenerateXml(oldModel,true,true,None)
     analyzerNodes
     |> (fun n -> n.OuterXml)
     |> normalizeXml

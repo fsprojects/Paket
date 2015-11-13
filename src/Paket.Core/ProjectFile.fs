@@ -369,7 +369,7 @@ type ProjectFile =
                     |> addChild (this.CreateNode("Paket","True"))
                     |> itemGroup.AppendChild
                     |> ignore
-                | Reference.FrameworkAssemblyReference frameworkAssembly ->              
+                | Reference.FrameworkAssemblyReference frameworkAssembly ->
                     this.CreateNode("Reference")
                     |> addAttribute "Include" frameworkAssembly
                     |> addChild (this.CreateNode("Paket","True"))
@@ -381,14 +381,14 @@ type ProjectFile =
         let createPropertyGroup references = 
             let propertyGroup = this.CreateNode("PropertyGroup")
                       
-            let propertyNames =          
+            let propertyNames =
                 references
                 |> Seq.choose (fun lib ->
                     if not importTargets then None else
                     match lib with
                     | Reference.Library _ -> None
                     | Reference.FrameworkAssemblyReference _ -> None
-                    | Reference.TargetsFile targetsFile ->                        
+                    | Reference.TargetsFile targetsFile ->
                         let fi = new FileInfo(normalizePath targetsFile)
                         let propertyName = "__paket__" + fi.Name.ToString().Replace(" ","_").Replace(".","_")
                         
@@ -432,7 +432,7 @@ type ProjectFile =
                         whenNode.AppendChild(itemGroup) |> ignore
                         containsReferences := true
                     whenNode)
-                |> List.iter(fun node -> chooseNode.AppendChild(node) |> ignore)              
+                |> List.iter(fun node -> chooseNode.AppendChild(node) |> ignore)
                                 
                 if !containsReferences then chooseNode else this.CreateNode("Choose")
 
@@ -453,22 +453,39 @@ type ProjectFile =
                         whenNode.AppendChild(propertyGroup) |> ignore
                         containsProperties := true
                     whenNode)
-                |> List.iter(fun node -> propertyChooseNode.AppendChild(node) |> ignore)                                                               
+                |> List.iter(fun node -> propertyChooseNode.AppendChild(node) |> ignore)
                 
                 (targetsFileConditions |> List.map (fun (_,(propertyNames,_)) -> propertyNames)),
                 (if !containsProperties then propertyChooseNode else this.CreateNode("Choose"))
                 
 
-        let propertyNameNodes = 
+        let propsNodes = 
             propertyNames
             |> Seq.concat
             |> Seq.distinctBy (fun (x,_,_) -> x)
+            |> Seq.filter (fun (propertyName,path,buildPath) -> propertyName.ToLower().EndsWith "props")
             |> Seq.map (fun (propertyName,path,buildPath) -> 
                 let fileName = 
                     match propertyName.ToLower() with
                     | _ when propertyChooseNode.ChildNodes.Count = 0 -> path
-                    | name when name.EndsWith "props" ->
-                        sprintf "%s$(%s).props" buildPath propertyName 
+                    | name when name.EndsWith "props" -> sprintf "%s$(%s).props" buildPath propertyName 
+                    | _ -> failwithf "Unknown .props filename %s" propertyName
+
+                this.CreateNode("Import")
+                |> addAttribute "Project" fileName
+                |> addAttribute "Condition" (sprintf "Exists('%s')" fileName)
+                |> addAttribute "Label" "Paket")
+            |> Seq.toList
+
+        let targetsNodes = 
+            propertyNames
+            |> Seq.concat
+            |> Seq.distinctBy (fun (x,_,_) -> x)
+            |> Seq.filter (fun (propertyName,path,buildPath) -> propertyName.ToLower().EndsWith "props" |> not)
+            |> Seq.map (fun (propertyName,path,buildPath) -> 
+                let fileName = 
+                    match propertyName.ToLower() with
+                    | _ when propertyChooseNode.ChildNodes.Count = 0 -> path
                     | name when name.EndsWith "targets" ->
                         sprintf "%s$(%s).targets" buildPath propertyName
                     | _ -> failwithf "Unknown .targets filename %s" propertyName
@@ -481,14 +498,14 @@ type ProjectFile =
         
         let analyzersNode = this.GenerateAnalyzersXml model
 
-        propertyNameNodes,chooseNode,propertyChooseNode,analyzersNode
+        propsNodes,targetsNodes,chooseNode,propertyChooseNode,analyzersNode
         
     member this.RemovePaketNodes() =
         this.DeletePaketNodes("Analyzer")
         this.DeletePaketNodes("Reference")
 
         let rec PaketNodes (node:XmlNode) =
-            [for node in node.ChildNodes do                
+            [for node in node.ChildNodes do
                 if node.Name.Contains("__paket__") || 
                     (node.Name = "Import" && match node |> getAttribute "Project" with Some v -> v.Contains("__paket__") | None -> false) ||
                     (node |> withAttributeValue "Label" "Paket")
@@ -498,7 +515,7 @@ type ProjectFile =
         
         for node in PaketNodes this.Document do
             let parent = node.ParentNode
-            try                
+            try
                 node.ParentNode.RemoveChild(node) |> ignore
             with
             | _ -> ()
@@ -531,15 +548,27 @@ type ProjectFile =
             let importTargets = defaultArg installSettings.ImportTargets true
 
             this.GenerateXml(projectModel,copyLocal,importTargets,installSettings.ReferenceCondition))
-        |> Seq.iter (fun (propertyNameNodes,chooseNode,propertyChooseNode, analyzersNode) -> 
+        |> Seq.iter (fun (propsNodes,targetsNodes,chooseNode,propertyChooseNode, analyzersNode) -> 
             if chooseNode.ChildNodes.Count > 0 then
                 this.ProjectNode.AppendChild chooseNode |> ignore
 
             if propertyChooseNode.ChildNodes.Count > 0 then
                 this.ProjectNode.AppendChild propertyChooseNode |> ignore
+            
+            let i = ref 0
+            while !i < this.ProjectNode.ChildNodes.Count && this.ProjectNode.ChildNodes.[!i].OuterXml.ToString().ToLower().StartsWith("<import") do
+                incr i
+            
+            if !i = 0 then
+                propsNodes
+                |> Seq.iter (this.ProjectNode.AppendChild >> ignore)
+            else
+                propsNodes
+                |> Seq.iter (fun n -> this.ProjectNode.InsertAfter(n,this.ProjectNode.ChildNodes.[!i-1]) |> ignore)
 
-            propertyNameNodes
+            targetsNodes
             |> Seq.iter (this.ProjectNode.AppendChild >> ignore)
+
 
             if analyzersNode.ChildNodes.Count > 0 then
                 this.ProjectNode.AppendChild analyzersNode |> ignore

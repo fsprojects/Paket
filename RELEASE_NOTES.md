@@ -1,3 +1,6 @@
+#### 2.24.7 - 13.11.2015
+* Putting .props and .targets import project on correct location in project files - https://github.com/fsprojects/Paket/issues/1219
+
 #### 2.24.6 - 12.11.2015
 * Propagate framework restriction with top-level dependencies correctly - https://github.com/fsprojects/Paket/issues/1215
 

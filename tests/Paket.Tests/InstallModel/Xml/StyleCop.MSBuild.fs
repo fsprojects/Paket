@@ -23,14 +23,15 @@ let ``should generate Xml for StyleCop.MSBuild``() =
 
     model.GetTargetsFiles(SinglePlatform (DotNetFramework FrameworkVersion.V2)) |> shouldContain @"..\StyleCop.MSBuild\build\StyleCop.MSBuild.Targets" 
     
-    let propertyNodes,chooseNode,propertyChooseNode,_ = ProjectFile.TryLoad("./ProjectFile/TestData/Empty.fsprojtest").Value.GenerateXml(model,true,true,None)
+    let propsNodes,targetsNodes,chooseNode,propertyChooseNode,_ = ProjectFile.TryLoad("./ProjectFile/TestData/Empty.fsprojtest").Value.GenerateXml(model,true,true,None)
     
     propertyChooseNode.OuterXml
     |> normalizeXml
     |> shouldEqual (normalizeXml emptyPropertyNameNodes)
         
-    propertyNodes |> Seq.length |> shouldEqual 1
+    propsNodes |> Seq.length |> shouldEqual 0
+    targetsNodes |> Seq.length |> shouldEqual 1
 
-    (propertyNodes |> Seq.head).OuterXml
+    (targetsNodes |> Seq.head).OuterXml
     |> normalizeXml
     |> shouldEqual (normalizeXml expectedPropertyNodes)

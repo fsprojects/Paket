@@ -25,7 +25,7 @@ let ``should generate Xml for GitInfoPlanter2.0.0``() =
             [],
               Nuspec.All)
 
-    let propertyNodes,chooseNode,propertyChooseNode,_ = ProjectFile.TryLoad("./ProjectFile/TestData/Empty.fsprojtest").Value.GenerateXml(model,true,true,None)
+    let propsNodes,targetsNodes,chooseNode,propertyChooseNode,_ = ProjectFile.TryLoad("./ProjectFile/TestData/Empty.fsprojtest").Value.GenerateXml(model,true,true,None)
     chooseNode.OuterXml
     |> normalizeXml
     |> shouldEqual (normalizeXml emptyReferences)
@@ -34,8 +34,9 @@ let ``should generate Xml for GitInfoPlanter2.0.0``() =
     |> normalizeXml
     |> shouldEqual (normalizeXml emptyPropertyDefinitionNodes)
 
-    propertyNodes |> Seq.length |> shouldEqual 1
+    propsNodes |> Seq.length |> shouldEqual 0
+    targetsNodes |> Seq.length |> shouldEqual 1
 
-    (propertyNodes |> Seq.head).OuterXml
+    (targetsNodes |> Seq.head).OuterXml
     |> normalizeXml
     |> shouldEqual (normalizeXml expectedPropertyNodes)
