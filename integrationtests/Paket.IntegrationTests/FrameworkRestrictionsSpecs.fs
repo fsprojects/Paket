@@ -25,9 +25,9 @@ let ``#1182 framework restrictions overwrite each other``() =
 
 [<Test>]
 let ``#1190 paket add nuget should handle transitive dependencies``() = 
-    paket "add nuget xunit version 2.1.0" "i001190-transitive-dependencies-with-restrictions" |> ignore
+    paket "add nuget xunit version 2.1.0" "i001190-transitive-dependencies-with-restr" |> ignore
     
-    let lockFile = LockFile.LoadFrom(Path.Combine(scenarioTempPath "i001190-transitive-dependencies-with-restrictions","paket.lock"))
+    let lockFile = LockFile.LoadFrom(Path.Combine(scenarioTempPath "i001190-transitive-dependencies-with-restr","paket.lock"))
     lockFile.Groups.[Constants.MainDependencyGroup].Resolution.[PackageName "xunit.abstractions"].Settings.FrameworkRestrictions
     |> shouldContain (FrameworkRestriction.AtLeast(DotNetFramework(FrameworkVersion.V4_5)))
     
