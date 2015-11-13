@@ -224,24 +224,10 @@ let loadFromCacheOrGetDetails (force:bool)
     
 /// Uses the NuGet v3 registration endpoint to retrieve package details .
 let GetPackageDetails (force:bool) (source:NugetV3Source) (packageName:PackageName) (version:SemVerInfo) : Async<NuGet.NugetPackageCache> =
-    let cacheFile,errorFile = NuGet.cacheFile source.Url packageName version
-    async {
-        try
-            if not force && errorFile.Exists then
-                failwithf "Error file for %O exists at %s" packageName errorFile.FullName
-
-            let! (invalidCache,details) = loadFromCacheOrGetDetails force cacheFile.FullName source packageName version
-
-            errorFile.Delete()
-            if invalidCache then
-                try
-                    File.WriteAllText(cacheFile.FullName,JsonConvert.SerializeObject(details))
-                with
-                | _ -> () // if caching fails we should not fail
-            return details
-        with
-        | exn -> 
-            File.AppendAllText(errorFile.FullName,exn.ToString())
-            raise exn
-            return! getPackageDetails source packageName version
-    }
+    getDetailsFromCacheOr
+        force
+        source.Url
+        packageName
+        version
+        (fun () ->
+            getPackageDetails source packageName version)
