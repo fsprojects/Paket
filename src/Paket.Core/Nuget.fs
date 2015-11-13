@@ -7,6 +7,7 @@ open Paket.Requirements
 open Paket.Logging
 
 open System.IO
+open Chessie.ErrorHandling
 
 open Newtonsoft.Json
 
