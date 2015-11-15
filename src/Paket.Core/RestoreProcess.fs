@@ -11,16 +11,25 @@ open FSharp.Polyfill
 open System
 
 let private extractPackage package root auth source groupName version includeVersionInPath force =
+    let downloadAndExtract force detailed = async {
+        let! folder = NuGetV2.DownloadPackage(root, auth, source, groupName, package.Name, version, includeVersionInPath, force, detailed)
+        return package, NuGetV2.GetLibFiles folder, NuGetV2.GetTargetsFiles folder, NuGetV2.GetAnalyzerFiles folder
+    }
+
     async {
         try 
-            let! folder = NuGetV2.DownloadPackage(root, auth, source, groupName, package.Name, version, includeVersionInPath, force)
-            return package, NuGetV2.GetLibFiles folder, NuGetV2.GetTargetsFiles folder, NuGetV2.GetAnalyzerFiles folder
-        with exn when not force -> 
-            tracefn "Something went wrong while downloading %O %A%sMessage: %s%s  ==> Trying again." 
-                package.Name version Environment.NewLine exn.Message Environment.NewLine
-            let! folder = NuGetV2.DownloadPackage(root, auth, source, groupName, package.Name, version, includeVersionInPath, true)
-            return package, NuGetV2.GetLibFiles folder, NuGetV2.GetTargetsFiles folder, NuGetV2.GetAnalyzerFiles folder
+            return! downloadAndExtract force false
+        with exn -> 
+            try
+                tracefn "Something went wrong while downloading %O %A%sMessage: %s%s  ==> Trying again" 
+                    package.Name version Environment.NewLine exn.Message Environment.NewLine
+                return! downloadAndExtract true false
+            with exn ->
+                tracefn "Something went wrong while downloading %O %A%sMessage: %s%s  ==> Last trial" 
+                    package.Name version Environment.NewLine exn.Message Environment.NewLine
+                return! downloadAndExtract true true
     }
+
 /// Downloads and extracts a package.
 let ExtractPackage(root, groupName, sources, force, package : ResolvedPackage) = 
     async { 
@@ -33,15 +42,14 @@ let ExtractPackage(root, groupName, sources, force, package : ResolvedPackage) =
                                match s with
                                | Nuget s when s.Url = package.Source.Url -> s.Authentication |> Option.map toBasicAuth
                                | _ -> None)
-            let! result =
-                extractPackage package root auth package.Source groupName v includeVersionInPath force 
+            let! result = extractPackage package root auth package.Source groupName v includeVersionInPath force 
             return result
         | LocalNuget path ->
             let path = Utils.normalizeLocalPath path
             let di = Utils.getDirectoryInfo path root
             let nupkg = NuGetV2.findLocalPackage di.FullName package.Name v
 
-            let! folder = NuGetV2.CopyFromCache(root, groupName, nupkg.FullName, "", package.Name, v, includeVersionInPath, force)
+            let! folder = NuGetV2.CopyFromCache(root, groupName, nupkg.FullName, "", package.Name, v, includeVersionInPath, force, false)
             return package, NuGetV2.GetLibFiles folder, NuGetV2.GetTargetsFiles folder, NuGetV2.GetAnalyzerFiles folder
     }
 
@@ -71,7 +79,7 @@ let Restore(dependenciesFileName,force,group,referencesFileNames) =
     let root = lockFileName.Directory.FullName
 
     if not lockFileName.Exists then 
-        failwithf "%s doesn't exist." lockFileName.FullName        
+        failwithf "%s doesn't exist." lockFileName.FullName
 
     let dependenciesFile = DependenciesFile.ReadFromFile(dependenciesFileName)
     let lockFile = LockFile.LoadFrom(lockFileName.FullName)

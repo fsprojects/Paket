@@ -335,7 +335,7 @@ let inline isExtracted fileName =
     |> Seq.exists (fun f -> f.FullName <> fi.FullName)
 
 /// Extracts the given package to the ./packages folder
-let ExtractPackage(fileName:string, targetFolder, packageName:PackageName, version:SemVerInfo) =
+let ExtractPackage(fileName:string, targetFolder, packageName:PackageName, version:SemVerInfo, detailed) =
     async {
         if isExtracted fileName then
              verbosefn "%O %O already extracted" packageName version
@@ -353,7 +353,7 @@ let ExtractPackage(fileName:string, targetFolder, packageName:PackageName, versi
                 with
                 | _ -> ()
 
-                let text = if !text = "" then "" else sprintf "%s Package contains text: %s%s" Environment.NewLine !text Environment.NewLine
+                let text = if detailed && !text = "" then "" else sprintf "%s Package contains text: %s%s" Environment.NewLine !text Environment.NewLine
                 failwithf "Error during extraction of %s.%sMessage: %s%s" (Path.GetFullPath fileName) Environment.NewLine exn.Message text
 
             // cleanup folder structure
@@ -391,7 +391,7 @@ let CopyLicenseFromCache(root, groupName, cacheFileName, packageName:PackageName
     }
 
 /// Extracts the given package to the ./packages folder
-let CopyFromCache(root, groupName, cacheFileName, licenseCacheFile, packageName:PackageName, version:SemVerInfo, includeVersionInPath, force) = 
+let CopyFromCache(root, groupName, cacheFileName, licenseCacheFile, packageName:PackageName, version:SemVerInfo, includeVersionInPath, force, detailed) = 
     async { 
         let targetFolder = DirectoryInfo(getTargetFolder root groupName packageName version includeVersionInPath).FullName
         let fi = FileInfo(cacheFileName)
@@ -402,7 +402,7 @@ let CopyFromCache(root, groupName, cacheFileName, licenseCacheFile, packageName:
             CleanDir targetFolder
             File.Copy(cacheFileName, targetFile.FullName)
         try 
-            let! extracted = ExtractPackage(targetFile.FullName,targetFolder,packageName,version)
+            let! extracted = ExtractPackage(targetFile.FullName,targetFolder,packageName,version,detailed)
             do! CopyLicenseFromCache(root, groupName, licenseCacheFile, packageName, version, includeVersionInPath, force)
             return extracted
         with
@@ -451,7 +451,7 @@ let DownloadLicense(root,force,packageName:PackageName,version:SemVerInfo,licens
     }
 
 /// Downloads the given package to the NuGet Cache folder
-let DownloadPackage(root, auth, (source : PackageSource), groupName, packageName:PackageName, version:SemVerInfo, includeVersionInPath, force) = 
+let DownloadPackage(root, auth, (source : PackageSource), groupName, packageName:PackageName, version:SemVerInfo, includeVersionInPath, force, detailed) = 
     async { 
         let targetFileName = Path.Combine(CacheFolder, packageName.ToString() + "." + version.Normalize() + ".nupkg")
         let targetFile = FileInfo targetFileName
@@ -519,7 +519,7 @@ let DownloadPackage(root, auth, (source : PackageSource), groupName, packageName
             with
             | exn -> failwithf "Could not download %O %O from %s.%s    %s" packageName version nugetPackage.DownloadUrl Environment.NewLine exn.Message
                 
-        return! CopyFromCache(root, groupName, targetFile.FullName, licenseFileName, packageName, version, includeVersionInPath, force)
+        return! CopyFromCache(root, groupName, targetFile.FullName, licenseFileName, packageName, version, includeVersionInPath, force, detailed)
     }
 
 let private getFiles targetFolder subFolderName filesDescriptionForVerbose =

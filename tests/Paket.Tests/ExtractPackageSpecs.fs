@@ -18,7 +18,7 @@ let ``should report blocked download``() =
     File.Copy("Nuspec/FSharp.Data.nuspec",fileName)
     
     try
-        NuGetV2.ExtractPackage(fileName,di,PackageName "FSharp.Data",SemVer.Parse("0.1.1"))
+        NuGetV2.ExtractPackage(fileName,di,PackageName "FSharp.Data",SemVer.Parse("0.1.1"),true)
         |> Async.RunSynchronously
 
     with 

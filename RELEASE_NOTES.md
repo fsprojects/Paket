@@ -1,3 +1,6 @@
+#### 2.25.1 - 15.11.2015
+* Always try 3 times to download and extract a package
+
 #### 2.25.0 - 13.11.2015
 * Unified cache implementation for V2 and V3 - https://github.com/fsprojects/Paket/pull/1222
 * BUGFIX: Putting .props and .targets import project on correct location in project files - https://github.com/fsprojects/Paket/issues/1219
