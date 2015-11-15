@@ -420,9 +420,11 @@ module internal TemplateFile =
           Contents =
               match contents with
               | CompleteInfo(core, optionalInfo) ->
-                  CompleteInfo(core, { optionalInfo with Files = getFiles optionalInfo.Files })
+                  let files = getFiles optionalInfo.Files
+                  CompleteInfo(core, { optionalInfo with Files = files })
               | ProjectInfo(core, optionalInfo) ->
-                  ProjectInfo(core, { optionalInfo with Files = getFiles optionalInfo.Files }) }
+                  let files = getFiles optionalInfo.Files
+                  ProjectInfo(core, { optionalInfo with Files = files }) }
 
     let FindTemplateFiles root =
         Directory.EnumerateFiles(root, "*" + Constants.TemplateFile, SearchOption.AllDirectories)

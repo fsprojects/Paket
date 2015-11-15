@@ -138,7 +138,15 @@ let addFile (source : string) (target : string) (templateFile : TemplateFile) =
         { FileName = templateFile.FileName
           Contents = CompleteInfo(core, { opt with Files = (source,target) :: opt.Files }) }
     | IncompleteTemplate -> 
-        failwith "You should only try and add dependencies to template files with complete metadata."
+        failwith "You should only try and add files to template files with complete metadata."
+
+let prependFile (source : string) (target : string) (templateFile : TemplateFile) = 
+    match templateFile with
+    | CompleteTemplate(core, opt) -> 
+        { FileName = templateFile.FileName
+          Contents = CompleteInfo(core, { opt with Files = opt.Files @ [source,target] }) }
+    | IncompleteTemplate -> 
+        failwith "You should only try and add files to template files with complete metadata."
 
 let findDependencies (dependencies : DependenciesFile) config (template : TemplateFile) (project : ProjectFile) lockDependencies (map : Map<string, TemplateFile * ProjectFile>) =
     let targetDir = 
@@ -177,7 +185,7 @@ let findDependencies (dependencies : DependenciesFile) config (template : Templa
 
                 isSameFileName && isValidExtension)
         additionalFiles
-        |> Array.fold (fun template file -> addFile file.FullName targetDir template) template
+        |> Array.fold (fun template file -> prependFile file.FullName targetDir template) template
     
     // If project refs will also be packaged, add dependency
     let withDeps = 

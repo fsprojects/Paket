@@ -1,3 +1,6 @@
+#### 2.25.2 - 15.11.2015
+* WORKAROUND: Use file order to work around duplicate files in template definition - https://github.com/fsprojects/Paket/issues/1221
+
 #### 2.25.1 - 15.11.2015
 * Always try 3 times to download and extract a package
 
