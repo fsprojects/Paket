@@ -125,7 +125,7 @@ type ProjectFile =
 
             if !isPaketNode = paketOnes then yield node]
 
-    member this.GetProperty propertyName defaultProperties =
+    member this.GetPropertyWithDefaults propertyName defaultProperties =
         let rec handleElement (data : Map<string, string>) (node : XmlNode) =
             let processPlaceholders (data : Map<string, string>) text =
                 let getPlaceholderValue (name:string) =
@@ -338,6 +338,9 @@ type ProjectFile =
         |> getDescendants "PropertyGroup"
         |> Seq.fold handleElement defaultProperties
         |> Map.tryFind propertyName
+
+    member this.GetProperty propertyName =
+        this.GetPropertyWithDefaults propertyName Map.empty<string, string>
 
     member this.Name = FileInfo(this.FileName).Name
 
@@ -968,7 +971,7 @@ type ProjectFile =
     member this.GetOutputDirectory buildConfiguration =
         let startingData = Map.empty<string,string>.Add("Configuration", buildConfiguration)
 
-        this.GetProperty "OutputPath" startingData
+        this.GetPropertyWithDefaults "OutputPath" startingData
         |> function
             | None -> failwithf "Unable to find %s output path node in file %s" buildConfiguration this.FileName
             | Some s -> s.TrimEnd [|'\\'|] |> normalizePath
