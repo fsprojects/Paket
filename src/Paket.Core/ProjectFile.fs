@@ -1,4 +1,4 @@
-﻿namespace Paket
+namespace Paket
 
 open Paket.Domain
 open Paket.Logging
@@ -124,6 +124,220 @@ type ProjectFile =
                     isPaketNode := true
 
             if !isPaketNode = paketOnes then yield node]
+
+    member this.GetProperty propertyName defaultProperties =
+        let rec handleElement (data : Map<string, string>) (node : XmlNode) =
+            let processPlaceholders (data : Map<string, string>) text =
+                let getPlaceholderValue (name:string) =
+                    // Change "$(Configuration)" to "Configuration",
+                    // then find in the data map
+                    let name = name.Substring(2, name.Length - 3)
+                    match data.TryFind(name) with
+                    | None -> ""
+                    | Some s -> s
+
+                let replacePlaceholder (s:string) (m:System.Text.RegularExpressions.Match) =
+                    let front = s.Substring(0, m.Index)
+                    let value = getPlaceholderValue m.Value
+                    let back = s.Substring(m.Index + m.Length)
+                    front + value + back
+
+                // The placeholder name must be a valid XML node name,
+                // else where would its value be defined?
+                let regex = @"\$\([a-zA-Z_\-\:][a-zA-Z0-9_\.\-\:]*\)"
+
+                System.Text.RegularExpressions.Regex.Matches(text, regex)
+                |> fun x -> System.Linq.Enumerable.Cast<System.Text.RegularExpressions.Match>(x)
+                |> Seq.toArray
+                |> Array.rev
+                |> Array.fold replacePlaceholder text
+
+            let conditionMatches data condition =
+                let rec parseWord (data:System.Text.StringBuilder) (input:string) index inQuotes =
+                    if input.Length <= index
+                    then
+                        if data.Length > 0 && not inQuotes then Some(data.ToString(), index)
+                        else None
+                    else
+                        let c = input.[index]
+                        let gtz = data.Length > 0
+                        match gtz, inQuotes, c with
+                        | false, false, ' '  -> parseWord data input (index + 1) false
+                        | false, false, '\'' -> parseWord data input (index + 1) true
+                        |     _,  true, '\'' -> Some(data.ToString(), index + 1)
+                        |  true, false, ' '  -> Some(data.ToString(), index + 1)
+                        |     _,  true, c    -> parseWord (data.Append(c)) input (index + 1) true
+                        |     _, false, c    -> parseWord (data.Append(c)) input (index + 1) false
+
+                let rec parseComparison (data:System.Text.StringBuilder) (input:string) index =
+                    let isCompChar c = c = '<' || c = '>' || c = '!' || c = '='
+                    if input.Length <= index
+                    then None
+                    else
+                        let c = input.[index]
+                        if data.Length = 0 && c = ' '
+                        then parseComparison data input (index + 1)
+                        elif data.Length = 2 && isCompChar c
+                        then None
+                        elif isCompChar c
+                        then parseComparison (data.Append(c)) input (index + 1)
+                        else
+                            let s = data.ToString()
+                            let valid = [ "=="; "!="; "<"; ">"; "<="; ">=" ]
+                            match (valid |> List.tryFind ((=) s)) with
+                            | None -> None
+                            | Some(_) -> Some(s, index)
+
+                let parseCondition (data:System.Text.StringBuilder) (input:string) index =
+                    if input.Length <= index
+                    then None
+                    else
+                        data.Clear() |> ignore
+                        match parseWord data input index false with
+                        | None -> None
+                        | Some(left, index) ->
+                            data.Clear() |> ignore
+                            let comp = parseComparison data input index
+                            match comp with
+                            | None -> None
+                            | Some(comp, index) ->
+                                data.Clear() |> ignore
+                                match parseWord data input index false with
+                                | None -> None
+                                | Some(right, index) ->
+                                    Some(left, comp, right, index)
+
+                let rec parseAndOr (data:System.Text.StringBuilder) (input:string) index =
+                    if input.Length <= index
+                    then None
+                    else
+                        let c = input.[index]
+                        if data.Length = 0 && c = ' '
+                        then parseAndOr data input (index + 1)
+                        elif c = ' ' then
+                            let s = data.ToString()
+                            if s.Equals("and", StringComparison.OrdinalIgnoreCase) then Some("and", index)
+                            elif s.Equals("or", StringComparison.OrdinalIgnoreCase) then Some("or", index)
+                            else None
+                        else parseAndOr (data.Append(c)) input (index + 1)
+
+                let rec containsMoreText (input:string) index =
+                    if input.Length <= index then false
+                    else
+                        match input.[index] with
+                        | ' ' -> containsMoreText input (index + 1)
+                        | _ -> true
+
+                let rec parseFullCondition data (sb:System.Text.StringBuilder) (input:string) index =
+                    if input.Length <= index
+                    then data
+                    else
+                        match data with
+                        | None -> None
+                        | Some(data) ->
+                            sb.Clear() |> ignore
+                            let andOr, index =
+                                match data with
+                                | [] -> None, index
+                                | _ ->
+                                    let moreText = containsMoreText input index
+                                    match (parseAndOr sb input index), moreText with
+                                    | None, false -> None, index
+                                    | Some(andOr, index), _ -> Some(andOr), index
+                                    | None, true -> failwith "Could not parse condition; multiple conditions found with no \"AND\" or \"OR\" between them."
+                            sb.Clear() |> ignore
+                            let nextCondition = parseCondition sb input index
+                            let moreText = containsMoreText input index
+                            match nextCondition, moreText with
+                            | None, true -> None
+                            | None, false -> Some(data)
+                            | Some(left, comp, right, index), _ ->
+                                let data = Some <| data @[(andOr, left, comp, right)]
+                                parseFullCondition data sb input index
+
+                let allConditions = parseFullCondition (Some([])) (System.Text.StringBuilder()) condition 0
+
+                let rec handleConditions xs lastCondition =
+                    match xs with
+                    | [] -> lastCondition
+                    | (cond, left, comp, right)::xs ->
+                        let left = processPlaceholders data left
+                        let right = processPlaceholders data right
+                        let inline doComp l r =
+                            match comp with
+                            | "==" -> l =  r
+                            | "!=" -> l <> r
+                            | ">"  -> l >  r
+                            | "<"  -> l <  r
+                            | "<=" -> l <= r
+                            | ">=" -> l >= r
+                            | _ -> failwithf "%s is not a valid comparison operator" comp
+
+                        let result =
+                            match comp with
+                            | "==" | "!=" -> doComp left right
+                            | _ ->
+                                match System.Int64.TryParse(left), System.Int64.TryParse(right) with
+                                | (true, l), (true, r) -> doComp l r
+                                | _ -> false
+
+                        match lastCondition, cond with
+                        |    _, None        -> handleConditions xs result
+                        | true, Some("and") -> handleConditions xs result
+                        |    _, Some("or")  -> handleConditions xs (lastCondition || result)
+                        | _ -> false
+
+                match allConditions with
+                | None -> false
+                | Some(conditions) -> handleConditions conditions true
+
+
+            let addData data (node:XmlNode) =
+                let text = processPlaceholders data node.InnerText
+                // Note that using Map.add overrides the value assigned
+                // to this key if it already exists in the map; so long
+                // as we process nodes top-to-bottom, this matches the
+                // behavior of MSBuild.
+                Map.add node.Name text data
+
+            let handleConditionalElement data node =
+                node
+                |> getAttribute "Condition"
+                |> function
+                    | None ->
+                        node
+                        |> getChildNodes
+                        |> Seq.fold handleElement data
+                    | Some s ->
+                        if not (conditionMatches data s)
+                        then data
+                        else
+                            if node.ChildNodes.Count > 0 then
+                                node
+                                |> getChildNodes
+                                |> Seq.fold handleElement data
+                            else
+                                data
+
+            match node.Name with
+            | "PropertyGroup" -> handleConditionalElement data node
+            // Don't handle these yet
+            | "Choose" | "Import" | "ItemGroup" | "ProjectExtensions" | "Target" | "UsingTask" -> data
+            // Any other node types are intended to be values being defined
+            | _ ->
+                node
+                |> getAttribute "Condition"
+                |> function
+                    | None -> addData data node
+                    | Some s ->
+                        if not (conditionMatches data s)
+                        then data
+                        else addData data node
+
+        this.Document
+        |> getDescendants "PropertyGroup"
+        |> Seq.fold handleElement defaultProperties
+        |> Map.tryFind propertyName
 
     member this.Name = FileInfo(this.FileName).Name
 
@@ -752,220 +966,9 @@ type ProjectFile =
         else "Content"
 
     member this.GetOutputDirectory buildConfiguration =
-        let rec handleElement (data : Map<string, string>) (node : XmlNode) =
-            let processPlaceholders (data : Map<string, string>) text =
-                let getPlaceholderValue (name:string) =
-                    // Change "$(Configuration)" to "Configuration",
-                    // then find in the data map
-                    let name = name.Substring(2, name.Length - 3)
-                    match data.TryFind(name) with
-                    | None -> ""
-                    | Some s -> s
-
-                let replacePlaceholder (s:string) (m:System.Text.RegularExpressions.Match) =
-                    let front = s.Substring(0, m.Index)
-                    let value = getPlaceholderValue m.Value
-                    let back = s.Substring(m.Index + m.Length)
-                    front + value + back
-
-                // The placeholder name must be a valid XML node name,
-                // else where would its value be defined?
-                let regex = @"\$\([a-zA-Z_\-\:][a-zA-Z0-9_\.\-\:]*\)"
-
-                System.Text.RegularExpressions.Regex.Matches(text, regex)
-                |> fun x -> System.Linq.Enumerable.Cast<System.Text.RegularExpressions.Match>(x)
-                |> Seq.toArray
-                |> Array.rev
-                |> Array.fold replacePlaceholder text
-
-            let conditionMatches data condition =
-                let rec parseWord (data:System.Text.StringBuilder) (input:string) index inQuotes =
-                    if input.Length <= index
-                    then
-                        if data.Length > 0 && not inQuotes then Some(data.ToString(), index)
-                        else None
-                    else
-                        let c = input.[index]
-                        let gtz = data.Length > 0
-                        match gtz, inQuotes, c with
-                        | false, false, ' '  -> parseWord data input (index + 1) false
-                        | false, false, '\'' -> parseWord data input (index + 1) true
-                        |     _,  true, '\'' -> Some(data.ToString(), index + 1)
-                        |  true, false, ' '  -> Some(data.ToString(), index + 1)
-                        |     _,  true, c    -> parseWord (data.Append(c)) input (index + 1) true
-                        |     _, false, c    -> parseWord (data.Append(c)) input (index + 1) false
-
-                let rec parseComparison (data:System.Text.StringBuilder) (input:string) index =
-                    let isCompChar c = c = '<' || c = '>' || c = '!' || c = '='
-                    if input.Length <= index
-                    then None
-                    else
-                        let c = input.[index]
-                        if data.Length = 0 && c = ' '
-                        then parseComparison data input (index + 1)
-                        elif data.Length = 2 && isCompChar c
-                        then None
-                        elif isCompChar c
-                        then parseComparison (data.Append(c)) input (index + 1)
-                        else
-                            let s = data.ToString()
-                            let valid = [ "=="; "!="; "<"; ">"; "<="; ">=" ]
-                            match (valid |> List.tryFind ((=) s)) with
-                            | None -> None
-                            | Some(_) -> Some(s, index)
-
-                let parseCondition (data:System.Text.StringBuilder) (input:string) index =
-                    if input.Length <= index
-                    then None
-                    else
-                        data.Clear() |> ignore
-                        match parseWord data input index false with
-                        | None -> None
-                        | Some(left, index) ->
-                            data.Clear() |> ignore
-                            let comp = parseComparison data input index
-                            match comp with
-                            | None -> None
-                            | Some(comp, index) ->
-                                data.Clear() |> ignore
-                                match parseWord data input index false with
-                                | None -> None
-                                | Some(right, index) ->
-                                    Some(left, comp, right, index)
-
-                let rec parseAndOr (data:System.Text.StringBuilder) (input:string) index =
-                    if input.Length <= index
-                    then None
-                    else
-                        let c = input.[index]
-                        if data.Length = 0 && c = ' '
-                        then parseAndOr data input (index + 1)
-                        elif c = ' ' then
-                            let s = data.ToString()
-                            if s.Equals("and", StringComparison.OrdinalIgnoreCase) then Some("and", index)
-                            elif s.Equals("or", StringComparison.OrdinalIgnoreCase) then Some("or", index)
-                            else None
-                        else parseAndOr (data.Append(c)) input (index + 1)
-
-                let rec containsMoreText (input:string) index =
-                    if input.Length <= index then false
-                    else
-                        match input.[index] with
-                        | ' ' -> containsMoreText input (index + 1)
-                        | _ -> true
-
-                let rec parseFullCondition data (sb:System.Text.StringBuilder) (input:string) index =
-                    if input.Length <= index
-                    then data
-                    else
-                        match data with
-                        | None -> None
-                        | Some(data) ->
-                            sb.Clear() |> ignore
-                            let andOr, index =
-                                match data with
-                                | [] -> None, index
-                                | _ ->
-                                    let moreText = containsMoreText input index
-                                    match (parseAndOr sb input index), moreText with
-                                    | None, false -> None, index
-                                    | Some(andOr, index), _ -> Some(andOr), index
-                                    | None, true -> failwith "Could not parse condition; multiple conditions found with no \"AND\" or \"OR\" between them."
-                            sb.Clear() |> ignore
-                            let nextCondition = parseCondition sb input index
-                            let moreText = containsMoreText input index
-                            match nextCondition, moreText with
-                            | None, true -> None
-                            | None, false -> Some(data)
-                            | Some(left, comp, right, index), _ ->
-                                let data = Some <| data @[(andOr, left, comp, right)]
-                                parseFullCondition data sb input index
-
-                let allConditions = parseFullCondition (Some([])) (System.Text.StringBuilder()) condition 0
-
-                let rec handleConditions xs lastCondition =
-                    match xs with
-                    | [] -> lastCondition
-                    | (cond, left, comp, right)::xs ->
-                        let left = processPlaceholders data left
-                        let right = processPlaceholders data right
-                        let inline doComp l r =
-                            match comp with
-                            | "==" -> l =  r
-                            | "!=" -> l <> r
-                            | ">"  -> l >  r
-                            | "<"  -> l <  r
-                            | "<=" -> l <= r
-                            | ">=" -> l >= r
-                            | _ -> failwithf "%s is not a valid comparision operator" comp
-
-                        let result =
-                            match comp with
-                            | "==" | "!=" -> doComp left right
-                            | _ ->
-                                match System.Int64.TryParse(left), System.Int64.TryParse(right) with
-                                | (true, l), (true, r) -> doComp l r
-                                | _ -> false
-
-                        match lastCondition, cond with
-                        |    _, None        -> handleConditions xs result
-                        | true, Some("and") -> handleConditions xs result
-                        |    _, Some("or")  -> handleConditions xs (lastCondition || result)
-                        | _ -> false
-
-                match allConditions with
-                | None -> false
-                | Some(conditions) -> handleConditions conditions true
-
-
-            let addData data (node:XmlNode) =
-                let text = processPlaceholders data node.InnerText
-                // Note that using Map.add overrides the value assigned
-                // to this key if it already exists in the map; so long
-                // as we process nodes top-to-bottom, this matches the
-                // behavior of MSBuild.
-                Map.add node.Name text data
-
-            let handleConditionalElement data node =
-                node
-                |> getAttribute "Condition"
-                |> function
-                    | None ->
-                        node
-                        |> getChildNodes
-                        |> Seq.fold handleElement data
-                    | Some s ->
-                        if not (conditionMatches data s)
-                        then data
-                        else
-                            if node.ChildNodes.Count > 0 then
-                                node
-                                |> getChildNodes
-                                |> Seq.fold handleElement data
-                            else
-                                data
-
-            match node.Name with
-            | "PropertyGroup" -> handleConditionalElement data node
-            // Don't handle these yet
-            | "Choose" | "Import" | "ItemGroup" | "ProjectExtensions" | "Target" | "UsingTask" -> data
-            // Any other node types are intended to be values being defined
-            | _ ->
-                node
-                |> getAttribute "Condition"
-                |> function
-                    | None -> addData data node
-                    | Some s ->
-                        if not (conditionMatches data s)
-                        then data
-                        else addData data node
-
         let startingData = Map.empty<string,string>.Add("Configuration", buildConfiguration)
 
-        this.Document
-        |> getDescendants "PropertyGroup"
-        |> Seq.fold handleElement startingData
-        |> Map.tryFind "OutputPath"
+        this.GetProperty "OutputPath" startingData
         |> function
             | None -> failwithf "Unable to find %s output path node in file %s" buildConfiguration this.FileName
             | Some s -> s.TrimEnd [|'\\'|] |> normalizePath
