@@ -916,9 +916,7 @@ type ProjectFile =
         |> Seq.head
 
     member this.GetTargetFrameworkIdentifier() =
-        seq { for outputType in this.Document |> getDescendants "TargetFrameworkIdentifier" ->
-                outputType.InnerText }
-        |> Seq.tryHead
+        this.GetProperty "TargetFrameworkIdentifier"
 
     member this.GetTargetFrameworkProfile() =
         seq {for outputType in this.Document |> getDescendants "TargetFrameworkProfile" ->
