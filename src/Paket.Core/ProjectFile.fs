@@ -551,7 +551,7 @@ type ProjectFile =
         |> Seq.iter (fun (propsNodes,targetsNodes,chooseNode,propertyChooseNode, analyzersNode) ->
 
             let i = ref (this.ProjectNode.ChildNodes.Count-1)
-            while !i >= 0 && this.ProjectNode.ChildNodes.[!i].OuterXml.ToString().ToLower().StartsWith("<import") do
+            while !i >= 0 && this.ProjectNode.ChildNodes.[!i].OuterXml.ToString().ToLower().StartsWith("<import") && this.ProjectNode.ChildNodes.[!i].OuterXml.ToString().ToLower().Contains("paket") do
                 decr i
             
             if !i <= 0 then

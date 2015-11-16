@@ -1,3 +1,6 @@
+#### 2.25.3 - 16.11.2015
+* BUGFIX: Putting .targets import on correct location in project files - https://github.com/fsprojects/Paket/issues/1226
+
 #### 2.25.2 - 15.11.2015
 * WORKAROUND: Use file order to work around duplicate files in template definition - https://github.com/fsprojects/Paket/issues/1221
 
@@ -6,7 +9,7 @@
 
 #### 2.25.0 - 13.11.2015
 * Unified cache implementation for V2 and V3 - https://github.com/fsprojects/Paket/pull/1222
-* BUGFIX: Putting .props and .targets import project on correct location in project files - https://github.com/fsprojects/Paket/issues/1219
+* BUGFIX: Putting .props and .targets import on correct location in project files - https://github.com/fsprojects/Paket/issues/1219
 * BUGFIX: Propagate framework restriction correctly - https://github.com/fsprojects/Paket/issues/1213
 * BUGFIX: Match auth - https://github.com/fsprojects/Paket/issues/1210
 * BUGFIX: Better error message when something goes wrong during package download
