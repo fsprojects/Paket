@@ -928,21 +928,21 @@ type ProjectFile =
         | Some profile when String.IsNullOrWhiteSpace profile |> not ->
             KnownTargetProfiles.FindPortableProfile profile
         | _ ->
-            let framework =
-                seq {for outputType in this.Document |> getDescendants "TargetFrameworkVersion" ->
-                        outputType.InnerText }
-                |> Seq.choose (fun s -> 
-                                let prefix = 
-                                    match this.GetTargetFrameworkIdentifier() with
-                                    | None -> "net"
-                                    | Some x -> x
-
-                                prefix + s.Replace("v","")
-                                |> FrameworkDetection.Extract)
-                |> Seq.tryHead
-
-            SinglePlatform(defaultArg framework (DotNetFramework(FrameworkVersion.V4)))
-
+            let prefix =
+                match this.GetTargetFrameworkIdentifier() with
+                | None -> "net"
+                | Some x -> x
+            let framework = this.GetProperty "TargetFrameworkVersion"
+            let defaultResult = SinglePlatform(DotNetFramework(FrameworkVersion.V4))
+            match framework with
+            | None -> defaultResult
+            | Some s ->
+                let detectedFramework =
+                    prefix + s.Replace("v","")
+                    |> FrameworkDetection.Extract
+                match detectedFramework with
+                | None -> defaultResult
+                | Some x -> SinglePlatform(x)
     
     member this.AddImportForPaketTargets(relativeTargetsPath) =
         match this.Document 
