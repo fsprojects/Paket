@@ -1,3 +1,6 @@
+#### 2.25.5 - 16.11.2015
+* USABILITY: Sets default resolver strategy for convert from nuget to None - https://github.com/fsprojects/Paket/pull/1228
+
 #### 2.25.4 - 16.11.2015
 * BUGFIX: Putting .targets import on correct location in project files - https://github.com/fsprojects/Paket/issues/1226
 
