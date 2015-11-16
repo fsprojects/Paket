@@ -1,3 +1,6 @@
+#### 2.25.6 - 16.11.2015
+* BUGFIX: Update ProjectFile.GetTargetProfile to work with conditional nodes - https://github.com/fsprojects/Paket/pull/1227
+
 #### 2.25.5 - 16.11.2015
 * USABILITY: Sets default resolver strategy for convert from nuget to None - https://github.com/fsprojects/Paket/pull/1228
 
