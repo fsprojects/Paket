@@ -1,0 +1,22 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2013
+VisualStudioVersion = 12.0.31101.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ClassLibrary1", "ClassLibrary1.csproj", "{0A4F4639-6C3A-4245-98FD-02E676CA9BD9}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{0A4F4639-6C3A-4245-98FD-02E676CA9BD9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0A4F4639-6C3A-4245-98FD-02E676CA9BD9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0A4F4639-6C3A-4245-98FD-02E676CA9BD9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0A4F4639-6C3A-4245-98FD-02E676CA9BD9}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

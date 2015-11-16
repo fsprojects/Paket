@@ -214,7 +214,7 @@ let createPackageRequirement (packageName, version, restrictions) dependenciesFi
                 VersionRequirement(VersionRange.Minimum <| SemVer.Parse "0", PreReleaseStatus.No)
             else
                 VersionRequirement(VersionRange.Exactly version, PreReleaseStatus.No)
-       ResolverStrategy = Some ResolverStrategy.Max
+       ResolverStrategy = None
        Settings = { InstallSettings.Default with FrameworkRestrictions = restrictions }
        Parent = PackageRequirementSource.DependenciesFile dependenciesFileName
        Graph = [] }
