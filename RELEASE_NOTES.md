@@ -1,4 +1,4 @@
-#### 2.25.3 - 16.11.2015
+#### 2.25.4 - 16.11.2015
 * BUGFIX: Putting .targets import on correct location in project files - https://github.com/fsprojects/Paket/issues/1226
 
 #### 2.25.2 - 15.11.2015

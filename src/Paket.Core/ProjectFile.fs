@@ -551,7 +551,11 @@ type ProjectFile =
         |> Seq.iter (fun (propsNodes,targetsNodes,chooseNode,propertyChooseNode, analyzersNode) ->
 
             let i = ref (this.ProjectNode.ChildNodes.Count-1)
-            while !i >= 0 && this.ProjectNode.ChildNodes.[!i].OuterXml.ToString().ToLower().StartsWith("<import") && this.ProjectNode.ChildNodes.[!i].OuterXml.ToString().ToLower().Contains("paket") do
+            while 
+              !i >= 0 && 
+                (this.ProjectNode.ChildNodes.[!i].OuterXml.ToString().ToLower().StartsWith("<import") && 
+                 this.ProjectNode.ChildNodes.[!i].OuterXml.ToString().ToLower().Contains("label") &&
+                 this.ProjectNode.ChildNodes.[!i].OuterXml.ToString().ToLower().Contains("paket"))  do
                 decr i
             
             if !i <= 0 then
@@ -561,11 +565,12 @@ type ProjectFile =
                 if propertyChooseNode.ChildNodes.Count > 0 then
                     this.ProjectNode.AppendChild propertyChooseNode |> ignore
             else
+                let node = this.ProjectNode.ChildNodes.[!i]
                 if chooseNode.ChildNodes.Count > 0 then
-                    this.ProjectNode.InsertBefore(chooseNode,this.ProjectNode.ChildNodes.[!i]) |> ignore
+                    this.ProjectNode.InsertAfter(chooseNode,node) |> ignore
 
                 if propertyChooseNode.ChildNodes.Count > 0 then
-                    this.ProjectNode.InsertBefore(propertyChooseNode,this.ProjectNode.ChildNodes.[!i]) |> ignore
+                    this.ProjectNode.InsertAfter(propertyChooseNode,node) |> ignore
 
             let i = ref 0
             while !i < this.ProjectNode.ChildNodes.Count && this.ProjectNode.ChildNodes.[!i].OuterXml.ToString().ToLower().StartsWith("<import") do
