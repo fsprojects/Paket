@@ -23,6 +23,8 @@ let paket command scenario =
     |> Seq.iter (fun f -> File.Move(f, Path.ChangeExtension(f, "fsproj")))
     Directory.GetFiles(scenarioPath, "*.csprojtemplate", SearchOption.AllDirectories)
     |> Seq.iter (fun f -> File.Move(f, Path.ChangeExtension(f, "csproj")))
+    Directory.GetFiles(scenarioPath, "*.templatetemplate", SearchOption.AllDirectories)
+    |> Seq.iter (fun f -> File.Move(f, Path.ChangeExtension(f, "template")))
 
     let result =
         ExecProcessAndReturnMessages (fun info ->
