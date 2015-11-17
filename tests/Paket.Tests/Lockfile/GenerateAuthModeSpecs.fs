@@ -19,7 +19,7 @@ let graph = [
 let expected = """NUGET
   remote: http://nuget.org/api/v2
   specs:
-    Castle.Windsor-log4net (3.2)"""
+    Castle.Windsor-log4net (3.2.0)"""
 
 [<Test>]
 let ``should generate no auth in lock file``() = 

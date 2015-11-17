@@ -1,3 +1,7 @@
+#### 2.25.7 - 17.11.2015
+* BUGFIX: Fixed issue with V3 feeds doing api requests even when the paket.lock is fully specified - https://github.com/fsprojects/Paket/pull/1231
+* USABILITY: Always write nomalized version into lock file to keep the lockfile as stable as possible
+
 #### 2.25.6 - 16.11.2015
 * BUGFIX: Update ProjectFile.GetTargetProfile to work with conditional nodes - https://github.com/fsprojects/Paket/pull/1227
 
