@@ -778,27 +778,37 @@ type ProjectFile =
             if !i <= 0 then
                 if chooseNode.ChildNodes.Count > 0 then
                     this.ProjectNode.AppendChild chooseNode |> ignore
-
-                if propertyChooseNode.ChildNodes.Count > 0 then
-                    this.ProjectNode.AppendChild propertyChooseNode |> ignore
             else
                 let node = this.ProjectNode.ChildNodes.[!i]
                 if chooseNode.ChildNodes.Count > 0 then
                     this.ProjectNode.InsertAfter(chooseNode,node) |> ignore
 
-                if propertyChooseNode.ChildNodes.Count > 0 then
-                    this.ProjectNode.InsertAfter(propertyChooseNode,node) |> ignore
-
-            let i = ref 0
-            while !i < this.ProjectNode.ChildNodes.Count && this.ProjectNode.ChildNodes.[!i].OuterXml.ToString().ToLower().StartsWith("<import") do
-                incr i
+            let j = ref 0
+            while !j < this.ProjectNode.ChildNodes.Count && this.ProjectNode.ChildNodes.[!j].OuterXml.ToString().ToLower().StartsWith("<import") do
+                incr j
             
-            if !i = 0 then
-                propsNodes
-                |> Seq.iter (this.ProjectNode.PrependChild >> ignore)
+            if propertyChooseNode.ChildNodes.Count > 0 then
+                if !i <= 0 then
+                    if propertyChooseNode.ChildNodes.Count > 0 then
+                        this.ProjectNode.AppendChild propertyChooseNode |> ignore
+
+                    propsNodes
+                    |> Seq.iter (this.ProjectNode.AppendChild >> ignore)
+                else
+                    let node = this.ProjectNode.ChildNodes.[!i]
+
+                    propsNodes
+                    |> Seq.iter (fun n -> this.ProjectNode.InsertAfter(n,node) |> ignore)
+
+                    if propertyChooseNode.ChildNodes.Count > 0 then
+                        this.ProjectNode.InsertAfter(propertyChooseNode,node) |> ignore
             else
-                propsNodes
-                |> Seq.iter (fun n -> this.ProjectNode.InsertAfter(n,this.ProjectNode.ChildNodes.[!i-1]) |> ignore)
+                if !j = 0 then
+                    propsNodes
+                    |> Seq.iter (this.ProjectNode.PrependChild >> ignore)
+                else
+                    propsNodes
+                    |> Seq.iter (fun n -> this.ProjectNode.InsertAfter(n,this.ProjectNode.ChildNodes.[!j-1]) |> ignore)
 
             targetsNodes
             |> Seq.iter (this.ProjectNode.AppendChild >> ignore)
