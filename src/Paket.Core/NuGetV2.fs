@@ -181,49 +181,75 @@ let parseODataDetails(nugetURL,packageName:PackageName,version,raw) =
       LicenseUrl = licenseUrl
       Unlisted = publishDate = Constants.MagicUnlistingDate }
 
-
-let getDetailsFromNuGetViaODataFast auth nugetURL (packageName:PackageName) (version:SemVerInfo) = 
-    async {
-        try 
+/// Gets package details from NuGet via OData
+let getDetailsFromNuGetViaOData auth nugetURL (packageName:PackageName) (version:SemVerInfo) = 
+    let checkODataWithNormalizedVersion = async {
+        try
             let url = sprintf "%s/Packages?$filter=Id eq '%O' and NormalizedVersion eq '%s'" nugetURL packageName (version.Normalize())
             let! raw = getFromUrl(auth,url,acceptXml)
             if verbose then
                 tracefn "Response from %s:" url
                 tracefn ""
                 tracefn "%s" raw
-            return parseODataDetails(nugetURL,packageName,version,raw)
-        with _ ->
+            return Some(parseODataDetails(nugetURL,packageName,version,raw))
+         with
+         | _ -> return None }
+
+    let checkODataWithVersion = async {
+        try
             let url = sprintf "%s/Packages?$filter=Id eq '%O' and Version eq '%O'" nugetURL packageName version
             let! raw = getFromUrl(auth,url,acceptXml)
             if verbose then
                 tracefn "Response from %s:" url
                 tracefn ""
                 tracefn "%s" raw
-            return parseODataDetails(nugetURL,packageName,version,raw)
-    }
+            return Some(parseODataDetails(nugetURL,packageName,version,raw))
+         with
+         | _ -> return None }
 
-/// Gets package details from NuGet via OData
-let getDetailsFromNuGetViaOData auth nugetURL (packageName:PackageName) (version:SemVerInfo) = 
-    async {
-        try 
-            return! getDetailsFromNuGetViaODataFast auth nugetURL packageName version
-        with _ ->
+    let checkPackagesWithVersion = async {
+        try
             let url = sprintf "%s/Packages(Id='%O',Version='%O')" nugetURL packageName version
             let! response = safeGetFromUrl(auth,url,acceptXml)
-                    
-            let! raw =
-                match response with
-                | Some(r) -> async { return r }
-                | None ->
-                    let url = sprintf "%s/odata/Packages(Id='%O',Version='%O')" nugetURL packageName version
-                    getXmlFromUrl(auth,url)
+            match response with
+            | None -> return None
+            | Some raw ->
+                if verbose then
+                    tracefn "Response from %s:" url
+                    tracefn ""
+                    tracefn "%s" raw
+                return Some(parseODataDetails(nugetURL,packageName,version,raw))
+         with
+         | _ -> return None }
 
+    let checkPackagesODataWithVersion = async {
+        try
+            let url = sprintf "%s/odata/Packages(Id='%O',Version='%O')" nugetURL packageName version
+            let! raw = getXmlFromUrl(auth,url) 
+            
             if verbose then
                 tracefn "Response from %s:" url
                 tracefn ""
                 tracefn "%s" raw
-            return parseODataDetails(nugetURL,packageName,version,raw)
-    }
+            return Some(parseODataDetails(nugetURL,packageName,version,raw))
+         with
+         | _ -> return None }
+
+
+    async {
+        let! result =
+            [checkODataWithNormalizedVersion
+             checkODataWithVersion
+             checkPackagesWithVersion
+             checkPackagesODataWithVersion ]
+            |> Async.Choice
+
+        match result with
+        | Some x -> return x
+        | None -> 
+            failwithf "Could not get package details for %O %O from %s." packageName version nugetURL
+            return Unchecked.defaultof<_> // bug in F# 3.0 compiler remove line in F# F 4.0 
+   }
 
 let private loadFromCacheOrODataOrV3 force fileName (auth,nugetURL) package version = 
     async {
@@ -258,8 +284,7 @@ let getDetailsFromNuGet force auth nugetURL packageName version =
         nugetURL
         packageName
         version
-        (fun () ->
-            getDetailsFromNuGetViaOData auth nugetURL packageName version)
+        (fun () -> getDetailsFromNuGetViaOData auth nugetURL packageName version)
 
 
 let fixDatesInArchive fileName =

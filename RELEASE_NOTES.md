@@ -1,24 +1,12 @@
-#### 2.25.8 - 17.11.2015
+#### 2.26.0-alpha001 - 17.11.2015
+* Try all 4 NuGet APIs for "GetPackageDetails" in parallel - https://github.com/fsprojects/Paket/issues/1225
 * BUGFIX: Detect AssemblyName from project file name if empty - https://github.com/fsprojects/Paket/issues/1234
-
-#### 2.25.7 - 17.11.2015
 * BUGFIX: Fixed issue with V3 feeds doing api requests even when the paket.lock is fully specified - https://github.com/fsprojects/Paket/pull/1231
-* USABILITY: Always write nomalized version into lock file to keep the lockfile as stable as possible
-
-#### 2.25.6 - 16.11.2015
 * BUGFIX: Update ProjectFile.GetTargetProfile to work with conditional nodes - https://github.com/fsprojects/Paket/pull/1227
-
-#### 2.25.5 - 16.11.2015
-* USABILITY: Sets default resolver strategy for convert from nuget to None - https://github.com/fsprojects/Paket/pull/1228
-
-#### 2.25.4 - 16.11.2015
 * BUGFIX: Putting .targets import on correct location in project files - https://github.com/fsprojects/Paket/issues/1226
-
-#### 2.25.2 - 15.11.2015
-* WORKAROUND: Use file order to work around duplicate files in template definition - https://github.com/fsprojects/Paket/issues/1221
-
-#### 2.25.1 - 15.11.2015
-* Always try 3 times to download and extract a package
+* USABILITY: Always write nomalized version into lock file to keep the lockfile as stable as possible
+* USABILITY: Always try 3 times to download and extract a package
+* USABILITY: Sets default resolver strategy for convert from nuget to None - https://github.com/fsprojects/Paket/pull/1228
 
 #### 2.25.0 - 13.11.2015
 * Unified cache implementation for V2 and V3 - https://github.com/fsprojects/Paket/pull/1222
