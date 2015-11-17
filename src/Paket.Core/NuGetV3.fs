@@ -146,8 +146,9 @@ type Catalog =
 
 let getRegistration (source : NugetV3Source) (packageName:PackageName) (version:SemVerInfo) =
     async {
-        let url = sprintf "%s%s/%s.json" source.RegistrationUrl (packageName.ToString().ToLower()) version.AsString
-        let! rawData = safeGetFromUrl (source.BasicAuthentication, url, acceptJson)
+        let! registrationUrl = PackageSources.getNugetV3Resource source Registration
+        let url = sprintf "%s%s/%s.json" registrationUrl (packageName.ToString().ToLower()) version.AsString
+        let! rawData = safeGetFromUrl (source.Authentication |> Option.map toBasicAuth, url, acceptJson)
         return
             match rawData with
             | None -> failwithf "could not get registration data from %s" url
@@ -166,7 +167,7 @@ let getCatalog url auth =
 let getPackageDetails (source:NugetV3Source) (packageName:PackageName) (version:SemVerInfo) : Async<NuGet.NugetPackageCache> =
     async {
         let! registrationData = getRegistration source packageName version
-        let! catalogData = getCatalog registrationData.CatalogEntry source.BasicAuthentication
+        let! catalogData = getCatalog registrationData.CatalogEntry (source.Authentication |> Option.map toBasicAuth)
 
         let dependencies = 
             if catalogData.DependencyGroups = null then

@@ -634,7 +634,16 @@ let GetVersions root (sources, packageName:PackageName) =
 
                         v2Feeds @ v3Feeds
                    | NugetV3 source ->
-                        [ tryNuGetV3 (source.BasicAuthentication, source.AutoCompleteUrl, packageName) ]
+                        let resp =
+                            async {
+                                let! autoCompleteUrl = PackageSources.getNugetV3Resource source AutoComplete
+                                return!
+                                    tryNuGetV3 (source.Authentication |> Option.map toBasicAuth, 
+                                                autoCompleteUrl,
+                                                packageName)
+                            }   
+                        
+                        [ resp ]
                    | LocalNuget path -> [ getAllVersionsFromLocalPath (path, packageName, root) ])
         |> Seq.toArray
         |> Array.map Async.Choice
