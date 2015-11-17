@@ -59,7 +59,9 @@ let ``correctly creates a binding redirect``() =
     let dependency = doc.Descendants(xNameForNs "dependentAssembly") |> Seq.head
 
     // Assert
-    dependency.ToString() |> shouldEqual (createBindingRedirectXml "en-gb" "Assembly" "1.0.0" "123456")
+    dependency.ToString()
+    |> normalizeLineEndings
+    |> shouldEqual (createBindingRedirectXml "en-gb" "Assembly" "1.0.0" "123456" |> normalizeLineEndings)
 
 [<Test>]
 let ``correctly creates a binding redirect with default culture``() = 
@@ -70,7 +72,9 @@ let ``correctly creates a binding redirect with default culture``() =
     let dependency = doc.Descendants(xNameForNs "dependentAssembly") |> Seq.head
 
     // Assert
-    dependency.ToString() |> shouldEqual (createBindingRedirectXml "neutral" "Assembly" "1.0.0" "PUBLIC_KEY")
+    dependency.ToString() 
+    |> normalizeLineEndings
+    |> shouldEqual (createBindingRedirectXml "neutral" "Assembly" "1.0.0" "PUBLIC_KEY" |> normalizeLineEndings)
 
 [<Test>]
 let ``does not overwrite existing binding redirects for a different assembly``() = 
@@ -104,7 +108,9 @@ let ``correctly updates an existing binding redirect``() =
 
     // Assert
     let dependency = doc.Descendants(xNameForNs "dependentAssembly") |> Seq.head
-    dependency.ToString() |> shouldEqual (createBindingRedirectXml "neutral" "Assembly" "2.0.0" "PUBLIC_KEY")
+    dependency.ToString() 
+    |> normalizeLineEndings
+    |> shouldEqual (createBindingRedirectXml "neutral" "Assembly" "2.0.0" "PUBLIC_KEY" |> normalizeLineEndings)
     
 [<Test>]
 let ``redirects got properly indented for readability``() = 
@@ -116,7 +122,11 @@ let ``redirects got properly indented for readability``() =
 
     // Assert
     let dependency = doc.Descendants(xNameForNs "dependentAssembly") |> Seq.head
-    dependency.ToString() |> shouldEqual "<dependentAssembly xmlns=\"urn:schemas-microsoft-com:asm.v1\">\r\n    <assemblyIdentity name=\"Assembly\" publicKeyToken=\"PUBLIC_KEY\" culture=\"neutral\" />\r\n    <bindingRedirect oldVersion=\"0.0.0.0-999.999.999.999\" newVersion=\"1.0.0\" />\r\n  </dependentAssembly>"
+    dependency.ToString()
+    |> normalizeLineEndings 
+    |> shouldEqual 
+        ("<dependentAssembly xmlns=\"urn:schemas-microsoft-com:asm.v1\">\r\n    <assemblyIdentity name=\"Assembly\" publicKeyToken=\"PUBLIC_KEY\" culture=\"neutral\" />\r\n    <bindingRedirect oldVersion=\"0.0.0.0-999.999.999.999\" newVersion=\"1.0.0\" />\r\n  </dependentAssembly>"
+          |> normalizeLineEndings)
 
 let toSafePath = System.IO.Path.GetFullPath
 let buildMockGetFiles outcomes =
