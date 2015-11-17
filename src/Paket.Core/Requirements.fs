@@ -112,7 +112,7 @@ let rec optimizeRestrictions restrictions =
                     | FrameworkRestriction.AtLeast(DotNetFramework(x)) -> isMatching x
                     | _ -> false
 
-                match newRestrictions' |> Seq.tryFind isLowerVersion with
+                match newRestrictions' |> Seq.rev |> Seq.tryFind isLowerVersion with
                 | None -> newRestrictions'
                 | Some n -> 
                     let newLowest =
