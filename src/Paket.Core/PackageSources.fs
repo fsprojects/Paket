@@ -56,42 +56,69 @@ type NugetV3SourceResourceJSON =
 type NugetV3SourceRootJSON =
     { [<JsonProperty("resources")>]
       Resources : NugetV3SourceResourceJSON [] }
-type NugetV3Source(url : string, 
-                   authentication : NugetSourceAuthentication option,
-                   basicAuthentication : Auth option,
-                   resources : Map<string, string>) = 
+type NugetV3Source = 
+    { Url : string
+      Authentication : NugetSourceAuthentication option }
+
+type NugetV3ResourceType =
+| AutoComplete
+| Registration
+with
+    member this.AsString = 
+        match this with
+        | AutoComplete -> "SearchAutoCompleteService"
+        | Registration -> "RegistrationsBaseUrl"
+
+let mutable private nugetV3Resources : Map<NugetV3Source * NugetV3ResourceType, string> = Map.empty 
         
-    let getResource (resourceType : string) =
-        match resources |> Map.tryFind (resourceType.ToLower()) with
-        | None -> failwithf "could not find an %s endpoint" resourceType
-        | Some x -> x
-    let searchautoCompleteService = lazy((getResource "SearchAutoCompleteService"))
-    let registrationsBaseUrl = lazy((getResource "RegistrationsBaseUrl"))
-    member this.Url = url
-    member this.Authentication = authentication
-    member this.BasicAuthentication = basicAuthentication
-    member this.AutoCompleteUrl = searchautoCompleteService.Value
-    member this.RegistrationUrl = registrationsBaseUrl.Value
+let getNugetV3Resource (source : NugetV3Source) (resourceType : NugetV3ResourceType) =
+    async {
+        let key = (source, resourceType)
+        return!
+            match nugetV3Resources |> Map.tryFind key with
+            | Some x -> async { return x }
+            | None -> 
+                async {
+                    let basicAuth = source.Authentication |> Option.map toBasicAuth
+                    let! rawData = safeGetFromUrl(basicAuth, source.Url, acceptJson)
+                    let rawData =
+                        match rawData with
+                        | None -> failwithf "couldnt load resources from %s" source.Url
+                        | Some x -> x
+                    let json = JsonConvert.DeserializeObject<NugetV3SourceRootJSON>(rawData)
+                    let resources = 
+                        json.Resources 
+                        |> Seq.distinctBy(fun x -> x.Type.ToLower())
+                        |> Seq.map(fun x -> x.Type.ToLower(), x.ID) 
 
-    static member loadFromUrl (url : string) (authentication : NugetSourceAuthentication option) =
-        async {
-            let basicAuth = authentication |> Option.map toBasicAuth
-            let! rawData = safeGetFromUrl(basicAuth, url, acceptJson) 
-            let rawData =
-                match rawData with
-                | None -> failwithf "couldnt load resources from %s" url
-                | Some x -> x
+                    let newMap = 
+                        lock nugetV3Resources (fun() ->
+                            let newMap =
+                                resources
+                                |> Seq.fold(fun m (res, value) ->
+                                    let resType =
+                                        match res.ToLower() with
+                                        | "searchautocompleteservice" -> Some AutoComplete
+                                        | "registrationsbaseurl" -> Some Registration
+                                        | _ -> None
+                                    match resType with
+                                    | None -> m
+                                    | Some resType ->
+                                        m |> Map.add (source, resType) value
+                                ) nugetV3Resources
+                            
+                            nugetV3Resources <- newMap
+                        
+                            newMap)
 
-            let json = JsonConvert.DeserializeObject<NugetV3SourceRootJSON>(rawData)
-            let resources = 
-                json.Resources 
-                |> Seq.distinctBy(fun x -> x.Type.ToLower())
-                |> Seq.map(fun x -> x.Type.ToLower(), x.ID) 
-                |> Map.ofSeq
-             
-            return NugetV3Source(url, authentication,(basicAuth), resources)
-        }
-
+                    return
+                        match newMap |> Map.tryFind key with
+                        | Some x -> x
+                        | None ->
+                            failwithf "could not find an %s endpoint for %s" (resourceType.ToString()) source.Url
+                }
+                
+    }
 let userNameRegex = Regex("username[:][ ]*[\"]([^\"]*)[\"]", RegexOptions.IgnoreCase ||| RegexOptions.Compiled)
 let passwordRegex = Regex("password[:][ ]*[\"]([^\"]*)[\"]", RegexOptions.IgnoreCase ||| RegexOptions.Compiled)
 
@@ -156,7 +183,7 @@ type PackageSource =
                     LocalNuget(source) 
                 else 
                     if source.ToLower().EndsWith("v3/index.json") then
-                        NugetV3 (NugetV3Source.loadFromUrl source auth |> Async.RunSynchronously)
+                        NugetV3({ Url = source; Authentication = auth })
                     else
                         Nuget({ Url = source; Authentication = auth })
             | _ ->  match System.Uri.TryCreate(source, System.UriKind.Relative) with
