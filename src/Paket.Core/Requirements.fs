@@ -37,9 +37,13 @@ type FrameworkRestrictions = FrameworkRestriction list
 
 
 let parseRestrictions(text:string) =
+    let text =
+        // workaround missing spaces
+        text.Replace("<=","<= ").Replace(">=",">= ").Replace("=","= ")
+
     let commaSplit = text.Trim().Split(',')
     [for p in commaSplit do
-        let operatorSplit = p.Trim().Split(' ')
+        let operatorSplit = p.Trim().Split([|' '|],StringSplitOptions.RemoveEmptyEntries)
         let framework =
             if operatorSplit.Length < 2 then 
                 operatorSplit.[0] 

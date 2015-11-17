@@ -1,5 +1,6 @@
-#### 2.26.0-alpha006 - 17.11.2015
+#### 2.26.0-alpha007 - 17.11.2015
 * Try all 4 NuGet APIs for "GetPackageDetails" in parallel - https://github.com/fsprojects/Paket/issues/1225
+* BUGFIX: Better parsing of framework restrictions - https://github.com/fsprojects/Paket/issues/1232
 * BUGFIX: Fix props files - https://github.com/fsprojects/Paket/issues/1233
 * BUGFIX: Detect AssemblyName from project file name if empty - https://github.com/fsprojects/Paket/issues/1234
 * BUGFIX: Fixed issue with V3 feeds doing api requests even when the paket.lock is fully specified - https://github.com/fsprojects/Paket/pull/1231

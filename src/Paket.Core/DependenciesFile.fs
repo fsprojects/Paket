@@ -235,7 +235,10 @@ module DependenciesFileParser =
                 | _ -> None
 
             ParserOptions(ParserOption.ResolverStrategy(setting))
-        | String.StartsWith "framework" trimmed -> ParserOptions(ParserOption.FrameworkRestrictions(trimmed.Replace(":","").Trim() |> Requirements.parseRestrictions))
+        | String.StartsWith "framework" trimmed -> 
+            let text = trimmed.Replace(":","").Trim() 
+            let restriction = Requirements.parseRestrictions text
+            ParserOptions(ParserOption.FrameworkRestrictions restriction)
         | String.StartsWith "content" trimmed -> 
             let setting =
                 match trimmed.Replace(":","").Trim().ToLowerInvariant() with
@@ -492,7 +495,7 @@ type DependenciesFile(fileName,groups:Map<GroupName,DependenciesGroup>, textRepr
                           Settings = group.Options.Settings })
                 |> Seq.toList
 
-            { ResolvedPackages = 
+            let resolution =
                 PackageResolver.Resolve(
                     groupName,
                     group.Sources,
@@ -502,6 +505,8 @@ type DependenciesFile(fileName,groups:Map<GroupName,DependenciesGroup>, textRepr
                     group.Options.Settings.FrameworkRestrictions,
                     remoteDependencies @ group.Packages |> Set.ofList,
                     updateMode)
+
+            { ResolvedPackages = resolution
               ResolvedSourceFiles = remoteFiles }
 
         groupsToResolve

@@ -967,3 +967,17 @@ let ``should read config with very similar feeds``() =
 
     cfg.Groups.[Constants.MainDependencyGroup].Sources.Tail.Head.Auth |> shouldNotEqual None
     cfg.Groups.[Constants.MainDependencyGroup].Sources.Tail.Head.Url |> shouldEqual "http://nexus2:8081/nexus/service/local/nuget/nuget-repo"
+
+let configTargetFramework = """source https://nuget.org/api/v2
+
+framework: >=net40
+
+nuget System.Data.SQLite 1.0.98.1 content: none
+"""
+
+[<Test>]
+let ``should read config with target framework``() = 
+    let cfg = DependenciesFile.FromCode(configTargetFramework)
+
+    cfg.Groups.[Constants.MainDependencyGroup].Options.Settings.FrameworkRestrictions
+    |> shouldEqual [FrameworkRestriction.AtLeast(FrameworkIdentifier.DotNetFramework(FrameworkVersion.V4_Client))]
