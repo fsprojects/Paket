@@ -987,6 +987,12 @@ type ProjectFile =
                | assemblyName::_ ->
                     traceWarnfn "Found multiple AssemblyName nodes in file %s, using first" this.FileName
                     assemblyName.InnerText
+            |> fun assemblyName ->
+                if String.IsNullOrWhiteSpace assemblyName then 
+                    let fi = FileInfo this.FileName
+                    fi.Name.Replace(fi.Extension,"")
+                else assemblyName
+
         sprintf "%s.%s" assemblyName (this.OutputType |> function ProjectOutputType.Library -> "dll" | ProjectOutputType.Exe -> "exe")
 
     static member LoadFromStream(fullName:string, stream:Stream) =

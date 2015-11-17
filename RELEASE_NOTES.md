@@ -1,3 +1,6 @@
+#### 2.25.8 - 17.11.2015
+* BUGFIX: Detect AssemblyName from project file name if empty - https://github.com/fsprojects/Paket/issues/1234
+
 #### 2.25.7 - 17.11.2015
 * BUGFIX: Fixed issue with V3 feeds doing api requests even when the paket.lock is fully specified - https://github.com/fsprojects/Paket/pull/1231
 * USABILITY: Always write nomalized version into lock file to keep the lockfile as stable as possible
