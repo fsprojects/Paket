@@ -61,3 +61,10 @@ let ``#1215 framework dependencies propagate``() =
     
     lockFile.Groups.[Constants.MainDependencyGroup].Resolution.[PackageName "Microsoft.Bcl.Async"].Settings.FrameworkRestrictions
     |> shouldEqual []
+
+[<Test>]
+let ``#1232 framework dependencies propagate``() = 
+    let lockFile = update "i001232-sql-lite"
+    
+    lockFile.Groups.[Constants.MainDependencyGroup].Resolution.[PackageName "System.Data.SQLite.Core"].Settings.FrameworkRestrictions
+    |> shouldContain (FrameworkRestriction.Exactly(DotNetFramework(FrameworkVersion.V4_Client)))

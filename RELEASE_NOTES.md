@@ -1,4 +1,4 @@
-#### 2.26.0-alpha008 - 17.11.2015
+#### 2.26.0-alpha009 - 17.11.2015
 * Try all 4 NuGet APIs for "GetPackageDetails" in parallel - https://github.com/fsprojects/Paket/issues/1225
 * BUGFIX: Better parsing of framework restrictions - https://github.com/fsprojects/Paket/issues/1232
 * BUGFIX: Fix props files - https://github.com/fsprojects/Paket/issues/1233

@@ -249,12 +249,13 @@ let Resolve(groupName:GroupName, sources, getVersionsF, getPackageDetailsF, stra
                     | true, s -> s + dependency.Settings 
                     | _ -> dependency.Settings 
 
+            let settings = settings.AdjustWithSpecialCases packageDetails.Name
             let explored =
                 { Name = packageDetails.Name
                   Version = version
                   Dependencies = filteredDependencies
                   Unlisted = packageDetails.Unlisted
-                  Settings = settings.AdjustWithSpecialCases packageDetails.Name
+                  Settings = settings
                   Source = packageDetails.Source }
             exploredPackages.Add((dependency.Name,version),explored)
             explored

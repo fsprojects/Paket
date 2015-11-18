@@ -172,10 +172,11 @@ let parseODataDetails(nugetURL,packageName:PackageName,version,raw) =
         |> Array.map split
         |> Array.toList
 
+    let dependencies = Requirements.optimizeDependencies packages
     
     { PackageName = officialName
       DownloadUrl = downloadLink
-      Dependencies = Requirements.optimizeDependencies packages
+      Dependencies = dependencies
       SourceUrl = nugetURL
       CacheVersion = NugetPackageCache.CurrentCacheVersion
       LicenseUrl = licenseUrl

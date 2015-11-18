@@ -185,3 +185,54 @@ let ``should optimize ZendeskApi_v2 ``() =
     original
     |> optimizeDependencies
     |> shouldEqual expected
+
+[<Test>]
+let ``should optimize real world restrictions``() = 
+    let original =
+        [PackageName("P1"), VersionRequirement.AllReleases, [FrameworkRestriction.Exactly (DotNetFramework(FrameworkVersion.V2))]
+         PackageName("P1"), VersionRequirement.AllReleases, [FrameworkRestriction.Exactly (DotNetFramework(FrameworkVersion.V3_5))]
+         PackageName("P1"), VersionRequirement.AllReleases, [FrameworkRestriction.Exactly (DotNetFramework(FrameworkVersion.V4_5))]
+         PackageName("P1"), VersionRequirement.AllReleases, [FrameworkRestriction.Exactly (DotNetFramework(FrameworkVersion.V4_5_1))]
+         PackageName("P1"), VersionRequirement.AllReleases, [FrameworkRestriction.Exactly (DotNetFramework(FrameworkVersion.V4_6))]]
+
+    let expected =
+        [PackageName("P1"), VersionRequirement.AllReleases, 
+           [FrameworkRestriction.Exactly (DotNetFramework(FrameworkVersion.V2))
+            FrameworkRestriction.Exactly (DotNetFramework(FrameworkVersion.V3_5))
+            FrameworkRestriction.Exactly (DotNetFramework(FrameworkVersion.V4_5))
+            FrameworkRestriction.Exactly (DotNetFramework(FrameworkVersion.V4_5_1))
+            FrameworkRestriction.AtLeast (DotNetFramework(FrameworkVersion.V4_6))]]
+
+    let result = optimizeDependencies original
+    result |> shouldEqual expected
+
+[<Test>]
+let ``should optimize real world restrictions 2``() = 
+    let original =
+        [PackageName("P1"), VersionRequirement.AllReleases, [FrameworkRestriction.Exactly (DotNetFramework(FrameworkVersion.V2))]
+         PackageName("P1"), VersionRequirement.AllReleases, [FrameworkRestriction.Exactly (DotNetFramework(FrameworkVersion.V4_Client))]
+         PackageName("P1"), VersionRequirement.AllReleases, [FrameworkRestriction.Exactly (DotNetFramework(FrameworkVersion.V4_5))]
+         PackageName("P1"), VersionRequirement.AllReleases, [FrameworkRestriction.Exactly (DotNetFramework(FrameworkVersion.V4_5_1))]
+         PackageName("P1"), VersionRequirement.AllReleases, [FrameworkRestriction.Exactly (DotNetFramework(FrameworkVersion.V4_6))]]
+
+    let expected =
+        [PackageName("P1"), VersionRequirement.AllReleases, 
+           [FrameworkRestriction.Exactly (DotNetFramework(FrameworkVersion.V2))
+            FrameworkRestriction.Exactly (DotNetFramework(FrameworkVersion.V4_Client))
+            FrameworkRestriction.Exactly (DotNetFramework(FrameworkVersion.V4_5))
+            FrameworkRestriction.Exactly (DotNetFramework(FrameworkVersion.V4_5_1))
+            FrameworkRestriction.AtLeast (DotNetFramework(FrameworkVersion.V4_6))]]
+
+    let result = optimizeDependencies original
+    result |> shouldEqual expected
+
+[<Test>]
+let ``should optimize real world restrictions 3``() = 
+    let original =
+        [FrameworkRestriction.AtLeast (DotNetFramework(FrameworkVersion.V4_Client))
+         FrameworkRestriction.AtLeast (DotNetFramework(FrameworkVersion.V4_5_1))]
+
+    let expected = [FrameworkRestriction.AtLeast (DotNetFramework(FrameworkVersion.V4_Client))]
+
+    let result = optimizeRestrictions original
+    result |> shouldEqual expected

@@ -81,15 +81,30 @@ let findMaxDotNetRestriction restrictions =
         | _ -> failwith "error"
 
 let rec optimizeRestrictions restrictions = 
-    match restrictions with
-    | [] -> restrictions
-    | [x] -> restrictions
-    | _ ->
-                            
-        let newRestrictions' = 
-            restrictions
-            |> List.distinct
-            |> List.sort
+    let sorting xs =
+        xs
+        |> List.sortBy (fun x ->
+            match x with
+            | FrameworkRestriction.Exactly r -> r
+            | FrameworkRestriction.Portable r -> FrameworkIdentifier.MonoMac
+            | FrameworkRestriction.AtLeast r -> r
+            | FrameworkRestriction.Between(min,max) -> min
+            |> fun y -> y,x)
+            
+    match sorting restrictions |> List.distinct with
+    | [] -> []
+    | [x] -> [x]
+    | odered ->
+        let newRestrictions' =
+            match odered |> Seq.tryFind (function | FrameworkRestriction.AtLeast r -> true | _ -> false) with
+            | Some((FrameworkRestriction.AtLeast(DotNetFramework(v)) as r)) ->
+                odered
+                |> List.filter (fun r' ->
+                    match r' with
+                    | FrameworkRestriction.Exactly(DotNetFramework(x)) when x > v -> false
+                    | FrameworkRestriction.AtLeast(DotNetFramework(x)) when x > v -> false
+                    | _ -> true)
+            | _ -> odered
 
         let newRestrictions =
             match newRestrictions' |> Seq.rev |> Seq.tryFind (function | FrameworkRestriction.AtLeast r -> true | _ -> false) with
@@ -100,10 +115,11 @@ let rec optimizeRestrictions restrictions =
                     | FrameworkRestriction.AtLeast(DotNetFramework(x)) -> x
                     | x -> failwithf "Unknown .NET moniker %O" x
                                                                                                            
-                let isLowerVersion x =
+                let isLowerVersion currentVersion x =
                     let isMatching x =
                         if x = FrameworkVersion.V3_5 && currentVersion = FrameworkVersion.V4 then true else
-                        if x = FrameworkVersion.V4_Client && currentVersion >= FrameworkVersion.V4_5 then true else
+                        if x = FrameworkVersion.V3_5 && currentVersion = FrameworkVersion.V4_Client then true else
+                        if x = FrameworkVersion.V4_Client && currentVersion = FrameworkVersion.V4_5 then true else
                         let hasFrameworksBetween = KnownTargetProfiles.DotNetFrameworkVersions |> Seq.exists (fun p -> p > x && p < currentVersion)
                         not hasFrameworksBetween
 
@@ -112,7 +128,7 @@ let rec optimizeRestrictions restrictions =
                     | FrameworkRestriction.AtLeast(DotNetFramework(x)) -> isMatching x
                     | _ -> false
 
-                match newRestrictions' |> Seq.rev |> Seq.tryFind isLowerVersion with
+                match newRestrictions' |> Seq.tryFind (isLowerVersion currentVersion) with
                 | None -> newRestrictions'
                 | Some n -> 
                     let newLowest =
@@ -121,11 +137,13 @@ let rec optimizeRestrictions restrictions =
                         | FrameworkRestriction.AtLeast(DotNetFramework(x)) -> x
                         | x -> failwithf "Unknown .NET moniker %O" x
 
-                    (newRestrictions'
-                        |> List.filter (fun x -> x <> r && x <> n)) @ [FrameworkRestriction.AtLeast(DotNetFramework(newLowest))]
-                                        
-        if restrictions = newRestrictions then newRestrictions else optimizeRestrictions newRestrictions
+                    let filtered =
+                        newRestrictions'
+                        |> List.filter (fun x -> x <> r && x <> n)
 
+                    filtered @ [FrameworkRestriction.AtLeast(DotNetFramework(newLowest))]
+                                        
+        if restrictions = newRestrictions then sorting newRestrictions else optimizeRestrictions newRestrictions
 
 let optimizeDependencies packages =
     let grouped = packages |> List.groupBy (fun (n,v,_) -> n,v)

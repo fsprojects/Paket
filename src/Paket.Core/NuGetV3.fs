@@ -188,10 +188,10 @@ let getPackageDetails (source:NugetV3Source) (packageName:PackageName) (version:
                         | x -> Requirements.parseRestrictions x
                     (PackageName dep.Id), (VersionRequirement.Parse dep.Range), targetFramework)
                 |> Seq.toList
-                |> Requirements.optimizeDependencies
 
+        let optimized = Requirements.optimizeDependencies dependencies 
         return 
-            { Dependencies =  dependencies 
+            { Dependencies = optimized
               PackageName = packageName.ToString()
               SourceUrl = source.Url
               Unlisted = not catalogData.Listed

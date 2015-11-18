@@ -7,7 +7,7 @@ NUGET
 GITHUB
   remote: fsharp/FAKE
   specs:
-    src/app/FakeLib/Globbing/Globbing.fs (0e09afa32c4f2ba5eafa65a73d99d7badaece7ab)
+    src/app/FakeLib/Globbing/Globbing.fs (752592c55d7f9e2b7a10f1782cb4128703d7a7d3)
   remote: fsprojects/Chessie
   specs:
     src/Chessie/ErrorHandling.fs (1f23b1caeb1f87e750abc96a25109376771dd090)
@@ -15,7 +15,7 @@ GROUP Build
 NUGET
   remote: https://nuget.org/api/v2
   specs:
-    FAKE (4.9.2)
+    FAKE (4.9.3)
     FSharp.Compiler.Service (1.4.0.6)
     FSharp.Formatting (2.12.0)
       FSharp.Compiler.Service (1.4.0.6)
@@ -34,7 +34,7 @@ NUGET
 GITHUB
   remote: fsharp/FAKE
   specs:
-    modules/Octokit/Octokit.fsx (0e09afa32c4f2ba5eafa65a73d99d7badaece7ab)
+    modules/Octokit/Octokit.fsx (752592c55d7f9e2b7a10f1782cb4128703d7a7d3)
       Octokit
 GROUP Test
 NUGET
@@ -45,4 +45,4 @@ NUGET
 GITHUB
   remote: forki/FsUnit
   specs:
-    FsUnit.fs (1963bdbc3ddf34403ec40c385d9ce38aad5b0a7f)
+    FsUnit.fs (ddee2d57be2afd2b5a0327b87dd5b8d1dea947ce)
