@@ -186,7 +186,7 @@ let parseODataDetails(nugetURL,packageName:PackageName,version,raw) =
 let getDetailsFromNuGetViaOData auth nugetURL (packageName:PackageName) (version:SemVerInfo) = 
     let checkODataWithNormalizedVersion = async {
         try
-            let url = sprintf "%s/Packages?$filter=Id eq '%O' and NormalizedVersion eq '%s'" nugetURL packageName (version.Normalize())
+            let url = sprintf "%s/Packages?$filter=(Id eq '%O') and (NormalizedVersion eq '%s')" nugetURL packageName (version.Normalize())
             let! raw = getFromUrl(auth,url,acceptXml)
             if verbose then
                 tracefn "Response from %s:" url
@@ -198,7 +198,7 @@ let getDetailsFromNuGetViaOData auth nugetURL (packageName:PackageName) (version
 
     let checkODataWithVersion = async {
         try
-            let url = sprintf "%s/Packages?$filter=Id eq '%O' and Version eq '%O'" nugetURL packageName version
+            let url = sprintf "%s/Packages?$filter=(Id eq '%O') and (Version eq '%O')" nugetURL packageName version
             let! raw = getFromUrl(auth,url,acceptXml)
             if verbose then
                 tracefn "Response from %s:" url

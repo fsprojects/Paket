@@ -1,4 +1,4 @@
-#### 2.26.0-alpha009 - 17.11.2015
+#### 2.26.0 - 18.11.2015
 * Try all 4 NuGet APIs for "GetPackageDetails" in parallel - https://github.com/fsprojects/Paket/issues/1225
 * BUGFIX: Better parsing of framework restrictions - https://github.com/fsprojects/Paket/issues/1232
 * BUGFIX: Fix props files - https://github.com/fsprojects/Paket/issues/1233
@@ -6,6 +6,7 @@
 * BUGFIX: Fixed issue with V3 feeds doing api requests even when the paket.lock is fully specified - https://github.com/fsprojects/Paket/pull/1231
 * BUGFIX: Update ProjectFile.GetTargetProfile to work with conditional nodes - https://github.com/fsprojects/Paket/pull/1227
 * BUGFIX: Putting .targets import on correct location in project files - https://github.com/fsprojects/Paket/issues/1226
+* BUGFIX: Putting braces around OData conditions to work around ProGet issues - https://github.com/fsprojects/Paket/issues/1225
 * USABILITY: Always write nomalized version into lock file to keep the lockfile as stable as possible
 * USABILITY: Always try 3 times to download and extract a package
 * USABILITY: Sets default resolver strategy for convert from nuget to None - https://github.com/fsprojects/Paket/pull/1228
