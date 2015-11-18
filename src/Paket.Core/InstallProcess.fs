@@ -223,6 +223,7 @@ let private applyBindingRedirects (loadedLibs:Dictionary<_,_>) createNewBindingF
               Version = assembly.GetName().Version.ToString()
               PublicKeyToken = token
               Culture = None })
+        |> Seq.sort
 
     applyBindingRedirectsToFolder createNewBindingFiles cleanBindingRedirects root bindingRedirects
 
