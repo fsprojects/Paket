@@ -23,4 +23,4 @@ let ``should report blocked download``() =
 
     with 
     | exn -> exn.Message
-    |> fun error -> error.Contains("Package contains text:") |> shouldEqual true
+    |> fun error -> error.Contains("firewall") |> shouldEqual true

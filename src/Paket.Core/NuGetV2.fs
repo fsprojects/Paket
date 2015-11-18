@@ -373,13 +373,8 @@ let ExtractPackage(fileName:string, targetFolder, packageName:PackageName, versi
                 ZipFile.ExtractToDirectory(fileName, targetFolder)
             with
             | exn ->
-                let text = ref ""
-                try
-                    text := File.ReadAllText(fileName)
-                with
-                | _ -> ()
-
-                let text = if detailed && !text = "" then "" else sprintf "%s Package contains text: %s%s" Environment.NewLine !text Environment.NewLine
+                
+                let text = if detailed then sprintf "%s In rare cases a firewall might have blocked the download. Please look into the file and see if it contains text with further information." Environment.NewLine else ""
                 failwithf "Error during extraction of %s.%sMessage: %s%s" (Path.GetFullPath fileName) Environment.NewLine exn.Message text
 
             // cleanup folder structure
