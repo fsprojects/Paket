@@ -50,6 +50,11 @@ let internal setRedirect (doc:XDocument) bindingRedirect =
                 
     let newRedirect = createElementWithNs "bindingRedirect" [ "oldVersion", "0.0.0.0-999.999.999.999"
                                                               "newVersion", bindingRedirect.Version ]
+
+    match tryGetElementWithNs "Paket" dependentAssembly with
+    | Some e -> e.Value <- "True"
+    | None -> dependentAssembly.AddFirst(XElement(XName.Get("Paket", bindingNs), "True"))
+
     match dependentAssembly |> tryGetElementWithNs "bindingRedirect" with
     | Some redirect -> redirect.ReplaceWith(newRedirect)
     | None -> dependentAssembly.Add(newRedirect)
