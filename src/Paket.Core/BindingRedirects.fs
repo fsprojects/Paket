@@ -121,13 +121,18 @@ let private applyBindingRedirects cleanBindingRedirects bindingRedirects (config
         with
         | exn -> failwithf "Parsing of %s failed.%s%s" configFilePath Environment.NewLine exn.Message
 
-    if cleanBindingRedirects then
-        let nsManager = XmlNamespaceManager(NameTable());
-        nsManager.AddNamespace("bindings", bindingNs)
-        config.XPathSelectElements("//bindings:assemblyBinding", nsManager)
-        |> Seq.collect (fun e -> e.Elements(XName.Get("dependentAssembly", bindingNs)))
-        |> List.ofSeq
-        |> List.iter (fun e -> e.Remove())
+    let isMarked e =
+        match tryGetElement (Some bindingNs) "Paket" e with
+        | Some e -> e.Value.Trim().ToLower() = "true"
+        | None -> false
+
+    let nsManager = XmlNamespaceManager(NameTable());
+    nsManager.AddNamespace("bindings", bindingNs)
+    config.XPathSelectElements("//bindings:assemblyBinding", nsManager)
+    |> Seq.collect (fun e -> e.Elements(XName.Get("dependentAssembly", bindingNs)))
+    |> List.ofSeq
+    |> List.filter (fun e -> cleanBindingRedirects || isMarked e)
+    |> List.iter (fun e -> e.Remove())
 
     let config = Seq.fold setRedirect config bindingRedirects
     indentAssemblyBindings config
