@@ -1,5 +1,4 @@
-#### 2.26.0 - 18.11.2015
-* Try all 4 NuGet APIs for "GetPackageDetails" in parallel - https://github.com/fsprojects/Paket/issues/1225
+#### 2.26.1 - 18.11.2015
 * BUGFIX: Better parsing of framework restrictions - https://github.com/fsprojects/Paket/issues/1232
 * BUGFIX: Fix props files - https://github.com/fsprojects/Paket/issues/1233
 * BUGFIX: Detect AssemblyName from project file name if empty - https://github.com/fsprojects/Paket/issues/1234
