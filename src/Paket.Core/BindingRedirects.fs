@@ -7,6 +7,7 @@ open System.Xml.Linq
 open System.IO
 open System.Reflection
 open Paket.Xml.Linq
+open System.Xml.XPath
 
 /// Represents a binding redirection
 type BindingRedirect = 
@@ -108,33 +109,40 @@ let private addConfigFileToProject project =
         project.Save())
 
 /// Applies a set of binding redirects to a single configuration file.
-let private applyBindingRedirects bindingRedirects (configFilePath:string) =
+let private applyBindingRedirects cleanBindingRedirects bindingRedirects (configFilePath:string) =
     let config = 
         try
             XDocument.Load(configFilePath, LoadOptions.PreserveWhitespace)
         with
         | exn -> failwithf "Parsing of %s failed.%s%s" configFilePath Environment.NewLine exn.Message
 
+    if cleanBindingRedirects then
+        let nsManager = XmlNamespaceManager(NameTable());
+        nsManager.AddNamespace("bindings", bindingNs)
+        config.XPathSelectElements("//bindings:assemblyBinding", nsManager)
+        |> Seq.collect (fun e -> e.Elements(XName.Get("dependentAssembly", bindingNs)))
+        |> List.ofSeq
+        |> List.iter (fun e -> e.Remove())
+
     let config = Seq.fold setRedirect config bindingRedirects
     indentAssemblyBindings config
     config.Save configFilePath
 
 /// Applies a set of binding redirects to all .config files in a specific folder.
-let applyBindingRedirectsToFolder createNewBindingFiles rootPath bindingRedirects =
+let applyBindingRedirectsToFolder createNewBindingFiles cleanBindingRedirects rootPath bindingRedirects =
     let applyBindingRedirects projectFile =
         let bindingRedirects = bindingRedirects projectFile
-        if Seq.isEmpty bindingRedirects |> not then
-            let path = Path.GetDirectoryName projectFile.FileName
-            match getConfig Directory.GetFiles path with
-            | Some c -> Some c
-            | None -> 
-                match createNewBindingFiles with
-                | false -> None
-                | true ->
-                    let config = createAppConfigInDirectory path
-                    addConfigFileToProject projectFile
-                    Some config
-            |> Option.iter (applyBindingRedirects bindingRedirects)
+        let path = Path.GetDirectoryName projectFile.FileName
+        match getConfig Directory.GetFiles path with
+        | Some c -> Some c
+        | None -> 
+            match createNewBindingFiles, Seq.isEmpty bindingRedirects with
+            | true, false ->
+                let config = createAppConfigInDirectory path
+                addConfigFileToProject projectFile
+                Some config
+            | _ -> None
+        |> Option.iter (applyBindingRedirects cleanBindingRedirects bindingRedirects)
 
     rootPath
     |> getProjectFilesWithPaketReferences Directory.GetFiles
