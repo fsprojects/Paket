@@ -21,10 +21,11 @@ let ``#1040 init should download release version of bootstrapper``() =
 let ``#1240 current bootstrapper should work``() = 
     CleanDir (scenarioTempPath "i001240-bootstrapper")
     let paketToolPath = FullName(__SOURCE_DIRECTORY__ + "../../../bin/paket.bootstrapper.exe")
+    CopyFile (scenarioTempPath "i001240-bootstrapper") paketToolPath
 
     let result =
         ExecProcessAndReturnMessages (fun info ->
-          info.FileName <- paketToolPath
+          info.FileName <- scenarioTempPath "i001240-bootstrapper" </> "paket.bootstrapper.exe"
           info.WorkingDirectory <- scenarioTempPath "i001240-bootstrapper"
           info.Arguments <- "") (System.TimeSpan.FromMinutes 5.)
     if result.ExitCode <> 0 then 
@@ -33,4 +34,7 @@ let ``#1240 current bootstrapper should work``() =
         failwith errors
 
     String.Join(Environment.NewLine,result.Messages).StartsWith("No version specified. Downloading latest stable.")
+    |> shouldEqual true
+
+    File.Exists(scenarioTempPath "i001240-bootstrapper" </> "paket.exe")
     |> shouldEqual true
