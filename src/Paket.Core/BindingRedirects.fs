@@ -7,6 +7,7 @@ open System.Xml.Linq
 open System.IO
 open System.Reflection
 open Paket.Xml.Linq
+open System.Xml.XPath
 
 /// Represents a binding redirection
 type BindingRedirect = 
@@ -49,6 +50,11 @@ let internal setRedirect (doc:XDocument) bindingRedirect =
                 
     let newRedirect = createElementWithNs "bindingRedirect" [ "oldVersion", "0.0.0.0-999.999.999.999"
                                                               "newVersion", bindingRedirect.Version ]
+
+    match tryGetElementWithNs "Paket" dependentAssembly with
+    | Some e -> e.Value <- "True"
+    | None -> dependentAssembly.AddFirst(XElement(XName.Get("Paket", bindingNs), "True"))
+
     match dependentAssembly |> tryGetElementWithNs "bindingRedirect" with
     | Some redirect -> redirect.ReplaceWith(newRedirect)
     | None -> dependentAssembly.Add(newRedirect)
@@ -108,33 +114,45 @@ let private addConfigFileToProject project =
         project.Save())
 
 /// Applies a set of binding redirects to a single configuration file.
-let private applyBindingRedirects bindingRedirects (configFilePath:string) =
+let private applyBindingRedirects cleanBindingRedirects bindingRedirects (configFilePath:string) =
     let config = 
         try
             XDocument.Load(configFilePath, LoadOptions.PreserveWhitespace)
         with
         | exn -> failwithf "Parsing of %s failed.%s%s" configFilePath Environment.NewLine exn.Message
 
+    let isMarked e =
+        match tryGetElement (Some bindingNs) "Paket" e with
+        | Some e -> e.Value.Trim().ToLower() = "true"
+        | None -> false
+
+    let nsManager = XmlNamespaceManager(NameTable());
+    nsManager.AddNamespace("bindings", bindingNs)
+    config.XPathSelectElements("//bindings:assemblyBinding", nsManager)
+    |> Seq.collect (fun e -> e.Elements(XName.Get("dependentAssembly", bindingNs)))
+    |> List.ofSeq
+    |> List.filter (fun e -> cleanBindingRedirects || isMarked e)
+    |> List.iter (fun e -> e.Remove())
+
     let config = Seq.fold setRedirect config bindingRedirects
     indentAssemblyBindings config
     config.Save configFilePath
 
 /// Applies a set of binding redirects to all .config files in a specific folder.
-let applyBindingRedirectsToFolder createNewBindingFiles rootPath bindingRedirects =
+let applyBindingRedirectsToFolder createNewBindingFiles cleanBindingRedirects rootPath bindingRedirects =
     let applyBindingRedirects projectFile =
         let bindingRedirects = bindingRedirects projectFile
-        if Seq.isEmpty bindingRedirects |> not then
-            let path = Path.GetDirectoryName projectFile.FileName
-            match getConfig Directory.GetFiles path with
-            | Some c -> Some c
-            | None -> 
-                match createNewBindingFiles with
-                | false -> None
-                | true ->
-                    let config = createAppConfigInDirectory path
-                    addConfigFileToProject projectFile
-                    Some config
-            |> Option.iter (applyBindingRedirects bindingRedirects)
+        let path = Path.GetDirectoryName projectFile.FileName
+        match getConfig Directory.GetFiles path with
+        | Some c -> Some c
+        | None -> 
+            match createNewBindingFiles, Seq.isEmpty bindingRedirects with
+            | true, false ->
+                let config = createAppConfigInDirectory path
+                addConfigFileToProject projectFile
+                Some config
+            | _ -> None
+        |> Option.iter (applyBindingRedirects cleanBindingRedirects bindingRedirects)
 
     rootPath
     |> getProjectFilesWithPaketReferences Directory.GetFiles
