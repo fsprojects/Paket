@@ -2,7 +2,8 @@
 
 ## Atom
 
-* Project site: https://github.com/fsprojects/Paket.Atom
+* Project site: http://ionide.io
+* Repository: https://github.com/ionide/ionide-paket
 * Status: Released
 * Installation: Availabe in [Atom's plugin manager](https://atom.io/packages/paket)
 * Features:
@@ -45,3 +46,14 @@
 	* Integrates with Xamarin Studio's unified search
 
 <a href="img/paket-xamarin-studio.png"><img src="img/paket-xamarin-studio.png" alt="Paket in Xamarin Studio" title="Paket in Xamarin Studio" width="500"></a>
+
+## VS Code
+
+* Project site: http://ionide.io
+* Repository: https://github.com/ionide/ionide-vscode-paket
+* Status: Released
+* Installation: Availabe in [Visual Studio Marketplace](https://marketplace.visualstudio.com/items/Ionide.Ionide-Paket)
+* Features:
+  * Paket commands available in Atom's Command Palette
+
+<a href="img/paket-vscode.gif"><img src="img/paket-vscode.gif" alt="paket in VS Code" title="paket in VSCode" width="500"></a>
