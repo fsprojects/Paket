@@ -2,7 +2,7 @@
 
 ## Atom
 
-* Project site: https://ionide.io
+* Project site: http://ionide.io
 * Repository: https://github.com/ionide/ionide-paket
 * Status: Released
 * Installation: Availabe in [Atom's plugin manager](https://atom.io/packages/paket)
@@ -49,7 +49,7 @@
 
 ## VS Code
 
-* Project site: https://ionide.io
+* Project site: http://ionide.io
 * Repository: https://github.com/ionide/ionide-vscode-paket
 * Status: Released
 * Installation: Availabe in [Visual Studio Marketplace](https://marketplace.visualstudio.com/items/Ionide.Ionide-Paket)
