@@ -5,6 +5,7 @@ open Paket.BindingRedirects
 open NUnit.Framework
 open System.Xml.Linq
 open FsUnit
+open System.Xml
 
 let defaultRedirect =
     {   AssemblyName = "Assembly"
@@ -21,7 +22,7 @@ let private containsDescendents count ns elementName (doc:XDocument) =
     Assert.AreEqual(count, doc.Descendants(XName.Get(elementName, ns)) |> Seq.length)
 let private containsSingleDescendent = containsDescendents 1 ""
 let private containsSingleDescendentWithNs = containsDescendents 1 bindingNs
-let private createBindingRedirectXml culture assembly version publicKey = sprintf "<dependentAssembly xmlns=\"urn:schemas-microsoft-com:asm.v1\">\r\n  <assemblyIdentity name=\"%s\" publicKeyToken=\"%s\" culture=\"%s\" />\r\n  <bindingRedirect oldVersion=\"0.0.0.0-999.999.999.999\" newVersion=\"%s\" />\r\n</dependentAssembly>" assembly publicKey culture version
+let private createBindingRedirectXml culture assembly version publicKey = sprintf "<dependentAssembly xmlns=\"urn:schemas-microsoft-com:asm.v1\">\r\n  <Paket>True</Paket>\r\n  <assemblyIdentity name=\"%s\" publicKeyToken=\"%s\" culture=\"%s\" />\r\n  <bindingRedirect oldVersion=\"0.0.0.0-999.999.999.999\" newVersion=\"%s\" />\r\n</dependentAssembly>" assembly publicKey culture version
 let private xNameForNs name = XName.Get(name, bindingNs)
 
 let sampleDocWithNoIndentation() = sprintf """<?xml version="1.0" encoding="utf-8"?>
@@ -125,7 +126,7 @@ let ``redirects got properly indented for readability``() =
     dependency.ToString()
     |> normalizeLineEndings 
     |> shouldEqual 
-        ("<dependentAssembly xmlns=\"urn:schemas-microsoft-com:asm.v1\">\r\n    <assemblyIdentity name=\"Assembly\" publicKeyToken=\"PUBLIC_KEY\" culture=\"neutral\" />\r\n    <bindingRedirect oldVersion=\"0.0.0.0-999.999.999.999\" newVersion=\"1.0.0\" />\r\n  </dependentAssembly>"
+        ("<dependentAssembly xmlns=\"urn:schemas-microsoft-com:asm.v1\">\r\n    <Paket>True</Paket>\r\n    <assemblyIdentity name=\"Assembly\" publicKeyToken=\"PUBLIC_KEY\" culture=\"neutral\" />\r\n    <bindingRedirect oldVersion=\"0.0.0.0-999.999.999.999\" newVersion=\"1.0.0\" />\r\n  </dependentAssembly>"
           |> normalizeLineEndings)
 
 let toSafePath = System.IO.Path.GetFullPath
@@ -161,3 +162,47 @@ let ``project file not containing paket.references is not marked for binding red
             ]
     getProjectFilesWithPaketReferences mockGetFiles rootPath
     |> shouldEqual []
+
+[<Test>]
+let ``adds paket's node if one does not exist``() = 
+    let doc = sampleDoc()
+    setRedirect doc defaultRedirect |> ignore
+
+    let dependency = doc.Descendants(xNameForNs "dependentAssembly") |> Seq.head
+    dependency.Nodes()
+    |> Seq.filter (fun e -> e.NodeType = XmlNodeType.Element)
+    |> Seq.map (fun e -> e :?> XElement)
+    |> Seq.filter (fun e -> e.Name = XName.Get("Paket"))
+    |> List.ofSeq
+    |> List.iter (fun e -> e.Remove())
+
+    // Act
+    setRedirect doc { defaultRedirect with Version = "2.0.0" } |> ignore
+
+    // Assert
+    let dependency = doc.Descendants(xNameForNs "dependentAssembly") |> Seq.head
+    dependency.ToString() 
+    |> normalizeLineEndings
+    |> shouldEqual (createBindingRedirectXml "neutral" "Assembly" "2.0.0" "PUBLIC_KEY" |> normalizeLineEndings)
+
+[<Test>]
+let ``replaces paket's node if one already exists``() = 
+    let doc = sampleDoc()
+    setRedirect doc defaultRedirect |> ignore
+
+    let dependency = doc.Descendants(xNameForNs "dependentAssembly") |> Seq.head
+    dependency.Nodes()
+    |> Seq.filter (fun e -> e.NodeType = XmlNodeType.Element)
+    |> Seq.map (fun e -> e :?> XElement)
+    |> Seq.filter (fun e -> e.Name = XName.Get("Paket"))
+    |> List.ofSeq
+    |> List.iter (fun e -> e.Value <- "False")
+
+    // Act
+    setRedirect doc { defaultRedirect with Version = "2.0.0" } |> ignore
+
+    // Assert
+    let dependency = doc.Descendants(xNameForNs "dependentAssembly") |> Seq.head
+    dependency.ToString() 
+    |> normalizeLineEndings
+    |> shouldEqual (createBindingRedirectXml "neutral" "Assembly" "2.0.0" "PUBLIC_KEY" |> normalizeLineEndings)
