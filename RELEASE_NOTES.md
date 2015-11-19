@@ -1,3 +1,6 @@
+#### 2.27.1 - 19.11.2015
+* REVERT: Bootstrapper compares version per SemVer - https://github.com/fsprojects/Paket/pull/1236
+
 #### 2.27.0 - 19.11.2015
 * Binding redirects get cleaned during install - https://github.com/fsprojects/Paket/pull/1235
 * BUGFIX: Bootstrapper compares version per SemVer - https://github.com/fsprojects/Paket/pull/1236
