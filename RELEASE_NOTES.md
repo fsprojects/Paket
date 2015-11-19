@@ -1,4 +1,4 @@
-#### 2.27.4 - 19.11.2015
+#### 2.27.5 - 19.11.2015
 * Adding monoandroid41 framework moniker - https://github.com/fsprojects/Paket/pull/1245
 
 #### 2.27.3 - 19.11.2015

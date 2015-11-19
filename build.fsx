@@ -424,7 +424,7 @@ Target "All" DoNothing
   =?> ("ReleaseDocs",isLocalBuild && not isMono)
 
 "All"
-  ==> "RunIntegrationTests" 
+  =?> ("RunIntegrationTests", not <| hasBuildParam "SkipIntegrationTests")
   ==> "MergePaketTool"
   =?> ("MergePowerShell", not isMono)
   ==> "SignAssemblies"
