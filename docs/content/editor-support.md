@@ -2,7 +2,8 @@
 
 ## Atom
 
-* Project site: https://github.com/fsprojects/Paket.Atom
+* Project site: https://ionide.io
+* Repository: https://github.com/ionide/ionide-paket
 * Status: Released
 * Installation: Availabe in [Atom's plugin manager](https://atom.io/packages/paket)
 * Features:
