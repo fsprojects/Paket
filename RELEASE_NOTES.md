@@ -1,7 +1,10 @@
-#### 2.26.2 - 18.11.2015
+#### 2.26.3 - 19.11.2015
+* BUGFIX: Do not print feed password to output - https://github.com/fsprojects/Paket/pull/1238
+
+#### 2.26.2 - 19.11.2015
 * USABILITY: Always write non-version into lock file to keep ProGet happy - https://github.com/fsprojects/Paket/issues/1239
 
-#### 2.26.1 - 18.11.2015
+#### 2.26.0 - 18.11.2015
 * BUGFIX: Better parsing of framework restrictions - https://github.com/fsprojects/Paket/issues/1232
 * BUGFIX: Fix props files - https://github.com/fsprojects/Paket/issues/1233
 * BUGFIX: Detect AssemblyName from project file name if empty - https://github.com/fsprojects/Paket/issues/1234
