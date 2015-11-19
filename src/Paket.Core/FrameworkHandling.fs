@@ -186,7 +186,7 @@ module FrameworkDetection =
                 | "net453" -> Some (DotNetFramework FrameworkVersion.V4_5_3)
                 | "net46" -> Some (DotNetFramework FrameworkVersion.V4_6)
                 | "monotouch" | "monotouch10" | "monotouch1" -> Some MonoTouch
-                | "monoandroid" | "monoandroid10" | "monoandroid1" | "monoandroid403" | "monoandroid50"-> Some MonoAndroid
+                | "monoandroid" | "monoandroid10" | "monoandroid1" | "monoandroid403" | "monoandroid41" | "monoandroid50"-> Some MonoAndroid
                 | "monomac" | "monomac10" | "monomac1" -> Some MonoMac
                 | "xamarinios" | "xamarinios10" | "xamarinios1" | "xamarin.ios10" -> Some XamariniOS
                 | "xamarinmac" | "xamarinmac20" | "xamarin.mac20" -> Some XamarinMac
