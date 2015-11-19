@@ -83,7 +83,7 @@ namespace Paket.Bootstrapper
                 }
                 else
                 {
-                    var currentSemVer = SemVer.Create(localVersion);
+                    var currentSemVer = String.IsNullOrEmpty(localVersion) ? new SemVer() : SemVer.Create(localVersion);
                     var latestSemVer = SemVer.Create(latestVersion);
                     if (currentSemVer.CompareTo(latestSemVer) != 0)
                     {
