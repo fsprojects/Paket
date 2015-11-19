@@ -16,3 +16,21 @@ let ``#1040 init should download release version of bootstrapper``() =
     let productVersion = FileVersionInfo.GetVersionInfo(bootstrapperPath).ProductVersion
     String.IsNullOrWhiteSpace productVersion |> shouldEqual false
     productVersion.Contains("-") |> shouldEqual false
+
+[<Test>]
+let ``#1240 current bootstrapper should work``() = 
+    CleanDir (scenarioTempPath "i001240-bootstrapper")
+    let paketToolPath = FullName(__SOURCE_DIRECTORY__ + "../../../bin/paket.bootstrapper.exe")
+
+    let result =
+        ExecProcessAndReturnMessages (fun info ->
+          info.FileName <- paketToolPath
+          info.WorkingDirectory <- scenarioTempPath "i001240-bootstrapper"
+          info.Arguments <- "") (System.TimeSpan.FromMinutes 5.)
+    if result.ExitCode <> 0 then 
+        let errors = String.Join(Environment.NewLine,result.Errors)
+        printfn "%s" <| String.Join(Environment.NewLine,result.Messages)
+        failwith errors
+
+    String.Join(Environment.NewLine,result.Messages).StartsWith("No version specified. Downloading latest stable.")
+    |> shouldEqual true

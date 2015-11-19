@@ -8,9 +8,9 @@ open System.Text.RegularExpressions
 
 [<Test>]
 let ``install should redirect required assemblies only``() = 
-    paket "install --redirects --createnewbindingfiles" "i001187-binding-redirect-adds-referenced-assemblies-only" |> ignore
+    paket "install --redirects --createnewbindingfiles" "i001187-binding-redirect" |> ignore
 
-    let path = Path.Combine(scenarioTempPath "i001187-binding-redirect-adds-referenced-assemblies-only")
+    let path = Path.Combine(scenarioTempPath "i001187-binding-redirect")
     let config1Path = Path.Combine(path, "Project1", "app.config")
     let config2Path = Path.Combine(path, "Project2", "app.config")
     let config3Path = Path.Combine(path, "Project3", "app.config")
@@ -80,9 +80,9 @@ let ``#1195 should report broken app.config``() =
 
 [<Test>]
 let ``#1218 install hard should replace all assembly redirects with required only``() = 
-    paket "install --redirects --createnewbindingfiles --hard" "i001218-binding-redirect-replaces-all-redirects-with-required-only" |> ignore
+    paket "install --redirects --createnewbindingfiles --hard" "i001218-binding-redirect" |> ignore
 
-    let path = Path.Combine(scenarioTempPath "i001218-binding-redirect-replaces-all-redirects-with-required-only")
+    let path = Path.Combine(scenarioTempPath "i001218-binding-redirect")
     let config1Path = Path.Combine(path, "Project1", "app.config")
     let config2Path = Path.Combine(path, "Project2", "app.config")
     let config3Path = Path.Combine(path, "Project3", "app.config")
@@ -145,9 +145,9 @@ let ``#1218 install hard should replace all assembly redirects with required onl
     
 [<Test>]
 let ``#1218 install should replace paket's binding redirects with required only``() = 
-    paket "install --redirects --createnewbindingfiles" "i001218-binding-redirect-replaces-all-redirects-with-required-only" |> ignore
+    paket "install --redirects --createnewbindingfiles" "i001218-binding-redirect" |> ignore
 
-    let path = Path.Combine(scenarioTempPath "i001218-binding-redirect-replaces-all-redirects-with-required-only")
+    let path = Path.Combine(scenarioTempPath "i001218-binding-redirect")
     let config1Path = Path.Combine(path, "Project1", "app.config")
     let config2Path = Path.Combine(path, "Project2", "app.config")
     let config3Path = Path.Combine(path, "Project3", "app.config")
