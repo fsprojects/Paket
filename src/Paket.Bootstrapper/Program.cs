@@ -83,9 +83,7 @@ namespace Paket.Bootstrapper
                 }
                 else
                 {
-                    var currentSemVer = SemVer.Create(localVersion);
-                    var latestSemVer = SemVer.Create(latestVersion);
-                    if (currentSemVer.CompareTo(latestSemVer) != 0)
+                    if (!localVersion.StartsWith(latestVersion, StringComparison.OrdinalIgnoreCase))
                     {
                         downloadStrategy.DownloadVersion(latestVersion, dlArgs.Target, silent);
                         if (!silent)
