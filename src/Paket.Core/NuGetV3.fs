@@ -193,12 +193,13 @@ let getPackageDetails (source:NugetV3Source) (packageName:PackageName) (version:
                not catalogData.Listed.Value 
             else
                 false
+
         let optimized = Requirements.optimizeDependencies dependencies 
         return 
             { Dependencies = optimized
               PackageName = packageName.ToString()
               SourceUrl = source.Url
-              Unlisted = not unlisted
+              Unlisted = unlisted
               DownloadUrl = registrationData.PackageContent
               LicenseUrl = catalogData.LicenseUrl
               CacheVersion = NuGet.NugetPackageCache.CurrentCacheVersion }
