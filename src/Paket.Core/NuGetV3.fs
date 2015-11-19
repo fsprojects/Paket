@@ -139,7 +139,7 @@ type Catalog =
       LicenseUrl : string
       
       [<JsonProperty("listed")>]
-      Listed : bool
+      Listed : System.Nullable<bool>
       
       [<JsonProperty("dependencyGroups")>]
       DependencyGroups : CatalogDependencyGroup [] }
@@ -188,13 +188,17 @@ let getPackageDetails (source:NugetV3Source) (packageName:PackageName) (version:
                         | x -> Requirements.parseRestrictions x
                     (PackageName dep.Id), (VersionRequirement.Parse dep.Range), targetFramework)
                 |> Seq.toList
-
+        let unlisted =
+            if catalogData.Listed.HasValue then
+               not catalogData.Listed.Value 
+            else
+                false
         let optimized = Requirements.optimizeDependencies dependencies 
         return 
             { Dependencies = optimized
               PackageName = packageName.ToString()
               SourceUrl = source.Url
-              Unlisted = not catalogData.Listed
+              Unlisted = not unlisted
               DownloadUrl = registrationData.PackageContent
               LicenseUrl = catalogData.LicenseUrl
               CacheVersion = NuGet.NugetPackageCache.CurrentCacheVersion }
