@@ -1,6 +1,9 @@
+#### 2.27.4 - 19.11.2015
+* Adding monoandroid41 framework moniker - https://github.com/fsprojects/Paket/pull/1245
+
 #### 2.27.3 - 19.11.2015
 * BUGFIX: Unlisted property get properly filled from NuGet v3 API - https://github.com/fsprojects/Paket/issues/1242
-* 
+ 
 #### 2.27.2 - 19.11.2015
 * BUGFIX: Bootstrapper compares version per SemVer - https://github.com/fsprojects/Paket/pull/1236
 
