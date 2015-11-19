@@ -1,3 +1,6 @@
+#### 2.26.2 - 18.11.2015
+* USABILITY: Always write non-version into lock file to keep ProGet happy - https://github.com/fsprojects/Paket/issues/1239
+
 #### 2.26.1 - 18.11.2015
 * BUGFIX: Better parsing of framework restrictions - https://github.com/fsprojects/Paket/issues/1232
 * BUGFIX: Fix props files - https://github.com/fsprojects/Paket/issues/1233

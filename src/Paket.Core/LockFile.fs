@@ -77,7 +77,7 @@ module LockFileSerializer =
                   for _,_,package in packages |> Seq.sortBy (fun (_,_,p) -> p.Name) do
                       let versionStr = 
                           let s = package.Version.ToString()
-                          if s = "" then s else "(" + package.Version.Normalize() + ")"
+                          if s = "" then s else "(" + s + ")"
 
                       let settings =
                         if package.Settings.FrameworkRestrictions = options.Settings.FrameworkRestrictions then

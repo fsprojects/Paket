@@ -25,7 +25,7 @@ FRAMEWORK: >= NET45
 NUGET
   remote: http://nuget.org/api/v2
   specs:
-    Castle.Windsor-log4net (3.2.0)"""
+    Castle.Windsor-log4net (3.2)"""
 
 [<Test>]
 let ``should generate strict lock file``() = 
@@ -52,7 +52,7 @@ CONTENT: NONE
 NUGET
   remote: http://nuget.org/api/v2
   specs:
-    Microsoft.SqlServer.Types (1.0.0)"""
+    Microsoft.SqlServer.Types (1.0)"""
 
 [<Test>]
 let ``should generate content none lock file``() = 
@@ -76,7 +76,7 @@ let expected3 = """REDIRECTS: ON
 NUGET
   remote: http://nuget.org/api/v2
   specs:
-    Microsoft.SqlServer.Types (1.0.0)"""
+    Microsoft.SqlServer.Types (1.0)"""
 
 [<Test>]
 let ``should generate redirects lock file``() = 
@@ -98,7 +98,7 @@ let ``should generate strategy min lock file``() =
 NUGET
   remote: http://nuget.org/api/v2
   specs:
-    Microsoft.SqlServer.Types (1.0.0)"""
+    Microsoft.SqlServer.Types (1.0)"""
 
     let cfg = DependenciesFile.FromCode(config)
     ResolveWithGraph(cfg,noSha1,VersionsFromGraphAsSeq graph3, PackageDetailsFromGraph graph3).[Constants.MainDependencyGroup].ResolvedPackages.GetModelOrFail()
@@ -118,7 +118,7 @@ let ``should generate strategy max lock file``() =
 NUGET
   remote: http://nuget.org/api/v2
   specs:
-    Microsoft.SqlServer.Types (1.0.0)"""
+    Microsoft.SqlServer.Types (1.0)"""
 
     let cfg = DependenciesFile.FromCode(config)
     ResolveWithGraph(cfg,noSha1,VersionsFromGraphAsSeq graph3, PackageDetailsFromGraph graph3).[Constants.MainDependencyGroup].ResolvedPackages.GetModelOrFail()

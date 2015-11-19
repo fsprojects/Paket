@@ -524,7 +524,7 @@ IMPORT-TARGETS: TRUE
 NUGET
   remote: "D:\code\temp with space"
   specs:
-    Castle.Windsor (2.1.0)
+    Castle.Windsor (2.1)
 
 GROUP Build
 REDIRECTS: ON
@@ -533,7 +533,7 @@ CONDITION: LEGACY
 NUGET
   remote: "D:\code\temp with space"
   specs:
-    FAKE (4.0.0) - redirects: on
+    FAKE (4.0) - redirects: on
 """
 
 [<Test>]
