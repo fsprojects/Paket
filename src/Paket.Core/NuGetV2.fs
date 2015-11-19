@@ -651,7 +651,7 @@ let GetVersions root (sources, packageName:PackageName) =
     let versions = 
         match v with
         | versions when Array.isEmpty versions |> not -> versions
-        | _ -> failwithf "Could not find versions for package %O in any of the sources in %A." packageName sources
+        | _ -> failwithf "Could not find versions for package %O in any of the sources in %A." packageName (sources |> Seq.map (fun (s:PackageSource) -> s.ToString()) |> List.ofSeq)
 
     versions
     |> Seq.toList
