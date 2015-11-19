@@ -637,7 +637,7 @@ let GetVersions root (sources, packageName:PackageName) =
                                     tryNuGetV3 (source.Authentication |> Option.map toBasicAuth, 
                                                 autoCompleteUrl,
                                                 packageName)
-                            }   
+                            }
                         
                         [ resp ]
                    | LocalNuget path -> [ getAllVersionsFromLocalPath (path, packageName, root) ])
