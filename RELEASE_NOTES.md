@@ -1,4 +1,4 @@
-#### 2.27.8 - 23.11.2015
+#### 2.27.9 - 23.11.2015
 * Create installer demo - https://github.com/fsprojects/Paket/issues/1251
 
 #### 2.27.7 - 23.11.2015

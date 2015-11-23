@@ -14,7 +14,7 @@ let integrationTestPath = FullName(__SOURCE_DIRECTORY__ + "../../../integrationt
 let scenarioTempPath scenario = Path.Combine(integrationTestPath,scenario,"temp")
 let originalScenarioPath scenario = Path.Combine(integrationTestPath,scenario,"before")
 
-let paket command scenario =
+let prepare scenario =
     let originalScenarioPath = originalScenarioPath scenario
     let scenarioPath = scenarioTempPath scenario
     CleanDir scenarioPath
@@ -25,6 +25,11 @@ let paket command scenario =
     |> Seq.iter (fun f -> File.Move(f, Path.ChangeExtension(f, "csproj")))
     Directory.GetFiles(scenarioPath, "*.templatetemplate", SearchOption.AllDirectories)
     |> Seq.iter (fun f -> File.Move(f, Path.ChangeExtension(f, "template")))
+
+let paket command scenario =
+    let originalScenarioPath = originalScenarioPath scenario
+    let scenarioPath = scenarioTempPath scenario
+    prepare scenario
 
     let result =
         ExecProcessAndReturnMessages (fun info ->

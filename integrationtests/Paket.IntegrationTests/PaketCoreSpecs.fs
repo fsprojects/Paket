@@ -13,11 +13,12 @@ open Paket.Domain
 
 [<Test>]
 let ``#1251 full installer demoe``() = 
+    prepare "i001251-installer-demo"
     let deps = """source https://nuget.org/api/v2
     nuget FAKE
     nuget FSharp.Formatting"""
 
-    let dependenciesFile = DependenciesFile.FromCode deps
+    let dependenciesFile = DependenciesFile.FromCode(scenarioTempPath "i001251-installer-demo",deps)
     let force = false
     let packagesToInstall = 
         // get from references file

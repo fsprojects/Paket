@@ -714,6 +714,9 @@ type DependenciesFile(fileName,groups:Map<GroupName,DependenciesGroup>, textRepr
         File.WriteAllText(fileName, this.ToString())
         tracefn "Dependencies files saved to %s" fileName
 
+    static member FromCode(rootPath,code:string) : DependenciesFile = 
+        DependenciesFile(DependenciesFileParser.parseDependenciesFile (Path.Combine(rootPath,Constants.DependenciesFileName)) <| code.Replace("\r\n","\n").Replace("\r","\n").Split('\n'))
+
     static member FromCode(code:string) : DependenciesFile = 
         DependenciesFile(DependenciesFileParser.parseDependenciesFile "" <| code.Replace("\r\n","\n").Replace("\r","\n").Split('\n'))
 
