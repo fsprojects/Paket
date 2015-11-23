@@ -12,7 +12,7 @@ open Chessie.ErrorHandling
 open Paket.Domain
 
 [<Test>]
-let ``#1251 full installer demoe``() = 
+let ``#1251 full installer demo``() = 
     prepare "i001251-installer-demo"
     let deps = """source https://nuget.org/api/v2
     nuget FAKE
