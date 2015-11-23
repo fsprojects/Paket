@@ -90,7 +90,7 @@ let tryNuGetV3 (auth, nugetV3Url, package:PackageName) =
         try 
             let! data = NuGetV3.findVersionsForPackage(nugetV3Url, auth, package, true, 100000)
             match data with
-            | Some data when Array.isEmpty data |> not -> return Some data
+            | Some data -> return Some data
             | _ -> return None
         with exn -> return None
     }
@@ -605,7 +605,7 @@ let getVersionsCached key f (auth, nugetURL, package) =
         | _ ->
             let! result = f (auth, nugetURL, package)
             match result with
-            | Some x when Array.isEmpty x |> not ->
+            | Some x ->
                 protocolCache.TryAdd((auth, nugetURL), key) |> ignore
                 return Some x
             | _ -> return None
@@ -624,9 +624,11 @@ let GetVersions root (sources, packageName:PackageName) =
                             | Some v3Url -> [ tryNuGetV3 (auth, v3Url, packageName) ]
 
                         let v2Feeds =
-                            [ getVersionsCached "Json" tryGetPackageVersionsViaJson (auth, source.Url, packageName)
-                              getVersionsCached "OData" tryGetPackageVersionsViaOData (auth, source.Url, packageName)
-                              getVersionsCached "ODataWithFilter" tryGetAllVersionsFromNugetODataWithFilter (auth, source.Url, packageName) ]
+                            [ yield getVersionsCached "OData" tryGetPackageVersionsViaOData (auth, source.Url, packageName)
+                              yield getVersionsCached "ODataWithFilter" tryGetAllVersionsFromNugetODataWithFilter (auth, source.Url, packageName)
+                              if not (source.Url.ToLower().Contains "teamcity" || source.Url.ToLower().Contains "feedservice.svc") then
+                                yield getVersionsCached "Json" tryGetPackageVersionsViaJson (auth, source.Url, packageName)
+                              ]
 
                         v2Feeds @ v3Feeds
                    | NugetV3 source ->

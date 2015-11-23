@@ -1,3 +1,6 @@
+#### 2.27.7 - 23.11.2015
+* PERFORMANCE: Avoid requests to teamcity that lead to server error
+
 #### 2.27.6 - 23.11.2015
 * USABILITY: If parsing of lock file fails Paket reports the lock file filename - https://github.com/fsprojects/Paket/issues/1247
 

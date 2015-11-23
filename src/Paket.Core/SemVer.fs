@@ -186,7 +186,7 @@ module SemVer =
                 | d, p when p = -1 -> version.Substring(d+1)
                 | d, p -> version.Substring(d+1, (version.Length - 1 - p) )
             
-            /// there can only be one piece of build metadata, and it is signified by a + and then any number of dot-separated alphanumeric groups.
+            /// there can only be one piece of build metadata, and it is signified by a + and then any number of dot-separated alpha-numeric groups.
             /// this just greedily takes the whole remaining string :(
             let buildmeta =
                 match plusIndex with
