@@ -138,7 +138,7 @@ let CreateInstallModel(root, groupName, sources, force, package) =
     }
 
 /// Restores the given packages from the lock file.
-let createModel(root, force, dependenciesFile:DependenciesFile, lockFile : LockFile, packages:Set<GroupName*PackageName>) =
+let CreateModel(root, force, dependenciesFile:DependenciesFile, lockFile : LockFile, packages:Set<GroupName*PackageName>) =
     let sourceFileDownloads = 
         [|for kv in lockFile.Groups -> RemoteDownload.DownloadSourceFiles(root, kv.Key, force, kv.Value.RemoteFiles) |]
         |> Async.Parallel
@@ -246,7 +246,7 @@ let findAllReferencesFiles root =
      |> collect
 
 /// Installs all packages from the lock file.
-let InstallIntoProjects(options : InstallerOptions, dependenciesFile, lockFile : LockFile, projects : (ProjectFile * ReferencesFile) list) =    
+let InstallIntoProjects(options : InstallerOptions, dependenciesFile, lockFile : LockFile, projects : (ProjectFile * ReferencesFile) list) =
     let packagesToInstall =
         if options.OnlyReferenced then
             projects
@@ -260,7 +260,7 @@ let InstallIntoProjects(options : InstallerOptions, dependenciesFile, lockFile :
             |> Seq.map (fun kv -> kv.Key)
 
     let root = Path.GetDirectoryName lockFile.FileName
-    let model = createModel(root, options.Force, dependenciesFile, lockFile, Set.ofSeq packagesToInstall) |> Map.ofArray
+    let model = CreateModel(root, options.Force, dependenciesFile, lockFile, Set.ofSeq packagesToInstall) |> Map.ofArray
     let lookup = lockFile.GetDependencyLookupTable()
 
     for project : ProjectFile, referenceFile in projects do
