@@ -1,3 +1,6 @@
+#### 2.27.6 - 23.11.2015
+* USABILITY: If parsing of lock file fails Paket reports the lock file filename - https://github.com/fsprojects/Paket/issues/1247
+
 #### 2.27.5 - 19.11.2015
 * Adding monoandroid41 framework moniker - https://github.com/fsprojects/Paket/pull/1245
 

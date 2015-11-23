@@ -1,0 +1,18 @@
+redirects: on
+
+source https://api.nuget.org/v3/index.json
+source https://www.nuget.org/api/v2/
+
+nuget FSharp.Control.Reactive
+nuget FSharp.Data framework: >= net40
+nuget FsLexYacc framework: >= net40
+nuget FsUnit framework: >= net45
+nuget Newtonsoft.Json framework: >= net40
+nuget NLog.FSharp 3.2.1 framework: >= net40
+nuget NLog 3.2.1 framework: >= net40
+nuget SnmpSharpNet
+nuget NUnit.Runners
+nuget FAKE ~> 4
+nuget FSharp.Formatting.CommandTool
+nuget FSharp.Core ~> 4 framework: >= net40
+nuget ILRepack

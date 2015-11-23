@@ -490,18 +490,22 @@ type LockFile(fileName:string,groups: Map<GroupName,LockFileGroup>) =
         LockFile.Parse(lockFileName, File.ReadAllLines lockFileName)
 
     /// Parses a paket.lock file from lines
-    static member Parse(lockFileName,lines) : LockFile = 
-        let groups =
-            LockFileParser.Parse lines
-            |> List.map (fun state ->
-                state.GroupName,
-                { Name = state.GroupName
-                  Options = state.Options
-                  Resolution = state.Packages |> Seq.fold (fun map p -> Map.add p.Name p map) Map.empty
-                  RemoteFiles = List.rev state.SourceFiles })
-            |> Map.ofList
+    static member Parse(lockFileName,lines) : LockFile =
+        try
+            let groups =
+                LockFileParser.Parse lines
+                |> List.map (fun state ->
+                    state.GroupName,
+                    { Name = state.GroupName
+                      Options = state.Options
+                      Resolution = state.Packages |> Seq.fold (fun map p -> Map.add p.Name p map) Map.empty
+                      RemoteFiles = List.rev state.SourceFiles })
+                |> Map.ofList
 
-        LockFile(lockFileName, groups)
+            LockFile(lockFileName, groups)
+        with
+        | exn ->
+            failwithf "Error during parsing of %s.%sMessage: %s" lockFileName Environment.NewLine exn.Message
 
     member this.GetPackageHull(referencesFile:ReferencesFile) =
         let usedPackages = Dictionary<_,_>()
