@@ -10,7 +10,7 @@ open Paket.NuGetV3
 [<Test>]
 let ``can extract all versions from Rx-Platformservice.json``() = 
     File.ReadAllText "JSON-LD/Rx-PlatformServices.json" 
-    |> extractVersions
+    |> extractAutoCompleteVersions
     |> shouldEqual 
            [| "2.0.20304-beta"; "2.0.20612-rc"; "2.0.20622-rc"; "2.0.20814"; "2.0.20823"; "2.0.21030"; "2.0.21103"; 
               "2.0.21114"; "2.1.30204"; "2.1.30214"; "2.2.0-beta"; "2.2.0"; "2.2.1-beta"; "2.2.1"; "2.2.2"; "2.2.3"; 
@@ -75,6 +75,6 @@ let ``can parse autocomplete response for packages``() =
 let ``can parse autocomplete response for versions``() =
     let response = """{"@context":{"@vocab":"http://schema.nuget.org/schema#"},"totalHits":37,"timeTakenInMs":2,"index":"ng-v3search-nov13-2014","data":["3.5.8","4.0.1","4.0.2","4.0.3","4.0.4","4.0.5","4.0.6","4.0.7","4.0.8","4.5.1","4.5.2","4.5.3","4.5.4","4.5.5","4.5.6","4.5.7","4.5.8","4.5.9","4.5.10","4.5.11","5.0.1","5.0.2","5.0.3","5.0.4","5.0.5","5.0.6","5.0.7","5.0.8","6.0.1-beta1","6.0.1","6.0.2","6.0.3","6.0.4","6.0.5","6.0.6","6.0.7","6.0.8"],"answeredBy":"nuget-prod-0-v3search_IN2-search"}"""
 
-    let packages = NuGetV3.extractVersions response
+    let packages = NuGetV3.extractAutoCompleteVersions response
     packages |> shouldContain "4.0.1"
     packages |> shouldContain "4.0.5"

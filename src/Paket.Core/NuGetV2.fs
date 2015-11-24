@@ -88,7 +88,7 @@ let tryGetPackageVersionsViaJson (auth, nugetURL, package:PackageName) =
 let tryNuGetV3 (auth, nugetV3Url, package:PackageName) = 
     async { 
         try 
-            let! data = NuGetV3.findVersionsForPackage(nugetV3Url, auth, package, true, 100000)
+            let! data = NuGetV3.findVersionsForPackage(nugetV3Url, auth, package)
             match data with
             | Some data -> return Some data
             | _ -> return None
@@ -613,14 +613,13 @@ let getVersionsCached key f (auth, nugetURL, package) =
 
 /// Allows to retrieve all version no. for a package from the given sources.
 let GetVersions root (sources, packageName:PackageName) = 
-    let getVersions useV3 =
+    let getVersions() =
         sources
         |> Seq.map (function
                    | Nuget source -> 
                         let auth = source.Authentication |> Option.map toBasicAuth
                         let v3Feeds = 
-                            if not useV3 then [] else
-                            match NuGetV3.getSearchAPI(auth,source.Url) with
+                            match NuGetV3.getAllVersionsAPI(auth,source.Url) with
                             | None -> []
                             | Some v3Url -> [ tryNuGetV3 (auth, v3Url, packageName) ]
 
@@ -635,7 +634,7 @@ let GetVersions root (sources, packageName:PackageName) =
                    | NugetV3 source ->
                         let resp =
                             async {
-                                let! autoCompleteUrl = PackageSources.getNugetV3Resource source AutoComplete
+                                let! autoCompleteUrl = PackageSources.getNugetV3Resource source AllVersionsAPI
                                 return!
                                     tryNuGetV3 (source.Authentication |> Option.map toBasicAuth, 
                                                 autoCompleteUrl,
@@ -652,12 +651,9 @@ let GetVersions root (sources, packageName:PackageName) =
         |> Array.concat
 
     let versions = 
-        match getVersions true with
+        match getVersions() with
         | versions when Array.isEmpty versions |> not -> versions
-        | _ -> 
-            match getVersions false with
-            | versions when Array.isEmpty versions |> not -> versions
-            | _ -> failwithf "Could not find versions for package %O in any of the sources in %A." packageName (sources |> Seq.map (fun (s:PackageSource) -> s.ToString()) |> List.ofSeq)
+        | _ -> failwithf "Could not find versions for package %O in any of the sources in %A." packageName (sources |> Seq.map (fun (s:PackageSource) -> s.ToString()) |> List.ofSeq)
 
     versions
     |> Seq.toList

@@ -62,12 +62,14 @@ type NugetV3Source =
 
 type NugetV3ResourceType =
 | AutoComplete
+| AllVersionsAPI
 | Registration
 with
     member this.AsString = 
         match this with
         | AutoComplete -> "SearchAutoCompleteService"
         | Registration -> "RegistrationsBaseUrl"
+        | AllVersionsAPI -> "PackageBaseAddress/3.0.0"
 
 let mutable private nugetV3Resources : Map<NugetV3Source * NugetV3ResourceType, string> = Map.empty 
         
@@ -100,6 +102,7 @@ let getNugetV3Resource (source : NugetV3Source) (resourceType : NugetV3ResourceT
                                         match res.ToLower() with
                                         | "searchautocompleteservice" -> Some AutoComplete
                                         | "registrationsbaseurl" -> Some Registration
+                                        | "packagebaseaddress/3.0.0" -> Some AllVersionsAPI
                                         | _ -> None
                                     match resType with
                                     | None -> m

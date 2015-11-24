@@ -119,4 +119,4 @@ let ``#1247 should report lockfile in parse errror``() =
 let ``#1254 should install unlisted transitive dependencies``() =
     let lockFile = update "i001253-unlisted"
     lockFile.Groups.[Constants.MainDependencyGroup].Resolution.[PackageName "WebActivator"].Version
-    |> shouldBeGreaterThan (SemVer.Parse "1.5.3")
+    |> shouldEqual (SemVer.Parse "1.5.3")

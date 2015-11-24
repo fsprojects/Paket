@@ -19,7 +19,8 @@ type JSONResource =
 
 /// [omit]
 type JSONVersionData = 
-    { Data : string [] }
+    { Data : string [] 
+      Versions : string [] }
 
 /// [omit]
 type JSONRootData = 
@@ -29,6 +30,12 @@ type JSONRootData =
 let getSearchAutocompleteService (data : string) =
     JsonConvert.DeserializeObject<JSONRootData>(data.Replace("@id","ID").Replace("@type","Type")).Resources
     |> Array.tryFind (fun x -> (isNull x.Type |> not) && x.Type.ToLower() = "searchautocompleteservice")
+    |> Option.map (fun x -> x.ID)
+
+/// [omit]
+let getAllVersionsService (data : string) =
+    JsonConvert.DeserializeObject<JSONRootData>(data.Replace("@id","ID").Replace("@type","Type")).Resources
+    |> Array.tryFind (fun x -> (isNull x.Type |> not) && x.Type.ToLower() = "packagebaseaddress/3.0.0")
     |> Option.map (fun x -> x.ID)
 
 /// [omit]
@@ -66,17 +73,42 @@ let getSearchAPI(auth,nugetUrl) =
         result
 
 /// [omit]
-let extractVersions(response:string) =
+let getAllVersionsAPI(auth,nugetUrl) = 
+    match searchDict.TryGetValue nugetUrl with
+    | true,v -> v
+    | _ ->
+        let result = 
+            match calculateNuGet3Path nugetUrl with
+            | None -> None
+            | Some v3Path ->
+                let serviceData =
+                    safeGetFromUrl(auth,v3Path,acceptJson)
+                    |> Async.RunSynchronously
+
+                match serviceData with
+                | None -> None
+                | Some data -> getAllVersionsService data
+
+        searchDict.[nugetUrl] <- result
+        result
+
+/// [omit]
+let extractAutoCompleteVersions(response:string) =
     JsonConvert.DeserializeObject<JSONVersionData>(response).Data
 
-let internal findVersionsForPackage(v3Url, auth, packageName:Domain.PackageName, includingPrereleases, maxResults) =
+/// [omit]
+let extractVersions(response:string) =
+    JsonConvert.DeserializeObject<JSONVersionData>(response).Versions
+
+
+let internal findAutoCompleteVersionsForPackage(v3Url, auth, packageName:Domain.PackageName, includingPrereleases, maxResults) =
     async {
         let url = sprintf "%s?id=%O&take=%d%s" v3Url packageName (max maxResults 100000) (if includingPrereleases then "&prerelease=true" else "")
-        let! response = safeGetFromUrl(auth,url,acceptXml) // NuGet is showing old versions first
+        let! response = safeGetFromUrl(auth,url,acceptJson) // NuGet is showing old versions first
         match response with
         | Some text ->
             let versions =
-                let extracted = extractVersions text
+                let extracted = extractAutoCompleteVersions text
                 if extracted.Length > maxResults then
                     extracted |> Seq.take maxResults |> Seq.toArray
                 else
@@ -87,9 +119,31 @@ let internal findVersionsForPackage(v3Url, auth, packageName:Domain.PackageName,
     }
 
 /// Uses the NuGet v3 autocomplete service to retrieve all package versions for the given package.
-let FindVersionsForPackage(auth, nugetURL, package, includingPrereleases, maxResults) =
+let FindAutoCompleteVersionsForPackage(auth, nugetURL, package, includingPrereleases, maxResults) =
     async {
-        let! raw = findVersionsForPackage(auth, nugetURL, package, includingPrereleases, maxResults)
+        let! raw = findAutoCompleteVersionsForPackage(auth, nugetURL, package, includingPrereleases, maxResults)
+        match raw with 
+        | Some versions -> return versions
+        | None -> return [||]
+    }
+
+
+let internal findVersionsForPackage(v3Url, auth, packageName:Domain.PackageName) =
+    async {
+        let url = sprintf "%s%O/index.json" v3Url packageName
+        let! response = safeGetFromUrl(auth,url,acceptJson) // NuGet is showing old versions first
+        match response with
+        | Some text ->
+            let versions = extractVersions text
+
+            return Some(SemVer.SortVersions versions)
+        | None -> return None
+    }
+
+/// Uses the NuGet v3 service to retrieve all package versions for the given package.
+let FindVersionsForPackage(auth, nugetURL, package) =
+    async {
+        let! raw = findVersionsForPackage(auth, nugetURL, package)
         match raw with 
         | Some versions -> return versions
         | None -> return [||]
