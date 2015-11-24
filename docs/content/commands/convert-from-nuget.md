@@ -1,3 +1,46 @@
+## Preparation
+
+Choose a folder to run the conversion from that is parent to **all** the projects to be converted.
+
+When using nuget package restore, the ``packages`` folder is alongside the solution. It is possible with a solution that the folder parent to ``packages`` is **not** also parent to all the projects in the solution.
+
+A solution is in effect acting as a symlink but this indirection via the solution is not possible with paket because paket manages projects and not solutions. In the example below, it would not be possible to run the ``paket convert-from-nuget`` command from the ``Build`` folder but it would be from the root folder.
+
+<pre>
++---Build
+|   |   Numbers.sln
+|   |   
+|   +---.nuget
+|   |   NuGet.Config
+|   |   NuGet.exe
+|   |   NuGet.targets
+|   |   
+|   +---packages
+|   
++---Encoding
+|   |   Encoding.fsproj
+|   |   packages.config
+</pre>
+
+After running the conversion from the root folder;
+
+<pre>
++---.paket
+|   |   paket.bootstrapper.exe
+|   |   paket.exe
+|   |   paket.targets
+|
++---packages
+|
++---Build
+|   |   Numbers.sln
+|   
++---Encoding
+|   |   Encoding.fsproj
+|   |   paket.references
+</pre>
+
+
 ## Command steps
 
 The `paket convert-from-nuget` command:
