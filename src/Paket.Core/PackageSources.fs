@@ -85,7 +85,7 @@ let getNugetV3Resource (source : NugetV3Source) (resourceType : NugetV3ResourceT
                     let! rawData = safeGetFromUrl(basicAuth, source.Url, acceptJson)
                     let rawData =
                         match rawData with
-                        | None -> failwithf "couldnt load resources from %s" source.Url
+                        | None -> failwithf "Could not load resources from %s" source.Url
                         | Some x -> x
                     let json = JsonConvert.DeserializeObject<NugetV3SourceRootJSON>(rawData)
                     let resources = 

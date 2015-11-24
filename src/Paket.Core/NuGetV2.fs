@@ -619,7 +619,7 @@ let GetVersions root (sources, packageName:PackageName) =
                    | Nuget source -> 
                         let auth = source.Authentication |> Option.map toBasicAuth
                         let v3Feeds = 
-                            match NuGetV3.getAllVersionsAPI(auth,source.Url) with
+                            match NuGetV3.getAllVersionsAPI(source.Authentication,source.Url) with
                             | None -> []
                             | Some v3Url -> [ tryNuGetV3 (auth, v3Url, packageName) ]
 

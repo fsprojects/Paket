@@ -1,3 +1,6 @@
+#### 2.27.14 - 24.11.2015
+* Reuse more of the NuGet v3 API for protocol selection
+
 #### 2.27.13 - 24.11.2015
 * Using new NuGet v3 protocol to retrieve unlisted packages - https://github.com/fsprojects/Paket/issues/1254
 

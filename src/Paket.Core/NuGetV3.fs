@@ -27,19 +27,10 @@ type JSONRootData =
     { Resources : JSONResource [] }
 
 /// [omit]
-let getSearchAutocompleteService (data : string) =
-    JsonConvert.DeserializeObject<JSONRootData>(data.Replace("@id","ID").Replace("@type","Type")).Resources
-    |> Array.tryFind (fun x -> (isNull x.Type |> not) && x.Type.ToLower() = "searchautocompleteservice")
-    |> Option.map (fun x -> x.ID)
-
-/// [omit]
-let getAllVersionsService (data : string) =
-    JsonConvert.DeserializeObject<JSONRootData>(data.Replace("@id","ID").Replace("@type","Type")).Resources
-    |> Array.tryFind (fun x -> (isNull x.Type |> not) && x.Type.ToLower() = "packagebaseaddress/3.0.0")
-    |> Option.map (fun x -> x.ID)
-
-/// [omit]
 let private searchDict = new System.Collections.Concurrent.ConcurrentDictionary<_,_>()
+
+/// [omit]
+let private allVersionsDict = new System.Collections.Concurrent.ConcurrentDictionary<_,_>()
 
 /// Calculates the NuGet v3 URL from a NuGet v2 URL.
 let calculateNuGet3Path(nugetUrl:string) = 
@@ -60,36 +51,27 @@ let getSearchAPI(auth,nugetUrl) =
         let result = 
             match calculateNuGet3Path nugetUrl with
             | None -> None
-            | Some v3Path ->
-                let serviceData =
-                    safeGetFromUrl(auth,v3Path,acceptJson)
-                    |> Async.RunSynchronously
-
-                match serviceData with
-                | None -> None
-                | Some data -> getSearchAutocompleteService data
-
+            | Some v3Path -> 
+                let source = { Url = v3Path; Authentication = auth }
+                Some (PackageSources.getNugetV3Resource source AutoComplete |> Async.RunSynchronously)
+                
         searchDict.[nugetUrl] <- result
         result
 
 /// [omit]
 let getAllVersionsAPI(auth,nugetUrl) = 
-    match searchDict.TryGetValue nugetUrl with
+    match allVersionsDict.TryGetValue nugetUrl with
     | true,v -> v
     | _ ->
         let result = 
             match calculateNuGet3Path nugetUrl with
             | None -> None
-            | Some v3Path ->
-                let serviceData =
-                    safeGetFromUrl(auth,v3Path,acceptJson)
-                    |> Async.RunSynchronously
+            | Some v3Path -> 
+                let source = { Url = v3Path; Authentication = auth }
+                Some (PackageSources.getNugetV3Resource source AllVersionsAPI |> Async.RunSynchronously)
+                
 
-                match serviceData with
-                | None -> None
-                | Some data -> getAllVersionsService data
-
-        searchDict.[nugetUrl] <- result
+        allVersionsDict.[nugetUrl] <- result
         result
 
 /// [omit]
@@ -157,7 +139,7 @@ let private getPackages(auth, nugetURL, packageNamePrefix, maxResults) = async {
     match getSearchAPI(auth,nugetURL) with
     | Some url -> 
         let query = sprintf "%s?q=%s&take=%d" url packageNamePrefix maxResults
-        let! response = safeGetFromUrl(auth,query,acceptJson)
+        let! response = safeGetFromUrl(auth |> Option.map toBasicAuth,query,acceptJson)
         match response with
         | Some text -> return extractPackages text
         | None -> return [||]
