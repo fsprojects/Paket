@@ -1,3 +1,6 @@
+#### 2.27.12 - 24.11.2015
+* WORKAROUND: Working around NuGt v3 protocol issues with unlisted packages - https://github.com/fsprojects/Paket/issues/1254
+
 #### 2.27.11 - 24.11.2015
 * BUGFIX: Specifying prereleases did not work with pessimistic version constraint - https://github.com/fsprojects/Paket/issues/1252
 

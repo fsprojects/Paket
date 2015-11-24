@@ -71,7 +71,8 @@ let extractVersions(response:string) =
 
 let internal findVersionsForPackage(v3Url, auth, packageName:Domain.PackageName, includingPrereleases, maxResults) =
     async {
-        let! response = safeGetFromUrl(auth,sprintf "%s?id=%O&take=%d%s" v3Url packageName (max maxResults 100000) (if includingPrereleases then "&prerelease=true" else ""), acceptXml) // Nuget is showing old versions first
+        let url = sprintf "%s?id=%O&take=%d%s" v3Url packageName (max maxResults 100000) (if includingPrereleases then "&prerelease=true" else "")
+        let! response = safeGetFromUrl(auth,url,acceptXml) // NuGet is showing old versions first
         match response with
         | Some text ->
             let versions =

@@ -114,3 +114,9 @@ let ``#1247 should report lockfile in parse errror``() =
         failwith "error was expected"
     with
     | exn when exn.Message.Contains "paket.lock" -> ()
+
+[<Test>]
+let ``#1254 should install unlisted transitive dependencies``() =
+    let lockFile = update "i001253-unlisted"
+    lockFile.Groups.[Constants.MainDependencyGroup].Resolution.[PackageName "WebActivator"].Version
+    |> shouldBeGreaterThan (SemVer.Parse "1.5.3")

@@ -613,12 +613,13 @@ let getVersionsCached key f (auth, nugetURL, package) =
 
 /// Allows to retrieve all version no. for a package from the given sources.
 let GetVersions root (sources, packageName:PackageName) = 
-    let v =
+    let getVersions useV3 =
         sources
         |> Seq.map (function
                    | Nuget source -> 
                         let auth = source.Authentication |> Option.map toBasicAuth
-                        let v3Feeds =
+                        let v3Feeds = 
+                            if not useV3 then [] else
                             match NuGetV3.getSearchAPI(auth,source.Url) with
                             | None -> []
                             | Some v3Url -> [ tryNuGetV3 (auth, v3Url, packageName) ]
@@ -651,9 +652,12 @@ let GetVersions root (sources, packageName:PackageName) =
         |> Array.concat
 
     let versions = 
-        match v with
+        match getVersions true with
         | versions when Array.isEmpty versions |> not -> versions
-        | _ -> failwithf "Could not find versions for package %O in any of the sources in %A." packageName (sources |> Seq.map (fun (s:PackageSource) -> s.ToString()) |> List.ofSeq)
+        | _ -> 
+            match getVersions false with
+            | versions when Array.isEmpty versions |> not -> versions
+            | _ -> failwithf "Could not find versions for package %O in any of the sources in %A." packageName (sources |> Seq.map (fun (s:PackageSource) -> s.ToString()) |> List.ofSeq)
 
     versions
     |> Seq.toList
