@@ -734,7 +734,7 @@ let ``SelectiveUpdate updates package that conflicts with transitive dependency 
     let expected = 
         [("Ninject.Extensions.Interception","0.0.2-alpha001");
         ("Ninject.Extensions.Logging","0.0.3");
-        ("Ninject", "0.0.3-alpha001")]
+        ("Ninject", "0.0.2-alpha001")]
         |> Seq.sortBy fst
 
     result

@@ -1,3 +1,6 @@
+#### 2.27.11 - 24.11.2015
+* BUGFIX: Specifying prereleases did not work with pessimistic version constraint - https://github.com/fsprojects/Paket/issues/1252
+
 #### 2.27.10 - 23.11.2015
 * Create installer demo - https://github.com/fsprojects/Paket/issues/1251
 

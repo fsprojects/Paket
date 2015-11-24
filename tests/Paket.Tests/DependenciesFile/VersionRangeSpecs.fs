@@ -22,7 +22,7 @@ let ``can detect specific version``() =
 [<Test>]
 let ``can detect ordinary Between``() = 
     parseRange "~> 2.2" |> shouldEqual (VersionRange.Between("2.2","3.0"))
-    parseRange "~> 1.2" |> shouldEqual (VersionRange.Between("1.2","2.0"))        
+    parseRange "~> 1.2" |> shouldEqual (VersionRange.Between("1.2","2.0"))
     (VersionRequirement(parseRange "~> 1.0",PreReleaseStatus.All)).IsInRange(SemVer.Parse("1.0.071.9556")) |> shouldEqual true
     (VersionRequirement(parseRange "~> 1.0",PreReleaseStatus.All)).IsInRange(SemVer.Parse("1.0.071.9432")) |> shouldEqual true
 
@@ -30,7 +30,7 @@ let ``can detect ordinary Between``() =
 let ``can detect lower versions for ~>``() = 
     parseRange "~> 3.2.0.0" |> shouldEqual (VersionRange.Between("3.2.0.0","3.2.1.0"))
 
-    parseRange "~> 1.2.3.4" |> shouldEqual (VersionRange.Between("1.2.3.4","1.2.4.0"))    
+    parseRange "~> 1.2.3.4" |> shouldEqual (VersionRange.Between("1.2.3.4","1.2.4.0"))
     parseRange "~> 1.2.3" |> shouldEqual (VersionRange.Between("1.2.3","1.3.0"))
     parseRange "~> 1.2" |> shouldEqual (VersionRange.Between("1.2","2.0"))
     parseRange "~> 1.0" |> shouldEqual (VersionRange.Between("1.0","2.0"))
@@ -80,7 +80,7 @@ let ``can detect prereleases``() =
 
 [<Test>]
 let ``can detect override operator``() = 
-    parseRange "== 3.2.0.0" |> shouldEqual (VersionRange.OverrideAll(SemVer.Parse "3.2.0.0"))    
+    parseRange "== 3.2.0.0" |> shouldEqual (VersionRange.OverrideAll(SemVer.Parse "3.2.0.0"))
 
 [<Test>]
 let ``can detect override operator for beta``() = 

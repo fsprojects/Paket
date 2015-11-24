@@ -1,4 +1,4 @@
-module paket.dependenciesFile.VersionRequirementSpecs
+module Paket.DependenciesFile.VersionRequirementSpecs
 
 open Paket
 open NUnit.Framework

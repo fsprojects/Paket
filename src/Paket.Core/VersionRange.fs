@@ -109,7 +109,7 @@ type VersionRequirement =
                 | VersionRangeBound.Including -> version >= from
                 | VersionRangeBound.Excluding -> version > from
 
-            isInLowerBound && isInUpperBound  && checkPrerelease prerelease version
+            (isInLowerBound && isInUpperBound && checkPrerelease prerelease version) || sameVersionWithoutPreRelease from
 
     member this.Range =
         match this with
