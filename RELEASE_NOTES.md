@@ -1,4 +1,4 @@
-#### 2.28.0-alpha001 - 25.11.2015
+#### 2.28.0 - 25.11.2015
 * Reuse more of the NuGet v3 API for protocol selection
 * Using new NuGet v3 protocol to retrieve unlisted packages - https://github.com/fsprojects/Paket/issues/1254
 * Created installer demo - https://github.com/fsprojects/Paket/issues/1251
