@@ -1,32 +1,13 @@
-#### 2.27.14 - 24.11.2015
+#### 2.28.0-alpha001 - 25.11.2015
 * Reuse more of the NuGet v3 API for protocol selection
-
-#### 2.27.13 - 24.11.2015
 * Using new NuGet v3 protocol to retrieve unlisted packages - https://github.com/fsprojects/Paket/issues/1254
-
-#### 2.27.12 - 24.11.2015
-* WORKAROUND: Working around NuGet v3 protocol issues with unlisted packages - https://github.com/fsprojects/Paket/issues/1254
-
-#### 2.27.11 - 24.11.2015
-* BUGFIX: Specifying prereleases did not work with pessimistic version constraint - https://github.com/fsprojects/Paket/issues/1252
-
-#### 2.27.10 - 23.11.2015
-* Create installer demo - https://github.com/fsprojects/Paket/issues/1251
-
-#### 2.27.7 - 23.11.2015
-* PERFORMANCE: Avoid requests to teamcity that lead to server error
-
-#### 2.27.6 - 23.11.2015
-* USABILITY: If parsing of lock file fails Paket reports the lock file filename - https://github.com/fsprojects/Paket/issues/1247
-
-#### 2.27.5 - 19.11.2015
+* Created installer demo - https://github.com/fsprojects/Paket/issues/1251
 * Adding monoandroid41 framework moniker - https://github.com/fsprojects/Paket/pull/1245
-
-#### 2.27.3 - 19.11.2015
+* BUGFIX: Specifying prereleases did not work with pessimistic version constraint - https://github.com/fsprojects/Paket/issues/1252
 * BUGFIX: Unlisted property get properly filled from NuGet v3 API - https://github.com/fsprojects/Paket/issues/1242
- 
-#### 2.27.2 - 19.11.2015
 * BUGFIX: Bootstrapper compares version per SemVer - https://github.com/fsprojects/Paket/pull/1236
+* PERFORMANCE: Avoid requests to teamcity that lead to server error
+* USABILITY: If parsing of lock file fails Paket reports the lock file filename - https://github.com/fsprojects/Paket/issues/1247
 
 #### 2.27.0 - 19.11.2015
 * Binding redirects get cleaned during install - https://github.com/fsprojects/Paket/pull/1235
