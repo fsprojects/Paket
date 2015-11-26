@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Configuration;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -12,10 +13,13 @@ namespace Paket.Bootstrapper
     class Program
     {
         const string PreferNugetCommandArg = "--prefer-nuget";
+        const string PreferNugetAppSettingsKey = "PreferNuget";
         const string PrereleaseCommandArg = "prerelease";
         const string PaketVersionEnv = "PAKET.VERSION";
+        const string PaketVersionAppSettingsKey = "PaketVersion";
         const string SelfUpdateCommandArg = "--self";
         const string SilentCommandArg = "-s";
+        const string NugetSourceArgPrefix = "--nuget-source=";
 
         static void Main(string[] args)
         {
@@ -27,6 +31,10 @@ namespace Paket.Bootstrapper
             {
                 preferNuget = true;
                 commandArgs = args.Where(x => x != PreferNugetCommandArg).ToArray();
+            }
+            else if (ConfigurationManager.AppSettings[PreferNugetAppSettingsKey] == "true")
+            {
+                preferNuget = true;
             }
             var silent = false;
             if (commandArgs.Contains(SilentCommandArg))
@@ -125,7 +133,7 @@ namespace Paket.Bootstrapper
         private static IDownloadStrategy GetEffectiveDownloadStrategy(DownloadArguments dlArgs, bool preferNuget)
         {
             var gitHubDownloadStrategy = new GitHubDownloadStrategy(BootstrapperHelper.PrepareWebClient, BootstrapperHelper.PrepareWebRequest, BootstrapperHelper.GetDefaultWebProxyFor);
-            var nugetDownloadStrategy = new NugetDownloadStrategy(BootstrapperHelper.PrepareWebClient, BootstrapperHelper.GetDefaultWebProxyFor, dlArgs.Folder);
+            var nugetDownloadStrategy = new NugetDownloadStrategy(BootstrapperHelper.PrepareWebClient, BootstrapperHelper.GetDefaultWebProxyFor, dlArgs.Folder, dlArgs.NugetSource);
 
             IDownloadStrategy effectiveStrategy;
             if (preferNuget)
@@ -145,8 +153,9 @@ namespace Paket.Bootstrapper
         {
             var folder = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
             var target = Path.Combine(folder, "paket.exe");
+            string nugetSource = null;
 
-            var latestVersion = Environment.GetEnvironmentVariable(PaketVersionEnv) ?? String.Empty;
+            var latestVersion = ConfigurationManager.AppSettings[PaketVersionAppSettingsKey] ?? Environment.GetEnvironmentVariable(PaketVersionEnv) ?? String.Empty;
             var ignorePrerelease = true;
             bool doSelfUpdate = false;
             var commandArgs = args;
@@ -155,6 +164,12 @@ namespace Paket.Bootstrapper
             {
                 commandArgs = commandArgs.Where(x => x != SelfUpdateCommandArg).ToArray();
                 doSelfUpdate = true;
+            }
+            var nugetSourceArg = commandArgs.SingleOrDefault(x => x.StartsWith(NugetSourceArgPrefix));
+            if (nugetSourceArg != null)
+            {
+                commandArgs = commandArgs.Where(x => !x.StartsWith(NugetSourceArgPrefix)).ToArray();
+                nugetSource = nugetSourceArg.Substring(NugetSourceArgPrefix.Length);
             }
             if (commandArgs.Length >= 1)
             {
@@ -189,7 +204,7 @@ namespace Paket.Bootstrapper
             }
 
 
-            return new DownloadArguments(latestVersion, ignorePrerelease, folder, target, doSelfUpdate);
+            return new DownloadArguments(latestVersion, ignorePrerelease, folder, target, doSelfUpdate, nugetSource);
         }
     }
 }
