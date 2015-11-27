@@ -1,11 +1,8 @@
-#### 2.28.3 - 27.11.2015
-* Show a warning when the resolver selects an unlisted version - https://github.com/fsprojects/Paket/pull/1258
-
-#### 2.28.2 - 27.11.2015
-* Better error message when lock file doesn't contain version pin - https://github.com/fsprojects/Paket/issues/1256
-
-#### 2.28.1 - 27.11.2015
-* Do not normalize versions since it might break Klondike - https://github.com/fsprojects/Paket/issues/1257
+#### 2.29.0 - 27.11.2015
+* Allow specifying Nuget Source and provide option to specify parameters with config file in bootstrapper - https://github.com/fsprojects/Paket/pull/1261
+* BUGFIX: Do not normalize versions since it might break Klondike - https://github.com/fsprojects/Paket/issues/1257
+* COSMETICS: Better error message when lock file doesn't contain version pin - https://github.com/fsprojects/Paket/issues/1256
+* COSMETICS: Show a warning when the resolver selects an unlisted version - https://github.com/fsprojects/Paket/pull/1258
 
 #### 2.28.0 - 25.11.2015
 * Reuse more of the NuGet v3 API for protocol selection
