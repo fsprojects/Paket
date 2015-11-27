@@ -1,4 +1,5 @@
 using System;
+using System.Configuration;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
@@ -12,18 +13,23 @@ namespace Paket.Bootstrapper
         internal class NugetApiHelper
         {
             private readonly string packageName;
-            const string GetPackageVersionTemplate = "https://www.nuget.org/api/v2/package-versions/{0}";
-            const string GetLatestFromNugetUrlTemplate = "https://www.nuget.org/api/v2/package/{0}";
-            const string GetSpecificFromNugetUrlTemplate = "https://www.nuget.org/api/v2/package/{0}/{1}";
+            private readonly string nugetSource;
 
-            public NugetApiHelper(string packageName)
+            const string NugetSourceAppSettingsKey = "NugetSource";
+            const string DefaultNugetSource = "https://www.nuget.org/api/v2";
+            const string GetPackageVersionTemplate = "{0}/package-versions/{1}";
+            const string GetLatestFromNugetUrlTemplate = "{0}/package/{1}";
+            const string GetSpecificFromNugetUrlTemplate = "{0}/package/{1}/{2}";
+
+            public NugetApiHelper(string packageName, string nugetSource)
             {
                 this.packageName = packageName;
+                this.nugetSource = nugetSource ?? ConfigurationManager.AppSettings[NugetSourceAppSettingsKey] ?? DefaultNugetSource;
             }
 
             internal string GetAllPackageVersions(bool includePrerelease)
             {
-                var request = String.Format(GetPackageVersionTemplate, packageName);
+                var request = String.Format(GetPackageVersionTemplate, nugetSource, packageName);
                 const string withPrereleases = "?includePrerelease=true";
                 if (includePrerelease)
                     request += withPrereleases;
@@ -32,12 +38,12 @@ namespace Paket.Bootstrapper
 
             internal string GetLatestPackage()
             {
-                return String.Format(GetLatestFromNugetUrlTemplate, packageName);
+                return String.Format(GetLatestFromNugetUrlTemplate, nugetSource, packageName);
             }
 
             internal string GetSpecificPackageVersion(string version)
             {
-                return String.Format(GetSpecificFromNugetUrlTemplate, packageName, version);
+                return String.Format(GetSpecificFromNugetUrlTemplate, nugetSource, packageName, version);
             }
         }
 
@@ -45,14 +51,16 @@ namespace Paket.Bootstrapper
         private PrepareWebClientDelegate PrepareWebClient { get; set; }
         private GetDefaultWebProxyForDelegate GetDefaultWebProxyFor { get; set; }
         private string Folder { get; set; }
+        private string NugetSource { get; set; }
         private const string PaketNugetPackageName = "Paket";
         private const string PaketBootstrapperNugetPackageName = "Paket.Bootstrapper";
 
-        public NugetDownloadStrategy(PrepareWebClientDelegate prepareWebClient, GetDefaultWebProxyForDelegate getDefaultWebProxyFor, string folder)
+        public NugetDownloadStrategy(PrepareWebClientDelegate prepareWebClient, GetDefaultWebProxyForDelegate getDefaultWebProxyFor, string folder, string nugetSource)
         {
             PrepareWebClient = prepareWebClient;
             GetDefaultWebProxyFor = getDefaultWebProxyFor;
             Folder = folder;
+            NugetSource = nugetSource;
         }
 
         public string Name
@@ -64,7 +72,7 @@ namespace Paket.Bootstrapper
 
         public string GetLatestVersion(bool ignorePrerelease)
         {
-            var apiHelper = new NugetApiHelper(PaketNugetPackageName);
+            var apiHelper = new NugetApiHelper(PaketNugetPackageName, NugetSource);
             using (var client = new WebClient())
             {
                 var versionRequestUrl = apiHelper.GetAllPackageVersions(!ignorePrerelease);
@@ -83,7 +91,7 @@ namespace Paket.Bootstrapper
 
         public void DownloadVersion(string latestVersion, string target, bool silent)
         {
-            var apiHelper = new NugetApiHelper(PaketNugetPackageName);
+            var apiHelper = new NugetApiHelper(PaketNugetPackageName, NugetSource);
             using (WebClient client = new WebClient())
             {
                 const string paketNupkgFile = "paket.latest.nupkg";
@@ -123,7 +131,7 @@ namespace Paket.Bootstrapper
                     Console.WriteLine("Bootstrapper is up to date. Nothing to do.");
                 return;
             }
-            var apiHelper = new NugetApiHelper(PaketBootstrapperNugetPackageName);
+            var apiHelper = new NugetApiHelper(PaketBootstrapperNugetPackageName, NugetSource);
 
             const string paketNupkgFile = "paket.bootstrapper.latest.nupkg";
             const string paketNupkgFileTemplate = "paket.bootstrapper.{0}.nupkg";
