@@ -264,7 +264,10 @@ module LockFileParser =
                     | Some remote -> 
                         let package,settings = parsePackage details
                         let parts' = package.Split ' '
-                        let version = parts'.[1] |> removeBrackets
+                        let version = 
+                            if parts'.Length < 2 then
+                                failwithf "No version specified for package %O in group %O." package currentGroup.GroupName
+                            parts'.[1] |> removeBrackets
 
                         { currentGroup with 
                             LastWasPackage = true

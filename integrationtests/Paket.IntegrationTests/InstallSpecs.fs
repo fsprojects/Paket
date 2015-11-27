@@ -45,3 +45,11 @@ let ``#1233 install props``() =
     let s1 = File.ReadAllText oldFile |> normalizeLineEndings
     let s2 = File.ReadAllText newFile |> normalizeLineEndings
     s1 |> shouldEqual s2
+
+[<Test>]
+let ``#1256 should report error in lock file``() =
+    try
+        install "i001256-wrong-lock" |> ignore
+        failwith "error expected"
+    with
+    | exn when exn.Message.Contains("FAKE") && exn.Message.Contains("paket.lock") -> ()
