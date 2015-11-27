@@ -95,3 +95,27 @@ let ``should override graph3 conflict to package C``() =
         let conflicting = stillOpen |> Seq.head 
         conflicting.Name 
         |> shouldEqual (PackageName "C")
+
+let configWithServices = """
+source https://nuget.org/api/v2
+
+nuget Service 1.1.31.2
+nuget Service.Contracts 1.1.31.2
+"""
+
+let graphWithServices = [
+    "Service","1.1.31.2",["Service.Core",VersionRequirement(VersionRange.AtLeast "1.1.31.2",PreReleaseStatus.No)]
+    "Service","1.1.47",["Service.Core",VersionRequirement(VersionRange.AtLeast "1.1.47",PreReleaseStatus.No)]
+    "Service.Core","1.1.31.2",["Service.Contracts",VersionRequirement(VersionRange.AtLeast "1.1.31.2",PreReleaseStatus.No)]
+    "Service.Core","1.1.47",["Service.Contracts",VersionRequirement(VersionRange.AtLeast "1.1.47",PreReleaseStatus.No)]
+    "Service.Contracts","1.1.31.2",[]
+    "Service.Contracts","1.1.47",[]
+]
+
+[<Test>]
+let ``should resolve simple config with services``() = 
+    let cfg = DependenciesFile.FromCode(configWithServices)
+    let resolved = ResolveWithGraph(cfg,noSha1,VersionsFromGraphAsSeq graphWithServices, PackageDetailsFromGraph graphWithServices).[Constants.MainDependencyGroup].ResolvedPackages.GetModelOrFail()
+    getVersion resolved.[PackageName "Service.Core"] |> shouldEqual "1.1.31.2"
+    getVersion resolved.[PackageName "Service.Contracts"] |> shouldEqual "1.1.31.2"
+    getVersion resolved.[PackageName "Service"] |> shouldEqual "1.1.31.2"
