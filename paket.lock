@@ -2,15 +2,14 @@ NUGET
   remote: https://nuget.org/api/v2
   specs:
     Argu (1.1.2)
+    Chessie (0.2.2)
+      FSharp.Core
     FSharp.Core (4.0.0.1) - redirects: on
     Newtonsoft.Json (7.0.1) - redirects: on
 GITHUB
   remote: fsharp/FAKE
   specs:
     src/app/FakeLib/Globbing/Globbing.fs (752592c55d7f9e2b7a10f1782cb4128703d7a7d3)
-  remote: fsprojects/Chessie
-  specs:
-    src/Chessie/ErrorHandling.fs (1f23b1caeb1f87e750abc96a25109376771dd090)
 GROUP Build
 NUGET
   remote: https://nuget.org/api/v2

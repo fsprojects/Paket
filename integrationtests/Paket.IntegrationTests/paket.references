@@ -1,4 +1,5 @@
 FSharp.Core
+Chessie
 
 group Test
   NUnit
