@@ -1,4 +1,4 @@
-#### 2.28.1 - 27.11.2015
+#### 2.28.2 - 27.11.2015
 * Better error message when lock file doesn't contain version pin - https://github.com/fsprojects/Paket/issues/1256
 
 #### 2.28.1 - 27.11.2015
