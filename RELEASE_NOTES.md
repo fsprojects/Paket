@@ -1,3 +1,6 @@
+#### 2.28.3 - 27.11.2015
+* Show a warning when the resolver selects an unlisted version - https://github.com/fsprojects/Paket/pull/1258
+
 #### 2.28.2 - 27.11.2015
 * Better error message when lock file doesn't contain version pin - https://github.com/fsprojects/Paket/issues/1256
 

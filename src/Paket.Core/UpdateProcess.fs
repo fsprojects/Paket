@@ -142,9 +142,14 @@ let selectiveUpdate force getSha1 getSortedVersionsF getPackageDetailsF (lockFil
         |> Map.map (fun groupName dependenciesGroup -> 
                 match resolution |> Map.tryFind groupName with
                 | Some group ->
+                    let model = group.ResolvedPackages.GetModelOrFail()
+                    for x in model do
+                        if x.Value.Unlisted then
+                            traceWarnfn "The owner of %O %A has unlisted the package. This could mean that the package version is deprecated or shouldn't be used anymore." x.Value.Name x.Value.Version
+
                     { Name = dependenciesGroup.Name
                       Options = dependenciesGroup.Options
-                      Resolution = group.ResolvedPackages.GetModelOrFail()
+                      Resolution = model
                       RemoteFiles = group.ResolvedSourceFiles }
                 | None -> lockFile.GetGroup groupName) // just copy from lockfile
     

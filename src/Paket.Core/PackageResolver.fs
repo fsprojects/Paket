@@ -239,7 +239,6 @@ let Resolve(groupName:GroupName, sources, getVersionsF, getPackageDetailsF, stra
             let newRestrictions = filterRestrictions dependency.Settings.FrameworkRestrictions globalFrameworkRestrictions
 
             let packageDetails : PackageDetails = getPackageDetailsF sources dependency.Name version
-            if packageDetails.Unlisted then traceWarnfn " - %O %A - the owner has unlisted this package. This could mean that the package is deprecated or shouldn't be used anymore" dependency.Name version
 
             let filteredDependencies = DependencySetFilter.filterByRestrictions newRestrictions packageDetails.DirectDependencies
 
