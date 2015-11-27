@@ -285,7 +285,7 @@ dependencies
     Argu (1.1.2)
     FSharp.Core (4.0.0.1) - redirects: on
     Newtonsoft.Json (7.0.1) - redirects: on
-    My.OtherThing (1.2.3) - redirects: on
+    My.OtherThing (1.2.3.0) - redirects: on
 GITHUB
   remote: fsharp/FAKE
   specs:
@@ -330,7 +330,9 @@ GITHUB
         name1 |> shouldEqual (PackageName "FSharp.Core")
         range1.Range |> shouldEqual (Specific (SemVer.Parse "4.3.1"))
         name2 |> shouldEqual (PackageName "My.OtherThing")
-        range2.Range |> shouldEqual (Specific (SemVer.Parse "1.2.3"))
+        range2.Range.ToString() |> shouldEqual "1.2.3.0"
+        range2.FormatInNuGetSyntax() |> shouldEqual "[1.2.3.0]"
+
     | _ -> Assert.Fail()
 
 [<Test>]

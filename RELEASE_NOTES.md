@@ -1,3 +1,6 @@
+#### 2.28.1 - 27.11.2015
+* Do not normalize versions since it might break Klondike - https://github.com/fsprojects/Paket/issues/1257
+
 #### 2.28.0 - 25.11.2015
 * Reuse more of the NuGet v3 API for protocol selection
 * Using new NuGet v3 protocol to retrieve unlisted packages - https://github.com/fsprojects/Paket/issues/1254

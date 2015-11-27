@@ -200,7 +200,10 @@ type VersionRequirement =
                 | _ -> "-prerelease"
 
             let normalize (v:SemVerInfo) =
-                let s = v.Normalize()
+                let s = 
+                    let u = v.ToString()
+                    let n = v.Normalize()
+                    if u.Length > n.Length then u else n // Do not short version since Klondike doesn't understand
                 if s.Contains("-") then s else s + pre
 
             let str =
