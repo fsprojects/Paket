@@ -59,7 +59,7 @@ let getDirectoryInfo pathInfo root =
             | RelativePath s -> DirectoryInfo(Path.Combine(root, s))
         
 /// Creates a directory if it does not exist.
-let createDir path = 
+let internal createDir path = 
     try
         let dir = DirectoryInfo path
         if not dir.Exists then dir.Create()
@@ -68,7 +68,7 @@ let createDir path =
         DirectoryCreateError path |> fail
 
 /// Cleans a directory by deleting it and recreating it.
-let CleanDir path = 
+let internal CleanDir path = 
     let di = DirectoryInfo path
     if di.Exists then 
         try
@@ -398,27 +398,27 @@ let parseKeyValuePairs(s:string) =
             dict.[!lastKey] <- dict.[!lastKey] + ", " + p
     dict
 
-let downloadStringSync (url : string) (client : System.Net.WebClient) = 
+let internal downloadStringSync (url : string) (client : System.Net.WebClient) = 
     try 
         client.DownloadString url |> ok
     with _ ->
         DownloadError url |> fail 
 
-let downloadFileSync (url : string) (fileName : string) (client : System.Net.WebClient) = 
+let internal downloadFileSync (url : string) (fileName : string) (client : System.Net.WebClient) = 
     tracefn "Downloading file from %s to %s" url fileName
     try 
         client.DownloadFile(url, fileName) |> ok
     with _ ->
         DownloadError url |> fail 
 
-let saveFile (fileName : string) (contents : string) =
+let internal saveFile (fileName : string) (contents : string) =
     tracefn "Saving file %s" fileName
     try 
         File.WriteAllText(fileName, contents) |> ok
     with _ ->
         FileSaveError fileName |> fail
 
-let removeFile (fileName : string) =
+let internal removeFile (fileName : string) =
     if File.Exists fileName then
         tracefn "Removing file %s" fileName
         try

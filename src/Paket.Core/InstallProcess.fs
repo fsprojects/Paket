@@ -227,7 +227,7 @@ let private applyBindingRedirects (loadedLibs:Dictionary<_,_>) createNewBindingF
 
     applyBindingRedirectsToFolder createNewBindingFiles cleanBindingRedirects root bindingRedirects
 
-let findAllReferencesFiles root =
+let internal findAllReferencesFiles root =
     root
     |> ProjectFile.FindAllProjects
     |> Array.map (fun p ->         

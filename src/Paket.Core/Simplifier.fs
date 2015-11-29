@@ -27,7 +27,7 @@ let private removePackage(packageName, transitivePackages, fileName, interactive
     else
         false
 
-let simplifyDependenciesFile (dependenciesFile : DependenciesFile, groupName, flatLookup, interactive) = trial {
+let internal simplifyDependenciesFile (dependenciesFile : DependenciesFile, groupName, flatLookup, interactive) = trial {
     let packages = dependenciesFile.Groups.[groupName].Packages |> List.map (fun p -> p.Name)
     let! transitive = findTransitive(groupName, packages, flatLookup, DependencyNotFoundInLockFile)
 
@@ -39,7 +39,7 @@ let simplifyDependenciesFile (dependenciesFile : DependenciesFile, groupName, fl
                 else d) dependenciesFile
 }
 
-let simplifyReferencesFile (refFile:ReferencesFile, groupName, flatLookup, interactive) = trial {
+let internal simplifyReferencesFile (refFile:ReferencesFile, groupName, flatLookup, interactive) = trial {
     match refFile.Groups |> Map.tryFind groupName with
     | None -> return refFile
     | Some g -> 
@@ -62,7 +62,7 @@ let beforeAndAfter environment dependenciesFile projects =
         DependenciesFile = dependenciesFile
         Projects = projects }
 
-let simplify interactive environment = trial {
+let internal simplify interactive environment = trial {
     let! lockFile = environment |> PaketEnv.ensureLockFileExists
 
     let flatLookup = lockFile.GetDependencyLookupTable()

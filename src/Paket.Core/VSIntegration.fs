@@ -8,7 +8,7 @@ open Domain
 open Releases
 
 /// Activates the Visual Studio Nuget autorestore feature in all projects
-let TurnOnAutoRestore environment =
+let internal TurnOnAutoRestore environment =
     let exeDir = Path.Combine(environment.RootDirectory.FullName, ".paket")
 
     trial {         
@@ -25,7 +25,7 @@ let TurnOnAutoRestore environment =
     } 
 
 /// Deactivates the Visual Studio Nuget autorestore feature in all projects
-let TurnOffAutoRestore environment = 
+let internal TurnOffAutoRestore environment = 
     let exeDir = Path.Combine(environment.RootDirectory.FullName, ".paket")
     
     trial {
