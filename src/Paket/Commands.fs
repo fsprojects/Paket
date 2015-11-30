@@ -292,6 +292,7 @@ with
 type PackArgs =
     | [<CustomCommandLine("output")>][<Mandatory>] Output of string
     | [<CustomCommandLine("buildconfig")>] BuildConfig of string
+    | [<CustomCommandLine("buildplatform")>] BuildPlatform of string
     | [<CustomCommandLine("version")>] Version of string
     | [<CustomCommandLine("templatefile")>] TemplateFile of string
     | [<CustomCommandLine("releaseNotes")>] ReleaseNotes of string

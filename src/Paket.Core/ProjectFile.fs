@@ -979,7 +979,7 @@ type ProjectFile =
         then "Compile"
         else "Content"
 
-    member this.GetOutputDirectory buildConfiguration =
+    member this.GetOutputDirectory buildConfiguration buildPlatform =
         let startingData = Map.empty<string,string>.Add("Configuration", buildConfiguration)
 
         this.GetPropertyWithDefaults "OutputPath" startingData

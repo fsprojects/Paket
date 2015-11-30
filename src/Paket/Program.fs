@@ -215,6 +215,7 @@ let pack (results : ParseResults<_>) =
     Dependencies.Locate()
                 .Pack(outputPath,
                       ?buildConfig = results.TryGetResult <@ PackArgs.BuildConfig @>,
+                      ?buildPlatform = results.TryGetResult <@ PackArgs.BuildPlatform @>,
                       ?version = results.TryGetResult <@ PackArgs.Version @>,
                       ?releaseNotes = results.TryGetResult <@ PackArgs.ReleaseNotes @>,
                       ?templateFile = results.TryGetResult <@ PackArgs.TemplateFile @>,
