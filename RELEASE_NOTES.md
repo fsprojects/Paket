@@ -1,4 +1,4 @@
-#### 2.30.0-alpha001 - 30.11.2015
+#### 2.30.0-alpha002 - 30.11.2015
 * Switched to using Chessie Nuget package - https://github.com/fsprojects/Paket/pull/1266
 
 #### 2.29.0 - 27.11.2015
