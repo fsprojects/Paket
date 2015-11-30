@@ -14,6 +14,8 @@ namespace Paket.Bootstrapper
     {
         const string PreferNugetCommandArg = "--prefer-nuget";
         const string PreferNugetAppSettingsKey = "PreferNuget";
+        const string ForceNugetCommandArg = "--force-nuget";
+        const string ForceNugetAppSettingsKey = "ForceNuget";
         const string PrereleaseCommandArg = "prerelease";
         const string PaketVersionEnv = "PAKET.VERSION";
         const string PaketVersionAppSettingsKey = "PaketVersion";
@@ -27,6 +29,7 @@ namespace Paket.Bootstrapper
 
             var commandArgs = args;
             var preferNuget = false;
+            var forceNuget = false;
             if (commandArgs.Contains(PreferNugetCommandArg))
             {
                 preferNuget = true;
@@ -36,6 +39,15 @@ namespace Paket.Bootstrapper
             {
                 preferNuget = true;
             }
+            if (commandArgs.Contains(ForceNugetCommandArg))
+            {
+                forceNuget = true;
+                commandArgs = args.Where(x => x != ForceNugetCommandArg).ToArray();
+            }
+            else if (ConfigurationManager.AppSettings[ForceNugetAppSettingsKey] == "true")
+            {
+                forceNuget = true;
+            }
             var silent = false;
             if (commandArgs.Contains(SilentCommandArg))
             {
@@ -44,7 +56,7 @@ namespace Paket.Bootstrapper
             }
             var dlArgs = EvaluateCommandArgs(commandArgs, silent);
 
-            var effectiveStrategy = GetEffectiveDownloadStrategy(dlArgs, preferNuget, false);
+            var effectiveStrategy = GetEffectiveDownloadStrategy(dlArgs, preferNuget, forceNuget);
 
             StartPaketBootstrapping(effectiveStrategy, dlArgs, silent);
         }
