@@ -303,6 +303,7 @@ with
             match this with
             | Output(_) -> "Output directory to put .nupkg files."
             | BuildConfig(_) -> "Optionally specify build configuration that should be packaged (defaults to Release)."
+            | BuildPlatform(_) -> "Optionally specify build platform that should be packaged (if not provided or empty, checks all known platform targets)."
             | Version(_) -> "Specify version of the package."
             | TemplateFile(_) -> "Allows to specify a single template file."
             | ReleaseNotes(_) -> "Specify relase notes for the package."
