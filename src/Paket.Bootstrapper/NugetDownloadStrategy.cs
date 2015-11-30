@@ -127,10 +127,25 @@ namespace Paket.Bootstrapper
                 var randomFullPath = Path.Combine(Folder, Path.GetRandomFileName());
                 Directory.CreateDirectory(randomFullPath);
                 var paketPackageFile = Path.Combine(randomFullPath, paketFile);
-                if (!silent)
-                    Console.WriteLine("Starting download from {0}", paketDownloadUrl);
-                PrepareWebClient(client, paketDownloadUrl);
-                client.DownloadFile(paketDownloadUrl, paketPackageFile);
+
+                if (Directory.Exists(NugetSource))
+                {
+                    if (latestVersion == String.Empty) latestVersion = this.GetLatestVersion(false);
+                    var sourcePath = Path.Combine(NugetSource, String.Format(paketNupkgFileTemplate, latestVersion));
+
+                    if (!silent)
+                        Console.WriteLine("Starting download from {0}", sourcePath);
+
+                    File.Copy(sourcePath, paketPackageFile);
+                }
+                else
+                {
+                    if (!silent)
+                        Console.WriteLine("Starting download from {0}", paketDownloadUrl);
+
+                    PrepareWebClient(client, paketDownloadUrl);
+                    client.DownloadFile(paketDownloadUrl, paketPackageFile);
+                }
 
                 ZipFile.ExtractToDirectory(paketPackageFile, randomFullPath);
                 var paketSourceFile = Path.Combine(randomFullPath, "tools", "paket.exe");
