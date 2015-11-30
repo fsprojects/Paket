@@ -72,20 +72,39 @@ namespace Paket.Bootstrapper
 
         public string GetLatestVersion(bool ignorePrerelease)
         {
-            var apiHelper = new NugetApiHelper(PaketNugetPackageName, NugetSource);
-            using (var client = new WebClient())
+            if (Directory.Exists(NugetSource))
             {
-                var versionRequestUrl = apiHelper.GetAllPackageVersions(!ignorePrerelease);
-                PrepareWebClient(client, versionRequestUrl);
-                var versions = client.DownloadString(versionRequestUrl);
-                var latestVersion = versions.
-                    Trim('[', ']').
-                    Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries).
-                    Select(x => x.Trim('"')).
+                var paketPrefix = "paket.";
+                var latestLocalVersion =
+                    Directory.EnumerateFiles(NugetSource, "paket.*.nupkg", SearchOption.TopDirectoryOnly).
+                    Select(x => Path.GetFileNameWithoutExtension(x)).
+                    // If the specified character isn't a digit, then the file
+                    // likely contains the bootstrapper or paket.core
+                    Where(x => x.Length > paketPrefix.Length && Char.IsDigit(x[paketPrefix.Length])).
+                    Select(x => x.Substring(paketPrefix.Length)).
                     Select(SemVer.Create).
+                    Where(x => !ignorePrerelease || (x.PreRelease == null)).
                     OrderBy(x => x).
                     LastOrDefault(x => !String.IsNullOrWhiteSpace(x.Original));
-                return latestVersion != null ? latestVersion.Original : String.Empty;
+                return latestLocalVersion != null ? latestLocalVersion.Original : String.Empty;
+            }
+            else
+            {
+                var apiHelper = new NugetApiHelper(PaketNugetPackageName, NugetSource);
+                using (var client = new WebClient())
+                {
+                    var versionRequestUrl = apiHelper.GetAllPackageVersions(!ignorePrerelease);
+                    PrepareWebClient(client, versionRequestUrl);
+                    var versions = client.DownloadString(versionRequestUrl);
+                    var latestVersion = versions.
+                        Trim('[', ']').
+                        Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries).
+                        Select(x => x.Trim('"')).
+                        Select(SemVer.Create).
+                        OrderBy(x => x).
+                        LastOrDefault(x => !String.IsNullOrWhiteSpace(x.Original));
+                    return latestVersion != null ? latestVersion.Original : String.Empty;
+                }
             }
         }
 
