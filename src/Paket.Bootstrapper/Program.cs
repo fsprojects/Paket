@@ -44,7 +44,7 @@ namespace Paket.Bootstrapper
             }
             var dlArgs = EvaluateCommandArgs(commandArgs, silent);
 
-            var effectiveStrategy = GetEffectiveDownloadStrategy(dlArgs, preferNuget);
+            var effectiveStrategy = GetEffectiveDownloadStrategy(dlArgs, preferNuget, false);
 
             StartPaketBootstrapping(effectiveStrategy, dlArgs, silent);
         }
@@ -130,13 +130,18 @@ namespace Paket.Bootstrapper
             }
         }
 
-        private static IDownloadStrategy GetEffectiveDownloadStrategy(DownloadArguments dlArgs, bool preferNuget)
+        private static IDownloadStrategy GetEffectiveDownloadStrategy(DownloadArguments dlArgs, bool preferNuget, bool forceNuget)
         {
             var gitHubDownloadStrategy = new GitHubDownloadStrategy(BootstrapperHelper.PrepareWebClient, BootstrapperHelper.PrepareWebRequest, BootstrapperHelper.GetDefaultWebProxyFor);
             var nugetDownloadStrategy = new NugetDownloadStrategy(BootstrapperHelper.PrepareWebClient, BootstrapperHelper.GetDefaultWebProxyFor, dlArgs.Folder, dlArgs.NugetSource);
 
             IDownloadStrategy effectiveStrategy;
-            if (preferNuget)
+            if (forceNuget)
+            {
+                effectiveStrategy = nugetDownloadStrategy;
+                nugetDownloadStrategy.FallbackStrategy = null;
+            }
+            else if (preferNuget)
             {
                 effectiveStrategy = nugetDownloadStrategy;
                 nugetDownloadStrategy.FallbackStrategy = gitHubDownloadStrategy;
