@@ -53,7 +53,7 @@ let private merge buildConfig version projectFile templateFile =
                 | Valid completeCore -> { templateFile with Contents = CompleteInfo(completeCore, opt) }
     | _ -> templateFile
 
-let Pack(workingDir,dependencies : DependenciesFile, packageOutputPath, buildConfig, version, releaseNotes, templateFile, lockDependencies) =
+let Pack(workingDir,dependencies : DependenciesFile, packageOutputPath, buildConfig, version, releaseNotes, templateFile, excludedTemplates, lockDependencies) =
     let buildConfig = defaultArg buildConfig "Release"
     let packageOutputPath = if Path.IsPathRooted(packageOutputPath) then packageOutputPath else Path.Combine(workingDir,packageOutputPath)
     Utils.createDir packageOutputPath |> returnOrFail
@@ -115,12 +115,19 @@ let Pack(workingDir,dependencies : DependenciesFile, packageOutputPath, buildCon
                                 | [] -> failwithf "There was no project file found for template file %s" fileName
                                 | _ -> failwithf "There was more than one project file found for template file %s" fileName
                             | _ -> templateFile ]
+
+    let excludedTemplates =
+        match excludedTemplates with
+        | None -> allTemplates
+        | Some excluded -> 
+            let excluded = set excluded
+            allTemplates |> List.filter (fun t -> match t with CompleteTemplate(c,_) -> not (excluded.Contains c.Id) | _ -> true)
     
     // set version
     let templatesWithVersion =
         match version with
-        | None -> allTemplates
-        | Some v -> allTemplates |> List.map (TemplateFile.setVersion v)
+        | None -> excludedTemplates
+        | Some v -> excludedTemplates |> List.map (TemplateFile.setVersion v)
 
     // set release notes
     let processedTemplates =

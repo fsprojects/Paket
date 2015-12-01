@@ -218,6 +218,7 @@ let pack (results : ParseResults<_>) =
                       ?version = results.TryGetResult <@ PackArgs.Version @>,
                       ?releaseNotes = results.TryGetResult <@ PackArgs.ReleaseNotes @>,
                       ?templateFile = results.TryGetResult <@ PackArgs.TemplateFile @>,
+                      excludedTemplates = results.GetResults <@ PackArgs.ExcludedTemplate @>,
                       workingDir = Environment.CurrentDirectory,
                       lockDependencies = results.Contains <@ PackArgs.LockDependencies @>)
 
