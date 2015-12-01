@@ -53,3 +53,12 @@ let ``#1256 should report error in lock file``() =
         failwith "error expected"
     with
     | exn when exn.Message.Contains("FAKE") && exn.Message.Contains("paket.lock") -> ()
+
+[<Test>]
+let ``#1270 install net461``() = 
+    let newLockFile = install "i001270-net461"
+    let newFile = Path.Combine(scenarioTempPath "i001270-net461","MyClassLibrary","MyClassLibrary","MyClassLibrary.csproj")
+    let oldFile = Path.Combine(originalScenarioPath "i001270-net461","MyClassLibrary","MyClassLibrary","MyClassLibrary.csprojtemplate")
+    let s1 = File.ReadAllText oldFile |> normalizeLineEndings
+    let s2 = File.ReadAllText newFile |> normalizeLineEndings
+    s1 |> shouldEqual s2

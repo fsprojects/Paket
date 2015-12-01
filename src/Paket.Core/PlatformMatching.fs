@@ -107,7 +107,7 @@ let rec findBestMatch (paths : string list) (targetProfile : TargetProfile) =
 
 // For a given list of paths and target profiles return tuples of paths with their supported target profiles.
 // Every target profile will only be listed for own path - the one that best supports it. 
-let getSupportedTargetProfiles (paths : string list) =     
+let getSupportedTargetProfiles (paths : string list) =
     KnownTargetProfiles.AllProfiles
     |> List.map (fun target -> findBestMatch paths target, target)
     |> List.collect (fun (path, target) -> 
