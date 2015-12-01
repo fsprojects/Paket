@@ -1,3 +1,6 @@
+#### 2.31.1 - 01.12.2015
+* BUGFIX: Fixed coreProps root element in generated nuspec - https://github.com/fsprojects/Paket/pull/1276
+
 #### 2.31.0 - 01.12.2015
 * Add options to force Nuget source and use local file paths with bootstrapper - https://github.com/fsprojects/Paket/pull/1268
 * Implement exclude parameter for pack - https://github.com/fsprojects/Paket/pull/1274
