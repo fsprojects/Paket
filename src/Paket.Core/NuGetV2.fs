@@ -305,7 +305,7 @@ let getDetailsFromLocalFile root localNugetPath (packageName:PackageName) (versi
         let nupkg = findLocalPackage di.FullName packageName version
         
         fixArchive nupkg.FullName
-        use zipToCreate = new FileStream(nupkg.FullName, FileMode.Open)
+        use zipToCreate = new FileStream(nupkg.FullName, FileMode.Open, FileAccess.Read)
         use zip = new ZipArchive(zipToCreate,ZipArchiveMode.Read)
         
         let zippedNuspec = zip.Entries |> Seq.find (fun f -> f.FullName.EndsWith ".nuspec")
