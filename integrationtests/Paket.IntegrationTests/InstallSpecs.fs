@@ -56,9 +56,16 @@ let ``#1256 should report error in lock file``() =
 
 [<Test>]
 let ``#1270 install net461``() = 
-    let newLockFile = install "i001270-net461"
+    paket "install --redirects" "i001270-net461" |> ignore
     let newFile = Path.Combine(scenarioTempPath "i001270-net461","MyClassLibrary","MyClassLibrary","MyClassLibrary.csproj")
     let oldFile = Path.Combine(originalScenarioPath "i001270-net461","MyClassLibrary","MyClassLibrary","MyClassLibrary.csprojtemplate")
     let s1 = File.ReadAllText oldFile |> normalizeLineEndings
     let s2 = File.ReadAllText newFile |> normalizeLineEndings
     s1 |> shouldEqual s2
+
+    let path = Path.Combine(scenarioTempPath "i001270-net461")
+    let config1Path = Path.Combine(path, "MyClassLibrary", "MyClassLibrary", "app.config")
+
+    let config1 = File.ReadAllText(config1Path)
+
+    config1 |> shouldContainText "FSharp.Core"
