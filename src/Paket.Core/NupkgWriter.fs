@@ -141,7 +141,7 @@ let corePropsDoc (core : CompleteCoreInfo) =
     let xsi = XNamespace.Get "http://www.w3.org/2001/XMLSchema-instance"
     let root =
         XElement
-            (ns + "Relationships", XAttribute(XName.Get "xmlns", ns.NamespaceName),
+            (ns + "coreProperties", XAttribute(XName.Get "xmlns", ns.NamespaceName),
              XAttribute(XNamespace.Xmlns + "dc", dc.NamespaceName),
              XAttribute(XNamespace.Xmlns + "dcterms", dcterms.NamespaceName),
              XAttribute(XNamespace.Xmlns + "xsi", xsi.NamespaceName))
