@@ -10,7 +10,7 @@ open System.Collections.Generic
 open Paket.PackageMetaData
 open Chessie.ErrorHandling
 
-let private merge buildConfig version projectFile templateFile = 
+let private merge buildConfig buildPlatform version projectFile templateFile = 
     let withVersion =
         match version with
         | None -> templateFile
@@ -21,7 +21,7 @@ let private merge buildConfig version projectFile templateFile =
         match md with
         | Valid completeCore -> { templateFile with Contents = CompleteInfo(completeCore, opt) }
         | _ ->
-            let assembly,id,assemblyFileName = loadAssemblyId buildConfig projectFile
+            let assembly,id,assemblyFileName = loadAssemblyId buildConfig buildPlatform projectFile
             let md = { md with Id = md.Id ++ Some id }
 
             match md with
@@ -53,8 +53,9 @@ let private merge buildConfig version projectFile templateFile =
                 | Valid completeCore -> { templateFile with Contents = CompleteInfo(completeCore, opt) }
     | _ -> templateFile
 
-let Pack(workingDir,dependencies : DependenciesFile, packageOutputPath, buildConfig, version, releaseNotes, templateFile, lockDependencies) =
+let Pack(workingDir,dependencies : DependenciesFile, packageOutputPath, buildConfig, buildPlatform, version, releaseNotes, templateFile, lockDependencies) =
     let buildConfig = defaultArg buildConfig "Release"
+    let buildPlatform = defaultArg buildPlatform ""
     let packageOutputPath = if Path.IsPathRooted(packageOutputPath) then packageOutputPath else Path.Combine(workingDir,packageOutputPath)
     Utils.createDir packageOutputPath |> returnOrFail
 
@@ -93,14 +94,14 @@ let Pack(workingDir,dependencies : DependenciesFile, packageOutputPath, buildCon
             |> Array.map (fun (projectFile,templateFile) ->
                 allTemplateFiles.Remove(templateFile.FileName) |> ignore
 
-                let merged = merge buildConfig version projectFile templateFile
+                let merged = merge buildConfig buildPlatform version projectFile templateFile
                 Path.GetFullPath projectFile.FileName |> normalizePath,(merged,projectFile))
             |> Map.ofArray
 
     // add dependencies
     let allTemplates =
         projectTemplates
-        |> Map.map (fun _ (t, p) -> p,findDependencies dependencies buildConfig t p lockDependencies projectTemplates)
+        |> Map.map (fun _ (t, p) -> p,findDependencies dependencies buildConfig buildPlatform t p lockDependencies projectTemplates)
         |> Map.toList
         |> List.map (fun (_,(_,x)) -> x)
         |> List.append [for fileName in allTemplateFiles -> 
@@ -111,7 +112,7 @@ let Pack(workingDir,dependencies : DependenciesFile, packageOutputPath, buildCon
                                 let allProjectFiles = ProjectFile.FindAllProjects(fi.Directory.FullName) |> Array.toList
 
                                 match allProjectFiles with
-                                | [ projectFile ] -> merge buildConfig version projectFile templateFile
+                                | [ projectFile ] -> merge buildConfig buildPlatform version projectFile templateFile
                                 | [] -> failwithf "There was no project file found for template file %s" fileName
                                 | _ -> failwithf "There was more than one project file found for template file %s" fileName
                             | _ -> templateFile ]

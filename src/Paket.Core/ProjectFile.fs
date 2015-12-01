@@ -979,13 +979,40 @@ type ProjectFile =
         then "Compile"
         else "Content"
 
-    member this.GetOutputDirectory buildConfiguration =
-        let startingData = Map.empty<string,string>.Add("Configuration", buildConfiguration)
+    member this.GetOutputDirectory buildConfiguration buildPlatform =
+        let platforms =
+            if not <| String.IsNullOrWhiteSpace(buildPlatform)
+            then [buildPlatform]
+            else
+                [
+                    "AnyCPU";
+                    "AnyCPU32BitPreferred";
+                    "x86";
+                    "x64";
+                    "ARM";
+                    "Itanium";
+                ]
 
-        this.GetPropertyWithDefaults "OutputPath" startingData
-        |> function
-            | None -> failwithf "Unable to find %s output path node in file %s" buildConfiguration this.FileName
-            | Some s -> s.TrimEnd [|'\\'|] |> normalizePath
+        let rec tryNextPlat platforms attempted =
+            match platforms with
+            | [] ->
+                if String.IsNullOrWhiteSpace(buildPlatform)
+                then
+                    failwithf "Unable to find %s output path node in file %s for any known platforms" buildConfiguration this.FileName
+                else
+                    failwithf "Unable to find %s output path node in file %s targeting the %s platform" buildConfiguration this.FileName buildPlatform
+            | x::xs ->
+                let startingData = Map.ofList [("Configuration", buildConfiguration); ("Platform", x)]
+                this.GetPropertyWithDefaults "OutputPath" startingData
+                |> function
+                    | None -> tryNextPlat xs (x::attempted)
+                    | Some s ->
+                        if String.IsNullOrWhiteSpace(buildPlatform) then
+                            let tested = String.Join(", ", Array.ofList attempted)
+                            traceWarnfn "No platform specified; found output path node for the %s platform after failing to find one for the following: %s" x tested
+                        s.TrimEnd [|'\\'|] |> normalizePath
+
+        tryNextPlat platforms []
 
     member this.GetAssemblyName () =
         let assemblyName =

@@ -84,10 +84,10 @@ let getDescription attributes =
                       | Description d -> Some d
                       | _ -> None) 
 
-let loadAssemblyId buildConfig (projectFile : ProjectFile) = 
+let loadAssemblyId buildConfig buildPlatform (projectFile : ProjectFile) = 
     let fileName = 
         Path.Combine
-            (Path.GetDirectoryName projectFile.FileName, projectFile.GetOutputDirectory buildConfig, 
+            (Path.GetDirectoryName projectFile.FileName, projectFile.GetOutputDirectory buildConfig buildPlatform, 
              projectFile.GetAssemblyName()) |> normalizePath
 
     traceVerbose <| sprintf "Loading assembly metadata for %s" fileName
@@ -129,8 +129,8 @@ let addDependency (templateFile : TemplateFile) (dependency : PackageName * Vers
     | IncompleteTemplate -> 
         failwith "You should only try and add dependencies to template files with complete metadata."
 
-let toFile config (p : ProjectFile) = 
-    Path.Combine(Path.GetDirectoryName p.FileName, p.GetOutputDirectory(config), p.GetAssemblyName())
+let toFile config platform (p : ProjectFile) = 
+    Path.Combine(Path.GetDirectoryName p.FileName, p.GetOutputDirectory config platform, p.GetAssemblyName())
 
 let addFile (source : string) (target : string) (templateFile : TemplateFile) = 
     match templateFile with
@@ -140,7 +140,7 @@ let addFile (source : string) (target : string) (templateFile : TemplateFile) =
     | IncompleteTemplate -> 
         failwith "You should only try and add files to template files with complete metadata."
 
-let findDependencies (dependencies : DependenciesFile) config (template : TemplateFile) (project : ProjectFile) lockDependencies (map : Map<string, TemplateFile * ProjectFile>) =
+let findDependencies (dependencies : DependenciesFile) config platform (template : TemplateFile) (project : ProjectFile) lockDependencies (map : Map<string, TemplateFile * ProjectFile>) =
     let targetDir = 
         match project.OutputType with
         | ProjectOutputType.Exe -> "tools/"
@@ -163,7 +163,7 @@ let findDependencies (dependencies : DependenciesFile) config (template : Templa
     
     // Add the assembly + pdb + dll from this project
     let templateWithOutput =
-        let assemblyFileName = toFile config project
+        let assemblyFileName = toFile config platform project
         let fi = FileInfo(assemblyFileName)
         let name = Path.GetFileNameWithoutExtension fi.Name
 
@@ -199,7 +199,7 @@ let findDependencies (dependencies : DependenciesFile) config (template : Templa
     // If project refs will not be packaged, add the assembly to the package
     let withDepsAndIncluded = 
         files
-        |> List.fold (fun templatefile file -> addFile (toFile config file) targetDir templatefile) withDeps
+        |> List.fold (fun templatefile file -> addFile (toFile config platform file) targetDir templatefile) withDeps
 
     let lockFile = 
         dependencies.FindLockfile().FullName

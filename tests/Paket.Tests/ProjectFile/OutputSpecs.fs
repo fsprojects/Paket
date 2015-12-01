@@ -35,7 +35,7 @@ let ``should detect target framework for Project2 proj file``() =
 let ``should detect output path for proj file``
         ([<Values("Project1", "Project2", "Project3", "ProjectWithConditions")>] project)
         ([<Values("Debug", "Release")>] configuration) =
-    ProjectFile.TryLoad(sprintf "./ProjectFile/TestData/%s.fsprojtest" project).Value.GetOutputDirectory configuration
+    ProjectFile.TryLoad(sprintf "./ProjectFile/TestData/%s.fsprojtest" project).Value.GetOutputDirectory configuration ""
     |> shouldEqual (System.IO.Path.Combine(@"bin", configuration) |> normalizePath)
 
 [<Test>]
