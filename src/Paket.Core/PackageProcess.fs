@@ -141,7 +141,7 @@ let Pack(workingDir,dependencies : DependenciesFile, packageOutputPath, buildCon
             | _ -> seq { yield templateFile }
 
         projectTemplates
-        |> Map.map (fun _ (t, p) -> p,findDependencies dependencies buildConfig t p lockDependencies projectTemplates)
+        |> Map.map (fun _ (t, p) -> p,findDependencies dependencies buildConfig buildPlatform t p lockDependencies projectTemplates)
         |> Map.toList
         |> Seq.collect (fun (_,(p,t)) -> t |> optWithSymbols p)
         |> Seq.append (allTemplateFiles |> Seq.collect convertRemainingTemplate)
