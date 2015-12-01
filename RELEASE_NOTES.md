@@ -1,3 +1,6 @@
+#### 2.30.2 - 01.12.2015
+* Handle different platforms in ProjectFile.GetOutputPath - https://github.com/fsprojects/Paket/pull/1269
+
 #### 2.30.1 - 01.12.2015
 * Support local read-only .nupkg-files - https://github.com/fsprojects/Paket/pull/1272
 
