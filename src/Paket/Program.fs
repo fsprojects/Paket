@@ -221,7 +221,8 @@ let pack (results : ParseResults<_>) =
                       ?templateFile = results.TryGetResult <@ PackArgs.TemplateFile @>,
                       excludedTemplates = results.GetResults <@ PackArgs.ExcludedTemplate @>,
                       workingDir = Environment.CurrentDirectory,
-                      lockDependencies = results.Contains <@ PackArgs.LockDependencies @>)
+                      lockDependencies = results.Contains <@ PackArgs.LockDependencies @>,
+                      symbols = results.Contains <@ PackArgs.Symbols @>)
 
 let findPackages (results : ParseResults<_>) =
     let maxResults = defaultArg (results.TryGetResult <@ FindPackagesArgs.MaxResults @>) 10000

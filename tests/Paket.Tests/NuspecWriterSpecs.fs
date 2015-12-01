@@ -23,7 +23,8 @@ let ``should serialize core info``() =
         { Id = "Paket.Tests"
           Version = SemVer.Parse "1.0.0.0" |> Some
           Authors = [ "Two"; "Authors" ]
-          Description = "A description" }
+          Description = "A description"
+          Symbols = false }
     
     let doc = NupkgWriter.nuspecDoc (core, OptionalPackagingInfo.Epmty)
     doc.ToString()
@@ -50,7 +51,8 @@ let ``should serialize dependencies``() =
         { Id = "Paket.Tests"
           Version = SemVer.Parse "1.0.0.0" |> Some
           Authors = [ "Two"; "Authors" ]
-          Description = "A description" }
+          Description = "A description"
+          Symbols = false }
     
     let optional = 
         { OptionalPackagingInfo.Epmty with 
@@ -85,7 +87,8 @@ let ``should serialize frameworkAssemblues``() =
         { Id = "Paket.Tests"
           Version = SemVer.Parse "1.0.0.0" |> Some
           Authors = [ "Two"; "Authors" ]
-          Description = "A description" }
+          Description = "A description"
+          Symbols = false }
     
     let optional = 
         { OptionalPackagingInfo.Epmty with 
@@ -114,7 +117,8 @@ let ``should not serialize files``() =
         { Id = "Paket.Core"
           Version = SemVer.Parse "4.2" |> Some
           Authors = [ "Michael"; "Steffen" ]
-          Description = "A description" }
+          Description = "A description"
+          Symbols = false }
     
     let optional = 
         { OptionalPackagingInfo.Epmty with 
@@ -160,7 +164,8 @@ second line</releaseNotes>
         { Id = "Paket.Core"
           Version = SemVer.Parse "4.2" |> Some
           Authors = [ "Michael"; "Steffen" ]
-          Description = "A description" }
+          Description = "A description"
+          Symbols = false }
     
     let optional = 
         { OptionalPackagingInfo.Epmty with 
