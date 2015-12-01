@@ -33,7 +33,8 @@ let private merge buildConfig version projectFile templateFile =
                     { Id = md.Id
                       Version = md.Version ++ getVersion assembly attribs
                       Authors = md.Authors ++ getAuthors attribs
-                      Description = md.Description ++ getDescription attribs }
+                      Description = md.Description ++ getDescription attribs
+                      Symbols = md.Symbols }
 
                 match merged with
                 | Invalid ->
@@ -53,7 +54,28 @@ let private merge buildConfig version projectFile templateFile =
                 | Valid completeCore -> { templateFile with Contents = CompleteInfo(completeCore, opt) }
     | _ -> templateFile
 
-let Pack(workingDir,dependencies : DependenciesFile, packageOutputPath, buildConfig, version, releaseNotes, templateFile, lockDependencies) =
+let private convertToSymbols (projectFile : ProjectFile) templateFile =
+    let sourceFiles =
+        let getTarget compileItem =
+            match compileItem.Link with
+            | Some link -> link
+            | None -> compileItem.Include
+            |> Path.GetDirectoryName
+            |> (fun d -> Path.Combine("src", d))
+
+        projectFile.GetCompileItems()
+        |> Seq.map (fun c -> c.Include, getTarget c)
+        |> Seq.toList
+
+    match templateFile.Contents with
+    | CompleteInfo(core, optional) ->
+        let augmentedFiles = optional.Files |> List.append sourceFiles 
+        { templateFile with Contents = CompleteInfo({ core with Symbols = true }, { optional with Files = augmentedFiles }) }
+    | ProjectInfo(core, optional) ->
+        let augmentedFiles = optional.Files |> List.append sourceFiles 
+        { templateFile with Contents = ProjectInfo({ core with Symbols = true }, { optional with Files = augmentedFiles }) }
+
+let Pack(workingDir,dependencies : DependenciesFile, packageOutputPath, buildConfig, version, releaseNotes, templateFile, lockDependencies, symbols) =
     let buildConfig = defaultArg buildConfig "Release"
     let packageOutputPath = if Path.IsPathRooted(packageOutputPath) then packageOutputPath else Path.Combine(workingDir,packageOutputPath)
     Utils.createDir packageOutputPath |> returnOrFail
@@ -99,22 +121,30 @@ let Pack(workingDir,dependencies : DependenciesFile, packageOutputPath, buildCon
 
     // add dependencies
     let allTemplates =
+        let optWithSymbols projectFile templateFile =
+            seq { yield templateFile; if symbols then yield templateFile |> convertToSymbols projectFile }
+
+        let convertRemainingTemplate fileName =
+            let templateFile = TemplateFile.Load(fileName,lockFile,version)
+            match templateFile with
+            | { Contents = ProjectInfo(_) } -> 
+                let fi = FileInfo(fileName)
+                let allProjectFiles = ProjectFile.FindAllProjects(fi.Directory.FullName) |> Array.toList
+
+                match allProjectFiles with
+                | [ projectFile ] ->
+                    merge buildConfig version projectFile templateFile
+                    |> optWithSymbols projectFile
+                | [] -> failwithf "There was no project file found for template file %s" fileName
+                | _ -> failwithf "There was more than one project file found for template file %s" fileName
+            | _ -> seq { yield templateFile }
+
         projectTemplates
         |> Map.map (fun _ (t, p) -> p,findDependencies dependencies buildConfig t p lockDependencies projectTemplates)
         |> Map.toList
-        |> List.map (fun (_,(_,x)) -> x)
-        |> List.append [for fileName in allTemplateFiles -> 
-                            let templateFile = TemplateFile.Load(fileName,lockFile,version)
-                            match templateFile with
-                            | { Contents = ProjectInfo(_) } -> 
-                                let fi = FileInfo(fileName)
-                                let allProjectFiles = ProjectFile.FindAllProjects(fi.Directory.FullName) |> Array.toList
-
-                                match allProjectFiles with
-                                | [ projectFile ] -> merge buildConfig version projectFile templateFile
-                                | [] -> failwithf "There was no project file found for template file %s" fileName
-                                | _ -> failwithf "There was more than one project file found for template file %s" fileName
-                            | _ -> templateFile ]
+        |> Seq.collect (fun (_,(p,t)) -> t |> optWithSymbols p)
+        |> Seq.append (allTemplateFiles |> Seq.collect convertRemainingTemplate)
+        |> Seq.toList
     
     // set version
     let templatesWithVersion =

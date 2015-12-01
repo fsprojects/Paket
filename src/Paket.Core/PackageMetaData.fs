@@ -110,11 +110,12 @@ let loadAssemblyAttributes fileName (assembly:Assembly) =
 
 let (|Valid|Invalid|) md = 
     match md with
-    | { ProjectCoreInfo.Id = Some id'; Version = Some v; Authors = Some a; Description = Some d } -> 
+    | { ProjectCoreInfo.Id = Some id'; Version = Some v; Authors = Some a; Description = Some d; Symbols = s } -> 
         Valid { CompleteCoreInfo.Id = id'
                 Version = Some v
                 Authors = a
-                Description = d }
+                Description = d
+                Symbols = s }
     | _ -> Invalid
 
 let addDependency (templateFile : TemplateFile) (dependency : PackageName * VersionRequirement) = 

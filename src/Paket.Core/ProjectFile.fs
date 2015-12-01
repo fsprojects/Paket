@@ -22,6 +22,11 @@ type ProjectReference =
       Name : string
       GUID : Guid }
 
+/// Compile items inside of project files.
+type CompileItem = 
+    { Include : string
+      Link : string option }
+
 /// Project output type.
 [<RequireQualifiedAccess>]
 type ProjectOutputType =
@@ -1004,6 +1009,19 @@ type ProjectFile =
                 else assemblyName
 
         sprintf "%s.%s" assemblyName (this.OutputType |> function ProjectOutputType.Library -> "dll" | ProjectOutputType.Exe -> "exe")
+
+    member this.GetCompileItems () =
+        let getCompileItem (compileNode : XmlNode) =
+            let includePath = compileNode |> getAttribute "Include" |> fun a -> a.Value
+            compileNode
+            |> getDescendants "Link"
+            |> function
+               | [] -> { Include = includePath; Link = None }
+               | [link] | link::_ -> { Include = includePath; Link = Some link.InnerText }
+
+        this.Document
+        |> getDescendants "Compile"
+        |> Seq.map getCompileItem
 
     static member LoadFromStream(fullName:string, stream:Stream) =
         let doc = new XmlDocument()
